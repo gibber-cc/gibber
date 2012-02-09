@@ -68,13 +68,11 @@
 		</style>
 	</head>
 	<body>
-		<div id="editor">// execute selected code using Ctrl-Return. If no code is selected entire block is run.
+		<div id="editor">// execute selected code using Ctrl-Return (Cmd-Return OSX). If no code is selected entire block is run.
+// Cntrl/Cmd-. toggles the audio on and off
 		
 sine = Sine(240, .5); 				// Create a sine wave at frequency 240, amplitude .5
 sine.mod("frequency", LFO(4,10));  // modulate the frequencyOffset by 10Hz with an LFO running at 4Hz
-	
-//  Gibber.stop();		// stop audio
-//  Gibber.start();		// restart audio
 
 square = Square(120, .15);
 freqs = [120, 240, 120, 360];
@@ -82,9 +80,9 @@ freqs = [120, 240, 120, 360];
 step = Step(250, freqs); 				// create a step sequencer. each step is 250 ms.
 
 square.mod("frequency", step);			// use step sequencer to set freq of saw wave
-square.mod("ampOffset", LFO(10, .15));  // tremolo
+square.mod("mix", LFO(10, .15));  // tremolo
 
-tri = Tri(240, .5).mod( "freqOffset", LFO(4,40) ).mod( "ampOffset", LFO(1, .25) ); // mods can cascade
+tri = Tri(240, .5).mod( "frequency", LFO(4,40) ).mod( "mix", LFO(1, .25) ); // mods can cascade
 
 // Gibber.clear(); 		// delete all audio generators		
 </div>

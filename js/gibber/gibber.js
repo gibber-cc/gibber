@@ -67,7 +67,11 @@ function audioProcess(buffer, channelCount){
 	}
 };
 
-
+Gibber.automationModes = {
+	"+" : "addition",
+	"=" : "assignment",
+	"*" : "modulation",
+};
 function Osc(args, isAudioGenerator) {
 	var _freq = (typeof args[0] !== "undefined") ? args[0] : 440;
 	
@@ -90,9 +94,10 @@ function Osc(args, isAudioGenerator) {
 	that.value = 0;
 	that.mods = [];
 	
-	that.mod = function(_name, _source) {
+	that.mod = function(_name, _source, _type) {
+		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
 		this.mods.push( {type:_name, gen:_source} );
-		this.addAutomation(_name, _source, 1, 'addition');
+		this.addAutomation(_name, _source, 1, type);
 		return this;
 	}
 	
@@ -115,7 +120,7 @@ function Osc(args, isAudioGenerator) {
 	return that;
 }
 
-function LFO(freq, amount, shape) {
+function LFO(freq, amount, shape, type) {
 	var that = Osc(arguments, false);
 	that.mix = amount;
 	that.waveShape = (typeof shape === "String") ? shape : 'sine';
