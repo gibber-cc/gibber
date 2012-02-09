@@ -51,6 +51,7 @@ function Osc(args, isLFO) {
 	
 	that.mod = function(_name, _source) {
 		this.mods.push( {type:_name, gen:_source} );
+		return this;
 	}
 	
 	that.stop = function() {

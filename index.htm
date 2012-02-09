@@ -60,11 +60,12 @@ sine.mod("freqOffset", LFO(4,10));  // modulate the frequencyOffset by 10Hz with
 square = Square(120, .15);
 freqs = [120, 240, 120, 360];
 
-step = StepSequencer(250, freqs); 	// create a step sequencer. each step is 250 ms.
+step = StepSequencer(250, freqs); 		// create a step sequencer. each step is 250 ms.
 
-square.mod("frequency", step);		// use step sequencer to set freq of saw wave
-square.mod("ampOffset", LFO(10, .15)); // tremolo
-		
+square.mod("frequency", step);			// use step sequencer to set freq of saw wave
+square.mod("ampOffset", LFO(10, .15));  // tremolo
+
+tri = Tri(240, .5).mod( "freqOffset", LFO(4,40) ).mod( "ampOffset", LFO(1, .25) ); // mods can cascade		
 		</div>
 	</body>
 </html>
