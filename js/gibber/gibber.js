@@ -4,9 +4,6 @@ var Gibber = {
 	init : function() {
 		this.dev = audioLib.AudioDevice(audioProcess, 2),
 		this.sampleRate = this.dev.sampleRate;
-		this.generators.clear = function() {
-			
-		}
 	},
 	
 	clear : function() {
@@ -38,9 +35,38 @@ var Gibber = {
 
 Gibber.gens = Gibber.generators;
 
-function Trigger(time, func, repeat) {
+function audioProcess(buffer, channelCount){
+	var i, channel, val;
 	
-}
+	for(var g = 0; g < Gibber.generators.length; g++) {
+		var gen = Gibber.generators[g];
+		//console.log("mod length = " + gen.mods.length);
+		for(var m = 0; m < gen.mods.length; m++) {
+			var mod = gen.mods[m];
+			//gen[mod.type] = mod.gen.out();
+			mod.gen.generateBuffer(buffer.length, channelCount);
+		}
+		gen.generateBuffer(buffer.length, channelCount);
+	}
+	
+	for (i = 0; i < buffer.length; i+=channelCount){
+		val = 0;
+		if( Gibber.active ) {
+			for(var l = 0; l < Gibber.generators.length; l++) {
+				var gen = Gibber.generators[l];
+	
+				val += gen.generatedBuffer[i];	
+			}
+			//if(i == buffer.length / 2) console.log(val);
+			buffer[i]   = val;
+			buffer[i+1] = buffer[i];
+		}else{
+			buffer[i]   = 0;
+			buffer[i+1] = 0;
+		}
+	}
+};
+
 
 function Osc(args, isAudioGenerator) {
 	var _freq = (typeof args[0] !== "undefined") ? args[0] : 440;
@@ -61,12 +87,17 @@ function Osc(args, isAudioGenerator) {
 		return this.value;
 	}
 	
-	this.value = 0;
+	that.value = 0;
 	that.mods = [];
 	
 	that.mod = function(_name, _source) {
 		this.mods.push( {type:_name, gen:_source} );
+		this.addAutomation(_name, _source, _source.amount, 'addition');
 		return this;
+	}
+	
+	that.clear = function() {
+		this.mods.length = 0;
 	}
 	
 	that.stop = function() {
@@ -84,17 +115,9 @@ function Osc(args, isAudioGenerator) {
 	return that;
 }
 
-function Trigger(time, func, shouldRepeat) {
-	var that = new audioLib.Oscillator(Gibber.sampleRate, 1);
-	that.value = 0;
-	that.generate = function() {
-		that.value++;
-		if((Gibber.sampleRate / 1000) * that.value > time) func();
-	}
-}
-
 function LFO(freq, amount, shape) {
 	var that = Osc(arguments, false);
+	that.amount = amount;
 	that.waveShape = (typeof shape === "String") ? shape : 'sine';
 	return that;
 };
@@ -159,33 +182,11 @@ function Trigger(_func, _time, _repeats) {
 		}
 	}
 	that.stop = Sink.doInterval(_callback(), 500);
-	//that.callback = function(_that) { console.log("ERH");  _that.func();  }(that));
-	//if(!_repeats) _that.stop();
+
 	return that;
 }
 
-function audioProcess(buffer, channelCount){
-	var i, channel, val;
-	for (i = 0; i < buffer.length; i+=channelCount){
-		val = 0;
-		if( Gibber.active ) {
-			for(var l = 0; l < Gibber.generators.length; l++) {
-				var gen = Gibber.generators[l];
-				for(var m = 0; m < gen.mods.length; m++) {
-					var mod = gen.mods[m];
-					gen[mod.type] = mod.gen.out();
-				}
-				val += gen.out();	
-			}
-			//if(i == buffer.length / 2) console.log(val);
-			buffer[i]   = val;
-			buffer[i+1] = buffer[i];
-		}else{
-			buffer[i]   = 0;
-			buffer[i+1] = 0;
-		}
-	}
-};
+
 
 function Step(stepTime, steps) {
 	var that = new audioLib.StepSequencer(Gibber.sampleRate, stepTime, steps, 0.0);
