@@ -73,26 +73,26 @@ function Osc(args, isAudioGenerator) {
 	
 	var that = new audioLib.Oscillator(Gibber.sampleRate, _freq);
 		
-	that.amp = (typeof args[1] !== "undefined") ? args[1] : .25;
-	that.ampOffset = 0;
+	that.mix = (typeof args[1] !== "undefined") ? args[1] : .25;
+
 	that.active = true;
 	
-	that.out = function() {
-		if(this.active) {
-			this.generate();
-			this.value = this.getMix() * (this.amp + this.ampOffset);
-		}else{
-			this.value = 0;
-		}
-		return this.value;
-	}
+	// that.out = function() {
+	// 	if(this.active) {
+	// 		this.generate();
+	// 		this.value = this.getMix() * (this.amp + this.ampOffset);
+	// 	}else{
+	// 		this.value = 0;
+	// 	}
+	// 	return this.value;
+	// }
 	
 	that.value = 0;
 	that.mods = [];
 	
 	that.mod = function(_name, _source) {
 		this.mods.push( {type:_name, gen:_source} );
-		this.addAutomation(_name, _source, _source.amount, 'addition');
+		this.addAutomation(_name, _source, 1, 'addition');
 		return this;
 	}
 	
@@ -117,7 +117,7 @@ function Osc(args, isAudioGenerator) {
 
 function LFO(freq, amount, shape) {
 	var that = Osc(arguments, false);
-	that.amount = amount;
+	that.mix = amount;
 	that.waveShape = (typeof shape === "String") ? shape : 'sine';
 	return that;
 };
