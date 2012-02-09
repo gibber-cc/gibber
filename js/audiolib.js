@@ -3991,6 +3991,7 @@ UIControl.prototype = {
  * @param type:Float min:0.0 max:1.0 default:0.0 attack The time the linear transition between the steps. Measured in steps.
  * @param type:Float default:0.0 phase The current phase of the sequencer.
 */
+
 function StepSequencer(sampleRate, stepLength, steps, attack){
 	var	self	= this,
 		phase	= 0;

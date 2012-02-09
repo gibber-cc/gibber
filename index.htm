@@ -16,7 +16,7 @@
 			    name: 'evaluate',
 			    bindKey: {
 			        win: 'Ctrl-Return',
-			        mac: 'Ctrl-Return',
+			        mac: 'Command-Return',
 			        sender: 'editor'
 			    },
 			    exec: function(env, args, request) {
@@ -24,11 +24,29 @@
 					if(text === "") {
 						text = editor.getSession().getValue();
 					}
-					eval(text);
+					//window.alert(editor.getSession.getPosition());
+					Gibber.runScript(text);
 			    }
-			});	
-						
-			GND.init();
+			});
+			editor.commands.addCommand({
+			    name: 'stop',
+			    bindKey: {
+			        win: 'Ctrl-.',
+			        mac: 'Command-.',
+			        sender: 'editor'
+			    },
+			    exec: function(env, args, request) {
+					Gibber.active = !Gibber.active;
+					if(Gibber.active) console.log("audio on"); else console.log("audio off");
+			    }
+			});
+			
+			// editor.getSession().doc.
+			
+			editor.setShowPrintMargin(false);
+				
+			//this.document.getLine
+			Gibber.init();
 				// s = Tri(160, .6);
 				// // l = LFO(2, 12)
 				// s.mod("freqOffset", LFO(2, 12));
@@ -40,32 +58,35 @@
 		
 		</script>
 		<style>
+		body { margin: 0}
 		#editor {
 		        position: absolute;
-		        width: 800px;
-		        height: 400px;
+				margin: 0;
+		        width: 100%;
+		        height: 100%;
 		    }
 		</style>
 	</head>
 	<body>
-		<div id="editor">
-// execute selected code using Ctrl-Return. If no code is selected entire block is run.
+		<div id="editor">// execute selected code using Ctrl-Return. If no code is selected entire block is run.
 		
 sine = Sine(240, .5); 				// Create a sine wave at frequency 240, amplitude .5
 sine.mod("freqOffset", LFO(4,10));  // modulate the frequencyOffset by 10Hz with an LFO running at 4Hz
 	
-//  GND.stop();
-//  GND.start();
+//  Gibber.stop();		// stop audio
+//  Gibber.start();		// restart audio
 
 square = Square(120, .15);
 freqs = [120, 240, 120, 360];
 
-step = StepSequencer(250, freqs); 		// create a step sequencer. each step is 250 ms.
+step = Step(250, freqs); 				// create a step sequencer. each step is 250 ms.
 
 square.mod("frequency", step);			// use step sequencer to set freq of saw wave
 square.mod("ampOffset", LFO(10, .15));  // tremolo
 
-tri = Tri(240, .5).mod( "freqOffset", LFO(4,40) ).mod( "ampOffset", LFO(1, .25) ); // mods can cascade		
-		</div>
+tri = Tri(240, .5).mod( "freqOffset", LFO(4,40) ).mod( "ampOffset", LFO(1, .25) ); // mods can cascade
+
+// Gibber.clear(); 		// delete all audio generators		
+</div>
 	</body>
 </html>
