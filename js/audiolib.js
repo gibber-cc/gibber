@@ -2489,7 +2489,7 @@ CombFilter.prototype = {
  * @param type:Float min:0.0 max:1.0 default:0.1 resonance The resonance of the IIRFilter.
  * @param type:UInt default:0 type The type of the filter (LowPass, HighPass, BandPass, Notch).
 */
-function IIRFilter(samplerate, cutoff, resonance, type){
+function IIRFilter(sampleRate, cutoff, resonance, type){
 	var	self	= this,
 		f	= [0.0, 0.0, 0.0, 0.0],
 		freq, damp,
@@ -2501,7 +2501,7 @@ function IIRFilter(samplerate, cutoff, resonance, type){
 
 	self.cutoff = isNaN(cutoff) ? 20000 : cutoff; // > 40
 	self.resonance = !resonance ? 0.1 : resonance; // 0.0 - 1.0
-	self.samplerate = isNaN(samplerate) ? 44100 : sampleRate;
+	self.samplerate = isNaN(sampleRate) ? 44100 : sampleRate;
 	self.type = type || 0;
 
 	function calcCoeff(){
@@ -2976,6 +2976,7 @@ Delay.MAX_DELAY = 2;
 */
 function Distortion(sampleRate) // Based on the famous TubeScreamer.
 {
+	sampleRate = sampleRate || 44100;
 	var	hpf1	= new IIRFilter(sampleRate, 720.484),
 		lpf1	= new IIRFilter(sampleRate, 723.431),
 		hpf2	= new IIRFilter(sampleRate, 1.0),

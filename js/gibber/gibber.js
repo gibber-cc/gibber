@@ -1,3 +1,9 @@
+// GIBBER
+// by Charlie Roberts
+// 2011
+// MIT License
+// special thanks to audioLib.js
+
 var Gibber = {
 	active : true,
 	
@@ -29,11 +35,94 @@ var Gibber = {
 	
 	runScript : function(script) {
 		eval(script);
-	}
+	},
 	
+	chain : function(_effect) {
+		for(var i = 0; i < arguments.length; i++) {
+			this.fx.push(arguments[i]);
+		}
+		
+		return this;
+	},
+	
+	clearFX : function() {
+		this.fx.length = 0;
+		
+		return this;
+	},
+	
+	removeFX : function(_id) {
+		if(typeof _id === "Number") {
+			this.fx.splice(_id, 1);
+		}else{
+			for(var i = 0; i < this.fx.length; i++) {
+				var effect = this.fx[i];
+				if(effect.name == _id) {
+					this.fx.splice(i, 1);
+				}
+			}
+		}
+		return this;
+	},
+	
+	removeMod : function(_id) {
+		if(typeof _id === "Number") {
+			this.mod.splice(_id, 1);
+		}else{
+			for(var i = 0; i < this.mods.length; i++) {
+				var mod = this.mods[i];
+				if(mod.name == _id) {
+					this.mods.splice(i, 1);
+				}
+			}
+		}
+		return this;
+	},
+	
+	mod : function(_name, _source, _type) {
+		var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
+		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
+		
+		this.mods.push( {type:name, gen:_source} );
+		this.automations.push(this.addAutomation(name, _source, 1, type));
+
+		return this;
+	},
+	
+	clearMods : function() {
+		for(var i = 0; i < this.mods.length; i++) {
+			this.mods[i].gen.reset();
+			this.automations[i].amount = 0;
+		}
+		this.mods.length = 0;
+		this.automations.length = 0;
+		
+		return this;
+	},
 };
 
 Gibber.gens = Gibber.generators;
+
+// audioLib additions
+audioLib.BufferEffect.prototype.mod = Gibber.mod;
+
+audioLib.BufferEffect.prototype.clearMods = Gibber.clearMods;
+
+audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
+	fx.setParam(param, fx[param] + Math.abs(value));
+};
+
+Master = {
+	mod: Gibber.mod,
+	chain: 	 	Gibber.chain,
+	clearFX: 	Gibber.clearFX,
+	clearMods: 	Gibber.clearMods,
+	removeFX: 	Gibber.removeFX,
+	removeMod: 	Gibber.removeMod,
+	mods : [],
+	fx : [],
+	automations : [],
+};
 
 function audioProcess(buffer, channelCount){
 	var i, channel, val;
@@ -54,6 +143,11 @@ function audioProcess(buffer, channelCount){
 				// run fx
 				for(var e = 0; e < gen.fx.length; e++) {
 					var effect = gen.fx[e];
+					for(var f = 0; f < effect.mods.length; f++) {
+						var mod = effect.mods[f];
+						mod.gen.generateBuffer(buffer.length, channelCount);
+					}
+					
 					effect.append(gen.generatedBuffer);
 				}
 				
@@ -62,11 +156,23 @@ function audioProcess(buffer, channelCount){
 				}
 			}
 		}
+		// Master output
+		for(var e = 0; e < Master.fx.length; e++) {
+			var effect = Master.fx[e];
+			for(var f = 0; f < effect.mods.length; f++) {
+				var mod = effect.mods[f];
+				mod.gen.generateBuffer(buffer.length, channelCount);
+			}
+					
+			effect.append(buffer);
+		}
+		
 	}
 };
 
 Gibber.automationModes = {
 	"+" : "addition",
+	"++": "absoluteAddition",
 	"=" : "assignment",
 	"*" : "modulation",
 };
@@ -74,7 +180,8 @@ Gibber.automationModes = {
 Gibber.shorthands = {
 	"freq": "frequency", 
 	"amp": "mix",
-}
+};
+
 function Osc(args, isAudioGenerator) {
 	var _freq = (typeof args[0] !== "undefined") ? args[0] : 440;
 	
@@ -83,61 +190,27 @@ function Osc(args, isAudioGenerator) {
 	that.mix = (typeof args[1] !== "undefined") ? args[1] : .25;
 
 	that.active = true;
-	
-	// that.out = function() {
-	// 	if(this.active) {
-	// 		this.generate();
-	// 		this.value = this.getMix() * (this.amp + this.ampOffset);
-	// 	}else{
-	// 		this.value = 0;
-	// 	}
-	// 	return this.value;
-	// }
-	
+		
 	that.value = 0;
 	
 	that.mods = [];
 	that.fx = [];
 	that.automations = [];
 	
-	that.chain = function(_effect) {
-		for(var i = 0; i < arguments.length; i++) {
-			this.fx.push(arguments[i]);
-		}
-	}
-	
-	that.mod = function(_name, _source, _type) {
-		var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
-		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
-		this.mods.push( {type:name, gen:_source} );
-		this.automations.push(this.addAutomation(name, _source, 1, type));
-		// this.mods.push(function() {
-		// 			_source.generate();
-		// 			this[name] = _source.getMix();
-		// 		})
-		// this.addPreProcessing(function() {
-		// 	_source.generate();
-		// 	this[name] = _source.getMix();
-		// });
-		return this;
-	}
-	
-	that.clear = function() {
-		for(var i = 0; i < this.mods.length; i++) {
-			this.mods[i].gen.reset();
-			this.automations[i].amount = 0;
-		}
-		this.mods.length = 0;
-		this.automations.length = 0;
-	}
-	
+	that.mod 	= Gibber.mod;
+	that.chain  = Gibber.chain;
+	that.clearFX   = Gibber.clearFX;
+	that.clearMods = Gibber.clearMods;
+	that.removeFX  = Gibber.removeFX;
+	that.removeMod = Gibber.removeMod;
+
 	that.stop = function() {
 		this.active = false;
-	}
+	};
 	
 	that.start = function() {
 		this.active = true;
-	}
+	};
 	
 	if(typeof isAudioGenerator === "undefined" || isAudioGenerator) {
 		Gibber.generators.push(that);
@@ -146,28 +219,190 @@ function Osc(args, isAudioGenerator) {
 	return that;
 }
 
-function Delay(feedback, time, mix) {
+function Reverb(roomSize, damping, wet, dry) {
+	roomSize 	= roomSize || .8;
+	damping 	= damping || .3;
+	wet 		= wet || .75;
+	dry 		= dry || .5;
+	
+	var that = audioLib.Reverb.createBufferBased(2, Gibber.sampleRate);
+	that.name = "Reverb";
+	
+	that.mods = [];
+	that.automations = [];
+	
+	if(typeof roomSize === "Object") {
+		that.effects[1].roomSize = roomSize[0];
+		that.effects[0].roomSize = roomSize[1];
+	}else{
+		that.setParam("roomSize", roomSize);
+	}
+	
+	if(typeof damping === "Object") {
+		that.effects[1].damping = damping[0];
+		that.effects[0].damping = damping[1];
+	}else{
+		that.setParam("damping", damping);
+	}
+	
+	if(typeof wet === "Object") {
+		that.effects[1].wet = wet[0];
+		that.effects[0].wet = wet[1];
+	}else{
+		that.setParam("wet", wet);
+	}
+	
+	if(typeof dry === "Object") {
+		that.effects[1].dry = dry[0];
+		that.effects[0].dry = dry[1];
+	}else{
+		that.setParam("dry", dry);
+	}
+	
+	return that;
+}
+
+function Delay(time, feedback, mix) {
 	var that = audioLib.Delay.createBufferBased(2, Gibber.sampleRate);
+	that.name = "Delay";
+	
+	that.mods = [];
+	that.automations = [];
+	
+	time = time || 500;
+	feedback = feedback || .3;
+	mix = mix || .3;
+	
 	if(typeof feedback === "Object") {
 		that.effects[1].feedback = feedback[0];
 		that.effects[0].feedback = feedback[1];
 	}else{
-		that.effects[0].feedback = feedback;
-		that.effects[1].feedback = feedback;
+		that.setParam("feedback", feedback);
 	}
 	
 	if(typeof time === "Object") {
 		that.effects[1].time = time[0];
 		that.effects[0].time = time[1];
 	}else{
-		that.effects[0].time = time;
-		that.effects[1].time = time;
+		that.setParam("time", time);
 	}
 	
-	that.mix = mix;
+	that.mix = mix || .3;
 	
 	return that;	
 };
+
+function LP(cutoff, resonance, mix) {
+	var that = audioLib.LP12Filter.createBufferBased(2, Gibber.sampleRate);
+	that.name = "LP";
+	
+	that.mods = [];
+	that.automations = [];
+	
+	if(typeof cutoff === "Object") {
+		that.effects[1].cutoff = cutoff[0];
+		that.effects[0].cutoff = cutoff[1];
+	}else{
+		that.setParam("cutoff", cutoff);
+	}
+	
+	if(typeof time === "Object") {
+		that.effects[1].resonance = resonance[0];
+		that.effects[0].resonance = resonance[1];
+	}else{
+		that.setParam("resonance", resonance);
+	}
+	
+	that.mix = mix || .3;
+	
+	return that;
+}
+
+function Trunc(bits, mix) {
+    var that = audioLib.BitCrusher.createBufferBased(2, Gibber.sampleRate);
+	that.name = "Trunc";
+	
+	that.mods = [];
+	that.automations = [];
+	
+	if(typeof bits === "Object") {
+		that.effects[1].resolution = Math.pow(2, bits[0]-1);
+		that.effects[0].resolution = Math.pow(2, bits[1]-1);
+	}else{
+		that.setParam("resolution", Math.pow(2, bits-1));
+	}
+	
+	that.mix = mix || 1;
+	
+	return that;
+}
+
+function Chorus(delay, depth, freq, mix) {
+    var that = audioLib.Chorus.createBufferBased(2, Gibber.sampleRate);
+	that.name = "Chorus";
+	
+	that.mods = [];
+	that.automations = [];
+	
+	delay = delay || 10;
+	depth = depth || .2;
+	freq  = freq  || 5;
+	
+	if(typeof delay === "Object") {
+		that.effects[0].delay = delay[0];
+		that.effects[1].delay = delay[1];
+	}else if(typeof delay !== "undefined"){
+		that.setParam("delay", delay);
+	}
+	
+	if(typeof depth === "Object") {
+		that.effects[0].depth = depth[0];
+		that.effects[1].depth = depth[1];
+	}else if(typeof depth !== "undefined"){
+		that.setParam("depth", depth);
+	}
+	
+	if(typeof freq === "Object") {
+		that.effects[0].freq = freq[0];
+		that.effects[1].freq = freq[1];
+	}else if(typeof freq !== "undefined"){
+		that.setParam("freq", freq);
+	}
+	
+	that.mix = mix || 1;
+	
+	return that;
+}
+
+function Dist(gain, master) {
+    var that = audioLib.Distortion.createBufferBased(2, Gibber.sampleRate);
+	that.name = "Dist";
+	
+	that.mods = [];
+	that.automations = [];
+	
+	if(typeof gain === "undefined") 	gain 	= 10;
+	if(typeof master === "undefined") 	master  = 4;
+	
+	if(typeof gain === "Object") {
+		that.effects[1].gain = gain[0];
+		that.effects[0].gain = gain[1];
+	}else{
+		that.setParam("gain", gain);
+	}
+	
+	if(typeof master === "Object") {
+		that.effects[1].master = master[0];
+		that.effects[0].master = master[1];
+	}else{
+		that.setParam("master", master);
+	}
+	
+	
+	//that.master = mix || 1;
+	
+	return that;
+}
 
 
 function LFO(freq, amount, shape, type) {
