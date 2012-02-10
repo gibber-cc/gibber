@@ -4025,10 +4025,10 @@ StepSequencer.prototype = {
 			val;
 		self.phase	= (self.phase + 1) % sequenceLength;
 		step		= self.phase / sequenceLength * steps.length;
-		overStep	= step % 1;
+		//overStep	= step % 1;
 		step		= Math.floor(step);
 		prevStep	= (step || steps.length) - 1;
-		stepDiff	= steps[step] - steps[prevStep];
+		//stepDiff	= steps[step] - steps[prevStep];
 		val		= steps[step];
 		if (overStep < self.attack){
 			val -= stepDiff - stepDiff / self.attack * overStep;

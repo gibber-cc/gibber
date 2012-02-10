@@ -40,6 +40,18 @@
 					if(Gibber.active) console.log("audio on"); else console.log("audio off");
 			    }
 			});
+			editor.commands.addCommand({
+			    name: 'deleteGenerators',
+			    bindKey: {
+			        win: 'Ctrl-`',
+			        mac: 'Command-`',
+			        sender: 'editor'
+			    },
+			    exec: function(env, args, request) {
+					Gibber.clear();
+			    }
+			});
+			
 			
 			// editor.getSession().doc.
 			
@@ -68,23 +80,23 @@
 		</style>
 	</head>
 	<body>
-		<div id="editor">// execute selected code using Ctrl-Return (Cmd-Return OSX). If no code is selected entire block is run.
+		<div id="editor">// Ctrl-Return (Cmd-Return OSX) executes selected code. If no code is selected entire block is run.
 // Cntrl/Cmd-. toggles the audio on and off
+// Cntrl/Cmd-` clears all generators
 		
-sine = Sine(240, .5); 				// Create a sine wave at frequency 240, amplitude .5
-sine.mod("frequency", LFO(4,10));  // modulate the frequencyOffset by 10Hz with an LFO running at 4Hz
+sine = Sine(240, .5); 					// Create a sine wave at frequency 240, amplitude .5
+sine.mod("freq", LFO(4,10), "+");  		// offset the frequency by 10Hz with an LFO running at 4Hz
 
 square = Square(120, .15);
 freqs = [120, 240, 120, 360];
 
 step = Step(250, freqs); 				// create a step sequencer. each step is 250 ms.
 
-square.mod("frequency", step);			// use step sequencer to set freq of saw wave
-square.mod("mix", LFO(10, .15));  // tremolo
+square.mod("freq", step, "=");	    	// use step sequencer to assign freq of saw wave
+square.mod("amp", LFO(10, .15));  		// tremolo
 
-tri = Tri(240, .5).mod( "frequency", LFO(4,40) ).mod( "mix", LFO(1, .25) ); // mods can cascade
-
-// Gibber.clear(); 		// delete all audio generators		
-</div>
+tri = Tri(240, .5)
+    .mod( "freq", LFO(4,40) )
+    .mod( "amp", LFO(1, .25) );         // mods can cascade</div>
 	</body>
 </html>

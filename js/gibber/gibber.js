@@ -3,7 +3,7 @@ var Gibber = {
 	
 	init : function() {
 		this.dev = audioLib.AudioDevice(audioProcess, 2),
-		this.sampleRate = this.dev.sampleRate;
+		this.sampleRate = this.dev.sampleRate;		
 	},
 	
 	clear : function() {
@@ -38,31 +38,29 @@ Gibber.gens = Gibber.generators;
 function audioProcess(buffer, channelCount){
 	var i, channel, val;
 	
-	for(var g = 0; g < Gibber.generators.length; g++) {
-		var gen = Gibber.generators[g];
-		//console.log("mod length = " + gen.mods.length);
-		for(var m = 0; m < gen.mods.length; m++) {
-			var mod = gen.mods[m];
-			//gen[mod.type] = mod.gen.out();
-			mod.gen.generateBuffer(buffer.length, channelCount);
-		}
-		gen.generateBuffer(buffer.length, channelCount);
-	}
-	
-	for (i = 0; i < buffer.length; i+=channelCount){
-		val = 0;
-		if( Gibber.active ) {
-			for(var l = 0; l < Gibber.generators.length; l++) {
-				var gen = Gibber.generators[l];
-	
-				val += gen.generatedBuffer[i];	
+	if( Gibber.active ) {
+		for(var g = 0; g < Gibber.generators.length; g++) {
+			var gen = Gibber.generators[g];
+			if(gen.active) {
+				// run controls
+				for(var m = 0; m < gen.mods.length; m++) {
+					var mod = gen.mods[m];
+					mod.gen.generateBuffer(buffer.length, channelCount);
+				}
+				
+				// run oscillator
+				gen.generateBuffer(buffer.length, channelCount);
+				
+				// run fx
+				for(var e = 0; e < gen.fx.length; e++) {
+					var effect = gen.fx[e];
+					effect.append(gen.generatedBuffer);
+				}
+				
+				for(var i = 0; i < buffer.length; i++) {
+					buffer[i] += gen.generatedBuffer[i];
+				}
 			}
-			//if(i == buffer.length / 2) console.log(val);
-			buffer[i]   = val;
-			buffer[i+1] = buffer[i];
-		}else{
-			buffer[i]   = 0;
-			buffer[i+1] = 0;
 		}
 	}
 };
@@ -72,6 +70,11 @@ Gibber.automationModes = {
 	"=" : "assignment",
 	"*" : "modulation",
 };
+
+Gibber.shorthands = {
+	"freq": "frequency", 
+	"amp": "mix",
+}
 function Osc(args, isAudioGenerator) {
 	var _freq = (typeof args[0] !== "undefined") ? args[0] : 440;
 	
@@ -92,17 +95,40 @@ function Osc(args, isAudioGenerator) {
 	// }
 	
 	that.value = 0;
+	
 	that.mods = [];
+	that.fx = [];
+	that.automations = [];
+	
+	that.chain = function(_effect) {
+		for(var i = 0; i < arguments.length; i++) {
+			this.fx.push(arguments[i]);
+		}
+	}
 	
 	that.mod = function(_name, _source, _type) {
+		var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
 		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
-		this.mods.push( {type:_name, gen:_source} );
-		this.addAutomation(_name, _source, 1, type);
+		this.mods.push( {type:name, gen:_source} );
+		this.automations.push(this.addAutomation(name, _source, 1, type));
+		// this.mods.push(function() {
+		// 			_source.generate();
+		// 			this[name] = _source.getMix();
+		// 		})
+		// this.addPreProcessing(function() {
+		// 	_source.generate();
+		// 	this[name] = _source.getMix();
+		// });
 		return this;
 	}
 	
 	that.clear = function() {
+		for(var i = 0; i < this.mods.length; i++) {
+			this.mods[i].gen.reset();
+			this.automations[i].amount = 0;
+		}
 		this.mods.length = 0;
+		this.automations.length = 0;
 	}
 	
 	that.stop = function() {
@@ -110,7 +136,7 @@ function Osc(args, isAudioGenerator) {
 	}
 	
 	that.start = function() {
-		this.active = false;
+		this.active = true;
 	}
 	
 	if(typeof isAudioGenerator === "undefined" || isAudioGenerator) {
@@ -119,6 +145,30 @@ function Osc(args, isAudioGenerator) {
 	
 	return that;
 }
+
+function Delay(feedback, time, mix) {
+	var that = audioLib.Delay.createBufferBased(2, Gibber.sampleRate);
+	if(typeof feedback === "Object") {
+		that.effects[1].feedback = feedback[0];
+		that.effects[0].feedback = feedback[1];
+	}else{
+		that.effects[0].feedback = feedback;
+		that.effects[1].feedback = feedback;
+	}
+	
+	if(typeof time === "Object") {
+		that.effects[1].time = time[0];
+		that.effects[0].time = time[1];
+	}else{
+		that.effects[0].time = time;
+		that.effects[1].time = time;
+	}
+	
+	that.mix = mix;
+	
+	return that;	
+};
+
 
 function LFO(freq, amount, shape, type) {
 	var that = Osc(arguments, false);
