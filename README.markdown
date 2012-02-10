@@ -4,7 +4,7 @@ Gibber is a live coding environment for the web browser, built on top of audioli
 
 Gibber is just getting started. But here are some simple instructions if you want to play. Ctrl-Return executes selected code, if no code is executed the entire block is run. Try executing one line at a time.
 
-```
+``` javascript
 // GIBBER --- try execting code one line at a time to hear results
 // Ctrl-Return (Cmd-Return OSX) executes selected code. If no code is selected entire block is run.
 // Cntrl/Cmd-. toggles the audio on and off
