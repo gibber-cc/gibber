@@ -8,7 +8,7 @@ var Gibber = {
 	active : true,
 	
 	init : function() {
-		this.dev = audioLib.AudioDevice(audioProcess, 2),
+		this.dev = Sink(audioProcess, 2),
 		this.sampleRate = this.dev.sampleRate;		
 	},
 	
@@ -134,7 +134,7 @@ function audioProcess(buffer, channelCount){
 				// run controls
 				for(var m = 0; m < gen.mods.length; m++) {
 					var mod = gen.mods[m];
-					mod.gen.generateBuffer(buffer.length, channelCount);
+					mod.gen.generateBuffer(buffer.length / channelCount);
 				}
 				
 				// run oscillator
@@ -145,7 +145,7 @@ function audioProcess(buffer, channelCount){
 					var effect = gen.fx[e];
 					for(var f = 0; f < effect.mods.length; f++) {
 						var mod = effect.mods[f];
-						mod.gen.generateBuffer(buffer.length, channelCount);
+						mod.gen.generateBuffer(buffer.length / channelCount);
 					}
 					
 					effect.append(gen.generatedBuffer);
@@ -161,7 +161,7 @@ function audioProcess(buffer, channelCount){
 			var effect = Master.fx[e];
 			for(var f = 0; f < effect.mods.length; f++) {
 				var mod = effect.mods[f];
-				mod.gen.generateBuffer(buffer.length, channelCount);
+				mod.gen.generateBuffer(buffer.length / channelCount);
 			}
 					
 			effect.append(buffer);
