@@ -83,7 +83,7 @@ var Gibber = {
 		var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
 		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
 		
-		this.mods.push( {type:name, gen:_source} );
+		this.mods.push( {type:name, gen:_source, name:_name, sourceName:_source.name} );
 		this.automations.push(this.addAutomation(name, _source, 1, type));
 
 		return this;
@@ -98,6 +98,17 @@ var Gibber = {
 		this.automations.length = 0;
 		
 		return this;
+	},
+	
+	trig : function (onOff) {
+		if(typeof onOff === "undefined") onOff = true;
+		
+		for(var i = 0; i < this.mods.length; i++) {
+			var mod = this.mods[i];
+			if(mod.sourceName == "Env") {
+				mod.gen.triggerGate(onOff);
+			}
+		}
 	},
 };
 
@@ -203,6 +214,7 @@ function Osc(args, isAudioGenerator) {
 	that.clearMods = Gibber.clearMods;
 	that.removeFX  = Gibber.removeFX;
 	that.removeMod = Gibber.removeMod;
+	that.trig 	   = Gibber.trig;
 
 	that.stop = function() {
 		this.active = false;
@@ -298,6 +310,7 @@ function LP(cutoff, resonance, mix) {
 	
 	that.mods = [];
 	that.automations = [];
+	that.trig = Gibber.trig;	
 	
 	if(typeof cutoff === "Object") {
 		that.effects[1].cutoff = cutoff[0];
@@ -454,7 +467,90 @@ function Square(freq, volume) {
 	return that;
 }
 
-function Trigger(_func, _time, _repeats) {
+function assign(param, name) {
+	if(typeof param === "Object") {
+		this.effects[1][name] = param[0];
+		this.effects[0][name] = param[1];
+	}else{
+		this.setParam(name, param);
+	}
+}
+
+// extend audioLib to close envelop at end of release time
+audioLib.ADSREnvelope.prototype.isDead = true;
+audioLib.ADSREnvelope.prototype.generate = function(){
+	if(!this.isDead) {
+		this.states[this.state].call(this);
+	}
+	return this.value;
+};
+
+audioLib.ADSREnvelope.prototype.states[4] = function(){ // Timed release
+	this.value = Math.max(0, this.value - 1000 / this.sampleRate / this.release);
+
+	if (this._st++ >= this.sampleRate * 0.001 * this.releaseTime){
+		console.log(this);
+		this._st	= 0;
+		this.state	= 0;
+		this.gate = false;
+		this.isDead = true;
+		this.value = 0;
+	}
+}
+
+audioLib.ADSREnvelope.prototype.triggerGate = function(isOpen){
+	isOpen		= typeof isOpen === 'undefined' ? !this.gate : isOpen;
+	this.gate	= isOpen;
+	this.state	= isOpen ? 0 : this.releaseTime === null ? 3 : 5;
+	this._st	= 0;
+	if(isOpen) this.isDead = false;
+};
+
+function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
+	if(arguments.length > 1) {
+		if(typeof attack === "undefined") 	attack 		= 100;
+		if(typeof decay  === "undefined") 	decay  		= 50;
+		if(typeof sustain === "undefined") 	sustain 	= .25;	// sustain is a amplitude value, not time\
+	}else{
+		if(typeof attack === "undefined") 	sustain 	= .25;
+		if(typeof decay  === "undefined") 	attack  	= 100;
+		if(typeof sustain === "undefined") 	decay 		= 50;	// sustain is a amplitude value, not time
+	}
+	
+	if(typeof release  === "undefined") release  		= 50;
+	if(typeof releaseTime  === "undefined") releaseTime = 50;		
+	if(typeof sustainTime  === "undefined") sustainTime = 50;
+	
+	var that = audioLib.ADSREnvelope(Gibber.sampleRate, attack, decay, sustain, release, sustainTime, releaseTime);
+	
+	that.looping = false;
+	that._releaseTime = releaseTime;
+	that._sustainTime = sustainTime;
+	
+	that.loop = function(shouldLoop) {
+		if(typeof shouldLoop === "undefined") shouldLoop = true; // since default for Env is false...
+		
+		if(!shouldLoop) {
+			this._releaseTime = releaseTime;
+			this._sustainTime = sustainTime;
+			this.releaseTime = null;
+			this.sustainTime = null;
+		}else{
+			this.releaseTime = this._releaseTime;
+			this.releaseTime = this._releaseTime;			
+		}
+	}
+	that.name = "Env";
+	
+	that.mods = [];
+	that.automations = [];
+			
+	that.mix = this.mix || 1;
+	
+	return that;				
+}
+
+function Sched(_func, _time, _repeats) {
 	var that = {
 		func : _func,
 		time : _time,
@@ -475,8 +571,6 @@ function Trigger(_func, _time, _repeats) {
 
 	return that;
 }
-
-
 
 function Step(stepTime, steps) {
 	var that = new audioLib.StepSequencer(Gibber.sampleRate, stepTime, steps, 0.0);
