@@ -176,7 +176,7 @@
 	<body>
 		<div id="editor">Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
 
-s = Sine(240, .5);      // Sine wave with freq 240, amp .5.
+s = Sine(240, .25);      // Sine wave with freq 240, amp .5.
 
 s.chain(                // create an fx chain for oscillator                   
     Dist(),             // Distortion
@@ -185,15 +185,18 @@ s.chain(                // create an fx chain for oscillator
 
 a = Arp(s, "Cm7", 2, _g.beat / 4, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
 
-s.mod("freq", LFO(8, 4), "+");               // Vibrato - modulating frequency by +/- 4Hz 8 times per second
+d = Drums("x*o*x*o*",8);
+d.chain( Trunc(6) );
+d.frequency = 660; 	// 440 is base frequency
 
-s.removeMod(1);     // mod 0 is the arp, I know, confusing...
+s.mod("freq", LFO(8, 4), "+");  // Vibrato - modulating frequency by +/- 4Hz 8 times per second
+s.removeMod(1);                 // mod 0 is the arp, I know, confusing...
 
 a.shuffle();        // randomize arpeggio
 a.reset();          // reset arpeggio
 
-Master.chain( Chorus(), Reverb() );     // Master FX are applied to summed signal of all generators
-Master.removeFX(0);                     // remove first effect in chain. don't pass a argument to remove all fx.</div>
+Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators
+Master.removeFX(0);           // remove first effect in chain. don't pass a argument to remove all fx.</div>
 		<div id="info">
 			<h1>GIBBER</h1>
 			<div id="about" class="section">

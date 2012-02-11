@@ -595,7 +595,7 @@ function Sched(_func, _time, _repeats) {
 			}
 		}
 	}
-	that.stop = Sink.doInterval(_callback(), time);
+	that.stop = Sink.doInterval(_callback(), that.time);
 
 	return that;
 }
@@ -640,7 +640,6 @@ function Drums(_sequence, _timeValue, _mix, _freq) {
 			for(var i = 0; i < this.sequences.kick.length; i++) {
 				if(this.phase == this.sequences.kick[i]) {
 					this.kick.noteOn(this.frequency);
-					console.log("kick!");
 					break;
 				}
 			}
@@ -651,7 +650,6 @@ function Drums(_sequence, _timeValue, _mix, _freq) {
 			for(var i = 0; i < this.sequences.snare.length; i++) {
 				if(this.phase == this.sequences.snare[i]) {
 					this.snare.noteOn(this.frequency);
-					console.log("snare!");					
 					break;
 				}
 			}
@@ -661,7 +659,7 @@ function Drums(_sequence, _timeValue, _mix, _freq) {
 			
 			for(var i = 0; i < this.sequences.hat.length; i++) {
 				if(this.phase == this.sequences.hat[i]) {
-					this.hat.noteOn(this.frequency);
+					this.hat.noteOn(this.frequency * 3.5);
 					break;
 				}
 			}
@@ -694,7 +692,8 @@ function Drums(_sequence, _timeValue, _mix, _freq) {
 					default: break;
 				}
 				console.log("sequence " + drum + " :: " + stepTime * i);
-				this.sequences[drum].push((stepTime * i) * (Gibber.sampleRate / 1000));
+				if(drum != null)
+					this.sequences[drum].push((stepTime * i) * (Gibber.sampleRate / 1000));
 			}
 		},
 		
@@ -722,10 +721,11 @@ function Drums(_sequence, _timeValue, _mix, _freq) {
 			this.active = true;
 		},		
 	};
+	that.prototype = audioLib.GeneratorClass.prototype;
 	
 	that.kick.loadWav(atob(samples.kick));
 	that.snare.loadWav(atob(samples.snare));
-	that.hat.loadWav(atob(samples.hihat));
+	that.hat.loadWav(atob(samples.snare));
 	
 	that.setSequence(that.sequence);		
 	
