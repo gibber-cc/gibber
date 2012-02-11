@@ -5,24 +5,27 @@ Gibber is a live coding environment for the web browser, built on top of audioli
 Gibber is just getting started. But here are some simple instructions if you want to play. Ctrl-Return executes selected code, if no code is executed the entire block is run. Try executing one line at a time.
 
 ``` javascript
-// GIBBER --- try execting code one line at a time to hear results
-// Ctrl-Return (Cmd-Return OSX) executes selected code. If no code is selected entire block is run.
-// Cntrl/Cmd-. toggles the audio on and off
-// Cntrl/Cmd-` clears all generators
-    	
-s = Sine(240, .5);                  // Create a sine wave at frequency 240, amplitude .5    
-s.mod("freq", LFO(2,4), "+");  	    // offset the frequency by 10Hz with an LFO running at 4Hz
-s.chain( Dist(), Reverb() );        // add some fx
+Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
 
-step = Step( 250, [120, 240, 120, 360] ); 	// create a step sequencer. each step is 250 ms.
-s.mod("freq", step, "=");	    	        // use step sequencer to assign freq of saw wave
+s = Sine(240, .25);      // Sine wave with freq 240, amp .5.
 
-/*
-tri = Tri(240, .5)
-    .mod( "freq", LFO(4,40) )
-    .mod( "amp", LFO(1, .25) );     // mods can cascade
-*/
+s.chain(                // create an fx chain for oscillator                   
+    Dist(),             // Distortion
+    Delay(_g.beat / 4)  // Delay with delay time set to 1/4 of a beat (1/16th note)
+);
 
-Master.chain( Trunc(4) );           // Master FX are applied to summed signal of all generators
-Master.clearFX();                   // clearFX also works with generators... try it on s	
+a = Arp(s, "Cm7", 2, _g.beat / 4, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
+
+d = Drums("x*o*x*o*",8);
+d.chain( Trunc(6) );
+d.frequency = 660;     // 440 is base frequency
+
+s.mod("freq", LFO(8, 4), "+");  // Vibrato - modulating frequency by +/- 4Hz 8 times per second
+s.removeMod(1);                 // mod 0 is the arp, I know, confusing...
+
+a.shuffle();        // randomize arpeggio
+a.reset();          // reset arpeggio
+
+Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators
+Master.removeFX(0);           // remove first effect in chain. don't pass a argument to remove all fx.
 ```
