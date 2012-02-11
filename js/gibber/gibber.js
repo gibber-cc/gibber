@@ -6,10 +6,19 @@
 
 var Gibber = {
 	active : true,
-	
+	bpm : 120,
+
 	init : function() {
+		this.beat = 60000 / this.bpm;
+		this.measure = this.beat * 4;
 		this.dev = Sink(audioProcess, 2),
-		this.sampleRate = this.dev.sampleRate;		
+		this.sampleRate = this.dev.sampleRate;
+	},
+	
+	setBPM : function(_bpm) {
+		this.bpm = _bpm;
+		this.beat = 60000 / this.bpm;
+		this.measure = this.beat * 4;	
 	},
 	
 	clear : function() {
@@ -45,14 +54,10 @@ var Gibber = {
 		return this;
 	},
 	
-	clearFX : function() {
-		this.fx.length = 0;
-		
-		return this;
-	},
-	
 	removeFX : function(_id) {
-		if(typeof _id === "Number") {
+		if(typeof _id === "undefined") {
+			this.fx.length = 0;
+		}else if(typeof _id === "number") {
 			this.fx.splice(_id, 1);
 		}else{
 			for(var i = 0; i < this.fx.length; i++) {
@@ -66,8 +71,13 @@ var Gibber = {
 	},
 	
 	removeMod : function(_id) {
-		if(typeof _id === "Number") {
-			this.mod.splice(_id, 1);
+		if(typeof _id === "undefined") {
+			this.clearMods();
+		}else if(typeof _id === "number") {
+			this.mods[_id].gen.reset();
+			this.automations[_id].amount = 0;
+			this.mods.splice(_id, 1);
+			console.log(this.mods);
 		}else{
 			for(var i = 0; i < this.mods.length; i++) {
 				var mod = this.mods[i];
@@ -113,6 +123,7 @@ var Gibber = {
 };
 
 Gibber.gens = Gibber.generators;
+_g = Gibber;
 
 // audioLib additions
 audioLib.BufferEffect.prototype.mod = Gibber.mod;
@@ -281,7 +292,7 @@ function Delay(time, feedback, mix) {
 	that.mods = [];
 	that.automations = [];
 	
-	time = time || 500;
+	time = time || Gibber.beat;
 	feedback = feedback || .3;
 	mix = mix || .3;
 	
@@ -395,7 +406,7 @@ function Dist(gain, master) {
 	that.automations = [];
 	
 	if(typeof gain === "undefined") 	gain 	= 10;
-	if(typeof master === "undefined") 	master  = 4;
+	if(typeof master === "undefined") 	master  = 1;
 	
 	if(typeof gain === "Object") {
 		that.effects[1].gain = gain[0];
@@ -476,7 +487,10 @@ function assign(param, name) {
 	}
 }
 
-// extend audioLib to close envelop at end of release time
+// extend audioLib to close envelop at end of release time using isDead property.
+// isDead is different from gate... once gate is closed the release section of the env
+// begins. When isDead is true the state of the envelope does not advance
+
 audioLib.ADSREnvelope.prototype.isDead = true;
 audioLib.ADSREnvelope.prototype.generate = function(){
 	if(!this.isDead) {
@@ -485,7 +499,7 @@ audioLib.ADSREnvelope.prototype.generate = function(){
 	return this.value;
 };
 
-audioLib.ADSREnvelope.prototype.states[4] = function(){ // Timed release
+audioLib.ADSREnvelope.prototype.states[4] = function(){ // Timed release state of env
 	this.value = Math.max(0, this.value - 1000 / this.sampleRate / this.release);
 
 	if (this._st++ >= this.sampleRate * 0.001 * this.releaseTime){
@@ -572,7 +586,63 @@ function Sched(_func, _time, _repeats) {
 	return that;
 }
 
-function Step(stepTime, steps) {
+function Chord(_notation, _octave) {
+	var chord = [];
+	var _chord = ChordFactory.createNotations(_notation, _octave);
+	
+	for(var i = 0; i < _chord.length; i++) {
+		chord[i] = Note.getFrequencyForNotation(_chord[i]);
+	}
+	
+	return chord;
+}
+
+// http://snippets.dzone.com/posts/show/849
+Array.prototype.shuffle = function() {
+		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
+}
+//a = Arp(s, "Cm7", 2, .125, "updown");
+function Arp(gen, notation, octave, beats, mode) {
+	beats = isNaN(beats) ? .25 : beats;
+	mode = mode || "up";
+	
+	modes = {
+		up : function(array) {
+			return array;
+		},
+		down : function(array) {
+			return array.reverse();
+		},
+		updown : function(array) {
+			var _tmp = array.slice(0);
+			_tmp.reverse();
+			return array.concat(_tmp);
+		}
+	}
+	
+	var that = {
+		gen: gen,
+		notation: notation || "Cm7",
+		octave: (isNaN(octave)) ? 2 : octave,
+		speed: (beats < 20) ? beats * Gibber.measure : beats,
+		mode: mode,
+		freqs: [],
+		shuffle: function() { this.freqs.shuffle(); this.step.steps = this.freqs;},
+		reset: function() { this.freqs = this.original.slice(0); this.step.steps = this.freqs; },
+	};
+	
+	that.freqs = modes[mode]( Chord(that.notation, that.octave) );
+	that.original = that.freqs.slice(0);
+	that.step = Step(that.freqs, that.speed);
+	that.gen.mod("freq", that.step, "=");
+	
+	return that;
+}
+
+function Step() {	// steps, stepTime
+	steps 	 = arguments[0] || [1,0];
+	stepTime = arguments[1] || _g.beat;
+	
 	var that = new audioLib.StepSequencer(Gibber.sampleRate, stepTime, steps, 0.0);
 	return that;
 }

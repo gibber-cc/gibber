@@ -2,13 +2,19 @@
 <html>
 	<head>
 		<script src="js/audiolib.js"></script>
-		<script src="js/gibber/gibber.js"></script>		
+		<script src="js/gibber/chord.js"></script>						
+		<script src="js/gibber/gibber.js"></script>
 	    <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/ace/theme-idle_fingers.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/ace/theme-textmate.js" type="text/javascript" charset="utf-8"></script>				
+		<script src="js/ace/theme-solarized_light.js" type="text/javascript" charset="utf-8"></script>						
+		<script src="js/ace/theme-chrome.js" type="text/javascript" charset="utf-8"></script>				
+		<script src="js/jquery-1.5.js" type="text/javascript" charset="utf-8"></script>
 		<script>
 		window.onload	= function(){
-	        var editor = ace.edit("editor");
+	        editor = ace.edit("editor");
 		    var JavaScriptMode = require("ace/mode/javascript").Mode;
 		    editor.getSession().setMode(new JavaScriptMode());
 			editor.setTheme("ace/theme/twilight");
@@ -55,63 +61,156 @@
 			editor.setShowPrintMargin(false);
 				
 			Gibber.init();
+			
+			$('.aboutsection').click(function(){
+			    $('.aboutcontent').slideToggle('fast');
+			});
+			$('.optionssection').click(function(){
+			    $('.optionscontent').slideToggle('fast');
+			});
+			$('.referencesection').click(function(){
+			    $('.referencecontent').slideToggle('fast');
+			});
+			
+			
 		};
 		
 		</script>
 		<style>
 		body { margin: 0}
 		#editor {
-		        position: absolute;
-				margin: 0;
-		        width: 100%;
-		        height: 100%;
-		    }
+			font-family:Monaco;
+			font-size: .8em;
+	        position: absolute;
+			display:inline;
+			margin: 0;
+	        width: 80%;
+	        height: 100%;
+		}
+		#info {
+			position: absolute;
+			overflow: scroll;
+			display: inline;
+			width:20%;
+			height:100%;
+			font-size: .75em;
+			background-color:#e6dddd;
+			right: 0;
+		}
+		h1, h2, h3 {
+			font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
+		}
+		#info h1 {
+			margin-left: .25em;
+			font-size: 1.5em;
+			font-weight: normal;
+		}
+		h2 {
+			background-color:#eee;
+			font-size: 1.1em;
+			font-weight: normal;
+		}
+		
+		h3 {
+			font-size: 1em;
+			font-weight: normal;
+		}
+		a { color: #744; text-decoration: none; }
+		.section {
+			margin: .5em;
+		}
+		.referencesection, .aboutsection, .optionssection {
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			-o-user-select: none;
+			user-select: none;
+			cursor: default;
+			right: 15px;
+			margin-top: .25em;
+			position:absolute;
+			font-color: #444;
+			font-size: .8em;
+		}
+		ul {
+			margin:0;
+			padding:0;
+			list-style:none;
+		}
+		
+		.referencecontent li { margin-bottom: 1.25em; }
+		
+		.referencecontent pre { display: inline; }
+		
 		</style>
 	</head>
 	<body>
-		<div id="editor">// GIBBER --- try execting code one line at a time to hear results
-// Ctrl-Return (Cmd-Return OSX) executes selected code. If no code is selected entire block is run.
-// Cntrl/Cmd-. toggles the audio on and off
-// Cntrl/Cmd-` clears all generators
-    	
-s = Sine(240, .5);                  // Create a sine wave at frequency 240, amplitude .5    
-s.mod("freq", LFO(2,4), "+");  	    // offset the frequency by 10Hz with an LFO running at 4Hz
-s.chain( Dist(), Reverb() );        // add some fx
+		<div id="editor">Gibber.setBPM(120); // default = 120. You can also refer to Gibber as _g.
 
-step = Step( 250, [120, 240, 120, 360] ); 	// create a step sequencer. each step is 250 ms.
-s.mod("freq", step, "=");	    	        // use step sequencer to assign freq of saw wave
+s = Sine(240, .5).chain( Dist(), Delay(_g.beat / 4) );  // Sine wave with freq 240, amp .5. add Distortion / Delay fx
+a = Arp(s, "Cm7", 2, _g.beat / 4, "updown");            // Cminor7 chord, 2nd octave, 16th notes, up then down
 
-/*
-tri = Tri(240, .5)
-    .mod( "freq", LFO(4,40) )
-    .mod( "amp", LFO(1, .25) );     // mods can cascade
-*/
+s.mod("freq", LFO(8, 4), "+");  // Vibrato
+s.removeMod(1);                 // mod 0 is the arp, I know, confusing...
 
-Master.chain( Trunc(4) );           // Master FX are applied to summed signal of all generators
-Master.clearFX();                   // clearFX also works with generators... try it on s</div>
+a.shuffle();                    // randomize arpeggio
+a.reset();                      // reset arpeggio
+
+Master.chain( Trunc(8), Reverb() );     // Master FX are applied to summed signal of all generators
+Master.removeFX(0);                     // remove first effect in chain. don't pass argument to remove all fx.</div>
+		<div id="info">
+			<h1>GIBBER</h1>
+			<div id="about" class="section">
+				<h2>About <span class="aboutsection">show/hide</span></h2>
+				<div class="aboutcontent">
+				<p>
+				Gibber is a JavaScript live coding environment with a relatively easy syntax. Gibber has only been tested in Chrome. The syntax is layered on top of the excellent <a href="https://github.com/jussi-kalliokoski/audiolib.js">audioLib.js library</a> by <a href="https://github.com/jussi-kalliokoski">Jussi Kalliokoski</a>. Gibber is open-source and <a href="https://github.com/charlieroberts/Gibber">available for download</a>.</p>
+				<p>Other projects/code that contribute to Gibber:</p>
+				<ul>
+					<li><a href="http://ace.ajax.org/">Ace Code Editor</a></li>
+					<li><a href="http://jquery.com">jQuery</a></li>
+					<li><a href="http://www.benfarrell.com/2011/12/13/chords-and-arpeggiators-with-audiolib-js/">Chords and Notes from Ben Farrell</a></li>
+				</ul>
+				</div>
+			</div>
+			<div id="options" class="section">
+				<h2>Options <span class="optionssection">show/hide</span></h2>
+				<div class="optionscontent">
+					Theme: <select id="theme" size="1" onchange="editor.setTheme(this.value);" style="margin-bottom:1.5em;">
+					<option value="ace/theme/chrome">Chrome</option>
+					<option value="ace/theme/idle_fingers" selected="selected">idleFingers</option>
+					<option value="ace/theme/solarized_light">Solarized Light</option>
+					<option value="ace/theme/textmate">TextMate</option>
+					<option value="ace/theme/twilight">Twilight</option><
+					</select><br>
+					Show Gutter: <input type="checkbox" id="show_gutter" checked onclick="editor.renderer.setShowGutter(this.checked)"/>
+				</div>				
+			</div>
+		
+			<div id="reference" class="section">
+				<h2>Key Commands <span class="referencesection">show/hide</span></h2>
+
+				<div class="referencecontent">
+					<ul>
+					<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected entire script is run.</li>
+					<li><pre>Ctrl/Cmd .</pre> toggles the audio on and off</li>
+					<li><pre>Ctrl/Cmd `</pre> clears all generators, use this to start over without refreshing and losing your code</li>
+					<li><pre>Ctrl/Cmd +- </pre>change font size up and down</li>
+					</ul>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
 
 <!--
-		<div id="editor">// Ctrl-Return (Cmd-Return OSX) executes selected code. If no code is selected entire block is run.
-// Cntrl/Cmd-. toggles the audio on and off
-// Cntrl/Cmd-` clears all generators
-		
-sine = Sine(240, .5); 					// Create a sine wave at frequency 240, amplitude .5
-sine.mod("freq", LFO(4,10), "+");  		// offset the frequency by 10Hz with an LFO running at 4Hz
-
-square = Square(120, .15);
-freqs = [120, 240, 120, 360];
-
-step = Step(250, freqs); 				// create a step sequencer. each step is 250 ms.
-
-square.mod("freq", step, "=");	    	// use step sequencer to assign freq of saw wave
-square.mod("amp", LFO(10, .15));  		// tremolo
-
-tri = Tri(240, .5)
-    .mod( "freq", LFO(4,40) )
-    .mod( "amp", LFO(1, .25) );         // mods can cascade</div>
-
-
+				<h3>Generators</h3>
+				<p>All generators(oscillators) accept two parameters in their constructor: frequency and amplitude. The amplitude default is .25, but you have to enter a frequency. The available generators are Sine, Square, Saw, Tri(Triangle), Pulse and LFO.</p>
+				Methods:
+				<ul>
+					<li>mod(str:parameterName, obj:modSource, str:type) : parameterName is the parameter you'd like to modulate. Common options are "frequency" (or "freq") and "amp". modSource is another object such as an LFO or a StepSequencer whose output will change the parameter in question. Modes determine how the parameter is changed. "+" adds the output of the modulator to the paramter, "*" multiples, "++" adds the absolute value of the modulator and "=" assigns the value of the modulator to the parameter; the default is "+"; Vibrato Example:<pre>s = Sine(400); s.mod("freq", LFO(4, 2), "+");</pre></li>
+				</ul>
 
 -->
