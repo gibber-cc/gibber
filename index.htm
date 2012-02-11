@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<script src="js/audiolib.js"></script>
+		<script src="js/samples/drum-samples.js"></script>
 		<script src="js/gibber/chord.js"></script>						
 		<script src="js/gibber/gibber.js"></script>
 	    <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -18,6 +19,13 @@
 		    var JavaScriptMode = require("ace/mode/javascript").Mode;
 		    editor.getSession().setMode(new JavaScriptMode());
 			editor.setTheme("ace/theme/twilight");
+			$('.ace_gutter').css({
+				"background-color":"#000",
+				"color":"#ccc",
+				"border-width": "0px 1px 0px 0px",
+				"border-color": "#ccc",
+				"border-style": "solid", 
+			});
 			editor.commands.addCommand({
 			    name: 'evaluate',
 			    bindKey: {
@@ -63,13 +71,13 @@
 			Gibber.init();
 			
 			$('.aboutsection').click(function(){
-			    $('.aboutcontent').slideToggle('fast');
+			    $('.aboutcontent').toggle();
 			});
 			$('.optionssection').click(function(){
-			    $('.optionscontent').slideToggle('fast');
+			    $('.optionscontent').toggle();
 			});
-			$('.referencesection').click(function(){
-			    $('.referencecontent').slideToggle('fast');
+			$('.referencesection').click(function(){				
+			    $('.referencecontent').toggle();
 			});
 			
 			
@@ -78,6 +86,7 @@
 		</script>
 		<style>
 		body { margin: 0}
+		.ace_scroller {padding-left: .5em;}
 		#editor {
 			font-family:Monaco;
 			font-size: .8em;
@@ -94,11 +103,15 @@
 			width:20%;
 			height:100%;
 			font-size: .75em;
-			background-color:#e6dddd;
+			background-color:#333;
 			right: 0;
+			color: #ccc;
 		}
 		h1, h2, h3 {
 			font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
+		}
+		h2 {
+			color:#333;
 		}
 		#info h1 {
 			margin-left: .25em;
@@ -107,6 +120,7 @@
 		}
 		h2 {
 			background-color:#eee;
+			padding-left: .25em;
 			font-size: 1.1em;
 			font-weight: normal;
 		}
@@ -115,7 +129,7 @@
 			font-size: 1em;
 			font-weight: normal;
 		}
-		a { color: #744; text-decoration: none; }
+		a { color: #a66; text-decoration: none; }
 		.section {
 			margin: .5em;
 		}
@@ -134,10 +148,23 @@
 			font-color: #444;
 			font-size: .8em;
 		}
+		
+		select {
+			background-color:#000;
+			color:#aaa;
+		}
+
 		ul {
 			margin:0;
 			padding:0;
 			list-style:none;
+		}
+		
+		button {
+			-webkit-border-radius: 0px;
+			background-color: #333;
+			border: 1px solid #777;
+			color: #ccc;
 		}
 		
 		.referencecontent li { margin-bottom: 1.25em; }
@@ -147,19 +174,26 @@
 		</style>
 	</head>
 	<body>
-		<div id="editor">Gibber.setBPM(120); // default = 120. You can also refer to Gibber as _g.
+		<div id="editor">Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
 
-s = Sine(240, .5).chain( Dist(), Delay(_g.beat / 4) );  // Sine wave with freq 240, amp .5. add Distortion / Delay fx
-a = Arp(s, "Cm7", 2, _g.beat / 4, "updown");            // Cminor7 chord, 2nd octave, 16th notes, up then down
+s = Sine(240, .5);      // Sine wave with freq 240, amp .5.
 
-s.mod("freq", LFO(8, 4), "+");  // Vibrato
-s.removeMod(1);                 // mod 0 is the arp, I know, confusing...
+s.chain(                // create an fx chain for oscillator                   
+    Dist(),             // Distortion
+    Delay(_g.beat / 4)  // Delay with delay time set to 1/4 of a beat (1/16th note)
+);
 
-a.shuffle();                    // randomize arpeggio
-a.reset();                      // reset arpeggio
+a = Arp(s, "Cm7", 2, _g.beat / 4, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
 
-Master.chain( Trunc(8), Reverb() );     // Master FX are applied to summed signal of all generators
-Master.removeFX(0);                     // remove first effect in chain. don't pass argument to remove all fx.</div>
+s.mod("freq", LFO(8, 4), "+");               // Vibrato - modulating frequency by +/- 4Hz 8 times per second
+
+s.removeMod(1);     // mod 0 is the arp, I know, confusing...
+
+a.shuffle();        // randomize arpeggio
+a.reset();          // reset arpeggio
+
+Master.chain( Chorus(), Reverb() );     // Master FX are applied to summed signal of all generators
+Master.removeFX(0);                     // remove first effect in chain. don't pass a argument to remove all fx.</div>
 		<div id="info">
 			<h1>GIBBER</h1>
 			<div id="about" class="section">
@@ -180,13 +214,13 @@ Master.removeFX(0);                     // remove first effect in chain. don't p
 				<div class="optionscontent">
 					Theme: <select id="theme" size="1" onchange="editor.setTheme(this.value);" style="margin-bottom:1.5em;">
 					<option value="ace/theme/chrome">Chrome</option>
-					<option value="ace/theme/idle_fingers" selected="selected">idleFingers</option>
+					<option value="ace/theme/idle_fingers">idleFingers</option>
 					<option value="ace/theme/solarized_light">Solarized Light</option>
 					<option value="ace/theme/textmate">TextMate</option>
-					<option value="ace/theme/twilight">Twilight</option><
+					<option value="ace/theme/twilight" selected="selected">Twilight</option>
 					</select><br>
-					Show Gutter: <input type="checkbox" id="show_gutter" checked onclick="editor.renderer.setShowGutter(this.checked)"/>
-				</div>				
+					<button onclick="editor.renderer.setShowGutter(!editor.renderer.getShowGutter())">Toggle Line Numbers</button>
+				</div>
 			</div>
 		
 			<div id="reference" class="section">

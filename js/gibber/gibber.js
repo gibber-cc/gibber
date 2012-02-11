@@ -7,7 +7,7 @@
 var Gibber = {
 	active : true,
 	bpm : 120,
-
+	
 	init : function() {
 		this.beat = 60000 / this.bpm;
 		this.measure = this.beat * 4;
@@ -15,10 +15,24 @@ var Gibber = {
 		this.sampleRate = this.dev.sampleRate;
 	},
 	
+	observers : {
+		"bpm": [],
+	},
+	
+	registerObserver : function(name, fn) {
+		this.observers[name].push(fn);
+	},
+	
 	setBPM : function(_bpm) {
 		this.bpm = _bpm;
 		this.beat = 60000 / this.bpm;
-		this.measure = this.beat * 4;	
+		this.measure = this.beat * 4;
+		
+		var bpmObservers = this.observers.bpm;
+		for(var i = 0; i < bpmObservers.length; i++) {
+			var o = bpmObservers[i];
+			o();
+		}
 	},
 	
 	clear : function() {
@@ -581,7 +595,7 @@ function Sched(_func, _time, _repeats) {
 			}
 		}
 	}
-	that.stop = Sink.doInterval(_callback(), 500);
+	that.stop = Sink.doInterval(_callback(), time);
 
 	return that;
 }
@@ -600,6 +614,124 @@ function Chord(_notation, _octave) {
 // http://snippets.dzone.com/posts/show/849
 Array.prototype.shuffle = function() {
 		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
+}
+
+function Drums(_sequence, _timeValue, _mix, _freq) {
+	_timeValue = isNaN(_timeValue) ? 4 : _timeValue;
+	
+	var that = {
+		sampleRate : Gibber.sampleRate,
+		kick : new audioLib.Sampler(Gibber.sampleRate),
+		snare : new audioLib.Sampler(Gibber.sampleRate),		
+		hat : new audioLib.Sampler(Gibber.sampleRate),
+		sequence : _sequence,
+		patternLengthInMs : _sequence.length * (Gibber.measure / _timeValue),
+		patternLengthInSamples : _sequence.length * (Gibber.measure / _timeValue) * (Gibber.sampleRate / 1000),
+		timeValue: _timeValue,
+		tempo : Gibber.bpm,
+		phase : 0,
+		value : 0,
+		frequency : isNaN(_freq) ? 440 : _freq,
+		append : audioLib.GeneratorClass.prototype.append,
+		generateBuffer : audioLib.GeneratorClass.prototype.generateBuffer,		
+		generate : function() {
+			this.value = 0;
+			
+			for(var i = 0; i < this.sequences.kick.length; i++) {
+				if(this.phase == this.sequences.kick[i]) {
+					this.kick.noteOn(this.frequency);
+					console.log("kick!");
+					break;
+				}
+			}
+			
+			this.kick.generate();
+			this.value += this.kick.getMix();
+			
+			for(var i = 0; i < this.sequences.snare.length; i++) {
+				if(this.phase == this.sequences.snare[i]) {
+					this.snare.noteOn(this.frequency);
+					console.log("snare!");					
+					break;
+				}
+			}
+			
+			this.snare.generate();
+			this.value += this.snare.getMix();
+			
+			for(var i = 0; i < this.sequences.hat.length; i++) {
+				if(this.phase == this.sequences.hat[i]) {
+					this.hat.noteOn(this.frequency);
+					break;
+				}
+			}
+			
+			this.hat.generate();
+			this.value += this.hat.getMix();
+			
+			if(++this.phase >= this.patternLengthInSamples) this.phase = 0;
+		},
+		
+		getMix : function() {
+			return this.value;
+		},
+		
+		sequences : {
+			kick  : [],
+			snare : [],
+			hat   : [],
+		},
+		
+		setSequence : function(seq) {
+			var stepTime = Gibber.measure / seq.length;
+			for(var i = 0; i < seq.length; i++) {
+				var c = seq.charAt(i);
+				var drum = null;
+				switch(c) {
+					case 'x': drum = "kick"; break;
+					case 'o': drum = "snare"; break;
+					case '*': drum = "hat"; break;
+					default: break;
+				}
+				console.log("sequence " + drum + " :: " + stepTime * i);
+				this.sequences[drum].push((stepTime * i) * (Gibber.sampleRate / 1000));
+			}
+		},
+		
+		mix : isNaN(_mix) ? 0.25 : _mix,
+
+		active : true,
+
+		mods : [],
+		fx : [],
+		automations : [],
+	
+		mod 	: Gibber.mod,
+		chain  : Gibber.chain,
+		clearFX   : Gibber.clearFX,
+		clearMods : Gibber.clearMods,
+		removeFX  : Gibber.removeFX,
+		removeMod : Gibber.removeMod,
+		trig 	   : Gibber.trig,
+
+		stop : function() {
+			this.active = false;
+		},
+	
+		start : function() {
+			this.active = true;
+		},		
+	};
+	
+	that.kick.loadWav(atob(samples.kick));
+	that.snare.loadWav(atob(samples.snare));
+	that.hat.loadWav(atob(samples.hihat));
+	
+	that.setSequence(that.sequence);		
+	
+	Gibber.generators.push(that);
+	
+	return that;
 }
 //a = Arp(s, "Cm7", 2, .125, "updown");
 function Arp(gen, notation, octave, beats, mode) {
@@ -620,9 +752,11 @@ function Arp(gen, notation, octave, beats, mode) {
 		}
 	}
 	
+	
 	var that = {
 		gen: gen,
 		notation: notation || "Cm7",
+		beats: beats,
 		octave: (isNaN(octave)) ? 2 : octave,
 		speed: (beats < 20) ? beats * Gibber.measure : beats,
 		mode: mode,
@@ -631,10 +765,23 @@ function Arp(gen, notation, octave, beats, mode) {
 		reset: function() { this.freqs = this.original.slice(0); this.step.steps = this.freqs; },
 	};
 	
+	that.usesBPM = (beats < 20);
+	
 	that.freqs = modes[mode]( Chord(that.notation, that.octave) );
 	that.original = that.freqs.slice(0);
 	that.step = Step(that.freqs, that.speed);
 	that.gen.mod("freq", that.step, "=");
+	
+	// function bpmCallback() {
+	// 	return function() {
+	// 		that.speed = beats * Gibber.measure;
+	// 		that.step.stepLength = that.speed;
+	// 	}
+	// }
+	// 
+	// if(that.usesBPM) {
+	// 	Gibber.registerObserver("bpm", bpmCallback());
+	// }
 	
 	return that;
 }
@@ -644,6 +791,18 @@ function Step() {	// steps, stepTime
 	stepTime = arguments[1] || _g.beat;
 	
 	var that = new audioLib.StepSequencer(Gibber.sampleRate, stepTime, steps, 0.0);
+	
+	function bpmCallback() {
+		return function() {
+			that.speed = that.stepTime * Gibber.measure;
+			that.stepLength = that.speed;
+		}
+	}
+	
+	if(that.usesBPM) {
+		Gibber.registerObserver("bpm", bpmCallback());
+	}
+	
 	return that;
 }
 var a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
