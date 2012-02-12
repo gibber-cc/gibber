@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<title>Gibber</title>
 		<script src="js/audiolib.js"></script>
 		<script src="js/samples/drum-samples.js"></script>
 		<script src="js/gibber/gibber.js"></script>
 		<script src="js/gibber/chord.js"></script>								
 		<script src="js/gibber/drums.js"></script>
 		<script src="js/gibber/arpeggiator.js"></script>
-		<script src="js/gibber/beatCallback.js"></script>						
+		<script src="js/gibber/beatCallback.js"></script>
+		<script src="js/gibber/editorSetup.js"></script>								
 		
-	    <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/theme-idle_fingers.js" type="text/javascript" charset="utf-8"></script>
@@ -18,243 +20,18 @@
 		<script src="js/ace/theme-chrome.js" type="text/javascript" charset="utf-8"></script>				
 		
 		<script src="js/jquery-1.5.js" type="text/javascript" charset="utf-8"></script>
+		
+		<link rel="stylesheet" href="css/main.css">
+		
 		<script>
 		window.onload	= function(){
-	        editor = ace.edit("editor");
-		    var JavaScriptMode = require("ace/mode/javascript").Mode;
-		    editor.getSession().setMode(new JavaScriptMode());
-			editor.setTheme("ace/theme/idle_fingers");
-			$('.ace_gutter').css({
-				"background-color":"#000",
-				"color":"#ccc",
-				"border-width": "0px 1px 0px 0px",
-				"border-color": "#ccc",
-				"border-style": "solid", 
-			});
-			$(".ace_sb").css("z-index", 10);
-			editor.commands.addCommand({
-			    name: 'evaluate',
-			    bindKey: {
-			        win: 'Ctrl-Return',
-			        mac: 'Command-Return',
-			        sender: 'editor'
-			    },
-			    exec: function(env, args, request) {
-			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
-					if(text === "") {
-						var pos = editor.getCursorPosition();
-						text = editor.getSession().doc.getLine(pos.row);
-					}
-					Gibber.runScript(text);
-			    }
-			});
-			editor.commands.addCommand({
-			    name: 'evaluate_1',
-			    bindKey: {
-			        win: 'Ctrl-Shift-Return',
-			        mac: 'Command-Shift-Return',
-			        sender: 'editor'
-			    },
-			    exec: function(env, args, request) {
-			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
-					if(text === "") {
-						var pos = editor.getCursorPosition();
-						text = editor.getSession().doc.getLine(pos.row);
-					}
-
-					Gibber.callback.addCallback(text, _1);
-			    }
-			});
-			editor.commands.addCommand({
-			    name: 'evaluate_4',
-			    bindKey: {
-			        win: 'Ctrl-Shift-Alt-Return',
-			        mac: 'Command-Shift-Option-Return',
-			        sender: 'editor'
-			    },
-			    exec: function(env, args, request) {
-			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
-					if(text === "") {
-						var pos = editor.getCursorPosition();
-						text = editor.getSession().doc.getLine(pos.row);
-					}
-
-					Gibber.callback.addCallback(text, _4);
-			    }
-			});
-			
-			
-			editor.commands.addCommand({
-			    name: 'stop',
-			    bindKey: {
-			        win: 'Ctrl-.',
-			        mac: 'Command-.',
-			        sender: 'editor'
-			    },
-			    exec: function(env, args, request) {
-					Gibber.active = !Gibber.active;
-					if(Gibber.active) console.log("audio on"); else console.log("audio off");
-			    }
-			});
-			editor.commands.addCommand({
-			    name: 'deleteGenerators',
-			    bindKey: {
-			        win: 'Ctrl-`',
-			        mac: 'Command-`',
-			        sender: 'editor'
-			    },
-			    exec: function(env, args, request) {
-					Gibber.clear();
-					Gibber.audioInit = false;
-			    }
-			});
-			
-			editor.setShowPrintMargin(false);
-				
+	        editor = ace.edit("editor");	
 			Gibber.init();
-			
-			$('.aboutsection').click(function(){
-			    $('.aboutcontent').toggle();
-			});
-			$('.optionssection').click(function(){
-			    $('.optionscontent').toggle();
-			});
-			$('.referencesection').click(function(){				
-			    $('.referencecontent').toggle();
-			});
-			
-			var count = document.createElement('div');
-			count.id = "count";
-			count.innerHTML ="<span id='n1'>1</span><span id='n2'>2</span><span id='n3'>3</span><span id='n4'>4</span></span>";
-			$('.ace_scroller').append(count);
-			
-			
-			
-			
+			Gibber.setupEditor(editor);
 		};
-		
 		</script>
-		<style>
-		body { margin: 0}
-		.ace_scroller {padding-left: .5em;}
-		#editor {
-			font-family:Monaco;
-			font-size: .8em;
-	        position: absolute;
-			display:inline;
-			margin: 0;
-	        width: 80%;
-	        height: 100%;
-		}
-		#info {
-			position: absolute;
-			overflow: scroll;
-			display: inline;
-			width:20%;
-			height:100%;
-			font-size: .85em;
-			background-color:#333;
-			right: 0;
-			color: #ccc;
-		}
-		h1, h2, h3 {
-			font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
-		}
-		h2 {
-			color:#333;
-		}
-		#info h1 {
-			margin-left: .25em;
-			font-size: 1.5em;
-			font-weight: normal;
-		}
-		h2 {
-			background-color:#eee;
-			padding-left: .25em;
-			font-size: 1.1em;
-			font-weight: normal;
-		}
-		
-		h3 {
-			font-size: 1em;
-			font-weight: normal;
-		}
-		a { color: #a66; text-decoration: none; }
-		.section {
-			margin: .5em;
-		}
-		.referencesection, .aboutsection, .optionssection, .count {
-			-webkit-touch-callout: none;
-			-webkit-user-select: none;
-			-khtml-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-			-o-user-select: none;
-			user-select: none;
-			cursor: default;
-			right: 15px;
-			margin-top: .25em;
-			position:absolute;
-			font-color: #444;
-			font-size: .8em;
-		}
-		#count { font-size:1.5em; 
-			position:absolute;
-			right: 1em;
-			top:0;
-			z-index:10
-		}
-		#n1,#n2,#n3,#n4 { margin-right: 10px; }
-		#n1 { color:red; }
-		select {
-			background-color:#000;
-			color:#aaa;
-		}
-
-		ul {
-			margin:0;
-			padding:0;
-			list-style:none;
-		}
-		
-		button {
-			-webkit-border-radius: 0px;
-			background-color: #333;
-			border: 1px solid #777;
-			color: #ccc;
-		}
-		
-		.referencecontent li { margin-bottom: 1.25em; }
-		
-		.referencecontent pre { display: inline; }
-		
-		</style>
 	</head>
 	<body>
-		<div id="editor">Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
-
-s = Sine(240, .25);      // Sine wave with freq 240, amp .5.
-
-s.chain(                // create an fx chain for oscillator                   
-    Dist(),             // Distortion
-    Delay( _3 )  		// Delay with delay time set to 1/4 of a beat (1/16th note)
-);
-
-a = Arp(s, "Cm7", 2, _16, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
-
-d = Drums("x*o*x*o*",_8);
-d.chain( Trunc(6) );
-d.frequency = 660; 	// 440 is base frequency
-
-s.mod("freq", LFO(8, 4), "+");  // Vibrato - modulating frequency by +/- 4Hz 8 times per second
-s.removeMod(1);                 // mod 0 is the arp, I know, confusing...
-
-a.shuffle();        // randomize arpeggio
-a.reset();          // reset arpeggio
-
-Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators
-Master.removeFX(0);           // remove first effect in chain. don't pass a argument to remove all fx.</div>
-
 		<div id="info">
 			<h1>GIBBER  (beta)</h1>
 			<div id="about" class="section">
@@ -289,16 +66,43 @@ Master.removeFX(0);           // remove first effect in chain. don't pass a argu
 
 				<div class="referencecontent">
 					<ul>
-					<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected current row of the cursor is run.</li>
+					<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected current line of the cursor is run.</li>
 					<li><pre>Ctrl/Cmd-Shift-Return</pre> executes code at the start of the next measure. </li>
 					<li><pre>Ctrl/Cmd-Shift-Alt/Option-Return</pre> executes code at the start of the next beat.</li>										
 					<li><pre>Ctrl/Cmd .</pre> toggles the audio on and off</li>
 					<li><pre>Ctrl/Cmd `</pre> clears all generators, use this to start over without refreshing and losing your code</li>
 					<li><pre>Ctrl/Cmd +- </pre>change font size up and down.</li>
+					<li><pre>Ctrl/Cmd-I </pre>Hide this info panel.</li>					
 					</ul>
 				</div>
 			</div>
 		</div>
+		
+		<div id="editor">Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
+
+s = Sine(240, .15);      // Sine wave with freq 240, amp .5.
+
+s.chain(                // create an fx chain for oscillator                   
+    Dist(),             // Distortion
+    Delay( _3 )  		// Delay with delay time set to 1/4 of a beat (1/16th note)
+);
+
+a = Arp(s, "Cm7", 2, _16, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
+
+d = Drums("x*o*x*o*",_8);
+d.chain( Trunc(6) );
+d.frequency = 880; 	// 440 is base frequency
+
+s.mod("freq", LFO(8, 4), "+");  // Vibrato - modulating frequency by +/- 4Hz 8 times per second
+s.removeMod(1);                 // mod 0 is the arp, I know, confusing...
+
+a.shuffle();        // randomize arpeggio
+a.reset();          // reset arpeggio
+
+Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators
+Master.removeFX(0);           // remove first effect in chain. don't pass a argument to remove all fx.</div>
+
+		
 	</body>
 </html>
 
