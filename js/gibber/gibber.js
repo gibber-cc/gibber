@@ -25,7 +25,6 @@ var Gibber = {
 		    //hat 	: atob(samples.snare), 
 		}
 		this.callback = new audioLib.Callback();
-		console.log(this.callback);
 	},
 	
 	observers : {
@@ -323,7 +322,8 @@ function Delay(time, feedback, mix) {
 	that.mods = [];
 	that.automations = [];
 	
-	time = time || Gibber.beat;
+	time = time || 4;
+	time /= Gibber.sampleRate / 1000;
 	feedback = feedback || .3;
 	mix = mix || .3;
 	

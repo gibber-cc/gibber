@@ -16,17 +16,14 @@ function initPlugin(audioLib){
 (function(audioLib){
 
 function _Drums (_sequence, _timeValue, _mix, _freq){
-	this.timeValue = isNaN(_timeValue) ? _4 : _timeValue;
 	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
-	this.hat = new audioLib.Sampler(Gibber.sampleRate);
-	this.sequence = _sequence;
+	this.hat   = new audioLib.Sampler(Gibber.sampleRate);
+	this.mix   = isNaN(_mix) ? 0.25 : _mix;
+	this.timeValue = isNaN(_timeValue) ? _4 : _timeValue;
+	this.sequence  = _sequence;
 	this.frequency = isNaN(_freq) ? 440 : _freq;
 	this.patternLengthInSamples = this.sequence.length * this.timeValue;
-	this.mix = isNaN(_mix) ? 0.25 : _mix;
-	
-	console.log("p length" + this.patternLengthInSamples );
-    for ( var prop in Gibber.modsAndEffects) { this[prop] = Gibber.modsAndEffects[prop]; }
 	
 	// SAMPLES ARE PRELOADED IN GIBBER CLASS
 	this.kick.loadWav(Gibber.samples.kick);
@@ -38,7 +35,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	function bpmCallback() {
 		var that = this;
 		return function(percentageChangeForBPM) {
-			console.log(percentageChangeForBPM);
+			//console.log(percentageChangeForBPM);
 			that.timeValue *= percentageChangeForBPM;
 			that.patternLengthInSamples = that.sequence.length * that.timeValue;
 			that.setSequence(that.sequence);
@@ -98,7 +95,10 @@ _Drums.prototype = {
 		this.hat.generate();
 		this.value += this.hat.getMix();
 			
-		if(++this.phase >= this.patternLengthInSamples) { this.phase = 0; }
+		if(++this.phase >= this.patternLengthInSamples) { 
+			//console.log("PHASE : " +this.phase + " TV :" + this.timeValue);
+			this.phase = 0; 
+		}
 	},
 		
 	getMix : function() { return this.value; },
@@ -147,5 +147,5 @@ if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
 }());
 
 function Drums (_sequence, _timeValue, _mix, _freq) {
-	return audioLib.Drums(_sequence, _timeValue, _mix, _freq);
+	return new audioLib.Drums(_sequence, _timeValue, _mix, _freq);
 }

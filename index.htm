@@ -42,11 +42,10 @@
 			    exec: function(env, args, request) {
 			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
 					if(text === "") {
-						text = editor.getSession().getValue();
+						var pos = editor.getCursorPosition();
+						text = editor.getSession().doc.getLine(pos.row);
 					}
-					//window.alert(editor.getSession.getPosition());
 					Gibber.runScript(text);
-					//Gibber.callback.addCallback(text, _1);
 			    }
 			});
 			editor.commands.addCommand({
@@ -59,7 +58,8 @@
 			    exec: function(env, args, request) {
 			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
 					if(text === "") {
-						text = editor.getSession().getValue();
+						var pos = editor.getCursorPosition();
+						text = editor.getSession().doc.getLine(pos.row);
 					}
 
 					Gibber.callback.addCallback(text, _1);
@@ -75,7 +75,8 @@
 			    exec: function(env, args, request) {
 			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
 					if(text === "") {
-						text = editor.getSession().getValue();
+						var pos = editor.getCursorPosition();
+						text = editor.getSession().doc.getLine(pos.row);
 					}
 
 					Gibber.callback.addCallback(text, _4);
