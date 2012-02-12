@@ -4001,6 +4001,8 @@ function StepSequencer(sampleRate, stepLength, steps, attack){
 	this.stepLength		= isNaN(stepLength) ? this.stepLength : stepLength;
 	this.steps		= steps || [1, 0];
 	this.attack		= isNaN(attack) ? this.attack : attack;
+	
+	console.log(this.stepLength);
 }
 
 StepSequencer.prototype = {

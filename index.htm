@@ -184,12 +184,12 @@ s = Sine(240, .25);      // Sine wave with freq 240, amp .5.
 
 s.chain(                // create an fx chain for oscillator                   
     Dist(),             // Distortion
-    Delay(_g.beat / 4)  // Delay with delay time set to 1/4 of a beat (1/16th note)
+    Delay( _4 )  		// Delay with delay time set to 1/4 of a beat (1/16th note)
 );
 
-a = Arp(s, "Cm7", 2, _g.beat / 4, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
+a = Arp(s, "Cm7", 2, _16, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
 
-d = Drums("x*o*x*o*",8);
+d = Drums("x*o*x*o*",_8);
 d.chain( Trunc(6) );
 d.frequency = 660; 	// 440 is base frequency
 

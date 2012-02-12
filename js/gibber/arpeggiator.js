@@ -12,16 +12,12 @@ function initPlugin(audioLib){
 (function(audioLib){
 
 function Arp(gen, notation, octave, beats, mode) {
-	this.beats = isNaN(beats) ? .25 : beats;
+	this.speed = isNaN(beats) ? _4 : beats;
 	this.mode = mode || "up";
 	
-	this.usesBPM = (this.beats < 20);
 	this.gen = gen,
 	this.notation = notation || "Cm7",
-	this.beats = beats,
 	this.octave = (isNaN(octave)) ? 2 : octave,
-	this.speed = this.usesBPM ? this.beats * Gibber.measure : this.beats,
-	this.mode = mode,
 	
 	this.freqs 		= this.modes[this.mode]( Chord(this.notation, this.octave) );
 	this.original 	= this.freqs.slice(0);
@@ -31,8 +27,8 @@ function Arp(gen, notation, octave, beats, mode) {
 	
 	function bpmCallback() {
 		var that = this;
-		return function() {
-			that.speed = that.beats * Gibber.measure;
+		return function(percentageChangeForBPM) {
+			that.speed *= percentageChangeForBPM
 			that.step.stepLength = that.speed;
 		}
 	}

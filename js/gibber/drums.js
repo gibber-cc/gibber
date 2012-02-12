@@ -10,33 +10,42 @@ o = snare
 Usage: d = audioLib.Drums("x*o*x*o*");
 
 */
-
-
 (function myPlugin(){
 
 function initPlugin(audioLib){
 (function(audioLib){
 
 function _Drums (_sequence, _timeValue, _mix, _freq){
-	this.timeValue = isNaN(_timeValue) ? 4 : _timeValue;	
+	this.timeValue = isNaN(_timeValue) ? _4 : _timeValue;
 	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
 	this.hat = new audioLib.Sampler(Gibber.sampleRate);
 	this.sequence = _sequence;
-	this.timeValue = this.timeValue;
 	this.frequency = isNaN(_freq) ? 440 : _freq;
-	this.patternLengthInMs = this.sequence.length * (Gibber.measure / this.timeValue);
-	this.patternLengthInSamples = this.sequence.length * (Gibber.measure / this.timeValue) * (Gibber.sampleRate / 1000);
+	this.patternLengthInSamples = this.sequence.length * this.timeValue;
 	this.mix = isNaN(_mix) ? 0.25 : _mix;
 	
+	console.log("p length" + this.patternLengthInSamples );
     for ( var prop in Gibber.modsAndEffects) { this[prop] = Gibber.modsAndEffects[prop]; }
 	
 	this.kick.loadWav(atob(samples.kick));
 	this.snare.loadWav(atob(samples.snare));
 	this.hat.loadWav(atob(samples.snare)); // TODO: CHANGE TO HIHAT SAMPLE
 	
-	this.setSequence(this.sequence);		
+	this.setSequence(this.sequence);
 	
+	function bpmCallback() {
+		var that = this;
+		return function(percentageChangeForBPM) {
+			console.log(percentageChangeForBPM);
+			that.timeValue *= percentageChangeForBPM;
+			that.patternLengthInSamples = that.sequence.length * that.timeValue;
+			that.setSequence(that.sequence);
+		}
+	}
+	
+	Gibber.registerObserver("bpm", bpmCallback.call(this));
+
 	Gibber.generators.push(this);
 }
 
@@ -88,13 +97,20 @@ _Drums.prototype = {
 		this.hat.generate();
 		this.value += this.hat.getMix();
 			
-		if(++this.phase >= this.patternLengthInSamples) this.phase = 0;
+		if(++this.phase >= this.patternLengthInSamples) { console.log("restart pattern"); this.phase = 0; }
 	},
 		
 	getMix : function() { return this.value; },
+	
+	clearSequence : function() {
+		for(var name in this.sequences) {
+			this.sequences[name].length = 0;
+		}
+	},
 		
 	setSequence : function(seq) {
-		var stepTime = Gibber.measure / seq.length;
+		this.clearSequence();
+		
 		for(var i = 0; i < seq.length; i++) {
 			var c = seq.charAt(i);
 			var drum = null;
@@ -104,9 +120,9 @@ _Drums.prototype = {
 				case '*': drum = "hat"; break;
 				default: break;
 			}
-			console.log("sequence " + drum + " :: " + stepTime * i);
+			console.log("sequence " + drum + " :: " + this.timeValue * i);
 			if(drum != null)
-				this.sequences[drum].push((stepTime * i) * (Gibber.sampleRate / 1000));
+				this.sequences[drum].push(this.timeValue * i);
 		}
 	},
 	start : function() { this.active = true; },	

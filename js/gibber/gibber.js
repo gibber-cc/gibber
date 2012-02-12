@@ -9,10 +9,14 @@ var Gibber = {
 	bpm : 120,
 	
 	init : function() {
-		this.beat = 60000 / this.bpm;
+		this.dev = Sink(audioProcess, 2);		
+		this.sampleRate = this.dev.sampleRate;		
+		this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
 		this.measure = this.beat * 4;
-		this.dev = Sink(audioProcess, 2),
-		this.sampleRate = this.dev.sampleRate;
+		
+		for(var i = 0; i <= 32; i++) {
+			window["_"+i] = this.measure / i;
+		}
 	},
 	
 	observers : {
@@ -20,20 +24,26 @@ var Gibber = {
 	},
 	
 	registerObserver : function(name, fn) {
-		console.log("registering");
+		console.log("Registering");
 		this.observers[name].push(fn);
 	},
 	
 	setBPM : function(_bpm) {
+		var oldbpm = this.bpm;
 		this.bpm = _bpm;
-		this.beat = 60000 / this.bpm;
+		this.beat = 60000 / this.bpm * (this.sampleRate / 1000);
 		this.measure = this.beat * 4;
 		
+		for(var j = 0; j <= 32; j++) {
+			window["_"+j] = this.measure / j;
+		}
+		
 		var bpmObservers = this.observers.bpm;
-		console.log(bpmObservers);
+
+		var percentChange = oldbpm / this.bpm;
 		for(var i = 0; i < bpmObservers.length; i++) {
 			var o = bpmObservers[i];
-			o();
+			o(percentChange);
 		}
 	},
 	
@@ -615,11 +625,10 @@ Array.prototype.shuffle = function() {
 		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
 }
 
-function Step() {	// steps, stepTime
-	steps 	 = arguments[0] || [1,0];
-	stepTime = arguments[1] || _g.beat;
-	
-	var that = new audioLib.StepSequencer(Gibber.sampleRate, stepTime, steps, 0.0);
+function Step(steps, stepTime) {
+	steps 	 = steps || [1,0];
+	stepTime = stepTime || _4;
+	var that = new audioLib.StepSequencer(Gibber.sampleRate, (stepTime / Gibber.sampleRate) * 1000, steps, 0.0);
 	
 	function bpmCallback() {
 		return function() {
@@ -628,9 +637,7 @@ function Step() {	// steps, stepTime
 		}
 	}
 	
-	if(that.usesBPM) {
-		Gibber.registerObserver("bpm", bpmCallback());
-	}
+	Gibber.registerObserver("bpm", bpmCallback());
 	
 	Gibber.addModsAndFX.call(that);	
 	return that;
