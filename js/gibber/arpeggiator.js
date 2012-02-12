@@ -19,13 +19,11 @@ function Arp(gen, notation, octave, beats, mode, mult) {
 	this.notation = notation || "Cm7",
 	this.octave = (isNaN(octave)) ? 2 : octave,
 	this.mult = mult || 1;
-	console.log("mult = " + mult + " this.milt" + this.mult);
 	
 	var arr = [];
 	for(var i = 0; i < this.mult; i++) {
 		var tmp = Chord(this.notation, this.octave + i);
 		arr = arr.concat(tmp);
-		console.log(arr);
 	}
 	
 	this.freqs 		= this.modes[this.mode]( arr );

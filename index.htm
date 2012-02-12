@@ -123,6 +123,13 @@
 			    $('.referencecontent').toggle();
 			});
 			
+			var count = document.createElement('div');
+			count.id = "count";
+			count.innerHTML ="<span id='n1'>1</span><span id='n2'>2</span><span id='n3'>3</span><span id='n4'>4</span></span>";
+			$('.ace_scroller').append(count);
+			
+			
+			
 			
 		};
 		
@@ -191,7 +198,12 @@
 			font-color: #444;
 			font-size: .8em;
 		}
-		.count { right: 0; }
+		#count { font-size:1.5em; 
+			position:absolute;
+			right: 1em;
+			top:0;
+			z-index:10
+		}
 		#n1,#n2,#n3,#n4 { margin-right: 10px; }
 		#n1 { color:red; }
 		select {
@@ -242,8 +254,9 @@ a.reset();          // reset arpeggio
 
 Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators
 Master.removeFX(0);           // remove first effect in chain. don't pass a argument to remove all fx.</div>
+
 		<div id="info">
-			<h1>GIBBER <span class="count"><span id="n1">1</span><span id="n2">2</span><span id="n3">3</span><span id="n4">4</span></span></h1>
+			<h1>GIBBER  (beta)</h1>
 			<div id="about" class="section">
 				<h2>About <span class="aboutsection">show/hide</span></h2>
 				<div class="aboutcontent">
@@ -278,7 +291,7 @@ Master.removeFX(0);           // remove first effect in chain. don't pass a argu
 					<ul>
 					<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected current row of the cursor is run.</li>
 					<li><pre>Ctrl/Cmd-Shift-Return</pre> executes code at the start of the next measure. </li>
-					<li><pre>Ctrl/Cmd-Shift-Alt/Option-Return</pre>executes code at the start of the next beat.</li>										
+					<li><pre>Ctrl/Cmd-Shift-Alt/Option-Return</pre> executes code at the start of the next beat.</li>										
 					<li><pre>Ctrl/Cmd .</pre> toggles the audio on and off</li>
 					<li><pre>Ctrl/Cmd `</pre> clears all generators, use this to start over without refreshing and losing your code</li>
 					<li><pre>Ctrl/Cmd +- </pre>change font size up and down.</li>

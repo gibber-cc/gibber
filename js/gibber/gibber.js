@@ -102,7 +102,7 @@ var Gibber = {
 			return this;
 		},
 	
-		removeFX : function(_id) {
+		clearFX : function(_id) {
 			if(typeof _id === "undefined") {
 				this.fx.length = 0;
 			}else if(typeof _id === "number") {
@@ -179,10 +179,6 @@ Gibber.gens = Gibber.generators;
 _g = Gibber;
 
 // audioLib additions
-audioLib.BufferEffect.prototype.mod = Gibber.mod;
-
-audioLib.BufferEffect.prototype.clearMods = Gibber.clearMods;
-
 audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
 	fx.setParam(param, fx[param] + Math.abs(value));
 };
