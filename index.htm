@@ -6,7 +6,8 @@
 		<script src="js/gibber/gibber.js"></script>
 		<script src="js/gibber/chord.js"></script>								
 		<script src="js/gibber/drums.js"></script>
-		<script src="js/gibber/arpeggiator.js"></script>				
+		<script src="js/gibber/arpeggiator.js"></script>
+		<script src="js/gibber/beatCallback.js"></script>						
 		
 	    <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
@@ -43,7 +44,7 @@
 						text = editor.getSession().getValue();
 					}
 					//window.alert(editor.getSession.getPosition());
-					Gibber.runScript(text);
+					Gibber.callback.addCallback(text, _1);
 			    }
 			});
 			editor.commands.addCommand({

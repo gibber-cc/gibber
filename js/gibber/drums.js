@@ -28,9 +28,10 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	console.log("p length" + this.patternLengthInSamples );
     for ( var prop in Gibber.modsAndEffects) { this[prop] = Gibber.modsAndEffects[prop]; }
 	
-	this.kick.loadWav(atob(samples.kick));
-	this.snare.loadWav(atob(samples.snare));
-	this.hat.loadWav(atob(samples.snare)); // TODO: CHANGE TO HIHAT SAMPLE
+	// SAMPLES ARE PRELOADED IN GIBBER CLASS
+	this.kick.loadWav(Gibber.samples.kick);
+	this.snare.loadWav(Gibber.samples.snare);
+	this.hat.loadWav(Gibber.samples.snare); // TODO: CHANGE TO HIHAT SAMPLE
 	
 	this.setSequence(this.sequence);
 	
@@ -45,7 +46,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	}
 	
 	Gibber.registerObserver("bpm", bpmCallback.call(this));
-
+	Gibber.addModsAndFX.call(this);
 	Gibber.generators.push(this);
 }
 
@@ -97,7 +98,7 @@ _Drums.prototype = {
 		this.hat.generate();
 		this.value += this.hat.getMix();
 			
-		if(++this.phase >= this.patternLengthInSamples) { console.log("restart pattern"); this.phase = 0; }
+		if(++this.phase >= this.patternLengthInSamples) { this.phase = 0; }
 	},
 		
 	getMix : function() { return this.value; },
@@ -120,7 +121,7 @@ _Drums.prototype = {
 				case '*': drum = "hat"; break;
 				default: break;
 			}
-			console.log("sequence " + drum + " :: " + this.timeValue * i);
+			//console.log("sequence " + drum + " :: " + this.timeValue * i);
 			if(drum != null)
 				this.sequences[drum].push(this.timeValue * i);
 		}

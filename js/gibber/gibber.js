@@ -9,7 +9,7 @@ var Gibber = {
 	bpm : 120,
 	
 	init : function() {
-		this.dev = Sink(audioProcess, 2);		
+		this.dev = Sink(audioProcess, 2);
 		this.sampleRate = this.dev.sampleRate;		
 		this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
 		this.measure = this.beat * 4;
@@ -17,6 +17,14 @@ var Gibber = {
 		for(var i = 0; i <= 32; i++) {
 			window["_"+i] = this.measure / i;
 		}
+		
+		this.samples = { // preload
+			kick 	: atob(samples.kick),
+		    snare 	: atob(samples.snare),
+		    //hat 	: atob(samples.snare), 
+		}
+		this.callback = new audioLib.Callback();
+		console.log(this.callback);
 	},
 	
 	observers : {
@@ -213,6 +221,7 @@ function audioProcess(buffer, channelCount){
 				}
 				
 				for(var i = 0; i < buffer.length; i++) {
+					if(i % 2 === 1) Gibber.callback.generate(); // not double buffered!!!
 					buffer[i] += gen.generatedBuffer[i];
 				}
 			}
@@ -226,7 +235,7 @@ function audioProcess(buffer, channelCount){
 			}
 					
 			effect.append(buffer);
-		}	
+		}
 	}
 };
 
