@@ -20,6 +20,7 @@ var Gibber = {
 	},
 	
 	registerObserver : function(name, fn) {
+		console.log("registering");
 		this.observers[name].push(fn);
 	},
 	
@@ -29,6 +30,7 @@ var Gibber = {
 		this.measure = this.beat * 4;
 		
 		var bpmObservers = this.observers.bpm;
+		console.log(bpmObservers);
 		for(var i = 0; i < bpmObservers.length; i++) {
 			var o = bpmObservers[i];
 			o();
@@ -60,80 +62,98 @@ var Gibber = {
 		eval(script);
 	},
 	
-	chain : function(_effect) {
-		for(var i = 0; i < arguments.length; i++) {
-			this.fx.push(arguments[i]);
-		}
-		
-		return this;
+	automationModes : {
+		"+" : "addition",
+		"++": "absoluteAddition",
+		"=" : "assignment",
+		"*" : "modulation",
 	},
 	
-	removeFX : function(_id) {
-		if(typeof _id === "undefined") {
-			this.fx.length = 0;
-		}else if(typeof _id === "number") {
-			this.fx.splice(_id, 1);
-		}else{
-			for(var i = 0; i < this.fx.length; i++) {
-				var effect = this.fx[i];
-				if(effect.name == _id) {
-					this.fx.splice(i, 1);
+	shorthands : {
+		"freq": "frequency", 
+		"amp": "mix",
+	},
+		
+	modsAndEffects : {
+		chain : function(_effect) {
+			for(var i = 0; i < arguments.length; i++) {
+				this.fx.push(arguments[i]);
+			}
+		
+			return this;
+		},
+	
+		removeFX : function(_id) {
+			if(typeof _id === "undefined") {
+				this.fx.length = 0;
+			}else if(typeof _id === "number") {
+				this.fx.splice(_id, 1);
+			}else{
+				for(var i = 0; i < this.fx.length; i++) {
+					var effect = this.fx[i];
+					if(effect.name == _id) {
+						this.fx.splice(i, 1);
+					}
 				}
 			}
-		}
-		return this;
-	},
+			return this;
+		},
 	
-	removeMod : function(_id) {
-		if(typeof _id === "undefined") {
-			this.clearMods();
-		}else if(typeof _id === "number") {
-			this.mods[_id].gen.reset();
-			this.automations[_id].amount = 0;
-			this.mods.splice(_id, 1);
-			console.log(this.mods);
-		}else{
+		removeMod : function(_id) {
+			if(typeof _id === "undefined") {
+				this.clearMods();
+			}else if(typeof _id === "number") {
+				this.mods[_id].gen.reset();
+				this.automations[_id].amount = 0;
+				this.mods.splice(_id, 1);
+				console.log(this.mods);
+			}else{
+				for(var i = 0; i < this.mods.length; i++) {
+					var mod = this.mods[i];
+					if(mod.name == _id) {
+						this.mods.splice(i, 1);
+					}
+				}
+			}
+			return this;
+		},
+	
+		mod : function(_name, _source, _type) {
+			var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
+			var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
+		
+			this.mods.push( {type:name, gen:_source, name:_name, sourceName:_source.name} );
+			this.automations.push(this.addAutomation(name, _source, 1, type));
+
+			return this;
+		},
+	
+		clearMods : function() {
+			for(var i = 0; i < this.mods.length; i++) {
+				this.mods[i].gen.reset();
+				this.automations[i].amount = 0;
+			}
+			this.mods.length = 0;
+			this.automations.length = 0;
+		
+			return this;
+		},
+	
+		trig : function (onOff) {
+			if(typeof onOff === "undefined") onOff = true;
+		
 			for(var i = 0; i < this.mods.length; i++) {
 				var mod = this.mods[i];
-				if(mod.name == _id) {
-					this.mods.splice(i, 1);
+				if(mod.sourceName == "Env") {
+					mod.gen.triggerGate(onOff);
 				}
 			}
-		}
-		return this;
+		},
 	},
-	
-	mod : function(_name, _source, _type) {
-		var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
-		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
-		
-		this.mods.push( {type:name, gen:_source, name:_name, sourceName:_source.name} );
-		this.automations.push(this.addAutomation(name, _source, 1, type));
+};
 
-		return this;
-	},
-	
-	clearMods : function() {
-		for(var i = 0; i < this.mods.length; i++) {
-			this.mods[i].gen.reset();
-			this.automations[i].amount = 0;
-		}
-		this.mods.length = 0;
-		this.automations.length = 0;
-		
-		return this;
-	},
-	
-	trig : function (onOff) {
-		if(typeof onOff === "undefined") onOff = true;
-		
-		for(var i = 0; i < this.mods.length; i++) {
-			var mod = this.mods[i];
-			if(mod.sourceName == "Env") {
-				mod.gen.triggerGate(onOff);
-			}
-		}
-	},
+Gibber.addModsAndFX = function() {
+    for ( var prop in Gibber.modsAndEffects) { this[prop] = Gibber.modsAndEffects[prop]; }	
 };
 
 Gibber.gens = Gibber.generators;
@@ -149,16 +169,11 @@ audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
 };
 
 Master = {
-	mod: Gibber.mod,
-	chain: 	 	Gibber.chain,
-	clearFX: 	Gibber.clearFX,
-	clearMods: 	Gibber.clearMods,
-	removeFX: 	Gibber.removeFX,
-	removeMod: 	Gibber.removeMod,
 	mods : [],
 	fx : [],
 	automations : [],
 };
+Gibber.addModsAndFX.call(Master);
 
 function audioProcess(buffer, channelCount){
 	var i, channel, val;
@@ -201,21 +216,8 @@ function audioProcess(buffer, channelCount){
 			}
 					
 			effect.append(buffer);
-		}
-		
+		}	
 	}
-};
-
-Gibber.automationModes = {
-	"+" : "addition",
-	"++": "absoluteAddition",
-	"=" : "assignment",
-	"*" : "modulation",
-};
-
-Gibber.shorthands = {
-	"freq": "frequency", 
-	"amp": "mix",
 };
 
 function Osc(args, isAudioGenerator) {
@@ -224,22 +226,12 @@ function Osc(args, isAudioGenerator) {
 	var that = new audioLib.Oscillator(Gibber.sampleRate, _freq);
 		
 	that.mix = (typeof args[1] !== "undefined") ? args[1] : .25;
-
-	that.active = true;
-		
+	that.active = true;		
 	that.value = 0;
 	
 	that.mods = [];
 	that.fx = [];
 	that.automations = [];
-	
-	that.mod 	= Gibber.mod;
-	that.chain  = Gibber.chain;
-	that.clearFX   = Gibber.clearFX;
-	that.clearMods = Gibber.clearMods;
-	that.removeFX  = Gibber.removeFX;
-	that.removeMod = Gibber.removeMod;
-	that.trig 	   = Gibber.trig;
 
 	that.stop = function() {
 		this.active = false;
@@ -252,6 +244,8 @@ function Osc(args, isAudioGenerator) {
 	if(typeof isAudioGenerator === "undefined" || isAudioGenerator) {
 		Gibber.generators.push(that);
 	}
+	
+	Gibber.addModsAndFX.call(that);
 	
 	return that;
 }
@@ -296,6 +290,7 @@ function Reverb(roomSize, damping, wet, dry) {
 		that.setParam("dry", dry);
 	}
 	
+	Gibber.addModsAndFX.call(that);
 	return that;
 }
 
@@ -326,6 +321,7 @@ function Delay(time, feedback, mix) {
 	
 	that.mix = mix || .3;
 	
+	Gibber.addModsAndFX.call(that);
 	return that;	
 };
 
@@ -353,6 +349,7 @@ function LP(cutoff, resonance, mix) {
 	
 	that.mix = mix || .3;
 	
+	Gibber.addModsAndFX.call(that);
 	return that;
 }
 
@@ -372,6 +369,7 @@ function Trunc(bits, mix) {
 	
 	that.mix = mix || 1;
 	
+	Gibber.addModsAndFX.call(that);
 	return that;
 }
 
@@ -409,6 +407,7 @@ function Chorus(delay, depth, freq, mix) {
 	
 	that.mix = mix || 1;
 	
+	Gibber.addModsAndFX.call(that);	
 	return that;
 }
 
@@ -436,9 +435,9 @@ function Dist(gain, master) {
 		that.setParam("master", master);
 	}
 	
-	
 	//that.master = mix || 1;
 	
+	Gibber.addModsAndFX.call(that);	
 	return that;
 }
 
@@ -616,176 +615,6 @@ Array.prototype.shuffle = function() {
 		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
 }
 
-function Drums(_sequence, _timeValue, _mix, _freq) {
-	_timeValue = isNaN(_timeValue) ? 4 : _timeValue;
-	
-	var that = {
-		sampleRate : Gibber.sampleRate,
-		kick : new audioLib.Sampler(Gibber.sampleRate),
-		snare : new audioLib.Sampler(Gibber.sampleRate),		
-		hat : new audioLib.Sampler(Gibber.sampleRate),
-		sequence : _sequence,
-		patternLengthInMs : _sequence.length * (Gibber.measure / _timeValue),
-		patternLengthInSamples : _sequence.length * (Gibber.measure / _timeValue) * (Gibber.sampleRate / 1000),
-		timeValue: _timeValue,
-		tempo : Gibber.bpm,
-		phase : 0,
-		value : 0,
-		frequency : isNaN(_freq) ? 440 : _freq,
-		append : audioLib.GeneratorClass.prototype.append,
-		generateBuffer : audioLib.GeneratorClass.prototype.generateBuffer,		
-		generate : function() {
-			this.value = 0;
-			
-			for(var i = 0; i < this.sequences.kick.length; i++) {
-				if(this.phase == this.sequences.kick[i]) {
-					this.kick.noteOn(this.frequency);
-					break;
-				}
-			}
-			
-			this.kick.generate();
-			this.value += this.kick.getMix();
-			
-			for(var i = 0; i < this.sequences.snare.length; i++) {
-				if(this.phase == this.sequences.snare[i]) {
-					this.snare.noteOn(this.frequency);
-					break;
-				}
-			}
-			
-			this.snare.generate();
-			this.value += this.snare.getMix();
-			
-			for(var i = 0; i < this.sequences.hat.length; i++) {
-				if(this.phase == this.sequences.hat[i]) {
-					this.hat.noteOn(this.frequency * 3.5);
-					break;
-				}
-			}
-			
-			this.hat.generate();
-			this.value += this.hat.getMix();
-			
-			if(++this.phase >= this.patternLengthInSamples) this.phase = 0;
-		},
-		
-		getMix : function() {
-			return this.value;
-		},
-		
-		sequences : {
-			kick  : [],
-			snare : [],
-			hat   : [],
-		},
-		
-		setSequence : function(seq) {
-			var stepTime = Gibber.measure / seq.length;
-			for(var i = 0; i < seq.length; i++) {
-				var c = seq.charAt(i);
-				var drum = null;
-				switch(c) {
-					case 'x': drum = "kick"; break;
-					case 'o': drum = "snare"; break;
-					case '*': drum = "hat"; break;
-					default: break;
-				}
-				console.log("sequence " + drum + " :: " + stepTime * i);
-				if(drum != null)
-					this.sequences[drum].push((stepTime * i) * (Gibber.sampleRate / 1000));
-			}
-		},
-		
-		mix : isNaN(_mix) ? 0.25 : _mix,
-
-		active : true,
-
-		mods : [],
-		fx : [],
-		automations : [],
-	
-		mod 	: Gibber.mod,
-		chain  : Gibber.chain,
-		clearFX   : Gibber.clearFX,
-		clearMods : Gibber.clearMods,
-		removeFX  : Gibber.removeFX,
-		removeMod : Gibber.removeMod,
-		trig 	   : Gibber.trig,
-
-		stop : function() {
-			this.active = false;
-		},
-	
-		start : function() {
-			this.active = true;
-		},		
-	};
-	that.prototype = audioLib.GeneratorClass.prototype;
-	
-	that.kick.loadWav(atob(samples.kick));
-	that.snare.loadWav(atob(samples.snare));
-	that.hat.loadWav(atob(samples.snare));
-	
-	that.setSequence(that.sequence);		
-	
-	Gibber.generators.push(that);
-	
-	return that;
-}
-//a = Arp(s, "Cm7", 2, .125, "updown");
-function Arp(gen, notation, octave, beats, mode) {
-	beats = isNaN(beats) ? .25 : beats;
-	mode = mode || "up";
-	
-	modes = {
-		up : function(array) {
-			return array;
-		},
-		down : function(array) {
-			return array.reverse();
-		},
-		updown : function(array) {
-			var _tmp = array.slice(0);
-			_tmp.reverse();
-			return array.concat(_tmp);
-		}
-	}
-	
-	
-	var that = {
-		gen: gen,
-		notation: notation || "Cm7",
-		beats: beats,
-		octave: (isNaN(octave)) ? 2 : octave,
-		speed: (beats < 20) ? beats * Gibber.measure : beats,
-		mode: mode,
-		freqs: [],
-		shuffle: function() { this.freqs.shuffle(); this.step.steps = this.freqs;},
-		reset: function() { this.freqs = this.original.slice(0); this.step.steps = this.freqs; },
-	};
-	
-	that.usesBPM = (beats < 20);
-	
-	that.freqs = modes[mode]( Chord(that.notation, that.octave) );
-	that.original = that.freqs.slice(0);
-	that.step = Step(that.freqs, that.speed);
-	that.gen.mod("freq", that.step, "=");
-	
-	// function bpmCallback() {
-	// 	return function() {
-	// 		that.speed = beats * Gibber.measure;
-	// 		that.step.stepLength = that.speed;
-	// 	}
-	// }
-	// 
-	// if(that.usesBPM) {
-	// 	Gibber.registerObserver("bpm", bpmCallback());
-	// }
-	
-	return that;
-}
-
 function Step() {	// steps, stepTime
 	steps 	 = arguments[0] || [1,0];
 	stepTime = arguments[1] || _g.beat;
@@ -803,11 +632,7 @@ function Step() {	// steps, stepTime
 		Gibber.registerObserver("bpm", bpmCallback());
 	}
 	
+	Gibber.addModsAndFX.call(that);	
 	return that;
 }
 var a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
-
-audioLib.StepSequencer.prototype.out = function() {
-	this.generate();
-	return this.getMix();
-}
