@@ -23,7 +23,7 @@
 	        editor = ace.edit("editor");
 		    var JavaScriptMode = require("ace/mode/javascript").Mode;
 		    editor.getSession().setMode(new JavaScriptMode());
-			editor.setTheme("ace/theme/twilight");
+			editor.setTheme("ace/theme/idle_fingers");
 			$('.ace_gutter').css({
 				"background-color":"#000",
 				"color":"#ccc",
@@ -31,6 +31,7 @@
 				"border-color": "#ccc",
 				"border-style": "solid", 
 			});
+			$(".ace_sb").css("z-index", 10);
 			editor.commands.addCommand({
 			    name: 'evaluate',
 			    bindKey: {
@@ -44,9 +45,44 @@
 						text = editor.getSession().getValue();
 					}
 					//window.alert(editor.getSession.getPosition());
+					Gibber.runScript(text);
+					//Gibber.callback.addCallback(text, _1);
+			    }
+			});
+			editor.commands.addCommand({
+			    name: 'evaluate_1',
+			    bindKey: {
+			        win: 'Ctrl-Shift-Return',
+			        mac: 'Command-Shift-Return',
+			        sender: 'editor'
+			    },
+			    exec: function(env, args, request) {
+			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
+					if(text === "") {
+						text = editor.getSession().getValue();
+					}
+
 					Gibber.callback.addCallback(text, _1);
 			    }
 			});
+			editor.commands.addCommand({
+			    name: 'evaluate_4',
+			    bindKey: {
+			        win: 'Ctrl-Shift-Alt-Return',
+			        mac: 'Command-Shift-Option-Return',
+			        sender: 'editor'
+			    },
+			    exec: function(env, args, request) {
+			        var text = editor.getSession().doc.getTextRange(editor.getSelectionRange());
+					if(text === "") {
+						text = editor.getSession().getValue();
+					}
+
+					Gibber.callback.addCallback(text, _4);
+			    }
+			});
+			
+			
 			editor.commands.addCommand({
 			    name: 'stop',
 			    bindKey: {
@@ -68,6 +104,7 @@
 			    },
 			    exec: function(env, args, request) {
 					Gibber.clear();
+					Gibber.audioInit = false;
 			    }
 			});
 			
@@ -138,7 +175,7 @@
 		.section {
 			margin: .5em;
 		}
-		.referencesection, .aboutsection, .optionssection {
+		.referencesection, .aboutsection, .optionssection, .count {
 			-webkit-touch-callout: none;
 			-webkit-user-select: none;
 			-khtml-user-select: none;
@@ -153,7 +190,9 @@
 			font-color: #444;
 			font-size: .8em;
 		}
-		
+		.count { right: 0; }
+		#n1,#n2,#n3,#n4 { margin-right: 10px; }
+		#n1 { color:red; }
 		select {
 			background-color:#000;
 			color:#aaa;
@@ -203,7 +242,7 @@ a.reset();          // reset arpeggio
 Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators
 Master.removeFX(0);           // remove first effect in chain. don't pass a argument to remove all fx.</div>
 		<div id="info">
-			<h1>GIBBER</h1>
+			<h1>GIBBER <span class="count"><span id="n1">1</span><span id="n2">2</span><span id="n3">3</span><span id="n4">4</span></span></h1>
 			<div id="about" class="section">
 				<h2>About <span class="aboutsection">show/hide</span></h2>
 				<div class="aboutcontent">
@@ -222,10 +261,10 @@ Master.removeFX(0);           // remove first effect in chain. don't pass a argu
 				<div class="optionscontent">
 					Theme: <select id="theme" size="1" onchange="editor.setTheme(this.value);" style="margin-bottom:1.5em;">
 					<option value="ace/theme/chrome">Chrome</option>
-					<option value="ace/theme/idle_fingers">idleFingers</option>
+					<option value="ace/theme/idle_fingers" selected="selected">idleFingers</option>
 					<option value="ace/theme/solarized_light">Solarized Light</option>
 					<option value="ace/theme/textmate">TextMate</option>
-					<option value="ace/theme/twilight" selected="selected">Twilight</option>
+					<option value="ace/theme/twilight">Twilight</option>
 					</select><br>
 					<button onclick="editor.renderer.setShowGutter(!editor.renderer.getShowGutter())">Toggle Line Numbers</button>
 				</div>

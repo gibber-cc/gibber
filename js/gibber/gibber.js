@@ -7,6 +7,7 @@
 var Gibber = {
 	active : true,
 	bpm : 120,
+	audioInit : false,
 	
 	init : function() {
 		this.dev = Sink(audioProcess, 2);
@@ -32,7 +33,7 @@ var Gibber = {
 	},
 	
 	registerObserver : function(name, fn) {
-		console.log("Registering");
+		//console.log("Registering");
 		this.observers[name].push(fn);
 	},
 	
@@ -50,13 +51,14 @@ var Gibber = {
 
 		var percentChange = oldbpm / this.bpm;
 		for(var i = 0; i < bpmObservers.length; i++) {
-			var o = bpmObservers[i];
-			o(percentChange);
+			var fcn = bpmObservers[i]; // all observers are callback functions to be called
+			fcn(percentChange);
 		}
 	},
 	
 	clear : function() {
 		this.generators.length = 0;
+		this.callback.phase = 0;		
 	},
 	
 	stop : function() {
@@ -221,7 +223,7 @@ function audioProcess(buffer, channelCount){
 				}
 				
 				for(var i = 0; i < buffer.length; i++) {
-					if(i % 2 === 1) Gibber.callback.generate(); // not double buffered!!!
+					if(i % 2 === 1 && g == 0) Gibber.callback.generate(); // not double buffered!!!
 					buffer[i] += gen.generatedBuffer[i];
 				}
 			}
@@ -261,6 +263,7 @@ function Osc(args, isAudioGenerator) {
 	};
 	
 	if(typeof isAudioGenerator === "undefined" || isAudioGenerator) {
+		Gibber.audioInit = true;
 		Gibber.generators.push(that);
 	}
 	
