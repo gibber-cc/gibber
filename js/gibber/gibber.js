@@ -347,7 +347,7 @@ function Delay(time, feedback, mix) {
 	return that;	
 };
 
-function LP(cutoff, resonance, mix) {
+function LPF(cutoff, resonance, mix) {
 	var that = audioLib.LP12Filter.createBufferBased(2, Gibber.sampleRate);
 	that.name = "LP";
 	

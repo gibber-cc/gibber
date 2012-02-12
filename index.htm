@@ -145,7 +145,7 @@
 			display: inline;
 			width:20%;
 			height:100%;
-			font-size: .75em;
+			font-size: .85em;
 			background-color:#333;
 			right: 0;
 			color: #ccc;
@@ -225,7 +225,7 @@ s = Sine(240, .25);      // Sine wave with freq 240, amp .5.
 
 s.chain(                // create an fx chain for oscillator                   
     Dist(),             // Distortion
-    Delay( _4 )  		// Delay with delay time set to 1/4 of a beat (1/16th note)
+    Delay( _3 )  		// Delay with delay time set to 1/4 of a beat (1/16th note)
 );
 
 a = Arp(s, "Cm7", 2, _16, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
@@ -276,10 +276,12 @@ Master.removeFX(0);           // remove first effect in chain. don't pass a argu
 
 				<div class="referencecontent">
 					<ul>
-					<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected entire script is run.</li>
+					<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected current row of the cursor is run.</li>
+					<li><pre>Ctrl/Cmd-Shift-Return</pre> executes code at the start of the next measure. </li>
+					<li><pre>Ctrl/Cmd-Shift-Alt/Option-Return</pre>executes code at the start of the next beat.</li>										
 					<li><pre>Ctrl/Cmd .</pre> toggles the audio on and off</li>
 					<li><pre>Ctrl/Cmd `</pre> clears all generators, use this to start over without refreshing and losing your code</li>
-					<li><pre>Ctrl/Cmd +- </pre>change font size up and down</li>
+					<li><pre>Ctrl/Cmd +- </pre>change font size up and down.</li>
 					</ul>
 				</div>
 			</div>
