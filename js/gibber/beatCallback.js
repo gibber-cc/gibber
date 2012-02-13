@@ -33,22 +33,32 @@ Callback.prototype = {
 	measureLengthInSamples : 0,
 	value : 0,
 	
-	addCallback : function(callback, subdivision) {		
+	addCallback : function(callback, subdivision, shouldLoop, shouldWait) {
+		if(typeof shouldWait === 'undefined') shouldWait = true;
+		if(typeof shouldLoop === 'undefined') shouldLoop = false;
 		var currentSubdivision = Math.floor(this.phase / subdivision); // 0
 		var nextSubdivision = (currentSubdivision + 1) * subdivision; // 1 * _1 = 88200
-		//console.log("Current Subdivison = " + currentSubdivision + " : next subdivision = " + nextSubdivision + " : phase = " + this.phase);
+		console.log("Current Subdivison = " + currentSubdivision + " : next subdivision = " + nextSubdivision + " : phase = " + this.phase);
 		
 		function _callback() {
 			var call = callback;
+			var loop = shouldLoop;
 			return function() {
-				stop();
+				if(!loop) {
+					stop();
+				}
 				//console.log("here is " + call);
 				eval(call);
 
 			}
 		}
-		//console.log("time till event = " + ((nextSubdivision - this.phase) / (Gibber.sampleRate / 1000)) ) // 88200 - 88187 / 441
-		var stop = Sink.doInterval(_callback(), ((nextSubdivision - this.phase) / (Gibber.sampleRate / 1000)) );
+		console.log("time till event = " + (nextSubdivision - this.phase) ) // 88200 - 88187 / 441
+		var stop;
+		if(shouldWait) {
+			stop = Sink.doInterval(_callback(), ((nextSubdivision - this.phase) / (Gibber.sampleRate / 1000)) );
+		}else{
+			stop = Sink.doInterval(_callback(), subdivision / (Gibber.sampleRate / 1000) );
+		}
 	},
 	
 	generate : function() {

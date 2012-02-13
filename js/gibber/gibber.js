@@ -534,7 +534,7 @@ audioLib.ADSREnvelope.prototype.states[4] = function(){ // Timed release state o
 	this.value = Math.max(0, this.value - 1000 / this.sampleRate / this.release);
 
 	if (this._st++ >= this.sampleRate * 0.001 * this.releaseTime){
-		console.log(this);
+		//console.log(this);
 		this._st	= 0;
 		this.state	= 0;
 		this.gate = false;
@@ -550,7 +550,12 @@ audioLib.ADSREnvelope.prototype.triggerGate = function(isOpen){
 	this._st	= 0;
 	if(isOpen) this.isDead = false;
 };
-
+/*
+s = Sine(240, .15);
+e = Env(100);
+s.mod("mix" , e, "*");
+e.triggerGate();
+*/
 function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(arguments.length > 1) {
 		if(typeof attack === "undefined") 	attack 		= 100;
