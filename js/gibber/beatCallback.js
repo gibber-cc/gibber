@@ -45,7 +45,7 @@ Callback.prototype = {
 			var loop = shouldLoop;
 			return function() {
 				if(!loop) {
-					stop();
+					//stop();
 				}
 				//console.log("here is " + call);
 				eval(call);
@@ -54,11 +54,12 @@ Callback.prototype = {
 		}
 		console.log("time till event = " + (nextSubdivision - this.phase) ) // 88200 - 88187 / 441
 		var stop;
-		if(shouldWait) {
-			stop = Sink.doInterval(_callback(), ((nextSubdivision - this.phase) / (Gibber.sampleRate / 1000)) );
-		}else{
-			stop = Sink.doInterval(_callback(), subdivision / (Gibber.sampleRate / 1000) );
-		}
+		this.callbacks.push(_callback());
+		// if(shouldWait) {
+		// 			stop = Sink.doInterval(_callback(), ((nextSubdivision - this.phase) / (Gibber.sampleRate / 1000)) );
+		// 		}else{
+		// 			stop = Sink.doInterval(_callback(), subdivision / (Gibber.sampleRate / 1000) );
+		// 		}
 	},
 	
 	generate : function() {
@@ -69,6 +70,12 @@ Callback.prototype = {
 				$("#n" + i).css("color", "#444");
 			}
 			$("#n1").css("color", "red");
+			if(this.callbacks.length != 0) {
+				for(var j = 0; j < this.callbacks.length; j++) {
+					this.callbacks[j]();
+				}
+				this.callbacks.length = 0;
+			}
 		}else{
 			if(this.phase % _4 == 0) {
 				var subdivision = Math.floor(this.phase / _4) + 1;
