@@ -1799,7 +1799,7 @@ inlineWorker.test();
  * Uses inline workers to achieve this. If not available, will revert to regular timers.
  *
  * @static Sink
- * @name doInterval
+ * @name x
  *
  * @arg {Function} callback The callback to trigger on timer hit.
  * @arg {Number} timeout The interval between timer hits.

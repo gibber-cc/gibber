@@ -94,6 +94,11 @@ var Gibber = {
 	},
 		
 	modsAndEffects : {
+		out : function() {
+			this.generate();
+			return this.getMix() * this.mix;
+		},
+		
 		chain : function(_effect) {
 			for(var i = 0; i < arguments.length; i++) {
 				this.fx.push(arguments[i]);
@@ -141,9 +146,11 @@ var Gibber = {
 			var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
 			var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
 		
-			this.mods.push( {type:name, gen:_source, name:_name, sourceName:_source.name} );
+			this.mods.push( {param:name, gen:_source, name:_name, sourceName:_source.name, type:type} );
 			this.automations.push(this.addAutomation(name, _source, 1, type));
-
+			
+			this[name + "_"] = 0;
+			
 			return this;
 		},
 	
@@ -273,7 +280,7 @@ function Reverb(roomSize, damping, wet, dry) {
 	wet 		= wet || .75;
 	dry 		= dry || .5;
 	
-	var that = audioLib.Reverb.createBufferBased(2, Gibber.sampleRate);
+	var that = new audioLib.Reverb(Gibber.sampleRate, 1);
 	that.name = "Reverb";
 	
 	that.mods = [];
