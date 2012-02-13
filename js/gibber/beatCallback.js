@@ -49,7 +49,6 @@ Callback.prototype = {
 				}
 				//console.log("here is " + call);
 				eval(call);
-
 			}
 		}
 		//console.log("time till event = " + (nextSubdivision - this.phase) ) // 88200 - 88187 / 441

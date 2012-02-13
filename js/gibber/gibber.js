@@ -8,6 +8,9 @@ var Gibber = {
 	active : true,
 	bpm : 120,
 	audioInit : false,
+	_gens : {
+		test : "blah",
+	},
 	
 	init : function() {
 		this.dev = Sink(audioProcess, 2);
@@ -73,7 +76,7 @@ var Gibber = {
 	pop : function() { this.generators.pop(); },
 	
 	shapes : {
-		triangle : 'triangle',
+	    triangle : 'triangle',
 		sine : 'sine',
 		square : 'square',
 		saw : 'sawtooth',
@@ -81,6 +84,7 @@ var Gibber = {
 	
 	runScript : function(script) {
 		eval(script);
+		//(function(_s) { console.log(this); eval(s); console.log(this); }).call(Gibber._gens, script);
 	},
 	
 	automationModes : {
@@ -101,6 +105,11 @@ var Gibber = {
 			return this.getMix() * this.mix;
 		},
 		
+		fxout : function(samp) {
+			this.pushSample(samp,0);
+			return (samp * (1 - this.mix)) + (this.mix * this.getMix(0));
+		},
+		
 		chain : function(_effect) {
 			for(var i = 0; i < arguments.length; i++) {
 				this.fx.push(arguments[i]);
@@ -109,7 +118,7 @@ var Gibber = {
 			return this;
 		},
 	
-		clearFX : function(_id) {
+		removeFX : function(_id) {
 			if(typeof _id === "undefined") {
 				this.fx.length = 0;
 			}else if(typeof _id === "number") {
@@ -321,7 +330,6 @@ function Reverb(roomSize, damping, wet, dry) {
 }
 
 function Delay(time, feedback, mix) {
-	//audioLib.Reverb(Gibber.sampleRate, 1);
 	var that = audioLib.Delay(Gibber.sampleRate);
 	that.name = "Delay";
 	
@@ -331,7 +339,7 @@ function Delay(time, feedback, mix) {
 	time = time || 4;
 	time /= Gibber.sampleRate / 1000;
 	feedback = feedback || .3;
-	mix = mix || .3;
+	mix = isNaN(mix) ? .3 : mix;
 	
 	if(typeof feedback === "Object") {
 		that.effects[1].feedback = feedback[0];
@@ -347,7 +355,7 @@ function Delay(time, feedback, mix) {
 		that.setParam("time", time);
 	}
 	
-	that.mix = mix || .3;
+	that.mix = mix;
 	
 	Gibber.addModsAndFX.call(that);
 	return that;	

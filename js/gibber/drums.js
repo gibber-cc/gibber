@@ -119,6 +119,8 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		stop : function() { this.active = false; },	
 	};
 	
+	that.seq = that.setSequence;
+	
 	// for(var name in this.__proto__) {
 	// 	this[name] = this.__proto__[name];
 	// }
@@ -126,7 +128,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	that.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	that.snare = new audioLib.Sampler(Gibber.sampleRate);		
 	that.hat   = new audioLib.Sampler(Gibber.sampleRate);
-	that.mix   = isNaN(_mix) ? 0.25 : _mix;
+	that.mix   = isNaN(_mix) ? 0.175 : _mix;
 	that.timeValue = isNaN(_timeValue) ? _4 : _timeValue;
 	that.sequence  = _sequence;
 	that.frequency = isNaN(_freq) ? 440 : _freq;
@@ -184,7 +186,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 // }());
 
 function Drums (_sequence, _timeValue, _mix, _freq) {
-	var d = new _Drums(_sequence, _timeValue, _mix, _freq);
+	var d = _Drums(_sequence, _timeValue, _mix, _freq);
 	d.load();
 	return d;
 }

@@ -12,6 +12,10 @@ Note = {
 
     /* corrected notations */
     correctedNotations: ["C", "C", "F", "F"],
+	
+	mtof : function(midiNumber) {
+		return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)
+	},
 
     /**
      * turn a notation into a frequency
@@ -26,6 +30,7 @@ Note = {
             octave = parseInt(nt.charAt(nt.length -1));
             nt = nt.substr(0, nt.length-1);
         }
+		console.log("note : " + nt + " octave : " + octave);
 
         // correct any flat/sharps that resolve to a natural
         if (this.oddNotations.indexOf(nt) != -1) {
