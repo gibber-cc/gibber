@@ -57,7 +57,9 @@ var Gibber = {
 	
 	clear : function() {
 		this.generators.length = 0;
-		this.callback.phase = 0;		
+		this.callback.phase = 0;
+		Master.fx.length = 0;
+		Master.mods.length = 0;	
 	},
 	
 	stop : function() {
@@ -319,7 +321,8 @@ function Reverb(roomSize, damping, wet, dry) {
 }
 
 function Delay(time, feedback, mix) {
-	var that = audioLib.Delay.createBufferBased(2, Gibber.sampleRate);
+	//audioLib.Reverb(Gibber.sampleRate, 1);
+	var that = audioLib.Delay(Gibber.sampleRate);
 	that.name = "Delay";
 	
 	that.mods = [];
@@ -351,7 +354,7 @@ function Delay(time, feedback, mix) {
 };
 
 function LPF(cutoff, resonance, mix) {
-	var that = audioLib.LP12Filter.createBufferBased(2, Gibber.sampleRate);
+	var that = audioLib.LP12Filter(Gibber.sampleRate);
 	that.name = "LP";
 	
 	that.mods = [];
@@ -379,7 +382,7 @@ function LPF(cutoff, resonance, mix) {
 }
 
 function Trunc(bits, mix) {
-    var that = audioLib.BitCrusher.createBufferBased(2, Gibber.sampleRate);
+    var that = audioLib.BitCrusher(Gibber.sampleRate);
 	that.name = "Trunc";
 	
 	that.mods = [];
@@ -399,7 +402,7 @@ function Trunc(bits, mix) {
 }
 
 function Chorus(delay, depth, freq, mix) {
-    var that = audioLib.Chorus.createBufferBased(2, Gibber.sampleRate);
+    var that = audioLib.Chorus(Gibber.sampleRate);
 	that.name = "Chorus";
 	
 	that.mods = [];
@@ -437,7 +440,7 @@ function Chorus(delay, depth, freq, mix) {
 }
 
 function Dist(gain, master) {
-    var that = audioLib.Distortion.createBufferBased(2, Gibber.sampleRate);
+    var that = audioLib.Distortion(Gibber.sampleRate);
 	that.name = "Dist";
 	
 	that.mods = [];
