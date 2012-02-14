@@ -65,6 +65,10 @@ Arp.prototype = {
 			return array.concat(_tmp);
 		}
 	},
+	shuffle: function() { this.freqs.shuffle(); this.step.steps = this.freqs;},
+	reset: function() { this.freqs = this.original.slice(0); this.step.steps = this.freqs; },
+	freqs: [],
+	
 	replace : function(replacement){
 		if(replacement.name != "Arp") {
 			if(replacement.type == "mod") {
@@ -82,10 +86,6 @@ Arp.prototype = {
 			}
 		}
 	},
-	
-	freqs: [],
-	shuffle: function() { this.freqs.shuffle(); this.step.steps = this.freqs;},
-	reset: function() { this.freqs = this.original.slice(0); this.step.steps = this.freqs; },
 }
 
 audioLib.Arpeggiator = Arp;

@@ -9,7 +9,7 @@
 		<script src="js/gibber/drums.js"></script>
 		<script src="js/gibber/arpeggiator.js"></script>
 		<script src="js/gibber/beatCallback.js"></script>
-		<script src="js/gibber/editorSetup.js"></script>
+		<script src="js/gibber/environment.js"></script>
 		<script src="js/gibber/audio_callback.js"></script>
 		<script src="js/gibber/synth.js"></script>										
 		
@@ -27,9 +27,7 @@
 		
 		<script>
 		window.onload	= function(){
-	        editor = ace.edit("editor");	
 			Gibber.init();
-			Gibber.setupEditor(editor);
 		};
 		</script>
 	</head>
@@ -52,14 +50,19 @@
 			<div id="options" class="section">
 				<h2>Options <span class="optionssection">show/hide</span></h2>
 				<div class="optionscontent">
-					Theme: <select id="theme" size="1" onchange="editor.setTheme(this.value);" style="margin-bottom:1.5em;">
+					Theme: <select id="theme" size="1" onchange="Gibber.Environment.Editor.setTheme(this.value);" style="margin-bottom:1em;">
 					<option value="ace/theme/chrome">Chrome</option>
 					<option value="ace/theme/idle_fingers" selected="selected">idleFingers</option>
 					<option value="ace/theme/solarized_light">Solarized Light</option>
 					<option value="ace/theme/textmate">TextMate</option>
 					<option value="ace/theme/twilight">Twilight</option>
 					</select><br>
-					<button onclick="editor.renderer.setShowGutter(!editor.renderer.getShowGutter())">Toggle Line Numbers</button>
+					<button onclick="Gibber.saveFile()">Save File</button>
+					load file:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">
+					</select><br>
+					<!--<button onclick="Gibber.loadFile()">Load File</button><br>-->
+					<button onclick="editor.renderer.setShowGutter(!Gibber.Environment.Editor.renderer.getShowGutter())">Toggle Line Numbers</button>
+					
 				</div>
 			</div>
 		

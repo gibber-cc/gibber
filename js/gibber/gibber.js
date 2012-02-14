@@ -14,11 +14,12 @@ var Gibber = {
 	active : true,
 	bpm : 120,
 	audioInit : false,
-	_gens : {
-		test : "blah",
-	},
 	
 	init : function() {
+		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
+			console.log("CALLING INIT");
+			this.Environment.init();
+		}
 		this.dev = Sink(audioProcess, 2);
 		this.sampleRate = this.dev.sampleRate;		
 		this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
@@ -73,8 +74,8 @@ var Gibber = {
 	},
 	
 	genRemove : function(gen) {
-		// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
-		// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc?
+	// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
+	// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc to replacement???
 		var idx = jQuery.inArray( gen, Gibber.generators);
 		if(idx > -1) {
 			Gibber.generators.splice(idx,1);
