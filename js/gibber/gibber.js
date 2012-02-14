@@ -56,12 +56,12 @@ var Gibber = {
 									 Gibber.fxRemove(variable, newObj);
 								 break;
 								 case "complex":
-									 variable.replace(val);
+									 variable.replace(newObj);
 								 break;
 								 default: break;
 							 }
 						 }
-					 	 window["____"+ltr] = val;
+					 	 window["____"+ltr] = newObj;
 					},
 				})
 			})();

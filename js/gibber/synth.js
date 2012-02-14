@@ -10,7 +10,7 @@ function Synth(waveform, volume, _seq, speed) {
 	var that = {
 		osc : Osc([440, volume, "triangle"], false),
 		name: "Synth",
-		type: "Complex",
+		type: "complex",
 		env : Env(),
 		mix: volume,
 		frequency: 440,
@@ -33,23 +33,13 @@ function Synth(waveform, volume, _seq, speed) {
 	that.fx = [];
 	that.automations = [];
 	
-	replace : function(replacement){
-		if(replacement.name != "Synth") {
-			if(replacement.type == "mod") {
-				var idx = jQuery.inArray( this.step, this.gen.mods );
-				if(idx > -1) {
-					this.gen.mods.splice(idx,1,replacement);
-					replacement.gens.push(this.gen);
-				}
-			}
-		}else{
-			var idx = jQuery.inArray( this.step, this.gen.mods );
-			if(idx > -1) {
-				this.gen.mods.splice(idx,1,replacement.step);
-				replacement.gens.push(this.gen);
-			}
-		}
-	},
+	that.replace = function(replacement){
+		// can't replace, just remove instead.
+		Gibber.genRemove(this);
+		delete this.osc;
+		delete this.env;
+		delete this;
+	};
 	
 	// TODO: figure out speed problems
 	that.setSequence = function(seq, speed) {
