@@ -21,6 +21,8 @@ and manually assigning __proto__.
 function _Drums (_sequence, _timeValue, _mix, _freq){
 	that = {
 		sampleRate : Gibber.sampleRate,
+		type  : "gen",
+		name  : "Drums",
 		tempo : Gibber.bpm,
 		phase : 0,
 		value : 0,

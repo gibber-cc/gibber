@@ -71,7 +71,11 @@ var Gibber = {
 										 for(var j = 0; j < moddedGen.mods.length; j++) {
 											 var modCheck = moddedGen.mods[j].gen;
 											 if(modCheck == modToReplace) {
-												 moddedGen.mods[j].gen = val;
+												 if(val.type == "mod") {
+													 moddedGen.mods[j].gen = val;
+												 }else{
+												 	
+												 }
 												 val.modded.push(moddedGen);
 											 }
 										 }
@@ -90,6 +94,10 @@ var Gibber = {
 										 }
 									 }
 								 break;
+								 case "complex":
+									 variable.replace(val);
+								 break;
+								 default: break;
 							 }
 						 }
 					 	 window["____"+ltr] = val;
