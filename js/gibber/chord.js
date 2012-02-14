@@ -30,7 +30,7 @@ Note = {
             octave = parseInt(nt.charAt(nt.length -1));
             nt = nt.substr(0, nt.length-1);
         }
-		console.log("note : " + nt + " octave : " + octave);
+		//console.log("note : " + nt + " octave : " + octave);
 
         // correct any flat/sharps that resolve to a natural
         if (this.oddNotations.indexOf(nt) != -1) {

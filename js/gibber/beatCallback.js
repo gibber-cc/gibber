@@ -44,11 +44,8 @@ Callback.prototype = {
 			var call = callback;
 			var loop = shouldLoop;
 			return function() {
-				if(!loop) {
-					//stop();
-				}
-				//console.log("here is " + call);
 				eval(call);
+				return shouldLoop;
 			}
 		}
 		//console.log("time till event = " + (nextSubdivision - this.phase) ) // 88200 - 88187 / 441
@@ -70,8 +67,13 @@ Callback.prototype = {
 			}
 			$("#n1").css("color", "red");
 			if(this.callbacks.length != 0) {
+				// TODO: only clear callback if shouldLoop = false;
 				for(var j = 0; j < this.callbacks.length; j++) {
-					this.callbacks[j]();
+					try{
+						this.callbacks[j]();
+					}catch(e) {
+						console.log("EXECUTION FAILED: " + e.name + " : " + e.type + " : " + e.arguments[0]);
+					}
 				}
 				this.callbacks.length = 0;
 			}

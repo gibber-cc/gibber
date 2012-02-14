@@ -26,7 +26,9 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		value : 0,
 		active : true,
 		mods : [],
+		shouldBreak: false,
 		fx : [],
+		sequenceInit:false,
 		automations : [],
 		sequences : {
 			kick  : [],
@@ -81,7 +83,12 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 			this.hat.generate();
 			this.value += this.hat.getMix();
 			
-			if(++this.phase >= this.patternLengthInSamples) { 
+			if(++this.phase >= this.sequences.lengthInSamples) { 
+				if(this.shouldBreak) { 
+					this.shouldBreak = false; 
+					this.sequences = jQuery.extend(true, {}, this.preBreakSequences);
+				}
+				
 				//console.log("PHASE : " +this.phase + " TV :" + this.timeValue);
 				this.phase = 0; 
 			}
@@ -95,10 +102,12 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 			}
 		},
 		
-		setSequence : function(seq) {
-			console.log(this);
-			this.clearSequence();
-		
+		createSequence : function(seq) {
+			var output = {
+				kick:[],
+				snare:[],
+				hat:[],
+			};
 			for(var i = 0; i < seq.length; i++) {
 				var c = seq.charAt(i);
 				var drum = null;
@@ -108,16 +117,38 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 					case '*': drum = "hat"; break;
 					default: break;
 				}
-				//console.log("sequence " + drum + " :: " + this.timeValue * i);
-				if(drum != null)
-					this.sequences[drum].push(this.timeValue * i);
+				if(drum != null) {
+					output[drum].push(this.timeValue * i);
+				}
 			}
-			console.log(this);
+			output.lengthInSamples = seq.length * this.timeValue;	
+
+			return output;
+		},
 		
+		setSequence : function(seq) {
+			this.sequences = this.createSequence(seq);
+			
+			if(!this.sequenceInit) {
+				this._sequences = jQuery.extend(true, {}, this.sequences);
+				this.sequenceInit = true;
+			}							
+		},
+		
+		reset: function() {
+			this.sequences = jQuery.extend(true, {}, this._sequences);
+		},
+		
+		break: function(newSeq) {
+			this.shouldBreak = true;
+			
+			this.preBreakSequences = jQuery.extend(true, {}, this.sequences);
+			this.sequences = this.createSequence(newSeq);
 		},
 		start : function() { this.active = true; },	
-		stop : function() { this.active = false; },	
+		stop  : function() { this.active = false; },	
 	};
+	that._sequences = that.sequences;
 	
 	that.seq = that.setSequence;
 	

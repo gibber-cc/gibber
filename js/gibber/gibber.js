@@ -111,10 +111,13 @@ var Gibber = {
 		},
 		
 		chain : function(_effect) {
+			console.log("chaining 2");
 			for(var i = 0; i < arguments.length; i++) {
+				console.log("chaning 3");
+				console.log(this);
 				this.fx.push(arguments[i]);
 			}
-		
+			console.log("4");
 			return this;
 		},
 	
@@ -336,7 +339,7 @@ function Delay(time, feedback, mix) {
 	that.mods = [];
 	that.automations = [];
 	
-	time = time || 4;
+	time = time || _4;
 	time /= Gibber.sampleRate / 1000;
 	feedback = feedback || .3;
 	mix = isNaN(mix) ? .3 : mix;
@@ -386,6 +389,8 @@ function LPF(cutoff, resonance, mix) {
 	that.mix = mix || .3;
 	
 	Gibber.addModsAndFX.call(that);
+	
+	
 	return that;
 }
 
