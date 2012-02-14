@@ -25,12 +25,14 @@ function Arp(gen, notation, octave, beats, mode, mult) {
 		var tmp = Chord(this.notation, this.octave + i);
 		arr = arr.concat(tmp);
 	}
-	
 	this.freqs 		= this.modes[this.mode]( arr );
+	
 	this.original 	= this.freqs.slice(0);
 	this.step 		= Step(this.freqs, this.speed);
 	
 	this.gen.mod("freq", this.step, "=");
+	
+	this.modded = [];
 	
 	function bpmCallback() {
 		var that = this;

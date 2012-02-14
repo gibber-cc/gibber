@@ -50,6 +50,7 @@ function Synth(waveform, volume, _seq, speed) {
 	};
 	
 	that.start = function() {
+		this.phase = 0;
 		this.active = true;
 	};
 	

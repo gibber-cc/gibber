@@ -27,6 +27,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		active : true,
 		mods : [],
 		shouldBreak: false,
+		breakToOriginal: false,
 		fx : [],
 		sequenceInit:false,
 		automations : [],
@@ -85,8 +86,12 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 			
 			if(++this.phase >= this.sequences.lengthInSamples) { 
 				if(this.shouldBreak) { 
-					this.shouldBreak = false; 
-					this.sequences = jQuery.extend(true, {}, this.preBreakSequences);
+					this.shouldBreak = false;
+					if(!this.breakToOriginal) {
+						this.sequences = jQuery.extend(true, {}, this.preBreakSequences);
+					}else{
+						this.sequences = jQuery.extend(true, {}, this._sequences);
+					}
 				}
 				
 				//console.log("PHASE : " +this.phase + " TV :" + this.timeValue);
@@ -137,11 +142,15 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		
 		reset: function() {
 			this.sequences = jQuery.extend(true, {}, this._sequences);
+			this.phase = 0;
 		},
 		
-		break: function(newSeq) {
+		break: function(newSeq, breakToOriginal) {
 			this.shouldBreak = true;
 			
+			if(breakToOriginal) {
+				this.breakToOriginal = true;
+			}
 			this.preBreakSequences = jQuery.extend(true, {}, this.sequences);
 			this.sequences = this.createSequence(newSeq);
 		},

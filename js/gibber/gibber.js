@@ -4,6 +4,12 @@
 // MIT License
 // special thanks to audioLib.js
 
+Array.prototype.remove = function(v) {
+    return $.grep(this, function(e) {
+        return e !== v;
+    });
+};
+
 var Gibber = {
 	active : true,
 	bpm : 120,
@@ -28,6 +34,69 @@ var Gibber = {
 		    //hat 	: atob(samples.snare), 
 		}
 		this.callback = new audioLib.Callback();
+		
+		
+		// a = LFO(2,1)
+		// 
+		// s.mod("mix", a, "*")
+		// 
+		// a = Step([0,1], _4)
+		var letters = "abcdefghijklmnopqrstuvwxyz";
+		for(var l = 0; l < letters.length; l++) {
+			var lt = letters.charAt(l);
+			(function() {
+				var ltr = lt;
+				Object.defineProperty(window, ltr, {
+					get:function() { return window["____"+ltr];},
+					set:function(val) {
+						 if(typeof window["____"+ltr] !== "undefined") {
+							 var variable = window["____"+ltr];
+							 switch(variable.type) {
+								 case "gen":
+								 // easiest case, loop through all generators and replace the match. also delete mods and fx arrays
+								 // so that javascript can garbage collect that stuff
+									 var idx = jQuery.inArray( variable, Gibber.generators);
+									 if(idx > -1) {
+										 Gibber.generators.splice(idx,1);
+										 variable.mods.length = 0;
+										 variable.fx.length = 0;
+									 }
+								 break;
+								 case "mod":
+								 // loop through ugens / fx that the mods influence and replace with new value
+								 // also push ugens that are modded into the mods "modded" array for future reference
+									 var modToReplace = variable;
+									 for(var i = 0; i < modToReplace.modded.length; i++) {
+										 var moddedGen = modToReplace.modded[i];
+										 for(var j = 0; j < moddedGen.mods.length; j++) {
+											 var modCheck = moddedGen.mods[j].gen;
+											 if(modCheck == modToReplace) {
+												 moddedGen.mods[j].gen = val;
+												 val.modded.push(moddedGen);
+											 }
+										 }
+									 }
+								 break;
+								 case "fx":
+								 // loop through gens affected by effect (for now, this should almost always be 1)
+								 // replace with new effect and add the gen to the gens array of the new effect
+									 var fxToReplace = variable;
+									 for(var i = 0; i < fxToReplace.gens.length; i++) {
+										 var fxgen = fxToReplace.gens[i];
+										 var idx = jQuery.inArray( fxToReplace, fxgen.fx );
+										 if(idx > -1) {
+											 fxgen.fx.splice(idx,1,val);
+											 val.gens.push(fxgen);
+										 }
+									 }
+								 break;
+							 }
+						 }
+					 	 window["____"+ltr] = val;
+					},
+				})
+			})();
+		}
 	},
 	
 	observers : {
@@ -111,13 +180,11 @@ var Gibber = {
 		},
 		
 		chain : function(_effect) {
-			console.log("chaining 2");
 			for(var i = 0; i < arguments.length; i++) {
-				console.log("chaning 3");
-				console.log(this);
-				this.fx.push(arguments[i]);
+				var fx = arguments[i];
+				this.fx.push(fx);
+				fx.gens.push(this);	
 			}
-			console.log("4");
 			return this;
 		},
 	
@@ -144,7 +211,6 @@ var Gibber = {
 				this.mods[_id].gen.reset();
 				this.automations[_id].amount = 0;
 				this.mods.splice(_id, 1);
-				console.log(this.mods);
 			}else{
 				for(var i = 0; i < this.mods.length; i++) {
 					var mod = this.mods[i];
@@ -163,6 +229,10 @@ var Gibber = {
 			this.mods.push( {param:name, gen:_source, name:_name, sourceName:_source.name, type:type} );
 			this.automations.push(this.addAutomation(name, _source, 1, type));
 			
+			_source.modded.push(this);
+			console.log("PUSHING")
+			console.log(this);
+			console.log(_source);
 			this[name + "_"] = 0;
 			
 			return this;
@@ -197,7 +267,7 @@ Gibber.addModsAndFX = function() {
 };
 
 Gibber.gens = Gibber.generators;
-_g = Gibber;
+window.G = Gibber;
 
 // audioLib additions
 audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
@@ -261,7 +331,7 @@ function Osc(args, isAudioGenerator) {
 	var _freq = (typeof args[0] !== "undefined") ? args[0] : 440;
 	
 	var that = new audioLib.Oscillator(Gibber.sampleRate, _freq);
-		
+	that.type = "gen";	
 	that.mix = (typeof args[1] !== "undefined") ? args[1] : .25;
 	that.active = true;		
 	that.value = 0;
@@ -296,7 +366,9 @@ function Reverb(roomSize, damping, wet, dry) {
 	
 	var that = new audioLib.Reverb(Gibber.sampleRate, 1);
 	that.name = "Reverb";
+	that.type="fx";
 	
+	that.gens = [];
 	that.mods = [];
 	that.automations = [];
 	
@@ -335,7 +407,9 @@ function Reverb(roomSize, damping, wet, dry) {
 function Delay(time, feedback, mix) {
 	var that = audioLib.Delay(Gibber.sampleRate);
 	that.name = "Delay";
+	that.type= "fx";
 	
+	that.gens = [];
 	that.mods = [];
 	that.automations = [];
 	
@@ -367,7 +441,9 @@ function Delay(time, feedback, mix) {
 function LPF(cutoff, resonance, mix) {
 	var that = audioLib.LP12Filter(Gibber.sampleRate);
 	that.name = "LP";
+	that.type="fx";
 	
+	that.gens = [];
 	that.mods = [];
 	that.automations = [];
 	that.trig = Gibber.trig;	
@@ -397,7 +473,9 @@ function LPF(cutoff, resonance, mix) {
 function Trunc(bits, mix) {
     var that = audioLib.BitCrusher(Gibber.sampleRate);
 	that.name = "Trunc";
+	that.type="fx";
 	
+	that.gens = [];
 	that.mods = [];
 	that.automations = [];
 	
@@ -417,7 +495,9 @@ function Trunc(bits, mix) {
 function Chorus(delay, depth, freq, mix) {
     var that = audioLib.Chorus(Gibber.sampleRate);
 	that.name = "Chorus";
+	that.type = "fx";
 	
+	that.gens = [];
 	that.mods = [];
 	that.automations = [];
 	
@@ -453,9 +533,12 @@ function Chorus(delay, depth, freq, mix) {
 }
 
 function Dist(gain, master) {
+	
     var that = audioLib.Distortion(Gibber.sampleRate);
 	that.name = "Dist";
+	that.type = "fx";
 	
+	that.gens = [];
 	that.mods = [];
 	that.automations = [];
 	
@@ -485,13 +568,17 @@ function Dist(gain, master) {
 
 function LFO(freq, amount, shape, type) {
 	var that = Osc(arguments, false);
+	that.name = "LFO";
+	that.type = "mod";
 	that.mix = amount;
 	that.waveShape = (typeof shape === "String") ? shape : 'sine';
+	that.modded = [];
 	return that;
 };
 
 function Sine(freq, volume) {	
 	var that = Osc(arguments);
+	that.name = "Sine";
 	that.waveShape = 'sine';
 	
 	return that;
@@ -499,6 +586,7 @@ function Sine(freq, volume) {
 
 function Tri(freq, volume) {	
 	var that = Osc(arguments);
+	that.name = "Tri";
 	that.waveShape = 'triangle';
 	
 	return that;
@@ -506,6 +594,7 @@ function Tri(freq, volume) {
 
 function Pulse(freq, volume) {	
 	var that = Osc(arguments);
+	that.name = "Square";
 	that.waveShape = 'pulse';
 	
 	return that;
@@ -513,6 +602,7 @@ function Pulse(freq, volume) {
 
 function Saw(freq, volume) {	
 	var that = Osc(arguments);
+	that.name = "Saw";	
 	that.waveShape = 'sawtooth';
 	
 	return that;
@@ -520,6 +610,7 @@ function Saw(freq, volume) {
 
 function InvSaw(freq, volume) {	
 	var that = Osc(arguments);
+	that.name = "InvSquare";	
 	that.waveShape = 'invSawtooth';
 	
 	return that;
@@ -527,6 +618,7 @@ function InvSaw(freq, volume) {
 
 function Square(freq, volume) {	
 	var that = Osc(arguments);
+	that.name = "Square";
 	that.waveShape = 'square';
 	
 	return that;
@@ -595,6 +687,9 @@ function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(typeof sustainTime  === "undefined") sustainTime = 50;
 	
 	var that = audioLib.ADSREnvelope(Gibber.sampleRate, attack, decay, sustain, release, sustainTime, releaseTime);
+	that.name = "Env";
+	that.type = "mod";
+	
 	
 	that.looping = false;
 	that._releaseTime = releaseTime;
@@ -615,6 +710,7 @@ function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	}
 	that.name = "Env";
 	
+	that.modded = [];
 	that.mods = [];
 	that.automations = [];
 			
@@ -628,6 +724,8 @@ function Sched(_func, _time, _repeats) {
 		func : _func,
 		time : _time,
 		repeats: _repeats,
+		name : "Sched",
+		type : "mod",
 	};
 	
 	function _callback() {
@@ -666,6 +764,8 @@ function Step(steps, stepTime) {
 	stepTime = stepTime || _4;
 	var that = new audioLib.StepSequencer(Gibber.sampleRate, (stepTime / Gibber.sampleRate) * 1000, steps, 0.0);
 	
+	that.name = "Step";
+	that.type = "mod";
 	function bpmCallback() {
 		return function() {
 			that.speed = that.stepTime * Gibber.measure;
@@ -673,9 +773,10 @@ function Step(steps, stepTime) {
 		}
 	}
 	
+	that.modded =[];
 	Gibber.registerObserver("bpm", bpmCallback());
 	
 	Gibber.addModsAndFX.call(that);	
 	return that;
 }
-var a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
+//var a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
