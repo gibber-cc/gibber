@@ -34,13 +34,7 @@ var Gibber = {
 		    //hat 	: atob(samples.snare), 
 		}
 		this.callback = new audioLib.Callback();
-		
-		
-		// a = LFO(2,1)
-		// 
-		// s.mod("mix", a, "*")
-		// 
-		// a = Step([0,1], _4)
+
 		var letters = "abcdefghijklmnopqrstuvwxyz";
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
@@ -48,51 +42,18 @@ var Gibber = {
 				var ltr = lt;
 				Object.defineProperty(window, ltr, {
 					get:function() { return window["____"+ltr];},
-					set:function(val) {
+					set:function(newObj) {
 						 if(typeof window["____"+ltr] !== "undefined") {
 							 var variable = window["____"+ltr];
 							 switch(variable.type) {
 								 case "gen":
-								 // easiest case, loop through all generators and replace the match. also delete mods and fx arrays
-								 // so that javascript can garbage collect that stuff
-									 var idx = jQuery.inArray( variable, Gibber.generators);
-									 if(idx > -1) {
-										 Gibber.generators.splice(idx,1);
-										 variable.mods.length = 0;
-										 variable.fx.length = 0;
-									 }
+									 Gibber.genRemove(variable);
 								 break;
 								 case "mod":
-								 // loop through ugens / fx that the mods influence and replace with new value
-								 // also push ugens that are modded into the mods "modded" array for future reference
-									 var modToReplace = variable;
-									 for(var i = 0; i < modToReplace.modded.length; i++) {
-										 var moddedGen = modToReplace.modded[i];
-										 for(var j = 0; j < moddedGen.mods.length; j++) {
-											 var modCheck = moddedGen.mods[j].gen;
-											 if(modCheck == modToReplace) {
-												 if(val.type == "mod") {
-													 moddedGen.mods[j].gen = val;
-												 }else{
-												 	
-												 }
-												 val.modded.push(moddedGen);
-											 }
-										 }
-									 }
+									 Gibber.modRemove(variable, newObj);
 								 break;
 								 case "fx":
-								 // loop through gens affected by effect (for now, this should almost always be 1)
-								 // replace with new effect and add the gen to the gens array of the new effect
-									 var fxToReplace = variable;
-									 for(var i = 0; i < fxToReplace.gens.length; i++) {
-										 var fxgen = fxToReplace.gens[i];
-										 var idx = jQuery.inArray( fxToReplace, fxgen.fx );
-										 if(idx > -1) {
-											 fxgen.fx.splice(idx,1,val);
-											 val.gens.push(fxgen);
-										 }
-									 }
+									 Gibber.fxRemove(variable, newObj);
 								 break;
 								 case "complex":
 									 variable.replace(val);
@@ -109,6 +70,49 @@ var Gibber = {
 	
 	observers : {
 		"bpm": [],
+	},
+	
+	genRemove : function(gen) {
+		// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
+		// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc?
+		var idx = jQuery.inArray( gen, Gibber.generators);
+		if(idx > -1) {
+			Gibber.generators.splice(idx,1);
+			gen.mods.length = 0;
+			gen.fx.length = 0;
+		}
+	},
+	
+	modRemove : function(oldMod, newMod) {
+	// loop through ugens / fx that the mods influence and replace with new value
+	// also push ugens that are modded into the mods "modded" array for future reference
+		var modToReplace = oldMod;
+		for(var i = 0; i < modToReplace.modded.length; i++) {
+			var moddedGen = modToReplace.modded[i];
+			for(var j = 0; j < moddedGen.mods.length; j++) {
+				var modCheck = moddedGen.mods[j].gen;
+				if(modCheck == modToReplace) {
+					if(newMod.type == "mod") {
+						moddedGen.mods[j].gen =  newMod;
+					}
+					newMod.modded.push(moddedGen);
+				}
+			}
+		}
+	},
+	
+	fxRemove : function(oldFx, newFx) {
+	// loop through gens affected by effect (for now, this should almost always be 1)
+	// replace with new effect and add the gen to the gens array of the new effect
+		var fxToReplace = oldFX;
+		for(var i = 0; i < fxToReplace.gens.length; i++) {
+			var fxgen = fxToReplace.gens[i];
+			var idx = jQuery.inArray( fxToReplace, fxgen.fx );
+			if(idx > -1) {
+				fxgen.fx.splice(idx,1,newFX);
+				newFX.gens.push(fxgen);
+			}
+		}
 	},
 	
 	registerObserver : function(name, fn) {
@@ -238,9 +242,7 @@ var Gibber = {
 			this.automations.push(this.addAutomation(name, _source, 1, type));
 			
 			_source.modded.push(this);
-			console.log("PUSHING")
-			console.log(this);
-			console.log(_source);
+
 			this[name + "_"] = 0;
 			
 			return this;
@@ -550,7 +552,7 @@ function Dist(gain, master) {
 	that.mods = [];
 	that.automations = [];
 	
-	if(typeof gain === "undefined") 	gain 	= 10;
+	if(typeof gain === "undefined") 	gain 	= 6;
 	if(typeof master === "undefined") 	master  = 1;
 	
 	if(typeof gain === "Object") {

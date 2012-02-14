@@ -9,6 +9,8 @@ function Synth(waveform, volume, _seq, speed) {
 	console.log(sequence);
 	var that = {
 		osc : Osc([440, volume, "triangle"], false),
+		name: "Synth",
+		type: "Complex",
 		env : Env(),
 		mix: volume,
 		frequency: 440,
@@ -30,6 +32,24 @@ function Synth(waveform, volume, _seq, speed) {
 	that.mods = [];
 	that.fx = [];
 	that.automations = [];
+	
+	replace : function(replacement){
+		if(replacement.name != "Synth") {
+			if(replacement.type == "mod") {
+				var idx = jQuery.inArray( this.step, this.gen.mods );
+				if(idx > -1) {
+					this.gen.mods.splice(idx,1,replacement);
+					replacement.gens.push(this.gen);
+				}
+			}
+		}else{
+			var idx = jQuery.inArray( this.step, this.gen.mods );
+			if(idx > -1) {
+				this.gen.mods.splice(idx,1,replacement.step);
+				replacement.gens.push(this.gen);
+			}
+		}
+	},
 	
 	// TODO: figure out speed problems
 	that.setSequence = function(seq, speed) {
@@ -55,7 +75,7 @@ function Synth(waveform, volume, _seq, speed) {
 	};
 	
 	if(typeof waveform !== "undefined") {
-		that.osc.waveform = waveform;
+		that.osc.waveShape = waveform;
 	}
 	
 	that.generate = function() {
