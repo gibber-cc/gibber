@@ -6,6 +6,9 @@ function audioProcess(buffer, channelCount){
 		for(var i = 0; i < buffer.length; i+= channelCount) {
 			value = 0;
 			Gibber.callback.generate();
+			for(var c = 0; c < Gibber.controls.length; c++) {
+				Gibber.controls[c].generate();
+			}
 			for(var g = 0; g < Gibber.generators.length; g++) {
 				var genValue = 0;
 				var gen = Gibber.generators[g];

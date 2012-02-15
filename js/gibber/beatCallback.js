@@ -72,7 +72,8 @@ Callback.prototype = {
 					try{
 						this.callbacks[j]();
 					}catch(e) {
-						console.log("EXECUTION FAILED: " + e.name + " : " + e.type + " : " + e.arguments[0]);
+						console.log("EXECUTION FAILED");
+						console.log(e);
 					}
 				}
 				this.callbacks.length = 0;

@@ -17,7 +17,6 @@ var Gibber = {
 	
 	init : function() {
 		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
-			console.log("CALLING INIT");
 			this.Environment.init();
 		}
 		this.dev = Sink(audioProcess, 2);
@@ -143,6 +142,7 @@ var Gibber = {
 	clear : function() {
 		this.generators.length = 0;
 		this.callback.phase = 0;
+		this.controls.length = 0;
 		Master.fx.length = 0;
 		Master.mods.length = 0;	
 	},
@@ -155,6 +155,7 @@ var Gibber = {
 	},
 	
 	generators : [],
+	controls : [],
 	pop : function() { this.generators.pop(); },
 	
 	shapes : {
@@ -170,7 +171,7 @@ var Gibber = {
 	},
 	
 	automationModes : {
-		"+" : "addition",
+		"+" : "= ",
 		"++": "absoluteAddition",
 		"=" : "assignment",
 		"*" : "modulation",

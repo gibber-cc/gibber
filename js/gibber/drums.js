@@ -132,7 +132,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 
 			return output;
 		},
-		
+		// TODO: setSequence should have an option to change timeValue
 		setSequence : function(seq) {
 			this.sequences = this.createSequence(seq);
 			

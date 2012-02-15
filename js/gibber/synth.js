@@ -1,12 +1,6 @@
-// a = Synth('triangle',.15, ["F4", "G4"], _1 * 2);
-// a.chain(Delay(), Reverb() )
-// y.seq(["A2", "B2", "E2", "F#2"], _8);
-
-function Synth(waveform, volume, _seq, speed) {
+function Synth(waveform, volume) {
 	volume = isNaN(volume) ? .2 : volume;
-	sequence = _seq; //(typeof seq === "undefined") ? [] : seq;
-	speed = isNaN(speed) ? _4 : speed;
-	console.log(sequence);
+	
 	var that = {
 		osc : Osc([440, volume, "triangle"], false),
 		name: "Synth",
@@ -22,11 +16,8 @@ function Synth(waveform, volume, _seq, speed) {
 			this.osc.frequency = (typeof n === "string") ? Note.getFrequencyForNotation(n) : Note.mtof(n);
 			this.env.triggerGate();
 		},
-		_sequence : sequence,
-		sequence : [],
 		_start : true,
 		counter : -1,
-		speed: speed,
 	};
 	
 	that.mods = [];
@@ -42,18 +33,18 @@ function Synth(waveform, volume, _seq, speed) {
 	};
 	
 	// TODO: figure out speed problems
-	that.setSequence = function(seq, speed) {
-		if(typeof speed != "undefined") {
-			this.phase -= this.speed - speed;
-			this.speed = speed;
-			//this.phase = 0;
-		}
-		this.sequence = [];
-		for(var i = 0; i < seq.length; i++) {
-			var n = seq[i];
-			this.sequence[i] = n;
-		}
-	};
+	// that.setSequence = function(seq, speed) {
+	// 	if(typeof speed != "undefined") {
+	// 		this.phase -= this.speed - speed;
+	// 		this.speed = speed;
+	// 		//this.phase = 0;
+	// 	}
+	// 	this.sequence = [];
+	// 	for(var i = 0; i < seq.length; i++) {
+	// 		var n = seq[i];
+	// 		this.sequence[i] = n;
+	// 	}
+	// };
 	
 	that.stop = function() {
 		this.active = false;
@@ -69,12 +60,12 @@ function Synth(waveform, volume, _seq, speed) {
 	}
 	
 	that.generate = function() {
-		if(this.phase++ > this.speed || this._start) {
-			this.phase = 0;
-			if(++this.counter >= this.sequence.length) { this.counter = 0;};
-			this.note(this.sequence[this.counter]);
-			this._start = false;
-		}
+	// 	if(this.phase++ > this.speed || this._start) {
+	// 		this.phase = 0;
+	// 		if(++this.counter >= this.sequence.length) { this.counter = 0;};
+	// 		this.note(this.sequence[this.counter]);
+	// 		this._start = false;
+	// 	}
 		
 		this.env.generate();
 		this.osc.generate();
@@ -105,12 +96,10 @@ function Synth(waveform, volume, _seq, speed) {
 		}
 	}
 	
-	that.setSequence(that._sequence);
-	that.seq = that.setSequence;
+	//that.setSequence(that._sequence);
+	//that.seq = that.setSequence;
 	Gibber.generators.push(that);
 	
 	//that.__proto__ = new audioLib.GeneratorClass();
-	console.log("returning...");
-	console.log(that);
 	return that;
 }
