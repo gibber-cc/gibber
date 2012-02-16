@@ -171,7 +171,7 @@ var Gibber = {
 	},
 	
 	automationModes : {
-		"+" : "= ",
+		"+" : "addition",
 		"++": "absoluteAddition",
 		"=" : "assignment",
 		"*" : "modulation",
