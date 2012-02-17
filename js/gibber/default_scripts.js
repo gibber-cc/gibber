@@ -181,7 +181,11 @@ FM:
 'c.env.attack  = 1;        // 1 ms attack time\n'+
 'c.env.decay   = 1000;     // 1000 ms decay\n'+
 '\n'+
-'c.note(noteFrequency);',
+'c.note(noteFrequency);\n'+
+'f = FM(1 / 1.0007, 5, 100, 100);\n'+
+'f.chain( Reverb() );\n'+
+'f.osc.mix = .05;\n'+
+'s = Seq(["A4", "B4", "B4", "C4"], _8, f);',
 
 "END":"LABEL END",
 }
