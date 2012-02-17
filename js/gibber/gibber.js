@@ -240,12 +240,19 @@ var Gibber = {
 			var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
 			var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
 		
-			this.mods.push( {param:name, gen:_source, name:_name, sourceName:_source.name, type:type} );
-			this.automations.push(this.addAutomation(name, _source, 1, type));
 			
+			if(typeof _source.mods === "undefined") {
+				_source.mods = [];
+			}
+			_source.store = {};
 			_source.modded.push(this);
-
-			this[name + "_"] = 0;
+			_source.param = name;
+			_source.type = type;
+			
+			this.mods.push(_source);
+			
+			//this.mods.push( {param:name, gen:_source, name:_name, sourceName:_source.name, type:type} );
+			
 			
 			Gibber.genRemove(_source);
 			return this;
@@ -541,6 +548,7 @@ function LFO(freq, amount, shape, type) {
 	that.mix = amount;
 	that.waveShape = (typeof shape === "String") ? shape : 'sine';
 	that.modded = [];
+	that.mods = [];
 	return that;
 };
 
