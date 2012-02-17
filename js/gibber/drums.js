@@ -9,7 +9,7 @@ o = snare
 
 Usage: d = audioLib.Drums("x*o*x*o*");
 
-I don't know what happened here but the prototype ineheritance was completely jacked... had to go to creating an object
+I don't know what happened here but the prototype inheritance was completely jacked... had to go to creating an object
 and manually assigning __proto__.
 
 */

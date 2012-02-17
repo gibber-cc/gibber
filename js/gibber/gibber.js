@@ -247,6 +247,7 @@ var Gibber = {
 
 			this[name + "_"] = 0;
 			
+			Gibber.genRemove(_source);
 			return this;
 		},
 	
@@ -293,52 +294,6 @@ Master = {
 };
 Gibber.addModsAndFX.call(Master);
 
-function audioProcess(buffer, channelCount){
-	var i, channel, val;
-	
-	if( Gibber.active ) {
-		for(var g = 0; g < Gibber.generators.length; g++) {
-			var gen = Gibber.generators[g];
-			if(gen.active) {
-				// run controls
-				for(var m = 0; m < gen.mods.length; m++) {
-					var mod = gen.mods[m];
-					mod.gen.generateBuffer(buffer.length / channelCount);
-				}
-				
-				// run oscillator
-				gen.generateBuffer(buffer.length, channelCount);
-				
-				// run fx
-				for(var e = 0; e < gen.fx.length; e++) {
-					var effect = gen.fx[e];
-					for(var f = 0; f < effect.mods.length; f++) {
-						var mod = effect.mods[f];
-						mod.gen.generateBuffer(buffer.length / channelCount);
-					}
-					
-					effect.append(gen.generatedBuffer);
-				}
-				
-				for(var i = 0; i < buffer.length; i++) {
-					if(i % 2 === 1 && g == 0) Gibber.callback.generate(); // not double buffered!!!
-					buffer[i] += gen.generatedBuffer[i];
-				}
-			}
-		}
-		// Master output
-		for(var e = 0; e < Master.fx.length; e++) {
-			var effect = Master.fx[e];
-			for(var f = 0; f < effect.mods.length; f++) {
-				var mod = effect.mods[f];
-				mod.gen.generateBuffer(buffer.length / channelCount);
-			}
-					
-			effect.append(buffer);
-		}
-	}
-};
-
 function Osc(args, isAudioGenerator) {
 	var _freq = (typeof args[0] !== "undefined") ? args[0] : 440;
 	
@@ -351,6 +306,7 @@ function Osc(args, isAudioGenerator) {
 	that.mods = [];
 	that.fx = [];
 	that.automations = [];
+	that.modded = []; // for use as modulation source
 
 	that.stop = function() {
 		this.active = false;
@@ -649,54 +605,64 @@ function assign(param, name) {
 // isDead is different from gate... once gate is closed the release section of the env
 // begins. When isDead is true the state of the envelope does not advance
 
-audioLib.ADSREnvelope.prototype.isDead = true;
-audioLib.ADSREnvelope.prototype.generate = function(){
-	if(!this.isDead) {
-		this.states[this.state].call(this);
-	}
-	return this.value;
-};
-
-audioLib.ADSREnvelope.prototype.states[4] = function(){ // Timed release state of env
-	this.value = Math.max(0, this.value - 1000 / this.sampleRate / this.release);
-
-	if (this._st++ >= this.sampleRate * 0.001 * this.releaseTime){
-		//console.log(this);
-		this._st	= 0;
-		this.state	= 0;
-		this.gate = false;
-		this.isDead = true;
-		this.value = 0;
-	}
-}
-
-audioLib.ADSREnvelope.prototype.triggerGate = function(isOpen){
-	isOpen		= typeof isOpen === 'undefined' ? !this.gate : isOpen;
-	this.gate	= isOpen;
-	this.state	= isOpen ? 0 : this.releaseTime === null ? 3 : 5;
-	this._st	= 0;
-	if(isOpen) this.isDead = false;
-};
+// audioLib.ADSREnvelope.prototype.isDead = true;
+// audioLib.ADSREnvelope.prototype.generate = function(){
+// 	if(!this.isDead) {
+// 		this.states[this.state].call(this);
+// 	}
+// 	return this.value;
+// };
+// 
+// audioLib.ADSREnvelope.prototype.states[4] = function(){ // Timed release state of env
+// 	this.value = Math.max(0, this.value - 1000 / this.sampleRate / this.release);
+// 
+// 	if (this._st++ >= this.sampleRate * 0.001 * this.releaseTime){
+// 		//console.log(this);
+// 		this._st	= 0;
+// 		this.state	= 0;
+// 		this.gate = false;
+// 		this.isDead = true;
+// 		this.value = 0;
+// 	}
+// }
+// 
+// audioLib.ADSREnvelope.prototype.triggerGate = function(isOpen){
+// 	isOpen		= typeof isOpen === 'undefined' ? !this.gate : isOpen;
+// 	this.gate	= isOpen;
+// 	this.state	= isOpen ? 0 : this.releaseTime === null ? 3 : 5;
+// 	this._st	= 0;
+// 	if(isOpen) this.isDead = false;
+// };
 /*
 s = Sine(240, .15);
 e = Env(100);
 s.mod("mix" , e, "*");
 e.triggerGate();
 */
+audioLib.ADSREnvelope.prototype.states[1] = function(){ // Timed Decay
+	var delayAmt = (1 - this.sustain) / ( (Gibber.sampleRate / 1000) * this.decay);
+	this.value -= delayAmt;
+	if(this.value <= this.sustain) {
+		this.state = 2;
+	}
+ 	//this.value = Math.max(this.sustain, this.value - 1000 / this.sampleRate / this.release);
+}; 
+
+ 
 function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(arguments.length > 1) {
 		if(typeof attack === "undefined") 	attack 		= 100;
 		if(typeof decay  === "undefined") 	decay  		= 50;
-		if(typeof sustain === "undefined") 	sustain 	= .25;	// sustain is a amplitude value, not time\
+		if(typeof sustain === "undefined") 	sustain 	= 0;	// sustain is a amplitude value, not time\
 	}else{
-		if(typeof attack === "undefined") 	sustain 	= .25;
+		if(typeof attack === "undefined") 	sustain 	= 0;
 		if(typeof decay  === "undefined") 	attack  	= 100;
-		if(typeof sustain === "undefined") 	decay 		= 50;	// sustain is a amplitude value, not time
+		if(typeof sustain === "undefined") 	decay 		= 50;
 	}
 	
 	if(typeof release  === "undefined") release  		= 50;
-	if(typeof releaseTime  === "undefined") releaseTime = 50;		
-	if(typeof sustainTime  === "undefined") sustainTime = 50;
+	if(typeof releaseTime  === "undefined") releaseTime = null;		
+	if(typeof sustainTime  === "undefined") sustainTime = 0;
 	
 	var that = audioLib.ADSREnvelope(Gibber.sampleRate, attack, decay, sustain, release, sustainTime, releaseTime);
 	that.name = "Env";
@@ -727,6 +693,7 @@ function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	that.automations = [];
 			
 	that.mix = this.mix || 1;
+	Gibber.addModsAndFX.call(that);	
 	
 	return that;				
 }

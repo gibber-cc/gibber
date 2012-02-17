@@ -1,5 +1,5 @@
 Gibber.defaultScripts = {
-	default:
+default:
 '// default \n'+
 's = Sine(240, .15);      // Sine wave with freq 240, amp .5.\n'+
 '\n'+
@@ -23,52 +23,35 @@ Gibber.defaultScripts = {
 'Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators\n'+
 'Master.removeFX(0);           // remove first effect in chain. do not pass a argument to remove all fx.\n',
 
+"GIBBER TUTORIALS":"LABEL START",
 synth_sequence:
-'// synth sequence \n'+
-'// triangle wave, .15 amplitude, four note sequence, each note lasts a measure\n'+
-'s = Synth("triangle", .15, ["F4", "G4", "A5", "E4"], _1)\n'+
-'\n'+
-'// add delay and reverb to an fx chain\n'+
-'s.chain( Delay(), Reverb() )\n'+
-'\n'+
-'// resequence synth\n'+
-'s.seq(["F4", "G4", "D4", "C4"]);',
+'// Triangle wave, .15 amplitude. Synths also have a short envelope that\n' +
+'// is triggered whenever it receives a note(noteName or MIDI number) command.\n' +
+'s = Synth();\n' +
+'t = Synth();\n' +
+'\n' +
+'// play a note\n' +
+'s.note("F4")\n' +
+'\n' +
+'// create a sequence object by passing an array of notes and a length for each\n' +
+'q = Seq(["F4", "G4", "A5", "E4"], _1);\n' +
+'\n' +
+'// tell the sequence object to control the synth\n' +
+'q.slave(s);\n' +
+'\n' +
+'// if you pass a synth as the last parameter it will be slaved\n' +
+'r = Seq(["A5", "A#5", "C#5", "D5"], _1, t);\n' +
+'\n' +
+'// create fx chains with delay and reverb\n' +
+'s.chain( Delay(), Reverb() )\n' +
+'t.chain( Delay(), Reverb() )\n' +
+'\n' +
+'// resequence\n' +
+'q.set(["F4", "G4", "D4", "C4"]);\n' +
+'r.set(["A5", "A#5", "C#5", "B5"]);',
 
-
-frequency_mod:'// Sine wave at 240Hz with an amplitude of .15\n' +
-'s = Sine(240, .15);\n'+
-'\n'+
-'/*\n'+
-'modulate the frequency of s with an LFO.\n'+
-'\n'+
-'An LFO with an amplitude of four creates values in the range {-4, 4}\n'+
-'After adding this mod the frequency of s will fluctate between 236 and 244\n'+
-'*/\n'+
-'\n'+
-'s.mod("freq", LFO(8, 4), "+");  // Vibrato - modulating frequency 8 times per second by +/- 4Hz\n'+
-'\n'+
-'/*\n'+
-'There are (currently) four modulation modes:\n'+
-'    +   : add the modulator value to the parameter value\n'+
-'    ++  : add the absolute value of the modulator to the parameter value\n'+
-'    *   : multiply the value of the modulator by the parameter value\n'+
-'    =   : assign the value of the modulator to the parameter value\n'+
-'*/\n'+
-'\n'+
-'// end the modulation\n'+
-'s.removeMod();\n'+
-'\n'+
-'/*\n'+ 
-'Create a StepSequencer to modulate frequency\n'+
-'We will assign the value of the StepSequencer to the frequency of our sine wave\n'+
-'The frequency values will be 440,550 and 660 and they will shift every quarter note\n'+
-'*/\n'+
-'\n'+
-'t = Step([440, 550, 660], _4);\n'+
-'\n'+
-'s.mod("freq", t, "=");',
-
-simple_fx: '// triangle wave at 440Hz, .15 amplitude\n'+
+"simple fx":
+'// triangle wave at 440Hz, .15 amplitude\n'+
 's = Tri(440, .15)\n'+
 '\n'+
 '// modulate the frequency of the triangle wave. see simple modulation for details\n'+
@@ -89,7 +72,8 @@ simple_fx: '// triangle wave at 440Hz, .15 amplitude\n'+
 '// remove all fx\n'+
 's.removeFX();',
 
-drums: '// x = kick, o = snare, * = hihat. hits are triggered every quarter note\n'+
+drums: 
+'// x = kick, o = snare, * = hihat. hits are triggered every quarter note\n'+
 'd = Drums("xoxo", _4)\n'+
 '\n'+
 '// crush to six bits\n'+
@@ -107,4 +91,97 @@ drums: '// x = kick, o = snare, * = hihat. hits are triggered every quarter note
 '\n'+
 '// return to original sequence\n'+
 'd.reset();',
+
+"SYNTHESIS TUTORIALS":"LABEL START",
+
+"Additive":
+'/* \n'+
+'Complex tones can often be represented by a combination of sine waves. This synthesis\n'+
+'technique is termed "additive synthesis". Harmonic sounds are created when the frequency\n'+
+'of every sine wave is a multiple of the lowest component. The lowest component is referred\n'+
+'to as the fundamental. Example:\n'+
+'*/\n'+
+'\n'+
+'Sine(220, .15)  // fundamental\n'+
+'Sine(440, .075) // first harmonic\n'+
+'Sine(660, .025) // second harmonic\n'+
+'\n'+
+'/*\n'+
+'Many of the classic waveforms of electronic music can be reconstructed using additive\n'+
+'synthesis techniques. For example, a square wave only contains odd numbered harmonics.\n'+
+'The amplitude of each harmonic is the inverse of its number in the harmonic series...\n'+
+'thus the 3rd harmonic has 1/3rd the amplitude of the fundamental, the 5th harmonic\n'+
+'amplitude is 1/5th the amplitude of the fundamental, etc.\n'+
+'*/\n'+
+'\n'+
+'fundamentalAmplitude = .15\n'+
+'Sine(110, fundamentalAmplitude)     // fundamental\n'+
+'Sine(330, fundamentalAmplitude / 3) // 3rd harmonic\n'+
+'Sine(550, fundamentalAmplitude / 5) // 5th harmonic\n'+
+'Sine(770, fundamentalAmplitude / 7) // 7th harmonic\n'+
+'Sine(990, fundamentalAmplitude / 9) // 9th harmonic\n'+
+'\n'+
+'/*\n'+
+'We can also create inharmonic partials (a partial is any component of a spectrum) to\n'+
+'create more interesting timbres. In the example below, the inharmonic relationships\n'+
+'create a grittier sound with a beating effect stemming from phase cancellation.\n'+
+'*/\n'+
+'\n'+
+'fundamentalAmplitude = .15\n'+
+'Sine(110, fundamentalAmplitude)     // fundamental\n'+
+'Sine(335, fundamentalAmplitude / 3) // 3rd harmonic\n'+
+'Sine(550, fundamentalAmplitude / 5) // 5th harmonic\n'+
+'Sine(871, fundamentalAmplitude / 4) // 7th harmonic\n'+
+'Sine(973, fundamentalAmplitude / 9) // 9th harmonic',
+
+FM:
+'/*\n'+
+'FM (frequency modulation) synthesis refers to rapidly changing the frequency of an\n'+
+'oscillator according to the output of another oscillator. The main oscillator whose \n'+
+'frequency is termed the "carrier". The modulating oscillator is the "modulator".\n'+
+'\n'+
+'Although it is not typically termed FM synthesis, when the modulator frequency is in the \n'+
+'sub-audio domain vibrato is created. In the example below, the modulating sine wave has \n'+
+'an amplitude of 4. This means it will create values in the range {-4, 4}. After adding this\n'+
+'modulation the frequency of the carrier sine wave (c) will fluctate between 236 and 244.\n'+
+'*/\n'+
+'\n'+
+'c = Sine(240, .15);\n'+
+'\n'+
+'c.mod("freq", Sine(8, 4), "+");  // Vibrato - modulating frequency 8 times per second by +/- 4Hz\n'+
+'\n'+
+'/*\n'+
+'The mod command in Gibber simply modulates the named parameter ("freq") using the provided\n'+
+'modulation source. In FM synthesis, we add the modulator output to the carrier frequency, so\n'+
+'the third parameter is simply "+".\n'+
+'\n'+
+'Sub-audio modulation is not typically referred to as FM; FM more commonly refers to using a\n'+
+'modulator in the audio range to mod the frequency of the carrier. Below is an example of a "bell"\n'+
+'recipe for FM synthesis. In this recipe:\n'+
+'\n'+
+'modulator frequency = 1.4 * carrier frequency\n'+
+'modulator amplitude < carrier frequency\n'+
+'\n'+
+'*/\n'+
+'\n'+
+'carrierFrequency = 200;\n'+
+'c = Sine(carrierFrequency, .15);\n'+
+'\n'+
+'c.mod("freq", Sine(carrierFrequency * 1.4, 190), "+"); \n'+
+'\n'+
+'/*\n'+
+'If we use a synth for this we get an envelope that can be triggered via the note command.\n'+
+'A short attack and long decay will give us some nice bell sounds. Especially if we add some reverb :)\n'+
+'*/\n'+
+'\n'+
+'noteFrequency = ntof("F2"); // ntof is note-to-frequency\n'+
+'\n'+
+'c = Synth("sine", .15);\n'+
+'c.mod("freq", Sine( noteFrequency * 1.4, 190), "+");\n'+
+'c.env.attack  = 1;        // 1 ms attack time\n'+
+'c.env.decay   = 1000;     // 1000 ms decay\n'+
+'\n'+
+'c.note(noteFrequency);',
+
+"END":"LABEL END",
 }

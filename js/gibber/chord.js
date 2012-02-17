@@ -16,6 +16,10 @@ Note = {
 	mtof : function(midiNumber) {
 		return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)
 	},
+	
+	ntof : function(nt) {
+		return Note.getFrequencyForNotation(nt);
+	},
 
     /**
      * turn a notation into a frequency
@@ -689,3 +693,5 @@ function _Chord(notation, octave) {
     // do a build based on initial params
     that.buildChord();
 } 
+
+window.ntof = Note.ntof;

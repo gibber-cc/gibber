@@ -1,4 +1,4 @@
-function Seq(_seq, speed) {
+function Seq(_seq, speed, gen) {
 	sequence = _seq;
 	speed = isNaN(speed) ? _4 : speed;
 	
@@ -107,6 +107,11 @@ function Seq(_seq, speed) {
 	that.setSequence(that.sequence);
 	
 	Gibber.controls.push(that);
+	
+	console.log(typeof gen);
+	if(typeof gen !== "undefined") {
+		that.slave(gen);
+	}
 	return that;
 }
 	

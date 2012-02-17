@@ -60,8 +60,8 @@
 					<option value="ace/theme/textmate">TextMate</option>
 					<option value="ace/theme/twilight">Twilight</option>
 					</select><br>
-					<button onclick="Gibber.saveFile()">Save File</button>
-					load file:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">
+					<button onclick="Gibber.saveFile()">Save File</button><br>
+					Load File:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">
 					</select><br>
 					<!--<button onclick="Gibber.loadFile()">Load File</button><br>-->
 					<button onclick="editor.renderer.setShowGutter(!Gibber.Environment.Editor.renderer.getShowGutter())">Toggle Line Numbers</button>

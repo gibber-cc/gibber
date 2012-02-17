@@ -3092,7 +3092,6 @@ proto = Oscillator.prototype = {
 			f	= +self.frequency,
 			pw	= self.pulseWidth,
 			p	= self.phase;
-		f += self.freqOffset;
 		f += f * self.fm;
 		self.phase	= (p + f / self.sampleRate / 2) % 1;
 		p		= (self.phase + self.phaseOffset) % 1;
@@ -3871,7 +3870,8 @@ ADSREnvelope.prototype = {
 	triggerGate: function(isOpen){
 		isOpen		= typeof isOpen === 'undefined' ? !this.gate : isOpen;
 		this.gate	= isOpen;
-		this.state	= isOpen ? 0 : this.releaseTime === null ? 3 : 5;
+		//this.state	= isOpen ? 0 : this.releaseTime === null ? 3 : 5;
+		this.state	= 0;
 		this._st	= 0;
 	},
 /**
@@ -3884,6 +3884,7 @@ ADSREnvelope.prototype = {
 				this.state = 1;
 			}
 		},
+		// TODO: FIX THIS ENVELOPE MESS!!!!
 		function(){ // Decay
 			this.value -= 1000 / this.sampleRate / this.decay * this.sustain;
 			if (this.value <= this.sustain){
@@ -3895,6 +3896,20 @@ ADSREnvelope.prototype = {
 				}
 			}
 		},
+
+		
+		// function(){ // Decay
+		// 			this.value -= 1000 / this.sampleRate / this.decay;
+		// 			if (this.value <= 0){ // used to be this.sustain
+		// 				if (this.sustainTime === null){
+		// 					this.state	= 2;
+		// 				} else {
+		// 					this._st	= 0;
+		// 					this.state	= 4;
+		// 				}
+		// 			}
+		// 		},
+		
 		function(){ // Sustain
 			this.value = this.sustain;
 		},

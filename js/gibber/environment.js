@@ -44,8 +44,25 @@ Gibber.Environment = {
 	
 	
 	addScriptsToList : function(scripts, defaultName) {
+		var foundSection = false;
+		var sectionName = null;
+		var optgroup = null;
 		var sel=$("#fileList");
 		for(var name in scripts) {
+			if(scripts[name] === "LABEL END") {
+				$(sel).append(optgroup);
+				break;
+			}
+			if(scripts[name] === "LABEL START") {
+				if(foundSection) {
+					$(sel).append(optgroup);
+				}
+				sectionName = name;
+				optgroup = document.createElement("optgroup");
+				optgroup.label = name;
+				foundSection = true;
+				continue;
+			}
 			var opt = document.createElement("option");
 			opt.value = name;
 			if(typeof defaultName === "undefined") { // on startup
@@ -58,7 +75,11 @@ Gibber.Environment = {
 				}
 			}
 			opt.innerHTML = name;
-			$(sel).append(opt);
+			if(foundSection) {
+				$(optgroup).append(opt);
+			}else{
+				$(sel).append(opt);
+			}
 		}
 	},
 	createFileList : function(savedFile) {

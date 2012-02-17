@@ -13,7 +13,7 @@ function Synth(waveform, volume) {
 		active : true,
 		note : function(n) {
 			//console.log("calling " + n);
-			this.osc.frequency = (typeof n === "string") ? Note.getFrequencyForNotation(n) : Note.mtof(n);
+			this.osc.frequency = (typeof n === "string") ? Note.getFrequencyForNotation(n) : n;
 			this.env.triggerGate();
 		},
 		_start : true,
@@ -32,20 +32,6 @@ function Synth(waveform, volume) {
 		delete this;
 	};
 	
-	// TODO: figure out speed problems
-	// that.setSequence = function(seq, speed) {
-	// 	if(typeof speed != "undefined") {
-	// 		this.phase -= this.speed - speed;
-	// 		this.speed = speed;
-	// 		//this.phase = 0;
-	// 	}
-	// 	this.sequence = [];
-	// 	for(var i = 0; i < seq.length; i++) {
-	// 		var n = seq[i];
-	// 		this.sequence[i] = n;
-	// 	}
-	// };
-	
 	that.stop = function() {
 		this.active = false;
 	};
@@ -59,35 +45,50 @@ function Synth(waveform, volume) {
 		that.osc.waveShape = waveform;
 	}
 	
-	that.generate = function() {
-	// 	if(this.phase++ > this.speed || this._start) {
-	// 		this.phase = 0;
-	// 		if(++this.counter >= this.sequence.length) { this.counter = 0;};
-	// 		this.note(this.sequence[this.counter]);
-	// 		this._start = false;
+	// that.generate = function() {
+	// 	
+	// 	var store = {};
+	// 	for(var m = 0; m < this.mods.length; m++) {
+	// 		var mod = gen.mods[m];
+	// 		if(typeof store[mod.param] === "undefined") store[mod.param] = gen[mod.param];
+	// 		var val = mod.gen.out();
+	// 		audioLib.Automation.modes[mod.type](gen, mod.param, val);
 	// 	}
-		
-		this.env.generate();
-		this.osc.generate();
-		
-		this.value = (this.env.getMix() * this.osc.getMix()) * this.mix;
-		
-		for(var e = 0; e < this.osc.fx.length; e++) {
-			this.value = this.osc.fx[e].fxout(this.value);
-		}
-	};
-	
+	// 				
+	// 	genValue += gen.out();
+	// 				
+	// 	for(var name in store) {
+	// 		gen[name] = store[name];
+	// 	}
+	// 	
+	// 	this.env.generate();
+	// 	this.osc.generate();
+	// 	
+	// 	this.value = (this.env.getMix() * this.osc.getMix()) * this.mix;
+	// 	
+	// 	for(var e = 0; e < this.osc.fx.length; e++) {
+	// 		this.value = this.osc.fx[e].fxout(this.value);
+	// 	}
+	// };
+	// 
 	that.out = function() {
-		this.generate();
-		return this.value;
+		//this.generate();
+		//return this.value;
 	}
 	
 	that.getMix = function() {
 		return this.value * this.mix;
 	};
 	
-	that.chain = Gibber.modsAndEffects.chain;
-
+	//Gibber.generators.push(that);
+	
+	that.chain = function() {
+		for(var i = 0; i < arguments.length; i++) {
+			this.osc.chain(arguments[i]);
+		}
+		return this;
+	}
+	
 	that.mod = function() {
 		if(typeof arguments[2] === "undefined") {
 			this.osc.mod(arguments[0], arguments[1]);
@@ -96,10 +97,13 @@ function Synth(waveform, volume) {
 		}
 	}
 	
-	//that.setSequence(that._sequence);
-	//that.seq = that.setSequence;
-	Gibber.generators.push(that);
+	Gibber.generators.push(that.osc);
+	that.osc.mod("mix", that.env, "*");
+	
 	
 	//that.__proto__ = new audioLib.GeneratorClass();
 	return that;
 }
+// TODO: Extend for FM?
+//FM = Synth;
+//FM.note = 
