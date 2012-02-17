@@ -2,6 +2,8 @@ function Seq(_seq, speed, gen) {
 	sequence = _seq;
 	speed = isNaN(speed) ? _4 : speed;
 	
+	console.log("speed = " + speed);
+	
 	var that = {
 		_sequence : sequence,
 		sequence : sequence,
@@ -68,7 +70,7 @@ function Seq(_seq, speed, gen) {
 			return;
 		}
 		
-		if(this.phase % this.speed == 0) {
+		if(this.phase % this.speed < 1) {
 			this.counter++;
 			for(j = 0; j < this.slaves.length; j++) {
 				var slave = this.slaves[j];
@@ -104,7 +106,7 @@ function Seq(_seq, speed, gen) {
 		this.setSequence(this.sequence);
 	}
 	
-	that.setSequence(that.sequence);
+	that.setSequence(that.sequence, that.speed);
 	
 	Gibber.controls.push(that);
 	
