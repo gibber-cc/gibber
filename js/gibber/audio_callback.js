@@ -1,4 +1,5 @@
 function processMods(gen) {
+	if(Gibber.debug) console.log("MODDING " + gen.mods.length);
 	for(var m = 0; m < gen.mods.length; m++) {
 		var mod = gen.mods[m];
 		
@@ -50,14 +51,9 @@ function audioProcess(buffer, channelCount){
 					// run fx
 					for(var e = 0; e < gen.fx.length; e++) {
 						var effect = gen.fx[e];
-						//if(effect.name == "Delay" && i == 0) console.log("DELAY PROCESSING");
-						// for(var f = 0; f < effect.mods.length; f++) {
-						// 	var mod = effect.mods[f];
-						// 	mod.gen.generateBuffer(buffer.length / channelCount);
-						// }
+						processMods(effect);
 						genValue = effect.fxout(genValue);
-						// effect.pushSample(genValue, 0);
-						// genValue = effect.getMix(0);			
+						restoreMods(effect);
 					}
 				}
 				value += genValue;

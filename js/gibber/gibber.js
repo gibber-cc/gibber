@@ -101,7 +101,7 @@ var Gibber = {
 		}
 	},
 	
-	fxRemove : function(oldFx, newFx) {
+	fxRemove : function(oldFX, newFX) {
 	// loop through gens affected by effect (for now, this should almost always be 1)
 	// replace with new effect and add the gen to the gens array of the new effect
 		var fxToReplace = oldFX;
@@ -190,6 +190,11 @@ var Gibber = {
 		
 		fxout : function(samp) {
 			this.pushSample(samp,0);
+			// if(Gibber.debug) {
+			// 				console.log("this.mix = " + this.mix);
+			// 				console.log("value = " + this.getMix());
+			// 				console.log("output = " + (samp * (1 - this.mix)) + (this.mix * this.getMix(0)));
+			// 			}
 			return (samp * (1 - this.mix)) + (this.mix * this.getMix(0));
 		},
 		
@@ -413,6 +418,44 @@ function Delay(time, feedback, mix) {
 	return that;	
 };
 
+function Ring(freq, amt) {
+	freq = (typeof freq !== "undefined") ? freq : 440;
+	amt = (typeof amt !== "undefined") ? amt : .15;	
+	console.log("freq  = " + freq + " :: amt = " + amt);
+	var that = {
+		freq: freq,
+		amt: amt,
+	};
+	
+	that.name = "Ring";
+	that.type="fx";
+	
+	that.osc  = LFO(that.freq, that.amt);
+	that.gens = [];
+	that.mods = [];
+	that.value = 0;
+	that.mix = .25;
+	
+	that.pushSample = function(sample) {
+		this.osc.generate();
+		if(Gibber.debug) {
+			//console.log("sample = " + sample);
+			//console.log("osc value = " + this.osc.getMix());
+		}
+		this.value = sample * this.osc.getMix();
+		return this.value;
+	}
+	
+	that.getMix = function() {
+		if(Gibber.debug) {		
+			//console.log("this.value = " + this.value)
+		}
+		return this.value;
+	}
+	Gibber.addModsAndFX.call(that);
+	
+	return that;
+}
 function LPF(cutoff, resonance, mix) {
 	var that = audioLib.LP12Filter(Gibber.sampleRate);
 	that.name = "LP";
@@ -549,10 +592,12 @@ function LFO(freq, amount, shape, type) {
 	that.waveShape = (typeof shape === "String") ? shape : 'sine';
 	that.modded = [];
 	that.mods = [];
+	Gibber.addModsAndFX.call(that);	
+	
 	return that;
 };
 
-function Sine(freq, volume) {	
+function Sine(freq, volume, shouldAdd) {	
 	var that = Osc(arguments);
 	that.name = "Sine";
 	that.waveShape = 'sine';

@@ -2,7 +2,6 @@ function Seq(_seq, speed, gen) {
 	var _seq = arguments[0];
 	var speed = (typeof arguments[1] === "number") ? arguments[1] : window["_" + arguments[0].length];
 	
-	console.log("speed = " + speed);
 	var gen =   (typeof arguments[2] !== "undefined") ? arguments[2] : null;
 	sequence = _seq;
 		
@@ -16,6 +15,7 @@ function Seq(_seq, speed, gen) {
 		active:true,
 		slaves: [],
 		phase: 0,
+		memory: [],
 		init: true,
 	}
 	
@@ -81,12 +81,10 @@ function Seq(_seq, speed, gen) {
 		
 		if(this.phase % this.speed < 1) {
 			this.counter++;
-			//if(this.slaves != null) {
-				for(j = 0; j < this.slaves.length; j++) {
-					var slave = this.slaves[j];
-					slave[this.outputMessage](this.sequence[this.counter % this.sequence.length]);
-				}
-				//}
+			for(j = 0; j < this.slaves.length; j++) {
+				var slave = this.slaves[j];
+				slave[this.outputMessage](this.sequence[this.counter % this.sequence.length]);
+			}
 		}
 			
 		if(this.phase >= this.sequence.lengthInSamples) { 
@@ -132,7 +130,19 @@ function Seq(_seq, speed, gen) {
 	}
 	
 	that.reset = function() {
-		this.setSequence(this._sequence, this.speed);
+		if(arguments.length === 0) {
+			this.setSequence(this._sequence, this.speed);
+		}else{
+			this.setSequence(this.memory[arguments[0]]);
+		}
+	}
+	
+	that.retain = function() {
+		if(arguments.length != 0) {
+			this.memory.push(this.sequence);
+		}else{
+			this.memory[arguments[0]] = this.sequence;
+		}
 	}
 	
 	that.break = function(newSeq, breakToOriginal) {
