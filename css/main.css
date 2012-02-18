@@ -1,9 +1,29 @@
-body { margin: 0}
+body { 
+	margin: 0;
+	background-color:#000;
+}
 
-.ace_scroller {padding-left: .5em;}
+.ace_scroller {
+	padding-left: .5em;
+	border:0;
+}
+
+::-webkit-scrollbar {
+	height: 1.5ex;
+	width: 1.5ex;   
+}  
+
+::-webkit-scrollbar-corner {
+	background-image:url(../images/corner.png);
+	background-repeat:no-repeat;
+}
+
+::-webkit-scrollbar-thumb:horizontal, ::-webkit-scrollbar-thumb:vertical {
+	background: rgba(255, 255, 255, .2);  
+}
 
 #editor {
-	font-family:Monaco;
+	font-family:Monaco, Menlo, sans-serif;
 	font-size: .8em;
     position: absolute;
 	display:inline;
@@ -11,6 +31,9 @@ body { margin: 0}
     width: 80%;
     height: 100%;
 }
+
+body {scrollbar-base-color:orange;}
+
 #info {
 	position: absolute;
 	overflow: scroll;
@@ -18,7 +41,10 @@ body { margin: 0}
 	width:20%;
 	height:100%;
 	font-size: .85em;
-	background-color:#333;
+	background-color:#000;
+	border-style: solid;
+	border-width: 0px 0px 0px 1px;
+	border-color:#ccc;
 	right: 0;
 	color: #ccc;
 }
@@ -48,7 +74,7 @@ a { color: #a66; text-decoration: none; }
 .section {
 	margin: .5em;
 }
-.referencesection, .aboutsection, .optionssection, .count {
+.referencesection, .aboutsection, .optionssection, .quickstartsection, .count {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -63,7 +89,12 @@ a { color: #a66; text-decoration: none; }
 	font-color: #444;
 	font-size: .8em;
 }
-#count { font-size:1.5em; 
+
+.startlist {
+	list-style:square;
+	margin-left:1.25em;
+}
+#count { font-size:1.25em; 
 	position:absolute;
 	right: 1em;
 	top:0;

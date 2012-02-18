@@ -105,7 +105,7 @@ Gibber.Environment = {
 		Gibber.Environment.Editor = ace.edit("editor");
 	    var JavaScriptMode = require("ace/mode/javascript").Mode;
 	    Gibber.Environment.Editor.getSession().setMode(new JavaScriptMode());
-		Gibber.Environment.Editor.setTheme("ace/theme/idle_fingers");
+		Gibber.Environment.Editor.setTheme("ace/theme/thecharlie");
 		$('.ace_gutter').css({
 			"background-color":"#000",
 			"color":"#ccc",
@@ -114,7 +114,11 @@ Gibber.Environment = {
 			"border-style": "solid", 
 		});
 		$(".ace_sb").css("z-index", 10);
-	
+		
+		$('.quickstartsection').click(function(){				
+		    $('.quickstartcontent').toggle();
+		});
+		
 		$('.aboutsection').click(function(){
 		    $('.aboutcontent').toggle();
 		});

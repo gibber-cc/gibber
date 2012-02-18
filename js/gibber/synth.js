@@ -87,7 +87,7 @@ function Synth(waveform, volume) {
 			this.osc.chain(arguments[i]);
 		}
 		return this;
-	}
+	};
 	
 	that.mod = function() {
 		if(typeof arguments[2] === "undefined") {
@@ -95,7 +95,7 @@ function Synth(waveform, volume) {
 		}else{
 			this.osc.mod(arguments[0], arguments[1], arguments[2]);
 		}
-	}
+	};
 	
 	Gibber.generators.push(that.osc);
 	that.osc.mod("mix", that.env, "*");

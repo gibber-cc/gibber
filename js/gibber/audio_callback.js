@@ -13,11 +13,7 @@ function processMods(gen) {
 	}		
 }
 
-function restoreMods(gen) {
-	if(Gibber.debug) {
-		console.log(gen);
-	}
-	
+function restoreMods(gen) {	
 	for(var m = 0; m < gen.mods.length; m++) {
 		var mod = gen.mods[m];
 		if(mod.mods.length != 0) {
@@ -44,21 +40,12 @@ function audioProcess(buffer, channelCount){
 			for(var g = 0; g < Gibber.generators.length; g++) {
 				var genValue = 0;
 				var gen = Gibber.generators[g];
-				if(gen.active) {
-					// run controls
-					// var store = {};
-					// for(var m = 0; m < gen.mods.length; m++) {
-					// 	var mod = gen.mods[m];
-					// 	if(typeof store[mod.param] === "undefined") store[mod.param] = gen[mod.param];
-					// 	var val = mod.gen.out();
-					// 	audioLib.Automation.modes[mod.type](gen, mod.param, val);
-					// }
-					
+				if(gen.active) {					
 					processMods(gen); // apply modulation changes
 					
 					genValue += gen.out();
 					
-					restoreMods(gen); // reset values to state before modulation
+					restoreMods(gen); // reset gen values to state before modulation
 				
 					// run fx
 					for(var e = 0; e < gen.fx.length; e++) {

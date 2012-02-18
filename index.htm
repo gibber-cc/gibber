@@ -23,7 +23,8 @@
 		<script src="js/ace/theme-idle_fingers.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/theme-textmate.js" type="text/javascript" charset="utf-8"></script>				
 		<script src="js/ace/theme-solarized_light.js" type="text/javascript" charset="utf-8"></script>						
-		<script src="js/ace/theme-chrome.js" type="text/javascript" charset="utf-8"></script>				
+		<script src="js/ace/theme-chrome.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/ace/theme-thecharlie.js" type="text/javascript" charset="utf-8"></script>
 		
 		<script src="js/jquery-1.5.js" type="text/javascript" charset="utf-8"></script>
 		
@@ -38,6 +39,18 @@
 	<body>
 		<div id="info">
 			<h1>GIBBER  (beta)</h1>
+			<div id="quickstart" class="section">
+			<h2>Quick Start <span class="quickstartsection">show/hide</span></h2>
+			<div class="quickstartcontent">
+				<ul class="startlist">
+					<li>Select some code.</li>
+					<li>Hit Ctrl-return (cmd-return on os x) to execute selected code. If no code is selected the line of code that the cursor is on will be run. Shift-ctrl-return executes at the start of the next measure; this is useful to make sure your timing of arpeggios, drum beats, etc. line up correctly.
+					</li><li> To kill current oscillators / fx in memory, hit Cntrl/Cmd -`.</li>
+					<li> Under options, load up different files to learn how things work.</li>
+					</ul>
+			</p>
+			</div>
+			</div>
 			<div id="about" class="section">
 				<h2>About <span class="aboutsection">show/hide</span></h2>
 				<div class="aboutcontent">
@@ -87,29 +100,29 @@
 			</div>
 		</div>
 		
-		<div id="editor">Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
+		<div id="editor">Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as G.
 
-s = Sine(240, .15);      // Sine wave with freq 240, amp .5.
+s = Sine(240, .15);     // Sine wave with freq 240, amp .5.
 
 s.chain(                // create an fx chain for oscillator                   
     Dist(),             // Distortion
-    Delay( _3 )  		// Delay with delay time set to 1/4 of a beat (1/16th note)
+    Delay( _3 )  		// Delay with delay time set to 1/3 of a measure
 );
 
-a = Arp(s, "Cm7", 2, _16, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
+a = Arp(s, "Cm7", 2, _16, "updown");// Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down
 
-d = Drums("x*o*x*o*",_8);
-d.chain( Trunc(6) );
-d.frequency = 880; 	// 440 is base frequency
-
-s.mod("freq", LFO(8, 4), "+");  // Vibrato - modulating frequency by +/- 4Hz 8 times per second
-s.removeMod(1);                 // mod 0 is the arp, I know, confusing...
-
-a.shuffle();        // randomize arpeggio
-a.reset();          // reset arpeggio
-
-Master.chain( Reverb() );     // Master FX are applied to summed signal of all generators
-Master.removeFX(0);           // remove first effect in chain. don't pass a argument to remove all fx.</div>
+d = Drums("x*o*x*o*",_8);			// x = kick, o = snare, * = hat, each hit lasts an 1/8th note
+d.chain( Trunc(6) );				// bit crush to 6 bits
+d.frequency = 880; 					// 440 is base frequency
+	
+s.mod("freq", LFO(8, 4), "+");  	// Vibrato - modulating frequency by +/- 4Hz 8 times per second
+s.removeMod(1);                 	// mod 0 is the arp, I know, confusing...
+	
+a.shuffle();        				// randomize arpeggio
+a.reset();          				// reset arpeggio
+	
+Master.chain( Reverb() );     		// Master FX are applied to summed signal of all generators
+Master.removeFX(0);           		// remove first effect in chain. don't pass a argument to remove all fx.</div>
 
 		
 	</body>

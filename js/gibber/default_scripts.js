@@ -135,15 +135,15 @@ drums:
 'Sine(973, fundamentalAmplitude / 9) // 9th harmonic',
 
 FM:
-'/*\n'+
+'/* (skip to the bottom if you want to see the simplest way to do FM synthesis in Gibber)\n'+
+'\n'+
 'FM (frequency modulation) synthesis refers to rapidly changing the frequency of an\n'+
 'oscillator according to the output of another oscillator. The main oscillator whose \n'+
-'frequency is termed the "carrier". The modulating oscillator is the "modulator".\n'+
+'frequency is changed is termed the "carrier". The modulating oscillator is the "modulator".\n'+
 '\n'+
-'Although it is not typically termed FM synthesis, when the modulator frequency is in the \n'+
-'sub-audio domain vibrato is created. In the example below, the modulating sine wave has \n'+
-'an amplitude of 4. This means it will create values in the range {-4, 4}. After adding this\n'+
-'modulation the frequency of the carrier sine wave (c) will fluctate between 236 and 244.\n'+
+'When the modulator frequency is in the sub-audio domain vibrato is created. In the example below,\n'+
+'the modulating sine wave has an amplitude of 4. This means it will create values in the range {-4, 4}.\n'+
+'After adding this modulation the frequency of the carrier sine wave (c) will fluctate between 236 and 244.\n'+
 '*/\n'+
 '\n'+
 'c = Sine(240, .15);\n'+
@@ -176,15 +176,26 @@ FM:
 '\n'+
 'noteFrequency = ntof("F2"); // ntof is note-to-frequency\n'+
 '\n'+
-'c = Synth("sine", .15);\n'+
-'c.mod("freq", Sine( noteFrequency * 1.4, 190), "+");\n'+
+'c = Synth("sine", .15).chain( Reverb() );\n'+
+'c.mod("freq", Sine( noteFrequency * 1.4, noteFrequency * .95), "+");\n'+
 'c.env.attack  = 1;        // 1 ms attack time\n'+
-'c.env.decay   = 1000;     // 1000 ms decay\n'+
+'c.env.decay   = 6000;     // 1000 ms decay\n'+
 '\n'+
 'c.note(noteFrequency);\n'+
+'\n'+
+'/*\n'+
+'Note that, in the above code snippet, the amplitude of the modulator changes proportionally to the\n'+
+'carrier frequency. John Chowning, inventor of FM synthesis, refers to this as the "index" of the\n'+
+'synthesis algorithm. We have taken the carrier : modulation ratio, the index, an attack and decay envelope\n'+
+'and wrapped it up into a synth for use in Gibber. Here is the syntax:\n'+
+'\n'+
+'FM(carrierToModulatorRatio, index, attack, decay)\n'+
+'\n'+
+'And below is a code sample that creates a "brassy" sound (depending on how forgiving you are).\n'+
+'*/\n'+
+'\n'+
 'f = FM(1 / 1.0007, 5, 100, 100);\n'+
 'f.chain( Reverb() );\n'+
-'f.osc.mix = .05;\n'+
 's = Seq(["A4", "B4", "B4", "C4"], _8, f);',
 
 "END":"LABEL END",

@@ -172,10 +172,24 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	that.hat   = new audioLib.Sampler(Gibber.sampleRate);
 	that.mix   = isNaN(_mix) ? 0.175 : _mix;
 	that.timeValue = isNaN(_timeValue) ? _4 : _timeValue;
-	that.sequence  = _sequence;
+	that.sequence  = (typeof _sequence !== undefined) ? _sequence : "";
 	that.frequency = isNaN(_freq) ? 440 : _freq;
 	that.patternLengthInSamples = that.sequence.length * that.timeValue;	
 	
+	that.note = function(nt) {
+		switch(nt) {
+			case "x":
+				this.kick.noteOn(this.frequency);
+				break;
+			case "o":
+				this.snare.noteOn(this.frequency);
+				break;
+			case "*":
+				this.hat.noteOn(this.frequency * 3.5);
+				break;
+			default: break;
+		}
+	}
 	// this.sequences = {
 	// 	kick  : [],
 	// 	snare : [],
