@@ -430,7 +430,8 @@ function Ring(freq, amt) {
 	that.name = "Ring";
 	that.type="fx";
 	
-	that.osc  = LFO(that.freq, that.amt);
+	that.osc  = Sine(that.freq, that.amt);
+	that.osc.isControl = true;
 	that.gens = [];
 	that.mods = [];
 	that.value = 0;
@@ -586,6 +587,7 @@ function Dist(gain, master) {
 
 function LFO(freq, amount, shape, type) {
 	var that = Osc(arguments, false);
+	that.isControl = true;
 	that.name = "LFO";
 	that.type = "mod";
 	that.mix = amount;
@@ -593,7 +595,7 @@ function LFO(freq, amount, shape, type) {
 	that.modded = [];
 	that.mods = [];
 	Gibber.addModsAndFX.call(that);	
-	
+
 	return that;
 };
 

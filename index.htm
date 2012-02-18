@@ -27,12 +27,19 @@
 		<script src="js/ace/theme-thecharlie.js" type="text/javascript" charset="utf-8"></script>
 		
 		<script src="js/jquery-1.5.js" type="text/javascript" charset="utf-8"></script>
-		
+		<script src="js/node/socket.io.min.js" type="text/javascript" charset="utf-8"></script>
 		<link rel="stylesheet" href="css/main.css">
 		
 		<script>
 		window.onload	= function(){
 			Gibber.init();
+			socket = io.connect('http://localhost:8080/');
+			socket.on('connect', function () {
+				socket.on('message', function (msg) {
+					console.log("msg received !");
+					Gibber.runScript(msg);
+				});
+			});
 		};
 		</script>
 	</head>

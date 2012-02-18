@@ -1,0 +1,16 @@
+<html>
+<head>
+	<script src="socket.io.min.js"></script>
+	<script>
+	  var socket = io.connect('http://localhost:8080/'); // has to match port node.js is running on
+	  socket.on('connect', function () {
+	    socket.on('message', function (msg) {
+			//window.alert("IEHRIEHRIER");
+	    });
+	  });
+	</script>
+</head>
+<body>
+	<input type="text" name="fname" onchange="socket.send(this.value)"/>
+</body>
+</head>

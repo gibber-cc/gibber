@@ -262,6 +262,24 @@ Gibber.Environment = {
 		    }
 		});
 		
+		Gibber.Environment.Editor.commands.addCommand({
+		    name: 'remoteSend',
+		    bindKey: {
+		        win: 'Shift-Ctrl-2',
+		        mac: 'Shift-Command-2',
+		        sender: 'Gibber.Environment.Editor'
+		    },
+		    exec: function(env, args, request) {
+		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
+				if(text === "") {
+					var pos = Gibber.Environment.Editor.getCursorPosition();
+					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
+				}
+				socket.send(text);
+		    }
+		});
+		
+		
 				
 		Gibber.Environment.Editor.setShowPrintMargin(false);
 	},

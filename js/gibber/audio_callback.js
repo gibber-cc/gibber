@@ -1,5 +1,5 @@
 function processMods(gen) {
-	if(Gibber.debug) console.log("MODDING " + gen.mods.length);
+	//if(Gibber.debug) console.log("MODDING " + gen.mods.length);
 	for(var m = 0; m < gen.mods.length; m++) {
 		var mod = gen.mods[m];
 		
@@ -44,7 +44,11 @@ function audioProcess(buffer, channelCount){
 				if(gen.active) {					
 					processMods(gen); // apply modulation changes
 					
-					genValue += gen.out();
+					if(!gen.isControl) {
+						genValue += gen.out();
+					}else{
+						gen.generate();
+					}
 					
 					restoreMods(gen); // reset gen values to state before modulation
 				
@@ -61,12 +65,9 @@ function audioProcess(buffer, channelCount){
 			// Master output
 			for(var e = 0; e < Master.fx.length; e++) {
 				var effect = Master.fx[e];
-				// for(var f = 0; f < effect.mods.length; f++) {
-				// 					var mod = effect.mods[f];
-				// 					mod.gen.generateBuffer(buffer.length / channelCount);
-				// 				}
-				effect.pushSample(value, 0);
-				value = effect.getMix(0);			
+				processMods(effect);
+				value = effect.fxout(value);
+				restoreMods(effect);
 			}
 			buffer[i] += value;
 			buffer[i + 1] = buffer[i];
