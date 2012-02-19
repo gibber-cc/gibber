@@ -59,9 +59,6 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		getMix : function() { return this.value; },
 	};
 	
-	if(typeof _sequence != undefined) {
-		that.seq = Seq(_sequence, _timeValue, that);
-	}
 	
 	that.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	that.snare = new audioLib.Sampler(Gibber.sampleRate);		
@@ -76,10 +73,24 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		this.frequency = _freq;
 	};
 	
-	that.shuffle = function() { this.seq.shuffle(); }
-	that.set = function(newSequence) { this.seq.set(newSequence); }
-	that.reset = function(num)  { this.seq.reset(num); }
-	that.retain = function(num) { this.seq.retain(num); }
+	that.shuffle = function() { this.seq.shuffle(); };
+	that.set = function(newSequence) { this.seq.set(newSequence); };
+	
+	that.reset = function(num)  { 
+		if(isNaN(num)) {
+			this.seq.reset();
+		}else{
+			this.seq.reset(num); 
+		}
+	};
+	
+	that.retain = function(num) { 
+		if(isNaN(num)) {
+			this.seq.retain();
+		}else{
+			this.seq.retain(num); 
+		}
+	};
 	
 	that.note = function(nt) {
 		switch(nt) {
@@ -96,17 +107,12 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		}
 	}
 	
-	function bpmCallback() {
-		return function(percentageChangeForBPM) {
-			that.timeValue *= percentageChangeForBPM;
-			that.patternLengthInSamples = that.sequence.length * that.timeValue;
-			that.setSequence(that.sequence);
-		}
-	}
-	
-	Gibber.registerObserver("bpm", bpmCallback.call(that));
 	Gibber.addModsAndFX.call(that);
 	Gibber.generators.push(that);
+	
+	if(typeof _sequence != undefined) {
+		that.seq = Seq(_sequence, _timeValue, that);
+	}
 	
 	that.__proto__ = new audioLib.GeneratorClass();
 	

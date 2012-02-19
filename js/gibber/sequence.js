@@ -1,26 +1,35 @@
-function Seq(_seq, speed, gen) {
+function Seq(_seq, speed, gen, _outputMsg) {
 	var _seq = arguments[0];
 	var speed = (typeof arguments[1] === "number") ? arguments[1] : window["_" + arguments[0].length];
 	
 	var gen =   (typeof arguments[2] !== "undefined") ? arguments[2] : null;
 	sequence = _seq;
-		
+	
+	if(typeof arguments[3] === "undefined") {
+		if(gen != null) {
+			if(typeof gen.note === "undefined") {
+				_outputMessage = "freq";
+			}else{
+				_outputMessage = "note";
+			}
+		}else{
+			_outputMessage = "note";
+		}
+	}
+	_outputMsg = (typeof arguments[3] === "undefined") ? "note" : _outputMsg;
+	
 	var that = {
 		_sequence : sequence,
 		sequence : sequence,
 		_start : true,
 		counter : -1,
 		speed: speed,
-		outputMessage:"note",
+		outputMessage:_outputMsg,
 		active:true,
 		slaves: [],
 		phase: 0,
 		memory: [],
 		init: true,
-	}
-	
-	if(gen != null) {
-		if(typeof gen.note === "undefined") { that.outputMessage = "freq"; }
 	}
 	
 	that.setSequence = function(seq, speed, shouldReset) {
@@ -163,12 +172,8 @@ function Seq(_seq, speed, gen) {
 			this.breakToOriginal = true;
 		}
 		this.preBreakSequences = jQuery.extend(true, {}, this.sequence);
-		//this.sequences = this.createSequence(newSeq);
 	};
-	
-	
-	Gibber.registerObserver("bpm", that.bpmCallback.call(that));
-	
+		
 	that.setSequence(that.sequence, that.speed);
 	
 	Gibber.controls.push(that);
@@ -176,6 +181,7 @@ function Seq(_seq, speed, gen) {
 	if(gen != null) {
 		that.slave(gen);
 	}
+	
 	return that;
 }
 	
