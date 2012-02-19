@@ -5,7 +5,7 @@
 	  var socket = io.connect('http://localhost:8080/'); // has to match port node.js is running on
 	  socket.on('connect', function () {
 	    socket.on('message', function (msg) {
-			//window.alert("IEHRIEHRIER");
+			console.log(msg);
 	    });
 	  });
 	</script>

@@ -39,6 +39,7 @@
 					console.log("msg received !");
 					Gibber.runScript(msg);
 				});
+				socket.emit('master', null);
 			});
 		};
 		</script>
