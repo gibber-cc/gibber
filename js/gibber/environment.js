@@ -21,6 +21,26 @@ Gibber.Environment = {
 		Gibber.Environment.createFileList(name);
 	},
 	
+	slave : function(name, ip) {
+		console.log("Name " + name + " : ip " + ip);
+		Gibber.Environment.slaveSocket = io.connect('http://localhost:8080/'); // has to match port node.js is running on
+		Gibber.Environment.slaveSocket.on('connect', function () {
+			Gibber.Environment.slaveSocket.on('message', function (msg) {
+				console.log(msg);
+			});
+		});
+	},
+	
+	master : function() {
+		Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
+		Gibber.Environment.masterSocket.on('connect', function () {
+			Gibber.Environment.masterSocket.on('message', function (msg) {
+				Gibber.runScript(msg);
+			});
+			Gibber.Environment.masterSocket.emit('master', null);
+		});	
+	},
+	
 	saveWithName : function(name) {
 		var scripts;
 		if(typeof localStorage.scripts === "undefined") {
@@ -123,6 +143,82 @@ Gibber.Environment = {
 	
 	createOptionButtons : function() {
 		Gibber.Environment.isSaveOpen = false;
+		Gibber.Environment.isLoadOpen = false;
+		Gibber.Environment.isJoinOpen = false;		
+		
+		this.createSaveAndLoadButtons();
+		this.createJoinSessionButton();
+		
+		$("body").bind('click', function() {
+			if(Gibber.Environment.isLoadOpen) {
+				$(Gibber.Environment.loadWindow).remove();
+				Gibber.Environment.isLoadOpen = false;	
+			}
+			if(Gibber.Environment.isSaveOpen) {
+				$(Gibber.Environment.saveWindow).remove();
+				Gibber.Environment.isSaveOpen = false;		
+			}
+			if(Gibber.Environment.isJoinOpen) {
+				$(Gibber.Environment.joinWindow).remove();
+				Gibber.Environment.isJoinOpen = false;		
+			}
+			
+		});
+	},
+	
+	createJoinSessionButton : function() {
+		$("#joinsession").bind("click", function(event) {
+			if(!Gibber.Environment.isJoinOpen) {
+				Gibber.Environment.isJoinOpen = true;
+				Gibber.Environment.joinWindow = document.createElement('div');
+				///console.log($(this).width);
+				$(Gibber.Environment.joinWindow).css({
+					"top": $(this).offset().top + $(this).outerHeight(),
+					"left": $(this).offset().left,
+					"position": "absolute",
+					"width": "9em",
+					"height": "6em", 
+					"background-color": "rgba(65,65,65,1)", 
+				});
+				var t = document.createElement('input');
+				$(t).attr("id", "nameInput");				
+				$(t).css({
+					"margin": "5px", 
+				});
+				$(t).bind('click', function(evt) { evt.stopPropagation(); });
+				t.value = "your name";
+				
+				var t1 = document.createElement('input');
+				$(t1).attr("id", "ipInput");
+				$(t1).css({
+					"margin": "5px", 
+				});
+				$(t1).bind('click', function(evt) { evt.stopPropagation(); });				
+				t1.value = "master ip address";
+				
+				var b = document.createElement('button');
+				$(b).html("Join");
+				$(b).css({
+					"position": "relative", 
+					"left": "4em", 
+				});
+				$(b).bind("click", function() {
+					Gibber.Environment.slave($("#nameInput").val(), $("#ipInput").val());
+					$(m).remove();
+					Gibber.Environment.isJoinOpen = false;
+				});
+				
+				$(Gibber.Environment.joinWindow).append(t);
+				$(Gibber.Environment.joinWindow).append(t1);				
+				$(Gibber.Environment.joinWindow).append(b);
+				$("body").append(Gibber.Environment.joinWindow);
+				event.stopPropagation();
+			}
+		});
+		
+	},
+	
+	createSaveAndLoadButtons : function() {
 		$("#saveme").bind("click", function(event) {			
 			if(!Gibber.Environment.isSaveOpen) {
 				Gibber.Environment.isSaveOpen = true;
@@ -209,7 +305,6 @@ Gibber.Environment = {
 				}
 					
 				Gibber.Environment.loadWindow = document.createElement('div');
-				///console.log($(this).width);
 				$(Gibber.Environment.loadWindow).css({
 					"top": $(this).offset().top + $(this).outerHeight(),
 					"left": $(this).offset().left,
@@ -235,18 +330,7 @@ Gibber.Environment = {
 				$(Gibber.Environment.loadWindow).remove();
 				Gibber.Environment.isLoadOpen = false;					
 			}
-		});
-			
-		$("body").bind('click', function() {
-			if(Gibber.Environment.isLoadOpen) {
-				$(Gibber.Environment.loadWindow).remove();
-				Gibber.Environment.isLoadOpen = false;	
-			}
-			if(Gibber.Environment.isSaveOpen) {
-				$(Gibber.Environment.saveWindow).remove();
-				Gibber.Environment.isSaveOpen = false;		
-			}
-		});
+		});	
 	},
 	
 	initEditor : function() {
@@ -424,7 +508,7 @@ Gibber.Environment = {
 					var pos = Gibber.Environment.Editor.getCursorPosition();
 					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
 				}
-				socket.send(text);
+				Gibber.Environment.slaveSocket.send(text);
 		    }
 		});				
 	},

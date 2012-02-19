@@ -32,13 +32,6 @@
 		<script>
 		window.onload	= function(){
 			Gibber.init();
-			socket = io.connect('http://localhost:8080/');
-			socket.on('connect', function () {
-				socket.on('message', function (msg) {
-					Gibber.runScript(msg);
-				});
-				socket.emit('master', null);
-			});
 		};
 				
 
@@ -82,8 +75,10 @@
 					<option value="ace/theme/textmate">TextMate</option>
 					<option value="ace/theme/twilight">Twilight</option>
 					</select><br>
-					<button id="saveme">Save File <span style="font-size:.5em">&#9660;</span></button>
-					<button id="loadme">Load File <span style="font-size:.5em">&#9660;</span></button><br>					
+					<button id="saveme">Save File<span style="font-size:.5em">&#9660;</span></button>
+					<button id="loadme">Load File<span style="font-size:.5em">&#9660;</span></button>
+					<button id="joinsession">Join Session<span style="font-size:.5em">&#9660;</span></button><br>					
+									
 					<!--Load File:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">-->
 					</select><br>
 					<!--<button onclick="Gibber.loadFile()">Load File</button><br>-->
