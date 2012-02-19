@@ -695,3 +695,14 @@ function _Chord(notation, octave) {
 } 
 
 window.ntof = Note.ntof;
+
+function Chord(_notation, _octave) {
+	//var chord = [];
+	var chord = ChordFactory.createNotations(_notation, _octave);
+	
+	/*for(var i = 0; i < _chord.length; i++) {
+		chord[i] = Note.getFrequencyForNotation(_chord[i]);
+	}*/
+	
+	return chord;
+}

@@ -319,6 +319,10 @@ function Osc(args, isAudioGenerator) {
 	that.fx = [];
 	that.automations = [];
 	that.modded = []; // for use as modulation source
+	
+	that.freq = function(_freq) {
+		this.frequency = _freq;
+	}
 
 	that.stop = function() {
 		this.active = false;
@@ -775,17 +779,6 @@ function Sched(_func, _time, _repeats) {
 	that.stop = Sink.doInterval(_callback(), that.time);
 
 	return that;
-}
-
-function Chord(_notation, _octave) {
-	var chord = [];
-	var _chord = ChordFactory.createNotations(_notation, _octave);
-	
-	for(var i = 0; i < _chord.length; i++) {
-		chord[i] = Note.getFrequencyForNotation(_chord[i]);
-	}
-	
-	return chord;
 }
 
 // http://snippets.dzone.com/posts/show/849

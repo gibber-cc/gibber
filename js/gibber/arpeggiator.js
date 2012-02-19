@@ -25,30 +25,25 @@ function Arp(gen, notation, octave, beats, mode, mult, interpolate) {
 	
 	var arr = [];
 	for(var i = 0; i < this.mult; i++) {
-		var tmp = Chord(this.notation, this.octave + i);
+		var tmp;
+		if(typeof gen.note !== "undefined") {
+			tmp = Chord(this.notation, this.octave + i);
+		}else{
+			var tmp = [];
+			var _chord = ChordFactory.createNotations(this.notation, this.octave);
+	
+			for(var i = 0; i < _chord.length; i++) {
+				tmp[i] = Note.getFrequencyForNotation(_chord[i]);
+			}
+		}
 		arr = arr.concat(tmp);
 	}
+	
 	this.freqs 		= this.modes[this.mode]( arr );
-	
 	this.original 	= this.freqs.slice(0);
-	this.step 		= Step(this.freqs, this.speed);
-	
-	this.gen.mod("freq", this.step, "=");
+	this.seq = Seq(this.freqs, this.speed, gen)
 	
 	this.modded = [];
-	
-	function bpmCallback() {
-		var that = this;
-		return function(percentageChangeForBPM) {
-			that.speed *= percentageChangeForBPM
-			that.step.stepLength = that.speed;
-		}
-	}
-	
-	if(this.usesBPM) {
-		Gibber.registerObserver("bpm", bpmCallback.call(this));
-	}
-	
 }
 
 Arp.prototype = {
@@ -65,9 +60,8 @@ Arp.prototype = {
 			return array.concat(_tmp);
 		}
 	},
-	shuffle: function() { this.freqs.shuffle(); this.step.steps = this.freqs;},
-	reset: function() { this.freqs = this.original.slice(0); this.step.steps = this.freqs; },
-	freqs: [],
+	shuffle: function() { this.seq.shuffle(); },
+	reset: function() { this.seq.reset(); },
 	
 	replace : function(replacement){
 		if(replacement.name != "Arp") {

@@ -19,6 +19,10 @@ function Seq(_seq, speed, gen) {
 		init: true,
 	}
 	
+	if(gen != null) {
+		if(typeof gen.note === "undefined") { that.outputMessage = "freq"; }
+	}
+	
 	that.setSequence = function(seq, speed, shouldReset) {
 		if(typeof speed != "undefined") {
 			if(!shouldReset) {
@@ -50,6 +54,7 @@ function Seq(_seq, speed, gen) {
 	
 	that.slave = function(gen) {
 		this.slaves.push(gen);
+		if(typeof gen.note === "undefined") { this.outputMessage = "freq"; }		
 	};
 	
 	that.free = function() {
@@ -83,7 +88,13 @@ function Seq(_seq, speed, gen) {
 			this.counter++;
 			for(j = 0; j < this.slaves.length; j++) {
 				var slave = this.slaves[j];
-				slave[this.outputMessage](this.sequence[this.counter % this.sequence.length]);
+				var val = this.sequence[this.counter % this.sequence.length];
+				if(this.outputMessage === "freq") {
+					if( isNaN(val) ) {
+						val = Note.getFrequencyForNotation(val);
+					}
+				}
+				slave[this.outputMessage](val);
 			}
 		}
 			

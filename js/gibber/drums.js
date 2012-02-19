@@ -69,6 +69,13 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	that.mix   = isNaN(_mix) ? 0.175 : _mix;
 	that.frequency = isNaN(_freq) ? 440 : _freq;
 	
+	that.freq = function(_freq) {
+		if(isNaN(_freq)) {
+			_freq = Note.getFrequencyForNotation(_freq);
+		}
+		this.frequency = _freq;
+	};
+	
 	that.shuffle = function() { this.seq.shuffle(); }
 	that.set = function(newSequence) { this.seq.set(newSequence); }
 	that.reset = function(num)  { this.seq.reset(num); }
