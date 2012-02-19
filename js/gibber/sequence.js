@@ -100,10 +100,17 @@ function Seq(_seq, speed, gen, _outputMsg) {
 				var val = this.sequence[this.counter % this.sequence.length];
 				if(this.outputMessage === "freq") {
 					if( isNaN(val) ) {
-						val = Note.getFrequencyForNotation(val);
+						//val = Note.getFrequencyForNotation(val);
+						var n = new teoria.TeoriaNote(val);
+						val = n.fq();
+						//console.log("note freq = " + val);
 					}
 				}
-				slave[this.outputMessage](val);
+				if(typeof slave[this.outputMessage] === "function") {
+					slave[this.outputMessage](val);
+				}else{
+					slave[this.outputMessage] = val;
+				}
 			}
 		}
 			

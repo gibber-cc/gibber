@@ -11,7 +11,14 @@ a = audioLib.Arp(s, "Cm7", 2, .25, "updown");
 function initPlugin(audioLib){
 (function(audioLib){
 
-function Arp(gen, notation, octave, beats, mode, mult, interpolate) {
+function Arp(gen, notation, beats, mode, mult, interpolate) {
+	if(typeof arguments[0] === "string") {
+		gen = null;
+		notation = arguments[0], beats = arguments[1], mode = arguments[2], mult = arguments[3];
+	}else{
+		gen = arguments[0], notation = arguments[1], beats = arguments[2], mode = arguments[3], mult = arguments[4];
+	}	
+	
 	this.speed = isNaN(beats) ? _4 : beats;
 	this.mode = mode || "up";
 	this.type = "complex";
@@ -19,34 +26,41 @@ function Arp(gen, notation, octave, beats, mode, mult, interpolate) {
 	
 	this.gen = gen,
 	this.notation = notation || "Cm7",
-	this.octave = (isNaN(octave)) ? 2 : octave,
 	this.mult = mult || 1;
 	this.interpolate = interpolate || 0; // not programmed yet
 	
-	var arr = [];
-	for(var i = 0; i < this.mult; i++) {
-		var tmp;
-		if(typeof gen.note !== "undefined") {
-			tmp = Chord(this.notation, this.octave + i);
-		}else{
-			var tmp = [];
-			var _chord = ChordFactory.createNotations(this.notation, this.octave);
-	
-			for(var i = 0; i < _chord.length; i++) {
-				tmp[i] = Note.getFrequencyForNotation(_chord[i]);
-			}
-		}
-		arr = arr.concat(tmp);
-	}
-	
-	this.freqs 		= this.modes[this.mode]( arr );
-	this.original 	= this.freqs.slice(0);
-	this.seq = Seq(this.freqs, this.speed, gen)
-	
 	this.modded = [];
+	if(gen != null) { this.slave(gen); }
 }
 
 Arp.prototype = {
+	slave : function(gen) {
+		var arr = [];
+		for(var i = 0; i < this.mult; i++) {
+			var tmp = [];
+			
+			var _root = this.notation.slice(0,1);
+			var _octave = this.notation.slice(1,2);
+			var _quality = this.notation.slice(2);
+
+			var _chord = teoria.chord(_root + _quality);
+			for(var i = 0; i < _chord.notes.length; i++) {
+				var n = _chord.notes[i];
+				n.octave = _octave;
+				if(typeof gen.note === "function") {
+					tmp[i] = n;
+				}else{
+					tmp[i] = n.fq();
+				}
+			}
+
+			arr = arr.concat(tmp);
+		}
+		
+		this.freqs 		= this.modes[this.mode]( arr );
+		this.original 	= this.freqs.slice(0);
+		this.seq = Seq(this.freqs, this.speed, gen)
+	},
 	modes : {
 		up : function(array) {
 			return array;
@@ -61,8 +75,22 @@ Arp.prototype = {
 		}
 	},
 	shuffle: function() { this.seq.shuffle(); },
-	reset: function() { this.seq.reset(); },
+	reset : function(num)  { 
+		if(isNaN(num)) {
+			this.seq.reset();
+		}else{
+			this.seq.reset(num); 
+		}
+	},
 	
+	retain : function(num) { 
+		if(isNaN(num)) {
+			this.seq.retain();
+		}else{
+			this.seq.retain(num); 
+		}
+	},
+
 	replace : function(replacement){
 		if(replacement.name != "Arp") {
 			if(replacement.type == "mod") {

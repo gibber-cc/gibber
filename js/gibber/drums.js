@@ -32,7 +32,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 		initialized : false,
 		
 		load : function (){
-			// SAMPLES ARE PRELOADED IN GIBBER CLASS
+			// SAMPLES ARE PRELOADED IN GIBBER CLASS... but it still doesn't stop the hitch when loading these...
 			this.kick.loadWav(Gibber.samples.kick);
 			this.snare.loadWav(Gibber.samples.snare);
 			this.hat.loadWav(Gibber.samples.snare); // TODO: CHANGE TO HIHAT SAMPLE
@@ -66,12 +66,12 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	that.mix   = isNaN(_mix) ? 0.175 : _mix;
 	that.frequency = isNaN(_freq) ? 440 : _freq;
 	
-	that.freq = function(_freq) {
-		if(isNaN(_freq)) {
-			_freq = Note.getFrequencyForNotation(_freq);
-		}
-		this.frequency = _freq;
-	};
+	// that.freq = function(_freq) {
+	// 	if(isNaN(_freq)) {
+	// 		_freq = Note.getFrequencyForNotation(_freq);
+	// 	}
+	// 	this.frequency = _freq;
+	// };
 	
 	that.shuffle = function() { this.seq.shuffle(); };
 	that.set = function(newSequence) { this.seq.set(newSequence); };
@@ -101,7 +101,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 				this.snare.noteOn(this.frequency);
 				break;
 			case "*":
-				this.hat.noteOn(this.frequency * 3.5);
+				this.hat.noteOn(this.frequency * 3.5); // multiply to make a higher pitched sound, 'cuz I can't get a better hihat sound in there
 				break;
 			default: break;
 		}

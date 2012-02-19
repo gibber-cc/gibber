@@ -145,6 +145,7 @@ Gibber.Environment = {
 		this.initEditor();
 		this.addScriptsToList(Gibber.defaultScripts, "default");
 		this.createOptionButtons();
+		this.loadAndSet("default");
 		//this.createFileList();
 	},
 	

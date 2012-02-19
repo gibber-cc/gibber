@@ -8,7 +8,7 @@ default:
 '    Delay( _3 )  		// Delay with delay time set to 1/4 of a beat (1/16th note)\n'+
 ');\n'+
 '\n'+
-'a = Arp(s, "Cm7", 2, _16, "updown"); // Arpeggiator: Cminor7 chord, 2nd octave, 16th notes, up then down\n'+
+'a = Arp(s, "C3m7", _16, "updown");  // Arpeggiator: C3minor7 (3 is octave) chord, 16th notes, up then down\n'+
 '\n'+
 'd = Drums("x*o*x*o*",_8);\n'+
 'd.chain( Trunc(6) );\n'+
