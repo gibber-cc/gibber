@@ -16,7 +16,6 @@
 		<script src="js/gibber/fm_synth.js"></script>		
 		<script src="js/gibber/default_scripts.js"></script>
 
-		
 		<script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
@@ -36,12 +35,13 @@
 			socket = io.connect('http://localhost:8080/');
 			socket.on('connect', function () {
 				socket.on('message', function (msg) {
-					console.log("msg received !");
 					Gibber.runScript(msg);
 				});
 				socket.emit('master', null);
 			});
 		};
+				
+
 		</script>
 	</head>
 	<body>
@@ -82,8 +82,9 @@
 					<option value="ace/theme/textmate">TextMate</option>
 					<option value="ace/theme/twilight">Twilight</option>
 					</select><br>
-					<button onclick="Gibber.saveFile()">Save File</button><br>
-					Load File:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">
+					<button id="saveme">Save File <span style="font-size:.5em">&#9660;</span></button>
+					<button id="loadme">Load File <span style="font-size:.5em">&#9660;</span></button><br>					
+					<!--Load File:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">-->
 					</select><br>
 					<!--<button onclick="Gibber.loadFile()">Load File</button><br>-->
 					<button onclick="editor.renderer.setShowGutter(!Gibber.Environment.Editor.renderer.getShowGutter())">Toggle Line Numbers</button>

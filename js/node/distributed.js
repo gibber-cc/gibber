@@ -1,3 +1,7 @@
+// run this script using Node.js to perform distributed live coding using Gibber.
+// see test.htm in the same folder for an example of how to send code to a master
+// Gibber instance.
+
 var io = require('socket.io').listen(8080);
 
 var master = null;
