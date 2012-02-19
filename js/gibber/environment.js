@@ -23,19 +23,26 @@ Gibber.Environment = {
 	
 	slave : function(name, ip) {
 		console.log("Name " + name + " : ip " + ip);
-		Gibber.Environment.slaveSocket = io.connect('http://localhost:8080/'); // has to match port node.js is running on
+		Gibber.Environment.slaveSocket = io.connect('http://' + ip + ':8080/'); // has to match port node.js is running on
 		Gibber.Environment.slaveSocket.on('connect', function () {
-			Gibber.Environment.slaveSocket.on('message', function (msg) {
-				console.log(msg);
-			});
+			console.log("SLAVE IS CONNECTING>....... " + name);
+			Gibber.Environment.slaveSocket.emit('name', {"name":name});
 		});
 	},
 	
 	master : function() {
 		Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
 		Gibber.Environment.masterSocket.on('connect', function () {
-			Gibber.Environment.masterSocket.on('message', function (msg) {
-				Gibber.runScript(msg);
+			Gibber.Environment.Editor.selectAll();
+			Gibber.Environment.Editor.remove();
+			Gibber.Environment.Editor.insert("// MASTER SESSION START\n\n");
+			Gibber.Environment.Editor.clearSelection();			
+			Gibber.Environment.masterSocket.on('code', function (msg) {
+				Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
+				Gibber.Environment.Editor.insert(msg.code + "\n\n");
+				Gibber.Environment.Editor.scrollPageDown();
+				
+				Gibber.runScript(msg.code + "\n\n");
 			});
 			Gibber.Environment.masterSocket.emit('master', null);
 		});	

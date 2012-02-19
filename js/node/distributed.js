@@ -12,10 +12,10 @@ io.sockets.on('connection', function (socket) {
 	socket.isMaster = false;
 	
 	socket.on('message', function (msg) {
-		console.log("MESSAGE " + msg);
-		if(master !== null) {
-			master.send(msg);
-		}
+		console.log("MESSAGE " + msg + "for user " + socket.userName);
+		if(master != null) {
+			master.emit("code", {code:msg, userName:socket.userName});
+		};
 	});
 	
 	socket.on('master', function(msg) {
@@ -23,6 +23,11 @@ io.sockets.on('connection', function (socket) {
 			console.log("SETTING MASTER SOCKET");
 			master = socket;
 		}
+	});
+	
+	socket.on('name', function(msg) {
+		console.log("NAME RECEIVED " + msg.name);
+		socket.userName = msg.name;
 	});
 	
 	socket.on('disconnect', function () { 
