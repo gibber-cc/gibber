@@ -4,10 +4,42 @@
 // MIT License
 // special thanks to audioLib.js
 
-Array.prototype.remove = function(v) {
-    return $.grep(this, function(e) {
-        return e !== v;
-    });
+Array.prototype.remove = function(arg) {
+    // return $.grep(this, function(e) {
+    //     return e !== v;
+    // });
+	if(typeof arg === "undefined") { // clear all
+		for(var i = 0; i < this.length; i++) {
+			delete this[i];
+		}
+		this.length = 0;
+	}else if(typeof arg === "number") {
+		this.splice(arg,1);
+	}else{ // find named member and remove
+		for(var i = 0; i < this.length; i++) {
+			var member = this[i];
+			if(member.name == arg) {
+				this.splice(i, 1);
+			}
+		}
+	}
+};
+
+Array.prototype.insert = function(v, pos) {
+	this.splice(pos,0,v);
+};
+
+Array.prototype.add = function() {
+	for(var i = 0; i < arguments.length; i++) {
+		this.push(arguments[i]);
+	}
+};
+
+Array.prototype.clear = function() {
+	for(var i = 0; i < this.length; i++) {
+		delete this[i];
+	}
+	this.length = 0;
 };
 
 var Gibber = {
@@ -56,7 +88,7 @@ var Gibber = {
 									 Gibber.fxRemove(variable, newObj);
 								 break;
 								 case "complex":
-									 variable.replace(newObj);
+									 variable.replace(newObj); // rely on object prototype to handle removing members
 								 break;
 								 default: break;
 							 }
@@ -227,8 +259,6 @@ var Gibber = {
 			if(typeof _id === "undefined") {
 				this.clearMods();
 			}else if(typeof _id === "number") {
-				this.mods[_id].gen.reset();
-				this.automations[_id].amount = 0;
 				this.mods.splice(_id, 1);
 			}else{
 				for(var i = 0; i < this.mods.length; i++) {
@@ -242,6 +272,7 @@ var Gibber = {
 		},
 	
 		mod : function(_name, _source, _type) {
+			console.log(_name);
 			var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
 			var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
 		
@@ -252,6 +283,7 @@ var Gibber = {
 			_source.store = {};
 			_source.modded.push(this);
 			_source.param = name;
+			_source.name = _name;
 			_source.type = type;
 			
 			this.mods.push(_source);
@@ -264,10 +296,6 @@ var Gibber = {
 		},
 	
 		clearMods : function() {
-			for(var i = 0; i < this.mods.length; i++) {
-				this.mods[i].gen.reset();
-				this.automations[i].amount = 0;
-			}
 			this.mods.length = 0;
 			this.automations.length = 0;
 		
