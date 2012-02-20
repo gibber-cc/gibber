@@ -86,6 +86,32 @@ drums:
 '// return to original sequence\n'+
 'd.reset();',
 
+"custom callback": 
+'/*\n'+
+'So, you want your own callback... don\'t like my graph? Well, here you go.\n'+
+'Most ugens in Gibber have a method named "out" that advances the phase of the\n'+
+'ugen and returns the output. Note that keystrokes to stop/start audio will\n'+
+'not work with a custom callback, and that there is no tempo.\n'+
+'*/\n'+
+'\n'+
+'this.dev.readFn = function(buffer, channelCount){\n'+
+'    var freqStore, val;\n'+
+'    for(var i = 0; i < buffer.length; i+= channelCount) {\n'+
+'        freqStore = s.frequency;\n'+
+'        s.frequency += m.out();     // modulate the frequency\n'+
+'        val = s.out();          	// get the output of s\n'+
+'        s.frequency = freqStore;    // restore the frequency of s\n'+
+'        \n'+
+'        buffer[i] = val;            // assign value to sample\n'+
+'        buffer[i+1] = val;\n'+
+'	}\n'+
+'}\n'+
+'\n'+
+'s = Sine();\n'+
+'m = Sine(4, 8);\n'+
+'\n' +
+'//this.dev.readFn = window.audioProcess;  // restore the Gibber graph',
+
 "SYNTHESIS TUTORIALS":"LABEL START",
 
 "Additive":

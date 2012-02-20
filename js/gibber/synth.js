@@ -12,8 +12,17 @@ function Synth(waveform, volume) {
 		value : 0,
 		active : true,
 		note : function(n) {
-			//console.log("calling " + n);
-			this.osc.frequency = (typeof n === "number") ? n : n.fq();
+			switch(typeof n) {
+				case "number" :
+					this.osc.frequency = n;
+				break;
+				case "string" :
+					this.osc.frequency = teoria.note(n).fq();
+				break;
+				default:
+					this.osc.frequency = n.fq();
+					break;
+			}
 			this.env.triggerGate();
 		},
 		_start : true,

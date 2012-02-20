@@ -41,8 +41,8 @@ Arp.prototype = {
 			
 			var _root = this.notation.slice(0,1);
 			var _octave, _quality;
-			if(isNaN(this.notation.charAt(1))) { // if true, then there is a sharp or flat
-				_root += this.notation.charAt(1);
+			if(isNaN(this.notation.charAt(1))) { 	// if true, then there is a sharp or flat...
+				_root += this.notation.charAt(1);	// ... so add it to the root name
 				_octave = parseInt( this.notation.slice(2,3) );
 				_quality = this.notation.slice(3);
 			}else{

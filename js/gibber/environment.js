@@ -318,7 +318,7 @@ Gibber.Environment = {
 					"left": $(this).offset().left,
 					"position": "absolute",
 					"width": "9em",
-					"height": "5.5em",
+					"height": "8.5em",
 					"overflow": "scroll", 
 					"background-color": "rgba(65,65,65,1)", 
 					"-webkit-box-shadow": "3px 3px 8px #000",
