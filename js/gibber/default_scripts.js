@@ -3,15 +3,15 @@ default:
 's = Sine(240, .1);                  // Sine wave with freq 240, amp .5.\n' +
 's.fx.add( Delay( _3 ), Reverb() );  // create fx chain with delay and reverb. delay time (_3) is a triplet.\n' +
 '\n' +
-'a = Arp(s, "C4m7", _16, "updown");  // Arpeggiator: control s, C3minor7 (3 is octave) chord, 16th notes, up then down\n' +
+'a = Arp(s, "C4m7", _16, "updown");  // Arpeggiator: control s, Cminor7 (4 is octave) chord, 16th notes, up then down\n' +
 'a.shuffle();                        // randomize arpeggio\n' +
 'a.reset();                          // reset arpeggio\n' +
 '\n' +
 'd = Drums("x...o..*", _8);			// kick on 1, snare on 5, "hat" on 8... each note is an eighth note (_8) \n' +
 'd.fx.add( Trunc(6), Delay(_8) );\n' +
-'d.frequency = 880;                  // 440 is base frequency\n' +
+'d.frequency = 880;                  // 440 is base frequency; this lines doubles the pitch of all drum samples\n' +
 '\n' +
-'s.mod("freq", LFO(8, 10), "+");     // Vibrato - modulating frequency by +/- 4Hz 8 times per second\n' +
+'s.mod("freq", LFO(8, 10), "+");     // Vibrato - modulating frequency by +/- 10Hz 8 times per second\n' +
 's.mods.remove();                    // removes all mods, pass a number or parameter name to remove a particular mod\n' +
 '\n' +
 'Master.chain( Reverb() );           // Master FX are applied to summed signal of all generators\n' +

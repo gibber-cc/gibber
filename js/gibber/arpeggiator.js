@@ -40,20 +40,26 @@ Arp.prototype = {
 			var tmp = [];
 			
 			var _root = this.notation.slice(0,1);
-			var _octave = this.notation.slice(1,2);
-			var _quality = this.notation.slice(2);
+			var _octave, _quality;
+			if(isNaN(this.notation.charAt(1))) { // if true, then there is a sharp or flat
+				_root += this.notation.charAt(1);
+				_octave = parseInt( this.notation.slice(2,3) );
+				_quality = this.notation.slice(3);
+			}else{
+				_octave = parseInt( this.notation.slice(1,2) );
+				_quality = this.notation.slice(3);
+			}
+			_octave += i;
 
-			var _chord = teoria.chord(_root + _quality);
-			for(var i = 0; i < _chord.notes.length; i++) {
-				var n = _chord.notes[i];
-				n.octave = _octave;
+			var _chord = teoria.note(_root + _octave).chord(_quality);
+			for(var j = 0; j < _chord.notes.length; j++) {
+				var n = _chord.notes[j];
 				if(typeof gen.note === "function") {
-					tmp[i] = n;
+					tmp[j] = n;
 				}else{
-					tmp[i] = n.fq();
+					tmp[j] = n.fq();
 				}
 			}
-
 			arr = arr.concat(tmp);
 		}
 		

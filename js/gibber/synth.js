@@ -13,7 +13,7 @@ function Synth(waveform, volume) {
 		active : true,
 		note : function(n) {
 			//console.log("calling " + n);
-			this.osc.frequency = (typeof n === "string") ? Note.getFrequencyForNotation(n) : n;
+			this.osc.frequency = (typeof n === "number") ? n : n.fq();
 			this.env.triggerGate();
 		},
 		_start : true,
