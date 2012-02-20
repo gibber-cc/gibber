@@ -25,11 +25,11 @@ function Intervals(_root, _quality, _sequence, _speed, _gen) {
 		}
 
 		var negCount = -1;
-		for(var oct = _rootoctave -1, o = -1; oct > 0; oct--, o--) {
+		for(var oct = _rootoctave -1, o = -1; oct >= 0; oct--, o--) {
 		 	for(var num = _scale.length - 1; num >= 0; num--) {
 		 		var nt = jQuery.extend({}, _scale[num]);
 		 		nt.octave += o;
-		 		this.scale[negCount--] = nt;
+		 		this.scale[negCount--] = nt;	// negative array indices!!!!! The magic of js.
 		 	}
 		}
 		
@@ -123,7 +123,7 @@ function Seq(_seq, speed, gen, _outputMsg) {
 		if(typeof seq === "string") {
 			for(var c = 0; c < seq.length; c++) {
 				var _c = seq.charAt(c);
-				this.sequence.push(c);
+				this.sequence.push(_c);
 			}
 		}else{
 			for(var i = 0; i < seq.length; i++) {
@@ -131,9 +131,6 @@ function Seq(_seq, speed, gen, _outputMsg) {
 				this.sequence[i] = n;
 			}
 		}
-		
-		console.log("INSIDE SEQUENCER");
-		console.log(this.sequence);
 		
 		if(shouldReset) {
 			this.phase = 0;
@@ -181,19 +178,17 @@ function Seq(_seq, speed, gen, _outputMsg) {
 				var val = this.sequence[this.counter % this.sequence.length];
 				if(this.outputMessage === "freq") {
 					if(typeof val === "string" ) {
-						//val = Note.getFrequencyForNotation(val);
 						var n = teoria.note(val);
 						val = n.fq();
-						//console.log("note freq = " + val);
 					}else if(typeof val === "object"){
 						val = val.fq();
 					}
 				}
 				if(typeof slave[this.outputMessage] === "function") {
-					if(Gibber.debug) console.log("calling function " + this.outputMessage);					
+					//if(Gibber.debug) console.log("calling function " + this.outputMessage);					
 					slave[this.outputMessage](val);
 				}else{
-					if(Gibber.debug) console.log("outputting " + this.outputMessage);
+					//if(Gibber.debug) console.log("outputting " + this.outputMessage);
 					slave[this.outputMessage] = val;
 				}
 			}
@@ -265,7 +260,7 @@ function Seq(_seq, speed, gen, _outputMsg) {
 		}
 		this.preBreakSequences = jQuery.extend(true, {}, this.sequence);
 	};
-		
+	
 	that.setSequence(that.sequence, that.speed);	
 	
 	Gibber.controls.push(that);
