@@ -64,6 +64,10 @@ function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {
 			}, 
 	    });
 	})();
+	
+	that.shuffle = function() { that.seq.shuffle(); };
+	that.reset = function() { that.seq.reset(); }
+	that.retain = function() { that.seq.retain(arguments[0]); }
 
 	/*
 s = Synth();
@@ -136,7 +140,7 @@ function Seq(_seq, speed, gen, _outputMsg) {
 			this.phase = 0;
 		}
 		
-		this.sequenceLengthInSamples = seq.length * speed;
+		this.sequenceLengthInSamples = seq.length * this.speed;
 	};
 	
 	that.slave = function(gen) {
@@ -171,7 +175,7 @@ function Seq(_seq, speed, gen, _outputMsg) {
 			return;
 		}
 		
-		if(this.phase % this.speed < 1) {
+		if(this.phase % this.speed <= .5) {
 			this.counter++;
 			for(j = 0; j < this.slaves.length; j++) {
 				var slave = this.slaves[j];
@@ -193,22 +197,39 @@ function Seq(_seq, speed, gen, _outputMsg) {
 				}
 			}
 		}
-			
-		if(this.phase >= this.sequence.lengthInSamples) { 
+		
+		if(this.phase >= this.sequenceLengthInSamples - 1) {
 			if(this.shouldBreak) { 
+				console.log("breaking");
 				this.shouldBreak = false;
 				if(!this.breakToOriginal) {
-					this.sequence = jQuery.extend(true, {}, this.preBreakSequences);
+					console.log("original");
+					this.sequence = jQuery.extend(true, {}, this.preBreakSequence);
 				}else{
-					this.sequence = jQuery.extend(true, {}, this._sequences);
+					console.log("Last");;
+					this.sequence = jQuery.extend(true, {}, this._sequence);
 				}
-				this.setSequence(this.sequence, this.speed)
+				this.setSequence(this.sequence, this.speed);
+				console.log(this.sequence);
 			}
 			this.phase = 0;
 		}else{
 			this.phase++;
 		}
 	}
+	
+	that.break = function(newSeq, breakToOriginal) {
+		this.shouldBreak = true;
+			
+		if(breakToOriginal) {
+			this.breakToOriginal = true;
+		}
+		console.log("BREAK");
+		this.preBreakSequence = jQuery.extend(true, {}, this._sequence);
+		console.log(this.preBreakSequence);
+	};
+	
+	
 	
 	that.getMix = function(){
 		return 0;
@@ -231,6 +252,8 @@ function Seq(_seq, speed, gen, _outputMsg) {
 		}
 	}
 	
+	Gibber.registerObserver( "bpm", that.bpmCallback() );
+	
 	that.shuffle = function() {
 		this.sequence.shuffle();
 		this.setSequence(this.sequence, this.speed);
@@ -252,15 +275,7 @@ function Seq(_seq, speed, gen, _outputMsg) {
 		}
 	}
 	
-	that.break = function(newSeq, breakToOriginal) {
-		this.shouldBreak = true;
-			
-		if(breakToOriginal) {
-			this.breakToOriginal = true;
-		}
-		this.preBreakSequences = jQuery.extend(true, {}, this.sequence);
-	};
-	
+
 	that.setSequence(that.sequence, that.speed);	
 	
 	Gibber.controls.push(that);

@@ -3896,20 +3896,6 @@ ADSREnvelope.prototype = {
 				}
 			}
 		},
-
-		
-		// function(){ // Decay
-		// 			this.value -= 1000 / this.sampleRate / this.decay;
-		// 			if (this.value <= 0){ // used to be this.sustain
-		// 				if (this.sustainTime === null){
-		// 					this.state	= 2;
-		// 				} else {
-		// 					this._st	= 0;
-		// 					this.state	= 4;
-		// 				}
-		// 			}
-		// 		},
-		
 		function(){ // Sustain
 			this.value = this.sustain;
 		},

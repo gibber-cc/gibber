@@ -19,52 +19,60 @@ default:
 
 "GIBBER TUTORIALS":"LABEL START",
 synth_sequence:
-'// Triangle wave, .15 amplitude. Synths also have a short envelope that\n' +
-'// is triggered whenever it receives a note(noteName or MIDI number) command.\n' +
-'s = Synth();\n' +
-'t = Synth();\n' +
-'\n' +
-'// play a note\n' +
-'s.note("F4")\n' +
-'\n' +
-'// create a sequence object by passing an array of notes and a length for each\n' +
-'q = Seq(["F4", "G4", "A5", "E4"], _1);\n' +
-'\n' +
-'// tell the sequence object to control the synth\n' +
-'q.slave(s);\n' +
-'\n' +
-'// if you pass a synth as the last parameter it will be slaved\n' +
-'r = Seq(["A5", "A#5", "C#5", "D5"], _1, t);\n' +
-'\n' +
-'// create fx chains with delay and reverb\n' +
-'s.chain( Delay(), Reverb() )\n' +
-'t.chain( Delay(), Reverb() )\n' +
-'\n' +
-'// resequence\n' +
-'q.set(["F4", "G4", "D4", "C4"]);\n' +
+'// Triangle wave, .15 amplitude. Synths also have a short envelope that\n'+
+'// is triggered whenever it receives a note(noteName or MIDI number) command.\n'+
+'s = Synth();\n'+
+'t = Synth();\n'+
+'u = Synth();\n'+
+'\n'+
+'// play a note\n'+
+'s.note("F4")\n'+
+'\n'+
+'// create a sequence object by passing an array of notes and a length for each\n'+
+'q = Seq(["F4", "G4", "A4", "E4"], _1);\n'+
+'\n'+
+'// tell the sequence object to control the synth\n'+
+'q.slave(s);\n'+
+'\n'+
+'// if you pass a synth as the last parameter it will be slaved\n'+
+'r = Seq(["A5", "A#5", "C#5", "D5"], _1, t);\n'+
+'\n'+
+'// ScaleSeq allows you to specify a root note and scale type to define notes.\n'+
+'v = ScaleSeq("F2", "locrian", [0,2,-3,-1], _4, u);\n'+
+'u.osc.waveShape = "square";\n'+
+'u.osc.mix = .05;\n'+
+'u.chain( Ring(), Delay(_32) );\n'+
+'\n'+
+'\n'+
+'// create fx chains with delay and reverb\n'+
+'s.chain( Delay(), Reverb() )\n'+
+'t.chain( Delay(), Reverb() )\n'+
+'\n'+
+'// resequence\n'+
+'q.set(["F4", "G4", "D4", "C4"]);\n'+
 'r.set(["A5", "A#5", "C#5", "B5"]);',
 
 "simple fx":
 '// triangle wave at 440Hz, .15 amplitude\n'+
-'s = Tri(440, .15)\n'+
+'s = Tri(440, .15);\n'+
 '\n'+
 '// modulate the frequency of the triangle wave. see simple modulation for details\n'+
-'s.mod("freq", Step([220, 0], _2), "+")\n'+
+'s.mod("freq", Step([220, 0], _2), "+");\n'+
 '\n'+
 '// add a Delay effect with a delay time of 1/3 a measure and a Reverb effect with default settings\n'+
-'s.chain( Delay(_3), Reverb() )\n'+
+'s.fx.add( Delay(_3), Reverb() );\n'+
 '\n'+
 '// remove last added effect\n'+
-'s.fx.pop()\n'+
+'s.fx.pop();\n'+
 '\n'+
 '// bit crush; reduce to 8-bits\n'+
-'s.chain( Trunc(8) )\n'+
+'s.fx.add( Trunc(8) );\n'+
 '\n'+
 '// remove first effect in fx chain\n'+
-'s.removeFX(0)\n'+
+'s.fx.remove(0);\n'+
 '\n'+
 '// remove all fx\n'+
-'s.removeFX();',
+'s.fx.remove();',
 
 drums: 
 '// x = kick, o = snare, * = hihat. hits are triggered every quarter note\n'+
@@ -77,11 +85,10 @@ drums:
 'd.frequency = 880\n'+
 '\n'+
 '// pass new sequence\n'+
-'d.seq("x * ")\n'+
+'d.set("x * ")\n'+
 '\n'+
-'// play sequence once and then return to regular pattern\n'+
-'// pass true as a second parameter to return to original sequence\n'+
-'d.break("xxxx", true)\n'+
+'// change speed of pattern\n'+
+'d.speed = _8;\n'+
 '\n'+
 '// return to original sequence\n'+
 'd.reset();',
@@ -91,11 +98,19 @@ drums:
 'So, you want your own callback... don\'t like my graph? Well, here you go.\n'+
 'Most ugens in Gibber have a method named "out" that advances the phase of the\n'+
 'ugen and returns the output. Note that keystrokes to stop/start audio will\n'+
-'not work with a custom callback, and that there is no tempo.\n'+
+'not work with a custom callback, and that there is no tempo. It\'s a little\n'+
+'tricky to run this and then initialize objects, so we\'ll just create our ugens\n'+
+'the first time the new callback is called.\n'+
 '*/\n'+
 '\n'+
 'this.dev.readFn = function(buffer, channelCount){\n'+
 '    var freqStore, val;\n'+
+'    if(typeof s === "undefined") {  // init oscillators\n'+
+'        console.log("INIT");\n'+
+'        s = Sine();\n'+
+'        m = Sine(4, 8);\n'+
+'    }\n'+
+'    \n'+
 '    for(var i = 0; i < buffer.length; i+= channelCount) {\n'+
 '        freqStore = s.frequency;\n'+
 '        s.frequency += m.out();     // modulate the frequency\n'+
@@ -107,10 +122,7 @@ drums:
 '	}\n'+
 '}\n'+
 '\n'+
-'s = Sine();\n'+
-'m = Sine(4, 8);\n'+
-'\n' +
-'//this.dev.readFn = window.audioProcess;  // restore the Gibber graph',
+'this.dev.readFn = window.audioProcess;  // restore the Gibber graph',
 
 "SYNTHESIS TUTORIALS":"LABEL START",
 
@@ -218,3 +230,9 @@ FM:
 'f.chain( Reverb() );\n'+
 's = Seq(["A4", "B4", "B4", "C4"], _8, f);',
 }
+
+/* this is broken unfortunately...
+'// play sequence once and then return to regular pattern\n'+
+'// pass true as a second parameter to return to original sequence\n'+
+'d.break("xxxx", true)\n'+
+*/

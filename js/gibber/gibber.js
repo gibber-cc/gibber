@@ -5,9 +5,6 @@
 // special thanks to audioLib.js
 
 Array.prototype.remove = function(arg) {
-    // return $.grep(this, function(e) {
-    //     return e !== v;
-    // });
 	if(typeof arg === "undefined") { // clear all
 		for(var i = 0; i < this.length; i++) {
 			delete this[i];
@@ -148,7 +145,7 @@ var Gibber = {
 	},
 	
 	registerObserver : function(name, fn) {
-		//console.log("Registering");
+		console.log("Registering");
 		this.observers[name].push(fn);
 	},
 	
@@ -730,7 +727,11 @@ audioLib.ADSREnvelope.prototype.states[1] = function(){ // Timed Decay
 	var delayAmt = (1 - this.sustain) / ( (Gibber.sampleRate / 1000) * this.decay);
 	this.value -= delayAmt;
 	if(this.value <= this.sustain) {
-		this.state = 2;
+		if(this.sustainTime === 0) {
+			this.state = 2;
+		}else{
+			this.state= 4;
+		}
 	}
  	//this.value = Math.max(this.sustain, this.value - 1000 / this.sampleRate / this.release);
 }; 
