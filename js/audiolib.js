@@ -3912,8 +3912,10 @@ ADSREnvelope.prototype = {
 		function(){ // Timed release
 			this.value = Math.max(0, this.value - 1000 / this.sampleRate / this.release);
 			if (this._st++ >= this.sampleRate * 0.001 * this.releaseTime){
+				console.log("RELEASING");
 				this._st	= 0;
-				this.state	= 0;
+				//this.state	= 0;
+				this.value = 0;
 			}
 		}
 	]

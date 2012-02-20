@@ -7,6 +7,7 @@ function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {
 		sequence : [],
 		speed : _speed,
 		seq : null,
+		slaves : [],
 	};
 		
 	that.setSequence = function(sequence) {
@@ -68,7 +69,19 @@ function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {
 	that.shuffle = function() { that.seq.shuffle(); };
 	that.reset = function() { that.seq.reset(); }
 	that.retain = function() { that.seq.retain(arguments[0]); }
-
+	that.slave = function(gen) {
+		this.seq.slaves.push(gen);
+		//if(typeof gen.note === "undefined") { this.outputMessage = "freq"; }		
+	};
+	
+	that.free = function() {
+		if(arguments.length == 0) {
+			this.seq.slaves.length = 0;
+		}else{
+			this.seq.slaves.splice(arguments[0], 1);
+		}
+	};
+	
 	/*
 s = Synth();
 i = ScaleSeq("B2", "ionian", [1,2,3,5], _8, s);
@@ -177,9 +190,24 @@ function Seq(_seq, speed, gen, _outputMsg) {
 		
 		if(this.phase % this.speed <= .5) {
 			this.counter++;
+			var val = this.sequence[this.counter % this.sequence.length];
+			
+			// Function sequencing
+			// TODO: there should probably be a more robust way to to this
+			// but it will look super nice and clean on screen...
+			if(typeof val === "function") {
+				val();
+				if(this.phase >= this.sequenceLengthInSamples - 1) {
+					this.phase = 0;
+				}else{
+					this.phase++;
+				}
+				return;
+			}
+			
 			for(j = 0; j < this.slaves.length; j++) {
 				var slave = this.slaves[j];
-				var val = this.sequence[this.counter % this.sequence.length];
+	
 				if(this.outputMessage === "freq") {
 					if(typeof val === "string" ) {
 						var n = teoria.note(val);

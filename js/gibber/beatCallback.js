@@ -7,6 +7,8 @@ c = audioLib.Callback;
 c.addCallback("Gibber.setBPM(120)", _4);	// time is measured in samples
 
 This will set the bpm to 120 at the start of the next quarter beat
+
+TODO: Time subdivision doesn't appear to work; always defaults to one measure
 */
 
 (function myPlugin(){
@@ -34,23 +36,32 @@ Callback.prototype = {
 	value : 0,
 	
 	addCallback : function(callback, subdivision, shouldLoop, shouldWait) {
+		console.log("callback = " + callback);
+		var isLoop = false;
+		
 		if(typeof shouldWait === 'undefined') shouldWait = true;
 		if(typeof shouldLoop === 'undefined') shouldLoop = false;
 		var currentSubdivision = Math.floor(this.phase / subdivision); // 0
 		var nextSubdivision = (currentSubdivision + 1) * subdivision; // 1 * _1 = 88200
 		//console.log("Current Subdivison = " + currentSubdivision + " : next subdivision = " + nextSubdivision + " : phase = " + this.phase);
-		
+
 		function _callback() {
 			var call = callback;
 			var loop = shouldLoop;
 			return function() {
-				eval(call);
-				return shouldLoop;
+				if(typeof call === "string") {
+					eval(call);
+				}else{
+					call();
+				}
+				return loop;
 			}
 		}
 		//console.log("time till event = " + (nextSubdivision - this.phase) ) // 88200 - 88187 / 441
 		var stop;
 		this.callbacks.push(_callback());
+		
+		return this.callbacks[this.callbacks.length - 1];
 		// if(shouldWait) {
 		// 			stop = Sink.doInterval(_callback(), ((nextSubdivision - this.phase) / (Gibber.sampleRate / 1000)) );
 		// 		}else{
@@ -67,16 +78,14 @@ Callback.prototype = {
 			}
 			$("#n1").css("color", "red");
 			if(this.callbacks.length != 0) {
-				// TODO: only clear callback if shouldLoop = false;
 				for(var j = 0; j < this.callbacks.length; j++) {
 					try{
-						this.callbacks[j]();
+						var check = this.callbacks[j]();
+						if(!check) this.callbacks.splice(j,1);
 					}catch(e) {
-						console.log("EXECUTION FAILED");
-						console.log(e);
+						this.callbacks.splice(j,1);
 					}
 				}
-				this.callbacks.length = 0;
 			}
 		}else{
 			if(this.phase % _4 == 0) {

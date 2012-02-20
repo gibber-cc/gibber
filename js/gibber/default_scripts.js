@@ -93,6 +93,22 @@ drums:
 '// return to original sequence\n'+
 'd.reset();',
 
+"sequence functions" :
+'// This routine shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
+'\n'+
+'// create a synth, add delay + reverb\n'+
+'s = Synth().chain( Delay(_8), Reverb() );\n'+
+'\n'+
+'// sequence the aeolian mode from root C3, eighth notes\n'+
+'q = ScaleSeq("C3", "aeolian", [0,1,5,3,0,6,7,-5], _8, s)    \n'+
+'\n'+
+'// every two measures, alternate between randomizing the sequence\n'+
+'// and resetting it to its original value\n'+
+'p = Seq([ q.shuffle, q.reset], _1 * 2);\n'+
+'\n'+
+'// -very- gradually fade out in steps\n'+
+'v = Seq([ function() { s.osc.mix *= .9; if(s.osc.mix < .001) v.stop(); } ])',
+
 "custom callback": 
 '/*\n'+
 'So, you want your own callback... don\'t like my graph? Well, here you go.\n'+

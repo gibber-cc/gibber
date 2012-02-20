@@ -4,6 +4,16 @@
 // MIT License
 // special thanks to audioLib.js
 
+window.copy = function(obj) {
+	return $.extend(true, {}, obj);
+};
+
+Array.prototype.removeObj = function(value) {
+    return jQuery.grep(this, function(elem, index) {
+        return elem !== value;
+    });
+};
+
 Array.prototype.remove = function(arg) {
 	if(typeof arg === "undefined") { // clear all
 		for(var i = 0; i < this.length; i++) {
@@ -62,7 +72,15 @@ var Gibber = {
 		    snare 	: atob(samples.snare),
 		    //hat 	: atob(samples.snare), 
 		}
+		
 		this.callback = new audioLib.Callback();
+		window.loop = function(cb, time) {
+			var l = Gibber.callback.addCallback(cb, time, true);
+			l.end = function() {
+				Gibber.callback.callbacks = Gibber.callback.callbacks.removeObj(this);
+			};
+			return l;
+		};
 
 		var letters = "abcdefghijklmnopqrstuvwxyz";
 		for(var l = 0; l < letters.length; l++) {
@@ -172,6 +190,7 @@ var Gibber = {
 		this.generators.length = 0;
 		this.callback.phase = 0;
 		this.controls.length = 0;
+		this.callback.callbacks.length = 0;
 		Master.fx.length = 0;
 		Master.mods.length = 0;	
 	},
