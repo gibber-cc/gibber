@@ -1,4 +1,4 @@
-function Intervals(_root, _quality, _sequence, _speed, _gen) {	
+function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {	
 	var that = {
 		root : _root,
 		sequenceNumbers : _sequence,
@@ -67,7 +67,7 @@ function Intervals(_root, _quality, _sequence, _speed, _gen) {
 
 	/*
 s = Synth();
-i = Intervals("B2", "ionian", [1,2,3,5], _8, s);
+i = ScaleSeq("B2", "ionian", [1,2,3,5], _8, s);
 	*/
 	that.root = _root;	// triggers meta-setter that sets sequence
 	that.seq = Seq(that.sequence, that.speed, that.gen);

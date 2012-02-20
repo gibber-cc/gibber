@@ -574,12 +574,12 @@
                 this.notes.push(teoria.interval(this.root, CHORDS[this.type][x]));
             }
         }
-		console.log(this.notes);
-		console.log(extensions);
+		//console.log(this.notes);
+		//console.log(extensions);
         for (x = 0, xLength = extensions.length; x < xLength; x++) {
             this.notes.push(teoria.interval(this.root, extensions[x]));
         }
-		console.log(this.notes);
+		//console.log(this.notes);
     }
 
     TeoriaChord.prototype.dominant = function(additional) {

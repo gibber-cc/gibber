@@ -47,7 +47,7 @@ Arp.prototype = {
 				_quality = this.notation.slice(3);
 			}else{
 				_octave = parseInt( this.notation.slice(1,2) );
-				_quality = this.notation.slice(3);
+				_quality = this.notation.slice(2);
 			}
 			_octave += i;
 
