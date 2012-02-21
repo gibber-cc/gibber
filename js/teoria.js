@@ -567,7 +567,7 @@
         }
 
         for (var x = 0, xLength = CHORDS[this.type].length; x < xLength; x++) {
-			console.log(CHORDS[this.type][x][1]);
+			//console.log(CHORDS[this.type][x][1]);
             if (CHORDS[this.type][x][1] === '5' && five) {
                 this.notes.push(teoria.interval(this.root, five));
             } else {

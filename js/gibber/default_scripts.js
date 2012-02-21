@@ -204,6 +204,51 @@ default:
 '// change q to play each note in scale (with some extra notes on the pentatonic ones)\n'+
 'q.set([0,1,2,3,4,5,6,7]);',
 
+"chords + arp":
+'/*\n'+
+'Chords\n'+
+'Chords are created in Gibber using the teoria.js library. Unfortunately, teoria does not\n'+
+'provide a means for specifying octaves, so Gibber\'s format is slightly different. Here are\n'+
+'some examples:\n'+
+'\n'+
+'C3M7 - C major chord, dominant 7th, root is C3.\n'+
+'C3m7 - C minor chord, dominant 7th, root is C3.\n'+
+'Db4dim - Db diminished chord, root is Db4\n'+
+'A#3Maj7 - A# major seventh chord\n'+
+'F3M9b5 - F major 9 flat 5 chord\n'+
+'G3aug  - G augmented chord\n'+
+'\n'+
+'In Gibber we can use these chords with the Poly (polysynth) and the Arp (arpeggiator) objects.\n'+
+'The Poly object plays all notes simultaneously, the Arp plays them sequentially.\n'+
+'\n'+
+'Note that teoria.js uses the note C to demarcate octaves. Thus, B4 is an octave and a semitone\n'+
+'lower than C5, NOT a single semitone.\n'+
+'*/\n'+
+'\n'+
+'// create a poly object and give it a starting chord.\n'+
+'p = Poly("C4m7").chain( Reverb() );\n'+
+'\n'+
+'// trigger the amplitude envelope to play the chord. Pass the volume you want to use.\n'+
+'p.trig(.6);\n'+
+'\n'+
+'// we can sequence trig calls to play the chord in a pattern of different volumes\n'+
+'s = Seq([.5, .2, .3, .1], _8, p, "trig")\n'+
+'\n'+
+'// change the chord using the chord message\n'+
+'p.chord("D4m7");\n'+
+'\n'+
+'// sequence chord changes using chord calls\n'+
+'ss = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, p, "chord");\n'+
+'\n'+
+'// create a sine wave to arpeggiate\n'+
+'high = Sine(440, .1).chain( Reverb() );\n'+
+'\n'+
+'// pass oscillator/synth to control, chord, note duration, direction and number of octaves\n'+
+'aa = Arp(high, "C4m7", _32, "updown", 3);\n'+
+'\n'+
+'aa.shuffle(); // shuffle notes in arpeggiator\n'+
+'aa.reset();   // reset to original chord',
+
 "sequence functions" :
 '// This shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
 '// There is a tutorial on the Seq object that should be read first to understand this.\n'+
