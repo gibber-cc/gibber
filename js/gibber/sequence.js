@@ -1,8 +1,9 @@
-function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {	
+function ScaleSeq(_sequence, _speed, _gen) {
 	var that = {
-		root : _root,
+		root : Gibber.root,
 		sequenceNumbers : _sequence,
-		quality : _quality,
+		mode : Gibber.mode,
+		
 		gen : _gen,
 		sequence : [],
 		speed : _speed,
@@ -15,8 +16,10 @@ function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {
 		this.sequenceNumbers = sequence;
 		this.sequence.length = 0;
 		this.scale = [];
+		
+		console.log("root " + this.root + " mode " + this.mode);
 
-		var _scale = teoria.scale.list(this.root, this.quality, false);
+		var _scale = teoria.scale.list(this.root, this.mode, false);
 		for(var oct = _rootoctave, o = 0; oct < 8; oct++, o++) {
 			for(var num = 0; num < _scale.length; num++) {
 				var nt = jQuery.extend({}, _scale[num]);
@@ -42,6 +45,7 @@ function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {
 	(function() {
 	    var root = that.root;
 		var speed = that.speed;
+		var mode = that.mode;
 
 	    Object.defineProperties(that, {
 			"root" : {
@@ -62,17 +66,31 @@ function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {
 					speed = value;
 					this.seq.speed = speed;
 				}
-			}, 
+			},
+			"mode" : {
+		        get: function() {
+		            return mode;
+		        },
+		        set: function(value) {
+		            mode = value;
+					this.setSequence(this.sequenceNumbers);
+					if(this.seq != null) {
+						this.seq.set(this.sequence);
+					}
+		        }
+			},
+			 
 	    });
 	})();
 	
-	that.shuffle = function() { that.seq.shuffle(); };
-	that.reset = function() { that.seq.reset(); }
-	that.retain = function() { that.seq.retain(arguments[0]); }
-	that.slave = function(gen) {
-		this.seq.slaves.push(gen);
-		//if(typeof gen.note === "undefined") { this.outputMessage = "freq"; }		
-	};
+	// pass methods to seq object... TODO: this should probably just inherit somehow.
+	that.shuffle 	= function() 	{ that.seq.shuffle(); };
+	that.reset 		= function() 	{ that.seq.reset(); }
+	that.retain 	= function() 	{ that.seq.retain(arguments[0]); }
+	that.slave 		= function(gen) { this.seq.slaves.push(gen); };
+	that.stop  		= function() 	{ this.seq.stop();  }
+	that.play  		= function() 	{ this.seq.play();  }
+	that.pause 		= function() 	{ this.seq.pause(); }
 	
 	that.free = function() {
 		if(arguments.length == 0) {
@@ -81,37 +99,71 @@ function ScaleSeq(_root, _quality, _sequence, _speed, _gen) {
 			this.seq.slaves.splice(arguments[0], 1);
 		}
 	};
-	
-	/*
-s = Synth();
-i = ScaleSeq("B2", "ionian", [1,2,3,5], _8, s);
-	*/
-	that.root = _root;	// triggers meta-setter that sets sequence
+
+	that.root = Gibber.root;	// triggers meta-setter that sets sequence
 	that.seq = Seq(that.sequence, that.speed, that.gen);
 	
 	return that;
 }
 
 
-function Seq(_seq, speed, gen, _outputMsg) {
-	var _seq = arguments[0];
-	var speed = (typeof arguments[1] === "number") ? arguments[1] : window["_" + arguments[0].length];
+//function Seq(_seq, speed, gen, _outputMsg) {
+function Seq() {
 	
-	var gen =   (typeof arguments[2] !== "undefined") ? arguments[2] : null;
+	var _seq = arguments[0];
+	var speed = window["_" + arguments[0].length];
+	var gen = null;
+	var _outputMsg = null;
+	
+	// variable argument list parsing
+	switch(arguments.length) {
+		case 1: break;
+		case 2:
+			if(typeof arguments[1] === "number") {
+				speed = arguments[1];
+			}else if(typeof arguments[1] === "object") {
+				gen = arguments[1];
+			}else{
+				_outputMsg = arguments[1];
+			}
+		break;
+		case 3:
+			if(typeof arguments[1] === "number") {
+				speed = arguments[1];
+			}else if(typeof arguments[1] === "object") {
+				gen = arguments[1];
+			}else{
+				_outputMsg = arguments[1];
+			}
+			if(typeof arguments[2] === "number") {
+				speed = arguments[2];
+			}else if(typeof arguments[2] === "object") {
+				gen = arguments[2];
+			}else{
+				_outputMsg = arguments[2];
+			}
+		break;
+		case 4:
+			speed = arguments[1];
+			gen = arguments[2];
+			_outputMsg = arguments[3];
+		break;
+		default: break;
+	};
+	
 	sequence = _seq;
 	
-	if(typeof arguments[3] === "undefined") {
+	if(_outputMsg === null) {
 		if(gen != null) {
 			if(typeof gen.note === "undefined") {
-				_outputMessage = "freq";
+				_outputMsg = "freq";
 			}else{
-				_outputMessage = "note";
+				_outputMsg = "note";
 			}
 		}else{
-			_outputMessage = "note";
+			_outputMsg = "note";
 		}
 	}
-	//_outputMsg = (typeof arguments[3] === "undefined") ? "freq" : _outputMsg;
 	
 	var that = {
 		_sequence : sequence,
@@ -119,7 +171,7 @@ function Seq(_seq, speed, gen, _outputMsg) {
 		_start : true,
 		counter : -1,
 		speed: speed,
-		outputMessage:_outputMessage,
+		outputMessage:_outputMsg,
 		active:true,
 		slaves: [],
 		phase: 0,
@@ -220,7 +272,7 @@ function Seq(_seq, speed, gen, _outputMsg) {
 					//if(Gibber.debug) console.log("calling function " + this.outputMessage);					
 					slave[this.outputMessage](val);
 				}else{
-					//if(Gibber.debug) console.log("outputting " + this.outputMessage);
+					console.log("outputting " + this.outputMessage);
 					slave[this.outputMessage] = val;
 				}
 			}
@@ -314,7 +366,3 @@ function Seq(_seq, speed, gen, _outputMsg) {
 	
 	return that;
 }
-	
-
-	
-	

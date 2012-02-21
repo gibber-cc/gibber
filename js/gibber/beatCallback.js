@@ -36,7 +36,6 @@ Callback.prototype = {
 	value : 0,
 	
 	addCallback : function(callback, subdivision, shouldLoop, shouldWait) {
-		console.log("callback = " + callback);
 		var isLoop = false;
 		
 		if(typeof shouldWait === 'undefined') shouldWait = true;

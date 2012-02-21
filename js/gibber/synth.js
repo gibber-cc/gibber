@@ -54,32 +54,74 @@ function Synth(waveform, volume) {
 		that.osc.waveShape = waveform;
 	}
 	
-	// that.generate = function() {
-	// 	
-	// 	var store = {};
-	// 	for(var m = 0; m < this.mods.length; m++) {
-	// 		var mod = gen.mods[m];
-	// 		if(typeof store[mod.param] === "undefined") store[mod.param] = gen[mod.param];
-	// 		var val = mod.gen.out();
-	// 		audioLib.Automation.modes[mod.type](gen, mod.param, val);
-	// 	}
-	// 				
-	// 	genValue += gen.out();
-	// 				
-	// 	for(var name in store) {
-	// 		gen[name] = store[name];
-	// 	}
-	// 	
-	// 	this.env.generate();
-	// 	this.osc.generate();
-	// 	
-	// 	this.value = (this.env.getMix() * this.osc.getMix()) * this.mix;
-	// 	
-	// 	for(var e = 0; e < this.osc.fx.length; e++) {
-	// 		this.value = this.osc.fx[e].fxout(this.value);
-	// 	}
-	// };
-	// 
+	(function() {
+	    var mix = that.mix;
+		var attack = that.env.attack;
+		var decay  = that.env.decay;
+		var sustain = that.env.sustain;
+		var sustainTime = that.env.sustainTime;
+		var waveShape = that.osc.waveShape;
+		
+	    Object.defineProperties(that, {
+			"mix" : {
+		        get: function() {
+		            return mix;
+		        },
+		        set: function(value) {
+		            mix = value;
+					this.osc.mix = value;
+		        }
+			},
+			"waveShape" : {
+		        get: function() {
+		            return waveShape;
+		        },
+		        set: function(value) {
+		            waveShape = value;
+					this.osc.waveShape = value;
+		        }
+			},
+			
+			"attack" : {
+		        get: function() {
+		            return attack;
+		        },
+		        set: function(value) {
+		            attack = value;
+					this.env.attack = value;
+		        }
+			},
+			"decay" : {
+		        get: function() {
+		            return decay;
+		        },
+		        set: function(value) {
+		            decay = value;
+					this.env.decay = value;
+		        }
+			},
+			"sustain" : {
+		        get: function() {
+		            return sustain;
+		        },
+		        set: function(value) {
+		            sustain = sustain;
+					this.env.sustain = value;
+		        }
+			},
+			"sustainTime" : {
+		        get: function() {
+		            return sustainTime;
+		        },
+		        set: function(value) {
+		            sustainTime = value;
+					this.env.sustainTime = value;
+		        }
+			},
+	    });
+	})();
+	
+	
 	that.out = function() {
 		//this.generate();
 		//return this.value;

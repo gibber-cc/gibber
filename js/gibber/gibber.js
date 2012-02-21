@@ -4,55 +4,12 @@
 // MIT License
 // special thanks to audioLib.js
 
-window.copy = function(obj) {
-	return $.extend(true, {}, obj);
-};
-
-Array.prototype.removeObj = function(value) {
-    return jQuery.grep(this, function(elem, index) {
-        return elem !== value;
-    });
-};
-
-Array.prototype.remove = function(arg) {
-	if(typeof arg === "undefined") { // clear all
-		for(var i = 0; i < this.length; i++) {
-			delete this[i];
-		}
-		this.length = 0;
-	}else if(typeof arg === "number") {
-		this.splice(arg,1);
-	}else{ // find named member and remove
-		for(var i = 0; i < this.length; i++) {
-			var member = this[i];
-			if(member.name == arg) {
-				this.splice(i, 1);
-			}
-		}
-	}
-};
-
-Array.prototype.insert = function(v, pos) {
-	this.splice(pos,0,v);
-};
-
-Array.prototype.add = function() {
-	for(var i = 0; i < arguments.length; i++) {
-		this.push(arguments[i]);
-	}
-};
-
-Array.prototype.clear = function() {
-	for(var i = 0; i < this.length; i++) {
-		delete this[i];
-	}
-	this.length = 0;
-};
-
 var Gibber = {
 	active : true,
 	bpm : 120,
 	audioInit : false,
+	root : "C4",
+	mode : "aeolian",
 	
 	init : function() {
 		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
@@ -827,11 +784,6 @@ function Sched(_func, _time, _repeats) {
 	that.stop = Sink.doInterval(_callback(), that.time);
 
 	return that;
-}
-
-// http://snippets.dzone.com/posts/show/849
-Array.prototype.shuffle = function() {
-		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
 }
 
 function Step(steps, stepTime) {

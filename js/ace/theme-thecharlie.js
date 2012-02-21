@@ -54,7 +54,7 @@ exports.cssText = "\
 }\
 \
 .ace-thecharlie .ace_marker-layer .ace_active_line {\
-  background: #353637;\
+  background: #333;\
 }\
 \
 .ace-thecharlie .ace_marker-layer .ace_selected_word {\
