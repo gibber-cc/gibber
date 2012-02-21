@@ -93,6 +93,51 @@ drums:
 '// return to original sequence\n'+
 'd.reset();',
 
+"scales + theory":
+'// shows how to use Gibber.mode, Gibber.root and the ScaleSeq object\n'+
+'\n'+
+'// first, create a pair of synths, add delay + reverb, adjust attack/delay times\n'+
+'s = Synth().chain( Reverb() );\n'+
+'s.attack = 10;\n'+
+'s.decay = 50;\n'+
+'\n'+
+'ss = Synth().chain( Reverb() );\n'+
+'ss.attack = 10;\n'+
+'ss.decay = 50;\n'+
+'\n'+
+'// assign a mode and root note to Gibber.\n'+
+'G.mode = "lydian";\n'+
+'G.root = "D4";\n'+
+'\n'+
+'// ScaleSeq uses whatever mode and root is currently defined in Gibber.\n'+
+'// The default is C4 aeolian; we just changed it to D4 Lydian\n'+
+'q  = ScaleSeq([0,1,5,3,0,6,7,-5], _16, s);\n'+
+'qq = ScaleSeq([0,4,3,6,4,5,9,-3], _16, ss);\n'+
+'\n'+
+'// We can manually change the mode of any ScaleSeq. We can also change the root.\n'+
+'q.mode = "minor"\n'+
+'qq.mode = "majorpentatonic"\n'+
+'\n'+
+'qq.root = "A4";\n'+
+'\n'+
+'// We can easily sequence changes to modes using the Seq object. Just pass "mode"\n'+
+'// as the last parameter and it will change that parameter of q.\n'+
+'qq.stop();\n'+
+'a = Seq([ "minor", "majorpentatonic" ], _1, q, "mode");\n'+
+'\n'+
+'// We can also easily sequence the root key\n'+
+'b = Seq(["D4", "E4", "F#4", "A4"], _2, q, "root");\n'+
+'\n'+
+'// set sequence to loop through all available modes (make sure to select boths lines...)\n'+
+'// all modes are also stored in G.modes\n'+
+'b.stop();\n'+
+'a.set([ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian",\n'+
+'"majorpentatonic", "minorpentatonic"]);\n'+
+'\n'+
+'// change q to play each note in scale (with some extra notes on the pentatonic ones)\n'+
+'q.set([0,1,2,3,4,5,6,7]);',
+
+
 "sequence functions" :
 '// This routine shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
 '\n'+

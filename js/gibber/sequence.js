@@ -36,9 +36,14 @@ function ScaleSeq(_sequence, _speed, _gen) {
 		 		this.scale[negCount--] = nt;	// negative array indices!!!!! The magic of js.
 		 	}
 		}
-		
+		console.log(this.sequenceNumbers);
+		this.sequence.length = 0;
 		for(var i = 0; i < this.sequenceNumbers.length; i++) {
 			this.sequence.push(this.scale[this.sequenceNumbers[i]]);
+		}
+		
+		if(this.seq != null) {
+			that.seq.set(that.sequence);
 		}
 	};
 	
@@ -91,6 +96,7 @@ function ScaleSeq(_sequence, _speed, _gen) {
 	that.stop  		= function() 	{ this.seq.stop();  }
 	that.play  		= function() 	{ this.seq.play();  }
 	that.pause 		= function() 	{ this.seq.pause(); }
+	that.set		= function()	{ this.setSequence(arguments[0]); }
 	
 	that.free = function() {
 		if(arguments.length == 0) {

@@ -10,6 +10,7 @@ var Gibber = {
 	audioInit : false,
 	root : "C4",
 	mode : "aeolian",
+	modes : [ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic"],
 	
 	init : function() {
 		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
