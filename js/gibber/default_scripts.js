@@ -166,6 +166,7 @@ default:
 
 "scales + theory":
 '// shows how to use Gibber.mode, Gibber.root and the ScaleSeq object\n'+
+'// scales come from teoria.js\n'+
 '\n'+
 '// first, create a pair of synths, add reverb and adjust attack/delay times\n'+
 's = Synth().chain( Reverb() );\n'+
@@ -207,7 +208,7 @@ default:
 "chords + arp":
 '/*\n'+
 'Chords\n'+
-'Chords are created in Gibber using the teoria.js library. Unfortunately, teoria does not\n'+
+'Chords are created in Gibber using the teoria.js library. Teoria does not\n'+
 'provide a means for specifying octaves, so Gibber\'s format is slightly different. Here are\n'+
 'some examples:\n'+
 '\n'+
@@ -220,9 +221,6 @@ default:
 '\n'+
 'In Gibber we can use these chords with the Poly (polysynth) and the Arp (arpeggiator) objects.\n'+
 'The Poly object plays all notes simultaneously, the Arp plays them sequentially.\n'+
-'\n'+
-'Note that teoria.js uses the note C to demarcate octaves. Thus, B4 is an octave and a semitone\n'+
-'lower than C5, NOT a single semitone.\n'+
 '*/\n'+
 '\n'+
 '// create a poly object and give it a starting chord.\n'+
