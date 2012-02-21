@@ -10,7 +10,7 @@ var Gibber = {
 	audioInit : false,
 	root : "C4",
 	mode : "aeolian",
-	modes : [ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic"],
+	modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic"],
 	
 	init : function() {
 		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
@@ -316,6 +316,9 @@ function Osc(args, isAudioGenerator) {
 	that.mix = (typeof args[1] !== "undefined") ? args[1] : .25;
 	that.active = true;		
 	that.value = 0;
+	if(typeof args[2] === "string") {
+		that.waveShape = args[2];
+	}
 	
 	that.mods = [];
 	that.fx = [];
@@ -465,13 +468,16 @@ function Ring(freq, amt) {
 }
 function LPF(cutoff, resonance, mix) {
 	var that = audioLib.LP12Filter(Gibber.sampleRate);
-	that.name = "LP";
+	that.name = "LPF";
 	that.type="fx";
 	
 	that.gens = [];
 	that.mods = [];
 	that.automations = [];
 	that.trig = Gibber.trig;	
+	
+	cutoff = isNaN(cutoff) ? 300 : cutoff;
+	resonance = isNaN(resonance) ? 3 : resonance;
 	
 	if(typeof cutoff === "Object") {
 		that.effects[1].cutoff = cutoff[0];

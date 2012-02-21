@@ -229,6 +229,7 @@ function Seq() {
 	
 	that.stop = function() {
 		this.active = false;
+		this.phase = 0;		
 	};
 	
 	that.pause = function() {
@@ -237,7 +238,6 @@ function Seq() {
 		
 	that.play = function() {
 		this.active = true;
-		this.phase = 0;
 	};
 	
 	that.generate = function() {

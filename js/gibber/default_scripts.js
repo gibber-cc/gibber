@@ -18,51 +18,37 @@ default:
 'Master.fx.remove(0);                // remove first effect in chain. do not pass a argument to remove all fx.',
 
 "GIBBER TUTORIALS":"LABEL START",
-synth_sequence:
-'// Triangle wave, .15 amplitude. Synths also have a short envelope that\n'+
-'// is triggered whenever it receives a note(noteName or MIDI number) command.\n'+
-'s = Synth();\n'+
-'t = Synth();\n'+
-'u = Synth();\n'+
+"synthesis + fx" :
+'/*\n'+
+'Synthesis + FX\n'+
 '\n'+
-'// play a note\n'+
-'s.note("F4")\n'+
+'Here are some quick ways to get started with synthesis and fx in Gibber. For more\n'+
+'details on synthesis, see the synthesis tutorials.\n'+
 '\n'+
-'// create a sequence object by passing an array of notes and a length for each\n'+
-'q = Seq(["F4", "G4", "A4", "E4"], _1);\n'+
+'The fx with Gibber all have default settings which will mostly be used here. Please\n'+
+'view the (forthcoming!) documentation for details on all fx.\n'+
+'*/\n'+
 '\n'+
-'// tell the sequence object to control the synth\n'+
-'q.slave(s);\n'+
-'\n'+
-'// if you pass a synth as the last parameter it will be slaved\n'+
-'r = Seq(["A5", "A#5", "C#5", "D5"], _1, t);\n'+
-'\n'+
-'// ScaleSeq allows you to specify a root note and scale type to define notes.\n'+
-'v = ScaleSeq("F2", "locrian", [0,2,-3,-1], _4, u);\n'+
-'u.osc.waveShape = "square";\n'+
-'u.osc.mix = .05;\n'+
-'u.chain( Ring(), Delay(_32) );\n'+
-'\n'+
-'\n'+
-'// create fx chains with delay and reverb\n'+
-'s.chain( Delay(), Reverb() )\n'+
-'t.chain( Delay(), Reverb() )\n'+
-'\n'+
-'// resequence\n'+
-'q.set(["F4", "G4", "D4", "C4"]);\n'+
-'r.set(["A5", "A#5", "C#5", "B5"]);',
-
-"simple fx":
 '// triangle wave at 440Hz, .15 amplitude\n'+
-'s = Tri(440, .15);\n'+
+'// possible waveShapes are sine, tri, saw, square, pulse\n'+
+'s = Tri(300, .15);\n'+
 '\n'+
-'// modulate the frequency of the triangle wave. see simple modulation for details\n'+
+'// change waveShape to sine\n'+
+'s.waveShape = "sine";\n'+
+'\n'+
+'// modulate the frequency of the triangle wave using a step sequencer.\n'+
+'// add the step sequencers output to the oscillators frequency\n'+
 's.mod("freq", Step([220, 0], _2), "+");\n'+
+'\n'+
+'// create tremolo by using a LFO to modulate the volume of the oscillator \n'+
+'// (currently volume is inappropriately referred to as mix). Multiply the amplitude\n'+
+'// of the oscillator times the output of the LFO\n'+
+'s.mod("mix",  LFO(4, 1), "*");\n'+
 '\n'+
 '// add a Delay effect with a delay time of 1/3 a measure and a Reverb effect with default settings\n'+
 's.fx.add( Delay(_3), Reverb() );\n'+
 '\n'+
-'// remove last added effect\n'+
+'// remove last fx in chain\n'+
 's.fx.pop();\n'+
 '\n'+
 '// bit crush; reduce to 8-bits\n'+
@@ -71,10 +57,41 @@ synth_sequence:
 '// remove first effect in fx chain\n'+
 's.fx.remove(0);\n'+
 '\n'+
-'// remove all fx\n'+
-'s.fx.remove();',
+'// remove all fx, but not mods\n'+
+'s.fx.remove();\n'+
+'\n'+
+'// low-pass filter\n'+
+'f = LPF();\n'+
+'\n'+
+'// add ring modulator and filter\n'+
+'s.fx.add( Ring(), f );\n'+
+'\n'+
+'// change filter parameters\n'+
+'f.resonance = 10\n'+
+'f.cutoff = 400\n'+
+'\n'+
+'s.fx.pop();\n'+
+'\n'+
+'// clear all mods\n'+
+'s.mods.remove();',
 
-drums: 
+"rhythm + drums": 
+'/*\n'+
+'Rhythm + Drums\n'+
+'\n'+
+'Gibber is geared towards rhythmic music. The numbers at the top right show the current\n'+
+'beat number of the Gibber transport. In order to sync to this transport, we use variables\n'+
+'such as _1, _2, _4, _8. These variables represent a whole-note, half-note, quarter-note and\n'+
+'eighth-note respectively. Any variable from _1 to _64 can be used to represent a time; the actual\n'+
+'value stored in these variables is the number of samples each subdivision of a measure lasts.\n'+
+'\n'+
+'For example, at 120 BPM each measure lasts for two seconds, therefore _1 = 88200, _2 = 44100,\n'+
+'_4 = 22050, _8 - 11025.\n'+
+'\n'+
+'The Drums objects is a quick way to enter beats; it uses a Seq object behind the scenes. See the\n'+
+'Sequencer tutorial for more information.\n'+
+'*/\n'+
+'\n'+
 '// x = kick, o = snare, * = hihat. hits are triggered every quarter note\n'+
 'd = Drums("xoxo", _4)\n'+
 '\n'+
@@ -90,71 +107,122 @@ drums:
 '// change speed of pattern\n'+
 'd.speed = _8;\n'+
 '\n'+
+'// change the master tempo. All sequencers will update themselves to run match the\n'+
+'// master clock speed whenever it is changed.\n'+
+'Gibber.setBPM(180);\n'+
+'\n'+
 '// return to original sequence\n'+
 'd.reset();',
+
+"the sequencer":
+'/* \n'+
+'The Seq object is one of the basic building blocks of Gibber. It is designed\n'+
+'to be completely generic; it can sequence notes for a synth to play, functions to \n'+
+'be executed and values to be assigned to object parameters.\n'+
+'\n'+
+'Making a Seq takes the form of:\n'+
+'\n'+
+'Seq(\n'+
+'    array   : sequenced objects / primitives, \n'+
+'    num     : step speed (optional, default = _1 / length of sequence array),\n'+
+'    object  : object to apply sequence to (optional),\n'+
+'    string  : name of method or property of object to sequence (optional, default = "note" or "freq") \n'+
+');\n'+
+'*/\n'+
+'\n'+
+'s = Synth();\n'+
+'\n'+
+'// create a sequence object by passing an array of notes\n'+
+'// this sequence will not have a ugen slaved, but once it has one it will output note messages (default)\n'+
+'q = Seq(["F4", "G4", "A4", "E4"], _1);\n'+
+'\n'+
+'// tell the sequence object to control the synth\n'+
+'q.slave(s);\n'+
+'\n'+
+'// if you pass a synth as the last parameter it will be slaved automatically\n'+
+'t = Synth();\n'+
+'r = Seq(["A5", "A#5", "C#5", "D5"], _1, t);\n'+
+'\n'+
+'// assign new values to the sequence\n'+
+'q.set(["F4", "G4",  "D4",  "C4"]);\n'+
+'r.set(["A5", "A#5", "C#5", "B5"]);\n'+
+'\n'+
+'// change the speed of each sequence step\n'+
+'r.speed = q.speed = _8;\n'+
+'\n'+
+'// randomize the sequences\n'+
+'q.shuffle();\n'+
+'r.shuffle();\n'+
+'\n'+
+'// reset them to their original values\n'+
+'q.reset();\n'+
+'r.reset();\n'+
+'\n'+
+'// stop, pause and play sequences. stop resets the phase of the sequence to 0, pause does not.\n'+
+'q.stop();\n'+
+'q.play();\n'+
+'q.pause();\n'+
+'q.play();',
 
 "scales + theory":
 '// shows how to use Gibber.mode, Gibber.root and the ScaleSeq object\n'+
 '\n'+
-'// first, create a pair of synths, add delay + reverb, adjust attack/delay times\n'+
+'// first, create a pair of synths, add reverb and adjust attack/delay times\n'+
 's = Synth().chain( Reverb() );\n'+
-'s.attack = 10;\n'+
-'s.decay = 50;\n'+
-'\n'+
 'ss = Synth().chain( Reverb() );\n'+
-'ss.attack = 10;\n'+
-'ss.decay = 50;\n'+
+'\n'+
+'s.attack = ss.attack = 10;\n'+
+'s.decay  = ss.decay  = 50;\n'+
 '\n'+
 '// assign a mode and root note to Gibber.\n'+
 'G.mode = "lydian";\n'+
 'G.root = "D4";\n'+
 '\n'+
 '// ScaleSeq uses whatever mode and root is currently defined in Gibber.\n'+
+'// Each value in the sequence defines an offset from the root note in terms of the scale, NOT IN TERMS OF HALF / WHOLE STEPS.\n'+
 '// The default is C4 aeolian; we just changed it to D4 Lydian\n'+
 'q  = ScaleSeq([0,1,5,3,0,6,7,-5], _16, s);\n'+
 'qq = ScaleSeq([0,4,3,6,4,5,9,-3], _16, ss);\n'+
 '\n'+
 '// We can manually change the mode of any ScaleSeq. We can also change the root.\n'+
-'q.mode = "minor"\n'+
-'qq.mode = "majorpentatonic"\n'+
-'\n'+
-'qq.root = "A4";\n'+
+'qq.mode = q.mode = "majorpentatonic"\n'+
+'qq.root = q.root = "A4";\n'+
 '\n'+
 '// We can easily sequence changes to modes using the Seq object. Just pass "mode"\n'+
-'// as the last parameter and it will change that parameter of q.\n'+
+'// as the last parameter and it will change that property of q.\n'+
 'qq.stop();\n'+
 'a = Seq([ "minor", "majorpentatonic" ], _1, q, "mode");\n'+
 '\n'+
 '// We can also easily sequence the root key\n'+
 'b = Seq(["D4", "E4", "F#4", "A4"], _2, q, "root");\n'+
+'b.speed = _1\n'+
 '\n'+
-'// set sequence to loop through all available modes (make sure to select boths lines...)\n'+
-'// all modes are also stored in G.modes\n'+
+'// set sequence to loop through all available modes. All modes are also stored in Gibber.modes\n'+
 'b.stop();\n'+
-'a.set([ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian",\n'+
-'"majorpentatonic", "minorpentatonic"]);\n'+
+'a.set([ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic"]);\n'+
 '\n'+
 '// change q to play each note in scale (with some extra notes on the pentatonic ones)\n'+
 'q.set([0,1,2,3,4,5,6,7]);',
 
-
 "sequence functions" :
-'// This routine shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
+'// This shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
+'// There is a tutorial on the Seq object that should be read first to understand this.\n'+
 '\n'+
 '// create a synth, add delay + reverb, adjust attack/delay times\n'+
 's = Synth().chain( Delay(_8), Reverb() );\n'+
-'s.attack = 10\n'+
-'s.decay = 50\n'+
+'s.attack = 10;\n'+
+'s.decay = 50;\n'+
 '\n'+
-'// sequence the aeolian mode from root C3, sixteenth notes\n'+
-'q = ScaleSeq("C3", "aeolian", [0,1,5,3,0,6,7,-5], _16, s)    \n'+
+'// Sequence using the default Gibber scale, C4 Aeolian\n'+
+'// See scales and theory for details on the ScaleSeq object\n'+
+'q = ScaleSeq([ 0,1,5,3,0,6,7,-5 ], _16, s);\n'+
 '\n'+
-'// every two measures, alternate between randomizing the sequence\n'+
-'// and resetting it to its original value\n'+
-'p = Seq([ q.shuffle, q.reset], _1 * 2);\n'+
+'// Every two measures, alternate between randomizing the sequence and resetting it to its original value\n'+
+'// IMPORTANT: Note we do not call the functions using (), we just pass references to them\n'+
+'p = Seq([ q.shuffle, q.reset ], _1 * 2);\n'+
 '\n'+
-'// gradually fade out synth and stop sequence when synth volume is just about inaudible.\n'+
-'v = Seq([ function() { s.mix *= .8; if(s.mix < .001) q.stop(); } ])',
+'// fade out synth (hello pops!) and stop sequence when synth volume is just about inaudible.\n'+
+'v = Seq([ function() { s.mix *= .8; if(s.mix < .001) q.stop(); } ]);',
 
 "custom callback": 
 '/*\n'+
