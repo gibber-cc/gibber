@@ -185,14 +185,7 @@ function Seq() {
 		init: true,
 	}
 	
-	that.setSequence = function(seq, speed, shouldReset) {
-		if(typeof speed != "undefined") {
-			if(!shouldReset) {
-				this.phase -= this.speed - speed;
-			}
-			this.speed = speed;
-		}
-		
+	that.setSequence = function(seq) {
 		this.sequence = [];
 		
 		if(typeof seq === "string") {
@@ -205,10 +198,6 @@ function Seq() {
 				var n = seq[i];
 				this.sequence[i] = n;
 			}
-		}
-		
-		if(shouldReset) {
-			this.phase = 0;
 		}
 		
 		this.sequenceLengthInSamples = seq.length * this.speed;
@@ -303,7 +292,7 @@ function Seq() {
 		}else{
 			this.phase++;
 		}
-	}
+	};
 	
 	that.break = function(newSeq, breakToOriginal) {
 		this.shouldBreak = true;
@@ -320,16 +309,27 @@ function Seq() {
 	
 	that.getMix = function(){
 		return 0;
-	}
+	};
 	
 	that.out = function() {
 		this.generate();
 		return 0;
-	}
+	};
 	that.set = function(newSequence, speed, shouldReset) {
+		if(typeof speed != "undefined") {
+			if(!shouldReset) {
+				this.phase -= this.speed - speed;
+			}
+			this.speed = speed;
+		}
+		
+		if(shouldReset) {
+			this.phase = 0;
+		}
+		
 		this.sequence = newSequence;
 		this.setSequence(this.sequence, speed, shouldReset);
-	}
+	};
 	
 	that.bpmCallback = function() {
 		var that = this;
@@ -337,14 +337,14 @@ function Seq() {
 			that.speed *= percentageChangeForBPM;
 			that.setSequence(that.sequence, that.speed);
 		}
-	}
+	};
 	
 	Gibber.registerObserver( "bpm", that.bpmCallback() );
 	
 	that.shuffle = function() {
 		this.sequence.shuffle();
 		this.setSequence(this.sequence, this.speed);
-	}
+	};
 	
 	that.reset = function() {
 		if(arguments.length === 0) {
@@ -352,21 +352,23 @@ function Seq() {
 		}else{
 			this.setSequence(this.memory[arguments[0]]);
 		}
-	}
+	};
 	
 	(function() {
 		var speed = that.speed;
-
-	    Object.defineProperties(that, {
+		var _that = that;
+		
+		Object.defineProperties(that, {
 			"speed": {
 				get: function(){ return speed; },
 				set: function(value) {
 					speed = value;
-					this.setSequence(this.sequence, speed, false);
+					this.setSequence(this.sequence, this.speed, false);
 				}
-			},
-	    });
+			}
+		});
 	})();
+	
 	
 	//this.sequenceLengthInSamples
 	
@@ -376,7 +378,7 @@ function Seq() {
 		}else{
 			this.memory[arguments[0]] = this.sequence;
 		}
-	}
+	};
 	
 	that.setSequence(that.sequence, that.speed);	
 	
