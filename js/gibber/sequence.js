@@ -230,6 +230,7 @@ function Seq() {
 	that.stop = function() {
 		this.active = false;
 		this.phase = 0;		
+		this.counter = -1;
 	};
 	
 	that.pause = function() {

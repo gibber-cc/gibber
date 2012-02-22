@@ -208,8 +208,8 @@ default:
 "chords + arp":
 '/*\n'+
 'Chords\n'+
-'Chords are created in Gibber using the teoria.js library. Teoria does not\n'+
-'provide a means for specifying octaves, so Gibber\'s format is slightly different. Here are\n'+
+'Chords are created in Gibber using the teoria.js library. Gibber\'s format is slightly different;\n'+
+'it lets you specify the octave in addition to the tonic note and the chord sonority.. Here are\n'+
 'some examples:\n'+
 '\n'+
 'C3M7 - C major chord, dominant 7th, root is C3.\n'+
