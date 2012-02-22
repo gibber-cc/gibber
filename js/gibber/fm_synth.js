@@ -1,16 +1,21 @@
 function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
-	var that = Synth();
+	var that = Synth("sine");
 	that.name = "FM";
 	that.cmRatio 	= isNaN(cmRatio) ? 2 : cmRatio;
 	that.index = isNaN(index)	 ? .9 : index;
-	that.modulator = Sine(that.osc.frequency * that.cmRatio, that.index * that.osc.frequency);
+	modFreq = that.osc.frequency * that.cmRatio;
+	modAmp = that.index * that.osc.frequency;
+	that.modulator = Sine();
+
 	Gibber.genRemove(that.modulator);
 	
-	that.env.attack = isNaN(attack) ? 100 : attack;
-	that.env.decay = isNaN(decay) ? 100 : decay;
-		
+	that.attack = isNaN(attack) ? 100 : attack;
+	that.decay = isNaN(decay) ? 100 : decay;
+	
+	shouldUseModulatorEnvelope = (typeof shouldUseModulatorEnvelope === "undefined") ? true : shouldUseModulatorEnvelope;
+	
 	if(shouldUseModulatorEnvelope) {
-		that.modulator.env = Env(that.osc.env.attack, that.osc.env.decay);
+		that.modulator.env = Env(that.attack, that.decay);
 		that.modulator.mod("mix", that.modulator.env, "*");
 	}
 		
@@ -22,8 +27,8 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		this.modulator.frequency = oscFreq * this.cmRatio;
 		this.modulator.mix = oscFreq * this.index;
 		
-		//console.log("osc.freq = " + this.osc.frequency + " :: " + this.modulator.frequency + " :: " + this.modulator.mix);
 		this.env.triggerGate();
+		this.modulator.env.triggerGate();
 	};
 	
 	return that;
