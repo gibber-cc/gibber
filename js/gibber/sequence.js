@@ -354,6 +354,22 @@ function Seq() {
 		}
 	}
 	
+	(function() {
+		var speed = that.speed;
+
+	    Object.defineProperties(that, {
+			"speed": {
+				get: function(){ return speed; },
+				set: function(value) {
+					speed = value;
+					this.setSequence(this.sequence, speed, false);
+				}
+			},
+	    });
+	})();
+	
+	//this.sequenceLengthInSamples
+	
 	that.retain = function() {
 		if(arguments.length != 0) {
 			this.memory.push(this.sequence);
@@ -362,7 +378,6 @@ function Seq() {
 		}
 	}
 	
-
 	that.setSequence(that.sequence, that.speed);	
 	
 	Gibber.controls.push(that);

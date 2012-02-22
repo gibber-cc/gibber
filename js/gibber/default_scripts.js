@@ -107,12 +107,23 @@ default:
 '// change speed of pattern\n'+
 'd.speed = _8;\n'+
 '\n'+
-'// change the master tempo. All sequencers will update themselves to run match the\n'+
+'// change the master tempo. All sequencers will update themselves to match the\n'+
 '// master clock speed whenever it is changed.\n'+
 'Gibber.setBPM(180);\n'+
 '\n'+
 '// return to original sequence\n'+
-'d.reset();',
+'d.reset();\n'+
+'// sequence kick, snare and hat with separate sequences so they can play simultaneously\n'+
+'// see sequencing tutorial for more details\n'+
+'\n'+
+'Gibber.clear();\n'+
+'d = Drums()\n'+
+'\n'+
+'kick = Seq("x...x..xx..xx...", _16, d);\n'+
+'hat  = Seq("*.*.*.***.*.*.**", _16, d);\n'+
+'sn   = Seq(".o", _4, d);\n'+
+'\n'+
+'hat.shuffle(); // randomize hat sequence',
 
 "the sequencer":
 '/* \n'+

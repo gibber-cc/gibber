@@ -19,6 +19,7 @@ and manually assigning __proto__.
 // (function(audioLib){
 
 function _Drums (_sequence, _timeValue, _mix, _freq){
+	
 	that = {
 		sampleRate : Gibber.sampleRate,
 		type  : "gen",
@@ -103,7 +104,7 @@ function _Drums (_sequence, _timeValue, _mix, _freq){
 	Gibber.addModsAndFX.call(that);
 	Gibber.generators.push(that);
 	
-	if(typeof _sequence != undefined) {
+	if(typeof _sequence != "undefined") {
 		that.seq = Seq(_sequence, _timeValue, that);
 	}
 	
