@@ -220,7 +220,7 @@ default:
 '/*\n'+
 'Chords\n'+
 'Chords are created in Gibber using the teoria.js library. Gibber\'s format is slightly different;\n'+
-'it lets you specify the octave in addition to the tonic note and the chord sonority.. Here are\n'+
+'it lets you specify the octave in addition to the tonic note and the chord sonority. Here are\n'+
 'some examples:\n'+
 '\n'+
 'C3M7 - C major chord, dominant 7th, root is C3.\n'+
@@ -253,10 +253,9 @@ default:
 'high = Sine(440, .1).chain( Reverb() );\n'+
 '\n'+
 '// pass oscillator/synth to control, chord, note duration, direction and number of octaves\n'+
-'aa = Arp(high, "C4m7", _32, "updown", 3);\n'+
-'\n'+
-'aa.shuffle(); // shuffle notes in arpeggiator\n'+
-'aa.reset();   // reset to original chord',
+'aa = Arp("C4m7", _32, "updown", 3);\n'+
+'aa.slave(high);     // slave oscillator to arp\n'+
+'ss.slave(aa);       // slave chord of arp to same sequencer that is controlling our Poly',
 
 "sequence functions" :
 '// This shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+

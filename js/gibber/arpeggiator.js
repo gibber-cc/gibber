@@ -11,31 +11,45 @@ a = audioLib.Arp(s, "Cm7", 2, .25, "updown");
 function initPlugin(audioLib){
 (function(audioLib){
 
-function Arp(gen, notation, beats, mode, mult, interpolate) {
-	if(typeof arguments[0] === "string") {
-		gen = null;
-		notation = arguments[0], beats = arguments[1], mode = arguments[2], mult = arguments[3];
-	}else{
-		gen = arguments[0], notation = arguments[1], beats = arguments[2], mode = arguments[3], mult = arguments[4];
-	}	
-	
+function Arp(notation, beats, mode, mult) {
 	this.speed = isNaN(beats) ? _4 : beats;
 	this.mode = mode || "up";
+	this.notation = notation || "Cm7";
+	this.mult = mult || 1;
+		
 	this.type = "complex";
 	this.name = "Arp";
 	
-	this.gen = gen,
-	this.notation = notation || "Cm7",
-	this.mult = mult || 1;
-	this.interpolate = interpolate || 0; // not programmed yet
-	
+	this.notes = [];
 	this.modded = [];
-	if(gen != null) { this.slave(gen); }
+	
+	this.seq = Seq();
+	
+	this.chord(this.notation);
+	this.original = this.notes.slice(0);
+	
+	(function() {
+		var speed = this.speed;
+		var _that = this;
+		
+		Object.defineProperties(_that, {
+			"speed": {
+				get: function(){ return speed; },
+				set: function(value) {
+					speed = value;
+					this.seq.setSequence(this.notes, speed, false);
+				}
+			}
+		});
+	})();
 }
 
 Arp.prototype = {
-	slave : function(gen) {
+	chord : function(_chord, shouldReset) {
 		var arr = [];
+		
+		this.notation = _chord;
+
 		for(var i = 0; i < this.mult; i++) {
 			var tmp = [];
 			
@@ -54,19 +68,27 @@ Arp.prototype = {
 			var _chord = teoria.note(_root + _octave).chord(_quality);
 			for(var j = 0; j < _chord.notes.length; j++) {
 				var n = _chord.notes[j];
-				if(typeof gen.note === "function") {
-					tmp[j] = n;
-				}else{
-					tmp[j] = n.fq();
-				}
+				tmp[j] = n;
 			}
 			arr = arr.concat(tmp);
-		}
-		
-		this.freqs 		= this.modes[this.mode]( arr );
-		this.original 	= this.freqs.slice(0);
-		this.seq = Seq(this.freqs, this.speed, gen)
+		}	
+		this.notes = this.modes[this.mode]( arr );
+		this.seq.setSequence(this.notes, this.speed, shouldReset);	
 	},
+	set : function(_chord, _speed, _mode, octaveMult, shouldReset) {
+		this.speed = _speed || this.speed;
+		this.mode = _mode || this.mode;
+		this.mult = octaveMult || this.mult;
+		
+		this.chord(_chord, shouldReset); // also sets sequence
+	},
+	
+	slave : function(gen) {
+		this.gen = gen;
+		this.seq.slave(this.gen);
+		if(typeof this.gen.note === "undefined") { this.seq.outputMessage = "freq"; }		
+	},
+	
 	modes : {
 		up : function(array) {
 			return array;
@@ -130,6 +152,6 @@ if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
 
 }());
 
-function Arp(gen, notation, octave, beats, mode, mult) {
-	return new audioLib.Arpeggiator(gen, notation, octave, beats, mode, mult);
+function Arp(notation, beats, mode, mult) {
+	return new audioLib.Arpeggiator(notation, beats, mode, mult);
 }

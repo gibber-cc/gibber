@@ -1,17 +1,47 @@
+Gibber.FMPresets = {
+	gong : {
+		cmRatio : 1.4,
+		index	: .95,
+		attack	: 1,
+		decay	: 5000,
+	},
+	drum : {
+		cmRatio : 1.4,
+		index	: 2,
+		attack	: 1,
+		decay	: 1000,
+	},
+	brass : {
+		cmRatio : 1 / 1.0007,
+		index	: 5,
+		attack	: 100,
+		decay	: 100,
+	},
+};
+
 function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	var that = Synth("sine");
 	that.name = "FM";
-	that.cmRatio 	= isNaN(cmRatio) ? 2 : cmRatio;
-	that.index = isNaN(index)	 ? .9 : index;
+	
+	if(typeof arguments[0] === "string") {	// if a preset
+		var preset = Gibber.FMPresets[arguments[0]];
+		that.cmRatio 	= preset.cmRatio;
+		that.index 		= preset.index;
+		that.attack 	= preset.attack;
+		that.decay 		= preset.decay;
+	}else{
+		that.cmRatio 	= isNaN(cmRatio) ? 2 : cmRatio;
+		that.index = isNaN(index)	 ? .9 : index;
+		that.attack = isNaN(attack) ? 100 : attack;
+		that.decay = isNaN(decay) ? 100 : decay;
+	}
+	
 	modFreq = that.osc.frequency * that.cmRatio;
 	modAmp = that.index * that.osc.frequency;
+	
 	that.modulator = Sine();
-
 	Gibber.genRemove(that.modulator);
-	
-	that.attack = isNaN(attack) ? 100 : attack;
-	that.decay = isNaN(decay) ? 100 : decay;
-	
+
 	shouldUseModulatorEnvelope = (typeof shouldUseModulatorEnvelope === "undefined") ? true : shouldUseModulatorEnvelope;
 	
 	if(shouldUseModulatorEnvelope) {

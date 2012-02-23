@@ -117,7 +117,7 @@ function ScaleSeq(_sequence, _speed, _gen) {
 function Seq() {
 	
 	var _seq = arguments[0];
-	var speed = window["_" + arguments[0].length];
+	var speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
 	var gen = null;
 	var _outputMsg = null;
 	
@@ -172,8 +172,8 @@ function Seq() {
 	}
 	
 	var that = {
-		_sequence : sequence,
-		sequence : sequence,
+		_sequence : sequence || null,
+		sequence : sequence || null,
 		_start : true,
 		counter : -1,
 		speed: speed,
@@ -185,7 +185,16 @@ function Seq() {
 		init: true,
 	}
 	
-	that.setSequence = function(seq) {
+	that.setSequence = function(seq, _speed, _reset) {
+		if(typeof _speed !== "undefined") {
+			this.speed = _speed;
+		}
+		
+		if(_reset) {
+			this.phase = 0;		
+			this.counter = -1;
+		}
+		
 		this.sequence = [];
 		
 		if(typeof seq === "string") {
@@ -201,9 +210,11 @@ function Seq() {
 		}
 		
 		this.sequenceLengthInSamples = seq.length * this.speed;
+		//console.log("seq.length = " + seq.length + " : speed = " + this.speed + " : sequenceLengthInSamples = " + this.sequenceLengthInSamples);
 	};
 	
 	that.slave = function(gen) {
+		console.log("slaving " + gen);
 		this.slaves.push(gen);
 		//if(typeof gen.note === "undefined") { this.outputMessage = "freq"; }		
 	};
@@ -236,7 +247,8 @@ function Seq() {
 			return;
 		}
 		
-		if(this.phase % this.speed <= .5) {
+		//if(Gibber.debug) console.log(this.speed + " : " + this.phase);
+ 		if(this.phase % this.speed <= .5) {
 			this.counter++;
 			var val = this.sequence[this.counter % this.sequence.length];
 			
@@ -262,13 +274,11 @@ function Seq() {
 						val = n.fq();
 					}else if(typeof val === "object"){
 						val = val.fq();
-					}
+					}// else val is a number and is fine to send as a freq...
 				}
 				if(typeof slave[this.outputMessage] === "function") {
-					//if(Gibber.debug) console.log("calling function " + this.outputMessage);					
 					slave[this.outputMessage](val);
 				}else{
-					console.log("outputting " + this.outputMessage);
 					slave[this.outputMessage] = val;
 				}
 			}
@@ -363,15 +373,14 @@ function Seq() {
 				get: function(){ return speed; },
 				set: function(value) {
 					speed = value;
-					this.setSequence(this.sequence, this.speed, false);
+					if(this.sequence != null) {
+						this.setSequence(this.sequence);
+					}
 				}
 			}
 		});
 	})();
-	
-	
-	//this.sequenceLengthInSamples
-	
+		
 	that.retain = function() {
 		if(arguments.length != 0) {
 			this.memory.push(this.sequence);
@@ -380,7 +389,9 @@ function Seq() {
 		}
 	};
 	
-	that.setSequence(that.sequence, that.speed);	
+	if(that.sequence != null) {
+		that.setSequence(that.sequence, that.speed);	
+	}
 	
 	Gibber.controls.push(that);
 	
