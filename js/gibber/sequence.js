@@ -252,11 +252,18 @@ function Seq() {
 			this.counter++;
 			var val = this.sequence[this.counter % this.sequence.length];
 			
+			var shouldReturn = false;
 			// Function sequencing
 			// TODO: there should probably be a more robust way to to this
 			// but it will look super nice and clean on screen...
 			if(typeof val === "function") {
 				val();
+				shouldReturn = true;
+			}else if(typeof val === "undefined") {
+				shouldReturn = true;
+			}
+			
+			if(shouldReturn) {
 				if(this.phase >= this.sequenceLengthInSamples - 1) {
 					this.phase = 0;
 				}else{
@@ -264,6 +271,7 @@ function Seq() {
 				}
 				return;
 			}
+			
 			
 			for(j = 0; j < this.slaves.length; j++) {
 				var slave = this.slaves[j];
