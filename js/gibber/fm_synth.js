@@ -61,5 +61,31 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		this.modulator.env.triggerGate();
 	};
 	
+	(function() {
+	    var mix = that.mix;
+		var fx  = that.osc.fx;
+		
+	    Object.defineProperties(that, {
+			"mix" : {
+		        get: function() {
+		            return mix;
+		        },
+		        set: function(value) {
+		            mix = value;
+					this.osc.mix = value;
+		        }
+			},
+			"fx" : {
+				get : function() {
+					return this.osc.fx;
+				},
+				set : function(_fx) {
+					this.osc.fx = _fx;
+				}
+			},
+		})
+	})();
+	
+	
 	return that;
 };

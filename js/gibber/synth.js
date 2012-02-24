@@ -61,6 +61,7 @@ function Synth(waveform, volume) {
 		var sustain = that.env.sustain;
 		var sustainTime = that.env.sustainTime;
 		var waveShape = that.osc.waveShape;
+		var fx = that.osc.fx;
 		
 	    Object.defineProperties(that, {
 			"mix" : {
@@ -71,6 +72,14 @@ function Synth(waveform, volume) {
 		            mix = value;
 					this.osc.mix = value;
 		        }
+			},
+			"fx" : {
+				get : function() {
+					return this.osc.fx;
+				},
+				set : function(_fx) {
+					this.osc.fx = _fx;
+				}
 			},
 			"waveShape" : {
 		        get: function() {

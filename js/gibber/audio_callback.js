@@ -33,11 +33,19 @@ function audioProcess(buffer, channelCount){
 		//console.log(Gibber.generators.length);
 		for(var i = 0; i < buffer.length; i+= channelCount) {
 			if(i === 0) Gibber.debug = true;
+			
 			value = 0;
+			
 			Gibber.callback.generate();
 			for(var c = 0; c < Gibber.controls.length; c++) {
-				Gibber.controls[c].generate();
+				var control = Gibber.controls[c];
+				processMods(control);
+				//if(Gibber.debug) console.log(control.phase);
+				
+				control.generate();
+				restoreMods(control);
 			}
+			
 			for(var g = 0; g < Gibber.generators.length; g++) {
 				var genValue = 0;
 				var gen = Gibber.generators[g];

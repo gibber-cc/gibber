@@ -1,9 +1,10 @@
 Gibber.defaultScripts = {
 default:
 's = Sine(240, .1);                  // Sine wave with freq 240, amp .5.\n' +
-'s.fx.add( Delay( _3 ), Reverb() );  // create fx chain with delay and reverb. delay time (_3) is a triplet.\n' +
+'s.fx.add( Delay( _3 ), Reverb() );  // adds delay and reverb fx. delay time (_3) is a half-note triplet.\n' +
 '\n' +
-'a = Arp(s, "C4m7", _16, "updown");  // Arpeggiator: control s, Cminor7 (4 is octave) chord, 16th notes, up then down\n' +
+'a = Arp("C4m7", _16, "updown");  	// Arpeggiator: control s, Cminor7 (4 is octave) chord, 16th notes, up then down\n' +
+'a.slave(s);                         // tell arpeggiator to control our sine oscillator\n' +
 'a.shuffle();                        // randomize arpeggio\n' +
 'a.reset();                          // reset arpeggio\n' +
 '\n' +
@@ -14,8 +15,8 @@ default:
 's.mod("freq", LFO(8, 10), "+");     // Vibrato - modulating frequency by +/- 10Hz 8 times per second\n' +
 's.mods.remove();                    // removes all mods, pass a number or parameter name to remove a particular mod\n' +
 '\n' +
-'Master.chain( Reverb() );           // Master FX are applied to summed signal of all generators\n' +
-'Master.fx.remove(0);                // remove first effect in chain. do not pass a argument to remove all fx.',
+'Master.fx.add( Reverb() );           // Master FX are applied to summed signal of all generators\n' +
+'Master.fx.remove(0);                // remove first effect in fx.add. do not pass a argument to remove all fx.',
 
 "GIBBER TUTORIALS":"LABEL START",
 "synthesis + fx" :
@@ -48,13 +49,13 @@ default:
 '// add a Delay effect with a delay time of 1/3 a measure and a Reverb effect with default settings\n'+
 's.fx.add( Delay(_3), Reverb() );\n'+
 '\n'+
-'// remove last fx in chain\n'+
+'// remove last fx in fx.add\n'+
 's.fx.pop();\n'+
 '\n'+
 '// bit crush; reduce to 8-bits\n'+
 's.fx.add( Trunc(8) );\n'+
 '\n'+
-'// remove first effect in fx chain\n'+
+'// remove first effect in fx fx.add\n'+
 's.fx.remove(0);\n'+
 '\n'+
 '// remove all fx, but not mods\n'+
@@ -96,7 +97,7 @@ default:
 'd = Drums("xoxo", _4)\n'+
 '\n'+
 '// crush to six bits\n'+
-'d.chain( Trunc(6) )\n'+
+'d.fx.add( Trunc(6) )\n'+
 '\n'+
 '// raise/lower frequencies of drums; 440 is default starting value\n'+
 'd.frequency = 880\n'+
@@ -123,6 +124,10 @@ default:
 'hat  = Seq("*.*.*.***.*.*.**", _16, d);\n'+
 'sn   = Seq(".o", _4, d);\n'+
 '\n'+
+'// put the snare slightly behind the beat... don\'t execute this at the start of a measure\n'+
+'// or the phase will be negative and the universe will collapse.\n'+
+'sn.phase -= 1000\n'+
+'\n'+
 'hat.shuffle(); // randomize hat sequence',
 
 "the sequencer":
@@ -142,6 +147,7 @@ default:
 '*/\n'+
 '\n'+
 's = Synth();\n'+
+'s.fx.add( Reverb() )\n'+
 '\n'+
 '// create a sequence object by passing an array of notes\n'+
 '// this sequence will not have a ugen slaved, but once it has one it will output note messages (default)\n'+
@@ -152,6 +158,7 @@ default:
 '\n'+
 '// if you pass a synth as the last parameter it will be slaved automatically\n'+
 't = Synth();\n'+
+'t.fx.add( Reverb() )\n'+
 'r = Seq(["A5", "A#5", "C#5", "D5"], _1, t);\n'+
 '\n'+
 '// assign new values to the sequence\n'+
@@ -180,8 +187,10 @@ default:
 '// scales come from teoria.js\n'+
 '\n'+
 '// first, create a pair of synths, add reverb and adjust attack/delay times\n'+
-'s = Synth().chain( Reverb() );\n'+
-'ss = Synth().chain( Reverb() );\n'+
+'s = Synth();\n'+
+'s.fx.add( Reverb() )\n'+
+'ss = Synth();\n'+
+'ss.fx.add( Reverb() )\n'+
 '\n'+
 's.attack = ss.attack = 10;\n'+
 's.decay  = ss.decay  = 50;\n'+
@@ -235,7 +244,8 @@ default:
 '*/\n'+
 '\n'+
 '// create a poly object and give it a starting chord.\n'+
-'p = Poly("C4m7").chain( Reverb() );\n'+
+'p = Poly("C4m7");\n'+
+'p.fx.add( Reverb() );\n'+
 '\n'+
 '// trigger the amplitude envelope to play the chord. Pass the volume you want to use.\n'+
 'p.trig(.6);\n'+
@@ -250,19 +260,21 @@ default:
 'ss = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, p, "chord");\n'+
 '\n'+
 '// create a sine wave to arpeggiate\n'+
-'high = Sine(440, .1).chain( Reverb() );\n'+
+'high = Sine(440, .1);\n'+
+'.fx.add( Reverb() );\n'+
 '\n'+
 '// pass oscillator/synth to control, chord, note duration, direction and number of octaves\n'+
-'aa = Arp("C4m7", _32, "updown", 3);\n'+
-'aa.slave(high);     // slave oscillator to arp\n'+
-'ss.slave(aa);       // slave chord of arp to same sequencer that is controlling our Poly',
+'a = Arp("C4m7", _32, "updown", 3);\n'+
+'a.slave(high);     // slave oscillator to arp\n'+
+'ss.slave(a);       // slave chord of arp to same sequencer that is controlling our Poly',
 
 "sequence functions" :
 '// This shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
 '// There is a tutorial on the Seq object that should be read first to understand this.\n'+
 '\n'+
 '// create a synth, add delay + reverb, adjust attack/delay times\n'+
-'s = Synth().chain( Delay(_8), Reverb() );\n'+
+'s = Synth();\n'+
+'s.fx.add( Delay(_8), Reverb() );\n'+
 's.attack = 10;\n'+
 's.decay = 50;\n'+
 '\n'+
@@ -283,25 +295,28 @@ default:
 'Most ugens in Gibber have a method named "out" that advances the phase of the\n'+
 'ugen and returns the output. Note that keystrokes to stop/start audio will\n'+
 'not work with a custom callback, and that there is no tempo. It\'s a little\n'+
-'tricky to run this and then initialize objects, so we\'ll just create our ugens\n'+
-'the first time the new callback is called.\n'+
+'tricky to run this and then initialize objects as new objects are automatically added to\n'+
+'Gibber\'s graph, so we\'ll just create our ugens the first time the new callback is called.\n'+
+'\n'+
+'To disable the callback (and stop the sine wave) just run the last line of code, which\n'+
+'resets the callback to Gibber\'s default\n.'+
 '*/\n'+
 '\n'+
 'this.dev.readFn = function(buffer, channelCount){\n'+
 '    var freqStore, val;\n'+
-'    if(typeof s === "undefined") {  // init oscillators\n'+
+'    if(typeof __s === "undefined") {  // init oscillators\n'+
 '        console.log("INIT");\n'+
-'        s = Sine();\n'+
-'        m = Sine(4, 8);\n'+
+'        __s = Sine();\n'+
+'        __m = Sine(4, 8);\n'+
 '    }\n'+
 '    \n'+
 '    for(var i = 0; i < buffer.length; i+= channelCount) {\n'+
-'        freqStore = s.frequency;\n'+
-'        s.frequency += m.out();     // modulate the frequency\n'+
-'        val = s.out();          	// get the output of s\n'+
-'        s.frequency = freqStore;    // restore the frequency of s\n'+
+'        freqStore = __s.frequency;\n'+
+'        __s.frequency += __m.out();     	// modulate the frequency\n'+
+'        val = __s.out();          			// get the output of s\n'+
+'        __s.frequency = freqStore;    		// restore the frequency of s\n'+
 '        \n'+
-'        buffer[i] = val;            // assign value to sample\n'+
+'        buffer[i] = val;            		// assign value to sample\n'+
 '        buffer[i+1] = val;\n'+
 '	}\n'+
 '}\n'+
@@ -392,7 +407,8 @@ FM:
 '\n'+
 'noteFrequency = ntof("F2"); // ntof is note-to-frequency\n'+
 '\n'+
-'c = Synth("sine", .15).chain( Reverb() );\n'+
+'c = Synth("sine", .15);\n'+
+'c.fx.add( Reverb() );\n'+
 'c.mod("freq", Sine( noteFrequency * 1.4, noteFrequency * .95), "+");\n'+
 'c.env.attack  = 1;        // 1 ms attack time\n'+
 'c.env.decay   = 6000;     // 1000 ms decay\n'+
@@ -411,7 +427,7 @@ FM:
 '*/\n'+
 '\n'+
 'f = FM(1 / 1.0007, 5, 100, 100);\n'+
-'f.chain( Reverb() );\n'+
+'f.fx.add( Reverb() );\n'+
 's = Seq(["A4", "B4", "B4", "C4"], _8, f);',
 }
 

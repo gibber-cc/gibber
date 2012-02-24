@@ -7,6 +7,10 @@ Storage.prototype.getObject = function(key) {
     return value && JSON.parse(value);
 }
 
+Gibber.log = function(val) {
+	window.console.log(val);
+}
+
 Gibber.Environment = {
 	save : function(code) {
 		var scripts;
@@ -42,7 +46,8 @@ Gibber.Environment = {
 				Gibber.Environment.Editor.insert(msg.code + "\n\n");
 				Gibber.Environment.Editor.scrollPageDown();
 				
-				Gibber.runScript(msg.code + "\n\n");
+				Gibber.callback.addCallback(msg.code + "\n\n", _1);
+				//Gibber.runScript(msg.code + "\n\n");
 			});
 			Gibber.Environment.masterSocket.emit('master', null);
 		});	
@@ -212,7 +217,7 @@ Gibber.Environment = {
 				});
 				$(b).bind("click", function() {
 					Gibber.Environment.slave($("#nameInput").val(), $("#ipInput").val());
-					$(m).remove();
+					$(Gibber.Environment.joinWindow).remove();
 					Gibber.Environment.isJoinOpen = false;
 				});
 				

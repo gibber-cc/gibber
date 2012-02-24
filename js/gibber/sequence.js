@@ -172,7 +172,7 @@ function Seq() {
 	}
 	
 	var that = {
-		_sequence : sequence || null,
+		_sequence : null,
 		sequence : sequence || null,
 		_start : true,
 		counter : -1,
@@ -183,6 +183,7 @@ function Seq() {
 		phase: 0,
 		memory: [],
 		init: true,
+		mods: [],
 	}
 	
 	that.setSequence = function(seq, _speed, _reset) {
@@ -207,6 +208,10 @@ function Seq() {
 				var n = seq[i];
 				this.sequence[i] = n;
 			}
+		}
+		
+		if(this._sequence === null) {
+			this._sequence = this.sequence.slice(0);
 		}
 		
 		this.sequenceLengthInSamples = seq.length * this.speed;
@@ -248,46 +253,48 @@ function Seq() {
 		}
 		
 		//if(Gibber.debug) console.log(this.speed + " : " + this.phase);
- 		if(this.phase % this.speed <= .5) {
-			this.counter++;
-			var val = this.sequence[this.counter % this.sequence.length];
+		if(this.phase >= 0) {
+	 		if(this.phase % this.speed <= .5) {
+				this.counter++;
+				var val = this.sequence[this.counter % this.sequence.length];
 			
-			var shouldReturn = false;
-			// Function sequencing
-			// TODO: there should probably be a more robust way to to this
-			// but it will look super nice and clean on screen...
-			if(typeof val === "function") {
-				val();
-				shouldReturn = true;
-			}else if(typeof val === "undefined") {
-				shouldReturn = true;
-			}
-			
-			if(shouldReturn) {
-				if(this.phase >= this.sequenceLengthInSamples - 1) {
-					this.phase = 0;
-				}else{
-					this.phase++;
+				var shouldReturn = false;
+				// Function sequencing
+				// TODO: there should probably be a more robust way to to this
+				// but it will look super nice and clean on screen...
+				if(typeof val === "function") {
+					val();
+					shouldReturn = true;
+				}else if(typeof val === "undefined") {
+					shouldReturn = true;
 				}
-				return;
-			}
+			
+				if(shouldReturn) {
+					if(this.phase >= this.sequenceLengthInSamples - 1) {
+						this.phase = 0;
+					}else{
+						this.phase++;
+					}
+					return;
+				}
 			
 			
-			for(j = 0; j < this.slaves.length; j++) {
-				var slave = this.slaves[j];
+				for(j = 0; j < this.slaves.length; j++) {
+					var slave = this.slaves[j];
 	
-				if(this.outputMessage === "freq") {
-					if(typeof val === "string" ) {
-						var n = teoria.note(val);
-						val = n.fq();
-					}else if(typeof val === "object"){
-						val = val.fq();
-					}// else val is a number and is fine to send as a freq...
-				}
-				if(typeof slave[this.outputMessage] === "function") {
-					slave[this.outputMessage](val);
-				}else{
-					slave[this.outputMessage] = val;
+					if(this.outputMessage === "freq") {
+						if(typeof val === "string" ) {
+							var n = teoria.note(val);
+							val = n.fq();
+						}else if(typeof val === "object"){
+							val = val.fq();
+						}// else val is a number and is fine to send as a freq...
+					}
+					if(typeof slave[this.outputMessage] === "function") {
+						slave[this.outputMessage](val);
+					}else{
+						slave[this.outputMessage] = val;
+					}
 				}
 			}
 		}
@@ -401,6 +408,11 @@ function Seq() {
 		that.setSequence(that.sequence, that.speed);	
 	}
 	
+	that.setParam = function(param, _value){
+		this[param] = _value;
+	};
+	
+	Gibber.addModsAndFX.call(that);
 	Gibber.controls.push(that);
 	
 	if(gen != null) {

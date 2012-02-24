@@ -2,12 +2,14 @@
 <html>
 	<head>
 		<title>Gibber</title>
+		<script src="js/jquery-1.5.js" type="text/javascript" charset="utf-8"></script>
+		
 		<script src="js/audiolib.js"></script>
 		<script src="js/samples/drum-samples.js"></script>
 		<script src="js/gibber/gibber.js"></script>
 		<script src="js/gibber/chord.js"></script>
 		<script src="js/teoria.js"></script>		
-										
+		<script src="js/gibber/utilities.js"></script>											
 		<script src="js/gibber/drums.js"></script>
 		<script src="js/gibber/arpeggiator.js"></script>
 		<script src="js/gibber/beatCallback.js"></script>
@@ -18,7 +20,6 @@
 		<script src="js/gibber/poly.js"></script>		
 		<script src="js/gibber/fm_synth.js"></script>		
 		<script src="js/gibber/default_scripts.js"></script>
-		<script src="js/gibber/utilities.js"></script>		
 
 		<script src="js/ace/ace-ugly.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
@@ -29,7 +30,6 @@
 		<script src="js/ace/theme-chrome.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ace/theme-thecharlie.js" type="text/javascript" charset="utf-8"></script>
 		
-		<script src="js/jquery-1.5.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/node/socket.io.min.js" type="text/javascript" charset="utf-8"></script>
 		<link rel="stylesheet" href="css/main.css">
 		
@@ -89,7 +89,7 @@
 					<!--Load File:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">-->
 					</select><br>
 					<!--<button onclick="Gibber.loadFile()">Load File</button><br>-->
-					<button onclick="editor.renderer.setShowGutter(!Gibber.Environment.Editor.renderer.getShowGutter())">Toggle Line Numbers</button>
+					<button onclick="Gibber.Environment.Editor.renderer.setShowGutter(!Gibber.Environment.Editor.renderer.getShowGutter())">Toggle Line Numbers</button>
 					
 				</div>
 			</div>
