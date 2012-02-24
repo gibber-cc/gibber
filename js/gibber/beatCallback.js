@@ -82,6 +82,8 @@ Callback.prototype = {
 						var check = this.callbacks[j]();
 						if(!check) this.callbacks.splice(j,1);
 					}catch(e) {
+						G.log(e.toString());
+						console.log(e);
 						this.callbacks.splice(j,1);
 					}
 				}

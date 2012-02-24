@@ -8,6 +8,7 @@ Storage.prototype.getObject = function(key) {
 }
 
 Gibber.log = function(val) {
+	$(".consoletext").text(val);
 	window.console.log(val);
 }
 
@@ -29,7 +30,7 @@ Gibber.Environment = {
 		console.log("Name " + name + " : ip " + ip);
 		Gibber.Environment.slaveSocket = io.connect('http://' + ip + ':8080/'); // has to match port node.js is running on
 		Gibber.Environment.slaveSocket.on('connect', function () {
-			console.log("SLAVE IS CONNECTING>....... " + name);
+			G.log("CONNECTED TO MASTER AS " + name);
 			Gibber.Environment.slaveSocket.emit('name', {"name":name});
 		});
 	},
@@ -216,6 +217,7 @@ Gibber.Environment = {
 					"left": "4em", 
 				});
 				$(b).bind("click", function() {
+					G.log("ATTEMPTING TO CONNECT TO MASTER...");
 					Gibber.Environment.slave($("#nameInput").val(), $("#ipInput").val());
 					$(Gibber.Environment.joinWindow).remove();
 					Gibber.Environment.isJoinOpen = false;
@@ -351,6 +353,7 @@ Gibber.Environment = {
 	    var JavaScriptMode = require("ace/mode/javascript").Mode;
 	    Gibber.Environment.Editor.getSession().setMode(new JavaScriptMode());
 		Gibber.Environment.Editor.setTheme("ace/theme/thecharlie");
+		
 		$('.ace_gutter').css({
 			"background-color":"#000",
 			"color":"#ccc",

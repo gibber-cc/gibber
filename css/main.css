@@ -22,14 +22,36 @@ body {
 	background: rgba(255, 255, 255, .2);  
 }
 
+#console {
+	position:absolute;
+	display:block;
+	bottom: 0px;
+	width: 80%;
+	height:20px;
+	border-width: 1px 0px 0px 0px;
+	border-style: solid;
+	border-color:#ccc;
+	color: #f00;
+	background-color:#000;
+	font-size: .85em;	
+}
+
+#console p {
+	margin-top : 0;
+	color: #ccc;
+	padding-left: 4em;
+	font-family: Monaco, Menlo, monospace;
+	font-weight: bold;
+}
+
 #editor {
-	font-family:Monaco, Menlo, sans-serif;
+	font-family:Monaco, Menlo, monospace;
 	font-size: .8em;
     position: absolute;
 	display:inline;
 	margin: 0;
     width: 80%;
-    height: 100%;
+	height:100%;
 }
 
 body {scrollbar-base-color:orange;}

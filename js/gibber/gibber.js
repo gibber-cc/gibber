@@ -172,7 +172,12 @@ var Gibber = {
 	},
 	
 	runScript : function(script) {
-		eval(script);
+		try {
+			eval(script);
+		}catch(e) {
+			G.log(e.toString());
+			console.log(e);
+		}
 		//(function(_s) { console.log(this); eval(s); console.log(this); }).call(Gibber._gens, script);
 	},
 	
