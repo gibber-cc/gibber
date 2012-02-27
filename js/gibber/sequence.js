@@ -223,7 +223,7 @@ function Seq() {
 	that.slave = function(gen) {
 		console.log("slaving " + gen);
 		this.slaves.push(gen);
-		//if(typeof gen.note === "undefined") { this.outputMessage = "freq"; }		
+		if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }		
 	};
 	
 	that.free = function() {

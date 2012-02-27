@@ -214,6 +214,3 @@ function Poly(_chord, _waveform, volume) {
 	
 	return that;
 }
-// TODO: Extend for FM?
-//FM = Synth;
-//FM.note = 

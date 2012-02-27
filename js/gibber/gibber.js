@@ -318,7 +318,9 @@ function Osc(args, isAudioGenerator) {
 	
 	var that = new audioLib.Oscillator(Gibber.sampleRate, _freq);
 	that.type = "gen";	
+	
 	that.mix = (typeof args[1] !== "undefined") ? args[1] : .25;
+	console.log(that.mix);
 	that.active = true;		
 	that.value = 0;
 	if(typeof args[2] === "string") {
@@ -515,6 +517,7 @@ function Trunc(bits, mix) {
 	that.automations = [];
 	
 	bits = bits || 8;
+	if(bits > 16) bits = 16;
 	
 	if(typeof bits === "Object") {
 		that.effects[1].resolution = Math.pow(2, bits[0]-1);
@@ -658,7 +661,7 @@ function InvSaw(freq, volume) {
 	return that;
 }
 
-function Square(freq, volume) {	
+function Square(freq, volume) {
 	var that = Osc(arguments);
 	that.name = "Square";
 	that.waveShape = 'square';

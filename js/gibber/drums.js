@@ -21,6 +21,15 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	this.mix   = isNaN(_mix) ? 0.175 : _mix;
 	this.frequency = isNaN(_freq) ? 440 : _freq;
 	
+	this.value = 0;
+	this.active = true;
+	this.mods = [];
+	this.fx = [];
+	this.sequenceInit =false;
+	this.automations = [];
+	this.initialized = false;
+	
+	
 	Gibber.addModsAndFX.call(this);
 	Gibber.generators.push(this);
 	
@@ -52,13 +61,6 @@ Drums.prototype = {
 	sampleRate : Gibber.sampleRate,
 	type  : "gen",
 	name  : "Drums",
-	value : 0,
-	active : true,
-	mods : [],
-	fx : [],
-	sequenceInit:false,
-	automations : [],
-	initialized : false,
 		
 	load : function (){
 		// SAMPLES ARE PRELOADED IN GIBBER CLASS... but it still doesn't stop the hitch when loading these...

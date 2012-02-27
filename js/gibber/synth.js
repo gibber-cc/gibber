@@ -18,13 +18,26 @@ function Synth(waveform, volume) {
 	this.volume = isNaN(volume) ? .2 : volume;
 	this.waveform = waveform || "triangle";
 	this.osc = Osc([440, this.volume, this.waveform], false);
+	this.env = Env();
+	this.osc.mod("mix", this.env, "*");
 	
 	if(typeof waveform !== "undefined") {
 		this.osc.waveShape = waveform;
 	}
 	
+	this.mix= .2;
+	this.frequency= 440;
+	this.phase = 0;
+	this.value = 0;
+	this.active = true;
+	this._start = true;
+	this.counter = -1;
+	
+	this.mods = [];
+	this.fx = [];
+	this.automations = [];
+	
 	Gibber.generators.push(this.osc);
-	this.osc.mod("mix", this.env, "*");
 	
 	// meta-methods
 	(function(obj) {
@@ -108,12 +121,7 @@ function Synth(waveform, volume) {
 Synth.prototype = {
 	name: "Synth",
 	type: "complex",
-	env : Env(),
-	mix: .2,
-	frequency: 440,
-	phase : 0,
-	value : 0,
-	active : true,
+
 	note : function(n) {
 		switch(typeof n) {
 			case "number" :
@@ -128,12 +136,6 @@ Synth.prototype = {
 		}
 		this.env.triggerGate();
 	},
-	_start : true,
-	counter : -1,
-	
-	mods : [],
-	fx : [],
-	automations : [],
 	
 	replace : function(replacement){
 		// can't replace, just remove instead.
@@ -171,7 +173,6 @@ Synth.prototype = {
 	},
 	
 	mod : function() {
-		console.log("MODDING...");
 		if(typeof arguments[2] === "undefined") {
 			this.osc.mod(arguments[0], arguments[1]);
 		}else{
