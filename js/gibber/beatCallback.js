@@ -19,8 +19,8 @@ function initPlugin(audioLib){
 function Callback() {
 	this.measureLengthInSamples = _1;
 	
-	function bpmCallback() {
-		var that = this;
+	function bpmCallback(obj) {
+		var that = obj;
 		return function(percentageChangeForBPM) {
 			that.measureLengthInSamples = _1;
 		}
