@@ -1,60 +1,34 @@
+/* 	
+Charlie Roberts 2012 MIT License
+
+Oscillator and envelope wrapped together with a method to play notes.
+
+usage:
+s = Synth();
+s.note("A4");
+
+*/
+
+(function myPlugin(){
+
+function initPlugin(audioLib){
+(function(audioLib){
+
 function Synth(waveform, volume) {
-	volume = isNaN(volume) ? .2 : volume;
-	
-	var that = {
-		osc : Osc([440, volume, "triangle"], false),
-		name: "Synth",
-		type: "complex",
-		env : Env(),
-		mix: volume,
-		frequency: 440,
-		phase : 0,
-		value : 0,
-		active : true,
-		note : function(n) {
-			switch(typeof n) {
-				case "number" :
-					this.osc.frequency = n;
-				break;
-				case "string" :
-					this.osc.frequency = teoria.note(n).fq();
-				break;
-				default:
-					this.osc.frequency = n.fq();
-					break;
-			}
-			this.env.triggerGate();
-		},
-		_start : true,
-		counter : -1,
-	};
-	
-	that.mods = [];
-	that.fx = [];
-	that.automations = [];
-	
-	that.replace = function(replacement){
-		// can't replace, just remove instead.
-		Gibber.genRemove(this);
-		delete this.osc;
-		delete this.env;
-		delete this;
-	};
-	
-	that.stop = function() {
-		this.active = false;
-	};
-	
-	that.start = function() {
-		this.phase = 0;
-		this.active = true;
-	};
+	this.volume = isNaN(volume) ? .2 : volume;
+	this.waveform = waveform || "triangle";
+	this.osc = Osc([440, this.volume, this.waveform], false);
 	
 	if(typeof waveform !== "undefined") {
-		that.osc.waveShape = waveform;
+		this.osc.waveShape = waveform;
 	}
 	
-	(function() {
+	Gibber.generators.push(this.osc);
+	this.osc.mod("mix", this.env, "*");
+	
+	// meta-methods
+	(function(obj) {
+		var that = obj;
 	    var mix = that.mix;
 		var attack = that.env.attack;
 		var decay  = that.env.decay;
@@ -128,42 +102,103 @@ function Synth(waveform, volume) {
 		        }
 			},
 	    });
-	})();
+	})(this);
+}
+
+Synth.prototype = {
+	name: "Synth",
+	type: "complex",
+	env : Env(),
+	mix: .2,
+	frequency: 440,
+	phase : 0,
+	value : 0,
+	active : true,
+	note : function(n) {
+		switch(typeof n) {
+			case "number" :
+				this.osc.frequency = n;
+			break;
+			case "string" :
+				this.osc.frequency = teoria.note(n).fq();
+			break;
+			default:
+				this.osc.frequency = n.fq();
+				break;
+		}
+		this.env.triggerGate();
+	},
+	_start : true,
+	counter : -1,
 	
+	mods : [],
+	fx : [],
+	automations : [],
 	
-	that.out = function() {
+	replace : function(replacement){
+		// can't replace, just remove instead.
+		Gibber.genRemove(this);
+		delete this.osc;
+		delete this.env;
+		delete this;
+	},
+	
+	stop : function() {
+		this.active = false;
+	},
+	
+	start : function() {
+		this.phase = 0;
+		this.active = true;
+	},
+		
+	out : function() {
 		//this.generate();
 		//return this.value;
-	}
+	},
 	
-	that.getMix = function() {
+	getMix : function() {
 		return this.value * this.mix;
-	};
+	},
 	
 	//Gibber.generators.push(that);
 	
-	that.chain = function() {
+	chain : function() {
 		for(var i = 0; i < arguments.length; i++) {
 			this.osc.chain(arguments[i]);
 		}
 		return this;
-	};
+	},
 	
-	that.mod = function() {
+	mod : function() {
+		console.log("MODDING...");
 		if(typeof arguments[2] === "undefined") {
 			this.osc.mod(arguments[0], arguments[1]);
 		}else{
 			this.osc.mod(arguments[0], arguments[1], arguments[2]);
 		}
-	};
-	
-	Gibber.generators.push(that.osc);
-	that.osc.mod("mix", that.env, "*");
-	
-	
-	//that.__proto__ = new audioLib.GeneratorClass();
-	return that;
+	},
 }
-// TODO: Extend for FM?
-//FM = Synth;
-//FM.note = 
+
+Synth.prototype.__proto__ = new audioLib.GeneratorClass();
+
+audioLib.generators('Synth', Synth);
+
+audioLib.Synth = audioLib.generators.Synth;
+ 
+}(audioLib));
+audioLib.plugins('Synth', myPlugin);
+}
+
+if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
+	exports.init = initPlugin;
+} else {
+	initPlugin(audioLib);
+}
+
+}());
+
+function Synth (waveform, volume) {
+	var s = new audioLib.Synth(waveform, volume);
+	return s;
+}
