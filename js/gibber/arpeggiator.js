@@ -12,10 +12,10 @@ function initPlugin(audioLib){
 (function(audioLib){
 
 function Arp(notation, beats, mode, mult) {
-	this.speed = isNaN(beats) ? _4 : beats;
 	this.mode = mode || "up";
 	this.notation = notation || "Cm7";
 	this.mult = mult || 1;
+	this.speed = isNaN(beats) ? _4 : beats;
 		
 	this.type = "complex";
 	this.name = "Arp";
@@ -25,14 +25,13 @@ function Arp(notation, beats, mode, mult) {
 	
 	this.seq = Seq();
 	
-	this.chord(this.notation);
 	this.original = this.notes.slice(0);
 	
-	(function() {
-		var speed = this.speed;
-		var _that = this;
+	(function(obj) {	
+		var that = obj;
+		var speed = obj.speed;
 		
-		Object.defineProperties(_that, {
+		Object.defineProperties(that, {
 			"speed": {
 				get: function(){ return speed; },
 				set: function(value) {
@@ -41,7 +40,9 @@ function Arp(notation, beats, mode, mult) {
 				}
 			}
 		});
-	})();
+	})(this);
+	
+	this.chord(this.notation);
 }
 
 Arp.prototype = {
