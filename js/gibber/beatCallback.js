@@ -26,7 +26,7 @@ function Callback() {
 		}
 	}
 	
-	Gibber.registerObserver("bpm", bpmCallback.call(this));
+	Gibber.registerObserver("bpm", bpmCallback(this));
 }
 
 Callback.prototype = {

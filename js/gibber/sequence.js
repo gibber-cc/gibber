@@ -191,7 +191,7 @@ function Seq() {
 	
 	console.log(that.sequence);
 	
-	that.setSequence = function(seq, _speed, _reset) {
+	that.setSequence = function(seq, _speed, _reset) {		
 		if(typeof _speed !== "undefined") {
 			this.speed = _speed;
 		}
@@ -361,26 +361,26 @@ function Seq() {
 		this.setSequence(this.sequence, speed, shouldReset);
 	};
 	
-	that.bpmCallback = function() {
-		var that = this;
+	that.bpmCallback = function(obj) {
+		var _that = obj;
 		return function(percentageChangeForBPM) {
-			that.speed *= percentageChangeForBPM;
-			that.setSequence(that.sequence, that.speed);
+			_that.speed *= percentageChangeForBPM;
+			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
 		}
 	};
 	
-	Gibber.registerObserver( "bpm", that.bpmCallback() );
+	Gibber.registerObserver( "bpm", that.bpmCallback(that) );
 	
 	that.shuffle = function() {
-		that.sequence.shuffle();
-		that.setSequence(that.sequence, that.speed);
+		this.sequence.shuffle();
+		this.setSequence(this.sequence, this.speed);
 	};
 	
 	that.reset = function() {
 		if(arguments.length === 0) {
-			that.setSequence(that._sequence, that.speed);
+			this.setSequence(this._sequence, this.speed);
 		}else{
-			that.setSequence(that.memory[arguments[0]]);
+			this.setSequence(this.memory[arguments[0]]);
 		}
 	};
 	

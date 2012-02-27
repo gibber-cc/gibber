@@ -12,39 +12,46 @@ function initPlugin(audioLib){
 (function(audioLib){
 
 function Arp(notation, beats, mode, mult) {
+	this.__proto__.__proto__ = Seq();
+	this.slaves = [];
+	this.sequence = [];
+	Gibber.controls.pop();
+	Gibber.controls.push(this);
+	
 	this.mode = mode || "up";
 	this.notation = notation || "Cm7";
 	this.mult = mult || 1;
 	this.speed = isNaN(beats) ? _4 : beats;
 	
 	this.notes = [];
-	this.modded = [];
+	//this.notes = [];
+	//this.modded = [];
 	
-	this.seq = Seq();
+	// this.seq = Seq();
 	
 	this.original = this.notes.slice(0);
 	
-	(function(obj) {	
-		var that = obj;
-		var speed = obj.speed;
-		
-		Object.defineProperties(that, {
-			"speed": {
-				get: function(){ return speed; },
-				set: function(value) {
-					speed = value;
-					this.seq.setSequence(this.notes, speed, false);
-				}
-			}
-		});
-	})(this);
+	// (function(obj) {	
+	// 	var that = obj;
+	// 	var speed = obj.speed;
+	// 	
+	// 	Object.defineProperties(that, {
+	// 		"speed": {
+	// 			get: function(){ return speed; },
+	// 			set: function(value) {
+	// 				speed = value;
+	// 				this.seq.setSequence(this.notes, speed, false);
+	// 			}
+	// 		}
+	// 	});
+	// })(this);
 	
 	this.chord(this.notation);
 }
 
 Arp.prototype = {
 	name : "Arp",
-	type : "complex",
+	type : "control",
 	
 	chord : function(_chord, shouldReset) {
 		var arr = [];
@@ -74,7 +81,8 @@ Arp.prototype = {
 			arr = arr.concat(tmp);
 		}	
 		this.notes = this.modes[this.mode]( arr );
-		this.seq.setSequence(this.notes, this.speed, shouldReset);	
+		this.setSequence(this.notes, this.speed, shouldReset);
+
 	},
 	set : function(_chord, _speed, _mode, octaveMult, shouldReset) {
 		this.speed = _speed || this.speed;
@@ -82,12 +90,6 @@ Arp.prototype = {
 		this.mult = octaveMult || this.mult;
 		
 		this.chord(_chord, shouldReset); // also sets sequence
-	},
-	
-	slave : function(gen) {
-		this.gen = gen;
-		this.seq.slave(this.gen);
-		if(typeof this.gen.note === "undefined") { this.seq.outputMessage = "freq"; }		
 	},
 	
 	modes : {
@@ -103,42 +105,43 @@ Arp.prototype = {
 			return array.concat(_tmp);
 		}
 	},
-	shuffle: function() { this.seq.shuffle(); },
-	reset : function(num)  { 
-		if(isNaN(num)) {
-			this.seq.reset();
-		}else{
-			this.seq.reset(num); 
-		}
-	},
-	
-	retain : function(num) { 
-		if(isNaN(num)) {
-			this.seq.retain();
-		}else{
-			this.seq.retain(num); 
-		}
-	},
+	// shuffle: function() { this.seq.shuffle(); },
+	// reset : function(num)  { 
+	// 	if(isNaN(num)) {
+	// 		this.seq.reset();
+	// 	}else{
+	// 		this.seq.reset(num); 
+	// 	}
+	// },
+	// 
+	// retain : function(num) { 
+	// 	if(isNaN(num)) {
+	// 		this.seq.retain();
+	// 	}else{
+	// 		this.seq.retain(num); 
+	// 	}
+	// },
 
-	replace : function(replacement){
-		if(replacement.name != "Arp") {
-			this.seq.free();
-			if(replacement.type == "mod") {
-				var idx = jQuery.inArray( this.step, this.gen.mods );
-				if(idx > -1) {
-					this.gen.mods.splice(idx,1,replacement);
-					replacement.gens.push(this.gen);
-				}
-			}
-		}else{
-			var idx = jQuery.inArray( this.step, this.gen.mods );
-			if(idx > -1) {
-				this.gen.mods.splice(idx,1,replacement.step);
-				replacement.gens.push(this.gen);
-			}
-		}
-	},
+	// replace : function(replacement){
+	// 	if(replacement.name != "Arp") {
+	// 		this.seq.free();
+	// 		if(replacement.type == "mod") {
+	// 			var idx = jQuery.inArray( this.step, this.gen.mods );
+	// 			if(idx > -1) {
+	// 				this.gen.mods.splice(idx,1,replacement);
+	// 				replacement.gens.push(this.gen);
+	// 			}
+	// 		}
+	// 	}else{
+	// 		var idx = jQuery.inArray( this.step, this.gen.mods );
+	// 		if(idx > -1) {
+	// 			this.gen.mods.splice(idx,1,replacement.step);
+	// 			replacement.gens.push(this.gen);
+	// 		}
+	// 	}
+	// },
 }
+//Arp.prototype.__proto__ = Seq();
 
 audioLib.Arpeggiator = Arp;
 		

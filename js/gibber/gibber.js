@@ -12,10 +12,7 @@ var Gibber = {
 	mode : "aeolian",
 	modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic"],
 	
-	init : function() {
-		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
-			this.Environment.init();
-		}
+	initDurations : function() {
 		this.dev = Sink(audioProcess, 2);
 		this.sampleRate = this.dev.sampleRate;		
 		this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
@@ -24,7 +21,13 @@ var Gibber = {
 		for(var i = 0; i <= 64; i++) {
 			window["_"+i] = this.measure / i;
 		}
-		
+	},
+	
+	init : function() {
+		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
+			this.Environment.init();
+		}
+
 		this.samples = { // preload
 			kick 	: atob(samples.kick),
 		    snare 	: atob(samples.snare),
@@ -55,7 +58,7 @@ var Gibber = {
 									 Gibber.genReplace(variable);
 								 break;
 								 case "mod":
-									 Gibber.modReplacevariable, newObj);
+									 Gibber.modReplace(variable, newObj);
 								 break;
 								 case "fx":
 									 Gibber.fxReplace(variable, newObj);
@@ -125,7 +128,7 @@ var Gibber = {
 	
 	controlReplace: function(oldControl, newControl) {
 		var controlToReplace = oldControl;
-		
+
 		for(var i = 0; i < controlToReplace.slaves.length; i++) {
 			var slave = controlToReplace.slaves[i];
 			newControl.slave(slave);
@@ -140,9 +143,10 @@ var Gibber = {
 	},
 	
 	registerObserver : function(name, fn) {
-		console.log("Registering");
+		console.log("Registering " + fn);
 		this.observers[name].push(fn);
 	},
+	
 	
 	setBPM : function(_bpm) {
 		var oldbpm = this.bpm;
@@ -150,16 +154,16 @@ var Gibber = {
 		this.beat = 60000 / this.bpm * (this.sampleRate / 1000);
 		this.measure = this.beat * 4;
 		
-		for(var j = 0; j <= 32; j++) {
+		for(var j = 0; j <= 64; j++) {
 			window["_"+j] = this.measure / j;
 		}
 		
-		var bpmObservers = this.observers.bpm;
+		var bpmObservers = Gibber.observers.bpm;
 
 		var percentChange = oldbpm / this.bpm;
 		for(var i = 0; i < bpmObservers.length; i++) {
-			var fcn = bpmObservers[i]; // all observers are callback functions to be called
-			fcn(percentChange);
+			var fnc = bpmObservers[i]; // all observers are callback functions to be called
+			fnc(percentChange);
 		}
 	},
 	
@@ -320,6 +324,8 @@ Gibber.addModsAndFX = function() {
 Gibber.gens = Gibber.generators;
 window.G = Gibber;
 
+Gibber.initDurations();
+
 // audioLib additions
 audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
 	fx.setParam(param, fx[param] + Math.abs(value));
@@ -428,8 +434,8 @@ function Delay(time, feedback, mix) {
 	that.mods = [];
 	that.automations = [];
 	
-	time = time || _4;
-	time /= Gibber.sampleRate / 1000;
+	that.time = time || _4;
+	that.time /= Gibber.sampleRate / 1000;
 	feedback = feedback || .3;
 	mix = isNaN(mix) ? .3 : mix;
 	
@@ -441,11 +447,22 @@ function Delay(time, feedback, mix) {
 	}
 	
 	if(typeof time === "Object") {
-		that.effects[1].time = time[0];
-		that.effects[0].time = time[1];
+		that.effects[1].time = that.time[0];
+		that.effects[0].time = that.time[1];
 	}else{
-		that.setParam("time", time);
+		that.setParam("time", that.time);
 	}
+	
+	that.bpmCallback = function(obj) {
+		var _that = obj;
+		return function(percentageChangeForBPM) {
+			_that.time *= percentageChangeForBPM;
+			_that.setParam("time", _that.time);			
+		}
+	};
+	
+	Gibber.registerObserver( "bpm", that.bpmCallback(that) );
+	
 	
 	that.mix = mix;
 	
