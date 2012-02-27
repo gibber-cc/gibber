@@ -23,36 +23,17 @@ var Gibber = {
 		}
 	},
 	
-	init : function() {
-		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
-			this.Environment.init();
-		}
-
-		this.samples = { // preload
-			kick 	: atob(samples.kick),
-		    snare 	: atob(samples.snare),
-		    //hat 	: atob(samples.snare), 
-		}
-		
-		this.callback = new audioLib.Callback();
-		window.loop = function(cb, time) {
-			var l = Gibber.callback.addCallback(cb, time, true);
-			l.end = function() {
-				Gibber.callback.callbacks = Gibber.callback.callbacks.removeObj(this);
-			};
-			return l;
-		};
-
+	meta: function(obj) {
 		var letters = "abcdefghijklmnopqrstuvwxyz";
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
 			(function() {
 				var ltr = lt;
-				Object.defineProperty(window, ltr, {
-					get:function() { return window["____"+ltr];},
+				Object.defineProperty(obj, ltr, {
+					get:function() { return obj["____"+ltr];},
 					set:function(newObj) {
-						 if(typeof window["____"+ltr] !== "undefined") {
-							 var variable = window["____"+ltr];
+						 if(typeof obj["____"+ltr] !== "undefined") {
+							 var variable = obj["____"+ltr];
 							 switch(variable.type) {
 								 case "gen":
 									 Gibber.genReplace(variable);
@@ -72,20 +53,52 @@ var Gibber = {
 								 default: break;
 							 }
 						 }
-					 	 window["____"+ltr] = newObj;
+					 	 obj["____"+ltr] = newObj;
 					},
 				})
 			})();
 		}
 	},
 	
+	init : function() {
+		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
+			this.Environment.init();
+		}
+
+		this.samples = { // preload
+			kick 	: atob(samples.kick),
+		    snare 	: atob(samples.snare),
+		    //hat 	: atob(samples.snare), 
+		}
+		
+		this.callback = new audioLib.Callback();
+		window.loop = function(cb, time) {
+			var l = Gibber.callback.addCallback(cb, time, true);
+			l.end = function() {
+				Gibber.callback.callbacks = Gibber.callback.callbacks.removeObj(this);
+			};
+			return l;
+		};
+		this.meta(window);
+	},
+	
 	observers : {
 		"bpm": [],
+	},
+	
+	genRemove : function(gen) {
+		var idx = jQuery.inArray( gen, Gibber.generators);
+		if(idx > -1) {
+			Gibber.generators.splice(idx,1);
+			gen.mods.length = 0;
+			gen.fx.length = 0;
+		}
 	},
 	
 	genReplace : function(gen) {
 	// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
 	// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc to replacement???
+	// TODO: YES IT SHOULD ADD THE FX / MODS OF REPLACEMENT
 		var idx = jQuery.inArray( gen, Gibber.generators);
 		if(idx > -1) {
 			Gibber.generators.splice(idx,1);
@@ -143,7 +156,7 @@ var Gibber = {
 	},
 	
 	registerObserver : function(name, fn) {
-		console.log("Registering " + fn);
+		//console.log("Registering " + fn);
 		this.observers[name].push(fn);
 	},
 	

@@ -189,7 +189,7 @@ function Seq() {
 		mods: [],
 	}
 	
-	console.log(that.sequence);
+	//console.log(that.sequence);
 	
 	that.setSequence = function(seq, _speed, _reset) {		
 		if(typeof _speed !== "undefined") {
@@ -224,7 +224,7 @@ function Seq() {
 	};
 	
 	that.slave = function(gen) {
-		console.log("slaving " + gen);
+		//console.log("slaving " + gen);
 		this.slaves.push(gen);
 		if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }		
 	};

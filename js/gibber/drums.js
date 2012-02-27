@@ -13,7 +13,8 @@ Usage: d = Drums("x*o*xx.*");
 
 function initPlugin(audioLib){
 (function(audioLib){
-
+	
+// TODO: This should use a Seq object as prototype if possible.
 function Drums (_sequence, _timeValue, _mix, _freq){
 	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
