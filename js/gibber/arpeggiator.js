@@ -16,9 +16,6 @@ function Arp(notation, beats, mode, mult) {
 	this.notation = notation || "Cm7";
 	this.mult = mult || 1;
 	this.speed = isNaN(beats) ? _4 : beats;
-		
-	this.type = "complex";
-	this.name = "Arp";
 	
 	this.notes = [];
 	this.modded = [];
@@ -46,6 +43,9 @@ function Arp(notation, beats, mode, mult) {
 }
 
 Arp.prototype = {
+	name : "Arp",
+	type : "complex",
+	
 	chord : function(_chord, shouldReset) {
 		var arr = [];
 		
@@ -122,6 +122,7 @@ Arp.prototype = {
 
 	replace : function(replacement){
 		if(replacement.name != "Arp") {
+			this.seq.free();
 			if(replacement.type == "mod") {
 				var idx = jQuery.inArray( this.step, this.gen.mods );
 				if(idx > -1) {

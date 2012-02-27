@@ -1,5 +1,8 @@
 function ScaleSeq(_sequence, _speed, _gen) {
 	var that = {
+		name : "ScaleSeq",
+		type : "control",
+		
 		root : Gibber.root,
 		sequenceNumbers : _sequence,
 		mode : Gibber.mode,
@@ -17,8 +20,6 @@ function ScaleSeq(_sequence, _speed, _gen) {
 		this.sequence.length = 0;
 		this.scale = [];
 		
-		console.log("root " + this.root + " mode " + this.mode);
-
 		var _scale = teoria.scale.list(this.root, this.mode, false);
 		for(var oct = _rootoctave, o = 0; oct < 8; oct++, o++) {
 			for(var num = 0; num < _scale.length; num++) {
@@ -36,7 +37,7 @@ function ScaleSeq(_sequence, _speed, _gen) {
 		 		this.scale[negCount--] = nt;	// negative array indices!!!!! The magic of js.
 		 	}
 		}
-		console.log(this.sequenceNumbers);
+		
 		this.sequence.length = 0;
 		for(var i = 0; i < this.sequenceNumbers.length; i++) {
 			this.sequence.push(this.scale[this.sequenceNumbers[i]]);
@@ -172,6 +173,8 @@ function Seq() {
 	}
 	
 	var that = {
+		name : "Seq",
+		type : "control",
 		_sequence : null,
 		sequence : sequence || null,
 		_start : true,

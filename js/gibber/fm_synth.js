@@ -50,9 +50,36 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	}
 		
 	that.osc.mod("freq", that.modulator, "+");
-	
+	/*
+	note : function(n) {
+		switch(typeof n) {
+			case "number" :
+				this.osc.frequency = n;
+			break;
+			case "string" :
+				this.osc.frequency = teoria.note(n).fq();
+			break;
+			default:
+				this.osc.frequency = n.fq();
+				break;
+		}
+		this.env.triggerGate();
+	},
+	*/
 	that.note = function(n) {
-		var oscFreq = (typeof n === "string") ? Note.getFrequencyForNotation(n) : n;
+		var oscFreq;
+		switch(typeof n) {
+			case "number" :
+				oscFreq = n;
+			break;
+			case "string" :
+				oscFreq = teoria.note(n).fq();
+			break;
+			default:
+				oscFreq = n.fq();
+				break;
+		}
+		
 		this.osc.frequency = oscFreq;
 		this.modulator.frequency = oscFreq * this.cmRatio;
 		this.modulator.mix = oscFreq * this.index;

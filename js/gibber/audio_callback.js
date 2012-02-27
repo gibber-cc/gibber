@@ -41,7 +41,6 @@ function audioProcess(buffer, channelCount){
 				var control = Gibber.controls[c];
 				processMods(control);
 				//if(Gibber.debug) console.log(control.phase);
-				
 				control.generate();
 				restoreMods(control);
 			}

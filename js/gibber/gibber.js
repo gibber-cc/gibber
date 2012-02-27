@@ -52,14 +52,17 @@ var Gibber = {
 							 var variable = window["____"+ltr];
 							 switch(variable.type) {
 								 case "gen":
-									 Gibber.genRemove(variable);
+									 Gibber.genReplace(variable);
 								 break;
 								 case "mod":
-									 Gibber.modRemove(variable, newObj);
+									 Gibber.modReplacevariable, newObj);
 								 break;
 								 case "fx":
-									 Gibber.fxRemove(variable, newObj);
+									 Gibber.fxReplace(variable, newObj);
 								 break;
+								 case "control":
+									 Gibber.controlReplace(variable, newObj);
+									 break;
 								 case "complex":
 									 variable.replace(newObj); // rely on object prototype to handle removing members
 								 break;
@@ -77,7 +80,7 @@ var Gibber = {
 		"bpm": [],
 	},
 	
-	genRemove : function(gen) {
+	genReplace : function(gen) {
 	// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
 	// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc to replacement???
 		var idx = jQuery.inArray( gen, Gibber.generators);
@@ -88,7 +91,7 @@ var Gibber = {
 		}
 	},
 	
-	modRemove : function(oldMod, newMod) {
+	modReplace : function(oldMod, newMod) {
 	// loop through ugens / fx that the mods influence and replace with new value
 	// also push ugens that are modded into the mods "modded" array for future reference
 		var modToReplace = oldMod;
@@ -106,7 +109,7 @@ var Gibber = {
 		}
 	},
 	
-	fxRemove : function(oldFX, newFX) {
+	fxReplace : function(oldFX, newFX) {
 	// loop through gens affected by effect (for now, this should almost always be 1)
 	// replace with new effect and add the gen to the gens array of the new effect
 		var fxToReplace = oldFX;
@@ -118,6 +121,22 @@ var Gibber = {
 				newFX.gens.push(fxgen);
 			}
 		}
+	},
+	
+	controlReplace: function(oldControl, newControl) {
+		var controlToReplace = oldControl;
+		
+		for(var i = 0; i < controlToReplace.slaves.length; i++) {
+			var slave = controlToReplace.slaves[i];
+			newControl.slave(slave);
+		}
+		controlToReplace.slaves.length = 0;
+		
+		for(var i = 0; i < controlToReplace.mods.length; i++) {
+			var mod = controlToReplace.mods[i];
+			newControl.mods.push(mod);
+		}
+		controlToReplace.mods.length = 0;		
 	},
 	
 	registerObserver : function(name, fn) {
