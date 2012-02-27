@@ -1,0 +1,148 @@
+body { 
+	margin: 0;
+	background-color:#000;
+}
+
+.ace_scroller {
+	padding-left: .5em;
+	border:0;
+}
+
+::-webkit-scrollbar {
+	height: 1.5ex;
+	width: 1.5ex;   
+}  
+
+::-webkit-scrollbar-corner {
+	background-image:url(../images/corner.png);
+	background-repeat:no-repeat;
+}
+
+::-webkit-scrollbar-thumb:horizontal, ::-webkit-scrollbar-thumb:vertical {
+	background: rgba(255, 255, 255, .2);  
+}
+
+#console {
+	position:absolute;
+	display:block;
+	bottom: 0px;
+	width: 80%;
+	height:20px;
+	border-width: 1px 0px 0px 0px;
+	border-style: solid;
+	border-color:#ccc;
+	color: #f00;
+	background-color:#000;
+	font-size: .85em;	
+}
+
+#console p {
+	margin-top : 0;
+	color: #ccc;
+	padding-left: 4em;
+	font-family: Monaco, Menlo, monospace;
+	font-weight: bold;
+}
+
+#editor {
+	font-family:Monaco, Menlo, monospace;
+	font-size: .8em;
+    position: absolute;
+	display:inline;
+	margin: 0;
+    width: 80%;
+	height:auto;
+}
+
+body {scrollbar-base-color:orange;}
+
+#info {
+	position: absolute;
+	overflow: scroll;
+	display: inline;
+	width:20%;
+	height:100%;
+	font-size: .85em;
+	background-color:#000;
+	border-style: solid;
+	border-width: 0px 0px 0px 1px;
+	border-color:#ccc;
+	right: 0;
+	color: #ccc;
+	font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
+}
+h1, h2, h3 {
+	font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
+}
+h2 {
+	color:#333;
+}
+#info h1 {
+	margin-left: .25em;
+	font-size: 1.5em;
+	font-weight: normal;
+}
+h2 {
+	background-color:#eee;
+	padding-left: .25em;
+	font-size: 1.1em;
+	font-weight: normal;
+}
+		
+h3 {
+	font-size: 1em;
+	font-weight: normal;
+}
+a { color: #a66; text-decoration: none; }
+.section {
+	margin: .5em;
+}
+.referencesection, .aboutsection, .optionssection, .quickstartsection, .count {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+	cursor: default;
+	right: 15px;
+	margin-top: .25em;
+	position:absolute;
+	font-color: #444;
+	font-size: .8em;
+}
+
+.startlist {
+	list-style:square;
+	margin-left:1.25em;
+}
+#count { font-size:1.25em; 
+	position:absolute;
+	right: 1em;
+	top:0;
+	z-index:10
+}
+#n1,#n2,#n3,#n4 { margin-right: 10px; }
+#n1 { color:red; }
+select {
+	background-color:#000;
+	color:#aaa;
+}
+
+ul {
+	margin:0;
+	padding:0;
+	list-style:none;
+}
+		
+button {
+	-webkit-border-radius: 0px;
+	background-color: #333;
+	border: 1px solid #777;
+	color: #ccc;
+}
+		
+.referencecontent li { margin-bottom: 1.25em; }
+		
+.referencecontent pre { display: inline; }
