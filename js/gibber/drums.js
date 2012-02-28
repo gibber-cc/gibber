@@ -32,17 +32,7 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	this.initialized = false;
 	
 	Gibber.addModsAndFX.call(this);
-	Gibber.generators.push(this);
-	
-	// this.send = function(busName, amount) {
-	// 	console.log("CALLING SEND FROM");
-	// 	console.log(this);
-	// 	this.sends.push({ 
-	// 		bus : Gibber.getBus(busName),
-	// 		amount : amount,
-	// 	});
-	// };
-	
+	Gibber.generators.push(this);	
 	
 	if(typeof _sequence != "undefined") {
 		this.seq = Seq(_sequence, _timeValue, this);
@@ -110,6 +100,11 @@ Drums.prototype = {
 		}else{
 			this.seq.reset(num); 
 		}
+	},
+	
+	once : function() {
+		this.seq.once();
+		return this;
 	},
 	
 	retain : function(num) { 

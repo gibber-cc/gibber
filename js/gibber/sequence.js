@@ -204,7 +204,8 @@ function Seq() {
 		};
 	},
 	
-	that.setSequence = function(seq, _speed, _reset) {		
+	that.setSequence = function(seq, _speed, _reset) {
+		console.log("SETTING SEQUENCE " + seq)		
 		if(typeof _speed !== "undefined") {
 			this.speed = _speed;
 		}
