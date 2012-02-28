@@ -1,13 +1,17 @@
-function Bus(_name, _fx) { // name is id, fx is array, ahem, fx
+function Bus() { // name is id, fx is array, ahem, fx
 	var bus = {};
 	bus.fx = [];
 	
-	for(var i = 1; i < arguments.length; i++) {
+	var fxStart = (typeof arguments[0] === "string") ? 1 : 0;
+	console.log("Fx Start " + fxStart);
+	for(var i = fxStart; i < arguments.length; i++) {
 		bus.fx.push(arguments[i]);
 	}
 	
-	bus.name = _name;
+	bus.name = (typeof arguments[0] === "string") ? arguments[0] : null;
 	bus.value = 0;
+	
+	console.log(bus.fx);
 	
 	bus.senders = [];
 	Gibber.busses.push(bus);
@@ -16,7 +20,7 @@ function Bus(_name, _fx) { // name is id, fx is array, ahem, fx
 		for(var i = 0; i < this.senders.length; i++) {
 			var gen = this.senders[i];
 			for(var j = 0; j < gen.sends.length; j++) {
-				if(gen.sends[j].name == this.name) {
+				if(gen.sends[j] == this) {
 					gen.sends.splice(j, 1);
 					break;
 				}
@@ -24,7 +28,7 @@ function Bus(_name, _fx) { // name is id, fx is array, ahem, fx
 		}
 		for(var i = 0; i < Gibber.busses.length; i++) {
 			var _bus = Gibber.busses[i];
-			if(this.name == _bus.name) {
+			if(this == _bus) {
 				Gibber.busses.splice(i, 1);
 			}
 		}

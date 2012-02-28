@@ -95,10 +95,17 @@ var Gibber = {
 		"bpm": [],
 	},
 	
-	getBus : function(busName) {
-		for(var i = 0; i < Gibber.busses.length; i++) {
-			var bus = Gibber.busses[i];
-			if(bus.name = busName) return bus;
+	getBus : function(_bus) {
+		if(typeof _bus === "string") {
+			for(var i = 0; i < Gibber.busses.length; i++) {
+				var bus = Gibber.busses[i];
+				if(bus.name == _bus) return bus;
+			}
+		}else{
+			for(var i = 0; i < Gibber.busses.length; i++) {
+				var bus = Gibber.busses[i];
+				if(bus == _bus) return bus;
+			}
 		}
 	},
 
@@ -246,9 +253,9 @@ var Gibber = {
 	},
 		
 	modsAndEffects : {
-		send : function(busName, amount) {
+		send : function(_bus, amount) {
 			var bus = { 
-				bus : Gibber.getBus(busName),
+				bus : Gibber.getBus(_bus),
 				amount : amount,
 			};
 			

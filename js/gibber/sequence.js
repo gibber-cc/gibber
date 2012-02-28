@@ -45,7 +45,7 @@ function ScaleSeq(_sequence, _speed, _gen) {
 		}
 		
 		if(this.seq != null) {
-			that.seq.set(that.sequence);
+			this.seq.set(this.sequence);
 		}
 	};
 	
