@@ -883,6 +883,8 @@
             minor: ['M2', 'm2', 'M2', 'M2', 'm2', 'M2'],
             aeolian: ['M2', 'm2', 'M2', 'M2', 'm2', 'M2'],
             locrian: ['m2', 'M2', 'M2', 'm2', 'M2', 'M2'],
+			
+			chromatic: ['m2','m2','m2','m2','m2','m2','m2','m2','m2','m2','m2','m2',],
 
             majorpentatonic: ['M2', 'M2', 'm3', 'M2'],
             minorpentatonic: ['m3', 'M2', 'M2', 'm3']

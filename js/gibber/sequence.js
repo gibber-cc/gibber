@@ -21,6 +21,7 @@ function ScaleSeq(_sequence, _speed, _gen) {
 		this.scale = [];
 		
 		var _scale = teoria.scale.list(this.root, this.mode, false);
+		//console.log(_scale);
 		for(var oct = _rootoctave, o = 0; oct < 8; oct++, o++) {
 			for(var num = 0; num < _scale.length; num++) {
 				var nt = jQuery.extend({}, _scale[num]);
@@ -116,7 +117,6 @@ function ScaleSeq(_sequence, _speed, _gen) {
 
 //function Seq(_seq, speed, gen, _outputMsg) {
 function Seq() {
-	
 	var _seq = arguments[0];
 	var speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
 	var gen = null;
@@ -190,6 +190,19 @@ function Seq() {
 	}
 	
 	//console.log(that.sequence);
+	that.once = function() {
+		this.end = true;
+		return this;
+	},
+	
+	that.kill = function() {
+		this.free();
+		for(var i = 0; i < Gibber.controls.length; i++) {
+			if(Gibber.controls[i] == this) {
+				Gibber.controls.splice(i,1);
+			}
+		};
+	},
 	
 	that.setSequence = function(seq, _speed, _reset) {		
 		if(typeof _speed !== "undefined") {
@@ -226,7 +239,8 @@ function Seq() {
 	that.slave = function(gen) {
 		//console.log("slaving " + gen);
 		this.slaves.push(gen);
-		if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }		
+		if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+		return this;		
 	};
 	
 	that.free = function() {
@@ -241,14 +255,17 @@ function Seq() {
 		this.active = false;
 		this.phase = 0;		
 		this.counter = -1;
+		return this;
 	};
 	
 	that.pause = function() {
 		this.active = false;
+		return this;
 	};
 		
 	that.play = function() {
 		this.active = true;
+		return this;
 	};
 	
 	that.generate = function() {
@@ -305,6 +322,9 @@ function Seq() {
 		}
 		
 		if(this.phase >= this.sequenceLengthInSamples - 1) {
+			if(this.end) {
+				this.kill();
+			}
 			if(this.shouldBreak) { 
 				console.log("breaking");
 				this.shouldBreak = false;
