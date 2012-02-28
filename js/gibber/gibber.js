@@ -59,6 +59,14 @@ var Gibber = {
 				})
 			})();
 		}
+		
+		obj.kill = function() {
+			for(var n in obj) {
+				if(typeof obj[n].kill === "function") {
+					obj[n].kill();
+				}
+			}
+		};
 	},
 	
 	init : function() {
@@ -391,6 +399,10 @@ function Osc(args, isAudioGenerator) {
 	
 	that.freq = function(_freq) {
 		this.frequency = _freq;
+	}
+	
+	that.kill = function() {
+		Gibber.genRemove(this);
 	}
 
 	that.stop = function() {

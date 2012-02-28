@@ -178,6 +178,10 @@ function Poly(_chord, _waveform, volume) {
 		return this.getMix();
 	};
 	
+	that.kill = function() {
+		Gibber.genRemove(this);
+	};
+	
 	that.getMix = function() {
 		return this.value * this.mix;
 	};

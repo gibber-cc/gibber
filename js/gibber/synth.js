@@ -137,6 +137,10 @@ Synth.prototype = {
 		this.env.triggerGate();
 	},
 	
+	kill : function() {
+		Gibber.genRemove(this.osc);
+	},
+	
 	replace : function(replacement){
 		// can't replace, just remove instead.
 		Gibber.genRemove(this);

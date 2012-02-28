@@ -82,6 +82,10 @@ Drums.prototype = {
 		this.initialized = true;
 	},
 	
+	kill : function() {
+		Gibber.genRemove(this);
+	},
+	
 	generate : function() {
 		this.value = 0;
 		if(!this.initialized) {
