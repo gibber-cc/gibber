@@ -43,7 +43,7 @@ function Poly(_chord, _waveform, volume) {
 	
 	that.mods = [];
 	that.fx = [];
-	that.automations = [];
+	that.sends = [];	
 	
 	Gibber.addModsAndFX.call(that);	
 	

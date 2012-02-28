@@ -66,9 +66,34 @@ function audioProcess(buffer, channelCount){
 						genValue = effect.fxout(genValue);
 						restoreMods(effect);
 					}
+					
+					// TODO: send from any point in the fx chain?
+					if(gen.sends) {
+						for(var b = 0; b < gen.sends.length; b++) {
+							var send = gen.sends[b];
+							send.bus.value += genValue * send.amount;
+						}
+					}
 				}
 				value += genValue;
 			}
+			
+			// Busses
+			for(var b = 0; b < Gibber.busses.length; b++) {
+				var bus = Gibber.busses[b];
+				var busValue = bus.value;
+				
+				for(var e = 0; e < bus.fx.length; e++) {
+					var effect = bus.fx[e];
+					processMods(effect);
+					busValue += effect.fxout(busValue);
+					restoreMods(effect);
+				}
+				
+				value += busValue;
+				bus.value = 0;
+			}
+			
 			// Master output
 			for(var e = 0; e < Master.fx.length; e++) {
 				var effect = Master.fx[e];

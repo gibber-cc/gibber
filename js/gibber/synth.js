@@ -35,7 +35,7 @@ function Synth(waveform, volume) {
 	
 	this.mods = [];
 	this.fx = [];
-	this.automations = [];
+	this.sends = [];
 	
 	Gibber.generators.push(this.osc);
 	

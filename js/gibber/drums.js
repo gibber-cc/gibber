@@ -26,13 +26,23 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	this.active = true;
 	this.mods = [];
 	this.fx = [];
-	this.sequenceInit =false;
-	this.automations = [];
-	this.initialized = false;
+	this.sends = [];
 	
+	this.sequenceInit =false;
+	this.initialized = false;
 	
 	Gibber.addModsAndFX.call(this);
 	Gibber.generators.push(this);
+	
+	// this.send = function(busName, amount) {
+	// 	console.log("CALLING SEND FROM");
+	// 	console.log(this);
+	// 	this.sends.push({ 
+	// 		bus : Gibber.getBus(busName),
+	// 		amount : amount,
+	// 	});
+	// };
+	
 	
 	if(typeof _sequence != "undefined") {
 		this.seq = Seq(_sequence, _timeValue, this);
