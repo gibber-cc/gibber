@@ -217,6 +217,13 @@ var Gibber = {
 	},
 	
 	clear : function() {
+		for(var g = 0; g < Gibber.generators.length; g++) {
+			Gibber.generators[g].kill();
+		}
+		for(var c = 0; c < Gibber.controls.length; g++) {
+			Gibber.controls[c].kill();
+		}
+		
 		this.generators.length = 0;
 		this.callback.phase = 0;
 		this.controls.length = 0;

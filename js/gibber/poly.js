@@ -3,6 +3,7 @@ function Poly(_chord, _waveform, volume) {
 	var _volume = volume / 5;
 	_chord = _chord || "C4m7";
 	_waveform = _waveform || "square";
+
 	var that = {
 		oscs : [
 			Osc([220, .1, _waveform], false),
@@ -21,6 +22,7 @@ function Poly(_chord, _waveform, volume) {
 		value : 0,
 		active : true,
 		notation: _chord,
+		masters: [],
 		note : function(n) {
 			switch(typeof n) {
 				case "number" :
@@ -72,14 +74,25 @@ function Poly(_chord, _waveform, volume) {
 		}
 	};
 	
+	that.kill = function() {
+		Gibber.genRemove(this);
+		this.masters.length = 0;
+	},
 	
 	that.replace = function(replacement){
 		// can't replace, just remove instead.
 		Gibber.genRemove(this);
-		delete this.osc;
-		delete this.env;
-		delete this;
+		for(var i = 0; i < this.masters.length; i++) {
+			var master = this.masters[i];
+			for(var j = 0; j < master.slaves.length; j++) {
+				if(master.slaves[j] == this) {
+					master.slave(replacement);
+					master.slaves.splice(j,1);
+				}
+			}
+		}
 	};
+
 	
 	that.stop = function() {
 		this.active = false;
