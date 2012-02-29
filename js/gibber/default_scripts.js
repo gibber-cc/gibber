@@ -218,8 +218,9 @@ default:
 'b.speed = _1\n'+
 '\n'+
 '// set sequence to loop through all available modes. All modes are also stored in Gibber.modes\n'+
+'// major can be substituted for ionian, minor can sub for aeolian\n'+
 'b.stop();\n'+
-'a.set([ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic"]);\n'+
+'a.set([ "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"]);\n'+
 '\n'+
 '// change q to play each note in scale (with some extra notes on the pentatonic ones)\n'+
 'q.set([0,1,2,3,4,5,6,7]);',
