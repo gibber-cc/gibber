@@ -11,7 +11,7 @@ var Gibber = {
 	root : "C4",
 	mode : "aeolian",
 	busses : [],
-	modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic"],
+	modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"],
 	
 	initDurations : function() {
 		this.dev = Sink(audioProcess, 2);
@@ -33,8 +33,10 @@ var Gibber = {
 				Object.defineProperty(obj, ltr, {
 					get:function() { return obj["____"+ltr];},
 					set:function(newObj) {
+						var endString = " created";
 						 if(typeof obj["____"+ltr] !== "undefined") {
 							 var variable = obj["____"+ltr];
+ 							 endString = " replaced " + variable.name;
 							 switch(variable.type) {
 								 case "gen":
 									 Gibber.genReplace(variable);
@@ -55,6 +57,8 @@ var Gibber = {
 							 }
 						 }
 					 	 obj["____"+ltr] = newObj;
+						 if(newObj.name != undefined)
+						 	G.log(newObj.name + endString);
 					},
 				})
 			})();
@@ -207,9 +211,11 @@ var Gibber = {
 		this.generators.length = 0;
 		this.callback.phase = 0;
 		this.controls.length = 0;
+		this.busses.length = 0;
 		this.callback.callbacks.length = 0;
 		Master.fx.length = 0;
-		Master.mods.length = 0;	
+		Master.mods.length = 0;
+		Gibber.log("Cleared Gibber graph.");	
 	},
 	
 	stop : function() {
@@ -321,24 +327,20 @@ var Gibber = {
 		},
 	
 		mod : function(_name, _source, _type) {
-			console.log(_name);
 			var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
 			var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
 		
-			
 			if(typeof _source.mods === "undefined") {
 				_source.mods = [];
 			}
+			
 			_source.store = {};
 			_source.modded.push(this);
 			_source.param = name;
 			_source.name = _name;
 			_source.type = type;
 			
-			this.mods.push(_source);
-			
-			//this.mods.push( {param:name, gen:_source, name:_name, sourceName:_source.name, type:type} );
-			
+			this.mods.push(_source);			
 			
 			Gibber.genRemove(_source);
 			return this;

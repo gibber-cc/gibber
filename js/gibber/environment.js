@@ -514,7 +514,7 @@ Gibber.Environment = {
 		    },
 		    exec: function(env, args, request) {
 				Gibber.active = !Gibber.active;
-				if(Gibber.active) console.log("audio on"); else console.log("audio off");
+				if(Gibber.active) G.log("audio on"); else G.log("audio off");
 		    }
 		});
 		Gibber.Environment.Editor.commands.addCommand({

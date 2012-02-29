@@ -5,7 +5,13 @@ function Bus() { // name is id, fx is array, ahem, fx
 	var fxStart = (typeof arguments[0] === "string") ? 1 : 0;
 	console.log("Fx Start " + fxStart);
 	for(var i = fxStart; i < arguments.length; i++) {
-		bus.fx.push(arguments[i]);
+		var fx = arguments[i];
+		if(fx.name === "Reverb") {
+			console.log("modifying reverb");
+			fx.wet = 1;
+			fx.dry = 0;
+		}
+		bus.fx.push(fx);
 	}
 	
 	bus.name = (typeof arguments[0] === "string") ? arguments[0] : null;
