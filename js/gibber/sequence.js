@@ -82,8 +82,11 @@ function Seq() {
 	
 	that.slave = function(gen) {
 		//console.log("slaving " + gen);
-		this.slaves.push(gen);
-		if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+		var idx = jQuery.inArray( gen, this.slaves);
+		if(idx === -1) {
+			this.slaves.push(gen);
+			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+		}
 		return this;		
 	};
 	
