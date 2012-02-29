@@ -14,10 +14,12 @@ function initPlugin(audioLib){
 function Arp(notation, beats, mode, mult) {
 	this.slaves = [];
 	this.sequence = [];
+	this._sequence = [];	
 	this.notes = [];
 	this.mode = mode || "up";
 	this.notation = notation || "Cm7";
 	this.mult = mult || 1;
+	this.init = false;
 	
 	// wrap this in closures for easy sequencing
 	var that = this;
@@ -28,6 +30,7 @@ function Arp(notation, beats, mode, mult) {
 	
 	this.reset = function() {
 		if(arguments.length === 0) {
+			console.log(that._sequence);
 			that.setSequence(that._sequence, that.speed);
 		}else{
 			that.setSequence(that.memory[arguments[0]]);
@@ -38,10 +41,8 @@ function Arp(notation, beats, mode, mult) {
 	
 	this.speed = isNaN(beats) ? _4 : beats;
 	
-	this.chord(this.notation);
-	this.original = this.notes.slice(0);	
-	
-	Gibber.controls.push(this);
+	this.chord(this.notation);	// this sets the sequence
+	this._sequence = this.notes.slice(0);	
 }
 
 Arp.prototype = {

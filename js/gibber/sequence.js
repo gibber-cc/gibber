@@ -26,7 +26,7 @@ function Seq() {
 		slaves: [],
 		phase: 0,
 		memory: [],
-		init: true,
+		init: false,
 		mods: [],
 	}
 	
@@ -70,9 +70,10 @@ function Seq() {
 			}
 		}
 		
-		if(this._sequence === null) {
+		if(this.init === false) {
 			Gibber.controls.push(this);
 			this._sequence = this.sequence.slice(0);
+			this.init = true;
 		}
 				
 		this.sequenceLengthInSamples = seq.length * this.speed;
@@ -274,6 +275,7 @@ function Seq() {
 	})();
 	
 	if(that.sequence != null && typeof that.sequence != "undefined") {
+		console.log("setting inital sequence")
 		that.setSequence(that.sequence, that.speed);	
 	}
 	
