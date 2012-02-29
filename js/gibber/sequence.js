@@ -1,182 +1,23 @@
-function ScaleSeq(_sequence, _speed, _gen) {
-	var that = {
-		name : "ScaleSeq",
-		type : "control",
-		
-		root : Gibber.root,
-		sequenceNumbers : _sequence,
-		mode : Gibber.mode,
-		
-		gen : _gen,
-		sequence : [],
-		speed : _speed,
-		seq : null,
-		slaves : [],
-	};
-		
-	that.setSequence = function(sequence) {
-		var _rootoctave = this.root.octave;
-		this.sequenceNumbers = sequence;
-		this.sequence.length = 0;
-		this.scale = [];
-		
-		var _scale = teoria.scale.list(this.root, this.mode, false);
-		//console.log(_scale);
-		for(var oct = _rootoctave, o = 0; oct < 8; oct++, o++) {
-			for(var num = 0; num < _scale.length; num++) {
-				var nt = jQuery.extend({}, _scale[num]);
-				nt.octave += o;
-				this.scale.push(nt);
-			}
-		}
-
-		var negCount = -1;
-		for(var oct = _rootoctave -1, o = -1; oct >= 0; oct--, o--) {
-		 	for(var num = _scale.length - 1; num >= 0; num--) {
-		 		var nt = jQuery.extend({}, _scale[num]);
-		 		nt.octave += o;
-		 		this.scale[negCount--] = nt;	// negative array indices!!!!! The magic of js.
-		 	}
-		}
-		
-		this.sequence.length = 0;
-		for(var i = 0; i < this.sequenceNumbers.length; i++) {
-			this.sequence.push(this.scale[this.sequenceNumbers[i]]);
-		}
-		
-		if(this.seq != null) {
-			this.seq.set(this.sequence);
-		}
-	};
-	
-	(function() {
-	    var root = that.root;
-		var speed = that.speed;
-		var mode = that.mode;
-
-	    Object.defineProperties(that, {
-			"root" : {
-		        get: function() {
-		            return root;
-		        },
-		        set: function(value) {
-		            root = teoria.note(value);
-					this.setSequence(this.sequenceNumbers);
-					if(this.seq != null) {
-						this.seq.set(this.sequence);
-					}
-		        }
-			},
-			"speed": {
-				get: function(){ return speed; },
-				set: function(value) {
-					speed = value;
-					this.seq.speed = speed;
-				}
-			},
-			"mode" : {
-		        get: function() {
-		            return mode;
-		        },
-		        set: function(value) {
-		            mode = value;
-					this.setSequence(this.sequenceNumbers);
-					if(this.seq != null) {
-						this.seq.set(this.sequence);
-					}
-		        }
-			},
-			 
-	    });
-	})();
-	
-	// pass methods to seq object... TODO: this should probably just inherit somehow.
-	that.shuffle 	= function() 	{ that.seq.shuffle(); };
-	that.reset 		= function() 	{ that.seq.reset(); }
-	that.retain 	= function() 	{ that.seq.retain(arguments[0]); }
-	that.slave 		= function(gen) { this.seq.slaves.push(gen); };
-	that.stop  		= function() 	{ this.seq.stop();  }
-	that.play  		= function() 	{ this.seq.play();  }
-	that.pause 		= function() 	{ this.seq.pause(); }
-	that.set		= function()	{ this.setSequence(arguments[0]); }
-	
-	that.free = function() {
-		if(arguments.length == 0) {
-			this.seq.slaves.length = 0;
-		}else{
-			this.seq.slaves.splice(arguments[0], 1);
-		}
-	};
-
-	that.root = Gibber.root;	// triggers meta-setter that sets sequence
-	that.seq = Seq(that.sequence, that.speed, that.gen);
-	
-	return that;
-}
-
-
 //function Seq(_seq, speed, gen, _outputMsg) {
 function Seq() {
-	var _seq = arguments[0];
-	var speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
-	var gen = null;
-	var _outputMsg = null;
+	var _seq = arguments[0] || null;
 	
-	// variable argument list parsing
-	switch(arguments.length) {
-		case 1: break;
-		case 2:
-			if(typeof arguments[1] === "number") {
-				speed = arguments[1];
-			}else if(typeof arguments[1] === "object") {
-				gen = arguments[1];
-			}else{
-				_outputMsg = arguments[1];
-			}
-		break;
-		case 3:
-			if(typeof arguments[1] === "number") {
-				speed = arguments[1];
-			}else if(typeof arguments[1] === "object") {
-				gen = arguments[1];
-			}else{
-				_outputMsg = arguments[1];
-			}
-			if(typeof arguments[2] === "number") {
-				speed = arguments[2];
-			}else if(typeof arguments[2] === "object") {
-				gen = arguments[2];
-			}else{
-				_outputMsg = arguments[2];
-			}
-		break;
-		case 4:
-			speed = arguments[1];
-			gen = arguments[2];
-			_outputMsg = arguments[3];
-		break;
-		default: break;
-	};
-	
-	sequence = _seq;
-	
-	if(_outputMsg === null) {
-		if(gen != null) {
-			if(typeof gen.note === "undefined") {
-				_outputMsg = "freq";
-			}else{
-				_outputMsg = "note";
-			}
-		}else{
-			_outputMsg = "note";
-		}
+	var speed = arguments[1] || null;
+	if(speed == null && _seq != null) {
+		speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
 	}
 	
+	var _outputMsg = arguments[2] || null;
+	
+	if(_outputMsg === null) {
+		_outputMsg = "note";
+	}
+		
 	var that = {
 		name : "Seq",
 		type : "control",
 		_sequence : null,
-		sequence : sequence || null,
+		sequence : _seq,
 		_start : true,
 		counter : -1,
 		speed: speed,
@@ -230,9 +71,10 @@ function Seq() {
 		}
 		
 		if(this._sequence === null) {
+			Gibber.controls.push(this);
 			this._sequence = this.sequence.slice(0);
 		}
-		
+				
 		this.sequenceLengthInSamples = seq.length * this.speed;
 		//console.log("seq.length = " + seq.length + " : speed = " + this.speed + " : sequenceLengthInSamples = " + this.sequenceLengthInSamples);
 	};
@@ -279,6 +121,7 @@ function Seq() {
 		if(this.phase >= 0) {
 	 		if(this.phase % this.speed <= .5) {
 				this.counter++;
+				//console.log(this);
 				var val = this.sequence[this.counter % this.sequence.length];
 			
 				var shouldReturn = false;
@@ -382,16 +225,6 @@ function Seq() {
 		this.setSequence(this.sequence, speed, shouldReset);
 	};
 	
-	that.bpmCallback = function(obj) {
-		var _that = obj;
-		return function(percentageChangeForBPM) {
-			_that.speed *= percentageChangeForBPM;
-			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
-		}
-	};
-	
-	Gibber.registerObserver( "bpm", that.bpmCallback(that) );
-	
 	that.shuffle = function() {
 		this.sequence.shuffle();
 		this.setSequence(this.sequence, this.speed);
@@ -404,6 +237,24 @@ function Seq() {
 			this.setSequence(this.memory[arguments[0]]);
 		}
 	};
+		
+	that.retain = function() {
+		if(arguments.length != 0) {
+			this.memory.push(this.sequence);
+		}else{
+			this.memory[arguments[0]] = this.sequence;
+		}
+	};
+	
+	that.bpmCallback = function(obj) {
+		var _that = obj;
+		return function(percentageChangeForBPM) {
+			_that.speed *= percentageChangeForBPM;
+			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
+		}
+	};
+	
+	Gibber.registerObserver( "bpm", that.bpmCallback(that) );
 	
 	(function() {
 		var speed = that.speed;
@@ -421,16 +272,8 @@ function Seq() {
 			}
 		});
 	})();
-		
-	that.retain = function() {
-		if(arguments.length != 0) {
-			this.memory.push(this.sequence);
-		}else{
-			this.memory[arguments[0]] = this.sequence;
-		}
-	};
 	
-	if(that.sequence != null) {
+	if(that.sequence != null && typeof that.sequence != "undefined") {
 		that.setSequence(that.sequence, that.speed);	
 	}
 	
@@ -439,11 +282,6 @@ function Seq() {
 	};
 	
 	Gibber.addModsAndFX.call(that);
-	Gibber.controls.push(that);
-	
-	if(gen != null) {
-		that.slave(gen);
-	}
 	
 	return that;
 }
