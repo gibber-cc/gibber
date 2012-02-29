@@ -36,6 +36,7 @@ function Synth(waveform, volume) {
 	this.mods = [];
 	this.fx = [];
 	this.sends = [];
+	this.masters = [];
 	
 	Gibber.generators.push(this.osc);
 	
@@ -144,6 +145,15 @@ Synth.prototype = {
 	replace : function(replacement){
 		// can't replace, just remove instead.
 		Gibber.genRemove(this);
+		for(var i = 0; i < this.masters.length; i++) {
+			var master = this.masters[i];
+			for(var j = 0; j < master.slaves.length; j++) {
+				if(master.slaves[j] == this) {
+					master.slave(replacement);
+					master.slaves.splice(j,1);
+				}
+			}
+		}
 		delete this.osc;
 		delete this.env;
 		delete this;

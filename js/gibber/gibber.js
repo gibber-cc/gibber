@@ -39,7 +39,7 @@ var Gibber = {
  							 endString = " replaced " + variable.name;
 							 switch(variable.type) {
 								 case "gen":
-									 Gibber.genReplace(variable);
+									 Gibber.genReplace(variable, newObj);
 								 break;
 								 case "mod":
 									 Gibber.modReplace(variable, newObj);
@@ -51,7 +51,7 @@ var Gibber = {
 									 Gibber.controlReplace(variable, newObj);
 									 break;
 								 case "complex":
-									 variable.replace(newObj); // rely on object prototype to handle removing members
+									variable .replace(newObj); // rely on object prototype to handle removing members
 								 break;
 								 default: break;
 							 }
@@ -122,7 +122,7 @@ var Gibber = {
 		}
 	},
 	
-	genReplace : function(gen) {
+	genReplace : function(gen, newGen) {
 	// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
 	// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc to replacement???
 	// TODO: YES IT SHOULD ADD THE FX / MODS OF REPLACEMENT
@@ -131,6 +131,15 @@ var Gibber = {
 			Gibber.generators.splice(idx,1);
 			gen.mods.length = 0;
 			gen.fx.length = 0;
+		}
+		for(var i = 0; i < gen.masters.length; i++) {
+			var master = gen.masters[i];
+			for(var j = 0; j < master.slaves.length; j++) {
+				if(master.slaves[j] == gen) {
+					master.slave(newGen);
+					master.slaves.splice(j,1);
+				}
+			}
 		}
 	},
 	

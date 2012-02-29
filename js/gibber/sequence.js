@@ -85,6 +85,11 @@ function Seq() {
 		var idx = jQuery.inArray( gen, this.slaves);
 		if(idx === -1) {
 			this.slaves.push(gen);
+			if(typeof gen.masters === "undefined") {
+				gen.masters = [this];
+			}else{
+				gen.masters.push(this);
+			}
 			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
 		}
 		return this;		

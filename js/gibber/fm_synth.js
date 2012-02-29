@@ -80,12 +80,12 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 				break;
 		}
 		
-		this.osc.frequency = oscFreq;
-		this.modulator.frequency = oscFreq * this.cmRatio;
-		this.modulator.mix = oscFreq * this.index;
+		that.osc.frequency = oscFreq;
+		that.modulator.frequency = oscFreq * that.cmRatio;
+		that.modulator.mix = oscFreq * that.index;
 		
-		this.env.triggerGate();
-		this.modulator.env.triggerGate();
+		that.env.triggerGate();
+		that.modulator.env.triggerGate();
 	};
 	
 	(function() {
