@@ -18,7 +18,22 @@ function Arp(notation, beats, mode, mult) {
 	this.mode = mode || "up";
 	this.notation = notation || "Cm7";
 	this.mult = mult || 1;
-		
+	
+	// wrap this in closures for easy sequencing
+	var that = this;
+	this.shuffle = function() {
+		that.sequence.shuffle();
+		that.setSequence(that.sequence, that.speed);
+	};
+	
+	this.reset = function() {
+		if(arguments.length === 0) {
+			that.setSequence(that._sequence, that.speed);
+		}else{
+			that.setSequence(that.memory[arguments[0]]);
+		}
+	};
+	
 	this.__proto__.__proto__ = Seq();
 	
 	this.speed = isNaN(beats) ? _4 : beats;
@@ -86,7 +101,7 @@ Arp.prototype = {
 		}
 	},
 }
-//Arp.prototype.__proto__ = Seq();
+//Arp.prototype.__proto__ = Seq();	
 
 audioLib.Arpeggiator = Arp;
 		

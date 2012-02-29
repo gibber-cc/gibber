@@ -146,7 +146,7 @@ function Seq() {
 			
 			
 				for(j = 0; j < this.slaves.length; j++) {
-					var slave = this.slaves[j];
+					var _slave = this.slaves[j];
 	
 					if(this.outputMessage === "freq") {
 						if(typeof val === "string" ) {
@@ -156,10 +156,10 @@ function Seq() {
 							val = val.fq();
 						}// else val is a number and is fine to send as a freq...
 					}
-					if(typeof slave[this.outputMessage] === "function") {
-						slave[this.outputMessage](val);
+					if(typeof _slave[this.outputMessage] === "function") {
+						_slave[this.outputMessage](val);
 					}else{
-						slave[this.outputMessage] = val;
+						_slave[this.outputMessage] = val;
 					}
 				}
 			}
@@ -226,15 +226,15 @@ function Seq() {
 	};
 	
 	that.shuffle = function() {
-		this.sequence.shuffle();
-		this.setSequence(this.sequence, this.speed);
+		that.sequence.shuffle();
+		that.setSequence(that.sequence, that.speed);
 	};
 	
 	that.reset = function() {
 		if(arguments.length === 0) {
-			this.setSequence(this._sequence, this.speed);
+			that.setSequence(that._sequence, that.speed);
 		}else{
-			this.setSequence(this.memory[arguments[0]]);
+			that.setSequence(that.memory[arguments[0]]);
 		}
 	};
 		
