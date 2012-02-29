@@ -120,9 +120,9 @@ default:
 'Gibber.clear();\n'+
 'd = Drums()\n'+
 '\n'+
-'kick = Seq("x...x..xx..xx...", _16, d);\n'+
-'hat  = Seq("*.*.*.***.*.*.**", _16, d);\n'+
-'sn   = Seq(".o", _4, d);\n'+
+'kick = Seq("x...x..xx..xx...", _16).slave(d);\n'+
+'hat  = Seq("*.*.*.***.*.*.**", _16).slave(d);\n'+
+'sn   = Seq(".o", _4).slave(d);\n'+
 '\n'+
 '// put the snare slightly behind the beat... don\'t execute this at the start of a measure\n'+
 '// or the phase will be negative and the universe will collapse.\n'+
@@ -156,10 +156,9 @@ default:
 '// tell the sequence object to control the synth\n'+
 'q.slave(s);\n'+
 '\n'+
-'// if you pass a synth as the last parameter it will be slaved automatically\n'+
 't = Synth();\n'+
 't.fx.add( Reverb() )\n'+
-'r = Seq(["A5", "A#5", "C#5", "D5"], _1, t);\n'+
+'r = Seq(["A5", "A#5", "C#5", "D5"], _1).slave(t);\n'+
 '\n'+
 '// assign new values to the sequence\n'+
 'q.set(["F4", "G4",  "D4",  "C4"]);\n'+
@@ -202,8 +201,8 @@ default:
 '// ScaleSeq uses whatever mode and root is currently defined in Gibber.\n'+
 '// Each value in the sequence defines an offset from the root note in terms of the scale, NOT IN TERMS OF HALF / WHOLE STEPS.\n'+
 '// The default is C4 aeolian; we just changed it to D4 Lydian\n'+
-'q  = ScaleSeq([0,1,5,3,0,6,7,-5], _16, s);\n'+
-'qq = ScaleSeq([0,4,3,6,4,5,9,-3], _16, ss);\n'+
+'q  = ScaleSeq([0,1,5,3,0,6,7,-5], _16).slave(s);\n'+
+'qq = ScaleSeq([0,4,3,6,4,5,9,-3], _16).slave(ss);\n'+
 '\n'+
 '// We can manually change the mode of any ScaleSeq. We can also change the root.\n'+
 'qq.mode = q.mode = "majorpentatonic"\n'+
@@ -212,10 +211,10 @@ default:
 '// We can easily sequence changes to modes using the Seq object. Just pass "mode"\n'+
 '// as the last parameter and it will change that property of q.\n'+
 'qq.stop();\n'+
-'a = Seq([ "minor", "majorpentatonic" ], _1, q, "mode");\n'+
+'a = Seq([ "minor", "majorpentatonic" ], _1, "mode").slave(q);\n'+
 '\n'+
 '// We can also easily sequence the root key\n'+
-'b = Seq(["D4", "E4", "F#4", "A4"], _2, q, "root");\n'+
+'b = Seq(["D4", "E4", "F#4", "A4"], _2, "root").slave(q);\n'+
 'b.speed = _1\n'+
 '\n'+
 '// set sequence to loop through all available modes. All modes are also stored in Gibber.modes\n'+
@@ -251,17 +250,17 @@ default:
 'p.trig(.6);\n'+
 '\n'+
 '// we can sequence trig calls to play the chord in a pattern of different volumes\n'+
-'s = Seq([.5, .2, .3, .1], _8, p, "trig")\n'+
+'s = Seq([.5, .2, .3, .1], _8, "trig").slave(p);\n'+
 '\n'+
 '// change the chord using the chord message\n'+
 'p.chord("D4m7");\n'+
 '\n'+
 '// sequence chord changes using chord calls\n'+
-'ss = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, p, "chord");\n'+
+'ss = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, "chord").slave(p);\n'+
 '\n'+
 '// create a sine wave to arpeggiate\n'+
 'high = Sine(440, .1);\n'+
-'.fx.add( Reverb() );\n'+
+'high.fx.add( Reverb() );\n'+
 '\n'+
 '// pass oscillator/synth to control, chord, note duration, direction and number of octaves\n'+
 'a = Arp("C4m7", _32, "updown", 3);\n'+
@@ -280,7 +279,7 @@ default:
 '\n'+
 '// Sequence using the default Gibber scale, C4 Aeolian\n'+
 '// See scales and theory for details on the ScaleSeq object\n'+
-'q = ScaleSeq([ 0,1,5,3,0,6,7,-5 ], _16, s);\n'+
+'q = ScaleSeq([ 0,1,5,3,0,6,7,-5 ], _16).slave(s);\n'+
 '\n'+
 '// Every two measures, alternate between randomizing the sequence and resetting it to its original value\n'+
 '// IMPORTANT: Note we do not call the functions using (), we just pass references to them\n'+
@@ -428,11 +427,5 @@ FM:
 '\n'+
 'f = FM(1 / 1.0007, 5, 100, 100);\n'+
 'f.fx.add( Reverb() );\n'+
-'s = Seq(["A4", "B4", "B4", "C4"], _8, f);',
+'s = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);',
 }
-
-/* this is broken unfortunately...
-'// play sequence once and then return to regular pattern\n'+
-'// pass true as a second parameter to return to original sequence\n'+
-'d.break("xxxx", true)\n'+
-*/

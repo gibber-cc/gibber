@@ -234,30 +234,31 @@ Gibber.Environment = {
 	},
 	
 	createSaveAndLoadButtons : function() {
-		$("#saveme").bind("click", function(event) {			
+		$("#saveme").bind("click", function(event) {
 			if(!Gibber.Environment.isSaveOpen) {
 				Gibber.Environment.isSaveOpen = true;
 				Gibber.Environment.saveWindow = document.createElement('div');
-				///console.log($(this).width);
+
 				$(Gibber.Environment.saveWindow).css({
 					"top": $(this).offset().top + $(this).outerHeight(),
 					"left": $(this).offset().left,
 					"position": "absolute",
 					"width": "9em",
-					"height": "3.5em", 
-					"background-color": "rgba(65,65,65,1)", 
+					"height": "3.5em",
+					"background-color": "rgba(65,65,65,1)",
 				});
 				var t = document.createElement('input');
 				$(t).css({
 					"margin": "5px", 
 				});
+				$(t).bind('click', function(evt) { evt.stopPropagation(); });
 				t.value = "enter name here";
 				
 				var b = document.createElement('button');
 				$(b).html("Save");
 				$(b).bind("click", function() {
 					Gibber.Environment.saveWithName(this.value);
-					$(m).remove();
+					$(Gibber.Environment.saveWindow).remove();
 					Gibber.Environment.isSaveOpen = false;
 				});
 				
@@ -315,6 +316,45 @@ Gibber.Environment = {
 							"font-size": ".8em", 
 						})
 					}
+					
+					$(list).append(opt);
+				}
+				
+				var userScripts = localStorage.getObject("scripts")
+				
+				var userTitle = document.createElement("li");
+				$(userTitle).bind("click", function(event) {
+					event.stopPropagation();
+				});
+						
+				$(userTitle).css({
+					"color": "#fff",
+					"margin-left": "3px", 
+					"font-weight": "bold",
+					"font-size": ".8em", 
+				});
+				
+				userTitle.innerHTML = "USER SCRIPTS";
+				
+				$(list).append(userTitle);
+
+				for(var name in userScripts) {
+					var s = userScripts[name];
+					var opt = document.createElement("li");
+					var shouldBind = false;
+
+					var opt = document.createElement("li");
+					$(opt).css({
+						"color": "#ccc", 
+						"margin": ".1em",
+						"margin-left": "1em", 
+					});
+
+					opt.innerHTML = name;
+					
+					$(opt).bind("click", function() {
+						Gibber.Environment.loadAndSet($(this).text());
+					});
 					
 					$(list).append(opt);
 				}

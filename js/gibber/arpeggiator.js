@@ -12,41 +12,21 @@ function initPlugin(audioLib){
 (function(audioLib){
 
 function Arp(notation, beats, mode, mult) {
-	this.__proto__.__proto__ = Seq();
 	this.slaves = [];
 	this.sequence = [];
-	Gibber.controls.pop();
-	Gibber.controls.push(this);
-	
+	this.notes = [];
 	this.mode = mode || "up";
 	this.notation = notation || "Cm7";
 	this.mult = mult || 1;
+		
+	this.__proto__.__proto__ = Seq();
+	
 	this.speed = isNaN(beats) ? _4 : beats;
 	
-	this.notes = [];
-	//this.notes = [];
-	//this.modded = [];
-	
-	// this.seq = Seq();
-	
-	this.original = this.notes.slice(0);
-	
-	// (function(obj) {	
-	// 	var that = obj;
-	// 	var speed = obj.speed;
-	// 	
-	// 	Object.defineProperties(that, {
-	// 		"speed": {
-	// 			get: function(){ return speed; },
-	// 			set: function(value) {
-	// 				speed = value;
-	// 				this.seq.setSequence(this.notes, speed, false);
-	// 			}
-	// 		}
-	// 	});
-	// })(this);
-	
 	this.chord(this.notation);
+	this.original = this.notes.slice(0);	
+	
+	Gibber.controls.push(this);
 }
 
 Arp.prototype = {
@@ -82,8 +62,8 @@ Arp.prototype = {
 		}	
 		this.notes = this.modes[this.mode]( arr );
 		this.setSequence(this.notes, this.speed, shouldReset);
-
 	},
+	
 	set : function(_chord, _speed, _mode, octaveMult, shouldReset) {
 		this.speed = _speed || this.speed;
 		this.mode = _mode || this.mode;
@@ -91,7 +71,7 @@ Arp.prototype = {
 		
 		this.chord(_chord, shouldReset); // also sets sequence
 	},
-	
+		
 	modes : {
 		up : function(array) {
 			return array;
@@ -105,41 +85,6 @@ Arp.prototype = {
 			return array.concat(_tmp);
 		}
 	},
-	// shuffle: function() { this.seq.shuffle(); },
-	// reset : function(num)  { 
-	// 	if(isNaN(num)) {
-	// 		this.seq.reset();
-	// 	}else{
-	// 		this.seq.reset(num); 
-	// 	}
-	// },
-	// 
-	// retain : function(num) { 
-	// 	if(isNaN(num)) {
-	// 		this.seq.retain();
-	// 	}else{
-	// 		this.seq.retain(num); 
-	// 	}
-	// },
-
-	// replace : function(replacement){
-	// 	if(replacement.name != "Arp") {
-	// 		this.seq.free();
-	// 		if(replacement.type == "mod") {
-	// 			var idx = jQuery.inArray( this.step, this.gen.mods );
-	// 			if(idx > -1) {
-	// 				this.gen.mods.splice(idx,1,replacement);
-	// 				replacement.gens.push(this.gen);
-	// 			}
-	// 		}
-	// 	}else{
-	// 		var idx = jQuery.inArray( this.step, this.gen.mods );
-	// 		if(idx > -1) {
-	// 			this.gen.mods.splice(idx,1,replacement.step);
-	// 			replacement.gens.push(this.gen);
-	// 		}
-	// 	}
-	// },
 }
 //Arp.prototype.__proto__ = Seq();
 

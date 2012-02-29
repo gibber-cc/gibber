@@ -35,7 +35,7 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	Gibber.generators.push(this);	
 	
 	if(typeof _sequence != "undefined") {
-		this.seq = Seq(_sequence, _timeValue, this);
+		this.seq = Seq(_sequence, _timeValue).slave(this);
 	}
 	
 	(function(obj) {
