@@ -76,7 +76,6 @@ function audioProcess(buffer, channelCount){
 						}
 					}
 				}
-				//if(G.debug) console.log("assigning " + genValue);
 				value += genValue;
 			}
 			// Busses

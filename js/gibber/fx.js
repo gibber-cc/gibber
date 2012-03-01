@@ -136,7 +136,7 @@ function Delay(time, feedback, mix) {
 
 function Ring(freq, amt) {
 	freq = (typeof freq !== "undefined") ? freq : 440;
-	amt  = (typeof amt !== "undefined") ? amt : .15;	
+	amt  = (typeof amt !== "undefined") ? amt : 1;	
 	var that = {
 		freq: freq,
 		amt: amt,
@@ -150,10 +150,10 @@ function Ring(freq, amt) {
 	that.gens = [];
 	that.mods = [];
 	that.value = 0;
-	that.mix = .25;
+	that.mix = 1;
 	
 	(function(obj) {
-	    Object.defineProperties(obj, {
+	    Object.defineProperties(that, {
 			"frequency" : {
 		        get: function() {
 		            return this.osc.frequency;
@@ -167,11 +167,12 @@ function Ring(freq, amt) {
 		            return this.osc.mix;
 		        },
 		        set: function(value) {
-					this.osc.mix = value;
+		            this.osc.mix = value;
 		        }
 			},
 	    });
 	})(that);
+	
 	
 	that.pushSample = function(sample) {
 		this.osc.generate();
@@ -182,7 +183,6 @@ function Ring(freq, amt) {
 	that.getMix = function() {
 		return this.value;
 	}
-	
 	Gibber.addModsAndFX.call(that);
 	
 	return that;

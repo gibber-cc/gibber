@@ -128,9 +128,7 @@ Synth.prototype = {
 	note : function(n) {
 		switch(typeof n) {
 			case "number" :
-			
 				this.osc.frequency = n;
-				console.log(this.osc.frequency);
 			break;
 			case "string" :
 				this.osc.frequency = teoria.note(n).fq();
