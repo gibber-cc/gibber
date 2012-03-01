@@ -140,6 +140,9 @@ Synth.prototype = {
 	
 	kill : function() {
 		Gibber.genRemove(this.osc);
+		this.masters.length = 0;
+		this.mods.length = 0;
+		this.fx.length = 0;
 	},
 	
 	replace : function(replacement){
@@ -158,6 +161,24 @@ Synth.prototype = {
 		delete this.env;
 		delete this;
 	},
+	
+	remove : function(replacement){
+		// can't replace, just remove instead.
+		Gibber.genRemove(this);
+		for(var i = 0; i < this.masters.length; i++) {
+			var master = this.masters[i];
+			for(var j = 0; j < master.slaves.length; j++) {
+				if(master.slaves[j] == this) {
+					master.slave(replacement);
+					master.slaves.splice(j,1);
+				}
+			}
+		}
+		delete this.osc;
+		delete this.env;
+		delete this;
+	},
+	
 	
 	stop : function() {
 		this.active = false;

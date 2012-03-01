@@ -152,22 +152,37 @@ function Ring(freq, amt) {
 	that.value = 0;
 	that.mix = .25;
 	
+	(function(obj) {
+	    Object.defineProperties(obj, {
+			"frequency" : {
+		        get: function() {
+		            return this.osc.frequency;
+		        },
+		        set: function(value) {
+		            this.osc.frequency = value;
+		        }
+			},
+			"amount" : {
+		        get: function() {
+		            return this.osc.mix;
+		        },
+		        set: function(value) {
+					this.osc.mix = value;
+		        }
+			},
+	    });
+	})(that);
+	
 	that.pushSample = function(sample) {
 		this.osc.generate();
-		// if(Gibber.debug) {
-		// 	//console.log("sample = " + sample);
-		// 	//console.log("osc value = " + this.osc.getMix());
-		// }
 		this.value = sample * this.osc.getMix();
 		return this.value;
 	}
 	
 	that.getMix = function() {
-		if(Gibber.debug) {		
-			//console.log("this.value = " + this.value)
-		}
 		return this.value;
 	}
+	
 	Gibber.addModsAndFX.call(that);
 	
 	return that;

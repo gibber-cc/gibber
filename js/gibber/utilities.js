@@ -10,8 +10,6 @@ jQuery.fn.aPosition = function() {
     }
 };
 
-
-
 Array.prototype.removeObj = function(value) {
     return jQuery.grep(this, function(elem, index) {
         return elem !== value;
@@ -26,12 +24,17 @@ Array.prototype.remove = function(arg) {
 		this.length = 0;
 	}else if(typeof arg === "number") {
 		this.splice(arg,1);
-	}else{ // find named member and remove
+	}else if(typeof arg === "string"){ // find named member and remove
 		for(var i = 0; i < this.length; i++) {
 			var member = this[i];
 			if(member.name == arg) {
 				this.splice(i, 1);
 			}
+		}
+	}else if(typeof arg === "object") {
+		var idx = jQuery.inArray( arg, this);
+		if(idx > -1) {
+			this.splice(idx,1);
 		}
 	}
 };
@@ -59,9 +62,11 @@ Array.prototype.shuffle = function() {
 }
 
 window.toggle = function(obj, val, value1, value2) {
-	console.log(obj[val]);
-	obj[val] = (obj[val] === value1) ? value2 : value1;
-	console.log(obj[val]);
+	if(obj[val] == value1) {
+		obj[val] = value2;
+	}else{
+		obj[val] = value1;
+	}
 };
 
 window.copy = function(obj) {

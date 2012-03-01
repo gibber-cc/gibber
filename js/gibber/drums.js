@@ -74,6 +74,9 @@ Drums.prototype = {
 	
 	kill : function() {
 		Gibber.genRemove(this);
+		this.masters.length = 0;
+		this.mods.length = 0;
+		this.fx.length = 0;
 	},
 	
 	generate : function() {

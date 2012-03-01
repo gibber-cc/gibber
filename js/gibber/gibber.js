@@ -33,32 +33,46 @@ var Gibber = {
 				Object.defineProperty(obj, ltr, {
 					get:function() { return obj["____"+ltr];},
 					set:function(newObj) {
-						var endString = " created";
-						 if(typeof obj["____"+ltr] !== "undefined") {
-							 var variable = obj["____"+ltr];
- 							 endString = " replaced " + variable.name;
-							 switch(variable.type) {
-								 case "gen":
-									 Gibber.genReplace(variable, newObj);
-								 break;
-								 case "mod":
-									 Gibber.modReplace(variable, newObj);
-								 break;
-								 case "fx":
-									 Gibber.fxReplace(variable, newObj);
-								 break;
-								 case "control":
-									 Gibber.controlReplace(variable, newObj);
+						if(newObj != null) {	// replace
+							var endString = " created";
+							 if(typeof obj["____"+ltr] !== "undefined" && obj["____"+ltr] != null) {
+								 console.log("replacing");
+								 var variable = obj["____"+ltr];
+
+								 switch(variable.type) {
+									 case "gen":
+										 Gibber.genReplace(variable, newObj);
 									 break;
-								 case "complex":
-									variable .replace(newObj); // rely on object prototype to handle removing members
-								 break;
-								 default: break;
+									 case "mod":
+										 Gibber.modReplace(variable, newObj);
+									 break;
+									 case "fx":
+										 Gibber.fxReplace(variable, newObj);
+									 break;
+									 case "control":
+										 Gibber.controlReplace(variable, newObj);
+										 break;
+									 case "complex":
+										variable .replace(newObj); // rely on object prototype to handle removing members
+									 break;
+									 default: break;
+								 }
+							 }
+							 if(newObj.name != undefined)
+							 	G.log(newObj.name + endString);
+							 
+						 }else{		// kill
+							 console.log("killing");
+							 if(typeof obj["____"+ltr] !== "undefined") {
+								 var variable = obj["____"+ltr];
+								 if(variable != null) {
+									 if(variable.kill != undefined) {
+										 variable.kill();
+									 }
+								 }
 							 }
 						 }
 					 	 obj["____"+ltr] = newObj;
-						 if(newObj.name != undefined)
-						 	G.log(newObj.name + endString);
 					},
 				})
 			})();
@@ -66,12 +80,22 @@ var Gibber = {
 		
 		obj.kill = function() {
 			for(var n in obj) {
+				console.log(n);
 				if(typeof obj[n].kill === "function") {
 					obj[n].kill();
 				}
 			}
 		};
 	},
+	
+	killSingles : function(obj) {	// kill all single letter variables
+		var letters = "abcdefghijklmnopqrstuvwxyz";
+		for(var l = 0; l < letters.length; l++) {
+			var ltr = letters.charAt(l);
+			window[ltr] = null;
+		}
+	},
+	
 	
 	init : function() {
 		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
@@ -161,6 +185,21 @@ var Gibber = {
 		}
 	},
 	
+	modRemove : function(oldMod) {
+	// loop through ugens / fx that the mods influence and delete
+		var modToReplace = oldMod;
+		for(var i = 0; i < modToReplace.modded.length; i++) {
+			var moddedGen = modToReplace.modded[i];
+			for(var j = 0; j < moddedGen.mods.length; j++) {
+				var modCheck = moddedGen.mods[j].gen;
+				if(modCheck == modToReplace) {
+					moddedGen.mods.splice(j,1);
+				}
+			}
+		}
+	},
+	
+	
 	fxReplace : function(oldFX, newFX) {
 	// loop through gens affected by effect (for now, this should almost always be 1)
 	// replace with new effect and add the gen to the gens array of the new effect
@@ -174,6 +213,20 @@ var Gibber = {
 			}
 		}
 	},
+	
+	fxRemove : function(oldFX) {
+	// loop through gens affected by effect (for now, this should almost always be 1)
+	// replace with new effect and add the gen to the gens array of the new effect
+		var fxToReplace = oldFX;
+		for(var i = 0; i < fxToReplace.gens.length; i++) {
+			var fxgen = fxToReplace.gens[i];
+			var idx = jQuery.inArray( fxToReplace, fxgen.fx );
+			if(idx > -1) {
+				fxgen.fx.splice(idx,1);
+			}
+		}
+	},
+	
 	
 	controlReplace: function(oldControl, newControl) {
 		var controlToReplace = oldControl;
@@ -190,6 +243,22 @@ var Gibber = {
 		}
 		controlToReplace.mods.length = 0;		
 	},
+	
+	controlRemove: function(oldControl) {
+		var controlToReplace = oldControl;
+
+		for(var i = 0; i < controlToReplace.slaves.length; i++) {
+			var slave = controlToReplace.slaves[i];
+			slave.masters.length = 0;
+		}
+		controlToReplace.slaves.length = 0;
+		
+		for(var i = 0; i < controlToReplace.mods.length; i++) {
+			var mod = controlToReplace.mods[i];
+		}
+		controlToReplace.mods.length = 0;		
+	},
+	
 	
 	registerObserver : function(name, fn) {
 		//console.log("Registering " + fn);
@@ -224,6 +293,8 @@ var Gibber = {
 			Gibber.controls[c].kill();
 		}
 		
+		Gibber.killSingles();
+				
 		this.generators.length = 0;
 		this.callback.phase = 0;
 		this.controls.length = 0;
@@ -409,8 +480,7 @@ function Osc(args, isAudioGenerator) {
 	var that = new audioLib.Oscillator(Gibber.sampleRate, _freq);
 	that.type = "gen";	
 	
-	that.mix = (typeof args[1] !== "undefined") ? args[1] : .25;
-	console.log(that.mix);
+	that.mix = (typeof args[1] !== "undefined") ? args[1] : .1;
 	that.active = true;		
 	that.value = 0;
 	if(typeof args[2] === "string") {
@@ -424,24 +494,36 @@ function Osc(args, isAudioGenerator) {
 	
 	that.freq = function(_freq) {
 		this.frequency = _freq;
-	}
+	};
 	
 	that.kill = function() {
 		Gibber.genRemove(this);
-	}
+		if(this.masters != undefined) 	this.masters.length = 0;
+		if(this.mods != undefined)		this.mods.length = 0;
+		if(this.fx != undefined)		this.fx.length = 0;
+	};
 
 	that.stop = function() {
 		this.active = false;
+		return this;
 	};
 	
 	that.start = function() {
 		this.active = true;
+		return this;		
 	};
 	
 	if(typeof isAudioGenerator === "undefined" || isAudioGenerator) {
 		Gibber.audioInit = true;
 		Gibber.generators.push(that);
 	}
+	
+	that.silent = function() {
+		Gibber.genRemove(this);
+		return this;
+	};
+	
+	that.sssh = that.silent;
 	
 	Gibber.addModsAndFX.call(that);
 	

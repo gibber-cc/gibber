@@ -77,6 +77,8 @@ function Poly(_chord, _waveform, volume) {
 	that.kill = function() {
 		Gibber.genRemove(this);
 		this.masters.length = 0;
+		this.mods.length = 0;
+		this.fx.length = 0;
 	},
 	
 	that.replace = function(replacement){

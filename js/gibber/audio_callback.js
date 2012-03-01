@@ -29,15 +29,14 @@ function restoreMods(gen) {
 function audioProcess(buffer, channelCount){
 	var i, channel, value;
 	
-	if( Gibber.active ) {
-		//console.log(Gibber.generators.length);
-		for(var i = 0; i < buffer.length; i+= channelCount) {
+	if( Gibber.active ) {		
+		for(var i = 0, _bl = buffer.length; i < _bl; i+= channelCount) {
 			if(i === 0) Gibber.debug = true;
 			
 			value = 0;
 			
 			Gibber.callback.generate();
-			for(var c = 0; c < Gibber.controls.length; c++) {
+			for(var c = 0, _cl = Gibber.controls.length; c < _cl; c++) {
 				var control = Gibber.controls[c];
 				processMods(control);
 				//if(Gibber.debug) console.log(control.phase);
@@ -45,7 +44,8 @@ function audioProcess(buffer, channelCount){
 				restoreMods(control);
 			}
 			
-			for(var g = 0; g < Gibber.generators.length; g++) {
+			var _generatorsLength = Gibber.generators.length;
+			for(var g = 0, _gl = Gibber.generators.length; g < _gl; g++) {
 				var genValue = 0;
 				var gen = Gibber.generators[g];
 				if(gen.active) {					
@@ -60,7 +60,7 @@ function audioProcess(buffer, channelCount){
 					restoreMods(gen); // reset gen values to state before modulation
 				
 					// run fx
-					for(var e = 0; e < gen.fx.length; e++) {
+					for(var e = 0, _el = gen.fx.length; e < _el; e++) {
 						var effect = gen.fx[e];
 						processMods(effect);
 						genValue = effect.fxout(genValue);
@@ -69,8 +69,8 @@ function audioProcess(buffer, channelCount){
 					
 					// TODO: send from any point in the fx chain?
 					if(gen.sends) {
-						for(var b = 0; b < gen.sends.length; b++) {
-							var send = gen.sends[b];
+						for(var s = 0, _sl = gen.sends.length; s < _sl ; s++) {
+							var send = gen.sends[s];
 							send.bus.value += genValue * send.amount;
 						}
 					}
@@ -79,11 +79,11 @@ function audioProcess(buffer, channelCount){
 			}
 			
 			// Busses
-			for(var b = 0; b < Gibber.busses.length; b++) {
+			for(var b = 0, _bbl = Gibber.busses.length; b < _bbl; b++) {
 				var bus = Gibber.busses[b];
 				var busValue = bus.value;
 				
-				for(var e = 0; e < bus.fx.length; e++) {
+				for(var e = 0, _eel = bus.fx.length; e < _eel ; e++) {
 					var effect = bus.fx[e];
 					processMods(effect);
 					busValue += effect.fxout(busValue);
@@ -95,7 +95,7 @@ function audioProcess(buffer, channelCount){
 			}
 			
 			// Master output
-			for(var e = 0; e < Master.fx.length; e++) {
+			for(var e = 0, _ml = Master.fx.length; e < _ml; e++) {
 				var effect = Master.fx[e];
 				processMods(effect);
 				value = effect.fxout(value);

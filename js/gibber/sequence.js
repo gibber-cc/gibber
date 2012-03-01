@@ -43,6 +43,14 @@ function Seq() {
 				Gibber.controls.splice(i,1);
 			}
 		};
+		
+		for(var i = 0; i < this.slaves.length; i++) {
+			var slave = this.slaves[i];
+			slave.masters.length = 0;
+		}
+		this.slaves.length = 0;
+		
+		this.mods.length = 0;	
 	},
 	
 	that.setSequence = function(seq, _speed, _reset) {
@@ -154,13 +162,13 @@ function Seq() {
 				}
 			
 			
-				for(j = 0; j < this.slaves.length; j++) {
+				for(var j = 0; j < this.slaves.length; j++) {
 					var _slave = this.slaves[j];
 	
 					if(this.outputMessage === "freq") {
 						if(typeof val === "string" ) {
-							var n = teoria.note(val);
-							val = n.fq();
+							var nt = teoria.note(val);
+							val = nt.fq();
 						}else if(typeof val === "object"){
 							val = val.fq();
 						}// else val is a number and is fine to send as a freq...

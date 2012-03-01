@@ -4,6 +4,8 @@ Requires gibber.js and chord.js found in the Gibber download.
 
 Usage (assume s is a sine oscillator that has the Gibber mod method) :
 a = audioLib.Arp(s, "Cm7", 2, .25, "updown");
+
+TODO: does traversing the prototype chain cause the huge performance spike vs. a seq object?
 */
 
 (function myPlugin(){
