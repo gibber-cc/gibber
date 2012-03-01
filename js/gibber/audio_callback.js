@@ -48,6 +48,7 @@ function audioProcess(buffer, channelCount){
 			for(var g = 0, _gl = Gibber.generators.length; g < _gl; g++) {
 				var genValue = 0;
 				var gen = Gibber.generators[g];
+				
 				if(gen.active) {					
 					processMods(gen); // apply modulation changes
 					
@@ -75,9 +76,9 @@ function audioProcess(buffer, channelCount){
 						}
 					}
 				}
+				//if(G.debug) console.log("assigning " + genValue);
 				value += genValue;
 			}
-			
 			// Busses
 			for(var b = 0, _bbl = Gibber.busses.length; b < _bbl; b++) {
 				var bus = Gibber.busses[b];

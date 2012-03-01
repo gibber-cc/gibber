@@ -17,9 +17,9 @@ function initPlugin(audioLib){
 function Synth(waveform, volume) {
 	this.volume = isNaN(volume) ? .2 : volume;
 	this.waveform = waveform || "triangle";
-	this.osc = Osc([440, this.volume, this.waveform], false);
+	this.osc = Osc([440, this.volume, this.waveform], false).silent();
 	this.env = Env();
-	this.osc.mod("mix", this.env, "*");
+	//this.osc.mod("mix", this.env, "*");
 	
 	if(typeof waveform !== "undefined") {
 		this.osc.waveShape = waveform;
@@ -32,14 +32,15 @@ function Synth(waveform, volume) {
 	this.active = true;
 	this._start = true;
 	this.counter = -1;
+	this.value = 0;
 	
 	this.mods = [];
 	this.fx = [];
 	this.sends = [];
 	this.masters = [];
 	
-	Gibber.generators.push(this.osc);
-	
+	//Gibber.generators.push(this.osc);
+	Gibber.generators.push(this);
 	// meta-methods
 	(function(obj) {
 		var that = obj;
@@ -122,11 +123,14 @@ function Synth(waveform, volume) {
 Synth.prototype = {
 	name: "Synth",
 	type: "complex",
+	active : true,
 
 	note : function(n) {
 		switch(typeof n) {
 			case "number" :
+			
 				this.osc.frequency = n;
+				console.log(this.osc.frequency);
 			break;
 			case "string" :
 				this.osc.frequency = teoria.note(n).fq();
@@ -136,6 +140,28 @@ Synth.prototype = {
 				break;
 		}
 		this.env.triggerGate();
+	},
+	
+	// TODO : get generate to work in synth
+	
+	out : function() {
+		this.generate();
+		return this.value * this.mix;
+	},
+	
+	getMix : function() {
+		return this.value * this.mix;
+	},
+	
+	generate: function() {
+		//console.log("Generate called");
+		this.value = this.osc.out();
+		// if(Gibber.debug) {
+		// 	G.log(this.value);
+		// }
+		this.env.generate();
+		
+		this.value *= this.env.value;
 	},
 	
 	kill : function() {
@@ -188,17 +214,6 @@ Synth.prototype = {
 		this.phase = 0;
 		this.active = true;
 	},
-		
-	out : function() {
-		//this.generate();
-		//return this.value;
-	},
-	
-	getMix : function() {
-		return this.value * this.mix;
-	},
-	
-	//Gibber.generators.push(that);
 	
 	chain : function() {
 		for(var i = 0; i < arguments.length; i++) {
@@ -213,6 +228,17 @@ Synth.prototype = {
 		}else{
 			this.osc.mod(arguments[0], arguments[1], arguments[2]);
 		}
+	},
+	
+	send : function(_bus, amount) {
+		var bus = { 
+			bus : Gibber.getBus(_bus),
+			amount : amount,
+		};
+			
+		bus.bus.senders.push(this);
+			
+		this.sends.push(bus);
 	},
 }
 
