@@ -141,7 +141,6 @@ default:
 'Seq(\n'+
 '    array   : sequenced objects / primitives, \n'+
 '    num     : step speed (optional, default = _1 / length of sequence array),\n'+
-'    object  : object to apply sequence to (optional),\n'+
 '    string  : name of method or property of object to sequence (optional, default = "note" or "freq") \n'+
 ');\n'+
 '*/\n'+
@@ -151,21 +150,21 @@ default:
 '\n'+
 '// create a sequence object by passing an array of notes\n'+
 '// this sequence will not have a ugen slaved, but once it has one it will output note messages (default)\n'+
-'q = Seq(["F4", "G4", "A4", "E4"], _1);\n'+
+'q = Seq(["F4", "G4", "A4", "E4"], _4);\n'+
 '\n'+
 '// tell the sequence object to control the synth\n'+
 'q.slave(s);\n'+
 '\n'+
 't = Synth();\n'+
 't.fx.add( Reverb() )\n'+
-'r = Seq(["A5", "A#5", "C#5", "D5"], _1).slave(t);\n'+
+'r = Seq(["A5", "A#5", "C#5", "D5"], _4).slave(t);\n'+
 '\n'+
 '// assign new values to the sequence\n'+
 'q.set(["F4", "G4",  "D4",  "C4"]);\n'+
 'r.set(["A5", "A#5", "C#5", "B5"]);\n'+
 '\n'+
 '// change the speed of each sequence step\n'+
-'r.speed = q.speed = _8;\n'+
+'r.speed = q.speed = _16;\n'+
 '\n'+
 '// randomize the sequences\n'+
 'q.shuffle();\n'+

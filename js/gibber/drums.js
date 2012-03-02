@@ -38,6 +38,17 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 		this.seq = Seq(_sequence, _timeValue).slave(this);
 	}
 	
+	var that = this; // closure so that d.shuffle can be sequenced
+	this.shuffle = function() { that.seq.shuffle(); };
+	
+	this.reset = function(num)  { 
+		if(isNaN(num)) {
+			that.seq.reset();
+		}else{
+			that.seq.reset(num); 
+		}
+	};
+	
 	(function(obj) {
 		var that = obj;
 		var speed = that.speed;
@@ -97,13 +108,7 @@ Drums.prototype = {
 		
 	getMix : function() { return this.value; },
 	
-	reset : function(num)  { 
-		if(isNaN(num)) {
-			this.seq.reset();
-		}else{
-			this.seq.reset(num); 
-		}
-	},
+
 	
 	once : function() {
 		this.seq.once();
@@ -117,8 +122,6 @@ Drums.prototype = {
 			this.seq.retain(num); 
 		}
 	},
-	
-	shuffle : function() { this.seq.shuffle(); },
 	set : function(newSequence) { this.seq.set(newSequence); },
 	
 	note : function(nt) {
