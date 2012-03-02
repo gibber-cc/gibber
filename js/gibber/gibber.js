@@ -480,7 +480,7 @@ function Osc(args, isAudioGenerator) {
 	var that = new audioLib.Oscillator(Gibber.sampleRate, _freq);
 	that.type = "gen";	
 	
-	that.mix = (typeof args[1] !== "undefined") ? args[1] : .1;
+	that.mix = (typeof args[1] !== "undefined") ? args[1] : .2;
 	that.active = true;		
 	that.value = 0;
 	if(typeof args[2] === "string") {

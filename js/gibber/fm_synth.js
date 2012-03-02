@@ -19,6 +19,9 @@ Gibber.FMPresets = {
 	},
 };
 
+// TODO: modulator should use same amplitude envelope as the carrier, would probably require a custom generate method.
+// or, if you keep them separate, expand envelope capabilities to be more advanced
+
 function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	var that = Synth("sine");
 	that.name = "FM";
@@ -36,11 +39,12 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		that.decay = isNaN(decay) ? 100 : decay;
 	}
 	
+
 	modFreq = that.osc.frequency * that.cmRatio;
 	modAmp = that.index * that.osc.frequency;
 	
-	that.modulator = Sine();
-	Gibber.genRemove(that.modulator);
+	that.modulator = Sine(modFreq, modAmp);
+	//Gibber.genRemove(that.modulator);
 
 	shouldUseModulatorEnvelope = (typeof shouldUseModulatorEnvelope === "undefined") ? true : shouldUseModulatorEnvelope;
 	
@@ -48,8 +52,28 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		that.modulator.env = Env(that.attack, that.decay);
 		that.modulator.mod("mix", that.modulator.env, "*");
 	}
+	
+	that.mod = function(_name, _source, _type) {
+		var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
+		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
 		
-	that.osc.mod("freq", that.modulator, "+");
+		if(typeof _source.mods === "undefined") {
+			_source.mods = [];
+		}
+			
+		_source.store = {};
+		_source.modded.push(this);
+		_source.param = name;
+		_source.name = _name;
+		_source.type = type;
+			
+		this.mods.push(_source);			
+			
+		Gibber.genRemove(_source);
+		return this;
+	};
+	
+	that.mod("frequency", that.modulator, "+");
 	/*
 	note : function(n) {
 		switch(typeof n) {
@@ -80,12 +104,14 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 				break;
 		}
 		
-		that.osc.frequency = oscFreq;
-		that.modulator.frequency = oscFreq * that.cmRatio;
-		that.modulator.mix = oscFreq * that.index;
+		//console.log("cmRatio = " + this.cmRatio + " : index = " + this.index);
+		this.osc.frequency = oscFreq;
+		this.modulator.frequency = oscFreq * this.cmRatio;
+		this.modulator.mix = oscFreq * this.index;
+		//console.log("freq = " + this.modulator.frequency + " : mix = " + this.modulator.mix);
 		
-		that.env.triggerGate();
-		that.modulator.env.triggerGate();
+		this.env.triggerGate();
+		this.modulator.env.triggerGate();
 	};
 	
 	(function() {

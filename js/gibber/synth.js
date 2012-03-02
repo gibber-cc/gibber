@@ -17,15 +17,14 @@ function initPlugin(audioLib){
 function Synth(waveform, volume) {
 	this.volume = isNaN(volume) ? .2 : volume;
 	this.waveform = waveform || "triangle";
-	this.osc = Osc([440, this.volume, this.waveform], false).silent();
+	this.osc = Osc([440, 1, this.waveform], false).silent();
 	this.env = Env();
-	//this.osc.mod("mix", this.env, "*");
 	
 	if(typeof waveform !== "undefined") {
 		this.osc.waveShape = waveform;
 	}
 	
-	this.mix= .2;
+	this.mix= this.volume;
 	this.frequency= 440;
 	this.phase = 0;
 	this.value = 0;
@@ -45,6 +44,7 @@ function Synth(waveform, volume) {
 	(function(obj) {
 		var that = obj;
 	    var mix = that.mix;
+		var frequency = that.osc.frequency;
 		var attack = that.env.attack;
 		var decay  = that.env.decay;
 		var sustain = that.env.sustain;
@@ -62,12 +62,12 @@ function Synth(waveform, volume) {
 					this.osc.mix = value;
 		        }
 			},
-			"fx" : {
+			"frequency" : {
 				get : function() {
-					return this.osc.fx;
+					return this.osc.frequency;
 				},
-				set : function(_fx) {
-					this.osc.fx = _fx;
+				set : function(val) {
+					this.osc.frequency = val;
 				}
 			},
 			"waveShape" : {
@@ -118,6 +118,7 @@ function Synth(waveform, volume) {
 			},
 	    });
 	})(this);
+	Gibber.addModsAndFX.call(this);
 }
 
 Synth.prototype = {
@@ -220,13 +221,15 @@ Synth.prototype = {
 		return this;
 	},
 	
-	mod : function() {
-		if(typeof arguments[2] === "undefined") {
-			this.osc.mod(arguments[0], arguments[1]);
-		}else{
-			this.osc.mod(arguments[0], arguments[1], arguments[2]);
-		}
-	},
+	// mod : function() {
+	// 	console.log("MODDING")
+	// 	console.log(this);
+	// 	if(typeof arguments[2] === "undefined") {
+	// 		this.mod(arguments[0], arguments[1]);
+	// 	}else{
+	// 		this.mod(arguments[0], arguments[1], arguments[2]);
+	// 	}
+	// },
 	
 	send : function(_bus, amount) {
 		var bus = { 
