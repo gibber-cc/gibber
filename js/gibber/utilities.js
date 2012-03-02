@@ -73,7 +73,28 @@ window.copy = function(obj) {
 	return $.extend(true, {}, obj);
 };
 
-window.randomi = function() {
+window.filli = function(min, max, number) {
+	var output = [];
+	for(var i = 0; i < number; i++) {
+		output.push(randomi(min, max));
+	}
+	return output;
+};
+
+window.fillf = function(min, max, number) {
+	var output = [];
+	for(var i = 0; i < number; i++) {
+		output.push(randomf(min, max));
+	}
+	return output;
+};
+
+window.fill = function() {
+	return window.filli(0, 20, 16);
+};
+
+
+window.rndi = window.randomi = function() {
 	var min, max;
 	if(arguments.length == 1) {
 		min = 0, max = arguments[0];
@@ -91,9 +112,13 @@ window.randomi = function() {
 	var rrr = Math.round(rr);
 	
 	return min + rrr;
-}
+};
 
-window.randomf = function(min, max) {
+window.getDivision = function(div) {
+	return window["_"+div];
+};
+
+window.rndf = 	window.randomf = function(min, max) {
 	if(arguments.length == 1) {
 		min = 0, max = arguments[0];
 	}else if(arguments.length == 2) {

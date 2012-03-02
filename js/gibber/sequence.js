@@ -2,6 +2,10 @@
 function Seq() {
 	var _seq = arguments[0] || null;
 	
+	if(typeof _seq === "function") { // wrap anonymous function in array as sugar
+		_seq = [_seq];
+	}
+	
 	var speed = arguments[1] || null;
 	if(speed == null && _seq != null) {
 		speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
@@ -245,6 +249,7 @@ function Seq() {
 	that.shuffle = function() {
 		that.sequence.shuffle();
 		that.setSequence(that.sequence, that.speed);
+		return that;
 	};
 	
 	that.reset = function() {
@@ -253,6 +258,7 @@ function Seq() {
 		}else{
 			that.setSequence(that.memory[arguments[0]]);
 		}
+		return that;
 	};
 		
 	that.retain = function() {
