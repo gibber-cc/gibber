@@ -115,29 +115,17 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	};
 	
 	that.generate = function() {
-		//console.log("Generate called");
-
 		var envValue = this.env.generate();
-		// if(Gibber.debug) {
-		// 	G.log(envValue);
-		// }
 		
 		var modValue = this.modulator.out() * envValue;
 		var freqStore = this.osc.frequency;
 		
 		this.osc.frequency += modValue;
 		this.value = this.osc.out();
-		// if(Gibber.debug) {
-		// 	G.log(this.value);
-		// }
 		
 		this.osc.frequency = freqStore;
 		
 		this.value *= envValue;
-		// if(Gibber.debug) {
-		// 	G.log(this.value);
-		// }
-		
 	};
 	
 	

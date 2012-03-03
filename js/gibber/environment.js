@@ -464,10 +464,16 @@ Gibber.Environment = {
 		    exec: function(env, args, request) {
 				console.log(this);
 		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
-				if(text === "") {
+				var cb;
+				var sel;
+				if(text === "") {	// single line execution		
+					sel = ".ace_active_line";			
 					var pos = Gibber.Environment.Editor.getCursorPosition();
 					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
+				}else{
+					sel = ".ace_selection";
 				}
+				Gibber.Environment.flashExecutedCode(sel);				
 				Gibber.runScript(text);
 		    }
 		});
@@ -479,12 +485,16 @@ Gibber.Environment = {
 		        sender: 'Gibber.Environment.Editor'
 		    },
 		    exec: function(env, args, request) {
+				var sel;
 		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
 				if(text === "") {
+					sel = ".ace_active_line";
 					var pos = Gibber.Environment.Editor.getCursorPosition();
 					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
+				}else{
+					sel = ".ace_selection";
 				}
-
+				Gibber.Environment.flashExecutedCode(sel);
 				Gibber.callback.addCallback(text, _1);
 		    }
 		});
@@ -496,15 +506,40 @@ Gibber.Environment = {
 		        sender: 'Gibber.Environment.Editor'
 		    },
 		    exec: function(env, args, request) {
+				var sel;
 		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
 				if(text === "") {
+					sel = ".ace_active_line";
 					var pos = Gibber.Environment.Editor.getCursorPosition();
 					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
+				}else{
+					sel = ".ace_selection";
 				}
-
+				Gibber.Environment.flashExecutedCode(sel);
 				Gibber.callback.addCallback(text, _4);
 		    }
 		});
+		Gibber.Environment.Editor.commands.addCommand({
+		    name: 'remoteSend',
+		    bindKey: {
+		        win: 'Shift-Ctrl-2',
+		        mac: 'Shift-Command-2',
+		        sender: 'Gibber.Environment.Editor'
+		    },
+		    exec: function(env, args, request) {
+				var sel;
+		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
+				if(text === "") {
+					sel = ".ace_active_line";
+					var pos = Gibber.Environment.Editor.getCursorPosition();
+					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
+				}else{
+					sel = ".ace_selection";
+				}
+				Gibber.Environment.flashExecutedCode(sel);
+				Gibber.Environment.slaveSocket.send(text);
+		    }
+		});	
 			
 			
 		Gibber.Environment.Editor.commands.addCommand({
@@ -563,25 +598,18 @@ Gibber.Environment = {
 					Gibber.Environment.Editor.getSession().setValue(code);
 				}
 		    }
-		});
-		
-		Gibber.Environment.Editor.commands.addCommand({
-		    name: 'remoteSend',
-		    bindKey: {
-		        win: 'Shift-Ctrl-2',
-		        mac: 'Shift-Command-2',
-		        sender: 'Gibber.Environment.Editor'
-		    },
-		    exec: function(env, args, request) {
-		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
-				if(text === "") {
-					var pos = Gibber.Environment.Editor.getCursorPosition();
-					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
-				}
-				Gibber.Environment.slaveSocket.send(text);
-		    }
-		});				
+		});		
 	},
+	flashExecutedCode : function(selector) {
+		var sel = selector;
+		var activeColor = $(sel).css("backgroundColor");
+		var cb = (function() { 
+			$(sel).css("backgroundColor", activeColor);
+		});
+					
+		$(sel).css("backgroundColor", "#900");
+		window.setTimeout(cb, 250);
+	},	
 };
 
 $(window).resize(Gibber.Environment.editorResize);
