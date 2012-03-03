@@ -400,6 +400,8 @@ Gibber.Environment = {
 	    Gibber.Environment.Editor.getSession().setMode(new JavaScriptMode());
 		Gibber.Environment.Editor.setTheme("ace/theme/thecharlie");
 		
+		Gibber.Environment.Editor.session.setUseWorker(false);
+		
 		var one = $('#console').outerHeight(),
 		remaining_height = parseInt($(window).height() - one); 
 		$('#editor').height(remaining_height);

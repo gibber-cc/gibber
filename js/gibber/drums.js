@@ -8,11 +8,17 @@ o = snare
 * = closed hat
 
 Usage: d = Drums("x*o*xx.*");
+
+TODO : ADD REPLACE METHOD
+TODO : ADD REPLACE METHOD
+TODO : ADD REPLACE METHOD
+TODO : ADD REPLACE METHOD
+
 */
 (function myPlugin(){
 
 function initPlugin(audioLib){
-(function(audioLib){
+(function(audioLib){	
 	
 // TODO: This should use a Seq object as prototype if possible.
 function Drums (_sequence, _timeValue, _mix, _freq){
@@ -27,9 +33,11 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	this.mods = [];
 	this.fx = [];
 	this.sends = [];
+	this.masters = [];
 	
 	this.sequenceInit =false;
 	this.initialized = false;
+	this.seq = null;
 	
 	Gibber.addModsAndFX.call(this);
 	Gibber.generators.push(this);	
@@ -71,7 +79,7 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 
 Drums.prototype = {
 	sampleRate : Gibber.sampleRate,
-	type  : "gen",
+	type  : "complex",
 	name  : "Drums",
 		
 	load : function (){
@@ -108,11 +116,24 @@ Drums.prototype = {
 		
 	getMix : function() { return this.value; },
 	
-
-	
 	once : function() {
 		this.seq.once();
 		return this;
+	},
+	
+	replace : function(replacement){
+		Gibber.genRemove(this);
+		Gibber.controls.remove(this.seq);
+		
+		for(var i = 0; i < this.masters.length; i++) {
+			var master = this.masters[i];
+			for(var j = 0; j < master.slaves.length; j++) {
+				if(master.slaves[j] == this) {
+					master.slave(replacement);
+					master.slaves.splice(j,1);
+				}
+			}
+		}
 	},
 	
 	retain : function(num) { 
