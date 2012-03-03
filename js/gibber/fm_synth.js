@@ -44,13 +44,13 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	modAmp = that.index * that.osc.frequency;
 	
 	that.modulator = Sine(modFreq, modAmp);
-	//Gibber.genRemove(that.modulator);
+	Gibber.genRemove(that.modulator);
 
 	shouldUseModulatorEnvelope = (typeof shouldUseModulatorEnvelope === "undefined") ? true : shouldUseModulatorEnvelope;
 	
 	if(shouldUseModulatorEnvelope) {
-		that.modulator.env = Env(that.attack, that.decay);
-		that.modulator.mod("mix", that.modulator.env, "*");
+		//that.modulator.env = Env(that.attack, that.decay);
+		//that.modulator.mod("mix", that.modulator.env, "*");
 	}
 	
 	that.mod = function(_name, _source, _type) {
@@ -73,7 +73,7 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		return this;
 	};
 	
-	that.mod("frequency", that.modulator, "+");
+	//that.mod("frequency", that.modulator, "+");
 	/*
 	note : function(n) {
 		switch(typeof n) {
@@ -111,8 +111,35 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		//console.log("freq = " + this.modulator.frequency + " : mix = " + this.modulator.mix);
 		
 		this.env.triggerGate();
-		this.modulator.env.triggerGate();
+		//this.modulator.env.triggerGate();
 	};
+	
+	that.generate = function() {
+		//console.log("Generate called");
+
+		var envValue = this.env.generate();
+		// if(Gibber.debug) {
+		// 	G.log(envValue);
+		// }
+		
+		var modValue = this.modulator.out() * envValue;
+		var freqStore = this.osc.frequency;
+		
+		this.osc.frequency += modValue;
+		this.value = this.osc.out();
+		// if(Gibber.debug) {
+		// 	G.log(this.value);
+		// }
+		
+		this.osc.frequency = freqStore;
+		
+		this.value *= envValue;
+		// if(Gibber.debug) {
+		// 	G.log(this.value);
+		// }
+		
+	};
+	
 	
 	(function() {
 	    var mix = that.mix;
