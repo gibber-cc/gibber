@@ -257,7 +257,7 @@ Gibber.Environment = {
 				var b = document.createElement('button');
 				$(b).html("Save");
 				$(b).bind("click", function() {
-					Gibber.Environment.saveWithName(this.value);
+					Gibber.Environment.saveWithName(t.value);
 					$(Gibber.Environment.saveWindow).remove();
 					Gibber.Environment.isSaveOpen = false;
 				});
