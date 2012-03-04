@@ -1,6 +1,7 @@
 /* 	
 Charlie Roberts 2012 MIT License
 Execute a callback in relation to a continuously running clock, on a particular beat.
+TODO: This is also now the master clock in Gibber and should be abstracted.
 
 Usage:
 c = audioLib.Callback;
@@ -31,6 +32,7 @@ function Callback() {
 
 Callback.prototype = {
 	callbacks : [],
+	slaves : [],
 	phase : 0,
 	measureLengthInSamples : 0,
 	value : 0,
@@ -67,10 +69,20 @@ Callback.prototype = {
 		// 			stop = Sink.doInterval(_callback(), subdivision / (Gibber.sampleRate / 1000) );
 		// 		}
 	},
-	
+	// 1.2 with no control rate
 	generate : function() {
+		//if(Gibber.debug) console.log(_16)
+		if(this.phase % _64 <= .5) {
+			this.counter++;
+			for(var i = 0, _sl = this.slaves.length; i < _sl; i++) {
+				var slave = this.slaves[i];
+				if(this.phase % slave.speed <= .5) {
+					slave.advance();
+				}
+			}
+		}
 		this.phase++;
-		if(this.phase > this.measureLengthInSamples) { 
+		if(this.phase >= this.measureLengthInSamples) { 
 			this.phase = 0;
 			for(var i = 2; i <= 4; i++) {
 				$("#n" + i).css("color", "#444");

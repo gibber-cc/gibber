@@ -44,7 +44,6 @@ function audioProcess(buffer, channelCount){
 				restoreMods(control);
 			}
 			
-			var _generatorsLength = Gibber.generators.length;
 			for(var g = 0, _gl = Gibber.generators.length; g < _gl; g++) {
 				var genValue = 0;
 				var gen = Gibber.generators[g];

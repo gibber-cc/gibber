@@ -23,7 +23,7 @@ function Seq() {
 		_sequence : null,
 		sequence : _seq,
 		_start : true,
-		counter : -1,
+		counter : 0,
 		speed: speed,
 		outputMessage:_outputMsg,
 		active:true,
@@ -41,16 +41,13 @@ function Seq() {
 	},
 	
 	that.kill = function() {
+		console.log("killing more");
 		this.free();
-		for(var i = 0; i < Gibber.controls.length; i++) {
-			if(Gibber.controls[i] == this) {
-				Gibber.controls.splice(i,1);
-			}
-		};
+		Gibber.callback.slaves.remove(this);
 		
 		for(var i = 0; i < this.slaves.length; i++) {
 			var slave = this.slaves[i];
-			slave.masters.length = 0;
+			slave.masters.remove(this);
 		}
 		this.slaves.length = 0;
 		
@@ -58,14 +55,13 @@ function Seq() {
 	},
 	
 	that.setSequence = function(seq, _speed, _reset) {
-		//console.log("SETTING SEQUENCE " + seq)		
 		if(typeof _speed !== "undefined") {
 			this.speed = _speed;
 		}
 		
 		if(_reset) {
 			this.phase = 0;		
-			this.counter = -1;
+			this.counter = 0;
 		}
 		
 		this.sequence = [];
@@ -83,7 +79,7 @@ function Seq() {
 		}
 		
 		if(this.init === false) {
-			Gibber.controls.push(this);
+			Gibber.callback.slaves.push(this);
 			this._sequence = this.sequence.slice(0);
 			this.init = true;
 		}
@@ -118,7 +114,7 @@ function Seq() {
 	that.stop = function() {
 		this.active = false;
 		this.phase = 0;		
-		this.counter = -1;
+		this.counter = 0;
 		return this;
 	};
 	
@@ -132,80 +128,39 @@ function Seq() {
 		return this;
 	};
 	
-	that.generate = function() {
-		this.value = 0;
-		if(!this.active) {
-			return;
-		}
-		
-		//if(Gibber.debug) console.log(this.speed + " : " + this.phase);
-		if(this.phase >= 0) {
-	 		if(this.phase % this.speed <= .5) {
-				this.counter++;
-				//console.log(this);
-				var val = this.sequence[this.counter % this.sequence.length];
+	that.advance = function() {
+		if(this.active) {
+			var val = this.sequence[this.counter % this.sequence.length];
+			this.counter++;
 			
-				var shouldReturn = false;
-				// Function sequencing
-				// TODO: there should probably be a more robust way to to this
-				// but it will look super nice and clean on screen...
-				if(typeof val === "function") {
-					val();
-					shouldReturn = true;
-				}else if(typeof val === "undefined") {
-					shouldReturn = true;
-				}
-			
-				if(shouldReturn) {
-					if(this.phase >= this.sequenceLengthInSamples - 1) {
-						this.phase = 0;
-					}else{
-						this.phase++;
-					}
-					return;
-				}
-			
-			
-				for(var j = 0; j < this.slaves.length; j++) {
-					var _slave = this.slaves[j];
+			var shouldReturn = false;
+			// Function sequencing
+			// TODO: there should probably be a more robust way to to this
+			// but it will look super nice and clean on screen...
+			if(typeof val === "function") {
+				val();
+				return;
+			}else if(typeof val === "undefined") {
+				return;
+			}
+				
+			for(var j = 0; j < this.slaves.length; j++) {
+				var _slave = this.slaves[j];
 	
-					if(this.outputMessage === "freq") {
-						if(typeof val === "string" ) {
-							var nt = teoria.note(val);
-							val = nt.fq();
-						}else if(typeof val === "object"){
-							val = val.fq();
-						}// else val is a number and is fine to send as a freq...
-					}
-					if(typeof _slave[this.outputMessage] === "function") {
-						_slave[this.outputMessage](val);
-					}else{
-						_slave[this.outputMessage] = val;
-					}
+				if(this.outputMessage === "freq") {
+					if(typeof val === "string" ) {
+						var nt = teoria.note(val);
+						val = nt.fq();
+					}else if(typeof val === "object"){
+						val = val.fq();
+					}// else val is a number and is fine to send as a freq...
 				}
-			}
-		}
-		
-		if(this.phase >= this.sequenceLengthInSamples - 1) {
-			if(this.end) {
-				this.kill();
-			}
-			if(this.shouldBreak) { 
-				console.log("breaking");
-				this.shouldBreak = false;
-				if(!this.breakToOriginal) {
-					console.log("original");
-					this.sequence = jQuery.extend(true, {}, this.preBreakSequence);
+				if(typeof _slave[this.outputMessage] === "function") {
+					_slave[this.outputMessage](val);
 				}else{
-					console.log("Last");;
-					this.sequence = jQuery.extend(true, {}, this._sequence);
+					_slave[this.outputMessage] = val;
 				}
-				this.setSequence(this.sequence, this.speed);
-				console.log(this.sequence);
 			}
-			this.phase = 0;
-		}else{
-			this.phase++;
 		}
 	};
 	

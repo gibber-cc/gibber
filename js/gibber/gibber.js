@@ -50,6 +50,7 @@ var Gibber = {
 										 Gibber.fxReplace(variable, newObj);
 									 break;
 									 case "control":
+									 console.log("Replacing Control");
 										 Gibber.controlReplace(variable, newObj);
 										 break;
 									 case "complex":
@@ -241,10 +242,13 @@ var Gibber = {
 			var mod = controlToReplace.mods[i];
 			newControl.mods.push(mod);
 		}
-		controlToReplace.mods.length = 0;		
+		controlToReplace.mods.length = 0;
+		
+		Gibber.callback.slaves.remove(oldControl);	
 	},
 	
 	controlRemove: function(oldControl) {
+		console.log("removing control");
 		var controlToReplace = oldControl;
 
 		for(var i = 0; i < controlToReplace.slaves.length; i++) {
@@ -256,7 +260,8 @@ var Gibber = {
 		for(var i = 0; i < controlToReplace.mods.length; i++) {
 			var mod = controlToReplace.mods[i];
 		}
-		controlToReplace.mods.length = 0;		
+		controlToReplace.mods.length = 0;
+		Gibber.callback.slaves.remove(oldControl);
 	},
 	
 	
@@ -291,6 +296,9 @@ var Gibber = {
 		}
 		for(var c = 0; c < Gibber.controls.length; g++) {
 			Gibber.controls[c].kill();
+		}
+		for(var cc = 0; cc < Gibber.callback.slaves.length; cc++) {
+			Gibber.callback.slaves[cc].kill();
 		}
 		
 		Gibber.killSingles();

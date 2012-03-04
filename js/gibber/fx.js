@@ -3,11 +3,9 @@ function Bus() { // name is id, fx is array, ahem, fx
 	bus.fx = [];
 	
 	var fxStart = (typeof arguments[0] === "string") ? 1 : 0;
-	console.log("Fx Start " + fxStart);
 	for(var i = fxStart; i < arguments.length; i++) {
 		var fx = arguments[i];
 		if(fx.name === "Reverb") {
-			console.log("modifying reverb");
 			fx.wet = 1;
 			fx.dry = 0;
 		}
@@ -16,9 +14,7 @@ function Bus() { // name is id, fx is array, ahem, fx
 	
 	bus.name = (typeof arguments[0] === "string") ? arguments[0] : null;
 	bus.value = 0;
-	
-	console.log(bus.fx);
-	
+		
 	bus.senders = [];
 	Gibber.busses.push(bus);
 	
@@ -169,7 +165,7 @@ function Ring(freq, amt) {
 		        set: function(value) {
 		            this.osc.mix = value;
 		        }
-			},
+			},	
 	    });
 	})(that);
 	
