@@ -19,32 +19,38 @@ function initPlugin(audioLib){
 
 function Callback() {
 	this.measureLengthInSamples = _1;
-	
+	this.sequence = [];
 	function bpmCallback(obj) {
 		var that = obj;
 		return function(percentageChangeForBPM) {
 			that.measureLengthInSamples = _1;
 		}
 	}
-	
 	Gibber.registerObserver("bpm", bpmCallback(this));
 }
 
 Callback.prototype = {
 	callbacks : [],
 	slaves : [],
-	phase : 0,
+	phase : 0, // phase for beats / measure / callbacks
+	cphase: 0, // phase for controls
 	measureLengthInSamples : 0,
 	value : 0,
+	init : false,
 	
-	addCallback : function(callback, subdivision, shouldLoop, shouldWait) {
-		var isLoop = false;
+	addEvent : function(position, sequencer) {
+		if(this.sequence[position] === undefined) {
+			this.sequence[position] = [];
+		}
 		
+		this.sequence[position].push(sequencer);
+	},
+	
+	addCallback : function(callback, subdivision, shouldLoop, shouldWait) {		
 		if(typeof shouldWait === 'undefined') shouldWait = true;
 		if(typeof shouldLoop === 'undefined') shouldLoop = false;
 		var currentSubdivision = Math.floor(this.phase / subdivision); // 0
 		var nextSubdivision = (currentSubdivision + 1) * subdivision; // 1 * _1 = 88200
-		//console.log("Current Subdivison = " + currentSubdivision + " : next subdivision = " + nextSubdivision + " : phase = " + this.phase);
 
 		function _callback() {
 			var call = callback;
@@ -59,7 +65,6 @@ Callback.prototype = {
 			}
 		}
 		//console.log("time till event = " + (nextSubdivision - this.phase) ) // 88200 - 88187 / 441
-		var stop;
 		this.callbacks.push(_callback());
 		
 		return this.callbacks[this.callbacks.length - 1];
@@ -69,21 +74,9 @@ Callback.prototype = {
 		// 			stop = Sink.doInterval(_callback(), subdivision / (Gibber.sampleRate / 1000) );
 		// 		}
 	},
-	// 1.2 with no control rate
+
 	generate : function() {
-		//if(Gibber.debug) console.log(_16)
-		if(this.phase % _64 <= .5) {
-			this.counter++;
-			for(var i = 0, _sl = this.slaves.length; i < _sl; i++) {
-				var slave = this.slaves[i];
-				if(this.phase % slave.speed <= .5) {
-					slave.advance();
-				}
-			}
-		}
-		this.phase++;
-		if(this.phase >= this.measureLengthInSamples) { 
-			this.phase = 0;
+		if(this.phase == 0){	// must happen first to correctly schedule new sequencers
 			for(var i = 2; i <= 4; i++) {
 				$("#n" + i).css("color", "#444");
 			}
@@ -100,12 +93,32 @@ Callback.prototype = {
 					}
 				}
 			}
+			this.sequence = [];
+			for(var i = 0, _sl = this.slaves.length; i < _sl; i++) {
+				this.slaves[i].schedule();
+				this.init = true;
+			}
+			
 		}else{
 			if(this.phase % _4 == 0) {
 				var subdivision = Math.floor(this.phase / _4) + 1;
 				$("#n" + subdivision).css("color", "red");
 			}
 		}
+		
+		if(this.sequence[this.phase] != undefined) {	// play events
+			var events = this.sequence[this.phase];
+			for(var i = 0; i < events.length; i++) {
+				var seq = events[i];
+				seq.advance();
+			}
+		}
+		
+		this.phase++;
+		if(this.phase >= _1) {
+			this.phase = 0;
+		}
+
 	},
 	
 	getMix : function() { return this.value; }, // not used but just in case

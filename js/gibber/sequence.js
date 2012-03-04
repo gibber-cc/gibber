@@ -23,7 +23,8 @@ function Seq() {
 		_sequence : null,
 		sequence : _seq,
 		_start : true,
-		counter : 0,
+		offset : 0,	 // used to sequence Gibber object
+		counter : 0, // position in seqeuence
 		speed: speed,
 		outputMessage:_outputMsg,
 		active:true,
@@ -32,16 +33,33 @@ function Seq() {
 		memory: [],
 		init: false,
 		mods: [],
+		oddEven : 0,
 	}
 	
-	//console.log(that.sequence);
 	that.once = function() {
 		this.end = true;
 		return this;
-	},
+	};
+	
+	that.schedule = function() {
+	    var phase = 0;
+	    var _offset = this.offset;
+
+		var events = (_1 + _offset) / this.speed;
+		for(var i = 0; i < events; i++) {
+			this.oddEven = !this.oddEven;
+			var pos = (this.oddEven) ? (i * Math.floor(this.speed)) : (i * Math.ceil(this.speed));
+			
+			G.callback.addEvent(pos - _offset, this); // sequence on global object
+			phase = pos - _offset;
+			
+	        this.offset = 0;
+		}
+	
+		this.offset += _1 - phase;
+	};
 	
 	that.kill = function() {
-		console.log("killing more");
 		this.free();
 		Gibber.callback.slaves.remove(this);
 		
@@ -56,6 +74,7 @@ function Seq() {
 	
 	that.setSequence = function(seq, _speed, _reset) {
 		if(typeof _speed !== "undefined") {
+			//console.log("SPEED = " + _speed);
 			this.speed = _speed;
 		}
 		
@@ -83,9 +102,6 @@ function Seq() {
 			this._sequence = this.sequence.slice(0);
 			this.init = true;
 		}
-				
-		this.sequenceLengthInSamples = seq.length * this.speed;
-		//console.log("seq.length = " + seq.length + " : speed = " + this.speed + " : sequenceLengthInSamples = " + this.sequenceLengthInSamples);
 	};
 	
 	that.slave = function(gen) {
@@ -252,7 +268,7 @@ function Seq() {
 	})();
 	
 	if(that.sequence != null && typeof that.sequence != "undefined") {
-		console.log("setting inital sequence")
+		//console.log("setting inital sequence")
 		that.setSequence(that.sequence, that.speed);	
 	}
 	

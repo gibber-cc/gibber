@@ -59,22 +59,20 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	
 	(function(obj) {
 		var that = obj;
-		var speed = that.speed;
 
 	    Object.defineProperties(that, {
 			"speed" : {
 		        get: function() {
-		            return speed;
+		            return that.seq.speed;
 		        },
 		        set: function(value) {
-		            speed = value;
-					if(this.seq != null) {
-						this.seq.speed = speed;
+					if(that.seq != null) {
+						that.seq.speed = value;
 					}
 		        }
 			},
 	    });
-	})(this);
+	})(that);
 }
 
 Drums.prototype = {

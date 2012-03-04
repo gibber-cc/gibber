@@ -300,6 +300,7 @@ var Gibber = {
 		for(var cc = 0; cc < Gibber.callback.slaves.length; cc++) {
 			Gibber.callback.slaves[cc].kill();
 		}
+		Gibber.callback.sequence = [];
 		
 		Gibber.killSingles();
 				
