@@ -258,6 +258,9 @@ function Seq() {
 			"speed": {
 				get: function(){ return speed; },
 				set: function(value) {
+					if(value < 65) {
+						value = window["_"+value];
+					}
 					speed = value;
 					if(this.sequence != null) {
 						this.setSequence(this.sequence);

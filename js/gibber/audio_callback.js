@@ -50,7 +50,7 @@ function audioProcess(buffer, channelCount){
 				
 				if(gen.active) {					
 					processMods(gen); // apply modulation changes
-					
+
 					if(!gen.isControl) {
 						genValue += gen.out();
 					}else{

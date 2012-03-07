@@ -53,15 +53,15 @@ function Synth(waveform, volume) {
 		var fx = that.osc.fx;
 		
 	    Object.defineProperties(that, {
-			"mix" : {
-		        get: function() {
-		            return mix;
-		        },
-		        set: function(value) {
-		            mix = value;
-					this.osc.mix = value;
-		        }
-			},
+			// "mix" : {
+			// 		        get: function() {
+			// 		            return mix;
+			// 		        },
+			// 		        set: function(value) {
+			// 		            mix = value;
+			// 		this.osc.mix = value;
+			// 		        }
+			// },
 			"frequency" : {
 				get : function() {
 					return this.osc.frequency;
