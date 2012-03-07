@@ -114,7 +114,7 @@ window.rndi = window.randomi = function() {
 	return min + rrr;
 };
 
-window.getDivision = function(div) {
+window.getSpeed = function(div) {
 	return window["_"+div];
 };
 

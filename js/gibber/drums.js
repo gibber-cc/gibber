@@ -34,6 +34,7 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	this.fx = [];
 	this.sends = [];
 	this.masters = [];
+	this.pitch = 1; // pitch is a mod to frequency; only used when the value is set
 	
 	this.sequenceInit =false;
 	this.initialized = false;
@@ -59,7 +60,8 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	
 	(function(obj) {
 		var that = obj;
-
+		var _pitch;
+		
 	    Object.defineProperties(that, {
 			"speed" : {
 		        get: function() {
@@ -71,8 +73,17 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 					}
 		        }
 			},
+			"pitch" : {
+		        get: function() {
+		            return _pitch;
+		        },
+		        set: function(value) {
+					_pitch = value;
+					that.frequency = 440 * value;
+		        }
+			},
 	    });
-	})(that);
+	})(this);
 }
 
 Drums.prototype = {
