@@ -104,17 +104,21 @@ function Seq() {
 		}
 	};
 	
-	that.slave = function(gen) {
+	that.slave = function() {
 		//console.log("slaving " + gen);
-		var idx = jQuery.inArray( gen, this.slaves);
-		if(idx === -1) {
-			this.slaves.push(gen);
-			if(typeof gen.masters === "undefined") {
-				gen.masters = [this];
-			}else{
-				gen.masters.push(this);
+		for(var i = 0; i < arguments.length; i++) {
+			var gen = arguments[i];
+	
+			var idx = jQuery.inArray( gen, this.slaves);
+			if(idx === -1) {
+				this.slaves.push(gen);
+				if(typeof gen.masters === "undefined") {
+					gen.masters = [this];
+				}else{
+					gen.masters.push(this);
+				}
+				if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
 			}
-			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
 		}
 		return this;		
 	};
