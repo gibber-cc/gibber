@@ -15,7 +15,7 @@ default:
 's.mod("freq", LFO(8, 10), "+");     // Vibrato - modulating frequency by +/- 10Hz 8 times per second\n' +
 's.mods.remove();                    // removes all mods, pass a number or parameter name to remove a particular mod\n' +
 '\n' +
-'Master.fx.add( Reverb() );           // Master FX are applied to summed signal of all generators\n' +
+'Master.fx.add( Reverb() );          // Master FX are applied to summed signal of all generators\n' +
 'Master.fx.remove(0);                // remove first effect in fx.add. do not pass a argument to remove all fx.',
 
 "GIBBER TUTORIALS":"LABEL START",
@@ -341,7 +341,8 @@ default:
 'synthesis techniques. For example, a square wave only contains odd numbered harmonics.\n'+
 'The amplitude of each harmonic is the inverse of its number in the harmonic series...\n'+
 'thus the 3rd harmonic has 1/3rd the amplitude of the fundamental, the 5th harmonic\n'+
-'amplitude is 1/5th the amplitude of the fundamental, etc.\n'+
+'amplitude is 1/5th the amplitude of the fundamental, etc. Make sure you run the first line\n'+
+'below before attempting to create the sine waves.\n'+
 '*/\n'+
 '\n'+
 'fundamentalAmplitude = .15\n'+

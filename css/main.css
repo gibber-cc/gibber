@@ -33,20 +33,20 @@ body {
 	border-color:#ccc;
 	color: #f00;
 	background-color:#000;
-	font-size: .85em;	
+	font-size: 1.25em;	
 }
 
 #console p {
 	margin-top : 0;
 	color: #ccc;
 	padding-left: 4em;
-	font-family: Monaco, Menlo, monospace;
+	font-family: monospace;
 	font-weight: bold;
 }
 
 #editor {
-	font-family:Monaco, Menlo, monospace;
-	font-size: .8em;
+	font-family:monospace;
+	font-size: 1.25em;
     position: absolute;
 	display:inline;
 	margin: 0;

@@ -32,7 +32,7 @@ exports.cssText = "\
 }\
 \
 .ace-thecharlie .ace_cursor {\
-  border-left: 2px solid #91FF00;\
+  border-left: 2px solid #FF6666;\
 }\
 \
 .ace-thecharlie .ace_cursor.ace_overwrite {\
@@ -41,7 +41,7 @@ exports.cssText = "\
 }\
  \
 .ace-thecharlie .ace_marker-layer .ace_selection {\
-  background: rgba(140, 100, 126, 0.88);\
+  background: rgba(140, 25, 50, 0.88);\
 }\
 \
 .ace-thecharlie .ace_marker-layer .ace_step {\
@@ -54,7 +54,7 @@ exports.cssText = "\
 }\
 \
 .ace-thecharlie .ace_marker-layer .ace_active_line {\
-  background: #333;\
+  background: #322;\
 }\
 \
 .ace-thecharlie .ace_marker-layer .ace_selected_word {\
