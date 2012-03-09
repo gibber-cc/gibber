@@ -45,10 +45,13 @@ function Seq() {
 	    var phase = 0;
 	    var _offset = this.offset;
 
-		var events = (_1 + _offset) / this.speed;
+		var events = (_1 + _offset ) / this.speed;
+		//console.log("NUM EVENTS " + events );
 		for(var i = 0; i < events; i++) {
 			this.oddEven = !this.oddEven;
-			var pos = (this.oddEven) ? (i * Math.floor(this.speed)) : (i * Math.ceil(this.speed));
+			var pos = i * Math.round(this.speed);
+			//if(i ==1 ) console.log(pos); // TODO: there is some slop here. eventually the wrong number of events will be generated...
+			//var pos = (this.oddEven) ? (i * Math.floor(this.speed)) : (i * Math.ceil(this.speed));
 			
 			G.callback.addEvent(pos - _offset, this); // sequence on global object
 			phase = pos - _offset;
@@ -190,9 +193,8 @@ function Seq() {
 		if(breakToOriginal) {
 			this.breakToOriginal = true;
 		}
-		console.log("BREAK");
+
 		this.preBreakSequence = jQuery.extend(true, {}, this._sequence);
-		console.log(this.preBreakSequence);
 	};
 	
 	

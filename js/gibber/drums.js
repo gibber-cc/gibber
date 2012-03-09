@@ -100,6 +100,22 @@ Drums.prototype = {
 		this.initialized = true;
 	},
 	
+	replace : function(replacement) { 
+		if(typeof this.seq != "undefined") {
+			this.seq.kill();
+		}
+		for( var i = 0; i < this.masters.length; i++) {
+			replacement.masters.push(this.masters[i]);
+		}
+		for( var j = 0; j < this.fx.length; j++) {
+			replacement.fx.push(this.fx[j]);
+		}
+		for( var k = 0; k < this.mods.length; k++) {
+			replacement.mods.push(this.mods[k]);
+		}
+		this.kill();
+	},
+	
 	kill : function() {
 		Gibber.genRemove(this);
 		this.masters.length = 0;
@@ -128,21 +144,6 @@ Drums.prototype = {
 	once : function() {
 		this.seq.once();
 		return this;
-	},
-	
-	replace : function(replacement){
-		Gibber.genRemove(this);
-		Gibber.controls.remove(this.seq);
-		
-		for(var i = 0; i < this.masters.length; i++) {
-			var master = this.masters[i];
-			for(var j = 0; j < master.slaves.length; j++) {
-				if(master.slaves[j] == this) {
-					master.slave(replacement);
-					master.slaves.splice(j,1);
-				}
-			}
-		}
 	},
 	
 	retain : function(num) { 

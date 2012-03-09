@@ -36,7 +36,6 @@ var Gibber = {
 						if(newObj != null) {	// replace
 							var endString = " created";
 							 if(typeof obj["____"+ltr] !== "undefined" && obj["____"+ltr] != null) {
-								 console.log("replacing");
 								 var variable = obj["____"+ltr];
 
 								 switch(variable.type) {
@@ -50,11 +49,12 @@ var Gibber = {
 										 Gibber.fxReplace(variable, newObj);
 									 break;
 									 case "control":
-									 console.log("Replacing Control");
+										 //console.log("Replacing Control");
 										 Gibber.controlReplace(variable, newObj);
 										 break;
 									 case "complex":
-										variable .replace(newObj); // rely on object prototype to handle removing members
+										//console.log("Replacing " + variable.name);
+										variable.replace(newObj); // rely on object prototype to handle removing members
 									 break;
 									 default: break;
 								 }
@@ -63,7 +63,7 @@ var Gibber = {
 							 	G.log(newObj.name + endString);
 							 
 						 }else{		// kill
-							 console.log("killing");
+							 //console.log("killing");
 							 if(typeof obj["____"+ltr] !== "undefined") {
 								 var variable = obj["____"+ltr];
 								 if(variable != null) {
@@ -81,7 +81,6 @@ var Gibber = {
 		
 		obj.kill = function() {
 			for(var n in obj) {
-				console.log(n);
 				if(typeof obj[n].kill === "function") {
 					obj[n].kill();
 				}
@@ -501,6 +500,7 @@ function Osc(args, isAudioGenerator) {
 	that.fx = [];
 	that.sends = [];	
 	that.modded = []; // for use as modulation source
+	that.masters = [];
 	
 	that.freq = function(_freq) {
 		this.frequency = _freq;

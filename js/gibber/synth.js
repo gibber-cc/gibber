@@ -171,7 +171,6 @@ Synth.prototype = {
 	},
 	
 	replace : function(replacement){
-		// can't replace, just remove instead.
 		Gibber.genRemove(this);
 		for(var i = 0; i < this.masters.length; i++) {
 			var master = this.masters[i];
