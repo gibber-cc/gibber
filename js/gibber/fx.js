@@ -244,6 +244,34 @@ function Trunc(bits, mix) {
 	return that;
 }
 
+// simple waveshaper using y = x / (1+|x|) 
+function Clip(amt) {
+	var that = {
+		amount: (typeof amt !== "undefined" && amt > 1) ? amt : 4,
+		name : "Clip",
+		type: "fx",
+		gens :  [],
+		mods :  [],
+		value : 0,
+		mix : 1,
+		
+		pushSample : function(sample) {
+			var x = sample * this.amount;
+			this.value = (x / (1 + Math.abs(x))) / (Math.log(this.amount) / Math.LN2);
+			return this.value;
+		},
+		getMix : function() {
+			return this.value;
+		},
+	};
+
+	Gibber.addModsAndFX.call(that);
+	
+	return that;
+}
+
+
+
 function Chorus(delay, depth, freq, mix) {
     var that = audioLib.Chorus(Gibber.sampleRate);
 	that.name = "Chorus";
