@@ -135,3 +135,12 @@ window.rndf = 	window.randomf = function(min, max) {
 	
 	return min + rr;
 }
+
+// mtof : function(midiNumber) {
+// 	return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)
+// },
+	
+function ntof(note) {
+	var n = teoria.note(note);
+	return n.fq();
+};
