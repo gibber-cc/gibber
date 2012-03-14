@@ -245,6 +245,9 @@ function Trunc(bits, mix) {
 }
 
 // simple waveshaper using y = x / (1+|x|) 
+// added a logarithmic volume adapter to the equation so that you can
+// apply extreme amounts of clipping
+// TODO: store base2 log for faster calculations
 function Clip(amt) {
 	var that = {
 		amount: (typeof amt !== "undefined" && amt > 1) ? amt : 4,
@@ -270,7 +273,41 @@ function Clip(amt) {
 	return that;
 }
 
+function Gain(amt) {
+	var that = new  audioLib.GainController(Gibber.sampleRate, amt);
+	that.name = "Gain";
+	that.type = "fx";
+	
+	that.gens = [];
+	that.mods = [];
+	
+	Gibber.addModsAndFX.call(that);	
+	return that;
+}
 
+function Comp(scaleBy, gain){
+	var that = new audioLib.Compressor(Gibber.sampleRate, scaleBy, gain);
+	that.name = "Comp";
+	that.type = "fx";
+	
+	that.gens = [];
+	that.mods = [];
+	
+	Gibber.addModsAndFX.call(that);	
+	return that;
+}
+
+function Comb(delaySize, feedback, damping){
+	var that = new audioLib.CombFilter(Gibber.sampleRate, delaySize, feedback, damping);
+	that.name = "Comb";
+	that.type = "fx";
+	
+	that.gens = [];
+	that.mods = [];
+	
+	Gibber.addModsAndFX.call(that);	
+	return that;
+}
 
 function Chorus(delay, depth, freq, mix) {
     var that = audioLib.Chorus(Gibber.sampleRate);

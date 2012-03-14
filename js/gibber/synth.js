@@ -14,11 +14,14 @@ s.note("A4");
 function initPlugin(audioLib){
 (function(audioLib){
 
-function Synth(waveform, volume) {
-	this.volume = isNaN(volume) ? .2 : volume;
-	this.waveform = waveform || "triangle";
+function Synth(attack, decay, volume) {
+	this.volume = isNaN(volume) ? .4 : volume;
+	this.waveform = "triangle";
 	this.osc = Osc([440, 1, this.waveform], false).silent();
 	this.env = Env();
+	
+	if(!isNaN(attack)) this.env.attack = attack;
+	if(!isNaN(decay)) this.env.decay = decay;	
 	
 	if(typeof waveform !== "undefined") {
 		this.osc.waveShape = waveform;
@@ -260,7 +263,7 @@ if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
 
 }());
 
-function Synth (waveform, volume) {
-	var s = new audioLib.Synth(waveform, volume);
+function Synth (attack, decay, volume) {
+	var s = new audioLib.Synth(attack, decay, volume);
 	return s;
 }

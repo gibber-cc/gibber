@@ -2432,6 +2432,8 @@ function CombFilter(sampleRate, delaySize, feedback, damping){
 	self.feedback	= isNaN(feedback) ? self.feedback : feedback;
 	self.damping	= isNaN(damping) ? self.damping : damping;
 	self.invDamping	= 1 - self.damping;
+	
+	G.log(self.bufferSize);
 }
 
 CombFilter.prototype = {
