@@ -5,14 +5,16 @@ function initPlugin(audioLib){
 	
 function Line (time, start, end){
 	this.time = time || _1;
-	this.start = start || 0;
-	this.end = end || 1;
-	this.value = 0;
+	this.start = (isNaN(start)) ? 0 : start;
+	this.end = (isNaN(end)) ? 1 : end;
+	this.value = this.start;
 	this.active = true;
 	
 	this.modded =[];
 	
 	this.increment = (this.end - this.start) / this.time;
+	G.log("inc = " + this.increment);
+	this.dir = (this.end > this.start) ? 1 : 0;
 	Gibber.addModsAndFX.call(this);		
 }
 
@@ -31,9 +33,22 @@ Line.prototype = {
 	generate : function() {		
 		if(this.active) {
 			this.value += this.increment;
-			if(this.value >= this.end) {
-				this.active = false;
-				this.kill();
+			if(G.debug) G.log(this.modded[0].mix);
+			if(this.dir) {
+				if(this.value >= this.end) {
+					this.active = false;
+					this.kill();
+					
+				}
+			}else{
+				if(this.value <= this.end) {
+					console.log(this.modded[0].mix)
+					
+					this.active = false;
+					this.kill();
+					
+					console.log(s.mix)
+				}
 			}
 		}
 	},

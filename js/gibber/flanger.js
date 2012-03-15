@@ -1,6 +1,6 @@
-function Flanger(speed, amount, feedback) {
+function Flanger(rate, amount, feedback, offset) {
 	var that = {
-		speed: (typeof speed !== "undefined") ? speed : .25,
+		rate: (typeof rate !== "undefined") ? rate : .25,
 		amount: (typeof amount !== "undefined") ? amount : 125,
 		name : "Flanger",
 		type: "fx",
@@ -12,7 +12,7 @@ function Flanger(speed, amount, feedback) {
 		feedback : (isNaN(feedback)) ? .25 : feedback,
 
 		pushSample : function(sample) {
-			var r = this.readIndex + this.rateMod.out();
+			var r = this.readIndex + this.delayMod.out();
 			if(r > this.bufferSize) {
 				r = r - this.bufferSize;
 			}else if(r < 0) {
@@ -37,14 +37,43 @@ function Flanger(speed, amount, feedback) {
 			return this.value;
 		},
 	};
+	that.offset = offset || that.amount;
 	
 	that.buffer = new Float32Array(Gibber.sampleRate * 2);
 	that.bufferSize = Gibber.sampleRate * 2;
-	that.readIndex = that.amount * -1;
+	that.readIndex = that.offset * -1;
 	
-	that.rateMod = LFO(that.speed, that.amount * .95);
+	that.delayMod = LFO(that.rate, that.amount * .95); // *.95 to ensure it never catches up with write head
 	
 	Gibber.addModsAndFX.call(that);
+	
+	// TODO: Fix so this changes the speed of the LFO
+	(function(obj) {
+		var _that = obj;
+		var rate = that.rate;
+	
+	    Object.defineProperties(_that, {
+			"rate" : { 
+				get: function() {
+					return rate;
+				},
+				set: function(value) {
+					rate = value;
+					_that.delayMod.frequency = rate;
+				}
+			},
+		});
+	})(that);
+	
+	return that;
+}
+
+// cheap chorus using a flanger see http://denniscronin.net/dsp/article.html
+function Chorus(rate, amount) {
+	var _rate = rate || 2;
+	var _amount = amount || 50;
+	that = Flanger(rate, amount, 0, 880); // 20ms offset
+	that.name = "Chorus";
 	
 	return that;
 }
