@@ -33,6 +33,7 @@ function Seq() {
 		memory: [],
 		init: false,
 		mods: [],
+		shouldDie: false,
 		oddEven : 0,
 	}
 	
@@ -42,6 +43,10 @@ function Seq() {
 	};
 	
 	that.schedule = function() {
+		if(this.shouldDie) {
+			this.kill();
+			return;
+		}
 	    var phase = 0;
 	    var _offset = this.offset;
 
@@ -57,6 +62,10 @@ function Seq() {
 			phase = pos - _offset;
 			
 	        this.offset = 0;
+		}
+		if(this.end) {
+			this.shouldDie = true;
+			this.end = false;
 		}
 	
 		this.offset += _1 - phase;
@@ -77,7 +86,6 @@ function Seq() {
 	
 	that.setSequence = function(seq, _speed, _reset) {
 		if(typeof _speed !== "undefined") {
-			//console.log("SPEED = " + _speed);
 			this.speed = _speed;
 		}
 		
@@ -108,7 +116,6 @@ function Seq() {
 	};
 	
 	that.slave = function() {
-		//console.log("slaving " + gen);
 		for(var i = 0; i < arguments.length; i++) {
 			var gen = arguments[i];
 	
@@ -196,9 +203,7 @@ function Seq() {
 
 		this.preBreakSequence = jQuery.extend(true, {}, this._sequence);
 	};
-	
-	
-	
+
 	that.getMix = function(){
 		return 0;
 	};
@@ -207,6 +212,7 @@ function Seq() {
 		this.generate();
 		return 0;
 	};
+	
 	that.set = function(newSequence, speed, shouldReset) {
 		if(typeof speed != "undefined") {
 			if(!shouldReset) {
@@ -277,7 +283,6 @@ function Seq() {
 	})();
 	
 	if(that.sequence != null && typeof that.sequence != "undefined") {
-		//console.log("setting inital sequence")
 		that.setSequence(that.sequence, that.speed);	
 	}
 	
