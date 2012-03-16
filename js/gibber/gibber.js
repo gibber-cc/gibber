@@ -678,7 +678,7 @@ function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(typeof releaseTime  === "undefined") releaseTime = null;		
 	if(typeof sustainTime  === "undefined") sustainTime = 0;
 	
-	var that = audioLib.ADSREnvelope(Gibber.sampleRate, attack, decay, sustain, release, sustainTime, releaseTime);
+	var that = audioLib.	ADSREnvelope(Gibber.sampleRate, attack, decay, sustain, release, sustainTime, releaseTime);
 	that.name = "Env";
 	that.type = "mod";
 	

@@ -39,6 +39,17 @@ Array.prototype.remove = function(arg) {
 	}
 };
 
+Array.prototype.replace = function(oldObj, newObj) {
+	if(typeof oldObj != "number") {
+		var idx = jQuery.inArray( oldObj, this);
+		if(idx > -1) {
+			this.splice(idx, 1, newObj);
+		}
+	}else{
+		this.splice(oldObj, 1, newObj);
+	}
+};
+
 Array.prototype.insert = function(v, pos) {
 	this.splice(pos,0,v);
 };
