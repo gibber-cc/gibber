@@ -21,6 +21,9 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 		pitchShifting : false,
 		pitchChance : .5,
 		mix : 1,
+		fadeCount : 0,
+		shouldFade : false,
+		shouldPrint : false,
 
 		pushSample : function(sample) {
 			var val = sample;
@@ -29,16 +32,52 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 				this.writeIndex = 0;
 			}
 			
+			if(this.shouldFade && !this.isCrazy) {
+				var crazySample = Sink.interpolate(this.readBuffer, this.readIndex);
+
+				if(this.reverse) {
+					this.readIndex -= this.increment;
+						
+					if(this.readIndex < 0) {
+						this.readIndex += this.length * 2;
+					}
+				}else{
+					this.readIndex += this.increment;
+						
+					if(this.readIndex >= (this.length * 2) - 1) {
+						this.readIndex = this.readIndex - (this.length * 2);
+					}
+				}
+
+				val *= 1 - this.fadeCount;
+				val += crazySample * this.fadeCount;
+				// var amt = .03
+				// if(this.fadeCount === 1 - amt) {
+				// 	for(var i = 0; i < .06; i += .01) {
+				// 		var pos = this.readIndex - this.increment - (this.increment * (amt - i));
+				// 		console.log("s" + i + " : " + pos + " : " + Sink.interpolate(this.readBuffer, pos));					
+				// 	}
+				// 	console.log("CURRENT: " + crazySample);					
+				// }
+				var previousSample = Sink.interpolate(this.readBuffer, this.readIndex - this.increment - this.increment - this.increment);
+				
+				this.fadeCount -= .001;
+				if(this.fadeCount <= 0) {
+					this.shouldFade = false;
+					this.fadeCount = 0;
+				}
+			}
+
 			if(++this.phase === Math.floor(this.rate)) {
 				if(!this.isCrazy) {
-					if(Math.random() < this.chance) {						
+					if(Math.random() < this.chance) {				
 						this.isCrazy = true;
 						var readHead = this.writeIndex - this.length; //(this.length * rndi(1,4));
-						while(readHead < 0) {
-							readHead += this.length; // loop through end
-						}
+						if(readHead < 0) readHead = this.writeBufferLength + readHead;
+
 						readHead = Math.floor(readHead);
-						for(var i = 0; i < this.length; i++) {
+						
+						for(var i = 0; i < this.length * 2; i++) {
 							this.readBuffer[i] = this.writeBuffer[readHead++];
 							if(readHead >= this.writeBufferLength) {
 								readHead = 0;
@@ -53,36 +92,41 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 						if(this.shouldRandomizePitch) {
 							this.pitchShifting = (Math.random() < this.pitchChance) ? true : false;
 						}
-						this.increment = (this.pitchShifting) ? rndf(.25, 2) : 1;
+						this.increment = (this.pitchShifting) ? rndf(.5, .95) : 1;
 						
-						this.readIndex = Math.floor(this.readIndex);
 						this.crazyTime = 0;
+						this.fadeCount = 1;
 					}
 				}
 				this.phase = 0;
 			}else{
 				if(this.isCrazy) {
 					val = Sink.interpolate(this.readBuffer, this.readIndex);
-					
-					if(this.reverse) {
-						this.readIndex -= this.increment;
-						
-						if(this.readIndex < 0) {
-							this.readIndex += this.length;
-						}
-					}else{
-						this.readIndex += this.increment
-						
-						if(this.readIndex >= this.length) {
-							this.readIndex = this.readIndex - this.length;
-						}
-					}
 
-					if(this.crazyTime++ > this.length) {
+					if(this.fadeCount > 0) {
+						val *= 1 - this.fadeCount;
+						this.fadeCount -= .001;
+						val += sample * this.fadeCount;
+					}
+					
+					this.readIndex += this.increment;
+						
+					if(this.readIndex >= (this.length * 2) - 1) {
+						this.readIndex = this.readIndex - this.length * 2 ;
+					}
+					
+					if(++this.crazyTime >= this.length - 1) {
 						this.isCrazy = false;
 						this.crazyTime = 0;
-						this.increment = 1;
+						this.fadeCount = 1;
+						this.shouldFade = true;
+						this.shouldPrint = true;
 					}
+					if(this.shouldPrint) {
+						console.log("VALUE : " + val);
+						this.shouldPrint = false;
+					}
+					
 				}
 			}
 			
@@ -93,9 +137,9 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 		},
 	};
 	
-	that.writeBuffer = new Float32Array(Gibber.sampleRate * 2);
-	that.writeBufferLength = Gibber.sampleRate * 2;		
-	that.readBuffer  = new Float32Array(that.length);
+	that.writeBuffer = new Float32Array(that.length * 2);
+	that.writeBufferLength = that.length * 2;		
+	that.readBuffer  = new Float32Array(that.length * 2);
 
 	Gibber.addModsAndFX.call(that);
 	
