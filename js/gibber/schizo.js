@@ -1,7 +1,7 @@
 function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeReverse) {
 	var that = {
-		chance: (typeof chance !== "undefined") ? chance : .5,		
-		rate: (typeof rate !== "undefined") ? rate : _1,
+		chance: (typeof chance !== "undefined") ? chance : .25,		
+		rate: (typeof rate !== "undefined") ? rate : _16,
 		length: (typeof length !== "undefined") ? length : _4,
 		shouldRandomizeReverse : (typeof shouldRandomizeReverse === "undefined") ? true : shouldRandomizeReverse,
 		shouldRandomizePitch : (typeof shouldRandomizePitch === "undefined") ? true : shouldRandomizePitch,		
@@ -17,24 +17,23 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 		isCrazy : false,
 		crazyTime : 0,
 		reverse : false,
+		reverseChance : .5,
 		pitchShifting : false,
+		pitchChance : .5,
 		mix : 1,
 
 		pushSample : function(sample) {
 			var val = sample;
-			
-			if(isNaN(sample)) G.log( "ALERT");
 			this.writeBuffer[this.writeIndex++] = val;
 			if (this.writeIndex >= this.writeBufferLength) {
 				this.writeIndex = 0;
 			}
+			
 			if(++this.phase === Math.floor(this.rate)) {
 				if(!this.isCrazy) {
-					if(Math.random() < this.chance) {
-						G.log("CRAZY");
-						
+					if(Math.random() < this.chance) {						
 						this.isCrazy = true;
-						var readHead = this.writeIndex - (this.length * rndi(1,4));
+						var readHead = this.writeIndex - this.length; //(this.length * rndi(1,4));
 						while(readHead < 0) {
 							readHead += this.length; // loop through end
 						}
@@ -47,14 +46,14 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 						}					
 						
 						if(this.shouldRandomizeReverse) {
-							this.reverse = (Math.random() > .5) ? true : false;
+							this.reverse = (Math.random() < this.reverseChance) ? true : false;
 						}
 						this.readIndex = (this.reverse) ? this.length - 1 : 0;
 
 						if(this.shouldRandomizePitch) {
-							this.pitchShifting = (Math.random() > .5) ? true : false;
+							this.pitchShifting = (Math.random() < this.pitchChance) ? true : false;
 						}
-						this.increment = (this.pitchShifting) ? rndf(.5, 2) : 1;
+						this.increment = (this.pitchShifting) ? rndf(.25, 2) : 1;
 						
 						this.readIndex = Math.floor(this.readIndex);
 						this.crazyTime = 0;
@@ -64,33 +63,30 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 			}else{
 				if(this.isCrazy) {
 					val = Sink.interpolate(this.readBuffer, this.readIndex);
-					if(G.debug) G.log(this.increment + " : " + this.readIndex + " : " + val);
 					
 					if(this.reverse) {
 						this.readIndex -= this.increment;
 						
-						if(this.readIndex < 0 || this.readIndex >= this.length) {
-							this.readIndex = this.length - 1;
+						if(this.readIndex < 0) {
+							this.readIndex += this.length;
 						}
 					}else{
 						this.readIndex += this.increment
 						
-						if(this.readIndex >= this.length || this.readIndex < 0) {
-							this.readIndex = 0;
+						if(this.readIndex >= this.length) {
+							this.readIndex = this.readIndex - this.length;
 						}
 					}
 
-					if(this.crazyTime++ > this.rate) {
+					if(this.crazyTime++ > this.length) {
 						this.isCrazy = false;
 						this.crazyTime = 0;
-						this.increment = 0;
-						G.log("ENDING CRAZY TIME");
+						this.increment = 1;
 					}
 				}
 			}
 			
 			this.value = val;
-			//var s = Sink.interpolate(this.buffer, r);
 		},
 		getMix : function() {
 			return this.value;
@@ -103,23 +99,22 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 
 	Gibber.addModsAndFX.call(that);
 	
-	// TODO: Fix so this changes the speed of the LFO
-	(function(obj) {
-		var _that = obj;
-		var rate = that.rate;
-	
-	    Object.defineProperties(_that, {
-			"rate" : { 
-				get: function() {
-					return rate;
-				},
-				set: function(value) {
-					rate = value;
-					_that.delayMod.frequency = rate;
-				}
-			},
-		});
-	})(that);
+	// (function(obj) {
+	// 	var _that = obj;
+	// 	var rate = that.rate;
+	// 
+	//     Object.defineProperties(_that, {
+	// 		"rate" : { 
+	// 			get: function() {
+	// 				return rate;
+	// 			},
+	// 			set: function(value) {
+	// 				rate = value;
+	// 				_that.delayMod.frequency = rate;
+	// 			}
+	// 		},
+	// 	});
+	// })(that);
 	
 	return that;
 }
