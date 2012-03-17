@@ -11,9 +11,9 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 		mods :  [],
 		value : 0,
 		readIndex : 0,
-		writeIndex : 0,
+		writeIndex : -1,
 		increment : 1,
-		phase : 0,
+		loopPhase : 0,
 		isCrazy : false,
 		crazyTime : 0,
 		reverse : false,
@@ -21,125 +21,102 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 		pitchShifting : false,
 		pitchChance : .5,
 		mix : 1,
+		phase : 0,
 		fadeCount : 0,
-		shouldFade : false,
+		fading : false,
 		shouldPrint : false,
-
-		pushSample : function(sample) {
-			var val = sample;
-			this.writeBuffer[this.writeIndex++] = val;
-			if (this.writeIndex >= this.writeBufferLength) {
-				this.writeIndex = 0;
-			}
-			
-			if(this.shouldFade && !this.isCrazy) {
-				var crazySample = Sink.interpolate(this.readBuffer, this.readIndex);
-
-				if(this.reverse) {
-					this.readIndex -= this.increment;
+		advanceReadIndex : function() {
+			if(this.reverse) {
+				this.readIndex -= this.increment;
 						
-					if(this.readIndex < 0) {
-						this.readIndex += this.length * 2;
+				if(this.readIndex < 0) {
+					this.readIndex += this.length * 2;
+				}
+			}else{
+				this.readIndex += this.increment;
+						
+				if(this.readIndex >= (this.length * 2) - 1) {
+					this.readIndex = this.readIndex - (this.length * 2);
+				}
+			}
+		},
+
+		pushSample : function(inputSample) {
+			this.writeBuffer[++this.writeIndex] = inputSample;
+			var output = inputSample;
+			if(this.writeIndex >= this.writeBufferLength) this.writeIndex = -1;
+
+			if(!this.isCrazy) {
+				if(this.fading) {
+					this.advanceReadIndex();
+										
+					if(this.fadeAmount >= .0025) {
+						var old = Sink.interpolate(this.readBuffer, this.readIndex);
+						output = (inputSample * (1 - this.fadeAmount)) + (old * this.fadeAmount);
+						//if(this.fadeAmount >= .998) console.log("last : " + this.value + " | now : " + output);
+						this.fadeAmount -= .0025;	
+					}else{
+						this.fading = false;
+						output = inputSample;
 					}
 				}else{
-					this.readIndex += this.increment;
-						
-					if(this.readIndex >= (this.length * 2) - 1) {
-						this.readIndex = this.readIndex - (this.length * 2);
-					}
+					output = inputSample;
 				}
-
-				val *= 1 - this.fadeCount;
-				val += crazySample * this.fadeCount;
-				// var amt = .03
-				// if(this.fadeCount === 1 - amt) {
-				// 	for(var i = 0; i < .06; i += .01) {
-				// 		var pos = this.readIndex - this.increment - (this.increment * (amt - i));
-				// 		console.log("s" + i + " : " + pos + " : " + Sink.interpolate(this.readBuffer, pos));					
-				// 	}
-				// 	console.log("CURRENT: " + crazySample);					
-				// }
-				var previousSample = Sink.interpolate(this.readBuffer, this.readIndex - this.increment - this.increment - this.increment);
 				
-				this.fadeCount -= .001;
-				if(this.fadeCount <= 0) {
-					this.shouldFade = false;
-					this.fadeCount = 0;
-				}
-			}
-
-			if(++this.phase === Math.floor(this.rate)) {
-				if(!this.isCrazy) {
-					if(Math.random() < this.chance) {				
+				if(this.phase++ % this.rate < 1) {
+					if(Math.random() < this.chance) {
 						this.isCrazy = true;
-						var readHead = this.writeIndex - this.length; //(this.length * rndi(1,4));
-						if(readHead < 0) readHead = this.writeBufferLength + readHead;
-
-						readHead = Math.floor(readHead);
-						
+						this.fading = true;
+						this.fadeAmount = 1;
+		
+						if(this.shouldRandomizePitch) this.pitchShifting = (Math.random() < this.pitchChance);
+						this.increment = (this.pitchShifting) ? rndf(.25, 2) : 1;
+		
+						if(this.shouldRandomizeReverse) this.reverse = (Math.random() < this.reverseChance);			
+						this.readIndex = this.reverse ? this.length - 1 : 0;
+		
+						var readPos = this.writeIndex - this.length;
+						if(readPos < 0) readPos += this.writeBufferLength;
+		
 						for(var i = 0; i < this.length * 2; i++) {
-							this.readBuffer[i] = this.writeBuffer[readHead++];
-							if(readHead >= this.writeBufferLength) {
-								readHead = 0;
-							}
-						}					
-						
-						if(this.shouldRandomizeReverse) {
-							this.reverse = (Math.random() < this.reverseChance) ? true : false;
+							this.readBuffer[i] = this.writeBuffer[readPos++];
+							if(readPos >= this.writeBufferLength) readPos = 0;
 						}
-						this.readIndex = (this.reverse) ? this.length - 1 : 0;
-
-						if(this.shouldRandomizePitch) {
-							this.pitchShifting = (Math.random() < this.pitchChance) ? true : false;
-						}
-						this.increment = (this.pitchShifting) ? rndf(.5, .95) : 1;
-						
-						this.crazyTime = 0;
-						this.fadeCount = 1;
 					}
 				}
-				this.phase = 0;
 			}else{
-				if(this.isCrazy) {
-					val = Sink.interpolate(this.readBuffer, this.readIndex);
-
-					if(this.fadeCount > 0) {
-						val *= 1 - this.fadeCount;
-						this.fadeCount -= .001;
-						val += sample * this.fadeCount;
+				this.advanceReadIndex();
+				var loopedSample = Sink.interpolate(this.readBuffer, this.readIndex);
+	
+				if(this.fading) {
+					if(this.fadeAmount >= .0025) {
+						output = (loopedSample * (1 - this.fadeAmount)) + (inputSample * this.fadeAmount);
+						this.fadeAmount -= .0025;
+					}else{
+						output = loopedSample;
+						this.fading = false;
 					}
-					
-					this.readIndex += this.increment;
-						
-					if(this.readIndex >= (this.length * 2) - 1) {
-						this.readIndex = this.readIndex - this.length * 2 ;
-					}
-					
-					if(++this.crazyTime >= this.length - 1) {
-						this.isCrazy = false;
-						this.crazyTime = 0;
-						this.fadeCount = 1;
-						this.shouldFade = true;
-						this.shouldPrint = true;
-					}
-					if(this.shouldPrint) {
-						console.log("VALUE : " + val);
-						this.shouldPrint = false;
-					}
-					
+				}else{
+					output = loopedSample;
+				}
+	
+				if(++this.loopPhase >= Math.floor(this.length) - 400) {
+					this.isCrazy = false;
+					this.fading = true;
+					this.fadeAmount = 1;
+					this.loopPhase = 0;
 				}
 			}
-			
-			this.value = val;
+			this.value = output;
 		},
 		getMix : function() {
 			return this.value;
 		},
 	};
 	
-	that.writeBuffer = new Float32Array(that.length * 2);
-	that.writeBufferLength = that.length * 2;		
-	that.readBuffer  = new Float32Array(that.length * 2);
+	that.writeBuffer = new Float32Array(Math.floor(that.length * 2));
+	that.writeBufferLength = Math.floor(that.length * 2);		
+	that.readBuffer  = new Float32Array(Math.floor(that.length * 2));
 
 	Gibber.addModsAndFX.call(that);
 	
