@@ -6,9 +6,19 @@ function Seq() {
 		_seq = [_seq];
 	}
 	
-	var speed = arguments[1] || null;
-	if(speed == null && _seq != null) {
+	var arg1Type = typeof arguments[1];
+	var speed, durations;
+	if(arg1Type !== "undefined") {
+		if(arg1Type === "number") {
+			speed = arguments[1];
+			durations = null;
+		}else{
+			speed = null;
+			durations = arguments[1];
+		}
+	}else{
 		speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
+		durations = null;
 	}
 	
 	var _outputMsg = arguments[2] || null;
@@ -25,7 +35,9 @@ function Seq() {
 		_start : true,
 		offset : 0,	 // used to sequence Gibber object
 		counter : 0, // position in seqeuence
+		_counter :0, // used for scheduling
 		speed: speed,
+		durations : durations,
 		outputMessage:_outputMsg,
 		active:true,
 		slaves: [],
@@ -35,6 +47,7 @@ function Seq() {
 		mods: [],
 		shouldDie: false,
 		oddEven : 0,
+		phaseOffset : 0,
 	}
 	
 	that.once = function() {
@@ -47,28 +60,75 @@ function Seq() {
 			this.kill();
 			return;
 		}
-	    var phase = 0;
-	    var _offset = this.offset;
+		
+		// increment phase
+		// how many events will be passed?
+		// for each event that occurs
+		// schedule
+		// retain phase
+		// var numEventsToSchedule = _1 / this.speed;
+				
+		// var me = this;
+		// var count = 0;
 
-		var events = (_1 + _offset ) / this.speed;
-		//console.log("NUM EVENTS " + events );
-		for(var i = 0; i < events; i++) {
-			this.oddEven = !this.oddEven;
-			var pos = i * Math.round(this.speed);
-			//if(i ==1 ) console.log(pos); // TODO: there is some slop here. eventually the wrong number of events will be generated...
-			//var pos = (this.oddEven) ? (i * Math.floor(this.speed)) : (i * Math.ceil(this.speed));
-			
-			G.callback.addEvent(pos - _offset, this); // sequence on global object
-			phase = pos - _offset;
-			
-	        this.offset = 0;
-		}
-		if(this.end) {
-			this.shouldDie = true;
-			this.end = false;
-		}
-	
-		this.offset += _1 - phase;
+
+		/*
+		checkSchedule( 0 + 88200)
+		....nextEvent = 0
+		checkSchedule(88200)
+		....nextEvent = 22050
+		....
+		checkSchedule(22050) --- counter  = 0
+		*/
+		// function checkSchedule(time) {
+		// 	var nextEvent = me.durations[me._counter];
+		// 	count += nextEvent;
+		// 	if(time >= nextEvent) {
+		// 		
+		// 		var _pos = nextEvent % time;
+		// 		console.log("NEXT EVENT = " + nextEvent + " time : " + time + " : pos : " + _pos);
+		// 		
+		// 		me.phaseOffset += _pos;
+		// 		G.callback.addEvent(me.phaseOffset, me);
+		// 		
+		// 		if(++me._counter >= me.durations.length) {
+		// 			me._counter = 0;
+		// 			me.phase = 0;
+		// 			me.phaseOffset = 0;
+		// 		}
+		// 		//console.log("now checking time : " + (time - _pos));
+		// 		if(count >= _1) return time - _pos;
+		// 		return checkSchedule(time - _pos);
+		// 	}else{
+		// 		//console.log("done");
+		// 		return time;
+		// 	}
+		// }
+		// 
+		// this.phase = checkSchedule(this.phase + _1);	
+		
+		// 	    var phase = 0;
+		// 	    var _offset = this.offset;
+		// 
+		// var events = (_1 + _offset ) / this.speed;
+		// //console.log("NUM EVENTS " + events );
+		// for(var i = 0; i < events; i++) {
+		// 	this.oddEven = !this.oddEven;
+		// 	var pos = i * Math.round(this.speed);
+		// 	//if(i ==1 ) console.log(pos); // TODO: there is some slop here. eventually the wrong number of events will be generated...
+		// 	//var pos = (this.oddEven) ? (i * Math.floor(this.speed)) : (i * Math.ceil(this.speed));
+		// 	
+		// 	G.callback.addEvent(pos - _offset, this); // sequence on global object
+		// 	phase = pos - _offset;
+		// 	
+		// 	        this.offset = 0;
+		// }
+		// if(this.end) {
+		// 	this.shouldDie = true;
+		// 	this.end = false;
+		// }
+		// 	
+		// this.offset += _1 - phase;
 	};
 	
 	that.kill = function() {
@@ -109,9 +169,11 @@ function Seq() {
 		}
 		
 		if(this.init === false) {
+			console.log("CALLING INIT");
 			Gibber.callback.slaves.push(this);
 			this._sequence = this.sequence.slice(0);
 			this.init = true;
+			this.advance();
 		}
 	};
 	
@@ -161,8 +223,7 @@ function Seq() {
 	that.advance = function() {
 		if(this.active) {
 			var val = this.sequence[this.counter % this.sequence.length];
-			this.counter++;
-			
+		
 			var shouldReturn = false;
 			// Function sequencing
 			// TODO: there should probably be a more robust way to to this
@@ -172,8 +233,7 @@ function Seq() {
 				return;
 			}else if(typeof val === "undefined") {
 				return;
-			}
-				
+			}			
 			for(var j = 0; j < this.slaves.length; j++) {
 				var _slave = this.slaves[j];
 	
@@ -191,6 +251,15 @@ function Seq() {
 					_slave[this.outputMessage] = val;
 				}
 			}
+			
+			
+			// TODO: should this flip-flop between floor and ceiling?
+			if(this.durations != null) {
+				G.callback.addEvent(Math.round(this.durations[this.counter % this.sequence.length]), this);
+			}else{
+				G.callback.addEvent(Math.round(this.speed), this);
+			}
+			this.counter++;
 		}
 	};
 	

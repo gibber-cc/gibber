@@ -579,7 +579,7 @@
         for (x = 0, xLength = extensions.length; x < xLength; x++) {
             this.notes.push(teoria.interval(this.root, extensions[x]));
         }
-		//console.log(this.notes);
+		//G.log(this.notes);
     }
 
     TeoriaChord.prototype.dominant = function(additional) {

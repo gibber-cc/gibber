@@ -1,5 +1,5 @@
 function ScaleSeq(_sequence, _speed) {
-	var that = Seq();
+	var that = Seq(_sequence, _speed);
 
 	that.name = "ScaleSeq";
 	that.type = "control";
@@ -7,8 +7,7 @@ function ScaleSeq(_sequence, _speed) {
 	that.root = Gibber.root;
 	that.sequenceNumbers = _sequence;
 	that.mode = Gibber.mode;
-	
-	that.speed = _speed;
+
 	that.slaves = [];
 		
 	that.createPattern = function(sequence) {

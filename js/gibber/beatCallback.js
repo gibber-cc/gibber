@@ -37,13 +37,15 @@ Callback.prototype = {
 	measureLengthInSamples : 0,
 	value : 0,
 	init : false,
+	beat : 0,
+	numberOfBeats : 4,
 	
 	addEvent : function(position, sequencer) {
-		if(this.sequence[position] === undefined) {
-			this.sequence[position] = [];
+		if(this.sequence[this.phase + position] === undefined) {
+			this.sequence[this.phase + position] = [];
 		}
 		
-		this.sequence[position].push(sequencer);
+		this.sequence[this.phase + position].push(sequencer);
 	},
 	
 	addCallback : function(callback, subdivision, shouldLoop, shouldWait) {		
@@ -76,7 +78,8 @@ Callback.prototype = {
 	},
 
 	generate : function() {
-		if(this.phase == 0){	// must happen first to correctly schedule new sequencers
+		if(this.phase % _1 === 0){	// must happen first to correctly schedule new sequencers
+			this.beat = 0;
 			for(var i = 2; i <= 4; i++) {
 				$("#n" + i).css("color", "#444");
 			}
@@ -93,15 +96,17 @@ Callback.prototype = {
 					}
 				}
 			}
-			this.sequence = [];
-			for(var i = 0, _sl = this.slaves.length; i < _sl; i++) {
-				this.slaves[i].schedule();
-				this.init = true;
-			}
+			//this.sequence = [];
+			// for(var i = 0, _sl = this.slaves.length; i < _sl; i++) {
+			// 	this.slaves[i].schedule();
+			// 	this.init = true;
+			// }
 			
 		}else{
-			if(this.phase % _4 == 0) {
-				var subdivision = Math.floor(this.phase / _4) + 1;
+			if(this.phase % _4 === 0) {
+				this.beat++;
+				
+				var subdivision = this.beat + 1;
 				$("#n" + subdivision).css("color", "red");
 			}
 		}
@@ -115,10 +120,6 @@ Callback.prototype = {
 		}
 		
 		this.phase++;
-		if(this.phase >= _1) {
-			this.phase = 0;
-		}
-
 	},
 	
 	getMix : function() { return this.value; }, // not used but just in case

@@ -39,12 +39,14 @@ function Arp(notation, beats, mode, mult) {
 		}
 	};
 	
-	this.__proto__.__proto__ = Seq();
-	
 	this.speed = isNaN(beats) ? _4 : beats;
 	
 	this.chord(this.notation);	// this sets the sequence
+	this.__proto__.__proto__ = Seq();
+	this.setSequence(this.notes, this.speed, false);
+
 	this._sequence = this.notes.slice(0);	
+	this._init = true;
 }
 
 Arp.prototype = {
@@ -63,10 +65,10 @@ Arp.prototype = {
 			var _octave, _quality;
 			if(isNaN(this.notation.charAt(1))) { 	// if true, then there is a sharp or flat...
 				_root += this.notation.charAt(1);	// ... so add it to the root name
-				_octave = parseInt( this.notation.slice(2,3) );
+				_octave  = parseInt( this.notation.slice(2,3) );
 				_quality = this.notation.slice(3);
 			}else{
-				_octave = parseInt( this.notation.slice(1,2) );
+				_octave  = parseInt( this.notation.slice(1,2) );
 				_quality = this.notation.slice(2);
 			}
 			_octave += i;
@@ -79,7 +81,7 @@ Arp.prototype = {
 			arr = arr.concat(tmp);
 		}	
 		this.notes = this.modes[this.mode]( arr );
-		this.setSequence(this.notes, this.speed, shouldReset);
+		if(this.init) this.setSequence(this.notes, this.speed, shouldReset);
 	},
 	
 	set : function(_chord, _speed, _mode, octaveMult, shouldReset) {
