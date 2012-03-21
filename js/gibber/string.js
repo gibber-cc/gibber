@@ -1,9 +1,23 @@
+//  Gibber.js - string.js
+// ========================
+
+
 (function myPlugin(){
 
 function initPlugin(audioLib){
 (function(audioLib){	
-	
-// 0 - 1 produced the best values for damping, but higher values can be used for very short sounds
+
+// ###Pluck
+// A Karplus-Strong implementation by thecharlie
+//
+// param **damping**: Float. Default = 0. The speed at which the string decays. Note that higher frequencies decay faster than lower frequencies in the (basic) Karplus-Strong implementation
+// param **blend**: Float. Default = 1. 1 gives string sounds, .5 gives noisy sounds, 0 gives weird sounds  
+// param **color**: String. Default = "white". The type of noise used in the alogrithm. The options are "white", "pink", and "brown"
+//
+// example usage:    
+// `p = Pluck(0, 1, "pink");  
+//  p.note( "A3" );  `
+
 function Pluck (damping, blend, color){
 	this.name = "Pluck";
 	this.type = "gen";
@@ -55,6 +69,10 @@ Pluck.prototype = {
 	type  : "mod",
 	name  : "Pluck",
 	
+	// ####note
+	// play a note
+	// 
+	// param **note**: Default: NONE. Either a frequency or a note name such as "C#3"
 	note : function(n) {
 		this._buffer = [];
 		
@@ -74,6 +92,9 @@ Pluck.prototype = {
 			this._buffer[i] = this.noise[this.color]();
 		}
 	},
+	
+	// ####kill
+	// remove the generator from the graph and destroy all attached fx
 	
 	kill : function() {
 		Gibber.genRemove(this);

@@ -1,4 +1,21 @@
-//function Seq(_seq, speed, gen, _outputMsg) {
+//  Gibber - sequence.js
+// ========================
+
+
+// ###Seq
+// Create a sequencer object, the base class for all sequencing capabilities in Gibber
+//
+// param **values**: Array or function. The value(s) to be sequenced.
+// param **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.
+//
+// example usage:  
+//	`s = Synth();  
+//  t = Seq(["C4", "D4", "G4", "F4"], [_2, _8, _4, _4 * 1.5]).slave(s);    `
+//
+// alternatively:  
+//	`s = Synth();  
+//  t = Seq(["C4", "D4", "G4", "F4"], _4).slave(s)  ` 
+
 function Seq() {
 	var _seq = arguments[0] || null;
 	
@@ -48,7 +65,10 @@ function Seq() {
 		shouldDie: false,
 		oddEven : 0,
 		phaseOffset : 0,
+		sequenceInit : false,
 	}
+	// ####once
+	// Play the sequence once and then end it
 	
 	that.once = function() {
 		this.end = true;
@@ -56,80 +76,10 @@ function Seq() {
 	};
 	
 	that.schedule = function() {
-		if(this.shouldDie) {
-			this.kill();
-			return;
-		}
-		
-		// increment phase
-		// how many events will be passed?
-		// for each event that occurs
-		// schedule
-		// retain phase
-		// var numEventsToSchedule = _1 / this.speed;
-				
-		// var me = this;
-		// var count = 0;
-
-
-		/*
-		checkSchedule( 0 + 88200)
-		....nextEvent = 0
-		checkSchedule(88200)
-		....nextEvent = 22050
-		....
-		checkSchedule(22050) --- counter  = 0
-		*/
-		// function checkSchedule(time) {
-		// 	var nextEvent = me.durations[me._counter];
-		// 	count += nextEvent;
-		// 	if(time >= nextEvent) {
-		// 		
-		// 		var _pos = nextEvent % time;
-		// 		console.log("NEXT EVENT = " + nextEvent + " time : " + time + " : pos : " + _pos);
-		// 		
-		// 		me.phaseOffset += _pos;
-		// 		G.callback.addEvent(me.phaseOffset, me);
-		// 		
-		// 		if(++me._counter >= me.durations.length) {
-		// 			me._counter = 0;
-		// 			me.phase = 0;
-		// 			me.phaseOffset = 0;
-		// 		}
-		// 		//console.log("now checking time : " + (time - _pos));
-		// 		if(count >= _1) return time - _pos;
-		// 		return checkSchedule(time - _pos);
-		// 	}else{
-		// 		//console.log("done");
-		// 		return time;
-		// 	}
-		// }
-		// 
-		// this.phase = checkSchedule(this.phase + _1);	
-		
-		// 	    var phase = 0;
-		// 	    var _offset = this.offset;
-		// 
-		// var events = (_1 + _offset ) / this.speed;
-		// //console.log("NUM EVENTS " + events );
-		// for(var i = 0; i < events; i++) {
-		// 	this.oddEven = !this.oddEven;
-		// 	var pos = i * Math.round(this.speed);
-		// 	//if(i ==1 ) console.log(pos); // TODO: there is some slop here. eventually the wrong number of events will be generated...
-		// 	//var pos = (this.oddEven) ? (i * Math.floor(this.speed)) : (i * Math.ceil(this.speed));
-		// 	
-		// 	G.callback.addEvent(pos - _offset, this); // sequence on global object
-		// 	phase = pos - _offset;
-		// 	
-		// 	        this.offset = 0;
-		// }
-		// if(this.end) {
-		// 	this.shouldDie = true;
-		// 	this.end = false;
-		// }
-		// 	
-		// this.offset += _1 - phase;
 	};
+	
+	// ####kill
+	// Destroy the sequencer
 	
 	that.kill = function() {
 		this.free();
@@ -143,6 +93,13 @@ function Seq() {
 		
 		this.mods.length = 0;	
 	},
+	
+	// ####setSequence
+	// assign a new set of values to be sequenced
+	//
+	// param **seq** Array or Function. The new values to be sequenced  
+	// param **_speed** Int. Optional. A new speed for the sequencer to run at  
+	// param **_reset** Bool. Optional. If true, reset the the current position of the sequencer to 0.  
 	
 	that.setSequence = function(seq, _speed, _reset) {
 		if(typeof _speed !== "undefined") {
@@ -169,13 +126,26 @@ function Seq() {
 		}
 		
 		if(this.init === false) {
-			console.log("CALLING INIT");
-			Gibber.callback.slaves.push(this);
 			this._sequence = this.sequence.slice(0);
+			Gibber.callback.slaves.push(this);
+			if(typeof this.sequence[0] === "function"){
+				this.advance();
+			}
 			this.init = true;
-			this.advance();
 		}
 	};
+	
+	
+	// ####slave
+	// assign a new set of values to be sequenced
+	//
+	// param **seq** Comma separated list of generators. The generators to be controlled by this sequencer  
+	//
+	// example:
+	// `s = Synth();  
+	// ss = Synth();  
+	// t = Seq(["C4", "D4"], _1)  
+	// t.slave(s, ss);  `
 	
 	that.slave = function() {
 		for(var i = 0; i < arguments.length; i++) {
@@ -190,10 +160,16 @@ function Seq() {
 					gen.masters.push(this);
 				}
 				if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+			}else{
+				return this;
 			}
 		}
+		if(this.slaves.length === 1) { this.advance(); } // start sequence if it's not already running
 		return this;		
 	};
+	
+	// ####free
+	// stop controlling slaved ugens
 	
 	that.free = function() {
 		if(arguments.length == 0) {
@@ -203,6 +179,9 @@ function Seq() {
 		}
 	};
 	
+	// ####stop
+	// stop the sequencer from running and reset the position to 0
+	
 	that.stop = function() {
 		this.active = false;
 		this.phase = 0;		
@@ -210,28 +189,53 @@ function Seq() {
 		return this;
 	};
 	
+	// ####pause
+	// stop the sequencer from running but do not reset the current position
+	
 	that.pause = function() {
 		this.active = false;
 		return this;
 	};
-		
+	
+	// ####play
+	// start the sequencer running
+	
 	that.play = function() {
 		this.active = true;
 		return this;
 	};
 	
+	// ####advance
+	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
+	
 	that.advance = function() {
 		if(this.active) {
-			var val = this.sequence[this.counter % this.sequence.length];
+			var pos = this.counter % this.sequence.length;
+			var val = this.sequence[pos];
 		
 			var shouldReturn = false;
 			// Function sequencing
 			// TODO: there should probably be a more robust way to to this
 			// but it will look super nice and clean on screen...
+			
 			if(typeof val === "function") {
 				val();
+				if(this.durations != null) {
+					G.callback.addEvent(Math.round(this.durations[pos]), this);
+				}else{
+					G.callback.addEvent(Math.round(this.speed), this);
+				}
+				this.counter++;
+				
 				return;
 			}else if(typeof val === "undefined") {
+				if(this.durations != null) {
+					G.callback.addEvent(Math.round(this.durations[pos]), this);
+				}else{
+					G.callback.addEvent(Math.round(this.speed), this);
+				}
+				this.counter++;
+				
 				return;
 			}			
 			for(var j = 0; j < this.slaves.length; j++) {
@@ -255,11 +259,16 @@ function Seq() {
 			
 			// TODO: should this flip-flop between floor and ceiling?
 			if(this.durations != null) {
-				G.callback.addEvent(Math.round(this.durations[this.counter % this.sequence.length]), this);
+				G.callback.addEvent(Math.round(this.durations[pos]), this);
 			}else{
 				G.callback.addEvent(Math.round(this.speed), this);
 			}
 			this.counter++;
+			if(this.counter % this.sequence.length === 0) {
+				if(this.shouldDie) {
+					this.kill();
+				}
+			}
 		}
 	};
 	
@@ -282,6 +291,14 @@ function Seq() {
 		return 0;
 	};
 	
+	// ####set
+	// assign a new set of values to be sequenced. I can't remember how this is different from setSequence, but surely there's a good reason for it :)
+	//
+	// param **newSequence** Array or Function. The new values to be sequenced  
+	// param **speed** Int. Optional. A new speed for the sequencer to run at  
+	// param **shouldReset** Bool. Optional. If true, reset the the current position of the sequencer to 0.   
+	
+	
 	that.set = function(newSequence, speed, shouldReset) {
 		if(typeof speed != "undefined") {
 			if(!shouldReset) {
@@ -298,11 +315,19 @@ function Seq() {
 		this.setSequence(this.sequence, speed, shouldReset);
 	};
 	
+	// ####shuffle
+	// randomize order of sequence
+
 	that.shuffle = function() {
 		that.sequence.shuffle();
 		that.setSequence(that.sequence, that.speed);
 		return that;
 	};
+	
+	// ####reset
+	// reset order of sequence to its original order or to a memorized set of positions
+	//
+	// param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order.
 	
 	that.reset = function() {
 		if(arguments.length === 0) {
@@ -312,9 +337,13 @@ function Seq() {
 		}
 		return that;
 	};
-		
+	
+	// ####retain
+	// retain current order of sequenced values
+	//
+	// param **slotNumber** Int. Optional. The position to hold the current sequencer order. By default it will simply be pushed to the memory array
 	that.retain = function() {
-		if(arguments.length != 0) {
+		if(arguments.length === 0) {
 			this.memory.push(this.sequence);
 		}else{
 			this.memory[arguments[0]] = this.sequence;

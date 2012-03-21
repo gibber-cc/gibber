@@ -1,0 +1,352 @@
+<!DOCTYPE html><html lang="en"><head><title>fx</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="fx"><meta name="groc-project-path" content="fx.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">fx.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="-gibberjs-fxjs"> Gibber.js - fx.js</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="bus">Bus</h3>
+
+<p>Create a bus holding fx that signals can be routed to </p>
+
+<p>param <strong>name</strong>: String Optional name that can be used to refer to the new bus. <br />
+param <strong>---</strong>: variable length object list. A comma delimited list of effects to attach to the bus.  </p>
+
+<p>example usage: <br />
+<code>b = Bus( Delay(_4), Reverb() ); <br />
+ s = Synth(); <br />
+s.send( b, .5 );</code></p>
+
+<p>alternatively: <br />
+<code>b = Bus( "rev", Delay(_4), Reverb() ); <br />
+ s = Synth(); <br />
+s.send( "rev", .5 );</code></p>
+
+<p>Note that when Reverb is placed on a bus it defaults to outputting only the wet signal; this is different from how it behaves in an fx chain.</p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Bus</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// name is id, fx is array, ahem, fx</span>
+  <span class="kd">var</span> <span class="nx">bus</span> <span class="o">=</span> <span class="p">{};</span>
+  <span class="nx">bus</span><span class="p">.</span><span class="nx">fx</span> <span class="o">=</span> <span class="p">[];</span>
+  
+  <span class="kd">var</span> <span class="nx">fxStart</span> <span class="o">=</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">===</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="mi">1</span> <span class="o">:</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="nx">fxStart</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">fx</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">fx</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s2">&quot;Reverb&quot;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">fx</span><span class="p">.</span><span class="nx">wet</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="nx">fx</span><span class="p">.</span><span class="nx">dry</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nx">bus</span><span class="p">.</span><span class="nx">fx</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">fx</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="nx">bus</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">===</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="nx">bus</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    
+  <span class="nx">bus</span><span class="p">.</span><span class="nx">senders</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">busses</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">bus</span><span class="p">);</span>
+  
+  <span class="nx">bus</span><span class="p">.</span><span class="nx">kill</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">senders</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">gen</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">senders</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+      <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">gen</span><span class="p">.</span><span class="nx">sends</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">gen</span><span class="p">.</span><span class="nx">sends</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">==</span> <span class="k">this</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">gen</span><span class="p">.</span><span class="nx">sends</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+          <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">Gibber</span><span class="p">.</span><span class="nx">busses</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">_bus</span> <span class="o">=</span> <span class="nx">Gibber</span><span class="p">.</span><span class="nx">busses</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+      <span class="k">if</span><span class="p">(</span><span class="k">this</span> <span class="o">==</span> <span class="nx">_bus</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">Gibber</span><span class="p">.</span><span class="nx">busses</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+  
+  <span class="k">return</span> <span class="nx">bus</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="reverb">Reverb</h3>
+
+<p>A wrapper for the reverb from audioLib.js</p>
+
+<p>param <strong>roomSize</strong>: Float. Default = .8. The size of the room being emulated <br />
+param <strong>damping</strong>: Float. Default = .3. Attenuation of high frequencies that occurs <br />
+param <strong>wet</strong>: Float. Default = .75. The amount of processed signal that is output <br />
+param <strong>dry</strong>: Float. Default = .5. The amount of dry signal that is output  </p>
+
+<p>example usage: <br />
+<code>s = Synth(); <br />
+ s.fx.add( Reverb() );</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Reverb</span><span class="p">(</span><span class="nx">roomSize</span><span class="p">,</span> <span class="nx">damping</span><span class="p">,</span> <span class="nx">wet</span><span class="p">,</span> <span class="nx">dry</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">roomSize</span>  <span class="o">=</span> <span class="nx">roomSize</span> <span class="o">||</span> <span class="p">.</span><span class="mi">8</span><span class="p">;</span>
+  <span class="nx">damping</span>   <span class="o">=</span> <span class="nx">damping</span> <span class="o">||</span> <span class="p">.</span><span class="mi">3</span><span class="p">;</span>
+  <span class="nx">wet</span>     <span class="o">=</span> <span class="nx">wet</span> <span class="o">||</span> <span class="p">.</span><span class="mi">75</span><span class="p">;</span>
+  <span class="nx">dry</span>     <span class="o">=</span> <span class="nx">dry</span> <span class="o">||</span> <span class="p">.</span><span class="mi">5</span><span class="p">;</span>
+  
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">Reverb</span><span class="p">(</span><span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">&quot;Reverb&quot;</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">type</span><span class="o">=</span><span class="s2">&quot;fx&quot;</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">gens</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mods</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">automations</span> <span class="o">=</span> <span class="p">[];</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">roomSize</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">roomSize</span> <span class="o">=</span> <span class="nx">roomSize</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">roomSize</span> <span class="o">=</span> <span class="nx">roomSize</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;roomSize&quot;</span><span class="p">,</span> <span class="nx">roomSize</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">damping</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">damping</span> <span class="o">=</span> <span class="nx">damping</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">damping</span> <span class="o">=</span> <span class="nx">damping</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;damping&quot;</span><span class="p">,</span> <span class="nx">damping</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">wet</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">wet</span> <span class="o">=</span> <span class="nx">wet</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">wet</span> <span class="o">=</span> <span class="nx">wet</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;wet&quot;</span><span class="p">,</span> <span class="nx">wet</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">dry</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">dry</span> <span class="o">=</span> <span class="nx">dry</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">dry</span> <span class="o">=</span> <span class="nx">dry</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;dry&quot;</span><span class="p">,</span> <span class="nx">dry</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="delay">Delay</h3>
+
+<p>A wrapper for the Delay from audioLib.js</p>
+
+<p>param <strong>time</strong>: Int. Default = _4. The number of samples betweeen echoes, usually expressed in Gibber time variables
+param <strong>feedback</strong>: Float. Default = .3. How much of the output is fed back into the input of hte delay  </p>
+
+<p>example usage: <br />
+<code>s = Synth(); <br />
+ s.fx.add( Delay() );</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Delay</span><span class="p">(</span><span class="nx">time</span><span class="p">,</span> <span class="nx">feedback</span><span class="p">,</span> <span class="nx">mix</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">Delay</span><span class="p">(</span><span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span><span class="p">);</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">&quot;Delay&quot;</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">type</span><span class="o">=</span> <span class="s2">&quot;fx&quot;</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">gens</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mods</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">automations</span> <span class="o">=</span> <span class="p">[];</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">time</span> <span class="o">=</span> <span class="nx">time</span> <span class="o">||</span> <span class="nx">_4</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">time</span> <span class="o">/=</span> <span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">;</span>
+  <span class="nx">feedback</span> <span class="o">=</span> <span class="nx">feedback</span> <span class="o">||</span> <span class="p">.</span><span class="mi">3</span><span class="p">;</span>
+  <span class="nx">mix</span> <span class="o">=</span> <span class="nb">isNaN</span><span class="p">(</span><span class="nx">mix</span><span class="p">)</span> <span class="o">?</span> <span class="p">.</span><span class="mi">3</span> <span class="o">:</span> <span class="nx">mix</span><span class="p">;</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">feedback</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">feedback</span> <span class="o">=</span> <span class="nx">feedback</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">feedback</span> <span class="o">=</span> <span class="nx">feedback</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;feedback&quot;</span><span class="p">,</span> <span class="nx">feedback</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">time</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">time</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">time</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">time</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">time</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="nx">that</span><span class="p">.</span><span class="nx">time</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">bpmCallback</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">_that</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">;</span>
+    <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">percentageChangeForBPM</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">_that</span><span class="p">.</span><span class="nx">time</span> <span class="o">*=</span> <span class="nx">percentageChangeForBPM</span><span class="p">;</span>
+      <span class="nx">_that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="nx">_that</span><span class="p">.</span><span class="nx">time</span><span class="p">);</span>     
+    <span class="p">}</span>
+  <span class="p">};</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">registerObserver</span><span class="p">(</span> <span class="s2">&quot;bpm&quot;</span><span class="p">,</span> <span class="nx">that</span><span class="p">.</span><span class="nx">bpmCallback</span><span class="p">(</span><span class="nx">that</span><span class="p">)</span> <span class="p">);</span>
+  
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mix</span> <span class="o">=</span> <span class="nx">mix</span><span class="p">;</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>  
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="ring">Ring</h3>
+
+<p>A Ring Modulator by thecharlie</p>
+
+<p>param <strong>frequency</strong>: Float. Default = 440. The frequency of the sine wave that the signal is multiplied by <br />
+param <strong>amount</strong>: Float. Default = 1. The amplitude of the sine wave the signal is multiplied by  </p>
+
+<p>example usage: <br />
+<code>s = Synth(); <br />
+ s.fx.add( Ring(220, .5) );</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Ring</span><span class="p">(</span><span class="nx">frequency</span><span class="p">,</span> <span class="nx">amount</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">frequency</span> <span class="o">=</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">freq</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">frequency</span> <span class="o">:</span> <span class="mi">440</span><span class="p">;</span>
+  <span class="nx">amount</span>  <span class="o">=</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">amount</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">amount</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span> 
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">frequency</span><span class="o">:</span> <span class="nx">frequency</span><span class="p">,</span>
+    <span class="nx">amount</span><span class="o">:</span> <span class="nx">amount</span><span class="p">,</span>
+  <span class="p">};</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">&quot;Ring&quot;</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">type</span><span class="o">=</span><span class="s2">&quot;fx&quot;</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">osc</span>  <span class="o">=</span> <span class="nx">Sine</span><span class="p">(</span><span class="nx">that</span><span class="p">.</span><span class="nx">frequency</span><span class="p">,</span> <span class="nx">that</span><span class="p">.</span><span class="nx">amount</span><span class="p">);</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">isControl</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">gens</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mods</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mix</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+  
+  <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperties</span><span class="p">(</span><span class="nx">that</span><span class="p">,</span> <span class="p">{</span>
+      <span class="s2">&quot;frequency&quot;</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+            <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;amount&quot;</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">mix</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">mix</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+            <span class="p">}</span>
+      <span class="p">},</span>  
+      <span class="p">});</span>
+  <span class="p">})(</span><span class="nx">that</span><span class="p">);</span>
+  
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">pushSample</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">sample</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">generate</span><span class="p">();</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">sample</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">getMix</span><span class="p">();</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+  <span class="p">}</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">getMix</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span>
+  
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="lpf">LPF</h3>
+
+<p>A low-pass filter from audioLib.js  </p>
+
+<p>param <strong>cutoff</strong>: Float. Default = 300. The cutoff frequency of the filter <br />
+param <strong>resonance</strong>: Float. Default = 3. Emphasis of the cutoff frequency  </p>
+
+<p>example usage: <br />
+<code>d = Drums("xoxo"); <br />
+ d.fx.add( LPF(420, .5) );</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">LPF</span><span class="p">(</span><span class="nx">cutoff</span><span class="p">,</span> <span class="nx">resonance</span><span class="p">,</span> <span class="nx">mix</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">LP12Filter</span><span class="p">(</span><span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span><span class="p">);</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">&quot;LPF&quot;</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">type</span><span class="o">=</span><span class="s2">&quot;fx&quot;</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">gens</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mods</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">automations</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">trig</span> <span class="o">=</span> <span class="nx">Gibber</span><span class="p">.</span><span class="nx">trig</span><span class="p">;</span>  
+  
+  <span class="nx">cutoff</span> <span class="o">=</span> <span class="nb">isNaN</span><span class="p">(</span><span class="nx">cutoff</span><span class="p">)</span> <span class="o">?</span> <span class="mi">300</span> <span class="o">:</span> <span class="nx">cutoff</span><span class="p">;</span>
+  <span class="nx">resonance</span> <span class="o">=</span> <span class="nb">isNaN</span><span class="p">(</span><span class="nx">resonance</span><span class="p">)</span> <span class="o">?</span> <span class="mi">3</span> <span class="o">:</span> <span class="nx">resonance</span><span class="p">;</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">cutoff</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">cutoff</span> <span class="o">=</span> <span class="nx">cutoff</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">cutoff</span> <span class="o">=</span> <span class="nx">cutoff</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;cutoff&quot;</span><span class="p">,</span> <span class="nx">cutoff</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">time</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">resonance</span> <span class="o">=</span> <span class="nx">resonance</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">resonance</span> <span class="o">=</span> <span class="nx">resonance</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;resonance&quot;</span><span class="p">,</span> <span class="nx">resonance</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mix</span> <span class="o">=</span> <span class="nx">mix</span> <span class="o">||</span> <span class="p">.</span><span class="mi">3</span><span class="p">;</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span>
+  
+  
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="crush">Crush</h3>
+
+<p>A bit-crusher from audioLib.js  </p>
+
+<p>param <strong>resolution</strong>: Float. Default = 8. The number of bits to truncate the output to  </p>
+
+<p>example usage: <br />
+<code>d = Drums("xoxo"); <br />
+ d.fx.add( LPF(420, .5) );</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Crush</span><span class="p">(</span><span class="nx">resolution</span><span class="p">,</span> <span class="nx">mix</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">BitCrusher</span><span class="p">(</span><span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span><span class="p">);</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">&quot;Trunc&quot;</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">type</span><span class="o">=</span><span class="s2">&quot;fx&quot;</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">gens</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mods</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">automations</span> <span class="o">=</span> <span class="p">[];</span>
+  
+  <span class="nx">resolution</span> <span class="o">=</span> <span class="nx">resolution</span> <span class="o">||</span> <span class="mi">8</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">resolution</span> <span class="o">&gt;</span> <span class="mi">16</span><span class="p">)</span> <span class="nx">resolution</span> <span class="o">=</span> <span class="mi">16</span><span class="p">;</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">resolution</span> <span class="o">===</span> <span class="s2">&quot;Object&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">resolution</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nx">resolution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">effects</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">resolution</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nx">resolution</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="nx">that</span><span class="p">.</span><span class="nx">setParam</span><span class="p">(</span><span class="s2">&quot;resolution&quot;</span><span class="p">,</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nx">resolution</span> <span class="o">-</span> <span class="mi">1</span><span class="p">));</span>
+  <span class="p">}</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mix</span> <span class="o">=</span> <span class="nx">mix</span> <span class="o">||</span> <span class="mi">1</span><span class="p">;</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="clip">Clip</h3>
+
+<p>A simple waveshaping distortion using y = x / (1+|x|) by thecharlie</p>
+
+<p>param <strong>amount</strong>: Float. Default = 4. The amount of distortion
+Clip also has a logarithmic volume adapter to the equation so that you can
+apply extreme amounts of clipping
+TODO: store base2 log for faster calculations</p>
+
+<p>example usage: <br />
+<code>d = Drums("xoxo"); <br />
+ d.fx.add( Clip(1000) );</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Clip</span><span class="p">(</span><span class="nx">amount</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">amount</span><span class="o">:</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">amount</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span> <span class="o">&amp;&amp;</span> <span class="nx">amount</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">?</span> <span class="nx">amount</span> <span class="o">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="nx">name</span> <span class="o">:</span> <span class="s2">&quot;Clip&quot;</span><span class="p">,</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s2">&quot;fx&quot;</span><span class="p">,</span>
+    <span class="nx">gens</span> <span class="o">:</span>  <span class="p">[],</span>
+    <span class="nx">mods</span> <span class="o">:</span>  <span class="p">[],</span>
+    <span class="nx">value</span> <span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nx">mix</span> <span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    
+    <span class="nx">pushSample</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">sample</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">sample</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">amount</span><span class="p">;</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="p">(</span><span class="nx">x</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">x</span><span class="p">)))</span> <span class="o">/</span> <span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">amount</span><span class="p">)</span> <span class="o">/</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">LN2</span><span class="p">);</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="nx">getMix</span> <span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+    <span class="p">},</span>
+  <span class="p">};</span>
+
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span>
+  
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="comb-filter">Comb Filter</h3>
+
+<p>A wrapper around the Comb filter from audiolib.js</p>
+
+<p>param <strong>delaySize</strong>: Int. The offset in samples for the comb filter
+param <strong>feedback</strong>: Float. feedback of samples into filter
+param <strong>damping</strong>: Float. Default = .2. damping for feedback</p>
+
+<p>example usage: <br />
+<code>d = Drums("xoxo"); <br />
+ d.fx.add( Clip(1000) );</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Comb</span><span class="p">(</span><span class="nx">delaySize</span><span class="p">,</span> <span class="nx">feedback</span><span class="p">,</span> <span class="nx">damping</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">CombFilter</span><span class="p">(</span><span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span><span class="p">,</span> <span class="nx">delaySize</span><span class="p">,</span> <span class="nx">feedback</span><span class="p">,</span> <span class="nx">damping</span><span class="p">);</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">&quot;Comb&quot;</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">type</span> <span class="o">=</span> <span class="s2">&quot;fx&quot;</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">gens</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">mods</span> <span class="o">=</span> <span class="p">[];</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span> 
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div></div></body></html>

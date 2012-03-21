@@ -50,6 +50,15 @@ Gibber.Environment = {
 				Gibber.callback.addCallback(msg.code + "\n\n", _1);
 				//Gibber.runScript(msg.code + "\n\n");
 			});
+			Gibber.Environment.masterSocket.on('code_immediate', function (msg) {
+				Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
+				Gibber.Environment.Editor.insert(msg.code + "\n\n");
+				Gibber.Environment.Editor.scrollPageDown();
+				
+				Gibber.callback.runScript(msg.code);
+				//Gibber.runScript(msg.code + "\n\n");
+			});
+			
 			Gibber.Environment.masterSocket.emit('master', null);
 		});	
 	},
@@ -540,6 +549,29 @@ Gibber.Environment = {
 				Gibber.Environment.slaveSocket.send(text);
 		    }
 		});	
+		
+		Gibber.Environment.Editor.commands.addCommand({
+		    name: 'remoteSend_immediate',
+		    bindKey: {
+		        win: 'Alt-Ctrl-2',
+		        mac: 'Option-Command-2',
+		        sender: 'Gibber.Environment.Editor'
+		    },
+		    exec: function(env, args, request) {
+				var sel;
+		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
+				if(text === "") {
+					sel = ".ace_active_line";
+					var pos = Gibber.Environment.Editor.getCursorPosition();
+					text = Gibber.Environment.Editor.getSession().doc.getLine(pos.row);
+				}else{
+					sel = ".ace_selection";
+				}
+				Gibber.Environment.flashExecutedCode(sel);
+				Gibber.Environment.slaveSocket.send(text);
+		    }
+		});	
+		
 			
 			
 		Gibber.Environment.Editor.commands.addCommand({

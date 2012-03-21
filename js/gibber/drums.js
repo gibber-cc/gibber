@@ -1,26 +1,24 @@
-/* 	
-Charlie Roberts 2012 MIT License
+// Gibber - drums.js
+// ========================
 
-Requires gibber.js and audioLib.js.
-
-x = kick
-o = snare
-* = closed hat
-
-Usage: d = Drums("x*o*xx.*");
-
-TODO : ADD REPLACE METHOD
-TODO : ADD REPLACE METHOD
-TODO : ADD REPLACE METHOD
-TODO : ADD REPLACE METHOD
-
-*/
 (function myPlugin(){
 
 function initPlugin(audioLib){
 (function(audioLib){	
 	
-// TODO: This should use a Seq object as prototype if possible.
+// ###Drums
+// Three different samplers linked to a combined sequencer for convenience  
+//
+// param **sequence**: String. Uses x for kick, o for snare, * for cowbell (just a repitched snare at the moment)  
+// param **timeValue**: Int. A duration in samples for each drum hit. Commonly uses Gibber time values such as _4, _8 etc.  
+// param **mix**: Float. Default = .175. Volume for drums  
+// param **freq**: Int. The audioLib.js samplers use 440 as a fundamental frequency. You can raise or lower the pitch of samples by changing this value.  
+//
+// example usage:    
+// `d = Drums("xo*o", _8, .2, 880)  `
+//
+// note that most Drum methods mirror that of Seq. 
+
 function Drums (_sequence, _timeValue, _mix, _freq){
 	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
@@ -43,12 +41,14 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	Gibber.addModsAndFX.call(this);
 	Gibber.generators.push(this);	
 	
+	var that = this; // closure so that d.shuffle can be sequenced
+	this.shuffle = function() { that.seq.shuffle(); };
+	
+	this.load();
+	
 	if(typeof _sequence != "undefined") {
 		this.seq = Seq(_sequence, _timeValue).slave(this);
 	}
-	
-	var that = this; // closure so that d.shuffle can be sequenced
-	this.shuffle = function() { that.seq.shuffle(); };
 	
 	this.reset = function(num)  { 
 		if(isNaN(num)) {
@@ -73,6 +73,7 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 					}
 		        }
 			},
+			// pitch is a multiplier for the fundamental frequency of the samplers (440). A pitch value of 2 means the samples will be played with a frequency of 880 hz.
 			"pitch" : {
 		        get: function() {
 		            return _pitch;
@@ -191,6 +192,6 @@ if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
 
 function Drums (_sequence, _timeValue, _mix, _freq) {
 	var d = new audioLib.Drums(_sequence, _timeValue, _mix, _freq);
-	d.load();
+	
 	return d;
 }

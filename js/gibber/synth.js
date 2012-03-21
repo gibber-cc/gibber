@@ -1,18 +1,21 @@
-/* 	
-Charlie Roberts 2012 MIT License
-
-Oscillator and envelope wrapped together with a method to play notes.
-
-usage:
-s = Synth();
-s.note("A4");
-
-*/
+//  Gibber - synth.js
+// ========================
 
 (function myPlugin(){
 
 function initPlugin(audioLib){
 (function(audioLib){
+	
+// ###Synth
+// Create an oscillator with an attached envelope that can be triggered by note messages.
+//
+// param **attack**: Int in ms. The number of milliseconds the attack of the synth's envelope lasts  
+// param **decay** : Int in ms. The number of milliseconds the decay of the synth's envelope lasts  
+// param **volume** : Float. The volume of the synth.  
+//
+// example usage:  
+//	`s = Synth(1000, 2000, .5);  
+//   s.note("A4");  `
 
 function Synth(attack, decay, volume) {
 	this.volume = isNaN(volume) ? .4 : volume;
@@ -41,7 +44,6 @@ function Synth(attack, decay, volume) {
 	this.sends = [];
 	this.masters = [];
 	
-	//Gibber.generators.push(this.osc);
 	Gibber.generators.push(this);
 	// meta-methods
 	(function(obj) {
@@ -56,15 +58,6 @@ function Synth(attack, decay, volume) {
 		var fx = that.osc.fx;
 		
 	    Object.defineProperties(that, {
-			// "mix" : {
-			// 		        get: function() {
-			// 		            return mix;
-			// 		        },
-			// 		        set: function(value) {
-			// 		            mix = value;
-			// 		this.osc.mix = value;
-			// 		        }
-			// },
 			"frequency" : {
 				get : function() {
 					return this.osc.frequency;
@@ -128,23 +121,25 @@ Synth.prototype = {
 	name: "Synth",
 	type: "complex",
 	active : true,
-
-	note : function(n) {
-		switch(typeof n) {
+	
+	// ###note
+	// tell synth to play a particular frequency and trigger its envelope. The value can be either a frequency, a note name (such as "A4") or a note object from teoria.js
+	//
+	// param note: the value can be either string (note name), int(frequency), or object (teoria note object).
+	note : function(note) {
+		switch(typeof note) {
 			case "number" :
-				this.osc.frequency = n;
+				this.osc.frequency = note;
 			break;
 			case "string" :
-				this.osc.frequency = teoria.note(n).fq();
+				this.osc.frequency = teoria.note(note).fq();
 			break;
 			default:
-				this.osc.frequency = n.fq();
+				this.osc.frequency = note.fq();
 				break;
 		}
 		this.env.triggerGate();
 	},
-	
-	// TODO : get generate to work in synth
 	
 	out : function() {
 		this.generate();
@@ -156,16 +151,14 @@ Synth.prototype = {
 	},
 	
 	generate: function() {
-		//console.log("Generate called");
 		this.value = this.osc.out();
-		// if(Gibber.debug) {
-		// 	G.log(this.value);
-		// }
 		this.env.generate();
 		
 		this.value *= this.env.value;
 	},
 	
+	// ####kill
+	// remove the generator from the graph and destroy all attached fx
 	kill : function() {
 		Gibber.genRemove(this.osc);
 		this.masters.length = 0;
@@ -206,32 +199,12 @@ Synth.prototype = {
 		delete this;
 	},
 	
-	
-	stop : function() {
-		this.active = false;
-	},
-	
-	start : function() {
-		this.phase = 0;
-		this.active = true;
-	},
-	
 	chain : function() {
 		for(var i = 0; i < arguments.length; i++) {
 			this.osc.chain(arguments[i]);
 		}
 		return this;
 	},
-	
-	// mod : function() {
-	// 	console.log("MODDING")
-	// 	console.log(this);
-	// 	if(typeof arguments[2] === "undefined") {
-	// 		this.mod(arguments[0], arguments[1]);
-	// 	}else{
-	// 		this.mod(arguments[0], arguments[1], arguments[2]);
-	// 	}
-	// },
 	
 	send : function(_bus, amount) {
 		var bus = { 

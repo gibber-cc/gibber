@@ -120,22 +120,5 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 
 	Gibber.addModsAndFX.call(that);
 	
-	// (function(obj) {
-	// 	var _that = obj;
-	// 	var rate = that.rate;
-	// 
-	//     Object.defineProperties(_that, {
-	// 		"rate" : { 
-	// 			get: function() {
-	// 				return rate;
-	// 			},
-	// 			set: function(value) {
-	// 				rate = value;
-	// 				_that.delayMod.frequency = rate;
-	// 			}
-	// 		},
-	// 	});
-	// })(that);
-	
 	return that;
 }

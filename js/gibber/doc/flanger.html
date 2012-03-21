@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="en"><head><title>flanger</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="flanger"><meta name="groc-project-path" content="flanger.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">flanger.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="gibber-flangerjs">Gibber - flanger.js</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="flanger">Flanger</h3>
+
+<p>A traditional flanger using a variable-length comb filter by thecharlie.  </p>
+
+<p>param <strong>rate</strong>: Float. Default = .25. Measure in Hz, this is the speed that the delay line size fluctuates at <br />
+param <strong>amount</strong>: Int. Default = 125. The amount that the size of the delay line fluctuates by <br />
+param <strong>feedback</strong>: Float. Default = .25. Feedback for the flanger. Increase to get a more pronounced effect <br />
+param <strong>offset</strong>: Int. Default = amount. The offset of the flanger's comb filter from the current sample. By default this is the same as the amount parameter  </p>
+
+<p>example usage: <br />
+<code>p = Pluck(0, 1, "pink"); <br />
+ p.fx.add( Flanger() ); <br />
+ p.note( "A3" );</code> </p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Flanger</span><span class="p">(</span><span class="nx">rate</span><span class="p">,</span> <span class="nx">amount</span><span class="p">,</span> <span class="nx">feedback</span><span class="p">,</span> <span class="nx">offset</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">rate</span><span class="o">:</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">rate</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">rate</span> <span class="o">:</span> <span class="p">.</span><span class="mi">25</span><span class="p">,</span>
+    <span class="nx">amount</span><span class="o">:</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">amount</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">amount</span> <span class="o">:</span> <span class="mi">125</span><span class="p">,</span>
+    <span class="nx">name</span> <span class="o">:</span> <span class="s2">&quot;Flanger&quot;</span><span class="p">,</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s2">&quot;fx&quot;</span><span class="p">,</span>
+    <span class="nx">gens</span> <span class="o">:</span>  <span class="p">[],</span>
+    <span class="nx">mods</span> <span class="o">:</span>  <span class="p">[],</span>
+    <span class="nx">value</span> <span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nx">writeIndex</span> <span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nx">mix</span> <span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">feedback</span> <span class="o">:</span> <span class="p">(</span><span class="nb">isNaN</span><span class="p">(</span><span class="nx">feedback</span><span class="p">))</span> <span class="o">?</span> <span class="p">.</span><span class="mi">25</span> <span class="o">:</span> <span class="nx">feedback</span><span class="p">,</span>
+
+    <span class="nx">pushSample</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">sample</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">r</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">readIndex</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">delayMod</span><span class="p">.</span><span class="nx">out</span><span class="p">();</span>
+      <span class="k">if</span><span class="p">(</span><span class="nx">r</span> <span class="o">&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">bufferSize</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">r</span> <span class="o">=</span> <span class="nx">r</span> <span class="o">-</span> <span class="k">this</span><span class="p">.</span><span class="nx">bufferSize</span><span class="p">;</span>
+      <span class="p">}</span><span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">r</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">r</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">bufferSize</span> <span class="o">+</span> <span class="nx">r</span><span class="p">;</span>
+      <span class="p">}</span>
+      
+      <span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="nx">Sink</span><span class="p">.</span><span class="nx">interpolate</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">buffer</span><span class="p">,</span> <span class="nx">r</span><span class="p">);</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">buffer</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">writeIndex</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="nx">sample</span> <span class="o">+</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">feedback</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">writeIndex</span> <span class="o">&gt;=</span> <span class="k">this</span><span class="p">.</span><span class="nx">bufferSize</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">writeIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="p">}</span>
+      
+      <span class="k">this</span><span class="p">.</span><span class="nx">readIndex</span><span class="o">++</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">readIndex</span> <span class="o">&gt;=</span> <span class="k">this</span><span class="p">.</span><span class="nx">bufferSize</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">readIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="p">}</span>
+      
+      <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">s</span> <span class="o">+</span> <span class="nx">sample</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="nx">getMix</span> <span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+    <span class="p">},</span>
+  <span class="p">};</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">offset</span> <span class="o">=</span> <span class="nx">offset</span> <span class="o">||</span> <span class="nx">that</span><span class="p">.</span><span class="nx">amount</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Float32Array</span><span class="p">(</span><span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span> <span class="o">*</span> <span class="mi">2</span><span class="p">);</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">bufferSize</span> <span class="o">=</span> <span class="nx">Gibber</span><span class="p">.</span><span class="nx">sampleRate</span> <span class="o">*</span> <span class="mi">2</span><span class="p">;</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">readIndex</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">offset</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+  
+  <span class="nx">that</span><span class="p">.</span><span class="nx">delayMod</span> <span class="o">=</span> <span class="nx">LFO</span><span class="p">(</span><span class="nx">that</span><span class="p">.</span><span class="nx">rate</span><span class="p">,</span> <span class="nx">that</span><span class="p">.</span><span class="nx">amount</span> <span class="o">*</span> <span class="p">.</span><span class="mi">95</span><span class="p">);</span> <span class="c1">// *.95 to ensure it never catches up with write head</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">that</span><span class="p">);</span>
+  </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: Fix so this changes the speed of the LFO</p></div></div><div class="code"><div class="wrapper">  <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">_that</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">rate</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">rate</span><span class="p">;</span>
+  
+      <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperties</span><span class="p">(</span><span class="nx">_that</span><span class="p">,</span> <span class="p">{</span>
+      <span class="s2">&quot;rate&quot;</span> <span class="o">:</span> <span class="p">{</span> 
+        <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">rate</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">rate</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+          <span class="nx">_that</span><span class="p">.</span><span class="nx">delayMod</span><span class="p">.</span><span class="nx">frequency</span> <span class="o">=</span> <span class="nx">rate</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+    <span class="p">});</span>
+  <span class="p">})(</span><span class="nx">that</span><span class="p">);</span>
+  
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="chorus">Chorus</h3>
+
+<p>cheap chorus using a flanger with an extreme offset see http://denniscronin.net/dsp/article.html</p>
+
+<p>param <strong>rate</strong>: Float. Default = .25. Measure in Hz, this is the speed that the delay line size fluctuates at <br />
+param <strong>amount</strong>: Int. Default = 125. The amount that the size of the delay line fluctuates by  </p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Chorus</span><span class="p">(</span><span class="nx">rate</span><span class="p">,</span> <span class="nx">amount</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">_rate</span> <span class="o">=</span> <span class="nx">rate</span> <span class="o">||</span> <span class="mi">2</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">_amount</span> <span class="o">=</span> <span class="nx">amount</span> <span class="o">||</span> <span class="mi">50</span><span class="p">;</span>
+  <span class="nx">that</span> <span class="o">=</span> <span class="nx">Flanger</span><span class="p">(</span><span class="nx">rate</span><span class="p">,</span> <span class="nx">amount</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">880</span><span class="p">);</span> <span class="c1">// 20ms offset</span>
+  <span class="nx">that</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">&quot;Chorus&quot;</span><span class="p">;</span>
+  
+  <span class="k">return</span> <span class="nx">that</span><span class="p">;</span>
+<span class="p">}</span></div></div></div></div></body></html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html><html lang="en"><head><title>synth</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="synth"><meta name="groc-project-path" content="synth.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">synth.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="-gibber-synthjs"> Gibber - synth.js</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="p">(</span><span class="kd">function</span> <span class="nx">myPlugin</span><span class="p">(){</span>
+
+<span class="kd">function</span> <span class="nx">initPlugin</span><span class="p">(</span><span class="nx">audioLib</span><span class="p">){</span>
+<span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">audioLib</span><span class="p">){</span>
+  </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="synth">Synth</h3>
+
+<p>Create an oscillator with an attached envelope that can be triggered by note messages.</p>
+
+<p>param <strong>attack</strong>: Int in ms. The number of milliseconds the attack of the synth's envelope lasts <br />
+param <strong>decay</strong> : Int in ms. The number of milliseconds the decay of the synth's envelope lasts <br />
+param <strong>volume</strong> : Float. The volume of the synth.  </p>
+
+<p>example usage: <br />
+<code>s = Synth(1000, 2000, .5); <br />
+  s.note("A4");</code></p></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">Synth</span><span class="p">(</span><span class="nx">attack</span><span class="p">,</span> <span class="nx">decay</span><span class="p">,</span> <span class="nx">volume</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">volume</span> <span class="o">=</span> <span class="nb">isNaN</span><span class="p">(</span><span class="nx">volume</span><span class="p">)</span> <span class="o">?</span> <span class="p">.</span><span class="mi">4</span> <span class="o">:</span> <span class="nx">volume</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">waveform</span> <span class="o">=</span> <span class="s2">&quot;triangle&quot;</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">osc</span> <span class="o">=</span> <span class="nx">Osc</span><span class="p">([</span><span class="mi">440</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">waveform</span><span class="p">],</span> <span class="kc">false</span><span class="p">).</span><span class="nx">silent</span><span class="p">();</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">env</span> <span class="o">=</span> <span class="nx">Env</span><span class="p">();</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nb">isNaN</span><span class="p">(</span><span class="nx">attack</span><span class="p">))</span> <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">attack</span> <span class="o">=</span> <span class="nx">attack</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nb">isNaN</span><span class="p">(</span><span class="nx">decay</span><span class="p">))</span> <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">decay</span> <span class="o">=</span> <span class="nx">decay</span><span class="p">;</span> 
+  
+  <span class="k">if</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">waveform</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">waveShape</span> <span class="o">=</span> <span class="nx">waveform</span><span class="p">;</span>
+  <span class="p">}</span>
+  
+  <span class="k">this</span><span class="p">.</span><span class="nx">mix</span><span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">volume</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">frequency</span><span class="o">=</span> <span class="mi">440</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">phase</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">active</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_start</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">counter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  
+  <span class="k">this</span><span class="p">.</span><span class="nx">mods</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">fx</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">sends</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">masters</span> <span class="o">=</span> <span class="p">[];</span>
+  
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">this</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>meta-methods</p></div></div><div class="code"><div class="wrapper">  <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">;</span>
+      <span class="kd">var</span> <span class="nx">mix</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">mix</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">frequency</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">attack</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">attack</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">decay</span>  <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">decay</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">sustain</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">sustain</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">sustainTime</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">sustainTime</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">waveShape</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">waveShape</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">fx</span> <span class="o">=</span> <span class="nx">that</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">fx</span><span class="p">;</span>
+    
+      <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperties</span><span class="p">(</span><span class="nx">that</span><span class="p">,</span> <span class="p">{</span>
+      <span class="s2">&quot;frequency&quot;</span> <span class="o">:</span> <span class="p">{</span>
+        <span class="nx">get</span> <span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">set</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span> <span class="o">=</span> <span class="nx">val</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;waveShape&quot;</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">waveShape</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">waveShape</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">waveShape</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+            <span class="p">}</span>
+      <span class="p">},</span>
+      
+      <span class="s2">&quot;attack&quot;</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">attack</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">attack</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">attack</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+            <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;decay&quot;</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">decay</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">decay</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">decay</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+            <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;sustain&quot;</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">sustain</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">sustain</span> <span class="o">=</span> <span class="nx">sustain</span><span class="p">;</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">sustain</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+            <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;sustainTime&quot;</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">sustainTime</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">set</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">sustainTime</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">sustainTime</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+            <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="p">});</span>
+  <span class="p">})(</span><span class="k">this</span><span class="p">);</span>
+  <span class="nx">Gibber</span><span class="p">.</span><span class="nx">addModsAndFX</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">Synth</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;Synth&quot;</span><span class="p">,</span>
+  <span class="nx">type</span><span class="o">:</span> <span class="s2">&quot;complex&quot;</span><span class="p">,</span>
+  <span class="nx">active</span> <span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+  </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="note">note</h3>
+
+<p>tell synth to play a particular frequency and trigger its envelope. The value can be either a frequency, a note name (such as "A4") or a note object from teoria.js</p>
+
+<p>param note: the value can be either string (note name), int(frequency), or object (teoria note object).</p></div></div><div class="code"><div class="wrapper">  <span class="nx">note</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">note</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span><span class="p">(</span><span class="k">typeof</span> <span class="nx">note</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">case</span> <span class="s2">&quot;number&quot;</span> <span class="o">:</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span> <span class="o">=</span> <span class="nx">note</span><span class="p">;</span>
+      <span class="k">break</span><span class="p">;</span>
+      <span class="k">case</span> <span class="s2">&quot;string&quot;</span> <span class="o">:</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span> <span class="o">=</span> <span class="nx">teoria</span><span class="p">.</span><span class="nx">note</span><span class="p">(</span><span class="nx">note</span><span class="p">).</span><span class="nx">fq</span><span class="p">();</span>
+      <span class="k">break</span><span class="p">;</span>
+      <span class="k">default</span><span class="o">:</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">frequency</span> <span class="o">=</span> <span class="nx">note</span><span class="p">.</span><span class="nx">fq</span><span class="p">();</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">triggerGate</span><span class="p">();</span>
+  <span class="p">},</span>
+  
+  <span class="nx">out</span> <span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">generate</span><span class="p">();</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">mix</span><span class="p">;</span>
+  <span class="p">},</span>
+  
+  <span class="nx">getMix</span> <span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">mix</span><span class="p">;</span>
+  <span class="p">},</span>
+  
+  <span class="nx">generate</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">out</span><span class="p">();</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">generate</span><span class="p">();</span>
+    
+    <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">*=</span> <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+  <span class="p">},</span>
+  </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h4 id="kill">kill</h4>
+
+<p>remove the generator from the graph and destroy all attached fx</p></div></div><div class="code"><div class="wrapper">  <span class="nx">kill</span> <span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">Gibber</span><span class="p">.</span><span class="nx">genRemove</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">masters</span><span class="p">.</span><span class="nx">length</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">mods</span><span class="p">.</span><span class="nx">length</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">fx</span><span class="p">.</span><span class="nx">length</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">},</span>
+  
+  <span class="nx">replace</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">replacement</span><span class="p">){</span>
+    <span class="nx">Gibber</span><span class="p">.</span><span class="nx">genRemove</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+    <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">masters</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">master</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">masters</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+      <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">master</span><span class="p">.</span><span class="nx">slaves</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">master</span><span class="p">.</span><span class="nx">slaves</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">==</span> <span class="k">this</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">master</span><span class="p">.</span><span class="nx">slave</span><span class="p">(</span><span class="nx">replacement</span><span class="p">);</span>
+          <span class="nx">master</span><span class="p">.</span><span class="nx">slaves</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">j</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">;</span>
+    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">;</span>
+    <span class="k">delete</span> <span class="k">this</span><span class="p">;</span>
+  <span class="p">},</span>
+  
+  <span class="nx">remove</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">replacement</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>can't replace, just remove instead.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">Gibber</span><span class="p">.</span><span class="nx">genRemove</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+    <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">masters</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">master</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">masters</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+      <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">master</span><span class="p">.</span><span class="nx">slaves</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">master</span><span class="p">.</span><span class="nx">slaves</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">==</span> <span class="k">this</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">master</span><span class="p">.</span><span class="nx">slave</span><span class="p">(</span><span class="nx">replacement</span><span class="p">);</span>
+          <span class="nx">master</span><span class="p">.</span><span class="nx">slaves</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">j</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">;</span>
+    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">env</span><span class="p">;</span>
+    <span class="k">delete</span> <span class="k">this</span><span class="p">;</span>
+  <span class="p">},</span>
+  
+  <span class="nx">chain</span> <span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">osc</span><span class="p">.</span><span class="nx">chain</span><span class="p">(</span><span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+  <span class="p">},</span>
+  
+  <span class="nx">send</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">_bus</span><span class="p">,</span> <span class="nx">amount</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">bus</span> <span class="o">=</span> <span class="p">{</span> 
+      <span class="nx">bus</span> <span class="o">:</span> <span class="nx">Gibber</span><span class="p">.</span><span class="nx">getBus</span><span class="p">(</span><span class="nx">_bus</span><span class="p">),</span>
+      <span class="nx">amount</span> <span class="o">:</span> <span class="nx">amount</span><span class="p">,</span>
+    <span class="p">};</span>
+      
+    <span class="nx">bus</span><span class="p">.</span><span class="nx">bus</span><span class="p">.</span><span class="nx">senders</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+      
+    <span class="k">this</span><span class="p">.</span><span class="nx">sends</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">bus</span><span class="p">);</span>
+  <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="nx">Synth</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">GeneratorClass</span><span class="p">();</span>
+
+<span class="nx">audioLib</span><span class="p">.</span><span class="nx">generators</span><span class="p">(</span><span class="s1">&#39;Synth&#39;</span><span class="p">,</span> <span class="nx">Synth</span><span class="p">);</span>
+
+<span class="nx">audioLib</span><span class="p">.</span><span class="nx">Synth</span> <span class="o">=</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">Synth</span><span class="p">;</span>
+ 
+<span class="p">}(</span><span class="nx">audioLib</span><span class="p">));</span>
+<span class="nx">audioLib</span><span class="p">.</span><span class="nx">plugins</span><span class="p">(</span><span class="s1">&#39;Synth&#39;</span><span class="p">,</span> <span class="nx">myPlugin</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">audioLib</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">exports</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">){</span>
+  <span class="nx">exports</span><span class="p">.</span><span class="nx">init</span> <span class="o">=</span> <span class="nx">initPlugin</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">initPlugin</span><span class="p">(</span><span class="nx">audioLib</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="p">}());</span>
+
+<span class="kd">function</span> <span class="nx">Synth</span> <span class="p">(</span><span class="nx">attack</span><span class="p">,</span> <span class="nx">decay</span><span class="p">,</span> <span class="nx">volume</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">audioLib</span><span class="p">.</span><span class="nx">Synth</span><span class="p">(</span><span class="nx">attack</span><span class="p">,</span> <span class="nx">decay</span><span class="p">,</span> <span class="nx">volume</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">s</span><span class="p">;</span>
+<span class="p">}</span></div></div></div></div></body></html>

@@ -1,3 +1,25 @@
+//  Gibber.js - fx.js
+// ========================
+
+
+// ###Bus
+// Create a bus holding fx that signals can be routed to 
+//
+// param **name**: String Optional name that can be used to refer to the new bus.  
+// param **---**: variable length object list. A comma delimited list of effects to attach to the bus.  
+//
+// example usage:  
+//	`b = Bus( Delay(_4), Reverb() );  
+//  s = Synth();  
+//	s.send( b, .5 );  `
+//
+// alternatively:  
+//	`b = Bus( "rev", Delay(_4), Reverb() );  
+//  s = Synth();  
+//	s.send( "rev", .5 );  `
+//
+// Note that when Reverb is placed on a bus it defaults to outputting only the wet signal; this is different from how it behaves in an fx chain.
+
 function Bus() { // name is id, fx is array, ahem, fx
 	var bus = {};
 	bus.fx = [];
@@ -38,6 +60,18 @@ function Bus() { // name is id, fx is array, ahem, fx
 	
 	return bus;
 }
+
+// ###Reverb
+// A wrapper for the reverb from audioLib.js
+//
+// param **roomSize**: Float. Default = .8. The size of the room being emulated  
+// param **damping**: Float. Default = .3. Attenuation of high frequencies that occurs  
+// param **wet**: Float. Default = .75. The amount of processed signal that is output  
+// param **dry**: Float. Default = .5. The amount of dry signal that is output  
+//
+// example usage:    
+// `s = Synth();  
+//  s.fx.add( Reverb() );  `
 
 function Reverb(roomSize, damping, wet, dry) {
 	roomSize 	= roomSize || .8;
@@ -85,6 +119,16 @@ function Reverb(roomSize, damping, wet, dry) {
 	return that;
 }
 
+// ###Delay
+// A wrapper for the Delay from audioLib.js
+//
+// param **time**: Int. Default = _4. The number of samples betweeen echoes, usually expressed in Gibber time variables
+// param **feedback**: Float. Default = .3. How much of the output is fed back into the input of hte delay  
+//
+// example usage:    
+// `s = Synth();  
+//  s.fx.add( Delay() );  `
+
 function Delay(time, feedback, mix) {
 	var that = audioLib.Delay(Gibber.sampleRate);
 	that.name = "Delay";
@@ -130,18 +174,28 @@ function Delay(time, feedback, mix) {
 	return that;	
 };
 
-function Ring(freq, amt) {
-	freq = (typeof freq !== "undefined") ? freq : 440;
-	amt  = (typeof amt !== "undefined") ? amt : 1;	
+// ###Ring
+// A Ring Modulator by thecharlie
+//
+// param **frequency**: Float. Default = 440. The frequency of the sine wave that the signal is multiplied by  
+// param **amount**: Float. Default = 1. The amplitude of the sine wave the signal is multiplied by  
+//
+// example usage:    
+// `s = Synth();  
+//  s.fx.add( Ring(220, .5) );  `
+
+function Ring(frequency, amount) {
+	frequency = (typeof freq !== "undefined") ? frequency : 440;
+	amount  = (typeof amount !== "undefined") ? amount : 1;	
 	var that = {
-		freq: freq,
-		amt: amt,
+		frequency: frequency,
+		amount: amount,
 	};
 	
 	that.name = "Ring";
 	that.type="fx";
 	
-	that.osc  = Sine(that.freq, that.amt);
+	that.osc  = Sine(that.frequency, that.amount);
 	that.osc.isControl = true;
 	that.gens = [];
 	that.mods = [];
@@ -183,6 +237,17 @@ function Ring(freq, amt) {
 	
 	return that;
 }
+
+// ###LPF
+// A low-pass filter from audioLib.js  
+//
+// param **cutoff**: Float. Default = 300. The cutoff frequency of the filter  
+// param **resonance**: Float. Default = 3. Emphasis of the cutoff frequency  
+//
+// example usage:    
+// `d = Drums("xoxo");  
+//  d.fx.add( LPF(420, .5) );  `
+
 function LPF(cutoff, resonance, mix) {
 	var that = audioLib.LP12Filter(Gibber.sampleRate);
 	that.name = "LPF";
@@ -218,7 +283,17 @@ function LPF(cutoff, resonance, mix) {
 	return that;
 }
 
-function Trunc(bits, mix) {
+// ###Crush
+// A bit-crusher from audioLib.js  
+//
+// param **resolution**: Float. Default = 8. The number of bits to truncate the output to  
+//
+// example usage:    
+// `d = Drums("xoxo");  
+//  d.fx.add( LPF(420, .5) );  `
+
+
+function Crush(resolution, mix) {
     var that = audioLib.BitCrusher(Gibber.sampleRate);
 	that.name = "Trunc";
 	that.type="fx";
@@ -227,30 +302,37 @@ function Trunc(bits, mix) {
 	that.mods = [];
 	that.automations = [];
 	
-	bits = bits || 8;
-	if(bits > 16) bits = 16;
+	resolution = resolution || 8;
+	if(resolution > 16) resolution = 16;
 	
-	if(typeof bits === "Object") {
-		that.effects[1].resolution = Math.pow(2, bits[0]-1);
-		that.effects[0].resolution = Math.pow(2, bits[1]-1);
+	if(typeof resolution === "Object") {
+		that.effects[1].resolution = Math.pow(2, resolution[0] - 1);
+		that.effects[0].resolution = Math.pow(2, resolution[1] - 1);
 	}else{
-		that.setParam("resolution", Math.pow(2, bits-1));
+		that.setParam("resolution", Math.pow(2, resolution - 1));
 	}
 	
-
 	that.mix = mix || 1;
 	
 	Gibber.addModsAndFX.call(that);
 	return that;
 }
 
-// simple waveshaper using y = x / (1+|x|) 
-// added a logarithmic volume adapter to the equation so that you can
+// ###Clip
+// A simple waveshaping distortion using y = x / (1+|x|) by thecharlie
+//
+// param **amount**: Float. Default = 4. The amount of distortion
+// Clip also has a logarithmic volume adapter to the equation so that you can
 // apply extreme amounts of clipping
 // TODO: store base2 log for faster calculations
-function Clip(amt) {
+//
+// example usage:    
+// `d = Drums("xoxo");  
+//  d.fx.add( Clip(1000) );  `
+
+function Clip(amount) {
 	var that = {
-		amount: (typeof amt !== "undefined" && amt > 1) ? amt : 4,
+		amount: (typeof amount !== "undefined" && amount > 1) ? amount : 4,
 		name : "Clip",
 		type: "fx",
 		gens :  [],
@@ -272,30 +354,16 @@ function Clip(amt) {
 	
 	return that;
 }
-
-function Gain(amt) {
-	var that = new  audioLib.GainController(Gibber.sampleRate, amt);
-	that.name = "Gain";
-	that.type = "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	
-	Gibber.addModsAndFX.call(that);	
-	return that;
-}
-
-function Comp(scaleBy, gain){
-	var that = new audioLib.Compressor(Gibber.sampleRate, scaleBy, gain);
-	that.name = "Comp";
-	that.type = "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	
-	Gibber.addModsAndFX.call(that);	
-	return that;
-}
+// ###Comb Filter 
+// A wrapper around the Comb filter from audiolib.js
+//
+// param **delaySize**: Int. The offset in samples for the comb filter
+// param **feedback**: Float. feedback of samples into filter
+// param **damping**: Float. Default = .2. damping for feedback
+//
+// example usage:    
+// `d = Drums("xoxo");  
+//  d.fx.add( Clip(1000) );  `
 
 function Comb(delaySize, feedback, damping){
 	var that = new audioLib.CombFilter(Gibber.sampleRate, delaySize, feedback, damping);
@@ -304,79 +372,6 @@ function Comb(delaySize, feedback, damping){
 	
 	that.gens = [];
 	that.mods = [];
-	
-	Gibber.addModsAndFX.call(that);	
-	return that;
-}
-
-function Chorus(delay, depth, freq, mix) {
-    var that = audioLib.Chorus(Gibber.sampleRate);
-	that.name = "Chorus";
-	that.type = "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.automations = [];
-	
-	delay = delay || 10;
-	depth = depth || .2;
-	freq  = freq  || 5;
-	
-	if(typeof delay === "Object") {
-		that.effects[0].delay = delay[0];
-		that.effects[1].delay = delay[1];
-	}else if(typeof delay !== "undefined"){
-		that.setParam("delay", delay);
-	}
-	
-	if(typeof depth === "Object") {
-		that.effects[0].depth = depth[0];
-		that.effects[1].depth = depth[1];
-	}else if(typeof depth !== "undefined"){
-		that.setParam("depth", depth);
-	}
-	
-	if(typeof freq === "Object") {
-		that.effects[0].freq = freq[0];
-		that.effects[1].freq = freq[1];
-	}else if(typeof freq !== "undefined"){
-		that.setParam("freq", freq);
-	}
-	
-	that.mix = mix || 1;
-	
-	Gibber.addModsAndFX.call(that);	
-	return that;
-}
-
-function Dist(gain, master) {
-	
-    var that = audioLib.Distortion(Gibber.sampleRate);
-	that.name = "Dist";
-	that.type = "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.automations = [];
-	
-	if(typeof gain === "undefined") 	gain 	= 6;
-	if(typeof master === "undefined") 	master  = 1;
-	
-	if(typeof gain === "Object") {
-		that.effects[1].gain = gain[0];
-		that.effects[0].gain = gain[1];
-	}else{
-		that.setParam("gain", gain);
-	}
-	
-	if(typeof master === "Object") {
-		that.effects[1].master = master[0];
-		that.effects[0].master = master[1];
-	}else{
-		that.setParam("master", master);
-	}
-	
-	//that.master = mix || 1;
 	
 	Gibber.addModsAndFX.call(that);	
 	return that;
