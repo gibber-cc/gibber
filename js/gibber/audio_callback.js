@@ -3,25 +3,30 @@ function processMods(gen) {
 	for(var m = 0; m < gen.mods.length; m++) {
 		var mod = gen.mods[m];
 		
-		if(mod.mods.length != 0) {
-			processMods(mod);
+		if(mod.active) {
+			if(mod.mods.length != 0) {
+				processMods(mod);
+			}
+			mod.store[mod.param] = gen[mod.param];
+		
+			var val = mod.out();
+		
+			audioLib.Automation.modes[mod.type](gen, mod.param, val);
 		}
-		mod.store[mod.param] = gen[mod.param];
-		
-		var val = mod.out();
-		
-		audioLib.Automation.modes[mod.type](gen, mod.param, val);
 	}		
 }
 
 function restoreMods(gen) {	
 	for(var m = 0; m < gen.mods.length; m++) {
 		var mod = gen.mods[m];
-		if(mod.mods.length != 0) {
-			restoreMods(mod);
-		}
-		for(var name in mod.store) {
-			gen[name] = mod.store[name];
+		
+		if(mod.active) {
+			if(mod.mods.length != 0) {
+				restoreMods(mod);
+			}
+			for(var name in mod.store) {
+				gen[name] = mod.store[name];
+			}
 		}
 	}	
 }

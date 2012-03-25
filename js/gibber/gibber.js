@@ -662,6 +662,65 @@ audioLib.ADSREnvelope.prototype.states[1] = function(){ // Timed Decay
  	//this.value = Math.max(this.sustain, this.value - 1000 / this.sampleRate / this.release);
 }; 
 
+// list of values / durations passed as arguments
+function Env2 () {
+	that = {};
+	that.value = 0;
+	that.position = 0;
+	that.values = [];
+	that.durations = [];
+	that.shouldLoop = false;
+	that.phase = 0;
+	that.active = true;
+	that.increment = 0;
+	that.modded =[];
+	
+	for(i = 0; i < arguments.length - 1; i+=2) {
+		that.values.push(arguments[i]);
+		that.durations.push(arguments[i + 1]);		
+	}
+	
+	that.increment = (that.values[that.position] - that.value) / that.durations[that.position];
+	
+	that.generate = function() {
+		if(this.active) {
+			this.phase++;
+			if(this.phase >= this.durations[this.position]) {
+				this.phase = 0;
+				this.position++;
+				if(this.position >= this.durations.length) {
+					// TODO: INTERESTING. Because this.active is set to false during one cycle, the value
+					// is not restored in the audio callback. Oddly enough, this creates the expected behavior.
+					this.active= false;
+					this.position = 0;
+				}
+				this.increment = (this.values[this.position] - this.value) / this.durations[this.position];
+			}
+			this.value += this.increment;
+		}
+	}
+		
+	function bpmCallback() {
+		return function(percentageChangeForBPM) {
+			for(var i = 0; i < this.durations.length; i++) {
+				this.durations[i] *= percentageChangeForBPM;
+			}
+		}
+	}
+	
+	Gibber.registerObserver("bpm", bpmCallback());
+	
+	Gibber.addModsAndFX.call(that);	
+	
+	that.out = function() {
+		this.generate();
+		return this.value;
+	};
+	
+	return that;
+}
+
+
  
 function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(arguments.length > 1) {
@@ -678,10 +737,9 @@ function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(typeof releaseTime  === "undefined") releaseTime = null;		
 	if(typeof sustainTime  === "undefined") sustainTime = 0;
 	
-	var that = audioLib.	ADSREnvelope(Gibber.sampleRate, attack, decay, sustain, release, sustainTime, releaseTime);
+	var that = audioLib.ADSREnvelope(Gibber.sampleRate, attack, decay, sustain, release, sustainTime, releaseTime);
 	that.name = "Env";
 	that.type = "mod";
-	
 	
 	that.looping = false;
 	that._releaseTime = releaseTime;

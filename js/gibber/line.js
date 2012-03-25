@@ -41,13 +41,9 @@ Line.prototype = {
 					
 				}
 			}else{
-				if(this.value <= this.end) {
-					console.log(this.modded[0].mix)
-					
+				if(this.value <= this.end) {					
 					this.active = false;
 					this.kill();
-					
-					console.log(s.mix)
 				}
 			}
 		}
