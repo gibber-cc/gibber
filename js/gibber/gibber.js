@@ -367,7 +367,7 @@ var Gibber = {
 		
 		out : function() {
 			this.generate();
-			return this.getMix() * this.mix;
+			return this.getMix();
 		},
 		
 		fxout : function(samp) {
@@ -428,6 +428,8 @@ var Gibber = {
 			if(typeof _source.mods === "undefined") {
 				_source.mods = [];
 			}
+			
+			if(_source.name === "Seq") _source.advance(); // Seqs normally wait until slaves are present to advance, this line starts it running.
 			
 			_source.store = {};
 			_source.modded.push(this);
@@ -803,25 +805,3 @@ function Sched(_func, _time, _repeats) {
 
 	return that;
 }
-
-function Step(steps, stepTime) {
-	steps 	 = steps || [1,0];
-	stepTime = stepTime || _4;
-	var that = new audioLib.StepSequencer(Gibber.sampleRate, (stepTime / Gibber.sampleRate) * 1000, steps, 0.0);
-	
-	that.name = "Step";
-	that.type = "mod";
-	function bpmCallback() {
-		return function() {
-			that.speed = that.stepTime * Gibber.measure;
-			that.stepLength = that.speed;
-		}
-	}
-	
-	that.modded =[];
-	Gibber.registerObserver("bpm", bpmCallback());
-	
-	Gibber.addModsAndFX.call(that);	
-	return that;
-}
-//var a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;

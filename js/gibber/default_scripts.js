@@ -37,9 +37,9 @@ default:
 '// change waveShape to sine\n'+
 's.waveShape = "sine";\n'+
 '\n'+
-'// modulate the frequency of the triangle wave using a step sequencer.\n'+
-'// add the step sequencers output to the oscillators frequency\n'+
-'s.mod("freq", Step([220, 0], _2), "+");\n'+
+'// modulate the frequency of the triangle wave using a sequencer.\n'+
+'// add the sequencer\'s output to the oscillators frequency\n'+
+'s.mod("freq", Seq([220, 0], _2), "+");\n'+
 '\n'+
 '// create tremolo by using a LFO to modulate the volume of the oscillator \n'+
 '// (currently volume is inappropriately referred to as mix). Multiply the amplitude\n'+
@@ -123,10 +123,6 @@ default:
 'kick = Seq("x...x..xx..xx...", _16).slave(d);\n'+
 'hat  = Seq("*.*.*.***.*.*.**", _16).slave(d);\n'+
 'sn   = Seq(".o", _4).slave(d);\n'+
-'\n'+
-'// put the snare slightly behind the beat... don\'t execute this at the start of a measure\n'+
-'// or the phase will be negative and the universe will collapse.\n'+
-'sn.phase -= 1000\n'+
 '\n'+
 'hat.shuffle(); // randomize hat sequence',
 

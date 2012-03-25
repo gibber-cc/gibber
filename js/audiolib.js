@@ -4025,6 +4025,7 @@ StepSequencer.prototype = {
  * @return {Number} The current value of the step sequencer.
 */
 	generate: function(){
+		if(G.debug) G.log(this.value);
 		var	self		= this,
 			stepLength	= self.sampleRate / 1000 * self.stepLength,
 			steps		= self.steps,

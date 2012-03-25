@@ -242,25 +242,28 @@ function Seq() {
 				this.counter++;
 				
 				return;
-			}			
-			for(var j = 0; j < this.slaves.length; j++) {
-				var _slave = this.slaves[j];
+			}
+			if(this.slaves.length === 0) { // if a mod
+				this.value = val;
+			}else{
+				for(var j = 0; j < this.slaves.length; j++) {
+					var _slave = this.slaves[j];
 	
-				if(this.outputMessage === "freq") {
-					if(typeof val === "string" ) {
-						var nt = teoria.note(val);
-						val = nt.fq();
-					}else if(typeof val === "object"){
-						val = val.fq();
-					}// else val is a number and is fine to send as a freq...
-				}
-				if(typeof _slave[this.outputMessage] === "function") {
-					_slave[this.outputMessage](val);
-				}else{
-					_slave[this.outputMessage] = val;
+					if(this.outputMessage === "freq") {
+						if(typeof val === "string" ) {
+							var nt = teoria.note(val);
+							val = nt.fq();
+						}else if(typeof val === "object"){
+							val = val.fq();
+						}// else val is a number and is fine to send as a freq...
+					}
+					if(typeof _slave[this.outputMessage] === "function") {
+						_slave[this.outputMessage](val);
+					}else{
+						_slave[this.outputMessage] = val;
+					}
 				}
 			}
-			
 			
 			// TODO: should this flip-flop between floor and ceiling?
 			if(this.durations != null) {
@@ -288,7 +291,7 @@ function Seq() {
 	};
 
 	that.getMix = function(){
-		return 0;
+		return this.value;
 	};
 	
 	that.out = function() {
@@ -392,6 +395,10 @@ function Seq() {
 	that.setParam = function(param, _value){
 		this[param] = _value;
 	};
+	
+	that.generate = function() {} // null function of modding
+	that.getMix = function() { return this.value; }
+	that.modded = [];
 	
 	Gibber.addModsAndFX.call(that);
 	
