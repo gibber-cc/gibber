@@ -58,6 +58,7 @@ function Seq() {
 		outputMessage:_outputMsg,
 		active:true,
 		slaves: [],
+		slavesInit : false,
 		phase: 0,
 		memory: [],
 		init: false,
@@ -164,7 +165,10 @@ function Seq() {
 				return this;
 			}
 		}
-		if(this.slaves.length === 1) { this.advance(); } // start sequence if it's not already running
+		if(!this.slavesInit) {
+			 this.advance();
+			 this.slavesInit = true;
+		} // start sequence if it's not already running
 		return this;		
 	};
 	
@@ -202,6 +206,7 @@ function Seq() {
 	
 	that.play = function() {
 		this.active = true;
+		this.advance();
 		return this;
 	};
 	
