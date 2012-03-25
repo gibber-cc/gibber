@@ -664,16 +664,44 @@ audioLib.ADSREnvelope.prototype.states[1] = function(){ // Timed Decay
 
 // list of values / durations passed as arguments
 function Env2 () {
-	that = {};
-	that.value = 0;
-	that.position = 0;
-	that.values = [];
-	that.durations = [];
-	that.shouldLoop = false;
-	that.phase = 0;
-	that.active = true;
-	that.increment = 0;
-	that.modded =[];
+	that = {
+		value : 0,
+		position : 0,
+		values : [],
+		durations : [],
+		shouldLoop : false,
+		phase : 0,
+		active : true,
+		increment : 0,
+		modded : [],
+		endFunction : null,
+		end : function(func) { 
+			if(typeof func === "function") this.endFunction = func; 
+			return this;
+		},
+		
+		generate : function() {
+			if(this.active) {
+				this.phase++;
+				if(this.phase >= this.durations[this.position]) {
+					this.phase = 0;
+					this.position++;
+					if(this.position >= this.durations.length) {
+						// TODO: INTERESTING. Because this.active is set to false during one cycle, the value
+						// is not restored in the audio callback. Oddly enough, this creates the expected behavior.
+						this.active= false;
+						this.position = 0;
+						if(this.endFunction != null) {
+							this.endFunction();
+						}
+					}
+					this.increment = (this.values[this.position] - this.value) / this.durations[this.position];
+				}
+				this.value += this.increment;
+			}
+		},
+		
+	};
 	
 	for(i = 0; i < arguments.length - 1; i+=2) {
 		that.values.push(arguments[i]);
@@ -681,25 +709,7 @@ function Env2 () {
 	}
 	
 	that.increment = (that.values[that.position] - that.value) / that.durations[that.position];
-	
-	that.generate = function() {
-		if(this.active) {
-			this.phase++;
-			if(this.phase >= this.durations[this.position]) {
-				this.phase = 0;
-				this.position++;
-				if(this.position >= this.durations.length) {
-					// TODO: INTERESTING. Because this.active is set to false during one cycle, the value
-					// is not restored in the audio callback. Oddly enough, this creates the expected behavior.
-					this.active= false;
-					this.position = 0;
-				}
-				this.increment = (this.values[this.position] - this.value) / this.durations[this.position];
-			}
-			this.value += this.increment;
-		}
-	}
-		
+
 	function bpmCallback() {
 		return function(percentageChangeForBPM) {
 			for(var i = 0; i < this.durations.length; i++) {
@@ -712,6 +722,7 @@ function Env2 () {
 	
 	Gibber.addModsAndFX.call(that);	
 	
+	// define after addModsAndFX since it overrides the out function assigned by it
 	that.out = function() {
 		this.generate();
 		return this.value;
