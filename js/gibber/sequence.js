@@ -67,6 +67,7 @@ function Seq() {
 		oddEven : 0,
 		phaseOffset : 0,
 		sequenceInit : false,
+		mix : 1, // needed for modding because the value of the gen is multiplied by this, should never be changed.
 	}
 	// ####once
 	// Play the sequence once and then end it
