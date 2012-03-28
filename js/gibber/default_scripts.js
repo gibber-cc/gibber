@@ -9,7 +9,7 @@ default:
 'a.reset();                          // reset arpeggio\n' +
 '\n' +
 'd = Drums("x...o..*", _8);			// kick on 1, snare on 5, "hat" on 8... each note is an eighth note (_8) \n' +
-'d.fx.add( Trunc(6), Delay(_8) );\n' +
+'d.fx.add( Crush(6), Delay(_8) );\n' +
 'd.frequency = 880;                  // 440 is base frequency; this lines doubles the pitch of all drum samples\n' +
 '\n' +
 's.mod("freq", LFO(8, 10), "+");     // Vibrato - modulating frequency by +/- 10Hz 8 times per second\n' +
@@ -53,7 +53,7 @@ default:
 's.fx.pop();\n'+
 '\n'+
 '// bit crush; reduce to 8-bits\n'+
-'s.fx.add( Trunc(8) );\n'+
+'s.fx.add( Crush(8) );\n'+
 '\n'+
 '// remove first effect in fx fx.add\n'+
 's.fx.remove(0);\n'+
@@ -96,8 +96,8 @@ default:
 '// x = kick, o = snare, * = hihat. hits are triggered every quarter note\n'+
 'd = Drums("xoxo", _4)\n'+
 '\n'+
-'// crush to six bits\n'+
-'d.fx.add( Trunc(6) )\n'+
+'// add soft-clipping distortion\n'+
+'d.fx.add( Clip(1000) )\n'+
 '\n'+
 '// raise/lower frequencies of drums; 440 is default starting value\n'+
 'd.frequency = 880\n'+
@@ -300,7 +300,7 @@ default:
 'this.dev.readFn = function(buffer, channelCount){\n'+
 '    var freqStore, val;\n'+
 '    if(typeof __s === "undefined") {  // init oscillators\n'+
-'        console.log("INIT");\n'+
+'        G.log("INIT");\n'+
 '        __s = Sine();\n'+
 '        __m = Sine(4, 8);\n'+
 '    }\n'+
