@@ -367,7 +367,7 @@ var Gibber = {
 		
 		out : function() {
 			this.generate();
-			return this.getMix();
+			return this.getMix() * this.mix;
 		},
 		
 		fxout : function(samp) {

@@ -18,12 +18,13 @@ function initPlugin(audioLib){
 // `p = Pluck(0, 1, "pink");  
 //  p.note( "A3" );  `
 
-function Pluck (damping, blend, color){
+function Pluck (damping, blend, color, vol){
 	this.name = "Pluck";
 	this.type = "gen";
 	this.frequency = 440;
 	this.value = 0;
 	this.active = true;
+	this.mix = vol || 1;
 	
 	this.mods =[];
 	this.fx =[];

@@ -357,7 +357,7 @@ function Seq() {
 			this.memory[arguments[0]] = this.sequence;
 		}
 	};
-	
+	// TODO: Needs to account for multiple durations
 	that.bpmCallback = function(obj) {
 		var _that = obj;
 		return function(percentageChangeForBPM) {
