@@ -43,6 +43,7 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	
 	var that = this; // closure so that d.shuffle can be sequenced
 	this.shuffle = function() { that.seq.shuffle(); };
+	this.reset = function() { that.seq.reset(); };
 	
 	this.load();
 	
@@ -154,7 +155,13 @@ Drums.prototype = {
 			this.seq.retain(num); 
 		}
 	},
-	set : function(newSequence) { this.seq.set(newSequence); },
+	set : function(newSequence, _timeValue) { 
+		if(typeof this.seq != "undefined") {
+			this.seq = Seq(newSequence, _timeValue).slave(this);
+		}else{
+			this.seq.set(newSequence); 
+		}
+	},
 	
 	note : function(nt) {
 		switch(nt) {

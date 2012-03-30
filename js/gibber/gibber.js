@@ -693,6 +693,7 @@ function Env2 () {
 						// is not restored in the audio callback. Oddly enough, this creates the expected behavior.
 						this.active= false;
 						this.position = 0;
+						G.log("NOT ACTIVE");
 						if(this.endFunction != null) {
 							this.endFunction();
 						}

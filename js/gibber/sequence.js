@@ -51,6 +51,7 @@ function Seq() {
 		sequence : _seq,
 		_start : true,
 		offset : 0,	 // used to sequence Gibber object
+		shouldUseOffset : false, // flag to determine when offset should be initially applied
 		counter : 0, // position in seqeuence
 		_counter :0, // used for scheduling
 		speed: speed,
@@ -105,7 +106,13 @@ function Seq() {
 	
 	that.setSequence = function(seq, _speed, _reset) {
 		if(typeof _speed !== "undefined") {
-			this.speed = _speed;
+			if(_speed === "number") {
+				speed = _speed;
+				durations = null;
+			}else{
+				speed = null;
+				durations = _speed;
+			}
 		}
 		
 		if(_reset) {
@@ -224,22 +231,21 @@ function Seq() {
 			// TODO: there should probably be a more robust way to to this
 			// but it will look super nice and clean on screen...
 			
+			var nextPhase = (this.durations != null) ? this.durations[pos] : this.speed;
+			if(this.shouldUseOffset) {
+				nextPhase += this.offset;
+				this.shouldUseOffset = false;
+			}
+			nextPhase = Math.round(nextPhase);
+			
 			if(typeof val === "function") {
 				val();
-				if(this.durations != null) {
-					G.callback.addEvent(Math.round(this.durations[pos]), this);
-				}else{
-					G.callback.addEvent(Math.round(this.speed), this);
-				}
+				G.callback.addEvent(nextPhase, this);
 				this.counter++;
 				
 				return;
 			}else if(typeof val === "undefined") {
-				if(this.durations != null) {
-					G.callback.addEvent(Math.round(this.durations[pos]), this);
-				}else{
-					G.callback.addEvent(Math.round(this.speed), this);
-				}
+				G.callback.addEvent(nextPhase, this);
 				this.counter++;
 				
 				return;
@@ -267,11 +273,8 @@ function Seq() {
 			}
 			
 			// TODO: should this flip-flop between floor and ceiling?
-			if(this.durations != null) {
-				G.callback.addEvent(Math.round(this.durations[pos]), this);
-			}else{
-				G.callback.addEvent(Math.round(this.speed), this);
-			}
+			G.callback.addEvent(nextPhase, this);
+			
 			this.counter++;
 			if(this.counter % this.sequence.length === 0) {
 				if(this.shouldDie) {
@@ -372,6 +375,7 @@ function Seq() {
 	(function() {
 		var speed = that.speed;
 		var _that = that;
+		var _offset = that.offset;
 		
 		Object.defineProperties(that, {
 			"speed": {
@@ -384,6 +388,13 @@ function Seq() {
 					if(this.sequence != null) {
 						this.setSequence(this.sequence);
 					}
+				}
+			},
+			"offset" : {
+				get: function(){ return _offset; },
+				set: function(value) {
+					_offset = value;
+					this.shouldUseOffset = true;
 				}
 			}
 		});
