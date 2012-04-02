@@ -39,11 +39,12 @@ function Arp(notation, beats, mode, mult) {
 	};
 	
 	this.speed = isNaN(beats) ? _4 : beats;
-	
 	this.chord(this.notation);	// this sets the sequence
+	
 	this.__proto__.__proto__ = Seq();
-	this.setSequence(this.notes, this.speed, false);
 
+	this.setSequence(this.notes, this.speed, false);
+	
 	this._sequence = this.notes.slice(0);	
 	this._init = true;
 }

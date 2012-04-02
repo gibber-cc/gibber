@@ -10,7 +10,7 @@ default:
 '\n' +
 'd = Drums("x...o..*", _8);			// kick on 1, snare on 5, "hat" on 8... each note is an eighth note (_8) \n' +
 'd.fx.add( Crush(6), Delay(_8) );\n' +
-'d.frequency = 880;                  // 440 is base frequency; this lines doubles the pitch of all drum samples\n' +
+'d.pitch *= 2;                      // double the pitch of drum samples\n' +
 '\n' +
 's.mod("freq", LFO(8, 10), "+");     // Vibrato - modulating frequency by +/- 10Hz 8 times per second\n' +
 's.mods.remove();                    // removes all mods, pass a number or parameter name to remove a particular mod\n' +
@@ -205,11 +205,10 @@ default:
 '\n'+
 '// We can easily sequence changes to modes using the Seq object. Just pass "mode"\n'+
 '// as the last parameter and it will change that property of q.\n'+
-'qq.stop();\n'+
-'a = Seq([ "minor", "majorpentatonic" ], _1, "mode").slave(q);\n'+
+'a = Seq([ "minor", "majorpentatonic" ], _1, "mode").slave(q, qq);\n'+
 '\n'+
 '// We can also easily sequence the root key\n'+
-'b = Seq(["D4", "E4", "F#4", "A4"], _2, "root").slave(q);\n'+
+'b = Seq(["D4", "E4", "F#4", "A4"], _2, "root").slave(q, qq);\n'+
 'b.speed = _1\n'+
 '\n'+
 '// set sequence to loop through all available modes. All modes are also stored in Gibber.modes\n'+
@@ -218,7 +217,8 @@ default:
 'a.set([ "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"]);\n'+
 '\n'+
 '// change q to play each note in scale (with some extra notes on the pentatonic ones)\n'+
-'q.set([0,1,2,3,4,5,6,7]);',
+'q.set( [0,1,2,3,4,5,6,7]);\n'+
+'qq.set([3,4,5,6,7,1,2,3]);',
 
 "chords + arp":
 '/*\n'+
@@ -281,7 +281,7 @@ default:
 '// IMPORTANT: Note we do not call the functions using (), we just pass references to them\n'+
 'p = Seq([ q.shuffle, q.reset ], _1 * 2);\n'+
 '\n'+
-'// fade out synth (hello pops!) and stop sequence when synth volume is just about inaudible.\n'+
+'// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
 'v = Seq([ function() { s.mix *= .8; if(s.mix < .001) q.stop(); } ]);',
 
 "custom callback": 

@@ -16,75 +16,259 @@
 //	`s = Synth();  
 //  t = Seq(["C4", "D4", "G4", "F4"], _4).slave(s)  ` 
 
+(function myPlugin(){
+
+function initPlugin(audioLib){
+(function(audioLib){
+
 function Seq() {
-	var _seq = arguments[0] || null;
+	(function(_that) {
+		var _speed = null;
+		var that = _that;
+		var _offset = 0;
+		var _slaves = [];
+		
+		Object.defineProperties(that, {
+			"speed": {
+				get: function(){ return _speed; },
+				set: function(value) {
+					if(value < 65) {
+						value = window["_"+value];
+					}
+					_speed = value;
+					if(that.sequence != null) {
+						that.setSequence(that.sequence);
+					}
+				}
+			},
+			"offset" : {
+				get: function(){ return _offset; },
+				set: function(value) {
+					_offset = value;
+					that.shouldUseOffset = true;
+				}
+			},
+			"slaves" : {
+				get: function(){ return _slaves; },
+				set: function(value) {
+					_slaves = value;
+					that.slave.apply(that, _slaves);
+				}
+			},
+		});
+	})(this);
+
+	this._sequence = null;
+	this.sequence = null;
+	this._start = true;
+	this.shouldUseOffset = false; // flag to determine when offset should be initially applied
+	this.counter = 0; // position in seqeuence
+	this._counter = 0; // used for scheduling
+	this.durations = null;
+	this.outputMessage = null;
+	this.active = true;
+	this.slavesInit = false;
+	this.phase = 0;
+	this.memory = [];
+	this.init = false;
+	this.mods = [];
+	this.shouldDie = false;
+	this.oddEven = 0;
+	this.phaseOffset = 0;
+	this.sequenceInit = false;
+	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
 	
-	if(typeof _seq === "function") { // wrap anonymous function in array as sugar
-		_seq = [_seq];
-	}
-	
-	var arg1Type = typeof arguments[1];
-	var speed, durations;
-	if(arg1Type !== "undefined") {
-		if(arg1Type === "number") {
-			speed = arguments[1];
-			durations = null;
-		}else{
-			speed = null;
-			durations = arguments[1];
+	var that = this;	
+
+	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
+		var obj = arguments[0];
+		for(key in obj) {
+			if(key !== "slaves") {
+				this[key] = obj[key];
+			}else{
+				this.slave.apply(this, obj[key]);
+			}
 		}
 	}else{
-		speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
-		durations = null;
+		_seq = arguments[0] || null;
+		if(typeof _seq === "function") { // wrap anonymous function in array as sugar
+			_seq = [_seq];
+		}
+		this.sequence = _seq;
+	}
+	if(this.speed === null && this.durations === null) {
+		var arg1Type = typeof arguments[1];
+		if(arg1Type !== "undefined") {
+			if(arg1Type === "number") {
+				this.speed = arguments[1];
+				this.durations = null;
+			}else{
+				this.speed = null;
+				this.durations = arguments[1];
+			}
+		}else{
+			if(typeof arguments !== "undefined") {
+				if(typeof arguments[0] !== "undefined")
+					this.speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
+			}
+		}
+	}
+
+	this.outputMessage = arguments[2] || "note";
+	
+	Gibber.registerObserver( "bpm", this.bpmCallback(this) );
+	
+	if(this.sequence != null && typeof this.sequence != "undefined") {
+		this.setSequence(this.sequence, this.speed);	
+	}
+	if(this.slaves.length != 0) {	// put here so it doesn't get repushed as when using slave function
+		for(var i = 0; i < this.slaves.length; i++) {
+			var gen = this.slaves[i];
+	
+			if(typeof gen.masters === "undefined") {
+				gen.masters = [this];
+			}else{
+				gen.masters.push(this);
+			}
+			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+		}
+		if(!this.slavesInit && !this.doNotAdvance) { // start sequence if it's not already running
+			 this.advance();
+			 this.slavesInit = true;
+		}
 	}
 	
-	var _outputMsg = arguments[2] || null;
+	this.setParam = function(param, _value){
+		this[param] = _value;
+	};
 	
-	if(_outputMsg === null) {
-		_outputMsg = "note";
-	}
+	this.generate = function() {} // null function of modding
+	this.getMix = function() { return this.value; }
+	this.modded = [];
+	
+	// ####shuffle
+	// randomize order of sequence
+
+	this.shuffle = function() {
+		that.sequence.shuffle();
+		that.setSequence(that.sequence, that.speed);
+		return that;
+	};
+	
+	// ####reset
+	// reset order of sequence to its original order or to a memorized set of positions
+	//
+	// param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order.
+	
+	this.reset = function() {
+		if(arguments.length === 0) {
+			that.setSequence(that._sequence, that.speed);
+		}else{
+			that.setSequence(that.memory[arguments[0]]);
+		}
+		return that;
+	};
+	
+	Gibber.addModsAndFX.call(this);	
+}
+	
+Seq.prototype = {
+	name : "Seq",
+	type : "control",
+	
+	// ####advance
+	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
+	advance : function() {
+		if(this.active) {
+			var pos = this.counter % this.sequence.length;
+			var val = this.sequence[pos];
 		
-	var that = {
-		name : "Seq",
-		type : "control",
-		_sequence : null,
-		sequence : _seq,
-		_start : true,
-		offset : 0,	 // used to sequence Gibber object
-		shouldUseOffset : false, // flag to determine when offset should be initially applied
-		counter : 0, // position in seqeuence
-		_counter :0, // used for scheduling
-		speed: speed,
-		durations : durations,
-		outputMessage:_outputMsg,
-		active:true,
-		slaves: [],
-		slavesInit : false,
-		phase: 0,
-		memory: [],
-		init: false,
-		mods: [],
-		shouldDie: false,
-		oddEven : 0,
-		phaseOffset : 0,
-		sequenceInit : false,
-		mix : 1, // needed for modding because the value of the gen is multiplied by this, should never be changed.
-	}
+			// only play if not setting an offset... if using offset simply set original offset position
+			var shouldReturn = false; 
+			var nextPhase = 0;
+			
+			if(this.shouldUseOffset) {
+				nextPhase += this.offset;
+				this.shouldUseOffset = false;
+				shouldReturn = true;
+				
+				// only use duration with negative offset
+				if(this.offset < 0)
+					nextPhase += (this.durations != null) ? this.durations[pos] : this.speed;
+			}else{
+				nextPhase += (this.durations != null) ? this.durations[pos] : this.speed;
+			}
+			
+			// TODO: should this flip-flop between floor and ceiling instead of rounding?
+			nextPhase = Math.round(nextPhase);
+			
+			G.callback.addEvent(nextPhase, this);
+			
+			// Function sequencing
+			// TODO: there should probably be a more robust way to to this
+			// but it will look super nice and clean on screen...
+			if(typeof val === "function") {
+				if(!shouldReturn) {
+					val();
+					this.counter++;
+				}
+				
+				return;
+			}else if(typeof val === "undefined") {
+				if(!shouldReturn) {
+					this.counter++;
+				}
+
+				return;
+			}
+			
+			if(shouldReturn) return;
+			
+			if(this.slaves.length === 0) { // if a mod
+				this.value = val;
+			}else{
+				for(var j = 0; j < this.slaves.length; j++) {
+					var _slave = this.slaves[j];
+	
+					if(this.outputMessage === "freq") {
+						if(typeof val === "string" ) {
+							var nt = teoria.note(val);
+							val = nt.fq();
+						}else if(typeof val === "object"){
+							val = val.fq();
+						}// else val is a number and is fine to send as a freq...
+					}
+					if(typeof _slave[this.outputMessage] === "function") {
+						_slave[this.outputMessage](val);
+					}else{
+						_slave[this.outputMessage] = val;
+					}
+				}
+			}
+			
+			this.counter++;
+			if(this.counter % this.sequence.length === 0) {
+				if(this.shouldDie) {
+					this.kill();
+				}
+			}
+		}
+	},
+	
 	// ####once
 	// Play the sequence once and then end it
 	
-	that.once = function() {
+	once : function() {
 		this.end = true;
 		return this;
-	};
+	},
 	
-	that.schedule = function() {
-	};
+	schedule : function() {},
 	
 	// ####kill
 	// Destroy the sequencer
 	
-	that.kill = function() {
+	kill : function() {
 		this.free();
 		Gibber.callback.slaves.remove(this);
 		
@@ -104,7 +288,7 @@ function Seq() {
 	// param **_speed** Int. Optional. A new speed for the sequencer to run at  
 	// param **_reset** Bool. Optional. If true, reset the the current position of the sequencer to 0.  
 	
-	that.setSequence = function(seq, _speed, _reset) {
+	setSequence : function(seq, _speed, _reset) {
 		if(typeof _speed !== "undefined") {
 			if(_speed === "number") {
 				speed = _speed;
@@ -133,8 +317,7 @@ function Seq() {
 				this.sequence[i] = n;
 			}
 		}
-		
-		if(this.init === false) {
+		if(this.init === false && !this.doNotAdvance) {
 			this._sequence = this.sequence.slice(0);
 			Gibber.callback.slaves.push(this);
 			if(typeof this.sequence[0] === "function"){
@@ -142,8 +325,7 @@ function Seq() {
 			}
 			this.init = true;
 		}
-	};
-	
+	},
 	
 	// ####slave
 	// assign a new set of values to be sequenced
@@ -156,7 +338,7 @@ function Seq() {
 	// t = Seq(["C4", "D4"], _1)  
 	// t.slave(s, ss);  `
 	
-	that.slave = function() {
+	slave : function() {
 		for(var i = 0; i < arguments.length; i++) {
 			var gen = arguments[i];
 	
@@ -176,115 +358,52 @@ function Seq() {
 		if(!this.slavesInit) {
 			 this.advance();
 			 this.slavesInit = true;
+			 this._sequence = this.sequence.slice(0);
 		} // start sequence if it's not already running
 		return this;		
-	};
+	},
 	
 	// ####free
 	// stop controlling slaved ugens
 	
-	that.free = function() {
+	free : function() {
 		if(arguments.length == 0) {
 			this.slaves.length = 0;
 		}else{
 			this.slaves.splice(arguments[0], 1);
 		}
-	};
+	},
 	
 	// ####stop
 	// stop the sequencer from running and reset the position to 0
 	
-	that.stop = function() {
+	stop : function() {
 		this.active = false;
 		this.phase = 0;		
 		this.counter = 0;
 		return this;
-	};
+	},
 	
 	// ####pause
 	// stop the sequencer from running but do not reset the current position
 	
-	that.pause = function() {
+	pause : function() {
 		this.active = false;
 		return this;
-	};
+	},
 	
 	// ####play
 	// start the sequencer running
 	
-	that.play = function() {
+	play : function() {
 		this.active = true;
 		this.advance();
 		return this;
-	};
+	},
 	
-	// ####advance
-	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
+
 	
-	that.advance = function() {
-		if(this.active) {
-			var pos = this.counter % this.sequence.length;
-			var val = this.sequence[pos];
-		
-			var shouldReturn = false;
-			// Function sequencing
-			// TODO: there should probably be a more robust way to to this
-			// but it will look super nice and clean on screen...
-			
-			var nextPhase = (this.durations != null) ? this.durations[pos] : this.speed;
-			if(this.shouldUseOffset) {
-				nextPhase += this.offset;
-				this.shouldUseOffset = false;
-			}
-			nextPhase = Math.round(nextPhase);
-			
-			if(typeof val === "function") {
-				val();
-				G.callback.addEvent(nextPhase, this);
-				this.counter++;
-				
-				return;
-			}else if(typeof val === "undefined") {
-				G.callback.addEvent(nextPhase, this);
-				this.counter++;
-				
-				return;
-			}
-			if(this.slaves.length === 0) { // if a mod
-				this.value = val;
-			}else{
-				for(var j = 0; j < this.slaves.length; j++) {
-					var _slave = this.slaves[j];
-	
-					if(this.outputMessage === "freq") {
-						if(typeof val === "string" ) {
-							var nt = teoria.note(val);
-							val = nt.fq();
-						}else if(typeof val === "object"){
-							val = val.fq();
-						}// else val is a number and is fine to send as a freq...
-					}
-					if(typeof _slave[this.outputMessage] === "function") {
-						_slave[this.outputMessage](val);
-					}else{
-						_slave[this.outputMessage] = val;
-					}
-				}
-			}
-			
-			// TODO: should this flip-flop between floor and ceiling?
-			G.callback.addEvent(nextPhase, this);
-			
-			this.counter++;
-			if(this.counter % this.sequence.length === 0) {
-				if(this.shouldDie) {
-					this.kill();
-				}
-			}
-		}
-	};
-	
-	that.break = function(newSeq, breakToOriginal) {
+	break : function(newSeq, breakToOriginal) {
 		this.shouldBreak = true;
 			
 		if(breakToOriginal) {
@@ -292,16 +411,16 @@ function Seq() {
 		}
 
 		this.preBreakSequence = jQuery.extend(true, {}, this._sequence);
-	};
+	},
 
-	that.getMix = function(){
+	getMix : function(){
 		return this.value;
-	};
+	},
 	
-	that.out = function() {
+	out : function() {
 		this.generate();
 		return 0;
-	};
+	},
 	
 	// ####set
 	// assign a new set of values to be sequenced. I can't remember how this is different from setSequence, but surely there's a good reason for it :)
@@ -310,8 +429,7 @@ function Seq() {
 	// param **speed** Int. Optional. A new speed for the sequencer to run at  
 	// param **shouldReset** Bool. Optional. If true, reset the the current position of the sequencer to 0.   
 	
-	
-	that.set = function(newSequence, speed, shouldReset) {
+	set : function(newSequence, speed, shouldReset) {
 		if(typeof speed != "undefined") {
 			if(!shouldReset) {
 				this.phase -= this.speed - speed;
@@ -325,94 +443,42 @@ function Seq() {
 		
 		this.sequence = newSequence;
 		this.setSequence(this.sequence, speed, shouldReset);
-	};
-	
-	// ####shuffle
-	// randomize order of sequence
-
-	that.shuffle = function() {
-		that.sequence.shuffle();
-		that.setSequence(that.sequence, that.speed);
-		return that;
-	};
-	
-	// ####reset
-	// reset order of sequence to its original order or to a memorized set of positions
-	//
-	// param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order.
-	
-	that.reset = function() {
-		if(arguments.length === 0) {
-			that.setSequence(that._sequence, that.speed);
-		}else{
-			that.setSequence(that.memory[arguments[0]]);
-		}
-		return that;
-	};
+	},
 	
 	// ####retain
 	// retain current order of sequenced values
 	//
 	// param **slotNumber** Int. Optional. The position to hold the current sequencer order. By default it will simply be pushed to the memory array
-	that.retain = function() {
+	retain : function() {
 		if(arguments.length === 0) {
 			this.memory.push(this.sequence);
 		}else{
 			this.memory[arguments[0]] = this.sequence;
 		}
-	};
+	},
 	// TODO: Needs to account for multiple durations
-	that.bpmCallback = function(obj) {
+	bpmCallback : function(obj) {
 		var _that = obj;
 		return function(percentageChangeForBPM) {
 			_that.speed *= percentageChangeForBPM;
 			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
 		}
-	};
-	
-	Gibber.registerObserver( "bpm", that.bpmCallback(that) );
-	
-	(function() {
-		var speed = that.speed;
-		var _that = that;
-		var _offset = that.offset;
+	},
+}
+audioLib.Sequencer = Seq;
 		
-		Object.defineProperties(that, {
-			"speed": {
-				get: function(){ return speed; },
-				set: function(value) {
-					if(value < 65) {
-						value = window["_"+value];
-					}
-					speed = value;
-					if(this.sequence != null) {
-						this.setSequence(this.sequence);
-					}
-				}
-			},
-			"offset" : {
-				get: function(){ return _offset; },
-				set: function(value) {
-					_offset = value;
-					this.shouldUseOffset = true;
-				}
-			}
-		});
-	})();
-	
-	if(that.sequence != null && typeof that.sequence != "undefined") {
-		that.setSequence(that.sequence, that.speed);	
-	}
-	
-	that.setParam = function(param, _value){
-		this[param] = _value;
-	};
-	
-	that.generate = function() {} // null function of modding
-	that.getMix = function() { return this.value; }
-	that.modded = [];
-	
-	Gibber.addModsAndFX.call(that);
-	
-	return that;
+}(audioLib));
+audioLib.plugins('Sequencer', myPlugin);
+}
+
+if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
+	exports.init = initPlugin;
+} else {
+	initPlugin(audioLib);
+}
+
+}());
+
+function Seq(seq, durations, msg) { // may also be a single object dictionary
+	return new audioLib.Sequencer(seq, durations, msg);
 }

@@ -54,7 +54,7 @@ function Pluck (damping, blend, color, vol){
 	    Object.defineProperties(that, {
 			"damping" : { 
 				get: function() {
-					return damping * 10;
+					return damping * 100;
 				},
 				set: function(value) {
 					damping = value / 100;

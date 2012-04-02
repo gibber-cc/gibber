@@ -46,11 +46,30 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	this.reset = function() { that.seq.reset(); };
 	
 	this.load();
-	
 	if(typeof _sequence != "undefined") {
-		this.seq = Seq(_sequence, _timeValue).slave(this);
+		if(typeof _timeValue !== "undefined") {
+			if($.isArray(_timeValue)) {
+				this.seq = Seq({
+					sequence :_sequence,
+					durations : _timeValue,
+					slaves:[this],
+				});
+			}else{
+				this.seq = Seq({
+					sequence :_sequence,
+					speed : _timeValue,
+					slaves:[this],
+				});
+			}
+		}else{
+			_timeValue = window["_"+_sequence.length];
+			this.seq = Seq({
+				sequence :_sequence,
+				speed : _timeValue,
+				slaves:[this],
+			});
+		}
 	}
-	
 	this.reset = function(num)  { 
 		if(isNaN(num)) {
 			that.seq.reset();

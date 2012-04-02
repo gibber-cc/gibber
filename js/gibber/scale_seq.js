@@ -1,14 +1,25 @@
 function ScaleSeq(_sequence, _speed) {
+	var _sequenceNumbers = ($.isArray(_sequence)) ? _sequence.slice(0) : _sequence.sequence.slice(0);
+	
+	_sequence.doNotAdvance = true; // do not start sequence until scale and pattern has been set.	
 	var that = Seq(_sequence, _speed);
-
+	_sequence.doNotAdvance = false;
+	
+	that.sequenceNumbers = _sequenceNumbers;
+	
 	that.name = "ScaleSeq";
 	that.type = "control";
 	
-	that.root = Gibber.root;
-	that.sequenceNumbers = _sequence;
 	that.mode = Gibber.mode;
+	that.root = Gibber.root;	// triggers meta-setter that sets sequence
 
-	that.slaves = [];
+	that.scaleInit = false;
+	that.counter = 0;
+	
+	if(typeof arguments[0] !== "object" && $.isArray(arguments[0]) === true) {
+		that.sequence = _sequence;
+		that.slaves = [];
+	}
 		
 	that.createPattern = function(sequence) {
 		var _rootoctave = this.root.octave;
@@ -44,6 +55,11 @@ function ScaleSeq(_sequence, _speed) {
 		}
 		
 		this.setSequence(this.sequence);
+		// if(this.scaleInit === false && this.slaves.length != 0) {
+		// 	this.scaleInit = true;
+		// 	console.log("CALLED CALLED CALLED")
+		// 	this.advance();
+		// }
 	};
 	
 	that.set = function(sequence) {
@@ -54,7 +70,7 @@ function ScaleSeq(_sequence, _speed) {
 	    var root = obj.root;
 		var speed = obj.speed;
 		var mode = obj.mode;
-
+		var that = obj;
 	    Object.defineProperties(that, {
 			"root" : {
 		        get: function() {
@@ -62,7 +78,7 @@ function ScaleSeq(_sequence, _speed) {
 		        },
 		        set: function(value) {
 		            root = teoria.note(value);
-					this.createPattern(this.sequenceNumbers);
+					that.createPattern(that.sequenceNumbers);
 		        }
 			},
 			"mode" : {
@@ -71,14 +87,14 @@ function ScaleSeq(_sequence, _speed) {
 		        },
 		        set: function(value) {
 		            mode = value;
-					this.createPattern(this.sequenceNumbers);
+					that.createPattern(that.sequenceNumbers);
 		        }
 			},
 			 
 	    });
 	})(that);
 
-	that.root = Gibber.root;	// triggers meta-setter that sets sequence
-	
+	that.root = G.root;
+		
 	return that;
 }
