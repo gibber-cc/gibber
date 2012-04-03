@@ -495,9 +495,10 @@ function Osc(freq, vol) {
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
-		
+		console.log(obj);
 		for(key in obj) {
-			this[key] = obj[key];
+			console.log("setting " + key);
+			that[key] = obj[key];
 		}
 		that.amp = (typeof that.amp === "undefined") ? .3 : that.amp;
 	}else{
@@ -571,7 +572,7 @@ function LFO(freq, amount, shape, type) {
 };
 
 function Sine(freq, volume, shouldAdd) {	
-	var that = Osc.call(null, arguments);
+	var that = Osc.apply(null, arguments);
 	that.name = "Sine";
 	that.waveShape = 'sine';
 	
@@ -579,7 +580,7 @@ function Sine(freq, volume, shouldAdd) {
 }
 
 function Tri(freq, volume) {	
-	var that = Osc(arguments);
+	var that = Osc.apply(null,arguments);
 	that.name = "Tri";
 	that.waveShape = 'triangle';
 	
@@ -587,7 +588,7 @@ function Tri(freq, volume) {
 }
 
 function Pulse(freq, volume) {	
-	var that = Osc(arguments);
+	var that = Osc.apply(null,arguments);
 	that.name = "Pulse";
 	that.waveShape = 'pulse';
 	
@@ -597,7 +598,7 @@ function Pulse(freq, volume) {
 }
 
 function Saw(freq, volume) {	
-	var that = Osc(arguments);
+	var that = Osc.apply(null,arguments);
 	that.name = "Saw";	
 	that.waveShape = 'sawtooth';
 	
@@ -607,7 +608,7 @@ function Saw(freq, volume) {
 }
 
 function InvSaw(freq, volume) {	
-	var that = Osc(arguments);
+	var that = Osc.apply(null,arguments);
 	that.name = "InvSaw";	
 	that.waveShape = 'invSawtooth';
 	
@@ -617,7 +618,7 @@ function InvSaw(freq, volume) {
 }
 
 function Square(freq, volume) {
-	var that = Osc(arguments);
+	var that = Osc.apply(null,arguments);
 	that.name = "Square";
 	that.waveShape = 'square';
 	
