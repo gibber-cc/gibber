@@ -495,15 +495,13 @@ function Osc(freq, vol) {
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
-		console.log(obj);
 		for(key in obj) {
-			console.log("setting " + key);
 			that[key] = obj[key];
 		}
 		that.amp = (typeof that.amp === "undefined") ? .3 : that.amp;
 	}else{
-		that.frequency = (typeof args[0] !== "undefined") ? args[0] : 440;
-		that.amp = (typeof args[1] !== "undefined") ? args[1] : .2;	
+		that.frequency = (typeof arguments[0] !== "undefined") ? arguments[0] : 440;
+		that.amp = (typeof arguments[1] !== "undefined") ? arguments[1] : .2;	
 	}
 	
 	that.type = "gen";	
@@ -558,10 +556,11 @@ function Osc(freq, vol) {
 }
 
 function LFO(freq, amount, shape, type) {
-	var that = Osc(arguments, false);
-	that.isControl = true;
+	var that = Osc.apply(null, arguments).silent();
 	that.name = "LFO";
 	that.type = "mod";
+	
+	that.isControl = false;
 	that.mix = amount;
 	that.waveShape = (typeof shape === "String") ? shape : 'sine';
 	that.modded = [];
