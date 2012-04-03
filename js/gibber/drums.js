@@ -23,7 +23,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
 	this.hat   = new audioLib.Sampler(Gibber.sampleRate);
-	this.amp   = isNaN(_amp) ? 1 : _amp;
+	this.amp   = isNaN(_amp) ? .4 : _amp;
 	this.frequency = isNaN(_freq) ? 440 : _freq;
 	
 	this.value = 0;

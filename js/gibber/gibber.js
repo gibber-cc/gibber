@@ -490,7 +490,7 @@ audioLib.Oscillator.getMix =  function(){
 };
 
 
-function Osc(freq, vol) {
+function Osc(freq, vol, waveShape) {
 	var that = new audioLib.Oscillator(Gibber.sampleRate, 440);
 	
 	if(typeof arguments[0] === "object") {
@@ -504,6 +504,7 @@ function Osc(freq, vol) {
 		that.amp = (typeof arguments[1] !== "undefined") ? arguments[1] : .2;	
 	}
 	
+	if(typeof waveShape !== "undefined") that.waveShape = waveShape;
 	that.type = "gen";	
 	that.active = true;		
 	that.value = 0;

@@ -6,11 +6,11 @@ function Poly(_chord, _waveform, volume) {
 
 	var that = {
 		oscs : [
-			Osc([220, .1, _waveform], false),
-			Osc([330, .1, _waveform], false),
-			Osc([440, .1, _waveform], false),
-			Osc([550, .1, _waveform], false),
-			Osc([660, .1, _waveform], false),
+			Osc(220, .1, _waveform).silent(),
+			Osc(330, .1, _waveform).silent(),
+			Osc(440, .1, _waveform).silent(),
+			Osc(550, .1, _waveform).silent(),
+			Osc(660, .1, _waveform).silent(),
 		],
 		waveform: _waveform,
 		name: "Synth",
