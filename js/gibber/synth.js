@@ -19,7 +19,7 @@ function initPlugin(audioLib){
 
 function Synth(attack, decay, volume) {	
 	this.env = Env();
-	this.osc = Osc([440, 1, "triangle"], false).silent();
+	this.osc = Osc(440, 1, "triangle", false).silent();
 	
 	(function(obj) {
 		var that = obj;

@@ -267,11 +267,13 @@ default:
 '// This shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
 '// There is a tutorial on the Seq object that should be read first to understand this.\n'+
 '\n'+
-'// create a synth, add delay + reverb, adjust attack/delay times\n'+
-'s = Synth();\n'+
+'// create a synth and specify attack/delay/amp values, add delay + reverb\n'+
+'s = Synth({\n'+
+'    attack: 10,\n'+
+'    decay: 50,\n'+
+'    amp:.25\n'+
+'});\n'+
 's.fx.add( Delay(_8), Reverb() );\n'+
-'s.attack = 10;\n'+
-'s.decay = 50;\n'+
 '\n'+
 '// Sequence using the default Gibber scale, C4 Aeolian\n'+
 '// See scales and theory for details on the ScaleSeq object\n'+
@@ -282,7 +284,7 @@ default:
 'p = Seq([ q.shuffle, q.reset ], _1 * 2);\n'+
 '\n'+
 '// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
-'v = Seq([ function() { s.mix *= .8; if(s.mix < .001) q.stop(); } ]);',
+'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
 "custom callback": 
 '/*\n'+

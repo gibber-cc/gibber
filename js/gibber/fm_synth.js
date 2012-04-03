@@ -6,10 +6,16 @@ Gibber.FMPresets = {
 		decay	: 5000,
 	},
 	drum : {
-		cmRatio : 1.4,
+		cmRatio : 1.40007,
 		index	: 2,
 		attack	: 1,
 		decay	: 1000,
+	},
+	drum2 : {
+		cmRatio: 1 + Math.sqrt(2),
+		index: .2,
+		attack: 1,
+		decay: 20,
 	},
 	brass : {
 		cmRatio : 1 / 1.0007,
