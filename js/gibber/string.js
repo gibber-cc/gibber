@@ -19,8 +19,6 @@ function initPlugin(audioLib){
 //  p.note( "A3" );  `
 
 function Pluck (damping, blend, color, vol){
-	this.name = "Pluck";
-	this.type = "gen";
 	this.frequency = 440;
 	this.value = 0;
 	this.active = true;
@@ -67,8 +65,8 @@ function Pluck (damping, blend, color, vol){
 
 Pluck.prototype = {
 	sampleRate : Gibber.sampleRate,
-	type  : "mod",
-	name  : "Pluck",
+	name : "Pluck",
+	type : "gen",
 	
 	// ####note
 	// play a note

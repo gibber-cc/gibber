@@ -20,6 +20,8 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 		reverseChance : .5,
 		pitchShifting : false,
 		pitchChance : .5,
+		pitchMin : .25,
+		pitchMax : 2,
 		mix : 1,
 		phase : 0,
 		fadeCount : 0,
@@ -70,7 +72,7 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 						this.fadeAmount = 1;
 		
 						if(this.shouldRandomizePitch) this.pitchShifting = (Math.random() < this.pitchChance);
-						this.increment = (this.pitchShifting) ? rndf(.25, 2) : 1;
+						this.increment = (this.pitchShifting) ? rndf(this.pitchMin, this.pitchMax) : 1;
 		
 						if(this.shouldRandomizeReverse) this.reverse = (Math.random() < this.reverseChance);			
 						this.readIndex = this.reverse ? this.length - 1 : 0;
@@ -113,6 +115,17 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 			return this.value;
 		},
 	};
+	
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		if(typeof obj["chance"] === "undefined") {
+			obj["chance"] = .5;
+		}
+		
+		for(key in obj) {
+			that[key] = obj[key];
+		}
+	}
 	
 	that.writeBuffer = new Float32Array(Math.floor(that.length * 2));
 	that.writeBufferLength = Math.floor(that.length * 2);		
