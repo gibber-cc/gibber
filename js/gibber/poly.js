@@ -189,7 +189,7 @@ function Poly(_chord, _waveform, volume) {
 	
 	that.trig = function(vol) {
 		if(typeof vol !== "undefined") {
-			this.mix = vol;
+			this.amp = vol;
 		}
 		this.env.triggerGate();
 	};
