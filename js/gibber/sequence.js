@@ -63,6 +63,7 @@ function Seq() {
 	this._start = true;
 	this.shouldUseOffset = false; // flag to determine when offset should be initially applied
 	this.counter = 0; // position in seqeuence
+	this.durationCounter = 0;
 	this._counter = 0; // used for scheduling
 	this.durations = null;
 	this.outputMessage = null;
@@ -194,9 +195,9 @@ Seq.prototype = {
 				
 				// only use duration with negative offset
 				if(this.offset < 0)
-					nextPhase += (this.durations != null) ? this.durations[pos] : this.speed;
+					nextPhase += (this.durations != null) ? this.durations[this.durationCounter % this.durations.length] : this.speed;
 			}else{
-				nextPhase += (this.durations != null) ? this.durations[pos] : this.speed;
+				nextPhase += (this.durations != null) ? this.durations[this.durationCounter % this.durations.length] : this.speed;
 			}
 			
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
@@ -247,6 +248,7 @@ Seq.prototype = {
 			}
 			
 			this.counter++;
+			this.durationCounter++;
 			if(this.counter % this.sequence.length === 0) {
 				if(this.shouldDie) {
 					this.kill();

@@ -104,6 +104,15 @@ window.fill = function() {
 	return window.filli(0, 20, 16);
 };
 
+window.fillD = function(min, max, number) {
+	var output = [];
+	for(var i = 0; i < number; i++) {
+		output.push(window["_" + randomi(min, max)]);
+	}
+	
+	return output;
+};
+
 
 window.rndi = window.randomi = function() {
 	var min, max;
