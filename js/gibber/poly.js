@@ -16,7 +16,7 @@ function Poly(_chord, _waveform, volume) {
 		name: "Synth",
 		type: "complex",
 		env : Env(),
-		mix: volume,
+		amp: volume,
 		frequency: 440,
 		phase : 0,
 		value : 0,
@@ -106,34 +106,12 @@ function Poly(_chord, _waveform, volume) {
 	};
 	
 	(function() {
-	    var mix = that.mix;
 		var attack = that.env.attack;
 		var decay  = that.env.decay;
 		var sustain = that.env.sustain;
 		var sustainTime = that.env.sustainTime;
-		var waveform = that.waveform;
-		var fx = that.fx;
 		
 	    Object.defineProperties(that, {
-			"mix" : {
-		        get: function() {
-		            return mix;
-		        },
-		        set: function(value) {
-		            mix = value;
-					//this.osc.mix = value;
-		        }
-			},
-			"waveform" : {
-		        get: function() {
-		            return waveform;
-		        },
-		        set: function(value) {
-		            waveform = value;
-					//this.osc.waveShape = value;
-		        }
-			},
-			
 			"attack" : {
 		        get: function() {
 		            return attack;
@@ -188,15 +166,8 @@ function Poly(_chord, _waveform, volume) {
 		this.value = val;
 	}
 	
-	that.out = function() {
-		this.generate();
-		return this.getMix();
-	};
-	
-	
-	
 	that.getMix = function() {
-		return this.value * this.mix;
+		return this.value * this.amp;
 	};
 	
 	//Gibber.generators.push(that);

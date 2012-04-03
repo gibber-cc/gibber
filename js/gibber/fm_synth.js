@@ -23,7 +23,7 @@ Gibber.FMPresets = {
 // or, if you keep them separate, expand envelope capabilities to be more advanced
 
 function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
-	var that = Synth("sine");
+	var that = Synth({ waveShape : "sine"});
 	that.name = "FM";
 	
 	if(typeof arguments[0] === "string") {	// if a preset
@@ -39,12 +39,12 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		that.decay = isNaN(decay) ? 100 : decay;
 	}
 	
+	that.amp = .5;
 
 	modFreq = that.osc.frequency * that.cmRatio;
 	modAmp = that.index * that.osc.frequency;
 	
-	that.modulator = Sine(modFreq, modAmp);
-	Gibber.genRemove(that.modulator);
+	that.modulator = Sine(modFreq, modAmp).silent();
 
 	shouldUseModulatorEnvelope = (typeof shouldUseModulatorEnvelope === "undefined") ? true : shouldUseModulatorEnvelope;
 	
@@ -128,32 +128,9 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		this.value *= envValue;
 	};
 	
-	
-	(function() {
-	    var mix = that.mix;
-		var fx  = that.osc.fx;
+	that.getMix = function() {
+		return this.value * this.amp;
+	}
 		
-	    Object.defineProperties(that, {
-			"mix" : {
-		        get: function() {
-		            return mix;
-		        },
-		        set: function(value) {
-		            mix = value;
-					this.osc.mix = value;
-		        }
-			},
-			"fx" : {
-				get : function() {
-					return this.osc.fx;
-				},
-				set : function(_fx) {
-					this.osc.fx = _fx;
-				}
-			},
-		})
-	})();
-	
-	
 	return that;
 };

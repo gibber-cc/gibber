@@ -17,46 +17,19 @@ function initPlugin(audioLib){
 //	`s = Synth(1000, 2000, .5);  
 //   s.note("A4");  `
 
-function Synth(attack, decay, volume) {
-	this.volume = isNaN(volume) ? .4 : volume;
-	this.waveform = "triangle";
-	this.osc = Osc([440, 1, this.waveform], false).silent();
+function Synth(attack, decay, volume) {	
 	this.env = Env();
+	this.osc = Osc([440, 1, "triangle"], false).silent();
 	
-	if(!isNaN(attack)) this.env.attack = attack;
-	if(!isNaN(decay)) this.env.decay = decay;	
-	
-	if(typeof waveform !== "undefined") {
-		this.osc.waveShape = waveform;
-	}
-	
-	this.mix= this.volume;
-	this.frequency= 440;
-	this.phase = 0;
-	this.value = 0;
-	this.active = true;
-	this._start = true;
-	this.counter = -1;
-	this.value = 0;
-	
-	this.mods = [];
-	this.fx = [];
-	this.sends = [];
-	this.masters = [];
-	
-	Gibber.generators.push(this);
-	// meta-methods
 	(function(obj) {
 		var that = obj;
-	    var mix = that.mix;
 		var frequency = that.osc.frequency;
 		var attack = that.env.attack;
 		var decay  = that.env.decay;
 		var sustain = that.env.sustain;
 		var sustainTime = that.env.sustainTime;
 		var waveShape = that.osc.waveShape;
-		var fx = that.osc.fx;
-		
+	
 	    Object.defineProperties(that, {
 			"frequency" : {
 				get : function() {
@@ -114,6 +87,33 @@ function Synth(attack, decay, volume) {
 			},
 	    });
 	})(this);
+	
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		
+		for(key in obj) {
+			this[key] = obj[key];
+		}
+	}else{
+		this.amp = isNaN(volume) ? .4 : volume;
+		if(!isNaN(attack)) this.env.attack = attack;
+		if(!isNaN(decay)) this.env.decay = decay;
+	}
+	
+	this.amp = this.amp || .4;
+	
+	this.waveShape = this.waveShape || "triangle";
+	
+	this.frequency = 440;
+	this.phase = 0;
+	this.value = 0;
+	this.active = true;
+	
+	this.mods = [];
+	this.fx = [];
+	this.sends = [];
+	this.masters = [];
+	Gibber.generators.push(this);
 	Gibber.addModsAndFX.call(this);
 }
 
@@ -141,13 +141,8 @@ Synth.prototype = {
 		this.env.triggerGate();
 	},
 	
-	out : function() {
-		this.generate();
-		return this.value * this.mix;
-	},
-	
 	getMix : function() {
-		return this.value * this.mix;
+		return this.value * this.amp;
 	},
 	
 	generate: function() {

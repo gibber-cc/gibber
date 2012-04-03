@@ -19,11 +19,11 @@ function initPlugin(audioLib){
 //
 // note that most Drum methods mirror that of Seq. 
 
-function Drums (_sequence, _timeValue, _mix, _freq){
+function Drums (_sequence, _timeValue, _amp, _freq){
 	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
 	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
 	this.hat   = new audioLib.Sampler(Gibber.sampleRate);
-	this.mix   = isNaN(_mix) ? 0.175 : _mix;
+	this.amp   = isNaN(_amp) ? 1 : _amp;
 	this.frequency = isNaN(_freq) ? 440 : _freq;
 	
 	this.value = 0;
@@ -46,7 +46,20 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 	this.reset = function() { that.seq.reset(); };
 	
 	this.load();
-	if(typeof _sequence != "undefined") {
+	
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		
+		for(key in obj) {
+			this[key] = obj[key];
+		}
+		
+		this.seq = Seq({
+			sequence : 	this.sequence,
+			speed : 	this.speed,
+			slaves :	[this],
+		});
+	}else if(typeof _sequence != "undefined") {
 		if(typeof _timeValue !== "undefined") {
 			if($.isArray(_timeValue)) {
 				this.seq = Seq({
@@ -70,17 +83,10 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 			});
 		}
 	}
-	this.reset = function(num)  { 
-		if(isNaN(num)) {
-			that.seq.reset();
-		}else{
-			that.seq.reset(num); 
-		}
-	};
 	
 	(function(obj) {
 		var that = obj;
-		var _pitch;
+		var _pitch = 1;
 		
 	    Object.defineProperties(that, {
 			"speed" : {
@@ -105,6 +111,16 @@ function Drums (_sequence, _timeValue, _mix, _freq){
 			},
 	    });
 	})(this);
+	
+	if(this.pitch != 1) this.pitch = arguments[0].pitch;
+	
+	this.reset = function(num)  { 
+		if(isNaN(num)) {
+			that.seq.reset();
+		}else{
+			that.seq.reset(num); 
+		}
+	};
 }
 
 Drums.prototype = {
@@ -160,7 +176,7 @@ Drums.prototype = {
 		this.value += this.hat.getMix();
 	},
 		
-	getMix : function() { return this.value; },
+	getMix : function() { return this.value * this.amp; },
 	
 	once : function() {
 		this.seq.once();
@@ -175,7 +191,7 @@ Drums.prototype = {
 		}
 	},
 	set : function(newSequence, _timeValue) { 
-		if(typeof this.seq != "undefined") {
+		if(typeof this.seq === "undefined") {
 			this.seq = Seq(newSequence, _timeValue).slave(this);
 		}else{
 			this.seq.set(newSequence); 

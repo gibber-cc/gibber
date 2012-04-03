@@ -367,7 +367,7 @@ var Gibber = {
 		
 		out : function() {
 			this.generate();
-			return this.getMix() * this.mix;
+			return this.getMix();
 		},
 		
 		fxout : function(samp) {
@@ -485,18 +485,29 @@ Master = {
 };
 Gibber.addModsAndFX.call(Master);
 
-function Osc(args, isAudioGenerator) {
-	var _freq = (typeof args[0] !== "undefined") ? args[0] : 440;
+audioLib.Oscillator.getMix =  function(){
+	return this[this.waveShape]() * this.amp;
+};
+
+
+function Osc(freq, vol) {
+	var that = new audioLib.Oscillator(Gibber.sampleRate, 440);
 	
-	var that = new audioLib.Oscillator(Gibber.sampleRate, _freq);
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		
+		for(key in obj) {
+			this[key] = obj[key];
+		}
+		that.amp = (typeof that.amp === "undefined") ? .3 : that.amp;
+	}else{
+		that.frequency = (typeof args[0] !== "undefined") ? args[0] : 440;
+		that.amp = (typeof args[1] !== "undefined") ? args[1] : .2;	
+	}
+	
 	that.type = "gen";	
-	
-	that.mix = (typeof args[1] !== "undefined") ? args[1] : .2;
 	that.active = true;		
 	that.value = 0;
-	if(typeof args[2] === "string") {
-		that.waveShape = args[2];
-	}
 	
 	that.mods = [];
 	that.fx = [];
@@ -525,10 +536,13 @@ function Osc(args, isAudioGenerator) {
 		return this;		
 	};
 	
-	if(typeof isAudioGenerator === "undefined" || isAudioGenerator) {
-		Gibber.audioInit = true;
-		Gibber.generators.push(that);
-	}
+	that.getMix = function() { 
+		return this[this.waveShape]() * this.amp;
+	};
+	
+
+	Gibber.audioInit = true;
+	Gibber.generators.push(that);
 	
 	that.silent = function() {
 		Gibber.genRemove(this);
@@ -557,7 +571,7 @@ function LFO(freq, amount, shape, type) {
 };
 
 function Sine(freq, volume, shouldAdd) {	
-	var that = Osc(arguments);
+	var that = Osc.call(null, arguments);
 	that.name = "Sine";
 	that.waveShape = 'sine';
 	
@@ -574,8 +588,10 @@ function Tri(freq, volume) {
 
 function Pulse(freq, volume) {	
 	var that = Osc(arguments);
-	that.name = "Square";
+	that.name = "Pulse";
 	that.waveShape = 'pulse';
+	
+	that.amp *= .7;
 	
 	return that;
 }
@@ -585,13 +601,17 @@ function Saw(freq, volume) {
 	that.name = "Saw";	
 	that.waveShape = 'sawtooth';
 	
+	that.amp *= .55;
+	
 	return that;
 }
 
 function InvSaw(freq, volume) {	
 	var that = Osc(arguments);
-	that.name = "InvSquare";	
+	that.name = "InvSaw";	
 	that.waveShape = 'invSawtooth';
+	
+	that.amp *= .55;
 	
 	return that;
 }
@@ -601,56 +621,10 @@ function Square(freq, volume) {
 	that.name = "Square";
 	that.waveShape = 'square';
 	
+	that.amp *= .5;
 	return that;
 }
 
-function assign(param, name) {
-	if(typeof param === "Object") {
-		this.effects[1][name] = param[0];
-		this.effects[0][name] = param[1];
-	}else{
-		this.setParam(name, param);
-	}
-}
-
-// extend audioLib to close envelop at end of release time using isDead property.
-// isDead is different from gate... once gate is closed the release section of the env
-// begins. When isDead is true the state of the envelope does not advance
-
-// audioLib.ADSREnvelope.prototype.isDead = true;
-// audioLib.ADSREnvelope.prototype.generate = function(){
-// 	if(!this.isDead) {
-// 		this.states[this.state].call(this);
-// 	}
-// 	return this.value;
-// };
-// 
-// audioLib.ADSREnvelope.prototype.states[4] = function(){ // Timed release state of env
-// 	this.value = Math.max(0, this.value - 1000 / this.sampleRate / this.release);
-// 
-// 	if (this._st++ >= this.sampleRate * 0.001 * this.releaseTime){
-// 		//console.log(this);
-// 		this._st	= 0;
-// 		this.state	= 0;
-// 		this.gate = false;
-// 		this.isDead = true;
-// 		this.value = 0;
-// 	}
-// }
-// 
-// audioLib.ADSREnvelope.prototype.triggerGate = function(isOpen){
-// 	isOpen		= typeof isOpen === 'undefined' ? !this.gate : isOpen;
-// 	this.gate	= isOpen;
-// 	this.state	= isOpen ? 0 : this.releaseTime === null ? 3 : 5;
-// 	this._st	= 0;
-// 	if(isOpen) this.isDead = false;
-// };
-/*
-s = Sine(240, .15);
-e = Env(100);
-s.mod("mix" , e, "*");
-e.triggerGate();
-*/
 audioLib.ADSREnvelope.prototype.states[1] = function(){ // Timed Decay
 	var delayAmt = (1 - this.sustain) / ( (Gibber.sampleRate / 1000) * this.decay);
 	this.value -= delayAmt;

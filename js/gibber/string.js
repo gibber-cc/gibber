@@ -19,10 +19,32 @@ function initPlugin(audioLib){
 //  p.note( "A3" );  `
 
 function Pluck (damping, blend, color, vol){
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		
+		for(key in obj) {
+			this[key] = obj[key];
+		}
+		this.damping = (isNaN(this.damping)) ? 0 : this.damping;
+		this.dampingValue = .5 - this.damping;
+		this.blend = (isNaN(this.blend)) ? 1 : this.blend;
+		this.amp = (isNaN(this.amp)) ? .5 : this.amp;
+		this.color = (typeof this.color === "undefined") ? "white" : this.color;
+	}else{
+		if(typeof damping === "string") {
+			color = damping;
+			damping = 0;
+		}
+		this.damping = (isNaN(damping)) ? 0 : damping / 100;
+		this.dampingValue = .5 - this.damping;
+		this.blend = (isNaN(blend)) ? 1 : blend;
+		this.amp = vol || .5;
+		this.color = (typeof color === "undefined") ? "white" : color;
+	}
+	
 	this.frequency = 440;
 	this.value = 0;
 	this.active = true;
-	this.mix = vol || 1;
 	
 	this.mods =[];
 	this.fx =[];
@@ -32,15 +54,6 @@ function Pluck (damping, blend, color, vol){
 	this.noise = new audioLib.Noise();
 	this._buffer = [];
 	this.lastValue = 0;
-	if(typeof damping === "string") {
-		color = damping;
-		damping = 0;
-	}
-	this.damping = (isNaN(damping)) ? 0 : damping / 100;
-	this.dampingValue = .5 - this.damping;
-	this.blend = (isNaN(blend)) ? 1 : blend;
-	
-	this.color = (typeof color === "undefined") ? "white" : color;
 	
 	Gibber.addModsAndFX.call(this);	
 	Gibber.generators.push(this);
@@ -115,7 +128,7 @@ Pluck.prototype = {
 		this._buffer.push(this.value);
 	},
 			
-	getMix : function() { return this.value; },
+	getMix : function() { return this.value * this.amp; },
 };
 
 Pluck.prototype.__proto__ = new audioLib.GeneratorClass();
