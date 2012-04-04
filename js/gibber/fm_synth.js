@@ -1,4 +1,10 @@
 Gibber.FMPresets = {
+	glockenspiel : {
+		cmRatio	: 3.5307,
+		index 	: 1,
+		attack	: 1,
+		decay	: 1000
+	},
 	gong : {
 		cmRatio : 1.4,
 		index	: .95,
@@ -23,6 +29,12 @@ Gibber.FMPresets = {
 		attack	: 100,
 		decay	: 100,
 	},
+	clarinet : {
+		cmRatio	: 2 / 3,
+		index	: 1.5,
+		attack	: 50,
+		decay	: 200,
+	}
 };
 
 // TODO: modulator should use same amplitude envelope as the carrier, would probably require a custom generate method.

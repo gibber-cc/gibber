@@ -104,8 +104,8 @@ function Seq() {
 				this.speed = arguments[1];
 				this.durations = null;
 			}else{
-				this.speed = null;
 				this.durations = arguments[1];
+				this.speed = null;
 			}
 		}else{
 			if(typeof arguments !== "undefined") {
@@ -114,7 +114,7 @@ function Seq() {
 			}
 		}
 	}
-
+	
 	this.outputMessage = arguments[2] || "note";
 	
 	Gibber.registerObserver( "bpm", this.bpmCallback(this) );
@@ -199,7 +199,6 @@ Seq.prototype = {
 			}else{
 				nextPhase += (this.durations != null) ? this.durations[this.durationCounter % this.durations.length] : this.speed;
 			}
-			
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
 			nextPhase = Math.round(nextPhase);
 			
@@ -212,12 +211,14 @@ Seq.prototype = {
 				if(!shouldReturn) {
 					val();
 					this.counter++;
+					this.durationCounter++;
 				}
 				
 				return;
 			}else if(typeof val === "undefined") {
 				if(!shouldReturn) {
 					this.counter++;
+					this.durationCounter++;
 				}
 
 				return;

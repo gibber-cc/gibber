@@ -84,6 +84,12 @@ window.copy = function(obj) {
 	return $.extend(true, {}, obj);
 };
 
+window.select = function(objects) {
+	var selectionNumber = $.isArray(objects) ? rndi(0, objects.length) : rndi(0, arguments.length);
+	var selection = $.isArray(objects) ? objects[selectionNumber] : arguments[selectionNumber];
+	
+	return selection;
+}
 window.filli = function(min, max, number) {
 	var output = [];
 	for(var i = 0; i < number; i++) {
@@ -100,11 +106,8 @@ window.fillf = function(min, max, number) {
 	return output;
 };
 
-window.fill = function() {
-	return window.filli(0, 20, 16);
-};
-
-window.fillD = function(min, max, number) {
+// fill durations
+window.filld = function(min, max, number) {
 	var output = [];
 	for(var i = 0; i < number; i++) {
 		output.push(window["_" + randomi(min, max)]);
@@ -112,6 +115,13 @@ window.fillD = function(min, max, number) {
 	
 	return output;
 };
+
+
+window.fill = function() {
+	return window.filli(0, 20, 16);
+};
+
+
 
 
 window.rndi = window.randomi = function() {
