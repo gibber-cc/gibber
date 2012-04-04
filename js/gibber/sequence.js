@@ -49,7 +49,11 @@ function Seq() {
 				}
 			},
 			"slaves" : {
-				get: function(){ return _slaves; },
+				get: function(){ 
+					//console.log("GETTING SLAVES");
+					//console.log(_slaves);
+					return _slaves; 
+				},
 				set: function(value) {
 					_slaves = value;
 					that.slave.apply(that, _slaves);
@@ -78,7 +82,7 @@ function Seq() {
 	this.phaseOffset = 0;
 	this.sequenceInit = false;
 	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
-	
+
 	var that = this;	
 
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
@@ -97,6 +101,7 @@ function Seq() {
 		}
 		this.sequence = _seq;
 	}
+
 	if(this.speed === null && this.durations === null) {
 		var arg1Type = typeof arguments[1];
 		if(arg1Type !== "undefined") {
@@ -114,7 +119,7 @@ function Seq() {
 			}
 		}
 	}
-	
+		
 	this.outputMessage = arguments[2] || "note";
 	
 	Gibber.registerObserver( "bpm", this.bpmCallback(this) );
@@ -122,6 +127,7 @@ function Seq() {
 	if(this.sequence != null && typeof this.sequence != "undefined") {
 		this.setSequence(this.sequence, this.speed);	
 	}
+	
 	if(this.slaves.length != 0) {	// put here so it doesn't get repushed as when using slave function
 		for(var i = 0; i < this.slaves.length; i++) {
 			var gen = this.slaves[i];
@@ -160,7 +166,7 @@ function Seq() {
 	// reset order of sequence to its original order or to a memorized set of positions
 	//
 	// param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order.
-	
+
 	this.reset = function() {
 		if(arguments.length === 0) {
 			that.setSequence(that._sequence, that.speed);
@@ -273,7 +279,7 @@ Seq.prototype = {
 	
 	kill : function() {
 		this.free();
-		Gibber.callback.slaves.remove(this);
+		//Gibber.callback.slaves.remove(this);
 		
 		for(var i = 0; i < this.slaves.length; i++) {
 			var slave = this.slaves[i];
@@ -322,7 +328,7 @@ Seq.prototype = {
 		}
 		if(this.init === false && !this.doNotAdvance) {
 			this._sequence = this.sequence.slice(0);
-			Gibber.callback.slaves.push(this);
+			//Gibber.callback.slaves.push(this);
 			if(typeof this.sequence[0] === "function"){
 				this.advance();
 			}
@@ -342,27 +348,29 @@ Seq.prototype = {
 	// t.slave(s, ss);  `
 	
 	slave : function() {
-		for(var i = 0; i < arguments.length; i++) {
-			var gen = arguments[i];
+		if(arguments.length != 0) {
+			for(var i = 0; i < arguments.length; i++) {
+				var gen = arguments[i];
 	
-			var idx = jQuery.inArray( gen, this.slaves);
-			if(idx === -1) {
-				this.slaves.push(gen);
-				if(typeof gen.masters === "undefined") {
-					gen.masters = [this];
+				var idx = jQuery.inArray( gen, this.slaves);
+				if(idx === -1) {
+					this.slaves.push(gen);
+					if(typeof gen.masters === "undefined") {
+						gen.masters = [this];
+					}else{
+						gen.masters.push(this);
+					}
+					if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
 				}else{
-					gen.masters.push(this);
+					return this;
 				}
-				if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
-			}else{
-				return this;
 			}
+			if(!this.slavesInit) {
+				 this.advance();
+				 this.slavesInit = true;
+				 this._sequence = this.sequence.slice(0);
+			} // start sequence if it's not already running
 		}
-		if(!this.slavesInit) {
-			 this.advance();
-			 this.slavesInit = true;
-			 this._sequence = this.sequence.slice(0);
-		} // start sequence if it's not already running
 		return this;		
 	},
 	

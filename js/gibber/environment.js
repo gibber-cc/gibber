@@ -471,7 +471,6 @@ Gibber.Environment = {
 		        sender: 'Gibber.Environment.Editor'
 		    },
 		    exec: function(env, args, request) {
-				console.log(this);
 		        var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
 				var cb;
 				var sel;
@@ -482,8 +481,8 @@ Gibber.Environment = {
 				}else{
 					sel = ".ace_selection";
 				}
-				Gibber.Environment.flashExecutedCode(sel);				
-				Gibber.runScript(text);
+				Gibber.Environment.flashExecutedCode(sel);							
+				Gibber.runScript(text);			
 		    }
 		});
 		Gibber.Environment.Editor.commands.addCommand({
