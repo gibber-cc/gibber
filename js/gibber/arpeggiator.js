@@ -66,6 +66,13 @@ function Arp(notation, beats, mode, mult) {
 			var _tmp = array.slice(0);
 			_tmp.reverse();
 			return array.concat(_tmp);
+		},
+		updown2 : function(array) { // do not repeat highest and lowest notes
+			var _tmp = array.slice(0);
+			_tmp.pop();
+			_tmp.reverse();
+			_tmp.pop();
+			return array.concat(_tmp);
 		}
 	};
 	
