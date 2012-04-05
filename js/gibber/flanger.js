@@ -27,6 +27,9 @@ function Flanger(rate, amount, feedback, offset) {
 		mix : 1,
 		feedback : (isNaN(feedback)) ? .25 : feedback,
 
+		buffer : new Float32Array(Gibber.sampleRate * 2),
+		bufferSize : Gibber.sampleRate * 2,
+
 		pushSample : function(sample) {
 			var r = this.readIndex + this.delayMod.out();
 			if(r > this.bufferSize) {
@@ -53,12 +56,9 @@ function Flanger(rate, amount, feedback, offset) {
 			return this.value;
 		},
 	};
+	
 	that.offset = offset || that.amount;
-	
-	that.buffer = new Float32Array(Gibber.sampleRate * 2);
-	that.bufferSize = Gibber.sampleRate * 2;
 	that.readIndex = that.offset * -1;
-	
 	that.delayMod = LFO(that.rate, that.amount * .95); // *.95 to ensure it never catches up with write head
 	
 	Gibber.addModsAndFX.call(that);

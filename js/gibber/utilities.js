@@ -109,8 +109,17 @@ window.fillf = function(min, max, number) {
 // fill durations
 window.filld = function(min, max, number) {
 	var output = [];
+	if(typeof number === "undefined") {
+		number = max || min.length;
+	}
 	for(var i = 0; i < number; i++) {
-		output.push(window["_" + randomi(min, max)]);
+		var num;
+		if(typeof arguments[0] === "object") {
+			num = arguments[0][randomi(0, arguments[0].length - 1)];
+		}else{
+			num = randomi(min, max);
+		}
+		output.push(window["_" + num]);
 	}
 	
 	return output;

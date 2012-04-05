@@ -30,7 +30,7 @@ Gibber.FMPresets = {
 		decay	: 100,
 	},
 	clarinet : {
-		cmRatio	: 2 / 3,
+		cmRatio	: 3 / 2,
 		index	: 1.5,
 		attack	: 50,
 		decay	: 200,

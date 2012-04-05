@@ -1,9 +1,9 @@
 /* 	
 Charlie Roberts 2012 MIT License
-Requires gibber.js and chord.js found in the Gibber download.
 
 Usage (assume s is a sine oscillator) :
-a = Arp(s, "Cm7", 2, .25, "updown");
+
+a = Arp("Cm7", 2, .25, "updown").slave(s);
 
 */
 function Arp(notation, beats, mode, mult) {	
