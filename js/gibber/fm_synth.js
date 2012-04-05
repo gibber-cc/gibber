@@ -129,7 +129,7 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 			this.osc.frequency = freqStore;
 			
 			this.value *= envValue;
-			if(envValue < .005) {
+			if(envValue < .005 && this.env.state != 0) {
 				this.active = false;
 			}
 		}
