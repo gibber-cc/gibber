@@ -58,7 +58,8 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	}
 	
 	that.amp = .5;
-
+	that.active = false;
+	
 	modFreq = that.osc.frequency * that.cmRatio;
 	modAmp = that.index * that.osc.frequency;
 	
@@ -91,23 +92,6 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		return this;
 	};
 	
-	//that.mod("frequency", that.modulator, "+");
-	/*
-	note : function(n) {
-		switch(typeof n) {
-			case "number" :
-				this.osc.frequency = n;
-			break;
-			case "string" :
-				this.osc.frequency = teoria.note(n).fq();
-			break;
-			default:
-				this.osc.frequency = n.fq();
-				break;
-		}
-		this.env.triggerGate();
-	},
-	*/
 	that.note = function(n) {
 		var oscFreq;
 		switch(typeof n) {
@@ -129,22 +113,27 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		//console.log("freq = " + this.modulator.frequency + " : mix = " + this.modulator.mix);
 		
 		this.env.triggerGate();
-		//this.modulator.env.triggerGate();
+		this.active = true;
 	};
 	
 	that.generate = function() {
-		var envValue = this.env.generate();
+		if(this.active === true) {
+			var envValue = this.env.generate();
 		
-		var modValue = this.modulator.out() * envValue;
-		var freqStore = this.osc.frequency;
+			var modValue = this.modulator.out() * envValue;
+			var freqStore = this.osc.frequency;
 		
-		this.osc.frequency += modValue;
-		this.value = this.osc.out();
+			this.osc.frequency += modValue;
+			this.value = this.osc.out();
 		
-		this.osc.frequency = freqStore;
-		
-		this.value *= envValue;
-	};
+			this.osc.frequency = freqStore;
+			
+			this.value *= envValue;
+			if(envValue < .005) {
+				this.active = false;
+			}
+		}
+	}
 	
 	that.getMix = function() {
 		return this.value * this.amp;
