@@ -5,6 +5,9 @@ Gibber.FMPresets = {
 		attack	: 1,
 		decay	: 1000
 	},
+	//ljpfrog lp.f = FM(0.1, 2.0, 300, 5);
+	//ljpradio lp.f = FM(1, 40.0, 300, 500); lp.f.amp = 0.2;
+	//ljpnoise lp.f = FM(0.04, 1000.0, 1, 100);
 	gong : {
 		cmRatio : 1.4,
 		index	: .95,
@@ -117,21 +120,19 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	};
 	
 	that.generate = function() {
-		if(this.active === true) {
-			var envValue = this.env.generate();
+		var envValue = this.env.generate();
 		
-			var modValue = this.modulator.out() * envValue;
-			var freqStore = this.osc.frequency;
+		var modValue = this.modulator.out() * envValue;
+		var freqStore = this.osc.frequency;
 		
-			this.osc.frequency += modValue;
-			this.value = this.osc.out();
+		this.osc.frequency += modValue;
+		this.value = this.osc.out();
 		
-			this.osc.frequency = freqStore;
+		this.osc.frequency = freqStore;
 			
-			this.value *= envValue;
-			if(envValue < .005 && this.env.state != 0) {
-				this.active = false;
-			}
+		this.value *= envValue;
+		if(envValue < .005 && this.env.state != 0) {
+			this.active = false;
 		}
 	}
 	

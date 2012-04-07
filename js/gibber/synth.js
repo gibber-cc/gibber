@@ -138,7 +138,6 @@ Synth.prototype = {
 				this.osc.frequency = note.fq();
 				break;
 		}
-		G.log("ACTIVE TRUE");
 		this.active = true;
 		this.env.triggerGate();
 	},
@@ -148,15 +147,13 @@ Synth.prototype = {
 	},
 	
 	generate: function() {
-		if(this.active === true) {
-			this.value = this.osc.out();
-			this.env.generate();
+		this.value = this.osc.out();
+		this.env.generate();
 		
-			this.value *= this.env.value;
+		this.value *= this.env.value;
 
-			if(this.env.value <= .005 && this.env.state != 0) {
-				this.active = false;
-			}
+		if(this.env.value <= .005 && this.env.state != 0) {
+			this.active = false;
 		}
 	},
 	

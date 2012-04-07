@@ -465,7 +465,8 @@ var Gibber = {
 };
 
 Gibber.addModsAndFX = function() {
-    for ( var prop in Gibber.modsAndEffects) { this[prop] = Gibber.modsAndEffects[prop]; }	
+	$.extend(this, Gibber.modsAndEffects);
+    //for ( var prop in Gibber.modsAndEffects) { this[prop] = Gibber.modsAndEffects[prop]; }	
 };
 
 Gibber.gens = Gibber.generators;

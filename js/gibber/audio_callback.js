@@ -63,23 +63,24 @@ function audioProcess(buffer, channelCount){
 					}
 					
 					restoreMods(gen); // reset gen values to state before modulation
+				}
 				
-					// run fx
-					for(var e = 0, _el = gen.fx.length; e < _el; e++) {
-						var effect = gen.fx[e];
-						processMods(effect);
-						genValue = effect.fxout(genValue);
-						restoreMods(effect);
-					}
+				// run fx
+				for(var e = 0, _el = gen.fx.length; e < _el; e++) {
+					var effect = gen.fx[e];
+					processMods(effect);
+					genValue = effect.fxout(genValue);
+					restoreMods(effect);
+				}
 					
-					// TODO: send from any point in the fx chain?
-					if(gen.sends) {
-						for(var s = 0, _sl = gen.sends.length; s < _sl ; s++) {
-							var send = gen.sends[s];
-							send.bus.value += genValue * send.amount;
-						}
+				// TODO: send from any point in the fx chain?
+				if(gen.sends) {
+					for(var s = 0, _sl = gen.sends.length; s < _sl ; s++) {
+						var send = gen.sends[s];
+						send.bus.value += genValue * send.amount;
 					}
 				}
+				
 				value += genValue;
 			}
 			// Busses

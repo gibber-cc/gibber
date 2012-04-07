@@ -130,6 +130,25 @@ window.fill = function() {
 	return window.filli(0, 20, 16);
 };
 
+window.rndd = window.randomi = function() {
+	var min, max;
+	if(arguments.length == 1) {
+		min = 0, max = arguments[0];
+	}else if(arguments.length == 2) {
+		min = arguments[0];
+		max = arguments[1];
+	}else{
+		min = 0;
+		max = 100;
+	}
+
+	var diff = max - min;
+	var r = Math.random();
+	var rr = diff * r;
+	var rrr = Math.round(rr);
+	
+	return window[ "_" + (min + rrr) ];
+};
 
 
 
@@ -153,9 +172,7 @@ window.rndi = window.randomi = function() {
 	return min + rrr;
 };
 
-window.getSpeed = function(div) {
-	return window["_"+div];
-};
+
 
 window.rndf = 	window.randomf = function(min, max) {
 	if(arguments.length == 1) {
@@ -174,6 +191,10 @@ window.rndf = 	window.randomf = function(min, max) {
 	
 	return min + rr;
 }
+
+window.getSpeed = function(div) {
+	return window["_"+div];
+};
 
 // mtof : function(midiNumber) {
 // 	return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)

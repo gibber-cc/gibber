@@ -299,7 +299,7 @@ default:
 'resets the callback to Gibber\'s default\n.'+
 '*/\n'+
 '\n'+
-'this.dev.readFn = function(buffer, channelCount){\n'+
+'G.dev.readFn = function(buffer, channelCount){\n'+
 '    var freqStore, val;\n'+
 '    if(typeof __s === "undefined") {  // init oscillators\n'+
 '        G.log("INIT");\n'+
@@ -318,7 +318,7 @@ default:
 '	}\n'+
 '}\n'+
 '\n'+
-'this.dev.readFn = window.audioProcess;  // restore the Gibber graph',
+'G.dev.readFn = window.audioProcess;  // restore the Gibber graph',
 
 "SYNTHESIS TUTORIALS":"LABEL START",
 

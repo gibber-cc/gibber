@@ -43,11 +43,11 @@ Gibber.Environment = {
 			Gibber.Environment.Editor.insert("// MASTER SESSION START\n\n");
 			Gibber.Environment.Editor.clearSelection();			
 			Gibber.Environment.masterSocket.on('code', function (msg) {
-				Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
-				Gibber.Environment.Editor.insert(msg.code + "\n\n");
+				//Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
+				Gibber.Environment.Editor.insert(msg.code);
 				Gibber.Environment.Editor.scrollPageDown();
 				
-				Gibber.callback.addCallback(msg.code + "\n\n", _1);
+				Gibber.callback.addCallback(msg.code + "\n", _1);
 				//Gibber.runScript(msg.code + "\n\n");
 			});
 			Gibber.Environment.masterSocket.on('code_immediate', function (msg) {
@@ -68,7 +68,7 @@ Gibber.Environment = {
 		if(typeof localStorage.scripts === "undefined") {
 			scripts = {};
 		}else{
-			scripts = localStorage.getObject("scripts")
+			scripts = localStorage.getObject("scripts");
 		}
 		
         var text = Gibber.Environment.Editor.getSession().doc.getTextRange(Gibber.Environment.Editor.getSelectionRange());
@@ -78,7 +78,7 @@ Gibber.Environment = {
 		}
 		scripts[name] = text;
 		localStorage.setObject("scripts", scripts);
-		Gibber.Environment.createFileList(name);	
+		Gibber.Environment.createFileList(name);
 	},
 	
 	load : function(fileName) {
