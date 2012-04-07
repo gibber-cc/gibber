@@ -1,22 +1,63 @@
 Gibber.defaultScripts = {
 default:
-'s = Sine(240, .1);                  // Sine wave with freq 240, amp .5.\n' +
-'s.fx.add( Delay( _3 ), Reverb() );  // adds delay and reverb fx. delay time (_3) is a half-note triplet.\n' +
-'\n' +
-'a = Arp("C4m7", _16, "updown");  	// Arpeggiator: control s, Cminor7 (4 is octave) chord, 16th notes, up then down\n' +
-'a.slave(s);                         // tell arpeggiator to control our sine oscillator\n' +
-'a.shuffle();                        // randomize arpeggio\n' +
-'a.reset();                          // reset arpeggio\n' +
-'\n' +
-'d = Drums("x...o..*", _8);			// kick on 1, snare on 5, "hat" on 8... each note is an eighth note (_8) \n' +
-'d.fx.add( Crush(6), Delay(_8) );\n' +
-'d.pitch *= 2;                      // double the pitch of drum samples\n' +
-'\n' +
-'s.mod("freq", LFO(8, 10), "+");     // Vibrato - modulating frequency by +/- 10Hz 8 times per second\n' +
-'s.mods.remove();                    // removes all mods, pass a number or parameter name to remove a particular mod\n' +
-'\n' +
-'Master.fx.add( Reverb() );          // Master FX are applied to summed signal of all generators\n' +
-'Master.fx.remove(0);                // remove first effect in fx.add. do not pass a argument to remove all fx.',
+'// This is a sample of what Gibber can do and isn\'t really\n'+
+'// intended as a tutorial. There are many tutorials under\n'+
+'// Options > Load File in the right pane of the screen.\n'+
+'//\n'+
+'// Run lines in between comments one section at a time\n'+
+'// by highlighting lines and hitting cmd + shift + return\n'+
+'\n'+
+'G.setBPM(140)\n'+
+'\n'+
+'// x is a kick, o is a snare\n'+
+'d = Drums("x.ox.xo.")\n'+
+'d.fx.add( Crush(5) )\n'+
+'\n'+
+'// karplus-strong can create string or noise sounds depending on blend\n'+
+'p = Pluck();\n'+
+'p.amp = .3\n'+
+'p.blend = .5;\n'+
+'\n'+
+'// sequence pluck with random 16th notes\n'+
+'s = ScaleSeq(fill(), _16).slave(p);\n'+
+'s.root = "C2";\n'+
+'\n'+
+'// create bass synth with 1000ms attack, 2000ms decay, .75 amp\n'+
+'b = Synth(1000, 2000, .75)\n'+
+'b.fx.add( Clip(50) )\n'+
+'\n'+
+'// sequence bass. first array is positions in scale, second is durations\n'+
+'c = ScaleSeq([0,-2,-4], [_1 * 2, _1, _1]).slave(b)\n'+
+'c.root = "C2"\n'+
+'\n'+
+'// add modulation changing blend of karplus-strong\n'+
+'// this will move from string to noise sounds\n'+
+'p.mod("blend", LFO(.25, 1), "=")\n'+
+'\n'+
+'// add buffer stuttering / repitching / reversing\n'+
+'p.fx.add( Schizo() )\n'+
+'\n'+
+'// re-pitch drums\n'+
+'d.pitch *= 2\n'+
+'\n'+
+'// sequence drums randomizing every 4th measure and then reseting\n'+
+'e = Seq( [ d.reset, d.shuffle ], [_1 * 3, _1]).slave(d)\n'+
+'\n'+
+'// stop bass sequence\n'+
+'c.stop()\n'+
+'\n'+
+'// make FM synth using glockenspiel preset. add delay and reverb\n'+
+'f = FM("glockenspiel")\n'+
+'f.fx.add( Delay(_6, .8), Reverb() )\n'+
+'\n'+
+'// sequence glockenspiel with random notes each lasting two measures\n'+
+'g = ScaleSeq(filli(0,12,16), _1 * 2).slave(f)\n'+
+'\n'+
+'// insert fx at start of fx chain, in this case, before delay / reverb\n'+
+'f.fx.insert( Chorus(), 0)\n'+
+'\n'+
+'// remove fx from drums\n'+
+'d.fx.remove();',
 
 "GIBBER TUTORIALS":"LABEL START",
 "synthesis + fx" :
