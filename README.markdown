@@ -2,7 +2,7 @@
 
 Gibber is a live coding environment for the web browser, built on top of audiolib.js and using the ACE code editor. I've only tested it in Chrome.
 
-Below is a code sample. To test out Gibber, visit http://www.charlie-roberts.com/Gibber
+Below is a code sample. To test out Gibber, visit http://www.charlie-roberts.com/gibber
 
 ``` javascript
 Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
