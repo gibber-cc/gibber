@@ -98,17 +98,37 @@ window.select = function(objects) {
 }
 window.filli = function(min, max, number) {
 	var output = [];
-	for(var i = 0; i < number; i++) {
-		output.push(randomi(min, max));
+	if(typeof number === "undefined") {
+		number = max || min.length;
 	}
+	for(var i = 0; i < number; i++) {
+		var num;
+		if(typeof arguments[0] === "object") {
+			num = arguments[0][randomi(0, arguments[0].length - 1)];
+		}else{
+			num = randomi(min, max);
+		}
+		output.push(num);
+	}
+
 	return output;
 };
 
 window.fillf = function(min, max, number) {
 	var output = [];
-	for(var i = 0; i < number; i++) {
-		output.push(randomf(min, max));
+	if(typeof number === "undefined") {
+		number = max || min.length;
 	}
+	for(var i = 0; i < number; i++) {
+		var num;
+		if(typeof arguments[0] === "object") {
+			num = arguments[0][randomi(0, arguments[0].length - 1)];
+		}else{
+			num = randomf(min, max);
+		}
+		output.push(num);
+	}
+	
 	return output;
 };
 

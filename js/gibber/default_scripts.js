@@ -4,14 +4,14 @@ default:
 '// intended as a tutorial. There are many tutorials under\n'+
 '// Options > Load File in the right pane of the screen.\n'+
 '//\n'+
-'// Run lines in between comments one section at a time\n'+
+'// Run lines in between comments ONE SECTION AT A TIME\n'+
 '// by highlighting lines and hitting cmd + shift + return\n'+
 '\n'+
 'G.setBPM(140)\n'+
 '\n'+
 '// x is a kick, o is a snare\n'+
-'d = Drums("x.ox.xo.")\n'+
-'d.fx.add( Crush(5) )\n'+
+'d = Drums("x.ox.xo.");\n'+
+'d.pitch *= 2;\n'+
 '\n'+
 '// karplus-strong can create string or noise sounds depending on blend\n'+
 'p = Pluck();\n'+
@@ -23,12 +23,16 @@ default:
 's.root = "C2";\n'+
 '\n'+
 '// create bass synth with 1000ms attack, 2000ms decay, .75 amp\n'+
-'b = Synth(1000, 2000, .75)\n'+
+'b = Synth(1000, 2000, .65)\n'+
 'b.fx.add( Clip(50) )\n'+
 '\n'+
-'// sequence bass. first array is positions in scale, second is durations\n'+
-'c = ScaleSeq([0,-2,-4], [_1 * 2, _1, _1]).slave(b)\n'+
-'c.root = "C2"\n'+
+'// sequence bass. "sequence" is positions in scale\n'+
+'c = ScaleSeq({\n'+
+'    root :      "C2",\n'+
+'    sequence :  [0,-2,-4], \n'+
+'    durations:  [_1 * 2, _1, _1],\n'+
+'    slaves:     [b]\n'+
+'});\n'+
 '\n'+
 '// add modulation changing blend of karplus-strong\n'+
 '// this will move from string to noise sounds\n'+
@@ -37,27 +41,26 @@ default:
 '// add buffer stuttering / repitching / reversing\n'+
 'p.fx.add( Schizo() )\n'+
 '\n'+
-'// re-pitch drums\n'+
-'d.pitch *= 2\n'+
-'\n'+
 '// sequence drums randomizing every 4th measure and then reseting\n'+
 'e = Seq( [ d.reset, d.shuffle ], [_1 * 3, _1]).slave(d)\n'+
 '\n'+
-'// stop bass sequence\n'+
-'c.stop()\n'+
-'\n'+
 '// make FM synth using glockenspiel preset. add delay and reverb\n'+
 'f = FM("glockenspiel")\n'+
+'f.amp = .2;\n'+
 'f.fx.add( Delay(_6, .8), Reverb() )\n'+
 '\n'+
 '// sequence glockenspiel with random notes each lasting two measures\n'+
-'g = ScaleSeq(filli(0,12,16), _1 * 2).slave(f)\n'+
+'g = ScaleSeq({\n'+
+'    sequence :  filli(0,12,16), \n'+
+'    durations : filli([_2, _1 * 2, _1 * 4], 32),\n'+
+'    slaves :    [f],\n'+
+'});\n'+
 '\n'+
 '// insert fx at start of fx chain, in this case, before delay / reverb\n'+
 'f.fx.insert( Chorus(), 0)\n'+
 '\n'+
-'// remove fx from drums\n'+
-'d.fx.remove();',
+'// add fx to Master channel; this affects all sounds\n'+
+'Master.fx.add( Flanger() );',
 
 "GIBBER TUTORIALS":"LABEL START",
 "synthesis + fx" :
