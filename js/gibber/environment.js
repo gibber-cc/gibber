@@ -41,26 +41,40 @@ Gibber.Environment = {
 			Gibber.Environment.Editor.selectAll();
 			Gibber.Environment.Editor.remove();
 			Gibber.Environment.Editor.insert("// MASTER SESSION START\n\n");
+			Gibber.Environment.sessionStart = new Date();
+			Gibber.Environment.sessionHistory = [];
 			Gibber.Environment.Editor.clearSelection();			
 			Gibber.Environment.masterSocket.on('code', function (msg) {
 				//Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
-				Gibber.Environment.Editor.insert(msg.code);
+				Gibber.Environment.Editor.insert(msg.code + "\n");
+				Gibber.Environment.sessionHistory.push( { code: msg.code + "\n", time: new Date() - Gibber.Environment.sessionStart} );
+				G.log(Gibber.Environment.sessionHistory);
 				Gibber.Environment.Editor.scrollPageDown();
 				
-				Gibber.callback.addCallback(msg.code + "\n", _1);
+				Gibber.callback.addCallback(msg.code, _1);
 				//Gibber.runScript(msg.code + "\n\n");
 			});
-			Gibber.Environment.masterSocket.on('code_immediate', function (msg) {
-				Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
-				Gibber.Environment.Editor.insert(msg.code + "\n\n");
-				Gibber.Environment.Editor.scrollPageDown();
-				
-				Gibber.callback.runScript(msg.code);
-				//Gibber.runScript(msg.code + "\n\n");
-			});
+			// Gibber.Environment.masterSocket.on('code_immediate', function (msg) {
+			// 	Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
+			// 	Gibber.Environment.Editor.insert(msg.code + "\n\n");
+			// 	Gibber.Environment.Editor.scrollPageDown();
+			// 	
+			// 	Gibber.callback.runScript(msg.code);
+			// 	//Gibber.runScript(msg.code + "\n\n");
+			// });
 			
 			Gibber.Environment.masterSocket.emit('master', null);
 		});	
+	},
+	
+    saveSession : function(name) { 
+    	var sessions = localStorage.getObject("sessions");
+		if(typeof sessions === "undefined" || sessions === null) {
+			sessions = {};
+		}
+		
+		sessions[name] = G.Environment.sessionHistory ;
+		localStorage.setObject("sessions", sessions);
 	},
 	
 	saveWithName : function(name) {
