@@ -327,6 +327,49 @@ default:
 '// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
+"algorithmic music" :
+'// this tutorial shows how to use random functions to generate "music".\n'+
+'// first create arrays to hold drums and sequencers\n'+
+'perc = [];\n'+
+'seqs = [];\n'+
+'\n'+
+'// set the mode and root note for all scale sequencers to use\n'+
+'G.mode = "lydian"\n'+
+'G.root = "D6"\n'+
+'\n'+
+'// create a bus with reverb to send audio to. this is much cheaper\n'+
+'// than a separate reverb for every drum / sound\n'+
+'b = Bus( Reverb(.3,.3) )\n'+
+'\n'+
+'for(var i = 0; i < 8; i++) {\n'+
+'    // fill our perc array with a FM drum synth. set the amp to be low\n'+
+'    // (since there will be 8) and send each to the reverb bus\n'+
+'    perc[i] = FM("drum2")\n'+
+'    perc[i].amp /= 8;\n'+
+'    perc[i].send(b, .5)\n'+
+'    \n'+
+'    // create a sequencer to control each drum\n'+
+'    seqs[i] = ScaleSeq( \n'+
+'        filli(-12, 12, 32),   // create an array of 32 random integers ranging from -12 to 12 \n'+
+'        filld([2,4,8,16], 32) // create an array of 32 random durations that are either \n'+
+'                              // 1/2, 1/4, 1/8 or 16th notes\n'+
+'    ).slave(perc[i]);\n'+
+'    \n'+
+'    seqs[i].offset = rndi(-500, 500); // set a random sample offset to "humanize" the sequence\n'+
+'}\n'+
+'\n'+
+'// create a sequencer that will randomize the volume of each drum every quarter note\n'+
+'t = Seq( function() { \n'+
+'    perc.all(            // use all to apply a function to each array item\n'+
+'        function (obj) { // obj represents the array item\n'+
+'            obj.amp = rndf(.015, .1); // set a random amp from .015 to .5        \n'+
+'        } \n'+
+'    );\n'+
+'}, _4)\n'+
+'\n'+
+'seqs.all( function(obj) { obj.root = "F6" } );  // change the root for all scales\n'+
+'perc.all( function(obj) { obj.fx.add( Delay(_16, .1) ) } ); // add fx to all drums',
+
 "custom callback": 
 '/*\n'+
 'So, you want your own callback... don\'t like my graph? Well, here you go.\n'+

@@ -295,8 +295,8 @@ function LPF(cutoff, resonance, mix) {
 
 function Crush(resolution, mix) {
     var that = audioLib.BitCrusher(Gibber.sampleRate);
-	that.name = "Trunc";
-	that.type="fx";
+	that.name = "Crush";
+	that.type = "fx";
 	
 	that.gens = [];
 	that.mods = [];
