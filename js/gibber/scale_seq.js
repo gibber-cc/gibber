@@ -10,8 +10,8 @@ function ScaleSeq(_sequence, _speed) {
 	
 	that.sequenceNumbers = _sequenceNumbers;
 
-	that.mode = Gibber.mode;
-	that.root = Gibber.root;
+	that.mode = that.mode || Gibber.mode;
+	that.root = that.root || Gibber.root;
 
 	that.scaleInit = false;
 	that.counter = 0;
@@ -94,7 +94,7 @@ function ScaleSeq(_sequence, _speed) {
 	    });
 	})(that);
 
-	that.root = G.root; // triggers meta-setter that sets sequence
+	that.root = that.root || Gibber.root; // triggers meta-setter that sets sequence
 		
 	return that;
 }

@@ -178,8 +178,6 @@ window.rndi = window.randomi = function() {
 	return min + rrr;
 };
 
-
-
 window.rndf = 	window.randomf = function(min, max) {
 	if(arguments.length == 1) {
 		min = 0, max = arguments[0];
