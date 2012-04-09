@@ -106,7 +106,7 @@ function audioProcess(buffer, channelCount){
 				value = effect.fxout(value);
 				restoreMods(effect);
 			}
-			buffer[i] = value * Master.mix;
+			buffer[i] = value * Master.amp;
 			buffer[i + 1] = buffer[i];
 			Gibber.debug = false;
 		}

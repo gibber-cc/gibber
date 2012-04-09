@@ -483,7 +483,7 @@ Master = {
 	mods : [],
 	fx : [],
 	automations : [],
-	mix : 1,
+	amp : 1,
 };
 Gibber.addModsAndFX.call(Master);
 

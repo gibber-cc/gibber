@@ -11,7 +11,7 @@
 // example usage:  
 //	`b = Bus( Delay(_4), Reverb() );  
 //  s = Synth();  
-//	s.send( b, .5 );  `
+//	s.send( b, .5 ); 
 //
 // alternatively:  
 //	`b = Bus( "rev", Delay(_4), Reverb() );  
@@ -203,21 +203,13 @@ function Ring(frequency, amount) {
 	that.mix = 1;
 	
 	(function(obj) {
-	    Object.defineProperties(that, {
+	    Object.defineProperties(obj, {
 			"frequency" : {
 		        get: function() {
-		            return this.osc.frequency;
+		            return obj.osc.frequency;
 		        },
 		        set: function(value) {
-		            this.osc.frequency = value;
-		        }
-			},
-			"amount" : {
-		        get: function() {
-		            return this.osc.mix;
-		        },
-		        set: function(value) {
-		            this.osc.mix = value;
+		            obj.osc.frequency = value;
 		        }
 			},	
 	    });
@@ -225,7 +217,6 @@ function Ring(frequency, amount) {
 	
 	
 	that.pushSample = function(sample) {
-		this.osc.generate();
 		this.value = sample * this.osc.getMix();
 		return this.value;
 	}
@@ -233,6 +224,11 @@ function Ring(frequency, amount) {
 	that.getMix = function() {
 		return this.value;
 	}
+	
+	that.setParam = function(param, value){
+		this[param] = value;
+	}
+	
 	Gibber.addModsAndFX.call(that);
 	
 	return that;
@@ -295,6 +291,14 @@ function LPF(cutoff, resonance, mix) {
 
 function Crush(resolution, mix) {
     var that = audioLib.BitCrusher(Gibber.sampleRate);
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		
+		for(key in obj) {
+			that[key] = obj[key];
+		}
+	}
+	
 	that.name = "Crush";
 	that.type = "fx";
 	
@@ -349,7 +353,15 @@ function Clip(amount) {
 			return this.value;
 		},
 	};
-
+	
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		
+		for(key in obj) {
+			that[key] = obj[key];
+		}
+	}
+	
 	Gibber.addModsAndFX.call(that);
 	
 	return that;
@@ -366,7 +378,15 @@ function Clip(amount) {
 //  d.fx.add( Clip(1000) );  `
 
 function Comb(delaySize, feedback, damping){
-	var that = new audioLib.CombFilter(Gibber.sampleRate, delaySize, feedback, damping);
+	var that;
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		that = new audioLib.CombFilter(Gibber.sampleRate, obj.delaySize, obj.feedback, obj.damping);
+
+	}else{
+		that = new audioLib.CombFilter(Gibber.sampleRate, delaySize, feedback, damping);
+	}
+	
 	that.name = "Comb";
 	that.type = "fx";
 	
