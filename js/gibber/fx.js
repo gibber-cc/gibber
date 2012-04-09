@@ -186,7 +186,7 @@ function Delay(time, feedback, mix) {
 
 function Ring(frequency, mix) {
 	frequency = (typeof freq !== "undefined") ? frequency : 440;
-	mix  = (typeof mix !== "undefined") ? amount : 1;	
+	mix  = (typeof mix !== "undefined") ? mix : 1;	
 	var that = {
 		frequency: frequency,
 		mix: mix,
