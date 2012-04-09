@@ -184,23 +184,23 @@ function Delay(time, feedback, mix) {
 // `s = Synth();  
 //  s.fx.add( Ring(220, .5) );  `
 
-function Ring(frequency, amount) {
+function Ring(frequency, mix) {
 	frequency = (typeof freq !== "undefined") ? frequency : 440;
-	amount  = (typeof amount !== "undefined") ? amount : 1;	
+	mix  = (typeof mix !== "undefined") ? amount : 1;	
 	var that = {
 		frequency: frequency,
-		amount: amount,
+		mix: mix,
 	};
 	
 	that.name = "Ring";
 	that.type="fx";
 	
-	that.osc  = Sine(that.frequency, that.amount);
+	that.osc  = Sine(that.frequency, that.amount).silent();
+	that.osc.amp = 1;
 	that.osc.isControl = true;
 	that.gens = [];
 	that.mods = [];
 	that.value = 0;
-	that.mix = 1;
 	
 	(function(obj) {
 	    Object.defineProperties(obj, {
@@ -217,7 +217,8 @@ function Ring(frequency, amount) {
 	
 	
 	that.pushSample = function(sample) {
-		this.value = sample * this.osc.getMix();
+		this.osc.generate();		
+		this.value = sample * this.osc.sine();
 		return this.value;
 	}
 	
