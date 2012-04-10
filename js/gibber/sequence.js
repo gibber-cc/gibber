@@ -82,16 +82,18 @@ function Seq() {
 	this.phaseOffset = 0;
 	this.sequenceInit = false;
 	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
+	this.picker = null;
 
 	var that = this;	
-
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
 		var obj = arguments[0];
 		for(key in obj) {
 			if(key !== "slaves") {
 				this[key] = obj[key];
 			}else{
+				G.log("before slaves");
 				this.slave.apply(this, obj[key]);
+				G.log("after slaves");				
 			}
 		}
 	}else{
@@ -101,7 +103,6 @@ function Seq() {
 		}
 		this.sequence = _seq;
 	}
-
 	if(this.speed === null && this.durations === null) {
 		var arg1Type = typeof arguments[1];
 		if(arg1Type !== "undefined") {
@@ -119,11 +120,9 @@ function Seq() {
 			}
 		}
 	}
-		
 	this.outputMessage = arguments[2] || "note";
 	
 	Gibber.registerObserver( "bpm", this.bpmCallback(this) );
-	
 	if(this.sequence != null && typeof this.sequence != "undefined") {
 		this.setSequence(this.sequence, this.speed);	
 	}
@@ -144,7 +143,6 @@ function Seq() {
 			 this.slavesInit = true;
 		}
 	}
-	
 	this.setParam = function(param, _value){
 		this[param] = _value;
 	};
@@ -175,7 +173,6 @@ function Seq() {
 		}
 		return that;
 	};
-	
 	Gibber.addModsAndFX.call(this);	
 }
 	
@@ -187,9 +184,16 @@ Seq.prototype = {
 	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
 	advance : function() {
 		if(this.active) {
-			var pos = this.counter % this.sequence.length;
-			var val = this.sequence[pos];
-		
+			var pos, val;
+			if(this.picker === null) {
+				pos = this.counter % this.sequence.length;
+			}
+			if($.isArray(this.sequence)) {
+				val = this.sequence[pos];
+			}else{
+				val = this.picker.pick();
+			}
+			
 			// only play if not setting an offset... if using offset simply set original offset position
 			var shouldReturn = false; 
 			var nextPhase = 0;
@@ -256,7 +260,7 @@ Seq.prototype = {
 			
 			this.counter++;
 			this.durationCounter++;
-			if(this.counter % this.sequence.length === 0) {
+			if(this.picker === null && this.counter % this.sequence.length === 0) {
 				if(this.shouldDie) {
 					this.kill();
 				}
@@ -298,6 +302,7 @@ Seq.prototype = {
 	// param **_reset** Bool. Optional. If true, reset the the current position of the sequencer to 0.  
 	
 	setSequence : function(seq, _speed, _reset) {
+		G.log("SEQUENCE START");
 		if(typeof _speed !== "undefined") {
 			if(_speed === "number") {
 				speed = _speed;
@@ -320,13 +325,15 @@ Seq.prototype = {
 				var _c = seq.charAt(c);
 				this.sequence.push(_c);
 			}
-		}else{
+		}else if ($.isArray(seq) ){
 			for(var i = 0; i < seq.length; i++) {
 				var n = seq[i];
 				this.sequence[i] = n;
 			}
+		}else{
+			this.sequence = seq;
 		}
-		if(this.init === false && !this.doNotAdvance) {
+		if(this.init === false && !this.doNotAdvance && this.picker == null) {
 			this._sequence = this.sequence.slice(0);
 			//Gibber.callback.slaves.push(this);
 			if(typeof this.sequence[0] === "function"){
@@ -334,6 +341,7 @@ Seq.prototype = {
 			}
 			this.init = true;
 		}
+		G.log("SEQUENCE SET");
 	},
 	
 	// ####slave
@@ -368,7 +376,8 @@ Seq.prototype = {
 			if(!this.slavesInit) {
 				 this.advance();
 				 this.slavesInit = true;
-				 this._sequence = this.sequence.slice(0);
+				 if(this.picker === null)
+					 this._sequence = this.sequence.slice(0);
 			} // start sequence if it's not already running
 		}
 		return this;		
