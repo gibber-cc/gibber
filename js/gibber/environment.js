@@ -33,6 +33,24 @@ Gibber.Environment = {
 			G.log("CONNECTED TO MASTER AS " + name);
 			Gibber.Environment.slaveSocket.emit('name', {"name":name});
 		});
+		Gibber.Environment.slaveSocket.on('chat', function(msg) {
+			var d = $("<div>");
+			$(d).html("<h1>" + msg.user + " says:" + "</h1>" + "<p style='font-size:1em; font-family:sans-serif'>" + msg.text + "</p>");
+			$(d).css({
+				"position": "absolute",
+				"width": "300px",
+				"height": "200px",
+				"top": "100px",
+				"padding": "15px", 
+				"left": ($("body").width() / 2) - 150,
+				"background-color": "#666",
+				"opacity": .75,
+				"border": "3px #fff solid", 
+				"color": "#fff", 
+			});
+			$("body").append(d);
+			window.setTimeout(function() { d.remove() }, 5000);
+		});
 	},
 	
 	master : function() {
@@ -643,7 +661,22 @@ Gibber.Environment = {
 					Gibber.Environment.Editor.getSession().setValue(code);
 				}
 		    }
-		});		
+		});	
+		Gibber.Environment.Editor.commands.addCommand({
+		    name: 'send chat',
+		    bindKey: {
+		        win: 'Alt-Shift-Ctrl-m',
+		        mac: 'Option-Shift-Command-m',
+		        sender: 'Gibber.Environment.Editor'
+		    },
+		    exec: function(env, args, request) {
+				var msg = prompt("enter msg to send");
+				
+				if(msg != null) {
+					Gibber.Environment.slaveSocket.emit('msg', { "text":msg });
+				}
+		    }
+		});	
 	},
 	flashExecutedCode : function(selector) {
 		var sel = selector;
