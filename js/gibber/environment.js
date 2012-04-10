@@ -45,6 +45,8 @@ Gibber.Environment = {
 	},
 	
 	master : function() {
+		$("#info").html("");
+		
 		Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
 		Gibber.Environment.masterSocket.on('connect', function () {
 			Gibber.Environment.Editor.selectAll();
@@ -54,23 +56,20 @@ Gibber.Environment = {
 			Gibber.Environment.sessionHistory = [];
 			Gibber.Environment.Editor.clearSelection();			
 			Gibber.Environment.masterSocket.on('code', function (msg) {
-				//Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
 				Gibber.Environment.Editor.insert(msg.code + "\n");
 				Gibber.Environment.sessionHistory.push( { code: msg.code + "\n", time: new Date() - Gibber.Environment.sessionStart} );
 				G.log(Gibber.Environment.sessionHistory);
 				Gibber.Environment.Editor.scrollPageDown();
 				
 				Gibber.callback.addCallback(msg.code, _1);
-				//Gibber.runScript(msg.code + "\n\n");
 			});
-			// Gibber.Environment.masterSocket.on('code_immediate', function (msg) {
-			// 	Gibber.Environment.Editor.insert("/************** from " + msg.userName + " at " + (new Date()).toTimeString() + " ************/\n\n");	
-			// 	Gibber.Environment.Editor.insert(msg.code + "\n\n");
-			// 	Gibber.Environment.Editor.scrollPageDown();
-			// 	
-			// 	Gibber.callback.runScript(msg.code);
-			// 	//Gibber.runScript(msg.code + "\n\n");
-			// });
+			Gibber.Environment.masterSocket.on('chat', function(msg) {
+				var p = $("<p>");
+				$(p).css("padding", "0px 10px");
+				$(p).html("<h2 style='display:inline'>"+msg.user+" :</h2>" + " " + msg.text);
+				$("#info").append(p);
+				$("#info").scrollTop( $("#info").height() );
+			});
 			
 			Gibber.Environment.masterSocket.emit('master', null);
 		});	
