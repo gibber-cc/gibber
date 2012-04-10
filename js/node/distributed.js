@@ -20,7 +20,9 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('msg', function(msg) {
 		console.log("BROADCASTING");
+		
 		socket.broadcast.emit("chat", {user: socket.userName, "text": msg.text});
+		socket.emit("chat", {user: socket.userName, "text": msg.text});
 	});
 	
 	socket.on('master', function(msg) {

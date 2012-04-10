@@ -27,6 +27,8 @@ Gibber.Environment = {
 	},
 	
 	slave : function(name, ip) {
+		$("#info").html("");
+
 		console.log("Name " + name + " : ip " + ip);
 		Gibber.Environment.slaveSocket = io.connect('http://' + ip + ':8080/'); // has to match port node.js is running on
 		Gibber.Environment.slaveSocket.on('connect', function () {
@@ -34,22 +36,11 @@ Gibber.Environment = {
 			Gibber.Environment.slaveSocket.emit('name', {"name":name});
 		});
 		Gibber.Environment.slaveSocket.on('chat', function(msg) {
-			var d = $("<div>");
-			$(d).html("<h1>" + msg.user + " says:" + "</h1>" + "<p style='font-size:1em; font-family:sans-serif'>" + msg.text + "</p>");
-			$(d).css({
-				"position": "absolute",
-				"width": "300px",
-				"height": "200px",
-				"top": "100px",
-				"padding": "15px", 
-				"left": ($("body").width() / 2) - 150,
-				"background-color": "#666",
-				"opacity": .75,
-				"border": "3px #fff solid", 
-				"color": "#fff", 
-			});
-			$("body").append(d);
-			window.setTimeout(function() { d.remove() }, 5000);
+			var p = $("<p>");
+			$(p).css("padding", "0px 10px");
+			$(p).html("<h2 style='display:inline'>"+msg.user+" :</h2>" + " " + msg.text);
+			$("#info").append(p);
+			$("#info").scrollTop( $("#info").height() );
 		});
 	},
 	
