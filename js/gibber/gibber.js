@@ -351,7 +351,6 @@ var Gibber = {
 	
 	shorthands : {
 		"freq": "frequency", 
-		"amp": "mix",
 	},
 		
 	modsAndEffects : {

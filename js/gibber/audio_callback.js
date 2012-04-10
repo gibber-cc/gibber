@@ -9,7 +9,7 @@ function processMods(gen) {
 			}
 			mod.store[mod.param] = gen[mod.param];
 		
-			var val = mod.out();
+			var val = mod.out();			
 		
 			audioLib.Automation.modes[mod.type](gen, mod.param, val);
 		}
@@ -44,7 +44,6 @@ function audioProcess(buffer, channelCount){
 			for(var c = 0, _cl = Gibber.controls.length; c < _cl; c++) {
 				var control = Gibber.controls[c];
 				processMods(control);
-				//if(Gibber.debug) console.log(control.phase);
 				control.generate();
 				restoreMods(control);
 			}
@@ -55,7 +54,6 @@ function audioProcess(buffer, channelCount){
 				
 				if(gen.active) {					
 					processMods(gen); // apply modulation changes
-
 					if(!gen.isControl) {
 						genValue += gen.out();
 					}else{
