@@ -82,7 +82,6 @@ function Seq() {
 	this.phaseOffset = 0;
 	this.sequenceInit = false;
 	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
-	this.picker = null;
 
 	var that = this;	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
@@ -91,9 +90,7 @@ function Seq() {
 			if(key !== "slaves") {
 				this[key] = obj[key];
 			}else{
-				G.log("before slaves");
 				this.slave.apply(this, obj[key]);
-				G.log("after slaves");				
 			}
 		}
 	}else{
@@ -185,13 +182,14 @@ Seq.prototype = {
 	advance : function() {
 		if(this.active) {
 			var pos, val;
-			if(this.picker === null) {
+			var usePick = (typeof this.sequence.pick !== "undefined");
+			if(!usePick) {
 				pos = this.counter % this.sequence.length;
 			}
-			if($.isArray(this.sequence)) {
+			if(!usePick) {
 				val = this.sequence[pos];
 			}else{
-				val = this.picker.pick();
+				val = this.sequence.pick();
 			}
 			
 			// only play if not setting an offset... if using offset simply set original offset position
@@ -260,7 +258,7 @@ Seq.prototype = {
 			
 			this.counter++;
 			this.durationCounter++;
-			if(this.picker === null && this.counter % this.sequence.length === 0) {
+			if(!usePick && this.counter % this.sequence.length === 0) {
 				if(this.shouldDie) {
 					this.kill();
 				}
@@ -302,7 +300,6 @@ Seq.prototype = {
 	// param **_reset** Bool. Optional. If true, reset the the current position of the sequencer to 0.  
 	
 	setSequence : function(seq, _speed, _reset) {
-		G.log("SEQUENCE START");
 		if(typeof _speed !== "undefined") {
 			if(_speed === "number") {
 				speed = _speed;
@@ -325,15 +322,16 @@ Seq.prototype = {
 				var _c = seq.charAt(c);
 				this.sequence.push(_c);
 			}
-		}else if ($.isArray(seq) ){
+		}else if ($.isArray(seq) && typeof seq.pick === "undefined"){
 			for(var i = 0; i < seq.length; i++) {
 				var n = seq[i];
 				this.sequence[i] = n;
 			}
 		}else{
+			G.log("ASSIGNED CORRECTLY");
 			this.sequence = seq;
 		}
-		if(this.init === false && !this.doNotAdvance && this.picker == null) {
+		if(this.init === false && !this.doNotAdvance && typeof seq.pick === "undefined") {
 			this._sequence = this.sequence.slice(0);
 			//Gibber.callback.slaves.push(this);
 			if(typeof this.sequence[0] === "function"){
@@ -341,7 +339,6 @@ Seq.prototype = {
 			}
 			this.init = true;
 		}
-		G.log("SEQUENCE SET");
 	},
 	
 	// ####slave
@@ -376,7 +373,7 @@ Seq.prototype = {
 			if(!this.slavesInit) {
 				 this.advance();
 				 this.slavesInit = true;
-				 if(this.picker === null)
+				 if(typeof this.sequence.pick !== "undefined")
 					 this._sequence = this.sequence.slice(0);
 			} // start sequence if it's not already running
 		}
