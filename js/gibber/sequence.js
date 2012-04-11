@@ -202,10 +202,27 @@ Seq.prototype = {
 				shouldReturn = true;
 				
 				// only use duration with negative offset
-				if(this.offset < 0)
-					nextPhase += (this.durations != null) ? this.durations[this.durationCounter % this.durations.length] : this.speed;
+				if(this.offset < 0) {
+					if(this.durations != null) {
+						if(this.durations.pick != null) {
+							nextPhase += this.durations.pick();
+						}else{
+							nextPhase +=this.durations[this.durationCounter % this.durations.length]
+						}
+					}else{
+						nextPhase += this.speed;
+					}
+				}
 			}else{
-				nextPhase += (this.durations != null) ? this.durations[this.durationCounter % this.durations.length] : this.speed;
+				if(this.durations != null) {
+					if(this.durations.pick != null) {
+						nextPhase += this.durations.pick();
+					}else{
+						nextPhase += this.durations[this.durationCounter % this.durations.length]
+					}
+				}else{
+					nextPhase += this.speed;
+				}
 			}
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
 			nextPhase = Math.round(nextPhase);

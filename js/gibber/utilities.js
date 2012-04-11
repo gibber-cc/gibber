@@ -216,6 +216,32 @@ window.rndf = 	window.randomf = function(min, max) {
 	return min + rr;
 }
 
+/* returns function that randomly picks from an array using the provided weights. Example:
+a = [1,2,3,4]
+a.pick = weight([.5,.25,.1,.15])
+a.pick();
+
+TODO: Figure out an algorithm(s) to automatically create weights with different schemes
+*/
+window.weight = function(weights) {
+    var w = weights;
+    var returnValue = this[0];
+    function pick() {
+        var total = 0;
+        var r = rndf();
+        for(var i = 0; i < w.length; i++) {
+            total += w[i];
+            if(r < total) { 
+                returnValue = this[i];
+                break;
+            }
+        }
+        return returnValue;
+    }
+    
+    return pick;
+}
+
 window.getSpeed = function(div) {
 	return window["_"+div];
 };
