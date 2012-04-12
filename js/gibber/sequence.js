@@ -117,7 +117,10 @@ function Seq() {
 			}
 		}
 	}
-	this.outputMessage = arguments[2] || "note";
+	
+	if(this.outputMessage === null) {
+		this.outputMessage = arguments[2] || "note";
+	}
 	
 	Gibber.registerObserver( "bpm", this.bpmCallback(this) );
 	if(this.sequence != null && typeof this.sequence != "undefined") {
@@ -250,13 +253,12 @@ Seq.prototype = {
 			}
 			
 			if(shouldReturn) return;
-			
 			if(this.slaves.length === 0) { // if a mod
 				this.value = val;
 			}else{
 				for(var j = 0; j < this.slaves.length; j++) {
 					var _slave = this.slaves[j];
-	
+
 					if(this.outputMessage === "freq") {
 						if(typeof val === "string" ) {
 							var nt = teoria.note(val);

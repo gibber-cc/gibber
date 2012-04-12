@@ -46,9 +46,9 @@ Gibber.Environment = {
 	
 	master : function() {
 		$("#info").html("");
-		
 		Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
 		Gibber.Environment.masterSocket.on('connect', function () {
+			G.callback.phase = 0;
 			Gibber.Environment.Editor.selectAll();
 			Gibber.Environment.Editor.remove();
 			Gibber.Environment.Editor.insert("// MASTER SESSION START\n\n");
@@ -57,13 +57,13 @@ Gibber.Environment = {
 			Gibber.Environment.Editor.clearSelection();			
 			Gibber.Environment.masterSocket.on('code', function (msg) {
 				Gibber.Environment.Editor.insert(msg.code + "\n");
-				Gibber.Environment.sessionHistory.push( { code: msg.code + "\n", time: new Date() - Gibber.Environment.sessionStart} );
-				G.log(Gibber.Environment.sessionHistory);
+				Gibber.Environment.sessionHistory.push( { code: msg.code, time: new Date() - Gibber.Environment.sessionStart} );
 				Gibber.Environment.Editor.scrollPageDown();
 				
 				Gibber.callback.addCallback(msg.code, _1);
 			});
 			Gibber.Environment.masterSocket.on('chat', function(msg) {
+				Gibber.Environment.sessionHistory.push( { user: msg.user, text:msg.text, time: new Date() - Gibber.Environment.sessionStart} );
 				var p = $("<p>");
 				$(p).css("padding", "0px 10px");
 				$(p).html("<h2 style='display:inline'>"+msg.user+" :</h2>" + " " + msg.text);

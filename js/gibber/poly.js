@@ -23,22 +23,7 @@ function Poly(_chord, _waveform, volume) {
 		active : true,
 		notation: _chord,
 		masters: [],
-		note : function(n) {
-			switch(typeof n) {
-				case "number" :
-					this.osc.frequency = n;
-				break;
-				case "string" :
-					this.osc.frequency = teoria.note(n).fq();
-				break;
-				default:
-					this.osc.frequency = n.fq();
-					break;
-			}
-			this.env.triggerGate();
-		},
 		notes: [],
-		
 		_start : true,
 		counter : -1,
 	};
@@ -51,26 +36,39 @@ function Poly(_chord, _waveform, volume) {
 	
 	that.chord = function(val) {
 		this.notation = val;
+				
 		for(var i = 0; i < this.oscs.length; i++) {
 			this.oscs[i].active = false;
 		}
-		var _root = this.notation.slice(0,1);
-		var _octave, _quality;
-		if(isNaN(this.notation.charAt(1))) { 	// if true, then there is a sharp or flat...
-			_root += this.notation.charAt(1);	// ... so add it to the root name
-			_octave = parseInt( this.notation.slice(2,3) );
-			_quality = this.notation.slice(3);
+		if(typeof this.notation === "string") {
+			var _root = this.notation.slice(0,1);
+			var _octave, _quality;
+			if(isNaN(this.notation.charAt(1))) { 	// if true, then there is a sharp or flat...
+				_root += this.notation.charAt(1);	// ... so add it to the root name
+				_octave = parseInt( this.notation.slice(2,3) );
+				_quality = this.notation.slice(3);
+			}else{
+				_octave = parseInt( this.notation.slice(1,2) );
+				_quality = this.notation.slice(2);
+			}
+			//console.log(_root + " : " + _octave + " : " + _quality);
+			var _chord = teoria.note(_root + _octave).chord(_quality);
+			for(var j = 0; j < _chord.notes.length; j++) {
+				var n = _chord.notes[j];
+				this.notes[j] = n.fq();
+				this.oscs[j].frequency = this.notes[j];
+				this.oscs[j].active = true;			
+			}
 		}else{
-			_octave = parseInt( this.notation.slice(1,2) );
-			_quality = this.notation.slice(2);
-		}
-		//console.log(_root + " : " + _octave + " : " + _quality);
-		var _chord = teoria.note(_root + _octave).chord(_quality);
-		for(var j = 0; j < _chord.notes.length; j++) {
-			var n = _chord.notes[j];
-			this.notes[j] = n.fq();
-			this.oscs[j].frequency = this.notes[j];
-			this.oscs[j].active = true;			
+			for(var k = 0; k < this.notation.length; k++) {
+				var note = this.notation[k];
+				if(typeof note === "number"){
+					this.oscs[k].frequency = note;
+				}else{
+					this.oscs[k].frequency = teoria.note(note).fq();
+					this.oscs[k].active = true;
+				}
+			}
 		}
 	};
 	
