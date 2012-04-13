@@ -1,32 +1,94 @@
 function Poly(_chord, _waveform, volume) {
-	volume = isNaN(volume) ? .2 : volume;
-	var _volume = volume / 5;
-	_chord = _chord || "C4m7";
-	_waveform = _waveform || "square";
-
 	var that = {
-		oscs : [
-			Osc(220, .1, _waveform).silent(),
-			Osc(330, .1, _waveform).silent(),
-			Osc(440, .1, _waveform).silent(),
-			Osc(550, .1, _waveform).silent(),
-			Osc(660, .1, _waveform).silent(),
-		],
+		oscs : null,
 		waveform: _waveform,
 		name: "Synth",
 		type: "complex",
 		env : Env(),
-		amp: volume,
+		amp: null,
 		frequency: 440,
 		phase : 0,
 		value : 0,
 		active : true,
-		notation: _chord,
+		notation: null,
 		masters: [],
 		notes: [],
 		_start : true,
 		counter : -1,
 	};
+	
+	(function() {
+		var attack = that.env.attack;
+		var decay  = that.env.decay;
+		var sustain = that.env.sustain;
+		var sustainTime = that.env.sustainTime;
+		
+	    Object.defineProperties(that, {
+			"attack" : {
+		        get: function() {
+		            return attack;
+		        },
+		        set: function(value) {
+		            attack = value;
+					this.env.attack = value;
+		        }
+			},
+			"decay" : {
+		        get: function() {
+		            return decay;
+		        },
+		        set: function(value) {
+		            decay = value;
+					this.env.decay = value;
+		        }
+			},
+			"sustain" : {
+		        get: function() {
+		            return sustain;
+		        },
+		        set: function(value) {
+		            sustain = sustain;
+					this.env.sustain = value;
+		        }
+			},
+			"sustainTime" : {
+		        get: function() {
+		            return sustainTime;
+		        },
+		        set: function(value) {
+		            sustainTime = value;
+					this.env.sustainTime = value;
+		        }
+			},
+	    });
+	})();
+	
+	
+	if(typeof arguments[0] === "object" && !$.isArray(arguments[0])) {
+		var obj = arguments[0];
+		
+		for(key in obj) {
+			that[key] = obj[key];
+		}
+		that.amp = isNaN(that.amp) ? .2 : that.amp;
+		that.amp /= 5;
+		that.notation = that.notation || "C4m7";
+		that.waveform = that.waveform || "square";
+		
+	}else{
+		that.amp = isNaN(volume) ? .2 : volume;
+		that.amp /= 5;
+		that.notation = _chord || "C4m7";
+		that.waveform = _waveform || "square";
+	}
+	
+	that.oscs = [
+		Osc(220, .1, that.waveform).silent(),
+		Osc(330, .1, that.waveform).silent(),
+		Osc(440, .1, that.waveform).silent(),
+		Osc(550, .1, that.waveform).silent(),
+		Osc(660, .1, that.waveform).silent(),
+	];
 	
 	that.mods = [];
 	that.fx = [];
@@ -102,52 +164,6 @@ function Poly(_chord, _waveform, volume) {
 		this.phase = 0;
 		this.active = true;
 	};
-	
-	(function() {
-		var attack = that.env.attack;
-		var decay  = that.env.decay;
-		var sustain = that.env.sustain;
-		var sustainTime = that.env.sustainTime;
-		
-	    Object.defineProperties(that, {
-			"attack" : {
-		        get: function() {
-		            return attack;
-		        },
-		        set: function(value) {
-		            attack = value;
-					this.env.attack = value;
-		        }
-			},
-			"decay" : {
-		        get: function() {
-		            return decay;
-		        },
-		        set: function(value) {
-		            decay = value;
-					this.env.decay = value;
-		        }
-			},
-			"sustain" : {
-		        get: function() {
-		            return sustain;
-		        },
-		        set: function(value) {
-		            sustain = sustain;
-					this.env.sustain = value;
-		        }
-			},
-			"sustainTime" : {
-		        get: function() {
-		            return sustainTime;
-		        },
-		        set: function(value) {
-		            sustainTime = value;
-					this.env.sustainTime = value;
-		        }
-			},
-	    });
-	})();
 	
 	that.generate = function() {
 		var val = 0;

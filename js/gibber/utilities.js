@@ -78,6 +78,30 @@ Array.prototype.shuffle = function() {
 		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
 }
 
+// TODO: make a method that returns an array of all unique values
+Bag = function(values) { 
+	var that = {
+		values : values,
+		picked : [],
+	
+		pick : function() {
+			var val = this.values[rndi(0, this.values.length - 1)];
+			if($.inArray(val, this.picked) > -1) {
+				return this.pick();
+			}
+			
+			this.picked.push(val);
+			if(this.picked.length === this.values.length) {
+				this.picked = [];
+			}
+			return val;
+		},
+	};
+	
+	return that;
+}
+
+
 window.toggle = function(obj, val, value1, value2) {
 	if(obj[val] == value1) {
 		obj[val] = value2;
