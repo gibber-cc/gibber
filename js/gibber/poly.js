@@ -126,6 +126,7 @@ function Poly(_chord, _waveform, volume) {
 				var note = this.notation[k];
 				if(typeof note === "number"){
 					this.oscs[k].frequency = note;
+					this.oscs[k].active = true;					
 				}else{
 					this.oscs[k].frequency = teoria.note(note).fq();
 					this.oscs[k].active = true;
