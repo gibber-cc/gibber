@@ -344,6 +344,7 @@ function Clip(amount) {
 		mods :  [],
 		value : 0,
 		mix : 1,
+		amp : 1,
 		
 		pushSample : function(sample) {
 			var x = sample * this.amount;
@@ -351,7 +352,7 @@ function Clip(amount) {
 			return this.value;
 		},
 		getMix : function() {
-			return this.value;
+			return this.value * this.amp;
 		},
 	};
 	

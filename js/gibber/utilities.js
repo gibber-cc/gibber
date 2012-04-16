@@ -78,25 +78,55 @@ Array.prototype.shuffle = function() {
 		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
 }
 
-// TODO: make a method that returns an array of all unique values
 Bag = function(values) { 
 	var that = {
 		values : values,
 		picked : [],
 	
 		pick : function() {
-			var val = this.values[rndi(0, this.values.length - 1)];
-			if($.inArray(val, this.picked) > -1) {
-				return this.pick();
-			}
+			if(arguments.length === 0) { // just return a single value
+				var val = this.values[rndi(0, this.values.length - 1)];
+				if($.inArray(val, this.picked) > -1) {
+					return this.pick();
+				}
 			
-			this.picked.push(val);
-			if(this.picked.length === this.values.length) {
-				this.picked = [];
+				this.picked.push(val);
+				if(this.picked.length === this.values.length) {
+					this.picked = [];
+				}
+				return val;
+			}else{ // return an array of unique values
+				if(arguments[0] >= this.values.length) {
+					G.log("Bag error: You cannot return more unique values than are in the bag.");
+					return this.values;
+				}
+				var out = [];
+				for(var i = 0; i < arguments[0]; i++) {
+					var choose = this.pick();
+					while($.inArray(choose, out) > -1) {
+						choose = this.pick();
+					}
+					out.push(choose);
+				}
+				return out;
 			}
-			return val;
 		},
 	};
+	
+	(function(obj) {
+	    Object.defineProperties(obj, {
+			"values" : {
+		        get: function() {
+		            return values;
+		        },
+		        set: function(value) {
+		            values = value;
+					picked = [];
+		        }
+			},	
+	    });
+	})(that);
+	
 	
 	return that;
 }
