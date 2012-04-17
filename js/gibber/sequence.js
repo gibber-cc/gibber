@@ -81,6 +81,8 @@ function Seq() {
 	this.oddEven = 0;
 	this.phaseOffset = 0;
 	this.sequenceInit = false;
+	this.humanize = null;
+	this.prevHumanize = null;
 	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
 
 	var that = this;	
@@ -198,7 +200,14 @@ Seq.prototype = {
 			// only play if not setting an offset... if using offset simply set original offset position
 			var shouldReturn = false; 
 			var nextPhase = 0;
+			if(this.prevHumanize) {
+				nextPhase += this.prevHumanize * -1;
+			}
 			
+			if(this.humanize) {
+				this.prevHumanize = rndi(this.humanize * -1, this.humanize);
+				nextPhase += this.prevHumanize;
+			}
 			if(this.shouldUseOffset) {
 				nextPhase += this.offset;
 				this.shouldUseOffset = false;
