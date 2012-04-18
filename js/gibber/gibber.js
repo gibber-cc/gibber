@@ -275,18 +275,17 @@ var Gibber = {
 		var oldbpm = this.bpm;
 		this.bpm = _bpm;
 		this.beat = 60000 / this.bpm * (this.sampleRate / 1000);
-		this.measure = this.beat * 4;
+		this.measure = Math.floor(this.beat * 4);
 		
 		for(var j = 0; j <= 64; j++) {
-			window["_"+j] = this.measure / j;
+			window["_"+j] = Math.floor(this.measure / j);
 		}
 		
 		var bpmObservers = Gibber.observers.bpm;
 
 		var percentChange = oldbpm / this.bpm;
 		for(var i = 0; i < bpmObservers.length; i++) {
-			var fnc = bpmObservers[i]; // all observers are callback functions to be called
-			fnc(percentChange);
+			bpmObservers[i](percentChange); 	// all observers are callback functions to be called
 		}
 	},
 	

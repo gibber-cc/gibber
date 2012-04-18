@@ -505,7 +505,14 @@ Seq.prototype = {
 	bpmCallback : function(obj) {
 		var _that = obj;
 		return function(percentageChangeForBPM) {
-			_that.speed *= percentageChangeForBPM;
+			if(_that.speed !== null) {
+				_that.speed *= percentageChangeForBPM;
+			}
+			if(_that.durations !== null) {
+				for(var i = 0; i < _that.durations.length; i++) {
+					_that.durations[i] *= percentageChangeForBPM;
+				}
+			}
 			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
 		}
 	},

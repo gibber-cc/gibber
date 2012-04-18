@@ -24,8 +24,23 @@ function Callback() {
 		var that = obj;
 		return function(percentageChangeForBPM) {
 			that.measureLengthInSamples = _1;
+			var init = false;
+			for(var i = 0, sl = that.sequence.length; i < sl; i++) {
+				if(typeof that.sequence[i] !== "undefined") {
+					if(i < that.phase) {
+						delete that.sequence[i];
+						continue;
+					}
+					var newPhase = Math.ceil(i * percentageChangeForBPM);
+					that.sequence[newPhase] = that.sequence[i].slice(0);
+					delete that.sequence[i];
+				}
+			}
+			that.phase = Math.floor(that.phase * percentageChangeForBPM);
+			console.log(that.phase);
 		}
 	}
+	
 	Gibber.registerObserver("bpm", bpmCallback(this));
 }
 
