@@ -354,6 +354,19 @@ var Gibber = {
 	},
 		
 	modsAndEffects : {
+		"+" : function() { 
+			return this.out() + this.param_;
+		},
+		"++": function() {
+			return Math.abs(this.out()) + this.param_;
+		},
+		"=" : function() { 
+			return this.out();		
+		},
+		"*" : function() {
+			return this.out() * this.param_;
+		},
+		
 		send : function(_bus, amount) {
 			var bus = { 
 				bus : Gibber.getBus(_bus),
@@ -423,7 +436,7 @@ var Gibber = {
 	
 		mod : function(_name, _source, _type) {
 			var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
-			var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
+			var type = (typeof _type !== "undefined") ? _type : '+';
 		
 			if(typeof _source.mods === "undefined") {
 				_source.mods = [];
@@ -436,6 +449,7 @@ var Gibber = {
 			_source.param = name;
 			_source.name = _name;
 			_source.type = type;
+			_source.param_ = this[name];
 			
 			this.mods.push(_source);			
 			

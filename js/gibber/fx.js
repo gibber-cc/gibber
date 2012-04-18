@@ -235,51 +235,6 @@ function Ring(frequency, mix) {
 	return that;
 }
 
-// ###LPF
-// A low-pass filter from audioLib.js  
-//
-// param **cutoff**: Float. Default = 300. The cutoff frequency of the filter  
-// param **resonance**: Float. Default = 3. Emphasis of the cutoff frequency  
-//
-// example usage:    
-// `d = Drums("xoxo");  
-//  d.fx.add( LPF(420, .5) );  `
-
-function LPF(cutoff, resonance, mix) {
-	var that = audioLib.LP12Filter(Gibber.sampleRate);
-	that.name = "LPF";
-	that.type="fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.automations = [];
-	that.trig = Gibber.trig;	
-	
-	cutoff = isNaN(cutoff) ? 300 : cutoff;
-	resonance = isNaN(resonance) ? 3 : resonance;
-	
-	if(typeof cutoff === "Object") {
-		that.effects[1].cutoff = cutoff[0];
-		that.effects[0].cutoff = cutoff[1];
-	}else{
-		that.setParam("cutoff", cutoff);
-	}
-	
-	if(typeof time === "Object") {
-		that.effects[1].resonance = resonance[0];
-		that.effects[0].resonance = resonance[1];
-	}else{
-		that.setParam("resonance", resonance);
-	}
-	
-	that.mix = mix || .3;
-	
-	Gibber.addModsAndFX.call(that);
-	
-	
-	return that;
-}
-
 // ###Crush
 // A bit-crusher from audioLib.js  
 //
@@ -288,7 +243,6 @@ function LPF(cutoff, resonance, mix) {
 // example usage:    
 // `d = Drums("xoxo");  
 //  d.fx.add( LPF(420, .5) );  `
-
 
 function Crush(resolution, mix) {
     var that = audioLib.BitCrusher(Gibber.sampleRate);
@@ -335,7 +289,7 @@ function Crush(resolution, mix) {
 // `d = Drums("xoxo");  
 //  d.fx.add( Clip(1000) );  `
 
-function Clip(amount) {
+function Clip(amount, amp) {
 	var that = {
 		amount: (typeof amount !== "undefined" && amount > 1) ? amount : 4,
 		name : "Clip",
@@ -344,7 +298,7 @@ function Clip(amount) {
 		mods :  [],
 		value : 0,
 		mix : 1,
-		amp : 1,
+		amp : isNaN(amp) ? 1 : amp,
 		
 		pushSample : function(sample) {
 			var x = sample * this.amount;
@@ -396,5 +350,102 @@ function Comb(delaySize, feedback, damping){
 	that.mods = [];
 	
 	Gibber.addModsAndFX.call(that);	
+	return that;
+}
+
+// ###LPF
+// A low-pass filter from audioLib.js  
+//
+// param **cutoff**: Float. Default = 300. The cutoff frequency of the filter  
+// param **resonance**: Float. Default = 3. Emphasis of the cutoff frequency  
+//
+// example usage:    
+// `d = Drums("xoxo");  
+//  d.fx.add( LPF(420, .5) );  `
+
+function LPF(cutoff, resonance, mix) {
+	var that = audioLib.LP12Filter(Gibber.sampleRate);
+	that.name = "LPF";
+	that.type="fx";
+	
+	that.gens = [];
+	that.mods = [];
+	that.automations = [];
+	that.trig = Gibber.trig;	
+	
+	cutoff = isNaN(cutoff) ? 300 : cutoff;
+	resonance = isNaN(resonance) ? 3 : resonance;
+	
+	if(typeof cutoff === "Object") {
+		that.effects[1].cutoff = cutoff[0];
+		that.effects[0].cutoff = cutoff[1];
+	}else{
+		that.setParam("cutoff", cutoff);
+	}
+	
+	if(typeof time === "Object") {
+		that.effects[1].resonance = resonance[0];
+		that.effects[0].resonance = resonance[1];
+	}else{
+		that.setParam("resonance", resonance);
+	}
+	
+	that.mix = mix || .3;
+	
+	Gibber.addModsAndFX.call(that);
+	
+	
+	return that;
+}
+
+
+function HPF(cutoff, Q) {
+	var that;
+	if(typeof arguments[0] === "object") {
+		var obj = arguments[0];
+		
+		if(isNaN(obj.cutoff)) obj.cutoff = 1000;
+		if(isNaN(obj.Q)) obj.Q = .5;
+		
+		that = new audioLib.BiquadFilter.HighPass(Gibber.sampleRate, obj.cutoff, obj.Q);		
+	}else{
+		if(isNaN(cutoff)) cutoff = 1000;
+		if(isNaN(Q)) Q = .5;		
+		that = new audioLib.BiquadFilter.HighPass(Gibber.sampleRate, cutoff, Q);
+		that.Q = Q;
+		that.cutoff = cutoff;
+	}
+	that.name = "HPF";
+	that.type = "fx";
+	
+	that.gens = [];
+	that.mods = [];
+	that.mix = isNaN(that.mix) ? 1 : that.mix;
+	
+	Gibber.addModsAndFX.call(that);
+	(function(obj) {
+	    Object.defineProperties(obj, {
+			"cutoff" : {
+		        get: function() {
+		            return cutoff;
+		        },
+		        set: function(value) {
+		            cutoff = value;
+					var	w0	= 2* Math.PI*cutoff/Gibber.sampleRate,
+						cosw0	= Math.cos(w0),
+						sinw0   = Math.sin(w0),
+						alpha   = sinw0/(2*this.Q),
+						b0	=  (1 + cosw0)/2,
+						b1	= -(1 + cosw0),
+						b2	=   b0,
+						a0	=   1 + alpha,
+						a1	=  -2*cosw0,
+						a2	=   1 - alpha;
+					this.reset(Gibber.sampleRate, b0/a0, b1/a0, b2/a0, a1/a0, a2/a0);
+		        }
+			},	
+	    });
+	})(that);
+
 	return that;
 }

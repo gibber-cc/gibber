@@ -2593,6 +2593,7 @@ BiquadFilter.BiquadFilterClass.prototype = {
 		return this.sample;
 	},
 	reset: function(sampleRate, b0, b1, b2, a1, a2){
+		if(G.debug) G.log("resetting");
 		this.inputs = [0,0];
 		this.outputs = [0,0];
 		this.sampleRate = isNaN(sampleRate) ? this.sampleRate : sampleRate;
