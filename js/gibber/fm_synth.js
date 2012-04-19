@@ -117,6 +117,9 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		
 		this.env.triggerGate();
 		this.active = true;
+		if(typeof arguments[1] !== "undefined") {
+			this.amp = arguments[1];
+		}
 	};
 	
 	that.generate = function() {

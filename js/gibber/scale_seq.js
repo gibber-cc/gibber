@@ -51,7 +51,11 @@ function ScaleSeq(_sequence, _speed) {
 		}
 		
 		for(var i = 0; i < this.sequenceNumbers.length; i++) {
-			this.sequence.push(this.scale[this.sequenceNumbers[i]]);
+			if(!$.isArray(this.sequenceNumbers[i])) {
+				this.sequence.push(this.scale[this.sequenceNumbers[i]]);
+			}else{
+				this.sequence.push([this.scale[this.sequenceNumbers[i][0]], this.sequenceNumbers[i][1]]);
+			}
 		}
 		
 		this.setSequence(this.sequence);

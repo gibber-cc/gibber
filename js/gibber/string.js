@@ -103,6 +103,9 @@ Pluck.prototype = {
 		for(var i = 0; i < _size ; i++) {
 			this._buffer[i] = this.noise[this.color]();
 		}
+		if(typeof arguments[1] !== "undefined") {
+			this.amp = arguments[1];
+		}
 	},
 	
 	// ####kill

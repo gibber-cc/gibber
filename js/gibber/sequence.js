@@ -1,8 +1,8 @@
 //  Gibber - sequence.js
 // ========================
 // TODO: shuffle and reset are broke after applying pick function
-// TODO: use memory[0] in reset function instead of _sequence
-
+// TODO: use memory[0] in reset function instead of _sequence 
+// TODO: velocities
 // ###Seq
 // Create a sequencer object, the base class for all sequencing capabilities in Gibber
 //
@@ -85,6 +85,7 @@ function Seq() {
 	this.humanize = null;
 	this.prevHumanize = null;
 	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
+	this.values2 = null;
 
 	var that = this;	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
@@ -265,7 +266,11 @@ Seq.prototype = {
 
 				return;
 			}
-			
+			var amp = null;
+			if($.isArray(val)) {
+				amp = val[1];
+				val = val[0];
+			}
 			if(shouldReturn) return;
 			if(this.slaves.length === 0) { // if a mod
 				this.value = val;
@@ -282,7 +287,11 @@ Seq.prototype = {
 						}// else val is a number and is fine to send as a freq...
 					}
 					if(typeof _slave[this.outputMessage] === "function") {
-						_slave[this.outputMessage](val);
+						if(amp === null){
+							_slave[this.outputMessage](val);
+						}else{
+							_slave[this.outputMessage](val, amp);
+						}
 					}else{
 						_slave[this.outputMessage] = val;
 					}

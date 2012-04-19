@@ -140,6 +140,9 @@ Synth.prototype = {
 		}
 		this.active = true;
 		this.env.triggerGate();
+		if(typeof arguments[1] !== "undefined") {
+			this.amp = arguments[1];
+		}
 	},
 	
 	getMix : function() {

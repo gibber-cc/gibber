@@ -133,6 +133,8 @@ function Poly(_chord, _waveform, volume) {
 				}
 			}
 		}
+		if(typeof arguments[1] !== "undefined") { this.trig(arguments[1]); }
+		return this;
 	};
 	
 	that.kill = function() {
@@ -207,6 +209,7 @@ function Poly(_chord, _waveform, volume) {
 			this.amp = vol;
 		}
 		this.env.triggerGate();
+		return this;
 	};
 	
 	//console.log("end of constructor");
