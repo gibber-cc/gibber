@@ -55,16 +55,29 @@ function ScaleSeq(_sequence, _speed) {
 		}
 		
 		this.setSequence(this.sequence);
-		// if(this.scaleInit === false && this.slaves.length != 0) {
-		// 	this.scaleInit = true;
-		// 	console.log("CALLED CALLED CALLED")
-		// 	this.advance();
-		// }
+		if(this.scaleInit === false) {
+		 	this.scaleInit = true;
+		 	this.memory[0] = this.sequence;
+		}
 	};
 	
 	that.set = function(sequence) {
 		that.createPattern(sequence);
 	};
+	
+	that.reset = function() {
+		if(arguments.length === 0) {
+			if(that.durations === null) {
+				that.setSequence(that.memory[0], that.speed);
+			}else{
+				that.setSequence(that.memory[0], that.durations);
+			}
+		}else{
+			that.setSequence(that.memory[arguments[0]]);
+		}
+		return that;
+	};
+	
 	
 	(function(obj) {
 	    var root = obj.root;

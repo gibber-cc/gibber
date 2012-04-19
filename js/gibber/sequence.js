@@ -1,6 +1,7 @@
 //  Gibber - sequence.js
 // ========================
 // TODO: shuffle and reset are broke after applying pick function
+// TODO: use memory[0] in reset function instead of _sequence
 
 // ###Seq
 // Create a sequencer object, the base class for all sequencing capabilities in Gibber
