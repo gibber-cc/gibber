@@ -95,6 +95,5 @@ function ScaleSeq(_sequence, _speed) {
 	})(that);
 
 	that.root = that.root || Gibber.root; // triggers meta-setter that sets sequence
-		
 	return that;
 }

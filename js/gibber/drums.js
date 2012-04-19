@@ -55,6 +55,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 		}
 		
 		this.seq = Seq({
+			doNotAdvance : true,
 			sequence : 	this.sequence,
 			speed : 	this.speed,
 			slaves :	[this],
@@ -63,12 +64,14 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 		if(typeof _timeValue !== "undefined") {
 			if($.isArray(_timeValue)) {
 				this.seq = Seq({
+					doNotAdvance : true,					
 					sequence :_sequence,
 					durations : _timeValue,
 					slaves:[this],
 				});
 			}else{
 				this.seq = Seq({
+					doNotAdvance : true,					
 					sequence :_sequence,
 					speed : _timeValue,
 					slaves:[this],
@@ -77,6 +80,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 		}else{
 			_timeValue = window["_"+_sequence.length];
 			this.seq = Seq({
+				doNotAdvance : true,					
 				sequence :_sequence,
 				speed : _timeValue,
 				slaves:[this],
@@ -121,6 +125,8 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 			that.seq.reset(num); 
 		}
 	};
+	this.seq.doNotAdvance = false;
+	this.seq.advance();
 }
 
 Drums.prototype = {
@@ -192,6 +198,7 @@ Drums.prototype = {
 	},
 	set : function(newSequence, _timeValue) { 
 		if(typeof this.seq === "undefined" || this.seq === null) {
+			console.log("SETTING A NEW SEQUENCE");
 			this.seq = Seq(newSequence, _timeValue).slave(this);
 		}else{
 			this.seq.set(newSequence); 

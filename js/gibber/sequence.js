@@ -169,7 +169,11 @@ function Seq() {
 
 	this.reset = function() {
 		if(arguments.length === 0) {
-			that.setSequence(that._sequence, that.speed);
+			if(that.durations === null) {
+				that.setSequence(that._sequence, that.speed);
+			}else{
+				that.setSequence(that._sequence, that.durations);
+			}
 		}else{
 			that.setSequence(that.memory[arguments[0]]);
 		}
@@ -356,13 +360,12 @@ Seq.prototype = {
 				this.sequence[i] = n;
 			}
 		}else{
-			G.log("ASSIGNED CORRECTLY");
 			this.sequence = seq;
 		}
-		if(this.init === false && !this.doNotAdvance && typeof seq.pick === "undefined") {
+		if(this.init === false && typeof seq.pick === "undefined") {
 			this._sequence = this.sequence.slice(0);
 			//Gibber.callback.slaves.push(this);
-			if(typeof this.sequence[0] === "function"){
+			if(typeof this.sequence[0] === "function" && !this.doNotAdvance){
 				this.advance();
 			}
 			this.init = true;
@@ -398,7 +401,7 @@ Seq.prototype = {
 					return this;
 				}
 			}
-			if(!this.slavesInit) {
+			if(!this.slavesInit && !this.doNotAdvance) {
 				 this.advance();
 				 this.slavesInit = true;
 				 if(typeof this.sequence.pick !== "undefined")
@@ -441,12 +444,11 @@ Seq.prototype = {
 	// start the sequencer running
 	
 	play : function() {
+		console.log("PLAYING")
 		this.active = true;
 		this.advance();
 		return this;
 	},
-	
-
 	
 	break : function(newSeq, breakToOriginal) {
 		this.shouldBreak = true;

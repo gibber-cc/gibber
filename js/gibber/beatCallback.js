@@ -9,7 +9,8 @@ c.addCallback("Gibber.setBPM(120)", _4);	// time is measured in samples
 
 This will set the bpm to 120 at the start of the next quarter beat
 
-TODO: Time subdivision doesn't appear to work; always defaults to one measure
+TODO: There is now an audio stutter when changing tempo. I'm guessing this is due to checking the large number
+of past events in the sequence array that are no longer even being used. How can we regularly cull this array?
 */
 
 (function myPlugin(){
@@ -37,7 +38,6 @@ function Callback() {
 				}
 			}
 			that.phase = Math.floor(that.phase * percentageChangeForBPM);
-			console.log(that.phase);
 		}
 	}
 	
