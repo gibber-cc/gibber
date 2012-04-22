@@ -251,7 +251,7 @@ window.rndd = window.randomi = function(min, max, number) {
 
 
 window.rndi = window.randomi = function(min, max, number) {
-	if(typeof number === "undefined") {
+	if(typeof number === "undefined" && typeof min != "object") {
 		if(arguments.length == 1) {
 			min = 0, max = arguments[0];
 		}else if(arguments.length == 2) {
@@ -288,7 +288,7 @@ window.rndi = window.randomi = function(min, max, number) {
 };
 
 window.rndf = window.randomf = function(min, max, number) {
-	if(typeof number === "undefined") {
+	if(typeof number === "undefined" && typeof min != "object") {
 		if(arguments.length == 1) {
 			min = 0, max = arguments[0];
 		}else if(arguments.length == 2) {
@@ -350,9 +350,9 @@ window.getSpeed = function(div) {
 	return window["_"+div];
 };
 
-// mtof : function(midiNumber) {
-// 	return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)
-// },
+window.mtof = function(midiNumber) {
+ 	return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)
+};
 	
 function ntof(note) {
 	var n = teoria.note(note);

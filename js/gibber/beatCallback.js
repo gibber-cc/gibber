@@ -118,6 +118,9 @@ Callback.prototype = {
 			// }
 			
 		}else{
+			if(this.phase % _16 === 0) {
+				osc_client.send('/tick', 'f', [1]);
+			}
 			if(this.phase % _4 === 0) {
 				this.beat++;
 				

@@ -196,7 +196,7 @@ function Ring(frequency, mix) {
 	that.type="fx";
 	
 	that.osc  = Sine(that.frequency, that.amount).silent();
-	that.osc.amp = .5	;
+	that.osc.amp = 1;
 	that.osc.isControl = true;
 	that.gens = [];
 	that.mods = [];

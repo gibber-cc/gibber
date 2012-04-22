@@ -245,7 +245,6 @@ var Gibber = {
 			controlToReplace.mods.length = 0;
 		}
 		oldControl.kill();
-		Gibber.callback.slaves.remove(oldControl);	
 	},
 	
 	controlRemove: function(oldControl) {

@@ -323,7 +323,6 @@ Seq.prototype = {
 	
 	kill : function() {
 		this.free();
-		//Gibber.callback.slaves.remove(this);
 		
 		for(var i = 0; i < this.slaves.length; i++) {
 			var slave = this.slaves[i];
@@ -331,7 +330,8 @@ Seq.prototype = {
 		}
 		this.slaves.length = 0;
 		
-		this.mods.length = 0;	
+		this.mods.length = 0;
+		this.active = false;
 	},
 	
 	// ####setSequence

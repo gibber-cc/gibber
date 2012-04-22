@@ -36,12 +36,6 @@ function audioProcess(buffer, channelCount){
 			value = 0;
 			
 			Gibber.callback.generate();
-			for(var c = 0, _cl = Gibber.controls.length; c < _cl; c++) {
-				var control = Gibber.controls[c];
-				processMods(control);
-				control.generate();
-				restoreMods(control);
-			}
 			
 			for(var g = 0, _gl = Gibber.generators.length; g < _gl; g++) {
 				var genValue = 0;
