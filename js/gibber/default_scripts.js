@@ -1,11 +1,12 @@
 Gibber.defaultScripts = {
 default:
 '// This is a sample of what Gibber can do and isn\'t really\n'+
-'// intended as a tutorial. There are many tutorials under\n'+
-'// Options > Load File in the right pane of the screen.\n'+
+'// intended as a tutorial. There are many tutorials in\n'+
+'// the Load menu at the top of the screen.\n'+
 '//\n'+
-'// Run lines in between comments ONE SECTION AT A TIME\n'+
-'// by highlighting lines and hitting cmd + shift + return\n'+
+'// Run lines in between comments one section at a time\n'+
+'// by highlighting them and hitting ctrl + shift + return.\n'+
+'// Or select everything at once and run it all together.\n'+
 '\n'+
 'G.setBPM(140)\n'+
 '\n'+
