@@ -2,7 +2,12 @@
 <html>
 	<head>
 		<title>Gibber</title>
-		<link rel="stylesheet" href="css/main.css">
+		<link rel="stylesheet" href="css/main.css">			
+		<link rel="stylesheet" href="js/codemirror/codemirror.css">
+		<link rel="stylesheet" href="css/elegant.css">		
+		<link rel="stylesheet" href="css/thecharlie.css">
+		<link rel="stylesheet" href="css/dcmegamenu.css">		
+		
 		<!--
 		CODE FOR OSC SENDING
 		<script src="socket.io.js"></script>
@@ -25,89 +30,126 @@
 		<script>
 		window.onload	= function(){
 			Gibber.init();
-		};
-				
-
+		};	
 		</script>
 	</head>
 	<body>
-		<div id="info">
-			<h1>GIBBER  (beta)</h1>
-			<div id="quickstart" class="section">
-			<h2>Quick Start <span class="quickstartsection">show/hide</span></h2>
-			<div class="quickstartcontent">
-				<ul class="startlist">
-					<li>Click on a line of code.</li>
-					<li>Hit Ctrl-return (cmd-return on os x) to execute the selected line.</li>
-					<li>You can also highlight multiple lines to be executed at once. Most of the tutorial files that come with Gibber are designed to be run one line at a time.</li>
-					<li> Shift-ctrl-return executes code at the start of the next measure; this is useful to ensure the timing of arpeggios, drum beats, etc. line up correctly.
-					</li><li> To kill current oscillators / fx in memory, hit Cntrl/Cmd -`.</li>
-					<li> Under Options, load up different files to learn how things work.</li>
-					<li> Check out <a href="http://www.charlie-roberts.com/gibber/info">the documentation</a> and visit <a href="http://charlie-roberts.com/gibber/info/?forum=gibber">the forum</a> to ask questions!</li>
-					</ul>
-			</p>
-			</div>
-			</div>
-			<div id="about" class="section">
-				<h2>About <span class="aboutsection">show/hide</span></h2>
-				<div class="aboutcontent">
-				<p>
-				<a href="http://www.charlie-roberts.com/gibber/info">Gibber</a> is a JavaScript live coding environment with a relatively easy syntax. Gibber has only been tested in Chrome. The syntax is layered on top of the excellent <a href="https://github.com/jussi-kalliokoski/audiolib.js">audioLib.js library</a> by <a href="https://github.com/jussi-kalliokoski">Jussi Kalliokoski</a>. Gibber is open-source and <a href="https://github.com/charlieroberts/Gibber">available for download</a>.</p>
-				<p>Other projects/code that contribute to Gibber:</p>
-				<ul>
-					<li><a href="http://ace.ajax.org/">Ace Code Editor</a></li>
-					<li><a href="http://jquery.com">jQuery</a></li>
-					<li><a href="http://saebekassebil.github.com/teoria/docs/teoria.html">teoria.js</a></li>
-				</ul>
-				</div>
-			</div>
-			<div id="options" class="section">
-				<h2>Options <span class="optionssection">show/hide</span></h2>
-				<div class="optionscontent">
-					Theme: <select id="theme" size="1" onchange="Gibber.Environment.Editor.setTheme(this.value);" style="margin-bottom:1em;">
-					<option value="ace/theme/idle_fingers">idleFingers</option>
-					<option value="ace/theme/solarized_light">Solarized Light</option>
-					<option value="ace/theme/textmate">TextMate</option>
-					<option value="ace/theme/thecharlie" selected="selected">thecharlie</option>
-					<option value="ace/theme/twilight">Twilight</option>
-					</select><br>
-					<button id="saveme">Save File<span style="font-size:.5em">&#9660;</span></button>
-					<button id="loadme">Load File<span style="font-size:.5em">&#9660;</span></button>
-					<button id="joinsession">Join Session<span style="font-size:.5em">&#9660;</span></button><br>					
-									
-					<!--Load File:<select id="fileList" size="1" onchange="Gibber.Environment.loadAndSet(this.value);" style="margin-bottom:1em;">-->
-					</select><br>
-					<!--<button onclick="Gibber.loadFile()">Load File</button><br>-->
-					<button onclick="Gibber.Environment.Editor.renderer.setShowGutter(!Gibber.Environment.Editor.renderer.getShowGutter())">Toggle Line Numbers</button>
-					
-				</div>
-			</div>
-		
-			<div id="reference" class="section">
-				<h2>Key Commands <span class="referencesection">show/hide</span></h2>
-
-				<div class="referencecontent">
+		<div class="demo-container">
+			<ul id="mega-menu-1" class="mega-menu">
+				<li class="nolink" style="padding:0">
+					<span class="floaty">GIBBER</span>
+					<span class="num" id="beat1">&nbsp;</span>
+					<span class="num" id="beat2">&nbsp;</span>
+					<span class="num" id="beat3">&nbsp;</span>
+					<span class="num" id="beat4">&nbsp;</span>															
+				</li>
+				<li><a>Load</a>
+					<ul id="fileList"></ul>	
+				</li>
+				<li><a>Save</a>
 					<ul>
-					<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected current line of the cursor is run.</li>
-					<li><pre>Ctrl/Cmd-Shift-Return</pre> executes code at the start of the next measure. </li>
-					<li><pre>Ctrl/Cmd-Shift-Alt/Option-Return</pre> executes code at the start of the next beat.</li>										
-					<li><pre>Ctrl/Cmd .</pre> toggles the audio on and off</li>
-					<li><pre>Ctrl/Cmd `</pre> clears all audio generators, use this to start over without refreshing the page and losing your code</li>
-					<li><pre>Ctrl/Cmd +- </pre>change font size up and down.</li>
-					<li><pre>Ctrl/Cmd-I </pre>Hide this info panel.</li>					
+						<label for="filename" >filename :</label>
+						<input id="filename">
+						<button onclick='Gibber.Environment.saveWithName( $("#filename").val() )'>Save</button>
 					</ul>
-				</div>
+				</li>
+				<!-- <li><a>Demos</a>
+					<ul><a><li>SubItem 11</li></a>
+						<a><li>SubItem 21</li></a>
+					</ul>
+				</li>
+				<li><a>Tutorials</a>
+					<ul><a><li>SubItem 11</li></a>
+						<a><li>SubItem 21</li></a>
+					</ul>
+				</li> -->
+				<li><a>Join Session</a>
+					<ul><li>
+						<label for="username">username :</label>
+						<input id="username"><br>
+						<label for="ip">ip address :</label>
+						<input id="ip">
+						<button onclick='
+							G.log("ATTEMPTING TO CONNECT TO MASTER...");
+							Gibber.Environment.slave($("#username").val(), $("#ip").val());
+							$(Gibber.Environment.joinWindow).remove();
+							Gibber.Environment.isJoinOpen = false;'
+						>Join</button>
+					</li>
+					</ul>
+				</li>
+				<li><a>Help</a>
+					<ul>
+						<li><a id="aboutMenuItem">About</a></li>
+						<li><a id="quickstartMenuItem">Quickstart</a></li>
+						<li><a id="keyCommandMenuItem">Key Commands</a></li>
+						<li><a href="http:://www.charlie-roberts.com/gibber/info">Website</a></li>
+						<li><a href="http://charlie-roberts.com/gibber/info/?forum=gibber">Forum</a></li>
+					</ul>
+				</li>
+				
+			</ul>
+		</div>
+		
+		<div id="about" style="display:none">
+			<p>
+			<a href="http://www.charlie-roberts.com/gibber/info">Gibber</a> is a JavaScript live coding environment with a relatively easy syntax. Gibber has only been tested in Chrome. The syntax is layered on top of the excellent <a href="https://github.com/jussi-kalliokoski/audiolib.js">audioLib.js library</a> by <a href="https://github.com/jussi-kalliokoski">Jussi Kalliokoski</a>. Gibber is open-source and <a href="https://github.com/charlieroberts/Gibber">available for download</a>.</p>
+			<p>Other projects/code that contribute to Gibber:</p>
+			<ul>
+				<li><a href="http://codemirror.net">CodeMirror</a></li>
+				<li><a href="http://jquery.com">jQuery</a></li>
+				<li><a href="http://saebekassebil.github.com/teoria/docs/teoria.html">teoria.js</a></li>
+				<li><a href="http://www.designchemical.com/lab/jquery-mega-drop-down-menu-plugin/options/">Design Chemical Mega Menu</a></li>
+				<li><a href="http://www.ericmmartin.com/projects/simplemodal/">SimpleModal jQuery plugin</a></li>
+				<li><a href="http://nodejs.org">Node.js</a></li>
+			</ul>
+			<p><a href="http://toplap.org">Learn more about live coding at Toplap.org</a></p>
+			<p>Some live coding environments that were particularly inspiring to this project:</p>
+			<ul>
+				<li><a href="http://www.ixi-audio.net/ixilang/">ixi lang</a></li>
+				<li><a href="http://www.sketchpatch.net/livecodelab/index.html">Livecodelab</a></li>
+				<li><a href="http://chuck.cs.princeton.edu/">ChucK</a></li>
+			</ul>
 			</div>
 		</div>
 		
-		<div id="console">
-			<p>>&nbsp;<span class="consoletext"></span></p>
+		<div id="keyCommands" style="display:none">
+			<ul style="list-style:none">
+			<li><pre>Ctrl-Return (Cmd-Return OSX)</pre> executes selected code. If no code is selected current line of the cursor is run.</li>
+			<li><pre>Ctrl/Cmd-Shift-Return</pre> executes code at the start of the next measure. </li>
+			<li><pre>Ctrl/Cmd-Shift-Alt/Option-Return</pre> executes code at the start of the next beat.</li>										
+			<li><pre>Ctrl/Cmd .</pre> toggles the audio on and off</li>
+			<li><pre>Ctrl/Cmd ` (backtick)</pre> clears all audio generators, use this to start over without refreshing the page and losing your code</li>
+			<li><pre>Ctrl/Cmd +- </pre>change font size up and down.</li>
+			<li><pre>Ctrl/Cmd-I </pre>Hide this info panel.</li>					
+			</ul>
 		</div>
-		<div id="editor"> </div>
+		
+		
+		<div id="quickstart" style="display:none">
+			<ul class="startlist">
+				<li>Click on a line of code.</li>
+				<li>Hit Ctrl-return (cmd-return on os x) to execute the selected line.</li>
+				<li>You can also highlight multiple lines to be executed at once. Most of the tutorial files that come with Gibber are designed to be run one line at a time.</li>
+				<li> Shift-ctrl-return executes code at the start of the next measure; this is useful to ensure the timing of arpeggios, drum beats, etc. line up correctly.
+				</li><li> To kill current oscillators / fx in memory, hit Cntrl/Cmd -` (backtick).</li>
+				<li> Under Options, load up different files to learn how things work.</li>
+				<li> Check out <a href="http://www.charlie-roberts.com/gibber/info">the documentation</a> and visit <a href="http://charlie-roberts.com/gibber/info/?forum=gibber">the forum</a> to ask questions!</li>
+			</ul>
+		</div>
+		
 
+		<div id="console">
+			<span class="consoleprompt" style="margin-left:.5em">>&nbsp;<span class="consoletext"></span></span>
+		</div>
+<textarea id="code" name="code">
+</textarea>
 	</body>
 	<script src="js/jquery-1.5.js" type="text/javascript" charset="utf-8"></script>
-		
+	<script type='text/javascript' src='js/megamenu/jquery.hoverIntent.minified.js'></script>
+	<script type='text/javascript' src='js/megamenu/jquery.dcmegamenu.1.3.3.min.js'></script>
+	<script type='text/javascript' src='js/jquery.simplemodal.1.4.2.min.js'></script>
+	
 	<script src="js/audiolib.js"></script>
 	<script src="js/samples/drum-samples.js"></script>
 	<script src="js/gibber/audio_callback.js"></script>	
@@ -131,25 +173,10 @@
 	<script src="js/gibber/schizo.js"></script>			
 	<script src="js/gibber/crackle.js"></script>						
 	<script src="js/gibber/default_scripts.js"></script>
-
-	<script src="js/ace/ace-ugly.js" type="text/javascript" charset="utf-8"></script>
-	<script src="js/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
-	<script src="js/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
-	<script src="js/ace/theme-idle_fingers.js" type="text/javascript" charset="utf-8"></script>
-	<script src="js/ace/theme-textmate.js" type="text/javascript" charset="utf-8"></script>				
-	<script src="js/ace/theme-solarized_light.js" type="text/javascript" charset="utf-8"></script>						
-	<script src="js/ace/theme-thecharlie.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script src="js/codemirror/codemirror.js"></script>
+ 	<script src="js/codemirror/util/loadmode.js"></script>
 		
 	<script src="js/node/socket.io.min.js" type="text/javascript" charset="utf-8"></script>
 	
 </html>
-
-<!--
-				<h3>Generators</h3>
-				<p>All generators(oscillators) accept two parameters in their constructor: frequency and amplitude. The amplitude default is .25, but you have to enter a frequency. The available generators are Sine, Square, Saw, Tri(Triangle), Pulse and LFO.</p>
-				Methods:
-				<ul>
-					<li>mod(str:parameterName, obj:modSource, str:type) : parameterName is the parameter you'd like to modulate. Common options are "frequency" (or "freq") and "amp". modSource is another object such as an LFO or a StepSequencer whose output will change the parameter in question. Modes determine how the parameter is changed. "+" adds the output of the modulator to the paramter, "*" multiples, "++" adds the absolute value of the modulator and "=" assigns the value of the modulator to the parameter; the default is "+"; Vibrato Example:<pre>s = Sine(400); s.mod("freq", LFO(4, 2), "+");</pre></li>
-				</ul>
-
--->

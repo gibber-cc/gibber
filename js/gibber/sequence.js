@@ -45,7 +45,8 @@ function Seq() {
 			"offset" : {
 				get: function(){ return _offset; },
 				set: function(value) {
-					_offset = value;
+					_offset = value + (_offset * -1)
+					console.log("OFFSET = " + _offset);
 					that.shouldUseOffset = true;
 				}
 			},
@@ -98,7 +99,7 @@ function Seq() {
 			}
 		}
 	}else{
-		_seq = arguments[0] || null;
+		_seq = arguments[0] || [];
 		if(typeof _seq === "function") { // wrap anonymous function in array as sugar
 			_seq = [_seq];
 		}
@@ -193,16 +194,6 @@ Seq.prototype = {
 	advance : function() {
 		if(this.active) {
 			var pos, val;
-			var usePick = (typeof this.sequence.pick !== "undefined");
-			if(!usePick) {
-				pos = this.counter % this.sequence.length;
-			}
-			if(!usePick) {
-				val = this.sequence[pos];
-			}else{
-				val = this.sequence.pick();
-			}
-			
 			// only play if not setting an offset... if using offset simply set original offset position
 			var shouldReturn = false; 
 			var nextPhase = 0;
@@ -244,8 +235,21 @@ Seq.prototype = {
 			}
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
 			nextPhase = Math.round(nextPhase);
+			if(nextPhase == 0) return;
 			
 			G.callback.addEvent(nextPhase, this);
+			
+			if(typeof this.sequence === "undefined" || this.sequence === null) return;
+			
+			var usePick = (typeof this.sequence.pick !== "undefined");
+			if(!usePick) {
+				pos = this.counter % this.sequence.length;
+			}
+			if(!usePick) {
+				val = this.sequence[pos];
+			}else{
+				val = this.sequence.pick();
+			}
 			
 			// Function sequencing
 			// TODO: there should probably be a more robust way to to this

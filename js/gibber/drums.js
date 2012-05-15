@@ -125,8 +125,10 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 			that.seq.reset(num); 
 		}
 	};
-	this.seq.doNotAdvance = false;
-	this.seq.advance();
+	if(this.seq !== null) {
+		this.seq.doNotAdvance = false;
+		this.seq.advance();
+	}
 }
 
 Drums.prototype = {

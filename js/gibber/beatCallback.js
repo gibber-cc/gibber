@@ -96,9 +96,9 @@ Callback.prototype = {
 		if(this.phase % _1 === 0){	// must happen first to correctly schedule new sequencers
 			this.beat = 0;
 			for(var i = 2; i <= 4; i++) {
-				$("#n" + i).css("color", "#444");
+				$("#beat" + i).css("background-color", "#500");
 			}
-			$("#n1").css("color", "red");
+			$("#beat1").css("background-color", "#900");
 			if(this.callbacks.length != 0) {
 				for(var j = 0; j < this.callbacks.length; j++) {
 					try{
@@ -122,7 +122,11 @@ Callback.prototype = {
 				this.beat++;
 				
 				var subdivision = this.beat + 1;
-				$("#n" + subdivision).css("color", "red");
+				for(var i = 1; i <= 4; i++) {
+					$("#beat" + i).css("background-color", "#500");
+				}
+				
+				$("#beat" + subdivision).css("background-color", "#900");
 			}
 		}
 		
