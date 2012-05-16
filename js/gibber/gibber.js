@@ -665,6 +665,7 @@ function Env2 () {
 		increment : 0,
 		modded : [],
 		endFunction : null,
+		mix: 1,
 		end : function(func) { 
 			if(typeof func === "function") this.endFunction = func; 
 			return this;
