@@ -64,7 +64,7 @@ function Rec() {
 		
 		remove 	: function(gen) {
 			this.mode = "playback";
-			gen.fx.remove("Rec");
+			gen.fx.remove(this.name);
 			this.sampleCount = 0;
 			this.effect = null;
 		},
