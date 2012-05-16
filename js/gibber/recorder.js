@@ -13,7 +13,7 @@ function Rec() {
 		added	: false,
 		active	: true,
 		speed 	: args.speed || 1,
-		
+		mix		: 1,
 		insert 	: function(gen) {
 			this.mode = "record";
 			gen.fx.add(this);
@@ -51,7 +51,7 @@ function Rec() {
 			if(this.sampleCount >= this.length) {
 				this.remove(this.effect);
 			}
-			this.value = incoming;
+			return this.value = incoming;
 		},
 		
 		play : function() {

@@ -331,6 +331,35 @@ default:
 '// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
+"granulation" :
+'// run some drums to sample and granulate\n'+
+'d = Drums("x*o*", _8);\n'+
+'d.pitch *= 2;\n'+
+'\n'+
+'// create the granulator, 10 grains, each grain is 50ms\n'+
+'// and the speed ranges from -.5 (half speed backwards) to 2\n'+
+'// (double speed forwards)\n'+
+'g = Grains({\n'+
+'  numberOfGrains: 10,\n'+
+'  grainSize: ms(50),\n'+
+'  range:[-.5,2],\n'+
+'});\n'+
+'\n'+
+'// insert the grain as an fx on the drums\n'+
+'g.insert(d);\n'+
+'\n'+
+'// tell the granulator to play and the drums to stop\n'+
+'g.play();\n'+
+'d.seq.stop();\n'+
+'\n'+
+'// change the length of all grains\n'+
+'g.set("length", ms(350));\n'+
+'\n'+
+'// change the speed of all grains to a new random value\n'+
+'g.grains.all( function(obj) {\n'+
+'  obj.speed = rndf(-.5, 2);\n'+
+'});',
+
 "algorithmic music" :
 '// this tutorial shows how to use random functions to generate "music".\n'+
 '// first create arrays to hold drums and sequencers\n'+

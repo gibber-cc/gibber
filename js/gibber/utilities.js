@@ -350,6 +350,10 @@ window.getSpeed = function(div) {
 	return window["_"+div];
 };
 
+window.ms = function(num) {
+	return (G.sampleRate / 1000) * num;
+}
+
 window.mtof = function(midiNumber) {
  	return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)
 };
