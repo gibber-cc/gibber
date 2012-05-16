@@ -336,16 +336,17 @@ default:
 'd = Drums("x*o*", _8);\n'+
 'd.pitch *= 2;\n'+
 '\n'+
-'// create the granulator, 10 grains, each grain is 50ms\n'+
-'// and the speed ranges from -.5 (half speed backwards) to 2\n'+
-'// (double speed forwards)\n'+
+'// Create the granulator, 20 grains, each grain is 50ms\n'+
+'// and the speed ranges from .25 (quarter speed) to 2\n'+
+'// (double speed). Grain playback is randomly reversed.\n'+
 'g = Grains({\n'+
-'  numberOfGrains: 10,\n'+
+'  numberOfGrains: 20,\n'+
 '  grainSize: ms(50),\n'+
-'  range:[-.5,2],\n'+
+'  shouldReverse: true,\n'+
+'  range:[.25, 2],\n'+
 '});\n'+
 '\n'+
-'// insert the grain as an fx on the drums\n'+
+'// insert the grain as an fx on the drums, records one measure\n'+
 'g.insert(d);\n'+
 '\n'+
 '// tell the granulator to play and the drums to stop\n'+
@@ -355,10 +356,19 @@ default:
 '// change the length of all grains\n'+
 'g.set("length", ms(350));\n'+
 '\n'+
-'// change the speed of all grains to a new random value\n'+
-'g.grains.all( function(obj) {\n'+
-'  obj.speed = rndf(-.5, 2);\n'+
-'});',
+'\n'+
+'// stop granulator in preparation for to granulate\n'+
+'// new sound source.\n'+
+'g.stop();\n'+
+'\n'+
+'s = Synth(50,50,.1);\n'+
+'t = ScaleSeq(fill(), _16).slave(s);\n'+
+'\n'+
+'g.insert(s);\n'+
+'\n'+
+'// stop scaleseq and play granulator\n'+
+'g.play();\n'+
+'t.stop();',
 
 "algorithmic music" :
 '// this tutorial shows how to use random functions to generate "music".\n'+

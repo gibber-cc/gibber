@@ -7,7 +7,8 @@ function Grains() {
 	that.grainSize = args.grainSize || ms(100);
 	that.envelopeSize = args.envelopeSize || .1;
 	that.shouldRandomizeSpeed = (typeof args.shouldRandomizeSpeed !== "undefined") ? args.shouldRandomizeSpeed : false;
-	that.range = args.range || [-2, 2];
+	that.range = args.range || [.25, 2];
+	that.shouldReverse = (typeof args.shouldReverse !=="undefined") ? args.shouldReverse : true;
 	
 	for(var i = 0; i < that.numGrains; i++) {
 		that.grains[i] = {
@@ -30,11 +31,22 @@ function Grains() {
 				this.pos += this.speed;
 				
 				if(this.pos > this.length && this.speed > 0) {
-					this.pos = this.pos - this.length;
-					//this.speed = rndf(this.parent.range[0], this.parent.range[1]);
+					this.speed = rndf(this.parent.range[0], this.parent.range[1]);
+					if(this.parent.shouldReverse) {
+						if(Math.random() > .5) this.speed *= -1;
+					}
+					if(this.speed > 0) {
+						this.pos = this.pos - this.length;
+					}
 					this.start = rndi(0, this.parent.length);
 				}else if(this.pos < 0 && this.speed < 0) {
-					this.pos = this.length;
+					this.speed = rndf(this.parent.range[0], this.parent.range[1]);
+					if(this.parent.shouldReverse) {
+						if(Math.random() > .5) this.speed *= -1;
+					}
+					if(this.speed < 0) {
+						this.pos = this.length;
+					}	
 				}
 				
 				if(this.start + this.pos >= this.parent.length) {
