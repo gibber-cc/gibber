@@ -14,11 +14,17 @@ function Rec() {
 		active	: true,
 		speed 	: args.speed || 1,
 		mix		: 1,
+		playFlag: false,
 		insert 	: function(gen) {
 			this.mode = "record";
 			gen.fx.add(this);
 			this.sampleCount = 0;
 			this.effect = gen;
+		},
+		
+		insertAndPlay : function(gen) {
+			this.playFlag = true;
+			this.insert(gen);
 		},
 		
 		generate : function() {
@@ -49,6 +55,10 @@ function Rec() {
 			this.buffer[this.sampleCount++] = incoming;
 			if(this.sampleCount >= this.length) {
 				this.remove(this.effect);
+				if(this.playFlag) {
+					this.play();
+					this.playFlag = false;
+				}
 			}
 			return this.value = incoming;
 		},

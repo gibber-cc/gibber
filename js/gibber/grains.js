@@ -1,11 +1,11 @@
 function Grains() {
 	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];
-	var that = Rec();
+	var that = Rec(args);
 	$.extend(that, {
 		name 				 : "Grains",
 		grains 				 : [],
 		numGrains 			 : args.numberOfGrains || 10,
-		grainSize 			 : args.grainSize || ms(100),
+		grainSize 			 : args.grainSize || ms(50),
 		envelopeSize 		 : args.envelopeSize || .1,
 		shouldRandomizeSpeed : (typeof args.shouldRandomizeSpeed !== "undefined") ? args.shouldRandomizeSpeed : false,
 		positionCenter 		 : args.positionCenter   || .5,
@@ -66,7 +66,6 @@ function Grains() {
 				return this.value * this.amp;
 			},
 		}
-		console.log(that.grains[i].speed);
 	}
 	
 	that.set = function(prop, value) {

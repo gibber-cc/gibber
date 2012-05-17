@@ -332,14 +332,16 @@ default:
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
 "granulation" :
-'// Create the granulator, 20 grains, each grain is 150ms\n'+
-'// Pitch and position vary by five percent.\n'+
+'// Create the granulator, 20 grains, each grain is 50ms\n'+
+'// Pitch and position vary by five percent. Store a buffer\n'+
+'// of one measure in length.\n'+
 'g = Grains({\n'+
 '	numberOfGrains	: 20,\n'+
-'	grainSize		: ms(150),\n'+
+'	grainSize		: ms(50),\n'+
 '	pitchVariance	: .05,\n'+
 '	shouldReverse	: false,\n'+
 '	positionVariance: .05,\n'+
+'    length			: _1,\n'+
 '});\n'+
 'g.amp *= 2; \n'+
 'g.fx.add(Reverb(1,0,1,0));\n'+
@@ -348,12 +350,11 @@ default:
 'u = Synth(50,50,.1);\n'+
 't = ScaleSeq(fill(), _16).slave(u);\n'+
 '\n'+
-'// insert the grain as an fx on the synth, records one measure\n'+
-'g.insert(u);\n'+
+'// insert the grain as an fx on the synth to record.\n'+
+'// play automatically when done recording\n'+
+'g.insertAndPlay(u);\n'+
 '\n'+
-'// WAIT ONE MEASURE. REALLY.\n'+
-'// tell the granulator to play and the synth to stop\n'+
-'g.play();\n'+
+'// stop the synth if desired\n'+
 't.stop();\n'+
 '\n'+
 '// mod the center position of the grain cloud\n'+
@@ -363,7 +364,7 @@ default:
 '// change the amount of variance in grain playback speed\n'+
 'g.pitchVariance = .01; 	\n'+
 '\n'+
-'g.mod("pitchVariance", LFO(.001, .01), "+");\n'+
+'g.mod("pitchVariance", LFO(.001, .03), "+");\n'+
 '\n'+
 '// change the size of all grains\n'+
 'g.grainSize = ms(550);\n'+
@@ -373,7 +374,7 @@ default:
 'g.set("envLength", ms(200));\n'+
 '\n'+
 '// remove the mods\n'+
-'g.mods.remove();',
+'g.mods.remove();\n',
 
 "algorithmic music" :
 '// this tutorial shows how to use random functions to generate "music".\n'+
