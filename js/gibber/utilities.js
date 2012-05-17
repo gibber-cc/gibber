@@ -328,7 +328,7 @@ a.pick();
 TODO: Figure out an algorithm(s) to automatically create weights with different schemes
 */
 window.weight = function(weights) {
-    var w = weights;
+    var w = (typeof weights === "object") ? weights : arguments;
     var returnValue = this[0];
     function pick() {
         var total = 0;

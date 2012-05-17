@@ -41,7 +41,6 @@ function Rec() {
 		},
 		
 		out : function() {
-			if(G.debug) console.log("CALLING")
 			this.generate();
 			return this.getMix();
 		},
@@ -56,7 +55,6 @@ function Rec() {
 		
 		play : function() {
 			if(!this.added) {
-				G.log("ADDING REC");
 				Gibber.generators.push(this);
 			}
 			this.active = true;

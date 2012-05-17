@@ -1,24 +1,30 @@
 function Grains() {
 	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];
 	var that = Rec();
-	that.name = "Grains";
-	that.grains = [];
-	that.numGrains = args.numberOfGrains || 10;
-	that.grainSize = args.grainSize || ms(100);
-	that.envelopeSize = args.envelopeSize || .1;
-	that.shouldRandomizeSpeed = (typeof args.shouldRandomizeSpeed !== "undefined") ? args.shouldRandomizeSpeed : false;
-	that.range = args.range || [.25, 2];
-	that.shouldReverse = (typeof args.shouldReverse !=="undefined") ? args.shouldReverse : true;
-	
+	$.extend(that, {
+		name 				 : "Grains",
+		grains 				 : [],
+		numGrains 			 : args.numberOfGrains || 10,
+		grainSize 			 : args.grainSize || ms(100),
+		envelopeSize 		 : args.envelopeSize || .1,
+		shouldRandomizeSpeed : (typeof args.shouldRandomizeSpeed !== "undefined") ? args.shouldRandomizeSpeed : false,
+		positionCenter 		 : args.positionCenter   || .5,
+		positionVariance 	 : args.positionVariance || .5,		
+		pitchCenter 		 : args.pitchCenter 	|| 1,
+		pitchVariance 		 : args.pitchVariance 	|| .5,
+		shouldReverse 		 : (typeof args.shouldReverse !=="undefined") ? args.shouldReverse : true,
+	});
+
 	for(var i = 0; i < that.numGrains; i++) {
 		that.grains[i] = {
-			start: rndi(0, that.length),
+			start: Math.floor(rndf(that.positionCenter - that.positionVariance, that.positionCenter + that.positionVariance) * that.length),
 			length: that.grainSize,
 			pos: 0,
 			amp: 1 / that.numGrains,
-			speed : (that.shouldRandomizeSpeed) ? 1 : rndf(that.range[0], that.range[1]),
+			speed : (that.shouldRandomizeSpeed) ? 1 : rndf(that.pitchCenter - that.pitchVariance, that.pitchCenter + that.pitchVariance),
 			parent : that,
 			envLength : that.envelopeSize * that.grainSize,
+			
 			generate: function() {
 				this.value = Sink.interpolate(this.parent.buffer, this.start + this.pos);
 				
@@ -30,23 +36,25 @@ function Grains() {
 				
 				this.pos += this.speed;
 				
-				if(this.pos > this.length && this.speed > 0) {
-					this.speed = rndf(this.parent.range[0], this.parent.range[1]);
+				if((this.pos > this.length && this.speed > 0) || (this.pos < 0 && this.speed < 0)) {
+					this.speed = rndf(this.parent.pitchCenter - this.parent.pitchVariance, this.parent.pitchCenter + this.parent.pitchVariance);
+					
 					if(this.parent.shouldReverse) {
 						if(Math.random() > .5) this.speed *= -1;
 					}
-					if(this.speed > 0) {
+					
+					if(this.speed > 0 && this.pos > this.length) {
 						this.pos = this.pos - this.length;
-					}
-					this.start = rndi(0, this.parent.length);
-				}else if(this.pos < 0 && this.speed < 0) {
-					this.speed = rndf(this.parent.range[0], this.parent.range[1]);
-					if(this.parent.shouldReverse) {
-						if(Math.random() > .5) this.speed *= -1;
-					}
-					if(this.speed < 0) {
+					}else if(this.speed < 0 && this.pos < 0) {
 						this.pos = this.length;
 					}	
+					
+					this.length = this.parent.grainSize;
+					this.start = Math.floor( 
+						rndf( 
+						this.parent.positionCenter - this.parent.positionVariance, 
+						this.parent.positionCenter + this.parent.positionVariance
+					) * this.parent.length);
 				}
 				
 				if(this.start + this.pos >= this.parent.length) {
@@ -58,9 +66,16 @@ function Grains() {
 				return this.value * this.amp;
 			},
 		}
+		console.log(that.grains[i].speed);
 	}
 	
 	that.set = function(prop, value) {
+		// we must let current grains play out their length
+		// grainSize is only assigned when grains have finished playing
+		if(prop === "length") {
+			this.grainSize = value;
+			return;
+		}
 		for(var i = 0; i < this.numGrains; i++) {
 			this.grains[i][prop] = value;
 		}

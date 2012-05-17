@@ -332,43 +332,48 @@ default:
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
 "granulation" :
-'// run some drums to sample and granulate\n'+
-'d = Drums("x*o*", _8);\n'+
-'d.pitch *= 2;\n'+
-'\n'+
-'// Create the granulator, 20 grains, each grain is 50ms\n'+
-'// and the speed ranges from .25 (quarter speed) to 2\n'+
-'// (double speed). Grain playback is randomly reversed.\n'+
+'// Create the granulator, 20 grains, each grain is 150ms\n'+
+'// Pitch and position vary by five percent.\n'+
 'g = Grains({\n'+
-'  numberOfGrains: 20,\n'+
-'  grainSize: ms(50),\n'+
-'  shouldReverse: true,\n'+
-'  range:[.25, 2],\n'+
+'	numberOfGrains	: 20,\n'+
+'	grainSize		: ms(150),\n'+
+'	pitchVariance	: .05,\n'+
+'	shouldReverse	: false,\n'+
+'	positionVariance: .05,\n'+
 '});\n'+
+'g.amp *= 2; \n'+
+'g.fx.add(Reverb(1,0,1,0));\n'+
 '\n'+
-'// insert the grain as an fx on the drums, records one measure\n'+
-'g.insert(d);\n'+
+'// create a synth to sample and sequence it\n'+
+'u = Synth(50,50,.1);\n'+
+'t = ScaleSeq(fill(), _16).slave(u);\n'+
 '\n'+
-'// tell the granulator to play and the drums to stop\n'+
+'// insert the grain as an fx on the synth, records one measure\n'+
+'g.insert(u);\n'+
+'\n'+
+'// WAIT ONE MEASURE. REALLY.\n'+
+'// tell the granulator to play and the synth to stop\n'+
 'g.play();\n'+
-'d.seq.stop();\n'+
+'t.stop();\n'+
 '\n'+
-'// change the length of all grains\n'+
-'g.set("length", ms(350));\n'+
+'// mod the center position of the grain cloud\n'+
+'// 0 is the beginning of the sampled material, 1 is the end\n'+
+'g.mod("positionCenter", LFO(.01, .5), "+");\n'+
 '\n'+
+'// change the amount of variance in grain playback speed\n'+
+'g.pitchVariance = .01; 	\n'+
 '\n'+
-'// stop granulator in preparation for to granulate\n'+
-'// new sound source.\n'+
-'g.stop();\n'+
+'g.mod("pitchVariance", LFO(.001, .01), "+");\n'+
 '\n'+
-'s = Synth(50,50,.1);\n'+
-'t = ScaleSeq(fill(), _16).slave(s);\n'+
+'// change the size of all grains\n'+
+'g.grainSize = ms(550);\n'+
 '\n'+
-'g.insert(s);\n'+
+'// change the fadein / fadeout length for each grain\n'+
+'// make sure this length is less than half the grainSize\n'+
+'g.set("envLength", ms(200));\n'+
 '\n'+
-'// stop scaleseq and play granulator\n'+
-'g.play();\n'+
-'t.stop();',
+'// remove the mods\n'+
+'g.mods.remove();',
 
 "algorithmic music" :
 '// this tutorial shows how to use random functions to generate "music".\n'+
