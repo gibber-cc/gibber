@@ -46,14 +46,11 @@ function Seq() {
 				get: function(){ return _offset; },
 				set: function(value) {
 					_offset = value + (_offset * -1)
-					console.log("OFFSET = " + _offset);
 					that.shouldUseOffset = true;
 				}
 			},
 			"slaves" : {
 				get: function(){ 
-					//console.log("GETTING SLAVES");
-					//console.log(_slaves);
 					return _slaves; 
 				},
 				set: function(value) {
@@ -87,7 +84,9 @@ function Seq() {
 	this.prevHumanize = null;
 	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
 	this.values2 = null;
-
+	this.randomFlag = false;
+	this.end = false;
+	
 	var that = this;	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
 		var obj = arguments[0];
@@ -303,6 +302,14 @@ Seq.prototype = {
 			}
 			
 			this.counter++;
+			if(this.counter % this.sequence.length === 0){
+				if(this.randomFlag) {
+					this.shuffle();
+				}
+				if(this.end) {
+					this.stop();
+				}
+			}
 			this.durationCounter++;
 			if(!usePick && this.counter % this.sequence.length === 0) {
 				if(this.shouldDie) {
@@ -318,6 +325,11 @@ Seq.prototype = {
 	once : function() {
 		this.end = true;
 		return this;
+	},
+	
+	random : function(flag) {
+		this.randomFlag = (typeof flag === "undefined" || flag) ? true : false;
+		if(!this.randomFlag) this.reset();
 	},
 	
 	schedule : function() {},
@@ -460,6 +472,7 @@ Seq.prototype = {
 	play : function() {
 		console.log("PLAYING")
 		this.active = true;
+		this.end = false;
 		this.advance();
 		return this;
 	},
