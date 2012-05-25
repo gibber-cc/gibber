@@ -323,7 +323,12 @@ Seq.prototype = {
 	// Play the sequence once and then end it
 	
 	once : function() {
+		if(!this.active) {
+			this.play();
+		}
+		
 		this.end = true;
+
 		return this;
 	},
 	
@@ -470,7 +475,6 @@ Seq.prototype = {
 	// start the sequencer running
 	
 	play : function() {
-		console.log("PLAYING")
 		this.active = true;
 		this.end = false;
 		this.advance();
