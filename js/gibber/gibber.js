@@ -682,7 +682,7 @@ function Env2 () {
 						// is not restored in the audio callback. Oddly enough, this creates the expected behavior.
 						this.active= false;
 						this.position = 0;
-						G.log("NOT ACTIVE");
+						//G.log("NOT ACTIVE");
 						if(this.endFunction != null) {
 							this.endFunction();
 						}
@@ -695,11 +695,14 @@ function Env2 () {
 		
 	};
 	
-	for(i = 0; i < arguments.length - 1; i+=2) {
+	var start = (arguments.length % 2 === 0) ? 0 : 1;
+	if(start) that.value = arguments[0];
+	
+	for(i = start; i < arguments.length - 1; i+=2) {
 		that.values.push(arguments[i]);
 		that.durations.push(arguments[i + 1]);		
 	}
-	
+
 	that.increment = (that.values[that.position] - that.value) / that.durations[that.position];
 
 	function bpmCallback() {
