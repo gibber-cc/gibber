@@ -81,7 +81,7 @@ function Poly(_chord, _waveform, volume) {
 		that.notation = _chord || "C4m7";
 		that.waveform = _waveform || "square";
 	}
-	console.log("AMP = " + that.amp);
+
 	that.oscs = [
 		Osc(220, .1, that.waveform).silent(),
 		Osc(330, .1, that.waveform).silent(),

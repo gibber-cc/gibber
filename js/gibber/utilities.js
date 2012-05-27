@@ -63,10 +63,14 @@ Array.prototype.add = function() {
 Array.prototype.add1 = function() {
 	for(var i = 0; i < arguments.length; i++) {
 		var obj = arguments[i];
+		var shouldAdd = true;
 		for(var j = 0; j < this.length; j++) {
-			if(obj.name !== this[j].name) {
-				this.push(obj);
+			if(obj.name === this[j].name) {
+				shouldAdd = false;
 			}
+		}
+		if(shouldAdd) {
+			this.push(obj);
 		}
 	}
 };
@@ -392,37 +396,38 @@ function ntof(note) {
 };
 
 window.bzzzzzz = function() {
-	if(typeof b === "undefined") {
-		b = Saw();
-	  	b.fx.add(HPF(1100, 5));
-		b.freq(80, .2);		
+	if(typeof buzz === "undefined") {
+		buzz = Saw();
+	  	buzz.fx.add(HPF(1100, 5));
+		buzz.freq(80, .2);		
 	}
-	b.amp = .2;
-  	future(function() { b.amp = 0; }, _8);
+	buzz.amp = .2;
+  	future(function() { buzz.amp = 0; }, _8);
 };
 
 window.bleep = function() {
-	if(typeof a === "undefined") {
-		a = FM("frog");
-		a.fx.add( Ring() );		
+	if(typeof frog === "undefined") {
+		frog = FM("frog");
+		frog.amp = .15;
+		frog.fx.add( Ring() );		
 	}
-	a.note("C8");
+	frog.note("C8");
 };
 
 window.blop = function() {
-	if(typeof c === "undefined") {
-		c = Env2(860, 80, _16, 400, _32).end( function() {
-	      d.mod("amp", Env2(.25, 0, _64), "=");
+	if(typeof env === "undefined") {
+		env = Env2(860, 80, _16, 400, _32).end( function() {
+	      sine.mod("amp", Env2(.25, 0, _64), "=");
     	});		
-		d = Sine({amp:.25});
-		d.mod("freq", c, "=");		
+		sine = Sine({amp:.25});
+		sine.mod("freq", env, "=");		
 	}else{
-		d.amp = .25;
-		d.mods.remove();
-		c = Env2(860, 80, _16, 400, _32).end( function() {
-	      d.mod("amp", Env2(.25, 0, _64), "=");
+		sine.amp = .25;
+		sine.mods.remove();
+		env = Env2(860, 80, _16, 400, _32).end( function() {
+	      sine.mod("amp", Env2(.25, 0, _64), "=");
     	});
 		
-		d.mod("freq", c, "=");		
+		sine.mod("freq", env, "=");		
 	}
 };
