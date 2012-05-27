@@ -1,6 +1,27 @@
+Gibber.SchizoPresets = {
+	sane: {
+		chance			: .1,
+		reverseChance 	: 0,
+		pitchChance		: .5,
+		mix				:.5,
+	},
+	borderline: {
+		chance			: .1,		
+		pitchChance		: .25,
+		reverseChance	: .5,
+		mix				: 1,
+	},
+	paranoid: {
+		chance			: .2,
+		reverseChance 	: .5,
+		pitchChance		: .5,
+		mix				: 1,
+	},
+};
+
 function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeReverse) {
 	var that = {
-		chance: (typeof chance !== "undefined") ? chance : .25,		
+		chance: (typeof chance !== "undefined" && typeof chance !== "string") ? chance : .25,		
 		rate: (typeof rate !== "undefined") ? rate : _16,
 		length: (typeof length !== "undefined") ? length : _4,
 		shouldRandomizeReverse : (typeof shouldRandomizeReverse === "undefined") ? true : shouldRandomizeReverse,
@@ -118,13 +139,15 @@ function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeRever
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
-		if(typeof obj["chance"] === "undefined") {
-			obj["chance"] = .5;
-		}
-		
+		$.extend(obj, arguments[0]);
 		for(key in obj) {
 			that[key] = obj[key];
 		}
+		if(typeof that["chance"] === "undefined") {
+			that["chance"] = .5;
+		}
+	}else if(typeof arguments[0] === "string") {
+		$.extend(that, Gibber.SchizoPresets[arguments[0]]);
 	}
 	
 	that.writeBuffer = new Float32Array(Math.floor(that.length * 2));

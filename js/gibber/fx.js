@@ -61,7 +61,7 @@ function Bus() { // name is id, fx is array, ahem, fx
 	return bus;
 }
 
-// ###Reverb
+// ##Reverb#
 // A wrapper for the reverb from audioLib.js
 //
 // param **roomSize**: Float. Default = .8. The size of the room being emulated  

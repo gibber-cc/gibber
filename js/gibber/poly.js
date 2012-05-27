@@ -5,7 +5,7 @@ function Poly(_chord, _waveform, volume) {
 		name: "Synth",
 		type: "complex",
 		env : Env(),
-		amp: null,
+		amp: .35,
 		frequency: 440,
 		phase : 0,
 		value : 0,
@@ -81,7 +81,7 @@ function Poly(_chord, _waveform, volume) {
 		that.notation = _chord || "C4m7";
 		that.waveform = _waveform || "square";
 	}
-	
+	console.log("AMP = " + that.amp);
 	that.oscs = [
 		Osc(220, .1, that.waveform).silent(),
 		Osc(330, .1, that.waveform).silent(),
@@ -96,7 +96,7 @@ function Poly(_chord, _waveform, volume) {
 	
 	Gibber.addModsAndFX.call(that);	
 	
-	that.chord = function(val) {
+	that.chord = function(val, volume, shouldTrigger) {
 		this.notation = val;
 				
 		for(var i = 0; i < this.oscs.length; i++) {
@@ -133,7 +133,12 @@ function Poly(_chord, _waveform, volume) {
 				}
 			}
 		}
-		if(typeof arguments[1] !== "undefined") { this.trig(arguments[1]); }
+		//if(typeof arguments[1] !== "undefined") { this.trig(arguments[1]); }
+		if(typeof arguments[1] === "undefined") {
+			this.trig(this.amp);
+		}else if(shouldTrigger) { 
+			this.trig(volume); 
+		}
 		return this;
 	};
 	
@@ -214,7 +219,7 @@ function Poly(_chord, _waveform, volume) {
 	
 	//console.log("end of constructor");
 	
-	that.chord(that.notation);
+	that.chord(that.notation, that.amp, false);
 	
 	Gibber.generators.push(that);
 	

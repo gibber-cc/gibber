@@ -184,13 +184,15 @@ Gibber.Environment = {
 			speed : 'fast',
 		});
 		this.createFileList();
-		
 		CodeMirror.modeURL = "js/codemirror/mode/%N/%N.js";
 		window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-		  lineNumbers: false
+  		  lineNumbers: false,
+  		  autofocus: true,
+		  indentUnit : 2,
+  		  smartIndent: true,
 		});
+		CodeMirror.autoLoadMode(window.editor, "javascript");		
 	    window.editor.setOption("mode", "javascript");
-		CodeMirror.autoLoadMode(window.editor, "javascript");
 		window.editor.setOption("theme", "thecharlie");
 		
 		CodeMirror.defineMode("links", function(config, parserConfig) { 

@@ -693,6 +693,13 @@ function Env2 () {
 			}
 		},
 		
+		trigger : function() {
+			var start = (arguments.length % 2 === 0) ? 0 : 1;
+			if(start) that.value = arguments[0];
+			this.phase = 0;
+			this.position = 0;
+		},
+		
 	};
 	
 	var start = (arguments.length % 2 === 0) ? 0 : 1;
@@ -726,8 +733,6 @@ function Env2 () {
 	return that;
 }
 
-
- 
 function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(arguments.length > 1) {
 		if(typeof attack === "undefined") 	attack 		= 100;
@@ -774,27 +779,4 @@ function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	Gibber.addModsAndFX.call(that);	
 	
 	return that;				
-}
-
-function future(_func, _time, _repeats) {
-	var that = {
-		func : _func,
-		repeats: _repeats,
-		name : "Sched",
-		type : "mod",
-	};
-	
-	function _callback() {
-		return function() {
-			if(that.repeats) {
-				that.func();
-			}else{
-				that.func();
-				that.stop();
-			}
-		}
-	}
-	that.stop = Sink.doInterval(_callback(), that.time);
-
-	return that;
 }

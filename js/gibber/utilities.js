@@ -60,6 +60,18 @@ Array.prototype.add = function() {
 	}
 };
 
+Array.prototype.add1 = function() {
+	for(var i = 0; i < arguments.length; i++) {
+		var obj = arguments[i];
+		for(var j = 0; j < this.length; j++) {
+			if(obj.name !== this[j].name) {
+				this.push(obj);
+			}
+		}
+	}
+};
+
+
 Array.prototype.clear = function() {
 	for(var i = 0; i < this.length; i++) {
 		delete this[i];
@@ -210,8 +222,8 @@ window.fill = function() {
 	return window.filli(0, 20, 16);
 };
 
-window.rndd = window.randomi = function(min, max, number) {
-	if(typeof number === "undefined") {
+window.rndd = window.randomd = function(min, max, number) {
+	if(typeof number === "undefined" && typeof min != "object") {
 		if(arguments.length == 1) {
 			min = 0, max = arguments[0];
 		}else if(arguments.length == 2) {
@@ -227,20 +239,27 @@ window.rndd = window.randomi = function(min, max, number) {
 		var rr = diff * r;
 		var rrr = Math.round(rr);
 	
-		return window[ "_" + (min + rrr) ];
+		return Math.round(window[ "_" + (min + rrr) ]);
 	}else{
 		var output = [];
+		var num;
 		if(typeof number === "undefined") {
-			number = max || min.length;
+			num = max || min.length;
+		}else{
+			num = number;
 		}
-		for(var i = 0; i < number; i++) {
-			var num;
-			if(typeof arguments[0] === "object") {
-				num = arguments[0][randomi(0, arguments[0].length - 1)];
-			}else{
-				num = randomi(min, max);
+		if(num !== 1) {
+			for(var i = 0; i < num; i++) {
+				var choice;
+				if(typeof arguments[0] === "object") {
+					choice = arguments[0][randomi(0, arguments[0].length - 1)];
+				}else{
+					choice = randomi(min, max);
+				}
+				output.push(Math.round(window["_" + choice]));
 			}
-			output.push(window["_" + num]);
+		}else{
+			output = Math.round(window[ "_" + arguments[0][randomi(0, arguments[0].length - 1)]]);
 		}
 	
 		return output;
@@ -251,7 +270,7 @@ window.rndd = window.randomi = function(min, max, number) {
 
 
 window.rndi = window.randomi = function(min, max, number) {
-	if(typeof number === "undefined" && typeof min != "object") {
+	if(typeof number === "undefined" && typeof min !== "object") {
 		if(arguments.length == 1) {
 			min = 0, max = arguments[0];
 		}else if(arguments.length == 2) {
@@ -273,6 +292,7 @@ window.rndi = window.randomi = function(min, max, number) {
 		if(typeof number === "undefined") {
 			number = max || min.length;
 		}
+		G.log(number);
 		for(var i = 0; i < number; i++) {
 			var num;
 			if(typeof arguments[0] === "object") {
@@ -369,4 +389,40 @@ window.mtof = function(midiNumber) {
 function ntof(note) {
 	var n = teoria.note(note);
 	return n.fq();
+};
+
+window.bzzzzzz = function() {
+	if(typeof b === "undefined") {
+		b = Saw();
+	  	b.fx.add(HPF(1100, 5));
+		b.freq(80, .2);		
+	}
+	b.amp = .2;
+  	future(function() { b.amp = 0; }, _8);
+};
+
+window.bleep = function() {
+	if(typeof a === "undefined") {
+		a = FM("frog");
+		a.fx.add( Ring() );		
+	}
+	a.note("C8");
+};
+
+window.blop = function() {
+	if(typeof c === "undefined") {
+		c = Env2(860, 80, _16, 400, _32).end( function() {
+	      d.mod("amp", Env2(.25, 0, _64), "=");
+    	});		
+		d = Sine({amp:.25});
+		d.mod("freq", c, "=");		
+	}else{
+		d.amp = .25;
+		d.mods.remove();
+		c = Env2(860, 80, _16, 400, _32).end( function() {
+	      d.mod("amp", Env2(.25, 0, _64), "=");
+    	});
+		
+		d.mod("freq", c, "=");		
+	}
 };

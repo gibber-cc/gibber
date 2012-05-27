@@ -1,5 +1,30 @@
+Gibber.GrainsPresets = {
+	tight : {
+		numberOfGrains : 10,
+		grainSize : ms(25),
+		positionVariance : .01,
+		pitchVariance : .01,
+		shouldReverse : false,
+	},
+	cloudy : {
+		numberOfGrains : 20,
+		grainSize : ms(100),
+		positionVariance : .05,
+		pitchVariance : .1,
+		shouldReverse : true,
+	}
+};
+
 function Grains() {
 	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];
+	
+	if(typeof arguments[0] === "string") {
+		args = Gibber.GrainsPresets[arguments[0]];
+		if(typeof arguments[1] !== "undefined") {
+			$.extend(args, arguments[1]);
+		}
+	}
+	
 	var that = Rec(args);
 	$.extend(that, {
 		name 				 : "Grains",
@@ -7,7 +32,6 @@ function Grains() {
 		numGrains 			 : args.numberOfGrains || 10,
 		grainSize 			 : args.grainSize || ms(50),
 		envelopeSize 		 : args.envelopeSize || .1,
-		shouldRandomizeSpeed : (typeof args.shouldRandomizeSpeed !== "undefined") ? args.shouldRandomizeSpeed : false,
 		positionCenter 		 : args.positionCenter   || .5,
 		positionVariance 	 : args.positionVariance || .5,		
 		pitchCenter 		 : args.pitchCenter 	|| 1,
@@ -21,7 +45,7 @@ function Grains() {
 			length: that.grainSize,
 			pos: 0,
 			amp: 1 / that.numGrains,
-			speed : (that.shouldRandomizeSpeed) ? 1 : rndf(that.pitchCenter - that.pitchVariance, that.pitchCenter + that.pitchVariance),
+			speed : rndf(that.pitchCenter - that.pitchVariance, that.pitchCenter + that.pitchVariance),
 			parent : that,
 			envLength : that.envelopeSize * that.grainSize,
 			

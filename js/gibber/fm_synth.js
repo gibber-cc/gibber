@@ -8,6 +8,12 @@ Gibber.FMPresets = {
 	//ljpfrog lp.f = FM(0.1, 2.0, 300, 5);
 	//ljpradio lp.f = FM(1, 40.0, 300, 500); lp.f.amp = 0.2;
 	//ljpnoise lp.f = FM(0.04, 1000.0, 1, 100);
+	frog : {
+		cmRatio	: 0.1,
+		index	: 2.0,
+		attack	: 300,
+		decay	: 5,
+	},
 	gong : {
 		cmRatio : 1.4,
 		index	: .95,
