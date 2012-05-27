@@ -193,6 +193,30 @@ Gibber.Environment = {
 		CodeMirror.autoLoadMode(window.editor, "javascript");
 		window.editor.setOption("theme", "thecharlie");
 		
+		CodeMirror.defineMode("links", function(config, parserConfig) { 
+		    var linksOverlay = { 
+			    token: function(stream, state) { 
+				    if (stream.match(/^\b(next\ tutorial:([^\s]+))\b/)) {
+				        return "link"; 
+					}
+				    stream.skipToEnd(); 
+			    }
+			};
+			return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), linksOverlay);				
+		});
+		
+	    $('.CodeMirror').delegate(".cm-link", "click", function(e) {
+	    	var url = $(event.target).text();
+ 	    	if(url.indexOf('http') != 0 ) {
+ 	        	url = 'http://' + url;
+ 	       		window.open(url, '_blank');
+			}	
+	    });
+	       
+		CodeMirror.autoLoadMode(window.editor, "links");
+	    window.editor.setOption("mode", "links");
+		
+		
 		this.loadAndSet("default");
 		this.editorResize();
 		$.extend($.modal.defaults, {
@@ -310,6 +334,7 @@ Gibber.Environment = {
 				Gibber.Environment.slaveSocket.send(v);
 			},
 		};
+		
 		window.editor.setOption("keyMap", "gibber");
 	},
 	

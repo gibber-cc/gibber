@@ -773,7 +773,7 @@ function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	return that;				
 }
 
-function Sched(_func, _time, _repeats) {
+function future(_func, _time, _repeats) {
 	var that = {
 		func : _func,
 		repeats: _repeats,

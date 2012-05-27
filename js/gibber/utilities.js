@@ -346,6 +346,14 @@ window.weight = function(weights) {
     return pick;
 }
 
+window.future = function(func, when) {
+	var me = func;
+	me.advance = function() {
+		me();
+	};
+	G.callback.addEvent(when, me);
+};
+
 window.getSpeed = function(div) {
 	return window["_"+div];
 };

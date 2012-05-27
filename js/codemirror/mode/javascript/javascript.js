@@ -46,6 +46,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
 
   function jsTokenBase(stream, state) {
     var ch = stream.next();
+
     if (ch == '"' || ch == "'")
       return chain(stream, state, jsTokenString(ch));
     else if (/[\[\]{}\(\),;\:\.]/.test(ch))
