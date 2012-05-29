@@ -735,13 +735,13 @@ function Env2 () {
 
 function Env(attack, decay, sustain, release, sustainTime, releaseTime) {
 	if(arguments.length > 1) {
-		if(typeof attack === "undefined") 	attack 		= 100;
-		if(typeof decay  === "undefined") 	decay  		= 50;
+		if(typeof attack === "undefined") 	attack 		= 10;
+		if(typeof decay  === "undefined") 	decay  		= 250;
 		if(typeof sustain === "undefined") 	sustain 	= 0;	// sustain is a amplitude value, not time\
 	}else{
 		if(typeof attack === "undefined") 	sustain 	= 0;
-		if(typeof decay  === "undefined") 	attack  	= 100;
-		if(typeof sustain === "undefined") 	decay 		= 50;
+		if(typeof decay  === "undefined") 	attack  	= 10;
+		if(typeof sustain === "undefined") 	decay 		= 250;
 	}
 	
 	if(typeof release  === "undefined") release  		= 50;

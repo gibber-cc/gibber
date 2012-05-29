@@ -179,6 +179,15 @@ Gibber.Environment = {
 		window.editor.setLine(endLine, window.editor.getLine(endLine) + " \n" + code);
 	},
 	
+	loadTutorial : function(name) {
+		console.log("LOADING TUTORIAL " + name + name.charAt(name.length - 1)  );
+		if(name.charAt(name.length - 1) === "_") {
+			Gibber.clear();
+			name = name.substring(0, name.length-1);
+		}
+		window.editor.setValue(Gibber.tutorials[name]);
+	},
+	
 	init: function() {
 		$("#mega-menu-1").dcMegaMenu({
 			speed : 'fast',
@@ -209,10 +218,8 @@ Gibber.Environment = {
 		
 	    $('.CodeMirror').delegate(".cm-link", "click", function(e) {
 	    	var url = $(event.target).text();
- 	    	if(url.indexOf('http') != 0 ) {
- 	        	url = 'http://' + url;
- 	       		window.open(url, '_blank');
-			}	
+			console.log(url);
+        	Gibber.Environment.loadTutorial(url.split(":")[1]);
 	    });
 	       
 		CodeMirror.autoLoadMode(window.editor, "links");
@@ -254,6 +261,11 @@ Gibber.Environment = {
 		$("#keyCommandMenuItem").bind("click", function() {
 			$("#keyCommands").modal();
 		});
+		
+		$("#tutorialMenuItem").bind("click", function() {
+			Gibber.Environment.loadTutorial("intro");
+		});
+		
 		$("#quickstartMenuItem").bind("click", function() {
 			$("#quickstart").modal({
 				minHeight: "325px",

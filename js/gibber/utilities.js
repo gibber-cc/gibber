@@ -370,6 +370,15 @@ window.weight = function(weights) {
     return pick;
 }
 
+window.whocares = window.doesItEvenMatter = function() {
+	function pick() {
+		var n = rndi(0, this.length - 1);
+		return this[n];
+	}
+	
+	return pick;
+}
+
 window.future = function(func, when) {
 	var me = func;
 	me.advance = function() {

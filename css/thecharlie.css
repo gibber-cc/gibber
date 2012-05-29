@@ -20,7 +20,7 @@
 .cm-s-thecharlie span.cm-error {background: #f92672; color: #f8f8f0;}
 .cm-s-thecharlie span.cm-bracket {color: #f8f8f2;}
 .cm-s-thecharlie span.cm-tag {color: #f92672;}
-.cm-s-thecharlie span.cm-link {color: #ae81ff;}
+.cm-s-thecharlie span.cm-link {color: #ae81ff; cursor:pointer}
 
 .cm-s-thecharlie .CodeMirror-matchingbracket {
   text-decoration: underline;
