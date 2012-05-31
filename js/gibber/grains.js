@@ -5,6 +5,7 @@ Gibber.GrainsPresets = {
 		positionVariance : .01,
 		pitchVariance : .01,
 		shouldReverse : false,
+		length: _1 * 4,
 	},
 	cloudy : {
 		numberOfGrains : 20,

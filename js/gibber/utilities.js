@@ -370,7 +370,7 @@ window.weight = function(weights) {
     return pick;
 }
 
-window.whocares = window.doesItEvenMatter = function() {
+window.whocares = window.doesItEvenMatter = window.surpriseMe = window.makeMeHappy = function() {
 	function pick() {
 		var n = rndi(0, this.length - 1);
 		return this[n];
