@@ -213,6 +213,20 @@ Seq.prototype = {
 		if(this.active) {
 			var pos, val;
 			// only play if not setting an offset... if using offset simply set original offset position
+			
+			if(this.counter % this.sequence.length === 0){
+				if(this.randomFlag) {
+					this.shuffle();
+				}
+				if(this.end) {
+					this.stop();
+					if(this.endFunction !== null) {
+						this.endFunction();
+					}
+					return;
+				}
+			}
+			
 			var shouldReturn = false; 
 			var nextPhase = 0;
 			if(this.prevHumanize) {
@@ -298,18 +312,6 @@ Seq.prototype = {
 						}
 					}else{
 						_slave[this.outputMessage] = val;
-					}
-				}
-			}
-			
-			if(this.counter % this.sequence.length === 0){
-				if(this.randomFlag) {
-					this.shuffle();
-				}
-				if(this.end) {
-					this.stop();
-					if(this.endFunction !== null) {
-						this.endFunction();
 					}
 				}
 			}
