@@ -63,7 +63,11 @@ function Seq() {
 					return _slaves; 
 				},
 				set: function(value) {
-					_slaves = value;
+					if($.isArray(value)) {
+						_slaves = value;
+					}else{
+						_slaves = [value];
+					}
 					that.slave.apply(that, _slaves);
 				}
 			},
@@ -104,7 +108,11 @@ function Seq() {
 			if(key !== "slaves") {
 				this[key] = obj[key];
 			}else{
-				this.slave.apply(this, obj[key]);
+				if($.isArray(obj[key])) {
+					this.slave.apply(this, obj[key]);
+				}else{
+					this.slave.apply(this, [obj[key]]);
+				}
 			}
 		}
 	}else{
