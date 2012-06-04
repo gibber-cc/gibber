@@ -47,14 +47,19 @@ function Seq() {
 				set: function(value) {
 					if(_offset !== value) {
 						value = Math.round(value);
-						G.callback.sequence[this.nextEvent].remove(this);
+						if(typeof G.callback.sequence[this.nextEvent] !== "undefined") {
+							G.callback.sequence[this.nextEvent].remove(this);
+						}
 						var curPhase = G.callback.phase;
-						var newPhase = (this.nextEvent - curPhase) - _offset + value;
-						if(newPhase < 0) newPhase *= -1;
+						
+						if(this.nextEvent !== 0) {
+							var newPhase = (this.nextEvent - curPhase) - _offset + value;
+							if(newPhase < 0) newPhase *= -1;
+							G.callback.addEvent(newPhase, that);
+						}else{
+							that.shouldUseOffset = true;
+						}
 						_offset = value;
-						G.callback.addEvent(newPhase, that);
-						//console	.log(this.nextEvent, curPhase, newPhase, _offset, value);
-						//that.shouldUseOffset = true;
 					}
 				}
 			},
@@ -99,7 +104,7 @@ function Seq() {
 	this.values2 = null;
 	this.randomFlag = false;
 	this.end = false;
-	this.nextEvent = null;
+	this.nextEvent = 0;
 	this.endFunction = null;
 	
 	var that = this;	
@@ -107,7 +112,13 @@ function Seq() {
 		var obj = arguments[0];
 		for(key in obj) {
 			if(key !== "slaves") {
-				this[key] = obj[key];
+				//if(key !== "offset") {
+					this[key] = obj[key];
+					/*}else{
+					console.log("OFFSET");
+					this.offset = obj[key];
+				}*/
+				
 			}else{
 				if($.isArray(obj[key])) {
 					this.slave.apply(this, obj[key]);
@@ -237,16 +248,35 @@ Seq.prototype = {
 				this.prevHumanize = rndi(this.humanize * -1, this.humanize);
 				nextPhase += this.prevHumanize;
 			}
-			if(this.durations != null) {
-				if(this.durations.pick != null) {
-					nextPhase += this.durations.pick();
-				}else{
-					nextPhase += this.durations[this.durationCounter % this.durations.length]
+			
+			if(this.shouldUseOffset) { // only used when Seq object is first initialized to set the offset; afterwards scheduling is handled in property setter
+				nextPhase += this.offset;
+				this.shouldUseOffset = false;
+				shouldReturn = true;
+				
+				// only use duration with negative offset
+				if(this.offset < 0) {
+					if(this.durations != null) {
+						if(this.durations.pick != null) {
+							nextPhase += this.durations.pick();
+						}else{
+							nextPhase += this.durations[this.durationCounter % this.durations.length]
+						}
+					}else{
+						nextPhase += this.speed;
+					}
 				}
 			}else{
-				nextPhase += this.speed;
+				if(this.durations != null) {
+					if(this.durations.pick != null) {
+						nextPhase += this.durations.pick();
+					}else{
+						nextPhase += this.durations[this.durationCounter % this.durations.length]
+					}
+				}else{
+					nextPhase += this.speed;
+				}
 			}
-			//}
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
 			nextPhase = Math.round(nextPhase);
 			//if(nextPhase == 0) return;
@@ -346,12 +376,13 @@ Seq.prototype = {
 		return this;
 	},
 	
+	// ####random
+	// Shuffle the sequence each time it is played
+	
 	random : function(flag) {
 		this.randomFlag = (typeof flag === "undefined" || flag) ? true : false;
 		if(!this.randomFlag) this.reset();
 	},
-	
-	schedule : function() {},
 	
 	// ####kill
 	// Destroy the sequencer
@@ -504,7 +535,7 @@ Seq.prototype = {
 
 		this.preBreakSequence = jQuery.extend(true, {}, this._sequence);
 	},
-
+	
 	getMix : function(){
 		return this.value;
 	},
@@ -548,7 +579,7 @@ Seq.prototype = {
 			this.memory[arguments[0]] = this.sequence;
 		}
 	},
-	// TODO: Needs to account for multiple durations
+
 	bpmCallback : function(obj) {
 		var _that = obj;
 		return function(percentageChangeForBPM) {
