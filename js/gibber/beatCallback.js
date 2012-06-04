@@ -61,6 +61,7 @@ Callback.prototype = {
 		}
 		
 		this.sequence[this.phase + position].push(sequencer);
+		return this.phase + position;
 	},
 	
 	addCallback : function(callback, subdivision, shouldLoop, shouldWait) {		

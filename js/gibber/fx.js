@@ -289,7 +289,7 @@ function Crush(resolution, mix) {
 // `d = Drums("xoxo");  
 //  d.fx.add( Clip(1000) );  `
 
-function Clip(amount, amp) {
+window.Dist = window.Clip = function(amount, amp) {
 	var that = {
 		amount: (typeof amount !== "undefined" && amount > 1) ? amount : 4,
 		name : "Clip",

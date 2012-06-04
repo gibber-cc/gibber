@@ -45,8 +45,17 @@ function Seq() {
 			"offset" : {
 				get: function(){ return _offset; },
 				set: function(value) {
-					_offset = value + (_offset * -1)
-					that.shouldUseOffset = true;
+					if(_offset !== value) {
+						value = Math.round(value);
+						G.callback.sequence[this.nextEvent].remove(this);
+						var curPhase = G.callback.phase;
+						var newPhase = (this.nextEvent - curPhase) - _offset + value;
+						if(newPhase < 0) newPhase *= -1;
+						_offset = value;
+						G.callback.addEvent(newPhase, that);
+						//console	.log(this.nextEvent, curPhase, newPhase, _offset, value);
+						//that.shouldUseOffset = true;
+					}
 				}
 			},
 			"slaves" : {
@@ -86,6 +95,7 @@ function Seq() {
 	this.values2 = null;
 	this.randomFlag = false;
 	this.end = false;
+	this.nextEvent = null;
 	
 	var that = this;	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
@@ -204,39 +214,39 @@ Seq.prototype = {
 				this.prevHumanize = rndi(this.humanize * -1, this.humanize);
 				nextPhase += this.prevHumanize;
 			}
-			if(this.shouldUseOffset) {
-				nextPhase += this.offset;
-				this.shouldUseOffset = false;
-				shouldReturn = true;
-				
-				// only use duration with negative offset
-				if(this.offset < 0) {
-					if(this.durations != null) {
-						if(this.durations.pick != null) {
-							nextPhase += this.durations.pick();
-						}else{
-							nextPhase +=this.durations[this.durationCounter % this.durations.length]
-						}
-					}else{
-						nextPhase += this.speed;
-					}
+			// if(this.shouldUseOffset) {
+			// 	nextPhase += this.offset;
+			// 	this.shouldUseOffset = false;
+			// 	shouldReturn = true;
+			// 	
+			// 	// only use duration with negative offset
+			// 	if(this.offset < 0) {
+			// 		if(this.durations != null) {
+			// 			if(this.durations.pick != null) {
+			// 				nextPhase += this.durations.pick();
+			// 			}else{
+			// 				nextPhase +=this.durations[this.durationCounter % this.durations.length]
+			// 			}
+			// 		}else{
+			// 			nextPhase += this.speed;
+			// 		}
+			// 	}
+			// }else{
+			if(this.durations != null) {
+				if(this.durations.pick != null) {
+					nextPhase += this.durations.pick();
+				}else{
+					nextPhase += this.durations[this.durationCounter % this.durations.length]
 				}
 			}else{
-				if(this.durations != null) {
-					if(this.durations.pick != null) {
-						nextPhase += this.durations.pick();
-					}else{
-						nextPhase += this.durations[this.durationCounter % this.durations.length]
-					}
-				}else{
-					nextPhase += this.speed;
-				}
+				nextPhase += this.speed;
 			}
+			//}
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
 			nextPhase = Math.round(nextPhase);
-			if(nextPhase == 0) return;
+			//if(nextPhase == 0) return;
 			
-			G.callback.addEvent(nextPhase, this);
+			this.nextEvent = G.callback.addEvent(nextPhase, this);
 			
 			if(typeof this.sequence === "undefined" || this.sequence === null) return;
 			
