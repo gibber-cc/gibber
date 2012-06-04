@@ -100,6 +100,7 @@ function Seq() {
 	this.randomFlag = false;
 	this.end = false;
 	this.nextEvent = null;
+	this.endFunction = null;
 	
 	var that = this;	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
@@ -222,24 +223,6 @@ Seq.prototype = {
 				this.prevHumanize = rndi(this.humanize * -1, this.humanize);
 				nextPhase += this.prevHumanize;
 			}
-			// if(this.shouldUseOffset) {
-			// 	nextPhase += this.offset;
-			// 	this.shouldUseOffset = false;
-			// 	shouldReturn = true;
-			// 	
-			// 	// only use duration with negative offset
-			// 	if(this.offset < 0) {
-			// 		if(this.durations != null) {
-			// 			if(this.durations.pick != null) {
-			// 				nextPhase += this.durations.pick();
-			// 			}else{
-			// 				nextPhase +=this.durations[this.durationCounter % this.durations.length]
-			// 			}
-			// 		}else{
-			// 			nextPhase += this.speed;
-			// 		}
-			// 	}
-			// }else{
 			if(this.durations != null) {
 				if(this.durations.pick != null) {
 					nextPhase += this.durations.pick();
@@ -319,16 +302,21 @@ Seq.prototype = {
 				}
 			}
 			
-			this.counter++;
 			if(this.counter % this.sequence.length === 0){
 				if(this.randomFlag) {
 					this.shuffle();
 				}
 				if(this.end) {
 					this.stop();
+					if(this.endFunction !== null) {
+						this.endFunction();
+					}
 				}
 			}
+			
+			this.counter++;
 			this.durationCounter++;
+			
 			if(!usePick && this.counter % this.sequence.length === 0) {
 				if(this.shouldDie) {
 					this.kill();
@@ -343,6 +331,12 @@ Seq.prototype = {
 	once : function() {
 		if(!this.active) {
 			this.play();
+		}
+		
+		if(typeof arguments[0] === "function") {
+			this.endFunction = arguments[0];
+		}else{
+			this.endFunction = null;
 		}
 		
 		this.end = true;
