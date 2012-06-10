@@ -61,9 +61,9 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		that.decay 		= preset.decay;
 	}else{
 		that.cmRatio 	= isNaN(cmRatio) ? 2 : cmRatio;
-		that.index = isNaN(index)	 ? .9 : index;
+		that.index  = isNaN(index)	 ? .9 : index;
 		that.attack = isNaN(attack) ? 100 : attack;
-		that.decay = isNaN(decay) ? 100 : decay;
+		that.decay  = isNaN(decay) ? 100 : decay;
 	}
 	
 	that.amp = .5;

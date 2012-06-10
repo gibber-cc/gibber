@@ -81,6 +81,7 @@ function Seq() {
 
 	this._sequence = null;
 	this.sequence = null;
+	this.sequences = {};
 	this._start = true;
 	this.shouldUseOffset = false; // flag to determine when offset should be initially applied
 	this.counter = 0; // position in seqeuence
@@ -112,13 +113,11 @@ function Seq() {
 		var obj = arguments[0];
 		for(key in obj) {
 			if(key !== "slaves") {
-				//if(key !== "offset") {
+				if($.inArray(key, this.properties) !== -1) {
 					this[key] = obj[key];
-					/*}else{
-					console.log("OFFSET");
-					this.offset = obj[key];
-				}*/
-				
+				}else{
+					this.sequences[key] = obj[key];
+				}
 			}else{
 				if($.isArray(obj[key])) {
 					this.slave.apply(this, obj[key]);
@@ -133,6 +132,14 @@ function Seq() {
 			_seq = [_seq];
 		}
 		this.sequence = _seq;
+	}
+	
+	if(this.sequence !== null) {
+		if (this.outputMessage === null) {
+			this.sequences["note"] = this.sequence;
+		}else{
+			this.sequences[this.outputMessage] = this.sequence;
+		}
 	}
 	if(this.speed === null && this.durations === null) {
 		var arg1Type = typeof arguments[1];
@@ -222,21 +229,22 @@ Seq.prototype = {
 	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
 	advance : function() {
 		if(this.active) {
+			//console.log("ADVANCE");
 			var pos, val;
 			// only play if not setting an offset... if using offset simply set original offset position
 			
-			if(this.counter % this.sequence.length === 0){
-				if(this.randomFlag) {
-					this.shuffle();
-				}
-				if(this.end) {
-					this.stop();
-					if(this.endFunction !== null) {
-						this.endFunction();
-					}
-					return;
-				}
-			}
+			// if(this.counter % this.sequence.length === 0){
+			// 	if(this.randomFlag) {
+			// 		this.shuffle();
+			// 	}
+			// 	if(this.end) {
+			// 		this.stop();
+			// 		if(this.endFunction !== null) {
+			// 			this.endFunction();
+			// 		}
+			// 		return;
+			// 	}
+			// }
 			
 			var shouldReturn = false; 
 			var nextPhase = 0;
@@ -283,71 +291,82 @@ Seq.prototype = {
 			
 			this.nextEvent = G.callback.addEvent(nextPhase, this);
 			
-			if(typeof this.sequence === "undefined" || this.sequence === null) return;
+			//if(typeof this.sequence === "undefined" || this.sequence === null) return;
 			
-			var usePick = (typeof this.sequence.pick !== "undefined");
-			if(!usePick) {
-				pos = this.counter % this.sequence.length;
-			}
-			if(!usePick) {
-				val = this.sequence[pos];
-			}else{
-				val = this.sequence.pick();
-			}
-			
-			// Function sequencing
-			// TODO: there should probably be a more robust way to to this
-			// but it will look super nice and clean on screen...
-			if(typeof val === "function") {
-				if(!shouldReturn) {
-					val();
-					this.counter++;
-					this.durationCounter++;
-				}
-				
-				return;
-			}else if(typeof val === "undefined") {
-				if(!shouldReturn) {
-					this.counter++;
-					this.durationCounter++;
-				}
-
-				return;
-			}
-			var amp = null;
-			if($.isArray(val)) {
-				amp = val[1];
-				val = val[0];
-			}
-			if(shouldReturn) return;
-			if(this.slaves.length === 0) { // if a mod
-				this.value = val;
-			}else{
+			//if(shouldReturn) return;
+			console.log("BEFORE SEQUENCING");
+			// if(this.slaves.length === 0) { // if a mod
+			// 	this.value = val;
+			// }else{
 				for(var j = 0; j < this.slaves.length; j++) {
-					var _slave = this.slaves[j];
+					var _slave = this.slaves[j];					
 
-					if(this.outputMessage === "freq") {
-						if(typeof val === "string" ) {
-							var nt = teoria.note(val);
-							val = nt.fq();
-						}else if(typeof val === "object"){
-							val = val.fq();
-						}// else val is a number and is fine to send as a freq...
-					}
-					if(typeof _slave[this.outputMessage] === "function") {
-						if(this.outputMessage === "note" && val === 0) { // advance envelope instead of changing freq
-							if(typeof _slave.env === "object") {
-								_slave.env.state = 1;
-							}
+					for(var key in this.sequences) {
+						var seq = this.sequences[key];
+						var usePick = (typeof seq.pick !== "undefined");
+						if(!usePick) {
+							pos = this.counter % seq.length;
+						}
+						if(!usePick) {
+							val = seq[pos];
 						}else{
-							if(amp === null){
-								_slave[this.outputMessage](val);
+							val = seq.pick();
+						}
+						G.log("key : " + key + " , val : " + val);
+						
+						// Function sequencing
+						// TODO: there should probably be a more robust way to to this
+						// but it will look super nice and clean on screen...
+						if(typeof val === "function") {
+							if(!shouldReturn) {
+								val();
+								this.counter++;
+								this.durationCounter++;
+							}
+				
+							return;
+						}else if(typeof val === "undefined") {
+							if(!shouldReturn) {
+								this.counter++;
+								this.durationCounter++;
+							}
+
+							return;
+						}
+												
+						if(key === "freq" || key === "frequency") {
+							if(! $.isArray(val) ) {
+								if(typeof val === "string" ) {
+									var nt = teoria.note(val);
+									val = nt.fq();
+								}else if(typeof val === "object"){
+									val = val.fq();
+								}// else val is a number and is fine to send as a freq...
 							}else{
-								_slave[this.outputMessage](val, amp);
+								if(typeof val[0] === "string" ) {
+									var nt = teoria.note(val[0]);
+									val[0] = nt.fq();
+								}else if(typeof val[0] === "object"){ // for ScaleSeqs and Arps
+									val[0] = val[0].fq();
+								}
 							}
 						}
-					}else{
-						_slave[this.outputMessage] = val;
+						
+						if(typeof _slave[key] === "function") {
+							if(key === "note" && val === 0) { // advance envelope instead of changing freq
+								if(typeof _slave.env === "object") {
+									_slave.env.state = 1;
+								}
+							}else{
+								if($.isArray(val)) {
+									_slave[key].apply(_slave, val);									
+								}else{
+									_slave[key](val);
+								}
+							}
+						}else{
+							_slave[key] = val;
+						}
 					}
 				}
 			}
@@ -355,13 +374,31 @@ Seq.prototype = {
 			this.counter++;
 			this.durationCounter++;
 			
-			if(!usePick && this.counter % this.sequence.length === 0) {
-				if(this.shouldDie) {
-					this.kill();
-				}
-			}
-		}
+			// if(!usePick && this.counter % this.sequence.length === 0) {
+			// 	if(this.shouldDie) {
+			// 		this.kill();
+			// 	}
+			// }
+			//}
 	},
+	// an array storing all the properties/methods of the Seq object that can't be sequenced
+	properties : [
+		"isSequence", "once", "random", "kill",
+		"setSequence","slave","stop","play",
+		"shuffle", "reset", "free", "pause",
+		"break", "out", "getMix", "bpmCallback",
+		"retain", "set", "advance", "name",
+		"type", "generate", "setParam", "modded",
+		"_sequence","sequence","_start","shouldUseOffset",
+		"counter","durationCounter","_counter","outputMessage",
+		"active","slavesInit","phase","memory","init","mods",
+		"shouldDie","oddEven","phaseOffset","sequenceInit",
+		"humanize","prevHumanize","mix","values2","randomFlag",
+		"end","nextEvent","endFunction",
+		"durations","doNotAdvance","speed",
+		// for ScaleSeq
+		"root", "mode", "scaleInit",
+	],
 	
 	// ####once
 	// Play the sequence once and then end it
@@ -483,12 +520,12 @@ Seq.prototype = {
 					return this;
 				}
 			}
-			if(!this.slavesInit && !this.doNotAdvance) {
-				 this.advance();
-				 this.slavesInit = true;
-				 if(typeof this.sequence.pick !== "undefined")
-					 this._sequence = this.sequence.slice(0);
-			} // start sequence if it's not already running
+			// if(!this.slavesInit && !this.doNotAdvance) {
+			// 	 this.advance();
+			// 	 this.slavesInit = true;
+			// 	 if(typeof this.sequence.pick !== "undefined")
+			// 		 this._sequence = this.sequence.slice(0);
+			// } // start sequence if it's not already running
 		}
 		return this;		
 	},

@@ -3,7 +3,8 @@ function ScaleSeq(_sequence, _speed) {
 	
 	_sequence.doNotAdvance = true; // do not start sequence until scale and pattern has been set.	
 	var that = Seq(_sequence, _speed);
-	_sequence.doNotAdvance = false;
+	//_sequence.doNotAdvance = false;
+	
 
 	that.name = "ScaleSeq";
 	that.type = "control";
@@ -20,7 +21,7 @@ function ScaleSeq(_sequence, _speed) {
 		that.sequence = _sequence;
 		that.slaves = [];
 	}
-		
+	
 	that.createPattern = function(sequence) {
 		var _rootoctave = this.root.octave;
 		this.sequenceNumbers = sequence;
@@ -44,21 +45,17 @@ function ScaleSeq(_sequence, _speed) {
 		 	}
 		}
 		
-		if(this.sequence != null) {
-			this.sequence.length = 0;
-		}else{
-			this.sequence = [];
-		}
+		this.sequences.note = [];
 		
 		for(var i = 0; i < this.sequenceNumbers.length; i++) {
 			if(!$.isArray(this.sequenceNumbers[i])) {
-				this.sequence.push(this.scale[this.sequenceNumbers[i]]);
+				this.sequences.note.push(this.scale[this.sequenceNumbers[i]]);
 			}else{
-				this.sequence.push([this.scale[this.sequenceNumbers[i][0]], this.sequenceNumbers[i][1]]);
+				this.sequences.note.push([this.scale[this.sequenceNumbers[i][0]], this.sequenceNumbers[i][1]]);
 			}
 		}
 		
-		this.setSequence(this.sequence);
+		//this.setSequence(this.sequence);
 		if(this.scaleInit === false) {
 		 	this.scaleInit = true;
 		 	this.memory[0] = this.sequence;
