@@ -87,6 +87,7 @@ function Synth(attack, decay, volume) {
 			},
 	    });
 	})(this);
+	this.envRetrigger = false;
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
@@ -113,6 +114,7 @@ function Synth(attack, decay, volume) {
 	this.fx = [];
 	this.sends = [];
 	this.masters = [];
+	
 	Gibber.generators.push(this);
 	Gibber.addModsAndFX.call(this);
 }
@@ -139,6 +141,9 @@ Synth.prototype = {
 				break;
 		}
 		this.active = true;
+		if(this.envRetrigger) {
+			this.env.value = 0;
+		}
 		this.env.triggerGate();
 		if(typeof arguments[1] !== "undefined") {
 			this.amp = arguments[1];

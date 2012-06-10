@@ -335,10 +335,16 @@ Seq.prototype = {
 						}// else val is a number and is fine to send as a freq...
 					}
 					if(typeof _slave[this.outputMessage] === "function") {
-						if(amp === null){
-							_slave[this.outputMessage](val);
+						if(this.outputMessage === "note" && val === 0) { // advance envelope instead of changing freq
+							if(typeof _slave.env === "object") {
+								_slave.env.state = 1;
+							}
 						}else{
-							_slave[this.outputMessage](val, amp);
+							if(amp === null){
+								_slave[this.outputMessage](val);
+							}else{
+								_slave[this.outputMessage](val, amp);
+							}
 						}
 					}else{
 						_slave[this.outputMessage] = val;
