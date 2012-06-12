@@ -1,19 +1,16 @@
 function ScaleSeq(_sequence, _speed) {
-	var _sequenceNumbers = ($.isArray(_sequence)) ? _sequence.slice(0) : _sequence.sequence.slice(0);
-	
+	var _sequenceNumbers = ($.isArray(_sequence)) ? _sequence.slice(0) : _sequence.note.slice(0);
+
 	_sequence.doNotAdvance = true; // do not start sequence until scale and pattern has been set.	
 	var that = Seq(_sequence, _speed);
 	//_sequence.doNotAdvance = false;
-	
 
 	that.name = "ScaleSeq";
 	that.type = "control";
 	
 	that.sequenceNumbers = _sequenceNumbers;
-
 	that.mode = that.mode || Gibber.mode;
 	that.root = that.root || Gibber.root;
-
 	that.scaleInit = false;
 	that.counter = 0;
 	
@@ -26,8 +23,9 @@ function ScaleSeq(_sequence, _speed) {
 		var _rootoctave = this.root.octave;
 		this.sequenceNumbers = sequence;
 		this.scale = [];
-		
+
 		var _scale = teoria.scale.list(this.root, this.mode, false);
+
 		for(var oct = _rootoctave, o = 0; oct < 8; oct++, o++) {
 			for(var num = 0; num < _scale.length; num++) {
 				var nt = jQuery.extend({}, _scale[num]);
@@ -41,7 +39,7 @@ function ScaleSeq(_sequence, _speed) {
 		 	for(var num = _scale.length - 1; num >= 0; num--) {
 		 		var nt = jQuery.extend({}, _scale[num]);
 		 		nt.octave += o;
-		 		this.scale[negCount--] = nt;	// negative array indices!!!!! The magic of js.
+		 		this.scale[negCount--] = nt;
 		 	}
 		}
 		
@@ -67,17 +65,20 @@ function ScaleSeq(_sequence, _speed) {
 	};
 	
 	that.reset = function() {
-		if(arguments.length === 0) {
-			if(that.durations === null) {
-				that.setSequence(that.memory[0], that.speed);
-			}else{
-				that.setSequence(that.memory[0], that.durations);
-			}
-		}else{
-			that.setSequence(that.memory[arguments[0]]);
-		}
-		return that;
+		that.set(that._sequence);
 	};
+	// that.reset = function() {
+	// 	if(arguments.length === 0) {
+	// 		if(that.durations === null) {
+	// 			that.setSequence(that.memory[0], that.speed);
+	// 		}else{
+	// 			that.setSequence(that.memory[0], that.durations);
+	// 		}
+	// 	}else{
+	// 		that.setSequence(that.memory[arguments[0]]);
+	// 	}
+	// 	return that;
+	// };
 	
 	
 	(function(obj) {
@@ -109,5 +110,6 @@ function ScaleSeq(_sequence, _speed) {
 	})(that);
 
 	that.root = that.root || Gibber.root; // triggers meta-setter that sets sequence
+	//that.play();
 	return that;
 }

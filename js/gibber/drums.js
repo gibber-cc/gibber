@@ -1,6 +1,10 @@
 // Gibber - drums.js
 // ========================
 
+// TODO: d._sequence is getting changed when shuffling, so reset no longer works correctly.
+// maybe nows the time to fix the memory situation once and for all?
+
+
 (function myPlugin(){
 
 function initPlugin(audioLib){
@@ -42,7 +46,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 	Gibber.generators.push(this);	
 	
 	var that = this; // closure so that d.shuffle can be sequenced
-	this.shuffle = function() { that.seq.shuffle(); };
+	this.shuffle = function() { console.log("SHUFFLE"); that.seq.shuffle(); };
 	this.reset = function() { that.seq.reset(); };
 	
 	this.load();
@@ -56,7 +60,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 		
 		this.seq = Seq({
 			doNotAdvance : true,
-			sequence : 	this.sequence,
+			note : 	this.sequence.split(""),
 			speed : 	this.speed,
 			slaves :	[this],
 		});
@@ -65,14 +69,14 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 			if($.isArray(_timeValue)) {
 				this.seq = Seq({
 					doNotAdvance : true,					
-					sequence :_sequence,
+					note :_sequence.split(""),
 					durations : _timeValue,
 					slaves:[this],
 				});
 			}else{
 				this.seq = Seq({
 					doNotAdvance : true,					
-					sequence :_sequence,
+					note :_sequence.split(""),
 					speed : _timeValue,
 					slaves:[this],
 				});
@@ -81,7 +85,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 			_timeValue = window["_"+_sequence.length];
 			this.seq = Seq({
 				doNotAdvance : true,					
-				sequence :_sequence,
+				note :_sequence.split(""),
 				speed : _timeValue,
 				slaves:[this],
 			});
@@ -118,13 +122,6 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 	
 	if(this.pitch != 1) this.pitch = arguments[0].pitch;
 	
-	this.reset = function(num)  { 
-		if(isNaN(num)) {
-			that.seq.reset();
-		}else{
-			that.seq.reset(num); 
-		}
-	};
 	if(this.seq !== null) {
 		this.seq.doNotAdvance = false;
 		this.seq.advance();
@@ -200,10 +197,9 @@ Drums.prototype = {
 	},
 	set : function(newSequence, _timeValue) { 
 		if(typeof this.seq === "undefined" || this.seq === null) {
-			console.log("SETTING A NEW SEQUENCE");
 			this.seq = Seq(newSequence, _timeValue).slave(this);
 		}else{
-			this.seq.set(newSequence); 
+			this.seq.sequences.note = newSequence.split("");//set(newSequence); 
 		}
 	},
 	

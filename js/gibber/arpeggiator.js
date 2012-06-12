@@ -44,7 +44,12 @@ function Arp(notation, beats, mode, mult) {
 			arr = arr.concat(tmp);
 		}	
 		this.notes = this.modes[this.mode]( arr );
-		if(this.init) this.setSequence(this.notes, this.speed, shouldReset);
+		this.sequences.note = this.notes;
+		
+		// if(this.init) {
+		// 	this.sequences.note = this.notes;
+		// 	//this.setSequence(this.notes, this.speed, shouldReset);
+		// }
 	};
 	
 	that.set = function(_chord, _speed, _mode, octaveMult, shouldReset) {
@@ -78,7 +83,7 @@ function Arp(notation, beats, mode, mult) {
 	
 	that.chord(that.notation);	// this sets the sequence
 				
-	that.setSequence(that.notes, that.speed, false);
+	//that.setSequence(that.notes, that.speed, false);
 				
 	that._sequence = that.notes.slice(0);	
 	that._init = true;

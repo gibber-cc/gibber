@@ -30,9 +30,9 @@ default:
 '// sequence bass. "sequence" is positions in scale\n'+
 'c = ScaleSeq({\n'+
 '    root :      "C2",\n'+
-'    sequence :  [0,-2,-4], \n'+
+'    note :      [0,-2,-4], \n'+
 '    durations:  [_1 * 2, _1, _1],\n'+
-'    slaves:     [b]\n'+
+'    slaves:     b\n'+
 '});\n'+
 '\n'+
 '// add modulation changing blend of karplus-strong\n'+
@@ -50,11 +50,11 @@ default:
 'f.amp = .2;\n'+
 'f.fx.add( Delay(_6, .8), Reverb() )\n'+
 '\n'+
-'// sequence glockenspiel with random notes each lasting two measures\n'+
+'// sequence glockenspiel with random notes and random durations\n'+
 'g = ScaleSeq({\n'+
-'    sequence :  filli(0,12,16), \n'+
-'    durations : filli([_2, _1 * 2, _1 * 4], 32),\n'+
-'    slaves :    [f],\n'+
+'    note :      rndi(0,12,16), // 0-12 in the scale, generate 16 notes \n'+
+'    durations : rndi([_2, _1 * 2, _1 * 4], 32), // half note, two measures or four measures\n'+
+'    slaves :    f,\n'+
 '});\n'+
 '\n'+
 '// insert fx at start of fx chain, in this case, before delay / reverb\n'+
@@ -177,12 +177,40 @@ default:
 'to be completely generic; it can sequence notes for a synth to play, functions to \n'+
 'be executed and values to be assigned to object parameters.\n'+
 '\n'+
-'Making a Seq takes the form of:\n'+
+'You can sequence as many parameters as you want from a single Seq object. The two unifying\n'+
+'factors for all of these parameters are the "durations" (when the parameters will change) and\n'+
+'the "slaves" (which objects will they be changed on). \n'+
+'\n'+
+'When you create a Seq you give a bunch of arrays for properties you want to sequence. For example,\n'+
+'if we want to sequence notes and change the amplitude for each note:\n'+
+'\n'+
+'a = Synth();\n'+
+'b = Seq({\n'+
+'  note: ["A4", "Bb4", "C5", "G4"],\n'+
+'  amp:  [ .2 ,   .3 ,   .4,  .1 ],\n'+
+'  slaves: a,\n'+
+'  durations: _4,\n'+
+'});\n'+
+'\n'+
+'The above Seq object slaves one synth and advances through the various sequences it contains\n'+
+'every 1/4 note. All of the sequences get store in an object named, appropriately, "sequences". So, to\n'+
+'access the amplitudes in the above sequence you would use b.sequences.amp.\n'+
+'\n'+
+'There is another special keyword, "function", that allows you to sequence calls to functions instead\n'+
+'of controlling objects.\n'+
+'\n'+
+'c = Seq({\n'+
+'  function: [ function() { G.setBPM(180); }, function() { G.setBPM(100); } ],\n'+
+'  durations: [_1 * 2],\n'+
+'});\n'+
+'\n'+
+'\n'+
+'There is also a shorthand version that we\'ll use in this tutorial. It takes the form of:\n'+
 '\n'+
 'Seq(\n'+
 '    array   : sequenced objects / primitives, \n'+
 '    num     : step speed (optional, default = _1 / length of sequence array),\n'+
-'    string  : name of method or property of object to sequence (optional, default = "note" or "freq") \n'+
+'    string  : name of method or property of object to sequence (optional, default = "note" or "function") \n'+
 ');\n'+
 '*/\n'+
 '\n'+
@@ -200,9 +228,9 @@ default:
 't.fx.add( Reverb() )\n'+
 'r = Seq(["A5", "A#5", "C#5", "D5"], _4).slave(t);\n'+
 '\n'+
-'// assign new values to the sequence\n'+
-'q.set(["F4", "G4",  "D4",  "C4"]);\n'+
-'r.set(["A5", "A#5", "C#5", "B5"]);\n'+
+'// assign new values to the note sequence\n'+
+'q.sequences.note = ["F4", "G4",  "D4",  "C4"];\n'+
+'r.sequences.note = ["A5", "A#5", "C#5", "B5"];\n'+
 '\n'+
 '// change the speed of each sequence step\n'+
 'r.speed = q.speed = _16;\n'+

@@ -544,6 +544,23 @@ function Osc(freq, vol, waveShape) {
 		return this;
 	};
 	
+	that.note = function(note) {
+		switch(typeof note) {
+			case "number" :
+				this.frequency = note;
+			break;
+			case "string" :
+				this.frequency = teoria.note(note).fq();
+			break;
+			default:
+				this.frequency = note.fq();
+				break;
+		}
+
+		if(typeof arguments[1] !== "undefined") {
+			this.amp = arguments[1];
+		}		
+	};
 	that.start = function() {
 		this.active = true;
 		return this;		

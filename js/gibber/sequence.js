@@ -107,6 +107,7 @@ function Seq() {
 	this.end = false;
 	this.nextEvent = 0;
 	this.endFunction = null;
+	this.endSequence = "note";
 	
 	var that = this;	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
@@ -114,9 +115,18 @@ function Seq() {
 		for(key in obj) {
 			if(key !== "slaves") {
 				if($.inArray(key, this.properties) !== -1) {
-					this[key] = obj[key];
+					//if($.isArray(obj[key])) {
+						this[key] = obj[key];
+						//}else{
+						//this[key] = [obj[key]];
+						//}
+					
 				}else{
-					this.sequences[key] = obj[key];
+					//if($.isArray(obj[key])) {
+						this.sequences[key] = obj[key];
+						//}else{
+						//this.sequences[key] = [obj[key]];
+						//}
 				}
 			}else{
 				if($.isArray(obj[key])) {
@@ -134,13 +144,37 @@ function Seq() {
 		this.sequence = _seq;
 	}
 	
+	if(this.outputMessage === null) {
+		if(typeof arguments[2] !== "undefined") {
+			this.outputMessage = arguments[2];
+		}else{
+			if(this.sequence !== null) {
+				if(typeof this.sequence[0] === "function") {
+					this.outputMessage = "function";
+				}else{
+					this.outputMessage = "note";
+				}
+			}
+		}
+	}
+	
 	if(this.sequence !== null) {
 		if (this.outputMessage === null) {
-			this.sequences["note"] = this.sequence;
+			if(typeof this.sequence[0] === "function") {
+				this.sequences["functions"] = this.sequence;
+			}else{
+				this.sequences["note"] = this.sequence;
+			}
 		}else{
 			this.sequences[this.outputMessage] = this.sequence;
 		}
+		this._sequence = this.sequence.slice(0);
+	}else{
+		if(typeof this.sequences.note !== "undefined") {
+			this._sequence = this.sequences.note.slice(0);
+		}
 	}
+
 	if(this.speed === null && this.durations === null) {
 		var arg1Type = typeof arguments[1];
 		if(arg1Type !== "undefined") {
@@ -157,10 +191,6 @@ function Seq() {
 					this.speed = (arguments.length != 0) ? window["_" + arguments[0].length] : _4;
 			}
 		}
-	}
-	
-	if(this.outputMessage === null) {
-		this.outputMessage = arguments[2] || "note";
 	}
 	
 	Gibber.registerObserver( "bpm", this.bpmCallback(this) );
@@ -195,9 +225,17 @@ function Seq() {
 	// ####shuffle
 	// randomize order of sequence
 
-	this.shuffle = function() {
-		that.sequence.shuffle();
-		that.setSequence(that.sequence, that.speed);
+	this.shuffle = function(seq) {
+		if(typeof seq === "undefined") {
+			that.sequences.note.shuffle();
+		}else if(seq !== "all"){
+			that.sequences[seq].shuffle();
+		}else{
+			for(key in that.sequences) {
+				that.sequences[key].shuffle();
+			}
+			that.durations.shuffle();
+		}
 		return that;
 	};
 	
@@ -206,19 +244,24 @@ function Seq() {
 	//
 	// param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order.
 
-	this.reset = function() {
-		if(arguments.length === 0) {
-			if(that.durations === null) {
-				that.setSequence(that._sequence, that.speed);
-			}else{
-				that.setSequence(that._sequence, that.durations);
-			}
-		}else{
-			that.setSequence(that.memory[arguments[0]]);
+	this.reset = function(seq) {
+		if(typeof seq === "undefined") {
+			that.sequences.note = that._sequence.slice(0);
+			// if(arguments.length === 0) {
+			// 				if(that.durations === null) {
+			// 					that.setSequence(that._sequence, that.speed);
+			// 				}else{
+			// 					that.setSequence(that._sequence, that.durations);
+			// 				}
+			// 			}else{
+			// 				that.setSequence(that.memory[arguments[0]]);
+			// 			}
 		}
 		return that;
 	};
+
 	Gibber.addModsAndFX.call(this);	
+	//this.play();
 }
 	
 Seq.prototype = {
@@ -229,22 +272,17 @@ Seq.prototype = {
 	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
 	advance : function() {
 		if(this.active) {
-			//console.log("ADVANCE");
 			var pos, val;
-			// only play if not setting an offset... if using offset simply set original offset position
 			
-			// if(this.counter % this.sequence.length === 0){
-			// 	if(this.randomFlag) {
-			// 		this.shuffle();
-			// 	}
-			// 	if(this.end) {
-			// 		this.stop();
-			// 		if(this.endFunction !== null) {
-			// 			this.endFunction();
-			// 		}
-			// 		return;
-			// 	}
-			// }
+			if(this.end) {
+				if(this.counter % this.sequences[this.endSequence].length === 0) {
+					this.stop();
+					if(this.endFunction !== null) {
+						this.endFunction();
+					}
+					return;	
+				}
+			}
 			
 			var shouldReturn = false; 
 			var nextPhase = 0;
@@ -293,80 +331,83 @@ Seq.prototype = {
 			
 			//if(typeof this.sequence === "undefined" || this.sequence === null) return;
 			
-			//if(shouldReturn) return;
-			console.log("BEFORE SEQUENCING");
-			// if(this.slaves.length === 0) { // if a mod
-			// 	this.value = val;
-			// }else{
-				for(var j = 0; j < this.slaves.length; j++) {
-					var _slave = this.slaves[j];					
-
-					for(var key in this.sequences) {
-						var seq = this.sequences[key];
-						var usePick = (typeof seq.pick !== "undefined");
-						if(!usePick) {
-							pos = this.counter % seq.length;
-						}
-						if(!usePick) {
-							val = seq[pos];
-						}else{
-							val = seq.pick();
-						}
-						G.log("key : " + key + " , val : " + val);
-						
-						// Function sequencing
-						// TODO: there should probably be a more robust way to to this
-						// but it will look super nice and clean on screen...
-						if(typeof val === "function") {
-							if(!shouldReturn) {
-								val();
-								this.counter++;
-								this.durationCounter++;
-							}
+			//if(shouldReturn) return;a.mods
 				
-							return;
-						}else if(typeof val === "undefined") {
-							if(!shouldReturn) {
-								this.counter++;
-								this.durationCounter++;
-							}
+			for(var key in this.sequences) {
+				var seq = this.sequences[key];
+				var usePick = (typeof seq.pick !== "undefined");
+				
 
-							return;
-						}
-												
-						if(key === "freq" || key === "frequency") {
-							if(! $.isArray(val) ) {
-								if(typeof val === "string" ) {
-									var nt = teoria.note(val);
-									val = nt.fq();
-								}else if(typeof val === "object"){
-									val = val.fq();
-								}// else val is a number and is fine to send as a freq...
-							}else{
-								if(typeof val[0] === "string" ) {
-									var nt = teoria.note(val[0]);
-									val[0] = nt.fq();
-								}else if(typeof val[0] === "object"){ // for ScaleSeqs and Arps
-									val[0] = val[0].fq();
-								}
+				
+				if(!usePick) {
+					pos = this.counter % seq.length;
+				}
+				if(!usePick) {
+					val = seq[pos];
+				}else{
+					val = seq.pick();
+				}
+				
+				if(this.slaves.length === 0 && key === "note") { // if a mod... note is the default sequence value
+				 	this.value = val;
+				}
+				
+				//G.log("key : " + key + " , val : " + val);
+						
+				// Function sequencing
+				// TODO: there should probably be a more robust way to to this
+				// but it will look super nice and clean on screen...
+				if(key === "function") {
+					if(!shouldReturn) {
+						val();
+						this.counter++;
+						this.durationCounter++;
+					}
+					return;
+				}else if(typeof val === "undefined") {
+					if(!shouldReturn) {
+						this.counter++;
+						this.durationCounter++;
+					}
+
+					return;
+				}
+				
+				for(var j = 0; j < this.slaves.length; j++) {
+					var _slave = this.slaves[j];	
+						
+					if(key === "freq" || key === "frequency") {
+						if(! $.isArray(val) ) {
+							if(typeof val === "string" ) {
+								var nt = teoria.note(val);
+								val = nt.fq();
+							}else if(typeof val === "object"){
+								val = val.fq();
+							}// else val is a number and is fine to send as a freq...
+						}else{
+							if(typeof val[0] === "string" ) {
+								var nt = teoria.note(val[0]);
+								val[0] = nt.fq();
+							}else if(typeof val[0] === "object"){ // for ScaleSeqs and Arps
+								val[0] = val[0].fq();
 							}
 						}
+					}
 						
-						if(typeof _slave[key] === "function") {
-							if(key === "note" && val === 0) { // advance envelope instead of changing freq
-								if(typeof _slave.env === "object") {
-									_slave.env.state = 1;
-								}
-							}else{
-								if($.isArray(val)) {
-									_slave[key].apply(_slave, val);									
-								}else{
-									_slave[key](val);
-								}
+					if(typeof _slave[key] === "function") {
+						if(key === "note" && val === 0) { // advance envelope instead of changing freq
+							if(typeof _slave.env === "object") {
+								_slave.env.state = 1;
 							}
 						}else{
-							_slave[key] = val;
+							if($.isArray(val)) {
+								_slave[key].apply(_slave, val);									
+							}else{
+								_slave[key](val);
+							}
 						}
+					}else{
+						_slave[key] = val;
 					}
 				}
 			}
@@ -380,6 +421,7 @@ Seq.prototype = {
 			// 	}
 			// }
 			//}
+		}
 	},
 	// an array storing all the properties/methods of the Seq object that can't be sequenced
 	properties : [
@@ -397,23 +439,26 @@ Seq.prototype = {
 		"end","nextEvent","endFunction",
 		"durations","doNotAdvance","speed",
 		// for ScaleSeq
-		"root", "mode", "scaleInit",
+		"scaleInit", "root", "mode"
 	],
 	
 	// ####once
 	// Play the sequence once and then end it
 	
-	once : function() {
+	once : function(seq) {
 		if(!this.active) {
 			this.play();
 		}
 		
 		if(typeof arguments[0] === "function") {
 			this.endFunction = arguments[0];
+		}else if(typeof arguments[0] === "string") {
+			this.endSequence = seq;
+			this.endFunction = (typeof arguments[1] === "function") ? arguments[1] : null;
 		}else{
 			this.endFunction = null;
 		}
-		
+	
 		this.end = true;
 
 		return this;
@@ -482,8 +527,7 @@ Seq.prototype = {
 			this.sequence = seq;
 		}
 		if(this.init === false && typeof seq.pick === "undefined") {
-			this._sequence = this.sequence.slice(0);
-			//Gibber.callback.slaves.push(this);
+			//this._sequence = this.sequence.slice(0);
 			if(typeof this.sequence[0] === "function" && !this.doNotAdvance){
 				this.advance();
 			}
@@ -520,12 +564,10 @@ Seq.prototype = {
 					return this;
 				}
 			}
-			// if(!this.slavesInit && !this.doNotAdvance) {
-			// 	 this.advance();
-			// 	 this.slavesInit = true;
-			// 	 if(typeof this.sequence.pick !== "undefined")
-			// 		 this._sequence = this.sequence.slice(0);
-			// } // start sequence if it's not already running
+			if(!this.slavesInit && !this.doNotAdvance) {
+				 this.advance();
+				 this.slavesInit = true;
+			} // start sequence if it's not already running
 		}
 		return this;		
 	},
