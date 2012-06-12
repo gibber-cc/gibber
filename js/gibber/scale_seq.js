@@ -43,14 +43,18 @@ function ScaleSeq(_sequence, _speed) {
 		 	}
 		}
 		
-		this.sequences.note = [];
+		this.note = [];
 		
 		for(var i = 0; i < this.sequenceNumbers.length; i++) {
 			if(!$.isArray(this.sequenceNumbers[i])) {
-				this.sequences.note.push(this.scale[this.sequenceNumbers[i]]);
+				this.note.push(this.scale[this.sequenceNumbers[i]]);
 			}else{
-				this.sequences.note.push([this.scale[this.sequenceNumbers[i][0]], this.sequenceNumbers[i][1]]);
+				this.note.push([this.scale[this.sequenceNumbers[i][0]], this.sequenceNumbers[i][1]]);
 			}
+		}
+		
+		if($.inArray("note", this.sequences) === -1) {
+			this.sequences.push("note");
 		}
 		
 		//this.setSequence(this.sequence);

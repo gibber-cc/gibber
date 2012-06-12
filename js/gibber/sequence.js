@@ -81,7 +81,7 @@ function Seq() {
 
 	this._sequence = null;
 	this.sequence = null;
-	this.sequences = {};
+	this.sequences = [];
 	this._start = true;
 	this.shouldUseOffset = false; // flag to determine when offset should be initially applied
 	this.counter = 0; // position in seqeuence
@@ -114,20 +114,23 @@ function Seq() {
 		var obj = arguments[0];
 		for(key in obj) {
 			if(key !== "slaves") {
-				if($.inArray(key, this.properties) !== -1) {
+				//if($.inArray(key, this.properties) !== -1) {
 					//if($.isArray(obj[key])) {
-						this[key] = obj[key];
+				this[key] = obj[key];
+				if($.inArray(key, this.properties) === -1) {
+					this.sequences.push(key);
+				}
 						//}else{
 						//this[key] = [obj[key]];
 						//}
 					
-				}else{
+				//}else{
 					//if($.isArray(obj[key])) {
-						this.sequences[key] = obj[key];
+				//		this.sequences[key] = obj[key];
 						//}else{
 						//this.sequences[key] = [obj[key]];
 						//}
-				}
+				//}
 			}else{
 				if($.isArray(obj[key])) {
 					this.slave.apply(this, obj[key]);
@@ -154,6 +157,8 @@ function Seq() {
 				}else{
 					this.outputMessage = "note";
 				}
+				this.sequences.push(this.outputMessage);				
+				
 			}
 		}
 	}
@@ -161,17 +166,19 @@ function Seq() {
 	if(this.sequence !== null) {
 		if (this.outputMessage === null) {
 			if(typeof this.sequence[0] === "function") {
-				this.sequences["functions"] = this.sequence;
+				this.functions = this.sequence;
+				this.sequences.push("functions");				
 			}else{
-				this.sequences["note"] = this.sequence;
+				this.note = this.sequence;
+				this.sequences.push("note");				
 			}
 		}else{
-			this.sequences[this.outputMessage] = this.sequence;
+			this[this.outputMessage] = this.sequence;
 		}
 		this._sequence = this.sequence.slice(0);
 	}else{
-		if(typeof this.sequences.note !== "undefined") {
-			this._sequence = this.sequences.note.slice(0);
+		if(typeof this.note !== "undefined") {
+			this._sequence = this.note.slice(0);
 		}
 	}
 
@@ -227,12 +234,13 @@ function Seq() {
 
 	this.shuffle = function(seq) {
 		if(typeof seq === "undefined") {
-			that.sequences.note.shuffle();
+			that.note.shuffle();
 		}else if(seq !== "all"){
-			that.sequences[seq].shuffle();
+			that[seq].shuffle();
 		}else{
-			for(key in that.sequences) {
-				that.sequences[key].shuffle();
+			for(var i = 0; i < that.sequences.length; i++) {
+				var key = that.sequences[i];
+				that[key].shuffle();
 			}
 			that.durations.shuffle();
 		}
@@ -246,7 +254,7 @@ function Seq() {
 
 	this.reset = function(seq) {
 		if(typeof seq === "undefined") {
-			that.sequences.note = that._sequence.slice(0);
+			that.note = that._sequence.slice(0);
 			// if(arguments.length === 0) {
 			// 				if(that.durations === null) {
 			// 					that.setSequence(that._sequence, that.speed);
@@ -275,12 +283,12 @@ Seq.prototype = {
 			var pos, val;
 			
 			if(this.end) {
-				if(this.counter % this.sequences[this.endSequence].length === 0) {
+				if(this.counter % this[this.endSequence].length === 0) {
 					this.stop();
 					if(this.endFunction !== null) {
 						this.endFunction();
 					}
-					return;	
+					return;
 				}
 			}
 			
@@ -332,12 +340,12 @@ Seq.prototype = {
 			//if(typeof this.sequence === "undefined" || this.sequence === null) return;
 			
 			//if(shouldReturn) return;a.mods
-				
-			for(var key in this.sequences) {
-				var seq = this.sequences[key];
+//			console.log(this.sequences);
+			for(var i = 0; i < this.sequences.length; i++) {
+				var key = this.sequences[i];
+				var seq = this[key];
+//				console.log(key);
 				var usePick = (typeof seq.pick !== "undefined");
-				
-
 				
 				if(!usePick) {
 					pos = this.counter % seq.length;
@@ -369,12 +377,11 @@ Seq.prototype = {
 						this.counter++;
 						this.durationCounter++;
 					}
-
 					return;
 				}
 				
 				for(var j = 0; j < this.slaves.length; j++) {
-					var _slave = this.slaves[j];	
+					var _slave = this.slaves[j];
 						
 					if(key === "freq" || key === "frequency") {
 						if(! $.isArray(val) ) {
@@ -426,7 +433,7 @@ Seq.prototype = {
 	// an array storing all the properties/methods of the Seq object that can't be sequenced
 	properties : [
 		"isSequence", "once", "random", "kill",
-		"setSequence","slave","stop","play",
+		"setSequence","slave", "slaves", "stop","play",
 		"shuffle", "reset", "free", "pause",
 		"break", "out", "getMix", "bpmCallback",
 		"retain", "set", "advance", "name",
