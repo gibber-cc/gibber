@@ -8,11 +8,11 @@ requirejs(['external/sink-light', 'external/audiofile', 'gibberish', 'utils', 'c
 		window.Gibberish = _gibberish;
 		Gibberish.init();
 		
-		s = Gibberish.Sine(440, .25);
-		s.connect(Gibberish.MASTER);
-		Gibberish.dirty = true;
+		// s = Gibberish.Sine(440, .25);
+		// s.connect(Gibberish.MASTER);
+		// Gibberish.dirty = true;
 		
-		// 		Gibberish.callback = Gibberish.generateCallback( false );
+		Gibberish.callback = Gibberish.generateCallback();
 		// 		codeTimeout = setTimeout(function() { 
 		// 			var codegen = document.getElementById("output");
 		// 			codegen.innerHTML = Gibberish.callback;

@@ -76,6 +76,7 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
+							console.log("SETITING", propName, _value);
 							if(typeof value === "number" || typeof value === "boolean"){
 								value = _value;
 							}else{
@@ -284,7 +285,10 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 			}
 			Gibberish.dirty = true;
 		},
-		
+		out : function() {
+			this.connect(Gibberish.MASTER);
+			return this;
+		},
 		fx:			[],
 		mods:		[],
 		mod:		that.mod,

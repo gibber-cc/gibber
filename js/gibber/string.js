@@ -1,12 +1,4 @@
 //  Gibber.js - string.js
-// ========================
-
-
-(function myPlugin(){
-
-function initPlugin(audioLib){
-(function(audioLib){	
-
 // ###Pluck
 // A Karplus-Strong implementation by thecharlie
 //
@@ -17,141 +9,34 @@ function initPlugin(audioLib){
 // example usage:    
 // `p = Pluck(0, 1, "pink");  
 //  p.note( "A3" );  `
+/*
+p = Pluck({damping:0, blend:1, maxVoices:1}).out();
 
-function Pluck (damping, blend, color, vol){
+p.note(450);
+
+s = ScaleSeq(filli(-5,7,128), _32).slave(p);
+s.mode = "phrygian";
+s.root = "G3";
+
+s.humanize = 200;
+*/
+
+function Pluck (damping, blend, amp, color){
+	var that;
+	
 	if(typeof arguments[0] === "object") {
-		var obj = arguments[0];
-		
-		for(key in obj) {
-			this[key] = obj[key];
-		}
-		this.damping = (isNaN(this.damping)) ? 0 : this.damping;
-		this.dampingValue = .5 - this.damping;
-		this.blend = (isNaN(this.blend)) ? 1 : this.blend;
-		this.amp = (isNaN(this.amp)) ? .5 : this.amp;
-		this.color = (typeof this.color === "undefined") ? "white" : this.color;
+		that = Gibberish.PolyKarplusStrong( arguments[0] );
 	}else{
-		if(typeof damping === "string") {
-			color = damping;
-			damping = 0;
-		}
-		this.damping = (isNaN(damping)) ? 0 : damping / 100;
-		this.dampingValue = .5 - this.damping;
-		this.blend = (isNaN(blend)) ? 1 : blend;
-		this.amp = vol || .5;
-		this.color = (typeof color === "undefined") ? "white" : color;
+		var props = {
+			damping : (isNaN(damping)) ? 0 : damping / 100,
+			blend	: (isNaN(blend)) ? 1 : blend,
+			amp		: amp || .5,
+		};
+		
+		that = Gibberish.PolyKarplusStrong( props );
 	}
 	
-	this.frequency = 440;
-	this.value = 0;
-	this.active = true;
+	that.note = Gibber.makeNoteFunction(that);
 	
-	this.mods =[];
-	this.fx =[];
-	this.sends = [];
-	this.masters =[];		
-	
-	this.noise = new audioLib.Noise();
-	this._buffer = [];
-	this.lastValue = 0;
-	
-	Gibber.addModsAndFX.call(this);	
-	Gibber.generators.push(this);
-	
-	(function(obj) {
-		var that = obj;
-		var damping = that.damping;
-	
-	    Object.defineProperties(that, {
-			"damping" : { 
-				get: function() {
-					return damping * 100;
-				},
-				set: function(value) {
-					damping = value / 100;
-					that.dampingValue = .5 - damping;
-				}
-			},
-		});
-	})(this);
-}
-
-Pluck.prototype = {
-	sampleRate : Gibber.sampleRate,
-	name : "Pluck",
-	type : "gen",
-	
-	// ####note
-	// play a note
-	// 
-	// param **note**: Default: NONE. Either a frequency or a note name such as "C#3"
-	note : function(n) {
-		this._buffer = [];
-		
-		switch(typeof n) {
-			case "number" :
-			break;
-			case "string" :
-				n = teoria.note(n).fq();
-			break;
-			default:
-				n = n.fq();
-				break;
-		}
-
-		var _size = Math.floor(44100 / n);
-		for(var i = 0; i < _size ; i++) {
-			this._buffer[i] = this.noise[this.color]();
-		}
-		if(typeof arguments[1] !== "undefined") {
-			this.amp = arguments[1];
-		}
-	},
-	
-	// ####kill
-	// remove the generator from the graph and destroy all attached fx
-	
-	kill : function() {
-		Gibber.genRemove(this);
-		this.masters.length = 0;
-		this.mods.length = 0;
-		this.fx.length = 0;
-		this.sends.length = 0;
-	},
-	
-	generate : function() {		
-		var val = this._buffer.shift();
-		if(isNaN(val)) val = 0;
-		var rnd = (Math.random() > this.blend) ? -1 : 1;
-		
-		this.value = rnd * (val + this.lastValue) * this.dampingValue;
-		
-		this.lastValue = this.value;
-		
-		this._buffer.push(this.value);
-	},
-			
-	getMix : function() { return this.value * this.amp; },
-};
-
-Pluck.prototype.__proto__ = new audioLib.GeneratorClass();
-
-audioLib.generators('Pluck', Pluck);
-
-audioLib.Pluck = audioLib.generators.Pluck;
- 
-}(audioLib));
-audioLib.plugins('Pluck', myPlugin);
-}
-
-if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
-	exports.init = initPlugin;
-} else {
-	initPlugin(audioLib);
-}
-
-}());
-
-function Pluck(damping, blend, color) {
-	return new audioLib.Pluck(damping, blend, color);
+	return that;
 }

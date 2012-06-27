@@ -95,6 +95,23 @@ var Gibber = {
 		}
 	},
 	
+	// wraps Gibberish note function to _note and calls it after calculating frequency
+	makeNoteFunction : function(targetObj) {
+		eval("targetObj._note = " + targetObj.note.toString()); // create the copy
+		
+		return function(note) {
+			switch(typeof note) {
+				case "number" : break;
+				case "string" :
+					note = teoria.note(note).fq();
+				break;
+				default:
+					note = note.fq();
+					break;
+			}
+			this._note(note);
+		};
+	},
 	
 	init : function() {
 		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
@@ -601,18 +618,14 @@ function LFO(freq, amount, shape, type) {
 	return that;
 };
 
-function Sine(freq, volume, shouldAdd) {	
-	var that = Osc.apply(null, arguments);
-	that.name = "Sine";
-	that.waveShape = 'sine';
-	
+function Sine(freq, volume) {	
+	var that = Gibberish.Sine(freq, volume);//Osc.apply(null, arguments);
+	//that.connect(Gibberish.MASTER);
 	return that;
 }
 
 function Tri(freq, volume) {	
-	var that = Osc.apply(null,arguments);
-	that.name = "Tri";
-	that.waveShape = 'triangle';
+	var that = Gibberish.Triangle(freq, volume);
 	
 	return that;
 }

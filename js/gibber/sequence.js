@@ -214,7 +214,7 @@ function Seq() {
 			}else{
 				gen.masters.push(this);
 			}
-			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "frequency"; }
 		}
 		if(!this.slavesInit && !this.doNotAdvance) { // start sequence if it's not already running
 			 this.advance();
@@ -400,7 +400,7 @@ Seq.prototype = {
 							}
 						}
 					}
-						
+					//console.log("ADVANCING", key, _slave);	
 					if(typeof _slave[key] === "function") {
 						if(key === "note" && val === 0) { // advance envelope instead of changing freq
 							if(typeof _slave.env === "object") {
@@ -566,7 +566,7 @@ Seq.prototype = {
 					}else{
 						gen.masters.push(this);
 					}
-					if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+					if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "frequency"; }
 				}else{
 					return this;
 				}

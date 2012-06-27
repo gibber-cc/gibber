@@ -26,7 +26,7 @@ define([], function() {
 			gibberish.make["Sampler"] = this.makeSampler;
 		},
 		
-		Sine : function(freq, amp, name) {
+		Sine : function(freq, amp) {
 			var that = { 
 				type:		"Sine",
 				category:	"Gen",
@@ -59,7 +59,7 @@ define([], function() {
 			return output;
 		},
 		
-		Square : function(freq, amp, name) {
+		Square : function(freq, amp) {
 			var that = { 
 				type:		"Square",
 				category:	"Gen",
@@ -92,7 +92,7 @@ define([], function() {
 			return output;
 		},
 		
-		Triangle : function(freq, amp, name) {
+		Triangle : function(freq, amp) {
 			var that = { 
 				type:		"Triangle",
 				category:	"Gen",
