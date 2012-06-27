@@ -1,30 +1,21 @@
-function processMods(gen) {
-	//if(Gibber.debug) console.log("MODDING " + gen.mods.length + "for " + gen.name);
-	for(var m = 0; m < gen.mods.length; m++) {
-		var mod = gen.mods[m];
-		if(mod.active) {
-			// if(mod.mods.length != 0) {
-			// 	processMods(mod);
-			// }
-			gen[mod.param] = mod.out() + mod.param_;
-		}
-	}		
-}
+// 		Gibberish.callback = Gibberish.generateCallback( false );
+// 		codeTimeout = setTimeout(function() { 
+// 			var codegen = document.getElementById("output");
+// 			codegen.innerHTML = Gibberish.callback;
+// 		}, 250);
+// 		
+// 		var phase = 0;
+// 		var sink = Sink( function(buffer, channelCount){
+// 			//console.log("CHANNEL COUNT = ", channelCount);
+// 		    for (var i=0; i<buffer.length; i+=2){
+// 				//if(phase++ % 100 == 0) s.frequency = Math.round(400 + Math.random() * 400);
+// 				if(Gibberish.dirty) {
+// 					Gibberish.callback = Gibberish.generateCallback( false ); 
+// 				}
+// 				buffer[i] = buffer[i+1] = Gibberish.callback();
+// 		    }
+// 	}, 2, 256);
 
-function restoreMods(gen) {	
-	for(var m = 0; m < gen.mods.length; m++) {
-		var mod = gen.mods[m];
-		
-		if(mod.active) {
-			if(mod.mods.length != 0) {
-				restoreMods(mod);
-			}
-			for(var name in mod.store) {
-				gen[name] = mod.store[name];
-			}
-		}
-	}	
-}
 
 function audioProcess(buffer, channelCount){
 	var i, channel, value;
@@ -35,77 +26,13 @@ function audioProcess(buffer, channelCount){
 			//if(Gibber.debug) console.log(buffer.length);
 			value = 0;
 			
+			if(Gibberish.dirty) {
+			 	Gibberish.callback = Gibberish.generateCallback(); 
+			}
+			
 			Gibber.callback.generate();
 			
-			for(var g = 0, _gl = Gibber.generators.length; g < _gl; g++) {
-				var genValue = 0;
-				var gen = Gibber.generators[g];
-				
-				if(gen.active) {					
-					//processMods(gen); // apply modulation changes
-					for(var m = 0; m < gen.mods.length; m++) {
-						var mod = gen.mods[m];
-						if(mod.active) {
-							gen[mod.param] = mod[mod.type]();
-						}
-					}
-					
-					if(!gen.isControl) {
-						genValue += gen.out();
-					}else{
-						gen.generate();
-					}
-					
-					//restoreMods(gen); // reset gen values to state before modulation
-				}
-				
-				// run fx
-				for(var e = 0, _el = gen.fx.length; e < _el; e++) {
-					var effect = gen.fx[e];
-					for(var m = 0; m < effect.mods.length; m++) {
-						var mod = effect.mods[m];
-						if(mod.active) {
-							effect[mod.param] = mod[mod.type]();
-						}
-					}
-					genValue = effect.fxout(genValue);
-				}
-					
-				// TODO: send from any point in the fx chain?
-				if(gen.sends) {
-					for(var s = 0, _sl = gen.sends.length; s < _sl ; s++) {
-						var send = gen.sends[s];
-						send.bus.value += genValue * send.amount;
-					}
-				}
-				
-				value += genValue;
-			}
-			// Busses
-			for(var b = 0, _bbl = Gibber.busses.length; b < _bbl; b++) {
-				var bus = Gibber.busses[b];
-				var busValue = bus.value;
-				
-				for(var e = 0, _eel = bus.fx.length; e < _eel ; e++) {
-					var effect = bus.fx[e];
-					processMods(effect);
-					busValue += effect.fxout(busValue);
-					restoreMods(effect);
-				}
-				
-				value += busValue;
-				bus.value = 0;
-			}
-			
-			// Master output
-			for(var e = 0, _ml = Master.fx.length; e < _ml; e++) {
-				var effect = Master.fx[e];
-				processMods(effect);
-				value = effect.fxout(value);
-				restoreMods(effect);
-			}
-			buffer[i] = value * Master.amp;
-			buffer[i + 1] = buffer[i];
+			buffer[i] = buffer[i + 1] = Gibberish.callback();
 			Gibber.debug = false;
 		}
 	}
