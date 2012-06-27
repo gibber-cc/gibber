@@ -37,6 +37,7 @@ function Pluck (damping, blend, amp, color){
 	}
 	
 	that.note = Gibber.makeNoteFunction(that);
+	that.chord = Gibber.chord;	
 	
 	return that;
 }

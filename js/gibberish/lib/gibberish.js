@@ -76,7 +76,7 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
-							console.log("SETITING", propName, _value);
+							//console.log("SETITING", propName, _value);
 							if(typeof value === "number" || typeof value === "boolean"){
 								value = _value;
 							}else{

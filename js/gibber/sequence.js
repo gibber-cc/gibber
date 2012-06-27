@@ -279,7 +279,9 @@ Seq.prototype = {
 	// ####advance
 	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
 	advance : function() {
+		//console.log("ADVANCE");
 		if(this.active) {
+			//console.log("ACTIVE");
 			var pos, val;
 			
 			if(this.end) {
@@ -341,6 +343,8 @@ Seq.prototype = {
 			
 			//if(shouldReturn) return;a.mods
 //			console.log(this.sequences);
+			// TODO : an array of keys? can't this just loop through an object with the appropriate values? 
+			// pretty sure I made this decision to easy live coding (no need to specify sequences array) but it's weird...
 			for(var i = 0; i < this.sequences.length; i++) {
 				var key = this.sequences[i];
 				var seq = this[key];
@@ -360,7 +364,7 @@ Seq.prototype = {
 				 	this.value = val;
 				}
 				
-				//G.log("key : " + key + " , val : " + val);
+				//G.log("key : " + key + " , val : " + val + ", pos : " + pos);
 						
 				// Function sequencing
 				// TODO: there should probably be a more robust way to to this

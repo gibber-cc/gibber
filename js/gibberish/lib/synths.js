@@ -78,7 +78,7 @@ define([], function() {
 			var that = { 
 				type:		"FMSynth",
 				category:	"Gen",
-				amp:		.5,
+				amp:		.25,
 				cmRatio:	2,
 				index:		5,			
 				attack:		22050,
@@ -135,7 +135,6 @@ define([], function() {
 			var that = {
 				type:			"PolyFM",
 				category:		"Gen",
-				waveform:		"Triangle",
 				amp:		 	.5,
 				cmRatio:		2,
 				index:		 	5,			
@@ -155,7 +154,7 @@ define([], function() {
 				Gibberish.extend(that, properties);
 			}
 			Gibberish.extend(that, Gibberish.ugen);
-			
+			console.log("AMP = " + that.amp);
 			that.synths = [];
 			that.synthFunctions = [];
 			for(var i = 0; i < that.maxVoices; i++) {
