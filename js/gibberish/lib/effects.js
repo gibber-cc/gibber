@@ -1,9 +1,9 @@
 define([], function() {
     return {
 		init: function(gibberish) {			
-			gibberish.generators.Clip = gibberish.createGenerator(["source", "amount", "amp"], "{0}( {1}, {2} ) * {3}");
-			gibberish.make["Clip"] = this.makeClip;
-			gibberish.Clip = this.Clip;
+			gibberish.generators.SoftClip = gibberish.createGenerator(["source", "amount", "amp"], "{0}( {1}, {2} ) * {3}");
+			gibberish.make["SoftClip"] = this.makeSoftClip;
+			gibberish.SoftClip = this.SoftClip;
 
 			gibberish.generators.Filter24 = gibberish.createGenerator(["source", "cutoff", "resonance", "isLowPass"], "{0}( {1}, {2}, {3}, {4} )");
 			gibberish.make["Filter24"] = this.makeFilter24;
@@ -84,11 +84,9 @@ define([], function() {
 			return that;
 		},
 
-		makeAllPass : function(_buffer, _feedback) {
+		makeAllPass : function(buffer, feedback) {
 			//console.log("ALL PASS", _buffer.length, _feedback);
-			var feedback = _feedback;
-			var bufferLength = _buffer.length;
-			var buffer = _buffer;
+			var bufferLength = buffer.length;
 			var index = -1;
 
 			var output = function(inputSample) {
@@ -144,12 +142,9 @@ define([], function() {
 			return that;
 		},
 
-		makeComb : function(_buffer, _feedback, _damping) {
+		makeComb : function(buffer, feedback, damping) {
 			//console.log("COMB CHECK", _feedback, _damping, _buffer.length);
-			var feedback = _feedback;
-			var damping = _damping;
-			var invDamping = 1 - _damping;
-			var buffer = _buffer;
+			var invDamping = 1 - damping;
 			var time = buffer.length;
 			var index = 0;
 			var store = 0;
@@ -167,14 +162,14 @@ define([], function() {
 		},
 
 		// adapted from audioLib.js
-		Reverb : function(roomSize, damping, wet, dry) {
+		Reverb : function(properties) {
 			var that = {
 				type:		"Reverb",
 				category:	"FX",
-				roomSize:	roomSize || .5,
-				damping:	typeof damping !== "undefined" ? damping : .2223,
-				wet:		typeof wet     !== "undefined" ? wet : .5,
-				dry:		typeof dry     !== "undefined" ? dry : .55,				
+				roomSize:	.5,
+				damping:	.2223,
+				wet:		.5,
+				dry:		.55,				
 				source:		null,
 				tuning:		{
 				    combCount: 		8,
@@ -195,6 +190,10 @@ define([], function() {
 				channelCount: 1,
 			};
 			Gibberish.extend(that, Gibberish.ugen);
+			if(typeof properties !== "undefined") {
+				Gibberish.extend(that, properties);
+			}
+			
 			that.name = Gibberish.generateSymbol(that.type);
 
 			that.combFilters = (function() {
@@ -281,10 +280,8 @@ define([], function() {
 			return that;
 		},
 
-		makeDelay : function(_buffer, _bufferLength) {
+		makeDelay : function(buffer, bufferLength) {
 			var phase = 0;
-			var bufferLength = _bufferLength;
-			var buffer = _buffer;
 
 			var output = function(sample, time, feedback) {
 				var _phase = phase++ % bufferLength;
@@ -299,9 +296,9 @@ define([], function() {
 		},
 
 
-		Clip : function(amount, amp) {
+		SoftClip : function(amount, amp) {
 			var that = {
-				type:		"Clip",
+				type:		"SoftClip",
 				category:	"FX",
 				amount:		amount,
 				amp:		amp,
@@ -310,15 +307,15 @@ define([], function() {
 			Gibberish.extend(that, Gibberish.ugen);
 
 			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Clip\"]();");
-			window[that.name] = Gibberish.make["Clip"]();
+			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"SoftClip\"]();");
+			window[that.name] = Gibberish.make["SoftClip"]();
 
 			Gibberish.defineProperties( that, ["amount", "amp"] );
 
 			return that;
 		},
 
-		makeClip : function() {
+		makeSoftClip : function() {
 			var abs = Math.abs;
 			var log = Math.log;
 			var ln2 = Math.LN2;
@@ -505,7 +502,7 @@ define([], function() {
 			return output;
 		},
 		
-		RingModulator : function(amount, amp, mix) {
+		RingModulator : function(frequency, amp) {
 			var that = {
 				type:		"RingModulator",
 				category:	"FX",

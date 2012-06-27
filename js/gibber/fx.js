@@ -74,48 +74,20 @@ function Bus() { // name is id, fx is array, ahem, fx
 //  s.fx.add( Reverb() );  `
 
 function Reverb(roomSize, damping, wet, dry) {
-	roomSize 	= roomSize || .8;
-	damping 	= damping || .3;
-	wet 		= wet || .75;
-	dry 		= dry || .5;
-	
-	var that = new audioLib.Reverb(Gibber.sampleRate, 1);
-	that.name = "Reverb";
-	that.type="fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.automations = [];
-	
-	if(typeof roomSize === "Object") {
-		that.effects[1].roomSize = roomSize[0];
-		that.effects[0].roomSize = roomSize[1];
+	var that;
+	if(typeof arguments[0] === "object") {
+		that = Gibberish.Reverb( arguments[0] );
 	}else{
-		that.setParam("roomSize", roomSize);
+		var props = {
+			roomSize : (isNaN(roomSize)) ? .5 : roomSize,
+			damping	: (isNaN(damping)) ? .2223 : damping,
+			wet		: wet || .5,
+			dry		: dry || .55,
+		};
+		
+		that = Gibberish.Reverb( props );
 	}
 	
-	if(typeof damping === "Object") {
-		that.effects[1].damping = damping[0];
-		that.effects[0].damping = damping[1];
-	}else{
-		that.setParam("damping", damping);
-	}
-	
-	if(typeof wet === "Object") {
-		that.effects[1].wet = wet[0];
-		that.effects[0].wet = wet[1];
-	}else{
-		that.setParam("wet", wet);
-	}
-	
-	if(typeof dry === "Object") {
-		that.effects[1].dry = dry[0];
-		that.effects[0].dry = dry[1];
-	}else{
-		that.setParam("dry", dry);
-	}
-	
-	Gibber.addModsAndFX.call(that);
 	return that;
 }
 
@@ -129,48 +101,8 @@ function Reverb(roomSize, damping, wet, dry) {
 // `s = Synth();  
 //  s.fx.add( Delay() );  `
 
-function Delay(time, feedback, mix) {
-	var that = audioLib.Delay(Gibber.sampleRate);
-	that.name = "Delay";
-	that.type= "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.automations = [];
-	
-	that.time = time || _4;
-	that.time /= Gibber.sampleRate / 1000;
-	feedback = feedback || .3;
-	mix = isNaN(mix) ? .3 : mix;
-	
-	if(typeof feedback === "Object") {
-		that.effects[1].feedback = feedback[0];
-		that.effects[0].feedback = feedback[1];
-	}else{
-		that.setParam("feedback", feedback);
-	}
-	
-	if(typeof time === "Object") {
-		that.effects[1].time = that.time[0];
-		that.effects[0].time = that.time[1];
-	}else{
-		that.setParam("time", that.time);
-	}
-	
-	that.bpmCallback = function(obj) {
-		var _that = obj;
-		return function(percentageChangeForBPM) {
-			_that.time *= percentageChangeForBPM;
-			_that.setParam("time", _that.time);			
-		}
-	};
-	
-	Gibber.registerObserver( "bpm", that.bpmCallback(that) );
-	
-	
-	that.mix = mix;
-	
-	Gibber.addModsAndFX.call(that);
+function Delay(time, feedback) {
+	var that = Gibberish.Delay(time, feedback);
 	return that;	
 };
 
@@ -184,59 +116,13 @@ function Delay(time, feedback, mix) {
 // `s = Synth();  
 //  s.fx.add( Ring(220, .5) );  `
 
-function Ring(frequency, mix) {
-	frequency = (typeof freq !== "undefined") ? frequency : 440;
-	mix  = (typeof mix !== "undefined") ? mix : 1;	
-	var that = {
-		frequency: frequency,
-		mix: mix,
-	};
-	
-	that.name = "Ring";
-	that.type="fx";
-	
-	that.osc  = Sine(that.frequency, that.amount).silent();
-	that.osc.amp = 1;
-	that.osc.isControl = true;
-	that.gens = [];
-	that.mods = [];
-	that.value = 0;
-	
-	(function(obj) {
-	    Object.defineProperties(obj, {
-			"frequency" : {
-		        get: function() {
-		            return obj.osc.frequency;
-		        },
-		        set: function(value) {
-		            obj.osc.frequency = value;
-		        }
-			},	
-	    });
-	})(that);
-	
-	
-	that.pushSample = function(sample) {
-		this.osc.generate();		
-		this.value = sample * this.osc.sine();
-		return this.value;
-	}
-	
-	that.getMix = function() {
-		return this.value;
-	}
-	
-	that.setParam = function(param, value){
-		this[param] = value;
-	}
-	
-	Gibber.addModsAndFX.call(that);
-	
+function Ring(frequency, amount) {
+	var that = Gibberish.RingModulator(frequency, amount);
 	return that;
 }
 
 // ###Crush
-// A bit-crusher from audioLib.js  
+// A bit-crusher / sample-rate reducer
 //
 // param **resolution**: Float. Default = 8. The number of bits to truncate the output to  
 //
@@ -244,36 +130,8 @@ function Ring(frequency, mix) {
 // `d = Drums("xoxo");  
 //  d.fx.add( LPF(420, .5) );  `
 
-function Crush(resolution, mix) {
-    var that = audioLib.BitCrusher(Gibber.sampleRate);
-	if(typeof arguments[0] === "object") {
-		var obj = arguments[0];
-		
-		for(key in obj) {
-			that[key] = obj[key];
-		}
-	}
-	
-	that.name = "Crush";
-	that.type = "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.automations = [];
-	
-	resolution = resolution || 8;
-	if(resolution > 16) resolution = 16;
-	
-	if(typeof resolution === "Object") {
-		that.effects[1].resolution = Math.pow(2, resolution[0] - 1);
-		that.effects[0].resolution = Math.pow(2, resolution[1] - 1);
-	}else{
-		that.setParam("resolution", Math.pow(2, resolution - 1));
-	}
-	
-	that.mix = mix || 1;
-	
-	Gibber.addModsAndFX.call(that);
+function Crush(bitDepth, sampleRate) {
+	var that = Gibberish.Decimator({bitDepth:bitDepth, sampleRate:sampleRate});
 	return that;
 }
 
@@ -290,71 +148,12 @@ function Crush(resolution, mix) {
 //  d.fx.add( Clip(1000) );  `
 
 window.Dist = window.Clip = function(amount, amp) {
-	var that = {
-		amount: (typeof amount !== "undefined" && amount > 1) ? amount : 4,
-		name : "Clip",
-		type: "fx",
-		gens :  [],
-		mods :  [],
-		value : 0,
-		mix : 1,
-		amp : isNaN(amp) ? 1 : amp,
-		
-		pushSample : function(sample) {
-			var x = sample * this.amount;
-			this.value = (x / (1 + Math.abs(x))) / (Math.log(this.amount) / Math.LN2);
-			return this.value;
-		},
-		getMix : function() {
-			return this.value * this.amp;
-		},
-	};
-	
-	if(typeof arguments[0] === "object") {
-		var obj = arguments[0];
-		
-		for(key in obj) {
-			that[key] = obj[key];
-		}
-	}
-	
-	Gibber.addModsAndFX.call(that);
+	var that = Gibberish.SoftClip(amount, amp);
 	
 	return that;
 }
-// ###Comb Filter 
-// A wrapper around the Comb filter from audiolib.js
-//
-// param **delaySize**: Int. The offset in samples for the comb filter
-// param **feedback**: Float. feedback of samples into filter
-// param **damping**: Float. Default = .2. damping for feedback
-//
-// example usage:    
-// `d = Drums("xoxo");  
-//  d.fx.add( Clip(1000) );  `
 
-function Comb(delaySize, feedback, damping){
-	var that;
-	if(typeof arguments[0] === "object") {
-		var obj = arguments[0];
-		that = new audioLib.CombFilter(Gibber.sampleRate, obj.delaySize, obj.feedback, obj.damping);
-
-	}else{
-		that = new audioLib.CombFilter(Gibber.sampleRate, delaySize, feedback, damping);
-	}
-	
-	that.name = "Comb";
-	that.type = "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	
-	Gibber.addModsAndFX.call(that);	
-	return that;
-}
-
-// ###LPF
-// A low-pass filter from audioLib.js  
+// ###LPF 24db ladder-style filter
 //
 // param **cutoff**: Float. Default = 300. The cutoff frequency of the filter  
 // param **resonance**: Float. Default = 3. Emphasis of the cutoff frequency  
@@ -364,88 +163,12 @@ function Comb(delaySize, feedback, damping){
 //  d.fx.add( LPF(420, .5) );  `
 
 function LPF(cutoff, resonance, mix) {
-	var that = audioLib.LP12Filter(Gibber.sampleRate);
-	that.name = "LPF";
-	that.type="fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.automations = [];
-	that.trig = Gibber.trig;	
-	
-	cutoff = isNaN(cutoff) ? 300 : cutoff;
-	resonance = isNaN(resonance) ? 3 : resonance;
-	
-	if(typeof cutoff === "Object") {
-		that.effects[1].cutoff = cutoff[0];
-		that.effects[0].cutoff = cutoff[1];
-	}else{
-		that.setParam("cutoff", cutoff);
-	}
-	
-	if(typeof time === "Object") {
-		that.effects[1].resonance = resonance[0];
-		that.effects[0].resonance = resonance[1];
-	}else{
-		that.setParam("resonance", resonance);
-	}
-	
-	that.mix = mix || .3;
-	
-	Gibber.addModsAndFX.call(that);
-	
-	
+	var that = Gibberish.Filter24(cutoff, resonance, true);
 	return that;
 }
 
 
-function HPF(cutoff, Q) {
-	var that;
-	if(typeof arguments[0] === "object") {
-		var obj = arguments[0];
-		
-		if(isNaN(obj.cutoff)) obj.cutoff = 1000;
-		if(isNaN(obj.Q)) obj.Q = .5;
-		
-		that = new audioLib.BiquadFilter.HighPass(Gibber.sampleRate, obj.cutoff, obj.Q);		
-	}else{
-		if(isNaN(cutoff)) cutoff = 1000;
-		if(isNaN(Q)) Q = .5;		
-		that = new audioLib.BiquadFilter.HighPass(Gibber.sampleRate, cutoff, Q);
-		that.Q = Q;
-		that.cutoff = cutoff;
-	}
-	that.name = "HPF";
-	that.type = "fx";
-	
-	that.gens = [];
-	that.mods = [];
-	that.mix = isNaN(that.mix) ? 1 : that.mix;
-	
-	Gibber.addModsAndFX.call(that);
-	(function(obj) {
-	    Object.defineProperties(obj, {
-			"cutoff" : {
-		        get: function() {
-		            return cutoff;
-		        },
-		        set: function(value) {
-		            cutoff = value;
-					var	w0	= 2* Math.PI*cutoff/Gibber.sampleRate,
-						cosw0	= Math.cos(w0),
-						sinw0   = Math.sin(w0),
-						alpha   = sinw0/(2*this.Q),
-						b0	=  (1 + cosw0)/2,
-						b1	= -(1 + cosw0),
-						b2	=   b0,
-						a0	=   1 + alpha,
-						a1	=  -2*cosw0,
-						a2	=   1 - alpha;
-					this.reset(Gibber.sampleRate, b0/a0, b1/a0, b2/a0, a1/a0, a2/a0);
-		        }
-			},	
-	    });
-	})(that);
-
+function HPF(cutoff, resonance) {
+	var that = Gibberish.Filter24(cutoff, resonance, false);
 	return that;
 }

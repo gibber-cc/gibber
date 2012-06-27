@@ -1,6 +1,7 @@
 define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, effects, synths, envelopes) {
 	var ugens = [];
     var that = {
+		debug : false,
         init : function() { 
 			oscillators.init(this);
 			effects.init(this);
@@ -18,7 +19,7 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 		},
 
 		generateCallback : function() {
-			var debug = false;
+			var debug = this.debug;
 			this.masterUpvalues = [];
 			this.masterCodeblock = [];
 			this.memo = {};

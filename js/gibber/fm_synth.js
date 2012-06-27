@@ -1,3 +1,17 @@
+// d = FM("glockenspiel").out();
+// d.amp = .1;
+// 
+// a = ScaleSeq(rndi(-2, 7, 64), _16).slave(d);
+// aa = ScaleSeq(rndi(0, 9, 65), _16).slave(d);
+// 
+// aaa = ScaleSeq(rndi(-3, 6, 66), _16).slave(d);
+// aaa.root = "C3";
+// 
+// aaaa = ScaleSeq(rndi(2, 9, 67), _16).slave(d);
+// aaaa.root = "C5";
+// 
+// a.humanize = aa.humanize = aaa.humanize = aaaa.humanize = 150;
+
 Gibber.FMPresets = {
 	glockenspiel : {
 		cmRatio	: 3.5307,
@@ -23,13 +37,13 @@ Gibber.FMPresets = {
 	drum : {
 		cmRatio : 1.40007,
 		index	: 2,
-		attack	: 44.1,
+		attack	: 44,
 		decay	: 44100,
 	},
 	drum2 : {
 		cmRatio: 1 + Math.sqrt(2),
 		index: .2,
-		attack: 44.1,
+		attack: 441,
 		decay: 20 * 44.1,
 	},
 	brass : {
@@ -50,7 +64,14 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	var that;
 	
 	if(typeof arguments[0] === "string") { // if a preset
-		that = Gibberish.FMSynth( Gibber.FMPresets[arguments[0]] );
+		if(typeof arguments[1] === "undefined") {
+			that = Gibberish.PolyFM( Gibber.FMPresets[arguments[0]] );
+		}else{
+			var props = Gibber.FMPresets[arguments[0]];
+			Gibberish.extend(props, arguments[1]);
+			
+			that = Gibberish.PolyFM( props );
+		}
 	}else if(typeof arguments[0] === "object") {
 		that = Gibberish.PolyFM( arguments[0] );
 	}else{
