@@ -25,6 +25,7 @@ var Gibber = {
 	},
 	
 	meta: function(obj) {
+		console.log("META", obj);
 		var letters = "abcdefghijklmnopqrstuvwxyz";
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
@@ -33,19 +34,19 @@ var Gibber = {
 				Object.defineProperty(obj, ltr, {
 					get:function() { return obj["____"+ltr];},
 					set:function(newObj) {
-						if(newObj != null) {	// replace
+						if(newObj !== null) {	// replace
 							var endString = " created";
 							 if(typeof obj["____"+ltr] !== "undefined" && obj["____"+ltr] != null) {
 								 var variable = obj["____"+ltr];
 
-								 switch(variable.type) {
-									 case "gen":
+								 switch(variable.category) {
+									 case "Gen":
 										 Gibber.genReplace(variable, newObj);
 									 break;
-									 case "mod":
+									 case "Mod":
 										 Gibber.modReplace(variable, newObj);
 									 break;
-									 case "fx":
+									 case "FX":
 										 Gibber.fxReplace(variable, newObj);
 									 break;
 									 case "control":
@@ -203,19 +204,42 @@ var Gibber = {
 	// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
 	// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc to replacement???
 	// TODO: YES IT SHOULD ADD THE FX / MODS OF REPLACEMENT
-		var idx = jQuery.inArray( gen, Gibber.generators);
-		if(idx > -1) {
-			Gibber.generators.splice(idx,1);
-			gen.mods.length = 0;
-			gen.fx.length = 0;
+		// var idx = jQuery.inArray( gen, Gibber.generators);
+		// if(idx > -1) {
+		// 	Gibber.generators.splice(idx,1);
+		// 	gen.mods.length = 0;
+		// 	gen.fx.length = 0;
+		// }
+		// for(var i = 0; i < gen.masters.length; i++) {
+		// 	var master = gen.masters[i];
+		// 	for(var j = 0; j < master.slaves.length; j++) {
+		// 		if(master.slaves[j] == gen) {
+		// 			master.slave(newGen);
+		// 			master.slaves.splice(j,1);
+		// 		}
+		// 	}
+		// }
+		
+		Gibberish.disconnect(gen); // disconnect from output if connected
+		
+		// if gen is modulating another gen...
+		for(var i = 0; i < gen.modding.length; i++) {
+			var mod = gen.modding[i];
+			mod.ugen.removeMod(mod.mod);
+			mod.ugen.mod(mod.mod.name, newGen, mod.mod.type);
 		}
-		for(var i = 0; i < gen.masters.length; i++) {
-			var master = gen.masters[i];
-			for(var j = 0; j < master.slaves.length; j++) {
-				if(master.slaves[j] == gen) {
-					master.slave(newGen);
-					master.slaves.splice(j,1);
-				}
+		
+		// if gen is being modulated...
+		for(var i = 0; i < gen.mods.length; i++) {
+			var mod = gen.mods[i];
+			newGen.mod(mod.name, mod.operands[1], mod.type);
+		}
+		
+		if(typeof gen.masters !== "undefined") {
+			for(var i = 0; i < gen.masters.length; i++) {
+				var master = gen.masters[i];
+				master.slaves.remove(gen);
+				master.slave(newGen);
 			}
 		}
 	},
@@ -656,7 +680,9 @@ function LFO(freq, amount, shape, type) {
 };
 
 function Sine(freq, volume) {	
-	var that = Gibberish.Sine(freq, volume);//Osc.apply(null, arguments);
+	var that = Gibberish.Sine(freq, volume);//.out();//Osc.apply(null, arguments);
+	that.masters = [];
+	
 	//that.connect(Gibberish.MASTER);
 	return that;
 }

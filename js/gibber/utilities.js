@@ -17,6 +17,7 @@ Array.prototype.removeObj = function(value) {
 };
 
 Array.prototype.remove = function(arg) {
+	console.log("REMOVING");
 	if(typeof arg === "undefined") { // clear all
 		for(var i = 0; i < this.length; i++) {
 			delete this[i];
@@ -25,9 +26,11 @@ Array.prototype.remove = function(arg) {
 	}else if(typeof arg === "number") {
 		this.splice(arg,1);
 	}else if(typeof arg === "string"){ // find named member and remove
+		console.log("SEARCHING");
 		for(var i = 0; i < this.length; i++) {
 			var member = this[i];
-			if(member.name == arg) {
+			if(member.name === arg) {
+				console.log("FOUND");
 				this.splice(i, 1);
 			}
 		}

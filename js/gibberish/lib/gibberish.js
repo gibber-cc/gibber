@@ -1,5 +1,4 @@
 define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, effects, synths, envelopes) {
-	var ugens = [];
     var that = {
 		debug : false,
         init : function() { 
@@ -28,8 +27,8 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 			var upvalues = "";
 			var codeblock = "function cb() {\nvar output = 0;\n";
 			
-			for(var i = 0; i < ugens.length; i++) {
-				var ugen = ugens[i];
+			for(var i = 0; i < this.ugens.length; i++) {
+				var ugen = this.ugens[i];
 				
 				if(ugen.dirty) {
 					Gibberish.generate(ugen);				
@@ -54,14 +53,14 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 
 		connect : function() {
 			for(var i = 0; i < arguments.length; i++) {
-				ugens.push(arguments[i]);
+				this.ugens.push(arguments[i]);
 			}
 			Gibberish.dirty = true;
 		},
 		
 		disconnect : function() {
 			for(var i = 0; i < arguments.length; i++) {
-				ugens.remove(arguments[i]);
+				this.ugens.remove(arguments[i]);
 			}
 			Gibberish.dirty = true;
 		},
@@ -204,7 +203,7 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 			var type = type || "+";
 			var m = { type:type, operands:[this[name], modulator], name:name };
 			this[name] = m;
-			//modulator.modding = this;
+			modulator.modding.push({ ugen:this, mod:m });
 			this.mods.push(m);
 			Gibberish.generate(this);
 			Gibberish.dirty = true;
@@ -263,12 +262,12 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 		id			:  0,
 		make 		: {},
 		generators 	: {},
-		ugens		: ugens,
+		ugens		: [],
 		dirty		: false,
 		memo		: {},
 		MASTER		: "output", // a constant to connect to master output
 		masterUpvalues : [],
-		masterCodelock : [],
+		masterCodeblock : [],
 		masterInit	   : [],	
     };
 	
@@ -292,6 +291,7 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 		},
 		fx:			[],
 		mods:		[],
+		modding:	[],
 		mod:		that.mod,
 		removeMod:	that.removeMod,
 		dirty:		true,
