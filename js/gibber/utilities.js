@@ -75,7 +75,6 @@ Array.prototype.add1 = function() {
 	}
 };
 
-
 Array.prototype.clear = function() {
 	for(var i = 0; i < this.length; i++) {
 		delete this[i];

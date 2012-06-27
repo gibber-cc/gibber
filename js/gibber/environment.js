@@ -313,6 +313,9 @@ Gibber.Environment = {
 				flash(cm, pos);			
 				Gibber.runScript(v);		
 			},
+			"Cmd-S":function(cm) {
+				//console.log("BLANLSH");
+			},
 			"Shift-Ctrl-Enter" : function(cm) { 
 				var v = cm.getSelection();
 				var pos = null;

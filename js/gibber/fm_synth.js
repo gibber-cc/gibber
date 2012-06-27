@@ -129,19 +129,20 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	};
 	
 	that.generate = function() {
-		var envValue = this.env.generate();
+		var self = this;
+		var envValue = self.env.generate();
 		
-		var modValue = this.modulator.out() * envValue;
-		var freqStore = this.osc.frequency;
+		var modValue = self.modulator.out() * envValue;
+		var freqStore = self.osc.frequency;
 		
-		this.osc.frequency += modValue;
-		this.value = this.osc.out();
+		self.osc.frequency += modValue;
+		self.value = self.osc.out();
 		
-		this.osc.frequency = freqStore;
+		self.osc.frequency = freqStore;
 			
-		this.value *= envValue;
-		if(envValue < .005 && this.env.state != 0) {
-			this.active = false;
+		self.value *= envValue;
+		if(envValue < .005 && self.env.state != 0) {
+			self.active = false;
 		}
 	}
 	

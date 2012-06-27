@@ -14,7 +14,7 @@ var Gibber = {
 	modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"],
 	
 	initDurations : function() {
-		this.dev = Sink(audioProcess, 2);
+		this.dev = Sink(audioProcess, 2, 256);
 		this.sampleRate = this.dev.sampleRate;		
 		this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
 		this.measure = this.beat * 4;
