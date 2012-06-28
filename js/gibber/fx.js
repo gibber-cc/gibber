@@ -21,43 +21,7 @@
 // Note that when Reverb is placed on a bus it defaults to outputting only the wet signal; this is different from how it behaves in an fx chain.
 
 function Bus() { // name is id, fx is array, ahem, fx
-	var bus = {};
-	bus.fx = [];
-	
-	var fxStart = (typeof arguments[0] === "string") ? 1 : 0;
-	for(var i = fxStart; i < arguments.length; i++) {
-		var fx = arguments[i];
-		if(fx.name === "Reverb") {
-			fx.wet = 1;
-			fx.dry = 0;
-		}
-		bus.fx.push(fx);
-	}
-	
-	bus.name = (typeof arguments[0] === "string") ? arguments[0] : null;
-	bus.value = 0;
-		
-	bus.senders = [];
-	Gibber.busses.push(bus);
-	
-	bus.kill = function() {
-		for(var i = 0; i < this.senders.length; i++) {
-			var gen = this.senders[i];
-			for(var j = 0; j < gen.sends.length; j++) {
-				if(gen.sends[j] == this) {
-					gen.sends.splice(j, 1);
-					break;
-				}
-			}
-		}
-		for(var i = 0; i < Gibber.busses.length; i++) {
-			var _bus = Gibber.busses[i];
-			if(this == _bus) {
-				Gibber.busses.splice(i, 1);
-			}
-		}
-	};
-	
+	var bus = Gibberish.Bus().out();
 	return bus;
 }
 

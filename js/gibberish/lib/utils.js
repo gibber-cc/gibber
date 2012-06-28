@@ -1,4 +1,4 @@
-define(["gibberish"], function() {
+define(["gibberish/lib/gibberish"], function() {
     String.prototype.format = function(i, safe, arg) {
 
         function format() {

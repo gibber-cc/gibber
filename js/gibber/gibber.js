@@ -14,18 +14,12 @@ var Gibber = {
 	modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"],
 	
 	initDurations : function() {
-		this.dev = Sink(audioProcess, 2, 256);
-		this.sampleRate = this.dev.sampleRate;		
-		this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
-		this.measure = this.beat * 4;
-		
 		for(var i = 0; i <= 64; i++) {
 			window["_"+i] = this.measure / i;
 		}
 	},
 	
 	meta: function(obj) {
-		console.log("META", obj);
 		var letters = "abcdefghijklmnopqrstuvwxyz";
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
@@ -155,12 +149,19 @@ var Gibber = {
 		if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
 			this.Environment.init();
 		}
+		
+		this.dev = Sink(audioProcess, 2, 256);
+		this.sampleRate = this.dev.sampleRate;		
+		this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
+		this.measure = this.beat * 4;
+		
+		this.initDurations();
 
 		this.samples = { // preload
 			kick 	: atob(samples.kick),
 		    snare 	: atob(samples.snare),
 		    //hat 	: atob(samples.snare), 
-		}
+		};
 		
 		this.callback = new audioLib.Callback();
 		window.loop = function(cb, time) {
@@ -170,7 +171,10 @@ var Gibber = {
 			};
 			return l;
 		};
+		
 		this.meta(window);
+		window.Master = Gibberish.Bus().connect(Gibberish.MASTER);
+		console.log("MASTER", Master);
 	},
 	
 	observers : {
@@ -201,25 +205,6 @@ var Gibber = {
 	},
 	
 	genReplace : function(gen, newGen) {
-	// easiest case, loop through all generators and replace the match. also delete mods and fx arrays
-	// so that javascript can garbage collect that stuff. Should it add the fx / mods of previous osc to replacement???
-	// TODO: YES IT SHOULD ADD THE FX / MODS OF REPLACEMENT
-		// var idx = jQuery.inArray( gen, Gibber.generators);
-		// if(idx > -1) {
-		// 	Gibber.generators.splice(idx,1);
-		// 	gen.mods.length = 0;
-		// 	gen.fx.length = 0;
-		// }
-		// for(var i = 0; i < gen.masters.length; i++) {
-		// 	var master = gen.masters[i];
-		// 	for(var j = 0; j < master.slaves.length; j++) {
-		// 		if(master.slaves[j] == gen) {
-		// 			master.slave(newGen);
-		// 			master.slaves.splice(j,1);
-		// 		}
-		// 	}
-		// }
-		
 		Gibberish.disconnect(gen); // disconnect from output if connected
 		
 		// if gen is modulating another gen...
@@ -235,12 +220,19 @@ var Gibber = {
 			newGen.mod(mod.name, mod.operands[1], mod.type);
 		}
 		
+		// if gen is slaved to sequencer...
 		if(typeof gen.masters !== "undefined") {
 			for(var i = 0; i < gen.masters.length; i++) {
 				var master = gen.masters[i];
 				master.slaves.remove(gen);
 				master.slave(newGen);
 			}
+		}
+		
+		// if gen has fx...
+		for(var i = 0; i < gen.fx.length; i++) {
+			console.log("ADDING");
+			newGen.fx.add(gen.fx[i]);
 		}
 	},
 	
@@ -275,7 +267,6 @@ var Gibber = {
 			}
 		}
 	},
-	
 	
 	fxReplace : function(oldFX, newFX) {
 	// loop through gens affected by effect (for now, this should almost always be 1)
@@ -561,24 +552,24 @@ Gibber.addModsAndFX = function() {
 Gibber.gens = Gibber.generators;
 window.G = Gibber;
 
-Gibber.initDurations();
+//Gibber.initDurations();
 
 // audioLib additions
-audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
-	fx.setParam(param, fx[param] + Math.abs(value));
-};
+// audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
+// 	fx.setParam(param, fx[param] + Math.abs(value));
+// };
 
-Master = {
-	mods : [],
-	fx : [],
-	automations : [],
-	amp : 1,
-};
-Gibber.addModsAndFX.call(Master);
+// Master = {
+// 	mods : [],
+// 	fx : [],
+// 	automations : [],
+// 	amp : 1,
+// };
+// Gibber.addModsAndFX.call(Master);
 
-audioLib.Oscillator.getMix =  function(){
-	return this[this.waveShape]() * this.amp;
-};
+// audioLib.Oscillator.getMix =  function(){
+// 	return this[this.waveShape]() * this.amp;
+// };
 
 
 function Osc(freq, vol, waveShape) {
@@ -648,7 +639,6 @@ function Osc(freq, vol, waveShape) {
 		return this[this.waveShape]() * this.amp;
 	};
 	
-
 	Gibber.audioInit = true;
 	Gibber.generators.push(that);
 	
@@ -664,31 +654,23 @@ function Osc(freq, vol, waveShape) {
 	return that;
 }
 
-function LFO(freq, amount, shape, type) {
-	var that = Osc.apply(null, arguments).silent();
-	that.name = "LFO";
-	that.type = "mod";
-	
-	that.isControl = false;
-	that.mix = amount;
-	that.waveShape = (typeof shape === "String") ? shape : 'sine';
-	that.modded = [];
-	that.mods = [];
-	Gibber.addModsAndFX.call(that);	
+function LFO(freq, amp, waveform) {
+	if(typeof waveform === "undefined") waveform = "Sine";
+	var that = Gibberish[waveform](freq, amp);
 
 	return that;
 };
 
 function Sine(freq, volume) {	
-	var that = Gibberish.Sine(freq, volume);//.out();//Osc.apply(null, arguments);
+	var that = Gibberish.Sine(freq, volume).connect(Master);//Osc.apply(null, arguments);
 	that.masters = [];
 	
 	//that.connect(Gibberish.MASTER);
 	return that;
 }
 
-function Tri(freq, volume) {	
-	var that = Gibberish.Triangle(freq, volume);
+function Triangle(freq, volume) {	
+	var that = Gibberish.Triangle(freq, volume).out();
 	
 	return that;
 }

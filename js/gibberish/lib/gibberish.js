@@ -1,4 +1,4 @@
-define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, effects, synths, envelopes) {
+define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/synths", "gibberish/lib/envelopes"], function(oscillators, effects, synths, envelopes) {
     var that = {
 		debug : false,
         init : function() { 
@@ -133,7 +133,9 @@ define(["oscillators", "effects", "synths", "envelopes"], function(oscillators, 
 				var name = op.ugenVariable || this.generateSymbol("v");
 				
 				op.ugenVariable = name;
-				this.memo[op.name] = op.ugenVariable;
+				if(op.name) {
+					this.memo[op.name] = op.ugenVariable;
+				}
 				
 				//console.log("OP : ", op);
 				// if(typeof op === "object" && op instanceof Array) {

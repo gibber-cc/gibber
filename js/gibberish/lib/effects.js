@@ -682,7 +682,8 @@ define([], function() {
 					//console.log("FORMULA : ", formula);
 					//console.log(attrArray);
 					Gibberish.generators[that.type] = Gibberish.createGenerator(attrArray, formula);
-
+					this.dirty = true;
+					Gibberish.dirty = true;
 				},
 
 				send: function(bus, amount) {
