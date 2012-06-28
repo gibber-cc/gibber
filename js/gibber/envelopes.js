@@ -1,15 +1,15 @@
-audioLib.ADSREnvelope.prototype.states[1] = function(){ // Timed Decay
-	var delayAmt = (1 - this.sustain) / ( (Gibber.sampleRate / 1000) * this.decay);
-	this.value -= delayAmt;
-	if(this.value <= this.sustain) {
-		if(this.sustainTime === 0) {
-			this.state = 2;
-		}else{
-			this.state= 4;
-		}
-	}
- 	//this.value = Math.max(this.sustain, this.value - 1000 / this.sampleRate / this.release);
-}; 
+// audioLib.ADSREnvelope.prototype.states[1] = function(){ // Timed Decay
+// 	var delayAmt = (1 - this.sustain) / ( (Gibber.sampleRate / 1000) * this.decay);
+// 	this.value -= delayAmt;
+// 	if(this.value <= this.sustain) {
+// 		if(this.sustainTime === 0) {
+// 			this.state = 2;
+// 		}else{
+// 			this.state= 4;
+// 		}
+// 	}
+//  	//this.value = Math.max(this.sustain, this.value - 1000 / this.sampleRate / this.release);
+// }; 
 
 // list of values / durations passed as arguments
 

@@ -649,7 +649,7 @@ define([], function() {
 		
 		Bus : function(effects) {
 			var that = {
-				senders : 0,
+				senders : [],
 				length	: 0,
 				type	: "Bus",
 				category: "Bus",
@@ -667,21 +667,26 @@ define([], function() {
 				},
 
 				connectUgen : function(variable, amount) { // man, this is hacky... but it should be called rarely
-					this["senders" + this.length++] = { type:"*", operands:[variable, amount]};
-
-					var formula = "{0}( ";
-					var attrArray = [];
-
-					for(var i = 1; i <= this.length; i++) {
-						formula += "{"+i+"}";
-						if(i !== this.length) formula +=" + ";
-						attrArray.push("senders"+(i-1));
-					}
-					formula += " )";
+					//this["senders" + this.length++] = { type:"*", operands:[variable, amount]};
+					console.log("CONNECTING");
+					
+					amount = isNaN(amount) ? 1 : amount;
+					
+					this.senders.push({ type:"*", operands:[variable, amount]});
 					variable.destinations.push(this);
-					//console.log("FORMULA : ", formula);
-					//console.log(attrArray);
-					Gibberish.generators[that.type] = Gibberish.createGenerator(attrArray, formula);
+					
+					this.dirty = true;
+					Gibberish.dirty = true;
+				},
+				
+				disconnectUgen : function(ugen) {
+					for(var i = 0; i < this.senders.length; i++) {
+						if(this.senders[i].operands[0] === ugen) {
+							this.senders.splice(i,1);
+							this.senders.dirty = true;
+							break;
+						}
+					}
 					this.dirty = true;
 					Gibberish.dirty = true;
 				},
@@ -697,21 +702,23 @@ define([], function() {
 			that.name = Gibberish.generateSymbol(that.type);
 			that.type = that.name;
 
-			Gibberish.generators[that.type] = Gibberish.createGenerator(["senders", "amount"], "{0}( {1} )");
+			Gibberish.generators[that.type] = Gibberish.createGenerator(["senders"], "{0}( {1} )");
 
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Bus\"]();");
-			window[that.name] = Gibberish.make["Bus"]();
+			window[that.name] = Gibberish.make["Bus"](that.senders);
 
-			Gibberish.defineProperties( that, ["senders", "dirty"]);
+			//Gibberish.defineProperties( that, ["senders", "dirty"]);
 			return that;
 		},
 
-		makeBus : function() { 
-			var output = function() {
+		makeBus : function(_senders) { 
+			var output = function(senders) {
 				var out = 0;
-
-				for(var i = 0; i < arguments.length; i++) {
-					out += arguments[i];
+				
+				if(typeof senders !== "undefined") {
+					for(var i = 0; i < senders.length; i++) {
+						out += senders[i];
+					}
 				}
 
 				return out;

@@ -17,12 +17,14 @@
 //	`s = Synth();  
 //  t = Seq(["C4", "D4", "G4", "F4"], _4).slave(s)  ` 
 
-(function myPlugin(){
+// hmmm... some screwups from the audioLib.js conversion, now I have to wrap these functions:
 
-function initPlugin(audioLib){
-(function(audioLib){
+function Seq(seq, durations, msg) {
+	return new _Seq(seq, durations, msg);
+}
 
-function Seq() {
+function _Seq() {
+	console.log(this);
 	(function(_that) {
 		var _speed = null;
 		var that = _that;
@@ -268,11 +270,11 @@ function Seq() {
 		return that;
 	};
 
-	Gibber.addModsAndFX.call(this);	
+	//Gibber.addModsAndFX.call(this);	
 	//this.play();
 }
 	
-Seq.prototype = {
+_Seq.prototype = {
 	name : "Seq",
 	type : "control",
 	
@@ -690,21 +692,4 @@ Seq.prototype = {
 			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
 		}
 	},
-}
-audioLib.Sequencer = Seq;
-		
-}(audioLib));
-audioLib.plugins('Sequencer', myPlugin);
-}
-
-if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
-	exports.init = initPlugin;
-} else {
-	initPlugin(audioLib);
-}
-
-}());
-
-function Seq(seq, durations, msg) { // may also be a single object dictionary
-	return new audioLib.Sequencer(seq, durations, msg);
 }

@@ -1,23 +1,25 @@
-Gibber.GrainsPresets = {
-	tight : {
-		numberOfGrains : 10,
-		grainSize : ms(25),
-		positionVariance : .01,
-		pitchVariance : .01,
-		shouldReverse : false,
-		length: 88200,
-	},
-	cloudy : {
-		numberOfGrains : 20,
-		grainSize : ms(100),
-		positionVariance : .05,
-		pitchVariance : .1,
-		shouldReverse : true,
-	}
-};
-
 function Grains() {
 	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];
+	
+	if(typeof Gibber.GrainsPresets === "undefined") {
+		Gibber.GrainsPresets = {
+			tight : {
+				numberOfGrains : 10,
+				grainSize : ms(25),
+				positionVariance : .01,
+				pitchVariance : .01,
+				shouldReverse : false,
+				length: 88200,
+			},
+			cloudy : {
+				numberOfGrains : 20,
+				grainSize : ms(100),
+				positionVariance : .05,
+				pitchVariance : .1,
+				shouldReverse : true,
+			}
+		};
+	}
 	
 	if(typeof arguments[0] === "string") {
 		args = Gibber.GrainsPresets[arguments[0]];
@@ -114,4 +116,4 @@ function Grains() {
 	G.addModsAndFX.call(that);
 	
 	return that;
-}
+};

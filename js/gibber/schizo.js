@@ -1,25 +1,27 @@
-Gibber.SchizoPresets = {
-	sane: {
-		chance			: .1,
-		reverseChance 	: 0,
-		pitchChance		: .5,
-		mix				:.5,
-	},
-	borderline: {
-		chance			: .1,		
-		pitchChance		: .25,
-		reverseChance	: .5,
-		mix				: 1,
-	},
-	paranoid: {
-		chance			: .2,
-		reverseChance 	: .5,
-		pitchChance		: .5,
-		mix				: 1,
-	},
-};
-
 function Schizo(chance, rate, length, shouldRandomizePitch, shouldRandomizeReverse) {
+	if(typeof Gibber.SchizoPresets === "undefined") {
+		Gibber.SchizoPresets = {
+			sane: {
+				chance			: .1,
+				reverseChance 	: 0,
+				pitchChance		: .5,
+				mix				:.5,
+			},
+			borderline: {
+				chance			: .1,		
+				pitchChance		: .25,
+				reverseChance	: .5,
+				mix				: 1,
+			},
+			paranoid: {
+				chance			: .2,
+				reverseChance 	: .5,
+				pitchChance		: .5,
+				mix				: 1,
+			},
+		};
+	}
+	
 	var that = {
 		chance: (typeof chance !== "undefined" && typeof chance !== "string") ? chance : .25,		
 		rate: (typeof rate !== "undefined") ? rate : _16,

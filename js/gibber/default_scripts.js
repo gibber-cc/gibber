@@ -1,4 +1,6 @@
-Gibber.defaultScripts = {
+requirejs(["gibber/gibber"], function(_Gibber) {
+
+_Gibber.defaultScripts = {
 default:
 '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// intended as a tutorial. There are many tutorials in\n'+
@@ -588,4 +590,5 @@ FM:
 'f = FM(1 / 1.0007, 5, 100, 100);\n'+
 'f.fx.add( Reverb() );\n'+
 's = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);',
-}
+};
+});

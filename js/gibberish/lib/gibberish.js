@@ -46,6 +46,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 	
 			if(debug) console.log(cbgen);
 			
+			this.callbackString = cbgen;
+			
 			this.dirty = false;
 			
 			return (new Function("globals", cbgen))(window);
@@ -137,13 +139,23 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					this.memo[op.name] = op.ugenVariable;
 				}
 				
-				//console.log("OP : ", op);
-				// if(typeof op === "object" && op instanceof Array) {
-				// 	for(var i = 0; i < op.length; i++) {
-				// 		var gen = this.generators[op[i].type];
-				// 		statement = "{0} = {1}".format(op[i].source, gen(op[i], codeDictionary));
-				// 	}
-				// }else{
+				var statement;
+				if(typeof op === "object" && op instanceof Array) {
+					statement = "var " + name + " = [";
+					
+					for(var i = 0; i < op.length; i++) {
+						var gen = this.generators[op[i].type];
+						
+						var _name = op[i].ugenVariable || this.generateSymbol("v");
+						var _statement = "var {0} = {1}".format(_name, gen(op[i], codeDictionary));
+						statement += _name + ",";
+						codeDictionary.codeblock.push(_statement);
+					}
+					statement += "]";
+					
+					op.ugenVariable = name;
+					codeDictionary.codeblock.push(statement);
+				}else{
 					var gen = this.generators[op.type];
 					//console.log(gen);
 					if(gen) {
@@ -154,7 +166,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 						}
 						codeDictionary.codeblock.push(statement);
 					}// else{
-					// 						statement = "var {0} = {1}".format(name, JSON.stringify(op));
+				}// 						statement = "var {0} = {1}".format(name, JSON.stringify(op));
 					// 					}
 					//}
 				return name;
@@ -282,11 +294,32 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			if(bus === Gibberish.MASTER) {
 				Gibberish.connect(this);
 			}else{
-				//console.log("CONNECTING", this.ugenVariable);
+				console.log("CONNECTING", this.ugenVariable);
 				bus.connectUgen(this, 1);
 			}
 			Gibberish.dirty = true;
+			return this;
 		},
+		disconnect : function(bus) {
+			console.log("DISCONNECT 1");
+			if(bus === Gibberish.MASTER) {
+				Gibberish.disconnect(this);
+			}else if(bus){
+				//console.log("CONNECTING", this.ugenVariable);
+				bus.disconnectUgen(this);
+				this.destinations.remove(bus);
+			}else{
+							console.log("DISCONNECT 2 Length ", this.destinations.length);
+				for(var i = 0; i < this.destinations.length; i++) {
+					this.destinations[i].disconnectUgen(this);
+				}
+				this.destinations.remove();
+				
+			}
+			Gibberish.dirty = true;
+			return this;
+		},
+		
 		out : function() {
 			this.connect(Gibberish.MASTER);
 			return this;

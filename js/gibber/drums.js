@@ -3,13 +3,6 @@
 
 // TODO: d._sequence is getting changed when shuffling, so reset no longer works correctly.
 // maybe nows the time to fix the memory situation once and for all?
-
-
-(function myPlugin(){
-
-function initPlugin(audioLib){
-(function(audioLib){	
-	
 // ###Drums
 // Three different samplers linked to a combined sequencer for convenience  
 //
@@ -129,7 +122,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 }
 
 Drums.prototype = {
-	sampleRate : Gibber.sampleRate,
+	sampleRate : 44100, //Gibber.sampleRate,
 	type  : "complex",
 	name  : "Drums",
 		
@@ -218,27 +211,3 @@ Drums.prototype = {
 		}
 	},
 };
-
-Drums.prototype.__proto__ = new audioLib.GeneratorClass();
-
-audioLib.generators('Drums', Drums);
-
-audioLib.Drums = audioLib.generators.Drums;
- 
-}(audioLib));
-audioLib.plugins('Drums', myPlugin);
-}
-
-if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
-	exports.init = initPlugin;
-} else {
-	initPlugin(audioLib);
-}
-
-}());
-
-function Drums (_sequence, _timeValue, _mix, _freq) {
-	var d = new audioLib.Drums(_sequence, _timeValue, _mix, _freq);
-	
-	return d;
-}

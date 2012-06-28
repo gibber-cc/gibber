@@ -30,5 +30,7 @@ function Synth(attack, decay, amp) {
 	that.note = Gibber.makeNoteFunction(that);
 	that.chord = Gibber.chord;	
 	
+	//that.connect(Master);
+	
 	return that;
 }
