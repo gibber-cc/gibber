@@ -23,7 +23,7 @@ define([], function() {
 					that._function.setPhase(0);					
 				},
 			};
-			Gibberish.extend(that, Gibberish.ugen);
+			Gibberish.extend(that, new Gibberish.ugen());
 			
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Env\"]();");
@@ -77,7 +77,7 @@ define([], function() {
 					that._function.setState(0);
 				},
 			};
-			Gibberish.extend(that, Gibberish.ugen);
+			Gibberish.extend(that, new Gibberish.ugen());
 			
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"ADSR\"]();");

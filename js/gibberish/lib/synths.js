@@ -38,7 +38,7 @@ define([], function() {
 				},
 			};
 			
-			Gibberish.extend(that, Gibberish.ugen);
+			Gibberish.extend(that, new Gibberish.ugen());
 			
 			that.env = Gibberish.make["Env"](that.attack, that.decay);
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
@@ -55,8 +55,7 @@ define([], function() {
 					if(waveform !== value) {
 						waveform = value;
 						that.osc = Gibberish.make[value]();
-						that.dirty = true;
-						Gibberish.dirty = true;
+						Gibberish.dirty(that);
 					}
 				},
 			});
@@ -91,7 +90,7 @@ define([], function() {
 					this.env.start();
 				},
 			};
-			Gibberish.extend(that, Gibberish.ugen);
+			Gibberish.extend(that, new Gibberish.ugen());
 
 			that.env = Gibberish.make["Env"]();
 			that.carrier = Gibberish.make["Sine"]();
@@ -153,7 +152,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, Gibberish.ugen);
+			Gibberish.extend(that, new Gibberish.ugen());
 
 			that.synths = [];
 			that.synthFunctions = [];
@@ -227,7 +226,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, Gibberish.ugen);
+			Gibberish.extend(that, new Gibberish.ugen());
 			
 			that.env = Gibberish.make["ADSR"](that.attack, that.decay, that.sustain, that.release, that.attackLevel, that.sustainLevel);
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
@@ -247,8 +246,7 @@ define([], function() {
 					if(waveform !== value) {
 						waveform = value;
 						that.osc = Gibberish.make[value]();
-						that.dirty = true;
-						Gibberish.dirty = true;
+						Gibberish.dirty(that);
 					}
 				},
 			});
@@ -304,7 +302,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, Gibberish.ugen);
+			Gibberish.extend(that, new Gibberish.ugen());
 			
 			that.synths = [];
 			that.synthFunctions = [];
@@ -339,8 +337,7 @@ define([], function() {
 					if(waveform !== value) {
 						waveform = value;
 						that.osc = Gibberish.make[value]();
-						that.dirty = true;
-						Gibberish.dirty = true;
+						Gibberish.dirty(that);
 					}
 				},
 			});

@@ -57,11 +57,11 @@ Array.prototype.insert = function(v, pos) {
 	this.splice(pos,0,v);
 };
 
-Array.prototype.add = function() {
-	for(var i = 0; i < arguments.length; i++) {
-		this.push(arguments[i]);
-	}
-};
+// Array.prototype.add = function() {
+// 	for(var i = 0; i < arguments.length; i++) {
+// 		this.push(arguments[i]);
+// 	}
+// };
 
 Array.prototype.add1 = function() {
 	for(var i = 0; i < arguments.length; i++) {
@@ -298,7 +298,6 @@ window.rndi = window.randomi = function(min, max, number) {
 		if(typeof number === "undefined") {
 			number = max || min.length;
 		}
-		G.log(number);
 		for(var i = 0; i < number; i++) {
 			var num;
 			if(typeof arguments[0] === "object") {

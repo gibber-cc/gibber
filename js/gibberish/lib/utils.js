@@ -81,11 +81,36 @@ define(["gibberish/lib/gibberish"], function() {
 		this.splice(pos,0,v);
 	};
 
-	Array.prototype.add = function() {
-		for(var i = 0; i < arguments.length; i++) {
-			this.push(arguments[i]);
-		}
-	};
+	// Array.prototype.add = function() {
+	// 	for(var i = 0; i < arguments.length; i++) {
+	// 		this.push(arguments[i]);
+	// 	}
+	// };
+	window.FXArray = function() {
+		var that = {
+			length : 0,
+			add : function() {
+				for(var i = 0; i < arguments.length; i++) {
+					Array.prototype.push.call(this, arguments[i]);
+				}
+				Gibberish.dirty(this);
+			},
+			remove : function() {
+				Array.prototype.remove.apply(this, arguments);
+				Gibberish.dirty(this);
+			},
+			replace : function() {
+				Array.prototype.replace.apply(this, arguments);
+				Gibberish.dirty(this);
+			},
+			insert : function() {
+				Array.prototype.insert.apply(this, arguments);
+				Gibberish.dirty(this);	
+			},
+		};
+		Gibberish.extend(this,that);
+		return this;
+	}
 
 	Array.prototype.replace = function(oldObj, newObj) {
 		if(typeof oldObj != "number") {

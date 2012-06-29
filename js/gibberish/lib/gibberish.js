@@ -48,7 +48,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			
 			this.callbackString = cbgen;
 			
-			this.dirty = false;
+			this.isDirty = false;
 			
 			return (new Function("globals", cbgen))(window);
 		},
@@ -57,14 +57,14 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			for(var i = 0; i < arguments.length; i++) {
 				this.ugens.push(arguments[i]);
 			}
-			Gibberish.dirty = true;
+			Gibberish.dirty();
 		},
 		
 		disconnect : function() {
 			for(var i = 0; i < arguments.length; i++) {
 				this.ugens.remove(arguments[i]);
 			}
-			Gibberish.dirty = true;
+			Gibberish.dirty();
 		},
 		
 		defineProperties : function(obj, props) {
@@ -96,7 +96,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 									}
 								}
 							}
-							Gibberish.dirty = true;
+							Gibberish.dirty();
 						},
 					});
 				})(obj);
@@ -220,8 +220,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			modulator.modding.push({ ugen:this, mod:m });
 			this.mods.push(m);
 			Gibberish.generate(this);
-			Gibberish.dirty = true;
-			this.dirty = true;
+			Gibberish.dirty(this);
 			return modulator;
 		},
 
@@ -235,8 +234,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 
 			Gibberish.defineProperties(this, ["frequency"]);
 			Gibberish.generate(this);
-			Gibberish.dirty = true;
-			this.dirty = true;
+			Gibberish.dirty(this);
 		},
 		
 		generateSymbol : function(name) {
@@ -272,12 +270,19 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 		
 		NO_MEMO : function() { return "NO_MEMO"; }, 
+		
+		dirty : function(ugen) { 
+			this.isDirty = true;
+			if(typeof ugen !== "undefined") {
+				ugen.dirty = true;
+			}
+		},
 
 		id			:  0,
 		make 		: {},
 		generators 	: {},
 		ugens		: [],
-		dirty		: false,
+		//dirty		: false,
 		memo		: {},
 		MASTER		: "output", // a constant to connect to master output
 		masterUpvalues : [],
@@ -285,52 +290,77 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		masterInit	   : [],	
     };
 	
-	that.ugen = {	
-		send: function(bus, amount) {
-			bus.connectUgen(this, amount);
-		},
-		connect : function(bus) {
-			this.destinations.push(bus);
-			if(bus === Gibberish.MASTER) {
-				Gibberish.connect(this);
-			}else{
-				console.log("CONNECTING", this.ugenVariable);
-				bus.connectUgen(this, 1);
-			}
-			Gibberish.dirty = true;
-			return this;
-		},
-		disconnect : function(bus) {
-			console.log("DISCONNECT 1");
-			if(bus === Gibberish.MASTER) {
-				Gibberish.disconnect(this);
-			}else if(bus){
-				//console.log("CONNECTING", this.ugenVariable);
-				bus.disconnectUgen(this);
-				this.destinations.remove(bus);
-			}else{
-							console.log("DISCONNECT 2 Length ", this.destinations.length);
-				for(var i = 0; i < this.destinations.length; i++) {
-					this.destinations[i].disconnectUgen(this);
+	that.ugen = function() {
+		var self = {	
+			send: function(bus, amount) {
+				bus.connectUgen(this, amount);
+			},
+			connect : function(bus) {
+				this.destinations.push(bus);
+				if(bus === Gibberish.MASTER) {
+					Gibberish.connect(this);
+				}else{
+					console.log("CONNECTING", this.ugenVariable);
+					bus.connectUgen(this, 1);
 				}
-				this.destinations.remove();
+				Gibberish.dirty(true);
+				return this;
+			},
+			disconnect : function(bus) {
+				console.log("DISCONNECT 1");
+				if(bus === Gibberish.MASTER) {
+					Gibberish.disconnect(this);
+				}else if(bus){
+					//console.log("CONNECTING", this.ugenVariable);
+					bus.disconnectUgen(this);
+					this.destinations.remove(bus);
+				}else{
+								console.log("DISCONNECT 2 Length ", this.destinations.length);
+					for(var i = 0; i < this.destinations.length; i++) {
+						this.destinations[i].disconnectUgen(this);
+					}
+					this.destinations.remove();
 				
-			}
-			Gibberish.dirty = true;
-			return this;
-		},
+				}
+				Gibberish.dirty(true);
+				return this;
+			},
 		
-		out : function() {
-			this.connect(Gibberish.MASTER);
-			return this;
-		},
-		fx:			[],
-		mods:		[],
-		modding:	[],
-		mod:		that.mod,
-		removeMod:	that.removeMod,
-		dirty:		true,
-		destinations : [],
+			out : function() {
+				this.connect(Gibberish.MASTER);
+				return this;
+			},
+		
+			addFX : function() {
+				for(var i = 0; i < arguments.length; i++) {
+					this.fx.push(arguments[i]);
+				}
+				Gibberish.dirty(this);
+			},
+		
+			fx:			null,
+			mods:		[],
+			modding:	[],
+			mod:		that.mod,
+			removeMod:	that.removeMod,
+			dirty:		true,
+			destinations : [],
+		};
+		Gibberish.extend(this, self);
+		
+		this.fx = [];
+		
+		var parent = this;
+		this.fx.prototype.parent = this;
+		this.fx.add = function() {
+			console.log("FX ADDED CALLED");
+			for(var i = 0; i < arguments.length; i++) {
+				this.push(arguments[i]);
+			}
+			Gibberish.dirty(parent);
+		};
+		console.log(this.fx.add);
+		return this;
 	};
 	// todo: how to dirty fx bus when adding an effect?
 	

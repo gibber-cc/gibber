@@ -168,7 +168,6 @@ define(['gibber/audio_callback',
 				this.Environment.init();
 			}
 		
-			console.log("INITIALIZING");
 			this.dev = Sink(audioProcess, 2, 1024);
 			this.sampleRate = this.dev.sampleRate;		
 			this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);

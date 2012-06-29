@@ -4,10 +4,8 @@ function audioProcess(buffer, channelCount){
 			if(i === 0) Gibber.debug = true;
 			//if(Gibber.debug) console.log("RUNNING", buffer.length);
 			
-			if(Gibberish.dirty) {
-			 	Gibberish.callback = Gibberish.generateCallback(); 
-			}
-			
+			if(Gibberish.isDirty) Gibberish.callback = Gibberish.generateCallback(); 
+
 			Gibber.callback.generate();
 			
 			buffer[i] = buffer[i + 1] = Gibberish.callback();
