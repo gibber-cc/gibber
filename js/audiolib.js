@@ -1610,11 +1610,11 @@ sinks('webkit', function(readFn, channelCount, bufferSize, sampleRate){
 	var	self		= this,
 		// For now, we have to accept that the AudioContext is at 48000Hz, or whatever it decides.
 		context		= new (window.AudioContext || webkitAudioContext)(/*sampleRate*/),
-		node		= context.createJavaScriptNode(bufferSize, 0, channelCount);
+		node		= context.createJavaScriptNode(bufferSize , 0, channelCount);
 	self.start.apply(self, arguments);
 
 	function bufferFill(e){
-		var	outputBuffer	= e.outputBuffer,
+		var	outputBuffer	= e.outputBuffer, 
 			channelCount	= outputBuffer.numberOfChannels,
 			i, n, l		= outputBuffer.length,
 			size		= outputBuffer.size,
@@ -2088,7 +2088,7 @@ Sink.createDeinterleaved = function(length, channelCount){
 };
 
 global.Sink = Sink;
-}(function(){ return this; }()));
+}(function(){ return this; }())); 
 /**
  * Creates a Bit Crusher Effect.
  * Adapted from http://www.musicdsp.org/archive.php?classid=4#139
