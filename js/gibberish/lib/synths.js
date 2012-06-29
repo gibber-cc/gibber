@@ -38,7 +38,7 @@ define([], function() {
 				},
 			};
 			
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.env = Gibberish.make["Env"](that.attack, that.decay);
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
@@ -90,7 +90,7 @@ define([], function() {
 					this.env.start();
 				},
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 
 			that.env = Gibberish.make["Env"]();
 			that.carrier = Gibberish.make["Sine"]();
@@ -152,7 +152,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 
 			that.synths = [];
 			that.synthFunctions = [];
@@ -226,7 +226,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.env = Gibberish.make["ADSR"](that.attack, that.decay, that.sustain, that.release, that.attackLevel, that.sustainLevel);
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
@@ -302,7 +302,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.synths = [];
 			that.synthFunctions = [];

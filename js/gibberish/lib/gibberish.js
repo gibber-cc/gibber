@@ -258,7 +258,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		extend: function(destination, source) {
 		    for (var property in source) {
 				if(source[property] instanceof Array) {
-		            destination[property] = source[property].slice(0);				
+		            destination[property] = source[property].slice(0);
+					if(source[property].parent)	destination[property].parent = source[property].parent;
 		        }else if (typeof source[property] === "object" && source[property] !== null) {
 		            destination[property] = destination[property] || {};
 		            arguments.callee(destination[property], source[property]);
@@ -290,7 +291,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		masterInit	   : [],	
     };
 	
-	that.ugen = function() {
+	that.ugen = function(parent) {
 		var self = {	
 			send: function(bus, amount) {
 				bus.connectUgen(this, amount);
@@ -338,7 +339,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				Gibberish.dirty(this);
 			},
 		
-			fx:			null,
+			fx:			[],
 			mods:		[],
 			modding:	[],
 			mod:		that.mod,
@@ -346,20 +347,21 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			dirty:		true,
 			destinations : [],
 		};
+		self.fx.parent = parent;
+		
 		Gibberish.extend(this, self);
 		
-		this.fx = [];
 		
-		var parent = this;
-		this.fx.prototype.parent = this;
-		this.fx.add = function() {
-			console.log("FX ADDED CALLED");
-			for(var i = 0; i < arguments.length; i++) {
-				this.push(arguments[i]);
-			}
-			Gibberish.dirty(parent);
-		};
-		console.log(this.fx.add);
+		// var parent = this;
+		// this.fx.prototype.parent = this;
+		// this.fx.add = function() {
+		// 	console.log("FX ADDED CALLED");
+		// 	for(var i = 0; i < arguments.length; i++) {
+		// 		this.push(arguments[i]);
+		// 	}
+		// 	Gibberish.dirty(parent);
+		// };
+		// console.log(this.fx.add);
 		return this;
 	};
 	// todo: how to dirty fx bus when adding an effect?

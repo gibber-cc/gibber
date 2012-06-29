@@ -56,7 +56,7 @@ define([], function() {
 				buffer:		new Float32Array(time || 500),
 				source:		null,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that) );
 
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"AllPass\"]();");
@@ -113,7 +113,7 @@ define([], function() {
 				damping:	damping || .2,
 				source:		null,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Comb\"]();");
@@ -188,7 +188,7 @@ define([], function() {
 				},
 				channelCount: 1,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
@@ -262,7 +262,7 @@ define([], function() {
 				buffer:		new Float32Array(88200),				
 				bufferLength: 88200,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 
 			if(that.time >= 88200) {
 				that.time = 88199;
@@ -303,7 +303,7 @@ define([], function() {
 				amp:		amp,
 				source:		null,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"SoftClip\"]();");
@@ -337,7 +337,7 @@ define([], function() {
 				isLowPass:	typeof isLowPass === "undefined" ? true : isLowPass,
 				source:		null,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Filter24\"]();");
@@ -403,7 +403,7 @@ define([], function() {
 				shouldPrint : false,
 			};
 			
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
@@ -510,7 +510,7 @@ define([], function() {
 				mix:		.5,
 				source:		null,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.modulation = Gibberish.make["Sine"]();
 			
@@ -549,7 +549,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.modulation = Gibberish.make["Sine"]();
 			
@@ -602,7 +602,7 @@ define([], function() {
 				bufferLength: 88200,
 			};
 			
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
@@ -692,7 +692,7 @@ define([], function() {
 				},
 			};
 
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			that.fx = effects || [];
 
 			that.name = Gibberish.generateSymbol(that.type);

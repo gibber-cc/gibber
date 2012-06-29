@@ -31,7 +31,7 @@ define(["gibberish/lib/gibberish"], function() {
 			for(var i = 0; i < this.length; i++) {
 				
 				var member = this[i];
-				if(member === arg) {
+				if(member.type === arg) {
 					console.log("DIE");
 					this.splice(i,1);
 				}
@@ -45,6 +45,7 @@ define(["gibberish/lib/gibberish"], function() {
 				this.splice(idx,1);
 			}
 		}
+		if(this.parent) Gibberish.dirty(this.parent);
 	};
 	
 	Array.prototype.get = function(arg) {
@@ -75,42 +76,52 @@ define(["gibberish/lib/gibberish"], function() {
 		}else{
 			this.splice(oldObj, 1, newObj);
 		}
+		if(this.parent) Gibberish.dirty(this.parent);
 	};
 
 	Array.prototype.insert = function(v, pos) {
 		this.splice(pos,0,v);
+		if(this.parent) Gibberish.dirty(this.parent);
 	};
 
-	// Array.prototype.add = function() {
-	// 	for(var i = 0; i < arguments.length; i++) {
-	// 		this.push(arguments[i]);
-	// 	}
-	// };
-	window.FXArray = function() {
-		var that = {
-			length : 0,
-			add : function() {
-				for(var i = 0; i < arguments.length; i++) {
-					Array.prototype.push.call(this, arguments[i]);
-				}
-				Gibberish.dirty(this);
-			},
-			remove : function() {
-				Array.prototype.remove.apply(this, arguments);
-				Gibberish.dirty(this);
-			},
-			replace : function() {
-				Array.prototype.replace.apply(this, arguments);
-				Gibberish.dirty(this);
-			},
-			insert : function() {
-				Array.prototype.insert.apply(this, arguments);
-				Gibberish.dirty(this);	
-			},
-		};
-		Gibberish.extend(this,that);
-		return this;
-	}
+	Array.prototype.add = function() {
+		for(var i = 0; i < arguments.length; i++) {
+			this.push(arguments[i]);
+		}
+		if(this.parent) Gibberish.dirty(this.parent);
+	};
+	// window.FXArray = function() {
+	// 	var that = {
+	// 		length : 0,
+	// 		add : function() {
+	// 			for(var i = 0; i < arguments.length; i++) {
+	// 				Array.prototype.push.call(that, arguments[i]);
+	// 			}
+	// 			Gibberish.dirty(this);
+	// 		},
+	// 		remove : function() {
+	// 			Array.prototype.remove.apply(that, arguments);
+	// 			Gibberish.dirty(this);
+	// 		},
+	// 		replace : function() {
+	// 			Array.prototype.replace.apply(that, arguments);
+	// 			Gibberish.dirty(this);
+	// 		},
+	// 		insert : function() {
+	// 			Array.prototype.insert.apply(that, arguments);
+	// 			Gibberish.dirty(this);	
+	// 		},
+	// 		splice : function() {
+	// 			Array.prototype.splice.apply(that, arguments);
+	// 		},
+	// 		push : function() {
+	// 			Array.prototype.push.call(that, arguments[0]);
+	// 		},
+	// 		
+	// 	};
+	// 	Gibberish.extend(this,that);
+	// 	return this;
+	// }
 
 	Array.prototype.replace = function(oldObj, newObj) {
 		if(typeof oldObj != "number") {
@@ -121,10 +132,7 @@ define(["gibberish/lib/gibberish"], function() {
 		}else{
 			this.splice(oldObj, 1, newObj);
 		}
-	};
-
-	Array.prototype.insert = function(v, pos) {
-		this.splice(pos,0,v);
+		if(this.parent) Gibberish.dirty(this.parent);
 	};
 	
 	String.prototype.hashCode = function(){

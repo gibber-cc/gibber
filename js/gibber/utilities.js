@@ -16,31 +16,31 @@ Array.prototype.removeObj = function(value) {
     });
 };
 
-Array.prototype.remove = function(arg) {
-	console.log("REMOVING");
-	if(typeof arg === "undefined") { // clear all
-		for(var i = 0; i < this.length; i++) {
-			delete this[i];
-		}
-		this.length = 0;
-	}else if(typeof arg === "number") {
-		this.splice(arg,1);
-	}else if(typeof arg === "string"){ // find named member and remove
-		console.log("SEARCHING");
-		for(var i = 0; i < this.length; i++) {
-			var member = this[i];
-			if(member.name === arg) {
-				console.log("FOUND");
-				this.splice(i, 1);
-			}
-		}
-	}else if(typeof arg === "object") {
-		var idx = jQuery.inArray( arg, this);
-		if(idx > -1) {
-			this.splice(idx,1);
-		}
-	}
-};
+// Array.prototype.remove = function(arg) {
+// 	console.log("REMOVING");
+// 	if(typeof arg === "undefined") { // clear all
+// 		for(var i = 0; i < this.length; i++) {
+// 			delete this[i];
+// 		}
+// 		this.length = 0;
+// 	}else if(typeof arg === "number") {
+// 		this.splice(arg,1);
+// 	}else if(typeof arg === "string"){ // find named member and remove
+// 		console.log("SEARCHING");
+// 		for(var i = 0; i < this.length; i++) {
+// 			var member = this[i];
+// 			if(member.name === arg) {
+// 				console.log("FOUND");
+// 				this.splice(i, 1);
+// 			}
+// 		}
+// 	}else if(typeof arg === "object") {
+// 		var idx = jQuery.inArray( arg, this);
+// 		if(idx > -1) {
+// 			this.splice(idx,1);
+// 		}
+// 	}
+// };
 
 Array.prototype.replace = function(oldObj, newObj) {
 	if(typeof oldObj != "number") {
