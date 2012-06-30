@@ -1606,12 +1606,13 @@ sinks('moz', function(){
 
 var fixChrome82795 = [];
 
-sinks('webkit', function(readFn, channelCount, bufferSize, sampleRate){
+sinks('webaudio', function(readFn, channelCount, bufferSize, sampleRate){
 	var	self		= this,
 		// For now, we have to accept that the AudioContext is at 48000Hz, or whatever it decides.
 		context		= new (window.AudioContext || webkitAudioContext)(/*sampleRate*/),
-		node		= context.createJavaScriptNode(bufferSize , 0, channelCount);
+		node		= null;
 	self.start.apply(self, arguments);
+	node = context.createJavaScriptNode(self.bufferSize, self.channelCount, self.channelCount);
 
 	function bufferFill(e){
 		var	outputBuffer	= e.outputBuffer, 
@@ -1687,6 +1688,7 @@ sinks('webkit', function(readFn, channelCount, bufferSize, sampleRate){
 	},
 });
 
+sinks.webkit = sinks.webaudio;
 sinks.webkit.fix82795 = fixChrome82795;
 
 /**
