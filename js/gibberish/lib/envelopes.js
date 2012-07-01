@@ -40,18 +40,18 @@ define([], function() {
 			var phase = 0;
 			var state = 0;
 			var output = function(attack,decay) {
-				var val = 0;
 				if(state === 0){
-					val = phase / attack;
-					if(++phase % attack === 0) {
+					var incr = 1 / attack;
+					phase += incr;
+					if(phase >=1) {
 						state++;
-						phase = decay;
 					}
 				}else if(state === 1){
-					val = phase / decay;
-					if(--phase === 0) state++;;			
+					var incr = 1 / decay;
+					phase -= incr;
+					if(phase <= 0) state++;;			
 				}
-				return val;
+				return phase;
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };
 			output.setState = function(newState) { state = newState; };

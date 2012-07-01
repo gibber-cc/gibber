@@ -31,7 +31,7 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	}
 	
 	this.bus = Gibberish.Bus();
-	console.log("AMP = ", this.amp);
+
 	this.sounds.kick.sampler.send(this.bus, this.amp);
 	this.sounds.snare.sampler.send(this.bus, this.amp);
 	this.sounds.hat.sampler.send(this.bus, this.amp);
@@ -50,7 +50,7 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.seq = null;
 	
 	var that = this; // closure so that d.shuffle can be sequenced
-	this.shuffle = function() { console.log("SHUFFLE"); that.seq.shuffle(); };
+	this.shuffle = function() { that.seq.shuffle(); };
 	this.reset = function() { that.seq.reset(); };
 	
 	if(typeof arguments[0] === "object") {
