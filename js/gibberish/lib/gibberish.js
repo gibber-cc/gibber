@@ -35,7 +35,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					if(__ugen.category === "Bus") {
 						//console.log("BUS SENDER OBJECT", ugen.name);
 						checkBusses(__ugen, gibberish);
-						gibberish.generate(__ugen);
+						if(__ugen.dirty)
+							gibberish.generate(__ugen);
 					 	gibberish.masterUpvalues.push( __ugen.upvalues + ";\n" );
 						gibberish.masterCodeblock.push(__ugen.codeblock);					
 						
@@ -68,10 +69,11 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					checkBusses(ugen, this);
 					//console.log("BUS", ugen.name, ugen.codeblock);
 				}
-				
+				var shouldPush = true;
 				if(ugen.dirty) {
 					this.generate(ugen);				
 					ugen.dirty = false;
+					shouldPush = false;
 				}
 				for(var k = 0; k < ugen.fx.length; k++) {
 					var fx = ugen.fx[k];
@@ -81,7 +83,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				
 				
 				//this.masterUpvalues.push( ugen.upvalues + ";\n" );
-				this.masterCodeblock.push(ugen.codeblock);
+				//if(shouldPush)
+					this.masterCodeblock.push(ugen.codeblock);
 				//console.log("MASTER UGEN CODEBLOCK", ugen.codeblock);
 			}
 			
@@ -147,9 +150,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 		
 		createGenerator : function(parameters, formula) {
-			var generator = function(op, codeDictionary, shouldAdd) {
-				//console.log("SHOULD ADD GEN", shouldAdd);
-				
+			var generator = function(op, codeDictionary, shouldAdd) {				
 				shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
 				var name = op.name;
 				
@@ -159,7 +160,6 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				var paramNames = [name];
 				for(var i = 0; i < parameters.length; i++) {
 					var param = parameters[i];
-					//console.log(param);
 					paramNames.push(Gibberish.codegen(op[parameters[i]], codeDictionary, shouldAdd));
 				}
 				
@@ -171,13 +171,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 		// TODO: MUST MEMOIZE THIS FUNCTION
 		codegen : function(op, codeDictionary, shouldAdd) {
-			//console.log("SHOULD ADD", shouldAdd);
 			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
-			//if(!shouldAdd) console.log("NOT ADDING", op.ugenVariable);
+			
 			if(typeof op === "object" && op !== null) {
 
 				var memo = this.memo[op.name];
-				if(memo && op.category !== "Bus") {
+				if(memo){
 					return memo;
 				}
 				
@@ -195,7 +194,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					for(var i = 0; i < op.length; i++) {
 						var gen = this.generators[op[i].type];
 						
-						var _name = op[i].ugenVariable;// this.generateSymbol("v");
+						var _name = op[i].ugenVariable;
 												
 						var objName = op[i].name && !op[i].dirty ? op[i].name : gen(op[i], codeDictionary, false);
 						var _statement = "var {0} = {1}".format(_name, objName);
@@ -204,27 +203,23 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					}
 						
 					statement += "]";
-					
-					op.ugenVariable = name;
+										
 					if(shouldAdd)
 						codeDictionary.codeblock.push(statement);
-					else
-						console.log("NOT ADDING;")
-						
 				}else{
 					var gen = this.generators[op.type];
-					//console.log(gen);
 					if(gen) {
-						var objName = gen(op, codeDictionary, true); //op.name && !op.dirty ? op.ugenVariable : gen(op, codeDictionary);
+						var objName = gen(op, codeDictionary, true);
 						
-						if(op.category !== "FX") {
-							statement = "var {0} = {1}".format(name, objName);
-						}else{
-							statement = "{0} = {1}".format(op.source, objName);
-						}
-						if(shouldAdd)
+						if(shouldAdd) {
+							if(op.category !== "FX") {
+								statement = "var {0} = {1}".format(name, objName);
+							}else{
+								statement = "{0} = {1}".format(op.source, objName);
+							}
 							codeDictionary.codeblock.push(statement);
-					}// else{
+						}
+					}
 				}
 				return name;
 			}
