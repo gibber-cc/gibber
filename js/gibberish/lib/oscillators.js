@@ -33,7 +33,7 @@ define([], function() {
 				frequency:	freq || 440, 
 				amp:		amp || .5,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Sine\"]();");
@@ -66,7 +66,7 @@ define([], function() {
 				frequency:	freq || 440, 
 				amp:		amp * .35 || .1,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Square\"]();");
@@ -99,7 +99,7 @@ define([], function() {
 				frequency:	freq || 440, 
 				amp:		amp * .35 || .1,
 			};
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Triangle\"]();");
@@ -150,21 +150,21 @@ define([], function() {
 				},
 			};
 			
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			//that.fx.parent = new FXArray(this);
 			
 			var damping = that.damping;
 			
-		    Object.defineProperty(that, "damping", {
-				get: function() {
-					return damping * 100;
-				},
-				set: function(value) {
-					damping = value / 100;
-					that.dampingValue = .5 - damping;
-					Gibberish.dirty(this);
-				}
-			});
+			// 		    Object.defineProperty(that, "damping", {
+			// 	get: function() {
+			// 		return damping * 100;
+			// 	},
+			// 	set: function(value) {
+			// 		damping = value / 100;
+			// 		that.dampingValue = .5 - damping;
+			// 		Gibberish.dirty(this);
+			// 	}
+			// });
 
 			
 			if(typeof properties !== "undefined") {
@@ -230,7 +230,7 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.synths = [];
 			that.synthFunctions = [];
@@ -245,9 +245,9 @@ define([], function() {
 				props.type = "KarplusStrong";
 				
 				var synth = this.KarplusStrong(props);
-
+			
 				that.synths.push(synth);
-
+			
 				that.synthFunctions.push(synth._function);
 			}
 			
@@ -257,17 +257,17 @@ define([], function() {
 			
 			Gibberish.defineProperties( that, ["blend", "amp"] );
 			
-		    Object.defineProperty(that, "damping", {
-				get: function() {
-					return damping * 100;
-				},
-				set: function(value) {
-					damping = value / 100;
-					that.dampingValue = .5 - damping;
-					Gibberish.dirty(this);
-				}
-
-			});
+			// 		    Object.defineProperty(that, "damping", {
+			// 	get: function() {
+			// 		return damping * 100;
+			// 	},
+			// 	set: function(value) {
+			// 		damping = value / 100;
+			// 		that.dampingValue = .5 - damping;
+			// 		Gibberish.dirty(this);
+			// 	}
+			// 
+			// });
 	
 			return that;
 		},
@@ -300,7 +300,11 @@ define([], function() {
 					that.buffer = decoded.channels[0]; 
 					that.bufferLength = decoded.length;
 					
+					console.log("LOADED ", that.audioFilePath, that.bufferLength);
+					Gibberish.audioFiles[that.audioFilePath] = that.buffer;
+					
 					that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
+					
 					window[that.name] = that._function;
 					
 					Gibberish.dirty(that);
@@ -317,27 +321,33 @@ define([], function() {
 			// if(typeof properties !== "undefined") {
 			// 	Gibberish.extend(that, properties);
 			// }
-			Gibberish.extend(that, new Gibberish.ugen());
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-		    var request = new AudioFileRequest(that.audioFilePath);
-		    request.onSuccess = that.onload;
-		    request.send();
+			if(typeof Gibberish.audioFiles[that.audioFilePath] !== "undefined") {
+				that.buffer =  Gibberish.audioFiles[that.audioFilePath];
+				that.bufferLength = that.buffer.length;
+			}else{
+			    var request = new AudioFileRequest(that.audioFilePath);
+			    request.onSuccess = that.onload;
+			    request.send();
+			}
 			
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Sampler\"]();");	
+			
+			Gibberish.defineProperties( that, ["speed", "amp"] );
 			
 			return that;
 		},
 		
 		makeSampler : function(buffer) {
-			var phase = 0;
+			var phase = buffer.length;
 			var interpolate = Gibberish.interpolate;
-			var output = function(speed) {
+			var output = function(_speed) {
 				var out = 0;
-				if(buffer !== null) {
-					phase += speed;
+				phase += _speed;
+				if(buffer !== null && phase < buffer.length) {
 					out = interpolate(buffer, phase);
-					//if(phase % 22050 === 0) console.log("OUT", out, speed);
 				}
 				return out;
 			};

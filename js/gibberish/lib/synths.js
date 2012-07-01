@@ -303,7 +303,7 @@ define([], function() {
 				Gibberish.extend(that, properties);
 			}
 			Gibberish.extend(that, new Gibberish.ugen(that));
-			
+
 			that.synths = [];
 			that.synthFunctions = [];
 			
@@ -342,6 +342,7 @@ define([], function() {
 				},
 			});
 			
+			//Gibberish.ugens.push(that);
 			return that;
 		},
 		

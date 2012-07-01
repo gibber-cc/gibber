@@ -88,6 +88,7 @@ define(["gibberish/lib/gibberish"], function() {
 		for(var i = 0; i < arguments.length; i++) {
 			this.push(arguments[i]);
 		}
+		console.log("ADDING ::: this.parent = ", this.parent)
 		if(this.parent) Gibberish.dirty(this.parent);
 	};
 	// window.FXArray = function() {

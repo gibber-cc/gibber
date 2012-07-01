@@ -16,18 +16,30 @@
 //
 // note that most Drum methods mirror that of Seq. 
 
-function Drums (_sequence, _timeValue, _amp, _freq){
-	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
-	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
-	this.hat   = new audioLib.Sampler(Gibber.sampleRate);
+function Drums(_sequence, _timeValue, _amp, _freq) {
+	return new _Drums(_sequence, _timeValue, _amp, _freq);
+}
+
+
+function _Drums (_sequence, _timeValue, _amp, _freq){
+	this.kick  = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/kick.wav");//new audioLib.Sampler(Gibber.sampleRate);
+	this.snare = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/snare.wav");//new audioLib.Sampler(Gibber.sampleRate);		
+	this.hat   = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/hat.wav");//new audioLib.Sampler(Gibber.sampleRate);
+	this.openHat = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/openhat.wav");//new audioLib.Sampler(Gibber.sampleRate);
+	
+	this.bus = Gibberish.Bus();
+	
+	this.kick.connect(this.bus);
+	this.snare.connect(this.bus);
+	this.hat.connect(this.bus);
+	this.openHat.connect(this.bus);	
+	
+	this.bus.connect(Master);
+	
 	this.amp   = isNaN(_amp) ? .4 : _amp;
 	this.frequency = isNaN(_freq) ? 440 : _freq;
 	
-	this.value = 0;
 	this.active = true;
-	this.mods = [];
-	this.fx = [];
-	this.sends = [];
 	this.masters = [];
 	this.pitch = 1; // pitch is a mod to frequency; only used when the value is set
 	
@@ -35,14 +47,9 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 	this.initialized = false;
 	this.seq = null;
 	
-	Gibber.addModsAndFX.call(this);
-	Gibber.generators.push(this);	
-	
 	var that = this; // closure so that d.shuffle can be sequenced
 	this.shuffle = function() { console.log("SHUFFLE"); that.seq.shuffle(); };
 	this.reset = function() { that.seq.reset(); };
-	
-	this.load();
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
@@ -85,6 +92,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 		}
 	}
 	
+	//this.seq = {};
 	(function(obj) {
 		var that = obj;
 		var _pitch = 1;
@@ -112,8 +120,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 			},
 	    });
 	})(this);
-	
-	if(this.pitch != 1) this.pitch = arguments[0].pitch;
+	//if(this.pitch != 1) this.pitch = arguments[0].pitch;
 	
 	if(this.seq !== null) {
 		this.seq.doNotAdvance = false;
@@ -121,7 +128,7 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 	}
 }
 
-Drums.prototype = {
+_Drums.prototype = {
 	sampleRate : 44100, //Gibber.sampleRate,
 	type  : "complex",
 	name  : "Drums",
@@ -131,10 +138,10 @@ Drums.prototype = {
 		this.kick.loadWav(Gibber.samples.kick);
 		this.snare.loadWav(Gibber.samples.snare);
 		this.hat.loadWav(Gibber.samples.snare); // TODO: CHANGE TO HIHAT SAMPLE
-			
+				
 		this.initialized = true;
 	},
-	
+		
 	replace : function(replacement) { 
 		if(typeof this.seq != "undefined") {
 			this.seq.kill();
@@ -150,37 +157,21 @@ Drums.prototype = {
 		}
 		this.kill();
 	},
-	
+		
 	kill : function() {
 		Gibber.genRemove(this);
 		this.masters.length = 0;
 		this.mods.length = 0;
 		this.fx.length = 0;
 	},
-	
-	generate : function() {
-		this.value = 0;
-		if(!this.initialized) {
-			return;
-		}
 			
-		this.kick.generate();
-		this.value += this.kick.getMix();
-
-		this.snare.generate();
-		this.value += this.snare.getMix();
-			
-		this.hat.generate();
-		this.value += this.hat.getMix();
-	},
-		
 	getMix : function() { return this.value * this.amp; },
-	
+		
 	once : function() {
 		this.seq.once();
 		return this;
 	},
-	
+		
 	retain : function(num) { 
 		if(isNaN(num)) {
 			this.seq.retain();
@@ -199,13 +190,16 @@ Drums.prototype = {
 	note : function(nt) {
 		switch(nt) {
 			case "x":
-				this.kick.noteOn(this.frequency);
+				this.kick.note(this.pitch);
 				break;
 			case "o":
-				this.snare.noteOn(this.frequency);
+				this.snare.note(this.pitch);
 				break;
 			case "*":
-				this.hat.noteOn(this.frequency * 3.5); // multiply to make a higher pitched sound, 'cuz I can't get a better hihat sound in there
+				this.hat.note(this.pitch);
+				break;
+			case "-":
+				this.openHat.note(this.pitch);
 				break;
 			default: break;
 		}

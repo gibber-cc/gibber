@@ -27,18 +27,64 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			var upvalues = "";
 			var codeblock = "function cb() {\nvar output = 0;\n";
 			
+			function checkBusses(_ugen, gibberish) {
+				//console.log("RUNNING INSIDE CODE FOR", _ugen.name );
+				
+				for(var j = 0; j < _ugen.senderObjects.length; j++) {
+					var __ugen = _ugen.senderObjects[j];
+					if(__ugen.category === "Bus") {
+						//console.log("BUS SENDER OBJECT", ugen.name);
+						checkBusses(__ugen, gibberish);
+						gibberish.generate(__ugen);
+					 	gibberish.masterUpvalues.push( __ugen.upvalues + ";\n" );
+						gibberish.masterCodeblock.push(__ugen.codeblock);					
+						
+						for(var k = 0; k < __ugen.fx.length; k++) {
+							var fx = __ugen.fx[k];
+							if(fx.dirty)
+								gibberish.generate(fx);	
+						}
+					}else{
+						if(__ugen.dirty) {
+							//console.log(__ugen.name + " IS DIRTY");
+						 	gibberish.generate(__ugen);
+							__ugen.dirty = false;
+						}
+					 	gibberish.masterUpvalues.push( __ugen.upvalues + ";\n" );
+						gibberish.masterCodeblock.push(__ugen.codeblock);					
+						for(var k = 0; k < __ugen.fx.length; k++) {
+							var fx = __ugen.fx[k];
+							if(fx.dirty)
+								gibberish.generate(fx);	
+						}
+					}
+				}
+			}
+			
 			for(var i = 0; i < this.ugens.length; i++) {
 				var ugen = this.ugens[i];
 				
-				if(ugen.dirty) {
-					Gibberish.generate(ugen);				
-					ugen.dirty = false;
+				if(ugen.category === "Bus") {
+					checkBusses(ugen, this);
+					//console.log("BUS", ugen.name, ugen.codeblock);
 				}
 				
-				this.masterUpvalues.push( ugen.upvalues + ";\n" );
+				if(ugen.dirty) {
+					this.generate(ugen);				
+					ugen.dirty = false;
+				}
+				for(var k = 0; k < ugen.fx.length; k++) {
+					var fx = ugen.fx[k];
+					if(fx.dirty)
+						this.generate(fx);	
+				}	
+				
+				
+				//this.masterUpvalues.push( ugen.upvalues + ";\n" );
 				this.masterCodeblock.push(ugen.codeblock);
+				//console.log("MASTER UGEN CODEBLOCK", ugen.codeblock);
 			}
-	
+			
 			codeblock += this.masterCodeblock.join("\n");
 			var end = "return output;\n}\nreturn cb;";
 			
@@ -85,9 +131,6 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 								value["operands"][0] = _value;
 							}
 							
-							if(propName !== "dirty") {
-								that.dirty = true;
-							}
 							//console.log(that);
 							if(typeof that.destinations !== "undefined") {
 								if(that.destinations.length > 0) {
@@ -96,7 +139,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 									}
 								}
 							}
-							Gibberish.dirty();
+							Gibberish.dirty(that);
 						},
 					});
 				})(obj);
@@ -104,7 +147,10 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 		
 		createGenerator : function(parameters, formula) {
-			var generator = function(op, codeDictionary) {
+			var generator = function(op, codeDictionary, shouldAdd) {
+				//console.log("SHOULD ADD GEN", shouldAdd);
+				
+				shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
 				var name = op.name;
 				
 				//console.log("GENERATING WITH FORMULA", formula, "PARAMETERS", parameters);
@@ -114,7 +160,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				for(var i = 0; i < parameters.length; i++) {
 					var param = parameters[i];
 					//console.log(param);
-					paramNames.push(Gibberish.codegen(op[parameters[i]], codeDictionary));
+					paramNames.push(Gibberish.codegen(op[parameters[i]], codeDictionary, shouldAdd));
 				}
 				
 				var c = String.prototype.format.apply(formula, paramNames);
@@ -124,11 +170,14 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			return generator;
 		},
 		// TODO: MUST MEMOIZE THIS FUNCTION
-		codegen : function(op, codeDictionary) {
+		codegen : function(op, codeDictionary, shouldAdd) {
+			//console.log("SHOULD ADD", shouldAdd);
+			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
+			//if(!shouldAdd) console.log("NOT ADDING", op.ugenVariable);
 			if(typeof op === "object" && op !== null) {
 
 				var memo = this.memo[op.name];
-				if(memo && op.category !== "FX" && op.category !== "Bus") {
+				if(memo && op.category !== "Bus") {
 					return memo;
 				}
 				
@@ -146,33 +195,40 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					for(var i = 0; i < op.length; i++) {
 						var gen = this.generators[op[i].type];
 						
-						var _name = op[i].ugenVariable || this.generateSymbol("v");
-						var _statement = "var {0} = {1}".format(_name, gen(op[i], codeDictionary));
-						statement += _name + ",";
-						codeDictionary.codeblock.push(_statement);
+						var _name = op[i].ugenVariable;// this.generateSymbol("v");
+												
+						var objName = op[i].name && !op[i].dirty ? op[i].name : gen(op[i], codeDictionary, false);
+						var _statement = "var {0} = {1}".format(_name, objName);
+						
+						statement += objName + ",";
 					}
+						
 					statement += "]";
 					
 					op.ugenVariable = name;
-					codeDictionary.codeblock.push(statement);
+					if(shouldAdd)
+						codeDictionary.codeblock.push(statement);
+					else
+						console.log("NOT ADDING;")
+						
 				}else{
 					var gen = this.generators[op.type];
 					//console.log(gen);
 					if(gen) {
+						var objName = gen(op, codeDictionary, true); //op.name && !op.dirty ? op.ugenVariable : gen(op, codeDictionary);
+						
 						if(op.category !== "FX") {
-							statement = "var {0} = {1}".format(name, gen(op, codeDictionary));
+							statement = "var {0} = {1}".format(name, objName);
 						}else{
-							statement = "{0} = {1}".format(op.source, gen(op, codeDictionary));
+							statement = "{0} = {1}".format(op.source, objName);
 						}
-						codeDictionary.codeblock.push(statement);
+						if(shouldAdd)
+							codeDictionary.codeblock.push(statement);
 					}// else{
-				}// 						statement = "var {0} = {1}".format(name, JSON.stringify(op));
-					// 					}
-					//}
+				}
 				return name;
-			}else{
-				return op;
 			}
+			return op;
 		},
 				
 		generate : function(ugen) {
@@ -183,6 +239,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			};
 			//console.log("GENERATING " + ugen.type);
 			var outputCode = this.codegen(ugen, codeDictionary);
+			//console.log("OUTPUT CODE", ugen.type, outputCode);
 			
 			if(typeof ugen.fx !== "undefined") {
 				for(var i = 0; i < ugen.fx.length; i++) {
@@ -195,10 +252,11 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				}
 			}
 			
-			if(ugen.destinations.length > 0) { // mods don't have an output
+			if(ugen.category === "Bus") {
 				for(var i = 0; i < ugen.destinations.length; i++) {
 					var output = ugen.destinations[i].ugenVariable || ugen.destinations[i];
-					codeDictionary.codeblock.push( "{0} += {1};\n".format( output, outputCode) );
+					if(output == "output")
+						codeDictionary.codeblock.push( "{0} += {1};\n".format( output, outputCode) );
 				}
 			}
 
@@ -207,10 +265,11 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			ugen.codeblock		= codeDictionary.codeblock.join(";\n");
 		},
 		
-		binop_generator : function(op, codeDictionary) {
-			return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary), 
-											Gibberish.codegen(op.type, 	codeDictionary),
-											Gibberish.codegen(op.operands[1],	codeDictionary));
+		binop_generator : function(op, codeDictionary, shouldAdd) {
+			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
+			return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+											Gibberish.codegen(op.type, 	codeDictionary, shouldAdd),
+											Gibberish.codegen(op.operands[1],	codeDictionary, shouldAdd));
 		},
 		
 		mod : function(name, modulator, type) {
@@ -259,7 +318,9 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		    for (var property in source) {
 				if(source[property] instanceof Array) {
 		            destination[property] = source[property].slice(0);
-					if(source[property].parent)	destination[property].parent = source[property].parent;
+					if(property === "fx") {
+						destination[property].parent = source[property].parent;
+					}
 		        }else if (typeof source[property] === "object" && source[property] !== null) {
 		            destination[property] = destination[property] || {};
 		            arguments.callee(destination[property], source[property]);
@@ -272,17 +333,20 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		
 		NO_MEMO : function() { return "NO_MEMO"; }, 
 		
-		dirty : function(ugen) { 
-			this.isDirty = true;
-			if(typeof ugen !== "undefined") {
+		dirty : function(ugen) {
+			//console.log("DIRTY", ugen);
+			if(typeof ugen !== "undefined" && ugen !== this) {
 				ugen.dirty = true;
 			}
+			this.isDirty = true;
+			Master.dirty = true;
 		},
 
 		id			:  0,
 		make 		: {},
 		generators 	: {},
 		ugens		: [],
+		audioFiles:	{},
 		//dirty		: false,
 		memo		: {},
 		MASTER		: "output", // a constant to connect to master output

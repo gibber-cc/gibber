@@ -168,7 +168,7 @@ define(['gibber/audio_callback',
 				this.Environment.init();
 			}
 		
-			this.dev = Sink(audioProcess, 2, 1024);
+			this.dev = Sink(audioProcess, 2, 4096);
 			this.sampleRate = this.dev.sampleRate;		
 			this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
 			this.measure = this.beat * 4;
@@ -182,7 +182,7 @@ define(['gibber/audio_callback',
 			};
 		
 			this.callback = new Callback();
-			console.log(this.callback);
+
 			window.loop = function(cb, time) {
 				var l = Gibber.callback.addCallback(cb, time, true);
 				l.end = function() {

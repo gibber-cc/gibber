@@ -649,6 +649,7 @@ define([], function() {
 		Bus : function(effects) {
 			var that = {
 				senders : [],
+				senderObjects: [],
 				length	: 0,
 				type	: "Bus",
 				category: "Bus",
@@ -662,15 +663,16 @@ define([], function() {
 						bus.connectUgen(this, 1);
 					}
 					Gibberish.dirty(this);
+					return this;
 				},
 
-				connectUgen : function(variable, amount) { // man, this is hacky... but it should be called rarely
-					//this["senders" + this.length++] = { type:"*", operands:[variable, amount]};
-					console.log("CONNECTING");
-					
+				connectUgen : function(variable, amount) {
 					amount = isNaN(amount) ? 1 : amount;
 					
-					this.senders.push({ type:"*", operands:[variable, amount]});
+					this.senderObjects.push(variable);
+					
+					this.senders.push( { type:"*", operands:[variable, amount] } );
+					
 					variable.destinations.push(this);
 					
 					Gibberish.dirty(this);
@@ -694,9 +696,10 @@ define([], function() {
 
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			that.fx = effects || [];
+			that.fx.parent = this;
 
 			that.name = Gibberish.generateSymbol(that.type);
-			that.type = that.name;
+			//that.type = that.name;
 
 			Gibberish.generators[that.type] = Gibberish.createGenerator(["senders"], "{0}( {1} )");
 
