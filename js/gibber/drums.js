@@ -20,28 +20,25 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 	return new _Drums(_sequence, _timeValue, _amp, _freq);
 }
 
-
 function _Drums (_sequence, _timeValue, _amp, _freq){
-	this.kick  = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/kick.wav");//new audioLib.Sampler(Gibber.sampleRate);
-	this.snare = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/snare.wav");//new audioLib.Sampler(Gibber.sampleRate);		
-	this.hat   = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/hat.wav");//new audioLib.Sampler(Gibber.sampleRate);
-	this.openHat = Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/openhat.wav");//new audioLib.Sampler(Gibber.sampleRate);
+	this.amp   = isNaN(_amp) ? .4 : _amp;
+	
+	this.sounds = {
+		kick 	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/kick.wav"), pitch:0, amp:this.amp },
+		snare	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/snare.wav"),pitch:0, amp:this.amp },
+		hat		: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/hat.wav"), 	pitch:0, amp: this.amp }, 
+		openHat	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/openhat.wav"), pitch:0, amp:this.amp },
+	}
 	
 	this.bus = Gibberish.Bus();
 	
-	this.kick.connect(this.bus);
-	this.snare.connect(this.bus);
-	this.hat.connect(this.bus);
-	this.openHat.connect(this.bus);	
-	
-	this.kick.pitch = 0;
-	this.snare.pitch = 0;	
-	this.hat.pitch = 0;
-	this.openHat.pitch = 0;
-	
+	this.sounds.kick.sampler.send(this.bus, this.amp);
+	this.sounds.snare.sampler.send(this.bus, this.amp);
+	this.sounds.hat.sampler.send(this.bus, this.amp);
+	this.sounds.openHat.sampler.send(this.bus, this.amp);	
+		
 	this.bus.connect(Master);
 	
-	this.amp   = isNaN(_amp) ? .4 : _amp;
 	this.frequency = isNaN(_freq) ? 440 : _freq;
 	
 	this.active = true;
@@ -100,7 +97,6 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	//this.seq = {};
 	(function(obj) {
 		var that = obj;
-		var _pitch = 1;
 		
 	    Object.defineProperties(that, {
 			"speed" : {
@@ -113,16 +109,21 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 					}
 		        }
 			},
-			// pitch is a multiplier for the fundamental frequency of the samplers (440). A pitch value of 2 means the samples will be played with a frequency of 880 hz.
-			"pitch" : {
+			
+			"amp" : {
 		        get: function() {
-		            return _pitch;
+		            return amp;
 		        },
 		        set: function(value) {
-					_pitch = value;
-					that.frequency = 440 * value;
+					amp = value;
+					for(var sound in this.sounds) {
+						console.log("DISCONNECTING", sound);
+						this.sounds[sound].sampler.disconnect();
+						this.sounds[sound].sampler.send(this.bus, this.amp);
+					}
 		        }
 			},
+			
 	    });
 	})(this);
 	//if(this.pitch != 1) this.pitch = arguments[0].pitch;
@@ -195,16 +196,16 @@ _Drums.prototype = {
 	note : function(nt) {
 		switch(nt) {
 			case "x":
-				this.kick.note(this.pitch + this.kick.pitch);
+				this.sounds.kick.sampler.note(this.pitch + this.sounds.kick.pitch);
 				break;
 			case "o":
-				this.snare.note(this.pitch + this.snare.pitch);
+				this.sounds.snare.sampler.note(this.pitch + this.sounds.snare.pitch);
 				break;
 			case "*":
-				this.hat.note(this.pitch + this.hat.pitch);
+				this.sounds.hat.sampler.note(this.pitch + this.sounds.hat.pitch);
 				break;
 			case "-":
-				this.openHat.note(this.pitch + this.openHat.pitch);
+				this.sounds.openHat.sampler.note(this.pitch + this.sounds.openHat.pitch);
 				break;
 			default: break;
 		}

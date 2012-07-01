@@ -22,7 +22,7 @@ define([], function() {
 			gibberish.PolyKarplusStrong = this.PolyKarplusStrong;
 			
 			gibberish.Sampler = this.Sampler;
-			gibberish.generators.Sampler = gibberish.createGenerator(["speed"], "{0}( {1} )");
+			gibberish.generators.Sampler = gibberish.createGenerator(["speed", "amp"], "{0}( {1}, {2} )");
 			gibberish.make["Sampler"] = this.makeSampler;
 		},
 		
@@ -295,6 +295,7 @@ define([], function() {
 				buffer : 		null,
 				bufferLength:   null,
 				speed:			1,
+				amp:			1,
 				_function:		null,
 				onload : 		function(decoded) { 
 					that.buffer = decoded.channels[0]; 
@@ -309,11 +310,11 @@ define([], function() {
 					
 					Gibberish.dirty(that);
 				},
-				note: function(speed) {
+				note: function(speed, amp) {
+					if(typeof amp !== "undefined") { this.amp = amp; }
 					this.speed = speed;
 					if(this._function !== null) {
 						this._function.setPhase(0);
-						Gibberish.dirty(this);
 					}
 				},
 			};
@@ -343,13 +344,13 @@ define([], function() {
 		makeSampler : function(buffer) {
 			var phase = buffer.length;
 			var interpolate = Gibberish.interpolate;
-			var output = function(_speed) {
+			var output = function(_speed, amp) {
 				var out = 0;
 				phase += _speed;
 				if(buffer !== null && phase < buffer.length) {
 					out = interpolate(buffer, phase);
 				}
-				return out;
+				return out * amp;
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };
 			
