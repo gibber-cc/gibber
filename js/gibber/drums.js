@@ -21,7 +21,7 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 }
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
-	this.amp   = isNaN(_amp) ? .4 : _amp;
+	this.amp   = isNaN(_amp) ? .2 : _amp;
 	
 	this.sounds = {
 		kick 	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/kick.wav"), pitch:0, amp:this.amp },
@@ -31,7 +31,7 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	}
 	
 	this.bus = Gibberish.Bus();
-	
+	console.log("AMP = ", this.amp);
 	this.sounds.kick.sampler.send(this.bus, this.amp);
 	this.sounds.snare.sampler.send(this.bus, this.amp);
 	this.sounds.hat.sampler.send(this.bus, this.amp);

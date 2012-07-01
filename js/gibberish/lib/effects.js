@@ -299,8 +299,8 @@ define([], function() {
 			var that = {
 				type:		"SoftClip",
 				category:	"FX",
-				amount:		amount,
-				amp:		amp,
+				amount:		amount || 50,
+				amp:		amp || 1,
 				source:		null,
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
@@ -580,7 +580,7 @@ define([], function() {
 			var that = {
 				type:		"Flanger",
 				category:	"FX",
-				feedback:	.5,
+				feedback:	0,
 				offset:		125,
 				amount:		125,
 				rate:		.25,
