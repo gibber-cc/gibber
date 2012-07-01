@@ -374,6 +374,8 @@ define([], function() {
 			return output;
 		},
 		
+// gibberish.generators.BufferShuffler = gibberish.createGenerator(["source","chance", "rate", "length", "reverseChance", "pitchChance", "pitchMin", "pitchMax"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8} )");
+		
 		BufferShuffler : function(properties) {
 			var that = {
 				type:		"BufferShuffler",
@@ -381,26 +383,11 @@ define([], function() {
 				chance: 	.25,		
 				rate: 		11025,
 				length:		22050,
-				shouldRandomizeReverse : true,
-				shouldRandomizePitch :   true,
-				value : 0,
-				readIndex : 0,
-				writeIndex : -1,
-				increment : 1,
-				loopPhase : 0,
-				isCrazy : false,
-				crazyTime : 0,
-				reverse : false,
 				reverseChance : .5,
-				pitchShifting : false,
 				pitchChance : .5,
 				pitchMin : .25,
 				pitchMax : 2,
 				mix : 1,
-				phase : 0,
-				fadeCount : 0,
-				fading : false,
-				shouldPrint : false,
 			};
 			
 			Gibberish.extend(that, new Gibberish.ugen(that));

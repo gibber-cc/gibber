@@ -33,13 +33,15 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 			index  	: isNaN(index)	 ? .9 	: index,
 			attack 	: isNaN(attack)  ? 4100 : attack,
 			decay  	: isNaN(decay)   ? 4100 : decay,
+			maxVoices: 1,
 		};
 		
 		that = Gibberish.PolyFM( props );
 	}
 	
 	that.note = Gibber.makeNoteFunction(that);
-	that.chord = Gibber.chord;	
+	that.chord = Gibber.chord;
+	that.connect(Master);	
 	
 	return that;
 }
