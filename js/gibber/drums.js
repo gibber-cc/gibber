@@ -34,6 +34,11 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.hat.connect(this.bus);
 	this.openHat.connect(this.bus);	
 	
+	this.kick.pitch = 0;
+	this.snare.pitch = 0;	
+	this.hat.pitch = 0;
+	this.openHat.pitch = 0;
+	
 	this.bus.connect(Master);
 	
 	this.amp   = isNaN(_amp) ? .4 : _amp;
@@ -190,16 +195,16 @@ _Drums.prototype = {
 	note : function(nt) {
 		switch(nt) {
 			case "x":
-				this.kick.note(this.pitch);
+				this.kick.note(this.pitch + this.kick.pitch);
 				break;
 			case "o":
-				this.snare.note(this.pitch);
+				this.snare.note(this.pitch + this.snare.pitch);
 				break;
 			case "*":
-				this.hat.note(this.pitch);
+				this.hat.note(this.pitch + this.hat.pitch);
 				break;
 			case "-":
-				this.openHat.note(this.pitch);
+				this.openHat.note(this.pitch + this.openHat.pitch);
 				break;
 			default: break;
 		}
