@@ -16,7 +16,7 @@ function Synth(attack, decay, amp) {
 	var that;
 	if(typeof arguments[0] === "object") {
 		that = arguments[0];
-		that.maxVoices = 1;
+		if(isNaN(that.maxVoices)) that.maxVoices = 1;
 		
 		that = Gibberish.PolySynth(that);
 	}else{

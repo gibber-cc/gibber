@@ -16,9 +16,9 @@
 
 function Flanger(rate, amount, feedback, offset) {
 	var that = {
-		rate: (typeof rate !== "undefined") ? rate : .1,
+		rate: (typeof rate !== "undefined") ? rate : .25,
 		amount: (typeof amount !== "undefined") ? amount : 125,
-		feedback:	isNaN(feedback) ? .5 : feedback,
+		feedback:	isNaN(feedback) ? 0 : feedback,
 		offset:		isNaN(offset) ? 125 : offset,
 	}
 	
@@ -37,7 +37,7 @@ function Chorus(rate, amount) {
 	var _rate = rate || 2;
 	var _amount = amount || 50;
 	that = Flanger(rate, amount, 0, 880); // 20ms offset
-	that.name = "Chorus";
+	//that.name = "Chorus";
 	
 	return that;
 }

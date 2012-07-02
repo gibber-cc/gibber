@@ -24,7 +24,6 @@ function Seq(seq, durations, msg) {
 }
 
 function _Seq() {
-	console.log(this);
 	(function(_that) {
 		var _speed = null;
 		var that = _that;

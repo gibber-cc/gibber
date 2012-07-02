@@ -446,7 +446,6 @@ define([], function() {
 						fadeAmount = 1;
 						isFadingWetIn = true;
 						isFadingDryIn = false;
-						console.log("SHUFFLE");
 					}
 				}else if(++shuffleTimeKeeper % (length - 400) === 0) {
 					isFadingWetIn = false;
@@ -580,9 +579,9 @@ define([], function() {
 			var that = {
 				type:		"Flanger",
 				category:	"FX",
-				feedback:	0,
-				offset:		125,
-				amount:		125,
+				feedback:	0, // TODO: feedback is broken
+				offset:		300,
+				amount:		100,
 				rate:		.25,
 				source:		null,
 				buffer:		new Float32Array(88200),				
@@ -608,25 +607,27 @@ define([], function() {
 
 		makeFlanger : function(buffer, bufferLength, delayModulation, _offset) {
 			var phase = 0;
-			var readIndex = _offset * - 1;
+			var readIndex = bufferLength - _offset;
 			var writeIndex = 0;
+			var interpolate = Gibberish.interpolate;
 			
 			var output = function(sample, offset, feedback, delayModulationRate, delayModulationAmount) {
-				var readPosition = readIndex++ + delayModulation(delayModulationRate, delayModulationAmount * .95);
-				
-				readIndex %= bufferLength;
-				
-				if(readPosition >= bufferLength) {
-					readPosition -= bufferLength;
-				}else if(readPosition < 0) {
-					readPosition += bufferLength;
-				}
-				
-				var delayedSample = Gibberish.interpolate(buffer, readPosition);
-				
-				buffer[writeIndex++] = sample + (delayedSample * feedback);
-				writeIndex %= bufferLength;
+				var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount);
 
+				if(delayIndex > bufferLength) {
+					delayIndex -= bufferLength;
+				}else if(delayIndex < 0) {
+					delayIndex += bufferLength;
+				}
+
+				var delayedSample = interpolate(buffer, delayIndex);
+				
+				// TODO: Feedback is broken
+				buffer[writeIndex] = sample;// + (delayedSample * feedback);
+				
+				if(++writeIndex >= bufferLength) writeIndex = 0;
+				if(++readIndex  >= bufferLength) readIndex  = 0;				
+				
 				return sample + delayedSample;
 			};
 
