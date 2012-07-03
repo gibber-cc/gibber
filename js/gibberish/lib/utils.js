@@ -65,7 +65,7 @@ define(["gibberish/lib/gibberish"], function() {
 	
 
 	Array.prototype.replace = function(oldObj, newObj) {
-		newObj.target = this;
+		newObj.parent = this;
 		if(typeof oldObj != "number") {
 			var idx = jQuery.inArray( oldObj, this);
 			if(idx > -1) {
@@ -78,14 +78,14 @@ define(["gibberish/lib/gibberish"], function() {
 	};
 
 	Array.prototype.insert = function(v, pos) {
-		v.target = this;
+		v.parent = this;
 		this.splice(pos,0,v);
 		if(this.parent) Gibberish.dirty(this.parent);
 	};
 
 	Array.prototype.add = function() {
 		for(var i = 0; i < arguments.length; i++) {
-			arguments[i].target = this;
+			arguments[i].parent = this;
 			this.push(arguments[i]);
 		}
 		//console.log("ADDING ::: this.parent = ", this.parent)

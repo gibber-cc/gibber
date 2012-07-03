@@ -134,7 +134,6 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 								value["operands"][0] = _value;
 							}
 							
-
 							if(typeof that.destinations !== "undefined") {
 								if(that.destinations.length > 0) {
 									for(var i = 0; i < that.destinations.length; i++) {
@@ -144,7 +143,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 							}
 							if(that.category === "FX") {
 								that.dirty = true;
-								Gibberish.dirty(that.parent);								
+								Gibberish.dirty(that.parent.parent); // that.parent is fx array, parent of fx array is ugen
 							}else{
 								Gibberish.dirty(that);
 							}
