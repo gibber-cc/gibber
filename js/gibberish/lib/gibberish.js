@@ -134,7 +134,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 								value["operands"][0] = _value;
 							}
 							
-							//console.log(that);
+
 							if(typeof that.destinations !== "undefined") {
 								if(that.destinations.length > 0) {
 									for(var i = 0; i < that.destinations.length; i++) {
@@ -142,7 +142,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 									}
 								}
 							}
-							Gibberish.dirty(that);
+							if(that.category === "FX") {
+								that.dirty = true;
+								Gibberish.dirty(that.parent);								
+							}else{
+								Gibberish.dirty(that);
+							}
 						},
 					});
 				})(obj);
@@ -334,9 +339,11 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		NO_MEMO : function() { return "NO_MEMO"; }, 
 		
 		dirty : function(ugen) {
-			//console.log("DIRTY", ugen);
 			if(typeof ugen !== "undefined" && ugen !== this) {
 				ugen.dirty = true;
+				this.generate(ugen);
+		 		//this.masterUpvalues.pushUnique( __ugen.upvalues + ";\n" );
+				//this.masterCodeblock.pushUnique(__ugen.codeblock + ";\n");
 			}
 			this.isDirty = true;
 			Master.dirty = true;
@@ -346,13 +353,13 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		make 		: {},
 		generators 	: {},
 		ugens		: [],
-		audioFiles:	{},
+		audioFiles	: {},
 		//dirty		: false,
 		memo		: {},
 		MASTER		: "output", // a constant to connect to master output
-		masterUpvalues : [],
+		masterUpvalues 	: [],
 		masterCodeblock : [],
-		masterInit	   : [],	
+		masterInit	   	: [],	
     };
 	
 	that.ugen = function(parent) {
@@ -398,7 +405,9 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		
 			addFX : function() {
 				for(var i = 0; i < arguments.length; i++) {
-					this.fx.push(arguments[i]);
+					var fx = arguments[i];
+					fx.parent = this;
+					this.fx.push(fx);
 				}
 				Gibberish.dirty(this);
 			},

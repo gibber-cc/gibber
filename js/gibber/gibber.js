@@ -687,7 +687,7 @@ function Sine(freq, volume) {
 }
 
 function Triangle(freq, volume) {	
-	var that = Gibberish.Triangle(freq, volume).out();
+	var that = Gibberish.Triangle(freq, volume).connect(Master);
 	
 	return that;
 }

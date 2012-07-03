@@ -78,10 +78,7 @@ default:
 '\n'+
 '// triangle wave at 440Hz, .15 amplitude\n'+
 '// possible waveShapes are sine, tri, saw, square, pulse\n'+
-'s = Tri(300, .15);\n'+
-'\n'+
-'// change waveShape to sine\n'+
-'s.waveShape = "sine";\n'+
+'s = Triangle(300, .15);\n'+
 '\n'+
 '// modulate the frequency of the triangle wave using a sequencer.\n'+
 '// add the sequencer\'s output to the oscillators frequency\n'+
@@ -90,16 +87,13 @@ default:
 '// create tremolo by using a LFO to modulate the volume of the oscillator \n'+
 '// (currently volume is inappropriately referred to as mix). Multiply the amplitude\n'+
 '// of the oscillator times the output of the LFO\n'+
-'s.mod("mix",  LFO(4, 1), "*");\n'+
+'s.mod("amp",  LFO(4, 1), "*");\n'+
 '\n'+
 '// add a Delay effect with a delay time of 1/3 a measure and a Reverb effect with default settings\n'+
 's.fx.add( Delay(_3), Reverb() );\n'+
 '\n'+
-'// remove last fx in fx.add\n'+
-'s.fx.pop();\n'+
-'\n'+
-'// bit crush; reduce to 8-bits\n'+
-'s.fx.add( Crush(8) );\n'+
+'// bit crush / sample rate reduce; reduce to 8-bits and 8khz\n'+
+'s.fx.add( Crush(8, 8000) );\n'+
 '\n'+
 '// remove first effect in fx fx.add\n'+
 's.fx.remove(0);\n'+
@@ -107,17 +101,15 @@ default:
 '// remove all fx, but not mods\n'+
 's.fx.remove();\n'+
 '\n'+
-'// low-pass filter\n'+
+'// low-pass filter : 0..1 cutoff, 0..5 resonance \n'+
 'f = LPF();\n'+
 '\n'+
 '// add ring modulator and filter\n'+
 's.fx.add( Ring(), f );\n'+
 '\n'+
 '// change filter parameters\n'+
-'f.resonance = 10\n'+
-'f.cutoff = 400\n'+
-'\n'+
-'s.fx.pop();\n'+
+'f.resonance = 0\n'+
+'f.cutoff = .4\n'+
 '\n'+
 '// clear all mods\n'+
 's.mods.remove();',

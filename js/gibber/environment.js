@@ -1,5 +1,6 @@
 define([
 	'gibber/gibber',
+	'gibber/default_scripts',
 	'gibber/tutorials', 
 	'jquery.simplemodal',
 	//'node/socket.io.min',

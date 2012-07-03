@@ -332,8 +332,8 @@ define([], function() {
 			var that = {
 				type:		"Filter24",
 				category:	"FX",
-				cutoff:		cutoff,
-				resonance:	resonance,
+				cutoff:		cutoff || .1,
+				resonance:	resonance || 3,
 				isLowPass:	typeof isLowPass === "undefined" ? true : isLowPass,
 				source:		null,
 			};
