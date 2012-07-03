@@ -20,6 +20,7 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 		if(typeof arguments[1] === "undefined") {
 			that = Gibberish.PolyFM( Gibber.FMPresets[arguments[0]] );
 		}else{
+			console.log("EXTENDING WITH ", arguments[1]);
 			var props = Gibber.FMPresets[arguments[0]];
 			Gibberish.extend(props, arguments[1]);
 			
@@ -78,7 +79,7 @@ function FMPresets() {
 		drum2 : {
 			cmRatio: 1 + Math.sqrt(2),
 			index: .2,
-			attack: 441,
+			attack: 44,
 			decay: 20 * 44.1,
 		},
 		brass : {

@@ -21,7 +21,7 @@
 // Note that when Reverb is placed on a bus it defaults to outputting only the wet signal; this is different from how it behaves in an fx chain.
 
 function Bus() { // name is id, fx is array, ahem, fx
-	var bus = Gibberish.Bus().connect(Master);
+	var bus = Gibberish.Bus(arguments).connect(Master);
 	return bus;
 }
 

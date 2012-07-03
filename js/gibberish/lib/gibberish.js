@@ -37,8 +37,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 						checkBusses(__ugen, gibberish);
 						if(__ugen.dirty)
 							gibberish.generate(__ugen);
-					 	gibberish.masterUpvalues.push( __ugen.upvalues + ";\n" );
-						gibberish.masterCodeblock.push(__ugen.codeblock);					
+					 	gibberish.masterUpvalues.pushUnique( __ugen.upvalues + ";\n" );
+						gibberish.masterCodeblock.pushUnique(__ugen.codeblock + ";\n");					
 						
 						for(var k = 0; k < __ugen.fx.length; k++) {
 							var fx = __ugen.fx[k];
@@ -51,8 +51,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 						 	gibberish.generate(__ugen);
 							__ugen.dirty = false;
 						}
-					 	gibberish.masterUpvalues.push( __ugen.upvalues + ";\n" );
-						gibberish.masterCodeblock.push(__ugen.codeblock);					
+					 	gibberish.masterUpvalues.pushUnique( __ugen.upvalues + ";\n" );
+						gibberish.masterCodeblock.pushUnique(__ugen.codeblock + ";\n");					
 						for(var k = 0; k < __ugen.fx.length; k++) {
 							var fx = __ugen.fx[k];
 							if(fx.dirty)
@@ -82,9 +82,9 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				}	
 				
 				
-				//this.masterUpvalues.push( ugen.upvalues + ";\n" );
+				this.masterUpvalues.pushUnique( ugen.upvalues + ";\n" );
 				//if(shouldPush)
-					this.masterCodeblock.push(ugen.codeblock);
+					this.masterCodeblock.pushUnique(ugen.codeblock);
 				//console.log("MASTER UGEN CODEBLOCK", ugen.codeblock);
 			}
 			
@@ -177,6 +177,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 
 				var memo = this.memo[op.name];
 				if(memo){
+					//console.log("MEMO", memo);
 					return memo;
 				}
 				
@@ -209,7 +210,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				}else{
 					var gen = this.generators[op.type];
 					if(gen) {
-						var objName = gen(op, codeDictionary, true);
+						var objName = gen(op, codeDictionary, shouldAdd);
 						
 						if(shouldAdd) {
 							if(op.category !== "FX") {
@@ -268,8 +269,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				return Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd);
 			}
 			return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
-											Gibberish.codegen(op.type, 	codeDictionary, shouldAdd),
-											Gibberish.codegen(op.operands[1],	codeDictionary, shouldAdd));
+											op.type,
+											Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
 		},
 		
 		mod : function(name, modulator, type) {
@@ -278,7 +279,6 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			this[name] = m;
 			modulator.modding.push({ ugen:this, mod:m });
 			this.mods.push(m);
-			Gibberish.generate(this);
 			Gibberish.dirty(this);
 			return modulator;
 		},
