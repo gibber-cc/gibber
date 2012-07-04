@@ -43,6 +43,7 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	
 	this.fx = this.bus.fx;
 	
+	// this enables this.kick.pitch = 2, this.kick.fx.add( Reverb() ) etc.
 	this.kick = this.sounds.kick;
 	this.kick.fx = this.sounds.kick.sampler.fx;
 	this.snare = this.sounds.snare;
@@ -51,7 +52,6 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.hat.fx = this.sounds.hat.sampler.fx;
 	this.openHat = this.sounds.openHat;
 	this.openHat.fx = this.sounds.openHat.sampler.fx;
-	
 	
 	this.active = true;
 	this.masters = [];

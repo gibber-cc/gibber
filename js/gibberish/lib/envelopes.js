@@ -8,6 +8,10 @@ define([], function() {
 			gibberish.generators.ADSR = gibberish.createGenerator(["attack",  "decay", "sustain", "release", "attackLevel", "sustainLevel"], "{0}({1},{2},{3},{4},{5},{6})" ),
 			gibberish.make["ADSR"] = this.makeADSR;
 			gibberish.ADSR = this.ADSR;
+			
+			gibberish.generators.Step = gibberish.createGenerator(["time"], "{0}({1})" ),
+			gibberish.make["Step"] = this.makeStep;
+			gibberish.Step = this.Step;
 		},
 		
 		Env : function(attack, decay) {
@@ -128,6 +132,50 @@ define([], function() {
 			output.getState = function() { return state; };	
 			
 			return output;
-		},		
+		},
+		
+		Step : function(steps, time) {
+			var that = { 
+				type:		"Step",
+				category:	"Gen",
+				steps:		steps || [1],
+				time:		time || 44100,
+
+				run: function() {
+					//that._function.setPhase(0);
+					that._function.setState(0);
+					that._function.setPhase(0);					
+				},
+			};
+			Gibberish.extend(that, new Gibberish.ugen());
+			
+			that.name = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Step\"]();");
+			window[that.name] = Gibberish.make["Step"](that.steps);
+			that._function = window[that.name];
+			
+			Gibberish.defineProperties( that, ["attack", "decay"] );
+	
+			return that;
+		},
+		
+		makeStep : function(steps) {
+			var phase = 0;
+			var state = 0;
+			var output = function(time) {
+				if(phase++ >= time) {
+					state++;
+					if(state >= steps.length) state = 0;
+					phase = 0;
+				}
+				return steps[state];
+			};
+			output.setPhase = function(newPhase) { phase = newPhase; };
+			output.setState = function(newState) { state = newState; };
+			output.getState = function() { return state; };						
+			output.start = function() { phase = 0; state = 0; }
+			
+			return output;
+		},	
     }
 });
