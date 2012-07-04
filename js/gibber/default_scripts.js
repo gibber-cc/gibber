@@ -222,11 +222,11 @@ default:
 'r = Seq(["A5", "A#5", "C#5", "D5"], _4).slave(t);\n'+
 '\n'+
 '// assign new values to the note sequence\n'+
-'q.sequences.note = ["F4", "G4",  "D4",  "C4"];\n'+
-'r.sequences.note = ["A5", "A#5", "C#5", "B5"];\n'+
+'q.note = ["F4", "G4",  "D4",  "C4"];\n'+
+'r.note = ["A5", "A#5", "C#5", "B5"];\n'+
 '\n'+
 '// change the speed of each sequence step\n'+
-'r.speed = q.speed = _16;\n'+
+'r.speed = q.speed = _8;\n'+
 '\n'+
 '// randomize the sequences\n'+
 'q.shuffle();\n'+

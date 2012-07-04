@@ -54,6 +54,7 @@ define(['gibber/audio_callback',
 
 									 switch(variable.category) {
 										 case "Gen":
+											 console.log("REPLACING ", variable);
 											 Gibber.genReplace(variable, newObj);
 										 break;
 										 case "Mod":
@@ -225,9 +226,9 @@ define(['gibber/audio_callback',
 		},
 	
 		genReplace : function(gen, newGen) {
-			Gibberish.disconnect(gen); // disconnect from output if connected
+			Master.disconnectUgen(gen); // disconnect from output if connected
 		
-			// if gen is modulating another gen...
+			// if old gen is modulating another gen...
 			for(var i = 0; i < gen.modding.length; i++) {
 				var mod = gen.modding[i];
 				mod.ugen.removeMod(mod.mod);
@@ -251,7 +252,6 @@ define(['gibber/audio_callback',
 		
 			// if gen has fx...
 			for(var i = 0; i < gen.fx.length; i++) {
-				console.log("ADDING");
 				newGen.fx.add(gen.fx[i]);
 			}
 		},
