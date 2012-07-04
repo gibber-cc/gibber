@@ -376,12 +376,12 @@ define(['gibber/audio_callback',
 		},
 	
 		clear : function() {
-			for(var g = 0; g < Gibber.generators.length; g++) {
-				Gibber.generators[g].kill();
-			}
-			for(var c = 0; c < Gibber.controls.length; g++) {
-				Gibber.controls[c].kill();
-			}
+			// for(var g = 0; g < Gibber.generators.length; g++) {
+			// 	Gibber.generators[g].kill();
+			// }
+			// for(var c = 0; c < Gibber.controls.length; g++) {
+			// 	Gibber.controls[c].kill();
+			// }
 			for(var cc = 0; cc < Gibber.callback.slaves.length; cc++) {
 				Gibber.callback.slaves[cc].kill();
 			}
@@ -389,13 +389,16 @@ define(['gibber/audio_callback',
 		
 			Gibber.killSingles();
 				
-			this.generators.length = 0;
-			this.callback.phase = 0;
-			this.controls.length = 0;
-			this.busses.length = 0;
-			this.callback.callbacks.length = 0;
-			Master.fx.length = 0;
-			Master.mods.length = 0;
+			// this.generators.length = 0;
+			// this.callback.phase = 0;
+			// this.controls.length = 0;
+			// this.busses.length = 0;
+			// this.callback.callbacks.length = 0;
+			// Master.fx.length = 0;
+			// Master.mods.length = 0;
+			Master.senderObjects.remove();
+			Master.senders.remove();
+			Gibberish.dirty(Master);
 			Gibber.log("Cleared Gibber graph.");	
 		},
 	
