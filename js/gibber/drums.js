@@ -201,7 +201,7 @@ _Drums.prototype = {
 		if(typeof this.seq === "undefined" || this.seq === null) {
 			this.seq = Seq(newSequence, _timeValue).slave(this);
 		}else{
-			this.seq.sequences.note = newSequence.split("");//set(newSequence); 
+			this.seq.note = newSequence.split("");//set(newSequence); 
 		}
 	},
 	

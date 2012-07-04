@@ -25,6 +25,11 @@ function ADSR() {
 	return that;
 }
 
+function Step(steps, time) {
+	that = Gibberish.Step(steps, time);
+	return that;
+}
+
 function Env2() {
 	that = {
 		value : 0,

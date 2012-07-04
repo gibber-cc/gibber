@@ -82,7 +82,7 @@ default:
 '\n'+
 '// modulate the frequency of the triangle wave using a sequencer.\n'+
 '// add the sequencer\'s output to the oscillators frequency\n'+
-'s.mod("freq", Seq([220, 0], _2), "+");\n'+
+'s.mod("frequency", Step([220, 0], _2), "+");\n'+
 '\n'+
 '// create tremolo by using a LFO to modulate the volume of the oscillator \n'+
 '// (currently volume is inappropriately referred to as mix). Multiply the amplitude\n'+
@@ -111,8 +111,8 @@ default:
 'f.resonance = 0\n'+
 'f.cutoff = .4\n'+
 '\n'+
-'// clear all mods\n'+
-'s.mods.remove();',
+'// remove frequency mod\n'+
+'s.removeMod("frequency");',
 
 "rhythm + drums": 
 '/*\n'+
@@ -137,8 +137,8 @@ default:
 '// add soft-clipping distortion\n'+
 'd.fx.add( Clip(1000) )\n'+
 '\n'+
-'// raise/lower frequencies of drums; 440 is default starting value\n'+
-'d.frequency = 880\n'+
+'// pitches range from 0.001 .. whatever. \n'+
+'d.pitch = 2;\n'+
 '\n'+
 '// pass new sequence\n'+
 'd.set("x * ")\n'+
@@ -148,7 +148,7 @@ default:
 '\n'+
 '// change the master tempo. All sequencers will update themselves to match the\n'+
 '// master clock speed whenever it is changed.\n'+
-'Gibber.setBPM(180);\n'+
+'Gibber.setBPM(100);\n'+
 '\n'+
 '// return to original sequence\n'+
 'd.reset();\n'+
