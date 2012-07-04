@@ -22,7 +22,7 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.amp   = isNaN(_amp) ? .2 : _amp;
-	
+
 	this.sounds = {
 		kick 	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/kick.wav"), pitch:0, amp:this.amp },
 		snare	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/snare.wav"),pitch:0, amp:this.amp },
@@ -129,7 +129,6 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 		        set: function(value) {
 					amp = value;
 					for(var sound in this.sounds) {
-						console.log("DISCONNECTING", sound);
 						this.sounds[sound].sampler.disconnect();
 						this.sounds[sound].sampler.send(this.bus, this.amp);
 					}
@@ -148,8 +147,8 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 
 _Drums.prototype = {
 	sampleRate : 44100, //Gibber.sampleRate,
-	type  : "complex",
-	name  : "Drums",
+	category  	: "complex",
+	name  		: "Drums",
 		
 	load : function (){
 		// SAMPLES ARE PRELOADED IN GIBBER CLASS... but it still doesn't stop the hitch when loading these...
@@ -160,26 +159,20 @@ _Drums.prototype = {
 		this.initialized = true;
 	},
 		
-	replace : function(replacement) { 
+	replace : function(replacement) {
+		this.kill();
 		if(typeof this.seq != "undefined") {
 			this.seq.kill();
 		}
 		for( var i = 0; i < this.masters.length; i++) {
 			replacement.masters.push(this.masters[i]);
 		}
-		for( var j = 0; j < this.fx.length; j++) {
-			replacement.fx.push(this.fx[j]);
-		}
-		for( var k = 0; k < this.mods.length; k++) {
-			replacement.mods.push(this.mods[k]);
-		}
-		this.kill();
 	},
 		
 	kill : function() {
-		Gibber.genRemove(this);
+		Master.disconnectUgen(this.bus);
+		this.bus.destinations.remove(Master);
 		this.masters.length = 0;
-		this.fx.length = 0;
 	},
 			
 	getMix : function() { return this.value * this.amp; },

@@ -335,6 +335,8 @@ define([], function() {
 			
 			that.name = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Sampler\"]();");	
+			that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
+			window[that.name] = that._function;
 			
 			Gibberish.defineProperties( that, ["speed", "amp"] );
 			
@@ -342,7 +344,7 @@ define([], function() {
 		},
 		
 		makeSampler : function(buffer) {
-			var phase = buffer.length;
+			var phase = buffer === null ? 0 : buffer.length;
 			var interpolate = Gibberish.interpolate;
 			var output = function(_speed, amp) {
 				var out = 0;

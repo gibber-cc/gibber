@@ -674,6 +674,15 @@ define([], function() {
 							break;
 						}
 					}
+					if(typeof this.senderObjects !== "undefined") {
+						for(var i = 0; i < this.senderObjects.length; i++) {
+							if(this.senderObjects[i] === ugen) {
+								this.senderObjects.splice(i,1);
+								break;
+							}
+						}
+					}
+					
 					Gibberish.dirty(this);
 				},
 
