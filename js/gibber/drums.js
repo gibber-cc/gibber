@@ -36,10 +36,22 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.sounds.snare.sampler.send(this.bus, this.amp);
 	this.sounds.hat.sampler.send(this.bus, this.amp);
 	this.sounds.openHat.sampler.send(this.bus, this.amp);	
-		
+	
 	this.bus.connect(Master);
 	
-	this.frequency = isNaN(_freq) ? 440 : _freq;
+	Gibberish.extend(this, this.sounds);
+	
+	this.fx = this.bus.fx;
+	
+	this.kick = this.sounds.kick;
+	this.kick.fx = this.sounds.kick.sampler.fx;
+	this.snare = this.sounds.snare;
+	this.snare.fx = this.sounds.snare.sampler.fx;
+	this.hat = this.sounds.hat;
+	this.hat.fx = this.sounds.hat.sampler.fx;
+	this.openHat = this.sounds.openHat;
+	this.openHat.fx = this.sounds.openHat.sampler.fx;
+	
 	
 	this.active = true;
 	this.masters = [];
