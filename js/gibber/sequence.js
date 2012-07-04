@@ -151,6 +151,8 @@ function _Seq() {
 	if(this.outputMessage === null) {
 		if(typeof arguments[2] !== "undefined") {
 			this.outputMessage = arguments[2];
+			this[this.outputMessage] = this.sequence;
+			this.sequences.push(this.outputMessage);
 		}else{
 			if(this.sequence !== null) {
 				if(typeof this.sequence[0] === "function") {

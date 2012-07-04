@@ -252,8 +252,8 @@ default:
 'ss = Synth();\n'+
 'ss.fx.add( Reverb() )\n'+
 '\n'+
-'s.attack = ss.attack = 10;\n'+
-'s.decay  = ss.decay  = 50;\n'+
+'s.attack = ss.attack = ms(10);\n'+
+'s.decay  = ss.decay  = ms(50);\n'+
 '\n'+
 '// assign a mode and root note to Gibber.\n'+
 'G.mode = "lydian";\n'+
@@ -280,7 +280,7 @@ default:
 '// set sequence to loop through all available modes. All modes are also stored in Gibber.modes\n'+
 '// major can be substituted for ionian, minor can sub for aeolian\n'+
 'b.stop();\n'+
-'a.set([ "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"]);\n'+
+'a.mode = [ "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"];\n'+
 '\n'+
 '// change q to play each note in scale (with some extra notes on the pentatonic ones)\n'+
 'q.set( [0,1,2,3,4,5,6,7]);\n'+
