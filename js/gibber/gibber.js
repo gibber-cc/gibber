@@ -146,6 +146,7 @@ define(['gibber/audio_callback',
 				var _chord = teoria.note(_root + _octave).chord(_quality);
 				for(var j = 0; j < _chord.notes.length; j++) {
 					var n = _chord.notes[j];
+					//console.log(n, this);
 					this.note(n);
 				}
 			}else{
@@ -154,10 +155,9 @@ define(['gibber/audio_callback',
 					this.note(note);
 				}
 			}
-			//if(typeof arguments[1] !== "undefined") { this.trig(arguments[1]); }
-			if(typeof arguments[1] === "undefined") {
+
+			if(typeof arguments[1] !== "undefined") {
 				this.amp = arguments[1];
-				// this.trig(this.amp);
 			}
 		
 			return this;
@@ -681,8 +681,10 @@ function LFO(freq, amp, waveform) {
 
 function Sine(freq, volume) {	
 	var that = Gibberish.Sine(freq, volume);
-	that.connect(Master);//Osc.apply(null, arguments);
+	that.connect(Master);
 	that.masters = [];
+	that.note = function(freq) { this.frequency = freq; }
+	that.note = Gibber.makeNoteFunction(that);
 	
 	//that.connect(Gibberish.MASTER);
 	return that;
