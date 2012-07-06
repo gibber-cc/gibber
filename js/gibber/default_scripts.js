@@ -300,34 +300,43 @@ default:
 'F3M9b5 - F major 9 flat 5 chord\n'+
 'G3aug  - G augmented chord\n'+
 '\n'+
-'In Gibber we can use these chords with the Poly (polysynth) and the Arp (arpeggiator) objects.\n'+
-'The Poly object plays all notes simultaneously, the Arp plays them sequentially.\n'+
+'In Gibber we can use these chords with the Synth, FM and Pluck objects assuming we tell these\n'+
+'to be polyphonic using the maxVoices parameter. The Arp (arpeggiator) object also accepts chords\n'+
+'that it then sequences... you can slave a synth to an arp just like you would a Seq object.\n'+
 '*/\n'+
 '\n'+
-'// create a poly object and give it a starting chord.\n'+
-'p = Poly("C4m7");\n'+
+'// create a poly object and assign five note polyphony\n'+
+'p = Synth( {maxVoices: 5, attack: ms(1000), decay: ms(1000) } );\n'+
 'p.fx.add( Reverb() );\n'+
 '\n'+
-'// trigger the amplitude envelope to play the chord. Pass the volume you want to use.\n'+
-'p.trig(.6);\n'+
+'// play a chord at .5 amplitude\n'+
+'p.chord("C4m7", .5);\n'+
 '\n'+
-'// we can sequence trig calls to play the chord in a pattern of different volumes\n'+
-'s = Seq([.5, .2, .3, .1], _8, "trig").slave(p);\n'+
-'\n'+
-'// change the chord using the chord message\n'+
-'p.chord("D4m7");\n'+
+'// play a chord at .25 amplitude\n'+
+'p.chord("Bb3maj7", .25);\n'+
 '\n'+
 '// sequence chord changes using chord calls\n'+
-'ss = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, "chord").slave(p);\n'+
+'s = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, "chord").slave(p);\n'+
+'\n'+
+'s.stop();\n'+
+'\n'+
+'// also sequence amplitudes, long form\n'+
+'s = Seq({\n'+
+'  chord: [["C4m7", .15], ["D4m7", .025], ["Bb3maj7", .1], ["Ab3maj7", .3]],\n'+
+'  speed: _1,\n'+
+'  slaves: p,\n'+
+'});\n'+
+'\n'+
 '\n'+
 '// create a sine wave to arpeggiate\n'+
-'high = Sine(440, .1);\n'+
+'high = Sine(440, .1);	\n'+
 'high.fx.add( Reverb() );\n'+
 '\n'+
-'// pass oscillator/synth to control, chord, note duration, direction and number of octaves\n'+
+'// create arpeggiator with chord, note duration, direction and number of octaves\n'+
 'a = Arp("C4m7", _32, "updown", 3);\n'+
-'a.slave(high);     // slave oscillator to arp\n'+
-'ss.slave(a);       // slave chord of arp to same sequencer that is controlling our Poly',
+'a.slave(high);	// slave oscillator to arp\n'+
+'\n'+
+'s.slave(a);		// slave chord of arp to same sequencer that is controlling our Poly',
 
 "sequence functions" :
 '// This shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
