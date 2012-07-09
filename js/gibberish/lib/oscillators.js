@@ -209,84 +209,57 @@ define([], function() {
 		},
 		
 		PolyKarplusStrong : function(properties) {
-			var that = {
-				type:			"PolyKarplusStrong",
-				category:		"Gen",
+			var that = Gibberish.Bus();
+				
+			Gibberish.extend(that, {
+				amp:		 	.2,
 				blend:			1,
 				damping:		0,
-				maxVoices:		10,
+				maxVoices:		5,
 				voiceCount:		0,
-				amp:			.2,
+				children:		[],
+				mod:			Gibberish.polyMod,
 				
 				note : function(_frequency) {
-					var synth = this.synths[this.voiceCount++];
+					var synth = this.children[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
 					synth.note(_frequency);
 				},
-			};
-			
-			that.dampingValue = .5 - that.damping;
+			});
 			
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-			that.synths = [];
-			that.synthFunctions = [];
 			for(var i = 0; i < that.maxVoices; i++) {
-				var props = {};
-				Gibberish.extend(props, that);
-				delete props.note; // we don't want to copy the poly note function obviously
-				delete props.type;
-				delete props.synths;
-				delete props.synthFunctions;
-				
-				props.type = "KarplusStrong";
+				var props = {
+					blend:		that.blend,
+					damping:	that.damping,
+					amp: 		1,
+				};
 				
 				var synth = this.KarplusStrong(props);
-			
-				that.synths.push(synth);
-			
-				that.synthFunctions.push(synth._function);
+				synth.send(that, 1);
+
+				that.children.push(synth);
 			}
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"PolyKarplusStrong\"]();");	
-			window[that.name] = Gibberish.make["PolyKarplusStrong"](that.synthFunctions); // only passs ugen functions to make
+			Gibberish.polyDefineProperties( that, ["blend", "damping"] );
 			
-			Gibberish.defineProperties( that, ["blend", "amp"] );
+			(function() {
+				var _amp = that.amp;
+				Object.defineProperty(that, "amp", {
+					get: function() { return _amp; },
+					set: function(value) {
+						_amp = value;
+						that.send(Master, value);
+					},
+				});
+			})();
 			
-			// 		    Object.defineProperty(that, "damping", {
-			// 	get: function() {
-			// 		return damping * 100;
-			// 	},
-			// 	set: function(value) {
-			// 		damping = value / 100;
-			// 		that.dampingValue = .5 - damping;
-			// 		Gibberish.dirty(this);
-			// 	}
-			// 
-			// });
-	
 			return that;
-		},
-		
-		makePolyKarplusStrong: function(_synths) {
-			var phase = 0;
-			var output = function(blend, dampingValue, amp) {
-				var out = 0;
-				var synths = _synths;
-				var numSynths = synths.length;
-				for(var i = 0; i < numSynths; i++) {
-					var synth = synths[i];
-					out += synth(blend, dampingValue, amp);
-				}
-				return out;
-			}
-			return output;
-		},
-		
+		},	
+			
 		Sampler : function(pathToAudioFile) {
 			var that = {
 				type: 			"Sampler",
