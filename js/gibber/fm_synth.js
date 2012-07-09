@@ -42,7 +42,8 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	
 	that.note = Gibber.makeNoteFunction(that);
 	that.chord = Gibber.chord;
-	that.connect(Master);	
+	
+	that.send(Master, that.amp);	
 	
 	return that;
 }
