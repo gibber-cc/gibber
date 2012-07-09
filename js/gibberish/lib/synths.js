@@ -102,7 +102,7 @@ define([], function() {
 				voiceCount:		0,
 				
 				note : function(_frequency) {
-					var synth = this.synths[this.voiceCount++];
+					var synth = this.children[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
 					synth.note(_frequency);
 				},
@@ -111,67 +111,46 @@ define([], function() {
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			//Gibberish.extend(that, new Gibberish.ugen(that));
 			
-			that.synths = [];
-			that.synthFunctions = [];
+			that.children = [];
 			
 			for(var i = 0; i < that.maxVoices; i++) {
 				var props = {};
 				Gibberish.extend(props, that);
 				delete props.note; // we don't want to copy the poly note function obviously
 				delete props.type;
-				delete props.synths;
+				delete props.children;
 				delete props.synthFunctions;
 				delete props.name;
 				delete props.ugenVariable;
 				delete props._function;
-
+				
+				props.amp = 1;
 				props.type = "Synth";
 				props.category = "Gen";
 				
 				var synth = this.Synth(props);
 				synth.send(that, 1);
 
-				that.synths.push(synth);
-
-				that.synthFunctions.push(synth._function);
+				that.children.push(synth);
 			}
 			
 			that.mod = Gibberish.polyMod;
-			// Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay"] );
-			// 
-			// var waveform = that.waveform; 
-			// 		    Object.defineProperty(that, "waveform", {
-			// 	get: function() { return waveform; },
-			// 	set: function(value) {
-			// 		if(waveform !== value) {
-			// 			waveform = value;
-			// 			that.osc = Gibberish.make[value]();
-			// 			Gibberish.dirty(that);
-			// 		}
-			// 	},
-			// });
+			Gibberish.polyDefineProperties( that, ["waveform", "attack","decay"] );
+
+			(function() {
+				var _amp = that.amp;
+				Object.defineProperty(that, "amp", {
+					get: function() { return _amp; },
+					set: function(value) {
+						_amp = value;
+						that.send(Master, value);
+					},
+				});
+			})();
 			
-			//Gibberish.ugens.push(that);
 			return that;
 		},
-		
-		// makePolySynth: function(_synths) {
-		// 	var phase = 0;
-		// 	var output = function(amp, attack, decay) {
-		// 		var out = 0;
-		// 		var synths = _synths;
-		// 		var numSynths = synths.length;
-		// 		for(var i = 0; i < numSynths; i++) {
-		// 			var synth = synths[i];
-		// 			out += synth(null, amp, attack, decay);
-		// 		}
-		// 		//if(phase++ % 22050 === 0) console.log(out, numSynths, amp);
-		// 		return out;
-		// 	}
-		// 	return output;
-		// },
 		
 		FMSynth : function(properties) {
 			var that = { 

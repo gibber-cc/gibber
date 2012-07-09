@@ -657,11 +657,20 @@ define([], function() {
 				connectUgen : function(variable, amount) {
 					amount = isNaN(amount) ? 1 : amount;
 					
-					this.senderObjects.push(variable);
+					if(this.senderObjects.indexOf(variable) === -1) {
+						this.senderObjects.push(variable);
 					
-					this.senders.push( { type:"*", operands:[variable, amount] } );
+						this.senders.push( { type:"*", operands:[variable, amount] } );
 					
-					variable.destinations.push(this);
+						variable.destinations.push(this);
+					}else{
+						for(var i = 0; i < this.senders.length; i++) {
+							var sender = this.senders[i];
+							if(sender.operands[0] === variable) {
+								sender.operands[1] = amount;
+							}
+						}
+					}
 					
 					Gibberish.dirty(this);
 				},
@@ -701,13 +710,13 @@ define([], function() {
 			Gibberish.generators[that.type] = Gibberish.createGenerator(["senders"], "{0}( {1} )");
 
 			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Bus\"]();");
-			window[that.name] = Gibberish.make["Bus"](that.senders);
+			window[that.name] = Gibberish.make["Bus"]();
 
 			//Gibberish.defineProperties( that, ["senders", "dirty"]);
 			return that;
 		},
 
-		makeBus : function(_senders) { 
+		makeBus : function() { 
 			var output = function(senders) {
 				var out = 0;
 				

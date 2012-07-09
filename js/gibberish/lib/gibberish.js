@@ -153,6 +153,39 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			}
 		},
 		
+		polyDefineProperties : function(obj, props) {
+			for(var i = 0; i < props.length; i++) {
+				var prop = props[i];
+				(function(_obj) {
+					var that = _obj;
+					var propName = prop;
+					var value = that[prop];
+	
+				    Object.defineProperty(that, propName, {
+						get: function() { return value; },
+						set: function(_value) {
+							if(typeof value === "number" || typeof value === "boolean"){
+								value = _value;
+							}else{
+								value["operands"][0] = _value;
+							}
+							
+							for(var j = 0; j < obj.children.length; j++) {
+								obj.children[j][prop] = value;
+							}
+
+							if(that.category === "FX") {
+								that.dirty = true;
+								Gibberish.dirty(that.parent.parent); // that.parent is fx array, parent of fx array is ugen
+							}else{
+								Gibberish.dirty(that);
+							}
+						},
+					});
+				})(obj);
+			}
+		},
+		
 		createGenerator : function(parameters, formula) {
 			var generator = function(op, codeDictionary, shouldAdd) {				
 				shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
@@ -282,8 +315,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 		
 		polyMod : function(name, modulator, type) {
-			for(var i = 0; i < this.synths.length; i++) {
-				this.synths[i].mod(name, modulator, type);
+			for(var i = 0; i < this.children.length; i++) {
+				this.children[i].mod(name, modulator, type);
 			}
 			Gibberish.dirty(this);
 		},
