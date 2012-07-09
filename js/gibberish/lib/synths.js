@@ -78,7 +78,7 @@ define([], function() {
 			var phase = 0;
 			var _frequency = 0;
 			var output = function(frequency, amp, attack, decay ) {
-				var val = osc(frequency || _frequency, amp) * env(attack, decay);
+				var val = osc(frequency, amp) * env(attack, decay);
 				//if(phase++ % 22050 === 0) console.log(val, amp);
 				return val;
 			}
@@ -89,9 +89,11 @@ define([], function() {
 		},
 		
 		PolySynth : function(properties) {
-			var that = {
-				type:			"PolySynth",
-				category:		"Gen",
+			var that = Gibberish.Bus();
+			
+			Gibberish.extend(that, {
+				// type:			"Bus",
+				// category:		"Bus",
 				waveform:		"Triangle",
 				amp:			.25,				
 				attack:			10000,
@@ -104,12 +106,12 @@ define([], function() {
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
 					synth.note(_frequency);
 				},
-			};
+			});
 			
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			Gibberish.extend(that, new Gibberish.ugen(that));
+			//Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.synths = [];
 			that.synthFunctions = [];
@@ -121,53 +123,55 @@ define([], function() {
 				delete props.type;
 				delete props.synths;
 				delete props.synthFunctions;
-				
+				delete props.name;
+				delete props.ugenVariable;
+				delete props._function;
+
 				props.type = "Synth";
+				props.category = "Gen";
 				
 				var synth = this.Synth(props);
-				//console.log(synth.note);
+				synth.send(that, 1);
+
 				that.synths.push(synth);
-				//console.log(that);
+
 				that.synthFunctions.push(synth._function);
 			}
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"PolySynth\"]();");	
-			window[that.name] = Gibberish.make["PolySynth"](that.synthFunctions);
-			
-			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay"] );
-			
-			var waveform = that.waveform; 
-		    Object.defineProperty(that, "waveform", {
-				get: function() { return waveform; },
-				set: function(value) {
-					if(waveform !== value) {
-						waveform = value;
-						that.osc = Gibberish.make[value]();
-						Gibberish.dirty(that);
-					}
-				},
-			});
+			that.mod = Gibberish.polyMod;
+			// Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay"] );
+			// 
+			// var waveform = that.waveform; 
+			// 		    Object.defineProperty(that, "waveform", {
+			// 	get: function() { return waveform; },
+			// 	set: function(value) {
+			// 		if(waveform !== value) {
+			// 			waveform = value;
+			// 			that.osc = Gibberish.make[value]();
+			// 			Gibberish.dirty(that);
+			// 		}
+			// 	},
+			// });
 			
 			//Gibberish.ugens.push(that);
 			return that;
 		},
 		
-		makePolySynth: function(_synths) {
-			var phase = 0;
-			var output = function(amp, attack, decay) {
-				var out = 0;
-				var synths = _synths;
-				var numSynths = synths.length;
-				for(var i = 0; i < numSynths; i++) {
-					var synth = synths[i];
-					out += synth(null, amp, attack, decay);
-				}
-				//if(phase++ % 22050 === 0) console.log(out, numSynths, amp);
-				return out;
-			}
-			return output;
-		},
+		// makePolySynth: function(_synths) {
+		// 	var phase = 0;
+		// 	var output = function(amp, attack, decay) {
+		// 		var out = 0;
+		// 		var synths = _synths;
+		// 		var numSynths = synths.length;
+		// 		for(var i = 0; i < numSynths; i++) {
+		// 			var synth = synths[i];
+		// 			out += synth(null, amp, attack, decay);
+		// 		}
+		// 		//if(phase++ % 22050 === 0) console.log(out, numSynths, amp);
+		// 		return out;
+		// 	}
+		// 	return output;
+		// },
 		
 		FMSynth : function(properties) {
 			var that = { 

@@ -173,7 +173,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			}
 			return generator;
 		},
-		// TODO: MUST MEMOIZE THIS FUNCTION
+		
 		codegen : function(op, codeDictionary, shouldAdd) {
 			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
 			
@@ -186,9 +186,9 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				}
 				
 				var name = op.ugenVariable || this.generateSymbol("v");
-				
 				op.ugenVariable = name;
-				if(op.name) {
+				
+				if(op.name && !op.NO_MEMO) {
 					this.memo[op.name] = op.ugenVariable;
 				}
 				
@@ -197,13 +197,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					statement = "var " + name + " = [";
 					
 					for(var i = 0; i < op.length; i++) {
-						var gen = this.generators[op[i].type];
-						
-						var _name = op[i].ugenVariable;
-												
-						var objName = op[i].name && !op[i].dirty ? op[i].name : gen(op[i], codeDictionary, false);
-						var _statement = "var {0} = {1}".format(_name, objName);
-						
+						var objName = op[i].name && !op[i].dirty ? op[i].name : this.generators[op[i].type](op[i], codeDictionary, false);
 						statement += objName + ",";
 					}
 						
@@ -279,14 +273,21 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		
 		mod : function(name, modulator, type) {
 			var type = type || "+";
-			var m = { type:type, operands:[this[name], modulator], name:name };
+			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:true };
 			this[name] = m;
 			modulator.modding.push({ ugen:this, mod:m });
 			this.mods.push(m);
 			Gibberish.dirty(this);
 			return modulator;
 		},
-
+		
+		polyMod : function(name, modulator, type) {
+			for(var i = 0; i < this.synths.length; i++) {
+				this.synths[i].mod(name, modulator, type);
+			}
+			Gibberish.dirty(this);
+		},
+		
 		removeMod : function() {
 			var mod = this.mods.get(arguments[0]); 	// can be number, string, or object
 			delete this[mod.name]; 					// remove property getter/setters so we can directly assign
