@@ -344,8 +344,8 @@ default:
 '\n'+
 '// create a synth and specify attack/delay/amp values, add delay + reverb\n'+
 's = Synth({\n'+
-'    attack: 10,\n'+
-'    decay: 50,\n'+
+'    attack: ms(10),\n'+
+'    decay: ms(50),\n'+
 '    amp:.25\n'+
 '});\n'+
 's.fx.add( Delay(_8), Reverb() );\n'+

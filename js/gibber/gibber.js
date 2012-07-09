@@ -397,7 +397,8 @@ define(['gibber/audio_callback',
 			// Master.mods.length = 0;
 			Master.senderObjects.remove();
 			Master.senders.remove();
-			Gibberish.dirty(Master);
+			Master.fx.remove();
+			//Gibberish.dirty(Master);
 			Gibber.log("Cleared Gibber graph.");	
 		},
 	

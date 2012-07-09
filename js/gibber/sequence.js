@@ -417,12 +417,12 @@ _Seq.prototype = {
 							if($.isArray(val)) {
 								_slave[key].apply(_slave, val);									
 							}else{
-								console.log("CALLING");
+								//console.log("CALLING");
 								_slave[key](val);
 							}
 						}
 					}else{
-						console.log("ASSIGNING");
+						//console.log("ASSIGNING");
 						_slave[key] = val;
 					}
 				}
