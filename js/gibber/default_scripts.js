@@ -361,7 +361,7 @@ default:
 '// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
-"granulation" :
+/*"granulation" :
 '// Create the granulator, 20 grains, each grain is 50ms\n'+
 '// Pitch and position vary by five percent. Store a buffer\n'+
 '// of one measure in length.\n'+
@@ -404,84 +404,69 @@ default:
 'g.set("envLength", ms(200));\n'+
 '\n'+
 '// remove the mods\n'+
-'g.mods.remove();\n',
+'g.mods.remove();\n',*/
 
-"algorithmic music" :
-'// this tutorial shows how to use random functions to generate "music".\n'+
-'// first create arrays to hold drums and sequencers\n'+
-'perc = [];\n'+
-'seqs = [];\n'+
+"randomness and algorithms" :
+'/* Randomness and Algorithms\n'+
 '\n'+
-'// set the mode and root note for all scale sequencers to use\n'+
-'G.mode = "lydian"\n'+
-'G.root = "D6"\n'+
+'There are some simple mechanisms for creating generative music. First, there are \n'+
+'two random methods, one for floats and one for ints: rndf and rndi. These two methods\n'+
+'are heavily overloaded.\n'+
 '\n'+
-'// create a bus with reverb to send audio to. this is much cheaper\n'+
-'// than a separate reverb for every drum / sound\n'+
-'b = Bus( Reverb(.3,.3) )\n'+
+'rndf(); Generate a random float between 0 and 1\n'+
+'rndf(10); Generate a random float between 0 and 10\n'+
+'rndi(5, 10); Generate an integer between 5 and 10\n'+
+'rndi(0, 10, 150); Return an array of 150 integers between 0 and 10\n'+
+'rndf([.2, .4, .7, .9], 25); Return an array of 25 numbers either .2, .4, .7 or .9\n'+
 '\n'+
-'for(var i = 0; i < 8; i++) {\n'+
-'    // fill our perc array with a FM drum synth. set the amp to be low\n'+
-'    // (since there will be 8) and send each to the reverb bus\n'+
-'    perc[i] = FM("drum2")\n'+
-'    perc[i].amp /= 8;\n'+
-'    perc[i].send(b, .5)\n'+
-'    \n'+
-'    // create a sequencer to control each drum\n'+
-'    seqs[i] = ScaleSeq( \n'+
-'        filli(-12, 12, 32),   // create an array of 32 random integers ranging from -12 to 12 \n'+
-'        filld([2,4,8,16], 32) // create an array of 32 random durations that are either \n'+
-'                              // 1/2, 1/4, 1/8 or 16th notes\n'+
-'    ).slave(perc[i]);\n'+
-'    \n'+
-'    seqs[i].offset = rndi(-500, 500); // set a random sample offset to "humanize" the sequence\n'+
-'}\n'+
+'With that in mind, here\'s a simple randomized sequencer: */\n'+
 '\n'+
-'// create a sequencer that will randomize the volume of each drum every quarter note\n'+
-'t = Seq( function() { \n'+
-'    perc.all(            // use all to apply a function to each array item\n'+
-'        function (obj) { // obj represents the array item\n'+
-'            obj.amp = rndf(.015, .1); // set a random amp from .015 to .5        \n'+
-'        } \n'+
-'    );\n'+
-'}, _4)\n'+
+'a = Synth();\n'+
+'b = Seq( function() { a.note( rndi(440, 880) ) }, _2).slave(a);\n'+
 '\n'+
-'seqs.all( function(obj) { obj.root = "F6" } );  // change the root for all scales\n'+
-'perc.all( function(obj) { obj.fx.add( Delay(_16, .1) ) } ); // add fx to all drums',
-
-"custom callback": 
-'/*\n'+
-'So, you want your own callback... don\'t like my graph? Well, here you go.\n'+
-'Most ugens in Gibber have a method named "out" that advances the phase of the\n'+
-'ugen and returns the output. Note that keystrokes to stop/start audio will\n'+
-'not work with a custom callback, and that there is no tempo. It\'s a little\n'+
-'tricky to run this and then initialize objects as new objects are automatically added to\n'+
-'Gibber\'s graph, so we\'ll just create our ugens the first time the new callback is called.\n'+
+'// and here\'s one with an array of 5 set random values:\n'+
 '\n'+
-'To disable the callback (and stop the sine wave) just run the last line of code, which\n'+
-'resets the callback to Gibber\'s default\n.'+
-'*/\n'+
+'c = Synth();\n'+
+'d = Seq( rndf(440, 880, 5), _4).slave(c);\n'+
 '\n'+
-'G.dev.readFn = function(buffer, channelCount){\n'+
-'    var freqStore, val;\n'+
-'    if(typeof __s === "undefined") {  // init oscillators\n'+
-'        G.log("INIT");\n'+
-'        __s = Sine();\n'+
-'        __m = Sine(4, 8);\n'+
-'    }\n'+
-'    \n'+
-'    for(var i = 0; i < buffer.length; i+= channelCount) {\n'+
-'        freqStore = __s.frequency;\n'+
-'        __s.frequency += __m.out();     	// modulate the frequency\n'+
-'        val = __s.out();          			// get the output of s\n'+
-'        __s.frequency = freqStore;    		// restore the frequency of s\n'+
-'        \n'+
-'        buffer[i] = val;            		// assign value to sample\n'+
-'        buffer[i+1] = val;\n'+
-'	}\n'+
-'}\n'+
+'/* Whenever a sequencer advances through an array of values, it checks to see if that\n'+
+'array has a pick function. If a pick function exists then it uses that function to pick\n'+
+'out an item from the array instead of linearly advancing through it. Notice how once we\n'+
+'add a pick function to the note array the same note is always returned: */\n'+
 '\n'+
-'G.dev.readFn = window.audioProcess;  // restore the Gibber graph',
+'e = Synth();\n'+
+'f = Seq( rndf(440, 880, 10), _4).slave(e);\n'+
+'\n'+
+'// wait a few seconds, then run the line below\n'+
+'f.note.pick = function() { return 660; };\n'+
+'\n'+
+'/* Gibber includes a couple of functions to help define pick functions for you. One simple\n'+
+'example is the surpriseMe() function, which will return a function that randomly selects an\n'+
+'element from the array each time the sequencer advances. */\n'+
+'\n'+
+'g = Synth();\n'+
+'h = Seq( rndf(440, 880, 4), _4).slave(g);\n'+
+'\n'+
+'// wait a few seconds, then run the line below\n'+
+'h.note.pick = surpriseMe();\n'+
+'\n'+
+'/* Another useful function to generate a pick is weight(). Weight allows you to weight the\n'+
+'likelihood of each note being picked in an array. For example, if we wanted to stress the\n'+
+'root of a scale and eighth note durations we could do the following: */\n'+
+'\n'+
+'i = Synth( { attack:ms(10), decay:ms(500) } );\n'+
+'j = ScaleSeq({\n'+
+'  note:[0,2,3,5,7,8],\n'+
+'  durations:[_8, _4, _2],\n'+
+'  slaves:[i],\n'+
+'  root:"C2",\n'+
+'});\n'+
+'\n'+
+'// wait a few seconds and then run the line below\n'+
+'j.note.pick = weight(.7, .1, .1, .05, .05); // weights should add up to 1\n'+
+'\n'+
+'// wait a while and then run this to emphasize eighth notes\n'+
+'j.durations.pick = weight(.8, .1, .1);',
 
 "SYNTHESIS TUTORIALS":"LABEL START",
 

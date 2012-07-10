@@ -350,6 +350,10 @@ window.rndf = window.randomf = function(min, max, number) {
 	}else{
 		var output = [];
 		
+		if(typeof number === "undefined") {
+			number = max || min.length;
+		}
+
 		for(var i = 0; i < number; i++) {
 			var num;
 			if(typeof arguments[0] === "object") {
