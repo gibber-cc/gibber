@@ -171,7 +171,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 							}
 							
 							for(var j = 0; j < obj.children.length; j++) {
-								obj.children[j][prop] = value;
+								obj.children[j][propName] = value;
 							}
 
 							if(that.category === "FX") {

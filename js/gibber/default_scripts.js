@@ -540,7 +540,7 @@ FM:
 '\n'+
 'c = Sine(240, .15);\n'+
 '\n'+
-'c.mod("freq", Sine(8, 4), "+");  // Vibrato - modulating frequency 8 times per second by +/- 4Hz\n'+
+'c.mod("frequency", LFO(4, 10), "+");  // Vibrato - modulating frequency 8 times per second by +/- 4Hz\n'+
 '\n'+
 '/*\n'+
 'The mod command in Gibber simply modulates the named parameter ("freq") using the provided\n'+
@@ -559,21 +559,22 @@ FM:
 'carrierFrequency = 200;\n'+
 'c = Sine(carrierFrequency, .15);\n'+
 '\n'+
-'c.mod("freq", Sine(carrierFrequency * 1.4, 190), "+"); \n'+
+'c.mod("frequency", LFO(carrierFrequency * 1.4, 190), "+"); \n'+
 '\n'+
 '/*\n'+
 'If we use a synth for this we get an envelope that can be triggered via the note command.\n'+
 'A short attack and long decay will give us some nice bell sounds. Especially if we add some reverb :)\n'+
 '*/\n'+
 '\n'+
-'noteFrequency = ntof("F2"); // ntof is note-to-frequency\n'+
+'noteFrequency = ntof("F3"); // ntof is note-to-frequency\n'+
 '\n'+
-'c = Synth("sine", .15);\n'+
+'c = Synth("Sine", .15);\n'+
 'c.fx.add( Reverb() );\n'+
-'c.mod("freq", Sine( noteFrequency * 1.4, noteFrequency * .95), "+");\n'+
-'c.env.attack  = 1;        // 1 ms attack time\n'+
-'c.env.decay   = 6000;     // 1000 ms decay\n'+
+'c.mod("frequency", LFO( noteFrequency * 1.4, noteFrequency * .95), "+");\n'+
+'c.attack  = ms(1);        // 1 ms attack time\n'+
+'c.decay   = ms(6000);     // 1000 ms decay\n'+
 '\n'+
+'c.amp = .5;\n'+
 'c.note(noteFrequency);\n'+
 '\n'+
 '/*\n'+
@@ -589,6 +590,6 @@ FM:
 '\n'+
 'f = FM(1 / 1.0007, 5, 100, 100);\n'+
 'f.fx.add( Reverb() );\n'+
-'s = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);',
+'s = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);,\n',
 };
 });

@@ -34,7 +34,7 @@ define([], function() {
 				amp:		.5,				
 				attack:		22050,
 				decay:		22050,
-				frequency:	440,
+				frequency:	0,
 				
 				note : function(_frequency) {
 					this.frequency = _frequency;
