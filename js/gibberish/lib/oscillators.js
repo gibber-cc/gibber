@@ -86,11 +86,14 @@ define([], function() {
 			var cycle = 1;
 			var phase = 0;
 			var output = function(frequency, amp) {
-				while(phase++ >= 44100 / frequency) {
-					cycle *= -1;
-					phase -= 44100;
-				}
-				return cycle;
+				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Square.js
+				var out = phase > 0.5 ? 1 : -1;
+			    phase += frequency / 44100;
+				
+			    if (phase > 1) {
+			        phase %= 1;
+			    }
+				return out * amp;
 			}
 	
 			return output;
@@ -118,6 +121,7 @@ define([], function() {
 		makeTriangle: function() {
 			var phase = 0;
 			var output = function(frequency, amp) {
+				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js
 			    var out = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);
 
 			    phase += frequency / 44100;
