@@ -38,3 +38,19 @@ function Synth(attack, decay, amp) {
 	
 	return that;
 }
+
+function Synth2(properties) {
+	var that = {};
+	
+	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
+	if(isNaN(that.maxVoices)) that.maxVoices = 1;
+		
+	that = Gibberish.PolySynth2(that);
+	
+	that.note = Gibber.makeNoteFunction(that);
+	that.chord = Gibber.chord;	
+	
+	that.send(Master, that.amp);
+	
+	return that;
+}
