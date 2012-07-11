@@ -98,11 +98,28 @@ define([], function() {
 				decay:			10000,
 				maxVoices:		5,
 				voiceCount:		0,
+				glide:			0,
 				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
+					
+					if(typeof synth.frequency === "object") {
+						prevFreq = synth.frequency.operands[0];
+					}else{
+						prevFreq = synth.frequency;
+					}
+					
 					synth.note(_frequency);
+					
+					if(this.glide > 0) {
+						synth.mod("frequency", Line(_frequency - prevFreq, 0, this.glide), "-");
+					
+						var oldMod = synth.mods[synth.mods.length - 1];
+						future( function() { synth.removeMod(oldMod) }, this.glide );
+					}
+					
+					return synth;
 				},
 			});
 			
