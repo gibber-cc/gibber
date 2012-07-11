@@ -314,7 +314,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			this[name] = m;
 			modulator.modding.push({ ugen:this, mod:m });
 			this.mods.push(m);
-			Gibberish.dirty(this);
+			//Gibberish.dirty(this);
 			return modulator;
 		},
 		

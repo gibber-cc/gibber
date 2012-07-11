@@ -107,39 +107,6 @@ define(["gibberish/lib/gibberish"], function() {
 			}
 		}
 	};
-	
-	// window.FXArray = function() {
-	// 	var that = {
-	// 		length : 0,
-	// 		add : function() {
-	// 			for(var i = 0; i < arguments.length; i++) {
-	// 				Array.prototype.push.call(that, arguments[i]);
-	// 			}
-	// 			Gibberish.dirty(this);
-	// 		},
-	// 		remove : function() {
-	// 			Array.prototype.remove.apply(that, arguments);
-	// 			Gibberish.dirty(this);
-	// 		},
-	// 		replace : function() {
-	// 			Array.prototype.replace.apply(that, arguments);
-	// 			Gibberish.dirty(this);
-	// 		},
-	// 		insert : function() {
-	// 			Array.prototype.insert.apply(that, arguments);
-	// 			Gibberish.dirty(this);	
-	// 		},
-	// 		splice : function() {
-	// 			Array.prototype.splice.apply(that, arguments);
-	// 		},
-	// 		push : function() {
-	// 			Array.prototype.push.call(that, arguments[0]);
-	// 		},
-	// 		
-	// 	};
-	// 	Gibberish.extend(this,that);
-	// 	return this;
-	// }
 
 	Array.prototype.replace = function(oldObj, newObj) {
 		if(typeof oldObj != "number") {

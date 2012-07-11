@@ -21,7 +21,7 @@ function Schizo(props) {
 			},
 		};
 	}
-	console.log(0);
+
 	var that = {
 		type:		"BufferShuffler",
 		category:	"FX",
@@ -34,13 +34,13 @@ function Schizo(props) {
 		pitchMax : 2,
 		mix : 1,
 	};
-	console.log(1);
+
 	if(typeof arguments[0] === "object") {
 		$.extend(that, arguments[0]);
 	}else if(typeof arguments[0] === "string") {
 		$.extend(that, Gibber.SchizoPresets[arguments[0]]);
 	}
-	console.log(2);
+
 	that = Gibberish.BufferShuffler( that );
 	
 	return that;
