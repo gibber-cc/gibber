@@ -35,11 +35,28 @@ define([], function() {
 				attack:		22050,
 				decay:		22050,
 				frequency:	0,
+				glide:		0,
 				
 				note : function(_frequency) {
+					if(typeof this.frequency === "object") {
+						prevFreq = this.frequency.operands[0];
+					}else{
+						prevFreq = this.frequency;
+					}
+					
 					this.frequency = _frequency;
 					this._function.setFrequency(this.frequency);
 					if(this.env.getState() > 0) this.env.setState(0);
+				
+					if(this.glide > 0) {
+						this.mod("frequency", Line(_frequency - prevFreq, 0, this.glide), "-");
+					
+						var oldMod = this.mods[this.mods.length - 1];
+						
+						var me = this;
+						future( function() { me.removeMod(oldMod) }, this.glide );
+					}
+					
 				},
 			};
 			
@@ -104,20 +121,7 @@ define([], function() {
 					var synth = this.children[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
 					
-					if(typeof synth.frequency === "object") {
-						prevFreq = synth.frequency.operands[0];
-					}else{
-						prevFreq = synth.frequency;
-					}
-					
 					synth.note(_frequency);
-					
-					if(this.glide > 0) {
-						synth.mod("frequency", Line(_frequency - prevFreq, 0, this.glide), "-");
-					
-						var oldMod = synth.mods[synth.mods.length - 1];
-						future( function() { synth.removeMod(oldMod) }, this.glide );
-					}
 					
 					return synth;
 				},
@@ -144,7 +148,7 @@ define([], function() {
 			}
 			
 			that.mod = Gibberish.polyMod;
-			Gibberish.polyDefineProperties( that, ["waveform", "attack","decay"] );
+			Gibberish.polyDefineProperties( that, ["waveform", "attack", "decay", "glide"] );
 			
 			(function() {
 				var _amp = that.amp;
