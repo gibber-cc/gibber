@@ -30,6 +30,12 @@ function Step(steps, time) {
 	return that;
 }
 
+function Line(time, start, end){
+	var that = Gibberish.Line(time, start, end);
+	
+	return that;
+}
+
 function Env2() {
 	that = {
 		value : 0,

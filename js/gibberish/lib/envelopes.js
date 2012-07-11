@@ -12,6 +12,10 @@ define([], function() {
 			gibberish.generators.Step = gibberish.createGenerator(["time"], "{0}({1})" ),
 			gibberish.make["Step"] = this.makeStep;
 			gibberish.Step = this.Step;
+			
+			gibberish.generators.Line = gibberish.createGenerator(["time"], "{0}({1})" ),
+			gibberish.make["Line"] = this.makeLine;
+			gibberish.Line = this.Line;
 		},
 		
 		Env : function(attack, decay) {
@@ -177,5 +181,44 @@ define([], function() {
 			
 			return output;
 		},	
+		
+		Line : function(start, end, time) {
+			var that = { 
+				type:		"Line",
+				category:	"Gen",
+				start:		start || 0,
+				end:		end   || 1,
+				time:		time || 44100,
+
+				run: function() {
+					//that._function.setPhase(0);
+					that._function.setState(0);
+					that._function.setPhase(0);					
+				},
+			};
+			Gibberish.extend(that, new Gibberish.ugen());
+			
+			that.name = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Line\"]();");
+			window[that.name] = Gibberish.make["Line"](that.start, that.end, that.time);
+			that._function = window[that.name];
+			
+			Gibberish.defineProperties( that, [] );
+	
+			return that;
+		},
+		
+		makeLine : function(start, end, time) {
+			var phase = 0;
+			var incr = (end - start) / time;
+			
+			var output = function(time) {
+				var out = phase < time ? start + ( phase++ * incr) : end;
+				
+				return out;
+			};
+			
+			return output;
+		},
     }
 });
