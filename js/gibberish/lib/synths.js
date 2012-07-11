@@ -174,11 +174,27 @@ define([], function() {
 				attack:		22050,
 				decay:		22050,
 				frequency:	0,
+				glide: 		0,
 				
 				note : function(frequency) {
+					if(typeof this.frequency === "object") {
+						prevFreq = this.frequency.operands[0];
+					}else{
+						prevFreq = this.frequency;
+					}
+					
 					this.frequency = frequency;
 					this._function.setFrequency(frequency);
 					this.env.start();
+					
+					if(this.glide > 0) {
+						this.mod("frequency", Line(frequency - prevFreq, 0, this.glide), "-");
+					
+						var oldMod = this.mods[this.mods.length - 1];
+						
+						var me = this;
+						future( function() { me.removeMod(oldMod) }, this.glide );
+					}
 				},
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
@@ -232,7 +248,7 @@ define([], function() {
 				decay:			22050,
 				maxVoices:		5,
 				voiceCount:		0,
-				
+				glide:			0,
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
@@ -262,7 +278,7 @@ define([], function() {
 			}
 			
 			that.mod = Gibberish.polyMod;
-			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack","decay"] );
+			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack", "decay", "glide"] );
 			
 			(function() {
 				var _amp = that.amp;
@@ -295,11 +311,27 @@ define([], function() {
 				filterMult:		.3,
 				isLowPass:		true,
 				frequency:		440,
+				glide:			0,
 				
 				note : function(_frequency) {
+					if(typeof this.frequency === "object") {
+						prevFreq = this.frequency.operands[0];
+					}else{
+						prevFreq = this.frequency;
+					}
+					
 					this.frequency = _frequency;
 					this._function.setFrequency(_frequency);
 					if(this.env.getState() > 1) this.env.setState(0);
+					
+					if(this.glide > 0) {
+						this.mod("frequency", Line(_frequency - prevFreq, 0, this.glide), "-");
+					
+						var oldMod = this.mods[this.mods.length - 1];
+						
+						var me = this;
+						future( function() { me.removeMod(oldMod) }, this.glide );
+					}	
 				},
 			};
 			
@@ -371,8 +403,10 @@ define([], function() {
 				isLowPass:		true,
 				maxVoices:		5,
 				voiceCount:		0,
+				glide:			0,
 				
 				note : function(_frequency) {
+					
 					var synth = this.synths[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
 					synth.note(_frequency);
