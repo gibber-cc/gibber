@@ -91,6 +91,23 @@ define(["gibberish/lib/gibberish"], function() {
 		//console.log("ADDING ::: this.parent = ", this.parent)
 		if(this.parent) Gibberish.dirty(this.parent);
 	};
+	
+	Array.prototype.pushUnique = function() {
+		for(var i = 0; i < arguments.length; i++) {
+			var obj = arguments[i];
+			var shouldAdd = true;
+			for(var j = 0; j < this.length; j++) {
+				if(obj === this[j]) {
+					shouldAdd = false;
+					break;
+				}
+			}
+			if(shouldAdd) {
+				this.push(obj);
+			}
+		}
+	};
+	
 	// window.FXArray = function() {
 	// 	var that = {
 	// 		length : 0,

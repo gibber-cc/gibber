@@ -126,7 +126,7 @@ define(['gibber/audio_callback',
 				this._note(note);
 			};
 		},
-	
+			
 		chord : function(val, volume, shouldTrigger) {
 			this.notation = val;
 				
@@ -708,11 +708,7 @@ function Pulse(freq, volume) {
 }
 
 function Saw(freq, volume) {	
-	var that = Osc.apply(null,arguments);
-	that.name = "Saw";	
-	that.waveShape = 'sawtooth';
-	
-	that.amp *= .55;
+	var that = Gibberish.Saw(freq, volume).connect(Master);
 	
 	return that;
 }

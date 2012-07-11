@@ -127,8 +127,9 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
-							//console.log("SETITING", propName, _value);
-							if(typeof value === "number" || typeof value === "boolean"){
+							//console.log("SETITING...", propName, _value);
+							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
+								//console.log("SETTING INDIVIDUAL", value);
 								value = _value;
 							}else{
 								value["operands"][0] = _value;
@@ -164,14 +165,17 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
-							if(typeof value === "number" || typeof value === "boolean"){
+							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
+								//console.log("TRYING TO SET");
 								value = _value;
+								//console.log("AFTER SETTING");
 							}else{
 								value["operands"][0] = _value;
 							}
 							
 							for(var j = 0; j < obj.children.length; j++) {
-								obj.children[j][propName] = value;
+								//console.log("SETTING FOR CHILD", j, propName);
+								obj.children[j][propName] = _value;
 							}
 
 							if(that.category === "FX") {
@@ -405,14 +409,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				if(bus === Gibberish.MASTER) {
 					Gibberish.connect(this);
 				}else{
-					console.log("CONNECTING", this.ugenVariable);
 					bus.connectUgen(this, 1);
 				}
 				Gibberish.dirty(true);
 				return this;
 			},
 			disconnect : function(bus) {
-				console.log("DISCONNECT 1");
 				if(bus === Gibberish.MASTER) {
 					Gibberish.disconnect(this);
 				}else if(bus){

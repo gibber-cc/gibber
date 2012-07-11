@@ -13,6 +13,10 @@ define([], function() {
 			gibberish.make["Triangle"] = this.makeTriangle;
 			gibberish.Triangle = this.Triangle;
 			
+			gibberish.generators.Saw = gibberish.createGenerator(["frequency", "amp"], "{0}( {1}, {2} )");
+			gibberish.make["Saw"] = this.makeSaw;
+			gibberish.Saw = this.Saw;
+			
 			gibberish.generators.KarplusStrong = gibberish.createGenerator(["blend", "dampingValue", "amp"], "{0}( {1}, {2}, {3} )");
 			gibberish.make["KarplusStrong"] = this.makeKarplusStrong;
 			gibberish.KarplusStrong = this.KarplusStrong;
@@ -127,6 +131,49 @@ define([], function() {
 	
 			return output;
 		},
+		
+	    // output.samples[0] = ((this.phase / 2 + 0.25) % 0.5 - 0.25) * 4;
+	    // this.phase += frequency / sampleRate;
+	    // 
+	    // if (this.phase > 1) {
+	    //     this.phase %= 1;
+	    // }
+		Saw : function(freq, amp) {
+			var that = { 
+				type:		"Saw",
+				category:	"Gen",
+				frequency:	freq || 440, 
+				amp:		amp * .35 || .1,
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
+			
+			that.name = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Saw\"]();");
+			window[that.name] = Gibberish.make["Saw"]();
+			that._function = window[that.name];
+			
+			Gibberish.defineProperties( that, ["frequency", "amp"] );
+	
+			return that;
+		},
+		
+		makeSaw: function() {
+			var phase = 0;
+			var output = function(frequency, amp) {
+			    var out = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
+
+			    phase += frequency / 44100;
+				
+			    if (phase > 1) {
+			        phase %= 1;
+			    }
+				
+				return out * amp;
+			};
+	
+			return output;
+		},
+		
 		
 		KarplusStrong : function(properties) {
 			var that = { 
