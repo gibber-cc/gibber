@@ -132,7 +132,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 								//console.log("SETTING INDIVIDUAL", value);
 								value = _value;
 							}else{
-								value["operands"][0] = _value;
+								if(typeof _value.operands !== "undefined") {
+									value = _value;
+									//console.log("MOD", value);
+								}else{
+									value["operands"][0] = _value;
+								}
 							}
 							
 							if(typeof that.destinations !== "undefined") {
@@ -142,6 +147,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 									}
 								}
 							}
+							
 							if(that.category === "FX") {
 								that.dirty = true;
 								Gibberish.dirty(that.parent.parent); // that.parent is fx array, parent of fx array is ugen
@@ -170,7 +176,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 								value = _value;
 								//console.log("AFTER SETTING");
 							}else{
-								value["operands"][0] = _value;
+								if(typeof _value.operands !== "undefined") {
+									value = _value;
+									//console.log("MOD", value);
+								}else{
+									value["operands"][0] = _value;
+								}
 							}
 							
 							for(var j = 0; j < obj.children.length; j++) {
