@@ -17,7 +17,7 @@ s.fx.add(               // create an fx chain for oscillator
 
 a = Arp("C2m7", _16, "updown", 3); // Arpeggiator: Cminor7 chord in 2nd octave, 16th notes, up then down, 3 octave range
 
-d = Drums("x*o*x*o*",8);
+d = Drums("x*o-x*o-", _8);
 
 d.chain( Crush(6) );
 
