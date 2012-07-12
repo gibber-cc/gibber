@@ -5,8 +5,8 @@
 // some utilities are defined.
 
 // CodeMirror is the only global var we claim
-
-window.CodeMirror = (function() {
+define(function() {
+return (function() {
   // This is the function that produces an editor instance. Its
   // closure is used to store the editor state.
   function CodeMirror(place, givenOptions) {
@@ -3046,3 +3046,4 @@ window.CodeMirror = (function() {
 
   return CodeMirror;
 })();
+});

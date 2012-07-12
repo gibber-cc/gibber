@@ -2,7 +2,6 @@
 // by Charlie Roberts
 // 2011
 // MIT License
-// special thanks to audioLib.js
 define(['gibber/audio_callback',
 	'gibber/fx',
 	'gibber/sequence',

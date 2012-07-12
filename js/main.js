@@ -4,14 +4,10 @@ requirejs.config({
 });
 
 requirejs([
-	'codemirror/codemirror', 
-	"js/codemirror/util/loadmode.js",
-	"js/codemirror/util/overlay.js",
-	'gibberish/lib/external/sink-light', 
 	'gibberish/lib/gibberish', 
-	'gibber/gibber',
+	'gibber/gibber',	
 	'gibber/environment',
-	'gibber/default_scripts',
+	'gibberish/lib/external/sink-light', 	
 	'gibberish/lib/external/audiofile', 
 	'gibberish/lib/utils', 
 	'gibberish/lib/cycle',
@@ -19,7 +15,7 @@ requirejs([
 	'samples/drum-samples',
 	],
 	
-	function   ( _a, _b, _c, _d, __gibberish, __gibber, __environment, e) {
+	function   ( __gibberish, __gibber, __environment) {
 		window.Gibberish = __gibberish;
 		window.Gibber = window.G = __gibber;
 		Gibber.Environment = __environment;

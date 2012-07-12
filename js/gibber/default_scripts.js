@@ -1,6 +1,5 @@
-requirejs(["gibber/gibber"], function(_Gibber) {
-
-_Gibber.defaultScripts = {
+define(["gibber/gibber"], function(_Gibber) {	
+return {
 default:
 '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// intended as a tutorial. There are many tutorials in\n'+

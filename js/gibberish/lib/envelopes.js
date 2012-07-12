@@ -74,11 +74,11 @@ define([], function() {
 				type:		"ADSR",
 				category:	"Gen",	
 				attack:		attack || 10000,
-				decay:		decay || 10000,
+				decay:		decay	|| 0,
 				release:	release || 10000,
 				sustain: 	typeof sustain === "undefined" ? null : sustain,
 				attackLevel:  attackLevel || 1,
-				sustainLevel: sustainLevel || .5,
+				sustainLevel: sustainLevel || 1,
 
 				trigger: function() {
 					that._function.setPhase(0);

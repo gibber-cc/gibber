@@ -1,12 +1,15 @@
 define([
 	'gibber/gibber',
 	'gibber/default_scripts',
-	'gibber/tutorials', 
+	'codemirror/codemirror',
+	'gibber/tutorials',
+	"js/codemirror/util/loadmode.js",
+	"js/codemirror/util/overlay.js",
 	'jquery.simplemodal',
 	//'node/socket.io.min',
 	'megamenu/jquery.hoverIntent.minified',
 	'megamenu/jquery.dcmegamenu.1.3.3.min',
-], function(_Gibber) {
+], function(_Gibber, defaults, CodeMirror) {
 	
 	Storage.prototype.setObject = function(key, value) {
 	    this.setItem(key, JSON.stringify(value));
@@ -21,7 +24,7 @@ define([
 		$(".consoletext").text(val);
 		window.console.log(val);
 	}
-	
+	console.log("CREATING ENVIRONMENT");
 	var Environment = {
 		save : function(code) {
 			var scripts;
@@ -116,8 +119,8 @@ define([
 					return scripts[fileName];
 				}
 			}
-			if(typeof Gibber.defaultScripts[fileName] !== "undefined"){
-				return Gibber.defaultScripts[fileName];
+			if(typeof defaults[fileName] !== "undefined"){
+				return defaults[fileName];
 			}else{
 				window.alert("The file " + fileName +" is not found");
 				return null;
@@ -164,7 +167,7 @@ define([
 		createFileList : function(savedFile) {
 			var sel = $("#fileList");
 			$(sel).empty();
-			this.addScriptsToList(Gibber.defaultScripts);
+			this.addScriptsToList(defaults);
 		
 			var userScripts = localStorage.getObject("scripts")
 		
@@ -211,7 +214,8 @@ define([
 			  indentUnit : 2,
 	  		  smartIndent: true,
 			});
-			CodeMirror.autoLoadMode(window.editor, "javascript");		
+			CodeMirror.autoLoadMode(window.editor, "javascript");	
+			window.CodeMirror = CodeMirror;	
 		    window.editor.setOption("mode", "javascript");
 			window.editor.setOption("theme", "thecharlie");
 		
