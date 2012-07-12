@@ -1,5 +1,3 @@
-# NOTE THE MASTER BRANCH IS CURRENTLY BROKEN. PLEASE USE THE DEVELOP BRANCH #
-
 ## Gibber ##
 
 Gibber is a live coding environment for the web browser, built on top of audiolib.js and using the ACE code editor. I've only tested it in Chrome.
