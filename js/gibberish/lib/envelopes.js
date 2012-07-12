@@ -167,6 +167,8 @@ define([], function() {
 			var phase = 0;
 			var state = 0;
 			var output = function(time) {
+				//phase = phase >= time ? 0 : phase + 1;
+				//state = 
 				if(phase++ >= time) {
 					state++;
 					if(state >= steps.length) state = 0;

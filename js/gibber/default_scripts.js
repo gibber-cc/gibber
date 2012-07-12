@@ -130,17 +130,24 @@ default:
 'Sequencer tutorial for more information.\n'+
 '*/\n'+
 '\n'+
-'// x = kick, o = snare, * = hihat. hits are triggered every quarter note\n'+
+'// x = kick, o = snare, * = closed hihat, - = open hihat. hits are triggered every quarter note\n'+
 'd = Drums("xoxo", _4)\n'+
 '\n'+
-'// add soft-clipping distortion\n'+
+'// add soft-clipping distortion to entire kit\n'+
 'd.fx.add( Clip(1000) )\n'+
 '\n'+
-'// pitches range from 0.001 .. whatever. \n'+
+'// pitches range from 0.001 to however high you want to go. \n'+
 'd.pitch = 2;\n'+
 '\n'+
+'// pitch snare back down to original value\n'+
+'d.snare.pitch = .5;\n'+
+'\n'+
+'// add delay fx to snare only\n'+
+'d.snare.fx.add( Delay(_6, .25) );\n'+
+'\n'+
+'\n'+
 '// pass new sequence\n'+
-'d.set("x * ")\n'+
+'d.set("x -*")\n'+
 '\n'+
 '// change speed of pattern\n'+
 'd.speed = _8;\n'+
@@ -151,14 +158,14 @@ default:
 '\n'+
 '// return to original sequence\n'+
 'd.reset();\n'+
+'\n'+
 '// sequence kick, snare and hat with separate sequences so they can play simultaneously\n'+
 '// see sequencing tutorial for more details\n'+
-'\n'+
 'Gibber.clear();\n'+
-'d = Drums()\n'+
+'d = Drums();\n'+
 '\n'+
 'kick = Seq("x...x..xx..xx...", _16).slave(d);\n'+
-'hat  = Seq("*.*.*.***.*.*.**", _16).slave(d);\n'+
+'hat  = Seq("*.*.*-***.*-*.**", _16).slave(d);\n'+
 'sn   = Seq(".o", _4).slave(d);\n'+
 '\n'+
 'hat.shuffle(); // randomize hat sequence',
@@ -572,8 +579,15 @@ FM:
 'And below is a code sample that creates a "brassy" sound (depending on how forgiving you are).\n'+
 '*/\n'+
 '\n'+
-'f = FM(1 / 1.0007, 5, 100, 100);\n'+
+'f = FM(1 / 1.0007, 5, ms(100), ms(100));\n'+
 'f.fx.add( Reverb() );\n'+
-'s = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);,\n',
+'s = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);\n'+
+'\n'+
+'/* Finally, there are a number of presets that can be called with the FM object; the algorithm given above\n'+
+'is the "brass" preset. Other presets include glockenspiel, gong, clarinet, frog, drum and drum2. Hopefully\n'+
+'more will be added in the future. */\n'+
+'\n'+
+'g = FM("clarinet");\n'+
+'g.note("A3");\n',
 };
 });
