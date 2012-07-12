@@ -588,6 +588,6 @@ FM:
 'more will be added in the future. */\n'+
 '\n'+
 'g = FM("clarinet");\n'+
-'g.note("A3");\n',
+'g.note("A5");\n',
 };
 });
