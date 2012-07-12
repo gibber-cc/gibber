@@ -12,13 +12,8 @@ This will set the bpm to 120 at the start of the next quarter beat
 TODO: There is now an audio stutter when changing tempo. I'm guessing this is due to checking the large number
 of past events in the sequence array that are no longer even being used. How can we regularly cull this array?
 */
-
-(function myPlugin(){
-
-function initPlugin(audioLib){
-(function(audioLib){
-
 function Callback() {
+	console.log("MAKING A CALLBACK");
 	this.measureLengthInSamples = _1;
 	this.sequence = [];
 	function bpmCallback(obj) {
@@ -144,19 +139,3 @@ Callback.prototype = {
 	
 	getMix : function() { return this.value; }, // not used but just in case
 }
-
-audioLib.generators('Callback', Callback);
-
-audioLib.Callback = audioLib.generators.Callback;
-
-}(audioLib));
-audioLib.plugins('Callback', myPlugin);
-}
-
-if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
-	exports.init = initPlugin;
-} else {
-	initPlugin(audioLib);
-}
-
-}());

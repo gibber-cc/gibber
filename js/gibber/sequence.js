@@ -17,12 +17,13 @@
 //	`s = Synth();  
 //  t = Seq(["C4", "D4", "G4", "F4"], _4).slave(s)  ` 
 
-(function myPlugin(){
+// hmmm... some screwups from the audioLib.js conversion, now I have to wrap these functions:
 
-function initPlugin(audioLib){
-(function(audioLib){
+function Seq(seq, durations, msg) {
+	return new _Seq(seq, durations, msg);
+}
 
-function Seq() {
+function _Seq() {
 	(function(_that) {
 		var _speed = null;
 		var that = _that;
@@ -150,6 +151,8 @@ function Seq() {
 	if(this.outputMessage === null) {
 		if(typeof arguments[2] !== "undefined") {
 			this.outputMessage = arguments[2];
+			this[this.outputMessage] = this.sequence;
+			this.sequences.push(this.outputMessage);
 		}else{
 			if(this.sequence !== null) {
 				if(typeof this.sequence[0] === "function") {
@@ -214,7 +217,7 @@ function Seq() {
 			}else{
 				gen.masters.push(this);
 			}
-			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+			if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "frequency"; }
 		}
 		if(!this.slavesInit && !this.doNotAdvance) { // start sequence if it's not already running
 			 this.advance();
@@ -268,18 +271,20 @@ function Seq() {
 		return that;
 	};
 
-	Gibber.addModsAndFX.call(this);	
+	//Gibber.addModsAndFX.call(this);	
 	//this.play();
 }
 	
-Seq.prototype = {
+_Seq.prototype = {
 	name : "Seq",
 	type : "control",
 	
 	// ####advance
 	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
 	advance : function() {
+		//console.log("ADVANCE");
 		if(this.active) {
+			//console.log("ACTIVE");
 			var pos, val;
 			
 			if(this.end) {
@@ -341,6 +346,8 @@ Seq.prototype = {
 			
 			//if(shouldReturn) return;a.mods
 //			console.log(this.sequences);
+			// TODO : an array of keys? can't this just loop through an object with the appropriate values? 
+			// pretty sure I made this decision to easy live coding (no need to specify sequences array) but it's weird...
 			for(var i = 0; i < this.sequences.length; i++) {
 				var key = this.sequences[i];
 				var seq = this[key];
@@ -360,7 +367,7 @@ Seq.prototype = {
 				 	this.value = val;
 				}
 				
-				//G.log("key : " + key + " , val : " + val);
+				//G.log("key : " + key + " , val : " + val + ", pos : " + pos);
 						
 				// Function sequencing
 				// TODO: there should probably be a more robust way to to this
@@ -400,7 +407,7 @@ Seq.prototype = {
 							}
 						}
 					}
-						
+					//console.log("ADVANCING", key, _slave);	
 					if(typeof _slave[key] === "function") {
 						if(key === "note" && val === 0) { // advance envelope instead of changing freq
 							if(typeof _slave.env === "object") {
@@ -410,10 +417,12 @@ Seq.prototype = {
 							if($.isArray(val)) {
 								_slave[key].apply(_slave, val);									
 							}else{
+								//console.log("CALLING");
 								_slave[key](val);
 							}
 						}
 					}else{
+						//console.log("ASSIGNING");
 						_slave[key] = val;
 					}
 				}
@@ -566,7 +575,7 @@ Seq.prototype = {
 					}else{
 						gen.masters.push(this);
 					}
-					if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "freq"; }
+					if(typeof gen.note === "undefined" && this.outputMessage == "note") { this.outputMessage = "frequency"; }
 				}else{
 					return this;
 				}
@@ -686,21 +695,4 @@ Seq.prototype = {
 			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
 		}
 	},
-}
-audioLib.Sequencer = Seq;
-		
-}(audioLib));
-audioLib.plugins('Sequencer', myPlugin);
-}
-
-if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
-	exports.init = initPlugin;
-} else {
-	initPlugin(audioLib);
-}
-
-}());
-
-function Seq(seq, durations, msg) { // may also be a single object dictionary
-	return new audioLib.Sequencer(seq, durations, msg);
 }

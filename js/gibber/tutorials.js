@@ -1,4 +1,6 @@
-Gibber.tutorials = {
+requirejs(['gibber/gibber'], function(_Gibber) {
+
+_Gibber.tutorials = {
 "intro" : "// This is simple tutorial to get started with Gibber and making drum patterns.\n" +
 '// Note that at any time you can stop all audio using Ctrl-` (the backtick character above the tab key)\n'+
 '// You can also restart the intro from the Help menu\n\n'+
@@ -63,4 +65,6 @@ Gibber.tutorials = {
 '// to get an idea of how to do other tasks in Gibber.\n'+
 '\n'+
 'next tutorial:intro\n',
-}
+};
+
+});

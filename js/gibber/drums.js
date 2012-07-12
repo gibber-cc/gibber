@@ -3,13 +3,6 @@
 
 // TODO: d._sequence is getting changed when shuffling, so reset no longer works correctly.
 // maybe nows the time to fix the memory situation once and for all?
-
-
-(function myPlugin(){
-
-function initPlugin(audioLib){
-(function(audioLib){	
-	
 // ###Drums
 // Three different samplers linked to a combined sequencer for convenience  
 //
@@ -23,18 +16,44 @@ function initPlugin(audioLib){
 //
 // note that most Drum methods mirror that of Seq. 
 
-function Drums (_sequence, _timeValue, _amp, _freq){
-	this.kick  = new audioLib.Sampler(Gibber.sampleRate);
-	this.snare = new audioLib.Sampler(Gibber.sampleRate);		
-	this.hat   = new audioLib.Sampler(Gibber.sampleRate);
-	this.amp   = isNaN(_amp) ? .4 : _amp;
-	this.frequency = isNaN(_freq) ? 440 : _freq;
+function Drums(_sequence, _timeValue, _amp, _freq) {
+	return new _Drums(_sequence, _timeValue, _amp, _freq);
+}
+
+function _Drums (_sequence, _timeValue, _amp, _freq){
+	this.amp   = isNaN(_amp) ? .2 : _amp;
+
+	this.sounds = {
+		kick 	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/kick.wav"), pitch:1, amp:this.amp },
+		snare	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/snare.wav"),pitch:1, amp:this.amp },
+		hat		: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/hat.wav"), 	pitch:1, amp: this.amp }, 
+		openHat	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/openhat.wav"), pitch:1, amp:this.amp },
+	}
 	
-	this.value = 0;
+	this.bus = Gibberish.Bus();
+
+	this.sounds.kick.sampler.send(this.bus, this.amp);
+	this.sounds.snare.sampler.send(this.bus, this.amp);
+	this.sounds.hat.sampler.send(this.bus, this.amp);
+	this.sounds.openHat.sampler.send(this.bus, this.amp);	
+	
+	this.bus.connect(Master);
+	
+	Gibberish.extend(this, this.sounds);
+	
+	this.fx = this.bus.fx;
+	
+	// this enables this.kick.pitch = 2, this.kick.fx.add( Reverb() ) etc.
+	this.kick = this.sounds.kick;
+	this.kick.fx = this.sounds.kick.sampler.fx;
+	this.snare = this.sounds.snare;
+	this.snare.fx = this.sounds.snare.sampler.fx;
+	this.hat = this.sounds.hat;
+	this.hat.fx = this.sounds.hat.sampler.fx;
+	this.openHat = this.sounds.openHat;
+	this.openHat.fx = this.sounds.openHat.sampler.fx;
+	
 	this.active = true;
-	this.mods = [];
-	this.fx = [];
-	this.sends = [];
 	this.masters = [];
 	this.pitch = 1; // pitch is a mod to frequency; only used when the value is set
 	
@@ -42,14 +61,9 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 	this.initialized = false;
 	this.seq = null;
 	
-	Gibber.addModsAndFX.call(this);
-	Gibber.generators.push(this);	
-	
 	var that = this; // closure so that d.shuffle can be sequenced
-	this.shuffle = function() { console.log("SHUFFLE"); that.seq.shuffle(); };
+	this.shuffle = function() { that.seq.shuffle(); };
 	this.reset = function() { that.seq.reset(); };
-	
-	this.load();
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
@@ -92,9 +106,9 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 		}
 	}
 	
+	//this.seq = {};
 	(function(obj) {
 		var that = obj;
-		var _pitch = 1;
 		
 	    Object.defineProperties(that, {
 			"speed" : {
@@ -107,20 +121,23 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 					}
 		        }
 			},
-			// pitch is a multiplier for the fundamental frequency of the samplers (440). A pitch value of 2 means the samples will be played with a frequency of 880 hz.
-			"pitch" : {
+			
+			"amp" : {
 		        get: function() {
-		            return _pitch;
+		            return amp;
 		        },
 		        set: function(value) {
-					_pitch = value;
-					that.frequency = 440 * value;
+					amp = value;
+					for(var sound in this.sounds) {
+						this.sounds[sound].sampler.disconnect();
+						this.sounds[sound].sampler.send(this.bus, this.amp);
+					}
 		        }
 			},
+			
 	    });
 	})(this);
-	
-	if(this.pitch != 1) this.pitch = arguments[0].pitch;
+	//if(this.pitch != 1) this.pitch = arguments[0].pitch;
 	
 	if(this.seq !== null) {
 		this.seq.doNotAdvance = false;
@@ -128,66 +145,43 @@ function Drums (_sequence, _timeValue, _amp, _freq){
 	}
 }
 
-Drums.prototype = {
-	sampleRate : Gibber.sampleRate,
-	type  : "complex",
-	name  : "Drums",
+_Drums.prototype = {
+	sampleRate : 44100, //Gibber.sampleRate,
+	category  	: "complex",
+	name  		: "Drums",
 		
 	load : function (){
 		// SAMPLES ARE PRELOADED IN GIBBER CLASS... but it still doesn't stop the hitch when loading these...
 		this.kick.loadWav(Gibber.samples.kick);
 		this.snare.loadWav(Gibber.samples.snare);
 		this.hat.loadWav(Gibber.samples.snare); // TODO: CHANGE TO HIHAT SAMPLE
-			
+				
 		this.initialized = true;
 	},
-	
-	replace : function(replacement) { 
+		
+	replace : function(replacement) {
+		this.kill();
 		if(typeof this.seq != "undefined") {
 			this.seq.kill();
 		}
 		for( var i = 0; i < this.masters.length; i++) {
 			replacement.masters.push(this.masters[i]);
 		}
-		for( var j = 0; j < this.fx.length; j++) {
-			replacement.fx.push(this.fx[j]);
-		}
-		for( var k = 0; k < this.mods.length; k++) {
-			replacement.mods.push(this.mods[k]);
-		}
-		this.kill();
-	},
-	
-	kill : function() {
-		Gibber.genRemove(this);
-		this.masters.length = 0;
-		this.mods.length = 0;
-		this.fx.length = 0;
-	},
-	
-	generate : function() {
-		this.value = 0;
-		if(!this.initialized) {
-			return;
-		}
-			
-		this.kick.generate();
-		this.value += this.kick.getMix();
-
-		this.snare.generate();
-		this.value += this.snare.getMix();
-			
-		this.hat.generate();
-		this.value += this.hat.getMix();
 	},
 		
+	kill : function() {
+		Master.disconnectUgen(this.bus);
+		this.bus.destinations.remove(Master);
+		this.masters.length = 0;
+	},
+			
 	getMix : function() { return this.value * this.amp; },
-	
+		
 	once : function() {
 		this.seq.once();
 		return this;
 	},
-	
+		
 	retain : function(num) { 
 		if(isNaN(num)) {
 			this.seq.retain();
@@ -199,46 +193,25 @@ Drums.prototype = {
 		if(typeof this.seq === "undefined" || this.seq === null) {
 			this.seq = Seq(newSequence, _timeValue).slave(this);
 		}else{
-			this.seq.sequences.note = newSequence.split("");//set(newSequence); 
+			this.seq.note = newSequence.split("");//set(newSequence); 
 		}
 	},
 	
 	note : function(nt) {
 		switch(nt) {
 			case "x":
-				this.kick.noteOn(this.frequency);
+				this.sounds.kick.sampler.note(this.pitch * this.sounds.kick.pitch);
 				break;
 			case "o":
-				this.snare.noteOn(this.frequency);
+				this.sounds.snare.sampler.note(this.pitch * this.sounds.snare.pitch);
 				break;
 			case "*":
-				this.hat.noteOn(this.frequency * 3.5); // multiply to make a higher pitched sound, 'cuz I can't get a better hihat sound in there
+				this.sounds.hat.sampler.note(this.pitch * this.sounds.hat.pitch);
+				break;
+			case "-":
+				this.sounds.openHat.sampler.note(this.pitch * this.sounds.openHat.pitch);
 				break;
 			default: break;
 		}
 	},
 };
-
-Drums.prototype.__proto__ = new audioLib.GeneratorClass();
-
-audioLib.generators('Drums', Drums);
-
-audioLib.Drums = audioLib.generators.Drums;
- 
-}(audioLib));
-audioLib.plugins('Drums', myPlugin);
-}
-
-if (typeof audioLib === 'undefined' && typeof exports !== 'undefined'){
-	exports.init = initPlugin;
-} else {
-	initPlugin(audioLib);
-}
-
-}());
-
-function Drums (_sequence, _timeValue, _mix, _freq) {
-	var d = new audioLib.Drums(_sequence, _timeValue, _mix, _freq);
-	
-	return d;
-}

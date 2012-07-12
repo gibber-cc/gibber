@@ -1,154 +1,99 @@
-Gibber.FMPresets = {
-	glockenspiel : {
-		cmRatio	: 3.5307,
-		index 	: 1,
-		attack	: 1,
-		decay	: 1000
-	},
-	//ljpfrog lp.f = FM(0.1, 2.0, 300, 5);
-	//ljpradio lp.f = FM(1, 40.0, 300, 500); lp.f.amp = 0.2;
-	//ljpnoise lp.f = FM(0.04, 1000.0, 1, 100);
-	frog : {
-		cmRatio	: 0.1,
-		index	: 2.0,
-		attack	: 300,
-		decay	: 5,
-	},
-	gong : {
-		cmRatio : 1.4,
-		index	: .95,
-		attack	: 1,
-		decay	: 5000,
-	},
-	drum : {
-		cmRatio : 1.40007,
-		index	: 2,
-		attack	: 1,
-		decay	: 1000,
-	},
-	drum2 : {
-		cmRatio: 1 + Math.sqrt(2),
-		index: .2,
-		attack: 1,
-		decay: 20,
-	},
-	brass : {
-		cmRatio : 1 / 1.0007,
-		index	: 5,
-		attack	: 100,
-		decay	: 100,
-	},
-	clarinet : {
-		cmRatio	: 3 / 2,
-		index	: 1.5,
-		attack	: 50,
-		decay	: 200,
-	}
-};
-
-// TODO: modulator should use same amplitude envelope as the carrier, would probably require a custom generate method.
-// or, if you keep them separate, expand envelope capabilities to be more advanced
+// d = FM("glockenspiel").out();
+// d.amp = .1;
+// 
+// a = ScaleSeq(rndi(-2, 7, 64), _16).slave(d);
+// aa = ScaleSeq(rndi(0, 9, 65), _16).slave(d);
+// 
+// aaa = ScaleSeq(rndi(-3, 6, 66), _16).slave(d);
+// aaa.root = "C3";
+// 
+// aaaa = ScaleSeq(rndi(2, 9, 67), _16).slave(d);
+// aaaa.root = "C5";
+// 
+// a.humanize = aa.humanize = aaa.humanize = aaaa.humanize = 150;
 
 function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
-	var that = Synth({ waveShape : "sine"});
-	that.name = "FM";
+	var that;
+	if(typeof Gibber.FMPresets === "undefined") FMPresets();
 	
-	if(typeof arguments[0] === "string") {	// if a preset
-		var preset = Gibber.FMPresets[arguments[0]];
-		that.cmRatio 	= preset.cmRatio;
-		that.index 		= preset.index;
-		that.attack 	= preset.attack;
-		that.decay 		= preset.decay;
+	if(typeof arguments[0] === "string") { // if a preset
+		if(typeof arguments[1] === "undefined") {
+			that = Gibberish.PolyFM( Gibber.FMPresets[arguments[0]] );
+		}else{
+			console.log("EXTENDING WITH ", arguments[1]);
+			var props = Gibber.FMPresets[arguments[0]];
+			Gibberish.extend(props, arguments[1]);
+			
+			that = Gibberish.PolyFM( props );
+		}
+	}else if(typeof arguments[0] === "object") {
+		that = Gibberish.PolyFM( arguments[0] );
 	}else{
-		that.cmRatio 	= isNaN(cmRatio) ? 2 : cmRatio;
-		that.index  = isNaN(index)	 ? .9 : index;
-		that.attack = isNaN(attack) ? 100 : attack;
-		that.decay  = isNaN(decay) ? 100 : decay;
+		props = {
+			cmRatio : isNaN(cmRatio) ?  2 	: cmRatio,
+			index  	: isNaN(index)	 ? .9 	: index,
+			attack 	: isNaN(attack)  ? 4100 : attack,
+			decay  	: isNaN(decay)   ? 4100 : decay,
+			maxVoices: 1,
+		};
+		
+		that = Gibberish.PolyFM( props );
 	}
 	
-	that.amp = .5;
-	that.active = false;
+	that.note = Gibber.makeNoteFunction(that);
+	that.chord = Gibber.chord;
 	
-	modFreq = that.osc.frequency * that.cmRatio;
-	modAmp = that.index * that.osc.frequency;
+	that.send(Master, that.amp);	
 	
-	that.modulator = Sine(modFreq, modAmp).silent();
-
-	shouldUseModulatorEnvelope = (typeof shouldUseModulatorEnvelope === "undefined") ? true : shouldUseModulatorEnvelope;
-	
-	if(shouldUseModulatorEnvelope) {
-		//that.modulator.env = Env(that.attack, that.decay);
-		//that.modulator.mod("mix", that.modulator.env, "*");
-	}
-	
-	that.mod = function(_name, _source, _type) {
-		var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
-		var type = (typeof _type !== "undefined") ? Gibber.automationModes[_type] : 'addition';
-		
-		if(typeof _source.mods === "undefined") {
-			_source.mods = [];
-		}
-			
-		_source.store = {};
-		_source.modded.push(this);
-		_source.param = name;
-		_source.name = _name;
-		_source.type = type;
-			
-		this.mods.push(_source);			
-			
-		Gibber.genRemove(_source);
-		return this;
-	};
-	
-	that.note = function(n) {
-		var oscFreq;
-		switch(typeof n) {
-			case "number" :
-				oscFreq = n;
-			break;
-			case "string" :
-				oscFreq = teoria.note(n).fq();
-			break;
-			default:
-				oscFreq = n.fq();
-				break;
-		}
-		
-		//console.log("cmRatio = " + this.cmRatio + " : index = " + this.index);
-		this.osc.frequency = oscFreq;
-		this.modulator.frequency = oscFreq * this.cmRatio;
-		this.modulator.mix = oscFreq * this.index;
-		//console.log("freq = " + this.modulator.frequency + " : mix = " + this.modulator.mix);
-		
-		this.env.triggerGate();
-		this.active = true;
-		if(typeof arguments[1] !== "undefined") {
-			this.amp = arguments[1];
-		}
-	};
-	
-	that.generate = function() {
-		var self = this;
-		var envValue = self.env.generate();
-		
-		var modValue = self.modulator.out() * envValue;
-		var freqStore = self.osc.frequency;
-		
-		self.osc.frequency += modValue;
-		self.value = self.osc.out();
-		
-		self.osc.frequency = freqStore;
-			
-		self.value *= envValue;
-		if(envValue < .005 && self.env.state != 0) {
-			self.active = false;
-		}
-	}
-	
-	that.getMix = function() {
-		return this.value * this.amp;
-	}
-		
 	return that;
-};
+}
+
+function FMPresets() {
+	Gibber.FMPresets = {
+		glockenspiel : {
+			cmRatio	: 3.5307,
+			index 	: 1,
+			attack	: 44,
+			decay	: 44100,
+		},
+		//ljpfrog lp.f = FM(0.1, 2.0, 300, 5);
+		//ljpradio lp.f = FM(1, 40.0, 300, 500); lp.f.amp = 0.2;
+		//ljpnoise lp.f = FM(0.04, 1000.0, 1, 100);
+		frog : {
+			cmRatio	: 0.1,
+			index	: 2.0,
+			attack	: 300 * 44.1,
+			decay	: 5 * 44.1,
+		},
+		gong : {
+			cmRatio : 1.4,
+			index	: .95,
+			attack	: 44.1,
+			decay	: 5000 * 44.1,
+		},
+		drum : {
+			cmRatio : 1.40007,
+			index	: 2,
+			attack	: 44,
+			decay	: 44100,
+		},
+		drum2 : {
+			cmRatio: 1 + Math.sqrt(2),
+			index: .2,
+			attack: 44,
+			decay: 20 * 44.1,
+		},
+		brass : {
+			cmRatio : 1 / 1.0007,
+			index	: 5,
+			attack	: 4100,
+			decay	: 4100,
+		},
+		clarinet : {
+			cmRatio	: 3 / 2,
+			index	: 1.5,
+			attack	: 50 * 44.1,
+			decay	: 200 * 44.1,
+		}
+	};
+}

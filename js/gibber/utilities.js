@@ -16,28 +16,31 @@ Array.prototype.removeObj = function(value) {
     });
 };
 
-Array.prototype.remove = function(arg) {
-	if(typeof arg === "undefined") { // clear all
-		for(var i = 0; i < this.length; i++) {
-			delete this[i];
-		}
-		this.length = 0;
-	}else if(typeof arg === "number") {
-		this.splice(arg,1);
-	}else if(typeof arg === "string"){ // find named member and remove
-		for(var i = 0; i < this.length; i++) {
-			var member = this[i];
-			if(member.name == arg) {
-				this.splice(i, 1);
-			}
-		}
-	}else if(typeof arg === "object") {
-		var idx = jQuery.inArray( arg, this);
-		if(idx > -1) {
-			this.splice(idx,1);
-		}
-	}
-};
+// Array.prototype.remove = function(arg) {
+// 	console.log("REMOVING");
+// 	if(typeof arg === "undefined") { // clear all
+// 		for(var i = 0; i < this.length; i++) {
+// 			delete this[i];
+// 		}
+// 		this.length = 0;
+// 	}else if(typeof arg === "number") {
+// 		this.splice(arg,1);
+// 	}else if(typeof arg === "string"){ // find named member and remove
+// 		console.log("SEARCHING");
+// 		for(var i = 0; i < this.length; i++) {
+// 			var member = this[i];
+// 			if(member.name === arg) {
+// 				console.log("FOUND");
+// 				this.splice(i, 1);
+// 			}
+// 		}
+// 	}else if(typeof arg === "object") {
+// 		var idx = jQuery.inArray( arg, this);
+// 		if(idx > -1) {
+// 			this.splice(idx,1);
+// 		}
+// 	}
+// };
 
 Array.prototype.replace = function(oldObj, newObj) {
 	if(typeof oldObj != "number") {
@@ -54,11 +57,11 @@ Array.prototype.insert = function(v, pos) {
 	this.splice(pos,0,v);
 };
 
-Array.prototype.add = function() {
-	for(var i = 0; i < arguments.length; i++) {
-		this.push(arguments[i]);
-	}
-};
+// Array.prototype.add = function() {
+// 	for(var i = 0; i < arguments.length; i++) {
+// 		this.push(arguments[i]);
+// 	}
+// };
 
 Array.prototype.add1 = function() {
 	for(var i = 0; i < arguments.length; i++) {
@@ -67,6 +70,7 @@ Array.prototype.add1 = function() {
 		for(var j = 0; j < this.length; j++) {
 			if(obj.name === this[j].name) {
 				shouldAdd = false;
+				break;
 			}
 		}
 		if(shouldAdd) {
@@ -295,7 +299,6 @@ window.rndi = window.randomi = function(min, max, number) {
 		if(typeof number === "undefined") {
 			number = max || min.length;
 		}
-		G.log(number);
 		for(var i = 0; i < number; i++) {
 			var num;
 			if(typeof arguments[0] === "object") {
@@ -330,6 +333,10 @@ window.rndf = window.randomf = function(min, max, number) {
 	}else{
 		var output = [];
 		
+		if(typeof number === "undefined") {
+			number = max || min.length;
+		}
+
 		for(var i = 0; i < number; i++) {
 			var num;
 			if(typeof arguments[0] === "object") {

@@ -1,4 +1,5 @@
-Gibber.defaultScripts = {
+define(["gibber/gibber"], function(_Gibber) {	
+return {
 default:
 '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// intended as a tutorial. There are many tutorials in\n'+
@@ -12,7 +13,6 @@ default:
 '\n'+
 '// x is a kick, o is a snare\n'+
 'd = Drums("x.ox.xo.");\n'+
-'d.pitch *= 2;\n'+
 '\n'+
 '// karplus-strong can create string or noise sounds depending on blend\n'+
 'p = Pluck();\n'+
@@ -46,7 +46,7 @@ default:
 'e = Seq( [ d.reset, d.shuffle ], [_1 * 3, _1]).slave(d)\n'+
 '\n'+
 '// make FM synth using glockenspiel preset. add delay and reverb\n'+
-'f = FM("glockenspiel")\n'+
+'f = FM("glockenspiel", {maxVoices:1})\n'+
 'f.amp = .2;\n'+
 'f.fx.add( Delay(_6, .8), Reverb() )\n'+
 '\n'+
@@ -77,28 +77,22 @@ default:
 '\n'+
 '// triangle wave at 440Hz, .15 amplitude\n'+
 '// possible waveShapes are sine, tri, saw, square, pulse\n'+
-'s = Tri(300, .15);\n'+
-'\n'+
-'// change waveShape to sine\n'+
-'s.waveShape = "sine";\n'+
+'s = Triangle(300, .15);\n'+
 '\n'+
 '// modulate the frequency of the triangle wave using a sequencer.\n'+
 '// add the sequencer\'s output to the oscillators frequency\n'+
-'s.mod("freq", Seq([220, 0], _2), "+");\n'+
+'s.mod("frequency", Step([220, 0], _2), "+");\n'+
 '\n'+
 '// create tremolo by using a LFO to modulate the volume of the oscillator \n'+
 '// (currently volume is inappropriately referred to as mix). Multiply the amplitude\n'+
 '// of the oscillator times the output of the LFO\n'+
-'s.mod("mix",  LFO(4, 1), "*");\n'+
+'s.mod("amp",  LFO(4, 1), "*");\n'+
 '\n'+
 '// add a Delay effect with a delay time of 1/3 a measure and a Reverb effect with default settings\n'+
 's.fx.add( Delay(_3), Reverb() );\n'+
 '\n'+
-'// remove last fx in fx.add\n'+
-'s.fx.pop();\n'+
-'\n'+
-'// bit crush; reduce to 8-bits\n'+
-'s.fx.add( Crush(8) );\n'+
+'// bit crush / sample rate reduce; reduce to 8-bits and 8khz\n'+
+'s.fx.add( Crush(8, 8000) );\n'+
 '\n'+
 '// remove first effect in fx fx.add\n'+
 's.fx.remove(0);\n'+
@@ -106,20 +100,18 @@ default:
 '// remove all fx, but not mods\n'+
 's.fx.remove();\n'+
 '\n'+
-'// low-pass filter\n'+
+'// low-pass filter : 0..1 cutoff, 0..5 resonance \n'+
 'f = LPF();\n'+
 '\n'+
 '// add ring modulator and filter\n'+
 's.fx.add( Ring(), f );\n'+
 '\n'+
 '// change filter parameters\n'+
-'f.resonance = 10\n'+
-'f.cutoff = 400\n'+
+'f.resonance = 0\n'+
+'f.cutoff = .4\n'+
 '\n'+
-'s.fx.pop();\n'+
-'\n'+
-'// clear all mods\n'+
-'s.mods.remove();',
+'// remove frequency mod\n'+
+'s.removeMod("frequency");',
 
 "rhythm + drums": 
 '/*\n'+
@@ -138,35 +130,42 @@ default:
 'Sequencer tutorial for more information.\n'+
 '*/\n'+
 '\n'+
-'// x = kick, o = snare, * = hihat. hits are triggered every quarter note\n'+
+'// x = kick, o = snare, * = closed hihat, - = open hihat. hits are triggered every quarter note\n'+
 'd = Drums("xoxo", _4)\n'+
 '\n'+
-'// add soft-clipping distortion\n'+
+'// add soft-clipping distortion to entire kit\n'+
 'd.fx.add( Clip(1000) )\n'+
 '\n'+
-'// raise/lower frequencies of drums; 440 is default starting value\n'+
-'d.frequency = 880\n'+
+'// pitches range from 0.001 to however high you want to go. \n'+
+'d.pitch = 2;\n'+
+'\n'+
+'// pitch snare back down to original value\n'+
+'d.snare.pitch = .5;\n'+
+'\n'+
+'// add delay fx to snare only\n'+
+'d.snare.fx.add( Delay(_6, .25) );\n'+
+'\n'+
 '\n'+
 '// pass new sequence\n'+
-'d.set("x * ")\n'+
+'d.set("x -*")\n'+
 '\n'+
 '// change speed of pattern\n'+
 'd.speed = _8;\n'+
 '\n'+
 '// change the master tempo. All sequencers will update themselves to match the\n'+
 '// master clock speed whenever it is changed.\n'+
-'Gibber.setBPM(180);\n'+
+'Gibber.setBPM(100);\n'+
 '\n'+
 '// return to original sequence\n'+
 'd.reset();\n'+
+'\n'+
 '// sequence kick, snare and hat with separate sequences so they can play simultaneously\n'+
 '// see sequencing tutorial for more details\n'+
-'\n'+
 'Gibber.clear();\n'+
-'d = Drums()\n'+
+'d = Drums();\n'+
 '\n'+
 'kick = Seq("x...x..xx..xx...", _16).slave(d);\n'+
-'hat  = Seq("*.*.*.***.*.*.**", _16).slave(d);\n'+
+'hat  = Seq("*.*.*-***.*-*.**", _16).slave(d);\n'+
 'sn   = Seq(".o", _4).slave(d);\n'+
 '\n'+
 'hat.shuffle(); // randomize hat sequence',
@@ -229,11 +228,11 @@ default:
 'r = Seq(["A5", "A#5", "C#5", "D5"], _4).slave(t);\n'+
 '\n'+
 '// assign new values to the note sequence\n'+
-'q.sequences.note = ["F4", "G4",  "D4",  "C4"];\n'+
-'r.sequences.note = ["A5", "A#5", "C#5", "B5"];\n'+
+'q.note = ["F4", "G4",  "D4",  "C4"];\n'+
+'r.note = ["A5", "A#5", "C#5", "B5"];\n'+
 '\n'+
 '// change the speed of each sequence step\n'+
-'r.speed = q.speed = _16;\n'+
+'r.speed = q.speed = _8;\n'+
 '\n'+
 '// randomize the sequences\n'+
 'q.shuffle();\n'+
@@ -259,8 +258,8 @@ default:
 'ss = Synth();\n'+
 'ss.fx.add( Reverb() )\n'+
 '\n'+
-'s.attack = ss.attack = 10;\n'+
-'s.decay  = ss.decay  = 50;\n'+
+'s.attack = ss.attack = ms(10);\n'+
+'s.decay  = ss.decay  = ms(50);\n'+
 '\n'+
 '// assign a mode and root note to Gibber.\n'+
 'G.mode = "lydian";\n'+
@@ -287,7 +286,7 @@ default:
 '// set sequence to loop through all available modes. All modes are also stored in Gibber.modes\n'+
 '// major can be substituted for ionian, minor can sub for aeolian\n'+
 'b.stop();\n'+
-'a.set([ "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"]);\n'+
+'a.mode = [ "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"];\n'+
 '\n'+
 '// change q to play each note in scale (with some extra notes on the pentatonic ones)\n'+
 'q.set( [0,1,2,3,4,5,6,7]);\n'+
@@ -307,34 +306,43 @@ default:
 'F3M9b5 - F major 9 flat 5 chord\n'+
 'G3aug  - G augmented chord\n'+
 '\n'+
-'In Gibber we can use these chords with the Poly (polysynth) and the Arp (arpeggiator) objects.\n'+
-'The Poly object plays all notes simultaneously, the Arp plays them sequentially.\n'+
+'In Gibber we can use these chords with the Synth, FM and Pluck objects assuming we tell these\n'+
+'to be polyphonic using the maxVoices parameter. The Arp (arpeggiator) object also accepts chords\n'+
+'that it then sequences... you can slave a synth to an arp just like you would a Seq object.\n'+
 '*/\n'+
 '\n'+
-'// create a poly object and give it a starting chord.\n'+
-'p = Poly("C4m7");\n'+
+'// create a poly object and assign five note polyphony\n'+
+'p = Synth( {maxVoices: 5, attack: ms(1000), decay: ms(1000) } );\n'+
 'p.fx.add( Reverb() );\n'+
 '\n'+
-'// trigger the amplitude envelope to play the chord. Pass the volume you want to use.\n'+
-'p.trig(.6);\n'+
+'// play a chord at .5 amplitude\n'+
+'p.chord("C4m7", .5);\n'+
 '\n'+
-'// we can sequence trig calls to play the chord in a pattern of different volumes\n'+
-'s = Seq([.5, .2, .3, .1], _8, "trig").slave(p);\n'+
-'\n'+
-'// change the chord using the chord message\n'+
-'p.chord("D4m7");\n'+
+'// play a chord at .25 amplitude\n'+
+'p.chord("Bb3maj7", .25);\n'+
 '\n'+
 '// sequence chord changes using chord calls\n'+
-'ss = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, "chord").slave(p);\n'+
+'s = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, "chord").slave(p);\n'+
+'\n'+
+'s.stop();\n'+
+'\n'+
+'// also sequence amplitudes, long form\n'+
+'s = Seq({\n'+
+'  chord: [["C4m7", .15], ["D4m7", .025], ["Bb3maj7", .1], ["Ab3maj7", .3]],\n'+
+'  speed: _1,\n'+
+'  slaves: p,\n'+
+'});\n'+
+'\n'+
 '\n'+
 '// create a sine wave to arpeggiate\n'+
-'high = Sine(440, .1);\n'+
+'high = Sine(440, .1);	\n'+
 'high.fx.add( Reverb() );\n'+
 '\n'+
-'// pass oscillator/synth to control, chord, note duration, direction and number of octaves\n'+
+'// create arpeggiator with chord, note duration, direction and number of octaves\n'+
 'a = Arp("C4m7", _32, "updown", 3);\n'+
-'a.slave(high);     // slave oscillator to arp\n'+
-'ss.slave(a);       // slave chord of arp to same sequencer that is controlling our Poly',
+'a.slave(high);	// slave oscillator to arp\n'+
+'\n'+
+'s.slave(a);		// slave chord of arp to same sequencer that is controlling our Poly',
 
 "sequence functions" :
 '// This shows how sequencers can sequence commands in addition to notes, volumes etc.\n'+
@@ -342,8 +350,8 @@ default:
 '\n'+
 '// create a synth and specify attack/delay/amp values, add delay + reverb\n'+
 's = Synth({\n'+
-'    attack: 10,\n'+
-'    decay: 50,\n'+
+'    attack: ms(10),\n'+
+'    decay: ms(50),\n'+
 '    amp:.25\n'+
 '});\n'+
 's.fx.add( Delay(_8), Reverb() );\n'+
@@ -359,7 +367,7 @@ default:
 '// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
-"granulation" :
+/*"granulation" :
 '// Create the granulator, 20 grains, each grain is 50ms\n'+
 '// Pitch and position vary by five percent. Store a buffer\n'+
 '// of one measure in length.\n'+
@@ -402,84 +410,69 @@ default:
 'g.set("envLength", ms(200));\n'+
 '\n'+
 '// remove the mods\n'+
-'g.mods.remove();\n',
+'g.mods.remove();\n',*/
 
-"algorithmic music" :
-'// this tutorial shows how to use random functions to generate "music".\n'+
-'// first create arrays to hold drums and sequencers\n'+
-'perc = [];\n'+
-'seqs = [];\n'+
+"randomness and algorithms" :
+'/* Randomness and Algorithms\n'+
 '\n'+
-'// set the mode and root note for all scale sequencers to use\n'+
-'G.mode = "lydian"\n'+
-'G.root = "D6"\n'+
+'There are some simple mechanisms for creating generative music. First, there are \n'+
+'two random methods, one for floats and one for ints: rndf and rndi. These two methods\n'+
+'are heavily overloaded.\n'+
 '\n'+
-'// create a bus with reverb to send audio to. this is much cheaper\n'+
-'// than a separate reverb for every drum / sound\n'+
-'b = Bus( Reverb(.3,.3) )\n'+
+'rndf(); Generate a random float between 0 and 1\n'+
+'rndf(10); Generate a random float between 0 and 10\n'+
+'rndi(5, 10); Generate an integer between 5 and 10\n'+
+'rndi(0, 10, 150); Return an array of 150 integers between 0 and 10\n'+
+'rndf([.2, .4, .7, .9], 25); Return an array of 25 numbers either .2, .4, .7 or .9\n'+
 '\n'+
-'for(var i = 0; i < 8; i++) {\n'+
-'    // fill our perc array with a FM drum synth. set the amp to be low\n'+
-'    // (since there will be 8) and send each to the reverb bus\n'+
-'    perc[i] = FM("drum2")\n'+
-'    perc[i].amp /= 8;\n'+
-'    perc[i].send(b, .5)\n'+
-'    \n'+
-'    // create a sequencer to control each drum\n'+
-'    seqs[i] = ScaleSeq( \n'+
-'        filli(-12, 12, 32),   // create an array of 32 random integers ranging from -12 to 12 \n'+
-'        filld([2,4,8,16], 32) // create an array of 32 random durations that are either \n'+
-'                              // 1/2, 1/4, 1/8 or 16th notes\n'+
-'    ).slave(perc[i]);\n'+
-'    \n'+
-'    seqs[i].offset = rndi(-500, 500); // set a random sample offset to "humanize" the sequence\n'+
-'}\n'+
+'With that in mind, here\'s a simple randomized sequencer: */\n'+
 '\n'+
-'// create a sequencer that will randomize the volume of each drum every quarter note\n'+
-'t = Seq( function() { \n'+
-'    perc.all(            // use all to apply a function to each array item\n'+
-'        function (obj) { // obj represents the array item\n'+
-'            obj.amp = rndf(.015, .1); // set a random amp from .015 to .5        \n'+
-'        } \n'+
-'    );\n'+
-'}, _4)\n'+
+'a = Synth();\n'+
+'b = Seq( function() { a.note( rndi(440, 880) ) }, _2).slave(a);\n'+
 '\n'+
-'seqs.all( function(obj) { obj.root = "F6" } );  // change the root for all scales\n'+
-'perc.all( function(obj) { obj.fx.add( Delay(_16, .1) ) } ); // add fx to all drums',
-
-"custom callback": 
-'/*\n'+
-'So, you want your own callback... don\'t like my graph? Well, here you go.\n'+
-'Most ugens in Gibber have a method named "out" that advances the phase of the\n'+
-'ugen and returns the output. Note that keystrokes to stop/start audio will\n'+
-'not work with a custom callback, and that there is no tempo. It\'s a little\n'+
-'tricky to run this and then initialize objects as new objects are automatically added to\n'+
-'Gibber\'s graph, so we\'ll just create our ugens the first time the new callback is called.\n'+
+'// and here\'s one with an array of 5 set random values:\n'+
 '\n'+
-'To disable the callback (and stop the sine wave) just run the last line of code, which\n'+
-'resets the callback to Gibber\'s default\n.'+
-'*/\n'+
+'c = Synth();\n'+
+'d = Seq( rndf(440, 880, 5), _4).slave(c);\n'+
 '\n'+
-'G.dev.readFn = function(buffer, channelCount){\n'+
-'    var freqStore, val;\n'+
-'    if(typeof __s === "undefined") {  // init oscillators\n'+
-'        G.log("INIT");\n'+
-'        __s = Sine();\n'+
-'        __m = Sine(4, 8);\n'+
-'    }\n'+
-'    \n'+
-'    for(var i = 0; i < buffer.length; i+= channelCount) {\n'+
-'        freqStore = __s.frequency;\n'+
-'        __s.frequency += __m.out();     	// modulate the frequency\n'+
-'        val = __s.out();          			// get the output of s\n'+
-'        __s.frequency = freqStore;    		// restore the frequency of s\n'+
-'        \n'+
-'        buffer[i] = val;            		// assign value to sample\n'+
-'        buffer[i+1] = val;\n'+
-'	}\n'+
-'}\n'+
+'/* Whenever a sequencer advances through an array of values, it checks to see if that\n'+
+'array has a pick function. If a pick function exists then it uses that function to pick\n'+
+'out an item from the array instead of linearly advancing through it. Notice how once we\n'+
+'add a pick function to the note array the same note is always returned: */\n'+
 '\n'+
-'G.dev.readFn = window.audioProcess;  // restore the Gibber graph',
+'e = Synth();\n'+
+'f = Seq( rndf(440, 880, 10), _4).slave(e);\n'+
+'\n'+
+'// wait a few seconds, then run the line below\n'+
+'f.note.pick = function() { return 660; };\n'+
+'\n'+
+'/* Gibber includes a couple of functions to help define pick functions for you. One simple\n'+
+'example is the surpriseMe() function, which will return a function that randomly selects an\n'+
+'element from the array each time the sequencer advances. */\n'+
+'\n'+
+'g = Synth();\n'+
+'h = Seq( rndf(440, 880, 4), _4).slave(g);\n'+
+'\n'+
+'// wait a few seconds, then run the line below\n'+
+'h.note.pick = surpriseMe();\n'+
+'\n'+
+'/* Another useful function to generate a pick is weight(). Weight allows you to weight the\n'+
+'likelihood of each note being picked in an array. For example, if we wanted to stress the\n'+
+'root of a scale and eighth note durations we could do the following: */\n'+
+'\n'+
+'i = Synth( { attack:ms(10), decay:ms(500) } );\n'+
+'j = ScaleSeq({\n'+
+'  note:[0,2,3,5,7,8],\n'+
+'  durations:[_8, _4, _2],\n'+
+'  slaves:[i],\n'+
+'  root:"C2",\n'+
+'});\n'+
+'\n'+
+'// wait a few seconds and then run the line below\n'+
+'j.note.pick = weight(.7, .1, .1, .05, .05); // weights should add up to 1\n'+
+'\n'+
+'// wait a while and then run this to emphasize eighth notes\n'+
+'j.durations.pick = weight(.8, .1, .1);',
 
 "SYNTHESIS TUTORIALS":"LABEL START",
 
@@ -538,7 +531,7 @@ FM:
 '\n'+
 'c = Sine(240, .15);\n'+
 '\n'+
-'c.mod("freq", Sine(8, 4), "+");  // Vibrato - modulating frequency 8 times per second by +/- 4Hz\n'+
+'c.mod("frequency", LFO(4, 10), "+");  // Vibrato - modulating frequency 8 times per second by +/- 4Hz\n'+
 '\n'+
 '/*\n'+
 'The mod command in Gibber simply modulates the named parameter ("freq") using the provided\n'+
@@ -557,21 +550,22 @@ FM:
 'carrierFrequency = 200;\n'+
 'c = Sine(carrierFrequency, .15);\n'+
 '\n'+
-'c.mod("freq", Sine(carrierFrequency * 1.4, 190), "+"); \n'+
+'c.mod("frequency", LFO(carrierFrequency * 1.4, 190), "+"); \n'+
 '\n'+
 '/*\n'+
 'If we use a synth for this we get an envelope that can be triggered via the note command.\n'+
 'A short attack and long decay will give us some nice bell sounds. Especially if we add some reverb :)\n'+
 '*/\n'+
 '\n'+
-'noteFrequency = ntof("F2"); // ntof is note-to-frequency\n'+
+'noteFrequency = ntof("F3"); // ntof is note-to-frequency\n'+
 '\n'+
-'c = Synth("sine", .15);\n'+
+'c = Synth("Sine", .15);\n'+
 'c.fx.add( Reverb() );\n'+
-'c.mod("freq", Sine( noteFrequency * 1.4, noteFrequency * .95), "+");\n'+
-'c.env.attack  = 1;        // 1 ms attack time\n'+
-'c.env.decay   = 6000;     // 1000 ms decay\n'+
+'c.mod("frequency", LFO( noteFrequency * 1.4, noteFrequency * .95), "+");\n'+
+'c.attack  = ms(1);        // 1 ms attack time\n'+
+'c.decay   = ms(6000);     // 1000 ms decay\n'+
 '\n'+
+'c.amp = .5;\n'+
 'c.note(noteFrequency);\n'+
 '\n'+
 '/*\n'+
@@ -585,7 +579,15 @@ FM:
 'And below is a code sample that creates a "brassy" sound (depending on how forgiving you are).\n'+
 '*/\n'+
 '\n'+
-'f = FM(1 / 1.0007, 5, 100, 100);\n'+
+'f = FM(1 / 1.0007, 5, ms(100), ms(100));\n'+
 'f.fx.add( Reverb() );\n'+
-'s = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);',
-}
+'s = Seq(["A4", "B4", "B4", "C5"], _8).slave(f);\n'+
+'\n'+
+'/* Finally, there are a number of presets that can be called with the FM object; the algorithm given above\n'+
+'is the "brass" preset. Other presets include glockenspiel, gong, clarinet, frog, drum and drum2. Hopefully\n'+
+'more will be added in the future. */\n'+
+'\n'+
+'g = FM("clarinet");\n'+
+'g.note("A5");\n',
+};
+});

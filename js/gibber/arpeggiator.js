@@ -43,8 +43,8 @@ function Arp(notation, beats, mode, mult) {
 			}
 			arr = arr.concat(tmp);
 		}	
-		this.notes = this.modes[this.mode]( arr );
-		this.sequences.note = this.notes;
+		this.note = this.modes[this.mode]( arr );
+		this.sequences.push("note");
 		
 		// if(this.init) {
 		// 	this.sequences.note = this.notes;
