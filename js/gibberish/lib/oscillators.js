@@ -21,9 +21,18 @@ define([], function() {
 			gibberish.make["KarplusStrong"] = this.makeKarplusStrong;
 			gibberish.KarplusStrong = this.KarplusStrong;
 			
+			gibberish.generators.KarplusStrong2 = gibberish.createGenerator(["blend", "dampingValue", "amp", "headPos"], "{0}( {1}, {2}, {3}, {4} )");
+			gibberish.make["KarplusStrong2"] = this.makeKarplusStrong2;
+			gibberish.KarplusStrong2 = this.KarplusStrong2;
+			
 			gibberish.generators.PolyKarplusStrong = gibberish.createGenerator(["blend", "dampingValue", "amp"], "{0}( {1}, {2}, {3} )");
 			gibberish.make["PolyKarplusStrong"] = this.makePolyKarplusStrong;
 			gibberish.PolyKarplusStrong = this.PolyKarplusStrong;
+			
+			gibberish.generators.Mesh = gibberish.createGenerator(["input", "hitX", "hitY", "amp"], "{0}( {1}, {2}, {3}, {4} )");
+			gibberish.make["Mesh"] = this.makeMesh;
+			gibberish.Mesh = this.Mesh;
+			
 			
 			gibberish.Sampler = this.Sampler;
 			gibberish.generators.Sampler = gibberish.createGenerator(["speed", "amp"], "{0}( {1}, {2} )");
@@ -39,10 +48,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Sine\"]();");
-			window[that.name] = Gibberish.make["Sine"]();
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Sine\"]();");
+			window[that.symbol] = Gibberish.make["Sine"]();
+			that._function = window[that.symbol];
 						
 			Gibberish.defineProperties( that, ["frequency", "amp"] );
 			
@@ -72,10 +81,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Square\"]();");
-			window[that.name] = Gibberish.make["Square"]();
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Square\"]();");
+			window[that.symbol] = Gibberish.make["Square"]();
+			that._function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["frequency", "amp"] );
 			
@@ -108,10 +117,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Triangle\"]();");
-			window[that.name] = Gibberish.make["Triangle"]();
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Triangle\"]();");
+			window[that.symbol] = Gibberish.make["Triangle"]();
+			that._function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["frequency", "amp"] );
 	
@@ -151,10 +160,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Saw\"]();");
-			window[that.name] = Gibberish.make["Saw"]();
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Saw\"]();");
+			window[that.symbol] = Gibberish.make["Saw"]();
+			that._function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["frequency", "amp"] );
 	
@@ -226,10 +235,10 @@ define([], function() {
 			
 			that.buffer.push(0);
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"KarplusStrong\"]();");	
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"KarplusStrong\"]();");	
 			that._function = Gibberish.make["KarplusStrong"](that.buffer);
-			window[that.name] = that._function;
+			window[that.symbol] = that._function;
 			
 			Gibberish.defineProperties( that, ["blend", "amp"] );
 			
@@ -330,7 +339,7 @@ define([], function() {
 					
 					that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
 					
-					window[that.name] = that._function;
+					window[that.symbol] = that._function;
 					
 					Gibberish.dirty(that);
 				},
@@ -357,10 +366,10 @@ define([], function() {
 			    request.send();
 			}
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Sampler\"]();");	
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Sampler\"]();");	
 			that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
-			window[that.name] = that._function;
+			window[that.symbol] = that._function;
 			
 			Gibberish.defineProperties( that, ["speed", "amp"] );
 			
@@ -381,8 +390,269 @@ define([], function() {
 			output.setPhase = function(newPhase) { phase = newPhase; };
 			
 			return output;
-		}
+		},
 		
+		KarplusStrong2 : function(properties) {
+			var that = { 
+				type:		"KarplusStrong2",
+				category:	"Gen",
+				amp:		.5,
+				damping:	.75,
+				dampingValue: .75,
+				blend:		 1,
+				buffer: 	new Float32Array(100),
+				buffer2:	new Float32Array(100),
+				headPos:	4,
+				headCoeff:  .25,
+				
+				note : function(frequency) {
+					var _size = Math.floor(44100 / frequency);
+					this.buffer  = new Float32Array(_size); // needs push and shift methods
+					this.buffer2 = new Float32Array(_size);;
+					
+					this.headPos = Math.round( _size * this.headCoeff);
+					var last = 0;
+					var phase = 0;
+					for(var i = 0; i < _size ; i++) {
+					    // if (phase < 1) {
+					    // 		this.buffer[i] = this.buffer2[i] = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);   
+					    // 		phase += frequency / 44100;
+					    // }else{
+							var newVal = Math.random() * 2 - 1; // white noise
+							this.buffer[i] = this.buffer2[i] = (newVal + last) / 2; // filter
+							last = newVal;
+					    // }
+					}
+					this._function.setHeads(0, _size - 1, 0);
+					this._function.setBuffer(this.buffer);
+					this._function.setBuffer2(this.buffer2);					
+				},
+			};
+			
+			Gibberish.extend(that, new Gibberish.ugen(that));
+			
+			var damping = that.damping;
+			
+			// 		    Object.defineProperty(that, "damping", {
+			// 	get: function() {
+			// 		return damping * 100;
+			// 	},
+			// 	set: function(value) {
+			// 		damping = value / 100;
+			// 		that.dampingValue = .5 - damping;
+			// 		Gibberish.dirty(this);
+			// 	}
+			// });
+
+			
+			if(typeof properties !== "undefined") {
+				Gibberish.extend(that, properties);
+			}
+			
+			that.dampingValue = .5 - that.damping;
+			
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"KarplusStrong2\"]();");	
+			that._function = Gibberish.make["KarplusStrong2"](that.buffer, that.buffer2);
+			window[that.symbol] = that._function;
+			
+			Gibberish.defineProperties( that, ["blend", "amp", "headPos", "damping"] );
+
+			return that;
+		},
 		
+		makeKarplusStrong2: function(buffer, buffer2) {
+			var phase = 0;
+			var rnd = Math.random;
+			var lastValue = 0;
+			var lastValue2 = 0;
+			var read1 = 0, read2 = 0, write = 0;
+			 
+			var output = function(blend, damping, amp, headPos) {
+				var val = buffer[read1++];
+				var val2 = buffer2[read2--];
+				read1 = read1 >= buffer.length ? 0 : read1;
+				read2 = read2 < 0 ? buffer.length - 1 : read2;
+	
+				var value = ((val + lastValue) ) * damping;
+				var value2 = ((val2 + lastValue2) ) * damping;				
+				
+				//if(phase++ % 22050 === 0) console.log(damping, read1, read2, value, value2, headPos);
+				
+				lastValue = value;
+				lastValue2 = value2;				
+		
+				buffer[write] = value;
+				buffer2[write] = value2;
+				
+				write = write < buffer.length - 1 ? write + 1 : 0;
+				
+				//if(phase++ % 22050 === 0) console.log("INSIDE", value, blend, damping, amp, val);
+				//return buffer[(headPos + read1) % buffer.length] + (buffer2[(buffer.length - headPos + read2) % buffer.length] * -1) * amp;
+				return (value + (value2 * -1)) * amp;
+			};
+			output.setBuffer  = function(buff) { buffer  = buff; };
+			output.setBuffer2 = function(buff) { buffer2 = buff; };		
+			output.setHeads = function(r1, r2, w) { read1 = r1; read2 = r2; write = w; }	
+			output.getBuffer = function() { return buffer; };			
+
+			return output;
+		},
+		
+		Mesh : function(props) {
+			var that = { 
+				type:		"Mesh",
+				category:	"Gen",
+				amp:		props.amp || .5,
+				input:		props.input,
+				hitX : 0,
+				hitY : 0,
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
+
+			var Junction = function() {
+				var that = {
+					phase : 0,
+					neighbors : null,
+					nearest : 	null,
+					value : 0,
+					n1 : 0,
+					n2 : 0,
+					
+					setNeighbors : function(neighbors) {
+						this.neighbors = neighbors;
+						this.nearest = [ neighbors[1], neighbors[3], neighbors[5], neighbors[7] ];
+					},
+					render : function(input) {
+						var val = 0;
+					
+						for(var i = 0; i < this.nearest.length; i++) {
+							if(this.nearest[i] !== null) {
+								//console.log("NON NULL NEIGHBOR", this.nearest[i].n1);
+								//if(isNaN( this.nearest[i].n1 )) console.log("PROBLEM ", i);
+								val += this.nearest[i].n1;// - this.n2;
+							}
+						}
+						
+						val *= .5;
+						val -= this.n2;
+						val *= .999;
+
+						if(typeof input === "number") { val += input; }
+						//if(val === NaN) console.log("ALERT!");
+						//if(this.num == 8)
+						//	if(this.phase++ < 100) console.log("OUTPUT", this.num, val);
+						this.value = val;
+						//if(typeof this.value !== "number" ) console.log("AOSUDOAISHUDOAI");
+						//console.log(this.value, this.num);
+						return this.value;
+					},
+					update : function() {
+						//if(this.phase++ % 22050 === 0) console.log(this.n1);
+						this.n2 = this.n1;
+						this.n1 = this.value; //isNaN(this.value) ? this.n1 : this.value;
+						//console.log("UPDATING", this);					
+					}
+				}
+				
+				return that;
+			}
+			
+			var Grid = function(width, height) {
+				var grid = [];
+				for(var i = 0; i < height; i++) {
+					grid[i] = [];
+					for(var j = 0; j < width; j++) {
+						grid[i][j] = Junction();
+						
+						grid[i][j].num = i * width + j;
+						if(grid[i][j].num === 8) grid[i][j].n1 = 1;
+					}
+				}
+				for(var i = 0; i < height; i++) {
+					var above = i - 1;
+					var below = i + 1;
+					
+					for(var j = 0; j < width; j++) {
+						var left = j - 1;
+						var right = j + 1;
+						var neighbors = [];
+						for(var k = 0; k < width * height; k++) { neighbors[k] = null; }
+						
+						if(above >= 0) {
+							if(left >= 0) {
+								neighbors[0] = grid[above][left];
+							}
+							neighbors[1] = grid[above][j];
+							if(right < width) {
+								neighbors[2] = grid[above][right];
+							}
+						}
+						if(left >= 0) {
+							neighbors[3] = grid[i][left];
+						}
+						neighbors[4] = null;
+						if(right < width) {
+							neighbors[5] = grid[i][right];
+						}
+						
+						if(below < height) {
+							if(left >= 0) {
+								neighbors[6] = grid[below][left];
+							}
+							neighbors[7] = grid[below][j];
+							if(right < width) {
+								neighbors[8] = grid[below][right];
+							}
+						}
+						grid[i][j].setNeighbors(neighbors);
+					}
+				}
+				return grid;
+			}
+			
+			that.grid = Grid(8,8);
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
+			window[that.symbol] = Gibberish.make["Mesh"](that.grid);
+			that._function = window[that.symbol];
+						
+			Gibberish.defineProperties( that, ["input", "amp", "hitX", "hitY"] );
+	
+			return that;
+		},
+		
+		makeMesh : function(grid) { // note, storing the increment value DOES NOT make this faster!
+			var phase = 0;
+	
+			var output = function(input, junctionX, junctionY, amp) {
+				var val = 0;
+				for(var i = 0; i < grid.length; i++) {					
+					for(var j = 0; j < grid[i].length; j++) {
+						if(i === junctionY && j === junctionX && typeof input === "number" && input !== Infinity) {
+							if(phase++ % 22050 === 0) console.log("input = ", input, amp);
+							//console.log("MATCHED");
+							val += grid[i][j].render(input);
+						}else{
+							val += grid[i][j].render();
+						}
+					}
+					if(typeof val !== "number") {
+						console.log(grid[i][j]);
+					}
+				}
+				for(var i = 0; i < grid.length; i++) {					
+					for(var j = 0; j < grid[i].length; j++) {
+						//console.log("updating", (i * this.grid[i].length) + j);
+						grid[i][j].update();
+					}
+				}
+				//if(phase++ % 22050 === 0) console.log("output", val);
+				
+				return val * amp;
+			}
+	
+			return output;
+		},		
     }
 });

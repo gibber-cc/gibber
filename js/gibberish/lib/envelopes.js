@@ -33,10 +33,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen());
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Env\"]();");
-			window[that.name] = Gibberish.make["Env"]();
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Env\"]();");
+			window[that.symbol] = Gibberish.make["Env"]();
+			that._function = window[that.symbol];
 			that._function.setState(2);
 			
 			Gibberish.defineProperties( that, ["attack", "decay"] );
@@ -87,10 +87,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen());
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"ADSR\"]();");
-			window[that.name] = Gibberish.make["ADSR"]();
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"ADSR\"]();");
+			window[that.symbol] = Gibberish.make["ADSR"]();
+			that._function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["attack", "decay", "sustain", "release", "attackLevel", "sustainLevel"] );
 	
@@ -153,10 +153,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen());
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Step\"]();");
-			window[that.name] = Gibberish.make["Step"](that.steps);
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Step\"]();");
+			window[that.symbol] = Gibberish.make["Step"](that.steps);
+			that._function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["attack", "decay"] );
 	
@@ -200,10 +200,10 @@ define([], function() {
 			};
 			Gibberish.extend(that, new Gibberish.ugen());
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Line\"]();");
-			window[that.name] = Gibberish.make["Line"](that.start, that.end, that.time);
-			that._function = window[that.name];
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Line\"]();");
+			window[that.symbol] = Gibberish.make["Line"](that.start, that.end, that.time);
+			that._function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, [] );
 	

@@ -44,3 +44,49 @@ function Pluck (damping, blend, amp, color){
 	
 	return that;
 }
+
+function Pluck2 (damping, blend, amp, color){
+	var that = {};
+
+	if(typeof arguments[0] === "object") {
+		that = Gibberish.KarplusStrong2( arguments[0] );
+	}else{
+		var props = {
+			damping : (isNaN(damping)) ? 0 : damping / 100,
+			blend	: (isNaN(blend)) ? 1 : blend,
+			amp		: amp || .5,
+			maxVoices: 1,
+		};
+		
+		that = Gibberish.KarplusStrong2( props );
+	}
+
+	that.note = Gibber.makeNoteFunction(that);
+	that.chord = Gibber.chord;
+
+	that.send(Master, that.amp);	
+	
+	return that;
+}
+
+function Mesh (input){
+	var that = {};
+
+	if(typeof arguments[0] === "object") {
+		console.log("Before");
+		that = Gibberish.Mesh( arguments[0] );
+		console.log("After");		
+	}else{
+		var props = {
+			"input" : input,
+			amp		: amp || .5,
+		};
+
+		that = Gibberish.Mesh( props );
+	}
+	
+	that.send(Master, that.amp);	
+	
+	return that;
+}
+

@@ -26,7 +26,7 @@ function Bus() { // name is id, fx is array, ahem, fx
 }
 
 // ##Reverb#
-// A wrapper for the reverb from audioLib.js
+// based off audiolib.js reverb and freeverb
 //
 // param **roomSize**: Float. Default = .8. The size of the room being emulated  
 // param **damping**: Float. Default = .3. Attenuation of high frequencies that occurs  
@@ -51,12 +51,11 @@ function Reverb(roomSize, damping, wet, dry) {
 		
 		that = Gibberish.Reverb( props );
 	}
-	
+	that.name = "Reverb";
 	return that;
 }
 
 // ###Delay
-// A wrapper for the Delay from audioLib.js
 //
 // param **time**: Int. Default = _4. The number of samples betweeen echoes, usually expressed in Gibber time variables
 // param **feedback**: Float. Default = .3. How much of the output is fed back into the input of hte delay  
@@ -67,11 +66,12 @@ function Reverb(roomSize, damping, wet, dry) {
 
 function Delay(time, feedback) {
 	var that = Gibberish.Delay(time, feedback);
+	that.name = "Delay";
 	return that;	
 };
 
 // ###Ring
-// A Ring Modulator by thecharlie
+// A Ring Modulator
 //
 // param **frequency**: Float. Default = 440. The frequency of the sine wave that the signal is multiplied by  
 // param **amount**: Float. Default = 1. The amplitude of the sine wave the signal is multiplied by  
@@ -82,6 +82,7 @@ function Delay(time, feedback) {
 
 function Ring(frequency, amount) {
 	var that = Gibberish.RingModulator(frequency, amount);
+	that.name = "Ring";
 	return that;
 }
 
@@ -96,11 +97,12 @@ function Ring(frequency, amount) {
 
 function Crush(bitDepth, sampleRate) {
 	var that = Gibberish.Decimator({bitDepth:bitDepth, sampleRate:sampleRate});
+	that.name = "Crush";
 	return that;
 }
 
 // ###Clip
-// A simple waveshaping distortion using y = x / (1+|x|) by thecharlie
+// A simple waveshaping distortion using y = x / (1+|x|)
 //
 // param **amount**: Float. Default = 4. The amount of distortion
 // Clip also has a logarithmic volume adapter to the equation so that you can
@@ -113,7 +115,7 @@ function Crush(bitDepth, sampleRate) {
 
 window.Dist = window.Clip = function(amount, amp) {
 	var that = Gibberish.SoftClip(amount, amp);
-	
+	that.name = "Clip";
 	return that;
 }
 
@@ -128,11 +130,13 @@ window.Dist = window.Clip = function(amount, amp) {
 
 function LPF(cutoff, resonance, mix) {
 	var that = Gibberish.Filter24(cutoff, resonance, true);
+	that.name = "LPF";
 	return that;
 }
 
 
 function HPF(cutoff, resonance) {
 	var that = Gibberish.Filter24(cutoff, resonance, false);
+	that.name = "HPF";
 	return that;
 }

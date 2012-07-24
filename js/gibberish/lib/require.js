@@ -413,7 +413,7 @@ var requirejs, require, define;
         function makeModuleMap(name, parentModuleMap, isNormalized, applyMap) {
             var index = name ? name.indexOf('!') : -1,
                 prefix = null,
-                parentName = parentModuleMap ? parentModuleMap.name : null,
+                parentName = parentModuleMap ? parentModuleMap.symbol : null,
                 originalName = name,
                 isDefine = true,
                 normalizedName = '',
@@ -460,7 +460,7 @@ var requirejs, require, define;
                     //issue #142, so just pass in name here and redo
                     //the normalization. Paths outside baseUrl are just
                     //messy to support.
-                    url = context.nameToUrl(name, null, parentModuleMap);
+                    url = context.symbolToUrl(name, null, parentModuleMap);
                 }
             }
 
@@ -1047,8 +1047,8 @@ var requirejs, require, define;
                     pluginMap = makeModuleMap(map.prefix, null, false, true);
 
                 on(pluginMap, 'defined', bind(this, function (plugin) {
-                    var name = this.map.name,
-                        parentName = this.map.parentMap ? this.map.parentMap.name : null,
+                    var name = this.map.symbol,
+                        parentName = this.map.parentMap ? this.map.parentMap.symbol : null,
                         load, normalizedMap, normalizedMod;
 
                     //If current map is not normalized, wait for that
@@ -1136,7 +1136,7 @@ var requirejs, require, define;
                     //Use parentName here since the plugin's name is not reliable,
                     //could be some weird string with no path that actually wants to
                     //reference the parentName's path.
-                    plugin.load(map.name, makeRequire(map.parentMap, true, function (deps, cb) {
+                    plugin.load(map.symbol, makeRequire(map.parentMap, true, function (deps, cb) {
                         deps.rjsSkipMap = true;
                         return context.require(deps, cb);
                     }), load, config);
@@ -1350,9 +1350,9 @@ var requirejs, require, define;
                         //Create a brand new object on pkgs, since currentPackages can
                         //be passed in again, and config.pkgs is the internal transformed
                         //state for all package configs.
-                        pkgs[pkgObj.name] = {
-                            name: pkgObj.name,
-                            location: location || pkgObj.name,
+                        pkgs[pkgObj.symbol] = {
+                            name: pkgObj.symbol,
+                            location: location || pkgObj.symbol,
                             //Remove leading dot in main, so main paths are normalized,
                             //and remove any trailing .js, since different package
                             //envs have different conventions: some use a module name,
@@ -1583,7 +1583,7 @@ var requirejs, require, define;
                     moduleNamePlusExt = moduleNamePlusExt.substring(0, index);
                 }
 
-                return context.nameToUrl(moduleNamePlusExt, ext, relModuleMap);
+                return context.symbolToUrl(moduleNamePlusExt, ext, relModuleMap);
             },
 
             /**
@@ -1630,7 +1630,7 @@ var requirejs, require, define;
                         } else if (pkg) {
                             //If module name is just the package name, then looking
                             //for the main module.
-                            if (moduleName === pkg.name) {
+                            if (moduleName === pkg.symbol) {
                                 pkgPath = pkg.location + '/' + pkg.main;
                             } else {
                                 pkgPath = pkg.location;

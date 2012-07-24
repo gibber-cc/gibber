@@ -278,6 +278,7 @@ function _Seq() {
 _Seq.prototype = {
 	name : "Seq",
 	type : "control",
+	category : "control",
 	
 	// ####advance
 	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.

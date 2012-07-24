@@ -29,10 +29,10 @@ define(["gibberish/lib/gibberish"], function() {
 			for(var i = 0; i < this.length; i++) {
 				
 				var member = this[i];
-				if(member.type === arg) {
+				if(member.type === arg || member.name === arg) {
 					this.splice(i,1);
 				}
-				// if(member.name === arg) {
+				// if(member.symbol === arg) {
 				// 	this.splice(i, 1);
 				// }
 			}
@@ -51,7 +51,7 @@ define(["gibberish/lib/gibberish"], function() {
 		}else if(typeof arg === "string"){ // find named member and remove
 			for(var i = 0; i < this.length; i++) {
 				var member = this[i];
-				if(member.name == arg) {
+				if(member.symbol == arg) {
 					return this[i]
 				}
 			}
@@ -162,6 +162,5 @@ define(["gibberish/lib/gibberish"], function() {
 			}
 			return output;
 		}
-	}
-	
+	}		
 });

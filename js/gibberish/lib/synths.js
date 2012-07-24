@@ -63,10 +63,10 @@ define([], function() {
 			that.env = Gibberish.make["Env"](that.attack, that.decay);
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Synth\"]();");	
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Synth\"]();");	
 			that._function = Gibberish.make["Synth"](that.osc, that.env); // only passs ugen functions to make
-			window[that.name] = that._function;
+			window[that.symbol] = that._function;
 			
 			Gibberish.defineProperties( that, ["frequency", "amp", "attack", "decay"] );
 				
@@ -197,10 +197,10 @@ define([], function() {
 			that.carrier = Gibberish.make["Sine"]();
 			that.modulator = Gibberish.make["Sine"]();
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"FMSynth\"]();");
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"FMSynth\"]();");
 			that._function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env);
-			window[that.name] = that._function;
+			window[that.symbol] = that._function;
 						
 			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency"] );
 			if(typeof properties !== "undefined") {
@@ -337,12 +337,12 @@ define([], function() {
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
 			that.filter = Gibberish.make["Filter24"](that.cutoff, that.resonance, that.isLowPass);
 			
-			that.name = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.name + " = Gibberish.make[\"Synth2\"]();");	
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Synth2\"]();");	
 			that._function = Gibberish.make["Synth2"](that.osc, that.env, that.filter);
-			window[that.name] = that._function;
+			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay","sustain","release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform"] );
+			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay","sustain","release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "isLowPass"] );
 			
 			var waveform = that.waveform;
 		    Object.defineProperty(that, "waveform", {
@@ -434,7 +434,7 @@ define([], function() {
 			}
 			
 			that.mod = Gibberish.polyMod;
-			Gibberish.polyDefineProperties( that, ["frequency", "amp", "attack", "decay", "sustain", "release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "glide"] );
+			Gibberish.polyDefineProperties( that, ["frequency", "amp", "attack", "decay", "sustain", "release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "glide", "isLowPass"] );
 			
 			(function() {
 				var _amp = that.amp;

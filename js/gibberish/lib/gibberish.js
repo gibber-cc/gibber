@@ -28,12 +28,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			var codeblock = "function cb() {\nvar output = 0;\n";
 			
 			function checkBusses(_ugen, gibberish) {
-				//console.log("RUNNING INSIDE CODE FOR", _ugen.name );
+				//console.log("RUNNING INSIDE CODE FOR", _ugen.symbol );
 				
 				for(var j = 0; j < _ugen.senderObjects.length; j++) {
 					var __ugen = _ugen.senderObjects[j];
 					if(__ugen.category === "Bus") {
-						//console.log("BUS SENDER OBJECT", ugen.name);
+						//console.log("BUS SENDER OBJECT", ugen.symbol);
 						checkBusses(__ugen, gibberish);
 						if(__ugen.dirty)
 							gibberish.generate(__ugen);
@@ -47,7 +47,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 						}
 					}else{
 						if(__ugen.dirty) {
-							//console.log(__ugen.name + " IS DIRTY");
+							//console.log(__ugen.symbol + " IS DIRTY");
 						 	gibberish.generate(__ugen);
 							__ugen.dirty = false;
 						}
@@ -67,7 +67,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				
 				if(ugen.category === "Bus") {
 					checkBusses(ugen, this);
-					//console.log("BUS", ugen.name, ugen.codeblock);
+					//console.log("BUS", ugen.symbol, ugen.codeblock);
 				}
 				var shouldPush = true;
 				if(ugen.dirty) {
@@ -204,7 +204,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		createGenerator : function(parameters, formula) {
 			var generator = function(op, codeDictionary, shouldAdd) {				
 				shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
-				var name = op.name;
+				var name = op.symbol;
 				
 				//console.log("GENERATING WITH FORMULA", formula, "PARAMETERS", parameters);
 				codeDictionary.upvalues.push("var {0} = globals.{0}".format(name));
@@ -227,7 +227,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			
 			if(typeof op === "object" && op !== null) {
 
-				var memo = this.memo[op.name];
+				var memo = this.memo[op.symbol];
 				if(memo){
 					//console.log("MEMO", memo);
 					return memo;
@@ -236,8 +236,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				var name = op.ugenVariable || this.generateSymbol("v");
 				op.ugenVariable = name;
 				
-				if(op.name && !op.NO_MEMO) {
-					this.memo[op.name] = op.ugenVariable;
+				if(op.symbol && !op.NO_MEMO) {
+					this.memo[op.symbol] = op.ugenVariable;
 				}
 				
 				var statement;
@@ -245,7 +245,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					statement = "var " + name + " = [";
 					
 					for(var i = 0; i < op.length; i++) {
-						var objName = op[i].name && !op[i].dirty ? op[i].name : this.generators[op[i].type](op[i], codeDictionary, false);
+						var objName = op[i].symbol && !op[i].dirty ? op[i].symbol : this.generators[op[i].type](op[i], codeDictionary, false);
 						statement += objName + ",";
 					}
 						
@@ -338,11 +338,11 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		
 		removeMod : function() {
 			var mod = this.mods.get(arguments[0]); 	// can be number, string, or object
-			delete this[mod.name]; 					// remove property getter/setters so we can directly assign
+			delete this[mod.symbol]; 					// remove property getter/setters so we can directly assign
 			this.mods.remove(mod);
 			
 			var val = mod.operands[0];
-			this[mod.name] = val;
+			this[mod.symbol] = val;
 
 			Gibberish.defineProperties(this, ["frequency"]);
 			Gibberish.generate(this);
