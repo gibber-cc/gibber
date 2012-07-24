@@ -522,14 +522,32 @@ define([], function() {
 					n1 : 0,
 					n2 : 0,
 					damping : .01,
+					mode : 0,
 					
 					setNeighbors : function(neighbors) {
 						this.neighbors = neighbors;
 						this.nearest = [ neighbors[1], neighbors[3], neighbors[5], neighbors[7] ];
 					},
 					render : function(input) {
+						/* grid
+						0.09398		0.3120	0.09398
+						0.3120		0.3759	0.32120
+						0.09398		0.3120	0.09398
+						*/
 						var val = 0;
-					
+						/*
+						if(this.neighbors[0] !== null) val += this.neighbors[0].n1 * 0.09398;
+						if(this.neighbors[1] !== null) val += this.neighbors[1].n1 * 0.3120;
+						if(this.neighbors[2] !== null) val += this.neighbors[2].n1 * 0.09398;
+						if(this.neighbors[3] !== null) val += this.neighbors[3].n1 * 0.3120;
+						if(this.neighbors[4] !== null) val += this.n1 * 0.3759;
+						if(this.neighbors[5] !== null) val += this.neighbors[5].n1 * 0.3120;
+						if(this.neighbors[6] !== null) val += this.neighbors[6].n1 * 0.09398;
+						if(this.neighbors[7] !== null) val += this.neighbors[7].n1 * 0.3120;
+						if(this.neighbors[8] !== null) val += this.neighbors[8].n1 * 0.09398;
+						*/
+						
+						/*
 						for(var i = 0; i < this.nearest.length; i++) {
 							if(this.nearest[i] !== null) {
 								//console.log("NON NULL NEIGHBOR", this.nearest[i].n1);
@@ -537,11 +555,12 @@ define([], function() {
 								val += this.nearest[i].n1;// - this.n2;
 							}
 						}
-						
+
 						val *= .5;
 						val -= this.n2;
 						val *= 1 - this.damping;
-
+						*/
+						
 						if(typeof input === "number") { val += input; }
 						//if(val === NaN) console.log("ALERT!");
 						//if(this.num == 8)
@@ -561,6 +580,78 @@ define([], function() {
 				
 				return that;
 			}
+			/* Triangular (hexagonal) mesh, 6 ports per junction
+
+var r1="	* *    ";
+var r2=" * * * * * ";
+var r3="* * * * * *";
+var r4=" * * * * * ";
+var r5="* * * * * *";
+var r6=" * * * * * ";
+var r7="    * *    ";
+
+			*/
+			
+			var Triangle = function() {
+				console.log("triangle 0");
+				var rows = [
+					"    * *    ",
+					" * * * * * ",
+					"* * * * * *",
+					" * * * * * ",
+					"* * * * * *",
+					" * * * * * ",
+					"    * *    ",
+				];
+				var grid = [];
+				for(var i = 0; i < rows.length; i++) {
+					var _row = rows[i].split("");
+					grid[i] = [];
+					for(var j = 0; j < _row.length; j++) {
+						grid[i][j] = _row[j] === "*" ? Junction() : null;
+					}
+				}
+				console.log("triangle 1", grid);
+				for(var i = 0; i < grid.length; i++) {
+					console.log("row", i);
+					var row = grid[i];
+					var above = i - 1;
+					var below = i + 1;
+					
+					for(var col = 0; col < row.length; col++) {
+						console.log("column", col);
+						var left = 	col - 1;
+						var right = col + 1;
+						
+						if( row[col] !== null) {
+							var neighbors = [];
+							var count = 0;
+							if(above >= 0 && left >= 0) {
+								neighbors[count++] = grid[above][left];
+							}
+							if(above >= 0 && right < row.length) {
+								neighbors[count++] = grid[above][right];
+							}
+							if(left - 1 >= 0) {
+								neighbors[count++] = grid[i][left - 1];
+							}
+							if(right + 1 < row.length) {
+								neighbors[count++] = grid[i][right + 1];
+							}
+							if(below < grid.length && left >= 0) {
+								neighbors[count++] = grid[below][left];
+							}
+							if(below < grid.length && right < row.length) {
+								neighbors[count++] = grid[below][right];
+							}
+							
+							row[col].neighbors = neighbors;
+						}
+					}
+				}
+				console.log("triangle 2");
+				return grid;
+			};
 			
 			var Grid = function(width, height) {
 				var grid = [];
@@ -573,6 +664,7 @@ define([], function() {
 						//if(grid[i][j].num === 8) grid[i][j].n1 = 1;
 					}
 				}
+				
 				for(var i = 0; i < height; i++) {
 					var above = i - 1;
 					var below = i + 1;
@@ -595,7 +687,7 @@ define([], function() {
 						if(left >= 0) {
 							neighbors[3] = grid[i][left];
 						}
-						neighbors[4] = null;
+						neighbors[4] = grid[i][j];
 						if(right < width) {
 							neighbors[5] = grid[i][right];
 						}
@@ -615,7 +707,7 @@ define([], function() {
 				return grid;
 			}
 			
-			that.grid = Grid(that.width,that.height);
+			that.grid = Triangle();
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
 			window[that.symbol] = Gibberish.make["Mesh"](that.grid);
@@ -641,6 +733,7 @@ define([], function() {
 	
 			return that;
 		},
+		
 		
 		makeMesh : function(grid) { // note, storing the increment value DOES NOT make this faster!
 			var phase = 0;
