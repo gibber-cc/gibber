@@ -29,7 +29,7 @@ define([], function() {
 			gibberish.make["PolyKarplusStrong"] = this.makePolyKarplusStrong;
 			gibberish.PolyKarplusStrong = this.PolyKarplusStrong;
 			
-			gibberish.generators.Mesh = gibberish.createGenerator(["input", "hitX", "hitY", "amp"], "{0}( {1}, {2}, {3}, {4} )");
+			gibberish.generators.Mesh = gibberish.createGenerator(["input", "hitX", "hitY", "amp", "rate"], "{0}( {1}, {2}, {3}, {4}, {5} )");
 			gibberish.make["Mesh"] = this.makeMesh;
 			gibberish.Mesh = this.Mesh;
 			
@@ -505,8 +505,11 @@ define([], function() {
 				category:	"Gen",
 				amp:		props.amp || .5,
 				input:		props.input,
-				hitX : 0,
-				hitY : 0,
+				hitX :  props.hitX || 3,
+				hitY :  props.hitY || 3,
+				width:  props.width || 16,
+				height: props.height || 16,
+				rate: 	props.rate || 10,			
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 
@@ -518,6 +521,7 @@ define([], function() {
 					value : 0,
 					n1 : 0,
 					n2 : 0,
+					damping : .01,
 					
 					setNeighbors : function(neighbors) {
 						this.neighbors = neighbors;
@@ -536,7 +540,7 @@ define([], function() {
 						
 						val *= .5;
 						val -= this.n2;
-						val *= .999;
+						val *= 1 - this.damping;
 
 						if(typeof input === "number") { val += input; }
 						//if(val === NaN) console.log("ALERT!");
@@ -566,7 +570,7 @@ define([], function() {
 						grid[i][j] = Junction();
 						
 						grid[i][j].num = i * width + j;
-						if(grid[i][j].num === 8) grid[i][j].n1 = 1;
+						//if(grid[i][j].num === 8) grid[i][j].n1 = 1;
 					}
 				}
 				for(var i = 0; i < height; i++) {
@@ -611,46 +615,80 @@ define([], function() {
 				return grid;
 			}
 			
-			that.grid = Grid(8,8);
+			that.grid = Grid(that.width,that.height);
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
 			window[that.symbol] = Gibberish.make["Mesh"](that.grid);
 			that._function = window[that.symbol];
 						
-			Gibberish.defineProperties( that, ["input", "amp", "hitX", "hitY"] );
+			Gibberish.defineProperties( that, ["input", "amp", "hitX", "hitY", "rate"] );
+			
+			(function() {
+				var _damping = that.damping;
+				
+				Object.defineProperty(that, "damping", {
+					get: function() { return _damping; },
+					set: function(value) {
+						_damping = value;
+						for(var i = 0; i < that.grid.length; i++) {
+							for(var j = 0; j < that.grid[i].length; j++) {
+								this.grid[i][j].damping = _damping;
+							}
+						}
+					},
+				});
+			})();
 	
 			return that;
 		},
 		
 		makeMesh : function(grid) { // note, storing the increment value DOES NOT make this faster!
 			var phase = 0;
+			//var incr = 1 / 44100;
 	
-			var output = function(input, junctionX, junctionY, amp) {
+			var output = function(input, junctionX, junctionY, amp, rate) {
 				var val = 0;
-				for(var i = 0; i < grid.length; i++) {					
-					for(var j = 0; j < grid[i].length; j++) {
-						if(i === junctionY && j === junctionX && typeof input === "number" && input !== Infinity) {
-							if(phase++ % 22050 === 0) console.log("input = ", input, amp);
-							//console.log("MATCHED");
-							val += grid[i][j].render(input);
-						}else{
-							val += grid[i][j].render();
+				phase++; //= incr;
+				//var _phase = phase++ % rate;
+				var phaseMult = phase / rate;
+				if(phase >= rate) {
+					for(var i = 0; i < grid.length; i++) {					
+						for(var j = 0; j < grid[i].length; j++) {
+							if(i === junctionY && j === junctionX && typeof input === "number" && input !== Infinity) {
+								if(phase++ % 22050 === 0) console.log("input = ", input, amp);
+								//console.log("MATCHED");
+								grid[i][j].render(input);
+							}else{
+								grid[i][j].render();
+							}
 						}
 					}
-					if(typeof val !== "number") {
-						console.log(grid[i][j]);
+				
+					for(var i = 0; i < grid.length; i++) {					
+						for(var j = 0; j < grid[i].length; j++) {
+							//console.log("updating", (i * this.grid[i].length) + j);
+							grid[i][j].update();
+						}
 					}
+
+					phase -= rate;
 				}
+				
 				for(var i = 0; i < grid.length; i++) {					
 					for(var j = 0; j < grid[i].length; j++) {
-						//console.log("updating", (i * this.grid[i].length) + j);
-						grid[i][j].update();
+						var node = grid[i][j];
+						//if(phase % 22000 === 0) console.log(node.n1, node.value);
+						//if(node.n1 !== 0 || node.value !== 0) console.log("NONZERO", node.num);
+						//console.log(node.n1, node.value);
+						val += node.n1 + (node.value - node.n1) * phaseMult;
 					}
 				}
-				//if(phase++ % 22050 === 0) console.log("output", val);
+				
+				//if(val !== 0) console.log("VALUE 0", val);
 				
 				return val * amp;
 			}
+
 	
 			return output;
 		},		
