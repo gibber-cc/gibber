@@ -29,10 +29,14 @@ define([], function() {
 			gibberish.make["PolyKarplusStrong"] = this.makePolyKarplusStrong;
 			gibberish.PolyKarplusStrong = this.PolyKarplusStrong;
 			
-			gibberish.generators.Mesh = gibberish.createGenerator(["input", "hitX", "hitY", "amp", "rate"], "{0}( {1}, {2}, {3}, {4}, {5} )");
+			// gibberish.generators.Mesh = gibberish.createGenerator(["input", "hitX", "hitY", "amp", "rate"], "{0}( {1}, {2}, {3}, {4}, {5} )");
+			// gibberish.make["Mesh"] = this.makeMesh;
+			// gibberish.Mesh = this.Mesh;
+			
+			// input, amp, tension, power, distance, speed
+			gibberish.generators.Mesh = gibberish.createGenerator(["bang", "amp", "tension", "power", "size", "speed"], "{0}( {1}, {2}, {3}, {4}, {5}, {6} )");
 			gibberish.make["Mesh"] = this.makeMesh;
 			gibberish.Mesh = this.Mesh;
-			
 			
 			gibberish.Sampler = this.Sampler;
 			gibberish.generators.Sampler = gibberish.createGenerator(["speed", "amp"], "{0}( {1}, {2} )");
@@ -499,101 +503,112 @@ define([], function() {
 			return output;
 		},
 		
-		Mesh : function(props) {
+		/*Mesh : function(props) {
 			var that = { 
 				type:		"Mesh",
 				category:	"Gen",
 				amp:		props.amp || .5,
 				input:		props.input,
-				hitX :  props.hitX || 3,
-				hitY :  props.hitY || 3,
-				width:  props.width || 16,
-				height: props.height || 16,
-				rate: 	props.rate || 10,			
+				hitX :  	props.hitX || 3,
+				hitY :  	props.hitY || 3,
+				width:  	props.width || 16,
+				height: 	props.height || 16,
+				rate: 		props.rate || 10,
+				gridType: 	props.gridType || "Grid",
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 
-			var Junction = function() {
+			var Junction = function(type) {
 				var that = {
 					phase : 0,
 					neighbors : null,
 					nearest : 	null,
 					value : 0,
+					_value : 0, // storage for simulation
 					n1 : 0,
 					n2 : 0,
 					damping : .01,
 					mode : 0,
+					count : 0,
+					type: type || "Grid",
 					
 					setNeighbors : function(neighbors) {
 						this.neighbors = neighbors;
 						this.nearest = [ neighbors[1], neighbors[3], neighbors[5], neighbors[7] ];
 					},
-					render : function(input) {
-						/* grid
-						0.09398		0.3120	0.09398
-						0.3120		0.3759	0.32120
-						0.09398		0.3120	0.09398
-						*/
+					renderGrid : function(input) {
+
 						var val = 0;
-						/*
-						if(this.neighbors[0] !== null) val += this.neighbors[0].n1 * 0.09398;
-						if(this.neighbors[1] !== null) val += this.neighbors[1].n1 * 0.3120;
-						if(this.neighbors[2] !== null) val += this.neighbors[2].n1 * 0.09398;
-						if(this.neighbors[3] !== null) val += this.neighbors[3].n1 * 0.3120;
-						if(this.neighbors[4] !== null) val += this.n1 * 0.3759;
-						if(this.neighbors[5] !== null) val += this.neighbors[5].n1 * 0.3120;
-						if(this.neighbors[6] !== null) val += this.neighbors[6].n1 * 0.09398;
-						if(this.neighbors[7] !== null) val += this.neighbors[7].n1 * 0.3120;
-						if(this.neighbors[8] !== null) val += this.neighbors[8].n1 * 0.09398;
-						*/
+						// optimized kernel
+						// 0.09398		0.3120	0.09398
+						// 0.3120		0.3759	0.32120
+						// 0.09398		0.3120	0.09398
 						
-						/*
+						// if(this.neighbors[0] !== null) val += this.neighbors[0].n1 * 0.09398;
+						// if(this.neighbors[1] !== null) val += this.neighbors[1].n1 * 0.3120;
+						// if(this.neighbors[2] !== null) val += this.neighbors[2].n1 * 0.09398;
+						// if(this.neighbors[3] !== null) val += this.neighbors[3].n1 * 0.3120;
+						// if(this.neighbors[4] !== null) val += this.n1 * 0.3759;
+						// if(this.neighbors[5] !== null) val += this.neighbors[5].n1 * 0.3120;
+						// if(this.neighbors[6] !== null) val += this.neighbors[6].n1 * 0.09398;
+						// if(this.neighbors[7] !== null) val += this.neighbors[7].n1 * 0.3120;
+						// if(this.neighbors[8] !== null) val += this.neighbors[8].n1 * 0.09398;
+						
+						
 						for(var i = 0; i < this.nearest.length; i++) {
 							if(this.nearest[i] !== null) {
 								//console.log("NON NULL NEIGHBOR", this.nearest[i].n1);
 								//if(isNaN( this.nearest[i].n1 )) console.log("PROBLEM ", i);
-								val += this.nearest[i].n1;// - this.n2;
+								val += this.nearest[i].value;// - this.n2;
+							}
+						}
+						
+						
+						val *= .5;
+						val -= this.n1;
+						val *= 1 - this.damping;
+						
+						if(typeof input === "number") { val += input; }
+
+						this._value = val;
+
+						return this._value;
+					},
+					renderTriangle : function(input) {
+						val = 0;
+						for(var i = 0; i < this.neighbors.length; i++) {
+							if(this.neighbors[i] !== null) {
+								val += this.neighbors[i].value;// - this.n2;
 							}
 						}
 
-						val *= .5;
-						val -= this.n2;
+						val *= .333333;
+						val -= this.n1;
+						//val *= 2 / ( 2 * 6 * 6 / (.0001 * .0001 * 8 * 8) );
 						val *= 1 - this.damping;
-						*/
-						
+
 						if(typeof input === "number") { val += input; }
-						//if(val === NaN) console.log("ALERT!");
-						//if(this.num == 8)
-						//	if(this.phase++ < 100) console.log("OUTPUT", this.num, val);
-						this.value = val;
-						//if(typeof this.value !== "number" ) console.log("AOSUDOAISHUDOAI");
-						//console.log(this.value, this.num);
-						return this.value;
+						
+						//unit->yj = 1 / ( 2 * 6 * 6 / (.0001 * .0001 * 8 * 8) );
+						//float yj_r = 1.0f / unit->yj;
+						
+						this._value = val;
+						return this._value;
 					},
 					update : function() {
 						//if(this.phase++ % 22050 === 0) console.log(this.n1);
 						this.n2 = this.n1;
 						this.n1 = this.value; //isNaN(this.value) ? this.n1 : this.value;
+						this.value = this._value;
 						//console.log("UPDATING", this);					
 					}
 				}
 				
+				that.render = that.type === "Grid" ? that.renderGrid : that.renderTriangle;
 				return that;
 			}
-			/* Triangular (hexagonal) mesh, 6 ports per junction
-
-var r1="	* *    ";
-var r2=" * * * * * ";
-var r3="* * * * * *";
-var r4=" * * * * * ";
-var r5="* * * * * *";
-var r6=" * * * * * ";
-var r7="    * *    ";
-
-			*/
 			
 			var Triangle = function() {
-				console.log("triangle 0");
 				var rows = [
 					"    * *    ",
 					" * * * * * ",
@@ -608,18 +623,15 @@ var r7="    * *    ";
 					var _row = rows[i].split("");
 					grid[i] = [];
 					for(var j = 0; j < _row.length; j++) {
-						grid[i][j] = _row[j] === "*" ? Junction() : null;
+						grid[i][j] = _row[j] === "*" ? Junction("Triangle") : null;
 					}
 				}
-				console.log("triangle 1", grid);
 				for(var i = 0; i < grid.length; i++) {
-					console.log("row", i);
 					var row = grid[i];
 					var above = i - 1;
 					var below = i + 1;
 					
 					for(var col = 0; col < row.length; col++) {
-						console.log("column", col);
 						var left = 	col - 1;
 						var right = col + 1;
 						
@@ -649,7 +661,6 @@ var r7="    * *    ";
 						}
 					}
 				}
-				console.log("triangle 2");
 				return grid;
 			};
 			
@@ -658,7 +669,7 @@ var r7="    * *    ";
 				for(var i = 0; i < height; i++) {
 					grid[i] = [];
 					for(var j = 0; j < width; j++) {
-						grid[i][j] = Junction();
+						grid[i][j] = Junction("Grid");
 						
 						grid[i][j].num = i * width + j;
 						//if(grid[i][j].num === 8) grid[i][j].n1 = 1;
@@ -707,7 +718,8 @@ var r7="    * *    ";
 				return grid;
 			}
 			
-			that.grid = Triangle();
+			that.grid = that.gridType === "Grid" ? Grid(that.width, that.height) : Triangle();
+			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
 			window[that.symbol] = Gibberish.make["Mesh"](that.grid);
@@ -724,7 +736,8 @@ var r7="    * *    ";
 						_damping = value;
 						for(var i = 0; i < that.grid.length; i++) {
 							for(var j = 0; j < that.grid[i].length; j++) {
-								this.grid[i][j].damping = _damping;
+								if(this.grid[i][j] !== null)
+									this.grid[i][j].damping = _damping;
 							}
 						}
 					},
@@ -737,53 +750,180 @@ var r7="    * *    ";
 		
 		makeMesh : function(grid) { // note, storing the increment value DOES NOT make this faster!
 			var phase = 0;
-			//var incr = 1 / 44100;
+			var debug = 0;
 	
 			var output = function(input, junctionX, junctionY, amp, rate) {
 				var val = 0;
-				phase++; //= incr;
-				//var _phase = phase++ % rate;
-				var phaseMult = phase / rate;
+				phase++;
 				if(phase >= rate) {
 					for(var i = 0; i < grid.length; i++) {					
 						for(var j = 0; j < grid[i].length; j++) {
-							if(i === junctionY && j === junctionX && typeof input === "number" && input !== Infinity) {
-								if(phase++ % 22050 === 0) console.log("input = ", input, amp);
-								//console.log("MATCHED");
-								grid[i][j].render(input);
-							}else{
-								grid[i][j].render();
+							if(grid[i][j] !== null) {
+								if(i === junctionY && j === junctionX) {
+									val += grid[i][j].render(input);
+								}else{
+									val += grid[i][j].render();
+								}
 							}
 						}
 					}
 				
 					for(var i = 0; i < grid.length; i++) {					
 						for(var j = 0; j < grid[i].length; j++) {
-							//console.log("updating", (i * this.grid[i].length) + j);
-							grid[i][j].update();
+							if(grid[i][j] !== null)
+								grid[i][j].update();
 						}
 					}
 
 					phase -= rate;
 				}
 				
+				var phaseMult = phase / rate;
+				
 				for(var i = 0; i < grid.length; i++) {					
 					for(var j = 0; j < grid[i].length; j++) {
 						var node = grid[i][j];
-						//if(phase % 22000 === 0) console.log(node.n1, node.value);
-						//if(node.n1 !== 0 || node.value !== 0) console.log("NONZERO", node.num);
-						//console.log(node.n1, node.value);
-						val += node.n1 + (node.value - node.n1) * phaseMult;
+						if(node !== null) {
+							//if(debug++ % 22050 === 0) console.log("phaseMult", phaseMult, node);
+							val += node.n1 + (node.value - node.n1) * phaseMult;
+						}
 					}
-				}
+				}				
 				
-				//if(val !== 0) console.log("VALUE 0", val);
+				//if(debug++ % 22050 === 0) console.log("VALUE", val);
 				
 				return val * amp;
 			}
 
-	
 			return output;
-		},		
+		},
+		*/
+		Mesh : function(props) {
+			var that = { 
+				type:		"Mesh",
+				category:	"Gen",
+				amp:		props.amp || .5,
+				input:		props.input,
+				hitX :  	props.hitX || 3,
+				hitY :  	props.hitY || 3,
+				width:  	props.width || 8,
+				height: 	props.height || 8,
+				rate: 		props.rate || 10,
+				gridType: 	props.gridType || "Grid",
+				junctions : [],
+				size:		props.size || 15, // simulated distance between junctions
+				speed: 		8, // wave speed
+				loss:		.2,
+				initTension:props.initTension || .4,
+				tension:	props.tension || 0.03,
+				power:		0.5,
+				bang: 		0,
+				note: 		function() {
+					var Yj = 2 * this.size * this.size / ( (this.initTension * this.initTension) * (this.speed * this.speed) );
+					
+					for(var i = 1; i < this.height - 1; i++ ) {
+						for(var j = 1; j < this.width - 1; j++) {
+							var junction = this.junctions[i][j];	
+					
+							var temp = .9 * (i+j) / (this.height / this.width);
+							var addValue = Yj * temp / 8; // 8 is number of ports per junction
+							junction.v_junction += temp;
+							junction.n_junction += addValue;
+							junction.s_junction += addValue;
+							junction.e_junction += addValue;
+							junction.w_junction += addValue;
+						}
+					}
+				},
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
+			
+			for(var i = 0; i < that.height; i++) {
+				that.junctions[i] = [];
+				for(var j = 0; j < that.width; j++) {
+					that.junctions[i][j] = {
+						v_junction: 0,
+						n_junction: 0,
+						s_junction: 0,
+						e_junction: 0,
+						w_junction: 0,
+						c_junction: 0,
+						s_temp:		0,
+						e_temp:		0,
+					};
+				}
+			}
+			
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
+			window[that.symbol] = Gibberish.make["Mesh"](that.junctions, that.height, that.width, that);
+			that._function = window[that.symbol];
+			
+			Gibberish.defineProperties( that, ["amp", "tension", "size", "speed"] );
+			
+			return that;
+		},
+		
+		makeMesh : function(junctions, height, width, ugen) { // note, storing the increment value DOES NOT make this faster!
+			var phase = 0;
+			var debug = 0;
+			var heightBy4 = height / 4;
+			var widthBy4  = width / 4;
+			
+			var output = function(input, amp, tension, power, distance, speed ) {
+				var val = 0;
+				tension = tension >= 0.0001 ? tension : 0.0001;
+				
+				// Yj = 2*INIT_DELTA*INIT_DELTA/(( (in3_tension[k])*((in3_tension[k]) )*(INIT_GAMMA*INIT_GAMMA))); 
+
+				var Yj = 2 * (distance * distance) / ( (tension * tension) * (speed * speed) );
+				var Yc = Yj-4;
+				var oldfilt = junctions[height-heightBy4][width-widthBy4].v_junction;
+				
+				for(var i = 1; i < height - 1; i++ ) {
+					for(var j = 1; j < width - 1; j++) {
+						var junction = junctions[i][j];	
+						junction.v_junction = 2 * (junction.n_junction + junction.s_junction + junction.e_junction + junction.w_junction + Yc * junction.c_junction) / Yj;
+						
+						junctions[i][j+1].s_junction = junction.v_junction - junction.n_junction;
+						junctions[i][j-1].n_junction = junction.v_junction - junction.s_temp;						
+						
+						junctions[i+1][j].e_junction = junction.v_junction - junction.w_junction;
+						junctions[i-1][j].w_junction = junction.v_junction - junction.e_temp;
+						
+						junction.c_junction = junction.v_junction - junction.c_junction;
+						
+						junction.s_temp = junction.s_junction;
+						junction.e_temp = junction.e_junction;																		
+					}
+					
+					var _s = junctions[i][0].s_junction;
+					junctions[i][0].s_junction = -1 * junctions[i][0].n_junction;
+					junctions[i][1].s_junction = junctions[i][1].s_temp = _s;
+					
+					var _n = junctions[width - 1][0].n_junction;
+					junctions[i][width-1].n_junction = -1 * junctions[i][width-1].s_junction;
+					junctions[i][width-2].n_junction = _n;
+					
+					var _e = junctions[0][i].e_junction;
+					junctions[0][i].e_junction = -1 * junctions[0][i].w_junction;
+					junctions[1][i].e_junction = junctions[1][i].e_temp = _e;
+					
+					var _w = junctions[width-1][i].w_junction;
+					junctions[width-1][i].w_junction = -1 * junctions[width-1][i].e_junction;
+					junctions[width-2][i].w_junction = _w;
+				}
+				
+				var filt = .2 * (junctions[height-heightBy4][width-widthBy4].v_junction + oldfilt);
+				oldfilt = junctions[height-heightBy4][width-widthBy4].v_junction;
+				junctions[height-heightBy4][width-widthBy4].v_junction = filt;
+					
+				val += junctions[widthBy4][widthBy4 -1].v_junction;
+				
+				return val * amp;
+			}
+			
+			return output;
+		},
     }
 });
