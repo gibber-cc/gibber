@@ -18,7 +18,6 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 
 		generateCallback : function() {
-			console.log("GENERATING CALLBACK");
 			var debug = this.debug;
 			this.masterUpvalues = [];
 			this.masterCodeblock = [];
@@ -152,6 +151,17 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 							if(that.category === "FX") {
 								that.dirty = true;
 								Gibberish.dirty(that.parent.parent); // that.parent is fx array, parent of fx array is ugen
+							}else if (typeof that.modding !== "undefined") {
+								function checkMods(obj) {
+									for(var i = 0; i < obj.modding.length; i++) {
+										Gibberish.dirty(obj.modding[i].ugen);
+										checkMods(obj.modding[i].ugen);
+									}
+								}
+								
+								checkMods(obj);
+								
+								Gibberish.dirty(that);
 							}else{
 								Gibberish.dirty(that);
 							}

@@ -341,6 +341,27 @@ define([
 					flash(cm, pos);			
 					Gibber.callback.addCallback(v, _1);		
 				},
+				"Shift-Alt-Enter" : function(cm) { // thanks to graham wakefield
+					// search up & down for nearest empty line:
+					var pos = editor.getCursor();
+					var startline = pos.line;
+					var endline = pos.line;
+					while (startline > 0 && editor.getLine(startline) !== "") {
+						startline--;
+					}
+					while (endline < editor.lineCount() && editor.getLine(endline) !== "") {
+						endline++;
+					}
+					var pos1 = { line: startline, ch: 0 }
+					var pos2 = { line: endline, ch: 0 }
+					var str = editor.getRange(pos1, pos2);
+	
+					Gibber.runScript(str);
+	
+					// highlight:
+					var sel = editor.markText(pos1, pos2, "highlightLine");
+					window.setTimeout(function() { sel.clear(); }, 250);
+				},
 				"Ctrl-`" : function(cm) {
 					Gibber.clear();
 					Gibber.audioInit = false;
