@@ -18,6 +18,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 
 		generateCallback : function() {
+			console.log("GENERATING CALLBACK");
 			var debug = this.debug;
 			this.masterUpvalues = [];
 			this.masterCodeblock = [];
@@ -338,14 +339,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		
 		removeMod : function() {
 			var mod = this.mods.get(arguments[0]); 	// can be number, string, or object
-			delete this[mod.symbol]; 					// remove property getter/setters so we can directly assign
+			delete this[mod.name];	 				// remove property getter/setters so we can directly assign
 			this.mods.remove(mod);
-			
 			var val = mod.operands[0];
-			this[mod.symbol] = val;
+			this[mod.name] = val;
 
-			Gibberish.defineProperties(this, ["frequency"]);
-			Gibberish.generate(this);
+			Gibberish.defineProperties(this, [mod.name]);
 			Gibberish.dirty(this);
 		},
 		

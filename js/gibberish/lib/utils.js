@@ -51,8 +51,9 @@ define(["gibberish/lib/gibberish"], function() {
 		}else if(typeof arg === "string"){ // find named member and remove
 			for(var i = 0; i < this.length; i++) {
 				var member = this[i];
-				if(member.symbol == arg) {
-					return this[i]
+
+				if(member.name === arg) {
+					return member;
 				}
 			}
 		}else if(typeof arg === "object") {

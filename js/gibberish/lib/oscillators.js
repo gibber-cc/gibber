@@ -34,7 +34,7 @@ define([], function() {
 			// gibberish.Mesh = this.Mesh;
 			
 			// input, amp, tension, power, distance, speed
-			gibberish.generators.Mesh = gibberish.createGenerator(["bang", "amp", "tension", "power", "size", "speed"], "{0}( {1}, {2}, {3}, {4}, {5}, {6} )");
+			gibberish.generators.Mesh = gibberish.createGenerator(["bang", "amp", "tension", "power", "size", "speed", "outY", "outX", "loss", "noise"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10} )");
 			gibberish.make["Mesh"] = this.makeMesh;
 			gibberish.Mesh = this.Mesh;
 			
@@ -481,7 +481,7 @@ define([], function() {
 				var value = ((val + lastValue) ) * damping;
 				var value2 = ((val2 + lastValue2) ) * damping;				
 				
-				//if(phase++ % 22050 === 0) console.log(damping, read1, read2, value, value2, headPos);
+				//if(phase++ % 22050 === 0) console.lo	g(damping, read1, read2, value, value2, headPos);
 				
 				lastValue = value;
 				lastValue2 = value2;				
@@ -798,6 +798,8 @@ define([], function() {
 			return output;
 		},
 		*/
+		// based on https://ccrma.stanford.edu/~be/drum/drum.htm
+		// TODO: Implement power normalized waveguide filters to allow changing of tension when drum is not sounding
 		Mesh : function(props) {
 			var that = { 
 				type:		"Mesh",
@@ -818,14 +820,17 @@ define([], function() {
 				tension:	props.tension || 0.03,
 				power:		0.5,
 				bang: 		0,
-				note: 		function() {
+				noise: 		0,
+				note: 		function(vol) {
+					this.power = vol
 					var Yj = 2 * this.size * this.size / ( (this.initTension * this.initTension) * (this.speed * this.speed) );
 					
+					that._function.setNoise(1024);
 					for(var i = 1; i < this.height - 1; i++ ) {
 						for(var j = 1; j < this.width - 1; j++) {
 							var junction = this.junctions[i][j];	
 					
-							var temp = .9 * (i+j) / (this.height / this.width);
+							var temp = vol * (i+j) / (this.height / this.width);
 							var addValue = Yj * temp / 8; // 8 is number of ports per junction
 							junction.v_junction += temp;
 							junction.n_junction += addValue;
@@ -836,6 +841,10 @@ define([], function() {
 					}
 				},
 			};
+			
+			that.outX = isNaN(props.outX) ? that.width / 4 : props.outX;
+			that.outY = isNaN(props.outY) ? that.width / 4 - 1 : props.outY;
+			
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			for(var i = 0; i < that.height; i++) {
@@ -856,35 +865,46 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
-			window[that.symbol] = Gibberish.make["Mesh"](that.junctions, that.height, that.width, that);
+			window[that.symbol] = Gibberish.make["Mesh"](that.junctions, that.height, that.width);
 			that._function = window[that.symbol];
 			
-			Gibberish.defineProperties( that, ["amp", "tension", "size", "speed"] );
+			Gibberish.defineProperties( that, ["amp", "tension", "size", "speed", "outX", "outY", "loss", "noise"] );
 			
 			return that;
 		},
 		
-		makeMesh : function(junctions, height, width, ugen) { // note, storing the increment value DOES NOT make this faster!
+		makeMesh : function(_junctions, _height, _width) { // note, storing the increment value DOES NOT make this faster!
 			var phase = 0;
 			var debug = 0;
-			var heightBy4 = height / 4;
-			var widthBy4  = width / 4;
+			var heightBy4 = _height / 4;
+			var widthBy4  = _width / 4;
+			var noise = 0;
 			
-			var output = function(input, amp, tension, power, distance, speed ) {
+			var output = function(input, amp, tension, power, distance, speed, outY, outX, loss) {
 				var val = 0;
 				tension = tension >= 0.0001 ? tension : 0.0001;
-				
-				// Yj = 2*INIT_DELTA*INIT_DELTA/(( (in3_tension[k])*((in3_tension[k]) )*(INIT_GAMMA*INIT_GAMMA))); 
+				var junctions = _junctions;
+				var height = _height;
+				var width = _width;
 
 				var Yj = 2 * (distance * distance) / ( (tension * tension) * (speed * speed) );
 				var Yc = Yj-4;
 				var oldfilt = junctions[height-heightBy4][width-widthBy4].v_junction;
 				
+				// var noiseAddition = 0;
+				// if(noise-- > 0) {
+				// 	noiseAddition = (Math.random() * 2 - 1) * .01;
+				// }
+				// var count = 0;
+				// var numPoints = width * height;
+				
 				for(var i = 1; i < height - 1; i++ ) {
 					for(var j = 1; j < width - 1; j++) {
 						var junction = junctions[i][j];	
 						junction.v_junction = 2 * (junction.n_junction + junction.s_junction + junction.e_junction + junction.w_junction + Yc * junction.c_junction) / Yj;
-						
+						//if(count++ < numPoints / 2)
+						//	junction.v_junction += noiseAddition;
+												
 						junctions[i][j+1].s_junction = junction.v_junction - junction.n_junction;
 						junctions[i][j-1].n_junction = junction.v_junction - junction.s_temp;						
 						
@@ -894,7 +914,7 @@ define([], function() {
 						junction.c_junction = junction.v_junction - junction.c_junction;
 						
 						junction.s_temp = junction.s_junction;
-						junction.e_temp = junction.e_junction;																		
+						junction.e_temp = junction.e_junction;								
 					}
 					
 					var _s = junctions[i][0].s_junction;
@@ -914,14 +934,18 @@ define([], function() {
 					junctions[width-2][i].w_junction = _w;
 				}
 				
-				var filt = .2 * (junctions[height-heightBy4][width-widthBy4].v_junction + oldfilt);
+				// the filtering below does nothing
+				/*var filt = loss * (junctions[height-heightBy4][width-widthBy4].v_junction + oldfilt);
 				oldfilt = junctions[height-heightBy4][width-widthBy4].v_junction;
-				junctions[height-heightBy4][width-widthBy4].v_junction = filt;
-					
-				val += junctions[widthBy4][widthBy4 -1].v_junction;
+				junctions[height-heightBy4][width-widthBy4].v_junction = filt;*/
+				
+				//x->mesh[WIDTH/4][WIDTH/4-1].v_junction;
+				val += junctions[outY][outX].v_junction;
+				
 				
 				return val * amp;
-			}
+			};
+			output.setNoise = function(val) { noise = val; };
 			
 			return output;
 		},

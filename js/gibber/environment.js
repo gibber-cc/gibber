@@ -6,7 +6,7 @@ define([
 	"js/codemirror/util/loadmode.js",
 	"js/codemirror/util/overlay.js",
 	'jquery.simplemodal',
-	//'node/socket.io.min',
+	'node/socket.io.min',
 	'megamenu/jquery.hoverIntent.minified',
 	'megamenu/jquery.dcmegamenu.1.3.3.min',
 ], function(_Gibber, defaults, CodeMirror) {
