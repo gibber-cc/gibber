@@ -24,7 +24,6 @@ define([
 		$(".consoletext").text(val);
 		window.console.log(val);
 	}
-	console.log("CREATING ENVIRONMENT");
 	var Environment = {
 		save : function(code) {
 			var scripts;
@@ -202,7 +201,11 @@ define([
 		},
 	
 		init: function() {
-		    this.OSC = io.connect('http://localhost:8080/');
+			try{
+			    Gibber.OSC = io.connect('http://localhost:8080/');
+			}catch(e){
+				console.log("No OSC server running");
+			}
 			
 			$(window).resize(Gibber.Environment.editorResize);
 			$("#mega-menu-1").dcMegaMenu({
