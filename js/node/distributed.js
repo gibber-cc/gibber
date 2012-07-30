@@ -3,8 +3,22 @@
 // Gibber instance.
 
 var io = require('socket.io').listen(8080);
+var osc = require('./omgosc.js');
 
+var receiver = new osc.UdpReceiver(8080);
+receiver.on('', function(e) {
+	for(var i = 0; i < sockets.length; i++) {
+		sockets[i].emit(e.path, e.params );
+	}
+	console.log(e);
+});
+// var osc_server = new osc.UdpReceiver(8080);
+// osc_server.on('/key2', function(msg) {
+//     console.log(msg);
+// });
 var master = null;
+
+var sockets = [];
 
 io.sockets.on('connection', function (socket) {
 	socket.addr = socket.handshake.address.address;
@@ -44,4 +58,6 @@ io.sockets.on('connection', function (socket) {
 			master = null;
 		}
 	});
+	
+	sockets.push(socket);
 });

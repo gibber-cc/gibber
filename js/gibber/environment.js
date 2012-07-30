@@ -202,6 +202,8 @@ define([
 		},
 	
 		init: function() {
+		    this.OSC = io.connect('http://localhost:8080/');
+			
 			$(window).resize(Gibber.Environment.editorResize);
 			$("#mega-menu-1").dcMegaMenu({
 				speed : 'fast',
