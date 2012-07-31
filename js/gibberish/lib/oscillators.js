@@ -800,24 +800,21 @@ define([], function() {
 		*/
 		// based on https://ccrma.stanford.edu/~be/drum/drum.htm
 		// TODO: Implement power normalized waveguide filters to allow changing of tension when drum is not sounding
-		Mesh : function(props) {
+		Mesh : function(properties) {
 			var that = { 
 				type:		"Mesh",
 				category:	"Gen",
-				amp:		props.amp || .5,
-				input:		props.input,
-				hitX :  	props.hitX || 3,
-				hitY :  	props.hitY || 3,
-				width:  	props.width || 8,
-				height: 	props.height || 8,
-				rate: 		props.rate || 10,
-				gridType: 	props.gridType || "Grid",
+				amp:		.5,
+				width:  	8,
+				height: 	8,
+				rate: 		10,
+				gridType: 	"Grid",
 				junctions : [],
-				size:		props.size || 15, // simulated distance between junctions
+				size:		15, // simulated distance between junctions
 				speed: 		8, // wave speed
 				loss:		.2,
-				initTension:props.initTension || .4,
-				tension:	props.tension || 0.03,
+				initTension:.4,
+				tension:	0.03,
 				power:		0.5,
 				bang: 		0,
 				noise: 		0,
@@ -843,11 +840,14 @@ define([], function() {
 				},
 			};
 			
-			that.outX = isNaN(props.outX) ? that.width / 4 : props.outX;
-			that.outY = isNaN(props.outY) ? that.width / 4 - 1 : props.outY;
-			
 			Gibberish.extend(that, new Gibberish.ugen(that));
+			if(typeof properties !== "undefined") {
+				Gibberish.extend(that, properties);
+			}
 			
+			that.outX = isNaN(that.outX) ? that.width / 4 : that.outX;
+			that.outY = isNaN(that.outY) ? that.width / 4 - 1 : that.outY;
+
 			for(var i = 0; i < that.height; i++) {
 				that.junctions[i] = [];
 				for(var j = 0; j < that.width; j++) {

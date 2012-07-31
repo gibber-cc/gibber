@@ -69,20 +69,13 @@ function Pluck2 (damping, blend, amp, color){
 	return that;
 }
 
-function Mesh (input){
+function Mesh (){
 	var that = {};
 
 	if(typeof arguments[0] === "object") {
-		console.log("Before");
 		that = Gibberish.Mesh( arguments[0] );
-		console.log("After");		
 	}else{
-		var props = {
-			"input" : input,
-			amp		: amp || .5,
-		};
-
-		that = Gibberish.Mesh( props );
+		that = Gibberish.Mesh( arguments[0] );
 	}
 	
 	that.send(Master, that.amp);	
