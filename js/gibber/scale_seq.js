@@ -3,7 +3,6 @@ function ScaleSeq(_sequence, _speed) {
 
 	_sequence.doNotAdvance = true; // do not start sequence until scale and pattern has been set.	
 	var that = Seq(_sequence, _speed);
-	//_sequence.doNotAdvance = false;
 
 	that.name = "ScaleSeq";
 	that.type = "control";
@@ -112,8 +111,10 @@ function ScaleSeq(_sequence, _speed) {
 			 
 	    });
 	})(that);
-
+	
 	that.root = that.root || Gibber.root; // triggers meta-setter that sets sequence
+	//_sequence.doNotAdvance = false;
+	
 	//that.play();
 	return that;
 }

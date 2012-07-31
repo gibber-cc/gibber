@@ -283,20 +283,9 @@ _Seq.prototype = {
 	// ####advance
 	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
 	advance : function() {
-		//console.log("ADVANCE");
 		if(this.active) {
 			//console.log("ACTIVE");
 			var pos, val;
-			
-			if(this.end) {
-				if(this.counter % this[this.endSequence].length === 0) {
-					this.stop();
-					if(this.endFunction !== null) {
-						this.endFunction();
-					}
-					return;
-				}
-			}
 			
 			var shouldReturn = false; 
 			var nextPhase = 0;
@@ -431,6 +420,16 @@ _Seq.prototype = {
 			
 			this.counter++;
 			this.durationCounter++;
+			
+			if(this.end) {
+				if(this.counter % this[this.endSequence].length === 0) {
+					this.stop();
+					if(this.endFunction !== null) {
+						this.endFunction();
+					}
+					return;
+				}
+			}
 			
 			// if(!usePick && this.counter % this.sequence.length === 0) {
 			// 	if(this.shouldDie) {
@@ -622,9 +621,12 @@ _Seq.prototype = {
 	// start the sequencer running
 	
 	play : function() {
-		this.active = true;
-		this.end = false;
-		this.advance();
+		if(!this.doNotAdvance) {
+			this.active = true;
+			this.end = false;
+		
+			this.advance();
+		}
 		return this;
 	},
 	

@@ -54,3 +54,20 @@ function Synth2(properties) {
 	
 	return that;
 }
+
+function Mono(properties) {
+	var that = {};
+	
+	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
+	//if(isNaN(that.maxVoices)) that.maxVoices = 1;
+		
+	that = Gibberish.Mono(that);
+	
+	that.note = Gibber.makeNoteFunction(that);
+	that.chord = Gibber.chord;	
+	
+	that.send(Master, that.amp);
+	
+	return that;
+}
+

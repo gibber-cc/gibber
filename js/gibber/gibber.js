@@ -522,29 +522,6 @@ define(['gibber/audio_callback',
 				return this;
 			},
 	
-			mod : function(_name, _source, _type) {
-				var name = (typeof Gibber.shorthands[_name] !== "undefined") ? Gibber.shorthands[_name] : _name;
-				var type = (typeof _type !== "undefined") ? _type : '+';
-		
-				if(typeof _source.mods === "undefined") {
-					_source.mods = [];
-				}
-			
-				if(_source.name === "Seq") _source.advance(); // Seqs normally wait until slaves are present to advance, this line starts it running.
-			
-				_source.store = {};
-				_source.modded.push(this);
-				_source.param = name;
-				_source.name = _name;
-				_source.type = type;
-				_source.param_ = this[name];
-			
-				this.mods.push(_source);			
-			
-				Gibber.genRemove(_source);
-				return this;
-			},
-	
 			clearMods : function() {
 				this.mods.length = 0;
 				this.automations.length = 0;
@@ -570,26 +547,6 @@ define(['gibber/audio_callback',
 	}
 	return Gibber; 
 });
-
-//Gibber.initDurations();
-
-// audioLib additions
-// audioLib.Automation.modes.absoluteAddition = function(fx, param, value){
-// 	fx.setParam(param, fx[param] + Math.abs(value));
-// };
-
-// Master = {
-// 	mods : [],
-// 	fx : [],
-// 	automations : [],
-// 	amp : 1,
-// };
-// Gibber.addModsAndFX.call(Master);
-
-// audioLib.Oscillator.getMix =  function(){
-// 	return this[this.waveShape]() * this.amp;
-// };
-
 
 function Osc(freq, vol, waveShape) {
 	var that = new audioLib.Oscillator(Gibber.sampleRate, 440);

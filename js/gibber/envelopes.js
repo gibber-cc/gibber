@@ -10,8 +10,8 @@ function Step(steps, time) {
 	return that;
 }
 
-function Line(time, start, end){
-	var that = Gibberish.Line(time, start, end);
+function Line(start, end, time){
+	var that = Gibberish.Line(start, end, time);
 	
 	return that;
 }
