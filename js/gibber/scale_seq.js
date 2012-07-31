@@ -1,8 +1,19 @@
 function ScaleSeq(_sequence, _speed) {
 	var _sequenceNumbers = ($.isArray(_sequence)) ? _sequence.slice(0) : _sequence.note.slice(0);
-
-	_sequence.doNotAdvance = true; // do not start sequence until scale and pattern has been set.	
-	var that = Seq(_sequence, _speed);
+	
+	if($.isArray(arguments[0]) === true) {
+		_sequence = {
+			note:_sequence,
+		};
+		if($.isArray(_speed)) {
+			_sequence.durations = _speed;
+		}else{
+			_sequence.speed = _speed;
+		}
+	}
+	_sequence.doNotAdvance = true; // do not start sequence until scale and pattern has been set.
+	
+	var that = Seq(_sequence);
 	
 	that.name = "ScaleSeq";
 	that.type = "control";
@@ -114,9 +125,12 @@ function ScaleSeq(_sequence, _speed) {
 	
 	that.root = that.root || Gibber.root; // triggers meta-setter that sets sequence
 	that.counter = 0;
-	
-	_sequence.doNotAdvance = false;
-	that.advance(); // wait to advance until mode and root have been configured correctly.
+
+	that.doNotAdvance = false;	
+	if(that.slaves.length !== 0) {
+		that.advance(); // wait to advance until mode and root have been configured correctly.
+	}
+
 	
 	return that;
 }
