@@ -24,10 +24,10 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.amp   = isNaN(_amp) ? .2 : _amp;
 
 	this.sounds = {
-		kick 	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/kick.wav"), pitch:1, amp:this.amp },
-		snare	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/snare.wav"),pitch:1, amp:this.amp },
-		hat		: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/hat.wav"), 	pitch:1, amp: this.amp }, 
-		openHat	: { sampler: Gibberish.Sampler("http://127.0.0.1/~charlie/gibber/audiofiles/openhat.wav"), pitch:1, amp:this.amp },
+		kick 	: { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch:1, amp:this.amp },
+		snare	: { sampler: Gibberish.Sampler("audiofiles/snare.wav"),pitch:1, amp:this.amp },
+		hat		: { sampler: Gibberish.Sampler("audiofiles/hat.wav"), 	pitch:1, amp: this.amp }, 
+		openHat	: { sampler: Gibberish.Sampler("audiofiles/openhat.wav"), pitch:1, amp:this.amp },
 	}
 	
 	this.bus = Gibberish.Bus();
