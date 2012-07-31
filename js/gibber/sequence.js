@@ -110,7 +110,8 @@ function _Seq() {
 	this.endFunction = null;
 	this.endSequence = "note";
 	
-	var that = this;	
+	var that = this;
+	if(typeof arguments[0].doNotAdvance !== "undefined") this.doNotAdvance = true;
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
 		var obj = arguments[0];
 		for(key in obj) {

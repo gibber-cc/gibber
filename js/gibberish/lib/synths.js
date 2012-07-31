@@ -520,8 +520,6 @@ define([], function() {
 			that.osc2 = Gibberish.make[that.waveform](that.frequency2, that.amp2);
 			that.osc3 = Gibberish.make[that.waveform](that.frequency3, that.amp3);
 			
-
-
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mono\"]();");	
 			that._function = Gibberish.make["Mono"](that.osc1, that.osc2, that.osc3, that.env, that.filter);
@@ -575,8 +573,7 @@ define([], function() {
 				var oscValue = osc1(frequency, amp) + osc2(frequency2, amp2) + osc3(frequency3, amp3);
 				var envResult = env(attack, decay);
 				var val = filter( oscValue, cutoff + filterMult * envResult, resonance, isLowPass) * envResult;
-				//var val = osc(frequency,amp) * envResult;
-				//if(phase++ % 22050 === 0) console.log("SYNTH 2", val, amp, frequency, envResult);
+				
 				return val * masterAmp;
 			};
 	
