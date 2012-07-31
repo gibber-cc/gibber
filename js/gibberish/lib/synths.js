@@ -496,7 +496,7 @@ define([], function() {
 						this.mod("frequency", Line(_frequency - prevFreq, 0, this.glide), "-");
 						var oldMod = this.mods[this.mods.length - 1];
 						
-						if(typeof this.frequency2 === "object") console.log("ALERT");
+						//if(typeof this.frequency2 === "object") console.log("ALERT");
 						this.mod("frequency2", Line(this.frequency2 - prevFreq2, 0, this.glide), "-");
 						var oldMod2 = this.mods[this.mods.length - 1];
 						

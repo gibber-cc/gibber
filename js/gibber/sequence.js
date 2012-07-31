@@ -111,7 +111,9 @@ function _Seq() {
 	this.endSequence = "note";
 	
 	var that = this;
-	if(typeof arguments[0].doNotAdvance !== "undefined") this.doNotAdvance = true;
+	if(typeof arguments[0] === "object") {
+		if(typeof arguments[0].doNotAdvance !== "undefined") this.doNotAdvance = true;
+	}
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
 		var obj = arguments[0];
 		for(key in obj) {
