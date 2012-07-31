@@ -821,7 +821,7 @@ define([], function() {
 				power:		0.5,
 				bang: 		0,
 				noise: 		0,
-				note: 		function(vol) {
+				note: 		function(vol, _tension) {
 					this.power = vol
 					var Yj = 2 * this.size * this.size / ( (this.initTension * this.initTension) * (this.speed * this.speed) );
 					
@@ -839,6 +839,7 @@ define([], function() {
 							junction.w_junction += addValue;
 						}
 					}
+					if(typeof _tension !== "undefined") { this.tension = _tension; }
 				},
 			};
 			

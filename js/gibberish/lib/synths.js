@@ -462,7 +462,7 @@ define([], function() {
 				type:			"Mono",
 				category:		"Gen",
 				waveform:		"Saw",
-				masterAmp:		.6,
+				amp:		.6,
 				amp1:			1,
 				amp2:			1,
 				amp3:			1,
@@ -525,7 +525,7 @@ define([], function() {
 			that._function = Gibberish.make["Mono"](that.osc1, that.osc2, that.osc3, that.env, that.filter);
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["masterAmp", "frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "detune2", "detune3", "octave2", "octave3"] );
+			Gibberish.defineProperties( that, ["amp", "frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "detune2", "detune3", "octave2", "octave3"] );
 			
 			// var waveform = that.waveform;
 			// 		    Object.defineProperty(that, "waveform", {
@@ -544,7 +544,7 @@ define([], function() {
 		
 		makeMono: function(osc1, osc2, osc3, env, filter) {
 			var phase = 0;
-			var output = function(frequency, amp, amp2, amp3, attack, decay, cutoff, resonance, filterMult, isLowPass, masterAmp, detune2, detune3, octave2, octave3) {
+			var output = function(frequency, amp1, amp2, amp3, attack, decay, cutoff, resonance, filterMult, isLowPass, masterAmp, detune2, detune3, octave2, octave3) {
 				var frequency2 = frequency;
 				if(octave2 > 0) {
 					for(var i = 0; i < octave2; i++) {
@@ -570,7 +570,7 @@ define([], function() {
 				frequency2 += detune2 > 0 ? ((frequency * 2) - frequency) * detune2 : (frequency - (frequency / 2)) * detune2;
 				frequency3 += detune3 > 0 ? ((frequency * 2) - frequency) * detune3 : (frequency - (frequency / 2)) * detune3;
 							
-				var oscValue = osc1(frequency, amp) + osc2(frequency2, amp2) + osc3(frequency3, amp3);
+				var oscValue = osc1(frequency, amp1) + osc2(frequency2, amp2) + osc3(frequency3, amp3);
 				var envResult = env(attack, decay);
 				var val = filter( oscValue, cutoff + filterMult * envResult, resonance, isLowPass) * envResult;
 				
