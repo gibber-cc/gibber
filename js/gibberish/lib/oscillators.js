@@ -43,7 +43,7 @@ define([], function() {
 			gibberish.make["Sampler"] = this.makeSampler;
 			
 			//isRecording, isPlaying, input, length
-			gibberish.generators.Record = gibberish.createGenerator(["isRecording", "isPlaying", "input", "length"], "{0}( {1}, {2}, {3}, {4} )");
+			gibberish.generators.Record = gibberish.createGenerator(["isRecording", "isPlaying", "input", "length", "speed"], "{0}( {1}, {2}, {3}, {4}, {5} )");
 			gibberish.make["Record"] = this.makeRecord;
 			gibberish.Record = this.Record;
 		},
@@ -954,7 +954,7 @@ define([], function() {
 			return output;
 		},
 		
-		Record : function(input, length, shouldStart) {
+		Record : function(input, length, shouldStart, speed) {
 			var that = { 
 				type:		"Record",
 				category:	"Gen",
@@ -964,9 +964,10 @@ define([], function() {
 				buffer	:   null,
 				isPlaying:  false,
 				isRecording:false,
+				speed : 	speed || 1,
 				startRecording : function(recordLength) {
 					this.length = typeof recordLength === "undefined" ? this.length : recordLength;
-					this.buffer = new Float32Array(recordLength);
+					this.buffer = new Float32Array(this.length);
 					this.isRecording = true;
 					this._function.setBuffer(this.buffer);
 				},
@@ -987,7 +988,7 @@ define([], function() {
 			window[that.symbol] = Gibberish.make["Record"](that);
 			that._function = window[that.symbol];
 						
-			Gibberish.defineProperties( that, ["isPlaying", "isRecording", "input"] );
+			Gibberish.defineProperties( that, ["isPlaying", "isRecording", "input", "speed"] );
 			
 			return that;
 		},
@@ -995,16 +996,26 @@ define([], function() {
 		makeRecord: function(self) { // note, storing the increment value DOES NOT make this faster!
 			var phase = 0;
 			var buffer = null;
-			var output = function(isRecording, isPlaying, input, length) {
+			var interpolate = Gibberish.interpolate;
+			var output = function(isRecording, isPlaying, input, length, speed) {
 				
-				if(phase++ < length && isRecording) {
+				phase += isRecording ? 1 : speed;
+				
+				if(phase < length && isRecording) {
 					buffer[phase] = input;
 				}else if(phase > length && isRecording){
 					self.stopRecording();
 				}
-				var val = isPlaying ? buffer[phase] : 0;
+				
+				var val = 0; 
+				
 				if(isPlaying) {
-					phase = phase > length ? phase - length : phase;
+					val = isPlaying ? interpolate(buffer, phase) : val;
+					if(speed > 0) {
+						phase = phase > length ? phase - length : phase;
+					}else{
+						phase = phase < 0 ? phase + length : phase;
+					}
 				}
 				
 				return val;

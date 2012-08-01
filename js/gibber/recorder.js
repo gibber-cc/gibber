@@ -1,5 +1,5 @@
-function Rec(input, length, shouldStart) {
-	var that = Gibberish.Record(input, length, shouldStart);
+function Record(input, length, shouldStart, speed) {
+	var that = Gibberish.Record(input, length, shouldStart, speed);
 	that.send(Master, that.amp);
 	return that;
 }
