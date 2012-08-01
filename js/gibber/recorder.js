@@ -1,4 +1,12 @@
-function Rec() {
+function Rec(input, length, shouldStart) {
+	var that = Gibberish.Record(input, length, shouldStart);
+	that.send(Master, that.amp);
+	return that;
+}
+
+
+
+/*function Rec() {
 	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];
 	var that = {
 		name 	: "Rec",
@@ -85,4 +93,4 @@ function Rec() {
 	that.buffer = new Float32Array(that.length);
 	G.addModsAndFX.call(that);
 	return that;
-}
+}*/

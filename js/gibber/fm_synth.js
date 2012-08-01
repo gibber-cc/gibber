@@ -59,6 +59,18 @@ function FMPresets() {
 		//ljpfrog lp.f = FM(0.1, 2.0, 300, 5);
 		//ljpradio lp.f = FM(1, 40.0, 300, 500); lp.f.amp = 0.2;
 		//ljpnoise lp.f = FM(0.04, 1000.0, 1, 100);
+		radio : {
+			cmRatio	: 1,
+			index	: 40,
+			attack	: 300 * 44.1,
+			decay	: 500 * 44.1,
+		},
+		noise : {
+			cmRatio	: 0.04,
+			index	: 1000,
+			attack	: 1 * 44.1,
+			decay	: 100 * 44.1,
+		},
 		frog : {
 			cmRatio	: 0.1,
 			index	: 2.0,

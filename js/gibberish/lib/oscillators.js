@@ -41,6 +41,11 @@ define([], function() {
 			gibberish.Sampler = this.Sampler;
 			gibberish.generators.Sampler = gibberish.createGenerator(["speed", "amp"], "{0}( {1}, {2} )");
 			gibberish.make["Sampler"] = this.makeSampler;
+			
+			//isRecording, isPlaying, input, length
+			gibberish.generators.Record = gibberish.createGenerator(["isRecording", "isPlaying", "input", "length"], "{0}( {1}, {2}, {3}, {4} )");
+			gibberish.make["Record"] = this.makeRecord;
+			gibberish.Record = this.Record;
 		},
 		
 		Sine : function(freq, amp) {
@@ -96,16 +101,14 @@ define([], function() {
 		},
 		
 		makeSquare: function() { // note, storing the increment value DOES NOT make this faster!
-			var cycle = 1;
 			var phase = 0;
 			var output = function(frequency, amp) {
 				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Square.js
 				var out = phase > 0.5 ? 1 : -1;
 			    phase += frequency / 44100;
 				
-			    if (phase > 1) {
-			        phase %= 1;
-			    }
+			    phase = phase > 1 ? phase % 1 : phase;
+
 				return out * amp;
 			}
 	
@@ -950,5 +953,70 @@ define([], function() {
 			
 			return output;
 		},
+		
+		Record : function(input, length, shouldStart) {
+			var that = { 
+				type:		"Record",
+				category:	"Gen",
+				input	: 	input || null,
+				length	: 	length || ms(1000),
+				shouldStart:shouldStart || false,
+				buffer	:   null,
+				isPlaying:  false,
+				isRecording:false,
+				startRecording : function(recordLength) {
+					this.length = typeof recordLength === "undefined" ? this.length : recordLength;
+					this.buffer = new Float32Array(recordLength);
+					this.isRecording = true;
+					this._function.setBuffer(this.buffer);
+				},
+				stopRecording: function() {
+					this.isRecording = false;
+				},
+				play:function() {
+					this.isPlaying = true;
+				},
+				stop:function() {
+					this.isPlaying = false;
+				}
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
+			
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Record\"]();");
+			window[that.symbol] = Gibberish.make["Record"](that);
+			that._function = window[that.symbol];
+						
+			Gibberish.defineProperties( that, ["isPlaying", "isRecording", "input"] );
+			
+			return that;
+		},
+		
+		makeRecord: function(self) { // note, storing the increment value DOES NOT make this faster!
+			var phase = 0;
+			var buffer = null;
+			var output = function(isRecording, isPlaying, input, length) {
+				
+				if(phase++ < length && isRecording) {
+					buffer[phase] = input;
+				}else if(phase > length && isRecording){
+					self.stopRecording();
+				}
+				var val = isPlaying ? buffer[phase] : 0;
+				if(isPlaying) {
+					phase = phase > length ? phase - length : phase;
+				}
+				
+				return val;
+			};
+			
+			output.setBuffer = function(_buffer) {
+				buffer = _buffer;
+				phase = 0;
+			};
+	
+			return output;
+		},
+		
     }
 });

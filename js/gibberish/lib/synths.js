@@ -17,7 +17,7 @@ define([], function() {
 			gibberish.make["Synth2"] = this.makeSynth2;
 			gibberish.Synth2 = this.Synth2;
 			
-			gibberish.generators.Mono = gibberish.createGenerator(["frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "masterAmp", "detune2", "detune3", "octave2", "octave3"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15} )");
+			gibberish.generators.Mono = gibberish.createGenerator(["frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "amp", "detune2", "detune3", "octave2", "octave3"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15} )");
 			gibberish.make["Mono"] = this.makeMono;
 			gibberish.Mono = this.Mono;
 			
