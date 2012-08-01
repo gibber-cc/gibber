@@ -13,7 +13,7 @@ define([], function() {
 			gibberish.make["Step"] = this.makeStep;
 			gibberish.Step = this.Step;
 			
-			gibberish.generators.Line = gibberish.createGenerator(["time"], "{0}({1})" ),
+			gibberish.generators.Line = gibberish.createGenerator(["time", "loops"], "{0}({1}, {2})" ),
 			gibberish.make["Line"] = this.makeLine;
 			gibberish.Line = this.Line;
 		},
@@ -184,19 +184,14 @@ define([], function() {
 			return output;
 		},	
 		
-		Line : function(start, end, time) {
+		Line : function(start, end, time, loops) {
 			var that = { 
 				type:		"Line",
 				category:	"Gen",
 				start:		start || 0,
 				end:		end   || 1,
 				time:		time || 44100,
-
-				run: function() {
-					//that._function.setPhase(0);
-					that._function.setState(0);
-					that._function.setPhase(0);					
-				},
+				loops:		loops || false,
 			};
 			Gibberish.extend(that, new Gibberish.ugen());
 			
@@ -205,7 +200,7 @@ define([], function() {
 			window[that.symbol] = Gibberish.make["Line"](that.start, that.end, that.time);
 			that._function = window[that.symbol];
 			
-			Gibberish.defineProperties( that, [] );
+			Gibberish.defineProperties( that, ["loops", "time"] );
 	
 			return that;
 		},
@@ -214,8 +209,10 @@ define([], function() {
 			var phase = 0;
 			var incr = (end - start) / time;
 			
-			var output = function(time) {
+			var output = function(time, loops) {
 				var out = phase < time ? start + ( phase++ * incr) : end;
+				
+				phase = out === end && loops ? 0 : phase;
 				
 				return out;
 			};

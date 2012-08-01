@@ -1,4 +1,11 @@
-function Grains() {
+function Grains(properties) {
+	var that = Gibberish.Grains(properties);
+	that.send(Master, that.amp);
+	return that;
+}
+
+
+/*function Grains() {
 	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];
 	
 	if(typeof Gibber.GrainsPresets === "undefined") {
@@ -116,4 +123,4 @@ function Grains() {
 	G.addModsAndFX.call(that);
 	
 	return that;
-};
+};*/

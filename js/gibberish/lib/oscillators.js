@@ -46,6 +46,10 @@ define([], function() {
 			gibberish.generators.Record = gibberish.createGenerator(["isRecording", "isPlaying", "input", "length", "speed"], "{0}( {1}, {2}, {3}, {4}, {5} )");
 			gibberish.make["Record"] = this.makeRecord;
 			gibberish.Record = this.Record;
+			
+			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "reverse", "amp"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9} )");
+			gibberish.make["Grains"] = this.makeGrains;
+			gibberish.Grains = this.Grains;	
 		},
 		
 		Sine : function(freq, amp) {
@@ -1028,6 +1032,87 @@ define([], function() {
 	
 			return output;
 		},
+		
+		//gibberish.createGenerator(["numberOfGrains", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "reverse"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7} )");
+		Grains : function(properties) {
+			var that = { 
+				type:		"Grains",
+				category:	"Gen",
+				buffer: 	null,
+				grainSize: 	ms(250),
+				speedMin:   -.5,
+				speedMax: 	.5,
+				speed: 		1,
+				position:	.5,
+				positionMin:-.1,
+				positionMax:.1,
+				amp:		.2,
+				reverse:	true,
+				numberOfGrains:10,
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
+			if(typeof properties !== "undefined") {
+				Gibberish.extend(that, properties);
+			}
+			
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Grains\"]();");
+			window[that.symbol] = Gibberish.make["Grains"](that.numberOfGrains, that);
+			that._function = window[that.symbol];
+						
+			Gibberish.defineProperties( that, ["speed", "speedMin", "speedMax", "positionMin", "positionMax", "reverse", "position", "numberOfGrains", "amp"] );
+			
+			return that;
+		},
+		
+		makeGrains: function(numberOfGrains, self) { // note, storing the increment value DOES NOT make this faster!
+			var grains = [];
+			for(var i = 0; i < numberOfGrains; i++) {
+				grains[i] = {
+					pos : self.position + rndf(self.positionMin, self.positionMax),
+					speed : self.speed + rndf(self.speedMin, self.speedMax),
+				}
+				grains[i].start = grains[i].pos;
+			}
+			var buffer = self.buffer;
+			var interpolate = Gibberish.interpolate;
+			//numberOfGrains, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, buffer
+			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, amp) {	
+				var val = 0;
+				for(var i = 0; i < numberOfGrains; i++) {
+					var grain = grains[i];
+					if(grain.speed > 0) {
+						if(grain.pos > grain.start + grainSize) {
+							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
+							grain.start = grain.pos;
+							grain.speed = speed + rndf(speedMin, speedMax);
+						}
+					}else {
+						if(grain.pos < grain.start - grainSize) {
+							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
+							grain.start = grain.pos;
+							grain.speed = speed + rndf(speedMin, speedMax);							
+						}
+					}
+					var _pos = grain.pos < buffer.length ? grain.pos : grain.pos - buffer.length;
+					_pos = grain.pos > 0 ? grain.pos : grain.pos + buffer.length;
+					
+					val += interpolate(buffer, _pos);
+					
+					grain.pos += grain.speed;
+				}
+				
+				return val * amp;
+			};
+			
+			output.setBuffer = function(_buffer) {
+				buffer = _buffer;
+				phase = 0;
+			};
+	
+			return output;
+		},
+		
 		
     }
 });
