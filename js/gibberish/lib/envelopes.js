@@ -212,7 +212,7 @@ define([], function() {
 			var output = function(time, loops) {
 				var out = phase < time ? start + ( phase++ * incr) : end;
 				
-				phase = out === end && loops ? 0 : phase;
+				phase = (out >= end && loops) ? 0 : phase;
 				
 				return out;
 			};

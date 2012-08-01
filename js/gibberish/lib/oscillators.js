@@ -1094,8 +1094,10 @@ define([], function() {
 							grain.speed = speed + rndf(speedMin, speedMax);							
 						}
 					}
-					var _pos = grain.pos < buffer.length ? grain.pos : grain.pos - buffer.length;
-					_pos = grain.pos > 0 ? grain.pos : grain.pos + buffer.length;
+					var _pos = grain.pos;
+					while(_pos > buffer.length) _pos -= buffer.length;
+					while(_pos < 0) _pos += buffer.length
+					//_pos = grain.pos > 0 ? grain.pos : grain.pos + buffer.length;
 					
 					val += interpolate(buffer, _pos);
 					
