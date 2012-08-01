@@ -47,7 +47,7 @@ define([], function() {
 			gibberish.make["Record"] = this.makeRecord;
 			gibberish.Record = this.Record;
 			
-			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "reverse", "amp"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9} )");
+			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "reverse", "amp", "fade"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10} )");
 			gibberish.make["Grains"] = this.makeGrains;
 			gibberish.Grains = this.Grains;	
 		},
@@ -1049,6 +1049,7 @@ define([], function() {
 				amp:		.2,
 				reverse:	true,
 				numberOfGrains:10,
+				fade: .1,
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			if(typeof properties !== "undefined") {
@@ -1071,36 +1072,56 @@ define([], function() {
 				grains[i] = {
 					pos : self.position + rndf(self.positionMin, self.positionMax),
 					speed : self.speed + rndf(self.speedMin, self.speedMax),
+					phase : 0,
 				}
 				grains[i].start = grains[i].pos;
 			}
 			var buffer = self.buffer;
 			var interpolate = Gibberish.interpolate;
-			//numberOfGrains, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, buffer
-			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, amp) {	
+			var debug = 0;
+
+			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, amp, fade) {	
 				var val = 0;
 				for(var i = 0; i < numberOfGrains; i++) {
 					var grain = grains[i];
+					
 					if(grain.speed > 0) {
 						if(grain.pos > grain.start + grainSize) {
 							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
 							grain.start = grain.pos;
+							grain.end = grain.start + grainSize;
 							grain.speed = speed + rndf(speedMin, speedMax);
+							grain.fadeAmount = grain.speed * (fade * grainSize);
+							//console.log(grain.start, grain.pos, grain.end, grain.speed);
 						}
-					}else {
+					}/*else {
 						if(grain.pos < grain.start - grainSize) {
 							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
 							grain.start = grain.pos;
-							grain.speed = speed + rndf(speedMin, speedMax);							
+							grain.end = grain.start - grainSize;
+							grain.speed = speed + rndf(speedMin, speedMax);
+							grain.fadeAmount = grain.speed * fade;							
 						}
-					}
+					}*/
 					var _pos = grain.pos;
 					while(_pos > buffer.length) _pos -= buffer.length;
-					while(_pos < 0) _pos += buffer.length
-					//_pos = grain.pos > 0 ? grain.pos : grain.pos + buffer.length;
+					while(_pos < 0) _pos += buffer.length;
 					
-					val += interpolate(buffer, _pos);
+					var _val = interpolate(buffer, _pos);
 					
+					_val *= grain.pos < grain.fadeAmount + grain.start ? (grain.pos - grain.start) / grain.fadeAmount : 1;
+					_val *= grain.pos > (grain.end - grain.fadeAmount) ? (grain.end - grain.pos) / grain.fadeAmount : 1;
+					
+					//if(debug++ % 22050 == 0) console.log(grainSize, grain.pos, grain.fadeAmount);
+					//pos 80 grainSize 100 fade 20 (100 - 100) / 20
+					//if(grainSize - grain.phase <= fade)
+					//_val *= (grainSize - grain.phase) / fade;//grainSize - grain.phase > fade ? 1 : (grainSize - grain.phase) / fade;
+					//_val *= grain.phase >= fade ? 1 : grain.phase / fade;					
+					//_val += grainSize - grain.phase > fade ? 0 : interpolate(buffer, grain.start + ((grainSize - grain.phase) * grain.speed)) * (grain.phase / grainSize);
+ 				   
+				    val += _val;
+					
+					grain.phase++;
 					grain.pos += grain.speed;
 				}
 				
