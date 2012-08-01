@@ -57,6 +57,7 @@ define([
 		},
 	
 		master : function() {
+			G.log("CALLING MASTER");
 			$("#info").html("");
 			Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
 			Gibber.Environment.masterSocket.on('connect', function () {
@@ -388,8 +389,29 @@ define([
 						pos = cm.getCursor();
 						v = cm.getLine(pos.line);
 					}
-				
+					console.log("CALLED SLAVE SEND");
 					Gibber.Environment.slaveSocket.send(v);
+				},
+				"Shift-Alt-2" : function(cm) {
+					var pos = editor.getCursor();
+					var startline = pos.line;
+					var endline = pos.line;
+					while (startline > 0 && editor.getLine(startline) !== "") {
+						startline--;
+					}
+					while (endline < editor.lineCount() && editor.getLine(endline) !== "") {
+						endline++;
+					}
+					var pos1 = { line: startline, ch: 0 }
+					var pos2 = { line: endline, ch: 0 }
+					var str = editor.getRange(pos1, pos2);
+	
+					//Gibber.runScript(str);
+					Gibber.Environment.slaveSocket.send(str);
+					
+					// highlight:
+					var sel = editor.markText(pos1, pos2, "highlightLine");
+					window.setTimeout(function() { sel.clear(); }, 250);
 				},
 			};
 		

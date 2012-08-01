@@ -51,8 +51,9 @@ define(['gibber/audio_callback',
 								var endString = " created";
 								 if(typeof obj["____"+ltr] !== "undefined" && obj["____"+ltr] != null) {
 									 var variable = obj["____"+ltr];
+									 //console.log(variable);
 									 switch(variable.category) {
-										 case "Gen":
+										 case "Gen": case "Bus":
 											 Gibber.genReplace(variable, newObj);
 										 break;
 										 case "Mod":
@@ -224,8 +225,10 @@ define(['gibber/audio_callback',
 		},
 	
 		genReplace : function(gen, newGen) {
+			console.log("GEN REPLACE");
 			Master.disconnectUgen(gen); // disconnect from output if connected
-		
+			console.log(Master.senders);
+			Master.senders.remove(gen);
 			// if old gen is modulating another gen...
 			for(var i = 0; i < gen.modding.length; i++) {
 				var mod = gen.modding[i];

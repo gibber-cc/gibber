@@ -18,7 +18,9 @@ function FM(cmRatio, index, attack, decay, shouldUseModulatorEnvelope){
 	
 	if(typeof arguments[0] === "string") { // if a preset
 		if(typeof arguments[1] === "undefined") {
-			that = Gibberish.PolyFM( Gibber.FMPresets[arguments[0]] );
+			var preset = Gibber.FMPresets[arguments[0]];
+			preset.maxVoices = 1;
+			that = Gibberish.PolyFM( preset );
 		}else{
 			console.log("EXTENDING WITH ", arguments[1]);
 			var props = Gibber.FMPresets[arguments[0]];

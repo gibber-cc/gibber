@@ -5,7 +5,7 @@
 var io = require('socket.io').listen(8080);
 var osc = require('./omgosc.js');
 
-var receiver = new osc.UdpReceiver(8080);
+var receiver = new osc.UdpReceiver(8081);
 receiver.on('', function(e) {
 	for(var i = 0; i < sockets.length; i++) {
 		sockets[i].emit(e.path, e.params );
@@ -59,5 +59,9 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 	
-	sockets.push(socket);
+	if(sockets.indexOf(socket) === -1) {
+		sockets.push(socket);
+	}else{
+		socket.disconnect();
+	}
 });
