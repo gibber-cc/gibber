@@ -4,7 +4,11 @@ function Record(input, length, shouldStart, speed) {
 	return that;
 }
 
-
+function Sampler(pathToFile) {
+	var that = Gibberish.Sampler(pathToFile);
+	that.send(Master, 1);
+	return that;
+}
 
 /*function Rec() {
 	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];

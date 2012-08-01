@@ -1052,6 +1052,11 @@ define([], function() {
 				fade: .1,
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
+			
+			// avoid copying the entire buffer in Gibberish.extend; instead, simply store a pointer
+			if(typeof properties.buffer !== "undefined") that.buffer = properties.buffer;
+			delete properties.buffer;
+			
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
@@ -1072,9 +1077,10 @@ define([], function() {
 				grains[i] = {
 					pos : self.position + rndf(self.positionMin, self.positionMax),
 					speed : self.speed + rndf(self.speedMin, self.speedMax),
-					phase : 0,
 				}
 				grains[i].start = grains[i].pos;
+				grains[i].end = grains[i].pos + self.grainSize;
+				grains[i].fadeAmount = grains[i].speed * (self.fade * self.grainSize);
 			}
 			var buffer = self.buffer;
 			var interpolate = Gibberish.interpolate;
@@ -1092,17 +1098,16 @@ define([], function() {
 							grain.end = grain.start + grainSize;
 							grain.speed = speed + rndf(speedMin, speedMax);
 							grain.fadeAmount = grain.speed * (fade * grainSize);
-							//console.log(grain.start, grain.pos, grain.end, grain.speed);
 						}
-					}/*else {
+					}else {
 						if(grain.pos < grain.start - grainSize) {
 							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
 							grain.start = grain.pos;
 							grain.end = grain.start - grainSize;
 							grain.speed = speed + rndf(speedMin, speedMax);
-							grain.fadeAmount = grain.speed * fade;							
+							grain.fadeAmount = grain.speed * (fade * grainSize);							
 						}
-					}*/
+					}
 					var _pos = grain.pos;
 					while(_pos > buffer.length) _pos -= buffer.length;
 					while(_pos < 0) _pos += buffer.length;
@@ -1111,17 +1116,9 @@ define([], function() {
 					
 					_val *= grain.pos < grain.fadeAmount + grain.start ? (grain.pos - grain.start) / grain.fadeAmount : 1;
 					_val *= grain.pos > (grain.end - grain.fadeAmount) ? (grain.end - grain.pos) / grain.fadeAmount : 1;
-					
-					//if(debug++ % 22050 == 0) console.log(grainSize, grain.pos, grain.fadeAmount);
-					//pos 80 grainSize 100 fade 20 (100 - 100) / 20
-					//if(grainSize - grain.phase <= fade)
-					//_val *= (grainSize - grain.phase) / fade;//grainSize - grain.phase > fade ? 1 : (grainSize - grain.phase) / fade;
-					//_val *= grain.phase >= fade ? 1 : grain.phase / fade;					
-					//_val += grainSize - grain.phase > fade ? 0 : interpolate(buffer, grain.start + ((grainSize - grain.phase) * grain.speed)) * (grain.phase / grainSize);
- 				   
+				   
 				    val += _val;
 					
-					grain.phase++;
 					grain.pos += grain.speed;
 				}
 				
