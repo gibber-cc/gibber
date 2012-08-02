@@ -218,7 +218,9 @@ define([
 	  		  lineNumbers: false,
 	  		  autofocus: true,
 			  indentUnit : 2,
-	  		  smartIndent: true,
+			  matchBrackets : true,
+			  tabSize:2,
+	  		  smartIndent: false,
 			});
 			CodeMirror.autoLoadMode(window.editor, "javascript");	
 			window.CodeMirror = CodeMirror;	
@@ -383,6 +385,7 @@ define([
 					cm.refresh();
 				},
 				"Ctrl-Alt-2" : function(cm) {
+					console.log("CALLING CTRL-ALT-2");
 					var v = cm.getSelection();
 					var pos = null;
 					if(v === "") {

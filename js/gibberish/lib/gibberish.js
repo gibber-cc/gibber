@@ -12,7 +12,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				"-" : this.binop_generator,
 				"*" : this.binop_generator,
 				"/" : this.binop_generator,
-				"=" : this.binop_generator,																
+				"=" : this.binop_generator,
+				"++" : this.binop_generator,																				
 			};
 			this.extend(this.generators, binops);
 		},
@@ -324,6 +325,10 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				return Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd);
 			}else if((op.type === "*" || op.type === "/") && op.operands[1] === 1) {
 				return Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd);
+			}else if(op.type === "++") {
+				return"({0} + Math.abs({2}))".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+												op.type,
+												Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
 			}
 			return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
 											op.type,

@@ -120,6 +120,12 @@ function _Seq() {
 			if(key !== "slaves") {
 				//if($.inArray(key, this.properties) !== -1) {
 					//if($.isArray(obj[key])) {
+				if(key === "durations") {
+					if(typeof obj[key] === "number") {
+						obj[key] = [obj[key]];
+					}
+				}
+				
 				this[key] = obj[key];
 				if($.inArray(key, this.properties) === -1) {
 					this.sequences.push(key);
@@ -154,6 +160,7 @@ function _Seq() {
 	if(this.outputMessage === null) {
 		if(typeof arguments[2] !== "undefined") {
 			this.outputMessage = arguments[2];
+			this.endSequence = this.outputMessage;
 			this[this.outputMessage] = this.sequence;
 			this.sequences.push(this.outputMessage);
 		}else{
@@ -406,7 +413,7 @@ _Seq.prototype = {
 								_slave.env.state = 1;
 							}
 						}else{
-							if($.isArray(val)) {
+							if($.isArray(val) && key !== "chord") {
 								//console.log("CALLING", val);
 								_slave[key].apply(_slave, val);									
 							}else{

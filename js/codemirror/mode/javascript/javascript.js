@@ -354,7 +354,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
       else return lexical.indented + (closing ? 0 : indentUnit);
     },
 
-    electricChars: ":{}"
+    electricChars: ":{};"
   };
 });
 

@@ -25,6 +25,9 @@ function Pluck (damping, blend, amp, color){
 	var that = {};
 
 	if(typeof arguments[0] === "object") {
+		if(typeof arguments[0].maxVoices === "undefined") {
+			arguments[0].maxVoices = 1;
+		}
 		that = Gibberish.PolyKarplusStrong( arguments[0] );
 	}else{
 		var props = {

@@ -1,7 +1,7 @@
 /* Based on Sublime Text's Monokai theme */
 
 .cm-s-thecharlie {background: #000; color: #fff;}
-.cm-s-thecharlie div.CodeMirror-selected {background: #311 !important;}
+.cm-s-thecharlie div.CodeMirror-selected {background: #511 !important;}
 .cm-s-thecharlie .CodeMirror-gutter {background: #272822; border-right: 0px;}
 .cm-s-thecharlie .CodeMirror-gutter-text {color: #d0d0d0;}
 .cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #f8f8f0 !important;}
@@ -23,6 +23,7 @@
 .cm-s-thecharlie span.cm-link {color: #ae81ff; cursor:pointer}
 
 .cm-s-thecharlie .CodeMirror-matchingbracket {
-  text-decoration: underline;
+  /*text-decoration: underline;*/
+  background:#333;
   color: white !important;
 }

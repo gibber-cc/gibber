@@ -1102,11 +1102,12 @@ define([], function() {
 						
 						var _pos = grain.pos;
 						while(_pos > buffer.length) _pos -= buffer.length;
-					
+						while(_pos < 0) _pos += buffer.length;
+						
 						var _val = interpolate(buffer, _pos);
 					
 						_val *= grain.pos < grain.fadeAmount + grain.start ? (grain.pos - grain.start) / grain.fadeAmount : 1;
-						_val *= grain.pos > (grain.end - grain.fadeAmount) ? (grain.end - grain.pos) / grain.fadeAmount : 1;
+						_val *= grain.pos > (grain.end - grain.fadeAmount) ? (grain.end - grain.pos)   / grain.fadeAmount : 1;
 						
 					}else {
 						if(grain.pos < grain.end) {
@@ -1118,13 +1119,13 @@ define([], function() {
 						}
 						
 						var _pos = grain.pos;
+						while(_pos > buffer.length) _pos -= buffer.length;
 						while(_pos < 0) _pos += buffer.length;
 					
 						var _val = interpolate(buffer, _pos);
 					
 						_val *= grain.pos > grain.start - grain.fadeAmount ? (grain.start - grain.pos) / grain.fadeAmount : 1;
 						_val *= grain.pos < (grain.end + grain.fadeAmount) ? (grain.end - grain.pos) / grain.fadeAmount : 1;
-						
 					}
 
 				    val += _val;
