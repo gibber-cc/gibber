@@ -23,9 +23,8 @@ function Schizo(props) {
 	}
 
 	var that = {
-		type:		"BufferShuffler",
-		category:	"FX",
 		chance: 	.25,		
+		name:		"Schizo",
 		rate: 		11025,
 		length:		22050,
 		reverseChance : .5,

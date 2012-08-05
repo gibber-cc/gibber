@@ -21,7 +21,6 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 }
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
-	this.amp   = isNaN(_amp) ? .2 : _amp;
 	this.pitch = 1;
 	
 	this.kick 	 = { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch: 1, amp: 1 } ;
@@ -127,11 +126,12 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	    });
 	})(this);
 	
+	this.amp   = isNaN(_amp) ? .2 : _amp;
+	
 	if(this.seq !== null) {
 		this.seq.doNotAdvance = false;
 		this.seq.advance();
 	}
-	console.log(this);
 }
 
 _Drums.prototype = {

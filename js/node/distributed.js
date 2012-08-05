@@ -59,9 +59,20 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 	
-	if(sockets.indexOf(socket) === -1) {
-		sockets.push(socket);
-	}else{
+	var found = false;
+	for(var i = 0; i < sockets.length; i++) {
+		var _socket = sockets[i];
+		if(socket.addr === _socket.addr) {
+			found = true;
+			console.log("FOUND MATCH FOR " + socket.addr);
+		}
+	}
+	
+	if(found) {
+		console.log("NOT CONNECTING " + socket.addr);
 		socket.disconnect();
+	}else{
+		console.log("NEW CONNECTION", socket.addr);
+		sockets.push(socket);
 	}
 });

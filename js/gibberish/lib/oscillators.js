@@ -356,8 +356,9 @@ define([], function() {
 				},
 				note: function(pitch, amp) {
 					if(typeof amp !== "undefined") { this.amp = amp; }
+					
 					this.pitch = pitch;
-					console.log("this.pitch = ", this.pitch);
+					
 					if(this._function !== null) {
 						this._function.setPhase(0);
 					}
