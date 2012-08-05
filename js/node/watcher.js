@@ -42,7 +42,7 @@ io.on('connect', function () {
 // watch the given file, sending code to Gibber when changes are saved
 //
 var fs = require('fs');
-var _size = 0;
+var _prev = "";
 fs.watchFile(file, { persistent: true, interval: 200 /* millisecond poll interval */ }, function (curr, prev) {
   fs.readFile(file, function(err, data) {
     if(err) {
@@ -50,9 +50,10 @@ fs.watchFile(file, { persistent: true, interval: 200 /* millisecond poll interva
       process.exit(1);
     }
     else {
-		if(curr.size !== _size){
+		var _data = data.toString('ascii');
+		if(_data != _prev){
 		   currentConnection.send(data);
-		   _size = curr.size
+		   _prev = _data;
 	       console.log('-----------------------------');
 	       console.log(data.toString('ascii'));  
 		}
