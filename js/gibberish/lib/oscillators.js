@@ -845,7 +845,7 @@ define([], function() {
 							junction.w_junction += addValue;
 						}
 					}
-					if(typeof _tension !== "undefined") { this.tension = _tension; }
+					//if(typeof _tension !== "undefined") { this.tension = _tension; }
 				},
 			};
 			
@@ -945,9 +945,9 @@ define([], function() {
 				}
 				
 				// the filtering below does nothing
-				/*var filt = loss * (junctions[height-heightBy4][width-widthBy4].v_junction + oldfilt);
+				var filt = loss * (junctions[height-heightBy4][width-widthBy4].v_junction + oldfilt);
 				oldfilt = junctions[height-heightBy4][width-widthBy4].v_junction;
-				junctions[height-heightBy4][width-widthBy4].v_junction = filt;*/
+				junctions[height-heightBy4][width-widthBy4].v_junction = filt;
 				
 				//x->mesh[WIDTH/4][WIDTH/4-1].v_junction;
 				val += junctions[outY][outX].v_junction;

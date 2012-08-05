@@ -14,6 +14,8 @@ var name, host, file;
 
 // parse command line arguments
 //
+
+var currentConnection = null;
 if (process.argv.length == 5) {
   // args 0 and 1 are '/path/to/node' and '/path/to/watcher.js' respectively
   //
@@ -30,14 +32,17 @@ else {
 // message from the host
 //
 var io = require('socket.io-client').connect('http://' + host + ':8080/');
+
 io.on('connect', function () {
   console.log("connected to host as " + name);
-  io.emit('name', {"name":name});
+  currentConnection = io;
+  currentConnection.emit('name', {"name":name});
 });
 
 // watch the given file, sending code to Gibber when changes are saved
 //
 var fs = require('fs');
+var _size = 0;
 fs.watchFile(file, { persistent: true, interval: 200 /* millisecond poll interval */ }, function (curr, prev) {
   fs.readFile(file, function(err, data) {
     if(err) {
@@ -45,9 +50,12 @@ fs.watchFile(file, { persistent: true, interval: 200 /* millisecond poll interva
       process.exit(1);
     }
     else {
-      io.send(data);
-      console.log('-----------------------------');
-      console.log(data.toString('ascii'));
+		if(curr.size !== _size){
+		   currentConnection.send(data);
+		   _size = curr.size
+	       console.log('-----------------------------');
+	       console.log(data.toString('ascii'));  
+		}
     }
   });
 });
