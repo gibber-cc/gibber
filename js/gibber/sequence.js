@@ -153,6 +153,8 @@ function _Seq() {
 		_seq = arguments[0] || [];
 		if(typeof _seq === "function") { // wrap anonymous function in array as sugar
 			_seq = [_seq];
+		}else if(typeof _seq === "string") {
+			_seq = _seq.split("");
 		}
 		this.sequence = _seq;
 	}

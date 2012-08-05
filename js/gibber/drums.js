@@ -22,40 +22,32 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.amp   = isNaN(_amp) ? .2 : _amp;
-
-	this.sounds = {
-		kick 	: { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch:1, amp:this.amp },
-		snare	: { sampler: Gibberish.Sampler("audiofiles/snare.wav"),pitch:1, amp:this.amp },
-		hat		: { sampler: Gibberish.Sampler("audiofiles/hat.wav"), 	pitch:1, amp: this.amp }, 
-		openHat	: { sampler: Gibberish.Sampler("audiofiles/openhat.wav"), pitch:1, amp:this.amp },
-	}
+	this.pitch = 1;
 	
+	this.kick 	 = { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch: 1, amp: 1 } ;
+	this.snare	 = { sampler: Gibberish.Sampler("audiofiles/snare.wav"), pitch: 1, amp: 1 }
+	this.hat	 = { sampler: Gibberish.Sampler("audiofiles/hat.wav"), pitch: 1, amp: 1 }
+	this.openHat = { sampler: Gibberish.Sampler("audiofiles/openHat.wav"), pitch: 1, amp: 1 }
+
 	this.bus = Gibberish.Bus();
 
-	this.sounds.kick.sampler.send(this.bus, this.amp);
-	this.sounds.snare.sampler.send(this.bus, this.amp);
-	this.sounds.hat.sampler.send(this.bus, this.amp);
-	this.sounds.openHat.sampler.send(this.bus, this.amp);	
+	this.kick.sampler.send(this.bus,  1);
+	this.snare.sampler.send(this.bus, 1);
+	this.hat.sampler.send(this.bus,   1);
+	this.openHat.sampler.send(this.bus, 1);	
+	
+	// these are convenience wrappers. to mod, you must use this.kick.sampler etc.
+	this.kick.fx = this.kick.sampler.fx;
+	this.snare.fx = this.snare.sampler.fx;
+	this.hat.fx = this.hat.sampler.fx;
+	this.openHat.fx = this.openHat.sampler.fx;
 	
 	this.bus.connect(Master);
-	
-	Gibberish.extend(this, this.sounds);
-	
+		
 	this.fx = this.bus.fx;
-	
-	// this enables this.kick.pitch = 2, this.kick.fx.add( Reverb() ) etc.
-	this.kick = this.sounds.kick;
-	this.kick.fx = this.sounds.kick.sampler.fx;
-	this.snare = this.sounds.snare;
-	this.snare.fx = this.sounds.snare.sampler.fx;
-	this.hat = this.sounds.hat;
-	this.hat.fx = this.sounds.hat.sampler.fx;
-	this.openHat = this.sounds.openHat;
-	this.openHat.fx = this.sounds.openHat.sampler.fx;
 	
 	this.active = true;
 	this.masters = [];
-	this.pitch = 1; // pitch is a mod to frequency; only used when the value is set
 	
 	this.sequenceInit =false;
 	this.initialized = false;
@@ -63,7 +55,8 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	
 	var that = this; // closure so that d.shuffle can be sequenced
 	this.shuffle = function() { that.seq.shuffle(); };
-	this.reset = function() { that.seq.reset(); };
+	this.reset 	= function() { that.seq.reset(); };
+	this.stop 	= function() { that.seq.stop(); };
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
@@ -106,7 +99,6 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 		}
 	}
 	
-	//this.seq = {};
 	(function(obj) {
 		var that = obj;
 		
@@ -128,40 +120,27 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 		        },
 		        set: function(value) {
 					amp = value;
-					for(var sound in this.sounds) {
-						this.sounds[sound].sampler.disconnect();
-						this.sounds[sound].sampler.send(this.bus, this.amp);
-					}
+					this.bus.amp = value;
 		        }
 			},
 			
 	    });
 	})(this);
-	//if(this.pitch != 1) this.pitch = arguments[0].pitch;
 	
 	if(this.seq !== null) {
 		this.seq.doNotAdvance = false;
 		this.seq.advance();
 	}
+	console.log(this);
 }
 
 _Drums.prototype = {
-	sampleRate : 44100, //Gibber.sampleRate,
 	category  	: "complex",
 	name  		: "Drums",
 		
-	load : function (){
-		// SAMPLES ARE PRELOADED IN GIBBER CLASS... but it still doesn't stop the hitch when loading these...
-		this.kick.loadWav(Gibber.samples.kick);
-		this.snare.loadWav(Gibber.samples.snare);
-		this.hat.loadWav(Gibber.samples.snare); // TODO: CHANGE TO HIHAT SAMPLE
-				
-		this.initialized = true;
-	},
-		
 	replace : function(replacement) {
 		this.kill();
-		if(typeof this.seq != "undefined") {
+		if(typeof this.seq !== "undefined" && this.seq !== null) {
 			this.seq.kill();
 		}
 		for( var i = 0; i < this.masters.length; i++) {
@@ -174,9 +153,7 @@ _Drums.prototype = {
 		this.bus.destinations.remove(Master);
 		this.masters.length = 0;
 	},
-			
-	getMix : function() { return this.value * this.amp; },
-		
+					
 	once : function() {
 		this.seq.once();
 		return this;
@@ -189,6 +166,7 @@ _Drums.prototype = {
 			this.seq.retain(num); 
 		}
 	},
+	
 	set : function(newSequence, _timeValue) { 
 		if(typeof this.seq === "undefined" || this.seq === null) {
 			this.seq = Seq(newSequence, _timeValue).slave(this);
@@ -200,16 +178,16 @@ _Drums.prototype = {
 	note : function(nt) {
 		switch(nt) {
 			case "x":
-				this.sounds.kick.sampler.note(this.pitch * this.sounds.kick.pitch);
+				this.kick.sampler.note(this.pitch * this.kick.pitch, this.kick.amp);
 				break;
 			case "o":
-				this.sounds.snare.sampler.note(this.pitch * this.sounds.snare.pitch);
+				this.snare.sampler.note(this.pitch * this.snare.pitch, this.snare.amp);
 				break;
 			case "*":
-				this.sounds.hat.sampler.note(this.pitch * this.sounds.hat.pitch);
+				this.hat.sampler.note(this.pitch * this.hat.pitch, this.hat.amp);
 				break;
 			case "-":
-				this.sounds.openHat.sampler.note(this.pitch * this.sounds.openHat.pitch);
+				this.openHat.sampler.note(this.pitch * this.openHat.pitch, this.openHat.amp);
 				break;
 			default: break;
 		}

@@ -23,7 +23,8 @@ function ScaleSeq(_sequence, _speed) {
 	that.root = that.root || Gibber.root;
 	that.scaleInit = false;
 	that.counter = 0;
-	
+	that.scale = [];
+	this.note = [];
 	if(typeof arguments[0] !== "object" && $.isArray(arguments[0]) === true) {
 		that.sequence = _sequence;
 		that.slaves = [];
@@ -32,7 +33,7 @@ function ScaleSeq(_sequence, _speed) {
 	that.createPattern = function(sequence) {
 		var _rootoctave = this.root.octave;
 		this.sequenceNumbers = sequence;
-		this.scale = [];
+		this.scale.length = 0;
 
 		var _scale = teoria.scale.list(this.root, this.mode, false);
 
@@ -53,7 +54,7 @@ function ScaleSeq(_sequence, _speed) {
 		 	}
 		}
 		
-		this.note = [];
+		this.note.length = 0;
 		
 		for(var i = 0; i < this.sequenceNumbers.length; i++) {
 			if(!$.isArray(this.sequenceNumbers[i])) {

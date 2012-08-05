@@ -42,7 +42,7 @@ define([], function() {
 			gibberish.make["Flanger"] = this.makeFlanger;
 			gibberish.Flanger = this.Flanger;
 			
-			// the calls to dynamically create the bus generators are generated dynamically. that is fun to say.
+			gibberish.generators.Bus = gibberish.createGenerator(["senders", "amp"], "{0}( {1}, {2} )");
 			gibberish.make["Bus"] = this.makeBus;
 			gibberish.Bus = this.Bus;
 		},
@@ -641,7 +641,7 @@ define([], function() {
 				length	: 0,
 				type	: "Bus",
 				category: "Bus",
-				amount	: 1,
+				amp	: 1,
 
 				connect : function(bus) {
 					this.destinations.push(bus);
@@ -659,9 +659,9 @@ define([], function() {
 					
 					if(this.senderObjects.indexOf(variable) === -1) {
 						this.senderObjects.push(variable);
-					
+
 						this.senders.push( { type:"*", operands:[variable, amount] } );
-					
+
 						variable.destinations.push(this);
 					}else{
 						for(var i = 0; i < this.senders.length; i++) {
@@ -700,24 +700,21 @@ define([], function() {
 				},
 			};
 
-			Gibberish.extend(that, new Gibberish.ugen(that));
+			Gibberish.extend( that, new Gibberish.ugen(that) );
 			that.fx = effects || [];
 			that.fx.parent = this;
 
-			that.symbol = Gibberish.generateSymbol(that.type);
-			//that.type = that.symbol;
+			that.symbol = Gibberish.generateSymbol( that.type );
 
-			Gibberish.generators[that.type] = Gibberish.createGenerator(["senders"], "{0}( {1} )");
-
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Bus\"]();");
+			Gibberish.masterInit.push( that.symbol + " = Gibberish.make[\"Bus\"]();" );
 			window[that.symbol] = Gibberish.make["Bus"]();
 
-			//Gibberish.defineProperties( that, ["senders", "dirty"]);
+			Gibberish.defineProperties( that, ["amp"] );
 			return that;
 		},
 
 		makeBus : function() { 
-			var output = function(senders) {
+			var output = function(senders, amp) {
 				var out = 0;
 				
 				if(typeof senders !== "undefined") {
@@ -726,7 +723,7 @@ define([], function() {
 					}
 				}
 
-				return out;
+				return out * amp;
 			};
 
 			return output;

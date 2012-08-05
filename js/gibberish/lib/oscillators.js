@@ -39,7 +39,7 @@ define([], function() {
 			gibberish.Mesh = this.Mesh;
 			
 			gibberish.Sampler = this.Sampler;
-			gibberish.generators.Sampler = gibberish.createGenerator(["speed", "amp"], "{0}( {1}, {2} )");
+			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp"], "{0}( {1}, {2} )");
 			gibberish.make["Sampler"] = this.makeSampler;
 			
 			//isRecording, isPlaying, input, length
@@ -338,7 +338,7 @@ define([], function() {
 				audioFilePath: 	pathToAudioFile,
 				buffer : 		null,
 				bufferLength:   null,
-				speed:			1,
+				pitch:			1,
 				amp:			1,
 				_function:		null,
 				onload : 		function(decoded) { 
@@ -354,9 +354,10 @@ define([], function() {
 					
 					Gibberish.dirty(that);
 				},
-				note: function(speed, amp) {
+				note: function(pitch, amp) {
 					if(typeof amp !== "undefined") { this.amp = amp; }
-					this.speed = speed;
+					this.pitch = pitch;
+					console.log("this.pitch = ", this.pitch);
 					if(this._function !== null) {
 						this._function.setPhase(0);
 					}
@@ -382,7 +383,7 @@ define([], function() {
 			that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["speed", "amp"] );
+			Gibberish.defineProperties( that, ["pitch", "amp"] );
 			
 			return that;
 		},
@@ -390,9 +391,9 @@ define([], function() {
 		makeSampler : function(buffer) {
 			var phase = buffer === null ? 0 : buffer.length;
 			var interpolate = Gibberish.interpolate;
-			var output = function(_speed, amp) {
+			var output = function(_pitch, amp) {
 				var out = 0;
-				phase += _speed;
+				phase += _pitch;
 				if(buffer !== null && phase < buffer.length) {
 					out = interpolate(buffer, phase);
 				}
