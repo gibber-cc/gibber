@@ -202,11 +202,11 @@ define([
 		},
 	
 		init: function() {
-			try{
-			    Gibber.OSC = io.connect('http://localhost:8080/');
-			}catch(e){
-				console.log("No OSC server running");
-			}
+			// try{
+			//     Gibber.OSC = io.connect('http://localhost:8080/');
+			// }catch(e){
+			// 	console.log("No OSC server running");
+			// }
 			
 			$(window).resize(Gibber.Environment.editorResize);
 			$("#mega-menu-1").dcMegaMenu({
