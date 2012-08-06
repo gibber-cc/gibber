@@ -423,6 +423,7 @@ define([], function() {
 			var interpolate = Gibberish.interpolate;
 			var pitchShifting = false;
 			var speed = 1;
+			var init = 0;
 
 			
 			var output = function(sample, chance, rate, length, reverseChance, pitchChance, pitchMin, pitchMax) {
@@ -430,6 +431,9 @@ define([], function() {
 				if(!isShuffling) {
 					buffer[writeIndex++] = sample;
 					writeIndex %= buffer.length;
+					
+					init = writeIndex === 0 ? 1 : init; // don't output buffered audio until a buffer is full... otherwise you just get a gap
+					
 					randomizeCheckIndex += !isShuffling;
 					
 					if(randomizeCheckIndex % rate == 0 && random() < chance) {
@@ -478,7 +482,7 @@ define([], function() {
 						pitchShifting = 0;
 					}
 				}else{
-					out = isShuffling ? outSample : sample;
+					out = isShuffling && init ? outSample : sample;
 				}
 
 				return out;

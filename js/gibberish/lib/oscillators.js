@@ -410,8 +410,8 @@ define([], function() {
 				type:		"KarplusStrong2",
 				category:	"Gen",
 				amp:		.5,
-				damping:	.75,
-				dampingValue: .75,
+				damping:	0,
+				dampingValue: .1,
 				blend:		 1,
 				buffer: 	new Float32Array(100),
 				buffer2:	new Float32Array(100),
@@ -446,23 +446,22 @@ define([], function() {
 			
 			var damping = that.damping;
 			
-			// 		    Object.defineProperty(that, "damping", {
-			// 	get: function() {
-			// 		return damping * 100;
-			// 	},
-			// 	set: function(value) {
-			// 		damping = value / 100;
-			// 		that.dampingValue = .5 - damping;
-			// 		Gibberish.dirty(this);
-			// 	}
-			// });
+			Object.defineProperty(that, "damping", {
+				get: function() {
+					return damping * 100;
+				},
+				set: function(value) {
+					damping = value / 100;
+					that.dampingValue = .5 - damping;
+					Gibberish.dirty(this);
+				}
+			});
 
-			
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
-			
-			that.dampingValue = .5 - that.damping;
+			that.damping = that.damping;
+			//that.dampingValue = .5 - that.damping;
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"KarplusStrong2\"]();");	
@@ -470,7 +469,6 @@ define([], function() {
 			window[that.symbol] = that._function;
 			
 			Gibberish.defineProperties( that, ["blend", "amp", "headPos", "damping"] );
-
 			return that;
 		},
 		
