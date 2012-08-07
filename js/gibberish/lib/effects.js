@@ -585,12 +585,17 @@ define([], function() {
 				category:	"FX",
 				feedback:	0, // TODO: feedback is broken
 				offset:		300,
-				amount:		100,
+				amount:		300,
 				rate:		.25,
 				source:		null,
 				buffer:		new Float32Array(88200),				
 				bufferLength: 88200,
 			};
+			/*
+			that.offset = offset || that.amount;
+			that.readIndex = that.offset * -1;
+			that.delayMod = LFO(that.rate, that.amount * .95);
+			*/
 			
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			if(typeof properties !== "undefined") {
@@ -611,12 +616,12 @@ define([], function() {
 
 		makeFlanger : function(buffer, bufferLength, delayModulation, _offset) {
 			var phase = 0;
-			var readIndex = bufferLength - _offset;
+			var readIndex = _offset * -1;
 			var writeIndex = 0;
 			var interpolate = Gibberish.interpolate;
 			
 			var output = function(sample, offset, feedback, delayModulationRate, delayModulationAmount) {
-				var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount);
+				var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount * .95);
 
 				if(delayIndex > bufferLength) {
 					delayIndex -= bufferLength;
@@ -626,7 +631,6 @@ define([], function() {
 
 				var delayedSample = interpolate(buffer, delayIndex);
 				
-				// TODO: Feedback is broken
 				buffer[writeIndex] = sample + (delayedSample * feedback);
 				
 				if(++writeIndex >= bufferLength) writeIndex = 0;
@@ -634,7 +638,7 @@ define([], function() {
 				
 				return sample + delayedSample;
 				
-				/*
+				/* from old Gibber back when it worked correctly...
 				var r = this.readIndex + this.delayMod.out();
 				if(r > this.bufferSize) {
 					r = r - this.bufferSize;
