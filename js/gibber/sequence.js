@@ -160,7 +160,7 @@ function _Seq() {
 		}else if(typeof _seq === "string") {
 			_seq = _seq.split("");
 		}
-		if(typeof _seq[0] === "function") this.endSequence = "function";
+		if(typeof _seq[0] === "function") this.endSequence = "functions";
 		this.sequence = _seq;
 	}
 	
@@ -173,13 +173,12 @@ function _Seq() {
 		}else{
 			if(this.sequence !== null) {
 				if(typeof this.sequence[0] === "function") {
-					this.endSequence = "function";
-					this.outputMessage = "function";
+					this.endSequence = "functions";
+					this.outputMessage = "functions";
 				}else{
 					this.outputMessage = "note";
 				}
-				this.sequences.push(this.outputMessage);				
-				
+				this.sequences.push(this.outputMessage);
 			}
 		}
 	}
@@ -358,7 +357,7 @@ _Seq.prototype = {
 			for(var i = 0; i < this.sequences.length; i++) {
 				var key = this.sequences[i];
 				var seq = this[key];
-//				console.log(key);
+				// console.log(key);
 				var usePick = (typeof seq.pick !== "undefined");
 				
 				if(!usePick) {
@@ -374,12 +373,12 @@ _Seq.prototype = {
 				 	this.value = val;
 				}
 				
-				//G.log("key : " + key + " , val : " + val + ", pos : " + pos);
+				//G.log("key : " + key + " , val : " + val + ", pos : " + pos + ", next : " + nextPhase);
 						
 				// Function sequencing
 				// TODO: there should probably be a more robust way to to this
 				// but it will look super nice and clean on screen...
-				if(key === "function") {
+				if(key === "functions") {
 					if(!shouldReturn) {
 						val();
 						//this.counter++;

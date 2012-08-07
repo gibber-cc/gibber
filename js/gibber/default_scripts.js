@@ -43,7 +43,7 @@ default:
 'p.fx.add( Schizo() )\n'+
 '\n'+
 '// sequence drums randomizing every 4th measure and then reseting\n'+
-'e = Seq( [ d.reset, d.shuffle ], [_1 * 3, _1]).slave(d)\n'+
+'e = Seq( [ d.reset, d.shuffle ], [_1 * 3, _1]);\n'+
 '\n'+
 '// make FM synth using glockenspiel preset. add delay and reverb\n'+
 'f = FM("glockenspiel", {maxVoices:1})\n'+

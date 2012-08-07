@@ -591,11 +591,6 @@ define([], function() {
 				buffer:		new Float32Array(88200),				
 				bufferLength: 88200,
 			};
-			/*
-			that.offset = offset || that.amount;
-			that.readIndex = that.offset * -1;
-			that.delayMod = LFO(that.rate, that.amount * .95);
-			*/
 			
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			if(typeof properties !== "undefined") {
@@ -631,7 +626,13 @@ define([], function() {
 
 				var delayedSample = interpolate(buffer, delayIndex);
 				
-				buffer[writeIndex] = sample + (delayedSample * feedback);
+				// TODO: no, feedback really is broekn. sigh.
+				//var writeValue = sample + (delayedSample * feedback);
+				//if(writeValue > 1 || isNaN(writeValue) || writeValue < -1) { console.log("WRITE VALUE", writeValue); }
+				
+				// TODO: this shouldn't be necessary, but writeValue (when using feedback) sometimes returns NaN
+				// for reasons I can't figure out. 
+				buffer[writeIndex] = sample; //isNaN(writeValue) ? sample : writeValue;
 				
 				if(++writeIndex >= bufferLength) writeIndex = 0;
 				if(++readIndex  >= bufferLength) readIndex  = 0;				
