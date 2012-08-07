@@ -114,6 +114,7 @@ function _Seq() {
 	if(typeof arguments[0] === "object") {
 		if(typeof arguments[0].doNotAdvance !== "undefined") this.doNotAdvance = true;
 	}
+	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
 		var obj = arguments[0];
 		for(key in obj) {
@@ -156,6 +157,7 @@ function _Seq() {
 		}else if(typeof _seq === "string") {
 			_seq = _seq.split("");
 		}
+		if(typeof _seq[0] === "function") this.endSequence = "function";
 		this.sequence = _seq;
 	}
 	

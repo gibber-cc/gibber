@@ -73,13 +73,7 @@ function Pluck2 (damping, blend, amp, color){
 }
 
 function Mesh (){
-	var that = {};
-
-	if(typeof arguments[0] === "object") {
-		that = Gibberish.Mesh( arguments[0] );
-	}else{
-		that = Gibberish.Mesh( arguments[0] );
-	}
+	var that = Gibberish.Mesh( arguments[0] );
 	
 	that.send(Master, that.amp);	
 	
