@@ -170,6 +170,7 @@ function _Seq() {
 		}else{
 			if(this.sequence !== null) {
 				if(typeof this.sequence[0] === "function") {
+					this.endSequence = "function";
 					this.outputMessage = "function";
 				}else{
 					this.outputMessage = "note";
