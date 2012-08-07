@@ -627,12 +627,35 @@ define([], function() {
 				var delayedSample = interpolate(buffer, delayIndex);
 				
 				// TODO: Feedback is broken
-				buffer[writeIndex] = sample;// + (delayedSample * feedback);
+				buffer[writeIndex] = sample + (delayedSample * feedback);
 				
 				if(++writeIndex >= bufferLength) writeIndex = 0;
 				if(++readIndex  >= bufferLength) readIndex  = 0;				
 				
 				return sample + delayedSample;
+				
+				/*
+				var r = this.readIndex + this.delayMod.out();
+				if(r > this.bufferSize) {
+					r = r - this.bufferSize;
+				}else if(r < 0) {
+					r = this.bufferSize + r;
+				}
+			
+				var s = Sink.interpolate(this.buffer, r);
+
+				this.buffer[this.writeIndex++] = sample + (s * this.feedback);
+				if (this.writeIndex >= this.bufferSize) {
+					this.writeIndex = 0;
+				}
+			
+				this.readIndex++;
+				if (this.readIndex >= this.bufferSize) {
+					this.readIndex = 0;
+				}
+			
+				this.value = s + sample;
+				*/
 			};
 
 			return output;
