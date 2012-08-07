@@ -379,10 +379,10 @@ _Seq.prototype = {
 				if(key === "function") {
 					if(!shouldReturn) {
 						val();
-						this.counter++;
-						this.durationCounter++;
+						//this.counter++;
+						//this.durationCounter++;
 					}
-					return;
+					//return;
 				}else if(typeof val === "undefined") {
 					if(!shouldReturn) {
 						this.counter++;
@@ -437,7 +437,6 @@ _Seq.prototype = {
 			
 			this.counter++;
 			this.durationCounter++;
-			
 			if(this.end) {
 				if(this.counter % this[this.endSequence].length === 0) {
 					this.stop();
