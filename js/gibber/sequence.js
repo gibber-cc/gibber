@@ -109,6 +109,9 @@ function _Seq() {
 	this.nextEvent = 0;
 	this.endFunction = null;
 	this.endSequence = "note";
+	this.shouldRepeat = false;
+	this.repeatCount = 0;
+	this.repeatEnd = 0;
 	
 	var that = this;
 	if(typeof arguments[0] === "object") {
@@ -249,7 +252,7 @@ function _Seq() {
 	
 	// ####shuffle
 	// randomize order of sequence
-
+	
 	this.shuffle = function(seq) {
 		if(typeof seq === "undefined") {
 			that.note.shuffle();
@@ -437,6 +440,16 @@ _Seq.prototype = {
 			
 			this.counter++;
 			this.durationCounter++;
+			
+			if(this.shouldRepeat) {
+				if(this.counter % this[this.endSequence].length === 0) {
+					this.repeatCount++;
+					if(this.repeatCount === this.repeatEnd) {
+						this.end = true;
+					}
+				}
+			}
+			
 			if(this.end) {
 				if(this.counter % this[this.endSequence].length === 0) {
 					this.stop();
@@ -634,6 +647,14 @@ _Seq.prototype = {
 		return this;
 	},
 	
+	
+	repeat: function(numTimes) {
+		this.shouldRepeat = true;
+		this.repeatEnd = numTimes;
+		
+		return this;
+	},
+
 	// ####play
 	// start the sequencer running
 	
@@ -644,6 +665,7 @@ _Seq.prototype = {
 		
 			this.advance();
 		}
+		this.repeatCount = 0;
 		return this;
 	},
 	
