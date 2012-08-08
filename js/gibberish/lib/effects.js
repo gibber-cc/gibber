@@ -357,10 +357,11 @@ define([], function() {
 			var output = function(sample, cutoff, resonance, isLowPass) {
 				rez = pole4 * resonance; 
 
-				if (rez > 1) {rez = 1;}
+				rez = rez > 1 ? 1 : rez;
 				sample = sample - rez;
 
-				if (cutoff < 0) cutoff = 0;
+				cutoff = cutoff < 0 ?   0 	: cutoff;
+				cutoff = cutoff > 1 ? 1 	: cutoff;
 
 				pole1 = pole1 + ((-pole1 + sample) * cutoff);
 				pole2 = pole2 + ((-pole2 + pole1)  * cutoff);

@@ -24,6 +24,8 @@ function Seq(seq, durations, msg) {
 }
 
 function _Seq() {
+	Gibber._current = this; // immediately store in case there's a bug
+	
 	(function(_that) {
 		var _speed = null;
 		var that = _that;
@@ -117,7 +119,6 @@ function _Seq() {
 	if(typeof arguments[0] === "object") {
 		if(typeof arguments[0].doNotAdvance !== "undefined") this.doNotAdvance = true;
 	}
-	
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
 		var obj = arguments[0];
 		for(key in obj) {

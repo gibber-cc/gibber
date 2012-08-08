@@ -1,6 +1,9 @@
 function Record(input, length, shouldStart, speed) {
 	var that = Gibberish.Record(input, length, shouldStart, speed);
 	that.send(Master, that.amp);
+	if(typeof shoudldStart === "undefined" || shouldStart) {
+		that.startRecording();
+	}
 	return that;
 }
 
