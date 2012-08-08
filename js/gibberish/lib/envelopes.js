@@ -73,9 +73,9 @@ define([], function() {
 			var that = { 
 				type:		"ADSR",
 				category:	"Gen",	
-				attack:		attack || 10000,
-				decay:		decay	|| 0,
-				release:	release || 10000,
+				attack:		isNaN(attack) ? 10000 : attack,
+				decay:		isNaN(decay) ? 0 : decay,
+				release:	isNaN(release) ? 10000 : release,
 				sustain: 	typeof sustain === "undefined" ? null : sustain,
 				attackLevel:  attackLevel || 1,
 				sustainLevel: sustainLevel || 1,
@@ -189,7 +189,7 @@ define([], function() {
 				type:		"Line",
 				category:	"Gen",
 				start:		start || 0,
-				end:		end   || 1,
+				end:		isNaN(end) ? 1 : end,
 				time:		time || 44100,
 				loops:		loops || false,
 			};
