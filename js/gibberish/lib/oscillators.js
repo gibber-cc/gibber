@@ -117,6 +117,10 @@ define([], function() {
 
 				return out * amp;
 			}
+			output.setPhase = function(_phase {
+				phase = _phase;
+			};
+			
 	
 			return output;
 		},
@@ -154,7 +158,10 @@ define([], function() {
 				
 				return out * amp;
 			};
-	
+			output.setPhase = function(_phase {
+				phase = _phase;
+			};
+			
 			return output;
 		},
 		
@@ -196,7 +203,10 @@ define([], function() {
 				
 				return out * amp;
 			};
-	
+			output.setPhase = function(_phase {
+				phase = _phase;
+			};
+			
 			return output;
 		},
 		
