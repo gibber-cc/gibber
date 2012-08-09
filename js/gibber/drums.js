@@ -21,6 +21,8 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 }
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
+	 Gibberish.extend(this, Gibberish.Bus());
+	
 	this.pitch = 1;
 	
 	this.kick 	 = { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch: 1, amp: 1 } ;
@@ -28,12 +30,11 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.hat	 = { sampler: Gibberish.Sampler("audiofiles/hat.wav"), pitch: 1, amp: 1 }
 	this.openHat = { sampler: Gibberish.Sampler("audiofiles/openHat.wav"), pitch: 1, amp: 1 }
 
-	this.bus = Gibberish.Bus();
 
-	this.kick.sampler.send(this.bus,  1);
-	this.snare.sampler.send(this.bus, 1);
-	this.hat.sampler.send(this.bus,   1);
-	this.openHat.sampler.send(this.bus, 1);	
+	this.kick.sampler.send(this,  1);
+	this.snare.sampler.send(this, 1);
+	this.hat.sampler.send(this,   1);
+	this.openHat.sampler.send(this, 1);	
 	
 	// these are convenience wrappers. to mod, you must use this.kick.sampler etc.
 	this.kick.fx = this.kick.sampler.fx;
@@ -41,10 +42,8 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.hat.fx = this.hat.sampler.fx;
 	this.openHat.fx = this.openHat.sampler.fx;
 	
-	this.bus.connect(Master);
+	this.connect(Master);
 		
-	this.fx = this.bus.fx;
-	
 	this.active = true;
 	this.masters = [];
 	
@@ -119,7 +118,7 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 		        },
 		        set: function(value) {
 					amp = value;
-					this.bus.amp = value;
+					//this.bus.amp = value;
 		        }
 			},
 			

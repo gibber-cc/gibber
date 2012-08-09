@@ -225,9 +225,9 @@ define(['gibber/audio_callback',
 		},
 	
 		genReplace : function(gen, newGen) {
-			console.log("GEN REPLACE");
+			//console.log("GEN REPLACE");
 			Master.disconnectUgen(gen); // disconnect from output if connected
-			console.log(Master.senders);
+			//console.log(Master.senders);
 			Master.senders.remove(gen);
 			// if old gen is modulating another gen...
 			for(var i = 0; i < gen.modding.length; i++) {
