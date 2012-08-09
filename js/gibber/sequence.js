@@ -367,7 +367,12 @@ _Seq.prototype = {
 				if(!usePick) {
 					val = seq[pos];
 				}else{
-					val = seq.pick();
+					try{
+						val = seq.pick();
+					}catch(err) {
+						G.log("Error picking sequencer value from " + key + "array.");
+						this.stop();
+					}
 				}
 				
 				if(this.slaves.length === 0 && key === "note") { // if a mod... note is the default sequence value
@@ -381,11 +386,10 @@ _Seq.prototype = {
 				// but it will look super nice and clean on screen...
 				if(key === "functions") {
 					if(!shouldReturn) {
-						console.log("TRYING FUNCTION");
 						try {
 							val();
 						}catch(err) {
-							console.log("SEQUENCE FUNCTION ERRROR. STOPPING SEQUENCE.");
+							console.log("SEQUENCE FUNCTION ERRROR: ", err);
 							this.stop();
 						}
 						//this.counter++;
@@ -404,20 +408,25 @@ _Seq.prototype = {
 					var _slave = this.slaves[j];
 					//console.log("HAS SLAVE", _slave);
 					if(key === "freq" || key === "frequency") {
-						if(! $.isArray(val) ) {
-							if(typeof val === "string" ) {
-								var nt = teoria.note(val);
-								val = nt.fq();
-							}else if(typeof val === "object"){
-								val = val.fq();
-							}// else val is a number and is fine to send as a freq...
-						}else{
-							if(typeof val[0] === "string" ) {
-								var nt = teoria.note(val[0]);
-								val[0] = nt.fq();
-							}else if(typeof val[0] === "object"){ // for ScaleSeqs and Arps
-								val[0] = val[0].fq();
+						try{
+							if(! $.isArray(val) ) {
+								if(typeof val === "string" ) {
+									var nt = teoria.note(val);
+									val = nt.fq();
+								}else if(typeof val === "object"){
+									val = val.fq();
+								}// else val is a number and is fine to send as a freq...
+							}else{
+								if(typeof val[0] === "string" ) {
+									var nt = teoria.note(val[0]);
+									val[0] = nt.fq();
+								}else if(typeof val[0] === "object"){ // for ScaleSeqs and Arps
+									val[0] = val[0].fq();
+								}
 							}
+						}catch(err) {
+							G.log("Error determining frequency in Seq: " + err);
+							this.stop();
 						}
 					}
 					//console.log("ADVANCING", key, _slave);	
@@ -429,12 +438,22 @@ _Seq.prototype = {
 						}else{
 							if($.isArray(val) && key !== "chord") {
 								//console.log("CALLING", val);
-								_slave[key].apply(_slave, val);									
+								try {
+									_slave[key].apply(_slave, val);									
+								}catch(err) {
+									G.log("Seq error passing array:", err);
+									this.stop();
+								}
 							}else{
 								//console.log("CALLING", val);
 								
 								//console.log("CALLING");
-								_slave[key](val);
+								try{
+									_slave[key](val);
+								}catch(err) {
+									G.log("Seq error for key", key, err);
+									this.stop();
+								}
 							}
 						}
 					}else{

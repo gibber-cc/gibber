@@ -241,7 +241,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 
 				var memo = this.memo[op.symbol];
 				if(memo){
-					//console.log("MEMO", memo);
+					//console.log("MEMO", memo, op);
 					return memo;
 				}
 				
@@ -272,6 +272,8 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 						
 						if(shouldAdd) {
 							if(op.category !== "FX") {
+								//console.log("MAKING", objName);
+								
 								statement = "var {0} = {1}".format(name, objName);
 							}else{
 								statement = "{0} = {1}".format(op.source, objName);
@@ -309,7 +311,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			if(ugen.category === "Bus") {
 				for(var i = 0; i < ugen.destinations.length; i++) {
 					var output = ugen.destinations[i].ugenVariable || ugen.destinations[i];
-					if(output == "output")
+					if(output === "output")
 						codeDictionary.codeblock.push( "{0} += {1};\n".format( output, outputCode) );
 				}
 			}

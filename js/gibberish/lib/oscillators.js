@@ -962,15 +962,20 @@ define([], function() {
 			var that = { 
 				type:		"Record",
 				category:	"Gen",
-				input	: 	input || null,
+				input	: 	0, //input || null,
+				_input  :   input || null,
 				length	: 	length || ms(1000),
 				shouldStart:shouldStart || false,
 				buffer	:   null,
 				isPlaying:  false,
 				isRecording:false,
 				speed : 	speed || 1,
-				startRecording : function(recordLength) {
+				startRecording : function(recordLength) {					
 					this.length = typeof recordLength === "undefined" ? this.length : recordLength;
+					
+					// now this, this line below, THIS is a hack...
+					this.mod("input", this._input, "=");
+					
 					this.buffer = new Float32Array(this.length);
 					this.isRecording = true;
 					this._function.setBuffer(this.buffer);
@@ -1003,7 +1008,7 @@ define([], function() {
 			var interpolate = Gibberish.interpolate;
 			var output = function(isRecording, isPlaying, input, length, speed) {
 				
-				phase += isRecording ? 1 : speed;
+				phase += 1; //isRecording ? 1 : speed;
 				
 				if(phase < length && isRecording) {
 					buffer[phase] = input;
@@ -1040,12 +1045,12 @@ define([], function() {
 				category:	"Gen",
 				buffer: 	null,
 				grainSize: 	ms(250),
-				speedMin:   -.5,
-				speedMax: 	.5,
+				speedMin:   -0,
+				speedMax: 	.0,
 				speed: 		1,
 				position:	.5,
-				positionMin:-.1,
-				positionMax:.1,
+				positionMin:0,
+				positionMax:0,
 				amp:		.2,
 				reverse:	true,
 				numberOfGrains:10,
