@@ -109,7 +109,7 @@ define([], function() {
 			
 			Gibberish.extend(that, {
 				waveform:		"Triangle",
-				amp:			.25,				
+				//amp:			.25,				
 				attack:			10000,
 				decay:			10000,
 				maxVoices:		5,
@@ -150,16 +150,16 @@ define([], function() {
 			
 			Gibberish.polyDefineProperties( that, ["waveform", "attack", "decay", "glide"] );
 			
-			(function() {
-				var _amp = that.amp;
-				Object.defineProperty(that, "amp", {
-					get: function() { return _amp; },
-					set: function(value) {
-						_amp = value;
-						that.send(Master, value);
-					},
-				});
-			})();
+			// (function() {
+			// 	var _amp = that.amp;
+			// 	Object.defineProperty(that, "amp", {
+			// 		get: function() { return _amp; },
+			// 		set: function(value) {
+			// 			_amp = value;
+			// 			that.send(Master, value);
+			// 		},
+			// 	});
+			// })();
 			
 			return that;
 		},
@@ -282,16 +282,16 @@ define([], function() {
 			
 			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack", "decay", "glide"] );
 			
-			(function() {
-				var _amp = that.amp;
-				Object.defineProperty(that, "amp", {
-					get: function() { return _amp; },
-					set: function(value) {
-						_amp = value;
-						that.send(Master, value);
-					},
-				});
-			})();
+			// (function() {
+			// 	var _amp = that.amp;
+			// 	Object.defineProperty(that, "amp", {
+			// 		get: function() { return _amp; },
+			// 		set: function(value) {
+			// 			_amp = value;
+			// 			that.send(Master, value);
+			// 		},
+			// 	});
+			// })();
 			
 			return that;
 		},		
@@ -447,16 +447,16 @@ define([], function() {
 			
 			Gibberish.polyDefineProperties( that, ["frequency", "amp", "attack", "decay", "sustain", "release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "glide", "isLowPass"] );
 			
-			(function() {
-				var _amp = that.amp;
-				Object.defineProperty(that, "amp", {
-					get: function() { return _amp; },
-					set: function(value) {
-						_amp = value;
-						that.send(Master, value);
-					},
-				});
-			})();
+			// (function() {
+			// 	var _amp = that.amp;
+			// 	Object.defineProperty(that, "amp", {
+			// 		get: function() { return _amp; },
+			// 		set: function(value) {
+			// 			_amp = value;
+			// 			that.send(Master, value);
+			// 		},
+			// 	});
+			// })();
 			
 			return that;
 		},

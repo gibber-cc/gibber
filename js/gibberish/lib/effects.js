@@ -736,13 +736,16 @@ define([], function() {
 			Gibberish.extend( that, new Gibberish.ugen(that) );
 			that.fx = effects || [];
 			that.fx.parent = this;
-
+			
+			that.mod = Gibberish.polyMod;
+			that.removeMod = Gibberish.removePolyMod;
+			
 			that.symbol = Gibberish.generateSymbol( that.type );
 
 			Gibberish.masterInit.push( that.symbol + " = Gibberish.make[\"Bus\"]();" );
 			window[that.symbol] = Gibberish.make["Bus"]();
 
-			Gibberish.defineProperties( that, ["amp"] );
+			Gibberish.polyDefineProperties( that, ["amp"] );
 			return that;
 		},
 

@@ -128,6 +128,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
+							
 							//console.log("SETITING...", propName, _value);
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
 								//console.log("SETTING INDIVIDUAL", value);
@@ -179,14 +180,12 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 					var that = _obj;
 					var propName = prop;
 					var value = that[prop];
-	
+
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
-						set: function(_value) {
+						set: function(_value) {							
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
-								//console.log("TRYING TO SET");
 								value = _value;
-								//console.log("AFTER SETTING");
 							}else{
 								if(typeof _value.operands !== "undefined") {
 									value = _value;
@@ -196,9 +195,16 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 								}
 							}
 							
-							for(var j = 0; j < obj.children.length; j++) {
-								//console.log("SETTING FOR CHILD", j, propName);
-								obj.children[j][propName] = _value;
+							if(obj.category === "Bus") {
+								for(var j = 0; j < obj.senders.length; j++) {
+									//console.log("SETTING FOR CHILD", j, propName);
+									obj.senders[j][propName] = _value;
+								}
+							}else{
+								for(var j = 0; j < obj.children.length; j++) {
+									//console.log("SETTING FOR CHILD", j, propName);
+									obj.children[j][propName] = _value;
+								}
 							}
 
 							if(that.category === "FX") {
