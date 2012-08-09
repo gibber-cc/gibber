@@ -148,8 +148,8 @@ _Drums.prototype = {
 	},
 		
 	kill : function() {
-		Master.disconnectUgen(this.bus);
-		this.bus.destinations.remove(Master);
+		Master.disconnectUgen(this);
+		this.destinations.remove(Master);
 		this.masters.length = 0;
 	},
 					

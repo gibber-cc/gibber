@@ -347,9 +347,13 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			return modulator;
 		},
 		
-		polyMod : function(name, modulator, type) {
-			for(var i = 0; i < this.children.length; i++) {
-				this.children[i].mod(name, modulator, type);
+		polyMod : function(name, modulator, type) {			
+			if(arguments[0] !== "amp") {
+				for(var i = 0; i < this.children.length; i++) {
+					this.children[i].mod(name, modulator, type);
+				}
+			}else{
+				Gibberish.mod.apply(this, arguments);
 			}
 			Gibberish.dirty(this);
 		},
@@ -366,7 +370,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 			}else{
 				for(var i = 0; i < this.mods.length; i++) {
 					var mod = this.mods.get(i); 	// can be number, string, or object
-					delete this[mod.name];	 				// remove property getter/setters so we can directly assign
+					delete this[mod.name];	 		// remove property getter/setters so we can directly assign
 					this.mods.remove(mod);
 					var val = mod.operands[0];
 			
@@ -377,7 +381,16 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 
 			Gibberish.dirty(this);
 		},
-		
+		removePolyMod : function() {
+			if(arguments[0] !== "amp") {
+				for(var i = 0; i < this.children.length; i++) {
+					Gibberish.removeMod.apply(this.children[i], arguments);
+				}
+			}else{
+				Gibberish.removeMod.apply(this, arguments);
+			}
+			Gibberish.dirty(this);
+		},
 		generateSymbol : function(name) {
 			return name + "_" + this.id++; 
 		},
@@ -443,6 +456,16 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		var self = {	
 			send: function(bus, amount) {
 				bus.connectUgen(this, amount);
+			},
+			fadeIn : function(level, time) {
+				this.mod("amp", Line(0, level, time), "=");
+				var me = this;
+				future( function() { me.removeMod("amp"); me.amp = level;  }, time);
+			},
+			fadeOut : function(time) {
+				this.mod("amp", Line(this.amp, 0, time), "=");
+				var me = this;
+				future( function() { me.removeMod("amp"); me.amp = 0;  }, time);
 			},
 			connect : function(bus) {
 				this.destinations.push(bus);

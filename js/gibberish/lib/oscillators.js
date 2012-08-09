@@ -290,6 +290,7 @@ define([], function() {
 				voiceCount:		0,
 				children:		[],
 				mod:			Gibberish.polyMod,
+				removeMod:		Gibberish.removePolyMod,
 				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];

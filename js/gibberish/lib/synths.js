@@ -115,6 +115,8 @@ define([], function() {
 				maxVoices:		5,
 				voiceCount:		0,
 				glide:			0,
+				mod:			Gibberish.polyMod,
+				removeMod:		Gibberish.removePolyMod,
 				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
@@ -146,7 +148,6 @@ define([], function() {
 				that.children.push(synth);
 			}
 			
-			that.mod = Gibberish.polyMod;
 			Gibberish.polyDefineProperties( that, ["waveform", "attack", "decay", "glide"] );
 			
 			(function() {
@@ -248,6 +249,9 @@ define([], function() {
 				maxVoices:		5,
 				voiceCount:		0,
 				glide:			0,
+				mod:			Gibberish.polyMod,
+				removeMod:		Gibberish.removePolyMod,
+				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
@@ -276,7 +280,6 @@ define([], function() {
 				that.children.push(synth);
 			}
 			
-			that.mod = Gibberish.polyMod;
 			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack", "decay", "glide"] );
 			
 			(function() {
@@ -404,6 +407,8 @@ define([], function() {
 				maxVoices:		5,
 				voiceCount:		0,
 				glide:			0,
+				mod:			Gibberish.polyMod,
+				removeMod:		Gibberish.removePolyMod,
 					
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
@@ -440,7 +445,6 @@ define([], function() {
 				that.children.push(synth);
 			}
 			
-			that.mod = Gibberish.polyMod;
 			Gibberish.polyDefineProperties( that, ["frequency", "amp", "attack", "decay", "sustain", "release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "glide", "isLowPass"] );
 			
 			(function() {
