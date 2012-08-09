@@ -21,8 +21,7 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 }
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
-	 Gibberish.extend(this, Gibberish.Bus());
-	
+	Gibberish.extend(this, Gibberish.Bus());
 	this.pitch = 1;
 	
 	this.kick 	 = { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch: 1, amp: 1 } ;
@@ -151,6 +150,7 @@ _Drums.prototype = {
 		Master.disconnectUgen(this);
 		this.destinations.remove(Master);
 		this.masters.length = 0;
+		this.seq.stop();
 	},
 					
 	once : function() {

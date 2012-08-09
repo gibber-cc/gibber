@@ -81,7 +81,9 @@ define([], function() {
 				//while(phase > pi_2) phase -= pi_2;
 				return sin(phase * pi_2) * amp;
 			}
-	
+			output.setPhase = function(_phase {
+				phase = _phase;
+			};
 			return output;
 		},
 		
@@ -283,7 +285,7 @@ define([], function() {
 			var that = Gibberish.Bus();
 				
 			Gibberish.extend(that, {
-				amp:		 	.2,
+				amp:		 	.125,
 				blend:			1,
 				damping:		0,
 				maxVoices:		5,

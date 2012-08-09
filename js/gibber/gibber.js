@@ -54,7 +54,11 @@ define(['gibber/audio_callback',
 									 //console.log(variable);
 									 switch(variable.category) {
 										 case "Gen": case "Bus":
-											 Gibber.genReplace(variable, newObj);
+											 if(typeof variable.replace === "undefined") {
+												 Gibber.genReplace(variable, newObj);
+											 }else{
+											 	 variable.replace(newObj);
+											 }
 										 break;
 										 case "Mod":
 											 Gibber.modReplace(variable, newObj);
@@ -66,7 +70,7 @@ define(['gibber/audio_callback',
 											 Gibber.controlReplace(variable, newObj);
 											 break;
 										 case "complex":
-											console.log("Replacing " + variable.name);
+											//console.log("Replacing " + variable.name);
 											variable.replace(newObj); // rely on object prototype to handle removing members
 										 break;
 										 default: break;
