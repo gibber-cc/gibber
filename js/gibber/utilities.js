@@ -388,7 +388,11 @@ window.whocares = window.doesItEvenMatter = window.surpriseMe = window.makeMeHap
 window.future = function(func, when) {
 	var me = func;
 	me.advance = function() {
-		me();
+		try{
+			me();
+		}catch(err) {
+			G.log("error in function called using future().");
+		}
 	};
 	G.callback.addEvent(when, me);
 };

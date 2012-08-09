@@ -381,7 +381,13 @@ _Seq.prototype = {
 				// but it will look super nice and clean on screen...
 				if(key === "functions") {
 					if(!shouldReturn) {
-						val();
+						console.log("TRYING FUNCTION");
+						try {
+							val();
+						}catch(err) {
+							console.log("SEQUENCE FUNCTION ERRROR. STOPPING SEQUENCE.");
+							this.stop();
+						}
 						//this.counter++;
 						//this.durationCounter++;
 					}

@@ -40,7 +40,7 @@ define([], function() {
 			that._function.setState(2);
 			
 			Gibberish.defineProperties( that, ["attack", "decay"] );
-	
+			
 			return that;
 		},
 		
@@ -48,6 +48,8 @@ define([], function() {
 			var phase = 0;
 			var state = 0;
 			var output = function(attack,decay) {
+				attack = attack < 0 ? _4 : attack;
+				decay  = decay  < 0 ? _4 : decay;				
 				if(state === 0){
 					var incr = 1 / attack;
 					phase += incr;

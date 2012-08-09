@@ -948,7 +948,7 @@ define([], function() {
 				junctions[height-heightBy4][width-widthBy4].v_junction = filt;
 				
 				//x->mesh[WIDTH/4][WIDTH/4-1].v_junction;
-				val += junctions[outY][outX].v_junction;
+				val += junctions[2][2].v_junction;
 				
 				
 				return val * amp;

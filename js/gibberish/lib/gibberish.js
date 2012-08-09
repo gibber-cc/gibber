@@ -373,7 +373,6 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 				}
 			}
 
-
 			Gibberish.dirty(this);
 		},
 		
