@@ -81,7 +81,7 @@ define([], function() {
 				//while(phase > pi_2) phase -= pi_2;
 				return sin(phase * pi_2) * amp;
 			}
-			output.setPhase = function(_phase {
+			output.setPhase = function(_phase) {
 				phase = _phase;
 			};
 			return output;
@@ -117,7 +117,7 @@ define([], function() {
 
 				return out * amp;
 			}
-			output.setPhase = function(_phase {
+			output.setPhase = function(_phase) {
 				phase = _phase;
 			};
 			
@@ -158,7 +158,7 @@ define([], function() {
 				
 				return out * amp;
 			};
-			output.setPhase = function(_phase {
+			output.setPhase = function(_phase) {
 				phase = _phase;
 			};
 			
@@ -203,7 +203,7 @@ define([], function() {
 				
 				return out * amp;
 			};
-			output.setPhase = function(_phase {
+			output.setPhase = function(_phase) {
 				phase = _phase;
 			};
 			
