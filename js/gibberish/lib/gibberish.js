@@ -353,13 +353,27 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		},
 		
 		removeMod : function() {
-			var mod = this.mods.get(arguments[0]); 	// can be number, string, or object
-			delete this[mod.name];	 				// remove property getter/setters so we can directly assign
-			this.mods.remove(mod);
-			var val = mod.operands[0];
-			this[mod.name] = val;
+			if(typeof arguments[0] !== "undefined") {
+				var mod = this.mods.get(arguments[0]); 	// can be number, string, or object
+				delete this[mod.name];	 				// remove property getter/setters so we can directly assign
+				this.mods.remove(mod);
+				var val = mod.operands[0];
+			
+				this[mod.name] = val;
+				Gibberish.defineProperties(this, [mod.name]);				
+			}else{
+				for(var i = 0; i < this.mods.length; i++) {
+					var mod = this.mods.get(i); 	// can be number, string, or object
+					delete this[mod.name];	 				// remove property getter/setters so we can directly assign
+					this.mods.remove(mod);
+					var val = mod.operands[0];
+			
+					this[mod.name] = val;
+					Gibberish.defineProperties(this, [mod.name]);
+				}
+			}
 
-			Gibberish.defineProperties(this, [mod.name]);
+
 			Gibberish.dirty(this);
 		},
 		
