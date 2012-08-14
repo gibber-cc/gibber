@@ -19,6 +19,36 @@
 
 // hmmm... some screwups from the audioLib.js conversion, now I have to wrap these functions:
 
+/**#Seq
+Seq is used to sequence a variety of commands at specific durations. It can be used to call methods on objects, set properties of objects, or call named and anonymous functions.  
+- - - -  
+## Example Usage
+`a = Synth({maxVoices:5});  
+s = Seq(['c4', 'd4', 'eb4', 'g4'], [_4, _16, _8]).slave(a);  
+t = Seq(function() { s.note('c1'); }, _1);  
+u = Seq({  
+      chord:['c4m7', 'd4m7],  
+      durations:_2,  
+      slaves:a  
+});  `
+- - - -  
+## Constructors
+### syntax 1:  
+  param **values** : Array or function. The value(s) to be sequenced.  
+  param **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.
+  optional: {**message**} : String. A method to be called or a property for the Seq object to set
+  
+### syntax 2:  
+  param **arguments** : Object. A dictionary of messages, durations and slaves to be sequenced. See example.
+- - - -  
+## Methods
+start - starts a stopped seqeunce.  
+stop - stops a running seqeunce.  
+shuffle - shuffles note values in the sequence.  
+repeat(int _numberOfTimesToRepeat_) - plays the sequence a certain number of times and then stops it.  
+slave(objects _objectsToSequence_) - control any object passed as a parameter .  
+**/
+
 function Seq(seq, durations, msg) {
 	return new _Seq(seq, durations, msg);
 }
