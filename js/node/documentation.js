@@ -42,6 +42,9 @@ for (var i = 0; i < filenames.length; i++) {
 			var reg2 = /\>(.*)\</;
 			var name = reg2.exec(md);
 			console.log("NAME = " + name[1]);
+			if(name.split(".").length > 1) {
+				console.log("IS METHOD OR PROPERTY");
+			}
 			objs[name[1]] = md;
 			//objs["test"] = md;
 		}
