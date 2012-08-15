@@ -3,21 +3,6 @@
 // TODO: shuffle and reset are broke after applying pick function
 // TODO: use memory[0] in reset function instead of _sequence 
 // TODO: velocities
-// ###Seq
-// Create a sequencer object, the base class for all sequencing capabilities in Gibber
-//
-// param **values**: Array or function. The value(s) to be sequenced.
-// param **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.
-//
-// example usage:  
-//	`s = Synth();  
-//  t = Seq(["C4", "D4", "G4", "F4"], [_2, _8, _4, _4 * 1.5]).slave(s);    `
-//
-// alternatively:  
-//	`s = Synth();  
-//  t = Seq(["C4", "D4", "G4", "F4"], _4).slave(s)  ` 
-
-// hmmm... some screwups from the audioLib.js conversion, now I have to wrap these functions:
 
 /**#Seq
 Seq is used to sequence a variety of commands at specific durations. It can be used to call methods on objects, set properties of objects, or call named and anonymous functions.  
@@ -48,6 +33,8 @@ shuffle - shuffles note values in the sequence.
 repeat(int _numberOfTimesToRepeat_) - plays the sequence a certain number of times and then stops it.  
 slave(objects _objectsToSequence_) - control any object passed as a parameter .  
 **/
+
+/** hello **/
 
 function Seq(seq, durations, msg) {
 	return new _Seq(seq, durations, msg);
@@ -272,16 +259,14 @@ function _Seq() {
 			 this.slavesInit = true;
 		}
 	}
-	this.setParam = function(param, _value){
-		this[param] = _value;
-	};
 	
-	this.generate = function() {} // null function of modding
-	this.getMix = function() { return this.value; }
 	this.modded = [];
 	
-	// ####shuffle
-	// randomize order of sequence
+	/** Seq.shuffle 
+    param **sequenceName** : String. Default "note". The sequence values to shuffle. Choose "all" to shuffle all arrays in a sequence.
+	
+	shuffle() randomizes the order of an array(s) in the Seq object. The order can be reset using the reset() method.
+	**/
 	
 	this.shuffle = function(seq) {
 		if(typeof seq === "undefined") {
