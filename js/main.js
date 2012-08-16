@@ -5,7 +5,7 @@ requirejs.config({
 
 requirejs([
 	'gibberish/lib/gibberish', 
-	'gibber/gibber',	
+	'gibber/gibber',
 	'gibber/environment',
 	'gibberish/lib/external/sink-light', 	
 	'gibberish/lib/external/audiofile', 

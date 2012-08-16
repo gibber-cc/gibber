@@ -5,6 +5,7 @@ var converter = new Showdown.converter();
 var objs = {}
 var filenames = [
 	"sequence.js",
+	"synth.js",
 ];
 
 /*for (var i = 0; i < filenames.length; i++) {

@@ -16,6 +16,16 @@ textarea{
 	clip: scroll;
 }
 
+.ui-autocomplete {
+	max-height: 250px;
+	max-width: 200px;
+	overflow-y: auto;
+	/* prevent horizontal scrollbar */
+	overflow-x: hidden;
+	/* add padding to account for vertical scrollbar */
+	padding-right: 20px;
+	background-color:rgba(50,50,50, 1);
+}
 /* used to highlight executed lines of code */
 .highlightLine{ background-color:#f00 !important }
 
@@ -85,6 +95,7 @@ p { padding-left:5px; padding-right:5px; }
 
 #sidebar {
 	/*position: absolute;*/
+	position: relative;
 	overflow: auto;
 	display: none;
 	height:100%;
