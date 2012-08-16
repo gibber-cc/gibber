@@ -4,6 +4,10 @@ define([], function() {
 			gibberish.generators.SoftClip = gibberish.createGenerator(["source", "amount", "amp"], "{0}( {1}, {2} ) * {3}");
 			gibberish.make["SoftClip"] = this.makeSoftClip;
 			gibberish.SoftClip = this.SoftClip;
+			
+			gibberish.generators.Gain = gibberish.createGenerator(["source", "amp"], "{0}( {1}, {2} )");
+			gibberish.make["Gain"] = this.makeGain;
+			gibberish.Gain = this.Gain;
 
 			gibberish.generators.Filter24 = gibberish.createGenerator(["source", "cutoff", "resonance", "isLowPass"], "{0}( {1}, {2}, {3}, {4} )");
 			gibberish.make["Filter24"] = this.makeFilter24;
@@ -326,6 +330,33 @@ define([], function() {
 
 			return output;
 		},
+		
+		Gain : function(amp) {
+			var that = {
+				type:		"Gain",
+				category:	"FX",
+				amp:		amp || 1,
+				source:		null,
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
+
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Gain\"]();");
+			window[that.symbol] = Gibberish.make["Gain"]();
+
+			Gibberish.defineProperties( that, ["amp"] );
+
+			return that;
+		},
+
+		makeGain : function() {
+			var output = function(sample, amp) {
+				return sample * amp;
+			};
+
+			return output;
+		},
+		
 
 		// adapted from Arif Ove Karlsne's 24dB ladder approximation: http://musicdsp.org/showArchiveComment.php?ArchiveID=141
 		Filter24 : function(cutoff, resonance, isLowPass) {
