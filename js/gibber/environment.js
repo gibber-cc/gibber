@@ -238,7 +238,7 @@ define([
 				};
 				return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), linksOverlay);				
 			});
-		
+			$('.CodeMirror').css("display", "inline-block");
 		    $('.CodeMirror').delegate(".cm-link", "click", function(e) {
 		    	var url = $(event.target).text();
 				console.log(url);
@@ -375,12 +375,42 @@ define([
 					Gibber.audioInit = false;
 				},
 				"Ctrl-I" : function(cm) {
-					$('#info').toggle();
-					if($("#info").css("display") == "none") {
-						$('#code').css("width", "100%");
+					console.log("TOGGLING");
+					$('#sidebar').toggle();
+					$('#resizeButton').toggle();
+					//demo-container
+					//$('#sidebar').css("display", "inline");
+					if($("#sidebar").css("display") == "none") {
+						$('.CodeMirror').css("width", "100%");
+						
+						//$('.CodeMirror-scroll').css("width", "100%");
 						$('#console').css("width", "100%");					
 					}else{
-						$('#code').css("width", "80%");
+						if(typeof Gibber.codeWidth !== "undefined") { //if docs/editor split has not been resized
+							$(".CodeMirror").width(Gibber.codeWidth);
+							$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
+							$("#sidebar").height($(".CodeMirror").outerHeight());
+
+							$("#resizeButton").css({
+								position:"absolute",
+								display:"block",
+								top: $(".demo-container").height(),
+								left: Gibber.codeWidth,
+							});
+
+							
+						}else{
+							$("#resizeButton").css({
+								position:"absolute",
+								display:"block",
+								top: $(".demo-container").height(),
+								left: "80%",
+							});
+							$('#console').css("width", "80%");					
+							//$('.CodeMirror-scroll').css("width", "80%");
+							$('.CodeMirror').css("width", "80%");
+							$('.CodeMirror').css("margin", "0");						
+						}
 					}
 					cm.refresh();
 				},
@@ -419,6 +449,62 @@ define([
 			};
 		
 			window.editor.setOption("keyMap", "gibber");
+			$.getJSON("js/gibber/documentation.js", function(data, ts, xgr) { 
+				Gibber.docs = data;
+				Gibber.Environment.displayDocs("Seq");
+			});
+			$("#resizeButton").on("mousedown", function(e) {
+				$("body").css("-webkit-user-select", "none");
+				Gibber.prevMouse = e.screenX;
+				$(window).mousemove(function(e) { 
+					$(".CodeMirror").width(e.pageX);
+					$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
+					$("#sidebar").height($(".CodeMirror").outerHeight());
+
+					$("#resizeButton").css({
+						position:"absolute",
+						display:"block",
+						top: $(".demo-container").height() - 2,
+						left: Math.floor(e.pageX + 3),
+					});
+				});
+				$(window).mouseup( function(e) {
+					$(window).unbind("mousemove");
+					$(window).unbind("mouseup");
+					$("body").css("-webkit-user-select", "text");
+					Gibber.codeWidth = $(".CodeMirror").width();
+				});
+			});
+		},
+		
+		displayDocs : function(obj) {
+			$("#sidebar").html(Gibber.docs[obj].text);
+			$("#sidebar").append("<h2>Methods</h2>");
+			var count = 0;
+			for(var key in Gibber.docs[obj].methods) {
+				var html = $("<div style='padding-top:5px'>"+Gibber.docs[obj].methods[key]+"</div>");
+				var bgColor = count++ % 2 === 0 ? "#000" : "#222";
+				$(html).css({
+					"background-color": bgColor,
+					"border-color" : "#ccc",
+					"border-width": "0px 0px 1px 0px",
+					"border-style": "solid",
+				});
+				$("#sidebar").append(html);
+			}
+			$("#sidebar").append("<h2>Properties</h2>");
+			for(var key in Gibber.docs[obj].properties) {
+				var html = $("<div style='padding-top:5px'>"+Gibber.docs[obj].properties[key]+"</div>");
+				var bgColor = count++ % 2 === 0 ? "#000" : "#222";
+				$(html).css({
+					"background-color": bgColor,
+					"border-color" : "#ccc",
+					"border-width": "0px 0px 1px 0px",
+					"border-style": "solid",
+				});
+				$("#sidebar").append(html);
+			}
+			
 		},
 	
 		editorResize : function() {

@@ -10,7 +10,7 @@ textarea{
 
 #code {
 	width:100%;
-	display:block;
+	display:inline-block;
 	height:auto;
 	font-size: 1.25em;
 	clip: scroll;
@@ -56,6 +56,18 @@ textarea{
 	
 }
 
+#sidebar h1 { 
+	font-size:1.5em;
+}
+
+#sidebar code {
+	font-size: 1.25em;
+}
+
+#sidebar h3 { font-weight: bold; margin-top:0;}
+
+#resizeButton { display:none; color:#fff; font-size: 12px}
+
 #editor {
 	font-family:monospace;
 	font-size: 1.25em;
@@ -67,20 +79,24 @@ textarea{
 }
 
 body {scrollbar-base-color:orange;}
+code { white-space:pre-wrap; }
+.CodeMirror{ position:relative; top:1px; }
+p { padding-left:5px; padding-right:5px; }
 
-#info {
-	position: absolute;
-	overflow: scroll;
-	display: inline;
-	width:20%;
+#sidebar {
+	/*position: absolute;*/
+	overflow: auto;
+	display: none;
 	height:100%;
 	font-size: .85em;
 	background-color:#000;
 	border-style: solid;
 	border-width: 0px 0px 0px 1px;
 	border-color:#ccc;
-	right: 0;
+	float:right;
 	color: #ccc;
+	width:19%;
+	margin:0;
 	font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
 }
 h1, h2, h3 {

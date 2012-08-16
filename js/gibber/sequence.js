@@ -6,35 +6,26 @@
 
 /**#Seq
 Seq is used to sequence a variety of commands at specific durations. It can be used to call methods on objects, set properties of objects, or call named and anonymous functions.  
-- - - -  
-## Example Usage
-`a = Synth({maxVoices:5});  
-s = Seq(['c4', 'd4', 'eb4', 'g4'], [_4, _16, _8]).slave(a);  
-t = Seq(function() { s.note('c1'); }, _1);  
-u = Seq({  
-      chord:['c4m7', 'd4m7],  
-      durations:_2,  
-      slaves:a  
-});  `
-- - - -  
+## Example Usage ##
+`a = Synth({maxVoices:5});
+s = Seq(['c4', 'd4', 'eb4', 'g4'], [_4, _16, _8]).slave(a);
+t = Seq(function() { s.note('c1'); }, _1);
+u = Seq({
+      chord:['c4m7', 'd4m7],
+      durations:_2,
+      slaves:a
+});`
 ## Constructors
-### syntax 1:  
+### syntax 1:
   param **values** : Array or function. The value(s) to be sequenced.  
-  param **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.
-  optional: {**message**} : String. A method to be called or a property for the Seq object to set
   
-### syntax 2:  
+  param **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.  
+  
+  optional: {**message**} : String. A method to be called or a property for the Seq object to set
+- - - -
+### syntax 2: 
   param **arguments** : Object. A dictionary of messages, durations and slaves to be sequenced. See example.
-- - - -  
-## Methods
-start - starts a stopped seqeunce.  
-stop - stops a running seqeunce.  
-shuffle - shuffles note values in the sequence.  
-repeat(int _numberOfTimesToRepeat_) - plays the sequence a certain number of times and then stops it.  
-slave(objects _objectsToSequence_) - control any object passed as a parameter .  
 **/
-
-/** hello **/
 
 function Seq(seq, durations, msg) {
 	return new _Seq(seq, durations, msg);
@@ -50,6 +41,10 @@ function _Seq() {
 		var _slaves = [];
 		
 		Object.defineProperties(that, {
+/**###Seq.speed : property
+Integer. A single time value that determines how long each sequencer event lasts. This property only has an effect if the durations
+property of the sequencer object is null, otherwise the durations property takes priority.
+**/
 			"speed": {
 				get: function(){ return _speed; },
 				set: function(value) {
@@ -62,6 +57,9 @@ function _Seq() {
 					}
 				}
 			},
+/**###Seq.speed : property
+Integer. An offset in samples for the scheduling of all events by the sequencer.
+**/			
 			"offset" : {
 				get: function(){ return _offset; },
 				set: function(value) {
@@ -107,6 +105,10 @@ function _Seq() {
 	this.counter = 0; // position in seqeuence
 	this.durationCounter = 0;
 	this._counter = 0; // used for scheduling
+	
+/**###Seq.durations : property
+Array. The time values the sequencer uses to schedule events.
+**/
 	this.durations = null;
 	this.outputMessage = null;
 	this.active = true;
@@ -119,6 +121,11 @@ function _Seq() {
 	this.oddEven = 0;
 	this.phaseOffset = 0;
 	this.sequenceInit = false;
+	
+/**###Seq.humanize : property
+Integer. Setting this to a non-null value will cause scheduling to be off by a random amount where in between -humanize and +humanize.
+For example, `seq.humanize = 200;` would mean that scheduled values could be off by -200..200 samples. 
+**/
 	this.humanize = null;
 	this.prevHumanize = null;
 	this.mix = 1; // needed for modding because the value of the gen is multiplied by this, should never be changed
@@ -262,11 +269,11 @@ function _Seq() {
 	
 	this.modded = [];
 	
-	/** Seq.shuffle 
-    param **sequenceName** : String. Default "note". The sequence values to shuffle. Choose "all" to shuffle all arrays in a sequence.
+/**###Seq.shuffle : method
+param **sequenceName** : String. Default "note". The sequence values to shuffle. Choose "all" to shuffle all arrays in a sequence.
 	
-	shuffle() randomizes the order of an array(s) in the Seq object. The order can be reset using the reset() method.
-	**/
+shuffle() randomizes the order of an array(s) in the Seq object. The order can be reset using the reset() method.
+**/
 	
 	this.shuffle = function(seq) {
 		if(typeof seq === "undefined") {
@@ -283,10 +290,12 @@ function _Seq() {
 		return that;
 	};
 	
-	// ####reset
-	// reset order of sequence to its original order or to a memorized set of positions
-	//
-	// param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order.
+/**###Seq.reset : method
+param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order
+	
+reset order of sequence to its original order or to a memorized set of positions
+**/
+	
 
 	this.reset = function(seq) {
 		if(typeof seq === "undefined") {
@@ -313,8 +322,11 @@ _Seq.prototype = {
 	type : "control",
 	category : "control",
 	
-	// ####advance
-	// run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
+/**###Seq.advance : method
+Run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
+This should never need to be explicitly called.
+**/
+	
 	advance : function() {
 		if(this.active) {
 			var pos, val;
@@ -481,17 +493,17 @@ _Seq.prototype = {
 			this.counter++;
 			this.durationCounter++;
 			
-			if(this.shouldRepeat) {
-				if(this.counter % this[this.endSequence].length === 0) {
+			if(this.counter % this[this.endSequence].length === 0) {
+				if(this.randomFlag) { this.shuffle(); }
+				
+				if(this.shouldRepeat) {
 					this.repeatCount++;
 					if(this.repeatCount === this.repeatEnd) {
 						this.end = true;
 					}
 				}
-			}
 			
-			if(this.end) {
-				if(this.counter % this[this.endSequence].length === 0) {
+				if(this.end) {
 					this.stop();
 					if(this.endFunction !== null) {
 						this.endFunction();
@@ -527,9 +539,11 @@ _Seq.prototype = {
 		"scaleInit", "root", "mode"
 	],
 	
-	// ####once
-	// Play the sequence once and then end it
+/**###Seq.once : method
+param **sequenceName** : String. Default "note". The sequence that is played through to the end; all other sequences stop at the end of this one regardless of their length. 
 	
+Play the sequence once and then end it
+**/
 	once : function(seq) {
 		if(!this.active) {
 			this.play();
@@ -549,16 +563,17 @@ _Seq.prototype = {
 		return this;
 	},
 	
-	// ####random
-	// Shuffle the sequence each time it is played
-	
+/**###Seq.random : method
+Shuffle the sequence each time it is played. Currently only works on note sequence
+**/
 	random : function(flag) {
 		this.randomFlag = (typeof flag === "undefined" || flag) ? true : false;
 		if(!this.randomFlag) this.reset();
 	},
 	
-	// ####kill
-	// Destroy the sequencer
+/**###Seq.kill : method
+Destroy the sequencer
+**/
 	
 	kill : function() {
 		this.free();
@@ -573,13 +588,13 @@ _Seq.prototype = {
 		this.active = false;
 	},
 	
-	// ####setSequence
-	// assign a new set of values to be sequenced
-	//
-	// param **seq** Array or Function. The new values to be sequenced  
-	// param **_speed** Int. Optional. A new speed for the sequencer to run at  
-	// param **_reset** Bool. Optional. If true, reset the the current position of the sequencer to 0.  
+/*#Seq.setSequence : method
+param **seq** Array or Function. The new values to be sequenced  
+param **_speed** Int. Optional. A new speed for the sequencer to run at  
+param **_reset** Bool. Optional. If true, reset the the current position of the sequencer to 0.  
 	
+assign a new set of values to be sequenced
+*/
 	setSequence : function(seq, _speed, _reset) {
 		if(typeof _speed !== "undefined") {
 			if(_speed === "number") {
@@ -620,16 +635,15 @@ _Seq.prototype = {
 		}
 	},
 	
-	// ####slave
-	// assign a new set of values to be sequenced
-	//
-	// param **seq** Comma separated list of generators. The generators to be controlled by this sequencer  
-	//
-	// example:
-	// `s = Synth();  
-	// ss = Synth();  
-	// t = Seq(["C4", "D4"], _1)  
-	// t.slave(s, ss);  `
+/**###Seq.slave : method
+param **slaves** Comma separated list of generators. The generators to be controlled by this sequencer  
+
+example:
+`s = Synth();
+ss = Synth();
+t = Seq(["C4", "D4"], _1);
+t.slave(s, ss);`
+**/
 	
 	slave : function() {
 		if(arguments.length != 0) {
@@ -658,20 +672,20 @@ _Seq.prototype = {
 		return this;		
 	},
 	
-	// ####free
-	// stop controlling slaved ugens
-	
+/**###Seq.free : method
+param **slave** : Optional generator. Free the passed generator. If no generator is passed, free all slaved generators
+**/
 	free : function() {
 		if(arguments.length == 0) {
 			this.slaves.length = 0;
 		}else{
-			this.slaves.splice(arguments[0], 1);
+			this.slaves.remove(arguments[0], 1);
 		}
 	},
 	
-	// ####stop
-	// stop the sequencer from running and reset the position to 0
-	
+/**###Seq.stop : method
+stop the sequencer from running and reset the position counter to 0
+**/
 	stop : function() {
 		this.active = false;
 		this.phase = 0;		
@@ -679,15 +693,19 @@ _Seq.prototype = {
 		return this;
 	},
 	
-	// ####pause
-	// stop the sequencer from running but do not reset the current position
-	
+/**###Seq.pause : method
+stop the sequencer from running but do not reset the current position
+**/
 	pause : function() {
 		this.active = false;
 		return this;
 	},
 	
+/**###Seq.repeat : method
+param **timesToRepeat** : Integer. The number of times the sequence should repeat.
 	
+repeat the sequence a certain number of times and then stop it
+**/
 	repeat: function(numTimes) {
 		this.shouldRepeat = true;
 		this.repeatEnd = numTimes;
@@ -695,9 +713,9 @@ _Seq.prototype = {
 		return this;
 	},
 
-	// ####play
-	// start the sequencer running
-	
+/**###Seq.play : method
+start the sequencer running
+**/
 	play : function() {
 		if(!this.doNotAdvance) {
 			this.active = true;
@@ -719,6 +737,7 @@ _Seq.prototype = {
 		this.preBreakSequence = jQuery.extend(true, {}, this._sequence);
 	},
 	
+	// TODO: should we recreate this functionality to work with Gibberish?
 	getMix : function(){
 		return this.value;
 	},

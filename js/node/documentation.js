@@ -32,7 +32,7 @@ for (var i = 0; i < filenames.length; i++) {
 	//var reg = /(?:\/\*\*)+(.|\n)*(?:\*\*\/)+/g;
 	//var reg = /(?:\/\*\*)(.|\n)+(?:\*\*\/)/gm;   
 	//var reg = /[/\*\*]+(.|\s)+[\*\*/]+/g;// 
-	var reg = /(?:\/\*\*)((.|\n)+?)(?:\*\*\/)/g;
+	var reg = /(?:\/\*\*)((.|\n|\s)+?)(?:\*\*\/)/g;
 	var matches = null;
 	//
 	while (matches = reg.exec(text)) {
@@ -41,11 +41,27 @@ for (var i = 0; i < filenames.length; i++) {
 			var md = converter.makeHtml(matches[1]);
 			var reg2 = /\>(.*)\</;
 			var name = reg2.exec(md);
-			console.log("NAME = " + name[1]);
-			if(name.split(".").length > 1) {
-				console.log("IS METHOD OR PROPERTY");
+			var parts = name[1].split(".");
+			if(parts.length > 1) {
+				console.log("IS METHOD OR PROPERTY", parts[1]);
+				if(parts[1].indexOf("method") > -1) {
+					console.log("METHOD");
+					if(typeof objs[parts[0]] !== "undefined") {
+						objs[parts[0]].methods[parts[1].split(":")[0]] = md;
+					}
+				}else{
+					console.log("PROPERTY");
+					if(typeof objs[parts[0]] !== "undefined") {
+						objs[parts[0]].properties[parts[1].split(":")[0]] = md;
+					}
+				}
+			}else{
+				objs[name[1]] = {
+					text:md,
+					methods:{},
+					properties:{},
+				};
 			}
-			objs[name[1]] = md;
 			//objs["test"] = md;
 		}
 	}
