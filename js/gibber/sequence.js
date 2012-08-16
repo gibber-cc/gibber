@@ -17,14 +17,14 @@ u = Seq({
 });`
 ## Constructors
 ### syntax 1:
-  param **values** : Array or function. The value(s) to be sequenced.  
+  **param** **values** : Array or function. The value(s) to be sequenced.  
   
-  param **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.  
+  **param** **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.  
   
   optional: {**message**} : String. A method to be called or a property for the Seq object to set
 - - - -
 ### syntax 2: 
-  param **arguments** : Object. A dictionary of messages, durations and slaves to be sequenced. See example.
+  **param** **arguments** : Object. A dictionary of messages, durations and slaves to be sequenced. See example.
 **/
 
 function Seq(seq, durations, msg) {
@@ -57,7 +57,7 @@ property of the sequencer object is null, otherwise the durations property takes
 					}
 				}
 			},
-/**###Seq.speed : property
+/**###Seq.offset : property
 Integer. An offset in samples for the scheduling of all events by the sequencer.
 **/			
 			"offset" : {
@@ -270,9 +270,9 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 	this.modded = [];
 	
 /**###Seq.shuffle : method
-param **sequenceName** : String. Default "note". The sequence values to shuffle. Choose "all" to shuffle all arrays in a sequence.
+**param** *sequenceName* : String. Default "note". The sequence values to shuffle. Choose "all" to shuffle all arrays in a sequence.
 	
-shuffle() randomizes the order of an array(s) in the Seq object. The order can be reset using the reset() method.
+**description** : shuffle() randomizes the order of an array(s) in the Seq object. The order can be reset using the reset() method.
 **/
 	
 	this.shuffle = function(seq) {
@@ -291,9 +291,9 @@ shuffle() randomizes the order of an array(s) in the Seq object. The order can b
 	};
 	
 /**###Seq.reset : method
-param **memory location** Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order
+**param** *memory location* Int. Optional. If a sequencer has retain a order, you can recall it by passing its number here. Otherwise the sequence is reset to its original order
 	
-reset order of sequence to its original order or to a memorized set of positions
+**description** : reset order of sequence to its original order or to a memorized set of positions
 **/
 	
 
@@ -323,7 +323,7 @@ _Seq.prototype = {
 	category : "control",
 	
 /**###Seq.advance : method
-Run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
+**description** : Run the current event and schedule the next one. This is called automatically by the master clock if a sequencer is added to the Gibber.callback.slaves array.
 This should never need to be explicitly called.
 **/
 	
@@ -540,9 +540,9 @@ This should never need to be explicitly called.
 	],
 	
 /**###Seq.once : method
-param **sequenceName** : String. Default "note". The sequence that is played through to the end; all other sequences stop at the end of this one regardless of their length. 
+**param** *sequenceName* : String. Default "note". The sequence that is played through to the end; all other sequences stop at the end of this one regardless of their length. 
 	
-Play the sequence once and then end it
+**description** : Play the sequence once and then end it
 **/
 	once : function(seq) {
 		if(!this.active) {
@@ -564,7 +564,7 @@ Play the sequence once and then end it
 	},
 	
 /**###Seq.random : method
-Shuffle the sequence each time it is played. Currently only works on note sequence
+**description** : Shuffle the sequence each time it is played. Currently only works on note sequence
 **/
 	random : function(flag) {
 		this.randomFlag = (typeof flag === "undefined" || flag) ? true : false;
@@ -572,7 +572,7 @@ Shuffle the sequence each time it is played. Currently only works on note sequen
 	},
 	
 /**###Seq.kill : method
-Destroy the sequencer
+**description** : Destroy the sequencer
 **/
 	
 	kill : function() {
@@ -589,11 +589,11 @@ Destroy the sequencer
 	},
 	
 /*#Seq.setSequence : method
-param **seq** Array or Function. The new values to be sequenced  
-param **_speed** Int. Optional. A new speed for the sequencer to run at  
-param **_reset** Bool. Optional. If true, reset the the current position of the sequencer to 0.  
+**param** *seq* Array or Function. The new values to be sequenced  
+**param** *_speed* Int. Optional. A new speed for the sequencer to run at  
+**param** *_reset* Bool. Optional. If true, reset the the current position of the sequencer to 0.  
 	
-assign a new set of values to be sequenced
+**description** : assign a new set of values to be sequenced
 */
 	setSequence : function(seq, _speed, _reset) {
 		if(typeof _speed !== "undefined") {
@@ -636,8 +636,9 @@ assign a new set of values to be sequenced
 	},
 	
 /**###Seq.slave : method
-param **slaves** Comma separated list of generators. The generators to be controlled by this sequencer  
+**param** *slaves* Comma separated list of generators. The generators to be controlled by this sequencer  
 
+**description** : This method tells the Seq object to send messages / set properties to the objects passed as parameters
 example:
 `s = Synth();
 ss = Synth();
@@ -673,7 +674,7 @@ t.slave(s, ss);`
 	},
 	
 /**###Seq.free : method
-param **slave** : Optional generator. Free the passed generator. If no generator is passed, free all slaved generators
+**param** *slave* : Optional generator. Free the passed generator. If no generator is passed, free all slaved generators
 **/
 	free : function() {
 		if(arguments.length == 0) {
@@ -684,7 +685,7 @@ param **slave** : Optional generator. Free the passed generator. If no generator
 	},
 	
 /**###Seq.stop : method
-stop the sequencer from running and reset the position counter to 0
+**description** : stop the sequencer from running and reset the position counter to 0
 **/
 	stop : function() {
 		this.active = false;
@@ -694,7 +695,7 @@ stop the sequencer from running and reset the position counter to 0
 	},
 	
 /**###Seq.pause : method
-stop the sequencer from running but do not reset the current position
+**description** : stop the sequencer from running but do not reset the current position
 **/
 	pause : function() {
 		this.active = false;
@@ -702,9 +703,9 @@ stop the sequencer from running but do not reset the current position
 	},
 	
 /**###Seq.repeat : method
-param **timesToRepeat** : Integer. The number of times the sequence should repeat.
+**param** *timesToRepeat* : Integer. The number of times the sequence should repeat.
 	
-repeat the sequence a certain number of times and then stop it
+**description** : repeat the sequence a certain number of times and then stop it
 **/
 	repeat: function(numTimes) {
 		this.shouldRepeat = true;
@@ -714,7 +715,7 @@ repeat the sequence a certain number of times and then stop it
 	},
 
 /**###Seq.play : method
-start the sequencer running
+**description** : start the sequencer running
 **/
 	play : function() {
 		if(!this.doNotAdvance) {
@@ -750,9 +751,9 @@ start the sequencer running
 	// ####set
 	// assign a new set of values to be sequenced. I can't remember how this is different from setSequence, but surely there's a good reason for it :)
 	//
-	// param **newSequence** Array or Function. The new values to be sequenced  
-	// param **speed** Int. Optional. A new speed for the sequencer to run at  
-	// param **shouldReset** Bool. Optional. If true, reset the the current position of the sequencer to 0.   
+	// **param** **newSequence** Array or Function. The new values to be sequenced  
+	// **param** **speed** Int. Optional. A new speed for the sequencer to run at  
+	// **param** **shouldReset** Bool. Optional. If true, reset the the current position of the sequencer to 0.   
 	
 	set : function(newSequence, speed, shouldReset) {
 		if(typeof speed != "undefined") {
@@ -773,7 +774,7 @@ start the sequencer running
 	// ####retain
 	// retain current order of sequenced values
 	//
-	// param **slotNumber** Int. Optional. The position to hold the current sequencer order. By default it will simply be pushed to the memory array
+	// **param** **slotNumber** Int. Optional. The position to hold the current sequencer order. By default it will simply be pushed to the memory array
 	retain : function() {
 		if(arguments.length === 0) {
 			this.memory.push(this.sequence);

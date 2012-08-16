@@ -376,44 +376,7 @@ define([
 					Gibber.audioInit = false;
 				},
 				"Ctrl-I" : function(cm) {
-					console.log("TOGGLING");
-					$('#sidebar').toggle();
-					$('#resizeButton').toggle();
-					//demo-container
-					//$('#sidebar').css("display", "inline");
-					if($("#sidebar").css("display") == "none") {
-						$('.CodeMirror').css("width", "100%");
-						
-						//$('.CodeMirror-scroll').css("width", "100%");
-						$('#console').css("width", "100%");					
-					}else{
-						if(typeof Gibber.codeWidth !== "undefined") { //if docs/editor split has not been resized
-							$(".CodeMirror").width(Gibber.codeWidth);
-							$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
-							$("#sidebar").height($(".CodeMirror").outerHeight());
-
-							$("#resizeButton").css({
-								position:"absolute",
-								display:"block",
-								top: $(".demo-container").height(),
-								left: Gibber.codeWidth,
-							});
-
-							
-						}else{
-							$("#resizeButton").css({
-								position:"absolute",
-								display:"block",
-								top: $(".demo-container").height(),
-								left: "70%",
-							});
-							$('#console').css("width", "70%");					
-							//$('.CodeMirror-scroll').css("width", "80%");
-							$('.CodeMirror').css("width", "70%");
-							$('.CodeMirror').css("margin", "0");
-							$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);						
-						}
-					}
+					Gibber.Environment.toggleSidebar();
 					cm.refresh();
 				},
 				"Ctrl-Alt-2" : function(cm) {
@@ -455,6 +418,7 @@ define([
 				Gibber.docs = data;
 				
 				var tags = [];
+				Gibber.toc = [];
 				for(var key in Gibber.docs) {
 					var obj = Gibber.docs[key];
 					tags.push({
@@ -462,6 +426,9 @@ define([
 						obj: key,
 						type:"object",
 					});
+					
+					Gibber.toc.push(key);
+					
 					if(typeof obj.methods !== "undefined") {
 						for(var method in obj.methods) {
 							tags.push({
@@ -485,7 +452,8 @@ define([
 				}
 
 				Gibber.Environment.tags = tags;
-				Gibber.Environment.displayDocs("Seq");
+				Gibber.Environment.displayTOC();
+				//Gibber.Environment.displayDocs("Seq");
 			});
 			$("#resizeButton").on("mousedown", function(e) {
 				$("body").css("-webkit-user-select", "none");
@@ -513,6 +481,10 @@ define([
 			$("#searchButton").on("click", function(e) {
 				Gibber.Environment.displayDocs( $("#docsSearchInput").val() );
 			});
+			$("#tocButton").on("click", function(e) {
+				Gibber.Environment.displayTOC();
+			});
+			
 			$("#docsSearchInput").change(function(e) {
 				if($(e.target).is(":focus") || $(e.target).parents().has( Gibber.Environment.autocompleteLayer ) ) {
 					Gibber.Environment.displayDocs( $("#docsSearchInput").val() );
@@ -598,6 +570,65 @@ define([
 				});
 				$("#docs").append(html);
 			}
+		},
+		
+		displayTOC : function() {
+			$("#docs").empty();
+			var ul = $("<ul style='list-style:none; padding: 5px'>");
+
+			for(var i = 0; i < Gibber.toc.length; i++) {
+				var li = $("<li>");
+				var a = $("<a style='cursor:pointer'>");
+				(function() {
+					var text = Gibber.toc[i];
+					a.text(text);
+					a.click(function() {
+						Gibber.Environment.displayDocs(text);
+					});
+				})();
+				$(li).append(a);
+				$(ul).append(li);
+			}
+			$("#docs").append(ul);
+		},
+		
+		
+		toggleSidebar : function()  {
+			console.log("TOGGLING");
+			$('#sidebar').toggle();
+			$('#resizeButton').toggle();
+			//demo-container
+			//$('#sidebar').css("display", "inline");
+			if($("#sidebar").css("display") == "none") {
+				$('.CodeMirror').css("width", "100%");
+				//$('.CodeMirror-scroll').css("width", "100%");
+				$('#console').css("width", "100%");			
+			}else{
+				if(typeof Gibber.codeWidth !== "undefined") { //if docs/editor split has not been resized
+					$(".CodeMirror").width(Gibber.codeWidth);
+					$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
+					$("#sidebar").height($(".CodeMirror").outerHeight());
+
+					$("#resizeButton").css({
+						position:"absolute",
+						display:"block",
+						top: $(".demo-container").height(),
+						left: Gibber.codeWidth,
+					});
+				}else{
+					$("#resizeButton").css({
+						position:"absolute",
+						display:"block",
+						top: $(".demo-container").height(),
+						left: "70%",
+					});
+					$('#console').css("width", "70%");					
+					//$('.CodeMirror-scroll').css("width", "80%");
+					$('.CodeMirror').css("width", "70%");
+					$('.CodeMirror').css("margin", "0");
+					$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);						
+				}
+			}	
 		},
 	
 		editorResize : function() {

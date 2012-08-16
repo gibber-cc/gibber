@@ -1,20 +1,30 @@
 // Gibber - drums.js
 // ========================
 
-// TODO: d._sequence is getting changed when shuffling, so reset no longer works correctly.
-// maybe nows the time to fix the memory situation once and for all?
-// ###Drums
-// Three different samplers linked to a combined sequencer for convenience  
-//
-// param **sequence**: String. Uses x for kick, o for snare, * for cowbell (just a repitched snare at the moment)  
-// param **timeValue**: Int. A duration in samples for each drum hit. Commonly uses Gibber time values such as _4, _8 etc.  
-// param **mix**: Float. Default = .175. Volume for drums  
-// param **freq**: Int. The audioLib.js samplers use 440 as a fundamental frequency. You can raise or lower the pitch of samples by changing this value.  
-//
-// example usage:    
-// `d = Drums("xo*o", _8, .2, 880)  `
-//
-// note that most Drum methods mirror that of Seq. 
+/**#Drums
+Four different samplers linked to a single [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) for convenience. The four samplers feed into a single
+[Bus](javascript:Gibber.Environment.displayDocs('Bus'\)); this means you can change the amplitude / apply
+fx to each sampler individually or make changes to the Bus. Similarly, you can change the pitch of individual samplers and for the Drums as a whole.
+
+## Example Usage ##
+`d = Drums('x*o*x*o-', _8);
+d.amp = .4;
+d.snare.amp = 1.2;
+d.snare.fx.add( Delay(_16) );
+d.fx.add( Flanger() );
+d.shuffle(); // shuffle the underlying sequence`
+
+## Constructor
+**param** *sequence*: String. Uses x for kick, o for snare, * for closed hihat, - for open hihat
+**param** *timeValue*: Int. A duration in samples for each drum hit. Commonly uses Gibber time values such as _4, _8 etc.  
+**param** *amp*: Float. Default = .175. Volume for drums  
+**param** *freq*: Int. The audioLib.js samplers use 440 as a fundamental frequency. You can raise or lower the pitch of samples by changing this value.  
+
+example usage:  
+`d = Drums("x*o*x*o-", _8);`
+
+note that most Drum methods mirror that of Seq. 
+**/
 
 function Drums(_sequence, _timeValue, _amp, _freq) {
 	return new _Drums(_sequence, _timeValue, _amp, _freq);
@@ -22,13 +32,28 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
+
+/**###Drums.pitch : property
+Float. The overall pitch of the Drums. Each specific drum can also have its pitch set.
+**/	
 	this.pitch = 1;
 	
+/**###Drums.kick : property
+[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+**/	
 	this.kick 	 = { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch: 1, amp: 1 } ;
-	this.snare	 = { sampler: Gibberish.Sampler("audiofiles/snare.wav"), pitch: 1, amp: 1 }
-	this.hat	 = { sampler: Gibberish.Sampler("audiofiles/hat.wav"), pitch: 1, amp: 1 }
-	this.openHat = { sampler: Gibberish.Sampler("audiofiles/openHat.wav"), pitch: 1, amp: 1 }
-
+/**###Drums.snare : property
+[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+**/	
+	this.snare	 = { sampler: Gibberish.Sampler("audiofiles/snare.wav"), pitch: 1, amp: 1 };
+/**###Drums.hat : property
+[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+**/	
+	this.hat	 = { sampler: Gibberish.Sampler("audiofiles/hat.wav"), pitch: 1, amp: 1 };
+/**###Drums.openHat : property
+[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+**/
+	this.openHat = { sampler: Gibberish.Sampler("audiofiles/openHat.wav"), pitch: 1, amp: 1 };
 
 	this.kick.sampler.send(this,  1);
 	this.snare.sampler.send(this, 1);
@@ -48,12 +73,34 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	
 	this.sequenceInit =false;
 	this.initialized = false;
+	
+/**###Drums.seq : property
+[Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) (read-only). The underlying sequencer driving the drums. Most methods of this are wrapped,
+for example, you can simply call `drums.play()` instead of having to call `drums.seq.play`.
+**/
 	this.seq = null;
 	
 	var that = this; // closure so that d.shuffle can be sequenced
+	
+/**###Drums.shuffle : method	
+**description** : shuffle() randomizes the order of notes in the Drums object. The order can be reset using the reset() method.
+**/
 	this.shuffle = function() { that.seq.shuffle(); };
+	
+/**###Drums.reset : method
+**param** *memory location* Int. Optional. If Drums has retained an order, you can recall it by passing its number here. Otherwise the Drums sequence is reset to its original order
+	
+**description** : reset order of Drumssequence to its original order or to a memorized set of positions
+**/
 	this.reset 	= function() { that.seq.reset(); };
+/**###Drums.stop : method
+**description** : stop the Drums sequencer from running and reset the position counter to 0
+**/	
 	this.stop 	= function() { that.seq.stop(); };
+/**###Drums.play : method
+**description** : start the Drums sequencer running
+**/
+	this.play 	= function() { that.seq.play(); };	
 	
 	if(typeof arguments[0] === "object") {
 		var obj = arguments[0];
@@ -124,6 +171,9 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	    });
 	})(this);
 	
+/**###Drums.amp : property
+Float. The overall amplitude of the Drums. Each specific drum can also have its amplitude set.
+**/	
 	this.amp   = isNaN(_amp) ? .2 : _amp;
 	
 	if(this.seq !== null) {
@@ -145,14 +195,20 @@ _Drums.prototype = {
 			replacement.masters.push(this.masters[i]);
 		}
 	},
-		
+	
+/**###Drums.kill : method
+**description** : Remove a Drums instance from the audio graph
+**/
 	kill : function() {
 		Master.disconnectUgen(this);
 		this.destinations.remove(Master);
 		this.masters.length = 0;
 		this.seq.stop();
 	},
-					
+	
+/**###Drums.once : method
+**description** : Play the Drums sequence once and then stop.
+**/
 	once : function() {
 		this.seq.once();
 		return this;
@@ -174,6 +230,10 @@ _Drums.prototype = {
 		}
 	},
 	
+/**###Drums.note : method	
+**param** *note* : String. The note you want the drum to play. Can be x, o, *, -.  
+**description** : shuffle() randomizes the order of notes in the Drums object. The order can be reset using the reset() method.
+**/
 	note : function(nt) {
 		switch(nt) {
 			case "x":

@@ -56,6 +56,7 @@
 				<li><a>Help</a>
 					<ul>
 						<li><a id="aboutMenuItem">About</a></li>
+						<li><a href="#" onclick="Gibber.Environment.toggleSidebar(); Gibber.Environment.displayTOC();">Reference</a>
 						<li><a id="tutorialMenuItem">Intro Tutorial</a></li>
 						<li><a id="quickstartMenuItem">Quickstart</a></li>
 						<li><a id="keyCommandMenuItem">Key Commands</a></li>
@@ -117,7 +118,7 @@
 			<textarea id="code" name="code">
 			</textarea>
 			<div id="sidebar">
-				<input id="docsSearchInput" value="Seq"></input><button id="searchButton">Search</button>
+				<input id="docsSearchInput" value=""></input><button id="searchButton">Search</button><button id="tocButton">TOC</button>
 				<div id="docs"></div>
 			</div>
 		</div>

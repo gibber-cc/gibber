@@ -1,21 +1,37 @@
-/* 	
-Charlie Roberts 2012 MIT License
+/**#Arp
+The Arpeggiator takes a chord and plays the individual notes comprising it in succession, with different possible patterns.
+It is basically an extended Seq object. The available patterns are:  
+  
+*	*up* : Play the notes in ascending order. After the top note, drop back to the bottom  
+*	*down* : Play the notes in descending order. After the bottom note, jump to the top  
+*	*updown* : Play the notes all the way up, and then play them all the way down. The top and bottom notes repeat when changing direction  
+*	*updown2* : Play the notes all the way up, and then play them all the way down. The top and bottom notes DO NOT repeat when changing direction  
+## Example Usage ##
+`a = Sine();
+b = Arp('c2m7', _32, 'updown2', 4).slave(s);
+`
+## Constructor
+  **param** *notation* : String. The chord to be sequenced.  
+  **param** *duration* : Integer. The duration for each note in the arpeggio.  
+  **param** *pattern* : String. Default: "up". The ordering for the arpeggio.  
+  **param** *mult* : Integer. How many octaves the arpeggio should span. The default is 1.
+**/
 
-Usage (assume s is a sine oscillator) :
-
-a = Arp("Cm7", 2, .25, "updown").slave(s);
-
-*/
-function Arp(notation, beats, mode, mult) {	
+function Arp(notation, beats, pattern, mult) {	
 	var that = Seq();
 	that.name = "Arp";
 	that.notes = [];
-	that.mode = mode || "up";
+	that.pattern = pattern || "up";
 	that.notation = notation || "C4m7";
 	that.mult = mult || 1;
 	that.init = false;
 	that.speed = isNaN(beats) ? _4 : beats;
 	
+/**###Arp.chord : method
+**param** *memory location* String. The chord to be sequenced.
+	
+**description** : Change the chord that the Arpeggiator is arpeggiating.
+**/
 	that.chord = function(_chord, shouldReset) {
 		var arr = [];
 		
@@ -43,7 +59,7 @@ function Arp(notation, beats, mode, mult) {
 			}
 			arr = arr.concat(tmp);
 		}	
-		this.note = this.modes[this.mode]( arr );
+		this.note = this.patterns[this.pattern]( arr );
 		this.sequences.push("note");
 		
 		// if(this.init) {
@@ -52,15 +68,15 @@ function Arp(notation, beats, mode, mult) {
 		// }
 	};
 	
-	that.set = function(_chord, _speed, _mode, octaveMult, shouldReset) {
+	that.set = function(_chord, _speed, _pattern, octaveMult, shouldReset) {
 		this.speed = _speed || this.speed;
-		this.mode = _mode || this.mode;
+		this.pattern = _pattern || this.pattern;
 		this.mult = octaveMult || this.mult;
 		
 		this.chord(_chord, shouldReset); // also sets sequence
 	};
 		
-	that.modes = {
+	that.patterns = {
 		up : function(array) {
 			return array;
 		},
