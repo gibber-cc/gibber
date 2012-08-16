@@ -1,6 +1,6 @@
 /**#Arp
 The Arpeggiator takes a chord and plays the individual notes comprising it in succession, with different possible patterns.
-It is basically an extended Seq object. The available patterns are:  
+It is basically an extended [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) object. The available patterns are:  
   
 *	*up* : Play the notes in ascending order. After the top note, drop back to the bottom  
 *	*down* : Play the notes in descending order. After the bottom note, jump to the top  
