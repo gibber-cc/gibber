@@ -109,7 +109,7 @@ define([], function() {
 			
 			Gibberish.extend(that, {
 				waveform:		"Triangle",
-				amp:			.1,
+				amp:			.25,
 				attack:			10000,
 				decay:			10000,
 				maxVoices:		5,
@@ -241,7 +241,7 @@ define([], function() {
 			var that = Gibberish.Bus();
 				
 			Gibberish.extend(that, {
-				amp:		 	.1,
+				amp:		 	.25,
 				cmRatio:		2,
 				index:		 	5,			
 				attack:			22050,

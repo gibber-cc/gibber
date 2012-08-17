@@ -336,6 +336,7 @@ define(['gibber/audio_callback',
 				}
 				controlToReplace.mods.length = 0;
 			}
+			
 			oldControl.kill();
 		},
 	

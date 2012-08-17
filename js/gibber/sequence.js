@@ -463,7 +463,7 @@ This should never need to be explicitly called.
 								_slave.env.state = 1;
 							}
 						}else{
-							if($.isArray(val) && key !== "chord") {
+							if($.isArray(val) ) {
 								//console.log("CALLING", val);
 								try {
 									_slave[key].apply(_slave, val);									
@@ -478,7 +478,7 @@ This should never need to be explicitly called.
 								try{
 									_slave[key](val);
 								}catch(err) {
-									G.log("Seq error for key", key, err);
+									console.log("Seq error for key", key, err);
 									this.stop();
 								}
 							}
@@ -493,7 +493,7 @@ This should never need to be explicitly called.
 			this.counter++;
 			this.durationCounter++;
 			
-			if(this.counter % this[this.endSequence].length === 0) {
+			if(typeof this[this.endSequence] !== "undefined"&& this.counter % this[this.endSequence].length === 0) {
 				if(this.randomFlag) { this.shuffle(); }
 				
 				if(this.shouldRepeat) {
