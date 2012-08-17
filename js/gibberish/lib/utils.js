@@ -202,8 +202,32 @@ define(["gibberish/lib/gibberish"], function() {
 			that.category = category;
 			
 			Gibberish.extend(that, obj.props);
+			Gibberish.extend(that, obj);			
 			Gibberish.extend(that, _obj);
 			Gibberish.extend(that, new Gibberish.ugen(that));
+			
+			if(typeof that.init === "function") that.init();
+			
+			var propsArray = [];
+			for(var key in obj.props) {
+				propsArray.push(key);
+			}
+			Gibberish.defineProperties( that, propsArray );
+			
+			for(var key in obj.setters) {
+				(function() {
+					var propName = key;
+					var value = that[propName];
+					var setter = obj.setters[propName];
+					Object.defineProperty(that, propName, {
+						get: function() { console.log("PROP", propName, value); return value; },
+						set: function(_value) {
+							value = _value;
+							setter.call(that, value);
+						},
+					});
+				})();
+			}
 			
 			that.type = type;
 			that.symbol = Gibberish.generateSymbol(that.type);
@@ -211,7 +235,8 @@ define(["gibberish/lib/gibberish"], function() {
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + that.genName + "\"]();");
 
 			window[that.symbol] = Gibberish.make[that.type]();
-
+			
+			
 			if(that.category === "Gen") {
 				that.send(Master, 1);
 				Gibberish.dirty(that);

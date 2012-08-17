@@ -150,7 +150,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 								}
 							}
 							
-							if(that.category === "FX") {
+							if(that.category === "FX" && typeof that.parent !== "undefined") {
 								that.dirty = true;
 								Gibberish.dirty(that.parent.parent); // that.parent is fx array, parent of fx array is ugen
 							}else if (typeof that.modding !== "undefined") {
