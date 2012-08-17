@@ -1,7 +1,7 @@
 window.gen = function(objName) { // this returns a function that gets called when the upvalues are created, then returning a new function instance 
 	var name = objName; 
-	return function() {
-		return Gibberish.new(name);
+	return function(obj) {
+		return Gibberish.make[name](obj); // TODO: how to assign upvalues to object via me(that)?
 	}
 };
 
@@ -12,15 +12,28 @@ window.Gen = function(obj) {
 				if(typeof obj.upvalues[key] === "string" || typeof obj.upvalues[key] === "number") {
 					eval("var " + key + " = " + obj.upvalues[key]);
 				}else{
-					var tmp = obj.upvalues[key];	// nice hack!
+					// hack to defer codegen of properties until instance creation
+					var tmp = obj.upvalues[key];	
 					if(typeof tmp === "function") {
-						tmp = tmp();
+						var _tmp = tmp;
+						tmp = tmp(obj);
+						// check to see if this is a codegen function, if not, use original function
+						if(typeof tmp !== "function") tmp = _tmp; 
 					}
 					eval("var " + key + "= tmp");
 				}
-				eval("me[key] = " + key);
+				if(typeof me !== "undefined")
+					eval("me[key] = " + key);
 			}			
 			eval("var _newFunc = " + obj.callback.toString());
+			
+			for(var key in obj.upvalues) {	// assign getters and setters for upvalues
+				var letter0 = key.slice(0,1).toUpperCase();
+				var _key = key.slice(1);
+				_key = letter0 + _key;
+				eval("_newFunc.set" + _key + "= function(val) { " + key + "= val; }");
+				eval("_newFunc.get" + _key + "= function() { return " + key + "; }");				
+			}
 		}else{
 			var _newFunc = obj.callback;
 		}
@@ -53,6 +66,8 @@ window.Gen = function(obj) {
 		
 	var f = function(_obj) {
 		var that = {};
+		that.addToGraph = true;
+		
 		that.category = category;
 			
 		Gibberish.extend(that, obj.props);
@@ -98,7 +113,7 @@ window.Gen = function(obj) {
 		window[that.symbol] = Gibberish.make[that.type](that);
 		that.function = window[that.symbol];
 		
-		if(that.category === "Gen") {
+		if(that.category === "Gen" && that.addToGraph) {
 			that.send(Master, 1);
 			Gibberish.dirty(that);
 		}

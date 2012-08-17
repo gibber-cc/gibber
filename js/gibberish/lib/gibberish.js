@@ -14,9 +14,6 @@ define([], function() {
 			};
 			this.extend(this.generators, binops);
 		},
-		new : function(objName) {
-			return this.make[objName]();
-		},
 		generateCallback : function() {
 			var debug = this.debug;
 			this.masterUpvalues = [];

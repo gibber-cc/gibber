@@ -27,8 +27,9 @@ define([], function() {
 
 				run: function() {
 					//that._function.setPhase(0);
-					that._function.setState(0);
-					that._function.setPhase(0);					
+					this._function.setState(0);
+					this._function.setPhase(0);
+					return this;			
 				},
 			};
 			Gibberish.extend(that, new Gibberish.ugen());

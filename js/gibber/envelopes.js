@@ -16,6 +16,12 @@ function Line(start, end, time, loops){
 	return that;
 }
 
+function Env(attack, decay){
+	var that = Gibberish.Env(attack, decay);
+	
+	return that;
+}
+
 // TODO: recreate this in Gibberish as a multi-break-point envelope
 function Env2() {
 	that = {
