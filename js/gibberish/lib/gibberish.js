@@ -1,11 +1,8 @@
-define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/synths", "gibberish/lib/envelopes"], function(oscillators, effects, synths, envelopes) {
+define([], function() {
     var that = {
 		debug : false,
         init : function() { 
-			oscillators.init(this);
-			effects.init(this);
-			synths.init(this);
-			envelopes.init(this);			
+			
 			
 			var binops = {
 				"+" : this.binop_generator,
@@ -541,7 +538,7 @@ define(["gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/syn
 		// console.log(this.fx.add);
 		return this;
 	};
-	// todo: how to dirty fx bus when adding an effect?
+	// todo: how to dirty fx bus when adding an effect?	
 	
 	return that;
 });

@@ -178,12 +178,6 @@ define(['gibber/audio_callback',
 			this.measure = this.beat * 4;
 		
 			this.initDurations();
-
-			this.samples = { // preload
-				kick 	: atob(samples.kick),
-			    snare 	: atob(samples.snare),
-			    //hat 	: atob(samples.snare), 
-			};
 		
 			this.callback = new Callback();
 
@@ -196,9 +190,9 @@ define(['gibber/audio_callback',
 			};
 		
 			this.meta(window);
+			
 			window.Master = Gibberish.Bus();
 			Master.connect(Gibberish.MASTER);
-			//console.log("MASTER", Master);
 		},
 	
 		observers : {
