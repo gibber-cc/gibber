@@ -163,5 +163,32 @@ define(["gibberish/lib/gibberish"], function() {
 			}
 			return output;
 		}
-	}		
+	};
+	
+	window.Blank = function(obj) {
+		var that = {
+			type:		"Blank",
+		};
+
+		that.category = obj.acceptsInput ? "FX" : "Gen";
+		
+		Gibberish.extend(that, new Gibberish.ugen(that));
+		Gibberish.extend(that, obj);
+		console.log(obj.callback);
+		that.symbol = Gibberish.generateSymbol(that.type);
+		Gibberish.make["Blank"] = that.callback;
+		Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Blank\"];");
+		if(obj.acceptsInput)
+			Gibberish.generators.Blank = Gibberish.createGenerator(["source"], "{0}( {1} )");
+		else
+			Gibberish.generators.Blank = Gibberish.createGenerator([], "{0}()");	
+		
+		window[that.symbol] = that.callback;
+		
+		if(that.category === "Gen") {
+			that.send(Master, 1);
+			Gibberish.dirty(that);
+		}
+		return that;
+	};
 });

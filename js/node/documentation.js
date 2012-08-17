@@ -10,6 +10,7 @@ var filenames = [
 	"drums.js",
 	"flanger.js",
 	"fx.js",
+	"grains.js",
 ];
 
 /*for (var i = 0; i < filenames.length; i++) {

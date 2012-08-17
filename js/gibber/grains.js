@@ -1,5 +1,24 @@
 // TODO: how to deal with presets?
 
+/**#Grains
+A granulator that operates on a buffer of samples. You can either get the samples from a [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\))
+object, or the output of a [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)) (like the Master bus) 
+using the [Record](javascript:Gibber.Environment.displayDocs('Record'\)) object.
+
+## Example Usage ##
+`d = Drums('x*o*x*o-', _8);
+r = Record(d, _1 * 4);
+r.startRecording();  
+// wait 4 or 5 measures  
+g = Grains({buffer:r.buffer, amp:.8});
+g.mod("position", Line(.2,.8, _1 * 16, true), "=");
+g.mod("speedMax", Line(.1,.8, _1 * 16, true), "=");
+g.mod("speedMin", Line(-.1,-.8, _1 * 16, true), "=");  
+d.stop();`
+## Constructor
+**param** *propertiesList*: Object. At a minimum you should define the buffer to granulate. See the example.
+**/
+
 function Grains(properties) {
 	// if(typeof Gibber.GrainsPresets === "undefined") GrainsPresets();
 	// 
