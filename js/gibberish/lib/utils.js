@@ -167,10 +167,14 @@ define(["gibberish/lib/gibberish"], function() {
 	
 	window.Gen = function(obj) {
 		Gibberish.make[obj.name] = function() { 
-			for(var key in obj.upvalues) {
-				eval("var " + key + " = " + obj.upvalues[key]);
-			}			
-			eval("var _newFunc = " + obj.callback.toString());
+			if(typeof obj.upvalues !== "undefined") {
+				for(var key in obj.upvalues) {
+					eval("var " + key + " = " + obj.upvalues[key]);
+				}			
+				eval("var _newFunc = " + obj.callback.toString());
+			}else{
+				var _newFunc = obj.callback;
+			}
 
 			return _newFunc;
 		};
