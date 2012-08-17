@@ -164,26 +164,49 @@ define(["gibberish/lib/gibberish"], function() {
 			return output;
 		}
 	};
-	
-	window.Blank = function(obj) {
-		var that = {
-			type:		"Blank",
-		};
+	/*
+	window.Gen = function(obj) {
+		var that = {};
 
 		that.category = obj.acceptsInput ? "FX" : "Gen";
 		
-		Gibberish.extend(that, new Gibberish.ugen(that));
 		Gibberish.extend(that, obj);
-		console.log(obj.callback);
-		that.symbol = Gibberish.generateSymbol(that.type);
-		Gibberish.make["Blank"] = that.callback;
-		Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Blank\"];");
-		if(obj.acceptsInput)
-			Gibberish.generators.Blank = Gibberish.createGenerator(["source"], "{0}( {1} )");
-		else
-			Gibberish.generators.Blank = Gibberish.createGenerator([], "{0}()");	
+		Gibberish.extend(that, new Gibberish.ugen(that));
 		
-		window[that.symbol] = that.callback;
+		that.genName = typeof obj.name === "undefined" ? "Gen" : obj.name;
+		that.type = that.genName;
+		that.symbol = Gibberish.generateSymbol(that.type);
+		
+		Gibberish.make[that.genName] = function() { 
+			for(var key in that.upvalues) {
+				eval("var " + key + " = " + that.upvalues[key]);
+			}			
+			eval("var _newFunc = " + that.callback.toString());
+
+			return _newFunc;
+		};
+		
+		Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + that.genName + "\"]();");
+		
+		var genString = that.acceptsInput ? "{0}( {1}, " : "{0}(";
+		var genArray = that.acceptsInput ? ["source"] : [];
+		var count = that.acceptsInput;
+		
+		var counter = 0;
+		for(var key in that.props) {
+			genString += "{" + ++count + "},";
+			genArray.push(key);
+			that[key] = that.props[key];
+		}
+		if(genString.charAt(genString.length - 1) === ",") {
+			genString = genString.slice(0, genString.length - 1);
+		}
+		genString += ")";
+		console.log(genString, genArray);
+		
+		Gibberish.generators[that.genName] = Gibberish.createGenerator(genArray, genString);
+		
+		window[that.symbol] = Gibberish.make[that.genName]();
 		
 		if(that.category === "Gen") {
 			that.send(Master, 1);
@@ -191,4 +214,59 @@ define(["gibberish/lib/gibberish"], function() {
 		}
 		return that;
 	};
+	*/
+	window.Gen = function(obj) {
+		var that = {};
+
+		that.category = obj.acceptsInput ? "FX" : "Gen";
+		
+		Gibberish.extend(that, obj);
+		Gibberish.extend(that, new Gibberish.ugen(that));
+		
+		that.genName = typeof obj.name === "undefined" ? "Gen" : obj.name;
+		that.type = that.genName;
+		that.symbol = Gibberish.generateSymbol(that.type);
+		
+		Gibberish.make[that.genName] = function() { 
+			for(var key in that.upvalues) {
+				eval("var " + key + " = " + that.upvalues[key]);
+			}			
+			eval("var _newFunc = " + that.callback.toString());
+
+			return _newFunc;
+		};
+		
+		Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + that.genName + "\"]();");
+		
+		var genString = that.acceptsInput ? "{0}( {1}, " : "{0}(";
+		var genArray = that.acceptsInput ? ["source"] : [];
+		var count = that.acceptsInput;
+		
+		var counter = 0;
+		for(var key in that.props) {
+			genString += "{" + ++count + "},";
+			genArray.push(key);
+			that[key] = that.props[key];
+		}
+		if(genString.charAt(genString.length - 1) === ",") {
+			genString = genString.slice(0, genString.length - 1);
+		}
+		genString += ")";
+		console.log(genString, genArray);
+		
+		Gibberish.generators[that.genName] = Gibberish.createGenerator(genArray, genString);
+		
+		window[that.symbol] = Gibberish.make[that.genName]();
+		
+		if(that.category === "Gen") {
+			that.send(Master, 1);
+			Gibberish.dirty(that);
+		}
+		return that;
+	};
+	
 });
+
+Function.prototype.clone=function(){
+    return eval('['+this.toString()+']')[0];
+}
