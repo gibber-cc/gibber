@@ -1,13 +1,24 @@
+window.gen = function(objName) { // this returns a function that gets called when the upvalues are created, then returning a new function instance 
+	var name = objName; 
+	return function() {
+		return Gibberish.new(name);
+	}
+};
+
 window.Gen = function(obj) {
-	Gibberish.make[obj.name] = function() { 
+	Gibberish.make[obj.name] = function(me) { 
 		if(typeof obj.upvalues !== "undefined") {
 			for(var key in obj.upvalues) {
 				if(typeof obj.upvalues[key] === "string" || typeof obj.upvalues[key] === "number") {
 					eval("var " + key + " = " + obj.upvalues[key]);
 				}else{
 					var tmp = obj.upvalues[key];	// nice hack!
+					if(typeof tmp === "function") {
+						tmp = tmp();
+					}
 					eval("var " + key + "= tmp");
 				}
+				eval("me[key] = " + key);
 			}			
 			eval("var _newFunc = " + obj.callback.toString());
 		}else{
@@ -37,6 +48,8 @@ window.Gen = function(obj) {
 	}
 	genString += ")";
 	Gibberish.generators[obj.name] = Gibberish.createGenerator(genArray, genString);
+	
+	var args = obj.args;
 		
 	var f = function(_obj) {
 		var that = {};
@@ -68,17 +81,23 @@ window.Gen = function(obj) {
 				});
 			})();
 		}
-			
-		Gibberish.extend(that, _obj); // after setters are defined
+		
+		if(arguments.length > 1 || typeof arguments[0] !== "object") {
+			for(var i = 0; i < arguments.length; i++) {
+				that[propsArray[i]] = arguments[i];
+			}
+		}else{
+			Gibberish.extend(that, _obj); // after setters are defined
+		}
 			
 		that.type = type;
 		that.symbol = Gibberish.generateSymbol(that.type);
 
 		Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + that.genName + "\"]();");
 
-		window[that.symbol] = Gibberish.make[that.type]();
-			
-			
+		window[that.symbol] = Gibberish.make[that.type](that);
+		that.function = window[that.symbol];
+		
 		if(that.category === "Gen") {
 			that.send(Master, 1);
 			Gibberish.dirty(that);

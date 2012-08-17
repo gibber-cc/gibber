@@ -37,6 +37,10 @@ define(['gibber/audio_callback',
 				window["_"+i] = this.measure / i;
 			}
 		},
+		
+		make : function(objName) {
+			return Gibberish.new(objName);
+		},
 	
 		meta: function(obj) {
 			var letters = "abcdefghijklmnopqrstuvwxyz";
