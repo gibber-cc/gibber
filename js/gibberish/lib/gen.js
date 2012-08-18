@@ -7,10 +7,15 @@ window.gen = function(objName) { // this returns a function that gets called whe
 
 window.Gen = function(obj) {
 	Gibberish.make[obj.name] = function(me) { 
+		
 		if(typeof obj.upvalues !== "undefined") {
+			var str = "(function() {"; // must wrap in (function(){}) to ensure closure is scoped locally!!!
+			var fcns = {};
 			for(var key in obj.upvalues) {
 				if(typeof obj.upvalues[key] === "string" || typeof obj.upvalues[key] === "number") {
-					eval("var " + key + " = " + obj.upvalues[key]);
+					//eval("var " + key + " = " + obj.upvalues[key]);
+					str += "var " + key + " = " + obj.upvalues[key] +';';
+					//console.log(str);
 				}else{
 					// hack to defer codegen of properties until instance creation
 					var tmp = obj.upvalues[key];	
@@ -18,24 +23,36 @@ window.Gen = function(obj) {
 						var _tmp = tmp;
 						tmp = tmp(obj);
 						// check to see if this is a codegen function, if not, use original function
-						if(typeof tmp !== "function") tmp = _tmp; 
+						if(typeof tmp !== "function") tmp = _tmp;
+						fcns[key] = tmp;
 					}
-					eval("var " + key + "= tmp");
+					//eval("var " + key + "= tmp");
+					str += "var " + key + "= fcns."+key+";";
+					//console.log(str);
 				}
-				if(typeof me !== "undefined")
-					eval("me[key] = " + key);
+				if(typeof me !== "undefined") {
+					str += "me." + key + "= " + key + ";";
+					//eval("me[key] = " + key);
+				}
 			}			
-			eval("var _newFunc = " + obj.callback.toString());
+			str += "var _newFunc = " + obj.callback.toString() +";";
 			
 			for(var key in obj.upvalues) {	// assign getters and setters for upvalues
 				var letter0 = key.slice(0,1).toUpperCase();
 				var _key = key.slice(1);
 				_key = letter0 + _key;
-				eval("_newFunc.set" + _key + "= function(val) { " + key + "= val; }");
-				eval("_newFunc.get" + _key + "= function() { return " + key + "; }");				
+				//eval("_newFunc.set" + _key + "= function(val) { " + key + "= val; }");
+				str += "_newFunc.set" + _key + "= function(val) { " + key + "= val; };";
+				//eval("_newFunc.get" + _key + "= function() { return " + key + "; }");				
+				str += "_newFunc.get" + _key + "= function() { return " + key + "; };";
 			}
+			
+			str += "return _newFunc;})();";
+			//console.log(str);
+			
+			_newFunc = eval(str);
 		}else{
-			var _newFunc = obj.callback;
+			_newFunc = obj.callback;
 		}
 
 		return _newFunc;
