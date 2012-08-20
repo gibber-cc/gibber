@@ -188,7 +188,7 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 		if(typeof _seq[0] === "function") this.endSequence = "functions";
 		this.sequence = _seq;
 	}
-	
+
 	if(this.outputMessage === null) {
 		if(typeof arguments[2] !== "undefined") {
 			this.outputMessage = arguments[2];
@@ -207,7 +207,7 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 			}
 		}
 	}
-	
+
 	if(this.sequence !== null) {
 		if (this.outputMessage === null) {
 			if(typeof this.sequence[0] === "function") {
@@ -244,7 +244,7 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 			}
 		}
 	}
-	
+
 	Gibber.registerObserver( "bpm", this.bpmCallback(this) );
 	if(this.sequence != null && typeof this.sequence != "undefined") {
 		this.setSequence(this.sequence, this.speed);	
@@ -266,7 +266,7 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 			 this.slavesInit = true;
 		}
 	}
-	
+
 	this.modded = [];
 	
 /**###Seq.shuffle : method
@@ -328,6 +328,7 @@ This should never need to be explicitly called.
 **/
 	
 	advance : function() {
+		console.log("ADVANCE");
 		if(this.active) {
 			var pos, val;
 			
@@ -456,7 +457,6 @@ This should never need to be explicitly called.
 							this.stop();
 						}
 					}
-					//console.log("ADVANCING", key, _slave);	
 					if(typeof _slave[key] === "function") {
 						if(key === "note" && val === 0) { // advance envelope instead of changing freq
 							if(typeof _slave.env === "object") {
@@ -464,9 +464,8 @@ This should never need to be explicitly called.
 							}
 						}else{
 							if($.isArray(val) ) {
-								//console.log("CALLING", val);
 								try {
-									_slave[key].apply(_slave, val);									
+									_slave[key].call(_slave, val);									
 								}catch(err) {
 									G.log("Seq error passing array:", err);
 									this.stop();
@@ -474,7 +473,6 @@ This should never need to be explicitly called.
 							}else{
 								//console.log("CALLING", val);
 								
-								//console.log("CALLING");
 								try{
 									_slave[key](val);
 								}catch(err) {

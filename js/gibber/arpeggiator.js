@@ -28,7 +28,7 @@ function Arp(notation, beats, pattern, mult) {
 	that.speed = isNaN(beats) ? _4 : beats;
 	
 /**###Arp.chord : method
-**param** *memory location* String. The chord to be sequenced.
+**param** *chord name* String. The chord to be sequenced.
 	
 **description** : Change the chord that the Arpeggiator is arpeggiating.
 **/

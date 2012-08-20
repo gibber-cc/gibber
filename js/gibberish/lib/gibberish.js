@@ -179,7 +179,7 @@ define([], function() {
 
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
-						set: function(_value) {							
+						set: function(_value) {
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
 								value = _value;
 							}else{
@@ -192,13 +192,11 @@ define([], function() {
 							}
 							
 							if(obj.category === "Bus") {
-								for(var j = 0; j < obj.senders.length; j++) {
-									//console.log("SETTING FOR CHILD", j, propName);
-									obj.senders[j][propName] = _value;
+								for(var j = 0; j < obj.senderObjects.length; j++) {
+									obj.senderObjects[j][propName] = _value;
 								}
 							}else{
 								for(var j = 0; j < obj.children.length; j++) {
-									//console.log("SETTING FOR CHILD", j, propName);
 									obj.children[j][propName] = _value;
 								}
 							}
@@ -413,6 +411,7 @@ define([], function() {
 		// modified from http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/ to deep copy arrays
 		extend: function(destination, source) {
 		    for (var property in source) {
+				//console.log(property);
 				if(source[property] instanceof Array) {
 		            destination[property] = source[property].slice(0);
 					if(property === "fx") {
@@ -487,7 +486,6 @@ define([], function() {
 					bus.disconnectUgen(this);
 					this.destinations.remove(bus);
 				}else{
-								console.log("DISCONNECT 2 Length ", this.destinations.length);
 					for(var i = 0; i < this.destinations.length; i++) {
 						this.destinations[i].disconnectUgen(this);
 					}

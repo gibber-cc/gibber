@@ -119,8 +119,16 @@ define(['gibber/audio_callback',
 	
 		// wraps Gibberish note function to _note and calls it after calculating frequency
 		makeNoteFunction : function(targetObj) {
+			if(typeof targetObj.note === "undefined") {
+				targetObj.note = function(freq, amp) { 
+					this.frequency = freq;
+					if(typeof amp !== "undefined") {
+						this.amp = amp;
+					}
+				}
+			}
 			eval("targetObj._note = " + targetObj.note.toString()); // create the copy
-		
+				
 			return function(note) {
 				switch(typeof note) {
 					case "number" : break;
@@ -644,19 +652,26 @@ function LFO(freq, amp, waveform) {
 };
 
 function Sine(freq, volume) {	
-	var that = Gibberish.Sine(freq, volume);
-	that.connect(Master);
-	that.masters = [];
-	that.note = function(freq) { this.frequency = freq; }
+	var that = Gibberish.Sine(freq, volume).connect(Master);
 	that.note = Gibber.makeNoteFunction(that);
-	
-	//that.connect(Gibberish.MASTER);
 	return that;
 }
 
 function Triangle(freq, volume) {	
 	var that = Gibberish.Triangle(freq, volume).connect(Master);
-	
+	that.note = Gibber.makeNoteFunction(that);
+	return that;
+}
+
+function Square(freq, volume) {
+	var that = Gibberish.Square(freq, volume).connect(Master);
+	that.note = Gibber.makeNoteFunction(that);
+	return that;
+}
+
+function Saw(freq, volume) {	
+	var that = Gibberish.Saw(freq, volume).connect(Master);
+	that.note = Gibber.makeNoteFunction(that);
 	return that;
 }
 
@@ -670,12 +685,6 @@ function Pulse(freq, volume) {
 	return that;
 }
 
-function Saw(freq, volume) {	
-	var that = Gibberish.Saw(freq, volume).connect(Master);
-	
-	return that;
-}
-
 function InvSaw(freq, volume) {	
 	var that = Osc.apply(null,arguments);
 	that.name = "InvSaw";	
@@ -683,14 +692,5 @@ function InvSaw(freq, volume) {
 	
 	that.amp *= .55;
 	
-	return that;
-}
-
-function Square(freq, volume) {
-	var that = Osc.apply(null,arguments);
-	that.name = "Square";
-	that.waveShape = 'square';
-	
-	that.amp *= .5;
 	return that;
 }

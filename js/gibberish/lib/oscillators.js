@@ -1,25 +1,188 @@
 define([], function() {
     return {
 		init: function(gibberish) {			
-			gibberish.generators.Sine = gibberish.createGenerator(["frequency", "amp"], "{0}( {1}, {2} )");
-			gibberish.make["Sine"] = this.makeSine;
-			gibberish.Sine = this.Sine;
+			gibberish.Sine = Gen({
+			    name: "Sine",
+			    props: { frequency: 440, amp: .25, },
+			    upvalues: { phase: 0, sin: Math.sin, pi_2: Math.PI * 2 },
 			
-			gibberish.generators.Square = gibberish.createGenerator(["frequency", "amp"], "{0}({1}, {2})");
-			gibberish.make["Square"] = this.makeSquare;
-			gibberish.Square = this.Square;
+			    callback: function(frequency, amp) {
+			        phase += frequency / 44100;
+			        var val = sin(phase * pi_2) * amp;
+			        return val;
+			    },
+			});
 			
-			gibberish.generators.Triangle = gibberish.createGenerator(["frequency", "amp"], "{0}( {1}, {2} )");
-			gibberish.make["Triangle"] = this.makeTriangle;
-			gibberish.Triangle = this.Triangle;
+			gibberish.Square = Gen({
+			    name: "Square",
+			    props: { frequency: 440, amp: .15, },
+			    upvalues: { phase: 0 },
+					
+				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Square.js
+			    callback: function(frequency, amp) {
+					var out = phase > 0.5 ? 1 : -1;
+				    phase += frequency / 44100;
+				    phase = phase > 1 ? phase % 1 : phase;					
+					return out * amp;
+			    },
+			});
 			
-			gibberish.generators.Saw = gibberish.createGenerator(["frequency", "amp"], "{0}( {1}, {2} )");
-			gibberish.make["Saw"] = this.makeSaw;
-			gibberish.Saw = this.Saw;
+			gibberish.Triangle = Gen({
+			    name: "Triangle",
+			    props: { frequency: 440, amp: .15, },
+			    upvalues: { phase: 0 },
+
+			    callback: function(frequency, amp) {
+				    var out = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);
+				    phase += frequency / 44100;
+				    phase = phase > 1 ? phase % 1 : phase;
+					return out * amp;
+			    },
+			});
 			
-			gibberish.generators.KarplusStrong = gibberish.createGenerator(["blend", "dampingValue", "amp"], "{0}( {1}, {2}, {3} )");
-			gibberish.make["KarplusStrong"] = this.makeKarplusStrong;
-			gibberish.KarplusStrong = this.KarplusStrong;
+			gibberish.Saw = Gen({
+			    name: "Saw",
+			    props: { frequency: 440, amp: .15, },
+			    upvalues: { phase: 0 },
+
+				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js					
+			    callback: function(frequency, amp) {
+				    var out = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
+				    phase += frequency / 44100;
+				    phase = phase > 1 ? phase % 1 : phase;
+					return out * amp;
+			    },
+			});
+
+			gibberish.KarplusStrong = Gen({
+			  name:"KarplusStrong",
+			  props: { blend:1, damping:0, amp:1, dampingValue:.5 },
+			  upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random },
+  
+			  note : function(frequency) {
+			    var _size = Math.floor(44100 / frequency);
+			    this.buffer = [];
+    
+			    for(var i = 0; i < _size; i++) {
+			      this.buffer[i] = Math.random() * 2 - 1; // white noise
+			    }
+    
+			    this.function.setBuffer(this.buffer);
+			  },
+  
+			  callback : function(blend, __ignore, amp, damping) {		
+			    var val = buffer.shift();
+			    var rndValue = (rnd() > blend) ? -1 : 1;
+
+			    var value = rndValue * (val + last) * damping;
+
+			    last = value;
+
+			    buffer.push(value);
+    
+			    return value * amp;
+			  },
+  
+			  setters: {
+			  	damping: function(val) {
+			    	this.dampingValue = .5 - val / 100;
+			    }
+			  },
+			});
+			
+			/*gibberish.PolyKarplusStrong = Gen({
+	  			name:"PolyKarplusStrong",
+				addToGraph: true,
+				inherits: "Bus",
+  				//props: { blend:1, damping:0, amp:1, dampingValue:.5, voiceCount:0 },
+  				//upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random },
+				init : function() {
+					console.log("INIT");
+					this.children = [];
+					for(var i = 0; i < this.maxVoices; i++) {
+						var props = {
+							blend:		this.blend,
+							damping:	this.damping,
+							amp: 		1,
+						};
+				
+						var synth = Gibberish.KarplusStrong(props);
+						synth.send(this, 1);
+						Gibberish.dirty(synth);
+						this.children.push(synth);
+					}
+					Gibberish.polyDefineProperties( this, ["amp","blend", "damping"] );
+					Gibberish.dirty(this);
+				},
+				
+				setters : {
+					amp: function(value) {
+						_amp = value;
+						this.send(Master, value);
+					},
+				},
+				
+				note : function(_frequency) {
+					var synth = this.children[this.voiceCount++];
+					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
+					synth.note(_frequency);
+				},
+				
+			});*/
+				
+			/*	var that = Gibberish.Bus();
+				
+				Gibberish.extend(that, {
+					amp:		 	.125,
+					blend:			1,
+					damping:		0,
+					maxVoices:		5,
+					voiceCount:		0,
+					children:		[],
+					mod:			Gibberish.polyMod,
+					removeMod:		Gibberish.removePolyMod,
+				
+					note : function(_frequency) {
+						var synth = this.children[this.voiceCount++];
+						if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
+						synth.note(_frequency);
+					},
+				});
+			
+				if(typeof properties !== "undefined") {
+					Gibberish.extend(that, properties);
+				}
+			
+				for(var i = 0; i < that.maxVoices; i++) {
+					var props = {
+						blend:		that.blend,
+						damping:	that.damping,
+						amp: 		1,
+					};
+				
+					var synth = Gibberish.KarplusStrong(props);
+					synth.disconnect();
+					synth.send(that, 1);
+
+					that.children.push(synth);
+				}
+			
+				Gibberish.polyDefineProperties( that, ["blend", "damping"] );
+			
+				(function() {
+					var _amp = that.amp;
+					Object.defineProperty(that, "amp", {
+						get: function() { return _amp; },
+						set: function(value) {
+							_amp = value;
+							that.send(Master, value);
+						},
+					});
+				})();
+			
+				return that;
+			};*/
+			
 			
 			gibberish.generators.KarplusStrong2 = gibberish.createGenerator(["blend", "dampingValue", "amp", "headPos"], "{0}( {1}, {2}, {3}, {4} )");
 			gibberish.make["KarplusStrong2"] = this.makeKarplusStrong2;
@@ -51,246 +214,7 @@ define([], function() {
 			gibberish.make["Grains"] = this.makeGrains;
 			gibberish.Grains = this.Grains;	
 		},
-		
-		Sine : function(freq, amp) {
-			var that = { 
-				type:		"Sine",
-				category:	"Gen",
-				frequency:	freq || 440, 
-				amp:		amp || .5,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Sine\"]();");
-			window[that.symbol] = Gibberish.make["Sine"]();
-			that._function = window[that.symbol];
-						
-			Gibberish.defineProperties( that, ["frequency", "amp"] );
-			
-			return that;
-		},
-		
-		makeSine: function() { // note, storing the increment value DOES NOT make this faster!
-			var phase = 0;
-			var sin = Math.sin;
-			var pi_2 = Math.PI * 2;
-	
-			var output = function(frequency, amp) {
-				phase += frequency / 44100;
-				//while(phase > pi_2) phase -= pi_2;
-				return sin(phase * pi_2) * amp;
-			}
-			output.setPhase = function(_phase) {
-				phase = _phase;
-			};
-			return output;
-		},
-		
-		Square : function(freq, amp) {
-			var that = { 
-				type:		"Square",
-				category:	"Gen",
-				frequency:	freq || 440, 
-				amp:		amp * .35 || .1,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Square\"]();");
-			window[that.symbol] = Gibberish.make["Square"]();
-			that._function = window[that.symbol];
-			
-			Gibberish.defineProperties( that, ["frequency", "amp"] );
-			
-			return that;
-		},
-		
-		makeSquare: function() { // note, storing the increment value DOES NOT make this faster!
-			var phase = 0;
-			var output = function(frequency, amp) {
-				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Square.js
-				var out = phase > 0.5 ? 1 : -1;
-			    phase += frequency / 44100;
-				
-			    phase = phase > 1 ? phase % 1 : phase;
 
-				return out * amp;
-			}
-			output.setPhase = function(_phase) {
-				phase = _phase;
-			};
-			
-	
-			return output;
-		},
-		
-		Triangle : function(freq, amp) {
-			var that = { 
-				type:		"Triangle",
-				category:	"Gen",
-				frequency:	freq || 440, 
-				amp:		amp * .35 || .1,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Triangle\"]();");
-			window[that.symbol] = Gibberish.make["Triangle"]();
-			that._function = window[that.symbol];
-			
-			Gibberish.defineProperties( that, ["frequency", "amp"] );
-	
-			return that;
-		},
-		
-		makeTriangle: function() {
-			var phase = 0;
-			var output = function(frequency, amp) {
-				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js
-			    var out = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);
-
-			    phase += frequency / 44100;
-				
-			    if (phase > 1) {
-			        phase %= 1;
-			    }
-				
-				return out * amp;
-			};
-			output.setPhase = function(_phase) {
-				phase = _phase;
-			};
-			
-			return output;
-		},
-		
-	    // output.samples[0] = ((this.phase / 2 + 0.25) % 0.5 - 0.25) * 4;
-	    // this.phase += frequency / sampleRate;
-	    // 
-	    // if (this.phase > 1) {
-	    //     this.phase %= 1;
-	    // }
-		Saw : function(freq, amp) {
-			var that = { 
-				type:		"Saw",
-				category:	"Gen",
-				frequency:	freq || 440, 
-				amp:		amp * .35 || .1,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Saw\"]();");
-			window[that.symbol] = Gibberish.make["Saw"]();
-			that._function = window[that.symbol];
-			
-			Gibberish.defineProperties( that, ["frequency", "amp"] );
-	
-			return that;
-		},
-		
-		makeSaw: function() {
-			var phase = 0;
-			var output = function(frequency, amp) {
-			    var out = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
-
-			    phase += frequency / 44100;
-				
-			    if (phase > 1) {
-			        phase %= 1;
-			    }
-				
-				return out * amp;
-			};
-			output.setPhase = function(_phase) {
-				phase = _phase;
-			};
-			
-			return output;
-		},
-		
-		
-		KarplusStrong : function(properties) {
-			var that = { 
-				type:		"KarplusStrong",
-				category:	"Gen",
-				amp:		.5,
-				damping:	.0,
-				dampingValue: 0,
-				blend:		 1,
-				buffer: 	[],
-				
-				note : function(frequency) {
-					var _size = Math.floor(44100 / frequency);
-					this.buffer = []; //new Float32Array(_size); // needs push and shift methods
-					
-					for(var i = 0; i < _size ; i++) {
-						this.buffer[i] = Math.random() * 2 - 1; // white noise
-					}
-					
-					this._function.setBuffer(this.buffer);
-				},
-			};
-			
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			//that.fx.parent = new FXArray(this);
-			
-			var damping = that.damping;
-			
-			// 		    Object.defineProperty(that, "damping", {
-			// 	get: function() {
-			// 		return damping * 100;
-			// 	},
-			// 	set: function(value) {
-			// 		damping = value / 100;
-			// 		that.dampingValue = .5 - damping;
-			// 		Gibberish.dirty(this);
-			// 	}
-			// });
-
-			
-			if(typeof properties !== "undefined") {
-				Gibberish.extend(that, properties);
-			}
-			
-			that.dampingValue = .5 - that.damping;
-			
-			that.buffer.push(0);
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"KarplusStrong\"]();");	
-			that._function = Gibberish.make["KarplusStrong"](that.buffer);
-			window[that.symbol] = that._function;
-			
-			Gibberish.defineProperties( that, ["blend", "amp"] );
-			
-			return that;
-		},
-		
-		makeKarplusStrong: function(buffer) {
-			var phase = 0;
-			var rnd = Math.random;
-			var lastValue = 0;
-			var output = function(blend, damping, amp) {		
-				var val = buffer.shift();
-				//if(phase++ % 22050 === 0) console.log("VAL", val, buffer.length);
-				var rndValue = (rnd() > blend) ? -1 : 1;
-		
-				var value = rndValue * (val + lastValue) * damping;
-		
-				lastValue = value;
-		
-				buffer.push(value);
-				//if(phase++ % 22050 === 0) console.log("INSIDE", value, blend, damping, amp, val);
-				return value * amp;
-			};
-			output.setBuffer = function(buff) { buffer = buff; };
-			output.getBuffer = function() { return buffer; };			
-
-			return output;
-		},
-		
 		PolyKarplusStrong : function(properties) {
 			var that = Gibberish.Bus();
 				
@@ -322,7 +246,8 @@ define([], function() {
 					amp: 		1,
 				};
 				
-				var synth = this.KarplusStrong(props);
+				var synth = Gibberish.KarplusStrong(props);
+				synth.disconnect();
 				synth.send(that, 1);
 
 				that.children.push(synth);

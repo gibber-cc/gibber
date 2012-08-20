@@ -775,8 +775,8 @@ define([], function() {
 
 			Gibberish.masterInit.push( that.symbol + " = Gibberish.make[\"Bus\"]();" );
 			window[that.symbol] = Gibberish.make["Bus"]();
-
-			Gibberish.polyDefineProperties( that, ["amp"] );
+			
+			Gibberish.defineProperties( that, ["amp"] );
 			return that;
 		},
 

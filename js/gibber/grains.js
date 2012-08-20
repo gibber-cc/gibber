@@ -11,12 +11,45 @@ r = Record(d, _1 * 4);
 r.startRecording();  
 // wait 4 or 5 measures  
 g = Grains({buffer:r.buffer, amp:.8});
-g.mod("position", Line(.2,.8, _1 * 16, true), "=");
+g.loop(.2, .8, _1 * 16);
 g.mod("speedMax", Line(.1,.8, _1 * 16, true), "=");
 g.mod("speedMin", Line(-.1,-.8, _1 * 16, true), "=");  
 d.stop();`
 ## Constructor
 **param** *propertiesList*: Object. At a minimum you should define the buffer to granulate. See the example.
+**/
+
+/*
+/**###Grains.grainSize : property
+Integer. The length, in samples, of each grain
+**/
+
+/**###Grains.speed : property
+Float. The playback rate, in samples, of each grain
+**/
+
+/**###Grains.speedMin : property
+Float. When set, the playback rate will vary on a per grain basis from (grain.speed + grain.speedMin) -> (grain.speed + grain.speedMax). This value should almost always be negative.
+**/
+
+/**###Grains.speedMMax : property
+Float. When set, the playback rate will vary on a per grain basis from (grain.speed + grain.speedMin) -> (grain.speed + grain.speedMax).
+**/
+
+/**###Grains.position : property
+Float. The center position of the grain cloud. 0 represents the start of the buffer, 1 represents the end.
+**/
+
+/**###Grains.positionMin : property
+Float. The left boundary on the time axis of the grain cloud.
+**/
+
+/**###Grains.positionMax : property
+Float. The right boundary on the time axis of the grain cloud.
+**/
+
+/**###Grains.numberOfGrains : property
+Float. The number of grains in the cloud. Can currently only be set on initialization.
 **/
 
 function Grains(properties) {
@@ -35,6 +68,28 @@ function Grains(properties) {
 	// }
 	var that = Gibberish.Grains(properties);
 	that.send(Master, that.amp);
+	
+/**###Grains.loop : method
+**param** *min* Float. Default .25. The starting position for the playback loop. Measured from 0..1 where is the buffer start, 1 is the buffer end.  
+**param** *max* Float. Default .75.The finishing position for the playback loop. Measured from 0..1 where is the buffer start, 1 is the buffer end.	 
+**param** *time* Int. Default _1. The length of time, in samples, to travel through the loop points once.  
+**shouldLoop** *Boolean*. Default true. If set to false, the buffer will only play through the min and max values once.  
+	
+**description** : Tell the Grain cloud to travel between two positions in its buffer.
+**/
+	
+	that.loop = function(min, max, time, shouldLoop) {
+		min = isNaN(min) ? .25 : min;
+		max = isNaN(max) ? .75 : max;
+		time = isNaN(time) ? _1 : time;
+		
+		shouldLoop = typeof shouldLoop === "undefined" ? true : shouldLoop;
+		this.mod("position", Line(min, max, time, shouldLoop), "=");
+		var that = this;
+		if(shouldLoop === false) {
+			future( function() { that.removeMod("position"); }, time);
+		}
+	}
 	return that;
 }
 
