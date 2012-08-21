@@ -12,16 +12,13 @@ define(['gibber/audio_callback',
 	'gibber/drums',
 	'gibber/beatCallback',
 	'gibber/synth',
-	'gibber/poly',
 	'gibber/fm_synth',
 	'gibber/string',
-	'gibber/flanger',
 	'gibber/recorder',
 	'gibber/grains',
 	'gibber/envelopes',
 	'gibber/schizo',
 	], function() {
-
 
 	var Gibber = {
 		active : true,

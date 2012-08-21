@@ -224,7 +224,8 @@ define([], function() {
 				var paramNames = [name];
 				for(var i = 0; i < parameters.length; i++) {
 					var param = parameters[i];
-					paramNames.push(Gibberish.codegen(op[parameters[i]], codeDictionary, shouldAdd));
+					var add = typeof param.symbol !== "undefined" ? false : shouldAdd;
+					paramNames.push(Gibberish.codegen(op[parameters[i]], codeDictionary, true));
 				}
 				
 				var c = String.prototype.format.apply(formula, paramNames);
@@ -241,7 +242,6 @@ define([], function() {
 
 				var memo = this.memo[op.symbol];
 				if(memo){
-					//console.log("MEMO", memo, op);
 					return memo;
 				}
 				

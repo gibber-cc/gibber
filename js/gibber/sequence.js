@@ -328,7 +328,6 @@ This should never need to be explicitly called.
 **/
 	
 	advance : function() {
-		console.log("ADVANCE");
 		if(this.active) {
 			var pos, val;
 			

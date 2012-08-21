@@ -8,9 +8,9 @@ var filenames = [
 	"synth.js",
 	"arpeggiator.js",
 	"drums.js",
-	"flanger.js",
 	"fx.js",
 	"grains.js",
+	"recorder.js",
 ];
 
 /*for (var i = 0; i < filenames.length; i++) {

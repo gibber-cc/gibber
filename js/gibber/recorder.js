@@ -1,4 +1,48 @@
-function Record(input, length, shouldStart, speed) {
+/**#Sampler
+Sampler allows you to playback audiofiles at different speeds. It also allows you to record the output of any Gibber bus. 
+This could be the Master bus, or any of the polyphonic instruments that output to their own dedicated bus:
++ [Synth](javascript:Gibber.Environment.displayDocs('Synth'\))  
++ [Synth](javascript:Gibber.Environment.displayDocs('Synth2'\))  
++ [FMSynth](javascript:Gibber.Environment.displayDocs('FMSynth'\))  
++ [Pluck](javascript:Gibber.Environment.displayDocs('Pluck'\))  
++ [Drums](javascript:Gibber.Environment.displayDocs('Drums'\))  
+
+## Example Usage ##
+`a = Drums("x*ox*xo-");
+  
+b = Sampler({input:a, amp:2.5});
+b.startRecording(_1 * 2);
+  
+// wait 2 measures
+  
+b.fx.add( HPF(.4, 4.5) );
+  
+c = Seq({
+  note:[4,2,.5],
+  durations:[_1, _1, _1 * 4],
+  slaves:b
+});
+
+## Constructor
+**param** *input*: Object. A input Bus to record samples from
+**param** *length*: Integer. The length of recording to make in samples.
+**param** *shouldStart*: Boolean. If true, the Record object starts recording immediately.
+**/
+
+/**###Sampler.startRecording : method
+**param** *length*: Integer. The length of the recording, in samplers.
+
+**description**: Start recording samples from the Record objects input buffer.
+**/
+
+/**###Sampler.note : method
+**param** *playbackSpeed*: Float. The speed of the buffer playback.
+**param** *amp*: Float. The amplitude of the buffer playback.
+
+**description**: Play the buffer stored in the sampler object at a given speed and amplitude.
+**/
+
+function Record(input, length, shouldStart) {
 	var that = Gibberish.Record(input, length, shouldStart, speed);
 	that.send(Master, that.amp);
 	if(typeof shoudldStart === "undefined" || shouldStart) {
@@ -12,92 +56,3 @@ function Sampler(pathToFile) {
 	that.send(Master, 1);
 	return that;
 }
-
-/*function Rec() {
-	var args = (typeof arguments[0] === "undefined") ? {} : arguments[0];
-	var that = {
-		name 	: "Rec",
-		length 	: args.length || _1,
-		mode 	: "insert",
-		value 	: 0,
-		amp 	: args.amp || 1,
-		sampleCount : 0,
-		mods 	: [],
-		fx		: [],
-		effect	: null,
-		added	: false,
-		active	: true,
-		speed 	: args.speed || 1,
-		mix		: 1,
-		playFlag: false,
-		insert 	: function(gen) {
-			this.mode = "record";
-			gen.fx.add(this);
-			this.sampleCount = 0;
-			this.effect = gen;
-		},
-		
-		insertAndPlay : function(gen) {
-			this.playFlag = true;
-			this.insert(gen);
-		},
-		
-		generate : function() {
-			this.value = Sink.interpolate(this.buffer, this.sampleCount);
-			this.sampleCount += this.speed;
-			if(this.sampleCount >= this.length) {
-				this.sampleCount = this.length - this.sampleCount;
-			}
-		},
-		
-		getMix	: function() {
-			return this.value * this.amp;
-		},
-		
-		kill : function() {
-			Gibber.genRemove(this);
-			this.masters.length = 0;
-			this.mods.length = 0;
-			this.fx.length = 0;
-		},
-		
-		out : function() {
-			this.generate();
-			return this.getMix();
-		},
-		
-		pushSample : function(incoming) {
-			this.buffer[this.sampleCount++] = incoming;
-			if(this.sampleCount >= this.length) {
-				this.remove(this.effect);
-				if(this.playFlag) {
-					this.play();
-					this.playFlag = false;
-				}
-			}
-			return this.value = incoming;
-		},
-		
-		play : function() {
-			if(!this.added) {
-				Gibber.generators.push(this);
-			}
-			this.active = true;
-		},
-		
-		remove 	: function(gen) {
-			this.mode = "playback";
-			gen.fx.remove(this.name);
-			this.sampleCount = 0;
-			this.effect = null;
-		},
-		
-		stop : function() {
-			this.active = false;
-		},
-
-	};
-	that.buffer = new Float32Array(that.length);
-	G.addModsAndFX.call(that);
-	return that;
-}*/

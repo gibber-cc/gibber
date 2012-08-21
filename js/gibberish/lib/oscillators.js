@@ -70,7 +70,7 @@ define([], function() {
 			    this.function.setBuffer(this.buffer);
 			  },
   
-			  callback : function(blend, __ignore, amp, damping) {		
+			  callback : function(blend, __ignore, amp, damping) {
 			    var val = buffer.shift();
 			    var rndValue = (rnd() > blend) ? -1 : 1;
 
@@ -202,7 +202,7 @@ define([], function() {
 			gibberish.Mesh = this.Mesh;
 			
 			gibberish.Sampler = this.Sampler;
-			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp"], "{0}( {1}, {2} )");
+			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp", "isRecording", "isPlaying", "input", "bufferLength"], "{0}( {1}, {2}, {3}, {4}, {5}, {6} )");
 			gibberish.make["Sampler"] = this.makeSampler;
 			
 			//isRecording, isPlaying, input, length
@@ -268,16 +268,103 @@ define([], function() {
 			
 			return that;
 		},	
+		
+		Record : function(input, length, shouldStart) {
+			var that = { 
+				type:		"Record",
+				category:	"Gen",
+				input	: 	0, //input || null,
+				_input  :   input || null,
+				length	: 	length || ms(1000),
+				shouldStart:shouldStart || false,
+				buffer	:   null,
+				isPlaying:  false,
+				isRecording:false,
+				startRecording : function(recordLength) {					
+					this.length = typeof recordLength === "undefined" ? this.length : recordLength;
+					
+					// now this, this line below, THIS is a hack...
+					this.mod("input", this._input, "=");
+					
+					this.buffer = new Float32Array(this.length);
+					this.isRecording = true;
+					this._function.setBuffer(this.buffer);
+				},
+				stopRecording: function() {
+					this.isRecording = false;
+				},
+				play:function() {
+					this.isPlaying = true;
+				},
+				stop:function() {
+					this.isPlaying = false;
+				}
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-		Sampler : function(pathToAudioFile) {
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Record\"]();");
+			window[that.symbol] = Gibberish.make["Record"](that);
+			that._function = window[that.symbol];
+						
+			Gibberish.defineProperties( that, ["isPlaying", "isRecording", "input"] );
+			
+			return that;
+		},
+		
+		makeRecord: function(self) { // note, storing the increment value DOES NOT make this faster!
+			var phase = 0;
+			var buffer = null;
+			var interpolate = Gibberish.interpolate;
+			var output = function(isRecording, isPlaying, input, length) {
+				
+				phase += 1; //isRecording ? 1 : speed;
+				
+				if(phase < length && isRecording) {
+					buffer[phase] = input;
+				}else if(phase > length && isRecording){
+					self.stopRecording();
+					self.removeMod("input");
+				}
+				
+				var val = 0; 
+				
+				if(isPlaying) {
+					val = isPlaying ? interpolate(buffer, phase) : val;
+					if(speed > 0) {
+						phase = phase > length ? phase - length : phase;
+					}else{
+						phase = phase < 0 ? phase + length : phase;
+					}
+				}
+				
+				return val;
+			};
+			
+			output.setBuffer = function(_buffer) {
+				buffer = _buffer;
+				phase = 0;
+			};
+	
+			return output;
+		},
+		
+			
+		Sampler : function(properties) {
 			var that = {
 				type: 			"Sampler",
 				category:		"Gen",
-				audioFilePath: 	pathToAudioFile,
+				audioFilePath: 	null,
 				buffer : 		null,
 				bufferLength:   null,
 				pitch:			1,
 				amp:			1,
+				input:	 		0, //input || null,
+				_input :    	null,
+				length : 		ms(1000),
+				shouldStart: 	false,
+				isPlaying : 	false,
+				isRecording: 	false,
 				_function:		null,
 				onload : 		function(decoded) { 
 					that.buffer = decoded.channels[0]; 
@@ -298,20 +385,37 @@ define([], function() {
 					this.pitch = pitch;
 					
 					if(this._function !== null) {
+						this.isPlaying = true;
 						this._function.setPhase(0);
 					}
 				},
+				record : function(recordLength) {					
+					this.bufferLength = typeof recordLength === "undefined" ? this.bufferLength : recordLength;
+					
+					// now this, this line below, THIS is a hack...
+					this.mod("input", this._input, "=");
+					
+					this.buffer = new Float32Array(this.bufferLength);
+					this.isRecording = true;
+					this._function.setBuffer(this.buffer);
+				},
 			};
 			
-			// if(typeof properties !== "undefined") {
-			// 	Gibberish.extend(that, properties);
-			// }
+			if(typeof properties !== "undefined") {
+				if(typeof properties === "string") {
+					that.audioFilePath = properties;
+					that.isPlaying = true;
+				}else{ // wait to record samples
+					Gibberish.extend(that, properties);
+				}
+			}
+			if(that.input) that._input = that.input;
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			if(typeof Gibberish.audioFiles[that.audioFilePath] !== "undefined") {
 				that.buffer =  Gibberish.audioFiles[that.audioFilePath];
 				that.bufferLength = that.buffer.length;
-			}else{
+			}else if(that.audioFilePath !== null){
 			    var request = new AudioFileRequest(that.audioFilePath);
 			    request.onSuccess = that.onload;
 			    request.send();
@@ -319,27 +423,37 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Sampler\"]();");	
-			that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
+			that._function = Gibberish.make["Sampler"](that.buffer, that); // only passs ugen functions to make
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["pitch", "amp"] );
+			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "input", "length"] );
 			
 			return that;
 		},
 		
-		makeSampler : function(buffer) {
+		makeSampler : function(buffer, self) {
 			var phase = buffer === null ? 0 : buffer.length;
 			var interpolate = Gibberish.interpolate;
-			var output = function(_pitch, amp) {
+			var write = 0;
+			var output = function(_pitch, amp, isRecording, isPlaying, input, length) {
 				var out = 0;
 				phase += _pitch;
-				if(buffer !== null && phase < buffer.length) {
+				
+				if(write++ < length && isRecording) {
+					buffer[phase] = input;
+				}else if(write > length && isRecording){
+					self.isRecording = false;
+					write = 0;
+					self.removeMod("input");
+				}
+
+				if(buffer !== null && phase < buffer.length && isPlaying) {
 					out = interpolate(buffer, phase);
 				}
 				return out * amp;
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };
-			
+			output.setBuffer = function(newBuffer) { buffer = newBuffer; };
 			return output;
 		},
 		
@@ -893,86 +1007,6 @@ define([], function() {
 			};
 			output.setNoise = function(val) { noise = val; };
 			
-			return output;
-		},
-		
-		Record : function(input, length, shouldStart, speed) {
-			var that = { 
-				type:		"Record",
-				category:	"Gen",
-				input	: 	0, //input || null,
-				_input  :   input || null,
-				length	: 	length || ms(1000),
-				shouldStart:shouldStart || false,
-				buffer	:   null,
-				isPlaying:  false,
-				isRecording:false,
-				speed : 	speed || 1,
-				startRecording : function(recordLength) {					
-					this.length = typeof recordLength === "undefined" ? this.length : recordLength;
-					
-					// now this, this line below, THIS is a hack...
-					this.mod("input", this._input, "=");
-					
-					this.buffer = new Float32Array(this.length);
-					this.isRecording = true;
-					this._function.setBuffer(this.buffer);
-				},
-				stopRecording: function() {
-					this.isRecording = false;
-				},
-				play:function() {
-					this.isPlaying = true;
-				},
-				stop:function() {
-					this.isPlaying = false;
-				}
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Record\"]();");
-			window[that.symbol] = Gibberish.make["Record"](that);
-			that._function = window[that.symbol];
-						
-			Gibberish.defineProperties( that, ["isPlaying", "isRecording", "input", "speed"] );
-			
-			return that;
-		},
-		
-		makeRecord: function(self) { // note, storing the increment value DOES NOT make this faster!
-			var phase = 0;
-			var buffer = null;
-			var interpolate = Gibberish.interpolate;
-			var output = function(isRecording, isPlaying, input, length, speed) {
-				
-				phase += 1; //isRecording ? 1 : speed;
-				
-				if(phase < length && isRecording) {
-					buffer[phase] = input;
-				}else if(phase > length && isRecording){
-					self.stopRecording();
-				}
-				
-				var val = 0; 
-				
-				if(isPlaying) {
-					val = isPlaying ? interpolate(buffer, phase) : val;
-					if(speed > 0) {
-						phase = phase > length ? phase - length : phase;
-					}else{
-						phase = phase < 0 ? phase + length : phase;
-					}
-				}
-				
-				return val;
-			};
-			
-			output.setBuffer = function(_buffer) {
-				buffer = _buffer;
-				phase = 0;
-			};
-	
 			return output;
 		},
 		
