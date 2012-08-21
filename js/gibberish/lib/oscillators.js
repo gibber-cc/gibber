@@ -268,89 +268,8 @@ define([], function() {
 			
 			return that;
 		},	
-		
-		Record : function(input, length, shouldStart) {
-			var that = { 
-				type:		"Record",
-				category:	"Gen",
-				input	: 	0, //input || null,
-				_input  :   input || null,
-				length	: 	length || ms(1000),
-				shouldStart:shouldStart || false,
-				buffer	:   null,
-				isPlaying:  false,
-				isRecording:false,
-				startRecording : function(recordLength) {					
-					this.length = typeof recordLength === "undefined" ? this.length : recordLength;
-					
-					// now this, this line below, THIS is a hack...
-					this.mod("input", this._input, "=");
-					
-					this.buffer = new Float32Array(this.length);
-					this.isRecording = true;
-					this._function.setBuffer(this.buffer);
-				},
-				stopRecording: function() {
-					this.isRecording = false;
-				},
-				play:function() {
-					this.isPlaying = true;
-				},
-				stop:function() {
-					this.isPlaying = false;
-				}
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
 			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Record\"]();");
-			window[that.symbol] = Gibberish.make["Record"](that);
-			that._function = window[that.symbol];
-						
-			Gibberish.defineProperties( that, ["isPlaying", "isRecording", "input"] );
-			
-			return that;
-		},
-		
-		makeRecord: function(self) { // note, storing the increment value DOES NOT make this faster!
-			var phase = 0;
-			var buffer = null;
-			var interpolate = Gibberish.interpolate;
-			var output = function(isRecording, isPlaying, input, length) {
-				
-				phase += 1; //isRecording ? 1 : speed;
-				
-				if(phase < length && isRecording) {
-					buffer[phase] = input;
-				}else if(phase > length && isRecording){
-					self.stopRecording();
-					self.removeMod("input");
-				}
-				
-				var val = 0; 
-				
-				if(isPlaying) {
-					val = isPlaying ? interpolate(buffer, phase) : val;
-					if(speed > 0) {
-						phase = phase > length ? phase - length : phase;
-					}else{
-						phase = phase < 0 ? phase + length : phase;
-					}
-				}
-				
-				return val;
-			};
-			
-			output.setBuffer = function(_buffer) {
-				buffer = _buffer;
-				phase = 0;
-			};
-	
-			return output;
-		},
-		
-			
-		Sampler : function(properties) {
+		Sampler : function() {
 			var that = {
 				type: 			"Sampler",
 				category:		"Gen",
@@ -386,7 +305,11 @@ define([], function() {
 					
 					if(this._function !== null) {
 						this.isPlaying = true;
-						this._function.setPhase(0);
+						if(pitch > 0) {
+							this._function.setPhase(0);
+						}else{
+							this._function.setPhase(this.bufferLength);
+						}
 					}
 				},
 				record : function(recordLength) {					
@@ -401,15 +324,16 @@ define([], function() {
 				},
 			};
 			
-			if(typeof properties !== "undefined") {
-				if(typeof properties === "string") {
-					that.audioFilePath = properties;
+			if(typeof arguments[0] !== "undefined") {
+				if(typeof arguments[0] === "string") {
+					that.audioFilePath = arguments[0];
 					that.isPlaying = true;
 				}else{ // wait to record samples
-					Gibberish.extend(that, properties);
+					that.input = arguments[0];
+					that._input = arguments[0];
 				}
 			}
-			if(that.input) that._input = that.input;
+			
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			if(typeof Gibberish.audioFiles[that.audioFilePath] !== "undefined") {
@@ -426,7 +350,22 @@ define([], function() {
 			that._function = Gibberish.make["Sampler"](that.buffer, that); // only passs ugen functions to make
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "input", "length"] );
+			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length" ] );
+			
+			var _amp = that.amp;
+			
+			// TODO: why can't I reassign input?
+			(function() {
+				var __input = that.input;
+				Object.defineProperty(that, "input", {
+					get: function() { return __input; },
+					set: function(value) {
+						__input = value;
+						that._input = value;
+						Gibberish.dirty(that);
+					},
+				});
+			})();
 			
 			return that;
 		},
@@ -447,7 +386,7 @@ define([], function() {
 					self.removeMod("input");
 				}
 
-				if(buffer !== null && phase < buffer.length && isPlaying) {
+				if(buffer !== null && phase < buffer.length && phase > 0 && isPlaying) {
 					out = interpolate(buffer, phase);
 				}
 				return out * amp;
