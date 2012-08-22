@@ -418,16 +418,19 @@ define([
 				Gibber.docs = data;
 				
 				var tags = [];
-				Gibber.toc = [];
+				Gibber.toc = {};
 				for(var key in Gibber.docs) {
 					var obj = Gibber.docs[key];
 					tags.push({
 						text:key,
 						obj: key,
 						type:"object",
+						class:obj.key,
 					});
-					
-					Gibber.toc.push(key);
+					if(typeof Gibber.toc[obj.type] === "undefined") {
+						Gibber.toc[obj.type] = [];
+					}
+					Gibber.toc[obj.type].push(key);
 					
 					if(typeof obj.methods !== "undefined") {
 						for(var method in obj.methods) {
@@ -483,6 +486,9 @@ define([
 			});
 			$("#tocButton").on("click", function(e) {
 				Gibber.Environment.displayTOC();
+			});
+			$("#closeSidebarButton").on("click", function(e) {
+				Gibber.Environment.toggleSidebar();
 			});
 			
 			$("#docsSearchInput").change(function(e) {
@@ -543,6 +549,7 @@ define([
 		},
 		
 		displayDocs : function(obj) {
+			console.log("DISPLAYING", obj)
 			if(typeof Gibber.docs[obj] === "undefined") return;
 			$("#docs").html(Gibber.docs[obj].text);
 			$("#docs").append("<h2>Methods</h2>");
@@ -576,20 +583,27 @@ define([
 			$("#docs").empty();
 			var ul = $("<ul style='list-style:none; padding: 5px'>");
 
-			for(var i = 0; i < Gibber.toc.length; i++) {
-				var li = $("<li>");
-				var a = $("<a style='cursor:pointer'>");
-				(function() {
-					var text = Gibber.toc[i];
-					a.text(text);
-					a.click(function() {
-						Gibber.Environment.displayDocs(text);
-					});
-				})();
-				$(li).append(a);
-				$(ul).append(li);
+			for(var key in Gibber.toc) {
+				var cat = Gibber.toc[key];
+				var h2 = $("<h2>"+key+"</h2>");
+				var ul = $("<ul>");
+				for(var i = 0; i < cat.length; i++) {
+					var li = $("<li>");
+					var a = $("<a style='cursor:pointer'>");
+					(function() {
+						var text = cat[i];
+						a.text(text);
+						a.click(function() {
+							Gibber.Environment.displayDocs(text);
+						});
+					})();
+					$(li).append(a);
+					$(ul).append(li);
+				}
+				$("#docs").append(h2);
+				$("#docs").append(ul);					
 			}
-			$("#docs").append(ul);
+			
 		},
 		
 		
@@ -608,7 +622,7 @@ define([
 					$(".CodeMirror").width(Gibber.codeWidth);
 					$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
 					$("#sidebar").height($(".CodeMirror").outerHeight());
-
+					
 					$("#resizeButton").css({
 						position:"absolute",
 						display:"block",
@@ -626,7 +640,9 @@ define([
 					//$('.CodeMirror-scroll').css("width", "80%");
 					$('.CodeMirror').css("width", "70%");
 					$('.CodeMirror').css("margin", "0");
-					$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);						
+					$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);		
+					//$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
+					$("#sidebar").height($(".CodeMirror").outerHeight());				
 				}
 			}	
 		},

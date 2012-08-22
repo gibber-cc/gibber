@@ -1,7 +1,7 @@
 //  Gibber - ScaleSequence.js
 // ========================
 
-/**#ScaleSeq
+/**#ScaleSeq - Sequencer
 ScaleSeq inherits from the [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) object. By default it is used to send note messages
 where each note belongs to a specific scale. The scale is defined by giving a root note and a mode. All of the normal modes (aeolian,
 phrygian, lydian etc.) are supported, in addition to chromatic.

@@ -1,21 +1,80 @@
-// list of values / durations passed as arguments
+/**#ADSR - Modulation
+The cannonical four stage envelope.
+## Example Usage##
+`a = Sine();
+e = ADSR();  
+a.mod("amp", e, "=");  
+e.trigger();
+
+## Constructors
+### syntax 1:
+**param** *attack*: Integer in samples. The length of time in samples that it takes the envelope to reach its peak amplitude.
+**param** *decay* : Integer in samples. The length of time in samples that it takes the envelope to decay from its peak to its sustain level.
+**param** *sustain*: Integer in samples. The length of time the envelope maintains its sustain level
+**param** *release* : Integer in samples. The length of time the envelope takes to fade from its sustain level to 0.
+**param** *attackLevel* : Float. The peak level of the envelope, reached at the end of the attack stage.
+**param** *sustainLevel* : Float. The sustain level of the envelope, reached at the end of the decay stage.
+**/
+
+/**###ADSR.run : method
+Put the envelope at the start of its attack stage and run it.
+**/
 
 function ADSR(attack, decay, sustain, release, attackLevel, sustainLevel) {
 	that = Gibberish.ADSR(attack, decay, sustain, release, attackLevel, sustainLevel);
 	return that;
 }
 
+/**#Step- Modulation
+A basic step sequencer
+## Example Usage##
+`a = Sine();
+f = Step([140,280,100,200], _4);  
+a.mod("frequency", f);  
+`
+## Constructors
+### syntax 1:
+**param** *values*: Array. An array of values to step through.
+**param** *speed* : Integer in samples. The length of time for each step.
+**/
 function Step(steps, time) {
 	that = Gibberish.Step(steps, time);
 	return that;
 }
 
+/**#Line- Modulation
+A simple one-directional ramp
+## Example Usage##
+`a = Sine();
+l = Line(0, .5, _1, true);
+a.mod("amp", l, "=");  
+`
+## Constructor
+**param** *startingValue*: Float. The starting value for the Line.  
+**param** *endingValue* : Float. The ending value for the Line.  
+**param** *time* : Integer (samples). The time it takes to travel from the start value to the end value.  
+**param** *shouldLoop* : Boolean. Whether or not the line should repeatedly travel from start to finish.
+**/
 function Line(start, end, time, loops){
 	var that = Gibberish.Line(start, end, time, loops);
 	
 	return that;
 }
 
+/**#Env- Modulation
+A two-stage attack / decay envelope
+## Example Usage##
+`a = Sine();
+l = Line(0, .5, _1, true);
+a.mod("amp", l, "=");  
+`
+## Constructor
+**param** *attack*: Integer in samples. The length of time in samples that it takes the envelope to reach its peak amplitude.
+**param** *decay* : Integer in samples. The length of time in samples that it takes the envelope to decay from its peak to 0.
+**/
+/**###Env.run : method
+Put the envelope at the start of its attack stage and run it.
+**/
 function Env(attack, decay){
 	var that = Gibberish.Env(attack, decay);
 	

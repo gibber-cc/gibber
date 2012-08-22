@@ -4,7 +4,7 @@
 // TODO: use memory[0] in reset function instead of _sequence 
 // TODO: velocities
 
-/**#Seq
+/**#Seq - Sequencer
 Seq is used to sequence a variety of commands at specific durations. It can be used to call methods on objects, set properties of objects, or call named and anonymous functions.  
 ## Example Usage ##
 `a = Synth({maxVoices:5});

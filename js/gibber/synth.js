@@ -1,7 +1,7 @@
 //  Gibber - synth.js
 // ========================
 
-/**#Synth
+/**#Synth - Synth
 Create an oscillator(s) with an attached attack / decay envelope(s) that can play notes or chords.  
 ## Example Usage##
 `s = Synth();
@@ -78,7 +78,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 	return that;
 }
 
-/**#Synth2
+/**#Synth2 - Synth
 Create an oscillator with an attached envelope and 24db resonant filter that can be triggered by note or chord messages. The envelope controls both the
 amplitude and cutoff frequency of the filter.
 ## Example Usage##
@@ -149,7 +149,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 	
 	return that;
 }
-/**#Mono
+/**#Mono - Synth
 A three oscillator monosynth for bass and lead lines. You can set the octave and tuning offsets for oscillators 2 & 3. There is a 24db filter and an envelope controlling
 both the amplitude and filter cutoff.
 ## Example Usage##

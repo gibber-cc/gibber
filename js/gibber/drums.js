@@ -1,8 +1,8 @@
 // Gibber - drums.js
 // ========================
 
-/**#Drums
-Four different samplers linked to a single [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) for convenience. The four samplers feed into a single
+/**#Drums - Miscellaneous
+Four different samplers linked to a single [Seq](javascript:Gibber.Environment.displayDocs('Seq '\)) for convenience. The four samplers feed into a single
 [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)); this means you can change the amplitude / apply
 fx to each sampler individually or make changes to the Bus. Similarly, you can change the pitch of individual samplers and for the Drums as a whole.
 

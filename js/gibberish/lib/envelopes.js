@@ -83,7 +83,7 @@ define([], function() {
 				attackLevel:  attackLevel || 1,
 				sustainLevel: sustainLevel || 1,
 
-				trigger: function() {
+				run: function() {
 					that._function.setPhase(0);
 					that._function.setState(0);
 				},

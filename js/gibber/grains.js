@@ -1,6 +1,6 @@
 // TODO: how to deal with presets?
 
-/**#Grains
+/**#Grains - Buffer Playback
 A granulator that operates on a buffer of samples. You can either get the samples from a [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\))
 object, or the output of a [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)) (like the Master bus) 
 using the [Record](javascript:Gibber.Environment.displayDocs('Record'\)) object.

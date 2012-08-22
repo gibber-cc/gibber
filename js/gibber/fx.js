@@ -1,7 +1,7 @@
 //  Gibber.js - fx.js
 // ========================
 
-/**#Bus
+/**#Bus - Miscellaneous
 **description** : Create a bus holding fx that signals can be routed to   
 **param** *name*: String Optional name that can be used to refer to the new bus.  
 **param** *fx*: variable length object list. A comma delimited list of effects to attach to the bus.  
@@ -20,7 +20,7 @@ function Bus() { // name is id, fx is array, ahem, fx
 	return bus;
 }
 
-/**#Flanger
+/**#Flanger - FX
 **description** : A traditional flanger using a variable-length comb filter.
   
 **param** *rate*: Float. Default = .25. Measured in Hz, this is the speed that the delay line size fluctuates at  
@@ -54,7 +54,7 @@ function Flanger(rate, amount, feedback, offset) {
 	return that;
 }
 
-/**#Chorus
+/**#Chorus- FX
 **description** : cheap chorus using a flanger with an extreme offset see http://denniscronin.net/dsp/article.html
 
 **param** *rate*: Float. Default = .25. Measure in Hz, this is the speed that the delay line size fluctuates at  
@@ -76,7 +76,7 @@ function Chorus(rate, amount) {
 	return that;
 }
 
-/**#Reverb
+/**#Reverb- FX
 **description** :  based off audiolib.js reverb and freeverb
 
 **param** *roomSize*: Float. Default = .8. The size of the room being emulated  
@@ -84,7 +84,7 @@ function Chorus(rate, amount) {
 **param** *wet*: Float. Default = .75. The amount of processed signal that is output  
 **param** *dry*: Float. Default = .5. The amount of dry signal that is output  
 
-##Example Usage##
+##Example Usage
 `s = Synth();  
 s.fx.add( Reverb() );`
 **/
@@ -119,14 +119,15 @@ function Reverb(roomSize, damping, wet, dry) {
 	return that;
 }
 
-/**#Delay
+/**#Delay- FX
 
 **param** *time*: Int. Default = _4. The number of samples betweeen echoes, usually expressed in Gibber time variables
 **param** *feedback*: Float. Default = .3. How much of the output is fed back into the input of hte delay  
 
-##Example Usage##    
+##Example Usage
 `s = Synth();  
 s.fx.add( Delay() );`
+**/
 /**###Delay.time : property
 Int. The number of samples betweeen echoes, usually expressed in Gibber time variables
 **/	
@@ -141,13 +142,14 @@ function Delay(time, feedback) {
 };
 
 
-/**#Ring
+/**#Ring- FX
 
 **param** *frequency*: Float. Default = 440. The frequency of the sine wave that the signal is multiplied by  
 **param** *amount*: Float. Default = 1. The amplitude of the sine wave the signal is multiplied by  
 ##Example Usage##
 `s = Synth();  
 s.fx.add( Ring(220, .5) );`
+**/
 
 /**###Ring.frequency : property
 Float. The frequency of the sine wave that the signal is multiplied by  
@@ -162,7 +164,7 @@ function Ring(frequency, amount) {
 	return that;
 }
 
-/**#Crush
+/**#Crush- FX
 **description** : A bit-crusher / sample-rate reducer
 **param** *bitDepth*: Float. Default = 8. The number of bits to truncate the output to.
 **param** *sampleRate*: Float. Default = 1. The sampleRate to downsample to. Range is 0..1
@@ -184,7 +186,7 @@ function Crush(bitDepth, sampleRate) {
 	return that;
 }
 
-/**#Clip
+/**#Clip- FX
 **description** : A simple waveshaping distortion using y = x / (1+|x|). Clip also has a logarithmic volume adapter to the equation so that you can
 apply extreme amounts of clipping
 
@@ -208,7 +210,7 @@ window.Dist = window.Clip = function(amount, amp) {
 	return that;
 }
 
-/**#LPF 
+/**#LPF - FX
 **description** : 24db resonant ladder-style filter
 
 **param** *cutoff*: Float. Default = .1. The cutoff frequency of the filter. Range is 0..1
@@ -235,7 +237,7 @@ function LPF(cutoff, resonance) {
 	return that;
 }
 
-/**#HPF 
+/**#HPF - FX
 **description** : 24db resonant ladder-style filter
 
 **param** *cutoff*: Float. Default = .1. The cutoff frequency of the filter. Range is 0..1
@@ -262,7 +264,7 @@ function HPF(cutoff, resonance) {
 	return that;
 }
 
-/**#Gain 
+/**#Gain - FX
 **description** : a simple gain controller, can be used to scale output for example after high amplitude distortions or resonant filters.  
   
 **param** *gain*: Float. Default = 1. A multiple for the amplitude.
@@ -278,7 +280,7 @@ function Gain(gain) {
 	return that;
 }
 
-/**#Schizo 
+/**#Schizo - FX
 **description** : A buffer shuffling / stuttering effect with reversing and pitch-shifting
 ### syntax 1:
 **param** *properties* : Object. A dictionary of property keys and values to assign to the Schizo object

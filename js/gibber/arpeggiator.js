@@ -1,4 +1,4 @@
-/**#Arp
+/**#Arp - Sequencer
 The Arpeggiator takes a chord and plays the individual notes comprising it in succession, with different possible patterns.
 It is basically an extended [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) object. The available patterns are:  
   
