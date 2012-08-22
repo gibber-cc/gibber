@@ -312,7 +312,7 @@ define([], function() {
 						}
 					}
 				},
-				record : function(recordLength, input) {					
+				record : function(input, recordLength) {					
 					this.bufferLength = typeof recordLength === "undefined" ? this.bufferLength : recordLength;
 					this._function.setWriteHead(0);
 					

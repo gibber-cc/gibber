@@ -17,7 +17,6 @@ define(['gibber/audio_callback',
 	'gibber/sampler',
 	'gibber/grains',
 	'gibber/envelopes',
-	'gibber/schizo',
 	], function() {
 
 	var Gibber = {

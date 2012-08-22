@@ -11,6 +11,7 @@ var filenames = [
 	"fx.js",
 	"grains.js",
 	"sampler.js",
+	"scale_seq.js"
 ];
 
 /*for (var i = 0; i < filenames.length; i++) {

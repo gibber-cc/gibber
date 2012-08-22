@@ -1,3 +1,33 @@
+//  Gibber - ScaleSequence.js
+// ========================
+
+/**#ScaleSeq
+ScaleSeq inherits from the [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) object. By default it is used to send note messages
+where each note belongs to a specific scale. The scale is defined by giving a root note and a mode. All of the normal modes (aeolian,
+phrygian, lydian etc.) are supported, in addition to chromatic.
+## Example Usage ##
+`a = Synth();
+s = ScaleSeq([0,1,2,3], [_4, _16, _8]).slave(a);  
+b = Synth();
+t = ScaleSeq({
+	note:[0,2,4,5,7],
+	durations:[_1, _2, _4],
+	root:"C4",
+	mode:"lydian",
+	slaves:a
+})`
+## Constructors
+### syntax 1:
+  **param** **values** : Array. The note positions in the scale you want to sequence. Negative numbers will create notes lower than the root.  
+  
+  **param** **duration** : Array or Gibber time value. The length for each value in the sequence. This can either be a single Gibber time value or an array of Gibber time values.  
+  
+- - - -
+### syntax 2: 
+  **param** **arguments** : Object. A dictionary of messages, durations and slaves to be sequenced. See example.
+**/
+
+
 function ScaleSeq(_sequence, _speed) {
 	var _sequenceNumbers = ($.isArray(_sequence)) ? _sequence.slice(0) : _sequence.note.slice(0);
 	
@@ -102,6 +132,10 @@ function ScaleSeq(_sequence, _speed) {
 		var mode = obj.mode;
 		var that = obj;
 	    Object.defineProperties(that, {
+/**###ScaleSeq.root : property
+String. The root note for the scale. Possibilities are written in the form of "C#3" or "Bb2" for c-sharp in the third octave and b-flat in
+the second ocatve.
+**/	
 			"root" : {
 		        get: function() {
 		            return root;
@@ -111,6 +145,9 @@ function ScaleSeq(_sequence, _speed) {
 					that.createPattern(that.sequenceNumbers);
 		        }
 			},
+/**###ScaleSeq.mode : property
+String. The mode of the scale. Uses standard modes (such as locrian, mixolydian etc.) and also adds chromatic.
+**/	
 			"mode" : {
 		        get: function() {
 		            return mode;

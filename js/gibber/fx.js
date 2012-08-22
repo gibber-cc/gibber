@@ -2,16 +2,16 @@
 // ========================
 
 /**#Bus
-**description** : Create a bus holding fx that signals can be routed to 
-*param* *name*: String Optional name that can be used to refer to the new bus.  
-*param* *fx*: variable length object list. A comma delimited list of effects to attach to the bus.  
+**description** : Create a bus holding fx that signals can be routed to   
+**param** *name*: String Optional name that can be used to refer to the new bus.  
+**param** *fx*: variable length object list. A comma delimited list of effects to attach to the bus.  
 ##Example Usage##    
 `b = Bus( Delay(_4), Reverb() );  
- s = Synth();  
-s.send( b, .5 ); 
+s = Synth();  
+s.send( b, .5 );`
 alternatively:  
 `b = Bus( "rev", Delay(_4), Reverb() );  
- s = Synth();  
+s = Synth();  
 s.send( "rev", .5 );`
 **/
 
@@ -275,5 +275,85 @@ Float. A multiple for the amplitude.
 function Gain(gain) {
 	var that = Gibberish.Gain(gain);
 	that.name = "Gain";
+	return that;
+}
+
+/**#Schizo 
+**description** : A buffer shuffling / stuttering effect with reversing and pitch-shifting
+### syntax 1:
+**param** *properties* : Object. A dictionary of property keys and values to assign to the Schizo object
+- - - - 
+### syntax 2:
+**param** *presetName* : String. The name of a Schizo preset to use. Current choices include "sane", "borderline" and "paranoid".
+
+##Example Usage## 
+`d = Drums("x*o*x*o-");
+d.fx.add(Schizo('paranoid'));`
+**/
+/**###Schizo.rate : property
+Integer, in samples. Default 11025. How often Schizo will randomly decide whether or not to shuffle.
+**/	
+/**###Schizo.chance : property
+Float. Range 0..1. Default .25. The likelihood that incoming audio will be shuffled.
+**/	
+/**###Schizo.length : property
+Integer, in samples. Default 22050. The length of time to play stuttered audio when stuttering occurs.
+**/	
+/**###Schizo.reverseChance : property
+Float. Range 0..1. Default .5. The likelihood that stuttered audio will be reversed
+**/	
+/**###Schizo.pitchChance : property
+Float. Range 0..1. Default .5. The likelihood that stuttered audio will be repitched.
+**/	
+/**###Schizo.pitchMin : property
+Float. Range 0..1. Default .25. The lowest playback speed used to repitch the audio
+**/	
+/**###Schizo.pitchMax : property
+Float. Range 0..1. Default 2. The highest playback speed used to repitch the audio.
+**/	
+function Schizo(props) {
+	if(typeof Gibber.SchizoPresets === "undefined") {
+		Gibber.SchizoPresets = {
+			sane: {
+				chance			: .1,
+				reverseChance 	: 0,
+				pitchChance		: .5,
+				mix				:.5,
+			},
+			borderline: {
+				chance			: .1,		
+				pitchChance		: .25,
+				reverseChance	: .5,
+				mix				: 1,
+			},
+			paranoid: {
+				chance			: .2,
+				reverseChance 	: .5,
+				pitchChance		: .5,
+				mix				: 1,
+			},
+		};
+	}
+
+	var that = {
+		chance: 	.25,		
+		name:		"Schizo",
+		rate: 		11025,
+		length:		22050,
+		reverseChance : .5,
+		pitchChance : .5,
+		pitchMin : .25,
+		pitchMax : 2,
+		mix : 1,
+	};
+
+	if(typeof arguments[0] === "object") {
+		$.extend(that, arguments[0]);
+	}else if(typeof arguments[0] === "string") {
+		$.extend(that, Gibber.SchizoPresets[arguments[0]]);
+	}
+
+	that = Gibberish.BufferShuffler( that );
+	
 	return that;
 }
