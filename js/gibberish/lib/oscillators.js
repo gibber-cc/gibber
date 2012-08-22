@@ -279,13 +279,13 @@ define([], function() {
 				pitch:			1,
 				amp:			1,
 				input:	 		0, //input || null,
-				_input :    	null,
+				_input :    	0,
 				length : 		ms(1000),
 				shouldStart: 	false,
 				isPlaying : 	false,
 				isRecording: 	false,
 				_function:		null,
-				onload : 		function(decoded) { 
+				onload : 		function(decoded) {
 					that.buffer = decoded.channels[0]; 
 					that.bufferLength = decoded.length;
 					
@@ -312,15 +312,17 @@ define([], function() {
 						}
 					}
 				},
-				record : function(recordLength) {					
+				record : function(recordLength, input) {					
 					this.bufferLength = typeof recordLength === "undefined" ? this.bufferLength : recordLength;
+					this._function.setWriteHead(0);
 					
-					// now this, this line below, THIS is a hack...
-					this.mod("input", this._input, "=");
-					
+					// now this, this section below, THIS is a hack...
+					this.mod("input", input, "=");
 					this.buffer = new Float32Array(this.bufferLength);
-					this.isRecording = true;
-					this._function.setBuffer(this.buffer);
+					this.codeblock += ";";
+					Gibberish.ugens.push(this);	
+					this.isRecording = true;		
+					this._function.setBuffer(this.buffer);		
 				},
 			};
 			
@@ -350,12 +352,12 @@ define([], function() {
 			that._function = Gibberish.make["Sampler"](that.buffer, that); // only passs ugen functions to make
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length" ] );
+			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length", "input" ] );
 			
 			var _amp = that.amp;
 			
 			// TODO: why can't I reassign input?
-			(function() {
+			/*(function() {
 				var __input = that.input;
 				Object.defineProperty(that, "input", {
 					get: function() { return __input; },
@@ -365,7 +367,7 @@ define([], function() {
 						Gibberish.dirty(that);
 					},
 				});
-			})();
+			})();*/
 			
 			return that;
 		},
@@ -379,11 +381,16 @@ define([], function() {
 				phase += _pitch;
 				
 				if(write++ < length && isRecording) {
-					buffer[phase] = input;
-				}else if(write > length && isRecording){
+					//if(write % 10000 === 0) console.log(write, length);
+					buffer[write] = input;
+				}else if(write >= length && isRecording){
+					console.log("connecting to Master");
 					self.isRecording = false;
-					write = 0;
+					//self.input = 0;
 					self.removeMod("input");
+					Gibberish.ugens.remove(self);
+					self.send(Master, 1);
+					write = 0;
 				}
 
 				if(buffer !== null && phase < buffer.length && phase > 0 && isPlaying) {
@@ -392,6 +399,7 @@ define([], function() {
 				return out * amp;
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };
+			output.setWriteHead = function(newWriteHead) { write = newWriteHead; };			
 			output.setBuffer = function(newBuffer) { buffer = newBuffer; };
 			return output;
 		},

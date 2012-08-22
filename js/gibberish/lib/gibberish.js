@@ -1,9 +1,8 @@
 define([], function() {
     var that = {
 		debug : false,
+		callbackCount: 0,
         init : function() { 
-			
-			
 			var binops = {
 				"+" : this.binop_generator,
 				"-" : this.binop_generator,
@@ -16,6 +15,7 @@ define([], function() {
 		},
 		generateCallback : function() {
 			var debug = this.debug;
+			this.callbackCount++;
 			this.masterUpvalues = [];
 			this.masterCodeblock = [];
 			this.memo = {};
@@ -81,7 +81,7 @@ define([], function() {
 				
 				this.masterUpvalues.pushUnique( ugen.upvalues + ";\n" );
 				//if(shouldPush)
-					this.masterCodeblock.pushUnique(ugen.codeblock);
+					this.masterCodeblock.pushUnique(ugen.codeblock +";");
 				//console.log("MASTER UGEN CODEBLOCK", ugen.codeblock);
 			}
 			
@@ -126,7 +126,7 @@ define([], function() {
 						set: function(_value) {
 							
 							//console.log("SETITING...", propName, _value);
-							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
+							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string" || value === null){
 								//console.log("SETTING INDIVIDUAL", value);
 								value = _value;
 							}else{
@@ -145,11 +145,11 @@ define([], function() {
 									}
 								}
 							}
-							
+							if(that === null) return;
 							if(that.category === "FX" && typeof that.parent !== "undefined") {
 								that.dirty = true;
 								Gibberish.dirty(that.parent.parent); // that.parent is fx array, parent of fx array is ugen
-							}else if (typeof that.modding !== "undefined") {
+							}else if (typeof that.modding !== "undefined" && that.modding !== null) {
 								function checkMods(obj) {
 									for(var i = 0; i < obj.modding.length; i++) {
 										Gibberish.dirty(obj.modding[i].ugen);
@@ -224,8 +224,7 @@ define([], function() {
 				var paramNames = [name];
 				for(var i = 0; i < parameters.length; i++) {
 					var param = parameters[i];
-					var add = typeof param.symbol !== "undefined" ? false : shouldAdd;
-					paramNames.push(Gibberish.codegen(op[parameters[i]], codeDictionary, true));
+					paramNames.push(Gibberish.codegen(op[parameters[i]], codeDictionary, shouldAdd));
 				}
 				
 				var c = String.prototype.format.apply(formula, paramNames);
@@ -242,15 +241,12 @@ define([], function() {
 
 				var memo = this.memo[op.symbol];
 				if(memo){
+					//console.log("MEMO", memo, op);
 					return memo;
 				}
 				
 				var name = op.ugenVariable || this.generateSymbol("v");
 				op.ugenVariable = name;
-				
-				if(op.symbol && !op.NO_MEMO) {
-					this.memo[op.symbol] = op.ugenVariable;
-				}
 				
 				var statement;
 				if(typeof op === "object" && op instanceof Array) {
@@ -282,6 +278,11 @@ define([], function() {
 						}
 					}
 				}
+				
+				if(op.symbol && !op.NO_MEMO) {
+					this.memo[op.symbol] = op.ugenVariable;
+				}
+				
 				return name;
 			}
 			return op;
@@ -293,6 +294,10 @@ define([], function() {
 				upvalues		: [],	// pointers to globals that will be included in callback closure
 				codeblock 		: [],	// will go directly into callback
 			};
+			if(ugen.callbackCount === Gibberish.callbackCount) {
+				//console.log("shouldn't be building...", Gibberish.callbackCount, ugen.callbackCount);
+				//return;
+			}
 			//console.log("GENERATING " + ugen.type);
 			var outputCode = this.codegen(ugen, codeDictionary);
 			//console.log("OUTPUT CODE", ugen.type, outputCode);
@@ -319,6 +324,8 @@ define([], function() {
 			ugen.initialization	= codeDictionary.initialization;
 			ugen.upvalues		= codeDictionary.upvalues.join(";\n");
 			ugen.codeblock		= codeDictionary.codeblock.join(";\n");
+			
+			ugen.callbackCount = this.callbackCount;
 		},
 		
 		binop_generator : function(op, codeDictionary, shouldAdd) {
@@ -445,6 +452,7 @@ define([], function() {
 		generators 	: {},
 		ugens		: [],
 		audioFiles	: {},
+		callbackCount : 0,
 		//dirty		: false,
 		memo		: {},
 		MASTER		: "output", // a constant to connect to master output
