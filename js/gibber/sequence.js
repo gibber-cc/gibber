@@ -376,7 +376,6 @@ This should never need to be explicitly called.
 			}
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
 			nextPhase = Math.round(nextPhase);
-			console.log(nextPhase);
 			//if(nextPhase == 0) return;
 			
 			this.nextEvent = G.callback.addEvent(nextPhase, this);

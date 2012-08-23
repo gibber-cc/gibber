@@ -31,7 +31,7 @@ define([
 			if(typeof localStorage.scripts === "undefined") {
 				scripts = {};
 			}else{
-				scripts = localStorage.getObject("scripts")
+				scripts = localStorage.getObject("scripts");
 			}
 			var name = window.prompt("Enter name for file");
 			scripts[name] = code;
@@ -350,27 +350,26 @@ define([
 					flash(cm, pos);			
 					Gibber.callback.addCallback(v, _1);		
 				},
-				"Shift-Alt-Enter" : function(cm) { // thanks to graham wakefield
-					// search up & down for nearest empty line:
-					var pos = editor.getCursor();
-					var startline = pos.line;
-					var endline = pos.line;
-					while (startline > 0 && editor.getLine(startline) !== "") {
-						startline--;
-					}
-					while (endline < editor.lineCount() && editor.getLine(endline) !== "") {
-						endline++;
-					}
-					var pos1 = { line: startline, ch: 0 }
-					var pos2 = { line: endline, ch: 0 }
-					var str = editor.getRange(pos1, pos2);
-	
-					Gibber.runScript(str);
+				"Shift-Alt-Enter" : function(cm) {
+					var result = Gibber.Environment.selectCurrentBlock();
+					
+					Gibber.runScript(result.text);
 	
 					// highlight:
-					var sel = editor.markText(pos1, pos2, "highlightLine");
+					var sel = editor.markText(result.start, result.end, "highlightLine");
 					window.setTimeout(function() { sel.clear(); }, 250);
 				},
+				"Shift-Ctrl-Alt-Enter" : function(cm) {
+					console.log("CALLED");
+					var result = Gibber.Environment.selectCurrentBlock();
+					
+					Gibber.callback.addCallback(result.text, _1);		
+	
+					// highlight:
+					var sel = editor.markText(result.start, result.end, "highlightLine");
+					window.setTimeout(function() { sel.clear(); }, 250);
+				},
+				
 				"Ctrl-`" : function(cm) {
 					Gibber.clear();
 					Gibber.audioInit = false;
@@ -391,24 +390,12 @@ define([
 					Gibber.Environment.slaveSocket.send(v);
 				},
 				"Shift-Alt-2" : function(cm) {
-					var pos = editor.getCursor();
-					var startline = pos.line;
-					var endline = pos.line;
-					while (startline > 0 && editor.getLine(startline) !== "") {
-						startline--;
-					}
-					while (endline < editor.lineCount() && editor.getLine(endline) !== "") {
-						endline++;
-					}
-					var pos1 = { line: startline, ch: 0 }
-					var pos2 = { line: endline, ch: 0 }
-					var str = editor.getRange(pos1, pos2);
+					var result = Gibber.Environment.selectCurrentBlock();
 	
-					//Gibber.runScript(str);
-					Gibber.Environment.slaveSocket.send(str);
+					Gibber.Environment.slaveSocket.send(result.text);
 					
 					// highlight:
-					var sel = editor.markText(pos1, pos2, "highlightLine");
+					var sel = editor.markText(result.start, result.end, "highlightLine");
 					window.setTimeout(function() { sel.clear(); }, 250);
 				},
 			};
@@ -546,6 +533,29 @@ define([
 					$(Gibber.Environment.autocompleteLayer).append(li);
 				}
 			});
+			
+			var scripts = localStorage.getObject("scripts");
+			if(typeof scripts.loadFile !== "undefined") {
+				console.log(scripts.loadFile);
+				eval(scripts.loadFile);
+			}
+		},
+		
+		selectCurrentBlock : function() { // thanks to graham wakefield
+			var pos = editor.getCursor();
+			var startline = pos.line;
+			var endline = pos.line;
+			while (startline > 0 && editor.getLine(startline) !== "") {
+				startline--;
+			}
+			while (endline < editor.lineCount() && editor.getLine(endline) !== "") {
+				endline++;
+			}
+			var pos1 = { line: startline, ch: 0 }
+			var pos2 = { line: endline, ch: 0 }
+			var str = editor.getRange(pos1, pos2);
+			
+			return {start:pos1, end:pos2, text:str};
 		},
 		
 		displayDocs : function(obj) {

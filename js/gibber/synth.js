@@ -128,8 +128,8 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 function Synth2(properties) {
 	var that = {};
 	
-	if(that.attack) that.attack = G.time(that.attack);
-	if(that.decay) that.decay = G.time(that.decay);
+	if(properties.attack) properties.attack = G.time(properties.attack);
+	if(properties.decay) properties.decay = G.time(properties.decay);
 	
 	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
 	if(isNaN(that.maxVoices)) that.maxVoices = 1;
@@ -212,10 +212,10 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 function Mono(properties) {
 	var that = {};
 	
-	if(that.attack) that.attack = G.time(that.attack);
-	if(that.decay) that.decay = G.time(that.decay);
+	if(properties.attack) properties.attack = G.time(properties.attack);
+	if(properties.decay) properties.decay = G.time(properties.decay);
 	
-	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
+	if(typeof properties !== "undefined") Gibberish.extend(properties, properties);
 		
 	that = Gibberish.Mono(that);
 	
