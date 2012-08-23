@@ -370,7 +370,6 @@ This should never need to be explicitly called.
 					duration = G.time(duration);
 					nextPhase += duration;
 				}else{
-					console.log("HERE", this.speed, G.time(this.speed));
 					nextPhase += G.time(this.speed);//G.time(this.speed);
 				}
 			}

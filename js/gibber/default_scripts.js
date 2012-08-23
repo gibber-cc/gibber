@@ -23,8 +23,12 @@ default:
 's = ScaleSeq(fill(), 1/16).slave(p);\n'+
 's.root = "C2";\n'+
 '\n'+
-'// create bass synth with 1000ms attack, 2000ms decay, .75 amp\n'+
-'b = Synth(1000, 2000, .65)\n'+
+'// create bass synth with a half-note attack, a whole-note decay, and .75 amp\n'+
+'b = Synth({\n'+
+'	attack:1/2,\n'+
+'	decay: 1,\n'+
+'	amp: .65\n'+
+'})\n'+
 'b.fx.add( Clip(50) )\n'+
 '\n'+
 '// sequence bass. "sequence" is positions in scale\n'+

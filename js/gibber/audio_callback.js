@@ -6,9 +6,9 @@ function audioProcess(buffer, channelCount){
 			
 			if(Gibberish.isDirty) Gibberish.callback = Gibberish.generateCallback(); 
 
-			Gibber.callback.generate();
+			Gibber.callback.generate(); // for sequencers etc.
 			
-			buffer[i] = buffer[i + 1] = Gibberish.callback();
+			buffer[i] = buffer[i + 1] = Gibberish.callback(); // for audio
 			Gibber.debug = false;
 		}
 	}

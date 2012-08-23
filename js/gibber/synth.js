@@ -51,8 +51,8 @@ function Synth(attack, decay, amp) {
 	}else{
 		that = {};
 
-		if(! isNaN(attack)) that.attack = G.time(that.attack);
- 		if(! isNaN(decay)) 	that.decay 	= G.time(that.decay);	
+		if(! isNaN(attack)) that.attack = G.time(attack);
+ 		if(! isNaN(decay)) 	that.decay 	= G.time(decay);	
 		if(! isNaN(amp)) 	that.amp = amp;
 		
 		that.maxVoices = 1;
