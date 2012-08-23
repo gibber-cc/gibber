@@ -96,23 +96,54 @@ define([], function() {
 				name:"Filter24",
 				acceptsInput:true,	
 				props:{ cutoff:.1, resonance: 3, isLowPass:true },
-				upvalues: { pole1:0, pole2:0, pole3:0, pole4:0 },
+				upvalues: { pole1:0, pole2:0, pole3:0, pole4:0, pole11:0, pole22:0, pole33:0, pole44:0 },
 				
 				callback : function(sample, cutoff, resonance, isLowPass) {
-					var rez = pole4 * resonance; 
+					var out;
+					if(typeof sample[0] === "undefined") {
+						var rez = pole4 * resonance; 
+						rez = rez > 1 ? 1 : rez;
+						
+						sample = sample - rez;
 
-					rez = rez > 1 ? 1 : rez;
-					sample = sample - rez;
+						cutoff = cutoff < 0 ? 0 : cutoff;
+						cutoff = cutoff > 1 ? 1 : cutoff;
 
-					cutoff = cutoff < 0 ?   0 	: cutoff;
-					cutoff = cutoff > 1 ? 1 	: cutoff;
+						pole1 = pole1 + ((-pole1 + sample) * cutoff);
+						pole2 = pole2 + ((-pole2 + pole1)  * cutoff);
+						pole3 = pole3 + ((-pole3 + pole2)  * cutoff);
+						pole4 = pole4 + ((-pole4 + pole3)  * cutoff);
 
-					pole1 = pole1 + ((-pole1 + sample) * cutoff);
-					pole2 = pole2 + ((-pole2 + pole1)  * cutoff);
-					pole3 = pole3 + ((-pole3 + pole2)  * cutoff);
-					pole4 = pole4 + ((-pole4 + pole3)  * cutoff);
+						out = isLowPass ? pole4 : sample - pole4;
+					}else{
+						out = [];
+						var rezz = pole44 * resonance; 
+						rezz = rezz > 1 ? 1 : rezz;
+						
+						cutoff = cutoff < 0 ? 0 : cutoff;
+						cutoff = cutoff > 1 ? 1 : cutoff;
+						
+						sample[0] = sample[0] - rezz;
 
-					var out = isLowPass ? pole4 : sample - pole4;
+						pole11 = pole11 + ((-pole11 + sample[0]) * cutoff);
+						pole22 = pole22 + ((-pole22 + pole11)  * cutoff);
+						pole33 = pole33 + ((-pole33 + pole22)  * cutoff);
+						pole44 = pole44 + ((-pole44 + pole33)  * cutoff);
+
+						out[0] = isLowPass ? pole44 : sample[0] - pole44;
+						
+						rez = pole4 * resonance; 
+						rez = rez > 1 ? 1 : rez;
+						
+						sample[1] = sample[1] - rez;
+
+						pole1 = pole1 + ((-pole1 + sample[1]) * cutoff);
+						pole2 = pole2 + ((-pole2 + pole1)  * cutoff);
+						pole3 = pole3 + ((-pole3 + pole2)  * cutoff);
+						pole4 = pole4 + ((-pole4 + pole3)  * cutoff);
+
+						out[1] = isLowPass ? pole4 : sample[1] - pole4;
+					}
 					return out;
 				},
 			});
