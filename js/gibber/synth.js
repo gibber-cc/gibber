@@ -215,7 +215,7 @@ function Mono(properties) {
 	if(properties.attack) properties.attack = G.time(properties.attack);
 	if(properties.decay) properties.decay = G.time(properties.decay);
 	
-	if(typeof properties !== "undefined") Gibberish.extend(properties, properties);
+	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
 		
 	that = Gibberish.Mono(that);
 	
