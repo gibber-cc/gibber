@@ -133,7 +133,7 @@ default:
 '*/\n'+
 '\n'+
 '// x = kick, o = snare, * = closed hihat, - = open hihat. hits are triggered every quarter note\n'+
-'d = Drums("xoxo", _4)\n'+
+'d = Drums("xoxo", 1/4)\n'+
 '\n'+
 '// add soft-clipping distortion to entire kit\n'+
 'd.fx.add( Clip(1000) )\n'+
@@ -145,14 +145,14 @@ default:
 'd.snare.pitch = .5;\n'+
 '\n'+
 '// add delay fx to snare only\n'+
-'d.snare.fx.add( Delay(_6, .25) );\n'+
+'d.snare.fx.add( Delay(1/6, .25) );\n'+
 '\n'+
 '\n'+
 '// pass new sequence\n'+
 'd.set("x -*")\n'+
 '\n'+
 '// change speed of pattern\n'+
-'d.speed = _8;\n'+
+'d.speed = 1/8;\n'+
 '\n'+
 '// change the master tempo. All sequencers will update themselves to match the\n'+
 '// master clock speed whenever it is changed.\n'+
@@ -166,9 +166,9 @@ default:
 'Gibber.clear();\n'+
 'd = Drums();\n'+
 '\n'+
-'kick = Seq("x...x..xx..xx...", _16).slave(d);\n'+
-'hat  = Seq("*.*.*-***.*-*.**", _16).slave(d);\n'+
-'sn   = Seq(".o", _4).slave(d);\n'+
+'kick = Seq("x...x..xx..xx...", 1/16).slave(d);\n'+
+'hat  = Seq("*.*.*-***.*-*.**", 1/16).slave(d);\n'+
+'sn   = Seq(".o", 1/4).slave(d);\n'+
 '\n'+
 'hat.shuffle(); // randomize hat sequence',
 
@@ -190,7 +190,7 @@ default:
 '  note: ["A4", "Bb4", "C5", "G4"],\n'+
 '  amp:  [ .2 ,   .3 ,   .4,  .1 ],\n'+
 '  slaves: a,\n'+
-'  durations: _4,\n'+
+'  durations: 1/4,\n'+
 '});\n'+
 '\n'+
 'The above Seq object slaves one synth and advances through the various sequences it contains\n'+
@@ -202,7 +202,7 @@ default:
 '\n'+
 'c = Seq({\n'+
 '  function: [ function() { G.setBPM(180); }, function() { G.setBPM(100); } ],\n'+
-'  durations: [_1 * 2],\n'+
+'  durations: 2,\n'+
 '});\n'+
 '\n'+
 '\n'+
@@ -220,21 +220,21 @@ default:
 '\n'+
 '// create a sequence object by passing an array of notes\n'+
 '// this sequence will not have a ugen slaved, but once it has one it will output note messages (default)\n'+
-'q = Seq(["F4", "G4", "A4", "E4"], _4);\n'+
+'q = Seq(["F4", "G4", "A4", "E4"], 1/4);\n'+
 '\n'+
 '// tell the sequence object to control the synth\n'+
 'q.slave(s);\n'+
 '\n'+
 't = Synth();\n'+
 't.fx.add( Reverb() )\n'+
-'r = Seq(["A5", "A#5", "C#5", "D5"], _4).slave(t);\n'+
+'r = Seq(["A5", "A#5", "C#5", "D5"], 1/4).slave(t);\n'+
 '\n'+
 '// assign new values to the note sequence\n'+
 'q.note = ["F4", "G4",  "D4",  "C4"];\n'+
 'r.note = ["A5", "A#5", "C#5", "B5"];\n'+
 '\n'+
 '// change the speed of each sequence step\n'+
-'r.speed = q.speed = _8;\n'+
+'r.speed = q.speed = 1/8;\n'+
 '\n'+
 '// randomize the sequences\n'+
 'q.shuffle();\n'+
@@ -270,8 +270,8 @@ default:
 '// ScaleSeq uses whatever mode and root is currently defined in Gibber.\n'+
 '// Each value in the sequence defines an offset from the root note in terms of the scale, NOT IN TERMS OF HALF / WHOLE STEPS.\n'+
 '// The default is C4 aeolian; we just changed it to D4 Lydian\n'+
-'q  = ScaleSeq([0,1,5,3,0,6,7,-5], _16).slave(s);\n'+
-'qq = ScaleSeq([0,4,3,6,4,5,9,-3], _16).slave(ss);\n'+
+'q  = ScaleSeq([0,1,5,3,0,6,7,-5], 1/16).slave(s);\n'+
+'qq = ScaleSeq([0,4,3,6,4,5,9,-3], 1/16).slave(ss);\n'+
 '\n'+
 '// We can manually change the mode of any ScaleSeq. We can also change the root.\n'+
 'qq.mode = q.mode = "majorpentatonic"\n'+
@@ -279,10 +279,10 @@ default:
 '\n'+
 '// We can easily sequence changes to modes using the Seq object. Just pass "mode"\n'+
 '// as the last parameter and it will change that property of q.\n'+
-'a = Seq([ "minor", "majorpentatonic" ], _1, "mode").slave(q, qq);\n'+
+'a = Seq([ "minor", "majorpentatonic" ], 1, "mode").slave(q, qq);\n'+
 '\n'+
 '// We can also easily sequence the root key\n'+
-'b = Seq(["D4", "E4", "F#4", "A4"], _2, "root").slave(q, qq);\n'+
+'b = Seq(["D4", "E4", "F#4", "A4"], 1/2, "root").slave(q, qq);\n'+
 'b.speed = _1\n'+
 '\n'+
 '// set sequence to loop through all available modes. All modes are also stored in Gibber.modes\n'+
@@ -324,14 +324,14 @@ default:
 'p.chord("Bb3maj7", .25);\n'+
 '\n'+
 '// sequence chord changes using chord calls\n'+
-'s = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], _1, "chord").slave(p);\n'+
+'s = Seq(["C4m7", "D4m7", "Bb3maj7", "Ab3maj7"], 1, "chord").slave(p);\n'+
 '\n'+
 's.stop();\n'+
 '\n'+
 '// also sequence amplitudes, long form\n'+
 's = Seq({\n'+
 '  chord: [["C4m7", .15], ["D4m7", .025], ["Bb3maj7", .1], ["Ab3maj7", .3]],\n'+
-'  speed: _1,\n'+
+'  speed: 1,\n'+
 '  slaves: p,\n'+
 '});\n'+
 '\n'+
@@ -341,7 +341,7 @@ default:
 'high.fx.add( Reverb() );\n'+
 '\n'+
 '// create arpeggiator with chord, note duration, direction and number of octaves\n'+
-'a = Arp("C4m7", _32, "updown", 3);\n'+
+'a = Arp("C4m7", 1/32, "updown", 3);\n'+
 'a.slave(high);	// slave oscillator to arp\n'+
 '\n'+
 's.slave(a);		// slave chord of arp to same sequencer that is controlling our Poly',
@@ -356,15 +356,15 @@ default:
 '    decay: ms(50),\n'+
 '    amp:.25\n'+
 '});\n'+
-'s.fx.add( Delay(_8), Reverb() );\n'+
+'s.fx.add( Delay(1/8), Reverb() );\n'+
 '\n'+
 '// Sequence using the default Gibber scale, C4 Aeolian\n'+
 '// See scales and theory for details on the ScaleSeq object\n'+
-'q = ScaleSeq([ 0,1,5,3,0,6,7,-5 ], _16).slave(s);\n'+
+'q = ScaleSeq([ 0,1,5,3,0,6,7,-5 ], 1/16).slave(s);\n'+
 '\n'+
 '// Every two measures, alternate between randomizing the sequence and resetting it to its original value\n'+
 '// IMPORTANT: Note we do not call the functions using (), we just pass references to them\n'+
-'p = Seq([ q.shuffle, q.reset ], _1 * 2);\n'+
+'p = Seq([ q.shuffle, q.reset ], 2);\n'+
 '\n'+
 '// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
@@ -430,12 +430,12 @@ default:
 'With that in mind, here\'s a simple randomized sequencer: */\n'+
 '\n'+
 'a = Synth();\n'+
-'b = Seq( function() { a.note( rndi(440, 880) ) }, _2).slave(a);\n'+
+'b = Seq( function() { a.note( rndi(440, 880) ) }, 1/2).slave(a);\n'+
 '\n'+
 '// and here\'s one with an array of 5 set random values:\n'+
 '\n'+
 'c = Synth();\n'+
-'d = Seq( rndf(440, 880, 5), _4).slave(c);\n'+
+'d = Seq( rndf(440, 880, 5), 1/4).slave(c);\n'+
 '\n'+
 '/* Whenever a sequencer advances through an array of values, it checks to see if that\n'+
 'array has a pick function. If a pick function exists then it uses that function to pick\n'+
@@ -443,7 +443,7 @@ default:
 'add a pick function to the note array the same note is always returned: */\n'+
 '\n'+
 'e = Synth();\n'+
-'f = Seq( rndf(440, 880, 10), _4).slave(e);\n'+
+'f = Seq( rndf(440, 880, 10), 1/4).slave(e);\n'+
 '\n'+
 '// wait a few seconds, then run the line below\n'+
 'f.note.pick = function() { return 660; };\n'+
@@ -453,7 +453,7 @@ default:
 'element from the array each time the sequencer advances. */\n'+
 '\n'+
 'g = Synth();\n'+
-'h = Seq( rndf(440, 880, 4), _4).slave(g);\n'+
+'h = Seq( rndf(440, 880, 4), 1/4).slave(g);\n'+
 '\n'+
 '// wait a few seconds, then run the line below\n'+
 'h.note.pick = surpriseMe();\n'+
@@ -465,7 +465,7 @@ default:
 'i = Synth( { attack:ms(10), decay:ms(500) } );\n'+
 'j = ScaleSeq({\n'+
 '  note:[0,2,3,5,7,8],\n'+
-'  durations:[_8, _4, _2],\n'+
+'  durations:[1/8, 1/4, 1/2],\n'+
 '  slaves:[i],\n'+
 '  root:"C2",\n'+
 '});\n'+
