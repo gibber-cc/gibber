@@ -162,18 +162,19 @@ define([], function() {
 						if(counter >= 1) {
 							var bitMult = pow( depth, 2.0 );
 					
-							counter -= 1;
 							hold = floor( sample * bitMult )/ bitMult; 
+							
+							counter--;
 						}
 						return hold;
 					}else{
 						if(counter >= 1) {
 							var bitMult = pow( depth, 2.0 );
 					
-							counter -= 1;
 							hold  = floor( sample[0] * bitMult )/ bitMult;
 							holdd = floor( sample[1] * bitMult )/ bitMult;
 							
+							counter--;
 						}
 						return [hold, holdd];
 					}
@@ -196,8 +197,11 @@ define([], function() {
 				},
 				
 				init : function() {
-					this.buffer = new Float32Array(88200);
-					this.function.setBuffer(this.buffer);
+					if(this.channels === 1) {
+						this.function.setBuffer(new Float32Array(88200));
+					}else{
+						this.function.setBuffer( [new Float32Array(88200), new Float32Array(88200)] );
+					}
 				},
 				
 				callback : function(sample, offset, feedback, delayModulationRate, delayModulationAmount) {
@@ -208,42 +212,34 @@ define([], function() {
 					}else if(delayIndex < 0) {
 						delayIndex += bufferLength;
 					}
-								
-					var delayedSample = interpolate(buffer, delayIndex);
+					
+					if(typeof sample[0] === "undefined") {
+						var delayedSample = interpolate(buffer, delayIndex);
 									
-					// TODO: no, feedback really is broekn. sigh.
-					//var writeValue = sample + (delayedSample * feedback);
-					//if(writeValue > 1 || isNaN(writeValue) || writeValue < -1) { console.log("WRITE VALUE", writeValue); }
+						// TODO: no, feedback really is broken. sigh.
+						//var writeValue = sample + (delayedSample * feedback);
+						//if(writeValue > 1 || isNaN(writeValue) || writeValue < -1) { console.log("WRITE VALUE", writeValue); }
 									
-					// TODO: this shouldn't be necessary, but writeValue (when using feedback) sometimes returns NaN
-					// for reasons I can't figure out. 
-					buffer[writeIndex] = sample; //isNaN(writeValue) ? sample : writeValue;
+						// TODO: this shouldn't be necessary, but writeValue (when using feedback) sometimes returns NaN
+						// for reasons I can't figure out. 
+						buffer[writeIndex] = sample; //isNaN(writeValue) ? sample : writeValue;
+						sample += delayedSample;
+					}else{
+						var delayedSample = [];
+						delayedSample[0] = interpolate(buffer[0], delayIndex);
+						delayedSample[1] = interpolate(buffer[1], delayIndex);
 									
+						buffer[0][writeIndex] = sample[0]; //isNaN(writeValue) ? sample : writeValue;
+						buffer[1][writeIndex] = sample[1];
+						
+						sample[0] += delayedSample[0];
+						sample[1] += delayedSample[1];						
+					}
+					
 					if(++writeIndex >= bufferLength) writeIndex = 0;
-					if(++readIndex  >= bufferLength) readIndex  = 0;				
-									
-					return sample + delayedSample;
-					// 		//from old Gibber back when it worked correctly...
-					// 		var r = this.readIndex + this.delayMod.out();
-					// 		if(r > this.bufferSize) {
-					// 			r = r - this.bufferSize;
-					// 		}else if(r < 0) {
-					// 			r = this.bufferSize + r;
-					// 		}
-					// 
-					// 		var s = Sink.interpolate(this.buffer, r);
-					// 
-					// 		this.buffer[this.writeIndex++] = sample + (s * this.feedback);
-					// 		if (this.writeIndex >= this.bufferSize) {
-					// 			this.writeIndex = 0;
-					// 		}
-					// 
-					// 		this.readIndex++;
-					// 		if (this.readIndex >= this.bufferSize) {
-					// 			this.readIndex = 0;
-					// 		}
-					// 
-					// 		this.value = s + sample;
+					if(++readIndex  >= bufferLength) readIndex  = 0;
+
+					return sample;
 				},	
 			});
 
