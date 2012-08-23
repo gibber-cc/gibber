@@ -153,19 +153,31 @@ define([], function() {
 				name:"Decimator",
 				acceptsInput:true,	
 				props:{ bitDepth: 16, sampleRate: 1 },
-				upvalues: { counter: 0, hold:0, pow:Math.pow, phase:0, floor:Math.floor},
+				upvalues: { counter: 0, hold:0, holdd:0, pow:Math.pow, floor:Math.floor},
 				
 				callback : function(sample, depth, rate) {
 					counter += rate;
-				
-					if(counter >= 1) {
-						var bitMult = pow( depth, 2.0 );
 					
-						counter -= 1;
-						hold = floor( sample * bitMult )/ bitMult; 
+					if(typeof sample[0] === "undefined") {
+						if(counter >= 1) {
+							var bitMult = pow( depth, 2.0 );
+					
+							counter -= 1;
+							hold = floor( sample * bitMult )/ bitMult; 
+						}
+						return hold;
+					}else{
+						if(counter >= 1) {
+							var bitMult = pow( depth, 2.0 );
+					
+							counter -= 1;
+							hold  = floor( sample[0] * bitMult )/ bitMult;
+							holdd = floor( sample[1] * bitMult )/ bitMult;
+							
+						}
+						return [hold, holdd];
 					}
 				
-					return hold;
 				},
 			});
 			
