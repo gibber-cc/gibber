@@ -1,6 +1,14 @@
 define([], function() {
     return {
-		init: function(gibberish) {			
+		init: function(gibberish) {
+			gibberish.Noise = Gen({
+				name: "Noise",
+				upvalues: { rnd:Math.random() },
+				callback: function() {
+					return rnd() * 2 - 1;
+				},
+			});
+				
 			gibberish.Sine = Gen({
 			    name: "Sine",
 			    props: { frequency: 440, amp: .25, },
@@ -129,61 +137,7 @@ define([], function() {
 				},
 				
 			});*/
-				
-			/*	var that = Gibberish.Bus();
-				
-				Gibberish.extend(that, {
-					amp:		 	.125,
-					blend:			1,
-					damping:		0,
-					maxVoices:		5,
-					voiceCount:		0,
-					children:		[],
-					mod:			Gibberish.polyMod,
-					removeMod:		Gibberish.removePolyMod,
-				
-					note : function(_frequency) {
-						var synth = this.children[this.voiceCount++];
-						if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
-						synth.note(_frequency);
-					},
-				});
-			
-				if(typeof properties !== "undefined") {
-					Gibberish.extend(that, properties);
-				}
-			
-				for(var i = 0; i < that.maxVoices; i++) {
-					var props = {
-						blend:		that.blend,
-						damping:	that.damping,
-						amp: 		1,
-					};
-				
-					var synth = Gibberish.KarplusStrong(props);
-					synth.disconnect();
-					synth.send(that, 1);
 
-					that.children.push(synth);
-				}
-			
-				Gibberish.polyDefineProperties( that, ["blend", "damping"] );
-			
-				(function() {
-					var _amp = that.amp;
-					Object.defineProperty(that, "amp", {
-						get: function() { return _amp; },
-						set: function(value) {
-							_amp = value;
-							that.send(Master, value);
-						},
-					});
-				})();
-			
-				return that;
-			};*/
-			
-			
 			gibberish.generators.KarplusStrong2 = gibberish.createGenerator(["blend", "dampingValue", "amp", "headPos"], "{0}( {1}, {2}, {3}, {4} )");
 			gibberish.make["KarplusStrong2"] = this.makeKarplusStrong2;
 			gibberish.KarplusStrong2 = this.KarplusStrong2;
@@ -314,6 +268,7 @@ define([], function() {
 				},
 				record : function(input, recordLength) {					
 					this.bufferLength = typeof recordLength === "undefined" ? this.bufferLength : recordLength;
+					this.bufferLength = G.time(this.bufferLength); // TODO: should only be in Gibber, not Gibberish
 					this._function.setWriteHead(0);
 					
 					// now this, this section below, THIS is a hack...

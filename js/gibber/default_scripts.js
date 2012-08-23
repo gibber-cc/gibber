@@ -20,7 +20,7 @@ default:
 'p.blend = .5;\n'+
 '\n'+
 '// sequence pluck with random 16th notes\n'+
-'s = ScaleSeq(fill(), _16).slave(p);\n'+
+'s = ScaleSeq(fill(), 1/16).slave(p);\n'+
 's.root = "C2";\n'+
 '\n'+
 '// create bass synth with 1000ms attack, 2000ms decay, .75 amp\n'+
@@ -31,7 +31,7 @@ default:
 'c = ScaleSeq({\n'+
 '    root :      "C2",\n'+
 '    note :      [0,-2,-4], \n'+
-'    durations:  [_1 * 2, _1, _1],\n'+
+'    durations:  [2, 1, 1],\n'+
 '    slaves:     b\n'+
 '});\n'+
 '\n'+
@@ -43,7 +43,7 @@ default:
 'p.fx.add( Schizo() )\n'+
 '\n'+
 '// sequence drums randomizing every 4th measure and then reseting\n'+
-'e = Seq( [ d.reset, d.shuffle ], [_1 * 3, _1]);\n'+
+'e = Seq( [ d.reset, d.shuffle ], [3, 1]);\n'+
 '\n'+
 '// make FM synth using glockenspiel preset. add delay and reverb\n'+
 'f = FM("glockenspiel", {maxVoices:1})\n'+
@@ -53,7 +53,7 @@ default:
 '// sequence glockenspiel with random notes and random durations\n'+
 'g = ScaleSeq({\n'+
 '    note :      rndi(0,12,16), // 0-12 in the scale, generate 16 notes \n'+
-'    durations : rndi([_2, _1 * 2, _1 * 4], 32), // half note, two measures or four measures\n'+
+'    durations : rndi([1/2, 2, 4], 32), // half note, two measures or four measures\n'+
 '    slaves :    f,\n'+
 '});\n'+
 '\n'+
@@ -125,6 +125,8 @@ default:
 '\n'+
 'For example, at 120 BPM each measure lasts for two seconds, therefore _1 = 88200, _2 = 44100,\n'+
 '_4 = 22050, _8 - 11025.\n'+
+'\n'+
+'You can also use more traditional notation: 1/8 for an eighth note, 1/2 for a half note, 3/8 for three eighth notes etc.\n'+
 '\n'+
 'The Drums objects is a quick way to enter beats; it uses a Seq object behind the scenes. See the\n'+
 'Sequencer tutorial for more information.\n'+

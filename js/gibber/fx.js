@@ -38,7 +38,7 @@ p.note( "A3" );`
 Float. Hz. the speed that the delay line size fluctuates at.
 **/	
 /**###Flanger.amount : property
-Float. Hz. The amount that the size of the delay line fluctuates by.
+Int. Samples. The amount that the size of the delay line fluctuates by.
 **/	
 
 function Flanger(rate, amount, feedback, offset) {
@@ -136,6 +136,7 @@ Float. How much of the output is fed back into the input of the delay.
 **/	
 
 function Delay(time, feedback) {
+	if(time) time = G.time(time);
 	var that = Gibberish.Delay(time, feedback);
 	that.name = "Delay";
 	return that;	
@@ -354,7 +355,9 @@ function Schizo(props) {
 	}else if(typeof arguments[0] === "string") {
 		$.extend(that, Gibber.SchizoPresets[arguments[0]]);
 	}
-
+	that.rate = G.time(that.rate);
+	that.length = G.time(that.rate);
+	
 	that = Gibberish.BufferShuffler( that );
 	
 	return that;

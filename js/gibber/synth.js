@@ -44,13 +44,16 @@ function Synth(attack, decay, amp) {
 		that = arguments[0];
 		if(isNaN(that.maxVoices)) that.maxVoices = 1;
 		
+		if(that.attack) that.attack = G.time(that.attack);
+		if(that.decay) 	that.decay 	= G.time(that.decay);
+		
 		that = Gibberish.PolySynth(that);
 	}else{
 		that = {};
-		
-		if(! isNaN(attack)) that.attack = Math.round(attack * 44.1);
- 		if(! isNaN(decay)) that.decay = Math.round(decay * 44.1);
-		if(! isNaN(amp)) that.amp = amp;
+
+		if(! isNaN(attack)) that.attack = G.time(that.attack);
+ 		if(! isNaN(decay)) 	that.decay 	= G.time(that.decay);	
+		if(! isNaN(amp)) 	that.amp = amp;
 		
 		that.maxVoices = 1;
 
@@ -125,9 +128,12 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 function Synth2(properties) {
 	var that = {};
 	
+	if(that.attack) that.attack = G.time(that.attack);
+	if(that.decay) that.decay = G.time(that.decay);
+	
 	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
 	if(isNaN(that.maxVoices)) that.maxVoices = 1;
-		
+	
 	that = Gibberish.PolySynth2(that);
 /**###Synth2.note : method
 param **note or frequency** : String or Integer. You can pass a note name, such as "A#4", or a frequency value, such as 440.
@@ -205,6 +211,9 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 **/
 function Mono(properties) {
 	var that = {};
+	
+	if(that.attack) that.attack = G.time(that.attack);
+	if(that.decay) that.decay = G.time(that.decay);
 	
 	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
 		

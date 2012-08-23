@@ -66,6 +66,7 @@ function Grains(properties) {
 	// 		that = Gibberish.PolyFM( props );
 	// 	}
 	// }
+	if(properties.grainSize) properties.grainSize = G.time(properties.grainSize);
 	var that = Gibberish.Grains(properties);
 	that.send(Master, that.amp);
 	
@@ -81,7 +82,7 @@ function Grains(properties) {
 	that.loop = function(min, max, time, shouldLoop) {
 		min = isNaN(min) ? .25 : min;
 		max = isNaN(max) ? .75 : max;
-		time = isNaN(time) ? _1 : time;
+		time = isNaN(time) ? _1 : G.time(time);
 		
 		shouldLoop = typeof shouldLoop === "undefined" ? true : shouldLoop;
 		this.mod("position", Line(min, max, time, shouldLoop), "=");

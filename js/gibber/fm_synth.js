@@ -75,8 +75,8 @@ function FM(cmRatio, index, attack, decay){
 		props = {
 			cmRatio : isNaN(cmRatio) ?  2 	: cmRatio,
 			index  	: isNaN(index)	 ? .9 	: index,
-			attack 	: isNaN(attack)  ? 4100 : attack,
-			decay  	: isNaN(decay)   ? 4100 : decay,
+			attack 	: isNaN(attack)  ? 4100 : G.time(attack),
+			decay  	: isNaN(decay)   ? 4100 : G.time(decay),
 			maxVoices: 1,
 		};
 		

@@ -22,12 +22,20 @@ define(['gibber/audio_callback',
 	var Gibber = {
 		active : true,
 		bpm : 120,
+		MAX_MEASURES : 22,
 		audioInit : false,
 		root : "C4",
 		mode : "aeolian",
 		busses : [],
 		modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"],
-	
+		
+		time : function(val) {
+			if(val < this.MAX_MEASURES) {
+				val = Math.round(val * _1);
+			}
+			return val;
+		},
+		
 		initDurations : function() {
 			for(var i = 0; i <= 64; i++) {
 				window["_"+i] = this.measure / i;

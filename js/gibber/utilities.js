@@ -405,7 +405,7 @@ window.future = function(func, when) {
 			G.log("error in function called using future().");
 		}
 	};
-	G.callback.addEvent(when, me);
+	G.callback.addEvent(G.time(when), me);
 };
 
 window.getSpeed = function(div) {

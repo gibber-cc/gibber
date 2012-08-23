@@ -48,9 +48,9 @@ property of the sequencer object is null, otherwise the durations property takes
 			"speed": {
 				get: function(){ return _speed; },
 				set: function(value) {
-					if(value < 65) {
-						value = window["_"+value];
-					}
+					// if(value < 65) {
+					// 						value = window["_"+value];
+					// 					}
 					_speed = value;
 					if(that.sequence != null) {
 						that.setSequence(that.sequence);
@@ -351,27 +351,32 @@ This should never need to be explicitly called.
 				if(this.offset < 0) {
 					if(this.durations != null) {
 						if(this.durations.pick != null) {
-							nextPhase += this.durations.pick();
+							nextPhase += G.time(this.durations.pick());
 						}else{
-							nextPhase += this.durations[this.durationCounter % this.durations.length]
+							nextPhase += G.time( this.durations[this.durationCounter % this.durations.length] );
 						}
 					}else{
-						nextPhase += this.speed;
+						nextPhase += G.time(this.speed);
 					}
 				}
 			}else{
 				if(this.durations != null) {
+					var duration;
 					if(this.durations.pick != null) {
-						nextPhase += this.durations.pick();
+						duration = this.durations.pick();
 					}else{
-						nextPhase += this.durations[this.durationCounter % this.durations.length]
+						duration = this.durations[this.durationCounter % this.durations.length]
 					}
+					duration = G.time(duration);
+					nextPhase += duration;
 				}else{
-					nextPhase += this.speed;
+					console.log("HERE", this.speed, G.time(this.speed));
+					nextPhase += G.time(this.speed);//G.time(this.speed);
 				}
 			}
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
 			nextPhase = Math.round(nextPhase);
+			console.log(nextPhase);
 			//if(nextPhase == 0) return;
 			
 			this.nextEvent = G.callback.addEvent(nextPhase, this);

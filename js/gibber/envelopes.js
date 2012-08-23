@@ -21,7 +21,7 @@ Put the envelope at the start of its attack stage and run it.
 **/
 
 function ADSR(attack, decay, sustain, release, attackLevel, sustainLevel) {
-	that = Gibberish.ADSR(attack, decay, sustain, release, attackLevel, sustainLevel);
+	that = Gibberish.ADSR(G.time(attack), G.time(decay), G.time(sustain), G.time(release), attackLevel, sustainLevel);
 	return that;
 }
 
@@ -38,7 +38,7 @@ a.mod("frequency", f);
 **param** *speed* : Integer in samples. The length of time for each step.
 **/
 function Step(steps, time) {
-	that = Gibberish.Step(steps, time);
+	that = Gibberish.Step(steps, G.time(time));
 	return that;
 }
 
@@ -56,7 +56,7 @@ a.mod("amp", l, "=");
 **param** *shouldLoop* : Boolean. Whether or not the line should repeatedly travel from start to finish.
 **/
 function Line(start, end, time, loops){
-	var that = Gibberish.Line(start, end, time, loops);
+	var that = Gibberish.Line(start, end, G.time(time), loops);
 	
 	return that;
 }
@@ -76,7 +76,7 @@ a.mod("amp", l, "=");
 Put the envelope at the start of its attack stage and run it.
 **/
 function Env(attack, decay){
-	var that = Gibberish.Env(attack, decay);
+	var that = Gibberish.Env(G.time(attack), G.time(decay));
 	
 	return that;
 }
