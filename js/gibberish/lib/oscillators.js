@@ -3,69 +3,82 @@ define([], function() {
 		init: function(gibberish) {
 			gibberish.Noise = Gen({
 				name: "Noise",
-				upvalues: { rnd:Math.random() },
+				upvalues: { rnd:Math.random },
 				callback: function() {
 					return rnd() * 2 - 1;
 				},
 			});
 				
-			gibberish.Sine = Gen({
+			Gibberish.Sine = Gen({
 			    name: "Sine",
-			    props: { frequency: 440, amp: .25, },
+			    props: { frequency: 440, amp: .25, pan: -45, channels:2 },
+			    upvalues: { phase: 0, sin:Math.sin, pi_2:Math.PI * 2, panner:Gibberish.pan() },
+ 
+			    callback: function(frequency, amp, pan, channels) {
+			        phase += frequency / 44100;
+			        var val = sin(phase * pi_2) * amp;
+			        return channels === 2 ? panner(val, pan) : val;
+			    },
+			});
+			
+			gibberish.LFO = Gen({
+			    name: "LFO",
+			    props: { frequency: 440, amp: .25, channels:1 },
 			    upvalues: { phase: 0, sin: Math.sin, pi_2: Math.PI * 2 },
 			
 			    callback: function(frequency, amp) {
 			        phase += frequency / 44100;
 			        var val = sin(phase * pi_2) * amp;
-			        return val;
+			        return channels === 2 ? panner(val, pan) : val;
 			    },
 			});
 			
+			
 			gibberish.Square = Gen({
 			    name: "Square",
-			    props: { frequency: 440, amp: .15, },
-			    upvalues: { phase: 0 },
+			    props: { frequency: 440, amp: .15, pan:0 },
+			    upvalues: { phase: 0, panner:Gibberish.pan()  },
 					
 				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Square.js
-			    callback: function(frequency, amp) {
+			    callback: function(frequency, amp, pan) {
 					var out = phase > 0.5 ? 1 : -1;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;					
-					return out * amp;
+					return panner(out * amp, pan);
 			    },
 			});
 			
 			gibberish.Triangle = Gen({
 			    name: "Triangle",
-			    props: { frequency: 440, amp: .15, },
-			    upvalues: { phase: 0 },
+			    props: { frequency: 440, amp: .15, pan:0 },
+			    upvalues: { phase: 0, panner:Gibberish.pan()  },
 
-			    callback: function(frequency, amp) {
+			    callback: function(frequency, amp, pan) {
 				    var out = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
-					return out * amp;
+					return panner(out * amp);
 			    },
 			});
 			
 			gibberish.Saw = Gen({
 			    name: "Saw",
-			    props: { frequency: 440, amp: .15, },
-			    upvalues: { phase: 0 },
+			    props: { frequency: 440, amp: .15, pan:0 },
+			    upvalues: { phase: 0,panner:Gibberish.pan()  },
 
 				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js					
-			    callback: function(frequency, amp) {
+			    callback: function(frequency, amp, pan) {
 				    var out = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
-					return out * amp;
+					return panner(out * amp, pan);
 			    },
 			});
 
 			gibberish.KarplusStrong = Gen({
 			  name:"KarplusStrong",
-			  props: { blend:1, damping:0, amp:1, dampingValue:.5 },
-			  upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random },
+			  props: { blend:1, damping:0, amp:1, dampingValue:.5, pan:0, channels:2 },
+			  upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random, panner:Gibberish.pan() },
   
 			  note : function(frequency) {
 			    var _size = Math.floor(44100 / frequency);
@@ -78,7 +91,7 @@ define([], function() {
 			    this.function.setBuffer(this.buffer);
 			  },
   
-			  callback : function(blend, __ignore, amp, damping) {
+			  callback : function(blend, __ignore, amp, damping, pan) {
 			    var val = buffer.shift();
 			    var rndValue = (rnd() > blend) ? -1 : 1;
 
@@ -88,7 +101,7 @@ define([], function() {
 
 			    buffer.push(value);
     
-			    return value * amp;
+			    return panner(value * amp, pan);
 			  },
   
 			  setters: {
@@ -138,11 +151,11 @@ define([], function() {
 				
 			});*/
 
-			gibberish.generators.KarplusStrong2 = gibberish.createGenerator(["blend", "dampingValue", "amp", "headPos"], "{0}( {1}, {2}, {3}, {4} )");
+			gibberish.generators.KarplusStrong2 = gibberish.createGenerator(["blend", "dampingValue", "amp", "headPos", "pan"], "{0}( {1}, {2}, {3}, {4},{5} )");
 			gibberish.make["KarplusStrong2"] = this.makeKarplusStrong2;
 			gibberish.KarplusStrong2 = this.KarplusStrong2;
 			
-			gibberish.generators.PolyKarplusStrong = gibberish.createGenerator(["blend", "dampingValue", "amp"], "{0}( {1}, {2}, {3} )");
+			gibberish.generators.PolyKarplusStrong = gibberish.createGenerator(["blend", "dampingValue", "amp", "pan"], "{0}( {1}, {2}, {3}, {4} )");
 			gibberish.make["PolyKarplusStrong"] = this.makePolyKarplusStrong;
 			gibberish.PolyKarplusStrong = this.PolyKarplusStrong;
 			
@@ -151,20 +164,15 @@ define([], function() {
 			// gibberish.Mesh = this.Mesh;
 			
 			// input, amp, tension, power, distance, speed
-			gibberish.generators.Mesh = gibberish.createGenerator(["bang", "amp", "tension", "power", "size", "speed", "outY", "outX", "loss", "noise"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10} )");
+			gibberish.generators.Mesh = gibberish.createGenerator(["bang", "amp", "tension", "power", "size", "speed", "outY", "outX", "loss", "noise", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} )");
 			gibberish.make["Mesh"] = this.makeMesh;
 			gibberish.Mesh = this.Mesh;
 			
 			gibberish.Sampler = this.Sampler;
-			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp", "isRecording", "isPlaying", "input", "bufferLength"], "{0}( {1}, {2}, {3}, {4}, {5}, {6} )");
+			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp", "isRecording", "isPlaying", "input", "bufferLength", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7} )");
 			gibberish.make["Sampler"] = this.makeSampler;
 			
-			//isRecording, isPlaying, input, length
-			gibberish.generators.Record = gibberish.createGenerator(["isRecording", "isPlaying", "input", "length", "speed"], "{0}( {1}, {2}, {3}, {4}, {5} )");
-			gibberish.make["Record"] = this.makeRecord;
-			gibberish.Record = this.Record;
-			
-			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "reverse", "amp", "fade"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10} )");
+			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "reverse", "amp", "fade", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} )");
 			gibberish.make["Grains"] = this.makeGrains;
 			gibberish.Grains = this.Grains;	
 		},
@@ -173,12 +181,13 @@ define([], function() {
 			var that = Gibberish.Bus();
 				
 			Gibberish.extend(that, {
-				amp:		 	.125,
+				amp:		 	1,
 				blend:			1,
 				damping:		0,
 				maxVoices:		5,
 				voiceCount:		0,
 				children:		[],
+				pan:			0,
 				mod:			Gibberish.polyMod,
 				removeMod:		Gibberish.removePolyMod,
 				
@@ -198,16 +207,18 @@ define([], function() {
 					blend:		that.blend,
 					damping:	that.damping,
 					amp: 		1,
+					pan:		that.pan,
 				};
+				console.log(props);
 				
 				var synth = Gibberish.KarplusStrong(props);
-				synth.disconnect();
-				synth.send(that, 1);
+				
+				synth.connect(that);
 
 				that.children.push(synth);
 			}
 			
-			Gibberish.polyDefineProperties( that, ["blend", "damping"] );
+			Gibberish.polyDefineProperties( that, ["blend", "damping", "pan"] );
 			
 			(function() {
 				var _amp = that.amp;
@@ -239,6 +250,7 @@ define([], function() {
 				isPlaying : 	false,
 				isRecording: 	false,
 				_function:		null,
+				pan:			0,
 				onload : 		function(decoded) {
 					that.buffer = decoded.channels[0]; 
 					that.bufferLength = decoded.length;
@@ -307,7 +319,7 @@ define([], function() {
 			that._function = Gibberish.make["Sampler"](that.buffer, that); // only passs ugen functions to make
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length", "input" ] );
+			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length", "input", "pan" ] );
 			
 			var _amp = that.amp;
 			
@@ -331,7 +343,8 @@ define([], function() {
 			var phase = buffer === null ? 0 : buffer.length;
 			var interpolate = Gibberish.interpolate;
 			var write = 0;
-			var output = function(_pitch, amp, isRecording, isPlaying, input, length) {
+			var panner = Gibberish.pan();
+			var output = function(_pitch, amp, isRecording, isPlaying, input, length, pan) {
 				var out = 0;
 				phase += _pitch;
 				
@@ -351,7 +364,7 @@ define([], function() {
 				if(buffer !== null && phase < buffer.length && phase > 0 && isPlaying) {
 					out = interpolate(buffer, phase);
 				}
-				return out * amp;
+				return panner(out * amp, pan);
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };
 			output.setWriteHead = function(newWriteHead) { write = newWriteHead; };			
@@ -371,7 +384,7 @@ define([], function() {
 				buffer2:	new Float32Array(100),
 				headPos:	4,
 				headCoeff:  .25,
-				
+				pan: 0,
 				note : function(frequency) {
 					var _size = Math.floor(44100 / frequency);
 					this.buffer  = new Float32Array(_size); // needs push and shift methods
@@ -422,7 +435,7 @@ define([], function() {
 			that._function = Gibberish.make["KarplusStrong2"](that.buffer, that.buffer2);
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["blend", "amp", "headPos", "damping"] );
+			Gibberish.defineProperties( that, ["blend", "amp", "headPos", "damping", "pan"] );
 			return that;
 		},
 		
@@ -432,8 +445,9 @@ define([], function() {
 			var lastValue = 0;
 			var lastValue2 = 0;
 			var read1 = 0, read2 = 0, write = 0;
+			var panner = Gibberish.pan();
 			 
-			var output = function(blend, damping, amp, headPos) {
+			var output = function(blend, damping, amp, headPos, pan) {
 				var val = buffer[read1++];
 				var val2 = buffer2[read2--];
 				read1 = read1 >= buffer.length ? 0 : read1;
@@ -454,7 +468,7 @@ define([], function() {
 				
 				//if(phase++ % 22050 === 0) console.log("INSIDE", value, blend, damping, amp, val);
 				//return buffer[(headPos + read1) % buffer.length] + (buffer2[(buffer.length - headPos + read2) % buffer.length] * -1) * amp;
-				return (value + (value2 * -1)) * amp;
+				return panner( (value + (value2 * -1)) * amp, pan );
 			};
 			output.setBuffer  = function(buff) { buffer  = buff; };
 			output.setBuffer2 = function(buff) { buffer2 = buff; };		
@@ -779,6 +793,7 @@ define([], function() {
 				power:		0.5,
 				bang: 		0,
 				noise: 		0,
+				pan:		0,
 				note: 		function(vol, _tension) {
 					this.power = vol;
 					var Yj = 2 * this.size * this.size / ( (this.initTension * this.initTension) * (this.speed * this.speed) );
@@ -830,7 +845,7 @@ define([], function() {
 			window[that.symbol] = Gibberish.make["Mesh"](that.junctions, that.height, that.width);
 			that._function = window[that.symbol];
 			
-			Gibberish.defineProperties( that, ["amp", "tension", "size", "speed", "outX", "outY", "loss", "noise"] );
+			Gibberish.defineProperties( that, ["amp", "tension", "size", "speed", "outX", "outY", "loss", "noise", "pan"] );
 			
 			return that;
 		},
@@ -841,8 +856,9 @@ define([], function() {
 			var heightBy4 = _height / 4;
 			var widthBy4  = _width / 4;
 			var noise = 0;
+			var panner = Gibberish.pan();
 			
-			var output = function(input, amp, tension, power, distance, speed, outY, outX, loss) {
+			var output = function(input, amp, tension, power, distance, speed, outY, outX, loss, pan) {
 				var val = 0;
 				tension = tension >= 0.0001 ? tension : 0.0001;
 				var junctions = _junctions;
@@ -903,9 +919,8 @@ define([], function() {
 				
 				//x->mesh[WIDTH/4][WIDTH/4-1].v_junction;
 				val += junctions[2][2].v_junction;
-				
-				
-				return val * amp;
+
+				return panner(val * amp, pan);
 			};
 			output.setNoise = function(val) { noise = val; };
 			
@@ -929,6 +944,7 @@ define([], function() {
 				reverse:	true,
 				numberOfGrains:10,
 				fade: .1,
+				pan: 0,
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
@@ -945,7 +961,7 @@ define([], function() {
 			window[that.symbol] = Gibberish.make["Grains"](that.numberOfGrains, that);
 			that._function = window[that.symbol];
 						
-			Gibberish.defineProperties( that, ["speed", "speedMin", "speedMax", "positionMin", "positionMax", "reverse", "position", "numberOfGrains", "amp", "grainSize"] );
+			Gibberish.defineProperties( that, ["speed", "speedMin", "speedMax", "positionMin", "positionMax", "reverse", "position", "numberOfGrains", "amp", "grainSize", "pan"] );
 			
 			return that;
 		},
@@ -964,8 +980,9 @@ define([], function() {
 			var buffer = self.buffer;
 			var interpolate = Gibberish.interpolate;
 			var debug = 0;
+			var panner = Gibberish.pan();
 
-			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, amp, fade) {	
+			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, amp, fade, pan) {	
 				var val = 0;
 				for(var i = 0; i < numberOfGrains; i++) {
 					var grain = grains[i];
@@ -1012,7 +1029,7 @@ define([], function() {
 					grain.pos += grain.speed;
 				}
 				
-				return val * amp;
+				return panner(val * amp, pan);
 			};
 			
 			output.makeGrains = function(_buffer) {

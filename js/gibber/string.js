@@ -45,7 +45,7 @@ function Pluck (damping, blend, amp){
 	that.note = Gibber.makeNoteFunction(that);
 	that.chord = Gibber.chord;
 
-	that.send(Master, that.amp);	
+	that.send(Master, 1);	
 	
 	return that;
 }

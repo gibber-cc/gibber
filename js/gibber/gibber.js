@@ -651,7 +651,8 @@ function Osc(freq, vol, waveShape) {
 function LFO(freq, amp, waveform) {
 	if(typeof waveform === "undefined") waveform = "Sine";
 	var that = Gibberish[waveform](freq, amp);
-
+	that.channels = 1;
+	//var that = Gibberish.LFO(freq, amp);
 	return that;
 };
 

@@ -22,7 +22,7 @@ define([], function() {
 			
 			var start = "";//function(globals) {\n";
 			var upvalues = "";
-			var codeblock = "function cb() {\nvar output = 0;\n";
+			var codeblock = "function cb() {\nvar output = [0,0];\n";
 			
 			function checkBusses(_ugen, gibberish) {
 				//console.log("RUNNING INSIDE CODE FOR", _ugen.symbol );
@@ -318,7 +318,7 @@ define([], function() {
 				for(var i = 0; i < ugen.destinations.length; i++) {
 					var output = ugen.destinations[i].ugenVariable || ugen.destinations[i];
 					if(output === "output")
-						codeDictionary.codeblock.push( "{0} += {1};\n".format( output, outputCode) );
+						codeDictionary.codeblock.push( "{0}[0] = {1}[0];{0}[1] = {1}[1];\n".format( output, outputCode) );
 				}
 			}
 
@@ -331,8 +331,15 @@ define([], function() {
 		
 		binop_generator : function(op, codeDictionary, shouldAdd) {
 			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
-			if(op.type === "=") { 
-				return Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd);
+			if(op.type === "=") {
+				if(op.operands[0].channels === 1) { 
+					return Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd);
+				}else{
+					return "([{0}[0] = {1}, {0}[0] = {0}[1]])".format(
+						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd),
+						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
+					);
+				}
 			}else if((op.type === "*" || op.type === "/") && op.operands[1] === 1) {
 				return Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd);
 			}else if(op.type === "++") {
@@ -340,9 +347,34 @@ define([], function() {
 												op.type,
 												Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
 			}
-			return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+			if(op.operands[0].channels === 2 && op.operands[1].channels !== 2) {
+				//console.log("2, 1")
+				
+				return "([{0}[0] {1} {2}, {0}[1] {1} {2}])".format(	
+						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+						op.type,
+						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+			}else if(op.operands[0].channels === 2 && op.operands[1].channels === 2) {
+				//console.log("2, 2")
+				
+				return "([{0}[0] {1} {2}[0], {0}[1] {1} {2}[1]])".format(	
+						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+						op.type,
+						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+			}else if(op.operands[0].channels !== 2 && op.operands[1].channels === 2) {
+				//console.log("1, 2")
+				return "({0} {1} ({2}[0] + {2}[1]) / 2)".format(	
+						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+						op.type,
+						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+			
+			}else{
+				//console.log("1,1");
+				return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
 											op.type,
 											Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+			}
+			
 		},
 		
 		mod : function(name, modulator, type) {
@@ -436,7 +468,19 @@ define([], function() {
 		},
 		
 		NO_MEMO : function() { return "NO_MEMO"; }, 
-		
+		pan : function() { 
+			var sin = Math.sin;
+			var cos = Math.cos;
+			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
+			
+			return function(val, pan) {
+				pan = isNaN(pan) ? 0 : pan;
+				return [
+		      		val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ), 
+		      		val * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) ),
+	    		];
+			};
+		},
 		dirty : function(ugen) {
 			if(typeof ugen !== "undefined" && ugen !== this) {
 				ugen.dirty = true;

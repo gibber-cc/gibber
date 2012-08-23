@@ -525,6 +525,7 @@ define([], function() {
 				type	: "Bus",
 				category: "Bus",
 				amp	: 1,
+				channels : 2,
 
 				connect : function(bus) {
 					this.destinations.push(bus);
@@ -600,16 +601,26 @@ define([], function() {
 		},
 
 		makeBus : function() { 
+			var phase = 0;
 			var output = function(senders, amp) {
-				var out = 0;
+				var out = [0,0];
 				
 				if(typeof senders !== "undefined") {
 					for(var i = 0; i < senders.length; i++) {
-						out += senders[i];
+						if(typeof senders[i] === "object") {
+							//if(phase++ % 10000 === 0) console.log("OBJECT", senders[i][0], senders[i][1], amp);
+							out[0] += senders[i][0];
+							out[1] += senders[i][1];
+						}else{
+							//if(phase++ % 10000 === 0) console.log("NON-OBJECT", senders);
+							
+							out[0] += out[1] = senders[i];
+						}
 					}
 				}
-
-				return out * amp;
+				out[0] *= amp;
+				out[1] *= amp;
+				return out;
 			};
 
 			return output;
