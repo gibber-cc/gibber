@@ -60,7 +60,10 @@ define([], function() {
 				}else if(state === 1){
 					var incr = 1 / decay;
 					phase -= incr;
-					if(phase <= 0) state++;;			
+					if(phase <= 0) {
+						phase = 0;
+						state++;;
+					}			
 				}
 				return phase;
 			};
@@ -130,7 +133,7 @@ define([], function() {
 					}
 				}else if(state === 3) {
 					val = (phase-- / release) * sustainLevel;
-					if(phase === 0) state++;
+					if(phase <= 0) state++;
 				}
 				return val;
 			};

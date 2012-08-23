@@ -112,6 +112,7 @@ define([], function() {
 			}
 			Gibberish.dirty();
 		},
+		timeProperties : ["attack", "decay", "sustain", "release", "speed", "time"],
 		
 		defineProperties : function(obj, props) {
 			for(var i = 0; i < props.length; i++) {
@@ -120,11 +121,11 @@ define([], function() {
 					var that = _obj;
 					var propName = prop;
 					var value = that[prop];
-	
+					var timeCheck = Gibberish.timeProperties.indexOf(propName) > -1;
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
-							
+							if(timeCheck) _value = G.time(_value);
 							//console.log("SETITING...", propName, _value);
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string" || value === null){
 								//console.log("SETTING INDIVIDUAL", value);
