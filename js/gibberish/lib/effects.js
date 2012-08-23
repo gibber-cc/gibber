@@ -1,21 +1,178 @@
 define([], function() {
     return {
 		init: function(gibberish) {			
-			gibberish.generators.SoftClip = gibberish.createGenerator(["source", "amount", "amp"], "{0}( {1}, {2} ) * {3}");
-			gibberish.make["SoftClip"] = this.makeSoftClip;
-			gibberish.SoftClip = this.SoftClip;
+			gibberish.SoftClip = Gen({
+				name:"SoftClip",
+				acceptsInput:true,	
+				props:{ amount: 50 },
+				upvalues: { abs:Math.abs, log:Math.log, ln2:Math.LN2 },
+				
+				callback : function(sample, amount) {
+					var x = sample * amount;
+					return (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
+				},
+			});
+	
+			gibberish.Gain = Gen({
+				name:"Gain",
+				acceptsInput:true,	
+				props:{ amp: 1 },
+				
+				callback: function(sample, amp) {
+					return sample * amp;
+				},
+			});
 			
-			gibberish.generators.Gain = gibberish.createGenerator(["source", "amp"], "{0}( {1}, {2} )");
-			gibberish.make["Gain"] = this.makeGain;
-			gibberish.Gain = this.Gain;
+			gibberish.Delay = Gen({
+				name:"Delay",
+				acceptsInput:true,	
+				props:{ time: 22050, feedback: .5 },
+				upvalues: { buffer:new Float32Array(88200), bufferLength:88200, phase:0 },
+				
+				callback : function(sample, time, feedback) {
+					var _phase = phase++ % bufferLength;
 
-			gibberish.generators.Filter24 = gibberish.createGenerator(["source", "cutoff", "resonance", "isLowPass"], "{0}( {1}, {2}, {3}, {4} )");
-			gibberish.make["Filter24"] = this.makeFilter24;
-			gibberish.Filter24 = this.Filter24;
+					var delayPos = (_phase + time) % bufferLength;				
 
-			gibberish.generators.Delay = gibberish.createGenerator(["source", "time", "feedback"], "{0}( {1}, {2}, {3} )");
-			gibberish.make["Delay"] = this.makeDelay;
-			gibberish.Delay = this.Delay;
+					buffer[delayPos] = (sample + buffer[_phase]) * feedback;
+					return sample + buffer[_phase];
+				},
+				
+				init: function() {
+					if(this.time > 88200) {
+						this.time = 88200;
+						console.log("WARNING: Delays cannot be greater than two seconds in length.");
+					}
+				},
+			});
+			
+			gibberish.RingModulator = Gen({
+				name:"RingModulator",
+				acceptsInput:true,	
+				props:{ frequency: 440, amp: .5, mix:.5 },
+				upvalues: { modulation:gen("Sine") },
+				
+				callback: function(sample, frequency, amp, mix) {
+					var x = modulation(frequency, amp);
+					var wet = x * sample;
+					var out = (wet * mix) + ( (1 - mix) * sample);
+				
+					return out;
+				},
+			});
+			
+			// adapted from Arif Ove Karlsne's 24dB ladder approximation: http://musicdsp.org/showArchiveComment.php?ArchiveID=141
+			gibberish.Filter24 = Gen({
+				name:"Filter24",
+				acceptsInput:true,	
+				props:{ cutoff:.1, resonnance: 3, isLowPass:true },
+				upvalues: { pole1:0, pole2:0, pole3:0, pole4:0 },
+				
+				callback : function(sample, cutoff, resonance, isLowPass) {
+					var rez = pole4 * resonance; 
+
+					rez = rez > 1 ? 1 : rez;
+					sample = sample - rez;
+
+					cutoff = cutoff < 0 ?   0 	: cutoff;
+					cutoff = cutoff > 1 ? 1 	: cutoff;
+
+					pole1 = pole1 + ((-pole1 + sample) * cutoff);
+					pole2 = pole2 + ((-pole2 + pole1)  * cutoff);
+					pole3 = pole3 + ((-pole3 + pole2)  * cutoff);
+					pole4 = pole4 + ((-pole4 + pole3)  * cutoff);
+
+					var out = isLowPass ? pole4 : sample - pole4;
+					return out;
+				},
+			});
+			
+			// adapted from code / comments at http://musicdsp.org/showArchiveComment.php?ArchiveID=124
+			gibberish.Decimator = Gen({
+				name:"Decimator",
+				acceptsInput:true,	
+				props:{ bitDepth: 16, sampleRate: 1 },
+				upvalues: { counter: 0, hold:0, pow:Math.pow, phase:0, floor:Math.floor},
+				
+				callback : function(sample, depth, rate) {
+					counter += rate;
+				
+					if(counter >= 1) {
+						var bitMult = pow( depth, 2.0 );
+					
+						counter -= 1;
+						hold = floor( sample * bitMult )/ bitMult; 
+					}
+				
+					return hold;
+				},
+			});
+			
+			gibberish.Flanger = Gen({
+				name:"Flanger",
+				acceptsInput:true,	
+				props:{ offset:300, feedback:0, rate:.25, amount:100 },
+				upvalues: { 
+					buffer:				null,
+					bufferLength:		88200,
+					delayModulation:	gen("Sine"),
+					interpolate:		Gibberish.interpolate,
+					readIndex:			-300,
+					writeIndex:			0,
+					phase:				0,
+				},
+				
+				init : function() {
+					this.buffer = new Float32Array(88200);
+					this.function.setBuffer(this.buffer);
+				},
+				
+				callback : function(sample, offset, feedback, delayModulationRate, delayModulationAmount) {
+					var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount * .95);
+								
+					if(delayIndex > bufferLength) {
+						delayIndex -= bufferLength;
+					}else if(delayIndex < 0) {
+						delayIndex += bufferLength;
+					}
+								
+					var delayedSample = interpolate(buffer, delayIndex);
+									
+					// TODO: no, feedback really is broekn. sigh.
+					//var writeValue = sample + (delayedSample * feedback);
+					//if(writeValue > 1 || isNaN(writeValue) || writeValue < -1) { console.log("WRITE VALUE", writeValue); }
+									
+					// TODO: this shouldn't be necessary, but writeValue (when using feedback) sometimes returns NaN
+					// for reasons I can't figure out. 
+					buffer[writeIndex] = sample; //isNaN(writeValue) ? sample : writeValue;
+									
+					if(++writeIndex >= bufferLength) writeIndex = 0;
+					if(++readIndex  >= bufferLength) readIndex  = 0;				
+									
+					return sample + delayedSample;
+					// 		//from old Gibber back when it worked correctly...
+					// 		var r = this.readIndex + this.delayMod.out();
+					// 		if(r > this.bufferSize) {
+					// 			r = r - this.bufferSize;
+					// 		}else if(r < 0) {
+					// 			r = this.bufferSize + r;
+					// 		}
+					// 
+					// 		var s = Sink.interpolate(this.buffer, r);
+					// 
+					// 		this.buffer[this.writeIndex++] = sample + (s * this.feedback);
+					// 		if (this.writeIndex >= this.bufferSize) {
+					// 			this.writeIndex = 0;
+					// 		}
+					// 
+					// 		this.readIndex++;
+					// 		if (this.readIndex >= this.bufferSize) {
+					// 			this.readIndex = 0;
+					// 		}
+					// 
+					// 		this.value = s + sample;
+				},	
+			});
 
 			gibberish.generators.Reverb = gibberish.createGenerator(["source", "roomSize", "damping", "wet", "dry" ], "{0}( {1},{2},{3},{4},{5} )");
 			gibberish.make["Reverb"] = this.makeReverb;
@@ -32,19 +189,6 @@ define([], function() {
 			gibberish.generators.BufferShuffler = gibberish.createGenerator(["source","chance", "rate", "length", "reverseChance", "pitchChance", "pitchMin", "pitchMax"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8} )");
 			gibberish.make["BufferShuffler"] = this.makeBufferShuffler;
 			gibberish.BufferShuffler = this.BufferShuffler;
-			
-			gibberish.generators.RingModulator = gibberish.createGenerator(["source", "frequency", "amp", "mix"], "{0}( {1}, {2}, {3}, {4} )");
-			gibberish.make["RingModulator"] = this.makeRingModulator;
-			gibberish.RingModulator = this.RingModulator;
-
-			gibberish.generators.Decimator = gibberish.createGenerator(["source", "bitDepth", "sampleRate"], "{0}( {1}, {2}, {3} )");
-			gibberish.make["Decimator"] = this.makeDecimator;
-			gibberish.Decimator = this.Decimator;
-			
-			// sample, offset, feedback, delayModulationRate, delayModulationAmount
-			gibberish.generators.Flanger = gibberish.createGenerator(["source", "offset", "feedback", "rate", "amount"], "{0}( {1}, {2}, {3}, {4}, {5} )");
-			gibberish.make["Flanger"] = this.makeFlanger;
-			gibberish.Flanger = this.Flanger;
 			
 			gibberish.generators.Bus = gibberish.createGenerator(["senders", "amp"], "{0}( {1}, {2} )");
 			gibberish.make["Bus"] = this.makeBus;
@@ -255,156 +399,6 @@ define([], function() {
 
 			return output;
 		},
-
-		Delay : function(time, feedback) {
-			var that = {
-				type:		"Delay",
-				category:	"FX",
-				feedback:	feedback || .5,
-				time:		time || 22050,
-				source:		null,
-				buffer:		new Float32Array(88200),				
-				bufferLength: 88200,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-
-			if(that.time >= 88200) {
-				that.time = 88199;
-				//console.log("MAX DELAY TIME = 88199 samples");
-			}
-
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Delay\"]();");
-			window[that.symbol] = Gibberish.make["Delay"](that.buffer, that.bufferLength);
-			that._function = window[that.symbol];
-
-			Gibberish.defineProperties( that, ["time", "feedback"] );
-
-			return that;
-		},
-
-		makeDelay : function(buffer, bufferLength) {
-			var phase = 0;
-
-			var output = function(sample, time, feedback) {
-				var _phase = phase++ % bufferLength;
-
-				var delayPos = (_phase + time) % bufferLength;				
-
-				buffer[delayPos] = (sample + buffer[_phase]) * feedback;
-				return sample + buffer[_phase];
-			};
-
-			return output;
-		},
-
-
-		SoftClip : function(amount, amp) {
-			var that = {
-				type:		"SoftClip",
-				category:	"FX",
-				amount:		amount || 50,
-				amp:		amp || 1,
-				source:		null,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"SoftClip\"]();");
-			window[that.symbol] = Gibberish.make["SoftClip"]();
-
-			Gibberish.defineProperties( that, ["amount", "amp"] );
-
-			return that;
-		},
-
-		makeSoftClip : function() {
-			var abs = Math.abs;
-			var log = Math.log;
-			var ln2 = Math.LN2;
-
-			var output = function(sample, amount) {
-				var x = sample * amount;
-				return (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
-			};
-
-			return output;
-		},
-		
-		Gain : function(amp) {
-			var that = {
-				type:		"Gain",
-				category:	"FX",
-				amp:		amp || 1,
-				source:		null,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Gain\"]();");
-			window[that.symbol] = Gibberish.make["Gain"]();
-
-			Gibberish.defineProperties( that, ["amp"] );
-
-			return that;
-		},
-
-		makeGain : function() {
-			var output = function(sample, amp) {
-				return sample * amp;
-			};
-
-			return output;
-		},
-		
-
-		// adapted from Arif Ove Karlsne's 24dB ladder approximation: http://musicdsp.org/showArchiveComment.php?ArchiveID=141
-		Filter24 : function(cutoff, resonance, isLowPass) {
-			var that = {
-				type:		"Filter24",
-				category:	"FX",
-				cutoff:		cutoff || .1,
-				resonance:	resonance || 3,
-				isLowPass:	typeof isLowPass === "undefined" ? true : isLowPass,
-				source:		null,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Filter24\"]();");
-			window[that.symbol] = Gibberish.make["Filter24"]();
-
-			Gibberish.defineProperties( that, ["cutoff", "resonance", "isLowPass"] );
-
-			return that;
-		},
-
-		makeFilter24 : function() {
-			var pole1 = 0,
-				pole2 = 0,
-				pole3 = 0,
-				pole4 = 0;
-
-			var output = function(sample, cutoff, resonance, isLowPass) {
-				rez = pole4 * resonance; 
-
-				rez = rez > 1 ? 1 : rez;
-				sample = sample - rez;
-
-				cutoff = cutoff < 0 ?   0 	: cutoff;
-				cutoff = cutoff > 1 ? 1 	: cutoff;
-
-				pole1 = pole1 + ((-pole1 + sample) * cutoff);
-				pole2 = pole2 + ((-pole2 + pole1)  * cutoff);
-				pole3 = pole3 + ((-pole3 + pole2)  * cutoff);
-				pole4 = pole4 + ((-pole4 + pole3)  * cutoff);
-
-				var out = isLowPass ? pole4 : sample - pole4;
-				return out;
-			};
-
-			return output;
-		},
 		
 // gibberish.generators.BufferShuffler = gibberish.createGenerator(["source","chance", "rate", "length", "reverseChance", "pitchChance", "pitchMin", "pitchMax"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8} )");
 		
@@ -522,182 +516,7 @@ define([], function() {
 
 			return output;
 		},
-		
-		RingModulator : function(frequency, amp) {
-			var that = {
-				type:		"RingModulator",
-				category:	"FX",
-				frequency:	440,
-				amp:		.5,
-				mix:		.5,
-				source:		null,
-			};
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			that.modulation = Gibberish.make["Sine"]();
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"RingModulator\"]();");
-			window[that.symbol] = Gibberish.make["RingModulator"](that.modulation);
-
-			Gibberish.defineProperties( that, ["frequency", "amp", "mix"] );
-
-			return that;
-		},
-
-		makeRingModulator : function(modulation) {	
-			var phase = 0;
-			var output = function(sample, frequency, amp, mix) {
-				var x = modulation(frequency, amp);
-				var wet = x * sample;
-				var out = (wet * mix) + ( (1 - mix) * sample);
 				
-				return out;
-			};
-
-			return output;
-		},
-		
-		
-		// adapted from code / comments at http://musicdsp.org/showArchiveComment.php?ArchiveID=124
-		Decimator : function(properties) {
-			var that = {
-				type:		"Decimator",
-				category:	"FX",
-				bitDepth:	16,
-				sampleRate: 1,	// 44100 = 1
-				source:		null,
-			};
-			if(typeof properties !== "undefined") {
-				Gibberish.extend(that, properties);
-			}
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			that.modulation = Gibberish.make["Sine"]();
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Decimator\"]();");
-			window[that.symbol] = Gibberish.make["Decimator"](that.modulation);
-
-			Gibberish.defineProperties( that, ["frequency", "bitDepth", "sampleRate"] );
-
-			return that;
-		},
-
-		makeDecimator : function() {	
-			var counter = 0;
-			var hold = 0;
-			var pow = Math.pow;
-			var phase = 0;
-			var floor = Math.floor;
-			
-			var output = function(sample, depth, rate) {
-				counter += rate;
-				
-				if(counter >= 1) {
-					var bitMult = pow( depth, 2.0 );
-					
-					counter -= 1;
-					hold = floor( sample * bitMult )/ bitMult; 
-				}
-				
-				return hold;
-			};
-
-			return output;
-		},
-		/*
-			delayModulationDepth  	: amp of LFO for delay length modulation
-			delayModulationRate		: speed of LFO to modulate delay length			
-			delay  					: base time offset... LFO output is added to this value to get current read position
-		*/
-		Flanger : function(properties) {
-			var that = {
-				type:		"Flanger",
-				category:	"FX",
-				feedback:	0, // TODO: feedback is broken
-				offset:		300,
-				amount:		300,
-				rate:		.25,
-				source:		null,
-				buffer:		new Float32Array(88200),				
-				bufferLength: 88200,
-			};
-			
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			if(typeof properties !== "undefined") {
-				Gibberish.extend(that, properties);
-			}
-			
-			that.delayModulation = Gibberish.make["Sine"]();
-			
-			that.symbol = Gibberish.generateSymbol(that.type);
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Flanger\"]();");
-			window[that.symbol] = Gibberish.make["Flanger"](that.buffer, that.bufferLength, that.delayModulation, that.offset);
-			that._function = window[that.symbol];
-
-			Gibberish.defineProperties( that, ["amount", "feedback", "offset", "rate"] );
-
-			return that;
-		},
-
-		makeFlanger : function(buffer, bufferLength, delayModulation, _offset) {
-			var phase = 0;
-			var readIndex = _offset * -1;
-			var writeIndex = 0;
-			var interpolate = Gibberish.interpolate;
-			
-			var output = function(sample, offset, feedback, delayModulationRate, delayModulationAmount) {
-				var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount * .95);
-
-				if(delayIndex > bufferLength) {
-					delayIndex -= bufferLength;
-				}else if(delayIndex < 0) {
-					delayIndex += bufferLength;
-				}
-
-				var delayedSample = interpolate(buffer, delayIndex);
-				
-				// TODO: no, feedback really is broekn. sigh.
-				//var writeValue = sample + (delayedSample * feedback);
-				//if(writeValue > 1 || isNaN(writeValue) || writeValue < -1) { console.log("WRITE VALUE", writeValue); }
-				
-				// TODO: this shouldn't be necessary, but writeValue (when using feedback) sometimes returns NaN
-				// for reasons I can't figure out. 
-				buffer[writeIndex] = sample; //isNaN(writeValue) ? sample : writeValue;
-				
-				if(++writeIndex >= bufferLength) writeIndex = 0;
-				if(++readIndex  >= bufferLength) readIndex  = 0;				
-				
-				return sample + delayedSample;
-				
-				/* from old Gibber back when it worked correctly...
-				var r = this.readIndex + this.delayMod.out();
-				if(r > this.bufferSize) {
-					r = r - this.bufferSize;
-				}else if(r < 0) {
-					r = this.bufferSize + r;
-				}
-			
-				var s = Sink.interpolate(this.buffer, r);
-
-				this.buffer[this.writeIndex++] = sample + (s * this.feedback);
-				if (this.writeIndex >= this.bufferSize) {
-					this.writeIndex = 0;
-				}
-			
-				this.readIndex++;
-				if (this.readIndex >= this.bufferSize) {
-					this.readIndex = 0;
-				}
-			
-				this.value = s + sample;
-				*/
-			};
-
-			return output;
-		},
-		
 		Bus : function(effects) {
 			var that = {
 				senders : [],
