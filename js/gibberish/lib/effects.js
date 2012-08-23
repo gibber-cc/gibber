@@ -8,8 +8,16 @@ define([], function() {
 				upvalues: { abs:Math.abs, log:Math.log, ln2:Math.LN2 },
 				
 				callback : function(sample, amount) {
-					var x = sample * amount;
-					return (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
+					if(typeof sample[0] === "undefined") {
+						var x = sample * amount;
+						return (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
+					}else{
+						var x = [sample[0] * amount, sample[1] * amount];
+						var l = log(amount) / ln2;
+						x[0] = (x[0] / 1 + abs(x[0])) / l;
+						x[1] = (x[1] / 1 + abs(x[1])) / l;						
+						return x;
+					}
 				},
 			});
 	
@@ -19,26 +27,42 @@ define([], function() {
 				props:{ amp: 1 },
 				
 				callback: function(sample, amp) {
-					return sample * amp;
+					if(typeof sample[0] === "undefined") {
+						return sample * amp;
+					}else{
+						return [sample[0] * amp, sample[1] * amp];
+					}
 				},
 			});
 			
 			gibberish.Delay = Gen({
 				name:"Delay",
 				acceptsInput:true,	
-				props:{ time: 22050, feedback: .5 },
-				upvalues: { buffer:new Float32Array(88200), bufferLength:88200, phase:0 },
+				props:{ time: 22050, feedback: .5, channels:2 },
+				upvalues: { buffer:null, bufferLength:88200, phase:0 },
 				
-				callback : function(sample, time, feedback) {
+				callback : function(sample, time, feedback, channels) {
 					var _phase = phase++ % bufferLength;
 
 					var delayPos = (_phase + time) % bufferLength;				
-
-					buffer[delayPos] = (sample + buffer[_phase]) * feedback;
-					return sample + buffer[_phase];
+					
+					if(typeof sample[0] === "undefined") {
+						buffer[delayPos] = (sample + buffer[_phase]) * feedback;
+						return sample + buffer[_phase];
+					}else{
+						buffer[0][delayPos] = (sample[0] + buffer[0][_phase]) * feedback;
+						buffer[1][delayPos] = (sample[1] + buffer[1][_phase]) * feedback;
+						//buffer[delayPos] = ((sample[0] + sample[1]) / 2 + buffer[_phase]) * feedback;
+						return [sample[0] + buffer[0][_phase], sample[1] + buffer[1][_phase]];
+					}
 				},
 				
 				init: function() {
+					if(this.channels === 1) {
+						this.function.setBuffer(new Float32Array(88200));
+					}else{
+						this.function.setBuffer( [new Float32Array(88200), new Float32Array(88200)] );
+					}
 					if(this.time > 88200) {
 						this.time = 88200;
 						console.log("WARNING: Delays cannot be greater than two seconds in length.");
@@ -49,14 +73,20 @@ define([], function() {
 			gibberish.RingModulator = Gen({
 				name:"RingModulator",
 				acceptsInput:true,	
-				props:{ frequency: 440, amp: .5, mix:.5 },
+				props:{ frequency: 440, amp: .5, mix:.5,  },
 				upvalues: { modulation:gen("Sine") },
 				
 				callback: function(sample, frequency, amp, mix) {
 					var x = modulation(frequency, amp);
-					var wet = x * sample;
-					var out = (wet * mix) + ( (1 - mix) * sample);
-				
+					var out;
+					if(typeof sample[0] === "undefined") {
+						var wet = x * sample;
+						out = (wet * mix) + ( (1 - mix) * sample);
+					}else{
+						var wet1 = x * sample[0];
+						var wet2 = x * sample[1];
+						out = [(wet1 * mix) + ( (1 - mix) * sample[0]), (wet2 * mix) + ( (1 - mix) * sample[1])];
+					}
 					return out;
 				},
 			});
@@ -65,7 +95,7 @@ define([], function() {
 			gibberish.Filter24 = Gen({
 				name:"Filter24",
 				acceptsInput:true,	
-				props:{ cutoff:.1, resonnance: 3, isLowPass:true },
+				props:{ cutoff:.1, resonance: 3, isLowPass:true },
 				upvalues: { pole1:0, pole2:0, pole3:0, pole4:0 },
 				
 				callback : function(sample, cutoff, resonance, isLowPass) {
