@@ -347,7 +347,7 @@ define([], function() {
 												op.type,
 												Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
 			}
-			/*if(op.operands[0].channels === 2 && op.operands[1].channels !== 2) {
+			if(op.operands[0].channels === 2 && op.operands[1].channels !== 2) {
 				//console.log("2, 1")
 				
 				return "([{0}[0] {1} {2}, {0}[1] {1} {2}])".format(	
@@ -373,7 +373,7 @@ define([], function() {
 				return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
 											op.type,
 											Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
-			//}
+			}
 			
 		},
 		

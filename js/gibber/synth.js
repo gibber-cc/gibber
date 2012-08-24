@@ -52,7 +52,7 @@ function Synth(attack, decay, amp) {
 		that = {};
 
 		if(! isNaN(attack)) that.attack = G.time(attack);
- 		if(! isNaN(decay)) 	that.decay 	= G.time(	decay);	
+ 		if(! isNaN(decay)) 	that.decay 	= G.time(decay);	
 		if(! isNaN(amp)) 	that.amp = amp;
 		
 		that.maxVoices = 1;
@@ -76,7 +76,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 **/	
 	that.chord = Gibber.chord;	
 	
-	that.send(Master, that.amp);
+	that.send(Master, 1);
 	
 	return that;
 }
@@ -151,7 +151,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 **/		
 	that.chord = Gibber.chord;	
 	
-	that.send(Master, that.amp);
+	that.send(Master, 1);
 	
 	return that;
 }
@@ -225,7 +225,7 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
 **/
 	that.note = Gibber.makeNoteFunction(that);
 	
-	that.send(Master, that.amp);
+	that.send(Master, 1);
 	
 	return that;
 }

@@ -220,7 +220,7 @@ define([], function() {
 			
 			Gibberish.polyDefineProperties( that, ["blend", "damping", "pan"] );
 			
-			(function() {
+			/*(function() {
 				var _amp = that.amp;
 				Object.defineProperty(that, "amp", {
 					get: function() { return _amp; },
@@ -229,7 +229,7 @@ define([], function() {
 						that.send(Master, value);
 					},
 				});
-			})();
+			})();*/
 			
 			return that;
 		},	

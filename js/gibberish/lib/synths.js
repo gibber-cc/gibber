@@ -99,7 +99,7 @@ define([], function() {
 			
 			var output = function(frequency, amp, attack, decay, pan ) {
 				var val = osc(frequency, amp, 0, 1) * env(attack, decay);
-				//if(phase++ % 22050 === 0) console.log(val, amp);
+				if(phase++ % 22050 === 0) console.log(val, amp, pan);
 				return panner(val, pan);
 			}
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
@@ -113,7 +113,7 @@ define([], function() {
 			
 			Gibberish.extend(that, {
 				waveform:		"Triangle",
-				amp:			.25,
+				amp:			.5,
 				attack:			10000,
 				decay:			10000,
 				maxVoices:		5,
@@ -144,7 +144,8 @@ define([], function() {
 					attack: 	that.attack,
 					decay:		that.decay,
 					waveform:	that.waveform, 
-					amp: 1,
+					amp: 		1,
+					pan: 		0,
 				};
 				
 				var synth = this.Synth(props);

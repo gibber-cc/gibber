@@ -16,6 +16,19 @@ Array.prototype.removeObj = function(value) {
     });
 };
 
+Array.prototype.mul = function(operand) {
+	for(var i = 0; i < this.length; i++) {
+		this[i] *= operand;
+	}
+};
+
+Array.prototype.mod = function(func) {
+    for(var i = 0; i < this.length; i++) {
+        this[i] = func( this[i] );
+    }
+};
+
+
 // Array.prototype.remove = function(arg) {
 // 	console.log("REMOVING");
 // 	if(typeof arg === "undefined") { // clear all
