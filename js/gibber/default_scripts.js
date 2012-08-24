@@ -13,6 +13,7 @@ default:
 '\n'+
 '// x is a kick, o is a snare\n'+
 'd = Drums("x.ox.xo.");\n'+
+'d.amp = .4;\n'+
 '\n'+
 '// karplus-strong can create string or noise sounds depending on blend\n'+
 'p = Pluck();\n'+
@@ -51,7 +52,7 @@ default:
 '\n'+
 '// make FM synth using glockenspiel preset. add delay and reverb\n'+
 'f = FM("glockenspiel", {maxVoices:1})\n'+
-'f.amp = .2;\n'+
+'f.amp = .4;\n'+
 'f.fx.add( Delay(_6, .8), Reverb() )\n'+
 '\n'+
 '// sequence glockenspiel with random notes and random durations\n'+

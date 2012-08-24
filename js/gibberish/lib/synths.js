@@ -99,7 +99,7 @@ define([], function() {
 			
 			var output = function(frequency, amp, attack, decay, pan ) {
 				var val = osc(frequency, amp, 0, 1) * env(attack, decay);
-				if(phase++ % 22050 === 0) console.log(val, amp, pan);
+				//if(phase++ % 22050 === 0) console.log(val, amp, pan);
 				return panner(val, pan);
 			}
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
