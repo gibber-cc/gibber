@@ -851,7 +851,7 @@ define([], function() {
 						}else{
 							//if(phase++ % 10000 === 0) console.log("NON-OBJECT", senders);
 							
-							out[0] += out[1] = senders[i];
+							out[0] += out[1] += senders[i];
 						}
 					}
 				}

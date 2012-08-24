@@ -50,14 +50,14 @@ define([], function() {
 			
 			gibberish.Triangle = Gen({
 			    name: "Triangle",
-			    props: { frequency: 440, amp: .15, pan:0 },
+			    props: { frequency: 440, amp: .15, pan:0, channels:1 },
 			    upvalues: { phase: 0, panner:Gibberish.pan()  },
 
-			    callback: function(frequency, amp, pan) {
+			    callback: function(frequency, amp, pan, channels) {
 				    var out = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
-					return panner(out * amp);
+					return channels === 1 ? out * amp : panner(out * amp, pan);
 			    },
 			});
 			
@@ -190,6 +190,7 @@ define([], function() {
 				pan:			0,
 				mod:			Gibberish.polyMod,
 				removeMod:		Gibberish.removePolyMod,
+				pan:			0,
 				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
@@ -209,7 +210,6 @@ define([], function() {
 					amp: 		1,
 					pan:		that.pan,
 				};
-				console.log(props);
 				
 				var synth = Gibberish.KarplusStrong(props);
 				
@@ -352,7 +352,6 @@ define([], function() {
 					//if(write % 10000 === 0) console.log(write, length);
 					buffer[write] = input;
 				}else if(write >= length && isRecording){
-					console.log("connecting to Master");
 					self.isRecording = false;
 					//self.input = 0;
 					self.removeMod("input");

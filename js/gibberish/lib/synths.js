@@ -1,23 +1,23 @@
 define([], function() {
     return {
 		init: function(gibberish) {			
-			gibberish.generators.Synth = gibberish.createGenerator(["frequency", "amp", "attack", "decay"], "{0}( {1}, {2}, {3}, {4} )");
+			gibberish.generators.Synth = gibberish.createGenerator(["frequency", "amp", "attack", "decay", "pan"], "{0}( {1}, {2}, {3}, {4}, {5} )");
 			gibberish.make["Synth"] = this.makeSynth;
 			gibberish.Synth = this.Synth;
 			
 			gibberish.PolySynth = this.PolySynth;
 			
-			gibberish.generators.FMSynth = gibberish.createGenerator(["frequency", "cmRatio", "index", "attack", "decay", "amp"], "{0}( {1}, {2}, {3}, {4}, {5}, {6})");
+			gibberish.generators.FMSynth = gibberish.createGenerator(["frequency", "cmRatio", "index", "attack", "decay", "amp", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7})");
 			gibberish.make["FMSynth"] = this.makeFMSynth;
 			gibberish.FMSynth = this.FMSynth;
 			
 			gibberish.PolyFM = this.PolyFM;
 			
-			gibberish.generators.Synth2 = gibberish.createGenerator(["frequency", "amp", "attack", "decay", "sustain", "release", "attackLevel", "sustainLevel", "cutoff", "resonance", "filterMult", "isLowPass"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12} )");
+			gibberish.generators.Synth2 = gibberish.createGenerator(["frequency", "amp", "attack", "decay", "sustain", "release", "attackLevel", "sustainLevel", "cutoff", "resonance", "filterMult", "isLowPass", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13} )");
 			gibberish.make["Synth2"] = this.makeSynth2;
 			gibberish.Synth2 = this.Synth2;
 			
-			gibberish.generators.Mono = gibberish.createGenerator(["frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "amp", "detune2", "detune3", "octave2", "octave3"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15} )");
+			gibberish.generators.Mono = gibberish.createGenerator(["frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "amp", "detune2", "detune3", "octave2", "octave3", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16} )");
 			gibberish.make["Mono"] = this.makeMono;
 			gibberish.Mono = this.Mono;
 			
@@ -35,6 +35,8 @@ define([], function() {
 				decay:		22050,
 				frequency:	0,
 				glide:		0,
+				pan: 		0,
+				channels:	2,
 				
 				note : function(_frequency) {
 					if(typeof this.frequency === "object") {
@@ -73,7 +75,7 @@ define([], function() {
 			that._function = Gibberish.make["Synth"](that.osc, that.env); // only passs ugen functions to make
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["frequency", "amp", "attack", "decay"] );
+			Gibberish.defineProperties( that, ["frequency", "amp", "attack", "decay", "pan"] );
 				
 		    Object.defineProperty(that, "waveform", {
 				get: function() { return waveform; },
@@ -93,10 +95,12 @@ define([], function() {
 		makeSynth: function(osc, env) { // note, storing the increment value DOES NOT make this faster!
 			var phase = 0;
 			var _frequency = 0;
-			var output = function(frequency, amp, attack, decay ) {
-				var val = osc(frequency, amp) * env(attack, decay);
+			var panner = Gibberish.pan();
+			
+			var output = function(frequency, amp, attack, decay, pan ) {
+				var val = osc(frequency, amp, 0, 1) * env(attack, decay);
 				//if(phase++ % 22050 === 0) console.log(val, amp);
-				return val;
+				return panner(val, pan);
 			}
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
 			output.getFrequency = function() 		{ return _frequency; };
@@ -117,6 +121,7 @@ define([], function() {
 				glide:			0,
 				mod:			Gibberish.polyMod,
 				removeMod:		Gibberish.removePolyMod,
+				pan:			0,
 				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
@@ -148,7 +153,7 @@ define([], function() {
 				that.children.push(synth);
 			}
 			
-			Gibberish.polyDefineProperties( that, ["waveform", "attack", "decay", "glide"] );
+			Gibberish.polyDefineProperties( that, ["waveform", "attack", "decay", "glide", "pan"] );
 			
 			// (function() {
 			// 	var _amp = that.amp;
@@ -175,6 +180,7 @@ define([], function() {
 				decay:		22050,
 				frequency:	0,
 				glide: 		0,
+				pan:		0,
 				
 				note : function(frequency) {
 					if(typeof this.frequency === "object") {
@@ -208,7 +214,7 @@ define([], function() {
 			that._function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env);
 			window[that.symbol] = that._function;
 						
-			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency"] );
+			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency", "pan"] );
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
@@ -222,11 +228,12 @@ define([], function() {
 			var envelope = _env;
 			var phase = 0;
 			var _frequency = 0; // needed for polyfm
-			var output = function(frequency, cmRatio, index, attack, decay, amp) {
+			var panner = Gibberish.pan();
+			var output = function(frequency, cmRatio, index, attack, decay, amp, pan) {
 				var env = envelope(attack, decay);
-				var mod = modulator(frequency * cmRatio, frequency * index) * env;
+				var mod = modulator(frequency * cmRatio, frequency * index, 0, 1) * env;
 				//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency);
-				return carrier( frequency + mod, 1 ) * env * amp; 
+				return panner( carrier( frequency + mod, 1, 0, 1 ) * env * amp, pan ); 
 			}
 			output.setFrequency = function(freq) {
 				_frequency = freq;
@@ -251,6 +258,7 @@ define([], function() {
 				glide:			0,
 				mod:			Gibberish.polyMod,
 				removeMod:		Gibberish.removePolyMod,
+				pan:			0,
 				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
@@ -280,7 +288,7 @@ define([], function() {
 				that.children.push(synth);
 			}
 			
-			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack", "decay", "glide"] );
+			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack", "decay", "glide", "pan"] );
 			
 			// (function() {
 			// 	var _amp = that.amp;

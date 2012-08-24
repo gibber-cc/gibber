@@ -332,14 +332,14 @@ define([], function() {
 		binop_generator : function(op, codeDictionary, shouldAdd) {
 			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
 			if(op.type === "=") {
-				if(op.operands[0].channels === 1) { 
+				//if(op.operands[0].channels === 1) { 
 					return Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd);
-				}else{
-					return "([{0}[0] = {1}, {0}[0] = {0}[1]])".format(
-						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd),
-						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
-					);
-				}
+				// }else{
+				// 	return "([{0}[0] = {1}, {0}[0] = {0}[1]])".format(
+				// 		Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd),
+				// 		Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
+				// 	);
+				// }
 			}else if((op.type === "*" || op.type === "/") && op.operands[1] === 1) {
 				return Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd);
 			}else if(op.type === "++") {
@@ -347,7 +347,7 @@ define([], function() {
 												op.type,
 												Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
 			}
-			if(op.operands[0].channels === 2 && op.operands[1].channels !== 2) {
+			/*if(op.operands[0].channels === 2 && op.operands[1].channels !== 2) {
 				//console.log("2, 1")
 				
 				return "([{0}[0] {1} {2}, {0}[1] {1} {2}])".format(	
@@ -369,11 +369,11 @@ define([], function() {
 						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
 			
 			}else{
-				//console.log("1,1");
+				//console.log("1,1");*/
 				return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
 											op.type,
 											Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
-			}
+			//}
 			
 		},
 		
