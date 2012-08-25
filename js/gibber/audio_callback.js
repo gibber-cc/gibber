@@ -8,8 +8,12 @@ function audioProcess(buffer, channelCount){
 
 			Gibber.callback.generate(); // for sequencers etc.
 			var val = Gibberish.callback();
-			buffer[i] = val[0];
-			buffer[i + 1] = val[1]; 
+			if(typeof val === "object") {
+				buffer[i] = val[0];
+				buffer[i + 1] = val[1]; 
+			}else{
+				buffer[i] = buffer[i + 1] = val;
+			}
 			//Gibberish.callback(); // for audio
 			Gibber.debug = false;
 		}

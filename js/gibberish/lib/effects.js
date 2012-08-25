@@ -1,95 +1,90 @@
 define([], function() {
     return {
 		init: function(gibberish) {
-	
 			gibberish.SoftClip = Gen({
 				name:"SoftClip",
 				acceptsInput:true,	
-				props:{ amount: 50 },
-				upvalues: { abs:Math.abs, log:Math.log, ln2:Math.LN2 },
+				props:{ amount: 50, channels:1 },
+				upvalues: { abs:Math.abs, log:Math.log, ln2:Math.LN2, isStereo:null },
 				
-				callback : function(sample, amount) {
-					if(typeof sample[0] === "undefined") {
-						var x = sample * amount;
-						return (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
-					}else{
-						sample.mul(amount);
-						var l = log(amount) / ln2;
-						sample.mod( function(x) {
-							return (x / (1 + abs(x))) / l; //TODO: get rid of log / divide
-						})
-						return sample;
+				callback : function(sample, amount, channels) {
+					for(var channel = 0; channel < channels; channel++) {
+						var x = sample[channel] * amount;
+						sample[channel] = (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
 					}
+					return sample;
 				},
 			});
 	
 			gibberish.Gain = Gen({
 				name:"Gain",
 				acceptsInput:true,	
-				props:{ amp: 1 },
+				props:{ amp: 1, channels: 1, },
 				
-				callback: function(sample, amp) {
-					if(typeof sample[0] === "undefined") {
-						return sample * amp;
-					}else{
-						return [sample[0] * amp, sample[1] * amp];
+				callback: function(sample, amp, channels) {
+					for(var channel = 0; channel < channels; channel++) {
+						sample[channel] *= amp;
 					}
+					return sample;
 				},
 			});
 			
 			gibberish.Delay = Gen({
 				name:"Delay",
 				acceptsInput:true,	
-				props:{ time: 22050, feedback: .5, channels:2 },
-				upvalues: { buffer:null, bufferLength:88200, phase:0 },
+				props:{ time: 22050, feedback: .5, channels:1 },
+				upvalues: { buffers:null, bufferLength:88200, phase:0 },
 				
 				callback : function(sample, time, feedback, channels) {
 					var _phase = phase++ % bufferLength;
 
-					var delayPos = (_phase + time) % bufferLength;				
+					var delayPos = (_phase + time) % bufferLength;			
 					
-					if(typeof sample[0] === "undefined") {
-						buffer[delayPos] = (sample + buffer[_phase]) * feedback;
-						return sample + buffer[_phase];
-					}else{
-						buffer[0][delayPos] = (sample[0] + buffer[0][_phase]) * feedback;
-						buffer[1][delayPos] = (sample[1] + buffer[1][_phase]) * feedback;
-						//buffer[delayPos] = ((sample[0] + sample[1]) / 2 + buffer[_phase]) * feedback;
-						return [sample[0] + buffer[0][_phase], sample[1] + buffer[1][_phase]];
+					for(var channel = 0; channel < channels; channel++) {
+						buffers[channel][delayPos] =  (sample[channel] + buffers[channel][_phase]) * feedback;
+						sample[channel] += buffers[0][_phase];
 					}
+					return sample;
 				},
 				
 				init: function() {
-					if(this.channels === 1) {
-						this.function.setBuffer(new Float32Array(88200));
-					}else{
-						this.function.setBuffer( [new Float32Array(88200), new Float32Array(88200)] );
+					var buffers = [];
+					for(var i = 0; i < this.channels; i++) {
+						buffers.push( new Float32Array(88200) );
 					}
+					this.function.setBuffers(buffers);
+					
 					if(this.time > 88200) {
 						this.time = 88200;
 						console.log("WARNING: Delays cannot be greater than two seconds in length.");
 					}
 				},
+				setters : {
+					// is this every really going to be needed?
+					channels : function(val) {
+						var buffers = this.function.getBuffer();
+						if(val >= buffers.length) {
+							for(var i = 0; i < val - buffers.length; i++) {
+								buffers.push(new Float32Array(88200));
+							}
+						}
+					}
+				}
 			});
 			
 			gibberish.RingModulator = Gen({
 				name:"RingModulator",
 				acceptsInput:true,	
-				props:{ frequency: 440, amp: .5, mix:.5,  },
+				props:{ frequency: 440, amp: .5, mix:.5, channels:1 },
 				upvalues: { modulation:gen("Sine") },
 				
-				callback: function(sample, frequency, amp, mix) {
-					var x = modulation(frequency, amp);
-					var out;
-					if(typeof sample[0] === "undefined") {
-						var wet = x * sample;
-						out = (wet * mix) + ( (1 - mix) * sample);
-					}else{
-						var wet1 = x * sample[0];
-						var wet2 = x * sample[1];
-						out = [(wet1 * mix) + ( (1 - mix) * sample[0]), (wet2 * mix) + ( (1 - mix) * sample[1])];
+				callback: function(sample, frequency, amp, mix, channels) {
+					var x = modulation(frequency, amp, 1);
+					for(var channel = 0; channel < channels; channel++) {
+						var wet = x * sample[channel];
+						sample[channel] = (wet * mix) + (1 - mix) * sample[channel];
 					}
-					return out;
+					return sample;
 				},
 			});
 			
@@ -97,56 +92,27 @@ define([], function() {
 			gibberish.Filter24 = Gen({
 				name:"Filter24",
 				acceptsInput:true,	
-				props:{ cutoff:.1, resonance: 3, isLowPass:true },
+				props:{ cutoff:.1, resonance: 3, isLowPass:true, channels:1 },
 				upvalues: { pole1:0, pole2:0, pole3:0, pole4:0, pole11:0, pole22:0, pole33:0, pole44:0 },
 				
-				callback : function(sample, cutoff, resonance, isLowPass) {
-					var out;
-					if(typeof sample[0] === "undefined") {
-						var rez = pole4 * resonance; 
-						rez = rez > 1 ? 1 : rez;
-						
-						sample = sample - rez;
-
-						cutoff = cutoff < 0 ? 0 : cutoff;
-						cutoff = cutoff > 1 ? 1 : cutoff;
-
-						pole1 = pole1 + ((-pole1 + sample) * cutoff);
-						pole2 = pole2 + ((-pole2 + pole1)  * cutoff);
-						pole3 = pole3 + ((-pole3 + pole2)  * cutoff);
-						pole4 = pole4 + ((-pole4 + pole3)  * cutoff);
-
-						out = isLowPass ? pole4 : sample - pole4;
-					}else{
-						out = [];
+				callback : function(sample, cutoff, resonance, isLowPass, channels) {
+					for(var channel = 0; channel < channels; channel++) {
 						var rezz = pole44 * resonance; 
 						rezz = rezz > 1 ? 1 : rezz;
 						
 						cutoff = cutoff < 0 ? 0 : cutoff;
 						cutoff = cutoff > 1 ? 1 : cutoff;
 						
-						sample[0] = sample[0] - rezz;
+						sample[channel] = sample[channel] - rezz;
 
-						pole11 = pole11 + ((-pole11 + sample[0]) * cutoff);
+						pole11 = pole11 + ((-pole11 + sample[channel]) * cutoff);
 						pole22 = pole22 + ((-pole22 + pole11)  * cutoff);
 						pole33 = pole33 + ((-pole33 + pole22)  * cutoff);
 						pole44 = pole44 + ((-pole44 + pole33)  * cutoff);
 
-						out[0] = isLowPass ? pole44 : sample[0] - pole44;
-						
-						rez = pole4 * resonance; 
-						rez = rez > 1 ? 1 : rez;
-						
-						sample[1] = sample[1] - rez;
-
-						pole1 = pole1 + ((-pole1 + sample[1]) * cutoff);
-						pole2 = pole2 + ((-pole2 + pole1)  * cutoff);
-						pole3 = pole3 + ((-pole3 + pole2)  * cutoff);
-						pole4 = pole4 + ((-pole4 + pole3)  * cutoff);
-
-						out[1] = isLowPass ? pole4 : sample[1] - pole4;
+						sample[channel] = isLowPass ? pole44 : sample[channel] - pole44;
 					}
-					return out;
+					return sample;
 				},
 			});
 			
@@ -154,42 +120,32 @@ define([], function() {
 			gibberish.Decimator = Gen({
 				name:"Decimator",
 				acceptsInput:true,	
-				props:{ bitDepth: 16, sampleRate: 1 },
-				upvalues: { counter: 0, hold:0, holdd:0, pow:Math.pow, floor:Math.floor},
+				props:{ bitDepth: 16, sampleRate: 1, channels:1 },
+				upvalues: { counter: 0, hold:[], pow:Math.pow, floor:Math.floor},
 				
-				callback : function(sample, depth, rate) {
+				callback : function(sample, depth, rate, channels) {
 					counter += rate;
 					
-					if(typeof sample[0] === "undefined") {
+					for(var channel = 0; channel < channels; channel++) {
 						if(counter >= 1) {
 							var bitMult = pow( depth, 2.0 );
-					
-							hold = floor( sample * bitMult )/ bitMult; 
-							
+							hold[channel]  = floor( sample[channel] * bitMult ) / bitMult;
 							counter--;
 						}
-						return hold;
-					}else{
-						if(counter >= 1) {
-							var bitMult = pow( depth, 2.0 );
-					
-							hold  = floor( sample[0] * bitMult )/ bitMult;
-							holdd = floor( sample[1] * bitMult )/ bitMult;
-							
-							counter--;
-						}
-						return [hold, holdd];
+						sample[channel] = hold[channel];
 					}
-				
+					
+					return sample;
 				},
+
 			});
 			
 			gibberish.Flanger = Gen({
 				name:"Flanger",
 				acceptsInput:true,	
-				props:{ offset:300, feedback:0, rate:.25, amount:300 },
+				props:{ offset:300, feedback:0, rate:.25, amount:300, channels:1 },
 				upvalues: { 
-					buffer:				null,
+					buffers:			null,
 					bufferLength:		88200,
 					delayModulation:	gen("Sine"),
 					interpolate:		Gibberish.interpolate,
@@ -200,45 +156,31 @@ define([], function() {
 				
 				init : function() {
 					this.function.setReadIndex( this.offset * -1);
-					if(this.channels === 1) {
-						this.function.setBuffer(new Float32Array(88200));
-					}else{
-						this.function.setBuffer( [new Float32Array(88200), new Float32Array(88200)] );
+					this.buffers = [];
+					for(var i = 0; i < this.channels; i++) {
+						this.buffers.push( new Float32Array(88200) );
 					}
+					this.function.setBuffers(this.buffers);
+
 				},
 				
-				callback : function(sample, offset, feedback, delayModulationRate, delayModulationAmount) {
-					var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount * .95);
-								
+				callback : function(sample, offset, feedback, delayModulationRate, delayModulationAmount, channels) {
+					var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount * .95, 1)[0];
+
 					if(delayIndex > bufferLength) {
 						delayIndex -= bufferLength;
 					}else if(delayIndex < 0) {
 						delayIndex += bufferLength;
 					}
 					
-					if(typeof sample[0] === "undefined") {
-						var delayedSample = interpolate(buffer, delayIndex);
+					for(var channel = 0; channel < channels; channel++) {
+						var delayedSample = interpolate(buffers[channel], delayIndex);
 									
-						// TODO: no, feedback really is broken. sigh.
-						//var writeValue = sample + (delayedSample * feedback);
-						//if(writeValue > 1 || isNaN(writeValue) || writeValue < -1) { console.log("WRITE VALUE", writeValue); }
-									
-						// TODO: this shouldn't be necessary, but writeValue (when using feedback) sometimes returns NaN
-						// for reasons I can't figure out. 
-						buffer[writeIndex] = sample; //isNaN(writeValue) ? sample : writeValue;
-						sample += delayedSample;
-					}else{
-						var delayedSample = [];
-						delayedSample[0] = interpolate(buffer[0], delayIndex);
-						delayedSample[1] = interpolate(buffer[1], delayIndex);
-									
-						buffer[0][writeIndex] = sample[0]; //isNaN(writeValue) ? sample : writeValue;
-						buffer[1][writeIndex] = sample[1];
+						buffers[channel][writeIndex] = sample[channel];
 						
-						sample[0] += delayedSample[0];
-						sample[1] += delayedSample[1];						
+						sample[channel] += delayedSample;
 					}
-					
+
 					if(++writeIndex >= bufferLength) writeIndex = 0;
 					if(++readIndex  >= bufferLength) readIndex  = 0;
 
@@ -249,9 +191,9 @@ define([], function() {
 			gibberish.BufferShuffler = Gen({
 				name:"BufferShuffler",
 				acceptsInput: true,
-				props: { chance:.25, rate:11025, length:22050, reverseChange:.5, pitchChance:.5, pitchMin:.25, pitchMax:2, channels:2 },
+				props: { chance:.25, rate:11025, length:22050, reverseChange:.5, pitchChance:.5, pitchMin:.25, pitchMax:2, channels:1 },
 				upvalues: {
-					buffer : null,
+					buffers : null,
 					readIndex : 0,
 					writeIndex : 0,
 					randomizeCheckIndex : 0,
@@ -271,23 +213,21 @@ define([], function() {
 				},
 				
 				init: function() {
-					if(this.channels === 1) {
-						this.function.setBuffer(new Float32Array(88200));
-					}else{
-						this.function.setBuffer( [new Float32Array(88200), new Float32Array(88200)] );
+					this.buffers = [];
+					for(var i = 0; i < this.channels; i++) {
+						this.buffers.push( new Float32Array(88200) );
 					}
+					this.function.setBuffers(this.buffers);
 				},
 				
 				callback : function(sample, chance, rate, length, reverseChance, pitchChance, pitchMin, pitchMax, channels) {
-					var isStereo = typeof sample[0] === "number";
+					var isStereo = channels === 2;
 					if(!isShuffling) {
 						if(isStereo) {
-							//console.log(buffer);
-							buffer[0][writeIndex] = sample[0];
-							buffer[1][writeIndex++] = sample[1]
-							//console.log("BLAH");
+							buffers[0][writeIndex] 	 = sample[0];
+							buffers[1][writeIndex++] = sample[1]
 						}else{
-							buffer[writeIndex++] = sample;
+							buffers[writeIndex++] = sample;
 						}	
 						writeIndex %= bufferLength;
 					
@@ -395,10 +335,10 @@ define([], function() {
 					}
 					this.function.setBufferLength(this.time);
 				},
-				callback: function(sample) {
+				callback: function(sample, channels) {
 					var currentPos = ++index % bufferLength;
 					var out;
-					if(typeof sample[0] === "number") {
+					if(channels === 2) {
 						out = [
 							buffer[0][currentPos],
 							buffer[1][currentPos],
@@ -409,7 +349,6 @@ define([], function() {
 						store_ = (out[1] * .8) + (store_ * .2);
 						buffer[1][currentPos] = sample[1] + (store_ * feedback);
 					}else{
-						
 						out = buffer[currentPos];
 						
 						store = (out * .8) + (store * .2);
@@ -433,12 +372,12 @@ define([], function() {
 					this.function.setBufferLength(this.time);
 				},
 				
-				callback: function(sample) {
+				callback: function(sample, channels) {
 					index = ++index % bufferLength;
 					var out;
 					out = sample;
 					
-					if(typeof sample[0] === "number") {
+					if(channels === 2) {
 						var bufferSample1 = buffer[0][index];
 						var bufferSample2 = buffer[1][index];
 						
@@ -459,6 +398,8 @@ define([], function() {
 					return out;
 				},
 			});
+			// TODO: this is vastly less efficient than the "old" version (which is still being used as Reverb). Why?
+			// seems like it would have to be a problem with upvalues...
 			gibberish.Reverb2 = Gen({
 				name: "Reverb2",
 				acceptsInput : true,
@@ -519,26 +460,26 @@ define([], function() {
 					this.function.setCombFilters( this.combFilters );
 					this.function.setAllPassFilters( this.allPassFilters );					
 				},
-				callback : function(sample, roomSize, damping, wet, dry) {
+				callback : function(sample, roomSize, damping, wet, dry, channels) {
 					//if(phase++ % 500 == 0) console.log(roomSize, damping, wet, dry, input);
 					var out, input;
 					// if(typeof sample[0] === "number") {
 					// 	sample = (sample[0] + sample[1]) / 2;
 					// }
-					if(typeof sample[0] === "number") {
+					if(channels === 2) {
 						input = [
 							sample[0] * tuning.fixedGain,
 							sample[1] * tuning.fixedGain,
 						];
 						out = [0,0];
-						for(var i = 0; i < 4; i++) {
+						for(var i = 0; i < 8; i++) {
 							var filt = combFilters[i].function(input);
 							//var filt1 = combFilters[i+8].function(input[1]);							
 							out[0] += filt[0];
 							out[1] += filt[1];							
 						}
 
-						for(var i = 0; i < 2; i++) {
+						for(var i = 0; i < 4; i++) {
 							out = allPassFilters[i].function(out);
 							//out[1] = allPassFilters[i+4].function(out[1]);														
 						}
@@ -562,7 +503,7 @@ define([], function() {
 				},
 			});
 			
-			gibberish.generators.Bus = gibberish.createGenerator(["senders", "amp"], "{0}( {1}, {2} )");
+			gibberish.generators.Bus = gibberish.createGenerator(["senders", "amp", "channels"], "{0}( {1}, {2}, {3} )");
 			gibberish.make["Bus"] = this.makeBus;
 			gibberish.Bus = this.Bus;
 			
@@ -585,6 +526,7 @@ define([], function() {
 						category:	"FX",
 						feedback:	feedback || .5,
 						time:		time || 500,
+						channels:   2,
 						buffer:		new Float32Array(time || 500),
 						source:		null,
 					};
@@ -774,7 +716,7 @@ define([], function() {
 						}else{
 							var input = sample * tuning.fixedGain;
 						}
-						var out = 0; //input;
+						var out = 0;
 						for(var i = 0; i < 8; i++) {
 							out += combFilters[i](input);
 						}
@@ -797,11 +739,12 @@ define([], function() {
 				type	: "Bus",
 				category: "Bus",
 				amp	: 1,
-				channels : 2,
+				channels : 1,
 
 				connect : function(bus) {
 					this.destinations.push(bus);
 					if(bus === Gibberish.MASTER) {
+						console.log("CONNECTING TO MASTER", this)
 						Gibberish.connect(this);
 					}else{
 						bus.connectUgen(this, 1);
@@ -869,32 +812,26 @@ define([], function() {
 			Gibberish.masterInit.push( that.symbol + " = Gibberish.make[\"Bus\"]();" );
 			window[that.symbol] = Gibberish.make["Bus"]();
 			
-			//Gibberish.defineProperties( that, ["amp"] );
+			Gibberish.defineProperties( that, ["channels"] );
 			return that;
 		},
 
 		makeBus : function() { 
 			var phase = 0;
-			var output = function(senders, amp) {
-				var out = [0,0];
+			var output = function(senders, amp, channels) {
+				var out = [];
 				
 				if(typeof senders !== "undefined") {
-					for(var i = 0; i < senders.length; i++) {
-						if(typeof senders[i] === "object") {
-							
-							out[0] += senders[i][0];
-							out[1] += senders[i][1];
-							//if(phase++ % 44100 === 0) console.log("OBJECT", out);
-						}else{
-							//if(phase++ % 10000 === 0) console.log("NON-OBJECT", senders);
-							out[0] += senders[i];
-							out[1] += senders[i];
-							//out[0] += out[1] += senders[i];
+					for(var channel = 0; channel < channels; channel++) {
+						out[channel] = 0;
+						for(var i = 0, ii = senders.length; i < ii; i++) {
+							//if(phase++ % 1000 === 0 ) console.log("BUS", senders[i]);
+							out[channel] += typeof senders[i][channel] !== "undefined" ? senders[i][channel] : senders[i][channel - 1];
 						}
+						out[channel] *= amp;
 					}
 				}
-				out[0] *= amp;
-				out[1] *= amp;
+				
 				return out;
 			};
 

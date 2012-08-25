@@ -208,6 +208,7 @@ define(['gibber/audio_callback',
 			this.meta(window);
 			
 			window.Master = Gibberish.Bus();
+			Master.channels = 2;
 			Master.connect(Gibberish.MASTER);
 		},
 	

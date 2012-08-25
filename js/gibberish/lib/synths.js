@@ -21,7 +21,6 @@ define([], function() {
 			gibberish.make["Mono"] = this.makeMono;
 			gibberish.Mono = this.Mono;
 			
-			
 			gibberish.PolySynth2 = this.PolySynth2;
 		},
 		
@@ -323,6 +322,7 @@ define([], function() {
 				isLowPass:		true,
 				frequency:		0,
 				glide:			0,
+				pan:			0,
 				
 				note : function(_frequency) {
 					if(typeof this.frequency === "object") {
@@ -360,7 +360,7 @@ define([], function() {
 			that._function = Gibberish.make["Synth2"](that.osc, that.env, that.filter);
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay","sustain","release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "isLowPass"] );
+			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay","sustain","release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "isLowPass", "pan"] );
 			
 			var waveform = that.waveform;
 		    Object.defineProperty(that, "waveform", {
@@ -380,14 +380,15 @@ define([], function() {
 		makeSynth2: function(osc, env, filter) {
 			var phase = 0;
 			var _frequency = 0;
+			var panner = Gibberish.pan();
 
 			var output = function(frequency, amp, attack, decay, sustain, release, attackLevel, sustainLevel, cutoff, resonance, filterMult, isLowPass) {
 				//var envResult = env(attack, decay, sustain, release, attackLevel, sustainLevel);
 				var envResult = env(attack, decay);
-				var val = filter( osc(frequency, amp), cutoff + filterMult * envResult, resonance, isLowPass) * envResult;
+				var val = filter( osc(frequency, amp, 0, 1), cutoff + filterMult * envResult, resonance, isLowPass) * envResult;
 				//var val = osc(frequency,amp) * envResult;
 				//if(phase++ % 22050 === 0) console.log("SYNTH 2", val, amp, frequency, envResult);
-				return val;
+				return panner(val, pan);
 			};
 			output.setFrequency = function(freq) {
 				_frequency = freq;

@@ -317,8 +317,15 @@ define([], function() {
 			if(ugen.category === "Bus") {
 				for(var i = 0; i < ugen.destinations.length; i++) {
 					var output = ugen.destinations[i].ugenVariable || ugen.destinations[i];
-					if(output === "output")
+					if(output === "output" && ugen.channels === 2) {
 						codeDictionary.codeblock.push( "{0}[0] = {1}[0];{0}[1] = {1}[1];\n".format( output, outputCode) );
+					}else if(output === "output"){
+						if(ugen.channels === 1) {
+							codeDictionary.codeblock.push( "{0} = {1};\n".format( output, outputCode) );
+						}else{
+							codeDictionary.codeblock.push( "{0} = ({1}[0] + {1}[1]) / 2;\n".format( output, outputCode) );
+						}
+					}
 				}
 			}
 
@@ -543,7 +550,6 @@ define([], function() {
 						this.destinations[i].disconnectUgen(this);
 					}
 					this.destinations.remove();
-				
 				}
 				Gibberish.dirty(true);
 				return this;

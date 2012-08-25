@@ -11,13 +11,13 @@ define([], function() {
 				
 			Gibberish.Sine = Gen({
 			    name: "Sine",
-			    props: { frequency: 440, amp: .25, pan: -45, channels:2 },
+			    props: { frequency: 440, amp: .25, channels:1, pan: 0 },
 			    upvalues: { phase: 0, sin:Math.sin, pi_2:Math.PI * 2, panner:Gibberish.pan() },
  
-			    callback: function(frequency, amp, pan, channels) {
+			    callback: function(frequency, amp, channels, pan) {
 			        phase += frequency / 44100;
 			        var val = sin(phase * pi_2) * amp;
-			        return channels === 2 ? panner(val, pan) : val;
+			        return channels === 2 ? panner(val, pan) : [val];
 			    },
 			});
 			
@@ -29,55 +29,54 @@ define([], function() {
 			    callback: function(frequency, amp) {
 			        phase += frequency / 44100;
 			        var val = sin(phase * pi_2) * amp;
-			        return channels === 2 ? panner(val, pan) : val;
+			        return channels === 2 ? panner(val, pan) : [val];
 			    },
 			});
 			
 			
 			gibberish.Square = Gen({
 			    name: "Square",
-			    props: { frequency: 440, amp: .15, pan:0 },
+			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
 			    upvalues: { phase: 0, panner:Gibberish.pan()  },
 					
 				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Square.js
-			    callback: function(frequency, amp, pan) {
+			    callback: function(frequency, amp, channels, pan) {
 					var out = phase > 0.5 ? 1 : -1;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;					
-					return panner(out * amp, pan);
-			    },
+					return channels === 1 ? [out * amp] : panner(out * amp, pan);			    },
 			});
 			
 			gibberish.Triangle = Gen({
 			    name: "Triangle",
-			    props: { frequency: 440, amp: .15, pan:0, channels:1 },
+			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
 			    upvalues: { phase: 0, panner:Gibberish.pan()  },
 
-			    callback: function(frequency, amp, pan, channels) {
+			    callback: function(frequency, amp, channels, pan ) {
 				    var out = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
-					return channels === 1 ? out * amp : panner(out * amp, pan);
+					return channels === 1 ? [out * amp] : panner(out * amp, pan);
 			    },
 			});
 			
 			gibberish.Saw = Gen({
 			    name: "Saw",
-			    props: { frequency: 440, amp: .15, pan:0 },
+			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
 			    upvalues: { phase: 0,panner:Gibberish.pan()  },
 
 				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js					
-			    callback: function(frequency, amp, pan) {
+			    callback: function(frequency, amp, channels, pan) {
 				    var out = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
-					return panner(out * amp, pan);
+					return channels === 1 ? [out * amp] : panner(out * amp, pan);
 			    },
 			});
 
 			gibberish.KarplusStrong = Gen({
 			  name:"KarplusStrong",
-			  props: { blend:1, damping:0, amp:1, dampingValue:.5, pan:0, channels:2 },
+			  props: { blend:1, damping:0, amp:1, dampingValue:.5, channels:2, pan:0  },
 			  upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random, panner:Gibberish.pan() },
   
 			  note : function(frequency) {
@@ -91,7 +90,7 @@ define([], function() {
 			    this.function.setBuffer(this.buffer);
 			  },
   
-			  callback : function(blend, __ignore, amp, damping, pan) {
+			  callback : function(blend, __ignore, amp, damping, channels, pan) {
 			    var val = buffer.shift();
 			    var rndValue = (rnd() > blend) ? -1 : 1;
 
