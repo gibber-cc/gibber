@@ -129,6 +129,23 @@ window.Gen = function(obj) {
 		}
 		Gibberish.defineProperties( that, propsArray );
 		
+		that.type = type;
+
+		if(!obj.inherits || obj.inherits && typeof obj.callback !== "undefined") {
+			that.symbol = Gibberish.generateSymbol(that.type);
+			
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + that.genName + "\"]();");
+			window[that.symbol] = Gibberish.make[that.type](that);
+			that.function = window[that.symbol];
+		}else{
+			that.symbol = Gibberish.generateSymbol(obj.inherits);
+			
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + obj.inherits + "\"]();");
+			window[that.symbol] = Gibberish.make[obj.inherits](that);
+			that.function = window[that.symbol];
+			
+		}
+		
 		for(var key in obj.setters) {
 			(function() {
 				var propName = key;
@@ -152,23 +169,7 @@ window.Gen = function(obj) {
 		}else{
 			Gibberish.extend(that, _obj); // after setters are defined
 		}
-
-		that.type = type;
-
-		if(!obj.inherits || obj.inherits && typeof obj.callback !== "undefined") {
-			that.symbol = Gibberish.generateSymbol(that.type);
-			
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + that.genName + "\"]();");
-			window[that.symbol] = Gibberish.make[that.type](that);
-			that.function = window[that.symbol];
-		}else{
-			that.symbol = Gibberish.generateSymbol(obj.inherits);
-			
-			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"" + obj.inherits + "\"]();");
-			window[that.symbol] = Gibberish.make[obj.inherits](that);
-			that.function = window[that.symbol];
-			
-		}
+		
 		
 		if(typeof that.init === "function") that.init();
 		

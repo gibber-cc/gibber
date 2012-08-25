@@ -60,7 +60,6 @@ define([], function() {
 					}
 				},
 				setters : {
-					// is this every really going to be needed?
 					channels : function(val) {
 						var buffers = this.function.getBuffer();
 						if(val >= buffers.length) {
@@ -153,7 +152,6 @@ define([], function() {
 					writeIndex:			0,
 					phase:				0,
 				},
-				
 				init : function() {
 					this.function.setReadIndex( this.offset * -1);
 					this.buffers = [];
@@ -163,7 +161,16 @@ define([], function() {
 					this.function.setBuffers(this.buffers);
 
 				},
-				
+				setters : {
+					channels : function(val) {
+						var buffers = this.function.getBuffer();
+						if(val >= buffers.length) {
+							for(var i = 0; i < val - buffers.length; i++) {
+								buffers.push(new Float32Array(88200));
+							}
+						}
+					}
+				},
 				callback : function(sample, offset, feedback, delayModulationRate, delayModulationAmount, channels) {
 					var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount * .95, 1)[0];
 
@@ -219,7 +226,16 @@ define([], function() {
 					}
 					this.function.setBuffers(this.buffers);
 				},
-				
+				setters : {
+					channels : function(val) {
+						var buffers = this.function.getBuffer();
+						if(val >= buffers.length) {
+							for(var i = 0; i < val - buffers.length; i++) {
+								buffers.push(new Float32Array(88200));
+							}
+						}
+					}
+				},
 				callback : function(sample, chance, rate, length, reverseChance, pitchChance, pitchMin, pitchMax, channels) {
 					if(!isShuffling) {
 						for(var channel = 0; channel < channels; channel++) {
@@ -292,89 +308,106 @@ define([], function() {
 			gibberish.LowPassComb = Gen({
 				name:"LowPassComb",
 				acceptsInput: true,
-				props: { time:1200, channels:2,  },
+				props: { time:1200 },
 				upvalues:{
-					buffer:null,
+					buffers:new Float32Array(1200),
 					index : 0,
-					store : 0,
-					store_ : 0,
-					feedback: .84, bufferLength: null, damping:.2,
+					store : [0,0,0,0,0,0,0,0],
+					channels : 1,
+					feedback: .84,
+					bufferLength: null,
+					damping:.2,
 				},
 				init: function() {
-					if(this.channels === 1) {
-						this.function.setBuffer(new Float32Array(this.time));
-					}else{
-						this.function.setBuffer( [new Float32Array(this.time), new Float32Array(this.time)] );
+					var buffers = [];
+					for(var i = 0; i < this.channels; i++) {
+						buffers.push( new Float32Array(this.time) );
 					}
+					this.function.setBuffers(buffers);
+					//console.log(this.function.getBuffers());
 					this.function.setBufferLength(this.time);
+					this.function.setStore([0,0,0,0,0,0,0,]);
 				},
-				callback: function(sample, channels) {
+				setters : {
+					channels : function(val) {
+						var buffers = this.function.getBuffers();
+						if(val >= buffers.length) {
+							for(var i = 0; i < val - buffers.length; i++) {
+								buffers.push(new Float32Array(this.time));
+							}
+						}
+						this.function.setBuffers(buffers);
+					}
+				},
+				callback: function(sample) {
 					var currentPos = ++index % bufferLength;
-					var out;
-					if(channels === 2) {
-						out = [
-							buffer[0][currentPos],
-							buffer[1][currentPos],
-						];
-						store = (out[0] * .8) + (store * .2);
-						buffer[0][currentPos] = sample[0] + (store * feedback);
+					for(var channel = 0; channel < channels; channel++) {
+						//console.log(buffers, channel, channels);
+						//if(index % 22050 === 0) console.log('pos', currentPos);
+						var out = buffers[0][currentPos];
+						//if(index % 22050 === 0) console.log("out",out);
 						
-						store_ = (out[1] * .8) + (store_ * .2);
-						buffer[1][currentPos] = sample[1] + (store_ * feedback);
-					}else{
-						out = buffer[currentPos];
+						store[channel] = (out * .8) + (store[channel] * .2);
+						//if(index % 22050 === 0) console.log("store", store[channel]);
 						
-						store = (out * .8) + (store * .2);
-						buffer[currentPos] = sample + (store * feedback);
-					}					
-					return out;
+						buffers[channel][currentPos] = sample[channel] + (store[channel] * feedback);
+						sample[channel] = out;	
+					}
+					//if(index % 22050 === 0) console.log(sample);
+					return sample;
 				},
 			});
-			gibberish.AllPass2 = Gen({
-				name:"AllPass2",
+			
+			gibberish.AllPass = Gen({
+				name:"AllPass",
 				acceptsInput: true,
-				props: {  time:500, channels:2 },
-				upvalues: { feedback:.5, buffer: null, index:-1, bufferLength:500 },
-				
-				init: function() {
-					if(this.channels === 1) {
-						this.function.setBuffer(new Float32Array(this.time));
-					}else{
-						this.function.setBuffer( [new Float32Array(this.time), new Float32Array(this.time)] );
-					}
-					this.function.setBufferLength(this.time);
+				props: {  channels:1, time:500,  },
+				upvalues: { 
+					feedback:.5,
+					buffers: null,
+					index:-1,
+					bufferLength:500 
 				},
 				
+				init: function() {
+					var buffers = [];
+					for(var i = 0; i < this.channels; i++) {
+						buffers.push( new Float32Array(this.time) );
+					}
+					this.function.setBuffers(buffers);
+					this.function.setBufferLength(this.time);
+				},
+				setters : {
+					channels : function(val) {
+						var buffers = this.function.getBuffers();
+						if(val >= buffers.length) {
+							for(var i = 0; i < val - buffers.length; i++) {
+								buffers.push(new Float32Array(this.time));
+							}
+						}
+						this.function.setBuffers(buffers);
+					}
+				},
 				callback: function(sample, channels) {
 					index = ++index % bufferLength;
-					var out;
-					out = sample;
 					
-					if(channels === 2) {
-						var bufferSample1 = buffer[0][index];
-						var bufferSample2 = buffer[1][index];
-						
-						out = [
-							-1 * sample[0] + bufferSample1,
-							-1 * sample[1] + bufferSample2,
-						];
-						
-						buffer[0][index] = sample[0] + (bufferSample1 * feedback);
-						buffer[1][index] = sample[1] + (bufferSample2 * feedback);						
-					}else{
-						var bufferSample = buffer[index];
+					for(var channel = 0; channel < channels; channel++) {
+						var bufferSample = buffers[channel][index];
 
-						out = -sample + bufferSample;
-						buffer[index] = sample + (bufferSample * feedback);
+						var out = -1 * sample[channel] + bufferSample;
+						
+						buffers[channel][index] = sample[channel] + (bufferSample * feedback);
+						
+						sample[channel] = out;
 					}
 					
-					return out;
+					return sample;
 				},
 			});
 			// TODO: this is vastly less efficient than the "old" version (which is still being used as Reverb). Why?
 			// seems like it would have to be a problem with upvalues...
-			gibberish.Reverb2 = Gen({
-				name: "Reverb2",
+			gibberish.Reverb = Gen({
+				name: "Reverb",
 				acceptsInput : true,
 				props: { roomSize:.5, damping:.2223, wet:.5, dry:.55, channels:2 },
 				upvalues: {
@@ -484,16 +517,16 @@ define([], function() {
 			gibberish.make["Reverb"] = this.makeReverb;
 			gibberish.Reverb = this.Reverb;
 			
-			gibberish.generators.AllPass = gibberish.createGenerator(["source", "time", "feedback"], "{0}( {1}, {2}, {3} )");
+			/*gibberish.generators.AllPass = gibberish.createGenerator(["source", "time", "feedback"], "{0}( {1}, {2}, {3} )");
 			gibberish.make["AllPass"] = this.makeAllPass;
-			gibberish.AllPass = this.AllPass;
+			gibberish.AllPass = this.AllPass;*/
 
 			gibberish.generators.Comb = gibberish.createGenerator(["source", "time", "feedback"], "{0}( {1}, {2}, {3} )");
 			gibberish.make["Comb"] = this.makeComb;
 			gibberish.Comb = this.Comb;
 		},
 		
-		AllPass : function(time, feedback) {
+		/*AllPass : function(time, feedback) {
 					var that = {
 						type:		"AllPass",
 						category:	"FX",
@@ -608,7 +641,7 @@ define([], function() {
 				},
 
 				// adapted from audioLib.js
-				Reverb : function(properties) {
+				/*Reverb : function(properties) {
 					var that = {
 						type:		"Reverb",
 						category:	"FX",
@@ -702,7 +735,7 @@ define([], function() {
 					};
 
 					return output;
-				},
+				},*/
 		
 		Bus : function(effects) {
 			var that = {
