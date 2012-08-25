@@ -79,7 +79,7 @@ define([], function() {
 				upvalues: { modulation:gen("Sine") },
 				
 				callback: function(sample, frequency, amp, mix, channels) {
-					var x = modulation(frequency, amp, 1);
+					var x = modulation(frequency, amp, 1)[0];
 					for(var channel = 0; channel < channels; channel++) {
 						var wet = x * sample[channel];
 						sample[channel] = (wet * mix) + (1 - mix) * sample[channel];
