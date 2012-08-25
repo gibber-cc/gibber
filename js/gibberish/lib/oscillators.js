@@ -9,7 +9,7 @@ define([], function() {
 				},
 			});
 				
-			Gibberish.Sine = Gen({
+			gibberish.Sine = Gen({
 			    name: "Sine",
 			    props: { frequency: 440, amp: .25, channels:1, pan: 0 },
 			    upvalues: { phase: 0, sin:Math.sin, pi_2:Math.PI * 2, panner:Gibberish.pan() },
@@ -23,13 +23,13 @@ define([], function() {
 			
 			gibberish.LFO = Gen({
 			    name: "LFO",
-			    props: { frequency: 440, amp: .25, channels:1 },
+			    props: { frequency: 440, amp: .25 },
 			    upvalues: { phase: 0, sin: Math.sin, pi_2: Math.PI * 2 },
 			
 			    callback: function(frequency, amp) {
 			        phase += frequency / 44100;
 			        var val = sin(phase * pi_2) * amp;
-			        return channels === 2 ? panner(val, pan) : [val];
+			        return val;
 			    },
 			});
 			
@@ -100,7 +100,7 @@ define([], function() {
 
 			    buffer.push(value);
     
-			    return panner(value * amp, pan);
+			    return channels === 1 ? value * amp : panner(value * amp, pan);
 			  },
   
 			  setters: {

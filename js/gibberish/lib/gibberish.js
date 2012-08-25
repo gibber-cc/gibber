@@ -376,7 +376,7 @@ define([], function() {
 						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
 			
 			}else{
-				//console.log("1,1");*/
+				//console.log("1,1");
 				return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
 											op.type,
 											Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));

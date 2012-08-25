@@ -1,23 +1,23 @@
 define([], function() {
     return {
 		init: function(gibberish) {			
-			gibberish.generators.Synth = gibberish.createGenerator(["frequency", "amp", "attack", "decay", "pan"], "{0}( {1}, {2}, {3}, {4}, {5} )");
+			gibberish.generators.Synth = gibberish.createGenerator(["frequency", "amp", "attack", "decay", "pan", "channels"], "{0}( {1}, {2}, {3}, {4}, {5}, {6} )");
 			gibberish.make["Synth"] = this.makeSynth;
 			gibberish.Synth = this.Synth;
 			
 			gibberish.PolySynth = this.PolySynth;
 			
-			gibberish.generators.FMSynth = gibberish.createGenerator(["frequency", "cmRatio", "index", "attack", "decay", "amp", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7})");
+			gibberish.generators.FMSynth = gibberish.createGenerator(["frequency", "cmRatio", "index", "attack", "decay", "amp", "pan", "channels"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})");
 			gibberish.make["FMSynth"] = this.makeFMSynth;
 			gibberish.FMSynth = this.FMSynth;
 			
 			gibberish.PolyFM = this.PolyFM;
 			
-			gibberish.generators.Synth2 = gibberish.createGenerator(["frequency", "amp", "attack", "decay", "sustain", "release", "attackLevel", "sustainLevel", "cutoff", "resonance", "filterMult", "isLowPass", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13} )");
+			gibberish.generators.Synth2 = gibberish.createGenerator(["frequency", "amp", "attack", "decay", "sustain", "release", "attackLevel", "sustainLevel", "cutoff", "resonance", "filterMult", "isLowPass", "pan", "channels"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14} )");
 			gibberish.make["Synth2"] = this.makeSynth2;
 			gibberish.Synth2 = this.Synth2;
 			
-			gibberish.generators.Mono = gibberish.createGenerator(["frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "amp", "detune2", "detune3", "octave2", "octave3", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16} )");
+			gibberish.generators.Mono = gibberish.createGenerator(["frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "amp", "detune2", "detune3", "octave2", "octave3", "pan", "channels"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17} )");
 			gibberish.make["Mono"] = this.makeMono;
 			gibberish.Mono = this.Mono;
 			
@@ -35,7 +35,7 @@ define([], function() {
 				frequency:	0,
 				glide:		0,
 				pan: 		0,
-				channels:	2,
+				channels:	1,
 				
 				note : function(_frequency) {
 					if(typeof this.frequency === "object") {
@@ -74,7 +74,7 @@ define([], function() {
 			that._function = Gibberish.make["Synth"](that.osc, that.env); // only passs ugen functions to make
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["frequency", "amp", "attack", "decay", "pan"] );
+			Gibberish.defineProperties( that, ["frequency", "amp", "attack", "decay", "pan", "channels"] );
 				
 		    Object.defineProperty(that, "waveform", {
 				get: function() { return waveform; },
@@ -96,10 +96,9 @@ define([], function() {
 			var _frequency = 0;
 			var panner = Gibberish.pan();
 			
-			var output = function(frequency, amp, attack, decay, pan ) {
-				var val = osc(frequency, amp, 0, 1) * env(attack, decay);
-				//if(phase++ % 22050 === 0) console.log(val, amp, pan);
-				return panner(val, pan);
+			var output = function(frequency, amp, attack, decay, pan, channels ) {
+				var val = osc(frequency, amp, 1)[0] * env(attack, decay);
+				return channels === 1 ? [val] : panner(val, pan);
 			}
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
 			output.getFrequency = function() 		{ return _frequency; };
@@ -181,6 +180,7 @@ define([], function() {
 				frequency:	0,
 				glide: 		0,
 				pan:		0,
+				channels:	1,
 				
 				note : function(frequency) {
 					if(typeof this.frequency === "object") {
@@ -214,7 +214,7 @@ define([], function() {
 			that._function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env);
 			window[that.symbol] = that._function;
 						
-			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency", "pan"] );
+			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency", "pan", "channels"] );
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
@@ -229,11 +229,12 @@ define([], function() {
 			var phase = 0;
 			var _frequency = 0; // needed for polyfm
 			var panner = Gibberish.pan();
-			var output = function(frequency, cmRatio, index, attack, decay, amp, pan) {
+			var output = function(frequency, cmRatio, index, attack, decay, amp, pan, channels) {
 				var env = envelope(attack, decay);
-				var mod = modulator(frequency * cmRatio, frequency * index, 0, 1) * env;
+				var mod = modulator(frequency * cmRatio, frequency * index, 1)[0] * env;
 				//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency);
-				return panner( carrier( frequency + mod, 1, 0, 1 ) * env * amp, pan ); 
+				var out = carrier( frequency + mod, 1, 1 )[0] * env * amp;
+				return channels === 1 ? [out] : panner(out, pan);
 			}
 			output.setFrequency = function(freq) {
 				_frequency = freq;
@@ -323,6 +324,7 @@ define([], function() {
 				frequency:		0,
 				glide:			0,
 				pan:			0,
+				channels: 		1,
 				
 				note : function(_frequency) {
 					if(typeof this.frequency === "object") {
@@ -360,7 +362,7 @@ define([], function() {
 			that._function = Gibberish.make["Synth2"](that.osc, that.env, that.filter);
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay","sustain","release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "isLowPass", "pan"] );
+			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay","sustain","release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "isLowPass", "pan", "channels"] );
 			
 			var waveform = that.waveform;
 		    Object.defineProperty(that, "waveform", {
@@ -382,13 +384,13 @@ define([], function() {
 			var _frequency = 0;
 			var panner = Gibberish.pan();
 
-			var output = function(frequency, amp, attack, decay, sustain, release, attackLevel, sustainLevel, cutoff, resonance, filterMult, isLowPass) {
+			var output = function(frequency, amp, attack, decay, sustain, release, attackLevel, sustainLevel, cutoff, resonance, filterMult, isLowPass, channels) {
 				//var envResult = env(attack, decay, sustain, release, attackLevel, sustainLevel);
 				var envResult = env(attack, decay);
-				var val = filter( osc(frequency, amp, 0, 1), cutoff + filterMult * envResult, resonance, isLowPass) * envResult;
+				var val = filter( osc(frequency, amp, 1), cutoff + filterMult * envResult, resonance, isLowPass)[0] * envResult;
 				//var val = osc(frequency,amp) * envResult;
 				//if(phase++ % 22050 === 0) console.log("SYNTH 2", val, amp, frequency, envResult);
-				return panner(val, pan);
+				return channels === 1 ? [val] : panner(val, pan);
 			};
 			output.setFrequency = function(freq) {
 				_frequency = freq;
@@ -494,6 +496,8 @@ define([], function() {
 				detune3:		-.01,
 				octave3:		-1,
 				glide:			0,
+				pan:			0,
+				channels:		1,
 				
 				note : function(_frequency) {
 					var prevFreq, prevFreq2, prevFreq3
@@ -539,7 +543,7 @@ define([], function() {
 			that._function = Gibberish.make["Mono"](that.osc1, that.osc2, that.osc3, that.env, that.filter);
 			window[that.symbol] = that._function;
 			
-			Gibberish.defineProperties( that, ["amp", "frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "detune2", "detune3", "octave2", "octave3"] );
+			Gibberish.defineProperties( that, ["amp", "frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "detune2", "detune3", "octave2", "octave3", "pan", "channels"] );
 			
 			// var waveform = that.waveform;
 			// 		    Object.defineProperty(that, "waveform", {
@@ -558,7 +562,8 @@ define([], function() {
 		
 		makeMono: function(osc1, osc2, osc3, env, filter) {
 			var phase = 0;
-			var output = function(frequency, amp1, amp2, amp3, attack, decay, cutoff, resonance, filterMult, isLowPass, masterAmp, detune2, detune3, octave2, octave3) {
+			var panner = Gibberish.pan();
+			var output = function(frequency, amp1, amp2, amp3, attack, decay, cutoff, resonance, filterMult, isLowPass, masterAmp, detune2, detune3, octave2, octave3, pan, channels) {
 				var frequency2 = frequency;
 				if(octave2 > 0) {
 					for(var i = 0; i < octave2; i++) {
@@ -584,11 +589,11 @@ define([], function() {
 				frequency2 += detune2 > 0 ? ((frequency * 2) - frequency) * detune2 : (frequency - (frequency / 2)) * detune2;
 				frequency3 += detune3 > 0 ? ((frequency * 2) - frequency) * detune3 : (frequency - (frequency / 2)) * detune3;
 							
-				var oscValue = osc1(frequency, amp1) + osc2(frequency2, amp2) + osc3(frequency3, amp3);
+				var oscValue = osc1(frequency, amp1, 1)[0] + osc2(frequency2, amp2, 1)[0] + osc3(frequency3, amp3, 1)[0];
 				var envResult = env(attack, decay);
-				var val = filter( oscValue, cutoff + filterMult * envResult, resonance, isLowPass) * envResult;
-				
-				return val * masterAmp;
+				var val = filter( [oscValue], cutoff + filterMult * envResult, resonance, isLowPass)[0] * envResult;
+				val *= masterAmp;
+				return channels === 1 ? [val] : panner(val, pan);
 			};
 	
 			return output;
