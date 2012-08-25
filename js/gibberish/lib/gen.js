@@ -1,7 +1,10 @@
-window.gen = function(objName) { // this returns a function that gets called when the upvalues are created, then returning a new function instance 
+window.gen = function(objName, realObject) { // this returns a function that gets called when the upvalues are created, then returning a new function instance 
 	var name = objName; 
 	return function(obj) {
-		return Gibberish.make[name](obj); // TODO: how to assign upvalues to object via me(that)?
+		if(!realObject)
+			return Gibberish.make[name](obj); // TODO: how to assign upvalues to object via me(that)?
+		else
+			return Gibberish.make[name](obj); // TODO: how to assign upvalues to object via me(that)?
 	}
 };
 
