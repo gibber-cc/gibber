@@ -221,19 +221,17 @@ define([], function() {
 				},
 				
 				callback : function(sample, chance, rate, length, reverseChance, pitchChance, pitchMin, pitchMax, channels) {
-					var isStereo = channels === 2;
 					if(!isShuffling) {
-						if(isStereo) {
-							buffers[0][writeIndex] 	 = sample[0];
-							buffers[1][writeIndex++] = sample[1]
-						}else{
-							buffers[writeIndex++] = sample;
-						}	
+						for(var channel = 0; channel < channels; channel++) {
+							buffers[channel][writeIndex] = sample[channel];
+						}
+						writeIndex++
 						writeIndex %= bufferLength;
-					
+
 						isBufferFull = writeIndex === 0 ? 1 : isBufferFull; // don't output buffered audio until a buffer is full... otherwise you just get a gap
-						randomizeCheckIndex += !isShuffling;
-					
+						
+						randomizeCheckIndex++;
+
 						if(randomizeCheckIndex % rate == 0 && random() < chance) {
 							reversed = random() < reverseChance;
 							isShuffling = true;
@@ -255,8 +253,7 @@ define([], function() {
 						fadeAmount = 1;
 						shuffleTimeKeeper = 0;
 					}
-				
-					var out, index;
+					
 					readIndex += reversed ? speed * -1 : speed;
 					if(readIndex < 0) {
 						readIndex += bufferLength;
@@ -264,53 +261,29 @@ define([], function() {
 						readIndex -= bufferLength;
 					}
 					
-					var outSample;
-					if(isStereo) {
-						outSample = [
-							interpolate(buffer[0], readIndex),
-							interpolate(buffer[1], readIndex),
-						];
-					}else{
-						outSample = interpolate(buffer, readIndex);
-					}
-				
-					if(isFadingWetIn) {						
-						fadeAmount -= .0025;
-						if(isStereo){
-							out = [];
-							out[0] = (outSample[0] * (1 - fadeAmount)) + (sample[0] * fadeAmount);
-							out[1] = (outSample[1] * (1 - fadeAmount)) + (sample[1] * fadeAmount);							
+					for(var channel = 0; channel < channels; channel++) {
+						var outSample = interpolate(buffers[channel], readIndex);
+						
+						if(isFadingWetIn) {						
+							fadeAmount -= .0025;
+							sample[channel] = (outSample * (1 - fadeAmount)) + (sample[channel] * fadeAmount);
+							if(fadeAmount <= .0025) isFadingWetIn = false;
+						}else if(isFadingDryIn) {						
+							fadeAmount -= .0025;
+							sample[channel] = (outSample * (fadeAmount)) + (sample[channel] * (1 - fadeAmount));
+							
+							if(fadeAmount <= .0025) { 
+								isFadingDryIn = false;
+								isShuffling = false;
+								reversed = false;
+								speed = 1;
+								pitchShifting = 0;
+							}
 						}else{
-							out = (outSample * (1 - fadeAmount)) + (sample * fadeAmount);
-						}
-						if(fadeAmount <= .0025) isFadingWetIn = false;
-					}else if(isFadingDryIn) {						
-						fadeAmount -= .0025;
-						if(isStereo){
-							out = [];
-							out[0] = (outSample[0] * (fadeAmount)) + (sample[0] * (1 - fadeAmount));
-							out[1] = (outSample[1] * (fadeAmount)) + (sample[1] * (1 - fadeAmount));
-						}else{
-							out = (outSample * (fadeAmount)) + (sample * (1 - fadeAmount));
-						}
-						if(fadeAmount <= .0025) { 
-							isFadingDryIn = false;
-							isShuffling = false;
-							reversed = false;
-							speed = 1;
-							pitchShifting = 0;
-						}
-					}else{
-						if(isStereo) {
-							out = [
-								isShuffling && isBufferFull ? outSample[0] : sample[0],
-								isShuffling && isBufferFull ? outSample[1] : sample[1],
-							];
-						}else{
-							out = isShuffling && isBufferFull ? outSample : sample;
+							sample[channel] = isShuffling && isBufferFull ? outSample : sample[channel];
 						}
 					}
-					return out;
+					return sample;
 				},
 			});
 			
