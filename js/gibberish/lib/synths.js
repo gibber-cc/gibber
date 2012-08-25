@@ -7,7 +7,7 @@ define([], function() {
 			
 			gibberish.PolySynth = this.PolySynth;
 			
-			gibberish.generators.FMSynth = gibberish.createGenerator(["frequency", "cmRatio", "index", "attack", "decay", "amp", "pan", "channels"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})");
+			gibberish.generators.FMSynth = gibberish.createGenerator(["frequency", "cmRatio", "index", "attack", "decay", "amp", "channels", "pan" ], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})");
 			gibberish.make["FMSynth"] = this.makeFMSynth;
 			gibberish.FMSynth = this.FMSynth;
 			
@@ -214,7 +214,7 @@ define([], function() {
 			that._function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env);
 			window[that.symbol] = that._function;
 						
-			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency", "pan", "channels"] );
+			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency", "channels", "pan"] );
 			if(typeof properties !== "undefined") {
 				Gibberish.extend(that, properties);
 			}
@@ -229,11 +229,12 @@ define([], function() {
 			var phase = 0;
 			var _frequency = 0; // needed for polyfm
 			var panner = Gibberish.pan();
-			var output = function(frequency, cmRatio, index, attack, decay, amp, pan, channels) {
+			var output = function(frequency, cmRatio, index, attack, decay, amp, channels, pan) {
 				var env = envelope(attack, decay);
 				var mod = modulator(frequency * cmRatio, frequency * index, 1)[0] * env;
-				//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency);
 				var out = carrier( frequency + mod, 1, 1 )[0] * env * amp;
+				//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency, out);
+				
 				return channels === 1 ? [out] : panner(out, pan);
 			}
 			output.setFrequency = function(freq) {
@@ -260,6 +261,8 @@ define([], function() {
 				mod:			Gibberish.polyMod,
 				removeMod:		Gibberish.removePolyMod,
 				pan:			0,
+				channels:		1,
+				amp:			1,
 				
 				note : function(_frequency) {
 					var synth = this.children[this.voiceCount++];
@@ -289,7 +292,7 @@ define([], function() {
 				that.children.push(synth);
 			}
 			
-			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack", "decay", "glide", "pan"] );
+			Gibberish.polyDefineProperties( that, ["cmRatio", "index", "attack", "decay", "glide"] );
 			
 			// (function() {
 			// 	var _amp = that.amp;

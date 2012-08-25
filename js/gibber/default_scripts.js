@@ -19,6 +19,7 @@ default:
 'p = Pluck({\n'+
 '	amp : .3,\n'+
 '	blend : .5,\n'+
+'	channels: 2,\n'+
 '});\n'+
 'p.mod("pan", LFO(2, .75));\n'+
 '\n'+
@@ -52,19 +53,16 @@ default:
 '// sequence drums randomizing every 4th measure and then reseting\n'+
 'e = Seq( [ d.reset, d.shuffle ], [3, 1]);\n'+
 '\n'+
-'// make FM synth using glockenspiel preset. add delay and reverb\n'+
-'f = FM("glockenspiel", { maxVoices:1, amp: .4 })\n'+
-'f.fx.add( Delay(_6, .8), Reverb() )\n'+
+'// make FM synth using glockenspiel preset. add chorus and delay.\n'+
+'f = FM("glockenspiel", { maxVoices:1, amp: .125 })\n'+
+'f.fx.add( Chorus(), Delay(_6, .8) )\n'+
 '\n'+
 '// sequence glockenspiel with random notes and random durations\n'+
 'g = ScaleSeq({\n'+
-'    note :      rndi(0,12,16), // 0-12 in the scale, generate 16 notes \n'+
-'    durations : rndi([1/2, 2, 4], 32), // half note, two measures or four measures\n'+
+'    note :      rndi(0,12,16), 		// 0-12 in the scale, generate 16 notes \n'+
+'    durations : rndi([1/2, 2, 4], 32), // half note, two measures or four measures duration per note\n'+
 '    slaves :    f,\n'+
 '});\n'+
-'\n'+
-'// insert fx at start of fx chain, in this case, before delay / reverb\n'+
-'f.fx.insert( Chorus(), 0)\n'+
 '\n'+
 '// add fx to Master channel; this affects all sounds\n'+
 'Master.fx.add( Flanger() );',

@@ -481,7 +481,7 @@ define([], function() {
 			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
 			
 			return function(val, pan) {
-				pan = isNaN(pan) ? 0 : pan;
+				//pan = isNaN(pan) ? 0 : pan;
 				return [
 		      		val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ), 
 		      		val * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) ),

@@ -32,7 +32,7 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
-
+	this.channels = 2;
 /**###Drums.pitch : property
 Float. The overall pitch of the Drums. Each specific drum can also have its pitch set.
 **/	
@@ -42,10 +42,14 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
 **/	
 	this.kick 	 = { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch: 1, amp: 1 } ;
+	this.kick.sampler.channels = 2;
+	this.kick.sampler.pan = -.1;
 /**###Drums.snare : property
 [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
 **/	
 	this.snare	 = { sampler: Gibberish.Sampler("audiofiles/snare.wav"), pitch: 1, amp: 1 };
+	this.snare.sampler.channels = 2;
+	this.snare.sampler.pan = .1;
 /**###Drums.hat : property
 [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
 **/	

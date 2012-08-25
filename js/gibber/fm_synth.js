@@ -99,7 +99,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 **/	
 	that.chord = Gibber.chord;
 	
-	that.send(Master, that.amp);	
+	that.send(Master, 1);	
 	
 	return that;
 }
