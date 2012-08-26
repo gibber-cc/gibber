@@ -212,8 +212,10 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 function Mono(properties) {
 	var that = {};
 	
-	if(properties.attack) properties.attack = G.time(properties.attack);
-	if(properties.decay) properties.decay = G.time(properties.decay);
+	if(typeof properties !== "undefined") {
+		if(typeof properties.attack !== "undefined") properties.attack = G.time(properties.attack);
+		if(typeof properties.decay !== "undefined") properties.decay = G.time(properties.decay);
+	}
 	
 	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
 		

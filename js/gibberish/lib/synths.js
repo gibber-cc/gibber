@@ -594,7 +594,7 @@ define([], function() {
 							
 				var oscValue = osc1(frequency, amp1, 1)[0] + osc2(frequency2, amp2, 1)[0] + osc3(frequency3, amp3, 1)[0];
 				var envResult = env(attack, decay);
-				var val = filter( [oscValue], cutoff + filterMult * envResult, resonance, isLowPass)[0] * envResult;
+				var val = filter( [oscValue], cutoff + filterMult * envResult, resonance, isLowPass, 1)[0] * envResult;
 				val *= masterAmp;
 				return channels === 1 ? [val] : panner(val, pan);
 			};
