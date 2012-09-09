@@ -577,11 +577,15 @@ define([], function() {
 			dirty:		true,
 			destinations : [],
 		};
-		self.fx.parent = parent;
+		console.log("UGEN?", this);
+		
+		//self.fx.parent = {channels:2};		
 		
 		Gibberish.extend(this, self);
 		
-		
+		this.fx.parent = parent;
+		console.log("UGEN 2?", this);
+		//console.log("BLAH");
 		// var parent = this;
 		// this.fx.prototype.parent = this;
 		// this.fx.add = function() {

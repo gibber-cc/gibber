@@ -45,6 +45,10 @@ function ScaleSeq(_sequence, _speed) {
 	
 	var that = Seq(_sequence);
 	
+	if(that.sequences.root) delete that.sequences.root;
+	if(that.sequences.mode) delete that.sequences.mode;
+	if(that.sequences.scaleInit) delete that.sequences.scaleInit;
+		
 	that.name = "ScaleSeq";
 	that.type = "control";
 	

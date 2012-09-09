@@ -32,7 +32,12 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
+	
+	var _fx = arguments[0].fx;
+	
 	this.channels = 2;
+	this.fx.parent = this;
+	
 /**###Drums.pitch : property
 Float. The overall pitch of the Drums. Each specific drum can also have its pitch set.
 **/	
@@ -113,12 +118,15 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 			this[key] = obj[key];
 		}
 		
-		this.seq = Seq({
+		var props = {
 			doNotAdvance : true,
-			note : 	this.sequence.split(""),
 			speed : 	this.speed,
 			slaves :	[this],
-		});
+		};
+		
+		Gibberish.extend(props, arguments[0]);
+		
+		this.seq = Seq(props);
 	}else if(typeof _sequence != "undefined") {
 		if(typeof _timeValue !== "undefined") {
 			if($.isArray(_timeValue)) {
@@ -149,7 +157,7 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 	
 	(function(obj) {
 		var that = obj;
-		
+		var amp = .2;
 	    Object.defineProperties(that, {
 			"speed" : {
 		        get: function() {
@@ -168,6 +176,7 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 		        },
 		        set: function(value) {
 					amp = value;
+					Gibberish.dirty(this);
 					//this.bus.amp = value;
 		        }
 			},
@@ -175,14 +184,24 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 	    });
 	})(this);
 	
+	
 /**###Drums.amp : property
 Float. The overall amplitude of the Drums. Each specific drum can also have its amplitude set.
 **/	
+	
 	this.amp   = isNaN(_amp) ? .2 : _amp;
 	
 	if(this.seq !== null) {
 		this.seq.doNotAdvance = false;
 		this.seq.advance();
+	}
+	
+	if(typeof _fx !== 'undefined') {
+		console.log("FX", this);
+		this.fx = [];
+		for(var i = 0; i < _fx.length; i++) {
+			this.fx.add( _fx[i] );
+		}
 	}
 }
 

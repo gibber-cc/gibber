@@ -40,8 +40,11 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 
 function Synth(attack, decay, amp) {
 	var that;
+	var _fx;
 	if(typeof arguments[0] === "object") {
 		that = arguments[0];
+		_fx = that.fx;
+		
 		if(isNaN(that.maxVoices)) that.maxVoices = 1;
 		
 		if(that.attack) that.attack = G.time(that.attack);
@@ -59,6 +62,8 @@ function Synth(attack, decay, amp) {
 
 		that = Gibberish.PolySynth(that);
 	}
+	that.fx.parent = that;
+	
 	
 /**###Synth.note : method
 param **note or frequency** : String or Integer. You can pass a note name, such as "A#4", or a frequency value, such as 440.
@@ -77,6 +82,12 @@ Play a chord and optionally specify and amplitude for it. This method only works
 	that.chord = Gibber.chord;	
 	
 	that.send(Master, 1);
+	
+	if(_fx) {
+		for(var i = 0; i < _fx.length; i++) {
+			that.fx.add( _fx[i] );
+		}
+	}
 	
 	return that;
 }
@@ -127,7 +138,7 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 
 function Synth2(properties) {
 	var that = {};
-	
+	var _fx = properties.fx;
 	if(properties.attack) properties.attack = G.time(properties.attack);
 	if(properties.decay) properties.decay = G.time(properties.decay);
 	
@@ -135,6 +146,15 @@ function Synth2(properties) {
 	if(isNaN(that.maxVoices)) that.maxVoices = 1;
 	
 	that = Gibberish.PolySynth2(that);
+	that.fx.parent = that;
+	
+	if(_fx) {
+		for(var i = 0; i < _fx.length; i++) {
+			that.fx.add( _fx[i] );
+		}
+	}
+	
+	
 /**###Synth2.note : method
 param **note or frequency** : String or Integer. You can pass a note name, such as "A#4", or a frequency value, such as 440.
 param **amp** : Optional. Float. The volume of the note, usually between 0..1. The main amp property of the Synth will also affect note amplitude.
@@ -211,7 +231,7 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 **/
 function Mono(properties) {
 	var that = {};
-	
+	var _fx = typeof properties !== "undefined" ? properties.fx : undefined;
 	if(typeof properties !== "undefined") {
 		if(typeof properties.attack !== "undefined") properties.attack = G.time(properties.attack);
 		if(typeof properties.decay !== "undefined") properties.decay = G.time(properties.decay);
@@ -220,6 +240,13 @@ function Mono(properties) {
 	if(typeof properties !== "undefined") Gibberish.extend(that, properties);
 		
 	that = Gibberish.Mono(that);
+	that.fx.parent = that;
+		
+	if(typeof _fx !== "undefined") {
+		for(var i = 0; i < _fx.length; i++) {
+			that.fx.add( _fx[i] );
+		}
+	}
 	
 /**###Mono.note : method
 param **note or frequency** : String or Integer. You can pass a note name, such as "A#4", or a frequency value, such as 440.

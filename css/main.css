@@ -88,7 +88,7 @@ textarea{
 	height:auto;
 }
 
-body {scrollbar-base-color:orange;}
+body {scrollbar-base-color:orange; font-family:Helvetica, sans-serif;}
 code { white-space:pre-wrap; }
 .CodeMirror{ position:relative; top:1px; }
 p { padding-left:5px; padding-right:5px; }

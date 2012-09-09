@@ -87,8 +87,10 @@ define(["gibberish/lib/gibberish"], function() {
 	Array.prototype.add = function() {
 		for(var i = 0; i < arguments.length; i++) {
 			arguments[i].parent = this;
-			if(typeof this.channels === "number") {
-				arguments[i].channels = this.channels;
+			console.log(this.parent, this.parent.channels);
+			if(typeof this.parent.channels === "number") {
+				console.log("CHANGING CHANNELS");
+				arguments[i].channels = this.parent.channels;
 			}
 			this.push(arguments[i]);
 		}

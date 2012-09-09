@@ -237,12 +237,9 @@ define([], function() {
 				
 				return channels === 1 ? [out] : panner(out, pan);
 			}
-			output.setFrequency = function(freq) {
-				_frequency = freq;
-			};
+			output.setFrequency = function(freq) { _frequency = freq; };
 			output.getFrequency = function() { return _frequency; }
 			
-	
 			return output;
 		},
 		
@@ -261,7 +258,6 @@ define([], function() {
 				mod:			Gibberish.polyMod,
 				removeMod:		Gibberish.removePolyMod,
 				pan:			0,
-				channels:		1,
 				amp:			1,
 				
 				note : function(_frequency) {

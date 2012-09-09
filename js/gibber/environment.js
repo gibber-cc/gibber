@@ -327,6 +327,14 @@ define([
 			};
 			CodeMirror.keyMap.gibber = {
 				fallthrough : "default",
+				
+				"Shift-Ctrl-." : function(cm) { 
+					_Gibber.nextSlide();
+				},
+				"Shift-Ctrl-," : function(cm) { 
+					_Gibber.prevSlide();
+				},
+				
 				"Ctrl-Enter" : function(cm) { 
 					var v = cm.getSelection();
 					var pos = null;

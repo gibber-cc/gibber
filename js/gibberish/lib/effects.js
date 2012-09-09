@@ -61,7 +61,7 @@ define([], function() {
 				},
 				setters : {
 					channels : function(val) {
-						var buffers = this.function.getBuffer();
+						var buffers = this.function.getBuffers();
 						if(val >= buffers.length) {
 							for(var i = 0; i < val - buffers.length; i++) {
 								buffers.push(new Float32Array(88200));
@@ -163,7 +163,7 @@ define([], function() {
 				},
 				setters : {
 					channels : function(val) {
-						var buffers = this.function.getBuffer();
+						var buffers = this.function.getBuffers();
 						if(val >= buffers.length) {
 							for(var i = 0; i < val - buffers.length; i++) {
 								buffers.push(new Float32Array(88200));
@@ -228,7 +228,7 @@ define([], function() {
 				},
 				setters : {
 					channels : function(val) {
-						var buffers = this.function.getBuffer();
+						var buffers = this.function.getBuffers();
 						if(val >= buffers.length) {
 							for(var i = 0; i < val - buffers.length; i++) {
 								buffers.push(new Float32Array(88200));
@@ -506,7 +506,7 @@ define([], function() {
 				},
 			});
 			*/
-			gibberish.generators.Bus = gibberish.createGenerator(["senders", "amp", "channels"], "{0}( {1}, {2}, {3} )");
+			gibberish.generators.Bus = gibberish.createGenerator(["senders", "amp", "channels", "pan"], "{0}( {1}, {2}, {3}, {4} )");
 			gibberish.make["Bus"] = this.makeBus;
 			gibberish.Bus = this.Bus;
 			
@@ -763,7 +763,8 @@ define([], function() {
 				type	: "Bus",
 				category: "Bus",
 				amp	: 1,
-				channels : 1,
+				channels : 2,
+				pan : 0,
 
 				connect : function(bus) {
 					this.destinations.push(bus);
@@ -826,7 +827,7 @@ define([], function() {
 
 			Gibberish.extend( that, new Gibberish.ugen(that) );
 			that.fx = effects || [];
-			that.fx.parent = this;
+			that.fx.parent = that;
 			
 			that.mod = Gibberish.polyMod;
 			that.removeMod = Gibberish.removePolyMod;
@@ -834,29 +835,31 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol( that.type );
 
 			Gibberish.masterInit.push( that.symbol + " = Gibberish.make[\"Bus\"]();" );
-			window[that.symbol] = Gibberish.make["Bus"]();
+			window[that.symbol] = Gibberish.make["Bus"](Gibberish.pan());
 			
-			Gibberish.defineProperties( that, ["channels"] );
+			Gibberish.defineProperties( that, ["channels", "pan"] );
 			return that;
 		},
 
-		makeBus : function() { 
+		makeBus : function(panner) { 
 			var phase = 0;
-			var output = function(senders, amp, channels) {
+			var output = function(senders, amp, channels, pan) {
 				var out = [];
 				
 				if(typeof senders !== "undefined") {
 					for(var channel = 0; channel < channels; channel++) {
 						out[channel] = 0;
 						for(var i = 0, ii = senders.length; i < ii; i++) {
-							//if(phase++ % 1000 === 0 ) console.log("BUS", senders[i]);
+							//if(phase++ % 1000 === 0 ) console.log("BUS", senders[i][channel]);
 							out[channel] += typeof senders[i][channel] !== "undefined" ? senders[i][channel] : senders[i][channel - 1];
 						}
 						out[channel] *= amp;
 					}
 				}
 				
-				return out;
+		        return channels === 2 ? [panner(out[0], pan)[0], panner(out[1], pan)[1]] : [out];
+				
+				//return out;
 			};
 
 			return output;

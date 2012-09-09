@@ -489,7 +489,6 @@ This should never need to be explicitly called.
 					}
 				}
 			}
-			
 			this.counter++;
 			this.durationCounter++;
 			
@@ -536,7 +535,7 @@ This should never need to be explicitly called.
 		"end","nextEvent","endFunction",
 		"durations","doNotAdvance","speed",
 		// for ScaleSeq
-		"scaleInit", "root", "mode"
+		//"scaleInit", "root", "mode"
 	],
 	
 /**###Seq.once : method

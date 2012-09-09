@@ -1,7 +1,6 @@
 define(["gibber/gibber"], function(_Gibber) {	
 return {
-default:
-'// This is a sample of what Gibber can do and isn\'t really\n'+
+default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// intended as a tutorial. There are many tutorials in\n'+
 '// the Load menu at the top of the screen.\n'+
 '//\n'+
@@ -9,7 +8,7 @@ default:
 '// by highlighting them and hitting ctrl + shift + return.\n'+
 '// Or select everything at once and run it all together.\n'+
 '\n'+
-'G.setBPM(140)\n'+
+'G.setBPM(140);\n'+
 '\n'+
 '// x is a kick, o is a snare\n'+
 'd = Drums("x.ox.xo.");\n'+
@@ -17,51 +16,56 @@ default:
 '\n'+
 '// karplus-strong can create string or noise sounds depending on blend\n'+
 'p = Pluck({\n'+
-'	amp : .3,\n'+
+'	amp : .75,\n'+
 '	blend : .5,\n'+
 '	channels: 2,\n'+
 '});\n'+
 'p.mod("pan", LFO(2, .75));\n'+
 '\n'+
 '// sequence pluck with random 16th notes\n'+
-'s = ScaleSeq(fill(), 1/16).slave(p);\n'+
+'s = ScaleSeq(rndi(0,16,31), 1/16).slave(p);\n'+
 's.root = "C2";\n'+
 '\n'+
-'// create bass synth with a half-note attack, a whole-note decay, and .75 amp\n'+
-'b = Synth({\n'+
+'// create bass monosynth with a half-note attack, a whole-note decay\n'+
+'b = Mono({\n'+
 '	attack:1/2,\n'+
 '	decay: 1,\n'+
-'	amp: .65\n'+
-'})\n'+
-'b.fx.add( Clip(50) )\n'+
+'	amp: .35,\n'+
+'  octave3 : 0,\n'+
+'  cutoff: .2,\n'+
+'  resonance: 2.5,\n'+
+'});\n'+
 '\n'+
-'// sequence bass. "sequence" is positions in scale\n'+
+'// sequence bass. "note" is positions in scale where 0 is the root\n'+
 'c = ScaleSeq({\n'+
-'    root :      "C2",\n'+
-'    note :      [0,-2,-4], \n'+
-'    durations:  [2, 1, 1],\n'+
-'    slaves:     b\n'+
+'  note :      [0,-2,-4], \n'+
+'  durations:  [2, 1, 1],\n'+
+'  root :      "C2",\n'+
+'  slaves:     b\n'+
 '});\n'+
 '\n'+
 '// add modulation changing blend of karplus-strong\n'+
 '// this will move from string to noise sounds\n'+
-'p.mod("blend", LFO(.25, 1), "=")\n'+
+'p.mod("blend", LFO(.25, 1), "=");\n'+
 '\n'+
 '// add buffer stuttering / repitching / reversing\n'+
-'p.fx.add( Schizo() )\n'+
+'p.fx.add( Schizo() );\n'+
 '\n'+
 '// sequence drums randomizing every 4th measure and then reseting\n'+
 'e = Seq( [ d.reset, d.shuffle ], [3, 1]);\n'+
 '\n'+
 '// make FM synth using glockenspiel preset. add chorus and delay.\n'+
-'f = FM("glockenspiel", { maxVoices:1, amp: .125 })\n'+
-'f.fx.add( Chorus(), Delay(_6, .8) )\n'+
+'f = FM("glockenspiel", {\n'+
+'  maxVoices:1, \n'+
+'  amp: .225,\n'+
+'  fx: [ Chorus(), Delay(_6, .8) ],\n'+
+'});\n'+
 '\n'+
 '// sequence glockenspiel with random notes and random durations\n'+
 'g = ScaleSeq({\n'+
-'    note :      rndi(0,12,16), 		// 0-12 in the scale, generate 16 notes \n'+
-'    durations : rndi([1/2, 2, 4], 32), // half note, two measures or four measures duration per note\n'+
-'    slaves :    f,\n'+
+'  note :      rndi(0,12,16), 		// 0-12 in the scale, generate 16 notes \n'+
+'  durations : rndi([1/2, 2, 4], 32), // half note, two measures or four measures duration per note\n'+
+'  slaves :    f,\n'+
 '});\n'+
 '\n'+
 '// add fx to Master channel; this affects all sounds\n'+

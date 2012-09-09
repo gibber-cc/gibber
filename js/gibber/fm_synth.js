@@ -55,6 +55,8 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 
 function FM(cmRatio, index, attack, decay){
 	var that;
+	var _fx = arguments[0].fx;
+	
 	if(typeof Gibber.FMPresets === "undefined") FMPresets();
 	
 	if(typeof arguments[0] === "string") { // if a preset
@@ -81,6 +83,12 @@ function FM(cmRatio, index, attack, decay){
 		};
 		
 		that = Gibberish.PolyFM( props );
+	}
+	
+	if(_fx) {
+		for(var i = 0; i < _fx.length; i++) {
+			that.fx.add( _fx[i] );
+		}
 	}
 
 /**###FM.note : method
