@@ -172,8 +172,7 @@ window.Gen = function(obj) {
 		}else{
 			Gibberish.extend(that, _obj); // after setters are defined
 		}
-		
-		
+
 		if(typeof that.init === "function") that.init();
 		
 		if(that.category === "Gen" && that.addToGraph) {

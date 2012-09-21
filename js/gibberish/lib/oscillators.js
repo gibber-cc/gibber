@@ -47,7 +47,8 @@ define([], function() {
 					var out = phase > 0.5 ? 1 : -1;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;					
-					return channels === 1 ? [out * amp] : panner(out * amp, pan);			    },
+					return channels === 1 ? [out * amp] : panner(out * amp, pan);
+				},
 			});
 			
 			gibberish.Triangle = Gen({

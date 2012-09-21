@@ -354,8 +354,10 @@ define([], function() {
 			//that.env = Gibberish.make["ADSR"](that.attack, that.decay, that.sustain, that.release, that.attackLevel, that.sustainLevel);
 			that.env = Gibberish.make["Env"](that.attack, that.decay); //, that.sustain, that.release, that.attackLevel, that.sustainLevel);
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
-			that.filter = Gibberish.make["Filter24"](that.cutoff, that.resonance, that.isLowPass);
 			
+			var f = Gibberish.Filter24(that.cutoff, that.resonance, that.isLowPass);
+			that.filter = f.function; 
+
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Synth2\"]();");	
 			that._function = Gibberish.make["Synth2"](that.osc, that.env, that.filter);
@@ -383,11 +385,11 @@ define([], function() {
 			var _frequency = 0;
 			var panner = Gibberish.pan();
 
-			var output = function(frequency, amp, attack, decay, sustain, release, attackLevel, sustainLevel, cutoff, resonance, filterMult, isLowPass, channels) {
+			var output = function(frequency, amp, attack, decay, sustain, release, attackLevel, sustainLevel, cutoff, resonance, filterMult, isLowPass, pan, channels) {
 				//var envResult = env(attack, decay, sustain, release, attackLevel, sustainLevel);
 				var envResult = env(attack, decay);
-				var val = filter( osc(frequency, amp, 1), cutoff + filterMult * envResult, resonance, isLowPass)[0] * envResult;
-				//var val = osc(frequency,amp) * envResult;
+				var val = filter( osc(frequency, amp, 1), cutoff + filterMult * envResult, resonance, isLowPass, channels)[0] * envResult;
+				//var val = osc(frequency,amp,1) * envResult;
 				//if(phase++ % 22050 === 0) console.log("SYNTH 2", val, amp, frequency, envResult);
 				return channels === 1 ? [val] : panner(val, pan);
 			};
@@ -532,7 +534,11 @@ define([], function() {
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.env  = Gibberish.make["Env"](that.attack, that.decay);
-			that.filter = Gibberish.make["Filter24"](that.cutoff, that.resonance, that.isLowPass);
+			
+			// have to instantiate object for init method to be called and arrays initialized
+			var f = Gibberish.Filter24(that.cutoff, that.resonance, that.isLowPass);
+			that.filter = f.function; 
+			
 			that.osc1 = Gibberish.make[that.waveform](that.frequency,  that.amp1);
 			that.osc2 = Gibberish.make[that.waveform](that.frequency2, that.amp2);
 			that.osc3 = Gibberish.make[that.waveform](that.frequency3, that.amp3);

@@ -131,6 +131,7 @@ h2 {
 h3 {
 	font-size: 1em;
 	font-weight: normal;
+	max-width: 75%;
 }
 a { color: #a66; text-decoration: none; }
 .section {

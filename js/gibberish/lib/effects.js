@@ -91,12 +91,21 @@ define([], function() {
 			gibberish.Filter24 = Gen({
 				name:"Filter24",
 				acceptsInput:true,	
-				props:{ cutoff:.1, resonance: 3, isLowPass:true, channels:1 },
-				upvalues: { pole1:0, pole2:0, pole3:0, pole4:0, pole11:0, pole22:0, pole33:0, pole44:0 },
+				props:{ cutoff:.1, resonance: 3, isLowPass:true, channels:2 },
+				upvalues: { poles:null, phase:0},
+				
+				init: function() {
+					var poles  = [];
+					for(var i = 0; i < this.channels; i++) {
+						poles[i] = [0,0,0,0];
+					}
+					this.function.setPoles( poles );
+				},
 				
 				callback : function(sample, cutoff, resonance, isLowPass, channels) {
 					for(var channel = 0; channel < channels; channel++) {
-						var rezz = pole44 * resonance; 
+						var _poles = poles[channel];
+						var rezz = _poles[3] * resonance; 
 						rezz = rezz > 1 ? 1 : rezz;
 						
 						cutoff = cutoff < 0 ? 0 : cutoff;
@@ -104,15 +113,131 @@ define([], function() {
 						
 						sample[channel] = sample[channel] - rezz;
 
-						pole11 = pole11 + ((-pole11 + sample[channel]) * cutoff);
-						pole22 = pole22 + ((-pole22 + pole11)  * cutoff);
-						pole33 = pole33 + ((-pole33 + pole22)  * cutoff);
-						pole44 = pole44 + ((-pole44 + pole33)  * cutoff);
+						_poles[0] = _poles[0] + ((-_poles[0] + sample[channel]) * cutoff);
+						_poles[1] = _poles[1] + ((-_poles[1] + _poles[0])  * cutoff);
+						_poles[2] = _poles[2] + ((-_poles[2] + _poles[1])  * cutoff);
+						_poles[3] = _poles[3] + ((-_poles[3] + _poles[2])  * cutoff);
 
-						sample[channel] = isLowPass ? pole44 : sample[channel] - pole44;
+						sample[channel] = isLowPass ? _poles[3] : sample[channel] - _poles[3];
 					}
 					return sample;
 				},
+			});
+			
+			gibberish.Biquad = Gen({
+				name: "Biquad",
+
+				init: function() {
+			    	this.cutoff = 2000;
+			    	this.mode = "LP";
+			    	this.Q = .5;
+					
+					var x1 = [], x2 = [], y1 = [], y2 = [];
+					
+					for(var i = 0; i < this.channels; i++) {
+						x1[i] = 0;
+						x2[i] = 0;
+						y1[i] = 0;
+						y2[i] = 0;
+					}
+					
+					this.function.setX1(x1);
+					this.function.setX2(x2);
+					this.function.setY1(y1);
+					this.function.setY2(y2);											
+				},
+
+			   props: {
+			       b0: 0.001639,
+			       b1: 0.003278,
+			       b2: 0.001639,
+			       a1: -1.955777,
+			       a2: 0.960601,
+				   channels : 2,
+			   },
+
+			   acceptsInput: true,
+			   upvalues: {
+			       x1: null,
+			       x2: null,
+			       y1: null,
+			       y2: null,
+			   },
+
+			   setters: {
+			       frequency: function(val) {
+			           this.calculateCoefficients();
+			       },
+			       mode: function(val) {
+			           this.calculateCoefficients();
+			       },
+			       Q: function(val) {
+			           this.calculateCoefficients();
+			       },
+			   },
+
+			   calculateCoefficients: function() {
+			       switch (this.mode) {
+			       case "LP":
+			           var w0 = 2 * Math.PI * this.cutoff / 44100,
+			               sinw0 = Math.sin(w0),
+			               cosw0 = Math.cos(w0),
+			               alpha = sinw0 / (2 * this.Q),
+			               b0 = (1 - cosw0) / 2,
+			               b1 = 1 - cosw0,
+			               b2 = b0,
+			               a0 = 1 + alpha,
+			               a1 = -2 * cosw0,
+			               a2 = 1 - alpha;
+			           break;
+			       case "HP":
+			           var w0 = 2 * Math.PI * this.cutoff / 44100,
+			               sinw0 = Math.sin(w0),
+			               cosw0 = Math.cos(w0),
+			               alpha = sinw0 / (2 * this.Q),
+			               b0 = (1 + cosw0) / 2,
+			               b1 = -(1 + cosw0),
+			               b2 = b0,
+			               a0 = 1 + alpha,
+			               a1 = -2 * cosw0,
+			               a2 = 1 - alpha;
+			           break;
+			       case "BP":
+			           var w0 = 2 * Math.PI * this.cutoff / 44100,
+			               sinw0 = Math.sin(w0),
+			               cosw0 = Math.cos(w0),
+			               toSinh = Math.log(2) / 2 * this.Q * w0 / sinw0,
+			               alpha = sinw0 * (Math.exp(toSinh) - Math.exp(-toSinh)) / 2,
+			               b0 = alpha,
+			               b1 = 0,
+			               b2 = -alpha,
+			               a0 = 1 + alpha,
+			               a1 = -2 * cosw0,
+			               a2 = 1 - alpha;
+			           break;
+			       default:
+			           return;
+			       }
+
+			       this.b0 = b0 / a0;
+			       this.b1 = b1 / a0;
+			       this.b2 = b2 / a0;
+			       this.a1 = a1 / a0;
+			       this.a2 = a2 / a0;
+			   },
+
+			   callback: function(x, b0, b1, b2, a1, a2, channels) {
+				   var out = [];
+				   for(var channel = 0; channel < channels; channel++) {
+				       out[channel] = b0 * x[channel] + b1 * x1[channel] + b2 * x2[channel] - a1 * y1[channel] - a2 * y2[channel];
+				       x2[channel] = x1[channel];
+				       x1[channel] = x[channel];
+				       y2[channel] = y1[channel];
+				       y1[channel] = out[channel];
+				   }
+			       return out;
+			   },
+
 			});
 			
 			// adapted from code / comments at http://musicdsp.org/showArchiveComment.php?ArchiveID=124
@@ -136,7 +261,7 @@ define([], function() {
 					
 					return sample;
 				},
-
+				
 			});
 			
 			gibberish.Flanger = Gen({
@@ -561,7 +686,7 @@ define([], function() {
 				},
 
 				makeAllPass : function(buffers, bufferLength, feedback ) {
-					console.log("ALL PASS", bufferLength, feedback);
+					//console.log("ALL PASS", bufferLength, feedback);
 					//var bufferLength = buffer.length;
 					var index = -1;
 
@@ -622,12 +747,13 @@ define([], function() {
 
 					return that;
 				},
-
+				
+				// TODO: damping doesn't do anything!!! there is no damping
 				makeComb : function(buffers, feedback, damping) {
 					//console.log("COMB CHECK", feedback, damping, bufferLength);
 					var invDamping = 1 - damping;
 					var bufferLength = buffers[0].length;
-					console.log(buffers[0]);
+					//console.log(buffers[0]);
 					var index = 0;
 					var store = [0,0,0,0,0,0,0];
 
@@ -678,7 +804,7 @@ define([], function() {
 
 						    stereoSpread: 	23
 						},
-						channels: 1,
+						channels: 2,
 					};
 					Gibberish.extend(that, new Gibberish.ugen(that));
 					if(typeof properties !== "undefined") {
@@ -722,7 +848,7 @@ define([], function() {
 					window[that.symbol] = Gibberish.make["Reverb"](that.combFilters, that.allPassFilters, that.tuning);
 					that._function = window[that.symbol];
 
-					Gibberish.defineProperties( that, ["time", "feedback"] );
+					Gibberish.defineProperties( that, ["damping", 'wet','dry','roomSize'] );
 
 					return that;
 				},
@@ -769,7 +895,7 @@ define([], function() {
 				connect : function(bus) {
 					this.destinations.push(bus);
 					if(bus === Gibberish.MASTER) {
-						console.log("CONNECTING TO MASTER", this)
+						//console.log("CONNECTING TO MASTER", this)
 						Gibberish.connect(this);
 					}else{
 						bus.connectUgen(this, 1);

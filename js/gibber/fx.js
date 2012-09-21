@@ -98,13 +98,18 @@ Float. Attenuation of high frequencies that occurs.
 /**###Reverb.wet : property
 Float. Default = .75. The amount of processed signal that is output.  
 **/	
-/**###Reverb.roomSize : property
+/**###Reverb.dry : property
 Float. Default = .5. The amount of dry signal that is output
 **/	
 function Reverb(roomSize, damping, wet, dry) {
 	var that;
+	
+	if(typeof Gibber.ReverbPresets === 'undefined') ReverbPresets();
+	
 	if(typeof arguments[0] === "object") {
 		that = Gibberish.Reverb( arguments[0] );
+	}else if(typeof arguments[0] === 'string') {
+		that = Gibberish.Reverb( Gibber.ReverbPresets[arguments[0]]);
 	}else{
 		var props = {
 			roomSize : (isNaN(roomSize)) ? .5 : roomSize,
@@ -117,6 +122,17 @@ function Reverb(roomSize, damping, wet, dry) {
 	}
 	that.name = "Reverb";
 	return that;
+}
+
+function ReverbPresets() {
+	Gibber.ReverbPresets = {
+		space : {
+			roomSize:1,
+			damping:0,
+			wet:1,
+			dry:0,
+		},
+	}
 }
 
 /**#Delay- FX

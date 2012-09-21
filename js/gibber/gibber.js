@@ -386,7 +386,7 @@ define(['gibber/audio_callback',
 		
 			var bpmObservers = Gibber.observers.bpm;
 
-			var percentChange = oldbpm / this.bpm;
+			var percentChange = this.bpm / oldbpm; //oldbpm / this.bpm;
 			for(var i = 0; i < bpmObservers.length; i++) {
 				bpmObservers[i](percentChange); 	// all observers are callback functions to be called
 			}

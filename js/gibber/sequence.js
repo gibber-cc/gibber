@@ -330,7 +330,7 @@ This should never need to be explicitly called.
 	advance : function() {
 		if(this.active) {
 			var pos, val;
-			
+			//console.log("ADVANCE", G.callback.phase);
 			var shouldReturn = false; 
 			var nextPhase = 0;
 			if(this.prevHumanize) {
@@ -786,13 +786,18 @@ t.slave(s, ss);`
 		var _that = obj;
 		return function(percentageChangeForBPM) {
 			if(_that.speed !== null) {
-				_that.speed *= percentageChangeForBPM;
+				_that.speed = Math.floor( G.time(_that.speed) *  (1 / percentageChangeForBPM));
 			}
 			if(_that.durations !== null) {
 				for(var i = 0; i < _that.durations.length; i++) {
-					_that.durations[i] *= percentageChangeForBPM;
+					//if(_that.durations[i] >= G.MAX_MEASURES) {
+						_that.durations[i] = Math.floor(G.time(_that.durations[i]) * (1 / percentageChangeForBPM));
+						//}else{
+						//console.log("SMALL");
+						//}
 				}
 			}
+			console.log("DONE");
 			//_that.setSequence(_that.sequence, _that.speed); // don't need this, not sure why it causes errors.
 		}
 	},

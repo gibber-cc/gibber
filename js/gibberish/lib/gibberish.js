@@ -577,28 +577,13 @@ define([], function() {
 			dirty:		true,
 			destinations : [],
 		};
-		console.log("UGEN?", this);
-		
-		//self.fx.parent = {channels:2};		
-		
+			
 		Gibberish.extend(this, self);
 		
 		this.fx.parent = parent;
-		console.log("UGEN 2?", this);
-		//console.log("BLAH");
-		// var parent = this;
-		// this.fx.prototype.parent = this;
-		// this.fx.add = function() {
-		// 	console.log("FX ADDED CALLED");
-		// 	for(var i = 0; i < arguments.length; i++) {
-		// 		this.push(arguments[i]);
-		// 	}
-		// 	Gibberish.dirty(parent);
-		// };
-		// console.log(this.fx.add);
+
 		return this;
 	};
-	// todo: how to dirty fx bus when adding an effect?	
 	
 	return that;
 });

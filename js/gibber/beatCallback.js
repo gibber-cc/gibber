@@ -13,26 +13,26 @@ TODO: There is now an audio stutter when changing tempo. I'm guessing this is du
 of past events in the sequence array that are no longer even being used. How can we regularly cull this array?
 */
 function Callback() {
-	console.log("MAKING A CALLBACK");
 	this.measureLengthInSamples = _1;
 	this.sequence = [];
+	
 	function bpmCallback(obj) {
 		var that = obj;
 		return function(percentageChangeForBPM) {
 			that.measureLengthInSamples = _1;
 			var init = false;
-			for(var i = 0, sl = that.sequence.length; i < sl; i++) {
-				if(typeof that.sequence[i] !== "undefined") {
-					if(i < that.phase) {
-						delete that.sequence[i];
-						continue;
-					}
-					var newPhase = Math.ceil(i * percentageChangeForBPM);
-					that.sequence[newPhase] = that.sequence[i].slice(0);
-					delete that.sequence[i];
+			var _phase = that.phase;
+			that.phase = Math.floor(that.phase * (1 / percentageChangeForBPM));
+			
+			for(var i = 0; i < that.sequenceNumbers.length; i++) {
+				var pos = that.sequenceNumbers[i];
+				if(typeof that.sequence[pos] !== "undefined") {
+					var newPhase = Math.floor(pos * (1 / percentageChangeForBPM));
+					that.sequence[newPhase] = that.sequence[pos].slice(0);
+					that.sequenceNumbers.splice(i, 1, newPhase);
+					delete that.sequence[pos];
 				}
 			}
-			that.phase = Math.floor(that.phase * percentageChangeForBPM);
 		}
 	}
 	
@@ -48,14 +48,21 @@ Callback.prototype = {
 	value : 0,
 	init : false,
 	beat : 0,
+	sequenceNumbers: [],
 	numberOfBeats : 4,
 	
 	addEvent : function(position, sequencer) {
+		//console.log("ADDING", this.phase + position);
 		if(this.sequence[this.phase + position] === undefined) {
 			this.sequence[this.phase + position] = [];
 		}
 		
 		this.sequence[this.phase + position].push(sequencer);
+		
+		if(this.sequenceNumbers.indexOf(this.phase + position) === -1) {
+			this.sequenceNumbers.push(this.phase + position);
+		}
+
 		return this.phase + position;
 	},
 	
@@ -77,15 +84,10 @@ Callback.prototype = {
 				return loop;
 			}
 		}
-		//console.log("time till event = " + (nextSubdivision - this.phase) ) // 88200 - 88187 / 441
+
 		this.callbacks.push(_callback());
 		
 		return this.callbacks[this.callbacks.length - 1];
-		// if(shouldWait) {
-		// 			stop = Sink.doInterval(_callback(), ((nextSubdivision - this.phase) / (Gibber.sampleRate / 1000)) );
-		// 		}else{
-		// 			stop = Sink.doInterval(_callback(), subdivision / (Gibber.sampleRate / 1000) );
-		// 		}
 	},
 
 	generate : function() {
@@ -107,12 +109,6 @@ Callback.prototype = {
 					}
 				}
 			}
-			//this.sequence = [];
-			// for(var i = 0, _sl = this.slaves.length; i < _sl; i++) {
-			// 	this.slaves[i].schedule();
-			// 	this.init = true;
-			// }
-			
 		}else{
 			if(this.phase % _4 === 0) {
 				this.beat++;
@@ -136,6 +132,4 @@ Callback.prototype = {
 		
 		this.phase++;
 	},
-	
-	getMix : function() { return this.value; }, // not used but just in case
 }
