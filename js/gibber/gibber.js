@@ -237,29 +237,6 @@ define(['gibber/audio_callback',
 			"bpm": [],
 		},
 	
-		getBus : function(_bus) {
-			if(typeof _bus === "string") {
-				for(var i = 0; i < Gibber.busses.length; i++) {
-					var bus = Gibber.busses[i];
-					if(bus.name == _bus) return bus;
-				}
-			}else{
-				for(var i = 0; i < Gibber.busses.length; i++) {
-					var bus = Gibber.busses[i];
-					if(bus == _bus) return bus;
-				}
-			}
-		},
-
-		genRemove : function(gen) {
-			var idx = jQuery.inArray( gen, Gibber.generators);
-			if(idx > -1) {
-				Gibber.generators.splice(idx,1);
-				gen.mods.length = 0;
-				gen.fx.length = 0;
-			}
-		},
-	
 		genReplace : function(gen, newGen) {
 			//console.log("GEN REPLACE");
 			Master.disconnectUgen(gen); // disconnect from output if connected
@@ -310,21 +287,7 @@ define(['gibber/audio_callback',
 				}
 			}
 		},
-	
-		modRemove : function(oldMod) {
-		// loop through ugens / fx that the mods influence and delete
-			var modToReplace = oldMod;
-			for(var i = 0; i < modToReplace.modded.length; i++) {
-				var moddedGen = modToReplace.modded[i];
-				for(var j = 0; j < moddedGen.mods.length; j++) {
-					var modCheck = moddedGen.mods[j].gen;
-					if(modCheck == modToReplace) {
-						moddedGen.mods.splice(j,1);
-					}
-				}
-			}
-		},
-	
+		
 		fxReplace : function(oldFX, newFX) {
 		// loop through gens affected by effect (for now, this should almost always be 1)
 		// replace with new effect and add the gen to the gens array of the new effect
@@ -335,19 +298,6 @@ define(['gibber/audio_callback',
 				if(idx > -1) {
 					fxgen.fx.splice(idx,1,newFX);
 					newFX.gens.push(fxgen);
-				}
-			}
-		},
-	
-		fxRemove : function(oldFX) {
-		// loop through gens affected by effect (for now, this should almost always be 1)
-		// replace with new effect and add the gen to the gens array of the new effect
-			var fxToReplace = oldFX;
-			for(var i = 0; i < fxToReplace.gens.length; i++) {
-				var fxgen = fxToReplace.gens[i];
-				var idx = jQuery.inArray( fxToReplace, fxgen.fx );
-				if(idx > -1) {
-					fxgen.fx.splice(idx,1);
 				}
 			}
 		},
@@ -374,22 +324,6 @@ define(['gibber/audio_callback',
 			oldControl.kill();
 		},
 	
-		controlRemove: function(oldControl) {
-			var controlToReplace = oldControl;
-
-			for(var i = 0; i < controlToReplace.slaves.length; i++) {
-				var slave = controlToReplace.slaves[i];
-				slave.masters.length = 0;
-			}
-			controlToReplace.slaves.length = 0;
-		
-			for(var i = 0; i < controlToReplace.mods.length; i++) {
-				var mod = controlToReplace.mods[i];
-			}
-			controlToReplace.mods.length = 0;
-			Gibber.callback.slaves.remove(oldControl);
-		},
-	
 		registerObserver : function(name, fn) {
 			//console.log("Registering " + fn);
 			this.observers[name].push(fn);
@@ -414,30 +348,17 @@ define(['gibber/audio_callback',
 		},
 	
 		clear : function() {
-			// for(var g = 0; g < Gibber.generators.length; g++) {
-			// 	Gibber.generators[g].kill();
-			// }
-			// for(var c = 0; c < Gibber.controls.length; g++) {
-			// 	Gibber.controls[c].kill();
-			// }
 			for(var cc = 0; cc < Gibber.callback.slaves.length; cc++) {
 				Gibber.callback.slaves[cc].kill();
 			}
 			Gibber.callback.sequence = [];
 		
 			Gibber.killSingles();
-				
-			// this.generators.length = 0;
-			// this.callback.phase = 0;
-			// this.controls.length = 0;
-			// this.busses.length = 0;
-			// this.callback.callbacks.length = 0;
-			// Master.fx.length = 0;
-			// Master.mods.length = 0;
+
 			Master.senderObjects.remove();
 			Master.senders.remove();
 			Master.fx.remove();
-			//Gibberish.dirty(Master);
+
 			Gibber.log("Cleared Gibber graph.");	
 		},
 	
@@ -447,18 +368,7 @@ define(['gibber/audio_callback',
 		start : function() {
 			this.active = true;
 		},
-	
-		generators : [],
-		controls : [],
-		pop : function() { this.generators.pop(); },
-	
-		shapes : {
-		    triangle : 'triangle',
-			sine : 'sine',
-			square : 'square',
-			saw : 'sawtooth',
-		},
-	
+
 		runScript : function(script) {
 			try {
 				eval(script);
@@ -468,207 +378,10 @@ define(['gibber/audio_callback',
 			}
 			//(function(_s) { console.log(this); eval(s); console.log(this); }).call(Gibber._gens, script);
 		},
-	
-		automationModes : {
-			"+" : "addition",
-			"++": "absoluteAddition",
-			"=" : "assignment",
-			"*" : "modulation",
-		},
-	
-		shorthands : {
-			"freq": "frequency", 
-		},
-		
-		modsAndEffects : {
-			"+" : function() { 
-				return this.out() + this.param_;
-			},
-			"++": function() {
-				return Math.abs(this.out()) + this.param_;
-			},
-			"=" : function() { 
-				return this.out();		
-			},
-			"*" : function() {
-				return this.out() * this.param_;
-			},
-		
-			send : function(_bus, amount) {
-				var bus = { 
-					bus : Gibber.getBus(_bus),
-					amount : amount,
-				};
-			
-				bus.bus.senders.push(this);
-			
-				this.sends.push(bus);
-			},
-		
-			out : function() {
-				this.generate();
-				return this.getMix();
-			},
-		
-			fxout : function(samp) {
-				this.pushSample(samp,0);
-				// if(Gibber.debug) {
-				// 				console.log("this.mix = " + this.mix);
-				// 				console.log("value = " + this.getMix());
-				// 				console.log("output = " + (samp * (1 - this.mix)) + (this.mix * this.getMix(0)));
-				// 			}
-				return (samp * (1 - this.mix)) + (this.mix * this.getMix(0));
-			},
-		
-			chain : function(_effect) {
-				for(var i = 0; i < arguments.length; i++) {
-					var fx = arguments[i];
-					this.fx.push(fx);
-					fx.gens.push(this);	
-				}
-				return this;
-			},
-	
-			removeFX : function(_id) {
-				if(typeof _id === "undefined") {
-					this.fx.length = 0;
-				}else if(typeof _id === "number") {
-					this.fx.splice(_id, 1);
-				}else{
-					for(var i = 0; i < this.fx.length; i++) {
-						var effect = this.fx[i];
-						if(effect.name == _id) {
-							this.fx.splice(i, 1);
-						}
-					}
-				}
-				return this;
-			},
-	
-			removeMod : function(_id) {
-				this.removeMod(_id);
-				// if(typeof _id === "undefined") {
-				// 	this.clearMods();
-				// }else if(typeof _id === "number") {
-				// 	this.mods.splice(_id, 1);
-				// }else{
-				// 	for(var i = 0; i < this.mods.length; i++) {
-				// 		var mod = this.mods[i];
-				// 		if(mod.name == _id) {
-				// 			this.mods.splice(i, 1);
-				// 		}
-				// 	}
-				// }
-				return this;
-			},
-	
-			clearMods : function() {
-				this.mods.length = 0;
-				this.automations.length = 0;
-		
-				return this;
-			},
-		
-			addModsAndFX : function() {
-				$.extend(this, Gibber.modsAndEffects);
-			},
-	
-			trig : function (onOff) {
-				if(typeof onOff === "undefined") onOff = true;
-		
-				for(var i = 0; i < this.mods.length; i++) {
-					var mod = this.mods[i];
-					if(mod.sourceName == "Env") {
-						mod.gen.triggerGate(onOff);
-					}
-				}
-			},
-		},
+
 	}
 	return Gibber; 
 });
-
-function Osc(freq, vol, waveShape) {
-	var that = new audioLib.Oscillator(Gibber.sampleRate, 440);
-	
-	if(typeof arguments[0] === "object") {
-		var obj = arguments[0];
-		for(key in obj) {
-			that[key] = obj[key];
-		}
-		that.amp = (typeof that.amp === "undefined") ? .3 : that.amp;
-	}else{
-		that.frequency = (typeof arguments[0] !== "undefined") ? arguments[0] : 440;
-		that.amp = (typeof arguments[1] !== "undefined") ? arguments[1] : .2;	
-	}
-	
-	if(typeof waveShape !== "undefined") that.waveShape = waveShape;
-	that.type = "gen";	
-	that.active = true;		
-	that.value = 0;
-	
-	that.mods = [];
-	that.fx = [];
-	that.sends = [];	
-	that.modded = []; // for use as modulation source
-	that.masters = [];
-	
-	that.freq = function(_freq) {
-		this.frequency = _freq;
-	};
-	
-	that.kill = function() {
-		Gibber.genRemove(this);
-		if(this.masters != undefined) 	this.masters.length = 0;
-		if(this.mods != undefined)		this.mods.length = 0;
-		if(this.fx != undefined)		this.fx.length = 0;
-	};
-
-	that.stop = function() {
-		this.active = false;
-		return this;
-	};
-	
-	that.note = function(note) {
-		switch(typeof note) {
-			case "number" :
-				this.frequency = note;
-			break;
-			case "string" :
-				this.frequency = teoria.note(note).fq();
-			break;
-			default:
-				this.frequency = note.fq();
-				break;
-		}
-
-		if(typeof arguments[1] !== "undefined") {
-			this.amp = arguments[1];
-		}		
-	};
-	that.start = function() {
-		this.active = true;
-		return this;		
-	};
-	
-	that.getMix = function() { 
-		return this[this.waveShape]() * this.amp;
-	};
-	
-	Gibber.audioInit = true;
-	Gibber.generators.push(that);
-	
-	that.silent = function() {
-		Gibber.genRemove(this);
-		return this;
-	};
-	
-	that.sssh = that.silent;
-	
-	Gibber.addModsAndFX.call(that);
-	
-	return that;
-}
 
 function LFO(freq, amp, waveform) {
 	if(typeof waveform === "undefined") waveform = "Sine";
