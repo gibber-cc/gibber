@@ -65,7 +65,7 @@ function FM(cmRatio, index, attack, decay){
 			preset.maxVoices = 1;
 			that = Gibberish.PolyFM( preset );
 		}else{
-			console.log("EXTENDING WITH ", arguments[1]);
+			//console.log("EXTENDING WITH ", arguments[1]);
 			var props = Gibber.FMPresets[arguments[0]];
 			Gibberish.extend(props, arguments[1]);
 			

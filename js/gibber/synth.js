@@ -41,27 +41,37 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 function Synth(attack, decay, amp) {
 	var that;
 	var _fx;
-	if(typeof arguments[0] === "object") {
-		that = arguments[0];
-		_fx = that.fx;
+	
+	if(typeof Gibber.presets.Synth === "undefined") SynthPresets();
+	
+	var props;
+	if(typeof arguments[0] === "string") { // if a preset
+		if(typeof arguments[1] === "undefined") {
+			props = Gibber.presets.Synth[arguments[0]];
+			props.maxVoices = 1;
+		}else{
+			props = Gibber.presets.Synth[arguments[0]];
+			Gibberish.extend(props, arguments[1]);			
+		}
+	}else if(typeof arguments[0] === "object") {
+		props = arguments[0];
+		_fx = props.fx;
 		
-		if(isNaN(that.maxVoices)) that.maxVoices = 1;
-		
-		if(that.attack) that.attack = G.time(that.attack);
-		if(that.decay) 	that.decay 	= G.time(that.decay);
-		
-		that = Gibberish.PolySynth(that);
+		if(isNaN(props.maxVoices)) props.maxVoices = 1;		
 	}else{
-		that = {};
+		props = {};
 
-		if(! isNaN(attack)) that.attack = G.time(attack);
- 		if(! isNaN(decay)) 	that.decay 	= G.time(decay);	
-		if(! isNaN(amp)) 	that.amp = amp;
+		if(! isNaN(attack)) props.attack = attack;
+ 		if(! isNaN(decay)) 	props.decay  = decay;
+		if(! isNaN(amp)) 	props.amp = amp;
 		
-		that.maxVoices = 1;
+		props.maxVoices = 1;
 
-		that = Gibberish.PolySynth(that);
 	}
+	if(props.attack) props.attack = G.time( props.attack );
+	if(props.decay)  props.decay  = G.time( props.decay );
+	that = Gibberish.PolySynth( props );
+	
 	that.fx.parent = that;
 	
 	
@@ -91,6 +101,17 @@ Play a chord and optionally specify and amplitude for it. This method only works
 	
 	return that;
 }
+
+
+function SynthPresets() {
+	Gibber.presets.Synth = {
+		short : {
+			attack: 44,
+			decay: G.time(1/4),
+		},
+	};
+}
+	
 
 /**#Synth2 - Synth
 Create an oscillator with an attached envelope and 24db resonant filter that can be triggered by note or chord messages. The envelope controls both the
