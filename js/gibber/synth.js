@@ -41,8 +41,6 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 function Synth(attack, decay, amp) {
 	var that;
 	
-	if(typeof Gibber.presets.Synth === "undefined") SynthPresets();
-	
 	var props = Gibber.applyPreset("Synth", arguments);
 	if(typeof props === "undefined") {
 		props = {};
@@ -88,15 +86,13 @@ Play a chord and optionally specify and amplitude for it. This method only works
 	return that;
 }
 
+Gibber.presets.Synth = {
+	short : {
+		attack: 44,
+		decay: 1/16,
+	},
+};
 
-function SynthPresets() {
-	Gibber.presets.Synth = {
-		short : {
-			attack: 44,
-			decay: 1/16,
-		},
-	};
-}
 	
 
 /**#Synth2 - Synth
@@ -145,9 +141,7 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 
 function Synth2() {
 	var that = {};
-	
-	if(typeof Gibber.presets.Synth2 === "undefined") Synth2Presets();
-	
+		
 	var props = Gibber.applyPreset("Synth2", arguments);
 	if(typeof props === "undefined") {
 		props = {};
@@ -183,14 +177,12 @@ Play a chord and optionally specify and amplitude for it. This method only works
 	return that;
 }
 
-function Synth2Presets() {
-	Gibber.presets.Synth2 = {
-		short : {
-			attack: 44,
-			decay: 1/16,
-		},
-	};
-}
+Gibber.presets.Synth2 = {
+	short : {
+		attack: 44,
+		decay: 1/16,
+	},
+};
 
 /**#Mono - Synth
 A three oscillator monosynth for bass and lead lines. You can set the octave and tuning offsets for oscillators 2 & 3. There is a 24db filter and an envelope controlling
@@ -251,9 +243,7 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 **/
 function Mono() {
 	var that = {};
-	
-	if(typeof Gibber.presets.Mono === "undefined") MonoPresets();
-	
+		
 	var props = Gibber.applyPreset("Mono", arguments);
 	if(typeof props === "undefined") {
 		props = {};
@@ -284,31 +274,31 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
 	return that;
 }
 
-function MonoPresets() {
-	Gibber.presets.Mono = {
-		short : {
-			attack: 44,
-			decay: 1/16,
-		},
-		lead : {
-			fx : [ Delay(1/4, .35), Reverb() ],
-			attack: 1/8,
-			decay:1/2,
-			octave3:0,
-			cutoff:.2,
-			filterMult:.5,
-			resonance:5,
-			isLowPass: false,
-		},
-		bass : {
-			attack: Gibber.MAX_MEASURES,
-			decay:	1/8 - Gibber.MAX_MEASURES,
-			octave2 : -1,
-			cutoff: 0,
-			filterMult:.2,
-			resonance:4,
-		}
-	};
-}
+
+Gibber.presets.Mono = {
+	short : {
+		attack: 44,
+		decay: 1/16,
+	},
+	lead : {
+		fx : [ Delay(1/4, .35), Reverb() ],
+		attack: 1/8,
+		decay:1/2,
+		octave3:0,
+		cutoff:.2,
+		filterMult:.5,
+		resonance:5,
+		isLowPass: false,
+	},
+	bass : {
+		attack: Gibber.MAX_MEASURES,
+		decay:	1/8 - Gibber.MAX_MEASURES,
+		octave2 : -1,
+		cutoff: 0,
+		filterMult:.2,
+		resonance:4,
+	}
+};
+
 
 

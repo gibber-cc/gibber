@@ -55,8 +55,6 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 
 function FM(cmRatio, index, attack, decay){
 	var that;
-	
-	if(typeof Gibber.presets.FM === "undefined") FMPresets();
 		
 	var props = Gibber.applyPreset("FM", arguments);
 	if(typeof props === "undefined") {
@@ -101,61 +99,59 @@ Play a chord and optionally specify and amplitude for it. This method only works
 	return that;
 }
 
-function FMPresets() {
-	Gibber.presets.FM = {
-		glockenspiel : {
-			cmRatio	: 3.5307,
-			index 	: 1,
-			attack	: 44,
-			decay	: 44100,
-		},
-		radio : { //ljp
-			cmRatio	: 1,
-			index	: 40,
-			attack	: 300 * 44.1,
-			decay	: 500 * 44.1,
-		},
-		noise : { //ljp
-			cmRatio	: 0.04,
-			index	: 1000,
-			attack	: 1 * 44.1,
-			decay	: 100 * 44.1,
-		},
-		frog : { //ljp
-			cmRatio	: 0.1,
-			index	: 2.0,
-			attack	: 300 * 44.1,
-			decay	: 5 * 44.1,
-		},
-		gong : {
-			cmRatio : 1.4,
-			index	: .95,
-			attack	: 44.1,
-			decay	: 5000 * 44.1,
-		},
-		drum : {
-			cmRatio : 1.40007,
-			index	: 2,
-			attack	: 44,
-			decay	: 44100,
-		},
-		drum2 : {
-			cmRatio: 1 + Math.sqrt(2),
-			index: .2,
-			attack: 44,
-			decay: 20 * 44.1,
-		},
-		brass : {
-			cmRatio : 1 / 1.0007,
-			index	: 5,
-			attack	: 4100,
-			decay	: 4100,
-		},
-		clarinet : {
-			cmRatio	: 3 / 2,
-			index	: 1.5,
-			attack	: 50 * 44.1,
-			decay	: 200 * 44.1,
-		}
-	};
-}
+Gibber.presets.FM = {
+	glockenspiel : {
+		cmRatio	: 3.5307,
+		index 	: 1,
+		attack	: 44,
+		decay	: 44100,
+	},
+	radio : { //ljp
+		cmRatio	: 1,
+		index	: 40,
+		attack	: 300 * 44.1,
+		decay	: 500 * 44.1,
+	},
+	noise : { //ljp
+		cmRatio	: 0.04,
+		index	: 1000,
+		attack	: 1 * 44.1,
+		decay	: 100 * 44.1,
+	},
+	frog : { //ljp
+		cmRatio	: 0.1,
+		index	: 2.0,
+		attack	: 300 * 44.1,
+		decay	: 5 * 44.1,
+	},
+	gong : {
+		cmRatio : 1.4,
+		index	: .95,
+		attack	: 44.1,
+		decay	: 5000 * 44.1,
+	},
+	drum : {
+		cmRatio : 1.40007,
+		index	: 2,
+		attack	: 44,
+		decay	: 44100,
+	},
+	drum2 : {
+		cmRatio: 1 + Math.sqrt(2),
+		index: .2,
+		attack: 44,
+		decay: 20 * 44.1,
+	},
+	brass : {
+		cmRatio : 1 / 1.0007,
+		index	: 5,
+		attack	: 4100,
+		decay	: 4100,
+	},
+	clarinet : {
+		cmRatio	: 3 / 2,
+		index	: 1.5,
+		attack	: 50 * 44.1,
+		decay	: 200 * 44.1,
+	}
+};

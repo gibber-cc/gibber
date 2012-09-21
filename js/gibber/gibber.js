@@ -3,20 +3,6 @@
 // 2011
 // MIT License
 define(['gibber/audio_callback',
-	'gibber/fx',
-	'gibber/sequence',
-	'gibber/scale_seq',
-	'gibber/arpeggiator',
-	'teoria',
-	'gibber/utilities',
-	'gibber/drums',
-	'gibber/beatCallback',
-	'gibber/synth',
-	'gibber/fm_synth',
-	'gibber/string',
-	'gibber/sampler',
-	'gibber/grains',
-	'gibber/envelopes',
 	], function() {
 
 	var Gibber = {
@@ -201,32 +187,50 @@ define(['gibber/audio_callback',
 		},
 	
 		init : function() {
-			if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
-				this.Environment.init();
-			}
-		
+
 			this.dev = Sink(audioProcess, 2, 4096);
 			this.sampleRate = this.dev.sampleRate;		
 			this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
 			this.measure = this.beat * 4;
 		
 			this.initDurations();
-		
-			this.callback = new Callback();
-
-			window.loop = function(cb, time) {
-				var l = Gibber.callback.addCallback(cb, time, true);
-				l.end = function() {
-					Gibber.callback.callbacks = Gibber.callback.callbacks.removeObj(this);
-				};
-				return l;
-			};
-		
-			this.meta(window);
 			
 			window.Master = Gibberish.Bus();
 			Master.channels = 2;
 			Master.connect(Gibberish.MASTER);
+			
+			require([	
+				'gibber/fx',
+				'gibber/sequence',
+				'gibber/scale_seq',
+				'gibber/arpeggiator',
+				'teoria',
+				'gibber/utilities',
+				'gibber/drums',
+				'gibber/beatCallback',
+				'gibber/synth',
+				'gibber/fm_synth',
+				'gibber/string',
+				'gibber/sampler',
+				'gibber/grains',
+				'gibber/envelopes',
+			], function() {
+				if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
+					Gibber.Environment.init();
+				}
+
+				Gibber.callback = new Callback();
+
+				window.loop = function(cb, time) {
+					var l = Gibber.callback.addCallback(cb, time, true);
+					l.end = function() {
+						Gibber.callback.callbacks = Gibber.callback.callbacks.removeObj(Gibber);
+					};
+					return l;
+				};
+		
+				Gibber.meta(window);
+			});
 		},
 	
 		observers : {
