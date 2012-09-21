@@ -2,9 +2,7 @@
 // by Charlie Roberts
 // 2011
 // MIT License
-define(['gibber/audio_callback',
-	], function() {
-
+define(['gibber/audio_callback'], function() {
 	var Gibber = {
 		active : true,
 		bpm : 120,
@@ -115,7 +113,8 @@ define(['gibber/audio_callback',
 					props = Gibber.presets[name][args[0]];
 				}else{
 					props = Gibber.presets[name][args[0]];
-					Gibberish.extend(props, args[1]);			
+					if(typeof props !== 'undefined')
+						Gibberish.extend(props, args[1]);			
 				}
 			}else if(typeof args[0] === "object") {
 				props = args[0];		
@@ -187,7 +186,6 @@ define(['gibber/audio_callback',
 		},
 	
 		init : function() {
-
 			this.dev = Sink(audioProcess, 2, 4096);
 			this.sampleRate = this.dev.sampleRate;		
 			this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
@@ -376,7 +374,6 @@ define(['gibber/audio_callback',
 				G.log(e.toString());
 				console.log(e);
 			}
-			//(function(_s) { console.log(this); eval(s); console.log(this); }).call(Gibber._gens, script);
 		},
 
 	}

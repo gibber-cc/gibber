@@ -36,6 +36,7 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	var _fx = arguments[0].fx;
 	
 	this.channels = 2;
+	this.fx = [];
 	this.fx.parent = this;
 	
 /**###Drums.pitch : property
@@ -110,33 +111,31 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 **description** : start the Drums sequencer running
 **/
 	this.play 	= function() { that.seq.play(); };	
-	
-	if(typeof arguments[0] === "object") {
-		var obj = arguments[0];
-		
-		for(key in obj) {
-			this[key] = obj[key];
-		}
-		
-		var props = {
-			doNotAdvance : true,
-			speed : 	this.speed,
-			slaves :	[this],
-		};
-		
-		Gibberish.extend(props, arguments[0]);
-		
-		this.seq = Seq(props);
-	}else if(typeof _sequence != "undefined") {
-		if(typeof _timeValue !== "undefined") {
-			if($.isArray(_timeValue)) {
-				this.seq = Seq({
-					doNotAdvance : true,					
-					note :_sequence.split(""),
-					durations : _timeValue,
-					slaves:[this],
-				});
+
+	var props = Gibber.applyPreset("Drums", arguments);
+	console.log(props);
+	//Gibberish.extend(this, props);
+	//console.log(this.pitch);
+	if(typeof props === "undefined") {
+		if(typeof _sequence != "undefined") {
+			if(typeof _timeValue !== "undefined") {
+				if($.isArray(_timeValue)) {
+					this.seq = Seq({
+						doNotAdvance : true,					
+						note :_sequence.split(""),
+						durations : _timeValue,
+						slaves:[this],
+					});
+				}else{
+					this.seq = Seq({
+						doNotAdvance : true,					
+						note :_sequence.split(""),
+						speed : _timeValue,
+						slaves:[this],
+					});
+				}
 			}else{
+				_timeValue = window["_"+_sequence.length];
 				this.seq = Seq({
 					doNotAdvance : true,					
 					note :_sequence.split(""),
@@ -144,17 +143,25 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 					slaves:[this],
 				});
 			}
-		}else{
-			_timeValue = window["_"+_sequence.length];
-			this.seq = Seq({
-				doNotAdvance : true,					
-				note :_sequence.split(""),
-				speed : _timeValue,
-				slaves:[this],
-			});
-		}
+		}	
+	}else{
+		if(props.note) props.note = props.note.split("");
+		props.slaves = [this];
+		props.doNotAdvance = true;
+		if(this.seq === null) this.seq = Seq(props);
+		//Gibberish.extend(this, props);
+		//this.seq.slave(this);
 	}
 	
+	if(typeof props === "undefined") props = {};
+	
+	if(props.pitch) this.pitch = props.pitch;
+	
+	if(typeof props.snare !== "undefined") 	{ Gibberish.extend(this.snare.sampler, props.snare); Gibberish.extend(this.snare, props.snare); }
+	if(typeof props.kick !== "undefined") 	{ Gibberish.extend(this.kick.sampler, props.kick); Gibberish.extend(this.kick, props.kick); }
+	if(typeof props.hat !== "undefined") 	{ Gibberish.extend(this.hat.sampler, props.hat); Gibberish.extend(this.hat, props.hat); }
+	if(typeof props.openHat !== "undefined") { Gibberish.extend(this.openHat.sampler, props.openHat); Gibberish.extend(this.openHat, props.openHat); }
+ 
 	(function(obj) {
 		var that = obj;
 		var amp = .2;
@@ -196,14 +203,30 @@ Float. The overall amplitude of the Drums. Each specific drum can also have its 
 		this.seq.advance();
 	}
 	
-	if(typeof _fx !== 'undefined') {
-		console.log("FX", this);
-		this.fx = [];
-		for(var i = 0; i < _fx.length; i++) {
-			this.fx.add( _fx[i] );
+	if(props.fx) {
+		this.fx.parent = this;
+		for(var i = 0; i < props.fx.length; i++) {
+			this.fx.add( props.fx[i] );
 		}
 	}
 }
+
+Gibber.presets.Drums = {
+	kickSnare: {
+		note : 'xoxo',
+		snare: { pitch:1, fx: [ Reverb() ], amp:2.5 },
+		kick : { pitch:1, fx: [ Delay(1/16, .5)  ] },
+		speed: 1/4,
+	},
+	weird : {
+		note: 'x*o*x-o*',
+		snare: { pitch: -1, amp:1.5, fx: [ Ring(880, 1), Delay(1/6, .5) ] },
+		kick:  { pitch: 1, fx: [ Clip(5000), Flanger(), Schizo('paranoid') ] },
+		hat:   { pitch: 2, fx: [ Crush(8, .1), Schizo('paranoid') ] },		
+		openHat:   { pitch: -2, },
+		speed:1/8,
+	}
+};
 
 _Drums.prototype = {
 	category  	: "complex",

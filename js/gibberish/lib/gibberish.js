@@ -458,18 +458,36 @@ define([], function() {
 		// modified from http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/ to deep copy arrays
 		extend: function(destination, source) {
 		    for (var property in source) {
-				//console.log(property);
-				if(source[property] instanceof Array) {
-		            destination[property] = source[property].slice(0);
-					if(property === "fx") {
-						destination[property].parent = source[property].parent;
-					}
-		        }else if (typeof source[property] === "object" && source[property] !== null) {
-		            destination[property] = destination[property] || {};
-		            arguments.callee(destination[property], source[property]);
-		        } else {
-		            destination[property] = source[property];
-		        }
+				var keys = property.split(".");
+				//console.log(keys);
+				//if(keys.length === 1) {
+					if(source[property] instanceof Array) {
+			            destination[property] = source[property].slice(0);
+						if(property === "fx") {
+							destination[property].parent = source[property].parent;
+						}
+			        }else if (typeof source[property] === "object" && source[property] !== null) {
+			            destination[property] = destination[property] || {};
+			            arguments.callee(destination[property], source[property]);
+			        } else {
+			            destination[property] = source[property];
+			        }
+					//}
+				/*else{
+					console.log("GREATER THAN 1");
+					if(source[property] instanceof Array) {
+			            destination[keys[0]][keys[1]] = source[property].slice(0);
+						if(property === "fx") {
+							destination[keys[0]][keys[1]].parent =source[property].parent;
+						}
+			        }else if (typeof source[property] === "object" && source[property] !== null) {
+			            destination[keys[0]][keys[1]] = destination[keys[0]][keys[1]] || {};
+			            arguments.callee(destination[keys[0]][keys[1]], source[property]);
+			        } else {
+						console.log("CALLED BLAH");
+			            //destination[keys[0]][keys[1]] = source[property];
+			        }					
+				}*/
 		    }
 		    return destination;
 		},

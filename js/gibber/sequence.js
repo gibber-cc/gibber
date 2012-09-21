@@ -229,7 +229,7 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 
 	if(this.speed === null && this.durations === null) {
 		var arg1Type = typeof arguments[1];
-		if(arg1Type !== "undefined") {
+		if(arg1Type !== "undefined"			) {
 			if(arg1Type === "number") {
 				this.speed = arguments[1];
 				this.durations = null;
