@@ -191,7 +191,8 @@ define([], function() {
 					
 					this.frequency = frequency;
 					this._function.setFrequency(frequency);
-					this.env.start();
+
+					if(this.env.getState() > 0) this.env.setState(0);
 					
 					if(this.glide > 0) {
 						this.mod("frequency", Line(frequency - prevFreq, 0, this.glide), "-");
@@ -229,9 +230,11 @@ define([], function() {
 			var phase = 0;
 			var _frequency = 0; // needed for polyfm
 			var panner = Gibberish.pan();
+			
+			// FMSynth_14( 65.40639132514966, 3.5307, 1, 11025, 44100, 1, 1, 0);
 			var output = function(frequency, cmRatio, index, attack, decay, amp, channels, pan) {
 				var env = envelope(attack, decay);
-				var mod = modulator(frequency * cmRatio, frequency * index, 1)[0] * env;
+				var mod = modulator(frequency * cmRatio, frequency * index, 1, 1)[0] * env;
 				var out = carrier( frequency + mod, 1, 1 )[0] * env * amp;
 				//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency, out);
 				

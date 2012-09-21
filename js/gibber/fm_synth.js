@@ -55,25 +55,11 @@ Integer. The length in time, in samples, to slide in pitch from one note to the 
 
 function FM(cmRatio, index, attack, decay){
 	var that;
-	var _fx = arguments[0].fx;
 	
-	if(typeof Gibber.FMPresets === "undefined") FMPresets();
-	
-	if(typeof arguments[0] === "string") { // if a preset
-		if(typeof arguments[1] === "undefined") {
-			var preset = Gibber.FMPresets[arguments[0]];
-			preset.maxVoices = 1;
-			that = Gibberish.PolyFM( preset );
-		}else{
-			//console.log("EXTENDING WITH ", arguments[1]);
-			var props = Gibber.FMPresets[arguments[0]];
-			Gibberish.extend(props, arguments[1]);
-			
-			that = Gibberish.PolyFM( props );
-		}
-	}else if(typeof arguments[0] === "object") {
-		that = Gibberish.PolyFM( arguments[0] );
-	}else{
+	if(typeof Gibber.presets.FM === "undefined") FMPresets();
+		
+	var props = Gibber.applyPreset("FM", arguments);
+	if(typeof props === "undefined") {
 		props = {
 			cmRatio : isNaN(cmRatio) ?  2 	: cmRatio,
 			index  	: isNaN(index)	 ? .9 	: index,
@@ -81,13 +67,16 @@ function FM(cmRatio, index, attack, decay){
 			decay  	: isNaN(decay)   ? 4100 : G.time(decay),
 			maxVoices: 1,
 		};
-		
-		that = Gibberish.PolyFM( props );
 	}
+
+	if(isNaN(props.maxVoices)) props.maxVoices = 1;
 	
-	if(_fx) {
-		for(var i = 0; i < _fx.length; i++) {
-			that.fx.add( _fx[i] );
+	that = Gibberish.PolyFM( props );
+	that.fx.parent = that;
+	
+	if(props.fx) {
+		for(var i = 0; i < props.fx.length; i++) {
+			that.fx.add( props.fx[i] );
 		}
 	}
 
@@ -113,7 +102,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 }
 
 function FMPresets() {
-	Gibber.FMPresets = {
+	Gibber.presets.FM = {
 		glockenspiel : {
 			cmRatio	: 3.5307,
 			index 	: 1,

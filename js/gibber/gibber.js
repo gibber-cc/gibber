@@ -121,6 +121,22 @@ define(['gibber/audio_callback',
 				window[ltr] = null;
 			}
 		},
+		
+		applyPreset : function(name, args) {
+			var props;
+			if(typeof args[0] === "string") { // if a preset
+				if(typeof args[1] === "undefined") {
+					props = Gibber.presets[name][args[0]];
+				}else{
+					props = Gibber.presets[name][args[0]];
+					Gibberish.extend(props, args[1]);			
+				}
+			}else if(typeof args[0] === "object") {
+				props = args[0];		
+			}
+	
+			return props;
+		},
 	
 		// wraps Gibberish note function to _note and calls it after calculating frequency
 		makeNoteFunction : function(targetObj) {
