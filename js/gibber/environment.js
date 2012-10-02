@@ -543,6 +543,7 @@ define([
 			});
 			
 			var scripts = localStorage.getObject("scripts");
+			if(!scripts) scripts = {};
 			if(typeof scripts.loadFile !== "undefined") {
 				eval(scripts.loadFile);
 			}

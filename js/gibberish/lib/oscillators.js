@@ -153,6 +153,10 @@ define([], function() {
 				},
 				
 			});*/
+			
+			gibberish.generators.Input = gibberish.createGenerator(["amp", "channels"], "{0}( input, {1}, {2} )");
+			gibberish.make["Input"] = this.makeInput;
+			gibberish.Input = this.Input;
 
 			gibberish.generators.KarplusStrong2 = gibberish.createGenerator(["blend", "dampingValue", "amp", "headPos", "pan"], "{0}( {1}, {2}, {3}, {4},{5} )");
 			gibberish.make["KarplusStrong2"] = this.makeKarplusStrong2;
@@ -235,8 +239,34 @@ define([], function() {
 			})();*/
 			
 			return that;
-		},	
+		},
+		
+		Input : function(_amp) {
+			var that = {
+				type: "Input",
+				category: "Gen",
+				amp: isNaN(_amp) ? .5 : _amp,
+				channels: 1,
+			};
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
+			that.symbol = Gibberish.generateSymbol(that.type);
+			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Input\"]();");	
+			that._function = Gibberish.make["Input"](); // only passs ugen functions to make
+			window[that.symbol] = that._function;
+			
+			Gibberish.defineProperties( that, ["amp", "channels"] );
+			return that;
+		},
+		
+		makeInput : function() { // note, storing the increment value DOES NOT make this faster!
+			var output = function(input, amp, channels) {
+				var value = input * amp;
+				return channels === 1 ? [value] : [value, value];
+			};
+			return output;
+		},
+	
 		Sampler : function() {
 			var that = {
 				type: 			"Sampler",
@@ -347,13 +377,14 @@ define([], function() {
 			var interpolate = Gibberish.interpolate;
 			var write = 0;
 			var panner = Gibberish.pan();
+			var debug = 0;
 			var output = function(_pitch, amp, isRecording, isPlaying, input, length, pan) {
 				var out = 0;
 				phase += _pitch;
 				
 				if(write++ < length && isRecording) {
-					//if(write % 10000 === 0) console.log(write, length);
-					buffer[write] = input;
+					if(write % 10000 === 0) console.log(write, length, input);
+					buffer[write] = input[0];
 				}else if(write >= length && isRecording){
 					self.isRecording = false;
 					//self.input = 0;
@@ -364,13 +395,16 @@ define([], function() {
 				}
 
 				if(buffer !== null && phase < buffer.length && phase > 0 && isPlaying) {
+
 					out = interpolate(buffer, phase);
+					if(debug++ % 22050 === 0) console.log(phase, buffer.length, out);
 				}
-				return panner(out * amp, pan);
+				return [out * amp, out * amp]; //panner(out * amp, pan);
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };
 			output.setWriteHead = function(newWriteHead) { write = newWriteHead; };			
 			output.setBuffer = function(newBuffer) { buffer = newBuffer; };
+			output.getBuffer = function() { return buffer; };			
 			return output;
 		},
 		

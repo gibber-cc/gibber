@@ -91,9 +91,8 @@ Gibber.presets.Synth = {
 		attack: 44,
 		decay: 1/16,
 	},
+	bleep: { waveform:'Sine', attack:44, decay:1/16 },
 };
-
-	
 
 /**#Synth2 - Synth
 Create an oscillator with an attached envelope and 24db resonant filter that can be triggered by note or chord messages. The envelope controls both the
@@ -274,14 +273,13 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
 	return that;
 }
 
-
 Gibber.presets.Mono = {
 	short : {
 		attack: 44,
 		decay: 1/16,
 	},
 	lead : {
-		fx : [ Delay(1/4, .35), Reverb() ],
+		//fx : [ Delay(1/4, .35), Reverb() ],
 		attack: 1/8,
 		decay:1/2,
 		octave3:0,
@@ -297,8 +295,13 @@ Gibber.presets.Mono = {
 		cutoff: 0,
 		filterMult:.2,
 		resonance:4,
-	}
+	},
+	easy : {
+		attack:44,
+		decay:2,
+		octave2:0,
+		octave3:0,
+		cutoff:.3,
+		fx : Delay(1/8, .4),
+	},
 };
-
-
-

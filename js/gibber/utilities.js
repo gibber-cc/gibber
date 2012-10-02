@@ -28,7 +28,6 @@ Array.prototype.mod = function(func) {
     }
 };
 
-
 // Array.prototype.remove = function(arg) {
 // 	console.log("REMOVING");
 // 	if(typeof arg === "undefined") { // clear all
@@ -105,10 +104,34 @@ Array.prototype.all = function(func) {
     }
 };
 
-Array.prototype.random = function() {
+Array.prototype.random = Array.prototype.rnd =  function() {
 	this.pick = surpriseMe();
 	return this;
 };
+
+Array.prototype.random2 = Array.prototype.rnd2 = function() {
+	var lastValue = 0;
+	var playTwice = [];
+	for(var i = 0; i < arguments.length; i++) {
+		playTwice.push(arguments[i]);
+	}
+	
+	this.pick = function() { 
+		var value = 0;
+		if(playTwice.indexOf(lastValue) > -1) {
+			value = lastValue;
+			lastValue = 0;
+		}else{
+			var index = rndi(0, this.length - 1);
+			value = this[index];
+			lastValue = value;
+		}
+		return value;
+	};
+	
+	return this;
+};
+
 
 Array.prototype.weight = function() {
 	this.pick = weight.call(this, arguments);
@@ -297,8 +320,6 @@ window.rndd = window.randomd = function(min, max, number) {
 		
 	}
 };
-
-
 
 window.rndi = window.randomi = function(min, max, number) {
 	if(typeof number === "undefined" && typeof min !== "object") {

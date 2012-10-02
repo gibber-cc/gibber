@@ -22,7 +22,7 @@ define([], function() {
 			
 			var start = "";//function(globals) {\n";
 			var upvalues = "";
-			var codeblock = "function cb() {\nvar output = [0,0];\n";
+			var codeblock = "function cb(input) {\nvar output = [0,0];\n";
 			
 			function checkBusses(_ugen, gibberish) {
 				//console.log("RUNNING INSIDE CODE FOR", _ugen.symbol );
@@ -535,16 +535,19 @@ define([], function() {
 		var self = {	
 			send: function(bus, amount) {
 				bus.connectUgen(this, amount);
+				return this;
 			},
 			fadeIn : function(level, time) {
 				this.mod("amp", Line(0, level, time), "=");
 				var me = this;
 				future( function() { me.removeMod("amp"); me.amp = level;  }, time);
+				return this;
 			},
 			fadeOut : function(time) {
 				this.mod("amp", Line(this.amp, 0, time), "=");
 				var me = this;
 				future( function() { me.removeMod("amp"); me.amp = 0;  }, time);
+				return this;
 			},
 			connect : function(bus) {
 				this.destinations.push(bus);

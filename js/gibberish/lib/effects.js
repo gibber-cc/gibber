@@ -1,9 +1,30 @@
 define([], function() {
     return {
 		init: function(gibberish) {
+			gibberish.MSG = Gen({
+				name:"MSG",
+				acceptsInput: true,
+				props: { fm:.5, channels:2 },
+				upvalues: { sin:Math.sin, pi_2:Math.PI / 2, piX2:Math.PI * 2, phase:0},
+  
+				callback : function(sample, fm, channels) {
+			    	var debug;
+				  	if(phase++ % 22050 === 0) {
+				    	debug = true;
+				    	//console.log(sample);
+				    }
+				  	for(var i = 0; i < channels; i++) {
+				    	sample[i] = sin(sample[i] * pi_2 + (fm * sin(sample[i] * piX2)))	;
+				    }
+				    //if(debug) console.log(sample);
+    
+				    return sample;
+			  	},
+			});
+			
 			gibberish.SoftClip = Gen({
 				name:"SoftClip",
-				acceptsInput:true,	
+				acceptsInput:true,
 				props:{ amount: 50, channels:1 },
 				upvalues: { abs:Math.abs, log:Math.log, ln2:Math.LN2, isStereo:null },
 				
@@ -692,16 +713,21 @@ define([], function() {
 
 					var output = function(sample, channels) {
 						index = ++index % bufferLength;
-						for(var channel = 0; channel < channels; channel++) {
-							var bufferSample = buffers[channel][index];
+						//for(var channel = 0; channel < channels; channel++) {
+							//var bufferSample = buffers[channel][index];
+							var bufferSample = buffers[0][index];
 							//if(index % 10000 === 0) console.log(bufferSample);
 
-							var out = -1 * sample[channel] + bufferSample;
-							buffers[channel][index] = sample[channel] + (bufferSample * feedback);
+							//var out = -1 * sample[channel] + bufferSample;
+							var out = -1 * sample + bufferSample;
+							//buffers[channel][index] = sample[channel] + (bufferSample * feedback);
+							buffers[0][index] = sample + (bufferSample * feedback);
 						
-							sample[channel] = out;
-						}
-						return sample;
+							//sample[channel] = out;
+							
+							//}
+						//return sample;
+						return out;
 					};
 
 					return output;
@@ -757,12 +783,12 @@ define([], function() {
 					var index = 0;
 					var store = [0,0,0,0,0,0,0];
 
-					var output = function(sample, channels) {
+					/*var output = function(sample, channels) {
 						var currentPos = ++index % bufferLength;
 						for(var channel = 0; channel < channels; channel++) {
 							//console.log(buffers, channel, channels);
 							//if(index % 22050 === 0) console.log('pos', currentPos);
-							var out = buffers[0][currentPos];
+							var out = buffers[channel][currentPos];
 							//if(index % 22050 === 0) console.log("out",out);
 						
 							store[channel] = (out * .8) + (store[channel] * .2);
@@ -773,8 +799,24 @@ define([], function() {
 						}
 						//if(index % 22050 === 0) console.log(sample);
 						return sample;
+					};*/
+					var output = function(sample, channels) {
+						var currentPos = ++index % bufferLength;
+						//for(var channel = 0; channel < channels; channel++) {
+							//console.log(buffers, channel, channels);
+							//if(index % 22050 === 0) console.log('pos', currentPos);
+							var out = buffers[0][currentPos];
+							//if(index % 22050 === 0) console.log("out",out);
+						
+							store[0] = (out * .8) + (store[0] * .2);
+							//if(index % 22050 === 0) console.log("store", store[channel]);
+						
+							buffers[0][currentPos] = sample + (store[0] * feedback);
+							//sample = out;	
+							//}
+						//if(index % 22050 === 0) console.log(sample);
+						return out;
 					};
-
 					
 					return output;
 				},
@@ -858,18 +900,21 @@ define([], function() {
 					
 					var output = function(sample, roomSize, damping, wet, dry, channels) {
 						for(var channel = 0; channel < channels; channel++) {
-							var input = typeof sample[channel] === "number" ? sample[channel] : sample[channel - 1];
+							//var input = typeof sample[channel] === "number" ? sample[channel] : sample[channel - 1];
+							var input = sample[channel];
 							input *= tuning.fixedGain;
-							//console.log("???");
+
 							var out = input;
 						
 							for(var i = 0; i < 8; i++) {
-								var filt = combFilters[channel][i]([input], 1);
-								out += filt[0];				
+								//var filt = combFilters[channel][i]([input], 1);
+								//out += filt[0];				
+								var filt = combFilters[channel][i](input, 1);
+								out += filt;				
 							}
 							
 							for(var i = 0; i < 4; i++) {
-								out = allPassFilters[channel][i]([out], 1)[0];	
+								out = allPassFilters[channel][i](out, 1);	
 							}
 							out = out * wet + sample[channel] * dry;
 							sample[channel] = out;

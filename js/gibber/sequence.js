@@ -568,6 +568,7 @@ This should never need to be explicitly called.
 	random : function(flag) {
 		this.randomFlag = (typeof flag === "undefined" || flag) ? true : false;
 		if(!this.randomFlag) this.reset();
+		return this;
 	},
 	
 /**###Seq.kill : method
