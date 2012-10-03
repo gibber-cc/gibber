@@ -383,7 +383,7 @@ define([], function() {
 				phase += _pitch;
 				
 				if(write++ < length && isRecording) {
-					if(write % 10000 === 0) console.log(write, length, input);
+					//if(write % 10000 === 0) console.log(write, length, input);
 					buffer[write] = input[0];
 				}else if(write >= length && isRecording){
 					self.isRecording = false;
@@ -397,7 +397,7 @@ define([], function() {
 				if(buffer !== null && phase < buffer.length && phase > 0 && isPlaying) {
 
 					out = interpolate(buffer, phase);
-					if(debug++ % 22050 === 0) console.log(phase, buffer.length, out);
+					//if(debug++ % 22050 === 0) console.log(phase, buffer.length, out);
 				}
 				return [out * amp, out * amp]; //panner(out * amp, pan);
 			};

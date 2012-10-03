@@ -149,23 +149,24 @@ define([], function() {
 				name: "Biquad",
 
 				init: function() {
+					console.log("INIT BIQUAD");
 			    	this.cutoff = 2000;
 			    	this.mode = "LP";
 			    	this.Q = .5;
 					
-					var x1 = [], x2 = [], y1 = [], y2 = [];
+					this.x1 = [], this.x2 = [], this.y1 = [], this.y2 = [];
 					
 					for(var i = 0; i < this.channels; i++) {
-						x1[i] = 0;
-						x2[i] = 0;
-						y1[i] = 0;
-						y2[i] = 0;
+						this.x1[i] = 0;
+						this.x2[i] = 0;
+						this.y1[i] = 0;
+						this.y2[i] = 0;
 					}
 					
-					this.function.setX1(x1);
-					this.function.setX2(x2);
-					this.function.setY1(y1);
-					this.function.setY2(y2);											
+					this.function.setX1(this.x1);
+					this.function.setX2(this.x2);
+					this.function.setY1(this.y1);
+					this.function.setY2(this.y2);											
 				},
 
 			   props: {
@@ -186,7 +187,7 @@ define([], function() {
 			   },
 
 			   setters: {
-			       frequency: function(val) {
+			       cutoff: function(val) {
 			           this.calculateCoefficients();
 			       },
 			       mode: function(val) {
@@ -246,9 +247,12 @@ define([], function() {
 			       this.a1 = a1 / a0;
 			       this.a2 = a2 / a0;
 			   },
-
+			   call : function(x) {
+				   return this.function(x, this.b0, this.b1, this.b2, this.a1, this.a2, this.channels);
+			   },
 			   callback: function(x, b0, b1, b2, a1, a2, channels) {
 				   var out = [];
+				   //console.log("X! BITCHES", this.x1);
 				   for(var channel = 0; channel < channels; channel++) {
 				       out[channel] = b0 * x[channel] + b1 * x1[channel] + b2 * x2[channel] - a1 * y1[channel] - a2 * y2[channel];
 				       x2[channel] = x1[channel];
@@ -259,6 +263,68 @@ define([], function() {
 			       return out;
 			   },
 
+			});
+			
+			gibberish.Vocoder = Gen({
+				name : "Vocoder",
+				acceptsInput: true,
+				props : { channels:2 },
+				upvalues: { encoders:null, decoders:null, synth:null, amps:null, store:null, phase:0, synth:null},
+				note: function(n,a){
+					this.synth.note(n,a);
+				},
+				init : function() {
+					var enc = [];
+					var dec = [];
+					var _amps = [];
+					var _store = [];
+					this.synth = Gibberish.Saw({channels:1, amp:1, frequency:880});
+					for(var i = 0; i < 8; i++) {
+						(function(){
+							enc[i] = gibberish.Biquad();
+							dec[i] = gibberish.Biquad();
+							
+							enc[i].mode = dec[i].mode = "BP";
+							enc[i].cutoff = enc[i].cutoff = 80 + i * 250;
+							
+							_amps[i] = 0;
+							_store[i] = 0;
+						})();
+					}
+					this.function.setSynth(this.synth.function);
+					this.function.setDecoders(dec);					
+					this.function.setEncoders(enc);
+					this.function.setAmps(_amps);
+					this.function.setStore(_store);	
+				},
+				
+				callback: function(x) {
+					for(var i = 0; i < 6; i++) {
+						//console.log("BiQuad", i)
+						var bpVal = Math.abs(encoders[i].call(x)[0]);
+						store[i] = bpVal > store[i] ? bpVal : store[i];
+					}
+					if(++phase % 64 === 0) {
+						for(var i = 0; i < 6; i++) {
+							amps[i] = store[i];
+							store[i] = 0;
+						}
+						phase = 0;
+						//console.log(amps[0], amps[1], amps[2], amps[3]);
+					}
+					
+					var syn = synth(440, 1, 1, 0);
+					var x0, x1, x2, x3, x4, x5;
+					x0 = decoders[0].call(syn)[0] * amps[0];
+					x1 = decoders[1].call(syn)[0] * amps[1];
+					x2 = decoders[2].call(syn)[0] * amps[2];
+					x3 = decoders[3].call(syn)[0] * amps[3];
+					x4 = decoders[4].call(syn)[0] * amps[4];
+					x5 = decoders[5].call(syn)[0] * amps[5];
+					
+					var sum = x0 + x1 + x2 + x3 + x4 + x5;								
+					return [sum, sum];
+				},
 			});
 			
 			// adapted from code / comments at http://musicdsp.org/showArchiveComment.php?ArchiveID=124

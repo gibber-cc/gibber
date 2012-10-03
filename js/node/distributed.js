@@ -2,7 +2,8 @@
 // see test.htm in the same folder for an example of how to send code to a master
 // Gibber instance.
 
-var io = require('socket.io').listen(8080 );
+var io 		= require('socket.io').listen(8080 );
+
 //var osc = require('./omgosc.js');
 
 // var receiver = new osc.UdpReceiver(8081);

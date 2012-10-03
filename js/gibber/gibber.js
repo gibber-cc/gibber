@@ -243,10 +243,12 @@ define(['gibber/audio_callback'], function() {
 				'gibber/beatCallback',
 				'gibber/synth',
 				'gibber/fm_synth',
+				'gibber/input',
 				'gibber/string',
 				'gibber/sampler',
 				'gibber/grains',
 				'gibber/envelopes',
+				'gibber/osc',
 			], function() {
 				if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
 					Gibber.Environment.init();

@@ -38,7 +38,11 @@ define([
 			localStorage.setObject("scripts", scripts);
 			Gibber.Environment.createFileList(name);
 		},
-	
+		startOSC: function() {
+			Gibber.Environment.OSC = io.connect('http://127.0.0.1:8080/');
+			//Gibber.Environment.OSC.on( 'OSC', function(msg) { console.log(msg); } );
+			return Gibber.Environment.OSC;
+		},
 		slave : function(name, ip) {
 			$("#info").html("");
 

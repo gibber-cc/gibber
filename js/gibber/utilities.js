@@ -495,3 +495,106 @@ window.blop = function() {
 		sine.mod("freq", env, "=");		
 	}
 };
+
+window.Group = function() {
+	var that = Gibberish.Bus();
+	that.children = [];
+	that.release = function() {
+		if(arguments.length === 0) {
+			for(var i = 0; i < that.children.length; i++) {
+				that.children[i].disconnect();
+				that.children[i].connect(Master);
+			}
+			that.children = [];
+		}else{
+			for(var i = 0; i < arguments.length; i++) {
+				that.children.remove(arguments[i]);
+				arguments[i].disconnect();
+				arguments[i].connect(Master);
+			}
+		}
+	};
+	
+	that.ungroup = function() {
+		that.store = that.children.slice(0);
+		that.release();
+	};
+	
+	that.regroup = function() { that.add.apply(that, that.store); };
+	
+	that.add = function() {
+		for(var i = 0; i < arguments.length; i++) {
+			if(that.children.indexOf(arguments[i]) === -1) {
+				that.children.push(arguments[i]);
+				arguments[i].disconnect();
+				arguments[i].connect(that);
+			}
+		}
+	};
+	for(var i = 0; i < arguments.length; i++) {
+		arguments[i].disconnect();
+		that.children.push(arguments[i]);
+		arguments[i].connect(that);
+	}
+	that.connect(Master);
+	return that;
+};
+
+window.Scale = function(_root, _mode) {
+	that = {
+		root: typeof _root === "string" ? teoria.note(_root) : _root,
+		notes: [],
+		
+		chord : function(_notes, _offset) {
+			var _chord = [];
+			_offset = _offset || 0;
+			
+			for(var i = 0; i < _notes.length; i++) {
+				_chord.push(this.notes[_notes[i] + _offset].fq());
+			}
+			return _chord;
+		},
+		
+		create : function() {
+			this.notes = [];
+			var _rootoctave = this.root.octave;
+
+			var _scale = teoria.scale.list(this.root, this.mode, false);
+			for(var oct = _rootoctave, o = 0; oct < 8; oct++, o++) {
+				for(var num = 0; num < _scale.length; num++) {
+					var nt = jQuery.extend({}, _scale[num]);
+					nt.octave += o;
+					this.notes.push(nt);
+				}
+			}
+			
+			var negCount = -1;
+			for(var oct = _rootoctave -1, o = -1; oct >= 0; oct--, o--) {
+			 	for(var num = _scale.length - 1; num >= 0; num--) {
+			 		var nt = jQuery.extend({}, _scale[num]);
+			 		nt.octave += o;
+			 		this.notes[negCount--] = nt;
+			 	}
+			}
+		},
+	};
+	
+	var mode = _mode || "aeolian";
+	Object.defineProperty(that, "mode", {
+		get: function() { return mode; },
+		set: function(val) { mode = val; this.create(); }	
+	});
+	
+	var root = that.root;
+	Object.defineProperty(that, "root", {
+		get: function() { return root; },
+		set: function(val) { 
+			root = typeof val === "string" ? teoria.note(val) : val; 
+			this.create();
+		}	
+	});
+	
+	that.create();
+
+	return that;
+};

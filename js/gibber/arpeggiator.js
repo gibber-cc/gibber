@@ -17,7 +17,7 @@ b = Arp('c2m7', _32, 'updown2', 4).slave(s);
   **param** *mult* : Integer. How many octaves the arpeggio should span. The default is 1.
 **/
 
-function Arp(notation, beats, pattern, mult) {	
+function Arp(notation, beats, pattern, mult, scale) {	
 	var that = Seq();
 	that.name = "Arp";
 	that.notes = [];
@@ -26,6 +26,7 @@ function Arp(notation, beats, pattern, mult) {
 	that.mult = mult || 1;
 	that.init = false;
 	that.speed = isNaN(beats) ? _4 : beats;
+	that.scale = scale || null;
 	
 /**###Arp.chord : method
 **param** *chord name* String. The chord to be sequenced.
@@ -34,33 +35,47 @@ function Arp(notation, beats, pattern, mult) {
 **/
 	that.chord = function(_chord, shouldReset) {
 		var arr = [];
-		
 		this.notation = _chord;
-
-		for(var i = 0; i < this.mult; i++) {
-			var tmp = [];
+		
+		console.log("SCALE", this.scale, _chord);
+		if(typeof this.scale === 'undefined' && typeof _chord === 'string') {
+			for(var i = 0; i < this.mult; i++) {
+				var tmp = [];
 			
-			var _root = this.notation.slice(0,1);
-			var _octave, _quality;
-			if(isNaN(this.notation.charAt(1))) { 	// if true, then there is a sharp or flat...
-				_root += this.notation.charAt(1);	// ... so add it to the root name
-				_octave  = parseInt( this.notation.slice(2,3) );
-				_quality = this.notation.slice(3);
-			}else{
-				_octave  = parseInt( this.notation.slice(1,2) );
-				_quality = this.notation.slice(2);
-			}
-			_octave += i;
+				var _root = this.notation.slice(0,1);
+				var _octave, _quality;
+				if(isNaN(this.notation.charAt(1))) { 	// if true, then there is a sharp or flat...
+					_root += this.notation.charAt(1);	// ... so add it to the root name
+					_octave  = parseInt( this.notation.slice(2,3) );
+					_quality = this.notation.slice(3);
+				}else{
+					_octave  = parseInt( this.notation.slice(1,2) );
+					_quality = this.notation.slice(2);
+				}
+				_octave += i;
 
-			var _chord = teoria.note(_root + _octave).chord(_quality);
-			for(var j = 0; j < _chord.notes.length; j++) {
-				var n = _chord.notes[j];
-				tmp[j] = n;
-			}
-			arr = arr.concat(tmp);
-		}	
+				var _chord = teoria.note(_root + _octave).chord(_quality);
+				for(var j = 0; j < _chord.notes.length; j++) {
+					var n = _chord.notes[j];
+					tmp[j] = n;
+				}
+				arr = arr.concat(tmp);
+			}	
+
+		}else{
+			for(var i = 0; i < this.mult; i++) {
+				var tmp = [];
+				
+				for(var j = 0; j < this.notation.length; j++) {
+					tmp[j] = this.notation[j] + (7 * i);
+				}
+				arr = arr.concat(tmp);
+			}	
+		}
 		this.note = this.patterns[this.pattern]( arr );
+		console.log("NOTE", this.note);
 		this.sequences.push("note");
+		
 		
 		// if(this.init) {
 		// 	this.sequences.note = this.notes;

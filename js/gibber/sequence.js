@@ -460,12 +460,12 @@ This should never need to be explicitly called.
 						}
 					}
 					if(typeof _slave[key] === "function") {
-						if(key === "note" && val === 0) { // advance envelope instead of changing freq
+						if(key === "note" && val === '') { // advance envelope instead of changing freq
 							if(typeof _slave.env === "object") {
 								_slave.env.state = 1;
 							}
 						}else{
-							if($.isArray(val) ) {
+							if($.isArray(val) && (key !== "chord" || typeof this.scale === 'undefined')) {
 								try {
 									_slave[key].call(_slave, val);									
 								}catch(err) {
@@ -476,7 +476,19 @@ This should never need to be explicitly called.
 								//console.log("CALLING", val);
 								
 								try{
-									_slave[key](val);
+									if(typeof this.scale !== 'undefined' && key === "note") {
+										console.log("SCALE AND KEY");
+										_slave[key](this.scale.notes[val]);
+									}else if(typeof this.scale !== 'undefined' && key === "chord") {
+										if(this.offset) {
+											_slave[key](this.scale.chord(val, this.offset));
+										}else{
+											_slave[key](this.scale.chord(val));
+										}
+									
+									}else{
+										_slave[key](val);
+									}
 								}catch(err) {
 									console.log("Seq error for key", key, err);
 									this.stop();

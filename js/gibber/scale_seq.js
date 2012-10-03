@@ -57,7 +57,10 @@ function ScaleSeq(_sequence, _speed) {
 	that.root = that.root || Gibber.root;
 	that.scaleInit = false;
 	that.counter = 0;
-	that.scale = [];
+	if(typeof arguments[0].scale === "undefined") {
+		that.scale = Scale(that.root, that.mode);
+	}
+	//that.scale = [];
 	this.note = [];
 	if(typeof arguments[0] !== "object" && $.isArray(arguments[0]) === true) {
 		that.sequence = _sequence;
@@ -65,7 +68,8 @@ function ScaleSeq(_sequence, _speed) {
 	}
 	
 	that.createPattern = function(sequence) {
-		var _rootoctave = this.root.octave;
+		this.note = sequence;
+		/*var _rootoctave = this.root.octave;
 		this.sequenceNumbers = sequence;
 		this.scale.length = 0;
 
@@ -106,7 +110,7 @@ function ScaleSeq(_sequence, _speed) {
 		if(this.scaleInit === false) {
 		 	this.scaleInit = true;
 		 	this.memory[0] = this.sequence;
-		}
+		}*/
 	};
 	
 	that.set = function(sequence) {
@@ -142,11 +146,12 @@ the second ocatve.
 **/	
 			"root" : {
 		        get: function() {
-		            return root;
+		            return this.scale.root;
 		        },
 		        set: function(value) {
-		            root = teoria.note(value);
-					that.createPattern(that.sequenceNumbers);
+					this.scale.root = value;
+		            //root = teoria.note(value);
+					//that.createPattern(that.sequenceNumbers);
 		        }
 			},
 /**###ScaleSeq.mode : property
@@ -154,11 +159,12 @@ String. The mode of the scale. Uses standard modes (such as locrian, mixolydian 
 **/	
 			"mode" : {
 		        get: function() {
-		            return mode;
+		            return this.scale.mode;
 		        },
 		        set: function(value) {
-		            mode = value;
-					that.createPattern(that.sequenceNumbers);
+		            //mode = value;
+					//that.createPattern(that.sequenceNumbers);
+					this.scale.mode = value;
 		        }
 			},
 			 
