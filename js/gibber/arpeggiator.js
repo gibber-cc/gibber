@@ -37,7 +37,6 @@ function Arp(notation, beats, pattern, mult, scale) {
 		var arr = [];
 		this.notation = _chord;
 		
-		console.log("SCALE", this.scale, _chord);
 		if(typeof this.scale === 'undefined' && typeof _chord === 'string') {
 			for(var i = 0; i < this.mult; i++) {
 				var tmp = [];
@@ -73,7 +72,6 @@ function Arp(notation, beats, pattern, mult, scale) {
 			}	
 		}
 		this.note = this.patterns[this.pattern]( arr );
-		console.log("NOTE", this.note);
 		this.sequences.push("note");
 		
 		

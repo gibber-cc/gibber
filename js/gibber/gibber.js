@@ -189,40 +189,45 @@ define(['gibber/audio_callback'], function() {
 			//this.dev = Sink(audioProcess, 2, 4096);
 			this.sampleRate = 44100;//this.dev.sampleRate;
 			
-			this.context = new webkitAudioContext();//sinks.webaudio.getContext(),
-			console.log("BEFORE GETTING AUDIO...");
-			this.node = this.context.createJavaScriptNode(4096, 2, 2);
-			console.log("ADGAING");
-		    navigator.webkitGetUserMedia(
-				{audio:true}, 
-				function (stream) {
-					console.log("INIT AUDIO");
-				    //var context = new webkitAudioContext();
+			if (navigator.userAgent.indexOf("Firefox") > 0) {
+				this.dev = Sink(audioProcess, 2, 4096);
+				this.sampleRate = this.dev.sampleRate;
+			}else{
+			
+				this.context = new webkitAudioContext();//sinks.webaudio.getContext(),
+				console.log("BEFORE GETTING AUDIO...");
+				this.node = this.context.createJavaScriptNode(4096, 2, 2);
+				console.log("ADGAING");
+			    navigator.webkitGetUserMedia(
+					{audio:true}, 
+					function (stream) {
+						console.log("INIT AUDIO");
+					    //var context = new webkitAudioContext();
     		
-				    /*Gibber.analyser = Gibber.context.createAnalyser();
-				    Gibber.analyser.fftSize = 2048;
+					    /*Gibber.analyser = Gibber.context.createAnalyser();
+					    Gibber.analyser.fftSize = 2048;
 			
-				    Gibber.jsnode = Gibber.context.createJavaScriptNode(2048, 1, 1);
-					Gibber.jsnode.onaudioprocess = function(e) {
-						var data = e.inputBuffer.getChannelData(0);
-						var sum = 0;
-						for(var i = 0; i < data.length; i++) {
-							sum += data[i];
-						}
-						sum /= data.length;
-						//console.log("AVG = " + sum);
-					};*/
+					    Gibber.jsnode = Gibber.context.createJavaScriptNode(2048, 1, 1);
+						Gibber.jsnode.onaudioprocess = function(e) {
+							var data = e.inputBuffer.getChannelData(0);
+							var sum = 0;
+							for(var i = 0; i < data.length; i++) {
+								sum += data[i];
+							}
+							sum /= data.length;
+							//console.log("AVG = " + sum);
+						};*/
 	
-				    Gibber.mediaStreamSource = Gibber.context.createMediaStreamSource(stream);    
-				    Gibber.mediaStreamSource.connect(Gibber.node);
-					//Gibber.analyser.connect(Gibber.jsnode);
-				    //Gibber.jsnode.connect(Gibber.context.destination);
-				},
-				function(e) { console.log("EIRHIEHR", e); });
+					    Gibber.mediaStreamSource = Gibber.context.createMediaStreamSource(stream);    
+					    Gibber.mediaStreamSource.connect(Gibber.node);
+						//Gibber.analyser.connect(Gibber.jsnode);
+					    //Gibber.jsnode.connect(Gibber.context.destination);
+					},
+					function(e) { console.log("EIRHIEHR", e); });
 			
-			this.node.onaudioprocess = audioProcess;
-			this.node.connect(this.context.destination);
-			
+				this.node.onaudioprocess = audioProcess;
+				this.node.connect(this.context.destination);
+			}
 			this.beat = (60000 / this.bpm) * (this.sampleRate / 1000);
 			this.measure = this.beat * 4;
 		

@@ -575,6 +575,16 @@ window.Scale = function(_root, _mode) {
 			 		nt.octave += o;
 			 		this.notes[negCount--] = nt;
 			 	}
+			}	
+		},
+		
+		set : function(_root, _mode) {
+			if(Array.isArray(arguments[0])) {
+				this.root = arguments[0][0];
+				this.mode = arguments[0][1];
+			}else{
+				this.root = _root;
+				this.mode = _mode;
 			}
 		},
 	};

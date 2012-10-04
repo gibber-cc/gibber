@@ -1,12 +1,13 @@
 define([
 	'gibber/environment',
+	'node/socket.io.min',
 ], function(environment) {
 	window.OSC = {
 		socket : null,
 		listeners : {},
 		initialized : false,
-		init : function() {
-			this.socket = Gibber.Environment.startOSC();
+		init : function() {//Gibber.Environment.OSC = io.connect('http://127.0.0.1:8080/');
+			this.socket = io.connect('http://127.0.0.1:8080/'); //Gibber.Environment.startOSC();
 			this.socket.on( 'OSC', this.callback );
 			this.initialized = true;
 		},
@@ -84,7 +85,7 @@ define([
 			
 			if(callback === null) {
 				if(key && obj) {
-					callback = function(msg) { 
+					callback = function(msg) {
 						_set(msg.params[0]);
 						obj[key] = that.value; 
 					};

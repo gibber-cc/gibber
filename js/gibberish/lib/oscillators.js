@@ -399,7 +399,7 @@ define([], function() {
 					out = interpolate(buffer, phase);
 					//if(debug++ % 22050 === 0) console.log(phase, buffer.length, out);
 				}
-				return [out * amp, out * amp]; //panner(out * amp, pan);
+				return panner(out * amp, pan);
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };
 			output.setWriteHead = function(newWriteHead) { write = newWriteHead; };			

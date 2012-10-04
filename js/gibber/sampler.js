@@ -47,3 +47,45 @@ function Sampler(pathToFile) {
 	}
 	return that;
 }
+
+function Looper(input, length, numberOfLoops) {
+	var that = Gibberish.Bus();
+	that.children = [];
+	that.input = input;
+	that.length = G.time(length * 2); // TODO: THIS IS A HACK!!!
+	that.numberOfLoops = numberOfLoops;
+	that.seq = null;
+	 
+	that.currentLoop = 0;
+	for(var i = 0; i < numberOfLoops; i++) {
+		that.children.push( Gibberish.Sampler() );
+		that.children[i].send(that, 1);
+	}
+	that.send(Master, 1);
+	that.loop = function() {
+		that.children[that.currentLoop].record(that.input, that.length);
+		that.seq = Seq({note:[2], durations:length});
+		that.seq.slave(that.children[that.currentLoop]);
+		
+		future(that.nextLoop, length);
+		return that;
+	};
+	
+	that.nextLoop = function() {
+		that.children[++that.currentLoop].record(that.input, that.length);
+		if(that.currentLoop < that.numberOfLoops - 1) {
+			future(that.nextLoop, length);
+		}
+		that.seq.slave(that.children[that.currentLoop]);
+	};
+	that.stop = function() { that.seq.stop(); }
+	that.play = function() { that.seq.play(); }
+	// //var that = Gibberish.Sampler(pathToFile);
+	// if(typeof pathToFile === "string") {
+	// 	that.send(Master, 1);
+	// }else{
+	// 	console.log("NOT CONNECTING SAMPLER");
+	// }
+	return that;
+}
+

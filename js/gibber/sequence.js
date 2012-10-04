@@ -477,7 +477,6 @@ This should never need to be explicitly called.
 								
 								try{
 									if(typeof this.scale !== 'undefined' && key === "note") {
-										console.log("SCALE AND KEY");
 										_slave[key](this.scale.notes[val]);
 									}else if(typeof this.scale !== 'undefined' && key === "chord") {
 										if(this.offset) {
@@ -537,7 +536,7 @@ This should never need to be explicitly called.
 		"setSequence","slave", "slaves", "stop","play",
 		"shuffle", "reset", "free", "pause",
 		"break", "out", "getMix", "bpmCallback",
-		"retain", "set", "advance", "name",
+		"retain", /*"set"*/, "advance", "name",
 		"type", "generate", "setParam", "modded",
 		"_sequence","sequence","_start","shouldUseOffset",
 		"counter","durationCounter","_counter","outputMessage",
@@ -767,7 +766,7 @@ t.slave(s, ss);`
 	// **param** **speed** Int. Optional. A new speed for the sequencer to run at  
 	// **param** **shouldReset** Bool. Optional. If true, reset the the current position of the sequencer to 0.   
 	
-	set : function(newSequence, speed, shouldReset) {
+	/*set : function(newSequence, speed, shouldReset) {
 		if(typeof speed != "undefined") {
 			if(!shouldReset) {
 				this.phase -= this.speed - speed;
@@ -781,7 +780,7 @@ t.slave(s, ss);`
 		
 		this.sequence = newSequence;
 		this.setSequence(this.sequence, speed, shouldReset);
-	},
+	},*/
 	
 	// ####retain
 	// retain current order of sequenced values

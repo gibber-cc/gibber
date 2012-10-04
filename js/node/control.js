@@ -34,6 +34,7 @@ function stringify(string) {
 var browser = mdns.createBrowser(mdns.udp('osc'));
 
 browser.on('serviceUp', function(service) {
+	console.log(service);
 	control = new osc.UdpSender(service.host, 8080);
 	control.send( '/control/createBlankInterface', 'ss', ['testing', 'portrait'] );
 	control.send( "/control/pushDestination", 's', [myIP + ":" + 8081] );	
