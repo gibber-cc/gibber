@@ -60,10 +60,146 @@ define([
 				$("#info").scrollTop( $("#info").height() );
 			});
 		},
-	
+		republicish : function(userName) {
+			G.log("STARTING REPUBLICISH");
+			$("#sidebar").html("");
+			G.E = G.Environment;
+			G.E.republicish = {
+				name	: userName,
+				users 	: ['charlie', 'karl'],
+				addUser	: function(userName) {
+					if(this.users.indexOf(user) === -1) {
+						this.users.push(user);
+					}
+				},
+				removeUser : function(userName) {
+					var idx = this.users.indexOf(userName);
+					if(idx !== -1) {
+						this.users.splice(idx, 1);
+					}
+				}
+			};
+			G.E.R = G.E.republicish;
+			
+			
+			G.E.socket = io.connect('http://localhost:8080/');
+			
+			G.E.socket.on('connect', function() {
+				G.E.socket.emit('joinRepublic', G.E.R.name);
+			});
+			G.E.socket.on('userList', function(msg) {
+				for(var i = 0; i < msg.users.length; i++) {
+					G.E.R.addUser(msg.users[i]);
+				}
+				G.E.socket.emit('addUser', G.E.R.name);
+			});
+			
+			G.E.socket.on('addUser', 	function(msg) { G.E.R.addUser(msg); } );
+			G.E.socket.on('removeUser', function(msg) { G.E.R.removeUser(msg); } );			
+			
+			G.E.socket.on('chat', function(msg) {
+				//Gibber.Environment.sessionHistory.push( { user: msg.user, text:msg.text, time: new Date() - Gibber.Environment.sessionStart} );
+				var p = $("<p>");
+				$(p).css("padding", "0px 10px");
+				$(p).html("<h2 style='display:inline'>"+msg.user+" :</h2>" + " " + msg.text);
+				$("#sidebar").append(p);
+				$("#sidebar").scrollTop( $("#info").height() );
+			});
+			
+			G.E.R.code = function(msg) {
+				var d = $("<div>");
+				$(d).css({
+					'padding': '0px 10px',
+					marginBottom: '10px',
+				});
+				$(d).html("<h2 style='display:inline'>"+msg.user+" :</h2>" + " " + msg.code);
+				var b = $("<button>paste code in editor</button>");
+				$(b).on('mouseup', function() {
+					var code = window.editor.getValue();
+					window.editor.setValue(code + "\n" + msg.code);
+				});
+				$(d).append(b);
+				$("#sidebar").append(d);
+				$("#sidebar").scrollTop( $("#info").height() );
+			};
+			
+			G.E.socket.on('code', function(msg) { G.E.R.code(msg); } );
+			
+			CodeMirror.keyMap.gibber["Ctrl-S"] = function(cm) {
+				var v = cm.getSelection();
+				var pos = null;
+				if(v === "") {
+					pos = cm.getCursor();
+					v = cm.getLine(pos.line);
+				}
+				var d = $("<div>");
+				$(d).css({
+					minWidth: '15em',
+					padding:0,
+				});
+				var ul = $("<ul>");
+				$(ul).css({
+					'list-style' 	: 'none',
+					'padding'		: 0 ,
+					'margin'		: 0,
+					'border'		: '1px solid #ccc',
+				});
+				var allListItems = [];
+				for(var i = 0; i < G.E.R.users.length; i++) {
+					(function() {
+ 						var l = $("<li>");
+						l._selected = false;
+						$(l).text(G.E.R.users[i]);
+						if(i !== 0) {
+							$(l).css({
+								'border-top':"1px solid #ccc",
+							});
+						}
+						$(l).css({
+							textAlign:	'center',
+							padding:	'0 5px',
+						});
+						$(l).on('mousedown', function() { 
+							console.log("SELECT", l._selected);
+							l._selected = !l._selected;
+							if(l._selected) {
+								$(l).css('background-color', '#333');
+							}else{
+								$(l).css('background-color', '#000');
+							}
+						});
+						allListItems.push(l);
+						$(ul).append(l);
+					})();
+				}
+				$(d).append(ul);
+				
+				var b = $('<button>Send Code</button>');
+				$(b).on('mouseup', function() {
+					var selectedUsers = [];
+				
+					for(var i = 0; i < allListItems.length; i++) {
+						if(allListItems[i]._selected === true) {
+							selectedUsers.push($(allListItems[i]).text());
+						}
+					}
+					
+					G.E.socket.emit('sendCode', { recipients:selectedUsers, code:v} );
+					$.modal.close();
+				});
+				$(b).css({
+					float:'right',
+					marginTop: '1em',
+				});
+				
+				$(d).append(b);
+				$.modal(d, {});	
+			};
+		},
 		master : function() {
 			G.log("CALLING MASTER");
-			$("#info").html("");
+			$("#sidebar").html("");
+			
 			Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
 			Gibber.Environment.masterSocket.on('connect', function () {
 				G.callback.phase = 0;
