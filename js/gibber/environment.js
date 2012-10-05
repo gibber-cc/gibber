@@ -816,6 +816,6 @@ define([
 			window.editor.refresh();
 		},	
 	};
-	window.republicish = Environment.republicish();
+	window.republicish = Environment.republicish;
 	return Environment;
 });
