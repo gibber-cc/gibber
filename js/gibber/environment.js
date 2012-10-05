@@ -185,7 +185,7 @@ define([
 						}
 					}
 					
-					G.E.socket.emit('sendCode', { recipients:selectedUsers, code:v} );
+					G.E.socket.emit('code', { recipients:selectedUsers, code:v} );
 					$.modal.close();
 				});
 				$(b).css({
