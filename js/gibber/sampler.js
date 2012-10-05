@@ -64,7 +64,7 @@ function Looper(input, length, numberOfLoops) {
 	that.send(Master, 1);
 	that.loop = function() {
 		that.children[that.currentLoop].record(that.input, that.length);
-		that.seq = Seq({note:[2], durations:length});
+		that.seq = Seq([2], that.length / 2);
 		that.seq.slave(that.children[that.currentLoop]);
 		
 		future(that.nextLoop, length);
@@ -80,6 +80,28 @@ function Looper(input, length, numberOfLoops) {
 	};
 	that.stop = function() { that.seq.stop(); }
 	that.play = function() { that.seq.play(); }
+	
+	var _pitch = 2;
+	Object.defineProperty(that, "pitch", {
+		get: function() { return _pitch },
+		set: function(val) { 
+			_pitch = val * 2;
+			that.seq.note = [_pitch];
+			for(var i = 0; i < that.children.length; i++) {
+				that.children[i].pitch = _pitch;
+			}
+		},
+	});
+	var _speed = 1;
+	Object.defineProperty(that, "speed", {
+		get: function() { return _speed },
+		set: function(val) { 
+			_speed = val;
+			that.pitch = _speed;
+			that.seq.speed = (1 / Math.abs(_speed)) * 2;
+		},
+	});
+	
 	// //var that = Gibberish.Sampler(pathToFile);
 	// if(typeof pathToFile === "string") {
 	// 	that.send(Master, 1);

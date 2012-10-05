@@ -477,7 +477,7 @@ This should never need to be explicitly called.
 								
 								try{
 									if(typeof this.scale !== 'undefined' && key === "note") {
-										_slave[key](this.scale.notes[val]);
+										_slave[key](this.scale.notes[val + this.offset]);
 									}else if(typeof this.scale !== 'undefined' && key === "chord") {
 										if(this.offset) {
 											_slave[key](this.scale.chord(val, this.offset));

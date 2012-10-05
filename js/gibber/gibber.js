@@ -196,7 +196,7 @@ define(['gibber/audio_callback'], function() {
 			
 				this.context = new webkitAudioContext();//sinks.webaudio.getContext(),
 				console.log("BEFORE GETTING AUDIO...");
-				this.node = this.context.createJavaScriptNode(4096, 2, 2);
+				this.node = this.context.createJavaScriptNode(1024, 2, 2);
 				console.log("ADGAING");
 			    navigator.webkitGetUserMedia(
 					{audio:true}, 
