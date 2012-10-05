@@ -87,6 +87,7 @@ define([
 			G.E.socket.on('connect', function() {
 				G.E.socket.emit('joinRepublic', G.E.R.name);
 			});
+			
 			G.E.socket.on('userList', function(msg) {
 				for(var i = 0; i < msg.users.length; i++) {
 					G.E.R.addUser(msg.users[i]);
@@ -815,5 +816,6 @@ define([
 			window.editor.refresh();
 		},	
 	};
+	window.republicish = Environment.republicish();
 	return Environment;
 });
