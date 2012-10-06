@@ -79,7 +79,8 @@ io.sockets.on('connection', function (socket) {
     console.log("sent ", message.code, " to ", message.recipients);
   });
   
-  socket.on('disconnect', function (socket) {
+  socket.on('disconnect', function (msg) {
+	  console.log('disconnecting... ');
     if (ad) {
       ad.stop();
     }
