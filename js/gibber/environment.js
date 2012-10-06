@@ -64,7 +64,7 @@ define([
 			G.log("STARTING REPUBLICISH");
 			$("#sidebar").html("");
 			Gibber.Environment.toggleSidebar();
-			cm.refresh();
+			window.editor.refresh();
 			
 			G.E = G.Environment;
 			G.E.republicish = {
