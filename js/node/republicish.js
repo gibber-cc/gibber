@@ -32,9 +32,11 @@ browser.on('serviceUp', function(service) {
 
 browser.on('serviceDown', function(service) {
   console.log('ad lost on', service.host, ':',  service.port);
-  if (service.txtRecord.name) {
-    delete fief[service.txtRecord.name];
-    console.log('deleted', service.txtRecord.name);
+  if(service.txtRecord) {
+	  if (service.txtRecord.name) {
+	    delete fief[service.txtRecord.name];
+	    console.log('deleted', service.txtRecord.name);
+	  }
   }
 });
 
@@ -50,6 +52,9 @@ io.sockets.on('connection', function (socket) {
     if (ad) {
       ad.stop();
     }
+	for(var key in fief) {
+		socket.emit('addUser', key);
+	}
     ad = mdns.createAdvertisement(mdns.udp('osc'), port, {txtRecord: { name: me, }});
     ad.start();
   });
