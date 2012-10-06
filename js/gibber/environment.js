@@ -63,10 +63,13 @@ define([
 		republicish : function(userName) {
 			G.log("STARTING REPUBLICISH");
 			$("#sidebar").html("");
+			Gibber.Environment.toggleSidebar();
+			cm.refresh();
+			
 			G.E = G.Environment;
 			G.E.republicish = {
 				name	: userName,
-				users 	: ['charlie', 'karl'],
+				users 	: [],
 				addUser	: function(userName) {
 					if(this.users.indexOf(userName) === -1) {
 						this.users.push(userName);
