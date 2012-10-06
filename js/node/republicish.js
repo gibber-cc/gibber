@@ -78,13 +78,14 @@ io.sockets.on('connection', function (socket) {
     }
     console.log("sent ", message.code, " to ", message.recipients);
   });
-});
-
-io.sockets.on('disconnect', function (socket) {
-  if (ad) {
-    ad.stop();
-  }
-  ad = null;
+  
+  socket.on('disconnect', function (socket) {
+    if (ad) {
+      ad.stop();
+    }
+    ad = null;
+  });
+  
 });
 
 browser.start();
