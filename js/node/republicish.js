@@ -19,10 +19,14 @@ receiver.on('/code', function(message) {
 var browser = mdns.createBrowser(mdns.udp('osc'));
 
 browser.on('serviceUp', function(service) {
+	console.log(service);
   console.log('ad found on', service.host, ':',  service.port);
 
   if (service.txtRecord.name) {
-    fief[service.txtRecord.name] = new osc.UdpSender(service.host, service.port);
+    fief[service.txtRecord.name] = {
+		osc:new osc.UdpSender(service.host, service.port),
+		name:service.name
+	};
     if (gibber) {
       if (service.txtRecord.name !== me) {
         gibber.emit('addUser', service.txtRecord.name);
@@ -33,8 +37,18 @@ browser.on('serviceUp', function(service) {
 });
 
 browser.on('serviceDown', function(service) {
-  console.log('ad lost on', service.host, ':',  service.port);
-  if(service.txtRecord) {
+  console.log(service);
+  //console.log('ad lost on', service.host, ':',  service.port);
+  for(key in fief) {
+	  if(fief[key].name === service.name) {
+	      if(fief[key] !== me) {
+	        gibber.emit('removeUser', key);
+	      }
+	      delete fief[key];
+	      console.log('deleted', key);
+	  }
+  }
+  /*if(service.txtRecord) {
     if (service.txtRecord.name) {
       if (service.txtRecord.name !== me) {
         gibber.emit('removeUser', service.txtRecord.name);
@@ -42,7 +56,7 @@ browser.on('serviceDown', function(service) {
       delete fief[service.txtRecord.name];
       console.log('deleted', service.txtRecord.name);
     }
-  }
+  }*/
 });
 
 io.sockets.on('connection', function (socket) {
@@ -70,7 +84,7 @@ io.sockets.on('connection', function (socket) {
     for (var i = 0; i < message.recipients.length; i++) {
       var recipient = message.recipients[i];
       if (fief[recipient]) {
-        fief[recipient].send('/code', 'ss', [me, message.code]);
+        fief[recipient].osc.send('/code', 'ss', [me, message.code]);
       }
       else {
         console.log(recipient, 'is unknown');
