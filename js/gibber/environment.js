@@ -68,8 +68,8 @@ define([
 				name	: userName,
 				users 	: ['charlie', 'karl'],
 				addUser	: function(userName) {
-					if(this.users.indexOf(user) === -1) {
-						this.users.push(user);
+					if(this.users.indexOf(userName) === -1) {
+						this.users.push(userName);
 					}
 				},
 				removeUser : function(userName) {
