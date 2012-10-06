@@ -24,7 +24,9 @@ browser.on('serviceUp', function(service) {
   if (service.txtRecord.name) {
     fief[service.txtRecord.name] = new osc.UdpSender(service.host, service.port);
     if (gibber) {
-      gibber.emit('addUser', service.txtRecord.name);
+      if (service.txtRecord.name !== me) {
+        gibber.emit('addUser', service.txtRecord.name);
+      }
     }
     console.log('added', service.txtRecord.name);
   }
@@ -33,10 +35,13 @@ browser.on('serviceUp', function(service) {
 browser.on('serviceDown', function(service) {
   console.log('ad lost on', service.host, ':',  service.port);
   if(service.txtRecord) {
-	  if (service.txtRecord.name) {
-	    delete fief[service.txtRecord.name];
-	    console.log('deleted', service.txtRecord.name);
-	  }
+    if (service.txtRecord.name) {
+      if (service.txtRecord.name !== me) {
+        gibber.emit('removeUser', service.txtRecord.name);
+      }
+      delete fief[service.txtRecord.name];
+      console.log('deleted', service.txtRecord.name);
+    }
   }
 });
 
@@ -52,9 +57,11 @@ io.sockets.on('connection', function (socket) {
     if (ad) {
       ad.stop();
     }
-	for(var key in fief) {
-		socket.emit('addUser', key);
-	}
+    for(var key in fief) {
+      if (key !== me) {
+        socket.emit('addUser', key);
+      }
+    }
     ad = mdns.createAdvertisement(mdns.udp('osc'), port, {txtRecord: { name: me, }});
     ad.start();
   });
@@ -71,6 +78,13 @@ io.sockets.on('connection', function (socket) {
     }
     console.log("sent ", message.code, " to ", message.recipients);
   });
+});
+
+io.sockets.on('disconnect', function (socket) {
+  if (ad) {
+    ad.stop();
+  }
+  ad = null;
 });
 
 browser.start();
