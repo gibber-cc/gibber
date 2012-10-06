@@ -146,30 +146,15 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 	if(typeof arguments[0] === "object" && $.isArray(arguments[0]) === false) {
 		var obj = arguments[0];
 		for(key in obj) {
-			if(key !== "slaves") {
-				//if($.inArray(key, this.properties) !== -1) {
-					//if($.isArray(obj[key])) {
-				if(key === "durations") {
-					if(typeof obj[key] === "number") {
-						obj[key] = [obj[key]];
-					}
+			if(key !== "slaves") {					
+				if(typeof obj[key] !== "string" && !$.isArray(obj[key])) {
+					obj[key] = [obj[key]];
 				}
 				
 				this[key] = obj[key];
 				if($.inArray(key, this.properties) === -1) {
 					this.sequences.push(key);
 				}
-						//}else{
-						//this[key] = [obj[key]];
-						//}
-					
-				//}else{
-					//if($.isArray(obj[key])) {
-				//		this.sequences[key] = obj[key];
-						//}else{
-						//this.sequences[key] = [obj[key]];
-						//}
-				//}
 			}else{
 				if($.isArray(obj[key])) {
 					this.slave.apply(this, obj[key]);
@@ -439,6 +424,9 @@ This should never need to be explicitly called.
 					//console.log("HAS SLAVE", _slave);
 					if(key === "freq" || key === "frequency") {
 						try{
+							if(typeof val === "function") {
+								val = val();
+							}
 							if(! $.isArray(val) ) {
 								if(typeof val === "string" ) {
 									var nt = teoria.note(val);
@@ -496,6 +484,9 @@ This should never need to be explicitly called.
 						}
 					}else{
 						//console.log("ASSIGNING");
+						if(typeof val === "function") {
+							val = val();
+						}
 						_slave[key] = val;
 					}
 				}

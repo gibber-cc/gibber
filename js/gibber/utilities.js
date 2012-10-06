@@ -98,9 +98,9 @@ Array.prototype.clear = function() {
 	this.length = 0;
 };
 
-Array.prototype.all = function(func) {
+Array.prototype.all = Array.prototype.foreach = function(func) {
     for(var i = 0; i < this.length; i++) {
-        func( this[i] );
+        func.call(this[i]);
     }
 };
 
@@ -451,12 +451,16 @@ window.ms = function(num) {
 }
 
 window.mtof = function(midiNumber) {
- 	return 440 * Math.pow(2,(midiNumber - 69) / 12); //2^((n-69)/12)
+ 	return 440 * Math.pow(2,(midiNumber - 69) / 12);
 };
 	
-function ntof(note) {
+window.ntof = function(note) {
 	var n = teoria.note(note);
 	return n.fq();
+};
+
+window.btof = function(beat) {
+  return 44100 / ( (G.bpm / 60) * (beat * 44100) );
 };
 
 window.bzzzzzz = function() {
@@ -608,3 +612,11 @@ window.Scale = function(_root, _mode) {
 
 	return that;
 };
+
+// wrap a function call in a function.
+window._f = window.func = function() {
+	var func = Array.prototype.splice.call(arguments, 0, 1)[0];
+  	var args = Array.prototype.slice.call(arguments,0);
+	
+	return function() { return func.apply(this, args); };
+}
