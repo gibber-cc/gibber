@@ -81,7 +81,6 @@ define([
 			};
 			G.E.R = G.E.republicish;
 			
-			
 			G.E.socket = io.connect('http://localhost:8080/');
 			
 			G.E.socket.on('connect', function() {
@@ -125,6 +124,14 @@ define([
 			};
 			
 			G.E.socket.on('code', function(msg) { G.E.R.code(msg); } );
+			
+			CodeMirror.keyMap.gibber["Ctrl-M"] = function(cm) {
+				var msg = prompt("enter msg to send");
+
+				if(msg != null) {
+					G.E.socket.emit('chat', { user:G.E.R.name, "text":msg });
+				}
+			};
 			
 			CodeMirror.keyMap.gibber["Ctrl-S"] = function(cm) {
 				var v = cm.getSelection();
@@ -185,6 +192,7 @@ define([
 						}
 					}
 					
+					G.log("SENDING CODE TO REPUBLIC" + v);
 					G.E.socket.emit('code', { recipients:selectedUsers, code:v} );
 					$.modal.close();
 				});
