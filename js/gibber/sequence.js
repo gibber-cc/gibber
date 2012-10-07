@@ -147,7 +147,7 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 		var obj = arguments[0];
 		for(key in obj) {
 			if(key !== "slaves") {					
-				if(typeof obj[key] !== "string" && !$.isArray(obj[key])) {
+				if(typeof obj[key] !== "string" && !$.isArray(obj[key]) && key !== "scale") {
 					obj[key] = [obj[key]];
 				}
 				
@@ -205,10 +205,18 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 		}else{
 			this[this.outputMessage] = this.sequence;
 		}
-		this._sequence = this.sequence.slice(0);
+		if($.isArray(this.sequence)) {
+			this._sequence = this.sequence.slice(0);
+		}else{
+			this._sequence = this.sequence;
+		}
 	}else{
 		if(typeof this.note !== "undefined") {
-			this._sequence = this.note.slice(0);
+			if($.isArray(this.sequence)) {
+				this._sequence = this.note.slice(0);
+			}else{
+				this._sequence = this.note;
+			}
 		}
 	}
 
@@ -284,7 +292,7 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 
 	this.reset = function(seq) {
 		if(typeof seq === "undefined") {
-			that.note = that._sequence.slice(0);
+			//that.note = that._sequence.slice(0);
 			// if(arguments.length === 0) {
 			// 				if(that.durations === null) {
 			// 					that.setSequence(that._sequence, that.speed);
@@ -461,18 +469,28 @@ This should never need to be explicitly called.
 									this.stop();
 								}
 							}else{
-								//console.log("CALLING", val);
-								
 								try{
 									if(typeof this.scale !== 'undefined' && key === "note") {
-										_slave[key](this.scale.notes[val + this.offset]);
+										if(typeof val === "function") {
+											_slave[key](this.scale.notes[val() + this.offset]);
+										}else{
+											_slave[key](this.scale.notes[val + this.offset]);
+										}
 									}else if(typeof this.scale !== 'undefined' && key === "chord") {
 										if(this.offset) {
-											_slave[key](this.scale.chord(val, this.offset));
+											if(typeof val === "function") {
+												_slave[key](this.scale.chord(val(), this.offset));
+											}else{
+												_slave[key](this.scale.chord(val, this.offset));
+											}
 										}else{
-											_slave[key](this.scale.chord(val));
+											if(typeof val === "function") {
+												var args = val();
+												_slave[key](this.scale.chord(args));
+											}else{
+												_slave[key](this.scale.chord(val));
+											}
 										}
-									
 									}else{
 										_slave[key](val);
 									}
@@ -535,7 +553,7 @@ This should never need to be explicitly called.
 		"shouldDie","oddEven","phaseOffset","sequenceInit",
 		"humanize","prevHumanize","mix","values2","randomFlag",
 		"end","nextEvent","endFunction",
-		"durations","doNotAdvance","speed",
+		"durations","doNotAdvance","speed","scale",
 		// for ScaleSeq
 		//"scaleInit", "root", "mode"
 	],

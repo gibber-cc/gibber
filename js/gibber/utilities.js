@@ -272,7 +272,7 @@ window.filld = function(min, max, number) {
 };
 
 
-window.fill = function() {
+window.fill = window.notes = function() {
 	return window.filli(0, 20, 16);
 };
 
@@ -321,7 +321,8 @@ window.rndd = window.randomd = function(min, max, number) {
 	}
 };
 
-window.rndi = window.randomi = function(min, max, number) {
+window.rndi = window.randomi = function(min, max, number, canRepeat) {
+	canRepeat = typeof canRepeat === "undefined" ? true : canRepeat;
 	if(typeof number === "undefined" && typeof min !== "object") {
 		if(arguments.length == 1) {
 			min = 0, max = arguments[0];
@@ -341,6 +342,7 @@ window.rndi = window.randomi = function(min, max, number) {
 		return min + rrr;
 	}else{
 		var output = [];
+		var tmp = [];
 		if(typeof number === "undefined") {
 			number = max || min.length;
 		}
@@ -349,7 +351,16 @@ window.rndi = window.randomi = function(min, max, number) {
 			if(typeof arguments[0] === "object") {
 				num = arguments[0][randomi(0, arguments[0].length - 1)];
 			}else{
-				num = randomi(min, max);
+				if(canRepeat) {
+					num = randomi(min, max);
+				}else{
+					num = randomi(min, max);
+					while(tmp.indexOf(num) > -1) {
+						num = randomi(min, max);
+					}
+					tmp.push(num);
+				}
+				
 			}
 			output.push(num);
 		}
@@ -358,7 +369,8 @@ window.rndi = window.randomi = function(min, max, number) {
 	}
 };
 
-window.rndf = window.randomf = function(min, max, number) {
+window.rndf = window.randomf = function(min, max, number, canRepeat) {
+	canRepeat = typeof canRepeat === "undefined" ? true : canRepeat;
 	if(typeof number === "undefined" && typeof min != "object") {
 		if(arguments.length == 1) {
 			min = 0, max = arguments[0];
@@ -377,17 +389,25 @@ window.rndf = window.randomf = function(min, max, number) {
 		return min + rr;
 	}else{
 		var output = [];
-		
+		var tmp = [];
 		if(typeof number === "undefined") {
 			number = max || min.length;
 		}
-
+		
 		for(var i = 0; i < number; i++) {
 			var num;
 			if(typeof arguments[0] === "object") {
 				num = arguments[0][randomi(0, arguments[0].length - 1)];
 			}else{
-				num = randomf(min, max);
+				if(canRepeat) {
+					num = randomf(min, max);
+				}else{
+					num = randomf(min, max);
+					while(tmp.indexOf(num) > -1) {
+						num = randomf(min, max);
+					}
+					tmp.push(num);
+				}
 			}
 			output.push(num);
 		}
@@ -620,3 +640,13 @@ window._f = window.func = function() {
 	
 	return function() { return func.apply(this, args); };
 }
+
+window._rndf = function() {
+	var args = Array.prototype.slice.call(arguments,0);
+	return function() { return rndf.apply(this, args); };
+};
+
+window._rndi = function() {
+	var args = Array.prototype.slice.call(arguments,0);
+	return function() { return rndi.apply(this, args); };
+};

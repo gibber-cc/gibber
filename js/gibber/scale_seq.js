@@ -29,7 +29,17 @@ t = ScaleSeq({
 
 
 function ScaleSeq(_sequence, _speed) {
-	var _sequenceNumbers = ($.isArray(_sequence)) ? _sequence.slice(0) : _sequence.note.slice(0);
+	var _sequenceNumbers;
+	if($.isArray(_sequence)) {
+		_sequenceNumbers = _sequence.slice(0);
+	}else {
+		if(typeof _sequence.note === 'function') {
+			_sequenceNumbers = _sequence;
+		}else{
+			_sequenceNumbers = _sequence.note.slice(0);
+		}
+	}
+	//var _sequenceNumbers = ($.isArray(_sequence)) ? _sequence.slice(0) : _sequence.note.slice(0);
 	
 	if($.isArray(arguments[0]) === true) {
 		_sequence = {
