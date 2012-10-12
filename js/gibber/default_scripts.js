@@ -258,6 +258,74 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 'q.pause();\n'+
 'q.play();',
 
+"audio input, sampling, looping":
+'/* Audio Input, Sampling and Looping\n'+
+'\n'+
+'First, you must follow the instructions here:\n'+
+'http://www.html5audio.org/2012/09/live-audio-input-comes-to-googles-chrome-canary.html\n'+
+'\n'+
+'... which include using Chrome Canary, the experimental build of Chrome. Canary can live\n'+
+'peacefully on your computer next to a stable version of Chrome. If the demo at the link\n'+
+'above works, you can bring audio into Gibber with the following : \n'+
+'\n'+
+'(WARNING, feedback very possible if you are using a built-in laptop mic and laptop speakers, \n'+
+'use headphones!!!)\n'+
+'*/\n'+
+'\n'+
+'a = Input();\n'+
+'\n'+
+'/* now you can apply fx to the input like any other synth and monitor them live */\n'+
+'\n'+
+'a.fx.add( Delay(1/4), Schizo() );\n'+
+'\n'+
+'/* to sample it we create a Sampler and tell it to record the input for a number of measures */\n'+
+'\n'+
+'b = Sampler();\n'+
+'b.record(a, 2);\n'+
+'\n'+
+'/* you can disconnect the input from the output bus at any time */\n'+
+'\n'+
+'a.disconnect();\n'+
+'\n'+
+'/* to playback the recording, trigger a note message on the sampler. Pass a playback speed as\n'+
+'an option to the method; negative speeds will play in reverse*/\n'+
+'\n'+
+'b.note(2);\n'+
+'b.note(-1);\n'+
+'\n'+
+'/* and of course we can sequence it... */\n'+
+'\n'+
+'c = Seq({\n'+
+'	note:[.5,1,-1,-2,4],\n'+
+'  durations:1,\n'+
+'  slaves:b\n'+
+'});\n'+
+'\n'+
+'/* you can also apply fx to the sampler. We can also create a Looper to overdub parts. The syntax is:\n'+
+'\n'+
+'l = Looper( audioToLoop, howLongPerLoop, howManyLoops);\n'+
+'\n'+
+'... and give it the loop() command to start looping. So to record 4 overdubs of our \n'+
+'mic input for two measures each: */\n'+
+'\n'+
+'d = Input();\n'+
+'e = Looper(d, 1, 4).loop();\n'+
+'\n'+
+'/* Looper has start and stop methods and you can attach fx to it. The loops are each a Sampler object;\n'+
+'all loops are stored in the children array. Thus, to pan the loops we could do this: */\n'+
+'\n'+
+'d.disconnect();\n'+
+'e.children.all( function() { this.pan = rndf(-.75, .75); } );\n'+
+'\n'+
+'/* you can also apply fx to individual loops */\n'+
+'\n'+
+'e.children[1].fx.add( Delay(1/8), Schizo(\'paranoid\') );\n'+
+'\n'+
+'/* and change the pitch of the looper (but not the individual loops (yet)) */\n'+
+'\n'+
+'e.pitch = 2;\n'+
+'e.pitch = -2;',
+
 "scales + theory":
 '// shows how to use Gibber.mode, Gibber.root and the ScaleSeq object\n'+
 '// scales come from teoria.js\n'+

@@ -2,6 +2,7 @@ define([
 	'gibber/gibber',
 	'gibber/default_scripts',
 	'codemirror/codemirror',
+	'gibber/graphics',
 	'gibber/tutorials',
 	"js/codemirror/util/loadmode.js",
 	"js/codemirror/util/overlay.js",
@@ -9,7 +10,7 @@ define([
 	'node/socket.io.min',
 	'megamenu/jquery.hoverIntent.minified',
 	'megamenu/jquery.dcmegamenu.1.3.3.min',
-], function(_Gibber, defaults, CodeMirror) {
+], function(_Gibber, defaults, CodeMirror, _graphics) {
 	
 	Storage.prototype.setObject = function(key, value) {
 	    this.setItem(key, JSON.stringify(value));
@@ -354,13 +355,7 @@ define([
 			window.editor.setValue(Gibber.tutorials[name]);
 		},
 	
-		init: function() {
-			// try{
-			//     Gibber.OSC = io.connect('http://localhost:8080/');
-			// }catch(e){
-			// 	console.log("No OSC server running");
-			// }
-			
+		init: function() {			
 			$(window).resize(Gibber.Environment.editorResize);
 			$("#mega-menu-1").dcMegaMenu({
 				speed : 'fast',
@@ -401,9 +396,9 @@ define([
 			CodeMirror.autoLoadMode(window.editor, "links");
 		    window.editor.setOption("mode", "links");
 		
-		
 			this.loadAndSet("default");
 			this.editorResize();
+
 			$.extend($.modal.defaults, {
 				onOpen: function (dialog) {
 					dialog.overlay.fadeIn('fast', function () {
@@ -699,6 +694,13 @@ define([
 			if(typeof scripts.loadFile !== "undefined") {
 				eval(scripts.loadFile);
 			}
+			
+			this.graphics = _graphics;
+			// don't create graphics until waveform is called
+			window.Waveform = function() {
+				Gibber.Environment.graphics.init();
+				return window.Waveform(arguments[0]);
+			};
 		},
 		
 		selectCurrentBlock : function() { // thanks to graham wakefield

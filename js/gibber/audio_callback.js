@@ -27,12 +27,13 @@ if (navigator.userAgent.indexOf("Firefox") > 0) {
 	window.audioProcess = function(e){
 		var buffer = [];// e.outputBuffer;
 		var input = e.inputBuffer.getChannelData(0);
+		//console.log(input);
 		bufferL = e.outputBuffer.getChannelData(0);
 		bufferR = e.outputBuffer.getChannelData(1);	
 		var channelCount = e.outputBuffer.numberOfChannels;
 		//console.log("CALLING");
 		if( Gibber.active ) {
-			//console.log("INPUT", input[0]);
+			//if(Gibber.debug) console.log("INPUT", input[0]);
 			for(var i = 0, _bl = e.outputBuffer.length; i < _bl; i++){//= channelCount) {
 				if(i === 0) Gibber.debug = true;
 				//if(Gibber.debug) console.log("RUNNING", buffer.length);

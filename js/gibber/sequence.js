@@ -492,7 +492,11 @@ This should never need to be explicitly called.
 											}
 										}
 									}else{
-										_slave[key](val);
+										if(typeof val === 'function') {
+											_slave[key](val());
+										}else{
+											_slave[key](val);
+										}
 									}
 								}catch(err) {
 									console.log("Seq error for key", key, err);

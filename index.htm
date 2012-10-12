@@ -7,6 +7,12 @@
 		<link rel="stylesheet" href="css/elegant.css">
 		<link rel="stylesheet" href="css/thecharlie.css">
 		<link rel="stylesheet" href="css/dcmegamenu.css">
+		<script src='js/gibber/three.min.js'></script>
+		<script src='js/gibber/Stats.js'></script>		
+		<script src='js/gibber/EffectComposer.js'></script>
+		<script src='js/gibber/ShaderPass.js'></script>		
+		<script src='js/gibber/RenderPass.js'></script>				
+		<script src='js/gibber/ShaderExtras.js'></script>						
 	</head>
 	<body>
 		<div class="demo-container">
@@ -123,12 +129,12 @@
 				<button id="closeSidebarButton">X</button>
 				<div id="docs"></div>
 			</div>
+			<div id='three' style='position:absolute; top:50px; left:0; z-index:-1000;'></div>
 		</div>
 		<div id="resizeButton" style="display:block; width:10px; height:10px;">&#9660;</div>
 		<div id="console">
 			<span class="consoleprompt" style="margin-left:.5em">>&nbsp;<span class="consoletext"></span></span>
 		</div>
-		
 	</body>
 	<script data-main="js/main.js" src="js/require-jquery.js"></script>	
 </html>

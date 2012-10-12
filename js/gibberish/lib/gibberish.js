@@ -26,7 +26,6 @@ define([], function() {
 			
 			function checkBusses(_ugen, gibberish) {
 				//console.log("RUNNING INSIDE CODE FOR", _ugen.symbol );
-				
 				for(var j = 0; j < _ugen.senderObjects.length; j++) {
 					var __ugen = _ugen.senderObjects[j];
 					if(__ugen.category === "Bus") {
@@ -572,6 +571,7 @@ define([], function() {
 					}
 					this.destinations.remove();
 				}
+				this.dirty = true;
 				Gibberish.dirty(true);
 				return this;
 			},

@@ -1,6 +1,6 @@
 /* Based on Sublime Text's Monokai theme */
 
-.cm-s-thecharlie {background: #000; color: #fff;}
+.cm-s-thecharlie {background: rgba(0,0,0,.3); color: #fff;}
 .cm-s-thecharlie div.CodeMirror-selected {background: #511 !important;}
 .cm-s-thecharlie .CodeMirror-gutter {background: #272822; border-right: 0px;}
 .cm-s-thecharlie .CodeMirror-gutter-text {color: #d0d0d0;}

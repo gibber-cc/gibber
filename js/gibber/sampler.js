@@ -58,7 +58,8 @@ function Looper(input, length, numberOfLoops) {
 	 
 	that.currentLoop = 0;
 	for(var i = 0; i < numberOfLoops; i++) {
-		that.children.push( Gibberish.Sampler() );
+		that.children.push( Sampler() );
+		that.children[i].disconnect();
 		that.children[i].send(that, 1);
 	}
 	that.send(Master, 1);

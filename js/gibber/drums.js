@@ -84,6 +84,34 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 	this.sequenceInit =false;
 	this.initialized = false;
 	
+	// this is ridiculous
+	this._mod = Gibberish.mod;
+	this.mod = function(name, modulator, type) {
+		if(name === "pitch") {
+			this.kick.sampler.mod(name, modulator, type);
+			this.snare.sampler.mod(name, modulator, type);
+			this.hat.sampler.mod(name, modulator, type);
+			this.openHat.sampler.mod(name, modulator, type);									
+		}else{
+			this._mod(name,modulator,type);
+		}
+	};
+	this._removeMod = Gibberish.removeMod;
+	this.removeMod = function() {
+		arguments = Array.prototype.slice.call(arguments, 0);
+		if(typeof arguments[0] === 'undefined' || arguments[0] === "pitch") {
+			Gibberish.removeMod.apply(this.kick.sampler, arguments);
+			Gibberish.removeMod.apply(this.snare.sampler, arguments);
+			Gibberish.removeMod.apply(this.hat.sampler, arguments);
+			Gibberish.removeMod.apply(this.openHat.sampler, arguments);
+		}
+		if(typeof arguments[0] !== 'undefined') {
+			if(arguments[0] !== 'pitch') {
+				this._removeMod.call(this, arguments);
+			}
+		}
+	};
+	
 /**###Drums.seq : property
 [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) (read-only). The underlying sequencer driving the drums. Most methods of this are wrapped,
 for example, you can simply call `drums.play()` instead of having to call `drums.seq.play`.
