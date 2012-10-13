@@ -173,16 +173,13 @@ define(function() {
 				that.drawMe = function(_avg) {
 					avg.unshift(_avg);
 					avg.pop();
-					//that.context.fillStyle = "rgba(0,0,0,1)";
 					that.context.clearRect(0, 0, props.size, props.size);
 
 					that.context.beginPath();
-					//console.log(avg);
-					var h2 = props.size / 2; //Math.round(64 / 2);
-					//console.log(h2);
-					for(var i = 0; i < props.size; i++ ) {
-						var val = Math.ceil(avg[i] * h2);
-						//if(i === 0) console.log(val);
+					var h2 = props.size / 2;
+					for(var i = props.size - 1; i > 0; i-- ) {
+						var val = Math.ceil(avg[props.size -i] * h2);
+
 						that.context.moveTo(i, h2 + val);					
 						that.context.lineTo(i, h2 - val);
 					}
@@ -192,12 +189,12 @@ define(function() {
 					
 					that.texture.needsUpdate = true;
 				};
-							console.log("WAVE 3");
+				
 				var avg = [];
 				for(var i = 0; i < props.size; i++) {
 					avg[i] = 0;
 				}
-				console.log("BEFORE GRAPH");
+				
 				var reader = Gen({
 					name:"reader",
 					upvalues: { phase:0, sum:0, peak:0, draw:that.drawMe, pow:Math.pow },

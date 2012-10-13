@@ -189,14 +189,19 @@ define(['gibber/audio_callback'], function() {
 			if(typeof targetObj.note === "undefined") {
 				targetObj.note = function(freq, amp) { 
 					this.frequency = freq;
-					if(typeof amp !== "undefined") {
+					/*if(typeof amp !== "undefined") {
 						this.amp = amp;
 					}
+					*/
 				}
 			}
 			eval("targetObj._note = " + targetObj.note.toString()); // create the copy
 				
-			return function(note) {
+			return function(note, amp) {
+				if($.isArray(note)) {
+					amp = note[1];
+					note = note[0];
+				}
 				switch(typeof note) {
 					case "number" : break;
 					case "string" :
@@ -206,7 +211,8 @@ define(['gibber/audio_callback'], function() {
 						note = note.fq();
 						break;
 				}
-				this._note(note);
+				
+				this._note(note, amp);
 			};
 		},
 			

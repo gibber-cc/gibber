@@ -463,7 +463,12 @@ This should never need to be explicitly called.
 						}else{
 							if($.isArray(val) && (key !== "chord" || typeof this.scale === 'undefined')) {
 								try {
-									_slave[key].call(_slave, val);									
+									var _val = val.slice(0);
+									if(key === "note" && this.scale) {
+										_val[0] = this.scale.notes[_val[0]];
+										if(typeof val[1] === 'function') _val[1] = _val[1]();
+									}
+									_slave[key].call(_slave, _val);									
 								}catch(err) {
 									G.log("Seq error passing array:", err);
 									this.stop();
@@ -534,7 +539,6 @@ This should never need to be explicitly called.
 					return;
 				}
 			}
-			
 			// if(!usePick && this.counter % this.sequence.length === 0) {
 			// 	if(this.shouldDie) {
 			// 		this.kill();
@@ -620,6 +624,7 @@ This should never need to be explicitly called.
 **description** : assign a new set of values to be sequenced
 */
 	setSequence : function(seq, _speed, _reset) {
+		console.log("SETTING SEQUENCE");
 		if(typeof _speed !== "undefined") {
 			if(_speed === "number") {
 				speed = _speed;

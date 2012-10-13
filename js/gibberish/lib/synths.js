@@ -182,7 +182,7 @@ define([], function() {
 				pan:		0,
 				channels:	1,
 				
-				note : function(frequency) {
+				note : function(frequency, amp) {
 					if(typeof this.frequency === "object") {
 						prevFreq = this.frequency.operands[0];
 					}else{
@@ -191,7 +191,9 @@ define([], function() {
 					
 					this.frequency = frequency;
 					this._function.setFrequency(frequency);
-
+					
+					if(typeof amp !== 'undefined') this.amp = amp;
+					
 					if(this.env.getState() > 0) this.env.setState(0);
 					
 					if(this.glide > 0) {
@@ -263,10 +265,10 @@ define([], function() {
 				pan:			0,
 				amp:			1,
 				
-				note : function(_frequency) {
+				note : function(_frequency, amp) {
 					var synth = this.children[this.voiceCount++];
 					if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
-					synth.note(_frequency);
+					synth.note(_frequency, amp);
 				},
 			});
 			

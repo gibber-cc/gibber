@@ -650,3 +650,19 @@ window._rndi = function() {
 	var args = Array.prototype.slice.call(arguments,0);
 	return function() { return rndi.apply(this, args); };
 };
+
+window.list = function() {
+	var arr = [];
+	for(var i = 0; i < arguments.length; i++) {
+		var val = arguments[i];
+		if($.isArray(val)) {
+			console.log("VAL IS ARRAY");
+			for(j = 0; j < val[1]; j++) {
+				arr.push(val[0]);
+			}
+		}else{
+			arr.push(val);
+		}
+	}
+	return arr;
+};
