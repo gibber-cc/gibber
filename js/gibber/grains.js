@@ -67,6 +67,10 @@ function Grains(properties) {
 	// 	}
 	// }
 	if(properties.grainSize) properties.grainSize = G.time(properties.grainSize);
+	if(properties.input) { 
+		properties.buffer = properties.input;
+		delete properties.input;
+	}
 	properties.bufferSize = typeof properties.bufferSize === "undefined" ? G.time(1) : G.time(properties.bufferSize);
 	var that = Gibberish.Grains(properties);
 	that.connect(Master);
