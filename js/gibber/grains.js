@@ -67,8 +67,12 @@ function Grains(properties) {
 	// 	}
 	// }
 	if(properties.grainSize) properties.grainSize = G.time(properties.grainSize);
+	properties.bufferSize = typeof properties.bufferSize === "undefined" ? G.time(1) : G.time(properties.bufferSize);
 	var that = Gibberish.Grains(properties);
-	that.send(Master, that.amp);
+	that.connect(Master);
+		
+	var positionVariance = properties.positionVariance || 0;
+	var pitchVariance = properties.pitchVariance || 0;	
 	
 /**###Grains.loop : method
 **param** *min* Float. Default .25. The starting position for the playback loop. Measured from 0..1 where is the buffer start, 1 is the buffer end.  
@@ -91,6 +95,9 @@ function Grains(properties) {
 			future( function() { that.removeMod("position"); }, time);
 		}
 	}
+	
+	that.loop(0,1,properties.bufferSize); // start looping automatically
+	
 	return that;
 }
 

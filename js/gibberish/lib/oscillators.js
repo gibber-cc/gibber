@@ -179,7 +179,7 @@ define([], function() {
 			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp", "isRecording", "isPlaying", "input", "bufferLength", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7} )");
 			gibberish.make["Sampler"] = this.makeSampler;
 			
-			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "reverse", "amp", "fade", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} )");
+			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "amp", "fade", "pan", "shouldWrite"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} )");
 			gibberish.make["Grains"] = this.makeGrains;
 			gibberish.Grains = this.Grains;	
 		},
@@ -965,10 +965,12 @@ define([], function() {
 		
 		//gibberish.createGenerator(["numberOfGrains", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "reverse"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7} )");
 		Grains : function(properties) {
+			console.log("GRAINS v3");
 			var that = { 
 				type:		"Grains",
 				category:	"Gen",
 				buffer: 	null,
+				bufferSize: 88200,
 				grainSize: 	ms(250),
 				speedMin:   -0,
 				speedMax: 	.0,
@@ -976,16 +978,28 @@ define([], function() {
 				position:	.5,
 				positionMin:0,
 				positionMax:0,
+				shouldWrite:false,
 				amp:		.2,
 				reverse:	true,
+				fade:		.1,
+				pan:		0,
 				numberOfGrains:10,
-				fade: .1,
-				pan: 0,
+
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			// avoid copying the entire buffer in Gibberish.extend; instead, simply store a pointer
-			if(typeof properties.buffer !== "undefined") that.buffer = properties.buffer;
+			if(typeof properties.buffer !== "undefined") { 
+				if(properties.buffer.type) {
+					that.shouldWrite = true;
+					that.sampler = Gibberish.Sampler();
+					that.sampler.connect(Master); // TODO : remove Gibber dependency
+					that.sampler.record(properties.buffer, that.bufferSize);
+					that.buffer = that.sampler.buffer;
+				}else{
+					that.buffer = properties.buffer;
+				}
+			}
 			delete properties.buffer;
 			
 			if(typeof properties !== "undefined") {
@@ -994,10 +1008,10 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Grains\"]();");
-			window[that.symbol] = Gibberish.make["Grains"](that.numberOfGrains, that);
+			window[that.symbol] = /*function() { return [0,0]; }*/Gibberish.make["Grains"](that.numberOfGrains, that);
 			that._function = window[that.symbol];
 						
-			Gibberish.defineProperties( that, ["speed", "speedMin", "speedMax", "positionMin", "positionMax", "reverse", "position", "numberOfGrains", "amp", "grainSize", "pan"] );
+			Gibberish.defineProperties( that, ["speed", "speedMin", "speedMax", "positionMin", "positionMax", "position", "numberOfGrains", "amp", "grainSize", "pan", "shouldWrite"] );
 			
 			return that;
 		},
@@ -1017,8 +1031,9 @@ define([], function() {
 			var interpolate = Gibberish.interpolate;
 			var debug = 0;
 			var panner = Gibberish.pan();
+			var write = 0;
 
-			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, reverse, amp, fade, pan) {	
+			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {	
 				var val = 0;
 				for(var i = 0; i < numberOfGrains; i++) {
 					var grain = grains[i];

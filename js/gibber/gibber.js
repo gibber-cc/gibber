@@ -25,7 +25,7 @@ define(['gibber/audio_callback'], function() {
 			}else{
 			
 				this.context = new webkitAudioContext();//sinks.webaudio.getContext(),
-				this.node = this.context.createJavaScriptNode(4096, 2, 2);
+				this.node = this.context.createJavaScriptNode(1024, 2, 2);
 			
 				this.node.onaudioprocess = audioProcess;
 				this.node.connect(this.context.destination);
