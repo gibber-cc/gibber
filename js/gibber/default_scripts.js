@@ -445,50 +445,33 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// fade out synth and stop sequence when synth volume is just about inaudible.\n'+
 'v = Seq([ function() { s.amp *= .8; if(s.amp < .001) q.stop(); } ]);',
 
-/*"granulation" :
-'// Create the granulator, 20 grains, each grain is 50ms\n'+
-'// Pitch and position vary by five percent. Store a buffer\n'+
-'// of one measure in length.\n'+
-'g = Grains({\n'+
-'	numberOfGrains	: 20,\n'+
-'	grainSize		: ms(50),\n'+
-'	pitchVariance	: .05,\n'+
-'	shouldReverse	: false,\n'+
-'	positionVariance: .05,\n'+
-'    length			: _1,\n'+
-'});\n'+
-'g.amp *= 2; \n'+
-'g.fx.add(Reverb(1,0,1,0));\n'+
-'\n'+
+"granulation" :
 '// create a synth to sample and sequence it\n'+
-'u = Synth(50,50,.1);\n'+
-'t = ScaleSeq(fill(), _16).slave(u);\n'+
+'u = Drums(\'x*o*x*o-\');\n'+
 '\n'+
-'// insert the grain as an fx on the synth to record.\n'+
-'// play automatically when done recording\n'+
-'g.insertAndPlay(u);\n'+
+'// Create the granulator sampling our drums, 20 grains, each grain is 50ms\n'+
+'// The minimum speed for grain playback is .5, the max is 1.5. Record a buffer\n'+
+'// of two measures in length from the input to granulate.\n'+
+'g = Grains({\n'+
+'	input           : u,\n'+
+'	bufferSize      : 2,\n'+
+'	numberOfGrains  : 20,\n'+
+'	speedMin        : .5,\n'+
+'	speedMax        : 1.5,\n'+
+'	amp	            : .35,\n'+
+'});\n'+
+'g.fx.add( Reverb() );\n'+
 '\n'+
-'// stop the synth if desired\n'+
-'t.stop();\n'+
+'// stop the drums if desired\n'+
+'u.stop();\n'+
+'g.amp = 1;\n'+
 '\n'+
-'// mod the center position of the grain cloud\n'+
-'// 0 is the beginning of the sampled material, 1 is the end\n'+
-'g.mod("positionCenter", LFO(.01, .5), "+");\n'+
-'\n'+
-'// change the amount of variance in grain playback speed\n'+
-'g.pitchVariance = .01; 	\n'+
-'\n'+
-'g.mod("pitchVariance", LFO(.001, .03), "+");\n'+
-'\n'+
-'// change the size of all grains\n'+
-'g.grainSize = ms(550);\n'+
-'\n'+
-'// change the fadein / fadeout length for each grain\n'+
-'// make sure this length is less than half the grainSize\n'+
-'g.set("envLength", ms(200));\n'+
-'\n'+
-'// remove the mods\n'+
-'g.mods.remove();\n',*/
+'// Loop the start and end positions of the buffer that the granulator loops through.\n'+
+'// Tell the granulator how long (in measures) it should take to travel through the buffer.\n'+
+'g.loop(.25, .75, 4)\n'+
+'// change the speed so grains can play in revers\n'+
+'g.speedMin = -2;\n'+
+'\n',
 
 "randomness and algorithms" :
 '/* Randomness and Algorithms\n'+
