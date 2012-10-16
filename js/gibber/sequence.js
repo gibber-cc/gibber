@@ -475,7 +475,7 @@ This should never need to be explicitly called.
 								}
 							}else{
 								try{
-									if(typeof this.scale !== 'undefined' && key === "note") {
+									if(this.scale && key === "note") {
 										if(typeof val === "function") {
 											_slave[key](this.scale.notes[val() + this.offset]);
 										}else{
@@ -504,7 +504,7 @@ This should never need to be explicitly called.
 										}
 									}
 								}catch(err) {
-									console.log("Seq error for key", key, err);
+									console.log("Seq error for key", key, err, val);
 									this.stop();
 								}
 							}
@@ -624,7 +624,6 @@ This should never need to be explicitly called.
 **description** : assign a new set of values to be sequenced
 */
 	setSequence : function(seq, _speed, _reset) {
-		console.log("SETTING SEQUENCE");
 		if(typeof _speed !== "undefined") {
 			if(_speed === "number") {
 				speed = _speed;

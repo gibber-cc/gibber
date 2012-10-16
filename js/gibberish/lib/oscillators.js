@@ -3,12 +3,12 @@ define([], function() {
 		init: function(gibberish) {
 			gibberish.Noise = Gen({
 				name: "Noise",
-				props: { channels: 1 },
-				upvalues: { rnd:Math.random },
+				props: { channels: 1, pan:0 },
+				upvalues: { rnd:Math.random, panner:Gibberish.pan() },
 				
-				callback: function( channels ) {
+				callback: function( channels, pan ) {
 					var value = rnd() * 2 - 1;
-					return channels === 2 ? [value,value] : [value];
+					return channels === 2 ? panner(value, pan) : [value];
 				},
 			});
 				
@@ -32,7 +32,7 @@ define([], function() {
 			    callback: function(frequency, amp) {
 			        phase += frequency / 44100;
 			        var val = sin(phase * pi_2) * amp;
-			        return val;
+			        return [val];
 			    },
 			});
 			

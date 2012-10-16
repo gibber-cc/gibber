@@ -37,7 +37,7 @@ function Arp(notation, beats, pattern, mult, scale) {
 		var arr = [];
 		this.notation = _chord;
 		
-		if(typeof this.scale === 'undefined' && typeof _chord === 'string') {
+		if(typeof this.scale === 'undefined' || this.scale === null && typeof _chord === 'string') {
 			for(var i = 0; i < this.mult; i++) {
 				var tmp = [];
 			

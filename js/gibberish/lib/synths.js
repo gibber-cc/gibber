@@ -75,13 +75,15 @@ define([], function() {
 			window[that.symbol] = that._function;
 			
 			Gibberish.defineProperties( that, ["frequency", "amp", "attack", "decay", "pan", "channels"] );
-				
+			
+			var waveform = that.waveform;
 		    Object.defineProperty(that, "waveform", {
 				get: function() { return waveform; },
 				set: function(value) {
 					if(waveform !== value) {
 						waveform = value;
 						that.osc = Gibberish.make[value]();
+						that._function.setOscillator(that.osc);
 						Gibberish.dirty(that);
 					}
 				},
@@ -102,6 +104,7 @@ define([], function() {
 			}
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
 			output.getFrequency = function() 		{ return _frequency; };
+			output.setOscillator = function(_osc) 		{ osc = _osc; };			
 			
 			return output;
 		},
