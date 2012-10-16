@@ -16,6 +16,7 @@ var filenames = [
 	"fm_synth.js",
 	"string.js",
 	"envelopes.js",
+	"input.js",
 ];
 
 for (var i = 0; i < filenames.length; i++) {

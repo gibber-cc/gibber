@@ -1,4 +1,4 @@
-/**#Sampler - Buffer Playback
+/**#Sampler - Buffer Recording & Playback
 Sampler allows you to playback audiofiles at different speeds. It also allows you to record the output of any 
 Gibber [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)). 
 This could be the Master bus, or any of the polyphonic instruments that output to their own dedicated bus:  
@@ -7,13 +7,14 @@ This could be the Master bus, or any of the polyphonic instruments that output t
 * [FMSynth](javascript:Gibber.Environment.displayDocs('FMSynth'\))  
 * [Pluck](javascript:Gibber.Environment.displayDocs('Pluck'\))  
 * [Drums](javascript:Gibber.Environment.displayDocs('Drums'\))  
+* [Input](javascript:Gibber.Environment.displayDocs('Input'\)) 
 
 ## Example Usage ##
 `a = Drums("x*ox*xo-");  
-b = Sampler({input:a, amp:2.5});
-b.startRecording(_1 * 2);    
-// wait 2 measures  
-b.fx.add( HPF(.4, 4.5) );  
+b = Sampler();
+b.amp = 2.5;
+b.record(a, 2);
+b.fx.add( HPF(.4, 4.5) );    
 c = Seq({
   note:[4,2,.5],
   durations:[_1, _1, _1 * 4],
@@ -21,11 +22,12 @@ c = Seq({
 });
 `
 ## Constructor
-**param** *input*: Object or String. A input Bus to record samples from or an audiofile to load.
+**param** *input*: Optional. String. The path to an audiofile to load. You can only load samples from web servers.
 **/
 
 /**###Sampler.record : method
-**param** *input*: A [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)) . See the main description for info on what can be recorded.
+**param** *input*: A [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)) . See the main description for info on what can be recorded.  
+
 **param** *length*: Integer. The length of the recording, in samplers.
 
 **description**: Start recording samples from a Gibber Bus. The Master Bus can also be recorded.
@@ -48,6 +50,37 @@ function Sampler(pathToFile) {
 	return that;
 }
 
+/**#Looper - Buffer Recording & Playback
+The Looper ugen allows you to quickly overdub multiple takes from a single sound input. It is primarily designed to work with
+the [Input](javascript:Gibber.Environment.displayDocs('Input'\)) ugen to record and loop live input, however, it can record
+the output of any [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)) ugen.
+
+You specify the input source, the number of loops and how long each loop should last in the constructor. The Looper creates a
+[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) object to hold each individual loop behind the scenes;
+each of these Sampler object is stored in the *children* property of the Looper object. 
+## Example Usage ##
+`a = Input();           // live input only works in Chrome Canary
+b = Looper(a, 4, 1);   // four loops, one measure apiece
+b.loop();
+// wait 2 measures  
+c = Seq({
+  speed:[4, .5, -2],   // sequence playback speed
+  durations:2
+  slaves:b
+});
+`
+## Constructor
+**param** *input*: Object or String. A input Bus to record samples from.
+
+**param** *numberOfLoops*: Integer. The number of loops the Looper should overdub on top of each other.
+
+**param** *loopLength*: Integer. The length (in measures or samples) of each loop.
+**/
+
+/**###Looper.speed : property
+Float. The speed of the loop playback. Negative speeds will play the loops in reverse. Default is 1.
+**/
+
 function Looper(input, length, numberOfLoops) {
 	var that = Gibberish.Bus();
 	that.children = [];
@@ -63,6 +96,10 @@ function Looper(input, length, numberOfLoops) {
 		that.children[i].send(that, 1);
 	}
 	that.send(Master, 1);
+	
+/**###Looper.loop : method
+**description**: Start recording and looping samples from a Gibber Bus.
+**/
 	that.loop = function() {
 		that.children[that.currentLoop].record(that.input, that.length);
 		that.seq = Seq([2], that.length / 2);

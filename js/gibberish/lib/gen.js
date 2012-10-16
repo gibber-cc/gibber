@@ -176,7 +176,7 @@ window.Gen = function(obj) {
 		if(typeof that.init === "function") that.init();
 		
 		if(that.category === "Gen" && that.addToGraph) {
-			that.send(Master, 1);
+			that.send(Master, 1);	// TODO: remove Gibber dependency???
 			Gibberish.dirty(that);
 		}
 		return that;

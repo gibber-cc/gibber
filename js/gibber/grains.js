@@ -1,25 +1,31 @@
 // TODO: how to deal with presets?
 
-/**#Grains - Buffer Playback
+/**#Grains - Buffer Recording & Playback
 A granulator that operates on a buffer of samples. You can either get the samples from a [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\))
-object, or the output of a [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)) (like the Master bus) 
-using the [Record](javascript:Gibber.Environment.displayDocs('Record'\)) object.
-
+object, or directly record the output of a [Bus](javascript:Gibber.Environment.displayDocs('Bus'\)) (like the Master bus).
 ## Example Usage ##
-`d = Drums('x*o*x*o-', _8);
-r = Record(d, _1 * 4);
-r.startRecording();  
-// wait 4 or 5 measures  
-g = Grains({buffer:r.buffer, amp:.8});
-g.loop(.2, .8, _1 * 16);
-g.mod("speedMax", Line(.1,.8, _1 * 16, true), "=");
-g.mod("speedMin", Line(-.1,-.8, _1 * 16, true), "=");  
+`d = Drums('x*o*x*o-');  
+g = Grains({input:d, amp:.8, bufferLength:2});
+g.loop(.2, .8, 16);
+g.mod("speedMax", Line(.1, .8, true), "=");
+g.mod("speedMin", Line(-.1, -.8, 16, true), "=");  
 d.stop();`
 ## Constructor
-**param** *propertiesList*: Object. At a minimum you should define the buffer to granulate. See the example.
+**param** *propertiesList*: Object. At a minimum you should define the input to granulate. See the example.
 **/
 
-/*
+/**###Grains.input : property
+Object. The input Bus to granulate.
+**/
+
+/**###Grains.bufferLength : property
+Float. The length, in measures or samples, of the buffer to record and granulate
+**/
+
+/**###Grains.numberOfGrains : property
+Float. The number of grains in the cloud. Can currently only be set on initialization.
+**/
+
 /**###Grains.grainSize : property
 Integer. The length, in samples, of each grain
 **/
@@ -32,7 +38,7 @@ Float. The playback rate, in samples, of each grain
 Float. When set, the playback rate will vary on a per grain basis from (grain.speed + grain.speedMin) -> (grain.speed + grain.speedMax). This value should almost always be negative.
 **/
 
-/**###Grains.speedMMax : property
+/**###Grains.speedMax : property
 Float. When set, the playback rate will vary on a per grain basis from (grain.speed + grain.speedMin) -> (grain.speed + grain.speedMax).
 **/
 
@@ -46,10 +52,6 @@ Float. The left boundary on the time axis of the grain cloud.
 
 /**###Grains.positionMax : property
 Float. The right boundary on the time axis of the grain cloud.
-**/
-
-/**###Grains.numberOfGrains : property
-Float. The number of grains in the cloud. Can currently only be set on initialization.
 **/
 
 function Grains(properties) {
@@ -71,7 +73,7 @@ function Grains(properties) {
 		properties.buffer = properties.input;
 		delete properties.input;
 	}
-	properties.bufferSize = typeof properties.bufferSize === "undefined" ? G.time(1) : G.time(properties.bufferSize);
+	properties.bufferLength = typeof properties.bufferLength === "undefined" ? G.time(1) : G.time(properties.bufferLength);
 	var that = Gibberish.Grains(properties);
 	that.connect(Master);
 		
@@ -80,9 +82,12 @@ function Grains(properties) {
 	
 /**###Grains.loop : method
 **param** *min* Float. Default .25. The starting position for the playback loop. Measured from 0..1 where is the buffer start, 1 is the buffer end.  
+
 **param** *max* Float. Default .75.The finishing position for the playback loop. Measured from 0..1 where is the buffer start, 1 is the buffer end.	 
-**param** *time* Int. Default _1. The length of time, in samples, to travel through the loop points once.  
-**shouldLoop** *Boolean*. Default true. If set to false, the buffer will only play through the min and max values once.  
+
+**param** *time* Int. Default 1. The length of time, in samples, to travel through the loop points once.  
+
+**param** *shouldLoop* Boolean. Default true. If set to false, the buffer will only play through the min and max values once.  
 	
 **description** : Tell the Grain cloud to travel between two positions in its buffer.
 **/
@@ -100,7 +105,7 @@ function Grains(properties) {
 		}
 	}
 	
-	that.loop(0,1,properties.bufferSize); // start looping automatically
+	that.loop(0,1,properties.bufferLength); // start looping automatically
 	
 	return that;
 }

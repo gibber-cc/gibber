@@ -970,7 +970,7 @@ define([], function() {
 				type:		"Grains",
 				category:	"Gen",
 				buffer: 	null,
-				bufferSize: 88200,
+				bufferLength: 88200,
 				grainSize: 	ms(250),
 				speedMin:   -0,
 				speedMax: 	.0,
@@ -994,7 +994,7 @@ define([], function() {
 					that.shouldWrite = true;
 					that.sampler = Gibberish.Sampler();
 					that.sampler.connect(Master); // TODO : remove Gibber dependency
-					that.sampler.record(properties.buffer, that.bufferSize);
+					that.sampler.record(properties.buffer, that.bufferLength);
 					that.buffer = that.sampler.buffer;
 				}else{
 					that.buffer = properties.buffer;
