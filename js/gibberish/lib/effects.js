@@ -965,27 +965,30 @@ define([], function() {
 					//var panner = Gibberish.pan();
 					
 					var output = function(sample, roomSize, damping, wet, dry, channels) {
-						for(var channel = 0; channel < channels; channel++) {
-							//var input = typeof sample[channel] === "number" ? sample[channel] : sample[channel - 1];
-							var input = sample[channel];
+						// converted to fake stereo
+						//for(var channel = 0; channel < channels; channel++) {							
+							//var input = sample[channel];
+							var input = channels === 1 ? sample[0] : sample[0] + sample[1];
 							input *= tuning.fixedGain;
 
 							var out = input;
 						
 							for(var i = 0; i < 8; i++) {
-								//var filt = combFilters[channel][i]([input], 1);
-								//out += filt[0];				
-								var filt = combFilters[channel][i](input, 1);
+								//var filt = combFilters[channel][i](input, 1);
+								var filt = combFilters[0][i](input, 1);
 								out += filt;				
 							}
 							
 							for(var i = 0; i < 4; i++) {
-								out = allPassFilters[channel][i](out, 1);	
+								out = allPassFilters[0][i](out, 1);	
 							}
-							out = out * wet + sample[channel] * dry;
-							sample[channel] = out;
-						}
-						return sample;
+							//out = out * wet + sample[channel] * dry;
+							//out = out * wet + input * dry;
+							//sample[channel] = out;
+						//}
+						var _out = channels === 2 ? [ (sample[0] * dry) + (out * wet), (sample[1] * dry) + (out * wet) ] : [(sample[0] * dry) + (out * wet)];
+						return _out;
+							//};
 						
 					};
 
