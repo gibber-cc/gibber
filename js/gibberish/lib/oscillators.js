@@ -32,7 +32,7 @@ define([], function() {
 			    callback: function(frequency, amp) {
 			        phase += frequency / 44100;
 			        var val = sin(phase * pi_2) * amp;
-			        return [val];
+			        return val;
 			    },
 			});
 			
