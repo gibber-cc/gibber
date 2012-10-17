@@ -331,7 +331,7 @@ define([], function() {
 			gibberish.Decimator = Gen({
 				name:"Decimator",
 				acceptsInput:true,	
-				props:{ bitDepth: 16, sampleRate: 1, channels:1 },
+				props:{ bitDepth: 16, sampleRate: 1, channels:2 },
 				upvalues: { counter: 0, hold:[], pow:Math.pow, floor:Math.floor},
 				
 				callback : function(sample, depth, rate, channels) {
@@ -341,7 +341,7 @@ define([], function() {
 						if(counter >= 1) {
 							var bitMult = pow( depth, 2.0 );
 							hold[channel]  = floor( sample[channel] * bitMult ) / bitMult;
-							counter--;
+							counter -= 1 / channels;
 						}
 						sample[channel] = hold[channel];
 					}

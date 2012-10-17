@@ -45,6 +45,7 @@ function Flanger(rate, amount, feedback, offset) {
 	var args = Array.prototype.slice.call(arguments, 0),
 		that = Gibberish.Flanger.apply(null, args);
 		
+	that.name = 'Flanger';
 	return that;
 }
 
@@ -77,6 +78,8 @@ function Vibrato(rate, amount, offset) {
 	var args = Array.prototype.slice.call(arguments, 0),
 		that = Gibberish.Vibrato.apply(null, args);
 	
+	that.name = "Vibrato";
+	
 	return that;
 }
 
@@ -98,7 +101,7 @@ function Chorus(rate, amount) {
 	var _rate = rate || 1;
 	var _amount = amount || ms(1);
 	var that = Flanger(rate, amount, .5, ms(30));
-	//that.name = "Chorus";
+	that.name = "Chorus";
 	
 	return that;
 }
@@ -141,8 +144,8 @@ function Reverb(roomSize, damping, wet, dry) {
 		var props = {
 			roomSize : (isNaN(roomSize)) ? .5 : roomSize,
 			damping	: (isNaN(damping)) ? .2223 : damping,
-			wet		: wet || .5,
-			dry		: dry || .55,
+			wet		: wet || .25,
+			dry		: dry || 1,
 		};
 		
 		that = Gibberish.Reverb( props );
@@ -156,8 +159,8 @@ function ReverbPresets() {
 		space : {
 			roomSize:1,
 			damping:0,
-			wet:1,
-			dry:0,
+			wet:.4,
+			dry:.6,
 		},
 	}
 }
@@ -206,6 +209,7 @@ function Ring(frequency, amount) {
 	var args = Array.prototype.slice.call(arguments, 0),
 		that = Gibberish.RingModulator.apply(null, args);
 	
+	that.name = "Ring";
 	return that;	
 }
 
@@ -229,6 +233,7 @@ function Crush(bitDepth, sampleRate) {
 	var args = Array.prototype.slice.call(arguments, 0),
 		that = Gibberish.Decimator.apply(null, args);
 	
+	that.name = "Crush";
 	return that;
 }
 
@@ -254,6 +259,7 @@ window.Dist = window.Clip = function(amount, amp) {
 	var args = Array.prototype.slice.call(arguments, 0),
 		that = Gibberish.SoftClip.apply(null, args);
 	
+	that.name = "Clip";
 	return that;
 };
 
