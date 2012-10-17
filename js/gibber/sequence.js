@@ -461,14 +461,18 @@ This should never need to be explicitly called.
 						}else{
 							if($.isArray(val) && (key !== "chord" || typeof this.scale === 'undefined')) {
 								try {
-									var _val = val.slice(0);
-									if(key === "note" && this.scale) {
-										_val[0] = this.scale.notes[_val[0]];
-										if(typeof val[1] === 'function') _val[1] = _val[1]();
+									if(typeof val[0] === "string" && typeof val[1] === "number"){
+										_slave[key].apply(_slave, val);
+									}else{
+										var _val = val.slice(0);
+										if(key === "note" && this.scale) {
+											_val[0] = this.scale.notes[_val[0]];
+											if(typeof val[1] === 'function') _val[1] = _val[1]();
+										}
+										_slave[key].call(_slave, _val);									
 									}
-									_slave[key].call(_slave, _val);									
 								}catch(err) {
-									G.log("Seq error passing array:", err);
+									console.log("Seq error passing array:", err, val);
 									this.stop();
 								}
 							}else{
