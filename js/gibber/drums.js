@@ -33,7 +33,7 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
 	
-	var _fx = arguments[0].fx;
+	var _fx = typeof arguments[0] !== "undefined" ? arguments[0].fx : undefined;
 	
 	this.channels = 2;
 	this.fx = [];
@@ -261,6 +261,7 @@ _Drums.prototype = {
 	name  		: "Drums",
 		
 	replace : function(replacement) {
+		console.log("CALLING DRUMS REPLACEMENT");
 		this.kill();
 		if(typeof this.seq !== "undefined" && this.seq !== null) {
 			this.seq.kill();

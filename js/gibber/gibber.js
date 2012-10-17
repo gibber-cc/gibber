@@ -111,6 +111,7 @@ define(['gibber/audio_callback'], function() {
 											 if(typeof variable.replace === "undefined") {
 												 Gibber.genReplace(variable, newObj);
 											 }else{
+												 console.log("CALLING REPLACE");
 											 	 variable.replace(newObj);
 											 }
 										 break;
