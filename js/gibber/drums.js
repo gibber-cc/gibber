@@ -30,6 +30,21 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 	return new _Drums(_sequence, _timeValue, _amp, _freq);
 }
 
+Drums.kits = {
+	default: {
+		kick:{ file:"audiofiles/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
+		snare:{ file:"audiofiles/snare.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:{ file:"audiofiles/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
+		openHat:{ file:"audiofiles/openHat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
+	},
+	allKicks: {
+		kick:{ file:"audiofiles/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
+		snare:{ file:"audiofiles/kick.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:{ file:"audiofiles/kick.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
+		openHat:{ file:"audiofiles/kick.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
+	},
+};
+
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
 	
@@ -43,38 +58,54 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 Float. The overall pitch of the Drums. Each specific drum can also have its pitch set.
 **/	
 	this.pitch = 1;
+	this.kit = Drums.kits['default'];
+	if(typeof arguments[0] === "object") {
+		if(arguments[0].kit) {
+			this.kit = Drums.kits[arguments[0].kit];
+			arguments[0].kit = this.kit;
+		}
+	}
 	
-/**###Drums.kick : property
-[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
-**/	
-	this.kick 	 = { sampler: Gibberish.Sampler("audiofiles/kick.wav"), pitch: 1, amp: 1 } ;
-	this.kick.sampler.channels = 2;
-	this.kick.sampler.pan = -.1;
-/**###Drums.snare : property
-[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
-**/	
-	this.snare	 = { sampler: Gibberish.Sampler("audiofiles/snare.wav"), pitch: 1, amp: 1 };
-	this.snare.sampler.channels = 2;
-	this.snare.sampler.pan = .1;
-/**###Drums.hat : property
-[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
-**/	
-	this.hat	 = { sampler: Gibberish.Sampler("audiofiles/hat.wav"), pitch: 1, amp: 1 };
-/**###Drums.openHat : property
-[Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
-**/
-	this.openHat = { sampler: Gibberish.Sampler("audiofiles/openHat.wav"), pitch: 1, amp: 1 };
-
-	this.kick.sampler.send(this,  1);
-	this.snare.sampler.send(this, 1);
-	this.hat.sampler.send(this,   1);
-	this.openHat.sampler.send(this, 1);	
-	
-	// these are convenience wrappers. to mod, you must use this.kick.sampler etc.
-	this.kick.fx = this.kick.sampler.fx;
-	this.snare.fx = this.snare.sampler.fx;
-	this.hat.fx = this.hat.sampler.fx;
-	this.openHat.fx = this.openHat.sampler.fx;
+	for(var key in this.kit) {
+		var drum = this.kit[key];
+		this[key] = { sampler: Gibberish.Sampler(drum.file), pitch:drum.pitch, amp:drum.amp };
+		this[key].sampler.channels = 2;
+		this[key].sampler.pan = drum.pan;
+		this[key].sampler.send(this, 1);
+		this[key].fx = this[key].sampler.fx;
+	}
+	console.log("HA HA HA HA ");
+// /**###Drums.kick : property
+// [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+// **/	
+// 	this.kick 	 = { sampler: Gibberish.Sampler(this.kit.kick[0]), pitch: 1, amp: 1 } ;
+// 	this.kick.sampler.channels = 2;
+// 	this.kick.sampler.pan = -.1;
+// /**###Drums.snare : property
+// [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+// **/	
+// 	this.snare	 = { sampler: Gibberish.Sampler(this.kit.snare[0]), pitch: 1, amp: 1 };
+// 	this.snare.sampler.channels = 2;
+// 	this.snare.sampler.pan = .1;
+// /**###Drums.hat : property
+// [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+// **/	
+// 	this.hat	 = { sampler: Gibberish.Sampler(this.kit.hat[0]), pitch: 1, amp: 1 };
+// /**###Drums.openHat : property
+// [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
+// **/
+// 	this.openHat = { sampler: Gibberish.Sampler(this.kit.openHat[0]), pitch: 1, amp: 1 };
+// 
+// 	this.kick.sampler.send(this,  1);
+// 	this.snare.sampler.send(this, 1);
+// 	this.hat.sampler.send(this,   1);
+// 	this.openHat.sampler.send(this, 1);	
+// 	
+// 	// these are convenience wrappers. to mod, you must use this.kick.sampler etc.
+// 	this.kick.fx = this.kick.sampler.fx;
+// 	this.snare.fx = this.snare.sampler.fx;
+// 	this.hat.fx = this.hat.sampler.fx;
+// 	this.openHat.fx = this.openHat.sampler.fx;
 	
 	this.connect(Master);
 		
@@ -310,6 +341,15 @@ _Drums.prototype = {
 **description** : shuffle() randomizes the order of notes in the Drums object. The order can be reset using the reset() method.
 **/
 	note : function(nt) {
+		
+		for(var key in this.kit) {
+			console.log(key, nt, this.kit[key].symbol);
+			if(nt === this.kit[key].symbol) {
+				this[key].sampler.note(this.pitch * this[key].pitch, this[key].amp);
+				break;
+			}
+		}
+		/*
 		switch(nt) {
 			case "x":
 				this.kick.sampler.note(this.pitch * this.kick.pitch, this.kick.amp);
@@ -325,5 +365,6 @@ _Drums.prototype = {
 				break;
 			default: break;
 		}
+		*/
 	},
 };

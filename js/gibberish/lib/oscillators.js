@@ -1033,7 +1033,7 @@ define([], function() {
 			var panner = Gibberish.pan();
 			var write = 0;
 
-			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {	
+			var output = function(input, speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {	
 				var val = 0;
 				for(var i = 0; i < numberOfGrains; i++) {
 					var grain = grains[i];
