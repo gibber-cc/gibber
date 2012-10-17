@@ -558,17 +558,31 @@ define([], function() {
 			
 			Gibberish.defineProperties( that, ["amp", "frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "detune2", "detune3", "octave2", "octave3", "pan", "channels"] );
 			
-			// var waveform = that.waveform;
-			// 		    Object.defineProperty(that, "waveform", {
-			// 	get: function() { return waveform; },
-			// 	set: function(value) {
-			// 		if(waveform !== value) {
-			// 			waveform = value;
-			// 			that.osc = Gibberish.make[value]();
-			// 			Gibberish.dirty(that);
-			// 		}
-			// 	},
-			// });
+			var waveform = that.waveform;
+			Object.defineProperty(that, "waveform", {
+				get: function() { return waveform; },
+				set: function(value) {
+					if(waveform !== value) {
+						waveform = value;
+						var _osc1 = that.osc1;
+						var _osc2 = that.osc2;
+						var _osc3 = that.osc3;
+						
+						that.osc1 = Gibberish.make[value]();
+						//that.osc1.setPhase( _osc1.getPhase() );
+						that.osc2 = Gibberish.make[value]();
+						//that.osc2.setPhase( _osc2.getPhase() );
+						that.osc3 = Gibberish.make[value]();
+						//that.osc3.setPhase( _osc3.getPhase() );
+						
+						that._function.setOsc1(that.osc1);
+						that._function.setOsc2(that.osc2);
+						that._function.setOsc3(that.osc3);												
+
+						Gibberish.dirty(that);
+					}
+				},
+			});
 			
 			return that;
 		},
@@ -608,6 +622,9 @@ define([], function() {
 				val *= masterAmp;
 				return channels === 1 ? [val] : panner(val, pan);
 			};
+			output.setOsc1 = function(_osc) { osc1 = _osc; };
+			output.setOsc2 = function(_osc) { osc2 = _osc; };
+			output.setOsc3 = function(_osc) { osc3 = _osc; };						
 	
 			return output;
 		},

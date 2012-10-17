@@ -42,17 +42,44 @@ Int. Samples. The amount that the size of the delay line fluctuates by.
 **/	
 
 function Flanger(rate, amount, feedback, offset) {
-	var that = {
-		rate: (typeof rate !== "undefined") ? rate : .25,
-		amount: (typeof amount !== "undefined") ? amount : 125,
-		feedback:	isNaN(feedback) ? 0 : feedback,
-		offset:		isNaN(offset) ? 125 : offset,
-	}
-	
-	that = Gibberish.Flanger(that);
+	var args = Array.prototype.slice.call(arguments, 0),
+		that = Gibberish.Flanger.apply(null, args);
+		
+	return that;
+}
+
+/**#Vibrato - FX
+**description** : A small variation on the flanger that only outputs the 'wet' signal and creates fluctuations in pitch. 
+The rate controls the speed of the vibrato, while the maximum size of the vibrato in pitch is determined by offset * amount.
+  
+**param** *rate*: Float. Default = 5. Measured in Hz, this is the speed that the delay line size fluctuates at.  
+
+**param** *amount*: Int. Default = .5. The amount that the size of the delay line fluctuates by as a percentage of the offset.  
+
+**param** *offset*: Int. Default = 125. The base delay of the output from the input sample. This fluctuates according to the rate and amount. Is best to set upon initialization and not touch.
+## Example Usage ##
+`p = Pluck(0, 1);    
+p.fx.add( Vibrato() );   
+p.note( "A3" );`
+**/
+
+/**###Vibrato.rate : property
+Float. Hz. the speed that the delay line size fluctuates at.
+**/	 
+/**###Vibrato.amount : property
+Int. Samples. The amount that the size of the delay line fluctuates by.
+**/  
+/**###Vibrato.offset : property
+Int. Samples. The base delay offset for the output sample. In general this should only be set upon initialization.
+**/	
+
+function Vibrato(rate, amount, offset) {
+	var args = Array.prototype.slice.call(arguments, 0),
+		that = Gibberish.Vibrato.apply(null, args);
 	
 	return that;
 }
+
 
 /**#Chorus- FX
 **description** : cheap chorus using a flanger with an extreme offset see http://denniscronin.net/dsp/article.html
@@ -68,9 +95,9 @@ Float. Hz. The amount that the size of the delay line fluctuates by.
 **/	
 
 function Chorus(rate, amount) {
-	var _rate = rate || 2;
-	var _amount = amount || 50;
-	that = Flanger(rate, amount, 0, 880); // 20ms offset
+	var _rate = rate || 1;
+	var _amount = amount || ms(1);
+	var that = Flanger(rate, amount, .5, ms(30));
 	//that.name = "Chorus";
 	
 	return that;
@@ -176,9 +203,10 @@ Float. The amplitude of the sine wave the signal is multiplied by
 **/	
 
 function Ring(frequency, amount) {
-	var that = Gibberish.RingModulator(frequency, amount);
-	that.name = "Ring";
-	return that;
+	var args = Array.prototype.slice.call(arguments, 0),
+		that = Gibberish.RingModulator.apply(null, args);
+	
+	return that;	
 }
 
 /**#Crush- FX
@@ -198,8 +226,9 @@ Float. The sampleRate to downsample to. Range is 0..1
 **/	
  
 function Crush(bitDepth, sampleRate) {
-	var that = Gibberish.Decimator({bitDepth:bitDepth, sampleRate:sampleRate});
-	that.name = "Crush";
+	var args = Array.prototype.slice.call(arguments, 0),
+		that = Gibberish.Decimator.apply(null, args);
+	
 	return that;
 }
 
@@ -222,10 +251,11 @@ Float. The number of bits to truncate the output to.
 Float. The sampleRate to downsample to. Range is 0..1
 **/	
 window.Dist = window.Clip = function(amount, amp) {
-	var that = Gibberish.SoftClip(amount, amp);
-	that.name = "Clip";
+	var args = Array.prototype.slice.call(arguments, 0),
+		that = Gibberish.SoftClip.apply(null, args);
+	
 	return that;
-}
+};
 
 /**#LPF - FX
 **description** : 24db resonant ladder-style filter

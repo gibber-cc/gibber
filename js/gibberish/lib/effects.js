@@ -354,7 +354,7 @@ define([], function() {
 			gibberish.Flanger = Gen({
 				name:"Flanger",
 				acceptsInput:true,	
-				props:{ offset:300, feedback:0, rate:.25, amount:300, channels:1 },
+				props:{ rate:.25, amount:125, feedback:0, offset:125, channels:1 },
 				upvalues: { 
 					buffers:			null,
 					bufferLength:		88200,
@@ -383,7 +383,7 @@ define([], function() {
 						}
 					}
 				},
-				callback : function(sample, offset, feedback, delayModulationRate, delayModulationAmount, channels) {
+				callback : function(sample, delayModulationRate, delayModulationAmount, feedback, offset, channels) {
 					var delayIndex = readIndex + delayModulation(delayModulationRate, delayModulationAmount * .95, 1)[0];
 
 					if(delayIndex > bufferLength) {
@@ -406,6 +406,64 @@ define([], function() {
 					return sample;
 				},	
 			});
+			
+			// vibrato is basically flanging where you only hear the modulated delay line
+			gibberish.Vibrato = Gen({
+				name:"Vibrato",
+				acceptsInput:true,
+				props:{ rate:5, amount:.5, offset:125, feedback:0, channels:1 },
+				upvalues: { 
+					buffers:			null,
+					bufferLength:		88200,
+					delayModulation:	gen("Sine"),
+					interpolate:		Gibberish.interpolate,
+					readIndex:			-100,
+					writeIndex:			0,
+					phase:				0,
+				},
+				init : function() {
+					this.function.setReadIndex( this.offset * -1);
+					this.buffers = [];
+					for(var i = 0; i < this.channels; i++) {
+						this.buffers.push( new Float32Array(88200) );
+					}
+					this.function.setBuffers(this.buffers);
+
+				},
+				setters : {
+					channels : function(val) {
+						var buffers = this.function.getBuffers();
+						if(val >= buffers.length) {
+							for(var i = 0; i < val - buffers.length; i++) {
+								buffers.push(new Float32Array(88200));
+							}
+						}
+					}
+				},
+				callback : function(sample, delayModulationRate, delayModulationAmount, offset, feedback, channels) {
+					var delayIndex = readIndex + delayModulation(delayModulationRate, (delayModulationAmount * offset) - 1, 1)[0];
+
+					if(delayIndex > bufferLength) {
+						delayIndex -= bufferLength;
+					}else if(delayIndex < 0) {
+						delayIndex += bufferLength;
+					}
+					
+					for(var channel = 0; channel < channels; channel++) {
+						var delayedSample = interpolate(buffers[channel], delayIndex);
+									
+						buffers[channel][writeIndex] = sample[channel];
+						
+						sample[channel] = delayedSample;
+					}
+
+					if(++writeIndex >= bufferLength) writeIndex = 0;
+					if(++readIndex  >= bufferLength) readIndex  = 0;
+
+					return sample;
+				},	
+			});
+			
 			
 			gibberish.BufferShuffler = Gen({
 				name:"BufferShuffler",

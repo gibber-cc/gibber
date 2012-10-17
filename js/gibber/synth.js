@@ -2,16 +2,18 @@
 // ========================
 
 /**#Synth - Synth
-Create an oscillator(s) with an attached attack / decay envelope(s) that can play notes or chords.  
+Create an oscillator(s) with an attached attack / decay envelope(s) that can play notes or chords. The primary oscillator is determined by the
+waveform property and can currently be Sine, Saw, Triangle, Square or Noise.
 ## Example Usage##
 `s = Synth();
 s.note("A4");  
 t = Synth({ 
+	waveform:"Saw",
 	maxVoices:5, 
 	attack:_1,
 	decay:_1
 });
-t.chord("c4m7");`
+t.chord("c3m7");`
 ## Constructors
 ### syntax 1:
 param **attack**: Int in ms. The number of milliseconds the attack of the synth's envelope lasts  
@@ -22,6 +24,9 @@ param **volume** : Float. The volume of the synth.
   param **arguments** : Object. A dictionary of property values to set upon initialization. See the properties section and the example usage section for details.
 **/
 
+/**###Synth.waveform : property
+String. The primary oscillator to be used. Can currently be 'Sine', 'Square', 'Noise', 'Triangle' or 'Saw'. 
+**/
 /**###Synth.attack : property
 Integer. The length, in samples, of the attack of the amplitude envelope.
 **/
@@ -96,7 +101,8 @@ Gibber.presets.Synth = {
 
 /**#Synth2 - Synth
 Create an oscillator with an attached envelope and 24db resonant filter that can be triggered by note or chord messages. The envelope controls both the
-amplitude and cutoff frequency of the filter.
+amplitude and cutoff frequency of the filter. Like the Synth object, the primary oscillator is determined by the
+waveform property and can currently be Sine, Saw, Triangle, Square or Noise.
 ## Example Usage##
 `s = Synth2();
 s.note("A4");  
@@ -113,6 +119,9 @@ t.chord("c4m7");`
   param **arguments** : Object. A dictionary of property values to set upon initialization. See the properties section and the example usage section for details.
 **/
 
+/**###Synth2.waveform : property
+String. The primary oscillator to be used. Can currently be 'Sine', 'Square', 'Noise', 'Triangle' or 'Saw'. 
+**/
 /**###Synth2.attack : property
 Integer. The length, in samples, of the attack of the amplitude envelope.
 **/
@@ -206,6 +215,10 @@ t.note("C3");`
 ### syntax 2: 
   param **presetName** : String. A preset to choose for starting values. Current values are 'short', 'lead', and 'bass'.
   param **arguments** : Object. A dictionary of property values to set upon initialization; these override any settings in the preset. See the properties section and the example usage section for details.
+**/
+
+/**###Mono.waveform : property
+String. The primary oscillator to be used. Can currently be 'Sine', 'Square', 'Noise', 'Triangle' or 'Saw'. 
 **/
 /**###Mono.attack : property
 Integer. The length, in samples, of the attack of the amplitude envelope.
