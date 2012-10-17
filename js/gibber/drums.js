@@ -37,6 +37,12 @@ Drums.kits = {
 		hat:{ file:"audiofiles/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
 		openHat:{ file:"audiofiles/openHat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
+	djtw_acefr1: {
+		kick:{ file:"audiofiles/djtw_acefr1/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
+		snare:{ file:"audiofiles/djtw_acefr1/snare.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:{ file:"audiofiles/djtw_acefr1/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
+		openHat:{ file:"audiofiles/djtw_acefr1/openhat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
+	},
 	allKicks: {
 		kick:{ file:"audiofiles/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
 		snare:{ file:"audiofiles/kick.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
