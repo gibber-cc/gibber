@@ -32,16 +32,10 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 
 Drums.kits = {
 	default: {
-		kick:{ file:"audiofiles/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
-		snare:{ file:"audiofiles/snare.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:{ file:"audiofiles/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
-		openHat:{ file:"audiofiles/openHat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
-	},
-	allKicks: {
-		kick:{ file:"audiofiles/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
-		snare:{ file:"audiofiles/kick.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:{ file:"audiofiles/kick.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
-		openHat:{ file:"audiofiles/kick.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
+		kick:{ file:"audiofiles/kick.wav", 		symbol:'x', amp:1, pitch:1, pan:0 	},
+		snare:{ file:"audiofiles/snare.wav", 	symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:{ file:"audiofiles/hat.wav", 		symbol:'*', amp:1, pitch:1, pan:-.1 },
+		openHat:{ file:"audiofiles/openHat.wav",symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
 };
 
@@ -74,7 +68,7 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 		this[key].sampler.send(this, 1);
 		this[key].fx = this[key].sampler.fx;
 	}
-	console.log("HA HA HA HA ");
+
 // /**###Drums.kick : property
 // [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
 // **/	
@@ -292,7 +286,6 @@ _Drums.prototype = {
 	name  		: "Drums",
 		
 	replace : function(replacement) {
-		console.log("CALLING DRUMS REPLACEMENT");
 		this.kill();
 		if(typeof this.seq !== "undefined" && this.seq !== null) {
 			this.seq.kill();
@@ -343,7 +336,7 @@ _Drums.prototype = {
 	note : function(nt) {
 		
 		for(var key in this.kit) {
-			console.log(key, nt, this.kit[key].symbol);
+			//console.log(key, nt, this.kit[key].symbol);
 			if(nt === this.kit[key].symbol) {
 				this[key].sampler.note(this.pitch * this[key].pitch, this[key].amp);
 				break;

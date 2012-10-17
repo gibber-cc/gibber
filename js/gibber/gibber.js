@@ -400,6 +400,7 @@ define(['gibber/audio_callback'], function() {
 		},
 
 	}
+	Gibber.setBpm = Gibber.setBPM;
 	return Gibber; 
 });
 
