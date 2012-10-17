@@ -288,20 +288,18 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 	
 **description** : reset order of sequence to its original order or to a memorized set of positions
 **/
-	
-
 	this.reset = function(seq) {
 		if(typeof seq === "undefined") {
-			//that.note = that._sequence.slice(0);
-			// if(arguments.length === 0) {
-			// 				if(that.durations === null) {
-			// 					that.setSequence(that._sequence, that.speed);
-			// 				}else{
-			// 					that.setSequence(that._sequence, that.durations);
-			// 				}
-			// 			}else{
-			// 				that.setSequence(that.memory[arguments[0]]);
-			// 			}
+			that.note = that._sequence.slice(0);
+			if(arguments.length === 0) {
+				if(that.durations === null) {
+					that.setSequence(that._sequence, that.speed);
+				}else{
+					that.setSequence(that._sequence, that.durations);
+				}
+			}else{
+				that.setSequence(that.memory[arguments[0]]);
+			}
 		}
 		return that;
 	};
