@@ -178,7 +178,7 @@ define([], function() {
 			gibberish.Sampler = this.Sampler;
 			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp", "isRecording", "isPlaying", "input", "bufferLength", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7} )");
 			gibberish.make["Sampler"] = this.makeSampler;
-			
+																	//"speed", "speedMin", "speedMax", "positionMin", "positionMax", "position", "numberOfGrains", "amp", "grainSize", "pan", "shouldWrite"
 			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "amp", "fade", "pan", "shouldWrite"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} )");
 			gibberish.make["Grains"] = this.makeGrains;
 			gibberish.Grains = this.Grains;	
@@ -992,10 +992,12 @@ define([], function() {
 			if(typeof properties.buffer !== "undefined") { 
 				if(properties.buffer.type) {
 					that.shouldWrite = true;
+					//console.log("MAKING SAMPLER", properties.buffer);
 					that.sampler = Gibberish.Sampler();
 					that.sampler.connect(Master); // TODO : remove Gibber dependency
 					that.sampler.record(properties.buffer, that.bufferLength);
 					that.buffer = that.sampler.buffer;
+					//console.log("AFTER MAKING SAMPLER");
 				}else{
 					that.buffer = properties.buffer;
 				}
@@ -1033,7 +1035,7 @@ define([], function() {
 			var panner = Gibberish.pan();
 			var write = 0;
 
-			var output = function(input, speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {	
+			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {
 				var val = 0;
 				for(var i = 0; i < numberOfGrains; i++) {
 					var grain = grains[i];
