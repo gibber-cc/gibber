@@ -1,7 +1,10 @@
 ## Gibber ##
 
 Gibber is a live coding environment for the web browser, using the Gibberish audio engine and the CodeMirror code editor.
-It runs in Chrome, Firefox and nightly builds of Safari.
+It runs in Chrome and recent builds of Safari (iOS 6 and higher, or Safari 6 and higher on desktop). 
+To run, Gibber needs to be accessed from a web server. 
+In OS X you can do this by simply turning on Web Sharing under System Preferences and placing the Gibber directory
+in your Sites folder. Then access Gibber using the URL 127.0.0.1/~yourusername/gibber/index.htm.
 
 Below is a code sample. To test out Gibber, visit http://www.charlie-roberts.com/gibber
 
@@ -33,5 +36,4 @@ Master.fx.add( Schizo(), Reverb() ); // Master FX are applied to summed signal o
 Master.removeFX(0);                  // remove first effect in chain. don't pass a argument to remove all fx.
 ```
 
-Gibber also relies on Sink.js, audiofile.js, require.js and jQuery for functionality. Note that for drum samples to work the 
-sample locations in drums.js must be changed.
+Gibber also relies on Sink.js, audiofile.js, require.js and jQuery for functionality.
