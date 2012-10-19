@@ -205,7 +205,24 @@ define([
 					marginTop: '1em',
 				});
 				
+				var b2 = $('<button>Send Code To All</button>');
+				$(b2).on('mouseup', function() {
+					var selectedUsers = [];
+				
+					for(var i = 0; i < allListItems.length; i++) {
+						selectedUsers.push($(allListItems[i]).text());
+					}
+					
+					G.E.socket.emit('code', { recipients:selectedUsers, code:v} );
+					$.modal.close();
+				});
+				$(b2).css({
+					float:'right',
+					marginTop: '1em',
+				});
+				
 				$(d).append(b);
+				$(d).append(b2);
 				$.modal(d, {});	
 			};
 		},

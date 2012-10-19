@@ -3,11 +3,11 @@ define([], function() {
 		init: function(gibberish) {
 			gibberish.Noise = Gen({
 				name: "Noise",
-				props: { channels: 1, pan:0 },
+				props: { channels: 1, amp:1, pan:0 },
 				upvalues: { rnd:Math.random, panner:Gibberish.pan() },
 				
-				callback: function( channels, pan ) {
-					var value = rnd() * 2 - 1;
+				callback: function( channels, amp, pan ) {
+					var value = ( rnd() * 2 - 1 ) * amp;
 					return channels === 2 ? panner(value, pan) : [value];
 				},
 			});

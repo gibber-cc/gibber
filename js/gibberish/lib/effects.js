@@ -1,6 +1,33 @@
 define([], function() {
     return {
 		init: function(gibberish) {
+			// 0 for LP, 1 for HP ported from http://musicdsp.org/showArchiveComment.php?ArchiveID=237
+			// TODO: should the cutoff be moddable? seems pretty cheap...
+			gibberish.OnePole = Gen({
+			  name:"OnePole",
+			  acceptsInput: true,
+			  props: { cutoff:440, mode: 0, channels: 2,  },
+			  upvalues: { a0:null, b1:null, out:[]},
+  
+			  init : function() {
+			  	var x = Math.exp(-2.0 * Math.PI * this.cutoff / 44100);
+			    this.function.setA0( 1.0 - x );
+			    this.function.setB1( -x );
+			    for(var i = 0; i < this.channels; i++) {
+			    	this.function.getOut()[i] = 0;
+			    }
+			  },
+  
+			  callback : function(sample, cutoff, mode, channels) {
+			  	 for(var i = 0; i < channels; i++) {
+			     		var lp = a0 * (sample[i] - out[i]);
+			     		out[i] = mode ? lp : sample[i] - lp;
+			     }
+     
+			     return out;
+			  }
+			});
+			
 			gibberish.MSG = Gen({
 				name:"MSG",
 				acceptsInput: true,
@@ -246,6 +273,8 @@ define([], function() {
 			       this.b2 = b2 / a0;
 			       this.a1 = a1 / a0;
 			       this.a2 = a2 / a0;
+				   
+				   //console.log(this.b0, this.b1, this.b2);
 			   },
 			   call : function(x) {
 				   return this.function(x, this.b0, this.b1, this.b2, this.a1, this.a2, this.channels);
