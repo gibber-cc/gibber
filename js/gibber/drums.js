@@ -43,39 +43,42 @@ Drums.kits = {
 		hat:{ file:"audiofiles/hat.wav", 		symbol:'*', amp:1, pitch:1, pan:-.1 },
 		openHat:{ file:"audiofiles/openHat.wav",symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
-	djtw_acefr1: {
-		kick:{ file:"audiofiles/djtw_acefr1/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
-		snare:{ file:"audiofiles/djtw_acefr1/snare.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:{ file:"audiofiles/djtw_acefr1/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
-		openHat:{ file:"audiofiles/djtw_acefr1/openhat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
+	electronic: {
+		kick:{ file:"audiofiles/electronic/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
+		snare:{ file:"audiofiles/electronic/snare.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:{ file:"audiofiles/electronic/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
+		openHat:{ file:"audiofiles/electronic/openhat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
-	tyte_sbn: {
-    // sounds and inspiration found here: http://www.humanbeatbox.com/tips/p2_articleid/231
-    eight:  {file:'audiofiles/tyte_sbn/8.wav'    , symbol:'8', amp:1, pitch:1, pan:0 },
-    in_k:   {file:'audiofiles/tyte_sbn/^k.wav'   , symbol:'K', amp:1, pitch:1, pan:0 },
-    in_p:   {file:'audiofiles/tyte_sbn/^p.wav'   , symbol:'P', amp:1, pitch:1, pan:0 },
-    in_tss: {file:'audiofiles/tyte_sbn/^tss.wav' , symbol:'T', amp:1, pitch:1, pan:0 },
-    a:      {file:'audiofiles/tyte_sbn/a.wav'    , symbol:'a', amp:1, pitch:1, pan:0 },
-    b:      {file:'audiofiles/tyte_sbn/b.wav'    , symbol:'b', amp:1, pitch:1, pan:0 },
-    d:      {file:'audiofiles/tyte_sbn/d.wav'    , symbol:'d', amp:1, pitch:1, pan:0 },
-    dot:    {file:'audiofiles/tyte_sbn/dot.wav'  , symbol:'.', amp:1, pitch:1, pan:0 },
-    duf:    {file:'audiofiles/tyte_sbn/duf.wav'  , symbol:'D', amp:1, pitch:1, pan:0 },
-    f:      {file:'audiofiles/tyte_sbn/f.wav'    , symbol:'f', amp:1, pitch:1, pan:0 },
-    h:      {file:'audiofiles/tyte_sbn/h.wav'    , symbol:'h', amp:1, pitch:1, pan:0 },
-    k:      {file:'audiofiles/tyte_sbn/k.wav'    , symbol:'k', amp:1, pitch:1, pan:0 },
-    m:      {file:'audiofiles/tyte_sbn/m.wav'    , symbol:'m', amp:1, pitch:1, pan:0 },
-    n:      {file:'audiofiles/tyte_sbn/n.wav'    , symbol:'n', amp:1, pitch:1, pan:0 },
-    o:      {file:'audiofiles/tyte_sbn/o.wav'    , symbol:'o', amp:1, pitch:1, pan:0 },
-    pf:     {file:'audiofiles/tyte_sbn/pf.wav'   , symbol:'F', amp:1, pitch:1, pan:0 },
-    phs:    {file:'audiofiles/tyte_sbn/phs.wav'  , symbol:'P', amp:1, pitch:1, pan:0 },
-    psh:    {file:'audiofiles/tyte_sbn/psh.wav'  , symbol:'p', amp:1, pitch:1, pan:0 },
-    s:      {file:'audiofiles/tyte_sbn/s.wav'    , symbol:'s', amp:1, pitch:1, pan:0 },
-    t:      {file:'audiofiles/tyte_sbn/t.wav'    , symbol:'t', amp:1, pitch:1, pan:0 },
-    u:      {file:'audiofiles/tyte_sbn/u.wav'    , symbol:'u', amp:1, pitch:1, pan:0 },
+	beatbox: {
+
+    in_tss: {file:'audiofiles/beatbox/^tss.wav' , symbol:'T', amp:1, pitch:1, pan: 0.1},
+    f:      {file:'audiofiles/beatbox/f.wav'    , symbol:'f', amp:1, pitch:1, pan:-0.1},
+    h:      {file:'audiofiles/beatbox/h.wav'    , symbol:'h', amp:1, pitch:1, pan: 0.1},
+    s:      {file:'audiofiles/beatbox/s.wav'    , symbol:'s', amp:1, pitch:1, pan:-0.1},
+
+    d:      {file:'audiofiles/beatbox/d.wav'    , symbol:'d', amp:1, pitch:1, pan: 0.8},
+    t:      {file:'audiofiles/beatbox/t.wav'    , symbol:'t', amp:1, pitch:1, pan: 0.4},
+    k:      {file:'audiofiles/beatbox/k.wav'    , symbol:'k', amp:1, pitch:1, pan:-0.1},
+    in_k:   {file:'audiofiles/beatbox/^k.wav'   , symbol:'K', amp:1, pitch:1, pan:-0.4},
+    eight:  {file:'audiofiles/beatbox/8.wav'    , symbol:'8', amp:1, pitch:1, pan:-0.8},
+
+    psh:    {file:'audiofiles/beatbox/psh.wav'  , symbol:'p', amp:1, pitch:1, pan: 0.1},
+    in_p:   {file:'audiofiles/beatbox/^p.wav'   , symbol:'P', amp:1, pitch:1, pan:-0.1},
+    pf:     {file:'audiofiles/beatbox/pf.wav'   , symbol:'F', amp:1, pitch:1, pan: 0.2},
+    phs:    {file:'audiofiles/beatbox/phs.wav'  , symbol:'H', amp:1, pitch:1, pan:-0.2},
+
+    b:      {file:'audiofiles/beatbox/b.wav'    , symbol:'b', amp:1, pitch:1, pan: 0.3},
+    dot:    {file:'audiofiles/beatbox/dot.wav'  , symbol:'.', amp:1, pitch:1, pan: 0.0},
+    duf:    {file:'audiofiles/beatbox/duf.wav'  , symbol:'D', amp:1, pitch:1, pan:-0.3},
+
+    o:      {file:'audiofiles/beatbox/o.wav'    , symbol:'o', amp:1, pitch:1, pan: 0.6},
+    a:      {file:'audiofiles/beatbox/a.wav'    , symbol:'a', amp:1, pitch:1, pan: 0.8},
+    u:      {file:'audiofiles/beatbox/u.wav'    , symbol:'u', amp:1, pitch:1, pan:-0.8},
+
+    m:      {file:'audiofiles/beatbox/m.wav'    , symbol:'m', amp:1, pitch:1, pan:-0.6},
+    n:      {file:'audiofiles/beatbox/n.wav'    , symbol:'n', amp:1, pitch:1, pan: 0.0},
 	},
 };
-Drums.kits.electronic = Drums.kits.djtw_acefr1;
-Drums.kits.beatbox = Drums.kits.tyte_sbn;
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
