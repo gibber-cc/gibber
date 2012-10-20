@@ -249,7 +249,7 @@ define([], function() {
 				op.ugenVariable = name;
 				
 				var statement;
-				if(typeof op === "object" && op instanceof Array) {
+				if( Array.isArray(op) ) {
 					statement = "var " + name + " = [";
 					
 					for(var i = 0; i < op.length; i++) {
@@ -385,16 +385,18 @@ define([], function() {
 		
 		mod : function(name, modulator, type) {
 			var type = type || "+";
+			console.log(this.type, this[name]);
 			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:true };
 			this[name] = m;
 			modulator.modding.push({ ugen:this, mod:m });
 			this.mods.push(m);
-			//Gibberish.dirty(this);
+			Gibberish.dirty(this);
 			return modulator;
 		},
 		
 		polyMod : function(name, modulator, type) {			
 			if(arguments[0] !== "amp") {
+				console.log("POLY MOD CHILDREN");
 				for(var i = 0; i < this.children.length; i++) {
 					this.children[i].mod(name, modulator, type);
 				}
