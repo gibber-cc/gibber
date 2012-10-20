@@ -49,8 +49,33 @@ Drums.kits = {
 		hat:{ file:"audiofiles/djtw_acefr1/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
 		openHat:{ file:"audiofiles/djtw_acefr1/openhat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
+	tyte_sbn: {
+    // sounds and inspiration found here: http://www.humanbeatbox.com/tips/p2_articleid/231
+    eight:  {file:'audiofiles/tyte_sbn/8.wav'    , symbol:'8', amp:1, pitch:1, pan:0 },
+    in_k:   {file:'audiofiles/tyte_sbn/^k.wav'   , symbol:'K', amp:1, pitch:1, pan:0 },
+    in_p:   {file:'audiofiles/tyte_sbn/^p.wav'   , symbol:'P', amp:1, pitch:1, pan:0 },
+    in_tss: {file:'audiofiles/tyte_sbn/^tss.wav' , symbol:'T', amp:1, pitch:1, pan:0 },
+    a:      {file:'audiofiles/tyte_sbn/a.wav'    , symbol:'a', amp:1, pitch:1, pan:0 },
+    b:      {file:'audiofiles/tyte_sbn/b.wav'    , symbol:'b', amp:1, pitch:1, pan:0 },
+    d:      {file:'audiofiles/tyte_sbn/d.wav'    , symbol:'d', amp:1, pitch:1, pan:0 },
+    dot:    {file:'audiofiles/tyte_sbn/dot.wav'  , symbol:'.', amp:1, pitch:1, pan:0 },
+    duf:    {file:'audiofiles/tyte_sbn/duf.wav'  , symbol:'D', amp:1, pitch:1, pan:0 },
+    f:      {file:'audiofiles/tyte_sbn/f.wav'    , symbol:'f', amp:1, pitch:1, pan:0 },
+    h:      {file:'audiofiles/tyte_sbn/h.wav'    , symbol:'h', amp:1, pitch:1, pan:0 },
+    k:      {file:'audiofiles/tyte_sbn/k.wav'    , symbol:'k', amp:1, pitch:1, pan:0 },
+    m:      {file:'audiofiles/tyte_sbn/m.wav'    , symbol:'m', amp:1, pitch:1, pan:0 },
+    n:      {file:'audiofiles/tyte_sbn/n.wav'    , symbol:'n', amp:1, pitch:1, pan:0 },
+    o:      {file:'audiofiles/tyte_sbn/o.wav'    , symbol:'o', amp:1, pitch:1, pan:0 },
+    pf:     {file:'audiofiles/tyte_sbn/pf.wav'   , symbol:'F', amp:1, pitch:1, pan:0 },
+    phs:    {file:'audiofiles/tyte_sbn/phs.wav'  , symbol:'P', amp:1, pitch:1, pan:0 },
+    psh:    {file:'audiofiles/tyte_sbn/psh.wav'  , symbol:'p', amp:1, pitch:1, pan:0 },
+    s:      {file:'audiofiles/tyte_sbn/s.wav'    , symbol:'s', amp:1, pitch:1, pan:0 },
+    t:      {file:'audiofiles/tyte_sbn/t.wav'    , symbol:'t', amp:1, pitch:1, pan:0 },
+    u:      {file:'audiofiles/tyte_sbn/u.wav'    , symbol:'u', amp:1, pitch:1, pan:0 },
+	},
 };
 Drums.kits.electronic = Drums.kits.djtw_acefr1;
+Drums.kits.beatbox = Drums.kits.tyte_sbn;
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
