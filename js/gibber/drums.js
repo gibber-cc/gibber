@@ -61,6 +61,8 @@ function _Drums (_sequence, _timeValue, _amp, _freq){
 	this.fx = [];
 	this.fx.parent = this;
 	
+	this.children = [];
+	
 /**###Drums.pitch : property
 Float. The overall pitch of the Drums. Each specific drum can also have its pitch set.
 **/	
@@ -80,6 +82,8 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 		this[key].sampler.pan = drum.pan;
 		this[key].sampler.send(this, 1);
 		this[key].fx = this[key].sampler.fx;
+		this.children.push( this[key].sampler );
+		//Gibberish.extend(this.snare.sampler, props.snare); Gibberish.extend(this.snare, props.snare);
 	}
 
 // /**###Drums.kick : property
@@ -102,17 +106,6 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 // [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).
 // **/
 // 	this.openHat = { sampler: Gibberish.Sampler(this.kit.openHat[0]), pitch: 1, amp: 1 };
-// 
-// 	this.kick.sampler.send(this,  1);
-// 	this.snare.sampler.send(this, 1);
-// 	this.hat.sampler.send(this,   1);
-// 	this.openHat.sampler.send(this, 1);	
-// 	
-// 	// these are convenience wrappers. to mod, you must use this.kick.sampler etc.
-// 	this.kick.fx = this.kick.sampler.fx;
-// 	this.snare.fx = this.snare.sampler.fx;
-// 	this.hat.fx = this.hat.sampler.fx;
-// 	this.openHat.fx = this.openHat.sampler.fx;
 	
 	this.connect(Master);
 		
@@ -121,34 +114,6 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 	
 	this.sequenceInit =false;
 	this.initialized = false;
-	
-	// this is ridiculous
-	this._mod = Gibberish.mod;
-	this.mod = function(name, modulator, type) {
-		if(name === "pitch") {
-			this.kick.sampler.mod(name, modulator, type);
-			this.snare.sampler.mod(name, modulator, type);
-			this.hat.sampler.mod(name, modulator, type);
-			this.openHat.sampler.mod(name, modulator, type);									
-		}else{
-			this._mod(name,modulator,type);
-		}
-	};
-	this._removeMod = Gibberish.removeMod;
-	this.removeMod = function() {
-		arguments = Array.prototype.slice.call(arguments, 0);
-		if(typeof arguments[0] === 'undefined' || arguments[0] === "pitch") {
-			Gibberish.removeMod.apply(this.kick.sampler, arguments);
-			Gibberish.removeMod.apply(this.snare.sampler, arguments);
-			Gibberish.removeMod.apply(this.hat.sampler, arguments);
-			Gibberish.removeMod.apply(this.openHat.sampler, arguments);
-		}
-		if(typeof arguments[0] !== 'undefined') {
-			if(arguments[0] !== 'pitch') {
-				this._removeMod.call(this, arguments);
-			}
-		}
-	};
 	
 /**###Drums.seq : property
 [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) (read-only). The underlying sequencer driving the drums. Most methods of this are wrapped,
@@ -297,6 +262,8 @@ Gibber.presets.Drums = {
 _Drums.prototype = {
 	category  	: "complex",
 	name  		: "Drums",
+	mod			: Gibberish.polyMod,
+	removeMod	: Gibberish.removePolyMod,
 		
 	replace : function(replacement) {
 		this.kill();
@@ -347,30 +314,11 @@ _Drums.prototype = {
 **description** : shuffle() randomizes the order of notes in the Drums object. The order can be reset using the reset() method.
 **/
 	note : function(nt) {
-		
 		for(var key in this.kit) {
-			//console.log(key, nt, this.kit[key].symbol);
 			if(nt === this.kit[key].symbol) {
 				this[key].sampler.note(this.pitch * this[key].pitch, this[key].amp);
 				break;
 			}
 		}
-		/*
-		switch(nt) {
-			case "x":
-				this.kick.sampler.note(this.pitch * this.kick.pitch, this.kick.amp);
-				break;
-			case "o":
-				this.snare.sampler.note(this.pitch * this.snare.pitch, this.snare.amp);
-				break;
-			case "*":
-				this.hat.sampler.note(this.pitch * this.hat.pitch, this.hat.amp);
-				break;
-			case "-":
-				this.openHat.sampler.note(this.pitch * this.openHat.pitch, this.openHat.amp);
-				break;
-			default: break;
-		}
-		*/
 	},
 };

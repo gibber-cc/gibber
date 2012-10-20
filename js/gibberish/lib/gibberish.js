@@ -417,23 +417,24 @@ define([], function() {
 				for(var i = 0; i < this.mods.length; i++) {
 					var mod = this.mods.get(i); 	// can be number, string, or object
 					delete this[mod.name];	 		// remove property getter/setters so we can directly assign
-					this.mods.remove(mod);
 					var val = mod.operands[0];
 			
 					this[mod.name] = val;
 					Gibberish.defineProperties(this, [mod.name]);
 				}
+				this.mods = [];
 			}
 
 			Gibberish.dirty(this);
 		},
 		removePolyMod : function() {
+			var args = Array.prototype.slice(arguments, 0);
 			if(arguments[0] !== "amp") {
 				for(var i = 0; i < this.children.length; i++) {
-					Gibberish.removeMod.apply(this.children[i], arguments);
+					Gibberish.removeMod.apply(this.children[i], args);
 				}
 			}else{
-				Gibberish.removeMod.apply(this, arguments);
+				Gibberish.removeMod.apply(this, args);
 			}
 			Gibberish.dirty(this);
 		},

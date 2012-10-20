@@ -322,7 +322,9 @@ define([], function() {
 					this.codeblock += ";";
 					Gibberish.ugens.push(this);	
 					this.isRecording = true;		
-					this._function.setBuffer(this.buffer);		
+					this._function.setBuffer(this.buffer);
+					
+					return this;	
 				},
 			};
 			
