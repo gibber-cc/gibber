@@ -97,7 +97,9 @@ define([], function() {
 			  callback : function(blend, damping, amp, channels, pan) {
 			    var val = buffer.shift();
 			    var rndValue = (rnd() > blend) ? -1 : 1;
-
+				
+				damping = damping > 0 ? damping : 0;
+				
 			    var value = rndValue * (val + last) * (.5 - damping / 100);
 
 			    last = value;

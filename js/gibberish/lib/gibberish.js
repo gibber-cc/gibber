@@ -131,6 +131,7 @@ define([], function() {
 								value = _value;
 							}else{
 								if(typeof _value.operands !== "undefined") {
+									//console.log("_VALUE = ", _value);
 									value = _value;
 									//console.log("MODDING SWEET", _value, value);
 								}else{
@@ -404,6 +405,7 @@ define([], function() {
 					this.children[i].mod(name, modulator, type);
 				}
 			}else{
+				console.log("MODDING ME");	
 				Gibberish.mod.apply(this, arguments);
 			}
 			Gibberish.dirty(this);
