@@ -133,9 +133,9 @@ define([], function() {
 								if(typeof _value.operands !== "undefined") {
 									//console.log("_VALUE = ", _value);
 									value = _value;
-									//console.log("MODDING SWEET", _value, value);
+									console.log("MODDING SWEET", _value, value);
 								}else{
-									//console.log("CHANGING EXISTING MOD");
+									console.log("CHANGING EXISTING MOD");
 									value["operands"][0] = _value;
 								}
 							}
@@ -351,36 +351,42 @@ define([], function() {
 			}else if((op.type === "*" || op.type === "/") && op.operands[1] === 1) {
 				return Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd);
 			}else if(op.type === "++") {
-				return"({0} + Math.abs({2}))".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
-												op.type,
-												Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+				return"({0} + Math.abs({2}))".format(	
+					Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+					op.type,
+					Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
+				);
 			}
 			if(op.operands[0].channels === 2 && op.operands[1].channels !== 2) {
 				//console.log("2, 1")
 				
 				return "([{0}[0] {1} {2}, {0}[1] {1} {2}])".format(	
-						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
-						op.type,
-						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+					Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+					op.type,
+					Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
+				);
 			}else if(op.operands[0].channels === 2 && op.operands[1].channels === 2) {
 				//console.log("2, 2")
 				
 				return "([{0}[0] {1} {2}[0], {0}[1] {1} {2}[1]])".format(	
-						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
-						op.type,
-						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+					Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+					op.type,
+					Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
+				);
 			}else if(op.operands[0].channels !== 2 && op.operands[1].channels === 2) {
 				//console.log("1, 2")
 				return "({0} {1} ({2}[0] + {2}[1]) / 2)".format(	
-						Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
-						op.type,
-						Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+					Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+					op.type,
+					Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
+				);
 			
 			}else{
-				//console.log("1,1");
-				return "({0} {1} {2})".format(	Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
-											op.type,
-											Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd));
+				return "({0} {1} {2})".format( 
+					Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
+					op.type,
+					Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd)
+				);
 			}
 			
 		},
