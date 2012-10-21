@@ -16,6 +16,22 @@ define([], function() {
 			gibberish.generators.Line = gibberish.createGenerator(["time", "loops"], "{0}({1}, {2})" ),
 			gibberish.make["Line"] = this.makeLine;
 			gibberish.Line = this.Line;
+
+      gibberish.Follow = Gen({
+        name: "Follow",
+        props: {sidechain:null, bufferSize:4410, mult:1},
+        upvalues: {abs:Math.abs, history:null, sum:0, index:0},
+        init: function() {
+         this.function.setHistory(new Float32Array(this.bufferSize));
+        },
+        callback: function(sidechain, bufferSize, mult) {
+          sum += abs(sidechain[0]);
+          sum -= history[index];
+          history[index] = abs(sidechain[0]);
+          index = (index + 1) % bufferSize;
+          return (sum / bufferSize) * mult;
+        },
+      });
 		},
 		
 		Env : function(attack, decay) {
