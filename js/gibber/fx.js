@@ -406,6 +406,9 @@ function Schizo(props) {
 		$.extend(that, arguments[0]);
 	}else if(typeof arguments[0] === "string") {
 		$.extend(that, Gibber.SchizoPresets[arguments[0]]);
+		if(typeof arguments[1] === "object") {
+			$.extend(that, arguments[1]);
+		}
 	}
 	that.rate = G.time(that.rate);
 	that.length = G.time(that.rate);

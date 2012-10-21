@@ -294,10 +294,10 @@ define([], function() {
 				upvalues		: [],	// pointers to globals that will be included in callback closure
 				codeblock 		: [],	// will go directly into callback
 			};
-			if(ugen.callbackCount === Gibberish.callbackCount) {
+			//if(ugen.callbackCount === Gibberish.callbackCount) {
 				//console.log("shouldn't be building...", Gibberish.callbackCount, ugen.callbackCount);
 				//return;
-			}
+			//}
 			//console.log("GENERATING " + ugen.type);
 			var outputCode = this.codegen(ugen, codeDictionary);
 			//console.log("OUTPUT CODE", ugen.type, outputCode);
@@ -385,7 +385,7 @@ define([], function() {
 		
 		mod : function(name, modulator, type) {
 			var type = type || "+";
-			console.log(this.type, this[name]);
+			//console.log(this.type, this[name]);
 			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:true };
 			this[name] = m;
 			modulator.modding.push({ ugen:this, mod:m });

@@ -497,7 +497,7 @@ define([], function() {
 			gibberish.BufferShuffler = Gen({
 				name:"BufferShuffler",
 				acceptsInput: true,
-				props: { chance:.25, rate:11025, length:22050, reverseChange:.5, pitchChance:.5, pitchMin:.25, pitchMax:2, channels:1 },
+				props: { chance:.25, rate:11025, length:22050, reverseChange:.5, pitchChance:.5, pitchMin:.25, pitchMax:2, wet:1, dry:0, channels:1 },
 				upvalues: {
 					buffers : null,
 					readIndex : 0,
@@ -535,7 +535,7 @@ define([], function() {
 						}
 					}
 				},
-				callback : function(sample, chance, rate, length, reverseChance, pitchChance, pitchMin, pitchMax, channels) {
+				callback : function(sample, chance, rate, length, reverseChance, pitchChance, pitchMin, pitchMax, wet, dry, channels) {
 					if(!isShuffling) {
 						for(var channel = 0; channel < channels; channel++) {
 							buffers[channel][writeIndex] = sample[channel];
@@ -595,7 +595,7 @@ define([], function() {
 								pitchShifting = 0;
 							}
 						}else{
-							sample[channel] = isShuffling && isBufferFull ? outSample : sample[channel];
+							sample[channel] = isShuffling && isBufferFull ? (outSample * wet) + sample[channel] * dry : sample[channel];
 						}
 					}
 					return sample;
