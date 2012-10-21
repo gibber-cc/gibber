@@ -240,7 +240,7 @@ define([], function() {
 			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
 			
 			if(typeof op === "object" && op !== null) {
-
+				if (op.operands) console.log("CODEGEN MOD");
 				var memo = this.memo[op.symbol];
 				if(memo){
 					//console.log("MEMO", memo, op);
@@ -339,6 +339,16 @@ define([], function() {
 		
 		binop_generator : function(op, codeDictionary, shouldAdd) {
 			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
+			//op.operands[1] = this.generators[op.type](op.operands[1], codeDictionary, shouldAdd);
+			/*if(op.operands[0].operands) {
+				console.log("CODEGEN MOD 2 0");
+				op.operands[0] = this.generators[op.operands[0].type](op.operands[0], codeDictionary, shouldAdd);
+			}
+			
+			if(op.operands[1].operands) {
+				console.log("CODEGEN MOD 2 1");
+				op.operands[1] = this.generators[op.operands[1].type](op.operands[1], codeDictionary, shouldAdd);
+			}*/
 			if(op.type === "=") {
 				//if(op.operands[0].channels === 1) { 
 					return Gibberish.codegen(op.operands[1], codeDictionary, shouldAdd);
