@@ -124,7 +124,7 @@ define([], function() {
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
-							if(timeCheck) _value = G.time(_value);
+							if(timeCheck) _value = G.time(_value); // TODO: WTF GET RID OF THIS GIBBER CRAP LONG LIVE GIBBERISH
 							//console.log("SETITING...", propName, _value);
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string" || value === null){
 								//console.log("SETTING INDIVIDUAL", value);
@@ -132,8 +132,9 @@ define([], function() {
 							}else{
 								if(typeof _value.operands !== "undefined") {
 									value = _value;
-									//console.log("MOD", value);
+									//console.log("MODDING SWEET", _value, value);
 								}else{
+									//console.log("CHANGING EXISTING MOD");
 									value["operands"][0] = _value;
 								}
 							}
@@ -385,12 +386,14 @@ define([], function() {
 		
 		mod : function(name, modulator, type) {
 			var type = type || "+";
-			//console.log(this.type, this[name]);
+			//console.log("1", this.type, this[name]);
 			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:true };
+			console.log("MOD", m);
 			this[name] = m;
 			modulator.modding.push({ ugen:this, mod:m });
 			this.mods.push(m);
-			Gibberish.dirty(this);
+			//Gibberish.dirty(this);
+			//console.log("2",	this[name]);
 			return modulator;
 		},
 		

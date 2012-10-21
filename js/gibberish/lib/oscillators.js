@@ -80,7 +80,7 @@ define([], function() {
 
 			gibberish.KarplusStrong = Gen({
 			  name:"KarplusStrong",
-			  props: { blend:1, damping:0, amp:1, dampingValue:.5, channels:2, pan:0  },
+			  props: { blend:1, damping:0, amp:1, channels:2, pan:0  },
 			  upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random, panner:Gibberish.pan() },
   
 			  note : function(frequency) {
@@ -94,11 +94,11 @@ define([], function() {
 			    this.function.setBuffer(this.buffer);
 			  },
   
-			  callback : function(blend, __ignore, amp, damping, channels, pan) {
+			  callback : function(blend, damping, amp, channels, pan) {
 			    var val = buffer.shift();
 			    var rndValue = (rnd() > blend) ? -1 : 1;
 
-			    var value = rndValue * (val + last) * damping;
+			    var value = rndValue * (val + last) * (.5 - damping / 100);
 
 			    last = value;
 
@@ -108,9 +108,9 @@ define([], function() {
 			  },
   
 			  setters: {
-			  	damping: function(val) {
+			  	/*damping: function(val) {
 			    	this.dampingValue = .5 - val / 100;
-			    }
+			    }*/
 			  },
 			});
 			

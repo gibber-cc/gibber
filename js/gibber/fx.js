@@ -347,25 +347,31 @@ d.fx.add(Schizo('paranoid'));`
 **/
 /**###Schizo.rate : property
 Integer, in samples. Default 11025. How often Schizo will randomly decide whether or not to shuffle.
-**/	
+**/
 /**###Schizo.chance : property
 Float. Range 0..1. Default .25. The likelihood that incoming audio will be shuffled.
-**/	
+**/
+/**###Schizo.wet : property
+Float. Range 0..1. Default 1. When shuffling, the amplitude of the wet signal
+**/
+/**###Schizo.dry : property
+Float. Range 0..1. Default 0. When shuffling, the amplitude of the dry signal
+**/
 /**###Schizo.length : property
 Integer, in samples. Default 22050. The length of time to play stuttered audio when stuttering occurs.
-**/	
+**/
 /**###Schizo.reverseChance : property
 Float. Range 0..1. Default .5. The likelihood that stuttered audio will be reversed
-**/	
+**/
 /**###Schizo.pitchChance : property
 Float. Range 0..1. Default .5. The likelihood that stuttered audio will be repitched.
-**/	
+**/
 /**###Schizo.pitchMin : property
 Float. Range 0..1. Default .25. The lowest playback speed used to repitch the audio
-**/	
+**/
 /**###Schizo.pitchMax : property
 Float. Range 0..1. Default 2. The highest playback speed used to repitch the audio.
-**/	
+**/
 function Schizo(props) {
 	if(typeof Gibber.SchizoPresets === "undefined") {
 		Gibber.SchizoPresets = {
