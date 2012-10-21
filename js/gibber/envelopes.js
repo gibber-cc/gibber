@@ -62,7 +62,11 @@ function Line(start, end, time, loops){
 }
 
 function Follow(){
-	var that = Gibberish.Follow();
+	if(arguments.length === 0) {
+		G.log("Follow requires a dictionary of properties");
+		return;
+	}
+	var that = Gibberish.Follow(arguments[0]);
 	return that;
 }
 
