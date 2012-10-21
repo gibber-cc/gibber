@@ -69,6 +69,11 @@ function Follow(){
 	return Gibberish.Follow(arguments[0]);
 }
 
+function Pump(foo){
+	var that = Gibberish.Pump(foo);
+	return that;
+}
+
 /**#Env- Modulation
 A two-stage attack / decay envelope
 ## Example Usage##
