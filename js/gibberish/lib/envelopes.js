@@ -32,6 +32,23 @@ define([], function() {
           return (sum / bufferSize) * mult;
         },
       });
+      gibberish.Pump = Gen({
+        name: "Pump",
+        props: {sidechain:null, bufferSize:4410, mult:1},
+        upvalues: {abs:Math.abs, history:null, sum:0, index:0},
+        init: function() {
+         this.function.setHistory(new Float32Array(this.bufferSize));
+        },
+        callback: function(sidechain, bufferSize, mult) {
+          sum += abs(sidechain[0]);
+          sum -= history[index];
+          history[index] = abs(sidechain[0]);
+          index = (index + 1) % bufferSize;
+          val = 1 - (sum / bufferSize) * mult;
+          if (val < 0) val = 0;
+          return val;
+        },
+      });
 		},
 		
 		Env : function(attack, decay) {
