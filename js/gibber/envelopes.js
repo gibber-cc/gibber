@@ -66,8 +66,7 @@ function Follow(){
 		G.log("Follow requires a dictionary of properties");
 		return;
 	}
-	var that = Gibberish.Follow(arguments[0]);
-	return that;
+	return Gibberish.Follow(arguments[0]);
 }
 
 /**#Env- Modulation
