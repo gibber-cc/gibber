@@ -61,8 +61,8 @@ function Line(start, end, time, loops){
 	return that;
 }
 
-function Follow(){
-	var that = Gibberish.Follow();
+function Follow(foo){
+	var that = Gibberish.Follow(foo);
 	return that;
 }
 
