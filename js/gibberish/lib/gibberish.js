@@ -125,18 +125,26 @@ define([], function() {
 						get: function() { return value; },
 						set: function(_value) {
 							if(timeCheck) _value = G.time(_value); // TODO: WTF GET RID OF THIS GIBBER CRAP LONG LIVE GIBBERISH
-							//console.log("SETITING...", propName, _value);
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string" || value === null){
-								//console.log("SETTING INDIVIDUAL", value);
 								value = _value;
 							}else{
 								if(typeof _value.operands !== "undefined") {
-									//console.log("_VALUE = ", _value);
 									value = _value;
-									console.log("MODDING SWEET", _value, value);
 								}else{
-									console.log("CHANGING EXISTING MOD");
-									value["operands"][0] = _value;
+									if(value.operands) {
+										var valToFind = value.operands[0];
+										var currentMod;
+										var count = 0;
+										
+										// loop through all mods to find base value
+										while(typeof valToFind === 'object' && valToFind.operands) {
+											currentMod = valToFind;											
+											valToFind = valToFind.operands[0];
+
+											if(typeof valToFind === 'number') break; 
+										}
+										currentMod.operands[0] = _value;
+									}
 								}
 							}
 							
@@ -240,7 +248,6 @@ define([], function() {
 			shouldAdd = typeof shouldAdd === "undefined" ? true : shouldAdd;
 			
 			if(typeof op === "object" && op !== null) {
-				if (op.operands) console.log("CODEGEN MOD");
 				var memo = this.memo[op.symbol];
 				if(memo){
 					//console.log("MEMO", memo, op);
@@ -403,27 +410,27 @@ define([], function() {
 		
 		mod : function(name, modulator, type) {
 			var type = type || "+";
-			//console.log("1", this.type, this[name]);
+			
 			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:true };
-			console.log("MOD", m);
+			
 			this[name] = m;
+			
 			modulator.modding.push({ ugen:this, mod:m });
+			
 			this.mods.push(m);
-			//Gibberish.dirty(this);
-			//console.log("2",	this[name]);
+			
 			return modulator;
 		},
 		
 		polyMod : function(name, modulator, type) {			
 			if(arguments[0] !== "amp") {
-				console.log("POLY MOD CHILDREN");
 				for(var i = 0; i < this.children.length; i++) {
 					this.children[i].mod(name, modulator, type);
 				}
 			}else{
-				console.log("MODDING ME");	
 				Gibberish.mod.apply(this, arguments);
 			}
+			
 			Gibberish.dirty(this);
 		},
 		
