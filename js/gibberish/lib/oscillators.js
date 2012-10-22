@@ -305,7 +305,7 @@ define([], function() {
 					this.pitch = pitch;
 					
 					if(this._function !== null) {
-						this.isPlaying = true;
+						//this.isPlaying = true;
 						if(pitch > 0) {
 							this._function.setPhase(0);
 						}else{
@@ -399,7 +399,6 @@ define([], function() {
 				}
 
 				if(buffer !== null && phase < buffer.length && phase > 0 && isPlaying) {
-
 					out = interpolate(buffer, phase);
 					//if(debug++ % 22050 === 0) console.log(phase, buffer.length, out);
 				}

@@ -31,54 +31,48 @@ function Drums(_sequence, _timeValue, _amp, _freq) {
 }
 
 Drums.kits = {
-	default: {
-		kick:{ file:"audiofiles/kick.wav", 		symbol:'x', amp:1, pitch:1, pan:0 	},
-		snare:{ file:"audiofiles/snare.wav", 	symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:{ file:"audiofiles/hat.wav", 		symbol:'*', amp:1, pitch:1, pan:-.1 },
-		openHat:{ file:"audiofiles/openHat.wav",symbol:'-', amp:1, pitch:1, pan:-.2 },
-	},
 	original: {
-		kick:{ file:"audiofiles/kick.wav", 		symbol:'x', amp:1, pitch:1, pan:0 	},
-		snare:{ file:"audiofiles/snare.wav", 	symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:{ file:"audiofiles/hat.wav", 		symbol:'*', amp:1, pitch:1, pan:-.1 },
+		kick:   { file:"audiofiles/kick.wav",   symbol:'x', amp:1, pitch:1, pan:0 	},
+		snare:  { file:"audiofiles/snare.wav", 	symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:    { file:"audiofiles/hat.wav",    symbol:'*', amp:1, pitch:1, pan:-.1 },
 		openHat:{ file:"audiofiles/openHat.wav",symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
 	electronic: {
-		kick:{ file:"audiofiles/electronic/kick.wav", symbol:'x', amp:1, pitch:1, pan:0 },
-		snare:{ file:"audiofiles/electronic/snare.wav", symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:{ file:"audiofiles/electronic/hat.wav", symbol:'*', amp:1, pitch:1, pan:-.1 },
+		kick:   { file:"audiofiles/electronic/kick.wav",    symbol:'x', amp:1, pitch:1, pan:0 },
+		snare:  { file:"audiofiles/electronic/snare.wav",   symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:    { file:"audiofiles/electronic/hat.wav",     symbol:'*', amp:1, pitch:1, pan:-.1 },
 		openHat:{ file:"audiofiles/electronic/openhat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
 	beatbox: {
+	    in_tss: { file:'audiofiles/beatbox/^tss.wav' , symbol:'T', amp:1, pitch:1, pan: 0.1 },
+	    f:      { file:'audiofiles/beatbox/f.wav'    , symbol:'f', amp:1, pitch:1, pan:-0.1 },
+	    h:      { file:'audiofiles/beatbox/h.wav'    , symbol:'h', amp:1, pitch:1, pan: 0.1 },
+	    s:      { file:'audiofiles/beatbox/s.wav'    , symbol:'s', amp:1, pitch:1, pan:-0.1 },
 
-    in_tss: {file:'audiofiles/beatbox/^tss.wav' , symbol:'T', amp:1, pitch:1, pan: 0.1},
-    f:      {file:'audiofiles/beatbox/f.wav'    , symbol:'f', amp:1, pitch:1, pan:-0.1},
-    h:      {file:'audiofiles/beatbox/h.wav'    , symbol:'h', amp:1, pitch:1, pan: 0.1},
-    s:      {file:'audiofiles/beatbox/s.wav'    , symbol:'s', amp:1, pitch:1, pan:-0.1},
+	    d:      { file:'audiofiles/beatbox/d.wav'    , symbol:'d', amp:1, pitch:1, pan: 0.8 },
+	    t:      { file:'audiofiles/beatbox/t.wav'    , symbol:'t', amp:1, pitch:1, pan: 0.4 },
+	    k:      { file:'audiofiles/beatbox/k.wav'    , symbol:'k', amp:1, pitch:1, pan:-0.1 },
+	    in_k:   { file:'audiofiles/beatbox/^k.wav'   , symbol:'K', amp:1, pitch:1, pan:-0.4 },
+	    eight:  { file:'audiofiles/beatbox/8.wav'    , symbol:'8', amp:1, pitch:1, pan:-0.8 },
 
-    d:      {file:'audiofiles/beatbox/d.wav'    , symbol:'d', amp:1, pitch:1, pan: 0.8},
-    t:      {file:'audiofiles/beatbox/t.wav'    , symbol:'t', amp:1, pitch:1, pan: 0.4},
-    k:      {file:'audiofiles/beatbox/k.wav'    , symbol:'k', amp:1, pitch:1, pan:-0.1},
-    in_k:   {file:'audiofiles/beatbox/^k.wav'   , symbol:'K', amp:1, pitch:1, pan:-0.4},
-    eight:  {file:'audiofiles/beatbox/8.wav'    , symbol:'8', amp:1, pitch:1, pan:-0.8},
+	    psh:    { file:'audiofiles/beatbox/psh.wav'  , symbol:'p', amp:1, pitch:1, pan: 0.1 },
+	    in_p:   { file:'audiofiles/beatbox/^p.wav'   , symbol:'P', amp:1, pitch:1, pan:-0.1 },
+	    pf:     { file:'audiofiles/beatbox/pf.wav'   , symbol:'F', amp:1, pitch:1, pan: 0.2 },
+	    phs:    { file:'audiofiles/beatbox/phs.wav'  , symbol:'H', amp:1, pitch:1, pan:-0.2 },
 
-    psh:    {file:'audiofiles/beatbox/psh.wav'  , symbol:'p', amp:1, pitch:1, pan: 0.1},
-    in_p:   {file:'audiofiles/beatbox/^p.wav'   , symbol:'P', amp:1, pitch:1, pan:-0.1},
-    pf:     {file:'audiofiles/beatbox/pf.wav'   , symbol:'F', amp:1, pitch:1, pan: 0.2},
-    phs:    {file:'audiofiles/beatbox/phs.wav'  , symbol:'H', amp:1, pitch:1, pan:-0.2},
+	    b:      { file:'audiofiles/beatbox/b.wav'    , symbol:'b', amp:1, pitch:1, pan: 0.3 },
+	    dot:    { file:'audiofiles/beatbox/dot.wav'  , symbol:'.', amp:1, pitch:1, pan: 0.0 },
+	    duf:    { file:'audiofiles/beatbox/duf.wav'  , symbol:'D', amp:1, pitch:1, pan:-0.3 },
 
-    b:      {file:'audiofiles/beatbox/b.wav'    , symbol:'b', amp:1, pitch:1, pan: 0.3},
-    dot:    {file:'audiofiles/beatbox/dot.wav'  , symbol:'.', amp:1, pitch:1, pan: 0.0},
-    duf:    {file:'audiofiles/beatbox/duf.wav'  , symbol:'D', amp:1, pitch:1, pan:-0.3},
+	    o:      { file:'audiofiles/beatbox/o.wav'    , symbol:'o', amp:1, pitch:1, pan: 0.6 },
+	    a:      { file:'audiofiles/beatbox/a.wav'    , symbol:'a', amp:1, pitch:1, pan: 0.8 },
+	    u:      { file:'audiofiles/beatbox/u.wav'    , symbol:'u', amp:1, pitch:1, pan:-0.8 },
 
-    o:      {file:'audiofiles/beatbox/o.wav'    , symbol:'o', amp:1, pitch:1, pan: 0.6},
-    a:      {file:'audiofiles/beatbox/a.wav'    , symbol:'a', amp:1, pitch:1, pan: 0.8},
-    u:      {file:'audiofiles/beatbox/u.wav'    , symbol:'u', amp:1, pitch:1, pan:-0.8},
-
-    m:      {file:'audiofiles/beatbox/m.wav'    , symbol:'m', amp:1, pitch:1, pan:-0.6},
-    n:      {file:'audiofiles/beatbox/n.wav'    , symbol:'n', amp:1, pitch:1, pan: 0.0},
+	    m:      { file:'audiofiles/beatbox/m.wav'    , symbol:'m', amp:1, pitch:1, pan:-0.6 },
+	    n:      { file:'audiofiles/beatbox/n.wav'    , symbol:'n', amp:1, pitch:1, pan: 0.0 },
 	},
 };
+Drums.kits.default = Drums.kits.original;
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
@@ -112,6 +106,13 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 		this[key].fx = this[key].sampler.fx;
 		this.children.push( this[key].sampler );
 		//Gibberish.extend(this.snare.sampler, props.snare); Gibberish.extend(this.snare, props.snare);
+	}
+	
+	this.mod = function(name, mod, type) {
+		for(var key in this.kit) {
+			var drum = this[key].sampler;
+			drum.mod(name, mod, type);
+		}
 	}
 
 // /**###Drums.kick : property
@@ -270,8 +271,8 @@ Float. The overall amplitude of the Drums. Each specific drum can also have its 
 	}
 }
 
-Gibber.presets.Drums = {
-	kickSnare: {
+Gibber.presets.Drums = {}
+/*	kickSnare: {
 		note : 'xoxo',
 		snare: { pitch:1, fx: [ Reverb() ], amp:2.5 },
 		kick : { pitch:1, fx: [ Delay(1/16, .5)  ] },
@@ -285,7 +286,7 @@ Gibber.presets.Drums = {
 		openHat:   { pitch: -2, },
 		speed:1/8,
 	}
-};
+};*/
 
 _Drums.prototype = {
 	category  	: "complex",
@@ -342,8 +343,10 @@ _Drums.prototype = {
 **description** : shuffle() randomizes the order of notes in the Drums object. The order can be reset using the reset() method.
 **/
 	note : function(nt) {
+		//console.log("DRUMS NOTE");
 		for(var key in this.kit) {
 			if(nt === this.kit[key].symbol) {
+				//console.log("PITCHES", this.pitch, this[key].pitch);
 				this[key].sampler.note(this.pitch * this[key].pitch, this[key].amp);
 				break;
 			}

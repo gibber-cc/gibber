@@ -23,7 +23,7 @@ define([], function() {
 			var start = "";//function(globals) {\n";
 			var upvalues = "";
 			var codeblock = "function cb(input) {\nvar output = [0,0];\n";
-			
+			//console.log("GEN CALLBACK");
 			function checkBusses(_ugen, gibberish) {
 				//console.log("RUNNING INSIDE CODE FOR", _ugen.symbol );
 				for(var j = 0; j < _ugen.senderObjects.length; j++) {
@@ -126,6 +126,7 @@ define([], function() {
 						set: function(_value) {
 							if(timeCheck) _value = G.time(_value); // TODO: WTF GET RID OF THIS GIBBER CRAP LONG LIVE GIBBERISH
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string" || value === null){
+								if(value === _value) return;
 								value = _value;
 							}else{
 								if(typeof _value.operands !== "undefined") {
@@ -133,17 +134,23 @@ define([], function() {
 								}else{
 									if(value.operands) {
 										var valToFind = value.operands[0];
-										var currentMod;
+										var currentMod = value;
 										var count = 0;
-										
+
 										// loop through all mods to find base value
 										while(typeof valToFind === 'object' && valToFind.operands) {
+											//console.log("START ", count++);
 											currentMod = valToFind;											
 											valToFind = valToFind.operands[0];
-
+											
 											if(typeof valToFind === 'number') break; 
 										}
+										var v = _value;
+										
+										if(_value === valToFind) return;
+										
 										currentMod.operands[0] = _value;
+										//console.log("REPLACING ", _value, valToFind);
 									}
 								}
 							}
@@ -250,7 +257,8 @@ define([], function() {
 			if(typeof op === "object" && op !== null) {
 				var memo = this.memo[op.symbol];
 				if(memo){
-					//console.log("MEMO", memo, op);
+					//if(op.name === "LFO")
+						//console.log("RETURNING 	MEMO", memo);
 					return memo;
 				}
 				
@@ -288,8 +296,14 @@ define([], function() {
 					}
 				}
 				
-				if(op.symbol && !op.NO_MEMO) {
-					this.memo[op.symbol] = op.ugenVariable;
+				if(op.symbol) {
+					if(op.name === "LFO") {
+						//console.log("MEMOIZING", op.symbol);
+					}
+					
+					if(typeof this.memo[op.symbol] === 'undefined') {
+						this.memo[op.symbol] = op.ugenVariable;
+					}
 				}
 				
 				return name;
@@ -399,6 +413,7 @@ define([], function() {
 				);
 			
 			}else{
+				//console.log('1, 1');
 				return "({0} {1} {2})".format( 
 					Gibberish.codegen(op.operands[0], codeDictionary, shouldAdd), 
 					op.type,
@@ -411,19 +426,19 @@ define([], function() {
 		mod : function(name, modulator, type) {
 			var type = type || "+";
 			
-			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:true };
+			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:false };
 			
 			this[name] = m;
 			
 			modulator.modding.push({ ugen:this, mod:m });
 			
 			this.mods.push(m);
-			
+				
 			return modulator;
 		},
 		
 		polyMod : function(name, modulator, type) {			
-			if(arguments[0] !== "amp") {
+			if(arguments[0] !== "amp" && arguments[0] !== "pan" ) {
 				for(var i = 0; i < this.children.length; i++) {
 					this.children[i].mod(name, modulator, type);
 				}
