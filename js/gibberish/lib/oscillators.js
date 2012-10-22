@@ -305,7 +305,7 @@ define([], function() {
 					this.pitch = pitch;
 					
 					if(this._function !== null) {
-						//this.isPlaying = true;
+						this.isPlaying = true;	// needed to allow playback after recording
 						if(pitch > 0) {
 							this._function.setPhase(0);
 						}else{
