@@ -38,10 +38,10 @@ Drums.kits = {
 		openHat:{ file:"audiofiles/openHat.wav",symbol:'-', amp:1, pitch:1, pan:-.2 },
 	},
 	electronic: {
-		kick:   { file:"audiofiles/electronic/kick.wav",    symbol:'x', amp:1, pitch:1, pan:0 },
-		snare:  { file:"audiofiles/electronic/snare.wav",   symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:    { file:"audiofiles/electronic/hat.wav",     symbol:'*', amp:1, pitch:1, pan:-.1 },
-		openHat:{ file:"audiofiles/electronic/openhat.wav", symbol:'-', amp:1, pitch:1, pan:-.2 },
+		kick:   { file:"audiofiles/electronic/kick.wav",    symbol:'x', amp:1.5, pitch:1, pan:0 },
+		snare:  { file:"audiofiles/electronic/snare.wav",   symbol:'o', amp:1.5, pitch:1, pan:.15 },
+		hat:    { file:"audiofiles/electronic/hat.wav",     symbol:'*', amp:1.5, pitch:1, pan:-.1 },
+		openHat:{ file:"audiofiles/electronic/openhat.wav", symbol:'-', amp:1.5, pitch:1, pan:-.2 },
 	},
 	beatbox: {
 	    in_tss: { file:'audiofiles/beatbox/^tss.wav' , symbol:'T', amp:1, pitch:1, pan: 0.1 },
@@ -99,7 +99,7 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 	
 	for(var key in this.kit) {
 		var drum = this.kit[key];
-		this[key] = { sampler: Gibberish.Sampler(drum.file), pitch:drum.pitch, amp:drum.amp };
+		this[key] = { sampler: Gibberish.Sampler({file:drum.file, pitch:1, amp:drum.amp}), pitch:drum.pitch, amp:drum.amp };
 		this[key].sampler.channels = 2;
 		this[key].sampler.pan = drum.pan;
 		this[key].sampler.send(this, 1);

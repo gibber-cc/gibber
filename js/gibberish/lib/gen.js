@@ -89,19 +89,19 @@ window.Gen = function(obj) {
 		
 	var category = obj.acceptsInput ? "FX" : "Gen";
 		
-	var genString = obj.acceptsInput ? "{0}( {1}, " : "{0}(";
+	var genString = obj.acceptsInput ? "{0}( {1} " : "{0}(";
 	var genArray = obj.acceptsInput ? ["source"] : [];
 	var count = obj.acceptsInput;
 		
 	var counter = 0;
+	
 	for(var key in obj.props) {
-		genString += "{" + ++count + "},";
+		if(count != 0) genString += ",";
+		genString += "{" + ++count + "}";
 		genArray.push(key);
 	}
-	if(genString.charAt(genString.length - 1) === ",") {
-		genString = genString.slice(0, genString.length - 1);
-	}
 	genString += ")";
+	
 	Gibberish.generators[obj.name] = Gibberish.createGenerator(genArray, genString);
 	
 	var args = obj.args;

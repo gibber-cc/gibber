@@ -284,25 +284,31 @@ define([
 		},
 	
 		load : function(fileName) {
-			var scripts = localStorage.getObject("scripts");
+			console.log("LOADING ", fileName);
+			var scripts = localStorage.getObject("scripts"),
+			    code	= null;
+			
 			if(scripts != null) {
 				if(typeof scripts[fileName] !== "undefined") {
-					return scripts[fileName];
+					code = scripts[fileName];
 				}
 			}
 			if(typeof defaults[fileName] !== "undefined"){
-				return defaults[fileName];
+				code = defaults[fileName];
+			}
+			if(code != null) {
+				//console.log(code);
+				window.editor.setValue(code);
 			}else{
-				window.alert("The file " + fileName +" is not found");
-				return null;
+				G.log("The file " + fileName +" is not found");	
 			}
 		},
 	
 		loadAndSet : function(fileName) {
-			var code = this.load(fileName);
+			/*var code = this.load(fileName);
 			if(code != null) {
 				window.editor.setValue(code);
-			}	
+			}*/	
 		},
 	
 		addScriptsToList : function(scripts) {
@@ -313,8 +319,7 @@ define([
 					var cb = function(_name) {
 						var n = _name;
 						return function() {
-							console.log(n);
-							Gibber.Environment.loadAndSet(n);
+							Gibber.Environment.load(n);
 						}
 					}
 					var a = $("<a>");
@@ -413,7 +418,7 @@ define([
 			CodeMirror.autoLoadMode(window.editor, "links");
 		    window.editor.setOption("mode", "links");
 		
-			this.loadAndSet("default");
+			this.load("default");
 			this.editorResize();
 
 			$.extend($.modal.defaults, {

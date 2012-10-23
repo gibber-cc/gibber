@@ -273,45 +273,47 @@ define([], function() {
 			var that = {
 				type: 			"Sampler",
 				category:		"Gen",
-				audioFilePath: 	null,
+				file: 			null,
 				buffer : 		null,
 				bufferLength:   null,
 				pitch:			1,
 				amp:			1,
-				input:	 		0, //input || null,
+				input:	 		0,
 				_input :    	0,
 				length : 		ms(1000),
 				shouldStart: 	false,
-				isPlaying : 	false,
+				isPlaying : 	true,
 				isRecording: 	false,
 				_function:		null,
+				isLoaded: 		false,
 				pan:			0,
 				onload : 		function(decoded) {
 					that.buffer = decoded.channels[0]; 
 					that.bufferLength = decoded.length;
 					
-					console.log("LOADED ", that.audioFilePath, that.bufferLength);
-					Gibberish.audioFiles[that.audioFilePath] = that.buffer;
+					console.log("LOADED ", that.file, that.bufferLength);
+					Gibberish.audioFiles[that.file] = that.buffer;
 					
-					that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
+					that.isLoaded = true;
 					
-					window[that.symbol] = that._function;
+					that._function.setBuffer(that.buffer);
 					
-					Gibberish.dirty(that);
+					that._function.setPhase(that.bufferLength);
 				},
 				note: function(pitch, amp) {
-					if(typeof amp !== "undefined") { this.amp = amp; }
+					if(typeof amp === 'number') this.amp = amp;
+					//if(this.isLoaded) {
+						this.pitch = pitch;
 					
-					this.pitch = pitch;
-					
-					if(this._function !== null) {
-						this.isPlaying = true;	// needed to allow playback after recording
-						if(pitch > 0) {
-							this._function.setPhase(0);
-						}else{
-							this._function.setPhase(this.bufferLength);
+						if(this._function !== null) {
+							this.isPlaying = true;	// needed to allow playback after recording
+							if(pitch > 0) {
+								this._function.setPhase(0);
+							}else{
+								this._function.setPhase(this.bufferLength);
+							}
 						}
-					}
+						//}
 				},
 				record : function(input, recordLength) {					
 					this.bufferLength = typeof recordLength === "undefined" ? this.bufferLength : recordLength;
@@ -332,24 +334,19 @@ define([], function() {
 			
 			if(typeof arguments[0] !== "undefined") {
 				if(typeof arguments[0] === "string") {
-					that.audioFilePath = arguments[0];
-					that.isPlaying = true;
-				}else{ // wait to record samples
-					that.input = arguments[0];
-					that._input = arguments[0];
+					that.file = arguments[0];
+					//that.isPlaying = true;
+				}else if(typeof arguments[0] === "object") {
+					if(arguments[0].file) {
+						that.file = arguments[0].file;
+						//that.isPlaying = true;
+					}
 				}
 			}
-			
-			Gibberish.extend(that, new Gibberish.ugen(that));
-			
-			if(typeof Gibberish.audioFiles[that.audioFilePath] !== "undefined") {
-				that.buffer =  Gibberish.audioFiles[that.audioFilePath];
-				that.bufferLength = that.buffer.length;
-			}else if(that.audioFilePath !== null){
-			    var request = new AudioFileRequest(that.audioFilePath);
-			    request.onSuccess = that.onload;
-			    request.send();
+			if(typeof arguments[0] === 'object') {
+				Gibberish.extend(that, arguments[0]);
 			}
+			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Sampler\"]();");	
@@ -358,7 +355,20 @@ define([], function() {
 			
 			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length", "input", "pan" ] );
 			
-			var _amp = that.amp;
+			if(typeof Gibberish.audioFiles[that.file] !== "undefined") {
+				that.buffer =  Gibberish.audioFiles[that.file];
+				that.bufferLength = that.buffer.length;
+				that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
+				window[that.symbol] = that._function;
+				
+				console.log("ALREADY LOADED ", that.file);
+				//Gibberish.dirty(that);
+			}else if(that.file !== null){
+				console.log("NEED TO LOAD", that.file);
+			    var request = new AudioFileRequest(that.file);
+			    request.onSuccess = that.onload;
+			    request.send();
+			}
 			
 			// TODO: why can't I reassign input?
 			/*(function() {
@@ -381,7 +391,8 @@ define([], function() {
 			var interpolate = Gibberish.interpolate;
 			var write = 0;
 			var panner = Gibberish.pan();
-			var debug = 0;
+			var debug = 0;		
+
 			var output = function(_pitch, amp, isRecording, isPlaying, input, length, pan) {
 				var out = 0;
 				phase += _pitch;

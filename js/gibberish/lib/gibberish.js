@@ -20,6 +20,7 @@ define([], function() {
 			this.masterCodeblock = [];
 			this.memo = {};
 			
+			console.log("GEN CALLBACK", this.callbackCount);
 			var start = "";//function(globals) {\n";
 			var upvalues = "";
 			var codeblock = "function cb(input) {\nvar output = [0,0];\n";
