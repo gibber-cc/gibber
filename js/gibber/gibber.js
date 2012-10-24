@@ -121,8 +121,12 @@ define(['gibber/audio_callback'], function() {
 											 Gibber.fxReplace(variable, newObj);
 										 break;
 										 case "control":
-											 Gibber.controlReplace(variable, newObj);
-											 break;
+										 	Gibber.controlReplace(variable, newObj);
+											break;
+										 case "graphics" : 
+										 	console.log("REPLACING GRAPHICS");
+											Graphics.scene.remove(variable);
+											break;
 										 case "complex":
 											//console.log("Replacing " + variable.name);
 											variable.replace(newObj); // rely on object prototype to handle removing members

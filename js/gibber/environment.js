@@ -717,12 +717,15 @@ define([
 			});
 			
 			var scripts = localStorage.getObject("scripts");
+			
 			if(!scripts) scripts = {};
+			
 			if(typeof scripts.loadFile !== "undefined") {
 				eval(scripts.loadFile);
 			}
 			
 			this.graphics = _graphics;
+			window.Graphics = _graphics;
 			// don't create graphics until waveform is called
 			window.Waveform = function() {
 				Gibber.Environment.graphics.init();

@@ -74,6 +74,8 @@ define(function() {
 			pointLight.position.y = 50;
 			pointLight.position.z = 130;
 			
+			this.scene.add(pointLight);
+			
 			/*var radius = 50,
 			    segments = 16,
 			    rings = 16;
@@ -120,6 +122,7 @@ define(function() {
 				var r = function() {
 					//console.log("CALLED", that);
 					for(var i = 0; i < that.graph.length; i++) {
+						that.graph[i]._update();
 						that.graph[i].update();
 					}
 					//console.log(0);
@@ -136,9 +139,114 @@ define(function() {
 				window.requestAnimationFrame(r);
 			})();
 			
+			window.Cube = this.cube;
+			window.Sphere = this.sphere;
 			window.Waveform = this.waveform;
 			console.log("FINISH INIT");
 		},
+		sphere : function(props) {
+			props = props || {};
+			
+			var that = new THREE.Mesh(
+			  	new THREE.SphereGeometry( props.radius || 50, props.segments || 16, props.rings || 16),	// radius, segments per ring, rings, 
+			    new THREE.MeshPhongMaterial({color: props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000 } )
+			);
+			that.category = "graphics";
+			Graphics.scene.add(that);
+			
+			that.x = that.position.x;
+			that.y = that.position.y;
+			that.z = that.position.z;
+			
+			that.rx = that.rotation.x;
+			that.ry = that.rotation.y;
+			that.rz = that.rotation.z;
+			
+			Object.defineProperties(that, {
+				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; } },
+				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; } },
+				z : { get: function() { return this.position.z; }, set: function(val) { this.position.z = val; } },	
+				
+				rx : { get: function() { return this.rotation.x; }, set: function(val) { this.rotation.x = val; } },
+				ry : { get: function() { return this.rotation.y; }, set: function(val) { this.rotation.y = val; } },
+				rz : { get: function() { return this.rotation.z; }, set: function(val) { this.rotation.z = val; } },							
+			});		
+			
+			that.update = function() {};
+			Gibberish.extend(that, props);
+			Graphics.graph.push(that);
+			
+			return that;
+		},
+		cube : function(props) {
+			props = props || {};
+			
+			var that = new THREE.Mesh(
+			  	new THREE.CubeGeometry( props.width || 50, props.height || 50, props.depth || 50 ),
+			    new THREE.MeshPhongMaterial( {color: props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000 } )
+			);
+			that.category = "graphics";
+			
+			that.remove = that.kill = function() {
+				Graphics.scene.remove(that);
+			};
+			
+			that._update = function() {
+				for(var i = 0; i < this.mods.length; i++) {
+					var mod = this.mods[i];
+					switch(mod.type) {
+						case "+":
+							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+							break;
+						case "++":
+							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
+							break;							
+						case "-" :
+							this[mod.name] -= typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+							break;
+						case "=":
+							this[mod.name] = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+							break;
+						default:
+						break;	
+					}
+				}
+			};
+			that.mods = [];
+			that.mod = function(_name, _modulator, _type, _mult) {
+				this.mods.push({name:_name, modulator:_modulator, type:_type || "+", mult: _mult || 1 });
+			};
+			Graphics.scene.add(that);
+			
+			that.x = that.position.x;
+			that.y = that.position.y;
+			that.z = that.position.z;
+			
+			that.rx = that.rotation.x;
+			that.ry = that.rotation.y;
+			that.rz = that.rotation.z;
+			
+			Object.defineProperties(that, {
+				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; } },
+				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; } },
+				z : { get: function() { return this.position.z; }, set: function(val) { this.position.z = val; } },	
+				
+				rx : { get: function() { return this.rotation.x; }, set: function(val) { this.rotation.x = val; } },
+				ry : { get: function() { return this.rotation.y; }, set: function(val) { this.rotation.y = val; } },
+				rz : { get: function() { return this.rotation.z; }, set: function(val) { this.rotation.z = val; } },
+				
+				sx : { get: function() { return this.scale.x; }, set: function(val) { this.scale.x = val; } },
+				sy : { get: function() { return this.scale.y; }, set: function(val) { this.scale.y = val; } },
+				sz : { get: function() { return this.scale.z; }, set: function(val) { this.scale.z = val; } },							
+			});		
+			
+			that.update = function() {};
+			Gibberish.extend(that, props);
+			Graphics.graph.push(that);
+			
+			return that;
+		},
+		
 		waveform : function(props) {
 			console.log("WAVE 0");
 			//_ugen, frame, _size, _canvas

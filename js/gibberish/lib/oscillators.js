@@ -27,12 +27,12 @@ define([], function() {
 			gibberish.LFO = Gen({
 			    name: "LFO",
 			    props: { frequency: 440, amp: .25 },
-			    upvalues: { phase: 0, sin: Math.sin, pi_2: Math.PI * 2 },
+			    upvalues: { phase: 0, sin: Math.sin, pi_2: Math.PI * 2, value:0 },
 			
 			    callback: function(frequency, amp) {
 			        phase += frequency / 44100;
-			        var val = sin(phase * pi_2) * amp;
-			        return val;
+			        value = sin(phase * pi_2) * amp;
+			        return value;
 			    },
 			});
 			
@@ -361,10 +361,10 @@ define([], function() {
 				that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
 				window[that.symbol] = that._function;
 				
-				console.log("ALREADY LOADED ", that.file);
+				//console.log("ALREADY LOADED ", that.file);
 				//Gibberish.dirty(that);
 			}else if(that.file !== null){
-				console.log("NEED TO LOAD", that.file);
+				console.log("LOADING", that.file);
 			    var request = new AudioFileRequest(that.file);
 			    request.onSuccess = that.onload;
 			    request.send();
@@ -396,6 +396,8 @@ define([], function() {
 			var output = function(_pitch, amp, isRecording, isPlaying, input, length, pan) {
 				var out = 0;
 				phase += _pitch;
+				//phase = phase < 0 ? 0 : phase;
+				//phase = phase > buffer.length ? buffer.length : phase;				
 				
 				if(write++ < length && isRecording) {
 					//if(write % 10000 === 0) console.log(write, length, input);

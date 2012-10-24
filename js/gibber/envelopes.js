@@ -69,6 +69,18 @@ function Follow(){
 	return Gibberish.Follow(arguments[0]);
 }
 
+function Follow2(){
+	if(arguments.length === 0) {
+		G.log("Follow requires a dictionary of properties");
+		return;
+	}
+	var follow2 = Gibberish.Follow(arguments[0]);
+	follow2.send(Master, 1);
+	
+	return follow2;
+}
+
+
 function Pump(foo){
 	var that = Gibberish.Pump(foo);
 	return that;

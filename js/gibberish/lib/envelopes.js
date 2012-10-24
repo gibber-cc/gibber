@@ -19,19 +19,42 @@ define([], function() {
 
 	      gibberish.Follow = Gen({
 	        name: "Follow",
-	        props: {sidechain:null, bufferSize:4410, mult:1},
-	        upvalues: {abs:Math.abs, history:null, sum:0, index:0},
+	        props: { input:null, bufferSize:4410, mult:1 },
+	        upvalues: { abs:Math.abs, history:null, sum:0, index:0, value:0 },
+			
 	        init: function() {
 	         this.function.setHistory(new Float32Array(this.bufferSize));
 	        },
-	        callback: function(sidechain, bufferSize, mult) {
-	          sum += abs(sidechain[0]);
+			
+	        callback: function(input, bufferSize, mult) {
+	          sum += abs(input[0]);
 	          sum -= history[index];
-	          history[index] = abs(sidechain[0]);
+	          history[index] = abs(input[0]);
 	          index = (index + 1) % bufferSize;
-	          return (sum / bufferSize) * mult;
+	          value = (sum / bufferSize) * mult;
+			  return value;
 	        },
 	      });
+		  
+	      gibberish.Follow2 = Gen({
+	        name: "Follow",
+	        props: { input:null, bufferSize:4410, mult:1 },
+	        upvalues: { abs:Math.abs, history:null, sum:0, index:0, value:0 },
+			
+	        init: function() {
+	         	this.function.setHistory(new Float32Array(this.bufferSize));
+	        },
+			
+	        callback: function(input, bufferSize, mult) {
+	        	sum += abs(input[0]);
+	        	sum -= history[index];
+	        	history[index] = abs(input[0]);
+	        	index = (index + 1) % bufferSize;
+	        	value = (sum / bufferSize) * mult;
+				return [0, 0];
+	        },
+	      });
+		  
 	  
 	      gibberish.Pump = Gen({
 	        name: "Pump",
