@@ -29,6 +29,10 @@ define([
 		autocompleteLayer : null,
 		removeFile : function(fileName) {
 			var tmp = localStorage.getObject('scripts');
+			if(typeof tmp[fileName] === 'undefined') {
+				G.log("File " + fileName + " does not exist so I won't bother removing it. Huh?");
+				return;
+			}
 			delete tmp[fileName];
 			localStorage.setObject('scripts', tmp);
 			this.createFileList();
