@@ -27,6 +27,12 @@ define([
 	}
 	var Environment = {
 		autocompleteLayer : null,
+		removeFile : function(fileName) {
+			var tmp = localStorage.getObject('scripts');
+			delete tmp[fileName];
+			localStorage.setObject('scripts', tmp);
+			this.createFileList();
+		},
 		save : function(code) {
 			var scripts;
 			if(typeof localStorage.scripts === "undefined") {
