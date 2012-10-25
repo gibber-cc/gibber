@@ -1,26 +1,163 @@
 define(function() {	
 	return {
+		blur : function(hblur, vblur) {
+			hblur = hblur || 1 / ( this.width / 2 );
+			vblur = vblur || 1 / ( this.height / 2 );
+			
+			var that = {
+				_blurX : new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] ),
+				_blurY : new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] ),
+				blurX : hblur || 1 / ( this.width / 2 ),
+				blurY : vblur || 1 / ( this.height / 2 ),
+				
+				remove : function() {
+					Graphics.composer.removePass(this._blurX);
+					Graphics.composer.removePass(this._blurY);
+					
+					Graphics.fx.remove(this);
+				},
+			};
+			
+			var _renderToScreen = true;
+			Object.defineProperties(that, {
+				renderToScreen : {
+					get : function() { return renderToScreen; },
+					set : function(val) {
+						_renderToScreen = val;
+						that._blurX.renderToScreen = false;
+						that._blurY.renderToScreen = _renderToScreen;			
+					}
+				},
+				blurX : {
+					get : function() { return hblur; },
+					set: function(val) { 
+						hblur = val;
+						that._blurX.uniforms[ 'h' ].value = hblur;
+					},
+				},
+				blurY : {
+					get : function() { return hblur; },
+					set: function(val) { 
+						vblur = val;
+						that._blurY.uniforms[ 'v' ].value = hblur;
+					},
+				}
+			});
+			
+			that.renderToScreen = true;
+			
+			that.blurX = hblur; //effectHBlur.uniforms[ 'h' ].value = hblur;
+			that.blurY = vblur; //effectVBlur.uniforms[ 'v' ].value = vblur;
+			
+			this.composer.addPass( that._blurX );
+			this.composer.addPass( that._blurY );
+			
+			if(this.fx.length !== 0) {
+				this.fx[ this.fx.length - 1].renderToScreen = false;
+			}
+			
+			this.fx.push(that);
+			
+			return that;
+		},
+		dots : function(_center, _angle, _scale) {
+			_center = _center || [0,0];
+			_angle = _angle || .5;
+			_scale = _scale || .8;
+			
+			var that = {
+				screen : new THREE.DotScreenPass( new THREE.Vector2( _center[0], _center[1] ), _angle, _scale ),
+				mods : [],
+				mod : function(_name, _modulator, _type, _mult) {
+					this.mods.push({name:_name, modulator:_modulator, type:_type || "+", mult: _mult || 1 });
+				},
+			};
+			 
+ 			var _renderToScreen = true;
+ 			Object.defineProperties(that, {
+ 				renderToScreen : {
+ 					get : function() { return renderToScreen; },
+ 					set : function(val) {
+ 						_renderToScreen = val;
+ 						that.screen.renderToScreen = _renderToScreen;
+ 						//that._blurY.renderToScreen = _renderToScreen;			
+ 					}
+ 				},
+ 				scale : {
+ 					get : function() { return _scale; },
+ 					set: function(val) { 
+ 						_scale = val;
+ 						that.screen.uniforms[ 'scale' ].value = _scale;
+ 					},
+ 				},
+ 				angle : {
+ 					get : function() { return _angle; },
+ 					set: function(val) { 
+ 						_angle = val;
+ 						that.screen.uniforms[ 'angle' ].value = _angle;
+ 					},
+ 				}
+ 			});
+			that.renderToScreen = true;
+
+			//var shaderScreen = THREE.ShaderExtras[ "screen" ];
+			//var effectScreen = new THREE.ShaderPass( shaderScreen );
+			this.composer.addPass( that.screen );
+			
+			if(this.fx.length !== 0) {
+				this.fx[ this.fx.length - 1].renderToScreen = false;
+			}
+			this.fx.push( that );
+			
+			that._update = function() {
+				for(var i = 0; i < this.mods.length; i++) {
+					var mod = this.mods[i];
+					switch(mod.type) {
+						case "+":
+							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+							break;
+						case "++":
+							this[mod.name] += typeof mod.modulator === "number" ? 		mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
+							break;							
+						case "-" :
+							this[mod.name] -= typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+							break;
+						case "=":
+							this[mod.name] = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+							break;
+						default:
+						break;	
+					}
+				}
+			};
+			
+			that.update = function() {};
+			Graphics.graph.push(that);
+			
+			return that;
+		},
+
 		init : function() {
-			console.log("GRAPHICS");
+			//console.log("GRAPHICS");
 			$("#three").attr( "width",  $(".CodeMirror-scroll").outerWidth() );
 			$("#three").attr( "height", $(".CodeMirror-scroll").outerHeight() );
 			
 			// set the scene size
 			var WIDTH = $(".CodeMirror-scroll").outerWidth(),
 			  	HEIGHT = $(".CodeMirror-scroll").outerHeight();
-
+			
+			this.width = WIDTH;
+			this.height = HEIGHT;
+			
+			this.fx = [];
 			// set some camera attributes
 			var VIEW_ANGLE = 45,
 			  	ASPECT = WIDTH / HEIGHT,
 			  	NEAR = 0.1,
 			  	FAR = 10000;
 
-			// get the DOM element to attach to
-			// - assume we've got jQuery to hand
 			var $container = $('#three');
-			console.log("THIS", this);
-			// create a WebGL renderer, camera
-			// and a scene
+			
 			this.renderer = new THREE.WebGLRenderer();
 			this.camera = new THREE.PerspectiveCamera(
 			    VIEW_ANGLE,
@@ -37,23 +174,12 @@ define(function() {
 			this.stats.domElement.style.top = '0px';
 			this.stats.domElement.style.right = '0px';			
 			$("body").append( this.stats.domElement );
-			//this.texture = new THREE.Texture(that.cnvs);
-			//this.texture.needsUpdate = true;
-			/*this.sprite = new THREE.Sprite({
-				color:0xffffff,
-				//map:that.texture, 
-				affectedByDistance:false,
-				useScreenCoordinates : true,
-			});
-
-			this.sprite.position.x =  0;
-			this.sprite.position.y = 0;
-			this.sprite.position.z = 0;
-			this.sprite.scale.x = 8;
-			this.sprite.scale.y = 8;
-			this.sprite.scale.z = 1;						
-			this.scene.add(this.sprite);*/
 			
+			this.composer = new THREE.EffectComposer( this.renderer );
+			
+			this.renderScene = new THREE.RenderPass( this.scene, this.camera );
+			this.renderScene.renderToScreen = false;
+			this.composer.addPass( this.renderScene );
 
 			// add the camera to the scene
 			this.scene.add(this.camera);
@@ -61,7 +187,6 @@ define(function() {
 			// the camera starts at 0,0,0 so pull it back
 			this.camera.position.z = 300;
 
-			// start the renderer
 			this.renderer.setSize(WIDTH, HEIGHT);
 
 			// attach the render-supplied DOM element
@@ -76,62 +201,32 @@ define(function() {
 			
 			this.scene.add(pointLight);
 			
-			/*var radius = 50,
-			    segments = 16,
-			    rings = 16;
+			/*this.scene.add( new THREE.Mesh(
+			  	new THREE.CubeGeometry( 50, 50, 50 ),
+				new THREE.MeshLambertMaterial({ color: 0xCC0000 })
+			    //new THREE.MeshPhongMaterial( {color: props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000 } )
+				//sphereMaterial
+				) 
+			);*/
 
-			// create a new mesh with
-			// sphere geometry - we will cover
-			// the sphereMaterial next!
-			var sphere = new THREE.Mesh(
-			  	new THREE.SphereGeometry(radius,segments,rings),
-			    new THREE.MeshPhongMaterial({color: 0xCC0000 })
-			);
-		
-			// add the sphere to the scene
-			this.scene.add(sphere);*/
-
-			// add to the scene
-			//this.scene.add(pointLight);
-			
-			/*var renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBufer: false };
-			renderTargetGlow = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, renderTargetParameters );
- 
-			// Prepare the blur shader passes
-			hblur = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] );
-			vblur = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] );
- 
-			var bluriness = 30;
- 
-			hblur.uniforms[ "h" ].value = bluriness / WIDTH;
-			vblur.uniforms[ "v" ].value = bluriness / HEIGHT;
- 
-			// Prepare the glow scene render pass
-			var renderModelGlow = new THREE.RenderPass( this.scene, this.camera);
- 
-			// Create the glow composer
-			var glowcomposer = new THREE.EffectComposer( this.renderer, renderTargetGlow );
- 
-			// Add all the glow passes
-			//glowcomposer.addPass( renderModelGlow );
-			glowcomposer.addPass( hblur );
-			glowcomposer.addPass( vblur );
-			*/
 			var that = this;
 			(function() {
 				var r = function() {
-					//console.log("CALLED", that);
 					for(var i = 0; i < that.graph.length; i++) {
 						that.graph[i]._update();
 						that.graph[i].update();
 					}
-					//console.log(0);
-					//glowcomposer.render(that.scene, that.camera);
-					//console.log(1);
-					that.renderer.render(that.scene, that.camera);
-					//console.log(2);
+
+					that.renderer.clear();
+					
+					if(that.fx.length > 0) {
+						that.composer.render();
+					}else{
+						that.renderer.render(that.scene, that.camera);
+					}
 					
 					that.stats.update();
+					
 					//slow down animation
 					setTimeout( function() { requestAnimationFrame( r ); }, 1000 / 30 );
 					//window.requestAnimationFrame(r);
@@ -139,6 +234,8 @@ define(function() {
 				window.requestAnimationFrame(r);
 			})();
 			
+			window.Blur = this.blur;
+			window.Dots = this.dots;
 			window.Cube = this.cube;
 			window.Sphere = this.sphere;
 			window.Waveform = this.waveform;
@@ -181,9 +278,33 @@ define(function() {
 		cube : function(props) {
 			props = props || {};
 			
+			/*var vertex='attribute float displacement;\
+			uniform float amplitude;\
+			varying vec3 vNormal;\
+			void main() {\
+				vNormal = normal;\
+			    vec3 newPosition = position + normal * vec3(displacement * amplitude);\
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition,1.0);\
+			}';
+		
+			var fragment = 'varying vec3 vNormal;\
+			void main() {\
+				vec3 light = vec3( 0.5, 0.2, 5.0 );\
+				light = normalize( light );\
+			    float dProd = max( 0.0, dot(vNormal, light) );\
+				gl_FragColor = vec4(dProd, dProd, dProd, 1.0);\
+			}';
+		
+			var sphereMaterial = new THREE.ShaderMaterial({
+			    vertexShader:   vertex,
+			    fragmentShader: fragment,
+			});*/
+			
+			
 			var that = new THREE.Mesh(
 			  	new THREE.CubeGeometry( props.width || 50, props.height || 50, props.depth || 50 ),
 			    new THREE.MeshPhongMaterial( {color: props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000 } )
+				//sphereMaterial
 			);
 			that.category = "graphics";
 			
@@ -191,6 +312,7 @@ define(function() {
 				Graphics.scene.remove(that);
 			};
 			
+			//var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0xCC0000 });			
 			that._update = function() {
 				for(var i = 0; i < this.mods.length; i++) {
 					var mod = this.mods[i];
@@ -199,7 +321,7 @@ define(function() {
 							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
 							break;
 						case "++":
-							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
+							this[mod.name] += typeof mod.modulator === "number" ? 		mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
 							break;							
 						case "-" :
 							this[mod.name] -= typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
@@ -248,7 +370,6 @@ define(function() {
 		},
 		
 		waveform : function(props) {
-			console.log("WAVE 0");
 			//_ugen, frame, _size, _canvas
 			props.size = props.size || 64;
 			props.frame = props.frame || {pos:[.5, .5, rndf(-.05,.05)], size:[.5, .5, 1]};
@@ -277,7 +398,7 @@ define(function() {
 				});
 				$("body").append(that.canvas);
 				*/
-							console.log("WAVE 2");
+				console.log("WAVE 2");
 				that.drawMe = function(_avg) {
 					avg.unshift(_avg);
 					avg.pop();
