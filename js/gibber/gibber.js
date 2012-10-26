@@ -275,10 +275,10 @@ define(['gibber/audio_callback'], function() {
 			}
 		
 			// if gen is being modulated...
-			for(var i = 0; i < gen.mods.length; i++) {
+			/*for(var i = 0; i < gen.mods.length; i++) {
 				var mod = gen.mods[i];
 				newGen.mod(mod.name, mod.operands[1], mod.type);
-			}
+			}*/
 		
 			// if gen is slaved to sequencer...
 			if(typeof gen.masters !== "undefined") {
@@ -290,9 +290,9 @@ define(['gibber/audio_callback'], function() {
 			}
 		
 			// if gen has fx...
-			for(var i = 0; i < gen.fx.length; i++) {
+			/*for(var i = 0; i < gen.fx.length; i++) {
 				newGen.fx.add(gen.fx[i]);
-			}
+			}*/
 		},
 	
 		modReplace : function(oldMod, newMod) {
