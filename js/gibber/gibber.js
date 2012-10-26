@@ -11,7 +11,7 @@ define(['gibber/audio_callback'], function() {
 		root : "C4",
 		mode : "aeolian",
 		busses : [],
-		presets : [],
+		presets : {},
 		graphics : [],
 		modes :[ "major", "ionian", "dorian",  "phrygian", "lydian", "mixolydian", "minor", "aeolian", "locrian", "majorpentatonic", "minorpentatonic", "chromatic"],
 		
