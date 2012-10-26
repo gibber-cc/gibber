@@ -91,7 +91,8 @@ define([
 					if(idx !== -1) {
 						this.users.splice(idx, 1);
 					}
-				}
+				},
+				codeCount : 0,
 			};
 			G.E.R = G.E.republicish;
 			
@@ -122,19 +123,37 @@ define([
 				$("#sidebar").scrollTop( $("#sidebar")[0].scrollHeight );
 			});
 			
+			G.E.socket.on('claimCode', function(msg) {
+				$("#block" + msg.codeblockNumber).off('mouseup');
+				$("#block" + msg.codeblockNumber).text(msg.name);
+				$("#block" + msg.codeblockNumber).css( { backgroundColor:"#a00" } );
+			});
 			G.E.R.code = function(msg) {
 				var d = $("<div>");
+				
 				$(d).css({
 					'padding': '0px 10px',
 					marginBottom: '10px',
 				});
 				$(d).html("<h2 style='display:inline'>"+msg.user+" :</h2>" + " " + msg.code);
+				
 				var b = $("<button>paste code in editor</button>");
 				$(b).on('mouseup', function() {
 					var code = window.editor.getValue();
 					window.editor.setValue(code + "\n" + msg.code);
 				});
 				$(d).append(b);
+				
+				var b2 = $("<button>claim code</button>");
+				$(b2).on('mouseup', function() {
+					//console.log("CLAIMING CODE????", b2.codeblockNumber, G.E.R.name);
+					G.E.socket.emit('claimCode', {name:G.E.R.name, codeNumber:b2.codeblockNumber});
+				});
+				b2.codeblockNumber = msg.codeblockNumber;				
+				$(b2).attr("id", "block"+b2.codeblockNumber);
+				
+				$(d).append(b2);
+				
 				$("#sidebar").append(d);
 				$("#sidebar").scrollTop( $("#sidebar")[0].scrollHeight );
 			};
