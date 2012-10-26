@@ -584,7 +584,7 @@ window.Scale = function(_root, _mode) {
 			var _rootoctave = this.root.octave;
 
 			var _scale = teoria.scale.list(this.root, this.mode, false);
-			for(var oct = _rootoctave, o = 0; oct < 8; oct++, o++) {
+			for(var oct = _rootoctave, o = 0; oct < _rootoctave + 8; oct++, o++) {
 				for(var num = 0; num < _scale.length; num++) {
 					var nt = jQuery.extend({}, _scale[num]);
 					nt.octave += o;
