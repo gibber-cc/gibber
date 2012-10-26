@@ -1,140 +1,115 @@
 define(function() {	
-	return {
-		blur : function(hblur, vblur) {
-			hblur = hblur || 1 / ( this.width / 2 );
-			vblur = vblur || 1 / ( this.height / 2 );
-			
-			var that = {
-				_blurX : new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] ),
-				_blurY : new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] ),
-				blurX : hblur || 1 / ( this.width / 2 ),
-				blurY : vblur || 1 / ( this.height / 2 ),
+	var a = {
+		makeEffect : function(props) {			
+			var _constructor = function(_props) {
+				var that = {
+					name: props.name || "anonymous",
+					shaders : [],
+					_update : function() {
+						//console.log(this.mods);
+						for(var i = 0; i < this.mods.length; i++) {
+							var mod = this.mods[i];
+							switch(mod.type) {
+								case "+":
+									this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+									break;
+								case "++":
+									this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
+									break;							
+								case "-" :
+									this[mod.name] -= typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+									break;
+								case "=":
+									this[mod.name] = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
+									break;
+								default:
+								break;	
+							}
+						}
+					},
+					update : function() {},
+					mods : [],
+					mod : function(_name, _modulator, _type, _mult) {
+						this.mods.push({name:_name, modulator:_modulator, type:_type || "+", mult: _mult || 1 });
+					},
+				};
 				
-				remove : function() {
-					Graphics.composer.removePass(this._blurX);
-					Graphics.composer.removePass(this._blurY);
-					
-					Graphics.fx.remove(this);
-				},
-			};
-			
-			var _renderToScreen = true;
-			Object.defineProperties(that, {
-				renderToScreen : {
-					get : function() { return renderToScreen; },
-					set : function(val) {
-						_renderToScreen = val;
-						that._blurX.renderToScreen = false;
-						that._blurY.renderToScreen = _renderToScreen;			
+				for(var i = 0; i < props.shaders.length; i++) {
+					var shaderDictionary = props.shaders[i];
+
+					for(var ii = 0; ii < shaderDictionary.properties.length; ii++) {
+						var p = shaderDictionary.properties[ii];
+						that[p.name] = p.value;
 					}
-				},
-				blurX : {
-					get : function() { return hblur; },
-					set: function(val) { 
-						hblur = val;
-						that._blurX.uniforms[ 'h' ].value = hblur;
-					},
-				},
-				blurY : {
-					get : function() { return hblur; },
-					set: function(val) { 
-						vblur = val;
-						that._blurY.uniforms[ 'v' ].value = hblur;
-					},
+					
+					var shader = shaderDictionary.init(that);
+					shader.name = shaderDictionary.name;
+					that.shaders.push(shader);
+					
+					that[shaderDictionary.name] = shader;
+										
+					Graphics.composer.addPass( shader );
+
+					for(var j = 0; j < shaderDictionary.properties.length; j++) {
+						(function() { 
+							var property = shaderDictionary.properties[j];
+							var v = property.value;
+							var _shaderDictionary = shaderDictionary;
+							var _shader = shader;
+							Object.defineProperty(that, property.name, {
+								get : function() { return v; },
+								set : function(val) { 
+									v = val;
+									_shader[ _shaderDictionary.type ][ property.name ].value = v;
+								}
+							});
+						})();
+					}
+					
+					if(i === props.shaders.length - 1) {
+						shader.renderToScreen = true;
+					}else{
+						shader.renderToScreen = false;
+					}
+					
+					if(Graphics.fx.length !== 0) {
+						Graphics.fx[ Graphics.fx.length - 1].renderToScreen = false;
+					}
+					Graphics.fx.push(shader);
 				}
-			});
-			
-			that.renderToScreen = true;
-			
-			that.blurX = hblur; //effectHBlur.uniforms[ 'h' ].value = hblur;
-			that.blurY = vblur; //effectVBlur.uniforms[ 'v' ].value = vblur;
-			
-			this.composer.addPass( that._blurX );
-			this.composer.addPass( that._blurY );
-			
-			if(this.fx.length !== 0) {
-				this.fx[ this.fx.length - 1].renderToScreen = false;
-			}
-			
-			this.fx.push(that);
-			
-			return that;
-		},
-		dots : function(_center, _angle, _scale) {
-			_center = _center || [0,0];
-			_angle = _angle || .5;
-			_scale = _scale || .8;
-			
-			var that = {
-				screen : new THREE.DotScreenPass( new THREE.Vector2( _center[0], _center[1] ), _angle, _scale ),
-				mods : [],
-				mod : function(_name, _modulator, _type, _mult) {
-					this.mods.push({name:_name, modulator:_modulator, type:_type || "+", mult: _mult || 1 });
-				},
-			};
-			 
- 			var _renderToScreen = true;
- 			Object.defineProperties(that, {
- 				renderToScreen : {
- 					get : function() { return renderToScreen; },
+				
+				var _renderToScreen = true;
+ 				Object.defineProperty(that, "renderToScreen", {
+ 					get : function() { return _renderToScreen; },
  					set : function(val) {
  						_renderToScreen = val;
- 						that.screen.renderToScreen = _renderToScreen;
- 						//that._blurY.renderToScreen = _renderToScreen;			
+						if(_renderToScreen) {
+							this.shaders[ this.shaders.length - 1 ].renderToScreen = true;
+						}else{
+							this.shaders[ this.shaders.length - 1 ].renderToScreen = false;
+						}
  					}
- 				},
- 				scale : {
- 					get : function() { return _scale; },
- 					set: function(val) { 
- 						_scale = val;
- 						that.screen.uniforms[ 'scale' ].value = _scale;
- 					},
- 				},
- 				angle : {
- 					get : function() { return _angle; },
- 					set: function(val) { 
- 						_angle = val;
- 						that.screen.uniforms[ 'angle' ].value = _angle;
- 					},
- 				}
- 			});
-			that.renderToScreen = true;
-
-			//var shaderScreen = THREE.ShaderExtras[ "screen" ];
-			//var effectScreen = new THREE.ShaderPass( shaderScreen );
-			this.composer.addPass( that.screen );
-			
-			if(this.fx.length !== 0) {
-				this.fx[ this.fx.length - 1].renderToScreen = false;
-			}
-			this.fx.push( that );
-			
-			that._update = function() {
-				for(var i = 0; i < this.mods.length; i++) {
-					var mod = this.mods[i];
-					switch(mod.type) {
-						case "+":
-							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
-							break;
-						case "++":
-							this[mod.name] += typeof mod.modulator === "number" ? 		mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
-							break;							
-						case "-" :
-							this[mod.name] -= typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
-							break;
-						case "=":
-							this[mod.name] = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
-							break;
-						default:
-						break;	
+ 				});
+							
+				that.remove = function() {
+					for(var i = 0; i < props.shaders.length; i++) {
+						shaderDictionary = props.shaders[i];
+						for(var j = 0; j < this.shaders.length; j++) {
+							if(this.shaders[j].name === shaderDictionary.name) {
+								Graphics.composer.removePass(this.shaders[j]);	
+								Graphics.fx.remove(this.shaders[j]);
+							}
+						}
 					}
-				}
+					Graphics.graph.remove(this);
+				};
+				//Graphics.fx.push(that);
+				Graphics.graph.push(that);
+				
+				return that;
 			};
-			
-			that.update = function() {};
-			Graphics.graph.push(that);
-			
-			return that;
+			window[props.name] = _constructor;
+			return _constructor;
 		},
 
 		init : function() {
@@ -234,8 +209,8 @@ define(function() {
 				window.requestAnimationFrame(r);
 			})();
 			
-			window.Blur = this.blur;
-			window.Dots = this.dots;
+			//window.Blur = this.blur;
+			//window.Dots = this.dots;
 			window.Cube = this.cube;
 			window.Sphere = this.sphere;
 			window.Waveform = this.waveform;
@@ -498,4 +473,113 @@ define(function() {
 			return that;
 		},
 	};
+	
+	a.makeEffect({
+		name:"Dots",
+		shaders : [
+			{
+				name: 'screen',
+				properties: [{
+					name:'center',
+					value:[0,0],
+				},
+				{
+					name:'angle',
+					value:.5,
+				},
+				{
+					name:'scale',
+					value:.3,
+				}],
+				type:'uniforms',
+				init : function(obj) {
+					return new THREE.DotScreenPass( new THREE.Vector2( obj.center[0], obj.center[1] ), obj.angle, obj.scale );
+				},
+			},
+		],
+	});
+	
+	a.makeEffect({
+		name:"Film",
+		shaders : [
+		{
+			name:"Film",
+			properties:[
+				{
+					name: "nIntensity",
+					value: .35,
+					type:'uniforms',
+				},
+				{
+					name: "sIntensity",
+					value: .025,
+					type:'uniforms',
+				},
+				{
+					name: "sCount",
+					value: 648,
+					type:'uniforms',
+				},
+				{
+					name: "grayscale",
+					value: false,
+					type:'uniforms',
+				},
+			],
+			type:'uniforms',
+			init: function(obj) {
+				return new THREE.FilmPass(.35, .025, 648, 0);
+			}
+			
+		}
+		],
+	});
+	
+	a.makeEffect({
+		name:"Colorify",
+		shaders : [
+			{
+				name:'colorify',
+				properties: [{
+					name: 'color',
+					value: 0x00FF00,
+					type: 'uniforms',
+				}],
+				type:'uniforms',
+				init: function(obj) {
+					return new THREE.ShaderPass( THREE.ShaderExtras[ "colorify" ] );
+				}
+			}
+		]
+	});
+	
+	a.makeEffect({
+		name:"Blur",
+		shaders : [
+			{
+				name: 'h',
+				properties: [{
+					name:'h',
+					value:.003,
+				}],
+				type:'uniforms',
+				init : function(obj) {
+					return new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] );
+				},
+			},
+			{
+				name: 'v',
+				properties: [{
+					name:'v',
+					value:.003,
+				}],
+				type:'uniforms',
+				init : function(obj) {
+					return new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] );
+				},
+			}
+		],
+	});
+	
+	return a;
 });
