@@ -95,6 +95,8 @@ define([
 			};
 			G.E.R = G.E.republicish;
 			
+			G.E.R.addUser(G.E.R.name);
+			
 			G.E.socket = io.connect('http://localhost:8080/');
 			
 			G.E.socket.on('connect', function() {
@@ -117,7 +119,7 @@ define([
 				$(p).css("padding", "0px 10px");
 				$(p).html("<h2 style='display:inline'>"+msg.user+" :</h2>" + " " + msg.text);
 				$("#sidebar").append(p);
-				$("#sidebar").scrollTop( $("#info").height() );
+				$("#sidebar").scrollTop( $("#sidebar")[0].scrollHeight );
 			});
 			
 			G.E.R.code = function(msg) {
@@ -134,7 +136,7 @@ define([
 				});
 				$(d).append(b);
 				$("#sidebar").append(d);
-				$("#sidebar").scrollTop( $("#info").height() );
+				$("#sidebar").scrollTop( $("#sidebar")[0].scrollHeight );
 			};
 			
 			G.E.socket.on('code', function(msg) { G.E.R.code(msg); } );
@@ -148,6 +150,22 @@ define([
 			};
 			
 			CodeMirror.keyMap.gibber["Ctrl-S"] = function(cm) {
+				var selectedUsers = [];
+				for(var i = 0; i < G.E.R.users.length; i++) {
+					selectedUsers.push(G.E.R.users[i]);
+				}
+				
+				var v = cm.getSelection();
+				var pos = null;
+				if(v === "") {
+					pos = cm.getCursor();
+					v = cm.getLine(pos.line);
+				}
+				
+				G.E.socket.emit('code', { recipients:selectedUsers, code:v} );
+			};
+			
+			CodeMirror.keyMap.gibber["Ctrl-Alt-S"] = function(cm) {
 				var v = cm.getSelection();
 				var pos = null;
 				if(v === "") {
