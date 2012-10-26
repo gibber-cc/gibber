@@ -584,9 +584,15 @@ define([], function() {
 				return this;
 			},
 			fadeIn : function(level, time) {
-				this.mod("amp", Line(0, level, time), "=");
-				var me = this;
-				future( function() { me.removeMod("amp"); me.amp = level;  }, time);
+				if(arguments.length === 2) {
+					this.mod("amp", Line(0, level, time), "=");
+					var me = this;
+					future( function() { me.removeMod("amp"); me.amp = level;  }, time);
+				}else{
+					this.mod("amp", Line(0, 1, arguments[0]), "=");
+					var me = this;
+					future( function() { me.removeMod("amp"); me.amp = 1;  }, arguments[0]);
+				}
 				return this;
 			},
 			fadeOut : function(time) {

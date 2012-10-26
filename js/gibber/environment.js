@@ -98,7 +98,9 @@ define([
 			
 			G.E.R.addUser(G.E.R.name);
 			
-			G.E.socket = io.connect('http://localhost:8080/');
+			if(!G.E.socket) {
+				G.E.socket = io.connect('http://localhost:8080/');
+			}
 			
 			G.E.socket.on('connect', function() {
 				G.E.socket.emit('joinRepublic', G.E.R.name);
