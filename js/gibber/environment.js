@@ -145,11 +145,11 @@ define([
 				$(d).append(b);
 				
 				var b2 = $("<button>claim code</button>");
+				b2.codeblockNumber = msg.codeblockNumber;
 				$(b2).on('mouseup', function() {
 					//console.log("CLAIMING CODE????", b2.codeblockNumber, G.E.R.name);
 					G.E.socket.emit('claimCode', {name:G.E.R.name, codeNumber:b2.codeblockNumber});
 				});
-				b2.codeblockNumber = msg.codeblockNumber;				
 				$(b2).attr("id", "block"+b2.codeblockNumber);
 				
 				$(d).append(b2);
