@@ -99,18 +99,31 @@ define(function() {
  				});
 							
 				that.remove = function() {
+					var shouldResetRenderer = false;
+					var shadersToRemove = [];
 					for(var i = 0; i < props.shaders.length; i++) {
 						shaderDictionary = props.shaders[i];
 						for(var j = 0; j < this.shaders.length; j++) {
 							if(this.shaders[j].name === shaderDictionary.name) {
 								Graphics.composer.removePass(this.shaders[j]);	
 								Graphics.fx.remove(this.shaders[j]);
+								if(this.shaders[j].renderToScreen) {
+									shouldResetRenderer = true;
+								}
+								shadersToRemove.push(this.shaders[j]);
 							}
 						}
 					}
+					for(var j = 0; j < shadersToRemove.length; j++) {
+						this.shaders.remove(this.shaders[j]);
+					}
+					if(shouldResetRenderer) {
+						var __shader = Graphics.fx[ Graphics.fx.length - 1];
+						__shader.renderToScreen = true;
+						//console.log("RENDERING", __shader);
+					}
 					Graphics.graph.remove(this);
 				};
-				//Graphics.fx.push(that);
 				Graphics.graph.push(that);
 				
 				return that;
