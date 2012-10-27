@@ -34,6 +34,10 @@ define(function() {
 					},
 				};
 				
+				for(var key in _props) {
+					that[key] = _props[key];
+				}
+				
 				for(var i = 0; i < props.shaders.length; i++) {
 					var shaderDictionary = props.shaders[i];
 
@@ -150,9 +154,12 @@ define(function() {
 			this.stats.domElement.style.right = '0px';			
 			$("body").append( this.stats.domElement );
 			
-			this.composer = new THREE.EffectComposer( this.renderer );
+			var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
+			
+			this.composer = new THREE.EffectComposer( this.renderer);
 			
 			this.renderScene = new THREE.RenderPass( this.scene, this.camera );
+			this.renderScene.clear = false;
 			this.renderScene.renderToScreen = false;
 			this.composer.addPass( this.renderScene );
 
@@ -195,7 +202,7 @@ define(function() {
 					that.renderer.clear();
 					
 					if(that.fx.length > 0) {
-						that.composer.render();
+						that.composer.render(.01);
 					}else{
 						that.renderer.render(that.scene, that.camera);
 					}
@@ -252,33 +259,11 @@ define(function() {
 		},
 		cube : function(props) {
 			props = props || {};
-			
-			/*var vertex='attribute float displacement;\
-			uniform float amplitude;\
-			varying vec3 vNormal;\
-			void main() {\
-				vNormal = normal;\
-			    vec3 newPosition = position + normal * vec3(displacement * amplitude);\
-				gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition,1.0);\
-			}';
-		
-			var fragment = 'varying vec3 vNormal;\
-			void main() {\
-				vec3 light = vec3( 0.5, 0.2, 5.0 );\
-				light = normalize( light );\
-			    float dProd = max( 0.0, dot(vNormal, light) );\
-				gl_FragColor = vec4(dProd, dProd, dProd, 1.0);\
-			}';
-		
-			var sphereMaterial = new THREE.ShaderMaterial({
-			    vertexShader:   vertex,
-			    fragmentShader: fragment,
-			});*/
-			
+			props.color = props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000;
 			
 			var that = new THREE.Mesh(
 			  	new THREE.CubeGeometry( props.width || 50, props.height || 50, props.depth || 50 ),
-			    new THREE.MeshPhongMaterial( {color: props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000 } )
+			    new THREE.MeshPhongMaterial( {color: props.color } )
 				//sphereMaterial
 			);
 			that.category = "graphics";
@@ -323,6 +308,9 @@ define(function() {
 			that.ry = that.rotation.y;
 			that.rz = that.rotation.z;
 			
+			var __scale = [1,1,1];
+			var __rotate = [0,0,0];
+			var __position = [0,0,0];
 			Object.defineProperties(that, {
 				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; } },
 				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; } },
@@ -334,7 +322,35 @@ define(function() {
 				
 				sx : { get: function() { return this.scale.x; }, set: function(val) { this.scale.x = val; } },
 				sy : { get: function() { return this.scale.y; }, set: function(val) { this.scale.y = val; } },
-				sz : { get: function() { return this.scale.z; }, set: function(val) { this.scale.z = val; } },							
+				sz : { get: function() { return this.scale.z; }, set: function(val) { this.scale.z = val; } },
+
+				_scale : { 
+					get: function() { return __scale; }, 
+					set: function(val) { 
+						__scale = val;
+						this.sx = val[0];
+						this.sy = val[1];
+						this.sz = val[2];
+					}
+				},
+				_rotate : { 
+					get: function() { return __rotate; }, 
+					set: function(val) { 
+						__rotate = val;
+						this.rx = val[0];
+						this.ry = val[1];
+						this.rz = val[2];
+					}
+				},
+				_position : { 
+					get: function() { return __position; }, 
+					set: function(val) { 
+						__position = val;
+						this.x = val[0];
+						this.y = val[1];
+						this.z = val[2];
+					}
+				},			
 			});		
 			
 			that.update = function() {};
@@ -528,7 +544,14 @@ define(function() {
 			],
 			type:'uniforms',
 			init: function(obj) {
-				return new THREE.FilmPass(.35, .025, 648, 0);
+				obj = obj || {};
+				
+				obj.nIntensity = obj.nIntensity || .35;
+				obj.sIntensity = obj.sIntensity || .025;
+				obj.sCount = obj.sCount || 648;
+				obj.grayscale = obj.grayscale || false;
+				
+ 				return new THREE.FilmPass(obj.nIntensity, obj.sIntensity, obj.sCount, obj.grayscale);
 			}
 			
 		}
@@ -536,10 +559,38 @@ define(function() {
 	});
 	
 	a.makeEffect({
+		name:"Bloom",
+		shaders : [
+			{
+				name:'Bloom',
+				properties: [],/*{
+					name: 'amount',
+					value: .5,
+					type: 'uniforms',
+				}],*/
+				type:'uniforms',
+				init: function(obj) {
+					console.log("AMOUNT", obj.amount);
+					return new THREE.BloomPass( obj.amount || 2 );
+				}
+			},
+			{
+				name:'Screen',
+				properties: [],
+				type:'uniforms',
+				init: function(obj) {
+					return new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] );
+				}
+			},
+		]
+	});
+	
+	
+	a.makeEffect({
 		name:"Colorify",
 		shaders : [
 			{
-				name:'colorify',
+				name:'color',
 				properties: [{
 					name: 'color',
 					value: 0x00FF00,
