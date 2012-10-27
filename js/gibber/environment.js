@@ -443,7 +443,13 @@ define([
 			  matchBrackets : true,
 			  tabSize:2,
 	  		  smartIndent: false,
+			  onCursorActivity: function() {
+			  	window.editor.setLineClass(hlLine, null, null);
+			    hlLine = editor.setLineClass(editor.getCursor().line, null, "activeline");
+		      }
 			});
+			var hlLine = window.editor.setLineClass(0, "activeline");
+			
 			CodeMirror.autoLoadMode(window.editor, "javascript");	
 			window.CodeMirror = CodeMirror;	
 		    window.editor.setOption("mode", "javascript");

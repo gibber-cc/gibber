@@ -190,6 +190,8 @@ define(function() {
 			// attach the render-supplied DOM element
 			$container.append(this.renderer.domElement);
 			
+			var ambientLight = new THREE.AmbientLight(0x333333);
+			
 			var pointLight = new THREE.PointLight(0xFFFFFF);
 
 			// set its position
@@ -197,6 +199,7 @@ define(function() {
 			pointLight.position.y = 50;
 			pointLight.position.z = 130;
 			
+			this.scene.add(ambientLight);
 			this.scene.add(pointLight);
 			
 			/*this.scene.add( new THREE.Mesh(
@@ -521,7 +524,7 @@ define(function() {
 				},
 				{
 					name:'scale',
-					value:.3,
+					value:.035,
 				}],
 				type:'uniforms',
 				init : function(obj) {
@@ -539,17 +542,17 @@ define(function() {
 			properties:[
 				{
 					name: "nIntensity",
-					value: .35,
+					value: 1,
 					type:'uniforms',
 				},
 				{
 					name: "sIntensity",
-					value: .025,
+					value: .5,
 					type:'uniforms',
 				},
 				{
 					name: "sCount",
-					value: 648,
+					value: 1024,
 					type:'uniforms',
 				},
 				{
@@ -560,9 +563,9 @@ define(function() {
 			],
 			type:'uniforms',
 			init: function(obj) {
-				obj.nIntensity = obj.nIntensity || .35;
-				obj.sIntensity = obj.sIntensity || .025;
-				obj.sCount = obj.sCount || 648;
+				obj.nIntensity = obj.nIntensity || 1;
+				obj.sIntensity = obj.sIntensity || .5;
+				obj.sCount = obj.sCount || 1024;
 				obj.grayscale = obj.grayscale || false;
 				
 				console.log(obj);
@@ -600,6 +603,38 @@ define(function() {
 		]
 	});
 	
+	a.makeEffect({
+		name:"Tilt",
+		shaders: [
+		{
+			name:"hTilt",
+			properties:[
+				{name:"h", value: 1.0 / 512.0, type:"uniforms" },
+				{name:"r", value: 0.35, type:"uniforms"},
+			],
+			type:"uniforms",
+			init : function(obj) {
+				var c = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalTiltShift" ] );
+				return c;
+			},
+		},
+		{
+			name:"vTilt",
+			properties:[
+				{name:"v", value: 1.0 / 512.0, type:"uniforms" },
+				{name:"r", value: 0.35, type:"uniforms"},
+			],
+			type:"uniforms",
+			init : function(obj) {
+				var c = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalTiltShift" ] );
+				return c;
+			},
+		},
+		
+		
+		]
+	});
+	
 	
 	a.makeEffect({
 		name:"Colorify",
@@ -608,12 +643,16 @@ define(function() {
 				name:'color',
 				properties: [{
 					name: 'color',
-					value: 0x00FF00,
+					value: new THREE.Color( 0x000000 ).setRGB(1,1,1),
 					type: 'uniforms',
 				}],
 				type:'uniforms',
 				init: function(obj) {
-					return new THREE.ShaderPass( THREE.ShaderExtras[ "colorify" ] );
+					var c = new THREE.ShaderPass( THREE.ShaderExtras[ "colorify" ] );
+					if(typeof obj.color !== "undefined") {
+						c.uniforms['color'].value = obj.color;
+					}
+					return c;
 				}
 			}
 		]
