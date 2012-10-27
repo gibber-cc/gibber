@@ -1,7 +1,7 @@
 /* Based on Sublime Text's Monokai theme */
 
 .cm-s-thecharlie {background: rgba(0,0,0,.3); color: #fff;}
-.cm-s-thecharlie div.CodeMirror-selected {background: #511 !important;}
+.cm-s-thecharlie div.CodeMirror-selected {background: rgba(127,10,10,.5) !important;}
 .cm-s-thecharlie .CodeMirror-gutter {background: #272822; border-right: 0px;}
 .cm-s-thecharlie .CodeMirror-gutter-text {color: #d0d0d0;}
 .cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #f8f8f0 !important;}

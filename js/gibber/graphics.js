@@ -3,6 +3,7 @@ define(function() {
 		makeEffect : function(props) {			
 			var _constructor = function(_props) {
 				var that = {
+					category: "graphics",
 					name: props.name || "anonymous",
 					shaders : [],
 					_update : function() {
@@ -43,7 +44,9 @@ define(function() {
 
 					for(var ii = 0; ii < shaderDictionary.properties.length; ii++) {
 						var p = shaderDictionary.properties[ii];
-						that[p.name] = p.value;
+						if(typeof that[p.name] === "undefined") { // if an initialization property hasn't been set...
+							that[p.name] = p.value;
+						}
 					}
 					
 					var shader = shaderDictionary.init(that);
@@ -544,13 +547,12 @@ define(function() {
 			],
 			type:'uniforms',
 			init: function(obj) {
-				obj = obj || {};
-				
 				obj.nIntensity = obj.nIntensity || .35;
 				obj.sIntensity = obj.sIntensity || .025;
 				obj.sCount = obj.sCount || 648;
 				obj.grayscale = obj.grayscale || false;
 				
+				console.log(obj);
  				return new THREE.FilmPass(obj.nIntensity, obj.sIntensity, obj.sCount, obj.grayscale);
 			}
 			
