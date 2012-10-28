@@ -79,7 +79,7 @@ textarea{
 #resizeButton { display:none; color:#fff; font-size: 12px}
 
 #editor {
-	font-family:monospace;
+	font-family:'Source Code Pro', monospace !important;
 	font-size: 1.25em;
     position: absolute;
 	display:inline;
