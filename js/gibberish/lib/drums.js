@@ -4,7 +4,7 @@ define([], function() {
 			gibberish.Kick = Gen({
 				name:"Kick",
 				props: {cutoff:.01, decay:5, tone: 660, amp:1 },
-				upvalues: { count:44, bpf: null, lpf:null },
+				upvalues: { trigger:false, bpf: null, lpf:null },
   
 				init : function() {
 					var bpf = Gibberish.SVF();
@@ -26,27 +26,28 @@ define([], function() {
 				},
   
 				callback: function(cutoff, decay, tone, amp) {
-					var val = [0];
+					var out;
 
-					if(count++ <= 0) {
-						val = bpf( [60], cutoff, decay, 2, 1 );
-						val = lpf( val, tone, .5, 0, 1 );
+					if(trigger) {
+						out = bpf( [60], cutoff, decay, 2, 1 );
+						out = lpf( out, tone, .5, 0, 1 );
+						trigger = false;
 					}else{
-						val = bpf( [0], cutoff, decay, 2, 1 );
-						val = lpf( val, tone, .5, 0, 1 );						
+						out = bpf( [0], cutoff, decay, 2, 1 );
+						out = lpf( out, tone, .5, 0, 1 );						
 					}
     				
-					val[0] *= amp;
-					return val;
+					out[0] *= amp;
+					return out;
 				},
   
 				note : function(c, d, t, amp) {
 					if(c) this.cutoff = c;					
-					//if(d) this.decay = d; 
-					//if(t) this.tone = 220 + t * 800;
-					//if(amp) this.amp = 1;
+					if(d) this.decay = d; 
+					if(t) this.tone = t
+					if(amp) this.amp = amp;
 					
-					this.function.setCount(0); 
+					this.function.setTrigger(true); 
 				},
 			});
 			
