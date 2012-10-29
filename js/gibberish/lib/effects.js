@@ -148,7 +148,7 @@ define([], function() {
 						poles[i] = [0,0,0,0];
 					}
 					this.function.setPoles( poles );
-				},
+				},	
 				
 				callback : function(sample, cutoff, resonance, isLowPass, channels) {
 					for(var channel = 0; channel < channels; channel++) {
@@ -171,6 +171,82 @@ define([], function() {
 					return sample;
 				},
 			});
+			
+			gibberish.SVF = Gen({
+				name:"SVF",
+				acceptsInput: true,
+				props : { frequency: 440, Q:2, mode:0, channels: 1 },
+				upvalues : { d1:null, d2:null, pi:Math.PI },
+				
+				init: function() {
+					this.function.setD1([0,0]);
+					this.function.setD2([0,0]);					
+				},
+				
+				callback: function(sample, frequency, Q, mode, channels) {
+					var f1 = 2 * pi * frequency / 44100;
+					Q = 1 / Q;
+					
+					for(var i = 0; i < channels; i++) {
+						var l = d2[i] + f1 * d1[i];
+						var h = sample[i] - l - Q * d1[i];
+						var b = f1 * h + d1[i];
+						var n = h + l;
+						
+						d1[i] = b;
+						d2[i] = l;
+						
+						if(mode === 0) 
+							sample[i] = l;
+						else if(mode === 1)
+							sample[i] = h;
+						else if(mode === 2)
+							sample[i] = b;
+						else
+							sample[i] = n;
+					}
+					
+					return sample;
+				},
+				
+				/*//Input/Output
+				    I - input sample
+				    L - lowpass output sample
+				    B - bandpass output sample
+				    H - highpass output sample
+				    N - notch output sample
+				    F1 - Frequency control parameter
+				    Q1 - Q control parameter
+				    D1 - delay associated with bandpass output
+				    D2 - delay associated with low-pass output
+    
+				// parameters:
+				    Q1 = 1/Q 
+				    // where Q1 goes from 2 to 0, ie Q goes from .5 to infinity
+    
+				    // simple frequency tuning with error towards nyquist
+				    // F is the filter's center frequency, and Fs is the sampling rate
+				    F1 = 2*pi*F/Fs
+
+				    // ideal tuning:
+				    F1 = 2 * sin( pi * F / Fs )
+
+				// algorithm
+				    // loop
+				    L = D2 + F1 * D1
+				    H = I - L - Q1*D1
+				    B = F1 * H + D1
+				    N = H + L
+    
+				    // store delays
+				    D1 = B
+				    D2 = L
+
+				    // outputs
+				    L,H,B,N
+				*/
+			});
+			
 			
 			gibberish.Biquad = Gen({
 				name: "Biquad",

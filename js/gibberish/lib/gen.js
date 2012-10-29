@@ -158,7 +158,11 @@ window.Gen = function(obj) {
 					get: function() { /*console.log("PROP", propName, value);*/ return value; },
 					set: function(_value) {
 						value = _value;
-						setter.call(that, value);
+						var _function = function(v) {
+							value = v;
+						}
+						Gibberish.dirty(that);
+						setter.call(that, value, _function);
 					},
 				});
 			})();
