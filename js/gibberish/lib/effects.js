@@ -143,6 +143,7 @@ define([], function() {
 				upvalues: { poles:null, phase:0},
 				
 				init: function() {
+					console.log("FILTER INIT");
 					var poles  = [];
 					for(var i = 0; i < this.channels; i++) {
 						poles[i] = [0,0,0,0];
@@ -208,43 +209,6 @@ define([], function() {
 					
 					return sample;
 				},
-				
-				/*//Input/Output
-				    I - input sample
-				    L - lowpass output sample
-				    B - bandpass output sample
-				    H - highpass output sample
-				    N - notch output sample
-				    F1 - Frequency control parameter
-				    Q1 - Q control parameter
-				    D1 - delay associated with bandpass output
-				    D2 - delay associated with low-pass output
-    
-				// parameters:
-				    Q1 = 1/Q 
-				    // where Q1 goes from 2 to 0, ie Q goes from .5 to infinity
-    
-				    // simple frequency tuning with error towards nyquist
-				    // F is the filter's center frequency, and Fs is the sampling rate
-				    F1 = 2*pi*F/Fs
-
-				    // ideal tuning:
-				    F1 = 2 * sin( pi * F / Fs )
-
-				// algorithm
-				    // loop
-				    L = D2 + F1 * D1
-				    H = I - L - Q1*D1
-				    B = F1 * H + D1
-				    N = H + L
-    
-				    // store delays
-				    D1 = B
-				    D2 = L
-
-				    // outputs
-				    L,H,B,N
-				*/
 			});
 			
 			
@@ -252,7 +216,6 @@ define([], function() {
 				name: "Biquad",
 
 				init: function() {
-					console.log("INIT BIQUAD");
 			    	this.cutoff = 2000;
 			    	this.mode = "LP";
 			    	this.Q = .5;

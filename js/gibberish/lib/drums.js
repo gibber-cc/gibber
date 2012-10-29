@@ -3,7 +3,7 @@ define([], function() {
 		init : function(gibberish) {
 			gibberish.Kick = Gen({
 				name:"Kick",
-				props: {cutoff:.01, decay:5, tone: 660, amp:1 },
+				props: {cutoff:55, decay:5, tone: 660, amp:1 },
 				upvalues: { trigger:false, bpf: null, lpf:null },
   
 				init : function() {
@@ -11,6 +11,9 @@ define([], function() {
 					bpf.channels = 1;
 					var lpf = Gibberish.SVF();
 					lpf.channels = 1;
+					
+					
+					console.log("KICK INIT");
 					
 					this.function.setLpf( lpf.function );
 					this.function.setBpf( bpf.function );
@@ -51,45 +54,71 @@ define([], function() {
 				},
 			});
 			
+			// 808 snare is actually two of the 808 kick oscillators http://www.soundonsound.com/sos/Apr02/articles/synthsecrets0402.asp
+			// but I do a simpler filtered noise burst here.
 			gibberish.Snare = Gen({
 				name:"Snare",
-				props: { amp:2 },
-				upvalues: { count:44, rnd:Math.random, lpf:null },
+				props: { cutoff:.6, decay:11025, tune:0, amp:2 },
+				upvalues: { phase:11026, partial1:null, bpf1: null, lpf1:null, bpf2:null, lpf2:null, rnd:Math.random, noiseLPF:null, cutoffIncr:0 },
   
 				init : function() {
-					var lpf = Gibberish.SVF();
-					lpf.channels = 1;
+					var noiseLPF = Gibberish.SVF(); //Gibberish.Filter24(.6, 2, true);
+					noiseLPF.channels = 1;
 					
-					this.function.setBpf( filt.function );
+					var bpf1 = Gibberish.SVF();
+					bpf1.channels = 1;
+					var bpf2 = Gibberish.SVF();
+					bpf2.channels = 1;
+										
+					this.function.setBpf1( bpf1.function );
+					this.function.setBpf2( bpf2.function );
+
+					this.function.setNoiseLPF( noiseLPF.function );
 				},
-  
-				callback: function(cutoff, decay, tone, amp) {
-					var val = [0];
-					//cutoff, resonance, isLowPass, channels
-					if(count++ <= 0) {
-						val = bpf( [1], cutoff, decay, 2, 1 );
-						val = lpf( val, tone, .5, 0, 1 )[0];
+				//				callback : function(sample, cutoff, resonance, isLowPass, channels) {
+
+				callback: function(cutoff, decay, tune, amp) {
+					var val, p1, p2, noise = 0, env = 0;
+
+					if(phase++ <= decay) {
+						env = 1 - phase / decay;
+						
+						val = [ ( rnd() * 2 - 1) * env + env];
+						//val = noiseLPF( val, cutoff - ((1 - env) * cutoff / 2), 0, true, 1 );
+						//p1 = bpf1( val, 180 * (tune + 1), 4, 2, 1 );
+						//p2 = bpf2( val, 330 * (tune + 1), 4, 2, 1 );
+						
+						//						out = lpf( out, tone, .5, 0, 1 );
+						noise = noiseLPF( val, cutoff, .5, 1, 1 )[0];
 					}else{
-						val = bpf( [0], cutoff, decay, 2, 1 );
-						val = lpf( [val], tone, .5, 0, 1 )[0];						
+						val = [0];
+						noise = 0;
 					}
-    
-					return [val * amp];
+					
+					var _env = [env];
+					p1 = bpf1( _env, 180 * (tune + 1), 15, 2, 1 );
+					p2 = bpf2( _env, 330 * (tune + 1), 15, 2, 1 );
+					
+					val[0] += noise;
+					val[0] += p1[0]; 
+					val[0] += p2[0] * .8;
+					val[0] *= amp;
+    				
+					return val;
 				},
   
-				note : function(c, d, t, amp) {
+				note : function(c, d, amp) {
+					console.log(c,d,amp);
 					if(c) this.cutoff = c;					
-					if(d) this.decay = d * .002; 
-					if(t) this.tone = 220 + t * 800;
-					if(amp) this.amp = amp * 60;
+					if(d) this.decay = d; 
+					if(amp) this.amp = amp;
 					
-					this.function.setCount(0); 
+					//this.function.setCutoffIncr( this.cutoff / 2 / this.decay );
+					this.function.setPhase(0);
+					//this.function.getPartial1().setTrigger(true);
+					//this.function.getPartial2().setTrigger(true);
 				},
 			});
-			
-			// b = bd();
-			// 
-			// b.connect(Master);
 		},
 	}
 });
