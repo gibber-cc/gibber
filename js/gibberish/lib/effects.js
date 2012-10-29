@@ -1203,7 +1203,7 @@ define([], function() {
 			Gibberish.masterInit.push( that.symbol + " = Gibberish.make[\"Bus\"]();" );
 			window[that.symbol] = Gibberish.make["Bus"](Gibberish.pan());
 			
-			Gibberish.defineProperties( that, ["channels", "pan"] );
+			Gibberish.defineProperties( that, ["channels", "pan", "amp"] );
 			return that;
 		},
 

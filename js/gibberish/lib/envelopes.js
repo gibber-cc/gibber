@@ -16,7 +16,22 @@ define([], function() {
 			gibberish.generators.Line = gibberish.createGenerator(["time", "loops"], "{0}({1}, {2})" ),
 			gibberish.make["Line"] = this.makeLine;
 			gibberish.Line = this.Line;
+			
+			// simple exponential decay
+			gibberish.EG = Gen({
+				name:"EnvelopeGenerator",
+				props: { decay:.5, length:11050 },
+				
+				upvalues: { pow:Math.pow, value:0, phase:0 },
+				
+				callback: function( decay, length ) {
+					value = pow( decay, phase );
+					phase += 1 / length;
 
+					return value;
+				},
+			});
+			
 	      gibberish.Follow = Gen({
 	        name: "Follow",
 	        props: { input:null, bufferSize:4410, mult:1 },

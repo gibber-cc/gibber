@@ -47,6 +47,7 @@ define(['gibber/audio_callback'], function() {
 				'teoria',
 				'gibber/utilities',
 				'gibber/drums',
+				'gibber/edrums',
 				'gibber/beatCallback',
 				'gibber/synth',
 				'gibber/fm_synth',
