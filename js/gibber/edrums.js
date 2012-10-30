@@ -53,14 +53,15 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 	}
 	
 	this.kit = {
-		kick:   { symbol:'x', amp:1.5, pitch:1, pan:0 },
-		snare:  { symbol:'o', amp:1.5, pitch:1, pan:.15 },
-		// Hat:    { symbol:'*', amp:1.5, pitch:1, pan:-.1 },
-		// OpenHat:{ symbol:'-', amp:1.5, pitch:1, pan:-.2 },
+		kick:   { symbol:'x', amp:2.5, pitch:1, pan:0 },
+		snare:  { symbol:'o', amp:1, pitch:1, pan:.15 },
+		hat:    { symbol:'*', amp:1, pitch:1, pan:-.1 },
+		openHat:{ symbol:'-', amp:1, pitch:1, pan:-.2 },
 	};
 	
 	
 	for(var key in this.kit) {
+		if(key === "openHat") break;
 		var drum = this.kit[key];
 		var _key = key.charAt(0).toUpperCase() + key.slice(1);
 		this[key] = Gibberish[ _key ]( { amp:drum.amp } );
@@ -74,6 +75,7 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 	
 	this.mod = function(name, mod, type) {
 		for(var key in this.kit) {
+			if(key === 'openHat') break;
 			var drum = this[key];
 			drum.mod(name, mod, type);
 		}
@@ -307,11 +309,28 @@ _EDrums.prototype = {
 **description** : shuffle() randomizes the order of notes in the Drums object. The order can be reset using the reset() method.
 **/
 	note : function(nt) {
-		for(var key in this.kit) {
+		console.log("NOTE", nt);
+		switch(nt) {
+			case 'x':
+				this.kick.note();
+			break;
+			case 'o':
+				this.snare.note();
+			break;
+			case '*':
+				this.hat.note(9000);
+			break;
+			case '-':
+				this.hat.note(22050);
+			break;
+			default:
+			break;
+		}
+		/*for(var key in this.kit) {
 			if(nt === this.kit[key].symbol) {
 				this[key].note();
 				break;
 			}
-		}
+		}*/
 	},
 };
