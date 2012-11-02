@@ -1,5 +1,5 @@
 define([], function() {
-	console.log("GIBBERISH HUURAH 2");
+	console.log("GIBBERISH HUURAH 3");
     var that = {
 		debug : false,
 		callbackCount: 0,
@@ -428,7 +428,19 @@ define([], function() {
 		mod : function(name, modulator, type) {
 			var type = type || "+";
 			
-			var m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:false };
+			var m, mm;
+			/*if(typeof this[name] === 'object') {
+				mm = { type:type, operands:[this[name].operands[1], modulator], name:name, NO_MEMO: false };
+			}
+			// }else{
+			// 	mm = { type:type, operands:[this[name].operands[1], modulator], name:name, NO_MEMO: false };
+			// }
+			
+			if(mm) {
+				m = { type:type, operands:[this[name].operands[0], mm], name:name, NO_MEMO:false };
+			}else{*/
+				m = { type:type, operands:[this[name], modulator], name:name, NO_MEMO:false };
+			//}
 			
 			this[name] = m;
 			
@@ -457,13 +469,25 @@ define([], function() {
 				delete this[mod.name];	 				// remove property getter/setters so we can directly assign
 				this.mods.remove(mod);
 				var val = mod.operands[0];
-			
-				var anotherMod = this.mods.get(arguments[0]);
-				if(anotherMod !== null) {
-					this[mod.name] = anotherMod;
-				}else{
-					this[mod.name] = val;
-				}
+				
+				/*if(mod.operands[1].operands) {
+					var newMod = {
+						operands: [
+							val,
+							mod.operands[1].operands[1],
+						],
+						name:[mod.name],
+						type:mod.operands[1].operands[1].type,
+					}
+					this[mod.name] = newMod;
+				}else{*/
+					var anotherMod = this.mods.get(arguments[0]);
+					if(anotherMod !== null) {
+						this[mod.name] = anotherMod;
+					}else{
+						this[mod.name] = val;
+					}
+				//}
 				Gibberish.defineProperties(this, [mod.name]);				
 			}else{
 				for(var i = 0; i < this.mods.length; i++) {
@@ -593,18 +617,18 @@ define([], function() {
 				if(arguments.length === 2) {
 					this.mod("amp", Line(0, level, time), "=");
 					var me = this;
-					future( function() { me.removeMod("amp", false); me.amp = level;  }, time);
+					future( function() { me.amp = level; me.removeMod("amp", false);   }, time);
 				}else{
 					this.mod("amp", Line(0, 1, arguments[0]), "=");
 					var me = this;
-					future( function() { me.removeMod("amp", false); me.amp = 1;  }, arguments[0]);
+					future( function() { me.amp = 1; me.removeMod("amp", false);   }, arguments[0]);
 				}
 				return this;
 			},
 			fadeOut : function(time) {
 				this.mod("amp", Line(this.amp, 0, time), "=");
 				var me = this;
-				future( function() { me.removeMod("amp"); me.amp = 0;  }, time);
+				future( function() { me.amp = 0; me.removeMod("amp");   }, time);
 				return this;
 			},
 			connect : function(bus) {

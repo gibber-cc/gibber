@@ -144,24 +144,21 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             G.E.R.code = function(msg) {
                 var d = $("<div>");
 
-                $(d)
-                    .css({
+                $(d).css({
                     'padding': '0px 10px',
                     marginBottom: '10px',
                 });
-                $(d)
-                    .html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.code);
+                $(d).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.code);
 
                 var b = $("<button>paste code in editor</button>");
-                $(b)
-                    .on('mouseup', function() {
+                $(b).on('mouseup', function() {
                     var code = window.editor.getValue();
                     window.editor.setValue(code + "\n" + msg.code);
                 });
-                $(d)
-                    .append(b);
+                $(d).append(b);
 
-                var b2 = $("<button>claim code</button>");
+                /*
+				var b2 = $("<button>claim code</button>");
                 b2.codeblockNumber = msg.codeblockNumber;
                 (function() {
                     var num = msg.codeblockNumber;
@@ -177,13 +174,11 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                         .attr("id", "block" + num);
                 })();
 
-                $(d)
-                    .append(b2);
+                $(d).append(b2);
+				*/
 
-                $("#sidebar")
-                    .append(d);
-                $("#sidebar")
-                    .scrollTop($("#sidebar")[0].scrollHeight);
+                $("#sidebar").append(d);
+                $("#sidebar").scrollTop($("#sidebar")[0].scrollHeight);
             };
 
             G.E.socket.on('code', function(msg) {
