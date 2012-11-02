@@ -110,8 +110,14 @@ define([], function() {
 			
 			gibberish.Hat = Gen({
 				name: "Hat",
-				props : { amp: 1 },
-				upvalues: { s1:null, s2:null, s3:null, s4:null, s5:null, s6:null, bpf:null, hpf:null, hpf2:null, eg:null, decay:10500 },
+				props : { amp: 1, bpfFreq:1600, bpfRez:5, hpfFreq:.6, hpfRez:5 },
+				upvalues: { 
+					s1:null, s2:null, s3:null, s4:null, s5:null, s6:null, 
+					bpf:null, bpf2:null,
+					hpf:null, hpf2:null, hpf3:null,
+					hpf24: null, 
+					eg:null, eg2:null,
+					decay:8500, decay2:25500 },
 				
 				init : function() {
 					this.s1 = Gibberish.Square(); 
@@ -128,46 +134,78 @@ define([], function() {
 					this.function.setS5(this.s5.function);
 					this.function.setS6(this.s6.function);
 					
-					this.hpf = Gibberish.SVF();
+					this.hpf = Gibberish.Filter24();
 					this.hpf2 = Gibberish.SVF();
-										
-					this.function.setHpf(this.hpf.function);
-					this.function.setHpf2(this.hpf2.function);
+					this.hpf3 = Gibberish.SVF();
+					this.hpf24 = Gibberish.Biquad();
+					this.hpf24.cutoff = 5270;
+					this.hpf24.Q = 1;
+					this.hpf24.mode = "HP";
+					
+					this.hpf2 = Gibberish.Biquad();
+					this.hpf2.cutoff = 5270;
+					this.hpf2.Q = 5;
+					this.hpf2.mode = "HP";
+									
+					this.function.setHpf( this.hpf.function );
+					this.function.setHpf2( this.hpf2 );
+					this.function.setHpf3( this.hpf3.function );
+					this.function.setHpf24( this.hpf24 )
 					
 					this.bpf = Gibberish.SVF();
-					this.function.setBpf(this.bpf.function);					
+					this.function.setBpf(this.bpf.function);
 					
-					this.eg = Gibberish.EG( .0025, 11025 );
+					this.bpf2 = Gibberish.SVF();
+					this.function.setBpf2(this.bpf2.function);
+					
+					this.eg = Gibberish.EG( .0025, 10500 );
 					this.eg.function.setPhase(1);
-					
 					this.function.setEg(this.eg.function);
+					
+					this.eg2 = Gibberish.EG( .1, 7500 );
+					this.eg2.function.setPhase(1);
+					this.function.setEg2(this.eg2.function);
+					
+					
 				},
 				
-				callback : function(amp) {
-					var val = 0;
-					val += s1(540, .35, 1, 0)[0];
-					val += s2(800, .35, 1, 0)[0];
-					val += s3(863, .2, 1, 0)[0];
-					val += s4(1013, .2, 1, 0)[0];
-					val += s5(1427, .2, 1, 0)[0];
-					val += s6(1860 , .2, 1, 0)[0];
+				callback : function(amp, bpfFreq, bpfRez, hpfFreq, hpfRez) {
+					var val = 0, low, high;
+					var ifreq = 540;
+					val += s1( ifreq, .05, 1, 0 )[0];
+					val += s2( ifreq * 1.4471, 2, 1, 0 )[0];
+					val += s3( ifreq * 1.6170, 2, 1, 0 )[0];
+					val += s4( ifreq * 1.9265, 2, 1, 0 )[0];
+					val += s5( ifreq * 2.5028, 2, 1, 0 )[0];
+					val += s6( ifreq * 2.6637, 2, 1, 0 )[0];
 					
-					val = bpf( [val], 5000, .75, 2, 1 );
-					val = hpf2( val, 5500, .5, 1, 1 );
+					val = [val];
+					low  = bpf(  val, bpfFreq, bpfRez, 2, 1 );
+					//high = bpf(  val, 1550, .5, 2, 1 );
+					//high = [ low[0] ];
 					
-					val[0] *= eg(.001, decay);
-					
-					val = hpf( val, 5500, 3, 1, 1 );
-					
+					low[0]  *= eg(.001, decay);
+					//high[0] *= eg2( .1, 25000);
+					//sample, cutoff, resonance, isLowPass, channels
+					low 	= hpf(low, hpfFreq, hpfRez, 0, 1 );
+					//sample, cutoff, resonance, isLowPass, channels
+					//high	= hpf24.call( high ); //, .8, 1, 0, 1 );
+					if(val[0] > .4) val[0] = .4;
+					if(val[0] < -.4) val[0] = -.4;					
+					val[0] 	= low[0];// + high[0];					
 					val[0] *= amp;
 					
 					return val;
 				},
 				
-				note : function(_decay) {
+				note : function(_decay, _decay2) {
 					this.eg.function.setPhase(0);
+					this.eg2.function.setPhase(0);					
 					if(_decay)
 						this.function.setDecay(_decay);
+					if(_decay2)
+						this.function.setDecay2(_decay2);
+					
 				}
 				
 			});

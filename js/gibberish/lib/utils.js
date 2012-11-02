@@ -17,7 +17,8 @@ define(["gibberish/lib/gibberish"], function() {
         return format;
     }();
 	
-	Array.prototype.remove = function(arg) {
+	Array.prototype.remove = function(arg, searchDeep) { // searchDeep when true removes -all- matches, when false returns first one found.
+		searchDeep = typeof searchDeep === 'undefined' ? true : searchDeep;
 		if(typeof arg === "undefined") { // clear all
 			for(var i = 0; i < this.length; i++) {
 				delete this[i];
@@ -26,20 +27,26 @@ define(["gibberish/lib/gibberish"], function() {
 		}else if(typeof arg === "number") {
 			this.splice(arg,1);
 		}else if(typeof arg === "string"){ // find named member and remove
+			var removeMe = [];
 			for(var i = 0; i < this.length; i++) {
-				
 				var member = this[i];
 				if(member.type === arg || member.name === arg) {
-					this.splice(i,1);
+					if(!searchDeep) {
+						this.splice(i,1);
+						return;
+					}else{
+						removeMe.push(i);
+					}
 				}
-				// if(member.symbol === arg) {
-				// 	this.splice(i, 1);
-				// }
+			}
+			for(var i = 0; i < removeMe.length; i++) {
+				this.splice( removeMe[i], 1);
 			}
 		}else if(typeof arg === "object") {
 			var idx = this.indexOf(arg);
-			if(idx > -1) {
+			while(idx > -1) {
 				this.splice(idx,1);
+				idx = this.indexOf(arg);
 			}
 		}
 		if(this.parent) Gibberish.dirty(this.parent);
@@ -62,6 +69,7 @@ define(["gibberish/lib/gibberish"], function() {
 				return this[idx];
 			}
 		}
+		return null;
 	};
 	
 

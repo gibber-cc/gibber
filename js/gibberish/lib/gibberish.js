@@ -1,4 +1,5 @@
 define([], function() {
+	console.log("GIBBERISH HUURAH 2");
     var that = {
 		debug : false,
 		callbackCount: 0,
@@ -457,7 +458,12 @@ define([], function() {
 				this.mods.remove(mod);
 				var val = mod.operands[0];
 			
-				this[mod.name] = val;
+				var anotherMod = this.mods.get(arguments[0]);
+				if(anotherMod !== null) {
+					this[mod.name] = anotherMod;
+				}else{
+					this[mod.name] = val;
+				}
 				Gibberish.defineProperties(this, [mod.name]);				
 			}else{
 				for(var i = 0; i < this.mods.length; i++) {
@@ -587,11 +593,11 @@ define([], function() {
 				if(arguments.length === 2) {
 					this.mod("amp", Line(0, level, time), "=");
 					var me = this;
-					future( function() { me.removeMod("amp"); me.amp = level;  }, time);
+					future( function() { me.removeMod("amp", false); me.amp = level;  }, time);
 				}else{
 					this.mod("amp", Line(0, 1, arguments[0]), "=");
 					var me = this;
-					future( function() { me.removeMod("amp"); me.amp = 1;  }, arguments[0]);
+					future( function() { me.removeMod("amp", false); me.amp = 1;  }, arguments[0]);
 				}
 				return this;
 			},

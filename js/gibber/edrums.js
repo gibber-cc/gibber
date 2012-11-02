@@ -309,7 +309,6 @@ _EDrums.prototype = {
 **description** : shuffle() randomizes the order of notes in the Drums object. The order can be reset using the reset() method.
 **/
 	note : function(nt) {
-		console.log("NOTE", nt);
 		switch(nt) {
 			case 'x':
 				this.kick.note();
@@ -318,10 +317,10 @@ _EDrums.prototype = {
 				this.snare.note();
 			break;
 			case '*':
-				this.hat.note(9000);
+				this.hat.note(7000, 14000);
 			break;
 			case '-':
-				this.hat.note(22050);
+				this.hat.note(15000, 36000);
 			break;
 			default:
 			break;
