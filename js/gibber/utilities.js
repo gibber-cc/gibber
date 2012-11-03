@@ -65,9 +65,9 @@ Array.prototype.replace = function(oldObj, newObj) {
 	}
 };
 
-Array.prototype.insert = function(v, pos) {
+/*Array.prototype.insert = function(v, pos) {
 	this.splice(pos,0,v);
-};
+};*/
 
 // Array.prototype.add = function() {
 // 	for(var i = 0; i < arguments.length; i++) {

@@ -88,7 +88,13 @@ define(["gibberish/lib/gibberish"], function() {
 
 	Array.prototype.insert = function(v, pos) {
 		v.parent = this;
-		this.splice(pos,0,v);
+		if(Array.isArray(v)) {
+			for(var i = 0; i < v.length; i++) {
+				this.splice(pos + i, 0, v[i]);
+			}
+		}else{
+			this.splice(pos,0,v);
+		}
 		if(this.parent) Gibberish.dirty(this.parent);
 	};
 
