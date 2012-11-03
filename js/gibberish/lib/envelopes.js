@@ -31,27 +31,8 @@ define([], function() {
 					return value;
 				},
 			});
-			
-	      gibberish.Follow = Gen({
-	        name: "Follow",
-	        props: { input:null, bufferSize:4410, mult:1 },
-	        upvalues: { abs:Math.abs, history:null, sum:0, index:0, value:0 },
-			
-	        init: function() {
-	         this.function.setHistory(new Float32Array(this.bufferSize));
-	        },
-			
-	        callback: function(input, bufferSize, mult) {
-	          sum += abs(input[0]);
-	          sum -= history[index];
-	          history[index] = abs(input[0]);
-	          index = (index + 1) % bufferSize;
-	          value = (sum / bufferSize) * mult;
-			  return value;
-	        },
-	      });
 		  
-	      gibberish.Follow2 = Gen({
+	      gibberish.Follow = gibberish.Follow2 = Gen({
 	        name: "Follow",
 	        props: { input:null, bufferSize:4410, mult:1 },
 	        upvalues: { abs:Math.abs, history:null, sum:0, index:0, value:0 },

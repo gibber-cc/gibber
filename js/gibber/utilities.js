@@ -633,6 +633,46 @@ window.Scale = function(_root, _mode) {
 	return that;
 };
 
+window.CustomScale = function() {
+  var that = {
+    notes : [],
+    ratios: arguments[1] || [1, 1.10, 1.25, 1.3333, 1.5, 1.666, 1.75],
+	
+    create : function() {
+      this.notes = [];
+  
+      var scaleRoot = this.root;
+      
+      for( var octave = 0; octave < 8; octave++ ) {
+        for( var num = 0; num < this.ratios.length; num++ ) {	
+          this.notes.push( scaleRoot * this.ratios[num] );
+        }
+        scaleRoot *= 2;
+      }
+      
+      scaleRoot = this.root;
+	  var negCount = 8;
+      for(var octave = -1; octave >= -8; octave--) {
+        scaleRoot /= 2;
+        for( var num = 0; num < this.ratios.length; num++ ) {
+		  var noteNum = octave * this.ratios.length + num;
+          this.notes[noteNum] = scaleRoot * this.ratios[num];
+        }
+      }	
+    },
+  };
+  
+  var _root = arguments[0] || 440;
+  Object.defineProperty(that, "root", {
+    get : function() { return _root; },
+    set : function(val) { _root = val; this.create(_root); }
+  });
+                        
+  that.create();
+      
+  return that;
+};
+
 // wrap a function call in a function.
 window._f = window.func = function() {
 	var func = Array.prototype.splice.call(arguments, 0, 1)[0];
