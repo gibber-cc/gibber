@@ -593,7 +593,7 @@ window.Scale = function(_root, _mode) {
 			}
 			
 			var negCount = -1;
-			for(var oct = _rootoctave -1, o = -1; oct >= 0; oct--, o--) {
+			for(var oct = _rootoctave - 2, o = -1; oct >= 0; oct--, o--) {
 			 	for(var num = _scale.length - 1; num >= 0; num--) {
 			 		var nt = jQuery.extend({}, _scale[num]);
 			 		nt.octave += o;

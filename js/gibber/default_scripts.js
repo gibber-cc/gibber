@@ -188,7 +188,8 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '\n'+
 'You can sequence as many parameters as you want from a single Seq object. The two unifying\n'+
 'factors for all of these parameters are the "durations" (when the parameters will change) and\n'+
-'the "slaves" (which objects will they be changed on). \n'+
+'the "slaves" (which objects will they be changed on). For ScaleSeq objects, "mode" and "root" are also \n'+
+'used by the ScaleSeq object and not directly used to control slaves. \n'+
 '\n'+
 'When you create a Seq you give a bunch of arrays for properties you want to sequence. For example,\n'+
 'if we want to sequence notes and change the amplitude for each note:\n'+
@@ -202,8 +203,8 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '});\n'+
 '\n'+
 'The above Seq object slaves one synth and advances through the various sequences it contains\n'+
-'every 1/4 note. All of the sequences get store in an object named, appropriately, "sequences". So, to\n'+
-'access the amplitudes in the above sequence you would use b.sequences.amp.\n'+
+'every 1/4 note. The arrays holding the values are stored as properties of the Seq object. So, to\n'+
+'access the array of amplitudes in the above sequence you would use b.amp.\n'+
 '\n'+
 'There is another special keyword, "function", that allows you to sequence calls to functions instead\n'+
 'of controlling objects.\n'+
