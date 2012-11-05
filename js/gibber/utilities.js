@@ -673,6 +673,64 @@ window.CustomScale = function() {
   return that;
 };
 
+// Scales contributed by Luke Taylor
+// Half-Whole or Octatonic Scale
+//http://en.wikipedia.org/wiki/Octatonic_scale
+window.HalfWhole = function(root) {
+   return CustomScale( root, [ 1,1.059463,1.189207,1.259921,1.414214,1.498307,1.681793, 1.781797 ]);
+};
+
+//Whole-Half or Octatonic Scale
+//http://en.wikipedia.org/wiki/Octatonic_scale
+window.WholeHalf = function(root) {
+   return CustomScale( root, [ 1,1.122462,1.189207,1.334840,1.414214,1.587401,1.681793, 1.887749 ]);
+};
+
+//Pythagorean Tuning
+//http://en.wikipedia.org/wiki/Pythagorean_tuning
+
+//Chromatic scale in Pythagorean tuning
+window.Pythagorean = function(root) {
+   return CustomScale( root, [ 1, 256/243, 9/8, 32/27, 81/64, 4/3, 729/512, 3/2, 128/81, 27/16, 16/9, 243/128 ]);
+};
+
+//Major Pythagorean
+window.PythagoreanMajor = function(root) {
+   return CustomScale( root, [ 1, 9/8, 81/64, 4/3, 3/2, 27/16, 243/128 ]);
+};
+
+//Major Pythagorean
+window.PythagoreanMinor = function(root) {
+   return CustomScale( root, [ 1, 9/8, 32/27, 4/3, 3/2, 128/81, 16/9 ]);
+};
+
+
+// 5-limit Just Intonation 
+//http://en.wikipedia.org/wiki/List_of_intervals_in_5-limit_just_intonation
+
+//Chromatic scale in 5-limit just intonation
+window.Limit5 = function(root) {
+   return CustomScale( root, [ 1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 9/5, 15/8 ]);
+};
+
+//Major scale in 5-limit
+window.LimitMajor5 = function(root) {
+   return CustomScale( root, [ 1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]);
+};
+
+//Minor scale in 5-limit
+window.LimitMinor5 = function(root) {
+   return CustomScale( root, [ 1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]);
+};
+
+window.Just = function(root) {
+	return CustomScale(root, [
+		1, 1.0417, 1.1250, 1.2000,
+		1.2500, 1.3333, 1.4063, 1.5,
+		1.6, 1.6667, 1.8, 1.8750
+	]);
+};
+
 // wrap a function call in a function.
 window._f = window.func = function() {
 	var func = Array.prototype.splice.call(arguments, 0, 1)[0];
