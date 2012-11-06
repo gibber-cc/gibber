@@ -665,9 +665,20 @@ window.CustomScale = function() {
   var _root = arguments[0] || 440;
   Object.defineProperty(that, "root", {
     get : function() { return _root; },
-    set : function(val) { _root = val; this.create(_root); }
+    set : function(val) { 
+		if(typeof val === "number") {
+			_root = val;
+		}else if (typeof val === "string") {
+			_root = teoria.note(val).fq();
+			console.log(_root, teoria.note(val));
+		}else if (typeof val === 'object') {
+			_root = val.fq();
+		}
+		console.log()
+		this.create(_root); }
   });
-                        
+  
+  that.root = _root;                   
   that.create();
       
   return that;
@@ -721,6 +732,32 @@ window.LimitMajor5 = function(root) {
 //Minor scale in 5-limit
 window.LimitMinor5 = function(root) {
    return CustomScale( root, [ 1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]);
+};
+
+// Messiaen's modes of limited transposition http://en.wikipedia.org/wiki/Modes_of_limited_transposition
+window.Mess3 = function(root) { return CustomScale( root, [1,1.122462, 1.189207, 1.259921, 1.414214, 1.498307, 1.587401, 1.781797, 1.887749 ]) };
+
+window.Mess4 = function(root) { return CustomScale( root, [1, 1.059463, 1.122462, 1.334840, 1.414214, 1.498307, 1.587401, 1.887749 ]) };
+
+window.Mess5 = function(root) { return CustomScale( root, [1, 1.059463, 1.334840, 1.414214, 1.498307, 1.887749 ]) };
+
+window.Mess6 = function(root) { return CustomScale( root, [1, 1.122462, 1.259921, 1.334840, 1.414214, 1.587401, 1.781797, 1.887749 ]) };
+
+window.Mess7 = function(root) { return CustomScale( root, [1, 1.059463, 1.122462, 1.189207, 1.334840, 1.414214, 1.498307, 1.587401, 1.681793, 1.887749 ]) };
+
+//And, a personal (anthony garcia) favorite synthetic mode, lydian flat 7:
+window.Adams = function(root) { return CustomScale( root, [1, 1.122462, 1.259921, 1.414214, 1.498307, 1.681793, 1.781797 ]) };
+
+//5 tone equal temperament
+//http://en.wikipedia.org/wiki/Equal_temperament#5_and_7_tone_temperaments_in_ethnomusicology
+window.Equal5Tone = function(root) {
+   return CustomScale( root, [ 1, 1.15, 1.32, 1.35, 1.52, 1.74 ]);
+};
+
+//7 tone equal temperament
+//http://en.wikipedia.org/wiki/Equal_temperament#5_and_7_tone_temperaments_in_ethnomusicology
+window.Equal7Tone = function(root) {
+   return CustomScale( root, [ 1, 1.1, 1.22, 1.35, 1.49, 1.64, 1.81 ]);
 };
 
 window.Just = function(root) {
