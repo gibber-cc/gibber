@@ -233,6 +233,7 @@ define(function() {
 			
 			window.Camera = this.camera;
 			
+			window.Model = this.model;
 			window.Cylinder = this.cylinder;
 			window.Torus = this.torus;
 			window.Knot = this.torusKnot;
@@ -241,6 +242,7 @@ define(function() {
 			window.Octahedron = this.octahedron;
 			window.Cube = this.cube;
 			window.Sphere = this.sphere;
+			
 			window.Waveform = this.waveform;
 		},
 		geometry : function(props, geometry) {
@@ -418,27 +420,19 @@ define(function() {
 			);
 			return Graphics.geometry(props, geometry);
 		},
-		loadModel: function(name, cb) {
-			props = {};
-			var loader = new THREE.OBJLoader();
-			loader.addEventListener( 'load', function( event ) {
-				var geometry = event.content;
-				geometry.isModel = true;
-				console.log(geometry);
-				var testing = Graphics.geometry(props, geometry);
-				cb(testing);
-			});
-			loader.load(name);	
-		},
 		model : function(props) {
+			var returner = {};
 			
 			var loader = new THREE.OBJLoader();
 			loader.addEventListener( 'load', function( event ) {
 				var geometry = event.content;
 				geometry.isModel = true;
-				var testing = Graphics.geometry(props, geometry);
+				var _model = Graphics.geometry(props, geometry);
+				returner.__proto__ = _model;
 			});
-			loader.load(props.model);			
+			loader.load(typeof props === 'string' ? props : props.model );
+			
+			return returner;	
 		},
 
 		waveform : function(props) {
