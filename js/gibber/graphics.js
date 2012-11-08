@@ -244,17 +244,24 @@ define(function() {
 			window.Waveform = this.waveform;
 		},
 		geometry : function(props, geometry) {
+			console.log("IS MODEL", geometry.isModel);
 			props.color = props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000;
-					
-			var materials = props.wireframe ?  [
-			    new THREE.MeshPhongMaterial( {color: props.color, shading: THREE.FlatShading, } ),
-				new THREE.MeshBasicMaterial( { color: 0x000000, shading: THREE.FlatShading, wireframe: true, transparent: true } )
-			] 
-			: new THREE.MeshLambertMaterial( { color: props.color, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 			
-			var that = props.wireframe ? 
-				THREE.SceneUtils.createMultiMaterialObject( geometry, materials ) :
-				new THREE.Mesh(	geometry, materials);
+			var that;
+			if(!geometry.isModel) {
+				var materials = props.wireframe ?  [
+				    new THREE.MeshPhongMaterial( {color: props.color, shading: THREE.FlatShading, } ),
+					new THREE.MeshBasicMaterial( { color: 0x000000, shading: THREE.FlatShading, wireframe: true, transparent: true } )
+				] 
+				: new THREE.MeshLambertMaterial( { color: props.color, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
+			
+				that = props.wireframe ? 
+					THREE.SceneUtils.createMultiMaterialObject( geometry, materials ) :
+					new THREE.Mesh(	geometry, materials);
+			}else{
+				console.log("FOUND MODEL AND REPLACING");
+				that = geometry;
+			}
 			
 			that.category = "graphics";
 			
@@ -410,6 +417,28 @@ define(function() {
 				props.scaleHeight
 			);
 			return Graphics.geometry(props, geometry);
+		},
+		loadModel: function(name, cb) {
+			props = {};
+			var loader = new THREE.OBJLoader();
+			loader.addEventListener( 'load', function( event ) {
+				var geometry = event.content;
+				geometry.isModel = true;
+				console.log(geometry);
+				var testing = Graphics.geometry(props, geometry);
+				cb(testing);
+			});
+			loader.load(name);	
+		},
+		model : function(props) {
+			
+			var loader = new THREE.OBJLoader();
+			loader.addEventListener( 'load', function( event ) {
+				var geometry = event.content;
+				geometry.isModel = true;
+				var testing = Graphics.geometry(props, geometry);
+			});
+			loader.load(props.model);			
 		},
 
 		waveform : function(props) {
@@ -614,20 +643,20 @@ define(function() {
 		shaders : [
 			{
 				name:'Bloom',
-				properties: [],/*{
-					name: 'amount',
-					value: .5,
-					type: 'uniforms',
-				}],*/
+				properties: [],
 				type:'uniforms',
 				init: function(obj) {
-					console.log("AMOUNT", obj.amount);
-					return new THREE.BloomPass( obj.amount || 2 );
+					//console.log("AMOUNT", obj.amount);
+					return new THREE.BloomPass( obj.opacity || 1.5 );
 				}
 			},
 			{
 				name:'Screen',
-				properties: [],
+				properties: [{
+					name: 'opacity',
+					value: .5,
+					type: 'uniforms',
+				}],
 				type:'uniforms',
 				init: function(obj) {
 					return new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] );

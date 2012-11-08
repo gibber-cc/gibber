@@ -110,6 +110,7 @@ define(["gibberish/lib/gibberish"], function() {
 		}
 		//console.log("ADDING ::: this.parent = ", this.parent)
 		if(this.parent) Gibberish.dirty(this.parent);
+		
 	};
 	
 	Array.prototype.pushUnique = function() {
