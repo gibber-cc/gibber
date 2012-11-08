@@ -474,6 +474,39 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 'g.speedMin = -2;\n'+
 '\n',
 
+"graphics" :
+'// initialize graphics.\n'+
+'Graphics.init();\n'+
+'\n'+
+'// also try Cube, Sphere, Torus, Knot, Cylinder, Octahedron, Tetrahedron \n'+
+'a = Icosahedron({wireframe:true});\n'+
+'\n'+
+'// mod rotation so that geometry spins\n'+
+'a.mod("rx", .01, "++");\n'+
+'a.mod("ry", .01, "++");\n'+
+'a.mod("rz", .01, "++");\n'+
+'\n'+
+'// alternatively use a.scale.x etc.\n'+
+'a._scale = [.5,.5,.5];\n'+
+'\n'+
+'// film grain effect\n'+
+'c = Film();\n'+
+'// number of scanlines\n'+
+'c.sCount = 12;\n'+
+'\n'+
+'d = Drums("x*o*x*o*");\n'+
+'e = Blur();\n'+
+'\n'+
+'// create envelope follower tracking drums\n'+
+'f = Follow({input:d});\n'+
+'f.connect(Master);\n'+
+'\n'+
+'// mod horizontal blur amount based on envelope follower\n'+
+'e.mod("h", f, "=", .5);\n'+
+'\n'+
+'// move camera\n'+
+'Camera.position.z = 100;',
+
 "randomness and algorithms" :
 '/* Randomness and Algorithms\n'+
 '\n'+

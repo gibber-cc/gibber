@@ -184,7 +184,7 @@ define(function() {
 
 			// the camera starts at 0,0,0 so pull it back
 			this.camera.position.z = 300;
-
+			
 			this.renderer.setSize(WIDTH, HEIGHT);
 
 			// attach the render-supplied DOM element
@@ -202,14 +202,10 @@ define(function() {
 			this.scene.add(ambientLight);
 			this.scene.add(pointLight);
 			
-			/*this.scene.add( new THREE.Mesh(
-			  	new THREE.CubeGeometry( 50, 50, 50 ),
-				new THREE.MeshLambertMaterial({ color: 0xCC0000 })
-			    //new THREE.MeshPhongMaterial( {color: props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000 } )
-				//sphereMaterial
-				) 
-			);*/
-
+			this.lights = [
+				pointLight,
+				ambientLight
+			];
 			var that = this;
 			(function() {
 				var r = function() {
@@ -235,63 +231,37 @@ define(function() {
 				window.requestAnimationFrame(r);
 			})();
 			
-			//window.Blur = this.blur;
-			//window.Dots = this.dots;
+			window.Camera = this.camera;
+			
+			window.Cylinder = this.cylinder;
+			window.Torus = this.torus;
+			window.Knot = this.torusKnot;
+			window.Tetrahedron = this.tetrahedron;
+			window.Icosahedron = this.icosahedron;
+			window.Octahedron = this.octahedron;
 			window.Cube = this.cube;
 			window.Sphere = this.sphere;
 			window.Waveform = this.waveform;
-			console.log("FINISH INIT");
 		},
-		sphere : function(props) {
-			props = props || {};
-			
-			var that = new THREE.Mesh(
-			  	new THREE.SphereGeometry( props.radius || 50, props.segments || 16, props.rings || 16),	// radius, segments per ring, rings, 
-			    new THREE.MeshPhongMaterial({color: props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000 } )
-			);
-			that.category = "graphics";
-			Graphics.scene.add(that);
-			
-			that.x = that.position.x;
-			that.y = that.position.y;
-			that.z = that.position.z;
-			
-			that.rx = that.rotation.x;
-			that.ry = that.rotation.y;
-			that.rz = that.rotation.z;
-			
-			Object.defineProperties(that, {
-				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; } },
-				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; } },
-				z : { get: function() { return this.position.z; }, set: function(val) { this.position.z = val; } },	
-				
-				rx : { get: function() { return this.rotation.x; }, set: function(val) { this.rotation.x = val; } },
-				ry : { get: function() { return this.rotation.y; }, set: function(val) { this.rotation.y = val; } },
-				rz : { get: function() { return this.rotation.z; }, set: function(val) { this.rotation.z = val; } },							
-			});		
-			
-			that.update = function() {};
-			Gibberish.extend(that, props);
-			Graphics.graph.push(that);
-			
-			return that;
-		},
-		cube : function(props) {
-			props = props || {};
+		geometry : function(props, geometry) {
 			props.color = props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000;
+					
+			var materials = props.wireframe ?  [
+			    new THREE.MeshPhongMaterial( {color: props.color, shading: THREE.FlatShading, } ),
+				new THREE.MeshBasicMaterial( { color: 0x000000, shading: THREE.FlatShading, wireframe: true, transparent: true } )
+			] 
+			: new THREE.MeshLambertMaterial( { color: props.color, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 			
-			var that = new THREE.Mesh(
-			  	new THREE.CubeGeometry( props.width || 50, props.height || 50, props.depth || 50 ),
-			    new THREE.MeshPhongMaterial( {color: props.color } )
-				//sphereMaterial
-			);
+			var that = props.wireframe ? 
+				THREE.SceneUtils.createMultiMaterialObject( geometry, materials ) :
+				new THREE.Mesh(	geometry, materials);
+			
 			that.category = "graphics";
 			
 			that.remove = that.kill = function() {
 				Graphics.scene.remove(that);
 			};
 			
-			//var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0xCC0000 });			
 			that._update = function() {
 				for(var i = 0; i < this.mods.length; i++) {
 					var mod = this.mods[i];
@@ -378,7 +348,70 @@ define(function() {
 			
 			return that;
 		},
+		icosahedron : function(props) {
+			props = props || {};
+			var geometry = new THREE.IcosahedronGeometry( props.radius || 50, props.detail || 0	 );
+			return Graphics.geometry(props, geometry);
+		},
+		octahedron : function(props) {
+			props = props || {};
+			var geometry = new THREE.OctahedronGeometry( props.radius || 50, props.detail || 0 );
+			return Graphics.geometry(props, geometry);
+		},
+		tetrahedron : function(props) {
+			props = props || {};
+			var geometry = new THREE.TetrahedronGeometry( props.radius || 50, props.detail || 0 );
+			return Graphics.geometry(props, geometry);
+		},
+		sphere : function(props) {
+			props = props || {};
+			var geometry = new THREE.SphereGeometry( props.radius || 50, props.segments || 16, props.rings || 16 );
+			return Graphics.geometry(props, geometry);
+		},
+		cube : function(props) {
+			props = props || {};
+			var geometry = new THREE.CubeGeometry( props.width || 50, props.height || 50, props.depth || 50 );
+			return Graphics.geometry(props, geometry);
+		},
+		//radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded
+		cylinder : function(props) {
+			props = props || {};
+			var geometry = new THREE.CylinderGeometry( 
+				props.radiusTop,
+				props.radiusBottom,
+				props.height,
+				props.radiusSegments,
+				props.heightSegments,
+				props.openEnded
+			);
+			return Graphics.geometry(props, geometry);
+		},
 		
+		torus : function(props) {
+			props = props || {};
+			var geometry = new THREE.TorusGeometry( 
+				props.radius,
+				props.tube,
+				props.radialSegments,
+				props.tubularSegments,
+				props.arc
+			);
+			return Graphics.geometry(props, geometry);
+		},
+		torusKnot : function(props) {
+			props = props || {};
+			var geometry = new THREE.TorusKnotGeometry( 
+				props.radius,
+				props.tube,
+				props.radialSegments,
+				props.tubularSegments,
+				props.p,
+				props.q,
+				props.scaleHeight
+			);
+			return Graphics.geometry(props, geometry);
+		},
+
 		waveform : function(props) {
 			//_ugen, frame, _size, _canvas
 			props.size = props.size || 64;
