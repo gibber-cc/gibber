@@ -428,7 +428,7 @@ define(function() {
 				var geometry = event.content;
 				geometry.isModel = true;
 				var _model = Graphics.geometry(props, geometry);
-				returner.__proto__ = _model;
+				returner.__proto__ = _model; // only way I could simple asynchronous loading to work.
 			});
 			loader.load(typeof props === 'string' ? props : props.model );
 			

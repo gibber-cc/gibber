@@ -660,8 +660,18 @@ window.CustomScale = function() {
         }
       }	
     },
+	
+	chord : function(_notes, _offset) {
+		var _chord = [];
+		_offset = _offset || 0;
+			
+		for(var i = 0; i < _notes.length; i++) {
+			_chord.push( this.notes[_notes[i] + _offset] );
+		}
+		return _chord;
+	},	
   };
-  
+
   var _root = arguments[0] || 440;
   Object.defineProperty(that, "root", {
     get : function() { return _root; },
@@ -725,12 +735,12 @@ window.Limit5 = function(root) {
 };
 
 //Major scale in 5-limit
-window.LimitMajor5 = function(root) {
+window.LimitMajor5 = window.Limit5Major = function(root) {
    return CustomScale( root, [ 1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]);
 };
 
 //Minor scale in 5-limit
-window.LimitMinor5 = function(root) {
+window.LimitMinor5 = window.Limit5Minor = function(root) {
    return CustomScale( root, [ 1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]);
 };
 
