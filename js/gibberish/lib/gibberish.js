@@ -575,12 +575,26 @@ define([], function() {
 			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
 			
 			return function(val, pan) {
+				//amp = isNaN(amp) ? 1 : amp;
 				//pan = isNaN(pan) ? 0 : pan;
 				return [
 		      		val * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) ),
 		      		val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ), 
 	    		];
 			};
+		},
+		pan2 : function() {
+			var sin = Math.sin;
+			var cos = Math.cos;
+			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
+			
+			return function(val, pan, amp) {
+				return [
+	      			val[0] * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) ) * amp,
+		      		val[1] * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ) * amp, 
+				];
+			};
+			
 		},
 		dirty : function(ugen) {
 			if(typeof ugen !== "undefined" && ugen !== this) {

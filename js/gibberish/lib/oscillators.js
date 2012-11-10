@@ -981,7 +981,6 @@ define([], function() {
 		
 		//gibberish.createGenerator(["numberOfGrains", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "reverse"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7} )");
 		Grains : function(properties) {
-			console.log("GRAINS v3");
 			var that = { 
 				type:		"Grains",
 				category:	"Gen",
@@ -999,6 +998,7 @@ define([], function() {
 				reverse:	true,
 				fade:		.1,
 				pan:		0,
+				spread:		.5,
 				numberOfGrains:10,
 
 			};
@@ -1026,7 +1026,7 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Grains\"]();");
-			window[that.symbol] = /*function() { return [0,0]; }*/Gibberish.make["Grains"](that.numberOfGrains, that);
+			window[that.symbol] = /*function() { return [0,0]; }*/Gibberish.make["Grains"](that.numberOfGrains, that, rndf);
 			that._function = window[that.symbol];
 						
 			Gibberish.defineProperties( that, ["speed", "speedMin", "speedMax", "positionMin", "positionMax", "position", "numberOfGrains", "amp", "grainSize", "pan", "shouldWrite"] );
@@ -1034,7 +1034,7 @@ define([], function() {
 			return that;
 		},
 		
-		makeGrains: function(numberOfGrains, self) { // note, storing the increment value DOES NOT make this faster!
+		makeGrains: function(numberOfGrains, self, ___rndf) { // note, storing the increment value DOES NOT make this faster!
 			var grains = [];
 			for(var i = 0; i < numberOfGrains; i++) {
 				grains[i] = {
@@ -1044,15 +1044,16 @@ define([], function() {
 				grains[i].start = grains[i].pos;
 				grains[i].end = grains[i].pos + self.grainSize;
 				grains[i].fadeAmount = grains[i].speed * (self.fade * self.grainSize);
+				grains[i].pan = ___rndf(self.spread * -1, self.spread);
 			}
 			var buffer = self.buffer;
 			var interpolate = Gibberish.interpolate;
 			var debug = 0;
-			var panner = Gibberish.pan();
+			var panner = Gibberish.pan2();
 			var write = 0;
 
 			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {
-				var val = 0;
+				var val = [0,0];
 				for(var i = 0; i < numberOfGrains; i++) {
 					var grain = grains[i];
 					
@@ -1063,6 +1064,7 @@ define([], function() {
 							grain.end = grain.start + grainSize;
 							grain.speed = speed + rndf(speedMin, speedMax);
 							grain.fadeAmount = grain.speed * (fade * grainSize);
+							grain.pan = ___rndf(self.spread * -1, self.spread);
 						}
 						
 						var _pos = grain.pos;
@@ -1092,13 +1094,15 @@ define([], function() {
 						_val *= grain.pos > grain.start - grain.fadeAmount ? (grain.start - grain.pos) / grain.fadeAmount : 1;
 						_val *= grain.pos < (grain.end + grain.fadeAmount) ? (grain.end - grain.pos) / grain.fadeAmount : 1;
 					}
-
-				    val += _val;
+					
+					_val = panner(_val, grain.pan);
+				    val[0] += _val[0];
+				    val[1] += _val[1]
 					
 					grain.pos += grain.speed;
 				}
 				
-				return panner(val * amp, pan);
+				return panner(val, pan, amp);
 			};
 			
 			output.makeGrains = function(_buffer) {
