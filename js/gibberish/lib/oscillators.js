@@ -1049,7 +1049,8 @@ define([], function() {
 			var buffer = self.buffer;
 			var interpolate = Gibberish.interpolate;
 			var debug = 0;
-			var panner = Gibberish.pan2();
+			var panner = Gibberish.pan();
+			var panner2 = Gibberish.pan2();			
 			var write = 0;
 
 			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {
@@ -1102,7 +1103,7 @@ define([], function() {
 					grain.pos += grain.speed;
 				}
 				
-				return panner(val, pan, amp);
+				return panner2(val, pan, amp);
 			};
 			
 			output.makeGrains = function(_buffer) {

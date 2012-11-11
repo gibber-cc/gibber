@@ -144,6 +144,14 @@ Array.prototype.shuffle = function() {
 		for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
 }
 
+//http://stackoverflow.com/questions/3362471/how-can-i-call-a-javascript-constructor-using-call-or-apply
+function applyConstructor(ctor, args) {
+    var a = [];
+    for (var i = 0; i < args.length; i++)
+        a[i] = 'args[' + i + ']';
+    return eval('new ctor(' + a.join() + ')');
+}
+
 Bag = function(values) { 
 	var that = {
 		values : values,

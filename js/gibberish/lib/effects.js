@@ -353,7 +353,8 @@ define([], function() {
 							dec[i] = gibberish.Biquad();
 							
 							enc[i].mode = dec[i].mode = "BP";
-							enc[i].cutoff = enc[i].cutoff = 80 + i * 250;
+							enc[i].Q = dec[i].Q = 15;
+							enc[i].cutoff = dec[i].cutoff = 550 + i * 575;
 							
 							_amps[i] = 0;
 							_store[i] = 0;
