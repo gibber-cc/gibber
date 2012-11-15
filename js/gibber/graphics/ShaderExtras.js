@@ -156,9 +156,9 @@ THREE.ShaderExtras = {
  			x: {type: "f", value: 0.5},
  			y: {type: "f", value: 0.5},
  			exposure: {type: "f", value: 0.6},
- 			decay: {type: "f", value: 0.93},
- 			density: {type: "f", value: 0.96},
- 			weight: {type: "f", value: 0.4},
+ 			decay: {type: "f", value: 0.7},
+ 			density: {type: "f", value: 0.4},
+ 			weight: {type: "f", value: 0.8},
  			max: {type: "f", value: 1.0},
 			mix:  	{ type: "f", value: 1 },
 			//samples: { type:"i", value: 20 }			

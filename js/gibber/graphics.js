@@ -279,6 +279,7 @@ define(['gibber/graphics/three.min'], function(){
 				})();
 				window.Camera = that.camera;
 				
+				window.background = that.background;
 				window.Color = that.color;
 				
 				window.Model = that.model;
@@ -349,7 +350,7 @@ define(['gibber/graphics/three.min'], function(){
 				if(typeof arguments[0] !== 'string') {
 					Graphics.renderer.setClearColorHex(arguments[0]);
 				}else{
-					Graphics.renderer.setClearColor(this.color(arguments[0]));
+					Graphics.renderer.setClearColor(that.color(arguments[0]));
 				}
 			}
 		},
@@ -857,9 +858,9 @@ define(['gibber/graphics/three.min'], function(){
 			 			{ name:'x', value: 0.5},
 			 			{ name:'y', value: 0.5},
 			 			{ name:'exposure', value: 0.6},
-			 			{ name:'decay',    value: 0.93},
-			 			{ name:'density',  value: 0.96},
-			 			{ name:'weight',   value: 0.4},
+			 			{ name:'decay',    value: 0.7},
+			 			{ name:'density',  value: 0.4},
+			 			{ name:'weight',   value: 0.8},
 			 			{ name:'max',    value: 1.0},
 			 			{ name:'mix',    	value: 1.0},							
 			 			{ name:'samples',   value: 10.0},				
@@ -871,7 +872,6 @@ define(['gibber/graphics/three.min'], function(){
 				}
 				],
 			});
-	
 	
 			that.makeEffect({
 				name:"Screen",
@@ -888,7 +888,6 @@ define(['gibber/graphics/three.min'], function(){
 				}
 				],
 			});
-	
 	
 			that.makeEffect({
 				name:"Blur",
