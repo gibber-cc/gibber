@@ -570,13 +570,9 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                 };
                 return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), linksOverlay);
             });
-            $('.CodeMirror')
-                .css("display", "inline-block");
-            $('.CodeMirror')
-                .delegate(".cm-link", "click", function(e) {
-                var url = $(event.target)
-                    .text();
-                console.log(url);
+            $('.CodeMirror').css("display", "inline-block");
+            $('.CodeMirror').delegate(".cm-link", "click", function(e) {
+                var url = $(event.target).text();
                 Gibber.Environment.loadTutorial(url.split(":")[1]);
             });
 
@@ -950,6 +946,11 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
 
             this.graphics = _graphics;
             window.Graphics = _graphics;
+			window.graphics = function(fullScreen) {
+				if(fullScreen)
+					Gibber.Environment.fullScreen();
+				Graphics.init();
+			}
             // don't create graphics until waveform is called
             window.Waveform = function() {
                 Gibber.Environment.graphics.init();

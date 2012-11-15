@@ -820,8 +820,8 @@ window.list = function() {
 	return arr;
 };
 
-window.Color = function(r,g,b) {
-	var a = new THREE.Color(0x000000);
-	a.setRGB(r,g,b);
-	return a;
-};
+// window.Color = function(r,g,b) {
+// 	var a = new THREE.Color(0x000000);
+// 	a.setRGB(r,g,b);
+// 	return a;
+// };

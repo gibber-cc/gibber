@@ -1,20 +1,3 @@
-/*
-<script src='js/gibber/graphics/three.min.js'></script>
-<script src='js/gibber/graphics/Stats.js'></script>
-		
-<script src="js/gibber/graphics/ShaderExtras.js"></script>
-
-<script src="js/gibber/graphics/postprocessing/EffectComposer.js"></script>
-<script src="js/gibber/graphics/postprocessing/RenderPass.js"></script>
-<script src="js/gibber/graphics/postprocessing/BloomPass.js"></script>
-<script src="js/gibber/graphics/postprocessing/FilmPass.js"></script>
-<script src="js/gibber/graphics/postprocessing/DotScreenPass.js"></script>
-<script src="js/gibber/graphics/postprocessing/TexturePass.js"></script>
-<script src="js/gibber/graphics/postprocessing/ShaderPass.js"></script>
-<script src="js/gibber/graphics/postprocessing/MaskPass.js"></script>
-<script src="js/gibber/graphics/OBJLoader.js"></script>
-*/
-
 define(['gibber/graphics/three.min'], function(){	
 	var that = {
 		fullScreenFlag : false,
@@ -210,8 +193,8 @@ define(['gibber/graphics/three.min'], function(){
 				//$("#three").attr( "height", $(".CodeMirror-scroll").outerHeight() );
 			
 				// set the scene size
-				var WIDTH = screen.width,
-				  	HEIGHT = screen.height;
+				var WIDTH = that.fullScreenFlag ? screen.width : $(".CodeMirror-scroll").outerWidth(),
+				  	HEIGHT = that.fullScreenFlag ? screen.height : $(".CodeMirror-scroll").outerHeight();
 			
 				that.width = WIDTH;
 				that.height = HEIGHT;
@@ -265,7 +248,7 @@ define(['gibber/graphics/three.min'], function(){
 				pointLight.position.y = 100;
 				pointLight.position.z = -130;
 			
-				that.scene.add(ambientLight);
+				//that.scene.add(ambientLight); // doesn't seem like a good idea...
 				that.scene.add(pointLight);
 			
 				that.lights = [
@@ -295,7 +278,9 @@ define(['gibber/graphics/three.min'], function(){
 					window.requestAnimationFrame(r);
 				})();
 				window.Camera = that.camera;
-			
+				
+				window.Color = that.color;
+				
 				window.Model = that.model;
 				window.Cylinder = that.cylinder;
 				window.Torus = that.torus;
@@ -311,11 +296,61 @@ define(['gibber/graphics/three.min'], function(){
 				if(that.fullScreenFlag) that.fullScreen();
 			});
 		},
+		colors: {
+			red: 	[1,0,0],
+			green: 	[0,1,0],
+			blue:	[0,0,1],
+			white:	[1,1,1],
+			black:	[0,0,0],
+			cyan:	[0,1,1],
+			magenta:[1,0,1],
+			yellow:	[1,1,0],
+			grey:	[.5,.5,.5],
+			gray:	[.5,.5,.5],
+			pink:	[1, .5,.5],
+			orange: [1, .45, .2],
+			purple: [.4, 0, .5],			
+		},
+		color : function() {
+			var result, r,g,b;
+			if(typeof arguments[0] === 'string') {
+				var c  = this.colors[arguments[0]];
+				r = c[0];
+				g = c[1];
+				b = c[2];
+			}else if(Array.isArray(arguments[0])) {
+				r = arguments[0][0];
+				g = arguments[0][1];
+				b = arguments[0][2];
+			}else if(typeof arguments[0] === 'number') {
+				if(arguments.length === 1) {
+					r = arguments[0];
+					g = arguments[0];
+					b = arguments[0];
+				}else{
+					r = arguments[0];
+					g = arguments[1];
+					b = arguments[2];
+				}
+			}else if(typeof arguments[0] === 'object') {
+				r = arguments[0].r;
+				g = arguments[0].g;
+				b = arguments[0].b;
+			}
+			
+			result = new THREE.Color(0x000000);
+			result.setRGB(r,g,b);
+			return result;
+		},
 		background: function() {
 			if(arguments.length > 1) {
 				Graphics.renderer.setClearColor(Color(arguments[0], arguments[1], arguments[2]));
 			}else{
-				Graphics.renderer.setClearColorHex(arguments[0]);
+				if(typeof arguments[0] !== 'string') {
+					Graphics.renderer.setClearColorHex(arguments[0]);
+				}else{
+					Graphics.renderer.setClearColor(this.color(arguments[0]));
+				}
 			}
 		},
 		showStats : function() {
@@ -326,11 +361,9 @@ define(['gibber/graphics/three.min'], function(){
 			$("body").append( Graphics.stats.domElement );	
 		},
 		geometry : function(props, geometry) {
-			if(Array.isArray(props.fill)) { props.fill = { r:props.fill[0], g:props.fill[1], b:props.fill[2] } };
-			if(Array.isArray(props.stroke)) { props.stroke = { r:props.stroke[0], g:props.stroke[1], b:props.stroke[2] } };
+			props.fill = props.fill ? this.color(props.fill) : this.color('black');
+			props.stroke = props.stroke ? this.color(props.stroke) : undefined;
 						
-			props.fill = props.fill ? new THREE.Color(0x000000).setRGB(props.fill.r, props.fill.g, props.fill.b) : 0xCC0000;
-			props.stroke = props.stroke ? new THREE.Color(0x000000).setRGB(props.stroke.r, props.stroke.g, props.stroke.b) : undefined;
 			var that;
 			if(!geometry.isModel) {
 				var materials = props.stroke ?  [
@@ -343,7 +376,6 @@ define(['gibber/graphics/three.min'], function(){
 					THREE.SceneUtils.createMultiMaterialObject( geometry, materials ) :
 					new THREE.Mesh(	geometry, materials);
 			}else{
-				console.log("FOUND MODEL AND REPLACING");
 				that = geometry;
 			}
 			
