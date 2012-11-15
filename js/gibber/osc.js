@@ -12,7 +12,9 @@ define([
 			this.initialized = true;
 		},
 		callback : function(msg) {
-			OSC.listeners[msg.path](msg);
+			if(typeof OSC.listeners[msg.path] === 'function') {
+				OSC.listeners[msg.path](msg);
+			}
 		},
 		listen : function(path, callback) {
 			this.listeners[path] = callback;

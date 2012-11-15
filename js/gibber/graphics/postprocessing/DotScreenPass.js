@@ -2,7 +2,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.DotScreenPass = function ( center, angle, scale ) {
+THREE.DotScreenPass = function ( center, angle, scale, mix ) {
 
 	var shader = THREE.ShaderExtras[ "dotscreen" ];
 

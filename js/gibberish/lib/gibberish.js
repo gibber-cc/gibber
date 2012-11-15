@@ -3,6 +3,7 @@ define([], function() {
     var that = {
 		debug : false,
 		callbackCount: 0,
+		noOutput : [],
         init : function() { 
 			var binops = {
 				"+" : this.binop_generator,
@@ -85,9 +86,23 @@ define([], function() {
 					this.masterCodeblock.pushUnique(ugen.codeblock +";");
 				//console.log("MASTER UGEN CODEBLOCK", ugen.codeblock);
 			}
+						
+			for(var i = 0; i < this.noOutput.length; i++) {
+				//console.log("MAKING A NO OUTPUT UGEN");
+				var ugen = this.noOutput[i];
+				
+				// TODO: FIX DIRTY
+				//if(ugen.dirty) {
+					this.generate(ugen);				
+					ugen.dirty = false;
+				//}
+				this.masterUpvalues.pushUnique( ugen.upvalues + ";\n" );
+				this.masterCodeblock.pushUnique(ugen.codeblock +";\n");
+			}
 			
 			codeblock += this.masterCodeblock.join("\n");
-			var end = "return output;\n}\nreturn cb;";
+			//console.log(codeblock);
+			var end = "\nreturn output;\n}\nreturn cb;";
 			
 			var cbgen = start + this.masterUpvalues.join("") + codeblock + end;
 	
@@ -627,16 +642,11 @@ define([], function() {
 				bus.connectUgen(this, amount);
 				return this;
 			},
-			fadeIn : function(level, time) {
-				if(arguments.length === 2) {
-					this.mod("amp", Line(0, level, time), "=");
-					var me = this;
-					future( function() { me.amp = level; me.removeMod("amp", false);   }, time);
-				}else{
-					this.mod("amp", Line(0, 1, arguments[0]), "=");
-					var me = this;
-					future( function() { me.amp = 1; me.removeMod("amp", false);   }, arguments[0]);
-				}
+			fadeIn : function(time, level) {
+				level = level || 1;
+				this.mod("amp", Line(0, level, time), "=");
+				var me = this;
+				future( function() { me.amp = level; me.removeMod("amp", false);   }, time);
 				return this;
 			},
 			fadeOut : function(time) {

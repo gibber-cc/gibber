@@ -502,7 +502,34 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             }
             window.editor.setValue(Gibber.tutorials[name]);
         },
+		fullScreen : function() {
+			$("#console").toggle();
+			$("#header").toggle();
 
+			$("#container").css("height", "100%");
+			$("#container").css("width", "100%");
+						
+			$("#three").css({
+				top : 0,
+				height: "100%",
+				width: "100%",
+			});
+			
+			$("#three").attr("width", screen.width);
+			$("#three").attr("height", screen.height);
+
+			//$("canvas").attr({width:screen.width, height:screen.height});			
+			// if($("#three").top() === 50) {
+			// 	$("#three").css("top", 0);
+			// }else{
+			// 	$("#three").css("top", 50);
+			// }
+			
+			//if(Graphics.initialized) {
+			console.log("CALLING GRAPHICS FULL SCREEN");
+			Graphics.fullScreen();
+				//}
+		},
         init: function() {
             $(window)
                 .resize(Gibber.Environment.editorResize);
@@ -800,7 +827,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                         .css({
                         position: "absolute",
                         display: "block",
-                        top: $(".demo-container")
+                        top: $(".header")
                             .height() - 2,
                         left: Math.floor(e.pageX + 3),
                     });
@@ -1035,7 +1062,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                 .toggle();
             $('#resizeButton')
                 .toggle();
-            //demo-container
+            //header
             //$('#sidebar').css("display", "inline");
             if ($("#sidebar")
                 .css("display") == "none") {
@@ -1060,7 +1087,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                         .css({
                         position: "absolute",
                         display: "block",
-                        top: $(".demo-container")
+                        top: $(".header")
                             .height(),
                         left: Gibber.codeWidth,
                     });
@@ -1069,7 +1096,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                         .css({
                         position: "absolute",
                         display: "block",
-                        top: $(".demo-container")
+                        top: $(".header")
                             .height(),
                         left: "70%",
                     });

@@ -66,7 +66,14 @@ function Follow(){
 		G.log("Follow requires a dictionary of properties");
 		return;
 	}
-	return Gibberish.Follow(arguments[0]);
+	var args = [].slice.call(arguments);
+
+	var follow = Gibberish.Follow.apply(null, args);
+
+	Gibberish.noOutput.push(follow);
+	Gibberish.dirty(follow);
+	
+	return follow;
 }
 
 function Follow2(){
@@ -75,7 +82,6 @@ function Follow2(){
 		return;
 	}
 	var follow2 = Gibberish.Follow(arguments[0]);
-	follow2.send(Master, 1);
 	
 	return follow2;
 }

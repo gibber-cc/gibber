@@ -20,7 +20,7 @@ define(['gibber/audio_callback'], function() {
 			this.sampleRate = 44100;//this.dev.sampleRate;
 			
 			if (navigator.userAgent.indexOf("Firefox") > 0) {
-				this.dev = Sink(audioProcess, 2, 4096);
+				this.dev = Sink(audioProcess, 2, 8192);
 				this.sampleRate = this.dev.sampleRate;
 			}else{
 			
@@ -378,14 +378,15 @@ define(['gibber/audio_callback'], function() {
 				Gibber.callback.slaves[cc].kill();
 			}
 			Gibber.callback.sequence = [];
-		
+			
 			Gibber.killSingles();
 
 			Master.senderObjects.remove();
 			Master.senders.remove();
 			Master.fx.remove();
 
-			Gibber.log("Cleared Gibber graph.");	
+			Gibber.log("Cleared Gibber graph.");
+			Gibberish.noOutput = [];
 		},
 	
 		stop : function() {

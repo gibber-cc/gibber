@@ -7,23 +7,9 @@
 		<link rel="stylesheet" href="css/elegant.css">
 		<link rel="stylesheet" href="css/thecharlie.css">
 		<link rel="stylesheet" href="css/dcmegamenu.css">
-		<script src='js/gibber/graphics/three.min.js'></script>
-		<script src='js/gibber/graphics/Stats.js'></script>
-		
-		<script src="js/gibber/graphics/ShaderExtras.js"></script>
-
-		<script src="js/gibber/graphics/postprocessing/EffectComposer.js"></script>
-		<script src="js/gibber/graphics/postprocessing/RenderPass.js"></script>
-		<script src="js/gibber/graphics/postprocessing/BloomPass.js"></script>
-		<script src="js/gibber/graphics/postprocessing/FilmPass.js"></script>
-		<script src="js/gibber/graphics/postprocessing/DotScreenPass.js"></script>
-		<script src="js/gibber/graphics/postprocessing/TexturePass.js"></script>
-		<script src="js/gibber/graphics/postprocessing/ShaderPass.js"></script>
-		<script src="js/gibber/graphics/postprocessing/MaskPass.js"></script>
-		<script src="js/gibber/graphics/OBJLoader.js"></script>
 	</head>
 	<body>
-		<div class="demo-container">
+		<div id="header" class="header">
 			<ul id="mega-menu-1" class="mega-menu">
 				<li class="nolink" style="padding:0">
 					<span class="floaty">GIBBER</span>
@@ -128,7 +114,7 @@
 				<li> Check out <a href="http://www.charlie-roberts.com/gibber/info">the documentation</a> and visit <a href="http://charlie-roberts.com/gibber/info/?forum=gibber">the forum</a> to ask questions!</li>
 			</ul>
 		</div>		
-		<div style="width:100%">
+		<div id="container" style="width:100%">
 			<textarea id="code" name="code">
 			</textarea>
 			<div id="sidebar">
@@ -139,7 +125,7 @@
 			</div>
 			<div id='three' style='position:absolute; top:50px; left:0; z-index:-1000;'></div>
 		</div>
-		<div id="resizeButton" style="display:block; width:10px; height:10px;">&#9660;</div>
+		<!--<div id="resizeButton" style="display:block; width:10px; height:10px;">&#9660;</div>-->
 		<div id="console">
 			<span class="consoleprompt" style="margin-left:.5em">>&nbsp;<span class="consoletext"></span></span>
 		</div>

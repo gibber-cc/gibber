@@ -1,5 +1,43 @@
-define(function() {	
-	var a = {
+/*
+<script src='js/gibber/graphics/three.min.js'></script>
+<script src='js/gibber/graphics/Stats.js'></script>
+		
+<script src="js/gibber/graphics/ShaderExtras.js"></script>
+
+<script src="js/gibber/graphics/postprocessing/EffectComposer.js"></script>
+<script src="js/gibber/graphics/postprocessing/RenderPass.js"></script>
+<script src="js/gibber/graphics/postprocessing/BloomPass.js"></script>
+<script src="js/gibber/graphics/postprocessing/FilmPass.js"></script>
+<script src="js/gibber/graphics/postprocessing/DotScreenPass.js"></script>
+<script src="js/gibber/graphics/postprocessing/TexturePass.js"></script>
+<script src="js/gibber/graphics/postprocessing/ShaderPass.js"></script>
+<script src="js/gibber/graphics/postprocessing/MaskPass.js"></script>
+<script src="js/gibber/graphics/OBJLoader.js"></script>
+*/
+
+define(['gibber/graphics/three.min'], function(){	
+	var that = {
+		fullScreenFlag : false,
+		fullScreen : function() {
+			if(this.renderer) { // if Graphics has been initialized...
+				$("#three").attr("width", screen.width);
+				$("#three").attr("height", screen.height);
+				
+				$(Graphics.renderer.domElement).css("height", "100%");
+				$(Graphics.renderer.domElement).css("width", "100%");
+				
+				$(Graphics.renderer.domElement).width = screen.width;
+				$(Graphics.renderer.domElement).height = screen.height;
+				
+				Graphics.camera.aspect = screen.width / screen.height;
+				Graphics.camera.updateProjectionMatrix();
+
+				Graphics.renderer.setSize( screen.width, screen.height );	
+			}else{
+				// flag that tells init method to call fullScreen when Graphics is initialized
+				this.fullScreenFlag = true;
+			}
+		},
 		makeEffect : function(props) {			
 			var _constructor = function(_props) {
 				var that = {
@@ -35,6 +73,7 @@ define(function() {
 					},
 				};
 				
+				_props = _props || {};
 				for(var key in _props) {
 					that[key] = _props[key];
 				}
@@ -54,8 +93,12 @@ define(function() {
 					that.shaders.push(shader);
 					
 					that[shaderDictionary.name] = shader;
-										
-					Graphics.composer.addPass( shader );
+					
+					//console.log(_props);
+					var shouldAdd = typeof _props.shouldAdd === 'undefined' || _props.shouldAdd === true;
+					if(shouldAdd) {
+						Graphics.composer.addPass( shader );
+					}
 
 					for(var j = 0; j < shaderDictionary.properties.length; j++) {
 						(function() { 
@@ -79,13 +122,15 @@ define(function() {
 						shader.renderToScreen = false;
 					}
 					
-					if(Graphics.fx.length !== 0) {
-						Graphics.fx[ Graphics.fx.length - 1].renderToScreen = false;
+					if(shouldAdd) {
+						if(Graphics.fx.length !== 0) {
+							Graphics.fx[ Graphics.fx.length - 1].renderToScreen = false;
+						}
+						Graphics.fx.push(shader);
 					}
-					Graphics.fx.push(shader);
 				}
 				
-				var _renderToScreen = true;
+				var _renderToScreen = shouldAdd;
  				Object.defineProperty(that, "renderToScreen", {
  					get : function() { return _renderToScreen; },
  					set : function(val) {
@@ -97,7 +142,18 @@ define(function() {
 						}
  					}
  				});
-							
+				
+				that.add = function() {
+					for(var i = 0; i < that.shaders.length; i++) {
+						var shader = that.shaders[i];
+						if(Graphics.fx.length !== 0) {
+							Graphics.fx[ Graphics.fx.length - 1].renderToScreen = false;
+						}
+						Graphics.composer.addPass( shader );
+						Graphics.fx.push(shader);
+					}
+				};
+			
 				that.remove = function() {
 					var shouldResetRenderer = false;
 					var shadersToRemove = [];
@@ -117,7 +173,7 @@ define(function() {
 					for(var j = 0; j < shadersToRemove.length; j++) {
 						this.shaders.remove(this.shaders[j]);
 					}
-					if(shouldResetRenderer) {
+					if(shouldResetRenderer && Graphics.fx.length > 0) {
 						var __shader = Graphics.fx[ Graphics.fx.length - 1];
 						__shader.renderToScreen = true;
 						//console.log("RENDERING", __shader);
@@ -133,131 +189,157 @@ define(function() {
 		},
 
 		init : function() {
-			//console.log("GRAPHICS");
-			$("#three").attr( "width",  $(".CodeMirror-scroll").outerWidth() );
-			$("#three").attr( "height", $(".CodeMirror-scroll").outerHeight() );
+			require([
+				'gibber/graphics/three.min',
+				'gibber/graphics/Stats',
+				'gibber/graphics/ShaderExtras',
+				'gibber/graphics/postprocessing/EffectComposer',
+				'gibber/graphics/postprocessing/RenderPass',
+				'gibber/graphics/postprocessing/BloomPass',
+				'gibber/graphics/postprocessing/FilmPass',
+				'gibber/graphics/postprocessing/DotScreenPass',
+				'gibber/graphics/postprocessing/TexturePass',
+				'gibber/graphics/postprocessing/ShaderPass',				
+				'gibber/graphics/postprocessing/MaskPass',
+				'gibber/graphics/OBJLoader',	
+			], function() {
+				console.log("GRAPHICS");
+				that.intialized = true;
+				that.makePostProcessingEffects();
+				//$("#three").attr( "width",  $(".CodeMirror-scroll").outerWidth() );
+				//$("#three").attr( "height", $(".CodeMirror-scroll").outerHeight() );
 			
-			// set the scene size
-			var WIDTH = $(".CodeMirror-scroll").outerWidth(),
-			  	HEIGHT = $(".CodeMirror-scroll").outerHeight();
+				// set the scene size
+				var WIDTH = screen.width,
+				  	HEIGHT = screen.height;
 			
-			this.width = WIDTH;
-			this.height = HEIGHT;
-			
-			this.fx = [];
-			// set some camera attributes
-			var VIEW_ANGLE = 45,
-			  	ASPECT = WIDTH / HEIGHT,
-			  	NEAR = 0.1,
-			  	FAR = 10000;
+				that.width = WIDTH;
+				that.height = HEIGHT;
+				that.fx = [];
+				// set some camera attributes
+				var VIEW_ANGLE = 45,
+				  	ASPECT = WIDTH / HEIGHT,
+				  	NEAR = 0.1,
+				  	FAR = 10000;
 
-			var $container = $('#three');
+				var $container = $('#three');
 			
-			this.renderer = new THREE.WebGLRenderer();
-			this.camera = new THREE.PerspectiveCamera(
-			    VIEW_ANGLE,
-			    ASPECT,
-			    NEAR,
-			    FAR
-			);
+				that.renderer = new THREE.WebGLRenderer();
+			
+				that.camera = new THREE.PerspectiveCamera(
+				    VIEW_ANGLE,
+				    ASPECT,
+				    NEAR,
+				    FAR
+				);
+				
+				that.scene = new THREE.Scene();
 
-			this.scene = new THREE.Scene();
-			this.graph = [];
+				that.graph = [];
 			
-			this.stats = new Stats();
-			this.stats.domElement.style.position = 'absolute';
-			this.stats.domElement.style.top = '0px';
-			this.stats.domElement.style.right = '0px';			
-			$("body").append( this.stats.domElement );
+				var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
 			
-			var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
-			
-			this.composer = new THREE.EffectComposer( this.renderer);
-			
-			this.renderScene = new THREE.RenderPass( this.scene, this.camera );
-			this.renderScene.clear = false;
-			this.renderScene.renderToScreen = false;
-			this.composer.addPass( this.renderScene );
+				that.composer = new THREE.EffectComposer( that.renderer);
+				that.renderScene = new THREE.RenderPass( that.scene, that.camera );
+				that.renderScene.clear = false;
+				that.renderScene.renderToScreen = false;
+				that.composer.addPass( that.renderScene );
 
-			// add the camera to the scene
-			this.scene.add(this.camera);
+				// add the camera to the scene
+				that.scene.add(that.camera);
 
-			// the camera starts at 0,0,0 so pull it back
-			this.camera.position.z = 300;
+				// the camera starts at 0,0,0 so pull it back
+				that.camera.position.z = 300;
 			
-			this.renderer.setSize(WIDTH, HEIGHT);
+				that.renderer.setSize(WIDTH, HEIGHT);
 
-			// attach the render-supplied DOM element
-			$container.append(this.renderer.domElement);
+				// attach the render-supplied DOM element
+				$container.append(that.renderer.domElement);
 			
-			var ambientLight = new THREE.AmbientLight(0x333333);
+				var ambientLight = new THREE.AmbientLight(0x666666);
 			
-			var pointLight = new THREE.PointLight(0xFFFFFF);
+				var pointLight = new THREE.PointLight(0xFFFFFF);
 
-			// set its position
-			pointLight.position.x = 10;
-			pointLight.position.y = 50;
-			pointLight.position.z = 130;
+				// set its position
+				pointLight.position.x = 100;
+				pointLight.position.y = 100;
+				pointLight.position.z = -130;
 			
-			this.scene.add(ambientLight);
-			this.scene.add(pointLight);
+				that.scene.add(ambientLight);
+				that.scene.add(pointLight);
 			
-			this.lights = [
-				pointLight,
-				ambientLight
-			];
-			var that = this;
-			(function() {
-				var r = function() {
-					for(var i = 0; i < that.graph.length; i++) {
-						that.graph[i]._update();
-						that.graph[i].update();
-					}
+				that.lights = [
+					ambientLight,
+					pointLight,
+				];
+				(function() {
+					var r = function() {
+						for(var i = 0; i < that.graph.length; i++) {
+							that.graph[i]._update();
+							that.graph[i].update();
+						}
 
-					that.renderer.clear();
+						that.renderer.clear();
 					
-					if(that.fx.length > 0) {
-						that.composer.render(.01);
-					}else{
-						that.renderer.render(that.scene, that.camera);
-					}
+						if(that.fx.length > 0) {
+							that.composer.render(.01);
+						}else{
+							that.renderer.render(that.scene, that.camera);
+						}
 					
-					that.stats.update();
+						if(that.stats)
+							that.stats.update();
 					
-					//slow down animation
-					setTimeout( function() { requestAnimationFrame( r ); }, 1000 / 30 );
-					//window.requestAnimationFrame(r);
-				};
-				window.requestAnimationFrame(r);
-			})();
+						window.requestAnimationFrame(r);
+					};
+					window.requestAnimationFrame(r);
+				})();
+				window.Camera = that.camera;
 			
-			window.Camera = this.camera;
+				window.Model = that.model;
+				window.Cylinder = that.cylinder;
+				window.Torus = that.torus;
+				window.Knot = that.torusKnot;
+				window.Tetrahedron = that.tetrahedron;
+				window.Icosahedron = that.icosahedron;
+				window.Octahedron = that.octahedron;
+				window.Cube = that.cube;
+				window.Sphere = that.sphere;
 			
-			window.Model = this.model;
-			window.Cylinder = this.cylinder;
-			window.Torus = this.torus;
-			window.Knot = this.torusKnot;
-			window.Tetrahedron = this.tetrahedron;
-			window.Icosahedron = this.icosahedron;
-			window.Octahedron = this.octahedron;
-			window.Cube = this.cube;
-			window.Sphere = this.sphere;
+				window.Waveform = that.waveform;
 			
-			window.Waveform = this.waveform;
+				if(that.fullScreenFlag) that.fullScreen();
+			});
+		},
+		background: function() {
+			if(arguments.length > 1) {
+				Graphics.renderer.setClearColor(Color(arguments[0], arguments[1], arguments[2]));
+			}else{
+				Graphics.renderer.setClearColorHex(arguments[0]);
+			}
+		},
+		showStats : function() {
+			Graphics.stats = new Stats();
+			Graphics.stats.domElement.style.position = 'absolute';
+			Graphics.stats.domElement.style.top = '0px';
+			Graphics.stats.domElement.style.right = '0px';			
+			$("body").append( Graphics.stats.domElement );	
 		},
 		geometry : function(props, geometry) {
-			console.log("IS MODEL", geometry.isModel);
-			props.color = props.color ? new THREE.Color(0x000000).setRGB(props.color.r,props.color.g,props.color.b) : 0xCC0000;
-			
+			if(Array.isArray(props.fill)) { props.fill = { r:props.fill[0], g:props.fill[1], b:props.fill[2] } };
+			if(Array.isArray(props.stroke)) { props.stroke = { r:props.stroke[0], g:props.stroke[1], b:props.stroke[2] } };
+						
+			props.fill = props.fill ? new THREE.Color(0x000000).setRGB(props.fill.r, props.fill.g, props.fill.b) : 0xCC0000;
+			props.stroke = props.stroke ? new THREE.Color(0x000000).setRGB(props.stroke.r, props.stroke.g, props.stroke.b) : undefined;
 			var that;
 			if(!geometry.isModel) {
-				var materials = props.wireframe ?  [
-				    new THREE.MeshPhongMaterial( {color: props.color, shading: THREE.FlatShading, } ),
-					new THREE.MeshBasicMaterial( { color: 0x000000, shading: THREE.FlatShading, wireframe: true, transparent: true } )
+				var materials = props.stroke ?  [
+				    new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:50, specular:0xffffff} ),
+					new THREE.MeshBasicMaterial( { color: props.stroke, shading: THREE.FlatShading, wireframe: true, transparent: true } )
 				] 
-				: new THREE.MeshLambertMaterial( { color: props.color, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
+				: new THREE.MeshLambertMaterial( { color: props.fill, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 			
-				that = props.wireframe ? 
+				that = props.stroke ? 
 					THREE.SceneUtils.createMultiMaterialObject( geometry, materials ) :
 					new THREE.Mesh(	geometry, materials);
 			}else{
@@ -279,7 +361,7 @@ define(function() {
 							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
 							break;
 						case "++":
-							this[mod.name] += typeof mod.modulator === "number" ? 		mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
+							this[mod.name] += typeof mod.modulator === "number" ? mod.modulator : Math.abs(mod.modulator.function.getValue() * mod.mult);
 							break;							
 						case "-" :
 							this[mod.name] -= typeof mod.modulator === "number" ? mod.modulator : mod.modulator.function.getValue() * mod.mult;
@@ -326,9 +408,9 @@ define(function() {
 					get: function() { return __scale; }, 
 					set: function(val) { 
 						__scale = val;
-						this.sx = val[0];
-						this.sy = val[1];
-						this.sz = val[2];
+						this.sx = val[0] || this.scale.x;
+						this.sy = val[1] || this.scale.y;
+						this.sz = val[2] || this.scale.z;
 					}
 				},
 				_rotate : { 
@@ -351,12 +433,27 @@ define(function() {
 				},			
 			});		
 			
+			that.setScale = function() {
+				that._scale = [arguments[0], arguments[0], arguments[0]];
+			};
+			that.rotate = function() {
+				if(arguments[0]) {
+					that.mod('rx', arguments[0]);
+				}
+				if(arguments[1]) {
+					that.mod('ry', arguments[1]);
+				}
+				if(arguments[2]) {
+					that.mod('rz', arguments[2]);
+				}
+			};
 			that.update = function() {};
 			Gibberish.extend(that, props);
 			Graphics.graph.push(that);
 			
 			return that;
 		},
+		
 		icosahedron : function(props) {
 			props = props || {};
 			var geometry = new THREE.IcosahedronGeometry( props.radius || 50, props.detail || 0	 );
@@ -382,7 +479,6 @@ define(function() {
 			var geometry = new THREE.CubeGeometry( props.width || 50, props.height || 50, props.depth || 50 );
 			return Graphics.geometry(props, geometry);
 		},
-		//radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded
 		cylinder : function(props) {
 			props = props || {};
 			var geometry = new THREE.CylinderGeometry( 
@@ -394,8 +490,7 @@ define(function() {
 				props.openEnded
 			);
 			return Graphics.geometry(props, geometry);
-		},
-		
+		},	
 		torus : function(props) {
 			props = props || {};
 			var geometry = new THREE.TorusGeometry( 
@@ -563,184 +658,254 @@ define(function() {
 			
 			return that;
 		},
-	};
-	
-	a.makeEffect({
-		name:"Dots",
-		shaders : [
-			{
-				name: 'screen',
-				properties: [{
-					name:'center',
-					value:[0,0],
-				},
-				{
-					name:'angle',
-					value:.5,
-				},
-				{
-					name:'scale',
-					value:.035,
-				}],
-				type:'uniforms',
-				init : function(obj) {
-					return new THREE.DotScreenPass( new THREE.Vector2( obj.center[0], obj.center[1] ), obj.angle, obj.scale );
-				},
-			},
-		],
-	});
-	
-	a.makeEffect({
-		name:"Film",
-		shaders : [
-		{
-			name:"Film",
-			properties:[
-				{
-					name: "nIntensity",
-					value: 1,
-					type:'uniforms',
-				},
-				{
-					name: "sIntensity",
-					value: .5,
-					type:'uniforms',
-				},
-				{
-					name: "sCount",
-					value: 1024,
-					type:'uniforms',
-				},
-				{
-					name: "grayscale",
-					value: false,
-					type:'uniforms',
-				},
-			],
-			type:'uniforms',
-			init: function(obj) {
-				obj.nIntensity = obj.nIntensity || 1;
-				obj.sIntensity = obj.sIntensity || .5;
-				obj.sCount = obj.sCount || 1024;
-				obj.grayscale = obj.grayscale || false;
-				
-				console.log(obj);
- 				return new THREE.FilmPass(obj.nIntensity, obj.sIntensity, obj.sCount, obj.grayscale);
-			}
-			
-		}
-		],
-	});
-	
-	a.makeEffect({
-		name:"Bloom",
-		shaders : [
-			{
-				name:'Bloom',
-				properties: [],
-				type:'uniforms',
-				init: function(obj) {
-					//console.log("AMOUNT", obj.amount);
-					return new THREE.BloomPass( obj.opacity || 1.5 );
-				}
-			},
-			{
-				name:'Screen',
-				properties: [{
-					name: 'opacity',
-					value: .5,
-					type: 'uniforms',
-				}],
-				type:'uniforms',
-				init: function(obj) {
-					return new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] );
-				}
-			},
-		]
-	});
-	
-	a.makeEffect({
-		name:"Tilt",
-		shaders: [
-		{
-			name:"hTilt",
-			properties:[
-				{name:"h", value: 1.0 / 512.0, type:"uniforms" },
-				{name:"r", value: 0.35, type:"uniforms"},
-			],
-			type:"uniforms",
-			init : function(obj) {
-				var c = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalTiltShift" ] );
-				return c;
-			},
-		},
-		{
-			name:"vTilt",
-			properties:[
-				{name:"v", value: 1.0 / 512.0, type:"uniforms" },
-				{name:"r", value: 0.35, type:"uniforms"},
-			],
-			type:"uniforms",
-			init : function(obj) {
-				var c = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalTiltShift" ] );
-				return c;
-			},
-		},
 		
-		
-		]
-	});
+		makePostProcessingEffects : function() {
+			that.makeEffect({
+				name:"Dots",
+				shaders : [
+					{
+						name: 'screen',
+						properties: [{
+							name:'center',
+							value:[0,0],
+						},
+						{
+							name:'angle',
+							value:.5,
+						},
+						{
+							name:'scale',
+							value:.035,
+						},
+						{ name:'mix',	value: 1.0 },
+						],
+						type:'uniforms',
+						init : function(obj) {
+							return new THREE.DotScreenPass( new THREE.Vector2( obj.center[0], obj.center[1] ), obj.angle, obj.scale, obj.mix );
+						},
+					},
+				],
+			});
 	
-	
-	a.makeEffect({
-		name:"Colorify",
-		shaders : [
-			{
-				name:'color',
-				properties: [{
-					name: 'color',
-					value: new THREE.Color( 0x000000 ).setRGB(1,1,1),
-					type: 'uniforms',
-				}],
-				type:'uniforms',
-				init: function(obj) {
-					var c = new THREE.ShaderPass( THREE.ShaderExtras[ "colorify" ] );
-					if(typeof obj.color !== "undefined") {
-						c.uniforms['color'].value = obj.color;
+			that.makeEffect({
+				name:"Film",
+				shaders : [
+				{
+					name:"Film",
+					properties:[
+						{
+							name: "nIntensity",
+							value: 1,
+							type:'uniforms',
+						},
+						{
+							name: "sIntensity",
+							value: .5,
+							type:'uniforms',
+						},
+						{
+							name: "sCount",
+							value: 1024,
+							type:'uniforms',
+						},
+						{
+							name: "grayscale",
+							value: false,
+							type:'uniforms',
+						},
+						{
+							name: "mix",
+							value: 1,
+							type:'uniforms',
+						},
+					],
+					type:'uniforms',
+					init: function(obj) {
+						obj.nIntensity = obj.nIntensity || 1;
+						obj.sIntensity = obj.sIntensity || .5;
+						obj.sCount = obj.sCount || 1024;
+						obj.grayscale = obj.grayscale || false;
+						obj.mix = obj.mix || 1;
+						return new THREE.FilmPass(obj.nIntensity, obj.sIntensity, obj.sCount, obj.grayscale, obj.mix);
 					}
-					return c;
+			
 				}
-			}
-		]
-	});
+				],
+			});
 	
-	a.makeEffect({
-		name:"Blur",
-		shaders : [
-			{
-				name: 'h',
-				properties: [{
-					name:'h',
-					value:.003,
-				}],
-				type:'uniforms',
-				init : function(obj) {
-					return new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] );
-				},
-			},
-			{
-				name: 'v',
-				properties: [{
-					name:'v',
-					value:.003,
-				}],
-				type:'uniforms',
-				init : function(obj) {
-					return new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] );
-				},
-			}
-		],
-	});
+			that.makeEffect({
+				name:"Bloom",
+				shaders : [
+					{
+						name:'Bloom',
+						properties: [],
+						type:'uniforms',
+						init: function(obj) {
+							return new THREE.BloomPass( obj.opacity || 1.5, obj.kernelSize );
+						}
+					},
+					{
+						name:'Screen',
+						properties: [
+							{ name: 'opacity', value: .5, },
+							{ name:'mix',	value: 1.0 },
+						],
+						type:'uniforms',
+						init: function(obj) {
+							return new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] );
+						}
+					},
+				]
+			});
 	
-	return a;
+			that.makeEffect({
+				name:"Tilt",
+				shaders: [
+				{
+					name:"hTilt",
+					properties:[
+						{ name:"h", 	value: 1.0 / 512.0, type:"uniforms" },
+						{ name:"r", 	value: 0.35, type:"uniforms" },
+						{ name:'mix',	value: 1.0 },
+					],
+					type:"uniforms",
+					init : function(obj) {
+						var c = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalTiltShift" ] );
+						return c;
+					},
+				},
+				{
+					name:"vTilt",
+					properties:[
+						{ name:"v", 	value: 1.0 / 512.0, type:"uniforms" },
+						{ name:"r", 	value: 0.35, type:"uniforms"},
+						{ name:'mix',	value: 1.0 },
+					],
+					type:"uniforms",
+					init : function(obj) {
+						var c = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalTiltShift" ] );
+						return c;
+					},
+				},
+		
+		
+				]
+			});
+	
+			that.makeEffect({
+				name:"Colorify",
+				shaders : [
+					{
+						name:'color',
+						properties: [
+							{
+								name: 'color',
+								value: new THREE.Color( 0x000000 ).setRGB(1,1,1),
+							},
+				 			{ name:'mix',    	value: 1.0 },
+						],
+						type:'uniforms',
+						init: function(obj) {
+							var c = new THREE.ShaderPass( THREE.ShaderExtras[ "colorify" ] );
+							if(typeof obj.color !== "undefined") {
+								c.uniforms['color'].value = obj.color;
+							}
+							return c;
+						}
+					}
+				]
+			});
+	
+			that.makeEffect({
+				name:"Godrays",
+				shaders: [
+				{
+					name:"godrays",
+					properties:[
+			 			{ name:'x', value: 0.5},
+			 			{ name:'y', value: 0.5},
+			 			{ name:'exposure', value: 0.6},
+			 			{ name:'decay',    value: 0.93},
+			 			{ name:'density',  value: 0.96},
+			 			{ name:'weight',   value: 0.4},
+			 			{ name:'max',    value: 1.0},
+			 			{ name:'mix',    	value: 1.0},							
+			 			{ name:'samples',   value: 10.0},				
+					],
+					type:'uniforms',
+					init : function(obj) {
+						return new THREE.ShaderPass( THREE.ShaderExtras[ "Godrays" ] );
+					},
+				}
+				],
+			});
+	
+	
+			that.makeEffect({
+				name:"Screen",
+				shaders: [
+				{
+					name:"screen",
+					properties:[
+			 			{ name:'opacity', value: 1},			
+					],
+					type:'uniforms',
+					init : function(obj) {
+						return new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] );
+					},
+				}
+				],
+			});
+	
+	
+			that.makeEffect({
+				name:"Blur",
+				shaders : [
+					{
+						name: 'h',
+						properties: [
+							{ name:'h', 	value:.003 },
+				 			{ name:'mix',	value: 1.0 },
+						],
+						type:'uniforms',
+						init : function(obj) {
+							return new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] );
+						},
+					},
+					{
+						name: 'v',
+						properties: [
+							{ name:'v', 	value:.003 },
+				 			{ name:'mix',	value: 1.0 },
+						],
+						type:'uniforms',
+						init : function(obj) {
+							return new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] );
+						},
+					}
+				],
+			});
+			
+			that.makeEffect({
+				name:"Pixellate",
+				shaders : [
+				{
+					name: "Pixellate",
+					properties : [
+						{
+							name:'amount',
+							value:1,
+						},
+						{ name:'mix',	value: 1.0 },
+					],
+					type:'uniforms',
+					init : function(obj) {
+						return new THREE.ShaderPass( THREE.ShaderExtras[ "pixellate" ] );
+					},			
+				}
+				]
+			});
+		},
+	};
+	return that;
 });

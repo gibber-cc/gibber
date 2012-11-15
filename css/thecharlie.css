@@ -4,11 +4,11 @@
 .cm-s-thecharlie div.CodeMirror-selected {background: rgba(127,10,10,.5) !important;}
 .cm-s-thecharlie .CodeMirror-gutter {background: #272822; border-right: 0px;}
 .cm-s-thecharlie .CodeMirror-gutter-text {color: #d0d0d0;}
-.cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #f8f8f0 !important;}
+.cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #999999 !important;}
 
 /*.cm-s-thecharlie span { background:rgba(0,0,0,.5); }*/
 /*.CodeMirror-lines {background: rgba(0,0,0,.65) !important;}*/
-.activeline {background: rgba(0,0,0,.65) !important;}
+/*.activeline {background: rgba(0,0,0,.65) !important;}*/
 .cm-s-thecharlie span.cm-comment {color: #a32;}
 .cm-s-thecharlie span.cm-atom {color: #ae81ff;}
 .cm-s-thecharlie span.cm-number {color: #6C99BB;}

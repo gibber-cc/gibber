@@ -55,8 +55,8 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 	this.kit = {
 		kick:   { symbol:'x', amp:2.5, pitch:1, pan:0 },
 		snare:  { symbol:'o', amp:1, pitch:1, pan:.15 },
-		hat:    { symbol:'*', amp:1, pitch:1, pan:-.1 },
-		openHat:{ symbol:'-', amp:1, pitch:1, pan:-.2 },
+		//hat:    { symbol:'*', amp:1, pitch:1, pan:-.1 },
+		//openHat:{ symbol:'-', amp:1, pitch:1, pan:-.2 },
 	};
 	
 	

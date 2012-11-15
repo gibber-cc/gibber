@@ -178,7 +178,7 @@ define([], function() {
 			gibberish.Mesh = this.Mesh;
 			
 			gibberish.Sampler = this.Sampler;
-			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp", "isRecording", "isPlaying", "input", "bufferLength", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7} )");
+			gibberish.generators.Sampler = gibberish.createGenerator(["pitch", "amp", "isRecording", "isPlaying", "input", "bufferLength", "start", "end", "pan"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9} )");
 			gibberish.make["Sampler"] = this.makeSampler;
 																	//"speed", "speedMin", "speedMax", "positionMin", "positionMax", "position", "numberOfGrains", "amp", "grainSize", "pan", "shouldWrite"
 			gibberish.generators.Grains = gibberish.createGenerator(["speed", "speedMin", "speedMax", "grainSize", "positionMin", "positionMax", "position", "amp", "fade", "pan", "shouldWrite"], "{0}( {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11} )");
@@ -286,10 +286,15 @@ define([], function() {
 				isRecording: 	false,
 				_function:		null,
 				isLoaded: 		false,
+				start:			0,
+				end:			1,
+				loop:			0,
 				pan:			0,
 				onload : 		function(decoded) {
 					that.buffer = decoded.channels[0]; 
 					that.bufferLength = decoded.length;
+					
+					that.end = 1;
 					
 					console.log("LOADED ", that.file, that.bufferLength);
 					Gibberish.audioFiles[that.file] = that.buffer;
@@ -308,9 +313,9 @@ define([], function() {
 						if(this._function !== null) {
 							this.isPlaying = true;	// needed to allow playback after recording
 							if(pitch > 0) {
-								this._function.setPhase(0);
+								this._function.setPhase(this.start);
 							}else{
-								this._function.setPhase(this.bufferLength);
+								this._function.setPhase(this.end);
 							}
 						}
 						//}
@@ -319,6 +324,8 @@ define([], function() {
 					this.bufferLength = typeof recordLength === "undefined" ? this.bufferLength : recordLength;
 					this.bufferLength = G.time(this.bufferLength); // TODO: should only be in Gibber, not Gibberish
 					this._function.setWriteHead(0);
+					
+					that.end = 1;
 					
 					// now this, this section below, THIS is a hack...
 					this.mod("input", input, "=");
@@ -355,20 +362,47 @@ define([], function() {
 			
 			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length", "input", "pan" ] );
 			
+			var _end = 1;
+			Object.defineProperty(that, "end", {
+				get : function() { return _end; },
+				set : function(val) {
+					if(val > 1) val = 1;
+					_end = val * that.bufferLength - 1;
+					Gibberish.dirty(that);
+				}
+			});
+			var _start = 0;
+			Object.defineProperty(that, "start", {
+				get : function() { return _start; },
+				set : function(val) {
+					if(val < 0) val = 0;
+					_start = val * that.bufferLength - 1;
+					Gibberish.dirty(that);
+				}
+			});
+			var _loops = 0;
+			Object.defineProperty(that, "loops", {
+				get : function() { return _loops; },
+				set : function(val) {
+					_loops = val;
+					that._function.setLoops(_loops);
+				}
+			});
+			
 			if(typeof Gibberish.audioFiles[that.file] !== "undefined") {
+				console.log("NOT LOADING");
 				that.buffer =  Gibberish.audioFiles[that.file];
 				that.bufferLength = that.buffer.length;
+				that.end = that.bufferLength;
 				that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
 				window[that.symbol] = that._function;
-				
-				//console.log("ALREADY LOADED ", that.file);
-				//Gibberish.dirty(that);
 			}else if(that.file !== null){
 				console.log("LOADING", that.file);
 			    var request = new AudioFileRequest(that.file);
 			    request.onSuccess = that.onload;
 			    request.send();
 			}
+			
 			
 			// TODO: why can't I reassign input?
 			/*(function() {
@@ -392,31 +426,41 @@ define([], function() {
 			var write = 0;
 			var panner = Gibberish.pan();
 			var debug = 0;		
-
-			var output = function(_pitch, amp, isRecording, isPlaying, input, length, pan) {
+			var shouldLoop = 0;
+			
+			var output = function(_pitch, amp, isRecording, isPlaying, input, length, start, end,  pan) {
 				var out = 0;
-				phase += _pitch;
-				//phase = phase < 0 ? 0 : phase;
-				//phase = phase > buffer.length ? buffer.length : phase;				
+				phase += _pitch;				
 				
 				if(write++ < length && isRecording) {
-					//if(write % 10000 === 0) console.log(write, length, input);
 					buffer[write] = input[0];
 				}else if(write >= length && isRecording){
 					self.isRecording = false;
-					//self.input = 0;
+					
 					self.removeMod("input");
 					Gibberish.ugens.remove(self);
 					self.send(Master, 1);
+					
 					write = 0;
 				}
-
-				if(buffer !== null && phase < buffer.length && phase > 0 && isPlaying) {
-					out = interpolate(buffer, phase);
-					//if(debug++ % 22050 === 0) console.log(phase, buffer.length, out);
+				
+				if(_pitch > 0) {
+					if(phase < end) {
+						out = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
+					}else{
+						phase = shouldLoop ? start : phase;
+					}
+				}else{
+					if(phase > start) {
+						out = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
+					}else{
+						phase = shouldLoop ? end : phase;
+					}
 				}
+				
 				return panner(out * amp, pan);
 			};
+			output.setLoops = function(loops) { shouldLoop = loops; };
 			output.setPhase = function(newPhase) { phase = newPhase; };
 			output.setWriteHead = function(newWriteHead) { write = newWriteHead; };			
 			output.setBuffer = function(newBuffer) { buffer = newBuffer; };
@@ -1029,8 +1073,13 @@ define([], function() {
 			window[that.symbol] = /*function() { return [0,0]; }*/Gibberish.make["Grains"](that.numberOfGrains, that, rndf);
 			that._function = window[that.symbol];
 						
-			Gibberish.defineProperties( that, ["speed", "speedMin", "speedMax", "positionMin", "positionMax", "position", "numberOfGrains", "amp", "grainSize", "pan", "shouldWrite"] );
+			Gibberish.defineProperties( that, ["speedMin", "speedMax", "positionMin", "positionMax", "position", "numberOfGrains", "amp", "grainSize", "pan", "shouldWrite"] );
 			
+			var _speed = that.speed;
+			Object.defineProperty(that, "speed", {
+				get : function() { return _speed; },
+				set : function(val) { _speed = val; Gibberish.dirty(that); }
+			});
 			return that;
 		},
 		
@@ -1039,32 +1088,34 @@ define([], function() {
 			for(var i = 0; i < numberOfGrains; i++) {
 				grains[i] = {
 					pos : self.position + rndf(self.positionMin, self.positionMax),
-					speed : self.speed + rndf(self.speedMin, self.speedMax),
+					_speed : self.speed + rndf(self.speedMin, self.speedMax),
 				}
 				grains[i].start = grains[i].pos;
 				grains[i].end = grains[i].pos + self.grainSize;
-				grains[i].fadeAmount = grains[i].speed * (self.fade * self.grainSize);
+				grains[i].fadeAmount = grains[i]._speed * (self.fade * self.grainSize);
 				grains[i].pan = ___rndf(self.spread * -1, self.spread);
 			}
 			var buffer = self.buffer;
 			var interpolate = Gibberish.interpolate;
 			var debug = 0;
-			var panner = Gibberish.pan();
-			var panner2 = Gibberish.pan2();			
+			var panner2 = Gibberish.pan2();
+			var panner = Gibberish.pan();			
 			var write = 0;
-
 			var output = function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {
 				var val = [0,0];
 				for(var i = 0; i < numberOfGrains; i++) {
 					var grain = grains[i];
 					
-					if(grain.speed > 0) {
+					if(grain._speed > 0) {
 						if(grain.pos > grain.end) {
 							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
 							grain.start = grain.pos;
 							grain.end = grain.start + grainSize;
-							grain.speed = speed + rndf(speedMin, speedMax);
-							grain.fadeAmount = grain.speed * (fade * grainSize);
+							grain._speed = speed + rndf(speedMin, speedMax);
+							grain._speed = grain._speed < .1 ? .1 : grain._speed;
+							grain._speed = grain._speed < .1 && grain._speed > 0 ? .1 : grain._speed;							
+							grain._speed = grain._speed > -.1 && grain._speed < 0 ? -.1 : grain._speed;							
+							grain.fadeAmount = grain._speed * (fade * grainSize);
 							grain.pan = ___rndf(self.spread * -1, self.spread);
 						}
 						
@@ -1082,8 +1133,10 @@ define([], function() {
 							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
 							grain.start = grain.pos;
 							grain.end = grain.start - grainSize;
-							grain.speed = speed + rndf(speedMin, speedMax);
-							grain.fadeAmount = grain.speed * (fade * grainSize);							
+							grain._speed = speed + rndf(speedMin, speedMax);
+							grain._speed = grain._speed < .1 && grain._speed > 0 ? .1 : grain._speed;							
+							grain._speed = grain._speed > -.1 && grain._speed < 0 ? -.1 : grain._speed;	
+							grain.fadeAmount = grain._speed * (fade * grainSize);							
 						}
 						
 						var _pos = grain.pos;
@@ -1100,7 +1153,7 @@ define([], function() {
 				    val[0] += _val[0];
 				    val[1] += _val[1]
 					
-					grain.pos += grain.speed;
+					grain.pos += grain._speed;
 				}
 				
 				return panner2(val, pan, amp);

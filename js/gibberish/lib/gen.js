@@ -174,7 +174,20 @@ window.Gen = function(obj) {
 				}
 			}
 		}else{
-			Gibberish.extend(that, _obj); // after setters are defined
+			if(typeof _obj.symbol === 'undefined' ) { // make sure it's not a ugen being passed as the first argument
+				//console.log("NORMAL EXTENSION");
+				Gibberish.extend(that, _obj); // after setters are defined
+			}else{
+				//console.log("ARGUMENTS", arguments);
+				that[propsArray[0]] = _obj;
+				
+				for(var i = 1; i < arguments.length; i++) {
+					if(typeof arguments[i] !== "undefined") {
+						//console.log("SETTING " + propsArray[i] + " to " + arguments[i]);
+						that[propsArray[i]] = arguments[i];
+					}
+				}
+			}
 		}
 
 		if(typeof that.init === "function") that.init();

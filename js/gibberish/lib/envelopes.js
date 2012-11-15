@@ -34,11 +34,11 @@ define([], function() {
 		  
 	      gibberish.Follow = gibberish.Follow2 = Gen({
 	        name: "Follow",
-	        props: { input:null, bufferSize:4410, mult:1 },
+	        props: { input:0, bufferSize:4410, mult:1 },
 	        upvalues: { abs:Math.abs, history:null, sum:0, index:0, value:0 },
 			
 	        init: function() {
-	         	this.function.setHistory(new Float32Array(this.bufferSize));
+	         	this.function.setHistory([0]);
 	        },
 			
 	        callback: function(input, bufferSize, mult) {
@@ -46,6 +46,9 @@ define([], function() {
 	        	sum -= history[index];
 	        	history[index] = abs(input[0]);
 	        	index = (index + 1) % bufferSize;
+				
+				// zero history array iteratively instead of on initialization which can cause hiccups
+				history[index] = history[index] ? history[index] : 0;
 	        	value = (sum / bufferSize) * mult;
 				return [0, 0];
 	        },

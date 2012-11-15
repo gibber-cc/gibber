@@ -2,7 +2,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.FilmPass = function ( noiseIntensity, scanlinesIntensity, scanlinesCount, grayscale ) {
+THREE.FilmPass = function ( noiseIntensity, scanlinesIntensity, scanlinesCount, grayscale, mix ) {
 
 	var shader = THREE.ShaderExtras[ "film" ];
 
@@ -20,6 +20,7 @@ THREE.FilmPass = function ( noiseIntensity, scanlinesIntensity, scanlinesCount, 
 	if ( noiseIntensity !== undefined ) this.uniforms.nIntensity.value = noiseIntensity;
 	if ( scanlinesIntensity !== undefined ) this.uniforms.sIntensity.value = scanlinesIntensity;
 	if ( scanlinesCount !== undefined ) this.uniforms.sCount.value = scanlinesCount;
+	if ( mix !== undefined ) this.uniforms.mix.value = mix;	
 
 	this.enabled = true;
 	this.renderToScreen = false;

@@ -47,11 +47,11 @@ THREE.EffectComposer.prototype = {
 	
 	removePass : function( pass ) {
 		
-		console.log("REMOVING PASS");
+		//console.log("REMOVING PASS");
 		
 		var idx = this.passes.indexOf( pass );
 		
-		console.log("INDEX ", idx);
+		//console.log("INDEX ", idx);
 		
 		if(idx >= 0) {
 			this.passes.splice( idx, 1 );

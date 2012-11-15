@@ -29,8 +29,82 @@
  *  unpackDepthRGBA
  */
 
-THREE.ShaderExtras = {
+ /*THREE = THREE || {};
+ THREE.Extras = THREE.Extras || {};
 
+ THREE.Extras.Shaders = {
+ 	// Volumetric Light Approximation (Godrays)
+ 	
+
+ 	// Coeff'd additive buffer blending
+ 	Additive: {
+ 		uniforms: {
+ 			tDiffuse: { type: "t", value: 0, texture: null },
+ 			tAdd: { type: "t", value: 1, texture: null },
+ 			fCoeff: { type: "f", value: 1.0 }
+ 		},
+
+ 		vertexShader: [
+ 			"varying vec2 vUv;",
+
+ 			"void main() {",
+
+ 				"vUv = uv;",
+ 				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+ 			"}"
+ 		].join("\n"),
+
+ 		fragmentShader: [
+ 			"uniform sampler2D tDiffuse;",
+ 			"uniform sampler2D tAdd;",
+ 			"uniform float fCoeff;",
+
+ 			"varying vec2 vUv;",
+
+ 			"void main() {",
+
+ 				"vec4 texel = texture2D( tDiffuse, vUv );",
+ 				"vec4 add = texture2D( tAdd, vUv );",
+ 				"gl_FragColor = texel + add * fCoeff;",
+
+ 			"}"
+ 		].join("\n")
+ 	}
+ };
+ */
+
+THREE.ShaderExtras = {
+	'pixellate' : {
+		uniforms : {
+			tDiffuse : { type:'t', value: null},
+			amount: { type: 'f', value:.15},
+			mix:  	{ type: "f", value: 1 },			
+			
+		},
+		vertexShader: [
+			"varying vec2 vUv;",
+			"void main() {",
+			"	vUv = uv;",
+			"	gl_Position = vec4(position[0],position[1],position[2], 1.0);",
+			"}"
+		].join("\n"),
+		
+		fragmentShader : [
+			"uniform sampler2D tDiffuse;",
+			"uniform highp float amount;",
+			"uniform float mix;",
+			"varying vec2 vUv;",
+			"void main() {",
+			"	highp vec2 sd= vec2(amount);",
+			"	highp vec2 samplePos = vUv - mod(vUv, sd);",
+			"	vec4 p = texture2D(tDiffuse, samplePos );",
+			"	vec4 pp = texture2D( tDiffuse, vUv );",
+			"	vec3 blend = (p.rgb * vec3(mix)) + (pp.rgb * vec3(1.0 - mix) );",
+			"	gl_FragColor = vec4(blend, pp.a);",
+			"}"
+		].join("\n"),
+	},
 	/* -------------------------------------------------------------------------
 	//	Full-screen textured quad shader
 	 ------------------------------------------------------------------------- */
@@ -41,7 +115,7 @@ THREE.ShaderExtras = {
 
 			tDiffuse: { type: "t", value: null },
 			opacity:  { type: "f", value: 1.0 }
-
+			//mix:  	{ type: "f", value: 1 },			
 		},
 
 		vertexShader: [
@@ -75,6 +149,76 @@ THREE.ShaderExtras = {
 		].join("\n")
 
 	},
+	
+ 	"Godrays": {
+ 		uniforms: {
+ 			tDiffuse: {type: "t", value:0, texture:null},
+ 			x: {type: "f", value: 0.5},
+ 			y: {type: "f", value: 0.5},
+ 			exposure: {type: "f", value: 0.6},
+ 			decay: {type: "f", value: 0.93},
+ 			density: {type: "f", value: 0.96},
+ 			weight: {type: "f", value: 0.4},
+ 			max: {type: "f", value: 1.0},
+			mix:  	{ type: "f", value: 1 },
+			//samples: { type:"i", value: 20 }			
+ 		},
+
+ 		vertexShader: [
+ 			"varying vec2 vUv;",
+
+ 			"void main() {",
+
+ 				"vUv = uv;",
+ 				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+ 			"}"
+ 		].join("\n"),
+
+ 		fragmentShader: [
+ 			"varying vec2 vUv;",
+ 			"uniform sampler2D tDiffuse;",
+
+ 			"uniform float x;",
+ 			"uniform float y;",
+ 			"uniform float exposure;",
+ 			"uniform float decay;",
+ 			"uniform float density;",
+ 			"uniform float weight;",
+ 			"uniform float max;",
+			"uniform float mix;",
+			
+ 			"const int iSamples = 10;",
+
+ 			"void main()",
+ 			"{",
+ 				"vec2 deltaTextCoord = vec2(vUv - vec2(x,y));",
+ 				"deltaTextCoord *= 1.0 /  float(iSamples) * density;",
+ 				"vec2 coord = vUv;",
+ 				"float illuminationDecay = 1.0;",
+ 				"vec4 FragColor = vec4(0.0);",
+
+ 				"for(int i=0; i < iSamples ; i++)",
+ 				"{",
+ 					"coord -= deltaTextCoord;",
+ 					"vec4 texel = texture2D(tDiffuse, coord);",
+ 					"texel *= illuminationDecay * weight;",
+
+ 					"FragColor += texel;",
+
+ 					"illuminationDecay *= decay;",
+ 				"}",
+ 				"FragColor *= exposure;",
+ 				"FragColor = clamp(FragColor, 0.0, max);",
+				
+				"vec4 orig = texture2D(tDiffuse, vUv);",
+				
+				"vec3 blend = (FragColor.rgb * vec3(mix)) + (orig.rgb * vec3(1.0 - mix) );",
+ 				"gl_FragColor = vec4(blend, orig.a);",
+ 			"}"
+ 		].join("\n")
+ 	},
+	
 
 	/* ------------------------------------------------------------------------
 	//	Convolution shader
@@ -170,7 +314,9 @@ THREE.ShaderExtras = {
 			nIntensity: { type: "f", value: 0.5 },
 			sIntensity: { type: "f", value: 0.05 },
 			sCount: 	{ type: "f", value: 4096 },
-			grayscale:  { type: "i", value: 1 }
+			grayscale:  { type: "i", value: 1 },
+			value:  	{ type: "i", value: 1 },		
+			mix:  	{ type: "f", value: 1 },			
 
 		},
 
@@ -202,6 +348,8 @@ THREE.ShaderExtras = {
 
 			// scanlines effect count value (0 = no effect, 4096 = full effect)
 			"uniform float sCount;",
+			
+			"uniform float mix;",
 
 			"uniform sampler2D tDiffuse;",
 
@@ -235,8 +383,10 @@ THREE.ShaderExtras = {
 					"cResult = vec3( cResult.r * 0.3 + cResult.g * 0.59 + cResult.b * 0.11 );",
 
 				"}",
-
-				"gl_FragColor =  vec4( cResult, cTextureScreen.a );",
+				
+				"vec3 blend = (cResult.rgb * vec3(mix)) + (cTextureScreen.rgb * vec3(1.0 - mix) );",
+				
+				"gl_FragColor =  vec4( blend, cTextureScreen.a );",
 
 			"}"
 
@@ -481,8 +631,8 @@ THREE.ShaderExtras = {
 			tSize:    { type: "v2", value: new THREE.Vector2( 256, 256 ) },
 			center:   { type: "v2", value: new THREE.Vector2( 0.5, 0.5 ) },
 			angle:	  { type: "f", value: 1.57 },
-			scale:	  { type: "f", value: 1.0 }
-
+			scale:	  { type: "f", value: 1.0 },
+			mix:  	{ type: "f", value: 1 },			
 		},
 
 		vertexShader: [
@@ -504,6 +654,7 @@ THREE.ShaderExtras = {
 			"uniform float angle;",
 			"uniform float scale;",
 			"uniform vec2 tSize;",
+			"uniform float mix;",
 
 			"uniform sampler2D tDiffuse;",
 
@@ -525,8 +676,12 @@ THREE.ShaderExtras = {
 				"vec4 color = texture2D( tDiffuse, vUv );",
 
 				"float average = ( color.r + color.g + color.b ) / 3.0;",
-
-				"gl_FragColor = vec4( vec3( average * 10.0 - 5.0 + pattern() ), color.a );",
+				
+				"vec3 result = vec3( average * 10.0 - 5.0 + pattern() );",
+				
+				"vec3 blend = (result.rgb * vec3(mix)) + (color.rgb * vec3(1.0 - mix) );",
+				
+				"gl_FragColor = vec4( blend, color.a );",
 
 			"}"
 
@@ -872,8 +1027,9 @@ THREE.ShaderExtras = {
 		uniforms: {
 
 			"tDiffuse": { type: "t", value: null },
-			"h": 		{ type: "f", value: 1.0 / 512.0 }
-
+			"h": 		{ type: "f", value: 1.0 / 512.0 },
+			mix:  		{ type: "f", value: 1 },			
+			
 		},
 
 		vertexShader: [
@@ -893,7 +1049,7 @@ THREE.ShaderExtras = {
 
 			"uniform sampler2D tDiffuse;",
 			"uniform float h;",
-
+			"uniform float mix;",
 			"varying vec2 vUv;",
 
 			"void main() {",
@@ -909,8 +1065,10 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 2.0 * h, vUv.y ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 3.0 * h, vUv.y ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 4.0 * h, vUv.y ) ) * 0.051;",
-
-				"gl_FragColor = sum;",
+				
+				"vec4 original = texture2D(tDiffuse, vUv);",
+				
+				"gl_FragColor = (sum * vec4(mix)) + (original * vec4(1.0 - mix));",
 
 			"}"
 
@@ -924,8 +1082,8 @@ THREE.ShaderExtras = {
 		uniforms: {
 
 			"tDiffuse": { type: "t", value: null },
-			"v": 		{ type: "f", value: 1.0 / 512.0 }
-
+			"v": 		{ type: "f", value: 1.0 / 512.0 },
+			mix:  	{ type: "f", value: 1 },			
 		},
 
 		vertexShader: [
@@ -945,7 +1103,8 @@ THREE.ShaderExtras = {
 
 			"uniform sampler2D tDiffuse;",
 			"uniform float v;",
-
+			"uniform float mix;",
+			
 			"varying vec2 vUv;",
 
 			"void main() {",
@@ -962,7 +1121,9 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 3.0 * v ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 4.0 * v ) ) * 0.051;",
 
-				"gl_FragColor = sum;",
+				"vec4 original = texture2D(tDiffuse, vUv);",
+				
+				"gl_FragColor = (sum * vec4(mix)) + (original * vec4(1.0 - mix));",
 
 			"}"
 
@@ -986,7 +1147,8 @@ THREE.ShaderExtras = {
 
 			"tDiffuse": { type: "t", value: null },
 			"h": 		{ type: "f", value: 1.0 / 512.0 },
-			"r": 		{ type: "f", value: 0.35 }
+			"r": 		{ type: "f", value: 0.35 },
+			mix:  		{ type: "f", value: 1 },			
 
 		},
 
@@ -1008,6 +1170,7 @@ THREE.ShaderExtras = {
 			"uniform sampler2D tDiffuse;",
 			"uniform float h;",
 			"uniform float r;",
+			"uniform float mix;",
 
 			"varying vec2 vUv;",
 
@@ -1026,9 +1189,10 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 2.0 * hh, vUv.y ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 3.0 * hh, vUv.y ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 4.0 * hh, vUv.y ) ) * 0.051;",
-
-				"gl_FragColor = sum;",
-
+				
+				"vec4 original = texture2D(tDiffuse, vUv);",
+				
+				"gl_FragColor = (sum * vec4(mix)) + (original * vec4(1.0 - mix));",
 			"}"
 
 
@@ -1042,7 +1206,8 @@ THREE.ShaderExtras = {
 
 			"tDiffuse": { type: "t", value: null },
 			"v": 		{ type: "f", value: 1.0 / 512.0 },
-			"r": 		{ type: "f", value: 0.35 }
+			"r": 		{ type: "f", value: 0.35 },
+			mix:  		{ type: "f", value: 1 },			
 
 		},
 
@@ -1064,7 +1229,7 @@ THREE.ShaderExtras = {
 			"uniform sampler2D tDiffuse;",
 			"uniform float v;",
 			"uniform float r;",
-
+			"uniform float mix;",
 			"varying vec2 vUv;",
 
 			"void main() {",
@@ -1083,10 +1248,10 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 3.0 * vv ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 4.0 * vv ) ) * 0.051;",
 
-				"gl_FragColor = sum;",
-
+				"vec4 original = texture2D(tDiffuse, vUv);",
+				
+				"gl_FragColor = (sum * vec4(mix)) + (original * vec4(1.0 - mix));",
 			"}"
-
 
 		].join("\n")
 
@@ -1656,8 +1821,9 @@ THREE.ShaderExtras = {
 		uniforms: {
 
 			tDiffuse: { type: "t", value: null },
-			color:    { type: "c", value: new THREE.Color( 0xffffff ) }
-
+			color:    { type: "c", value: new THREE.Color( 0xffffff ) },
+			mix:  	{ type: "f", value: 1 },			
+			
 		},
 
 		vertexShader: [
@@ -1677,7 +1843,7 @@ THREE.ShaderExtras = {
 
 			"uniform vec3 color;",
 			"uniform sampler2D tDiffuse;",
-
+			"uniform float mix;",
 			"varying vec2 vUv;",
 
 			"void main() {",
@@ -1686,8 +1852,8 @@ THREE.ShaderExtras = {
 
 				"vec3 luma = vec3( 0.299, 0.587, 0.114 );",
 				"float v = dot( texel.xyz, luma );",
-
-				"gl_FragColor = vec4( v * color, texel.w );",
+				"vec3 result = vec3(v * color);",
+				"gl_FragColor = vec4( (result * vec3(mix)) + (texel.rgb * vec3(1.0 - mix)), texel.w );",
 
 			"}"
 

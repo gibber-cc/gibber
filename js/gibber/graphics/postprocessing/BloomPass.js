@@ -2,13 +2,12 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.BloomPass = function ( strength, kernelSize, sigma, resolution ) {
+THREE.BloomPass = function ( strength, kernelSize, sigma, resolution, mix ) {
 
 	strength = ( strength !== undefined ) ? strength : 1;
 	kernelSize = ( kernelSize !== undefined ) ? kernelSize : 25;
 	sigma = ( sigma !== undefined ) ? sigma : 4.0;
 	resolution = ( resolution !== undefined ) ? resolution : 256;
-
 	// render targets
 
 	var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
