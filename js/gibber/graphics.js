@@ -315,7 +315,7 @@ define(['gibber/graphics/three.min'], function(){
 		color : function() {
 			var result, r,g,b;
 			if(typeof arguments[0] === 'string') {
-				var c  = this.colors[arguments[0]];
+				var c  = that.colors[arguments[0]];
 				r = c[0];
 				g = c[1];
 				b = c[2];

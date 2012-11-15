@@ -589,25 +589,31 @@ window.Scale = function(_root, _mode) {
 		
 		create : function() {
 			this.notes = [];
-			var _rootoctave = this.root.octave;
+			if(Gibber.scales[this.mode]) {
+				var scale = Gibber.scales[this.mode](this.root);
+				scale.create();
+				this.notes = scale.notes;
+			}else{
+				var _rootoctave = this.root.octave;
 
-			var _scale = teoria.scale.list(this.root, this.mode, false);
-			for(var oct = _rootoctave, o = 0; oct < _rootoctave + 8; oct++, o++) {
-				for(var num = 0; num < _scale.length; num++) {
-					var nt = jQuery.extend({}, _scale[num]);
-					nt.octave += o;
-					this.notes.push(nt);
+				var _scale = teoria.scale.list(this.root, this.mode, false);
+				for(var oct = _rootoctave, o = 0; oct < _rootoctave + 8; oct++, o++) {
+					for(var num = 0; num < _scale.length; num++) {
+						var nt = jQuery.extend({}, _scale[num]);
+						nt.octave += o;
+						this.notes.push(nt);
+					}
 				}
-			}
 			
-			var negCount = -1;
-			for(var oct = _rootoctave - 2, o = -1; oct >= 0; oct--, o--) {
-			 	for(var num = _scale.length - 1; num >= 0; num--) {
-			 		var nt = jQuery.extend({}, _scale[num]);
-			 		nt.octave += o;
-			 		this.notes[negCount--] = nt;
-			 	}
-			}	
+				var negCount = -1;
+				for(var oct = _rootoctave - 2, o = -1; oct >= 0; oct--, o--) {
+				 	for(var num = _scale.length - 1; num >= 0; num--) {
+				 		var nt = jQuery.extend({}, _scale[num]);
+				 		nt.octave += o;
+				 		this.notes[negCount--] = nt;
+				 	}
+				}	
+			}
 		},
 		
 		set : function(_root, _mode) {
@@ -702,88 +708,90 @@ window.CustomScale = function() {
   return that;
 };
 
-// Scales contributed by Luke Taylor
-// Half-Whole or Octatonic Scale
-//http://en.wikipedia.org/wiki/Octatonic_scale
-window.HalfWhole = function(root) {
-   return CustomScale( root, [ 1,1.059463,1.189207,1.259921,1.414214,1.498307,1.681793, 1.781797 ]);
-};
 
-//Whole-Half or Octatonic Scale
-//http://en.wikipedia.org/wiki/Octatonic_scale
-window.WholeHalf = function(root) {
-   return CustomScale( root, [ 1,1.122462,1.189207,1.334840,1.414214,1.587401,1.681793, 1.887749 ]);
-};
+Gibber.scales = {
+	// Scales contributed by Luke Taylor
+	// Half-Whole or Octatonic Scale
+	//http://en.wikipedia.org/wiki/Octatonic_scale
+	HalfWhole : function(root) {
+	   return CustomScale( root, [ 1,1.059463,1.189207,1.259921,1.414214,1.498307,1.681793, 1.781797 ]);
+	},
 
-//Pythagorean Tuning
-//http://en.wikipedia.org/wiki/Pythagorean_tuning
+	//Whole-Half or Octatonic Scale
+	//http://en.wikipedia.org/wiki/Octatonic_scale
+	WholeHalf : function(root) {
+	   return CustomScale( root, [ 1,1.122462,1.189207,1.334840,1.414214,1.587401,1.681793, 1.887749 ]);
+	},
 
-//Chromatic scale in Pythagorean tuning
-window.Pythagorean = function(root) {
-   return CustomScale( root, [ 1, 256/243, 9/8, 32/27, 81/64, 4/3, 729/512, 3/2, 128/81, 27/16, 16/9, 243/128 ]);
-};
+	//Pythagorean Tuning
+	//http://en.wikipedia.org/wiki/Pythagorean_tuning
 
-//Major Pythagorean
-window.PythagoreanMajor = function(root) {
-   return CustomScale( root, [ 1, 9/8, 81/64, 4/3, 3/2, 27/16, 243/128 ]);
-};
+	//Chromatic scale in Pythagorean tuning
+	Pythagorean : function(root) {
+	   return CustomScale( root, [ 1, 256/243, 9/8, 32/27, 81/64, 4/3, 729/512, 3/2, 128/81, 27/16, 16/9, 243/128 ]);
+	},
 
-//Major Pythagorean
-window.PythagoreanMinor = function(root) {
-   return CustomScale( root, [ 1, 9/8, 32/27, 4/3, 3/2, 128/81, 16/9 ]);
-};
+	//Major Pythagorean
+	PythagoreanMajor : function(root) {
+	   return CustomScale( root, [ 1, 9/8, 81/64, 4/3, 3/2, 27/16, 243/128 ]);
+	},
 
+	//Major Pythagorean
+	PythagoreanMinor : function(root) {
+	   return CustomScale( root, [ 1, 9/8, 32/27, 4/3, 3/2, 128/81, 16/9 ]);
+	},
+	
+	// 5-limit Just Intonation 
+	//http://en.wikipedia.org/wiki/List_of_intervals_in_5-limit_just_intonation
 
-// 5-limit Just Intonation 
-//http://en.wikipedia.org/wiki/List_of_intervals_in_5-limit_just_intonation
+	//Chromatic scale in 5-limit just intonation
+	Limit5 : function(root) {
+	   return CustomScale( root, [ 1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 9/5, 15/8 ]);
+	},
 
-//Chromatic scale in 5-limit just intonation
-window.Limit5 = function(root) {
-   return CustomScale( root, [ 1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 9/5, 15/8 ]);
-};
+	//Major scale in 5-limit
+	Limit5Major : function(root) {
+	   return CustomScale( root, [ 1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]);
+	},
 
-//Major scale in 5-limit
-window.LimitMajor5 = window.Limit5Major = function(root) {
-   return CustomScale( root, [ 1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]);
-};
+	//Minor scale in 5-limit
+	Limit5Minor : function(root) {
+	   return CustomScale( root, [ 1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]);
+	},
 
-//Minor scale in 5-limit
-window.LimitMinor5 = window.Limit5Minor = function(root) {
-   return CustomScale( root, [ 1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]);
-};
+	// Messiaen's modes of limited transposition http://en.wikipedia.org/wiki/Modes_of_limited_transposition
+	Mess3 : function(root) { return CustomScale( root, [1,1.122462, 1.189207, 1.259921, 1.414214, 1.498307, 1.587401, 1.781797, 1.887749 ]) },
 
-// Messiaen's modes of limited transposition http://en.wikipedia.org/wiki/Modes_of_limited_transposition
-window.Mess3 = function(root) { return CustomScale( root, [1,1.122462, 1.189207, 1.259921, 1.414214, 1.498307, 1.587401, 1.781797, 1.887749 ]) };
+	Mess4 : function(root) { return CustomScale( root, [1, 1.059463, 1.122462, 1.334840, 1.414214, 1.498307, 1.587401, 1.887749 ]) },
 
-window.Mess4 = function(root) { return CustomScale( root, [1, 1.059463, 1.122462, 1.334840, 1.414214, 1.498307, 1.587401, 1.887749 ]) };
+	Mess5 : function(root) { return CustomScale( root, [1, 1.059463, 1.334840, 1.414214, 1.498307, 1.887749 ]) },
 
-window.Mess5 = function(root) { return CustomScale( root, [1, 1.059463, 1.334840, 1.414214, 1.498307, 1.887749 ]) };
+	Mess6 : function(root) { return CustomScale( root, [1, 1.122462, 1.259921, 1.334840, 1.414214, 1.587401, 1.781797, 1.887749 ]) },
 
-window.Mess6 = function(root) { return CustomScale( root, [1, 1.122462, 1.259921, 1.334840, 1.414214, 1.587401, 1.781797, 1.887749 ]) };
+	Mess7 : function(root) { return CustomScale( root, [1, 1.059463, 1.122462, 1.189207, 1.334840, 1.414214, 1.498307, 1.587401, 1.681793, 1.887749 ]) },
 
-window.Mess7 = function(root) { return CustomScale( root, [1, 1.059463, 1.122462, 1.189207, 1.334840, 1.414214, 1.498307, 1.587401, 1.681793, 1.887749 ]) };
+	//And, a personal (anthony garcia) favorite synthetic mode, lydian flat 7:
+	Adams : function(root) { return CustomScale( root, [1, 1.122462, 1.259921, 1.414214, 1.498307, 1.681793, 1.781797 ]) },
 
-//And, a personal (anthony garcia) favorite synthetic mode, lydian flat 7:
-window.Adams = function(root) { return CustomScale( root, [1, 1.122462, 1.259921, 1.414214, 1.498307, 1.681793, 1.781797 ]) };
+	//5 tone equal temperament
+	//http://en.wikipedia.org/wiki/Equal_temperament#5_and_7_tone_temperaments_in_ethnomusicology
+	Equal5Tone : function(root) {
+	   return CustomScale( root, [ 1, 1.15, 1.32, 1.35, 1.52, 1.74 ]);
+	},
 
-//5 tone equal temperament
-//http://en.wikipedia.org/wiki/Equal_temperament#5_and_7_tone_temperaments_in_ethnomusicology
-window.Equal5Tone = function(root) {
-   return CustomScale( root, [ 1, 1.15, 1.32, 1.35, 1.52, 1.74 ]);
-};
+	//7 tone equal temperament
+	//http://en.wikipedia.org/wiki/Equal_temperament#5_and_7_tone_temperaments_in_ethnomusicology
+	Equal7Tone : function(root) {
+	   return CustomScale( root, [ 1, 1.1, 1.22, 1.35, 1.49, 1.64, 1.81 ]);
+	},
 
-//7 tone equal temperament
-//http://en.wikipedia.org/wiki/Equal_temperament#5_and_7_tone_temperaments_in_ethnomusicology
-window.Equal7Tone = function(root) {
-   return CustomScale( root, [ 1, 1.1, 1.22, 1.35, 1.49, 1.64, 1.81 ]);
-};
-
-window.Just = function(root) {
-	return CustomScale(root, [
-		1, 1.0417, 1.1250, 1.2000,
-		1.2500, 1.3333, 1.4063, 1.5,
-		1.6, 1.6667, 1.8, 1.8750
-	]);
+	Just : function(root) {
+		return CustomScale(root, [
+			1, 1.0417, 1.1250, 1.2000,
+			1.2500, 1.3333, 1.4063, 1.5,
+			1.6, 1.6667, 1.8, 1.8750
+		]);
+	},
 };
 
 // wrap a function call in a function.
