@@ -474,6 +474,12 @@ define(['gibber/graphics/three.min'], function(){
 								that.material.color.g = val;
 								that.material.color.b = val;
 							}
+						}else if(typeof val === 'string') {
+							if(that.children.length > 0) {
+								that.children[0].material.color = Graphics.color(val);
+							}else{
+								that.material.color = Graphics.color(val);
+							}
 						}
 					}
 				},
@@ -505,6 +511,10 @@ define(['gibber/graphics/three.min'], function(){
 								that.children[1].material.color.r = val;
 								that.children[1].material.color.g = val;
 								that.children[1].material.color.b = val;
+							}
+						}else if(typeof val === 'string') {
+							if(that.children.length > 0) {
+								that.children[1].material.color = Graphics.color(val);
 							}
 						}
 					}
