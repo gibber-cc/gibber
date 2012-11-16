@@ -373,15 +373,15 @@ define(['gibber/graphics/three.min'], function(){
 		geometry : function(props, geometry) {
 			props.fill = props.fill ? this.color(props.fill) : this.color('black');
 			props.stroke = props.stroke ? this.color(props.stroke) : undefined;
-						
+
 			var that;
 			if(!geometry.isModel) {
 				var materials = props.stroke ?  [
 				    new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:50, specular:0xffffff} ),
 					new THREE.MeshBasicMaterial( { color: props.stroke, shading: THREE.FlatShading, wireframe: true, transparent: true } )
 				] 
-				: new THREE.MeshLambertMaterial( { color: props.fill, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
-			
+				: new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:50 } );
+				
 				that = props.stroke ? 
 					THREE.SceneUtils.createMultiMaterialObject( geometry, materials ) :
 					new THREE.Mesh(	geometry, materials);
@@ -433,8 +433,84 @@ define(['gibber/graphics/three.min'], function(){
 			var scale = {x:1, y:1, z:1};
 			var rotation = {x:0, y:0, z:0};
 			var position = {x:0, y:0, z:0};
+			var fill = props.fill;
+			var stroke = props.stroke;
 			
 			Object.defineProperties(that, {
+				fill : {
+					get: function() { 
+						if(that.children.length > 0) {
+							return that.children[0].material.color; 
+						}
+						return that.material.color;
+					},
+					set: function() {
+						var val = arguments[0];
+						if(typeof val === 'object') {
+							if(Array.isArray(val)) {
+								if(that.children.length > 0) {
+									that.children[0].material.color.r = val[0];
+									that.children[0].material.color.g = val[1];
+									that.children[0].material.color.b = val[2];
+								}else{
+									that.material.color.r = val[0];
+									that.material.color.g = val[1];
+									that.material.color.b = val[2];
+								}
+							}else{
+								if(that.children.length > 0) {
+									that.children[0].material.color = val;
+								}else{
+									that.material.color = val;
+								}
+							}
+						}else if(typeof val === 'number') {
+							if(that.children.length > 0) {
+								that.children[0].material.color.r = val;
+								that.children[0].material.color.g = val;
+								that.children[0].material.color.b = val;
+							}else{
+								that.material.color.r = val;
+								that.material.color.g = val;
+								that.material.color.b = val;
+							}
+						}
+					}
+				},
+				
+				// TODO: make a stroke mesh if it doesn't already exist
+				stroke : {
+					get: function() { 
+						if(that.children.length > 0) {
+							return that.children[1].material.color; 
+						}
+						return undefined;
+					},
+					set: function() {
+						var val = arguments[0];
+						if(typeof val === 'object') {
+							if(Array.isArray(val)) {
+								if(that.children.length > 0) {
+									that.children[1].material.color.r = val[0];
+									that.children[1].material.color.g = val[1];
+									that.children[1].material.color.b = val[2];
+								}
+							}else{
+								if(that.children.length > 0) {
+									that.children[1].material.color = val;
+								}
+							}
+						}else if(typeof val === 'number') {
+							if(that.children.length > 0) {
+								that.children[1].material.color.r = val;
+								that.children[1].material.color.g = val;
+								that.children[1].material.color.b = val;
+							}
+						}
+					}
+				},
+				
+				
 				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; } },
 				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; } },
 				z : { get: function() { return this.position.z; }, set: function(val) { this.position.z = val; } },	
@@ -530,7 +606,7 @@ define(['gibber/graphics/three.min'], function(){
 			that.update = function() {};
 			Gibberish.extend(that, props);
 			Graphics.graph.push(that);
-			
+						
 			return that;
 		},
 		
