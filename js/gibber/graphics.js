@@ -430,9 +430,10 @@ define(['gibber/graphics/three.min'], function(){
 			that.ry = that.rotation.y;
 			that.rz = that.rotation.z;
 			
-			var __scale = [1,1,1];
-			var __rotate = [0,0,0];
-			var __position = [0,0,0];
+			var scale = {x:1, y:1, z:1};
+			var rotation = {x:0, y:0, z:0};
+			var position = {x:0, y:0, z:0};
+			
 			Object.defineProperties(that, {
 				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; } },
 				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; } },
@@ -446,39 +447,75 @@ define(['gibber/graphics/three.min'], function(){
 				sy : { get: function() { return this.scale.y; }, set: function(val) { this.scale.y = val; } },
 				sz : { get: function() { return this.scale.z; }, set: function(val) { this.scale.z = val; } },
 
-				_scale : { 
-					get: function() { return __scale; }, 
+				scale : { 
+					get: function() { return scale; }, 
 					set: function(val) { 
-						__scale = val;
-						this.sx = val[0] || this.scale.x;
-						this.sy = val[1] || this.scale.y;
-						this.sz = val[2] || this.scale.z;
+						if(typeof val === 'object') {
+							if(Array.isArray(val)) {
+								scale.x = val[0];
+								scale.y = val[1];
+								scale.z = val[2];
+							}else{
+								scale = val;
+							}
+						}else if(typeof val === 'number') {
+							scale.x = val;
+							scale.y = val;
+							scale.z = val;
+						}
+
+						this.sx = scale.x;
+						this.sy = scale.y;
+						this.sz = scale.z;
 					}
 				},
-				_rotate : { 
-					get: function() { return __rotate; }, 
+				rotation : { 
+					get: function() { return rotation; }, 
 					set: function(val) { 
-						__rotate = val;
-						this.rx = val[0];
-						this.ry = val[1];
-						this.rz = val[2];
+						if(typeof val === 'object') {
+							if(Array.isArray(val)) {
+								rotation.x = val[0];
+								rotation.y = val[1];
+								rotation.z = val[2];
+							}else{
+								rotation = val;
+							}
+						}else if(typeof val === 'number') {
+							rotation.x = val;
+							rotation.y = val;
+							rotation.z = val;
+						}
+						
+						this.rx = rotation.x;
+						this.ry = rotation.y;
+						this.rz = rotation.z;
 					}
 				},
-				_position : { 
-					get: function() { return __position; }, 
+				position : { 
+					get: function() { return position; }, 
 					set: function(val) { 
-						__position = val;
-						this.x = val[0];
-						this.y = val[1];
-						this.z = val[2];
+						if(typeof val === 'object') {
+							if(Array.isArray(val)) {
+								position.x = val[0];
+								position.y = val[1];
+								position.z = val[2];
+							}else{
+								position = val;
+							}
+						}else if(typeof val === 'number') {
+							position.x = val;
+							position.y = val;
+							position.z = val;
+						}
+						
+						this.rx = position.x;
+						this.ry = position.y;
+						this.rz = position.z;
 					}
 				},			
 			});		
 			
-			that.setScale = function() {
-				that._scale = [arguments[0], arguments[0], arguments[0]];
-			};
-			that.rotate = function() {
+			that.spin = function() {
 				if(arguments[0]) {
 					that.mod('rx', arguments[0]);
 				}
@@ -489,6 +526,7 @@ define(['gibber/graphics/three.min'], function(){
 					that.mod('rz', arguments[2]);
 				}
 			};
+			
 			that.update = function() {};
 			Gibberish.extend(that, props);
 			Graphics.graph.push(that);

@@ -484,10 +484,10 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '	fill: "black",	// or [0,0,0] or {r:0, g:0, b:0} or 0\n'+
 '  stroke: "white",\n'+
 '});\n'+
-'a.rotate(.01,.01,.01);\n'+
+'a.spin(.01,.01,.01);\n'+
 '\n'+
 '// alternatively use a.scale.x etc.\n'+
-'a._scale = [1.5,1.5,1.5];\n'+
+'a.scale = 1.5;\n'+
 '\n'+
 '// film grain effect\n'+
 'c = Film();\n'+
