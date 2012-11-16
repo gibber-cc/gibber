@@ -475,19 +475,19 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '\n',
 
 "graphics" :
-'// initialize graphics.\n'+
-'Graphics.init();\n'+
+'// initialize graphics. pass false (or nothing) to not enter fullscreen mode\n'+
+'// graphics engine may take a few seconds to initialize\n'+
+'graphics(true);\n'+
 '\n'+
 '// also try Cube, Sphere, Torus, Knot, Cylinder, Octahedron, Tetrahedron \n'+
-'a = Icosahedron({wireframe:true});\n'+
-'\n'+
-'// mod rotation so that geometry spins\n'+
-'a.mod("rx", .01, "++");\n'+
-'a.mod("ry", .01, "++");\n'+
-'a.mod("rz", .01, "++");\n'+
+'a = Icosahedron({\n'+
+'	fill: "black",	// or [0,0,0] or {r:0, g:0, b:0} or 0\n'+
+'  stroke: "white",\n'+
+'});\n'+
+'a.rotate(.01,.01,.01);\n'+
 '\n'+
 '// alternatively use a.scale.x etc.\n'+
-'a._scale = [.5,.5,.5];\n'+
+'a._scale = [1.5,1.5,1.5];\n'+
 '\n'+
 '// film grain effect\n'+
 'c = Film();\n'+
@@ -497,15 +497,11 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 'd = Drums("x*o*x*o*");\n'+
 'e = Blur();\n'+
 '\n'+
-'// create envelope follower tracking drums\n'+
-'f = Follow({input:d});\n'+
-'f.connect(Master);\n'+
+'// create envelope= follower tracking drums\n'+
+'f = Follow(d);\n'+
 '\n'+
 '// mod horizontal blur amount based on envelope follower\n'+
-'e.mod("h", f, "=", .5);\n'+
-'\n'+
-'// move camera\n'+
-'Camera.position.z = 100;',
+'e.mod("h", f, "=", .1);\n',
 
 "randomness and algorithms" :
 '/* Randomness and Algorithms\n'+

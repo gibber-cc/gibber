@@ -251,9 +251,18 @@ define(['gibber/graphics/three.min'], function(){
 				//that.scene.add(ambientLight); // doesn't seem like a good idea...
 				that.scene.add(pointLight);
 			
+				pointLight2 = new THREE.PointLight(0xFFFFFF);
+
+				// set its position
+				pointLight2.position.x = 0;
+				pointLight2.position.y = 0;
+				pointLight2.position.z = 260;
+
+				//that.scene.add(ambientLight); // doesn't seem like a good idea...
+				Graphics.scene.add(pointLight2);
 				that.lights = [
-					ambientLight,
 					pointLight,
+					pointLight2,
 				];
 				(function() {
 					var r = function() {
