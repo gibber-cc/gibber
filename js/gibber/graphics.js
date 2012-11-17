@@ -57,19 +57,9 @@ define(['gibber/graphics/three.min'], function(){
 				};
 				
 				_props = _props || {};
-				for(var key in _props) {
-					that[key] = _props[key];
-				}
 				
 				for(var i = 0; i < props.shaders.length; i++) {
 					var shaderDictionary = props.shaders[i];
-
-					for(var ii = 0; ii < shaderDictionary.properties.length; ii++) {
-						var p = shaderDictionary.properties[ii];
-						if(typeof that[p.name] === "undefined") { // if an initialization property hasn't been set...
-							that[p.name] = p.value;
-						}
-					}
 					
 					var shader = shaderDictionary.init(that);
 					shader.name = shaderDictionary.name;
@@ -99,6 +89,14 @@ define(['gibber/graphics/three.min'], function(){
 						})();
 					}
 					
+					for(var ii = 0; ii < shaderDictionary.properties.length; ii++) {
+						var p = shaderDictionary.properties[ii];
+						//if(typeof that[p.name] === "undefined") { // if an initialization property hasn't been set...
+							//console.log("SETTING " + p.name + " TO " + p.value);
+							that[p.name] = p.value;
+							//}
+					}
+					
 					if(i === props.shaders.length - 1) {
 						shader.renderToScreen = true;
 					}else{
@@ -112,6 +110,12 @@ define(['gibber/graphics/three.min'], function(){
 						Graphics.fx.push(shader);
 					}
 				}
+				
+				for(var key in _props) {
+					//console.log("SETTING", key);
+					that[key] = _props[key];
+				}
+				that.props = _props;
 				
 				var _renderToScreen = shouldAdd;
  				Object.defineProperty(that, "renderToScreen", {
@@ -170,7 +174,7 @@ define(['gibber/graphics/three.min'], function(){
 			window[props.name] = _constructor;
 			return _constructor;
 		},
-
+		
 		init : function() {
 			require([
 				'gibber/graphics/three.min',
@@ -251,7 +255,7 @@ define(['gibber/graphics/three.min'], function(){
 				//that.scene.add(ambientLight); // doesn't seem like a good idea...
 				that.scene.add(pointLight);
 			
-				pointLight2 = new THREE.PointLight(0xFFFFFF);
+				pointLight2 = new THREE.PointLight(0x666666);
 
 				// set its position
 				pointLight2.position.x = 0;
@@ -373,14 +377,14 @@ define(['gibber/graphics/three.min'], function(){
 		geometry : function(props, geometry) {
 			props.fill = props.fill ? this.color(props.fill) : this.color('black');
 			props.stroke = props.stroke ? this.color(props.stroke) : undefined;
-
+			
 			var that;
 			if(!geometry.isModel) {
 				var materials = props.stroke ?  [
-				    new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:50, specular:0xffffff} ),
+				    new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:props.shiny || 50, specular:props.specular || 0xffffff} ),
 					new THREE.MeshBasicMaterial( { color: props.stroke, shading: THREE.FlatShading, wireframe: true, transparent: true } )
 				] 
-				: new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:50 } );
+				: new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:props.shiny || 50 } );
 				
 				that = props.stroke ? 
 					THREE.SceneUtils.createMultiMaterialObject( geometry, materials ) :
@@ -602,16 +606,55 @@ define(['gibber/graphics/three.min'], function(){
 			});		
 			
 			that.spin = function() {
-				if(arguments[0]) {
+				if(arguments.length === 0) {
+					that.mod('rx', .01);
+					that.mod('ry', .01);
+					that.mod('rz', .01);
+				}else if(arguments.length === 1) {
+					if(arguments[0] === 0) {
+						that.removeMod('rx');
+						that.removeMod('ry');
+						that.removeMod('rz');
+					}
 					that.mod('rx', arguments[0]);
-				}
-				if(arguments[1]) {
-					that.mod('ry', arguments[1]);
-				}
-				if(arguments[2]) {
-					that.mod('rz', arguments[2]);
+					that.mod('ry', arguments[0]);
+					that.mod('rz', arguments[0]);
+				}else{
+					if(arguments[0]) {
+						if(arguments[0] !== 0) {
+							that.mod('rx', arguments[0]);
+						}else{
+							that.removeMod('rx');
+						}
+					}
+					if(arguments[1]) {
+						if(arguments[1] !== 0) {
+							that.mod('ry', arguments[1]);
+						}else{
+							that.removeMod('ry');
+						}
+					}
+					if(arguments[2]) {
+						if(arguments[2] !== 0) {						
+							that.mod('rz', arguments[2]);
+						}else{
+							that.removeMod('rz');
+						}
+					}
 				}
 			};
+			
+			that.removeMod = function() {
+				var killme = [];
+				for(var i = 0; i < that.mods.length; i++) {
+					var mod = that.mods[i];
+					if(arguments[0]) {
+						if(arguments[0].name === mod.name) {
+							killme.push(i);
+						}
+					}
+				}
+			}
 			
 			that.update = function() {};
 			Gibberish.extend(that, props);
@@ -659,6 +702,10 @@ define(['gibber/graphics/three.min'], function(){
 		},	
 		torus : function(props) {
 			props = props || {};
+			if(props.segments) {
+				props.radialSegments = props.segments;
+				props.tubularSegments = props.segments;
+			}
 			var geometry = new THREE.TorusGeometry( 
 				props.radius,
 				props.tube,
@@ -936,8 +983,7 @@ define(['gibber/graphics/three.min'], function(){
 					],
 					type:"uniforms",
 					init : function(obj) {
-						var c = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalTiltShift" ] );
-						return c;
+						return new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalTiltShift" ] );
 					},
 				},
 				{
@@ -949,8 +995,7 @@ define(['gibber/graphics/three.min'], function(){
 					],
 					type:"uniforms",
 					init : function(obj) {
-						var c = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalTiltShift" ] );
-						return c;
+						return new THREE.ShaderPass( THREE.ShaderExtras[ "verticalTiltShift" ] );
 					},
 				},
 		
@@ -996,7 +1041,6 @@ define(['gibber/graphics/three.min'], function(){
 			 			{ name:'weight',   value: 0.8},
 			 			{ name:'max',    value: 1.0},
 			 			{ name:'mix',    	value: 1.0},							
-			 			{ name:'samples',   value: 10.0},				
 					],
 					type:'uniforms',
 					init : function(obj) {

@@ -57,6 +57,7 @@ define(['gibber/audio_callback'], function() {
 				'gibber/grains',
 				'gibber/envelopes',
 				'gibber/osc',
+				'gibber/swarms',
 			], function() {
 				if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
 					Gibber.Environment.init();
