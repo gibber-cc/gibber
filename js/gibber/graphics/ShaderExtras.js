@@ -78,7 +78,7 @@ THREE.ShaderExtras = {
 	'pixellate' : {
 		uniforms : {
 			tDiffuse : { type:'t', value: null},
-			amount: { type: 'f', value:.15},
+			amount: { type: 'f', value:.01},
 			mix:  	{ type: "f", value: 1 },			
 			
 		},

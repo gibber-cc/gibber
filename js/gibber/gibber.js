@@ -420,19 +420,36 @@ function LFO(freq, amp, waveform) {
 };
 
 function Sine(freq, volume) {	
-	var that = Gibberish.Sine(freq, volume).connect(Master);
+	var that;
+	if(typeof freq === 'number') {
+		that = Gibberish.Sine(freq, volume).connect(Master);
+	}else{
+		that = Gibberish.Sine(freq).connect(Master);
+	}
 	that.note = Gibber.makeNoteFunction(that);
 	return that;
 }
 
 function Triangle(freq, volume) {	
-	var that = Gibberish.Triangle(freq, volume).connect(Master);
+	var that;
+	if(typeof freq === 'number') {
+		that = Gibberish.Triangle(freq, volume).connect(Master);
+	}else{
+		that = Gibberish.Triangle(freq).connect(Master);
+	}
+	
 	that.note = Gibber.makeNoteFunction(that);
 	return that;
 }
 
 function Square(freq, volume) {
-	var that = Gibberish.Square(freq, volume).connect(Master);
+	var that;
+	if(typeof freq === 'number') {
+		that = Gibberish.Square(freq, volume).connect(Master);
+	}else{
+		that = Gibberish.Square(freq).connect(Master);
+	}
+	
 	that.note = Gibber.makeNoteFunction(that);
 	return that;
 }
@@ -443,7 +460,7 @@ function Saw(freq, volume) {
 	return that;
 }
 
-function Pulse(freq, volume) {	
+/*function Pulse(freq, volume) {	
 	var that = Osc.apply(null,arguments);
 	that.name = "Pulse";
 	that.waveShape = 'pulse';
@@ -462,3 +479,4 @@ function InvSaw(freq, volume) {
 	
 	return that;
 }
+*/

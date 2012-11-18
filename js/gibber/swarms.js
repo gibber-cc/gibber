@@ -46,7 +46,7 @@ Swarm = function(props) {
 				_props.z = rndf(_props.z - 1, _props.z + 1);
 			}
 			
-			if(i===0) console.log(_props);
+			//if(i===0) console.log(_props);
 			
 			__update = _props.update;
 			delete _props.update;
@@ -60,17 +60,16 @@ Swarm = function(props) {
 				agent.sound = window[_props.sound.type](props.sound);
 			}
 			
-			console.log(agent);
 			boids.push(agent);
 		}
 	}
 		
     var that = {
 		distance : 3,
-		center : {x:0, y:0, z:0},
+		position : {x:0, y:0, z:0},
 		speedMax: 5,
-		centerTendency:100,
-		flockTendency: 100,
+		positionTendency:100,
+		flockTendency: 1000,
 		boids : boids,
 		shouldRotate : props.shouldRotate || false,	
 		findVelocity : function() {
@@ -162,9 +161,9 @@ Swarm = function(props) {
 		
         function(boid) {
             return {
-                x: (that.center.x - boid.shape.x) / that.centerTendency,
-                y: (that.center.y - boid.shape.y) / that.centerTendency,
-                z: (that.center.z - boid.shape.z) / that.centerTendency,
+                x: (that.position.x - boid.shape.x) / that.positionTendency,
+                y: (that.position.y - boid.shape.y) / that.positionTendency,
+                z: (that.position.z - boid.shape.z) / that.positionTendency,
             }
         }, ],
 		
@@ -231,6 +230,7 @@ Swarm = function(props) {
 			for(var i = 0; i < boids.length; i++) {
 				var boid = boids[i];
 				boid.shape.remove();
+				boid.sound.disconnect();
 			}
 			Graphics.graph.remove(this);
 		},
@@ -244,7 +244,24 @@ Swarm = function(props) {
 		},
     };
 	
+	var _position = that.position;
+	Object.defineProperty(that, 'position', {
+		get : function() { return _position; },
+		set : function() {
+			if(typeof arguments[0] === 'number')  {
+				_position = { x:arguments[0], y:arguments[1], z:arguments[2] };
+			}else if(Array.isArray(arguments[0])) {
+				_position = { x:arguments[0][0], y:arguments[0][1], z:arguments[0][2] };
+			}else if(typeof arguments[0] === 'object') {
+				_position = arguments[0];
+			}
+		},
+	});
+	
 	that.init();
+	
+	delete props.update;
+	Gibberish.extend(that, props);
 	
     return that;
 };

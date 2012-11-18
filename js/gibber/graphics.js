@@ -1005,7 +1005,7 @@ define(['gibber/graphics/three.min'], function(){
 						name:'Screen',
 						properties: [
 							{ name: 'opacity', value: .5, },
-							{ name:'mix',	value: 1.0 },
+							{ name: 'mix',	value: 1.0 },
 						],
 						type:'uniforms',
 						init: function(obj) {
@@ -1146,7 +1146,7 @@ define(['gibber/graphics/three.min'], function(){
 					properties : [
 						{
 							name:'amount',
-							value:1,
+							value:.01,
 						},
 						{ name:'mix',	value: 1.0 },
 					],
