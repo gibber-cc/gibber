@@ -632,7 +632,7 @@ THREE.ShaderExtras = {
 			center:   { type: "v2", value: new THREE.Vector2( 0.5, 0.5 ) },
 			angle:	  { type: "f", value: 1.57 },
 			scale:	  { type: "f", value: 1.0 },
-			mix:  	{ type: "f", value: 1 },			
+			mix:  	  { type: "f", value: 1.0 },			
 		},
 
 		vertexShader: [

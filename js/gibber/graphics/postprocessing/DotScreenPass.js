@@ -3,9 +3,8 @@
  */
 
 THREE.DotScreenPass = function ( center, angle, scale, mix ) {
-
 	var shader = THREE.ShaderExtras[ "dotscreen" ];
-
+	
 	this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
 
 	if ( center !== undefined )
@@ -13,6 +12,7 @@ THREE.DotScreenPass = function ( center, angle, scale, mix ) {
 
 	if ( angle !== undefined )	this.uniforms[ "angle"].value = angle;
 	if ( scale !== undefined )	this.uniforms[ "scale"].value = scale;
+	if ( mix !== undefined )	this.uniforms[ "mix" ].value   = mix;
 
 	this.material = new THREE.ShaderMaterial( {
 
@@ -21,11 +21,10 @@ THREE.DotScreenPass = function ( center, angle, scale, mix ) {
 		fragmentShader: shader.fragmentShader
 
 	} );
-
+	
 	this.enabled = true;
 	this.renderToScreen = false;
 	this.needsSwap = true;
-
 };
 
 THREE.DotScreenPass.prototype = {

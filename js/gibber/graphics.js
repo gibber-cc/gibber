@@ -58,21 +58,23 @@ define(['gibber/graphics/three.min'], function(){
 				
 				_props = _props || {};
 				
+				console.log("BEFORE MAKING SHADERS");
 				for(var i = 0; i < props.shaders.length; i++) {
 					var shaderDictionary = props.shaders[i];
-					
+					console.log(0);
 					var shader = shaderDictionary.init(that);
+					console.log(.5);
 					shader.name = shaderDictionary.name;
 					that.shaders.push(shader);
-					
+					console.log(1);
 					that[shaderDictionary.name] = shader;
-					
+					console.log(2);
 					//console.log(_props);
 					var shouldAdd = typeof _props.shouldAdd === 'undefined' || _props.shouldAdd === true;
 					if(shouldAdd) {
 						Graphics.composer.addPass( shader );
 					}
-
+					console.log(3);
 					for(var j = 0; j < shaderDictionary.properties.length; j++) {
 						(function() { 
 							var property = shaderDictionary.properties[j];
@@ -82,17 +84,18 @@ define(['gibber/graphics/three.min'], function(){
 							Object.defineProperty(that, property.name, {
 								get : function() { return v; },
 								set : function(val) { 
+									console.log("SETTING " + property.name + " VALUE :" + val );
 									v = val;
 									_shader[ _shaderDictionary.type ][ property.name ].value = v;
 								}
 							});
 						})();
 					}
-					
+					console.log(4);
 					for(var ii = 0; ii < shaderDictionary.properties.length; ii++) {
 						var p = shaderDictionary.properties[ii];
 						//if(typeof that[p.name] === "undefined") { // if an initialization property hasn't been set...
-							//console.log("SETTING " + p.name + " TO " + p.value);
+							console.log("SETTING " + p.name + " TO " + p.value);
 							that[p.name] = p.value;
 							//}
 					}
@@ -924,7 +927,7 @@ define(['gibber/graphics/three.min'], function(){
 						name: 'screen',
 						properties: [{
 							name:'center',
-							value:[0,0],
+							value: new THREE.Vector2( .5, .5 ),
 						},
 						{
 							name:'angle',
@@ -938,7 +941,8 @@ define(['gibber/graphics/three.min'], function(){
 						],
 						type:'uniforms',
 						init : function(obj) {
-							return new THREE.DotScreenPass( new THREE.Vector2( obj.center[0], obj.center[1] ), obj.angle, obj.scale, obj.mix );
+							var _center = obj.center ? new THREE.Vector2( obj.center[0], obj.center[1] ) : new THREE.Vector2( .5, .5 );
+							return new THREE.DotScreenPass( _center, obj.angle, obj.scale, obj.mix );
 						},
 					},
 				],
@@ -978,6 +982,7 @@ define(['gibber/graphics/three.min'], function(){
 					],
 					type:'uniforms',
 					init: function(obj) {
+						console.log(obj);
 						obj.nIntensity = obj.nIntensity || 1;
 						obj.sIntensity = obj.sIntensity || .5;
 						obj.sCount = obj.sCount || 1024;
@@ -1005,7 +1010,7 @@ define(['gibber/graphics/three.min'], function(){
 						name:'Screen',
 						properties: [
 							{ name: 'opacity', value: .5, },
-							{ name: 'mix',	value: 1.0 },
+							//{ name: 'mix',	value: 1.0 },
 						],
 						type:'uniforms',
 						init: function(obj) {
