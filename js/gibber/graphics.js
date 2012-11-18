@@ -58,23 +58,20 @@ define(['gibber/graphics/three.min'], function(){
 				
 				_props = _props || {};
 				
-				console.log("BEFORE MAKING SHADERS");
 				for(var i = 0; i < props.shaders.length; i++) {
 					var shaderDictionary = props.shaders[i];
-					console.log(0);
+
 					var shader = shaderDictionary.init(that);
-					console.log(.5);
 					shader.name = shaderDictionary.name;
 					that.shaders.push(shader);
-					console.log(1);
+
 					that[shaderDictionary.name] = shader;
-					console.log(2);
-					//console.log(_props);
+
 					var shouldAdd = typeof _props.shouldAdd === 'undefined' || _props.shouldAdd === true;
 					if(shouldAdd) {
 						Graphics.composer.addPass( shader );
 					}
-					console.log(3);
+
 					for(var j = 0; j < shaderDictionary.properties.length; j++) {
 						(function() { 
 							var property = shaderDictionary.properties[j];
@@ -91,11 +88,10 @@ define(['gibber/graphics/three.min'], function(){
 							});
 						})();
 					}
-					console.log(4);
 					for(var ii = 0; ii < shaderDictionary.properties.length; ii++) {
 						var p = shaderDictionary.properties[ii];
 						//if(typeof that[p.name] === "undefined") { // if an initialization property hasn't been set...
-							console.log("SETTING " + p.name + " TO " + p.value);
+							// console.log("SETTING " + p.name + " TO " + p.value);
 							that[p.name] = p.value;
 							//}
 					}
@@ -1039,8 +1035,6 @@ define(['gibber/graphics/three.min'], function(){
 					name:"vTilt",
 					properties:[
 						{ name:"v", 	value: 1.0 / 512.0, type:"uniforms" },
-						{ name:"r", 	value: 0.35, type:"uniforms"},
-						{ name:'mix',	value: 1.0 },
 					],
 					type:"uniforms",
 					init : function(obj) {
@@ -1122,7 +1116,6 @@ define(['gibber/graphics/three.min'], function(){
 						name: 'h',
 						properties: [
 							{ name:'h', 	value:.003 },
-				 			{ name:'mix',	value: 1.0 },
 						],
 						type:'uniforms',
 						init : function(obj) {
