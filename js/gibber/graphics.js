@@ -356,6 +356,45 @@ define(['gibber/graphics/three.min'], function(){
 			result.setRGB(r,g,b);
 			return result;
 		},
+		colorFace : function(color, faceNumber) {
+			var faceIndices = ['a', 'b', 'c', 'd'];  
+			
+			if(this.children) {
+				geometry = this.children[0].geometry;
+			}
+			if(typeof faceNumber === 'number') {
+				var face = geometry.faces[ faceNumber || 0 ]; 
+				var numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
+				
+				var _color = color ? color : Color(0,0,0);
+				if(typeof _color === 'function') {
+					_color = Color(_color());
+				}
+				
+				for( var j = 0; j < numberOfSides; j++ )  {
+				    var vertexIndex = face[ faceIndices[ j ] ];
+				    var color = new THREE.Color( 0xffffff );
+				    color.setRGB( 1, 0, 0 );
+				    face.vertexColors[ j ] = color;
+				}
+			}else{
+				for(var i = 0; i < geometry.faces.length; i++) {
+					var _color = color ? color : Color(0,0,0);
+					if(typeof _color === 'function') {
+						_color = Color(_color());
+					}
+					
+					var face = geometry.faces[ i ]; 
+
+					var numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
+					for( var j = 0; j < numberOfSides; j++ )  {
+					    var vertexIndex = face[ faceIndices[ j ] ];
+					    face.vertexColors[ j ] = _color;
+					}
+				}
+			}
+			geometry.colorsNeedUpdate = true;
+		},
 		background: function() {
 			if(arguments.length > 1) {
 				Graphics.renderer.setClearColor(Color(arguments[0], arguments[1], arguments[2]));
@@ -381,7 +420,7 @@ define(['gibber/graphics/three.min'], function(){
 			var that;
 			if(!geometry.isModel) {
 				var materials = props.stroke ?  [
-				    new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:props.shiny || 50, specular:props.specular || 0xffffff} ),
+				    new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:props.shiny || 50, specular:props.specular || 0xffffff, vertexColors:THREE.VertexColors } ),
 					new THREE.MeshBasicMaterial( { color: props.stroke, shading: THREE.FlatShading, wireframe: true, transparent: true } )
 				] 
 				: new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:props.shiny || 50 } );
@@ -605,6 +644,8 @@ define(['gibber/graphics/three.min'], function(){
 				},			
 			});		
 			
+			that.colorFace = Graphics.colorFace;
+			
 			that.spin = function() {
 				if(arguments.length === 0) {
 					that.mod('rx', .01);
@@ -666,6 +707,7 @@ define(['gibber/graphics/three.min'], function(){
 		icosahedron : function(props) {
 			props = props || {};
 			var geometry = new THREE.IcosahedronGeometry( props.radius || 50, props.detail || 0	 );
+			
 			return Graphics.geometry(props, geometry);
 		},
 		octahedron : function(props) {
@@ -676,6 +718,8 @@ define(['gibber/graphics/three.min'], function(){
 		tetrahedron : function(props) {
 			props = props || {};
 			var geometry = new THREE.TetrahedronGeometry( props.radius || 50, props.detail || 0 );
+			geometry.applyMatrix( new THREE.Matrix4().makeRotationAxis( new THREE.Vector3( 1, 0, -1 ).normalize(), Math.atan( Math.sqrt(2)) ) );
+			
 			return Graphics.geometry(props, geometry);
 		},
 		sphere : function(props) {

@@ -10,7 +10,7 @@ Swarm = function(props) {
 		for(var i = 0; i < props.size; i++ ) {
 			var _props = {};
 			for(var key in props) {
-				if(typeof props[key] === 'function') {
+				if(typeof props[key] === 'function' && key !== 'update') {
 					_props[key] = props[key]();
 					if(key === 'x') isRandomX = true;
 					if(key === 'y') isRandomY = true;
@@ -47,10 +47,20 @@ Swarm = function(props) {
 			}
 			
 			if(i===0) console.log(_props);
+			
+			__update = _props.update;
+			delete _props.update;
+			
 			var agent = {
 				shape : window[type](_props),
+				update : __update || function() {},
 			}
 			
+			if(_props.sound) {
+				agent.sound = window[_props.sound.type](props.sound);
+			}
+			
+			console.log(agent);
 			boids.push(agent);
 		}
 	}
@@ -134,7 +144,7 @@ Swarm = function(props) {
                         c.z -= _boid.shape.z - boid.shape.z;
                     }
                 }
-				//}
+			//}
 
             return c;
         },
@@ -173,6 +183,8 @@ Swarm = function(props) {
 			this.findCenter();
 			this.findVelocity();
 			
+			var PI2 = Math.PI / 2;
+			var PI4 = Math.PI / 4;
             for (var i = 0; i < boids.length; i++) {
                 var boid = boids[i];
 				
@@ -189,16 +201,18 @@ Swarm = function(props) {
 				if(this.shouldRotate) {
 					var length = Math.sqrt( (boid.velocity.x * boid.velocity.x) + (boid.velocity.y * boid.velocity.y) + (boid.velocity.z * boid.velocity.z) );
 					var normalizedVelocity = {
-						x: boid.velocity.x / length,
-						y: boid.velocity.y / length,
-						z: boid.velocity.z / length,												
+						x: (boid.velocity.y / -length) ,//* Math.PI * 2 ,
+						y: (boid.velocity.z / -length) ,//* Math.PI * 2 ,
+						z: (boid.velocity.x / -length) ,//* Math.PI * 2,												
 					}
 					boid.shape.rotation = normalizedVelocity;
 				}
 
-                boid.shape.position.x += boid.velocity.x;
-                boid.shape.position.y += boid.velocity.y;
-                boid.shape.position.z += boid.velocity.z;
+                boid.shape.position.x += boid.velocity.x / 4;
+                boid.shape.position.y += boid.velocity.y / 4;
+                boid.shape.position.z += boid.velocity.z / 4;
+				
+				boid.update.call(boid);
             };
         },
 		
