@@ -257,7 +257,20 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 'q.stop();\n'+
 'q.play();\n'+
 'q.pause();\n'+
-'q.play();',
+'q.play();\n'+
+'\n'+
+'// Sequences can also be applied to graphics...\n'+
+'graphics();\n'+
+'\n'+
+'a = Cube({ fill:[1,0,0], stroke:[.5,0,0] });\n'+
+'a.scale = 2;\n'+
+'\n'+
+'b = Seq({\n'+
+'  scale : [ .5, 2, 1, .1, 6 ],\n'+
+'  rotation : _rndf( 0, 6.28, 3 ), // return a random array of three values between 0 and 2PI\n'+
+'  durations: 1/2,\n'+
+'  slaves:a\n'+
+'});',
 
 "audio input, sampling, looping":
 '/* Audio Input, Sampling and Looping\n'+
@@ -493,15 +506,18 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 'c = Film();\n'+
 '// number of scanlines\n'+
 'c.sCount = 12;\n'+
+'Graphics.fx.add(c);\n'+
 '\n'+
 'd = Drums("x*o*x*o*");\n'+
-'e = Blur();\n'+
 '\n'+
 '// create envelope= follower tracking drums\n'+
 'f = Follow(d);\n'+
 '\n'+
+'e = Blur();\n'+
+'Graphics.fx.add(e);\n'+
+'\n'+
 '// mod horizontal blur amount based on envelope follower\n'+
-'e.mod("h", f, "=", .1);\n',
+'e.mod("h", f, "=", .1);',
 
 "randomness and algorithms" :
 '/* Randomness and Algorithms\n'+

@@ -385,7 +385,14 @@ define(['gibber/audio_callback'], function() {
 			Master.senderObjects.remove();
 			Master.senders.remove();
 			Master.fx.remove();
-
+			
+			if(Graphics.initialized) {
+				Graphics.fx.remove();
+				for(var i = 0; i < Graphics.graph.length; i++) {
+					Graphics.graph[i].remove();
+				}
+			}
+			
 			Gibber.log("Cleared Gibber graph.");
 			Gibberish.noOutput = [];
 		},

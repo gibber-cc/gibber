@@ -108,12 +108,15 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 		//Gibberish.extend(this.snare.sampler, props.snare); Gibberish.extend(this.snare, props.snare);
 	}
 	
-	this.mod = function(name, mod, type) {
-		for(var key in this.kit) {
-			var drum = this[key].sampler;
-			drum.mod(name, mod, type);
-		}
-	}
+	// this.mod = function(name, mod, type) {
+	// 	for(var key in this.kit) {
+	// 		var drum = this[key].sampler;
+	// 		drum.mod(name, mod, type);
+	// 	}
+	// }
+	
+	this.mod = Gibberish.polyMod;
+	this.removeMod = Gibberish.removePolyMod;
 
 // /**###Drums.kick : property
 // [Sampler](javascript:Gibber.Environment.displayDocs('Sampler'\)) (read-only).

@@ -468,10 +468,12 @@ define([], function() {
 		
 		polyMod : function(name, modulator, type) {			
 			if(arguments[0] !== "amp" && arguments[0] !== "pan" ) {
+				console.log("POLY MOD", arguments[0]);
 				for(var i = 0; i < this.children.length; i++) {
 					this.children[i].mod(name, modulator, type);
 				}
 			}else{
+				console.log("NOT APPLYING POLY MOD");
 				Gibberish.mod.apply(this, arguments);
 			}
 			
@@ -520,7 +522,7 @@ define([], function() {
 		},
 		removePolyMod : function() {
 			var args = Array.prototype.slice(arguments, 0);
-			if(arguments[0] !== "amp") {
+			if(arguments[0] !== "amp" && arguments[0] !== "pan") {
 				for(var i = 0; i < this.children.length; i++) {
 					Gibberish.removeMod.apply(this.children[i], args);
 				}
@@ -646,7 +648,10 @@ define([], function() {
 				level = level || 1;
 				this.mod("amp", Line(0, level, time), "=");
 				var me = this;
-				future( function() { me.amp = level; me.removeMod("amp", false);   }, time);
+				future( function() { 
+					me.removeMod("amp", false);  
+					me.amp = level; 
+				}, time);
 				return this;
 			},
 			fadeOut : function(time) {

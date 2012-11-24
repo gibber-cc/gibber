@@ -173,7 +173,8 @@ A post-processing shader recreating the halftone technique (http://en.wikipedia.
 `graphics();
 background(.25);
 a = Cube({ fill: [1,0,0], scale:2 });
-d = Dots({ scale:.25 });
+b = Dots({ scale:.25 });
+Graphics.fx.add(b);
 a.spin(.01);;`
 **/
 /**###Dots.scale : property
@@ -223,7 +224,8 @@ A shader recreating film grain / scanline effects.
 ## Example Usage ##
 `graphics();
 a = Cube({ fill: [1,0,0] });
-d = Film({ sCount:512, nIntensity:1 });
+b = Film({ sCount:512, nIntensity:1 });
+Graphics.fx.add(b);
 a.spin(.01);`
 **/
 /**###Film.sCount : property
@@ -296,6 +298,7 @@ A shader producing fringes of light around bright objects and blurring details. 
 `graphics();
 a = Cube({ fill: [0,0,0], stroke:[1,1,1] });
 b = Bloom({ opacity:2 });
+Graphics.fx.add(b);
 a.spin(.01);`
 **/
 /**###Bloom.opacity : property
@@ -337,6 +340,7 @@ A shader that uses a two-pass blur to produce 'tilted' copies of the original im
 `graphics();
 a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
 b = Tilt({ h:2, v:2, r:1 });
+Graphics.fx.add(b);
 a.spin(.01);`
 **/
 /**###Tilt.h : property
@@ -388,6 +392,7 @@ Apply a tint to the light parts of the scene.
 `graphics();
 a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
 b = Tint( { color: Color("red") });
+Graphics.fx.add(b);
 a.spin(.01);`
 **/
 /**###Tint.color : property
@@ -429,6 +434,7 @@ be used to create pretty interesting geometric effects with high density and dec
 `graphics();
 a = Cube({ fill: [0,0,0], stroke:[1,1,1] });
 b = Godrays( { density:.35 } );
+Graphics.fx.add(b);
 a.spin(.01);`
 **/
 /**###Godrays.x : property
@@ -498,6 +504,7 @@ Applies separate horizontal and vertical blurs.
 `graphics();
 a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
 b = Blur({ h: .01, v:.01 });
+Graphics.fx.add(b);
 a.spin(.01);`
 **/
 /**###Blur.h : property
@@ -543,6 +550,7 @@ Resample image at a reduced frequency
 `graphics();
 a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
 b = Pixellate({ amount: .01 });
+Graphics.fx.add(b);
 a.spin(.01);`
 **/
 /**###Pixellate.amount : property

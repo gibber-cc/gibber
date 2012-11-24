@@ -154,6 +154,10 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 				this[key] = obj[key];
 				if($.inArray(key, this.properties) === -1) {
 					this.sequences.push(key);
+				}else if(key === "scale") {
+					if(!obj.note && !obj.chord) {
+						this.sequences.push(key);
+					}
 				}
 			}else{
 				if($.isArray(obj[key])) {
