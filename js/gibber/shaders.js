@@ -58,11 +58,6 @@ define(['gibber/graphics/three.min'],
 
 					that[shaderDictionary.name] = shader;
 
-					var shouldAdd = typeof _props.shouldAdd === 'undefined' || _props.shouldAdd === true;
-					if(shouldAdd) {
-						Graphics.composer.addPass( shader );
-					}
-
 					for(var j = 0; j < shaderDictionary.properties.length; j++) {
 						(function() { 
 							var property = shaderDictionary.properties[j];
@@ -87,18 +82,7 @@ define(['gibber/graphics/three.min'],
 							//}
 					}
 					
-					if(i === props.shaders.length - 1) {
-						shader.renderToScreen = true;
-					}else{
-						shader.renderToScreen = false;
-					}
-					
-					if(shouldAdd) {
-						if(Graphics.fx.length !== 0) {
-							Graphics.fx[ Graphics.fx.length - 1].renderToScreen = false;
-						}
-						Graphics.fx.push(shader);
-					}
+					shader.renderToScreen = false;
 				}
 				
 				for(var key in _props) {
@@ -107,7 +91,7 @@ define(['gibber/graphics/three.min'],
 				}
 				that.props = _props;
 				
-				var _renderToScreen = shouldAdd;
+				var _renderToScreen = false;
  				Object.defineProperty(that, "renderToScreen", {
  					get : function() { return _renderToScreen; },
  					set : function(val) {
@@ -121,47 +105,51 @@ define(['gibber/graphics/three.min'],
  				});
 				
 				that.add = function() {
-					for(var i = 0; i < that.shaders.length; i++) {
-						var shader = that.shaders[i];
-						if(Graphics.fx.length !== 0) {
-							Graphics.fx[ Graphics.fx.length - 1].renderToScreen = false;
-						}
-						Graphics.composer.addPass( shader );
-						Graphics.fx.push(shader);
+					if(Graphics.fx.length !== 0) {
+						Graphics.composer.passes[ Graphics.composer.passes.length - 1].renderToScreen = false;
 					}
+
+					for(var i = 0; i < this.shaders.length; i++) {
+						var shader = this.shaders[i];
+												
+						Graphics.composer.addPass( shader );
+						//Graphics.fx.push(shader);
+					}
+					Graphics.fx.push( this );
+					Graphics.composer.passes[ Graphics.composer.passes.length - 1].renderToScreen = true;
 				};
 			
 				that.remove = function() {
 					var shouldResetRenderer = false;
-					var shadersToRemove = [];
+
 					for(var i = 0; i < props.shaders.length; i++) {
 						shaderDictionary = props.shaders[i];
 						for(var j = 0; j < this.shaders.length; j++) {
 							if(this.shaders[j].name === shaderDictionary.name) {
 								Graphics.composer.removePass(this.shaders[j]);	
-								Graphics.fx.remove(this.shaders[j]);
+
 								if(this.shaders[j].renderToScreen) {
 									shouldResetRenderer = true;
 								}
-								shadersToRemove.push(this.shaders[j]);
 							}
 						}
 					}
-					for(var j = 0; j < shadersToRemove.length; j++) {
-						this.shaders.remove(this.shaders[j]);
-					}
-					if(shouldResetRenderer && Graphics.fx.length > 0) {
-						var __shader = Graphics.fx[ Graphics.fx.length - 1];
+
+					if(shouldResetRenderer && Graphics.composer.passes.length > 0) {
+						var __shader = Graphics.composer.passes[ Graphics.composer.passes.length - 1];
 						__shader.renderToScreen = true;
-						//console.log("RENDERING", __shader);
 					}
+					
 					Graphics.graph.remove(this);
 				};
+				
 				Graphics.graph.push(that);
 				
 				return that;
 			};
+			
 			window[props.name] = _constructor;
+			
 			return _constructor;
 		},
 		

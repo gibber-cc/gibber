@@ -9,6 +9,7 @@ define(['gibber/graphics/three.min'],
 			that.shaders = _shaders;
 		});
 		var that = {
+			fx : [],
 			fullScreenFlag : false,
 			fullScreen : function() {
 				if(this.renderer) { // if Graphics has been initialized...
@@ -34,14 +35,54 @@ define(['gibber/graphics/three.min'],
 			init : function() {
 				if(!that.initialized) {
 					that.intialized = true;
-
+					
+					that.fx.add = function() {
+						for(var i = 0; i < arguments.length; i++) {
+							arguments[i].add();
+						}
+					};
+					
+					that.fx.remove = function() {
+						if(arguments.length === 0) {
+							var killme = [];
+							for(var i = 0; i < Graphics.fx.length; i++) {
+								Graphics.fx[i].remove();
+							}
+							Graphics.fx.length = 0;
+						}else{
+							var killme = [];
+							
+							for(var i = 0; i < arguments.length; i++) {
+								if(typeof arguments[i] === 'object') {
+									arguments[i].remove();
+									for(var j = 0; j < Graphics.fx.length; j++) {
+										if(Graphics.fx[j] === arguments[i]) {
+											killme.push(j);
+										}
+									}
+								}else if(typeof arguments[i] === 'string') {
+									for(var j = 0; j < Graphics.fx.length; j++) {
+										if(Graphics.fx[j].name === arguments[i]) {
+											Graphics.fx[j].remove();
+											killme.push(j);
+										}
+									}
+								}
+								for(var k = 0; k < killme.length; k++) {
+									var _shader = Graphics.fx.splice(killme[k], 1);
+								}
+							}
+						}
+					};
+					
+					
 					// set the scene size
 					var WIDTH = that.fullScreenFlag ? screen.width : $(".CodeMirror-scroll").outerWidth(),
 					  	HEIGHT = that.fullScreenFlag ? screen.height : $(".CodeMirror-scroll").outerHeight();
 			
 					that.width = WIDTH;
 					that.height = HEIGHT;
-					that.fx = [];
+					
 					// set some camera attributes
 					var VIEW_ANGLE = 45,
 					  	ASPECT = WIDTH / HEIGHT,
