@@ -5,9 +5,9 @@
 THREE.BloomPass = function ( strength, kernelSize, sigma, resolution, mix ) {
 
 	strength = ( strength !== undefined ) ? strength : 1;
-	kernelSize = ( kernelSize !== undefined ) ? kernelSize : 25;
+	kernelSize = ( kernelSize !== undefined ) ? kernelSize : 200;
 	sigma = ( sigma !== undefined ) ? sigma : 4.0;
-	resolution = ( resolution !== undefined ) ? resolution : 256;
+	resolution = ( resolution !== undefined ) ? resolution : 128;
 	// render targets
 
 	var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };

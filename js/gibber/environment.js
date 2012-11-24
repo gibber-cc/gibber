@@ -1059,37 +1059,25 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
 
         toggleSidebar: function() {
             console.log("TOGGLING");
-            $('#sidebar')
-                .toggle();
-            $('#resizeButton')
-                .toggle();
+            $('#sidebar').toggle();
+            $('#resizeButton').toggle();
             //header
             //$('#sidebar').css("display", "inline");
-            if ($("#sidebar")
-                .css("display") == "none") {
-                $('.CodeMirror')
-                    .css("width", "100%");
+            if ($("#sidebar").css("display") == "none") {
+                $('.CodeMirror').css("width", "100%");
                 //$('.CodeMirror-scroll').css("width", "100%");
-                $('#console')
-                    .css("width", "100%");
+                $('#console').css("width", "100%");
             } else {
                 if (typeof Gibber.codeWidth !== "undefined") { //if docs/editor split has not been resized
-                    $(".CodeMirror")
-                        .width(Gibber.codeWidth);
-                    $("#sidebar")
-                        .width($("body")
-                        .width() - $(".CodeMirror")
-                        .outerWidth() - 8);
-                    $("#sidebar")
-                        .height($(".CodeMirror")
-                        .outerHeight());
+                    $(".CodeMirror").width(Gibber.codeWidth);
+                    $("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
+                    $("#sidebar").height($(".CodeMirror").outerHeight());
 
                     $("#resizeButton")
                         .css({
                         position: "absolute",
                         display: "block",
-                        top: $(".header")
-                            .height(),
+                        top: $(".header").height(),
                         left: Gibber.codeWidth,
                     });
                 } else {

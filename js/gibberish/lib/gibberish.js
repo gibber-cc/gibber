@@ -552,12 +552,12 @@ define([], function() {
 				var keys = property.split(".");
 				//console.log(keys);
 				//if(keys.length === 1) {
-					if(source[property] instanceof Array) {
+					if(source[property] instanceof Array && source[property].length < 100) { // don't copy large array buffers
 			            destination[property] = source[property].slice(0);
 						if(property === "fx") {
 							destination[property].parent = source[property].parent;
 						}
-			        }else if (typeof source[property] === "object" && source[property] !== null) {
+			        }else if (typeof source[property] === "object" && source[property] !== null && !(source[property] instanceof Float32Array) ) {
 			            destination[property] = destination[property] || {};
 			            arguments.callee(destination[property], source[property]);
 			        } else {

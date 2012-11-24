@@ -4,17 +4,32 @@ Swarm = function(props) {
 		var boids = arguments[0];
 	}else{
 		boids = [];
-		type = props.type || "Sphere";
 		var isRandomX = false, isRandomY = false, isRandomZ = false;
 		
 		for(var i = 0; i < props.size; i++ ) {
-			var _props = {};
+			var _props = {
+				shape: props.shape || {
+					type : "Sphere",
+					x : 0,
+					y : 0,
+					z : 0,
+					scale : .25,
+					shiny : 10,
+				},
+				sound: props.sound || {
+				    type:"Sine",
+				    channels:2,
+				    frequency:440,
+				    amp:0,
+				},
+			};
+			if(i==0) console.log(_props);
+			//delete props.shape; delete props.sound;
+			
 			for(var key in props) {
+				if(key === "shape" || key === "sound") continue;
 				if(typeof props[key] === 'function' && key !== 'update') {
 					_props[key] = props[key]();
-					if(key === 'x') isRandomX = true;
-					if(key === 'y') isRandomY = true;
-					if(key === 'z') isRandomZ = true;
 				}else if(Array.isArray(props[key])){
 					var p = [];
 					for(var j = 0; j<props[key].length; j++) {
@@ -25,25 +40,33 @@ Swarm = function(props) {
 						}
 					}
 					_props[key] = p;
-				}else{
+				}else if(key !== 'sound' && key !== 'shape'){
 					_props[key] = props[key];
 				}
 			}
 			
-			if(typeof _props.x === 'undefined') {
-				_props.x = rndf(-1, 1);
-			}else if(typeof _props.x === 'number' && !isRandomX) {
-				_props.x = rndf(_props.x - 1, _props.x + 1);
+			for(var key in _props.shape) {
+				if(typeof _props.shape[key] === 'function' && key !== 'update') {
+					_props.shape[key] = _props.shape[key]();
+				}
 			}
-			if(typeof _props.y === 'undefined') {
-				_props.y = rndf(-1, 1);
-			}else if(typeof _props.y === 'number' && !isRandomY) {
-				_props.y = rndf(_props.y - 1, _props.y + 1);
+			
+			if(typeof _props.shape.x === 'undefined') {
+				_props.shape.x = rndf(-1, 1);
+			}else if(typeof _props.shape.x === 'number') {
+				_props.shape.x = rndf(_props.shape.x - 1, _props.shape.x + 1);
 			}
-			if(typeof _props.z === 'undefined') {
-				_props.z = rndf(-1, 1);
-			}else if(typeof _props.z === 'number' && !isRandomZ) {
-				_props.z = rndf(_props.z - 1, _props.z + 1);
+			
+			if(typeof _props.shape.y === 'undefined') {
+				_props.shape.y = rndf(-1, 1);
+			}else if(typeof _props.shape.y === 'number') {
+				_props.shape.y = rndf(_props.shape.y - 1, _props.shape.y + 1);
+			}
+			
+			if(typeof _props.shape.z === 'undefined') {
+				_props.shape.z = rndf(-1, 1);
+			}else if(typeof _props.shape.z === 'number') {
+				_props.shape.z = rndf(_props.shape.z - 1, _props.shape.z + 1);
 			}
 			
 			//if(i===0) console.log(_props);
@@ -52,12 +75,12 @@ Swarm = function(props) {
 			delete _props.update;
 			
 			var agent = {
-				shape : window[type](_props),
+				shape : window[_props.shape.type](_props.shape),
 				update : __update || function() {},
 			}
 			
 			if(_props.sound) {
-				agent.sound = window[_props.sound.type](props.sound);
+				agent.sound = Gibberish[_props.sound.type](_props.sound);
 			}
 			
 			boids.push(agent);
@@ -65,13 +88,13 @@ Swarm = function(props) {
 	}
 		
     var that = {
-		distance : 3,
+		separation : 3,
 		position : {x:0, y:0, z:0},
-		speedMax: 5,
+		speed: 5,
 		positionTendency:100,
 		flockTendency: 1000,
 		boids : boids,
-		shouldRotate : props.shouldRotate || false,	
+		shouldOrient : props.shouldOrient || false,	
 		findVelocity : function() {
             var pvj = {
                 x: 0,
@@ -137,7 +160,7 @@ Swarm = function(props) {
                         z: _boid.shape.z - boid.shape.z,
                     };
 
-                    if (Math.sqrt(Math.pow(diff.x, 2) + Math.pow(diff.y, 2) + Math.pow(diff.z, 2)) < that.distance) {
+                    if (Math.sqrt(Math.pow(diff.x, 2) + Math.pow(diff.y, 2) + Math.pow(diff.z, 2)) < that.separation) {
                         c.x -= _boid.shape.x - boid.shape.x;
                         c.y -= _boid.shape.y - boid.shape.y;
                         c.z -= _boid.shape.z - boid.shape.z;
@@ -168,7 +191,7 @@ Swarm = function(props) {
         }, ],
 		
 		limit: function(boid) {
-			var lim = that.speedMax;
+			var lim = that.speed;
 			var v = Math.sqrt(Math.pow(boid.velocity.x, 2) + Math.pow(boid.velocity.y, 2) + Math.pow(boid.velocity.z, 2));
 			
 			if(v > lim) {
@@ -197,7 +220,7 @@ Swarm = function(props) {
 				
 				this.limit(boid);
 				
-				if(this.shouldRotate) {
+				if(this.shouldOrient) {
 					var length = Math.sqrt( (boid.velocity.x * boid.velocity.x) + (boid.velocity.y * boid.velocity.y) + (boid.velocity.z * boid.velocity.z) );
 					var normalizedVelocity = {
 						x: (boid.velocity.y / -length) ,//* Math.PI * 2 ,
@@ -258,10 +281,13 @@ Swarm = function(props) {
 		},
 	});
 	
-	that.init();
-	
 	delete props.update;
 	Gibberish.extend(that, props);
+
+	that.__proto__ = Bus();
+	boids.all( function() { this.sound.connect( that) } );
+	
+	that.init();
 	
     return that;
 };

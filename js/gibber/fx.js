@@ -16,7 +16,8 @@ s.send( "rev", .5 );`
 **/
 
 function Bus() { // name is id, fx is array, ahem, fx
-	return Gibberish.Bus(arguments).connect(Master);
+	var args = Array.prototype.slice.call(arguments, 0); 
+	return Gibberish.Bus(args).connect(Master);
 }
 
 /**#Flanger - FX

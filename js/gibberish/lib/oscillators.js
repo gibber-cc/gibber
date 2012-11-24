@@ -353,6 +353,8 @@ define([], function() {
 			if(typeof arguments[0] === 'object') {
 				Gibberish.extend(that, arguments[0]);
 			}
+			if(arguments[0] && arguments[0].buffer) that.buffer = arguments[0].buffer;
+			
 			Gibberish.extend(that, new Gibberish.ugen(that));
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
@@ -401,6 +403,17 @@ define([], function() {
 			    var request = new AudioFileRequest(that.file);
 			    request.onSuccess = that.onload;
 			    request.send();
+			}else if(that.buffer !== null) {
+				that.bufferLength = that.buffer.length;
+				that.end = that.bufferLength;
+				that.isLoaded = true;
+					
+				that._function.setBuffer(that.buffer);
+					
+				that._function.setPhase(that.bufferLength);
+				if(arguments[0] && arguments[0].loops) {
+					that.loops = 1;
+				}
 			}
 			
 			

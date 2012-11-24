@@ -17,6 +17,7 @@ var filenames = [
 	"string.js",
 	"envelopes.js",
 	"input.js",
+	"graphics.js"
 ];
 
 for (var i = 0; i < filenames.length; i++) {

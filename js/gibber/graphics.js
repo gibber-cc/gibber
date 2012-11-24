@@ -1,4 +1,18 @@
-define(['gibber/graphics/three.min'], function(){	
+define(['gibber/graphics/three.min'], 
+	function(){	
+		require([
+			'gibber/graphics/Stats',
+			'gibber/graphics/ShaderExtras',
+			'gibber/graphics/postprocessing/EffectComposer',
+			'gibber/graphics/postprocessing/RenderPass',
+			'gibber/graphics/postprocessing/BloomPass',
+			'gibber/graphics/postprocessing/FilmPass',
+			'gibber/graphics/postprocessing/DotScreenPass',
+			'gibber/graphics/postprocessing/TexturePass',
+			'gibber/graphics/postprocessing/ShaderPass',				
+			'gibber/graphics/postprocessing/MaskPass',
+			'gibber/graphics/OBJLoader'
+		]);
 	var that = {
 		fullScreenFlag : false,
 		fullScreen : function() {
@@ -81,7 +95,7 @@ define(['gibber/graphics/three.min'], function(){
 							Object.defineProperty(that, property.name, {
 								get : function() { return v; },
 								set : function(val) { 
-									console.log("SETTING " + property.name + " VALUE :" + val );
+									//console.log("SETTING " + property.name + " VALUE :" + val );
 									v = val;
 									_shader[ _shaderDictionary.type ][ property.name ].value = v;
 								}
@@ -175,26 +189,10 @@ define(['gibber/graphics/three.min'], function(){
 		},
 		
 		init : function() {
-			require([
-				'gibber/graphics/three.min',
-				'gibber/graphics/Stats',
-				'gibber/graphics/ShaderExtras',
-				'gibber/graphics/postprocessing/EffectComposer',
-				'gibber/graphics/postprocessing/RenderPass',
-				'gibber/graphics/postprocessing/BloomPass',
-				'gibber/graphics/postprocessing/FilmPass',
-				'gibber/graphics/postprocessing/DotScreenPass',
-				'gibber/graphics/postprocessing/TexturePass',
-				'gibber/graphics/postprocessing/ShaderPass',				
-				'gibber/graphics/postprocessing/MaskPass',
-				'gibber/graphics/OBJLoader',	
-			], function() {
-				console.log("GRAPHICS");
+			if(!that.initialized) {
 				that.intialized = true;
 				that.makePostProcessingEffects();
-				//$("#three").attr( "width",  $(".CodeMirror-scroll").outerWidth() );
-				//$("#three").attr( "height", $(".CodeMirror-scroll").outerHeight() );
-			
+
 				// set the scene size
 				var WIDTH = that.fullScreenFlag ? screen.width : $(".CodeMirror-scroll").outerWidth(),
 				  	HEIGHT = that.fullScreenFlag ? screen.height : $(".CodeMirror-scroll").outerHeight();
@@ -305,9 +303,9 @@ define(['gibber/graphics/three.min'], function(){
 				window.Sphere = that.sphere;
 			
 				window.Waveform = that.waveform;
+			}
 			
-				if(that.fullScreenFlag) that.fullScreen();
-			});
+			if(that.fullScreenFlag) that.fullScreen();
 		},
 		colors: {
 			red: 	[1,0,0],
@@ -398,10 +396,12 @@ define(['gibber/graphics/three.min'], function(){
 			if(arguments.length > 1) {
 				Graphics.renderer.setClearColor(Color(arguments[0], arguments[1], arguments[2]));
 			}else{
-				if(typeof arguments[0] !== 'string') {
+				if(typeof arguments[0] === 'object') {
 					Graphics.renderer.setClearColorHex(arguments[0]);
-				}else{
-					Graphics.renderer.setClearColor(that.color(arguments[0]));
+				}if(typeof arguments[0] === 'number'){
+					Graphics.renderer.setClearColor( Color(arguments[0], arguments[0], arguments[0]) );
+				}else if(typeof arguments[0] === 'string'){
+					Graphics.renderer.setClearColor( that.color(arguments[0]) );
 				}
 			}
 		},
@@ -412,8 +412,114 @@ define(['gibber/graphics/three.min'], function(){
 			Graphics.stats.domElement.style.right = '0px';			
 			$("body").append( Graphics.stats.domElement );	
 		},
+		
+/**#Geometry - Geometry
+This outlines a collection of shared methods and properties for all primitive geometries and 3D models ([Cube](javascript:Gibber.Environment.displayDocs('Cube'\)),
+[Sphere](javascript:Gibber.Environment.displayDocs('Sphere'\), [Icosahedron](javascript:Gibber.Environment.displayDocs('Icosahedron'\)), [Tetrahedron](javascript:Gibber.Environment.displayDocs('Tetrahedron'\)), [Octahedron](javascript:Gibber.Environment.displayDocs('Octahedron'\)),
+[Icosahedron](javascript:Gibber.Environment.displayDocs('Icosahedron'\)), [Cylinder](javascript:Gibber.Environment.displayDocs('Cylinder'\)), [Torus](javascript:Gibber.Environment.displayDocs('Torus'\)),  [Knot](javascript:Gibber.Environment.displayDocs('Knot'\)), [Model](javascript:Gibber.Environment.displayDocs('Model'\))). They all have similar methods for changing colors, positions, rotation, scale etc.
+**/
+		 
+/**###Geometry.rotation : property
+Object. The rotation of the object in radians. There are x, y, and z properties to this property. There are four different ways to set this property:  
+  
+`geometry.rotation = 1; // the x,y and z rotations will all be set to 1
+geometry.rotation = [0,1,0]; // the rotation along the x and z axis will be set to 0, y will be 1
+geometry.rotation = {x:0, y:1, z:0};
+geometry.rotation.x = 1; // only the rotation on the x axis is changed`
+**/
+
+/**###Geometry.position : property
+Object. The position of the object. There are x, y, and z properties to this property. There are four different ways to set this property:  
+  
+`geometry.position = 0; // the x,y and z position will all be set to 0. This will center the object.
+geometry.position = [0,50,0]; // y is 50, x and z are 0
+geometry.position = {x:0, y:50, z:0};
+geometry.position.x = 50; // only the position on the x axis is changed`
+**/
+
+/**###Geometry.scale : property
+Object. The scale of the object. There are x, y, and z properties to this property. There are four different ways to set this property:  
+  
+`geometry.scale = 1; // the x,y and z scale will all be set to 1.
+geometry.scale = [2,4,2]; // y is 4, x and z are 2
+geometry.scale = {x:1, y:2, z:1};
+geometry.scale.x = 10; // only the scale on the x axis is changed`
+**/
+
+/**###Geometry.fill : property
+Object. The color of light the geometry faces reflect. There are r, g, and b properties to this property. There are five different ways to set this property, including
+strings. The recognized color names are: red, black, grey, white, green, blue, cyan, magenta, yellow, pink, orange, purple. Other ways to set the property are:  
+  
+`geometry.fill = 1; // the r,g and b properties will all be set to 1.
+geometry.fill = [0,1,0]; // green
+geometry.fill = {r:1, g:0, b:0}; // red
+geometry.fill.r = 1; // only the red amount is changed
+geometry.fill = "purple";`
+**/	
+
+/**###Geometry.stroke : property
+Object. The color of light the geometry wireframe reflects. This property only works if a stroke color is set upon initialization, otherwise no wireframe is created.
+There are r, g, and b properties to this property. There are five different ways to set this property, including
+strings. The recognized color names are: red, black, grey, white, green, blue, cyan, magenta, yellow, pink, orange, purple. Other ways to set the property are:  
+  
+`geometry.stroke = 1; // the r,g and b properties will all be set to 1.
+geometry.stroke = [0,1,0]; // green
+geometry.stroke = {r:1, g:0, b:0}; // red
+geometry.stroke.r = 1; // only the red amount is changed
+geometry.stroke = "purple";`
+**/	
+/**###Geometry.remove : method
+Removes the geometry from the scene. 
+### Example Usage ###
+`graphics();
+a = Cube({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	height: 50,
+});
+a.spin(.01);  
+a.remove();`
+**/
+/**###Geometry.mod : method
+Modulate a parameter of the geometry each frame
+
+**param** *propertyName*: String. The property to be modulated.  
+  
+**param** *source*: Number or Object. The modulation source. This can be a constant number or an object that outputs a time varying value (like an LFO).  
+  
+**param** *type*: String. Default value is "+". How the modulation source should be applied to the property. Options are "+", "-", "\*", "++", and "=". "++" means 
+absolute addition, where the absolute value of the modulation source is added to the property.  
+  
+**param** *scale*: Float. A scalar to multiply the output of the modulation source by before it is applied to the property.  
+
+### Example Usage ###
+`graphics();
+a = Cube({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	height: 50,
+});
+b = Drums('xoxo');
+f = Follow(b);
+a.mod('sx', f, "=", 64);
+a.spin(.01);`
+**/
+
+/**###Geometry.removeMod : method
+Remove a modulation by name.
+### Example Usage ###
+`graphics();
+a = Cube({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	height: 50,
+});
+a.mod('rx', .01);
+a.removeMod('rx');`
+**/
+
 		geometry : function(props, geometry) {
-			props.fill = props.fill ? this.color(props.fill) : this.color('black');
+			props.fill = props.fill ? this.color(props.fill) : this.color('grey');
 			props.stroke = props.stroke ? this.color(props.stroke) : undefined;
 			
 			var that;
@@ -652,13 +758,15 @@ define(['gibber/graphics/three.min'], function(){
 					that.mod('rz', .01);
 				}else if(arguments.length === 1) {
 					if(arguments[0] === 0) {
+						console.log("REMOVING ALL ROTATION MODS");
 						that.removeMod('rx');
 						that.removeMod('ry');
 						that.removeMod('rz');
+					}else{
+						that.mod('rx', arguments[0]);
+						that.mod('ry', arguments[0]);
+						that.mod('rz', arguments[0]);
 					}
-					that.mod('rx', arguments[0]);
-					that.mod('ry', arguments[0]);
-					that.mod('rz', arguments[0]);
 				}else{
 					if(arguments[0]) {
 						if(arguments[0] !== 0) {
@@ -688,11 +796,14 @@ define(['gibber/graphics/three.min'], function(){
 				var killme = [];
 				for(var i = 0; i < that.mods.length; i++) {
 					var mod = that.mods[i];
-					if(arguments[0]) {
-						if(arguments[0].name === mod.name) {
-							killme.push(i);
+					if(typeof arguments[0] === 'string') {
+						if(arguments[0] === mod.name) {
+							killme.push(mod);
 						}
 					}
+				}
+				for(var i = 0; i < killme.length; i++) {
+					that.mods.remove(killme[i]);
 				}
 			}
 			
@@ -702,18 +813,104 @@ define(['gibber/graphics/three.min'], function(){
 						
 			return that;
 		},
-		
+
+/**#Icosahedron - Geometry
+A twenty sided 3D geometry. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Icosahedron({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	radius: 50,
+	detail:0
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are two extra constructor properties that can be set 
+'radius' and 'detail'.
+**/
+
+/**###Icosahedron.radius : property
+Float. The size of the icosahedron. This can only be set in a dictionary passed to the constructor method. You can change the size of the object using the scale property
+after the object has been created.	
+**/
+
+/**###Icosahedron.detail : property
+Integer. The number of times each face in the icosahedron is subdivided into 4 triangles. For example, an icosahedron with a detail of
+2 would have 320 faces (20 > 80 > 320).
+**/
+
 		icosahedron : function(props) {
 			props = props || {};
 			var geometry = new THREE.IcosahedronGeometry( props.radius || 50, props.detail || 0	 );
 			
 			return Graphics.geometry(props, geometry);
 		},
+
+/**#Octahedron - Geometry
+An eight sided 3D geometry. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Octahedron({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	radius: 50,
+	detail:0
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are two extra constructor properties that can be set 
+'radius' and 'detail'.
+**/
+
+/**###Octahedron.radius : property
+Float. The size of the octahedron. This can only be set in a dictionary passed to the constructor method. You can change the size of the object using the scale property
+after the object has been created.	
+**/
+
+/**###Octahedron.detail : property
+Integer. The number of times each face in the octahedron is subdivided into 4 triangles. For example, an octahedron with a detail of
+2 would have 320 faces (20 > 80 > 320).
+**/
+		
 		octahedron : function(props) {
 			props = props || {};
 			var geometry = new THREE.OctahedronGeometry( props.radius || 50, props.detail || 0 );
 			return Graphics.geometry(props, geometry);
 		},
+		
+/**#Tetrahedron - Geometry
+An eight sided 3D geometry. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Tetrahedron({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	radius: 50,
+	detail:0
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are two extra constructor properties that can be set 
+'radius' and 'detail'.
+**/
+
+/**###Tetrahedron.radius : property
+Float. The size of the icosahedron. This can only be set in a dictionary passed to the constructor method. You can change the size of the object using the scale property
+after the object has been created.	
+**/
+
+/**###Tetrahedron.detail : property
+Integer. The number of times each face in the tetrahedron is subdivided into 4 triangles. For example, an tetrahedron with a detail of
+2 would have 320 faces (20 > 80 > 320).
+**/
+		
 		tetrahedron : function(props) {
 			props = props || {};
 			var geometry = new THREE.TetrahedronGeometry( props.radius || 50, props.detail || 0 );
@@ -721,16 +918,122 @@ define(['gibber/graphics/three.min'], function(){
 			
 			return Graphics.geometry(props, geometry);
 		},
+
+/**#Sphere - Geometry
+An sphereical 3D geometry. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Sphere({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	radius: 50,
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are two extra constructor properties that can be set 
+'radius', 'rings' and 'segments'. These can only be set in the constructor.
+**/
+
+/**###Sphere.radius : property
+Float. The size of the sphere. This can only be set in a dictionary passed to the constructor method. You can change the size of the object using the scale property
+after the object has been created.	
+**/
+
+/**###Sphere.rings : property
+Integer. The vertical resolution of the sphere. This property can only be set in the constructor.
+**/
+
+/**###Sphere.segments : property
+Integer. The horizontal resolution of the sphere. This property can only be set in the constructor.
+**/
+
+		
 		sphere : function(props) {
 			props = props || {};
 			var geometry = new THREE.SphereGeometry( props.radius || 50, props.segments || 16, props.rings || 16 );
 			return Graphics.geometry(props, geometry);
 		},
+/**#Cube - Geometry
+An cubical 3D geometry. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Cube({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	height: 50,
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are two extra constructor properties that can be set 
+'width', 'height' and 'depth'. These can only be set in the constructor.
+**/
+
+/**###Cube.width : property
+Float. The size of the cube along the x axis. This property can only be set in the constructor.
+**/
+
+/**###Cube.height : property
+Float. The size of the cube along the y axis. This property can only be set in the constructor.
+**/
+
+/**###Cube.depth : property
+Float. The size of the cube along the z axis. This property can only be set in the constructor.	
+**/
+	
 		cube : function(props) {
 			props = props || {};
 			var geometry = new THREE.CubeGeometry( props.width || 50, props.height || 50, props.depth || 50 );
 			return Graphics.geometry(props, geometry);
 		},
+
+/**#Cylinder - Geometry
+An cylindrical 3D geometry. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Cylinder({
+	fill: [1,0,0],
+	stroke:[.5,0,0],
+	height: 50,
+	radiusTop: 25,
+	radiusBottom: 25,
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are six extra constructor properties that can be set 
+'radiusTop', 'radiusBottom', 'height', 'radiusSegments', 'heightSegments', 'openEnded'. These can only be set in the constructor.
+**/
+
+/**###Cylinder.height : property
+Float. The height of the cylinder. This property can only be set in the constructor.
+**/
+
+/**###Cylinder.radiusTop : property
+Float. The width of the cylinder at the top. This property can only be set in the constructor
+**/
+
+/**###Cylinder.radiusBottom : property
+Float. The width of the cylinder at the bottom. This property can only be set in the constructor
+**/
+
+/**###Cylinder.heightSegments : property
+Integer. The number of segments along the vertical axis. Default is 1 and should probably be left that way unless you plan to do some type
+of vertices deformation. This property can only be set in the constructor.
+**/
+
+/**###Cylinder.radiusSegments : property
+Integer. The number of segments around the vertical axis. Default is 8. This property can only be set in the constructor.
+**/
+
+/**###Cylinder.openEnded : property
+Boolean. Default true. Whether or not the cylinder appears hollow. This property can only be set in the constructor.
+**/
+
 		cylinder : function(props) {
 			props = props || {};
 			var geometry = new THREE.CylinderGeometry( 
@@ -743,6 +1046,45 @@ define(['gibber/graphics/three.min'], function(){
 			);
 			return Graphics.geometry(props, geometry);
 		},	
+/**#Torus - Geometry
+A 3D ring. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Torus({
+  fill:[1,0,0],
+  stroke:[.5,0,0],
+  scale:.75,
+  tube:10,
+  tubularSegments:16
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are five extra constructor properties that can be set 
+'radius', 'tube', 'radialSegments', 'tubularSegments', 'arc'. These can only be set in the constructor.
+**/
+
+/**###Torus.tube : property
+Float. The thickness of the tube that the ring is composed of. This property can only be set in the constructor
+**/
+
+/**###Torus.radius : property
+Float. The overall size of the torus geometry. This property can only be set in the constructor
+**/
+
+/**###Torus.radialSegments : property
+Integer. The resolution traveling around the geometry. This property can only be set in the constructor
+**/
+
+/**###Torus.tubularSegments : property
+Integer. The resolution of the tube. This property can only be set in the constructor
+**/
+
+/**###Torus.arc : property
+Float. The size of the arc created by the torus. Default is 2PI (a ring). Interesting patterns can be made using higher values.
+**/
+		
 		torus : function(props) {
 			props = props || {};
 			if(props.segments) {
@@ -758,6 +1100,54 @@ define(['gibber/graphics/three.min'], function(){
 			);
 			return Graphics.geometry(props, geometry);
 		},
+		
+/**#Knot - Geometry
+A torus twisted into a knot. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Knot({
+  fill:[1,0,0],
+  stroke:[.5,0,0],
+  scale:.75,
+  tube:10,
+  tubularSegments:16
+});
+a.spin(.01);`
+
+## Constructor
+**param** *properties*: Object. A dictionary of property names and values to set. There are six extra constructor properties that can be set 
+'radius', 'tube', 'radialSegments', 'tubularSegments', 'p', 'q', 'scaleHeight'. These can only be set in the constructor.
+**/
+
+/**###Knot.tube : property
+Float. The thickness of the tube that the ring is composed of. This property can only be set in the constructor
+**/
+
+/**###Knot.radius : property
+Float. The overall size of the torus geometry. This property can only be set in the constructor
+**/
+
+/**###Knot.radialSegments : property
+Integer. The resolution traveling around the geometry. This property can only be set in the constructor
+**/
+
+/**###Knot.tubularSegments : property
+Integer. The resolution of the tube. This property can only be set in the constructor
+**/
+
+/**###Knot.p : property
+Float. Angular momentum along one axis.
+**/	
+
+/**###Knot.q : property
+Float. Angular momentum along another axis.
+**/	
+
+/**###Knot.scaleHeight : property
+Float. Allows you to stretch the knot and create interesting elongated forms.
+**/	
+
 		torusKnot : function(props) {
 			props = props || {};
 			var geometry = new THREE.TorusKnotGeometry( 
@@ -771,6 +1161,22 @@ define(['gibber/graphics/three.min'], function(){
 			);
 			return Graphics.geometry(props, geometry);
 		},
+/**#Model - Geometry
+A 3D model loaded from an .obj file. See the [Geometry](javascript:Gibber.Environment.displayDocs('Geometry'\)) reference for details on properties and methods. 
+
+## Example Usage ##
+`graphics();
+a = Model({
+  model : "models/WaltHead.obj",
+  fill:[1,0,0],
+  stroke:[.5,0,0],
+  scale:.75,
+});
+a.spin(.01);`
+
+/**###Model.model : property
+String. The path (starting from the main Gibber directory) to the .obj file to load. Can only be set in constructor.
+**/		
 		model : function(props) {
 			var returner = {};
 			
@@ -916,6 +1322,30 @@ define(['gibber/graphics/three.min'], function(){
 		},
 		
 		makePostProcessingEffects : function() {
+/**#Dots - Shader
+A post-processing shader recreating the halftone technique (http://en.wikipedia.org/wiki/Halftone) 
+
+## Example Usage ##
+`graphics();
+background(.25);
+a = Cube({ fill: [1,0,0], scale:2 });
+d = Dots({ scale:.25 });
+a.spin(.01);;`
+**/
+/**###Dots.scale : property
+Float. The size of the dots. Larger values result in smaller dots.
+**/
+/**###Dots.center : property
+THREE.Vector2. Center position of dots
+**/
+/**###Dots.angle : property
+Float. Angle of dots in radians
+**/
+/**###Dots.mix : property
+Float. Blend of effect with original pixels.
+**/
+
+
 			that.makeEffect({
 				name:"Dots",
 				shaders : [
@@ -943,7 +1373,31 @@ define(['gibber/graphics/three.min'], function(){
 					},
 				],
 			});
-	
+/**#Film - Shader
+A shader recreating film grain / scanline effects.
+
+## Example Usage ##
+`graphics();
+a = Cube({ fill: [1,0,0] });
+d = Film({ sCount:512, nIntensity:1 });
+a.spin(.01);`
+**/
+/**###Film.sCount : property
+Integer. The number of scanlines to emulate
+**/
+/**###Film.sIntensity : property
+Float. The strength of the scanline effect
+**/
+/**###Film.nIntensity : property
+Float. The strength of the noise effect
+**/
+/**###Film.grayscale : property
+Boolean. Default false. Whether or not the image should be converted to grayscale.
+**/
+/**###Film.mix : property
+Float. Blend of effect with original pixels.
+**/
+
 			that.makeEffect({
 				name:"Film",
 				shaders : [
@@ -990,7 +1444,23 @@ define(['gibber/graphics/three.min'], function(){
 				}
 				],
 			});
-	
+
+/**#Bloom - Shader
+A shader producing fringes of light around bright objects and blurring details. Involves convolution and is expensive
+
+## Example Usage ##
+`graphics();
+a = Cube({ fill: [0,0,0], stroke:[1,1,1] });
+b = Bloom({ opacity:2 });
+a.spin(.01);`
+**/
+/**###Bloom.opacity : property
+Float. The strength of the Bloom effect
+**/
+/**###Bloom.kernelSize : property
+Float. The size of the convolution kernel used. Can only be set upon initialization
+**/
+
 			that.makeEffect({
 				name:"Bloom",
 				shaders : [
@@ -1015,7 +1485,28 @@ define(['gibber/graphics/three.min'], function(){
 					},
 				]
 			});
-	
+			
+/**#Tilt - Shader
+A shader that uses a two-pass blur to produce 'tilted' copies of the original image.
+
+## Example Usage ##
+`graphics();
+a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
+b = Tilt({ h:2, v:2, r:1 });
+a.spin(.01);`
+**/
+/**###Tilt.h : property
+Float. The strength of the tilt effect on the horizontal axis
+**/
+/**###Tilt.v : property
+Float. The strength of the tilt effect on the vertical axis
+**/
+/**###Tilt.r : property
+Float. The radius of the blur.
+**/
+/**###Tilt.mix : property
+Float. Blend of effect with original pixels.
+**/	
 			that.makeEffect({
 				name:"Tilt",
 				shaders: [
@@ -1045,9 +1536,25 @@ define(['gibber/graphics/three.min'], function(){
 		
 				]
 			});
+			
+/**#Tint - Shader
+Apply a tint to the light parts of the scene.
+
+## Example Usage ##
+`graphics();
+a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
+b = Tint( { color: Color("red") });
+a.spin(.01);`
+**/
+/**###Tint.color : property
+Color. The color to tint the scene.
+**/
+/**###Tint.mix : property
+Float. Blend of effect with original pixels.
+**/	
 	
 			that.makeEffect({
-				name:"Colorify",
+				name:"Tint",
 				shaders : [
 					{
 						name:'color',
@@ -1069,6 +1576,38 @@ define(['gibber/graphics/three.min'], function(){
 					}
 				]
 			});
+
+/**#Godrays - Shader
+An effect simulating light emnating from an object. Works best with dark backgrounds... objects with dark fills and light strokes are particularly nice. Can also
+be used to create pretty interesting geometric effects with high density and decay settings.
+
+## Example Usage ##
+`graphics();
+a = Cube({ fill: [0,0,0], stroke:[1,1,1] });
+b = Godrays( { density:.35 } );
+a.spin(.01);`
+**/
+/**###Godrays.x : property
+Float. The x-axis center position the Godrays are emitted from.
+**/
+/**###Godrays.y : property
+Float. The y-axis center position the Godrays are emitted from.
+**/
+/**###Godrays.exposure : property
+Float. The amount of bleed from light areas
+**/	
+/**###Godrays.decay : property
+Float. How quickly the godrays fade from their point of origin
+**/		
+/**###Godrays.weight : property
+Float.
+**/	
+/**###Godrays.max : property
+Float. Default 1. A clamp value for the brightness of the godrays.
+**/
+/**###Godrays.mix : property
+Float. Default 1. Blend of effect with original pixels.
+**/
 	
 			that.makeEffect({
 				name:"Godrays",
@@ -1083,7 +1622,7 @@ define(['gibber/graphics/three.min'], function(){
 			 			{ name:'density',  value: 0.4},
 			 			{ name:'weight',   value: 0.8},
 			 			{ name:'max',    value: 1.0},
-			 			{ name:'mix',    	value: 1.0},							
+			 			{ name:'mix',    value: 1.0},							
 					],
 					type:'uniforms',
 					init : function(obj) {
@@ -1108,7 +1647,25 @@ define(['gibber/graphics/three.min'], function(){
 				}
 				],
 			});
-	
+/**#Blur - Shader
+Applies separate horizontal and vertical blurs.
+
+## Example Usage ##
+`graphics();
+a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
+b = Blur({ h: .01, v:.01 });
+a.spin(.01);`
+**/
+/**###Blur.h : property
+Float. The amount of horizontal blur.
+**/
+/**###Blur.v : property
+Float. The amount of vertical blur.
+**/
+/**###Blur.mix : property
+Float. Blend of effect with original pixels.
+**/	
+
 			that.makeEffect({
 				name:"Blur",
 				shaders : [
@@ -1135,6 +1692,22 @@ define(['gibber/graphics/three.min'], function(){
 					}
 				],
 			});
+/**#Pixellate - Shader
+Resample image at a reduced frequency
+
+## Example Usage ##
+`graphics();
+a = Cube({ fill: [1,0,0], stroke:[1,1,1] });
+b = Pixellate({ amount: .01 });
+a.spin(.01);`
+**/
+/**###Pixellate.amount : property
+Float. Default .01. The number of pixels to output per pass. Higher values give greater degradation.
+**/
+
+/**###Pixellate.mix : property
+Float. Blend of effect with original pixels.
+**/	
 			
 			that.makeEffect({
 				name:"Pixellate",
