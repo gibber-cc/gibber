@@ -877,7 +877,7 @@ define([], function() {
 					that.symbol = Gibberish.generateSymbol(that.type);
 					Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"AllPass\"]();");
 					window[that.symbol] = Gibberish.make["AllPass"](that.buffers, that.time, that.feedback);
-					that._function = window[that.symbol];
+					that.function = window[that.symbol];
 
 					Gibberish.defineProperties( that, ["feedback"] );
 
@@ -944,7 +944,7 @@ define([], function() {
 					that.symbol = Gibberish.generateSymbol(that.type);
 					Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Comb\"]();");
 					window[that.symbol] = Gibberish.make["Comb"](that.buffers, that.feedback, that.damping, that.time);
-					that._function = window[that.symbol];
+					that.function = window[that.symbol];
 
 					Gibberish.defineProperties( that, ["feedback"] );
 
@@ -1081,7 +1081,7 @@ define([], function() {
 
 					Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Reverb\"]();");
 					window[that.symbol] = Gibberish.make["Reverb"](that.combFilters, that.allPassFilters, that.tuning);
-					that._function = window[that.symbol];
+					that.function = window[that.symbol];
 
 					Gibberish.defineProperties( that, ["damping", 'wet','dry','roomSize'] );
 

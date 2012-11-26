@@ -103,7 +103,7 @@ Gibber.presets.FM = {
 	glockenspiel : {
 		cmRatio	: 3.5307,
 		index 	: 1,
-		attack	: 44,
+		attack	: 50,
 		decay	: 44100,
 	},
 	radio : { //ljp
@@ -115,7 +115,7 @@ Gibber.presets.FM = {
 	noise : { //ljp
 		cmRatio	: 0.04,
 		index	: 1000,
-		attack	: 1 * 44.1,
+		attack	: 1 * 50,
 		decay	: 100 * 44.1,
 	},
 	frog : { //ljp
@@ -127,19 +127,19 @@ Gibber.presets.FM = {
 	gong : {
 		cmRatio : 1.4,
 		index	: .95,
-		attack	: 44.1,
+		attack	: 50,
 		decay	: 5000 * 44.1,
 	},
 	drum : {
 		cmRatio : 1.40007,
 		index	: 2,
-		attack	: 44,
+		attack	: 50,
 		decay	: 44100,
 	},
 	drum2 : {
 		cmRatio: 1 + Math.sqrt(2),
 		index: .2,
-		attack: 44,
+		attack: 50,
 		decay: 20 * 44.1,
 	},
 	brass : {

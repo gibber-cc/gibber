@@ -619,8 +619,8 @@ define([], function() {
 			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
 			
 			return function(val, pan, array) {
-	      		array[0] = val * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) ) * amp;
-		      	array[1] = val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ) * amp;
+	      		array[0] = val * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) );
+		      	array[1] = val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) );
 				return array;
 			};
 		},

@@ -84,9 +84,9 @@ define([], function() {
 				decay:		decay || 10000,
 
 				run: function() {
-					//that._function.setPhase(0);
-					this._function.setState(0);
-					this._function.setPhase(0);
+					//that.function.setPhase(0);
+					this.function.setState(0);
+					this.function.setPhase(0);
 					return this;			
 				},
 			};
@@ -95,8 +95,8 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Env\"]();");
 			window[that.symbol] = Gibberish.make["Env"]();
-			that._function = window[that.symbol];
-			that._function.setState(2);
+			that.function = window[that.symbol];
+			that.function.setState(2);
 			
 			Gibberish.defineProperties( that, ["attack", "decay"] );
 			
@@ -108,8 +108,8 @@ define([], function() {
 			var state = 0;
 			var output = function(attack,decay) {
 				if(state < 2) {
-					attack = attack < 0 ? _4 : attack;
-					decay  = decay  < 0 ? _4 : decay;
+					//attack = attack < 0 ? _4 : attack;
+					//decay  = decay  < 0 ? _4 : decay;
 					
 					var incr = state ? 1 / decay : 1 / attack
 					phase += state ? incr * -1 : incr;
@@ -141,8 +141,8 @@ define([], function() {
 				sustainLevel: sustainLevel || 1,
 
 				run: function() {
-					that._function.setPhase(0);
-					that._function.setState(0);
+					that.function.setPhase(0);
+					that.function.setState(0);
 				},
 			};
 			Gibberish.extend(that, new Gibberish.ugen());
@@ -150,7 +150,7 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"ADSR\"]();");
 			window[that.symbol] = Gibberish.make["ADSR"]();
-			that._function = window[that.symbol];
+			that.function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["attack", "decay", "sustain", "release", "attackLevel", "sustainLevel"] );
 	
@@ -206,9 +206,9 @@ define([], function() {
 				time:		time || 44100,
 
 				run: function() {
-					//that._function.setPhase(0);
-					that._function.setState(0);
-					that._function.setPhase(0);					
+					//that.function.setPhase(0);
+					that.function.setState(0);
+					that.function.setPhase(0);					
 				},
 			};
 			Gibberish.extend(that, new Gibberish.ugen());
@@ -216,7 +216,7 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Step\"]();");
 			window[that.symbol] = Gibberish.make["Step"](that.steps);
-			that._function = window[that.symbol];
+			that.function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["attack", "decay"] );
 	
@@ -258,7 +258,7 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Line\"]();");
 			window[that.symbol] = Gibberish.make["Line"](that.start, that.end, that.time);
-			that._function = window[that.symbol];
+			that.function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["loops", "time"] );
 	

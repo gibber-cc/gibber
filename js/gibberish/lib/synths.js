@@ -45,8 +45,9 @@ define([], function() {
 					}
 					
 					this.frequency = _frequency;
-					this._function.setFrequency(this.frequency);
-					if(this.env.getState() > 0) this.env.setState(0);
+					this.function.setFrequency(this.frequency);
+					this.env.setState(0);
+					this.env.setPhase(0);
 				
 					if(this.glide > 0) {
 						this.mod("frequency", Line(_frequency - prevFreq, 0, this.glide), "-");
@@ -70,8 +71,8 @@ define([], function() {
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Synth\"]();");	
-			that._function = Gibberish.make["Synth"](that.osc, that.env); // only passs ugen functions to make
-			window[that.symbol] = that._function;
+			that.function = Gibberish.make["Synth"](that.osc, that.env); // only passs ugen functions to make
+			window[that.symbol] = that.function;
 			
 			Gibberish.defineProperties( that, ["frequency", "amp", "attack", "decay", "pan", "channels"] );
 			
@@ -82,7 +83,7 @@ define([], function() {
 					if(waveform !== value) {
 						waveform = value;
 						that.osc = Gibberish.make[value]();
-						that._function.setOscillator(that.osc);
+						that.function.setOscillator(that.osc);
 						Gibberish.dirty(that);
 					}
 				},
@@ -196,11 +197,12 @@ define([], function() {
 					}
 					
 					this.frequency = frequency;
-					this._function.setFrequency(frequency);
+					this.function.setFrequency(frequency);
 					
 					if(typeof amp !== 'undefined') this.amp = amp;
 					
-					if(this.env.getState() > 0) this.env.setState(0);
+					this.env.setState(0);
+					this.env.setPhase(0);
 					
 					if(this.glide > 0) {
 						this.mod("frequency", Line(frequency - prevFreq, 0, this.glide), "-");
@@ -220,8 +222,8 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"FMSynth\"]();");
-			that._function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env, that.out);
-			window[that.symbol] = that._function;
+			that.function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env, that.out);
+			window[that.symbol] = that.function;
 						
 			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency", "channels", "pan"] );
 			if(typeof properties !== "undefined") {
@@ -345,7 +347,7 @@ define([], function() {
 						prevFreq = this.frequency;
 					}
 					this.frequency = _frequency;
-					this._function.setFrequency(_frequency);
+					this.function.setFrequency(_frequency);
 					if(this.env.getState() > 1) this.env.setState(0);
 					
 					if(this.glide > 0) {
@@ -373,8 +375,8 @@ define([], function() {
 
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Synth2\"]();");	
-			that._function = Gibberish.make["Synth2"](that.osc, that.env, that.filter);
-			window[that.symbol] = that._function;
+			that.function = Gibberish.make["Synth2"](that.osc, that.env, that.filter);
+			window[that.symbol] = that.function;
 			
 			Gibberish.defineProperties( that, ["frequency", "amp", "attack","decay","sustain","release","attackLevel","sustainLevel","cutoff","resonance","filterMult", "waveform", "isLowPass", "pan", "channels"] );
 			
@@ -561,8 +563,8 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mono\"]();");	
-			that._function = Gibberish.make["Mono"]( that.osc1, that.osc2, that.osc3, that.env, that.filter );
-			window[that.symbol] = that._function;
+			that.function = Gibberish.make["Mono"]( that.osc1, that.osc2, that.osc3, that.env, that.filter );
+			window[that.symbol] = that.function;
 			
 			Gibberish.defineProperties( that, ["amp", "frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "detune2", "detune3", "octave2", "octave3", "pan", "channels"] );
 			
@@ -583,9 +585,9 @@ define([], function() {
 						that.osc3 = Gibberish.make[value]();
 						//that.osc3.setPhase( _osc3.getPhase() );
 						
-						that._function.setOsc1(that.osc1);
-						that._function.setOsc2(that.osc2);
-						that._function.setOsc3(that.osc3);												
+						that.function.setOsc1(that.osc1);
+						that.function.setOsc2(that.osc2);
+						that.function.setOsc3(that.osc3);												
 
 						Gibberish.dirty(that);
 					}

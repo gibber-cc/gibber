@@ -255,8 +255,8 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Input\"]();");	
-			that._function = Gibberish.make["Input"](); // only passs ugen functions to make
-			window[that.symbol] = that._function;
+			that.function = Gibberish.make["Input"](); // only passs ugen functions to make
+			window[that.symbol] = that.function;
 			
 			Gibberish.defineProperties( that, ["amp", "channels"] );
 			return that;
@@ -285,7 +285,7 @@ define([], function() {
 				shouldStart: 	false,
 				isPlaying : 	true,
 				isRecording: 	false,
-				_function:		null,
+				function:		null,
 				isLoaded: 		false,
 				start:			0,
 				end:			1,
@@ -302,21 +302,21 @@ define([], function() {
 					
 					that.isLoaded = true;
 					
-					that._function.setBuffer(that.buffer);
+					that.function.setBuffer(that.buffer);
 					
-					that._function.setPhase(that.bufferLength);
+					that.function.setPhase(that.bufferLength);
 				},
 				note: function(pitch, amp) {
 					if(typeof amp === 'number') this.amp = amp;
 					//if(this.isLoaded) {
 						this.pitch = pitch;
 					
-						if(this._function !== null) {
+						if(this.function !== null) {
 							this.isPlaying = true;	// needed to allow playback after recording
 							if(pitch > 0) {
-								this._function.setPhase(this.start);
+								this.function.setPhase(this.start);
 							}else{
-								this._function.setPhase(this.end);
+								this.function.setPhase(this.end);
 							}
 						}
 						//}
@@ -324,7 +324,7 @@ define([], function() {
 				record : function(input, recordLength) {					
 					this.bufferLength = typeof recordLength === "undefined" ? this.bufferLength : recordLength;
 					this.bufferLength = G.time(this.bufferLength); // TODO: should only be in Gibber, not Gibberish
-					this._function.setWriteHead(0);
+					this.function.setWriteHead(0);
 					
 					that.end = 1;
 					
@@ -334,7 +334,7 @@ define([], function() {
 					this.codeblock += ";";
 					Gibberish.ugens.push(this);	
 					this.isRecording = true;		
-					this._function.setBuffer(this.buffer);
+					this.function.setBuffer(this.buffer);
 					
 					return this;	
 				},
@@ -360,8 +360,8 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Sampler\"]();");	
-			that._function = Gibberish.make["Sampler"](that.buffer, that); // only passs ugen functions to make
-			window[that.symbol] = that._function;
+			that.function = Gibberish.make["Sampler"](that.buffer, that); // only passs ugen functions to make
+			window[that.symbol] = that.function;
 			
 			Gibberish.defineProperties( that, ["pitch", "amp", "isRecording", "isPlaying", "length", "input", "pan" ] );
 			
@@ -388,7 +388,7 @@ define([], function() {
 				get : function() { return _loops; },
 				set : function(val) {
 					_loops = val;
-					that._function.setLoops(_loops);
+					that.function.setLoops(_loops);
 				}
 			});
 			
@@ -397,8 +397,8 @@ define([], function() {
 				that.buffer =  Gibberish.audioFiles[that.file];
 				that.bufferLength = that.buffer.length;
 				that.end = that.bufferLength;
-				that._function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
-				window[that.symbol] = that._function;
+				that.function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
+				window[that.symbol] = that.function;
 			}else if(that.file !== null){
 				console.log("LOADING", that.file);
 			    var request = new AudioFileRequest(that.file);
@@ -409,9 +409,9 @@ define([], function() {
 				that.end = that.bufferLength;
 				that.isLoaded = true;
 					
-				that._function.setBuffer(that.buffer);
+				that.function.setBuffer(that.buffer);
 					
-				that._function.setPhase(that.bufferLength);
+				that.function.setPhase(that.bufferLength);
 				if(arguments[0] && arguments[0].loops) {
 					that.loops = 1;
 				}
@@ -438,12 +438,12 @@ define([], function() {
 			var phase = buffer === null ? 0 : buffer.length;
 			var interpolate = Gibberish.interpolate;
 			var write = 0;
-			var panner = Gibberish.pan();
+			var panner = Gibberish.pan3();
 			var debug = 0;		
 			var shouldLoop = 0;
-			
+			var out = [0,0];
 			var output = function(_pitch, amp, isRecording, isPlaying, input, length, start, end,  pan) {
-				var out = 0;
+				var val = 0;
 				phase += _pitch;				
 				
 				if(write++ < length && isRecording) {
@@ -457,22 +457,27 @@ define([], function() {
 					
 					write = 0;
 				}
-				
-				if(_pitch > 0) {
-					if(phase < end) {
-						out = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
+				if(phase < end && phase > 0) {
+					if(_pitch > 0) {
+						if(phase < end) {
+							val = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
+						}else{
+							phase = shouldLoop ? start : phase;
+						}
 					}else{
-						phase = shouldLoop ? start : phase;
+						if(phase > start) {
+							val = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
+						}else{
+							phase = shouldLoop ? end : phase;
+						}
 					}
-				}else{
-					if(phase > start) {
-						out = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
-					}else{
-						phase = shouldLoop ? end : phase;
-					}
+					return panner(val * amp, pan, out);	
 				}
+				phase = shouldLoop && _pitch > 0 ? start : phase;
+				phase = shouldLoop && _pitch < 0 ? end : phase;
 				
-				return panner(out * amp, pan);
+				out[0] = out[1] = val;
+				return out;
 			};
 			output.setLoops = function(loops) { shouldLoop = loops; };
 			output.setPhase = function(newPhase) { phase = newPhase; };
@@ -513,9 +518,9 @@ define([], function() {
 							last = newVal;
 					    // }
 					}
-					this._function.setHeads(0, _size - 1, 0);
-					this._function.setBuffer(this.buffer);
-					this._function.setBuffer2(this.buffer2);					
+					this.function.setHeads(0, _size - 1, 0);
+					this.function.setBuffer(this.buffer);
+					this.function.setBuffer2(this.buffer2);					
 				},
 			};
 			
@@ -542,8 +547,8 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"KarplusStrong2\"]();");	
-			that._function = Gibberish.make["KarplusStrong2"](that.buffer, that.buffer2);
-			window[that.symbol] = that._function;
+			that.function = Gibberish.make["KarplusStrong2"](that.buffer, that.buffer2);
+			window[that.symbol] = that.function;
 			
 			Gibberish.defineProperties( that, ["blend", "amp", "headPos", "damping", "pan"] );
 			return that;
@@ -808,7 +813,7 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
 			window[that.symbol] = Gibberish.make["Mesh"](that.grid);
-			that._function = window[that.symbol];
+			that.function = window[that.symbol];
 						
 			Gibberish.defineProperties( that, ["input", "amp", "hitX", "hitY", "rate"] );
 			
@@ -908,7 +913,7 @@ define([], function() {
 					this.power = vol;
 					var Yj = 2 * this.size * this.size / ( (this.initTension * this.initTension) * (this.speed * this.speed) );
 					
-					that._function.setNoise(1024);
+					that.function.setNoise(1024);
 					for(var i = 1; i < this.height - 1; i++ ) {
 						for(var j = 1; j < this.width - 1; j++) {
 							var junction = this.junctions[i][j];	
@@ -953,7 +958,7 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mesh\"]();");
 			window[that.symbol] = Gibberish.make["Mesh"](that.junctions, that.height, that.width);
-			that._function = window[that.symbol];
+			that.function = window[that.symbol];
 			
 			Gibberish.defineProperties( that, ["amp", "tension", "size", "speed", "outX", "outY", "loss", "noise", "pan"] );
 			
@@ -1085,7 +1090,7 @@ define([], function() {
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Grains\"]();");
 			window[that.symbol] = /*function() { return [0,0]; }*/Gibberish.make["Grains"](that.numberOfGrains, that, rndf);
-			that._function = window[that.symbol];
+			that.function = window[that.symbol];
 						
 			Gibberish.defineProperties( that, ["speedMin", "speedMax", "positionMin", "positionMax", "position", "numberOfGrains", "amp", "grainSize", "pan", "shouldWrite"] );
 			
