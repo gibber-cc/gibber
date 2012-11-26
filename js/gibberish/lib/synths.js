@@ -68,7 +68,6 @@ define([], function() {
 			
 			that.env = Gibberish.make["Env"](that.attack, that.decay);
 			that.osc = Gibberish.make[that.waveform](that.frequency, that.amp);
-			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Synth\"]();");	
 			that._function = Gibberish.make["Synth"](that.osc, that.env); // only passs ugen functions to make
@@ -96,14 +95,15 @@ define([], function() {
 		makeSynth: function(osc, env) { // note, storing the increment value DOES NOT make this faster!
 			var phase = 0;
 			var _frequency = 0;
-			var panner = Gibberish.pan();
-			
+			var panner = Gibberish.pan3();
+			var out = [0,0];
 			var output = function(frequency, amp, attack, decay, pan, channels ) {
 				if(env.getState() < 2) {
 					var val =  osc(frequency, amp, 1)[0] * env(attack, decay);
-					return channels === 1 ? [val] : panner(val, pan);
+					out[0] = out[1] = val;
+					return channels === 1 ? out : panner(val, pan, out);
 				}
-				return channels === 1 ? [0] : [0,0];
+				return out;
 			}
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
 			output.getFrequency = function() 		{ return _frequency; };
@@ -213,14 +213,14 @@ define([], function() {
 				},
 			};
 			Gibberish.extend(that, new Gibberish.ugen(that));
-
+			
 			that.env = Gibberish.make["Env"]();
 			that.carrier = Gibberish.make["Sine"]();
 			that.modulator = Gibberish.make["Sine"]();
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"FMSynth\"]();");
-			that._function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env);
+			that._function = Gibberish.make["FMSynth"](that.carrier, that.modulator, that.env, that.out);
 			window[that.symbol] = that._function;
 						
 			Gibberish.defineProperties( that, ["amp", "attack", "decay", "cmRatio", "index", "frequency", "channels", "pan"] );
@@ -231,25 +231,23 @@ define([], function() {
 			return that;
 		},
 		
-		makeFMSynth: function(_carrier, _modulator, _env) { // note, storing the increment value DOES NOT make this faster!	
-			var carrier = _carrier;
-			var modulator = _modulator;
-			var envelope = _env;
+		makeFMSynth: function(carrier, modulator, envelope) { // note, storing the increment value DOES NOT make this faster!	
 			var phase = 0;
 			var _frequency = 0; // needed for polyfm
-			var panner = Gibberish.pan();
-			
-			// FMSynth_14( 65.40639132514966, 3.5307, 1, 11025, 44100, 1, 1, 0);
+			var panner = Gibberish.pan3();
+			var out = [0,0];
+
 			var output = function(frequency, cmRatio, index, attack, decay, amp, channels, pan) {
 				if(envelope.getState() < 2) {				
 					var env = envelope(attack, decay);
 					var mod = modulator(frequency * cmRatio, frequency * index, 1, 1)[0] * env;
-					var out = carrier( frequency + mod, 1, 1 )[0] * env * amp;
-				//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency, out);
-				
-					return channels === 1 ? [out] : panner(out, pan);
+					var val = carrier( frequency + mod, 1, 1 )[0] * env * amp;
+					//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency, out);
+					out[0] = out[1] = val;
+					return channels === 1 ? out : panner(val, pan, out);
 				}else{
-					return channels === 1 ? [0]: [0,0];
+					out[0] = out[1] = 0;
+					return out;
 				}
 			}
 			output.setFrequency = function(freq) { _frequency = freq; };
@@ -398,18 +396,18 @@ define([], function() {
 		makeSynth2: function(osc, env, filter) {
 			var phase = 0;
 			var _frequency = 0;
-			var panner = Gibberish.pan();
-
+			var panner = Gibberish.pan3();
+			var out = [0,0];
+			
 			var output = function(frequency, amp, attack, decay, sustain, release, attackLevel, sustainLevel, cutoff, resonance, filterMult, isLowPass, pan, channels) {
-				//var envResult = env(attack, decay, sustain, release, attackLevel, sustainLevel);
 				if(env.getState() < 2) {				
 					var envResult = env(attack, decay);
 					var val = filter( osc(frequency, amp, 1), cutoff + filterMult * envResult, resonance, isLowPass, channels)[0] * envResult;
-					//var val = osc(frequency,amp,1) * envResult;
-					//if(phase++ % 22050 === 0) console.log("SYNTH 2", val, amp, frequency, envResult);
-					return channels === 1 ? [val] : panner(val, pan);
+					out[0] = out[1] = val;
+					return channels === 1 ? out : panner(val, pan, out);
 				}
-				return channels === 1 ? [0] : [0,0];
+				out[0] = out[1] = 0;
+				return out;
 			};
 			output.setFrequency = function(freq) {
 				_frequency = freq;
@@ -563,7 +561,7 @@ define([], function() {
 			
 			that.symbol = Gibberish.generateSymbol(that.type);
 			Gibberish.masterInit.push(that.symbol + " = Gibberish.make[\"Mono\"]();");	
-			that._function = Gibberish.make["Mono"](that.osc1, that.osc2, that.osc3, that.env, that.filter);
+			that._function = Gibberish.make["Mono"]( that.osc1, that.osc2, that.osc3, that.env, that.filter );
 			window[that.symbol] = that._function;
 			
 			Gibberish.defineProperties( that, ["amp", "frequency", "amp1", "amp2", "amp3", "attack", "decay", "cutoff", "resonance", "filterMult", "isLowPass", "detune2", "detune3", "octave2", "octave3", "pan", "channels"] );
@@ -597,9 +595,10 @@ define([], function() {
 			return that;
 		},
 		
-		makeMono: function(osc1, osc2, osc3, env, filter) {
+		makeMono: function(osc1, osc2, osc3, env, filter, zeros) {
 			var phase = 0;
-			var panner = Gibberish.pan();
+			var panner = Gibberish.pan3();
+			var out = [0,0];
 			var output = function(frequency, amp1, amp2, amp3, attack, decay, cutoff, resonance, filterMult, isLowPass, masterAmp, detune2, detune3, octave2, octave3, pan, channels) {
 				if(env.getState() < 2) {
 					var frequency2 = frequency;
@@ -631,9 +630,11 @@ define([], function() {
 					var envResult = env(attack, decay);
 					var val = filter( [oscValue], cutoff + filterMult * envResult, resonance, isLowPass, 1)[0] * envResult;
 					val *= masterAmp;
-					return channels === 1 ? [val] : panner(val, pan);
+					out[0] = out[1] = val;
+					return channels === 1 ? out : panner(val, pan, out);
 				}else{
-					return channels === 1 ? [0] : [0,0];
+					out[0] = out[1] = 0;
+					return out;
 				}
 			};
 			output.setOsc1 = function(_osc) { osc1 = _osc; };

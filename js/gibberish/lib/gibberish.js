@@ -613,6 +613,17 @@ define([], function() {
 			};
 			
 		},
+		pan3 : function() {
+			var sin = Math.sin;
+			var cos = Math.cos;
+			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
+			
+			return function(val, pan, array) {
+	      		array[0] = val * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) ) * amp;
+		      	array[1] = val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ) * amp;
+				return array;
+			};
+		},
 		dirty : function(ugen) {
 			if(typeof ugen !== "undefined" && ugen !== this) {
 				ugen.dirty = true;
