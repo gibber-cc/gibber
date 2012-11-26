@@ -75,7 +75,6 @@ define(['gibber/graphics/three.min'],
 						}
 					};
 					
-					
 					// set the scene size
 					var WIDTH = that.fullScreenFlag ? screen.width : $(".CodeMirror-scroll").outerWidth(),
 					  	HEIGHT = that.fullScreenFlag ? screen.height : $(".CodeMirror-scroll").outerHeight();

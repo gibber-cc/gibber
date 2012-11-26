@@ -99,8 +99,11 @@ define([], function() {
 			var panner = Gibberish.pan();
 			
 			var output = function(frequency, amp, attack, decay, pan, channels ) {
-				var val = osc(frequency, amp, 1)[0] * env(attack, decay);
-				return channels === 1 ? [val] : panner(val, pan);
+				if(env.getState() < 2) {
+					var val =  osc(frequency, amp, 1)[0] * env(attack, decay);
+					return channels === 1 ? [val] : panner(val, pan);
+				}
+				return channels === 1 ? [0] : [0,0];
 			}
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
 			output.getFrequency = function() 		{ return _frequency; };
@@ -238,12 +241,16 @@ define([], function() {
 			
 			// FMSynth_14( 65.40639132514966, 3.5307, 1, 11025, 44100, 1, 1, 0);
 			var output = function(frequency, cmRatio, index, attack, decay, amp, channels, pan) {
-				var env = envelope(attack, decay);
-				var mod = modulator(frequency * cmRatio, frequency * index, 1, 1)[0] * env;
-				var out = carrier( frequency + mod, 1, 1 )[0] * env * amp;
+				if(envelope.getState() < 2) {				
+					var env = envelope(attack, decay);
+					var mod = modulator(frequency * cmRatio, frequency * index, 1, 1)[0] * env;
+					var out = carrier( frequency + mod, 1, 1 )[0] * env * amp;
 				//if(phase++ % 22050 === 0) console.log("MOD AMOUNT", mod, cmRatio, index, frequency, out);
 				
-				return channels === 1 ? [out] : panner(out, pan);
+					return channels === 1 ? [out] : panner(out, pan);
+				}else{
+					return channels === 1 ? [0]: [0,0];
+				}
 			}
 			output.setFrequency = function(freq) { _frequency = freq; };
 			output.getFrequency = function() { return _frequency; }
@@ -395,11 +402,14 @@ define([], function() {
 
 			var output = function(frequency, amp, attack, decay, sustain, release, attackLevel, sustainLevel, cutoff, resonance, filterMult, isLowPass, pan, channels) {
 				//var envResult = env(attack, decay, sustain, release, attackLevel, sustainLevel);
-				var envResult = env(attack, decay);
-				var val = filter( osc(frequency, amp, 1), cutoff + filterMult * envResult, resonance, isLowPass, channels)[0] * envResult;
-				//var val = osc(frequency,amp,1) * envResult;
-				//if(phase++ % 22050 === 0) console.log("SYNTH 2", val, amp, frequency, envResult);
-				return channels === 1 ? [val] : panner(val, pan);
+				if(env.getState() < 2) {				
+					var envResult = env(attack, decay);
+					var val = filter( osc(frequency, amp, 1), cutoff + filterMult * envResult, resonance, isLowPass, channels)[0] * envResult;
+					//var val = osc(frequency,amp,1) * envResult;
+					//if(phase++ % 22050 === 0) console.log("SYNTH 2", val, amp, frequency, envResult);
+					return channels === 1 ? [val] : panner(val, pan);
+				}
+				return channels === 1 ? [0] : [0,0];
 			};
 			output.setFrequency = function(freq) {
 				_frequency = freq;
@@ -591,36 +601,40 @@ define([], function() {
 			var phase = 0;
 			var panner = Gibberish.pan();
 			var output = function(frequency, amp1, amp2, amp3, attack, decay, cutoff, resonance, filterMult, isLowPass, masterAmp, detune2, detune3, octave2, octave3, pan, channels) {
-				var frequency2 = frequency;
-				if(octave2 > 0) {
-					for(var i = 0; i < octave2; i++) {
-						frequency2 *= 2;
+				if(env.getState() < 2) {
+					var frequency2 = frequency;
+					if(octave2 > 0) {
+						for(var i = 0; i < octave2; i++) {
+							frequency2 *= 2;
+						}
+					}else if(octave2 < 0) {
+						for(var i = 0; i > octave2; i--) {
+							frequency2 /= 2;
+						}
 					}
-				}else if(octave2 < 0) {
-					for(var i = 0; i > octave2; i--) {
-						frequency2 /= 2;
-					}
-				}
 					
-				var frequency3 = frequency;
-				if(octave3 > 0) {
-					for(var i = 0; i < octave3; i++) {
-						frequency3 *= 2;
+					var frequency3 = frequency;
+					if(octave3 > 0) {
+						for(var i = 0; i < octave3; i++) {
+							frequency3 *= 2;
+						}
+					}else if(octave3 < 0) {
+						for(var i = 0; i > octave3; i--) {
+							frequency3 /= 2;
+						}
 					}
-				}else if(octave3 < 0) {
-					for(var i = 0; i > octave3; i--) {
-						frequency3 /= 2;
-					}
-				}
 				
-				frequency2 += detune2 > 0 ? ((frequency * 2) - frequency) * detune2 : (frequency - (frequency / 2)) * detune2;
-				frequency3 += detune3 > 0 ? ((frequency * 2) - frequency) * detune3 : (frequency - (frequency / 2)) * detune3;
+					frequency2 += detune2 > 0 ? ((frequency * 2) - frequency) * detune2 : (frequency - (frequency / 2)) * detune2;
+					frequency3 += detune3 > 0 ? ((frequency * 2) - frequency) * detune3 : (frequency - (frequency / 2)) * detune3;
 							
-				var oscValue = osc1(frequency, amp1, 1)[0] + osc2(frequency2, amp2, 1)[0] + osc3(frequency3, amp3, 1)[0];
-				var envResult = env(attack, decay);
-				var val = filter( [oscValue], cutoff + filterMult * envResult, resonance, isLowPass, 1)[0] * envResult;
-				val *= masterAmp;
-				return channels === 1 ? [val] : panner(val, pan);
+					var oscValue = osc1(frequency, amp1, 1)[0] + osc2(frequency2, amp2, 1)[0] + osc3(frequency3, amp3, 1)[0];
+					var envResult = env(attack, decay);
+					var val = filter( [oscValue], cutoff + filterMult * envResult, resonance, isLowPass, 1)[0] * envResult;
+					val *= masterAmp;
+					return channels === 1 ? [val] : panner(val, pan);
+				}else{
+					return channels === 1 ? [0] : [0,0];
+				}
 			};
 			output.setOsc1 = function(_osc) { osc1 = _osc; };
 			output.setOsc2 = function(_osc) { osc2 = _osc; };

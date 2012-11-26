@@ -107,22 +107,18 @@ define([], function() {
 			var phase = 0;
 			var state = 0;
 			var output = function(attack,decay) {
-				attack = attack < 0 ? _4 : attack;
-				decay  = decay  < 0 ? _4 : decay;				
-				if(state === 0){
-					var incr = 1 / attack;
-					phase += incr;
-					if(phase >=1) {
-						state++;
-					}
-				}else if(state === 1){
-					var incr = 1 / decay;
-					phase -= incr;
-					if(phase <= 0) {
-						phase = 0;
-						state++;;
-					}			
+				if(state < 2) {
+					attack = attack < 0 ? _4 : attack;
+					decay  = decay  < 0 ? _4 : decay;
+					
+					var incr = state ? 1 / decay : 1 / attack
+					phase += state ? incr * -1 : incr;
+				
+					state += phase >= 1 ? 1 : 0;
+					state += phase <= 0 ? 1 : 0;
+					phase =  phase <= 0 ? 0 : phase;
 				}
+				
 				return phase;
 			};
 			output.setPhase = function(newPhase) { phase = newPhase; };

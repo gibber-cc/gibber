@@ -16,7 +16,7 @@ define([], function() {
 			    name: "Sine",
 			    props: { frequency: 440, amp: .25, channels:1, pan: 0 },
 			    upvalues: { phase: 0, sin:Math.sin, pi_2:Math.PI * 2, panner:Gibberish.pan() },
- 
+ 			   
 			    callback: function(frequency, amp, channels, pan) {
 			        phase += frequency / 44100;
 			        var output = sin(phase * pi_2) * amp;
@@ -28,7 +28,7 @@ define([], function() {
 			    name: "LFO",
 			    props: { frequency: 440, amp: .25 },
 			    upvalues: { phase: 0, sin: Math.sin, pi_2: Math.PI * 2, value:0 },
-			
+				
 			    callback: function(frequency, amp) {
 			        phase += frequency / 44100;
 			        value = sin(phase * pi_2) * amp;
@@ -54,10 +54,10 @@ define([], function() {
 			gibberish.Triangle = Gen({
 			    name: "Triangle",
 			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
-			    upvalues: { phase: 0, panner:Gibberish.pan()  },
+			    upvalues: { phase: 0, panner:Gibberish.pan(), abs:Math.abs  },
 
 			    callback: function(frequency, amp, channels, pan ) {
-				    var out = 1 - 4 * Math.abs((phase + 0.25) % 1 - 0.5);
+				    var out = 1 - 4 * abs((phase + 0.25) % 1 - 0.5);
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
 					return channels === 1 ? [out * amp] : panner(out * amp, pan);
@@ -67,9 +67,10 @@ define([], function() {
 			gibberish.Saw = Gen({
 			    name: "Saw",
 			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
-			    upvalues: { phase: 0,panner:Gibberish.pan()  },
+			    upvalues: { phase: 0, panner:Gibberish.pan()  },
 
-				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js					
+				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js
+				// 4 divides				
 			    callback: function(frequency, amp, channels, pan) {
 				    var out = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
 				    phase += frequency / 44100;
@@ -93,7 +94,7 @@ define([], function() {
     
 			    this.function.setBuffer(this.buffer);
 			  },
-  
+  			  // 2 mults, 1 divide, 2 array ops, 1 random
 			  callback : function(blend, damping, amp, channels, pan) {
 			    var val = buffer.shift();
 			    var rndValue = (rnd() > blend) ? -1 : 1;
@@ -106,7 +107,7 @@ define([], function() {
 
 			    buffer.push(value);
     
-			    return channels === 1 ? value * amp : panner(value * amp, pan);
+			    return channels === 1 ? [value * amp] : panner(value * amp, pan);
 			  },
   
 			  setters: {
