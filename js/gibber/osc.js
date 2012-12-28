@@ -59,7 +59,9 @@ define([
 				}
 			}
 			
-			if(options === null) options = {};
+			var hasOptions = options !== null ? true : false;
+			
+			if(!hasOptions) options = {};
 			options.name = type + this.id++;
 			options.type = type;
 			
@@ -84,6 +86,8 @@ define([
 				};
 				return set;
 			})();
+			
+			if(hasOptions && options.callback) callback = options.callback;
 			
 			if(callback === null) {
 				if(key && obj) {
@@ -116,6 +120,11 @@ define([
 		button : function() { 
 			var args = Array.prototype.slice.call(arguments, 0);
 			args.push("Button");
+			return this.abstract.apply(this, args); 
+		},
+		xy : function() {
+			var args = Array.prototype.slice.call(arguments, 0);
+			args.push("MultiTouchXY");
 			return this.abstract.apply(this, args); 
 		},
 	};

@@ -27,7 +27,7 @@ window.Gen = function(obj) {
 					if(typeof upvalue !== "object") {
 						str += "var " + key + " = " + upvalue +';';
 					}else{
-						if(upvalue instanceof Array) {
+						if(Array.isArray(upvalue)) {
 							objs[key] = upvalue.slice(0);
 						}else{
 							var _obj = {};
@@ -40,7 +40,7 @@ window.Gen = function(obj) {
 				}else{
 					// hack to defer codegen of properties until instance creation
 					var tmp = obj.upvalues[key];	
-					if(typeof tmp === "function") {
+					if(typeof tmp === "function" && !tmp.shouldNotEvalOnInitialization) {
 						var _tmp = tmp;
 						tmp = tmp(obj);
 						// check to see if this is a codegen function, if not, use original function

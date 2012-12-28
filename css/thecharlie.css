@@ -1,32 +1,32 @@
 /* Based on Sublime Text's Monokai theme */
 
-.cm-s-thecharlie {background: rgba(0,0,0,0); color: #fff;}
-.cm-s-thecharlie div.CodeMirror-selected {background: rgba(127,10,10,.5) !important;}
+.cm-s-thecharlie {background: rgba(150, 150, 150,0); color: #333;}
+.cm-s-thecharlie div.CodeMirror-selected {background: rgba(130,130,130,.5) !important;}
 .cm-s-thecharlie .CodeMirror-gutter {background: #272822; border-right: 0px;}
 .cm-s-thecharlie .CodeMirror-gutter-text {color: #d0d0d0;}
-.cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #999999 !important;}
+.cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #000 !important;}
 
 /*.cm-s-thecharlie span { background:rgba(0,0,0,.5); }*/
 /*.CodeMirror-lines {background: rgba(0,0,0,.65) !important;}*/
 /*.activeline {background: rgba(0,0,0,.65) !important;}*/
-.cm-s-thecharlie span.cm-comment {color: #a32;}
+.cm-s-thecharlie span.cm-comment {color: #666;}
 .cm-s-thecharlie span.cm-atom {color: #ae81ff;}
-.cm-s-thecharlie span.cm-number {color: #6C99BB;}
+.cm-s-thecharlie span.cm-number {color: #007;}
       
-.cm-s-thecharlie span.cm-property, .cm-s-monokai span.cm-attribute {color: #fff;}
-.cm-s-thecharlie span.cm-keyword {color: #f92672;}
-.cm-s-thecharlie span.cm-string {color: #A5C261; }
+.cm-s-thecharlie span.cm-property, .cm-s-monokai span.cm-attribute {color: #333;}
+.cm-s-thecharlie span.cm-keyword {color: #333;}
+.cm-s-thecharlie span.cm-string {color: #500; }
       
-.cm-s-thecharlie span.cm-variable {color: #fff;}
-.cm-s-thecharlie span.cm-variable-2 {color: #fff;}
+.cm-s-thecharlie span.cm-variable {color: #333;}
+.cm-s-thecharlie span.cm-variable-2 {color: #333;}
 .cm-s-thecharlie span.cm-def {color: #fd971f;}
-.cm-s-thecharlie span.cm-error {background: #f92672; color: #f8f8f0;}
+.cm-s-thecharlie span.cm-error {background: #f92672; color: #888880;}
 .cm-s-thecharlie span.cm-bracket {color: #f8f8f2;}
 .cm-s-thecharlie span.cm-tag {color: #f92672;}
 .cm-s-thecharlie span.cm-link {color: #ae81ff; cursor:pointer}
 
 .cm-s-thecharlie .CodeMirror-matchingbracket {
   /*text-decoration: underline;*/
-  background:#333;
-  color: white !important;
+  background:#888;
+  color: #333 !important;
 }

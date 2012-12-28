@@ -1,5 +1,4 @@
 define([], function() {
-	console.log("GIBBERISH HUURAH 3");
     var that = {
 		debug : false,
 		callbackCount: 0,
@@ -204,6 +203,7 @@ define([], function() {
 		},
 		
 		polyDefineProperties : function(obj, props) {
+			console.log("POLY DEFINE");
 			for(var i = 0; i < props.length; i++) {
 				var prop = props[i];
 				(function(_obj) {
@@ -214,14 +214,21 @@ define([], function() {
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
+							console.log("SETTTING");
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
 								value = _value;
 							}else{
-								if(typeof _value.operands !== "undefined") {
-									value = _value;
-									//console.log("MOD", value);
+								console.log("not a number bool or string");
+								if(value.type === "OP") {
+									console.log("CHANGING OP");
+									value[propName] = _value;
 								}else{
-									value["operands"][0] = _value;
+									if(typeof _value.operands !== "undefined") {
+										value = _value;
+										//console.log("MOD", value);
+									}else{
+										value["operands"][0] = _value;
+									}
 								}
 							}
 							
@@ -591,7 +598,7 @@ define([], function() {
 			var cos = Math.cos;
 			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
 			
-			return function(val, pan) {
+			var f = function(val, pan) {
 				//amp = isNaN(amp) ? 1 : amp;
 				//pan = isNaN(pan) ? 0 : pan;
 				return [
@@ -599,30 +606,39 @@ define([], function() {
 		      		val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ), 
 	    		];
 			};
+			f.shouldNotEvalOnInitialization = true;
+			
+			return f;
 		},
 		pan2 : function() {
 			var sin = Math.sin;
 			var cos = Math.cos;
 			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
 			
-			return function(val, pan, amp) {
+			var f = function(val, pan, amp) {
 				return [
 	      			val[0] * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) ) * amp,
 		      		val[1] * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) ) * amp, 
 				];
 			};
+			f.shouldNotEvalOnInitialization = true;
 			
+			return f;
 		},
 		pan3 : function() {
 			var sin = Math.sin;
 			var cos = Math.cos;
 			var sqrtTwoOverTwo = Math.sqrt(2) / 2;
 			
-			return function(val, pan, array) {
+			var f = function(val, pan, array) {
+				//array = array || [];
+				//console.log("ARRAY = ", array);
 	      		array[0] = val * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) );
 		      	array[1] = val * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) );
 				return array;
 			};
+			f.shouldNotEvalOnInitialization = true;
+			return f;
 		},
 		dirty : function(ugen) {
 			if(typeof ugen !== "undefined" && ugen !== this) {

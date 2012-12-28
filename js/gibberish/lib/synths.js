@@ -98,6 +98,7 @@ define([], function() {
 			var _frequency = 0;
 			var panner = Gibberish.pan3();
 			var out = [0,0];
+			
 			var output = function(frequency, amp, attack, decay, pan, channels ) {
 				if(env.getState() < 2) {
 					var val =  osc(frequency, amp, 1)[0] * env(attack, decay);
@@ -106,9 +107,10 @@ define([], function() {
 				}
 				return out;
 			}
+			
 			output.setFrequency = function(freq) 	{ _frequency = freq; };
 			output.getFrequency = function() 		{ return _frequency; };
-			output.setOscillator = function(_osc) 		{ osc = _osc; };			
+			output.setOscillator = function(_osc) 	{ osc = _osc; };			
 			
 			return output;
 		},
@@ -190,7 +192,7 @@ define([], function() {
 				channels:	1,
 				
 				note : function(frequency, amp) {
-					if(typeof this.frequency === "object") {
+					if(typeof this.frequency === "object" && this.frequency.type !== "OP") {
 						prevFreq = this.frequency.operands[0];
 					}else{
 						prevFreq = this.frequency;

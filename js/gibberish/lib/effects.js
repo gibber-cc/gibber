@@ -36,10 +36,10 @@ define([], function() {
   
 				callback : function(sample, fm, channels) {
 			    	var debug;
-				  	if(phase++ % 22050 === 0) {
-				    	debug = true;
+				  	//if(phase++ % 22050 === 0) {
+				    //	debug = true;
 				    	//console.log(sample);
-				    }
+              //}
 				  	for(var i = 0; i < channels; i++) {
 				    	sample[i] = sin(sample[i] * pi_2 + (fm * sin(sample[i] * piX2)))	;
 				    }
@@ -62,6 +62,14 @@ define([], function() {
 					}
 					return sample;
 				},
+				setters : {
+					amount: function(val, f) {
+						if(val <= 1) {
+							G.log("Clip amount must be greater than one; setting to two.");
+							f(2);
+						};
+					},
+				}
 			});
 	
 			gibberish.Gain = Gen({
@@ -143,7 +151,6 @@ define([], function() {
 				upvalues: { poles:null, phase:0},
 				
 				init: function() {
-					console.log("FILTER INIT");
 					var poles  = [];
 					for(var i = 0; i < this.channels; i++) {
 						poles[i] = [0,0,0,0];
@@ -210,7 +217,6 @@ define([], function() {
 					return sample;
 				},
 			});
-			
 			
 			gibberish.Biquad = Gen({
 				name: "Biquad",
@@ -417,7 +423,6 @@ define([], function() {
 					
 					return sample;
 				},
-				
 			});
 			
 			gibberish.Flanger = Gen({
@@ -532,8 +537,7 @@ define([], function() {
 					return sample;
 				},	
 			});
-			
-			
+						
 			gibberish.BufferShuffler = Gen({
 				name:"BufferShuffler",
 				acceptsInput: true,

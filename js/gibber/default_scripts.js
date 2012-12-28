@@ -489,15 +489,17 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 
 "graphics" :
 '// initialize graphics. pass false (or nothing) to not enter fullscreen mode\n'+
-'// graphics engine may take a few seconds to initialize\n'+
-'graphics(true);\n'+
+'Graphics.init({ fullScreen:true });\n'+
+'\n'+
+'// set the background color. Can also use color names, a single value (grayscale) or three numbers as a shorthand\n'+
+'Graphics.background({ r:0, g:.25, b:0 });\n'+
 '\n'+
 '// also try Cube, Sphere, Torus, Knot, Cylinder, Octahedron, Tetrahedron \n'+
 'a = Icosahedron({\n'+
 '	fill: "black",	// or [0,0,0] or {r:0, g:0, b:0} or 0\n'+
 '  stroke: "white",\n'+
 '});\n'+
-'a.spin(.01,.01,.01);\n'+
+'a.spin( .01,.01,.01 );\n'+
 '\n'+
 '// alternatively use a.scale.x etc.\n'+
 'a.scale = 1.5;\n'+
@@ -506,18 +508,18 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 'c = Film();\n'+
 '// number of scanlines\n'+
 'c.sCount = 12;\n'+
-'Graphics.fx.add(c);\n'+
+'Graphics.fx.add( c );\n'+
 '\n'+
-'d = Drums("x*o*x*o*");\n'+
+'d = Drums( "x*o*x*o*" );\n'+
 '\n'+
 '// create envelope= follower tracking drums\n'+
-'f = Follow(d);\n'+
+'f = Follow( d );\n'+
 '\n'+
 'e = Blur();\n'+
-'Graphics.fx.add(e);\n'+
+'Graphics.fx.add( e );\n'+
 '\n'+
 '// mod horizontal blur amount based on envelope follower\n'+
-'e.mod("h", f, "=", .1);',
+'e.mod( "h", f, "=", .1 );',
 
 "randomness and algorithms" :
 '/* Randomness and Algorithms\n'+

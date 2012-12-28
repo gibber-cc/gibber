@@ -32,7 +32,15 @@ define(['gibber/graphics/three.min'],
 				}
 			},
 
-			init : function() {
+			init : function(fullScreen) {
+				if(fullScreen) {
+                    if(typeof fullScreen === 'object') {
+                        if(fullScreen.fullScreen) Gibber.Environment.fullScreen();
+                    }else{
+    					Gibber.Environment.fullScreen();
+                    }
+                }
+                
 				if(!that.initialized) {
 					that.intialized = true;
 					
@@ -218,8 +226,13 @@ define(['gibber/graphics/three.min'],
 				return result;
 			},
 			background: function() {
+                var args = Array.prototype.slice.call(arguments,0);
+                var c = Color.apply(null, args);
+                Graphics.renderer.setClearColor( c );
+                /*
 				if(arguments.length > 1) {
-					Graphics.renderer.setClearColor(Color(arguments[0], arguments[1], arguments[2]));
+    					Graphics.renderer.setClearColor( Color(arguments[0], arguments[1], arguments[2]) );
+                    }
 				}else{
 					if(typeof arguments[0] === 'object') {
 						Graphics.renderer.setClearColorHex(arguments[0]);
@@ -228,7 +241,7 @@ define(['gibber/graphics/three.min'],
 					}else if(typeof arguments[0] === 'string'){
 						Graphics.renderer.setClearColor( that.color(arguments[0]) );
 					}
-				}
+				}*/
 			},
 			showStats : function() {
 				Graphics.stats = new Stats();

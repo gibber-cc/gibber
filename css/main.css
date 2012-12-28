@@ -1,8 +1,8 @@
 body { 
 	margin: 0;
-	background-color:#000;
+  background: rgba(150, 150, 150,1);
 	overflow:hidden;
-	text-shadow: black;
+	text-shadow: white;
 }
 
 textarea{
@@ -17,6 +17,13 @@ textarea{
 	clip: scroll;
 }
 
+input {
+  background-color:#bbb;
+  border-color:#aaa;
+}
+
+label { font-weight:normal; }
+
 .ui-autocomplete {
 	max-height: 250px;
 	max-width: 200px;
@@ -28,7 +35,7 @@ textarea{
 	background-color:rgba(50,50,50, 1);
 }
 /* used to highlight executed lines of code */
-.highlightLine{ background-color:#f00 !important }
+.highlightLine{ background: rgba(150,75,75,.5) !important }
 
 ::-webkit-scrollbar {
 	height: 1.5ex;
@@ -44,6 +51,15 @@ textarea{
 	background: rgba(255, 255, 255, .2);  
 }
 
+.listHeader {
+  padding-left: .5em;
+  font-weight: bold;
+  margin: 1em 0;
+  background-color: #9f9f9f;
+  color: #000;
+  text-align: left;
+}
+
 #console {
 	position:absolute;
 	display:block;
@@ -53,14 +69,15 @@ textarea{
 	border-width: 1px 0px 0px 0px;
 	border-style: solid;
 	border-color:#ccc;
-	color: #f00;
-	background-color:#000;
+/*  color: #f00;*/
+  /*  background-color:#000; */
+  background: rgba(150, 150, 150,.5)
 	font-size: 1.25em;	
 }
 .consoletext, .consoleprompt {
-	color: #ccc;
+	color: #333;
 	font-family: monospace;
-	font-weight: bold;
+/*  font-weight: bold;*/
 }
 #console p {
 	margin-top : 0;
@@ -77,15 +94,15 @@ textarea{
 
 #sidebar h3 { font-weight: bold; margin-top:0;}
 
-#resizeButton { display:none; color:#fff; font-size: 12px}
+#resizeButton { display:none; color:#bbb; font-size: 12px}
 
 #editor {
 	font-family:'Source Code Pro', monospace !important;
 	font-size: 1.25em;
-    position: absolute;
+  position: absolute;
 	display:inline;
 	margin: 0;
-    width: 100%;
+  width: 100%;
 	height:auto;
 }
 
@@ -101,12 +118,12 @@ p { padding-left:5px; padding-right:5px; }
 	display: none;
 	height:100%;
 	font-size: .85em;
-	background-color:#000;
+	background-color:#999;
 	border-style: solid;
 	border-width: 0px 0px 0px 1px;
 	border-color:#ccc;
 	float:right;
-	color: #ccc;
+	color: #333;
 	width:19%;
 	margin:0;
 	font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
@@ -123,7 +140,7 @@ h2 {
 	font-weight: normal;
 }
 h2 {
-	background-color:#eee;
+	background-color:#aaa;
 	padding-left: .25em;
 	font-size: 1.1em;
 	font-weight: normal;
@@ -134,7 +151,7 @@ h3 {
 	font-weight: normal;
 	max-width: 75%;
 }
-a { color: #a66; text-decoration: none; }
+a { color: #555; /*text-decoration: none;*/ }
 .section {
 	margin: .5em;
 }

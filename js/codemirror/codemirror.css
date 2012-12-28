@@ -1,10 +1,10 @@
 .CodeMirror {
   line-height: 1em;
-  font-size: 1.25em;
+  font-size:   1.1em;
   font-family: monospace;
   height: 100%;
   width: 100%;
-  text-shadow: 0.1em 0.1em 0.2em black;
+/*  text-shadow: 0.1em 0.1em 0.2em gray; */
 }
 
 .CodeMirror-scroll {

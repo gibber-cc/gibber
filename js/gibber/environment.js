@@ -1,5 +1,5 @@
 define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gibber/graphics', 'gibber/tutorials', "js/codemirror/util/loadmode.js", "js/codemirror/util/overlay.js", 'jquery.simplemodal', 'node/socket.io.min', 'megamenu/jquery.hoverIntent.minified', 'megamenu/jquery.dcmegamenu.1.3.3.min', ], function(_Gibber, defaults, CodeMirror, _graphics) {
-
+  window.Graphics = _graphics;
     Storage.prototype.setObject = function(key, value) {
         this.setItem(key, JSON.stringify(value));
     }
@@ -446,17 +446,8 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                     $(opt)
                         .append(a);
                 } else {
-                    $(opt)
-                        .text(" " + name);
-                    $(opt)
-                        .css({
-                        "padding-left": ".5em",
-                        "font-weight": "bold",
-                        "margin": "1em 0",
-                        "background-color": "#fff",
-                        "color": "#000",
-                        "text-align": "left",
-                    });
+                    $(opt).text(" " + name);
+                    $(opt).addClass('listHeader');
                 }
                 $(sel)
                     .append(opt);
@@ -474,15 +465,8 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             var opt = $("<li>");
             $(opt)
                 .text("USER SCRIPTS");
-            $(opt)
-                .css({
-                "padding-left": ".5em",
-                "font-weight": "bold",
-                "margin": "1em 0",
-                "background-color": "#fff",
-                "color": "#000",
-                "text-align": "left",
-            });
+            $(opt).addClass('listHeader');
+
             $(sel)
                 .append(opt);
 
@@ -943,14 +927,11 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             if (typeof scripts.loadFile !== "undefined") {
                 eval(scripts.loadFile);
             }
-
+            
+            console.log( _graphics );
             this.graphics = _graphics;
-            window.Graphics = _graphics;
-			window.graphics = function(fullScreen) {
-				if(fullScreen)
-					Gibber.Environment.fullScreen();
-				Graphics.init();
-			}
+            //window.Graphics = _graphics;
+            console.log(window.Graphics);
             // don't create graphics until waveform is called
             window.Waveform = function() {
                 Gibber.Environment.graphics.init();
@@ -995,7 +976,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             var count = 0;
             for (var key in Gibber.docs[obj].methods) {
                 var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].methods[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "#000" : "#222";
+                var bgColor = count++ % 2 === 0 ? "#999" : "#888";
                 $(html)
                     .css({
                     "background-color": bgColor,
@@ -1010,7 +991,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                 .append("<h2>Properties</h2>");
             for (var key in Gibber.docs[obj].properties) {
                 var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].properties[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "#000" : "#222";
+                var bgColor = count++ % 2 === 0 ? "#999" : "#888";
                 $(html)
                     .css({
                     "background-color": bgColor,

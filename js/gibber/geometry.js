@@ -164,6 +164,7 @@ a.removeMod('rx');`
 			props.fill = props.fill ? Graphics.color(props.fill) : Graphics.color('grey');
 			props.stroke = props.stroke ? Graphics.color(props.stroke) : undefined;
 			
+      var _graphics = that;
 			var that;
 			if(!geometry.isModel) {
 				var materials = props.stroke ?  [
@@ -390,8 +391,8 @@ a.removeMod('rx');`
 					}
 				},			
 			});		
-			
-			that.colorFace = Graphics.colorFace;
+			// TODO : fix colorFace problem
+			that.colorFace = that.colorFace;
 			
 			that.spin = function() {
 				if(arguments.length === 0) {
@@ -834,5 +835,6 @@ String. The path (starting from the main Gibber directory) to the .obj file to l
 			return returner;	
 		},
 	};
+  console.log( that );
 	return that;
 });

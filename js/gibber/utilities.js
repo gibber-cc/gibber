@@ -104,7 +104,7 @@ Array.prototype.all = Array.prototype.foreach = function(func) {
     }
 };
 
-Array.prototype.random = Array.prototype.rnd =  function() {
+/*Array.prototype.random = Array.prototype.rnd =  function() {
 	this.pick = surpriseMe();
 	return this;
 };
@@ -130,6 +130,39 @@ Array.prototype.random2 = Array.prototype.rnd2 = function() {
 	};
 	
 	return this;
+};*/
+
+Array.prototype.random = Array.prototype.rnd = function() {
+  var dict = {},
+	    lastChosen = null;
+      
+	for(var i = 0; i < arguments.length; i+=2) {
+    dict[ "" + arguments[i] ] = { repeat: arguments[i+1], count: 0 };
+	}
+
+	this.pick = function() {
+    var value = 0;
+    if(lastChosen !== null && dict[ ""+lastChosen ].count++ < dict[ ""+lastChosen ].repeat) {
+      value = lastChosen;
+      if( dict[ ""+lastChosen ].count >= dict[ ""+lastChosen ].repeat) {
+        dict[ ""+lastChosen ].count = 0;
+        lastChosen = null;
+      };
+    }else{
+      var index = rndi(0, this.length - 1);
+      value = this[index];
+      if( typeof dict[ ""+value ] !== 'undefined' ) {
+        dict[ ""+value ].count = 1;
+        lastChosen = value;
+      }else{
+        lastChosen = null;
+      }
+    }
+    
+		return value;
+	};
+	
+	return this;
 };
 
 
@@ -137,7 +170,6 @@ Array.prototype.weight = function() {
 	this.pick = weight.call(this, arguments);
 	return this;
 };
-
 
 // http://snippets.dzone.com/posts/show/849
 Array.prototype.shuffle = function() {

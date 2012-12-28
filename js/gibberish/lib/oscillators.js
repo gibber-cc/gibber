@@ -15,12 +15,12 @@ define([], function() {
 			gibberish.Sine = Gen({
 			    name: "Sine",
 			    props: { frequency: 440, amp: .25, channels:1, pan: 0 },
-			    upvalues: { phase: 0, sin:Math.sin, pi_2:Math.PI * 2, panner:Gibberish.pan() },
- 			   
+			    upvalues: { phase: 0, sin:Math.sin, pi_2:Math.PI * 2, panner:Gibberish.pan3(), out:[0] },
+				
 			    callback: function(frequency, amp, channels, pan) {
 			        phase += frequency / 44100;
-			        var output = sin(phase * pi_2) * amp;
-			        return channels === 2 ? panner(output, pan) : [output];
+			        out[0] = sin(phase * pi_2) * amp;
+			        return channels === 2 ? panner(out[0], pan, out) : out;
 			    },
 			});
 			
@@ -40,49 +40,52 @@ define([], function() {
 			gibberish.Square = Gen({
 			    name: "Square",
 			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
-			    upvalues: { phase: 0, panner:Gibberish.pan()  },
+			    upvalues: { phase: 0, panner:Gibberish.pan3(), out:[0]  },
 					
 				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Square.js
 			    callback: function(frequency, amp, channels, pan) {
-					var out = phase > 0.5 ? 1 : -1;
+					out[0] = phase > 0.5 ? 1 : -1;
+					out[0] *= amp;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;					
-					return channels === 1 ? [out * amp] : panner(out * amp, pan);
+					return channels === 1 ? out : panner(out[0], pan, out);
 				},
 			});
 			
 			gibberish.Triangle = Gen({
 			    name: "Triangle",
 			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
-			    upvalues: { phase: 0, panner:Gibberish.pan(), abs:Math.abs  },
+			    upvalues: { phase: 0, panner:Gibberish.pan3(), abs:Math.abs, out:[0],  },
 
 			    callback: function(frequency, amp, channels, pan ) {
-				    var out = 1 - 4 * abs((phase + 0.25) % 1 - 0.5);
+				    out[0] = 1 - 4 * abs((phase + 0.25) % 1 - 0.5);
+					out[0] *= amp;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
-					return channels === 1 ? [out * amp] : panner(out * amp, pan);
+					return channels === 1 ? out : panner(out[0], pan, out);
 			    },
 			});
 			
 			gibberish.Saw = Gen({
 			    name: "Saw",
 			    props: { frequency: 440, amp: .15, channels:1, pan:0 },
-			    upvalues: { phase: 0, panner:Gibberish.pan()  },
+			    upvalues: { phase: 0, panner:Gibberish.pan(), out:[0]  },
 
 				// from audiolet https://github.com/oampo/Audiolet/blob/master/src/dsp/Saw.js
 				// 4 divides				
 			    callback: function(frequency, amp, channels, pan) {
-				    var out = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
+				    out[0] = ((phase / 2 + 0.25) % 0.5 - 0.25) * 4;
+					  out[0] *= amp;
 				    phase += frequency / 44100;
 				    phase = phase > 1 ? phase % 1 : phase;
-					return channels === 1 ? [out * amp] : panner(out * amp, pan);
+					return channels === 1 ? out : panner(out[0], pan, out);
 			    },
 			});
 
 			gibberish.KarplusStrong = Gen({
 			  name:"KarplusStrong",
 			  props: { blend:1, damping:0, amp:1, channels:2, pan:0  },
-			  upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random, panner:Gibberish.pan() },
+			  upvalues: { phase: 0, buffer:[0], last:0, rnd:Math.random, panner:Gibberish.pan3, out:[0,0] },
   
 			  note : function(frequency) {
 			    var _size = Math.floor(44100 / frequency);
@@ -95,19 +98,20 @@ define([], function() {
 			    this.function.setBuffer(this.buffer);
 			  },
   			  // 2 mults, 1 divide, 2 array ops, 1 random
-			  callback : function(blend, damping, amp, channels, pan) {
+			  callback : function(blend, damping, amp, channels, pan) { 
 			    var val = buffer.shift();
 			    var rndValue = (rnd() > blend) ? -1 : 1;
 				
-				damping = damping > 0 ? damping : 0;
+				  damping = damping > 0 ? damping : 0;
 				
 			    var value = rndValue * (val + last) * (.5 - damping / 100);
 
 			    last = value;
 
 			    buffer.push(value);
-    
-			    return channels === 1 ? [value * amp] : panner(value * amp, pan);
+				
+    			out[0] = out[1] = value * amp;
+			    return channels === 1 ? out : panner(value, pan, out);
 			  },
   
 			  setters: {
