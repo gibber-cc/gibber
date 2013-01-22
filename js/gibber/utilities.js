@@ -604,6 +604,26 @@ window.Group = function() {
 	return that;
 };
 
+var soloGroup = [];
+var isSoloing = false;
+window.Solo = function(ugen) {
+  if(ugen) {
+    if(isSoloing) { Solo(); }
+    for(var i = 0; i < Master.senders.length; i++) {
+      if(Master.senders[i].operands[0] !== ugen) {
+        soloGroup.push([Master.senders[i], Master.senders[i].operands[0].amp]);
+        Master.senders[i].operands[0].amp = 0;
+      }
+    }
+    isSoloing =true;
+  }else{
+    for(var i = 0; i < soloGroup.length; i++) {
+      soloGroup[i][0].operands[0].amp = soloGroup[i][1];
+    }
+    isSoloing = false;
+  }
+}
+
 window.Scale = function(_root, _mode) {
 	that = {
 		root: typeof _root === "string" ? teoria.note(_root) : _root,
