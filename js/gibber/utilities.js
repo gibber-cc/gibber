@@ -607,10 +607,11 @@ window.Group = function() {
 var soloGroup = [];
 var isSoloing = false;
 window.Solo = function(ugen) {
+  var args = Array.prototype.slice.call(arguments);
   if(ugen) {
     if(isSoloing) { Solo(); }
     for(var i = 0; i < Master.senders.length; i++) {
-      if(Master.senders[i].operands[0] !== ugen) {
+      if(args.indexOf(Master.senders[i].operands[0]) === -1) {
         soloGroup.push([Master.senders[i], Master.senders[i].operands[0].amp]);
         Master.senders[i].operands[0].amp = 0;
       }
