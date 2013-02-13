@@ -54,27 +54,29 @@ Float. The left boundary on the time axis of the grain cloud.
 Float. The right boundary on the time axis of the grain cloud.
 **/
 
-function Grains(properties) {
-	// if(typeof Gibber.GrainsPresets === "undefined") GrainsPresets();
-	// 
-	// if(typeof arguments[0] === "string") { // if a preset
-	// 	if(typeof arguments[1] === "undefined") {
-	// 		that = Gibberish.PolyFM( Gibber.FMPresets[arguments[0]] );
-	// 	}else{
-	// 		console.log("EXTENDING WITH ", arguments[1]);
-	// 		var props = Gibber.FMPresets[arguments[0]];
-	// 		Gibberish.extend(props, arguments[1]);
-	// 		
-	// 		that = Gibberish.PolyFM( props );
-	// 	}
-	// }
+function Grains() {
+  var that, properties;
+  if(typeof Gibber.GrainsPresets === "undefined") GrainsPresets();
+  
+  if(typeof arguments[0] === "string") { // if a preset
+    properties = Gibber.GrainsPresets[arguments[0]];
+    
+    if(typeof arguments[1] !== "undefined") {
+      var props = arguments[1];
+      Gibberish.extend(properties, props);
+    }
+  }else{
+    properties = arguments[0];
+  }
+  
 	if(properties.grainSize) properties.grainSize = G.time(properties.grainSize);
 	if(properties.input) { 
 		properties.buffer = properties.input;
 		delete properties.input;
 	}
 	properties.bufferLength = typeof properties.bufferLength === "undefined" ? G.time(1) : G.time(properties.bufferLength);
-	var that = Gibberish.Grains(properties);
+  
+	that = Gibberish.Grains(properties);
 	that.connect(Master);
 		
 	var positionVariance = properties.positionVariance || 0;
@@ -115,16 +117,20 @@ function GrainsPresets() {
 		tight : {
 			numberOfGrains : 10,
 			grainSize : ms(25),
-			positionVariance : .01,
-			pitchVariance : .01,
+			positionMin : -.05,
+      positionMax : .05,
+      speedMin : .9,
+      speedMax : 1.1,
 			shouldReverse : false,
 			length: 88200,
 		},
 		cloudy : {
 			numberOfGrains : 20,
+			positionMin : -.25,
+      positionMax : .25,
+      speedMin : .1,
+      speedMax : 4,
 			grainSize : ms(100),
-			positionVariance : .05,
-			pitchVariance : .1,
 			shouldReverse : true,
 		}
 	};

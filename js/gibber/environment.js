@@ -562,7 +562,11 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
 
             CodeMirror.autoLoadMode(window.editor, "links");
             window.editor.setOption("mode", "links");
-
+            window.editor.onChange = function(e,i) {
+              console.log('CHANGE')
+              window.editor.markText({line:0, ch:0}, {line:window.editor.lineCount() - 1, ch:0}, "highlightLine");
+              console.log('change')
+            };
             this.load("default");
             this.editorResize();
 

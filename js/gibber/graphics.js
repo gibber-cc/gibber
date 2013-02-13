@@ -34,12 +34,12 @@ define(['gibber/graphics/three.min'],
 
 			init : function(fullScreen) {
 				if(fullScreen) {
-                    if(typeof fullScreen === 'object') {
-                        if(fullScreen.fullScreen) Gibber.Environment.fullScreen();
-                    }else{
-    					Gibber.Environment.fullScreen();
-                    }
-                }
+          if(typeof fullScreen === 'object') {
+              if(fullScreen.fullScreen) Gibber.Environment.fullScreen();
+          }else{
+    				Gibber.Environment.fullScreen();
+          }
+        }
                 
 				if(!that.initialized) {
 					that.intialized = true;

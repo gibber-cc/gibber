@@ -117,6 +117,8 @@ define(['gibber/graphics/three.min'],
 					}
 					Graphics.fx.push( this );
 					Graphics.composer.passes[ Graphics.composer.passes.length - 1].renderToScreen = true;
+          
+          return this;
 				};
 			
 				that.remove = function() {
@@ -141,6 +143,8 @@ define(['gibber/graphics/three.min'],
 					}
 					
 					Graphics.graph.remove(this);
+          
+          return this;
 				};
 				
 				Graphics.graph.push(that);

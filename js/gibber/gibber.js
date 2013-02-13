@@ -108,7 +108,7 @@ define(['gibber/audio_callback'], function() {
 								var endString = " created";
 								 if(typeof obj["____"+ltr] !== "undefined" && obj["____"+ltr] != null) {
 									 var variable = obj["____"+ltr];
-									 //console.log(variable);
+
 									 switch(variable.category) {
 										 case "Gen": case "Bus":
 											 if(typeof variable.replace === "undefined") {

@@ -510,6 +510,10 @@ window.ms = function(num) {
 	return (G.sampleRate / 1000) * num;
 }
 
+window.seconds = function(num) {
+  return G.sampleRate * num;
+}
+
 window.mtof = function(midiNumber) {
  	return 440 * Math.pow(2,(midiNumber - 69) / 12);
 };
