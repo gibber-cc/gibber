@@ -226,8 +226,9 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 	if(typeof props.openHat !== "undefined") { Gibberish.extend(this.openHat.sampler, props.openHat); Gibberish.extend(this.openHat, props.openHat); }
  
 	(function(obj) {
-		var that = obj;
-		var amp = .2;
+		var that = obj,
+        amp = .2,
+        pan = 0;
 	    Object.defineProperties(that, {
 			"speed" : {
 		        get: function() {
@@ -250,8 +251,16 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 					//this.bus.amp = value;
 		        }
 			},
-			
-	    });
+			"pan" : {
+		    get: function() {
+          return pan;
+		    },
+		    set: function(value) {
+    			pan = value;
+    			Gibberish.dirty(this);
+        }
+			},	
+	  });
 	})(this);
 	
 	
