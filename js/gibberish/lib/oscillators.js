@@ -308,7 +308,7 @@ define([], function() {
 					
 					that.function.setBuffer(that.buffer);
 					
-					that.function.setPhase(that.bufferLength);
+					that.function.setPhase(that.bufferLength);          
 				},
 				note: function(pitch, amp) {
 					if(typeof amp === 'number') this.amp = amp;
@@ -342,6 +342,71 @@ define([], function() {
 					
 					return this;	
 				},
+        floatTo16BitPCM : function(output, offset, input){
+          console.log(output.length, offset, input.length )
+          for (var i = 0; i < input.length - 1; i++, offset+=2){
+            var s = Math.max(-1, Math.min(1, input[i]));
+            output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+          }
+        },
+        encodeWAV : function(){
+          console.log("BUFFER LENGTH" + this.buffer.length);
+          var buffer = new ArrayBuffer(44 + this.buffer.length * 2),
+              view = new DataView(buffer),
+              sampleRate = 44100;
+          
+          function writeString(view, offset, string){
+            for (var i = 0; i < string.length; i++){
+              view.setUint8(offset + i, string.charCodeAt(i));
+            }
+          }
+
+          /* RIFF identifier */
+          writeString(view, 0, 'RIFF');
+          /* file length */
+          view.setUint32(4, 32 + this.buffer.length * 2, true);
+          /* RIFF type */
+          writeString(view, 8, 'WAVE');
+          /* format chunk identifier */
+          writeString(view, 12, 'fmt ');
+          /* format chunk length */
+          view.setUint32(16, 16, true);
+          /* sample format (raw) */
+          view.setUint16(20, 1, true);
+          /* channel count */
+          view.setUint16(22, 1, true);
+          /* sample rate */
+          view.setUint32(24, sampleRate, true);
+          /* byte rate (sample rate * block align) */
+          view.setUint32(28, sampleRate * 4, true);
+          /* block align (channel count * bytes per sample) */
+          view.setUint16(32, 2, true);
+          /* bits per sample */
+          view.setUint16(34, 16, true);
+          /* data chunk identifier */
+          writeString(view, 36, 'data');
+          /* data chunk length */
+          view.setUint32(40, this.buffer.length * 2, true);
+
+          this.floatTo16BitPCM(view, 44, this.buffer);
+
+          return view;
+        },
+        download : function() {
+           //function(blob, filename){
+             var blob = this.encodeWAV();
+             var audioBlob = new Blob( [blob] );
+             console.log(blob);
+             var url =  window.webkitURL.createObjectURL( audioBlob );
+             var link = window.document.createElement('a');
+              link.href = url;
+              link.download = 'output.wav';
+              var click = document.createEvent("Event");
+              click.initEvent("click", true, true);
+              link.dispatchEvent(click);
+             
+              //}
+        },
 			};
 			
 			if(typeof arguments[0] !== "undefined") {
