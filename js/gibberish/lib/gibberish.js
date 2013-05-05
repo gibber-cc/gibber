@@ -203,7 +203,7 @@ define([], function() {
 		},
 		
 		polyDefineProperties : function(obj, props) {
-			console.log("POLY DEFINE");
+			//console.log("POLY DEFINE");
 			for(var i = 0; i < props.length; i++) {
 				var prop = props[i];
 				(function(_obj) {
@@ -214,13 +214,12 @@ define([], function() {
 				    Object.defineProperty(that, propName, {
 						get: function() { return value; },
 						set: function(_value) {
-							console.log("SETTTING");
 							if(typeof value === "number" || typeof value === "boolean" || typeof value === "string"){
 								value = _value;
 							}else{
-								console.log("not a number bool or string");
+								//console.log("not a number bool or string");
 								if(value.type === "OP") {
-									console.log("CHANGING OP");
+									//console.log("CHANGING OP");
 									value[propName] = _value;
 								}else{
 									if(typeof _value.operands !== "undefined") {

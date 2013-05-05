@@ -45,7 +45,7 @@ function Sampler(pathToFile) {
 	if(typeof pathToFile === "string") {
 		that.send(Master, 1);
 	}else{
-		console.log("NOT CONNECTING SAMPLER");
+		//console.log("NOT CONNECTING SAMPLER");
 	}
 	return that;
 }

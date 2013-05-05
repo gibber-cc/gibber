@@ -331,7 +331,7 @@ define([], function() {
 					this.function.setWriteHead(0);
 					
 					that.end = 1;
-					
+					console.log("SAMPLER BUFFER LENGTH", this.bufferLength);
 					// now this, this section below, THIS is a hack...
 					this.mod("input", input, "=");
 					this.buffer = new Float32Array(this.bufferLength);
@@ -339,6 +339,7 @@ define([], function() {
 					Gibberish.ugens.push(this);	
 					this.isRecording = true;		
 					this.function.setBuffer(this.buffer);
+          this.length = this.bufferLength;
 					
 					return this;	
 				},
@@ -1117,7 +1118,7 @@ define([], function() {
 				type:		"Grains",
 				category:	"Gen",
 				buffer: 	null,
-				bufferLength: 88200,
+				bufferLength: properties.bufferLength || 88200,
 				grainSize: 	ms(250),
 				speedMin:   -0,
 				speedMax: 	.0,
@@ -1141,11 +1142,12 @@ define([], function() {
 				if(properties.buffer.type) {
 					that.shouldWrite = true;
 					//console.log("MAKING SAMPLER", properties.buffer);
-					that.sampler = Gibberish.Sampler();
-					that.sampler.connect(Master); // TODO : remove Gibber dependency
-					that.sampler.record(properties.buffer, that.bufferLength);
+					//that.sampler = Gibberish.Sampler();
+          that.sampler = Sampler().record( properties.buffer, that.bufferLength );
+					//that.sampler.connect(Master); // TODO : remove Gibber dependency
+					//that.sampler.record(properties.buffer, that.bufferLength);
 					that.buffer = that.sampler.buffer;
-					//console.log("AFTER MAKING SAMPLER");
+					console.log("BUFFER LENGTH GIBBERISH", that.bufferLength);
 				}else{
 					that.buffer = properties.buffer;
 				}
@@ -1196,6 +1198,7 @@ define([], function() {
 					
 					if(grain._speed > 0) {
 						if(grain.pos > grain.end) {
+              //console.log(buffer.length, grain.end)
 							grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
 							grain.start = grain.pos;
 							grain.end = grain.start + grainSize;
