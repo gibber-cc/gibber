@@ -55,10 +55,13 @@ Float. The right boundary on the time axis of the grain cloud.
 **/
 
 function Grains() {
-  var that, properties;
-  if(typeof Gibber.GrainsPresets === "undefined") GrainsPresets();
+  var that, properties = {};
+  //if(typeof Gibber.GrainsPresets === "undefined") GrainsPresets();
   
-  if(typeof arguments[0] === "string") { // if a preset
+	var props = Gibber.applyPreset("Grains", arguments);
+	Gibberish.extend(properties, props);
+    
+  /*if(typeof arguments[0] === "string") { // if a preset
     properties = Gibber.GrainsPresets[arguments[0]];
     
     if(typeof arguments[1] !== "undefined") {
@@ -67,14 +70,16 @@ function Grains() {
     }
   }else{
     properties = arguments[0];
-  }
+  }*/
   
 	if(properties.grainSize) properties.grainSize = G.time(properties.grainSize);
 	if(properties.input) { 
 		properties.buffer = properties.input;
 		delete properties.input;
 	}
+
 	properties.bufferLength = typeof properties.bufferLength === "undefined" ? G.time(1) : G.time(properties.bufferLength);
+  //console.log("BUFFER LENGTH", properties.bufferLength)
   
 	that = Gibberish.Grains(properties);
 	that.connect(Master);
@@ -112,26 +117,24 @@ function Grains() {
 	return that;
 }
 
-function GrainsPresets() {
-	Gibber.GrainsPresets = {
-		tight : {
-			numberOfGrains : 10,
-			grainSize : ms(25),
-			positionMin : -.05,
-      positionMax : .05,
-      speedMin : .9,
-      speedMax : 1.1,
-			shouldReverse : false,
-			length: 88200,
-		},
-		cloudy : {
-			numberOfGrains : 20,
-			positionMin : -.25,
-      positionMax : .25,
-      speedMin : .1,
-      speedMax : 4,
-			grainSize : ms(100),
-			shouldReverse : true,
-		}
-	};
-}
+Gibber.presets.Grains = {
+	tight : {
+		numberOfGrains : 10,
+		grainSize : ms(25),
+		positionMin : -.05,
+    positionMax : .05,
+    speedMin : -.1,
+    speedMax : .1,
+		shouldReverse : false,
+		length: 88200,
+	},
+	cloudy : {
+		numberOfGrains : 20,
+		positionMin : -.25,
+    positionMax : .25,
+    speedMin : -.1,
+    speedMax : 4,
+		grainSize : ms(100),
+		shouldReverse : true,
+	}
+};
