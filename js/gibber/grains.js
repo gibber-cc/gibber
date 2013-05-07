@@ -136,5 +136,15 @@ Gibber.presets.Grains = {
     speedMax : 4,
 		grainSize : ms(100),
 		shouldReverse : true,
-	}
+	},
+  flurry : {
+    speed:2,
+    speedMin:-2,
+    speedMax:2,
+    position:0,
+    positionMin:0,
+    positionMax:0,
+    numberOfGrains:20,
+    grainSize : ms(25),
+  },
 };
