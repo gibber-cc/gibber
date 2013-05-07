@@ -146,5 +146,5 @@ Gibber.presets.Grains = {
     positionMax:0,
     numberOfGrains:20,
     grainSize : ms(25),
-  },
+  },  
 };

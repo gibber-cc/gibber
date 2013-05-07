@@ -185,56 +185,51 @@ function applyConstructor(ctor, args) {
 }
 
 Bag = function(values) { 
-	var that = {
-		values : values,
-		picked : [],
-	
-		pick : function() {
-			if(arguments.length === 0) { // just return a single value
-				var val = this.values[rndi(0, this.values.length - 1)];
-				if($.inArray(val, this.picked) > -1) {
-					return this.pick();
-				}
-			
-				this.picked.push(val);
-				if(this.picked.length === this.values.length) {
-					this.picked = [];
-				}
-				return val;
-			}else{ // return an array of unique values
-				if(arguments[0] >= this.values.length) {
-					G.log("Bag error: You cannot return more unique values than are in the bag.");
-					return this.values;
-				}
-				var out = [];
-				for(var i = 0; i < arguments[0]; i++) {
-					var choose = this.pick();
-					while($.inArray(choose, out) > -1) {
-						choose = this.pick();
-					}
-					out.push(choose);
-				}
-				return out;
+  var notPicked = [];
+  for(var i = 0; i < values.length; i++) { notPicked[i] = values[i]; }
+  
+	var pick = function() {    
+		if(arguments.length === 0) { // just return a single value
+      var idx = rndi(0, notPicked.length - 1)
+			var val = notPicked[ idx ]
+      notPicked.splice( idx, 1 )
+		
+			if(notPicked.length === 0)
+        for(var i = 0; i < values.length; i++) { notPicked[i] = values[i]; }
+        
+			return val;
+      
+		}else{ // return an array of unique values
+			if(arguments[0] >= values.length) {
+				G.log("Bag error: You cannot return more unique values than are in the bag.");
+				return values;
 			}
-		},
+			var out = [];
+			for(var i = 0; i < arguments[0]; i++) {
+				var choose = pick();
+				while($.inArray(choose, out) > -1) {
+					choose = pick();
+				}
+				out.push(choose);
+			}
+			return out;
+		}
 	};
 	
-	(function(obj) {
-	    Object.defineProperties(obj, {
-			"values" : {
-		        get: function() {
-		            return values;
-		        },
-		        set: function(value) {
-		            values = value;
-					picked = [];
-		        }
-			},	
-	    });
-	})(that);
+  Object.defineProperties(pick, {
+  	"values" : {
+      get: function() {
+        return values;
+      },
+      set: function(value) {
+        values = value;
+        notPicked.length = 0;
+        for(var i = 0; i < values.length; i++) { notPicked[i] = values[i]; }
+      }
+  	},	
+  });
 	
-	
-	return that;
+	return pick;
 }
 
 
