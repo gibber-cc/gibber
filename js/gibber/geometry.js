@@ -183,7 +183,8 @@ a.removeMod('rx');`
 			that.category = "graphics";
 			
 			that.remove = that.kill = function() {
-				Graphics.scene.remove(that);
+				Graphics.scene.remove( that );
+        //Graphics.renderer.deallocateObject( that );
 			};
 			
 			that._update = function() {
@@ -229,6 +230,7 @@ a.removeMod('rx');`
 			
 			Object.defineProperties(that, {
 				fill : {
+          enumerable:true,
 					get: function() { 
 						if(that.children.length > 0) {
 							return that.children[0].material.color; 
@@ -277,6 +279,7 @@ a.removeMod('rx');`
 				
 				// TODO: make a stroke mesh if it doesn't already exist
 				stroke : {
+          enumerable:true,
 					get: function() { 
 						if(that.children.length > 0) {
 							return that.children[1].material.color; 
@@ -312,19 +315,20 @@ a.removeMod('rx');`
 				},
 				
 				
-				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; } },
-				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; } },
-				z : { get: function() { return this.position.z; }, set: function(val) { this.position.z = val; } },	
+				x : { get: function() { return this.position.x; }, set: function(val) { this.position.x = val; }, enumerable:true, },
+				y : { get: function() { return this.position.y; }, set: function(val) { this.position.y = val; }, enumerable:true, },
+				z : { get: function() { return this.position.z; }, set: function(val) { this.position.z = val; }, enumerable:true, },	
 				
-				rx : { get: function() { return this.rotation.x; }, set: function(val) { this.rotation.x = val; } },
-				ry : { get: function() { return this.rotation.y; }, set: function(val) { this.rotation.y = val; } },
-				rz : { get: function() { return this.rotation.z; }, set: function(val) { this.rotation.z = val; } },
+				rx : { get: function() { return this.rotation.x; }, set: function(val) { this.rotation.x = val; }, enumerable:true, },
+				ry : { get: function() { return this.rotation.y; }, set: function(val) { this.rotation.y = val; }, enumerable:true, },
+				rz : { get: function() { return this.rotation.z; }, set: function(val) { this.rotation.z = val; }, enumerable:true, },
 				
-				sx : { get: function() { return this.scale.x; }, set: function(val) { this.scale.x = val; } },
-				sy : { get: function() { return this.scale.y; }, set: function(val) { this.scale.y = val; } },
-				sz : { get: function() { return this.scale.z; }, set: function(val) { this.scale.z = val; } },
+				sx : { get: function() { return this.scale.x; }, set: function(val) { this.scale.x = val; }, enumerable:true, },
+				sy : { get: function() { return this.scale.y; }, set: function(val) { this.scale.y = val; }, enumerable:true, },
+				sz : { get: function() { return this.scale.z; }, set: function(val) { this.scale.z = val; }, enumerable:true, },
 
-				scale : { 
+				scale : {
+          enumerable:true,
 					get: function() { return scale; }, 
 					set: function(val) { 
 						if(typeof val === 'object') {
@@ -346,7 +350,8 @@ a.removeMod('rx');`
 						this.sz = scale.z;
 					}
 				},
-				rotation : { 
+				rotation : {
+          enumerable:true,
 					get: function() { return rotation; }, 
 					set: function(val) { 
 						if(typeof val === 'object') {
@@ -368,7 +373,8 @@ a.removeMod('rx');`
 						this.rz = rotation.z;
 					}
 				},
-				position : { 
+				position : {
+          enumerable:true, 
 					get: function() { return position; }, 
 					set: function(val) { 
 						if(typeof val === 'object') {
@@ -412,24 +418,23 @@ a.removeMod('rx');`
 					}
 				}else{
 					if(arguments[0]) {
+						that.removeMod('rx');
+            
 						if(arguments[0] !== 0) {
 							that.mod('rx', arguments[0]);
-						}else{
-							that.removeMod('rx');
 						}
 					}
 					if(arguments[1]) {
+          	that.removeMod('ry');
 						if(arguments[1] !== 0) {
 							that.mod('ry', arguments[1]);
-						}else{
-							that.removeMod('ry');
 						}
 					}
 					if(arguments[2]) {
+          	that.removeMod('rz');
+            
 						if(arguments[2] !== 0) {						
 							that.mod('rz', arguments[2]);
-						}else{
-							that.removeMod('rz');
 						}
 					}
 				}
@@ -835,6 +840,5 @@ String. The path (starting from the main Gibber directory) to the .obj file to l
 			return returner;	
 		},
 	};
-  console.log( that );
 	return that;
 });

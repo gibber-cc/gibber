@@ -315,6 +315,5 @@ Gibber.presets.Mono = {
 		octave2:0,
 		octave3:0,
 		cutoff:.3,
-		fx : Delay(1/8, .4),
 	},
 };

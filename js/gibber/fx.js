@@ -393,6 +393,14 @@ function Schizo(props) {
 				pitchChance		: .5,
 				mix				: 1,
 			},
+			psycho: {
+				chance			: .4,
+				reverseChance 	: .5,
+				pitchChance		: .5,
+				mix				: 1,
+        pitchMin:  .1,
+        pitchMax:  10,
+			},
 		};
 	}
 

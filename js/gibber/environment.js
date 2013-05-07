@@ -1,4 +1,7 @@
-define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gibber/graphics', 'gibber/tutorials', "js/codemirror/util/loadmode.js", "js/codemirror/util/overlay.js", 'jquery.simplemodal', 'node/socket.io.min', 'megamenu/jquery.hoverIntent.minified', 'megamenu/jquery.dcmegamenu.1.3.3.min', ], function(_Gibber, defaults, CodeMirror, _graphics) {
+define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gibber/graphics', 'gibber/tutorials', "js/codemirror/util/loadmode.js", "js/codemirror/util/overlay.js", 'jquery.simplemodal', 'node/socket.io.min', 'megamenu/jquery.hoverIntent.minified', 'megamenu/jquery.dcmegamenu.1.3.3.min', 'gibber/interface' ], function(_Gibber, defaults, CodeMirror, _graphics) {
+  _Gibber.Interface = _Interface;
+  _Gibber.Interface.init( _Gibber );
+  
   window.Graphics = _graphics;
     Storage.prototype.setObject = function(key, value) {
         this.setItem(key, JSON.stringify(value));

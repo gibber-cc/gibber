@@ -12,6 +12,7 @@ requirejs([
 	"gibberish/lib/oscillators", "gibberish/lib/effects", "gibberish/lib/synths", "gibberish/lib/envelopes", "gibberish/lib/drums",
 	'gibberish/lib/external/sink-light', 	
 	'gibberish/lib/external/audiofile',
+  'interface/interface',
 	],
 	
 	function   ( ___util, __gibberish,  __gibber, __environment, __gen, oscillators, effects,synths,envelopes, drums) {

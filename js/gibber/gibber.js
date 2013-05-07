@@ -127,7 +127,7 @@ define(['gibber/audio_callback'], function() {
 										 	Gibber.controlReplace(variable, newObj);
 											break;
 										 case "graphics" : 
-										 	console.log("REPLACING GRAPHICS");
+										 	//console.log("REPLACING GRAPHICS");
 											variable.remove();
 											break;
 										 case "complex":
