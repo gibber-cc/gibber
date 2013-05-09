@@ -13,6 +13,7 @@ requirejs([
 	'gibberish/lib/external/sink-light', 	
 	'gibberish/lib/external/audiofile',
   'interface/interface',
+  'js/freesound.js-master/freesound.js',
 	],
 	
 	function   ( ___util, __gibberish,  __gibber, __environment, __gen, oscillators, effects,synths,envelopes, drums) {
