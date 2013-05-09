@@ -1,9 +1,11 @@
 Agent = function(props) {
   var that = {
-    _update : function() {},
-    update : function() { 
+    _update : function() {
       this.sound.frequency = 440 + this.shape.y 
       this.sound.pan = -.75 + ( this.shape.x + 150) / 150;
+    },
+    update : function() { 
+
     },
   };
   if(props.sound) {

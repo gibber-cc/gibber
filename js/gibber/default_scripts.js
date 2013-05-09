@@ -583,6 +583,22 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// wait a while and then run this to emphasize eighth notes\n'+
 'j.durations.pick = weight(.8, .1, .1);',
 
+"agents" :
+"// Agents have a shape and a sound. By default when they move vertically their pitch changes, when the move\n"+
+"// left to right their panning changes.\n"+
+"Graphics.init(true);\n"+
+"\n"+
+"a = Agent({\n"+
+"  shape: { type:'Icosahedron', scale:1 },\n"+
+"  sound: { type:'Triangle', amp:.025 },\n"+
+"});\n"+
+"\n"+
+"b = Seq({\n"+
+"  position: _rndf(-100,100,3),\n"+
+"  durations:1/4,\n"+
+"  slaves:a\n"+
+"});",
+
 "SYNTHESIS TUTORIALS":"LABEL START",
 
 "Additive":
