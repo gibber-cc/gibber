@@ -5,9 +5,12 @@ body {
 	text-shadow: white;
 }
 
-textarea{
-	background-color:rgba(0,0,0,0);
+pre {
+  width:intrinsic;
+  background:rgba(150, 150, 150, .5) !important;
 }
+
+textarea{ background-color:rgba(0,0,0,0); }
 
 #code {
 	width:100%;

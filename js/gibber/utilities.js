@@ -366,7 +366,7 @@ window.rndi = window.randomi = function(min, max, number, canRepeat) {
 			max = arguments[1];
 		}else{
 			min = 0;
-			max = 100;
+			max = 1;
 		}
 
 		var diff = max - min;

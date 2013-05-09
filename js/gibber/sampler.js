@@ -57,11 +57,12 @@ function Freesound() {
   var sampler = Sampler();
   
   var key = arguments[0] || 96541;
-  var request, filename;
+  var callback = arguments[1];
+  var filename;
   
   var onload = function() {
     G.log(filename + " LOADED !!!")
-    Gibber.context.decodeAudioData(request.response, function(buffer) {
+    Gibber.context.decodeAudioData(Freesound.request.response, function(buffer) {
       Freesound.loaded[ filename ] = buffer.getChannelData( 0 )
       sampler.buffer = Freesound.loaded[ filename ];
       sampler.bufferLength = sampler.buffer.length;
@@ -69,11 +70,14 @@ function Freesound() {
       sampler.end = 1;
 			sampler.function.setBuffer( sampler.buffer );
 			sampler.function.setPhase( sampler.bufferLength );
+      sampler.filename = filename;
       
       sampler.send( Master, 1 )
+      if(callback) { callback() }
     })
   }
   
+  // freesound query api http://www.freesound.org/docs/api/resources.html
   if(typeof key === 'string') {
     var query = key;
     freesound.search(query, /*page*/0, /*filter*/null, 'rating_desc', null, null, null,
@@ -81,14 +85,15 @@ function Freesound() {
           filename = sounds.sounds[0].original_filename
           
           if(typeof Freesound.loaded[ filename ] === 'undefined') {
-            request = new XMLHttpRequest();
+            Freesound.request = new XMLHttpRequest();
             G.log("now downloading " + filename + ", " + sounds.sounds[0].duration + " seconds in length" )
-            request.open('GET', sounds.sounds[0].serve + "?api_key=" + freesound.apiKey, true);
-            request.responseType = 'arraybuffer';
-            request.onload = onload;
-            request.send();
+            Freesound.request.open('GET', sounds.sounds[0].serve + "?&api_key=" + freesound.apiKey, true);
+            Freesound.request.responseType = 'arraybuffer';
+            Freesound.request.onload = onload;
+            Freesound.request.send();
           }else{
             sampler.buffer = Freesound.loaded[ filename ];
+            sampler.filename = filename;
             sampler.bufferLength = sampler.buffer.length;
             sampler.isLoaded = true;
             sampler.end = 1;
@@ -96,6 +101,7 @@ function Freesound() {
       			sampler.function.setPhase( sampler.bufferLength );
       
             sampler.send( Master, 1 )
+            if(callback) { callback() }
           }
         },function(){ displayError("Error while searching...")}
     );
@@ -104,20 +110,33 @@ function Freesound() {
         filter  = key.filter || "",
         sort    = key.sort   || 'rating_desc',
         page    = key.page   || 0;
+        pick    = key.pick   || 0;
     
     filter += ' type:wav'
     freesound.search(query, page, filter, sort, null, null, null,
         function(sounds){
           if(sounds.num_results > 0) {
-            filename = sounds.sounds[0].original_filename
+            var num = 0;
+            
+            if(typeof key.pick === 'number') {
+              num = key.pick
+            }else if( typeof key.pick === 'function') {
+              num = key.pick();
+            }else if( key.pick === 'random') {
+              num = rndi(0, sounds.sounds.length);
+            }
+            
+            filename = sounds.sounds[ num ].original_filename
+
             if(typeof Freesound.loaded[ filename ] === 'undefined') {
-              request = new XMLHttpRequest();
-              G.log("now downloading " + filename + ", " + sounds.sounds[0].duration + " seconds in length" )
-              request.open('GET', sounds.sounds[0].serve + "?api_key=" + freesound.apiKey, true);
-              request.responseType = 'arraybuffer';
-              request.onload = onload;
-              request.send();
+              Freesound.request = new XMLHttpRequest();
+              G.log("now downloading " + filename + ", " + sounds.sounds[ num ].duration + " seconds in length" )
+              Freesound.request.open('GET', sounds.sounds[ num ].serve + "?&api_key=" + freesound.apiKey, true);
+              Freesound.request.responseType = 'arraybuffer';
+              Freesound.request.onload = onload;
+              Freesound.request.send();
             }else{
+              G.log('using exising loaded sample ' + filename)
               sampler.buffer = Freesound.loaded[ filename ];
               sampler.bufferLength = sampler.buffer.length;
               sampler.isLoaded = true;
@@ -126,6 +145,7 @@ function Freesound() {
         			sampler.function.setPhase( sampler.bufferLength );
       
               sampler.send( Master, 1 )
+              if(callback) { callback() }
             }
           }else{
             G.log("No Freesound files matched your query.")
@@ -135,18 +155,19 @@ function Freesound() {
   }else if(typeof key === 'number') {
     freesound.get_sound(key,
       function(sound){
-        request = new XMLHttpRequest();
+        Freesound.request = new XMLHttpRequest();
         filename = sound.original_filename
-        request.open('GET', sound.serve + "?api_key=" + freesound.apiKey, true);
-        request.responseType = 'arraybuffer';
-        request.onload = onload;
-        request.send();  
+        Freesound.request.open('GET', sound.serve + "?api_key=" + freesound.apiKey, true);
+        Freesound.request.responseType = 'arraybuffer';
+        Freesound.request.onload = onload;
+        Freesound.request.send();  
       }
     )
   }
   return sampler;
 }
 Freesound.loaded = {};
+Freesound.request = null;
 /**#Looper - Buffer Recording & Playback
 The Looper ugen allows you to quickly overdub multiple takes from a single sound input. It is primarily designed to work with
 the [Input](javascript:Gibber.Environment.displayDocs('Input'\)) ugen to record and loop live input, however, it can record
