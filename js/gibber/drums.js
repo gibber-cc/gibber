@@ -72,7 +72,7 @@ Drums.kits = {
 	    n:      { file:'audiofiles/beatbox/n.wav'    , symbol:'n', amp:1, pitch:1, pan: 0.0 },
 	},
 };
-Drums.kits.default = Drums.kits.original;
+Drums.kits.default = Drums.kits.electronic;
 
 function _Drums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());

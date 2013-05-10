@@ -80,7 +80,8 @@ function Freesound() {
   // freesound query api http://www.freesound.org/docs/api/resources.html
   if(typeof key === 'string') {
     var query = key;
-    freesound.search(query, /*page*/0, /*filter*/null, 'rating_desc', null, null, null,
+    G.log('searching freesound for ' + query)
+    freesound.search(query, /*page*/0, 'type:wav duration:[0.0 TO 10.0]', 'rating_desc', null, null, null,
         function(sounds){
           filename = sounds.sounds[0].original_filename
           
@@ -111,6 +112,8 @@ function Freesound() {
         sort    = key.sort   || 'rating_desc',
         page    = key.page   || 0;
         pick    = key.pick   || 0;
+    
+    G.log('searching freesound for ' + query)
     
     filter += ' type:wav'
     freesound.search(query, page, filter, sort, null, null, null,
@@ -153,6 +156,7 @@ function Freesound() {
         },function(){ displayError("Error while searching...")}
     );
   }else if(typeof key === 'number') {
+    G.log('downloading sound #' + key + ' from freesound.org')
     freesound.get_sound(key,
       function(sound){
         Freesound.request = new XMLHttpRequest();

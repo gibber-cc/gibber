@@ -7,6 +7,7 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// Run lines in between comments one section at a time\n'+
 '// by highlighting them and hitting ctrl + shift + return.\n'+
 '// Or select everything at once and run it all together.\n'+
+'// Stop the audio by hitting Ctrl + . (period)\n'+
 '\n'+
 'G.setBPM(140);\n'+
 '\n'+
@@ -583,9 +584,58 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '// wait a while and then run this to emphasize eighth notes\n'+
 'j.durations.pick = weight(.8, .1, .1);',
 
+'freesound' :
+"// The Freesound object is simply a Sampler (see the sampling tutorial)\n"+
+"// that can query the freesound.org database and download samples from it.\n"+
+"// The status bar will give you messages about the querying and downloading progress.\n"+
+"// You can use the Freesound object in a number of ways:\n"+
+"\n"+
+"// download a specific sound identified by an id number obtained from the \n"+
+"// freesound.org website. For example, this next sound is taken from here:\n"+
+"// http://www.freesound.org/people/RealRhodesSounds/sounds/4048/\n"+
+"\n"+
+"G.setBpm(90)\n"+
+"\n"+
+"a = Freesound(4048);\n"+
+"\n"+
+"// play the sample once at original spped\n"+
+"a.note(1)\n"+
+"\n"+
+"// set the sample to loop and play again at 1.25 speed\n"+
+"a.loops = true\n"+
+"a.note(1)\n"+
+"\n"+
+"// query the database for a particular term(s) and download the first response\n"+
+"// by default these simple queries are limited to soundfiles under 10 seconds\n"+
+"b = Freesound('crickets')\n"+
+"b.loops = true\n"+
+"b.note( 1 )\n"+
+"b.fx.add( Reverb() )\n"+
+"\n"+
+"// query for the term 90, which will most likely return a file at 90bpm.\n"+
+"// sort the returned results from best to worst, the top result is picked by default\n"+
+"// set the duration to be 0 to 15 seconds.\n"+
+"c = Freesound({ query:'90', rating:'downloads_desc', filter:'duration:[0.0 TO 15.0]' });\n"+
+"c.fx.add( Delay(1/16, .15), Schizo('paranoid', {mix:.25} ) )\n"+
+"\n"+
+"// sequence the Freesound object to trigger notes at different playback speeds\n"+
+"d = Seq({\n"+
+"  note:[1,1.25,1.5,1,,],\n"+
+"  durations:[1/2,1/2,1/4,2.25,8.5],\n"+
+"  slaves:c\n"+
+"})\n"+
+"\n"+
+"// pick a random sample from the returned results\n"+
+"e = Freesound({ query:'drum 90', pick:'random', filter:'duration:[0.0 TO 15.0]' });\n"+
+"e.note(1)\n"+
+"e.loops = true;\n"+
+"\n"+
+"// for more info about the query syntax please see http://www.freesound.org/docs/api/resources.html",
+
 "agents" :
 "// Agents have a shape and a sound. By default when they move vertically their pitch changes, when the move\n"+
-"// left to right their panning changes.\n"+
+"// left to right their panning changes. You can add other behaviors by giving them an update function, which\n"+
+"// will be called for each frame of video.\n"+
 "Graphics.init(true);\n"+
 "\n"+
 "a = Agent({\n"+
@@ -595,7 +645,7 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 "\n"+
 "b = Seq({\n"+
 "  position: _rndf(-100,100,3),\n"+
-"  durations:1/4,\n"+
+"  durations:1/8,\n"+
 "  slaves:a\n"+
 "});",
 

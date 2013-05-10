@@ -186,6 +186,45 @@ a.removeMod('rx');`
 				Graphics.scene.remove( that );
         //Graphics.renderer.deallocateObject( that );
 			};
+  		that.colorFace = function(color, faceNumber) {
+  			var faceIndices = ['a', 'b', 'c', 'd'];  
+			
+  			if(this.children) {
+  				geometry = this.children[0].geometry;
+  			}
+  			if(typeof faceNumber === 'number') {
+  				var face = geometry.faces[ faceNumber || 0 ]; 
+  				var numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
+				
+  				var _color = color ? color : Color(0,0,0);
+  				if(typeof _color === 'function') {
+  					_color = Color(_color());
+  				}
+				
+  				for( var j = 0; j < numberOfSides; j++ )  {
+  				    var vertexIndex = face[ faceIndices[ j ] ];
+  				    var color = new THREE.Color( 0xffffff );
+  				    color.setRGB( 1, 0, 0 );
+  				    face.vertexColors[ j ] = color;
+  				}
+  			}else{
+  				for(var i = 0; i < geometry.faces.length; i++) {
+  					var _color = color ? color : Color(0,0,0);
+  					if(typeof _color === 'function') {
+  						_color = Color(_color());
+  					}
+					
+  					var face = geometry.faces[ i ]; 
+
+  					var numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
+  					for( var j = 0; j < numberOfSides; j++ )  {
+  					    var vertexIndex = face[ faceIndices[ j ] ];
+  					    face.vertexColors[ j ] = _color;
+  					}
+  				}
+  			}
+  			geometry.colorsNeedUpdate = true;
+  		};
 			
 			that._update = function() {
 				for(var i = 0; i < this.mods.length; i++) {
@@ -398,7 +437,7 @@ a.removeMod('rx');`
 				},			
 			});		
 			// TODO : fix colorFace problem
-			that.colorFace = that.colorFace;
+			//that.colorFace = that.colorFace;
 			
 			that.spin = function() {
 				if(arguments.length === 0) {

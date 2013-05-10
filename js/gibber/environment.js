@@ -720,6 +720,10 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                     Gibber.clear();
                     Gibber.audioInit = false;
                 },
+                "Ctrl-.": function(cm) {
+                    Gibber.clear();
+                    Gibber.audioInit = false;
+                },
                 "Ctrl-I": function(cm) {
                     Gibber.Environment.toggleSidebar();
                     cm.refresh();
