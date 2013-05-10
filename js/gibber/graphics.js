@@ -43,6 +43,7 @@ define(['gibber/graphics/three.min'],
                 
 				if(!that.initialized) {
 					that.intialized = true;
+          Graphics.initialized = true;
 					
 					that.fx.add = function() {
 						for(var i = 0; i < arguments.length; i++) {

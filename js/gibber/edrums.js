@@ -33,14 +33,14 @@ function EDrums(_sequence, _timeValue, _amp, _freq) {
 function _EDrums (_sequence, _timeValue, _amp, _freq){
 	Gibberish.extend(this, Gibberish.Bus());
 	
-	var _fx = typeof arguments[0] !== "undefined" ? arguments[0].fx : undefined;
+	var _fx = typeof arguments[0] !== "undefined" ? arguments[0].fx : undefined,
+      props;
 	
 	this.channels = 2;
 	this.fx = [];
 	this.fx.parent = this;
 	
 	this.children = [];
-	
 /**###Drums.pitch : property
 Float. The overall pitch of the Drums. Each specific drum can also have its pitch set.
 **/	
@@ -58,7 +58,6 @@ Float. The overall pitch of the Drums. Each specific drum can also have its pitc
 		hat:    { symbol:'*', amp:1, pitch:1, pan:-.1 },
 		//openHat:{ symbol:'-', amp:1, pitch:1, pan:-.2 },
 	};
-	
 	
 	for(var key in this.kit) {
 		if(key === "openHat") break;
@@ -161,7 +160,7 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 					});
 				}
 			}else{
-				_timeValue = window["_"+_sequence.length];
+				_timeValue = 1 / _sequence.length;
 				this.seq = Seq({
 					doNotAdvance : true,					
 					note :_sequence.split(""),
@@ -178,7 +177,7 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 		//Gibberish.extend(this, props);
 		//this.seq.slave(this);
 	}
-	
+
 	if(typeof props === "undefined") props = {};
 	
 	if(props.pitch) this.pitch = props.pitch;
@@ -187,36 +186,32 @@ for example, you can simply call `drums.play()` instead of having to call `drums
 	if(typeof props.kick !== "undefined") 	{ Gibberish.extend(this.Kick.synth, props.kick); Gibberish.extend(this.kick, props.kick); }
 	if(typeof props.hat !== "undefined") 	{ Gibberish.extend(this.Hat.synth, props.hat); Gibberish.extend(this.hat, props.hat); }
 	if(typeof props.openHat !== "undefined") { Gibberish.extend(this.OpenHat.synth, props.openHat); Gibberish.extend(this.openHat, props.openHat); }
- 
-	(function(obj) {
-		var that = obj;
-		var amp = .2;
-	    Object.defineProperties(that, {
-			"speed" : {
-		        get: function() {
-		            return that.seq.speed;
-		        },
-		        set: function(value) {
-					if(that.seq != null) {
-						that.seq.speed = value;
-					}
-		        }
-			},
-			
-			"amp" : {
-		        get: function() {
-		            return amp;
-		        },
-		        set: function(value) {
-					amp = value;
-					Gibberish.dirty(this);
-					//this.bus.amp = value;
-		        }
-			},
-			
-	    });
-	})(this);
-	
+  
+  (function(obj) {
+    var amp = .2;
+    Object.defineProperties(obj, {
+      "speed" : {
+        get: function() {
+          return obj.seq.speed;
+        },
+        set: function(value) {
+          if(obj.seq != null) {
+            obj.seq.speed = value;
+          }
+        }
+      },
+      
+      "amp" : {
+        get: function() {
+          return amp;
+        },
+        set: function(value) {
+          amp = value;
+          Gibberish.dirty(obj);
+        }
+      },
+    })
+  })(this);
 	
 /**###Drums.amp : property
 Float. The overall amplitude of the Drums. Each specific drum can also have its amplitude set.
@@ -256,9 +251,9 @@ Gibber.presets.EDrums = {}
 
 _EDrums.prototype = {
 	category  	: "complex",
-	name  		: "EDrums",
-	mod			: Gibberish.polyMod,
-	removeMod	: Gibberish.removePolyMod,
+	name  		  : "EDrums",
+	mod			    : Gibberish.polyMod,
+	removeMod	  : Gibberish.removePolyMod,
 		
 	replace : function(replacement) {
 		this.kill();

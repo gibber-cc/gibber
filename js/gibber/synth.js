@@ -291,6 +291,7 @@ Gibber.presets.Mono = {
 		attack: 44,
 		decay: 1/16,
 	},
+  
 	lead : {
 		//fx : [ Delay(1/4, .35), Reverb() ],
 		attack: 1/8,
@@ -301,6 +302,7 @@ Gibber.presets.Mono = {
 		resonance:5,
 		isLowPass: false,
 	},
+  
 	bass : {
 		attack: Gibber.MAX_MEASURES,
 		decay:	1/8 - Gibber.MAX_MEASURES,
@@ -309,6 +311,7 @@ Gibber.presets.Mono = {
 		filterMult:.2,
 		resonance:4,
 	},
+  
 	easy : {
 		attack:44,
 		decay:2,
@@ -316,4 +319,19 @@ Gibber.presets.Mono = {
 		octave3:0,
 		cutoff:.3,
 	},
+  
+  dark : {
+    resonance:0,
+    attack:44,
+    cutoff:.075,
+    amp:.35,
+    filterMult:0
+  },
+
+  dark2 : {
+    filterMult:.1,
+    attack:44,
+    octave2:0,
+    octave3:0
+  },
 };

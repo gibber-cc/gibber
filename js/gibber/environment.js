@@ -13,8 +13,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
     }
 
     _Gibber.log = function(val) {
-        $(".consoletext")
-            .text(val);
+        $(".consoletext").text(val);
         window.console.log(val);
     }
     var Environment = {
@@ -47,8 +46,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             return Gibber.Environment.OSC;
         },
         slave: function(name, ip) {
-            $("#info")
-                .html("");
+            $("#info").html("");
 
             console.log("Name " + name + " : ip " + ip);
             Gibber.Environment.slaveSocket = io.connect('http://' + ip + ':8080/'); // has to match port node.js is running on
@@ -60,21 +58,17 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             });
             Gibber.Environment.slaveSocket.on('chat', function(msg) {
                 var p = $("<p>");
-                $(p)
-                    .css("padding", "0px 10px");
-                $(p)
-                    .html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                $("#info")
-                    .append(p);
-                $("#info")
-                    .scrollTop($("#info")
-                    .height());
+                $(p).css("padding", "0px 10px");
+                $(p).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
+                
+                $("#info").append(p);
+                $("#info").scrollTop($("#info").height());
             });
         },
         republicish: function(userName) {
             G.log("STARTING REPUBLICISH");
-            $("#sidebar")
-                .html("");
+            $("#sidebar").html("");
+            
             Gibber.Environment.toggleSidebar();
             window.editor.refresh();
 
@@ -360,16 +354,14 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                         text: msg.text,
                         time: new Date() - Gibber.Environment.sessionStart
                     });
+                    
                     var p = $("<p>");
-                    $(p)
-                        .css("padding", "0px 10px");
-                    $(p)
-                        .html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                    $("#info")
-                        .append(p);
-                    $("#info")
-                        .scrollTop($("#info")
-                        .height());
+                    
+                    $(p).css("padding", "0px 10px");
+                    $(p).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
+                    
+                    $("#info").append(p);
+                    $("#info").scrollTop( $("#info").height() );
                 });
 
                 Gibber.Environment.masterSocket.emit('master', null);
@@ -403,23 +395,26 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
         },
 
         load: function(fileName) {
-            console.log("LOADING ", fileName);
+            console.log("LOADING", fileName, defaults);
             var scripts = localStorage.getObject("scripts"),
                 code = null;
-
+            
             if (scripts != null) {
-                if (typeof scripts[fileName] !== "undefined") {
-                    code = scripts[fileName];
-                }
+              if ( typeof scripts[fileName] !== "undefined" ) {
+                code = scripts[ fileName ];
+              }
             }
-            if (typeof defaults[fileName] !== "undefined") {
-                code = defaults[fileName];
+            
+            if ( typeof defaults.tutorials[ fileName ] !== "undefined" ) {
+              code = defaults.tutorials[ fileName ];
+            }else if ( typeof defaults.demos[ fileName ] !== "undefined" ) {
+              code = defaults.demos[ fileName ];
             }
+            
             if (code != null) {
-                //console.log(code);
-                window.editor.setValue(code);
+              window.editor.setValue(code);
             } else {
-                G.log("The file " + fileName + " is not found");
+              G.log("The file " + fileName + " is not found");
             }
         },
 
@@ -430,50 +425,75 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
 			}*/
         },
 
-        addScriptsToList: function(scripts) {
-            var sel = $("#fileList");
-            for (var name in scripts) {
-                var opt = $("<li>");
-                if (scripts[name] !== "LABEL START") {
-                    var cb = function(_name) {
-                        var n = _name;
-                        return function() {
-                            Gibber.Environment.load(n);
-                        }
-                    }
-                    var a = $("<a>");
-                    $(a)
-                        .text(name);
-                    $(opt)
-                        .bind("click", cb(name));
-                    $(opt)
-                        .append(a);
-                } else {
-                    $(opt).text(" " + name);
-                    $(opt).addClass('listHeader');
-                }
-                $(sel)
-                    .append(opt);
-            }
-        },
-        createFileList: function(savedFile) {
-            var sel = $("#fileList");
-            $(sel)
-                .empty();
-            this.addScriptsToList(defaults);
-
-            var userScripts = localStorage.getObject("scripts")
-
-            var sel = $("#fileList");
+        createTutorialAndDemoList: function() {
+          var scripts = defaults;
+          var sel = $("#tutorialsFileList");
+          for (var name in scripts.tutorials) {
             var opt = $("<li>");
-            $(opt)
-                .text("USER SCRIPTS");
-            $(opt).addClass('listHeader');
+            if (scripts[name] !== "LABEL START") {
+              var cb = function(_name) {
+                var n = _name;
+                return function() {
+                  Gibber.Environment.load(n);
+                }
+              }
+              
+              var a = $("<a>");
+              $(a).text(name);
+              $(opt).bind("click", cb(name));
+              $(opt).append(a);
+            } else {
+              $(opt).text(" " + name);
+              $(opt).addClass('listHeader');
+            }
+            $(sel).append(opt);
+          }
+          
+          var sel = $("#demosFileList");
+          for (var name in scripts.demos) {
+            var opt = $("<li>");
+            if (scripts[name] !== "LABEL START") {
+              var cb = function(_name) {
+                var n = _name;
+                return function() {
+                  Gibber.Environment.load(n);
+                }
+              }
+              
+              var a = $("<a>");
+              $(a).text(name);
+              $(opt).bind("click", cb(name));
+              $(opt).append(a);
+            } else {
+              $(opt).text(" " + name);
+              $(opt).addClass('listHeader');
+            }
+            $(sel).append(opt);
+          }
+        },
+        
+        createUserFileList: function(savedFile) {
+          var sel = $("#userFileList").empty();
+          var userScripts = localStorage.getObject("scripts")
+          
+          for (var name in userScripts) {
+            var opt = $("<li>");
 
-            $(sel)
-                .append(opt);
-
-            this.addScriptsToList(userScripts);
+            var cb = function(_name) {
+              var n = _name;
+              return function() {
+                Gibber.Environment.load(n);
+              }
+            }
+            
+            var a = $("<a>");
+            $(a).text(name);
+            $(opt).bind("click", cb(name));
+            $(opt).append(a);
+            
+            sel.append( opt )
+          }
+          //this.addScriptsToList( userScripts );
         },
 
         insert: function(code) {
@@ -518,436 +538,449 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
 				//}
 		},
         init: function() {
-            $(window)
-                .resize(Gibber.Environment.editorResize);
-            $("#mega-menu-1")
-                .dcMegaMenu({
-                speed: 'fast',
-            });
-            this.createFileList();
-            CodeMirror.modeURL = "js/codemirror/mode/%N/%N.js";
-            window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-                lineNumbers: false,
-                autofocus: true,
-                indentUnit: 2,
-                matchBrackets: true,
-                tabSize: 2,
-                smartIndent: true,
-                onCursorActivity: function() {
-                    window.editor.setLineClass(hlLine, null, null);
-                    hlLine = editor.setLineClass(editor.getCursor()
-                        .line, null, "activeline");
-                },
-            });
-            var hlLine = window.editor.setLineClass(0, "activeline");
-
-            CodeMirror.autoLoadMode(window.editor, "javascript");
-            window.CodeMirror = CodeMirror;
-            window.editor.setOption("mode", "javascript");
-            window.editor.setOption("theme", "thecharlie");
-
-            CodeMirror.defineMode("links", function(config, parserConfig) {
-                var linksOverlay = {
-                    token: function(stream, state) {
-                        if (stream.match(/^\b(next\ tutorial:([^\s]+))\b/)) {
-                            return "link";
-                        }
-                        stream.skipToEnd();
-                    }
-                };
-                return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), linksOverlay);
-            });
-            $('.CodeMirror').css("display", "inline-block");
-            $('.CodeMirror').delegate(".cm-link", "click", function(e) {
-                var url = $(event.target).text();
-                Gibber.Environment.loadTutorial(url.split(":")[1]);
-            });
-
-            CodeMirror.autoLoadMode(window.editor, "links");
-            window.editor.setOption("mode", "links");
-            window.editor.onChange = function(e,i) {
-              console.log('CHANGE')
-              window.editor.markText({line:0, ch:0}, {line:window.editor.lineCount() - 1, ch:0}, "highlightLine");
-              console.log('change')
-            };
-            this.load("default");
-            this.editorResize();
-
-            $.extend($.modal.defaults, {
-                onOpen: function(dialog) {
-                    dialog.overlay.fadeIn('fast', function() {
-                        //dialog.data.hide();
-                        dialog.container.fadeIn('fast', function() {
-                            dialog.data.slideDown('fast');
-                        });
-                    });
-                },
-                onClose: function(dialog) {
-                    dialog.data.fadeOut('slow', function() {
-                        dialog.container.hide('slow', function() {
-                            dialog.overlay.slideUp('slow', function() {
-                                $.modal.close();
-                            });
-                        });
-                    });
-                },
-                overlayClose: true,
-                position: ["40px", null],
-                containerCss: {
-                    fontFamily: "sans-serif",
-                    color: "#fff",
-                    backgroundColor: "rgba(0,0,0,.75)",
-                    listStyle: "none",
-                    border: "1px solid #ccc",
-                    padding: "10px",
-                }
-            });
-
-            $("#keyCommandMenuItem")
-                .bind("click", function() {
-                $("#keyCommands")
-                    .modal();
-            });
-
-            $("#tutorialMenuItem")
-                .bind("click", function() {
-                Gibber.Environment.loadTutorial("intro");
-            });
-
-            $("#quickstartMenuItem")
-                .bind("click", function() {
-                $("#quickstart")
-                    .modal({
-                    minHeight: "325px",
-                    maxWidth: "500px",
-                });
-            });
-            $("#aboutMenuItem")
-                .bind("click", function() {
-                $("#about")
-                    .modal({
-                    minHeight: "425px",
-                    maxWidth: "500px",
-                });
-            });
-
-            var flash = function(cm, pos) {
-                if (pos !== null) {
-                    v = cm.getLine(pos.line);
-
-                    cm.setLineClass(pos.line, null, "highlightLine")
-
-                    var cb = (function() {
-                        cm.setLineClass(pos.line, null, null);
-                    });
-
-                    window.setTimeout(cb, 250);
-
-                } else {
-                    var sel = cm.markText(cm.getCursor(true), cm.getCursor(false), "highlightLine");
-
-                    var cb = (function() {
-                        sel.clear();
-                    });
-
-                    window.setTimeout(cb, 250);
-                }
-            };
-            CodeMirror.keyMap.gibber = {
-                fallthrough: "default",
-
-                /*"Shift-Ctrl-." : function(cm) { 
-					_Gibber.nextSlide();
-				},
-				"Shift-Ctrl-," : function(cm) { 
-					_Gibber.prevSlide();
-				},*/
-
-                "Ctrl-Enter": function(cm) {
-                    var v = cm.getSelection();
-                    var pos = null;
-                    if (v === "") {
-                        pos = cm.getCursor();
-                        v = cm.getLine(pos.line);
-                    }
-                    flash(cm, pos);
-                    Gibber.runScript(v);
-                },
-                "Cmd-S": function(cm) {
-                    var name = window.prompt("enter name for file:")
-                    Gibber.Environment.saveWithName(name);
-                },
-                "Cmd-L": function(cm) {
-                    var name = window.prompt("enter name of file to load:")
-                    Gibber.Environment.load(name);
-                },
-				
-                "Shift-Ctrl-Enter": function(cm) {
-                    var v = cm.getSelection();
-                    var pos = null;
-                    if (v === "") {
-                        pos = cm.getCursor();
-                        v = cm.getLine(pos.line);
-                    }
-                    flash(cm, pos);
-                    Gibber.callback.addCallback(v, _1);
-                },
-                "Shift-Alt-Enter": function(cm) {
-                    var result = Gibber.Environment.selectCurrentBlock();
-
-                    Gibber.runScript(result.text);
-
-                    // highlight:
-                    var sel = editor.markText(result.start, result.end, "highlightLine");
-                    window.setTimeout(function() {
-                        sel.clear();
-                    }, 250);
-                },
-                "Shift-Ctrl-Alt-Enter": function(cm) {
-                    console.log("CALLED");
-                    var result = Gibber.Environment.selectCurrentBlock();
-
-                    Gibber.callback.addCallback(result.text, _1);
-
-                    // highlight:
-                    var sel = editor.markText(result.start, result.end, "highlightLine");
-                    window.setTimeout(function() {
-                        sel.clear();
-                    }, 250);
-                },
-
-                "Ctrl-`": function(cm) {
-                    Gibber.clear();
-                    Gibber.audioInit = false;
-                },
-                "Ctrl-.": function(cm) {
-                    Gibber.clear();
-                    Gibber.audioInit = false;
-                },
-                "Ctrl-I": function(cm) {
-                    Gibber.Environment.toggleSidebar();
-                    cm.refresh();
-                },
-                "Ctrl-Alt-2": function(cm) {
-                    console.log("CALLING CTRL-ALT-2");
-                    var v = cm.getSelection();
-                    var pos = null;
-                    if (v === "") {
-                        pos = cm.getCursor();
-                        v = cm.getLine(pos.line);
-                    }
-                    console.log("CALLED SLAVE SEND");
-                    Gibber.Environment.slaveSocket.send(v);
-                },
-                "Shift-Alt-2": function(cm) {
-                    var result = Gibber.Environment.selectCurrentBlock();
-
-                    Gibber.Environment.slaveSocket.send(result.text);
-
-                    // highlight:
-                    var sel = editor.markText(result.start, result.end, "highlightLine");
-                    window.setTimeout(function() {
-                        sel.clear();
-                    }, 250);
-                },
-            };
-
-            window.editor.setOption("keyMap", "gibber");
-            $.getJSON("js/gibber/documentation.js", function(data, ts, xgr) {
-                Gibber.docs = data;
-
-                var tags = [];
-                Gibber.toc = {};
-                for (var key in Gibber.docs) {
-                    var obj = Gibber.docs[key];
-                    tags.push({
-                        text: key,
-                        obj: key,
-                        type: "object",
-                        class: obj.key,
-                    });
-                    if (typeof Gibber.toc[obj.type] === "undefined") {
-                        Gibber.toc[obj.type] = [];
-                    }
-                    Gibber.toc[obj.type].push(key);
-
-                    if (typeof obj.methods !== "undefined") {
-                        for (var method in obj.methods) {
-                            tags.push({
-                                text: method + "( " + key + " )",
-                                obj: key,
-                                type: "method",
-                                name: method,
-                            });
-                        }
-                    }
-                    if (typeof obj.properties !== "undefined") {
-                        for (var prop in obj.properties) {
-                            tags.push({
-                                text: prop + "( " + key + " )",
-                                obj: key,
-                                type: "property",
-                                name: prop,
-                            });
-                        }
-                    }
-                }
-
-                Gibber.Environment.tags = tags;
-                Gibber.Environment.displayTOC();
-                //Gibber.Environment.displayDocs("Seq");
-            });
-            $("#resizeButton")
-                .on("mousedown", function(e) {
-                $("body")
-                    .css("-webkit-user-select", "none");
-                Gibber.prevMouse = e.screenX;
-                $(window)
-                    .mousemove(function(e) {
-                    $(".CodeMirror")
-                        .width(e.pageX);
-                    $("#sidebar")
-                        .width($("body")
-                        .width() - $(".CodeMirror")
-                        .outerWidth() - 8);
-                    $("#sidebar")
-                        .height($(".CodeMirror")
-                        .outerHeight());
-
-                    $("#resizeButton")
-                        .css({
-                        position: "absolute",
-                        display: "block",
-                        top: $(".header")
-                            .height() - 2,
-                        left: Math.floor(e.pageX + 3),
-                    });
-                });
-                $(window)
-                    .mouseup(function(e) {
-                    $(window)
-                        .unbind("mousemove");
-                    $(window)
-                        .unbind("mouseup");
-                    $("body")
-                        .css("-webkit-user-select", "text");
-                    Gibber.codeWidth = $(".CodeMirror")
-                        .width();
-                });
-            });
-
-            $("#searchButton")
-                .on("click", function(e) {
-                Gibber.Environment.displayDocs($("#docsSearchInput").val());
-            });
-            $("#tocButton")
-                .on("click", function(e) {
-                Gibber.Environment.displayTOC();
-            });
-            $("#closeSidebarButton")
-                .on("click", function(e) {
-                Gibber.Environment.toggleSidebar();
-            });
-
-            $("#docsSearchInput")
-                .change(function(e) {
-                if ($(e.target)
-                    .is(":focus") || $(e.target)
-                    .parents()
-                    .has(Gibber.Environment.autocompleteLayer)) {
-                    Gibber.Environment.displayDocs($("#docsSearchInput")
-                        .val());
-                } else {
-                    $(Gibber.Environment.autocompleteLayer)
-                        .remove();
-                }
-            });
-            $("#docsSearchInput")
-                .focus(function(e) {
-                Gibber.Environment.autocompleteLayer = $("<div><ul>");
-                $(Gibber.Environment.autocompleteLayer)
-                    .css({
-                    position: "absolute",
-                    top: 22,
-                    left: 0,
-                    width: "200px",
-                    display: "block",
-                    backgroundColor: "rgba(30,30,30,.95)",
-                    listStyle: "none",
-                    padding: "0 5px 0px 5px",
-                    "overflow-y": "auto",
-                });
-                $("#sidebar")
-                    .append(Gibber.Environment.autocompleteLayer);
-            });
-            $("#docsSearchInput")
-                .keyup(function(e) {
-                var arr = [];
-                var val = e.target.value;
-                if (val.length !== 0) {
-                    for (var i = 0; i < Gibber.Environment.tags.length; i++) {
-                        if (Gibber.Environment.tags[i].text.indexOf(val) > -1) {
-                            arr.push(Gibber.Environment.tags[i]);
-                        }
-                    }
-                }
-                $(Gibber.Environment.autocompleteLayer)
-                    .empty();
-                $(Gibber.Environment.autocompleteLayer)
-                    .append("<ul>");
-                for (var i = 0; i < arr.length; i++) {
-                    var li = $("<li>");
-                    $(li)
-                        .css({
-                        cursor: "pointer",
-                        width: "90%",
-                    });
-                    if (i === arr.length - 1) {
-                        $(li)
-                            .css({
-                            marginBottom: '10px',
-                        });
-                    }
-                    $(li)
-                        .text(arr[i].text);
-                    (function() {
-                        var _item = arr[i];
-                        $(li)
-                            .on("click", function(e) {
-                            console.log(_item);
-                            Gibber.Environment.displayDocs(_item.obj);
-                            $(Gibber.Environment.autocompleteLayer)
-                                .remove();
-                            if (_item.type !== "object") {
-                                $("#sidebar")
-                                    .scrollTop($("*:contains(" + _item.obj + "." + _item.name + "):last")
-                                    .offset()
-                                    .top - 40);
-                            }
-                        });
-                    })();
-                    $(Gibber.Environment.autocompleteLayer)
-                        .append(li);
-                }
-            });
-
-            var scripts = localStorage.getObject("scripts");
-
-            if (!scripts) scripts = {};
-
-            if (typeof scripts.loadFile !== "undefined") {
-                eval(scripts.loadFile);
-            }
+            $(window).resize(Gibber.Environment.editorResize);
             
-            console.log( _graphics );
+            this.createUserFileList();
+            
+            this.createTutorialAndDemoList();
+            
+            this.createEditor();
+            
+            this.createMenus();
+            
+            this.setupKeyBindings();
+
+            this.setupDocumentation();
+            
             this.graphics = _graphics;
-            //window.Graphics = _graphics;
-            console.log(window.Graphics);
-            // don't create graphics until waveform is called
-            window.Waveform = function() {
-                Gibber.Environment.graphics.init();
-                return window.Waveform(arguments[0]);
-            };
+        },
+        
+        setupDocumentation : function() {
+          $.getJSON("js/gibber/documentation.js", function(data, ts, xgr) {
+              Gibber.docs = data;
+
+              var tags = [];
+              Gibber.toc = {};
+              for (var key in Gibber.docs) {
+                  var obj = Gibber.docs[key];
+                  tags.push({
+                      text: key,
+                      obj: key,
+                      type: "object",
+                      class: obj.key,
+                  });
+                  if (typeof Gibber.toc[obj.type] === "undefined") {
+                      Gibber.toc[obj.type] = [];
+                  }
+                  Gibber.toc[obj.type].push(key);
+
+                  if (typeof obj.methods !== "undefined") {
+                      for (var method in obj.methods) {
+                          tags.push({
+                              text: method + "( " + key + " )",
+                              obj: key,
+                              type: "method",
+                              name: method,
+                          });
+                      }
+                  }
+                  if (typeof obj.properties !== "undefined") {
+                      for (var prop in obj.properties) {
+                          tags.push({
+                              text: prop + "( " + key + " )",
+                              obj: key,
+                              type: "property",
+                              name: prop,
+                          });
+                      }
+                  }
+              }
+
+              Gibber.Environment.tags = tags;
+              Gibber.Environment.displayTOC();
+              //Gibber.Environment.displayDocs("Seq");
+          });
+          $("#resizeButton").on("mousedown", function(e) {
+              $("body").css( "-webkit-user-select", "none" );
+              Gibber.prevMouse = e.screenX;
+              $(window).mousemove(function(e) {
+                $(".CodeMirror").width( e.pageX );
+                
+                $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
+                $("#sidebar").height( $(".CodeMirror").outerHeight() );
+
+                $("#resizeButton").css({
+                  position: "absolute",
+                    display: "block",
+                    top: $(".header").height() - 2,
+                    left: Math.floor(e.pageX + 3),
+                  });
+              });
+              
+              $(window).mouseup(function(e) {
+                  $(window).unbind("mousemove");
+                  $(window).unbind("mouseup");
+                  
+                  $("body").css("-webkit-user-select", "text");
+                  
+                  Gibber.codeWidth = $(".CodeMirror").width();
+              });
+          });
+
+          $("#searchButton").on("click", function(e) {
+              Gibber.Environment.displayDocs($("#docsSearchInput").val());
+          });
+          $("#tocButton").on("click", function(e) {
+              Gibber.Environment.displayTOC();
+          });
+          $("#closeSidebarButton").on("click", function(e) {
+              Gibber.Environment.toggleSidebar();
+          });
+
+          $("#docsSearchInput").change(function(e) {
+            if ( $(e.target).is(":focus") || $(e.target).parents().has(Gibber.Environment.autocompleteLayer) ) {
+              Gibber.Environment.displayDocs( $("#docsSearchInput").val() );
+            } else {
+              Gibber.Environment.autocompleteLayer.remove();
+            }
+          });
+          
+          $("#docsSearchInput").focus(function(e) {
+              Gibber.Environment.autocompleteLayer = $("<div>");
+              Gibber.Environment.autocompleteLayer.css({
+                  position: "absolute",
+                  top: 22,
+                  left: 0,
+                  width: "200px",
+                  display: "block",
+                  background: "rgba(180, 180, 180,.95)",
+                  listStyle: "none",
+                  padding: "0 5px 0px 5px",
+                  "overflow-y": "auto",
+              });
+              
+              $("#sidebar").append(Gibber.Environment.autocompleteLayer);
+          });
+          
+          $("#docsSearchInput").keyup(function(e) {
+              var arr = [];
+              var val = e.target.value;
+              if (val.length !== 0) {
+                for (var i = 0; i < Gibber.Environment.tags.length; i++) {
+                  if (Gibber.Environment.tags[i].text.indexOf(val) > -1) {
+                      arr.push(Gibber.Environment.tags[i]);
+                  }
+                }
+              }
+              
+              $(Gibber.Environment.autocompleteLayer).empty();
+              $(Gibber.Environment.autocompleteLayer).append("<ul>");
+              
+              for (var i = 0; i < arr.length; i++) {
+                var li = $("<li>");
+                
+                $(li).css({
+                  cursor: "pointer",
+                  width: "90%",
+                });
+                
+                if (i === arr.length - 1) {
+                  $(li).css({
+                    marginBottom: '10px',
+                  });
+                }
+                
+                $(li).text(arr[i].text);
+                
+                (function() {
+                  var _item = arr[i];
+                  $(li).on("click", function(e) {
+                    Gibber.Environment.displayDocs(_item.obj);
+                    $(Gibber.Environment.autocompleteLayer).remove();
+                    if (_item.type !== "object") {
+                      $("#sidebar").scrollTop( $("*:contains(" + _item.obj + "." + _item.name + "):last").offset().top - 40 );
+                    }
+                  });
+                })();
+                $(Gibber.Environment.autocompleteLayer).append(li);
+              }
+          });
+        },
+        
+        createMenus : function() {
+          $("#mega-menu-1").dcMegaMenu({
+              speed: 'fast',
+          });
+          
+          $.extend($.modal.defaults, {
+              onOpen: function(dialog) {
+                dialog.overlay.fadeIn('fast', function() {
+                    //dialog.data.hide();
+                  dialog.container.fadeIn('fast', function() {
+                    dialog.data.slideDown('fast');
+                  });
+                });
+              },
+              onClose: function(dialog) {
+                dialog.data.fadeOut('slow', function() {
+                  dialog.container.hide('slow', function() {
+                    dialog.overlay.slideUp('slow', function() {
+                      $.modal.close();
+                    });
+                  });
+                });
+              },
+              overlayClose: true,
+              position: ["40px", null],
+              containerCss: {
+                fontSize:'.8em',
+                backgroundColor: "rgba(150,150,150,.9)",
+                listStyle: "none",
+                border: "1px solid #aaa",
+                padding: "10px",
+              }
+          });
+
+          $("#keyCommandMenuItem").bind("click", function() {
+              $("#keyCommands").modal();
+          });
+
+          $("#tutorialMenuItem").bind("click", function() {
+              Gibber.Environment.loadTutorial("intro");
+          });
+
+          $("#quickstartMenuItem").bind("click", function() {
+            $("#quickstart").modal({
+                minHeight: "325px",
+                maxWidth: "500px",
+            });
+          });
+          $("#aboutMenuItem").bind("click", function() {
+            $("#about").modal({
+                minHeight: "325px",
+                maxWidth: "500px",
+            });
+          });
+        },
+        
+        createEditor : function() {
+          CodeMirror.modeURL = "js/codemirror/mode/%N/%N.js";
+          
+          var isOpaque = true;
+          var timeout = null;
+          
+          window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+              lineNumbers: false,
+              autofocus: true,
+              indentUnit: 2,
+              matchBrackets: true,
+              tabSize: 2,
+              smartIndent: true,
+              onCursorActivity: function() {
+                window.editor.setLineClass( hlLine, null, null );
+                hlLine = editor.setLineClass( editor.getCursor().line, null, "activeline" );
+                
+                if(Graphics.initialized) {
+                  if(timeout != null) { 
+                    clearTimeout( timeout );
+                    timeout = null
+                  }
+                  if(isOpaque) {
+                    timeout = setTimeout( function() { 
+                      $('.CodeMirror pre').fadeTo(500, .1)
+                      isOpaque = false;
+                      timeout = null
+                    }, 3000);
+                  }else{
+                    $('.CodeMirror pre').fadeTo(250, 1)
+                    isOpaque = true;
+                  }
+                }
+              },
+              onChange:function(e,i) {
+                //window.editor.markText({line:0, ch:0}, {line:window.editor.lineCount() - 1, ch:0}, "highlightLine");
+                
+                if(Graphics.initialized) {
+                  if(timeout != null) { 
+                    clearTimeout( timeout );
+                    timeout = null
+                  }
+                  if(isOpaque) {
+                    timeout = setTimeout( function() { 
+                      $('.CodeMirror pre').fadeTo(500, .1)
+                      isOpaque = false;
+                      timeout = null
+                    }, 3000);
+                  }else{
+                    $('.CodeMirror pre').fadeTo(250, 1)
+                    isOpaque = true;
+                  }
+                }
+              }
+          });
+          var hlLine = window.editor.setLineClass(0, "activeline");
+
+          CodeMirror.autoLoadMode(window.editor, "javascript");
+          window.CodeMirror = CodeMirror;
+          window.editor.setOption("mode", "javascript");
+          window.editor.setOption("theme", "thecharlie");
+
+          CodeMirror.defineMode("links", function(config, parserConfig) {
+              var linksOverlay = {
+                  token: function(stream, state) {
+                      if (stream.match(/^\b(next\ tutorial:([^\s]+))\b/)) {
+                          return "link";
+                      }
+                      stream.skipToEnd();
+                  }
+              };
+              return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), linksOverlay);
+          });
+          $('.CodeMirror').css("display", "inline-block");
+          $('.CodeMirror').delegate(".cm-link", "click", function(e) {
+              var url = $(event.target).text();
+              Gibber.Environment.loadTutorial(url.split(":")[1]);
+          });
+
+          CodeMirror.autoLoadMode(window.editor, "links");
+          window.editor.setOption("mode", "links");
+          
+          this.load("resampling (default)");
+          this.editorResize();
+        },
+        
+        setupKeyBindings : function() {
+          var flash = function(cm, pos) {
+            if (pos !== null) {
+              v = cm.getLine(pos.line);
+
+              cm.setLineClass(pos.line, null, "highlightLine")
+
+              var cb = (function() {
+                  cm.setLineClass(pos.line, null, null);
+              });
+
+              window.setTimeout(cb, 250);
+
+            } else {
+              var sel = cm.markText(cm.getCursor(true), cm.getCursor(false), "highlightLine");
+
+              var cb = (function() {
+                  sel.clear();
+              });
+
+              window.setTimeout(cb, 250);
+            }
+          };
+          CodeMirror.keyMap.gibber = {
+              fallthrough: "default",
+
+              /*"Shift-Ctrl-." : function(cm) { 
+      					_Gibber.nextSlide();
+      				},
+      				"Shift-Ctrl-," : function(cm) { 
+      					_Gibber.prevSlide();
+      				},*/
+
+              "Ctrl-Enter": function(cm) {
+                  var v = cm.getSelection();
+                  var pos = null;
+                  if (v === "") {
+                      pos = cm.getCursor();
+                      v = cm.getLine( pos.line );
+                  }
+                  flash(cm, pos);
+                  Gibber.runScript( v );
+              },
+              "Cmd-S": function(cm) {
+                  var name = window.prompt("enter name for file:")
+                  Gibber.Environment.saveWithName(name);
+              },
+              "Cmd-L": function(cm) {
+                  var name = window.prompt("enter name of file to load:")
+                  Gibber.Environment.load(name);
+              },
+			
+              "Shift-Ctrl-Enter": function(cm) {
+                  var v = cm.getSelection();
+                  var pos = null;
+                  if (v === "") {
+                      pos = cm.getCursor();
+                      v = cm.getLine(pos.line);
+                  }
+                  flash(cm, pos);
+                  Gibber.callback.addCallback(v, _1);
+              },
+              "Shift-Alt-Enter": function(cm) {
+                  var result = Gibber.Environment.selectCurrentBlock();
+
+                  Gibber.runScript(result.text);
+
+                  // highlight:
+                  var sel = editor.markText(result.start, result.end, "highlightLine");
+                  window.setTimeout(function() {
+                      sel.clear();
+                  }, 250);
+              },
+              "Shift-Ctrl-Alt-Enter": function(cm) {
+                  var result = Gibber.Environment.selectCurrentBlock();
+
+                  Gibber.callback.addCallback(result.text, _1);
+
+                  // highlight:
+                  var sel = editor.markText(result.start, result.end, "highlightLine");
+                  window.setTimeout(function() {
+                      sel.clear();
+                  }, 250);
+              },
+
+              "Ctrl-`": function(cm) {
+                  Gibber.clear();
+                  Gibber.audioInit = false;
+              },
+              "Ctrl-.": function(cm) {
+                  Gibber.clear();
+                  Gibber.audioInit = false;
+              },
+              "Ctrl-I": function(cm) {
+                  Gibber.Environment.toggleSidebar();
+                  cm.refresh();
+              },
+              "Ctrl-Alt-2": function(cm) {
+                  console.log("CALLING CTRL-ALT-2");
+                  var v = cm.getSelection();
+                  var pos = null;
+                  if (v === "") {
+                      pos = cm.getCursor();
+                      v = cm.getLine(pos.line);
+                  }
+                  console.log("CALLED SLAVE SEND");
+                  Gibber.Environment.slaveSocket.send(v);
+              },
+              "Shift-Alt-2": function(cm) {
+                  var result = Gibber.Environment.selectCurrentBlock();
+
+                  Gibber.Environment.slaveSocket.send(result.text);
+
+                  // highlight:
+                  var sel = editor.markText(result.start, result.end, "highlightLine");
+                  window.setTimeout(function() {
+                      sel.clear();
+                  }, 250);
+              },
+          };
+
+          window.editor.setOption("keyMap", "gibber");
+        },
+        
+        runLoadFile : function() {
+          var scripts = localStorage.getObject("scripts");
+
+          if (!scripts) scripts = {};
+
+          if (typeof scripts.loadFile !== "undefined") {
+              eval(scripts.loadFile);
+          }
         },
 
         selectCurrentBlock: function() { // thanks to graham wakefield
@@ -978,46 +1011,43 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
         },
 
         displayDocs: function(obj) {
-            console.log("DISPLAYING", obj)
             if (typeof Gibber.docs[obj] === "undefined") return;
-            $("#docs")
-                .html(Gibber.docs[obj].text);
-            $("#docs")
-                .append("<h2>Methods</h2>");
+            $("#docs").html(Gibber.docs[obj].text);
+            $("#docs").append("<h2>Methods</h2>");
+            
             var count = 0;
             for (var key in Gibber.docs[obj].methods) {
                 var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].methods[key] + "</div>");
                 var bgColor = count++ % 2 === 0 ? "#999" : "#888";
-                $(html)
-                    .css({
+                $(html).css({
                     "background-color": bgColor,
                     "border-color": "#ccc",
                     "border-width": "0px 0px 1px 0px",
                     "border-style": "solid",
                 });
-                $("#docs")
-                    .append(html);
+                $("#docs").append(html);
             }
-            $("#docs")
-                .append("<h2>Properties</h2>");
+            
+            $("#docs").append("<h2>Properties</h2>");
+            
             for (var key in Gibber.docs[obj].properties) {
                 var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].properties[key] + "</div>");
                 var bgColor = count++ % 2 === 0 ? "#999" : "#888";
-                $(html)
-                    .css({
+                
+                $(html).css({
                     "background-color": bgColor,
                     "border-color": "#ccc",
                     "border-width": "0px 0px 1px 0px",
                     "border-style": "solid",
                 });
-                $("#docs")
-                    .append(html);
+                
+                $("#docs").append(html);
             }
         },
 
         displayTOC: function() {
-            $("#docs")
-                .empty();
+            $("#docs").empty();
+            
             for (var key in Gibber.toc) {
                 var cat = Gibber.toc[key];
                 if (cat.length > 0) {
@@ -1026,7 +1056,9 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                     //var ul = $("<ul>");
                     for (var i = 0; i < cat.length; i++) {
                         var li = $("<li>");
+                        
                         var a = $("<a style='cursor:pointer'>");
+                        
                         (function() {
                             var text = cat[i];
                             a.text(text);
@@ -1034,23 +1066,17 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                                 Gibber.Environment.displayDocs(text);
                             });
                         })();
-                        $(li)
-                            .append(a);
-                        $(ul)
-                            .append(li);
+                        
+                        $(li).append(a);
+                        $(ul).append(li);
                     }
-                    $("#docs")
-                        .append(h2);
-                    $("#docs")
-                        .append(ul);
+                    $("#docs").append(h2);
+                    $("#docs").append(ul);
                 }
             }
-
         },
 
-
         toggleSidebar: function() {
-            console.log("TOGGLING");
             $('#sidebar').toggle();
             $('#resizeButton').toggle();
             //header
@@ -1061,55 +1087,41 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                 $('#console').css("width", "100%");
             } else {
                 if (typeof Gibber.codeWidth !== "undefined") { //if docs/editor split has not been resized
-                    $(".CodeMirror").width(Gibber.codeWidth);
-                    $("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
-                    $("#sidebar").height($(".CodeMirror").outerHeight());
+                    $(".CodeMirror").width( Gibber.codeWidth );
+                    $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
+                    $("#sidebar").height( $(".CodeMirror").outerHeight() );
 
-                    $("#resizeButton")
-                        .css({
+                    $("#resizeButton").css({
                         position: "absolute",
                         display: "block",
                         top: $(".header").height(),
                         left: Gibber.codeWidth,
                     });
                 } else {
-                    $("#resizeButton")
-                        .css({
+                    $("#resizeButton").css({
                         position: "absolute",
                         display: "block",
-                        top: $(".header")
-                            .height(),
+                        top: $(".header").height(),
                         left: "70%",
                     });
-                    $('#console')
-                        .css("width", "70%");
-                    //$('.CodeMirror-scroll').css("width", "80%");
-                    $('.CodeMirror')
-                        .css("width", "70%");
-                    $('.CodeMirror')
-                        .css("margin", "0");
-                    $("#sidebar")
-                        .width($("body")
-                        .width() - $(".CodeMirror")
-                        .outerWidth() - 8);
-                    //$("#sidebar").width($("body").width() - $(".CodeMirror").outerWidth() - 8);
-                    $("#sidebar")
-                        .height($(".CodeMirror")
-                        .outerHeight());
+                    
+                    $('#console').css("width", "70%");
+
+                    $('.CodeMirror').css("width", "70%");
+                    $('.CodeMirror').css("margin", "0");
+                    
+                    $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
+                    $("#sidebar").height( $(".CodeMirror").outerHeight() );
                 }
             }
         },
 
         editorResize: function() {
-            var one = $('#console')
-                .outerHeight();
-            var remaining_height = parseInt($(window)
-                .height() - one - $("#mega-menu-1")
-                .outerHeight() - 1);
+            var one = $('#console').outerHeight();
+            var remaining_height = parseInt( $(window).height() - one - $("#mega-menu-1").outerHeight() - 1 );
 
             var scroll = window.editor.getScrollerElement();
-            $(scroll)
-                .height(remaining_height);
+            $(scroll).height( remaining_height );
 
             window.editor.refresh();
         },

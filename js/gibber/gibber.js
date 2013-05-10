@@ -20,7 +20,6 @@ define(['gibber/audio_callback'], function() {
 			this.sampleRate = 44100;//this.dev.sampleRate;
 			
 			if (navigator.userAgent.indexOf("Firefox") > 0) {
-				console.log("FIREFOX HO");
 				this.dev = Sink(audioProcess, 2, 8192);
 				this.sampleRate = this.dev.sampleRate;
 			}else{
@@ -63,6 +62,7 @@ define(['gibber/audio_callback'], function() {
 			], function() {
 				if(typeof Gibber.Environment !== "undefined") { // if we are using with the Gibber editing environment
 					Gibber.Environment.init();
+          Gibber.Environment.runLoadFile();
 				}
 
 				Gibber.callback = new Callback();

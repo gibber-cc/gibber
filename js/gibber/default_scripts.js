@@ -1,78 +1,6 @@
 define(["gibber/gibber"], function(_Gibber) {	
 return {
-default: '// This is a sample of what Gibber can do and isn\'t really\n'+
-'// intended as a tutorial. There are many tutorials in\n'+
-'// the Load menu at the top of the screen.\n'+
-'//\n'+
-'// Run lines in between comments one section at a time\n'+
-'// by highlighting them and hitting ctrl + shift + return.\n'+
-'// Or select everything at once and run it all together.\n'+
-'// Stop the audio by hitting Ctrl + . (period)\n'+
-'\n'+
-'G.setBPM(140);\n'+
-'\n'+
-'// x is a kick, o is a snare\n'+
-'d = Drums("x.ox.xo.");\n'+
-'d.amp = .55;\n'+
-'\n'+
-'// karplus-strong can create string or noise sounds depending on blend\n'+
-'p = Pluck({\n'+
-'	amp : .75,\n'+
-'	blend : .5,\n'+
-'	channels: 2,\n'+
-'});\n'+
-'p.mod("pan", LFO(2, .75));\n'+
-'\n'+
-'// sequence pluck with random 16th notes\n'+
-'s = ScaleSeq(rndi(0,16,31), 1/16).slave(p);\n'+
-'s.root = "C2";\n'+
-'\n'+
-'// create bass monosynth with a half-note attack, a whole-note decay\n'+
-'b = Mono({\n'+
-'	attack:1/2,\n'+
-'	decay: 1,\n'+
-'	amp: .35,\n'+
-'  octave3 : 0,\n'+
-'  cutoff: .2,\n'+
-'  resonance: 2.5,\n'+
-'});\n'+
-'\n'+
-'// sequence bass. "note" is positions in scale where 0 is the root\n'+
-'c = ScaleSeq({\n'+
-'  note :      [0,-2,-4], \n'+
-'  durations:  [2, 1, 1],\n'+
-'  root :      "C2",\n'+
-'  slaves:     b\n'+
-'});\n'+
-'\n'+
-'// add modulation changing blend of karplus-strong\n'+
-'// this will move from string to noise sounds\n'+
-'p.mod("blend", LFO(.25, 1), "=");\n'+
-'\n'+
-'// add buffer stuttering / repitching / reversing\n'+
-'p.fx.add( Schizo() );\n'+
-'\n'+
-'// sequence drums randomizing every 4th measure and then reseting\n'+
-'e = Seq( [ d.reset, d.shuffle ], [3, 1]);\n'+
-'\n'+
-'// make FM synth using glockenspiel preset. add chorus and delay.\n'+
-'f = FM("glockenspiel", {\n'+
-'  maxVoices:1, \n'+
-'  amp: .225,\n'+
-'  fx: [ Chorus(), Delay(_6, .8) ],\n'+
-'});\n'+
-'\n'+
-'// sequence glockenspiel with random notes and random durations\n'+
-'g = ScaleSeq({\n'+
-'  note :      rndi(0,12,16), 		// 0-12 in the scale, generate 16 notes \n'+
-'  durations : rndi([1/2, 2, 4], 32), // half note, two measures or four measures duration per note\n'+
-'  slaves :    f,\n'+
-'});\n'+
-'\n'+
-'// add fx to Master channel; this affects all sounds\n'+
-'Master.fx.add( Flanger() );',
-
-"GIBBER TUTORIALS":"LABEL START",
+tutorials : {
 "synthesis + fx" :
 '/*\n'+
 'Synthesis + FX\n'+
@@ -90,7 +18,7 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 '\n'+
 '// modulate the frequency of the triangle wave using a sequencer.\n'+
 '// add the sequencer\'s output to the oscillators frequency\n'+
-'s.mod("frequency", Step([220, 0], _2), "+");\n'+
+'s.mod("frequency", Step([220, 0], 1/2), "+");\n'+
 '\n'+
 '// create tremolo by using a LFO to modulate the volume of the oscillator \n'+
 '// (currently volume is inappropriately referred to as mix). Multiply the amplitude\n'+
@@ -98,7 +26,7 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 's.mod("amp",  LFO(4, 1), "*");\n'+
 '\n'+
 '// add a Delay effect with a delay time of 1/3 a measure and a Reverb effect with default settings\n'+
-'s.fx.add( Delay(_3), Reverb() );\n'+
+'s.fx.add( Delay( 1/3 ), Reverb() );\n'+
 '\n'+
 '// bit crush / sample rate reduce; reduce to 8-bits and 8khz\n'+
 's.fx.add( Crush(8, 8000) );\n'+
@@ -649,9 +577,7 @@ default: '// This is a sample of what Gibber can do and isn\'t really\n'+
 "  slaves:a\n"+
 "});",
 
-"SYNTHESIS TUTORIALS":"LABEL START",
-
-"Additive":
+"Additive Synthesis":
 '/* \n'+
 'Complex tones can often be represented by a combination of sine waves. This synthesis\n'+
 'technique is termed "additive synthesis". Harmonic sounds are created when the frequency\n'+
@@ -764,5 +690,223 @@ FM:
 '\n'+
 'g = FM("clarinet");\n'+
 'g.note("A5");\n',
+},
+
+demos: {
+"resampling (default)":'/*\nThis is a sample of what Gibber can do and isn\'t really\n'+
+'intended as a tutorial. There are many tutorials in the aptly named Tutorials\n'+
+'menu at the top of the screen.\n'+
+'\n'+
+'To play this demo select all the code and hit Ctrl + Enter.\n'+
+'Stop the audio by hitting Ctrl + . (period)\n'+
+'*/\n\n'+
+"// all time values less than this number are interpreted as measures,\n"+
+"// others are interpreted as samples\n"+
+"Gibber.MAX_MEASURES = 44\n"+
+"\n"+
+"// rhythm\n"+
+"a = EDrums('x*o*x*o-')\n"+
+"a.snare.snappy = 1.5;\n"+
+"\n"+
+"b = Grains('flurry', {input:a, amp:.35});\n"+
+"\n"+
+"c = Sampler().record(Master, 2);\n"+
+"\n"+
+"d = Seq({\n"+
+"  note:[-2,-1,-.5,.5,2].random(),\n"+
+"  durations:[1/4,1/2,1].random(),\n"+
+"  pan:_rndf(-.75,.75),\n"+
+"  slaves:c\n"+
+"});\n"+
+"\n"+
+"// bass line, begin after 4 measures\n"+
+"future( function() {\n"+
+"  m = Mono('dark2', {attack:1, decay:44, resonance: 0, detune3: 1.025, detune2: 2.025 });\n"+
+"  m.fx.add( Chorus() )\n"+
+"  \n"+
+"  n = Seq({\n"+
+"    note:['bb1', 'eb1', 'g1', 'ab1'],\n"+
+"    durations:[2],\n"+
+"    slaves:m\n"+
+"  });\n"+
+"}, 4)\n"+
+"\n"+
+"// lead + fx, begin after 8 measures\n"+
+"future( function() {\n"+
+"  g = Synth({ waveform:'Sine', attack:44, decay:1/4, amp:.65 })\n"+
+"  g.fx.add( Vibrato(2), Delay(), Reverb('space') )\n"+
+"  \n"+
+"  h = ScaleSeq({\n"+
+"    note:_rndi(0,8),\n"+
+"    durations:[1/2,1,2],\n"+
+"    slaves:g\n"+
+"  });\n"+
+"  \n"+
+"  // resample lead and sequence at different speeds after 4 measures\n"+
+"  future( function() {\n"+
+"    i = Sampler().record(g, 4);\n"+
+"    \n"+
+"    j = Seq({\n"+
+"      note:[-4,-2,-1,-.5,.5,2,4].random(),\n"+
+"      durations:[1/4,1/2,1].random(),\n"+
+"      pan:_rndf(-.75,.75),\n"+
+"      slaves:i\n"+
+"    });\n"+
+"  }, 4);\n"+
+"  \n"+
+"}, 12)\n"+
+"\n"+
+"// glitch things out a little bit more\n"+
+"future( function() {\n"+
+"  j.durations = [1/4, 1/8, 1/16].random() \n"+
+"  a.fx.add( Schizo('paranoid', { mix:.25 } ) )\n"+
+"}, 28)",
+
+"swarms (graphics + sound)" :
+"Graphics.init();\n"+
+"\n"+
+"a = Swarm({ \n"+
+"  size: 20,\n"+
+"  speed:25,\n"+
+"  separation:15,\n"+
+"  amp:2,\n"+
+"  \n"+
+"  shape: { type:'Tetrahedron', scale:.25 },\n"+
+"  sound: { type:'Sampler', file:'audiofiles/trumpet.wav', loops:true, amp:.1 },\n"+
+"  \n"+
+"  update : function() { \n"+
+"    this.sound.pitch = .05 + Math.abs(this.shape.y / 50);\n"+
+"    this.sound.pan = -.75 + ( this.shape.x + 200) / 200;\n"+
+"  },\n"+
+"});\n"+
+"\n"+
+"// shouldn't have to do this next line but I haven't fixed it yet\n"+
+"a.boids.all( function() { this.sound.loops = true; } )\n"+
+"\n"+
+"a.fx.add( Reverb() );\n"+
+"\n"+
+"c = Icosahedron({ scale:.25, fill:'red' })\n"+
+"c.spin(.0,.1,0)\n"+
+"\n"+
+"// change the center target for the swarm\n"+
+"b = Seq({\n"+
+"  position: _rndf(-50,50,3),\n"+
+"  durations:1,\n"+
+"  slaves:[a,c]\n"+
+"});\n"+
+"\n"+
+"f = Film();\n"+
+"f.sCount = 8\n"+
+"Graphics.fx.add( f );\n"+
+"\n"+
+"background('gray')\n"+
+"\n"+
+"// randomly change the minimum distance the swarm members must stay away from each other\n"+
+"g = Seq({\n"+
+"  separation: _rndf(5,50),\n"+
+"  speed: _rndf(3, 50),\n"+
+"  durations:2,\n"+
+"  slaves:a\n"+
+"});",
+
+'a crazy knot' :
+"Graphics.init(true)\n"+
+"background('white')\n"+
+"\n"+
+"a = Knot({ fill:'red', p:25, q: 15, tube:2 });\n"+
+"a.spin()\n"+
+"\n"+
+"f = Godrays()\n"+
+"Graphics.fx.add( f )\n"+
+"\n"+
+"g = Blur({ v:1 })\n"+
+"Graphics.fx.add( g )",
+
+beatboxing : 
+"/*\n"+
+"The beatbox kit, programmed by Karl Yerkes using samples found at humanbeatbox.com, \n"+
+"uses a beatboxing notation different from other Gibber drum kits. It is roughly as follows:\n"+
+"\n"+
+"hihat: T f h s\n"+
+"snare/hihat: d t k K 8\n"+
+"snare: p P F H\n"+
+"kicks: b . D\n"+
+"vowels: a o u\n"+
+"nasal: m n\n"+
+"\n"+
+"Below is a beat using the kit.\n"+
+"*/\n"+
+"\n"+
+"d = Drums({\n"+
+"  kit:'beatbox',\n"+
+"  note:'. t p tb  . p T . t p tb  .  b P. t p tb  . p T . t p tb T  dkp ',\n"+
+"  durations:[1/16],\n"+
+"  amp:1,\n"+
+"});",
+
+"older FM + Monosynth demo":
+'G.setBPM(140);\n'+
+'\n'+
+'// x is a kick, o is a snare\n'+
+'d = Drums("x.ox.xo.");\n'+
+'d.amp = .55;\n'+
+'\n'+
+'// karplus-strong can create string or noise sounds depending on blend\n'+
+'p = Pluck({\n'+
+'	amp : .75,\n'+
+'	blend : .5,\n'+
+'	channels: 2,\n'+
+'});\n'+
+'p.mod("pan", LFO(2, .75));\n'+
+'\n'+
+'// sequence pluck with random 16th notes\n'+
+'s = ScaleSeq(rndi(0,16,31), 1/16).slave(p);\n'+
+'s.root = "C2";\n'+
+'\n'+
+'// create bass monosynth with a half-note attack, a whole-note decay\n'+
+'b = Mono({\n'+
+'	attack:1/2,\n'+
+'	decay: 1,\n'+
+'	amp: .35,\n'+
+'  octave3 : 0,\n'+
+'  cutoff: .2,\n'+
+'  resonance: 2.5,\n'+
+'});\n'+
+'\n'+
+'// sequence bass. "note" is positions in scale where 0 is the root\n'+
+'c = ScaleSeq({\n'+
+'  note :      [0,-2,-4], \n'+
+'  durations:  [2, 1, 1],\n'+
+'  root :      "C2",\n'+
+'  slaves:     b\n'+
+'});\n'+
+'\n'+
+'// add modulation changing blend of karplus-strong\n'+
+'// this will move from string to noise sounds\n'+
+'p.mod("blend", LFO(.25, 1), "=");\n'+
+'\n'+
+'// add buffer stuttering / repitching / reversing\n'+
+'p.fx.add( Schizo() );\n'+
+'\n'+
+'// sequence drums randomizing every 4th measure and then reseting\n'+
+'e = Seq( [ d.reset, d.shuffle ], [3, 1]);\n'+
+'\n'+
+'// make FM synth using glockenspiel preset. add chorus and delay.\n'+
+'f = FM("glockenspiel", {\n'+
+'  maxVoices:1, \n'+
+'  amp: .225,\n'+
+'  fx: [ Chorus(), Delay(_6, .8) ],\n'+
+'});\n'+
+'\n'+
+'// sequence glockenspiel with random notes and random durations\n'+
+'g = ScaleSeq({\n'+
+'  note :      rndi(0,12,16), 		// 0-12 in the scale, generate 16 notes \n'+
+'  durations : rndi([1/2, 2, 4], 32), // half note, two measures or four measures duration per note\n'+
+'  slaves :    f,\n'+
+'});\n'+
+'\n'+
+'// add fx to Master channel; this affects all sounds\n'+
+'Master.fx.add( Flanger() );',
+} // end demos
 };
 });

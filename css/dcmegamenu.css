@@ -59,7 +59,7 @@
 #mega-menu-1 li .sub li.mega-hdr {margin: 0 10px 10px 0; float: left;}
 #mega-menu-1 li .sub li.mega-hdr.last {margin-right: 0;}
 #mega-menu-1 li .sub a {background: none; color: #333; padding: 7px 10px; display: block; float: none; font-size: 0.9em;}
-#mega-menu-1 li .sub li.mega-hdr a.mega-hdr-a {padding: 5px 15px; margin-bottom: 5px; background: #6B6B6B; text-transform: uppercase; font-weight: bold; color: #fff;}
+#mega-menu-1 li .sub li.mega-hdr a.mega-hdr-a {padding: 5px 15px; margin-bottom: 0px; background: #6B6B6B; text-transform: uppercase; font-weight: bold; color: #fff;}
 #mega-menu-1 li .sub li.mega-hdr a.mega-hdr-a:hover {color: #777;}
 #mega-menu-1 .sub li.mega-hdr li a {padding: 4px 5px; font-weight: normal;}
 #mega-menu-1 .sub li.mega-hdr li a:hover {color: #333; background: #888;}
@@ -68,4 +68,4 @@
 #mega-menu-1 li .sub-container.non-mega li {padding: 0; width: 190px; margin: 0;}
 #mega-menu-1 li .sub-container.non-mega li a {padding: 7px 5px 7px 22px;}
 #mega-menu-1 li .sub-container.non-mega li a:hover {color: #333; background: #888;}
-#mega-menu-1 li ul li { margin:5px 0px !important; } 
+#mega-menu-1 li ul li { margin:0px 0px !important; } 
