@@ -510,7 +510,24 @@ tutorials : {
 'j.note.pick = weight(.7, .1, .1, .05, .05); // weights should add up to 1\n'+
 '\n'+
 '// wait a while and then run this to emphasize eighth notes\n'+
-'j.durations.pick = weight(.8, .1, .1);',
+'j.durations.pick = weight(.8, .1, .1);\n\n'+
+"// The final way to add randomness to sequences is using the random() method of \n"+
+"// the array object. This method adds a pick function to the array that calls it, but also\n"+
+"// allows you to specify a number of times a particular value should be repeated if it is\n"+
+"// randomly chosen. This is useful, for example, to gurantee that three triplets would be played\n"+
+"// together. Or 5 quintuplets etc. In the example below, 1/16 notes are repeated so that the\n"+
+"// sequence stays on an eighth note grid.\n"+
+"\n"+
+"k = Mono('bass', {attack:44, cutoff:.1});\n"+
+"l = Drums('x*o*x*o-')\n"+
+"l.amp = 1\n"+
+"\n"+
+"m = ScaleSeq({\n"+
+"  note:[0,0,7,0,14,15,0,0,21,28,7,0].random(),\n"+
+"	durations:[1/8, 1/4, 1/16, 1/8].random( 1/16,2 ),\n"+
+"  slaves:k,\n"+
+"  root:'c2'\n"+
+"});",
 
 'freesound' :
 "// The Freesound object is simply a Sampler (see the sampling tutorial)\n"+
