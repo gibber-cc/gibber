@@ -731,7 +731,7 @@ demos: {
 "  });\n"+
 "}, 4)\n"+
 "\n"+
-"// lead + fx, begin after 8 measures\n"+
+"// lead + fx, begin after 12 measures\n"+
 "future( function() {\n"+
 "  g = Synth({ waveform:'Sine', attack:44, decay:1/4, amp:.65 })\n"+
 "  g.fx.add( Vibrato(2), Delay(), Reverb('space') )\n"+
@@ -744,7 +744,7 @@ demos: {
 "  \n"+
 "  // resample lead and sequence at different speeds after 4 measures\n"+
 "  future( function() {\n"+
-"    i = Sampler().record(g, 4);\n"+
+"    i = Sampler({ amp:.5 }).record(g, 4);\n"+
 "    \n"+
 "    j = Seq({\n"+
 "      note:[-4,-2,-1,-.5,.5,2,4].random(),\n"+
@@ -758,7 +758,7 @@ demos: {
 "\n"+
 "// glitch things out a little bit more\n"+
 "future( function() {\n"+
-"  j.durations = [1/4, 1/8, 1/16].random() \n"+
+"  j.durations = [1/4, 1/8, 1/16].random( 1/16,2 ) \n"+
 "  a.fx.add( Schizo('paranoid', { mix:.25 } ) )\n"+
 "}, 28)",
 
