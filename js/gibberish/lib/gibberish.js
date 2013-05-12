@@ -726,6 +726,7 @@ define([], function() {
 					this.fx.push(fx);
 				}
 				Gibberish.dirty(this);
+        return this;
 			},
 		
 			fx:			[],

@@ -120,7 +120,7 @@ function Grains() {
 Gibber.presets.Grains = {
 	tight : {
 		numberOfGrains : 10,
-		grainSize : ms(25),
+		grainSize : 44 * 25,
 		positionMin : -.05,
     positionMax : .05,
     speedMin : -.1,
@@ -134,7 +134,7 @@ Gibber.presets.Grains = {
     positionMax : .25,
     speedMin : -.1,
     speedMax : 4,
-		grainSize : ms(100),
+		grainSize : 44 * 100,
 		shouldReverse : true,
 	},
   flurry : {
@@ -145,6 +145,6 @@ Gibber.presets.Grains = {
     positionMin:0,
     positionMax:0,
     numberOfGrains:20,
-    grainSize : ms(25),
+    grainSize : 44 * 25,
   },  
 };

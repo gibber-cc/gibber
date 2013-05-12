@@ -854,12 +854,12 @@ window._f = window.func = function() {
 	return function() { return func.apply(this, args); };
 }
 
-window._rndf = function() {
+window._rndf = window.Rndf = function() {
 	var args = Array.prototype.slice.call(arguments,0);
 	return function() { return rndf.apply(this, args); };
 };
 
-window._rndi = function() {
+window._rndi = window.Rndi = function() {
 	var args = Array.prototype.slice.call(arguments,0);
 	return function() { return rndi.apply(this, args); };
 };

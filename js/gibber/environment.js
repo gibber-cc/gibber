@@ -390,7 +390,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
 
             scripts[name] = text;
             localStorage.setObject("scripts", scripts);
-            Gibber.Environment.createFileList();
+            Gibber.Environment.createUserFileList();
             G.log(name + " has been saved.")
         },
 
