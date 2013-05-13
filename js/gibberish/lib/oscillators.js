@@ -301,7 +301,7 @@ define([], function() {
 					
 					that.end = 1;
 					
-					console.log("LOADED ", that.file, that.bufferLength);
+					G.log("LOADED ", that.file, that.bufferLength, "bytes");
 					Gibberish.audioFiles[that.file] = that.buffer;
 					
 					that.isLoaded = true;
@@ -344,14 +344,14 @@ define([], function() {
 					return this;	
 				},
         floatTo16BitPCM : function(output, offset, input){
-          console.log(output.length, offset, input.length )
+          //console.log(output.length, offset, input.length )
           for (var i = 0; i < input.length - 1; i++, offset+=2){
             var s = Math.max(-1, Math.min(1, input[i]));
             output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
           }
         },
         encodeWAV : function(){
-          console.log("BUFFER LENGTH" + this.buffer.length);
+          //console.log("BUFFER LENGTH" + this.buffer.length);
           var buffer = new ArrayBuffer(44 + this.buffer.length * 2),
               view = new DataView(buffer),
               sampleRate = 44100;
@@ -397,7 +397,7 @@ define([], function() {
            //function(blob, filename){
              var blob = this.encodeWAV();
              var audioBlob = new Blob( [blob] );
-             console.log(blob);
+             //console.log(blob);
              var url =  window.webkitURL.createObjectURL( audioBlob );
              var link = window.document.createElement('a');
               link.href = url;
@@ -462,7 +462,6 @@ define([], function() {
 				}
 			});
 			
-      console.log( that.buffer );
 			if(typeof Gibberish.audioFiles[that.file] !== "undefined") {
 				console.log("NOT LOADING");
 				that.buffer =  Gibberish.audioFiles[that.file];
@@ -471,10 +470,10 @@ define([], function() {
 				that.function = Gibberish.make["Sampler"](that.buffer); // only passs ugen functions to make
 				window[that.symbol] = that.function;
 			}else if(that.file !== null){
-				console.log("LOADING", that.file);
-			    var request = new AudioFileRequest(that.file);
-			    request.onSuccess = that.onload;
-			    request.send();
+				G.log("LOADING", that.file);
+			  var request = new AudioFileRequest(that.file);
+			  request.onSuccess = that.onload;
+			  request.send();
 			}else if(that.buffer !== null) {
 				that.bufferLength = that.buffer.length;
 				that.end = that.bufferLength;

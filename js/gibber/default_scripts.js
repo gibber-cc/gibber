@@ -710,9 +710,10 @@ FM:
 },
 
 demos: {
-"resampling (default)":'/*\nThis is a sample of what Gibber can do and isn\'t really\n'+
-'intended as a tutorial. There are many tutorials in the aptly named Tutorials\n'+
-'menu at the top of the screen.\n'+
+"resampling (default)":'/*\nNOTE: Gibber currently runs best in Chrome; work is being\n'+
+'done to ensure compatability with other browsers. This sketch is a sample of what Gibber\n'+
+'can do and isn\'t really intended as a tutorial. There are many tutorials in the aptly\n'+
+'named Tutorials menu at the top of the screen.\n'+
 '\n'+
 'To play this demo select all the code and hit Ctrl + Enter.\n'+
 'Stop the audio by hitting Ctrl + . (period)\n'+
