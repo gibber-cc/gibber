@@ -3,7 +3,7 @@
 
 /**#Synth - Synth
 Create an oscillator(s) with an attached attack / decay envelope(s) that can play notes or chords. The primary oscillator is determined by the
-waveform property and can currently be Sine, Saw, Triangle, Square or Noise.
+waveform property and can currently be Sine, Saw, Triangle, Square or Noise. Presets are short and rhodes.
 ## Example Usage##
 `s = Synth();
 s.note("A4");  
@@ -87,6 +87,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 			that.fx.add( props.fx[i] );
 		}
 	}
+
 	
 	return that;
 }
@@ -97,12 +98,13 @@ Gibber.presets.Synth = {
 		decay: 1/16,
 	},
 	bleep: { waveform:'Sine', attack:44, decay:1/16 },
+  rhodes: { waveform:'Sine', maxVoices:4, fx:[ Tremolo(2, .2) ], attack:44, decay:1, cutoff:.1, filterMult:.4, resonance:1.5 }
 };
 
 /**#Synth2 - Synth
 Create an oscillator with an attached envelope and 24db resonant filter that can be triggered by note or chord messages. The envelope controls both the
 amplitude and cutoff frequency of the filter. Like the Synth object, the primary oscillator is determined by the
-waveform property and can currently be Sine, Saw, Triangle, Square or Noise.
+waveform property and can currently be Sine, Saw, Triangle, Square or Noise. Presets are short and squeal.
 ## Example Usage##
 `s = Synth2();
 s.note("A4");  
@@ -190,11 +192,12 @@ Gibber.presets.Synth2 = {
 		attack: 44,
 		decay: 1/16,
 	},
+  squeal: { waveform:'Saw', attack:44, decay:1/16, cutoff:.1, filterMult:.4, resonance:5.5 },
 };
 
 /**#Mono - Synth
 A three oscillator monosynth for bass and lead lines. You can set the octave and tuning offsets for oscillators 2 & 3. There is a 24db filter and an envelope controlling
-both the amplitude and filter cutoff.
+both the amplitude and filter cutoff. Presets are: short, lead, bass, easy, dark, dark2.
 ## Example Usage##
 `s = Mono();
 s.note("A4");  

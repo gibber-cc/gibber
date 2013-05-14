@@ -142,6 +142,22 @@ define([], function() {
 					return sample;
 				},
 			});
+      
+			gibberish.Tremolo = Gen({
+				name:"Tremolo",
+				acceptsInput:true,	
+				props:{ frequency: 2.5, amp: .5, channels:2 },
+				upvalues: { modulation:gen("Sine") },
+				
+				callback: function(sample, frequency, amp, channels) {
+					var x = modulation(frequency, amp, 1)[0];
+					for(var channel = 0; channel < channels; channel++) {
+						var wet = x * sample[channel];
+						sample[channel] = wet;
+					}
+					return sample;
+				},
+			});
 			
 			// adapted from Arif Ove Karlsne's 24dB ladder approximation: http://musicdsp.org/showArchiveComment.php?ArchiveID=141
 			gibberish.Filter24 = Gen({

@@ -83,6 +83,34 @@ function Vibrato(rate, amount, offset) {
 	return that;
 }
 
+/**#Tremolo - FX
+**description** : Amplitude modulation
+  
+**param** *rate*: Float. Default = 2.5. Measured in Hz, this is the speed of the tremolo
+
+**param** *amount*: Float. Default = .5. The maximum change in amplitude
+
+## Example Usage ##
+`p = Pluck(0, 1);    
+p.fx.add( Tremolo() );   
+p.note( "A3" );`
+**/
+
+/**###Tremolo.rate : property
+Float. Hz. the speed that the delay line size fluctuates at.
+**/	 
+/**###Tremolo.amount : property
+Float. The maximum change in amplitude
+**/  
+
+function Tremolo(rate, amount) {
+	var args = Array.prototype.slice.call(arguments, 0),
+		that = Gibberish.Tremolo.apply(null, args);
+	
+	that.name = "Tremolo";
+	
+	return that;
+}
 
 /**#Chorus- FX
 **description** : cheap chorus using a flanger with an extreme offset see http://denniscronin.net/dsp/article.html
@@ -107,7 +135,7 @@ function Chorus(rate, amount) {
 }
 
 /**#Reverb- FX
-**description** :  based off audiolib.js reverb and freeverb
+**description** :  based off audiolib.js reverb and freeverb. There are four presets for Reverb: small, medium, large, and space (like outer space).
 
 **param** *roomSize*: Float. Default = .8. The size of the room being emulated  
 **param** *damping*: Float. Default = .3. Attenuation of high frequencies that occurs  
@@ -134,35 +162,48 @@ Float. Default = .5. The amount of dry signal that is output
 function Reverb(roomSize, damping, wet, dry) {
 	var that;
 	
-	if(typeof Gibber.ReverbPresets === 'undefined') ReverbPresets();
-	
-	if(typeof arguments[0] === "object") {
-		that = Gibberish.Reverb( arguments[0] );
-	}else if(typeof arguments[0] === 'string') {
-		that = Gibberish.Reverb( Gibber.ReverbPresets[arguments[0]]);
-	}else{
-		var props = {
+	var props = Gibber.applyPreset("Reverb", arguments);
+	if(typeof props === "undefined") {
+		props = {
 			roomSize : (isNaN(roomSize)) ? .5 : roomSize,
 			damping	: (isNaN(damping)) ? .2223 : damping,
 			wet		: wet || .25,
 			dry		: dry || 1,
-		};
-		
-		that = Gibberish.Reverb( props );
+		};;
 	}
+		
+	that = Gibberish.Reverb( props );
+  
 	that.name = "Reverb";
+  
 	return that;
 }
 
-function ReverbPresets() {
-	Gibber.ReverbPresets = {
-		space : {
-			roomSize:1,
-			damping:0,
-			wet:.4,
-			dry:.6,
-		},
-	}
+Gibber.presets.Reverb = {
+	space : {
+		roomSize:1,
+		damping:0,
+		wet:.4,
+		dry:.6,
+	},
+  small : {
+    roomSize:.1,
+    damping:.75,
+    wet:.15,
+    dry:.85,
+  },
+  medium: {
+    roomSize:.5,
+    damping:.5,
+    wet:.35,
+    dry:.65,
+  },
+  large: {
+    roomSize:.75,
+    damping:.5,
+    wet:.55,
+    dry:.45,
+  }
 }
 
 /**#Delay- FX
@@ -334,12 +375,12 @@ function Gain(gain) {
 }
 
 /**#Schizo - FX
-**description** : A buffer shuffling / stuttering effect with reversing and pitch-shifting
+**description** : A buffer shuffling / stuttering effect with reversing and pitch-shifting. Presets include sane, borderline, paranoid and psycho.
 ### syntax 1:
 **param** *properties* : Object. A dictionary of property keys and values to assign to the Schizo object
 - - - - 
 ### syntax 2:
-**param** *presetName* : String. The name of a Schizo preset to use. Current choices include "sane", "borderline" and "paranoid".
+**param** *presetName* : String. The name of a Schizo preset to use. Current choices include "sane", "borderline", "paranoid" and "psycho".
 
 ##Example Usage## 
 `d = Drums("x*o*x*o-");

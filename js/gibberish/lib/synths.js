@@ -458,18 +458,19 @@ define([], function() {
 			
 			for(var i = 0; i < that.maxVoices; i++) {
 				var props = {
-					attack: 		that.attack,
-					decay:			that.decay,
-					release:		that.release,
-					sustain:		that.sustain,
+					attack: 		  that.attack,
+					decay:			  that.decay,
+					release:		  that.release,
+					sustain:		  that.sustain,
 					attackLevel:	that.attackLevel,
 					sustainLevel:	that.sustainLevel,	
-					cutoff:			that.cutoff,
+					cutoff:			  that.cutoff,
 					resonance:		that.resonance,
 					filterMult:		that.filterMult,
 					isLowPass:		that.isLowPass,
-					glide:			that.glide,
-					amp: 			1,
+					glide:			  that.glide,
+          waveform:     that.waveform,
+					amp: 			    1,
 				};
 				
 				var synth = this.Synth2(props);

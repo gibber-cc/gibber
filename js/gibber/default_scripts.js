@@ -109,6 +109,60 @@ tutorials : {
 '\n'+
 'hat.shuffle(); // randomize hat sequence',
 
+'presets' :
+"// to use a preset, simply pass the name of the preset as the first parameter\n"+
+"// the the constructor. The rhodes preset of the Synth object is four voices \n"+
+"// of sine waves with short attacks, long decays, and tremolo.\n"+
+"a = Synth('rhodes')\n"+
+"\n"+
+"b = Seq({\n"+
+"  chord:['eb4min7', 'db4min7'],\n"+
+"  durations:1,\n"+
+"  slaves:a\n"+
+"});\n"+
+"\n"+
+"// you can change individual properties of synths by passing an object\n"+
+"// as the second parameter with all the properties you want to change and\n"+
+"// their desired values. In this case, we make our synth able to play two\n"+
+"// notes at a time instead of the default 1.\n"+
+"c = Synth2('squeal', {maxVoices:2});\n"+
+"c.fx.add( Delay(1/16,.25) )\n"+
+"\n"+
+"d = ScaleSeq({\n"+
+"  note:Rndi(0,12),\n"+
+"  durations:[1/4,1/8,1/2,1/16].random(1/16,2),\n"+
+"  scale: Scale('ab4', 'minor'),\n"+
+"  slaves:c\n"+
+"})\n"+
+"\n"+
+"// drums unfortunately don't have presets because we use the first parameter\n"+
+"// to determine the beat. This will have to be fixed somehow in the future.\n"+
+"e = Drums('xxxx')\n"+
+"e.amp = .6\n"+
+"\n"+
+"h = Drums('.o.o')\n"+
+"h.fx.add( Delay(1/64) )\n"+
+"\n"+
+"f = Mono('dark', { filterMult:.4, amp:.1 });\n"+
+"g = ScaleSeq({\n"+
+"  note:[0,0,0,7,14].random(),\n"+
+"  durations:[1/4,1/8,1/16,1/8,1/8,1/4].random(1/16,2),\n"+
+"  slaves:f,\n"+
+"  root:'ab1'\n"+
+"});\n"+
+"\n"+
+"/* Presets in Gibber currently include:\n"+
+"\n"+
+"FM - 			glockenspiel, frog, radio, noise, brass, brassy, clarinet, drum, gong, drum2\n"+
+"Mono - 		short, lead, bass, easy, dark, dark2\n"+
+"Grains - 	tight, cloudy, flurry\n"+
+"Schizo - 	sane, boderline, paranoid, psycho\n"+
+"Reverb - 	small, medium, large, space\n"+
+"Synth -		short, rhodes \n"+
+"Synth2 - 	short, squeal\n"+
+"\n"+
+"*/",
+
 "the sequencer":
 '/* \n'+
 'The Seq object is one of the basic building blocks of Gibber. It is designed\n'+
