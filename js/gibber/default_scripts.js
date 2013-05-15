@@ -242,15 +242,15 @@ tutorials : {
 'q.pause();\n'+
 'q.play();\n'+
 '\n'+
-'// Sequences can also be applied to graphics...\n'+
-'graphics();\n'+
+'// Sequences can also be applied to graphics... see the graphics tutorial for more details.\n'+
+'Graphics.init()\n'+
 '\n'+
 'a = Cube({ fill:[1,0,0], stroke:[.5,0,0] });\n'+
 'a.scale = 2;\n'+
 '\n'+
 'b = Seq({\n'+
 '  scale : [ .5, 2, 1, .1, 6 ],\n'+
-'  rotation : _rndf( 0, 6.28, 3 ), // return a random array of three values between 0 and 2PI\n'+
+'  rotation : Rndf( 0, 6.28, 3 ), // return a random array of three values between 0 and 2PI\n'+
 '  durations: 1/2,\n'+
 '  slaves:a\n'+
 '});',
@@ -568,7 +568,7 @@ tutorials : {
 "// The final way to add randomness to sequences is using the random() method of \n"+
 "// the array object. This method adds a pick function to the array that calls it, but also\n"+
 "// allows you to specify a number of times a particular value should be repeated if it is\n"+
-"// randomly chosen. This is useful, for example, to gurantee that three triplets would be played\n"+
+"// randomly chosen. This is useful, for example, to guarantee that three triplets would be played\n"+
 "// together. Or 5 quintuplets etc. In the example below, 1/16 notes are repeated so that the\n"+
 "// sequence stays on an eighth note grid.\n"+
 "\n"+
@@ -578,7 +578,7 @@ tutorials : {
 "\n"+
 "m = ScaleSeq({\n"+
 "  note:[0,0,7,0,14,15,0,0,21,28,7,0].random(),\n"+
-"	durations:[1/8, 1/4, 1/16, 1/8].random( 1/16,2 ),\n"+
+"	 durations:[1/8, 1/4, 1/16, 1/8].random( 1/16,2 ),\n"+
 "  slaves:k,\n"+
 "  root:'c2'\n"+
 "});",
