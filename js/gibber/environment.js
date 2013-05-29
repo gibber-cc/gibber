@@ -780,7 +780,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                 window.editor.setLineClass( hlLine, null, null );
                 hlLine = editor.setLineClass( editor.getCursor().line, null, "activeline" );
                 
-                if(Graphics.initialized) {
+                /*if(Graphics.initialized) {
                   if(timeout != null) { 
                     clearTimeout( timeout );
                     timeout = null
@@ -795,12 +795,12 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                     $('.CodeMirror pre').fadeTo(250, 1)
                     isOpaque = true;
                   }
-                }
+                }*/
               },
               onChange:function(e,i) {
                 //window.editor.markText({line:0, ch:0}, {line:window.editor.lineCount() - 1, ch:0}, "highlightLine");
                 
-                if(Graphics.initialized) {
+                /*if(Graphics.initialized) {
                   if(timeout != null) { 
                     clearTimeout( timeout );
                     timeout = null
@@ -815,7 +815,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                     $('.CodeMirror pre').fadeTo(250, 1)
                     isOpaque = true;
                   }
-                }
+                }*/
               }
           });
           var hlLine = window.editor.setLineClass(0, "activeline");

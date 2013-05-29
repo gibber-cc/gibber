@@ -262,6 +262,10 @@ For example, `seq.humanize = 200;` would mean that scheduled values could be off
 			 this.advance();
 			 this.slavesInit = true;
 		}
+	}else{
+	  if( this.sequences.indexOf('functions') !== -1) {
+	    this.advance()
+	  }
 	}
 
 	this.modded = [];
@@ -414,7 +418,6 @@ This should never need to be explicitly called.
 						try {
 							val();
 						}catch(err) {
-							console.log("SEQUENCE FUNCTION ERRROR: ", err);
 							this.stop();
 						}
 						//this.counter++;
