@@ -1,4 +1,4 @@
-//  Gibber - sequence.js
+  //  Gibber - sequence.js
 // ========================
 // TODO: shuffle and reset are broke after applying pick function
 // TODO: use memory[0] in reset function instead of _sequence 
@@ -100,7 +100,7 @@ Integer. An offset in samples for the scheduling of all events by the sequencer.
 	this._sequence = null;
 	this.sequence = null;
 	this.sequences = [];
-	this._start = true;
+	this.__start = true;
 	this.shouldUseOffset = false; // flag to determine when offset should be initially applied
 	this.counter = 0; // position in seqeuence
 	this.durationCounter = 0;
@@ -360,16 +360,22 @@ This should never need to be explicitly called.
 				}
 			}else{
 				if(this.durations != null) {
-					var duration;
+					var duration, idx;
 					if(this.durations.pick != null) {
-						duration = this.durations.pick();
+            idx = this.durations.pick();
+						duration = this.durations[idx]; //this.durations.pick();
 					}else{
-						duration = this.durations[this.durationCounter % this.durations.length]
+            idx = this.durationCounter % this.durations.length;
+						duration = this.durations[idx]
 					}
+          
+          if(this.chose) this.chose('durations', idx) // for secondary notations
+          
 					duration = G.time(duration);
 					nextPhase += duration;
 				}else{
 					nextPhase += G.time(this.speed);//G.time(this.speed);
+          if(this.chose) this.chose('speed', 0) // for secondary notations
 				}
 			}
 			// TODO: should this flip-flop between floor and ceiling instead of rounding?
@@ -385,8 +391,8 @@ This should never need to be explicitly called.
 			// TODO : an array of keys? can't this just loop through an object with the appropriate values? 
 			// pretty sure I made this decision to easy live coding (no need to specify sequences array) but it's weird...
 			for(var i = 0; i < this.sequences.length; i++) {
-				var key = this.sequences[i];
-				var seq = this[key];
+				var key = this.sequences[i],
+				    seq = this[key];
 				// console.log(key);
 				var usePick = (typeof seq.pick !== "undefined");
 				
@@ -397,13 +403,16 @@ This should never need to be explicitly called.
 					val = seq[pos];
 				}else{
 					try{
-						val = seq.pick();
+            pos = seq.pick();
+						val = seq[pos];
 					}catch(err) {
 						G.log("Error picking sequencer value from " + key + "array.");
 						this.stop();
 					}
 				}
-				
+        
+        if(this.chose) this.chose(key, pos) // for secondary notations
+        
 				if(this.slaves.length === 0 && key === "note") { // if a mod... note is the default sequence value
 				 	this.value = val;
 				}
@@ -507,7 +516,11 @@ This should never need to be explicitly called.
 										}
 									}else{
 										if(typeof val === 'function') {
-											_slave[key](val());
+                      if(typeof _slave[key] === 'function') {
+  											_slave[key](val());
+                      }else{
+                        _slave[key] = val();
+                      }
 										}else{
 											_slave[key](val);
 										}
@@ -519,7 +532,6 @@ This should never need to be explicitly called.
 							}
 						}
 					}else{
-						//console.log("ASSIGNING");
 						if(typeof val === "function") {
 							val = val();
 						}
@@ -564,13 +576,13 @@ This should never need to be explicitly called.
 		"break", "out", "getMix", "bpmCallback",
 		"retain", /*"set"*/, "advance", "name",
 		"type", "generate", "setParam", "modded",
-		"_sequence","sequence","_start","shouldUseOffset",
+		"_sequence","sequence","__start","shouldUseOffset",
 		"counter","durationCounter","_counter","outputMessage",
 		"active","slavesInit","phase","memory","init","mods",
 		"shouldDie","oddEven","phaseOffset","sequenceInit",
 		"humanize","prevHumanize","mix","values2","randomFlag",
 		"end","nextEvent","endFunction",
-		"durations","doNotAdvance","speed","scale",
+		"durations","doNotAdvance","speed","scale",'properties','endSequence', 'marker', 'tree', 'repeat', 'sequences', 'endSequence', 'repeatCount', 'repeatEnd', 'shouldRepeat', 'category',
 		// for ScaleSeq
 		//"scaleInit", "root", "mode"
 	],

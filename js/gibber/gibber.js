@@ -105,7 +105,8 @@ define(['gibber/audio_callback'], function() {
 					Object.defineProperty(obj, ltr, {
 						get:function() { return obj["____"+ltr];},
 						set:function(newObj) {
-							if(newObj !== null) {	// replace
+              console.log("NEW OBJECT = ", newObj)
+							if(newObj) {	// replace
 								var endString = " created";
 								 if(typeof obj["____"+ltr] !== "undefined" && obj["____"+ltr] != null) {
 									 var variable = obj["____"+ltr];
@@ -406,7 +407,33 @@ define(['gibber/audio_callback'], function() {
 			this.active = true;
 		},
 
-		runScript : function(script) {
+		runScript : function(script, pos, cm) {
+      // var tree = esprima.parse(script, {loc:true, range:true})
+      // console.log(tree)
+      // console.log("POS",  pos)
+      // for(var i=0; i < tree.body.length; i++) {
+      //   var obj = tree.body[i];
+      //   if(obj.type === 'ExpressionStatement') {
+      //     console.log("EXPRESSION")
+      //     if(obj.expression.type === 'AssignmentExpression') {
+      //       console.log("ASSIGNMENT")
+      //       if(obj.expression.left.type === 'Identifier') { // assigning to global and not a property
+      //         var lastChar = cm.lineInfo(pos.line).text.length,
+      //             name = obj.expression.left.name;
+      //         
+      //         console.log('NEW OBJECT IS : ' + name, pos.line, lastChar);
+      //         $("<style type='text/css'> ." + name + "{}</style>").appendTo("head");
+      //         
+      //         setTimeout(function() {
+      //           var marker = cm.markText({line:pos.line,ch:0}, {line:pos.line,ch:lastChar}, name)
+      //           console.log(marker)
+      //           window[name].marker = marker;
+      //           window[name].tree = obj;
+      //         }, 15);
+      //       }
+      //     }
+      //   }
+      // }
 			try {
 				eval(script);
 			}catch(e) {

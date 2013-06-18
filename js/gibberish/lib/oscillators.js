@@ -453,6 +453,14 @@ define([], function() {
 					Gibberish.dirty(that);
 				}
 			});
+			Object.defineProperty(that, "_start", {
+				get : function() { return _start; },
+				set : function(val) {
+					if(val < 0) val = 0;
+					_start = val;// * that.bufferLength - 1;
+					Gibberish.dirty(that);
+				}
+			});
 			var _loops = 0;
 			Object.defineProperty(that, "loops", {
 				get : function() { return _loops; },

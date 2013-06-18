@@ -38,6 +38,7 @@ define([], function() {
 	        upvalues: { abs:Math.abs, history:null, sum:0, index:0, value:0 },
 			
 	        init: function() {
+            //this.getValue = function() { return value; }
 	         	this.function.setHistory([0]);
 	        },
 			
@@ -47,10 +48,10 @@ define([], function() {
 	        	history[index] = abs(input[0]);
 	        	index = (index + 1) % bufferSize;
 				
-				// zero history array iteratively instead of on initialization which can cause hiccups
-				history[index] = history[index] ? history[index] : 0;
+				    // zero history array iteratively instead of on initialization which can cause hiccups
+    				history[index] = history[index] ? history[index] : 0;
 	        	value = (sum / bufferSize) * mult;
-				return [0, 0];
+    				return [0, 0];
 	        },
 	      });
 		  

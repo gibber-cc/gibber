@@ -150,7 +150,7 @@ Array.prototype.random = Array.prototype.rnd = function() {
       };
     }else{
       var index = rndi(0, this.length - 1);
-      value = this[index];
+      value = index;//this[index];
       if( typeof dict[ ""+value ] !== 'undefined' ) {
         dict[ ""+value ].count = 1;
         lastChosen = value;
@@ -165,6 +165,9 @@ Array.prototype.random = Array.prototype.rnd = function() {
 	return this;
 };
 
+Array.prototype.choose = function() {
+  return this[ rndi(0, this.length - 1) ]
+}
 
 Array.prototype.weight = function() {
 	this.pick = weight.call(this, arguments);
@@ -459,14 +462,14 @@ TODO: Figure out an algorithm(s) to automatically create weights with different 
 */
 window.weight = function(weights) {
     var w = (typeof weights === "object") ? weights : arguments;
-    var returnValue = this[0];
+    var returnValue = 0; //this[0];
     function pick() {
         var total = 0;
         var r = rndf();
         for(var i = 0; i < w.length; i++) {
             total += w[i];
             if(r < total) { 
-                returnValue = this[i];
+                returnValue = i;//this[i];
                 break;
             }
         }
@@ -479,7 +482,7 @@ window.weight = function(weights) {
 window.whocares = window.doesItEvenMatter = window.surpriseMe = window.makeMeHappy = function() {
 	function pick() {
 		var n = rndi(0, this.length - 1);
-		return this[n];
+		return n; //this[n];
 	}
 	
 	return pick;

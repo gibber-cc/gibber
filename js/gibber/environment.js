@@ -1,4 +1,5 @@
-define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gibber/graphics', 'gibber/tutorials', "js/codemirror/util/loadmode.js", "js/codemirror/util/overlay.js", 'jquery.simplemodal', 'node/socket.io.min', 'megamenu/jquery.hoverIntent.minified', 'megamenu/jquery.dcmegamenu.1.3.3.min', 'gibber/interface' ], function(_Gibber, defaults, CodeMirror, _graphics) {
+define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gibber/graphics', 'gibber/notation','gibber/tutorials', "js/codemirror/util/loadmode.js", "js/codemirror/util/overlay.js", 'jquery.simplemodal', 'node/socket.io.min', 'megamenu/jquery.hoverIntent.minified', 'megamenu/jquery.dcmegamenu.1.3.3.min', 'gibber/interface' ], function(_Gibber, defaults, CodeMirror, _graphics, _notation) {
+
   _Gibber.Interface = _Interface;
   _Gibber.Interface.init( _Gibber );
   
@@ -509,7 +510,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             }
             window.editor.setValue(Gibber.tutorials[name]);
         },
-		fullScreen : function() {
+    		fullScreen : function() {
 			$("#console").toggle();
 			$("#header").toggle();
 
@@ -553,6 +554,12 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             this.setupDocumentation();
             
             this.graphics = _graphics;
+            
+        },
+        
+        useNotations : function() {
+          Gibber.Notation = _notation;
+          Gibber.Notation.init();
         },
         
         setupDocumentation : function() {
@@ -849,29 +856,30 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
           this.editorResize();
         },
         
+        flash: function(cm, pos) {
+          if (pos !== null) {
+            v = cm.getLine(pos.line);
+
+            cm.setLineClass(pos.line, null, "highlightLine")
+
+            var cb = (function() {
+                cm.setLineClass(pos.line, null, null);
+            });
+
+            window.setTimeout(cb, 250);
+
+          } else {
+            var sel = cm.markText(cm.getCursor(true), cm.getCursor(false), "highlightLine");
+
+            var cb = (function() {
+                sel.clear();
+            });
+
+            window.setTimeout(cb, 250);
+          }
+        },
         setupKeyBindings : function() {
-          var flash = function(cm, pos) {
-            if (pos !== null) {
-              v = cm.getLine(pos.line);
-
-              cm.setLineClass(pos.line, null, "highlightLine")
-
-              var cb = (function() {
-                  cm.setLineClass(pos.line, null, null);
-              });
-
-              window.setTimeout(cb, 250);
-
-            } else {
-              var sel = cm.markText(cm.getCursor(true), cm.getCursor(false), "highlightLine");
-
-              var cb = (function() {
-                  sel.clear();
-              });
-
-              window.setTimeout(cb, 250);
-            }
-          };
+          
           CodeMirror.keyMap.gibber = {
               fallthrough: "default",
 
@@ -889,8 +897,8 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                       pos = cm.getCursor();
                       v = cm.getLine( pos.line );
                   }
-                  flash(cm, pos);
-                  Gibber.runScript( v );
+                  Gibber.Environment.flash(cm, pos);
+                  Gibber.runScript( v, pos, cm );
               },
               "Cmd-S": function(cm) {
                   var name = window.prompt("enter name for file:")
@@ -908,13 +916,16 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                       pos = cm.getCursor();
                       v = cm.getLine(pos.line);
                   }
-                  flash(cm, pos);
+                  Gibber.Environment.flash(cm, pos);
                   Gibber.callback.addCallback(v, _1);
               },
               "Shift-Alt-Enter": function(cm) {
                   var result = Gibber.Environment.selectCurrentBlock();
-
-                  Gibber.runScript(result.text);
+                  
+                  console.log(result)
+                  Gibber.runScript( result.text, cm.getCursor(), cm );
+                  
+                  //Gibber.runScript(result.text);
 
                   // highlight:
                   var sel = editor.markText(result.start, result.end, "highlightLine");
