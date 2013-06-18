@@ -15,7 +15,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
 
     _Gibber.log = function(val) {
         $(".consoletext").text(val);
-        window.console.log(val);
+        console.log(val);
     }
     var Environment = {
         autocompleteLayer: null,
@@ -878,6 +878,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             window.setTimeout(cb, 250);
           }
         },
+        fontSize : 1,
         setupKeyBindings : function() {
           
           CodeMirror.keyMap.gibber = {
@@ -944,7 +945,15 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
                       sel.clear();
                   }, 250);
               },
-
+              
+              "Shift-Ctrl-=": function(cm) {
+                  Gibber.Environment.fontSize += .2;
+                  $('.CodeMirror').css({ fontSize:Gibber.Environment.fontSize + 'em' })
+              },
+              "Shift-Ctrl--": function(cm) {
+                  Gibber.Environment.fontSize -= .2;
+                  $('.CodeMirror').css({ fontSize:Gibber.Environment.fontSize + 'em' })
+              },              
               "Ctrl-`": function(cm) {
                   Gibber.clear();
                   Gibber.audioInit = false;
