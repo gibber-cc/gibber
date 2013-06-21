@@ -39,7 +39,8 @@ function _EDrums (_sequence, _timeValue, _amp, _freq){
 	this.channels = 2;
 	this.fx = [];
 	this.fx.parent = this;
-	
+	this.name = "EDrums";
+  
 	this.children = [];
 /**###Drums.pitch : property
 Float. The overall pitch of the Drums. Each specific drum can also have its pitch set.

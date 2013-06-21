@@ -25,6 +25,7 @@ define(['esprima'], function(esp) {
         window.setTimeout(cb, 250);
       }
     },
+    
     init : function() {
       //Gibber.runScript = Notation.runScript;
       Gibber.Environment.flash = this.flash;
@@ -142,7 +143,7 @@ define(['esprima'], function(esp) {
                 count++;
                 if(count === 1) {
                   $('.'+seq.locations[key][index]).css({ 
-                    background:'rgb(150,150,150)',
+                    background:'transparent',
                     transition: 'background-color 100ms linear'
                   });
                 }
@@ -162,55 +163,55 @@ define(['esprima'], function(esp) {
           
       console.log(seq.tree, prop)
       //if( seq.properties.indexOf(name) === -1 || name === 'durations') {
-        seq.locations[name] = []; 
-        var values = prop.value.split("");
-        // if(!values) {
-        //   if(prop.value.callee) { // if it is an array with a random or weight method attached..
-        //     if(prop.value.callee.object)
-        //       values = prop.value.callee.object.elements; // use the array that is calling the method
-        //   }
-        // } 
+      seq.locations[name] = []; 
+      var values = prop.value.split("");
+      // if(!values) {
+      //   if(prop.value.callee) { // if it is an array with a random or weight method attached..
+      //     if(prop.value.callee.object)
+      //       values = prop.value.callee.object.elements; // use the array that is calling the method
+      //   }
+      // } 
             
-        if(values) {
-          console.log("VALUES", values);
-          for(var j = 0; j < values.length; j++) {
-            var value = values[j],
-                __name = _name + "_" + name + "_" + j;
-          
-            var start = {
-              line : prop.loc.start.line + pos.start.line - 1,
-              ch : prop.loc.start.column + j + 1 // +1 to accommodate beginning quote
-            }
-            var end = {
-              line : prop.loc.end.line + pos.start.line - 1,
-              ch : prop.loc.start.column + j + 2
-            }
-            
-            console.log(start, end)
-            cm.markText(start, end, __name);
-            seq.locations[name].push( __name )
+      if(values) {
+        for(var j = 0; j < values.length; j++) {
+          var value = values[j],
+              __name = _name + "_" + name + "_" + j;
+        
+          //console.log(prop.loc, pos)
+          var start = {
+            line : prop.loc.start.line + pos.start.line - 1,
+            ch : prop.loc.start.column + j + 1 // +1 to accommodate beginning quote
           }
-         
-        }      
-        // }else{
-        //   if(name !== 'durations') console.log(prop)
-        //   var __name = _name + "_" + name + "_0"
-        // 
-        //   var loc = prop.value.loc;
-        //   var start = {
-        //     line : loc.start.line + pos.start.line - 1,
-        //     ch : loc.start.column
-        //   }
-        //   var end = {
-        //     line : loc.end.line + pos.start.line - 1,
-        //     ch : loc.end.column
-        //   }
-        //   //console.log('Location', start, end, loc)
-        //   cm.markText(start, end, __name);
-        // 
-        //   seq.locations[name].push( __name )
-        // }
-        // //console.log("FOUND", key)
+          var end = {
+            line : prop.loc.end.line + pos.start.line - 1,
+            ch : prop.loc.start.column + j + 2
+          }
+          
+          //console.log(start, end)
+          cm.markText(start, end, __name);
+          seq.locations[name].push( __name )
+        }
+       
+      }      
+      // }else{
+      //   if(name !== 'durations') console.log(prop)
+      //   var __name = _name + "_" + name + "_0"
+      // 
+      //   var loc = prop.value.loc;
+      //   var start = {
+      //     line : loc.start.line + pos.start.line - 1,
+      //     ch : loc.start.column
+      //   }
+      //   var end = {
+      //     line : loc.end.line + pos.start.line - 1,
+      //     ch : loc.end.column
+      //   }
+      //   //console.log('Location', start, end, loc)
+      //   cm.markText(start, end, __name);
+      // 
+      //   seq.locations[name].push( __name )
+      // }
+      // //console.log("FOUND", key)
         
         seq.seq.chose = function(key, index) {
           //console.log(key, index)
@@ -226,7 +227,7 @@ define(['esprima'], function(esp) {
                 count++;
                 if(count === 1) {
                   $('.'+seq.locations[key][index]).css({ 
-                    background:'rgb(150,150,150)',
+                    background:'transparent',
                     transition: 'background-color 100ms linear'
                   });
                 }
@@ -237,6 +238,7 @@ define(['esprima'], function(esp) {
         //}
       //console.log(seq.locations)
     },
+    
 		runScript : function(script, pos, cm) {
       var tree = Notation.esprima.parse(script, {loc:true, range:true})
       
@@ -248,25 +250,32 @@ define(['esprima'], function(esp) {
           if(obj.expression.type === 'AssignmentExpression') {
             if(obj.expression.left.type === 'Identifier') { // assigning to global and not a property
               var lastChar, name;
-              
-              if(typeof pos.start === 'undefined') lastChar = cm.lineInfo(pos.line).text.length;
+              console.log(obj.expression.left)
+              if(typeof pos.start === 'undefined') {
+                //lastChar = cm.lineInfo(pos.line).text.length;
+                lastChar = cm.lineInfo(pos.line).text.length;
+              }
               name = obj.expression.left.name;
               
               //console.log(pos)              
               var marker = typeof pos.start !== 'undefined' 
-                ? cm.markText(pos.start, pos.end, name)
-                : cm.markText({line:pos.line,ch:0}, {line:pos.line,ch:lastChar}, name);
+                ? cm.markText( pos.start, pos.end, name )
+                : cm.markText( { line:pos.line,ch:0 }, { line:pos.line, ch:lastChar }, name );
               
               //console.log(name, marker)
-              window[name].marker = marker;
-              window[name].tree = obj;
+              window[ name ].marker = marker;
+              window[ name ].tree = obj;
+              window[ name ].text = function() { return $('.'+name); }
+              window[ name ].text.color = function(color) {
+                window[ name ].text().css({ background:color });
+              }
               
               //console.log("NAME", window[name].name)
-              if(window[name].name === 'Seq' || window[name].name === 'ScaleSeq') {
+              if(window[ name ].name === 'Seq' || window[ name ].name === 'ScaleSeq') {
                 //console.log("SEQ PROCESS");
-                Notation.processSeq( window[name], name, cm, pos );
-              }else if(window[name].name === 'Drums') {
-                Notation.processDrums( window[name], name, cm, pos );
+                Notation.processSeq( window[ name ], name, cm, pos );
+              }else if(window[ name ].name === 'Drums' /* || window[ name ].name === 'EDrums' */) {
+                Notation.processDrums( window[ name ], name, cm, pos );
               }
 
             }

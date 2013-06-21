@@ -161,15 +161,18 @@ a.removeMod('rx');`
 **/
 
 		geometry : function(props, geometry) {
+      console.log("GEOMETRY")
+      if(!Graphics.initialized) Graphics.init();
+      
 			props.fill = props.fill ? Graphics.color(props.fill) : Graphics.color('grey');
-			props.stroke = props.stroke ? Graphics.color(props.stroke) : undefined;
+			props.stroke = props.stroke ? Graphics.color(props.stroke) : props.fill;
 			
       var _graphics = that;
 			var that;
 			if(!geometry.isModel) {
 				var materials = props.stroke ?  [
 				    new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:props.shiny || 50, specular:props.specular || 0xffffff, vertexColors:THREE.VertexColors } ),
-					new THREE.MeshBasicMaterial( { color: props.stroke, shading: THREE.FlatShading, wireframe: true, transparent: true } )
+					  new THREE.MeshPhongMaterial( { color: props.stroke, shading: THREE.FlatShading, wireframe: true, transparent: false} )
 				] 
 				: new THREE.MeshPhongMaterial( { color: props.fill, shading: THREE.FlatShading, shininess:props.shiny || 50 } );
 				

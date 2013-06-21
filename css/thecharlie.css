@@ -1,24 +1,30 @@
 /* Based on Sublime Text's Monokai theme */
+/*@import url(http://fonts.googleapis.com/css?family=Source+Code+Pro);*/
 
-.cm-s-thecharlie {background: rgba(150, 150, 150,0); color: #333;}
+.cm-s-thecharlie {
+  /*background: rgba(150, 150, 150,0); background: /*-webkit-linear-gradient(top, rgb(0,0,0) 0%, rgb(60,60,60) 100%);*/ /* Chrome10+,Safari5.1+ */
+  background:transparent;
+  color: #ccc
+;}
+
 .cm-s-thecharlie div.CodeMirror-selected {background: rgba(130,130,130,.5) !important;}
 .cm-s-thecharlie .CodeMirror-gutter {background: #272822; border-right: 0px;}
 .cm-s-thecharlie .CodeMirror-gutter-text {color: #d0d0d0;}
-.cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #000 !important;}
+.cm-s-thecharlie .CodeMirror-cursor {border-left: 1px solid #ccc !important;}
 
 /*.cm-s-thecharlie span { background:rgba(0,0,0,.5); }*/
 /*.CodeMirror-lines {background: rgba(0,0,0,.65) !important;}*/
 /*.activeline {background: rgba(0,0,0,.65) !important;}*/
 .cm-s-thecharlie span.cm-comment {color: #666;}
 .cm-s-thecharlie span.cm-atom {color: #006600;}
-.cm-s-thecharlie span.cm-number {color: #007;}
+.cm-s-thecharlie span.cm-number {color: #779;}
       
-.cm-s-thecharlie span.cm-property, .cm-s-monokai span.cm-attribute {color: #333;}
-.cm-s-thecharlie span.cm-keyword {color: #333;}
-.cm-s-thecharlie span.cm-string {color: #500; }
+.cm-s-thecharlie span.cm-property, .cm-s-monokai span.cm-attribute {color: #ccc;}
+.cm-s-thecharlie span.cm-keyword {color: #ccc;}
+.cm-s-thecharlie span.cm-string {color: #933; }
       
-.cm-s-thecharlie span.cm-variable {color: #333;}
-.cm-s-thecharlie span.cm-variable-2 {color: #333;}
+.cm-s-thecharlie span.cm-variable {color: #ccc;}
+.cm-s-thecharlie span.cm-variable-2 {color: #ccc;}
 .cm-s-thecharlie span.cm-def { /*color: #fd971f;*/ color: #000;}
 .cm-s-thecharlie span.cm-error {background: #f92672; color: #888880;}
 .cm-s-thecharlie span.cm-bracket {color: #f8f8f2;}
@@ -28,5 +34,8 @@
 .cm-s-thecharlie .CodeMirror-matchingbracket {
   /*text-decoration: underline;*/
   background:#888;
-  color: #333 !important;
+  color: #ccc !important;
+}
+.CodeMirror-lines {
+  padding:0 .5em;
 }

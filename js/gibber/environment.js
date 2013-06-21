@@ -741,10 +741,11 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
               position: ["40px", null],
               containerCss: {
                 fontSize:'.8em',
-                backgroundColor: "rgba(150,150,150,.9)",
+                backgroundColor: "rgba(60,60,60,.9)",
                 listStyle: "none",
                 border: "1px solid #aaa",
                 padding: "10px",
+                color:"#ccc",
               }
           });
 
@@ -1042,7 +1043,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             var count = 0;
             for (var key in Gibber.docs[obj].methods) {
                 var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].methods[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "#999" : "#888";
+                var bgColor = count++ % 2 === 0 ? "rgba(30,30,30,.75)" : "transparent";
                 $(html).css({
                     "background-color": bgColor,
                     "border-color": "#ccc",
@@ -1056,7 +1057,7 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             
             for (var key in Gibber.docs[obj].properties) {
                 var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].properties[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "#999" : "#888";
+                var bgColor = count++ % 2 === 0 ? "rgba(30,30,30,.75)" : "transparent";
                 
                 $(html).css({
                     "background-color": bgColor,
@@ -1141,8 +1142,8 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
         },
 
         editorResize: function() {
-            var one = $('#console').outerHeight();
-            var remaining_height = parseInt( $(window).height() - one - $("#mega-menu-1").outerHeight() - 1 );
+            var one = $('#console').innerHeight();
+            var remaining_height = parseInt( $(window).height() - one - $("#mega-menu-1").outerHeight() + 7 );
 
             var scroll = window.editor.getScrollerElement();
             $(scroll).height( remaining_height );

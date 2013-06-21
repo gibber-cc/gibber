@@ -141,25 +141,27 @@ Array.prototype.random = Array.prototype.rnd = function() {
 	}
 
 	this.pick = function() {
-    var value = 0;
-    if(lastChosen !== null && dict[ ""+lastChosen ].count++ < dict[ ""+lastChosen ].repeat) {
-      value = lastChosen;
-      if( dict[ ""+lastChosen ].count >= dict[ ""+lastChosen ].repeat) {
-        dict[ ""+lastChosen ].count = 0;
+    var value = 0, index, lastValue;
+    if(this[lastChosen]) lastValue = this[lastChosen]
+
+    if(lastChosen !== null && dict[ lastValue ].count++ <= dict[ lastValue ].repeat) {
+      index = lastChosen;
+      if( dict[ lastValue ].count >= dict[ lastValue ].repeat) {
+        dict[ lastValue ].count = 0;
         lastChosen = null;
       };
     }else{
-      var index = rndi(0, this.length - 1);
-      value = index;//this[index];
+      index = rndi(0, this.length - 1);
+      value = this[index];
       if( typeof dict[ ""+value ] !== 'undefined' ) {
         dict[ ""+value ].count = 1;
-        lastChosen = value;
+        lastChosen = index;
       }else{
         lastChosen = null;
       }
     }
     
-		return value;
+		return index; // return index, not value as required by secondary notation stuff
 	};
 	
 	return this;
@@ -462,14 +464,14 @@ TODO: Figure out an algorithm(s) to automatically create weights with different 
 */
 window.weight = function(weights) {
     var w = (typeof weights === "object") ? weights : arguments;
-    var returnValue = 0; //this[0];
+    var returnValue = 0;
     function pick() {
         var total = 0;
         var r = rndf();
         for(var i = 0; i < w.length; i++) {
             total += w[i];
             if(r < total) { 
-                returnValue = i;//this[i];
+                returnValue = i;
                 break;
             }
         }
@@ -562,6 +564,8 @@ window.blop = function() {
 	}
 };
 
+var someColors = ["red", "green", "blue", "white", "pink", "purple"]
+
 window.Group = function() {
 	var that = Gibberish.Bus();
 	that.children = [];
@@ -601,8 +605,12 @@ window.Group = function() {
 		arguments[i].disconnect();
 		that.children.push(arguments[i]);
 		arguments[i].connect(that);
+    //arguments[i].text.color('red')
 	}
 	that.connect(Master);
+
+  //future( function() { that.text.color('red') }, 1000 )
+  
 	return that;
 };
 

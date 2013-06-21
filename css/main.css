@@ -1,14 +1,26 @@
 body { 
 	margin: 0;
-  background: rgba(150, 150, 150,1);
+  /*background: rgba(150, 150, 150,1)*/;
+  background: -webkit-linear-gradient(top, rgb(0,0,0) 0%, rgb(60,60,60) 100%);
+/*  background:black;*/
 	overflow:hidden;
 	text-shadow: white;
 }
 
 pre {
   width:intrinsic;
-  background:rgba(150, 150, 150, .5) !important;
+  color: white !important;
+	text-shadow: rgba(0,0,0,.15) 1px 1px ;
+  
+  /*background:rgba(150, 150, 150, .5) !important;*/
 }
+
+.floaty { 
+  text-align:left !important;
+  padding-left:.5em;
+  display: block;
+  position:absolute; 
+  left:0 !important;}
 
 textarea{ background-color:rgba(0,0,0,0); }
 
@@ -72,13 +84,14 @@ label { font-weight:normal; }
 	border-width: 1px 0px 0px 0px;
 	border-style: solid;
 	border-color:#ccc;
-/*  color: #f00;*/
+  color: #ccc;
   /*  background-color:#000; */
-  background: rgba(150, 150, 150,.5)
+  background-color: rgb(60,60,60) !important;
+  background: rgb(60,60,60) !important;
 	font-size: 1.25em;	
 }
 .consoletext, .consoleprompt {
-	color: #333;
+	color: #ccc;
 	font-family: monospace;
 /*  font-weight: bold;*/
 }
@@ -100,7 +113,8 @@ label { font-weight:normal; }
 #resizeButton { display:none; color:#bbb; font-size: 12px}
 
 #editor {
-	font-family:'Source Code Pro', monospace !important;
+	/*font-family:'Source Code Pro', monospace !important;*/
+  /*font-family: 'Share Tech Mono', sans-serif;*/
 	font-size: 1.25em;
   position: absolute;
 	display:inline;
@@ -121,12 +135,12 @@ p { padding-left:5px; padding-right:5px; }
 	display: none;
 	height:100%;
 	font-size: .85em;
-	background-color:#999;
+	background-color:transparent;
 	border-style: solid;
 	border-width: 0px 0px 0px 1px;
 	border-color:#ccc;
 	float:right;
-	color: #333;
+	color: #999;
 	width:19%;
 	margin:0;
 	font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
@@ -142,6 +156,7 @@ h2 {
 	font-size: 1.5em;
 	font-weight: normal;
 }
+.floaty { background: transparent !important;}
 h2 {
 	background-color:#aaa;
 	padding-left: .25em;
@@ -154,7 +169,7 @@ h3 {
 	font-weight: normal;
 	max-width: 75%;
 }
-a { color: #555; /*text-decoration: none;*/ }
+a { color: #999; /*text-decoration: none;*/ }
 .section {
 	margin: .5em;
 }
@@ -170,8 +185,13 @@ a { color: #555; /*text-decoration: none;*/ }
 	right: 15px;
 	margin-top: .25em;
 	position:absolute;
-	font-color: #444;
+	color: #999;
 	font-size: .8em;
+  background:rgb(80,80,80);
+}
+
+.referencesection a, .aboutsection a, .optionssection a, .quickstartsection a {
+  color:#fff;
 }
 
 .startlist {
