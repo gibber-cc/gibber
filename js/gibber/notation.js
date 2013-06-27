@@ -1,4 +1,5 @@
 // need to set it up so a seq parameter with random attached to it highlights members of the array that are picked not the whole statement
+var ugens = ['Drums', 'Pluck', 'EDrums', 'Sampler', 'Synth', 'FM', 'Sine', 'Triangle', 'Mono', 'Synth2', 'Square', 'Grains']
 
 define(['esprima'], function(esp) {
   Notation = {
@@ -92,10 +93,12 @@ define(['esprima'], function(esp) {
               }
             } 
             
+            var lastChose = {};
+            
             if(values) {
               for(var j = 0; j < values.length; j++) {
                 var value = values[j];
-              
+                var __name = _name + "_" + name + "_" + j 
                 var start = {
                   line : value.loc.start.line + pos.start.line - 1,
                   ch : value.loc.start.column
@@ -104,11 +107,15 @@ define(['esprima'], function(esp) {
                   line : value.loc.end.line + pos.start.line - 1,
                   ch : value.loc.end.column
                 }
-                cm.markText(start, end, _name + "_" + name + "_" + j);
-                seq.locations[name].push( _name + "_" + name + "_" + j )
-              }
-              //}else if(prop.value.callee){
-              
+
+                cm.markText(start, end, __name);
+                
+                $('.'+__name).css({
+                  transition: 'background-color 100ms linear'
+                })
+                
+                seq.locations[name].push( __name )
+              }              
             }else{
               if(name !== 'durations') console.log(prop)
               var __name = _name + "_" + name + "_0"
@@ -122,7 +129,7 @@ define(['esprima'], function(esp) {
                 line : loc.end.line + pos.start.line - 1,
                 ch : loc.end.column
               }
-              //console.log('Location', start, end, loc)
+              
               cm.markText(start, end, __name);
             
               seq.locations[name].push( __name )
@@ -130,29 +137,25 @@ define(['esprima'], function(esp) {
             //console.log("FOUND", key)
           }
         }
-        seq.chose = function(key, index) {
-          //console.log(key, index)
+        
+        
+        seq.chose = function(key, index) {          
           if(seq.locations[key]) {
-            var count = 0;
-            if(seq.locations[key][index]) {
-              $('.'+seq.locations[key][index]).css({ 
-                background:'rgb(180,180,180)',
-                transition: 'background-color 100ms linear'
+            var __name = '.'+seq.locations[key][index];
+
+            if(typeof lastChose[key] === 'undefined') lastChose[key] = []
+            
+            $(__name).css({ backgroundColor:'rgb(200,200,200)' });
+            
+            // as far as I can tell, webkitTransitionEnd seems to suck, so...
+            setTimeout(function() {
+              $(__name).css({ 
+                backgroundColor:'rgba(0,0,0,0)',
               });
-              $('.'+seq.locations[key][index]).on('webkitTransitionEnd', function(e) {
-                count++;
-                if(count === 1) {
-                  $('.'+seq.locations[key][index]).css({ 
-                    background:'transparent',
-                    transition: 'background-color 100ms linear'
-                  });
-                }
-              })            
-            }
+            },100)
           }
         }
       }
-      //console.log(seq.locations)
     },
     
     processDrums : function( seq, _name, cm, pos ) {
@@ -212,34 +215,25 @@ define(['esprima'], function(esp) {
       //   seq.locations[name].push( __name )
       // }
       // //console.log("FOUND", key)
+      seq.seq.chose = function(key, index) {
+        //console.log(key, index)
+        if(seq.locations[key]) {
+          var __name = '.'+seq.locations[key][index];
         
-        seq.seq.chose = function(key, index) {
-          //console.log(key, index)
-          if(seq.locations[key]) {
-            var count = 0;
-            if(seq.locations[key][index]) {
-              //console.log("animating?", seq.locations[key][index])
-              $('.'+seq.locations[key][index]).css({ 
-                background:'rgb(180,180,180)',
-                transition: 'background-color 100ms linear'
-              });
-              $('.'+seq.locations[key][index]).on('webkitTransitionEnd', function(e) {
-                count++;
-                if(count === 1) {
-                  $('.'+seq.locations[key][index]).css({ 
-                    background:'transparent',
-                    transition: 'background-color 100ms linear'
-                  });
-                }
-              })            
-            }
-          }
+          $(__name).css({ backgroundColor:'rgb(150,50,50)' });
+        
+          // as far as I can tell, webkitTransitionEnd seems to suck, so...
+          setTimeout(function() {
+            $(__name).css({ 
+              backgroundColor:'rgba(0,0,0,0)',
+            });
+          },100)
         }
-        //}
-      //console.log(seq.locations)
+      }
     },
     
 		runScript : function(script, pos, cm) {
+      console.log("RUN")
       var tree = Notation.esprima.parse(script, {loc:true, range:true})
       
       Gibber.runScript(script); // must run script before parsing tree so ugens are present
@@ -262,7 +256,6 @@ define(['esprima'], function(esp) {
                 ? cm.markText( pos.start, pos.end, name )
                 : cm.markText( { line:pos.line,ch:0 }, { line:pos.line, ch:lastChar }, name );
               
-              //console.log(name, marker)
               window[ name ].marker = marker;
               window[ name ].tree = obj;
               window[ name ].text = function() { return $('.'+name); }
@@ -270,12 +263,21 @@ define(['esprima'], function(esp) {
                 window[ name ].text().css({ background:color });
               }
               
-              //console.log("NAME", window[name].name)
               if(window[ name ].name === 'Seq' || window[ name ].name === 'ScaleSeq') {
-                //console.log("SEQ PROCESS");
                 Notation.processSeq( window[ name ], name, cm, pos );
               }else if(window[ name ].name === 'Drums' /* || window[ name ].name === 'EDrums' */) {
                 Notation.processDrums( window[ name ], name, cm, pos );
+              }
+              
+              if( ugens.indexOf(window[name].name) > -1 ) {
+                window[name].follower = Follow( {input:window[name], mult:4} );
+                
+                window[name].followerSeq = Seq( function() {
+                  var val = window[name].follower.function.getValue()
+                  if(val > 1) val = 1
+                  var col = 'rgba(255,255,255,'+val+')'
+                  window[name].text.color(col) 
+                }, 1/32)
               }
 
             }

@@ -83,6 +83,7 @@ function Grains() {
   
 	that = Gibberish.Grains(properties);
 	that.connect(Master);
+    that.name = 'Grains';
 		
 	var positionVariance = properties.positionVariance || 0;
 	var pitchVariance = properties.pitchVariance || 0;	

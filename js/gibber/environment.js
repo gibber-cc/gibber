@@ -557,7 +557,9 @@ define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gib
             
         },
         
-        useNotations : function() {
+        useNotations : function() {},
+        _useNotations : function() {
+          //console.log("NOTATION")
           Gibber.Notation = _notation;
           Gibber.Notation.init();
         },

@@ -42,6 +42,7 @@ c = Seq({
 
 function Sampler(pathToFile) {
 	var that = Gibberish.Sampler(pathToFile);
+  that.name = 'Sampler';
 	if(typeof pathToFile === "string") {
 		that.send(Master, 1);
 	}else{
