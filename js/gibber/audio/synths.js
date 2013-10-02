@@ -33,6 +33,9 @@
       attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
       decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
       cutoff : { min: 0, max: .7, output: Gibber.LINEAR, timescale: 'audio' },
+      detune2: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
+      detune3: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
+      glide: { min:.99, max:.999995, output: Gibber.LINEAR, timescale: 'audio'},
       resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' }
     },
     FM: {

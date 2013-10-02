@@ -22,7 +22,11 @@
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
     },
     Kick    : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
-    Snare   : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
+    Snare   : { 
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC, timescale: 'audio' },
+      snappy: { min: .25, max: 1.5, output: Gibber.LOGARITHMIC, timescale: 'audio' }, 
+      tune: { min: 0, max: 2, output: Gibber.LOGARITHMIC, timescale: 'audio' },      
+    },
     Hat     : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
     Conga   : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
     Cowbell : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
@@ -72,7 +76,6 @@
           this._note.apply( this, args )
         }
         
-        console.log( "Calling abstractions" )
         Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
         
         Object.defineProperty(obj, '_', {
