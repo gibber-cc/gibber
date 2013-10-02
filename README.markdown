@@ -11,7 +11,7 @@ Below is a code sample. To test out Gibber, visit http://www.charlie-roberts.com
 ``` javascript
 Gibber.setBPM(180);     // default = 120. You can also refer to Gibber as _g.
 
-s = Sine(240, .25);     // Sine wave with freq 240, amp .5.
+s = Sine(240, .25);     // Sine wave with freq 240, amp .25.
 
 s.fx.add(               // create an fx chain for oscillator                   
     Clip(50),           // Soft-Clip Distortion
@@ -24,7 +24,7 @@ d = Drums("x*o-x*o-", _8);
 
 d.chain( Crush(6) );
 
-d.pitch = 2;     // play drum sapmles at twice their normal pitch
+d.pitch = 2;     // play drum samples at twice their normal pitch
 
 s.mod("frequency", LFO(8, 4), "+");  // Vibrato - modulating frequency by +/- 4Hz 8 times per second
 s.removeMod(0);
