@@ -1,0 +1,54 @@
+<div style="width:100%; color:#ccc; padding:.5em;">  
+  <form id='newPublicationForm'>
+    <table style='width:90%'>
+      <thead><tr><td></td><td></td></tr></thead>
+      <tbody>
+      <tr>
+        <td>
+          file name (required)&nbsp;&nbsp;  
+        </td>
+        <td>
+          <input style='border:0; margin-left:0;' id='new_publication_name' \>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          column # to publish (required)&nbsp;&nbsp;  
+        </td>
+        <td>
+          <select style='border:0; margin-left:0;' id='new_publication_column' \>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          notes&nbsp;&nbsp;
+        </td>
+        <td>
+          <textarea style='width:100%; height:5em' id='new_publication_notes'></textarea>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>    
+      <tr>
+        <td>
+          tags (comma separated)&nbsp;&nbsp;
+        </td>
+        <td>
+          <input style='border:0; margin-left:0;' id='new_publication_tags'>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>    
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+        <td>
+          <button style="margin-left:0;" onclick='Gibber.Environment.Account.publish()'>Publish</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </form>  
+</div>

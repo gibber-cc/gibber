@@ -1,0 +1,64 @@
+<div style="width:100%; color:#ccc; padding:1em">
+  <h4 style='margin-top:0; color:black; background:#ccc; width:80%'>Publish a sketch</h4>
+  
+  <form id='newPublicationForm'>
+    <table>
+      <thead><tr><td width='50%'></td><td width='50%'></td></tr></thead>
+      <tbody>
+      <tr><td style='color:white'><b>Required</b></td><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          sketch name&nbsp;&nbsp;  
+        </td>
+        <td>
+          <input id='new_publication_name' \>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr><td style='color:white'><b>Optional</b></td><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          notes
+        </td>
+        <td>
+          <textarea style='width:100%; height:5em' id='new_publication_notes'></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          tags(comma separated)
+        </td>
+        <td>
+          <input id='tags'>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          years of programming experience
+        </td>
+        <td id='new_publication_column'>
+          <select>
+            <option>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option> 
+            <option>4</option>            
+          </select>           
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>    
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+        <td>
+          <button onclick='Gibber.Environment.Account.publish()'>Publish</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </form>  
+  
+</div>

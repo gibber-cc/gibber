@@ -1,1158 +1,928 @@
-define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gibber/graphics', 'gibber/notation','gibber/tutorials', "js/codemirror/util/loadmode.js", "js/codemirror/util/overlay.js", 'jquery.simplemodal', 'node/socket.io.min', 'megamenu/jquery.hoverIntent.minified', 'megamenu/jquery.dcmegamenu.1.3.3.min', 'gibber/interface' ], function(_Gibber, defaults, CodeMirror, _graphics, _notation) {
+(function() {
 
-  _Gibber.Interface = _Interface;
-  _Gibber.Interface.init( _Gibber );
+"use strict"
+var SERVER_URL = 'http://127.0.0.1:3000',
+    modes = [ 'javascript', 'glsl' ]
+
+var GE = Gibber.Environment = {
+  modes: ['javascript', 'x-shader/x-fragment'],
+  init : function() { 
+    $script( ['external/codemirror/codemirror-compressed' ], 'codemirror',function() {
+      $script( ['external/codemirror/addons/closebrackets', 
+                'external/codemirror/addons/matchbrackets', 
+                'external/codemirror/addons/comment',
+                'external/codemirror/addons/show-hint',
+                'external/codemirror/addons/javascript-hint',
+                'external/codemirror/clike',
+                ], function() {
+                  
+        GE.Keymap.init()
+        
+        $( '#layoutTable' ).attr( 'height', $( window ).height() )
+        $( '#contentCell' ).width( $( window ).width() )
+        GE.Layout.init()
+        window.Layout = GE.Layout
+        GE.Account.init()
+        Gibber.proxy( window )
+      });
+    })
+
+    $script( ['external/color', 'external/injectCSS'], 'theme', function() {
+      GE.Theme.init()
+      GE.Storage.init()
+      GE.Menu.init()
+    })
+    
+    $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
+      Gibber.Graphics.load()
+    } )
+    
+    window.Columns = GE.Layout.columns
+  },
   
-  window.Graphics = _graphics;
-    Storage.prototype.setObject = function(key, value) {
-        this.setItem(key, JSON.stringify(value));
-    }
+  selectCurrentBlock: function( editor ) { // thanks to graham wakefield
+      var pos = editor.getCursor();
+      var startline = pos.line;
+      var endline = pos.line;
+      
+      while ( startline > 0 && editor.getLine( startline ) !== "" ) {
+        startline--;
+      }
+      while( endline < editor.lineCount() && editor.getLine( endline ) !== "" ) {
+        endline++;
+      }
+      
+      var pos1 = {
+          line: startline,
+          ch: 0
+      }
+      var pos2 = {
+          line: endline,
+          ch: 0
+      }
+      var str = editor.getRange( pos1, pos2 )
 
-    Storage.prototype.getObject = function(key) {
-        var value = this.getItem(key);
-        return value && JSON.parse(value);
-    }
+      return {
+          start: pos1,
+          end: pos2,
+          text: str
+      }
+  },
+  
+  Storage : {
+    values : null,
+    init : function() {
+      Storage.prototype.setObject = function( key, value ) { this.setItem( key, JSON.stringify( value ) ); }
+      Storage.prototype.getObject = function( key ) { var value = this.getItem( key ); return value && JSON.parse( value ); }
+      
+      this.values = localStorage.getObject( "gibber2" )
 
-    _Gibber.log = function(val) {
-        $(".consoletext").text(val);
-        console.log(val);
-    }
-    var Environment = {
-        autocompleteLayer: null,
-        removeFile: function(fileName) {
-            var tmp = localStorage.getObject('scripts');
-            if (typeof tmp[fileName] === 'undefined') {
-                G.log("File " + fileName + " does not exist so I won't bother removing it. Huh?");
-                return;
-            }
-            delete tmp[fileName];
-            localStorage.setObject('scripts', tmp);
-            this.createFileList();
-        },
-        save: function(code) {
-            var scripts;
-            if (typeof localStorage.scripts === "undefined") {
-                scripts = {};
-            } else {
-                scripts = localStorage.getObject("scripts");
-            }
-            var name = window.prompt("Enter name for file");
-            scripts[name] = code;
-            localStorage.setObject("scripts", scripts);
-            Gibber.Environment.createFileList(name);
-        },
-        startOSC: function() {
-            Gibber.Environment.OSC = io.connect('http://127.0.0.1:8080/');
-            //Gibber.Environment.OSC.on( 'OSC', function(msg) { console.log(msg); } );
-            return Gibber.Environment.OSC;
-        },
-        slave: function(name, ip) {
-            $("#info").html("");
-
-            console.log("Name " + name + " : ip " + ip);
-            Gibber.Environment.slaveSocket = io.connect('http://' + ip + ':8080/'); // has to match port node.js is running on
-            Gibber.Environment.slaveSocket.on('connect', function() {
-                G.log("CONNECTED TO MASTER AS " + name);
-                Gibber.Environment.slaveSocket.emit('name', {
-                    "name": name
-                });
-            });
-            Gibber.Environment.slaveSocket.on('chat', function(msg) {
-                var p = $("<p>");
-                $(p).css("padding", "0px 10px");
-                $(p).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                
-                $("#info").append(p);
-                $("#info").scrollTop($("#info").height());
-            });
-        },
-        republicish: function(userName) {
-            G.log("STARTING REPUBLICISH");
-            $("#sidebar").html("");
+      if ( ! this.values ) {
+        this.values = {
+          layouts : {}
+        }
+      }
+    },
+    
+    save : function() {
+      localStorage.setObject( "gibber2", this.values );
+    },
+  },
+  
+  Theme : {
+    init : function() {      
+      this.default = {
+          comment:    Color('#888'),
+          number:     Color('#779'),
+          string:     Color('#933'),
+          variable:   Color('#ccc'),
+          bracket:    Color('#f8f8f2'),
+          keyword:    Color('#ccc'),
+          property:   Color('#ccc'),
+          attribute:  Color('#ccc'),
+          atom:       Color('#006600'),
+          cursor:     { 'border-left':'1px solid #f00' },
+          highlight : { background: '#c00' },
+          'variable-2': Color('#ccc'),          
+      }
+      
+      this.applyTheme( this.default )
+      
+      window.theme = this.changeThemeProperty
+    },   
+    
+    nontext : [ 'cursor', 'selected', 'matchingbracket', 'lines', 'highlight' ],
+    
+    applyTheme : function( theme ) {
+      var obj = {}
+      for( var key in theme ) {
+        var prop = theme[ key ],
+            prefix = this.nontext.indexOf( key ) === -1 ? '.cm-s-gibber span.cm-' : '.CodeMirror-'
             
-            Gibber.Environment.toggleSidebar();
-            window.editor.refresh();
+        if( prop.opaquer ) { // only way to test if typeof Color object...
+          obj[ prefix + key ] = {
+            color : prop.rgbaString()
+          }
+        } else if( typeof prop === 'object') {
+          var obj2 = {}
+          for( var key2 in prop ) {
+            var prop2 = prop[ key2 ]
+            obj2[ key2 ] = typeof prop2.rgbaString === 'function' ? prop2.rgbaString() : prop2; // Color object or other property / string value...
+          }
+          obj[ prefix + key ] = obj2
+        }
+      }
+      
+      $.injectCSS( obj )
+    },
+    
+    changeThemeProperty : function( property, newValue ) {
+      var obj = {}
+      obj[ property ] = newValue
+      
+      GE.Theme.applyTheme( obj )
+    },
+  },
+  
+  Keymap : {
+    init : function() {
+      // this has to be done here so that it works when no editors are focused
+      $(window).on('keydown', function(e) {
+        if( e.which === 84 && e.altKey ) {
+          GE.Layout.toggle()
+          e.preventDefault()
+        }
+      })
+      
+      CodeMirror.keyMap.gibber = {
+        fallthrough: "default",
 
-            G.E = G.Environment;
-            G.E.republicish = {
-                name: userName,
-                users: [],
-                addUser: function(userName) {
-                    if (this.users.indexOf(userName) === -1) {
-                        this.users.push(userName);
-                    }
-                },
-                removeUser: function(userName) {
-                    var idx = this.users.indexOf(userName);
-                    if (idx !== -1) {
-                        this.users.splice(idx, 1);
-                    }
-                },
-                codeCount: 0,
-            };
-            G.E.R = G.E.republicish;
+        "Ctrl-Space" : function( cm ) { CodeMirror.showHint(cm, CodeMirror.javascriptHint ) },
+        
+        "Alt-/": CodeMirror.commands.toggleComment,
+        
+        "Ctrl-Enter": function(cm) {
+          var v = cm.getDoc().getSelection(),
+              pos = null
 
-            G.E.R.addUser(G.E.R.name);
-
-            if (!G.E.socket) {
-                G.E.socket = io.connect('http://localhost:8080/');
-            }
-
-            G.E.socket.on('connect', function() {
-                G.E.socket.emit('joinRepublic', G.E.R.name);
-            });
-
-            G.E.socket.on('userList', function(msg) {
-                for (var i = 0; i < msg.users.length; i++) {
-                    G.E.R.addUser(msg.users[i]);
-                }
-                G.E.socket.emit('addUser', G.E.R.name);
-            });
-
-            G.E.socket.on('addUser', function(msg) {
-                G.E.R.addUser(msg);
-            });
-            G.E.socket.on('removeUser', function(msg) {
-                G.E.R.removeUser(msg);
-            });
-
-            G.E.socket.on('chat', function(msg) {
-                //Gibber.Environment.sessionHistory.push( { user: msg.user, text:msg.text, time: new Date() - Gibber.Environment.sessionStart} );
-                var p = $("<p>");
-                $(p)
-                    .css("padding", "0px 10px");
-                $(p)
-                    .html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                $("#sidebar")
-                    .append(p);
-                $("#sidebar")
-                    .scrollTop($("#sidebar")[0].scrollHeight);
-            });
-
-            G.E.socket.on('claimCode', function(msg) {
-                $("#block" + msg.codeblockNumber)
-                    .off('mouseup');
-                $("#block" + msg.codeblockNumber)
-                    .text(msg.name);
-                $("#block" + msg.codeblockNumber)
-                    .css({
-                    backgroundColor: "#a00"
-                });
-            });
-            G.E.R.code = function(msg) {
-                var d = $("<div>");
-
-                $(d).css({
-                    'padding': '0px 10px',
-                    marginBottom: '10px',
-                });
-                $(d).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.code);
-
-                var b = $("<button>paste code in editor</button>");
-                $(b).on('mouseup', function() {
-                    var code = window.editor.getValue();
-                    window.editor.setValue(code + "\n" + msg.code);
-                });
-                $(d).append(b);
-
-                /*
-				var b2 = $("<button>claim code</button>");
-                b2.codeblockNumber = msg.codeblockNumber;
-                (function() {
-                    var num = msg.codeblockNumber;
-                    $(b2)
-                        .on('mouseup', function() {
-                        //console.log("CLAIMING CODE????", b2.codeblockNumber, G.E.R.name);
-                        G.E.socket.emit('claimCode', {
-                            name: G.E.R.name,
-                            codeNumber: num
-                        });
-                    });
-                    $(b2)
-                        .attr("id", "block" + num);
-                })();
-
-                $(d).append(b2);
-				*/
-
-                $("#sidebar").append(d);
-                $("#sidebar").scrollTop($("#sidebar")[0].scrollHeight);
-            };
-
-            G.E.socket.on('code', function(msg) {
-                G.E.R.code(msg);
-            });
-
-            CodeMirror.keyMap.gibber["Ctrl-M"] = function(cm) {
-                var msg = prompt("enter msg to send");
-
-                if (msg != null) {
-                    G.E.socket.emit('chat', {
-                        user: G.E.R.name,
-                        "text": msg
-                    });
-                }
-            };
-
-            CodeMirror.keyMap.gibber["Ctrl-S"] = function(cm) {
-                var selectedUsers = [];
-                for (var i = 0; i < G.E.R.users.length; i++) {
-                    selectedUsers.push(G.E.R.users[i]);
-                }
-
-                var v = cm.getSelection();
-                var pos = null;
-                if (v === "") {
-                    pos = cm.getCursor();
-                    v = cm.getLine(pos.line);
-                }
-
-                G.E.socket.emit('code', {
-                    recipients: selectedUsers,
-                    code: v
-                });
-            };
-
-            CodeMirror.keyMap.gibber["Ctrl-Alt-S"] = function(cm) {
-                var v = cm.getSelection();
-                var pos = null;
-                if (v === "") {
-                    pos = cm.getCursor();
-                    v = cm.getLine(pos.line);
-                }
-                var d = $("<div>");
-                $(d)
-                    .css({
-                    minWidth: '15em',
-                    padding: 0,
-                });
-                var ul = $("<ul>");
-                $(ul)
-                    .css({
-                    'list-style': 'none',
-                    'padding': 0,
-                    'margin': 0,
-                    'border': '1px solid #ccc',
-                });
-                var allListItems = [];
-                for (var i = 0; i < G.E.R.users.length; i++) {
-                    (function() {
-                        var l = $("<li>");
-                        l._selected = false;
-                        $(l)
-                            .text(G.E.R.users[i]);
-                        if (i !== 0) {
-                            $(l)
-                                .css({
-                                'border-top': "1px solid #ccc",
-                            });
-                        }
-                        $(l)
-                            .css({
-                            textAlign: 'center',
-                            padding: '0 5px',
-                        });
-                        $(l)
-                            .on('mousedown', function() {
-                            console.log("SELECT", l._selected);
-                            l._selected = !l._selected;
-                            if (l._selected) {
-                                $(l)
-                                    .css('background-color', '#333');
-                            } else {
-                                $(l)
-                                    .css('background-color', '#000');
-                            }
-                        });
-                        allListItems.push(l);
-                        $(ul)
-                            .append(l);
-                    })();
-                }
-                $(d)
-                    .append(ul);
-
-                var b = $('<button>Send Code</button>');
-                $(b)
-                    .on('mouseup', function() {
-                    var selectedUsers = [];
-
-                    for (var i = 0; i < allListItems.length; i++) {
-                        if (allListItems[i]._selected === true) {
-                            selectedUsers.push($(allListItems[i])
-                                .text());
-                        }
-                    }
-
-                    G.log("SENDING CODE TO REPUBLIC" + v);
-                    G.E.socket.emit('code', {
-                        recipients: selectedUsers,
-                        code: v
-                    });
-                    $.modal.close();
-                });
-                $(b)
-                    .css({
-                    float: 'right',
-                    marginTop: '1em',
-                });
-
-                var b2 = $('<button>Send Code To All</button>');
-                $(b2)
-                    .on('mouseup', function() {
-                    var selectedUsers = [];
-
-                    for (var i = 0; i < allListItems.length; i++) {
-                        selectedUsers.push($(allListItems[i])
-                            .text());
-                    }
-
-                    G.E.socket.emit('code', {
-                        recipients: selectedUsers,
-                        code: v
-                    });
-                    $.modal.close();
-                });
-                $(b2)
-                    .css({
-                    float: 'right',
-                    marginTop: '1em',
-                });
-
-                $(d)
-                    .append(b);
-                $(d)
-                    .append(b2);
-                $.modal(d, {});
-            };
-        },
-        master: function() {
-            G.log("CALLING MASTER");
-            $("#sidebar")
-                .html("");
-
-            Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
-            Gibber.Environment.masterSocket.on('connect', function() {
-                G.callback.phase = 0;
-                window.editor.setValue("");
-                Gibber.Environment.insert("// MASTER SESSION START\n\n");
-                Gibber.Environment.sessionStart = new Date();
-                Gibber.Environment.sessionHistory = [];
-                Gibber.Environment.masterSocket.on('code', function(msg) {
-                    Gibber.Environment.insert(msg.code);
-                    Gibber.Environment.sessionHistory.push({
-                        code: msg.code,
-                        time: new Date() - Gibber.Environment.sessionStart
-                    });
-                    window.editor.scrollTo(0, $(".CodeMirror-scroll > div")
-                        .outerHeight());
-
-                    Gibber.callback.addCallback(msg.code, _1);
-                });
-                Gibber.Environment.masterSocket.on('chat', function(msg) {
-                    Gibber.Environment.sessionHistory.push({
-                        user: msg.user,
-                        text: msg.text,
-                        time: new Date() - Gibber.Environment.sessionStart
-                    });
-                    
-                    var p = $("<p>");
-                    
-                    $(p).css("padding", "0px 10px");
-                    $(p).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                    
-                    $("#info").append(p);
-                    $("#info").scrollTop( $("#info").height() );
-                });
-
-                Gibber.Environment.masterSocket.emit('master', null);
-            });
-        },
-
-        saveSession: function(name) {
-            var sessions = localStorage.getObject("sessions");
-            if (typeof sessions === "undefined" || sessions === null) {
-                sessions = {};
-            }
-
-            sessions[name] = G.Environment.sessionHistory;
-            localStorage.setObject("sessions", sessions);
-        },
-
-        saveWithName: function(name) {
-            var scripts;
-            if (typeof localStorage.scripts === "undefined") {
-                scripts = {};
-            } else {
-                scripts = localStorage.getObject("scripts");
-            }
-
-            var text = window.editor.getValue();
-
-            scripts[name] = text;
-            localStorage.setObject("scripts", scripts);
-            Gibber.Environment.createUserFileList();
-            G.log(name + " has been saved.")
-        },
-
-        load: function(fileName) {
-            console.log("LOADING", fileName, defaults);
-            var scripts = localStorage.getObject("scripts"),
-                code = null;
-            
-            if (scripts != null) {
-              if ( typeof scripts[fileName] !== "undefined" ) {
-                code = scripts[ fileName ];
-              }
-            }
-            
-            if ( typeof defaults.tutorials[ fileName ] !== "undefined" ) {
-              code = defaults.tutorials[ fileName ];
-            }else if ( typeof defaults.demos[ fileName ] !== "undefined" ) {
-              code = defaults.demos[ fileName ];
-            }
-            
-            if (code != null) {
-              window.editor.setValue(code);
-            } else {
-              G.log("The file " + fileName + " is not found");
-            }
-        },
-
-        loadAndSet: function(fileName) {
-            /*var code = this.load(fileName);
-			if(code != null) {
-				window.editor.setValue(code);
-			}*/
-        },
-
-        createTutorialAndDemoList: function() {
-          var scripts = defaults;
-          var sel = $("#tutorialsFileList");
-          for (var name in scripts.tutorials) {
-            var opt = $("<li>");
-            if (scripts[name] !== "LABEL START") {
-              var cb = function(_name) {
-                var n = _name;
-                return function() {
-                  Gibber.Environment.load(n);
-                }
-              }
-              
-              var a = $("<a>");
-              $(a).text(name);
-              $(opt).bind("click", cb(name));
-              $(opt).append(a);
-            } else {
-              $(opt).text(" " + name);
-              $(opt).addClass('listHeader');
-            }
-            $(sel).append(opt);
+          if (v === "") {
+              pos = cm.getCursor()
+              v = cm.getLine( pos.line )
           }
           
-          var sel = $("#demosFileList");
-          for (var name in scripts.demos) {
-            var opt = $("<li>");
-            if (scripts[name] !== "LABEL START") {
-              var cb = function(_name) {
-                var n = _name;
-                return function() {
-                  Gibber.Environment.load(n);
-                }
-              }
-              
-              var a = $("<a>");
-              $(a).text(name);
-              $(opt).bind("click", cb(name));
-              $(opt).append(a);
-            } else {
-              $(opt).text(" " + name);
-              $(opt).addClass('listHeader');
-            }
-            $(sel).append(opt);
+          GE.Keymap.flash(cm, pos)
+          
+          var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
+          
+          if( GE.modes[ col.modeIndex ] !== 'x-shader/x-fragment' ) {
+            Gibber.run( v, pos, cm )  
+          }else{
+            var shader = Gibber.Graphics.makeFragmentShader( v )
+          	col.shader.material = new THREE.ShaderMaterial( {
+
+          		uniforms: col.shader.uniforms,
+          		vertexShader: shader.vertexShader,
+          		fragmentShader: shader.fragmentShader
+
+          	} );
           }
+          
         },
         
-        createUserFileList: function(savedFile) {
-          var sel = $("#userFileList").empty();
-          var userScripts = localStorage.getObject("scripts")
+        "Alt-Enter": function(cm) {          
+          var col = GE.Layout.columns[ GE.Layout.focusedColumn - 1],
+              v = col.value
           
-          for (var name in userScripts) {
-            var opt = $("<li>");
+          if( GE.modes[ col.modeIndex % GE.modes.length ] !== 'x-shader/x-fragment' ) {
+            Gibber.run( v, pos, cm )  
+          }else{
+            var shader = Gibber.Graphics.makeFragmentShader( v )
+          	col.shader.material = new THREE.ShaderMaterial( {
 
-            var cb = function(_name) {
-              var n = _name;
-              return function() {
-                Gibber.Environment.load(n);
-              }
-            }
-            
-            var a = $("<a>");
-            $(a).text(name);
-            $(opt).bind("click", cb(name));
-            $(opt).append(a);
-            
-            sel.append( opt )
+          		uniforms: col.shader.uniforms,
+          		vertexShader: shader.vertexShader,
+          		fragmentShader: shader.fragmentShader
+
+          	} );
           }
-          //this.addScriptsToList( userScripts );
+          
         },
-
-        insert: function(code) {
-            var endLine = window.editor.lineCount() - 1;
-            window.editor.setLine(endLine, window.editor.getLine(endLine) + " \n" + code);
+                
+        "Ctrl-L": function(cm) {
+          var name = window.prompt("layout to load:")
+        
+          GE.Layout.load( name )
         },
+        "Ctrl-F": function(cm) {
+          var result = Gibber.Environment.selectCurrentBlock( cm );
+        
+          var sel = cm.markText( result.start, result.end, { className:"CodeMirror-highlight" } );
+          
+          window.setTimeout(function() {
+              sel.clear();
+          }, 250);
 
-        loadTutorial: function(name) {
-            console.log("LOADING TUTORIAL " + name + name.charAt(name.length - 1));
-            if (name.charAt(name.length - 1) === "_") {
-                Gibber.clear();
-                name = name.substring(0, name.length - 1);
-            }
-            window.editor.setValue(Gibber.tutorials[name]);
-        },
-    		fullScreen : function() {
-			$("#console").toggle();
-			$("#header").toggle();
-
-			$("#container").css("height", "100%");
-			$("#container").css("width", "100%");
-						
-			$("#three").css({
-				top : 0,
-				height: "100%",
-				width: "100%",
-			});
-			
-			$("#three").attr("width", screen.width);
-			$("#three").attr("height", screen.height);
-
-			//$("canvas").attr({width:screen.width, height:screen.height});			
-			// if($("#three").top() === 50) {
-			// 	$("#three").css("top", 0);
-			// }else{
-			// 	$("#three").css("top", 50);
-			// }
-			
-			//if(Graphics.initialized) {
-			console.log("CALLING GRAPHICS FULL SCREEN");
-			Graphics.fullScreen();
-				//}
-		},
-        init: function() {
-            $(window).resize(Gibber.Environment.editorResize);
-            
-            this.createUserFileList();
-            
-            this.createTutorialAndDemoList();
-            
-            this.createEditor();
-            
-            this.createMenus();
-            
-            this.setupKeyBindings();
-
-            this.setupDocumentation();
-            
-            this.graphics = _graphics;
-            
         },
         
-        useNotations : function() {},
-        _useNotations : function() {
-          //console.log("NOTATION")
-          Gibber.Notation = _notation;
-          Gibber.Notation.init();
+        "Ctrl-M": function(cm) {
+          var colIndex = GE.Layout.focusedColumn,
+              col = GE.Layout.columns[ colIndex ]
+               
+          col.editor.setOption( 'mode', GE.modes[ ++col.modeIndex % GE.modes.length ] )
         },
         
-        setupDocumentation : function() {
-          $.getJSON("js/gibber/documentation.js", function(data, ts, xgr) {
-              Gibber.docs = data;
+        "Shift-Ctrl-Enter": function(cm) {
+          var v = cm.getDoc().getSelection(),
+              pos = null
 
-              var tags = [];
-              Gibber.toc = {};
-              for (var key in Gibber.docs) {
-                  var obj = Gibber.docs[key];
-                  tags.push({
-                      text: key,
-                      obj: key,
-                      type: "object",
-                      class: obj.key,
-                  });
-                  if (typeof Gibber.toc[obj.type] === "undefined") {
-                      Gibber.toc[obj.type] = [];
-                  }
-                  Gibber.toc[obj.type].push(key);
-
-                  if (typeof obj.methods !== "undefined") {
-                      for (var method in obj.methods) {
-                          tags.push({
-                              text: method + "( " + key + " )",
-                              obj: key,
-                              type: "method",
-                              name: method,
-                          });
-                      }
-                  }
-                  if (typeof obj.properties !== "undefined") {
-                      for (var prop in obj.properties) {
-                          tags.push({
-                              text: prop + "( " + key + " )",
-                              obj: key,
-                              type: "property",
-                              name: prop,
-                          });
-                      }
-                  }
-              }
-
-              Gibber.Environment.tags = tags;
-              Gibber.Environment.displayTOC();
-              //Gibber.Environment.displayDocs("Seq");
-          });
-          $("#resizeButton").on("mousedown", function(e) {
-              $("body").css( "-webkit-user-select", "none" );
-              Gibber.prevMouse = e.screenX;
-              $(window).mousemove(function(e) {
-                $(".CodeMirror").width( e.pageX );
-                
-                $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
-                $("#sidebar").height( $(".CodeMirror").outerHeight() );
-
-                $("#resizeButton").css({
-                  position: "absolute",
-                    display: "block",
-                    top: $(".header").height() - 2,
-                    left: Math.floor(e.pageX + 3),
-                  });
-              });
-              
-              $(window).mouseup(function(e) {
-                  $(window).unbind("mousemove");
-                  $(window).unbind("mouseup");
-                  
-                  $("body").css("-webkit-user-select", "text");
-                  
-                  Gibber.codeWidth = $(".CodeMirror").width();
-              });
-          });
-
-          $("#searchButton").on("click", function(e) {
-              Gibber.Environment.displayDocs($("#docsSearchInput").val());
-          });
-          $("#tocButton").on("click", function(e) {
-              Gibber.Environment.displayTOC();
-          });
-          $("#closeSidebarButton").on("click", function(e) {
-              Gibber.Environment.toggleSidebar();
-          });
-
-          $("#docsSearchInput").change(function(e) {
-            if ( $(e.target).is(":focus") || $(e.target).parents().has(Gibber.Environment.autocompleteLayer) ) {
-              Gibber.Environment.displayDocs( $("#docsSearchInput").val() );
-            } else {
-              Gibber.Environment.autocompleteLayer.remove();
-            }
-          });
+          if (v === "") {
+              pos = cm.getCursor()
+              v = cm.getLine( pos.line )
+          }
           
-          $("#docsSearchInput").focus(function(e) {
-              Gibber.Environment.autocompleteLayer = $("<div>");
-              Gibber.Environment.autocompleteLayer.css({
-                  position: "absolute",
-                  top: 22,
-                  left: 0,
-                  width: "200px",
-                  display: "block",
-                  background: "rgba(180, 180, 180,.95)",
-                  listStyle: "none",
-                  padding: "0 5px 0px 5px",
-                  "overflow-y": "auto",
-              });
-              
-              $("#sidebar").append(Gibber.Environment.autocompleteLayer);
-          });
+          GE.Keymap.flash(cm, pos)
           
-          $("#docsSearchInput").keyup(function(e) {
-              var arr = [];
-              var val = e.target.value;
-              if (val.length !== 0) {
-                for (var i = 0; i < Gibber.Environment.tags.length; i++) {
-                  if (Gibber.Environment.tags[i].text.indexOf(val) > -1) {
-                      arr.push(Gibber.Environment.tags[i]);
-                  }
-                }
-              }
-              
-              $(Gibber.Environment.autocompleteLayer).empty();
-              $(Gibber.Environment.autocompleteLayer).append("<ul>");
-              
-              for (var i = 0; i < arr.length; i++) {
-                var li = $("<li>");
-                
-                $(li).css({
-                  cursor: "pointer",
-                  width: "90%",
-                });
-                
-                if (i === arr.length - 1) {
-                  $(li).css({
-                    marginBottom: '10px',
-                  });
-                }
-                
-                $(li).text(arr[i].text);
-                
-                (function() {
-                  var _item = arr[i];
-                  $(li).on("click", function(e) {
-                    Gibber.Environment.displayDocs(_item.obj);
-                    $(Gibber.Environment.autocompleteLayer).remove();
-                    if (_item.type !== "object") {
-                      $("#sidebar").scrollTop( $("*:contains(" + _item.obj + "." + _item.name + "):last").offset().top - 40 );
-                    }
-                  });
-                })();
-                $(Gibber.Environment.autocompleteLayer).append(li);
-              }
-          });
+          Gibber.Clock.codeToExecute.push( { code:v, pos:pos, cm:cm } )
         },
         
-        createMenus : function() {
-          $("#mega-menu-1").dcMegaMenu({
-              speed: 'fast',
-          });
-          
-          $.extend($.modal.defaults, {
-              onOpen: function(dialog) {
-                dialog.overlay.fadeIn('fast', function() {
-                    //dialog.data.hide();
-                  dialog.container.fadeIn('fast', function() {
-                    dialog.data.slideDown('fast');
-                  });
-                });
-              },
-              onClose: function(dialog) {
-                dialog.data.fadeOut('slow', function() {
-                  dialog.container.hide('slow', function() {
-                    dialog.overlay.slideUp('slow', function() {
-                      $.modal.close();
-                    });
-                  });
-                });
-              },
-              overlayClose: true,
-              position: ["40px", null],
-              containerCss: {
-                fontSize:'.8em',
-                backgroundColor: "rgba(60,60,60,.9)",
-                listStyle: "none",
-                border: "1px solid #aaa",
-                padding: "10px",
-                color:"#ccc",
-              }
-          });
-
-          $("#keyCommandMenuItem").bind("click", function() {
-              $("#keyCommands").modal();
-          });
-
-          $("#tutorialMenuItem").bind("click", function() {
-              Gibber.Environment.loadTutorial("intro");
-          });
-
-          $("#quickstartMenuItem").bind("click", function() {
-            $("#quickstart").modal({
-                minHeight: "325px",
-                maxWidth: "500px",
-            });
-          });
-          $("#aboutMenuItem").bind("click", function() {
-            $("#about").modal({
-                minHeight: "325px",
-                maxWidth: "500px",
-            });
-          });
-        },
-        
-        createEditor : function() {
-          CodeMirror.modeURL = "js/codemirror/mode/%N/%N.js";
-          
-          var isOpaque = true;
-          var timeout = null;
-          
-          window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-              lineNumbers: false,
-              autofocus: true,
-              indentUnit: 2,
-              matchBrackets: true,
-              tabSize: 2,
-              smartIndent: true,
-              onCursorActivity: function() {
-                window.editor.setLineClass( hlLine, null, null );
-                hlLine = editor.setLineClass( editor.getCursor().line, null, "activeline" );
-                
-                /*if(Graphics.initialized) {
-                  if(timeout != null) { 
-                    clearTimeout( timeout );
-                    timeout = null
-                  }
-                  if(isOpaque) {
-                    timeout = setTimeout( function() { 
-                      $('.CodeMirror pre').fadeTo(500, .1)
-                      isOpaque = false;
-                      timeout = null
-                    }, 3000);
-                  }else{
-                    $('.CodeMirror pre').fadeTo(250, 1)
-                    isOpaque = true;
-                  }
-                }*/
-              },
-              onChange:function(e,i) {
-                //window.editor.markText({line:0, ch:0}, {line:window.editor.lineCount() - 1, ch:0}, "highlightLine");
-                
-                /*if(Graphics.initialized) {
-                  if(timeout != null) { 
-                    clearTimeout( timeout );
-                    timeout = null
-                  }
-                  if(isOpaque) {
-                    timeout = setTimeout( function() { 
-                      $('.CodeMirror pre').fadeTo(500, .1)
-                      isOpaque = false;
-                      timeout = null
-                    }, 3000);
-                  }else{
-                    $('.CodeMirror pre').fadeTo(250, 1)
-                    isOpaque = true;
-                  }
-                }*/
-              }
-          });
-          var hlLine = window.editor.setLineClass(0, "activeline");
-
-          CodeMirror.autoLoadMode(window.editor, "javascript");
-          window.CodeMirror = CodeMirror;
-          window.editor.setOption("mode", "javascript");
-          window.editor.setOption("theme", "thecharlie");
-
-          CodeMirror.defineMode("links", function(config, parserConfig) {
-              var linksOverlay = {
-                  token: function(stream, state) {
-                      if (stream.match(/^\b(next\ tutorial:([^\s]+))\b/)) {
-                          return "link";
-                      }
-                      stream.skipToEnd();
-                  }
-              };
-              return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), linksOverlay);
-          });
-          $('.CodeMirror').css("display", "inline-block");
-          $('.CodeMirror').delegate(".cm-link", "click", function(e) {
-              var url = $(event.target).text();
-              Gibber.Environment.loadTutorial(url.split(":")[1]);
-          });
-
-          CodeMirror.autoLoadMode(window.editor, "links");
-          window.editor.setOption("mode", "links");
-          
-          this.load("resampling (default)");
-          this.editorResize();
-        },
-        
-        flash: function(cm, pos) {
-          if (pos !== null) {
-            v = cm.getLine(pos.line);
-
-            cm.setLineClass(pos.line, null, "highlightLine")
-
-            var cb = (function() {
-                cm.setLineClass(pos.line, null, null);
-            });
-
-            window.setTimeout(cb, 250);
-
-          } else {
-            var sel = cm.markText(cm.getCursor(true), cm.getCursor(false), "highlightLine");
-
-            var cb = (function() {
+        "Shift-Alt-Enter": function(cm) {
+            var result = Gibber.Environment.selectCurrentBlock( cm );
+            
+            Gibber.run( result.text, cm.getCursor(), cm );
+            
+            var sel = cm.markText( result.start, result.end, { className:"CodeMirror-highlight" } );
+            window.setTimeout(function() {
                 sel.clear();
-            });
-
-            window.setTimeout(cb, 250);
-          }
-        },
-        fontSize : 1,
-        setupKeyBindings : function() {
-          
-          CodeMirror.keyMap.gibber = {
-              fallthrough: "default",
-
-              /*"Shift-Ctrl-." : function(cm) { 
-      					_Gibber.nextSlide();
-      				},
-      				"Shift-Ctrl-," : function(cm) { 
-      					_Gibber.prevSlide();
-      				},*/
-
-              "Ctrl-Enter": function(cm) {
-                  var v = cm.getSelection();
-                  var pos = null;
-                  if (v === "") {
-                      pos = cm.getCursor();
-                      v = cm.getLine( pos.line );
-                  }
-                  Gibber.Environment.flash(cm, pos);
-                  Gibber.runScript( v, pos, cm );
-              },
-              "Cmd-S": function(cm) {
-                  var name = window.prompt("enter name for file:")
-                  Gibber.Environment.saveWithName(name);
-              },
-              "Cmd-L": function(cm) {
-                  var name = window.prompt("enter name of file to load:")
-                  Gibber.Environment.load(name);
-              },
-			
-              "Shift-Ctrl-Enter": function(cm) {
-                  var v = cm.getSelection();
-                  var pos = null;
-                  if (v === "") {
-                      pos = cm.getCursor();
-                      v = cm.getLine(pos.line);
-                  }
-                  Gibber.Environment.flash(cm, pos);
-                  Gibber.callback.addCallback(v, _1);
-              },
-              "Shift-Alt-Enter": function(cm) {
-                  var result = Gibber.Environment.selectCurrentBlock();
-                  
-                  console.log(result)
-                  Gibber.runScript( result.text, cm.getCursor(), cm );
-                  
-                  //Gibber.runScript(result.text);
-
-                  // highlight:
-                  var sel = editor.markText(result.start, result.end, "highlightLine");
-                  window.setTimeout(function() {
-                      sel.clear();
-                  }, 250);
-              },
-              "Shift-Ctrl-Alt-Enter": function(cm) {
-                  var result = Gibber.Environment.selectCurrentBlock();
-
-                  Gibber.callback.addCallback(result.text, _1);
-
-                  // highlight:
-                  var sel = editor.markText(result.start, result.end, "highlightLine");
-                  window.setTimeout(function() {
-                      sel.clear();
-                  }, 250);
-              },
-              
-              "Shift-Ctrl-=": function(cm) {
-                  Gibber.Environment.fontSize += .2;
-                  $('.CodeMirror').css({ fontSize:Gibber.Environment.fontSize + 'em' })
-              },
-              "Shift-Ctrl--": function(cm) {
-                  Gibber.Environment.fontSize -= .2;
-                  $('.CodeMirror').css({ fontSize:Gibber.Environment.fontSize + 'em' })
-              },              
-              "Ctrl-`": function(cm) {
-                  Gibber.clear();
-                  Gibber.audioInit = false;
-              },
-              "Ctrl-.": function(cm) {
-                  Gibber.clear();
-                  Gibber.audioInit = false;
-              },
-              "Ctrl-/": function(cm) { // for international keyboards...
-                  Gibber.clear();
-                  Gibber.audioInit = false;
-              },
-              "Ctrl-I": function(cm) {
-                  Gibber.Environment.toggleSidebar();
-                  cm.refresh();
-              },
-              "Ctrl-Alt-2": function(cm) {
-                  console.log("CALLING CTRL-ALT-2");
-                  var v = cm.getSelection();
-                  var pos = null;
-                  if (v === "") {
-                      pos = cm.getCursor();
-                      v = cm.getLine(pos.line);
-                  }
-                  console.log("CALLED SLAVE SEND");
-                  Gibber.Environment.slaveSocket.send(v);
-              },
-              "Shift-Alt-2": function(cm) {
-                  var result = Gibber.Environment.selectCurrentBlock();
-
-                  Gibber.Environment.slaveSocket.send(result.text);
-
-                  // highlight:
-                  var sel = editor.markText(result.start, result.end, "highlightLine");
-                  window.setTimeout(function() {
-                      sel.clear();
-                  }, 250);
-              },
-          };
-
-          window.editor.setOption("keyMap", "gibber");
+            }, 250);
         },
         
-        runLoadFile : function() {
-          var scripts = localStorage.getObject("scripts");
+        "Shift-Ctrl-Alt-Enter": function(cm) {
+            var result = Gibber.Environment.selectCurrentBlock( cm );
 
-          if (!scripts) scripts = {};
+            Gibber.Clock.codeToExecute.push( { code:result.text, pos:cm.getCursor(), cm:cm } );
 
-          if (typeof scripts.loadFile !== "undefined") {
-              eval(scripts.loadFile);
+            var sel = cm.markText( result.start, result.end, { className:"CodeMirror-highlight" } );
+            window.setTimeout(function() {
+                sel.clear();
+            }, 250);
+        },
+        
+        "Ctrl-.": Gibber.clear.bind( Gibber ),
+
+        "Shift-Ctrl-=": function(cm) {
+          var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
+          col.fontSize += .2
+          
+          col.editorElement.css({ fontSize: col.fontSize + 'em'})
+          col.editor.refresh()
+        },
+        
+        "Shift-Ctrl--": function(cm) {
+          var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
+          col.fontSize -= .2
+          
+          col.editorElement.css({ fontSize: col.fontSize + 'em'})
+          col.editor.refresh()
+        },
+      }
+    },
+    flash: function(cm, pos) {
+      var sel,
+          cb = function() { sel.clear() }
+    
+      if (pos !== null) {
+        sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
+      } else {
+        sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } );
+      }
+    
+      window.setTimeout(cb, 250);
+    },
+  },
+  
+  Metronome : {
+    shouldDraw: true,
+    canvas: null,
+    ctx: null,
+    width: null,
+    height: null,
+    color: '#444',
+    
+    draw: function( beat, beatsPerMeasure ) {
+      if( this.shouldDraw ) {
+        var beatWidth = this.width / beatsPerMeasure,
+            beatPos = ( beat - 1 ) * beatWidth;
+      
+        this.ctx.clearRect( 0, 0, this.width, this.height )
+        this.ctx.fillRect(  beatPos, 0,  beatWidth, this.height )
+      }
+    },
+    
+    init: function() {
+      this.canvas = $( "#header canvas" )
+      this.ctx = this.canvas[0].getContext( '2d' )
+      
+      this.width = this.canvas.width()
+      this.height = this.canvas.height()      
+      
+      this.canvas.attr( 'width', this.width )
+      this.canvas.attr( 'height', this.height )
+      
+      this.ctx.fillStyle = this.color
+      
+      var color = this.color
+      Object.defineProperty( this, 'color', {
+        get: function() { return color; },
+        set: function(v) { color = v; this.ctx.fillStyle = color; }
+      })
+      
+    },
+    
+    off : function() {
+      this.ctx.clearRect( 0, 0, this.width, this.height )
+      this.shouldDraw = false;
+    },
+    
+    on : function() { this.shouldDraw = true; },
+  },
+  
+  Layout: {
+    focusedColumn : null,
+    dragging : null,
+    columns : [],
+    defaultColumnSize : 500,
+    resizeHandleSize  : 8,
+    columnID : 0,
+    
+    init : function() {
+      GE.Layout.addColumn({ fullScreen:false, type:'code', autofocus:true })
+    },
+        
+    emsToPixels : function( ems, element ) {
+      var pixelsPerEm = Number(getComputedStyle( element, "").fontSize.match(/(\d*(\.\d*)?)px/)[1])
+      
+      return pixelsPerEm * ems
+    },
+    
+    toggleHeader : function( onOrOff ) {
+      if(typeof onOrOff !== 'undefined') {
+        if( onOrOff ) {
+          $( '#header' ).show()
+        } else {
+          $( '#header' ).hide()
+        }
+      }else{
+        $( '#header' ).toggle()
+      }
+    },
+    
+    toggleFooter : function( onOrOff ) {
+      if(typeof onOrOff !== 'undefined') {
+        if( onOrOff ) {
+          $( '#footer' ).show()
+        } else {
+          $( '#footer' ).hide()
+        }
+      }else{
+        $( '#footer' ).toggle()
+      }
+    },
+    
+    toggleAllResizeHandles : function() { $( '.resizeHandle' ).toggle() },
+    
+    toggleAllColumns : function() {
+      for( var i = 0; i < GE.Layout.columns.length; i++ ) {
+        GE.Layout.columns[ i ].toggle()
+      }
+    },
+    
+    toggle : function() {
+      this.toggleHeader()
+      this.toggleFooter()
+      this.toggleAllColumns()
+    },
+    
+    addColumn : function( options ) {
+      options = options || {}
+      var isCodeColumn = options.type === 'code',
+          lastColumnWidth = $( "#contentCell").width(),
+          colNumber = this.columnID++,
+          mode  = 'javascript',
+          modeIndex = 0
+          
+      if( this.columns.length > 0) lastColumnWidth = $( this.columns[ this.columns.length - 1 ].element ).width()
+
+      var columnWidth = options.fullScreen ? lastColumnWidth : options.width || this.defaultColumnSize,
+          col = {
+            element:        $( '<div class="column">' ),
+            header:         $( '<div class="columnHeader">' ),
+            modeSelect:     $( '<select>'),
+            editorElement:  $( '<div class="editor">' ),
+            resizeHandle:   $( '<div class="resizeHandle">' ),
+            close :         $( '<button>' ),
+            width:          columnWidth,
+            number:         this.columns.length,
+            fontSize:       1,
+            modeIndex:      0,
+            isCodeColumn:   isCodeColumn,
+            toggleResizeHandle : function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+            toggle : function() { $( this.element ).toggle() },
+          },
+          resizeHandleSize = this.resizeHandleSize
+          
+      this.columns.push( col )
+      
+      Object.defineProperty( col, 'value', {
+        get: function()    { return col.editor.getValue() },
+        set: function( v ) { col.editor.setValue( v ) }
+      })
+      
+      col.element.width( columnWidth )
+      col.resizeHandle.width( resizeHandleSize )
+      
+      col.close.addClass( 'closeButton' )
+        .on( 'click', function(e) { GE.Layout.removeColumn( colNumber ) })
+        .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
+        .html('&#10005;')
+
+      if( isCodeColumn ) {
+        col.modeSelect
+          .append(
+            $( '<option>' ).text( 'javascript' ),
+            $( '<option>' ).text( 'glsl' )
+          )
+          .eq( 0 )
+          .on( 'change', function( e ) {
+            var idx = $( this ).find( ':selected' ).index()
+            col.editor.setOption( 'mode', GE.modes[ idx ] )
+            col.modeIndex = idx
+          })
+          
+        col.header
+          .append( col.close )
+          .append( $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;language:' ) )
+          .append( col.modeSelect )
+          
+      }else{
+        col.header
+          .append( col.close )
+          .append( $( '<span>' ).html( '&nbsp;' + options.header ) )
+      }
+      
+      col.element.append( col.header, col.resizeHandle )
+
+      $( '#contentCell' ).append( col.element )
+          
+      if( typeof options.mode === 'string' ) {
+        mode = options.mode
+      }else if( options.mode ) {
+        mode = modes[ options.mode ]
+      }
+      
+      if( isCodeColumn ) {
+        col.editorElement.width( columnWidth - resizeHandleSize )
+        col.element.append( col.editorElement )
+        col.editor = CodeMirror( col.editorElement[0], {
+          theme:  'gibber',
+          keyMap: 'gibber',
+          mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
+          autoCloseBrackets: true,
+          matchBrackets: true,
+          value:
+          "a = Sine()\n"+
+          "\n"+
+          "b = Seq({\n"+
+          "  frequency:[440,880],\n"+
+          "  durations:[44100],\n"+
+          "  target:a\n"+
+          "})",
+          lineWrapping: false,
+          tabSize: 2,
+          autofocus: options.autofocus || false,
+        })
+    
+        col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
+      }
+      
+      col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
+      col.modeSelect.eq( col.modeIndex )
+      
+      if( isCodeColumn )
+        $( col.modeSelect ).find( 'option' )[ col.modeIndex ].selected = true;
+      
+      col.element.addClass( colNumber )
+      col.element.attr( 'id', colNumber )
+      col.id = colNumber
+           
+      this.handleResizeEventForColumn( col )
+      
+      this.resizeColumns()
+      
+      return col
+    },
+    
+    load : function( name ) {       
+      var layout = GE.Storage.values.layouts[ name ];
+      
+      this.removeAllColumns()
+      
+      for( var i = 0; i < layout.columns.length; i++) {
+        // this.addColumn( false, layout.columns[i].width, GE.modes[ layout.columns[i].mode ] )
+        this.addColumn({ width:layout.columns[ i ].width, fullScreen:false, mode:layout.columns[i].mode, type:'code' })
+        this.columns[i].editor.setValue( layout.columns[i].value )
+      }
+    },
+    
+    save : function() {
+      var name = window.prompt("Enter name for layout");
+      
+      var layout = {
+        header: $( '#header' ).css( 'display' ) === 'none' ? false : true,
+        footer: $( '#footer' ).css( 'display' ) === 'none' ? false : true,
+        columns: []
+      }
+    
+      for( var i = 0; i < this.columns.length; i++ ) {
+        layout.columns.push({
+          width: $( this.columns[i].element ).width(),
+          value: this.columns[i].editor.getValue(),
+          mode: $( this.columns[i].modeSelect ).find(':selected').index()//this.columns[i].editor.mode//this.columns[i].modeIndex % GE.modes.length,
+        })
+      }
+      
+      GE.Storage.values.layouts[ name ] = layout
+      GE.Storage.save()
+    },
+    
+    getColumnByID : function( id ) {
+      for( var i = 0; i < this.columns.length; i++ ) {
+        var col = this.columns[ i ]
+        if( col.id === id ) {
+          return col;
+        }
+      }
+      return null;
+    },
+    
+    removeAllColumns : function() {
+      for( var i = this.columns.length - 1; i >= 0; i-- ) {
+        var col = this.columns[ i ]
+        col.element.remove()
+        this.columns.pop()
+      }
+    },
+    
+    removeColumn : function( columnNumber ) {
+      var col = this.getColumnByID( columnNumber )
+      
+      if( col.element ) col.element.remove()
+      
+      this.columns.splice( this.columns.indexOf( col ), 1 )
+      
+      this.resizeColumns();
+    },
+    
+    handleResizeEventForColumn : function(col) {
+    	col.resizeHandle.mousedown( function(e) {
+    		$( "body" ).css( "-webkit-user-select", "none" );
+
+    		$( window ).mousemove( function( e ) {
+          var newWidthCandidate = e.pageX - col.element.position().left
+          col.width = newWidthCandidate > 300 ? newWidthCandidate : 300
+          col.element.width( col.width )
+
+          GE.Layout.resizeColumns()
+    		});
+
+    		$( window ).mouseup( function(e) {
+    			$( window ).unbind( "mousemove" );
+    			$( window ).unbind( "mouseup" );
+    			$( "body ").css( "-webkit-user-select", "text" );
+    		});
+      })
+    },
+    
+    resizeColumns : function() {
+      var totalWidth   = 0, // also used to determine x coordinate of each column
+          headerHeight = $('thead').height(),
+          columnHeight = $(window).height() - headerHeight - $('tfoot').height()
+
+      for( var i = 0; i < this.columns.length; i++ ) {
+        this.columns[ i ].element.css({ 
+          top:headerHeight,
+          left: totalWidth,
+          height: $(window).height() - headerHeight - $('tfoot').height()
+        })
+                
+        $( this.columns[ i ].editorElement )
+          .width( this.columns[i].width - this.resizeHandleSize )
+          .height( columnHeight - this.columns[i].header.outerHeight() )
+          
+        $( this.columns[ i ].header ).width( this.columns[i].width - this.resizeHandleSize )
+        
+        if( this.columns[ i ].editor )
+          this.columns[ i ].editor.refresh()        
+        
+        totalWidth += this.columns[ i ].width
+      }
+
+      $( '#contentCell' ).width( totalWidth )
+    },
+    
+    scrollToColumnNumber : function( columnNumber ) { },
+  },
+  
+  Message: {
+    post : function( msgText ) {
+      var msgDiv = $( '<div>' )
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:200,
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em'
+        })
+        .addClass( 'message' )
+        .append( $( '<button>' )
+          .addClass( 'closeButton' )
+          .on('click', function(e) { $( msgDiv ).remove(); })
+          .html('&#10005;')
+        )
+      
+      msgDiv.append( $('<p>').text( msgText ).css({ marginTop:'.5em' }) )
+      
+      $( 'body' ).append( msgDiv )
+    }
+  },
+  
+  Menu : {
+    init: function() {
+      $( '#publishButton' ).on( 'click', function(e) {
+        GE.Account.newPublicationForm()
+      })
+      $( '#browseButton' ).on( 'click', function(e) {
+        GE.Browser.newBrowser()
+      })
+      $( '#addCodeButton' ).on( 'click', function(e) {
+        GE.Layout.addColumn({ fullScreen:true, type:'code' })
+      })
+    }
+  },
+  
+  Spinner: {
+    current : null,
+    spin: function( target ) {
+      var spinner = new Spinner({ color:'#ccc', lines:18,length:0,width:8,radius:30,corners:1.0,rotate:0,trail:42,speed:1,direction:1 })
+      spinner.spin( target )
+      this.current = spinner
+    },
+    remove: function() {
+      this.current.stop()
+    }
+  },
+  
+  Browser : {
+    newBrowser: function() {
+      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Browse Giblets' })
+      
+      //col.element.addClass( 'browser' )
+      
+      location.href = '#'
+      location.href = '#' + col.id
+      
+      col.editorElement.remove()
+      
+      $.ajax({
+        url: SERVER_URL + "/browser",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        $( col.element ).append( data );
+        $( '#search_button' ).on( 'click', GE.Browser.search )
+      })
+    },
+    
+    // publication name : author : rating : code fragment?
+    search : function(e) {
+      var data = { query:$( '#search_field' ).val() }
+      $.post(
+        SERVER_URL + '/search',
+        data,
+        function ( data ) {
+          console.log( "Search Data:", data )
+          
+          var results = $( '<ul>' ), count = 0
+          
+          for( var key in data ) {
+            count++
+            (function() {
+              var d = data[ key ],
+                  pubname = key,
+                  li = $( '<li>' )
+              
+              li
+              .html( pubname )
+              .on( 'click', function() { GE.Browser.openCode( d ) } )
+              .css( 'cursor', 'pointer' )
+              results.append( li )
+            })()
+          }
+          console.log( count )
+          $( '.browser' ).append( results )
+        },
+        'json'
+      )
+    },
+    
+    openCode : function( code ) {
+      var col = GE.Layout.addColumn({ fullScreen:true, type:'code' })
+      col.editor.setValue( code )
+    },
+    
+  },
+  
+  Account : {
+    init : function() {
+      $('.login a').on('click', function(e) { 
+        GE.Account.createLoginWindow()
+      })
+      
+      GE.Account.loginStatus()
+    },
+    
+    loginStatus : function() {
+      $.ajax({ 
+        url:'./loginStatus',
+        dataType:'json'
+      }).done( function( response ) { 
+        if( response.username !== null ) {
+          $( '.login' ).empty()
+          $( '.login' ).append( $('<span>welcome, ' + response.username + '.  </span>' ) )
+          $( '.login' ).append( $('<a href="#">' )
+            .text( ' logout ')
+            .on( 'click', function(e) {
+              $.ajax({
+                type:"GET",
+                url:'http://127.0.0.1:3000/logout', 
+                dataType:'json'
+              }).done( function( data ) {
+                $( '.login' ).empty()
+                $( '.login' ).append( $('<a href="#">' )
+                  .text( 'please login' )
+                  .on('click', function(e) { 
+                    GE.Account.createLoginWindow()
+                  })
+                )
+              })
+            })
+          )
+        }
+      }) 
+    },
+    
+    createLoginWindow : function() {
+      $.ajax({ 
+        url:'./login',
+        dataType:'html'
+      }).done( function(response) { 
+        $('body').append( response ); 
+        $("#username").focus() 
+      }) 
+    },
+    
+    login: function() {
+      $.ajax({
+        type:"POST",
+        url:'http://127.0.0.1:3000/login', 
+        data:{ username: $("#username").val(), password: $("#password").val() }, 
+        dataType:'json'
+      })
+      .done( function (data) {
+        if( !data.error ) {
+          console.log( "LOGIN RESPONSE", data )
+          $( '.login' ).empty()
+          $( '.login' ).append( $('<span>welcome, ' + data.username + '.  </span>' ) )
+          $( '.login' ).append( $('<a href="#">' )
+            .text( ' logout ')
+            .on( 'click', function(e) {
+              $.ajax({
+                type:"GET",
+                url:'http://127.0.0.1:3000/logout', 
+                dataType:'json'
+              }).done( function(data) {
+                $( '.login' ).empty()
+                $( '.login' ).append( $('<a href="#">' )
+                  .text( 'please login' )
+                  .on('click', function(e) { 
+                    GE.Account.createLoginWindow()
+                  })
+                )
+              })
+            })
+          )
+          $( '#loginForm' ).remove()
+        }else{
+          $( "#loginForm h5" ).text( "Your name or password was incorrect. Please try again." )
+        }
+      })
+      .fail( function(error) { console.log("FAILED FUCK"); console.log( error )})
+
+    },
+    newAccountForm: function() {
+      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Create an account' })
+      location.href = '#'
+      location.href = '#' + col.id
+      //col.editorElement.remove()
+      $( '#loginForm' ).remove()
+      $.ajax({
+        url:'./snippets/create_account.ejs',
+        dataType:'html'
+      }).done( function( data ) { console.log( data ); $( col.element ).append( data ); } )
+    },
+    newPublicationForm: function() {
+      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Publish a Giblet' })
+      
+      col.element.addClass('publication_form')
+      
+      location.href = '#'
+      location.href = '#' + col.id
+      
+      col.editorElement.remove()
+      
+      $.ajax({
+        url: SERVER_URL + "/create_publication",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        $( col.element ).append( data ); 
+        for( var i = 0; i < GE.Layout.columns.length; i++ ) {
+          var _col = GE.Layout.columns[ i ]
+          if( _col.isCodeColumn ) {
+            $('#new_publication_column').append( $( '<option>' + _col.id + '</option>' ) )
+          }
+        }
+      })
+    },
+    processNewAccount: function() {
+      var col = GE.Layout.columns[ GE.Layout.columns.length - 1],
+          date = new Date(),
+          data = { 
+            _id: $( '#new_account_username' ).val(),
+            type: 'user',
+            password:  $( '#new_account_password' ).val(),
+            joinDate:  [ date.getMonth() + 1, date.getDate(), date.getFullYear() ],
+            website:  $('#new_account_website').val(),
+            affiliation:  $('#new_account_affiliation').val(),
+            email:  $('#new_account_email').val(),
+            following: [],
+            friends: [],
+          }
+
+      $.post(
+        SERVER_URL + '/createNewUser',
+        data,
+        function (error, response, body) {
+          console.log(" RIGHT ")
+          if( error ) { 
+            console.log( "ERROR", error ) 
+          } else { 
+            console.log( "RESPONSE", response )
           }
         },
+        'json'
+      )
 
-        selectCurrentBlock: function() { // thanks to graham wakefield
-            var pos = editor.getCursor();
-            var startline = pos.line;
-            var endline = pos.line;
-            while (startline > 0 && editor.getLine(startline) !== "") {
-                startline--;
-            }
-            while (endline < editor.lineCount() && editor.getLine(endline) !== "") {
-                endline++;
-            }
-            var pos1 = {
-                line: startline,
-                ch: 0
-            }
-            var pos2 = {
-                line: endline,
-                ch: 0
-            }
-            var str = editor.getRange(pos1, pos2);
+      col.element.remove()
+      location.href = '#'
+      location.href = '#' + GE.Layout.columns[ GE.Layout.columns.length - 1].id      
+    },
+    publish : function() {
+      var url = SERVER_URL + '/publish'
+      
+      //GE.Spinner.spin( $('.publication_form')[0] )
+        
+      $.ajax({
+        type:"POST",
+        url: SERVER_URL + '/publish',
+        data: {
+          name: $( '#new_publication_name' ).val(),
+          code: GE.Layout.columns[0].editor.getValue(),
+          tags: $( '#new_publication_tags' ).val().split(','),
+          notes: $( '#new_publication_notes' ).val() 
+         },
+        dataType:'json'
+      })
+      .done( function ( data ) {
+        GE.Message.post( 'Your publication has been saved to: ' + SERVER_URL + '/gibber/' + data.url )
+        GE.Layout.removeColumn( parseInt( $( '.publication_form' ).attr( 'id' ) ) )
+      })
+      .fail( function(e) { console.log( "FAILED TO PUBLISH", e ) } )
+    }
+  },
+}
 
-            return {
-                start: pos1,
-                end: pos2,
-                text: str
-            };
-        },
-
-        displayDocs: function(obj) {
-            if (typeof Gibber.docs[obj] === "undefined") return;
-            $("#docs").html(Gibber.docs[obj].text);
-            $("#docs").append("<h2>Methods</h2>");
-            
-            var count = 0;
-            for (var key in Gibber.docs[obj].methods) {
-                var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].methods[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "rgba(30,30,30,.75)" : "transparent";
-                $(html).css({
-                    "background-color": bgColor,
-                    "border-color": "#ccc",
-                    "border-width": "0px 0px 1px 0px",
-                    "border-style": "solid",
-                });
-                $("#docs").append(html);
-            }
-            
-            $("#docs").append("<h2>Properties</h2>");
-            
-            for (var key in Gibber.docs[obj].properties) {
-                var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].properties[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "rgba(30,30,30,.75)" : "transparent";
-                
-                $(html).css({
-                    "background-color": bgColor,
-                    "border-color": "#ccc",
-                    "border-width": "0px 0px 1px 0px",
-                    "border-style": "solid",
-                });
-                
-                $("#docs").append(html);
-            }
-        },
-
-        displayTOC: function() {
-            $("#docs").empty();
-            
-            for (var key in Gibber.toc) {
-                var cat = Gibber.toc[key];
-                if (cat.length > 0) {
-                    var ul = $("<ul style='list-style:none; padding: 0px 5px;'>");
-                    var h2 = $("<h2>" + key + "</h2>");
-                    //var ul = $("<ul>");
-                    for (var i = 0; i < cat.length; i++) {
-                        var li = $("<li>");
-                        
-                        var a = $("<a style='cursor:pointer'>");
-                        
-                        (function() {
-                            var text = cat[i];
-                            a.text(text);
-                            a.click(function() {
-                                Gibber.Environment.displayDocs(text);
-                            });
-                        })();
-                        
-                        $(li).append(a);
-                        $(ul).append(li);
-                    }
-                    $("#docs").append(h2);
-                    $("#docs").append(ul);
-                }
-            }
-        },
-
-        toggleSidebar: function() {
-            $('#sidebar').toggle();
-            $('#resizeButton').toggle();
-            //header
-            //$('#sidebar').css("display", "inline");
-            if ($("#sidebar").css("display") == "none") {
-                $('.CodeMirror').css("width", "100%");
-                //$('.CodeMirror-scroll').css("width", "100%");
-                $('#console').css("width", "100%");
-            } else {
-                if (typeof Gibber.codeWidth !== "undefined") { //if docs/editor split has not been resized
-                    $(".CodeMirror").width( Gibber.codeWidth );
-                    $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
-                    $("#sidebar").height( $(".CodeMirror").outerHeight() );
-
-                    $("#resizeButton").css({
-                        position: "absolute",
-                        display: "block",
-                        top: $(".header").height(),
-                        left: Gibber.codeWidth,
-                    });
-                } else {
-                    $("#resizeButton").css({
-                        position: "absolute",
-                        display: "block",
-                        top: $(".header").height(),
-                        left: "70%",
-                    });
-                    
-                    $('#console').css("width", "70%");
-
-                    $('.CodeMirror').css("width", "70%");
-                    $('.CodeMirror').css("margin", "0");
-                    
-                    $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
-                    $("#sidebar").height( $(".CodeMirror").outerHeight() );
-                }
-            }
-        },
-
-        editorResize: function() {
-            var one = $('#console').innerHeight();
-            var remaining_height = parseInt( $(window).height() - one - $("#mega-menu-1").outerHeight() + 7 );
-
-            var scroll = window.editor.getScrollerElement();
-            $(scroll).height( remaining_height );
-
-            window.editor.refresh();
-        },
-    };
-    window.republicish = Environment.republicish;
-    return Environment;
-});
+})()
