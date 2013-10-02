@@ -433,9 +433,9 @@ a.removeMod('rx');`
 							position.z = val;
 						}
 						
-						this.rx = position.x;
-						this.ry = position.y;
-						this.rz = position.z;
+						this.x = position.x;
+						this.y = position.y;
+						this.z = position.z;
 					}
 				},			
 			});		

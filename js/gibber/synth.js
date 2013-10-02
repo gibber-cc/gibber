@@ -93,10 +93,7 @@ Play a chord and optionally specify and amplitude for it. This method only works
 }
 
 Gibber.presets.Synth = {
-	short : {
-		attack: 44,
-		decay: 1/16,
-	},
+	short : { attack: 44, decay: 1/16,},
 	bleep: { waveform:'Sine', attack:44, decay:1/16 },
   rhodes: { waveform:'Sine', maxVoices:4, fx:[ Tremolo(2, .2) ], attack:44, decay:1, cutoff:.1, filterMult:.4, resonance:1.5 }
 };

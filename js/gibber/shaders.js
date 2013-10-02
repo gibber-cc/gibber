@@ -158,7 +158,7 @@ define(['gibber/graphics/three.min'],
 		},
 		
 		init : function() {
-			Graphics.composer = new THREE.EffectComposer( Graphics.renderer);
+			Graphics.composer = new THREE.EffectComposer( Graphics.renderer );
 
 			Graphics.renderScene = new THREE.RenderPass( Graphics.scene, Graphics.camera );
 
