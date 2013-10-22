@@ -10,7 +10,7 @@ around with if you don't have your own server. Or you can simply create your own
 Below is a code sample that shows off the new mapping abstractions in Gibber, as well as the new TR-808 emulation.
 
 ``` javascript
-a = XOX('x*o*x*o-)
+a = XOX('x*o*x*o-')
 
 b = Cube()
 
