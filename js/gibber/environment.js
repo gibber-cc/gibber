@@ -1,7 +1,7 @@
 (function() {
 
 "use strict"
-var SERVER_URL = 'http://127.0.0.1:3000',
+var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
     modes = [ 'javascript', 'glsl' ]
 
 var GE = Gibber.Environment = {
@@ -14,6 +14,7 @@ var GE = Gibber.Environment = {
                 'external/codemirror/addons/show-hint',
                 'external/codemirror/addons/javascript-hint',
                 'external/codemirror/clike',
+                'gibber/gibber_interface',
                 ], function() {
                   
         GE.Keymap.init()

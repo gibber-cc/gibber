@@ -175,17 +175,29 @@
  	
   	obj.amp   = isNaN(_amp) ? 1 : _amp;
 	
-  	if( obj.seq ) { Gibberish.future( obj.seq.tick,1 ) }
+  	if( obj.seq ) { Gibberish.future( obj.seq.tick, 1 ) }
     
     obj.note = function(nt) {
   		for(var key in this.kit) {
   			if(nt === this.kit[key].symbol) {
-  				this[key].sampler.note( this.pitch * this[key].pitch, this[key].amp );
+  				this[ key ].sampler.note( obj.pitch /** this[key].pitch*/, this[key].amp );
   				break;
   			}
   		}
   	}
     
+    var _pitch = obj.pitch
+    Object.defineProperty( obj, 'pitch', {
+      get: function() { return _pitch },
+      set: function(v) { 
+        _pitch = v; 
+      	for(var key in obj.kit) {
+          console.log( obj[key] )
+      		obj[key].pitch = _pitch
+        }
+      }
+    })
+        
     Gibber.createMappingAbstractions( obj, _mappingProperties[ 'Drums' ] )
     
     obj.kill = function() {

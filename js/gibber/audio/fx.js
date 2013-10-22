@@ -58,16 +58,16 @@
         output: Gibber.LOGARITHMIC,
         timescale: 'audio',
       },
+      feedback: {
+        min: 0, max: .99,
+        output: Gibber.LINEAR,
+        timescale: 'audio',
+      },
       amount: {
         min: 25, max: 300,
         output: Gibber.LINEAR,
         timescale: 'audio',
       },
-      feedback: {
-        min: 0, max: .99,
-        output: Gibber.LINEAR,
-        timescale: 'audio',
-      }
     },
     Vibrato : {
       rate : {
@@ -147,7 +147,7 @@
       },
     }
   };
-
+  
   for( var i = 0; i < types.length; i++ ) {
   
     (function() {
@@ -156,40 +156,36 @@
      
       Gibber.FX[ name ] = function() {
         var args = Array.prototype.slice.call(arguments, 0),
-            obj = Gibber.processArguments( arguments, name )
-        
-        if( typeof obj !== 'undefined' && obj[0] ) {
-          if( typeof obj[0].length !== 'undefined') {
-            // multiple arguments passed as an array
-            obj.unshift(0) // insert a 0 to be a placeholder for input
-            obj = Gibber.construct( Gibberish[ type ], obj )
-          }else{
-            // a dictionary is passed to constructor
-            obj =  new Gibberish[ type ]( obj[0] )
-          }
-        }else{
-          // nothing is passed
-          obj = new Gibberish[ type ]()
-        }
-      
+            obj
+            
+        //if( typeof args !== 'undefined' && !$.isPlainObject( args[0] ) ) {
+        //  args.unshift(0) // insert a 0 into args array to be a placeholder for input
+        //}
+
+        obj = new Gibberish[ type ]()
         obj.type = 'FX'
+        obj.name = name
       
         $.extend( true, obj, Gibber.ugen )
         
+        Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
+        
+        Gibber.processArguments2( obj, args, obj.name )
+        
+        args.input = 0
         // TODO: this is a horrible hack for a bug in the delay fx. please fix, although I guess it won't hurt too much if it stays.
         if( obj.time ) obj.time = Gibber.Clock.time( obj.time )
         
-        Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
- 
         return obj
       }
     })()
   }
   
-  Gibber.FX.Chorus = function( rate, amount ) {
+  Gibber.FX.Chorus = function( rate, feedback, amount ) {
   	var _rate = rate || 1, 
-    	_amount = amount || ms( 1 ),
-  	  that = Flanger( rate, amount, .5, Math.round( 44.1 * 30 ) )
+    	  _amount = amount || ms( 1 ),
+        _feedback = feedback || 0,
+    	  that = Flanger( _rate, _feedback, _amount, ms( 1 ) * 30 )
       
   	that.name = 'Chorus'
     that.type = 'FX'

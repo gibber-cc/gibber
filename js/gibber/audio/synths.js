@@ -70,14 +70,13 @@
           args[0] = { maxVoices:1 }
         }
         
-        obj = Gibber.processArguments( args, name )
-      
-        if( Array.isArray( obj ) ) {
-          obj = Gibber.construct( Gibberish[ type ], obj ).connect( Gibber.Master )
-        }else{
-          obj =  new Gibberish[ type ]( obj ).connect( Gibber.Master )
-        }
-      
+        // if( Array.isArray( obj ) ) {
+        //   obj = Gibber.construct( Gibberish[ type ], obj ).connect( Gibber.Master )
+        // }else{
+        //   obj =  new Gibberish[ type ]( obj ).connect( Gibber.Master )
+        // }
+        
+        obj = new Gibberish[ type ]().connect( Gibber.Master )
         obj.type = 'Gen'
         
         $.extend( true, obj, Gibber.ugen )
@@ -102,15 +101,10 @@
           set: function() {}
         })
         
-        if(name === 'Mono') { // TODO: fix this hackiness, for some reason Mono doesn't get time values correctly applied to envelope
-          if( typeof args[0] === 'object' ) {
-            $.extend( obj, args[0] )
-          }else if( typeof args[1] === 'object' ) {
-            $.extend( obj, args[1] )
-          }
-        }
-
         Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
+        obj.name = name 
+        
+        Gibber.processArguments2( obj, args, obj.name )
         
         return obj
       }

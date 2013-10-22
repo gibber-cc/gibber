@@ -1,6 +1,7 @@
 (function() {
   
 "use strict"
+var times = []
 
 var Clock = Gibber.Clock = {
   seq : null, 
@@ -11,6 +12,7 @@ var Clock = Gibber.Clock = {
   beatsPerMeasure : 4,
   codeToExecute : [],
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
+  phase : 0,
   
   callback : function() {
     Clock.currentBeat = Clock.currentBeat === Clock.beatsPerMeasure ? 1 : Clock.currentBeat + 1
@@ -27,6 +29,12 @@ var Clock = Gibber.Clock = {
     if( typeof Clock.metronome === 'object' ) {
       Clock.metronome.draw( Clock.currentBeat, Clock.beatsPerMeasure )
     }
+    
+    Clock.phase += beats( 1 )()
+  },
+  
+  getTimeSinceStart : function() {
+    return Clock.phase + Clock.seq.phase
   },
   
   init : function() {
@@ -41,6 +49,24 @@ var Clock = Gibber.Clock = {
       durations:[ beats(1) ],
     }).start()
     
+  },
+  
+  tap : function() {
+    var time = Gibber.Clock.getTimeSinceStart()
+    if( times[2] && time - times[2] > 88200 ) {
+      times.length = 0
+    }
+    times.unshift( time )
+  
+    while( times.length > 3 ) times.pop()
+  
+    if( times.length === 3) {
+    	var average = ((times[0] + times[1]) - times[2] * 2) / 3.,
+          bps = 44100 / average,
+          bpm = bps * 60
+    
+      Gibber.Clock.bpm = bpm
+    }
   },
   
   start : function() {    

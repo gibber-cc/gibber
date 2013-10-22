@@ -229,7 +229,7 @@ var testDatabase = function() {
   }
   cb()
 }
-
+ 
 var search = function(term) {
   request({ url:'http://127.0.0.1:9200/gibber/_search', json:{
       "query": {
@@ -506,7 +506,7 @@ app.post( '/search', function( req, res, next) {
                   }
               }
           }
-      }
+      }.
   }}, function(e,r,b) {
     console.log("SEARCH RESULTS:", b )
     var result = {}
