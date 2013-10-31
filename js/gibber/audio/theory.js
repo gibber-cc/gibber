@@ -200,8 +200,10 @@ var Theory = Gibber.Theory = {
 		this.notation = val;
 			
 		if( typeof this.notation === "string" ) {
-			var _root = this.notation.slice( 0,1 );
-			var _octave, _quality;
+			var _root = this.notation.slice( 0,1 ),
+          _octave, 
+          _quality;
+          
 			if( isNaN( this.notation.charAt( 1 ) ) ) { 	// if true, then there is a sharp or flat...
 				_root += this.notation.charAt( 1 );	// ... so add it to the root name
 				_octave = parseInt( this.notation.slice( 2,3 ) );
@@ -212,7 +214,6 @@ var Theory = Gibber.Theory = {
 			}
 		
 			var _chord = teoria.note( _root + _octave ).chord( _quality );
-      console.log( _chord )
 			for( var j = 0; j < _chord.notes.length; j++ ) {
 				var n = _chord.notes[ j ];
 				this.note( typeof note === 'number' ? note : n.fq() );

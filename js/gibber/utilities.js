@@ -65,7 +65,7 @@ Gibber.Utilities = {
     if( ugen ) {
       if( isSoloing ) { Gibber.Utilities.solo(); } // quick toggle on / off
       
-      console.log( Master.inputs, args )
+      // console.log( Master.inputs, args )
       for(var i = 0; i < Master.inputs.length; i++) {
         var idx = args.indexOf( Master.inputs[i].value )
         if( idx === -1) {

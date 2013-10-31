@@ -161,12 +161,12 @@
     }
     
     seq.showSave = function() {
-      console.log( save )
+      //console.log( save )
     }
     
     seq.start()
     
-    console.log( 'Sequencer created' )
+    console.log( 'Sequencer created.' )
     return seq
   }
   
