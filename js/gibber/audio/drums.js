@@ -192,7 +192,6 @@
       set: function(v) { 
         _pitch = v; 
       	for(var key in obj.kit) {
-          console.log( obj[key] )
       		obj[key].pitch = _pitch
         }
       }
@@ -214,6 +213,7 @@
       }
     })
     
+    console.log( 'Drums created.' )
     return obj
   }
   
@@ -229,7 +229,8 @@
     }else{
       obj =  new Gibberish.Bus2( obj ).connect( Gibber.Master )
     }
-  
+    
+    obj.name = 'XOX'
     obj.type = 'Gen'
     obj.children = []
     
@@ -408,7 +409,8 @@
            
       obj.seq.kill()
     }
-      
+     
+    console.log( 'XOX created.' ) 
     return obj
   }
   

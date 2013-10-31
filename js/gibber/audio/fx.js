@@ -176,6 +176,7 @@
         // TODO: this is a horrible hack for a bug in the delay fx. please fix, although I guess it won't hurt too much if it stays.
         if( obj.time ) obj.time = Gibber.Clock.time( obj.time )
         
+        console.log( name + 'is created.' )
         return obj
       }
     })()

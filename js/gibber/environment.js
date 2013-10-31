@@ -15,6 +15,7 @@ var GE = Gibber.Environment = {
                 'external/codemirror/addons/javascript-hint',
                 'external/codemirror/clike',
                 'gibber/gibber_interface',
+                'gibber/console',
                 ], function() {
                   
         GE.Keymap.init()
@@ -25,6 +26,7 @@ var GE = Gibber.Environment = {
         window.Layout = GE.Layout
         GE.Account.init()
         Gibber.proxy( window )
+        GE.Console.init()
       });
     })
 
@@ -179,13 +181,13 @@ var GE = Gibber.Environment = {
             Gibber.run( v, pos, cm )  
           }else{
             var shader = Gibber.Graphics.makeFragmentShader( v )
-          	col.shader.material = new THREE.ShaderMaterial( {
+          	col.shader.material = new THREE.ShaderMaterial({
 
           		uniforms: col.shader.uniforms,
           		vertexShader: shader.vertexShader,
           		fragmentShader: shader.fragmentShader
 
-          	} );
+          	});
           }
           
         },
@@ -198,13 +200,13 @@ var GE = Gibber.Environment = {
             Gibber.run( v, pos, cm )  
           }else{
             var shader = Gibber.Graphics.makeFragmentShader( v )
-          	col.shader.material = new THREE.ShaderMaterial( {
+          	col.shader.material = new THREE.ShaderMaterial({
 
           		uniforms: col.shader.uniforms,
           		vertexShader: shader.vertexShader,
           		fragmentShader: shader.fragmentShader
 
-          	} );
+          	});
           }
           
         },
@@ -442,7 +444,7 @@ var GE = Gibber.Environment = {
       col.resizeHandle.width( resizeHandleSize )
       
       col.close.addClass( 'closeButton' )
-        .on( 'click', function(e) { GE.Layout.removeColumn( colNumber ) })
+        .on( 'click', function(e) { GE.Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose(); })
         .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
         .html('&#10005;')
 
@@ -670,6 +672,9 @@ var GE = Gibber.Environment = {
       })
       $( '#addCodeButton' ).on( 'click', function(e) {
         GE.Layout.addColumn({ fullScreen:true, type:'code' })
+      })
+      $( '#consoleButton' ).on( 'click', function(e) {
+        GE.Console.open()
       })
     }
   },

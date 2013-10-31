@@ -64,6 +64,8 @@ for( var key in types) {
       
       var args = processArgs( arguments, type, shape )
       
+      this.name = type
+      
       this.fill =     args.fill || new THREE.Color(0xffffff)
       
       this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
@@ -83,10 +85,12 @@ for( var key in types) {
               update = function() { obj.mesh[ prop ].set.apply( obj.mesh[ prop ], store ) }
           
           Object.defineProperties( store, {
-            x: { get: function() { return store[0] }, set: function(v) { store[0] = v; update() }, configurable:true },
-            y: { get: function() { return store[1] }, set: function(v) { store[1] = v; update() }, configurable:true },
-            z: { get: function() { return store[2] }, set: function(v) { store[2] = v; update() }, configurable:true },
+            x: { get: function() { return store[ 0 ] }, set: function(v) { store[ 0 ] = v; update() }, configurable:true },
+            y: { get: function() { return store[ 1 ] }, set: function(v) { store[ 1 ] = v; update() }, configurable:true },
+            z: { get: function() { return store[ 2 ] }, set: function(v) { store[ 2 ] = v; update() }, configurable:true },
           })
+          
+          store.name = type + '.' + prop
           
           for(var _ltr in ltrs) {
             (function() {
@@ -186,11 +190,12 @@ for( var key in types) {
               }
             }
           })
+          
         })( this )
         
       }
       
-      this.update =   function() {}
+      this.update = function() {}
           
 			this._update = function() {
 				for( var i = 0; i < this.mods.length; i++ ) {
@@ -334,9 +339,11 @@ for( var key in types) {
       Gibber.Graphics.graph.push( this )
       
       Object.defineProperty( this, '_', {
-        get: function() { this.remove() },
+        get: function() { this.remove(); console.log( type + ' is removed.' ) },
         set: function() {}
       })
+      
+      console.log( type + ' is created.' )
     } 
 
     Gibber.Graphics.Geometry[ type ] = function() { // wrap so no new keyword is required

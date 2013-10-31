@@ -61,6 +61,7 @@
         
         Gibber.processArguments2( oscillator, args, type )
         
+        console.log( type + ' is created.' )
         return oscillator
       }
     })()
@@ -135,6 +136,8 @@
       },
       set: function() {}
     })
+    
+    console.log( 'Grains is created.' )
     return oscillator
   }
   

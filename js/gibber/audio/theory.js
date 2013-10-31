@@ -215,9 +215,7 @@ var Theory = Gibber.Theory = {
       console.log( _chord )
 			for( var j = 0; j < _chord.notes.length; j++ ) {
 				var n = _chord.notes[ j ];
-        console.log(n)
 				this.note( typeof note === 'number' ? note : n.fq() );
-        console.log("after note")
 			}
 		}else{
 			for( var k = 0; k < this.notation.length; k++ ) {

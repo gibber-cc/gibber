@@ -111,6 +111,30 @@ tfoot, thead {
 #newPublicationForm table {
   font-size:.9em !important;
 }
+
+#footer {
+  padding:.5em;
+  font-family: Monospace;
+}
+
+.console-normal {
+  font-weight:normal;
+  color:#ccc;
+}
+
+.console-error {
+  font-weight:bold;
+  color:#c00;
+}
+
+.console-entry{
+  display:block;
+  padding-left:.5em;
+  margin-top: .5em;
+  font-size: 1.15em;
+  font-family: Monospace;
+}
+
 .editor {
   display:block;
   margin:0;

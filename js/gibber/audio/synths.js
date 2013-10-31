@@ -106,6 +106,7 @@
         
         Gibber.processArguments2( obj, args, obj.name )
         
+        console.log( name + ' is created.' )
         return obj
       }
     })()

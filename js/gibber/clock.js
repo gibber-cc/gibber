@@ -20,7 +20,11 @@ var Clock = Gibber.Clock = {
     if( Clock.currentBeat === 1 && Clock.codeToExecute.length > 0) {
       
       for( var i = 0; i < Clock.codeToExecute.length; i++ ) {
-        Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].code.cm )
+        try {
+          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].code.cm )
+        }catch( e ) {
+          console.error( "FAILED TO EXECUTE CODE:\n", Clock.codeToExecute[ i ].code )
+        }
       }
       
       Clock.codeToExecute.length = 0
@@ -104,7 +108,5 @@ var Clock = Gibber.Clock = {
   }
   
 }
-
-//Gibberish.Time.export( Clock )
 
 })()

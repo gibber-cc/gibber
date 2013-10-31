@@ -166,6 +166,7 @@
     
     seq.start()
     
+    console.log( 'Sequencer created' )
     return seq
   }
   

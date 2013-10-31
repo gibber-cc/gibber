@@ -1632,10 +1632,10 @@ Interface.XY = function() {
         if(touch.x > this._width()) touch.x = this._width();
                 
         touch.y = yOffset;// - this.half;
-        if(touch.y < 0) touch.y = 0;
-        if(touch.y > this._height()) touch.y = this._height();        
-        this.values[touch.id].x = xOffset / this._width();
-        this.values[touch.id].y = yOffset / this._height();
+        if( touch.y < 0 ) touch.y = 0;
+        if( touch.y > this._height() ) touch.y = this._height();        
+        this.values[ touch.id ].x = xOffset / this._width();
+        this.values[ touch.id ].y = yOffset / this._height();
                 
         if(this.onvaluechange) this.onvaluechange();
         
