@@ -11,12 +11,12 @@ var Graphics = Gibber.Graphics = {
   resolution: .5,
   
   load : function() {
-    $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry'], 'graphics', function() {
-      //
+    $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d'], 'graphics', function() {
+      console.log("LOADED")
     })
   },
   
-  init : function() {
+  init : function( mode ) {
     this.canvas = $( '<div>' )
       .css({
         left:0,
@@ -29,9 +29,9 @@ var Graphics = Gibber.Graphics = {
     $( '#contentCell' ).append( this.canvas )
     
     this.render = this.render.bind( this )
-    
-    this.createScene()
-    
+    this.mode = mode || '3d'    
+    this.createScene( this.mode )
+
     $script([
       'external/three/postprocessing/EffectComposer',
       'external/three/postprocessing/RenderPass',
@@ -52,11 +52,10 @@ var Graphics = Gibber.Graphics = {
       'postprocessing', function() {
         $script(['gibber/graphics/postprocessing','gibber/graphics/shader'], function() {
           Graphics.PostProcessing.init()
+          Graphics.start()
         })
       }
     )
-    this.start()
-    
     var res = this.resolution, self = this
     Object.defineProperty(this, 'resolution', {
       get: function() { return res; },
@@ -64,55 +63,38 @@ var Graphics = Gibber.Graphics = {
     });
   },
   
-  createScene : function() {		
-		// set some camera attributes
-		var VIEW_ANGLE = 45,
-		  	ASPECT = this.width / this.height,
-		  	NEAR = 0.1,
-		  	FAR = 10000;
-
-
-		this.renderer = new THREE.WebGLRenderer();
-		this.camera = new THREE.PerspectiveCamera(
-		    VIEW_ANGLE,
-		    ASPECT,
-		    NEAR,
-		    FAR
-		);
+  createScene : function( mode ) {		
+    this.renderer = new THREE.WebGLRenderer();
+    
 		$( '#three' ).append( this.renderer.domElement )
     
     this.assignWidthAndHeight()
-	
 		this.scene = new THREE.Scene();
-	
 		// must wait until scene and renderer are created to initialize effect composer
-		//that.shaders.init();
-	
+
+    this.ambientLight = new THREE.AmbientLight(0xFFFFFF);
+
+		this.pointLight = new THREE.PointLight( 0xFFFFFF )
+		this.pointLight.position.x = 100
+		this.pointLight.position.y = 100
+		this.pointLight.position.z = -130
+
+		this.pointLight2 = new THREE.PointLight( 0x666666 )
+		this.pointLight2.position.x = 0
+		this.pointLight2.position.y = 0
+		this.pointLight2.position.z = 260
+
+		this.lights = [ this.pointLight, this.pointLight2 ]
+    this.use( mode ); // creates camera and adds lights	
 		this.graph = [];
 	
 		this.scene.add( this.camera );
-
-		this.camera.position.z = 250;
-		this.camera.lookAt( this.scene.position );
     
-		//var ambientLight = new THREE.AmbientLight(0x666666);
-
-		var pointLight = new THREE.PointLight( 0xFFFFFF )
-		pointLight.position.x = 100
-		pointLight.position.y = 100
-		pointLight.position.z = -130
-
-		//this.scene.add( ambientLight ); // doesn't seem like a good idea...
-		this.scene.add( pointLight );
-
-		var pointLight2 = new THREE.PointLight( 0x666666 )
-		pointLight2.position.x = 0
-		pointLight2.position.y = 0
-		pointLight2.position.z = 260
-
-		//that.scene.add(ambientLight); // doesn't seem like a good idea...
-		this.scene.add( pointLight2 )
-		this.lights = [ pointLight, pointLight2 ]
+    this.camera.updateProjectionMatrix();
+    if( this.mode === '3d' ) {
+      this.camera.position.z = 250;
+      this.camera.lookAt( this.scene.position );
+    }
   },
   
   start : function() {
@@ -120,6 +102,37 @@ var Graphics = Gibber.Graphics = {
 		window.requestAnimationFrame( this.render );
   },
   
+  use : function( mode ) {
+    if( mode === '2d' ) {
+      console.log("Now drawing in 2d.")
+      this.camera = new THREE.OrthographicCamera( this.width / - 2, this.width / 2, this.height / 2, this.height / - 2, 1, 1.00000001 );
+      this.camera.position.z = 1
+      this.resolution = 1
+      this.renderer.setSize( this.width, this.height )
+
+      this.scene.remove( this.pointLight )
+      this.scene.remove( this.pointLight2 )
+      this.scene.add( this.ambientLight )
+      this.mode = '2d'
+    }else{
+      console.log("Now drawing in 3d.")
+		  var VIEW_ANGLE = 45,
+		  	  ASPECT = this.width / this.height,
+		  	  NEAR = 0.1,
+		  	  FAR = 10000;
+
+     	this.camera = new THREE.PerspectiveCamera(
+		    VIEW_ANGLE,
+		    ASPECT,
+		    NEAR,
+		    FAR
+		  )
+      this.scene.add( this.pointLight );
+      this.scene.add( this.pointLight2 );
+      this.scene.remove( this.ambientLight );
+      this.mode = '3d'
+    }
+  }, 
   render : function() {
    
     if( this.running ) {
@@ -176,8 +189,6 @@ var Graphics = Gibber.Graphics = {
     if( !isInitialSetting ) {
   		this.renderer.setSize( this.width * this.resolution, this.height * this.resolution );
       $( this.renderer.domElement ).css({ width: this.width, height: this.height })
-
-  		this.camera.updateProjectionMatrix();
     }
   },
   

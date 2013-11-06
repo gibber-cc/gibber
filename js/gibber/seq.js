@@ -81,7 +81,6 @@
           
             if ( count >= _chord.length) count = 0
           
-            // console.log( "CHORD:", chord)
             return chord
           }]
         }
@@ -159,7 +158,10 @@
         }
       }
     }
-    
+    seq.once = function() {
+      this.repeat(1)
+      return this
+    }    
     seq.showSave = function() {
       //console.log( save )
     }

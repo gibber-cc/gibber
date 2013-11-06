@@ -38,7 +38,7 @@ window.Gibber = window.G = {
       
       Gibber.Master = window.Master = Bus().connect( Gibberish.out )
       Master.type = 'Bus'
-      $.extend( true, Master, Gibber.ugen )
+      $.extend( true, Master, Gibber.ugen ) 
       Master.fx.ugen = Master
 
       Gibber.createMappingAbstractions( Master, Gibber.Busses.mappingProperties )
@@ -246,6 +246,7 @@ window.Gibber = window.G = {
               if( target[ '___'+ltr ] ) { 
                 if( typeof target[ '___'+ltr ].replaceWith === 'function' ) {
                   target[ '___'+ltr ].replaceWith( newObj )
+                  console.log( target[ '___'+ltr ].name + ' was replaced with ' + newObj.name )
                   console.log( target[ '___'+ltr ].name + ' was replaced with ' + newObj.name )
                 }
               }
@@ -751,7 +752,8 @@ window.Gibber = window.G = {
       end.disconnect()
       console.log( this.name + " has been terminated.")
     },
-  },
+  }
 }
 
+// end closure
 })()

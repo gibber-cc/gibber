@@ -11,4 +11,4 @@ $script.ready( 'jquery', function() {
     
     })
   })
-}) 
+})

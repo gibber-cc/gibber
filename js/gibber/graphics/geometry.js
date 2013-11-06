@@ -7,6 +7,7 @@ var types = {
       Sphere: { radius:50, segments:16, rings: 16 },
       Torus:  { radius:50, tube:10, radialSegments:8, tubularSegments:8, arc:Math.PI * 2 },
       TorusKnot: { radius: 100, tube:40, radialSegments:64, tubularSegments: 8, p:2, q:3, heightScale:1 },
+      Plane: { width:1, height:1, segmentsWidth:1, segmentsHeight:1 },
     },
     vectors = [ 'rotation', 'scale', 'position' ],
     processArgs = function( args, type, shape ) {
@@ -58,18 +59,21 @@ for( var key in types) {
   (function() {
     var type = key,
         shape = types[ key ]
-        
+    console.log( type )   
     var constructor = function() {
       if( Gibber.Graphics.canvas === null) Gibber.Graphics.init()
       
       var args = processArgs( arguments, type, shape )
-      
+      console.log( 'ARGS', args )      
       this.name = type
       
       this.fill =     args.fill || new THREE.Color(0xffffff)
       
-      this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
-      
+      if( !args.texture ) {
+        this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
+      }else{
+        this.material = new THREE.MeshBasicMaterial({ map: this.texture, affectedByDistance:false, useScreenCoordinates:true })
+      }
       this.geometry = Gibber.construct( THREE[ type + "Geometry" ], args )
       
       this.mesh =     new THREE.Mesh( this.geometry, this.material )
