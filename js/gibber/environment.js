@@ -7,7 +7,7 @@ var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
 var GE = Gibber.Environment = {
   modes: ['javascript', 'x-shader/x-fragment'],
   init : function() { 
-    $script( ['external/codemirror/codemirror-compressed' ], 'codemirror',function() {
+    $script( ['external/codemirror/codemirror-compressed', 'external/interface' ], 'codemirror',function() {
       $script( ['external/codemirror/addons/closebrackets', 
                 'external/codemirror/addons/matchbrackets', 
                 'external/codemirror/addons/comment',
@@ -356,9 +356,39 @@ var GE = Gibber.Environment = {
     defaultColumnSize : 500,
     resizeHandleSize  : 8,
     columnID : 0,
+    textBGOpacity : function( v ) {
+      var color = 'rgba( 0, 0, 0, '+v+' )'
+      $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
+    },
     
     init : function() {
       GE.Layout.addColumn({ fullScreen:false, type:'code', autofocus:true })
+      var opacityDiv = $('#opacity')
+
+      opacityDiv.css({
+        background:'transparent',
+        position:'relative',
+        width:150,
+        height:18,
+        display:'inline-block',
+        top:5,
+
+      })
+      opacityDiv.p = new Interface.Panel({ container:opacityDiv })
+      
+      $( opacityDiv.p.canvas ).css({ width:150, height: 18, zIndex:1  })
+      opacityDiv.p.add(
+        new Interface.Slider({
+          isVertical:false,
+          bounds:[0,0,.95,.95],
+          value:0,
+          max:.8,
+          target:Gibber.Environment.Layout, key:'textBGOpacity',
+          label:'text bg opacity',
+          background:'#000',
+          fill:'#333',
+          stroke:'#999'
+      }))
     },
         
     emsToPixels : function( ems, element ) {
@@ -420,6 +450,7 @@ var GE = Gibber.Environment = {
             element:        $( '<div class="column">' ),
             header:         $( '<div class="columnHeader">' ),
             modeSelect:     $( '<select>'),
+            slider:         $( '<div>'),
             editorElement:  $( '<div class="editor">' ),
             resizeHandle:   $( '<div class="resizeHandle">' ),
             close :         $( '<button>' ),
@@ -491,14 +522,20 @@ var GE = Gibber.Environment = {
           mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
           autoCloseBrackets: true,
           matchBrackets: true,
-          value:
-          "a = Sine()\n"+
-          "\n"+
-          "b = Seq({\n"+
-          "  frequency:[440,880],\n"+
-          "  durations:[44100],\n"+
-          "  target:a\n"+
-          "})",
+          value:[
+            "a = Drums('x*o*x*o-')",
+            "",
+            "b = FM({ attack:ms(1) })",
+            "",
+            "c = Seq({",
+            "  scale: Scale( 'c2', 'minor' ),",
+            "  note: [0,0,0,7,14].random(),",
+            "  durations: [1/4,1/8,1/16].random(1/16,2),",
+            "  target:b",
+            "})",
+            "",
+            "b.index = a.Amp"
+          ].join('\n'),
           lineWrapping: false,
           tabSize: 2,
           autofocus: options.autofocus || false,
@@ -506,7 +543,11 @@ var GE = Gibber.Environment = {
     
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
       }
-      
+   
+ 
+
+      col.header.append( col.slider )
+
       col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
       col.modeSelect.eq( col.modeIndex )
       

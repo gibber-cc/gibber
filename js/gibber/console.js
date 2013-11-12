@@ -1,6 +1,6 @@
 (function() {
   var GE = Gibber.Environment,
-      footer = $( '#footer' ),
+      console_footer = $( '#footer' ),
       tfoot  = $( 'tfoot' ),
       nl2br  = function (str, is_xhtml) {   
         var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
@@ -33,10 +33,10 @@
 
       this.parent.log.apply( this.parent, arguments )
       
-      footer.text( text )
+      console_footer.text( text )
       
-      if( footer.hasClass( 'console-error' ) ) {
-        footer.removeClass( 'console-error' )
+      if( console_footer.hasClass( 'console-error' ) ) {
+        console_footer.removeClass( 'console-error' )
       }
       
       // this.flash()
@@ -52,6 +52,29 @@
         }
       //}
     },
+    warn : function() {
+      var args = Array.prototype.slice.call( arguments, 0 ),
+          text = args.join( ' ' ),
+          _text = null
+
+      this.parent.warn.apply( this.parent, arguments )
+      
+      console_footer.text( text )
+      
+      if( ! console_footer.hasClass( 'console-warn' ) ) {
+        console_footer.addClass( 'console-warn' )
+      }
+      
+      if( text === this.lastText ) {
+        _text = '(' + ( ++this.duplicateCount ) + ')' + text
+        this.lastSpan.html( nl2br( _text, false) )
+      }else{
+        this.lastSpan = $( '<span>' ).html( nl2br(text, false) ).addClass( 'console-entry' ).addClass( 'console-warn' )
+        this.div.append( this.lastSpan )
+        this.duplicateCount = 1
+        this.lastText = text
+      }
+    },
     error: function() {
       var args = Array.prototype.slice.call( arguments, 0 ),
           text = args.join( ' ' ),
@@ -59,10 +82,10 @@
 
       this.parent.error.apply( this.parent, arguments )
       
-      footer.text( text )
+      console_footer.text( text )
       
-      if( ! footer.hasClass( 'console-error' ) ) {
-        footer.addClass( 'console-error' )
+      if( ! console_footer.hasClass( 'console-error' ) ) {
+        console_footer.addClass( 'console-error' )
       }
       
       // this.flash()

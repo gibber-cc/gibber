@@ -1,9 +1,7 @@
 ( function() {
-  $script( 'external/interface', function() {
-    Interface.use = Gibber.Environment.Interface.use
-    Interface.clear = Gibber.Environment.Interface.clear
-    $script( 'external/autogui' , function() {} )
-  })
+   
+  $script( 'external/autogui' , function() {} )
+  
   
   var mappingProperties = {
     value: {
@@ -42,6 +40,7 @@
     },
     
     widget: function( props, name ) {
+      console.log( this.mode )
       if( this.mode === 'local' ) {
         if( I.panel === null) {
           I.newPanel()
@@ -162,8 +161,6 @@
               targets:[],
             })
             
-            console.log( mapping )
-      
         Object.defineProperty( mapping.object, mapping.Name, {
           get: function() { return mapping },
           set: function(v) {
@@ -204,7 +201,7 @@
             name: w.remoteID,
           }] 
         }
-        
+        console.log( "sending widget", msg ) 
         this.socket.send( JSON.stringify( msg ) )
         
         return w
@@ -257,7 +254,11 @@
     knob: function( props )   { return I.widget( props, 'Knob' ) },    
   }
   
+  Interface.use = Gibber.Environment.Interface.use
+  Interface.clear = Gibber.Environment.Interface.clear
+
   window.Button = Gibber.Environment.Interface.button
   window.Slider = Gibber.Environment.Interface.slider
   window.Knob = Gibber.Environment.Interface.knob
+
 })()

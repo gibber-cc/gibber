@@ -9,6 +9,7 @@ var Graphics = Gibber.Graphics = {
   height:   0,
   running:  false,
   resolution: .5,
+  fps: null,
   
   load : function() {
     $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d'], 'graphics', function() {
@@ -16,17 +17,25 @@ var Graphics = Gibber.Graphics = {
     })
   },
   
-  init : function( mode ) {
+  init : function( mode, column ) {
     this.canvas = $( '<div>' )
-      .css({
+          
+    this.canvas.parent = typeof column === 'undefined' ? window : column.element
+    this.assignWidthAndHeight( true )
+    this.canvas.css({
         left:0,
-        position:'fixed',
+        top:0,
+        position: this.canvas.parent === window ? 'fixed' : 'absolute',
+        float: this.canvas.parent === window ? 'none' : 'left',
+        overflow:'hidden'
       })
       .attr( 'id', 'three' )
-    
-    this.assignWidthAndHeight( true )
-    
-    $( '#contentCell' ).append( this.canvas )
+
+    if( this.canvas.parent === window ) { 
+      $( '#contentCell' ).append( this.canvas )
+    }else{
+      $( column.element ).append( this.canvas )
+    }
     
     this.render = this.render.bind( this )
     this.mode = mode || '3d'    
@@ -150,8 +159,12 @@ var Graphics = Gibber.Graphics = {
       }
 
   		if( this.stats ) this.stats.update()
-
-  		window.requestAnimationFrame( this.render )
+      
+      if( this.fps === null || this.fps >= 55 ) {
+        window.requestAnimationFrame( this.render )
+      }else{
+        setTimeout( function() { Graphics.render() }, 1000 / this.fps )
+      }
     }
   },
   
@@ -176,7 +189,7 @@ var Graphics = Gibber.Graphics = {
 	},
   
   assignWidthAndHeight : function( isInitialSetting ) { // don't run final lines before renderer is setup...
-    this.width = $( window ).width()
+    this.width = $( this.canvas.parent ).width() // either column or window... 
     this.height = $( window ).height() - $( "thead" ).height() - $( "tfoot" ).height()
 
     this.canvas.css({

@@ -6,6 +6,13 @@ body {
   box-sizing: border-box !important;
 }
 
+
+/* fit background of code to text */
+pre {
+  float:left !important;
+  clear:left !important;
+}
+
 canvas {
   height: 2em;
   position:absolute;
@@ -56,6 +63,7 @@ button, input[type='submit'] {
   outline:none; 
   cursor:pointer;
 }
+tfoot tr { display:block; width:100% }
 
 #header ul li { display: inline; }
 
@@ -107,14 +115,26 @@ tfoot, thead {
   user-select: none;
 }
 #contentCell { padding:0; }
+#console_footer {
+  display:block;
+  width:50%;
+  /* overflow:hidden; */
+}
+#column_display {
+  display:block;
+  width:50%;
+  float:right;
+}
 
 #newPublicationForm table {
   font-size:.9em !important;
 }
 
 #footer {
+  width:100%;
+  display:block;
   padding:.5em;
-  font-family: Monospace;
+  font-family: Courier, monospace;
 }
 
 .console-normal {
@@ -131,8 +151,8 @@ tfoot, thead {
   display:block;
   padding-left:.5em;
   margin-top: .5em;
-  font-size: 1.15em;
-  font-family: Monospace;
+  font-size: 1em;
+  font-family: Courier, monospace;
 }
 
 .editor {
