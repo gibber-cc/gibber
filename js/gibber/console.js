@@ -26,6 +26,12 @@
       //window._console = this.parent      
       console = this;
     },
+    off : function() {
+      window.console = parent
+    },
+    on : function() {
+      window.console = this
+    },
     log : function() {
       var args = Array.prototype.slice.call( arguments, 0 ),
           text = args.join( ' ' ),

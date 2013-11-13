@@ -16,6 +16,7 @@ var GE = Gibber.Environment = {
                 'external/codemirror/clike',
                 'gibber/gibber_interface',
                 'gibber/console',
+                'gibber/mouse'
                 ], function() {
                   
         GE.Keymap.init()

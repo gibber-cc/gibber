@@ -385,16 +385,17 @@ window.Gibber = window.G = {
           delete target.object[ target.Name ].mapping
         }
       } else {
-        var proxy = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Proxy2( from.object, from.name ),
+        var proxy = typeof from.track !== 'undefined' ? from.track : new Gibberish.Proxy2( from.object, from.name ),
             op    = new Gibberish.OnePole({ a0:.005, b1:.995 }),
             range = target.max - target.min,
             percent = ( target.object[ target.name ] - target.min ) / range,
             widgetValue = from.min + ( ( from.max - from.min ) * percent ),
             _mapping
             
-        from.object.setValue( widgetValue )
+        if( from.object.setValue )
+          from.object.setValue( widgetValue )
         
-        from.object.track = proxy
+        from.track = proxy
         
         op.smooth( target.name, target.object )
 
@@ -418,7 +419,7 @@ window.Gibber = window.G = {
         }
 
         _mapping.replace = function( replacementObject, key, Key  ) {
-          _console.log( "REPLACE", replacementObject )
+          // _console.log( "REPLACE", replacementObject )
           
           proxy.setInput( replacementObject )
           if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )
@@ -551,7 +552,8 @@ window.Gibber = window.G = {
           target.object[ target.name ] = val
         }
         
-        from.object.setValue( target.object[ target.name ] )
+        if( from.object.setValue ) 
+          from.object.setValue( target.object[ target.name ] )
         
         if( typeof from.object.label !== 'undefined' ) {
           from.object.label = target.object.name + '.' + target.Name
