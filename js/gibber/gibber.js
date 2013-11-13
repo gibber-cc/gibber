@@ -752,6 +752,33 @@ window.Gibber = window.G = {
       end.disconnect()
       console.log( this.name + " has been terminated.")
     },
+
+    playNotes: function( notes, durations, repeat ) {
+      if( typeof this.seq === 'undefined' ) {
+        this.seq = Seq({ note: notes, durations:durations, target:this })
+      }else{
+        this.seq.note = notes
+        this.seq.durations = durations
+      }
+      if( repeat ) {
+        this.seq.repeat( repeat )
+      }
+      if( ! this.seq.isRunning ) {
+        this.seq.start()
+      }
+      return this
+    },
+
+    stop : function() {
+      if( this.seq ) this.seq.stop()
+    },
+    
+    start : function( repeat ) {
+      if( this.seq && ! this.seq.isRunning ) {
+        this.seq.start()
+        if( repeat ) this.seq.repeat( repeat )
+      }
+    },
   }
 }
 

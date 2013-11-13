@@ -75,8 +75,8 @@
         // }else{
         //   obj =  new Gibberish[ type ]( obj ).connect( Gibber.Master )
         // }
-        
-        obj = new Gibberish[ type ]().connect( Gibber.Master )
+        var mv = args[0].maxVoices || 1 
+        obj = new Gibberish[ type ]( mv ).connect( Gibber.Master )
         obj.type = 'Gen'
         
         $.extend( true, obj, Gibber.ugen )

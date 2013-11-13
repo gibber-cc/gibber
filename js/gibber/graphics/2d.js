@@ -1,8 +1,5 @@
 (function() {
-  var resubmitTexture = [
-    'fillRect', 'strokeRect', 'fillText', 'strokeText'
-  ],
-  cnvs = null
+  var cnvs = null
 
   var TwoD = Gibber.Graphics.TwoD = {
     Canvas : function( column ) {
@@ -73,6 +70,12 @@
         },
         _update: function() {
           this.save()
+          for( var i = 0; i < this.graph.length; i++ ) {
+            var shape = this.graph[ i ]
+            shape._update()
+            if( shape.update ) shape.update()
+            shape.draw()
+          }
           this.draw()
           this.restore()
         },
@@ -106,6 +109,71 @@
           this.closePath()
           return this
         },
+        rectangle : function( x,y,width,height ) {
+          this.beginPath()
+            this.moveTo( x,y )
+            this.lineTo( x + width, y )
+            this.lineTo( x + width, y + height )
+            this.lineTo( x, y + height )
+            this.lineTo( x,y )
+          this.closePath()
+          return this
+        },
+        Square : function() {
+          $.extend( this, {
+            ctx: that,
+            stroke: null,
+            fill: 'gray',
+            _update: function() {},
+            draw: function() {
+              that.square( this.x, this.y, this.size )
+              if( this.stroke ) that.stroke( this.stroke )
+              if( this.fill   ) that.fill( this.fill )
+            },
+            remove: function() {
+              that.graph.splice( that.graph.indexOf( this ), 1 )
+            },
+            changeZ : function( v ) {
+              z  = v
+            }
+          })
+          var x = y = size = 200,
+            z = that.graph.length;
+
+          Object.defineProperties( this, {
+            x: { 
+              get: function() { return x },
+              set: function(v) { that.clearRect( this.x, this.y, this.size, this.size ); x = v; }
+            },
+            y: { 
+              get: function() { return y },
+              set: function(v) { that.clearRect( this.x, this.y, this.size, this.size ); y = v; }
+            },
+            size: { 
+              get: function() { return size },
+              set: function(v) { that.clearRect( this.x, this.y, this.size, this.size ); sizex = v; }
+            },
+            z: { 
+              get: function() { return z },
+              set: function(v) { 
+                that.reorderGraph() 
+                that.graph.splice( that.graph.indexOf( this ),1 )
+                that.graph.splice( v, 0, this )
+                z = v
+              }
+            },
+           
+          })
+          that.graph.push( this )
+        },
+        reorderGraph : function() {
+          if( z > v ) {
+             for( var i = v; i < that.graph.length; i++ ){ 
+               that.graph[i].changeZ( that.graph[i].z + 1 )
+             }
+          }
+        },
+        graph : [],
         update: function() { this.texture.needsUpdate = true; return this },
         polygon: function( x,y,radius,sides ) {
           var ca  = 360 / sides
@@ -160,6 +228,8 @@
         get: function() { return Gibber.Graphics.fps !== null ? Gibber.Graphics.fps : 60 },
         set: function(v) { Gibber.Graphics.fps = v }
       })
+
+      Gibber.Graphics.canvas2d = that
 
       return that
     }

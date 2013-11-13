@@ -59,7 +59,6 @@ for( var key in types) {
   (function() {
     var type = key,
         shape = types[ key ]
-    console.log( type )   
     var constructor = function() {
       if( Gibber.Graphics.canvas === null) Gibber.Graphics.init()
       

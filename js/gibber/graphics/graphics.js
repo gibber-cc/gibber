@@ -12,7 +12,7 @@ var Graphics = Gibber.Graphics = {
   fps: null,
   
   load : function() {
-    $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d'], 'graphics', function() {
+    $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d', 'gibber/graphics/shapes2d'], 'graphics', function() {
       console.log("LOADED")
     })
   },
