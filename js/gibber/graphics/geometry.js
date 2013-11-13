@@ -112,6 +112,7 @@ for( var key in types) {
                     oldSetter: store.__lookupSetter__( ltr ),
                     set : function( num, val )  {
                       store[ num ] = val
+                      update()
                     },
                   })
               
@@ -119,6 +120,7 @@ for( var key in types) {
                 get: function()  { return mapping },
                 set: function(v) { 
                   store[ Ltr ] = v 
+                  update()
                 }
               })
         
@@ -133,9 +135,10 @@ for( var key in types) {
                     if(mapping.mapping) mapping.mapping.remove()
 
                     mapping.value = v
-                    
-                    oldSetter.call( this, mapping.value )
-                    //oldSetter.call( store, v )              
+                    console.log('old setter')
+
+                    // oldSetter.call( this, mapping.value )
+                    oldSetter.call( store, v )              
                   }
                 }
               })

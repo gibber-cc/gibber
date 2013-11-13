@@ -57,7 +57,6 @@
               targets:[],
             }),
             oldSetter = obj.__lookupSetter__( _prop )
-            // oldGetter = obj.__lookupGetter__( prop )
 
         Object.defineProperty( obj, _prop, {
           get: function() { return mapping.value },
@@ -68,8 +67,6 @@
               if(mapping.mapping) mapping.mapping.remove()
 
               mapping.value = v
-              
-              // oldSetter.call( obj, mapping.value )
             }
           }
         })

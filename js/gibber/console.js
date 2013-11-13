@@ -22,9 +22,9 @@
       setTimeout( function() { tfoot.css({ background: 'transparent' }) }, 25 )
     },
     init : function() {
-      this.div = $('<div>')
+      // this.div = $('<div>')
       //window._console = this.parent      
-      console = this;
+      // console = this;
     },
     off : function() {
       window.console = parent

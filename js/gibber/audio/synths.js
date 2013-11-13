@@ -62,21 +62,19 @@
      
       Gibber.Synths[ name ] = function() {
         var args = Array.prototype.slice.call(arguments),
-            obj
+            obj,
+            mv = 1
         
         if( typeof args[0] === 'object' && typeof args[0].maxVoices === 'undefined') { 
-          args[0].maxVoices = 1
+          args[0].maxVoices = mv = 1
         }else if( typeof args[0] === 'undefined') {
           args[0] = { maxVoices:1 }
+          mv = 1
+        }else{
+          if( args[0].maxVoices ) mv = args[0].maxVoices
         }
         
-        // if( Array.isArray( obj ) ) {
-        //   obj = Gibber.construct( Gibberish[ type ], obj ).connect( Gibber.Master )
-        // }else{
-        //   obj =  new Gibberish[ type ]( obj ).connect( Gibber.Master )
-        // }
-        var mv = args[0].maxVoices || 1 
-        obj = new Gibberish[ type ]( mv ).connect( Gibber.Master )
+        obj = new Gibberish[ type ]({maxVoices: mv}).connect( Gibber.Master )
         obj.type = 'Gen'
         
         $.extend( true, obj, Gibber.ugen )

@@ -359,7 +359,7 @@ window.Gibber = window.G = {
             delete target.object[ target.Name ].mapping
           }
           target.object[ target.Name ].mapping.replace = function( replacementObject, key, Key  ) {
-            _console.log("REPLACE!")
+            // _console.log("REPLACE!")
             target.object[ target.Name ].mapping.follow.input = replacementObject   
             if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )            
           }
@@ -464,7 +464,7 @@ window.Gibber = window.G = {
             mapping.connect( mapping.bus )
           
             mapping.replace = function( replacementObject, key, Key  ) {
-              _console.log( key, replacementObject )
+              // _console.log( key, replacementObject )
               
               // what if new mapping isn't audio type?
               if ( replacementObject[ Key ].timescale === from.timescale ) {
@@ -514,6 +514,7 @@ window.Gibber = window.G = {
         }
       }else if( from.timescale === 'graphics' ) {
         // rewrite getValue function of Map object to call Map callback and then return appropriate value
+
         var map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
             old = map.getValue.bind( map )
         
@@ -546,12 +547,40 @@ window.Gibber = window.G = {
           if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )            
         }
       }else{
-        var map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
-        from.object.onvaluechange = function() {          
-          var val = map.callback( this.value, target.min, target.max, from.min, from.max, target.output, from.wrap )
-          target.object[ target.name ] = val
+        console.log( "FROM", from.name, target.min, target.max, from.min, from.max )
+        var _map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
+        if( typeof from.object.functions === 'undefined' ) {
+          from.object.functions = {}
+          from.object.onvaluechange = function() {
+            for( var key in from.object.functions ) {
+              from.object.functions[ key ]()
+            }
+          }
         }
+
+        target.object[ target.Name ].mapping = _map
+        var map = target.object[ target.Name ].mapping
+        target.mapping.from = from
         
+        var fcn_name = target.object.name + '.' + target.modName
+
+        from.object.functions[ fcn_name ] = function() {
+          var val = map.callback( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
+          // target.object[ target.Name ].value = val
+          target.object[ target.Name ].oldSetter.call( target.object[ target.Name ], val )
+        }
+        // from.object.onvaluechange = function() {          
+        //   var val = map.callback( this[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
+        //   target.object[ target.name ] = val
+        // }
+        // target.object[ target.Name ].mapping.replace = function() {
+          // var old = from.functions[ target.Name ]
+
+        // } 
+        target.object[ target.Name ].mapping.remove  = function() {
+          console.log( "mapping removed" )
+          delete from.object.functions[ fcn_name ]
+        } 
         if( from.object.setValue ) 
           from.object.setValue( target.object[ target.name ] )
         
