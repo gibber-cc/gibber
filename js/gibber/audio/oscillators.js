@@ -2,7 +2,7 @@
   "use strict"
   
   Gibber.Oscillators = {}
-
+  
   var types = [
     'Sine',
     'Triangle',
@@ -27,7 +27,12 @@
       min: 0.01, max: .99,
       output: Gibber.LINEAR,
       timescale: 'audio',
-    }
+    },
+    pitch: {
+      min: 1, max: 4,
+      output: Gibber.LOGARITHMIC,
+      timescale: 'audio',
+    },
   }
   
   for( var i = 0; i < types.length; i++ ) {
@@ -35,14 +40,9 @@
       var type = types[ i ]
 
       Gibber.Oscillators[ type ] = function() {
-        var oscillator = Gibber.processArguments( arguments, type )
-
-        if( Array.isArray( oscillator ) ) {
-          oscillator = Gibber.construct( Gibberish[ type ], oscillator ).connect( Gibber.Master )
-        }else{
-          oscillator =  new Gibberish[ type ]( oscillator ).connect( Gibber.Master )
-        }
-
+        var oscillator = new Gibberish[ type ]().connect( Gibber.Master ),
+            args = Array.prototype.slice.call( arguments, 0 )
+           
         oscillator.type = 'Gen'
 
         $.extend( true, oscillator, Gibber.ugen )
@@ -59,10 +59,12 @@
         
         Gibber.createMappingAbstractions( oscillator, mappingProperties )
         
+        Gibber.processArguments2( oscillator, args, type )
+        
+        console.log( type + ' is created.' )
         return oscillator
       }
     })()
-
   }
   
   $script.ready('gibber', function() {
@@ -134,6 +136,8 @@
       },
       set: function() {}
     })
+    
+    console.log( 'Grains is created.' )
     return oscillator
   }
   

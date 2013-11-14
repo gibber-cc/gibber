@@ -35,7 +35,7 @@ var processArgs = function( args, type, shape ) {
         min: 0, max: 1,
         output: Gibber.LINEAR,       
         timescale: 'graphics',
-      },
+      },  
     },
     Film: {
       nIntensity: {
@@ -107,10 +107,9 @@ var processArgs = function( args, type, shape ) {
   shaders = {
      Dots: {
   		properties: {
-        center: new THREE.Vector2( .5, .5 ),
     		angle:  .5,
     		scale:  .035,
-    		mix:	  .5,
+        center: new THREE.Vector2( .5, .5 ),
   		},
   		type:'uniforms',
   		init : function(obj) {
@@ -247,7 +246,9 @@ var PP = Gibber.Graphics.PostProcessing = {
           // if( 'shaders' in shaders[ key ] ) {
           //console.log( shaderProps, shaderProps.shaders, shaderProps.shaders[0] )
           //var shader = shaderProps.shaders[0].init({ center:undefined, angle:.5, scale:.035, mix:.1 })
-          var shader = shaderProps.init.call( shaderProps, Array.prototype.slice.call( arguments,0 ) )
+          var args = Array.prototype.slice.call( arguments,0 ),
+              shader = shaderProps.init.call( shaderProps, args )
+              
           if( shader === null) {
             console.log( "SHADER ERROR... aborting" )
             return
@@ -400,7 +401,10 @@ var PP = Gibber.Graphics.PostProcessing = {
       
             this.remove()
           }
+
+          shader.properties = shaderProps.properties
           
+          Gibber.processArguments2( shader, Array.prototype.slice.call( arguments,0 ), shader.name )
           return shader;
         }
         window[ name ] = constructor;

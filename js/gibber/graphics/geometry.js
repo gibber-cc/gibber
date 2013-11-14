@@ -7,6 +7,7 @@ var types = {
       Sphere: { radius:50, segments:16, rings: 16 },
       Torus:  { radius:50, tube:10, radialSegments:8, tubularSegments:8, arc:Math.PI * 2 },
       TorusKnot: { radius: 100, tube:40, radialSegments:64, tubularSegments: 8, p:2, q:3, heightScale:1 },
+      Plane: { width:1, height:1, segmentsWidth:1, segmentsHeight:1 },
     },
     vectors = [ 'rotation', 'scale', 'position' ],
     processArgs = function( args, type, shape ) {
@@ -58,16 +59,20 @@ for( var key in types) {
   (function() {
     var type = key,
         shape = types[ key ]
-        
     var constructor = function() {
       if( Gibber.Graphics.canvas === null) Gibber.Graphics.init()
       
       var args = processArgs( arguments, type, shape )
+      console.log( 'ARGS', args )      
+      this.name = type
       
       this.fill =     args.fill || new THREE.Color(0xffffff)
       
-      this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
-      
+      if( !args.texture ) {
+        this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
+      }else{
+        this.material = new THREE.MeshBasicMaterial({ map: this.texture, affectedByDistance:false, useScreenCoordinates:true })
+      }
       this.geometry = Gibber.construct( THREE[ type + "Geometry" ], args )
       
       this.mesh =     new THREE.Mesh( this.geometry, this.material )
@@ -83,10 +88,12 @@ for( var key in types) {
               update = function() { obj.mesh[ prop ].set.apply( obj.mesh[ prop ], store ) }
           
           Object.defineProperties( store, {
-            x: { get: function() { return store[0] }, set: function(v) { store[0] = v; update() }, configurable:true },
-            y: { get: function() { return store[1] }, set: function(v) { store[1] = v; update() }, configurable:true },
-            z: { get: function() { return store[2] }, set: function(v) { store[2] = v; update() }, configurable:true },
+            x: { get: function() { return store[ 0 ] }, set: function(v) { store[ 0 ] = v; update() }, configurable:true },
+            y: { get: function() { return store[ 1 ] }, set: function(v) { store[ 1 ] = v; update() }, configurable:true },
+            z: { get: function() { return store[ 2 ] }, set: function(v) { store[ 2 ] = v; update() }, configurable:true },
           })
+          
+          store.name = type + '.' + prop
           
           for(var _ltr in ltrs) {
             (function() {
@@ -126,9 +133,10 @@ for( var key in types) {
                     if(mapping.mapping) mapping.mapping.remove()
 
                     mapping.value = v
-                    
+                    console.log('old setter')
+
                     oldSetter.call( this, mapping.value )
-                    //oldSetter.call( store, v )              
+                    // oldSetter.call( store, v )              
                   }
                 }
               })
@@ -145,9 +153,26 @@ for( var key in types) {
                 value : store,
                 object: obj,
                 targets:[],
-              }),
-              oldSetter = obj.__lookupSetter__( prop )
-          
+                oldSetter : function(v) {
+                  switch( $.type( v ) ) {
+                    case 'object' :
+                      if(typeof v.x === 'number') store[ 0 ] = v.x
+                      if(typeof v.y === 'number') store[ 1 ] = v.y
+                      if(typeof v.z === 'number') store[ 2 ] = v.z
+                    break;
+                    case 'array' :
+                      if(typeof v[0] === 'number') store[ 0 ] = v[ 0 ]
+                      if(typeof v[1] === 'number') store[ 1 ] = v[ 1 ]
+                      if(typeof v[2] === 'number') store[ 2 ] = v[ 2 ]
+                      break;
+                    case 'number' :
+                      store[ 0 ] = store[ 1 ] = store[ 2 ] = v
+                      break;
+                  }
+                  update()
+                }
+              })
+          // console.log( mapping.Name, mapping.oldSetter ) 
           Object.defineProperty( obj, prop, {
             get: function() { return store },
             set: function(v) {
@@ -186,11 +211,12 @@ for( var key in types) {
               }
             }
           })
+          
         })( this )
         
       }
       
-      this.update =   function() {}
+      this.update = function() {}
           
 			this._update = function() {
 				for( var i = 0; i < this.mods.length; i++ ) {
@@ -334,9 +360,11 @@ for( var key in types) {
       Gibber.Graphics.graph.push( this )
       
       Object.defineProperty( this, '_', {
-        get: function() { this.remove() },
+        get: function() { this.remove(); console.log( type + ' is removed.' ) },
         set: function() {}
       })
+      
+      console.log( type + ' is created.' )
     } 
 
     Gibber.Graphics.Geometry[ type ] = function() { // wrap so no new keyword is required

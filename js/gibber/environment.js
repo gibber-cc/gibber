@@ -7,13 +7,18 @@ var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
 var GE = Gibber.Environment = {
   modes: ['javascript', 'x-shader/x-fragment'],
   init : function() { 
-    $script( ['external/codemirror/codemirror-compressed' ], 'codemirror',function() {
+    $script( ['external/codemirror/codemirror-compressed', 'external/interface' ], 'codemirror',function() {
       $script( ['external/codemirror/addons/closebrackets', 
                 'external/codemirror/addons/matchbrackets', 
                 'external/codemirror/addons/comment',
                 'external/codemirror/addons/show-hint',
                 'external/codemirror/addons/javascript-hint',
                 'external/codemirror/clike',
+                'gibber/gibber_interface',
+                'gibber/console',
+                'gibber/mouse',
+                'external/mousetrap',
+                'gibber/help',
                 ], function() {
                   
         GE.Keymap.init()
@@ -24,6 +29,8 @@ var GE = Gibber.Environment = {
         window.Layout = GE.Layout
         GE.Account.init()
         Gibber.proxy( window )
+        GE.Console.init()
+        $script( 'gibber/keys')
       });
     })
 
@@ -178,13 +185,13 @@ var GE = Gibber.Environment = {
             Gibber.run( v, pos, cm )  
           }else{
             var shader = Gibber.Graphics.makeFragmentShader( v )
-          	col.shader.material = new THREE.ShaderMaterial( {
+          	col.shader.material = new THREE.ShaderMaterial({
 
           		uniforms: col.shader.uniforms,
           		vertexShader: shader.vertexShader,
           		fragmentShader: shader.fragmentShader
 
-          	} );
+          	});
           }
           
         },
@@ -197,13 +204,13 @@ var GE = Gibber.Environment = {
             Gibber.run( v, pos, cm )  
           }else{
             var shader = Gibber.Graphics.makeFragmentShader( v )
-          	col.shader.material = new THREE.ShaderMaterial( {
+          	col.shader.material = new THREE.ShaderMaterial({
 
           		uniforms: col.shader.uniforms,
           		vertexShader: shader.vertexShader,
           		fragmentShader: shader.fragmentShader
 
-          	} );
+          	});
           }
           
         },
@@ -353,9 +360,39 @@ var GE = Gibber.Environment = {
     defaultColumnSize : 500,
     resizeHandleSize  : 8,
     columnID : 0,
+    textBGOpacity : function( v ) {
+      var color = 'rgba( 0, 0, 0, '+v+' )'
+      $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
+    },
     
     init : function() {
       GE.Layout.addColumn({ fullScreen:false, type:'code', autofocus:true })
+      var opacityDiv = $('#opacity')
+
+      opacityDiv.css({
+        background:'transparent',
+        position:'relative',
+        width:150,
+        height:18,
+        display:'inline-block',
+        top:5,
+
+      })
+      opacityDiv.p = new Interface.Panel({ container:opacityDiv })
+      
+      $( opacityDiv.p.canvas ).css({ width:150, height: 18, zIndex:1  })
+      opacityDiv.p.add(
+        new Interface.Slider({
+          isVertical:false,
+          bounds:[0,0,.95,.95],
+          value:0,
+          max:.8,
+          target:Gibber.Environment.Layout, key:'textBGOpacity',
+          label:'text bg opacity',
+          background:'#000',
+          fill:'#333',
+          stroke:'#999'
+      }))
     },
         
     emsToPixels : function( ems, element ) {
@@ -417,6 +454,7 @@ var GE = Gibber.Environment = {
             element:        $( '<div class="column">' ),
             header:         $( '<div class="columnHeader">' ),
             modeSelect:     $( '<select>'),
+            slider:         $( '<div>'),
             editorElement:  $( '<div class="editor">' ),
             resizeHandle:   $( '<div class="resizeHandle">' ),
             close :         $( '<button>' ),
@@ -441,7 +479,7 @@ var GE = Gibber.Environment = {
       col.resizeHandle.width( resizeHandleSize )
       
       col.close.addClass( 'closeButton' )
-        .on( 'click', function(e) { GE.Layout.removeColumn( colNumber ) })
+        .on( 'click', function(e) { GE.Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose(); })
         .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
         .html('&#10005;')
 
@@ -488,14 +526,23 @@ var GE = Gibber.Environment = {
           mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
           autoCloseBrackets: true,
           matchBrackets: true,
-          value:
-          "a = Sine()\n"+
-          "\n"+
-          "b = Seq({\n"+
-          "  frequency:[440,880],\n"+
-          "  durations:[44100],\n"+
-          "  target:a\n"+
-          "})",
+          value:[
+            "a = Drums('x*o*x*o-')",
+            "a.pitch = Mouse.Y",
+            "",
+            "b = FM({ attack:ms(1) })",
+            "b.index = a.Amp",
+            "b.cmRatio = Mouse.X",
+            "",
+            "b.playNotes( ",
+            "  ['c2','c2','c2','c3','c4'].random(),",
+            "  [1/4,1/8,1/16].random(1/16,2) ",
+            ")",
+            "",
+            "d = Delay({ time: Mouse.X, feedback: Mouse.Y })",
+            "",
+            "b.fx.add( d )",
+          ].join('\n'),
           lineWrapping: false,
           tabSize: 2,
           autofocus: options.autofocus || false,
@@ -503,7 +550,11 @@ var GE = Gibber.Environment = {
     
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
       }
-      
+   
+ 
+
+      col.header.append( col.slider )
+
       col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
       col.modeSelect.eq( col.modeIndex )
       
@@ -669,6 +720,9 @@ var GE = Gibber.Environment = {
       })
       $( '#addCodeButton' ).on( 'click', function(e) {
         GE.Layout.addColumn({ fullScreen:true, type:'code' })
+      })
+      $( '#consoleButton' ).on( 'click', function(e) {
+        GE.Console.open()
       })
     }
   },

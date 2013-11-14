@@ -6,6 +6,13 @@ body {
   box-sizing: border-box !important;
 }
 
+
+/* fit background of code to text */
+pre {
+  float:left !important;
+  clear:left !important;
+}
+
 canvas {
   height: 2em;
   position:absolute;
@@ -56,15 +63,23 @@ button, input[type='submit'] {
   outline:none; 
   cursor:pointer;
 }
+tfoot tr { display:block; width:100% }
 
 #header ul li { display: inline; }
-
-
 
 #header ul {
   font-size: .9em;
   display: inline;
   -webkit-padding-start:0;
+}
+
+#header {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #mainHeader { 
@@ -76,6 +91,12 @@ button, input[type='submit'] {
   overflow:hidden;
   line-height:2em;
   border-bottom: 1px solid #444;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #mainContent { 
@@ -85,12 +106,55 @@ button, input[type='submit'] {
   overflow-y:hidden;
 }
 
-
+tfoot, thead { 
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 #contentCell { padding:0; }
+#console_footer {
+  display:block;
+  width:50%;
+  /* overflow:hidden; */
+}
+#column_display {
+  display:block;
+  width:50%;
+  float:right;
+}
 
 #newPublicationForm table {
   font-size:.9em !important;
 }
+
+#footer {
+  width:100%;
+  display:block;
+  padding:.5em;
+  font-family: Courier, monospace;
+}
+
+.console-normal {
+  font-weight:normal;
+  color:#ccc;
+}
+
+.console-error {
+  font-weight:bold;
+  color:#c00;
+}
+
+.console-entry{
+  display:block;
+  padding-left:.5em;
+  margin-top: .5em;
+  font-size: 1em;
+  font-family: Courier, monospace;
+}
+
 .editor {
   display:block;
   margin:0;
@@ -112,7 +176,13 @@ button, input[type='submit'] {
   background: #222;
   font-family: monospace;
 /*  padding-left: .35em;  */
-  height:2em;  
+  height:2em;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .columnHeader select {

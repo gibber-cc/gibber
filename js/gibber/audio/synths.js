@@ -33,6 +33,9 @@
       attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
       decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
       cutoff : { min: 0, max: .7, output: Gibber.LINEAR, timescale: 'audio' },
+      detune2: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
+      detune3: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
+      glide: { min:.99, max:.999995, output: Gibber.LINEAR, timescale: 'audio'},
       resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' }
     },
     FM: {
@@ -59,22 +62,19 @@
      
       Gibber.Synths[ name ] = function() {
         var args = Array.prototype.slice.call(arguments),
-            obj
+            obj,
+            mv = 1
         
         if( typeof args[0] === 'object' && typeof args[0].maxVoices === 'undefined') { 
-          args[0].maxVoices = 1
+          args[0].maxVoices = mv = 1
         }else if( typeof args[0] === 'undefined') {
           args[0] = { maxVoices:1 }
+          mv = 1
+        }else{
+          if( args[0].maxVoices ) mv = args[0].maxVoices
         }
         
-        obj = Gibber.processArguments( args, name )
-      
-        if( Array.isArray( obj ) ) {
-          obj = Gibber.construct( Gibberish[ type ], obj ).connect( Gibber.Master )
-        }else{
-          obj =  new Gibberish[ type ]( obj ).connect( Gibber.Master )
-        }
-      
+        obj = new Gibberish[ type ]({maxVoices: mv}).connect( Gibber.Master )
         obj.type = 'Gen'
         
         $.extend( true, obj, Gibber.ugen )
@@ -99,16 +99,12 @@
           set: function() {}
         })
         
-        if(name === 'Mono') { // TODO: fix this hackiness, for some reason Mono doesn't get time values correctly applied to envelope
-          if( typeof args[0] === 'object' ) {
-            $.extend( obj, args[0] )
-          }else if( typeof args[1] === 'object' ) {
-            $.extend( obj, args[1] )
-          }
-        }
-
         Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
+        obj.name = name 
         
+        Gibber.processArguments2( obj, args, obj.name )
+        
+        console.log( name + ' is created.' )
         return obj
       }
     })()

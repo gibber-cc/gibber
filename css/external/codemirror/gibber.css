@@ -1,12 +1,20 @@
 .cm-s-gibber {
   background:transparent;
-  color: #ccc
+  color: #ccc,
 ;}
 
-.CodeMirror-lines { padding-top: .75em; }
+.CodeMirror-lines { 
+  /* font-family: Menlo, Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace; */
+  padding-top: .75em;
+}
+
+.CodeMirror-lines pre {
+  /* word-wrap: break-word; */
+  /* white-space: pre-wrap; */
+}
 
 .codemirror-highlight { background:red !important; }
-.cm-s-gibber .CodeMirror-selected {background: rgba(130,130,130,.5) !important;}
+/* .cm-s-gibber .CodeMirror-selected {background: rgba(130,130,130,.5) !important;} */
 .cm-s-gibber .CodeMirror-cursor {border-left: 1px solid #f00 !important ;}
 
 .cm-s-gibber span.cm-comment {color: #666;}
@@ -25,7 +33,7 @@
 .cm-s-gibber span.cm-tag {color: #f92672;}
 .cm-s-gibber span.cm-link {color: #ae81ff; cursor:pointer}
 
-.cm-s-gibber .CodeMirror-matchingbracket {
+.CodeMirror-matchingbracket {
   background:#444;
   color: #ccc !important;
 }

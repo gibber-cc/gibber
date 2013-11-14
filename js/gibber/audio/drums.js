@@ -22,7 +22,11 @@
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
     },
     Kick    : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
-    Snare   : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
+    Snare   : { 
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC, timescale: 'audio' },
+      snappy: { min: .25, max: 1.5, output: Gibber.LOGARITHMIC, timescale: 'audio' }, 
+      tune: { min: 0, max: 2, output: Gibber.LOGARITHMIC, timescale: 'audio' },      
+    },
     Hat     : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
     Conga   : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
     Cowbell : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
@@ -72,7 +76,6 @@
           this._note.apply( this, args )
         }
         
-        console.log( "Calling abstractions" )
         Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
         
         Object.defineProperty(obj, '_', {
@@ -172,17 +175,28 @@
  	
   	obj.amp   = isNaN(_amp) ? 1 : _amp;
 	
-  	if( obj.seq ) { Gibberish.future( obj.seq.tick,1 ) }
+  	if( obj.seq ) { Gibberish.future( obj.seq.tick, 1 ) }
     
     obj.note = function(nt) {
   		for(var key in this.kit) {
   			if(nt === this.kit[key].symbol) {
-  				this[key].sampler.note( this.pitch * this[key].pitch, this[key].amp );
+  				this[ key ].sampler.note( obj.pitch /** this[key].pitch*/, this[key].amp );
   				break;
   			}
   		}
   	}
     
+    var _pitch = obj.pitch
+    Object.defineProperty( obj, 'pitch', {
+      get: function() { return _pitch },
+      set: function(v) { 
+        _pitch = v; 
+      	for(var key in obj.kit) {
+      		obj[key].pitch = _pitch
+        }
+      }
+    })
+        
     Gibber.createMappingAbstractions( obj, _mappingProperties[ 'Drums' ] )
     
     obj.kill = function() {
@@ -199,6 +213,7 @@
       }
     })
     
+    console.log( 'Drums created.' )
     return obj
   }
   
@@ -214,7 +229,8 @@
     }else{
       obj =  new Gibberish.Bus2( obj ).connect( Gibber.Master )
     }
-  
+    
+    obj.name = 'XOX'
     obj.type = 'Gen'
     obj.children = []
     
@@ -393,7 +409,8 @@
            
       obj.seq.kill()
     }
-      
+     
+    console.log( 'XOX created.' ) 
     return obj
   }
   

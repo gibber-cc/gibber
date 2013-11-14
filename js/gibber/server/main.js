@@ -507,7 +507,7 @@ app.post( '/search', function( req, res, next) {
                   }
               }
           }
-      }
+      }.
   }}, function(e,r,b) {
     console.log("SEARCH RESULTS:", b )
     var result = {}
