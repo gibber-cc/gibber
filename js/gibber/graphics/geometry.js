@@ -112,7 +112,6 @@ for( var key in types) {
                     oldSetter: store.__lookupSetter__( ltr ),
                     set : function( num, val )  {
                       store[ num ] = val
-                      update()
                     },
                   })
               
@@ -120,7 +119,6 @@ for( var key in types) {
                 get: function()  { return mapping },
                 set: function(v) { 
                   store[ Ltr ] = v 
-                  update()
                 }
               })
         
@@ -137,8 +135,8 @@ for( var key in types) {
                     mapping.value = v
                     console.log('old setter')
 
-                    // oldSetter.call( this, mapping.value )
-                    oldSetter.call( store, v )              
+                    oldSetter.call( this, mapping.value )
+                    // oldSetter.call( store, v )              
                   }
                 }
               })
@@ -155,9 +153,26 @@ for( var key in types) {
                 value : store,
                 object: obj,
                 targets:[],
-              }),
-              oldSetter = obj.__lookupSetter__( prop )
-          
+                oldSetter : function(v) {
+                  switch( $.type( v ) ) {
+                    case 'object' :
+                      if(typeof v.x === 'number') store[ 0 ] = v.x
+                      if(typeof v.y === 'number') store[ 1 ] = v.y
+                      if(typeof v.z === 'number') store[ 2 ] = v.z
+                    break;
+                    case 'array' :
+                      if(typeof v[0] === 'number') store[ 0 ] = v[ 0 ]
+                      if(typeof v[1] === 'number') store[ 1 ] = v[ 1 ]
+                      if(typeof v[2] === 'number') store[ 2 ] = v[ 2 ]
+                      break;
+                    case 'number' :
+                      store[ 0 ] = store[ 1 ] = store[ 2 ] = v
+                      break;
+                  }
+                  update()
+                }
+              })
+          // console.log( mapping.Name, mapping.oldSetter ) 
           Object.defineProperty( obj, prop, {
             get: function() { return store },
             set: function(v) {

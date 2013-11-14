@@ -547,7 +547,7 @@ window.Gibber = window.G = {
           if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )            
         }
       }else{
-        console.log( "FROM", from.name, target.min, target.max, from.min, from.max )
+        // console.log( "FROM", from.name, target.min, target.max, from.min, from.max )
         var _map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
         if( typeof from.object.functions === 'undefined' ) {
           from.object.functions = {}
@@ -567,16 +567,17 @@ window.Gibber = window.G = {
         from.object.functions[ fcn_name ] = function() {
           var val = map.callback( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
           // target.object[ target.Name ].value = val
+          // console.log( target.Name )
           target.object[ target.Name ].oldSetter.call( target.object[ target.Name ], val )
         }
         // from.object.onvaluechange = function() {          
         //   var val = map.callback( this[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
         //   target.object[ target.name ] = val
         // }
-        // target.object[ target.Name ].mapping.replace = function() {
+        target.object[ target.Name ].mapping.replace = function() {
           // var old = from.functions[ target.Name ]
 
-        // } 
+        } 
         target.object[ target.Name ].mapping.remove  = function() {
           console.log( "mapping removed" )
           delete from.object.functions[ fcn_name ]

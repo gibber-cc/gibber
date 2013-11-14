@@ -16,7 +16,9 @@ var GE = Gibber.Environment = {
                 'external/codemirror/clike',
                 'gibber/gibber_interface',
                 'gibber/console',
-                'gibber/mouse'
+                'gibber/mouse',
+                'external/mousetrap',
+                'gibber/help',
                 ], function() {
                   
         GE.Keymap.init()
@@ -28,6 +30,7 @@ var GE = Gibber.Environment = {
         GE.Account.init()
         Gibber.proxy( window )
         GE.Console.init()
+        $script( 'gibber/keys')
       });
     })
 
@@ -525,17 +528,20 @@ var GE = Gibber.Environment = {
           matchBrackets: true,
           value:[
             "a = Drums('x*o*x*o-')",
+            "a.pitch = Mouse.Y",
             "",
             "b = FM({ attack:ms(1) })",
+            "b.index = a.Amp",
+            "b.cmRatio = Mouse.X",
             "",
-            "c = Seq({",
-            "  scale: Scale( 'c2', 'minor' ),",
-            "  note: [0,0,0,7,14].random(),",
-            "  durations: [1/4,1/8,1/16].random(1/16,2),",
-            "  target:b",
-            "})",
+            "b.playNotes( ",
+            "  ['c2','c2','c2','c3','c4'].random(),",
+            "  [1/4,1/8,1/16].random(1/16,2) ",
+            ")",
             "",
-            "b.index = a.Amp"
+            "d = Delay({ time: Mouse.X, feedback: Mouse.Y })",
+            "",
+            "b.fx.add( d )",
           ].join('\n'),
           lineWrapping: false,
           tabSize: 2,
