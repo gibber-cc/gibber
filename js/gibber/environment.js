@@ -1,7 +1,7 @@
 (function() {
 
 "use strict"
-var SERVER_URL = 'http://127.0.0.1:3000',
+var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
     modes = [ 'javascript', 'glsl' ]
 
 var GE = Gibber.Environment = {
@@ -767,7 +767,7 @@ var GE = Gibber.Environment = {
             .on( 'click', function(e) {
               $.ajax({
                 type:"GET",
-                url:'http://127.0.0.1:3000/logout', 
+                url: SERVER_URL + '/logout', 
                 dataType:'json'
               }).done( function( data ) {
                 $( '.login' ).empty()
@@ -797,7 +797,7 @@ var GE = Gibber.Environment = {
     login: function() {
       $.ajax({
         type:"POST",
-        url:'http://127.0.0.1:3000/login', 
+        url: SERVER_URL + '/login', 
         data:{ username: $("#username").val(), password: $("#password").val() }, 
         dataType:'json'
       })
@@ -811,7 +811,7 @@ var GE = Gibber.Environment = {
             .on( 'click', function(e) {
               $.ajax({
                 type:"GET",
-                url:'http://127.0.0.1:3000/logout', 
+                url: SERVER_URL + '/logout', 
                 dataType:'json'
               }).done( function(data) {
                 $( '.login' ).empty()

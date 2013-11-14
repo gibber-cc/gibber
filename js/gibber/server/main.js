@@ -9,7 +9,7 @@ var request         = require( 'request' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
     _url            = 'http://localhost:5984/gibber',
     esUrl           = 'http://localhost:9200/gibber/_search',
-    webServerPort   = 3000,
+    webServerPort   = 80,
     serverRoot      = __dirname + "/../../../";
 
 var names = ['charlie', 'sally', 'mary','dick','paul','bettie', 'katie', 'liz']
@@ -229,8 +229,8 @@ var testDatabase = function() {
   }
   cb()
 }
-
 var search = function(term) {
+  console.log( "SEARCH TERM IS: " + term )
   request({ url:'http://127.0.0.1:9200/gibber/_search', json:{
       "query": {
           "filtered" : {
@@ -300,6 +300,7 @@ function findByUsername(username, fn) {
   request(
     { uri:'http://localhost:5984/gibber/_design/test/_view/password?key="'+username+'"', json: true }, 
     function(e,r,b) {
+      console.log(b.rows)
       if(b.rows.length === 1) {
         var user = { username:b.rows[ 0 ].key, password: b.rows[ 0 ].value, id:users.length } // MUST GIVE A USER ID FOR SESSION MAINTENANCE
         users.push( user )
@@ -497,7 +498,7 @@ app.get( '/browser', function( req, res, next ) {
 
 app.post( '/search', function( req, res, next) {
   console.log( req.body, _url + '/_search' )
-  request({ url: esUrl, json:{
+  request({ url: esUrl , json:{
       "query": {
           "filtered" : {
               "query" : {
@@ -522,7 +523,12 @@ app.post( '/search', function( req, res, next) {
         result.noresults = "No matches were found for your query."
       }
     }else{
-      result.error = b.indexOf('error') > -1 ? "The gibber database appears to be down. Please contact an administrator" : "No hits were found"
+      if( b ) {
+        result.error = b.indexOf('error') > -1 ? "The gibber database appears to be down. Please contact an administrator" : "No hits were found"
+      }else{
+        result.error = "The search database is offline. Please, please, please report this to admin@gibber.cc"
+        console.log(e, r)
+      }
     }
     
     res.send(result)
@@ -532,7 +538,7 @@ app.post( '/search', function( req, res, next) {
 app.post( '/login', function( req, res, next ) {
   passport.authenticate( 'local', function( err, user, info ) {
     var data = {}
-    console.log( "LOGGING IN... ", user )
+    console.log( "LOGGING IN... ", user, err, info )
     if (err) { return next( err ) }
     
     if (!user) {
@@ -564,7 +570,7 @@ app.get('/logout', function(req, res, next){
 //   res.send({ msg:'published.' })
 // })
 
-app.listen( 3000 );
+app.listen( 80 );
 
 
 // Simple route middleware to ensure user is authenticated.
