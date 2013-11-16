@@ -41,3 +41,7 @@
 /*  padding:0 .5em; */
   font-size:1.25em;
 }
+
+.CodeMirror-selected {
+  background:#444 !important;
+}

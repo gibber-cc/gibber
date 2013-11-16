@@ -41,6 +41,12 @@
       $.extend( that, {
         canvas: canvas,
         texture: tex, 
+        remove : function() {
+          $( '#three' ).remove()
+          Gibber.Graphics.canvas = null
+          Gibber.Graphics.ctx = null 
+          cnvs = null
+        },
         _fill : that.fill,
         _stroke : that.stroke,
         _rotate : that.rotate,

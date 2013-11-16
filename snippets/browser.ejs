@@ -1,6 +1,19 @@
 <div class='browser' style='width:100%;padding:.5em;'>
     <input style='border:0; margin-left:0; width:80%' id='search_field'>
     <button style='min-width:3em' id='search_button'>Search</button>
+    <h2>Demos</h2>
+    <ul>
+    <% for(var i=0; i<demos.length; i++) { %>
+    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- demos[i].id %>')"><%- demos[i].id.split('/')[2] %></a></li>
+    <% } %>
+    </ul>
+    <% if( userfiles.length > 0 ) { %>
+      <h2>Your Files</h2>
+      <ul>
+      <% for(var i=0; i<userfiles.length; i++) { %>
+        <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- userfiles[i].id %>')"><%- userfiles[i].id.split('/')[2] %></a></li>
+      <% } %>
+      </ul>
+    <% } %>
 
-    <!-- <button style="margin-left:0;" onclick='Gibber.Environment.Account.publish()'>Publish</button> -->
 </div>
