@@ -441,6 +441,16 @@ app.post( '/test', function(req, res, next){
   //res.render( 'login_start', { user: req.user, message: req.flash('error') });
 })
 
+app.post( '/retrieve', function( req, res, next ) {
+  console.log( req.body )
+  var suffix = req.body.address.replace(/\//g, '%2F')
+  console.log(suffix)
+  request( 'http://localhost:5984/gibber/' + suffix, function(e,r,b) {
+    console.log( b )
+    res.send( b )
+  })
+})
+
 app.get( '/create_publication', function( req, res, next ) {
   res.render( 'create_publication', { user: req.user, message: req.flash('error') });
 })
@@ -481,7 +491,8 @@ app.post( '/createNewUser', function( req, res, next ) {
   request.post({url:'http://localhost:5984/gibber/', json:req.body},
     function (error, response, body) {
       if( error ) { 
-        console.log( error ) 
+        console.log( error )
+        res.send({ msg: 'The server was unable to create your account' }) 
       } else { 
         res.send({ msg:'User account ' + req.body._id + ' created' })
           
@@ -493,7 +504,26 @@ app.post( '/createNewUser', function( req, res, next ) {
 })
 
 app.get( '/browser', function( req, res, next ) {
-  res.render( 'browser', { user: req.user, message: req.flash('error') });
+  request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
+    // console.log( (JSON.parse(b)).rows )
+    if( req.user ) {
+      request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
+        res.render( 'browser', {
+          user: req.user,
+          demos:(JSON.parse(b)).rows, 
+          userfiles:(JSON.parse(_b)).rows,
+          message: req.flash('error')
+        });
+      })
+    }else{
+      res.render( 'browser', {
+        user: req.user,
+        demos:(JSON.parse(b)).rows, 
+        userfiles:[],
+        message: req.flash('error')
+      });
+    }
+  });
 })
 
 app.post( '/search', function( req, res, next) {
@@ -507,7 +537,7 @@ app.post( '/search', function( req, res, next) {
                   }
               }
           }
-      }.
+      },
   }}, function(e,r,b) {
     console.log("SEARCH RESULTS:", b )
     var result = {}

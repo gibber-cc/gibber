@@ -449,7 +449,7 @@ var GE = Gibber.Environment = {
           
       if( this.columns.length > 0) lastColumnWidth = $( this.columns[ this.columns.length - 1 ].element ).width()
 
-      var columnWidth = options.fullScreen ? lastColumnWidth : options.width || this.defaultColumnSize,
+      var columnWidth = options.width || this.defaultColumnSize,
           col = {
             element:        $( '<div class="column">' ),
             header:         $( '<div class="columnHeader">' ),
@@ -530,9 +530,11 @@ var GE = Gibber.Environment = {
             "a = Drums('x*o*x*o-')",
             "a.pitch = Mouse.Y",
             "",
-            "b = FM({ attack:ms(1) })",
-            "b.index = a.Amp",
-            "b.cmRatio = Mouse.X",
+            "b = FM({",
+            "  attack:ms(1),",
+            "  index : a.Amp,",
+            "  cmRatio :Mouse.X",
+            "})",
             "",
             "b.playNotes( ",
             "  ['c2','c2','c2','c3','c4'].random(),",
@@ -792,9 +794,16 @@ var GE = Gibber.Environment = {
       )
     },
     
-    openCode : function( code ) {
-      var col = GE.Layout.addColumn({ fullScreen:true, type:'code' })
-      col.editor.setValue( code )
+    openCode : function( addr ) {
+      $.post(
+        SERVER_URL + '/retrieve',
+        { address:addr },
+        function( d ) {
+          d = JSON.parse(d)
+          var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
+          col.editor.setValue( d.text )
+        }
+      )
     },
     
   },
@@ -883,7 +892,7 @@ var GE = Gibber.Environment = {
           $( "#loginForm h5" ).text( "Your name or password was incorrect. Please try again." )
         }
       })
-      .fail( function(error) { console.log("FAILED FUCK"); console.log( error )})
+      .fail( function(error) { console.log( error )})
 
     },
     newAccountForm: function() {
@@ -939,18 +948,16 @@ var GE = Gibber.Environment = {
       $.post(
         SERVER_URL + '/createNewUser',
         data,
-        function (error, response, body) {
-          console.log(" RIGHT ")
-          if( error ) { 
-            console.log( "ERROR", error ) 
+        function (data, error) {
+          if( data ) {
+            GE.Message.post('New account created. Please login to verify your username and password.'); 
           } else { 
             console.log( "RESPONSE", response )
           }
         },
         'json'
       )
-
-      col.element.remove()
+      GE.Layout.removeColumn( col.id )
       location.href = '#'
       location.href = '#' + GE.Layout.columns[ GE.Layout.columns.length - 1].id      
     },

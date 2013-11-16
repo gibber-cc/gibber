@@ -241,7 +241,13 @@ tfoot, thead {
 .browser{
   color:#ccc;
 }
-
+.browser a {
+  color:#ccc;
+  text-decoration:none;
+}
+.browser h2 {
+  font-size:1.2em;
+}
 .browser input {
   background-color: #333;
   color:#ccc;
