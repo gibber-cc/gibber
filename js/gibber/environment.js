@@ -695,11 +695,11 @@ var GE = Gibber.Environment = {
           top: $( window ).height() / 2 - 100,
           backgroundColor: 'rgba(0,0,0,.85)',
           border:'1px solid #666',
-          padding:'.5em'
+          padding:'.5em',
+          zIndex:1000
         })
         .addClass( 'message' )
         .append( $( '<button>' )
-          .addClass( 'closeButton' )
           .on('click', function(e) { $( msgDiv ).remove(); })
           .html('&#10005;')
         )

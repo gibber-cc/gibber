@@ -133,7 +133,6 @@ for( var key in types) {
                     if(mapping.mapping) mapping.mapping.remove()
 
                     mapping.value = v
-                    console.log('old setter')
 
                     oldSetter.call( this, mapping.value )
                     // oldSetter.call( store, v )              

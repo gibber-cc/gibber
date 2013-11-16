@@ -224,9 +224,15 @@
       
       cnvs = that
 
-      Object.defineProperty( that, 'fps', {
-        get: function() { return Gibber.Graphics.fps !== null ? Gibber.Graphics.fps : 60 },
-        set: function(v) { Gibber.Graphics.fps = v }
+      Object.defineProperties( that, {
+        fps: {
+          get: function() { return Gibber.Graphics.fps !== null ? Gibber.Graphics.fps : 60 },
+          set: function(v) { Gibber.Graphics.fps = v },
+        },
+        alpha: {
+          get : function() { return this.globalAlpha },
+          set : function(v) { this.globalAlpha = v }
+        }
       })
 
       Gibber.Graphics.canvas2d = that

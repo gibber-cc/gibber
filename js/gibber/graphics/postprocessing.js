@@ -186,12 +186,14 @@ var processArgs = function( args, type, shape ) {
       }
     },
     Colorify : {
-      properties: { color: new THREE.Color( 0xffffff ) },
+      properties: { color: new THREE.Color( 0xff0000 ) },
       init: function( obj ) {
         obj = obj || {}
-        obj.color = obj.color || shaders.Colorify.properties.color
+        console.log( obj.color )
+        obj.color = typeof obj.color === 'string' ? new THREE.Color( Color(obj.color).hexString() ) : shaders.Colorify.properties.color
         
         var shader = new THREE.ShaderPass( THREE.ColorifyShader )
+        shader.uniforms[ 'color' ].value = obj.color
         return shader
       }
     },
@@ -248,7 +250,7 @@ var PP = Gibber.Graphics.PostProcessing = {
           //var shader = shaderProps.shaders[0].init({ center:undefined, angle:.5, scale:.035, mix:.1 })
           var args = Array.prototype.slice.call( arguments,0 ),
               shader = shaderProps.init.call( shaderProps, args )
-              
+          console.log( args )   
           if( shader === null) {
             console.log( "SHADER ERROR... aborting" )
             return
