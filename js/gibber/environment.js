@@ -808,7 +808,7 @@ var GE = Gibber.Environment = {
       )
     },
     
-    openCode : function( code ) {
+    openCode : function( addr ) {
       $.post(
         SERVER_URL + '/retrieve',
         { address:addr },
