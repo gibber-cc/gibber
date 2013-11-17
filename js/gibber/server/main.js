@@ -503,6 +503,12 @@ app.post( '/createNewUser', function( req, res, next ) {
 
 })
 
+app.get( '/welcome', function( req, res, next ) {
+  res.render( 'welcome', {
+    user:req.user
+  })
+})
+
 app.get( '/browser', function( req, res, next ) {
   request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
     // console.log( (JSON.parse(b)).rows )
