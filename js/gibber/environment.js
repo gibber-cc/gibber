@@ -809,10 +809,16 @@ var GE = Gibber.Environment = {
     },
     
     openCode : function( code ) {
-      var col = GE.Layout.addColumn({ fullScreen:true, type:'code' })
-      col.editor.setValue( code )
+      $.post(
+        SERVER_URL + '/retrieve',
+        { address:addr },
+        function( d ) {
+          d = JSON.parse(d)
+          var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
+          col.editor.setValue( d.text )
+        }
+      )
     },
-    
   },
   
   Account : {
@@ -955,14 +961,13 @@ var GE = Gibber.Environment = {
       $.post(
         SERVER_URL + '/createNewUser',
         data,
-        function (error, response, body) {
-          console.log(" RIGHT ")
-          if( error ) { 
-            console.log( "ERROR", error ) 
+        function (data, error) {
+          if( data ) {
+            GE.Message.post('New account created. Please login to verify your username and password.'); 
           } else { 
             console.log( "RESPONSE", response )
           }
-        },
+        },    
         'json'
       )
 
