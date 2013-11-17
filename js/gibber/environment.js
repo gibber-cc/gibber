@@ -30,6 +30,7 @@ var GE = Gibber.Environment = {
         GE.Account.init()
         Gibber.proxy( window )
         GE.Console.init()
+        GE.Welcome.init()
         $script( 'gibber/keys')
       });
     })
@@ -280,7 +281,7 @@ var GE = Gibber.Environment = {
           var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
           col.fontSize += .2
           
-          col.editorElement.css({ fontSize: col.fontSize + 'em'})
+          col.bodyElement.css({ fontSize: col.fontSize + 'em'})
           col.editor.refresh()
         },
         
@@ -288,7 +289,7 @@ var GE = Gibber.Environment = {
           var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
           col.fontSize -= .2
           
-          col.editorElement.css({ fontSize: col.fontSize + 'em'})
+          col.bodyElement.css({ fontSize: col.fontSize + 'em'})
           col.editor.refresh()
         },
       }
@@ -458,7 +459,7 @@ var GE = Gibber.Environment = {
             header:         $( '<div class="columnHeader">' ),
             modeSelect:     $( '<select>'),
             slider:         $( '<div>'),
-            editorElement:  $( '<div class="editor">' ),
+            bodyElement:    $( '<div class="editor">' ),
             resizeHandle:   $( '<div class="resizeHandle">' ),
             close :         $( '<button>' ),
             width:          columnWidth,
@@ -521,9 +522,9 @@ var GE = Gibber.Environment = {
       }
       
       if( isCodeColumn ) {
-        col.editorElement.width( columnWidth - resizeHandleSize )
-        col.element.append( col.editorElement )
-        col.editor = CodeMirror( col.editorElement[0], {
+        col.bodyElement.width( columnWidth - resizeHandleSize )
+        col.element.append( col.bodyElement )
+        col.editor = CodeMirror( col.bodyElement[0], {
           theme:  'gibber',
           keyMap: 'gibber',
           mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
@@ -666,6 +667,12 @@ var GE = Gibber.Environment = {
     		});
       })
     },
+    setColumnBodyHeight : function( col ) {
+      var headerHeight = $('thead').height(),
+          columnHeight = $(window).height() - headerHeight - $('tfoot').height() - col.header.outerHeight()
+      
+      col.bodyElement.css({ height: columnHeight })
+    },
     
     resizeColumns : function() {
       var totalWidth   = 0, // also used to determine x coordinate of each column
@@ -681,10 +688,11 @@ var GE = Gibber.Environment = {
           height: $(window).height() - headerHeight - $('tfoot').height()
         })
                 
-        $( this.columns[ i ].editorElement )
-          .width( this.columns[i].width - this.resizeHandleSize )
-          .height( columnHeight - this.columns[i].header.outerHeight() )
-          
+        $( this.columns[ i ].bodyElement ).css({
+          width : this.columns[i].width - this.resizeHandleSize, 
+          height: columnHeight - this.columns[i].header.outerHeight()
+        })
+        console.log( this.columns[i].bodyElement.width() ) 
         $( this.columns[ i ].header ).width( this.columns[i].width - this.resizeHandleSize )
         
         if( this.columns[ i ].editor )
@@ -760,14 +768,17 @@ var GE = Gibber.Environment = {
       location.href = '#'
       location.href = '#' + col.id
       
-      col.editorElement.remove()
+      col.bodyElement.remove()
 
       $.ajax({
         url: SERVER_URL + "/welcome",
         dataType:'html'
       })
       .done( function( data ) {
-        $( col.element ).append( data );
+        var welcome = $( data )
+        $( col.element ).append( welcome )
+        col.bodyElement = welcome
+        GE.Layout.setColumnBodyHeight( col )
       })
     },
   }, 
@@ -780,7 +791,7 @@ var GE = Gibber.Environment = {
       location.href = '#'
       location.href = '#' + col.id
       
-      col.editorElement.remove()
+      col.bodyElement.remove()
       
       $.ajax({
         url: SERVER_URL + "/browser",
@@ -928,7 +939,7 @@ var GE = Gibber.Environment = {
       var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Create an account' })
       location.href = '#'
       location.href = '#' + col.id
-      //col.editorElement.remove()
+      //col.bodyElement.remove()
       $( '#loginForm' ).remove()
       $.ajax({
         url:'./snippets/create_account.ejs',
@@ -943,7 +954,7 @@ var GE = Gibber.Environment = {
       location.href = '#'
       location.href = '#' + col.id
       
-      col.editorElement.remove()
+      col.bodyElement.remove()
       
       $.ajax({
         url: SERVER_URL + "/create_publication",

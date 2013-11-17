@@ -137,6 +137,23 @@ tfoot, thead {
   font-family: Courier, monospace;
 }
 
+#welcome {
+  padding: 0 1em 0 1em;
+  overflow-y:scroll;
+  overflow-x:hidden;
+  box-sizing: border-box !important;
+}
+#welcome ul li {
+  margin-bottom:1em;
+  padding-left:0em;
+}
+
+#welcome ul {
+  list-style-position:inside !important;
+  margin-left:0;
+  padding-left:0em;
+  list-style:disc;
+}
 .console-normal {
   font-weight:normal;
   color:#ccc;
@@ -164,6 +181,7 @@ tfoot, thead {
 .column { 
   position:absolute;
   height:100%;
+
 }
 
 .columnHeader {
