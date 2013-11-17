@@ -442,14 +442,17 @@ var GE = Gibber.Environment = {
     addColumn : function( options ) {
       options = options || {}
       var isCodeColumn = options.type === 'code',
-          lastColumnWidth = $( "#contentCell").width(),
+          lastColumnWidth = 0, 
           colNumber = this.columnID++,
           mode  = 'javascript',
           modeIndex = 0
-          
-      if( this.columns.length > 0) lastColumnWidth = $( this.columns[ this.columns.length - 1 ].element ).width()
+      
+      for( var i = 0; i < this.columns.length; i++) {
+        var col = this.columns[ i ]
+        if( col !== null ) lastColumnWidth = col.element.width()
+      }    
 
-      var columnWidth = options.width || this.defaultColumnSize,
+      var columnWidth = options.width ? options.width : lastColumnWidth || this.defaultColumnSize,
           col = {
             element:        $( '<div class="column">' ),
             header:         $( '<div class="columnHeader">' ),
@@ -530,11 +533,9 @@ var GE = Gibber.Environment = {
             "a = Drums('x*o*x*o-')",
             "a.pitch = Mouse.Y",
             "",
-            "b = FM({",
-            "  attack:ms(1),",
-            "  index : a.Amp,",
-            "  cmRatio :Mouse.X",
-            "})",
+            "b = FM({ attack:ms(1) })",
+            "b.index = a.Amp",
+            "b.cmRatio = Mouse.X",
             "",
             "b.playNotes( ",
             "  ['c2','c2','c2','c3','c4'].random(),",
@@ -596,6 +597,8 @@ var GE = Gibber.Environment = {
       }
     
       for( var i = 0; i < this.columns.length; i++ ) {
+        if( this.columns[i] === null ) return
+
         layout.columns.push({
           width: $( this.columns[i].element ).width(),
           value: this.columns[i].editor.getValue(),
@@ -610,6 +613,9 @@ var GE = Gibber.Environment = {
     getColumnByID : function( id ) {
       for( var i = 0; i < this.columns.length; i++ ) {
         var col = this.columns[ i ]
+
+        if( col === null ) continue;
+
         if( col.id === id ) {
           return col;
         }
@@ -620,19 +626,25 @@ var GE = Gibber.Environment = {
     removeAllColumns : function() {
       for( var i = this.columns.length - 1; i >= 0; i-- ) {
         var col = this.columns[ i ]
+
+        if( col === null ) continue;
+
         col.element.remove()
-        this.columns.pop()
       }
+      this.columns.length = 0
     },
     
     removeColumn : function( columnNumber ) {
       var col = this.getColumnByID( columnNumber )
       
+      if( col === null ) return
+        
       if( col.element ) col.element.remove()
       
-      this.columns.splice( this.columns.indexOf( col ), 1 )
+      this.columns[ this.columns.indexOf( col ) ] = null
+      // this.columns.splice( this.columns.indexOf( col ), 1 )
       
-      this.resizeColumns();
+      this.resizeColumns()
     },
     
     handleResizeEventForColumn : function(col) {
@@ -661,6 +673,8 @@ var GE = Gibber.Environment = {
           columnHeight = $(window).height() - headerHeight - $('tfoot').height()
 
       for( var i = 0; i < this.columns.length; i++ ) {
+        if( this.columns[ i ] === null ) continue 
+
         this.columns[ i ].element.css({ 
           top:headerHeight,
           left: totalWidth,
@@ -794,16 +808,9 @@ var GE = Gibber.Environment = {
       )
     },
     
-    openCode : function( addr ) {
-      $.post(
-        SERVER_URL + '/retrieve',
-        { address:addr },
-        function( d ) {
-          d = JSON.parse(d)
-          var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
-          col.editor.setValue( d.text )
-        }
-      )
+    openCode : function( code ) {
+      var col = GE.Layout.addColumn({ fullScreen:true, type:'code' })
+      col.editor.setValue( code )
     },
     
   },
@@ -830,7 +837,7 @@ var GE = Gibber.Environment = {
             .on( 'click', function(e) {
               $.ajax({
                 type:"GET",
-                url: SERVER_URL + '/logout', 
+                url:'http://127.0.0.1:3000/logout', 
                 dataType:'json'
               }).done( function( data ) {
                 $( '.login' ).empty()
@@ -860,7 +867,7 @@ var GE = Gibber.Environment = {
     login: function() {
       $.ajax({
         type:"POST",
-        url: SERVER_URL + '/login', 
+        url:'http://127.0.0.1:3000/login', 
         data:{ username: $("#username").val(), password: $("#password").val() }, 
         dataType:'json'
       })
@@ -874,7 +881,7 @@ var GE = Gibber.Environment = {
             .on( 'click', function(e) {
               $.ajax({
                 type:"GET",
-                url: SERVER_URL + '/logout', 
+                url:'http://127.0.0.1:3000/logout', 
                 dataType:'json'
               }).done( function(data) {
                 $( '.login' ).empty()
@@ -892,7 +899,7 @@ var GE = Gibber.Environment = {
           $( "#loginForm h5" ).text( "Your name or password was incorrect. Please try again." )
         }
       })
-      .fail( function(error) { console.log( error )})
+      .fail( function(error) { console.log("FAILED FUCK"); console.log( error )})
 
     },
     newAccountForm: function() {
@@ -948,16 +955,18 @@ var GE = Gibber.Environment = {
       $.post(
         SERVER_URL + '/createNewUser',
         data,
-        function (data, error) {
-          if( data ) {
-            GE.Message.post('New account created. Please login to verify your username and password.'); 
+        function (error, response, body) {
+          console.log(" RIGHT ")
+          if( error ) { 
+            console.log( "ERROR", error ) 
           } else { 
             console.log( "RESPONSE", response )
           }
         },
         'json'
       )
-      GE.Layout.removeColumn( col.id )
+
+      col.element.remove()
       location.href = '#'
       location.href = '#' + GE.Layout.columns[ GE.Layout.columns.length - 1].id      
     },
