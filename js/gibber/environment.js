@@ -754,7 +754,23 @@ var GE = Gibber.Environment = {
       this.current.stop()
     }
   },
-  
+  Welcome : {
+    init : function() {
+      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
+      location.href = '#'
+      location.href = '#' + col.id
+      
+      col.editorElement.remove()
+
+      $.ajax({
+        url: SERVER_URL + "/welcome",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        $( col.element ).append( data );
+      })
+    },
+  }, 
   Browser : {
     newBrowser: function() {
       var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Browse Giblets' })
