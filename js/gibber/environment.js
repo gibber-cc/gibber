@@ -1,7 +1,8 @@
 (function() {
 
 "use strict"
-var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
+// var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
+var SERVER_URL = 'http://127.0.0.1:8080', 
     modes = [ 'javascript', 'glsl' ]
 
 var GE = Gibber.Environment = {
@@ -19,6 +20,7 @@ var GE = Gibber.Environment = {
                 'gibber/mouse',
                 'external/mousetrap',
                 'gibber/help',
+                'gibber/chat',
                 ], function() {
                   
         GE.Keymap.init()
@@ -553,12 +555,9 @@ var GE = Gibber.Environment = {
         })
     
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
+        col.header.append( col.slider )
       }
    
- 
-
-      col.header.append( col.slider )
-
       col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
       col.modeSelect.eq( col.modeIndex )
       
@@ -747,6 +746,9 @@ var GE = Gibber.Environment = {
       })
       $( '#consoleButton' ).on( 'click', function(e) {
         GE.Console.open()
+      })
+      $( '#chatButton' ).on( 'click', function(e) {
+        GE.Chat.open()
       })
     }
   },
