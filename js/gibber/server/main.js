@@ -7,7 +7,8 @@ var request         = require( 'request' ),
     express         = require( 'express' ),
     util            = require( 'util' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
-    _url            = 'http://localhost:5984/gibber',
+    // _url            = 'http://localhost:5984/gibber',
+    _url            = 'http://127.0.0.1:5984/gibber',
     esUrl           = 'http://localhost:9200/gibber/_search',
     webServerPort   = 8080,
     serverRoot      = __dirname + "/../../../";
@@ -28,7 +29,7 @@ function findByUsername(username, fn) {
     { uri:'http://localhost:5984/gibber/_design/test/_view/password?key="'+username+'"', json: true }, 
     function(e,r,b) {
       console.log(b.rows)
-      if(b.rows.length === 1) {
+      if(b.rows && b.rows.length === 1) {
         var user = { username:b.rows[ 0 ].key, password: b.rows[ 0 ].value, id:users.length } // MUST GIVE A USER ID FOR SESSION MAINTENANCE
         users.push( user )
         return fn( null, user );
@@ -124,7 +125,7 @@ app.configure( function() {
   app.use( flash() )
   app.use( passport.initialize() )
   app.use( passport.session() )
-  // app.use( allowCrossDomain )
+  app.use( allowCrossDomain )
   app.use( app.router )
   app.use( checkForREST )
   app.use( express.static( serverRoot ) )

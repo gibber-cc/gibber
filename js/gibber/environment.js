@@ -851,6 +851,7 @@ var GE = Gibber.Environment = {
   },
   
   Account : {
+    nick: null,
     init : function() {
       $('.login a').on('click', function(e) { 
         GE.Account.createLoginWindow()
@@ -867,6 +868,9 @@ var GE = Gibber.Environment = {
         if( response.username !== null ) {
           $( '.login' ).empty()
           $( '.login' ).append( $('<span>welcome, ' + response.username + '.  </span>' ) )
+
+          GE.Account.nick = response.username
+
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
             .on( 'click', function(e) {
@@ -902,7 +906,7 @@ var GE = Gibber.Environment = {
     login: function() {
       $.ajax({
         type:"POST",
-        url:'http://127.0.0.1:3000/login', 
+        url:'http://127.0.0.1:8080/login', 
         data:{ username: $("#username").val(), password: $("#password").val() }, 
         dataType:'json'
       })
@@ -911,6 +915,8 @@ var GE = Gibber.Environment = {
           console.log( "LOGIN RESPONSE", data )
           $( '.login' ).empty()
           $( '.login' ).append( $('<span>welcome, ' + data.username + '.  </span>' ) )
+          GE.Account.nick = data.username
+
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
             .on( 'click', function(e) {

@@ -22,11 +22,20 @@ server.on( 'connection', function( client ) {
   })
 })
 
+server.on( 'disconnection', function( client ) {
+  client.ip = client._socket.remoteAddress
+  var _client = users[ client.ip ],
+      idx =  rooms[ _client.room ].indexOf( _client )
+
+  if( idx > -1 ) rooms[ _client.room ].clients.splice( idx, 1 )
+  delete users[ client.ip ]
+})
+
 handlers = {
   register : function( client, msg ) {
     client.nick = msg.nick
 
-    var msg = { nickRegistered: client.nick }
+    var msg = { msg:'registered', nickRegistered: client.nick }
 
     client.send( JSON.stringify( msg ) )
   },
@@ -74,20 +83,22 @@ handlers = {
   },
 
   message : function( client, msg ) {
-    var room = client.room, reponse = null
-
+    var room = rooms[ client.room ], response = null, _msg = null
+    
     if( typeof room !== 'undefined' ) {
+      _msg = JSON.stringify({ msg:'incomingMessage', incomingMessage:msg.text, nick:client.nick }) 
       for( var i = 0; i < room.clients.length; i++ ){
         var recipient = room.clients[ i ]
 
-        recipient.send( msg.text )
+        recipient.send( _msg )
       }
-      response = { msg:'messageSent', messageSent: msg.text }
+      console.log( 'Sending message from', client.nick )
+      response = { msg:'messageSent', messageSent: msg.text, nick:client.nick }
     }else{
       response = { msg:'messageSent', messageSent:null, error:'ERROR: You tried to send a message without joining a chat room!' }
     }
 
-    client.send( JSON.stringify( reponse ) )
+    client.send( JSON.stringify( response ) )
   },
 
   createRoom : function( client, msg ) {

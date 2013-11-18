@@ -214,9 +214,9 @@ var functions = [
   makePubs,
   makeDesign,
   testDesign,
-  deleteSearchEngine,
-  makeSearchEngine,
-  searchDatabase
+  // deleteSearchEngine,
+  // makeSearchEngine,
+  // searchDatabase
 ]
 
 var testDatabase = function() {
@@ -249,7 +249,7 @@ var search = function(term) {
     if(cb) cb()
   })
 }
-//testDatabase()
+testDatabase()
 //searchDatabase()
 //makeSearchEngine()
 //deleteSearchEngine()
@@ -263,25 +263,24 @@ var search = function(term) {
 //makeFakeUsers()
 //makeFakePubs()
 
-// var deleteUsers = function(cb) {
-//   for( var i = 0; i < names.length; i++ ) {
-//     (function() {
-//       var _i  = i,
-//           name = names[ _i ]
-//   
-//       request('http://localhost:5984/gibber/'+name, function(err, response, body) {
-//         var url = 'http://localhost:5984/gibber/'+name+'?rev=' + JSON.parse(body)._rev
-//         request( {url:url, method:'DELETE' }, function (error, response, body) {
-//           if( error ) { 
-//             console.log( error ) 
-//           } else { 
-//             console.log( body )
-//             if( _i === names.length - 1) {
-//               if(cb) cb()
-//             }
-//           }
-//         })
-//       })
-//     })()
-//   }
-// }
+var deleteUsers = function(cb) {
+  for( var i = 0; i < names.length; i++ ) {
+    (function() {
+      var _i  = i,
+          name = names[ _i ]
+      request('http://localhost:5984/gibber/'+name, function(err, response, body) {
+        var url = 'http://localhost:5984/gibber/'+name+'?rev=' + JSON.parse(body)._rev
+        request( {url:url, method:'DELETE' }, function (error, response, body) {
+          if( error ) { 
+            console.log( error ) 
+          } else { 
+            console.log( body )
+            if( _i === names.length - 1) {
+              if(cb) cb()
+            }
+          }
+        })
+      })
+    })()
+  }
+}
