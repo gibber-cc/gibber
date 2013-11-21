@@ -20,16 +20,16 @@ server.on( 'connection', function( client ) {
     console.log( msg )  
     handlers[ msg.cmd ]( client, msg )
   })
+
+  client.on( 'close', function() {
+    // console.log( "ROOM", client.room, rooms[ client.room ] )
+    var idx = rooms[ client.room ].clients.indexOf( client )
+    if( client.room ) rooms[ client.room ].clients.splice( idx , 1 )
+    delete users[ client.ip ]
+  })
 })
 
-server.on( 'disconnection', function( client ) {
-  client.ip = client._socket.remoteAddress
-  var _client = users[ client.ip ],
-      idx =  rooms[ _client.room ].indexOf( _client )
 
-  if( idx > -1 ) rooms[ _client.room ].clients.splice( idx, 1 )
-  delete users[ client.ip ]
-})
 
 handlers = {
   register : function( client, msg ) {
@@ -92,7 +92,7 @@ handlers = {
 
         recipient.send( _msg )
       }
-      console.log( 'Sending message from', client.nick )
+      // console.log( 'Sending message from', client.nick )
       response = { msg:'messageSent', messageSent: msg.text, nick:client.nick }
     }else{
       response = { msg:'messageSent', messageSent:null, error:'ERROR: You tried to send a message without joining a chat room!' }

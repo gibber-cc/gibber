@@ -5,6 +5,9 @@
 var GE = Gibber.Environment,
     Layout = GE.Layout,
     chatPort = 20000,
+    expr = /[-a-zA-Z0-9.]+(:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))/,
+    socketIPAndPort = expr.exec( window.location.toString() )[0].split(":"),
+    socketString = 'ws://' + socketIPAndPort[0] + ':' + chatPort;
 
 Chat = Gibber.Environment.Chat = {
   socket : null,
@@ -16,6 +19,9 @@ Chat = Gibber.Environment.Chat = {
       return
     }
     this.column = Layout.addColumn({ header:'Chat' })
+    this.column.onclose = function() {
+      this.socket.close()
+    }
     // this.column.header.append( $( '<span>lobby</span>') )
     this.lobbyRoom = $( '<div>' ).css({ display:'inline', marginLeft:'2em' })
     
@@ -30,10 +36,6 @@ Chat = Gibber.Environment.Chat = {
     this.lobbyRoom.append( this.lobby, this.room )
 
     this.column.header.append( this.lobbyRoom )
-
-    var expr = /[-a-zA-Z0-9.]+(:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))/,
-				socketIPAndPort = expr.exec( window.location.toString() )[0].split(":"),
-				socketString = 'ws://' + socketIPAndPort[0] + ':' + chatPort;
 
     this.socket = new WebSocket( socketString );
 
@@ -71,8 +73,14 @@ Chat = Gibber.Environment.Chat = {
 
     GE.Layout.setColumnBodyHeight( this.column )
     this.lobby.css({ color:'#333', background:'#ccc' })
+
+    if( this.currentRoom !== 'lobby' ) {
+      this.socket.send( JSON.stringify({ cmd:'leaveRoom', room:this.currentRoom }) ) 
+    }
+
     this.currentRoom = 'lobby'
     this.room.css({ color:'#ccc', background:'#333' })
+    this.room.hide()
     
     this.socket.send( JSON.stringify({ cmd:'listRooms' }) )
   },
@@ -82,18 +90,19 @@ Chat = Gibber.Environment.Chat = {
       this.lobbyElement.hide()
       this.lobby.css({ color:'#ccc', background:'#333' })
     }
+    this.room.show()
 
     if( this.roomElement === null ) {
       this.roomElement = $( '<div>' ).addClass( 'chatroom' )
       this.messages = $( '<ul>')
         .css({
           display:'block',
-          height:'calc(100% - 2.5em - ' +this.column.header.outerHeight()+ 'px)',
+          height:'calc(100% - 5em - ' +this.column.header.outerHeight()+ 'px)',
           width: 'calc(100% - 1em - ' + GE.Layout.resizeHandleSize +'px)',
           margin:0,
           padding:'.5em',
           'box-sizing':'border-box !important',
-          'overflow-y':'scroll',
+          'overflow-y':'auto',
         })
       this.msgPrompt = $( '<span>' )
         .text( 'enter msg : ' )
@@ -103,27 +112,36 @@ Chat = Gibber.Environment.Chat = {
           position:'absolute',
           display:'inline-block',
           width:'6em',
-          height:'2.5em',
-          lineHeight:'2.5em',
+          height:'5em',
+          lineHeight:'5em',
+          background:'#191919',
+          color:'#ccc',
+          paddingLeft:'.5em',
         })
       
-      this.msgField = $( '<input>' ).css({
+      this.msgField = $( '<textarea>' ).css({
         position:'absolute',
-        left:'10em',
+        left:'6em',
         bottom:0,
-        height: '2.5em',
+        height: '5em',
         verticalAlign: 'center',
-        width:'calc(100% - 10em - ' + GE.Layout.resizeHandleSize +'px )', 
+        width:'calc(100% - 6em - ' + GE.Layout.resizeHandleSize +'px )', 
+        background:'#aaa',
+        color:'#333',
+        fontSize:'1em',
       })
-      .on('change', function(e) {
-        Chat.socket.send( JSON.stringify({ cmd:'message', text:this.value, user:GE.Account.nick }) )
-        this.value = '' 
+      .keydown(function(event) {
+        if (event.keyCode == 13) {
+          Chat.socket.send( JSON.stringify({ cmd:'message', text:this.value, user:GE.Account.nick }) )
+          this.value = ''
+          event.preventDefault() 
+        }
       })
 
       this.roomElement.append( this.messages, this.msgPrompt, this.msgField )
       this.column.element.append( this.roomElement )
     }else{
-      this.roomElement.empty()
+      this.roomElement.find('ul').empty()
       this.roomElement.show()
       if( this.lobbyElement !== null ) this.lobbyElement.hide()
     }
@@ -153,20 +171,19 @@ Chat = Gibber.Environment.Chat = {
               .on( 'click', function() { Chat.socket.send( msg ) } )
               .css({ pointer:'hand' })
             
-
-        // var room = $( '<li>' ).text( key + " |  requiresPassword: " + (data.rooms[ key ].password !== null) + " | active user count : " +  data.rooms[ key ].userCount )
-
         roomList.append( link )
       }
       Chat.lobbyElement.append( roomList )
     },
     incomingMessage: function( data ) {
       console.log( 'NEW MESSAGE' )
-      var li = $( '<li>' ).text( data.nick + " : " +  data.incomingMessage )
+      var name = $( '<span>' ).text( data.nick ).addClass( (GE.Account.nick === data.nick ? 'messageFromSelf' : 'messageFromOther' )),
+          li = $( '<li class="message">' )
+            .text(  " : " +  data.incomingMessage )
 
+      li.prepend( name )
       Chat.messages.append( li )
-
-      // alert( data.incomingMessage )
+      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
     },
     roomJoined: function( data ) {
       Chat.moveToRoom( data.roomJoined )

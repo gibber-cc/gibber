@@ -273,3 +273,22 @@ tfoot, thead {
   outline:none;
   height:1.75em;
 }
+
+.message {
+  /* border-bottom:1px solid #444; */
+  margin-bottom:.5em;
+  width:100%;
+}
+.messageFromSelf {
+  padding:0 .5em;
+  color: #ddd;
+  background:#600
+}
+
+.messageFromOther {
+  padding:0 .5em;
+  color:#000;
+  background:#bbb
+}
+
+
