@@ -1,8 +1,8 @@
 (function() {
 
 "use strict"
-// var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
-var SERVER_URL = 'http://127.0.0.1:8080', 
+var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
+//var SERVER_URL = 'http://127.0.0.1:8080', 
     modes = [ 'javascript', 'glsl' ]
 
 var GE = Gibber.Environment = {
@@ -906,7 +906,7 @@ var GE = Gibber.Environment = {
     login: function() {
       $.ajax({
         type:"POST",
-        url:'http://127.0.0.1:8080/login', 
+        url: SERVER_URL + '/login', 
         data:{ username: $("#username").val(), password: $("#password").val() }, 
         dataType:'json'
       })

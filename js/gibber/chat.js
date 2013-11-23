@@ -6,10 +6,11 @@ var GE = Gibber.Environment,
     Layout = GE.Layout,
     chatPort = 20000,
     expr = /[-a-zA-Z0-9.]+(:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))/,
-    socketIPAndPort = expr.exec( window.location.toString() )[0].split(":"),
-    socketString = 'ws://' + socketIPAndPort[0] + ':' + chatPort;
+    socketString = 'ws://gibber.mat.ucsb.edu:20000';
+    //socketIPAndPort = expr.exec( window.location.toString() )[0].split(":"),
+    //socketString = 'ws://' + socketIPAndPort[0] + ':' + chatPort;
 
-Chat = Gibber.Environment.Chat = {
+window.Chat = Gibber.Environment.Chat = {
   socket : null,
   lobbyElement: null,
   roomElement: null,

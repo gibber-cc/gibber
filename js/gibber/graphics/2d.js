@@ -3,11 +3,18 @@
 
   var TwoD = Gibber.Graphics.TwoD = {
     Canvas : function( column ) {
+       var canvas = $( '<canvas>' )[0],
+          ctx = canvas.getContext( '2d' ),
+          GG = Gibber.Graphics,
+          that = ctx,
+          three = null;
+
       if( cnvs !== null ) {
         three = $( '#three' )
+        three.show()
         Gibber.Graphics.assignWidthAndHeight()
-        canvas.width = three.width()
-        canvas.height = three.height()
+        // canvas.width = three.width()
+        // canvas.height = three.height()
         that.top = 0 
         that.bottom = canvas.height
         that.left = 0
@@ -15,12 +22,6 @@
         that.center = { x: canvas.width / 2, y : canvas.height / 2 }
         return cnvs
       }
-
-      var canvas = $( '<canvas>' )[0],
-          ctx = canvas.getContext( '2d' ),
-          GG = Gibber.Graphics,
-          that = ctx,
-          three = null; 
 
       if( Gibber.Graphics.canvas === null ) {
         Gibber.Graphics.init( '2d', column )
@@ -42,9 +43,9 @@
         canvas: canvas,
         texture: tex, 
         remove : function() {
-          $( '#three' ).remove()
-          Gibber.Graphics.canvas = null
-          Gibber.Graphics.ctx = null 
+          $( '#three' ).hide()
+          //Gibber.Graphics.canvas = null
+          //Gibber.Graphics.ctx = null 
           cnvs = null
         },
         _fill : that.fill,

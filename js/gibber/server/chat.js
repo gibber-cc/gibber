@@ -1,10 +1,10 @@
+(function() {
 var ws = require( 'ws' ),
     rooms = {},
     users = {},
     port  = 20000,
     server = new ws.Server({ port: port }),
     handlers = null
-
 
 server.on( 'connection', function( client ) {
   client.ip = client._socket.remoteAddress
@@ -119,6 +119,7 @@ handlers = {
 
   listRooms : function( client, msg ) {
     var response = {}
+    console.log(" LISTING ROOMS ")
     for( var key in rooms ) {
       response[ key ]  = { 
         password: rooms[ key ].password !== null,
@@ -154,3 +155,4 @@ rooms[ 'gibber' ] = {
   clients : [],
   password: null
 }
+})()
