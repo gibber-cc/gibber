@@ -59,6 +59,7 @@ window.Gibber = window.G = {
       })
       
       window.Seq = Gibber.Seq
+      
       window.ScaleSeq = Gibber.ScaleSeq
       window.Rndi = Gibberish.Rndi
       window.Rndf = Gibberish.Rndf      
@@ -429,6 +430,7 @@ window.Gibber = window.G = {
 
       if( from.timescale === 'audio' ) {
         if( from.Name !== 'Amp' ) {
+
           target.object[ target.Name ].mapping = Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
         
           target.object[ target.Name ].mapping.follow = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Follow({ input:from.object.properties[ from.name ] })
@@ -446,10 +448,10 @@ window.Gibber = window.G = {
             target.object[ target.Name ].mapping.follow.input = replacementObject            
             if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )
           }
+          mapping = target.object[ target.Name ].mapping
         }else{
           if( typeof target.object[ target.Name ].mapping === 'undefined') {
             var mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, 0, 1, 0 )   
-          
             if( typeof from.object.track !== 'undefined' ) {
               mapping.follow = from.object.track
               mapping.follow.count++
@@ -785,12 +787,12 @@ window.Gibber = window.G = {
       console.log( this.name + " has been terminated.")
     },
 
-    playNotes: function( notes, durations, repeat ) {
+    play: function( notes, durations, repeat ) {
       if( typeof this.seq === 'undefined' ) {
         this.seq = Seq({ note: notes, durations:durations, target:this })
       }else{
-        this.seq.note = notes
-        this.seq.durations = durations
+        if( notes ) this.seq.note = notes
+        if( durations ) this.seq.durations = durations
       }
       if( repeat ) {
         this.seq.repeat( repeat )
@@ -805,12 +807,12 @@ window.Gibber = window.G = {
       if( this.seq ) this.seq.stop()
     },
     
-    start : function( repeat ) {
-      if( this.seq && ! this.seq.isRunning ) {
-        this.seq.start()
-        if( repeat ) this.seq.repeat( repeat )
-      }
-    },
+    // play : function( repeat ) {
+    //   if( this.seq && ! this.seq.isRunning ) {
+    //     this.seq.start()
+    //     if( repeat ) this.seq.repeat( repeat )
+    //   }
+    // },
   }
 }
 

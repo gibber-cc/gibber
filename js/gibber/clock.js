@@ -42,6 +42,17 @@ var Clock = Gibber.Clock = {
   },
   
   init : function() {
+    Gibberish.Time.clock = function() {
+      $.extend( this, {
+        properties: { rate: 1 },
+        callback : function( rate ) {
+          return rate
+        }
+      })
+      this.init()
+    }
+    Gibberish.Time.clock.prototype = new Gibberish.ugen()
+
     var bpm = 120
     Object.defineProperty(this, 'bpm', {
       get: function() { return bpm },

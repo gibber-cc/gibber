@@ -691,7 +691,7 @@ var GE = Gibber.Environment = {
           width : this.columns[i].width - this.resizeHandleSize, 
           height: columnHeight - this.columns[i].header.outerHeight()
         })
-        console.log( this.columns[i].bodyElement.width() ) 
+        // console.log( this.columns[i].bodyElement.width() ) 
         $( this.columns[ i ].header ).width( this.columns[i].width - this.resizeHandleSize )
         
         if( this.columns[ i ].editor )
