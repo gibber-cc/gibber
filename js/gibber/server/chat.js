@@ -1,13 +1,14 @@
 (function() {
-var ws = require( 'ws' ),
+var /*ws = require( 'ws' ),*/
     rooms = {},
     users = {},
-    port  = 20000,
-    server = new ws.Server({ port: port }),
+    io  = require( 'socket.io' ).listen( global.server ),
+    server = global.server, // new ws.Server({ port: port }),
     handlers = null
 
-server.on( 'connection', function( client ) {
-  client.ip = client._socket.remoteAddress
+//server.on( 'connection', function( client ) {
+io.sockets.on( 'connection', function( client ) {
+  client.ip = client.handshake.address.address
   console.log( 'CONNECTION', client.ip )
   users[ client.ip ] = client
 
@@ -21,14 +22,14 @@ server.on( 'connection', function( client ) {
     handlers[ msg.cmd ]( client, msg )
   })
 
-  client.on( 'close', function() {
-    // console.log( "ROOM", client.room, rooms[ client.room ] )
-    var idx = rooms[ client.room ].clients.indexOf( client )
-    if( client.room ) rooms[ client.room ].clients.splice( idx , 1 )
+  client.on( 'disconnect', function() {
+    if( rooms[ client.room ]  ) {
+      var idx = rooms[ client.room ].clients.indexOf( client )
+      if( client.room ) rooms[ client.room ].clients.splice( idx , 1 )
+    }
     delete users[ client.ip ]
   })
 })
-
 
 
 handlers = {

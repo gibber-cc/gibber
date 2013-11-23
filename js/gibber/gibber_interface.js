@@ -24,14 +24,13 @@
       if( typeof column === 'undefined' ) {
         column = Gibber.Environment.Layout.addColumn({ type:'code' })
       }
+      $( column.bodyElement ).find( '.CodeMirror' ).remove()
       
-      $( column.editorElement ).find( '.CodeMirror' ).remove()
-      
-      var panel = new Interface.Panel({ container: column.editorElement })
+      var panel = new Interface.Panel({ container: column.bodyElement })
       $( panel.canvas ).css({
         position: 'relative',
-        width: $( column.editorElement ).width(),
-        height: $( column.editorElement ).height()
+        width: $( column.bodyElement ).width(),
+        height: $( column.bodyElement ).height()
       })
       
       this.panel = panel

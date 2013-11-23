@@ -2,15 +2,9 @@
 
 "use strict"
 
-var GE = Gibber.Environment,
-    Layout = GE.Layout,
-    chatPort = 20000,
-    expr = /[-a-zA-Z0-9.]+(:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))/,
-    socketString = 'ws://gibber.mat.ucsb.edu:20000';
-    //socketIPAndPort = expr.exec( window.location.toString() )[0].split(":"),
-    //socketString = 'ws://' + socketIPAndPort[0] + ':' + chatPort;
+var GE = Gibber.Environment, Chat;
 
-window.Chat = Gibber.Environment.Chat = {
+Chat = window.Chat = Gibber.Environment.Chat = {
   socket : null,
   lobbyElement: null,
   roomElement: null,
@@ -37,27 +31,32 @@ window.Chat = Gibber.Environment.Chat = {
     this.lobbyRoom.append( this.lobby, this.room )
 
     this.column.header.append( this.lobbyRoom )
+    $script( 'external/socket.io.min', function() {
+      console.log( 'SOCKET IO LOADED' )
+      Chat.socket = io.connect('http://gibber.mat.ucsb.edu');
 
-    this.socket = new WebSocket( socketString );
+      // this.socket = new WebSocket( socketString );
 
-    this.socket.onmessage = function( _data ) {
-		  var data = JSON.parse( _data.data )
-      console.log( _data )
-			console.log( data, data.msg )
-		  
-			if( data.msg ) {
-				if( Chat.handlers[ data.msg ] ) {
-					Chat.handlers[ data.msg ]( data )
-				}else{
-					console.error( 'Cannot process message ' + data.msg + ' from server' )
-				}
-			}
-    }
-    
-		this.socket.onopen = function() {
-      Chat.moveToLobby()
-      Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
-		}
+      Chat.socket.on( 'message', function( data ) {
+        console.log( data )
+        data = JSON.parse( data )
+        // console.log( _data )
+        // console.log( data, data.msg )
+        console.log( data.msg, typeof data.msg, typeof data ) 
+        if( data.msg ) {
+          if( Chat.handlers[ data.msg ] ) {
+            Chat.handlers[ data.msg ]( data )
+          }else{
+            console.error( 'Cannot process message ' + data.msg + ' from server' )
+          }
+        }
+      })
+      
+      Chat.socket.on( 'connect', function() {
+        Chat.moveToLobby()
+        Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+      })
+    })
   },
 
   moveToLobby : function () {

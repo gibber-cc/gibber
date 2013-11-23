@@ -1,3 +1,5 @@
+global = {}
+
 var request         = require( 'request' ),
     connect         = require( 'connect' ),
     url             = require( 'url' ),
@@ -5,14 +7,25 @@ var request         = require( 'request' ),
     passport        = require( 'passport' ),
     flash           = require( 'connect-flash' ),
     express         = require( 'express' ),
+    app             = express(),
+    server          = require( 'http' ).createServer( app ),
     util            = require( 'util' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
     esUrl           = 'http://localhost:9200/gibber/_search',
     webServerPort   = 80,
-    serverRoot      = __dirname + "/../../../";
+    serverRoot      = __dirname + "/../../../",
+    chat            = null;
 
+global.server = server
+chat = require( './chat.js' )
+// io.sockets.on('connection', function (socket) {
+//   socket.emit('news', { hello: 'world' });
+//   socket.on('my other event', function (data) {
+//     console.log(data);
+//   });
+// });
 var users = [] 
 
 function findById(id, fn) {
@@ -110,7 +123,7 @@ function escapeString( string ) {
   });
 }
   
-var app = express();
+// var app = express();
 
 app.configure( function() {
   app.set('views', serverRoot + '/snippets')
@@ -344,7 +357,7 @@ app.get('/logout', function(req, res, next){
 //   res.send({ msg:'published.' })
 // })
 
-app.listen( webServerPort );
+server.listen( webServerPort );
 
 
 // Simple route middleware to ensure user is authenticated.

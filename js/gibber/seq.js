@@ -91,10 +91,11 @@
       obj.durations = $.isArray( arguments[1] ) ? arguments[1] : [ arguments[1] ]
       obj.target = arguments[2]
     }
+    console.log( obj )
+
+    seq = new Gibberish.Sequencer2( obj )
     
-    seq = new Gibberish.Sequencer( obj )
-    
-    if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )
+    // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )
     
     $.extend( seq, {
       replaceWith: function( replacement ) { this.kill() },
@@ -106,10 +107,11 @@
       }
     })
     
-    var nextTime = seq.nextTime
+    var nextTime = seq.nextTime,
+        oldNextTime = seq.__lookupSetter__('nextTime')
     Object.defineProperty( seq, 'nextTime', {
       get: function() { return nextTime },
-      set: function(v) { nextTime = Gibber.Clock.time( v ) }
+      set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
     })
     
     var offset = seq.offset
