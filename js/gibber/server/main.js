@@ -1,4 +1,4 @@
-global = {}
+gibber = {}
 
 var request         = require( 'request' ),
     connect         = require( 'connect' ),
@@ -7,6 +7,7 @@ var request         = require( 'request' ),
     passport        = require( 'passport' ),
     flash           = require( 'connect-flash' ),
     express         = require( 'express' ),
+    sharejs         = require( 'share' ).server,
     app             = express(),
     server          = require( 'http' ).createServer( app ),
     util            = require( 'util' ),
@@ -16,16 +17,18 @@ var request         = require( 'request' ),
     esUrl           = 'http://localhost:9200/gibber/_search',
     webServerPort   = 80,
     serverRoot      = __dirname + "/../../../",
+    // livedb          = require( 'livedb' ),
+    // livedbMongo     = require( 'livedb-mongo'),
+    // browserChannel  = require( 'browserchannel' ).server,
+    // Duplex          = require('stream').Duplex,
+    // shareCodeMirror = require( 'share-codemirror' ),
     chat            = null;
 
-global.server = server
+gibber.server = server
 chat = require( './chat.js' )
-// io.sockets.on('connection', function (socket) {
-//   socket.emit('news', { hello: 'world' });
-//   socket.on('my other event', function (data) {
-//     console.log(data);
-//   });
-// });
+
+sharejs.attach( app, { db: {type:'none' }, browserChannel: { cors:'*' } } )
+
 var users = [] 
 
 function findById(id, fn) {
@@ -96,8 +99,8 @@ passport.use(new LocalStrategy(
 var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Origin', ["127.0.0.1:3000", "127.0.0.1:8080"]);
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-
+   // res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept')
     next();
 }
 
@@ -138,11 +141,40 @@ app.configure( function() {
   app.use( flash() )
   app.use( passport.initialize() )
   app.use( passport.session() )
-  app.use( allowCrossDomain )
+  // app.use( allowCrossDomain )
   app.use( app.router )
   app.use( checkForREST )
+  
+  // app.use( browserChannel( { webserver: app }, function ( client ) {
+  //   var stream = new Duplex({objectMode: true});
+  //   stream._write = function (chunk, encoding, callback) {
+  //     if (client.state !== 'closed') {
+  //       client.send(chunk);
+  //     }
+  //     callback();
+  //   };
+  //   stream._read = function () {
+  //   };
+  //   stream.headers = client.headers;
+  //   stream.remoteAddress = stream.address;
+  //   client.on('message', function (data) {
+  //     stream.push(data);
+  //   });
+  //   stream.on('error', function (msg) {
+  //     client.stop();
+  //   });
+  //   client.on('close', function (reason) {
+  //     stream.emit('close');
+  //     stream.emit('end');
+  //     stream.end();
+  //   });
+  //   return share.listen(stream);
+  // }));
+
   app.use( express.static( serverRoot ) )
 })
+
+
   
 app.get( '/', function(req, res){
   fs.readFile(serverRoot + "index.htm", function (err, data) {
@@ -176,11 +208,11 @@ app.get( '/loginStatus', function( req, res ) {
   }
 })
 
-app.post( '/test', function(req, res, next){
-  // console.log(" TESTING  ", req.user, req.isAuthenticated() )
-  next()
-  //res.render( 'login_start', { user: req.user, message: req.flash('error') });
-})
+// app.post( '/test', function(req, res, next){
+//   // console.log(" TESTING  ", req.user, req.isAuthenticated() )
+//   next()
+//   //res.render( 'login_start', { user: req.user, message: req.flash('error') });
+// })
 
 app.post( '/retrieve', function( req, res, next ) {
   // console.log( req.body )

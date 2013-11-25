@@ -8,6 +8,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
   socket : null,
   lobbyElement: null,
   roomElement: null,
+  currentRoom: 'lobby',
   open : function() {
     if( GE.Account.nick === null ) {
       GE.Message.post( 'You must log in before chatting. Click the link in the upper right corner of the window to login (and create an account if necessary).' )
@@ -28,7 +29,12 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       .text( 'room' )
       .on( 'click', function() { Chat.moveToRoom( 'test' ) } )
 
-    this.lobbyRoom.append( this.lobby, this.room )
+    this.addButton = $('<button>' )
+      .text( 'create room' )
+      .on( 'click', Chat.createRoom )
+      .css({right:0 })
+
+    this.lobbyRoom.append( this.lobby, this.room, this.addButton )
 
     this.column.header.append( this.lobbyRoom )
     $script( 'external/socket.io.min', function() {
@@ -38,11 +44,8 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       // this.socket = new WebSocket( socketString );
 
       Chat.socket.on( 'message', function( data ) {
-        console.log( data )
         data = JSON.parse( data )
-        // console.log( _data )
-        // console.log( data, data.msg )
-        console.log( data.msg, typeof data.msg, typeof data ) 
+        // console.log( data )
         if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
@@ -53,6 +56,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       })
       
       Chat.socket.on( 'connect', function() {
+        console.log( "CONNECTION SUCCESSFUL" )
         Chat.moveToLobby()
         Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
       })
@@ -81,6 +85,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.currentRoom = 'lobby'
     this.room.css({ color:'#ccc', background:'#333' })
     this.room.hide()
+    this.addButton.show()
     
     this.socket.send( JSON.stringify({ cmd:'listRooms' }) )
   },
@@ -91,6 +96,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       this.lobby.css({ color:'#ccc', background:'#333' })
     }
     this.room.show()
+    this.addButton.hide()
 
     if( this.roomElement === null ) {
       this.roomElement = $( '<div>' ).addClass( 'chatroom' )
@@ -153,7 +159,16 @@ Chat = window.Chat = Gibber.Environment.Chat = {
 
     this.currentRoom = roomName
   },
+  
+  createRoom : function() {
+    var name = window.prompt( "Enter a name for the chatroom." ),
+        msg  = {}
 
+    msg.name = name
+    msg.password = null
+    msg.cmd = 'createRoom'
+    Chat.socket.send( JSON.stringify( msg ) )
+  },
   handlers : {
     messageSent : function( data ) {
       /* msg sent successfully, do nothing for now */
@@ -162,22 +177,27 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       /* successfully registered nick, do nothing for now */
     },
     listRooms : function( data ) {
-			console.log("ROOMS", data )
-      var roomList = $( '<ul>' )
+      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })
       for( var key in data.rooms ) {
         var msg = JSON.stringify( { cmd:'joinRoom', room:key } ),
-            lock = data.rooms[ key ].password !== null ? " - password" : " - open",
+            lock = data.rooms[ key ].password ? " - password required" : " - open",
             link = $( '<span>').text( key + "  " + lock )
               .on( 'click', function() { Chat.socket.send( msg ) } )
-              .css({ pointer:'hand' })
+              .css({ pointer:'hand' }),
+            li = $( '<li>').append( link )
             
-        roomList.append( link )
+        roomList.append( li )
       }
       Chat.lobbyElement.append( roomList )
     },
     incomingMessage: function( data ) {
-      console.log( 'NEW MESSAGE' )
-      var name = $( '<span>' ).text( data.nick ).addClass( (GE.Account.nick === data.nick ? 'messageFromSelf' : 'messageFromOther' )),
+      var name = $( '<span>' )
+            .text( data.nick )
+            .addClass( (GE.Account.nick === data.nick ? 'messageFromSelf' : 'messageFromOther' ))
+            .on( 'click', function() {
+              GE.Share.promptToShareWith( data.nick )
+            })
+            .css({ cursor:'pointer' }),
           li = $( '<li class="message">' )
             .text(  " : " +  data.incomingMessage )
 
@@ -185,8 +205,51 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       Chat.messages.append( li )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
     },
+    roomCreated: function( data ) { // response for when the user creates a room...
+
+    },
+    roomAdded : function( data ) { // response for when any user creates a room...
+      if( Chat.currentRoom === 'lobby' ) { 
+        Chat.lobbyElement.empty()
+        console.log( 'ROOM ADDED AND LIST RE-LOADED' )
+        Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
+      }
+    },
+    roomDeleted : function( data ) {
+      if( Chat.currentRoom === 'lobby' ) { 
+        Chat.lobbyElement.empty()
+        console.log( 'ROOM REMOVED AND LIST LOADED ' )
+        Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
+      }
+    },
     roomJoined: function( data ) {
       Chat.moveToRoom( data.roomJoined )
+    },
+    collaborationRequest: function( data ) {
+      var div = $('<div>'),
+          msg = null,
+          h3  = $('<h3>').text( data.from + ' would like to collaboratively edit code with you. Do you accept?' ),
+          radioY = $('<input type="radio" name="yesorno" value="Yes">Yes</input>'),
+          radioN = $('<input type="radio" name="yesorno" value="No">No</input>'),
+          submit = $('<button>')
+            .text('submit')
+            .on( 'click', function() {
+              var val =  $('input[type=radio]:checked').val()
+              Chat.socket.send( JSON.stringify({ cmd:'collaborationResponse', response:val==='Yes', to:data.from }) )
+              msg.remove()
+            })
+
+      div.append(h3, radioY, radioN, submit )
+
+      msg =  GE.Message.postHTML( div )
+    },
+    collaborationResponse: function( data ) {
+      GE.Share.collaborationResponse({ from: data.from, response: data.response })
+    },
+    shareReady : function( data ) {
+      var column = GE.Layout.addColumn({ type:'code' })
+
+      GE.Share.openExistingDoc( data.shareName, column )
     },
   },
 }

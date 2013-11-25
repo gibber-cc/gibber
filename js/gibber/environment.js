@@ -21,6 +21,7 @@ var GE = Gibber.Environment = {
                 'external/mousetrap',
                 'gibber/help',
                 'gibber/chat',
+                'gibber/share',
                 ], function() {
                   
         GE.Keymap.init()
@@ -33,6 +34,7 @@ var GE = Gibber.Environment = {
         Gibber.proxy( window )
         GE.Console.init()
         GE.Welcome.init()
+        GE.Share.open()
         $script( 'gibber/keys')
       });
     })
@@ -455,7 +457,7 @@ var GE = Gibber.Environment = {
         if( col !== null ) lastColumnWidth = col.element.width()
       }    
 
-      var columnWidth = options.width ? options.width : lastColumnWidth || this.defaultColumnSize,
+      var columnWidth = options.width ? options.width : /*lastColumnWidth ||*/ this.defaultColumnSize,
           col = {
             element:        $( '<div class="column">' ),
             header:         $( '<div class="columnHeader">' ),
@@ -533,6 +535,14 @@ var GE = Gibber.Environment = {
           autoCloseBrackets: true,
           matchBrackets: true,
           value:[
+            "/*",
+            "Giblet #1 - by thecharlie",
+            "In this sketch, the mouse position drives the",
+            "pitch of drums, the carrier to modulation",
+            "ratio of FM synthesis, and the feedback and",
+            "time of a delay.",
+            "*/",
+            "",
             "a = Drums('x*o*x*o-')",
             "a.pitch = Mouse.Y",
             "",
@@ -540,7 +550,7 @@ var GE = Gibber.Environment = {
             "b.index = a.Amp",
             "b.cmRatio = Mouse.X",
             "",
-            "b.playNotes( ",
+            "b.play( ",
             "  ['c2','c2','c2','c3','c4'].random(),",
             "  [1/4,1/8,1/16].random(1/16,2) ",
             ")",
@@ -730,7 +740,35 @@ var GE = Gibber.Environment = {
       msgDiv.append( $('<p>').text( msgText ).css({ marginTop:'.5em' }) )
       
       $( 'body' ).append( msgDiv )
-    }
+
+      return msgDiv // return so it can be removed if needed
+    },
+    postHTML : function( html ) {
+      var msgDiv = $( '<div>' )
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:200,
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em',
+          zIndex:1000
+        })
+        .addClass( 'message' )
+        .append( $( '<button>' )
+          .on('click', function(e) { $( msgDiv ).remove(); })
+          .html('&#10005;')
+        )
+      
+      msgDiv.append( html  )
+      
+      $( 'body' ).append( msgDiv )
+      
+      return msgDiv
+    },
   },
   
   Menu : {
@@ -876,7 +914,7 @@ var GE = Gibber.Environment = {
             .on( 'click', function(e) {
               $.ajax({
                 type:"GET",
-                url:'http://127.0.0.1:3000/logout', 
+                url: SERVER_URL + '/logout', 
                 dataType:'json'
               }).done( function( data ) {
                 $( '.login' ).empty()

@@ -2,8 +2,8 @@
 var /*ws = require( 'ws' ),*/
     rooms = {},
     users = {},
-    io  = require( 'socket.io' ).listen( global.server ),
-    server = global.server, // new ws.Server({ port: port }),
+    io  = require( 'socket.io' ).listen( gibber.server ),
+    server = gibber.server, // new ws.Server({ port: port }),
     handlers = null
 
 //server.on( 'connection', function( client ) {
@@ -31,6 +31,13 @@ io.sockets.on( 'connection', function( client ) {
   })
 })
 
+io.set('log level', 1)
+
+gibber.sendall = function( msg ) {
+  for( var ip in users ) {
+    users[ ip ].send( msg )
+  }
+}
 
 handlers = {
   register : function( client, msg ) {
@@ -40,7 +47,20 @@ handlers = {
 
     client.send( JSON.stringify( msg ) )
   },
-
+  heartbeat : function() {
+    var time = Date.now()
+    for( var room in rooms ) {
+      if( room !== 'gibber' ) {
+        var _room = rooms[ room ]
+        if( time - _room.timestamp > 600000 && _room.clients.length === 0 ) {
+          delete rooms[ room ]
+          var msg = { msg:'roomDeleted', room:room }
+          gibber.sendall( msg )
+        }
+      }
+     setTimeout( handlers.heartbeat, 10000 ) 
+    }
+  },    
   joinRoom : function( client, msg ) {
     var response = null
 
@@ -87,6 +107,7 @@ handlers = {
     var room = rooms[ client.room ], response = null, _msg = null
     
     if( typeof room !== 'undefined' ) {
+      room.timestamp = Date.now() // update timestamp so room isn't killed due to inactivity
       _msg = JSON.stringify({ msg:'incomingMessage', incomingMessage:msg.text, nick:client.nick }) 
       for( var i = 0; i < room.clients.length; i++ ){
         var recipient = room.clients[ i ]
@@ -101,21 +122,63 @@ handlers = {
 
     client.send( JSON.stringify( response ) )
   },
+  collaborationRequest: function( client, msg ) {
+    var from = msg.from, 
+        to = msg.to,
+        room = rooms[ client.room ]
 
+    for( var i = 0; i < room.clients.length; i++ ){
+      var _client = room.clients[ i ]
+      if( _client.nick === to ) {
+        console.log( "FOUND COLLABORATION REQUEST" )
+        _client.send( JSON.stringify( { msg:'collaborationRequest', from:client.nick } ) )
+        break;
+      }
+    }
+  },
+  collaborationResponse: function( client, msg ) {
+    var to = msg.to, room = rooms[ client.room ]
+
+    for( var i = 0; i < room.clients.length; i++ ){
+      var _client = room.clients[ i ]
+      if( _client.nick === to ) {
+        _client.send( JSON.stringify({ msg:'collaborationResponse', from:client.nick, response:msg.response }) )
+        break;
+      }
+    } 
+  },
+  shareCreated: function( client, msg ) {
+    // GE.Share.openDoc( msg.shareName )
+    var to = msg.to, room = rooms[ client.room ]
+    for( var i = 0; i < room.clients.length; i++ ){
+      var _client = room.clients[ i ]
+      if( _client.nick === to ) {
+        _client.send( JSON.stringify({ msg:'shareReady', from:client.nick, shareName:msg.shareName }) )
+        break;
+      }
+    } 
+  },
   createRoom : function( client, msg ) {
-    var response = null, room = null
+    var response = null, room = null, success = false
 
     if( typeof rooms[ msg.name ] === 'undefined' ) {
       rooms[ msg.name ] = {
         clients : [],
-        password: msg.password || null
+        password: msg.password || null,
+        timestamp: Date.now()
       }
+      success = true
       response = { msg:'roomCreated', roomCreated: msg.room } 
     }else{
       response = { msg:'roomCreated', roomCreated: null, error:'ERROR: A room with that name already exists' }
     }
 
     client.send( JSON.stringify( response ) )
+    
+    if( success ) {
+      var msg = { msg:'roomAdded', roomAdded:msg.room }
+      gibber.sendall( JSON.stringify( msg ) )
+    }
   },
 
   listRooms : function( client, msg ) {
@@ -156,4 +219,6 @@ rooms[ 'gibber' ] = {
   clients : [],
   password: null
 }
+
+handlers.heartbeat()
 })()
