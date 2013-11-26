@@ -60,7 +60,11 @@ for( var key in types) {
     var type = key,
         shape = types[ key ]
     var constructor = function() {
-      if( Gibber.Graphics.canvas === null) Gibber.Graphics.init()
+      if( Gibber.Graphics.canvas === null){
+        Gibber.Graphics.init()
+      }else if( Gibber.Graphics.mode === '2d' ) {
+        Gibber.Graphics.use( '3d' )
+      }
       
       var args = processArgs( arguments, type, shape )
       console.log( 'ARGS', args )      

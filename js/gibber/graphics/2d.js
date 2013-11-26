@@ -8,8 +8,10 @@
           GG = Gibber.Graphics,
           that = ctx,
           three = null;
+      
+      Gibber.Graphics.clear()
 
-      if( cnvs !== null ) {
+      if( cnvs !== null && Gibber.Graphics.mode === '2d' ) {
         three = $( '#three' )
         three.show()
         Gibber.Graphics.assignWidthAndHeight()
@@ -25,6 +27,8 @@
 
       if( Gibber.Graphics.canvas === null ) {
         Gibber.Graphics.init( '2d', column )
+      }else if( Gibber.Graphics.mode === '3d' ) {
+        Gibber.Graphics.use( '2d' )
       }
 
       three = $( '#three' )
@@ -220,6 +224,14 @@
             useScreenCoordinates:true
           })
         ),
+        hide: function() {
+          Gibber.Graphics.scene.remove( that.sprite )
+          Gibber.Graphics.graph.splice( that, 1 )
+        },
+        show : function() {
+          Gibber.Graphics.scene.add( that.sprite )
+          Gibber.Graphics.graph.push( that )
+        }
       })
 
       that.texture.needsUpdate = true 

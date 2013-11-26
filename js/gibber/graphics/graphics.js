@@ -97,8 +97,6 @@ var Graphics = Gibber.Graphics = {
     this.use( mode ); // creates camera and adds lights	
 		this.graph = [];
 	
-		this.scene.add( this.camera );
-    
     this.camera.updateProjectionMatrix();
     if( this.mode === '3d' ) {
       this.camera.position.z = 250;
@@ -112,19 +110,29 @@ var Graphics = Gibber.Graphics = {
   },
   
   use : function( mode ) {
+    $( '#three' ).show()
+
     if( mode === '2d' ) {
       console.log("Now drawing in 2d.")
+      if( this.mode === '3d' ) {
+        this.scene.remove( this.camera )
+        this.scene.remove( this.pointLight )
+        this.scene.remove( this.pointLight2 )
+        this.scene.add( this.ambientLight )
+      }
+
       this.camera = new THREE.OrthographicCamera( this.width / - 2, this.width / 2, this.height / 2, this.height / - 2, 1, 1.00000001 );
       this.camera.position.z = 1
       this.resolution = 1
       this.renderer.setSize( this.width, this.height )
 
-      this.scene.remove( this.pointLight )
-      this.scene.remove( this.pointLight2 )
-      this.scene.add( this.ambientLight )
       this.mode = '2d'
     }else{
       console.log("Now drawing in 3d.")
+      if( this.mode === '2d' ) {
+        Gibber.Graphics.canvas2d.hide()
+        this.scene.remove( this.camera )
+      }
 		  var VIEW_ANGLE = 45,
 		  	  ASPECT = this.width / this.height,
 		  	  NEAR = 0.1,
@@ -136,12 +144,26 @@ var Graphics = Gibber.Graphics = {
 		    NEAR,
 		    FAR
 		  )
+      this.scene.add( this.camera );
+      this.camera.updateProjectionMatrix();
       this.scene.add( this.pointLight );
       this.scene.add( this.pointLight2 );
       this.scene.remove( this.ambientLight );
+
+      this.camera.position.z = 250;
+      this.camera.lookAt( this.scene.position )
+
       this.mode = '3d'
     }
   }, 
+  clear : function() {
+    if( this.running ) {
+      for( var i = 0; i < this.graph.length; i++ ) {
+        this.graph[ i ].remove( true )
+      }
+      this.graph.length = 0
+    }
+  },
   render : function() {
    
     if( this.running ) {
