@@ -285,11 +285,32 @@ app.get( '/welcome', function( req, res, next ) {
 app.get( '/browser', function( req, res, next ) {
   request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
     // console.log( (JSON.parse(b)).rows )
+    var _audio = [], _3d = [], _2d = [], _misc=[], demoRows = JSON.parse( b ).rows
+
+    for( var i =0; i < demoRows.length; i++ ) {
+      var cat = 'misc', row = demoRows[ i ]
+      if( row.key.split('*').length > 0 ) {
+        cat = row.key.split('*')[1]
+        switch( cat ) {
+          case '2d' :
+            _2d.push( row ); break;
+          case '3d' : _3d.push( row ); break;
+          case 'audio' : _audio.push( row ); break;
+          default:
+            _misc.push( row ); break;
+        }
+      }
+    }
+
     if( req.user ) {
       request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
         res.render( 'browser', {
           user: req.user,
-          demos:(JSON.parse(b)).rows, 
+          demos:(JSON.parse(b)).rows,
+          audio:_audio,
+          _2d:_2d,
+          _3d:_3d,
+          misc:_misc,
           userfiles:(JSON.parse(_b)).rows,
           message: req.flash('error')
         });
@@ -298,6 +319,10 @@ app.get( '/browser', function( req, res, next ) {
       res.render( 'browser', {
         user: req.user,
         demos:(JSON.parse(b)).rows, 
+        audio:_audio,
+        _2d:_2d,
+        _3d:_3d,
+        misc:_misc,
         userfiles:[],
         message: req.flash('error')
       });
