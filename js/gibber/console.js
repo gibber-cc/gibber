@@ -13,7 +13,8 @@
     lastText : null,
     lastSpan : null,
     duplicateCount : 1,
-    
+    isOn: true,
+
     flash: function() {
       tfoot.css({
         background:'black',
@@ -22,14 +23,17 @@
       setTimeout( function() { tfoot.css({ background: 'transparent' }) }, 25 )
     },
     init : function() {
-      // this.div = $('<div>')
+      this.div = $('<div>')
       //window._console = this.parent      
       // console = this;
+      this.on()
     },
     off : function() {
-      window.console = parent
+      this.isOn = false
+      window.console = this.parent
     },
     on : function() {
+      this.isOn = true
       window.console = this
     },
     log : function() {

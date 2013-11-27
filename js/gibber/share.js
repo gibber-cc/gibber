@@ -50,9 +50,7 @@ Share = Gibber.Environment.Share = {
     var div = $('<div>'),
         hdr = $('<h3>').text( 'User : ' + nick ).css({ display:'inline' }),
         info = $('<button>').text( 'Display User Info' ).css({ marginLeft:'2em' }),
-        columns = $('<select>')
-          .append('<option value=0>0</option>')
-          .append('<option value=1>1</option>'),
+        columns = $('<select>'),
         collaborate = $('<span>').text( 'Collaborate on Column ID#: ' ),
         shareBtn = $('<button>')
           .text( 'Share' )
@@ -61,6 +59,13 @@ Share = Gibber.Environment.Share = {
             $( div ).append( $('<h4>').text( 'wating for approval from ' + nick + '...' ) )
           })
     
+
+    for( var i = 0; i < GE.Layout.columns.length; i++ ) {
+      var col = GE.Layout.columns[ i ]
+      if( col && col.isCodeColumn ) {
+        columns .append('<option value='+ col.id + '>' + col.id + '</option>')
+      }
+    }
     Share.prompt = div
     div.append( hdr, info, $('<br>'), $('<br>'), collaborate, columns, shareBtn )
 

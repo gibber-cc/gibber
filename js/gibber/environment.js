@@ -398,6 +398,8 @@ var GE = Gibber.Environment = {
           fill:'#333',
           stroke:'#999'
       }))
+
+      window.Layout = this
     },
         
     emsToPixels : function( ems, element ) {
@@ -512,7 +514,7 @@ var GE = Gibber.Environment = {
       }else{
         col.header
           .append( col.close )
-          .append( $( '<span>' ).html( '&nbsp;' + options.header ) )
+          .append( $( '<span>' ).html( '&nbsp;' + (options.header || '') ) )
       }
       
       col.element.append( col.header, col.resizeHandle )

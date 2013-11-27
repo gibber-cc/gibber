@@ -196,7 +196,7 @@ app.get( '/account', ensureAuthenticated, function(req, res){
 })
 
 app.get( '/login', function(req, res){
-  console.log(" LOGIN?  ")
+  // console.log(" LOGIN?  ")
   res.render( 'login_start', { user: req.user, message: req.flash('error') });
 })
 
@@ -219,7 +219,7 @@ app.post( '/retrieve', function( req, res, next ) {
   var suffix = req.body.address.replace(/\//g, '%2F')
   // console.log(suffix)
   request( 'http://localhost:5984/gibber/' + suffix, function(e,r,b) {
-    console.log( b )
+    // console.log( b )
     res.send( b )
   })
 })
@@ -252,7 +252,7 @@ app.post( '/publish', function( req, res, next ) {
       if( error ) { 
         console.log( error ) 
       } else { 
-        console.log( body )
+        // console.log( body )
         res.send({ url: req.user.username + '/publications/' + req.body.name })
       }
     }
@@ -269,7 +269,7 @@ app.post( '/createNewUser', function( req, res, next ) {
       } else { 
         res.send({ msg:'User account ' + req.body._id + ' created' })
           
-        console.log("USER MADE")
+        // console.log("USER MADE")
       }
     }
   )

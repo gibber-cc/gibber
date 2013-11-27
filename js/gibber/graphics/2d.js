@@ -8,21 +8,14 @@
           GG = Gibber.Graphics,
           that = ctx,
           three = null;
-      
-      Gibber.Graphics.clear()
 
-      if( cnvs !== null && Gibber.Graphics.mode === '2d' ) {
-        three = $( '#three' )
-        three.show()
-        Gibber.Graphics.assignWidthAndHeight()
-        // canvas.width = three.width()
-        // canvas.height = three.height()
-        that.top = 0 
-        that.bottom = canvas.height
-        that.left = 0
-        that.right = canvas.width
-        that.center = { x: canvas.width / 2, y : canvas.height / 2 }
-        return cnvs
+      Gibber.Graphics.clear()
+      console.log("2D", cnvs)
+      if( cnvs !== null ) {
+        cnvs.sprite.remove()
+        try{
+          Gibber.Graphics.scene.remove( cnvs.sprite )
+        }catch(e){ console.log("CANNOT REMOVE SPRITE") }
       }
 
       if( Gibber.Graphics.canvas === null ) {
@@ -32,6 +25,7 @@
       }
 
       three = $( '#three' )
+      three.show()
       canvas.width = three.width()
       canvas.height = three.height()
       
@@ -50,7 +44,7 @@
           $( '#three' ).hide()
           //Gibber.Graphics.canvas = null
           //Gibber.Graphics.ctx = null 
-          cnvs = null
+          //cnvs = null
         },
         _fill : that.fill,
         _stroke : that.stroke,
