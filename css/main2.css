@@ -2,7 +2,12 @@ body {
   color: #ccc;
 	font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
   background: -webkit-linear-gradient(top, rgb(0,0,0) 0%, rgb(60,60,60) 100%);
+  background: linear-gradient(to bottom, rgb(0, 0, 0), rgb(60,60,60));
   margin: 0;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
 }
 
@@ -83,6 +88,7 @@ tfoot tr { display:block; width:100% }
 }
 
 #mainHeader { 
+  -moz-box-sizing: border-box !important;
   box-sizing: border-box !important; 
   margin:0; 
   position:fixed !important;
@@ -141,6 +147,7 @@ tfoot, thead {
   padding: 0 1em 0 1em;
   overflow-y:scroll;
   overflow-x:hidden;
+ -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
 }
 #welcome ul li {
@@ -185,6 +192,7 @@ tfoot, thead {
 }
 
 .columnHeader {
+ -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
   display: inline-block;
   width:100%;
@@ -213,6 +221,7 @@ tfoot, thead {
 }
 
 .resizeHandle {
+ -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
   height:100%;
   background-color:transparent;
@@ -247,7 +256,7 @@ tfoot, thead {
   margin:0 0 0 .1em;
   border:0;
   font-size:1em;
-  cursor:hand;
+  cursor:pointer;
 }
 
 .addColumn {
