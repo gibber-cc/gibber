@@ -2,11 +2,31 @@
     <input style='border:0; margin-left:0; width:80%' id='search_field'>
     <button style='min-width:3em' id='search_button'>Search</button>
     <h2>Demos</h2>
+    <h3>Audio</h3>
     <ul>
-    <% for(var i=0; i<demos.length; i++) { %>
-    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- demos[i].id %>')"><%- demos[i].id.split('/')[2] %></a></li>
+    <% for(var i=0; i<audio.length; i++) { %>
+    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- audio[i].id %>')"><%- audio[i].id.split('/')[2].split('*')[0]%></a></li>
     <% } %>
     </ul>
+    <h3>2d Drawing</h3>
+    <ul>
+    <% for(var i=0; i<_2d.length; i++) { %>
+    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- _2d[i].id %>')"><%- _2d[i].id.split('/')[2].split('*')[0]%></a></li>
+    <% } %>
+    </ul>
+    <h3>3D Scenes</h3>
+    <ul>
+    <% for(var i=0; i<_3d.length; i++) { %>
+    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- _3d[i].id %>')"><%- _3d[i].id.split('/')[2].split('*')[0]%></a></li>
+    <% } %>
+    </ul>
+    <h3>Miscellaneous</h3>
+    <ul>
+    <% for(var i=0; i<misc.length; i++) { %>
+    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- misc[i].id %>')"><%- misc[i].id.split('/')[2].split('*')[0]%></a></li>
+    <% } %>
+    </ul>
+
     <% if( userfiles.length > 0 ) { %>
       <h2>Your Files</h2>
       <ul>

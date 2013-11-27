@@ -3,30 +3,29 @@
 
   var TwoD = Gibber.Graphics.TwoD = {
     Canvas : function( column ) {
-      if( cnvs !== null ) {
-        three = $( '#three' )
-        Gibber.Graphics.assignWidthAndHeight()
-        canvas.width = three.width()
-        canvas.height = three.height()
-        that.top = 0 
-        that.bottom = canvas.height
-        that.left = 0
-        that.right = canvas.width
-        that.center = { x: canvas.width / 2, y : canvas.height / 2 }
-        return cnvs
-      }
-
-      var canvas = $( '<canvas>' )[0],
+       var canvas = $( '<canvas>' )[0],
           ctx = canvas.getContext( '2d' ),
           GG = Gibber.Graphics,
           that = ctx,
-          three = null; 
+          three = null;
+
+      Gibber.Graphics.clear()
+      console.log("2D", cnvs)
+      if( cnvs !== null ) {
+        cnvs.sprite.remove()
+        try{
+          Gibber.Graphics.scene.remove( cnvs.sprite )
+        }catch(e){ console.log("CANNOT REMOVE SPRITE") }
+      }
 
       if( Gibber.Graphics.canvas === null ) {
         Gibber.Graphics.init( '2d', column )
+      }else if( Gibber.Graphics.mode === '3d' ) {
+        Gibber.Graphics.use( '2d' )
       }
 
       three = $( '#three' )
+      three.show()
       canvas.width = three.width()
       canvas.height = three.height()
       
@@ -42,10 +41,10 @@
         canvas: canvas,
         texture: tex, 
         remove : function() {
-          $( '#three' ).remove()
-          Gibber.Graphics.canvas = null
-          Gibber.Graphics.ctx = null 
-          cnvs = null
+          $( '#three' ).hide()
+          //Gibber.Graphics.canvas = null
+          //Gibber.Graphics.ctx = null 
+          //cnvs = null
         },
         _fill : that.fill,
         _stroke : that.stroke,
@@ -219,6 +218,14 @@
             useScreenCoordinates:true
           })
         ),
+        hide: function() {
+          Gibber.Graphics.scene.remove( that.sprite )
+          Gibber.Graphics.graph.splice( that, 1 )
+        },
+        show : function() {
+          Gibber.Graphics.scene.add( that.sprite )
+          Gibber.Graphics.graph.push( that )
+        }
       })
 
       that.texture.needsUpdate = true 

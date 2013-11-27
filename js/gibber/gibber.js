@@ -221,13 +221,14 @@ window.Gibber = window.G = {
   clear : function() {
     this.stopAudio();
     
-    if( this.Graphics.running ) {
-      for( var i = 0; i < this.Graphics.graph.length; i++ ) {
-        this.Graphics.graph[ i ].remove( true )
-      }
-      this.Graphics.graph.length = 0
-    }
-    
+    if( Gibber.Graphics ) Gibber.Graphics.clear()
+    // if( this.Graphics.running ) {
+    //   for( var i = 0; i < this.Graphics.graph.length; i++ ) {
+    //     this.Graphics.graph[ i ].remove( true )
+    //   }
+    //   this.Graphics.graph.length = 0
+    // }
+    Gibber.proxy( window ) 
     console.log( 'Gibber has been cleared.' )
   },
   
@@ -236,11 +237,16 @@ window.Gibber = window.G = {
     
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
-      
-			(function() {
+      if( typeof window[ lt ] !== 'undefined' ) { 
+        delete window[ lt ] 
+        delete window[ '___' + lt ]
+      }
+
+      (function() {
 				var ltr = lt;
       
 				Object.defineProperty( target, ltr, {
+          configurable: true,
 					get:function() { return target[ '___'+ltr] },
 					set:function( newObj ) {
             if( newObj ) {

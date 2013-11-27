@@ -1,3 +1,5 @@
+gibber = {}
+
 var request         = require( 'request' ),
     connect         = require( 'connect' ),
     url             = require( 'url' ),
@@ -5,13 +7,27 @@ var request         = require( 'request' ),
     passport        = require( 'passport' ),
     flash           = require( 'connect-flash' ),
     express         = require( 'express' ),
+    sharejs         = require( 'share' ).server,
+    app             = express(),
+    server          = require( 'http' ).createServer( app ),
     util            = require( 'util' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
     esUrl           = 'http://localhost:9200/gibber/_search',
-    webServerPort   = 8080,
-    serverRoot      = __dirname + "/../../../";
+    webServerPort   = 80,
+    serverRoot      = __dirname + "/../../../",
+    // livedb          = require( 'livedb' ),
+    // livedbMongo     = require( 'livedb-mongo'),
+    // browserChannel  = require( 'browserchannel' ).server,
+    // Duplex          = require('stream').Duplex,
+    // shareCodeMirror = require( 'share-codemirror' ),
+    chat            = null;
+
+gibber.server = server
+chat = require( './chat.js' )
+
+sharejs.attach( app, { db: {type:'none' }, browserChannel: { cors:'*' } } )
 
 var users = [] 
 
@@ -83,8 +99,8 @@ passport.use(new LocalStrategy(
 var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Origin', ["127.0.0.1:3000", "127.0.0.1:8080"]);
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-
+   // res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept')
     next();
 }
 
@@ -110,7 +126,7 @@ function escapeString( string ) {
   });
 }
   
-var app = express();
+// var app = express();
 
 app.configure( function() {
   app.set('views', serverRoot + '/snippets')
@@ -125,11 +141,40 @@ app.configure( function() {
   app.use( flash() )
   app.use( passport.initialize() )
   app.use( passport.session() )
-  app.use( allowCrossDomain )
+  // app.use( allowCrossDomain )
   app.use( app.router )
   app.use( checkForREST )
+  
+  // app.use( browserChannel( { webserver: app }, function ( client ) {
+  //   var stream = new Duplex({objectMode: true});
+  //   stream._write = function (chunk, encoding, callback) {
+  //     if (client.state !== 'closed') {
+  //       client.send(chunk);
+  //     }
+  //     callback();
+  //   };
+  //   stream._read = function () {
+  //   };
+  //   stream.headers = client.headers;
+  //   stream.remoteAddress = stream.address;
+  //   client.on('message', function (data) {
+  //     stream.push(data);
+  //   });
+  //   stream.on('error', function (msg) {
+  //     client.stop();
+  //   });
+  //   client.on('close', function (reason) {
+  //     stream.emit('close');
+  //     stream.emit('end');
+  //     stream.end();
+  //   });
+  //   return share.listen(stream);
+  // }));
+
   app.use( express.static( serverRoot ) )
 })
+
+
   
 app.get( '/', function(req, res){
   fs.readFile(serverRoot + "index.htm", function (err, data) {
@@ -151,7 +196,7 @@ app.get( '/account', ensureAuthenticated, function(req, res){
 })
 
 app.get( '/login', function(req, res){
-  console.log(" LOGIN?  ")
+  // console.log(" LOGIN?  ")
   res.render( 'login_start', { user: req.user, message: req.flash('error') });
 })
 
@@ -163,18 +208,18 @@ app.get( '/loginStatus', function( req, res ) {
   }
 })
 
-app.post( '/test', function(req, res, next){
-  // console.log(" TESTING  ", req.user, req.isAuthenticated() )
-  next()
-  //res.render( 'login_start', { user: req.user, message: req.flash('error') });
-})
+// app.post( '/test', function(req, res, next){
+//   // console.log(" TESTING  ", req.user, req.isAuthenticated() )
+//   next()
+//   //res.render( 'login_start', { user: req.user, message: req.flash('error') });
+// })
 
 app.post( '/retrieve', function( req, res, next ) {
   // console.log( req.body )
   var suffix = req.body.address.replace(/\//g, '%2F')
   // console.log(suffix)
   request( 'http://localhost:5984/gibber/' + suffix, function(e,r,b) {
-    console.log( b )
+    // console.log( b )
     res.send( b )
   })
 })
@@ -207,7 +252,7 @@ app.post( '/publish', function( req, res, next ) {
       if( error ) { 
         console.log( error ) 
       } else { 
-        console.log( body )
+        // console.log( body )
         res.send({ url: req.user.username + '/publications/' + req.body.name })
       }
     }
@@ -224,7 +269,7 @@ app.post( '/createNewUser', function( req, res, next ) {
       } else { 
         res.send({ msg:'User account ' + req.body._id + ' created' })
           
-        console.log("USER MADE")
+        // console.log("USER MADE")
       }
     }
   )
@@ -240,11 +285,32 @@ app.get( '/welcome', function( req, res, next ) {
 app.get( '/browser', function( req, res, next ) {
   request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
     // console.log( (JSON.parse(b)).rows )
+    var _audio = [], _3d = [], _2d = [], _misc=[], demoRows = JSON.parse( b ).rows
+
+    for( var i =0; i < demoRows.length; i++ ) {
+      var cat = 'misc', row = demoRows[ i ]
+      if( row.key.split('*').length > 0 ) {
+        cat = row.key.split('*')[1]
+        switch( cat ) {
+          case '2d' :
+            _2d.push( row ); break;
+          case '3d' : _3d.push( row ); break;
+          case 'audio' : _audio.push( row ); break;
+          default:
+            _misc.push( row ); break;
+        }
+      }
+    }
+
     if( req.user ) {
       request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
         res.render( 'browser', {
           user: req.user,
-          demos:(JSON.parse(b)).rows, 
+          demos:(JSON.parse(b)).rows,
+          audio:_audio,
+          _2d:_2d,
+          _3d:_3d,
+          misc:_misc,
           userfiles:(JSON.parse(_b)).rows,
           message: req.flash('error')
         });
@@ -253,6 +319,10 @@ app.get( '/browser', function( req, res, next ) {
       res.render( 'browser', {
         user: req.user,
         demos:(JSON.parse(b)).rows, 
+        audio:_audio,
+        _2d:_2d,
+        _3d:_3d,
+        misc:_misc,
         userfiles:[],
         message: req.flash('error')
       });
@@ -344,7 +414,7 @@ app.get('/logout', function(req, res, next){
 //   res.send({ msg:'published.' })
 // })
 
-app.listen( webServerPort );
+server.listen( webServerPort );
 
 
 // Simple route middleware to ensure user is authenticated.

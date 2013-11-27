@@ -3,6 +3,38 @@
   "use strict"
   
   var doNotSequence = [ 'durations', 'target', 'scale', 'offset' ]
+
+  var makeNoteFunction = function( notes, obj ) {
+    var _note = $.extend( [], notes ),
+        count = 0
+
+    return [function() {
+      var idx, freq
+    
+      if( typeof _note.pick === 'function' ) {
+        idx =  _note[ _note.pick() ] 
+      }else if( typeof _note[ count ] === 'function') {
+        idx = _note[ count ]()
+      }else{
+        idx = _note[ count++ ]
+      }
+      
+      if( typeof obj.scale.notes[ idx ] === 'number' ) {
+        freq = obj.scale.notes[ idx ]
+      }else{
+        try{
+          freq = obj.scale.notes[ idx ].fq()
+        }catch(e) {
+          console.error( "THe frequency could not be obtained from the current scale. Did you specify an invalid mode or root note?")
+          seq.stop()
+        }
+      }          
+      //freq = typeof obj.scale.notes[ idx ] === 'number' ? obj.scale.notes[ idx ] : obj.scale.notes[ idx ].fq()
+    
+      if( count >= _note.length ) count = 0
+      return freq
+    }]
+  }
   
   Gibber.Seq = function() {
     
@@ -43,25 +75,7 @@
       
       if( 'scale' in obj ) {
         if( 'note' in obj.keysAndValues ) {
-          var _note = $.extend( [], obj.keysAndValues.note ),
-              count = 0
-
-          obj.keysAndValues.note = [function() {
-            var idx, freq
-          
-            if( typeof _note.pick === 'function' ) {
-              idx =  _note[ _note.pick() ] 
-            }else if( typeof _note[ count ] === 'function') {
-              idx = _note[ count]()
-            }else{
-              idx = _note[ count++ ]
-            }
-          
-            freq = typeof obj.scale.notes[ idx ] === 'number' ? obj.scale.notes[ idx ] : obj.scale.notes[ idx ].fq()
-          
-            if( count >= _note.length ) count = 0
-            return freq
-          }]
+          obj.keysAndValues.note = makeNoteFunction( obj.keysAndValues.note, obj )
         }else if( 'chord' in obj.keysAndValues ) {
           var _chord = $.extend( [], obj.keysAndValues.chord ),
               count = 0
@@ -126,7 +140,12 @@
 
         Object.defineProperty( _seq, key, {
           get: function() { return _seq.keysAndValues[ key ] },
-          set: function(v) { _seq.keysAndValues[ key ] = v  }
+          set: function(v) {
+            if( key === 'note' && seq.scale ) {
+              v = makeNoteFunction( v, seq )
+            }
+            _seq.keysAndValues[ key ] = v  
+          }
         })
       })(seq)
     }
