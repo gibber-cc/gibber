@@ -1,6 +1,7 @@
 (function() {
 var rooms = {},
     users = {},
+    usersByNick = {},
     io  = require( 'socket.io' ).listen( gibber.server ),
     server = gibber.server, 
     handlers = null, sendall, hearbeat, sendToRoom;
@@ -73,6 +74,8 @@ sendToRoom = function( msg, roomName ) {
 handlers = {
   register : function( client, msg ) {
     client.nick = msg.nick
+    
+    usersByNick[ client.nick ] = client
 
     var msg = { msg:'registered', nickRegistered: client.nick }
 
@@ -249,6 +252,18 @@ handlers = {
     response = { msg:'listUsers', users:_users }
 
     client.send( JSON.stringify( response ) )
+  },
+
+  remoteExecution : function( client, msg ) {
+    var to = usersByNick[ msg.to ],
+        _msg = {
+          from: msg.from,
+          selectionRange : msg.selectionRange,
+          code: msg.code,
+          msg: 'remoteExecution'
+        }
+    
+    to.send( JSON.stringify( _msg ) )
   },
 }
 

@@ -291,6 +291,15 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       GE.Share.acceptCollaborationRequest( data )
       
     },
+    remoteExecution : function( data ) {
+      var column = Columns[3],
+          cm  = column.editor
+
+      // from, selectionRange, code
+      GE.Keymap.flash( cm, data.selectionRange )
+
+      Gibber.run( data.code, data.selectionRange, cm )
+    },
   },
 }
 

@@ -202,7 +202,42 @@ var GE = Gibber.Environment = {
         },
 
         'Shift-Ctrl-2' : function( cm ) {
-          
+          if( cm.column.sharingWith ) {
+            var v = cm.getDoc().getSelection(),
+            pos = null
+
+            if (v === "") {
+              pos = cm.getCursor()
+              v = cm.getLine( pos.line )
+            }
+
+            GE.Keymap.flash(cm, pos)
+
+            var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
+
+            if( GE.modes[ col.modeIndex ] !== 'x-shader/x-fragment' ) {
+              Gibber.run( v, pos, cm )  
+            }else{
+              var shader = Gibber.Graphics.makeFragmentShader( v )
+              col.shader.material = new THREE.ShaderMaterial({
+
+                uniforms: col.shader.uniforms,
+                vertexShader: shader.vertexShader,
+                fragmentShader: shader.fragmentShader
+
+              });
+            }
+
+            Chat.socket.send( 
+              JSON.stringify({ 
+                cmd:'remoteExecution',
+                to:cm.column.sharingWith,
+                from:GE.Account.nick,
+                selectionRange: pos,
+                code: v
+              })
+            ) 
+          }
         },
         
         "Alt-Enter": function(cm) {          
@@ -569,7 +604,7 @@ var GE = Gibber.Environment = {
           autofocus: options.autofocus || false,
         })
 
-        col.column = col    
+        col.editor.column = col    
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
       }
    
