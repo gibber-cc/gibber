@@ -464,7 +464,6 @@ var GE = Gibber.Environment = {
             element:        $( '<div class="column">' ),
             header:         $( '<div class="columnHeader">' ),
             modeSelect:     $( '<select>'),
-            slider:         $( '<div>'),
             bodyElement:    $( '<div class="editor">' ),
             resizeHandle:   $( '<div class="resizeHandle">' ),
             close :         $( '<button>' ),
@@ -567,7 +566,6 @@ var GE = Gibber.Environment = {
         })
     
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
-        col.header.append( col.slider )
       }
    
       col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;

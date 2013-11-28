@@ -3,7 +3,7 @@ var rooms = {},
     users = {},
     io  = require( 'socket.io' ).listen( gibber.server ),
     server = gibber.server, 
-    handlers = null, sendall, hearbeat;
+    handlers = null, sendall, hearbeat, sendToRoom;
 
 io.sockets.on( 'connection', function( client ) {
   client.ip = client.handshake.address.address
@@ -53,6 +53,23 @@ heartbeat = function() {
   }
 }
 
+sendToRoom = function( msg, roomName ) {
+  if( roomName && msg ) {
+    var room = rooms[ roomName ]
+    if( room ) {
+      room.timestamp = Date.now()
+      for( var i = 0; i < room.clients.length; i++ ){
+        var client = room.clients[ i ]
+        if( client ) {
+          client.send( msg )
+        }
+      }
+      return true
+    }
+  }
+  return false
+}
+
 handlers = {
   register : function( client, msg ) {
     client.nick = msg.nick
@@ -69,8 +86,14 @@ handlers = {
       if( rooms[ msg.room ].password !== null ) {
         if( rooms[ msg.room ].password === msg.password ) {
           client.room = msg.room
+
           rooms[ msg.room ].clients.push( client )
+
           response = { msg:'roomJoined', roomJoined: msg.room }
+
+          notification = JSON.stringify( { msg:'arrival', nick:client.nick } )
+
+          sendToRoom( notification, msg.room )
         }else{
           response = { msg:'roomJoined', roomJoined:null, error:'ERROR: The password you submitted to join ' + msg.room + ' was incorrect.' }
         }
@@ -78,6 +101,10 @@ handlers = {
         client.room = msg.room
         rooms[ msg.room ].clients.push( client )
         response = { msg:'roomJoined', roomJoined: msg.room }
+
+        notification = JSON.stringify( { msg:'arrival', nick:client.nick } )
+
+        sendToRoom( notification, msg.room )
       }
     }else{
       response = { msg:'roomJoined', roomJoined: null, error:"ERROR: There is no room named " + msg.room + '.' }
@@ -87,13 +114,19 @@ handlers = {
   },
 
   leaveRoom : function( client, msg ) {
-    var response = null
+    var response = null, notification
+
     if( rooms[ msg.room ] ) {
       var idx = rooms[ msg.room ].clients.indexOf( client )
 
       if( idx > -1 ) {
         rooms[ msg.room ].clients.splice( idx, 1 )
+
         response = { msg:'roomLeft', roomLeft: msg.room }
+        
+        notification = JSON.stringify( { msg:'departure', nick:client.nick } )
+
+        sendToRoom( notification, msg.room )
       }else{
         response = { msg:'roomLeft', roomLeft: null, error:'ERROR: The server tried to remove you from a room you weren\'t in' }
       }
@@ -103,19 +136,15 @@ handlers = {
 
     client.send( JSON.stringify( response ) )
   },
-
+  
   message : function( client, msg ) {
-    var room = rooms[ client.room ], response = null, _msg = null
+    var room = rooms[ client.room ], result = false, response = null, _msg = null
     
-    if( typeof room !== 'undefined' ) {
-      room.timestamp = Date.now() // update timestamp so room isn't killed due to inactivity
-      _msg = JSON.stringify({ msg:'incomingMessage', incomingMessage:msg.text, nick:client.nick }) 
-      for( var i = 0; i < room.clients.length; i++ ){
-        var recipient = room.clients[ i ]
+    _msg = JSON.stringify({ msg:'incomingMessage', incomingMessage:msg.text, nick:client.nick }) 
+     
+    result = sendToRoom( _msg, client.room )
 
-        recipient.send( _msg )
-      }
-      // console.log( 'Sending message from', client.nick )
+    if( result ) {
       response = { msg:'messageSent', messageSent: msg.text, nick:client.nick }
     }else{
       response = { msg:'messageSent', messageSent:null, error:'ERROR: You tried to send a message without joining a chat room!' }
@@ -184,7 +213,6 @@ handlers = {
 
   listRooms : function( client, msg ) {
     var response = {}
-    console.log(" LISTING ROOMS ")
     for( var key in rooms ) {
       response[ key ]  = { 
         password: rooms[ key ].password !== null,

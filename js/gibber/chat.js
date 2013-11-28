@@ -38,7 +38,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
 
     this.column.header.append( this.lobbyRoom )
     $script( 'external/socket.io.min', function() {
-      console.log( 'SOCKET IO LOADED' )
+      console.log( 'socket io loaded' )
       Chat.socket = io.connect('http://gibber.mat.ucsb.edu');
 
       // this.socket = new WebSocket( socketString );
@@ -56,7 +56,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       })
       
       Chat.socket.on( 'connect', function() {
-        console.log( "CONNECTION SUCCESSFUL" )
+        console.log( 'you are now connected to the chat server' )
         Chat.moveToLobby()
         Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
       })
@@ -163,6 +163,8 @@ Chat = window.Chat = Gibber.Environment.Chat = {
   createRoom : function() {
     var name = window.prompt( "Enter a name for the chatroom." ),
         msg  = {}
+    
+    if( name === null || name === '' ) return
 
     msg.name = name
     msg.password = null
@@ -216,19 +218,27 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     roomAdded : function( data ) { // response for when any user creates a room...
       if( Chat.currentRoom === 'lobby' ) { 
         Chat.lobbyElement.empty()
-        console.log( 'ROOM ADDED AND LIST RE-LOADED' )
         Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
       }
     },
     roomDeleted : function( data ) {
       if( Chat.currentRoom === 'lobby' ) { 
         Chat.lobbyElement.empty()
-        console.log( 'ROOM REMOVED AND LIST LOADED ' )
         Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
       }
     },
     roomJoined: function( data ) {
       Chat.moveToRoom( data.roomJoined )
+    },
+    arrival : function( data ) {
+      var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
+      Chat.messages.append( msg )
+      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+    },
+    departure : function( data ) {
+      var msg = $( '<span>' ).text( data.nick + ' has left the chatroom.' ).css({ color:'#b00', display:'block' })
+      Chat.messages.append( msg )
+      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
     },
     collaborationRequest: function( data ) {
       var div = $('<div>'),
@@ -253,6 +263,8 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     },
     shareReady : function( data ) {
       var column = GE.Layout.addColumn({ type:'code' })
+       
+      column.header.append( $('<span>').text( 'sharing with ' + data.from ).css({ paddingLeft:5}) )
 
       GE.Share.openExistingDoc( data.shareName, column )
     },

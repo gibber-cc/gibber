@@ -12,14 +12,12 @@ Share = Gibber.Environment.Share = {
   open : function() {
     $script( [ 'external/channel/bcsocket-uncompressed' ],function() {
       $script( 'external/share/share.uncompressed', function() {
-        $script( 'external/share/cm', function() { 
-          console.log( 'SHARE LOADED' )
-        })
+        $script( 'external/share/cm', function() {} )
       })
     })
   },
 
-  createDoc : function( columnNumber, cb ) {
+  createDoc : function( columnNumber, cb, sharingWith ) {
     if( GE.Account.nick !== null && typeof Share.docs[ columnNumber ] === 'undefined' ) {
         sharejs.open( GE.Account.nick + columnNumber, 'text', function(error, newDoc) {
 
@@ -30,6 +28,10 @@ Share = Gibber.Environment.Share = {
           Share.docs[ columnNumber ].attach_cm( Columns[ columnNumber ].editor );
           
           Columns[ columnNumber ].editor.setValue( val )
+
+          Columns[ columnNumber].header.append( $('<span>').text( 'sharing with ' + sharingWith )
+            .css({ paddingLeft:5}) )
+
           if( typeof cb === 'function' ) cb()
       });      
     }
@@ -79,17 +81,17 @@ Share = Gibber.Environment.Share = {
     }) ) 
   },
   collaborationResponse : function( msg ) {
-    var from = msg.from, response = msg.response,
+    var from = msg.from, 
+        response = msg.response,
         cb = function() {
           Chat.socket.send( JSON.stringify({
             cmd: 'shareCreated', from:GE.Account.nick, to: msg.from, shareName:GE.Account.nick + Share.potentialShareNum
           }) )
         }
 
-    console.log( "COLLAB RESPONSE", from, response )   
     if( response ) {
       Share.prompt.find( 'h4' ).text( msg.from + ' accepts your request. You are now coding together.' )
-      Share.createDoc( Share.potentialShareNum, cb )
+      Share.createDoc( Share.potentialShareNum, cb, msg.from )
     }else{
       Share.prompt.find( 'h4' ).text( msg.from + 'has rejected your request to code together.' )
     }
