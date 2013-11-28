@@ -9,6 +9,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
   lobbyElement: null,
   roomElement: null,
   currentRoom: 'lobby',
+  intialized : false,
   open : function() {
     if( GE.Account.nick === null ) {
       GE.Message.post( 'You must log in before chatting. Click the link in the upper right corner of the window to login (and create an account if necessary).' )
@@ -16,7 +17,8 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     }
     this.column = Layout.addColumn({ header:'Chat' })
     this.column.onclose = function() {
-      this.socket.close()
+      Chat.lobbyElement = null
+      // Chat.socket.close()
     }
     // this.column.header.append( $( '<span>lobby</span>') )
     this.lobbyRoom = $( '<div>' ).css({ display:'inline', marginLeft:'2em' })
@@ -28,6 +30,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.room =  $( '<button>' )
       .text( 'room' )
       .on( 'click', function() { Chat.moveToRoom( 'test' ) } )
+      .hide()
 
     this.addButton = $('<button>' )
       .text( 'create room' )
@@ -37,30 +40,36 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.lobbyRoom.append( this.lobby, this.room, this.addButton )
 
     this.column.header.append( this.lobbyRoom )
-    $script( 'external/socket.io.min', function() {
-      console.log( 'socket io loaded' )
-      Chat.socket = io.connect('http://gibber.mat.ucsb.edu');
 
-      // this.socket = new WebSocket( socketString );
+    if( !this.initialized ) {
+      $script( 'external/socket.io.min', function() {
+        // console.log( 'socket io loaded' )
+        Chat.socket = io.connect('http://gibber.mat.ucsb.edu');
 
-      Chat.socket.on( 'message', function( data ) {
-        data = JSON.parse( data )
-        // console.log( data )
-        if( data.msg ) {
-          if( Chat.handlers[ data.msg ] ) {
-            Chat.handlers[ data.msg ]( data )
-          }else{
-            console.error( 'Cannot process message ' + data.msg + ' from server' )
+        // this.socket = new WebSocket( socketString );
+
+        Chat.socket.on( 'message', function( data ) {
+          data = JSON.parse( data )
+          // console.log( data )
+          if( data.msg ) {
+            if( Chat.handlers[ data.msg ] ) {
+              Chat.handlers[ data.msg ]( data )
+            }else{
+              console.error( 'Cannot process message ' + data.msg + ' from server' )
+            }
           }
-        }
+        })
+        
+        Chat.socket.on( 'connect', function() {
+          console.log( 'you are now connected to the chat server' )
+          Chat.moveToLobby()
+          Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+        })
       })
-      
-      Chat.socket.on( 'connect', function() {
-        console.log( 'you are now connected to the chat server' )
-        Chat.moveToLobby()
-        Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
-      })
-    })
+    }else{
+      Chat.moveToLobby()
+    }
+    this.initialized = true;
   },
 
   moveToLobby : function () {
@@ -224,6 +233,10 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       li.prepend( name )
       Chat.messages.append( li )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+
+      if( Chat.onMsg ) {
+        Chat.onMsg( data.nick, data.incomingMessage )
+      }
     },
     roomCreated: function( data ) { // response for when the user creates a room...
 

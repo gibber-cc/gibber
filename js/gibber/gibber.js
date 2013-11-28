@@ -797,7 +797,7 @@ window.Gibber = window.G = {
       if( typeof this.seq === 'undefined' ) {
         this.seq = Seq({ note: notes, durations:durations, target:this })
       }else{
-        if( notes ) this.seq.note = notes
+        if( notes ) { this.seq.note = notes; this.seq.counts.note = 0; }
         if( durations ) this.seq.durations = durations
       }
       if( repeat ) {
