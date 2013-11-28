@@ -200,9 +200,13 @@ var GE = Gibber.Environment = {
           }
           
         },
+
+        'Shift-Ctrl-2' : function( cm ) {
+          
+        },
         
         "Alt-Enter": function(cm) {          
-          var col = GE.Layout.columns[ GE.Layout.focusedColumn - 1],
+          var col = GE.Layout.columns[ GE.Layout.focusedColumn - 1 ],
               v = col.value
           
           if( GE.modes[ col.modeIndex % GE.modes.length ] !== 'x-shader/x-fragment' ) {
@@ -564,7 +568,8 @@ var GE = Gibber.Environment = {
           tabSize: 2,
           autofocus: options.autofocus || false,
         })
-    
+
+        col.column = col    
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
       }
    

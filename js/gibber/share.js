@@ -21,15 +21,18 @@ Share = Gibber.Environment.Share = {
     if( GE.Account.nick !== null && typeof Share.docs[ columnNumber ] === 'undefined' ) {
         sharejs.open( GE.Account.nick + columnNumber, 'text', function(error, newDoc) {
 
-          var val = Columns[ columnNumber ].value
-          console.log( 'NEW DOC', newDoc, columnNumber )
+          var column = Columns[ columnNumber ],
+              val = column.value
+          
+          column.sharingWith = sharingWith
+
           Share.docs[ columnNumber ] = newDoc
 
-          Share.docs[ columnNumber ].attach_cm( Columns[ columnNumber ].editor );
+          Share.docs[ columnNumber ].attach_cm( column.editor );
           
-          Columns[ columnNumber ].editor.setValue( val )
+          column.editor.setValue( val )
 
-          Columns[ columnNumber].header.append( $('<span>').text( 'sharing with ' + sharingWith )
+          column.header.append( $('<span>').text( 'sharing with ' + sharingWith )
             .css({ paddingLeft:5}) )
 
           if( typeof cb === 'function' ) cb()
@@ -43,7 +46,7 @@ Share = Gibber.Environment.Share = {
       
         Share.docs[ column.number ]  = newDoc
 
-        Share.docs[ column.number ].attach_cm( column.editor );
+        Share.docs[ column.number ].attach_cm( column.editor )
       }); 
 
     }
@@ -95,6 +98,17 @@ Share = Gibber.Environment.Share = {
     }else{
       Share.prompt.find( 'h4' ).text( msg.from + 'has rejected your request to code together.' )
     }
+  },
+
+  // this message is forwarded from the socket server (currently the chat socket server)
+  acceptCollaborationRequest : function( data ) {
+    var column = GE.Layout.addColumn({ type:'code' })
+    
+    column.sharingWith = data.from 
+
+    column.header.append( $('<span>').text( 'sharing with ' + data.from ).css({ paddingLeft:5}) )
+
+    Share.openExistingDoc( data.shareName, column )
   },
 }
 

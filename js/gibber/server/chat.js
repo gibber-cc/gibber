@@ -42,8 +42,8 @@ heartbeat = function() {
   for( var room in rooms ) {
     if( room !== 'gibber' ) {
       var _room = rooms[ room ]
-      if( time - _room.timestamp > 600000 && _room.clients.length === 0 ) {
-        console.log( 'DELETING ROOM', room )
+      if( time - _room.timestamp > 300000 && _room.clients.length === 0 ) {
+        console.log( 'deleting room', room )
         delete rooms[ room ]
         var msg = { msg:'roomDeleted', room:room }
         sendall( msg )
@@ -80,16 +80,19 @@ handlers = {
   },
    
   joinRoom : function( client, msg ) {
-    var response = null
+    var response = null, occupants = []
 
     if( rooms[ msg.room ] ) {
       if( rooms[ msg.room ].password !== null ) {
         if( rooms[ msg.room ].password === msg.password ) {
           client.room = msg.room
 
+          for( var i = 0; i < rooms[ msg.room ].clients.length; i++ ) {
+            occupants.push( rooms[ msg.room ].clients[ i ].nick )
+          }
           rooms[ msg.room ].clients.push( client )
 
-          response = { msg:'roomJoined', roomJoined: msg.room }
+          response = { msg:'roomJoined', roomJoined: msg.room, occupants:occupants }
 
           notification = JSON.stringify( { msg:'arrival', nick:client.nick } )
 
@@ -99,8 +102,14 @@ handlers = {
         }
       }else{
         client.room = msg.room
+
+        for( var i = 0; i < rooms[ msg.room ].clients.length; i++ ) {
+          occupants.push( rooms[ msg.room ].clients[ i ].nick )
+        }
+
         rooms[ msg.room ].clients.push( client )
-        response = { msg:'roomJoined', roomJoined: msg.room }
+
+        response = { msg:'roomJoined', roomJoined: msg.room, occupants:occupants }
 
         notification = JSON.stringify( { msg:'arrival', nick:client.nick } )
 
@@ -160,7 +169,6 @@ handlers = {
     for( var i = 0; i < room.clients.length; i++ ){
       var _client = room.clients[ i ]
       if( _client.nick === to ) {
-        console.log( "FOUND COLLABORATION REQUEST" )
         _client.send( JSON.stringify( { msg:'collaborationRequest', from:client.nick } ) )
         break;
       }

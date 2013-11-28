@@ -90,7 +90,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.socket.send( JSON.stringify({ cmd:'listRooms' }) )
   },
 
-  moveToRoom : function( roomName ) {
+  moveToRoom : function( roomName, occupants ) {
     if( this.currentRoom === 'lobby' ) {
       this.lobbyElement.hide()
       this.lobby.css({ color:'#ccc', background:'#333' })
@@ -151,6 +151,18 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       this.roomElement.show()
       if( this.lobbyElement !== null ) this.lobbyElement.hide()
     }
+
+    var welcomeString = "You are now in chatroom " + roomName + "."
+    if( occupants.length > 0 ) {
+      welcomeString += " Your fellow gibberers are: "
+      for( var i = 0; i < occupants.length; i++ ){
+        welcomeString += occupants[i]
+        welcomeString += i < occupants.length - 1 ? ', ' : '.'
+      }
+    }
+
+    this.messages.append( $('<li>').text( welcomeString ).css({ color:'#b00'}) )
+
     this.column.bodyElement = this.roomElement
     GE.Layout.setColumnBodyHeight( this.column )
     this.room
@@ -186,7 +198,8 @@ Chat = window.Chat = Gibber.Environment.Chat = {
          var _key = key,  
              msg = JSON.stringify( { cmd:'joinRoom', room:_key } ),
              lock = data.rooms[ _key ].password ? " - password required" : " - open",
-             link = $( '<span>').text( _key + "  " + lock )
+             userCount = data.rooms[ _key ].userCount,
+             link = $( '<span>').text( _key + "  " + lock + ' - ' + userCount + ' gibberer(s)' )
                .on( 'click', function() { Chat.socket.send( msg ) } )
                .css({ pointer:'hand' }),
              li = $( '<li>').append( link )
@@ -228,7 +241,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       }
     },
     roomJoined: function( data ) {
-      Chat.moveToRoom( data.roomJoined )
+      Chat.moveToRoom( data.roomJoined, data.occupants )
     },
     arrival : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
@@ -262,11 +275,8 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       GE.Share.collaborationResponse({ from: data.from, response: data.response })
     },
     shareReady : function( data ) {
-      var column = GE.Layout.addColumn({ type:'code' })
-       
-      column.header.append( $('<span>').text( 'sharing with ' + data.from ).css({ paddingLeft:5}) )
-
-      GE.Share.openExistingDoc( data.shareName, column )
+      GE.Share.acceptCollaborationRequest( data )
+      
     },
   },
 }
