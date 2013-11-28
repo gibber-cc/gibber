@@ -178,16 +178,21 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     },
     listRooms : function( data ) {
       var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })
-      for( var key in data.rooms ) {
-        var msg = JSON.stringify( { cmd:'joinRoom', room:key } ),
-            lock = data.rooms[ key ].password ? " - password required" : " - open",
-            link = $( '<span>').text( key + "  " + lock )
-              .on( 'click', function() { Chat.socket.send( msg ) } )
-              .css({ pointer:'hand' }),
-            li = $( '<li>').append( link )
-            
-        roomList.append( li )
+
+     for( var key in data.rooms ) {
+       (function() {
+         var _key = key,  
+             msg = JSON.stringify( { cmd:'joinRoom', room:_key } ),
+             lock = data.rooms[ _key ].password ? " - password required" : " - open",
+             link = $( '<span>').text( _key + "  " + lock )
+               .on( 'click', function() { Chat.socket.send( msg ) } )
+               .css({ pointer:'hand' }),
+             li = $( '<li>').append( link )
+              
+          roomList.append( li )
+        })()
       }
+
       Chat.lobbyElement.append( roomList )
     },
     incomingMessage: function( data ) {

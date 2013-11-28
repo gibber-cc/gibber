@@ -1,12 +1,10 @@
 (function() {
-var /*ws = require( 'ws' ),*/
-    rooms = {},
+var rooms = {},
     users = {},
     io  = require( 'socket.io' ).listen( gibber.server ),
-    server = gibber.server, // new ws.Server({ port: port }),
-    handlers = null
+    server = gibber.server, 
+    handlers = null, sendall, hearbeat;
 
-//server.on( 'connection', function( client ) {
 io.sockets.on( 'connection', function( client ) {
   client.ip = client.handshake.address.address
   console.log( 'CONNECTION', client.ip )
@@ -31,11 +29,27 @@ io.sockets.on( 'connection', function( client ) {
   })
 })
 
-io.set('log level', 1)
+//io.set('log level', 1)
 
-gibber.sendall = function( msg ) {
+sendall = function( msg ) {
   for( var ip in users ) {
     users[ ip ].send( msg )
+  }
+}
+
+heartbeat = function() {
+  var time = Date.now()
+  for( var room in rooms ) {
+    if( room !== 'gibber' ) {
+      var _room = rooms[ room ]
+      if( time - _room.timestamp > 600000 && _room.clients.length === 0 ) {
+        console.log( 'DELETING ROOM', room )
+        delete rooms[ room ]
+        var msg = { msg:'roomDeleted', room:room }
+        sendall( msg )
+      }
+    }
+   setTimeout( handlers.heartbeat, 10000 ) 
   }
 }
 
@@ -47,20 +61,7 @@ handlers = {
 
     client.send( JSON.stringify( msg ) )
   },
-  heartbeat : function() {
-    var time = Date.now()
-    for( var room in rooms ) {
-      if( room !== 'gibber' ) {
-        var _room = rooms[ room ]
-        if( time - _room.timestamp > 600000 && _room.clients.length === 0 ) {
-          delete rooms[ room ]
-          var msg = { msg:'roomDeleted', room:room }
-          gibber.sendall( msg )
-        }
-      }
-     setTimeout( handlers.heartbeat, 10000 ) 
-    }
-  },    
+   
   joinRoom : function( client, msg ) {
     var response = null
 
@@ -177,7 +178,7 @@ handlers = {
     
     if( success ) {
       var msg = { msg:'roomAdded', roomAdded:msg.room }
-      gibber.sendall( JSON.stringify( msg ) )
+      sendall( JSON.stringify( msg ) )
     }
   },
 
@@ -220,5 +221,6 @@ rooms[ 'gibber' ] = {
   password: null
 }
 
-handlers.heartbeat()
+heartbeat()
+
 })()

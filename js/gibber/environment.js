@@ -35,7 +35,7 @@ var GE = Gibber.Environment = {
         GE.Console.init()
         GE.Welcome.init()
         GE.Share.open()
-        $script( 'gibber/keys')
+        $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
       });
     })
 
@@ -279,7 +279,7 @@ var GE = Gibber.Environment = {
             }, 250);
         },
         
-        "Ctrl-.": Gibber.clear.bind( Gibber ),
+        // "Ctrl-.": Gibber.clear.bind( Gibber ),
 
         "Shift-Ctrl-=": function(cm) {
           var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
