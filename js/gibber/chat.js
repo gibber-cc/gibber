@@ -269,19 +269,24 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     collaborationRequest: function( data ) {
       var div = $('<div>'),
           msg = null,
-          h3  = $('<h3>').text( data.from + ' would like to collaboratively edit code with you. Do you accept?' ),
-          radioY = $('<input type="radio" name="yesorno" value="Yes">Yes</input>'),
-          radioN = $('<input type="radio" name="yesorno" value="No">No</input>'),
+          h3  = $('<h3>').text( data.from + ' would like to collaboratively edit code with you. Choose a response:' ),
+          radioY = $('<input type="radio" name="yesorno" value="edit">Allow '+data.from+' to code with me.</input><br>'),
+          radioYY = $('<input type="radio" name="yesorno" value="editandexecute">Allow '+data.from+' to code with me and execute code remotely.</input><br>'),
+          radioN = $('<input type="radio" name="yesorno" value="no">Do not let '+data.from+' code with me.</input><br>'),
+
           submit = $('<button>')
             .text('submit')
             .on( 'click', function() {
               var val =  $('input[type=radio]:checked').val()
-              Chat.socket.send( JSON.stringify({ cmd:'collaborationResponse', response:val==='Yes', to:data.from }) )
+              Chat.socket.send( JSON.stringify({ cmd:'collaborationResponse', response:val, to:data.from }) )
+              GE.Share.willAcceptRemoteExecution = val === 'editandexecute'
               msg.remove()
             })
-
-      div.append(h3, radioY, radioN, submit )
-
+      
+      div.append( h3, radioY )
+      if( data.enableRemoteExecution ) div.append( radioYY )
+      div.append( radioN, submit )
+      
       msg =  GE.Message.postHTML( div )
     },
     collaborationResponse: function( data ) {
@@ -292,13 +297,26 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       
     },
     remoteExecution : function( data ) {
-      var column = Columns[3],
-          cm  = column.editor
+      var column, cm
+      console.log( "SHARE NAME", data.shareName, data )
+      for( var i = 0; i < GE.Layout.columns.length; i++ ){ 
+        var _column = GE.Layout.columns[i]
+        if( _column && _column.shareName === data.shareName ) {
+          console.log(" FOUND FREAKING COLUMN ", _column )
+          column = _column
+          break
+        }
+      }
+      if( typeof column === 'undefined' ) { console.log("CANNOT FIND COLUMN FOR REMOTE EXECUTION"); return }
+      
+      cm  = column.editor
 
       // from, selectionRange, code
-      GE.Keymap.flash( cm, data.selectionRange )
+      if( column.allowRemoteExecution ) {
+        GE.Keymap.flash( cm, data.selectionRange )
 
-      Gibber.run( data.code, data.selectionRange, cm )
+        Gibber.run( data.code, data.selectionRange, cm )
+      }
     },
   },
 }

@@ -228,15 +228,19 @@ var GE = Gibber.Environment = {
               });
             }
 
-            Chat.socket.send( 
-              JSON.stringify({ 
-                cmd:'remoteExecution',
-                to:cm.column.sharingWith,
-                from:GE.Account.nick,
-                selectionRange: pos,
-                code: v
-              })
-            ) 
+            if( cm.column.allowRemoteExecution ) {
+              console.log( cm.column.shareName )
+              Chat.socket.send( 
+                JSON.stringify({ 
+                  cmd:'remoteExecution',
+                  to:cm.column.sharingWith,
+                  shareName: cm.column.shareName,
+                  from:GE.Account.nick,
+                  selectionRange: pos,
+                  code: v
+                })
+              ) 
+            }
           }
         },
         

@@ -24,6 +24,7 @@ Share = Gibber.Environment.Share = {
           var column = Columns[ columnNumber ],
               val = column.value
           
+          column.shareName = GE.Account.nick + columnNumber
           column.sharingWith = sharingWith
 
           Share.docs[ columnNumber ] = newDoc
@@ -43,8 +44,15 @@ Share = Gibber.Environment.Share = {
     if( GE.Account.nick !== null ) {
       sharejs.open( docName, 'text', function(error, newDoc) {
         if( !column ) column = Columns[ 0 ]
-      
-        Share.docs[ column.number ]  = newDoc
+        
+        if( Share.willAcceptRemoteExecution ) {
+          column.allowRemoteExecution = true
+          Share.willAcceptRemoteExecution = false
+        }
+         
+        Share.docs[ column.number ] = newDoc
+
+        column.shareName = docName
 
         Share.docs[ column.number ].attach_cm( column.editor )
       }); 
@@ -60,9 +68,10 @@ Share = Gibber.Environment.Share = {
         shareBtn = $('<button>')
           .text( 'Share' )
           .on( 'click', function() {
-            Share.checkIfUserWantsToCollaborate( nick, $( div ).find( 'select' ).val() )
+            Share.checkIfUserWantsToCollaborate( nick, $( div ).find( 'select' ).val(), enableRemoteExecution.is(':checked') )
             $( div ).append( $('<h4>').text( 'wating for approval from ' + nick + '...' ) )
-          })
+          }),
+        enableRemoteExecution = $('<input type="checkbox">')
     
 
     for( var i = 0; i < GE.Layout.columns.length; i++ ) {
@@ -72,15 +81,19 @@ Share = Gibber.Environment.Share = {
       }
     }
     Share.prompt = div
-    div.append( hdr, info, $('<br>'), $('<br>'), collaborate, columns, shareBtn )
+    div.append( hdr, info, $('<br>'), $('<br>'),
+                collaborate, columns, $('<br>'), 
+                $('<span>').text('Enable remote code execution?'), enableRemoteExecution, '<br>',
+                shareBtn )
+
 
     GE.Message.postHTML( div )
   },
-  checkIfUserWantsToCollaborate : function( username, columnNumber ) {
+  checkIfUserWantsToCollaborate : function( username, columnNumber, remoteExecution ) {
     Share.potentialShareNum = columnNumber
 
     Chat.socket.send( JSON.stringify({
-      cmd: 'collaborationRequest', from:GE.Account.nick, to:username
+      cmd: 'collaborationRequest', from:GE.Account.nick, to:username, enableRemoteExecution:remoteExecution
     }) ) 
   },
   collaborationResponse : function( msg ) {
@@ -92,9 +105,10 @@ Share = Gibber.Environment.Share = {
           }) )
         }
 
-    if( response ) {
+    if( response !== 'no' ) {
       Share.prompt.find( 'h4' ).text( msg.from + ' accepts your request. You are now coding together.' )
       Share.createDoc( Share.potentialShareNum, cb, msg.from )
+      Columns[ Share.potentialShareNum ].allowRemoteExecution = response === 'editandexecute'
     }else{
       Share.prompt.find( 'h4' ).text( msg.from + 'has rejected your request to code together.' )
     }
@@ -104,6 +118,7 @@ Share = Gibber.Environment.Share = {
   acceptCollaborationRequest : function( data ) {
     var column = GE.Layout.addColumn({ type:'code' })
     
+    column.allowRemoteExecution = data.allowRemoteExecution  
     column.sharingWith = data.from 
 
     column.header.append( $('<span>').text( 'sharing with ' + data.from ).css({ paddingLeft:5}) )

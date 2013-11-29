@@ -172,7 +172,7 @@ handlers = {
     for( var i = 0; i < room.clients.length; i++ ){
       var _client = room.clients[ i ]
       if( _client.nick === to ) {
-        _client.send( JSON.stringify( { msg:'collaborationRequest', from:client.nick } ) )
+        _client.send( JSON.stringify( { msg:'collaborationRequest', from:client.nick, enableRemoteExecution:msg.enableRemoteExecution } ) )
         break;
       }
     }
@@ -260,7 +260,8 @@ handlers = {
           from: msg.from,
           selectionRange : msg.selectionRange,
           code: msg.code,
-          msg: 'remoteExecution'
+          msg: 'remoteExecution',
+          shareName:msg.shareName
         }
     
     to.send( JSON.stringify( _msg ) )
