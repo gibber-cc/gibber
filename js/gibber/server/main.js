@@ -127,7 +127,7 @@ function escapeString( string ) {
 }
   
 // var app = express();
-
+app.engine('htm', require('ejs').renderFile);
 app.configure( function() {
   app.set('views', serverRoot + '/snippets')
   app.set('view engine', 'ejs')
@@ -280,6 +280,18 @@ app.get( '/welcome', function( req, res, next ) {
   res.render( 'welcome', {
     user:req.user
   })
+})
+
+app.get( '/documentation', function( req, res, next ) {
+  res.render( 'docs', {
+    user:req.user
+  })
+})
+
+app.get( '/docs/', function( req,res,next ) { 
+  console.log('DOCS!!!!!!!!!!!!!!!!!!!!!!!!', req.query )
+
+  res.render( '../docs/output/'+req.query.group+'/'+req.query.file+'.htm' )
 })
 
 app.get( '/browser', function( req, res, next ) {

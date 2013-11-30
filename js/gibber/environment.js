@@ -155,7 +155,48 @@ var GE = Gibber.Environment = {
       GE.Theme.applyTheme( obj )
     },
   },
-  
+  Docs : {
+    files: {},
+    open : function() {
+      this.col = GE.Layout.addColumn({ header:'Documentation' })
+
+      location.href = '#'
+      location.href = '#' + this.col.id
+
+      this.col.bodyElement.remove()
+      
+      this.getIndex()
+    },
+    getIndex : function() {
+      $( '#docs' ).empty()
+      $.ajax({
+        url: SERVER_URL + "/documentation",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var docs = $( data )
+        $( GE.Docs.col.element ).append( docs )
+        GE.Docs.col.bodyElement = docs
+        GE.Layout.setColumnBodyHeight( GE.Docs.col )
+      }) 
+    },
+    openFile : function( group, name ) {
+      console.log( "OPENING", group, name )
+      $.ajax({
+        url:'docs/?group=' + group + '&file='+name,
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var docs = $( data )
+        $( '#docs' ).empty()
+        $( '#docs' ).append( $('<button>').text('Back To Table of Contents')
+                            .on('click', function() { $('#docs').remove(); GE.Docs.getIndex() } ) ) 
+        $( '#docs' ).append( docs )
+        GE.Docs.bodyElement = docs
+        GE.Layout.setColumnBodyHeight( GE.Docs.col )
+      }) 
+    },
+  }, 
   Keymap : {
     init : function() {
       // this has to be done here so that it works when no editors are focused

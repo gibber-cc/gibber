@@ -161,6 +161,46 @@ tfoot, thead {
   padding-left:0em;
   list-style:disc;
 }
+#docs a {
+  color:#ccc;
+  text-decoration:none;
+}
+
+#docs button { margin: 1em 0; }
+#docs h1 { 
+  font-size:1.5em;
+  padding:0;
+  display:block;
+}
+
+#docs h2 {
+  font-size:1.25em;
+  font-weight: normal;
+  display:block;
+  color:#ccc;
+  background:#333;
+}
+
+#docs {
+  padding: 0 .6em;
+  overflow: scroll;
+  -moz-box-sizing: border-box !important;
+  box-sizing: border-box !important;
+}
+
+#docs pre {
+  float: none !important;
+  clear: none !important;
+  display: block;
+}
+#docs li {
+  margin: .5em 0;
+}
+#docs em{
+  font-weight:bold;
+  font-style:normal
+}
+
 .console-normal {
   font-weight:normal;
   color:#ccc;
