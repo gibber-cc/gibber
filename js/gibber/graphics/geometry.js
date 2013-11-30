@@ -6,7 +6,7 @@ var types = {
       Cube:   { width:50, height:50, depth:50 },
       Sphere: { radius:50, segments:16, rings: 16 },
       Torus:  { radius:50, tube:10, radialSegments:8, tubularSegments:8, arc:Math.PI * 2 },
-      TorusKnot: { radius: 100, tube:40, radialSegments:64, tubularSegments: 8, p:2, q:3, heightScale:1 },
+      TorusKnot: { radius: 50, tube:20, radialSegments:64, tubularSegments: 8, p:5, q:3, heightScale:1 },
       Plane: { width:1, height:1, segmentsWidth:1, segmentsHeight:1 },
     },
     vectors = [ 'rotation', 'scale', 'position' ],

@@ -158,10 +158,6 @@
         var args = Array.prototype.slice.call(arguments, 0),
             obj
             
-        //if( typeof args !== 'undefined' && !$.isPlainObject( args[0] ) ) {
-        //  args.unshift(0) // insert a 0 into args array to be a placeholder for input
-        //}
-
         obj = new Gibberish[ type ]()
         obj.type = 'FX'
         obj.name = name
@@ -195,7 +191,9 @@
   }
   
   Gibber.FX.LPF = function( cutoff, resonance ) {
-  	var that = Filter24( cutoff, resonance, true )
+    var _cutoff = isNaN(cutoff) ? .2 : cutoff,
+        _resonance = isNaN( resonance ) ? 3.5 : resonance, 
+        that = Filter24( _cutoff, _resonance, true )
     
   	that.name = 'LPF'
     that.type = 'FX'
@@ -204,7 +202,9 @@
   }
   
   Gibber.FX.HPF = function( cutoff, resonance ) {
-  	var that = Filter24( cutoff, resonance, false )
+  	var _cutoff = isNaN( cutoff ) ? .25 : cutoff,
+        _resonance = isNaN( resonance ) ? 3.5 : resonance, 
+        that = Filter24( _cutoff, _resonance, true )
     
     that.isLowPass = false
   	that.name = 'HPF'
