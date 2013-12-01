@@ -5,7 +5,7 @@ var request         = require( 'request' ),
     url             = require( 'url' ),
     fs              = require( 'fs' ),
     passport        = require( 'passport' ),
-    flash           = require( 'connect-flash' ),
+    //flash           = require( 'connect-flash' ),
     express         = require( 'express' ),
     sharejs         = require( 'share' ).server,
     app             = express(),
@@ -138,7 +138,7 @@ app.configure( function() {
   //app.use(express.methodOverride())
   app.use( express.session({ secret: 'gibber gibberish gibbering' }) )
   // Initialize Passport!  Also use passport.session() middleware, to support persistent login sessions (recommended)
-  app.use( flash() )
+  // app.use( flash() )
   app.use( passport.initialize() )
   app.use( passport.session() )
   // app.use( allowCrossDomain )
@@ -197,7 +197,7 @@ app.get( '/account', ensureAuthenticated, function(req, res){
 
 app.get( '/login', function(req, res){
   // console.log(" LOGIN?  ")
-  res.render( 'login_start', { user: req.user, message: req.flash('error') });
+  res.render( 'login_start', { user: req.user, message:'login' /*req.flash('error')*/ });
 })
 
 app.get( '/loginStatus', function( req, res ) {
@@ -225,7 +225,7 @@ app.post( '/retrieve', function( req, res, next ) {
 })
 
 app.get( '/create_publication', function( req, res, next ) {
-  res.render( 'create_publication', { user: req.user, message: req.flash('error') });
+  res.render( 'create_publication', { user: req.user, message:'publication' /*req.flash('error')*/ });
 })
 
 app.post( '/publish', function( req, res, next ) {
@@ -326,7 +326,7 @@ app.get( '/browser', function( req, res, next ) {
           _3d:_3d,
           misc:_misc,
           userfiles:(JSON.parse(_b)).rows,
-          message: req.flash('error')
+          // message: req.flash('error')
         });
       })
     }else{
@@ -338,7 +338,7 @@ app.get( '/browser', function( req, res, next ) {
         _3d:_3d,
         misc:_misc,
         userfiles:[],
-        message: req.flash('error')
+        // message: req.flash('error')
       });
     }
   });

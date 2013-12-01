@@ -768,24 +768,30 @@ var GE = Gibber.Environment = {
       this.resizeColumns()
     },
     
-    handleResizeEventForColumn : function(col) {
-    	col.resizeHandle.mousedown( function(e) {
-    		$( "body" ).css( "-webkit-user-select", "none" );
-
-    		$( window ).mousemove( function( e ) {
+    handleResizeEventForColumn : function(_col) {
+      ( function() {
+        var col = _col,
+        columnResizeHandler = function(e) {
           var newWidthCandidate = e.pageX - col.element.position().left
           col.width = newWidthCandidate > 300 ? newWidthCandidate : 300
           col.element.width( col.width )
 
           GE.Layout.resizeColumns()
-    		});
+        },
+        columnResizeEndHandler = function(e) {
+          $( window ).unbind( "mousemove", columnResizeHandler );
+          $( window ).unbind( "mouseup", columnResizeEndHandler );
+          $( "body ").css( "-webkit-user-select", "text" );
+        };
 
-    		$( window ).mouseup( function(e) {
-    			$( window ).unbind( "mousemove" );
-    			$( window ).unbind( "mouseup" );
-    			$( "body ").css( "-webkit-user-select", "text" );
-    		});
-      })
+        col.resizeHandle.on( 'mousedown', function(e) {
+          $( "body" ).css( "-webkit-user-select", "none" );
+
+          $( window ).on( 'mousemove', columnResizeHandler )
+
+          $( window ).on( 'mouseup',  columnResizeEndHandler )
+        })
+      })()
     },
     setColumnBodyHeight : function( col ) {
       var headerHeight = $('thead').height(),

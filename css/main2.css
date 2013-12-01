@@ -161,10 +161,11 @@ tfoot, thead {
   padding-left:0em;
   list-style:disc;
 }
-#docs a {
-  color:#ccc;
-  text-decoration:none;
+#docs a, #help a {
+  color:#ccc;  
 }
+
+#docs a { text-decoration:none; }
 
 #docs button { margin: 1em 0; }
 #help h1, #docs h1 { 

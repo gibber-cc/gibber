@@ -17,7 +17,6 @@ io.sockets.on( 'connection', function( client ) {
 
   client.on( 'message', function( _msg ) {
     var msg = JSON.parse( _msg )
-    console.log( msg )  
     handlers[ msg.cmd ]( client, msg )
   })
 
