@@ -287,10 +287,12 @@ app.get( '/documentation', function( req, res, next ) {
     user:req.user
   })
 })
-
+app.get( '/help', function( req, res, next ) {
+  res.render( 'help', {
+    user:req.user
+  })
+})
 app.get( '/docs/', function( req,res,next ) { 
-  console.log('DOCS!!!!!!!!!!!!!!!!!!!!!!!!', req.query )
-
   res.render( '../docs/output/'+req.query.group+'/'+req.query.file+'.htm' )
 })
 

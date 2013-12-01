@@ -167,13 +167,14 @@ tfoot, thead {
 }
 
 #docs button { margin: 1em 0; }
-#docs h1 { 
+#help h1, #docs h1 { 
   font-size:1.5em;
+  margin: .75em 0 0 0;
   padding:0;
   display:block;
 }
 
-#docs h2 {
+#help h2, #docs h2 {
   font-size:1.25em;
   font-weight: normal;
   display:block;
@@ -181,7 +182,7 @@ tfoot, thead {
   background:#333;
 }
 
-#docs {
+#docs, #help, .browser {
   padding: 0 .6em;
   overflow: scroll;
   -moz-box-sizing: border-box !important;
@@ -193,8 +194,8 @@ tfoot, thead {
   clear: none !important;
   display: block;
 }
-#docs li {
-  margin: .5em 0;
+#help li, #docs li {
+  margin: .35em 0;
 }
 #docs em{
   font-weight:bold;
@@ -285,6 +286,12 @@ tfoot, thead {
   line-height:2em;
   position:fixed;
 }
+
+
+.mono { 
+  font-family:monospace;
+  font-size:1.25em
+ }
 
 .login a { color: #ccc; }
 

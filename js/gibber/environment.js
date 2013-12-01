@@ -19,7 +19,6 @@ var GE = Gibber.Environment = {
                 'gibber/console',
                 'gibber/mouse',
                 'external/mousetrap',
-                'gibber/help',
                 'gibber/chat',
                 'gibber/share',
                 ], function() {
@@ -155,10 +154,37 @@ var GE = Gibber.Environment = {
       GE.Theme.applyTheme( obj )
     },
   },
+  Help : {
+    open : function() {
+      this.col = GE.Layout.addColumn({ header:'Help' })
+
+      location.href = '#'
+      location.href = '#' + this.col.id
+
+      this.col.bodyElement.remove()
+      
+      this.getIndex()
+    },
+    getIndex : function() {
+      $( '#docs' ).empty()
+      $.ajax({
+        url: SERVER_URL + "/help",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var help = $( data )
+        $( GE.Help.col.element ).append( help )
+        GE.Help.col.bodyElement = help
+        GE.Layout.setColumnBodyHeight( GE.Help.col )
+      }) 
+    }, 
+
+
+  },
   Docs : {
     files: {},
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Documentation' })
+      this.col = GE.Layout.addColumn({ header:'Reference' })
 
       location.href = '#'
       location.href = '#' + this.col.id
@@ -285,24 +311,24 @@ var GE = Gibber.Environment = {
           }
         },
         
-        "Alt-Enter": function(cm) {          
-          var col = GE.Layout.columns[ GE.Layout.focusedColumn - 1 ],
-              v = col.value
+        // "Alt-Enter": function(cm) {          
+        //   var col = GE.Layout.columns[ GE.Layout.focusedColumn - 1 ],
+        //       v = col.value
           
-          if( GE.modes[ col.modeIndex % GE.modes.length ] !== 'x-shader/x-fragment' ) {
-            Gibber.run( v, pos, cm )  
-          }else{
-            var shader = Gibber.Graphics.makeFragmentShader( v )
-          	col.shader.material = new THREE.ShaderMaterial({
+        //   if( GE.modes[ col.modeIndex % GE.modes.length ] !== 'x-shader/x-fragment' ) {
+        //     Gibber.run( v, pos, cm )  
+        //   }else{
+        //     var shader = Gibber.Graphics.makeFragmentShader( v )
+        //   	col.shader.material = new THREE.ShaderMaterial({
 
-          		uniforms: col.shader.uniforms,
-          		vertexShader: shader.vertexShader,
-          		fragmentShader: shader.fragmentShader
+        //   		uniforms: col.shader.uniforms,
+        //   		vertexShader: shader.vertexShader,
+        //   		fragmentShader: shader.fragmentShader
 
-          	});
-          }
+        //   	});
+        //   }
           
-        },
+        // },
                 
         "Ctrl-L": function(cm) {
           var name = window.prompt("layout to load:")
@@ -341,7 +367,7 @@ var GE = Gibber.Environment = {
           Gibber.Clock.codeToExecute.push( { code:v, pos:pos, cm:cm } )
         },
         
-        "Shift-Alt-Enter": function(cm) {
+        "Alt-Enter": function(cm) {
             var result = Gibber.Environment.selectCurrentBlock( cm );
             
             Gibber.run( result.text, cm.getCursor(), cm );
@@ -352,7 +378,7 @@ var GE = Gibber.Environment = {
             }, 250);
         },
         
-        "Shift-Ctrl-Alt-Enter": function(cm) {
+        "Shift-Alt-Enter": function(cm) {
             var result = Gibber.Environment.selectCurrentBlock( cm );
 
             Gibber.Clock.codeToExecute.push( { code:result.text, pos:cm.getCursor(), cm:cm } );
@@ -862,7 +888,7 @@ var GE = Gibber.Environment = {
         GE.Account.newPublicationForm()
       })
       $( '#browseButton' ).on( 'click', function(e) {
-        GE.Browser.newBrowser()
+        GE.Browser.open()
       })
       $( '#addCodeButton' ).on( 'click', function(e) {
         GE.Layout.addColumn({ fullScreen:true, type:'code' })
@@ -872,6 +898,9 @@ var GE = Gibber.Environment = {
       })
       $( '#chatButton' ).on( 'click', function(e) {
         GE.Chat.open()
+      })
+      $( '#helpButton' ).on( 'click', function(e) {
+        GE.Help.open()
       })
     }
   },
@@ -908,8 +937,8 @@ var GE = Gibber.Environment = {
     },
   }, 
   Browser : {
-    newBrowser: function() {
-      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Browse Giblets' })
+    open: function() {
+      var col = GE.Layout.addColumn({ header:'Browse Giblets' })
       
       //col.element.addClass( 'browser' )
       
@@ -923,8 +952,11 @@ var GE = Gibber.Environment = {
         dataType:'html'
       })
       .done( function( data ) {
-        $( col.element ).append( data );
+        var browser = $( data )
+        $( col.element ).append( browser );
         $( '#search_button' ).on( 'click', GE.Browser.search )
+        col.bodyElement = browser;
+        GE.Layout.setColumnBodyHeight( col )
       })
     },
     

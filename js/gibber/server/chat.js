@@ -93,8 +93,9 @@ handlers = {
           for( var i = 0; i < rooms[ msg.room ].clients.length; i++ ) {
             occupants.push( rooms[ msg.room ].clients[ i ].nick )
           }
-          rooms[ msg.room ].clients.push( client )
-
+          if( rooms[ msg.room ].clients.indexOf( client ) === -1 ) {
+            rooms[ msg.room ].clients.push( client )
+          }
           response = { msg:'roomJoined', roomJoined: msg.room, occupants:occupants }
 
           notification = JSON.stringify( { msg:'arrival', nick:client.nick } )
@@ -110,7 +111,9 @@ handlers = {
           occupants.push( rooms[ msg.room ].clients[ i ].nick )
         }
 
-        rooms[ msg.room ].clients.push( client )
+        if( rooms[ msg.room ].clients.indexOf( client ) === -1 ) {
+          rooms[ msg.room ].clients.push( client )
+        }
 
         response = { msg:'roomJoined', roomJoined: msg.room, occupants:occupants }
 
