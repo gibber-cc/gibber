@@ -66,6 +66,7 @@ for( var key in types) {
         Gibber.Graphics.use( '3d' )
       }
       
+      Gibber.Graphics.running = true      
       var args = processArgs( arguments, type, shape )
       console.log( 'ARGS', args )      
       this.name = type

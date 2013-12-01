@@ -10,7 +10,9 @@
           three = null;
 
       Gibber.Graphics.clear()
-      console.log("2D", cnvs)
+
+      Gibber.Graphics.running = true
+
       if( cnvs !== null ) {
         cnvs.sprite.remove()
         try{

@@ -230,6 +230,8 @@ var PP = Gibber.Graphics.PostProcessing = {
   composer : null,
   fx: [],
   init : function() {
+    Gibber.Graphics.running = true
+
     this.composer = new THREE.EffectComposer( Gibber.Graphics.renderer );
     
 		this.renderScene = new THREE.RenderPass( Gibber.Graphics.scene, Gibber.Graphics.camera );

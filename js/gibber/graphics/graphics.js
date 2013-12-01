@@ -70,6 +70,22 @@ var Graphics = Gibber.Graphics = {
       get: function() { return res; },
       set: function(v) { res = v; self.assignWidthAndHeight() }
     });
+
+    var running = false
+    Object.defineProperty(this, 'running', {
+      get: function() { return running },
+      set: function(v) {
+        if( v !== running ) {
+          if( running === true ) { // switching to false, clear screen
+            self.render()
+            running = v
+          }else{ // switching to true, restart animation timer
+            running = v
+            self.render()
+          }
+        }
+      }
+    });
   },
   
   createScene : function( mode ) {		
@@ -161,7 +177,14 @@ var Graphics = Gibber.Graphics = {
       for( var i = 0; i < this.graph.length; i++ ) {
         this.graph[ i ].remove( true )
       }
+
       this.graph.length = 0
+      // if( this.PostProcessing ) this.PostProcessing.fx.length = 0
+      for( var j = this.PostProcessing.fx - 1; j >= 0; j++ ) {
+        this.PostProcessing.fx[ j ].remove()
+      }
+      
+      this.running = false
     }
   },
   render : function() {

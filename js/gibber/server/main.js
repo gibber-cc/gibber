@@ -25,7 +25,7 @@ var request         = require( 'request' ),
     chat            = null;
 
 gibber.server = server
-chat = require( './chat.js' )
+require( './chat.js' )
 
 sharejs.attach( app, { db: {type:'none' }, browserChannel: { cors:'*' } } )
 

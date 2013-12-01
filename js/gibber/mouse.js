@@ -74,14 +74,18 @@
         _m[ 'button' ] = 0
       },
       on: function() {
-        _m.ww = $( window ).width()
-        _m.wh = $( window ).height()
-        $( window ).on( 'mousemove', _m._onmousemove )
-        _m.isOn = true
+        if( ! _m.isOn ) {
+          _m.ww = $( window ).width()
+          _m.wh = $( window ).height()
+          $( window ).on( 'mousemove', _m._onmousemove )
+          _m.isOn = true
+        }
       },
       off: function() {
-        $( window ).off( 'mousemove', _m._onmousemove  )
-        _m.isOn = false
+        if( _m.isOn ) {
+          $( window ).off( 'mousemove', _m._onmousemove  )
+          _m.isOn = false
+        }
       },
       toggle : function() {
         if( _m.isOn ) {

@@ -196,7 +196,7 @@ tfoot, thead {
   display: block;
 }
 #help li, #docs li {
-  margin: .35em 0;
+  margin: .2em 0;
 }
 #docs em{
   font-weight:bold;
