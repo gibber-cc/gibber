@@ -76,7 +76,6 @@ passport.deserializeUser(function(id, done) {
 //   however, in this example we are using a baked-in set of users.
 passport.use(new LocalStrategy(
   function(username, password, done) {
-    console.log("VERIFYING...", username, password)
     // asynchronous verification, for effect...
     process.nextTick(function () {
       
@@ -85,7 +84,6 @@ passport.use(new LocalStrategy(
       // indicate failure and set a flash message.  Otherwise, return the
       // authenticated `user`.
       findByUsername(username, function(err, user) {
-        console.log( username, password, user)
         if (err) { return done(err); }
         if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
         if (user.password != password) { return done(null, false, { message: 'Invalid password' }); }
@@ -158,10 +156,11 @@ app.get( '/', function(req, res){
   console.log( req.query )
   if( req.query && req.query.path ) {
     request('http://localhost:5984/gibber/' + escapeString(req.query.path), function(err, response, body) {
-      
-      // res.send( body )
-      res.render( 'index', { loadFile:body } )
-      // res.redirect( 'http://gibber.mat.ucsb.edu/?url='+url, { loadFile: body } )
+      if( body && typeof body.error !== 'undefined' ) {
+        res.render( 'index', { loadFile:body } )
+      }else{
+        res.render( 'index', { loadFile: JSON.stringify({ error:'path not found' }) })
+      }
     })
   }else{
     res.render( 'index', { loadFile:null } )
@@ -214,7 +213,7 @@ app.post( '/retrieve', function( req, res, next ) {
 })
 
 app.get( '/create_publication', function( req, res, next ) {
-  res.render( 'create_publication', { user: req.user, message:'publication' /*req.flash('error')*/ });
+  res.render( 'create_publication', { user: req.user, message:'publication' } );
 })
 
 app.post( '/publish', function( req, res, next ) {

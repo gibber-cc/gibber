@@ -651,7 +651,8 @@ var GE = Gibber.Environment = {
       }else if( options.mode ) {
         mode = modes[ options.mode ]
       }
-      var _value = window.loadFile ? window.loadFile.text  :  [
+      var shouldDisplayLoadFile = window.loadFile !== null && typeof window.loadFile.error === 'undefined' && this.columns.length === 1, // make sure it's only on the first load
+          _value = shouldDisplayLoadFile ? window.loadFile.text  :  [
             "/*",
             "Giblet #1 - by thecharlie",
             "In this sketch, the mouse position drives the",
@@ -711,7 +712,10 @@ var GE = Gibber.Environment = {
       this.resizeColumns()
 
       $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).offset().left }, 'slow' );
-
+      
+      if( window.loadFile && window.loadFile.error && this.columns.length === 1 ) {
+        GE.Message.post('You attempted to load a document that does not exist. Please check the URL you entered and try again.')
+      }
       return col
     },
     
