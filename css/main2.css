@@ -161,21 +161,21 @@ tfoot, thead {
   padding-left:0em;
   list-style:disc;
 }
-#docs a, #help a {
+#docs a, #help a, #credits a {
   color:#ccc;  
 }
 
 #docs a { text-decoration:none; }
 
 #docs button { margin: 1em 0; }
-#help h1, #docs h1 { 
+#help h1, #docs h1, #credits h1 { 
   font-size:1.5em;
   margin: .75em 0 0 0;
   padding:0;
   display:block;
 }
 
-#help h2, #docs h2 {
+#help h2, #docs h2, #credits h2 {
   font-size:1.25em;
   font-weight: normal;
   display:block;
@@ -183,7 +183,7 @@ tfoot, thead {
   background:#333;
 }
 
-#docs, #help, .browser {
+#docs, #help, .browser, #credits {
   padding: 0 .6em;
   overflow: scroll;
   -moz-box-sizing: border-box !important;
@@ -195,7 +195,7 @@ tfoot, thead {
   clear: none !important;
   display: block;
 }
-#help li, #docs li {
+#help li, #docs li, #credits li {
   margin: .2em 0;
 }
 #docs em{

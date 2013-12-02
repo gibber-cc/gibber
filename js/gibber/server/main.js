@@ -109,9 +109,9 @@ var checkForREST = function( req, res, next ) {
   if( arr[1] === 'gibber' ) {
     arr.shift(); arr.shift(); // get rid of first two elements, the first / and gibber/
     var url = escapeString( arr.join('/') )
-    
     request('http://localhost:5984/gibber/'+ url, function(err, response, body) {
       res.send( body )
+      // res.redirect( 'http://gibber.mat.ucsb.edu/?url='+url, { loadFile: body } )
     })
   }else{
     next()  
@@ -138,57 +138,46 @@ app.configure( function() {
   //app.use(express.methodOverride())
   app.use( express.session({ secret: 'gibber gibberish gibbering' }) )
   // Initialize Passport!  Also use passport.session() middleware, to support persistent login sessions (recommended)
-  // app.use( flash() )
   app.use( passport.initialize() )
   app.use( passport.session() )
   // app.use( allowCrossDomain )
   app.use( app.router )
   app.use( checkForREST )
   
-  // app.use( browserChannel( { webserver: app }, function ( client ) {
-  //   var stream = new Duplex({objectMode: true});
-  //   stream._write = function (chunk, encoding, callback) {
-  //     if (client.state !== 'closed') {
-  //       client.send(chunk);
-  //     }
-  //     callback();
-  //   };
-  //   stream._read = function () {
-  //   };
-  //   stream.headers = client.headers;
-  //   stream.remoteAddress = stream.address;
-  //   client.on('message', function (data) {
-  //     stream.push(data);
-  //   });
-  //   stream.on('error', function (msg) {
-  //     client.stop();
-  //   });
-  //   client.on('close', function (reason) {
-  //     stream.emit('close');
-  //     stream.emit('end');
-  //     stream.end();
-  //   });
-  //   return share.listen(stream);
-  // }));
-
   app.use( express.static( serverRoot ) )
+  app.use(function(err, req, res, next){
+    console.error(err.stack);
+    res.send(500, 'Something broke!');
+  });
 })
 
 
   
 app.get( '/', function(req, res){
-  fs.readFile(serverRoot + "index.htm", function (err, data) {
-    if (err) {
-      next(err);
-      return;
-    }
-    res.writeHead( 200, {
-      'Content-Type': 'text/html',
-      'Content-Length': data.length
+  
+  console.log( req.query )
+  if( req.query && req.query.path ) {
+    request('http://localhost:5984/gibber/' + escapeString(req.query.path), function(err, response, body) {
+      
+      // res.send( body )
+      res.render( 'index', { loadFile:body } )
+      // res.redirect( 'http://gibber.mat.ucsb.edu/?url='+url, { loadFile: body } )
     })
+  }else{
+    res.render( 'index', { loadFile:null } )
+  }
+  // fs.readFile(serverRoot + "index.htm", function (err, data) {
+  //   if (err) {
+  //     next(err);
+  //     return;
+  //   }
+  //   res.writeHead( 200, {
+  //     'Content-Type': 'text/html',
+  //     'Content-Length': data.length
+  //   })
 
-    res.end( data )
-  })
+  //   res.end( data )
+  // })
 })
 
 app.get( '/account', ensureAuthenticated, function(req, res){
@@ -229,6 +218,7 @@ app.get( '/create_publication', function( req, res, next ) {
 })
 
 app.post( '/publish', function( req, res, next ) {
+  console.log(" PUBLISH ", req.body )
   var date = new Date(),
       day  = date.getDate(),
       month = date.getMonth() + 1,
@@ -245,6 +235,7 @@ app.post( '/publish', function( req, res, next ) {
         publicationDate: [year, month, day, time],
         text: req.body.code,
         tags: req.body.tags,
+        permissions : req.body.permissions,
         notes: req.body.notes
       }
     },
@@ -295,7 +286,9 @@ app.get( '/help', function( req, res, next ) {
 app.get( '/docs/', function( req,res,next ) { 
   res.render( '../docs/output/'+req.query.group+'/'+req.query.file+'.htm' )
 })
-
+app.get( '/credits', function( req,res,next ) { 
+  res.render( 'credits' )
+})
 app.get( '/browser', function( req, res, next ) {
   request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
     // console.log( (JSON.parse(b)).rows )
@@ -320,7 +313,7 @@ app.get( '/browser', function( req, res, next ) {
       request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
         res.render( 'browser', {
           user: req.user,
-          demos:(JSON.parse(b)).rows,
+          demos:( JSON.parse(b) ).rows,
           audio:_audio,
           _2d:_2d,
           _3d:_3d,

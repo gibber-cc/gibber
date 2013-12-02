@@ -1,13 +1,17 @@
 <html>
 
 <head>
-  <script src="js/external/script.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="http://gibber.mat.ucsb.edu/js/external/script.min.js" type="text/javascript" charset="utf-8"></script>
 
-  <link rel="stylesheet" href="css/main2.css" type="text/css" media="screen" title="no title" charset="utf-8">
-  <link rel="stylesheet" href="css/external/codemirror/codemirror.css" type="text/css" media="screen" title="no title" charset="utf-8">
-  <link rel="stylesheet" href="css/external/codemirror/gibber.css" type="text/css" media="screen" title="no title" charset="utf-8">
-  <link rel="stylesheet" href="css/external/codemirror/show-hint.css" type="text/css" media="screen" title="no title" charset="utf-8">
-  
+  <link rel="stylesheet" href="../css/main2.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="../css/external/codemirror/codemirror.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="../css/external/codemirror/gibber.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="../css/external/codemirror/show-hint.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <% if( loadFile ) { %>
+  <script type="text/javascript">
+    window.loadFile = <%- loadFile %>
+  </script>
+  <% } %> 
 </head>
 
 <body>
@@ -57,7 +61,7 @@
 
 <script>
   
-  $script.path( 'js/' )
+  $script.path( 'http://gibber.mat.ucsb.edu/js/' )
   $script( 'main' )
   
 </script>

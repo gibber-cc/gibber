@@ -158,9 +158,6 @@ var GE = Gibber.Environment = {
     open : function() {
       this.col = GE.Layout.addColumn({ header:'Help' })
 
-      location.href = '#'
-      location.href = '#' + this.col.id
-
       this.col.bodyElement.remove()
       
       this.getIndex()
@@ -181,13 +178,32 @@ var GE = Gibber.Environment = {
 
 
   },
+  Credits : {
+    open : function() {
+      this.col = GE.Layout.addColumn({ header:'Credits' })
+
+      this.col.bodyElement.remove()
+      
+      this.getIndex()
+    },
+    getIndex : function() {
+      $( '#docs' ).empty()
+      $.ajax({
+        url: SERVER_URL + "/credits",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var credits = $( data )
+        $( GE.Credits.col.element ).append( credits )
+        GE.Credits.col.bodyElement = credits
+        GE.Layout.setColumnBodyHeight( GE.Credits.col )
+      }) 
+    }, 
+  },
   Docs : {
     files: {},
     open : function() {
       this.col = GE.Layout.addColumn({ header:'Reference' })
-
-      location.href = '#'
-      location.href = '#' + this.col.id
 
       this.col.bodyElement.remove()
       
@@ -635,17 +651,7 @@ var GE = Gibber.Environment = {
       }else if( options.mode ) {
         mode = modes[ options.mode ]
       }
-      
-      if( isCodeColumn ) {
-        col.bodyElement.width( columnWidth - resizeHandleSize )
-        col.element.append( col.bodyElement )
-        col.editor = CodeMirror( col.bodyElement[0], {
-          theme:  'gibber',
-          keyMap: 'gibber',
-          mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
-          autoCloseBrackets: true,
-          matchBrackets: true,
-          value:[
+      var _value = window.loadFile ? window.loadFile.text  :  [
             "/*",
             "Giblet #1 - by thecharlie",
             "In this sketch, the mouse position drives the",
@@ -669,7 +675,18 @@ var GE = Gibber.Environment = {
             "d = Delay({ time: Mouse.X, feedback: Mouse.Y })",
             "",
             "b.fx.add( d )",
-          ].join('\n'),
+          ].join('\n');      
+
+      if( isCodeColumn ) {
+        col.bodyElement.width( columnWidth - resizeHandleSize )
+        col.element.append( col.bodyElement )
+        col.editor = CodeMirror( col.bodyElement[0], {
+          theme:  'gibber',
+          keyMap: 'gibber',
+          mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
+          autoCloseBrackets: true,
+          matchBrackets: true,
+          value: _value,
           lineWrapping: false,
           tabSize: 2,
           autofocus: options.autofocus || false,
@@ -688,11 +705,13 @@ var GE = Gibber.Environment = {
       col.element.addClass( colNumber )
       col.element.attr( 'id', colNumber )
       col.id = colNumber
-           
+      
       this.handleResizeEventForColumn( col )
       
       this.resizeColumns()
-      
+
+      $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).offset().left }, 'slow' );
+
       return col
     },
     
@@ -908,6 +927,10 @@ var GE = Gibber.Environment = {
       $( '#helpButton' ).on( 'click', function(e) {
         GE.Help.open()
       })
+      $( '#creditsButton' ).on( 'click', function(e) {
+        console.log('credits!')
+        GE.Credits.open()
+      })
     }
   },
   
@@ -925,9 +948,6 @@ var GE = Gibber.Environment = {
   Welcome : {
     init : function() {
       var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
-      location.href = '#'
-      location.href = '#' + col.id
-      
       col.bodyElement.remove()
 
       $.ajax({
@@ -947,9 +967,6 @@ var GE = Gibber.Environment = {
       var col = GE.Layout.addColumn({ header:'Browse Giblets' })
       
       //col.element.addClass( 'browser' )
-      
-      location.href = '#'
-      location.href = '#' + col.id
       
       col.bodyElement.remove()
       
@@ -1073,7 +1090,7 @@ var GE = Gibber.Environment = {
       })
       .done( function (data) {
         if( !data.error ) {
-          console.log( "LOGIN RESPONSE", data )
+          // console.log( "LOGIN RESPONSE", data )
           $( '.login' ).empty()
           $( '.login' ).append( $('<span>welcome, ' + data.username + '.  </span>' ) )
           GE.Account.nick = data.username
@@ -1101,14 +1118,11 @@ var GE = Gibber.Environment = {
           $( "#loginForm h5" ).text( "Your name or password was incorrect. Please try again." )
         }
       })
-      .fail( function(error) { console.log("FAILED FUCK"); console.log( error )})
+      .fail( function(error) {console.log( error )})
 
     },
     newAccountForm: function() {
       var col = GE.Layout.addColumn({ header:'Create an account' })
-      location.href = '#'
-      location.href = '#' + col.id
-      
       GE.Account.newAccountColumn = col
 
       $( '#loginForm' ).remove()
@@ -1123,9 +1137,6 @@ var GE = Gibber.Environment = {
       GE.Account.publicationColumn = col
 
       col.element.addClass('publication_form')
-      
-      // location.href = '#'
-      // location.href = '#' + col.id
       
       col.bodyElement.remove()
       
@@ -1173,9 +1184,6 @@ var GE = Gibber.Environment = {
 
       // col.element.remove()
       GE.Layout.removeColumn( GE.Account.newAccountColumn.id )     
-      
-      // location.href = '#'
-      // location.href = '#' + GE.Layout.columns[ GE.Layout.columns.length - 1].id      
     },
     publish : function() {
       var url = SERVER_URL + '/publish'
@@ -1183,23 +1191,26 @@ var GE = Gibber.Environment = {
       //GE.Spinner.spin( $('.publication_form')[0] 
       
       var columnNumber = $( '#new_publication_column' ).val()
-        
+
+      console.log("I'm trying", url, columnNumber)
       $.ajax({
         type:"POST",
         url: SERVER_URL + '/publish',
         data: {
           name: $( '#new_publication_name' ).val(),
           code: GE.Layout.columns[ columnNumber ].editor.getValue(),
+          permissions: $( '#new_publication_permissions' ).val() === 'on',
           tags: $( '#new_publication_tags' ).val().split(','),
           notes: $( '#new_publication_notes' ).val() 
          },
         dataType:'json'
       })
       .done( function ( data ) {
-        GE.Message.post( 'Your publication has been saved to: ' + SERVER_URL + '/gibber/' + data.url )
+        GE.Message.post( 'Your publication has been saved to: ' + SERVER_URL + '/?path=' + data.url )
         GE.Layout.removeColumn( parseInt( $( '.publication_form' ).attr( 'id' ) ) )
       })
       .fail( function(e) { console.log( "FAILED TO PUBLISH", e ) } )
+     
     }
   },
 }
