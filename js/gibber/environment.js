@@ -1083,7 +1083,7 @@ var GE = Gibber.Environment = {
             .on( 'click', function(e) {
               $.ajax({
                 type:"GET",
-                url:'http://127.0.0.1:3000/logout', 
+                url: SERVER_URL + '/logout', 
                 dataType:'json'
               }).done( function(data) {
                 $( '.login' ).empty()
@@ -1105,23 +1105,27 @@ var GE = Gibber.Environment = {
 
     },
     newAccountForm: function() {
-      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Create an account' })
+      var col = GE.Layout.addColumn({ header:'Create an account' })
       location.href = '#'
       location.href = '#' + col.id
-      //col.bodyElement.remove()
+      
+      GE.Account.newAccountColumn = col
+
       $( '#loginForm' ).remove()
       $.ajax({
         url:'./snippets/create_account.ejs',
         dataType:'html'
-      }).done( function( data ) { console.log( data ); $( col.element ).append( data ); } )
+      }).done( function( data ) { $( col.element ).append( data ); } )
     },
     newPublicationForm: function() {
       var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Publish a Giblet' })
       
+      GE.Account.publicationColumn = col
+
       col.element.addClass('publication_form')
       
-      location.href = '#'
-      location.href = '#' + col.id
+      // location.href = '#'
+      // location.href = '#' + col.id
       
       col.bodyElement.remove()
       
@@ -1133,7 +1137,7 @@ var GE = Gibber.Environment = {
         $( col.element ).append( data ); 
         for( var i = 0; i < GE.Layout.columns.length; i++ ) {
           var _col = GE.Layout.columns[ i ]
-          if( _col.isCodeColumn ) {
+          if( _col && _col.isCodeColumn ) {
             $('#new_publication_column').append( $( '<option>' + _col.id + '</option>' ) )
           }
         }
@@ -1167,21 +1171,25 @@ var GE = Gibber.Environment = {
         'json'
       )
 
-      col.element.remove()
-      location.href = '#'
-      location.href = '#' + GE.Layout.columns[ GE.Layout.columns.length - 1].id      
+      // col.element.remove()
+      GE.Layout.removeColumn( GE.Account.newAccountColumn.id )     
+      
+      // location.href = '#'
+      // location.href = '#' + GE.Layout.columns[ GE.Layout.columns.length - 1].id      
     },
     publish : function() {
       var url = SERVER_URL + '/publish'
       
-      //GE.Spinner.spin( $('.publication_form')[0] )
+      //GE.Spinner.spin( $('.publication_form')[0] 
+      
+      var columnNumber = $( '#new_publication_column' ).val()
         
       $.ajax({
         type:"POST",
         url: SERVER_URL + '/publish',
         data: {
           name: $( '#new_publication_name' ).val(),
-          code: GE.Layout.columns[0].editor.getValue(),
+          code: GE.Layout.columns[ columnNumber ].editor.getValue(),
           tags: $( '#new_publication_tags' ).val().split(','),
           notes: $( '#new_publication_notes' ).val() 
          },

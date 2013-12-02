@@ -175,7 +175,7 @@
  	
   	obj.amp   = isNaN(_amp) ? 1 : _amp;
 	
-  	if( obj.seq ) { Gibberish.future( obj.seq.tick, 1 ) }
+  	if( obj.seq.tick ) { Gibberish.future( obj.seq.tick, 1 ) }
     
     obj.note = function(nt) {
   		for(var key in this.kit) {
@@ -305,7 +305,7 @@
  	
   	obj.amp   = isNaN(_amp) ? 1 : _amp;
 	
-  	if( obj.seq ) { Gibberish.future( obj.seq.tick,1 ) }
+  	if( obj.seq.tick ) { Gibberish.future( obj.seq.tick,1 ) }
 
     var kcd = 1,
         scd = 1,

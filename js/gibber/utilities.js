@@ -41,19 +41,19 @@ Gibber.Utilities = {
   },
 
   future : function(func, time) { 
-    var seq = new Gibberish.Sequencer({
+    var __seq = new Gibberish.Sequencer({
       values:[
         function(){},
         function() {
           func();
-          seq.stop();
-          seq.disconnect();
+          __seq.stop();
+          __seq.disconnect();
         }
       ],
       durations:[ Gibber.Clock.time( time ) ]
     }).start()
     
-    return function(){ seq.stop(); seq.disconnect(); }
+    return function(){ __seq.stop(); __seq.disconnect(); }
   },
   
   shuffle : function( arr ) {

@@ -203,6 +203,9 @@ tfoot, thead {
   font-style:normal
 }
 
+#new_account button {
+  background:#111;
+}
 .console-normal {
   font-weight:normal;
   color:#ccc;
