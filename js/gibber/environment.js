@@ -714,6 +714,7 @@ var GE = Gibber.Environment = {
       $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).offset().left }, 'slow' );
       
       if( window.loadFile && window.loadFile.error && this.columns.length === 1 ) {
+        console.log( window.loadFile )
         GE.Message.post('You attempted to load a document that does not exist. Please check the URL you entered and try again.')
       }
       return col
@@ -1027,6 +1028,7 @@ var GE = Gibber.Environment = {
           d = JSON.parse(d)
           var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
           col.editor.setValue( d.text )
+          return false
         }
       )
     },
@@ -1044,7 +1046,7 @@ var GE = Gibber.Environment = {
     
     loginStatus : function() {
       $.ajax({ 
-        url:'./loginStatus',
+        url: SERVER_URL + '/loginStatus',
         dataType:'json'
       }).done( function( response ) { 
         if( response.username !== null ) {
@@ -1077,7 +1079,7 @@ var GE = Gibber.Environment = {
     
     createLoginWindow : function() {
       $.ajax({ 
-        url:'./login',
+        url:SERVER_URL + '/login',
         dataType:'html'
       }).done( function(response) { 
         $('body').append( response ); 
@@ -1107,7 +1109,10 @@ var GE = Gibber.Environment = {
                 url: SERVER_URL + '/logout', 
                 dataType:'json'
               }).done( function(data) {
+                GE.Account.nick = null
+
                 $( '.login' ).empty()
+
                 $( '.login' ).append( $('<a href="#">' )
                   .text( 'please login' )
                   .on('click', function(e) { 
@@ -1124,6 +1129,7 @@ var GE = Gibber.Environment = {
       })
       .fail( function(error) {console.log( error )})
 
+      return false
     },
     newAccountForm: function() {
       var col = GE.Layout.addColumn({ header:'Create an account' })
@@ -1131,32 +1137,38 @@ var GE = Gibber.Environment = {
 
       $( '#loginForm' ).remove()
       $.ajax({
-        url:'./snippets/create_account.ejs',
+        url: SERVER_URL + '/snippets/create_account.ejs',
         dataType:'html'
       }).done( function( data ) { $( col.element ).append( data ); } )
+
+      return false
     },
     newPublicationForm: function() {
-      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Publish a Giblet' })
-      
-      GE.Account.publicationColumn = col
+      if( GE.Account.nick !== null ) {
+        var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Publish a Giblet' })
+        
+        GE.Account.publicationColumn = col
 
-      col.element.addClass('publication_form')
-      
-      col.bodyElement.remove()
-      
-      $.ajax({
-        url: SERVER_URL + "/create_publication",
-        dataType:'html'
-      })
-      .done( function( data ) {
-        $( col.element ).append( data ); 
-        for( var i = 0; i < GE.Layout.columns.length; i++ ) {
-          var _col = GE.Layout.columns[ i ]
-          if( _col && _col.isCodeColumn ) {
-            $('#new_publication_column').append( $( '<option>' + _col.id + '</option>' ) )
+        col.element.addClass('publication_form')
+        
+        col.bodyElement.remove()
+        
+        $.ajax({
+          url: SERVER_URL + "/create_publication",
+          dataType:'html'
+        })
+        .done( function( data ) {
+          $( col.element ).append( data ); 
+          for( var i = 0; i < GE.Layout.columns.length; i++ ) {
+            var _col = GE.Layout.columns[ i ]
+            if( _col && _col.isCodeColumn ) {
+              $('#new_publication_column').append( $( '<option>' + _col.id + '</option>' ) )
+            }
           }
-        }
-      })
+        })
+      }else{
+        GE.Message.post('You must log in before publishing. Click the link in the upper right corner of the window to login (and create an account if necessary).')
+      }
     },
     processNewAccount: function() {
       var col = GE.Layout.columns[ GE.Layout.columns.length - 1],
@@ -1180,8 +1192,10 @@ var GE = Gibber.Environment = {
           if( data ) {
             GE.Message.post('New account created. Please login to verify your username and password.'); 
           } else { 
+            GE.Message.post( 'The account could not be created. Try a different username' )
             console.log( "RESPONSE", response )
           }
+          return false;
         },    
         'json'
       )
@@ -1196,7 +1210,6 @@ var GE = Gibber.Environment = {
       
       var columnNumber = $( '#new_publication_column' ).val()
 
-      console.log("I'm trying", url, columnNumber)
       $.ajax({
         type:"POST",
         url: SERVER_URL + '/publish',
@@ -1210,11 +1223,18 @@ var GE = Gibber.Environment = {
         dataType:'json'
       })
       .done( function ( data ) {
-        GE.Message.post( 'Your publication has been saved to: ' + SERVER_URL + '/?path=' + data.url )
+        if( data.error ) {
+          GE.Message.post( 'There was an error writing to Gibber\'s database. Error: ' + data.error )
+        }else{
+          GE.Message.post( 'Your publication has been saved to: ' + SERVER_URL + '/?path=' + data.url )
+        }
         GE.Layout.removeColumn( parseInt( $( '.publication_form' ).attr( 'id' ) ) )
+
+        return false
       })
       .fail( function(e) { console.log( "FAILED TO PUBLISH", e ) } )
-     
+      
+      return false 
     }
   },
 }

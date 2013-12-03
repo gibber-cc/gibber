@@ -95,7 +95,7 @@ passport.use(new LocalStrategy(
 
 //CORS middleware
 var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', ["127.0.0.1:3000", "127.0.0.1:8080"]);
+    res.header('Access-Control-Allow-Origin', ["http://localhost"]);
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
    // res.header('Access-Control-Allow-Headers', 'Content-Type');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept')
@@ -138,7 +138,7 @@ app.configure( function() {
   // Initialize Passport!  Also use passport.session() middleware, to support persistent login sessions (recommended)
   app.use( passport.initialize() )
   app.use( passport.session() )
-  // app.use( allowCrossDomain )
+  app.use( allowCrossDomain )
   app.use( app.router )
   app.use( checkForREST )
   
@@ -156,14 +156,15 @@ app.get( '/', function(req, res){
   console.log( req.query )
   if( req.query && req.query.path ) {
     request('http://localhost:5984/gibber/' + escapeString(req.query.path), function(err, response, body) {
-      if( body && typeof body.error !== 'undefined' ) {
+      console.log( body )
+      if( body && typeof body.error === 'undefined' ) {
         res.render( 'index', { loadFile:body } )
       }else{
         res.render( 'index', { loadFile: JSON.stringify({ error:'path not found' }) })
       }
     })
   }else{
-    res.render( 'index', { loadFile:null } )
+    res.render( 'index', { loadFile:'null' } )
   }
   // fs.readFile(serverRoot + "index.htm", function (err, data) {
   //   if (err) {
@@ -217,7 +218,7 @@ app.get( '/create_publication', function( req, res, next ) {
 })
 
 app.post( '/publish', function( req, res, next ) {
-  console.log(" PUBLISH ", req.body )
+  // console.log(" PUBLISH ", req.body )
   var date = new Date(),
       day  = date.getDate(),
       month = date.getMonth() + 1,
@@ -239,11 +240,15 @@ app.post( '/publish', function( req, res, next ) {
       }
     },
     function ( error, response, body ) {
-      if( error ) { 
-        console.log( error ) 
-      } else { 
-        // console.log( body )
-        res.send({ url: req.user.username + '/publications/' + req.body.name })
+      if( error ) {
+        res.send({ error:"unable to publish; most likely you used some reserved characters such as ? & or /" }) 
+      }else{
+        console.log( "Attempted to publish", body, req.body )
+        if( body.error ) {
+          res.send({ error:'could not publish to database. ' + body.reason })
+        }else{
+          res.send({ url: req.user.username + '/publications/' + req.body.name })
+        }
       }
     }
   )

@@ -789,6 +789,7 @@ window.Gibber = window.G = {
     
     kill: function() { 
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
+      if( this.seq ) this.seq.disconnect()
       end.disconnect()
       console.log( this.name + " has been terminated.")
     },
