@@ -651,7 +651,7 @@ var GE = Gibber.Environment = {
       }else if( options.mode ) {
         mode = modes[ options.mode ]
       }
-      var shouldDisplayLoadFile = window.loadFile !== null && typeof window.loadFile.error === 'undefined' && this.columns.length === 1, // make sure it's only on the first load
+      var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && this.columns.length === 1, // make sure it's only on the first load
           _value = shouldDisplayLoadFile ? window.loadFile.text  :  [
             "/*",
             "Giblet #1 - by thecharlie",
