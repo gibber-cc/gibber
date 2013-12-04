@@ -651,31 +651,36 @@ var GE = Gibber.Environment = {
       }else if( options.mode ) {
         mode = modes[ options.mode ]
       }
-      var shouldDisplayLoadFile = window.loadFile !== null && typeof window.loadFile.error === 'undefined' && this.columns.length === 1, // make sure it's only on the first load
+      var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && this.columns.length === 1, // make sure it's only on the first load
           _value = shouldDisplayLoadFile ? window.loadFile.text  :  [
             "/*",
-            "Giblet #1 - by thecharlie",
-            "In this sketch, the mouse position drives the",
-            "pitch of drums, the carrier to modulation",
-            "ratio of FM synthesis, and the feedback and",
-            "time of a delay.",
+            "* Giblet #1 - by thecharlie",
+            "* In this sketch, the mouse position drives the",
+            "* pitch of drums, the carrier to modulation",
+            "* ratio of FM synthesis, and the feedback and",
+            "* time of a delay.",
             "*/",
             "",
             "a = Drums('x*o*x*o-')",
             "a.pitch = Mouse.Y",
             "",
-            "b = FM({ attack:ms(1) })",
-            "b.index = a.Amp",
-            "b.cmRatio = Mouse.X",
+            "b = FM({ ",
+            "  attack:  ms(1),",
+            "  index:   a.Amp,",
+            "  cmRatio: Mouse.X",
+            "})",
+            "",
+            "b.fx.add(",
+            "  Delay({",
+            "    time:     Mouse.X,",
+            "    feedback: Mouse.Y",
+            "  })",
+            ")",
             "",
             "b.play( ",
             "  ['c2','c2','c2','c3','c4'].random(),",
             "  [1/4,1/8,1/16].random(1/16,2) ",
             ")",
-            "",
-            "d = Delay({ time: Mouse.X, feedback: Mouse.Y })",
-            "",
-            "b.fx.add( d )",
           ].join('\n');      
 
       if( isCodeColumn ) {
