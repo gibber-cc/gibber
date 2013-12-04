@@ -56,7 +56,39 @@ function findByUsername(username, fn) {
   )
 }
 
+function findByTag( tag, fn ) {
+   request(
+    { uri:'http://localhost:5984/gibber/_design/test/_view/tagged', json: true }, 
+    function(e,r,b) {
+      // console.log(b.rows)
+      var results = []
+      if(b.rows && b.rows.length > 0) {
+        for( var i = 0; i < b.rows.length; i++ ) {
+          var row = b.rows[ i ]
 
+          if( row.value.indexOf( tag ) > -1 ) results.push( row.key )
+        }
+      }
+      return results
+    }
+  )
+}
+
+function recentlyPosted() {
+   request(
+    { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
+    function(e,r,b) {
+      // console.log(b.rows)
+      if(b.rows && b.rows.length === 1) {
+        var user = { username:b.rows[ 0 ].key, password: b.rows[ 0 ].value, id:users.length } // MUST GIVE A USER ID FOR SESSION MAINTENANCE
+        users.push( user )
+        return fn( null, user );
+      }else{
+        return fn( null, null );
+      }
+    }
+  )
+}
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
 //   serialize users into and deserialize users out of the session.  Typically,
@@ -180,6 +212,36 @@ app.get( '/', function(req, res){
   // })
 })
 
+app.get( '/tag', function( req, res ) { 
+  if( req.query.tag ) {
+    console.log( req.query.tag )
+    request(
+      { uri:'http://localhost:5984/gibber/_design/test/_view/tagged', json: true }, 
+      function(e,r,b) {
+        var results = []
+        if(b.rows && b.rows.length > 0) {
+          for( var i = 0; i < b.rows.length; i++ ) {
+            var row = b.rows[ i ]
+
+            if( row.value.indexOf( req.query.tag ) > -1 ) results.push( row.key )
+          }
+        }
+        res.send({ results: results })
+      }
+    )
+  }
+})
+
+app.get( '/recent', function( req, res ) {
+  request(
+    { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
+    function(e,r,b) {
+      res.send({ results: b.rows })
+      // console.log(b.rows)
+    }
+  )
+})
+
 app.get( '/account', ensureAuthenticated, function(req, res){
   res.render('account', { user: req.user });
 })
@@ -294,51 +356,58 @@ app.get( '/credits', function( req,res,next ) {
   res.render( 'credits' )
 })
 app.get( '/browser', function( req, res, next ) {
-  request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
-    // console.log( (JSON.parse(b)).rows )
-    var _audio = [], _3d = [], _2d = [], _misc=[], demoRows = JSON.parse( b ).rows
-
-    for( var i =0; i < demoRows.length; i++ ) {
-      var cat = 'misc', row = demoRows[ i ]
-      if( row.key.split('*').length > 0 ) {
-        cat = row.key.split('*')[1]
-        switch( cat ) {
-          case '2d' :
-            _2d.push( row ); break;
-          case '3d' : _3d.push( row ); break;
-          case 'audio' : _audio.push( row ); break;
-          default:
-            _misc.push( row ); break;
-        }
+  request( { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
+    function(__e,__r,__b) {
+      var recent = []
+      for( var i = 0; i < __b.rows.length; i++ ){
+        recent.push( __b.rows[i].value )
       }
-    }
+      request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
+        // console.log( (JSON.parse(b)).rows )
+        var _audio = [], _3d = [], _2d = [], _misc=[], demoRows = JSON.parse( b ).rows
 
-    if( req.user ) {
-      request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
-        res.render( 'browser', {
-          user: req.user,
-          demos:( JSON.parse(b) ).rows,
-          audio:_audio,
-          _2d:_2d,
-          _3d:_3d,
-          misc:_misc,
-          userfiles:(JSON.parse(_b)).rows,
-          // message: req.flash('error')
-        });
-      })
-    }else{
-      res.render( 'browser', {
-        user: req.user,
-        demos:(JSON.parse(b)).rows, 
-        audio:_audio,
-        _2d:_2d,
-        _3d:_3d,
-        misc:_misc,
-        userfiles:[],
-        // message: req.flash('error')
+        for( var i =0; i < demoRows.length; i++ ) {
+          var cat = 'misc', row = demoRows[ i ]
+          if( row.key.split('*').length > 0 ) {
+            cat = row.key.split('*')[1]
+            switch( cat ) {
+              case '2d' :
+                _2d.push( row ); break;
+              case '3d' : _3d.push( row ); break;
+              case 'audio' : _audio.push( row ); break;
+              default:
+                _misc.push( row ); break;
+            }
+          }
+        }
+
+        if( req.user ) {
+          request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
+            res.render( 'browser', {
+              user: req.user,
+              demos:( JSON.parse(b) ).rows,
+              audio:_audio,
+              _2d:_2d,
+              _3d:_3d,
+              misc:_misc,
+              userfiles:(JSON.parse(_b)).rows,
+              recent: recent, 
+            });
+          })
+        }else{
+          res.render( 'browser', {
+            user: req.user,
+            demos:(JSON.parse(b)).rows, 
+            audio:_audio,
+            _2d:_2d,
+            _3d:_3d,
+            misc:_misc,
+            userfiles:[],
+            recent:recent,
+          });
+        }
       });
-    }
-  });
+  })
 })
 
 app.get( '/chat', function( req, res, next ) {

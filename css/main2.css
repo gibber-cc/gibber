@@ -334,6 +334,11 @@ tfoot, thead {
   height:1.75em;
 }
 
+.browser td {
+  vertical-align:top;
+  padding:15
+})
+
 .message {
   /* border-bottom:1px solid #444; */
   margin-bottom:.5em;
