@@ -67,28 +67,51 @@ window.Gibber = window.G = {
       window.rndi = Gibberish.rndi
       window.rndf = Gibberish.rndf
 			
-			window.import = Gibber.import
+			window.module = Gibber.import
            
     }) })
    },
   Modules : {},
- 	import : function( path ) {
-    $.post(
-      SERVER_URL + '/retrieve',
-      { address:path },
-      function( d ) {
-        eval( d )
-				
-				if( Gibber.Modules[ path ] ) {
-					if( Gibber.Modules[ path ].init ) {
-						Gibber.Modules[ path ].init()
-					}
-					console.log( 'Module ' + path + ' is now loaded.' )
-				}
-				
-        return false
-      }
-    )
+ 	import : function( path, exportTo ) {
+    var _done = null;
+    console.log( 'Loading module ' + path + '...' )
+
+    if( path.indexOf( 'http:' ) === -1 ) { 
+      console.log( 'loading via post ', path )
+      $.post(
+        'http://gibber.mat.ucsb.edu/gibber/'+path, {},
+        function( d ) {
+          d = JSON.parse( d )
+          console.log(d)
+          eval( d.text )
+
+          if( exportTo && Gibber.Modules[ path ] ) {
+            $.extend( exportTo, Gibber.Modules[ path ] )
+            Gibber.Modules[ path ] = exportTo
+          }  
+          if( Gibber.Modules[ path ] ) {
+            if( Gibber.Modules[ path ].init ) {
+              Gibber.Modules[ path ].init()
+            }
+            console.log( 'Module ' + path + ' is now loaded.' )
+          }else{
+            console.log( 'Publication ' + path + ' is loaded. It may not be a valid module.')
+          }
+          
+          if( _done !== null ) { _done( Gibber.Modules[ path ] ) }
+
+          return false;
+        }
+      )
+    }else{
+      $script.get( path, function() { 
+        // can't be guaranteed a that a module will be created... 
+        console.log( 'Module ' + path + ' is now loaded.' )
+        if( _done !== null ) { _done() }
+      })
+    }
+    return {  done: function( fcn ) { _done =  fcn } }
+
  	},  
   // override for gibberish method
   defineUgenProperty : function(key, initValue, obj) {
