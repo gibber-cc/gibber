@@ -29,9 +29,9 @@
           seq.stop()
         }
       }          
-      //freq = typeof obj.scale.notes[ idx ] === 'number' ? obj.scale.notes[ idx ] : obj.scale.notes[ idx ].fq()
-    
+      //freq = typeof obj.scale.notes[ idx ] === 'number' ? obj.scale.notes[ idx ] : obj.scale.notes[ idx ].fq()			
       if( count >= _note.length ) count = 0
+			
       return freq
     }]
   }
@@ -109,6 +109,7 @@
 
     seq = new Gibberish.Sequencer2( obj )
     
+		seq.name = 'Seq'
     // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )
     
     $.extend( seq, {

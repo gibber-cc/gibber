@@ -102,7 +102,8 @@
     }else{
       obj =  new Gibberish.Bus2( obj ).connect( Gibber.Master )
     }
-  
+    
+		obj.name = 'Drums'
     obj.type = 'Gen'
     obj.children = []
     

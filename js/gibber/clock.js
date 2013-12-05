@@ -20,8 +20,13 @@ var Clock = Gibber.Clock = {
     if( Clock.currentBeat === 1 && Clock.codeToExecute.length > 0) {
       
       for( var i = 0; i < Clock.codeToExecute.length; i++ ) {
+				console.log ( "CODE TO EXECUTE", Clock.codeToExecute[i] )
         try {
-          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].code.cm )
+					if( typeof Clock.codeToExecute[ i ].function === 'function' ) {
+						Clock.codeToExecute[ i ].function()
+					}else{
+	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].code.cm )
+					}
         }catch( e ) {
           console.error( "FAILED TO EXECUTE CODE:\n", Clock.codeToExecute[ i ].code )
         }

@@ -16,7 +16,7 @@ var GE = Gibber.Environment = {
                 'external/codemirror/addons/javascript-hint',
                 'external/codemirror/clike',
                 'gibber/gibber_interface',
-                'gibber/console',
+                //'gibber/console',
                 'gibber/mouse',
                 'external/mousetrap',
                 'gibber/chat',
@@ -31,7 +31,7 @@ var GE = Gibber.Environment = {
         window.Layout = GE.Layout
         GE.Account.init()
         Gibber.proxy( window )
-        GE.Console.init()
+        //GE.Console.init()
         GE.Welcome.init()
         GE.Share.open()
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
@@ -47,6 +47,12 @@ var GE = Gibber.Environment = {
     $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
       Gibber.Graphics.load()
     } )
+		
+		$script( 'external/esprima', function() { 
+			$script( 'gibber/notation', function() {
+				Gibber.Environment.Notation.init()
+			})
+		})
     
     window.Columns = GE.Layout.columns
   },
