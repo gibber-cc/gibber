@@ -15,6 +15,7 @@ window.Gibber = window.G = {
       'external/teoria.min',
       'gibber/clock',
       'gibber/audio/theory',
+    ], function() { $script([
       'gibber/audio/oscillators',
       'gibber/audio/fx',
       'gibber/audio/synths',
@@ -68,7 +69,7 @@ window.Gibber = window.G = {
 			
 			window.import = Gibber.import
            
-    })
+    }) })
    },
   Modules : {},
  	import : function( path ) {
@@ -158,7 +159,7 @@ window.Gibber = window.G = {
 		try {
 			eval( code )
     }catch( e ) {
-			Gibber.Environment.Console.error( e )
+			console.error( e )
     }
   },
   

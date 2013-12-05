@@ -1,4 +1,4 @@
-(function() {
+( function() {
 
 "use strict"
 var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
@@ -16,7 +16,7 @@ var GE = Gibber.Environment = {
                 'external/codemirror/addons/javascript-hint',
                 'external/codemirror/clike',
                 'gibber/gibber_interface',
-                //'gibber/console',
+                'gibber/console',
                 'gibber/mouse',
                 'external/mousetrap',
                 'gibber/chat',
@@ -31,7 +31,7 @@ var GE = Gibber.Environment = {
         window.Layout = GE.Layout
         GE.Account.init()
         Gibber.proxy( window )
-        //GE.Console.init()
+        GE.Console.init()
         GE.Welcome.init()
         GE.Share.open()
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )

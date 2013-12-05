@@ -229,18 +229,20 @@ var processArgs = function( args, type, shape ) {
 var PP = Gibber.Graphics.PostProcessing = {
   composer : null,
   fx: [],
-  init : function() {
-    Gibber.Graphics.running = true
-
+  isRunning : false,
+  start: function() {
     this.composer = new THREE.EffectComposer( Gibber.Graphics.renderer );
-    
-		this.renderScene = new THREE.RenderPass( Gibber.Graphics.scene, Gibber.Graphics.camera );
 
-		this.renderScene.clear = false;
-		this.renderScene.renderToScreen = true;
-    
+    this.renderScene = new THREE.RenderPass( Gibber.Graphics.scene, Gibber.Graphics.camera );
+
+    this.renderScene.clear = false;
+    this.renderScene.renderToScreen = true;
+
     this.composer.addPass( this.renderScene )
-    
+    this.isRunning = true
+  },
+  init : function() {
+    // Gibber.Graphics.running = true
     for( var key in shaders ) {
       (function() {
         var name = key,
@@ -258,6 +260,8 @@ var PP = Gibber.Graphics.PostProcessing = {
             return
           }
           
+          if( !PP.isRunning ) { PP.start() }
+
           shader.renderToScreen = true
           
           shader.name = name

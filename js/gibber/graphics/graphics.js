@@ -14,6 +14,30 @@ var Graphics = Gibber.Graphics = {
   load : function() {
     $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d', 'gibber/graphics/shapes2d'], 'graphics', function() {
       console.log("LOADED")
+      $script([
+        'external/three/postprocessing/EffectComposer',
+        'external/three/postprocessing/RenderPass',
+        'external/three/postprocessing/MaskPass',
+        'external/three/postprocessing/ShaderPass',
+        'external/three/postprocessing/CopyShader',
+        'external/three/postprocessing/shaders/DotScreenShader',
+        'external/three/postprocessing/DotScreenPass',
+        'external/three/postprocessing/FilmPass',
+        'external/three/postprocessing/shaders/FilmShader',      
+        'external/three/postprocessing/shaders/KaleidoShader',
+        'external/three/postprocessing/shaders/EdgeShader',
+        'external/three/postprocessing/shaders/FocusShader',      
+        'external/three/postprocessing/shaders/ShaderGodRays',      
+        'external/three/postprocessing/shaders/BleachBypassShader',
+        'external/three/postprocessing/shaders/ColorifyShader',
+      ], 'postprocessing', function() {
+        console.log("CALLED")
+        $script(['gibber/graphics/postprocessing','gibber/graphics/shader'], function() {
+          console.log( 'POST PROCESSING INIT' )
+          Graphics.PostProcessing.init()
+          //Graphics.start()
+        })
+      })
     })
   },
   
@@ -41,30 +65,6 @@ var Graphics = Gibber.Graphics = {
     this.mode = mode || '3d'    
     this.createScene( this.mode )
 
-    $script([
-      'external/three/postprocessing/EffectComposer',
-      'external/three/postprocessing/RenderPass',
-      'external/three/postprocessing/MaskPass',
-      'external/three/postprocessing/ShaderPass',
-      'external/three/postprocessing/CopyShader',
-      'external/three/postprocessing/shaders/DotScreenShader',
-      'external/three/postprocessing/DotScreenPass',
-      'external/three/postprocessing/FilmPass',
-      'external/three/postprocessing/shaders/FilmShader',      
-      'external/three/postprocessing/shaders/KaleidoShader',
-      'external/three/postprocessing/shaders/EdgeShader',
-      'external/three/postprocessing/shaders/FocusShader',      
-      'external/three/postprocessing/shaders/ShaderGodRays',      
-      'external/three/postprocessing/shaders/BleachBypassShader',
-      'external/three/postprocessing/shaders/ColorifyShader',
-      ],
-      'postprocessing', function() {
-        $script(['gibber/graphics/postprocessing','gibber/graphics/shader'], function() {
-          Graphics.PostProcessing.init()
-          Graphics.start()
-        })
-      }
-    )
     var res = this.resolution, self = this
     Object.defineProperty(this, 'resolution', {
       get: function() { return res; },
@@ -86,6 +86,8 @@ var Graphics = Gibber.Graphics = {
         }
       }
     });
+    this.start()
+
   },
   
   createScene : function( mode ) {		

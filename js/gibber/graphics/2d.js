@@ -8,8 +8,8 @@
           GG = Gibber.Graphics,
           that = ctx,
           three = null;
-
-      Gibber.Graphics.clear()
+      
+      if( Gibber.Graphics.running ) Gibber.Graphics.clear()
 
       Gibber.Graphics.running = true
 
