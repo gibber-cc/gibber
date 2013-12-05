@@ -65,10 +65,30 @@ window.Gibber = window.G = {
       window.Rndf = Gibberish.Rndf      
       window.rndi = Gibberish.rndi
       window.rndf = Gibberish.rndf
+			
+			window.import = Gibber.import
            
     })
    },
-  
+  Modules : {},
+ 	import : function( path ) {
+    $.post(
+      SERVER_URL + '/retrieve',
+      { address:path },
+      function( d ) {
+        eval( d )
+				
+				if( Gibber.Modules[ path ] ) {
+					if( Gibber.Modules[ path ].init ) {
+						Gibber.Modules[ path ].init()
+					}
+					console.log( 'Module ' + path + ' is now loaded.' )
+				}
+				
+        return false
+      }
+    )
+ 	},  
   // override for gibberish method
   defineUgenProperty : function(key, initValue, obj) {
     var isTimeProp = Gibber.Clock.timeProperties.indexOf(key) > -1,

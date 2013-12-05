@@ -48,15 +48,14 @@ var GE = Gibber.Environment = {
       Gibber.Graphics.load()
     } )
 		
-		$script( 'external/esprima', function() { 
-			$script( 'gibber/notation', function() {
-				Gibber.Environment.Notation.init()
-			})
-		})
+		// $script( 'external/esprima', function() { 
+		// 	$script( 'gibber/notation', function() {
+		// 		Gibber.Environment.Notation.init()
+		// 	})
+		// })
     
     window.Columns = GE.Layout.columns
   },
-  
   selectCurrentBlock: function( editor ) { // thanks to graham wakefield
       var pos = editor.getCursor();
       var startline = pos.line;
