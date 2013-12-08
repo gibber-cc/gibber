@@ -185,10 +185,10 @@ app.configure( function() {
   
 app.get( '/', function(req, res){
   
-  console.log( req.query )
+  // console.log( req.query )
   if( req.query && req.query.path ) {
     request('http://localhost:5984/gibber/' + escapeString(req.query.path), function(err, response, body) {
-      console.log( body )
+      // console.log( body )
       if( body && typeof body.error === 'undefined' ) {
         res.render( 'index', { loadFile:body } )
       }else{
@@ -214,7 +214,7 @@ app.get( '/', function(req, res){
 
 app.get( '/tag', function( req, res ) { 
   if( req.query.tag ) {
-    console.log( req.query.tag )
+    // console.log( req.query.tag )
     request(
       { uri:'http://localhost:5984/gibber/_design/test/_view/tagged', json: true }, 
       function(e,r,b) {
@@ -268,9 +268,9 @@ app.get( '/loginStatus', function( req, res ) {
 app.post( '/retrieve', function( req, res, next ) {
   // console.log( req.body )
   var suffix = req.body.address.replace(/\//g, '%2F')
-  // console.log(suffix)
+  console.log(suffix)
   request( 'http://localhost:5984/gibber/' + suffix, function(e,r,b) {
-    // console.log( b )
+   // console.log( e, b )
     res.send( b )
   })
 })
@@ -305,7 +305,7 @@ app.post( '/publish', function( req, res, next ) {
       if( error ) {
         res.send({ error:"unable to publish; most likely you used some reserved characters such as ? & or /" }) 
       }else{
-        console.log( "Attempted to publish", body, req.body )
+        // console.log( "Attempted to publish", body, req.body )
         if( body.error ) {
           res.send({ error:'could not publish to database. ' + body.reason })
         }else{
@@ -462,14 +462,14 @@ app.post( '/search', function( req, res, next) {
 app.post( '/login', function( req, res, next ) {
   passport.authenticate( 'local', function( err, user, info ) {
     var data = {}
-    console.log( "LOGGING IN... ", user, err, info )
+    // console.log( "LOGGING IN... ", user, err, info )
     if (err) { return next( err ) }
     
     if (!user) {
       res.send({ error:'Your username or password is incorrect. Please try again.' })
     }else{
       req.logIn( user, function() { 
-        console.log( "I AM LOGGED IN WTF ")
+        // console.log( "I AM LOGGED IN WTF ")
         res.send({ username: user.username }) 
       });
     }
