@@ -102,6 +102,11 @@ var processArgs = function( args, type, shape ) {
         output: Gibber.LINEAR,
         timescale: 'graphics',
       },
+      time:{
+        min:0, max:1,
+        output: Gibber.LINEAR,
+        timescale: 'graphics',
+      },
     }
   },
   shaders = {
@@ -323,6 +328,8 @@ var PP = Gibber.Graphics.PostProcessing = {
               
               shader[ upper ].oldSetter.call( this, shader[ upper ].value ) 
     				}
+						
+						shader.update()
     			}
       
     			shader.mods = []

@@ -322,5 +322,5 @@ var ugens = ['Drums', 'Pluck', 'EDrums', 'Sampler', 'Synth', 'FM', 'Sine', 'Tria
 		},
   }
 	//Gibber.Environment.Notation = Notation
-  Gibber.Modules.Notation = Notation;
+  Gibber.Modules[ 'gibber/publications/notation' ] = Notation;
 })()

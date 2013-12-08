@@ -67,17 +67,24 @@ window.Gibber = window.G = {
       window.rndi = Gibberish.rndi
       window.rndf = Gibberish.rndf
 			
-			window.import = Gibber.import
+			window.module = Gibber.import
            
     }) })
    },
   Modules : {},
- 	import : function( path ) {
+ 	import : function( path, exportTo ) {
+		var exported = null;
+		console.log( 'Loading module ' + path )
     $.post(
       SERVER_URL + '/retrieve',
       { address:path },
       function( d ) {
         eval( d )
+				
+				if( exportTo ) {
+					$.extend( exportTo, Gibber.Modules[ path ] )
+					Gibber.Modules[ path ] = exportTo
+				}
 				
 				if( Gibber.Modules[ path ] ) {
 					if( Gibber.Modules[ path ].init ) {

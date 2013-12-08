@@ -1,12 +1,12 @@
 ( function() {
 
 "use strict"
-var SERVER_URL = 'http://gibber.mat.ucsb.edu',//'http://127.0.0.1:3000',
+var SERVER_URL = 'http://gibber.mat.ucsb.edu'//'http://127.0.0.1:3000',
 //var SERVER_URL = 'http://127.0.0.1:8080', 
-    modes = [ 'javascript', 'glsl' ]
+    //modes = [ 'javascript', 'glsl' ]
 
 var GE = Gibber.Environment = {
-  modes: ['javascript', 'x-shader/x-fragment'],
+  //modes: ['javascript', 'x-shader/x-fragment'],
   init : function() { 
     $script( ['external/codemirror/codemirror-compressed', 'external/interface' ], 'codemirror',function() {
       $script( ['external/codemirror/addons/closebrackets', 
@@ -260,111 +260,10 @@ var GE = Gibber.Environment = {
         "Ctrl-Space" : function( cm ) { CodeMirror.showHint(cm, CodeMirror.javascriptHint ) },
         
         "Alt-/": CodeMirror.commands.toggleComment,
-        
-        "Ctrl-Enter": function(cm) {
-          var v = cm.getDoc().getSelection(),
-              pos = null
-
-          if (v === "") {
-              pos = cm.getCursor()
-              v = cm.getLine( pos.line )
-          }
-          
-          GE.Keymap.flash(cm, pos)
-          
-          var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
-          
-          if( GE.modes[ col.modeIndex ] !== 'x-shader/x-fragment' ) {
-            Gibber.run( v, pos, cm )  
-          }else{
-            var shader = Gibber.Graphics.makeFragmentShader( v )
-          	col.shader.material = new THREE.ShaderMaterial({
-
-          		uniforms: col.shader.uniforms,
-          		vertexShader: shader.vertexShader,
-          		fragmentShader: shader.fragmentShader
-
-          	});
-          }
-          
-        },
-
-        'Shift-Ctrl-2' : function( cm ) {
-          if( cm.column.sharingWith ) {
-            var v = cm.getDoc().getSelection(),
-            pos = null
-
-            if (v === "") {
-              pos = cm.getCursor()
-              v = cm.getLine( pos.line )
-            }
-
-            GE.Keymap.flash(cm, pos)
-
-            var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
-
-            if( GE.modes[ col.modeIndex ] !== 'x-shader/x-fragment' ) {
-              Gibber.run( v, pos, cm )  
-            }else{
-              var shader = Gibber.Graphics.makeFragmentShader( v )
-              col.shader.material = new THREE.ShaderMaterial({
-
-                uniforms: col.shader.uniforms,
-                vertexShader: shader.vertexShader,
-                fragmentShader: shader.fragmentShader
-
-              });
-            }
-
-            if( cm.column.allowRemoteExecution ) {
-              console.log( cm.column.shareName )
-              Chat.socket.send( 
-                JSON.stringify({ 
-                  cmd:'remoteExecution',
-                  to:cm.column.sharingWith,
-                  shareName: cm.column.shareName,
-                  from:GE.Account.nick,
-                  selectionRange: pos,
-                  code: v
-                })
-              ) 
-            }
-          }
-        },
-        
-        // "Alt-Enter": function(cm) {          
-        //   var col = GE.Layout.columns[ GE.Layout.focusedColumn - 1 ],
-        //       v = col.value
-          
-        //   if( GE.modes[ col.modeIndex % GE.modes.length ] !== 'x-shader/x-fragment' ) {
-        //     Gibber.run( v, pos, cm )  
-        //   }else{
-        //     var shader = Gibber.Graphics.makeFragmentShader( v )
-        //   	col.shader.material = new THREE.ShaderMaterial({
-
-        //   		uniforms: col.shader.uniforms,
-        //   		vertexShader: shader.vertexShader,
-        //   		fragmentShader: shader.fragmentShader
-
-        //   	});
-        //   }
-          
-        // },
                 
         "Ctrl-L": function(cm) {
           var name = window.prompt("layout to load:")
-        
           GE.Layout.load( name )
-        },
-        "Ctrl-F": function(cm) {
-          var result = Gibber.Environment.selectCurrentBlock( cm );
-        
-          var sel = cm.markText( result.start, result.end, { className:"CodeMirror-highlight" } );
-          
-          window.setTimeout(function() {
-              sel.clear();
-          }, 250);
-
         },
         
         "Ctrl-M": function(cm) {
@@ -374,44 +273,73 @@ var GE = Gibber.Environment = {
           col.editor.setOption( 'mode', GE.modes[ ++col.modeIndex % GE.modes.length ] )
         },
         
+        "Ctrl-Enter": function(cm) {
+					var obj = GE.getSelectionCodeColumn( cm, false )
+					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+        },
+				
         "Shift-Ctrl-Enter": function(cm) {
-          var v = cm.getDoc().getSelection(),
-              pos = null
-
-          if (v === "") {
-              pos = cm.getCursor()
-              v = cm.getLine( pos.line )
-          }
-          
-          GE.Keymap.flash(cm, pos)
-          
-          Gibber.Clock.codeToExecute.push( { code:v, pos:pos, cm:cm } )
+					var obj = GE.getSelectionCodeColumn( cm, false )
+					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )			
         },
         
         "Alt-Enter": function(cm) {
-            var result = Gibber.Environment.selectCurrentBlock( cm );
-            
-            Gibber.run( result.text, cm.getCursor(), cm );
-            
-            var sel = cm.markText( result.start, result.end, { className:"CodeMirror-highlight" } );
-            window.setTimeout(function() {
-                sel.clear();
-            }, 250);
+						var obj = GE.getSelectionCodeColumn( cm, true )
+						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
         },
         
         "Shift-Alt-Enter": function(cm) {
-            var result = Gibber.Environment.selectCurrentBlock( cm );
+					var obj = GE.getSelectionCodeColumn( cm, true )
+					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
+        },
+				
+				'Ctrl-2' : function( cm ) {
+          if( cm.column.sharingWith ) {
+						var obj = GE.getSelectionCodeColumn( cm, false )
+						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
 
-            Gibber.Clock.codeToExecute.push( { code:result.text, pos:cm.getCursor(), cm:cm } );
+            if( cm.column.allowRemoteExecution ) {
+              Chat.socket.send( 
+                JSON.stringify({ 
+                  cmd:'remoteExecution',
+                  to:cm.column.sharingWith,
+                  shareName: cm.column.shareName,
+                  from:GE.Account.nick,
+                  selectionRange: obj.selection,
+                  code: obj.code
+                })
+              ) 
+            }else{
+            	console.log( 'Remote code execution was not enabled for this shared editing session.')
+            }
+          }else{
+          	console.log( 'This is column is not part of a shared editing session' )
+          }
+				},
+        'Shift-Ctrl-2' : function( cm ) {
+          if( cm.column.sharingWith ) {
+						var obj = GE.getSelectionCodeColumn( cm, false )
+						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
 
-            var sel = cm.markText( result.start, result.end, { className:"CodeMirror-highlight" } );
-            window.setTimeout(function() {
-                sel.clear();
-            }, 250);
+            if( cm.column.allowRemoteExecution ) {
+              Chat.socket.send( 
+                JSON.stringify({ 
+                  cmd:'remoteExecution',
+                  to:cm.column.sharingWith,
+                  shareName: cm.column.shareName,
+                  from:GE.Account.nick,
+                  selectionRange: obj.selection,
+                  code: obj.code
+                })
+              ) 
+            }else{
+            	console.log( 'Remote code execution was not enabled for this shared editing session.')
+            }
+          }else{
+          	console.log( 'This is column is not part of a shared editing session' )
+          }
         },
         
-        // "Ctrl-.": Gibber.clear.bind( Gibber ),
-
         "Shift-Ctrl-=": function(cm) {
           var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
           col.fontSize += .2
@@ -434,15 +362,121 @@ var GE = Gibber.Environment = {
           cb = function() { sel.clear() }
     
       if (pos !== null) {
-        sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
-      } else {
+				if( pos.start ) { // if called from a findBlock keymap
+		      sel = cm.markText( pos.start, pos.end, { className:"CodeMirror-highlight" } );
+				}else{ // called with single line
+	        sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
+				}
+      }else{ // called with selected block
+				console.log( 'ARIAIRHA' )
         sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } );
       }
     
       window.setTimeout(cb, 250);
     },
   },
+	
+	getSelectionCodeColumn : function( cm, findBlock ) {
+		var pos = cm.getCursor(), 
+				text = null,
+			  column = GE.Layout.columns[ GE.Layout.focusedColumn ]
+				
+		if( !findBlock ) {
+			text = cm.getDoc().getSelection()
+
+	    if ( text === "") {
+	      text = cm.getLine( pos.line )
+	    }else{
+	    	pos = null
+	    }
+		}else{
+      var startline = pos.line, 
+					endline = pos.line,
+					pos1, pos2, sel
+      
+      while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
+      while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
+      
+      pos1 = { line: startline, ch: 0 }
+      pos2 = { line: endline, ch: 0 }
+			
+      text = cm.getRange( pos1, pos2 )
+
+      pos = { start: pos1, end: pos2 }
+		}
+		
+		console.log( pos )
+    GE.Keymap.flash(cm, pos)
+		
+		return { selection: pos, code: text, column:column }
+	},
   
+	//TODO : this should probably be moved to the Gibber object at some point as it's not environment specific
+	modes : {
+		nameMappings : {
+			'javascript' : 'javascript',
+			'glsl-fragment' : 'x-shader/x-fragment'
+		},
+		javascript : {
+			run : function( column, value, position, codemirror, shouldDelay ) {
+				if( shouldDelay ) {
+					Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
+				}else{
+					Gibber.run( value, position, codemirror ) 
+				}
+			},
+			default: [
+	      "/*",
+	      "* Giblet #1 - by thecharlie",
+	      "* In this sketch, the mouse position drives the",
+	      "* pitch of drums, the carrier to modulation",
+	      "* ratio of FM synthesis, and the feedback and",
+	      "* time of a delay.",
+	      "*/",
+	      "",
+	      "a = Drums('x*o*x*o-')",
+	      "a.pitch = Mouse.Y",
+	      "",
+	      "b = FM({ ",
+	      "  attack:  ms(1),",
+	      "  index:   a.Amp,",
+	      "  cmRatio: Mouse.X",
+	      "})",
+	      "",
+	      "b.fx.add(",
+	      "  Delay({",
+	      "    time:     Mouse.X,",
+	      "    feedback: Mouse.Y",
+	      "  })",
+	      ")",
+	      "",
+	      "b.play( ",
+	      "  ['c2','c2','c2','c3','c4'].random(),",
+	      "  [1/4,1/8,1/16].random(1/16,2) ",
+	      ")"
+	    ].join('\n'),
+		},
+		'glsl-fragment' : { 
+			run: function( column, value, position, codemirror, shouldDelay ) {
+	      var shader = Gibber.Graphics.makeFragmentShader( value )
+	    	column.shader.material = new THREE.ShaderMaterial({
+	    		uniforms: column.shader.uniforms,
+	    		vertexShader: shader.vertexShader,
+	    		fragmentShader: shader.fragmentShader
+	    	});
+			},
+			default: [
+				"uniform lowp float amp;",
+				"uniform sampler2D tDiffuse;",
+				"uniform lowp float time;",
+				"varying lowp vec2 p;",
+				"",
+				"void main() {",
+				"  gl_FragColor = vec4( time / 120.0);",
+				"}"
+			].join( '\n' ),
+		}
+	},
   Metronome : {
     shouldDraw: true,
     canvas: null,
@@ -621,19 +655,23 @@ var GE = Gibber.Environment = {
       col.close.addClass( 'closeButton' )
         .on( 'click', function(e) { GE.Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose(); })
         .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
-        .html('&#10005;')
+        .html( '&#10005;' )
 
       if( isCodeColumn ) {
         col.modeSelect
           .append(
             $( '<option>' ).text( 'javascript' ),
-            $( '<option>' ).text( 'glsl' )
+            $( '<option>' ).text( 'glsl-fragment' )
           )
           .eq( 0 )
           .on( 'change', function( e ) {
-            var idx = $( this ).find( ':selected' ).index()
-            col.editor.setOption( 'mode', GE.modes[ idx ] )
+            var opt = $( this ).find( ':selected' ), idx = opt.index(), val = opt.text()
+						
             col.modeIndex = idx
+						col.mode = val
+            col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
+
+						col.editor.setValue( GE.modes[ col.mode ].default )
           })
           
         col.header
@@ -657,37 +695,8 @@ var GE = Gibber.Environment = {
         mode = modes[ options.mode ]
       }
       var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && this.columns.length === 1, // make sure it's only on the first load
-          _value = shouldDisplayLoadFile ? window.loadFile.text  :  [
-            "/*",
-            "* Giblet #1 - by thecharlie",
-            "* In this sketch, the mouse position drives the",
-            "* pitch of drums, the carrier to modulation",
-            "* ratio of FM synthesis, and the feedback and",
-            "* time of a delay.",
-            "*/",
-            "",
-            "a = Drums('x*o*x*o-')",
-            "a.pitch = Mouse.Y",
-            "",
-            "b = FM({ ",
-            "  attack:  ms(1),",
-            "  index:   a.Amp,",
-            "  cmRatio: Mouse.X",
-            "})",
-            "",
-            "b.fx.add(",
-            "  Delay({",
-            "    time:     Mouse.X,",
-            "    feedback: Mouse.Y",
-            "  })",
-            ")",
-            "",
-            "b.play( ",
-            "  ['c2','c2','c2','c3','c4'].random(),",
-            "  [1/4,1/8,1/16].random(1/16,2) ",
-            ")",
-          ].join('\n');      
-
+          _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
+    
       if( isCodeColumn ) {
         col.bodyElement.width( columnWidth - resizeHandleSize )
         col.element.append( col.bodyElement )
@@ -713,6 +722,7 @@ var GE = Gibber.Environment = {
       if( isCodeColumn )
         $( col.modeSelect ).find( 'option' )[ col.modeIndex ].selected = true;
       
+			col.mode = 'javascript'
       col.element.addClass( colNumber )
       col.element.attr( 'id', colNumber )
       col.id = colNumber
