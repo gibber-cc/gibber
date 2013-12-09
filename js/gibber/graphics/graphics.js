@@ -13,7 +13,6 @@ var Graphics = Gibber.Graphics = {
   
   load : function() {
     $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d', 'gibber/graphics/shapes2d'], 'graphics', function() {
-      console.log("LOADED")
       $script([
         'external/three/postprocessing/EffectComposer',
         'external/three/postprocessing/RenderPass',
@@ -31,11 +30,8 @@ var Graphics = Gibber.Graphics = {
         'external/three/postprocessing/shaders/BleachBypassShader',
         'external/three/postprocessing/shaders/ColorifyShader',
       ], 'postprocessing', function() {
-        console.log("CALLED")
         $script(['gibber/graphics/postprocessing','gibber/graphics/shader'], function() {
-          console.log( 'POST PROCESSING INIT' )
           Graphics.PostProcessing.init()
-          //Graphics.start()
         })
       })
     })

@@ -759,11 +759,34 @@ window.Gibber = window.G = {
         if( arguments.length > 0 ) {
           for( var i = 0; i < arguments.length; i++ ) {
             var arg = arguments[ i ];
-            if( typeof arg === 'number' ) {
+						
+						if( typeof arg === 'string' ) { // if identified using the fx name
+							for( var j = 0; j < this.length; j++ ) {
+								if( this[ j ].name === arg ) {
+									this.remove( j )
+								}
+							}
+							continue;
+						}
+						
+            if( typeof arg === 'number' ) { // if identified via position in fx chain
+							var ugenToRemove = this[ arg ]
+							ugenToRemove.disconnect()
               this.splice( arg, 1 )
+							
               if( typeof this[ arg ] !== 'undefined') {
+								
+								// reset input for current position in chain
+								var newConnectionNumber = arg - 1
+								if( newConnectionNumber !== -1 ) {
+									this[ arg ].input = this[ newConnectionNumber ]
+								}else{
+									this[ arg ].input = this.ugen
+								}
+								
+								// reset input for next position in chain, or connect to Master bus
                 if( typeof this[ arg + 1 ] !== 'undefined' ) { // if there is another fx ahead in chain...
-                  this[ arg + 1 ].input = this[ arg ]
+                  this[ arg + 1 ].input = arg === 0 ? this.ugen : this[ arg ]
                 }else{
                   if( this.ugen !== Master ) {
                     this.ugen.connect( Gibber.Master )
@@ -784,7 +807,7 @@ window.Gibber = window.G = {
               }
             }
           }
-        }else{
+        }else{ // remove all fx
           if( this.length > 0) {
             this[ this.length - 1 ].disconnect()
             if( this.ugen !== Master ) {

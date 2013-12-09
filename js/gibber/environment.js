@@ -284,8 +284,8 @@ var GE = Gibber.Environment = {
         },
         
         "Alt-Enter": function(cm) {
-						var obj = GE.getSelectionCodeColumn( cm, true )
-						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+				  var obj = GE.getSelectionCodeColumn( cm, true )
+					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
         },
         
         "Shift-Alt-Enter": function(cm) {
@@ -306,7 +306,8 @@ var GE = Gibber.Environment = {
                   shareName: cm.column.shareName,
                   from:GE.Account.nick,
                   selectionRange: obj.selection,
-                  code: obj.code
+                  code: obj.code,
+                  shouldDelay: false,
                 })
               ) 
             }else{
@@ -329,7 +330,8 @@ var GE = Gibber.Environment = {
                   shareName: cm.column.shareName,
                   from:GE.Account.nick,
                   selectionRange: obj.selection,
-                  code: obj.code
+                  code: obj.code,
+                  shouldDelay: true,
                 })
               ) 
             }else{
@@ -368,7 +370,6 @@ var GE = Gibber.Environment = {
 	        sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
 				}
       }else{ // called with selected block
-				console.log( 'ARIAIRHA' )
         sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } );
       }
     
@@ -405,7 +406,6 @@ var GE = Gibber.Environment = {
       pos = { start: pos1, end: pos2 }
 		}
 		
-		console.log( pos )
     GE.Keymap.flash(cm, pos)
 		
 		return { selection: pos, code: text, column:column }
@@ -474,16 +474,17 @@ var GE = Gibber.Environment = {
 			"varying lowp vec2 p;",
       "",
 			"void main() {",
-			"  // normalize coordinate range from {0,1} to {-1,1}",
 			"  lowp vec2 uv = 2. * p - 1.;",
+			"  lowp float _out = 0.;",
       "",
+			"  for( lowp float i = 0.; i < 8.; i++){",
+			"    uv.x += sin( uv.y + time * i ) * amp;",
+			"    uv.x = abs( 1./uv.x ) * amp;    ",
+			"    _out += abs( uv.x ) * amp;    ",
+			"  }",
       "",
-			"  // time is passed as a uniform from js, as is amp",
-			"  uv.x += sin( uv.y + time ) * amp;",
-			"  uv.x = abs( .15/uv.x ) * amp;",
-      "",
-			"  gl_FragColor = vec4( 1. - uv.x );",
-			"}"
+			"  gl_FragColor = vec4( 1.-_out );",
+			"}",
 			].join( '\n' ),
 		}
 	},
