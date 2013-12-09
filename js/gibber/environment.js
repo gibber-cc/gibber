@@ -466,14 +466,24 @@ var GE = Gibber.Environment = {
 	    	});
 			},
 			default: [
-				"uniform lowp float amp;",
-				"uniform sampler2D tDiffuse;",
-				"uniform lowp float time;",
-				"varying lowp vec2 p;",
-				"",
-				"void main() {",
-				"  gl_FragColor = vec4( time / 120.0);",
-				"}"
+			"// to execute changes to shader, select all",
+			"// code and then hit ctrl+enter",
+			"uniform lowp float amp;",
+			"uniform sampler2D tDiffuse;",
+			"uniform lowp float time;",
+			"varying lowp vec2 p;",
+      "",
+			"void main() {",
+			"  // normalize coordinate range from {0,1} to {-1,1}",
+			"  lowp vec2 uv = 2. * p - 1.;",
+      "",
+      "",
+			"  // time is passed as a uniform from js, as is amp",
+			"  uv.x += sin( uv.y + time ) * amp;",
+			"  uv.x = abs( .15/uv.x ) * amp;",
+      "",
+			"  gl_FragColor = vec4( 1. - uv.x );",
+			"}"
 			].join( '\n' ),
 		}
 	},
@@ -656,7 +666,16 @@ var GE = Gibber.Environment = {
         .on( 'click', function(e) { GE.Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose(); })
         .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
         .html( '&#10005;' )
+			
+			col.setMode = function(mode) {
+        //var opt = $( this ).find( ':selected' ), idx = opt.index(), val = opt.text()
+				
+        //col.modeIndex = idx
+				col.mode = mode
+        col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
 
+				col.editor.setValue( GE.modes[ col.mode ].default )
+			}
       if( isCodeColumn ) {
         col.modeSelect
           .append(
