@@ -80,6 +80,7 @@
       
       shader.update = function() {}
       
+			var phase = 0
 			shader._update = function() {
 				for(var i = 0; i < shader.mods.length; i++) {
 					var mod = shader.mods[i],
@@ -87,6 +88,7 @@
               upper = mod.name
           
           upper = upper.charAt(0).toUpperCase() + upper.substr(1)
+					//if( phase % 60 === 0 ) { console.log( mod,val, upper ) }
           
           if( Array.isArray( val ) ) val = val[0]
           
@@ -137,7 +139,7 @@
 	        var propName = key,
 	            value = _shader.uniforms[ propName ].value
           
-							console.log( "defining ", propName )
+					console.log( "defining ", propName )
 	        Object.defineProperty( shader, propName, {
 	          configurable: true,
 	          get: function() { return value; },
@@ -165,45 +167,74 @@
 			}
 			
       shader.mappingObjects = []
-      for( var key in mappingProperties ) {
-        (function() {
-          var property = key,
-              prop = mappingProperties[ property ],
-              mapping = $.extend( {}, prop, {
-                Name  : property.charAt(0).toUpperCase() + property.slice(1),
-                name  : property,
-                type  : 'mapping',
-                value : shader[ property ],
-                object: shader,
-                oldSetter : shader.__lookupSetter__( property ),
-                targets: [],
-              }),
-              oldSetter = mapping.oldSetter
-          
-							console.log( "OLD SETTER", oldSetter, mapping.oldSetter )
-          shader.mappingObjects.push( mapping )
-          
-          Object.defineProperty( shader, mapping.Name, {
-            get : function()  { return mapping },
-            set : function( v ) {
-              shader[ mapping.Name ] = v
-            }
-          })
+			shader.uniform = function(_name, _min, _max, _value) {
+				_min = isNaN( _min ) ? 0 : _min
+				_max = isNaN( _max ) ? 1 : _max				
+				_value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
+				
+				if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
+					mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
+		        min:_min, max:_max,
+		        output: Gibber.LINEAR,
+		        timescale: 'graphics',
+		      }
+				}
+				
+				if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
+				
+        var property = _name,
+            value = shader.uniforms[ property ].value || _value,
+						prop = shader.mappingProperties[ _name ],
+						mapping, oldSetter
+        
+        Object.defineProperty( shader, property, {
+          configurable: true,
+          get: function() { return value; },
+          set: function(v) {
+            value = v
+            shader.material.uniforms[ property ].value = value
+          },
+        })
 
-          Object.defineProperty( shader, property, {
-            get : function() { return mapping.value },
-            set : function( v ) {
-              if( typeof v === 'object' && v.type === 'mapping' ) {
-                Gibber.createMappingObject( mapping, v )
-              }else{
-                if( mapping.mapping ) mapping.mapping.remove()
-                
-                mapping.value = v
-                oldSetter.call( shader, mapping.value )
-              }
+        mapping = $.extend( {}, prop, {
+          Name  : property.charAt(0).toUpperCase() + property.slice(1),
+          name  : property,
+          type  : 'mapping',
+          value : shader[ property ],
+          object: shader,
+          oldSetter : shader.__lookupSetter__( property ),
+          targets: [],
+        })
+        oldSetter = mapping.oldSetter
+        
+        shader.mappingObjects.push( mapping )
+        
+        Object.defineProperty( shader, mapping.Name, {
+          get : function()  { return mapping },
+          set : function( v ) {
+            shader[ mapping.Name ] = v
+          }
+        })
+
+        Object.defineProperty( shader, property, {
+          get : function() { return mapping.value },
+          set : function( v ) {
+            if( typeof v === 'object' && v.type === 'mapping' ) {
+							console.log( "CALLED MAPPING WITH", mapping.name )
+              Gibber.createMappingObject( mapping, v )
+            }else{
+              if( mapping.mapping ) mapping.mapping.remove()
+              
+              mapping.value = v
+              oldSetter.call( shader, mapping.value )
             }
-          })
-        })()
+          }
+        }) 
+			}
+			
+      for( var key in mappingProperties ) {
+				var prop = mappingProperties [ key ]
+				shader.uniform( key, prop.min, prop.max, shader[ key ] )
       } 
 			
 			return shader

@@ -453,6 +453,7 @@ var GE = Gibber.Environment = {
 		'glsl-fragment' : { 
 			run: function( column, value, position, codemirror, shouldDelay ) {
         column.shader.fragmentText = value
+        console.log( "UNIFORMS", column.shader.uniforms )
 	    	column.shader.material = new THREE.ShaderMaterial({
 	    		uniforms: column.shader.uniforms,
 	    		vertexShader: column.shader.vertexText || Gibber.Graphics.Shaders.defaultVertex,
