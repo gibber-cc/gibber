@@ -455,7 +455,7 @@ var GE = Gibber.Environment = {
         column.shader.fragmentText = value
 	    	column.shader.material = new THREE.ShaderMaterial({
 	    		uniforms: column.shader.uniforms,
-	    		vertexShader: column.shader.vertexShader || Gibber.Graphics.Shaders.defaultVertex,
+	    		vertexShader: column.shader.vertexText || Gibber.Graphics.Shaders.defaultVertex,
 	    		fragmentShader: value
 	    	});
 			},
@@ -488,15 +488,36 @@ var GE = Gibber.Environment = {
 	    	column.shader.material = new THREE.ShaderMaterial({
 	    		uniforms: column.shader.uniforms,
 	    		vertexShader: value,
-	    		fragmentShader: column.shader.fragmentShader || Gibber.Graphics.Shaders.defaultFragment
+	    		fragmentShader: column.shader.fragmentText || Gibber.Graphics.Shaders.defaultFragment
 	    	});
 			},
       default : [
-    		"varying vec2 p;",
-    		"void main() {",
-    		"  p = uv;",
-    		"  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-    		"}"
+        "// note:varying vec3 position provides vertex position by default",
+        "// as are projectionMatrix and modelViewMatrix",
+        "varying vec2 p;",
+        "uniform lowp float amp;",
+        "uniform lowp float time;",
+        "",
+        "float rand(vec2 co){",
+        "  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);",
+        "}",
+        "",
+        "void main() {",
+        "  p = uv; // pass to fragment shader",
+        "  lowp vec3 _position = position.xyz;",
+        "  lowp float amt = 10.;",
+        "",
+        "  // both position and amp are needed to (kindof) guarantee seeds",
+        "  // that will yield random values.",
+        "  _position.x += (-amt + rand(position.xy * amp) * amt * 2.) * amp;",
+        "  _position.y += (-amt + rand(position.yz * amp) * amt * 2.) * amp;  ",
+        "  _position.z += (-amt + rand(position.xz * amp) * amt * 2.) * amp;",
+        "",
+        "  gl_Position = ",
+        "    projectionMatrix * ",
+        "    modelViewMatrix * ",
+        "    vec4( _position, 1.0 );",
+        "}",
     	].join("\n"),
     }
 	},

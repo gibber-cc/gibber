@@ -56,6 +56,9 @@
 			if( typeof frag === 'object' ) { frag.shader = shader }
 			if( typeof vert === 'object' ) { vert.shader = shader }			
 			
+			shader.fragmentText = _material.fragmentShader
+			shader.vertexText =   _material.vertexShader
+			
 			Object.defineProperty( shader, 'material', {
 				get: function() { return _material; },
 				set: function(v) { _material = v; if( this.target) this.target.mesh.material = _material; }
