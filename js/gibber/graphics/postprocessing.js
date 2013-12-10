@@ -207,25 +207,33 @@ var processArgs = function( args, type, shape ) {
         amp:0,
         time:0,
       },
-      init : function( fragment ) {
-        var column = null, out = null, shader = null
-        
-        if( typeof fragment[0] === 'object' ) {
-          column = fragment[0]
-          console.log(column)
-          fragment = column.value
+			fragment : null,
+			vertex : null,
+      init : function( fragment, vertex ) {
+        var columnV = null, columnF = null, out = null, shader = null
+        if( fragment && typeof fragment === 'object' ) {
+          columnF = fragment
+          fragment = columnF.value
         }
-        
-        shader = Gibber.Graphics.makeFragmentShader( fragment )
+				
+        if( vertex && typeof vertex === 'object' ) {
+          columnV = vertex
+          vertex = columnV.value
+        }
+
+        shader = Gibber.Graphics.Shaders.make( fragment, vertex )
+				
         if( shader !== null) {
           out = new THREE.ShaderPass( shader )
         }
         
-        if( out !== null && column !== null ) {
-          out.column = column
-          column.shader = out
+        if( out !== null ) {
+					out.fragmentText = shader.fragmentText
+					out.vertexText = shader.vertexText
+          if( columnV ) { out.columnV = columnV; columnV.shader = out }
+					if( columnF ) { out.columnF = columnF; columnF.shader = out }
         }
-        
+        	
         return out
       }
     },
@@ -257,9 +265,12 @@ var PP = Gibber.Graphics.PostProcessing = {
           // if( 'shaders' in shaders[ key ] ) {
           //console.log( shaderProps, shaderProps.shaders, shaderProps.shaders[0] )
           //var shader = shaderProps.shaders[0].init({ center:undefined, angle:.5, scale:.035, mix:.1 })
-          var args = Array.prototype.slice.call( arguments,0 ),
-              shader = shaderProps.init.call( shaderProps, args )
-          console.log( args )   
+					if( name !== 'Shader' ) {
+	          var args = Array.prototype.slice.call( arguments,0 ),
+	              shader = shaderProps.init.call( shaderProps, args )
+					}else{
+					  shader = shaderProps.init( arguments[0], arguments[1] )
+					}
           if( shader === null) {
             console.log( "SHADER ERROR... aborting" )
             return

@@ -66,21 +66,28 @@ for( var key in types) {
         Gibber.Graphics.use( '3d' )
       }
       
-      Gibber.Graphics.running = true      
+      Gibber.Graphics.running = true 
+      console.log( "ARGUMENTS", arguments )
       var args = processArgs( arguments, type, shape )
       console.log( 'ARGS', args )      
       this.name = type
       
       this.fill =     args.fill || new THREE.Color(0xffffff)
       
-      if( !args.texture ) {
-        this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
+      if( !arguments[0] || !arguments[0].shader ) {
+        if( !args.texture ) {
+          this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
+        }else{
+          this.material = new THREE.MeshBasicMaterial({ map: this.texture, affectedByDistance:false, useScreenCoordinates:true })
+        }
       }else{
-        this.material = new THREE.MeshBasicMaterial({ map: this.texture, affectedByDistance:false, useScreenCoordinates:true })
+        this.material = new THREE.ShaderMaterial( arguments[0].shader.material || arguments[0].shader );
       }
       this.geometry = Gibber.construct( THREE[ type + "Geometry" ], args )
       
       this.mesh =     new THREE.Mesh( this.geometry, this.material )
+      
+      if( arguments[0].shader.material ) arguments[0].shader.target = this
       
       this.spinX = this.spinY = this.spinZ = 0
       
@@ -293,12 +300,16 @@ for( var key in types) {
         Gibber.Graphics.scene.remove( this.mesh )
         if( !shouldNotRemove )
           Gibber.Graphics.graph.splice( Gibber.Graphics.graph.indexOf( this ), 1 )
+          
+        return this
       }
       
       this.replaceWith = function( newObj ) { this._ }
       
 			this.mod = function( _name, _modulator, _type, _mult ) {
 				this.mods.push({ name:_name, modulator:_modulator, type:_type || "+", mult: _mult || 1 })
+        
+        return this
 			}
       
       this.removeMod = function( name ) {
@@ -351,7 +362,8 @@ for( var key in types) {
           }else{
             this.removeMod( 'rotation.z' )
           }
-        } 
+        }
+        return this
       }
       
       if( arguments[0] ) {

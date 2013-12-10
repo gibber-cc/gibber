@@ -31,7 +31,7 @@ var GE = Gibber.Environment = {
         window.Layout = GE.Layout
         GE.Account.init()
         Gibber.proxy( window )
-        GE.Console.init()
+        //GE.Console.init()
         GE.Welcome.init()
         GE.Share.open()
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
@@ -265,14 +265,7 @@ var GE = Gibber.Environment = {
           var name = window.prompt("layout to load:")
           GE.Layout.load( name )
         },
-        
-        "Ctrl-M": function(cm) {
-          var colIndex = GE.Layout.focusedColumn,
-              col = GE.Layout.columns[ colIndex ]
-               
-          col.editor.setOption( 'mode', GE.modes[ ++col.modeIndex % GE.modes.length ] )
-        },
-        
+
         "Ctrl-Enter": function(cm) {
 					var obj = GE.getSelectionCodeColumn( cm, false )
 					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
@@ -415,7 +408,8 @@ var GE = Gibber.Environment = {
 	modes : {
 		nameMappings : {
 			'javascript' : 'javascript',
-			'glsl-fragment' : 'x-shader/x-fragment'
+			'glsl-fragment' : 'x-shader/x-fragment',
+			'glsl-vertex'   : 'x-shader/x-vertex'      
 		},
 		javascript : {
 			run : function( column, value, position, codemirror, shouldDelay ) {
@@ -458,11 +452,11 @@ var GE = Gibber.Environment = {
 		},
 		'glsl-fragment' : { 
 			run: function( column, value, position, codemirror, shouldDelay ) {
-	      var shader = Gibber.Graphics.makeFragmentShader( value )
+        column.shader.fragmentText = value
 	    	column.shader.material = new THREE.ShaderMaterial({
 	    		uniforms: column.shader.uniforms,
-	    		vertexShader: shader.vertexShader,
-	    		fragmentShader: shader.fragmentShader
+	    		vertexShader: column.shader.vertexShader || Gibber.Graphics.Shaders.defaultVertex,
+	    		fragmentShader: value
 	    	});
 			},
 			default: [
@@ -486,7 +480,25 @@ var GE = Gibber.Environment = {
 			"  gl_FragColor = vec4( 1.-_out );",
 			"}",
 			].join( '\n' ),
-		}
+		},
+    'glsl-vertex' : {
+			run: function( column, value, position, codemirror, shouldDelay ) {
+	      var shader = Gibber.Graphics.Shaders.make( column.shader.fragmentText, value )
+        column.shader.vertexText = value
+	    	column.shader.material = new THREE.ShaderMaterial({
+	    		uniforms: column.shader.uniforms,
+	    		vertexShader: value,
+	    		fragmentShader: column.shader.fragmentShader || Gibber.Graphics.Shaders.defaultFragment
+	    	});
+			},
+      default : [
+    		"varying vec2 p;",
+    		"void main() {",
+    		"  p = uv;",
+    		"  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+    		"}"
+    	].join("\n"),
+    }
 	},
   Metronome : {
     shouldDraw: true,
@@ -678,11 +690,16 @@ var GE = Gibber.Environment = {
 				col.editor.setValue( GE.modes[ col.mode ].default )
 			}
       if( isCodeColumn ) {
+        for( var key in GE.modes ) {
+          if( key !== 'nameMappings' ) {
+            col.modeSelect.append( $( '<option>' ).text( key ) )
+          }
+        }
         col.modeSelect
-          .append(
-            $( '<option>' ).text( 'javascript' ),
-            $( '<option>' ).text( 'glsl-fragment' )
-          )
+          // .append(
+          //   $( '<option>' ).text( 'javascript' ),
+          //   $( '<option>' ).text( 'glsl-fragment' )
+          // )
           .eq( 0 )
           .on( 'change', function( e ) {
             var opt = $( this ).find( ':selected' ), idx = opt.index(), val = opt.text()
