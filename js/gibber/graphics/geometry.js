@@ -73,8 +73,9 @@ for( var key in types) {
       this.name = type
       
       this.fill =     args.fill || new THREE.Color(0xffffff)
+      var hasShader = typeof arguments[0] !== 'undefined' && arguments[0].shader
       
-      if( !arguments[0] || !arguments[0].shader ) {
+      if( !hasShader) {
         if( !args.texture ) {
           this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
         }else{
@@ -82,13 +83,12 @@ for( var key in types) {
         }
       }else{
         this.material = new THREE.ShaderMaterial( arguments[0].shader.material || arguments[0].shader );
+        if( arguments[0].shader.material ) arguments[0].shader.target = this
       }
       this.geometry = Gibber.construct( THREE[ type + "Geometry" ], args )
       
-      this.mesh =     new THREE.Mesh( this.geometry, this.material )
-      
-      if( arguments[0].shader.material ) arguments[0].shader.target = this
-      
+      this.mesh = new THREE.Mesh( this.geometry, this.material )
+
       this.spinX = this.spinY = this.spinZ = 0
       
       var ltrs = { x:'X', y:'Y', z:'Z' }
