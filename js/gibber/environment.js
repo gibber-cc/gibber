@@ -374,30 +374,36 @@ var GE = Gibber.Environment = {
 		var pos = cm.getCursor(), 
 				text = null,
 			  column = GE.Layout.columns[ GE.Layout.focusedColumn ]
-				
-		if( !findBlock ) {
-			text = cm.getDoc().getSelection()
+		
+    if( column.mode.indexOf('glsl') > -1 ) { // glsl always executes entire block
+      var lastLine = cm.getLine( cm.lineCount() - 1 )
+      pos ={ start:{ line:0, ch:0 }, end: { line:cm.lineCount() - 1, ch:lastLine.length - 1 } }
+      text = column.value
+    }else{
+  		if( !findBlock ) {
+  			text = cm.getDoc().getSelection()
 
-	    if ( text === "") {
-	      text = cm.getLine( pos.line )
-	    }else{
-	    	pos = null
-	    }
-		}else{
-      var startline = pos.line, 
-					endline = pos.line,
-					pos1, pos2, sel
+  	    if ( text === "") {
+  	      text = cm.getLine( pos.line )
+  	    }else{
+  	    	pos = null
+  	    }
+  		}else{
+        var startline = pos.line, 
+  					endline = pos.line,
+  					pos1, pos2, sel
       
-      while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
-      while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
+        while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
+        while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
       
-      pos1 = { line: startline, ch: 0 }
-      pos2 = { line: endline, ch: 0 }
+        pos1 = { line: startline, ch: 0 }
+        pos2 = { line: endline, ch: 0 }
 			
-      text = cm.getRange( pos1, pos2 )
+        text = cm.getRange( pos1, pos2 )
 
-      pos = { start: pos1, end: pos2 }
-		}
+        pos = { start: pos1, end: pos2 }
+  		}
+    }
 		
     GE.Keymap.flash(cm, pos)
 		
@@ -703,14 +709,12 @@ var GE = Gibber.Environment = {
         .html( '&#10005;' )
 			
 			col.setMode = function(mode) {
-        //var opt = $( this ).find( ':selected' ), idx = opt.index(), val = opt.text()
-				
-        //col.modeIndex = idx
 				col.mode = mode
         col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
-
+        $( col.modeSelect ).val( col.mode )
 				col.editor.setValue( GE.modes[ col.mode ].default )
 			}
+      
       if( isCodeColumn ) {
         for( var key in GE.modes ) {
           if( key !== 'nameMappings' ) {

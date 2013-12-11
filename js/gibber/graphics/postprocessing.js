@@ -235,7 +235,7 @@ var processArgs = function( args, type, shape ) {
         }
         	
         return out
-      }
+      },
     },
   }
 
@@ -270,6 +270,70 @@ var PP = Gibber.Graphics.PostProcessing = {
 	              shader = shaderProps.init.call( shaderProps, args )
 					}else{
 					  shader = shaderProps.init( arguments[0], arguments[1] )
+						shader.uniform = function(_name, _min, _max, _value) {
+							_min = isNaN( _min ) ? 0 : _min
+							_max = isNaN( _max ) ? 1 : _max				
+							_value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
+				
+							if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
+								mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
+					        min:_min, max:_max,
+					        output: Gibber.LINEAR,
+					        timescale: 'graphics',
+					      }
+							}
+				
+							if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
+				
+			        var property = _name,
+			            value = shader.uniforms[ property ].value || _value,
+									prop = shader.mappingProperties[ _name ],
+									mapping, oldSetter
+        
+			        Object.defineProperty( shader, property, {
+			          configurable: true,
+			          get: function() { return value; },
+			          set: function(v) {
+			            value = v
+			            shader.material.uniforms[ property ].value = value
+			          },
+			        })
+
+			        mapping = $.extend( {}, prop, {
+			          Name  : property.charAt(0).toUpperCase() + property.slice(1),
+			          name  : property,
+			          type  : 'mapping',
+			          value : shader[ property ],
+			          object: shader,
+			          oldSetter : shader.__lookupSetter__( property ),
+			          targets: [],
+			        })
+			        oldSetter = mapping.oldSetter
+        
+			        shader.mappingObjects.push( mapping )
+        
+			        Object.defineProperty( shader, mapping.Name, {
+			          get : function()  { return mapping },
+			          set : function( v ) {
+			            shader[ mapping.Name ] = v
+			          }
+			        })
+
+			        Object.defineProperty( shader, property, {
+			          get : function() { return mapping.value },
+			          set : function( v ) {
+			            if( typeof v === 'object' && v.type === 'mapping' ) {
+										console.log( "CALLED MAPPING WITH", mapping.name )
+			              Gibber.createMappingObject( mapping, v )
+			            }else{
+			              if( mapping.mapping ) mapping.mapping.remove()
+              
+			              mapping.value = v
+			              oldSetter.call( shader, mapping.value )
+			            }
+			          }
+			        }) 
+						}
 					}
           if( shader === null) {
             console.log( "SHADER ERROR... aborting" )
