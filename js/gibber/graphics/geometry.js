@@ -20,6 +20,11 @@ var types = {
          var pushValue = typeof args[0][ argsKey ] !== 'undefined' ? args[0][ argsKey ] : shape[ argsKey ]
          out.push( pushValue )
        }
+       for( var arg in args[ 0 ] ) {
+         if( ! shape[arg] ) {
+           out[ arg ] = args[ 0 ][ arg ]
+         }
+       }
      }else if( Array.isArray( args )){
        out = args
      }else{
@@ -79,7 +84,7 @@ for( var key in types) {
         if( !args.texture ) {
           this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
         }else{
-          this.material = new THREE.MeshBasicMaterial({ map: this.texture, affectedByDistance:false, useScreenCoordinates:true })
+          this.material = new THREE.MeshBasicMaterial({ map: args.texture, affectedByDistance:false, useScreenCoordinates:true })
         }
       }else{
         this.material = new THREE.ShaderMaterial( arguments[0].shader.material || arguments[0].shader );
