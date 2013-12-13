@@ -195,12 +195,12 @@
           address: '/clients/' + this.client + '/interface/addWidget',
           parameters:[
           {
-            type:'Slider',
+            type:name,
             target:'OSC', key: w.remoteID, 
             name: w.remoteID,
           }] 
         }
-        console.log( "sending widget", msg ) 
+        //console.log( "sending widget", msg ) 
         this.socket.send( JSON.stringify( msg ) )
         
         return w

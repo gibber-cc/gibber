@@ -64,6 +64,14 @@
           this.texture.needsUpdate = true
           return this
         },
+        fade: function( amt, color ) {
+          var store = this.alpha
+          
+          this.fillStyle = typeof color === 'undefined' ? 'black' : color
+          this.alpha = amt
+          this.fillRect( 0,0,this.width,this.height )
+          this.alpha = store
+        },
         stroke: function( color, lineWidth ) {
           if( typeof color !== 'undefined' ) {
             this.strokeStyle = color
@@ -102,7 +110,7 @@
         },
         circle : function( x,y,radius ) {
           this.beginPath()
-            this.arc( x, y, radius, 0, 360)
+            this.arc( x, y, radius, 0, Math.PI * 2)
           this.closePath()
           return this
         },

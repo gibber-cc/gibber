@@ -72,9 +72,9 @@ for( var key in types) {
       }
       
       Gibber.Graphics.running = true 
-      console.log( "ARGUMENTS", arguments )
+
       var args = processArgs( arguments, type, shape )
-      console.log( 'ARGS', args )      
+
       this.name = type
       
       this.fill =     args.fill || new THREE.Color(0xffffff)

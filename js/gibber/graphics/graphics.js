@@ -137,7 +137,7 @@ var Graphics = Gibber.Graphics = {
 
       this.camera = new THREE.OrthographicCamera( this.width / - 2, this.width / 2, this.height / 2, this.height / - 2, 1, 1.00000001 );
       this.camera.position.z = 1
-      this.resolution = 1
+      this.resolution = .5
       this.renderer.setSize( this.width, this.height )
 
       this.mode = '2d'

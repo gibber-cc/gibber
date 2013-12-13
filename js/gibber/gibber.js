@@ -19,7 +19,8 @@ window.Gibber = window.G = {
       'gibber/audio/oscillators',
       'gibber/audio/fx',
       'gibber/audio/synths',
-      'gibber/audio/bus',      
+      'gibber/audio/bus', 
+      'gibber/audio/analysis', 			     
       'gibber/seq', 
       'gibber/audio/drums',
       'gibber/utilities'], 'gibber', function() {
