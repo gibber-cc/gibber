@@ -31,7 +31,7 @@ var GE = Gibber.Environment = {
         window.Layout = GE.Layout
         GE.Account.init()
         Gibber.proxy( window )
-        //GE.Console.init()
+        GE.Console.init()
         GE.Welcome.init()
         GE.Share.open()
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )

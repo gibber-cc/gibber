@@ -58,6 +58,9 @@
         },
         fill : function( color ) {
           if( typeof color !== 'undefined' ) {
+            if( ! isNaN( color ) ) {
+              color = 'rgb(' + color + ',' + color + ',' + color + ')'
+            }
             this.fillStyle = color
           }
           this._fill() 
@@ -74,6 +77,9 @@
         },
         stroke: function( color, lineWidth ) {
           if( typeof color !== 'undefined' ) {
+            if( ! isNaN( color ) ) {
+              color = 'rgb(' + color + ',' + color + ',' + color + ')'
+            }
             this.strokeStyle = color
           }
           if( typeof lineWidth !== 'undefined' ) {

@@ -416,7 +416,9 @@ window.Gibber = window.G = {
           }
         }
       }else if( from.timescale === 'graphics' ) {
-        var proxy = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Proxy2( from.object, from.name ),
+				if( typeof from.object.track === 'undefined' ) from.object.track = {}
+				
+        var proxy = typeof from.object.track[ from.name ] !== 'undefined' ? from.object.track[ from.name ] : new Gibberish.Proxy2( from.object, from.name ),
             op    = new Gibberish.OnePole({ a0:.005, b1:.995 })
         
         from.object.track = proxy;
@@ -681,24 +683,10 @@ window.Gibber = window.G = {
               type  : 'mapping',
               value : obj[ property ],
               object: obj,
-              targets: []
+              targets: [],
+							oldSetter: obj.__lookupSetter__( property )
             }),
             oldSetter = obj.__lookupSetter__( property )
-        
-        //console.log( property, oldSetter )
-        
-        // if( typeof oldSetter === 'undefined') {
-        //   console.log( "CREATING SETTER", property )
-        //   //(function(_obj) { 
-        //     console.log(" DEFINING PROPERTY ")
-        //     Object.defineProperty( obj, property, {
-        //       get: function() { return _obj[ property ] },
-        //       set: function(v) { _obj[ property ] = v }
-        //     })
-        //     //})(obj)
-        //   
-        //   oldSetter = obj.__lookupSetter__( property )
-        // }
         
         obj.mappingObjects.push( mapping )
         

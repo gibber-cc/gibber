@@ -20,7 +20,6 @@ var Clock = Gibber.Clock = {
     if( Clock.currentBeat === 1 && Clock.codeToExecute.length > 0) {
       
       for( var i = 0; i < Clock.codeToExecute.length; i++ ) {
-				console.log ( "CODE TO EXECUTE", Clock.codeToExecute[i] )
         try {
 					if( typeof Clock.codeToExecute[ i ].function === 'function' ) {
 						Clock.codeToExecute[ i ].function()
