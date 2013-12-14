@@ -17,7 +17,7 @@ var Clock = Gibber.Clock = {
   phase : 0,
   
   processBeat : function() {
-    Clock.currentBeat = Clock.currentBeat === Clock.signature.upper ? 1 : Clock.currentBeat + 1
+    Clock.currentBeat = Clock.currentBeat >= Clock.signature.upper ? 1 : Clock.currentBeat + 1
     
     if( Clock.currentBeat === 1 && Clock.codeToExecute.length > 0) {
       
@@ -103,6 +103,7 @@ var Clock = Gibber.Clock = {
             Clock.signature.upper = parseInt( values[0] )
             Clock.signature.lower = parseInt( values[1] )
           }
+          Clock.currentBeat = 0
         }
       })
     }
