@@ -105,9 +105,21 @@
       obj.durations = $.isArray( arguments[1] ) ? arguments[1] : [ arguments[1] ]
       obj.target = arguments[2]
     }
-    console.log( obj )
+    //console.log( obj )
 
     seq = new Gibberish.Sequencer2( obj )
+    
+    seq.rate = Gibber.Clock
+    var oldRate  = seq.__lookupSetter__( 'rate' )
+    
+    var _rate = seq.rate
+    Object.defineProperty( seq, 'rate', {
+      get : function() { return _rate },
+      set : function(v) {
+        _rate = Mul( Gibber.Clock, v )
+        oldRate.call( seq, _rate )
+      }
+    })
     
 		seq.name = 'Seq'
     // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )

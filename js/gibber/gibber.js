@@ -56,8 +56,9 @@ window.Gibber = window.G = {
       Gibber.Audio.defineUgenProperty = Gibber.defineUgenProperty
       
       $script.ready('environment', function() {
-        Gibber.Clock.init()
+        Gibber.Clock.start( true )
         Gibber.Clock.addMetronome( Gibber.Environment.Metronome )
+				window.Clock = Gibber.Clock
       })
       
       window.Seq = Gibber.Seq
@@ -83,7 +84,6 @@ window.Gibber = window.G = {
         'http://gibber.mat.ucsb.edu/gibber/'+path, {},
         function( d ) {
           d = JSON.parse( d )
-          console.log(d)
           eval( d.text )
 
           if( exportTo && Gibber.Modules[ path ] ) {
@@ -257,8 +257,9 @@ window.Gibber = window.G = {
     
     Gibber.Master.inputs.length = 0
     
-    Gibber.Clock.start()
-    
+		console.log('resetting 2')
+    Gibber.Clock.reset()
+
     console.log( 'Audio stopped.')
   },
   
@@ -266,13 +267,9 @@ window.Gibber = window.G = {
     this.stopAudio();
     
     if( Gibber.Graphics ) Gibber.Graphics.clear()
-    // if( this.Graphics.running ) {
-    //   for( var i = 0; i < this.Graphics.graph.length; i++ ) {
-    //     this.Graphics.graph[ i ].remove( true )
-    //   }
-    //   this.Graphics.graph.length = 0
-    // }
-    Gibber.proxy( window ) 
+
+    Gibber.proxy( window )
+		
     console.log( 'Gibber has been cleared.' )
   },
   

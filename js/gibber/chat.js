@@ -302,7 +302,6 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       for( var i = 0; i < GE.Layout.columns.length; i++ ){ 
         var _column = GE.Layout.columns[i]
         if( _column && _column.shareName === data.shareName ) {
-          console.log(" FOUND FREAKING COLUMN ", _column )
           column = _column
           break
         }

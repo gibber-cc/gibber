@@ -7,15 +7,17 @@ var Clock = Gibber.Clock = {
   seq : null, 
   bpm : null,
   maxMeasures: 20,
+  baseBPM : 120,
   metronome : null,
-  currentBeat : 1,
+  currentBeat : 0,
   beatsPerMeasure : 4,
   codeToExecute : [],
+  signature: { lower: 4, upper: 4 },
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
   phase : 0,
   
-  callback : function() {
-    Clock.currentBeat = Clock.currentBeat === Clock.beatsPerMeasure ? 1 : Clock.currentBeat + 1
+  processBeat : function() {
+    Clock.currentBeat = Clock.currentBeat === Clock.signature.upper ? 1 : Clock.currentBeat + 1
     
     if( Clock.currentBeat === 1 && Clock.codeToExecute.length > 0) {
       
@@ -35,39 +37,22 @@ var Clock = Gibber.Clock = {
     }
     
     if( typeof Clock.metronome === 'object' ) {
-      Clock.metronome.draw( Clock.currentBeat, Clock.beatsPerMeasure )
+      Clock.metronome.draw( Clock.currentBeat, Clock.signature.upper )
     }
     
-    Clock.phase += beats( 1 )()
+    Clock.phase += beats( 1 )
   },
   
   getTimeSinceStart : function() {
     return Clock.phase + Clock.seq.phase
   },
   
-  init : function() {
-    Gibberish.Time.clock = function() {
-      $.extend( this, {
-        properties: { rate: 1 },
-        callback : function( rate ) {
-          return rate
-        }
-      })
-      this.init()
-    }
-    Gibberish.Time.clock.prototype = new Gibberish.ugen()
-
-    var bpm = 120
-    Object.defineProperty(this, 'bpm', {
-      get: function() { return bpm },
-      set: function(v) { bpm = v; Gibberish.Time.bpm = bpm }
-    })
+  reset : function() {
+    this.phase = 0
+    this.currentBeat = 0
+    this.start()
     
-    this.seq = new Gibberish.Sequencer({
-      values: [ this.callback ],
-      durations:[ beats(1) ],
-    }).start()
-    
+    console.log( 'Clock reset' )
   },
   
   tap : function() {
@@ -88,13 +73,45 @@ var Clock = Gibber.Clock = {
     }
   },
   
-  start : function() {    
+  start : function( shouldInit ) {    
+    if( shouldInit ) {
+      $.extend( this, {
+        properties: { rate: 1 },
+        name:'master_clock',
+        callback : function( rate ) {
+          return rate
+        }
+      })
     
-    this.seq = new Gibberish.Sequencer({
-      values: [ this.callback ],
-      durations:[ beats(1) ],
+      this.__proto__ = new Gibberish.ugen()
+      this.__proto__.init.call( this )
+
+      var bpm = this.baseBPM
+      Object.defineProperty(this, 'bpm', {
+        get: function() { return bpm },
+        set: function(v) { 
+          bpm = v;
+          this.rate = bpm / this.baseBPM
+        }
+      })
+      
+      Object.defineProperty(this, 'timeSignature', {
+        get: function() { return Clock.signature.upper + '/' + Clock.signature.lower },
+        set: function(v) { 
+          var values = v.split('/')
+          if( values.length === 2) {
+            Clock.signature.upper = parseInt( values[0] )
+            Clock.signature.lower = parseInt( values[1] )
+          }
+        }
+      })
+    }
+    
+    this.seq = new Gibberish.Sequencer2({
+      values: [ this.processBeat ],
+      durations:[ Clock.Beats(1) ],
+      rate: this,
     }).start()
-    
   },
   
   addMetronome: function( metronome ) {
@@ -106,8 +123,7 @@ var Clock = Gibber.Clock = {
     var timeInSamples, beat;
     
     if( v < this.maxMeasures ) {
-      beat = (44100 * 60) / this.bpm
-      timeInSamples = v * (beat * 4)
+      timeInSamples = Clock.beats( v * Clock.signature.lower )
     }else{
       timeInSamples = v
     }
@@ -115,13 +131,28 @@ var Clock = Gibber.Clock = {
     return timeInSamples
   },
   
+  Time : function(v) {
+    var timeFunction, beat;
+    
+    if( v < this.maxMeasures ) {
+      timeFunction = Clock.Beats( v * Clock.signature.lower )
+    }else{
+      timeFunction = Clock.Beats( v )
+    }
+    
+    return timeFunction()
+  },
+  
   beats : function(val) {
-    return function() { 
-      var samplesPerBeat = Gibberish.context.sampleRate / ( Clock.bpm / 60 ) ;
-      return samplesPerBeat * ( val * 4 );
+    var samplesPerBeat = Gibberish.context.sampleRate / ( Clock.baseBPM / 60 )
+    return samplesPerBeat * ( val * ( 4 / Clock.signature.lower ) );
+  },
+  
+  Beats : function(val) {
+    return function() {
+      return Gibber.Clock.beats( val )
     }
   }
-  
 }
 
 })()
