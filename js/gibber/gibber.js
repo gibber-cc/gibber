@@ -14,8 +14,8 @@ window.Gibber = window.G = {
       'external/gibberish.2.0.min', 
       'external/teoria.min',
       'gibber/clock',
-      'gibber/audio/theory',
     ], function() { $script([
+      'gibber/audio/theory',
       'gibber/audio/oscillators',
       'gibber/audio/fx',
       'gibber/audio/synths',
