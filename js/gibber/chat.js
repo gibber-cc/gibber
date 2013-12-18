@@ -32,12 +32,12 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       .on( 'click', function() { Chat.moveToRoom( 'test' ) } )
       .hide()
 
-    this.addButton = $('<button>' )
-      .text( 'create room' )
-      .on( 'click', Chat.createRoom )
-      .css({right:0 })
+    // this.addButton = $('<button>' )
+    //   .text( 'create room' )
+    //   .on( 'click', Chat.createRoom )
+    //   .css({right:0 })
 
-    this.lobbyRoom.append( this.lobby, this.room, this.addButton )
+    this.lobbyRoom.append( this.lobby, this.room /*this.addButton*/ )
 
     this.column.header.append( this.lobbyRoom )
 
@@ -94,7 +94,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.currentRoom = 'lobby'
     this.room.css({ color:'#ccc', background:'#333' })
     this.room.hide()
-    this.addButton.show()
+    // this.addButton.show()
     
     this.socket.send( JSON.stringify({ cmd:'listRooms' }) )
   },
@@ -105,7 +105,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       this.lobby.css({ color:'#ccc', background:'#333' })
     }
     this.room.show()
-    this.addButton.hide()
+    // this.addButton.hide()
 
     if( this.roomElement === null ) {
       this.roomElement = $( '<div>' ).addClass( 'chatroom' )

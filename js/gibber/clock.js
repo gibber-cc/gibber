@@ -99,11 +99,11 @@ var Clock = Gibber.Clock = {
         get: function() { return Clock.signature.upper + '/' + Clock.signature.lower },
         set: function(v) { 
           var values = v.split('/')
-          if( values.length === 2) {
+          if( values.length === 2 && ( values[0] !== Clock.signature.upper || values[1] !== Clock.signature.lower ) ) {
             Clock.signature.upper = parseInt( values[0] )
             Clock.signature.lower = parseInt( values[1] )
+            Clock.currentBeat = Clock.currentBeat != 1 ? 0 : 1
           }
-          Clock.currentBeat = 0
         }
       })
     }
