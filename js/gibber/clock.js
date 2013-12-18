@@ -13,6 +13,7 @@ var Clock = Gibber.Clock = {
   beatsPerMeasure : 4,
   codeToExecute : [],
   signature: { lower: 4, upper: 4 },
+  sequencers:[],
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
   phase : 0,
   
@@ -50,6 +51,7 @@ var Clock = Gibber.Clock = {
   reset : function() {
     this.phase = 0
     this.currentBeat = 0
+    this.rate = 1
     this.start()
     
     console.log( 'Clock reset' )

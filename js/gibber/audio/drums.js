@@ -277,7 +277,7 @@
         case 'string':
 					obj.seq = Seq({
 						note : props[0].split( "" ),
-						durations : props[1] ? Gibber.Clock.Beats( props[1] ) : Gibber.Clock.Beats( 1 / props[0].length ),
+						durations : props[1] ? Gibber.Clock.Time( props[1] ) : Gibber.Clock.Time( 1 / props[0].length ),
 						target: obj,
 					});
           
@@ -285,8 +285,8 @@
         case 'object':
       		if( typeof props[0].note === 'string' ) props[0].note = props[0].note.split("")
       		props[0].target = obj
-          props[0].durations = props[0].durations ? Gibber.Clock.Beats( props[0].durations ) : Gibber.Clock.Beats( 1 / props[0].note.length )
-      
+          props[0].durations = props[0].durations ? Gibber.Clock.Time( props[0].durations ) : Gibber.Clock.Time( 1 / props[0].note.length )
+          props[0].offset = props[0].offset ? Gibber.Clock.time( props[0].offset ) : 0
       	  obj.seq = Seq( props[0] );
           
           break;

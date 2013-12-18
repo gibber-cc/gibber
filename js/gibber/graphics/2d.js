@@ -115,9 +115,11 @@
           return this
         },
         circle : function( x,y,radius ) {
-          this.beginPath()
-            this.arc( x, y, radius, 0, Math.PI * 2)
-          this.closePath()
+          if( radius > 0 ) {
+            this.beginPath()
+              this.arc( x, y, radius, 0, Math.PI * 2)
+            this.closePath()
+          }
           return this
         },
         square : function( x,y,size ) {

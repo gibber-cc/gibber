@@ -112,7 +112,7 @@
     seq.rate = Gibber.Clock
     var oldRate  = seq.__lookupSetter__( 'rate' )
     
-    var _rate = seq.rate
+    var _rate = seq.rate 
     Object.defineProperty( seq, 'rate', {
       get : function() { return _rate },
       set : function(v) {
@@ -144,8 +144,9 @@
     var offset = seq.offset
     Object.defineProperty( seq, 'offset', {
       get: function() { return offset },
-      set: function(v) { offset = v; nextTime += offset }
+      set: function(v) { offset = v; seq.nextTime += offset }
     })
+    seq.nextTime += seq.offset
     
     for( var i = 0; i < keyList.length; i++ ) {
       (function(_seq) {
