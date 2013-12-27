@@ -265,12 +265,13 @@ var ugens = ['Drums', 'Pluck', 'EDrums', 'Sampler', 'Synth', 'FM', 'Sine', 'Tria
     },
     
 		runScript : function(script, pos, cm) {
-      var tree = Notation.esprima.parse(script, {loc:true, range:true})
+      var tree = Notation.esprima.parse(script, { loc:true, range:true} )
       
       Gibber.run(script); // must run script before parsing tree so ugens are present
-      //console.log( tree )
+
       for(var i=0; i < tree.body.length; i++) {
         var obj = tree.body[i];
+
         if(obj.type === 'ExpressionStatement') {
           if(obj.expression.type === 'AssignmentExpression') {
             if(obj.expression.left.type === 'Identifier') { // assigning to global and not a property
@@ -324,3 +325,5 @@ var ugens = ['Drums', 'Pluck', 'EDrums', 'Sampler', 'Synth', 'FM', 'Sine', 'Tria
 	//Gibber.Environment.Notation = Notation
   Gibber.Modules[ 'gibber/publications/notation' ] = Notation;
 })()
+
+//Gibber.Modules['gibber/publications/notation'].init()

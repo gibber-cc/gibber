@@ -27,10 +27,10 @@ var Clock = Gibber.Clock = {
 					if( typeof Clock.codeToExecute[ i ].function === 'function' ) {
 						Clock.codeToExecute[ i ].function()
 					}else{
-	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].code.cm )
+	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
 					}
         }catch( e ) {
-          console.error( "FAILED TO EXECUTE CODE:\n", Clock.codeToExecute[ i ].code )
+          console.error( "FAILED TO EXECUTE CODE:", Clock.codeToExecute[ i ].code , e)
         }
       }
       
@@ -53,8 +53,6 @@ var Clock = Gibber.Clock = {
     this.currentBeat = 0
     this.rate = 1
     this.start()
-    
-    console.log( 'Clock reset' )
   },
   
   tap : function() {

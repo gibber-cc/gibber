@@ -6,7 +6,6 @@ var SERVER_URL = 'http://gibber.mat.ucsb.edu'//'http://127.0.0.1:3000',
     //modes = [ 'javascript', 'glsl' ]
 
 var GE = Gibber.Environment = {
-  //modes: ['javascript', 'x-shader/x-fragment'],
   init : function() { 
     $script( ['external/codemirror/codemirror-compressed', 'external/interface' ], 'codemirror',function() {
       $script( ['external/codemirror/addons/closebrackets', 
@@ -47,12 +46,6 @@ var GE = Gibber.Environment = {
     $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
       Gibber.Graphics.load()
     } )
-		
-		// $script( 'external/esprima', function() { 
-		// 	$script( 'gibber/notation', function() {
-		// 		Gibber.Environment.Notation.init()
-		// 	})
-		// })
     
     window.Columns = GE.Layout.columns
   },
@@ -269,6 +262,7 @@ var GE = Gibber.Environment = {
         "Ctrl-Enter": function(cm) {
 					var obj = GE.getSelectionCodeColumn( cm, false )
 					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+          return false
         },
 				
         "Shift-Ctrl-Enter": function(cm) {
@@ -386,7 +380,8 @@ var GE = Gibber.Environment = {
   	    if ( text === "") {
   	      text = cm.getLine( pos.line )
   	    }else{
-  	    	pos = null
+          pos = { start: cm.getCursor('start'), end: cm.getCursor('end') }
+  	    	//pos = null
   	    }
   		}else{
         var startline = pos.line, 
@@ -688,8 +683,8 @@ var GE = Gibber.Environment = {
             fontSize:       1,
             modeIndex:      0,
             isCodeColumn:   isCodeColumn,
-            toggleResizeHandle : function() { $( this.element ).find( '.resizeHandle' ).toggle() },
-            toggle : function() { $( this.element ).toggle() },
+            toggle:         function() { $( this.element ).toggle() },            
+            toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
           },
           resizeHandleSize = this.resizeHandleSize
           
@@ -707,6 +702,7 @@ var GE = Gibber.Environment = {
         .on( 'click', function(e) { GE.Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose(); })
         .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
         .html( '&#10005;' )
+        .attr( 'title', 'close column' )
 			
 			col.setMode = function(mode) {
 				col.mode = mode
@@ -727,7 +723,7 @@ var GE = Gibber.Environment = {
           //   $( '<option>' ).text( 'glsl-fragment' )
           // )
           .eq( 0 )
-          .on( 'change', function( e ) {
+          .on( 'change', function( e ) {  
             var opt = $( this ).find( ':selected' ), idx = opt.index(), val = opt.text()
 						
             col.modeIndex = idx
@@ -736,6 +732,7 @@ var GE = Gibber.Environment = {
 
 						col.editor.setValue( GE.modes[ col.mode ].default )
           })
+          .attr( 'title', 'set language for column' )
           
         col.header
           .append( col.close )
@@ -772,9 +769,23 @@ var GE = Gibber.Environment = {
           value: _value,
           lineWrapping: false,
           tabSize: 2,
+          lineNumbers:false,
           autofocus: options.autofocus || false,
         })
-
+        
+        col.lineNumbersButton = $( '<button>' ).text('#')
+          .on( 'click', function( e ) { 
+            col.editor.setOption( 'lineNumbers', !col.editor.getOption('lineNumbers') )
+          })
+          .addClass( 'lineNumbersButton' )
+          .attr( 'title', 'toggle line numbers' )
+          // .css({
+          //   background:'black',
+          //   border:'1px solid #666',
+          //   height:'1.6em'
+          // })         
+        
+        col.header.append( col.lineNumbersButton )
         col.editor.column = col    
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
       }
@@ -1299,7 +1310,7 @@ var GE = Gibber.Environment = {
         data: {
           name: $( '#new_publication_name' ).val(),
           code: GE.Layout.columns[ columnNumber ].editor.getValue(),
-          permissions: $( '#new_publication_permissions' ).val() === 'on',
+          permissions: $( '#new_publication_permissions' ).prop( 'checked' ),
           tags: $( '#new_publication_tags' ).val().split(','),
           notes: $( '#new_publication_notes' ).val() 
          },

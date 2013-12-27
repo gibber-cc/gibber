@@ -23,7 +23,9 @@ window.Gibber = window.G = {
       'gibber/audio/analysis', 			     
       'gibber/seq', 
       'gibber/audio/drums',
-      'gibber/utilities'], 'gibber', function() {
+      'gibber/utilities',
+      'external/esprima',
+			], 'gibber', function() {
         
       Gibber.Audio = Gibberish
       
@@ -38,6 +40,7 @@ window.Gibber = window.G = {
       window.sec = window.seconds
       Gibber.Audio.Binops.export()
       
+			Gibber.Esprima = window.esprima
       Gibber.Master = window.Master = Bus().connect( Gibberish.out )
       Master.type = 'Bus'
       $.extend( true, Master, Gibber.ugen ) 
@@ -178,11 +181,78 @@ window.Gibber = window.G = {
 
   log: function( msg ) { console.log( msg ) },
   
-  run: function( code ) {
-		try {
-			eval( code )
-    }catch( e ) {
-			console.error( e )
+  run: function( script, pos, cm ) { // called by Gibber.Environment.modes.javascript
+		var _start = pos.start ? pos.start.line : pos.line,
+				tree
+		
+	  try{
+			tree = Gibber.Esprima.parse(script, { loc:true, range:true} )
+		}catch(e) {
+			console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
+			return
+		}
+
+    for(var i=0; i < tree.body.length; i++) {
+      var obj = tree.body[i],
+					start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
+					end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
+					src   = cm.getRange( start, end )
+					
+			//console.log( start, end, src )
+			try{
+				eval( src )
+			}catch( e ) {
+				console.error( "Error evaluating expression beginning on line " + start.line + '\n' + e.message )
+			}
+      //console.log( "LINE NUMBER", pos.start.line + obj.loc.start.line, obj )
+			//console.log( "SOURCE : ", cm.getRange( start, end ) )
+      // if(obj.type === 'ExpressionStatement') {
+      //   if(obj.expression.type === 'AssignmentExpression') {
+      //     if(obj.expression.left.type === 'Identifier') { // assigning to global and not a property
+      //       var lastChar, name;
+      //       //console.log(obj.expression.left)
+      //       if(typeof pos.start === 'undefined') {
+      //         //lastChar = cm.lineInfo(pos.line).text.length;
+      //         lastChar = cm.lineInfo(pos.line).text.length;
+      //       }
+      //       name = obj.expression.left.name;
+      //       
+      //       var marker = typeof pos.start !== 'undefined' 
+      //         ? cm.markText( pos.start, pos.end, {className:name} )
+      //         : cm.markText( { line:pos.line,ch:0 }, { line:pos.line, ch:lastChar }, {className:name} );
+      //       
+      //       window[ name ].marker = marker;
+      //       window[ name ].tree = obj;
+      //       window[ name ].text = function() { return $('.'+name); }
+      //       window[ name ].text.color = function(color) {
+      //         window[ name ].text().css({ background:color });
+      //       }
+      //       
+      //       if(window[ name ].name === 'Seq' || window[ name ].name === 'ScaleSeq') {
+      //         Notation.processSeq( window[ name ], name, cm, pos );
+      //       }else if(window[ name ].name === 'Drums' /* || window[ name ].name === 'EDrums' */) {
+      //         Notation.processDrums( window[ name ], name, cm, pos );
+      //       }
+      //       
+      //       if( ugens.indexOf(window[name].name) > -1 ) {
+      //         window[name].follower = new Gibberish.Follow( {input:window[name], mult:4} );
+      //         
+      //         window[name].followerSeq = Seq({ 
+      // 								values:[
+      // 									function() {
+      // 	                  var val = window[name].follower.getValue()
+      // 	                  if(val > 1) val = 1
+      // 	                  var col = 'rgba(255,255,255,'+val+')'
+      // 	                  window[name].text.color(col) 
+      // 									}
+      // 								],
+      // 								durations:1/32
+      //         })
+      //       }
+      // 
+      //     }
+      //   }
+      // }
     }
   },
   

@@ -265,6 +265,13 @@ tfoot, thead {
   padding: .15em .5em;
 }
 
+.lineNumbersButton {
+  padding: .15em .5em;
+  border: 1px solid #666;
+  background:black;
+}
+/*.columnHeader button { border-width:1px !important;}*/
+
 .resizeHandle {
  -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
@@ -291,7 +298,6 @@ tfoot, thead {
   position:fixed;
 }
 
-
 .mono { 
   font-family:monospace;
   font-size:1.25em
@@ -316,7 +322,7 @@ tfoot, thead {
 }
 
 /* DATABASE BROWSER STYLES */
-.browser{
+.browser {
   color:#ccc;
 }
 .browser a {

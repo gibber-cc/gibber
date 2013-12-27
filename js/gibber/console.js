@@ -8,7 +8,7 @@
       }
   
   Gibber.Environment.Console = {
-    parent : console,
+    parent : window.console,
     column : null,
     lastText : null,
     lastSpan : null,
@@ -130,7 +130,7 @@
         this.column.element.append( this.div )
         
         var element = this.column.element
-        var btn = $('<button>clear</button>')
+        var btn = $('<button title="clear console">clear</button>')
           .on('click', function() { 
             $( element ).find( '.console-entry' ).remove() 
             GE.Console.lastText = GE.Console.lastSpan = null

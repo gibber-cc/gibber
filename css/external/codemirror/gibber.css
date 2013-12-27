@@ -1,16 +1,6 @@
 .cm-s-gibber {
   background:transparent;
   color: #ccc,
-;}
-
-.CodeMirror-lines { 
-  /* font-family: Menlo, Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace; */
-  padding-top: .75em;
-}
-
-.CodeMirror-lines pre {
-  /* word-wrap: break-word; */
-  /* white-space: pre-wrap; */
 }
 
 .codemirror-highlight { background:red !important; }
@@ -40,8 +30,17 @@
 .CodeMirror-lines { 
 /*  padding:0 .5em; */
   font-size:1.25em;
+  padding-top: .75em;
 }
 
 .CodeMirror-selected {
   background:#444 !important;
+}
+
+.CodeMirror-code * {
+  height:1.25em;
+}
+
+.CodeMirror-gutters {
+  background:transparent;
 }
