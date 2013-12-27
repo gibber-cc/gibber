@@ -24,7 +24,7 @@ window.Gibber = window.G = {
       'gibber/seq', 
       'gibber/audio/drums',
       'gibber/utilities',
-      'external/esprima',
+      'external/esprima.min',
 			], 'gibber', function() {
         
       Gibber.Audio = Gibberish
