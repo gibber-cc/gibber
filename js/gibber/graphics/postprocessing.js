@@ -204,7 +204,7 @@ var processArgs = function( args, type, shape ) {
     },
     Shader : {
       properties : {
-        amp:0,
+        amp:.1,
         time:0,
       },
 			fragment : null,
@@ -333,8 +333,9 @@ var PP = Gibber.Graphics.PostProcessing = {
 			            }
 			          }
 			        }) 
-						}
+						}            
 					}
+          
           if( shader === null) {
             console.log( "SHADER ERROR... aborting" )
             return
@@ -403,6 +404,8 @@ var PP = Gibber.Graphics.PostProcessing = {
               
               shader[ upper ].oldSetter.call( this, shader[ upper ].value ) 
     				}
+            
+            if( typeof shader.time !== 'undefined' ) shader.time += 1/60;
 						
 						shader.update()
     			}
@@ -463,7 +466,10 @@ var PP = Gibber.Graphics.PostProcessing = {
                   }
                 }
               })
+              shader[ property ] = mapping.value
+              
             })()
+                        
           } 
           
           shader.replaceWith = function( replacement ) {
