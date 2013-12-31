@@ -32,6 +32,7 @@ var Graphics = Gibber.Graphics = {
       ], 'postprocessing', function() {
         $script(['gibber/graphics/postprocessing','gibber/graphics/shader'], function() {
           Graphics.PostProcessing.init()
+          window.Graphics = Graphics
         })
       })
     })

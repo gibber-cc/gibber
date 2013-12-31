@@ -157,6 +157,7 @@ function escapeString( string ) {
 }
   
 // var app = express();
+var oneDay = 86400000;
 app.engine('htm', require('ejs').renderFile);
 app.configure( function() {
   app.set('views', serverRoot + '/snippets')
@@ -174,7 +175,7 @@ app.configure( function() {
   app.use( app.router )
   app.use( checkForREST )
   
-  app.use( express.static( serverRoot ) )
+  app.use( express.static( serverRoot, { maxAge:oneDay }) )
   app.use(function(err, req, res, next){
     console.error(err.stack);
     res.send(500, 'Something broke!');

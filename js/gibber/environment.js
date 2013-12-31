@@ -7,7 +7,7 @@ var SERVER_URL = 'http://gibber.mat.ucsb.edu'//'http://127.0.0.1:3000',
 
 var GE = Gibber.Environment = {
   init : function() { 
-    $script( ['external/codemirror/codemirror-compressed', 'external/interface' ], 'codemirror',function() {
+    $script( ['external/codemirror/codemirror-compressed', 'external/interface.min' ], 'codemirror',function() {
       $script( ['external/codemirror/addons/closebrackets', 
                 'external/codemirror/addons/matchbrackets', 
                 'external/codemirror/addons/comment',
@@ -559,6 +559,7 @@ var GE = Gibber.Environment = {
         set: function(v) { color = v; this.ctx.fillStyle = color; }
       })
       
+      window.Metronome = this
     },
     
     off : function() {
@@ -582,9 +583,11 @@ var GE = Gibber.Environment = {
     },
     
     init : function() {
+      $( '#contentCell' ).empty()
+      
       GE.Layout.addColumn({ fullScreen:false, type:'code', autofocus:true })
       var opacityDiv = $('#opacity')
-
+      
       opacityDiv.css({
         background:'transparent',
         position:'relative',
