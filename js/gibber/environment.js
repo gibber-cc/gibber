@@ -1040,7 +1040,44 @@ var GE = Gibber.Environment = {
         console.log('credits!')
         GE.Credits.open()
       })
+      $( '#forumButton' ).on( 'click', function(e) {
+        GE.Forum.open()
+      })
     }
+  },
+  
+  Forum : {
+    open : function() {
+      this.col = GE.Layout.addColumn({ header:'Forums' })
+
+      this.col.bodyElement.remove()
+      
+      //this.getForum()
+      var iframe = $('<iframe src="http://0.0.0.0:4567">')
+      iframe.css({
+        width:'98%',
+        height:'100%',
+        border:0
+      })
+      this.col.element.append( iframe ) 
+            
+      this.col.bodyElement = iframe
+      GE.Layout.setColumnBodyHeight( this.col)
+
+    },
+    getForum : function() {
+      $( '#docs' ).empty()
+      $.ajax({
+        url: 'http://127.0.0.1:4567',
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var help = $( data )
+        $( GE.Help.col.element ).append( help )
+        GE.Help.col.bodyElement = help
+        GE.Layout.setColumnBodyHeight( GE.Help.col )
+      }) 
+    }, 
   },
   
   Spinner: {
