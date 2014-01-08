@@ -15,7 +15,7 @@ var request         = require( 'request' ),
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
     esUrl           = 'http://localhost:9200/gibber/_search',
-    webServerPort   = 80,
+    webServerPort   = 8080,
     serverRoot      = __dirname + "/../../../",
     // livedb          = require( 'livedb' ),
     // livedbMongo     = require( 'livedb-mongo'),
@@ -127,7 +127,7 @@ passport.use(new LocalStrategy(
 
 //CORS middleware
 var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', ["http://localhost"]);
+    res.header('Access-Control-Allow-Origin', ["http://localhost:8080"]);
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
    // res.header('Access-Control-Allow-Headers', 'Content-Type');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept')
@@ -356,6 +356,7 @@ app.get( '/docs/', function( req,res,next ) {
 app.get( '/credits', function( req,res,next ) { 
   res.render( 'credits' )
 })
+app.locals.inspect = require('util').inspect;
 app.get( '/browser', function( req, res, next ) {
   request( { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
     function(__e,__r,__b) {
@@ -369,6 +370,7 @@ app.get( '/browser', function( req, res, next ) {
 
         for( var i =0; i < demoRows.length; i++ ) {
           var cat = 'misc', row = demoRows[ i ]
+          console.log( row )
           if( row.key.split('*').length > 0 ) {
             cat = row.key.split('*')[1]
             switch( cat ) {

@@ -1,55 +1,94 @@
 <div class='browser'>
     <!-- <input style='border:0; margin-left:0; width:80%' id='search_field'> -->
     <!-- <button style='min-width:3em' id='search_button'>Search</button> -->
+  <div id='scroller'>
   <table>
     <thead><th></th><th></th></thead>
     <tbody>
-    <tr><td><h3>Audio</h3>
+    <tr><td>
+      <!-- $("#browser_audio").toggle(); -->
+      <h3 id="browser_audio_header">Audio <span id='browser_updown'>&#9662;</span></h3>
+      <div id='browser_audio'>
       <ul>
       <% for(var i=0; i<audio.length; i++) { %>
-      <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- audio[i].id %>')"><%- audio[i].id.split('/')[2].split('*')[0]%></a></li>
+      <li onclick="Gibber.Environment.Browser.openCode('<%- audio[i].id %>')"><%- audio[i].id.split('/')[2].split('*')[0]%></li>
       <% } %>
-      </ul></td>
-      <td><h3>2d Drawing</h3>
+      </ul></div>
+    </td><tr>
+    
+    <tr><td>
+      <h3>2d Drawing <span id='browser_updown'>&#9662;</span></h3>
+      <div id='browser_2d'>
         <ul>
         <% for(var i=0; i<_2d.length; i++) { %>
-        <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- _2d[i].id %>')"><%- _2d[i].id.split('/')[2].split('*')[0]%></a></li>
+        <li onclick="Gibber.Environment.Browser.openCode('<%- _2d[i].id %>')"><%- _2d[i].id.split('/')[2].split('*')[0]%></li>
         <% } %>
-    </ul></td>
-  </tr>
-  <tr>
-    <td><h3>3D Scenes</h3>
-    <ul>
-    <% for(var i=0; i<_3d.length; i++) { %>
-    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- _3d[i].id %>')"><%- _3d[i].id.split('/')[2].split('*')[0]%></a></li>
-    <% } %>
-   </ul></td>
-
-    <td><h3>Miscellaneous</h3>
-    <ul>
-    <% for(var i=0; i<misc.length; i++) { %>
-    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- misc[i].id %>')"><%- misc[i].id.split('/')[2].split('*')[0]%></a></li>
-    <% } %>
-   </ul></td>
-  </tr>
-  <tr>
-  <td><h3>Recently Added</h3>
-  <ul>
-  <% for(var i=0; i<recent.length; i++) { %>
-    <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- recent[i] %>')"><%- recent[i].split('/')[0] + ' - ' + recent[i].split('/')[2] %></a></li>
-  <% } %>
-  </ul>
-  </td>
-  <td>
-  <% if( userfiles.length > 0 ) { %>
-      <h2>Your Files</h2>
+        </ul>
+      </div>
+    </td></tr>
+    
+    <tr><td>
+      <h3>3D Scenes <span id='browser_updown'>&#9662;</span></h3>
+      <div id='browser_3d'>
       <ul>
-      <% for(var i=0; i<userfiles.length; i++) { %>
-        <li><a href="#" onclick="Gibber.Environment.Browser.openCode('<%- userfiles[i].id %>')"><%- userfiles[i].id.split('/')[2] %></a></li>
+      <% for(var i=0; i<_3d.length; i++) { %>
+      <li onclick="Gibber.Environment.Browser.openCode('<%- _3d[i].id %>')"><%- _3d[i].id.split('/')[2].split('*')[0]%></li>
       <% } %>
      </ul>
-  <% } %>
+     </div>
+   </td></tr>
+
+   <tr><td>
+     <h3>Miscellaneous <span id='browser_updown'>&#9662;</span></h3>
+     <div id='browser_misc'>
+       <ul>
+       <% for(var i=0; i<misc.length; i++) { %>
+       <li onclick="Gibber.Environment.Browser.openCode('<%- misc[i].id %>')"><%- misc[i].id.split('/')[2].split('*')[0]%></li>
+       <% } %>
+     </ul>
+     </div>
+   </td></tr>
+   
+  <tr><td>
+    <h3>Recently Added <span id='browser_updown'>&#9662;</span></h3>
+    <div id='browser_recent'>
+      <ul>
+      <% for(var i=0; i<recent.length; i++) { %>
+        <li onclick="Gibber.Environment.Browser.openCode('<%- recent[i] %>')"><%- recent[i].split('/')[0] + ' - ' + recent[i].split('/')[2] %></li>
+      <% } %>
+      </ul>
+    </div>
   </td></tr>
+
+  <% if( userfiles.length > 0 ) { %>  
+  <tr><td>
+      <h2>Your Files <span id='browser_updown'>&#9662;</span></h2>
+      <div id='browser_userfiles'>
+      <ul>
+      <% for(var i=0; i<userfiles.length; i++) { %>
+        <li onclick="Gibber.Environment.Browser.openCode('<%- userfiles[i].id %>')"><%- userfiles[i].id.split('/')[2] %></li>
+      <% } %>
+     </ul>
+     </div>
+  </td></tr>
+  <% } %>  
   </tbody>
   </table>
-</div>
+  </div>
+  <div id='browser_meta'>
+    <h4 id="browser_title"></h4>
+    <h4>tags</h4>
+    <p id="browser_tags"></p>
+    <h4>notes</h4>
+    <p id="browser_notes">  </p>
+  </div>
+</div><script>
+  Gibber.Environment.Browser.files = {
+    audio : <%= inspect(audio, {depth:null}) %>,
+    _2d  : <%= inspect(_2d, {depth:null}) %>,
+    _3d  : <%= inspect(_3d, {depth:null}) %>,
+    misc : <%= inspect(misc, {depth:null})%>,
+    recent : <%= inspect(recent, {depth:null}) %>,
+    userfiles : <%= inspect(userfiles, {depth:null}) %>
+  }
+</script>

@@ -1,9 +1,9 @@
 ( function() {
 
 "use strict"
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'//'http://127.0.0.1:3000',
-//var SERVER_URL = 'http://127.0.0.1:8080', 
-    //modes = [ 'javascript', 'glsl' ]
+var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+//var SERVER_URL = 'http://127.0.0.1:8080'
+
 
 var GE = Gibber.Environment = {
   init : function() { 
@@ -1095,7 +1095,7 @@ var GE = Gibber.Environment = {
     init : function() {
       var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
       col.bodyElement.remove()
-
+      console.log( "SERVER_URL", SERVER_URL )
       $.ajax({
         url: SERVER_URL + "/welcome",
         dataType:'html'
@@ -1121,14 +1121,55 @@ var GE = Gibber.Environment = {
         dataType:'html'
       })
       .done( function( data ) {
-        var browser = $( data )
-        $( col.element ).append( browser );
+        var browser = $( data ), cells
+        console.log( browser )
+        $( col.element ).append( browser[0] );
+        $('head').append( browser[1] )
         $( '#search_button' ).on( 'click', GE.Browser.search )
         col.bodyElement = browser;
         GE.Layout.setColumnBodyHeight( col )
+        
+        cells = browser.find('td')
+        
+        var types = [ 'audio', '_2d', '_3d', 'misc', 'recent', 'userfiles' ], prev
+        for( var i = 0; i < cells.length; i++ ) {
+          (function() {
+            var cell = cells[ i ]
+            $(cell).find('h3').on('click', function() { 
+              var div = $(cell).find('div')
+              div.toggle()
+              if( div.is(':visible') ) {
+                $(this).find('#browser_updown').html('&#9652;') 
+              }else{
+                $(this).find('#browser_updown').html('&#9662;') 
+              }
+            })
+            
+            var links = $(cell).find('li')
+            for( var j = 0; j < links.length; j++ ) {
+              (function() {
+                var num = j, type = types[ i ], link = links[j]
+                if( typeof Gibber.Environment.Browser.files[ type ] !== 'undefined' ) {
+                  var obj = Gibber.Environment.Browser.files[ type ][ num ].value 
+                  $( link ).on( 'mouseover', function() {
+                    $( link ).css({ background:'#444' })
+                    if( prev ) {
+                      $( prev ).css({ background:'transparent' })
+                    }
+                    prev = link
+                    $( '#browser_title' ).text( $( link ).text() )
+                    $( '#browser_notes' ).text( obj.notes )
+                    $( '#browser_tags' ).text( obj.tags.toString() )
+                  })
+                }
+              })()
+            }
+          })()
+        }
+        //$('#browser_audio_header').on('click', GE.Browser.updown)
       })
     },
-    
+
     // publication name : author : rating : code fragment?
     search : function(e) {
       var data = { query:$( '#search_field' ).val() }
@@ -1167,6 +1208,7 @@ var GE = Gibber.Environment = {
         { address:addr },
         function( d ) {
           d = JSON.parse(d)
+          console.log( "CODE", d )
           var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
           col.editor.setValue( d.text )
           return false
