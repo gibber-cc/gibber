@@ -74,21 +74,6 @@ function findByTag( tag, fn ) {
   )
 }
 
-function recentlyPosted() {
-   request(
-    { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
-    function(e,r,b) {
-      // console.log(b.rows)
-      if(b.rows && b.rows.length === 1) {
-        var user = { username:b.rows[ 0 ].key, password: b.rows[ 0 ].value, id:users.length } // MUST GIVE A USER ID FOR SESSION MAINTENANCE
-        users.push( user )
-        return fn( null, user );
-      }else{
-        return fn( null, null );
-      }
-    }
-  )
-}
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
 //   serialize users into and deserialize users out of the session.  Typically,
@@ -362,6 +347,7 @@ app.get( '/browser', function( req, res, next ) {
     function(__e,__r,__b) {
       var recent = []
       for( var i = 0; i < __b.rows.length; i++ ){
+        console.log( __b.rows[i].value )
         recent.push( __b.rows[i].value )
       }
       request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
@@ -370,7 +356,7 @@ app.get( '/browser', function( req, res, next ) {
 
         for( var i =0; i < demoRows.length; i++ ) {
           var cat = 'misc', row = demoRows[ i ]
-          console.log( row )
+          //console.log( row )
           if( row.key.split('*').length > 0 ) {
             cat = row.key.split('*')[1]
             switch( cat ) {

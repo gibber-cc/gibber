@@ -1,8 +1,8 @@
 ( function() {
 
 "use strict"
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-//var SERVER_URL = 'http://127.0.0.1:8080'
+//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+var SERVER_URL = 'http://127.0.0.1:8080'
 
 
 var GE = Gibber.Environment = {
@@ -1150,16 +1150,20 @@ var GE = Gibber.Environment = {
               (function() {
                 var num = j, type = types[ i ], link = links[j]
                 if( typeof Gibber.Environment.Browser.files[ type ] !== 'undefined' ) {
-                  var obj = Gibber.Environment.Browser.files[ type ][ num ].value 
+                  var pub = Gibber.Environment.Browser.files[ type ][ num ],
+                      obj = pub.value || pub, // recently added has slightly different format
+                      id = pub.id || obj._id  // see above
+                      
                   $( link ).on( 'mouseover', function() {
                     $( link ).css({ background:'#444' })
                     if( prev ) {
                       $( prev ).css({ background:'transparent' })
                     }
                     prev = link
-                    $( '#browser_title' ).text( $( link ).text() )
+                    $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
                     $( '#browser_notes' ).text( obj.notes )
                     $( '#browser_tags' ).text( obj.tags.toString() )
+                    $( '#browser_author' ).text( id.split('/')[0] )
                   })
                 }
               })()

@@ -328,15 +328,17 @@ tfoot, thead {
 
 .browser table { margin-top: 10px; width:97%; }
 
-.browser table tr td div { display:none; padding-left:1em; }
+.browser table tr td div { 
+  display:none; 
+  padding-left:1em; 
+}
 
-.browser a {
+.browser li {
   color:#ccc;
-  text-decoration:none;
+  cursor:pointer;
 }
-.browser h2 {
-  font-size:1.2em;
-}
+
+.browser h2 { font-size:1.2em; }
 
 .browser h3 {
   background:#333;
@@ -344,6 +346,7 @@ tfoot, thead {
   font-weight:normal;
   padding-left:1em;
 }
+
 .browser input {
   background-color: #333;
   color:#ccc;
@@ -367,12 +370,14 @@ tfoot, thead {
   border-top:1px solid #ccc;
   display:block;
   overflow: scroll;
-  height:25%;
+  height:29%;
 }
 
 #browser_meta p { margin-top: .15em;}
 #browser_meta h4 { margin-bottom:.15em; }
 
+#browser_title, #browser_auth { display: inline;}
+#browser_auth{ margin-left:1.5em;}
 .message {
   /* border-bottom:1px solid #444; */
   margin-bottom:.5em;

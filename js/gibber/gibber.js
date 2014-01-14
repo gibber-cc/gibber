@@ -327,7 +327,6 @@ window.Gibber = window.G = {
     
     Gibber.Master.inputs.length = 0
     
-		console.log('resetting 2')
     Gibber.Clock.reset()
 
     console.log( 'Audio stopped.')

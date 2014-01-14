@@ -8,7 +8,7 @@
     <tr><td>
       <!-- $("#browser_audio").toggle(); -->
       <h3 id="browser_audio_header">Audio <span id='browser_updown'>&#9662;</span></h3>
-      <div id='browser_audio'>
+      <div id='browser_audio' style='display:block'>
       <ul>
       <% for(var i=0; i<audio.length; i++) { %>
       <li onclick="Gibber.Environment.Browser.openCode('<%- audio[i].id %>')"><%- audio[i].id.split('/')[2].split('*')[0]%></li>
@@ -54,7 +54,7 @@
     <div id='browser_recent'>
       <ul>
       <% for(var i=0; i<recent.length; i++) { %>
-        <li onclick="Gibber.Environment.Browser.openCode('<%- recent[i] %>')"><%- recent[i].split('/')[0] + ' - ' + recent[i].split('/')[2] %></li>
+        <li onclick="Gibber.Environment.Browser.openCode('<%- recent[i]._id %>')"><%- recent[i]._id.split('/')[0] + ' - ' + recent[i]._id.split('/')[2] %></li>
       <% } %>
       </ul>
     </div>
@@ -76,7 +76,7 @@
   </table>
   </div>
   <div id='browser_meta'>
-    <h4 id="browser_title"></h4>
+    <h4></h4><span id="browser_title"></span> by <span id="browser_author"></span></h4>
     <h4>tags</h4>
     <p id="browser_tags"></p>
     <h4>notes</h4>
