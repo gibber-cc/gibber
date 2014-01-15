@@ -1,8 +1,8 @@
 ( function() {
 
 "use strict"
-//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-var SERVER_URL = 'http://127.0.0.1:8080'
+var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+//var SERVER_URL = 'http://127.0.0.1:8080'
 
 
 var GE = Gibber.Environment = {
@@ -1053,7 +1053,7 @@ var GE = Gibber.Environment = {
       this.col.bodyElement.remove()
       
       //this.getForum()
-      var iframe = $('<iframe src="http://0.0.0.0:4567">')
+      var iframe = $('<iframe src="'+SERVER_URL+':4567">')
       iframe.css({
         width:'98%',
         height:'100%',
@@ -1068,7 +1068,7 @@ var GE = Gibber.Environment = {
     getForum : function() {
       $( '#docs' ).empty()
       $.ajax({
-        url: 'http://127.0.0.1:4567',
+        url: SERVER_URL+':4567',
         dataType:'html'
       })
       .done( function( data ) {
@@ -1095,7 +1095,7 @@ var GE = Gibber.Environment = {
     init : function() {
       var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
       col.bodyElement.remove()
-      console.log( "SERVER_URL", SERVER_URL )
+      //console.log( "SERVER_URL", SERVER_URL )
       $.ajax({
         url: SERVER_URL + "/welcome",
         dataType:'html'
