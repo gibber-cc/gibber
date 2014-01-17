@@ -227,6 +227,9 @@
               I.callbacks[ data.address ]( data )
             }
           }
+          window.OSC = Gibber.Environment.Interface.socket
+          window.OSC.callbacks = Gibber.Environment.Interface.callbacks
+          
         }
         I.mode = 'remote'
         I.client = client
@@ -258,6 +261,29 @@
 
   window.Button = Gibber.Environment.Interface.button
   window.Slider = Gibber.Environment.Interface.slider
-  window.Knob = Gibber.Environment.Interface.knob
-
+  window.Knob   = Gibber.Environment.Interface.knob
+  
+  var OSC = Gibber.OSC = {
+    callbacks : {},
+    init : function( port ) {
+      var _port = port || 10080,
+          _socket = OSC.socket = new WebSocket( 'ws://127.0.0.1:' + port )
+      
+      OSC.socket.onopen = function() {}
+      OSC.socket.onmessage = OSC.onmessage;
+    },
+    onmessage : function(msg) {
+      var data
+      try{
+        data = JSON.parse( msg.data )
+      }catch( error ) {
+        console.error( "ERROR on parsing JSON", error )
+        return
+      }
+      if( OSC.callbacks[ data.path ] ) {
+        OSC.callbacks[ data.path ]( data.params )
+      }
+    },
+  }
+  window.OSC = OSC
 })()
