@@ -267,7 +267,7 @@
     callbacks : {},
     init : function( port ) {
       var _port = port || 10080,
-          _socket = OSC.socket = new WebSocket( 'ws://127.0.0.1:' + port )
+          _socket = OSC.socket = new WebSocket( 'ws://127.0.0.1:' + _port )
       
       OSC.socket.onopen = function() {}
       OSC.socket.onmessage = OSC.onmessage;
