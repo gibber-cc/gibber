@@ -10,6 +10,8 @@ var Graphics = Gibber.Graphics = {
   running:  false,
   resolution: .5,
   fps: null,
+  noThree : false,
+  graph: [],
   
   load : function() {
     $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d', 'gibber/graphics/shapes2d'], 'graphics', function() {
@@ -38,10 +40,21 @@ var Graphics = Gibber.Graphics = {
     })
   },
   
-  init : function( mode, column ) {
+  init : function( mode, column, noThree ) {
     this.canvas = $( '<div>' )
-          
-    this.canvas.parent = typeof column === 'undefined' ? window : column.element
+    
+    if( typeof noThree !== 'undefined' ) this.noThree = noThree
+    
+    if( !noThree ) {
+      if(!window.WebGLRenderingContext) {
+        this.noThree = true
+      }
+    }
+    if( this.noThree !== noThree ) {
+      Gibber.Environment.Message.post( 'Your browser does not support WebGL. 2D drawing will work, but 3D geometries and shaders are not supported.' )
+    }
+    
+    this.canvas.parent = typeof column === 'undefined' || column === null ? window : column.element
     this.assignWidthAndHeight( true )
     this.canvas.css({
         left:0,
@@ -59,9 +72,19 @@ var Graphics = Gibber.Graphics = {
     }
     
     this.render = this.render.bind( this )
-    this.mode = mode || '3d'    
-    this.createScene( this.mode )
+    this.mode = mode || '3d'
+    
+    if( !this.noThree ) {
+      try{
+        this.createScene( this.mode )
+      }catch(e) {
+        this.noThree = true
+        Gibber.Environment.Message.post( 'Your browser supports WebGL but does not have it enabled. 2D drawing will work, but 3D geometries and shaders will not function until you turn it on.' )
+      }
+    }else{
 
+    }
+    
     var res = this.resolution, self = this
     Object.defineProperty(this, 'resolution', {
       get: function() { return res; },
@@ -110,7 +133,6 @@ var Graphics = Gibber.Graphics = {
 
 		this.lights = [ this.pointLight, this.pointLight2 ]
     this.use( mode ); // creates camera and adds lights	
-		this.graph = [];
 	
     this.camera.updateProjectionMatrix();
     if( this.mode === '3d' ) {
@@ -179,8 +201,10 @@ var Graphics = Gibber.Graphics = {
 
       this.graph.length = 0
       // if( this.PostProcessing ) this.PostProcessing.fx.length = 0
-      for( var j = this.PostProcessing.fx - 1; j >= 0; j++ ) {
-        this.PostProcessing.fx[ j ].remove()
+      if( !this.noThree ) {
+        for( var j = this.PostProcessing.fx - 1; j >= 0; j++ ) {
+          this.PostProcessing.fx[ j ].remove()
+        }
       }
       
       this.running = false
@@ -193,16 +217,18 @@ var Graphics = Gibber.Graphics = {
   			this.graph[i]._update();
   			this.graph[i].update();
   		}
-
-  		this.renderer.clear()
       
-      if( this.PostProcessing && this.PostProcessing.fx.length ) {
-        this.PostProcessing.composer.render()
-      }else{
-        this.renderer.render( this.scene, this.camera )
-      }
+      if( !this.noThree ) {
+    		this.renderer.clear()
+      
+        if( this.PostProcessing && this.PostProcessing.fx.length ) {
+          this.PostProcessing.composer.render()
+        }else{
+          this.renderer.render( this.scene, this.camera )
+        }
 
-  		if( this.stats ) this.stats.update()
+    		if( this.stats ) this.stats.update()
+      }
       
       if( this.fps === null || this.fps >= 55 ) {
         window.requestAnimationFrame( this.render )

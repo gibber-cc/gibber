@@ -2,13 +2,16 @@
   var cnvs = null
 
   var TwoD = Gibber.Graphics.TwoD = {
-    Canvas : function( column ) {
+    Canvas : function( column, useThree ) {
        var canvas = $( '<canvas>' )[0],
           ctx = canvas.getContext( '2d' ),
           GG = Gibber.Graphics,
           that = ctx,
           three = null;
-      
+          
+      // if(!window.WebGLRenderingContext) {
+      //   Gibber.Graphics.noThree = true
+      // }
       if( Gibber.Graphics.running ) Gibber.Graphics.clear()
 
       Gibber.Graphics.running = true
@@ -21,9 +24,9 @@
       }
 
       if( Gibber.Graphics.canvas === null ) {
-        Gibber.Graphics.init( '2d', column )
+        Gibber.Graphics.init( '2d', column, useThree )
       }else if( Gibber.Graphics.mode === '3d' ) {
-        Gibber.Graphics.use( '2d' )
+        Gibber.Graphics.use( '2d', null, useThree )
       }
 
       three = $( '#three' )
@@ -38,10 +41,15 @@
       that.center = { x: canvas.width / 2, y : canvas.height / 2 }
 
       $( canvas ).css({ width: canvas.width, height: canvas.height })
-      var tex = new THREE.Texture( canvas )
+      if( !Gibber.Graphics.noThree ) {
+        var tex = new THREE.Texture( canvas )
+      }else{
+        three.empty()
+        three.append( canvas )
+      }
       $.extend( that, {
         canvas: canvas,
-        texture: tex, 
+        texture: tex || { needsUpdate: function() {} }, 
         remove : function() {
           $( '#three' ).hide()
           //Gibber.Graphics.canvas = null
@@ -249,8 +257,10 @@
       that.texture.needsUpdate = true 
 
       that.sprite.position.x = that.sprite.position.y = that.sprite.position.z = 0
-
-      Gibber.Graphics.scene.add( that.sprite )
+      
+      if( !Gibber.Graphics.noThree ) {
+        Gibber.Graphics.scene.add( that.sprite )
+      }
       Gibber.Graphics.graph.push( that )
       
       cnvs = that
