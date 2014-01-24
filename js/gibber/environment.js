@@ -4,7 +4,6 @@
 var SERVER_URL = 'http://gibber.mat.ucsb.edu'
 //var SERVER_URL = 'http://127.0.0.1:8080'
 
-
 var GE = Gibber.Environment = {
   init : function() { 
     $script( ['external/codemirror/codemirror-compressed', 'external/interface.min' ], 'codemirror',function() {

@@ -66,7 +66,7 @@ for( var key in types) {
         shape = types[ key ]
     var constructor = function() {
       if( Gibber.Graphics.canvas === null){
-        Gibber.Graphics.init()
+        Gibber.Graphics.init('3d', null, false)
       }else if( Gibber.Graphics.mode === '2d' ) {
         Gibber.Graphics.use( '3d' )
       }

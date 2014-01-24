@@ -2,16 +2,15 @@
   var cnvs = null
 
   var TwoD = Gibber.Graphics.TwoD = {
-    Canvas : function( column, useThree ) {
+    Canvas : function( column, noThree ) {
        var canvas = $( '<canvas>' )[0],
           ctx = canvas.getContext( '2d' ),
           GG = Gibber.Graphics,
           that = ctx,
           three = null;
           
-      // if(!window.WebGLRenderingContext) {
-      //   Gibber.Graphics.noThree = true
-      // }
+      if( typeof noThree === 'undefined' ) noThree = false
+      
       if( Gibber.Graphics.running ) Gibber.Graphics.clear()
 
       Gibber.Graphics.running = true
@@ -24,9 +23,9 @@
       }
 
       if( Gibber.Graphics.canvas === null ) {
-        Gibber.Graphics.init( '2d', column, useThree )
+        Gibber.Graphics.init( '2d', column, noThree )
       }else if( Gibber.Graphics.mode === '3d' ) {
-        Gibber.Graphics.use( '2d', null, useThree )
+        Gibber.Graphics.use( '2d', null, noThree )
       }
 
       three = $( '#three' )
