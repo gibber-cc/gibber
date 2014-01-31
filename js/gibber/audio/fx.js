@@ -1,8 +1,34 @@
-(function() {
+  (function() {
   "use strict"
   
   Gibber.FX = {}
+  
+  Gibberish.Gain = function() {
+  	Gibberish.extend(this, {
+    	name: 'gain',
+      type: 'effect',
+    
+      properties : {
+        input  : 0,
+        amount : 1, 
+      },
 
+      callback : function(input, amount) {
+        if( isNaN(input) ) {
+          input[0] *= amount
+          input[1] *= amount
+        }else{
+          input *= amount
+        }
+    
+        return input;
+      }
+    })
+    .init()
+    .processProperties(arguments);
+  };
+  Gibberish.Gain.prototype = Gibberish._effect;
+  
   var types = [
     'Reverb',
     'Delay',
@@ -10,6 +36,7 @@
     'Vibrato',
     'Distortion',
     'Biquad',
+    'Gain',
     'Filter24',    
     [ 'RingModulation', 'RingMod' ],
     [ 'BufferShuffler', 'Schizo' ],
@@ -65,6 +92,13 @@
       },
       amount: {
         min: 25, max: 300,
+        output: Gibber.LINEAR,
+        timescale: 'audio',
+      },
+    },
+    Gain : {
+      amount: {
+        min: 0, max: 1,
         output: Gibber.LINEAR,
         timescale: 'audio',
       },
