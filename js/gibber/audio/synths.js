@@ -82,7 +82,7 @@
         obj.fx.ugen = obj
         
         // override note method to allow note names
-        obj._note = obj.note.bind(obj)
+        obj._note = obj.note.bind( obj )
         obj.note = function() {
           var args = Array.prototype.splice.call( arguments, 0 )
         
@@ -99,7 +99,12 @@
           set: function() {}
         })
         
+        Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
+        
+        Gibber.createProxyMethods( obj, [ 'note', 'chord' ] )
+        
         Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
+        
         obj.name = name 
         
         Gibber.processArguments2( obj, args, obj.name )

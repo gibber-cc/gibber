@@ -735,82 +735,91 @@ window.Gibber = window.G = {
     
   },
   
+  defineSequencedProperty : function( obj, key ) {
+    var fnc = obj[ key ]
+    
+    fnc.seq = function( v,d ) { 
+      var args = {
+        key:key,
+        values: $.isArray(v) ? v : [v],
+        durations: $.isArray(d) ? d : [d],
+        target:obj
+      }
+    
+      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+        var s = obj.seq.seqs[ i ]
+        if( s.key === key ) {
+          s.shouldStop = true
+          obj.seq.seqs.splice(i,1)
+          break;
+        }
+      }
+      obj.seq.add( args )
+    
+      if( !obj.seq.isRunning ) obj.seq.start()
+    
+      return obj
+    }
+    fnc.seq.stop = function() { 
+      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+        var s = obj.seq.seqs[ i ]
+        if( s.key === key ) {
+          s.shouldStop = true
+          break;
+        }
+      }
+    } // TODO: property specific stop/start/shuffle etc. for polyseq
+    fnc.seq.start = function() {
+      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+        var s = obj.seq.seqs[ i ]
+        if( s.key === key ) {
+          s.shouldStop = false
+          obj.seq.timeline[0] = [ s ]                
+          obj.seq.nextTime = 0
+          break;
+        }
+      }
+    }
+  },
+  
+  createProxyMethods : function( obj, methods ) {
+    for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
+  },
+  
   createProxyProperties : function( obj, mappingProperties ) {
+    obj.seq = Gibber.PolySeq()
+    
     for( var _key in mappingProperties ) {
       ( function() {
         var key = _key,
             val = obj[ key ],
             setter = obj.__lookupSetter__( key ),
             getter = obj.__lookupGetter__( key ),
-            started = false;
+            fnc
         
-        obj.seq = Gibber.PolySeq()
-        obj[ '_' + key ] = ( function() {
-          var fnc = function(v) {
+        // voodoo to make method act like property
+        fnc = obj[ '_' + key ] = ( function() {
+          var _fnc = function(v) {
             if(v) {
               val = v
               setter( val )
             }
             return val
           }
-          
-          fnc.set = function(v) { val = v; setter( val ) }
-          fnc.valueOf = function() { return val }
-          
-          fnc.seq = function( v,d ) { 
-            var args = {
-              key:key,
-              values: $.isArray(v) ? v : [v],
-              durations: $.isArray(d) ? d : [d],
-              target:obj
-            }
-            
-            for( var i = 0; i < obj.seq.seqs.length; i++ ) {
-              var s = obj.seq.seqs[ i ]
-              if( s.key === key ) {
-                s.shouldStop = true
-                obj.seq.seqs.splice(i,1)
-                break;
-              }
-            }
-            obj.seq.add( args )
-            
-            if( !started ) { 
-              started = true
-              obj.seq.start()
-            }
-            
-            return obj
-          }
-          fnc.seq.stop = function() { 
-            for( var i = 0; i < obj.seq.seqs.length; i++ ) {
-              var s = obj.seq.seqs[ i ]
-              if( s.key === key ) {
-                s.shouldStop = true
-                break;
-              }
-            }
-          } // TODO: property specific stop/start/shuffle etc. for polyseq
-          fnc.seq.start = function() {
-            for( var i = 0; i < obj.seq.seqs.length; i++ ) {
-              var s = obj.seq.seqs[ i ]
-              if( s.key === key ) {
-                s.shouldStop = false
-                obj.seq.timeline[0] = [ s ]                
-                obj.seq.nextTime = 0
-                break;
-              }
-            }
-          }
-          
-          return fnc
+          return _fnc
         })()
-        //console.log( "MAKING", key, obj[ '_'+key ] )
+                  
+        fnc.set = function(v) { val = v; setter( val ) }
+        fnc.valueOf = function() { return val }
+          
         Object.defineProperty( obj, key, {
           configurable: true,
           get: function() { return obj[ '_'+key ] },
           set: function(v) { obj[ '_'+key ].set( v ) }
         })
+        
+        Gibber.defineSequencedProperty( obj, '_'+key )
+        
       })()
     }
   },
@@ -997,19 +1006,24 @@ window.Gibber = window.G = {
     },
 
     play: function( notes, durations, repeat ) {
-      if( typeof this.seq === 'undefined' ) {
-        this.seq = Seq({ note: notes, durations:durations, target:this })
-      }else{
-        if( notes ) { this.seq.note = notes; this.seq.counts.note = 0; }
-        if( durations ) this.seq.durations = durations
+      if( this.note ) {
+        this.note.seq( notes, durations )
+      }else if( this.frequency ) {
+        this.frequency.seq( notes, durations )
       }
-      if( repeat ) {
-        this.seq.repeat( repeat )
-      }
-      if( ! this.seq.isRunning ) {
-        this.seq.start()
-      }
-      return this
+      // if( typeof this.seq === 'undefined' ) {
+      //   this.seq = Seq({ note: notes, durations:durations, target:this })
+      // }else{
+      //   if( notes ) { this.seq.note = notes; this.seq.counts.note = 0; }
+      //   if( durations ) this.seq.durations = durations
+      // }
+      // if( repeat ) {
+      //   this.seq.repeat( repeat )
+      // }
+      // if( ! this.seq.isRunning ) {
+      //   this.seq.start()
+      // }
+      // return this
     },
 
     stop : function() {
