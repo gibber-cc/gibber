@@ -145,12 +145,44 @@
     if( typeof props !== 'undefined') {
       switch( $.type( props[0] ) ) {
         case 'string':
-					obj.seq = Seq({
-						note : props[0].split( "" ),
-						durations : props[1] ? Gibber.Clock.Time( props[1] ) : Gibber.Clock.Time( 1 / props[0].length ),
-						target: obj,
-					});
+          var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
+
+          for( var i = 0; i < seqs.length; i++ ) {
+            var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
+
+            if( idx > -1 ) {
+              var _value = seq.substr(0, idx),
+                  duration = seq.substr(idx+1)
+              
+              duration = eval(duration)
+              
+              seq = _value.trim()
+              
+              hasTime = true
+            }else{
+              seq = seq.trim()
+              duration = 1 / seq.length
+              //console.log( "DURATION",  duration, seq.trim() )              
+            }
+            
+            if( typeof props[1] !== 'undefined') { duration = props[1] }
+            
+            _seqs.push({
+              key:'note',
+              values:seq,
+              durations:duration,
+              target:obj
+            })
+          }
           
+          obj.seq = Gibber.PolySeq({ seqs:_seqs }).start()
+          var nextTime = obj.seq.nextTime,
+              oldNextTime = obj.seq.__lookupSetter__('nextTime')
+          Object.defineProperty( obj.seq, 'nextTime', {
+            get: function() { return nextTime },
+            set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
+          })
+
           break;
         case 'object':
       		if( typeof props[0].note === 'string' ) props[0].note = props[0].note.split("")
@@ -179,12 +211,24 @@
   	if( obj.seq && obj.seq.tick ) { Gibberish.future( obj.seq.tick, 1 ) }
     
     obj.note = function(nt) {
-  		for(var key in this.kit) {
-  			if(nt === this.kit[key].symbol) {
-  				this[ key ].sampler.note( obj.pitch /** this[key].pitch*/, this[key].amp );
-  				break;
-  			}
-  		}
+      if( $.isArray( nt ) ) {
+        for( var i = 0; i < nt.length; i++ ) {
+          var note = nt[ i ]
+      		for(var key in this.kit) {
+      			if(note === this.kit[key].symbol) {
+      				this[ key ].sampler.note( obj.pitch /** this[key].pitch*/, this[key].amp );
+      				break;
+      			}
+      		}
+        }
+      }else{
+    		for(var key in this.kit) {
+    			if(nt === this.kit[key].symbol) {
+    				this[ key ].sampler.note( obj.pitch /** this[key].pitch*/, this[key].amp );
+    				break;
+    			}
+    		}
+      }
   	}
     
     var _pitch = obj.pitch

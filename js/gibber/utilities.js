@@ -86,6 +86,6 @@ Gibber.Utilities = {
 
 window.solo = Gibber.Utilities.solo
 window.future = Gibber.Utilities.future // TODO: fix global reference
-Array.prototype.random = Gibber.Utilities.random
+Array.prototype.random = Array.prototype.rnd = Gibber.Utilities.random
 
 })()

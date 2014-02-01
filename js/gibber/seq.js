@@ -25,7 +25,7 @@
         try{
           freq = obj.scale.notes[ idx ].fq()
         }catch(e) {
-          console.error( "THe frequency could not be obtained from the current scale. Did you specify an invalid mode or root note?")
+          console.error( "The frequency could not be obtained from the current scale. Did you specify an invalid mode or root note?")
           seq.stop()
         }
       }          
@@ -204,6 +204,38 @@
     seq.start()
     
     console.log( 'Sequencer created.' )
+    return seq
+  }
+  
+  Gibber.PolySeq = function() {
+    var args = Array.prototype.slice.call( arguments, 0 ),
+        seq = Gibber.construct( Gibberish.PolySeq, args ).connect()
+    
+    seq.rate = Gibber.Clock
+    var oldRate  = seq.__lookupSetter__( 'rate' )
+    
+    var _rate = seq.rate 
+    Object.defineProperty( seq, 'rate', {
+      get : function() { return _rate },
+      set : function(v) {
+        _rate = Mul( Gibber.Clock, v )
+        oldRate.call( seq, _rate )
+      }
+    })
+    
+		seq.name = 'Seq'
+    // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )
+    
+    $.extend( seq, {
+      replaceWith: function( replacement ) { this.kill() },
+      kill: function() { 
+        if( this.target )
+          this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
+          
+        this.stop().disconnect()
+      }
+    })
+    
     return seq
   }
   

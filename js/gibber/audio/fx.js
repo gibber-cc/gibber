@@ -3,6 +3,7 @@
   
   Gibber.FX = {}
   
+  // TODO: should this be completely moved into Gibberish? Is it useful inside there instead of just using Mul?
   Gibberish.Gain = function() {
   	Gibberish.extend(this, {
     	name: 'gain',
