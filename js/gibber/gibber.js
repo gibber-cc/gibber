@@ -751,9 +751,10 @@ window.Gibber = window.G = {
             }
             return val
           }
-          fnc.set = function(v) { val = v; setter( val ) }
           
+          fnc.set = function(v) { val = v; setter( val ) }
           fnc.valueOf = function() { return val }
+          
           fnc.seq = function( v,d ) { 
             var args = {
               key:key,
@@ -764,13 +765,39 @@ window.Gibber = window.G = {
             if( typeof obj.seq === 'undefined' ) {
               obj.seq = Gibber.PolySeq({ seqs:[ args ] }).start()
             }else{
+              for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+                var s = obj.seq.seqs[ i ]
+                if( s.key === key ) {
+                  s.shouldStop = true
+                  obj.seq.seqs.splice(i,1)
+                  break;
+                }
+              }
               obj.seq.add( args )
             }
 
             return obj
           }
-          fnc.seq.stop = function() { if( fnc._seq ) fnc._seq.stop() } // TODO: property specific stop/start/shuffle etc. for polyseq
-          fnc.seq.start = function() { if( fnc._seq ) fnc._seq.start() }              
+          fnc.seq.stop = function() { 
+            for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+              var s = obj.seq.seqs[ i ]
+              if( s.key === key ) {
+                s.shouldStop = true
+                break;
+              }
+            }
+          } // TODO: property specific stop/start/shuffle etc. for polyseq
+          fnc.seq.start = function() {
+            for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+              var s = obj.seq.seqs[ i ]
+              if( s.key === key ) {
+                s.shouldStop = false
+                obj.seq.timeline[0] = [ s ]                
+                obj.seq.nextTime = 0
+                break;
+              }
+            }
+          }
           
           return fnc
         })()

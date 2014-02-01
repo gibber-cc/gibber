@@ -240,7 +240,7 @@
     })
         
     Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )        
-    Gibber.createMappingAbstractions( obj, _mappingProperties[ 'Drums' ] )
+    //Gibber.createMappingAbstractions( obj, _mappingProperties[ 'Drums' ] )
     
     obj.kill = function() {
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
