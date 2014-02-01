@@ -16,10 +16,12 @@
     Drums: {
       pitch: { min: .25, max: 4, output: Gibber.LINEAR,     timescale: 'audio' },
       amp:   { min: 0,   max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      pan:   { min: 0,   max: 1, output: Gibber.LINEAR,timescale: 'audio',},
     },
     XOX: {
       //pitch: { min: .25, max: 4, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      pan:   { min: 0,   max: 1, output: Gibber.LINEAR,timescale: 'audio',},      
     },
     Kick    : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
     Snare   : { 
@@ -76,6 +78,7 @@
           this._note.apply( this, args )
         }
         
+        Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
         Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
         
         Object.defineProperty(obj, '_', {
@@ -176,12 +179,6 @@
           }
           
           obj.seq = Gibber.PolySeq({ seqs:_seqs }).start()
-          var nextTime = obj.seq.nextTime,
-              oldNextTime = obj.seq.__lookupSetter__('nextTime')
-          Object.defineProperty( obj.seq, 'nextTime', {
-            get: function() { return nextTime },
-            set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
-          })
 
           break;
         case 'object':
@@ -242,6 +239,7 @@
       }
     })
         
+    Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )        
     Gibber.createMappingAbstractions( obj, _mappingProperties[ 'Drums' ] )
     
     obj.kill = function() {
@@ -446,6 +444,7 @@
       }
   	}
     
+    Gibber.createProxyProperties( obj, _mappingProperties[ 'XOX ' ] )
     Gibber.createMappingAbstractions( obj, _mappingProperties[ 'XOX' ] )
 
     obj.kill = function() {

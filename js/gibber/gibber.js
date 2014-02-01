@@ -735,6 +735,55 @@ window.Gibber = window.G = {
     
   },
   
+  createProxyProperties : function( obj, mappingProperties ) {
+    for( var _key in mappingProperties ) {
+      ( function() {
+        var key = _key,
+            val = obj[ key ],
+            setter = obj.__lookupSetter__( key ),
+            getter = obj.__lookupGetter__( key )
+        
+        obj[ '_' + key ] = ( function() {
+          var fnc = function(v) {
+            if(v) {
+              val = v
+              setter( val )
+            }
+            return val
+          }
+          fnc.set = function(v) { val = v; setter( val ) }
+          
+          fnc.valueOf = function() { return val }
+          fnc.seq = function( v,d ) { 
+            var args = {
+              key:key,
+              values:[v],
+              durations:[d],
+              target:obj
+            }
+            if( typeof obj.seq === 'undefined' ) {
+              obj.seq = Gibber.PolySeq({ seqs:[ args ] }).start()
+            }else{
+              obj.seq.add( args )
+            }
+
+            return obj
+          }
+          fnc.seq.stop = function() { if( fnc._seq ) fnc._seq.stop() } // TODO: property specific stop/start/shuffle etc. for polyseq
+          fnc.seq.start = function() { if( fnc._seq ) fnc._seq.start() }              
+          
+          return fnc
+        })()
+        //console.log( "MAKING", key, obj[ '_'+key ] )
+        Object.defineProperty( obj, key, {
+          configurable: true,
+          get: function() { return obj[ '_'+key ] },
+          set: function(v) { obj[ '_'+key ].set( v ) }
+        })
+      })()
+    }
+  },
+  
   createMappingAbstractions : function( obj, mappingProperties) {
     obj.mappingProperties = mappingProperties
     obj.mappingObjects = []

@@ -222,6 +222,13 @@
         oldRate.call( seq, _rate )
       }
     })
+    var nextTime = seq.nextTime,
+        oldNextTime = seq.__lookupSetter__('nextTime')
+
+    Object.defineProperty( seq, 'nextTime', {
+      get: function() { return nextTime },
+      set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
+    })
     
 		seq.name = 'Seq'
     // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )

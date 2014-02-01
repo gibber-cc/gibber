@@ -57,72 +57,8 @@
           set: function() {}
         })
         
-        for( var _key in mappingProperties ) {
-          ( function() {
-            var key = _key,
-                val = oscillator[ key ],
-                setter = oscillator.__lookupSetter__( key ),
-                getter = oscillator.__lookupGetter__( key )
-            
-            oscillator[ '_' + key ] = ( function() {
-              var fnc = function(v) {
-                if(v) {
-                  val = v
-                  setter( val )
-                }
-                //console.log( "CALLED", key, v )
-                return val
-              }
-              fnc.set = function(v) { val = v; setter( val ) }
-              fnc.valueOf = function() { return val }
-              fnc.seq = function( v,d ) { 
-                if( typeof fnc._seq === 'undefined' ) {
-                  var args = {
-                    durations:d,
-                    target:oscillator
-                  }
-                  args[ key ] = v
-                  
-                  fnc._seq = Seq( args )
-                }else{
-                  fnc._seq[ key ] = v
-                  fnc._seq.durations = d
-                }
-              }
-              
-              return fnc
-            })()
-            //console.log( "MAKING", key, oscillator[ '_'+key ] )
-            Object.defineProperty( oscillator, key, {
-              configurable: true,
-              get: function() { return oscillator[ '_'+key] },
-              set: function(v) { oscillator['_'+key].set(v) }
-            })
-          })()
-        }
-/*    
-zz = {
-  _pan:(
-    function() {
-      var val = 2, 
-          a = function() {
-            return val
-          }
-      a.set = function(v) { val = v }
-      a.test = 1
-      a.valueOf = function() {
-        return val
-      }
-      return a
-    }
-  )(),
-  set pan(v) { this._pan.set(v) },
-  get pan() { return this._pan }
-}
-
-zz.pan = 3
-console.log( zz.pan + 17 )
-        */
+        Gibber.createProxyProperties( oscillator, mappingProperties )
+        
         //Gibber.createMappingAbstractions( oscillator, mappingProperties )
         
         Gibber.processArguments2( oscillator, args, type )
