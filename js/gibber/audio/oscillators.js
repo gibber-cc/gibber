@@ -59,7 +59,7 @@
         
         Gibber.createProxyProperties( oscillator, mappingProperties )
         
-        //Gibber.createMappingAbstractions( oscillator, mappingProperties )
+        Gibber.createMappingAbstractions( oscillator, mappingProperties )
         
         Gibber.processArguments2( oscillator, args, type )
         

@@ -741,8 +741,10 @@ window.Gibber = window.G = {
         var key = _key,
             val = obj[ key ],
             setter = obj.__lookupSetter__( key ),
-            getter = obj.__lookupGetter__( key )
+            getter = obj.__lookupGetter__( key ),
+            started = false;
         
+        obj.seq = Gibber.PolySeq()
         obj[ '_' + key ] = ( function() {
           var fnc = function(v) {
             if(v) {
@@ -758,24 +760,26 @@ window.Gibber = window.G = {
           fnc.seq = function( v,d ) { 
             var args = {
               key:key,
-              values:[v],
-              durations:[d],
+              values: $.isArray(v) ? v : [v],
+              durations: $.isArray(d) ? d : [d],
               target:obj
             }
-            if( typeof obj.seq === 'undefined' ) {
-              obj.seq = Gibber.PolySeq({ seqs:[ args ] }).start()
-            }else{
-              for( var i = 0; i < obj.seq.seqs.length; i++ ) {
-                var s = obj.seq.seqs[ i ]
-                if( s.key === key ) {
-                  s.shouldStop = true
-                  obj.seq.seqs.splice(i,1)
-                  break;
-                }
+            
+            for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+              var s = obj.seq.seqs[ i ]
+              if( s.key === key ) {
+                s.shouldStop = true
+                obj.seq.seqs.splice(i,1)
+                break;
               }
-              obj.seq.add( args )
             }
-
+            obj.seq.add( args )
+            
+            if( !started ) { 
+              started = true
+              obj.seq.start()
+            }
+            
             return obj
           }
           fnc.seq.stop = function() { 
@@ -826,7 +830,8 @@ window.Gibber = window.G = {
               value : obj[ property ],
               object: obj,
               targets: [],
-							oldSetter: obj.__lookupSetter__( property )
+							oldSetter: obj.__lookupSetter__( property ),
+							oldGetter: obj.__lookupGetter__( property )              
             }),
             oldSetter = obj.__lookupSetter__( property )
         
@@ -841,7 +846,7 @@ window.Gibber = window.G = {
         })
         
         Object.defineProperty( obj, property, {
-          get : function() { return mapping.value },
+          get : function() { return mapping.oldGetter() },//{ return mapping.value },
           set : function( v ) {
             if( typeof v === 'object' && v.type === 'mapping' ) {
               Gibber.createMappingObject( mapping, v )

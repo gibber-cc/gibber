@@ -99,6 +99,9 @@
           }]
         }
       }  
+    }else if( typeof arguments[0] === 'function' ){
+      obj.values = arguments[0]
+      obj.durations = arguments[1]
     }else{
       obj.key = 'note'
       obj.values = $.isArray( arguments[0] ) ? arguments[0] : [ arguments[0] ]
@@ -207,14 +210,23 @@
     return seq
   }
   
+  Gibberish.PolySeq.prototype.applyScale = function() {
+    for( var i = 0; i < this.seqs.length; i++ ) {
+      var s = this.seqs[ i ]
+      if( s.key === 'note' || s.key === 'frequency' ) {
+        s.values = makeNoteFunction( s.values, this )
+      }
+    }
+  }
   Gibber.PolySeq = function() {
     var args = Array.prototype.slice.call( arguments, 0 ),
         seq = Gibber.construct( Gibberish.PolySeq, args ).connect()
     
     seq.rate = Gibber.Clock
-    var oldRate  = seq.__lookupSetter__( 'rate' )
     
-    var _rate = seq.rate 
+    var oldRate  = seq.__lookupSetter__( 'rate' ),
+       _rate = seq.rate 
+       
     Object.defineProperty( seq, 'rate', {
       get : function() { return _rate },
       set : function(v) {
@@ -222,6 +234,7 @@
         oldRate.call( seq, _rate )
       }
     })
+    
     var nextTime = seq.nextTime,
         oldNextTime = seq.__lookupSetter__('nextTime')
 
@@ -229,7 +242,16 @@
       get: function() { return nextTime },
       set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
     })
-    
+
+    var scale = null
+    Object.defineProperty( seq, 'scale', {
+      get: function() { return scale },
+      set: function(v) { 
+        scale = v
+        seq.applyScale()
+      }
+    })
+        
 		seq.name = 'Seq'
     // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )
     
