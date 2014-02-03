@@ -199,7 +199,7 @@
       
         $.extend( true, obj, Gibber.ugen )
         
-        Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
+        Gibber.createProxyProperties( obj, _mappingProperties[ name ] ) 
         
         Gibber.processArguments2( obj, args, obj.name )
         

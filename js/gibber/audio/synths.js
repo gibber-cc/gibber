@@ -102,9 +102,7 @@
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
         
         Gibber.createProxyMethods( obj, [ 'note', 'chord' ] )
-        
-        Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
-        
+                
         obj.name = name 
         
         Gibber.processArguments2( obj, args, obj.name )

@@ -79,7 +79,6 @@
         }
         
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
-        Gibber.createMappingAbstractions( obj, _mappingProperties[ name ] )
         
         Object.defineProperty(obj, '_', {
           get: function() { obj.kill(); return obj },
@@ -178,7 +177,7 @@
             })
           }
           
-          obj.seq = Gibber.PolySeq({ seqs:_seqs }).start()
+          obj.seq = Gibber.PolySeq({ seqs:_seqs }).connect().start()
 
           break;
         case 'object':
@@ -239,8 +238,8 @@
       }
     })
         
-    Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )        
-    Gibber.createMappingAbstractions( obj, _mappingProperties[ 'Drums' ] )
+    Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )    
+    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )       
     
     obj.kill = function() {
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
@@ -444,8 +443,8 @@
       }
   	}
     
-    Gibber.createProxyProperties( obj, _mappingProperties[ 'XOX ' ] )
-    Gibber.createMappingAbstractions( obj, _mappingProperties[ 'XOX' ] )
+    Gibber.createProxyProperties( obj, _mappingProperties[ 'XOX' ] )
+    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )
 
     obj.kill = function() {
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this

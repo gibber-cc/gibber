@@ -133,24 +133,24 @@
       }
 			shader.remove = function() {}
 			
-			console.log( shader.uniforms )
-	    for( var key in _shader.uniforms ) {
-	      ( function() {
-	        var propName = key,
-	            value = _shader.uniforms[ propName ].value
-          
-					console.log( "defining ", propName )
-	        Object.defineProperty( shader, propName, {
-	          configurable: true,
-	          get: function() { return value; },
-	          set: function(v) {
-	            value = v
-	            shader.material.uniforms[ propName ].value = value
-	          },
-	        })
-                
-	      })()
-	    }
+			//console.log( shader.uniforms )
+      // for( var key in _shader.uniforms ) {
+      //   ( function() {
+      //     var propName = key,
+      //         value = _shader.uniforms[ propName ].value
+      //           
+      //           console.log( "defining ", propName )
+      //     Object.defineProperty( shader, propName, {
+      //       configurable: true,
+      //       get: function() { return value; },
+      //       set: function(v) {
+      //         value = v
+      //         shader.material.uniforms[ propName ].value = value
+      //       },
+      //     })
+      //                 
+      //   })()
+      // }
 			shader.uniforms = _shader.uniforms
 			
       var mappingProperties = shader.mappingProperties = {
@@ -179,35 +179,51 @@
 		        timescale: 'graphics',
 		      }
 				}
-				
+
 				if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
 				
         var property = _name,
             value = shader.uniforms[ property ].value || _value,
 						prop = shader.mappingProperties[ _name ],
-						mapping, oldSetter
+						mapping, oldSetter, fnc
         
-        Object.defineProperty( shader, property, {
-          configurable: true,
-          get: function() { return value; },
-          set: function(v) {
-            value = v
-            shader.material.uniforms[ property ].value = value
-          },
-        })
+        // Object.defineProperty( shader, property, {
+        //   configurable: true,
+        //   get: function() { return value; },
+        //   set: function(v) {
+        //     value = v
+        //     shader.material.uniforms[ property ].value = value
+        //   },
+        // })
 
         mapping = $.extend( {}, prop, {
           Name  : property.charAt(0).toUpperCase() + property.slice(1),
           name  : property,
           type  : 'mapping',
-          value : shader[ property ],
+          value : value,
           object: shader,
           oldSetter : shader.__lookupSetter__( property ),
+          oldGetter:  shader.__lookupGetter__( property ),
           targets: [],
         })
-        oldSetter = mapping.oldSetter
         
         shader.mappingObjects.push( mapping )
+        
+        fnc = shader[ '_' + property ] = function(v) {
+          if(v) {
+            mapping.value = v
+            mapping.oldSetter( mapping.value )
+          }
+            
+          return mapping.value
+        }
+
+        fnc.set = function(v) { 
+          mapping.value = v; 
+          mapping.oldSetter( mapping.value ) 
+        }
+
+        fnc.valueOf = function() { return mapping.value }
         
         Object.defineProperty( shader, mapping.Name, {
           get : function()  { return mapping },
@@ -217,21 +233,23 @@
         })
 
         Object.defineProperty( shader, property, {
-          get : function() { return mapping.value },
+          get : function() { return shader[ '_' + property ] },
           set : function( v ) {
             if( typeof v === 'object' && v.type === 'mapping' ) {
-							console.log( "CALLED MAPPING WITH", mapping.name )
               Gibber.createMappingObject( mapping, v )
             }else{
               if( mapping.mapping ) mapping.mapping.remove()
-              
-              mapping.value = v
-              oldSetter.call( shader, mapping.value )
+              shader[ '_' + property ]( v )
+              shader.material.uniforms[ property ].value = v
+
             }
           }
         }) 
+        
+        Gibber.defineSequencedProperty( shader, '_' + property )
+        
 			}
-			
+      
       for( var key in mappingProperties ) {
 				var prop = mappingProperties [ key ]
 				shader.uniform( key, prop.min, prop.max, shader[ key ] )

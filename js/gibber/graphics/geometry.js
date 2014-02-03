@@ -96,93 +96,119 @@ for( var key in types) {
 
       this.spinX = this.spinY = this.spinZ = 0
       
+      this.seq = Gibber.PolySeq()
+    
+      this.mappingProperties = mappingProperties
+      this.mappingObjects = []
+      
       var ltrs = { x:'X', y:'Y', z:'Z' }
       for( var i = 0; i < vectors.length; i++ ) {
         
         (function( obj ) { // for each vector rotation, scale, position
           var prop = vectors[ i ],
-              store = prop === 'scale' ? [ 1, 1, 1 ] : [ 0, 0, 0 ],
-              update = function() { obj.mesh[ prop ].set.apply( obj.mesh[ prop ], store ) }
+              property = prop === 'scale' ? [ 1, 1, 1 ] : [ 0, 0, 0 ],
+              update = function() { obj.mesh[ prop ].set.apply( obj.mesh[ prop ], property ) }
           
-          Object.defineProperties( store, {
-            x: { get: function() { return store[ 0 ] }, set: function(v) { store[ 0 ] = v; update() }, configurable:true },
-            y: { get: function() { return store[ 1 ] }, set: function(v) { store[ 1 ] = v; update() }, configurable:true },
-            z: { get: function() { return store[ 2 ] }, set: function(v) { store[ 2 ] = v; update() }, configurable:true },
+          Object.defineProperties( property, {
+            x: { get: function() { return property[ 0 ] }, set: function(v) { property[ 0 ] = v; update() }, configurable:true },
+            y: { get: function() { return property[ 1 ] }, set: function(v) { property[ 1 ] = v; update() }, configurable:true },
+            z: { get: function() { return property[ 2 ] }, set: function(v) { property[ 2 ] = v; update() }, configurable:true },
           })
           
-          store.name = type + '.' + prop
+          property.name = type + '.' + prop
           
           for(var _ltr in ltrs) {
             (function() {
               var ltr = _ltr,
                   Ltr = ltrs[ ltr ],
-                  property = mappingProperties[ prop ],
-                  mapping = $.extend( {}, property, {
+                  propertyDict = mappingProperties[ prop ],
+                  propertyName = prop + ltr,
+                  mapping = $.extend( {}, propertyDict, {
                     Name  : Ltr,
                     name  : ltr,
                     modName : prop + '.' + ltr,
                     type  : 'mapping',
-                    value : store[ 0 ],
-                    object: store,
+                    value : property[ 0 ],
+                    object: property,
                     modObject: obj,
                     targets:[],
-                    oldSetter: store.__lookupSetter__( ltr ),
+                    oldSetter: property.__lookupSetter__( ltr ),
+                    oldGetter: property.__lookupGetter__( ltr ),                    
                     set : function( num, val )  {
-                      store[ num ] = val
+                      property[ num ] = val
                     },
-                  })
+                  }),
+                  fnc
               
-              Object.defineProperty( store, Ltr, {
+              mapping.object = property
+              
+              fnc = obj[ '_' + propertyName ] = function(v) {
+                if(v) {
+                  mapping.value = v
+                  mapping.oldSetter( mapping.value )
+                }
+                  
+                return mapping.value
+              }
+    
+              fnc.set = function(v) { 
+                mapping.value = v; 
+                mapping.oldSetter( mapping.value ) 
+              }
+    
+              fnc.valueOf = function() { return mapping.value }
+              
+              Object.defineProperty( property, Ltr, {
                 get: function()  { return mapping },
                 set: function(v) { 
-                  store[ Ltr ] = v 
+                  property[ Ltr ] = v 
                 }
               })
-        
-              var oldSetter = mapping.oldSetter //store.__lookupSetter__( ltr )
-        
-              Object.defineProperty( store, ltr, {
-                get: function() { return mapping.value },
+              
+              Object.defineProperty( property, ltr, {
+                get: function() { return obj[ '_' + propertyName ] },
                 set: function(v) {
                   if( typeof v === 'object' && v.type === 'mapping' ) {
                     Gibber.createMappingObject( mapping, v )
                   }else{
                     if(mapping.mapping) mapping.mapping.remove()
+                    obj[ '_' + propertyName ]( v )
+                    //mapping.value = v
 
-                    mapping.value = v
-
-                    oldSetter.call( this, mapping.value )
-                    // oldSetter.call( store, v )              
+                    //mapping.oldSetter.call( this, mapping.value )
+                    // oldSetter.call( property, v )              
                   }
                 }
               })
+              
+              Gibber.defineSequencedProperty( obj, '_' + propertyName )
             })()
           }
           
           //console.log( prop, mappingProperties[ prop ], obj )
           
-          var property = mappingProperties[ prop ],
-              mapping = $.extend( {}, property, {
+          var propertyDict = mappingProperties[ prop ],
+              mapping = $.extend( {}, propertyDict, {
                 Name  : prop.charAt(0).toUpperCase() + prop.slice(1),
                 name  : prop,
                 type  : 'mapping',
-                value : store,
+                value : property,
                 object: obj,
                 targets:[],
                 oldSetter : function(v) {
                   switch( $.type( v ) ) {
                     case 'object' :
-                      if(typeof v.x === 'number') store[ 0 ] = v.x
-                      if(typeof v.y === 'number') store[ 1 ] = v.y
-                      if(typeof v.z === 'number') store[ 2 ] = v.z
+                      if(typeof v.x === 'number') property[ 0 ] = v.x
+                      if(typeof v.y === 'number') property[ 1 ] = v.y
+                      if(typeof v.z === 'number') property[ 2 ] = v.z
                     break;
                     case 'array' :
-                      if(typeof v[0] === 'number') store[ 0 ] = v[ 0 ]
-                      if(typeof v[1] === 'number') store[ 1 ] = v[ 1 ]
-                      if(typeof v[2] === 'number') store[ 2 ] = v[ 2 ]
+                      if(typeof v[0] === 'number') property[ 0 ] = v[ 0 ]
+                      if(typeof v[1] === 'number') property[ 1 ] = v[ 1 ]
+                      if(typeof v[2] === 'number') property[ 2 ] = v[ 2 ]
                       break;
                     case 'number' :
-                      store[ 0 ] = store[ 1 ] = store[ 2 ] = v
+                      property[ 0 ] = property[ 1 ] = property[ 2 ] = v
                       break;
                   }
                   update()
@@ -190,27 +216,26 @@ for( var key in types) {
               })
           // console.log( mapping.Name, mapping.oldSetter ) 
           Object.defineProperty( obj, prop, {
-            get: function() { return store },
+            get: function() { return property },
             set: function(v) {
               if( mapping.mapping ) mapping.mapping.remove()
               switch( $.type( v ) ) {
-
                 case 'object' :
                   if( v.type === 'mapping' ) {
                     Gibber.createMappingObject( mapping, v )
                   }else{
-                    if(typeof v.x === 'number') store[ 0 ] = v.x
-                    if(typeof v.y === 'number') store[ 1 ] = v.y
-                    if(typeof v.z === 'number') store[ 2 ] = v.z
+                    if(typeof v.x === 'number') property[ 0 ] = v.x
+                    if(typeof v.y === 'number') property[ 1 ] = v.y
+                    if(typeof v.z === 'number') property[ 2 ] = v.z
                   }
                   break;
                 case 'array' :
-                  if(typeof v[0] === 'number') store[ 0 ] = v[ 0 ]
-                  if(typeof v[1] === 'number') store[ 1 ] = v[ 1 ]
-                  if(typeof v[2] === 'number') store[ 2 ] = v[ 2 ]
+                  if(typeof v[0] === 'number') property[ 0 ] = v[ 0 ]
+                  if(typeof v[1] === 'number') property[ 1 ] = v[ 1 ]
+                  if(typeof v[2] === 'number') property[ 2 ] = v[ 2 ]
                   break;
                 case 'number' :
-                  store[ 0 ] = store[ 1 ] = store[ 2 ] = v
+                  property[ 0 ] = property[ 1 ] = property[ 2 ] = v
                   break;
               }
               update()

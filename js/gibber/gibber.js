@@ -46,7 +46,7 @@ window.Gibber = window.G = {
       $.extend( true, Master, Gibber.ugen ) 
       Master.fx.ugen = Master
 
-      Gibber.createMappingAbstractions( Master, Gibber.Busses.mappingProperties )
+      //Gibber.createMappingAbstractions( Master, Gibber.Busses.mappingProperties )
       
       // override so that all ugens connect to Gibber's Master bus by default
       Gibber.Audio.ugen.connect = 
@@ -131,8 +131,9 @@ window.Gibber = window.G = {
       configurable: true,
       get: function() { return prop.value },
       set: function(val) { 
-        if( obj[ mappingName] && obj[ mappingName ].mapping ) {
-          obj[ mappingName ].mapping.remove( true ) // pass true to avoid setting property inside of remove method
+        if( obj[ mappingName ] && obj[ mappingName ].mapping ) {
+          if( obj[ mappingName ].mapping.remove )
+            obj[ mappingName ].mapping.remove( true ) // pass true to avoid setting property inside of remove method
         }
 
         prop.value = isTimeProp ? Gibber.Clock.time( val ) : val
@@ -424,7 +425,7 @@ window.Gibber = window.G = {
           from.object.track = proxy
           
           target.object[ target.name ] = Map( proxy, target.min, target.max, from.min, from.max )
-          target.object[ target.Name ].mapping = target.object[ target.name ]
+          target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
           
           target.object[ target.Name ].mapping.remove = function( doNotSet ) {
             
@@ -444,7 +445,7 @@ window.Gibber = window.G = {
           }
         }else{
           target.object[ target.name ] = Map( null, target.min, target.max, 0, 1, 0 )   
-          target.object[ target.Name ].mapping = target.object[ target.name ]
+          target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
           
           if( typeof from.object.track !== 'undefined' ) {
             target.object[ target.Name ].mapping.follow = from.object.track
@@ -484,15 +485,21 @@ window.Gibber = window.G = {
       }else if( from.timescale === 'graphics' ) {
 				if( typeof from.object.track === 'undefined' ) from.object.track = {}
 				
+        console.log( "FROM", from.object, from.name )
         var proxy = typeof from.object.track[ from.name ] !== 'undefined' ? from.object.track[ from.name ] : new Gibberish.Proxy2( from.object, from.name ),
             op    = new Gibberish.OnePole({ a0:.005, b1:.995 })
         
         from.object.track = proxy;
         
-        op.smooth( target.name, target.object )
+        // TODO: smooth doesn't work... why?
+        //op.smooth( target.name, target.object )
 
-        target.object[ target.name ] = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
-
+        target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        
+        op.input = target.object[ target.Name ].mapping
+        
+        target.object[ target.name ] = op
+        
         target.object[ target.Name ].mapping.proxy = proxy
         target.object[ target.Name ].mapping.op = op
         
@@ -516,10 +523,18 @@ window.Gibber = window.G = {
         
         from.track = proxy
         
-        op.smooth( target.name, target.object )
-
-        _mapping = target.object[ target.name ] = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        //op.smooth( target.name, target.object )
         
+        target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        
+        
+        _mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        
+        op.input = _mapping
+        
+        target.object[ target.name ] = op
+        
+        //_mapping = target.object[ target.name ] = 
         _mapping.proxy = proxy
         _mapping.op = op
 
@@ -756,7 +771,10 @@ window.Gibber = window.G = {
       }
       obj.seq.add( args )
     
-      if( !obj.seq.isRunning ) obj.seq.start()
+      if( !obj.seq.isRunning ) { 
+        obj.seq.connect()
+        obj.seq.start()
+      }
     
       return obj
     }
@@ -786,41 +804,81 @@ window.Gibber = window.G = {
     for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
   },
   
-  createProxyProperties : function( obj, mappingProperties ) {
-    obj.seq = Gibber.PolySeq()
+  createProxyProperty: function( obj, _key ) {
+    var propertyName = _key,
+        propertyDict = mappingProperties[ propertyName ],
+        mapping = $.extend( {}, propertyDict, {
+          Name  : propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
+          name  : propertyName,
+          type  : 'mapping',
+          value : obj[ propertyName ],
+          object: obj,
+          targets: [],
+					oldSetter: obj.__lookupSetter__( propertyName ),
+					oldGetter: obj.__lookupGetter__( propertyName )              
+        }),
+        fnc
     
-    for( var _key in mappingProperties ) {
-      ( function() {
-        var key = _key,
-            val = obj[ key ],
-            setter = obj.__lookupSetter__( key ),
-            getter = obj.__lookupGetter__( key ),
-            fnc
-        
-        // voodoo to make method act like property
-        fnc = obj[ '_' + key ] = ( function() {
-          var _fnc = function(v) {
-            if(v) {
-              val = v
-              setter( val )
-            }
-            return val
+    // voodoo to make method act like property
+    obj.mappingObjects.push( mapping )
+    
+    fnc = obj[ '_' + propertyName ] = ( function() {
+      var _fnc = function(v) {
+        if(v) {
+          mapping.value = v
+          mapping.oldSetter( mapping.value )
+        }
+        return mapping.value
+      }
+      return _fnc
+    })()    
+    
+    fnc.set = function(v) { 
+      mapping.value = v; 
+      mapping.oldSetter( mapping.value ) 
+    }
+    
+    fnc.valueOf = function() { return mapping.value }
+      
+    Object.defineProperty( obj, propertyName, {
+      configurable: true,
+      get: function() { return obj[ '_' + propertyName ] },
+      set: function(v) { 
+        if( typeof v === 'object' && v.type === 'mapping' ) {
+          Gibber.createMappingObject( mapping, v )
+        }else{
+          if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
+            if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
+            if( obj[ mapping.Name ].mapping.remove )
+              obj[ mapping.Name ].mapping.remove( true )
           }
-          return _fnc
-        })()
-                  
-        fnc.set = function(v) { val = v; setter( val ) }
-        fnc.valueOf = function() { return val }
-          
-        Object.defineProperty( obj, key, {
-          configurable: true,
-          get: function() { return obj[ '_'+key ] },
-          set: function(v) { obj[ '_'+key ].set( v ) }
-        })
-        
-        Gibber.defineSequencedProperty( obj, '_'+key )
-        
-      })()
+
+          obj[ '_' + propertyName ].set( v ) 
+        }
+      }
+    })
+    
+    Gibber.defineSequencedProperty( obj, '_' + propertyName )
+    
+    // capital letter mapping sugar
+    Object.defineProperty( obj, mapping.Name, {
+      configurable: true,
+      get : function()  { return mapping },
+      set : function( v ) {
+        obj[ mapping.Name ] = v
+      }
+    })
+  },
+  
+  createProxyProperties : function( obj, mappingProperties ) {
+    if( !obj.seq )
+      obj.seq = Gibber.PolySeq()
+    
+    obj.mappingProperties = mappingProperties
+    obj.mappingObjects = []
+    
+    for( var key in mappingProperties ) {
+      Gibber.createProxyProperty( obj, key )
     }
   },
   

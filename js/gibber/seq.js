@@ -26,7 +26,7 @@
           freq = obj.scale.notes[ idx ].fq()
         }catch(e) {
           console.error( "The frequency could not be obtained from the current scale. Did you specify an invalid mode or root note?")
-          seq.stop()
+          obj.stop()
         }
       }          
       //freq = typeof obj.scale.notes[ idx ] === 'number' ? obj.scale.notes[ idx ] : obj.scale.notes[ idx ].fq()			
@@ -220,7 +220,7 @@
   }
   Gibber.PolySeq = function() {
     var args = Array.prototype.slice.call( arguments, 0 ),
-        seq = Gibber.construct( Gibberish.PolySeq, args ).connect()
+        seq = Gibber.construct( Gibberish.PolySeq, args )
     
     seq.rate = Gibber.Clock
     
