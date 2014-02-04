@@ -754,10 +754,10 @@ window.Gibber = window.G = {
     
     fnc.seq = function( v,d ) { 
       var args = {
-        key:key,
+        key: key,
         values: $.isArray(v) ? v : [v],
         durations: $.isArray(d) ? d : [d],
-        target:obj
+        target: obj
       }
     
       for( var i = 0; i < obj.seq.seqs.length; i++ ) {
@@ -768,6 +768,7 @@ window.Gibber = window.G = {
           break;
         }
       }
+      
       obj.seq.add( args )
     
       if( !obj.seq.isRunning ) { 

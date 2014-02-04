@@ -57,11 +57,22 @@
           set: function() {}
         })
         
+        oscillator.note = function( pitch ) {
+          var freq = this.frequency()
+          if( typeof freq === 'function' ) {
+            this.frequency = pitch
+          }else{
+            freq[ 0 ] = pitch
+          }
+        }
+        
         Gibber.createProxyProperties( oscillator, mappingProperties )
+        
+        Gibber.createProxyMethods( oscillator, ['note'] )
         
         Gibber.processArguments2( oscillator, args, type )
         
-        console.log( type + ' is created.' )
+        console.log( type + ' is created.', oscillator )
         return oscillator
       }
     })()
@@ -70,10 +81,11 @@
   $script.ready('gibber', function() {
     Gibberish.Sampler.prototype.record = function(input, recordLength) {
       this.isRecording = true;
-  
+      console.log( 'starting recording' )
       var self = this;
   
       this.recorder = new Gibberish.Record(input, Gibber.Clock.time( recordLength ), function() {
+        console.log( 'recording finished' )
         self.setBuffer( this.getBuffer() );
         self.length = self.end = self.getBuffer().length;
         self.setPhase( self.length )
