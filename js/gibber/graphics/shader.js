@@ -171,7 +171,7 @@
 				_min = isNaN( _min ) ? 0 : _min
 				_max = isNaN( _max ) ? 1 : _max				
 				_value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
-				
+	
 				if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
 					mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
 		        min:_min, max:_max,
@@ -179,75 +179,19 @@
 		        timescale: 'graphics',
 		      }
 				}
-
+	
 				if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
-				
-        var property = _name,
-            value = shader.uniforms[ property ].value || _value,
-						prop = shader.mappingProperties[ _name ],
-						mapping, oldSetter, fnc
-        
-        // Object.defineProperty( shader, property, {
-        //   configurable: true,
-        //   get: function() { return value; },
-        //   set: function(v) {
-        //     value = v
-        //     shader.material.uniforms[ property ].value = value
-        //   },
-        // })
-
-        mapping = $.extend( {}, prop, {
-          Name  : property.charAt(0).toUpperCase() + property.slice(1),
-          name  : property,
-          type  : 'mapping',
-          value : value,
-          object: shader,
-          oldSetter : shader.__lookupSetter__( property ),
-          oldGetter:  shader.__lookupGetter__( property ),
-          targets: [],
+	      
+        Object.defineProperty( shader, _name, {
+          configurable: true,
+          get: function() { return _value; },
+          set: function(v) {
+            //value = v
+            shader.material.uniforms[ _name ].value = v
+          },
         })
         
-        shader.mappingObjects.push( mapping )
-        
-        fnc = shader[ '_' + property ] = function(v) {
-          if(v) {
-            mapping.value = v
-            mapping.oldSetter( mapping.value )
-          }
-            
-          return mapping.value
-        }
-
-        fnc.set = function(v) { 
-          mapping.value = v; 
-          mapping.oldSetter( mapping.value ) 
-        }
-
-        fnc.valueOf = function() { return mapping.value }
-        
-        Object.defineProperty( shader, mapping.Name, {
-          get : function()  { return mapping },
-          set : function( v ) {
-            shader[ mapping.Name ] = v
-          }
-        })
-
-        Object.defineProperty( shader, property, {
-          get : function() { return shader[ '_' + property ] },
-          set : function( v ) {
-            if( typeof v === 'object' && v.type === 'mapping' ) {
-              Gibber.createMappingObject( mapping, v )
-            }else{
-              if( mapping.mapping ) mapping.mapping.remove()
-              shader[ '_' + property ]( v )
-              shader.material.uniforms[ property ].value = v
-
-            }
-          }
-        }) 
-        
-        Gibber.defineSequencedProperty( shader, '_' + property )
-        
+        Gibber.createProxyProperty( shader, _name )
 			}
       
       for( var key in mappingProperties ) {
