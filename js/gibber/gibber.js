@@ -857,7 +857,7 @@ window.Gibber = window.G = {
       }
     })
     
-    //Gibber.defineSequencedProperty( obj, '_' + propertyName )
+    Gibber.defineSequencedProperty( obj, '_' + propertyName )
     
     // capital letter mapping sugar
     Object.defineProperty( obj, mapping.Name, {
