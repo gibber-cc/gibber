@@ -133,24 +133,6 @@
       }
 			shader.remove = function() {}
 			
-			console.log( shader.uniforms )
-	    for( var key in _shader.uniforms ) {
-	      ( function() {
-	        var propName = key,
-	            value = _shader.uniforms[ propName ].value
-          
-					console.log( "defining ", propName )
-	        Object.defineProperty( shader, propName, {
-	          configurable: true,
-	          get: function() { return value; },
-	          set: function(v) {
-	            value = v
-	            shader.material.uniforms[ propName ].value = value
-	          },
-	        })
-                
-	      })()
-	    }
 			shader.uniforms = _shader.uniforms
 			
       var mappingProperties = shader.mappingProperties = {
@@ -167,11 +149,32 @@
 			}
 			
       shader.mappingObjects = []
+      
+			//console.log( shader.uniforms )
+      // for( var key in _shader.uniforms ) {
+      //   ( function() {
+      //     var propName = key,
+      //         value = _shader.uniforms[ propName ].value
+      //           
+      //     console.log( "defining ", propName )
+      //     
+      //     Object.defineProperty( shader, propName, {
+      //       configurable: true,
+      //       get: function() { return value; },
+      //       set: function(v) {
+      //         value = v
+      //         shader.material.uniforms[ propName ].value = value
+      //       },
+      //     })
+      //                 
+      //   })()
+      // }
+      
 			shader.uniform = function(_name, _min, _max, _value) {
 				_min = isNaN( _min ) ? 0 : _min
 				_max = isNaN( _max ) ? 1 : _max				
 				_value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
-				
+	
 				if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
 					mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
 		        min:_min, max:_max,
@@ -179,59 +182,22 @@
 		        timescale: 'graphics',
 		      }
 				}
-				
+	
 				if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
-				
-        var property = _name,
-            value = shader.uniforms[ property ].value || _value,
-						prop = shader.mappingProperties[ _name ],
-						mapping, oldSetter
-        
-        Object.defineProperty( shader, property, {
+	      
+        Object.defineProperty( shader, _name, {
           configurable: true,
-          get: function() { return value; },
+          get: function() { return _value; },
           set: function(v) {
-            value = v
-            shader.material.uniforms[ property ].value = value
+            _value = v
+            shader.material.uniforms[ _name ].value = v
           },
         })
-
-        mapping = $.extend( {}, prop, {
-          Name  : property.charAt(0).toUpperCase() + property.slice(1),
-          name  : property,
-          type  : 'mapping',
-          value : shader[ property ],
-          object: shader,
-          oldSetter : shader.__lookupSetter__( property ),
-          targets: [],
-        })
-        oldSetter = mapping.oldSetter
         
-        shader.mappingObjects.push( mapping )
-        
-        Object.defineProperty( shader, mapping.Name, {
-          get : function()  { return mapping },
-          set : function( v ) {
-            shader[ mapping.Name ] = v
-          }
-        })
-
-        Object.defineProperty( shader, property, {
-          get : function() { return mapping.value },
-          set : function( v ) {
-            if( typeof v === 'object' && v.type === 'mapping' ) {
-							console.log( "CALLED MAPPING WITH", mapping.name )
-              Gibber.createMappingObject( mapping, v )
-            }else{
-              if( mapping.mapping ) mapping.mapping.remove()
-              
-              mapping.value = v
-              oldSetter.call( shader, mapping.value )
-            }
-          }
-        }) 
+        Gibber.createProxyProperty( shader, _name )
+        shader[  _name.charAt(0).toUpperCase() + _name.slice(1) ].timescale = 'graphics' // TODO: why is this necessary? otherwise it assumes the timescale for amp is audio... but why?????
 			}
-			
+      
       for( var key in mappingProperties ) {
 				var prop = mappingProperties [ key ]
 				shader.uniform( key, prop.min, prop.max, shader[ key ] )

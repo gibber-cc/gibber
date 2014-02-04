@@ -49,8 +49,8 @@
         
         obj.fx.ugen = obj
         
-        Gibber.createMappingAbstractions( obj, mappingProperties )
- 
+        Gibber.createProxyProperties( obj, mappingProperties )    
+  
         return obj
       }
     })()
@@ -89,7 +89,7 @@
     
     obj.fx.ugen = obj
     
-    Gibber.createMappingAbstractions( obj, mappingProperties )
+    Gibber.createProxyProperties( obj, mappingProperties )    
     
     $.extend( obj, {
       add : function() {

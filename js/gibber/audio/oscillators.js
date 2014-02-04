@@ -23,16 +23,16 @@
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
     },
-    pulsewidth :{
-      min: 0.01, max: .99,
-      output: Gibber.LINEAR,
-      timescale: 'audio',
-    },
-    pitch: {
-      min: 1, max: 4,
-      output: Gibber.LOGARITHMIC,
-      timescale: 'audio',
-    },
+    // pulsewidth :{
+    //   min: 0.01, max: .99,
+    //   output: Gibber.LINEAR,
+    //   timescale: 'audio',
+    // },
+    // pitch: {
+    //   min: 1, max: 4,
+    //   output: Gibber.LOGARITHMIC,
+    //   timescale: 'audio',
+    // },
   }
   
   for( var i = 0; i < types.length; i++ ) {
@@ -57,7 +57,9 @@
           set: function() {}
         })
         
-        Gibber.createMappingAbstractions( oscillator, mappingProperties )
+        Gibber.createProxyProperties( oscillator, mappingProperties )
+
+        //Gibber.createMappingAbstractions( oscillator, mappingProperties )
         
         Gibber.processArguments2( oscillator, args, type )
         

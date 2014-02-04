@@ -46,7 +46,7 @@ window.Gibber = window.G = {
       $.extend( true, Master, Gibber.ugen ) 
       Master.fx.ugen = Master
 
-      Gibber.createMappingAbstractions( Master, Gibber.Busses.mappingProperties )
+      //Gibber.createMappingAbstractions( Master, Gibber.Busses.mappingProperties )
       
       // override so that all ugens connect to Gibber's Master bus by default
       Gibber.Audio.ugen.connect = 
@@ -131,8 +131,9 @@ window.Gibber = window.G = {
       configurable: true,
       get: function() { return prop.value },
       set: function(val) { 
-        if( obj[ mappingName] && obj[ mappingName ].mapping ) {
-          obj[ mappingName ].mapping.remove( true ) // pass true to avoid setting property inside of remove method
+        if( obj[ mappingName ] && obj[ mappingName ].mapping ) {
+          if( obj[ mappingName ].mapping.remove )
+            obj[ mappingName ].mapping.remove( true ) // pass true to avoid setting property inside of remove method
         }
 
         prop.value = isTimeProp ? Gibber.Clock.time( val ) : val
@@ -424,7 +425,7 @@ window.Gibber = window.G = {
           from.object.track = proxy
           
           target.object[ target.name ] = Map( proxy, target.min, target.max, from.min, from.max )
-          target.object[ target.Name ].mapping = target.object[ target.name ]
+          target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
           
           target.object[ target.Name ].mapping.remove = function( doNotSet ) {
             
@@ -444,7 +445,7 @@ window.Gibber = window.G = {
           }
         }else{
           target.object[ target.name ] = Map( null, target.min, target.max, 0, 1, 0 )   
-          target.object[ target.Name ].mapping = target.object[ target.name ]
+          target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
           
           if( typeof from.object.track !== 'undefined' ) {
             target.object[ target.Name ].mapping.follow = from.object.track
@@ -489,10 +490,15 @@ window.Gibber = window.G = {
         
         from.object.track = proxy;
         
-        op.smooth( target.name, target.object )
+        // TODO: smooth doesn't work... why?
+        //op.smooth( target.name, target.object )
 
-        target.object[ target.name ] = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
-
+        target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        
+        op.input = target.object[ target.Name ].mapping
+        
+        target.object[ target.name ] = op
+        
         target.object[ target.Name ].mapping.proxy = proxy
         target.object[ target.Name ].mapping.op = op
         
@@ -516,10 +522,18 @@ window.Gibber = window.G = {
         
         from.track = proxy
         
-        op.smooth( target.name, target.object )
-
-        _mapping = target.object[ target.name ] = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        //op.smooth( target.name, target.object )
         
+        target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        
+        
+        _mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        
+        op.input = _mapping
+        
+        target.object[ target.name ] = op
+        
+        //_mapping = target.object[ target.name ] = 
         _mapping.proxy = proxy
         _mapping.op = op
 
@@ -735,54 +749,187 @@ window.Gibber = window.G = {
     
   },
   
-  createMappingAbstractions : function( obj, mappingProperties) {
+  defineSequencedProperty : function( obj, key ) {
+    var fnc = obj[ key ]
+    
+    fnc.seq = function( v,d ) { 
+      var args = {
+        key:key,
+        values: $.isArray(v) ? v : [v],
+        durations: $.isArray(d) ? d : [d],
+        target:obj
+      }
+    
+      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+        var s = obj.seq.seqs[ i ]
+        if( s.key === key ) {
+          s.shouldStop = true
+          obj.seq.seqs.splice(i,1)
+          break;
+        }
+      }
+      obj.seq.add( args )
+    
+      if( !obj.seq.isRunning ) { 
+        obj.seq.connect()
+        obj.seq.start()
+      }
+    
+      return obj
+    }
+    fnc.seq.stop = function() { 
+      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+        var s = obj.seq.seqs[ i ]
+        if( s.key === key ) {
+          s.shouldStop = true
+          break;
+        }
+      }
+    } // TODO: property specific stop/start/shuffle etc. for polyseq
+    fnc.seq.start = function() {
+      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+        var s = obj.seq.seqs[ i ]
+        if( s.key === key ) {
+          s.shouldStop = false
+          obj.seq.timeline[0] = [ s ]                
+          obj.seq.nextTime = 0
+          break;
+        }
+      }
+    }
+  },
+  
+  createProxyMethods : function( obj, methods ) {
+    for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
+  },
+  
+  createProxyProperty: function( obj, _key ) {
+    var propertyName = _key,
+        propertyDict = mappingProperties[ propertyName ],
+        mapping = $.extend( {}, propertyDict, {
+          Name  : propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
+          name  : propertyName,
+          type  : 'mapping',
+          value : obj[ propertyName ],
+          object: obj,
+          targets: [],
+					oldSetter: obj.__lookupSetter__( propertyName ),
+					oldGetter: obj.__lookupGetter__( propertyName )              
+        }),
+        fnc
+    
+    // voodoo to make method act like property
+    obj.mappingObjects.push( mapping )
+    
+    fnc = obj[ '_' + propertyName ] = ( function() {
+      var _fnc = function(v) {
+        if(v) {
+          mapping.value = v
+          mapping.oldSetter( mapping.value )
+        }
+        return mapping.value
+      }
+      return _fnc
+    })()    
+    
+    fnc.set = function(v) { 
+      mapping.value = v; 
+      mapping.oldSetter( mapping.value ) 
+    }
+    
+    fnc.valueOf = function() { return mapping.value }
+      
+    Object.defineProperty( obj, propertyName, {
+      configurable: true,
+      get: function() { return obj[ '_' + propertyName ] },
+      set: function(v) { 
+        if( typeof v === 'object' && v.type === 'mapping' ) {
+          Gibber.createMappingObject( mapping, v )
+        }else{
+          if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
+            if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
+            if( obj[ mapping.Name ].mapping.remove )
+              obj[ mapping.Name ].mapping.remove( true )
+          }
+
+          obj[ '_' + propertyName ].set( v ) 
+        }
+      }
+    })
+    
+    //Gibber.defineSequencedProperty( obj, '_' + propertyName )
+    
+    // capital letter mapping sugar
+    Object.defineProperty( obj, mapping.Name, {
+      configurable: true,
+      get : function()  { return mapping },
+      set : function( v ) {
+        obj[ mapping.Name ] = v
+      }
+    })
+  },
+  
+  createProxyProperties : function( obj, mappingProperties ) {
+    if( !obj.seq )
+      obj.seq = Gibber.PolySeq()
+    
     obj.mappingProperties = mappingProperties
     obj.mappingObjects = []
     
     for( var key in mappingProperties ) {
-      (function() {
-        var property = key,
-            prop = mappingProperties[ property ],
-            mapping = $.extend( {}, prop, {
-              Name  : property.charAt(0).toUpperCase() + property.slice(1),
-              name  : property,
-              type  : 'mapping',
-              value : obj[ property ],
-              object: obj,
-              targets: [],
-							oldSetter: obj.__lookupSetter__( property )
-            }),
-            oldSetter = obj.__lookupSetter__( property )
-        
-        obj.mappingObjects.push( mapping )
-        
-        Object.defineProperty( obj, mapping.Name, {
-          configurable: true,
-          get : function()  { return mapping },
-          set : function( v ) {
-            obj[ mapping.Name ] = v
-          }
-        })
-        
-        Object.defineProperty( obj, property, {
-          get : function() { return mapping.value },
-          set : function( v ) {
-            if( typeof v === 'object' && v.type === 'mapping' ) {
-              Gibber.createMappingObject( mapping, v )
-            }else{
-              mapping.value = v
-              if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
-                if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
-                obj[ mapping.Name ].mapping.remove( true )
-              }
-              if( oldSetter )
-                oldSetter.call( obj, mapping.value )
-            }
-          }
-        })
-      })()
-    } 
+      Gibber.createProxyProperty( obj, key )
+    }
   },
+  
+  // createMappingAbstractions : function( obj, mappingProperties) {
+  //   obj.mappingProperties = mappingProperties
+  //   obj.mappingObjects = []
+  //   
+  //   for( var key in mappingProperties ) {
+  //     (function() {
+  //       var property = key,
+  //           prop = mappingProperties[ property ],
+  //           mapping = $.extend( {}, prop, {
+  //             Name  : property.charAt(0).toUpperCase() + property.slice(1),
+  //             name  : property,
+  //             type  : 'mapping',
+  //             value : obj[ property ],
+  //             object: obj,
+  //             targets: [],
+  //               oldSetter: obj.__lookupSetter__( property ),
+  //               oldGetter: obj.__lookupGetter__( property )              
+  //           }),
+  //           oldSetter = obj.__lookupSetter__( property )
+  //       
+  //       obj.mappingObjects.push( mapping )
+  //       
+  //       Object.defineProperty( obj, mapping.Name, {
+  //         configurable: true,
+  //         get : function()  { return mapping },
+  //         set : function( v ) {
+  //           obj[ mapping.Name ] = v
+  //         }
+  //       })
+  //       
+  //       Object.defineProperty( obj, property, {
+  //         get : function() { return mapping.oldGetter() },//{ return mapping.value },
+  //         set : function( v ) {
+  //           if( typeof v === 'object' && v.type === 'mapping' ) {
+  //             Gibber.createMappingObject( mapping, v )
+  //           }else{
+  //             mapping.value = v
+  //             if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
+  //               if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
+  //               obj[ mapping.Name ].mapping.remove( true )
+  //             }
+  //             if( oldSetter )
+  //               oldSetter.call( obj, mapping.value )
+  //           }
+  //         }
+  //       })
+  //     })()
+  //   } 
+  // },
   
   ugen: {
     sequencers : [],
@@ -916,19 +1063,24 @@ window.Gibber = window.G = {
     },
 
     play: function( notes, durations, repeat ) {
-      if( typeof this.seq === 'undefined' ) {
-        this.seq = Seq({ note: notes, durations:durations, target:this })
-      }else{
-        if( notes ) { this.seq.note = notes; this.seq.counts.note = 0; }
-        if( durations ) this.seq.durations = durations
+      if( this.note ) {
+        this.note.seq( notes, durations )
+      }else if( this.frequency ) {
+        this.frequency.seq( notes, durations )
       }
-      if( repeat ) {
-        this.seq.repeat( repeat )
-      }
-      if( ! this.seq.isRunning ) {
-        this.seq.start()
-      }
-      return this
+      // if( typeof this.seq === 'undefined' ) {
+      //   this.seq = Seq({ note: notes, durations:durations, target:this })
+      // }else{
+      //   if( notes ) { this.seq.note = notes; this.seq.counts.note = 0; }
+      //   if( durations ) this.seq.durations = durations
+      // }
+      // if( repeat ) {
+      //   this.seq.repeat( repeat )
+      // }
+      // if( ! this.seq.isRunning ) {
+      //   this.seq.start()
+      // }
+      // return this
     },
 
     stop : function() {

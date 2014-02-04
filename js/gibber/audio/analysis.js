@@ -18,7 +18,7 @@
           _mappingProperties[ 'bin' + i ] = $.extend( {}, _mappingProperty )
         }
         
-        Gibber.createMappingAbstractions( fft, _mappingProperties )
+        Gibber.createProxyProperties( fft, _mappingProperties )    
         
         setInterval( function(){
           fft.getByteFrequencyData( fft.values );
@@ -37,7 +37,8 @@
       var follow = new Gibberish.Follow( ugen, bufferSize ),
           _mappingProperties = { value: { min: 0, max: 1, output: Gibber.LOGARITHMIC, timescale: 'audio' } }
 
-      Gibber.createMappingAbstractions( follow, _mappingProperties )
+      Gibber.createProxyProperties( follow, _mappingProperties )
+
       return follow
     }
   }
