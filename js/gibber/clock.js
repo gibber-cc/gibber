@@ -106,13 +106,21 @@ var Clock = Gibber.Clock = {
           }
         }
       })
+      
+      Gibber.createProxyProperties( this, {
+        rate : { min: .1, max: 2, output: Gibber.LINEAR, timescale: 'audio' },
+        bpm : { min: 20, max: 200, output: Gibber.LINEAR, timescale: 'audio' },        
+      })
     }
     
-    this.seq = new Gibberish.Sequencer2({
-      values: [ this.processBeat ],
-      durations:[ Clock.Beats(1) ],
+    this.seq = new Gibberish.PolySeq({
+      seqs : [{
+        target:this,
+        values: [ this.processBeat ],
+        durations:[ 1/4 ],
+      }],
       rate: this,
-    }).start()
+    }).connect().start()
   },
   
   addMetronome: function( metronome ) {
@@ -141,7 +149,7 @@ var Clock = Gibber.Clock = {
       timeFunction = Clock.Beats( v )
     }
     
-    return timeFunction()
+    return timeFunction
   },
   
   beats : function(val) {

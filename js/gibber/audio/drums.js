@@ -79,7 +79,8 @@
         }
         
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
-        
+        Gibber.createProxyMethods( obj, [ 'note' ] )
+                
         Object.defineProperty(obj, '_', {
           get: function() { obj.kill(); return obj },
           set: function() {}
