@@ -831,12 +831,7 @@ window.Gibber = window.G = {
       }
       return _fnc
     })()    
-    
-    fnc.set = function(v) { 
-      mapping.value = v; 
-      mapping.oldSetter( mapping.value ) 
-    }
-    
+
     fnc.valueOf = function() { return mapping.value }
       
     Object.defineProperty( obj, propertyName, {
@@ -852,7 +847,7 @@ window.Gibber = window.G = {
               obj[ mapping.Name ].mapping.remove( true )
           }
 
-          obj[ '_' + propertyName ].set( v ) 
+          obj[ '_' + propertyName ]( v ) 
         }
       }
     })
@@ -880,56 +875,6 @@ window.Gibber = window.G = {
       Gibber.createProxyProperty( obj, key )
     }
   },
-  
-  // createMappingAbstractions : function( obj, mappingProperties) {
-  //   obj.mappingProperties = mappingProperties
-  //   obj.mappingObjects = []
-  //   
-  //   for( var key in mappingProperties ) {
-  //     (function() {
-  //       var property = key,
-  //           prop = mappingProperties[ property ],
-  //           mapping = $.extend( {}, prop, {
-  //             Name  : property.charAt(0).toUpperCase() + property.slice(1),
-  //             name  : property,
-  //             type  : 'mapping',
-  //             value : obj[ property ],
-  //             object: obj,
-  //             targets: [],
-  //               oldSetter: obj.__lookupSetter__( property ),
-  //               oldGetter: obj.__lookupGetter__( property )              
-  //           }),
-  //           oldSetter = obj.__lookupSetter__( property )
-  //       
-  //       obj.mappingObjects.push( mapping )
-  //       
-  //       Object.defineProperty( obj, mapping.Name, {
-  //         configurable: true,
-  //         get : function()  { return mapping },
-  //         set : function( v ) {
-  //           obj[ mapping.Name ] = v
-  //         }
-  //       })
-  //       
-  //       Object.defineProperty( obj, property, {
-  //         get : function() { return mapping.oldGetter() },//{ return mapping.value },
-  //         set : function( v ) {
-  //           if( typeof v === 'object' && v.type === 'mapping' ) {
-  //             Gibber.createMappingObject( mapping, v )
-  //           }else{
-  //             mapping.value = v
-  //             if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
-  //               if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
-  //               obj[ mapping.Name ].mapping.remove( true )
-  //             }
-  //             if( oldSetter )
-  //               oldSetter.call( obj, mapping.value )
-  //           }
-  //         }
-  //       })
-  //     })()
-  //   } 
-  // },
   
   ugen: {
     sequencers : [],
@@ -1068,19 +1013,8 @@ window.Gibber = window.G = {
       }else if( this.frequency ) {
         this.frequency.seq( notes, durations )
       }
-      // if( typeof this.seq === 'undefined' ) {
-      //   this.seq = Seq({ note: notes, durations:durations, target:this })
-      // }else{
-      //   if( notes ) { this.seq.note = notes; this.seq.counts.note = 0; }
-      //   if( durations ) this.seq.durations = durations
-      // }
-      // if( repeat ) {
-      //   this.seq.repeat( repeat )
-      // }
-      // if( ! this.seq.isRunning ) {
-      //   this.seq.start()
-      // }
-      // return this
+      
+      return this
     },
 
     stop : function() {
