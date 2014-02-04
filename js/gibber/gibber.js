@@ -485,7 +485,6 @@ window.Gibber = window.G = {
       }else if( from.timescale === 'graphics' ) {
 				if( typeof from.object.track === 'undefined' ) from.object.track = {}
 				
-        console.log( "FROM", from.object, from.name )
         var proxy = typeof from.object.track[ from.name ] !== 'undefined' ? from.object.track[ from.name ] : new Gibberish.Proxy2( from.object, from.name ),
             op    = new Gibberish.OnePole({ a0:.005, b1:.995 })
         
@@ -858,7 +857,7 @@ window.Gibber = window.G = {
       }
     })
     
-    Gibber.defineSequencedProperty( obj, '_' + propertyName )
+    //Gibber.defineSequencedProperty( obj, '_' + propertyName )
     
     // capital letter mapping sugar
     Object.defineProperty( obj, mapping.Name, {
@@ -882,55 +881,55 @@ window.Gibber = window.G = {
     }
   },
   
-  createMappingAbstractions : function( obj, mappingProperties) {
-    obj.mappingProperties = mappingProperties
-    obj.mappingObjects = []
-    
-    for( var key in mappingProperties ) {
-      (function() {
-        var property = key,
-            prop = mappingProperties[ property ],
-            mapping = $.extend( {}, prop, {
-              Name  : property.charAt(0).toUpperCase() + property.slice(1),
-              name  : property,
-              type  : 'mapping',
-              value : obj[ property ],
-              object: obj,
-              targets: [],
-							oldSetter: obj.__lookupSetter__( property ),
-							oldGetter: obj.__lookupGetter__( property )              
-            }),
-            oldSetter = obj.__lookupSetter__( property )
-        
-        obj.mappingObjects.push( mapping )
-        
-        Object.defineProperty( obj, mapping.Name, {
-          configurable: true,
-          get : function()  { return mapping },
-          set : function( v ) {
-            obj[ mapping.Name ] = v
-          }
-        })
-        
-        Object.defineProperty( obj, property, {
-          get : function() { return mapping.oldGetter() },//{ return mapping.value },
-          set : function( v ) {
-            if( typeof v === 'object' && v.type === 'mapping' ) {
-              Gibber.createMappingObject( mapping, v )
-            }else{
-              mapping.value = v
-              if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
-                if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
-                obj[ mapping.Name ].mapping.remove( true )
-              }
-              if( oldSetter )
-                oldSetter.call( obj, mapping.value )
-            }
-          }
-        })
-      })()
-    } 
-  },
+  // createMappingAbstractions : function( obj, mappingProperties) {
+  //   obj.mappingProperties = mappingProperties
+  //   obj.mappingObjects = []
+  //   
+  //   for( var key in mappingProperties ) {
+  //     (function() {
+  //       var property = key,
+  //           prop = mappingProperties[ property ],
+  //           mapping = $.extend( {}, prop, {
+  //             Name  : property.charAt(0).toUpperCase() + property.slice(1),
+  //             name  : property,
+  //             type  : 'mapping',
+  //             value : obj[ property ],
+  //             object: obj,
+  //             targets: [],
+  //               oldSetter: obj.__lookupSetter__( property ),
+  //               oldGetter: obj.__lookupGetter__( property )              
+  //           }),
+  //           oldSetter = obj.__lookupSetter__( property )
+  //       
+  //       obj.mappingObjects.push( mapping )
+  //       
+  //       Object.defineProperty( obj, mapping.Name, {
+  //         configurable: true,
+  //         get : function()  { return mapping },
+  //         set : function( v ) {
+  //           obj[ mapping.Name ] = v
+  //         }
+  //       })
+  //       
+  //       Object.defineProperty( obj, property, {
+  //         get : function() { return mapping.oldGetter() },//{ return mapping.value },
+  //         set : function( v ) {
+  //           if( typeof v === 'object' && v.type === 'mapping' ) {
+  //             Gibber.createMappingObject( mapping, v )
+  //           }else{
+  //             mapping.value = v
+  //             if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
+  //               if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
+  //               obj[ mapping.Name ].mapping.remove( true )
+  //             }
+  //             if( oldSetter )
+  //               oldSetter.call( obj, mapping.value )
+  //           }
+  //         }
+  //       })
+  //     })()
+  //   } 
+  // },
   
   ugen: {
     sequencers : [],

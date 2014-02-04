@@ -133,24 +133,6 @@
       }
 			shader.remove = function() {}
 			
-			//console.log( shader.uniforms )
-      // for( var key in _shader.uniforms ) {
-      //   ( function() {
-      //     var propName = key,
-      //         value = _shader.uniforms[ propName ].value
-      //           
-      //           console.log( "defining ", propName )
-      //     Object.defineProperty( shader, propName, {
-      //       configurable: true,
-      //       get: function() { return value; },
-      //       set: function(v) {
-      //         value = v
-      //         shader.material.uniforms[ propName ].value = value
-      //       },
-      //     })
-      //                 
-      //   })()
-      // }
 			shader.uniforms = _shader.uniforms
 			
       var mappingProperties = shader.mappingProperties = {
@@ -167,6 +149,27 @@
 			}
 			
       shader.mappingObjects = []
+      
+			//console.log( shader.uniforms )
+      // for( var key in _shader.uniforms ) {
+      //   ( function() {
+      //     var propName = key,
+      //         value = _shader.uniforms[ propName ].value
+      //           
+      //     console.log( "defining ", propName )
+      //     
+      //     Object.defineProperty( shader, propName, {
+      //       configurable: true,
+      //       get: function() { return value; },
+      //       set: function(v) {
+      //         value = v
+      //         shader.material.uniforms[ propName ].value = value
+      //       },
+      //     })
+      //                 
+      //   })()
+      // }
+      
 			shader.uniform = function(_name, _min, _max, _value) {
 				_min = isNaN( _min ) ? 0 : _min
 				_max = isNaN( _max ) ? 1 : _max				
@@ -186,12 +189,13 @@
           configurable: true,
           get: function() { return _value; },
           set: function(v) {
-            //value = v
+            _value = v
             shader.material.uniforms[ _name ].value = v
           },
         })
         
         Gibber.createProxyProperty( shader, _name )
+        shader[  _name.charAt(0).toUpperCase() + _name.slice(1) ].timescale = 'graphics' // TODO: why is this necessary? otherwise it assumes the timescale for amp is audio... but why?????
 			}
       
       for( var key in mappingProperties ) {
