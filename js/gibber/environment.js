@@ -6,7 +6,7 @@ var SERVER_URL = 'http://gibber.mat.ucsb.edu'
 
 var GE = Gibber.Environment = {
   init : function() { 
-    $script( ['external/codemirror/codemirror-compressed', 'external/interface.min' ], 'codemirror',function() {
+    $script( ['external/codemirror/codemirror-compressed', 'external/interface' ], 'codemirror',function() {
       $script( ['external/codemirror/addons/closebrackets', 
                 'external/codemirror/addons/matchbrackets', 
                 'external/codemirror/addons/comment',

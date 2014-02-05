@@ -409,10 +409,11 @@ window.Gibber = window.G = {
     if( typeof from.targets !== 'undefined' ) {
       if( from.targets.indexOf( target ) === -1 ) from.targets.push( [target, target.Name] )
     }
-    
-    
+
     if( target.timescale === 'audio' ) {
+
       if( from.timescale === 'audio' ) {
+
         if( from.Name !== 'Amp' ) {
           var proxy
           if( typeof from.object.track !== 'undefined' ) {
@@ -516,7 +517,7 @@ window.Gibber = window.G = {
             percent = ( target.object[ target.name ] - target.min ) / range,
             widgetValue = from.min + ( ( from.max - from.min ) * percent ),
             _mapping
-            
+                
         if( from.object.setValue )
           from.object.setValue( widgetValue )
         
@@ -524,8 +525,7 @@ window.Gibber = window.G = {
         
         //op.smooth( target.name, target.object )
         
-        target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
-        
+        //target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
         
         _mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
         
@@ -727,10 +727,12 @@ window.Gibber = window.G = {
     
     Object.defineProperties( target.object[ target.Name ], {
       'min' : {
+        configurable:true,
         get : function() { return min },
         set : function(v) { min = v;  target.object[ target.Name ].mapping.outputMin = min }
       },
       'max' : {
+        configurable:true,
         get : function() { return max },
         set : function(v) { max = v; target.object[ target.Name ].mapping.outputMax = max }
       },
@@ -738,10 +740,12 @@ window.Gibber = window.G = {
     
     Object.defineProperties( from.object[ from.Name ], {
       'min' : {
+        configurable:true,
         get : function() { return _min },
         set : function(v) { _min = v; target.object[ target.Name ].mapping.inputMin = _min }
       },
       'max' : {
+        configurable:true,
         get : function() { return _max },
         set : function(v) { _max = v; target.object[ target.Name ].mapping.inputMax = _max }
       },
@@ -804,9 +808,9 @@ window.Gibber = window.G = {
     for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
   },
   
-  createProxyProperty: function( obj, _key ) {
+  createProxyProperty: function( obj, _key, shouldSeq ) {
     var propertyName = _key,
-        propertyDict = mappingProperties[ propertyName ],
+        propertyDict = obj.mappingProperties[ propertyName ],
         mapping = $.extend( {}, propertyDict, {
           Name  : propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
           name  : propertyName,
@@ -826,7 +830,7 @@ window.Gibber = window.G = {
       var _fnc = function(v) {
         if(v) {
           mapping.value = v
-          mapping.oldSetter( mapping.value )
+          if( mapping.oldSetter ) mapping.oldSetter( mapping.value )
         }
         return mapping.value
       }
@@ -853,7 +857,8 @@ window.Gibber = window.G = {
       }
     })
     
-    Gibber.defineSequencedProperty( obj, '_' + propertyName )
+    if( shouldSeq )
+      Gibber.defineSequencedProperty( obj, '_' + propertyName )
     
     // capital letter mapping sugar
     Object.defineProperty( obj, mapping.Name, {
@@ -865,15 +870,16 @@ window.Gibber = window.G = {
     })
   },
   
-  createProxyProperties : function( obj, mappingProperties ) {
-    if( !obj.seq )
+  createProxyProperties : function( obj, mappingProperties, noSeq ) {
+    var shouldSeq = typeof noSeq !== 'undefined'
+    if( !obj.seq && shouldSeq )
       obj.seq = Gibber.PolySeq()
     
     obj.mappingProperties = mappingProperties
     obj.mappingObjects = []
     
     for( var key in mappingProperties ) {
-      Gibber.createProxyProperty( obj, key )
+      Gibber.createProxyProperty( obj, key, shouldSeq )
     }
   },
   

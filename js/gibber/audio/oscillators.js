@@ -15,19 +15,22 @@
   mappingProperties = {
     frequency: {
       min: 50, max: 3200,
-      output: Gibber.LINEAR,
+      output: Gibber.LOGARITHMIC,
       timescale: 'audio',
+      dimensions:1
     },
     amp: {
       min: 0, max: 1,
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
+      dimensions:1
     },
-    // pulsewidth :{
-    //   min: 0.01, max: .99,
-    //   output: Gibber.LINEAR,
-    //   timescale: 'audio',
-    // },
+    pulsewidth :{
+      min: 0.01, max: .99,
+      output: Gibber.LINEAR,
+      timescale: 'audio',
+      dimensions:1
+    },
     // pitch: {
     //   min: 1, max: 4,
     //   output: Gibber.LOGARITHMIC,
@@ -72,7 +75,7 @@
         
         Gibber.processArguments2( oscillator, args, type )
         
-        console.log( type + ' is created.', oscillator )
+        console.log( type + ' is created.' )
         return oscillator
       }
     })()

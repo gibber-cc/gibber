@@ -1,8 +1,7 @@
 ( function() {
    
   $script( 'external/autogui' , function() {} )
-  
-  
+
   var mappingProperties = {
     value: {
       min: 0, max: 1,
@@ -26,7 +25,7 @@
       }
       $( column.bodyElement ).find( '.CodeMirror' ).remove()
       
-      var panel = new Interface.Panel({ container: column.bodyElement })
+      var panel = new Interface.Panel({ container: column.bodyElement, useRelativeSizesAndPositions:true })
       $( panel.canvas ).css({
         position: 'relative',
         width: $( column.bodyElement ).width(),
@@ -38,8 +37,48 @@
       return panel
     },
     
+    initializers : {
+      XY : function( widget, props ) {
+        var mappingProperties = {
+          x : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
+          y : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' }
+        }
+        for( var i = 0; i < widget.values.length; i++ ) {
+          ( function() { 
+            var num = i,
+                child = widget.values[ num ],
+                x = 0, y = 0
+            
+            Object.defineProperties( child, {
+              x: {
+                get: function() { return x },
+                set: function(v) { x = v; }
+              },
+              y : {
+                get: function() { return y },
+                set: function(v) { y = v; }
+              }
+            })
+
+            Gibber.createProxyProperties( child, mappingProperties, false )
+            widget[ num ] = child
+          })()
+        }
+      }
+    },
+    defaults: {
+      XY : {
+        //detectsCollision:false,
+        childWidth:40,
+        //friction:0,
+        oninit: function() { this.rainbow() },
+        numChildren:2,
+        usePhysics:false
+      }
+    },
+    
     widget: function( props, name ) {
-      console.log( this.mode )
+      //console.log( this.mode )
       if( this.mode === 'local' ) {
         if( I.panel === null) {
           I.newPanel()
@@ -50,55 +89,61 @@
             mode:'toggle'
           }
         }
-      
+        
+        if( I.defaults[ name ] ) props = $.extend( I.defaults[name], props )
+        
         var w = new Interface[ name ]( props )
         w.type = 'mapping'
         Gibber.Environment.Interface.panel.add( w )
+        
+        if( I.initializers[ name ] ){
+          I.initializers[ name ]( w, props )
+        }else{
+          var prop = 'value',
+              property = mappingProperties[ prop ],
+              mapping = $.extend( {}, property, {
+                Name  : prop.charAt(0).toUpperCase() + prop.slice(1),
+                name  : prop,
+                type  : 'mapping',
+                value : 1,
+                object: w,
+                targets:[],
+              })
+              //oldSetter = b.__lookupSetter__( prop )
       
-        prop = 'value'
-        var property = mappingProperties[ prop ],
-            mapping = $.extend( {}, property, {
-              Name  : prop.charAt(0).toUpperCase() + prop.slice(1),
-              name  : prop,
-              type  : 'mapping',
-              value : 1,
-              object: w,
-              targets:[],
-            })
-            //oldSetter = b.__lookupSetter__( prop )
-      
-        Object.defineProperty( mapping.object, mapping.Name, {
-          get: function() { return mapping },
-          set: function(v) {
-            if( typeof v === 'object' && v.type === 'mapping' ) {
-              Gibber.createMappingObject( mapping, v )
+          Object.defineProperty( mapping.object, mapping.Name, {
+            get: function() { return mapping },
+            set: function(v) {
+              if( typeof v === 'object' && v.type === 'mapping' ) {
+                Gibber.createMappingObject( mapping, v )
+              }
             }
-          }
-        })
+          })
       
-        w.mappingObjects = [ mapping ]
-        w.mappingProperties = mappingProperties
+          w.mappingObjects = [ mapping ]
+          w.mappingProperties = mappingProperties
       
-        w.replaceWith = function( replacement ) {
-          if( w.target ) replacement.target = w.target
-          if( w.key )    replacement.key    = w.key
+          w.replaceWith = function( replacement ) {
+            if( w.target ) replacement.target = w.target
+            if( w.key )    replacement.key    = w.key
         
-          I.panel.remove( w )
-          I.panel.add( replacement )
+            I.panel.remove( w )
+            I.panel.add( replacement )
         
-          replacement.setValue( w.value )
+            replacement.setValue( w.value )
         
-          for( var i = 0; i < this.mappingObjects.length; i++ ) {
-            var mapping = this.mappingObjects[ i ]
+            for( var i = 0; i < this.mappingObjects.length; i++ ) {
+              var mapping = this.mappingObjects[ i ]
           
-            if( mapping.targets.length > 0 ) {
-              for( var j = 0; j < mapping.targets.length; j++ ) {
-                var _mapping = mapping.targets[ j ]
+              if( mapping.targets.length > 0 ) {
+                for( var j = 0; j < mapping.targets.length; j++ ) {
+                  var _mapping = mapping.targets[ j ]
             
-                if( replacement.mappingProperties[ mapping.name ] ) {
-                  _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
-                }else{ // replacement object does not have property that was assigned to mapping
-                  _mapping[ 0 ].mapping.remove()
+                  if( replacement.mappingProperties[ mapping.name ] ) {
+                    _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
+                  }else{ // replacement object does not have property that was assigned to mapping
+                    _mapping[ 0 ].mapping.remove()
+                  }
                 }
               }
             }
@@ -135,7 +180,6 @@
             I.socket.send( JSON.stringify( msg ) )
           },
           kill: function() { 
-            console.log( "KILLING WIDGET" )
             var msg = {
               address: '/clients/' + this.client + '/interface/removeWidget',
               parameters:[ w.remoteID ] ,
@@ -237,6 +281,7 @@
         I.mode = 'local'
       }
     },
+    
     clear : function( num ) {
       var addr = isNaN( num ) ? I.client : num
       
@@ -253,7 +298,8 @@
     },
     button: function( props ) { return I.widget( props, 'Button' ) },
     slider: function( props ) { return I.widget( props, 'Slider' ) },
-    knob: function( props )   { return I.widget( props, 'Knob' ) },    
+    knob: function( props )   { return I.widget( props, 'Knob' ) },
+    xy: function( props )     { return I.widget( props, 'XY' ) },        
   }
   
   Interface.use = Gibber.Environment.Interface.use
@@ -262,6 +308,7 @@
   window.Button = Gibber.Environment.Interface.button
   window.Slider = Gibber.Environment.Interface.slider
   window.Knob   = Gibber.Environment.Interface.knob
+  window.XY   = Gibber.Environment.Interface.xy  
   
   var OSC = Gibber.OSC = {
     callbacks : {},
