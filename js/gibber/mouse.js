@@ -40,7 +40,6 @@
         },
       }
 
-
   window.Mouse = Gibber.Environment.Mouse = (function() {
     
     if( _m !== null ) return _m
@@ -95,8 +94,11 @@
         }
       },
     })
-
-    for( var prop in mappingProperties ) {
+    
+    Gibber.createProxyProperties( _m, mappingProperties, true )
+    
+    _m.on()
+    /*for( var prop in mappingProperties ) {
       ( function( obj ) {
         var _prop = prop,
             property = mappingProperties[ _prop ],
@@ -138,8 +140,8 @@
             }
           }
         })
-      })( _m )
-    }
+      })( _m )*/
+      //}
     return _m
   })() 
 })()

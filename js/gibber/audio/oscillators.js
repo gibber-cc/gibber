@@ -60,18 +60,18 @@
           set: function() {}
         })
         
-        oscillator.note = function( pitch ) {
-          var freq = this.frequency()
-          if( typeof freq === 'function' ) {
-            this.frequency = pitch
-          }else{
-            freq[ 0 ] = pitch
-          }
-        }
+        // oscillator.note = function( pitch ) {
+        //   var freq = this.frequency()
+        //   if( typeof freq === 'function' ) {
+        //     this.frequency = pitch
+        //   }else{
+        //     freq[ 0 ] = pitch
+        //   }
+        // }
         
         Gibber.createProxyProperties( oscillator, mappingProperties )
         
-        Gibber.createProxyMethods( oscillator, ['note'] )
+        //Gibber.createProxyMethods( oscillator, ['note'] )
         
         Gibber.processArguments2( oscillator, args, type )
         

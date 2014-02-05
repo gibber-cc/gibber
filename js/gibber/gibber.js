@@ -523,6 +523,7 @@ window.Gibber = window.G = {
         
         from.track = proxy
         
+        console.log( from, op )
         //op.smooth( target.name, target.object )
         
         //target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
@@ -872,7 +873,7 @@ window.Gibber = window.G = {
   
   createProxyProperties : function( obj, mappingProperties, noSeq ) {
     var shouldSeq = typeof noSeq !== 'undefined'
-    if( !obj.seq && shouldSeq )
+    if( !obj.seq && !shouldSeq )
       obj.seq = Gibber.PolySeq()
     
     obj.mappingProperties = mappingProperties
