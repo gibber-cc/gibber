@@ -522,8 +522,6 @@ window.Gibber = window.G = {
           from.object.setValue( widgetValue )
         
         from.track = proxy
-        
-        console.log( from, op )
         //op.smooth( target.name, target.object )
         
         //target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
@@ -531,7 +529,6 @@ window.Gibber = window.G = {
         _mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
         
         op.input = _mapping
-        
         target.object[ target.name ] = op
         
         //_mapping = target.object[ target.name ] = 
@@ -812,15 +809,18 @@ window.Gibber = window.G = {
   createProxyProperty: function( obj, _key, shouldSeq ) {
     var propertyName = _key,
         propertyDict = obj.mappingProperties[ propertyName ],
+        __n = propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
         mapping = $.extend( {}, propertyDict, {
-          Name  : propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
+          Name  : __n,
           name  : propertyName,
           type  : 'mapping',
           value : obj[ propertyName ],
           object: obj,
           targets: [],
 					oldSetter: obj.__lookupSetter__( propertyName ),
-					oldGetter: obj.__lookupGetter__( propertyName )              
+					oldGetter: obj.__lookupGetter__( propertyName ),
+          oldMappingGetter: obj.__lookupGetter__( __n ),
+          oldMappingSetter: obj.__lookupSetter__( __n ),          
         }),
         fnc
     
@@ -848,7 +848,7 @@ window.Gibber = window.G = {
           Gibber.createMappingObject( mapping, v )
         }else{
           if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
-            if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
+            //if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
             if( obj[ mapping.Name ].mapping.remove )
               obj[ mapping.Name ].mapping.remove( true )
           }
@@ -864,9 +864,13 @@ window.Gibber = window.G = {
     // capital letter mapping sugar
     Object.defineProperty( obj, mapping.Name, {
       configurable: true,
-      get : function()  { return mapping },
+      get : function()  {
+        if( typeof mapping.oldMappingGetter === 'function' ) mapping.oldMappingGetter()
+        return mapping 
+      },
       set : function( v ) {
         obj[ mapping.Name ] = v
+        if( typeof mapping.oldMappingSetter === 'function' ) mapping.oldMappingSetter( v )
       }
     })
   },

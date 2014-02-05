@@ -40,12 +40,13 @@
         },
       }
 
-  window.Mouse = Gibber.Environment.Mouse = (function() {
-    
+  window.Mouse = Gibber.Environment.Mouse = ( function() {
     if( _m !== null ) return _m
 
     _m = {} 
-
+    
+    var storeX = 0, storeY = 0
+    
     $.extend( _m, {
       x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
       isOn : false,
@@ -57,10 +58,10 @@
         
         upper = prefix === '' ? '' :  prefix.charAt(0).toUpperCase() + prefix.slice(1),
         // console.log( prefix, upper )
-        _m[ "prev" + upper + "X" ] = _m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
-        _m[ "prev" + upper + "Y" ] = _m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
-        _m[ prefix  + ( prefix === '' ? 'x' : "X" ) ] = e.pageX / _m.ww 
-        _m[ prefix  + ( prefix === '' ? 'y' : "Y" ) ] = e.pageY / _m.wh 
+        _m[ "prev" + upper + "X" ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
+        _m[ "prev" + upper + "Y" ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
+        storeX = _m[ prefix  + ( prefix === '' ? 'x' : "X" ) ] = e.pageX / _m.ww 
+        storeY = _m[ prefix  + ( prefix === '' ? 'y' : "Y" ) ] = e.pageY / _m.wh 
 
         if( typeof _m.onvaluechange === 'function' ) {
           _m.onvaluechange()
@@ -94,10 +95,31 @@
         }
       },
     })
+
+    for( var prop in mappingProperties ) {
+      ( function() {
+        var name = prop,
+            Name = prop.charAt(0).toUpperCase() + prop.slice(1)
+        
+        console.log( "MOUSE NAME", Name )
+        Object.defineProperty( _m, Name, {
+          configurable:true,
+          get: function() {
+            if( Name !== "Button" ) {
+              _m.on();
+            }else{
+              $( window ).on( 'mousedown', _m._onmousedown )
+              $( window ).on( 'mouseup',   _m._onmouseup   )
+            }
+          },
+          set: function(v) {}
+        })
+      })()
+    }
     
     Gibber.createProxyProperties( _m, mappingProperties, true )
     
-    _m.on()
+    //_m.on()
     /*for( var prop in mappingProperties ) {
       ( function( obj ) {
         var _prop = prop,

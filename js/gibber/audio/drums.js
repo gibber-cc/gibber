@@ -208,12 +208,17 @@
   	if( obj.seq && obj.seq.tick ) { Gibberish.future( obj.seq.tick, 1 ) }
     
     obj.note = function(nt) {
+      var p = typeof obj.pitch === 'function' ? obj.pitch() : obj.pitch
       if( $.isArray( nt ) ) {
         for( var i = 0; i < nt.length; i++ ) {
           var note = nt[ i ]
+
       		for(var key in this.kit) {
       			if(note === this.kit[key].symbol) {
-      				this[ key ].sampler.note( obj.pitch /** this[key].pitch*/, this[key].amp );
+      				this[ key ].sampler.note( 1, this[key].amp );
+              var p = this.pitch() 
+              if( this[ key ].sampler.pitch !== p )
+                this[ key ].sampler.pitch = p
       				break;
       			}
       		}
@@ -221,23 +226,26 @@
       }else{
     		for(var key in this.kit) {
     			if(nt === this.kit[key].symbol) {
-    				this[ key ].sampler.note( obj.pitch /** this[key].pitch*/, this[key].amp );
+    				this[ key ].sampler.note( 1, this[key].amp );
+            var p = this.pitch() 
+            if( this[ key ].sampler.pitch !== p )
+              this[ key ].sampler.pitch = p
     				break;
     			}
     		}
       }
   	}
     
-    var _pitch = obj.pitch
-    Object.defineProperty( obj, 'pitch', {
-      get: function() { return _pitch },
-      set: function(v) { 
-        _pitch = v; 
-      	for(var key in obj.kit) {
-      		obj[key].pitch = _pitch
-        }
-      }
-    })
+    // var _pitch = obj.pitch
+    // Object.defineProperty( obj, 'pitch', {
+    //   get: function() { return _pitch },
+    //   set: function(v) { 
+    //     _pitch = v; 
+    //     for(var key in obj.kit) {
+    //       obj[key].pitch = _pitch()
+    //     }
+    //   }
+    // })
         
     Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )    
     Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )       

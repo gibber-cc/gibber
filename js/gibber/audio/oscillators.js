@@ -31,11 +31,11 @@
       timescale: 'audio',
       dimensions:1
     },
-    // pitch: {
-    //   min: 1, max: 4,
-    //   output: Gibber.LOGARITHMIC,
-    //   timescale: 'audio',
-    // },
+    pitch: {
+      min: 1, max: 4,
+      output: Gibber.LOGARITHMIC,
+      timescale: 'audio',
+    },
   }
   
   for( var i = 0; i < types.length; i++ ) {
@@ -60,18 +60,20 @@
           set: function() {}
         })
         
-        // oscillator.note = function( pitch ) {
-        //   var freq = this.frequency()
-        //   if( typeof freq === 'function' ) {
-        //     this.frequency = pitch
-        //   }else{
-        //     freq[ 0 ] = pitch
-        //   }
-        // }
+        if( typeof oscillator.note === 'undefined' ) {
+          oscillator.note = function( pitch ) {
+            var freq = this.frequency()
+            if( typeof freq === 'number' || typeof freq === 'function' ) {
+              this.frequency = typeof pitch === 'function' ? pitch() : pitch
+            }else{
+              freq[ 0 ] = pitch
+            }
+          }
+        }
         
         Gibber.createProxyProperties( oscillator, mappingProperties )
         
-        //Gibber.createProxyMethods( oscillator, ['note'] )
+        Gibber.createProxyMethods( oscillator, ['note'] )
         
         Gibber.processArguments2( oscillator, args, type )
         
