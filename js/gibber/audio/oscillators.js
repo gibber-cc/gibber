@@ -25,7 +25,7 @@
       timescale: 'audio',
       dimensions:1
     },
-    pulsewidth :{
+    pulsewidth : {
       min: 0.01, max: .99,
       output: Gibber.LINEAR,
       timescale: 'audio',

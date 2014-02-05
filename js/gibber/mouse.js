@@ -95,13 +95,13 @@
         }
       },
     })
-
+    
+    // create getter layer that turns mouse event handlers on as needed
     for( var prop in mappingProperties ) {
       ( function() {
         var name = prop,
             Name = prop.charAt(0).toUpperCase() + prop.slice(1)
         
-        console.log( "MOUSE NAME", Name )
         Object.defineProperty( _m, Name, {
           configurable:true,
           get: function() {

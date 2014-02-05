@@ -876,8 +876,8 @@ window.Gibber = window.G = {
   },
   
   createProxyProperties : function( obj, mappingProperties, noSeq ) {
-    var shouldSeq = typeof noSeq !== 'undefined'
-    if( !obj.seq && !shouldSeq )
+    var shouldSeq = typeof noSeq === 'undefined' ? true : noSeq
+    if( !obj.seq && shouldSeq )
       obj.seq = Gibber.PolySeq()
     
     obj.mappingProperties = mappingProperties
