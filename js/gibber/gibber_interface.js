@@ -1,6 +1,8 @@
 ( function() {
    
-  $script( 'external/autogui' , function() {} )
+  $script( 'external/autogui' , function() {
+    Gibber.interfaceIsReady()
+  } )
 
   var mappingProperties = {
     value: {
@@ -21,11 +23,17 @@
     
     newPanel : function( column ) {
       if( typeof column === 'undefined' ) {
-        column = Gibber.Environment.Layout.addColumn({ type:'code' })
+        if( Gibber.isInstrument ) {
+          column = {
+            bodyElement: $('body')
+          }
+        }else{
+          column = Layout.addColumn()
+        }
       }
-      $( column.bodyElement ).find( '.CodeMirror' ).remove()
       
       var panel = new Interface.Panel({ container: column.bodyElement, useRelativeSizesAndPositions:true })
+      
       $( panel.canvas ).css({
         position: 'relative',
         width: $( column.bodyElement ).width(),
@@ -64,7 +72,25 @@
             widget[ num ] = child
           })()
         }
-      }
+      },
+      Piano : function( widget, props ) {
+        var target = widget.target
+        Object.defineProperty( widget, 'target', {
+          get: function() { return target },
+          set: function(v) { 
+            target = v
+            for( var i = 0; i < widget.keys.length; i++ ) {
+              widget.keys[ i ].target = target
+              widget.keys[ i ].key = typeof target.note !== 'undefined' ? 'note' : 'frequency'
+              
+              widget.keys[ i ].sendTargetMessage = function() {
+                this.target.note( this.frequency, this.value )
+              }
+            }
+          
+          }
+        })
+      },
     },
     defaults: {
       XY : {
@@ -74,11 +100,19 @@
         oninit: function() { this.rainbow() },
         numChildren:2,
         usePhysics:false
+      },
+      Piano: {
+         startletter : "C",
+         startoctave : 3,
+         endletter : "C",
+         endoctave : 4,
+         //bounds:[0,0,1,.25],
+         background:'white',
+         fill: 'black'
       }
     },
     
     widget: function( props, name ) {
-      //console.log( this.mode )
       if( this.mode === 'local' ) {
         if( I.panel === null) {
           I.newPanel()
@@ -94,8 +128,12 @@
         
         var w = new Interface[ name ]( props )
         w.type = 'mapping'
+
         Gibber.Environment.Interface.panel.add( w )
         
+        if( typeof w.bounds[0] === 'undefined' )
+          I.autogui.placeWidget( w, false )
+          
         if( I.initializers[ name ] ){
           I.initializers[ name ]( w, props )
         }else{
@@ -158,9 +196,7 @@
           get: function() { w.kill() },
           set: function(v) { }
         })
-      
-        I.autogui.placeWidget( w, false )
-      
+            
         return w
       }else{
         props = props || {}
@@ -300,15 +336,17 @@
     slider: function( props ) { return I.widget( props, 'Slider' ) },
     knob: function( props )   { return I.widget( props, 'Knob' ) },
     xy: function( props )     { return I.widget( props, 'XY' ) },        
+    piano: function( props )  { return I.widget( props, 'Piano' ) },    
   }
   
   Interface.use = Gibber.Environment.Interface.use
   Interface.clear = Gibber.Environment.Interface.clear
 
-  window.Button = Gibber.Environment.Interface.button
-  window.Slider = Gibber.Environment.Interface.slider
-  window.Knob   = Gibber.Environment.Interface.knob
-  window.XY   = Gibber.Environment.Interface.xy  
+  window.Button   = Gibber.Environment.Interface.button
+  window.Slider   = Gibber.Environment.Interface.slider
+  window.Knob     = Gibber.Environment.Interface.knob
+  window.XY       = Gibber.Environment.Interface.xy
+  window.Keyboard = Gibber.Environment.Interface.piano
   
   var OSC = Gibber.OSC = {
     callbacks : {},

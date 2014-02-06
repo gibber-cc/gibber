@@ -1,8 +1,10 @@
 ( function() {
 
 "use strict"
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-//var SERVER_URL = 'http://127.0.0.1:8080'
+// REMEMBER TO CHECK WELCOME.INIT()
+//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+var SERVER_URL = 'http://127.0.0.1:8080'
+//var SERVER_URL = 'http://a.local:8080'
 
 var GE = Gibber.Environment = {
   init : function() { 
@@ -25,21 +27,28 @@ var GE = Gibber.Environment = {
         
         $( '#layoutTable' ).attr( 'height', $( window ).height() )
         $( '#contentCell' ).width( $( window ).width() )
-        GE.Layout.init()
-        window.Layout = GE.Layout
-        GE.Account.init()
+        
         Gibber.proxy( window )
-        GE.Console.init()
-        GE.Welcome.init()
-        GE.Share.open()
+        
+        if( !window.isInstrument ) {
+          GE.Layout.init()
+          window.Layout = GE.Layout
+          GE.Account.init()
+          GE.Console.init()
+        //GE.Welcome.init()
+          GE.Share.open()
+        }
+        
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
       });
     })
 
     $script( ['external/color', 'external/injectCSS'], 'theme', function() {
-      GE.Theme.init()
-      GE.Storage.init()
-      GE.Menu.init()
+      if( !window.isInstrument ) {
+        GE.Theme.init()
+        GE.Storage.init()
+        GE.Menu.init()
+      }
     })
     
     $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
@@ -550,15 +559,15 @@ var GE = Gibber.Environment = {
     init: function() {
       this.canvas = $( "#header canvas" )
       this.ctx = this.canvas[0].getContext( '2d' )
-      
+    
       this.width = this.canvas.width()
       this.height = this.canvas.height()      
-      
+    
       this.canvas.attr( 'width', this.width )
       this.canvas.attr( 'height', this.height )
-      
+    
       this.ctx.fillStyle = this.color
-      
+    
       var color = this.color
       Object.defineProperty( this, 'color', {
         get: function() { return color; },
@@ -668,6 +677,7 @@ var GE = Gibber.Environment = {
     
     addColumn : function( options ) {
       options = options || {}
+      
       var isCodeColumn = options.type === 'code',
           lastColumnWidth = 0, 
           colNumber = this.columnID++,
@@ -797,6 +807,9 @@ var GE = Gibber.Environment = {
         col.header.append( col.lineNumbersButton )
         col.editor.column = col    
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
+      }else{
+        col.bodyElement.width( columnWidth - resizeHandleSize )
+        col.element.append( col.bodyElement )
       }
    
       col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
@@ -1404,7 +1417,8 @@ var GE = Gibber.Environment = {
           code: GE.Layout.columns[ columnNumber ].editor.getValue(),
           permissions: $( '#new_publication_permissions' ).prop( 'checked' ),
           tags: $( '#new_publication_tags' ).val().split(','),
-          notes: $( '#new_publication_notes' ).val() 
+          notes: $( '#new_publication_notes' ).val(), 
+          //instrument: $( '#new_publication_instrument' ).val()
          },
         dataType:'json'
       })

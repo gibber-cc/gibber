@@ -37,7 +37,7 @@ var Clock = Gibber.Clock = {
       Clock.codeToExecute.length = 0
     }
     
-    if( typeof Clock.metronome === 'object' ) {
+    if( Clock.metronome !== null ) {
       Clock.metronome.draw( Clock.currentBeat, Clock.signature.upper )
     }
     

@@ -802,7 +802,7 @@ Interface.Widget = {
         }
       }else{
         if(typeof this.target[this.key] === 'function') {
-            this.target[this.key]( this.values || this.value );
+          this.target[this.key]( this.values || this.value );
         }else{
           this.target[this.key] = this.values || this.value;
         }
@@ -1478,7 +1478,12 @@ Interface.Piano = function() {
     noteLabels : false,
     onvaluechange : function() {
       this.values = [this.frequency,this.value]
-      this.sendTargetMessage()
+      //console.log( "ONVALUECHANGE", this, this.values )
+    },
+    keys: [],
+    draw : function() {
+      for( var i = 0; i < this.keys.length; i++ ) { this.keys[i].refresh() }
+      return this
     },
 
     _init : function() {
@@ -1504,6 +1509,7 @@ Interface.Piano = function() {
       var j = 0;
       if (endnote == 2 || endnote == 4 || endnote == 7 || endnote == 9 || endnote == 11)
         dist--;
+        
      for (i = 0; i < notes-1; i++) {
         if (startnote == 1) {
           var pkeys = new Interface.ButtonV({ 
@@ -1560,7 +1566,7 @@ Interface.Piano = function() {
               textLocation : {x:.6075, y:.5},
               target : this.target,
               onvaluechange: this.onvaluechange,
-background: this._background(),
+              background: this._background(),
               stroke: this._stroke(),
               frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
               bounds:[(j-.5)/dist *this.width + this.x, this.y,this.width/dist,.625*this.height],  
@@ -1707,6 +1713,7 @@ background: this._background(),
             });
           }
         
+        this.keys.push(pkeys)
         this.panel.add(pkeys);
         j++;
         startnote++;
@@ -1772,103 +1779,10 @@ background: this._background(),
               requiresFocus : false,
               mode:'momentary'
             });
-      this.panel.add(pkeys);
-        
-    },
-   
-     changeValue : function( xOffset, yOffset ) {
-      if(this.hasFocus || !this.requiresFocus) {
-        this._value = !this._value;
-        
-        this.value = this._value ? this.max : this.min;
-                
-        if(this.value !== this.lastValue || this.mode === 'contact') {
-          this.sendTargetMessage();
-          if(this.onvaluechange) this.onvaluechange();
-          this.draw();
-          this.lastValue = this.value;
-        }
-      }     
-    },
-  
-
-    setValue : function(value, doNotDraw) {
-      var r = this.max - this.min,
-          v = value;
-        
-      this.value = value;
-                
-      if(this.min !== 0 || this.max !== 1) {
-        v -= this.min;
-        this._value = v / r;
-      }else{
-        this._value = this.value;
-      }
-      this.lastValue = this.value;
-      if(!doNotDraw && this.mode !== 'contact') this.refresh();
-    },
-
-    mousedown : function(e, hit) {
-      if(hit && Interface.mouseDown) {
-        this.isMouseOver = true;
-        this.changeValue();
-        if(this.mode === 'contact') {
-          var self = this;
-          setTimeout( function() { self._value = 0; self.draw(); }, 75);
-        }
-      }
-    },
-    mousemove : function(e, hit) { 
-      if(!this.requiresFocus && hit && Interface.mouseDown && !this.isMouseOver) {
-        this.isMouseOver = true;
-        if(this.mode !== 'contact') {
-          this.changeValue();// e.x - this.x, e.y - this.y ); 
-        }else{
-          this._value = 1;
-          this.draw();
-          var self = this;
-          setTimeout( function() { self._value = 0; self.draw(); }, 75);
-        }
-      }else if(!hit && this.isMouseOver) {
-        this.isMouseOver = false;
-      }
-    },
-    mouseup   : function(e) {
-      if(this.mode === 'momentary')
-        this.changeValue();// e.x - this.x, e.y - this.y ); 
-    },
-    
-    touchstart : function(e, hit) {
-      if(hit) {
-        this.isTouchOver = true;
-        this.changeValue();
-        if(this.mode === 'contact') {
-          var self = this;
-          setTimeout( function() { self._value = 0; self.draw(); }, 75);
-        }
-      }
-    },
-    touchmove : function(e, hit) {
-      if(!this.requiresFocus && hit && !this.isTouchOver) {
-        this.isTouchOver = true;
-        if(this.mode !== 'contact') {
-          this.changeValue();// e.x - this.x, e.y - this.y );
-          
-        }else{
-          this._value = 1;
-          this.draw();
-          var self = this;
-          setTimeout( function() { self._value = 0; self.draw(); }, 75);
-        }
-      }else if(!hit && this.isTouchOver) {
-        this.isTouchOver = false;
-      }
-    },
-    touchend   : function(e) {
-      this.isTouchOver = false;
-      if(this.mode === 'momentary')
-        this.changeValue();// e.x - this.x, e.y - this.y ); 
-    },
+            
+      this.keys.push(pkeys)      
+      this.panel.add(pkeys);   
+    }
   })
   .init( arguments[0] );
 };

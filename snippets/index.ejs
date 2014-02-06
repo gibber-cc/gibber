@@ -12,6 +12,8 @@
   <% if( loadFile ) { %>
   <script type="text/javascript">
     window.loadFile = <%- loadFile %>
+    window.isInstrument = <%- isInstrument %>
+    //if( window.isInstrument ) alert("INSTRUMENT")
   </script>
   <% } %> 
 </head>
@@ -19,7 +21,7 @@
 <body>
 
 <table role='presentation' border='0' id='layoutTable'>
-  
+  <% if( !isInstrument ) { %>
   <thead id='mainHeader'>
     <tr>
       <td id='header'>
@@ -58,6 +60,7 @@
   </tfoot>
 
 </table>
+<% } %>
 
 </body>
 

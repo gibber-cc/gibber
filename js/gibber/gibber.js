@@ -45,7 +45,8 @@ window.Gibber = window.G = {
       Master.type = 'Bus'
       $.extend( true, Master, Gibber.ugen ) 
       Master.fx.ugen = Master
-
+      
+      Gibber.isInstrument = window.isInstrument // TODO: better way to do this without global?
       //Gibber.createMappingAbstractions( Master, Gibber.Busses.mappingProperties )
       
       // override so that all ugens connect to Gibber's Master bus by default
@@ -60,7 +61,9 @@ window.Gibber = window.G = {
       
       $script.ready('environment', function() {
         Gibber.Clock.start( true )
-        Gibber.Clock.addMetronome( Gibber.Environment.Metronome )
+        if( !window.isInstrument ) {
+          //Gibber.Clock.addMetronome( Gibber.Environment.Metronome )
+        }
 				window.Clock = Gibber.Clock
       })
       
@@ -73,8 +76,11 @@ window.Gibber = window.G = {
       window.rndf = Gibberish.rndf
 			
 			window.module = Gibber.import
-           
+      
     }) })
+   },
+   interfaceIsReady : function() {
+     if( Gibber.isInstrument ) eval( loadFile.text )
    },
   Modules : {},
  	import : function( path, exportTo ) {

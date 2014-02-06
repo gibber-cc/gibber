@@ -11,19 +11,23 @@
   ],
   _mappingProperties = {
     Synth: {
-      frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
+      frequency: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
-      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
-      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
+      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
       pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},      
     },
     Synth2: {
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
-      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
-      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
+      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
       cutoff : { min: 0, max: .7, output: Gibber.LINEAR, timescale: 'audio' },
       resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' },
       pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},            
@@ -43,8 +47,10 @@
     FM: {
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
-      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
-      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
+      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
       cmRatio : { min:.1, max:50, output:Gibber.LINEAR, timescale:'audio' },
       index: { min:.1, max:50, output:Gibber.LINEAR, timescale:'audio' },
       pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}      
@@ -67,18 +73,29 @@
       Gibber.Synths[ name ] = function() {
         var args = Array.prototype.slice.call(arguments),
             obj,
-            mv = 1
+            mv = 1,
+            adsr = false,
+            requireReleaseTrigger = true
         
-        if( typeof args[0] === 'object' && typeof args[0].maxVoices === 'undefined') { 
-          args[0].maxVoices = mv = 1
-        }else if( typeof args[0] === 'undefined') {
-          args[0] = { maxVoices:1 }
-          mv = 1
-        }else{
-          if( args[0].maxVoices ) mv = args[0].maxVoices
+        if( typeof args[0] === 'object' ) {
+          if(typeof args[0].maxVoices !== 'undefined') { 
+            if( args[0].maxVoices ) mv = args[0].maxVoices
+          }
+          if( typeof args[0].useADSR !== 'undefined' ) {
+            adsr = args[0].useADSR
+            if( typeof args[0].requireReleaseTrigger !== 'undefined' ) {
+              requireReleaseTrigger = args[0].requireReleaseTrigger
+            }
+          }else{
+            requireReleaseTrigger = false
+          }
+          if( typeof args[0].useADSR !== 'undefined' ) {
+            adsr = args[0].useADSR
+          } 
         }
         
-        obj = new Gibberish[ type ]({maxVoices: mv}).connect( Gibber.Master )
+        if( args[0] !== 'undefined')
+        obj = new Gibberish[ type ]({ maxVoices: mv, useADSR:adsr, requireReleaseTrigger:requireReleaseTrigger }).connect( Gibber.Master )
         obj.type = 'Gen'
         
         $.extend( true, obj, Gibber.ugen )
@@ -93,6 +110,8 @@
           if( typeof args[0] === 'string' ) {
             args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
           }
+          
+          //this._note( args[0], args[1] )
           this._note.apply( this, args )
         }
         

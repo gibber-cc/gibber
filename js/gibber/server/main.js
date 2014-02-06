@@ -79,9 +79,10 @@ function findByTag( tag, fn ) {
 //   serialize users into and deserialize users out of the session.  Typically,
 //   this will be as simple as storing the user ID when serializing, and finding
 //   the user by ID when deserializing.
-passport.serializeUser( function(user, done) { done(null, user.id); } );
+passport.serializeUser( function(user, done) { console.log("SERIALIZE"); done(null, user.id); } );
 
 passport.deserializeUser(function(id, done) {
+  console.log( "DESERIALIZE" )
   findById(id, function (err, user) { done(err, user); } );
 });
 
@@ -160,7 +161,7 @@ app.configure( function() {
   app.use( app.router )
   app.use( checkForREST )
   
-  app.use( express.static( serverRoot, { maxAge:oneDay }) )
+  app.use( express.static( serverRoot/*, { maxAge:oneDay } */ ) )
   app.use(function(err, req, res, next){
     console.error(err.stack);
     res.send(500, 'Something broke!');
@@ -174,9 +175,10 @@ app.get( '/', function(req, res){
   // console.log( req.query )
   if( req.query && req.query.path ) {
     request('http://localhost:5984/gibber/' + escapeString(req.query.path), function(err, response, body) {
-      // console.log( body )
+      console.log( body )
+      var _body = JSON.parse( body )
       if( body && typeof body.error === 'undefined' ) {
-        res.render( 'index', { loadFile:body } )
+        res.render( 'index', { loadFile:body, isInstrument:_body.isInstrument } )
       }else{
         res.render( 'index', { loadFile: JSON.stringify({ error:'path not found' }) })
       }
@@ -273,6 +275,8 @@ app.post( '/publish', function( req, res, next ) {
       year = date.getFullYear(),
       time = date.toLocaleTimeString()
   
+  console.log( "USER", req.user )
+  
   request.post({ 
       url:'http://localhost:5984/gibber/', 
       json:{
@@ -284,6 +288,7 @@ app.post( '/publish', function( req, res, next ) {
         text: req.body.code,
         tags: req.body.tags,
         permissions : req.body.permissions,
+        isInstrument: req.body.instrument,
         notes: req.body.notes
       }
     },
@@ -316,7 +321,6 @@ app.post( '/createNewUser', function( req, res, next ) {
       }
     }
   )
-
 })
 
 app.get( '/welcome', function( req, res, next ) {
@@ -341,7 +345,10 @@ app.get( '/docs/', function( req,res,next ) {
 app.get( '/credits', function( req,res,next ) { 
   res.render( 'credits' )
 })
+
+// adds inspect function to .ejs templates, used in browser .ejs to dynamically inject js
 app.locals.inspect = require('util').inspect;
+
 app.get( '/browser', function( req, res, next ) {
   request( { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
     function(__e,__r,__b) {
@@ -451,14 +458,14 @@ app.post( '/search', function( req, res, next) {
 app.post( '/login', function( req, res, next ) {
   passport.authenticate( 'local', function( err, user, info ) {
     var data = {}
-    // console.log( "LOGGING IN... ", user, err, info )
+    console.log( "LOGGING IN... ", user, err, info )
     if (err) { return next( err ) }
     
     if (!user) {
       res.send({ error:'Your username or password is incorrect. Please try again.' })
     }else{
       req.logIn( user, function() { 
-        // console.log( "I AM LOGGED IN WTF ")
+         console.log( "I AM LOGGED IN WTF ")
         res.send({ username: user.username }) 
       });
     }
