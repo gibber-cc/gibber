@@ -55,6 +55,7 @@
         output: Gibber.LINEAR,
         timescale: 'audio',
       },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     Delay : {
       feedback: {
@@ -66,7 +67,8 @@
         min: 50, max: 88200, // TODO: Fix... problem with loading order, should be : Gibberish.context.sampleRate * 2,
         output: Gibber.LINEAR,
         timescale: 'audio',
-      }
+      },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     RingMod : {
       frequency : {
@@ -78,7 +80,8 @@
         min: 0, max: 1,
         output: Gibber.LINEAR,
         timescale: 'audio',
-      }
+      },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     Flanger : {
       rate : {
@@ -96,6 +99,7 @@
         output: Gibber.LINEAR,
         timescale: 'audio',
       },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     Gain : {
       amount: {
@@ -119,7 +123,8 @@
         min: .45, max: .55,
         output: Gibber.LINEAR,
         timescale: 'audio',
-      }
+      },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     Filter24 : {
       cutoff : {
@@ -131,7 +136,8 @@
         min: 0, max: 5.5,
         output: Gibber.LINEAR,
         timescale: 'audio',
-      }
+      },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     LPF : {
       cutoff : {
@@ -143,7 +149,8 @@
         min: 0, max: 5.5,
         output: Gibber.LINEAR,
         timescale: 'audio',
-      }
+      },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     HPF : {
       cutoff : {
@@ -155,7 +162,8 @@
         min: 0, max: 5.5,
         output: Gibber.LINEAR,
         timescale: 'audio',
-      }
+      },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     Crush : {
       bitDepth : {
@@ -173,6 +181,7 @@
         output: Gibber.LOGARITHMIC,
         timescale: 'audio',
       },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     Schizo: {
       amp: {
@@ -180,6 +189,7 @@
         output: Gibber.LOGARITHMIC,
         timescale: 'audio',
       },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     }
   };
   

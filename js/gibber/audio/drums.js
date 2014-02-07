@@ -17,23 +17,43 @@
       pitch: { min: .25, max: 4, output: Gibber.LINEAR,     timescale: 'audio' },
       amp:   { min: 0,   max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pan:   { min: 0,   max: 1, output: Gibber.LINEAR,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     XOX: {
       //pitch: { min: .25, max: 4, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
-      pan:   { min: 0,   max: 1, output: Gibber.LINEAR,timescale: 'audio',},      
+      pan:   { min: 0,   max: 1, output: Gibber.LINEAR,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },      
     },
-    Kick    : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
+    Kick    : { 
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
+    },
     Snare   : { 
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC, timescale: 'audio' },
-      snappy: { min: .25, max: 1.5, output: Gibber.LOGARITHMIC, timescale: 'audio' }, 
-      tune: { min: 0, max: 2, output: Gibber.LOGARITHMIC, timescale: 'audio' },      
+      snappy: { min: .25, max: 1.5, output: Gibber.LOGARITHMIC, timescale: 'audio' },
+      tune: { min: 0, max: 2, output: Gibber.LOGARITHMIC, timescale: 'audio' },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },    
     },
-    Hat     : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
-    Conga   : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
-    Cowbell : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
-    Clave   : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
-    Tom     : { amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },                        
+    Hat     : { 
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
+    },
+    Conga   : { 
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
+    },
+    Cowbell : { 
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+    },
+    Clave   : { 
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, },
+    Tom     : { 
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
+      amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}, 
+    },
   }
 
   for( var i = 0; i < types.length; i++ ) {

@@ -18,7 +18,8 @@
       decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
       sustain: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
       release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},      
+      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},   
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },   
     },
     Synth2: {
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
@@ -30,7 +31,8 @@
       release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
       cutoff : { min: 0, max: .7, output: Gibber.LINEAR, timescale: 'audio' },
       resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' },
-      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},            
+      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },                
     },
     Mono: {
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
@@ -42,7 +44,8 @@
       detune2: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
       detune3: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
       glide: { min:.99, max:.999995, output: Gibber.LINEAR, timescale: 'audio'},
-      resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' }
+      resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     FM: {
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
@@ -53,14 +56,16 @@
       release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
       cmRatio : { min:.1, max:50, output:Gibber.LINEAR, timescale:'audio' },
       index: { min:.1, max:50, output:Gibber.LINEAR, timescale:'audio' },
-      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}      
+      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },     
     },
     Pluck: {
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       blend :{ min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio' },
       damping :{ min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio' },
-      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',}      
+      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },     
     },
   }
 

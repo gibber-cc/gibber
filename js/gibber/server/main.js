@@ -178,13 +178,13 @@ app.get( '/', function(req, res){
       console.log( body )
       var _body = JSON.parse( body )
       if( body && typeof body.error === 'undefined' ) {
-        res.render( 'index', { loadFile:body, isInstrument:_body.isInstrument } )
+        res.render( 'index', { loadFile:body, isInstrument:_body.isInstrument || 'false' } )
       }else{
         res.render( 'index', { loadFile: JSON.stringify({ error:'path not found' }) })
       }
     })
   }else{
-    res.render( 'index', { loadFile:'null' } )
+    res.render( 'index', { loadFile:'null', isInstrument:'false' } )
   }
   // fs.readFile(serverRoot + "index.htm", function (err, data) {
   //   if (err) {

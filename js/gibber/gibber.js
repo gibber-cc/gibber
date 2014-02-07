@@ -62,7 +62,7 @@ window.Gibber = window.G = {
       $script.ready('environment', function() {
         Gibber.Clock.start( true )
         if( !window.isInstrument ) {
-          //Gibber.Clock.addMetronome( Gibber.Environment.Metronome )
+          Gibber.Clock.addMetronome( Gibber.Environment.Metronome )
         }
 				window.Clock = Gibber.Clock
       })
@@ -420,7 +420,7 @@ window.Gibber = window.G = {
 
       if( from.timescale === 'audio' ) {
 
-        if( from.Name !== 'Amp' ) {
+        if( from.Name !== 'Out' ) {
           var proxy
           if( typeof from.object.track !== 'undefined' ) {
             proxy = from.object.track
@@ -565,7 +565,7 @@ window.Gibber = window.G = {
     }else if( target.timescale === 'graphics' ) {
 
       if( from.timescale === 'audio' ) {
-        if( from.Name !== 'Amp' ) {
+        if( from.Name !== 'Out' ) {
 
           target.object[ target.Name ].mapping = Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
         

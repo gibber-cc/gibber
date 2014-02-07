@@ -15,6 +15,7 @@
       output: Gibber.LINEAR,
       timescale: 'audio',
     },
+    out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
   },
   init = false;
   

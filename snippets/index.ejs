@@ -1,15 +1,14 @@
 <html>
-
 <head>
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <!--<script src="http://gibber.mat.ucsb.edu/js/external/script.min.js" type="text/javascript" charset="utf-8"></script>-->
   <script src="js/external/script.min.js" type="text/javascript" charset="utf-8"></script>
   
-
   <link rel="stylesheet" href="../css/main2.css" type="text/css" media="screen" title="no title" charset="utf-8">
   <link rel="stylesheet" href="../css/external/codemirror/codemirror.css" type="text/css" media="screen" title="no title" charset="utf-8">
   <link rel="stylesheet" href="../css/external/codemirror/gibber.css" type="text/css" media="screen" title="no title" charset="utf-8">
   <link rel="stylesheet" href="../css/external/codemirror/show-hint.css" type="text/css" media="screen" title="no title" charset="utf-8">
-  <% if( loadFile ) { %>
+  <% if( loadFile !== null) { %>
   <script type="text/javascript">
     window.loadFile = <%- loadFile %>
     window.isInstrument = <%- isInstrument %>
@@ -20,8 +19,9 @@
 
 <body>
 
+<% if( isInstrument !== null ) { %>
+
 <table role='presentation' border='0' id='layoutTable'>
-  <% if( !isInstrument ) { %>
   <thead id='mainHeader'>
     <tr>
       <td id='header'>
