@@ -222,6 +222,10 @@ Interface.Panel = function() {
     
     touchEvent : function(event) {
       if(self.active) {
+        console.log( event )
+        if( typeof event.changedTouches === 'undefined' && event.originalEvent ) {
+          event.changedTouches = event.originalEvent.changedTouches
+        }
         for (var j = 0; j < event.changedTouches.length; j++){
           var touch = event.changedTouches.item(j);		
         
@@ -371,12 +375,12 @@ Interface.Panel = function() {
       
       if(typeof widget.children !== 'undefined' && widget.type !== "XY") {
         for(var i = 0; i < widget.children.length; i++) {
-          this.children.splice( this.children.indexOf(widget.children[i]) );
+          this.children.splice( this.children.indexOf(widget.children[i]), 1 );
           Interface.widgets.splice( Interface.widgets.indexOf( widget.children[i] ), 1 );
         }
       }else{
         if(this.children.indexOf( widget ) > -1) {
-          this.children.splice( this.children.indexOf( widget ) );
+          this.children.splice( this.children.indexOf( widget ), 1 );
           Interface.widgets.splice( Interface.widgets.indexOf( widget ), 1 );
           if(typeof widget.remove === 'function') widget.remove();
         }
@@ -627,6 +631,7 @@ var widgetDefaults = {
     ontouchmousemove : null,    
     ontouchmouseup : null,    
     onvaluechange : null,
+    onboundschange : null,  
   },
 }
 Interface.Widget = {
@@ -665,27 +670,30 @@ Interface.Widget = {
       bounds : {
         configurable: true,
         get : function() { return bounds; },
-        set : function(_bounds) { bounds = _bounds; this.x = bounds[0]; this.y = bounds[1]; this.width = bounds[2]; this.height = bounds[3]; }
+        set : function(_bounds) { 
+          bounds = _bounds; this.x = bounds[0]; this.y = bounds[1]; this.width = bounds[2]; this.height = bounds[3]; 
+          if( this.onboundschange ) this.onboundschange()
+        }
       },
       x : {
         configurable: true,        
         get : function() { return x; },
-        set : function(val) { this.clear(); x = val; this.refresh(); },
+        set : function(val) { this.clear(); x = val; if( this.onboundschange ) this.onboundschange(); this.refresh(); },
       },
       y : {
         configurable: true,        
         get : function() { return y; },
-        set : function(val) { this.clear(); y = val; this.refresh(); },
+        set : function(val) { this.clear(); y = val; if( this.onboundschange ) this.onboundschange(); this.refresh(); },
       },
       width : {
         configurable: true,        
         get : function() { return width; },
-        set : function(val) { this.clear(); width = val; this.refresh(); },
+        set : function(val) { this.clear(); width = val; if( this.onboundschange ) this.onboundschange(); this.refresh(); },
       },
       height : {
         configurable: true,        
         get : function() { return height; },
-        set : function(val) { this.clear(); height = val; this.refresh(); },
+        set : function(val) { this.clear(); height = val; if( this.onboundschange ) this.onboundschange(); this.refresh(); },
       },
       /*value : {
         configurable: true,        
@@ -1465,28 +1473,33 @@ Interface.Piano = function() {
   Interface.extend(this, {
     type : 'Piano',    
     _value: 0,
-    serializeMe : ["mode", "label"],
+    serializeMe : ['mode', 'label'],
     mode : 'toggle',
     isMouseOver : false,
     isTouchOver : false,
     label : null,
-    startletter : "C",
+    startletter : 'C',
     startoctave : 3,
-    endletter : "C",
+    endletter : 'C',
     endoctave : 5,
     target : null,
     noteLabels : false,
+    _initialized : false,
     onvaluechange : function() {
       this.values = [this.frequency,this.value]
       //console.log( "ONVALUECHANGE", this, this.values )
     },
-    keys: [],
+    children: [],
     draw : function() {
-      for( var i = 0; i < this.keys.length; i++ ) { this.keys[i].refresh() }
+      for( var i = 0; i < this.children.length; i++ ) { this.children[i].refresh() }
       return this
     },
-
-    _init : function() {
+    
+    onboundschange: function() { 
+      if( this._initialized) this.placeKeys()
+    },
+    
+    placeKeys: function() {
       var x = this._x(),
           y = this._y(),
           width = this._width(),
@@ -1495,234 +1508,156 @@ Interface.Piano = function() {
           startnote = 0,
           endnote = 0,
           keylabel = ["0","C","C#/Db","D","D#/Eb","E","F","F#/Gb","G","G#/Ab","A","A#/Bb","B"],
-          keyid = ["0","C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-          keynid = [0,  1,  2,  2, 3,  3,  4, 5,  5, 6,  6, 7,  7]
-     
-      for (var i = 1; i < 13; i++) {
-        if (this.startletter == keyid[i])
-          startnote = i;
-        if (this.endletter == keyid[i])
-          endnote = i;
+          keyid = ["0","C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],
+          keynid = [0,  1,  2,  2, 3,  3,  4, 5,  5, 6,  6, 7,  7],
+          notes = ( endnote + this.endoctave * 12) - (startnote + this.startoctave * 12) + 1,
+          dist = ( keynid[ endnote ] + this.endoctave * 7 ) - ( keynid[ startnote ] + this.startoctave * 7 ) + 1,
+          j = 0;
+          
+      if( this._initialized ) {
+        this.clear()
+        for( var i = this.children.length - 1; i >= 0; i-- ) {
+          var key = this.children.pop()
+          this.panel.remove( key )
+        }
       }
-      var notes = (endnote + this.endoctave * 12) - (startnote + this.startoctave * 12) + 1;
-      var dist = (keynid[endnote] + this.endoctave * 7) - (keynid[startnote] + this.startoctave * 7) + 1;
-      var j = 0;
-      if (endnote == 2 || endnote == 4 || endnote == 7 || endnote == 9 || endnote == 11)
-        dist--;
+          
+      for (var i = 1; i < 13; i++) {
+        if ( this.startletter === keyid[ i ] )  startnote = i;
+        if ( this.endletter === keyid[ i ] )    endnote = i;
+      }
+
+      if ( [ 2,4,7,9,11 ].indexOf( endnote ) > -1 ) dist--;
+      
+      for (var i = 0; i < notes - 1; i++ ) {
+        var points, textLocation, bg, fg, bounds, label
         
-     for (i = 0; i < notes-1; i++) {
-        if (startnote == 1) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:0,y:0},{x:.6,y:0},{x:.6,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:0}], //left
-              textLocation : {x:.5, y:.75},
-              background: this._fill(),
-              fill: this._background(),
-              stroke: this._stroke(),
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              bounds:[j/dist*this.width + this.x,this.y,this.width/dist,this.height],  
-              label: this.noteLabels ? keylabel[startnote] + octave : null,
-              requiresFocus : false,
-              mode:'momentary'
-            });
-          }
-          else if (startnote == 2) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:.1,y:0},{x:.7,y:0},{x:.7,y:1},{x:.1,y:1},{x:.1,y:0}], //black
-              textLocation : {x:.3925, y:.5},
-              stroke: this._stroke(),
-              target : this.target,
-              background: this._background(),
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              bounds:[(j-.5)/dist *this.width + this.x, this.y,this.width/dist,.625*this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              mode:'momentary'
-            });
-          j--;
-          }
-          else if (startnote == 3) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:.2,y:0},{x:.8,y:0},{x:.8,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:.625},{x:.2,y:.625},{x:.2,y:0}], //middle
-              textLocation : {x:.5, y:.75},
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              background: this._fill(),
-              fill: this._background(),
-              stroke: this._stroke(),
-              bounds:[j/dist*this.width + this.x,this.y,this.width/dist,this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary'
-            });
-          }
-        else if (startnote == 4) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:.3,y:0},{x:.9,y:0},{x:.9,y:1},{x:.3,y:1},{x:.3,y:0}], //black
-              textLocation : {x:.6075, y:.5},
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              background: this._background(),
-              stroke: this._stroke(),
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              bounds:[(j-.5)/dist *this.width + this.x, this.y,this.width/dist,.625*this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              mode:'momentary'
-            });
-          j--;
+        switch( startnote ) {
+          case 1:
+            points = [{x:0,y:0},{x:.6,y:0},{x:.6,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:0}] // left
+            bg = this._fill()
+            textLocation = { x:.5, y:.75 }
+            fg = this._background()
+            bounds = [ j/dist*this.width + this.x, this.y, this.width/dist, this.height ]
+            label = this.noteLabels ? keylabel[startnote] + octave : null
+            break;
+          case 2:
+            points = [{x:.1,y:0},{x:.7,y:0},{x:.7,y:1},{x:.1,y:1},{x:.1,y:0}] //black
+            textLocation = { x:.3925, y:.5 }
+            bg = this._background()
+            fg = this._fill()
+            bounds = [(j-.5)/dist *this.width + this.x, this.y,this.width/dist,.625*this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 3:
+            points = [{x:.2,y:0},{x:.8,y:0},{x:.8,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:.625},{x:.2,y:.625},{x:.2,y:0}] // mid
+            textLocation = { x:.5, y:.75 }
+            bg = this._fill()
+            fg = this._background()
+            bounds = [j/dist*this.width + this.x,this.y,this.width/dist,this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 4:
+            points = [{x:.3,y:0},{x:.9,y:0},{x:.9,y:1},{x:.3,y:1},{x:.3,y:0}], //black
+            textLocation = {x:.6075, y:.5}
+            bg = this._background()
+            fg = this._fill()
+            bounds = [(j-.5)/dist *this.width + this.x, this.y,this.width/dist,.625*this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 5:
+            points = [{x:1,y:0},{x:.4,y:0},{x:.4,y:.625},{x:0,y:.625},{x:0,y:1},{x:1,y:1},{x:1,y:0}] //right
+            textLocation = {x:.5, y:.75}
+            bg = this._fill()
+            fg = this._background()
+            bounds = [j/dist*this.width+ this.x,this.y,this.width/dist,this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 6:
+            points = [{x:0,y:0},{x:0.57142857,y:0},{x:0.57142857,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:0}] //left
+            textLocation = {x:.5, y:.75}
+            bg = this._fill()
+            fg = this._background()
+            bounds = [j/dist*this.width+ this.x,this.y,this.width/dist,this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 7:
+            points = [{x:0.07142857,y:0},{x:0.64285714,y:0},{x:0.64285714,y:1},{x:0.07142857,y:1},{x:0.07142857,y:0}] //black
+            textLocation = {x:.3925, y:.5}
+            bg = this._background()
+            fg = this._fill()
+            bounds = [(j-.5)/dist*this.width + this.x, this.y,this.width/dist,.625*this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 8:
+            points = [{x:0.14285714,y:0},{x:0.71428571,y:0},{x:0.71428571,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:.625},{x:0.14285714,y:.625},{x:0.14285714,y:0}], //middle
+            textLocation = {x:.5, y:.75}
+            bg = this._fill()
+            fg = this._background()
+            bounds = [j/dist*this.width + this.x,this.y,this.width/dist,this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break; 
+          case 9:
+            points = [{x:0.21428571,y:0},{x:0.78571428,y:0},{x:0.78571428,y:1},{x:0.21428571,y:1},{x:0.21428571,y:0}] //black
+            bg = this._background()
+            fg = this._fill()
+            bounds = [(j-.5)/dist*this.width + this.x, this.y,this.width/dist,.625*this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 10:
+            points = [{x:0.28571428,y:0},{x:0.85714285,y:0},{x:0.85714285,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:.625},{x:0.28571428,y:.625},{x:0.28571428,y:0}], //middle
+            bg = this._fill()
+            fg = this._background()
+            textLocation = {x:.5, y:.75}
+            bounds = [j/dist*this.width + this.x,this.y,this.width/dist,this.height]  
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;
+          case 11:
+            points = [{x:0.35714285,y:0},{x:0.92857142,y:0},{x:0.92857142,y:1},{x:0.35714285,y:1},{x:0.35714285,y:0}], //black
+            bg = this._background()
+            fg = this._fill()
+            textLocation = {x:.6075, y:.5}
+            bounds = [(j-.5)/dist*this.width + this.x, this.y,this.width/dist,.625*this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break; 
+          case 12:
+            points = [{x:1,y:0},{x:0.42857142,y:0},{x:0.42857142,y:.625},{x:0,y:.625},{x:0,y:1},{x:1,y:1},{x:1,y:0}] //right
+            bg = this._fill()
+            fg = this._background()
+            textLocation = {x:.5, y:.75}
+            bounds = [j/dist*this.width+ this.x,this.y,this.width/dist,this.height]
+            label = this.noteLabels ? keylabel[startnote] : null
+            break;                                                                    
         }
-        else if (startnote == 5) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:1,y:0},{x:.4,y:0},{x:.4,y:.625},{x:0,y:.625},{x:0,y:1},{x:1,y:1},{x:1,y:0}], //right
-              textLocation : {x:.5, y:.75},
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              background: this._fill(),
-              fill: this._background(),
-              stroke: this._stroke(),
-              bounds:[j/dist*this.width+ this.x,this.y,this.width/dist,this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary',
-            });
-          }
-          else if (startnote == 6) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:0,y:0},{x:0.57142857,y:0},{x:0.57142857,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:0}], //left
-              textLocation : {x:.5, y:.75},
-              background: this._fill(),
-              fill: this._background(),
-              stroke: this._stroke(),
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              bounds:[j/dist*this.width + this.x,this.y,this.width/dist,this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              mode:'momentary'
-            });
-          }
-          else if (startnote == 7) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:0.07142857,y:0},{x:0.64285714,y:0},{x:0.64285714,y:1},{x:0.07142857,y:1},{x:0.07142857,y:0}], //black
-              textLocation : {x:.3925, y:.5},
-              target : this.target,
-              stroke: this._stroke(),
-              background: this._background(),
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              bounds:[(j-.5)/dist*this.width + this.x, this.y,this.width/dist,.625*this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary'
-            });
-          j--;
-        }
-        else if (startnote == 8) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:0.14285714,y:0},{x:0.71428571,y:0},{x:0.71428571,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:.625},{x:0.14285714,y:.625},{x:0.14285714,y:0}], //middle
-              textLocation : {x:.5, y:.75},
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              background: this._fill(),
-              fill: this._background(),
-              stroke: this._stroke(),
-              bounds:[j/dist*this.width + this.x,this.y,this.width/dist,this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary'
-            });
-          }
-            
         
-        else if (startnote == 9) {
-          var pkeys = new Interface.ButtonV({ 
-            points: [{x:0.21428571,y:0},{x:0.78571428,y:0},{x:0.78571428,y:1},{x:0.21428571,y:1},{x:0.21428571,y:0}], //black
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              stroke: this._stroke(),
-              background: this._background(),
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              bounds:[(j-.5)/dist*this.width + this.x, this.y,this.width/dist,.625*this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary'
-            });
-          j--;
-        }
-        else if (startnote == 10) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:0.28571428,y:0},{x:0.85714285,y:0},{x:0.85714285,y:.625},{x:1,y:.625},{x:1,y:1},{x:0,y:1},{x:0,y:.625},{x:0.28571428,y:.625},{x:0.28571428,y:0}], //middle
-              textLocation : {x:.5, y:.75},
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              background: this._fill(),
-              fill: this._background(),
-              stroke: this._stroke(),
-              bounds:[j/dist*this.width + this.x,this.y,this.width/dist,this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary'
-            });
-          }
-        else if (startnote == 11) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:0.35714285,y:0},{x:0.92857142,y:0},{x:0.92857142,y:1},{x:0.35714285,y:1},{x:0.35714285,y:0}], //black
-              textLocation : {x:.6075, y:.5},
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              background: this._background(),
-              stroke: this._stroke(),
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              bounds:[(j-.5)/dist*this.width + this.x, this.y,this.width/dist,.625*this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary'
-            });
-          j--;
-        }
-         else if (startnote == 12) {
-          var pkeys = new Interface.ButtonV({ 
-              points: [{x:1,y:0},{x:0.42857142,y:0},{x:0.42857142,y:.625},{x:0,y:.625},{x:0,y:1},{x:1,y:1},{x:1,y:0}], //right
-              textLocation : {x:.5, y:.75},
-              target : this.target,
-              onvaluechange: this.onvaluechange,
-              frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
-              background: this._fill(),
-              fill: this._background(),
-              stroke: this._stroke(),
-              bounds:[j/dist*this.width+ this.x,this.y,this.width/dist,this.height],  
-              label: this.noteLabels ? keylabel[startnote] : null,
-              requiresFocus : false,
-              //value : 0,
-              mode:'momentary',
-            });
-          }
         
-        this.keys.push(pkeys)
-        this.panel.add(pkeys);
-        j++;
+        var _key = new Interface.ButtonV({ 
+          points: points,
+          textLocation : textLocation,
+          target : this.target,
+          onvaluechange: this.onvaluechange,
+          frequency: Math.pow(2,(startnote + 12*octave - 49)/12)*261.626,
+          background: bg,
+          fill: fg,
+          stroke: this._stroke(),
+          bounds: bounds,
+          label: label,
+          requiresFocus : false,
+          mode:'momentary',
+        });
+        
+        if ( [ 2,4,7,9,11 ].indexOf( startnote ) === -1 ) j++;
+        
+        this.children.push(_key)
+        this.panel.add(_key);
+
         startnote++;
+        
         if (startnote > 12) {
           startnote = 1;
           octave++;
         }
       }
-
       if (startnote == 2 || startnote == 4 || startnote == 7 || startnote == 9 || startnote == 11)
         var pkeys = new Interface.ButtonV({ 
             points: [{x:.166,y:0},{x:.5,y:0},{x:.5,y:1},{x:.166,y:1},{x:.166,y:0}], //black
@@ -1780,8 +1715,13 @@ Interface.Piano = function() {
               mode:'momentary'
             });
             
-      this.keys.push(pkeys)      
-      this.panel.add(pkeys);   
+      this.children.push(pkeys)      
+      this.panel.add(pkeys); 
+      
+      this._initialized = true
+    },
+    _init : function() {
+      this.placeKeys()
     }
   })
   .init( arguments[0] );

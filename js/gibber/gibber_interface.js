@@ -129,11 +129,12 @@
         var w = new Interface[ name ]( props )
         w.type = 'mapping'
 
-        Gibber.Environment.Interface.panel.add( w )
-        
-        if( typeof w.bounds[0] === 'undefined' )
+        if( typeof w.bounds[0] === 'undefined' ) {
           I.autogui.placeWidget( w, false )
-          
+        }
+        
+        Gibber.Environment.Interface.panel.add( w )
+
         if( I.initializers[ name ] ){
           I.initializers[ name ]( w, props )
         }else{

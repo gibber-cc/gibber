@@ -1,6 +1,11 @@
 <html>
 <head>
+  <% if( isInstrument === true ) { %>
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <% } %>
   <!--<script src="http://gibber.mat.ucsb.edu/js/external/script.min.js" type="text/javascript" charset="utf-8"></script>-->
   <script src="js/external/script.min.js" type="text/javascript" charset="utf-8"></script>
   
@@ -19,7 +24,7 @@
 
 <body>
 
-<% if( isInstrument !== null ) { %>
+<% if( isInstrument === "false" ) { %>
 
 <table role='presentation' border='0' id='layoutTable'>
   <thead id='mainHeader'>
