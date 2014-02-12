@@ -39,6 +39,8 @@ var Interface = {
     return ua.indexOf("android") > -1;
   })(),
   
+  keyCodeToChar : {8:"Backspace",9:"Tab",13:"Enter",16:"Shift",17:"Ctrl",18:"Alt",19:"Pause/Break",20:"Caps Lock",27:"Esc",32:"Space",33:"Page Up",34:"Page Down",35:"End",36:"Home",37:"Left",38:"Up",39:"Right",40:"Down",45:"Insert",46:"Delete",48:"0",49:"1",50:"2",51:"3",52:"4",53:"5",54:"6",55:"7",56:"8",57:"9",65:"A",66:"B",67:"C",68:"D",69:"E",70:"F",71:"G",72:"H",73:"I",74:"J",75:"K",76:"L",77:"M",78:"N",79:"O",80:"P",81:"Q",82:"R",83:"S",84:"T",85:"U",86:"V",87:"W",88:"X",89:"Y",90:"Z",91:"Windows",93:"Right Click",96:"Numpad 0",97:"Numpad 1",98:"Numpad 2",99:"Numpad 3",100:"Numpad 4",101:"Numpad 5",102:"Numpad 6",103:"Numpad 7",104:"Numpad 8",105:"Numpad 9",106:"Numpad *",107:"Numpad +",109:"Numpad -",110:"Numpad .",111:"Numpad /",112:"F1",113:"F2",114:"F3",115:"F4",116:"F5",117:"F6",118:"F7",119:"F8",120:"F9",121:"F10",122:"F11",123:"F12",144:"Num Lock",145:"Scroll Lock",182:"My Computer",183:"My Calculator",186:";",187:"=",188:",",189:"-",190:".",191:"/",192:"`",219:"[",220:"\\",221:"]",222:"'"},
+  
   panels : [],
   mouseDown : false,
   useTouch : 'ontouchstart' in document.documentElement,
@@ -296,6 +298,23 @@ Interface.Panel = function() {
         $(this.container).on( 'mousemove', this.mouseEvent );
         $(this.container).on( 'mouseup',   this.mouseEvent );                
       }
+      
+      $( this.container ).css({ outline: 'none' })
+      $( this.container ).attr( 'tabindex', 5 )
+      $( this.container ).on( 'keydown', this.keydown.bind( this ) )
+      $( this.container ).on( 'keyup', this.keyup.bind( this ) )
+    },
+    
+    keydown: function(e) {
+      for( var i = 0; i < this.children.length; i++ ) {
+        if( this.children[i].onkeydown ) this.children[i].onkeydown(e)
+      }
+    },
+    
+    keyup: function(e) {
+      for( var i = 0; i < this.children.length; i++ ) {
+        if( this.children[i].onkeyup ) this.children[i].onkeyup(e)
+      }
     },
     
     draw : function() {
@@ -375,7 +394,7 @@ Interface.Panel = function() {
       
       if(typeof widget.children !== 'undefined' && widget.type !== "XY") {
         for(var i = 0; i < widget.children.length; i++) {
-          this.children.splice( this.children.indexOf(widget.children[i]), 1 );
+          this.children.splice( this.children.indexOf( widget.children[i] ), 1 );
           Interface.widgets.splice( Interface.widgets.indexOf( widget.children[i] ), 1 );
         }
       }else{
@@ -1109,12 +1128,15 @@ Interface.Button = function() {
           setTimeout( function() { self._value = 0; self.draw(); }, 75);
         }
       }else if(!hit && this.isMouseOver) {
+        console.log( 'moved off!' )
         this.isMouseOver = false;
       }
     },
     mouseup   : function(e) {
-      if(this.mode === 'momentary')
+      if(this.mode === 'momentary') {
         this.changeValue();// e.x - this.x, e.y - this.y ); 
+        this.isMouseOver = false;
+      }
     },
     
     touchstart : function(e, hit) {
@@ -1256,7 +1278,7 @@ Interface.ButtonV = function() {
         this._value = !this._value;
         
         this.value = this._value ? this.max : this.min;
-                
+                        
         if(this.value !== this.lastValue || this.mode === 'contact') {
           this.sendTargetMessage();
           if(this.onvaluechange) this.onvaluechange();
@@ -1485,20 +1507,46 @@ Interface.Piano = function() {
     target : null,
     noteLabels : false,
     _initialized : false,
-    onvaluechange : function() {
-      this.values = [this.frequency,this.value]
-      //console.log( "ONVALUECHANGE", this, this.values )
-    },
+    keyMap: [ 'Z','S','X','D','C','V','G','B','H','N','J','M',','],
     children: [],
+    play: function( noteNum, duration ) {
+      if( isNaN(duration) ) { 
+        duration = 4410
+      }
+      if( typeof Gibber !== 'undefined' ) { duration = Gibber.Clock.time( duration ) }
+      
+      var child = this.children[ noteNum ]
+      if( child ) {
+        child.changeValue()
+        future( function() { if( child._value == 1 ) child.changeValue() }, duration )
+      } 
+    },
+    onkeyup: function( e ) { 
+      var c = Interface.keyCodeToChar[ e.keyCode ],
+          keyNum = this.keyMap.indexOf( c ),
+          child = this.children[ keyNum ]
+            
+      if( typeof child !== 'undefined' && child._value == 1 ) {
+        child.changeValue() 
+      }
+    },
+    onkeydown: function( e ) {
+      var c = Interface.keyCodeToChar[ e.keyCode ],
+          keyNum = this.keyMap.indexOf( c ),
+          child = this.children[ keyNum ]
+      
+      if( typeof child !== 'undefined' && child._value == 0 ) {
+        child.changeValue()
+      }
+    },
+    onvaluechange : function() { this.values = [this.frequency,this.value] },
+    onboundschange: function() { if( this._initialized) this.placeKeys() },
+    
     draw : function() {
       for( var i = 0; i < this.children.length; i++ ) { this.children[i].refresh() }
       return this
     },
-    
-    onboundschange: function() { 
-      if( this._initialized) this.placeKeys()
-    },
-    
+
     placeKeys: function() {
       var x = this._x(),
           y = this._y(),
@@ -2197,7 +2245,7 @@ Interface.XY = function() {
       
       for(var i = 0; i < this.children.length; i++) {
         var child = this.children[i];
-        
+        this.ctx.lineWidth = 2
         this.ctx.fillStyle = child.fill || this._fill();
         
         this.ctx.beginPath();
@@ -2212,6 +2260,7 @@ Interface.XY = function() {
         this.ctx.textBaseline = 'middle';
         this.ctx.textAlign = 'center';
         this.ctx.fillStyle = this._stroke();
+        this.ctx.font = this._font();
         this.ctx.fillText(child.id, x + child.x, y + child.y);
       }
       
@@ -2241,8 +2290,8 @@ Interface.XY = function() {
     
     makeChildren : function() {
       for(var i = 0; i < this.numChildren; i++) {
-        var x = Math.random() * this.panel.width,
-            y = Math.random() * this.panel.height
+        var x = Math.random() * this._width(),
+            y = Math.random() * this._height()
             
         this.children.push({ id:i, x:x, y:y, vx:0, vy:0, collideFlag:false, isActive:false, lastPosition:null, });
         this.values.push({ x:null, y:null });

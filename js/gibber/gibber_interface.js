@@ -32,7 +32,7 @@
         }
       }
       
-      var panel = new Interface.Panel({ container: column.bodyElement, useRelativeSizesAndPositions:true })
+      var panel = new Interface.Panel({ container: column.bodyElement, useRelativeSizesAndPositions:true, font:'normal 20px Helvetica' })
       
       $( panel.canvas ).css({
         position: 'relative',
@@ -79,11 +79,11 @@
           get: function() { return target },
           set: function(v) { 
             target = v
-            for( var i = 0; i < widget.keys.length; i++ ) {
-              widget.keys[ i ].target = target
-              widget.keys[ i ].key = typeof target.note !== 'undefined' ? 'note' : 'frequency'
+            for( var i = 0; i < widget.children.length; i++ ) {
+              widget.children[ i ].target = target
+              widget.children[ i ].key = typeof target.note !== 'undefined' ? 'note' : 'frequency'
               
-              widget.keys[ i ].sendTargetMessage = function() {
+              widget.children[ i ].sendTargetMessage = function() {
                 this.target.note( this.frequency, this.value )
               }
             }
@@ -97,7 +97,8 @@
         //detectsCollision:false,
         childWidth:40,
         //friction:0,
-        oninit: function() { this.rainbow() },
+        fill:'rgba(255,255,255,.1)',
+        stroke:'#aaa',
         numChildren:2,
         usePhysics:false
       },
