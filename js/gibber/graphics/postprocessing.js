@@ -220,7 +220,7 @@ var processArgs = function( args, type, shape ) {
           columnV = vertex
           vertex = columnV.value
         }
-
+        
         shader = Gibber.Graphics.Shaders.make( fragment, vertex )
 				
         if( shader !== null) {
@@ -259,12 +259,19 @@ var PP = Gibber.Graphics.PostProcessing = {
     for( var key in shaders ) {
       (function() {
         var name = key,
-            shaderProps = shaders[ key ]
+            shaderProps = shaders[ key ],
+            mappingProperties = _mappingProperties[ key ]
         
         var constructor = function() {
           // if( 'shaders' in shaders[ key ] ) {
           //console.log( shaderProps, shaderProps.shaders, shaderProps.shaders[0] )
           //var shader = shaderProps.shaders[0].init({ center:undefined, angle:.5, scale:.035, mix:.1 })
+          if( Gibber.Graphics.canvas === null){
+            Gibber.Graphics.init('3d', null, false)
+          }else if( Gibber.Graphics.mode === '2d' ) {
+            Gibber.Graphics.use( '3d' )
+          }
+          
 					if( name !== 'Shader' ) {
 	          var args = Array.prototype.slice.call( arguments,0 ),
 	              shader = shaderProps.init.call( shaderProps, args )
@@ -280,7 +287,7 @@ var PP = Gibber.Graphics.PostProcessing = {
 						_value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
 		
 						if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
-							mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
+							_mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
 				        min:_min, max:_max,
 				        output: Gibber.LINEAR,
 				        timescale: 'graphics',
@@ -288,8 +295,14 @@ var PP = Gibber.Graphics.PostProcessing = {
 						}
 		
 						if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
-          
-            Gibber.createProxyProperty( shader, _name )          
+            
+            Object.defineProperty( shader, _name, {
+              configurable: true,
+              get : function() { return shader.uniforms[_name].value },
+              set : function(v){ return shader.uniforms[_name].value = v }
+            })
+            
+            Gibber.createProxyProperty( shader, _name, true )          
           }
 					
           

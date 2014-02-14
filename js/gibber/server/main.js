@@ -15,7 +15,7 @@ var request         = require( 'request' ),
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
     esUrl           = 'http://localhost:9200/gibber/_search',
-    webServerPort   = 8080,
+    webServerPort   = 80,
     serverRoot      = __dirname + "/../../../",
     // livedb          = require( 'livedb' ),
     // livedbMongo     = require( 'livedb-mongo'),
@@ -79,10 +79,9 @@ function findByTag( tag, fn ) {
 //   serialize users into and deserialize users out of the session.  Typically,
 //   this will be as simple as storing the user ID when serializing, and finding
 //   the user by ID when deserializing.
-passport.serializeUser( function(user, done) { console.log("SERIALIZE"); done(null, user.id); } );
+passport.serializeUser( function(user, done) { done(null, user.id); } );
 
 passport.deserializeUser(function(id, done) {
-  console.log( "DESERIALIZE" )
   findById(id, function (err, user) { done(err, user); } );
 });
 
@@ -275,7 +274,7 @@ app.post( '/publish', function( req, res, next ) {
       year = date.getFullYear(),
       time = date.toLocaleTimeString()
   
-  console.log( "USER", req.user )
+  //console.log( "USER", req.user )
   
   request.post({ 
       url:'http://localhost:5984/gibber/', 

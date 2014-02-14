@@ -50,29 +50,26 @@
     $.extend( _m, {
       x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
       isOn : false,
+      name: 'Mouse',
       _onmousemove : function( e ) {
         // console.log( e )
-        var prefix = "", upper=""
+        var prefix = '', upper = ''
         if( e.shiftKey ) prefix = 'shift'
         if( e.ctrlKey ) prefix = 'ctrl'
         
         upper = prefix === '' ? '' :  prefix.charAt(0).toUpperCase() + prefix.slice(1),
         // console.log( prefix, upper )
-        _m[ "prev" + upper + "X" ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
-        _m[ "prev" + upper + "Y" ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
-        storeX = _m[ prefix  + ( prefix === '' ? 'x' : "X" ) ] = e.pageX / _m.ww 
-        storeY = _m[ prefix  + ( prefix === '' ? 'y' : "Y" ) ] = e.pageY / _m.wh 
+        _m[ 'prev' + upper + 'X' ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
+        _m[ 'prev' + upper + 'Y' ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
+        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX / _m.ww 
+        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY / _m.wh 
 
         if( typeof _m.onvaluechange === 'function' ) {
           _m.onvaluechange()
         }
       },
-      _onmousedown : function() {
-        _m[ 'button' ] = 1
-      },
-      _onmouseup : function() {
-        _m[ 'button' ] = 0
-      },
+      _onmousedown : function() { _m[ 'button' ] = 1 },
+      _onmouseup : function() { _m[ 'button' ] = 0 },
       on: function() {
         if( ! _m.isOn ) {
           _m.ww = $( window ).width()

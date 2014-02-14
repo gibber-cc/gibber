@@ -700,7 +700,7 @@ window.Gibber = window.G = {
         var map = target.object[ target.Name ].mapping
         target.mapping.from = from
         
-        var fcn_name = target.object.name + '.' + target.modName
+        var fcn_name = target.name + ' <- ' + from.object.name + '.' + from.Name
 
         from.object.functions[ fcn_name ] = function() {
           var val = map.callback( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
