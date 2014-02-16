@@ -118,8 +118,9 @@
     },
     open: function() {
       if( this.column === null ) {
+              
         this.column = GE.Layout.addColumn({ type:'console', header:'Console' })
-        
+        this.column.bodyElement.remove()
         this.column.onclose = function() { GE.Console.column = null; }
         
         this.div.css({
@@ -127,7 +128,9 @@
           height: this.column.element.height() - this.column.header.outerHeight(),
           overflow:'scroll',
         })
+
         this.column.element.append( this.div )
+        this.column.bodyElement = this.div
         
         var element = this.column.element
         var btn = $('<button title="clear console">clear</button>')
@@ -136,7 +139,11 @@
             GE.Console.lastText = GE.Console.lastSpan = null
           })
           .css({ 'margin-left': '2em', background:'black', border:'1px solid #777', color:'#999' })
+          
         this.column.header.append( btn  )
+        
+        GE.Layout.setColumnBodyHeight( this.column )
+        
       }
     },
   }

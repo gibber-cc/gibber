@@ -1332,13 +1332,20 @@ var GE = Gibber.Environment = {
     },
     newAccountForm: function() {
       var col = GE.Layout.addColumn({ header:'Create an account' })
+      col.bodyElement.remove()
       GE.Account.newAccountColumn = col
 
       $( '#loginForm' ).remove()
       $.ajax({
         url: SERVER_URL + '/snippets/create_account.ejs',
         dataType:'html'
-      }).done( function( data ) { $( col.element ).append( data ); } )
+      }).done( function( data ) {        
+        col.element.append( data )
+        col.bodyElement = data
+        
+        GE.Layout.setColumnBodyHeight( col )
+        //$( col.element ).append( data ); 
+      })
 
       return false
     },
