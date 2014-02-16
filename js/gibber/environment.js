@@ -262,10 +262,10 @@ var GE = Gibber.Environment = {
         
         "Alt-/": CodeMirror.commands.toggleComment,
                 
-        "Ctrl-L": function(cm) {
-          var name = window.prompt("layout to load:")
-          GE.Layout.load( name )
-        },
+        // "Ctrl-L": function(cm) {
+        //   var name = window.prompt("layout to load:")
+        //   GE.Layout.load( name )
+        // },
 
         "Ctrl-Enter": function(cm) {
 					var obj = GE.getSelectionCodeColumn( cm, false )
