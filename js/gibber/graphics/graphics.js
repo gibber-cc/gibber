@@ -32,7 +32,12 @@ var Graphics = Gibber.Graphics = {
         'external/three/postprocessing/shaders/BleachBypassShader',
         'external/three/postprocessing/shaders/ColorifyShader',
       ], 'postprocessing', function() {
-        $script(['gibber/graphics/postprocessing','gibber/graphics/shader', 'gibber/graphics/gibber_shaders'], function() {
+        $script([
+          'gibber/graphics/postprocessing',
+          'gibber/graphics/shader', 
+          'gibber/graphics/gibber_shaders',
+          'gibber/graphics/video'
+        ], function() {
           Graphics.PostProcessing.init()
           window.Graphics = Graphics
         })

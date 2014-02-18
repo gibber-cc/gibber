@@ -130,7 +130,7 @@ var Shaders = Gibber.Graphics.GibberShaders = {
     "  float _speed = 20. * speed;",
     "  float edgeDistance = radius * thickness;",
     "  float dist = distance( p, vec2(x,y) );",
-    "  float growth = mod(time, 1.) / -20.;",
+    "  float growth = mod(time, 1.) / -_speed;",
     "",
     "  float moddist = mod( dist + growth, radius );",
     "  float _out = smoothstep( moddist, moddist+edgeDistance, radius / 2. );",
@@ -145,13 +145,23 @@ var Shaders = Gibber.Graphics.GibberShaders = {
     shader.uniform( 'thickness', 0, 1, .1 )
     shader.uniform( 'x', 0, 1, .5 )
     shader.uniform( 'y', 0, 1, .5 )
-    shader.uniform( 'speed', -1, 1, .1 )               
+    shader.uniform( 'speed', -1, 1, 1 )               
     shader.uniform( 'radius', 0, 1, .05 )
     
     shader.uniforms.color = { type:'c', value:{ r:1, g:0, b:0 } }
     // shader.uniforms.colorY = { type:'c', value:{ r:1, g:1, b:1 } }
     // 
-    // Object.defineProperties( shader, {
+    
+    var oldSpeedSet = shader.__lookupSetter__('speed'), oldSpeedGet = shader.__lookupGetter__('speed')
+    Object.defineProperties( shader, {
+      speed: {
+        get: function() { return oldSpeedGet() },
+        set: function(v) {
+          v = v > 0 ? 1 - v : -1 - v
+          oldSpeedSet( v )
+        }
+      }
+    })
     //   colorX: {
     //     get: function()  { return shader.uniforms.colorX.value },
     //     set: function(v) { shader.uniforms.colorX.value = v }        
