@@ -369,6 +369,11 @@
       }
       if( OSC.callbacks[ data.path ] ) {
         OSC.callbacks[ data.path ]( data.params )
+      }else{
+        if( OSC.callbacks[ '*' ] ) {
+          data.params.address = data.path 
+          OSC.callbacks[ '*' ]( data.params )
+        }
       }
     },
   }
