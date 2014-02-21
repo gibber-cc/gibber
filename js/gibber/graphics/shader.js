@@ -18,10 +18,10 @@
 			return shader
 		},
 		defaultFragment : [
-			"uniform lowp float amp;",
+			"uniform float amp;",
 			"uniform sampler2D tDiffuse;",
-			"uniform lowp float time;",
-			"varying lowp vec2 p;",
+			"uniform float time;",
+			"varying vec2 p;",
       "",
 			"void main() {",
 			"  gl_FragColor = texture2D( tDiffuse, p ).rgba;",
@@ -149,42 +149,22 @@
 			}
 			
       shader.mappingObjects = []
-      
-			//console.log( shader.uniforms )
-      // for( var key in _shader.uniforms ) {
-      //   ( function() {
-      //     var propName = key,
-      //         value = _shader.uniforms[ propName ].value
-      //           
-      //     console.log( "defining ", propName )
-      //     
-      //     Object.defineProperty( shader, propName, {
-      //       configurable: true,
-      //       get: function() { return value; },
-      //       set: function(v) {
-      //         value = v
-      //         shader.material.uniforms[ propName ].value = value
-      //       },
-      //     })
-      //                 
-      //   })()
-      // }
-      
-			shader.uniform = function(_name, _min, _max, _value) {
-				_min = isNaN( _min ) ? 0 : _min
-				_max = isNaN( _max ) ? 1 : _max				
-				_value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
-	
-				if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
-					mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
-		        min:_min, max:_max,
-		        output: Gibber.LINEAR,
-		        timescale: 'graphics',
-		      }
-				}
-	
-				if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
-	      
+        
+      shader.uniform = function(_name, _min, _max, _value) {
+        _min = isNaN( _min ) ? 0 : _min
+        _max = isNaN( _max ) ? 1 : _max        
+        _value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
+        
+        if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
+          mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
+            min:_min, max:_max,
+            output: Gibber.LINEAR,
+            timescale: 'graphics',
+          }
+        }
+        
+        if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
+              
         Object.defineProperty( shader, _name, {
           configurable: true,
           get: function() { return _value; },
@@ -195,13 +175,13 @@
         })
         
         Gibber.createProxyProperty( shader, _name )
-        shader[  _name.charAt(0).toUpperCase() + _name.slice(1) ].timescale = 'graphics' // TODO: why is this necessary? otherwise it assumes the timescale for amp is audio... but why?????
-			}
-      
+        shader[  _name.charAt(0).toUpperCase() + _name.slice(1) ].timescale = 'graphics' // TODO: why is this necessary?
+      }
+            
       for( var key in mappingProperties ) {
-				var prop = mappingProperties [ key ]
-				shader.uniform( key, prop.min, prop.max, shader[ key ] )
-      } 
+        var prop = mappingProperties [ key ]
+        shader.uniform( key, prop.min, prop.max, shader[ key ] )
+      }
 			
 			return shader
 		}
