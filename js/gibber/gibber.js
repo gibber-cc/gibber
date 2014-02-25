@@ -26,6 +26,25 @@ window.Gibber = window.G = {
       'gibber/utilities',
       'external/esprima.min',
 			], 'gibber', function() {
+      
+      // pubsub as taken from here: https://gist.github.com/addyosmani/1321768
+      (function($) {
+        console.log( 'PUBSUB' )
+        var o = $({});
+
+        $.subscribe = function() {
+          o.on.apply(o, arguments);
+        };
+
+        $.unsubscribe = function() {
+          o.off.apply(o, arguments);
+        };
+
+        $.publish = function() {
+          o.trigger.apply(o, arguments);
+        };
+
+      }(jQuery));
         
       Gibber.Audio = Gibberish
       

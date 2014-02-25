@@ -113,6 +113,29 @@ var Graphics = Gibber.Graphics = {
     });
     this.start()
 
+    var resize = function( e, props ) { // I hate Safari on 10.6 for not having bind...
+      Graphics.width = props.w
+      Graphics.height = props.h
+      
+      Graphics.canvas.css({
+        top: props.offset,
+        width: Graphics.width,
+        height: Graphics.height,
+        zIndex: -1
+      })
+
+  		Graphics.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
+      $( Graphics.renderer.domElement ).css({ width: Graphics.width, height: Graphics.height })
+    }
+    
+    $.subscribe( '/layout/contentResize', resize ) // toggle fullscreen, or toggling console bar etc.
+    
+    $.subscribe( '/layout/resizeWindow', function( e, props) {
+      props.h -= $( 'thead' ).height() 
+      props.h -= $( 'tfoot' ).height()
+      
+      resize( null, props )  
+    })    
   },
   
   createScene : function( mode ) {		
@@ -216,7 +239,6 @@ var Graphics = Gibber.Graphics = {
     }
   },
   render : function() {
-   
     if( this.running ) {
   		for( var i = 0; i < this.graph.length; i++ ) {
   			this.graph[i]._update();

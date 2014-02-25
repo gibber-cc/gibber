@@ -249,8 +249,9 @@ var GE = Gibber.Environment = {
     init : function() {
       // this has to be done here so that it works when no editors are focused
       $(window).on('keydown', function(e) {
-        if( e.which === 84 && e.altKey ) {
-          GE.Layout.toggle()
+        //console.log( e.which )
+        if( e.which === 27 && e.shiftKey ) {
+          GE.Layout.fullScreen()
           e.preventDefault()
         }
       })
@@ -592,6 +593,7 @@ var GE = Gibber.Environment = {
     defaultColumnSize : 500,
     resizeHandleSize  : 8,
     columnID : 0,
+    isFullScreen: false,
     textBGOpacity : function( v ) {
       var color = 'rgba( 0, 0, 0, '+v+' )'
       $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
@@ -610,7 +612,6 @@ var GE = Gibber.Environment = {
         height:18,
         display:'inline-block',
         top:5,
-
       })
       opacityDiv.p = new Interface.Panel({ container:opacityDiv })
       
@@ -629,8 +630,51 @@ var GE = Gibber.Environment = {
       }))
 
       window.Layout = this
+      
+      $( window ).resize( this.onResizeWindow )
+      $.subscribe( '/layout/resizeWindow', function( e,dict ) { Layout.resize( dict.w, dict.h ) } )
     },
-        
+      
+    onResizeWindow : (function() {
+      var w = 0, h = 0, handler = function( e ) {
+        var _w = $( window ).width(), _h = $( window ).height()
+        if( w !== _w || h !== _h ) {
+          $.publish('/layout/resizeWindow', { w:_w, h:_h } )
+          w = _w
+          h = _h
+        }
+      }
+      
+      return handler
+    })(),
+    
+    resize : function( w,h ) {
+      $( 'table' ).height( $( window ).height() )
+      Layout.resizeColumns( w,h )
+    },
+    
+    fullScreen : function() {
+      Layout.isFullScreen = !Layout.isFullScreen
+      for( var i = 0; i < Layout.columns.length; i++ ) {
+        if( Layout.columns[i] ) Layout.columns[i].toggle()
+      }
+      //Layout.toggleHeader()
+      //Layout.toggleFooter()
+      $( 'thead' ).toggle()
+      $( 'tfoot' ).toggle()
+      
+      if( Layout.isFullScreen ) {
+        $( 'tbody' ).css({ height:'100%', width:'100%', margin:0 })
+        $( '#contentCell' ).height( $( window ).height() )
+        $.publish( '/layout/contentResize', { w: $( window ).width(), h:$( window ).height(), offset:0 } )
+      }else{
+        var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+        $( 'tbody' ).css({ height:height, width:'100%', margin:0 })
+        $( '#contentCell' ).height( height )
+        $.publish( '/layout/contentResize', { w: $( window ).width(), h:height, offset: $('thead').height() } )
+      }
+    },
+    
     emsToPixels : function( ems, element ) {
       var pixelsPerEm = Number(getComputedStyle( element, "").fontSize.match(/(\d*(\.\d*)?)px/)[1])
       
@@ -640,24 +684,28 @@ var GE = Gibber.Environment = {
     toggleHeader : function( onOrOff ) {
       if(typeof onOrOff !== 'undefined') {
         if( onOrOff ) {
-          $( '#header' ).show()
+          $( 'thead' ).show()
         } else {
-          $( '#header' ).hide()
+          $( 'thead' ).hide()
         }
       }else{
-        $( '#header' ).toggle()
+        $.publish('/layout/toggleHeader', {} )
+        
+        $( 'thead' ).toggle()
       }
     },
     
     toggleFooter : function( onOrOff ) {
       if(typeof onOrOff !== 'undefined') {
         if( onOrOff ) {
-          $( '#footer' ).show()
+          $( 'tfoot' ).show()
         } else {
-          $( '#footer' ).hide()
+          $( 'tfoot' ).hide()
         }
       }else{
-        $( '#footer' ).toggle()
+        $.publish('/layout/toggleFooter', {} )
+        
+        $( 'tfoot' ).toggle()
       }
     },
     
@@ -940,10 +988,12 @@ var GE = Gibber.Environment = {
       col.bodyElement.css({ height: columnHeight })
     },
     
-    resizeColumns : function() {
+    resizeColumns : function( windowWidth,windowHeight ) {
+      if( isNaN(windowHeight) ) windowHeight = $( window ).height()
+      
       var totalWidth   = 0, // also used to determine x coordinate of each column
           headerHeight = $('thead').height(),
-          columnHeight = $(window).height() - headerHeight - $('tfoot').height()
+          columnHeight = windowHeight - headerHeight - $('tfoot').height()
 
       for( var i = 0; i < this.columns.length; i++ ) {
         if( this.columns[ i ] === null ) continue 
@@ -953,21 +1003,23 @@ var GE = Gibber.Environment = {
           left: totalWidth,
           height: $(window).height() - headerHeight - $('tfoot').height()
         })
-                
+        
+        var colHeight = columnHeight - this.columns[i].header.outerHeight()
         $( this.columns[ i ].bodyElement ).css({
           width : this.columns[i].width - this.resizeHandleSize, 
-          height: columnHeight - this.columns[i].header.outerHeight()
+          height: colHeight
         })
         // console.log( this.columns[i].bodyElement.width() ) 
         $( this.columns[ i ].header ).width( this.columns[i].width - this.resizeHandleSize )
         
-        if( this.columns[ i ].editor )
-          this.columns[ i ].editor.refresh()        
+        if( this.columns[ i ].editor ) {
+          this.columns[ i ].editor.setSize( null, colHeight )
+        }
         
         totalWidth += this.columns[ i ].width
       }
 
-      $( '#contentCell' ).width( totalWidth )
+      $( '#contentCell' ).width( $( window ).width() )
     },
     
     scrollToColumnNumber : function( columnNumber ) { },
