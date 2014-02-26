@@ -249,10 +249,13 @@ var GE = Gibber.Environment = {
     init : function() {
       // this has to be done here so that it works when no editors are focused
       $(window).on('keydown', function(e) {
-        //console.log( e.which )
         if( e.which === 27 && e.shiftKey ) {
-          GE.Layout.fullScreen()
-          e.preventDefault()
+          if( e.ctrlKey ) {
+            GE.Layout.columns[ GE.Layout.focusedColumn ].fullScreen()
+          }else{
+            GE.Layout.fullScreen()
+            //e.preventDefault()
+          }
         }
       })
       
@@ -262,11 +265,6 @@ var GE = Gibber.Environment = {
         "Ctrl-Space" : function( cm ) { CodeMirror.showHint(cm, CodeMirror.javascriptHint ) },
         
         "Alt-/": CodeMirror.commands.toggleComment,
-                
-        // "Ctrl-L": function(cm) {
-        //   var name = window.prompt("layout to load:")
-        //   GE.Layout.load( name )
-        // },
 
         "Ctrl-Enter": function(cm) {
 					var obj = GE.getSelectionCodeColumn( cm, false )
@@ -741,7 +739,7 @@ var GE = Gibber.Environment = {
           col = {
             element:        $( '<div class="column">' ),
             header:         $( '<div class="columnHeader">' ),
-            modeSelect:     $( '<select>'),
+            modeSelect:     $( '<select>' ),
             bodyElement:    $( '<div class="editor">' ),
             resizeHandle:   $( '<div class="resizeHandle">' ),
             close :         $( '<button>' ),
@@ -752,6 +750,41 @@ var GE = Gibber.Environment = {
             isCodeColumn:   isCodeColumn,
             toggle:         function() { $( this.element ).toggle() },            
             toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+            isFullScreen: false,
+            fullScreen: ( function() {
+              var _w = null, _h = null,
+                  fnc = function() {
+                    //console.log( this )
+                    if( !this.isFullScreen ) {
+                      if( !GE.Layout.isFullScreen ) {
+                        GE.Layout.fullScreen()
+                      }
+                      _w = this.width
+                      var w = $( window ).width(), h = $( window ).height()
+                      this.toggle()
+                      this.header.hide()
+                      this.toggleResizeHandle()
+                      this.element.css({ width: w, height: h, top:0, left:0 })
+                      this.bodyElement.css({ width: w, height: h })
+                      //this.editor.setSize( w,h )
+                      this.isFullScreen = true
+                    }else{
+                      if( GE.Layout.isFullScreen ) {
+                        GE.Layout.fullScreen()
+                      }
+                      this.toggle()
+                      this.header.show()
+                      this.toggleResizeHandle()
+                      this.element.css({ width: _w, top:31 })
+                      this.bodyElement.css({ width: w })
+                      //this.editor.setSize( w,null )
+                      GE.Layout.resizeColumns()
+                      this.isFullScreen = false
+                    }
+                  }
+                
+                return fnc
+              })()
           },
           resizeHandleSize = this.resizeHandleSize
           
