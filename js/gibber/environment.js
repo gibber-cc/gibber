@@ -249,8 +249,8 @@ var GE = Gibber.Environment = {
     init : function() {
       // this has to be done here so that it works when no editors are focused
       $(window).on('keydown', function(e) {
-        if( e.which === 27 && e.shiftKey ) {
-          if( e.ctrlKey ) {
+          if( e.which === 70 && e.ctrlKey && e.altKey ) {
+          if( e.shiftKey ) {
             GE.Layout.columns[ GE.Layout.focusedColumn ].fullScreen()
           }else{
             GE.Layout.fullScreen()
@@ -428,7 +428,10 @@ var GE = Gibber.Environment = {
 				}
 			},
 			default: [
-	      "/*",
+	      "/*To execute code, select it and hit Ctrl+Enter.",
+        "* Ctrl+. stops audio. Press the help button for",
+        "* more keystrokes to use in Gibber.",
+        "*",
 	      "* Giblet #1 - by thecharlie",
 	      "* In this sketch, the mouse position drives the",
 	      "* pitch of drums, the carrier to modulation",

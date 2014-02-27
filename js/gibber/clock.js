@@ -87,11 +87,11 @@ var Clock = Gibber.Clock = {
       this.__proto__.init.call( this )
 
       var bpm = this.baseBPM
-      Object.defineProperty(this, 'bpm', {
+      Object.defineProperty(Clock, 'bpm', {
         get: function() { return bpm },
         set: function(v) { 
           bpm = v;
-          this.rate = bpm / this.baseBPM
+          Clock.rate = bpm / Clock.baseBPM
         }
       })
       
