@@ -169,23 +169,27 @@
       switch( $.type( props[0] ) ) {
         case 'string':
           var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
-
+          
+          console.log(seqs)
           for( var i = 0; i < seqs.length; i++ ) {
             var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
 
             if( idx > -1 ) {
-              var _value = seq.substr(0, idx),
-                  duration = seq.substr(idx+1)
+              var _value = seq.substr( 0, idx ),
+                  duration = seq.substr( idx + 1 )
               
               duration = eval(duration)
-              
-              seq = _value.trim()
-              
               hasTime = true
+              seq = _value.trim()
             }else{
               seq = seq.trim()
-              duration = 1 / seq.length
-              //console.log( "DURATION",  duration, seq.trim() )              
+              duration = 1 / seq.length  
+            }
+            
+            if( seq.indexOf('.rnd(') > -1) {// || seq.indexOf('.random(') > -1 ) {
+              console.log( "RANDOM")
+              seq = seq.split( '.rnd' )[0]
+              seq = seq.split('').rnd()
             }
             
             if( typeof props[1] !== 'undefined') { duration = props[1] }
@@ -345,11 +349,43 @@
     if( typeof props !== 'undefined') {
       switch( $.type( props[0] ) ) {
         case 'string':
-					obj.seq = Seq({
-						note : props[0].split( "" ),
-						durations : props[1] ? Gibber.Clock.Time( props[1] ) : Gibber.Clock.Time( 1 / props[0].length ),
-						target: obj,
-					});
+          var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
+          
+          console.log(seqs)
+          for( var i = 0; i < seqs.length; i++ ) {
+            var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
+
+            if( idx > -1 ) {
+              var _value = seq.substr( 0, idx ),
+                  duration = seq.substr( idx + 1 )
+              
+              duration = eval(duration)
+              hasTime = true
+              seq = _value.trim()
+            }else{
+              seq = seq.trim()
+              duration = 1 / seq.length  
+            }
+            
+            if( seq.indexOf('.rnd(') > -1) {// || seq.indexOf('.random(') > -1 ) {
+              seq = seq.split( '.rnd' )[0]
+              seq = seq.split('').rnd()
+            }else if( seq.indexOf('.random(') > -1 ) {
+              seq = seq.split( '.random' )[0]
+              seq = seq.split('').rnd()
+            }
+            
+            if( typeof props[1] !== 'undefined') { duration = props[1] }
+            
+            _seqs.push({
+              key:'note',
+              values:seq,
+              durations:duration,
+              target:obj
+            })
+          }
+          
+          obj.seq = Gibber.PolySeq({ seqs:_seqs }).connect().start()
           
           break;
         case 'object':
