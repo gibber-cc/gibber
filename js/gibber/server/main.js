@@ -256,8 +256,8 @@ app.post( '/retrieve', function( req, res, next ) {
   // console.log( req.body )
   var suffix = req.body.address.replace(/\//g, '%2F')
   console.log(suffix)
-  request( 'http://localhost:5984/gibber/' + suffix, function(e,r,b) {
-   // console.log( e, b )
+  request( 'http://localhost:5984/gibber/' + suffix + "?revs_info=true", function(e,r,b) {
+    console.log( e, b )
     res.send( b )
   })
 })
@@ -267,14 +267,11 @@ app.get( '/create_publication', function( req, res, next ) {
 })
 
 app.post( '/publish', function( req, res, next ) {
-  // console.log(" PUBLISH ", req.body )
   var date = new Date(),
       day  = date.getDate(),
       month = date.getMonth() + 1,
       year = date.getFullYear(),
       time = date.toLocaleTimeString()
-  
-  //console.log( "USER", req.user )
   
   request.post({ 
       url:'http://localhost:5984/gibber/', 
@@ -353,7 +350,7 @@ app.get( '/browser', function( req, res, next ) {
     function(__e,__r,__b) {
       var recent = []
       for( var i = 0; i < __b.rows.length; i++ ){
-        console.log( __b.rows[i].value )
+        //console.log( __b.rows[i].value )
         recent.push( __b.rows[i].value )
       }
       request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
