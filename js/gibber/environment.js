@@ -2,8 +2,8 @@
 
 "use strict"
 // REMEMBER TO CHECK WELCOME.INIT() and server port in main.js!!!
-//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-var SERVER_URL = 'http://127.0.0.1:8080'
+var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+//var SERVER_URL = 'http://127.0.0.1:8080'
 //var SERVER_URL = 'http://a.local:8080'
 
 var GE = Gibber.Environment = {
@@ -937,9 +937,20 @@ var GE = Gibber.Environment = {
         col.infoDivClose = $( '<button>')
           .addClass( 'closeButton' )
           .on( 'click', function(e) { col.infoDiv.remove(); col.infoDiv = null; })
-          .css({ marginLeft:'1.5em', fontSize:'.8em', display:'inline', border:'1px solid #666', padding:'.25em' })
-          .html( 'close file info' )
-          .attr( 'title', 'close column' )
+          .css({ 
+            fontSize:'1em', 
+            display:'inline', 
+            border:'1px solid #666',
+            padding:'.25em',
+            background:'#191919',
+            width:'80%',
+            marginLeft:'10%',
+            fontFamily:'Helvetica, sans-serif',
+            '-moz-box-sizing': 'border-box !important',
+            'box-sizing': 'border-box !important' 
+          })
+          .html( 'close file information view' )
+          .attr( 'title', 'close file info view' )
         
         html = [
           "<table>",
@@ -951,7 +962,7 @@ var GE = Gibber.Environment = {
         ].join('\n')
         
         table = $( html ).css({ margin:'1em' })
-        $( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
+        //$( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
         //console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
         if( col.fileInfo._revs_info.length > 1 ) {
           var list = $( '<ul>' ), tr, td, li, a
@@ -968,8 +979,8 @@ var GE = Gibber.Environment = {
                 return fnc
               })()
               )
-              .css({ cursor:'pointer' })
-              .hover( function() { $(this).css({ color:'#fff'} )}, function() { $(this).css({ color:'#aaa'} )})
+              .css({ cursor:'pointer', color:'#aaa' })
+              .hover( function() { $(this).css({ color:'#fff', textDecoration:'underline'} )}, function() { $(this).css({ color:'#aaa', textDecoration:'none'} )})
               
             list.append( li )
           }
@@ -983,6 +994,7 @@ var GE = Gibber.Environment = {
         table.find( 'td' ).css({ paddingBottom:'1em' })
         
         col.infoDiv.append( table )
+        col.infoDiv.append( col.infoDivClose )
         col.bodyElement.prepend( col.infoDiv )
       }
    
@@ -1374,7 +1386,7 @@ var GE = Gibber.Environment = {
                     prev = link
                     $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
                     $( '#browser_notes' ).text( obj.notes )
-                    $( '#browser_tags' ).text( obj.tags.toString() )
+                    $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
                     $( '#browser_author' ).text( id.split('/')[0] )
                   })
                 }
@@ -1419,7 +1431,7 @@ var GE = Gibber.Environment = {
     },
     
     openCode : function( addr ) {
-      console.log( "ADDR", addr )
+      // console.log( "ADDR", addr )
       $.post(
         SERVER_URL + '/retrieve',
         { address:addr },
