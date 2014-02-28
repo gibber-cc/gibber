@@ -918,7 +918,7 @@ var GE = Gibber.Environment = {
           top:col.header.height(),
           left:0,
           display:'block',
-          background:'rgba(0,0,0,.75)',
+          background:'rgba(0,0,0,.85)',
           color:'#aaa',
           zIndex:10
         })
@@ -939,17 +939,18 @@ var GE = Gibber.Environment = {
           
           list.append( $('<li>').html('<b>revisions</b>') )
           for( var i = 0; i < col.fileInfo._revs_info.length; i++ ) {
-            console.log("LI")
             li = $( '<li>' ).text( col.fileInfo._revs_info[ i ].rev )
               .on('click', ( function() {
                 var rev = col.fileInfo.author + '/publications/' +col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
-                console.log( "REV", rev )
                 var fnc = function() {
                   GE.Browser.openCode( rev )
                 }
                 return fnc
               })()
               )
+              .css({ cursor:'pointer' })
+              .hover( function() { $(this).css({ color:'#fff'} )}, function() { $(this).css({ color:'#aaa'} )})
+              
             list.append( li )
           }
           
@@ -1157,6 +1158,28 @@ var GE = Gibber.Environment = {
       $( 'body' ).append( msgDiv )
 
       return msgDiv // return so it can be removed if needed
+    },
+    postFlash : function( text, time ) {
+      var msgDiv = $( '<div>' )
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:'3em',
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em',
+          zIndex:1000
+        })
+        .addClass( 'message' )
+        
+        msgDiv.append( $('<p>').text( text ) )
+        
+        $( 'body' ).append( msgDiv )
+        
+        msgDiv.fadeOut( 2000, function() { msgDiv.remove() } )
     },
     postHTML : function( html ) {
       var msgDiv = $( '<div>' )
@@ -1382,11 +1405,13 @@ var GE = Gibber.Environment = {
         SERVER_URL + '/retrieve',
         { address:addr },
         function( d ) {
-          d = JSON.parse(d)
-          console.log( "CODE", d )
-          var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
-          col.editor.setValue( d.text )
-          col.fileInfo = d
+          var data = JSON.parse( d ),
+              col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
+              
+          col.editor.setValue( data.text )
+          col.fileInfo = data
+          col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
+          
           //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
           return false
         }
@@ -1603,7 +1628,27 @@ var GE = Gibber.Environment = {
       .fail( function(e) { console.log( "FAILED TO PUBLISH", e ) } )
       
       return false 
-    }
+    },
+    updateDocument : function( revisions, previous, notes, column ) {
+      var msg = {
+        type: 'POST',
+        url:  SERVER_URL + '/update',
+        data: previous,
+        dataType: 'json'
+      }
+      
+      $.extend( msg.data, revisions )
+      msg.data.revisionNotes = notes
+      
+      var promise = $.ajax( msg ).then( 
+        function(d) { 
+          column.fileInfo._rev = d._rev; 
+          column.revision = JSON.stringify( column.fileInfo )
+          GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
+        },
+        function(d) { console.error( d.error ) }
+      )
+    },
   },
 }
 

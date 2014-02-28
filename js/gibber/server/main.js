@@ -306,6 +306,35 @@ app.post( '/publish', function( req, res, next ) {
   )
 })
 
+app.post( '/update', function( req, res, next ) {
+  console.log( req.body._rev, req.body._id )
+  if( typeof req.user === 'undefined' ) {
+    res.send({ error:'you are not currently logged in.' })
+    return
+  }
+  
+  var docName = req.body._id.split('/')
+  
+  request.put({ 
+      url:'http://localhost:5984/gibber/' + req.user.username + '%2Fpublications%2F' + docName[2], // must use username explicitly for security
+      json: req.body
+    },
+    function ( error, response, body ) {
+      if( error ) {
+        res.send({ error:"unable to publish; most likely you used some reserved characters such as ? & or /" }) 
+      }else{
+        // console.log( "Attempted to publish", body, req.body )
+        if( body.error ) {
+          console.log( 'fail', body.reason )
+          res.send({ error:'could not publish to database. ' + body.reason })
+        }else{
+          res.send({ _rev: body.rev })
+        }
+      }
+    }
+  )
+})
+
 app.post( '/createNewUser', function( req, res, next ) { 
   //console.log(" CREATING A NEW USER SHEESH" )
   request.post({url:'http://localhost:5984/gibber/', json:req.body},
