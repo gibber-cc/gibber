@@ -15,7 +15,7 @@ var request         = require( 'request' ),
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
     esUrl           = 'http://localhost:9200/gibber/_search',
-    webServerPort   = 80,
+    webServerPort   = 8080,
     serverRoot      = __dirname + "/../../../",
     // livedb          = require( 'livedb' ),
     // livedbMongo     = require( 'livedb-mongo'),
@@ -254,9 +254,12 @@ app.get( '/loginStatus', function( req, res ) {
 
 app.post( '/retrieve', function( req, res, next ) {
   // console.log( req.body )
-  var suffix = req.body.address.replace(/\//g, '%2F')
-  console.log(suffix)
-  request( 'http://localhost:5984/gibber/' + suffix + "?revs_info=true", function(e,r,b) {
+  var suffix = req.body.address.replace(/\//g, '%2F'),
+      _url = 'http://localhost:5984/gibber/' + suffix
+      
+  _url += suffix.indexOf('?') > -1 ? "&revs_info=true" : "?revs_info=true"
+  
+  request( _url, function(e,r,b) {
     console.log( e, b )
     res.send( b )
   })

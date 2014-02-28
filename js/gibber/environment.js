@@ -2,8 +2,8 @@
 
 "use strict"
 // REMEMBER TO CHECK WELCOME.INIT() and server port in main.js!!!
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-//var SERVER_URL = 'http://127.0.0.1:8080'
+//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+var SERVER_URL = 'http://127.0.0.1:8080'
 //var SERVER_URL = 'http://a.local:8080'
 
 var GE = Gibber.Environment = {
@@ -886,14 +886,84 @@ var GE = Gibber.Environment = {
           //   background:'black',
           //   border:'1px solid #666',
           //   height:'1.6em'
-          // })         
+          // })
+        col.fileInfoButton = $( '<button>' ).text('?')
+          .on( 'click', function( e ) { 
+            col.showFileInfo()
+          })
+          .addClass( 'lineNumbersButton' )
+          .attr( 'title', 'show file info' )
+          // .css({
+          //   background:'black',
+          //   border:'1px solid #666',
+          //   height:'1.6em'
+          // })                  
         
-        col.header.append( col.lineNumbersButton )
+        col.header.append( col.lineNumbersButton, col.fileInfoButton )
         col.editor.column = col    
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
       }else{
         col.bodyElement.width( columnWidth - resizeHandleSize )
         col.element.append( col.bodyElement )
+      }
+      
+      col.showFileInfo = function() {
+        var html, table
+        
+        col.infoDiv = $('<div>')
+        col.infoDiv.css({
+          height:col.bodyElement.innerHeight(),
+          width:col.bodyElement.innerWidth(),
+          position:'absolute',
+          top:col.header.height(),
+          left:0,
+          display:'block',
+          background:'rgba(0,0,0,.75)',
+          color:'#aaa',
+          zIndex:10
+        })
+        
+        html = [
+          "<table>",
+          "<tr><td><h2> " + col.fileInfo.name + "<h2></td></tr>",
+          "<tr><td><b>author</b>: " + col.fileInfo.author + "</td></tr>",
+          "<tr><td><b>tags</b>: " + col.fileInfo.tags + "</td></tr>",
+          "<tr><td><b>notes</b>: " + col.fileInfo.notes + "</td></tr>",
+          "</table>"
+        ].join('\n')
+        
+        table = $( html ).css({ margin:'1em' })
+        console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
+        if( col.fileInfo._revs_info.length > 1 ) {
+          var list = $( '<ul>' ), tr, td, li, a
+          
+          list.append( $('<li>').html('<b>revisions</b>') )
+          for( var i = 0; i < col.fileInfo._revs_info.length; i++ ) {
+            console.log("LI")
+            li = $( '<li>' ).text( col.fileInfo._revs_info[ i ].rev )
+              .on('click', ( function() {
+                var rev = col.fileInfo.author + '/publications/' +col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
+                console.log( "REV", rev )
+                var fnc = function() {
+                  GE.Browser.openCode( rev )
+                }
+                return fnc
+              })()
+              )
+            list.append( li )
+          }
+          
+          console.log( list )
+          td = $('<td>').append( list )
+          tr = $('<tr>').append( td )
+          
+          table.append( tr )
+        }
+
+        table.find( 'td' ).css({ paddingBottom:'1em' })
+        
+        col.infoDiv.append( table )
+        col.bodyElement.prepend( col.infoDiv )
       }
    
       col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
@@ -1307,6 +1377,7 @@ var GE = Gibber.Environment = {
     },
     
     openCode : function( addr ) {
+      console.log( "ADDR", addr )
       $.post(
         SERVER_URL + '/retrieve',
         { address:addr },
@@ -1315,6 +1386,8 @@ var GE = Gibber.Environment = {
           console.log( "CODE", d )
           var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
           col.editor.setValue( d.text )
+          col.fileInfo = d
+          //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
           return false
         }
       )
