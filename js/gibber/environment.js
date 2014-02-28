@@ -271,6 +271,10 @@ var GE = Gibber.Environment = {
 					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
           return false
         },
+        
+        "Ctrl-S" : function(cm) {
+          GE.Layout.columns[ GE.Layout.focusedColumn ].save()
+        },
 				
         "Shift-Ctrl-Enter": function(cm) {
 					var obj = GE.getSelectionCodeColumn( cm, false )
@@ -882,18 +886,116 @@ var GE = Gibber.Environment = {
           })
           .addClass( 'lineNumbersButton' )
           .attr( 'title', 'toggle line numbers' )
-          // .css({
-          //   background:'black',
-          //   border:'1px solid #666',
-          //   height:'1.6em'
-          // })         
+
+        col.fileInfoButton = $( '<button>' ).text('?')
+          .on( 'click', function( e ) { 
+            col.showFileInfo()
+          })
+          .addClass( 'lineNumbersButton' )
+          .attr( 'title', 'show file info' )                
         
-        col.header.append( col.lineNumbersButton )
+        col.infoDiv = null
+        col.header.append( col.lineNumbersButton, col.fileInfoButton )
         col.editor.column = col    
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
+        
+        col.save = function() {
+          //    updateDocument : function( revisions, previous, notes, column ) {
+          if( col.fileInfo && col.value !== col.fileInfo.text ) {
+            GE.Account.updateDocument({ text: col.value }, col.fileInfo, '', col )
+          }else{
+            if( !col.fileInfo ) {
+              GE.Message.post( 'You need to publish this file before you can save it. The publish button is at the top of the Gibber menubar.')
+            }else if( col.value === col.fileInfo.text ) {
+              GE.Message.post( 'The current text is the same as what is in the database; no update was performed.')
+            }
+          }
+        }
       }else{
         col.bodyElement.width( columnWidth - resizeHandleSize )
         col.element.append( col.bodyElement )
+      }
+      
+      col.showFileInfo = function() {
+        var html, table
+        
+        if( col.infoDiv !== null ) return
+        
+        col.infoDiv = $('<div>')
+        col.infoDiv.css({
+          height:col.bodyElement.innerHeight(),
+          width:col.bodyElement.innerWidth(),
+          position:'absolute',
+          top:col.header.height(),
+          left:0,
+          display:'block',
+          background:'rgba(0,0,0,.8)',
+          color:'#aaa',
+          zIndex:10
+        })
+        
+        col.infoDivClose = $( '<button>')
+          .addClass( 'closeButton' )
+          .on( 'click', function(e) { col.infoDiv.remove(); col.infoDiv = null; })
+          .css({ 
+            fontSize:'1em', 
+            display:'inline', 
+            border:'1px solid #666',
+            padding:'.25em',
+            background:'#191919',
+            width:'80%',
+            marginLeft:'10%',
+            fontFamily:'Helvetica, sans-serif',
+            '-moz-box-sizing': 'border-box !important',
+            'box-sizing': 'border-box !important' 
+          })
+          .html( 'close file information view' )
+          .attr( 'title', 'close file info view' )
+        
+        html = [
+          "<table>",
+          "<tr><td><h2 style='display:inline; font-weight:normal; font-size:2em'> " + col.fileInfo.name + "</h2></td></tr>",
+          "<tr><td><b>author</b>: " + col.fileInfo.author + "</td></tr>",
+          "<tr><td><b>tags</b>: " + (col.fileInfo.tags || 'none') + "</td></tr>",
+          "<tr><td><b>notes</b>: " + (col.fileInfo.notes || 'none') + "</td></tr>",
+          "</table>"
+        ].join('\n')
+        
+        table = $( html ).css({ margin:'1em' })
+        //$( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
+        //console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
+        if( col.fileInfo._revs_info.length > 1 ) {
+          var list = $( '<ul>' ), tr, td, li, a
+          
+          list.append( $('<li>').html('<b>revisions</b>') )
+          
+          for( var i = 0; i < col.fileInfo._revs_info.length; i++ ) {
+            li = $( '<li>' ).text( col.fileInfo._revs_info[ i ].rev )
+              .on('click', ( function() {
+                var rev = col.fileInfo.author + '/publications/' +col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
+                var fnc = function() {
+                  GE.Browser.openCode( rev )
+                }
+                return fnc
+              })()
+              )
+              .css({ cursor:'pointer', color:'#aaa' })
+              .hover( function() { $(this).css({ color:'#fff', textDecoration:'underline'} )}, function() { $(this).css({ color:'#aaa', textDecoration:'none'} )})
+              
+            list.append( li )
+          }
+          
+          td = $('<td>').append( list )
+          tr = $('<tr>').append( td )
+          
+          table.append( tr )
+        }
+
+        table.find( 'td' ).css({ paddingBottom:'1em' })
+        
+        col.infoDiv.append( table )
+        col.infoDiv.append( col.infoDivClose )
+        col.bodyElement.prepend( col.infoDiv )
       }
    
       col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
@@ -1024,7 +1126,7 @@ var GE = Gibber.Environment = {
       col.bodyElement.css({ height: columnHeight })
     },
     
-    resizeColumns : function( windowWidth,windowHeight ) {
+    resizeColumns : function( windowWidth, windowHeight ) {
       if( isNaN(windowHeight) ) windowHeight = $( window ).height()
       
       var totalWidth   = 0, // also used to determine x coordinate of each column
@@ -1087,6 +1189,28 @@ var GE = Gibber.Environment = {
       $( 'body' ).append( msgDiv )
 
       return msgDiv // return so it can be removed if needed
+    },
+    postFlash : function( text, time ) {
+      var msgDiv = $( '<div>' )
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:'3em',
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em',
+          zIndex:1000
+        })
+        .addClass( 'message' )
+        
+        msgDiv.append( $('<p>').text( text ) )
+        
+        $( 'body' ).append( msgDiv )
+        
+        msgDiv.fadeOut( 2000, function() { msgDiv.remove() } )
     },
     postHTML : function( html ) {
       var msgDiv = $( '<div>' )
@@ -1262,7 +1386,7 @@ var GE = Gibber.Environment = {
                     prev = link
                     $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
                     $( '#browser_notes' ).text( obj.notes )
-                    $( '#browser_tags' ).text( obj.tags.toString() )
+                    $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
                     $( '#browser_author' ).text( id.split('/')[0] )
                   })
                 }
@@ -1307,14 +1431,19 @@ var GE = Gibber.Environment = {
     },
     
     openCode : function( addr ) {
+      // console.log( "ADDR", addr )
       $.post(
         SERVER_URL + '/retrieve',
         { address:addr },
         function( d ) {
-          d = JSON.parse(d)
-          console.log( "CODE", d )
-          var col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
-          col.editor.setValue( d.text )
+          var data = JSON.parse( d ),
+              col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
+              
+          col.editor.setValue( data.text )
+          col.fileInfo = data
+          col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
+          
+          //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
           return false
         }
       )
@@ -1530,7 +1659,27 @@ var GE = Gibber.Environment = {
       .fail( function(e) { console.log( "FAILED TO PUBLISH", e ) } )
       
       return false 
-    }
+    },
+    updateDocument : function( revisions, previous, notes, column ) {
+      var msg = {
+        type: 'POST',
+        url:  SERVER_URL + '/update',
+        data: previous,
+        dataType: 'json'
+      }
+      
+      $.extend( msg.data, revisions )
+      msg.data.revisionNotes = notes
+      
+      var promise = $.ajax( msg ).then( 
+        function(d) { 
+          column.fileInfo._rev = d._rev; 
+          column.revision = JSON.stringify( column.fileInfo )
+          GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
+        },
+        function(d) { console.error( d.error ) }
+      )
+    },
   },
 }
 

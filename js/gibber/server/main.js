@@ -254,9 +254,12 @@ app.get( '/loginStatus', function( req, res ) {
 
 app.post( '/retrieve', function( req, res, next ) {
   // console.log( req.body )
-  var suffix = req.body.address.replace(/\//g, '%2F')
-  console.log(suffix)
-  request( 'http://localhost:5984/gibber/' + suffix + "?revs_info=true", function(e,r,b) {
+  var suffix = req.body.address.replace(/\//g, '%2F'),
+      _url = 'http://localhost:5984/gibber/' + suffix
+      
+  _url += suffix.indexOf('?') > -1 ? "&revs_info=true" : "?revs_info=true"
+  
+  request( _url, function(e,r,b) {
     console.log( e, b )
     res.send( b )
   })
@@ -297,6 +300,35 @@ app.post( '/publish', function( req, res, next ) {
           res.send({ error:'could not publish to database. ' + body.reason })
         }else{
           res.send({ url: req.user.username + '/publications/' + req.body.name })
+        }
+      }
+    }
+  )
+})
+
+app.post( '/update', function( req, res, next ) {
+  console.log( req.body._rev, req.body._id )
+  if( typeof req.user === 'undefined' ) {
+    res.send({ error:'you are not currently logged in.' })
+    return
+  }
+  
+  var docName = req.body._id.split('/')
+  
+  request.put({ 
+      url:'http://localhost:5984/gibber/' + req.user.username + '%2Fpublications%2F' + docName[2], // must use username explicitly for security
+      json: req.body
+    },
+    function ( error, response, body ) {
+      if( error ) {
+        res.send({ error:"unable to publish; most likely you used some reserved characters such as ? & or /" }) 
+      }else{
+        // console.log( "Attempted to publish", body, req.body )
+        if( body.error ) {
+          console.log( 'fail', body.reason )
+          res.send({ error:'could not publish to database. ' + body.reason })
+        }else{
+          res.send({ _rev: body.rev })
         }
       }
     }

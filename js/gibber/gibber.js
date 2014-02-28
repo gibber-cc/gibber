@@ -28,23 +28,14 @@ window.Gibber = window.G = {
 			], 'gibber', function() {
       
       // pubsub as taken from here: https://gist.github.com/addyosmani/1321768
-      (function($) {
-        console.log( 'PUBSUB' )
-        var o = $({});
+      (function( $ ) {
+        var o = $( {} );
 
-        $.subscribe = function() {
-          o.on.apply(o, arguments);
-        };
+        $.subscribe = function() { o.on.apply( o, arguments ) }
+        $.unsubscribe = function() { o.off.apply( o, arguments ) }
+        $.publish = function() { o.trigger.apply( o, arguments ) }
 
-        $.unsubscribe = function() {
-          o.off.apply(o, arguments);
-        };
-
-        $.publish = function() {
-          o.trigger.apply(o, arguments);
-        };
-
-      }(jQuery));
+      }( jQuery ))
         
       Gibber.Audio = Gibberish
       
