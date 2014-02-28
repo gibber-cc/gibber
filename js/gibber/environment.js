@@ -271,6 +271,10 @@ var GE = Gibber.Environment = {
 					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
           return false
         },
+        
+        "Ctrl-S" : function(cm) {
+          GE.Layout.columns[ GE.Layout.focusedColumn ].save()
+        },
 				
         "Shift-Ctrl-Enter": function(cm) {
 					var obj = GE.getSelectionCodeColumn( cm, false )
@@ -882,26 +886,31 @@ var GE = Gibber.Environment = {
           })
           .addClass( 'lineNumbersButton' )
           .attr( 'title', 'toggle line numbers' )
-          // .css({
-          //   background:'black',
-          //   border:'1px solid #666',
-          //   height:'1.6em'
-          // })
+
         col.fileInfoButton = $( '<button>' ).text('?')
           .on( 'click', function( e ) { 
             col.showFileInfo()
           })
           .addClass( 'lineNumbersButton' )
-          .attr( 'title', 'show file info' )
-          // .css({
-          //   background:'black',
-          //   border:'1px solid #666',
-          //   height:'1.6em'
-          // })                  
+          .attr( 'title', 'show file info' )                
         
+        col.infoDiv = null
         col.header.append( col.lineNumbersButton, col.fileInfoButton )
         col.editor.column = col    
         col.editor.on('focus', function() { GE.Layout.focusedColumn = colNumber } )
+        
+        col.save = function() {
+          //    updateDocument : function( revisions, previous, notes, column ) {
+          if( col.fileInfo && col.value !== col.fileInfo.text ) {
+            GE.Account.updateDocument({ text: col.value }, col.fileInfo, '', col )
+          }else{
+            if( !col.fileInfo ) {
+              GE.Message.post( 'You need to publish this file before you can save it. The publish button is at the top of the Gibber menubar.')
+            }else if( col.value === col.fileInfo.text ) {
+              GE.Message.post( 'The current text is the same as what is in the database; no update was performed.')
+            }
+          }
+        }
       }else{
         col.bodyElement.width( columnWidth - resizeHandleSize )
         col.element.append( col.bodyElement )
@@ -909,6 +918,8 @@ var GE = Gibber.Environment = {
       
       col.showFileInfo = function() {
         var html, table
+        
+        if( col.infoDiv !== null ) return
         
         col.infoDiv = $('<div>')
         col.infoDiv.css({
@@ -918,26 +929,35 @@ var GE = Gibber.Environment = {
           top:col.header.height(),
           left:0,
           display:'block',
-          background:'rgba(0,0,0,.85)',
+          background:'rgba(0,0,0,.8)',
           color:'#aaa',
           zIndex:10
         })
         
+        col.infoDivClose = $( '<button>')
+          .addClass( 'closeButton' )
+          .on( 'click', function(e) { col.infoDiv.remove(); col.infoDiv = null; })
+          .css({ marginLeft:'1.5em', fontSize:'.8em', display:'inline', border:'1px solid #666', padding:'.25em' })
+          .html( 'close file info' )
+          .attr( 'title', 'close column' )
+        
         html = [
           "<table>",
-          "<tr><td><h2> " + col.fileInfo.name + "<h2></td></tr>",
+          "<tr><td><h2 style='display:inline; font-weight:normal; font-size:2em'> " + col.fileInfo.name + "</h2></td></tr>",
           "<tr><td><b>author</b>: " + col.fileInfo.author + "</td></tr>",
-          "<tr><td><b>tags</b>: " + col.fileInfo.tags + "</td></tr>",
-          "<tr><td><b>notes</b>: " + col.fileInfo.notes + "</td></tr>",
+          "<tr><td><b>tags</b>: " + (col.fileInfo.tags || 'none') + "</td></tr>",
+          "<tr><td><b>notes</b>: " + (col.fileInfo.notes || 'none') + "</td></tr>",
           "</table>"
         ].join('\n')
         
         table = $( html ).css({ margin:'1em' })
-        console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
+        $( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
+        //console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
         if( col.fileInfo._revs_info.length > 1 ) {
           var list = $( '<ul>' ), tr, td, li, a
           
           list.append( $('<li>').html('<b>revisions</b>') )
+          
           for( var i = 0; i < col.fileInfo._revs_info.length; i++ ) {
             li = $( '<li>' ).text( col.fileInfo._revs_info[ i ].rev )
               .on('click', ( function() {
@@ -954,7 +974,6 @@ var GE = Gibber.Environment = {
             list.append( li )
           }
           
-          console.log( list )
           td = $('<td>').append( list )
           tr = $('<tr>').append( td )
           
@@ -1095,7 +1114,7 @@ var GE = Gibber.Environment = {
       col.bodyElement.css({ height: columnHeight })
     },
     
-    resizeColumns : function( windowWidth,windowHeight ) {
+    resizeColumns : function( windowWidth, windowHeight ) {
       if( isNaN(windowHeight) ) windowHeight = $( window ).height()
       
       var totalWidth   = 0, // also used to determine x coordinate of each column
