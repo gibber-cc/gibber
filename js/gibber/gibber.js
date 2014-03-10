@@ -24,7 +24,7 @@ window.Gibber = window.G = {
       'gibber/seq', 
       'gibber/audio/drums',
       'gibber/utilities',
-      'external/esprima.min',
+      'external/esprima',
 			], 'gibber', function() {
       
       // pubsub as taken from here: https://gist.github.com/addyosmani/1321768
@@ -199,28 +199,31 @@ window.Gibber = window.G = {
   log: function( msg ) { console.log( msg ) },
   
   run: function( script, pos, cm ) { // called by Gibber.Environment.modes.javascript
+    
 		var _start = pos.start ? pos.start.line : pos.line,
-				tree
-		
+				tree, i
+
 	  try{
 			tree = Gibber.Esprima.parse(script, { loc:true, range:true} )
 		}catch(e) {
 			console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
 			return
 		}
-
-    for(var i=0; i < tree.body.length; i++) {
-      var obj = tree.body[i],
+    
+    // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+    for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
+      var obj = tree.body[ __i__ ],
 					start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
 					end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
-					src   = cm.getRange( start, end )
-					
+				  src   = cm.getRange( start, end )
+			
 			//console.log( start, end, src )
 			try{
 				eval( src )
 			}catch( e ) {
 				console.error( "Error evaluating expression beginning on line " + start.line + '\n' + e.message )
 			}
+
       //console.log( "LINE NUMBER", pos.start.line + obj.loc.start.line, obj )
 			//console.log( "SOURCE : ", cm.getRange( start, end ) )
       // if(obj.type === 'ExpressionStatement') {
@@ -1004,12 +1007,12 @@ window.Gibber = window.G = {
         replacement.connect( this.destinations[i] )
       }
       
-      for( i = 0; i < this.sequencers.length; i++ ) {
+      for( var i = 0; i < this.sequencers.length; i++ ) {
         this.sequencers[ i ].target = replacement
         replacement.sequencers.push( this.sequencers[i] )
       }
       
-      for( i = 0; i < this.mappingObjects.length; i++ ) {
+      for( var i = 0; i < this.mappingObjects.length; i++ ) {
         var mapping = this.mappingObjects[ i ]
 
         if( mapping.targets.length > 0 ) {
