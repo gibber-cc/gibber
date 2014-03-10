@@ -201,7 +201,7 @@ window.Gibber = window.G = {
   run: function( script, pos, cm ) { // called by Gibber.Environment.modes.javascript
     
 		var _start = pos.start ? pos.start.line : pos.line,
-				tree, i
+				tree
 
 	  try{
 			tree = Gibber.Esprima.parse(script, { loc:true, range:true} )
