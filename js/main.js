@@ -1,7 +1,7 @@
 //$script( 'external/zepto.min', 'zepto')
-$script( 'external/jquery.min', 'jquery')
+$script( ['external/jquery.min', 'external/gibberish.2.0.min'], 'GO')
 
-$script.ready( 'jquery', function() {
+$script.ready( 'GO', function() {
   $script( 'gibber/gibber', function() {
     $script( 'gibber/environment', 'environment', function() {
     

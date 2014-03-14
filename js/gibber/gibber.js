@@ -10,18 +10,18 @@ window.Gibber = window.G = {
   LINEAR : 0,
   
   init: function() { 
-    $script([
-      'external/gibberish.2.0.min', 
+    $script([ 
       'external/teoria.min',
       'gibber/clock',
+      'gibber/seq',      
     ], function() { $script([
       'gibber/audio/theory',
       'gibber/audio/oscillators',
       'gibber/audio/fx',
       'gibber/audio/synths',
       'gibber/audio/bus', 
-      'gibber/audio/analysis', 			     
-      'gibber/seq', 
+      'gibber/audio/analysis',
+      'gibber/audio/envelopes',       			     
       'gibber/audio/drums',
       'gibber/utilities',
       'external/esprima',
@@ -44,6 +44,7 @@ window.Gibber = window.G = {
       $.extend( window, Gibber.FX )
       $.extend( window, Gibber.Synths )
       $.extend( window, Gibber.Percussion )      
+      $.extend( window, Gibber.Envelopes )
       
       Gibber.Audio.init()
       Gibber.Audio.Time.export()
@@ -199,7 +200,6 @@ window.Gibber = window.G = {
   log: function( msg ) { console.log( msg ) },
   
   run: function( script, pos, cm ) { // called by Gibber.Environment.modes.javascript
-    
 		var _start = pos.start ? pos.start.line : pos.line,
 				tree
 
@@ -1052,6 +1052,31 @@ window.Gibber = window.G = {
       if( this.seq ) this.seq.stop()
     },
     
+    fadeIn : function( endLevel, _time ) {
+      if( arguments.length === 1) {
+        _time = arguments[0]
+        endLevel = 1
+      }
+      var time = Gibber.Clock.time( _time ),
+          line = new Gibberish.Line( 0, endLevel, Gibber.Clock.time( time ) )
+          
+      this.amp = line
+      
+      future( function() { this.amp = endLevel }.bind( this ), time)
+      
+      return this
+    },
+    
+    fadeOut : function( _time ) {
+      var time = Gibber.Clock.time( _time ),
+          line = new Gibberish.Line( this.amp(), 0, Gibber.Clock.time( time ) )
+          
+      this.amp = line
+      
+      future( function() { this.amp = 0 }.bind( this ), time )
+      
+      return this
+    },
     // play : function( repeat ) {
     //   if( this.seq && ! this.seq.isRunning ) {
     //     this.seq.start()

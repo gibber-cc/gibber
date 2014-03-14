@@ -409,7 +409,7 @@ var PP = Gibber.Graphics.PostProcessing = {
               replacement.sequencers.push( this.sequencers[i] )
             }
       
-            for( i = 0; i < this.mappingObjects.length; i++ ) {
+            for( var i = 0; i < this.mappingObjects.length; i++ ) {
               var mapping = this.mappingObjects[ i ]
 
               if( mapping.targets.length > 0 ) {

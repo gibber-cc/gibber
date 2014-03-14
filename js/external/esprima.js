@@ -494,7 +494,7 @@ parseStatement: true, parseSourceElement: true */
         var i, len, ch, code = 0;
 
         len = (prefix === 'u') ? 4 : 2;
-        for (i = 0; i < len; ++i) {
+        for ( var i = 0; i < len; ++i) {
             if (index < length && isHexDigit(source[index])) {
                 ch = source[index++];
                 code = code * 16 + '0123456789abcdef'.indexOf(ch.toLowerCase());
@@ -3466,7 +3466,7 @@ parseStatement: true, parseSourceElement: true */
     function filterTokenLocation() {
         var i, entry, token, tokens = [];
 
-        for (i = 0; i < extra.tokens.length; ++i) {
+        for (var i = 0; i < extra.tokens.length; ++i) {
             entry = extra.tokens[i];
             token = {
                 type: entry.type,
