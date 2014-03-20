@@ -221,7 +221,6 @@ var Theory = Gibber.Theory = {
 				this.note( typeof note === 'number' ? note : n.fq() );
 			}
 		}else{
-      console.log( "CHORD" )
 			for( var k = 0; k < this.notation.length; k++ ) {
 				var note = this.notation[ k ];
 				this.note( typeof note === 'number' || typeof note === 'string' ? note : note.fq() );
