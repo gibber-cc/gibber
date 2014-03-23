@@ -1,0 +1,15 @@
+<h1 id="tremolo">Tremolo</h1>
+<p>Basic amplitude modulation effect</p>
+<p>Example:</p>
+<pre><code>a = Synth({ attack:<span class="number">44</span>, decay:<span class="number">44100</span> }).play( Rndi(<span class="number">100</span>,<span class="number">1000</span>), <span class="number">1</span>/<span class="number">2</span> )
+
+r = Tremolo({ amp: <span class="number">1</span>, frequency:<span class="number">.5</span> })
+
+a.fx.add( r )</code></pre>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><em>frequency</em> : Default range: { .05, 20 }. The frequency of the modulating oscillator. </li>
+<li><em>amp</em>  : Default range: { 0, 1 }. Amplitude of the modulating oscillator. </li>
+</ul>
+<h2 id="methods">Methods</h2>
+<p>None worth mentioning.</p>

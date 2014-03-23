@@ -11,6 +11,7 @@
     'Noise',
     'PWM',
     'Sampler',
+    'Table',    
   ],
   mappingProperties = {
     frequency: {

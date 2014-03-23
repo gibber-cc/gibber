@@ -42,6 +42,7 @@
     [ 'RingModulation', 'RingMod' ],
     [ 'BufferShuffler', 'Schizo' ],
     [ 'Decimator', 'Crush' ],
+    'Tremolo',
   ],
   _mappingProperties = {
     Reverb: {
@@ -190,6 +191,19 @@
         timescale: 'audio',
       },
       out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
+    },
+    Tremolo: {
+      amp: {
+        min: 0, max: 1,
+        output: Gibber.LOGARITHMIC,
+        timescale: 'audio',
+      },
+      frequency : {
+        min: .05, max: 20,
+        output: Gibber.LOGARITHMIC,
+        timescale: 'audio',
+      },
+      out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     }
   };
   
@@ -256,30 +270,51 @@
   	return that
   }
   
+  Gibber.Presets.Schizo = {
+		sane: {
+			chance: .1,
+			reverseChance: 0,
+			pitchChance: .5,
+			mix:.5,
+		},
+		borderline: {
+			chance: .1,		
+			pitchChance: .25,
+			reverseChance: .5,
+			mix: 1,
+		},
+		paranoid: {
+			chance: .2,
+			reverseChance: .5,
+			pitchChance: .5,
+			mix: 1,
+		},
+	};
+  
   Gibber.Presets.Reverb = {
   	space : {
-  		roomSize:.99,
-  		damping:.23,
-  		wet:.75,
-  		dry:.25,
+  		roomSize: .99,
+  		damping: .23,
+  		wet: .75,
+  		dry: .25,
   	},
     small : {
-      roomSize:.6,
-      damping:.75,
-      wet:.15,
-      dry:.85,
+      roomSize: .6,
+      damping: .75,
+      wet: .15,
+      dry: .85,
     },
     medium: {
-      roomSize:.8,
-      damping:.5,
-      wet:.35,
-      dry:.65,
+      roomSize: .8,
+      damping: .5,
+      wet: .35,
+      dry: .65,
     },
     large: {
-      roomSize:.85,
-      damping:.3,
-      wet:.55,
-      dry:.45,
+      roomSize: .85,
+      damping: .3,
+      wet: .55,
+      dry: .45,
     }
   }
 })()

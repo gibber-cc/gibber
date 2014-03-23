@@ -27,6 +27,8 @@ list = [
   'audio/flanger',
   'audio/hpf',
   'audio/lpf',
+  'audio/tremolo',
+  'audio/gain',
   'audio/reverb',
   'audio/delay',
   'audio/crush',
