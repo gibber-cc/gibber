@@ -267,13 +267,13 @@
       }
     })
     
-    var nextTime = seq.nextTime,
-        oldNextTime = seq.__lookupSetter__('nextTime')
-
-    Object.defineProperty( seq, 'nextTime', {
-      get: function() { return nextTime },
-      set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
-    })
+    // var nextTime = seq.nextTime,
+    //     oldNextTime = seq.__lookupSetter__('nextTime')
+    // 
+    // Object.defineProperty( seq, 'nextTime', {
+    //   get: function() { return nextTime },
+    //   set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
+    // })
 
     var scale = null
     Object.defineProperty( seq, 'scale', {

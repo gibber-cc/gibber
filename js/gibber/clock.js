@@ -41,7 +41,7 @@ var Clock = Gibber.Clock = {
       Clock.metronome.draw( Clock.currentBeat, Clock.signature.upper )
     }
     
-    Clock.phase += beats( 1 )
+    Clock.phase += Gibber.Clock.beats( 1 )
   },
   
   getTimeSinceStart : function() {

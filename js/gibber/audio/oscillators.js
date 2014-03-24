@@ -11,7 +11,6 @@
     'Noise',
     'PWM',
     'Sampler',
-    'Table',    
   ],
   mappingProperties = {
     frequency: {
@@ -47,9 +46,10 @@
   
   for( var i = 0; i < types.length; i++ ) {
     (function() {
-      var type = types[ i ]
+      var type = Array.isArray( types[ i ] ) ? types[ i ][ 0 ] : types[ i ],
+          name = Array.isArray( types[ i ] ) ? types[ i ][ 1 ] : types[ i ]
 
-      Gibber.Oscillators[ type ] = function() {
+      Gibber.Oscillators[ name ] = function() {
         var oscillator = new Gibberish[ type ]().connect( Gibber.Master ),
             args = Array.prototype.slice.call( arguments, 0 )
            
@@ -61,7 +61,7 @@
         
         Object.defineProperty(oscillator, '_', {
           get: function() { 
-            oscillator.kill(); 
+            oscillator.kill();
             return oscillator 
           },
           set: function() {}
@@ -82,9 +82,9 @@
         
         Gibber.createProxyMethods( oscillator, ['note'] )
         
-        Gibber.processArguments2( oscillator, args, type )
+        Gibber.processArguments2( oscillator, args, name )
         
-        console.log( type + ' is created.' )
+        console.log( name + ' is created.' )
         return oscillator
       }
     })()
@@ -108,6 +108,61 @@
       return this;
     };
   })
+  
+  Gibber.Oscillators.Wavetable = function( table ) {
+    var oscillator = new Gibberish.Table().connect( Gibber.Master )
+    if( table ) oscillator.setTable( table )
+    
+    oscillator.type = 'Gen'
+
+    $.extend( true, oscillator, Gibber.ugen )
+
+    oscillator.fx.ugen = oscillator
+    
+    Object.defineProperty(oscillator, '_', {
+      get: function() { 
+        oscillator.kill();
+        return oscillator 
+      },
+      set: function() {}
+    })
+    
+    if( typeof oscillator.note === 'undefined' ) {
+      oscillator.note = function( pitch ) {
+        var freq = this.frequency()
+        if( typeof freq === 'number' || typeof freq === 'function' ) {
+          this.frequency = typeof pitch === 'function' ? pitch() : pitch
+        }else{
+          freq[ 0 ] = pitch
+        }
+      }
+    }
+    
+    Gibber.createProxyProperties( oscillator, {
+      frequency: {
+        min: 50, max: 3200,
+        output: Gibber.LOGARITHMIC,
+        timescale: 'audio',
+        dimensions:1
+      },
+      amp: {
+        min: 0, max: 1,
+        output: Gibber.LOGARITHMIC,
+        timescale: 'audio',
+        dimensions:1
+      },
+      out: {
+        min: 0, max: 1,
+        output: Gibber.LINEAR,
+        timescale: 'audio',
+        dimensions:1
+      },
+    })
+    
+    Gibber.createProxyMethods( oscillator, ['note'] )
+    
+    return oscillator
+  }
   
   Gibber.Oscillators.Grains = function() {
     var props = typeof arguments[0] === 'object' ? arguments[0] : arguments[1],
