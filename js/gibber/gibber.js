@@ -776,7 +776,7 @@ window.Gibber = window.G = {
         target: obj
       }
     
-      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
+      for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
         var s = obj.seq.seqs[ i ]
         if( s.key === key ) {
           s.shouldStop = true
@@ -791,7 +791,6 @@ window.Gibber = window.G = {
         obj.seq.connect()
         obj.seq.start()
       }
-    
       return obj
     }
     fnc.seq.stop = function() { 
