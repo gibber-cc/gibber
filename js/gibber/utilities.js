@@ -39,6 +39,26 @@ Gibber.Utilities = {
     
     return this;
   },
+  
+  choose: function( length ) {
+    var output = null
+    
+    if( isNaN( length ) ) length = 1
+    
+    if( length !== 1 ) {
+      var arr = []
+    
+      for( var i = 0; i < length; i++ ) {
+        arr[ i ] = this[ rndi( 0, this.length - 1 ) ]
+      }
+      
+      output = arr
+    }else{
+      output = this[ rndi( 0, this.length - 1 ) ]
+    }
+    
+  	return output;
+  },
 
   future : function(func, time) { 
     var __seq = new Gibberish.Sequencer({
@@ -82,10 +102,24 @@ Gibber.Utilities = {
       isSoloing = false;
     }
   },
+  fill : function( length, fnc ) {
+    if( isNaN( length ) ) length = 16
+    if( typeof fnc !== 'function' ) { fnc = Rndf() }
+    
+    fnc = fnc.bind( this 
+    )
+    for( var i = 0; i < length; i++ ) {
+      this[ i ] = fnc()
+    }
+    
+    return this
+  },
 }
 
 window.solo = Gibber.Utilities.solo
 window.future = Gibber.Utilities.future // TODO: fix global reference
 Array.prototype.random = Array.prototype.rnd = Gibber.Utilities.random
+Array.prototype.fill = Gibber.Utilities.fill
+Array.prototype.choose = Gibber.Utilities.choose
 
 })()

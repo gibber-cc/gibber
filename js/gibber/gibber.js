@@ -13,11 +13,15 @@ window.Gibber = window.G = {
     $script([ 
       'external/teoria.min',
       'gibber/clock',
-      'gibber/seq',      
-    ], function() { $script([
+      'gibber/seq',
+      'gibber/audio/fx',      
+    ], function() { 
+      
+      $.extend( window, Gibber.FX ) // must do before loading synths due to presets
+      
+      $script([
       'gibber/audio/theory',
       'gibber/audio/oscillators',
-      'gibber/audio/fx',
       'gibber/audio/synths',
       'gibber/audio/bus', 
       'gibber/audio/analysis',
@@ -31,7 +35,6 @@ window.Gibber = window.G = {
       
       $.extend( window, Gibber.Busses )       
       $.extend( window, Gibber.Oscillators )
-      $.extend( window, Gibber.FX )
       $.extend( window, Gibber.Synths )
       $.extend( window, Gibber.Percussion )      
       $.extend( window, Gibber.Envelopes )
@@ -296,6 +299,8 @@ window.Gibber = window.G = {
         }
       
         $.extend( obj, preset )
+        
+        if( obj.presetInit ) obj.presetInit() 
       }else if( $.isPlainObject( firstArg ) && typeof firstArg.type === 'undefined' ) {
         $.extend( obj, firstArg )
       }else{

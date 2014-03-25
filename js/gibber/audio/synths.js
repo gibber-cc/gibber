@@ -143,16 +143,16 @@
   }
   
   Gibber.Presets.Synth = {
-  	short : { attack: 44, decay: 1/16, },
-  	bleep: { waveform:'Sine', attack:44, decay:1/16 },
-    rhodes: { waveform:'Sine', maxVoices:4, /*fx:[ Tremolo(2, .2) ],*/ attack:44, decay:1, cutoff:.1, filterMult:.4, resonance:1.5 }
+  	short:  { attack: 44, decay: 1/16, },
+  	bleep:  { waveform:'Sine', attack:44, decay:1/16 },
+    rhodes: { waveform:'Sine', maxVoices:4, presetInit: function() {  this.fx.add( Tremolo(2, .2) ) }, attack:44, decay:1 }
   }
   
   Gibber.Presets.Mono = {
   	short : { attack: 44, decay: 1/16,},
   
   	lead : {
-  		//fx : [ Delay(1/4, .35), Reverb() ],
+  		presetInit : function() { this.fx.add( Delay(1/4, .35), Reverb() ) },
   		attack: 1/8,
   		decay:1/2,
   		octave3:0,
@@ -196,60 +196,61 @@
   }
   
   Gibber.Presets.FM = {
-  		glockenspiel : {
-  			cmRatio	: 3.5307,
-  			index 	: 1,
-  			attack	: 44,
-  			decay	: 44100,
-  		},
-  		radio : { //ljp
-  			cmRatio	: 1,
-  			index	: 40,
-  			attack	: 300 * 44.1,
-  			decay	: 500 * 44.1,
-  		},
-  		noise : { //ljp
-  			cmRatio	: 0.04,
-  			index	: 1000,
-  			attack	: 1 * 44.1,
-  			decay	: 100 * 44.1,
-  		},
-  		frog : { //ljp
-  			cmRatio	: 0.1,
-  			index	: 2.0,
-  			attack	: 300 * 44.1,
-  			decay	: 5 * 44.1,
-  		},
-  		gong : {
-  			cmRatio : 1.4,
-  			index	: .95,
-  			attack	: 44.1,
-  			decay	: 5000 * 44.1,
-  		},
-  		drum : {
-  			cmRatio : 1.40007,
-  			index	: 2,
-  			attack	: 44,
-  			decay	: 44100,
-  		},
-  		drum2 : {
-  			cmRatio: 1 + Math.sqrt(2),
-  			index: .2,
-  			attack: 44,
-  			decay: 20 * 44.1,
-  		},
-  		brass : {
-  			cmRatio : 1 / 1.0007,
-  			index	: 5,
-  			attack	: 4100,
-  			decay	: 4100,
-  		},
-  		clarinet : {
-  			cmRatio	: 3 / 2,
-  			index	: 1.5,
-  			attack	: 50 * 44.1,
-  			decay	: 200 * 44.1,
-  		}
-  	};
+		glockenspiel : {
+			cmRatio	: 3.5307,
+			index 	: 1,
+			attack	: 44,
+			decay	: 44100,
+		},
+		radio : { //ljp
+			cmRatio	: 1,
+			index	: 40,
+			attack	: 300 * 44.1,
+			decay	: 500 * 44.1,
+		},
+		noise : { //ljp
+			cmRatio	: 0.04,
+			index	: 1000,
+			attack	: 1 * 44.1,
+			decay	: 100 * 44.1,
+		},
+		frog : { //ljp
+			cmRatio	: 0.1,
+			index	: 2.0,
+			attack	: 300 * 44.1,
+			decay	: 5 * 44.1,
+		},
+		gong : {
+			cmRatio : 1.4,
+			index	: .95,
+			attack	: 44.1,
+			decay	: 5000 * 44.1,
+		},
+		drum : {
+			cmRatio : 1.40007,
+			index	: 2,
+			attack	: 44,
+			decay	: 44100,
+		},
+		drum2 : {
+			cmRatio: 1 + Math.sqrt(2),
+			index: .2,
+			attack: 44,
+			decay: 20 * 44.1,
+		},
+		brass : {
+      maxVoices:4,
+			cmRatio : 1 / 1.0007,
+			index	: 5,
+			attack	: 4100,
+			decay	: 1,
+		},
+		clarinet : {
+			cmRatio	: 3 / 2,
+			index	: 1.5,
+			attack	: 50 * 44.1,
+			decay	: 200 * 44.1,
+		}
+	};
   
 })()
