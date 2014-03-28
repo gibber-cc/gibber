@@ -13,7 +13,7 @@
       
 .cm-s-gibber span.cm-property, .cm-s-gibber span.cm-attribute {color: #ccc;}
 .cm-s-gibber span.cm-keyword {color: #ccc;}
-.cm-s-gibber span.cm-string {color: #933; }
+.cm-s-gibber span.cm-string {color: #f00; }
       
 .cm-s-gibber span.cm-variable {color: #ccc;}
 .cm-s-gibber span.cm-variable-2 {color: #ccc;}
@@ -34,7 +34,7 @@
 }
 
 .CodeMirror-selected {
-  background:#444 !important;
+  background:rgba(64,64,64,.5) !important;
 }
 
 .CodeMirror-code * {

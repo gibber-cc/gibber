@@ -110,8 +110,8 @@ var GE = Gibber.Environment = {
     init : function() {      
       this.default = {
           comment:    Color('#888'),
-          number:     Color('#779'),
-          string:     Color('#933'),
+          number:     Color('#69d'),
+          string:     Color('#d44'),
           variable:   Color('#ccc'),
           bracket:    Color('#f8f8f2'),
           keyword:    Color('#ccc'),
@@ -354,6 +354,20 @@ var GE = Gibber.Environment = {
           
           col.bodyElement.css({ fontSize: col.fontSize + 'em'})
           col.editor.refresh()
+        },
+        
+        "Shift-Ctrl-Alt-=": function(cm) {
+          if( GE.Layout._textBGOpacity < 1 ) {
+            GE.Layout._textBGOpacity = GE.Layout._textBGOpacity + .2 > 1 ? 1 : GE.Layout._textBGOpacity + .2
+            GE.Layout.textBGOpacity( GE.Layout._textBGOpacity )
+          }
+        },
+        
+        "Shift-Ctrl-Alt--": function(cm) {
+          if( GE.Layout._textBGOpacity >0 ) {
+            GE.Layout._textBGOpacity = GE.Layout._textBGOpacity - .2 < 0 ? 0 : GE.Layout._textBGOpacity - .2
+            GE.Layout.textBGOpacity( GE.Layout._textBGOpacity )
+          }          
         },
       }
     },
@@ -599,7 +613,9 @@ var GE = Gibber.Environment = {
     resizeHandleSize  : 8,
     columnID : 0,
     isFullScreen: false,
+    _textBGOpacity : 0,
     textBGOpacity : function( v ) {
+      this._textBGOpacity = v
       var color = 'rgba( 0, 0, 0, '+v+' )'
       $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
     },
@@ -766,14 +782,15 @@ var GE = Gibber.Environment = {
                       if( !GE.Layout.isFullScreen ) {
                         GE.Layout.fullScreen()
                       }
-                      _w = this.width
+                      _w = this.width - resizeHandleSize 
+                      _h = this.bodyElement.innerHeight
                       var w = $( window ).width(), h = $( window ).height()
                       this.toggle()
                       this.header.hide()
                       this.toggleResizeHandle()
                       this.element.css({ width: w, height: h, top:0, left:0 })
                       this.bodyElement.css({ width: w, height: h })
-                      //this.editor.setSize( w,h )
+                      this.editor.setSize( w,h )
                       this.isFullScreen = true
                     }else{
                       if( GE.Layout.isFullScreen ) {
@@ -783,8 +800,8 @@ var GE = Gibber.Environment = {
                       this.header.show()
                       this.toggleResizeHandle()
                       this.element.css({ width: _w, top:31 })
-                      this.bodyElement.css({ width: w })
-                      //this.editor.setSize( w,null )
+                      this.bodyElement.css({ width: w, height:_h })
+                      this.editor.setSize( _w - resizeHandleSize, _h )
                       GE.Layout.resizeColumns()
                       this.isFullScreen = false
                     }

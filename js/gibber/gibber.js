@@ -291,7 +291,7 @@ window.Gibber = window.G = {
     if( args.length ) {
       var firstArg = args[ 0 ]
     
-      if( typeof firstArg === 'string' && type !== 'Drums' && type !== 'XOX' ) {
+      if( typeof firstArg === 'string' && type !== 'Drums' && type !== 'XOX' && type !== 'Shader' ) {
         preset = Gibber.getPreset( args[0], type )
       
         if( typeof args[1] === 'object' ) {

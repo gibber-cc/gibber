@@ -172,8 +172,41 @@ var Shaders = Gibber.Graphics.GibberShaders = {
     //   }
     // })
     return shader
-  }
+  },
+  Pixellate : function() {
+    var frag = [
+  		"uniform sampler2D tDiffuse;",
+  		"uniform float amount;",
+  		"uniform float blend;",
+  		"varying vec2 vUv;",
+  		"void main() {",
+  		"	vec2 sd = vec2( amount );",
+  		"	vec2 samplePos = vUv - mod( vUv, sd );",
+  		"	vec4 p = texture2D( tDiffuse, samplePos );",
+  		"	vec4 pp = texture2D( tDiffuse, vUv );",
+  		"	vec3 _blend = (p.rgb * vec3( blend ) ) + ( pp.rgb * vec3(1.0 - blend ) );",
+  		"	gl_FragColor = vec4( _blend, 1. );",
+  		"}"
+    ].join('\n')
+    
+    var vert = [
+			"varying vec2 vUv;",
+			"void main() {",
+			"	vUv = uv;",
+			"	gl_Position = vec4( position[0],position[1],position[2], 1.0 );",
+			"}"
+		].join("\n")
+    
+    var shader = Shader( frag, vert )
+    shader.uniform( 'amount', 0, .1, .01 )
+    shader.uniform( 'blend', 0, 1, 1 )
+  
+    return shader
+  },
 }
+
+
+
 
 for( var key in Shaders ) {
   window[ key ] = Shaders[ key ]

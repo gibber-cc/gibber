@@ -10,7 +10,6 @@ var Graphics = Gibber.Graphics = {
   running:  false,
   resolution: .5,
   fps: null,
-  noThree : false,
   graph: [],
   
   load : function() {
@@ -55,6 +54,7 @@ var Graphics = Gibber.Graphics = {
         this.noThree = true
       }
     }
+    console.log( this.noThree, noThree )
     if( this.noThree !== noThree ) {
       Gibber.Environment.Message.post( 'Your browser does not support WebGL. 2D drawing will work, but 3D geometries and shaders are not supported.' )
     }
