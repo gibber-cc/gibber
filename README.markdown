@@ -21,13 +21,15 @@ a = XOX('x*o*x*o-')
 // create a cube
 b = Cube()
 
-// map the rotation of the cube to envelope followers
-b.rotation.x = a.kick.Amp
-b.rotation.y = a.snare.Amp
+// map the rotation of the cube
+// continuously follow the amplitude of drums
+
+b.rotation.x = a.kick.Out
+b.rotation.y = a.snare.Out
 
 // a shader that simulates film grain and video noise
 f = Film()
 
-// map the scanline count to the hihat amplitude
-f.sCount = a.hat.Amp
+// map the scanline count to the hihat output
+f.sCount = a.hat.Out
 ```
