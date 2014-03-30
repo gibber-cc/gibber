@@ -248,7 +248,7 @@ var PP = Gibber.Graphics.PostProcessing = {
 
     this.renderScene = new THREE.RenderPass( Gibber.Graphics.scene, Gibber.Graphics.camera );
 
-    this.renderScene.clear = false;
+    this.renderScene.clear = true;
     this.renderScene.renderToScreen = true;
 
     this.composer.addPass( this.renderScene )
@@ -271,6 +271,8 @@ var PP = Gibber.Graphics.PostProcessing = {
           }else if( Gibber.Graphics.mode === '2d' ) {
             Gibber.Graphics.use( '3d' )
           }
+          
+          Gibber.Graphics.running = true 
           
 					if( name !== 'Shader' ) {
 	          var args = Array.prototype.slice.call( arguments,0 ),
@@ -321,6 +323,7 @@ var PP = Gibber.Graphics.PostProcessing = {
           if( PP.fx.length > 0 ) {
             PP.fx[ PP.fx.length - 1 ].renderToScreen = false;
           }
+        
 
           //console.log( shader )
           PP.composer.addPass( shader )

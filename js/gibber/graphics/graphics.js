@@ -45,6 +45,7 @@ var Graphics = Gibber.Graphics = {
   },
   
   init : function( mode, column, noThree ) {
+    console.log("INIT", mode, noThree )
     this.canvas = $( '<div>' )
     
     if( typeof noThree !== 'undefined' ) this.noThree = noThree
@@ -229,12 +230,17 @@ var Graphics = Gibber.Graphics = {
 
       this.graph.length = 0
       // if( this.PostProcessing ) this.PostProcessing.fx.length = 0
-      if( !this.noThree ) {
-        for( var j = this.PostProcessing.fx - 1; j >= 0; j++ ) {
-          this.PostProcessing.fx[ j ].remove()
-        }
-      }
+      // if( !this.noThree ) {
+      //   for( var j = this.PostProcessing.fx - 1; j >= 0; j-- ) {
+      //     this.PostProcessing.fx[ j ].remove()
+      //   }
+      // }
       
+      this.PostProcessing.fx.length = 0
+      this.PostProcessing.isRunning = false
+      //this.canvas.remove()
+      //this.canvas = null
+      //this.ctx = null
       this.running = false
     }
   },
