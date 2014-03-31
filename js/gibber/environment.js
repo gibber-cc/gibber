@@ -462,7 +462,7 @@ var GE = Gibber.Environment = {
 	      "",
 	      "b = FM({ ",
 	      "  attack:  ms(1),",
-	      "  index:   a.Amp,",
+	      "  index:   a.Out,",
 	      "  cmRatio: Mouse.X",
 	      "})",
 	      "",
