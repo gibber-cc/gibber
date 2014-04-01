@@ -267,9 +267,7 @@ var PP = Gibber.Graphics.PostProcessing = {
           //console.log( shaderProps, shaderProps.shaders, shaderProps.shaders[0] )
           //var shader = shaderProps.shaders[0].init({ center:undefined, angle:.5, scale:.035, mix:.1 })
           if( Gibber.Graphics.canvas === null){
-            Gibber.Graphics.init('3d', null, false)
-          }else if( Gibber.Graphics.mode === '2d' ) {
-            Gibber.Graphics.use( '3d' )
+            Gibber.Graphics.init('2d', null, false)
           }
           
           Gibber.Graphics.running = true 
