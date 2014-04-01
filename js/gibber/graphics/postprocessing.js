@@ -171,8 +171,8 @@ var processArgs = function( args, type, shape ) {
       properties : {
   		  screenWidth:    1024,
   		  screenHeight:   1024,
-  		  sampleDistance: 0.94,
-  		  waveFactor:     0.00125
+  		  sampleDistance: 2,
+  		  waveFactor:     0.1
       },
       init: function(obj) {
         return new THREE.ShaderPass( THREE.FocusShader )
