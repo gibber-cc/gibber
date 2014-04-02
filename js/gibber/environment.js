@@ -23,14 +23,14 @@ var GE = Gibber.Environment = {
                 'gibber/chat',
                 'gibber/share',
                 ], function() {
-                  
+
         GE.Keymap.init()
-        
+
         $( '#layoutTable' ).attr( 'height', $( window ).height() )
         $( '#contentCell' ).width( $( window ).width() )
-        
+
         Gibber.proxy( window )
-        
+
         if( !window.isInstrument ) {
           GE.Layout.init( GE )
           window.Layout = GE.Layout
@@ -39,7 +39,7 @@ var GE = Gibber.Environment = {
           GE.Welcome.init()
           GE.Share.open()
         }
-        
+
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
       });
     })

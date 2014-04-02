@@ -190,39 +190,40 @@
       var html, table
     
       if( col.infoDiv !== null ) return
+      
+      $.extend( col, {
+        infoDiv : $('<div>').css({
+          height:col.bodyElement.innerHeight(),
+          width:col.bodyElement.innerWidth(),
+          position:'absolute',
+          top:col.header.height(),
+          left:0,
+          display:'block',
+          background:'rgba(0,0,0,.8)',
+          color:'#aaa',
+          zIndex:10
+        }),
     
-      col.infoDiv = $('<div>')
-      col.infoDiv.css({
-        height:col.bodyElement.innerHeight(),
-        width:col.bodyElement.innerWidth(),
-        position:'absolute',
-        top:col.header.height(),
-        left:0,
-        display:'block',
-        background:'rgba(0,0,0,.8)',
-        color:'#aaa',
-        zIndex:10
+        infoDivClose : $( '<button>')
+          .addClass( 'closeButton' )
+          .on( 'click', function(e) { col.infoDiv.remove(); col.infoDiv = null; })
+          .css({ 
+            fontSize:'1em', 
+            display:'inline', 
+            border:'1px solid #666',
+            padding:'.25em',
+            background:'#191919',
+            width:'80%',
+            marginLeft:'10%',
+            fontFamily:'Helvetica, sans-serif',
+            '-moz-box-sizing': 'border-box !important',
+            'box-sizing': 'border-box !important' 
+          })
+          .html( 'close file information view' )
+          .attr( 'title', 'close file info view' ),
       })
     
-      col.infoDivClose = $( '<button>')
-        .addClass( 'closeButton' )
-        .on( 'click', function(e) { col.infoDiv.remove(); col.infoDiv = null; })
-        .css({ 
-          fontSize:'1em', 
-          display:'inline', 
-          border:'1px solid #666',
-          padding:'.25em',
-          background:'#191919',
-          width:'80%',
-          marginLeft:'10%',
-          fontFamily:'Helvetica, sans-serif',
-          '-moz-box-sizing': 'border-box !important',
-          'box-sizing': 'border-box !important' 
-        })
-        .html( 'close file information view' )
-        .attr( 'title', 'close file info view' )
-    
-      html = [
+      var html = [
         "<table>",
         "<tr><td><h2 style='display:inline; font-weight:normal; font-size:2em'> " + col.fileInfo.name + "</h2></td></tr>",
         "<tr><td><b>author</b>: " + col.fileInfo.author + "</td></tr>",
