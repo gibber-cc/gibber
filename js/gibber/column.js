@@ -1,6 +1,6 @@
 ( function() { 
   'use strict'
-  
+
   var Column = function( options, Layout ) {
     options = options || {}
     
@@ -26,43 +26,8 @@
       fontSize:       1,
       modeIndex:      0,
       isCodeColumn:   isCodeColumn,
-      toggle:         function() { $( this.element ).toggle() },            
-      toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
-      isFullScreen: false,
-      fullScreen: ( function() {
-        var _w = null, _h = null,
-            fnc = function() {
-              //console.log( this )
-              if( !this.isFullScreen ) {
-                if( !Layout.isFullScreen ) {
-                  Layout.fullScreen()
-                }
-                _w = this.width - resizeHandleSize 
-                _h = this.bodyElement.innerHeight
-                var w = $( window ).width(), h = $( window ).height()
-                this.toggle()
-                this.header.hide()
-                this.toggleResizeHandle()
-                this.element.css({ width: w, height: h, top:0, left:0 })
-                this.bodyElement.css({ width: w, height: h })
-                this.editor.setSize( w,h )
-                this.isFullScreen = true
-              }else{
-                if( Layout.isFullScreen ) {
-                  Layout.fullScreen()
-                }
-                this.toggle()
-                this.header.show()
-                this.toggleResizeHandle()
-                this.element.css({ width: _w, top:31 })
-                this.bodyElement.css({ width: w, height:_h })
-                this.editor.setSize( _w - resizeHandleSize, _h )
-                Layout.resizeColumns()
-                this.isFullScreen = false
-              }
-            }
-        return fnc
-      })()
+      isFullScreen:   false,
+      fullScreen:     this.makeFullScreenFunction(),
     })
         
     Layout.columns.push( col )
@@ -80,13 +45,6 @@
       .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
       .html( '&#10005;' )
       .attr( 'title', 'close column' )
-	
-		col.setMode = function(mode) {
-			col.mode = mode
-      col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
-      $( col.modeSelect ).val( col.mode )
-			col.editor.setValue( GE.modes[ col.mode ].default )
-		}
   
     if( isCodeColumn ) {
       for( var key in GE.modes ) {
@@ -95,10 +53,6 @@
         }
       }
       col.modeSelect
-        // .append(
-        //   $( '<option>' ).text( 'javascript' ),
-        //   $( '<option>' ).text( 'glsl-fragment' )
-        // )
         .eq( 0 )
         .on( 'change', function( e ) {  
           var opt = $( this ).find( ':selected' ), idx = opt.index(), val = opt.text()
@@ -131,6 +85,7 @@
     }else if( options.mode ) {
       mode = modes[ options.mode ]
     }
+    
     var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
 
@@ -168,105 +123,9 @@
       col.header.append( col.lineNumbersButton, col.fileInfoButton )
       col.editor.column = col    
       col.editor.on('focus', function() { Layout.focusedColumn = colNumber } )
-    
-      col.save = function() {
-        //    updateDocument : function( revisions, previous, notes, column ) {
-        if( col.fileInfo && col.value !== col.fileInfo.text ) {
-          GE.Account.updateDocument({ text: col.value }, col.fileInfo, '', col )
-        }else{
-          if( !col.fileInfo ) {
-            GE.Message.post( 'You need to publish this file before you can save it. The publish button is at the top of the Gibber menubar.')
-          }else if( col.value === col.fileInfo.text ) {
-            GE.Message.post( 'The current text is the same as what is in the database; no update was performed.')
-          }
-        }
-      }
     }else{
       col.bodyElement.width( columnWidth - resizeHandleSize )
       col.element.append( col.bodyElement )
-    }
-  
-    col.showFileInfo = function() {
-      var html, table
-    
-      if( col.infoDiv !== null ) return
-      
-      $.extend( col, {
-        infoDiv : $('<div>').css({
-          height:col.bodyElement.innerHeight(),
-          width:col.bodyElement.innerWidth(),
-          position:'absolute',
-          top:col.header.height(),
-          left:0,
-          display:'block',
-          background:'rgba(0,0,0,.8)',
-          color:'#aaa',
-          zIndex:10
-        }),
-    
-        infoDivClose : $( '<button>')
-          .addClass( 'closeButton' )
-          .on( 'click', function(e) { col.infoDiv.remove(); col.infoDiv = null; })
-          .css({ 
-            fontSize:'1em', 
-            display:'inline', 
-            border:'1px solid #666',
-            padding:'.25em',
-            background:'#191919',
-            width:'80%',
-            marginLeft:'10%',
-            fontFamily:'Helvetica, sans-serif',
-            '-moz-box-sizing': 'border-box !important',
-            'box-sizing': 'border-box !important' 
-          })
-          .html( 'close file information view' )
-          .attr( 'title', 'close file info view' ),
-      })
-    
-      var html = [
-        "<table>",
-        "<tr><td><h2 style='display:inline; font-weight:normal; font-size:2em'> " + col.fileInfo.name + "</h2></td></tr>",
-        "<tr><td><b>author</b>: " + col.fileInfo.author + "</td></tr>",
-        "<tr><td><b>tags</b>: " + (col.fileInfo.tags || 'none') + "</td></tr>",
-        "<tr><td><b>notes</b>: " + (col.fileInfo.notes || 'none') + "</td></tr>",
-        "</table>"
-      ].join('\n')
-    
-      table = $( html ).css({ margin:'1em' })
-      //$( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
-      //console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
-      if( col.fileInfo._revs_info.length > 1 ) {
-        var list = $( '<ul>' ), tr, td, li, a
-      
-        list.append( $('<li>').html('<b>revisions</b>') )
-      
-        for( var i = 0; i < col.fileInfo._revs_info.length; i++ ) {
-          li = $( '<li>' ).text( col.fileInfo._revs_info[ i ].rev )
-            .on('click', ( function() {
-              var rev = col.fileInfo.author + '/publications/' +col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
-              var fnc = function() {
-                GE.Browser.openCode( rev )
-              }
-              return fnc
-            })()
-            )
-            .css({ cursor:'pointer', color:'#aaa' })
-            .hover( function() { $(this).css({ color:'#fff', textDecoration:'underline'} )}, function() { $(this).css({ color:'#aaa', textDecoration:'none'} )})
-          
-          list.append( li )
-        }
-      
-        td = $('<td>').append( list )
-        tr = $('<tr>').append( td )
-      
-        table.append( tr )
-      }
-
-      table.find( 'td' ).css({ paddingBottom:'1em' })
-    
-      col.infoDiv.append( table )
-      col.infoDiv.append( col.infoDivClose )
-      col.bodyElement.prepend( col.infoDiv )
     }
 
     col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
@@ -293,4 +152,159 @@
   }
   
   Gibber.Environment.Layout.Column = Column
+  
+  $.extend( Column.prototype, {
+    toggle:             function() { $( this.element ).toggle() },            
+    toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+    
+    makeFullScreenFunction : function() {
+      var _w = null, _h = null, fnc
+      
+      fnc = function() {
+        //console.log( this )
+        if( !this.isFullScreen ) {
+          if( !Layout.isFullScreen ) {
+            Layout.fullScreen()
+          }
+          _w = this.width - Layout.resizeHandleSize
+          _h = this.bodyElement.innerHeight
+          var w = $( window ).width(), h = $( window ).height()
+          this.toggle()
+          this.header.hide()
+          this.toggleResizeHandle()
+          this.element.css({ width: w, height: h, top:0, left:0 })
+          this.bodyElement.css({ width: w, height: h })
+          this.editor.setSize( w,h )
+          this.isFullScreen = true
+        }else{
+          if( Layout.isFullScreen ) {
+            Layout.fullScreen()
+          }
+          this.toggle()
+          this.header.show()
+          this.toggleResizeHandle()
+          this.element.css({ width: _w, top:31 })
+          this.bodyElement.css({ width: w, height:_h })
+          this.editor.setSize( _w - Layout.resizeHandleSize, _h )
+          Layout.resizeColumns()
+          this.isFullScreen = false
+        }
+      }
+      return fnc
+    },
+    
+		setMode : function(mode) {
+			col.mode = mode
+      col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
+      $( col.modeSelect ).val( col.mode )
+			col.editor.setValue( GE.modes[ col.mode ].default )
+		},
+    
+    save : function() {
+      var col = this
+      //    updateDocument : function( revisions, previous, notes, column ) {
+      if( this.fileInfo && this.value !== this.fileInfo.text ) {
+        GE.Account.updateDocument({ text: this.value }, this.fileInfo, '', this )
+      }else{
+        if( !this.fileInfo ) {
+          GE.Message.post( 'You need to publish this file before you can save it. The publish button is at the top of the Gibber menubar.')
+        }else if( this.value === this.fileInfo.text ) {
+          GE.Message.post( 'The current text is the same as what is in the database; no update was performed.')
+        }
+      }
+    },
+    
+    showFileInfo : function() {
+      var html, table, col = this
+  
+      if( this.infoDiv !== null ) return
+    
+      $.extend( this, {
+        infoDiv : $('<div>').css({
+          height:this.bodyElement.innerHeight(),
+          width:this.bodyElement.innerWidth(),
+          position:'absolute',
+          top:this.header.height(),
+          left:0,
+          display:'block',
+          background:'rgba(0,0,0,.8)',
+          color:'#aaa',
+          zIndex:10
+        }),
+  
+        infoDivClose : $( '<button>')
+          .addClass( 'closeButton' )
+          .on( 'click', function(e) { col.infoDiv.remove(); col.infoDiv = null; })
+          .css({ 
+            fontSize:'1em', 
+            display:'inline', 
+            border:'1px solid #666',
+            padding:'.25em',
+            background:'#191919',
+            width:'80%',
+            marginLeft:'10%',
+            fontFamily:'Helvetica, sans-serif',
+            '-moz-box-sizing': 'border-box !important',
+            'box-sizing': 'border-box !important' 
+          })
+          .html( 'close file information view' )
+          .attr( 'title', 'close file info view' ),
+      })
+    
+      var html
+      if( !this.fileInfo ) {
+        html = "<h2>This file has not been published.</h2><p>If you publish the file, you will see authorship information here and a revision history.</p>"
+        this.infoDiv.append( $( html ).css({ margin:'1em' }) )
+        this.infoDiv.append( this.infoDivClose )
+        this.bodyElement.prepend( this.infoDiv )
+      
+        return
+      }
+  
+      html = [
+        "<table>",
+        "<tr><td><h2 style='display:inline; font-weight:normal; font-size:2em'> " + this.fileInfo.name + "</h2></td></tr>",
+        "<tr><td><b>author</b>: " + this.fileInfo.author + "</td></tr>",
+        "<tr><td><b>tags</b>: " + (this.fileInfo.tags || 'none') + "</td></tr>",
+        "<tr><td><b>notes</b>: " + (this.fileInfo.notes || 'none') + "</td></tr>",
+        "</table>"
+      ].join('\n')
+  
+      table = $( html ).css({ margin:'1em' })
+      //$( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
+      //console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
+      if( this.fileInfo._revs_info.length > 1 ) {
+        var list = $( '<ul>' ), tr, td, li, a
+    
+        list.append( $('<li>').html('<b>revisions</b>') )
+    
+        for( var i = 0; i < this.fileInfo._revs_info.length; i++ ) {
+          li = $( '<li>' ).text( this.fileInfo._revs_info[ i ].rev )
+            .on('click', ( function() {
+              var rev = this.fileInfo.author + '/publications/' +this.fileInfo.name + '?rev=' + this.fileInfo._revs_info[ i ].rev
+              var fnc = function() {
+                GE.Browser.openCode( rev )
+              }
+              return fnc
+            })()
+            )
+            .css({ cursor:'pointer', color:'#aaa' })
+            .hover( function() { $(this).css({ color:'#fff', textDecoration:'underline'} )}, function() { $(this).css({ color:'#aaa', textDecoration:'none'} )})
+        
+          list.append( li )
+        }
+    
+        td = $('<td>').append( list )
+        tr = $('<tr>').append( td )
+    
+        table.append( tr )
+      }
+
+      table.find( 'td' ).css({ paddingBottom:'1em' })
+  
+      this.infoDiv.append( table )
+      this.infoDiv.append( this.infoDivClose )
+      this.bodyElement.prepend( this.infoDiv )
+    }
+  })
 })()

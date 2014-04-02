@@ -15,7 +15,9 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       GE.Message.post( 'You must log in before chatting. Click the link in the upper right corner of the window to login (and create an account if necessary).' )
       return
     }
-    this.column = Layout.addColumn({ header:'Chat' })
+    this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'Chat' })
+    this.column.bodyElement.remove()
+    
     this.column.onclose = function() {
       Chat.lobbyElement = null
       // Chat.socket.close()
@@ -70,6 +72,8 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       Chat.moveToLobby()
     }
     this.initialized = true;
+    Layout.setColumnBodyHeight( this.column )
+    
   },
 
   moveToLobby : function () {
