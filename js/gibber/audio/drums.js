@@ -569,5 +569,5 @@
   //Gibber.presets.Drums = {}
 
   Gibber.Drums = window.Drums = Drums
-  Gibber.EDrums = window.XOX = EDrums
+  Gibber.EDrums = window.XOX = window.EDrums = EDrums
 })()

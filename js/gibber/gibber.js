@@ -833,11 +833,42 @@ window.Gibber = window.G = {
     }
   },
   
+  defineRampedProperty : function( obj, _key ) {
+    var fnc = obj[ _key ], key = _key.slice(1), cancel
+    
+    fnc.ramp = function( from, to, length ) {
+      if( arguments.length < 2 ) {
+        console.err( 'ramp requires at least two arguments: target and time.' )
+        return
+      }
+      
+      if( typeof length === 'undefined' ) { // if only to and length arguments
+        length = to
+        to = from
+        from = obj[ key ]()
+      }
+      
+      if( cancel ) cancel()
+      
+      if( typeof from !== 'object' ) {
+        obj[ key ] = Line( from, to, length )
+      }else{
+        from.retrigger( to, Gibber.Clock.time( length ) )
+      }
+      
+      cancel = future( function() {
+        obj[ key ] = to
+      }, length )
+      
+      return obj
+    }
+  },
+  
   createProxyMethods : function( obj, methods ) {
     for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
   },
   
-  createProxyProperty: function( obj, _key, shouldSeq ) {
+  createProxyProperty: function( obj, _key, shouldSeq, shouldRamp ) {
     var propertyName = _key,
         propertyDict = obj.mappingProperties[ propertyName ],
         __n = propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
@@ -892,6 +923,9 @@ window.Gibber = window.G = {
     if( shouldSeq )
       Gibber.defineSequencedProperty( obj, '_' + propertyName )
     
+    if( shouldRamp )
+      Gibber.defineRampedProperty( obj, '_' + propertyName )
+    
     // capital letter mapping sugar
     Object.defineProperty( obj, mapping.Name, {
       configurable: true,
@@ -906,8 +940,9 @@ window.Gibber = window.G = {
     })
   },
   
-  createProxyProperties : function( obj, mappingProperties, noSeq ) {
-    var shouldSeq = typeof noSeq === 'undefined' ? true : noSeq
+  createProxyProperties : function( obj, mappingProperties, noSeq, noRamp ) {
+    var shouldSeq = typeof noSeq === 'undefined' ? true : noSeq,
+        shouldRamp = typeof noRamp === 'undefined' ? true : noRamp
     if( !obj.seq && shouldSeq )
       obj.seq = Gibber.PolySeq()
     
@@ -915,7 +950,7 @@ window.Gibber = window.G = {
     obj.mappingObjects = []
     
     for( var key in mappingProperties ) {
-      Gibber.createProxyProperty( obj, key, shouldSeq )
+      Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp )
     }
   },
   

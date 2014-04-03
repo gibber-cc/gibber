@@ -15,6 +15,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       GE.Message.post( 'You must log in before chatting. Click the link in the upper right corner of the window to login (and create an account if necessary).' )
       return
     }
+    
     this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'Chat' })
     this.column.bodyElement.remove()
     
@@ -74,14 +75,17 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.initialized = true;
     Layout.setColumnBodyHeight( this.column )
     
+    this.column.onclose = function() { console.log( 'you have left the chat server.' ) }
   },
 
   moveToLobby : function () {
     if( this.lobbyElement === null ) {
       this.lobbyElement = $( '<div>' ).addClass( 'chatlobby' )
       this.column.element.append( this.lobbyElement )
+      this.lobbyElement.append( $('<h3>Available Chatrooms</h3>').css({ marginLeft:'.5em' }) )
     }else{
       this.lobbyElement.empty()
+      this.lobbyElement.append( $('<h3>Available Chatrooms</h3>').css({ marginLeft:'.5em' }) )
       this.lobbyElement.show()
       this.column.bodyElement = this.lobbyElement
 
@@ -98,7 +102,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.currentRoom = 'lobby'
     this.room.css({ color:'#ccc', background:'#333' })
     this.room.hide()
-    // this.addButton.show()
+    //this.addButton.show()
     
     this.socket.send( JSON.stringify({ cmd:'listRooms' }) )
   },
@@ -206,16 +210,16 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     listRooms : function( data ) {
       var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })
 
-     for( var key in data.rooms ) {
-       (function() {
-         var _key = key,  
-             msg = JSON.stringify( { cmd:'joinRoom', room:_key } ),
-             lock = data.rooms[ _key ].password ? " - password required" : " - open",
-             userCount = data.rooms[ _key ].userCount,
-             link = $( '<span>').text( _key + "  " + lock + ' - ' + userCount + ' gibberer(s)' )
-               .on( 'click', function() { Chat.socket.send( msg ) } )
-               .css({ pointer:'hand' }),
-             li = $( '<li>').append( link )
+      for( var key in data.rooms ) {
+        (function() {
+          var _key = key,  
+              msg = JSON.stringify( { cmd:'joinRoom', room:_key } ),
+              lock = data.rooms[ _key ].password ? " - password required" : " - open",
+              userCount = data.rooms[ _key ].userCount,
+              link = $( '<span>').text( _key + "  " + lock + ' - ' + userCount + ' gibberer(s)' )
+                .on( 'click', function() { Chat.socket.send( msg ) } )
+                .css({ cursor:'pointer' }),
+              li = $( '<li>').append( link )
               
           roomList.append( li )
         })()
@@ -259,6 +263,9 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     },
     roomJoined: function( data ) {
       Chat.moveToRoom( data.roomJoined, data.occupants )
+    },
+    roomLeft: function( data ) {
+      
     },
     arrival : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
