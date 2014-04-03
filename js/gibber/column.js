@@ -1,11 +1,12 @@
 ( function() { 
   'use strict'
-
+  
+  var GE = Gibber.Environment
+  
   var Column = function( options, Layout ) {
     options = options || {}
-    
-    var GE = Gibber.Environment,
-        isCodeColumn = options.type === 'code',
+
+    var isCodeColumn = options.type === 'code',
         lastColumnWidth = 0, 
         colNumber = Layout.columnID++,
         mode  = 'javascript',
@@ -194,10 +195,10 @@
     },
     
 		setMode : function(mode) {
-			col.mode = mode
-      col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
-      $( col.modeSelect ).val( col.mode )
-			col.editor.setValue( GE.modes[ col.mode ].default )
+			this.mode = mode
+      this.editor.setOption( 'mode', GE.modes.nameMappings[ this.mode ] )
+      $( this.modeSelect ).val( this.mode )
+			this.editor.setValue( GE.modes[ this.mode ].default )
 		},
     
     save : function() {
