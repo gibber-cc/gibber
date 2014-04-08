@@ -1,8 +1,10 @@
+// TODO: shuffle and reset...
+
 (function() {
   
   "use strict"
   
-  var doNotSequence = [ 'durations', 'target', 'scale', 'offset' ]
+  var doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart' ]
 
   var makeNoteFunction = function( notes, obj ) {
     var _note = $.extend( [], notes ),
@@ -69,8 +71,7 @@
   }
   
   Gibber.Seq = function() {
-    
-    var obj = {}, seq, hasScale
+    var obj = {}, seq, hasScale, keyList = []
     
     if( $.type( arguments[0] ) === 'object' ) {
       var arg = arguments[0],
@@ -89,30 +90,44 @@
       }
       
       obj.keysAndValues = {}
-      
-      var keyList = []
+      obj.seqs = []
+
       for( var key in arg ) {
         if( doNotSequence.indexOf( key ) === -1 ) {
           var valueType = $.type( arg[ key ] )
           
-          if( valueType === 'array' ) {
-            obj.keysAndValues[ key ] = arg[ key ]
-          }else if( valueType !== 'undefined' ) {
-            obj.keysAndValues[ key ] = [ arg[ key ] ]
+          var _seq = {
+            key: key,
+            target: obj.target,
+            durations:obj.durations
           }
           
+          if( valueType === 'array' ) {
+            _seq.values = arg[ key ]
+          }else if( valueType !== 'undefined' ) {
+            _seq.values = [ arg[ key ] ]
+          }
+                    
+          obj.seqs.push( _seq )
           keyList.push( key )
         }
       }
       
       if( 'scale' in obj ) {
-        if( 'note' in obj.keysAndValues ) {
-          obj.keysAndValues.note = makeNoteFunction( obj.keysAndValues.note, obj )
-        }else if( 'chord' in obj.keysAndValues ) {
-          var _chord = $.extend( [], obj.keysAndValues.chord ),
+        var noteIndex = keyList.indexOf( 'note' ),
+            chordIndex = keyList.indexOf( 'chord' )
+            
+            //  var makeNoteFunction = function( notes, obj ) {
+
+        if( noteIndex > -1 ) {
+          obj.seqs[ noteIndex ].values = makeNoteFunction( obj.seqs[ noteIndex ].values, obj )
+        }
+        
+        if( chordIndex > -1 ) {
+          var _chord = $.extend( [], obj.seqs[ chordIndex ] ),
               count = 0
               
-          obj.keysAndValues.chord = [ function() {
+          obj.seqs[ chordIndex ] = [ function() {
             var idxs, chord = []
           
             if( typeof _chord.pick === 'function' ) {
@@ -132,17 +147,21 @@
         }
       }  
     }else if( typeof arguments[0] === 'function' ){
-      obj.values = arguments[0]
-      obj.durations = arguments[1]
-    }else{
-      obj.key = 'note'
-      obj.values = $.isArray( arguments[0] ) ? arguments[0] : [ arguments[0] ]
-      obj.durations = $.isArray( arguments[1] ) ? arguments[1] : [ arguments[1] ]
-      obj.target = arguments[2]
+      obj.seqs = [{
+        key:'functions',
+        values: [ arguments[ 0 ] ],
+        durations: Gibber.Clock.time( arguments[ 1 ] )
+      }]
+      
+      keyList.push('functions')
     }
-    //console.log( obj )
-
-    seq = new Gibberish.Sequencer2( obj )
+      
+    seq = new Gibberish.PolySeq( obj )
+		seq.name = 'Seq'
+    seq.save = {}
+    
+    seq.oldShuffle = seq.shuffle
+    delete seq.shuffle
     
     seq.rate = Gibber.Clock
     var oldRate  = seq.__lookupSetter__( 'rate' )
@@ -155,20 +174,7 @@
         oldRate.call( seq, _rate )
       }
     })
-    
-		seq.name = 'Seq'
-    // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )
-    
-    $.extend( seq, {
-      replaceWith: function( replacement ) { this.kill() },
-      kill: function() { 
-        if( this.target )
-          this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-          
-        this.stop().disconnect()
-      }
-    })
-    
+
     var nextTime = seq.nextTime,
         oldNextTime = seq.__lookupSetter__('nextTime')
     Object.defineProperty( seq, 'nextTime', {
@@ -185,120 +191,96 @@
     
     for( var i = 0; i < keyList.length; i++ ) {
       (function(_seq) {
-        var key = keyList[ i ]
+        var key = keyList[ i ],
+            _i  = i
 
         Object.defineProperty( _seq, key, {
-          get: function() { return _seq.keysAndValues[ key ] },
+          get: function() { return _seq.seqs[ _i ].values },
           set: function(v) {
-            if( key === 'note' && seq.scale ) {
-              v = makeNoteFunction( v, seq )
+            if( key === 'note' && _seq.scale ) {
+              v = makeNoteFunction( v, _seq )
             }
-            _seq.keysAndValues[ key ] = v  
+            _seq.seqs[ _i ].values = v  
           }
         })
       })(seq)
     }
     
-    var _shuffle = seq.shuffle, save = {}
-    seq.shuffle = function() {
-      if( Object.keys( save ).length === 0 ) {
-        for( var key in seq.keysAndValues ) {
-          var val = seq.keysAndValues[ key ]
-          if( Array.isArray( val ) ) {
-            save[ key ] = val.slice( 0 )
-          }else{
-            save[ key ] = val
-          }
+    var _durations = null
+    Object.defineProperty( seq, 'durations', {
+      get: function() { return _durations },
+      set: function(v) {
+        _durations = v
+        for( var i = 0; i < seq.seqs.length; i++ ) {
+          var _seq = seq.seqs[i]
+          _seq.durations = _durations
         }
       }
-      var args = Array.prototype.slice.call( arguments, 0 )
-            
-      _shuffle.apply( seq, args )
-    }
+    })
     
-    seq.reset = function() {
-      if( Object.keys( save ).length !== 0 ) {
-        for( var key in save ) {
-          var val = save[ key ]
-          if( Array.isArray( val ) ) {
-            seq.keysAndValues[ key ] = val.slice( 0 )
-          }else{
-            seq.keysAndValues[ key ] = val
-          }
-        }
-      }
+    if( arguments[0] && ! arguments[0].doNotStart ) {
+      seq.start()
     }
-    seq.once = function() {
-      this.repeat(1)
-      return this
-    }    
-    seq.showSave = function() {
-      //console.log( save )
-    }
-    
-    seq.start()
+    //seq.start()
     
     console.log( 'Sequencer created.' )
     return seq
   }
   
-  Gibberish.PolySeq.prototype.applyScale = function() {
-    for( var i = 0; i < this.seqs.length; i++ ) {
-      var s = this.seqs[ i ]
-      if( s.key === 'note' || s.key === 'frequency' ) {
-        s.values = makeNoteFunction( s.values, this )
-      }
-    }
-  }
-  Gibber.PolySeq = function() {
-    var args = Array.prototype.slice.call( arguments, 0 ),
-        seq = Gibber.construct( Gibberish.PolySeq, args )
-    
-    seq.rate = Gibber.Clock
-    
-    var oldRate  = seq.__lookupSetter__( 'rate' ),
-       _rate = seq.rate 
-       
-    Object.defineProperty( seq, 'rate', {
-      get : function() { return _rate },
-      set : function(v) {
-        _rate = Mul( Gibber.Clock, v )
-        oldRate.call( seq, _rate )
-      }
-    })
-    
-    // var nextTime = seq.nextTime,
-    //     oldNextTime = seq.__lookupSetter__('nextTime')
-    // 
-    // Object.defineProperty( seq, 'nextTime', {
-    //   get: function() { return nextTime },
-    //   set: function(v) { nextTime = Gibber.Clock.time( v ); oldNextTime( nextTime ) }
-    // })
-
-    var scale = null
-    Object.defineProperty( seq, 'scale', {
-      get: function() { return scale },
-      set: function(v) { 
-        scale = v
-        seq.applyScale()
-      }
-    })
+  $.extend( Gibberish.PolySeq.prototype, {
+    replaceWith: function( replacement ) { this.kill() },
+    kill: function() { 
+      if( this.target )
+        this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
         
-		seq.name = 'Seq'
-    // if( seq.target && seq.target.sequencers ) seq.target.sequencers.push( seq )
-    
-    $.extend( seq, {
-      replaceWith: function( replacement ) { this.kill() },
-      kill: function() { 
-        if( this.target )
-          this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-          
-        this.stop().disconnect()
+      this.stop().disconnect()
+    },
+    applyScale : function() {
+      for( var i = 0; i < this.seqs.length; i++ ) {
+        var s = this.seqs[ i ]
+        if( s.key === 'note' || s.key === 'frequency' ) {
+          s.values = makeNoteFunction( s.values, this )
+        }
       }
-    })
-    
-    return seq
-  }
+    },
+    once : function() {
+      this.repeat( 1 )
+      return this
+    },
+    reset : function() {
+      if( Object.keys( this.save ).length !== 0 ) {
+        for( var key in this.save ) {
+          var val = this.save[ key ]
+          for( var i = 0; i < this.seqs.length; i++ ) {
+            if( this.seqs[ i ].key === key ) {
+              if( Array.isArray( val ) ) {
+                this.seqs[ i ].values = this.save[ key ].slice(0)
+              }else{
+                this.seqs[ i ].values = this.save[ key ]
+              }
+              break;
+            }
+          }
+        }
+      }
+    },
+    shuffle : function() { // original Gibberish.PolySeq.shuffle is deleted in constructor after being saved
+      if( Object.keys( this.save ).length === 0 ) {
+        for( var i = 0; i < this.seqs.length; i++ ) {
+          var val = this.seqs[ i ].values
+          if( Array.isArray( val ) ) {
+            this.save[ this.seqs[ i ].key ] = val.slice(0)
+          }else{
+            this.save[ this.seqs[ i ].key ] = val
+          }
+        }
+      }
+      
+      var args = Array.prototype.slice.call( arguments, 0 )
+        
+      this.oldShuffle.apply( this, args )
+    },
+  })
   
   Gibber.ScaleSeq = function() {
     var args = arguments[0],
@@ -306,7 +288,8 @@
     
     args.root = args.root || 'c4'
     args.mode = args.mode || 'aeolian'
-        
+    
+    console.log( args )
     scale = Gibber.Theory.Scale( args.root, args.mode )
     
     delete args.root; delete args.mode

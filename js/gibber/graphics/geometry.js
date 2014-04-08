@@ -96,7 +96,7 @@ for( var key in types) {
 
       this.spinX = this.spinY = this.spinZ = 0
       
-      this.seq = Gibber.PolySeq()
+      this.seq = Gibber.Seq()
     
       this.mappingProperties = mappingProperties
       this.mappingObjects = []

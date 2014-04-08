@@ -247,8 +247,6 @@ var ugens = ['Drums', 'Pluck', 'EDrums', 'Sampler', 'Synth', 'FM', 'Sine', 'Tria
       // }
       // //console.log("FOUND", key)
       seq.seq.chose = function(key, index) {
-        //console.log( 'CHOSE', key, index)
-				//console.log( seq.locations )
         if(seq.locations[key]) {
           var __name = '.'+seq.locations[key][index];
 										

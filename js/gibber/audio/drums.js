@@ -112,7 +112,6 @@
   
   }
   
-  
   function Drums (_sequence, _timeValue, _amp, _freq){    
     var args = Array.prototype.slice.call(arguments),
         obj = {}, 
@@ -136,7 +135,6 @@
   
     Object.defineProperty(obj, '_', { get: function() { obj.disconnect(); return obj }, set: function() {} })
 		
-  	obj.pitch = 1;
   	obj.kit = Drums.kits['default'];
     
   	if(typeof arguments[0] === "object") {
@@ -159,18 +157,16 @@
     obj.removeMod = obj.removePolyMod
 	
   	obj.connect();
-	
-  	obj.shuffle = function() { obj.seq.shuffle(); };
-  	obj.reset 	= function() { obj.seq.reset(); };
-  	obj.stop 	= function() { obj.seq.stop(); };
-  	obj.play 	= function() { obj.seq.play(); };
+    
+    Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )    
+    
+  	obj.pitch(1);
     
     if( typeof props !== 'undefined') {
       switch( $.type( props[0] ) ) {
         case 'string':
           var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
           
-          console.log(seqs)
           for( var i = 0; i < seqs.length; i++ ) {
             var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
 
@@ -180,29 +176,26 @@
               
               duration = eval(duration)
               hasTime = true
-              seq = _value.trim()
+              seq = _value.trim().split('')
             }else{
-              seq = seq.trim()
+              seq = seq.trim().split('')
               duration = 1 / seq.length  
             }
             
             if( seq.indexOf('.rnd(') > -1) {// || seq.indexOf('.random(') > -1 ) {
-              console.log( "RANDOM")
               seq = seq.split( '.rnd' )[0]
               seq = seq.split('').rnd()
             }
             
             if( typeof props[1] !== 'undefined') { duration = props[1] }
             
-            _seqs.push({
+            obj.seq.add({
               key:'note',
               values:seq,
               durations:duration,
               target:obj
             })
           }
-          
-          obj.seq = Gibber.PolySeq({ seqs:_seqs }).connect().start()
 
           break;
         case 'object':
@@ -210,7 +203,7 @@
       		props[0].target = obj
           props[0].durations = props[0].durations ? Gibber.Clock.Time( props[0].durations ) : Gibber.Clock.Time( 1 / props[0].note.length )
           props[0].offset = props[0].offset ? Gibber.Clock.time( props[0].offset ) : 0
-      	  obj.seq = Seq( props[0] );
+      	  //obj.seq = Seq( props[0] );
           
           break;
         default:
@@ -260,20 +253,15 @@
       }
   	}
     
-    // var _pitch = obj.pitch
-    // Object.defineProperty( obj, 'pitch', {
-    //   get: function() { return _pitch },
-    //   set: function(v) { 
-    //     _pitch = v; 
-    //     for(var key in obj.kit) {
-    //       obj[key].pitch = _pitch()
-    //     }
-    //   }
-    // })
-        
-    Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )    
-    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )       
-    
+    obj.start = function() { obj.seq.start() }
+    obj.stop = function() { obj.seq.stop() }
+    obj.shuffle = function() { obj.seq.shuffle() }
+    obj.reset = function() { obj.seq.reset() }
+
+    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start' ] )
+            
+    obj.seq.start()
+
     obj.kill = function() {
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
       end.disconnect()
@@ -338,14 +326,18 @@
 	
     obj.mod = obj.polyMod
     obj.removeMod = obj.removePolyMod
-	
-  	obj.shuffle = function() { obj.seq.shuffle(); };
-  	obj.reset 	= function() { obj.seq.reset(); };
-  	obj.stop 	= function() { obj.seq.stop(); };
-  	obj.play 	= function() { obj.seq.play(); };
-    
+
     obj.set = function( v ) { obj.seq.note = v.split('') }
     
+    Gibber.createProxyProperties( obj, _mappingProperties[ 'XOX' ] )
+    
+    obj.start = function() { obj.seq.start() }
+    obj.stop = function() { obj.seq.stop() }
+    obj.shuffle = function() { obj.seq.shuffle() }
+    obj.reset = function() { obj.seq.reset() }
+
+    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start' ] )
+
     if( typeof props !== 'undefined') {
       switch( $.type( props[0] ) ) {
         case 'string':
@@ -361,9 +353,9 @@
               
               duration = eval(duration)
               hasTime = true
-              seq = _value.trim()
+              seq = _value.trim().split('')
             }else{
-              seq = seq.trim()
+              seq = seq.trim().split('')
               duration = 1 / seq.length  
             }
             
@@ -377,15 +369,13 @@
             
             if( typeof props[1] !== 'undefined') { duration = props[1] }
             
-            _seqs.push({
+            obj.seq.add({
               key:'note',
               values:seq,
               durations:duration,
               target:obj
             })
-          }
-          
-          obj.seq = Gibber.PolySeq({ seqs:_seqs }).connect().start()
+          }  
           
           break;
         case 'object':
@@ -508,8 +498,7 @@
       }
   	}
     
-    Gibber.createProxyProperties( obj, _mappingProperties[ 'XOX' ] )
-    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )
+    //Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )
 
     obj.kill = function() {
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
@@ -517,6 +506,8 @@
            
       obj.seq.kill()
     }
+     
+    obj.seq.start()
      
     console.log( 'XOX created.' ) 
     return obj

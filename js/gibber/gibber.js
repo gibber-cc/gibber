@@ -192,6 +192,8 @@ window.Gibber = window.G = {
 
   log: function( msg ) { console.log( msg ) },
   
+  scriptCallbacks: [],
+  
   run: function( script, pos, cm ) { // called by Gibber.Environment.modes.javascript
 		var _start = pos.start ? pos.start.line : pos.line,
 				tree
@@ -216,56 +218,12 @@ window.Gibber = window.G = {
 			}catch( e ) {
 				console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
 			}
-
-      //console.log( "LINE NUMBER", pos.start.line + obj.loc.start.line, obj )
-			//console.log( "SOURCE : ", cm.getRange( start, end ) )
-      // if(obj.type === 'ExpressionStatement') {
-      //   if(obj.expression.type === 'AssignmentExpression') {
-      //     if(obj.expression.left.type === 'Identifier') { // assigning to global and not a property
-      //       var lastChar, name;
-      //       //console.log(obj.expression.left)
-      //       if(typeof pos.start === 'undefined') {
-      //         //lastChar = cm.lineInfo(pos.line).text.length;
-      //         lastChar = cm.lineInfo(pos.line).text.length;
-      //       }
-      //       name = obj.expression.left.name;
-      //       
-      //       var marker = typeof pos.start !== 'undefined' 
-      //         ? cm.markText( pos.start, pos.end, {className:name} )
-      //         : cm.markText( { line:pos.line,ch:0 }, { line:pos.line, ch:lastChar }, {className:name} );
-      //       
-      //       window[ name ].marker = marker;
-      //       window[ name ].tree = obj;
-      //       window[ name ].text = function() { return $('.'+name); }
-      //       window[ name ].text.color = function(color) {
-      //         window[ name ].text().css({ background:color });
-      //       }
-      //       
-      //       if(window[ name ].name === 'Seq' || window[ name ].name === 'ScaleSeq') {
-      //         Notation.processSeq( window[ name ], name, cm, pos );
-      //       }else if(window[ name ].name === 'Drums' /* || window[ name ].name === 'EDrums' */) {
-      //         Notation.processDrums( window[ name ], name, cm, pos );
-      //       }
-      //       
-      //       if( ugens.indexOf(window[name].name) > -1 ) {
-      //         window[name].follower = new Gibberish.Follow( {input:window[name], mult:4} );
-      //         
-      //         window[name].followerSeq = Seq({ 
-      // 								values:[
-      // 									function() {
-      // 	                  var val = window[name].follower.getValue()
-      // 	                  if(val > 1) val = 1
-      // 	                  var col = 'rgba(255,255,255,'+val+')'
-      // 	                  window[name].text.color(col) 
-      // 									}
-      // 								],
-      // 								durations:1/32
-      //         })
-      //       }
-      // 
-      //     }
-      //   }
-      // }
+      
+      if( this.scriptCallbacks.length > 0 ) {
+        for( var i = 0; i < this.scriptCallbacks.length; i++ ) {
+          this.scriptCallbacks[ i ]( obj, cm, pos, start, end, src )
+        }
+      }
     }
   },
   
@@ -784,7 +742,16 @@ window.Gibber = window.G = {
   },
   
   defineSequencedProperty : function( obj, key ) {
-    var fnc = obj[ key ]
+    var fnc = obj[ key ], seq, seqNumber
+    
+    // for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
+    //   var s = obj.seq.seqs[ i ]
+    //   if( s.key === key ) {
+    //     seq = s,
+    //     seqNumber = i
+    //     break;
+    //   }
+    // }
     
     fnc.seq = function( v,d ) { 
       var args = {
@@ -793,17 +760,17 @@ window.Gibber = window.G = {
         durations: $.isArray(d) ? d : [d],
         target: obj
       }
-    
-      for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
-        var s = obj.seq.seqs[ i ]
-        if( s.key === key ) {
-          s.shouldStop = true
-          obj.seq.seqs.splice(i,1)
-          break;
-        }
+      
+      if( typeof seq !== 'undefined' ) {
+        seq.shouldStop = true
+        obj.seq.seqs.splice( seqNumber, 1 )
       }
       
+      console.log( obj.seq )
       obj.seq.add( args )
+      
+      seqNumber = obj.seq.seqs.length - 1
+      seq = obj.seq.seqs[ seqNumber ]
     
       if( !obj.seq.isRunning ) { 
         obj.seq.connect()
@@ -811,24 +778,18 @@ window.Gibber = window.G = {
       }
       return obj
     }
-    fnc.seq.stop = function() { 
-      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
-        var s = obj.seq.seqs[ i ]
-        if( s.key === key ) {
-          s.shouldStop = true
-          break;
-        }
-      }
-    } // TODO: property specific stop/start/shuffle etc. for polyseq
+    
+    fnc.seq.stop = function() { seq.shouldStop = true } 
+    
+    // TODO: property specific stop/start/shuffle etc. for polyseq
     fnc.seq.start = function() {
-      for( var i = 0; i < obj.seq.seqs.length; i++ ) {
-        var s = obj.seq.seqs[ i ]
-        if( s.key === key ) {
-          s.shouldStop = false
-          obj.seq.timeline[0] = [ s ]                
-          obj.seq.nextTime = 0
-          break;
-        }
+      seq.shouldStop = false
+      obj.seq.timeline[0] = [ seq ]                
+      obj.seq.nextTime = 0
+      
+      if( !obj.seq.isRunning ) { 
+        obj.seq.connect()
+        obj.seq.start()
       }
     }
   },
@@ -891,7 +852,7 @@ window.Gibber = window.G = {
     
     fnc = obj[ '_' + propertyName ] = ( function() {
       var _fnc = function(v) {
-        if(v) {
+        if( typeof v !== 'undefined' ) {
           mapping.value = v
           if( mapping.oldSetter ) mapping.oldSetter( mapping.value )
         }
@@ -943,8 +904,10 @@ window.Gibber = window.G = {
   createProxyProperties : function( obj, mappingProperties, noSeq, noRamp ) {
     var shouldSeq = typeof noSeq === 'undefined' ? true : noSeq,
         shouldRamp = typeof noRamp === 'undefined' ? true : noRamp
-    if( !obj.seq && shouldSeq )
-      obj.seq = Gibber.PolySeq()
+        
+    if( !obj.seq && shouldSeq ) {
+      obj.seq = Gibber.Seq({ doNotStart:true })      
+    }
     
     obj.mappingProperties = mappingProperties
     obj.mappingObjects = []
@@ -1095,9 +1058,12 @@ window.Gibber = window.G = {
       return this
     },
 
-    stop : function() {
-      if( this.seq ) this.seq.stop()
-    },
+    // stop : function() {
+    //   if( this.seq ) this.seq.stop()
+    // },
+    // start : function() {
+    //   if( this.seq ) this.seq.start()
+    // },
     
     fadeIn : function( endLevel, _time ) {
       if( arguments.length === 1) {
@@ -1124,12 +1090,6 @@ window.Gibber = window.G = {
       
       return this
     },
-    // play : function( repeat ) {
-    //   if( this.seq && ! this.seq.isRunning ) {
-    //     this.seq.start()
-    //     if( repeat ) this.seq.repeat( repeat )
-    //   }
-    // },
   }
 }
 
