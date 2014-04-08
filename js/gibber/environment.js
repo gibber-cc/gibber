@@ -22,6 +22,7 @@ var GE = Gibber.Environment = {
                 'external/mousetrap',
                 'gibber/chat',
                 'gibber/share',
+                'gibber/code_objects',                
                 ], function() {
 
         GE.Keymap.init()

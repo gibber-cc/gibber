@@ -105,7 +105,9 @@
         lineNumbers:false,
         autofocus: options.autofocus || false,
       })
-    
+      
+      col.editor.on('drop', function (cm, e) { e.preventDefault(); })
+      
       col.lineNumbersButton = $( '<button>' ).text('#')
         .on( 'click', function( e ) { 
           col.editor.setOption( 'lineNumbers', !col.editor.getOption('lineNumbers') )

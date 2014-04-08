@@ -109,6 +109,34 @@
     };
   })
   
+  Gibberish.Sampler.prototype.ondrop = function( files ) {
+    var file = files[0],
+        reader = new FileReader(),
+        that = this;
+  
+    reader.readAsArrayBuffer( file );
+    
+    reader.onload = function (event) {
+      Gibberish.context.decodeAudioData( reader.result, function(_buffer) {
+        var buffer = _buffer.getChannelData(0)
+        that.setBuffer( buffer )
+  			that.length = that.end = buffer.length
+        
+        that.isPlaying = true;
+					
+  			console.log("LOADED", file.name, buffer.length);
+  			Gibberish.audioFiles[ file.name ] = buffer;
+			
+        if(that.onload) that.onload();
+      
+        if(that.playOnLoad !== 0) that.note( that.playOnLoad );
+      
+  			that.isLoaded = true;
+      //Layout.columns[0].bodyElement.css('background', 'url(' + event.target.result + ') no-repeat center')
+      })
+    }
+  }
+  
   Gibber.Oscillators.Wavetable = function( table ) {
     var oscillator = new Gibberish.Table().connect( Gibber.Master )
     if( table ) oscillator.setTable( table )
