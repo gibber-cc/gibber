@@ -23,10 +23,10 @@ define(['gibber/audio_callback'], function() {
 				this.dev = Sink(audioProcess, 2, 8192);
 				this.sampleRate = this.dev.sampleRate;
 			}else{
-			
-				this.context = new webkitAudioContext();//sinks.webaudio.getContext(),
-				this.node = this.context.createJavaScriptNode(2048, 2, 2);
-			
+	      this.context = AudioContext ? new AudioContext() : new webkitAudioContext();//sinks.webaudio.getContext(),
+		    //this.context = new webkitAudioContext();//sinks.webaudio.getContext(),
+		    this.node = this.context.createJavaScriptNode ? this.context.createJavaScriptNode(2048, 2, 2) : this.context.createScriptProcessor();
+
 				this.node.onaudioprocess = audioProcess;
 				this.node.connect(this.context.destination);
 			}
