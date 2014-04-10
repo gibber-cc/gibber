@@ -103,6 +103,7 @@
         lineWrapping: false,
         tabSize: 2,
         lineNumbers:false,
+        cursorBlinkRate: 600,
         autofocus: options.autofocus || false,
       })
       

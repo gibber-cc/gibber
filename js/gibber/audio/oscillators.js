@@ -25,12 +25,6 @@
       timescale: 'audio',
       dimensions:1
     },
-    out: {
-      min: 0, max: 1,
-      output: Gibber.LINEAR,
-      timescale: 'audio',
-      dimensions:1
-    },
     pulsewidth : {
       min: 0.01, max: .99,
       output: Gibber.LINEAR,
@@ -41,6 +35,12 @@
       min: 1, max: 4,
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
+    },
+    out: {
+      min: 0, max: 1,
+      output: Gibber.LINEAR,
+      timescale: 'audio',
+      dimensions:1
     },
   }
   
@@ -78,9 +78,22 @@
           }
         }
         
+        if( name === 'Sampler' ) {
+          mappingProperties.pan = {
+            min: -1, max: 1,
+            output: Gibber.LINEAR,
+            timescale: 'audio',
+            dimensions:1
+          }
+        }
+        
         Gibber.createProxyProperties( oscillator, mappingProperties )
         
-        Gibber.createProxyMethods( oscillator, ['note'] )
+        var proxyMethods = [ 'note' ]
+        
+        if( name === 'Sampler' ) { proxyMethods.push( 'pickBuffer' ) }
+        
+        Gibber.createProxyMethods( oscillator, proxyMethods )
         
         Gibber.processArguments2( oscillator, args, name )
         
@@ -109,32 +122,65 @@
     };
   })
   
-  Gibberish.Sampler.prototype.ondrop = function( files ) {
-    var file = files[0],
-        reader = new FileReader(),
-        that = this;
-  
-    reader.readAsArrayBuffer( file );
+  Gibberish.Sampler.prototype.readFile = function( file ) {
+    var that = this
+    if( file.isFile ) {
+      file.file( function( file ) {
+        that.readFile( file )
+      })
+      return
+    }
+    var reader = new FileReader()
     
+    reader.readAsArrayBuffer( file );
+
     reader.onload = function (event) {
       Gibberish.context.decodeAudioData( reader.result, function(_buffer) {
         var buffer = _buffer.getChannelData(0)
         that.setBuffer( buffer )
   			that.length = that.end = buffer.length
-        
+        that.buffers[ file.name ] = buffer
+    
         that.isPlaying = true;
-					
+			
   			console.log("LOADED", file.name, buffer.length);
   			Gibberish.audioFiles[ file.name ] = buffer;
-			
+	
         if(that.onload) that.onload();
-      
+  
         if(that.playOnLoad !== 0) that.note( that.playOnLoad );
-      
+  
   			that.isLoaded = true;
-      //Layout.columns[0].bodyElement.css('background', 'url(' + event.target.result + ') no-repeat center')
       })
     }
+  }
+  
+  Gibberish.Sampler.prototype.ondrop = function( files ) {
+    for( var i = 0; i < files.length; i++ ) {
+      ( function(_that) { 
+        var file = files[ i ],
+            reader = new FileReader(),
+            that = _that, item;
+        
+        item = file.webkitGetAsEntry()
+        
+        if( item.isDirectory ) {
+          var dirReader = item.createReader()
+      		dirReader.readEntries( function( entries ){
+      			var idx = entries.length;
+      			while(idx--){
+      				_that.readFile( entries[idx] );
+      			}	
+      		})
+        }else{
+          _that.readFile( item )
+        }
+      })( this )
+    }
+  }
+  
+  Gibberish.Sampler.prototype.pickBuffer = function() {
+    this.switchBuffer( rndi( 0, this.getNumberOfBuffers() ) )
   }
   
   Gibber.Oscillators.Wavetable = function( table ) {

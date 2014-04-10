@@ -2283,6 +2283,7 @@ Interface.XY = function() {
         if(this.onvaluechange) this.onvaluechange();
         
         if(!this.usePhysics) {
+          this.sendTargetMessage();
           this.refresh();
         }
       }     
@@ -2463,6 +2464,7 @@ Interface.XY = function() {
     
     _init : function() { 
       this.makeChildren();
+      this.sendTargetMessage();
      },
   })
   .init( arguments[0] );
