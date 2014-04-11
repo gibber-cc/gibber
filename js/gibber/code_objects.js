@@ -14,7 +14,7 @@
         newObject.text = new String( src )
         newObject.text.mark = mark
         newObject.text.class = '.' + className
-        newObject.text.mappingProperties = $.extend( {}, Gibber.notationProperties )
+        newObject.text.mappingProperties = $.extend( {}, Gibber.Environment.Notation.properties )
         newObject.text.mappingObjects = []
         
         for( var _key in newObject.text.mappingProperties ) {

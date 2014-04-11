@@ -311,6 +311,8 @@ window.Gibber = window.G = {
 
     Gibber.proxy( window )
 		
+    $.publish( '/gibber/clear', {} )
+    
     console.log( 'Gibber has been cleared.' )
   },
   
@@ -586,87 +588,7 @@ window.Gibber = window.G = {
     for( var key in mappingProperties ) {
       Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp )
     }
-  },
-  
-  notationProperties: {
-    background: {
-      min:0, max:255, value:0, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___background___  = Math.round( v )
-        var backgroundString = 'rgb(' + this.___background___ +',' + this.___background___ +',' + this.___background___ + ')'
-        
-        $( this.class ).css( 'background', backgroundString )
-      },
-    },
-    fontSize: {
-      min:.5, max:3, value:1, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___fontSize___  = v
-        var outputString = v + 'em'
-        
-        $( this.class ).css( 'font-size', outputString )
-      },
-    },
-    color: {
-      min:0, max:255, value:0, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___color___  = Math.round( v ) 
-        var outputString = 'rgb(' + this.___color___ +',' + this.___color___ +',' + this.___color___ + ')'
-        
-        $( this.class ).css( 'color', outputString )
-      },
-    },
-    borderColor: { // TODO: NEED TO MARK LINES INSTEAD OF TOKENS
-      min:0, max:255, value:0, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___borderColor___  = Math.round( v )
-        var outputString = 'rgb(' + this.___borderColor__ +',' + this.___borderColor__ +',' + this.___borderColor__ + ')'
-        
-        $( this.class ).css( 'borderColor', outputString )
-      },
-    },
-    opacity: {
-      min:0, max:1, value:0, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___opacity___  = v
-        var outputString = v
-        
-        $( this.class ).css( 'opacity', outputString )
-      },
-    },
-    fontWeight: {
-      min:100, max:900, value:500, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___fontWeight___  = Math.round( v )
-        
-        $( this.class ).css( 'font-weight', this.___fontWeight___  )
-      },
-    },
-    left: {
-      min:0, max:5, value:0, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___left___  = v + 'em'
-        
-        $( this.class ).css( 'padding-left', this.___left___  )
-      },
-    },
-    letterSpacing: {
-      min:0, max:2, value:0, output:0,
-      timescale:'notation',
-      set: function(v) {
-        this.___letterSpacing___  = v + 'em'
-        
-        $( this.class ).css( 'letter-spacing', this.___letterSpacing___  )
-      },
-    },
-  },
+  },  
   
   object: {
     class: null,
