@@ -15,6 +15,7 @@ var GE = Gibber.Environment = {
                 'external/codemirror/addons/show-hint',
                 'external/codemirror/addons/javascript-hint',
                 'external/codemirror/clike',*/
+                'gibber/mappings',
                 'gibber/gibber_interface',
                 'gibber/console',
                 'gibber/mouse',

@@ -1,5 +1,4 @@
 (function() {
-
 //"use strict" // can't use strict because eval is used to evaluate user code in the run method 
 
 // TODO: get rid of window object here
@@ -367,9 +366,8 @@ window.Gibber = window.G = {
   
   createMappingObject : function(target, from) {
     var min = target.min, max = target.max, _min = from.min, _max = from.max, mapping
-    
-    // if using an interface object directly to map
-    if( typeof from.object === 'undefined' && from.Value) { 
+
+    if( typeof from.object === 'undefined' && from.Value) { // if using an interface object directly to map
       from = from.Value
     }
     
@@ -381,337 +379,10 @@ window.Gibber = window.G = {
     if( typeof from.targets !== 'undefined' ) {
       if( from.targets.indexOf( target ) === -1 ) from.targets.push( [target, target.Name] )
     }
-
-    if( target.timescale === 'audio' ) {
-
-      if( from.timescale === 'audio' ) {
-
-        if( from.Name !== 'Out' ) {
-          var proxy
-          if( typeof from.object.track !== 'undefined' ) {
-            proxy = from.object.track
-            proxy.count++
-          } else {
-            proxy = new Gibberish.Proxy2( from.object, from.name )
-            proxy.count = 1
-          }
-          from.object.track = proxy
-          
-          target.object[ target.name ] = Map( proxy, target.min, target.max, from.min, from.max )
-          target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
-          
-          target.object[ target.Name ].mapping.remove = function( doNotSet ) {
-            
-            if( !doNotSet ) {
-              target.object[ target.name ] = target.object[ target.Name ].mapping.getValue()
-            }
-            
-            if( target.object[ target.Name].mapping.op ) target.object[ target.Name].mapping.op.remove()
-            
-            delete target.object[ target.Name ].mapping
-          }
-          
-          target.object[ target.Name ].mapping.replace = function( replacementObject, key, Key ) {
-            var proxy = new Gibberish.Proxy2( replacementObject, key )
-            target.object[ target.Name ].mapping.input = proxy
-            if( replacementObject[ Key ].targets && replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )
-          }
-        }else{
-          target.object[ target.name ] = Map( null, target.min, target.max, 0, 1, 0 )   
-          mapping = target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
-          
-          if( typeof from.object.track !== 'undefined' ) {
-            mapping.follow = from.object.track
-            mapping.follow.count++
-          } else {
-            mapping.follow = new Gibberish.Follow({ input:from.object })
-            mapping.follow.count = 1
-          }
-          from.object.track = mapping.follow
-          
-          mapping.input = target.object[ target.Name ].mapping.follow
-          
-          mapping.remove = function( doNotSet ) {
-            if( !doNotSet ) {
-              target.object[ target.name ] = target.object[ target.Name ].mapping.getValue()
-            }
-            
-            if( this.bus )
-              this.bus.disconnect()
-            
-            if( this.follow ) {
-              this.follow.count--
-              if( this.follow.count === 0) {
-                delete from.object.track
-                this.follow.remove()
-              }
-            }
-            
-            delete target.object[ target.Name ].mapping
-          }
-          mapping.replace = function( replacementObject, key, Key  ) {
-            // _console.log("REPLACE!")
-            mapping.follow.input = replacementObject   
-            if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )            
-          }
-        }
-        
-        var env = mapping.follow.bufferSize
-        Object.defineProperty( target.object[ target.Name ], 'env', {
-          get: function() { return env },
-          set: function(v) { env = Gibber.Clock.time( v ); mapping.follow.bufferSize = env; }
-        })
-        
-      }else if( from.timescale === 'graphics' ) {
-				if( typeof from.object.track === 'undefined' ) from.object.track = {}
-				
-        var proxy = typeof from.object.track[ from.name ] !== 'undefined' ? from.object.track[ from.name ] : new Gibberish.Proxy2( from.object, from.name ),
-            op    = new Gibberish.OnePole({ a0:.005, b1:.995 })
-        
-        from.object.track = proxy;
-        
-        // TODO: smooth doesn't work... why?
-        //op.smooth( target.name, target.object )
-
-        mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
-        
-        op.input = mapping
-        
-        target.object[ target.name ] = op
-        
-        mapping.proxy = proxy
-        mapping.op = op
-        
-        mapping.remove = function( doNotSet ) {
-          if( !doNotSet ) {
-            target.object[ target.name ] = target.object[ target.Name ].mapping.getValue()
-          }
-          
-          delete target.object[ target.Name ].mapping
-        }
-      } else {
-        var proxy = typeof from.track !== 'undefined' ? from.track : new Gibberish.Proxy2( from.object, from.name ),
-            op    = new Gibberish.OnePole({ a0:.005, b1:.995 }),
-            range = target.max - target.min,
-            percent = ( target.object[ target.name ] - target.min ) / range,
-            widgetValue = from.min + ( ( from.max - from.min ) * percent )
-                
-        if( from.object.setValue )
-          from.object.setValue( widgetValue )
-        
-        from.track = proxy
-        //op.smooth( target.name, target.object )
-        
-        //target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
-        
-        mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
-        
-        op.input = mapping
-        target.object[ target.name ] = op
-        
-        //_mapping = target.object[ target.name ] = 
-        mapping.proxy = proxy
-        mapping.op = op
-
-        mapping.remove = function( doNotSet ) {
-          if( !doNotSet ) {
-            target.object[ target.name ] = mapping.getValue()
-          }
-          
-          if( _mapping.op ) mapping.op.remove()
-          
-          delete mapping
-        }
-        
-        if( typeof from.object.label !== 'undefined' ) {
-          from.object.label = target.object.name + '.' + target.Name
-        }
-
-        mapping.replace = function( replacementObject, key, Key  ) {
-          // _console.log( "REPLACE", replacementObject )
-          
-          proxy.setInput( replacementObject )
-          if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )
-        }
-      }
-    }else if( target.timescale === 'graphics' ) {
-
-      if( from.timescale === 'audio' ) {
-        if( from.Name !== 'Out' ) {
-
-          mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
-        
-          target.object[ target.Name ].mapping.follow = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Follow({ input:from.object.properties[ from.name ] })
-          from.object.track = target.object[ target.Name ].mapping.follow
-          // assign input after Map ugen is created so that follow can be assigned to the mapping object
-          target.object[ target.Name ].mapping.input = target.object[ target.Name ].mapping.follow
-        
-          target.object[ target.Name ].mapping.bus = new Gibberish.Bus2({ amp:0 }).connect()
-
-          target.object[ target.Name ].mapping.connect( target.object[ target.Name ].mapping.bus )
-          
-          target.object[ target.Name ].mapping.replace = function( replacementObject, key, Key ) {
-            //var proxy = new Gibberish.Proxy2( replacementObject, key )
-            //target.object[ target.Name ].mapping.input = proxy
-            target.object[ target.Name ].mapping.follow.input = replacementObject            
-            if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )
-          }
-          
-          var env = mapping.follow.bufferSize
-          Object.defineProperty( target.object[ target.Name ], 'env', {
-            get: function() { return env },
-            set: function(v) { env = Gibber.Clock.time( v ); mapping.follow.bufferSize = env; }
-          })
-
-        }else{
-          if( typeof target.object[ target.Name ].mapping === 'undefined') {
-            var mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, 0, 1, 0 )   
-            if( typeof from.object.track !== 'undefined' ) {
-              mapping.follow = from.object.track
-              mapping.follow.count++
-            } else {
-              mapping.follow = new Gibberish.Follow({ input:from.object })
-              mapping.follow.count = 1
-            }
-            from.object.track = mapping.follow
-            
-            var env = mapping.follow.bufferSize
-            Object.defineProperty( target.object[ target.Name ], 'env', {
-              get: function() { return env },
-              set: function(v) { env = Gibber.Clock.time( v ); mapping.follow.bufferSize = env; }
-            })
-            
-            mapping.input = mapping.follow
-            mapping.bus = new Gibberish.Bus2({ amp:0 }).connect()
-            mapping.connect( mapping.bus )
-          
-            mapping.replace = function( replacementObject, key, Key  ) {
-              // _console.log( key, replacementObject )
-              
-              // what if new mapping isn't audio type?
-              if ( replacementObject[ Key ].timescale === from.timescale ) {
-                var idx = mapping.follow.input[ from.Name ].targets.indexOf( target )
-                if( idx >= -1 ) {
-                  mapping.follow.input[ from.Name ].targets.splice( idx, 1 )
-                }
-              
-                mapping.follow.input = replacementObject   
-                if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )            
-              }else{
-                mapping.bus.disconnect()
-                mapping.follow.remove()
-                Gibber.createMappingObject( target, replacementObject )
-              }
-              
-            }
-          }else{
-            mapping.replace( from.object, from.name, from.Name )
-          }
-        }
-        
-        mapping.remove = function() {
-          this.bus.disconnect()
-          
-          if( this.follow ) {
-            this.follow.count--
-            if( this.follow.count === 0) {
-              delete from.object.track
-              this.follow.remove()
-            }
-          }
-
-          if( target.object.mod ) {
-            target.object.removeMod( target.name )
-          }else{
-            target.modObject.removeMod( target.modName )
-          }
-          
-          delete target.object[ target.Name ].mapping
-        }
-        
-        if( target.object.mod ) { // second case accomodates modding individual [0][1][2] properties fo vectors
-          target.object.mod( target.name, target.object[ target.Name ].mapping, '=' )
-        }else{
-          target.modObject.mod( target.modName, target.object[ target.Name ].mapping, '=' )
-        }
-      }else if( from.timescale === 'graphics' ) {
-        // rewrite getValue function of Map object to call Map callback and then return appropriate value
-
-        var map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
-            old = map.getValue.bind( map )
-        
-        map.getValue = function() {
-          map.callback( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
-          return old()
-        }
-        
-        target.object[ target.Name ].mapping = map
-        
-        if( target.object.mod ) { // second case accomodates modding individual [0][1][2] properties fo vectors
-          target.object.mod( target.name, target.object[ target.Name ].mapping, '=' )
-        }else{
-          target.modObject.mod( target.modName, target.object[ target.Name ].mapping, '=' )
-        }
-        
-        target.object[ target.Name ].mapping.remove = function() {
-          if( target.object.mod ) {
-            target.object.removeMod( target.name )
-          }else{
-            target.modObject.removeMod( target.modName )
-          }
-          target.object[ target.name ] = target.object[ target.Name ].mapping.getValue()
-          
-          delete target.object[ target.Name ].mapping
-        }
-        
-        target.object[ target.Name ].mapping.replace = function( replacementObject, key, Key  ) {
-          target.object[ target.Name ].mapping.input = replacementObject   
-          if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )            
-        }
-      }else{
-        // console.log( "FROM", from.name, target.min, target.max, from.min, from.max )
-        var _map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
-        if( typeof from.object.functions === 'undefined' ) {
-          from.object.functions = {}
-          from.object.onvaluechange = function() {
-            for( var key in from.object.functions ) {
-              from.object.functions[ key ]()
-            }
-          }
-        }
-
-        target.object[ target.Name ].mapping = _map
-        var map = target.object[ target.Name ].mapping
-        target.mapping.from = from
-        
-        var fcn_name = target.name + ' <- ' + from.object.name + '.' + from.Name
-
-        from.object.functions[ fcn_name ] = function() {
-          var val = map.callback( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
-          // target.object[ target.Name ].value = val
-          // console.log( target.Name )
-          target.object[ target.Name ].oldSetter.call( target.object[ target.Name ], val )
-        }
-        // from.object.onvaluechange = function() {          
-        //   var val = map.callback( this[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
-        //   target.object[ target.name ] = val
-        // }
-        target.object[ target.Name ].mapping.replace = function() {
-          // var old = from.functions[ target.Name ]
-
-        } 
-        target.object[ target.Name ].mapping.remove  = function() {
-          console.log( "mapping removed" )
-          delete from.object.functions[ fcn_name ]
-        } 
-        if( from.object.setValue ) 
-          from.object.setValue( target.object[ target.name ] )
-        
-        if( typeof from.object.label !== 'undefined' ) {
-          from.object.label = target.object.name + '.' + target.Name
-        }
-      }
-    } 
+    
+    var fromTimescale = from.Name !== 'Out' ? from.timescale : 'audioOut' // check for audio Out, which is a faux property
+    
+    mapping = Gibber.mappings[ target.timescale ][ fromTimescale ]( target, from )
     
     Object.defineProperties( target.object[ target.Name ], {
       'min' : {
@@ -829,9 +500,9 @@ window.Gibber = window.G = {
     for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
   },
   
-  createProxyProperty: function( obj, _key, shouldSeq, shouldRamp ) {
+  createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict ) {
     var propertyName = _key,
-        propertyDict = obj.mappingProperties[ propertyName ],
+        propertyDict = dict || obj.mappingProperties[ propertyName ],
         __n = propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
         mapping = $.extend( {}, propertyDict, {
           Name  : __n,
@@ -915,6 +586,95 @@ window.Gibber = window.G = {
     for( var key in mappingProperties ) {
       Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp )
     }
+  },
+  
+  notationProperties: {
+    background: {
+      min:0, max:255, value:0, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___background___  = Math.round( v )
+        var backgroundString = 'rgb(' + this.___background___ +',' + this.___background___ +',' + this.___background___ + ')'
+        
+        $( this.class ).css( 'background', backgroundString )
+      },
+    },
+    fontSize: {
+      min:.5, max:3, value:1, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___fontSize___  = v
+        var outputString = v + 'em'
+        
+        $( this.class ).css( 'font-size', outputString )
+      },
+    },
+    color: {
+      min:0, max:255, value:0, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___color___  = Math.round( v ) 
+        var outputString = 'rgb(' + this.___color___ +',' + this.___color___ +',' + this.___color___ + ')'
+        
+        $( this.class ).css( 'color', outputString )
+      },
+    },
+    borderColor: { // TODO: NEED TO MARK LINES INSTEAD OF TOKENS
+      min:0, max:255, value:0, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___borderColor___  = Math.round( v )
+        var outputString = 'rgb(' + this.___borderColor__ +',' + this.___borderColor__ +',' + this.___borderColor__ + ')'
+        
+        $( this.class ).css( 'borderColor', outputString )
+      },
+    },
+    opacity: {
+      min:0, max:1, value:0, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___opacity___  = v
+        var outputString = v
+        
+        $( this.class ).css( 'opacity', outputString )
+      },
+    },
+    fontWeight: {
+      min:100, max:900, value:500, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___fontWeight___  = Math.round( v )
+        
+        $( this.class ).css( 'font-weight', this.___fontWeight___  )
+      },
+    },
+    left: {
+      min:0, max:5, value:0, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___left___  = v + 'em'
+        
+        $( this.class ).css( 'padding-left', this.___left___  )
+      },
+    },
+    letterSpacing: {
+      min:0, max:2, value:0, output:0,
+      timescale:'notation',
+      set: function(v) {
+        this.___letterSpacing___  = v + 'em'
+        
+        $( this.class ).css( 'letter-spacing', this.___letterSpacing___  )
+      },
+    },
+  },
+  
+  object: {
+    class: null,
+    text : null,
+    init: function( classIdentifier ) {
+      this.class = classIdentifier
+      this.text = $( '.' + classIdentifier )
+    },
   },
   
   ugen: {
@@ -1093,5 +853,4 @@ window.Gibber = window.G = {
   }
 }
 
-// end closure
 })()
