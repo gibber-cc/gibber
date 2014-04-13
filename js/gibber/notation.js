@@ -1,21 +1,21 @@
 ( function() {
   
   var GEN = Gibber.Environment.Notation = {
-    isRunning : false,
-    notations : [],
+    isRunning: false,
+    notations: [],
     fps: 20,
     clear: null,
-    filterString :[],
+    filterString: [],
     add: function( obj ) {
       this.notations.push( obj )
       if( !this.isRunning ) {
         this.init()
       }
     },
-    remove : function( obj ) {
+    remove: function( obj ) {
       this.notations.splice( this.notations.indexOf( obj ), 1 )
     },
-    init : function() {
+    init: function() {
       var func = function() {
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {

@@ -338,7 +338,6 @@ window.Gibber = window.G = {
                 if( typeof target[ '___'+ltr ].replaceWith === 'function' ) {
                   target[ '___'+ltr ].replaceWith( newObj )
                   console.log( target[ '___'+ltr ].name + ' was replaced with ' + newObj.name )
-                  console.log( target[ '___'+ltr ].name + ' was replaced with ' + newObj.name )
                 }
               }
               target[ '___'+ltr ] = newObj
@@ -439,7 +438,6 @@ window.Gibber = window.G = {
         obj.seq.seqs.splice( seqNumber, 1 )
       }
       
-      console.log( obj.seq )
       obj.seq.add( args )
       
       seqNumber = obj.seq.seqs.length - 1
@@ -577,7 +575,9 @@ window.Gibber = window.G = {
   createProxyProperties : function( obj, mappingProperties, noSeq, noRamp ) {
     var shouldSeq = typeof noSeq === 'undefined' ? true : noSeq,
         shouldRamp = typeof noRamp === 'undefined' ? true : noRamp
-        
+    
+    obj.gibber = true // keyword identifying gibber object, needed for notation parser
+    
     if( !obj.seq && shouldSeq ) {
       obj.seq = Gibber.Seq({ doNotStart:true })      
     }

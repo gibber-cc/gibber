@@ -5,6 +5,8 @@
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
       
+      if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
+      
       if( right.callee ) {
         var constructorName = right.callee.name,
             className = constructorName + '_' + newObjectName
@@ -24,6 +26,7 @@
                 set = property.set
         
             newObject.text[ '___' + key + '___' ] = property.value
+            
             Object.defineProperty( newObject.text, key, {
               configurable: true,
               get: function() { return newObject.text[ '___' + key + '___' ] },
@@ -35,19 +38,13 @@
             Gibber.createProxyProperty( newObject.text, key, false, false, property )
           })()
         }
-        
-        // future( function() {
-        //   window[ newObjectName ].text = $( '.' + className )
-        // }, 1/4 )
       }
       
       if( codeObjects.indexOf( constructorName ) > -1 ){
             
         if( left ) {
           // console.log( 'MAKING A DROP', className, newObjectName )
-          
-          // apparently this isn't synchronous? 
-          
+          // apparently cm.markText isn't synchronous
           future( function() {
             $( '.' + className ).on( 'drop', function( e ) { 
               // console.log( 'GOT A DROP ', className, newObjectName )
