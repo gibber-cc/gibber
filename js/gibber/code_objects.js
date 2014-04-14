@@ -46,7 +46,7 @@
       }
       
   // text objects and mappings
-  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src ) {
+  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
       
@@ -84,6 +84,35 @@
         
             Gibber.createProxyProperty( newObject.text, key, false, false, property )
           })()
+        }
+        
+        if( constructorName === 'Seq' ) {
+          makeSequence( newObject, cm, pos, right, newObjectName )
+        } else if( right.arguments && right.arguments.length > 0 ) {
+          for( var i = 0; i < right.arguments.length; i++ ) {
+            ( function() {
+              var arg = right.arguments[ i ]
+              if( arg.type === 'Literal' ) {
+                var literal = arg, 
+                    _start = {line: start.line, ch:literal.loc.start.column },
+                    _end = {line: start.line, ch:literal.loc.end.column },
+                    mappingObject = newObject.mappingObjects[ i ]
+                    
+                makeReactive( literal, cm, _start, _end, newObject, newObjectName, mappingObject.name, mappingObject )                
+              }else if( arg.type === 'ObjectExpression' ) {
+                for( var j = 0; j < arg.properties.length; j++ ) {
+                  ( function() { 
+                    var literal = arg.properties[ j ],
+                        mappingObject = newObject.mappingProperties[ literal.key.name ],
+                        _start = { line: evalStart + literal.value.loc.start.line - 1, ch:literal.value.loc.start.column },
+                        _end = { line: evalStart + literal.value.loc.end.line - 1, ch:literal.value.loc.end.column }
+                    
+                    makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
+                  })()
+                }
+              }
+            })()
+          }
         }
       }
     }
@@ -134,119 +163,104 @@
   
   // sequencers 
   // processSeq : function( seq, _name, cm, pos ) {
-  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
-    if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
-      var left = obj.expression.left, 
-          right = obj.expression.right, 
-          newObjectName = left.name, 
-          newObject = window[ newObjectName ],
-          seq, props
+  var makeSequence = function( seq, cm, pos, right, newObjectName ) {
+    var props = seq.tree.expression.right.arguments[0].properties;
       
-      if( typeof right.callee === 'undefined' ) return
-      
-      if( right.callee.name === 'Seq' ) {
-        seq = newObject
-        console.log( seq.tree )
-        props = seq.tree.expression.right.arguments[0].properties;
-      }else{
-        return
-      }
-      
-      if( props ) {
-        for( var i = 0; i < right.arguments.length; i++ ) {
-          seq.locations = {}
-          //for(var key in seq) {
-          var props = seq.tree.expression.right.arguments[0].properties;
-  
-          if( props ) {
-            for(var i = 0; i < props.length; i++) {
-              var prop = props[i];
-              //console.log("PROP:", prop)
-              var name = prop.key.name;
+    if( props ) {
+      for( var i = 0; i < right.arguments.length; i++ ) {
+        seq.locations = {}
+        //for(var key in seq) {
+        var props = seq.tree.expression.right.arguments[0].properties;
 
-              if( typeof seq.properties[ name ] === 'undefined' || name === 'durations') {
-                seq.locations[name] = [];
-      	
-                var values = prop.value.elements; 
-                if(!values) {
-                  if(prop.value.callee) { // if it is an array with a random or weight method attached..
-                    if(prop.value.callee.object)
-                      values = prop.value.callee.object.elements; // use the array that is calling the method
-                  }
-                } 
-                var lastChose = {};
-          
-                if(values) {
-                  for(var j = 0; j < values.length; j++) {
-                    var value = values[j],
-                     		__name = newObjectName + "_" + name + "_" + j,
-      									start, end;
-						
-      							if( value.type === 'BinaryExpression' ) { // checking for durations such as 1/4, 1/8 etc.
-                      start = {
-                        line : value.left.loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                        ch : value.left.loc.start.column
-                      }
-                      end = {
-                        line : value.right.loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                        ch : value.right.loc.end.column
-                      }
-      							}else{
-                      start = {
-                        line : value.loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                        ch : value.loc.start.column
-                      }
-                      end = {
-                        line : value.loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                        ch : value.loc.end.column
-                      }
-      							}
-						
-                    cm.markText( start, end, { className:__name });
-            
-                    seq.locations[name].push( __name )
-                  }              
-                }	else {
-                  //if( name !== 'durations' ) console.log(prop)
-                  var __name = newObjectName + "_" + name + "_0"
-        
-                  var loc = prop.value.loc;
-                  var start = {
-                    line : loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                    ch : loc.start.column
-                  }
-                  var end = {
-                    line : loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1 ),
-                    ch : loc.end.column
-                  }
-          
-                  cm.markText(start, end, { className: __name });
-        
-                  seq.locations[name].push( __name )
+        if( props ) {
+          for(var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            //console.log("PROP:", prop)
+            var name = prop.key.name;
+
+            if( typeof seq.properties[ name ] === 'undefined' || name === 'durations') {
+              seq.locations[name] = [];
+    	
+              var values = prop.value.elements; 
+              if(!values) {
+                if(prop.value.callee) { // if it is an array with a random or weight method attached..
+                  if(prop.value.callee.object)
+                    values = prop.value.callee.object.elements; // use the array that is calling the method
                 }
+              } 
+              var lastChose = {};
+        
+              if(values) {
+                for(var j = 0; j < values.length; j++) {
+                  var value = values[j],
+                   		__name = newObjectName + "_" + name + "_" + j,
+    									start, end;
+					
+    							if( value.type === 'BinaryExpression' ) { // checking for durations such as 1/4, 1/8 etc.
+                    start = {
+                      line : value.left.loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                      ch : value.left.loc.start.column
+                    }
+                    end = {
+                      line : value.right.loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                      ch : value.right.loc.end.column
+                    }
+    							}else{
+                    start = {
+                      line : value.loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                      ch : value.loc.start.column
+                    }
+                    end = {
+                      line : value.loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                      ch : value.loc.end.column
+                    }
+    							}
+					
+                  cm.markText( start, end, { className:__name });
+          
+                  seq.locations[ name ].push( __name )
+                }              
+              }	else {
+                //if( name !== 'durations' ) console.log(prop)
+                var __name = newObjectName + "_" + name + "_0"
+      
+                var loc = prop.value.loc;
+                var start = {
+                  line : loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                  ch : loc.start.column
+                }
+                var end = {
+                  line : loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1 ),
+                  ch : loc.end.column
+                }
+        
+                cm.markText(start, end, { className: __name });
+      
+                seq.locations[ name ].push( __name )
               }
             }
-            
-            seq.chose = function( key, index ) { 
-              if( seq.locations[ key ] ) {
-                var __name = '.' + seq.locations[ key ][ index ];
-						
-                if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
-            
-                $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
-            
-                setTimeout( function() {
-                  $( __name ).css({ 
-                    backgroundColor: 'rgba(0,0,0,0)',
-                  });
-                }, 100 )
-              }
+          }
+          
+          seq.chose = function( key, index ) { 
+            if( seq.locations[ key ] ) {
+              var __name = '.' + seq.locations[ key ][ index ];
+					
+              if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
+          
+              $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+          
+              setTimeout( function() {
+                $( __name ).css({ 
+                  backgroundColor: 'rgba(0,0,0,0)',
+                });
+              }, 100 )
             }
           }
         }
       }
     }
-  })
+  }
+  
   // reactive literals
   /* Some ideas:
     - drag on note names to change name, ie 'c4' to 'c#4'
@@ -256,6 +270,33 @@
        - maybe this could be a modal drag, such as with the shift key held?
   */
   
+  var makeReactive = function( literal, cm, start, end, obj, newObjectName, propertyName, mappingObject ) {
+    var min = mappingObject.min, max = mappingObject.max,
+        range = max - min,
+        pixelRange = 300,
+        incr =  1 / pixelRange * range,
+        className = newObjectName + '_' + propertyName + '_' + cm.column.id,
+        mark, value, x, _move
+        
+    value = typeof literal.value.value !== 'undefined' ? literal.value.value : literal.value
+    
+    mark = cm.markText( start, end, { 'className': className, inclusiveLeft:true, inclusiveRight:true } )
+    $.subscribe('/gibber/clear', function() { mark.clear() } )
+    
+    cm.listeners[ className ] = function( e ) {
+      var isMouseDown = true;
+      
+      $( '.' + className ).css({ cursor:'ew-resize', outline:'none', userSelect:'none' })
+      
+      var x = e.clientX // closure variable
+      
+      _move = makeMove( x, value, incr, min, max, mark, cm, obj, propertyName )
+      
+      $( window ).on( 'mousemove', _move )                
+    }    
+  }
+  
+  /*
   G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
@@ -338,5 +379,5 @@
       }
     }
   })
-
+  */
 })()
