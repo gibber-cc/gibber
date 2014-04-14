@@ -107,6 +107,16 @@
         autofocus: options.autofocus || false,
       })
       
+      col.editor.on( 'mousedown', function( cm, e ) {
+        //console.log( e.toElement.className )
+        var classes = e.toElement.className.split(' ')
+        
+        for( var i = 0; i < classes.length; i++ ) {
+          if( cm.listeners[ classes[ i ] ] ) {
+            cm.listeners[ classes[ i ] ]( e )
+          }
+        }
+      })
       col.editor.on('drop', function (cm, e) { e.preventDefault(); })
       
       col.lineNumbersButton = $( '<button>' ).text('#')
@@ -127,6 +137,14 @@
       col.header.append( col.lineNumbersButton, col.fileInfoButton )
       col.editor.column = col    
       col.editor.on('focus', function() { Layout.focusedColumn = colNumber } )
+      
+      col.editor.listeners = {}
+      
+      // remove event handlers on clearing Gibber
+      $.subscribe('/gibber/clear', function() {
+        col.editor.listeners = {}
+      })
+      
     }else{
       col.bodyElement.width( columnWidth - resizeHandleSize )
       col.element.append( col.bodyElement )

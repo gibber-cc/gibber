@@ -196,7 +196,7 @@ window.Gibber = window.G = {
   run: function( script, pos, cm ) { // called by Gibber.Environment.modes.javascript
 		var _start = pos.start ? pos.start.line : pos.line,
 				tree
-
+    
 	  try{
 			tree = Gibber.Esprima.parse(script, { loc:true, range:true} )
 		}catch(e) {
@@ -220,7 +220,7 @@ window.Gibber = window.G = {
       
       if( this.scriptCallbacks.length > 0 ) {
         for( var i = 0; i < this.scriptCallbacks.length; i++ ) {
-          this.scriptCallbacks[ i ]( obj, cm, pos, start, end, src )
+          this.scriptCallbacks[ i ]( obj, cm, pos, start, end, src, _start )
         }
       }
     }

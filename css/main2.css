@@ -395,4 +395,12 @@ tfoot, thead {
   background:#bbb
 }
 
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none !important;
+}
 

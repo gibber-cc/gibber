@@ -224,6 +224,9 @@
     //seq.start()
     
     console.log( 'Sequencer created.' )
+    
+    seq.gibber = true
+    
     return seq
   }
   
