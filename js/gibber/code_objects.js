@@ -63,11 +63,11 @@ b = Seq({
 
             if( className ) { 
               var newEnd = { line: pos.to.line, ch: pos.from.ch + ( new String( text ).length ) }
-              mark.clear()
-              newObject.marks.splice( newObject.marks.indexOf( mark ), 1 )
-              
-              mark = cm.markText( pos.from, newEnd, { 'className': className, inclusiveLeft:true, inclusiveRight:true } ) 
-              newObject.marks.push( mark )
+              // mark.clear()
+              // newObject.marks.splice( newObject.marks.indexOf( mark ), 1 )
+              // 
+              // mark = cm.markText( pos.from, newEnd, { 'className': className, inclusiveLeft:true, inclusiveRight:true } ) 
+              // newObject.marks.push( mark )
             }
             
             if( move.onchange )

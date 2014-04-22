@@ -8,7 +8,7 @@ var SERVER_URL = 'http://gibber.mat.ucsb.edu'
 
 var GE = Gibber.Environment = {
   init : function() { 
-    $script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', ], 'codemirror',function() {
+    $script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
       $script( [/*'external/codemirror/addons/closebrackets', 
                 'external/codemirror/addons/matchbrackets', 
                 'external/codemirror/addons/comment',
@@ -23,7 +23,6 @@ var GE = Gibber.Environment = {
                 'external/mousetrap',
                 'gibber/chat',
                 'gibber/share',
-                'gibber/notation',
                 'gibber/code_objects',
                 ], function() {
 
@@ -39,7 +38,7 @@ var GE = Gibber.Environment = {
           window.Layout = GE.Layout
           GE.Account.init()
           GE.Console.init()
-          //GE.Welcome.init()
+          GE.Welcome.init()
           GE.Share.open()
         }
         

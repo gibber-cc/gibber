@@ -1,3 +1,4 @@
+// Make sure webServerPort is set to 80 before committing / pulling on the server!!!!
 gibber = {}
 
 var request         = require( 'request' ),
