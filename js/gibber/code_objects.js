@@ -1,14 +1,38 @@
+/*
+a = Synth({
+  attack:44100,
+  decay: 44100
+})
+
+b = Seq({
+  note: ['bb4','eb5','gb3'].rnd(),
+  durations:[ 1/4, 1/8, 1 ].rnd(),
+  pan: Rndf(-1,1),
+  target:a
+})
+*/
+
 ( function() {
   var codeObjects = [ 'Sampler', 'Model' ],
-      makeMove = function( x, value, incr, min, max, mark, cm, newObject, propertyName ) {
+      notes = [ 'c','db','d','eb','e','f','gb','g','ab','a','bb','b' ],
+      makeMove = function( x, value, incr, min, max, mark, cm, newObject, propertyName, className ) {
+        var text = value, count = 0;
+
         move = function( e ) {
           var isMouseDown = true
 
           if( e.which !== 1 ) {
             isMouseDown = false
             $( window ).off( 'mousemove', move )
+            if( count > 0 ) {
+              move.onend()
+            }
+            return
             //cm.setOption( 'readOnly', false )
           }
+          
+          // wait until mouse is actually moving (as opposed to just pressed down)
+          if( ++count === 1 ) move.startMove()
     
           if( isMouseDown ) {
             var subValue = e.clientX - x
@@ -18,29 +42,39 @@
               subValue *= .1
             }
   
-            x = e.clientX
-            value = value + subValue * incr
-  
-            if( value < min ) {
-              value = min
-            }else if( value > max ) {
-              value = max
+            x = e.clientX            
+
+            if( move.changeValue ) {
+              text = move.changeValue( subValue )
+            }else{
+              value = value + subValue * incr
+            
+              if( value < min ) {
+                value = min
+              }else if( value > max ) {
+                value = max
+              }
+            
+              text = value % 1 === 0 ? value : value.toFixed( 3 )
             }
   
-            var pos = mark.find()
-    
-            var newText = value % 1 === 0 ? value : value.toFixed( 3 )
-    
-            cm.replaceRange( ''+newText, pos.from, pos.to )
-            //mark = cm.markText( _start, _end, { 'className': className } )
-      
-            newObject[ propertyName ] = newText
+            var pos = mark.find()  
+            cm.replaceRange( '' + text, pos.from, pos.to )
+
+            if( className ) { 
+              var newEnd = { line: pos.to.line, ch: pos.from.ch + ( new String( text ).length ) }
+              //cm.markText( pos.from, newEnd, { 'className': className, inclusiveLeft:true, inclusiveRight:true } ) 
+            }
+            
+            if( move.onchange )
+              move.onchange( text )
   
             e.preventDefault()
           }
         }
         
         move.mousedown = function( e ) { x = e.clientX }
+        move.getValue = function() { return text }
         
         return move
       }
@@ -97,8 +131,12 @@
                     _start = {line: start.line, ch:literal.loc.start.column },
                     _end = {line: start.line, ch:literal.loc.end.column },
                     mappingObject = newObject.mappingObjects[ i ]
-                    
-                makeReactive( literal, cm, _start, _end, newObject, newObjectName, mappingObject.name, mappingObject )                
+                                    
+                var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, mappingObject.name, mappingObject )
+                
+                __move.onchange = function( v ) {
+                  newObject[ mappingObject.name ] = v
+                }
               }else if( arg.type === 'ObjectExpression' ) {
                 for( var j = 0; j < arg.properties.length; j++ ) {
                   ( function() { 
@@ -106,8 +144,12 @@
                         mappingObject = newObject.mappingProperties[ literal.key.name ],
                         _start = { line: evalStart + literal.value.loc.start.line - 1, ch:literal.value.loc.start.column },
                         _end = { line: evalStart + literal.value.loc.end.line - 1, ch:literal.value.loc.end.column }
+                                            
+                    var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
                     
-                    makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
+                    __move.onchange = function( v ) {
+                      newObject[ literal.key.name ] = v
+                    }
                   })()
                 }
               }
@@ -119,20 +161,24 @@
   })
   
   // drag and drop
-  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src ) {
+  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
+      
       var left = obj.expression.left, 
           right = obj.expression.right, 
           newObjectName = left.name,
           newObject = window[ newObjectName ]
       
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
-      
-      if( right.callee ) {
-        var constructorName = right.callee.name,
-            className = constructorName + '_' + newObjectName
             
-        if( codeObjects.indexOf( constructorName ) > -1 ){    
+      if( right.callee ) {
+        var constructorName = right.callee.name || src.split('\n')[0].split('=')[1].trim().split('(')[0],
+            className = constructorName + '_' + newObjectName + '_' + cm.column.id
+        
+        // have to mark again due to cascading calls...
+        var mark = cm.markText( start, end, { 'className': className } );
+        
+        if( codeObjects.indexOf( constructorName ) > -1 ){
           if( left ) {
             // console.log( 'MAKING A DROP', className, newObjectName )
             // apparently cm.markText isn't synchronous
@@ -164,9 +210,13 @@
   // sequencers 
   // processSeq : function( seq, _name, cm, pos ) {
   var makeSequence = function( seq, cm, pos, right, newObjectName ) {
-    var props = seq.tree.expression.right.arguments[0].properties;
+    var props = seq.tree.expression.right.arguments[0].properties,
+        targetName = typeof seq.target !== 'undefined' ? seq.target.text.split(' ')[0] : 'undefined',
+        target = window[ targetName ]
+    
       
     if( props ) {
+      console.log(" MAKING SEQUENCE ")
       for( var i = 0; i < right.arguments.length; i++ ) {
         seq.locations = {}
         //for(var key in seq) {
@@ -174,72 +224,125 @@
 
         if( props ) {
           for(var i = 0; i < props.length; i++) {
-            var prop = props[i];
-            //console.log("PROP:", prop)
-            var name = prop.key.name;
+            ( function() {
+              var prop = props[i],
+                  name = prop.key.name,            
+                  mappingObject = target.mappingProperties[ name ]
 
-            if( typeof seq.properties[ name ] === 'undefined' || name === 'durations') {
-              seq.locations[name] = [];
+              if( typeof seq.properties[ name ] === 'undefined' || name === 'durations') {
+                seq.locations[ name ] = [];
     	
-              var values = prop.value.elements; 
-              if(!values) {
-                if(prop.value.callee) { // if it is an array with a random or weight method attached..
-                  if(prop.value.callee.object)
-                    values = prop.value.callee.object.elements; // use the array that is calling the method
-                }
-              } 
-              var lastChose = {};
+                var values = prop.value.elements; 
+                if( !values ) {
+                  if( prop.value.callee ) { // if it is an array with a random or weight method attached..
+                    if( prop.value.callee.object )
+                      values = prop.value.callee.object.elements; // use the array that is calling the method
+                  }
+                } 
         
-              if(values) {
-                for(var j = 0; j < values.length; j++) {
-                  var value = values[j],
-                   		__name = newObjectName + "_" + name + "_" + j,
-    									start, end;
-					
-    							if( value.type === 'BinaryExpression' ) { // checking for durations such as 1/4, 1/8 etc.
-                    start = {
-                      line : value.left.loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                      ch : value.left.loc.start.column
-                    }
-                    end = {
-                      line : value.right.loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                      ch : value.right.loc.end.column
-                    }
-    							}else{
-                    start = {
-                      line : value.loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                      ch : value.loc.start.column
-                    }
-                    end = {
-                      line : value.loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                      ch : value.loc.end.column
-                    }
-    							}
-					
-                  cm.markText( start, end, { className:__name });
+                if( values ) {
+                  for( var j = 0; j < values.length; j++ ) {
+                    ( function() {
+                      var value = values[ j ],
+                       		__name = newObjectName + "_" + name + "_" + j,
+                          index = j,
+        									start, end;
+					        
+                      start = {
+                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                        ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
+                      }
+                      end = {
+                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                        ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
+                      }
+                  
+                      start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
+                      end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
+                      
+                      if( value.type !== 'BinaryExpression' ) {
+                        if( !mappingObject && (name !== 'note' && name !== 'frequency') ) return
+                        // only change inside quotes if string literal
+                        if( isNaN( value.value ) ) {
+                          start.ch += 1
+                          end.ch -=1
+                        }
+                        
+                        var _move = makeReactive( value, cm, start, end, target, targetName, __name, mappingObject, __name, true )
+                        _move.onchange = function( v ) { 
+                          seq[ name ][ index ] = isNaN(v) ? v : parseFloat( v )
+                        }
+                        
+                        if( isNaN( value.value ) && name === 'note' ) {  // string, for now we assume a note string
+                          _move.changeValue = function( amt ) {
+                            var currentValue = _move.getValue(), noteName, noteNumber, nameArray
+                            
+                            noteName = ''
+                            nameArray = currentValue.split('')
+                            
+                            var i = 0
+                            while( isNaN( nameArray[ i  ] ) ) {
+                              noteName += nameArray[ i ]
+                              i++
+                            }
+                            
+                            noteNumber = nameArray[ i ] 
+                            
+                            var index = notes.indexOf( noteName )
+                            if( amt > 0 ) {
+                              index += 1
+                              if( index >= notes.length ) {
+                                index = index % notes.length
+                                noteNumber = parseInt( noteNumber ) + 1
+                                if( noteNumber > 8 ) noteNumber = 8
+                              }
+                            }else{
+                              if( index === 0 ) {
+                                index = notes.length -1
+                                noteNumber = parseInt( noteNumber ) - 1
+                                if( noteNumber < 0 ) noteNumber = 0 
+                              }else{
+                                index -= 1
+                              }
+                            }
+                            
+                            noteName = notes[ ( index  )  % notes.length ]
+                            return noteName + noteNumber
+                          }
+                        }
+                        // highlight whole literal for second mark, quotes included
+                        start.ch -=1
+                        end.ch += 1
+                      }
+                      
+                      cm.markText( start, end, { className:__name });
           
-                  seq.locations[ name ].push( __name )
-                }              
-              }	else {
-                //if( name !== 'durations' ) console.log(prop)
-                var __name = newObjectName + "_" + name + "_0"
+                      seq.locations[ name ].push( __name )
+                    })()
+                  }              
+                }	else {
+                  //if( name !== 'durations' ) console.log(prop)
+                  var __name = newObjectName + "_" + name + "_0"
       
-                var loc = prop.value.loc;
-                var start = {
-                  line : loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                  ch : loc.start.column
-                }
-                var end = {
-                  line : loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1 ),
-                  ch : loc.end.column
-                }
+                  var loc = prop.value.loc;
+                  var start = {
+                    line : loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                    ch : loc.start.column
+                  }
+                  var end = {
+                    line : loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1 ),
+                    ch : loc.end.column
+                  }
         
-                cm.markText(start, end, { className: __name });
+                  cm.markText(start, end, { className: __name });
       
-                seq.locations[ name ].push( __name )
+                  seq.locations[ name ].push( __name )
+                }
               }
-            }
+            })()
           }
+          
+          var lastChose = {};
           
           seq.chose = function( key, index ) { 
             if( seq.locations[ key ] ) {
@@ -270,114 +373,74 @@
        - maybe this could be a modal drag, such as with the shift key held?
   */
   
-  var makeReactive = function( literal, cm, start, end, obj, newObjectName, propertyName, mappingObject ) {
+  var disableSelection = function( cm, obj ) {
+    for( var i = 0; i < obj.ranges.length; i++ ) {
+      var selection = obj.ranges[ i ]
+      selection.anchor = selection.head
+    }
+  }
+  
+  var makeReactive = function( literal, cm, start, end, obj, newObjectName, propertyName, mappingObject, extraClassName, isString ) {
     var min = mappingObject.min, max = mappingObject.max,
         range = max - min,
         pixelRange = 300,
         incr =  1 / pixelRange * range,
         className = newObjectName + '_' + propertyName + '_' + cm.column.id,
-        mark, value, x, _move
-        
-    value = typeof literal.value.value !== 'undefined' ? literal.value.value : literal.value
+        mark, value, x, _move, cb = {}, initCursorPos
     
+    value = typeof literal.value.value !== 'undefined' ? literal.value.value : literal.value
+
     mark = cm.markText( start, end, { 'className': className, inclusiveLeft:true, inclusiveRight:true } )
+    
     $.subscribe('/gibber/clear', function() { mark.clear() } )
     
     cm.listeners[ className ] = function( e ) {
       var isMouseDown = true;
       
-      $( '.' + className ).css({ cursor:'ew-resize', outline:'none', userSelect:'none' })
-      
-      var x = e.clientX // closure variable
-      
-      _move = makeMove( x, value, incr, min, max, mark, cm, obj, propertyName )
-      
-      $( window ).on( 'mousemove', _move )                
-    }    
-  }
-  
-  /*
-  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
-    if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
-      var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
-      if( right.arguments && right.arguments.length > 0 ) {
-        for( var i = 0; i < right.arguments.length; i++ ) {
-          ( function() {
-            var arg = right.arguments[ i ]
-            if( arg.type === 'Literal' ) {
-              //console.log( "FOUND LITERAL", prop.range[0], prop.range[1], start )
-              var prop = arg, 
-                  _start = {line: start.line, ch:prop.loc.start.column },
-                  _end = {line: start.line, ch:prop.loc.end.column },
-                  widget, x, y, isMouseDown,
-                  mappingObject = newObject.mappingObjects[ i ],
-                  propertyName = mappingObject.name,
-                  min = mappingObject.min, max = mappingObject.max,
-                  range = max - min,
-                  pixelRange = 300,
-                  incr =  1 / pixelRange * range,
-                  mark,
-                  className = newObjectName + '_' + propertyName + '_' + cm.column.id
-              
-              value = prop.value
-              
-              mark = cm.markText( _start, _end, { 'className': className, inclusiveLeft:true, inclusiveRight:true } )
-              $.subscribe('/gibber/clear', function() { mark.clear() } )
-              
-              var x, _move
-              
-              cm.listeners[ className ] = function( e ) {
-                var isMouseDown = true;
-                
-                $( '.' + className ).css({ cursor:'ew-resize', outline:'none', userSelect:'none' })
-                
-                var x = e.clientX // closure variable
-                
-                _move = makeMove( x, value, incr, min, max, mark, cm, newObject, propertyName )
-                
-                $( window ).on( 'mousemove', _move )                
-              }
-            
-            }else if( arg.type === 'ObjectExpression' ) {
-              console.log( "ARG", arg )
-              for( var j = 0; j < arg.properties.length; j++ ) {
-                ( function() { 
-                  var prop = arg.properties[ j ],
-                      propertyName  = prop.key.name,
-                      mappingObject = newObject.mappingProperties[ propertyName ],
-                      min = mappingObject.min, max = mappingObject.max,
-                      range = max - min,
-                      pixelRange = 300,
-                      incr =  1 / pixelRange * range,
-                      value = prop.value.value,
-                      _start = {line: evalStart + prop.value.loc.start.line - 1, ch:prop.value.loc.start.column },
-                      _end = {line: evalStart + prop.value.loc.end.line - 1, ch:prop.value.loc.end.column },
-                      className = newObjectName + '_' + propertyName + '_' + cm.column.id,
-                      mark, x, _move
-                  
-                  if( prop.value.type !== 'Literal' ) return
-                  
-                  mark = cm.markText( _start, _end, { 'className': className, inclusiveLeft:true, inclusiveRight:true } )
-                  
-                  $.subscribe('/gibber/clear', function() { mark.clear() } )
+      initCursorPos = cm.getCursor();
 
-                  cm.listeners[ className ] = function( e ) {
-                    var isMouseDown = true;
-                    $( '.' + className ).css({ cursor:'ew-resize', outline:'none', userSelect:'none' })
-                    
-                    x = e.clientX // closure variable
-                
-                    _move = makeMove( x, value, incr, min, max, mark, cm, newObject, propertyName )
-                
-                    $( window ).on( 'mousemove', _move )                
-                  }
-                })()
-              }
-            }
-          })()
-        }
+      if( _move ) { 
+        value = isString ? _move.getValue() : new Number( _move.getValue() ) // don't reset variable value to initial val
       }
+
+      var x = e.clientX // closure variable
+
+      _move = makeMove( x, value, incr, min, max, mark, cm, obj, propertyName, extraClassName )
+      
+      var moving = false
+
+      _move.startMove = function() {
+        moving = true
+        $( '.CodeMirror-cursors' ).css({ display:'none'} )
+        cm.on( 'beforeSelectionChange', disableSelection )
+        cm.addLineClass( start.line, 'wrap', 'ew-resize' )
+        cm.setOption( 'matchBrackets', false )
+      }
+      
+      _move.onend = function() {
+        cm.setCursor( initCursorPos )
+        $( '.CodeMirror-cursors').css({ display:'block' })
+        cm.removeLineClass( start.line, 'wrap', 'ew-resize' )
+        cm.off( 'beforeSelectionChange', disableSelection )
+        cm.setOption( 'matchBrackets', true )
+      }
+
+      if( cb.onchange ) _move.onchange = cb.onchange
+      if( cb.changeValue ) _move.changeValue = cb.changeValue
+      
+      var end = function() {
+        $( window ).off( 'mouseup', end )
+        if( moving ) _move.onend() 
+      }
+      
+      $( window ).on( 'mousemove', _move )
+      $( window ).on( 'mouseup', end )                
     }
-  })
-  */
+    
+    cb.getValue = function() {
+      return _move.getValue()
+    }
+    
+    return cb    
+  }
 })()

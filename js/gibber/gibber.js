@@ -586,7 +586,9 @@ window.Gibber = window.G = {
     obj.mappingObjects = []
     
     for( var key in mappingProperties ) {
-      Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp )
+      if( ! mappingProperties[ key ].doNotProxy ) {
+        Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp )
+      }
     }
   },  
   

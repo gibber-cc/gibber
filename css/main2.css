@@ -404,3 +404,6 @@ tfoot, thead {
   user-select: none !important;
 }
 
+.ew-resize {
+  cursor: ew-resize !important;
+}

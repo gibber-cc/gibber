@@ -5,7 +5,7 @@
 
 .codemirror-highlight { background:red !important; }
 /* .cm-s-gibber .CodeMirror-selected {background: rgba(130,130,130,.5) !important;} */
-.cm-s-gibber .CodeMirror-cursor {border-left: 1px solid #f00 !important ;}
+.cm-s-gibber .CodeMirror-cursor { border-left: 1px solid #f00 !important;}
 
 .cm-s-gibber span.cm-comment {color: #666;}
 .cm-s-gibber span.cm-atom {color: #006600;}
