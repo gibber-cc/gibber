@@ -159,6 +159,7 @@
     seq = new Gibberish.PolySeq( obj )
 		seq.name = 'Seq'
     seq.save = {}
+    seq.marks = []
     
     seq.oldShuffle = seq.shuffle
     delete seq.shuffle
@@ -235,7 +236,13 @@
     kill: function() { 
       if( this.target )
         this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-        
+      
+      for( var i = 0; i < this.marks.length; i++ ) {
+        console.log(" CLEARING SEQUENCER MARK", this.marks[i] )
+        this.marks[ i ].clear()
+      }
+      this.marks.length = 0
+      
       this.stop().disconnect()
     },
     applyScale : function() {

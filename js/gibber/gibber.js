@@ -603,6 +603,7 @@ window.Gibber = window.G = {
   
   ugen: {
     sequencers : [],
+    marks: [],
     fx: $.extend( [], {
       add: function() {
         var end = this.length === 0 ? this.ugen : this[ this.length - 1 ]
@@ -721,7 +722,7 @@ window.Gibber = window.G = {
           }
         }
       }
-      
+  
       this.kill()
     },
     
@@ -729,6 +730,12 @@ window.Gibber = window.G = {
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
       if( this.seq ) this.seq.disconnect()
       end.disconnect()
+      
+      for( var i = 0; i < this.marks.length; i++ ) {
+        this.marks[ i ].clear()
+      }
+      this.marks.length = 0
+      
       console.log( this.name + " has been terminated.")
     },
 

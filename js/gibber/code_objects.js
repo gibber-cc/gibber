@@ -63,7 +63,11 @@ b = Seq({
 
             if( className ) { 
               var newEnd = { line: pos.to.line, ch: pos.from.ch + ( new String( text ).length ) }
-              //cm.markText( pos.from, newEnd, { 'className': className, inclusiveLeft:true, inclusiveRight:true } ) 
+              mark.clear()
+              newObject.marks.splice( newObject.marks.indexOf( mark ), 1 )
+              
+              mark = cm.markText( pos.from, newEnd, { 'className': className, inclusiveLeft:true, inclusiveRight:true } ) 
+              newObject.marks.push( mark )
             }
             
             if( move.onchange )
@@ -82,16 +86,18 @@ b = Seq({
   // text objects and mappings
   G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
+      console.log(" MAPPING ")
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
       
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
       
       if( right.callee ) {
         var constructorName = right.callee.name,
-            className = constructorName + '_' + newObjectName + '_' + cm.column.id
+            className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
         
         var mark = cm.markText( start, end, { 'className': className } );
-
+        newObject.marks.push( mark )
+        
         newObject.text = new String( src )
         newObject.text.mark = mark
         newObject.text.class = '.' + className
@@ -173,12 +179,13 @@ b = Seq({
             
       if( right.callee ) {
         var constructorName = right.callee.name || src.split('\n')[0].split('=')[1].trim().split('(')[0],
-            className = constructorName + '_' + newObjectName + '_' + cm.column.id
-        
-        // have to mark again due to cascading calls...
-        var mark = cm.markText( start, end, { 'className': className } );
+            className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_dragdrop'
         
         if( codeObjects.indexOf( constructorName ) > -1 ){
+          // have to mark again due to cascading calls...
+          var mark = cm.markText( start, end, { 'className': className } );
+          newObject.marks.push( mark )
+        
           if( left ) {
             // console.log( 'MAKING A DROP', className, newObjectName )
             // apparently cm.markText isn't synchronous
@@ -213,10 +220,8 @@ b = Seq({
     var props = seq.tree.expression.right.arguments[0].properties,
         targetName = typeof seq.target !== 'undefined' ? seq.target.text.split(' ')[0] : 'undefined',
         target = window[ targetName ]
-    
-      
+  
     if( props ) {
-      console.log(" MAKING SEQUENCE ")
       for( var i = 0; i < right.arguments.length; i++ ) {
         seq.locations = {}
         //for(var key in seq) {
@@ -244,7 +249,7 @@ b = Seq({
                   for( var j = 0; j < values.length; j++ ) {
                     ( function() {
                       var value = values[ j ],
-                       		__name = newObjectName + "_" + name + "_" + j,
+                       		__name = newObjectName + '_' + name + '_' + j + '_sequence',
                           index = j,
         									start, end;
 					        
@@ -268,7 +273,7 @@ b = Seq({
                           end.ch -=1
                         }
                         
-                        var _move = makeReactive( value, cm, start, end, target, targetName, __name, mappingObject, __name, true )
+                        var _move = makeReactive( value, cm, start, end, seq, newObjectName, __name, mappingObject, __name, true )
                         _move.onchange = function( v ) { 
                           seq[ name ][ index ] = isNaN(v) ? v : parseFloat( v )
                         }
@@ -280,13 +285,13 @@ b = Seq({
                             noteName = ''
                             nameArray = currentValue.split('')
                             
-                            var i = 0
-                            while( isNaN( nameArray[ i  ] ) ) {
-                              noteName += nameArray[ i ]
-                              i++
+                            var _i = 0
+                            while( isNaN( nameArray[ _i  ] ) ) {
+                              noteName += nameArray[ _i ]
+                              _i++
                             }
                             
-                            noteNumber = nameArray[ i ] 
+                            noteNumber = nameArray[ _i ] 
                             
                             var index = notes.indexOf( noteName )
                             if( amt > 0 ) {
@@ -315,14 +320,14 @@ b = Seq({
                         end.ch += 1
                       }
                       
-                      cm.markText( start, end, { className:__name });
-          
+                      var mark = cm.markText( start, end, { className:__name });
+                      seq.marks.push( mark )
                       seq.locations[ name ].push( __name )
                     })()
                   }              
                 }	else {
                   //if( name !== 'durations' ) console.log(prop)
-                  var __name = newObjectName + "_" + name + "_0"
+                  var __name = newObjectName + '_' + name + '_0_sequence'
       
                   var loc = prop.value.loc;
                   var start = {
@@ -334,8 +339,8 @@ b = Seq({
                     ch : loc.end.column
                   }
         
-                  cm.markText(start, end, { className: __name });
-      
+                  var mark = cm.markText(start, end, { className: __name });
+                  seq.marks.push( mark )
                   seq.locations[ name ].push( __name )
                 }
               }
@@ -380,18 +385,20 @@ b = Seq({
     }
   }
   
+  
   var makeReactive = function( literal, cm, start, end, obj, newObjectName, propertyName, mappingObject, extraClassName, isString ) {
     var min = mappingObject.min, max = mappingObject.max,
         range = max - min,
         pixelRange = 300,
         incr =  1 / pixelRange * range,
-        className = newObjectName + '_' + propertyName + '_' + cm.column.id,
+        className = newObjectName + '_' + propertyName + '_' + cm.column.id + '_reactive',
         mark, value, x, _move, cb = {}, initCursorPos
     
     value = typeof literal.value.value !== 'undefined' ? literal.value.value : literal.value
 
     mark = cm.markText( start, end, { 'className': className, inclusiveLeft:true, inclusiveRight:true } )
-    
+    obj.marks.push( mark )
+        
     $.subscribe('/gibber/clear', function() { mark.clear() } )
     
     cm.listeners[ className ] = function( e ) {
