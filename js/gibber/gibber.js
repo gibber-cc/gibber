@@ -196,7 +196,7 @@ window.Gibber = window.G = {
   run: function( script, pos, cm ) { // called by Gibber.Environment.modes.javascript
 		var _start = pos.start ? pos.start.line : pos.line,
 				tree
-
+    
 	  try{
 			tree = Gibber.Esprima.parse(script, { loc:true, range:true} )
 		}catch(e) {
@@ -220,7 +220,7 @@ window.Gibber = window.G = {
       
       if( this.scriptCallbacks.length > 0 ) {
         for( var i = 0; i < this.scriptCallbacks.length; i++ ) {
-          this.scriptCallbacks[ i ]( obj, cm, pos, start, end, src )
+          this.scriptCallbacks[ i ]( obj, cm, pos, start, end, src, _start )
         }
       }
     }
@@ -586,7 +586,9 @@ window.Gibber = window.G = {
     obj.mappingObjects = []
     
     for( var key in mappingProperties ) {
-      Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp )
+      if( ! mappingProperties[ key ].doNotProxy ) {
+        Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp )
+      }
     }
   },  
   
@@ -601,6 +603,7 @@ window.Gibber = window.G = {
   
   ugen: {
     sequencers : [],
+    marks: [],
     fx: $.extend( [], {
       add: function() {
         var end = this.length === 0 ? this.ugen : this[ this.length - 1 ]
@@ -719,7 +722,7 @@ window.Gibber = window.G = {
           }
         }
       }
-      
+  
       this.kill()
     },
     
@@ -727,6 +730,12 @@ window.Gibber = window.G = {
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
       if( this.seq ) this.seq.disconnect()
       end.disconnect()
+      
+      for( var i = 0; i < this.marks.length; i++ ) {
+        this.marks[ i ].clear()
+      }
+      this.marks.length = 0
+      
       console.log( this.name + " has been terminated.")
     },
 

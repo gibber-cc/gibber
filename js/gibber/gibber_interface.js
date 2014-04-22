@@ -356,7 +356,7 @@
       var _port = port || 10080,
           _socket = OSC.socket = new WebSocket( 'ws://127.0.0.1:' + _port )
       
-      OSC.socket.onopen = function() {}
+      OSC.socket.onopen = function() { console.log( "OPENED" ) }
       OSC.socket.onmessage = OSC.onmessage;
     },
     onmessage : function(msg) {
@@ -376,6 +376,10 @@
         }
       }
     },
+    
+    // send: function( msg ) {
+    //   OSC.socket.send( JSON.stringify( msg ) )
+    // },
   }
   window.OSC = OSC
 })()

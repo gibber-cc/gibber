@@ -11,6 +11,7 @@
   ],
   _mappingProperties = {
     Synth: {
+      note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
@@ -22,6 +23,7 @@
       out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },   
     },
     Synth2: {
+      note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
@@ -35,6 +37,7 @@
       out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },                
     },
     Mono: {
+      note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
@@ -45,9 +48,11 @@
       detune3: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
       glide: { min:.99, max:.999995, output: Gibber.LINEAR, timescale: 'audio'},
       resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' },
+      pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },
     },
     FM: {
+      note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
@@ -60,6 +65,7 @@
       out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },     
     },
     Pluck: {
+      note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },    
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       blend :{ min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio' },

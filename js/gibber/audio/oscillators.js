@@ -42,6 +42,8 @@
       timescale: 'audio',
       dimensions:1
     },
+    pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC, timescale: 'audio',},   
+    note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },
   }
   
   for( var i = 0; i < types.length; i++ ) {

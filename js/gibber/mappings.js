@@ -9,9 +9,6 @@
             mapping
         
         from.object.track = proxy;
-        
-        // TODO: smooth doesn't work... why?
-        //op.smooth( target.name, target.object )
 
         mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
         
@@ -115,7 +112,7 @@
           mapping.follow = from.object.track
           mapping.follow.count++
         } else {
-          mapping.follow = new Gibberish.Follow({ input:from.object })
+          mapping.follow = new Gibberish.Follow({ input:from.object, useAbsoluteValue: true })
           mapping.follow.count = 1
         }
         from.object.track = mapping.follow
@@ -243,7 +240,7 @@
         
         mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
       
-        mapping.follow = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Follow({ input:from.object.properties[ from.name ] })
+        mapping.follow = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Follow({ input:from.object.properties[ from.name ], useAbsoluteValue: false })
         from.object.track = target.object[ target.Name ].mapping.follow
         // assign input after Map ugen is created so that follow can be assigned to the mapping object
         mapping.input = mapping.follow
@@ -455,9 +452,17 @@
         var mapping
         
         mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
-      
-        mapping.follow = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Follow({ input:from.object.properties[ from.name ] })
+  
+        if( typeof from.object.track !== 'undefined' && from.object.track.input === from.object.properties[ from.name ] ) {
+          mapping.follow = from.object.track
+          mapping.follow.count++
+        }else{
+          mapping.follow = new Gibberish.Follow({ input:from.object.properties[ from.name ], useAbsoluteValue: false })
+          mapping.follow.count = 1
+        }
+        
         from.object.track = target.object[ target.Name ].mapping.follow
+        
         // assign input after Map ugen is created so that follow can be assigned to the mapping object
         mapping.input = mapping.follow
       
@@ -476,12 +481,13 @@
           set: function(v) { env = Gibber.Clock.time( v ); mapping.follow.bufferSize = env; }
         })
         
-        if( target.object.mod ) { // second case accomodates modding individual [0][1][2] properties fo vectors
-          //console.log( target.object, target.object.mod )
-          target.object.mod( target.name, mapping, '=' )
-        }else{
-          target.modObject.mod( target.modName, mapping, '=' )
+        mapping.update = function() {   
+          target.object[ target.name ]( mapping.getValue() )
         }
+        mapping.text = target.object
+
+        // let Notation object handle scheduling updates
+        Gibber.Environment.Notation.add( mapping )
         
         mapping.remove = function() {
           this.bus.disconnect()
@@ -493,12 +499,8 @@
               this.follow.remove()
             }
           }
-
-          if( target.object.mod ) {
-            target.object.removeMod( target.name )
-          }else{
-            target.modObject.removeMod( target.modName )
-          }
+          
+          Gibber.Environment.Notation.remove( mapping )
           
           delete target.object[ target.Name ].mapping
         }
@@ -507,14 +509,18 @@
       },
       audioOut : function( target, from ) {
         if( typeof target.object[ target.Name ].mapping === 'undefined') {
-          var mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, 0, 1, 0 )   
-          if( typeof from.object.track !== 'undefined' ) {
+          var mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, 0, 1, 0 )
+          
+          console.log( "MAPPING", from )
+          
+          if( typeof from.object.track !== 'undefined' && from.object.track.input === from.object.properties[ from.name ] ) {
             mapping.follow = from.object.track
             mapping.follow.count++
-          } else {
-            mapping.follow = new Gibberish.Follow({ input:from.object })
+          }else{
+            mapping.follow = new Gibberish.Follow({ input:from.object, useAbsoluteValue: true })
             mapping.follow.count = 1
           }
+          
           from.object.track = mapping.follow
           
           var env = mapping.follow.bufferSize
