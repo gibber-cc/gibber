@@ -238,7 +238,6 @@
         this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
       
       for( var i = 0; i < this.marks.length; i++ ) {
-        console.log(" CLEARING SEQUENCER MARK", this.marks[i] )
         this.marks[ i ].clear()
       }
       this.marks.length = 0
