@@ -6,6 +6,42 @@
     fps: 20,
     clear: null,
     filterString: [],
+    
+    features:{ 'seq':true, 'reactive':true },
+    
+    enabled: {},
+    
+    on: function() {
+      for( var i = 0; i < arguments.length; i++ ) {
+        var name = arguments[ i ]
+        
+        if( this.features[ name ] && ! this.enabled[ name ] ) {
+          var func = this.features[ name ]
+          if( typeof func === 'function' ) {
+            if( Gibber.scriptCallbacks.indexOf( func ) === -1 ) {
+              Gibber.scriptCallbacks.push( func )
+              this.enabled[ name ] = func
+            }
+          } else {
+            this.enabled[ name ] = true
+          }
+        }
+      }
+    },
+    
+    off: function( name ) {
+      if( this.enabled[ name ] ) {
+        var val = this.enabled[ name ],
+            idx = Gibber.scriptCallbacks.indexOf( this.enabled[ name ] )
+        
+        if( typeof val === 'function' ) {    
+          Gibber.scriptCallbacks.splice( idx, 1 )
+        }
+        
+        delete this.enabled[ name ]
+      }
+    },
+    
     add: function( obj ) {
       this.notations.push( obj )
       if( !this.isRunning ) {

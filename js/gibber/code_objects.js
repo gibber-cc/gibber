@@ -84,9 +84,9 @@ b = Seq({
       }
       
   // text objects and mappings
-  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
+  //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
+  Gibber.Environment.Notation.features[ 'global' ] = function( obj, cm, pos, start, end, src, evalStart ) {
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
-      console.log(" MAPPING ")
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
       
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
@@ -126,9 +126,9 @@ b = Seq({
           })()
         }
         
-        if( constructorName === 'Seq' ) {
+        if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
-        } else if( right.arguments && right.arguments.length > 0 ) {
+        } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
           for( var i = 0; i < right.arguments.length; i++ ) {
             ( function() {
               var arg = right.arguments[ i ]
@@ -164,10 +164,11 @@ b = Seq({
         }
       }
     }
-  })
+  }
   
   // drag and drop
-  G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
+  //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
+  Gibber.Environment.Notation.features[ 'draganddrop' ] = function( obj, cm, pos, start, end, src, evalStart ) {    
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       
       var left = obj.expression.left, 
@@ -212,7 +213,7 @@ b = Seq({
         }
       }
     }
-  })
+  }
   
   // sequencers 
   // processSeq : function( seq, _name, cm, pos ) {
@@ -268,56 +269,58 @@ b = Seq({
                       if( value.type !== 'BinaryExpression' ) {
                         if( !mappingObject && (name !== 'note' && name !== 'frequency') ) return
                         // only change inside quotes if string literal
-                        if( isNaN( value.value ) ) {
-                          start.ch += 1
-                          end.ch -=1
-                        }
-                        
-                        var _move = makeReactive( value, cm, start, end, seq, newObjectName, __name, mappingObject, __name, true )
-                        _move.onchange = function( v ) { 
-                          seq[ name ][ index ] = isNaN(v) ? v : parseFloat( v )
-                        }
-                        
-                        if( isNaN( value.value ) && name === 'note' ) {  // string, for now we assume a note string
-                          _move.changeValue = function( amt ) {
-                            var currentValue = _move.getValue(), noteName, noteNumber, nameArray
-                            
-                            noteName = ''
-                            nameArray = currentValue.split('')
-                            
-                            var _i = 0
-                            while( isNaN( nameArray[ _i  ] ) ) {
-                              noteName += nameArray[ _i ]
-                              _i++
-                            }
-                            
-                            noteNumber = nameArray[ _i ] 
-                            
-                            var index = notes.indexOf( noteName )
-                            if( amt > 0 ) {
-                              index += 1
-                              if( index >= notes.length ) {
-                                index = index % notes.length
-                                noteNumber = parseInt( noteNumber ) + 1
-                                if( noteNumber > 8 ) noteNumber = 8
-                              }
-                            }else{
-                              if( index === 0 ) {
-                                index = notes.length -1
-                                noteNumber = parseInt( noteNumber ) - 1
-                                if( noteNumber < 0 ) noteNumber = 0 
-                              }else{
-                                index -= 1
-                              }
-                            }
-                            
-                            noteName = notes[ ( index  )  % notes.length ]
-                            return noteName + noteNumber
+                        if( Gibber.Environment.Notation.enabled.reactive ) {
+                          if( isNaN( value.value ) ) {
+                            start.ch += 1
+                            end.ch -=1
                           }
+                        
+                          var _move = makeReactive( value, cm, start, end, seq, newObjectName, __name, mappingObject, __name, true )
+                          _move.onchange = function( v ) { 
+                            seq[ name ][ index ] = isNaN(v) ? v : parseFloat( v )
+                          }
+                        
+                          if( isNaN( value.value ) && name === 'note' ) {  // string, for now we assume a note string
+                            _move.changeValue = function( amt ) {
+                              var currentValue = _move.getValue(), noteName, noteNumber, nameArray
+                            
+                              noteName = ''
+                              nameArray = currentValue.split('')
+                            
+                              var _i = 0
+                              while( isNaN( nameArray[ _i  ] ) ) {
+                                noteName += nameArray[ _i ]
+                                _i++
+                              }
+                            
+                              noteNumber = nameArray[ _i ] 
+                            
+                              var index = notes.indexOf( noteName )
+                              if( amt > 0 ) {
+                                index += 1
+                                if( index >= notes.length ) {
+                                  index = index % notes.length
+                                  noteNumber = parseInt( noteNumber ) + 1
+                                  if( noteNumber > 8 ) noteNumber = 8
+                                }
+                              }else{
+                                if( index === 0 ) {
+                                  index = notes.length -1
+                                  noteNumber = parseInt( noteNumber ) - 1
+                                  if( noteNumber < 0 ) noteNumber = 0 
+                                }else{
+                                  index -= 1
+                                }
+                              }
+                            
+                              noteName = notes[ ( index  )  % notes.length ]
+                              return noteName + noteNumber
+                            }
+                          }
+                          // highlight whole literal for second mark, quotes included
+                          start.ch -=1
+                          end.ch += 1
                         }
-                        // highlight whole literal for second mark, quotes included
-                        start.ch -=1
-                        end.ch += 1
                       }
                       
                       var mark = cm.markText( start, end, { className:__name });
@@ -450,4 +453,5 @@ b = Seq({
     
     return cb    
   }
+  Gibber.Environment.Notation.on( 'global' )
 })()

@@ -42,7 +42,9 @@ var GE = Gibber.Environment = {
           //GE.Welcome.init()
           GE.Share.open()
         }
-
+        
+        window.Notation = Gibber.Environment.Notation
+        
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
       });
     })
