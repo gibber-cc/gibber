@@ -97,7 +97,22 @@ b = Seq({
         
         var mark = cm.markText( start, end, { 'className': className } );
         
-        if( !newObject.marks ) newObject.marks = []
+        if( !newObject.marks ) {
+          newObject.marks = []
+          
+          newObject.clearMarks = function() {
+            for( var i = 0; i < this.marks.length; i++ ) {        
+              if( this.marks[ i ].height ) { // in case this is a line handle
+                var cm = this.marks[i].parent.parent.cm
+                cm.removeLineClass( this.marks[i].lineNo(), this.marks[i].wrapClass )
+              }else{
+                this.marks[ i ].clear()
+              }
+            }
+      
+            this.marks.length = 0
+          }
+        }
         
         newObject.marks.push( mark )
         
@@ -107,7 +122,8 @@ b = Seq({
         //         }
         
         $.subscribe( '/gibber/clear', function() {
-          newObject.clearMarks()
+          if( newObject.clearMarks )
+            newObject.clearMarks()
         })
  
         newObject.text = new String( src )

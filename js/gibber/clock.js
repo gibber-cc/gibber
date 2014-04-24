@@ -153,7 +153,9 @@ var Clock = Gibber.Clock = {
   },
   
   beats : function(val) {
-    var samplesPerBeat = Gibberish.context.sampleRate / ( Clock.baseBPM / 60 )
+    var sampleRate = typeof Gibberish.context !== 'undefined' ? Gibberish.context.sampleRate : 44100,
+        samplesPerBeat = sampleRate / ( Clock.baseBPM / 60 )
+        
     return samplesPerBeat * ( val * ( 4 / Clock.signature.lower ) );
   },
   

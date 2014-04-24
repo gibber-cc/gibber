@@ -159,7 +159,6 @@
     seq = new Gibberish.PolySeq( obj )
 		seq.name = 'Seq'
     seq.save = {}
-    seq.marks = []
     
     seq.oldShuffle = seq.shuffle
     delete seq.shuffle
@@ -232,18 +231,6 @@
   }
   
   $.extend( Gibberish.PolySeq.prototype, {
-    clearMarks: function() {
-      for( var i = 0; i < this.marks.length; i++ ) {        
-        if( this.marks[ i ].height ) { // in case this is a line handle
-          var cm = this.marks[i].parent.parent.cm
-          cm.removeLineClass( this.marks[i].lineNo(), this.marks[i].wrapClass )
-        }else{
-          this.marks[ i ].clear()
-        }
-      }
-      
-      this.marks.length = 0
-    },
     replaceWith: function( replacement ) { this.kill() },
     kill: function() { 
       if( this.target )
