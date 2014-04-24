@@ -232,15 +232,22 @@
   }
   
   $.extend( Gibberish.PolySeq.prototype, {
+    clearMarks: function() {
+      for( var i = 0; i < this.marks.length; i++ ) {        
+        if( this.marks[ i ].height ) { // in case this is a line handle
+          var cm = this.marks[i].parent.parent.cm
+          cm.removeLineClass( this.marks[i].lineNo(), this.marks[i].wrapClass )
+        }else{
+          this.marks[ i ].clear()
+        }
+      }
+      
+      this.marks.length = 0
+    },
     replaceWith: function( replacement ) { this.kill() },
     kill: function() { 
       if( this.target )
         this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-      
-      for( var i = 0; i < this.marks.length; i++ ) {
-        this.marks[ i ].clear()
-      }
-      this.marks.length = 0
       
       this.stop().disconnect()
     },

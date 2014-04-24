@@ -96,8 +96,20 @@ b = Seq({
             className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
         
         var mark = cm.markText( start, end, { 'className': className } );
+        
+        if( !newObject.marks ) newObject.marks = []
+        
         newObject.marks.push( mark )
         
+        // for( var i = evalStart + 1; i <= evalStart + ( end.line - start.line ); i++ ) {
+        //           mark = cm.addLineClass( i, 'wrap', className )
+        //           newObject.marks.push( mark )
+        //         }
+        
+        $.subscribe( '/gibber/clear', function() {
+          newObject.clearMarks()
+        })
+ 
         newObject.text = new String( src )
         newObject.text.mark = mark
         newObject.text.class = '.' + className

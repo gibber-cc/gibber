@@ -377,9 +377,14 @@
       }
     },
     
-    // send: function( msg ) {
-    //   OSC.socket.send( JSON.stringify( msg ) )
-    // },
+    send : function( address, typetags, params ) {
+      var msg = {
+        'address':address,
+        'typetags':typetags,
+        'params':params
+      }
+      OSC.socket.send( JSON.stringify( msg ) )
+    },
   }
   window.OSC = OSC
 })()
