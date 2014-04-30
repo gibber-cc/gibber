@@ -90,7 +90,6 @@ b = Seq({
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
       
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
-      
       if( right.callee ) {
         var constructorName = right.callee.name,
             className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
@@ -157,14 +156,14 @@ b = Seq({
         if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
         } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
-          for( var i = 0; i < right.arguments.length; i++ ) {
+          for( var ii = 0; ii < right.arguments.length; ii++ ) {
             ( function() {
-              var arg = right.arguments[ i ]
+              var arg = right.arguments[ ii ]
               if( arg.type === 'Literal' ) {
                 var literal = arg, 
                     _start = {line: start.line, ch:literal.loc.start.column },
                     _end = {line: start.line, ch:literal.loc.end.column },
-                    mappingObject = newObject.mappingObjects[ i ]
+                    mappingObject = newObject.mappingObjects[ ii ]
                                     
                 var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, mappingObject.name, mappingObject )
                 
@@ -251,15 +250,15 @@ b = Seq({
         target = window[ targetName ]
   
     if( props ) {
-      for( var i = 0; i < right.arguments.length; i++ ) {
+      for( var ii = 0; ii < right.arguments.length; ii++ ) {
         seq.locations = {}
         //for(var key in seq) {
         var props = seq.tree.expression.right.arguments[0].properties;
 
         if( props ) {
-          for(var i = 0; i < props.length; i++) {
+          for(var ii = 0; ii < props.length; i++) {
             ( function() {
-              var prop = props[i],
+              var prop = props[ii],
                   name = prop.key.name,            
                   mappingObject = target.mappingProperties[ name ]
 
@@ -275,11 +274,11 @@ b = Seq({
                 } 
         
                 if( values ) {
-                  for( var j = 0; j < values.length; j++ ) {
+                  for( var jj = 0; jj < values.length; jj++ ) {
                     ( function() {
-                      var value = values[ j ],
-                       		__name = newObjectName + '_' + name + '_' + j + '_sequence',
-                          index = j,
+                      var value = values[ jj ],
+                       		__name = newObjectName + '_' + name + '_' + jj + '_sequence',
+                          index = jj,
         									start, end;
 					        
                       start = {

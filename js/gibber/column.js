@@ -198,6 +198,7 @@
           this.bodyElement.css({ width: w, height: h })
           this.editor.setSize( w,h )
           this.isFullScreen = true
+          GE.Layout.fullScreenColumn = this
         }else{
           if( Layout.isFullScreen ) {
             Layout.fullScreen()
@@ -210,6 +211,7 @@
           this.editor.setSize( _w - Layout.resizeHandleSize, _h )
           Layout.resizeColumns()
           this.isFullScreen = false
+          GE.Layout.fullScreenColumn = null
         }
       }
       return fnc

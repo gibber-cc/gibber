@@ -100,7 +100,7 @@ Gibber.Utilities = {
       }
       soloGroup.length = 0
       isSoloing = false;
-    }
+    } 
   },
   fill : function( length, fnc ) {
     if( isNaN( length ) ) length = 16

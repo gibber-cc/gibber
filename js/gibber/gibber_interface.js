@@ -90,6 +90,11 @@
           
           }
         })
+        
+        widget.onboundschange = function() { 
+          if( this._initialized) this.placeKeys()
+          this.target = this.target // triggers reassignment of key
+        }
       },
     },
     defaults: {

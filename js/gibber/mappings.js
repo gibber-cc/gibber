@@ -52,13 +52,21 @@
         mapping.remove = function( doNotSet ) {
           if( !doNotSet ) target.object[ target.name ] = mapping.getValue()
           
-          if( _mapping.op ) mapping.op.remove()
+          //if( mapping.op ) mapping.op.remove()
           
           delete mapping
         }
         
-        if( typeof from.object.label !== 'undefined' ) from.object.label = target.object.name + '.' + target.Name
-
+        if( typeof from.object.label !== 'undefined' ) { 
+          var labelString = ''
+          for( var i = 0; i < from.targets.length; i++ ) {
+            var __target = from.targets[ i ]
+            labelString += __target[0].object.name + '.' + __target[1]
+            if( i !== from.targets.length - 1 ) labelString += ' & '
+          }
+          from.object.label = labelString
+        }
+                
         mapping.replace = function( replacementObject, key, Key  ) {
           proxy.setInput( replacementObject )
           if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )
@@ -229,8 +237,17 @@
         if( from.object.setValue ) 
           from.object.setValue( target.object[ target.name ] )
         
-        if( typeof from.object.label !== 'undefined' ) {
-          from.object.label = target.object.name + '.' + target.Name
+        // if( typeof from.object.label !== 'undefined' ) {
+        //   from.object.label = target.object.name + '.' + target.Name
+        // }
+        if( typeof from.object.label !== 'undefined' ) { 
+          var labelString = ''
+          for( var i = 0; i < from.targets.length; i++ ) {
+            var __target = from.targets[ i ]
+            labelString += __target[0].object.name + '.' + __target[1]
+            if( i !== from.targets.length - 1 ) labelString += ' & '
+          }
+          from.object.label = labelString
         }
         
         return mapping
@@ -442,8 +459,17 @@
         if( from.object.setValue ) 
           from.object.setValue( target.object[ target.name ] )
         
-        if( typeof from.object.label !== 'undefined' ) {
-          from.object.label = target.object.name + '.' + target.Name
+        // if( typeof from.object.label !== 'undefined' ) {
+        //   from.object.label = target.object.name + '.' + target.Name
+        // }
+        if( typeof from.object.label !== 'undefined' ) { 
+          var labelString = ''
+          for( var i = 0; i < from.targets.length; i++ ) {
+            var __target = from.targets[ i ]
+            labelString += __target[0].object.name + '.' + __target[1]
+            if( i !== from.targets.length - 1 ) labelString += ' & '
+          }
+          from.object.label = labelString
         }
         
         return mapping

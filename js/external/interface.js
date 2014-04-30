@@ -1493,7 +1493,7 @@ Object. The instrument used to make sound on each key.
 
 Interface.Piano = function() {
   Interface.extend(this, {
-    type : 'Piano',    
+    type : 'Piano',     
     _value: 0,
     serializeMe : ['mode', 'label'],
     mode : 'toggle',

@@ -15,12 +15,14 @@
   mappingProperties = {
     frequency: {
       min: 50, max: 3200,
+      hardMin:.01, hardMax:22050,
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
       dimensions:1
     },
     amp: {
       min: 0, max: 1,
+      hardMax:2,
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
       dimensions:1
@@ -33,6 +35,7 @@
     },
     pitch: {
       min: 1, max: 4,
+      hardMin: .01, hardMax: 20,      
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
     },
@@ -43,7 +46,13 @@
       dimensions:1
     },
     pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC, timescale: 'audio',},   
-    note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },
+    note: { 
+      min: 50, max: 3200, 
+      hardMin:.01, hardMax:22050,
+      output: Gibber.LOGARITHMIC, 
+      timescale: 'audio', 
+      doNotProxy:true 
+    },
   }
   
   for( var i = 0; i < types.length; i++ ) {
@@ -56,9 +65,8 @@
             args = Array.prototype.slice.call( arguments, 0 )
            
         oscillator.type = 'Gen'
-
         $.extend( true, oscillator, Gibber.ugen )
-
+        
         oscillator.fx.ugen = oscillator
         
         Object.defineProperty(oscillator, '_', {
@@ -90,15 +98,15 @@
         }
         
         Gibber.createProxyProperties( oscillator, mappingProperties )
-        
+
         var proxyMethods = [ 'note' ]
         
         if( name === 'Sampler' ) { proxyMethods.push( 'pickBuffer' ) }
         
         Gibber.createProxyMethods( oscillator, proxyMethods )
-        
+
         Gibber.processArguments2( oscillator, args, name )
-        
+
         console.log( name + ' is created.' )
         return oscillator
       }

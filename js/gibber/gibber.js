@@ -219,8 +219,8 @@ window.Gibber = window.G = {
 			}
       
       if( this.scriptCallbacks.length > 0 ) {
-        for( var i = 0; i < this.scriptCallbacks.length; i++ ) {
-          this.scriptCallbacks[ i ]( obj, cm, pos, start, end, src, _start )
+        for( var ___i___ = 0; ___i___ < this.scriptCallbacks.length; ___i___++ ) {
+          this.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
         }
       }
     }
@@ -398,6 +398,20 @@ window.Gibber = window.G = {
       },
     })
     
+    target.object[target.Name].mappingObjects = []
+    
+    Gibber.createProxyProperty( target.object[target.Name], 'min', 0, 0, {
+      'min':min, 'max':max, output: target.output,
+      timescale: target.timescale,
+      dimensions:1
+    })
+    
+    Gibber.createProxyProperty( target.object[target.Name], 'max', 0, 0, {
+      'min':min, 'max':max, output: target.output,
+      timescale: target.timescale,
+      dimensions:1
+    })
+    
     Object.defineProperties( from.object[ from.Name ], {
       'min' : {
         configurable:true,
@@ -410,6 +424,10 @@ window.Gibber = window.G = {
         set : function(v) { _max = v; target.object[ target.Name ].mapping.inputMax = _max }
       },
     })
+    
+    target.object[ target.Name ].invert = function() {
+      target.object[ target.Name ].mapping.invert()
+    }
     
   },
   
@@ -730,7 +748,8 @@ window.Gibber = window.G = {
       if( this.seq ) this.seq.disconnect()
       end.disconnect()
       
-      this.clearMarks()
+      if( this.clearMarks ) // check required for modulators
+        this.clearMarks()
       
       console.log( this.name + " has been terminated.")
     },
@@ -752,11 +771,11 @@ window.Gibber = window.G = {
     //   if( this.seq ) this.seq.start()
     // },
     
-    fadeIn : function( endLevel, _time ) {
-      if( arguments.length === 1) {
-        _time = arguments[0]
+    fadeIn : function( _time, endLevel ) {
+      if( isNaN( endLevel ) ) {
         endLevel = 1
       }
+
       var time = Gibber.Clock.time( _time ),
           line = new Gibberish.Line( 0, endLevel, Gibber.Clock.time( time ) )
           

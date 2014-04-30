@@ -38,7 +38,7 @@ var GE = Gibber.Environment = {
           window.Layout = GE.Layout
           GE.Account.init()
           GE.Console.init()
-          GE.Welcome.init()
+          //GE.Welcome.init()
           GE.Share.open()
         }
         
@@ -266,6 +266,56 @@ var GE = Gibber.Environment = {
         fallthrough: "default",
 
         "Ctrl-Space" : function( cm ) { CodeMirror.showHint(cm, CodeMirror.javascriptHint ) },
+        
+        "Shift-Ctrl-Right" : function( cm ) {
+          //console.log( GE.Layout.fullScreenColumn )
+          var currentColumnNumber = GE.Layout.focusedColumn,
+              nextCol = null
+          
+          for( var i = 0; i < GE.Layout.columns.length; i++ ) {
+            var col = GE.Layout.columns[ i ]
+            if( col === null || typeof col === 'undefined' ) continue;
+            
+            if( col.id > currentColumnNumber ) {
+              nextCol = col
+              break;
+            }
+          }
+          
+          if( nextCol !== null ) {
+            if( GE.Layout.isFullScreen ) {
+              var currentColumn = GE.Layout.columns[ currentColumnNumber ]
+              currentColumn.toggle()
+              nextCol.fullScreen()
+              GE.Layout.fullScreenColumn = nextCol
+            }
+            nextCol.editor.focus()
+          }
+        },
+        "Shift-Ctrl-Left" : function( cm ) {
+          var currentColumnNumber = GE.Layout.focusedColumn,
+              nextCol = null
+          
+          for( var i = currentColumnNumber; i >=0; i-- ) {
+            var col = GE.Layout.columns[ i ]
+            if( col === null || typeof col === 'undefined' ) continue;
+            
+            if( col.id < currentColumnNumber ) {
+              nextCol = col
+              break;
+            }
+          }
+          
+          if( nextCol !== null ) {
+            if( GE.Layout.isFullScreen ) {
+              var currentColumn = GE.Layout.columns[ currentColumnNumber ]
+              currentColumn.toggle()
+              nextCol.fullScreen()
+              GE.Layout.fullScreenColumn = nextCol
+            }
+            nextCol.editor.focus()
+          }
+        },        
         
         "Alt-/": CodeMirror.commands.toggleComment,
 
