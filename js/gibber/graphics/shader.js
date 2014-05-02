@@ -176,6 +176,8 @@
         
         Gibber.createProxyProperty( shader, _name )
         shader[  _name.charAt(0).toUpperCase() + _name.slice(1) ].timescale = 'graphics' // TODO: why is this necessary?
+        
+        return shader
       }
             
       for( var key in mappingProperties ) {

@@ -293,7 +293,10 @@ var Graphics = Gibber.Graphics = {
   
   assignWidthAndHeight : function( isInitialSetting ) { // don't run final lines before renderer is setup...
     this.width = $( this.canvas.parent ).width() // either column or window... 
-    this.height = $( window ).height() - $( "thead" ).height() - $( "tfoot" ).height()
+    this.height = $( window ).height()
+    if( Gibber.Environment.Layout.fullScreenColumn === null) { 
+      this.height -= $( "#header" ).height() + $( "tfoot" ).height()
+    }
 
     this.canvas.css({
       top: $( '#header' ).height(),

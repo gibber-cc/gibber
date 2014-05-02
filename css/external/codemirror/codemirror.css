@@ -41,7 +41,7 @@
 /* CURSOR */
 
 .CodeMirror div.CodeMirror-cursor {
-  border-left: 1px solid black;
+  border-left: 1px solid #f00;
   z-index: 3;
 }
 /* Shown when moving in bi-directional text */

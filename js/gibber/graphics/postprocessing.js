@@ -281,10 +281,10 @@ var PP = Gibber.Graphics.PostProcessing = {
           
           Gibber.createProxyProperties( shader, {} ) // call with empty object to initialize
           
-					shader.uniform = function(_name, _min, _max, _value) {
+					shader.uniform = function(_name, _value, _min, _max ) {
 						_min = isNaN( _min ) ? 0 : _min
 						_max = isNaN( _max ) ? 1 : _max				
-						_value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value
+						_value = isNaN( _value ) && typeof _value !== 'object' ? _min + (_max - _min) / 2 : _value
 		
 						if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
 							_mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
@@ -293,16 +293,24 @@ var PP = Gibber.Graphics.PostProcessing = {
 				        timescale: 'graphics',
 				      }
 						}
-		
-						if( typeof shader.uniforms[ _name ] === 'undefined' ) shader.uniforms[ _name ] = { type:'f', value:_value }
             
+						if( typeof shader.uniforms[ _name ] === 'undefined' ) {
+              shader.uniforms[ _name ] = { type:'f', value:_value }
+              var text = "uniform float " + _name + ";\n"
+              text += shader.columnF.editor.getValue()
+              shader.columnF.editor.setValue( text )
+            }
+            		        
             Object.defineProperty( shader, _name, {
               configurable: true,
               get : function() { return shader.uniforms[_name].value },
               set : function(v){ return shader.uniforms[_name].value = v }
             })
+            Gibber.createProxyProperty( shader, _name, true )
             
-            Gibber.createProxyProperty( shader, _name, true )          
+            shader[ _name ] = _value
+            
+            return shader
           }
 					
           
@@ -342,14 +350,14 @@ var PP = Gibber.Graphics.PostProcessing = {
           
           for( var key in mappingProperties ) {
     				var prop = mappingProperties [ key ]
-    				shader.uniform( key, prop.min, prop.max, shader[ key ] )
+    				shader.uniform( key, shader[ key ], prop.min, prop.max )
           }
           
           $.extend( shader, PP.shader )
           
           Gibber.Graphics.graph.push( shader )
           
-          shader.update =   function() {}
+          shader.update = function() {}
           
     			shader._update = function() {
     				for(var i = 0; i < shader.mods.length; i++) {
@@ -432,6 +440,7 @@ var PP = Gibber.Graphics.PostProcessing = {
           shader.properties = shaderProps.properties
           
           Gibber.processArguments2( shader, Array.prototype.slice.call( arguments,0 ), shader.name )
+          
           return shader;
         }
         window[ name ] = constructor;

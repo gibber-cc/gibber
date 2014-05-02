@@ -1,4 +1,6 @@
 ( function() {
+  // TODO: some effects need to use entire lines... for example, transfrom
+  // can't apply to inline elements
   
   var GEN = Gibber.Environment.Notation = {
     isRunning: false,
@@ -102,6 +104,17 @@
           $( this.class ).css( 'font-size', outputString )
         },
       },
+      scale : { 
+        min:.5, max:5, value:1, timescale:'notation',
+        set: function(v) {
+          this.___scale___  = v
+          var outputString = 'scale(' + v + ')'
+          //transform: scale(0.5);
+          console.log( outputString )
+
+          $( this.class ).css( 'transform', outputString )
+        },
+      },
       color: {
         min:0, max:255, value:0, timescale:'notation',
         set: function(v) {
@@ -158,6 +171,16 @@
         set: function(v) {
           this.___blur___  = Math.round( v ) 
           var outputString = 'blur(' + v + 'px)'
+          
+          if( !this.filterString ) this.filterString = []
+          this.filterString.push( outputString )
+        },
+      },
+      hue: {
+        min:0, max:360, value:0, timescale:'notation',
+        set: function(v) {
+          this.___blur___  = Math.round( v ) 
+          var outputString = 'hue-rotate(' + v + 'deg)'
           
           if( !this.filterString ) this.filterString = []
           this.filterString.push( outputString )

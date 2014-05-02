@@ -8,7 +8,7 @@
 
     var isCodeColumn = options.type === 'code',
         lastColumnWidth = 0, 
-        colNumber = Layout.columnID++,
+        colNumber = Layout.columns.length,
         mode  = 'javascript',
         modeIndex = 0,
         columnWidth = options.width ? options.width : Layout.defaultColumnSize,
@@ -28,7 +28,7 @@
       modeIndex:      0,
       isCodeColumn:   isCodeColumn,
       isFullScreen:   false,
-      fullScreen:     this.makeFullScreenFunction(),
+      // fullScreen:     this.makeFullScreenFunction(),
     })
         
     Layout.columns.push( col )
@@ -103,7 +103,7 @@
         lineWrapping: false,
         tabSize: 2,
         lineNumbers:false,
-        cursorBlinkRate: 600,
+        // cursorBlinkRate: 530,
         autofocus: options.autofocus || false,
       })
       
@@ -136,7 +136,9 @@
       col.infoDiv = null
       col.header.append( col.lineNumbersButton, col.fileInfoButton )
       col.editor.column = col    
-      col.editor.on('focus', function() { Layout.focusedColumn = colNumber } )
+      col.editor.on('focus', function() { 
+        Layout.focusedColumn = colNumber 
+      })
       
       col.editor.listeners = {}
       
@@ -178,6 +180,31 @@
   $.extend( Column.prototype, {
     toggle:             function() { $( this.element ).toggle() },            
     toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+    
+    fullScreen : function() {
+      if( GE.Layout.fullScreenColumn === null ) {
+        GE.Layout.toggle()
+        
+        GE.Layout.__fullScreenColumn__.toggle()
+        GE.Layout.__fullScreenColumn__.editor.focus()        
+        GE.Layout.__fullScreenColumn__.editor.setValue( this.editor.getValue() )
+        
+        GE.Layout.fullScreenColumn = this
+        if( Graphics.running ) Graphics.assignWidthAndHeight() 
+        GE.Layout.isFullScreen = true
+      }else{
+        GE.Layout.toggle()
+        GE.Layout.__fullScreenColumn__.toggle()
+        this.editor.setValue( GE.Layout.__fullScreenColumn__.editor.getValue() )
+        GE.Layout.__fullScreenColumn__.editor.setValue( '' )
+        
+        this.editor.focus()        
+
+        GE.Layout.fullScreenColumn = null
+        if( Graphics.running ) Graphics.assignWidthAndHeight() 
+        GE.Layout.isFullScreen = false        
+      }
+    },
     
     makeFullScreenFunction : function() {
       var _w = null, _h = null, fnc

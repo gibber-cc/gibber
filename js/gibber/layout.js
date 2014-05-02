@@ -12,6 +12,19 @@
     columnID : 0,
     isFullScreen: false,
     _textBGOpacity : 0,
+    __fullScreenColumn__: null,
+    fullScreenColumn: null,
+    getFocusedColumn: function( allowFullScreen ) {
+      if( allowFullScreen ) {
+        if( Layout.fullScreenColumn === null ) {
+          return Layout.columns[ Layout.focusedColumn ]
+        }else{
+          return Layout.__fullScreenColumn__
+        }
+      }else{
+        return Layout.columns[ Layout.focusedColumn ]
+      }
+    },
     textBGOpacity : function( v ) {
       this._textBGOpacity = v
       var color = 'rgba( 0, 0, 0, '+v+' )'
@@ -53,6 +66,18 @@
     
       $( window ).resize( this.onResizeWindow )
       $.subscribe( '/layout/resizeWindow', function( e,dict ) { Layout.resize( dict.w, dict.h ) } )
+      
+      this.__fullScreenColumn__ = GE.Layout.addColumn({ type:'code' })
+      var w = $( window ).width(), h = $( window ).height()
+      this.__fullScreenColumn__.header.hide()
+      this.__fullScreenColumn__.toggleResizeHandle()
+      this.__fullScreenColumn__.element.css({ display:'none', width: w, height: h, top:0, left:0 })
+      this.__fullScreenColumn__.bodyElement.css({ width: w, height: h })
+      this.__fullScreenColumn__.editor.setSize( w,h )
+      this.__fullScreenColumn__.isFullScreen = true
+      this.__fullScreenColumn__.editor._handlers.focus.length = 0
+      
+      GE.Layout.columns.splice( GE.Layout.columns.indexOf( this.__fullScreenColumn__ ) )
     },
     
     onResizeWindow : (function() {

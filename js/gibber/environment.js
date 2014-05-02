@@ -254,7 +254,11 @@ var GE = Gibber.Environment = {
       $(window).on('keydown', function(e) {
           if( e.which === 70 && e.ctrlKey && e.altKey ) {
           if( e.shiftKey ) {
-            GE.Layout.columns[ GE.Layout.focusedColumn ].fullScreen()
+            if( GE.Layout.fullScreenColumn === null ) {
+              GE.Layout.getFocusedColumn().fullScreen()
+            }else{
+              GE.Layout.fullScreenColumn.fullScreen()
+            }
           }else{
             GE.Layout.fullScreen()
             //e.preventDefault()
@@ -269,7 +273,7 @@ var GE = Gibber.Environment = {
         
         "Shift-Ctrl-Right" : function( cm ) {
           //console.log( GE.Layout.fullScreenColumn )
-          var currentColumnNumber = GE.Layout.focusedColumn,
+          var currentColumnNumber = GE.Layout.getFocusedColumn().id,
               nextCol = null
           
           for( var i = 0; i < GE.Layout.columns.length; i++ ) {
@@ -284,15 +288,27 @@ var GE = Gibber.Environment = {
           
           if( nextCol !== null ) {
             if( GE.Layout.isFullScreen ) {
-              var currentColumn = GE.Layout.columns[ currentColumnNumber ]
-              currentColumn.toggle()
-              nextCol.fullScreen()
+              var currentColumn = GE.Layout.getFocusedColumn() //columns[ currentColumnNumber ]
+              currentColumn.editor.setValue( GE.Layout.__fullScreenColumn__.editor.getValue() )
+              
+              GE.Layout.__fullScreenColumn__.editor.setOption('mode', GE.modes.nameMappings[ nextCol.mode ] )
+              GE.Layout.__fullScreenColumn__.editor.setValue( nextCol.editor.getValue() )
+              GE.Layout.__fullScreenColumn__.mode = nextCol.mode
+              GE.Layout.__fullScreenColumn__.__proto__ = nextCol              
               GE.Layout.fullScreenColumn = nextCol
+              GE.Layout.focusedColumn = nextCol.id
+              GE.Message.postFlash( 'Column ' + nextCol.id + ': ' + nextCol.mode, 1000, 
+                { borderRadius:'.5em', fontSize:'2em', fontWidth:'bold', borderWidth:'5px' }
+              )
+            }else{
+              nextCol.editor.focus()
             }
-            nextCol.editor.focus()
+            
           }
         },
+        
         "Shift-Ctrl-Left" : function( cm ) {
+          //GE.Layout.getFocusedColumn()
           var currentColumnNumber = GE.Layout.focusedColumn,
               nextCol = null
           
@@ -308,12 +324,21 @@ var GE = Gibber.Environment = {
           
           if( nextCol !== null ) {
             if( GE.Layout.isFullScreen ) {
-              var currentColumn = GE.Layout.columns[ currentColumnNumber ]
-              currentColumn.toggle()
-              nextCol.fullScreen()
+              var currentColumn = GE.Layout.getFocusedColumn() //columns[ currentColumnNumber ]
+              currentColumn.editor.setValue( GE.Layout.__fullScreenColumn__.editor.getValue() )              
+              
+              GE.Layout.__fullScreenColumn__.editor.setOption('mode', GE.modes.nameMappings[ nextCol.mode ] )
+              GE.Layout.__fullScreenColumn__.editor.setValue( nextCol.editor.getValue() )
+              GE.Layout.__fullScreenColumn__.mode = nextCol.mode
+              GE.Layout.__fullScreenColumn__.__proto__ = nextCol
               GE.Layout.fullScreenColumn = nextCol
+              GE.Layout.focusedColumn = nextCol.id
+              GE.Message.postFlash( 'Column ' + nextCol.id + ': ' + nextCol.mode, 1000, 
+                { borderRadius:'.5em', fontSize:'2em', fontWidth:'bold', borderWidth:'5px' }
+              )
+            }else{
+              nextCol.editor.focus()
             }
-            nextCol.editor.focus()
           }
         },        
         
@@ -394,7 +419,7 @@ var GE = Gibber.Environment = {
         },
         
         "Shift-Ctrl-=": function(cm) {
-          var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
+          var col = GE.Layout.getFocusedColumn( true )
           col.fontSize += .2
           
           col.bodyElement.css({ fontSize: col.fontSize + 'em'})
@@ -402,7 +427,7 @@ var GE = Gibber.Environment = {
         },
         
         "Shift-Ctrl--": function(cm) {
-          var col = GE.Layout.columns[ GE.Layout.focusedColumn ]
+          var col = GE.Layout.getFocusedColumn( true )
           col.fontSize -= .2
           
           col.bodyElement.css({ fontSize: col.fontSize + 'em'})
@@ -445,7 +470,7 @@ var GE = Gibber.Environment = {
 	getSelectionCodeColumn : function( cm, findBlock ) {
 		var pos = cm.getCursor(), 
 				text = null,
-			  column = GE.Layout.columns[ GE.Layout.focusedColumn ]
+			  column = GE.Layout.fullScreenColumn === null ? GE.Layout.columns[ GE.Layout.focusedColumn ] : GE.Layout.__fullScreenColumn__
 		
     if( column.mode.indexOf('glsl') > -1 ) { // glsl always executes entire block
       var lastLine = cm.getLine( cm.lineCount() - 1 )
@@ -535,7 +560,6 @@ var GE = Gibber.Environment = {
 		'glsl-fragment' : { 
 			run: function( column, value, position, codemirror, shouldDelay ) {
         column.shader.fragmentText = value
-        console.log( "UNIFORMS", column.shader.uniforms )
 	    	column.shader.material = new THREE.ShaderMaterial({
 	    		uniforms: column.shader.uniforms,
 	    		vertexShader: column.shader.vertexText || Gibber.Graphics.Shaders.defaultVertex,
@@ -685,27 +709,31 @@ var GE = Gibber.Environment = {
 
       return msgDiv // return so it can be removed if needed
     },
-    postFlash : function( text, time ) {
+    postFlash : function( text, time, css ) {
       var msgDiv = $( '<div>' )
-      msgDiv.css({
-          position:'fixed',
-          display:'block',
-          width:450,
-          height:'3em',
-          left: $( "thead" ).width() / 2 - 225,
-          top: $( window ).height() / 2 - 100,
-          backgroundColor: 'rgba(0,0,0,.85)',
-          border:'1px solid #666',
-          padding:'.5em',
-          zIndex:1000
-        })
-        .addClass( 'message' )
+      .css({
+        position:'fixed',
+        display:'block',
+        width:450,
+        height:'3em',
+        left: $( "thead" ).width() / 2 - 225,
+        top: $( window ).height() / 2 - 100,
+        backgroundColor: 'rgba(0,0,0,.85)',
+        border:'1px solid #666',
+        padding:'.5em',
+        zIndex:1000
+      })
+      .addClass( 'message' )
+      
+      if( css ) msgDiv.css( css )
         
-        msgDiv.append( $('<p>').text( text ) )
-        
-        $( 'body' ).append( msgDiv )
-        
-        msgDiv.fadeOut( 2000, function() { msgDiv.remove() } )
+      msgDiv.append( $('<p>').text( text ) )
+    
+      $( 'body' ).append( msgDiv )
+      
+      time = time || 2000
+      
+      msgDiv.fadeOut( time, function() { msgDiv.remove() } )
     },
     postHTML : function( html ) {
       var msgDiv = $( '<div>' )
