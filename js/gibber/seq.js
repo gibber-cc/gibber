@@ -223,7 +223,7 @@
     }
     //seq.start()
     
-    console.log( 'Sequencer created.' )
+    //console.log( 'Sequencer created.' )
     
     seq.gibber = true
     

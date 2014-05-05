@@ -597,7 +597,7 @@ window.Gibber = window.G = {
     obj.gibber = true // keyword identifying gibber object, needed for notation parser
     
     if( !obj.seq && shouldSeq ) {
-      obj.seq = Gibber.Seq({ doNotStart:true })      
+      obj.seq = Gibber.Seq({ doNotStart:true, scale:obj.scale })      
     }
     
     obj.mappingProperties = mappingProperties
@@ -745,8 +745,13 @@ window.Gibber = window.G = {
 
     kill: function() { 
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
-      if( this.seq ) this.seq.disconnect()
+      if( this.seq.isRunning ) this.seq.disconnect()
       end.disconnect()
+      
+      for( var i = 0; i < this.fx.length; i++ ) {
+        var fx = this.fx[ i ]
+        if( fx.seq.isRunning ) fx.seq.disconnect()
+      }
       
       if( this.clearMarks ) // check required for modulators
         this.clearMarks()

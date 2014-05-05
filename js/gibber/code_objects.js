@@ -248,7 +248,7 @@ b = Seq({
     var props = seq.tree.expression.right.arguments[0].properties,
         targetName = typeof seq.target !== 'undefined' ? seq.target.text.split(' ')[0] : 'undefined',
         target = window[ targetName ]
-  
+
     if( props ) {
       for( var ii = 0; ii < right.arguments.length; ii++ ) {
         seq.locations = {}
@@ -256,7 +256,7 @@ b = Seq({
         var props = seq.tree.expression.right.arguments[0].properties;
 
         if( props ) {
-          for(var ii = 0; ii < props.length; i++) {
+          for(var ii = 0; ii < props.length; ii++) {
             ( function() {
               var prop = props[ii],
                   name = prop.key.name,            
@@ -280,7 +280,7 @@ b = Seq({
                        		__name = newObjectName + '_' + name + '_' + jj + '_sequence',
                           index = jj,
         									start, end;
-					        
+
                       start = {
                         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
                         ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
@@ -296,6 +296,7 @@ b = Seq({
                       if( value.type !== 'BinaryExpression' ) {
                         if( !mappingObject && (name !== 'note' && name !== 'frequency') ) return
                         // only change inside quotes if string literal
+
                         if( Gibber.Environment.Notation.enabled.reactive ) {
                           if( isNaN( value.value ) ) {
                             start.ch += 1

@@ -86,6 +86,7 @@
             obj,
             mv = 1,
             adsr = false,
+            scale,
             requireReleaseTrigger = true
         
         if( typeof args[0] === 'object' ) {
@@ -102,11 +103,14 @@
           }
           if( typeof args[0].useADSR !== 'undefined' ) {
             adsr = args[0].useADSR
+          }
+          if( typeof args[0].scale !== 'undefined' ) {
+            scale = args[0].scale
           } 
         }
         
         if( args[0] !== 'undefined')
-        obj = new Gibberish[ type ]({ maxVoices: mv, useADSR:adsr, requireReleaseTrigger:requireReleaseTrigger }).connect( Gibber.Master )
+        obj = new Gibberish[ type ]({ maxVoices: mv, useADSR:adsr, requireReleaseTrigger:requireReleaseTrigger, scale:scale }).connect( Gibber.Master )
         obj.type = 'Gen'
         
         $.extend( true, obj, Gibber.ugen )
