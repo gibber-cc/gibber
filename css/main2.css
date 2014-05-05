@@ -300,8 +300,9 @@ tfoot, thead {
 
 .mono { 
   font-family:monospace;
-  font-size:1.25em
- }
+  font-size:1.25em;
+  background:#000;
+}
 
 .login a { color: #ccc; }
 
