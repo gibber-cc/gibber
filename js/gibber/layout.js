@@ -158,7 +158,8 @@
   
     toggleAllColumns : function() {
       for( var i = 0; i < GE.Layout.columns.length; i++ ) {
-        GE.Layout.columns[ i ].toggle()
+        if( GE.Layout.columns[i] !== null )
+          GE.Layout.columns[ i ].toggle()
       }
     },
   
