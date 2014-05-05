@@ -323,7 +323,7 @@
   
       table = $( html ).css({ margin:'1em' })
       //$( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
-      //console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
+      console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
       if( this.fileInfo._revs_info.length > 1 ) {
         var list = $( '<ul>' ), tr, td, li, a
     
@@ -332,7 +332,7 @@
         for( var i = 0; i < this.fileInfo._revs_info.length; i++ ) {
           li = $( '<li>' ).text( this.fileInfo._revs_info[ i ].rev )
             .on('click', ( function() {
-              var rev = this.fileInfo.author + '/publications/' +this.fileInfo.name + '?rev=' + this.fileInfo._revs_info[ i ].rev
+              var rev = col.fileInfo.author + '/publications/' + col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
               var fnc = function() {
                 GE.Browser.openCode( rev )
               }
@@ -340,7 +340,7 @@
             })()
             )
             .css({ cursor:'pointer', color:'#aaa' })
-            .hover( function() { $(this).css({ color:'#fff', textDecoration:'underline'} )}, function() { $(this).css({ color:'#aaa', textDecoration:'none'} )})
+            .hover( function() { $( li ).css({ color:'#fff', textDecoration:'underline' } )}, function() { $( li ).css({ color:'#aaa', textDecoration:'none'} )})
         
           list.append( li )
         }
