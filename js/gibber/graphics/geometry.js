@@ -241,9 +241,7 @@ for( var key in types) {
               update()
             },            
           })
-          
-          obj.spin = Gibber.Graphics.spin
-          
+                    
           Object.defineProperty( obj, mapping.Name, {
             get: function() { return mapping },
             set: function(v) {
@@ -264,30 +262,32 @@ for( var key in types) {
 					var mod = this.mods[ i ],
               val,
               prop,
-              upper
+              upper,
+              newVal
           
           if( mod.name.indexOf( '.' ) > -1 ) {
             var parts = mod.name.split( '.' )
-            val  = this[ parts[ 0 ] ][ parts[ 1 ] ]
+            val  = this[ parts[ 0 ] ][ parts[ 1 ] ]()
             upper = parts[ 1 ].toUpperCase()
             
   					switch( mod.type ) {
   						case "+":
-  							this[ parts[ 0 ] ][ upper ].value = typeof mod.modulator === "number" ? mod.modulator : val + mod.modulator.getValue() * mod.mult
+  							newVal = typeof mod.modulator === "number" ?  val + mod.modulator * mod.mult : val + mod.modulator.getValue() * mod.mult
   							break
   						case "++":
-  							this[ parts[ 0 ] ][ upper ].value = typeof mod.modulator === "number" ? mod.modulator : val + Math.abs( mod.modulator.getValue() * mod.mult )
+  							newVal += typeof mod.modulator === "number" ? val + Math.abs( mod.modulator * mod.mult) : val + Math.abs( mod.modulator.getValue() * mod.mult )
   							break							
   						case "-" :
-  							this[ parts[ 0 ] ][ upper ].value = typeof mod.modulator === "number" ? val - mod.modulator : val - mod.modulator.getValue() * mod.mult
+  							newVal = typeof mod.modulator === "number" ? val - mod.modulator * mod.mult : val - mod.modulator.getValue() * mod.mult
   							break
   						case "=":
-  							this[ parts[ 0 ] ][ upper ].value = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.getValue() * mod.mult
+  							newVal = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.getValue() * mod.mult
   							break
   						default:
   						break;	
   					}
-            this[ parts[ 0 ] ][ upper ].oldSetter.call( this, this[ parts[ 0 ] ][ upper ].value )
+            
+            this[ parts[ 0 ] ][ parts[1] ] = newVal //( newVal )
             
           }else{
             var modValue = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.getValue()
