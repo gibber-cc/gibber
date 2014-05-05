@@ -287,7 +287,7 @@ for( var key in types) {
   						break;	
   					}
             
-            this[ parts[ 0 ] ][ parts[1] ].set( newVal ) //( newVal )
+            this[ parts[ 0 ] ][ parts[1] ].set( newVal )
             
           }else{
             var modValue = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.getValue()

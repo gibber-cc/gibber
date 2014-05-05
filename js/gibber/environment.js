@@ -38,7 +38,7 @@ var GE = Gibber.Environment = {
           window.Layout = GE.Layout
           GE.Account.init()
           GE.Console.init()
-          //GE.Welcome.init()
+          GE.Welcome.init()
           GE.Share.open()
         }
         
