@@ -220,24 +220,23 @@ var Theory = Gibber.Theory = {
 				var n = _chord.notes[ j ];
 				this.note( typeof note === 'number' ? note : n.fq() );
 			}
-		}else if( this.scale ) {
-			for( var k = 0; k < this.notation.length; k++ ) {
-				var note = this.scale.notes[ this.notation[ k ] ]
-        this.note( note )
-      }
     }else{
 			for( var k = 0; k < this.notation.length; k++ ) {
-				var _note = this.notation[ k ],
+				var _note = this.scale ? this.scale.notes[ this.notation[k] ] : this.notation[ k ],
             note
-            
+
         switch( typeof _note ) {
           case 'number':
             note = _note
             break;
-          case 'string':
+          case 'object':
             note = _note.fq()
             break;
+          case 'string':
+            note = Theory.Teoria.note( _note ).fq();
+            break;
         }
+
         this.note( note )
 			}
 		}
