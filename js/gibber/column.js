@@ -325,23 +325,24 @@
       //$( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
       console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
       if( this.fileInfo._revs_info.length > 1 ) {
-        var list = $( '<ul>' ), tr, td, li, a
+        var list = $( '<ul>' ), tr, td, a
     
         list.append( $('<li>').html('<b>revisions</b>') )
     
         for( var i = 0; i < this.fileInfo._revs_info.length; i++ ) {
-          li = $( '<li>' ).text( this.fileInfo._revs_info[ i ].rev )
-            .on('click', ( function() {
-              var rev = col.fileInfo.author + '/publications/' + col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
-              var fnc = function() {
-                GE.Browser.openCode( rev )
-              }
-              return fnc
-            })()
-            )
-            .css({ cursor:'pointer', color:'#aaa' })
-            .hover( function() { $( li ).css({ color:'#fff', textDecoration:'underline' } )}, function() { $( li ).css({ color:'#aaa', textDecoration:'none'} )})
-        
+          ( function() { 
+            var li = $( '<li>' ).text( this.fileInfo._revs_info[ i ].rev )
+              .on('click', ( function() {
+                var rev = col.fileInfo.author + '/publications/' + col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
+                var fnc = function() {
+                  GE.Browser.openCode( rev )
+                }
+                return fnc
+              })()
+              )
+              .css({ cursor:'pointer', color:'#aaa' })
+              .hover( function() { $( li ).css({ color:'#fff', textDecoration:'underline' } )}, function() { $( li ).css({ color:'#aaa', textDecoration:'none'} )})
+          })()
           list.append( li )
         }
     
