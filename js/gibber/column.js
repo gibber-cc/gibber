@@ -331,7 +331,7 @@
     
         for( var i = 0; i < this.fileInfo._revs_info.length; i++ ) {
           ( function() { 
-            var li = $( '<li>' ).text( this.fileInfo._revs_info[ i ].rev )
+            var col = col, li = $( '<li>' ).text( this.fileInfo._revs_info[ i ].rev )
               .on('click', ( function() {
                 var rev = col.fileInfo.author + '/publications/' + col.fileInfo.name + '?rev=' + col.fileInfo._revs_info[ i ].rev
                 var fnc = function() {
