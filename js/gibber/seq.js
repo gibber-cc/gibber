@@ -137,7 +137,7 @@
             }else{
               idxs = _chord[ count++ ]
             }
-
+            
             chord = obj.scale.chord( idxs )
           
             if ( count >= _chord.length) count = 0
