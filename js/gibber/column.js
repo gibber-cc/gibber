@@ -323,7 +323,7 @@
   
       table = $( html ).css({ margin:'1em' })
       //$( $( $( table ).find( 'tr' )[0] ).find('td')[0] ).append( col.infoDivClose )
-      console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
+      //console.log( "FILE INFO", col.fileInfo, col.fileInfo._revs_info.length )
       if( this.fileInfo._revs_info.length > 1 ) {
         var list = $( '<ul>' ), tr, td, a
     
@@ -342,8 +342,9 @@
               )
               .css({ cursor:'pointer', color:'#aaa' })
               .hover( function() { $( li ).css({ color:'#fff', textDecoration:'underline' } )}, function() { $( li ).css({ color:'#aaa', textDecoration:'none'} )})
+              
+            list.append( li )  
           })()
-          list.append( li )
         }
     
         td = $('<td>').append( list )
