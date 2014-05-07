@@ -87,16 +87,26 @@ Gibber.Utilities = {
       
       // console.log( Master.inputs, args )
       for(var i = 0; i < Master.inputs.length; i++) {
-        var idx = args.indexOf( Master.inputs[i].value )
+        //console.log( i, Master.inputs[i] )
+        var idx = args.indexOf( Master.inputs[i].value ),
+            name = Master.inputs[i].value.name
         if( idx === -1) {
-          soloGroup.push( [ Master.inputs[i].value, Master.inputs[i].value.amp ] );
-          Master.inputs[i].value.amp = 0;
+          if( name !== 'polyseq' &&  name !== 'Seq' ) { // TODO: please, please, don't route seqs into master bus...
+            //soloGroup.push( [ Master.inputs[i].value, Master.inputs[i].value.amp() ] );
+            
+            Master.inputs[i].value = Mul( Master.inputs[i].value, 0 )
+            soloGroup.push( Master.inputs[i] );
+            //console.log( Master.inputs[i].value )
+            //Master.inputs[i].value.amp = 0;
+          }
         }
       }
       isSoloing = true;
     }else{
       for( var i = 0; i < soloGroup.length; i++ ) {
-        soloGroup[i][0].amp = soloGroup[i][1];
+        //soloGroup[i][0].amp( soloGroup[i][1] );
+        console.log( soloGroup[i].value[0] )
+        soloGroup[i].value = soloGroup[i].value[0]
       }
       soloGroup.length = 0
       isSoloing = false;
