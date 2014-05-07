@@ -544,6 +544,7 @@ window.Gibber = window.G = {
         if( typeof v !== 'undefined' ) {
           mapping.value = v
           if( mapping.oldSetter ) mapping.oldSetter( mapping.value )
+          return obj
         }
         return mapping.value
       }
@@ -567,6 +568,7 @@ window.Gibber = window.G = {
 
           obj[ '_' + propertyName ]( v ) 
         }
+        return obj
       }
     })
     
