@@ -133,5 +133,5 @@ window.future = Gibber.Utilities.future // TODO: fix global reference
 Array.prototype.random = Array.prototype.rnd = Gibber.Utilities.random
 Array.prototype.fill = Gibber.Utilities.fill
 Array.prototype.choose = Gibber.Utilities.choose
-
+Array.prototype.Rnd = Gibber.Utilities.random2
 })()
