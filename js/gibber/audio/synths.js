@@ -146,6 +146,16 @@
         Gibber.processArguments2( obj, args, obj.name )
         
         console.log( name + ' is created.' )
+        
+        var __scale;
+        Object.defineProperty(obj, 'scale', {
+          get: function() { return __scale },
+          set: function(v) {
+            __scale = v;
+            obj.seq.scale = __scale
+          }
+        })
+        
         return obj
       }
     })()

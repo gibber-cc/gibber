@@ -443,6 +443,9 @@ window.Gibber = window.G = {
     //   }
     // }
     
+    if( !obj.seq ) {
+      obj.seq = Gibber.Seq({ doNotStart:true, scale:obj.scale })
+    }
     fnc.seq = function( v,d ) { 
       var args = {
         key: key,
@@ -518,32 +521,38 @@ window.Gibber = window.G = {
     for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
   },
   
-  createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict ) {
+  createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
     var propertyName = _key,
-        propertyDict = dict || obj.mappingProperties[ propertyName ],
+        useMappings = _useMappings === false ? false : true,
+        propertyDict = useMappings ? dict || obj.mappingProperties[ propertyName ] : null,
         __n = propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
-        mapping = $.extend( {}, propertyDict, {
-          Name  : __n,
-          name  : propertyName,
-          type  : 'mapping',
-          value : obj[ propertyName ],
-          object: obj,
-          targets: [],
-					oldSetter: obj.__lookupSetter__( propertyName ),
-					oldGetter: obj.__lookupGetter__( propertyName ),
-          oldMappingGetter: obj.__lookupGetter__( __n ),
-          oldMappingSetter: obj.__lookupSetter__( __n ),          
-        }),
-        fnc
+        mapping, fnc
+        
+    mapping = $.extend( {}, propertyDict, {
+      Name  : __n,
+      name  : propertyName,
+      type  : 'mapping',
+      value : obj[ propertyName ],
+      object: obj,
+      targets: [],
+			oldSetter: obj.__lookupSetter__( propertyName ),
+			oldGetter: obj.__lookupGetter__( propertyName ),
+      oldMappingGetter: obj.__lookupGetter__( __n ),
+      oldMappingSetter: obj.__lookupSetter__( __n ),          
+    })
     
+    if( ! obj.mappingObjects ) obj.mappingObjects = []
     // voodoo to make method act like property
     obj.mappingObjects.push( mapping )
+    
+    var __propertyName = useMappings ? '_' + propertyName : propertyName
     
     fnc = obj[ '_' + propertyName ] = ( function() {
       var _fnc = function(v) {
         if( typeof v !== 'undefined' ) {
           mapping.value = v
-          if( mapping.oldSetter ) mapping.oldSetter( mapping.value )
+          
+          if( mapping.oldSetter ) { mapping.oldSetter( mapping.value ) }
           return obj
         }
         return mapping.value
@@ -552,44 +561,60 @@ window.Gibber = window.G = {
     })()    
 
     fnc.valueOf = function() { return mapping.value }
-      
-    Object.defineProperty( obj, propertyName, {
-      configurable: true,
-      get: function() { return obj[ '_' + propertyName ] },
-      set: function(v) { 
-        if( typeof v === 'object' && v.type === 'mapping' ) {
-          Gibber.createMappingObject( mapping, v )
-        }else{
-          if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
-            //if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
-            if( obj[ mapping.Name ].mapping.remove )
-              obj[ mapping.Name ].mapping.remove( true )
-          }
+    
+    if( useMappings ) {
+      Object.defineProperty( obj, propertyName, {
+        configurable: true,
+        get: function() { return obj[ '_' + propertyName ] },
+        set: function(v) { 
+          if( typeof v === 'object' && v.type === 'mapping' ) {
+            Gibber.createMappingObject( mapping, v )
+          }else{
+            if( typeof obj[ mapping.Name ].mapping !== 'undefined' ) { 
+              //if( obj[ mapping.Name ].mapping.op ) obj[ mapping.Name ].mapping.op.remove()
+              if( obj[ mapping.Name ].mapping.remove )
+                obj[ mapping.Name ].mapping.remove( true )
+            }
 
-          obj[ '_' + propertyName ]( v ) 
+            obj[ '_' + propertyName ]( v ) 
+          }
+          return obj
         }
-        return obj
-      }
-    })
+      })
+    }else{
+      ( function() { 
+        var __fnc = fnc
+        Object.defineProperty( obj, propertyName, {
+          configurable: true,
+          get: function() { return obj['_'+propertyName] },
+          set: function(v) { 
+            obj['_'+propertyName]( v )
+            return obj
+          }
+        })
+      })()
+    }
     
     if( shouldSeq )
-      Gibber.defineSequencedProperty( obj, '_' + propertyName )
+      Gibber.defineSequencedProperty( obj, __propertyName )
     
     if( shouldRamp )
-      Gibber.defineRampedProperty( obj, '_' + propertyName )
+      Gibber.defineRampedProperty( obj, __propertyName )
     
     // capital letter mapping sugar
-    Object.defineProperty( obj, mapping.Name, {
-      configurable: true,
-      get : function()  {
-        if( typeof mapping.oldMappingGetter === 'function' ) mapping.oldMappingGetter()
-        return mapping 
-      },
-      set : function( v ) {
-        obj[ mapping.Name ] = v
-        if( typeof mapping.oldMappingSetter === 'function' ) mapping.oldMappingSetter( v )
-      }
-    })
+    if( useMappings ) {
+      Object.defineProperty( obj, mapping.Name, {
+        configurable: true,
+        get : function()  {
+          if( typeof mapping.oldMappingGetter === 'function' ) mapping.oldMappingGetter()
+          return mapping 
+        },
+        set : function( v ) {
+          obj[ mapping.Name ] = v
+          if( typeof mapping.oldMappingSetter === 'function' ) mapping.oldMappingSetter( v )
+        }
+      })
+    }
   },
   
   createProxyProperties : function( obj, mappingProperties, noSeq, noRamp ) {

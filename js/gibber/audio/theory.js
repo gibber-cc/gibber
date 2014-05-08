@@ -19,15 +19,22 @@ var Theory = Gibber.Theory = {
   		},
 		
   		create : function() {
+        var __root = typeof that.root() === 'object' ? that.root() : teoria.note( that.root() ),
+            __mode = that.mode() || mode 
+            
+        //console.log( __mode )
+            
   			this.notes = [];
-  			if( Gibber.Theory.Scales[ this.mode ] ) {
-  				var scale = Gibber.Theory.Scales[ this.mode ]( this.root );
+        
+        //console.log( __mode, __root )
+  			if( Gibber.Theory.Scales[ __mode ] ) {
+  				var scale = Gibber.Theory.Scales[ __mode ]( __root );
   				scale.create();
   				this.notes = scale.notes;
   			}else{
-  				var _rootoctave = this.root.octave;
-
-  				var _scale = teoria.scale.list( this.root, this.mode, false );
+  				var _rootoctave = __root.octave;
+          
+  				var _scale = teoria.scale.list( __root, __mode, false );
   				for(var oct = _rootoctave, o = 0; oct < _rootoctave + 8; oct++, o++) {
   					for(var num = 0; num < _scale.length; num++) {
   						var nt = $.extend( {}, _scale[ num ] );
@@ -60,19 +67,30 @@ var Theory = Gibber.Theory = {
 	
   	var mode = _mode || "aeolian";
   	Object.defineProperty( that, "mode", {
+      configurable:true,
   		get: function() { return mode; },
-  		set: function( val ) { mode = val; this.create(); }	
+  		set: function( val ) { 
+        mode = val; 
+        that.create(); 
+      }	
   	});
 	
   	var root = that.root;
   	Object.defineProperty(that, "root", {
+      configurable:true,
   		get: function() { return root; },
   		set: function(val) { 
   			root = typeof val === "string" ? teoria.note( val ) : val; 
-  			this.create();
+  			that.create();
   		}	
   	});
-	
+	  
+    //createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
+    
+    Gibber.createProxyProperty( that, 'root', true, false, null, false )
+    Gibber.createProxyProperty( that, 'mode', true, false, null, false )
+    //Gibber.defineSequencedProperty( that, 'mode' )    
+    
   	that.create();
 
   	return that;

@@ -92,8 +92,8 @@ var Shaders = Gibber.Graphics.GibberShaders = {
     ].join('\n')
     
     var shader = Shader( frag )
-    shader.uniform( 'xCount', 1, 100, 10 )
-    shader.uniform( 'yCount', 1, 100, 10 )
+    shader.uniform( 'xCount', 4, 1, 100 )
+    shader.uniform( 'yCount', 4, 1, 100 )
     shader.uniform( 'blend', 0, 1, 0 )
     
     shader.uniforms.colorX = { type:'c', value:{ r:1, g:1, b:1 } }

@@ -293,9 +293,9 @@ var PP = Gibber.Graphics.PostProcessing = {
 				        timescale: 'graphics',
 				      }
 						}
+            shader.uniforms[ _name ] = { type:'f', value:_value }
             
-						if( typeof shader.uniforms[ _name ] === 'undefined' ) {
-              shader.uniforms[ _name ] = { type:'f', value:_value }
+						if( typeof shader.uniforms[ _name ] === 'undefined' && ( shader.columnF || shader.columnV ) ) {
               var text = "uniform float " + _name + ";\n"
               text += shader.columnF.editor.getValue()
               shader.columnF.editor.setValue( text )
