@@ -5,6 +5,33 @@ var soloGroup = [];
 var isSoloing = false;
 
 Gibber.Utilities = {
+  seq : function() {
+    var arg = arguments[0],
+        type = typeof arg,
+        list = [],
+        output = null
+    
+    if( type === 'object' ) {
+      if( Array.isArray( arg ) ) type = 'array'
+    }
+    
+    // switch( type ) {
+    //   case 'function':
+    //     output = arg
+    //     break;
+    //   case 'array':
+    //     for( var i = 0; i < arg.length; i++ ) {
+    //       var elem = arg[ i ]
+    //       if( typeof )
+    //     }
+    //     break;
+    //   default: 
+    //     output = function() { return arg }
+    //     break;
+    // }
+    
+    return output
+  },
   random :  function() {
     var dict = {},
         lastChosen = null;
@@ -38,6 +65,42 @@ Gibber.Utilities = {
     };
     
     return this;
+  },
+  
+  random2 : function() {
+    var dict = {},
+        lastChosen = null,
+        that = this;
+    
+    for(var i = 0; i < arguments.length; i+=2) {
+      dict[ "" + arguments[i] ] = { repeat: arguments[i+1], count: 0 };
+    }
+
+    this.pick = function() {
+      var value = 0, index, lastValue;
+      if(that[lastChosen]) lastValue = that[lastChosen]
+
+      if(lastChosen !== null && dict[ lastValue ].count++ <= dict[ lastValue ].repeat) {
+        index = lastChosen;
+        if( dict[ lastValue ].count >= dict[ lastValue ].repeat) {
+          dict[ lastValue ].count = 0;
+          lastChosen = null;
+        };
+      }else{
+        index = rndi(0, that.length - 1);
+        value = that[index];
+        if( typeof dict[ ""+value ] !== 'undefined' ) {
+          dict[ ""+value ].count = 1;
+          lastChosen = index;
+        }else{
+          lastChosen = null;
+        }
+      }
+      
+    	return that[ index ]; // return index, not value as required by secondary notation stuff
+    }
+    
+    return this.pick
   },
   
   choose: function( length ) {
@@ -118,8 +181,8 @@ Gibber.Utilities = {
     if( isNaN( length ) ) length = 16
     if( typeof fnc !== 'function' ) { fnc = Rndf() }
     
-    fnc = fnc.bind( this 
-    )
+    fnc = fnc.bind( this )
+    
     for( var i = 0; i < length; i++ ) {
       this[ i ] = fnc()
     }
