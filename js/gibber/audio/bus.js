@@ -44,7 +44,12 @@
           init = true;
         }
         
-        obj.type = 'FX'
+        obj.type = 'Gen'
+        
+        Object.defineProperty(obj, '_', {
+          get: function() { obj.kill(); return obj },
+          set: function() {}
+        })
       
         $.extend( true, obj, Gibber.ugen )
         

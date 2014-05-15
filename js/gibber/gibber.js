@@ -780,6 +780,8 @@ window.Gibber = window.G = {
         if( fx.seq.isRunning ) fx.seq.disconnect()
       }
       
+      this.disconnect()
+      
       if( this.clearMarks ) // check required for modulators
         this.clearMarks()
       
