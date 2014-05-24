@@ -8,6 +8,9 @@ window.Gibber = window.G = {
   LOGARITHMIC : 1,
   LINEAR : 0,
   
+  scale : null,
+  minNoteFrequency:50,
+  
   init: function() { 
     $script([ 
       'external/teoria.min',
@@ -48,6 +51,8 @@ window.Gibber = window.G = {
       Master.type = 'Bus'
       $.extend( true, Master, Gibber.ugen ) 
       Master.fx.ugen = Master
+      
+      Gibber.scale = Scale( 'c4','Minor' )
       
       Gibber.isInstrument = window.isInstrument // TODO: better way to do this without global?
       //Gibber.createMappingAbstractions( Master, Gibber.Busses.mappingProperties )

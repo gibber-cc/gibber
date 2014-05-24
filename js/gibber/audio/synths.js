@@ -124,9 +124,24 @@
         
           if( typeof args[0] === 'string' ) {
             args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
+          }else{
+            if( args[0] < Gibber.minNoteFrequency ) {
+              var scale = obj.scale || Gibber.scale,
+                  note  = scale.notes[ args[ 0 ] ]
+                  
+              if( obj.octave && obj.octave !== 0 ) {
+                var sign = obj.octave > 0 ? 1 : 0,
+                    num  = Math.abs( obj.octave )
+                
+                for( var i = 0; i < num; i++ ) {
+                  note *= sign ? 2 : .5
+                }
+              }
+              
+              args[ 0 ] = note
+            }
           }
-          
-          //this._note( args[0], args[1] )
+
           this._note.apply( this, args )
         }
         
@@ -216,6 +231,13 @@
   }
   
   Gibber.Presets.FM = {
+    bass : {
+      cmRatio:1,
+      index:3,
+      presetInit: function() { this.attack = ms(1); },
+      decay:1/16,
+      octave:-2
+    },
 		glockenspiel : {
 			cmRatio	: 3.5307,
 			index 	: 1,
