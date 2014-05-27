@@ -234,7 +234,8 @@
         
         args.input = 0
         
-        console.log( name + ' is created.' )
+        obj.toString = function() { return '> ' + name }
+        
         return obj
       }
     })()

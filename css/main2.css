@@ -1,5 +1,5 @@
 body {
-  color: #ccc;
+  color: #bbb;
 	font-family: "Helvetica-Neue", "Helvetica", "sans-serif";
   background: -webkit-linear-gradient(top, rgb(0,0,0) 0%, rgb(60,60,60) 100%);
   background: linear-gradient(to bottom, rgb(0, 0, 0), rgb(60,60,60));
@@ -63,10 +63,12 @@ ul { list-style:none; padding:0; }
 
 button, input[type='submit'] { 
   color: #ccc; 
-  background-color: #333; 
+  background-color: #292929; 
   border:none; 
   outline:none; 
   cursor:pointer;
+  font-family:inherit;
+  font-size:.8em;
 }
 tfoot tr { display:block; width:100% }
 
@@ -75,6 +77,7 @@ tfoot tr { display:block; width:100% }
 #header ul {
   font-size: .9em;
   display: inline;
+  margin-left: 2em;
   -webkit-padding-start:0;
 }
 
@@ -141,18 +144,24 @@ tfoot, thead {
   display:block;
   padding:.5em;
   font-family: Courier, monospace;
+  white-space: nowrap;
 }
 
 #welcome {
-  padding: 0 1em 0 1em;
+  padding: 0 .5em 0 .5em;
   overflow-y:scroll;
   overflow-x:hidden;
  -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
+  font-size:.95em;
 }
 #welcome ul li {
   margin-bottom:1em;
   padding-left:0em;
+}
+
+#welcome a {
+  color:#bbb;
 }
 
 #welcome ul {
@@ -162,7 +171,7 @@ tfoot, thead {
   list-style:disc;
 }
 #docs a, #help a, #credits a {
-  color:#ccc;  
+  color:#bbb;  
 }
 
 #docs a { text-decoration:none; }
@@ -179,7 +188,7 @@ tfoot, thead {
   font-size:1.25em;
   font-weight: normal;
   display:block;
-  color:#ccc;
+  color:#bbb;
   background:#333;
 }
 
@@ -208,7 +217,7 @@ tfoot, thead {
 }
 .console-normal {
   font-weight:normal;
-  color:#ccc;
+  color:#bbb;
 }
 
 .console-error {
@@ -219,9 +228,13 @@ tfoot, thead {
 .console-entry{
   display:block;
   padding-left:.5em;
-  margin-top: .5em;
+  margin-top: .25em;
   font-size: 1em;
-  font-family: Courier, monospace;
+  float:none !important;
+  clear:none !important;
+/*  font-family: Courier, monospace;*/
+  font-family: inherit;
+  font-size:.8em;
 }
 
 .editor {
@@ -244,8 +257,10 @@ tfoot, thead {
   line-height:2em;
   border-bottom: 1px solid #444;
   border-top: 1px solid #444;  
-  background: #222;
-  font-family: monospace;
+  background: #000;
+  font-family: inherit;
+  font-size:.75em;
+  color:#bbb;
 /*  padding-left: .35em;  */
   height:2em;
   -webkit-touch-callout: none;
@@ -258,15 +273,17 @@ tfoot, thead {
 
 .columnHeader select {
   background: #000;
-  color: #aaa;
+  color: #bbb;
   border-color: #666;
   -webkit-appearance: none;
   border-radius:0;
   padding: .15em .5em;
+  font-family:inherit;
 }
 
 .lineNumbersButton {
   padding: .15em .5em;
+  margin: 0 .25em;
   border: 1px solid #666;
   background:black;
 }
@@ -279,7 +296,8 @@ tfoot, thead {
   background-color:transparent;
   border-right: 1px solid #444;
   border-left: 1px solid #444;
-  border-top: 1px solid #444;    
+  border-top: 1px solid #444;
+  cursor: ew-resize; 
   float:right;
 }
 
@@ -287,7 +305,7 @@ tfoot, thead {
 .CodeMirror-scroll { overflow:scroll; }
 
 .login {
-  color:#ccc;
+  color:#bbb;
   right:0;
   top:0;
   float:right;
@@ -304,14 +322,14 @@ tfoot, thead {
   background:#000;
 }
 
-.login a { color: #ccc; }
+.login a { color: #bbb; }
 
 .closeButton {
   text-decoration:none;
-  color:#ccc;
+  color:#bbb;
   background:rgba(0,0,0,0);
   padding:0;
-  margin:0 0 0 .1em;
+  margin:0 .25em 0 .1em;
   border:0;
   font-size:1em;
   cursor:pointer;
@@ -324,7 +342,7 @@ tfoot, thead {
 
 /* DATABASE BROWSER STYLES */
 .browser {
-  color:#ccc;
+  color:#bbb;
 }
 
 .browser table { margin-top: 10px; width:97%; }
@@ -335,7 +353,7 @@ tfoot, thead {
 }
 
 .browser li {
-  color:#ccc;
+  color:#bbb;
   cursor:pointer;
 }
 
@@ -350,7 +368,7 @@ tfoot, thead {
 
 .browser input {
   background-color: #333;
-  color:#ccc;
+  color:#bbb;
   border: none;
   outline:none;
   height:1.75em;
@@ -368,7 +386,7 @@ tfoot, thead {
 }
 
 #browser_meta {
-  border-top:1px solid #ccc;
+  border-top:1px solid #bbb;
   display:block;
   overflow: scroll;
   height:29%;

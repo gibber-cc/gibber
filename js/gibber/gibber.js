@@ -209,11 +209,13 @@ window.Gibber = window.G = {
       var obj = tree.body[ __i__ ],
 					start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
 					end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
-				  src   = cm.getRange( start, end )
+				  src   = cm.getRange( start, end ),
+          result = null
 			
 			//console.log( start, end, src )
 			try{
-				eval( src )
+				result = eval( src )
+        log( result )
 			}catch( e ) {
 				console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
 			}
@@ -384,6 +386,8 @@ window.Gibber = window.G = {
     var fromTimescale = from.Name !== 'Out' ? from.timescale : 'audioOut' // check for audio Out, which is a faux property
     
     mapping = Gibber.mappings[ target.timescale ][ fromTimescale ]( target, from )
+    
+    target.object[ target.name ].toString = function() { return '> continuous mapping: ' + from.name + ' -> ' + target.name }
     
     Object.defineProperties( target.object[ target.Name ], {
       'min' : {
@@ -561,6 +565,7 @@ window.Gibber = window.G = {
     })()    
 
     fnc.valueOf = function() { return mapping.value }
+    mapping.toString = function() { return '> continuous mapping: ' + mapping.name  }
     
     if( useMappings ) {
       Object.defineProperty( obj, propertyName, {

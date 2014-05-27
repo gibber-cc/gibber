@@ -28,6 +28,8 @@
       modeIndex:      0,
       isCodeColumn:   isCodeColumn,
       isFullScreen:   false,
+      resizeHandleSize  : 8,
+      
       // fullScreen:     this.makeFullScreenFunction(),
     })
         
@@ -68,7 +70,7 @@
       
       col.header
         .append( col.close )
-        .append( $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;language:' ) )
+        .append( $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' ) )
         .append( col.modeSelect )
       
     }else{
@@ -154,6 +156,7 @@
 
     col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
     col.modeSelect.eq( col.modeIndex )
+    col.modeSelect.addClass( 'modeSelectDropDown' )
   
     if( isCodeColumn )
       $( col.modeSelect ).find( 'option' )[ col.modeIndex ].selected = true;
@@ -263,6 +266,14 @@
           GE.Message.post( 'The current text is the same as what is in the database; no update was performed.')
         }
       }
+    },
+    
+    setWidth: function( w ) {
+      var newWidthCandidate = w
+      this.width = newWidthCandidate > 300 ? newWidthCandidate : 300
+      this.element.width( this.width )
+
+      GE.Layout.resizeColumns()
     },
     
     showFileInfo : function() {

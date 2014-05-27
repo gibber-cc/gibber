@@ -30,37 +30,46 @@
       var color = 'rgba( 0, 0, 0, '+v+' )'
       $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
     },
-  
+    createBoundariesForInitialLayout : function() {
+      var windowWidth = $( window ).width(),
+          width0 = windowWidth * .75,
+          width1 = windowWidth * .25
+          
+      Layout.columns[0].setWidth( width0 )
+      Layout.columns[1].setWidth( width1 )
+      
+      Layout.resizeColumns()
+    },
     init : function( _GE ) {
       GE = _GE
       $( '#contentCell' ).empty()
     
       this.addColumn({ fullScreen:false, type:'code', autofocus:true })
-      var opacityDiv = $('#opacity')
-    
-      opacityDiv.css({
-        background:'transparent',
-        position:'relative',
-        width:150,
-        height:18,
-        display:'inline-block',
-        top:5,
-      })
-      opacityDiv.p = new Interface.Panel({ container:opacityDiv })
-    
-      $( opacityDiv.p.canvas ).css({ width:150, height: 18, zIndex:1  })
-      opacityDiv.p.add(
-        new Interface.Slider({
-          isVertical:false,
-          bounds:[0,0,.95,.95],
-          value:0,
-          max:.8,
-          target:Gibber.Environment.Layout, key:'textBGOpacity',
-          label:'text bg opacity',
-          background:'#000',
-          fill:'#333',
-          stroke:'#999'
-      }))
+      // var opacityDiv = $('#opacity')
+      //     
+      // opacityDiv.css({
+      //   background:'transparent',
+      //   position:'relative',
+      //   width:150,
+      //   height:18,
+      //   display:'inline-block',
+      //   top:5,
+      // })
+      // opacityDiv.p = new Interface.Panel({ container:opacityDiv })
+      //     
+      // $( opacityDiv.p.canvas ).css({ width:150, height: 18, zIndex:1  })
+      // opacityDiv.p.add(
+      //   new Interface.Slider({
+      //     isVertical:false,
+      //     bounds:[0,0,.95,.95],
+      //     value:0,
+      //     max:.8,
+      //     target:Gibber.Environment.Layout, key:'textBGOpacity',
+      //     label:'text bg opacity',
+      //     background:'#000',
+      //     fill:'#333',
+      //     stroke:'#999'
+      // }))
 
       window.Columns = this.columns
     

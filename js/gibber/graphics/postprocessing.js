@@ -212,8 +212,8 @@ var processArgs = function( args, type, shape ) {
       init : function( fragment, vertex ) {
         var columnV = null, columnF = null, out = null, shader = null
         if( fragment && typeof fragment === 'object' ) {
-          columnF = fragment
-          fragment = columnF.value
+          columnF  = fragment
+          fragment = Gibber.Graphics.PostProcessing.defs + columnF.value
         }
 				
         if( vertex && typeof vertex === 'object' ) {
@@ -243,6 +243,13 @@ var PP = Gibber.Graphics.PostProcessing = {
   composer : null,
   fx: [],
   isRunning : false,
+  defs: [
+    "#define PI 3.14159265358979323846264",
+    "float rand(vec2 co){",
+    "  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);",
+    "}\n",
+  ].join('\n'),
+  
   start: function() {
     this.composer = new THREE.EffectComposer( Gibber.Graphics.renderer );
 

@@ -3,11 +3,15 @@
       console_footer = $( '#footer' ),
       tfoot  = $( 'tfoot' ),
       nl2br  = function (str, is_xhtml) {   
-        var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
-        return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+        GEC.parent.log( "STRING", str )
+        var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>'; 
+        //str.replace(/ /g,'_')   
+        var out = (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+        
+        return out
       }
   
-  Gibber.Environment.Console = {
+  var GEC = Gibber.Environment.Console = {
     parent : window.console,
     column : null,
     lastText : null,
@@ -27,6 +31,10 @@
       //window._console = this.parent      
       // console = this;
       this.on()
+      window.log = this.log
+    },
+    html : function( html ) {
+      GEC.div.append( html )
     },
     off : function() {
       this.isOn = false
@@ -41,7 +49,7 @@
           text = args.join( ' ' ),
           _text = null
 
-      this.parent.log.apply( this.parent, arguments )
+      GEC.parent.log.apply( GEC.parent, arguments )
       
       console_footer.text( text )
       
@@ -53,13 +61,16 @@
       //if( this.column !== null) {
         if( text === this.lastText ) {
           _text = '(' + ( ++this.duplicateCount ) + ')' + text
-          this.lastSpan.html( nl2br(_text, false) )
+          GEC.lastSpan.html( nl2br(_text, false) )
         }else{
-          this.lastSpan = $( '<span>' ).html( nl2br( text, false) ).addClass( 'console-entry' )
-          this.div.append( this.lastSpan )
-          this.duplicateCount = 1
-          this.lastText = text
+          GEC.lastSpan = $( '<pre>' ).html( text /*nl2br( text, false)*/ ).addClass( 'console-entry' )
+          GEC.div.append( GEC.lastSpan )
+          GEC.duplicateCount = 1
+          GEC.lastText = text
         }
+        
+        GEC.div.scrollTop(GEC.div.height())
+        
       //}
     },
     warn : function() {
@@ -121,7 +132,9 @@
               
         this.column = GE.Layout.addColumn({ type:'console', header:'Console' })
         this.column.bodyElement.remove()
-        this.column.onclose = function() { GE.Console.column = null; }
+        this.column.onclose = function() { 
+          GE.Console.column = null;
+        }
         
         this.div.css({
           display:'block',
@@ -135,7 +148,8 @@
         var element = this.column.element
         var btn = $('<button title="clear console">clear</button>')
           .on('click', function() { 
-            $( element ).find( '.console-entry' ).remove() 
+            //$( element ).find( '.console-entry' ).remove() 
+            GEC.div.empty()
             GE.Console.lastText = GE.Console.lastSpan = null
           })
           .css({ 'margin-left': '2em', background:'black', border:'1px solid #777', color:'#999' })

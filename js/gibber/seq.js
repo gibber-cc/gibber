@@ -225,6 +225,7 @@
     
     //console.log( 'Sequencer created.' )
     
+    seq.toString = function() { return '> Seq' }
     seq.gibber = true
     
     return seq

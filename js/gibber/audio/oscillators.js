@@ -107,7 +107,8 @@
 
         Gibber.processArguments2( oscillator, args, name )
 
-        console.log( name + ' is created.' )
+        oscillator.toString = function() { return '> ' + name }
+        
         return oscillator
       }
     })()
@@ -245,6 +246,7 @@
     
     Gibber.createProxyMethods( oscillator, ['note'] )
     
+    obj.toString = function() { return '> Wavetable' }
     return oscillator
   }
   
@@ -300,7 +302,7 @@
       set: function() {}
     })
     
-    console.log( 'Grains is created.' )
+    obj.toString = function() { return '> Grains' }
     return oscillator
   }
   

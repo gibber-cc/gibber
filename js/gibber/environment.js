@@ -2,8 +2,8 @@
 
 "use strict"
 // REMEMBER TO CHECK WELCOME.INIT() and server port in main.js!!!
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-//var SERVER_URL = 'http://127.0.0.1:8080'
+//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+var SERVER_URL = 'http://127.0.0.1:8080'
 //var SERVER_URL = 'http://a.local:8080'
 
 var GE = Gibber.Environment = {
@@ -38,8 +38,10 @@ var GE = Gibber.Environment = {
           window.Layout = GE.Layout
           GE.Account.init()
           GE.Console.init()
+          GE.Console.open()
           GE.Welcome.init()
           GE.Share.open()
+          GE.Layout.createBoundariesForInitialLayout()
         }
         
         window.Notation = Gibber.Environment.Notation
@@ -558,8 +560,9 @@ var GE = Gibber.Environment = {
 	    ].join('\n'),
 		},
 		'glsl-fragment' : { 
-			run: function( column, value, position, codemirror, shouldDelay ) {
-        column.shader.fragmentText = value
+			run: function( column, value, position, codemirror, shouldDelay ) {        
+        value = Gibber.Graphics.PostProcessing.defs + value
+        
 	    	column.shader.material = new THREE.ShaderMaterial({
 	    		uniforms: column.shader.uniforms,
 	    		vertexShader: column.shader.vertexText || Gibber.Graphics.Shaders.defaultVertex,
@@ -641,7 +644,7 @@ var GE = Gibber.Environment = {
     ctx: null,
     width: null,
     height: null,
-    color: '#444',
+    color: '#252525',
     
     draw: function( beat, beatsPerMeasure ) {
       if( this.shouldDraw ) {
@@ -840,8 +843,8 @@ var GE = Gibber.Environment = {
   },
   Welcome : {
     init : function() {
-      var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
-      col.bodyElement.remove()
+      //var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
+      //col.bodyElement.remove()
       //console.log( "SERVER_URL", SERVER_URL )
       $.ajax({
         url: SERVER_URL + "/welcome",
@@ -849,9 +852,10 @@ var GE = Gibber.Environment = {
       })
       .done( function( data ) {
         var welcome = $( data )
-        $( col.element ).append( welcome )
-        col.bodyElement = welcome
-        GE.Layout.setColumnBodyHeight( col )
+        GE.Console.div.append( welcome )
+        // $( col.element ).append( welcome )
+        // col.bodyElement = welcome
+        // GE.Layout.setColumnBodyHeight( col )
       })
     },
   }, 

@@ -275,8 +275,8 @@
         set: function(v) { obj.seq.offset = Gibber.Clock.time(v)}
       }
     })
-    
-    console.log( 'Drums created.' )
+        
+    obj.toString = function() { return '> Drums : ' + obj.seq.seqs[0].values.join('') }
     return obj
   }
   
@@ -508,8 +508,9 @@
     }
      
     obj.seq.start()
-     
-    console.log( 'XOX created.' ) 
+    
+    obj.toString = function() { return '> EDrums : ' + obj.seq.seqs[0].values.join('') }
+    
     return obj
   }
   

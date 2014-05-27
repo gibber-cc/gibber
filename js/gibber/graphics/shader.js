@@ -49,16 +49,21 @@
 						fragmentShader :  fragText || GG.Shaders.defaultFragment,
 						vertexShader   :  vertText || GG.Shaders.defaultVertex,
 					}
-	
+      
+      _shader.fragmentShader = Gibber.Graphics.PostProcessing.defs + _shader.fragmentShader
+	    
+      
 			var _material = new THREE.ShaderMaterial( _shader )
 	
 			// if columns are passed as arguments set them up for livecoding
 			if( typeof frag === 'object' ) { frag.shader = shader }
 			if( typeof vert === 'object' ) { vert.shader = shader }			
 			
+      
 			shader.fragmentText = _material.fragmentShader
 			shader.vertexText =   _material.vertexShader
-			
+			console.log( shader.fragmentText )
+      
 			Object.defineProperty( shader, 'material', {
 				get: function() { return _material; },
 				set: function(v) { _material = v; if( this.target) this.target.mesh.material = _material; }

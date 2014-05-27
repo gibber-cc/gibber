@@ -110,7 +110,7 @@
           this.___scale___  = v
           var outputString = 'scale(' + v + ')'
           //transform: scale(0.5);
-          console.log( outputString )
+          //console.log( outputString )
 
           $( this.class ).css( 'transform', outputString )
         },
@@ -130,7 +130,7 @@
           this.___borderColor___  = Math.round( v )
           var outputString = 'rgb(' + this.___borderColor__ +',' + this.___borderColor__ +',' + this.___borderColor__ + ')'
         
-          $( this.class ).css( 'borderColor', outputString )
+          $( this.class ).css({ 'borderColor': outputString, borderWidth:'2px' })
         },
       },
       opacity: {
