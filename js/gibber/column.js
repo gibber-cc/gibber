@@ -237,8 +237,8 @@
           this.header.show()
           this.toggleResizeHandle()
           this.element.css({ width: _w, top:31 })
-          this.bodyElement.css({ width: w, height:_h })
-          this.editor.setSize( _w - Layout.resizeHandleSize, _h )
+          this.bodyElement.css({ width: _w, height:_h })
+          this.editor.setSize( _w, _h )
           Layout.resizeColumns()
           this.isFullScreen = false
           GE.Layout.fullScreenColumn = null
