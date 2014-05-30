@@ -2068,6 +2068,7 @@ Interface.XY = function() {
     touchCount        : 0,
     timer             : null,
     fps               : 30,
+    outputInitialValues: true,
     
     rainbow: function() {
       //console.log("RAINBOW", this.children.length);
@@ -2160,11 +2161,15 @@ Interface.XY = function() {
       var tt = '';
       this._values.length = 0;
       for(var i = 0; i < this.values.length; i++) {
-        tt += 'ss';
+        tt += 'ff';
         this._values.push( this.values[i].x );
         this._values.push( this.values[i].y );        
       }
-      Interface.OSC.send( this.key, tt, this._values );
+      if(this.target === "OSC") {
+        if(Interface.OSC) {
+          Interface.OSC.send( this.key, tt, this._values );
+        }
+      }
     },
     
     collisionTest : function(c1) {
@@ -2464,7 +2469,9 @@ Interface.XY = function() {
     
     _init : function() { 
       this.makeChildren();
-      this.sendTargetMessage();
+      if( this.outputInitialValues ) {
+        this.sendTargetMessage(); 
+      }
      },
   })
   .init( arguments[0] );
@@ -2993,6 +3000,13 @@ Interface.MultiButton = function() {
       }
     },
     
+    setValue : function( row, col, value ) {
+      var btnNum = row * this.columns + col
+      
+      this._values[ btnNum ] = this.values[ btnNum ] = this.lastValues[ btnNum ] = value
+      this.draw()
+    },
+    
     changeValue : function( xOffset, yOffset ) {
       if(this.hasFocus || !this.requiresFocus) {
         var width   = this._width(),
@@ -3369,6 +3383,290 @@ Interface.Range = function() {
   .init( arguments[0] );
 }
 Interface.Range.prototype = Interface.Widget;
+
+Interface.Paint = function() {
+  Interface.extend( this, {
+    lines: [],
+    startTime: 0,
+    isAnimating: false,
+    animationPoint: 0,
+    timer: null,
+    shouldLoop: true,
+    prevTimestamp:null,
+    value:{x:0, y:0},
+    draw : function() {
+      var x = this._x(),
+          y = this._y(),
+          width = this._width(),
+          height= this._height();
+          
+      this.ctx.fillStyle = this._background();
+      //this.ctx.fillRect( this.x, this.y, this.width, this.height );
+      
+      this.ctx.strokeStyle = this._stroke();
+      //this.ctx.strokeRect( this.x, this.y, this.width, this.height );
+      
+      this.ctx.save();
+      
+      this.ctx.beginPath();
+      
+      this.ctx.moveTo(x, y);
+      this.ctx.lineTo(x + width, y);
+      this.ctx.lineTo(x + width, y + height);
+      this.ctx.lineTo(x, y + height);
+      this.ctx.lineTo(x, y);
+      this.ctx.fill();
+      this.ctx.stroke();
+      
+      this.ctx.clip();
+      
+      this.ctx.fillStyle = this._fill();
+      
+      if( this.lines.length >= 1 ) {
+        this.ctx.lineWidth = 8
+        for( var i = 0; i < this.lines.length; i++ ) {
+          var points = this.lines[ i ]
+        
+          if( points.length >= 2 ) { 
+            this.ctx.moveTo( points[0].x * width, points[0].y * height )
+            
+            this.ctx.beginPath()
+        
+            for ( var j = 1; j < points.length - 2; j++ ) {
+               var xc = ( points[ j ].x + points[ j + 1 ].x ) / 2
+               var yc = ( points[ j ].y + points[ j + 1 ].y ) / 2
+               this.ctx.quadraticCurveTo( points[ j ].x * width, points[ j ].y * height, xc * width, yc * height )
+            }
+      
+            this.ctx.stroke()
+            //this.ctx.closePath();
+          }
+        }
+      }
+      
+      this.ctx.restore();
+    },
+    
+    /*
+    touchEvent : function(touch) {
+      var isHit = this.hitTest(touch);
+      var touchMouseName = convertTouchEvent(touch.type);
+      
+      if(isHit) {
+        if(touch.type === 'touchstart') {
+          this.hasFocus = true;
+          this.touchCount++;
+          this.trackTouch(touch.x - this._x(), touch.y - this._y(), touch);
+        }else{
+          if(this[touch.type])
+            this[touch.type](touch, isHit, touch.childID);  // normal event
+        }
+        
+        if(this['on'+touch.type]) this['on'+touch.type](touch, isHit, touch.childId); // user defined event
+        if(this['on'+touchMouseName]) this['on'+touchMouseName](touch, isHit);  // user defined event
+        
+      }else if(touch.type === 'touchend'){
+        this.touchCount--;
+        if(this.touchCount === 0) {        
+          this.hasFocus = false;
+        }else if(this.touchCount < 0 ) {
+          this.touchCount = 0;
+        }
+        this.touchend(touch)
+        if(this['on'+touch.type]) this['on'+touch.type](touch, isHit, touch.childId); // user defined event
+        if(this['on'+touchMouseName]) this['on'+touchMouseName](touch, isHit);  // user defined event
+      }
+    },
+    
+    trackMouse : function(xPos, yPos, id) {},
+    */
+    animate : function(co) {
+      var me = this; 
+      
+      if( this.isAnimating === false ) return
+      //console.log( this.lineNo, this._lines.length, this.speedMod )
+      var line = this.lines[ 0 ]
+      
+      // if( typeof this.line === 'undefined' ) {
+      //   this.context.fillStyle = '#fff'
+      //   this.context.fillRect( 0, 0, this.canvas[0].width, this.canvas[0].height )      
+      //   this.lineNo = this.pointNo = this.lines.length = 0
+      //   if( this.shouldLoop ) setTimeout( function() { me.drawBackground(); me.animate() }, this.endTime )
+      //   return
+      // }
+      var point = line[ this.animationPoint ],
+          nextPoint = line[ this.animationPoint + 1 ]
+            
+      //console.log( point, nextPoint )
+      
+      if( this.animationPoint >= line.length - 1 ) {
+        if( this.shouldLoop ) {
+          this.animationPoint = 0
+          this.draw()
+          //var time = this.shouldLoop ? this.endTime :  (this.point.timestamp - this.prevTimestamp)
+          this.timeout = setTimeout( function() { me.animate() }, 5 )
+          return
+        }else{
+          this.ctx.fillStyle = this._background()
+          this.ctx.fillRect( 0, 0, this._width(), this._height() )
+          if( this.speedMod !== 0 ) return
+        }
+      }
+      
+      this.ctx.save();
+      this.ctx.strokeStyle = '#f00'
+      this.ctx.lineWidth = 8
+      
+      this.ctx.beginPath()
+      
+      this.ctx.moveTo( point.x * this._width(), point.y * this._height() )
+      // var xc = ( point.x + nextPoint.x ) / 2
+      // var yc = ( point.y + nextPoint.y ) / 2
+      // this.ctx.quadraticCurveTo( nextPoint.x * this._width(), nextPoint.y * this._height(), xc * this._width(), yc * this._height() )
+      this.ctx.lineTo( nextPoint.x * this._width(), nextPoint.y * this._height() )
+      
+      this.ctx.stroke()
+      this.ctx.restore()
+      
+      this.timeout = setTimeout( function() { me.animate() }, point.timestamp - this.prevTimestamp )
+      this.prevTimestamp = point.timestamp
+      
+      this.animationPoint++ 
+      
+      this.value.x = point.x 
+      this.value.y = point.y
+      
+      this.sendTargetMessage()
+    },
+    
+    startAnimation: function() {
+      var self = this
+      
+      this.animate()
+    },
+    stopAnimation: function() {
+      if( this.timer ) {
+        clearInterval( this.timer )
+      }
+    },
+    mousedown : function(e) {
+      if(this.hitTest(e)) {
+        
+        this.lines = []
+        this.animationPoint = 0
+        
+        if( this.lines.length === 0 ) {
+          this.startTime = Date.now()
+        }else{
+          // if( this.lines[ this.lines.length - 1 ].length < 2 ) {
+          //   this.lines.pop()
+          // }
+        }
+
+        this.lines.push( [] )
+        this.isDrawing = true;
+        this.isAnimating = false;
+      }
+    },
+    mousemove : function(e) { 
+      if(this.hitTest(e) && this.activeTouch !== null) {
+        //ctx.fillStyle = '#000'
+  
+        //if( e.pageX > canvas.width ) isDrawing = false
+        if( this.isDrawing ) {
+          var points = this.lines[ this.lines.length - 1 ]
+          if( points ) {
+            points.push({ x:e.x / this._width(), y:e.y / this._height(), timestamp: Date.now() - this.startTime })
+            this.draw()
+          }
+        }  
+      }
+    },
+    mouseup   : function(e) {
+      this.isDrawing = false
+      if( this.lines.length > 0 ) {
+        this.isAnimating = true;
+        this.animate()
+      }
+    },
+    /*
+    trackTouch : function(xPos, yPos, _touch) {
+      var closestDiff = 10000;
+      var touchFound = null;
+      var touchNum = null;
+      
+      for(var i = 0; i < this.children.length; i++) {
+        var touch = this.children[i];
+        var xdiff = Math.abs(touch.x - xPos);
+        var ydiff = Math.abs(touch.y - yPos);
+
+        if(xdiff + ydiff < closestDiff && !touch.isActive) {
+          closestDiff = xdiff + ydiff;
+          touchFound = touch;
+          touchNum = i;
+        }
+      }
+      
+      touchFound.isActive = true;
+      touchFound.vx = 0;
+      touchFound.vy = 0;
+      touchFound.identifier = _touch.identifier;
+      touchFound.childID = touchNum;
+
+      if(touchFound != null)
+        this.changeValue(touchFound, xPos, yPos);
+    
+      this.lastTouched = touchFound;
+      return touchFound.childID;
+    },
+    touchstart : function(touch) {
+      // if(this.hitTest(touch)) {
+      //   this.trackTouch(touch.x - this.x, touch.y - this.y, touch);
+      // }
+    },
+    touchmove : function(touch) {
+      for(var t = 0; t < this.children.length; t++) {
+        _t = this.children[t];
+        if(touch.identifier == _t.identifier) {
+          this.changeValue(_t, touch.x - this._x(), touch.y - this._y());
+
+          var now = {x:touch.x - this._x(), y:touch.y - this._y()};
+          
+          if(_t.lastPosition !== null) {
+            _t.velocity = {x:now.x - _t.lastPosition.x, y:now.y - _t.lastPosition.y };
+          }
+          _t.lastPosition = now;
+        }
+      }
+    },
+    touchend : function(touch) {
+      var found = false;
+      var tu = null;
+      for(var t = 0; t < this.children.length; t++) {
+        var _t = this.children[t];
+        
+        if(touch.identifier === _t.identifier) {
+          _t.vx = _t.velocity.x;
+          _t.vy = _t.velocity.y;
+          
+          _t.lastPosition = null;
+          _t.isActive = false;
+          
+
+          found = true;
+          tu = t.childID;
+        }
+      }
+      if(found) { this.touchUp = tu; }
+      //if(!found) console.log("NOT FOUND", touch.identifier);
+    },
+    */
+  })
+  .init( arguments[0] );
+  
+  this.value = {x:0, y:0}
+}
+Interface.Paint.prototype = Interface.Widget;
 
 Interface.defineChildProperties = function(widget, properties) {
   for(var j = 0; j < properties.length; j++) {

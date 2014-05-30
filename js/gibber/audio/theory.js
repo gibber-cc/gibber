@@ -26,7 +26,7 @@ var Theory = Gibber.Theory = {
             
   			this.notes = [];
         
-        //console.log( __mode, __root )
+        // console.log( 'CREATE', __mode, __root )
   			if( Gibber.Theory.Scales[ __mode ] ) {
   				var scale = Gibber.Theory.Scales[ __mode ]( __root );
   				scale.create();
@@ -87,8 +87,8 @@ var Theory = Gibber.Theory = {
 	  
     //createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
     
-    Gibber.createProxyProperty( that, 'root', true, false, null, false )
-    Gibber.createProxyProperty( that, 'mode', true, false, null, false )
+    Gibber.createProxyProperty( that, 'root', true, false, null, false, true )
+    Gibber.createProxyProperty( that, 'mode', true, false, null, false, true )
     //Gibber.defineSequencedProperty( that, 'mode' )    
     
   	that.create();

@@ -73,6 +73,30 @@
           })()
         }
       },
+      Paint : function( widget, props ) {
+        var mappingProperties = {
+          x : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
+          y : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' }
+        }
+        
+        var num = i,
+            child = widget.value,
+            x = 0, y = 0
+        
+        Object.defineProperties( child, {
+          x: {
+            get: function() { return x },
+            set: function(v) { x = v; }
+          },
+          y : {
+            get: function() { return y },
+            set: function(v) { y = v; }
+          }
+        })
+
+        Gibber.createProxyProperties( child, mappingProperties, false )
+      },
+      
       Piano : function( widget, props ) {
         var target = widget.target
         Object.defineProperty( widget, 'target', {
@@ -344,6 +368,7 @@
     knob: function( props )   { return I.widget( props, 'Knob' ) },
     xy: function( props )     { return I.widget( props, 'XY' ) },        
     piano: function( props )  { return I.widget( props, 'Piano' ) },    
+    paint: function( props )  { return I.widget( props, 'Paint' ) },    
   }
   
   Interface.use = Gibber.Environment.Interface.use
@@ -354,6 +379,7 @@
   window.Knob     = Gibber.Environment.Interface.knob
   window.XY       = Gibber.Environment.Interface.xy
   window.Keyboard = Gibber.Environment.Interface.piano
+  window.Paint    = Gibber.Environment.Interface.paint  
   
   var OSC = Gibber.OSC = {
     callbacks : {},

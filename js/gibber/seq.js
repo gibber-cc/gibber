@@ -87,11 +87,14 @@
         obj.durations = arg.durations
       }else if( durationsType !== 'undefined') {
         obj.durations = [ arg.durations ]
+      }else{
+        
       }
       
       obj.keysAndValues = {}
       obj.seqs = []
-
+      obj.autofire = []
+      
       for( var key in arg ) {
         if( doNotSequence.indexOf( key ) === -1 ) {
           var valueType = $.type( arg[ key ] )

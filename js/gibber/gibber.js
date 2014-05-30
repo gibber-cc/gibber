@@ -440,7 +440,7 @@ window.Gibber = window.G = {
     
   },
   
-  defineSequencedProperty : function( obj, key ) {
+  defineSequencedProperty : function( obj, key, priority ) {
     var fnc = obj[ key ], seq, seqNumber
     
     // for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
@@ -459,8 +459,9 @@ window.Gibber = window.G = {
       var args = {
         key: key,
         values: $.isArray(v) ? v : [v],
-        durations: $.isArray(d) ? d : [d],
-        target: obj
+        durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
+        target: obj,
+        'priority': priority
       }
       
       if( typeof seq !== 'undefined' ) {
@@ -472,7 +473,11 @@ window.Gibber = window.G = {
       
       seqNumber = obj.seq.seqs.length - 1
       seq = obj.seq.seqs[ seqNumber ]
-    
+      
+      if( args.durations === null ) {
+        obj.seq.autofire.push( seq )
+      }
+      
       if( !obj.seq.isRunning ) { 
         obj.seq.connect()
         obj.seq.start()
@@ -530,7 +535,7 @@ window.Gibber = window.G = {
     for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
   },
   
-  createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
+  createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority ) {
     var propertyName = _key,
         useMappings = _useMappings === false ? false : true,
         propertyDict = useMappings ? dict || obj.mappingProperties[ propertyName ] : null,
@@ -606,7 +611,7 @@ window.Gibber = window.G = {
     }
     
     if( shouldSeq )
-      Gibber.defineSequencedProperty( obj, __propertyName )
+      Gibber.defineSequencedProperty( obj, __propertyName, priority )
     
     if( shouldRamp )
       Gibber.defineRampedProperty( obj, __propertyName )

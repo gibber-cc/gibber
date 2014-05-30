@@ -200,14 +200,15 @@
   	bass : { 
       attack: Gibber.Clock.maxMeasures,
   		decay:	1/8 - Gibber.Clock.maxMeasures,
+      octave: -2,
   		octave2 : -1,
-  		cutoff: 0,
+  		cutoff: .5,
   		filterMult:.2,
-  		resonance:4,
+  		resonance:1,
   	},
   
   	easy : {
-  		attack:44,
+  		attack:Gibber.Clock.maxMeasures,
   		decay:2,
   		octave2:0,
   		octave3:0,
@@ -224,7 +225,7 @@
 
     dark2 : {
       filterMult:.1,
-      attack:44,
+      attack: Gibber.Clock.maxMeasures,
       octave2:0,
       octave3:0
     },
