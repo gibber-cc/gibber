@@ -105,7 +105,7 @@
             durations:obj.durations
           }
           
-          if( valueType === 'array' ) {
+          if( valueType === 'array' || typeof arg.length === 'number' ) {
             _seq.values = arg[ key ]
           }else if( valueType !== 'undefined' ) {
             _seq.values = [ arg[ key ] ]

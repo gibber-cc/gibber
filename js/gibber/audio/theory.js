@@ -92,6 +92,8 @@ var Theory = Gibber.Theory = {
     //Gibber.defineSequencedProperty( that, 'mode' )    
     
   	that.create();
+    
+    that.toString = function() { return 'Scale: ' + that.root() + ', ' + that.mode() }
 
   	return that;
   },

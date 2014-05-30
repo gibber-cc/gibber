@@ -73,6 +73,42 @@
           })()
         }
       },
+      MultiSlider : function( widget, props ) {
+        var mappingProperties = {
+          value : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
+        }
+                
+        widget.children = []
+        
+        for( var i = 0; i < widget.count; i++ ) {
+          !function() { 
+            var num = i,
+                child = {},
+                _value = widget.values[ i ]
+            
+            Object.defineProperties( child, {
+              value: {
+                configurable:true,
+                get: function() { return _value },
+                set: function(v) { _value = v; }
+              }
+            })
+
+            Gibber.createProxyProperties( child, mappingProperties, false )
+            widget[ num ] = child
+            widget.children.push( child )
+            
+            child.valueOf = function() { return this.value() }
+            child.index = num
+          }()
+        }
+        
+        widget.length = widget.count
+        
+        widget.onvaluechange = function( sliderNum, __value ) {
+          widget[ sliderNum ].value = __value
+        }
+      },
       Paint : function( widget, props ) {
         var mappingProperties = {
           x : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
@@ -218,7 +254,9 @@
             }
           }
         }
-      
+        
+        if( typeof w.value === 'number' ) w.valueOf = function() { return w.value }
+        
         w.kill = w.remove = function() {
           w.panel.remove( w )
         }
@@ -363,12 +401,13 @@
         I.socket.send( JSON.stringify( msg ) )
       }
     },
-    button: function( props ) { return I.widget( props, 'Button' ) },
-    slider: function( props ) { return I.widget( props, 'Slider' ) },
-    knob: function( props )   { return I.widget( props, 'Knob' ) },
-    xy: function( props )     { return I.widget( props, 'XY' ) },        
-    piano: function( props )  { return I.widget( props, 'Piano' ) },    
-    paint: function( props )  { return I.widget( props, 'Paint' ) },    
+    button: function( props )      { return I.widget( props, 'Button' ) },
+    slider: function( props )      { return I.widget( props, 'Slider' ) },
+    multislider: function( props ) { return I.widget( props, 'MultiSlider' ) },
+    knob: function( props )        { return I.widget( props, 'Knob' ) },
+    xy: function( props )          { return I.widget( props, 'XY' ) },     
+    piano: function( props )       { return I.widget( props, 'Piano' ) },
+    paint: function( props )       { return I.widget( props, 'Paint' ) },
   }
   
   Interface.use = Gibber.Environment.Interface.use
@@ -376,6 +415,7 @@
 
   window.Button   = Gibber.Environment.Interface.button
   window.Slider   = Gibber.Environment.Interface.slider
+  window.MultiSlider = Gibber.Environment.Interface.multislider  
   window.Knob     = Gibber.Environment.Interface.knob
   window.XY       = Gibber.Environment.Interface.xy
   window.Keyboard = Gibber.Environment.Interface.piano

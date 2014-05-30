@@ -409,13 +409,13 @@ window.Gibber = window.G = {
     
     target.object[target.Name].mappingObjects = []
     
-    Gibber.createProxyProperty( target.object[target.Name], 'min', 0, 0, {
+    Gibber.createProxyProperty( target.object[target.Name], 'min', 1, 0, {
       'min':min, 'max':max, output: target.output,
       timescale: target.timescale,
       dimensions:1
     })
     
-    Gibber.createProxyProperty( target.object[target.Name], 'max', 0, 0, {
+    Gibber.createProxyProperty( target.object[target.Name], 'max', 1, 0, {
       'min':min, 'max':max, output: target.output,
       timescale: target.timescale,
       dimensions:1
@@ -438,6 +438,8 @@ window.Gibber = window.G = {
       target.object[ target.Name ].mapping.invert()
     }
     
+    Gibber.defineSequencedProperty( target.object[ target.Name ].mapping, 'invert' )
+    
   },
   
   defineSequencedProperty : function( obj, key, priority ) {
@@ -458,7 +460,7 @@ window.Gibber = window.G = {
     fnc.seq = function( v,d ) { 
       var args = {
         key: key,
-        values: $.isArray(v) ? v : [v],
+        values: $.isArray(v) || typeof v.length === 'number' ? v : [v],
         durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
         target: obj,
         'priority': priority

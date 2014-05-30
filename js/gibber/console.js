@@ -3,7 +3,6 @@
       console_footer = $( '#footer' ),
       tfoot  = $( 'tfoot' ),
       nl2br  = function (str, is_xhtml) {   
-        GEC.parent.log( "STRING", str )
         var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>'; 
         //str.replace(/ /g,'_')   
         var out = (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');

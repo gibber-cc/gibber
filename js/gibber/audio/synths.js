@@ -125,6 +125,9 @@
           if( typeof args[0] === 'string' ) {
             args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
           }else{
+            if( typeof args[0] === 'object' ) { // for interface elements etc.
+              args[0] = args[0].valueOf()
+            }
             if( args[0] < Gibber.minNoteFrequency ) {
               var scale = obj.scale || Gibber.scale,
                   note  = scale.notes[ args[ 0 ] ]
@@ -141,8 +144,10 @@
               args[ 0 ] = note
             }
           }
-
+          
           this._note.apply( this, args )
+          
+          return this 
         }
         
         obj.chord = Gibber.Theory.chord
