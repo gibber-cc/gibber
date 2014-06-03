@@ -460,11 +460,13 @@ window.Gibber = window.G = {
     fnc.seq = function( v,d ) { 
       var args = {
         key: key,
-        values: $.isArray(v) || typeof v.length === 'number' ? v : [v],
+        values: $.isArray(v) || typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
         durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
         target: obj,
         'priority': priority
       }
+      
+      console.log( args )
       
       if( typeof seq !== 'undefined' ) {
         seq.shouldStop = true
