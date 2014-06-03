@@ -457,10 +457,15 @@ window.Gibber = window.G = {
     if( !obj.seq ) {
       obj.seq = Gibber.Seq({ doNotStart:true, scale:obj.scale })
     }
-    fnc.seq = function( v,d ) { 
+    fnc.seq = function( v,d ) {
+      if( typeof d === 'undefined' ) { // for sequencing functions with no arguments
+        d = v
+        v = null
+      }
+      
       var args = {
         key: key,
-        values: $.isArray(v) || typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
+        values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
         durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
         target: obj,
         'priority': priority
