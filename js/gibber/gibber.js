@@ -460,12 +460,7 @@ window.Gibber = window.G = {
       obj.seq = Gibber.Seq({ doNotStart:true, scale:obj.scale, priority:priority })
     }
     
-    fnc.seq = function( v,d ) {
-      if( typeof d === 'undefined' ) { // for sequencing functions with no arguments
-        d = v
-        v = null
-      }
-      
+    fnc.seq = function( v,d ) {      
       var args = {
         key: key,
         values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
@@ -488,7 +483,7 @@ window.Gibber = window.G = {
         obj.seq.autofire.push( seq )
       }
       
-      if( !obj.seq.isRunning ) { 
+      if( !obj.seq.isRunning ) {
         obj.seq.start( false, priority )
       }
       return obj
