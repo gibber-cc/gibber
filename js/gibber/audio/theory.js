@@ -87,9 +87,8 @@ var Theory = Gibber.Theory = {
 	  
     //createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
     
-    Gibber.createProxyProperty( that, 'root', true, false, null, false, true )
-    Gibber.createProxyProperty( that, 'mode', true, false, null, false, true )
-    //Gibber.defineSequencedProperty( that, 'mode' )    
+    Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
+    Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
     
   	that.create();
     

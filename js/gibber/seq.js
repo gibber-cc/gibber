@@ -77,6 +77,7 @@
       var arg = arguments[0],
           durationsType = $.type( arg.durations ),
           targetsType = $.type( arg.target ),
+          priority = arg.priority,
           hasScale
       
       obj.target = arg.target
@@ -224,9 +225,6 @@
     if( arguments[0] && ! arguments[0].doNotStart ) {
       seq.start()
     }
-    //seq.start()
-    
-    //console.log( 'Sequencer created.' )
     
     seq.toString = function() { return '> Seq' }
     seq.gibber = true

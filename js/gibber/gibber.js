@@ -183,12 +183,14 @@ window.Gibber = window.G = {
   },
   
   // override for gibberish method to use master bus
-  connect : function( bus ) {
+  connect : function( bus, position ) {
     if( typeof bus === 'undefined' ) bus = Gibber.Master
     
     if( this.destinations.indexOf( bus ) === -1 ){
-      bus.addConnection( this, 1 )
-      this.destinations.push( bus )
+      bus.addConnection( this, 1, position )
+      if( position !== 0 ) {
+        this.destinations.push( bus )
+      }
     }
     
     return this
@@ -455,8 +457,9 @@ window.Gibber = window.G = {
     // }
     
     if( !obj.seq ) {
-      obj.seq = Gibber.Seq({ doNotStart:true, scale:obj.scale })
+      obj.seq = Gibber.Seq({ doNotStart:true, scale:obj.scale, priority:priority })
     }
+    
     fnc.seq = function( v,d ) {
       if( typeof d === 'undefined' ) { // for sequencing functions with no arguments
         d = v
@@ -470,9 +473,7 @@ window.Gibber = window.G = {
         target: obj,
         'priority': priority
       }
-      
-      console.log( args )
-      
+            
       if( typeof seq !== 'undefined' ) {
         seq.shouldStop = true
         obj.seq.seqs.splice( seqNumber, 1 )
@@ -488,8 +489,7 @@ window.Gibber = window.G = {
       }
       
       if( !obj.seq.isRunning ) { 
-        obj.seq.connect()
-        obj.seq.start()
+        obj.seq.start( false, priority )
       }
       return obj
     }
@@ -503,8 +503,7 @@ window.Gibber = window.G = {
       obj.seq.nextTime = 0
       
       if( !obj.seq.isRunning ) { 
-        obj.seq.connect()
-        obj.seq.start()
+        obj.seq.start( false, priority )
       }
     }
   },
@@ -641,6 +640,7 @@ window.Gibber = window.G = {
     }
   },
   
+  // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
   createProxyProperties : function( obj, mappingProperties, noSeq, noRamp ) {
     var shouldSeq = typeof noSeq === 'undefined' ? true : noSeq,
         shouldRamp = typeof noRamp === 'undefined' ? true : noRamp
