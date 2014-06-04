@@ -90,6 +90,12 @@ var Theory = Gibber.Theory = {
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
     
+    $.subscribe( '/gibber/clear', function() {
+      that.seq.isConnected = false
+      that.seq.isRunning = false
+      that.seq.destinations.length = 0
+    })
+    
   	that.create();
     
     that.toString = function() { return 'Scale: ' + that.root() + ', ' + that.mode() }
