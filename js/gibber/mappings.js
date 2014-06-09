@@ -113,6 +113,7 @@
       audioOut : function( target, from ) {
         var mapping
         
+        console.log( "MAPPING AUDIOOUT > AUDIO")
         target.object[ target.name ] = Map( null, target.min, target.max, 0, 1, 0 )   
         mapping = target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
         
@@ -132,19 +133,20 @@
             target.object[ target.name ] = target.object[ target.Name ].mapping.getValue()
           }
           
-          if( this.bus )
-            this.bus.disconnect()
+          if( mapping.bus )
+            mapping.bus.disconnect()
           
-          if( this.follow ) {
-            this.follow.count--
-            if( this.follow.count === 0) {
+          if( mapping.follow ) {
+            mapping.follow.count--
+            if( mapping.follow.count === 0) {
               delete from.object.track
-              this.follow.remove()
+              mapping.follow.remove()
             }
           }
           
           delete target.object[ target.Name ].mapping
         }
+        
         mapping.replace = function( replacementObject, key, Key  ) {
           mapping.follow.input = replacementObject   
           if( replacementObject[ Key ].targets.indexOf( target ) === -1 ) replacementObject[ Key ].targets.push( [target, target.Name] )            
@@ -155,7 +157,7 @@
           get: function() { return env },
           set: function(v) { env = Gibber.Clock.time( v ); mapping.follow.bufferSize = env; }
         })
-        
+                
         return mapping
       }
     },

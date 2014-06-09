@@ -409,15 +409,15 @@ window.Gibber = window.G = {
       },
     })
     
-    target.object[target.Name].mappingObjects = []
+    target.object[ target.Name ].mappingObjects = []
     
-    Gibber.createProxyProperty( target.object[target.Name], 'min', 1, 0, {
+    Gibber.createProxyProperty( target.object[ target.Name ], 'min', 1, 0, {
       'min':min, 'max':max, output: target.output,
       timescale: target.timescale,
       dimensions:1
     })
     
-    Gibber.createProxyProperty( target.object[target.Name], 'max', 1, 0, {
+    Gibber.createProxyProperty( target.object[ target.Name ], 'max', 1, 0, {
       'min':min, 'max':max, output: target.output,
       timescale: target.timescale,
       dimensions:1
@@ -440,7 +440,9 @@ window.Gibber = window.G = {
       target.object[ target.Name ].mapping.invert()
     }
     
-    Gibber.defineSequencedProperty( target.object[ target.Name ].mapping, 'invert' )
+    target.object.mappings.push( mapping )
+    
+    Gibber.defineSequencedProperty( target.object[ target.Name ], 'invert' )
     
   },
   
@@ -667,6 +669,7 @@ window.Gibber = window.G = {
   
   ugen: {
     sequencers : [],
+    mappings: [],
     fx: $.extend( [], {
       add: function() {
         var end = this.length === 0 ? this.ugen : this[ this.length - 1 ]
@@ -790,6 +793,7 @@ window.Gibber = window.G = {
     },
 
     kill: function() { 
+      console.log("KILL KILL KILL")
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
       if( this.seq.isRunning ) this.seq.disconnect()
       end.disconnect()
@@ -800,6 +804,11 @@ window.Gibber = window.G = {
       }
       
       this.disconnect()
+      
+      console.log( "REMOVING " + this.mappings.length + " MAPPINGS")
+      for( var i = 0; i < this.mappings.length; i++ ) {
+        this.mappings[ i ].remove() 
+      }
       
       if( this.clearMarks ) // check required for modulators
         this.clearMarks()

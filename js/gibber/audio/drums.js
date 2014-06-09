@@ -135,7 +135,7 @@
     
     obj.fx.ugen = obj
   
-    Object.defineProperty(obj, '_', { get: function() { obj.disconnect(); return obj }, set: function() {} })
+    Object.defineProperty(obj, '_', { get: function() { obj.kill(); return obj }, set: function() {} })
 		
   	obj.kit = Drums.kits['default'];
     
@@ -264,12 +264,12 @@
             
     obj.seq.start()
 
-    obj.kill = function() {
-      var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
-      end.disconnect()
-           
-      obj.seq.kill()
-    }
+    // obj.kill = function() {
+    //   var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
+    //   end.disconnect()
+    //        
+    //   obj.seq.kill()
+    // }
 
     Object.defineProperties( obj, {
       offset: {
@@ -502,12 +502,12 @@
     
     //Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )
 
-    obj.kill = function() {
-      var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
-      end.disconnect()
-           
-      obj.seq.kill()
-    }
+    // obj.kill = function() {
+    //   var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
+    //   end.disconnect()
+    //        
+    //   obj.seq.kill()
+    // }
      
     obj.seq.start()
     

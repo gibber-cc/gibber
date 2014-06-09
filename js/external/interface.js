@@ -2850,6 +2850,21 @@ Interface.MultiSlider = function() {
       this._values[ sliderNum ] = value
       this.refresh()
     },
+    resetValues : function() {
+      for( var i = 0; i < this.count; i++ ) {
+        this.values[ i ] = this.min + (this.max - this.min) * this._values[ i ];
+        
+        if(this.target !== "OSC") {
+          this.sendTargetMessage();
+        }else{
+          if(Interface.OSC)
+            Interface.OSC.send( this.key, 'if', [ sliderHit, this.values[ sliderHit ] ] );
+        }
+        if(this.onvaluechange) this.onvaluechange(sliderHit, this.values[ sliderHit ]);
+      }
+      
+      this.refresh();
+    },
     changeValue : function( xOffset, yOffset ) {
       if(this.hasFocus || !this.requiresFocus) {
         var width   = this._width(),

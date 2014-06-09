@@ -103,6 +103,22 @@
           }()
         }
         
+        // var _maxSet = widget.__lookupSetter__('max'),
+        //     _maxGet = widget.__lookupGetter__('max')
+        // 
+        // //console.log( "SLIDER MAX DESC", propDesc )
+        // 
+        // Object.defineProperty( widget, 'max', {
+        //   configurable:true,
+        //   get: _maxGet,
+        //   set: function( v ) {
+        //     _maxSet( v )
+        //   
+        //     widget.resetValues()
+        //     //this.min + (this.max - this.min) * _value;
+        //   }
+        // })
+        
         widget.length = widget.count
         
         widget.onvaluechange = function( sliderNum, __value ) {

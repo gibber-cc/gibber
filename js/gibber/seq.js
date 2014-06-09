@@ -4,7 +4,7 @@
   
   "use strict"
   
-  var doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart' ]
+  var doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart', 'priority' ]
 
   var makeNoteFunction = function( notes, obj ) {
     var _note = $.extend( [], notes ),
