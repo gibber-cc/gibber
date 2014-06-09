@@ -273,15 +273,29 @@
         
         if( typeof w.value === 'number' ) w.valueOf = function() { return w.value }
         
+        w.mappings = []
+        
         w.kill = w.remove = function() {
+          for( var i = 0; i < w.mappings.length; i++ ) {
+            w.mappings[ i ].remove() 
+          }
+  
+          if( w.clearMarks ) // check required for modulators
+            w.clearMarks()
+                  
           w.panel.remove( w )
         }
       
         Object.defineProperty( w, '_', {
-          get: function() { w.kill() },
-          set: function(v) { }
-        })
+          get: function() { 
+            // currently there is no sequencer for interface objects
+            //if( w.seq.isRunning ) w.seq.disconnect()  
             
+            w.kill()
+          },
+          set: function() {}
+        })
+
         return w
       }else{
         props = props || {}
@@ -292,6 +306,7 @@
           min:0, max:1,
           client: this.client,
           remoteID: '/' + ( props.name || remoteCount++ ),
+          mappings:[],
           setValue: function( val ) {
             this.value = val
             var msg = {
@@ -306,11 +321,29 @@
               parameters:[ w.remoteID ] ,
             }
             I.socket.send( JSON.stringify( msg ) )
+            
+            for( var i = 0; i < w.mappings.length; i++ ) {
+              w.mappings[ i ].remove() 
+            }
+  
+            if( w.clearMarks ) // check required for modulators
+              w.clearMarks()
+            
           },
           replaceWith: function() {
             this.kill()
           }
         }
+        
+        Object.defineProperty( w, '_', {
+          get: function() { 
+            // currently there is no sequencer for interface objects
+            //if( w.seq.isRunning ) w.seq.disconnect()  
+            
+            w.kill()
+          },
+          set: function() {}
+        })
       
         var prop = 'value',
             property = mappingProperties[ prop ],

@@ -405,8 +405,22 @@ for( var key in types) {
       Gibber.Graphics.scene.add( this.mesh )
       Gibber.Graphics.graph.push( this )
       
+      this.mappings = []
+      
       Object.defineProperty( this, '_', {
-        get: function() { this.remove(); console.log( type + ' is removed.' ) },
+        get: function() { 
+          if( this.seq.isRunning ) this.seq.disconnect()  
+      
+          for( var i = 0; i < this.mappings.length; i++ ) {
+            this.mappings[ i ].remove() 
+          }
+      
+          if( this.clearMarks ) // check required for modulators
+            this.clearMarks()
+            
+          this.remove(); 
+          console.log( type + ' is removed.' ) 
+        },
         set: function() {}
       })
       

@@ -449,6 +449,25 @@ var PP = Gibber.Graphics.PostProcessing = {
           
           Gibber.processArguments2( shader, Array.prototype.slice.call( arguments,0 ), shader.name )
           
+          shader.mappings = []
+          
+          Object.defineProperty( shader, '_', {
+            get: function() { 
+              if( shader.seq.isRunning ) shader.seq.disconnect()  
+      
+              for( var i = 0; i < shader.mappings.length; i++ ) {
+                shader.mappings[ i ].remove() 
+              }
+      
+              if( shader.clearMarks ) // check required for modulators
+                shader.clearMarks()
+            
+              shader.remove(); 
+              //console.log( type + ' is removed.' ) 
+            },
+            set: function() {}
+          })
+          
           return shader;
         }
         window[ name ] = constructor;

@@ -793,7 +793,6 @@ window.Gibber = window.G = {
     },
 
     kill: function() { 
-      console.log("KILL KILL KILL")
       var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
       if( this.seq.isRunning ) this.seq.disconnect()
       end.disconnect()
@@ -805,7 +804,6 @@ window.Gibber = window.G = {
       
       this.disconnect()
       
-      console.log( "REMOVING " + this.mappings.length + " MAPPINGS")
       for( var i = 0; i < this.mappings.length; i++ ) {
         this.mappings[ i ].remove() 
       }
