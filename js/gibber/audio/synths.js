@@ -168,6 +168,27 @@
         
         obj.toString = function() { return '> ' + name }
         
+        // define a continuous frequency mapping abstraction for all synths with children
+        if( name !== 'Mono' ) {
+          var __frequency = obj._frequency
+          Object.defineProperty( obj, 'frequency', {
+            configurable: true,
+            get: function() { return this._frequency },
+            set: function(v) { 
+               __frequency = v;
+               if( this.children ) {
+                 for( var i = 0; i < this.children.length; i++ ) {
+                   if( typeof this.children[i].frequency === 'number' ) {
+                     this.children[i].frequency = __frequency
+                   }else{
+                     this.children[i].frequency[0] = __frequency
+                   }
+                 }
+               }
+            }
+          })
+        }
+        
         var __scale;
         Object.defineProperty(obj, 'scale', {
           get: function() { return __scale },
