@@ -29,6 +29,8 @@ window.Gibber = window.G = {
       'gibber/audio/analysis',
       'gibber/audio/envelopes',       			     
       'gibber/audio/drums',
+      'gibber/audio/audio_input',
+      'gibber/audio/sampler',      
       'gibber/utilities',
       'external/esprima',
 			], 'gibber', function() {
