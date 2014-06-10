@@ -207,7 +207,8 @@
   Gibber.Presets.Synth = {
   	short:  { attack: 44, decay: 1/16, },
   	bleep:  { waveform:'Sine', attack:44, decay:1/16 },
-    rhodes: { waveform:'Sine', maxVoices:4, presetInit: function() {  this.fx.add( Tremolo(2, .2) ) }, attack:44, decay:1 }
+    rhodes: { waveform:'Sine', maxVoices:4, presetInit: function() { this.fx.add( Tremolo(2, .2) ) }, attack:44, decay:1 },
+    calvin: { waveform:'PWM',  maxVoices:4, amp:.075 presetInit: function() { this.fx.add( Delay(1/6,.5), Vibrato() ) }, attack:44, decay:1/4 }    
   }
   
   Gibber.Presets.Mono = {

@@ -255,14 +255,14 @@
       }
   	}
     
-    obj.start = function() { obj.seq.start() }
+    obj.start = function() { obj.seq.start( true ) }
     obj.stop = function() { obj.seq.stop() }
     obj.shuffle = function() { obj.seq.shuffle() }
     obj.reset = function() { obj.seq.reset() }
 
     Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start' ] )
             
-    obj.seq.start()
+    obj.seq.start( true )
 
     // obj.kill = function() {
     //   var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
@@ -333,7 +333,7 @@
     
     Gibber.createProxyProperties( obj, _mappingProperties[ 'XOX' ] )
     
-    obj.start = function() { obj.seq.start() }
+    obj.start = function() { obj.seq.start( true ) }
     obj.stop = function() { obj.seq.stop() }
     obj.shuffle = function() { obj.seq.shuffle() }
     obj.reset = function() { obj.seq.reset() }
@@ -509,7 +509,7 @@
     //   obj.seq.kill()
     // }
      
-    obj.seq.start()
+    obj.seq.start( true )
     
     obj.toString = function() { return '> EDrums : ' + obj.seq.seqs[0].values.join('') }
     

@@ -223,7 +223,7 @@
     })
     
     if( arguments[0] && ! arguments[0].doNotStart ) {
-      seq.start()
+      seq.start( true )
     }
     
     seq.toString = function() { return '> Seq' }

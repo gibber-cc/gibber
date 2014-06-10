@@ -488,7 +488,8 @@ window.Gibber = window.G = {
       }
       
       if( !obj.seq.isRunning ) {
-        obj.seq.start( false, priority )
+        obj.seq.offset = Clock.time( obj.offset )
+        obj.seq.start( true, priority )
       }
       return obj
     }

@@ -342,7 +342,8 @@ tfoot, thead {
 
 /* DATABASE BROWSER STYLES */
 .browser {
-  color:#bbb;
+  color:#aaa;
+  font-size:.8em;
 }
 
 .browser table { margin-top: 10px; width:97%; }
@@ -350,6 +351,11 @@ tfoot, thead {
 .browser table tr td div { 
   display:none; 
   padding-left:1em; 
+  font-size:.9em;
+}
+
+.browser table tr td {
+  
 }
 
 .browser li {
@@ -357,13 +363,15 @@ tfoot, thead {
   cursor:pointer;
 }
 
-.browser h2 { font-size:1.2em; }
+.browser h2 { font-size:1em; }
 
 .browser h3 {
-  background:#333;
+/*  background:#333;*/
+/*  text-decoration:underline;*/
   cursor:pointer;
-  font-weight:normal;
-  padding-left:1em;
+  font-weight:normal; 
+  font-size:1em;
+  margin-bottom:0;
 }
 
 .browser input {
