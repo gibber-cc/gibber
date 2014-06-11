@@ -342,7 +342,7 @@
     
         for( var i = 0; i < this.fileInfo._revs_info.length; i++ ) {
           ( function() { 
-            var _col = col, li = $( '<li>' ).text( this.fileInfo._revs_info[ i ].rev )
+            var _col = col, li = $( '<li>' ).text( _col.fileInfo._revs_info[ i ].rev )
               .on('click', ( function() {
                 var rev = _col.fileInfo.author + '/publications/' + _col.fileInfo.name + '?rev=' + _col.fileInfo._revs_info[ i ].rev
                 var fnc = function() {
