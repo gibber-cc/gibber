@@ -30,7 +30,8 @@ window.Gibber = window.G = {
       'gibber/audio/envelopes',       			     
       'gibber/audio/drums',
       'gibber/audio/audio_input',
-      'gibber/audio/sampler',      
+      'gibber/audio/sampler',
+      'gibber/audio/postprocessing',            
       'gibber/utilities',
       'external/esprima',
 			], 'gibber', function() {
@@ -47,6 +48,7 @@ window.Gibber = window.G = {
       Gibber.Audio.Time.export()
       window.sec = window.seconds
       Gibber.Audio.Binops.export()
+      Gibber.AudioPostProcessing.init()
       
 			Gibber.Esprima = window.esprima
       Gibber.Master = window.Master = Bus().connect( Gibberish.out )

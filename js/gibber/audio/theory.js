@@ -280,7 +280,7 @@ var Theory = Gibber.Theory = {
             note = Theory.Teoria.note( _note ).fq();
             break;
         }
-
+        
         this.note( note )
 			}
 		}
