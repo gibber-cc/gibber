@@ -343,7 +343,7 @@ tfoot, thead {
 /* DATABASE BROWSER STYLES */
 .browser {
   color:#aaa;
-  font-size:.8em;
+  font-size:.9em;
 }
 
 .browser table { margin-top: 10px; width:97%; }
@@ -354,16 +354,34 @@ tfoot, thead {
   font-size:.9em;
 }
 
-.browser table tr td {
-  
+.browser table tr td {}
+
+.search button {
+  background-color:0;
+  border:#555 1px solid;
 }
+
+.search .browserSearch {
+  right:0;
+  display:inline;
+  background-color:#ccc;
+  color:#333;
+  float:right;
+}
+
+.browser input { min-width:15em;}
 
 .browser li {
   color:#bbb;
   cursor:pointer;
 }
 
-.browser h2 { font-size:1em; }
+.browserHeader {
+/*  padding-bottom: 1em !important;*/
+  padding-top: 1em !important;  
+}
+
+.browser h2 { font-size:1em; background-color:#222; }
 
 .browser h3 {
 /*  background:#333;*/

@@ -2,8 +2,8 @@
 
 "use strict"
 // REMEMBER TO CHECK WELCOME.INIT() and server port in main.js!!!
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-//var SERVER_URL = 'http://127.0.0.1:8080'
+//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+var SERVER_URL = 'http://127.0.0.1:8080'
 //var SERVER_URL = 'http://a.local:8080'
 
 var GE = Gibber.Environment = {
@@ -60,7 +60,7 @@ var GE = Gibber.Environment = {
     
     $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
       Gibber.Graphics.load()
-    } )
+    })
   },
   selectCurrentBlock: function( editor ) { // thanks to graham wakefield
       var pos = editor.getCursor();
@@ -833,9 +833,9 @@ var GE = Gibber.Environment = {
   Spinner: {
     current : null,
     spin: function( target ) {
-      var spinner = new Spinner({ color:'#ccc', lines:18,length:0,width:8,radius:30,corners:1.0,rotate:0,trail:42,speed:1,direction:1 })
-      spinner.spin( target )
-      this.current = spinner
+      $( target ).spin('small', '#fff')
+      
+      return function() { $( target ).spin( false ) }
     },
     remove: function() {
       this.current.stop()
@@ -860,6 +860,32 @@ var GE = Gibber.Environment = {
     },
   }, 
   Browser : {
+    setupSearchGUI : function() {
+      var btns = $( '.searchOption' )
+
+      for( var i = 0; i < btns.length; i++ ) {
+        !function() {
+          var num = i, btn = btns[ num ]
+          
+          btn.state = 0
+          
+          $( btn ).on( 'click', function() {
+            for( var j = 0; j < btns.length; j++ ) {
+              var bgColor
+              
+              btns[ j ].state = btns[ j ] === btn
+              
+              bgColor = btns[ j ].state ? '#666' : '#000'
+              
+              $( btns[ j ] ).css({ backgroundColor:bgColor })
+            }
+          })
+          
+        }()
+      }
+      
+      $( '.browserSearch' ).on( 'click', GE.Browser.search )
+    },
     open: function() {
       var col = GE.Layout.addColumn({ header:'Browse Giblets' })
       
@@ -873,7 +899,7 @@ var GE = Gibber.Environment = {
       })
       .done( function( data ) {
         var browser = $( data ), cells
-        console.log( browser )
+        
         $( col.element ).append( browser[0] );
         $('head').append( browser[1] )
         $( '#search_button' ).on( 'click', GE.Browser.search )
@@ -882,10 +908,12 @@ var GE = Gibber.Environment = {
         
         cells = browser.find('td')
         
-        var types = [ 'audio', '_2d', '_3d', 'misc', 'recent', 'userfiles' ], prev
+        var types = [ 'searchHEADER','search','tutorialsHEADER','audio', '_2d', '_3d', 'misc', 'userHEADER','recent', 'userfiles' ], prev
         for( var i = 0; i < cells.length; i++ ) {
           (function() {
             var cell = cells[ i ]
+            if( $(cell).hasClass('browserHeader') ) return;
+            
             $(cell).find('h3').on('click', function() { 
               var div = $(cell).find('div')
               div.toggle()
@@ -901,9 +929,15 @@ var GE = Gibber.Environment = {
               (function() {
                 var num = j, type = types[ i ], link = links[j]
                 if( typeof Gibber.Environment.Browser.files[ type ] !== 'undefined' ) {
-                  var pub = Gibber.Environment.Browser.files[ type ][ num ],
-                      obj = pub.value || pub, // recently added has slightly different format
-                      id = pub.id || obj._id  // see above
+                  var pub = Gibber.Environment.Browser.files[ type ][ num ], obj, id
+                  
+                  if( typeof pub === 'undefined' ) {
+                    console.log( 'UNDEFINED', type, num )
+                    return;
+                  }
+                  
+                  obj = pub.value || pub, // recently added has slightly different format
+                  id = pub.id || obj._id  // see above
                       
                   $( link ).on( 'mouseover', function() {
                     $( link ).css({ background:'#444' })
@@ -922,39 +956,97 @@ var GE = Gibber.Environment = {
           })()
         }
         //$('#browser_audio_header').on('click', GE.Browser.updown)
+        GE.Browser.setupSearchGUI()
       })
     },
 
     // publication name : author : rating : code fragment?
     search : function(e) {
-      var data = { query:$( '#search_field' ).val() }
+      var btns = $( '.searchOption' ),
+          btnText = [ 'tags','code','author' ],
+          queryFilter = '', query = null
+      
+      query = $( '.browser .search input' ).val()
+      
+      if( query === '' ) {
+        GE.Message.post( 'You must type in a search query.' )
+        return
+      }
+      
+      for( var i = 0; i < btns.length; i++ ) {
+        if( btns[ i ].state ){
+          queryFilter = btnText[ i ]
+        }
+      }
+      
+      var data = {
+        'query': query,
+        filter:  queryFilter 
+      }
+      
+      console.log( data )
+      
+      $( '.searchResults' ).remove()
+      
+      // var sr = $('<div class="searchResults">').css({ width:'5em', height:'5em', display:'block', position:'relative', 'box-sizing': 'content-box !important' }) 
+      // var spinner = GE.Spinner.spin( sr )
+      
+      $( '.browser .search td' ).append( $('<p class="searchResults">Getting search results...</p>'))
+      
+      
+      //var data = { query:$( '#search_field' ).val() }
       $.post(
         SERVER_URL + '/search',
         data,
         function ( data ) {
-          console.log( "Search Data:", data )
+          var results = $( '<ul class="searchResults">' ), 
+              count = 0
+              
+          console.log( data )
           
-          var results = $( '<ul>' ), count = 0
-          
-          for( var key in data ) {
+          for( var i = 0; i < data.rows.length; i++ ) {
             count++
+            if( data.rows[i] === null ) continue; // sometimes things go missing...
+            
             (function() {
-              var d = data[ key ],
-                  pubname = key,
+              var d = JSON.parse( data.rows[ i ] ),
+                  pubname = d._id,
                   li = $( '<li>' )
               
-              li
-              .html( pubname )
-              .on( 'click', function() { GE.Browser.openCode( d ) } )
-              .css( 'cursor', 'pointer' )
+              $('.searchResults').remove()
+                  
+              li.html( pubname )
+                .on( 'click', function() { 
+                  GE.Browser.openCode( pubname ) 
+                })
+                .hover( function() { 
+                  li.css({ backgroundColor:'#444'})
+                  GE.Browser.displayFileMetadata( d )
+                }, 
+                  function() { li.css({ backgroundColor:'rgba(0,0,0,0)' })
+                })
+                .css({ cursor: 'pointer' })
+                
               results.append( li )
             })()
           }
-          console.log( count )
-          $( '.browser' ).append( results )
+          
+          if( data.rows.length === 0 ) {
+            $( '.browser .search td' ).append( $('<p class="searchResults">No results were found for your search</p>') )
+          }
+          
+          $( '.browser .search td' ).append( results )
         },
         'json'
       )
+      
+    },
+    
+    displayFileMetadata: function( obj ) {
+      $( '#browser_title' ).text( obj._id.split('/')[2].split('*')[0] )//$( link ).text() )
+      $( '#browser_notes' ).text( obj.notes )
+      $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
+      $( '#browser_author' ).text( obj._id.split('/')[0] )
     },
     
     openCode : function( addr ) {

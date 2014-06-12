@@ -15,9 +15,9 @@ var request         = require( 'request' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
-    esUrl           = 'http://localhost:9200/gibber/_search',
-    webServerPort   = 80,
+    webServerPort   = 8080,
     serverRoot      = __dirname + "/../../../",
+    searchURL       = 'http://127.0.0.1:5984/_fti/local/gibber/_design/fti/',
     // livedb          = require( 'livedb' ),
     // livedbMongo     = require( 'livedb-mongo'),
     // browserChannel  = require( 'browserchannel' ).server,
@@ -422,7 +422,7 @@ app.get( '/browser', function( req, res, next ) {
         }else{
           res.render( 'browser', {
             user: req.user,
-            demos:(JSON.parse(b)).rows, 
+            demos:(JSON.parse(b)).rows,
             audio:_audio,
             _2d:_2d,
             _3d:_3d,
@@ -446,8 +446,58 @@ app.get( '/chat', function( req, res, next ) {
 })
 
 app.post( '/search', function( req, res, next) {
-  console.log( req.body, _url + '/_search' )
-  request({ url: esUrl , json:{
+  var result = {},
+      query = req.body.query, filter = req.body.filter,
+      url = searchURL + filter + "?q="+query
+  
+  console.log( "SEARCH REQUEST", url )
+  
+  if( typeof query === 'undefined' || typeof filter === 'undefined') {
+    result.error = 'Search query or search type is undefined.'
+    res.send( result )
+    return
+  }
+  
+  var pubs = [], count = 0
+  
+  request({ 'url':url }, function(e,r,b) {
+    console.log( b )
+    b = JSON.parse( b )
+    if( b && b.rows.length > 0 ) {
+      //result.rows = b.rows
+      //res.send( result )
+      for( var i = 0; i < b.rows.length; i++ ) {
+        !function() {
+          var num = i,
+              pubID = b.rows[ i ].id,
+              suffix = pubID.replace(/\//g, '%2F'),
+              _url = 'http://localhost:5984/gibber/' + suffix
+      
+          _url += suffix.indexOf('?') > -1 ? "&revs_info=false" : "?revs_info=false"
+  
+          request( _url, function(e,r,_b) {
+            _b = JSON.parse( _b )
+            
+            delete _b.text
+            
+            pubs[ num ] = JSON.stringify( _b )
+            
+            if( ++count === b.rows.length  ) sendResults()
+             
+          })
+              
+        }()
+      }
+      
+      function sendResults() {
+        res.send({ rows: pubs, totalRows:b.total_rows })
+      }
+    }else{
+      res.send({ rows:[] })
+    }
+  })
+  //request({ url:searchURL, json:})
+  /*request({ url: esUrl , json:{
       "query": {
           "filtered" : {
               "query" : {
@@ -481,7 +531,7 @@ app.post( '/search', function( req, res, next) {
     }
     
     res.send(result)
-  })
+  })*/
 })
 
 app.post( '/login', function( req, res, next ) {
