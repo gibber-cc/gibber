@@ -11,6 +11,23 @@ body {
   box-sizing: border-box !important;
 }
 
+html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  overflow: scroll !important;
+}
+/*
+table {
+  height: 100%;
+  width: 100%;
+  overflow: scroll !important;
+}*/
 
 /* fit background of code to text */
 pre {
@@ -112,7 +129,6 @@ tfoot tr { display:block; width:100% }
   vertical-align:top;
   display:block;
   margin-top:2em;
-  overflow-y:hidden;
 }
 
 tfoot, thead { 
@@ -124,6 +140,7 @@ tfoot, thead {
   user-select: none;
 }
 #contentCell { padding:0; }
+
 #console_footer {
   display:block;
   width:50%;

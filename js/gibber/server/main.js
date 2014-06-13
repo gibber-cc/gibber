@@ -15,7 +15,7 @@ var request         = require( 'request' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
-    webServerPort   = 8080,
+    webServerPort   = 80,
     serverRoot      = __dirname + "/../../../",
     searchURL       = 'http://127.0.0.1:5984/_fti/local/gibber/_design/fti/',
     // livedb          = require( 'livedb' ),
@@ -450,7 +450,7 @@ app.post( '/search', function( req, res, next) {
       query = req.body.query, filter = req.body.filter,
       url = searchURL + filter + "?q="+query
   
-  console.log( "SEARCH REQUEST", url )
+  //console.log( "SEARCH REQUEST", url )
   
   if( typeof query === 'undefined' || typeof filter === 'undefined') {
     result.error = 'Search query or search type is undefined.'

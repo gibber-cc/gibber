@@ -2,8 +2,8 @@
 
 "use strict"
 // REMEMBER TO CHECK WELCOME.INIT() and server port in main.js!!!
-//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-var SERVER_URL = 'http://127.0.0.1:8080'
+var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+//var SERVER_URL = 'http://127.0.0.1:8080'
 //var SERVER_URL = 'http://a.local:8080'
 
 var GE = Gibber.Environment = {
@@ -884,6 +884,10 @@ var GE = Gibber.Environment = {
         }()
       }
       
+      btns[0].click()
+      
+      $( '.search input').on( 'keypress', function(e) { if( e.keyCode === 13 ) { $('.browserSearch').click() }})
+      
       $( '.browserSearch' ).on( 'click', GE.Browser.search )
     },
     open: function() {
@@ -999,6 +1003,9 @@ var GE = Gibber.Environment = {
         SERVER_URL + '/search',
         data,
         function ( data ) {
+          
+          $('.searchResults').remove()
+          
           var results = $( '<ul class="searchResults">' ), 
               count = 0
               
@@ -1030,6 +1037,15 @@ var GE = Gibber.Environment = {
               results.append( li )
             })()
           }
+          
+          var h4 = $('<h4 class="searchResults">Results</h4>').css({ display:'inline-block', width:'10em', marginBottom:0 }),
+              clearBtn = $('<button class="searchResults">clear results</button>').on('click', function() { 
+                $('.searchResults').remove()
+                clearBtn.remove()
+                h4.remove()
+              })
+              
+          $( '.browser .search td' ).append( h4, clearBtn )
           
           if( data.rows.length === 0 ) {
             $( '.browser .search td' ).append( $('<p class="searchResults">No results were found for your search</p>') )
