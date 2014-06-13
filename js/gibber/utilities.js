@@ -140,7 +140,7 @@ Gibber.Utilities = {
   },
   
   shuffle : function( arr ) {
-  		for(var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
+  	for(var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
   },
   
   solo : function( ugen ) {
@@ -189,6 +189,21 @@ Gibber.Utilities = {
     
     return this
   },
+  merge : function() {
+    var output = []
+  	for( var i = 0; i < this.length; i++ ) {
+      var arg = this[ i ]
+      if( Array.isArray( arg ) ) {
+        for( var j = 0; j < arg.length; j++ ) {
+  				output.push( arg[ j ] )
+        }
+      }else{
+        output.push( arg )
+      }
+    }
+  
+    return output
+  },
 }
 
 window.solo = Gibber.Utilities.solo
@@ -197,4 +212,5 @@ Array.prototype.random = Array.prototype.rnd = Gibber.Utilities.random
 Array.prototype.fill = Gibber.Utilities.fill
 Array.prototype.choose = Gibber.Utilities.choose
 Array.prototype.Rnd = Gibber.Utilities.random2
+Array.prototype.merge = Gibber.Utilities.merge
 })()

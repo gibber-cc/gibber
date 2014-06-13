@@ -11,7 +11,7 @@ body {
   box-sizing: border-box !important;
 }
 
-html {
+/*html {
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -21,7 +21,7 @@ body {
   height: 100%;
   width: 100%;
   overflow: scroll !important;
-}
+}*/
 /*
 table {
   height: 100%;
