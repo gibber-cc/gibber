@@ -52,7 +52,10 @@ window.Gibber = window.G = {
       
 			Gibber.Esprima = window.esprima
       Gibber.Master = window.Master = Bus().connect( Gibberish.out )
+      
       Master.type = 'Bus'
+      Master.name = 'Master'
+      
       $.extend( true, Master, Gibber.ugen ) 
       Master.fx.ugen = Master
       
@@ -379,7 +382,10 @@ window.Gibber = window.G = {
   },
   
   createMappingObject : function(target, from) {
-    var min = target.min, max = target.max, _min = from.min, _max = from.max, mapping
+    var min = typeof target.min === 'function' ? target.min() : target.min,
+        max = typeof target.max === 'function' ? target.max() : target.max,
+        _min = typeof from.min === 'function' ? from.min() : from.min,
+        _max = typeof from.max === 'function' ? from.max() : from.max
 
     if( typeof from.object === 'undefined' && from.Value) { // if using an interface object directly to map
       from = from.Value

@@ -113,7 +113,6 @@
       audioOut : function( target, from ) {
         var mapping
         
-        console.log( "MAPPING AUDIOOUT > AUDIO")
         target.object[ target.name ] = Map( null, target.min, target.max, 0, 1, 0 )   
         mapping = target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
         
@@ -154,6 +153,7 @@
       
         var env = mapping.follow.bufferSize
         Object.defineProperty( target.object[ target.Name ], 'env', {
+          configurable:true,
           get: function() { return env },
           set: function(v) { env = Gibber.Clock.time( v ); mapping.follow.bufferSize = env; }
         })
@@ -322,6 +322,7 @@
           
           var env = mapping.follow.bufferSize
           Object.defineProperty( target.object[ target.Name ], 'env', {
+            configurable: true,
             get: function() { return env },
             set: function(v) { env = Gibber.Clock.time( v ); mapping.follow.bufferSize = env; }
           })

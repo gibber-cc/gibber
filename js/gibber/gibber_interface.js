@@ -30,6 +30,8 @@
         }else{
           column = Layout.addColumn()
         }
+      }else{
+        $( column.bodyElement ).empty()
       }
       
       var panel = new Interface.Panel({ container: column.bodyElement, useRelativeSizesAndPositions:true, font:'normal 20px Helvetica' })
@@ -41,8 +43,20 @@
       })
       
       this.panel = panel
+      this.panel.column = column
+      
+      column.onresize = this.onresize.bind( panel )
       
       return panel
+    },
+    
+    onresize: function( newWidth ) {
+      $( this.canvas ).css({
+        position: 'relative',
+        width: $( this.column.bodyElement ).width(),
+        height: $( this.column.bodyElement ).height()
+      })
+      this.redoBoundaries()
     },
     
     initializers : {
@@ -123,6 +137,28 @@
         
         widget.onvaluechange = function( sliderNum, __value ) {
           widget[ sliderNum ].value = __value
+        }
+      },
+      Patchbay: function( widget, props ) {
+        widget.onconnection = function( start,end ) {
+          end.object[ end.name ] = start.object[ start.Name ]
+        }
+        
+        widget.ondisconnection = function( start, end ) {
+          end.object[ end.Name ].mapping.remove()
+        }
+        
+        widget._createConnection = widget.createConnection
+        widget.createConnection = function( connection ) {
+          var start = this.points[ connection[0] ],
+              end   = this.points[ connection[1] ]
+              
+          if( end.Name === 'Out' ) {
+            console.log( 'You can\'t feed input to an Out patch point' )
+            return
+          }
+          
+          widget._createConnection( connection )
         }
       },
       Paint : function( widget, props ) {
@@ -457,6 +493,7 @@
     xy: function( props )          { return I.widget( props, 'XY' ) },     
     piano: function( props )       { return I.widget( props, 'Piano' ) },
     paint: function( props )       { return I.widget( props, 'Paint' ) },
+    patchbay: function( props )    { return I.widget( props, 'Patchbay' ) },    
   }
   
   Interface.use = Gibber.Environment.Interface.use
@@ -468,7 +505,9 @@
   window.Knob     = Gibber.Environment.Interface.knob
   window.XY       = Gibber.Environment.Interface.xy
   window.Keyboard = Gibber.Environment.Interface.piano
-  window.Paint    = Gibber.Environment.Interface.paint  
+  window.Paint    = Gibber.Environment.Interface.paint
+  window.Panel    = I.newPanel.bind( I )
+  window.Patchbay = Gibber.Environment.Interface.patchbay    
   
   var OSC = Gibber.OSC = {
     callbacks : {},
@@ -476,7 +515,7 @@
       var _port = port || 10080,
           _socket = OSC.socket = new WebSocket( 'ws://127.0.0.1:' + _port )
       
-      OSC.socket.onopen = function() { console.log( "OPENED" ) }
+      OSC.socket.onopen = function() { console.log( "OSC SOCKET OPENED" ) }
       OSC.socket.onmessage = OSC.onmessage;
     },
     onmessage : function(msg) {

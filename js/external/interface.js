@@ -224,7 +224,6 @@ Interface.Panel = function() {
     
     touchEvent : function(event) {
       if(self.active) {
-        console.log( event )
         if( typeof event.changedTouches === 'undefined' && event.originalEvent ) {
           event.changedTouches = event.originalEvent.changedTouches
         }
@@ -309,12 +308,14 @@ Interface.Panel = function() {
       for( var i = 0; i < this.children.length; i++ ) {
         if( this.children[i].onkeydown ) this.children[i].onkeydown(e)
       }
+      e.preventDefault()
     },
     
     keyup: function(e) {
       for( var i = 0; i < this.children.length; i++ ) {
         if( this.children[i].onkeyup ) this.children[i].onkeyup(e)
       }
+      e.preventDefault()
     },
     
     draw : function() {
@@ -404,6 +405,47 @@ Interface.Panel = function() {
           if(typeof widget.remove === 'function') widget.remove();
         }
       }
+    },
+    clearText: function( text, x,y,hAlign,vAlign ,font ) {
+      // this.ctx.font = font
+      // 
+      // var metrics = this.ctx.measureText( text ),
+      //     rect = {
+      //       x: 0,
+      //       y: widget._y() - widget.size / 2,
+      //       width: metrics.width,
+      //       height: widget.size,
+      //     };
+      // 
+      // var x, y;
+      // switch( hAlign ) {
+      //   case 'center':
+      //     x += width / 2
+      //     rect.x = x - metrics.width / 2;
+      //     break;
+      //   case 'left':
+      //     rect.x = x;
+      //     break; 
+      //   case 'right':
+      //     x += width();
+      //     rect.x =  x - metrics.width;
+      //     break;
+      // }
+      // switch(this.vAlign) {
+      //   case 'middle':
+      //     y = (y() + height() / 2)
+      //     rect.y = y - metrics.height / 2;
+      //     break;
+      //   case 'top':
+      //     y = y();
+      //     rect.y = y;
+      //     break; 
+      //   case 'bottom':
+      //     y = y() + height();
+      //     rect.y =  y - metrics.height;
+      //     break;
+      // }
+      // this.ctx.clearRect(rect.x, rect.y, rect.width, rect.height * 2);
     },
   });
   
@@ -1819,7 +1861,7 @@ Interface.Knob = function() {
           height= this._height(),
           radius = width / 2;
           
-      this.ctx.clearRect(x, y, radius * 2,radius * 2);
+      //this.ctx.clearRect(x, y, radius * 2,radius * 2);
       this.ctx.strokeStyle = this._stroke();
 
     	this.ctx.fillStyle = this._background(); // draw background of widget first
@@ -3682,6 +3724,298 @@ Interface.Paint = function() {
   this.value = {x:0, y:0}
 }
 Interface.Paint.prototype = Interface.Widget;
+
+Interface.Patchbay = function() {
+  Interface.extend(this, {
+    type:"Patchbay",
+    points: [],
+    minWidth:80,
+    cableWidth:5,
+    start:null,
+    over:null,
+    connections:[],
+    rowLength:null,
+    selectedConnection: null,
+    patchOutlineWidth:3,
+    
+    draw : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height(),
+          length = this.points.length
+        
+      this.ctx.fillStyle = this._background();
+      this.ctx.strokeStyle = this._stroke();
+      this.ctx.clearRect(x, y, width, height);          
+      
+      this.layout()
+      this.drawSegments()
+      this.drawPatchPoints()
+      this.drawConnections()
+      //this.drawLabels()
+    },
+    
+    layout: function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height()
+      
+      this.rows = 1
+      
+      this.patchWidth = width / this.points.length
+      
+      if( this.patchWidth < this.minWidth ) {
+        this.patchWidth = this.minWidth
+      }
+      
+      this.rows = Math.ceil( (this.patchWidth * this.points.length) / width )
+            
+      this.patchHeight = height / this.rows
+      
+      
+      this.columns = Math.floor( width / this.patchWidth )
+    },
+    
+    drawSegments : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height(),
+          length = this.points.length
+          
+      this.ctx.fillStyle = this._fill();
+
+      var totalWidth = 0, row = 1
+      
+      //console.log("SEGMENT, START:", this.start, 'OVER:', this.over )
+      for( var i = 0; i < this.points.length; i++ ) {
+        if( this.start === i ) {
+          this.ctx.fillStyle = "#777"            
+          this.ctx.fillRect(x + totalWidth, y + (this.patchHeight * (row-1)), this.patchWidth, this.patchHeight  );
+        }else if( this.over === i ) {
+          this.ctx.fillStyle = "#744"
+          this.ctx.fillRect(x + totalWidth, y + (this.patchHeight * (row-1)), this.patchWidth, this.patchHeight );
+        }
+        
+        this.ctx.fillStyle = this._stroke()
+        this.ctx.textBaseline = 'middle'
+        this.ctx.textAlign = 'center'
+        this.ctx.font = this._font()
+        this.ctx.font = 'normal 12px Helvetica',
+        this.ctx.fillText( this.points[ i ].object.name , totalWidth + this.patchWidth / 2, y + ((row-1) * this.patchHeight + .1 * this.patchHeight)  )
+        this.ctx.fillText( this.points[ i ].name , totalWidth + this.patchWidth / 2, y + ((row-1) * this.patchHeight + .9 * this.patchHeight)  )
+  
+        totalWidth += this.patchWidth
+        
+        this.points[ i ].row = row
+        
+        if( totalWidth + this.patchWidth > width ) {
+          totalWidth = 0
+          row++
+        }
+      }
+    },
+    
+    drawPatchPoints : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height(),
+          length = this.points.length
+          
+      this.ctx.fillStyle = this._background();
+    
+      var totalWidth = 0, row = 1
+      for( var i = 0; i < this.points.length; i++ ) {
+        //this.ctx.fillRect(totalWidth, y, patchWidth, patchHeight);
+        this.ctx.beginPath()
+        this.ctx.arc( totalWidth + this.patchWidth / 2, y + this.patchHeight / 2 + (this.patchHeight * (row-1)), this.patchWidth/5, 0, Math.PI*2, true); 
+        this.ctx.closePath()
+        
+        this.ctx.fill()
+        
+        this.ctx.lineWidth = this.patchOutlineWidth
+        this.ctx.stroke()
+        
+        this.points[i].row = row
+        
+        this.ctx.lineWidth = 1
+        this.ctx.strokeRect(totalWidth, y + (this.patchHeight * (row-1)), this.patchWidth, this.patchHeight );
+              
+        totalWidth += this.patchWidth
+        if( totalWidth + this.patchWidth > width ) {
+          totalWidth = 0
+          row++
+        }
+      }
+      
+      //console.log("TOTAL ROWS = ", row )
+    },
+    
+    drawConnections : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height()
+      
+      this.ctx.lineWidth = this.cableWidth
+      
+      for( var i = 0; i < this.connections.length; i++ ) {
+        var connection = this.connections[ i ],
+            origin = this.connections[ i ][ 0 ],
+            destination = this.connections[ i ][ 1 ],
+            startX = x + this.patchWidth * (origin % this.columns) + this.patchWidth / 2,
+            startY = y + (this.patchHeight / 2) + (this.patchHeight * Math.floor(origin / this.columns) ),
+            endX   = x + this.patchWidth * (destination % this.columns) + this.patchWidth / 2,
+            endY   = y + (this.patchHeight / 2) + (this.patchHeight * Math.floor(destination / this.columns) ),
+            ctrl1X = startX,
+            ctrl1Y = startY + this.patchHeight * .5,
+            ctrl2X = endX,
+            ctrl2Y = endY + this.patchHeight * .5
+        
+            //console.log( "ORIGIN", this.points[origin].row, "DESTINATION", this.points[destination].row )
+        if( connection.selected ) {
+          this.ctx.strokeStyle = '#0f0'
+        }else{
+          this.ctx.strokeStyle = this._stroke()
+        }
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo( startX, startY )
+        this.ctx.bezierCurveTo( ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY );
+        this.ctx.stroke()
+
+        connection.edge = [startX, startY, ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY]
+      }
+    },
+    
+    _init : function() {
+      var x = this._x(),
+          y = this._y(),
+          width = this._width(),
+          height= this._height()
+          
+      this.patchWidth = width / this.points.length
+      this.patchHeight = height
+      this.rows = 1      
+    },
+    
+    createConnection : function( connection ) {
+      var start = this.points[ connection[0] ],
+          end   = this.points[ connection[1] ]
+      
+      if( end.output !== false ) {
+        this.connections.push( connection )
+      
+        if( this.onconnection ) this.onconnection( start, end ) 
+      }
+    },
+    
+    changeValue : function( xOffset, yOffset ) {  },
+    
+    hitTestEdges: function(e) {
+      var hit = false,
+          x = e.x - this._x(),
+          y = e.y - this._y()
+      
+      for( var i = 0; i < this.connections.length; i++ ) {
+        var edge = this.connections[ i ].edge
+        
+        this.ctx.beginPath()
+        this.ctx.moveTo( edge[0], edge[1] )
+        this.ctx.bezierCurveTo( edge[2], edge[3], edge[4], edge[5], edge[6], edge[7] );
+        if( this.ctx.isPointInStroke( x,y ) ) {
+          this.connections.forEach( function( elem, index, array ){
+            elem.selected = false
+          })
+          
+          this.connections[ i ].selected = true
+          this.selectedConnection = this.connections[ i ]
+          
+          hit = true
+          
+          break;
+        }
+      }
+      
+      return hit
+    },
+  
+    mousedown : function(e, hit) {
+      if( hit && Interface.mouseDown ) {
+        if( !this.hitTestEdges( e ) ) {
+          //this.start = Math.floor( ( e.x - this._x() / this._width() / this.rows ) / ( this._width() / this.points.length / this.rows ) )
+          var _x = Math.floor( ( e.x - this._x() / this._width() ) / ( this._width() / this.columns ) ),
+              _y = Math.floor( ( e.y - this._y() / this._height()) / ( this._height() / this.rows ) )
+                        
+          this.start = _y * this.columns + _x
+          
+          if( this.selectedConnection !== null ) {
+            this.selectedConnection.selected = false
+            this.selectedConnection = null
+          }       
+        }
+        
+        this.draw()
+      }
+    },
+    mousemove : function(e, hit) { 
+      if( hit && Interface.mouseDown ) {
+        var _x = Math.floor( ( e.x - this._x() / this._width() ) / ( this._width() / this.columns) ),
+            _y = Math.floor( ( e.y - this._y() / this._height()) / ( this._height() / this.rows ) )
+            
+        var prevOver = this.over
+        this.over = _y * this.columns + _x
+        
+        if( this.over !== prevOver ) {
+          this.draw()
+        }
+      }
+    },
+    mouseup   : function(e, hit) { 
+      if( hit ) {
+        var _x = Math.floor( ( e.x - this._x() / this._width() ) / ( this._width() / this.columns ) ),
+            _y = Math.floor( ( e.y - this._y() / this._height()) / ( this._height() / this.rows ) ),
+            over = _y * this.columns + _x
+            
+        // var over = Math.floor( ( e.x - this._x() / this._width() / this.rows ) / ( this._width() / this.points.length / this.rows ) )
+        
+        if( this.start !== over && this.start !== null ) {
+          var connection = [ this.start, over ],
+              isFound = false
+              
+          for( var i = 0; i < this.connections.length; i++ ) {
+            if( this.connections[i][0] === connection[0] && this.connections[i][1] === connection[1] ) {
+              isFound = true
+            }
+          }
+          
+          if( !isFound ) this.createConnection( connection )
+        }
+      }
+      
+      this.over = null
+      this.start = null
+      this.draw()
+    },
+    
+    onkeydown: function(e) {
+      var key = Interface.keyCodeToChar[ e.keyCode ]
+            
+      if( key === 'Delete' || key === 'Backspace' ) {
+        if( this.selectedConnection !== null ) {
+          this.deleteConnection( this.selectedConnection )
+          e.preventDefault()
+        }
+      }
+    },
+    
+    deleteConnection: function( connection ) {
+      this.connections.splice( this.connections.indexOf( connection ), 1 )
+      
+      if( this.ondisconnection ) { this.ondisconnection( this.points[ connection[0] ], this.points[ connection[1] ] ) }
+      
+      this.selectedConnection = null
+      
+      this.draw()
+    },
+    
+    touchstart : function(e, hit) { if(hit) this.changeValue( e.x - this._x(), e.y - this._y() ); },
+    touchmove  : function(e, hit) { if(hit) this.changeValue( e.x - this._x(), e.y - this._y() ); },
+    touchend   : function(e, hit) { if(hit) this.changeValue( e.x - this._x(), e.y - this._y() ); },  
+  })
+  .init( arguments[0] );
+  
+  return this
+}
+Interface.Patchbay.prototype = Interface.Widget;
 
 Interface.defineChildProperties = function(widget, properties) {
   for(var j = 0; j < properties.length; j++) {

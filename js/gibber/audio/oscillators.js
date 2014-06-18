@@ -81,6 +81,8 @@
           }
         }
         
+        oscillator.name = name
+        
         Gibber.createProxyProperties( oscillator, mappingProperties )
 
         var proxyMethods = [ 'note' ]

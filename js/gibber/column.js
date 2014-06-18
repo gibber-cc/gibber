@@ -3,25 +3,26 @@
   
   var GE = Gibber.Environment
   
-  var Column = function( options, Layout ) {
+  var Column = function( options ) {
     options = options || {}
 
     var isCodeColumn = options.type === 'code',
+        Layout = Gibber.Environment.Layout,
         lastColumnWidth = 0, 
         colNumber = Layout.columns.length,
         mode  = 'javascript',
         modeIndex = 0,
         columnWidth = options.width ? options.width : Layout.defaultColumnSize,
-        col = this,
+        col = {},
         resizeHandleSize = Layout.resizeHandleSize
         
-    $.extend( this, {
+    $.extend( col, {
       element:        $( '<div class="column">' ),
       header:         $( '<div class="columnHeader">' ),
       modeSelect:     $( '<select>' ),
       bodyElement:    $( '<div class="editor">' ),
       resizeHandle:   $( '<div class="resizeHandle">' ),
-      close :         $( '<button>' ),
+      closeButton :   $( '<button>' ),
       width:          columnWidth,
       number:         Layout.columns.length,
       fontSize:       1,
@@ -29,6 +30,9 @@
       isCodeColumn:   isCodeColumn,
       isFullScreen:   false,
       resizeHandleSize  : 8,
+      close: function() {
+        Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose();
+      }
       
       // fullScreen:     this.makeFullScreenFunction(),
     })
@@ -43,7 +47,7 @@
     col.element.width( columnWidth )
     col.resizeHandle.width( resizeHandleSize )
   
-    col.close.addClass( 'closeButton' )
+    col.closeButton.addClass( 'closeButton' )
       .on( 'click', function(e) { Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose(); })
       .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
       .html( '&#10005;' )
@@ -69,13 +73,13 @@
         .attr( 'title', 'set language for column' )
       
       col.header
-        .append( col.close )
+        .append( col.closeButton )
         .append( $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' ) )
         .append( col.modeSelect )
       
     }else{
       col.header
-        .append( col.close )
+        .append( col.closeButton )
         .append( $( '<span>' ).html( '&nbsp;' + (options.header || '') ) )
     }
   
@@ -176,11 +180,15 @@
       console.log( window.loadFile )
       GE.Message.post('You attempted to load a document that does not exist. Please check the URL you entered and try again.')
     }
+    
+    col.__proto__ = Proto
+    
+    return col
   }
   
   Gibber.Environment.Layout.Column = Column
   
-  $.extend( Column.prototype, {
+  var Proto = {
     toggle:             function() { $( this.element ).toggle() },            
     toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
     
@@ -370,5 +378,7 @@
       this.infoDiv.append( this.infoDivClose )
       this.bodyElement.prepend( this.infoDiv )
     }
-  })
+  }
+  
+  window.Column = Column
 })()

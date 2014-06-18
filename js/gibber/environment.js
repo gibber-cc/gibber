@@ -263,7 +263,7 @@ var GE = Gibber.Environment = {
             }
           }else{
             GE.Layout.fullScreen()
-            //e.preventDefault()
+            e.preventDefault()
           }
         }
       })

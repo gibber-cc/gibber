@@ -261,7 +261,9 @@
           var newWidthCandidate = e.pageX - col.element.position().left
           col.width = newWidthCandidate > 300 ? newWidthCandidate : 300
           col.element.width( col.width )
-
+          
+          if( col.onresize ) col.onresize( col.width )
+          
           GE.Layout.resizeColumns()
         },
         columnResizeEndHandler = function(e) {

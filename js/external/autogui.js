@@ -81,22 +81,22 @@ Interface.autogui = {
       widgetHeight = (splitDir == 1) ? bestChild.bounds[3] / 2 : bestChild.bounds[3];
 
       var div1 = {
-        "bounds": [bestChild.bounds[0], bestChild.bounds[1], widgetWidth, widgetHeight],
-        "widget": w,
-        "sacrosanct": false,
-        "parent": bestChild,
-        "children": [],
+        bounds: [bestChild.bounds[0], bestChild.bounds[1], widgetWidth, widgetHeight],
+        widget: w,
+        sacrosanct: false,
+        parent: bestChild,
+        children: [],
       }
 
       var newDivX = (splitDir == 0) ? bestChild.bounds[0] + widgetWidth : bestChild.bounds[0];
       var newDivY = (splitDir == 1) ? bestChild.bounds[1] + widgetHeight : bestChild.bounds[1];
 
       var div2 = {
-        "bounds": [newDivX, newDivY, widgetWidth, widgetHeight],
-        "widget": _widget,
-        "sacrosanct": sacrosanct,
-        "parent": bestChild,
-        "children": [],
+        bounds: [newDivX, newDivY, widgetWidth, widgetHeight],
+        widget: _widget,
+        sacrosanct: sacrosanct,
+        parent: bestChild,
+        children: [],
       }
 
       div1.widget.div = div1;
@@ -129,12 +129,12 @@ Interface.autogui = {
   reset: function() {
     this.children = [
       [{
-        "bounds": [0, 0, 1, 1],
-        "widget": null,
-        "sacrosanct": false,
-        "parent": null,
-        "id": 0,
-        "children": [],
+        bounds: [0, 0, 1, 1],
+        widget: null,
+        sacrosanct: false,
+        parent: null,
+        id: 0,
+        children: [],
       },]
     ];
   },
@@ -142,17 +142,17 @@ Interface.autogui = {
   redoLayout: function() {
     this.children = [
       [{
-        "bounds": [0, 0, 1, 1],
-        "widget": null,
-        "sacrosanct": false,
-        "parent": null,
-        "id": 0,
-        "children": [],
+        bounds: [0, 0, 1, 1],
+        widget: null,
+        sacrosanct: false,
+        parent: null,
+        id: 0,
+        children: [],
       },]
     ];
 
-    for (var i = 0; i < panel.children.length; i++) {
-      var w = panel.children[i];
+    for (var i = 0; i < Interface.panel.children.length; i++) {
+      var w = Interface.panel.children[i];
       this.placeWidget(w);
     }
   },
