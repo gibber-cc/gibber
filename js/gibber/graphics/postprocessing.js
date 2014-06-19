@@ -288,11 +288,11 @@ var PP = Gibber.Graphics.PostProcessing = {
           
           Gibber.createProxyProperties( shader, {} ) // call with empty object to initialize
           
-					shader.uniform = function(_name, _value, _min, _max ) {
+					shader.uniform = function(_name, _value, _min, _max, type ) {
 						_min = isNaN( _min ) ? 0 : _min
 						_max = isNaN( _max ) ? 1 : _max				
 						_value = isNaN( _value ) && typeof _value !== 'object' ? _min + (_max - _min) / 2 : _value
-		
+		        
 						if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
 							_mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
 				        min:_min, max:_max,
@@ -301,13 +301,20 @@ var PP = Gibber.Graphics.PostProcessing = {
 				      }
 						}
             
+            var info = getShaderInfo( _value, type, _name ),
+                shaderType = info[0],
+                threeType  = info[1],
+                shaderString = info[2]
+            
+            console.log( "TYPE = ", shaderType, threeType )
+            
 						if( typeof shader.uniforms[ _name ] === 'undefined' && ( shader.columnF ) ) {
-              var text = "uniform float " + _name + ";\n"
+              var text = shaderString
               text += shader.columnF.editor.getValue()
               shader.columnF.editor.setValue( text )
             }
             		        
-            shader.uniforms[ _name ] = { type:'f', value:_value }
+            shader.uniforms[ _name ] = { 'type': threeType, value:_value }
             
             Object.defineProperty( shader, _name, {
               configurable: true,
@@ -512,6 +519,87 @@ var PP = Gibber.Graphics.PostProcessing = {
   },
 }
 
-//$.extend( window, Gibber.Graphics.Geometry )
+var types = [
+  [ 'Vec2', 'Vector2', 'vec2' ],
+  [ 'Vec3', 'Vector3', 'vec3' ],
+  [ 'Vec4', 'Vector4', 'vec4' ],    
+]
+.forEach( function( element, index, array ) {
+  var type = element[ 0 ],
+    threeType = element[ 1 ] || element[ 0 ],
+    shaderType = element[ 2 ] || 'f'
+    
+  window[ type ] = function() {
+    var args = Array.prototype.slice.call( arguments, 0 ),
+        obj
+    
+    if( Array.isArray( args[0] ) ) {
+      var _args = []
+      for( var i = 0; i < args[0].length; i++ ) {
+        _args[ i ] = args[0][ i ]
+      }
+      args = _args
+    }    
+        
+    obj = Gibber.construct( THREE[ threeType ], args )
+    
+    obj.name = type
+    obj.shaderType = shaderType
+    
+    return obj
+  }
+})
+
+var threeTypes = {
+  'vec2' : 'v2',
+  'vec3' : 'v3',
+  'vec4' : 'v4',
+  'int'  : 'i',
+  'float'  : 'f'
+}
+
+var getShaderInfo = function( value, type, _name ) {
+  var shaderType = null, threeType = null, shaderString = '', isArray = false
+  
+  if( type ) {
+    shaderType = type
+  }else{
+    if( Array.isArray( value ) ) {
+      var arrayMember = value[ 0 ],
+          arrayMemberType = arrayMember.shaderType || typeof arrayMember
+          
+      if( arrayMemberType === 'number' ) {
+        var isInt = arrayMember % 1 === 0
+        
+        // check to make sure all elements are ints, otherwise use float
+        if( isInt ) { isInt = value.every( function( element ) { return element % 1 === 0 } ) }
+        
+        shaderType = isInt ? 'int' : 'float'
+      }else{
+        shaderType = arrayMemberType
+      }
+      isArray = true
+    }else if( typeof value === 'object' ){
+      shaderType = value.shaderType
+    }else{
+      shaderType = typeof value
+      if( shaderType === 'number' ) {
+        console.log("CHECKING FLOAT VS INT")
+        shaderType = value % 1 === 0 ? 'int' : 'float'
+      } 
+    }
+  }
+  
+  shaderString = "uniform " + shaderType + " " + _name
+  
+  shaderString += isArray ? '[' + value.length + '];\n' : ';\n'
+  
+  threeType = threeTypes[ shaderType ]
+  if( isArray ) {
+    threeType += shaderType.indexOf( 'vec' ) > - 1 ? 'v' : 'v1'
+  }
+  
+  return [ shaderType, threeType, shaderString ]
+}
 
 })()

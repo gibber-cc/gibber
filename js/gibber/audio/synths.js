@@ -256,6 +256,17 @@
       octave2:0,
       octave3:0
     },
+    
+    noise: {
+      resonance:20,
+      decay:1/2,
+      cutoff:.3,
+      glide:.99995,
+      detune3:0,
+      detune2:0,
+      filterMult:0,
+      presetInit: function() { this.fx.add( Gain(.1), Delay(1/6,.35) ) }
+    },
   }
   
   Gibber.Presets.FM = {
