@@ -1009,8 +1009,11 @@ var GE = Gibber.Environment = {
           var results = $( '<ul class="searchResults">' ), 
               count = 0
               
-          console.log( data )
-          
+          //console.log( data )
+          if( data.error ) {
+            console.error( data.error )
+            return  
+          }
           for( var i = 0; i < data.rows.length; i++ ) {
             count++
             if( data.rows[i] === null ) continue; // sometimes things go missing...

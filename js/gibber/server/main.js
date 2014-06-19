@@ -18,6 +18,7 @@ var request         = require( 'request' ),
     webServerPort   = 80,
     serverRoot      = __dirname + "/../../../",
     searchURL       = 'http://127.0.0.1:5984/_fti/local/gibber/_design/fti/',
+    queryString     = require('querystring'),
     // livedb          = require( 'livedb' ),
     // livedbMongo     = require( 'livedb-mongo'),
     // browserChannel  = require( 'browserchannel' ).server,
@@ -447,7 +448,7 @@ app.get( '/chat', function( req, res, next ) {
 
 app.post( '/search', function( req, res, next) {
   var result = {},
-      query = req.body.query, filter = req.body.filter,
+      query = queryString.escape(req.body.query), filter = req.body.filter,
       url = searchURL + filter + "?q="+query
   
   //console.log( "SEARCH REQUEST", url )
@@ -463,7 +464,7 @@ app.post( '/search', function( req, res, next) {
   request({ 'url':url }, function(e,r,b) {
     console.log( b )
     b = JSON.parse( b )
-    if( b && b.rows.length > 0 ) {
+    if( b && b.rows && b.rows.length > 0 ) {
       //result.rows = b.rows
       //res.send( result )
       for( var i = 0; i < b.rows.length; i++ ) {
@@ -493,7 +494,11 @@ app.post( '/search', function( req, res, next) {
         res.send({ rows: pubs, totalRows:b.total_rows })
       }
     }else{
-      res.send({ rows:[] })
+      if( b.reason ) {
+        res.send({ error:b.reason })
+      }else{
+        res.send({ rows:[] })
+      }
     }
   })
   //request({ url:searchURL, json:})
