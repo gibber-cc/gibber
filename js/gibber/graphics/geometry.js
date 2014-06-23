@@ -106,13 +106,18 @@ for( var key in types) {
         
         (function( obj ) { // for each vector rotation, scale, position
           var prop = vectors[ i ],
-              property = prop === 'scale' ? [ 1, 1, 1 ] : [ 0, 0, 0 ],
-              update = function() { obj.mesh[ prop ].set.apply( obj.mesh[ prop ], property ) }
+              property = prop === 'scale' ? Vec3(1, 1, 1) : Vec3(),
+              update = function() { 
+                //console.log( property.toArray() )
+                obj.mesh[ prop ].set( property.x(), property.y(), property.z() )
+                //obj.mesh[ prop ].set.apply( obj.mesh[ prop ], property.toArray() ) 
+              },
+              x = property.x, y = property.y, z = property.z
           
           Object.defineProperties( property, {
-            x: { get: function() { return property[ 0 ] }, set: function(v) { property[ 0 ] = v; update() }, configurable:true },
-            y: { get: function() { return property[ 1 ] }, set: function(v) { property[ 1 ] = v; update() }, configurable:true },
-            z: { get: function() { return property[ 2 ] }, set: function(v) { property[ 2 ] = v; update() }, configurable:true },
+            x: { get: function() { return x }, set: function(v) { x = v; update() }, configurable:true },
+            y: { get: function() { return y }, set: function(v) { y = v; update() }, configurable:true },
+            z: { get: function() { return z }, set: function(v) { z = v; update() }, configurable:true },
           })
           
           property.name = type + '.' + prop
@@ -128,24 +133,22 @@ for( var key in types) {
                     name  : ltr,
                     modName : prop + '.' + ltr,
                     type  : 'mapping',
-                    value : property[ 0 ],
+                    value : property[ ltr ],
                     object: property,
                     modObject: obj,
                     targets:[],
                     oldSetter: property.__lookupSetter__( ltr ),
-                    oldGetter: property.__lookupGetter__( ltr ),                    
-                    set : function( num, val )  {
-                      property[ num ] = val
-                    },
+                    oldGetter: property.__lookupGetter__( ltr ),            
+                    set : function( val )  { property[ ltr ] = val },
                   }),
                   fnc
               
               mapping.object = property
               
               fnc = obj[ '_' + propertyName ] = function(v) {
-                if(v) {
+                if( typeof v !== 'undefined' ) {
                   mapping.value = v
-                  mapping.oldSetter( mapping.value )
+                  mapping.oldSetter( mapping.value ) 
                 }
                   
                 return mapping.value
@@ -171,12 +174,8 @@ for( var key in types) {
                   if( typeof v === 'object' && v.type === 'mapping' ) {
                     Gibber.createMappingObject( mapping, v )
                   }else{
-                    if(mapping.mapping) mapping.mapping.remove()
+                    if( mapping.mapping ) mapping.mapping.remove()
                     obj[ '_' + propertyName ]( v )
-                    //mapping.value = v
-
-                    //mapping.oldSetter.call( this, mapping.value )
-                    // oldSetter.call( property, v )              
                   }
                 }
               })
@@ -184,37 +183,37 @@ for( var key in types) {
               Gibber.defineSequencedProperty( obj, '_' + propertyName )
             })()
           }
-          
-          //console.log( prop, mappingProperties[ prop ], obj )
-          
-          var propertyDict = mappingProperties[ prop ],
-              mapping = $.extend( {}, propertyDict, {
-                Name  : prop.charAt(0).toUpperCase() + prop.slice(1),
-                name  : prop,
-                type  : 'mapping',
-                value : property,
-                object: obj,
-                targets:[],
-                oldSetter : function(v) {
-                  switch( $.type( v ) ) {
-                    case 'object' :
-                      if(typeof v.x === 'number') property[ 0 ] = v.x
-                      if(typeof v.y === 'number') property[ 1 ] = v.y
-                      if(typeof v.z === 'number') property[ 2 ] = v.z
-                    break;
-                    case 'array' :
-                      if(typeof v[0] === 'number') property[ 0 ] = v[ 0 ]
-                      if(typeof v[1] === 'number') property[ 1 ] = v[ 1 ]
-                      if(typeof v[2] === 'number') property[ 2 ] = v[ 2 ]
-                      break;
-                    case 'number' :
-                      property[ 0 ] = property[ 1 ] = property[ 2 ] = v
-                      break;
-                  }
-                  update()
-                }
-              })
-          // console.log( mapping.Name, mapping.oldSetter ) 
+                    
+          var propertyDict = mappingProperties[ prop ], 
+              mapping
+              
+          mapping = $.extend( {}, propertyDict, {
+            Name  : prop.charAt(0).toUpperCase() + prop.slice(1),
+            name  : prop,
+            type  : 'mapping',
+            value : property,
+            object: obj,
+            targets:[],
+            oldSetter : function(v) {
+              switch( $.type( v ) ) {
+                case 'object' :
+                  if(typeof v.x === 'number') property.x = v.x
+                  if(typeof v.y === 'number') property.y = v.y
+                  if(typeof v.z === 'number') property.z = v.z
+                break;
+                case 'array' :
+                  if(typeof v[0] === 'number') property.x = v[ 0 ]
+                  if(typeof v[1] === 'number') property.y = v[ 1 ]
+                  if(typeof v[2] === 'number') property.z = v[ 2 ]
+                  break;
+                case 'number' :
+                  x = y = z = v
+                  break;
+              }
+              update()
+            }
+          })
+
           Object.defineProperty( obj, prop, {
             get: function() { return property },
             set: function(v) {
@@ -224,18 +223,18 @@ for( var key in types) {
                   if( v.type === 'mapping' ) {
                     Gibber.createMappingObject( mapping, v )
                   }else{
-                    if(typeof v.x === 'number') property[ 0 ] = v.x
-                    if(typeof v.y === 'number') property[ 1 ] = v.y
-                    if(typeof v.z === 'number') property[ 2 ] = v.z
+                    if(typeof v.x === 'number') property.x = v.x
+                    if(typeof v.y === 'number') property.y = v.y
+                    if(typeof v.z === 'number') property.z = v.z
                   }
                   break;
                 case 'array' :
-                  if(typeof v[0] === 'number') property[ 0 ] = v[ 0 ]
-                  if(typeof v[1] === 'number') property[ 1 ] = v[ 1 ]
-                  if(typeof v[2] === 'number') property[ 2 ] = v[ 2 ]
+                  if(typeof v[0] === 'number') property.x = v[ 0 ]
+                  if(typeof v[1] === 'number') property.y = v[ 1 ]
+                  if(typeof v[2] === 'number') property.z = v[ 2 ]
                   break;
-                case 'number' :
-                  property[ 0 ] = property[ 1 ] = property[ 2 ] = v
+                case 'number' :                  
+                  property.x = property.y = property.z = v
                   break;
               }
               update()
@@ -250,6 +249,8 @@ for( var key in types) {
               }
             }
           })
+          
+          Gibber.defineSequencedProperty( obj, prop )
           
         })( this )
         
@@ -423,6 +424,8 @@ for( var key in types) {
         },
         set: function() {}
       })
+      
+      this.toString = function() { return this.name }
       
       console.log( type + ' is created.' )
     } 
