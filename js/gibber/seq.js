@@ -235,7 +235,7 @@
   $.extend( Gibberish.PolySeq.prototype, {
     replaceWith: function( replacement ) { this.kill() },
     kill: function() { 
-      if( this.target )
+      if( this.target && this.target.sequencers )
         this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
       
       this.stop().disconnect()

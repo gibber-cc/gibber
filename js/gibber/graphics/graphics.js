@@ -80,6 +80,9 @@ var Graphics = Gibber.Graphics = {
     this.render = this.render.bind( this )
     this.mode = mode || '3d'
     
+    //console.log( this.mode )
+    // if( this.mode === '2d' ) this.noThree = true
+    
     if( !this.noThree ) {
       try{
         this.createScene( this.mode )
@@ -197,7 +200,7 @@ var Graphics = Gibber.Graphics = {
       console.log("Now drawing in 3d.")
       if( this.mode === '2d' ) {
         Gibber.Graphics.canvas2d.hide()
-        this.scene.remove( this.camera )
+        if( this.scene ) this.scene.remove( this.camera )
       }
 		  var VIEW_ANGLE = 45,
 		  	  ASPECT = this.width / this.height,
@@ -210,6 +213,9 @@ var Graphics = Gibber.Graphics = {
 		    NEAR,
 		    FAR
 		  )
+      
+      if( !this.scene ) this.scene = new THREE.Scene();
+      
       this.scene.add( this.camera );
       this.camera.updateProjectionMatrix();
       this.scene.add( this.pointLight );

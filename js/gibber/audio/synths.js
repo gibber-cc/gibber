@@ -240,6 +240,20 @@
   		octave2:0,
   		octave3:0,
   		cutoff:.3,
+      glide:.9995,
+  	},
+    
+  	easyfx : {
+  		attack:Gibber.Clock.maxMeasures,
+  		decay:2,
+      presetInit: function() {
+        this.fx.add( Delay(1/6,.35) )
+      },
+      amp:.3,
+  		octave2:0,
+  		octave3:0,
+  		cutoff:.3,
+      glide:.9995,
   	},
   
     dark : {
@@ -254,7 +268,9 @@
       filterMult:.1,
       attack: Gibber.Clock.maxMeasures,
       octave2:0,
-      octave3:0
+      octave3:0,
+      decay:1/4,
+      amp:.45,
     },
     
     noise: {
@@ -270,6 +286,19 @@
   }
   
   Gibber.Presets.FM = {
+    stabs:{
+      maxVoices:4,
+			cmRatio : 1 / 1.0007,
+			index	: 5,
+			attack: Gibber.Clock.maxMeasures,
+			decay	: 1/8,
+      amp:.1,
+      presetInit: function() {
+        this.bus = Bus().fx.add( Delay(1/8,.75), LPF({ resonance:4 }) )
+        this.bus.fx[1].cutoff = Add(.25, Sine(.1,.2)._ )
+        this.send( this.bus, .65 )
+      },
+    },
     bass : {
       cmRatio:1,
       index:3,

@@ -1459,11 +1459,10 @@ Interface.ButtonV = function() {
       }
     },
     touchend   : function(e) {
-      this.isTouchOver = false;
-      if( this.requiresFocus || ( !this.requiresFocus && this.isTouchOver) ) {
-        this.isTouchOver = false;
+      if( this.momentary && this.requiresFocus || ( !this.requiresFocus && this.isTouchOver) ) {
         this.changeValue();
       }
+      this.isTouchOver = false;
     },
   })
   .init( arguments[0] );
@@ -2494,8 +2493,10 @@ Interface.XY = function() {
         var _t = this.children[t];
         
         if(touch.identifier === _t.identifier) {
-          _t.vx = _t.velocity.x;
-          _t.vy = _t.velocity.y;
+          if( _t.velocity ) {
+            _t.vx = _t.velocity.x;
+            _t.vy = _t.velocity.y;
+          }
           
           _t.lastPosition = null;
           _t.isActive = false;

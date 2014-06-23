@@ -313,7 +313,7 @@ var PP = Gibber.Graphics.PostProcessing = {
               text += shader.columnF.editor.getValue()
               shader.columnF.editor.setValue( text )
             }
-            		        
+            
             shader.uniforms[ _name ] = { 'type': threeType, value:_value }
             
             Object.defineProperty( shader, _name, {
@@ -363,9 +363,11 @@ var PP = Gibber.Graphics.PostProcessing = {
           
           PP.defineProperties( shader )
           
+          console.log( shader, mappingProperties )
+          
           for( var key in mappingProperties ) {
     				var prop = mappingProperties [ key ]
-    				shader.uniform( key, shader[ key ], prop.min, prop.max )
+    				shader.uniform( key, shader[ key ], prop.min, prop.max, shader.uniforms[ key ].type )
           }
           
           $.extend( shader, PP.shader )
@@ -562,7 +564,16 @@ var getShaderInfo = function( value, type, _name ) {
   var shaderType = null, threeType = null, shaderString = '', isArray = false
   
   if( type ) {
-    shaderType = type
+    if( type in threeTypes ) {
+      shaderType = type
+    }else{
+      for( var key in threeTypes ) {
+        if( threeTypes[ key ] === type ) {
+          shaderType = key
+          break;
+        }
+      }
+    }
   }else{
     if( Array.isArray( value ) ) {
       var arrayMember = value[ 0 ],

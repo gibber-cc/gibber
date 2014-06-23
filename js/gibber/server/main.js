@@ -19,11 +19,6 @@ var request         = require( 'request' ),
     serverRoot      = __dirname + "/../../../",
     searchURL       = 'http://127.0.0.1:5984/_fti/local/gibber/_design/fti/',
     queryString     = require('querystring'),
-    // livedb          = require( 'livedb' ),
-    // livedbMongo     = require( 'livedb-mongo'),
-    // browserChannel  = require( 'browserchannel' ).server,
-    // Duplex          = require('stream').Duplex,
-    // shareCodeMirror = require( 'share-codemirror' ),
     chat            = null;
 
 gibber.server = server
@@ -46,7 +41,7 @@ function findByUsername(username, fn) {
   request(
     { uri:'http://localhost:5984/gibber/_design/test/_view/password?key="'+username+'"', json: true }, 
     function(e,r,b) {
-      console.log(b.rows)
+      //console.log(b.rows)
       if(b.rows && b.rows.length === 1) {
         var user = { username:b.rows[ 0 ].key, password: b.rows[ 0 ].value, id:users.length } // MUST GIVE A USER ID FOR SESSION MAINTENANCE
         users.push( user )
@@ -172,20 +167,57 @@ app.configure( function() {
 
   
 app.get( '/', function(req, res){
-  
+  var path
   // console.log( req.query )
-  if( req.query && req.query.path ) {
-    request('http://localhost:5984/gibber/' + escapeString(req.query.path), function(err, response, body) {
-      console.log( body )
-      var _body = JSON.parse( body )
-      if( body && typeof body.error === 'undefined' ) {
-        res.render( 'index', { loadFile:body, isInstrument:_body.isInstrument || 'false' } )
-      }else{
-        res.render( 'index', { loadFile: JSON.stringify({ error:'path not found' }) })
+  
+  console.log( req.query )
+  if( req.query ) {
+    if( req.query.path || req.query.p ) {
+      path = req.query.path || req.query.p
+      
+      if( path.indexOf('/publications') === -1 ) { // shorthand to leave publications out of url
+        var arr = path.split( '/' )
+    
+        path = arr[0] + '/publications/' + arr[1]
       }
-    })
-  }else{
-    res.render( 'index', { loadFile:'null', isInstrument:'false' } )
+      
+      request('http://localhost:5984/gibber/' + escapeString( path ), function(err, response, body) {
+        var _body = JSON.parse( body )
+        if( body && typeof body.error === 'undefined' ) {
+          res.render( 'index', { loadFile:body, isInstrument:_body.isInstrument || 'false' } )
+        }else{
+          res.render( 'index', { loadFile: JSON.stringify({ error:'path not found' }) })
+        }
+      })
+    }else if( req.query.i ) {
+      path = req.query.i
+      
+      if( path.indexOf('/publications') === -1 ) { // shorthand to leave publications out of url
+        var arr = path.split( '/' )
+    
+        path = arr[0] + '/publications/' + arr[1]
+      }
+      
+      request('http://localhost:5984/gibber/' + escapeString( path ), function(err, response, body) {
+        var _body = JSON.parse( body )
+        if( body && typeof body.error === 'undefined' ) {
+          res.render( 'index', { loadFile:body, isInstrument:true } )
+        }else{
+          res.render( 'index', { loadFile: JSON.stringify({ error:'path not found' }) })
+        }
+      })
+    }else if( req.query.u || req.query.user ) {
+      path = req.query.u || req.query.user
+      
+      request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+path+'%22', function(e,r,_b) {
+        res.render( 'instrumentBrowser', {
+          user: path,
+          userfiles:(JSON.parse(_b)).rows,
+        });
+      })
+    }else{
+      res.render( 'index', { loadFile:'null', isInstrument:'false' } )
+    }
   }
   // fs.readFile(serverRoot + "index.htm", function (err, data) {
   //   if (err) {
@@ -259,15 +291,23 @@ app.post( '/retrieve', function( req, res, next ) {
   var suffix = req.body.address.replace(/\//g, '%2F'),
       _url = 'http://localhost:5984/gibber/' + suffix
       
+  
+  if( _url.indexOf('%2Fpublications') === -1 ) { // shorthand to leave publications out of url
+    var arr = _url.split( '/' )
+    
+    _url = arr[0] + '%2Fpublications%2F' + arr[1]
+  }
+  
   _url += suffix.indexOf('?') > -1 ? "&revs_info=true" : "?revs_info=true"
   
   request( _url, function(e,r,b) {
-    console.log( e, b )
+    //console.log( e, b )
     res.send( b )
   })
 })
 
 app.get( '/create_publication', function( req, res, next ) {
+  console.log( req.user )
   res.render( 'create_publication', { user: req.user, message:'publication' } );
 })
 
@@ -278,18 +318,20 @@ app.post( '/publish', function( req, res, next ) {
       year = date.getFullYear(),
       time = date.toLocaleTimeString()
   
+  //console.log( "USERNAME", req.body.username )
+  
   request.post({ 
       url:'http://localhost:5984/gibber/', 
       json:{
-        _id: req.user.username + '/publications/' + req.body.name,
+        _id: req.body.username + '/publications/' + req.body.name,
         name: req.body.name,
-        author: req.user.username,
+        author: req.body.username,
         type: 'publication',
-        publicationDate: [year, month, day, time],
+        publicationDate: [''+year, ''+month, ''+day, ''+time],
         text: req.body.code,
         tags: req.body.tags,
         permissions : req.body.permissions,
-        isInstrument: req.body.instrument,
+        isInstrument: false, //req.body.instrument,
         notes: req.body.notes
       }
     },
@@ -301,7 +343,7 @@ app.post( '/publish', function( req, res, next ) {
         if( body.error ) {
           res.send({ error:'could not publish to database. ' + body.reason })
         }else{
-          res.send({ url: req.user.username + '/publications/' + req.body.name })
+          res.send({ url: req.body.username + '/publications/' + req.body.name })
         }
       }
     }
@@ -309,7 +351,7 @@ app.post( '/publish', function( req, res, next ) {
 })
 
 app.post( '/update', function( req, res, next ) {
-  console.log( req.body._rev, req.body._id )
+  //console.log( req.body._rev, req.body._id )
   if( typeof req.user === 'undefined' ) {
     res.send({ error:'you are not currently logged in.' })
     return
@@ -462,7 +504,7 @@ app.post( '/search', function( req, res, next) {
   var pubs = [], count = 0
   
   request({ 'url':url }, function(e,r,b) {
-    console.log( b )
+    //console.log( b )
     b = JSON.parse( b )
     if( b && b.rows && b.rows.length > 0 ) {
       //result.rows = b.rows
@@ -542,7 +584,7 @@ app.post( '/search', function( req, res, next) {
 app.post( '/login', function( req, res, next ) {
   passport.authenticate( 'local', function( err, user, info ) {
     var data = {}
-    console.log( "LOGGING IN... ", user, err, info )
+    //console.log( "LOGGING IN... ", user, err, info )
     if (err) { return next( err ) }
     
     if (!user) {

@@ -250,6 +250,7 @@ for( var key in types) {
             }
           })
           
+          property.mappings = []
           Gibber.defineSequencedProperty( obj, prop )
           
         })( this )

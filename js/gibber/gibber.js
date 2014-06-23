@@ -48,7 +48,11 @@ window.Gibber = window.G = {
       Gibber.Audio.Time.export()
       window.sec = window.seconds
       Gibber.Audio.Binops.export()
-      Gibber.AudioPostProcessing.init()
+      
+      if( !Gibberish.context ) { Gibberish.context = { sampleRate:44100 } }
+      
+      // post-processing depends on having context instantiated
+      Gibberish.onstart = Gibber.AudioPostProcessing.init
       
 			Gibber.Esprima = window.esprima
       Gibber.Master = window.Master = Bus().connect( Gibberish.out )

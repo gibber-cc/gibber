@@ -647,7 +647,7 @@ var GE = Gibber.Environment = {
     color: '#252525',
     
     draw: function( beat, beatsPerMeasure ) {
-      if( this.shouldDraw ) {
+      if( this.shouldDraw && this.ctx !== null ) {
         var beatWidth = this.width / beatsPerMeasure,
             beatPos = ( beat - 1 ) * beatWidth;
       
@@ -1074,6 +1074,7 @@ var GE = Gibber.Environment = {
         SERVER_URL + '/retrieve',
         { address:addr },
         function( d ) {
+          //console.log( d )
           var data = JSON.parse( d ),
               col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
               
@@ -1270,7 +1271,8 @@ var GE = Gibber.Environment = {
       //GE.Spinner.spin( $('.publication_form')[0] 
       
       var columnNumber = $( '#new_publication_column' ).val()
-
+      
+      console.log( Gibber.Environment.Account.nick )
       $.ajax({
         type:"POST",
         url: SERVER_URL + '/publish',
@@ -1280,7 +1282,8 @@ var GE = Gibber.Environment = {
           permissions: $( '#new_publication_permissions' ).prop( 'checked' ),
           tags: $( '#new_publication_tags' ).val().split(','),
           notes: $( '#new_publication_notes' ).val(), 
-          //instrument: $( '#new_publication_instrument' ).val()
+          instrument: false, //$( '#new_publication_instrument' ).prop( 'checked' ),
+          username: Gibber.Environment.Account.nick
          },
         dataType:'json'
       })

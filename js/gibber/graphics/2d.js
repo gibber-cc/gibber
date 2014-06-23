@@ -8,8 +8,11 @@
           GG = Gibber.Graphics,
           that = ctx,
           three = null;
-          
-      if( typeof noThree === 'undefined' ) noThree = false
+      
+      console.log( "NOTHREE - 1", noThree, Gibber.Graphics.noThree )    
+      if( typeof noThree === 'undefined' ) noThree = typeof Gibber.Graphics.noThree !== 'undefined' ? Gibber.Graphics.noThree : false
+      
+      console.log( "NOTHREE", noThree )
       
       if( Gibber.Graphics.running ) Gibber.Graphics.clear()
 
@@ -23,10 +26,12 @@
       }
 
       if( Gibber.Graphics.canvas === null ) {
-        Gibber.Graphics.init( '2d', column, noThree )
+        Gibber.Graphics.init( '2d', column, false )
       }else if( Gibber.Graphics.mode === '3d' ) {
-        Gibber.Graphics.use( '2d', null, noThree )
+        Gibber.Graphics.use( '2d', null, false )
       }
+
+      console.log( "NOTHREE 2", Gibber.Graphics.noThree )
 
       three = $( '#three' )
       three.show()
@@ -244,7 +249,7 @@
           })
         ),
         hide: function() {
-          Gibber.Graphics.scene.remove( that.sprite )
+          if( Gibber.Graphics.scene ) Gibber.Graphics.scene.remove( that.sprite )
           Gibber.Graphics.graph.splice( that, 1 )
         },
         show : function() {
