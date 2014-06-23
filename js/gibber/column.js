@@ -114,8 +114,9 @@
       })
       
       col.editor.on( 'mousedown', function( cm, e ) {
-        //console.log( e.toElement.className )
-        var classes = e.toElement.className.split(' ')
+        console.log(e)
+        var elem = e.toElement ? e.toElement : e.target,
+            classes = elem.className.split(' ')
         
         for( var i = 0; i < classes.length; i++ ) {
           if( cm.listeners[ classes[ i ] ] ) {
