@@ -979,7 +979,6 @@ Interface.Slider = function() {
     },
     
     mousedown : function(e, hit) { 
-      console.log( "SLIDER", e.x, this._x() )
       if(hit && Interface.mouseDown) this.changeValue( e.x - this._x(), e.y - this._y() ); 
     },
     mousemove : function(e, hit) { if(hit && Interface.mouseDown) this.changeValue( e.x - this._x(), e.y - this._y() ); },
@@ -1231,7 +1230,7 @@ Interface.HBox = function() {
     add: function() {
       for( var i = 0; i < arguments.length; i++ ) {
         var child = arguments[ i ]
-        this.children.push( child )
+        if( this.children.indexOf( child ) === -1 ) this.children.push( child )
         child.panel = this.proxyPanel
         child.ctx = this.panel.ctx
       }
@@ -1261,14 +1260,14 @@ Interface.HBox = function() {
     draw: function() {
       this.proxyPanel.width = this._width()
       this.proxyPanel.height = this._height()
-            
+      
+      console.log( "HBOX DRAW" )
       for( var i = 0; i < this.children.length; i++ ) {
         this.children[ i ].draw()
       }
     },
     
-    refresh: function() {
-      
+    refresh: function() {      
       for( var i = 0; i < this.proxyPanel.shouldDraw.length; i++ ) {
         this.proxyPanel.shouldDraw[ i ].draw()
       }
@@ -1302,11 +1301,121 @@ Interface.HBox = function() {
       this.proxyPanel.__proto__ = this.panel
       
       $.subscribe('/draw', this.refresh.bind( this ) )
+      
+      Object.defineProperties(this, {
+        bounds : {
+          configurable: true,
+          get : function() { return bounds; },
+          set : function(_bounds) { 
+            bounds = _bounds; this.x = bounds[0]; this.y = bounds[1]; this.width = bounds[2]; this.height = bounds[3]; 
+            this.layout()
+            this.draw()
+          }
+        },
+      })
     }
   })
   .init( arguments[0] )
 };
 Interface.HBox.prototype = Interface.Widget;
+
+Interface.VBox = function() {
+  Interface.extend(this, {
+    type : 'VBox',    
+    
+    children: [],
+    proxyPanel : { active:true, x:0, y:0, width:1, height:1, shouldDraw:[], useRelativeSizesAndPositions:true }, // needed for absolute widths / heights which are set in _init call
+    
+    add: function() {
+      for( var i = 0; i < arguments.length; i++ ) {
+        var child = arguments[ i ]
+        this.children.push( child )
+        child.panel = this.proxyPanel
+        child.ctx = this.panel.ctx
+      }
+      
+      this.layout()
+      this.draw()
+    },
+    
+    layout : function() {
+      var h = 1 / this.children.length,
+          _heightUsed = 0;
+      
+      for( var i = 0; i < this.children.length; i++ ) {
+        var child = this.children[ i ]
+        
+        child.x = 0
+        child.y = _heightUsed
+        
+        child.width = 1
+        child.height = h
+        
+        _heightUsed += h
+      }
+      
+    },
+    
+    draw: function() {
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+      
+      console.log( "VBOX DRAW" )
+      for( var i = 0; i < this.children.length; i++ ) {
+        this.children[ i ].draw()
+      }
+    },
+    
+    refresh: function() {      
+      for( var i = 0; i < this.proxyPanel.shouldDraw.length; i++ ) {
+        this.proxyPanel.shouldDraw[ i ].draw()
+      }
+      this.proxyPanel.shouldDraw.length = 0
+    },
+    
+    mouseEvent: function(e){
+      e.x -= this._x()
+      e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].mouseEvent( e ) 
+      } 
+    },
+    
+    touchEvent: function(e){
+      e.x -= this._x()
+      e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].touchEvent( e ) 
+      } 
+    },
+
+    _init: function() {
+      this.useRelativeSizesAndPositions = this.panel.useRelativeSizesAndPositions
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+      this.proxyPanel.__proto__ = this.panel
+      
+      $.subscribe('/draw', this.refresh.bind( this ) )
+      
+      Object.defineProperties(this, {
+        bounds : {
+          configurable: true,
+          get : function() { return bounds; },
+          set : function(_bounds) { 
+            bounds = _bounds; this.x = bounds[0]; this.y = bounds[1]; this.width = bounds[2]; this.height = bounds[3]; 
+            this.draw()
+          }
+        },
+      })
+    }
+  })
+  .init( arguments[0] )
+};
+Interface.VBox.prototype = Interface.Widget;
 
 /**#Interface.ButtonV - Widget
 A button with a customizable shape and variety of on/off modes

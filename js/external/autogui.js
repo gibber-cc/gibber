@@ -4,31 +4,19 @@ var Interface = Gibber.Environment.Interface
 
 Interface.autogui = {
   hasPageButtons: false,
-  children: [
-    [{
-      "bounds": [0, 0, 1, 1],
-      "widget": null,
-      "sacrosanct": false,
-      "parent": null,
-      "id": 0,
-      "children": [], 
-    },]
-  ],
+  layout: {
+    "bounds": [0, 0, 1, 1],
+    "widget": null,
+    "sacrosanct": false,
+    "parent": null,
+    "id": 0,
+    "children": [], 
+  },
 
   getBestChildForNewWidget: function(page) {
     var _maxSize = 0;
     page = 0;
-    if (typeof this.children[page] === "undefined") {
-      this.children[page] = [{
-        "bounds": [0, 0, 1, 1],
-        "widget": null,
-        "sacrosanct": false,
-        "parent": null,
-        "id": 0,
-        "children": [],
-      }, ];
-    }
-    var bestChild = this.children[page][0];
+    var bestChild = this.layout;
 
     // TODO include sacrosanct check
 
@@ -53,7 +41,7 @@ Interface.autogui = {
       }
     }
 
-    check(bestChild);
+    check( bestChild );
 
     return bestChild;
   },
@@ -107,49 +95,49 @@ Interface.autogui = {
 
       bestChild.children.push(div1);
       bestChild.children.push(div2);
+      
+      bestChild.widget = null
     }
   },
 
   removeWidget: function(_widget) {
     _widget.div.widget = null;
     var parent = _widget.div.parent;
-    if (parent != null) {
+    if (parent !== null) {
       var childNumber = jQuery.inArray(_widget.div, parent.children);
       // determine if sibling is already empty, if so, remove sibling and self from parent array
       var siblingNumber = (childNumber === 1) ? 0 : 1;
-      if (parent.children[siblingNumber].widget == null) {
-        parent.children = [];
-        parent.widget = null;
+      if ( parent.children[ siblingNumber ].widget === null) {
+        parent.children = []
+        parent.widget = null
       }
     } else {
-      _widget.div.children = [];
+      _widget.div.children = []
     }
+    
+    this.redoLayout()
   },
 
   reset: function() {
-    this.children = [
-      [{
-        bounds: [0, 0, 1, 1],
-        widget: null,
-        sacrosanct: false,
-        parent: null,
-        id: 0,
-        children: [],
-      },]
-    ];
+    this.layout = {
+      bounds: [0, 0, 1, 1],
+      widget: null,
+      sacrosanct: false,
+      parent: null,
+      id: 0,
+      children: [],
+    }
   },
 
   redoLayout: function() {
-    this.children = [
-      [{
-        bounds: [0, 0, 1, 1],
-        widget: null,
-        sacrosanct: false,
-        parent: null,
-        id: 0,
-        children: [],
-      },]
-    ];
+    this.layout = {
+      bounds: [0, 0, 1, 1],
+      widget: null,
+      sacrosanct: false,
+      parent: null,
+      id: 0,
+      children: [],
+    }
 
     for (var i = 0; i < Interface.panel.children.length; i++) {
       var w = Interface.panel.children[i];

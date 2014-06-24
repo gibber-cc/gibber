@@ -47,6 +47,8 @@
       
       column.onresize = this.onresize.bind( panel )
       
+      I.autogui.reset()
+      
       return panel
     },
     
@@ -87,6 +89,44 @@
           })()
         }
       },
+      HBox : function( widget, props ) {
+        for( var i = 0; i < widget.children.length; i++ ) {
+          !function() { 
+            var num = i,
+                child = widget.children[ i ]
+                
+            child.kill()
+            child.panel = widget.proxyPanel
+            
+            Object.defineProperty( widget, i, {
+              configurable:true,
+              get: function() { return child },
+              set: function(v) {}
+            })
+          }()
+        }
+        widget.layout()
+      },
+      
+      VBox : function( widget, props ) {
+        for( var i = 0; i < widget.children.length; i++ ) {
+          !function() { 
+            var num = i,
+                child = widget.children[ i ]
+            
+            child.kill()
+            child.panel = widget.proxyPanel
+            
+            Object.defineProperty( widget, i, {
+              configurable:true,
+              get: function() { return child },
+              set: function(v) {}
+            })
+          }()
+        }
+        widget.layout()
+      },
+      
       MultiSlider : function( widget, props ) {
         var mappingProperties = {
           value : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
@@ -196,7 +236,9 @@
               widget.children[ i ].key = typeof target.note !== 'undefined' ? 'note' : 'frequency'
               
               widget.children[ i ].sendTargetMessage = function() {
-                this.target.note( this.frequency, this.value )
+                if( this.target && this.target.note ) {
+                  this.target.note( this.frequency, this.value )
+                }
               }
             }
           
@@ -250,6 +292,7 @@
         if( typeof w.bounds[0] === 'undefined' ) {
           console.log("PLACING WIDGET")
           I.autogui.placeWidget( w, false )
+          w.useAutogui = true
         }
         
         Gibber.Environment.Interface.panel.add( w )
@@ -319,16 +362,22 @@
   
           if( w.clearMarks ) // check required for modulators
             w.clearMarks()
-                  
-          w.panel.remove( w )
+          
+          if( w.useAutogui ) {
+            I.autogui.removeWidget( w )
+            w.panel.remove( w )
+          }else{        
+            w.panel.remove( w )
+          }
         }
       
         Object.defineProperty( w, '_', {
           get: function() { 
             // currently there is no sequencer for interface objects
             //if( w.seq.isRunning ) w.seq.disconnect()  
-            
             w.kill()
+            
+            return w
           },
           set: function() {}
         })
@@ -365,6 +414,10 @@
   
             if( w.clearMarks ) // check required for modulators
               w.clearMarks()
+            
+            if( w.useAutogui ) {
+              I.autogui.removeWidget( w )
+            }
             
           },
           replaceWith: function() {
@@ -494,7 +547,25 @@
     xy: function( props )          { return I.widget( props, 'XY' ) },     
     piano: function( props )       { return I.widget( props, 'Piano' ) },
     paint: function( props )       { return I.widget( props, 'Paint' ) },
-    patchbay: function( props )    { return I.widget( props, 'Patchbay' ) },    
+    patchbay: function( props )    { return I.widget( props, 'Patchbay' ) },  
+    
+    hbox : function( props ) {
+      if( arguments.length > 1 || props.name ) {
+        var _props = {
+          children: Array.prototype.slice.call( arguments, 0 )
+        }
+        props = _props
+      }
+      return I.widget( props, 'HBox') 
+    },
+    vbox : function( props ) { 
+      if( arguments.length > 1 || props.name ) {
+        var _props = {
+          children: Array.prototype.slice.call( arguments, 0 )
+        }
+      }
+      return I.widget( props, 'VBox') 
+    },
   }
   
   Interface.use = Gibber.Environment.Interface.use
@@ -508,7 +579,9 @@
   window.Keyboard = Gibber.Environment.Interface.piano
   window.Paint    = Gibber.Environment.Interface.paint
   window.Panel    = I.newPanel.bind( I )
-  window.Patchbay = Gibber.Environment.Interface.patchbay    
+  window.Patchbay = Gibber.Environment.Interface.patchbay
+  window.HBox     = Gibber.Environment.Interface.hbox
+  window.VBox     = Gibber.Environment.Interface.vbox  
   
   var OSC = Gibber.OSC = {
     callbacks : {},
