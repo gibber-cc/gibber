@@ -325,6 +325,7 @@ Interface.Panel = function() {
         }
         this.shouldDraw.length = 0;
       }
+      $.publish('/draw')
     },
     
     getWidgetWithName: function( name ) {
@@ -977,7 +978,10 @@ Interface.Slider = function() {
       }     
     },
     
-    mousedown : function(e, hit) { if(hit && Interface.mouseDown) this.changeValue( e.x - this._x(), e.y - this._y() ); },
+    mousedown : function(e, hit) { 
+      console.log( "SLIDER", e.x, this._x() )
+      if(hit && Interface.mouseDown) this.changeValue( e.x - this._x(), e.y - this._y() ); 
+    },
     mousemove : function(e, hit) { if(hit && Interface.mouseDown) this.changeValue( e.x - this._x(), e.y - this._y() ); },
     mouseup   : function(e, hit) { if(hit && Interface.mouseDown) this.changeValue( e.x - this._x(), e.y - this._y() ); },    
     
@@ -1170,7 +1174,7 @@ Interface.Button = function() {
           setTimeout( function() { self._value = 0; self.draw(); }, 75);
         }
       }else if(!hit && this.isMouseOver) {
-        console.log( 'moved off!' )
+        // console.log( 'moved off!' )
         this.isMouseOver = false;
       }
     },
@@ -1217,6 +1221,92 @@ Interface.Button = function() {
 };
 Interface.Button.prototype = Interface.Widget;
 
+Interface.HBox = function() {
+  Interface.extend(this, {
+    type : 'HBox',    
+    
+    children: [],
+    proxyPanel : { active:true, x:0, y:0, width:1, height:1, shouldDraw:[], useRelativeSizesAndPositions:true }, // needed for absolute widths / heights which are set in _init call
+    
+    add: function() {
+      for( var i = 0; i < arguments.length; i++ ) {
+        var child = arguments[ i ]
+        this.children.push( child )
+        child.panel = this.proxyPanel
+        child.ctx = this.panel.ctx
+      }
+      
+      this.layout()
+      this.draw()
+    },
+    
+    layout : function() {
+      var w = 1 / this.children.length,
+          _widthUsed = 0;
+      
+      for( var i = 0; i < this.children.length; i++ ) {
+        var child = this.children[ i ]
+        
+        child.x = _widthUsed
+        child.y = 0
+        
+        child.width = w
+        child.height = 1
+        
+        _widthUsed += w
+      }
+      
+    },
+    
+    draw: function() {
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+            
+      for( var i = 0; i < this.children.length; i++ ) {
+        this.children[ i ].draw()
+      }
+    },
+    
+    refresh: function() {
+      
+      for( var i = 0; i < this.proxyPanel.shouldDraw.length; i++ ) {
+        this.proxyPanel.shouldDraw[ i ].draw()
+      }
+      this.proxyPanel.shouldDraw.length = 0
+    },
+    
+    mouseEvent: function(e){
+      e.x -= this._x()
+      e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].mouseEvent( e ) 
+      } 
+    },
+    
+    touchEvent: function(e){
+      e.x -= this._x()
+      e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].touchEvent( e ) 
+      } 
+    },
+
+    _init: function() {
+      this.useRelativeSizesAndPositions = this.panel.useRelativeSizesAndPositions
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+      this.proxyPanel.__proto__ = this.panel
+      
+      $.subscribe('/draw', this.refresh.bind( this ) )
+    }
+  })
+  .init( arguments[0] )
+};
+Interface.HBox.prototype = Interface.Widget;
 
 /**#Interface.ButtonV - Widget
 A button with a customizable shape and variety of on/off modes

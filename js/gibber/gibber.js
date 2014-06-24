@@ -461,7 +461,7 @@ window.Gibber = window.G = {
   },
   
   defineSequencedProperty : function( obj, key, priority ) {
-    var fnc = obj[ key ]
+    var fnc = obj[ key ], seq, seqNumber
     
     // for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
     //   var s = obj.seq.seqs[ i ]
@@ -477,8 +477,7 @@ window.Gibber = window.G = {
     }
     
     fnc.seq = function( v,d ) {      
-      var seq, seqNumber, 
-          args = {
+      var args = {
             key: key,
             values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
             durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
@@ -500,6 +499,7 @@ window.Gibber = window.G = {
       
       Object.defineProperties( fnc.seq, {
         values: {
+          configurable:true,
           get: function() { return obj.seq.seqs[ seqNumber ].values },
           set: function(v) {
             if( !Array.isArray(v) ) {
@@ -508,16 +508,25 @@ window.Gibber = window.G = {
             if( key === 'note' && obj.seq.scale ) {  
               v = makeNoteFunction( v, obj.seq )
             }
-            obj.seq.seqs[ seqNumber ].values = v  
+            obj.seq.seqs[ seqNumber ].values = v //.splice( 0, 10000, v )
+            //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].values, 'reverse' )
           }
         },
         durations: {
+          configurable:true,
           get: function() { return obj.seq.seqs[ seqNumber ].durations },
           set: function(v) {
-            obj.seq.seqs[ seqNumber ].durations = v  
+            if( !Array.isArray(v) ) {
+              v = [ v ]
+            }
+            obj.seq.seqs[ seqNumber ].durations = v   //.splice( 0, 10000, v )
+            //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].durations, 'reverse' )  
           }
         },
       })
+      
+      //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].values, 'reverse' )
+      //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].durations, 'reverse' )      
       
       if( !obj.seq.isRunning ) {
         obj.seq.offset = Clock.time( obj.offset )
