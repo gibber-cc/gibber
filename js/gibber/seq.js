@@ -233,6 +233,7 @@
   }
   
   $.extend( Gibberish.PolySeq.prototype, {
+    constructor: Gibber.Seq,
     replaceWith: function( replacement ) { this.kill() },
     kill: function() { 
       if( this.target && this.target.sequencers )

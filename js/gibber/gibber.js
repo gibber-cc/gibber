@@ -461,7 +461,7 @@ window.Gibber = window.G = {
   },
   
   defineSequencedProperty : function( obj, key, priority ) {
-    var fnc = obj[ key ], seq, seqNumber
+    var fnc = obj[ key ]
     
     // for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
     //   var s = obj.seq.seqs[ i ]
@@ -477,13 +477,14 @@ window.Gibber = window.G = {
     }
     
     fnc.seq = function( v,d ) {      
-      var args = {
-        key: key,
-        values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
-        durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
-        target: obj,
-        'priority': priority
-      }
+      var seq, seqNumber, 
+          args = {
+            key: key,
+            values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
+            durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
+            target: obj,
+            'priority': priority
+          }
             
       if( typeof seq !== 'undefined' ) {
         seq.shouldStop = true
@@ -495,9 +496,28 @@ window.Gibber = window.G = {
       seqNumber = obj.seq.seqs.length - 1
       seq = obj.seq.seqs[ seqNumber ]
       
-      if( args.durations === null ) {
-        obj.seq.autofire.push( seq )
-      }
+      if( args.durations === null ) { obj.seq.autofire.push( seq ) }
+      
+      Object.defineProperties( fnc.seq, {
+        values: {
+          get: function() { return obj.seq.seqs[ seqNumber ].values },
+          set: function(v) {
+            if( !Array.isArray(v) ) {
+              v = [ v ]
+            }
+            if( key === 'note' && obj.seq.scale ) {  
+              v = makeNoteFunction( v, obj.seq )
+            }
+            obj.seq.seqs[ seqNumber ].values = v  
+          }
+        },
+        durations: {
+          get: function() { return obj.seq.seqs[ seqNumber ].durations },
+          set: function(v) {
+            obj.seq.seqs[ seqNumber ].durations = v  
+          }
+        },
+      })
       
       if( !obj.seq.isRunning ) {
         obj.seq.offset = Clock.time( obj.offset )

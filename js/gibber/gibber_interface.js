@@ -248,6 +248,7 @@
         w.type = 'mapping'
 
         if( typeof w.bounds[0] === 'undefined' ) {
+          console.log("PLACING WIDGET")
           I.autogui.placeWidget( w, false )
         }
         

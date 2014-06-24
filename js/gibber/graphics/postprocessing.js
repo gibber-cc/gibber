@@ -591,7 +591,7 @@ var getShaderInfo = function( value, type, _name ) {
       }
       isArray = true
     }else if( typeof value === 'object' ){
-      shaderType = value.shaderType
+      shaderType = value.shaderType || 'float'
     }else{
       shaderType = typeof value
       if( shaderType === 'number' ) {
