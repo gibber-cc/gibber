@@ -1221,6 +1221,7 @@ Interface.Button = function() {
 Interface.Button.prototype = Interface.Widget;
 
 Interface.HBox = function() {
+  var me = this
   Interface.extend(this, {
     type : 'HBox',    
     
@@ -1237,34 +1238,37 @@ Interface.HBox = function() {
       
       this.layout()
       this.draw()
+      
+      return this
     },
     
     layout : function() {
-      var w = 1 / this.children.length,
+      var w = (this.width / this.children.length) / this.width,
           _widthUsed = 0;
       
       for( var i = 0; i < this.children.length; i++ ) {
         var child = this.children[ i ]
         
-        child.x = _widthUsed
-        child.y = 0
+        child.x = _widthUsed + this.x
+        child.y = this.y * (1 / this.height)
         
-        child.width = w
+        child.width = w 
         child.height = 1
         
         _widthUsed += w
       }
-      
+      return this
     },
     
     draw: function() {
       this.proxyPanel.width = this._width()
       this.proxyPanel.height = this._height()
       
-      console.log( "HBOX DRAW" )
       for( var i = 0; i < this.children.length; i++ ) {
         this.children[ i ].draw()
       }
+      
+      return this
     },
     
     refresh: function() {      
@@ -1272,11 +1276,13 @@ Interface.HBox = function() {
         this.proxyPanel.shouldDraw[ i ].draw()
       }
       this.proxyPanel.shouldDraw.length = 0
+      
+      return this
     },
     
     mouseEvent: function(e){
-      e.x -= this._x()
-      e.y -= this._y()
+      // e.x -= this._x()
+      // e.y -= this._y()
       for( var i = 0; i < this.children.length; i++ ) { 
         var child = this.children[ i ]
         
@@ -1285,8 +1291,8 @@ Interface.HBox = function() {
     },
     
     touchEvent: function(e){
-      e.x -= this._x()
-      e.y -= this._y()
+      // e.x -= this._x()
+      // e.y -= this._y()
       for( var i = 0; i < this.children.length; i++ ) { 
         var child = this.children[ i ]
         
@@ -1329,41 +1335,45 @@ Interface.VBox = function() {
     add: function() {
       for( var i = 0; i < arguments.length; i++ ) {
         var child = arguments[ i ]
-        this.children.push( child )
+        if( this.children.indexOf( child ) === -1 ) this.children.push( child )
         child.panel = this.proxyPanel
         child.ctx = this.panel.ctx
       }
       
       this.layout()
       this.draw()
+      
+      return this
     },
     
     layout : function() {
-      var h = 1 / this.children.length,
+      var h = this.height  / this.children.length,
           _heightUsed = 0;
       
       for( var i = 0; i < this.children.length; i++ ) {
         var child = this.children[ i ]
         
-        child.x = 0
-        child.y = _heightUsed
-        
+        child.x = this.x
+        child.y = (this.y + _heightUsed ) * (1 / this.height)
+        //
         child.width = 1
-        child.height = h
+        child.height = h * ( 1/this.height)
         
         _heightUsed += h
       }
       
+      return this
     },
     
     draw: function() {
       this.proxyPanel.width = this._width()
       this.proxyPanel.height = this._height()
       
-      console.log( "VBOX DRAW" )
       for( var i = 0; i < this.children.length; i++ ) {
         this.children[ i ].draw()
       }
+      
+      return this
     },
     
     refresh: function() {      
@@ -1371,11 +1381,13 @@ Interface.VBox = function() {
         this.proxyPanel.shouldDraw[ i ].draw()
       }
       this.proxyPanel.shouldDraw.length = 0
+      
+      return this
     },
     
     mouseEvent: function(e){
-      e.x -= this._x()
-      e.y -= this._y()
+      // e.x -= this._x()
+      // e.y -= this._y()
       for( var i = 0; i < this.children.length; i++ ) { 
         var child = this.children[ i ]
         
@@ -1407,6 +1419,7 @@ Interface.VBox = function() {
           get : function() { return bounds; },
           set : function(_bounds) { 
             bounds = _bounds; this.x = bounds[0]; this.y = bounds[1]; this.width = bounds[2]; this.height = bounds[3]; 
+            this.layout()
             this.draw()
           }
         },

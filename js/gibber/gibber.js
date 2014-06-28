@@ -10,6 +10,7 @@ window.Gibber = window.G = {
   
   scale : null,
   minNoteFrequency:50,
+  started:false,
   
   init: function() { 
     $script([ 
@@ -52,7 +53,10 @@ window.Gibber = window.G = {
       if( !Gibberish.context ) { Gibberish.context = { sampleRate:44100 } }
       
       // post-processing depends on having context instantiated
-      Gibberish.onstart = Gibber.AudioPostProcessing.init
+      Gibberish.onstart = function() {
+        Gibber.AudioPostProcessing.init()
+        Gibber.interfaceIsReady()
+      }
       
 			Gibber.Esprima = window.esprima
       Gibber.Master = window.Master = Bus().connect( Gibberish.out )
@@ -97,10 +101,15 @@ window.Gibber = window.G = {
 			window.module = Gibber.import
       
     }) })
-   },
-   interfaceIsReady : function() {
-     if( Gibber.isInstrument ) eval( loadFile.text )
-   },
+  },
+  interfaceIsReady : function() {
+    if( !Gibber.started ) {
+      if( typeof Gibberish.context.currentTime !== 'undefined' ) {
+        Gibber.started = true
+        if( Gibber.isInstrument ) eval( loadFile.text )
+      }
+    }
+  },
   Modules : {},
  	import : function( path, exportTo ) {
     var _done = null;

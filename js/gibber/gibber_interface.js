@@ -34,7 +34,7 @@
         $( column.bodyElement ).empty()
       }
       
-      var panel = new Interface.Panel({ container: column.bodyElement, useRelativeSizesAndPositions:true, font:'normal 20px Helvetica' })
+      var panel = new Interface.Panel({ container: column.bodyElement, useRelativeSizesAndPositions:true, font:'normal 16px Helvetica' })
       
       $( panel.canvas ).css({
         position: 'relative',
@@ -49,6 +49,8 @@
       
       I.autogui.reset()
       
+      column.onclose = function() { this.panel = null }
+      
       return panel
     },
     
@@ -62,10 +64,55 @@
     },
     
     initializers : {
+      Accelerometer : function( widget, props ) {
+        var mappingProperties = {
+          x : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
+          y : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
+          z : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' }
+        }
+        
+        var x = .5, y = .5, z = .5;
+        
+        delete widget.x; delete widget.y; delete widget.z;
+        
+        Gibber.createProxyProperties( widget, mappingProperties, false )
+        
+        widget.onvaluechange = function( _x, _y, _z ) {
+          widget.x( _x )
+          widget.y( _y )
+          widget.z( _z )
+        }
+        
+        widget.start()
+        
+        return widget
+      },
+      Orientation : function( widget, props ) {
+        var mappingProperties = {
+          x : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
+          y : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
+          z : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' }
+        }
+
+        delete widget.x; delete widget.y; delete widget.z;
+        
+        Gibber.createProxyProperties( widget, mappingProperties, false )
+        
+        widget.onvaluechange = function( _x, _y, _z ) {
+          widget.x( _x )
+          widget.y( _y )
+          widget.z( _z )
+        }
+
+        widget.start()
+        
+        return widget
+      },
+      
       XY : function( widget, props ) {
         var mappingProperties = {
           x : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
-          y : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' }
+          y : { min:0, max:1, output:Gibber.LINEAR, wrap:false, timescale:'interface' },
         }
         for( var i = 0; i < widget.values.length; i++ ) {
           ( function() { 
@@ -75,10 +122,12 @@
             
             Object.defineProperties( child, {
               x: {
+                configurable:true,
                 get: function() { return x },
                 set: function(v) { x = v; }
               },
               y : {
+                configurable:true,
                 get: function() { return y },
                 set: function(v) { y = v; }
               }
@@ -105,7 +154,32 @@
             })
           }()
         }
+        
+        var _old = widget.add
+        widget.add = function() {
+          var args = Array.prototype.slice.call( arguments, 0 )
+          
+          args = args.map( function( elem ) { return elem.kill() })
+          
+          var start = widget.children.length
+          for( var i = 0; i < args.length; i++ ) {
+            !function() { 
+              var num = i,
+                  child = args[ i ]
+            
+              Object.defineProperty( widget, start++, {
+                configurable:true,
+                get: function() { return child },
+                set: function(v) {}
+              })
+            }()
+          }
+          
+          return _old.apply( widget, args )
+        }
+        
         widget.layout()
+        widget.draw()
       },
       
       VBox : function( widget, props ) {
@@ -124,7 +198,18 @@
             })
           }()
         }
+        
+        var _old = widget.add
+        widget.add = function() {
+          var args = Array.prototype.slice.call( arguments, 0 )
+          
+          args = args.map( function( elem ) { return elem.kill() })
+          
+          return _old.apply( widget, args )
+        }
+        
         widget.layout()
+        widget.draw()
       },
       
       MultiSlider : function( widget, props ) {
@@ -271,10 +356,12 @@
          fill: 'black'
       }
     },
-    
+    nonGraphical: [ 'Accelerometer', 'Orientation' ],
     widget: function( props, name ) {
+      var isNonGraphical = I.nonGraphical.indexOf( name ) !== -1
+      
       if( this.mode === 'local' ) {
-        if( I.panel === null) {
+        if( I.panel === null && !isNonGraphical ) {
           I.newPanel()
         }
       
@@ -284,18 +371,20 @@
           }
         }
         
-        if( I.defaults[ name ] ) props = $.extend( I.defaults[name], props )
+        if( I.defaults[ name ] ) props = $.extend( I.defaults[ name ], props )
         
         var w = new Interface[ name ]( props )
         w.type = 'mapping'
-
+        
+        
         if( typeof w.bounds[0] === 'undefined' ) {
-          console.log("PLACING WIDGET")
-          I.autogui.placeWidget( w, false )
-          w.useAutogui = true
+          if( !isNonGraphical ) {
+            I.autogui.placeWidget( w, false )
+            w.useAutogui = true
+          }
         }
         
-        Gibber.Environment.Interface.panel.add( w )
+        if( !isNonGraphical ) Gibber.Environment.Interface.panel.add( w )
 
         if( I.initializers[ name ] ){
           I.initializers[ name ]( w, props )
@@ -363,21 +452,24 @@
           if( w.clearMarks ) // check required for modulators
             w.clearMarks()
           
-          if( w.useAutogui ) {
-            I.autogui.removeWidget( w )
-            w.panel.remove( w )
-          }else{        
-            w.panel.remove( w )
+          if( !isNonGraphical ) {
+            if( w.useAutogui ) {
+              I.autogui.removeWidget( w )
+              w.panel.remove( w )
+            }else{        
+              w.panel.remove( w )
+            }
           }
+          
+          return w
         }
       
         Object.defineProperty( w, '_', {
           get: function() { 
             // currently there is no sequencer for interface objects
             //if( w.seq.isRunning ) w.seq.disconnect()  
-            w.kill()
-            
-            return w
+
+            return w.kill()
           },
           set: function() {}
         })
@@ -547,7 +639,10 @@
     xy: function( props )          { return I.widget( props, 'XY' ) },     
     piano: function( props )       { return I.widget( props, 'Piano' ) },
     paint: function( props )       { return I.widget( props, 'Paint' ) },
-    patchbay: function( props )    { return I.widget( props, 'Patchbay' ) },  
+    patchbay: function( props )    { return I.widget( props, 'Patchbay' ) },
+    crossfader: function( props )  { return I.widget( props, 'Crossfader' ) },
+    accelerometer: function( props )  { return I.widget( props, 'Accelerometer' ) },
+    orientation: function( props )  { return I.widget( props, 'Orientation' ) },    
     
     hbox : function( props ) {
       if( arguments.length > 1 || props.name ) {
@@ -563,6 +658,7 @@
         var _props = {
           children: Array.prototype.slice.call( arguments, 0 )
         }
+        props = _props
       }
       return I.widget( props, 'VBox') 
     },
@@ -581,7 +677,10 @@
   window.Panel    = I.newPanel.bind( I )
   window.Patchbay = Gibber.Environment.Interface.patchbay
   window.HBox     = Gibber.Environment.Interface.hbox
-  window.VBox     = Gibber.Environment.Interface.vbox  
+  window.VBox     = Gibber.Environment.Interface.vbox
+  window.Crossfader = Gibber.Environment.Interface.crossfader
+  window.Accelerometer = Gibber.Environment.Interface.accelerometer
+  window.Orientation = Gibber.Environment.Interface.orientation  
   
   var OSC = Gibber.OSC = {
     callbacks : {},

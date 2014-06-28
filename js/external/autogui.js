@@ -140,8 +140,9 @@ Interface.autogui = {
     }
 
     for (var i = 0; i < Interface.panel.children.length; i++) {
-      var w = Interface.panel.children[i];
-      this.placeWidget(w);
+      var w = Interface.panel.children[i]
+      if( w.useAutogui )
+        this.placeWidget( w )
     }
   },
 };

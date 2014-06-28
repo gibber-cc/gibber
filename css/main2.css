@@ -187,8 +187,31 @@ tfoot, thead {
   padding-left:0em;
   list-style:disc;
 }
+
+#docs .docsBody { 
+  display: none; 
+  margin-left:1em;
+}
+
+#docs h1 {
+  margin-bottom:0 !important;
+}
+#docs h1 button {
+/*  margin:0; padding:0;*/
+  position:relative;
+  top: -.25em;
+  font-size:.7em !important;
+  margin-bottom:0 !important;
+}
+
 #docs a, #help a, #credits a {
   color:#bbb;  
+}
+
+#docs h2 {
+  font-size:1.25em;
+  font-weight: normal;
+  display:block;
 }
 
 #docs a { text-decoration:none; }
@@ -201,7 +224,7 @@ tfoot, thead {
   display:block;
 }
 
-#help h2, #docs h2, #credits h2 {
+#help h2, #credits h2 {
   font-size:1.25em;
   font-weight: normal;
   display:block;
@@ -214,6 +237,10 @@ tfoot, thead {
   overflow: scroll;
   -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
+}
+
+#docs ul li ul {
+  margin-left:1em;
 }
 
 #docs pre {

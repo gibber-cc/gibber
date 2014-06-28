@@ -54,7 +54,13 @@ list = [
   'graphics/kaleidoscope',
 
   'graphics/geometry',
-  'graphics/canvas', 
+  'graphics/canvas',
+  
+  'interface/slider',
+  'interface/widget',
+  'interface/button',
+  'interface/knob',
+  'interface/crossfader',
 ]
 
 for( var i = 0; i < list.length; i++ ) {
