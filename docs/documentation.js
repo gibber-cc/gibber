@@ -61,6 +61,7 @@ list = [
   'interface/button',
   'interface/knob',
   'interface/crossfader',
+  'interface/XY',  
 ]
 
 for( var i = 0; i < list.length; i++ ) {

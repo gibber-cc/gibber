@@ -644,6 +644,16 @@
     accelerometer: function( props )  { return I.widget( props, 'Accelerometer' ) },
     orientation: function( props )  { return I.widget( props, 'Orientation' ) },    
     
+    patchbay : function( props ) {
+      if( arguments.length > 1 || props.name ) {
+        var _props = {
+          points: Array.prototype.slice.call( arguments, 0 )
+        }
+        props = _props
+      }
+      return I.widget( props, 'Patchbay') 
+    },
+    
     hbox : function( props ) {
       if( arguments.length > 1 || props.name ) {
         var _props = {

@@ -2,13 +2,14 @@
 <p>A horizontal crossfader. Crossfader are a type of <a href="javascript:Gibber.Environment.Docs.openFile(&#39;interface&#39;,&#39;Widget&#39;)">Widget</a> and inherit its methods and properties.</p>
 <p>Example:</p>
 <pre><code><span class="comment">// crossfade between two drum loops</span>
-crossfader = Crossfader()
 
-loop1 = Drums(<span class="string">'x*o*x*o-'</span>)
-loop2 = Drums(<span class="string">'x*ox*xo-'</span>).pitch(<span class="number">2</span>)
+loop1 = Drums( <span class="string">'x*o*x*o-'</span> )
+loop2 = Drums( <span class="string">'x*ox*xo-'</span> ).pitch( <span class="number">2</span> )
 
-loop1.amp = loop2.amp = crossfader
+<span class="comment">// map amplitudes of both loops to crossfader</span>
+loop1.amp = loop2.amp = Crossfader()
 
+<span class="comment">// invert mapping on one loop</span>
 loop2.Amp.invert()</code></pre>
 <h2 id="properties">Properties</h2>
 <p>See the <a href="javascript:Gibber.Environment.Docs.openFile(&#39;interface&#39;,&#39;Widget&#39;)">Widget</a> prototype for many other relevant properties.</p>

@@ -463,6 +463,8 @@ window.Gibber = window.G = {
       target.object[ target.Name ].mapping.invert()
     }
     
+    if( typeof target.object.mappings === 'undefined' ) target.object.mappings = []
+    
     target.object.mappings.push( mapping )
     
     Gibber.defineSequencedProperty( target.object[ target.Name ], 'invert' )

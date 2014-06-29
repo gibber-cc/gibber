@@ -247,7 +247,7 @@
   		attack:Gibber.Clock.maxMeasures,
   		decay:2,
       presetInit: function() {
-        this.fx.add( Delay(1/6,.35) )
+        this.fx.add( Delay(1/6, .3) )
       },
       amp:.3,
   		octave2:0,

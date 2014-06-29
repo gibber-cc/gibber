@@ -5,13 +5,12 @@ A horizontal crossfader. Crossfader are a type of [Widget][widget] and inherit i
 Example:
 ```
 // crossfade between two drum loops
-crossfader = Crossfader()
 
 loop1 = Drums( 'x*o*x*o-' )
 loop2 = Drums( 'x*ox*xo-' ).pitch( 2 )
 
 // map amplitudes of both loops to crossfader
-loop1.amp = loop2.amp = crossfader
+loop1.amp = loop2.amp = Crossfader()
 
 // invert mapping on one loop
 loop2.Amp.invert()
