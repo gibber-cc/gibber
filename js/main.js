@@ -14,7 +14,7 @@ $script.ready( 'GO', function() {
   
   $script( 'gibber/gibber', function() {
     $script( 'gibber/environment', 'environment', function() {
-    
+      
       Gibber.init()
     
       Gibber.Environment.init( Gibber )

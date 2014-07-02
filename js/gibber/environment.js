@@ -2,8 +2,8 @@
 
 "use strict"
 // REMEMBER TO CHECK WELCOME.INIT() and server port in main.js!!!
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-//var SERVER_URL = 'http://127.0.0.1:8080'
+//var SERVER_URL = 'http://gibber.mat.ucsb.edu'
+var SERVER_URL = 'http://127.0.0.1:8080'
 //var SERVER_URL = 'http://a.local:8080'
 
 var GE = Gibber.Environment = {

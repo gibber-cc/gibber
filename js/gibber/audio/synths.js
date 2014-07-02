@@ -15,10 +15,10 @@
       frequency: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
-      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      attack: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      decay: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      release: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
       pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},   
       out: { min: 0, max: 1, output: Gibber.LINEAR, timescale: 'audio', dimensions:1 },   
     },
@@ -27,10 +27,10 @@
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
-      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      attack: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      decay: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      release: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
       cutoff : { min: 0, max: .7, output: Gibber.LINEAR, timescale: 'audio' },
       resonance: { min: 0, max: 5.5, output: Gibber.LINEAR, timescale: 'audio' },
       pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
@@ -41,8 +41,8 @@
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
       pulsewidth :{ min: 0.01, max: .99, output: Gibber.LINEAR, timescale: 'audio' },
-      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
-      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LOGARITHMIC, timescale:'audio'},
+      attack: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LOGARITHMIC, timescale:'audio'},
+      decay: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LOGARITHMIC, timescale:'audio'},
       cutoff : { min: 0, max: .7, output: Gibber.LINEAR, timescale: 'audio' },
       detune2: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
       detune3: { min: 0, max: .15, output: Gibber.LINEAR, timescale: 'audio' },
@@ -55,10 +55,10 @@
       note: { min: 50, max: 3200, output: Gibber.LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: Gibber.LINEAR, timescale: 'audio' },
       amp: { min: 0, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
-      attack: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      decay: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
-      release: { min:Gibber.Clock.maxMeasures + 1, max: 44100, output: Gibber.LINEAR, timescale:'audio'},
+      attack: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      decay: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      sustain: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
+      release: { min:Gibber.Clock.maxMeasures + 1, max: 176400, output: Gibber.LINEAR, timescale:'audio'},
       cmRatio : { min:.1, max:50, output:Gibber.LINEAR, timescale:'audio' },
       index: { min:.1, max:50, output:Gibber.LINEAR, timescale:'audio' },
       pan: { min: -1, max: 1, output: Gibber.LOGARITHMIC,timescale: 'audio',},
@@ -223,7 +223,26 @@
   		resonance:5,
   		isLowPass: false,
   	},
-  
+    /*LFO1.frequency = .234375
+    LFO1.amp = .890625
+
+    assign to cutoff and detune2
+    */
+  	winsome : {
+  		presetInit : function() { 
+        //this.fx.add( Delay(1/4, .35), Reverb() ) 
+        this.lfo = Sine( .234375 )._
+        
+        this.lfo.amp = .075
+        this.lfo.frequency = 2
+        
+        this.cutoff = this.lfo
+        this.detune2 = this.lfo
+      },
+  		attack: Gibber.Clock.maxMeasures,
+  		decay:1,
+  		cutoff:.2,
+  	},
   	bass : { 
       attack: Gibber.Clock.maxMeasures,
   		decay:	1/8 - Gibber.Clock.maxMeasures,

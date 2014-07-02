@@ -15,7 +15,7 @@ var request         = require( 'request' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
-    webServerPort   = 80,
+    webServerPort   = 8080,
     serverRoot      = __dirname + "/../../../",
     searchURL       = 'http://127.0.0.1:5984/_fti/local/gibber/_design/fti/',
     queryString     = require('querystring'),
@@ -170,7 +170,7 @@ app.get( '/', function(req, res){
   var path
   // console.log( req.query )
   
-  console.log( req.query )
+  //console.log( req.query )
   if( req.query ) {
     if( req.query.path || req.query.p ) {
       path = req.query.path || req.query.p
@@ -307,7 +307,7 @@ app.post( '/retrieve', function( req, res, next ) {
 })
 
 app.get( '/create_publication', function( req, res, next ) {
-  console.log( req.user )
+  //console.log( req.user )
   res.render( 'create_publication', { user: req.user, message:'publication' } );
 })
 

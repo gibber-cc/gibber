@@ -56,12 +56,18 @@ list = [
   'graphics/geometry',
   'graphics/canvas',
   
+  'interface/mouse',
   'interface/slider',
   'interface/widget',
   'interface/button',
   'interface/knob',
   'interface/crossfader',
-  'interface/XY',  
+  'interface/XY',
+  'interface/keyboard',
+  'interface/accelerometer',
+  'interface/orientation',  
+  'interface/patchbay',  
+  
 ]
 
 for( var i = 0; i < list.length; i++ ) {

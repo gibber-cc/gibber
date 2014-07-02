@@ -49,7 +49,9 @@
       
       I.autogui.reset()
       
-      column.onclose = function() { this.panel = null }
+      column.onclose = function() { I.panel = null }
+      
+      $.subscribe( '/gibber/clear', function() { column.close() } )
       
       return panel
     },
@@ -78,6 +80,7 @@
         Gibber.createProxyProperties( widget, mappingProperties, false )
         
         widget.onvaluechange = function( _x, _y, _z ) {
+          console.log( _x, _y, _z)
           widget.x( _x )
           widget.y( _y )
           widget.z( _z )
