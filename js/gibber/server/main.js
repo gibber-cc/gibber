@@ -1,4 +1,3 @@
-// Make sure webServerPort is set to 80 before committing / pulling on the server!!!!
 gibber = {}
 
 var request         = require( 'request' ),
@@ -15,7 +14,7 @@ var request         = require( 'request' ),
     LocalStrategy   = require( 'passport-local' ).Strategy,
     // _url            = 'http://localhost:5984/gibber',
     _url            = 'http://127.0.0.1:5984/gibber',
-    webServerPort   =  80,
+    webServerPort   =  process.argv[2], //second argument passed to command
     serverRoot      = __dirname + "/../../../",
     searchURL       = 'http://127.0.0.1:5984/_fti/local/gibber/_design/fti/',
     queryString     = require('querystring'),

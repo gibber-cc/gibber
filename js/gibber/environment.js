@@ -1,12 +1,13 @@
 ( function() {
 
 "use strict"
-// REMEMBER TO CHECK WELCOME.INIT() and server port in main.js!!!
-var SERVER_URL = 'http://gibber.mat.ucsb.edu'
-//var SERVER_URL = 'http://127.0.0.1:8080'
-//var SERVER_URL = 'http://a.local:8080'
+// REMEMBER TO CHECK WELCOME.INIT()
+//var GE.SERVER_URL = 'http://gibber.mat.ucsb.edu'
 
 var GE = Gibber.Environment = {
+  SERVER_URL : 'http://127.0.0.1:8080',
+  //SERVER_URL : 'http://gibber.mat.ucsb.edu',
+
   init : function() { 
     $script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
       $script( ['gibber/mappings',
@@ -18,6 +19,10 @@ var GE = Gibber.Environment = {
                 'gibber/chat',
                 'gibber/share',
                 'gibber/code_objects',
+                'gibber/docs',
+                'gibber/keymaps',
+                'gibber/browser',
+                'gibber/account',
                 ], function() {
 
         GE.Keymap.init()
@@ -116,7 +121,7 @@ var GE = Gibber.Environment = {
     getIndex : function() {
       $( '#docs' ).empty()
       $.ajax({
-        url: SERVER_URL + "/help",
+        url: GE.SERVER_URL + "/help",
         dataType:'html'
       })
       .done( function( data ) {
@@ -126,8 +131,6 @@ var GE = Gibber.Environment = {
         GE.Layout.setColumnBodyHeight( GE.Help.col )
       }) 
     }, 
-
-
   },
   Credits : {
     open : function() {
@@ -140,7 +143,7 @@ var GE = Gibber.Environment = {
     getIndex : function() {
       $( '#docs' ).empty()
       $.ajax({
-        url: SERVER_URL + "/credits",
+        url: GE.SERVER_URL + "/credits",
         dataType:'html'
       })
       .done( function( data ) {
@@ -150,274 +153,6 @@ var GE = Gibber.Environment = {
         GE.Layout.setColumnBodyHeight( GE.Credits.col )
       }) 
     }, 
-  },
-  Docs : {
-    files: {},
-    open : function() {
-      this.col = GE.Layout.addColumn({ header:'Reference' })
-
-      this.col.bodyElement.remove()
-      
-      this.getIndex()
-    },
-    showTOC : function( section, btn ) {
-      if( typeof btn.isShowing === 'undefined' ) {
-        btn.isShowing = 0
-      }
-      
-      btn.isShowing = !btn.isShowing
-      
-      var sec = $( '#'+section ).find( '.docsBody' ).toggle()
-      
-      $( btn ).text( btn.isShowing ? 'hide' : 'show' )
-    },
-    getIndex : function() {
-      $( '#docs' ).empty()
-      $.ajax({
-        url: SERVER_URL + "/documentation",
-        dataType:'html'
-      })
-      .done( function( data ) {
-        var docs = $( data )
-        $( GE.Docs.col.element ).append( docs )
-        GE.Docs.col.bodyElement = docs
-        GE.Layout.setColumnBodyHeight( GE.Docs.col )
-      }) 
-    },
-    openFile : function( group, name ) {
-      console.log( "OPENING", group, name )
-      $.ajax({
-        url:'docs/?group=' + group + '&file='+name,
-        dataType:'html'
-      })
-      .done( function( data ) {
-        var docs = $( data )
-        $( '#docs' ).empty()
-        $( '#docs' ).append( $('<button>').text('Back To Table of Contents')
-                            .on('click', function() { $('#docs').remove(); GE.Docs.getIndex() } ) ) 
-        $( '#docs' ).append( docs )
-        GE.Docs.bodyElement = docs
-        GE.Layout.setColumnBodyHeight( GE.Docs.col )
-      }) 
-    },
-  }, 
-  Keymap : {
-    init : function() {
-      // this has to be done here so that it works when no editors are focused
-      $(window).on('keydown', function(e) {
-          if( e.which === 70 && e.ctrlKey && e.altKey ) {
-          if( e.shiftKey ) {
-            if( GE.Layout.fullScreenColumn === null ) {
-              GE.Layout.getFocusedColumn().fullScreen()
-            }else{
-              GE.Layout.fullScreenColumn.fullScreen()
-            }
-          }else{
-            GE.Layout.fullScreen()
-            e.preventDefault()
-          }
-        }
-      })
-      
-      CodeMirror.keyMap.gibber = {
-        fallthrough: "default",
-
-        "Ctrl-Space" : function( cm ) { CodeMirror.showHint(cm, CodeMirror.javascriptHint ) },
-        
-        "Shift-Ctrl-Right" : function( cm ) {
-          //console.log( GE.Layout.fullScreenColumn )
-          var currentColumnNumber = GE.Layout.getFocusedColumn().id,
-              nextCol = null
-          
-          for( var i = 0; i < GE.Layout.columns.length; i++ ) {
-            var col = GE.Layout.columns[ i ]
-            if( col === null || typeof col === 'undefined' ) continue;
-            
-            if( col.id > currentColumnNumber ) {
-              nextCol = col
-              break;
-            }
-          }
-          
-          if( nextCol !== null ) {
-            if( GE.Layout.isFullScreen ) {
-              var currentColumn = GE.Layout.getFocusedColumn() //columns[ currentColumnNumber ]
-              currentColumn.editor.setValue( GE.Layout.__fullScreenColumn__.editor.getValue() )
-              
-              GE.Layout.__fullScreenColumn__.editor.setOption('mode', GE.modes.nameMappings[ nextCol.mode ] )
-              GE.Layout.__fullScreenColumn__.editor.setValue( nextCol.editor.getValue() )
-              GE.Layout.__fullScreenColumn__.mode = nextCol.mode
-              GE.Layout.__fullScreenColumn__.__proto__ = nextCol              
-              GE.Layout.fullScreenColumn = nextCol
-              GE.Layout.focusedColumn = nextCol.id
-              GE.Message.postFlash( 'Column ' + nextCol.id + ': ' + nextCol.mode, 1000, 
-                { borderRadius:'.5em', fontSize:'2em', fontWidth:'bold', borderWidth:'5px' }
-              )
-            }else{
-              nextCol.editor.focus()
-            }
-            
-          }
-        },
-        
-        "Shift-Ctrl-Left" : function( cm ) {
-          //GE.Layout.getFocusedColumn()
-          var currentColumnNumber = GE.Layout.focusedColumn,
-              nextCol = null
-          
-          for( var i = currentColumnNumber; i >=0; i-- ) {
-            var col = GE.Layout.columns[ i ]
-            if( col === null || typeof col === 'undefined' ) continue;
-            
-            if( col.id < currentColumnNumber ) {
-              nextCol = col
-              break;
-            }
-          }
-          
-          if( nextCol !== null ) {
-            if( GE.Layout.isFullScreen ) {
-              var currentColumn = GE.Layout.getFocusedColumn() //columns[ currentColumnNumber ]
-              currentColumn.editor.setValue( GE.Layout.__fullScreenColumn__.editor.getValue() )              
-              
-              GE.Layout.__fullScreenColumn__.editor.setOption('mode', GE.modes.nameMappings[ nextCol.mode ] )
-              GE.Layout.__fullScreenColumn__.editor.setValue( nextCol.editor.getValue() )
-              GE.Layout.__fullScreenColumn__.mode = nextCol.mode
-              GE.Layout.__fullScreenColumn__.__proto__ = nextCol
-              GE.Layout.fullScreenColumn = nextCol
-              GE.Layout.focusedColumn = nextCol.id
-              GE.Message.postFlash( 'Column ' + nextCol.id + ': ' + nextCol.mode, 1000, 
-                { borderRadius:'.5em', fontSize:'2em', fontWidth:'bold', borderWidth:'5px' }
-              )
-            }else{
-              nextCol.editor.focus()
-            }
-          }
-        },        
-        
-        "Alt-/": CodeMirror.commands.toggleComment,
-
-        "Ctrl-Enter": function(cm) {
-					var obj = GE.getSelectionCodeColumn( cm, false )
-					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
-          return false
-        },
-        
-        "Ctrl-S" : function(cm) {
-          GE.Layout.columns[ GE.Layout.focusedColumn ].save()
-        },
-				
-        "Shift-Ctrl-Enter": function(cm) {
-					var obj = GE.getSelectionCodeColumn( cm, false )
-					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )			
-        },
-        
-        "Alt-Enter": function(cm) {
-				  var obj = GE.getSelectionCodeColumn( cm, true )
-					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
-        },
-        
-        "Shift-Alt-Enter": function(cm) {
-					var obj = GE.getSelectionCodeColumn( cm, true )
-					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
-        },
-				
-				'Ctrl-2' : function( cm ) {
-          if( cm.column.sharingWith ) {
-						var obj = GE.getSelectionCodeColumn( cm, false )
-						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
-
-            if( cm.column.allowRemoteExecution ) {
-              Chat.socket.send( 
-                JSON.stringify({ 
-                  cmd:'remoteExecution',
-                  to:cm.column.sharingWith,
-                  shareName: cm.column.shareName,
-                  from:GE.Account.nick,
-                  selectionRange: obj.selection,
-                  code: obj.code,
-                  shouldDelay: false,
-                })
-              ) 
-            }else{
-            	console.log( 'Remote code execution was not enabled for this shared editing session.')
-            }
-          }else{
-          	console.log( 'This is column is not part of a shared editing session' )
-          }
-				},
-        'Shift-Ctrl-2' : function( cm ) {
-          if( cm.column.sharingWith ) {
-						var obj = GE.getSelectionCodeColumn( cm, false )
-						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
-
-            if( cm.column.allowRemoteExecution ) {
-              Chat.socket.send( 
-                JSON.stringify({ 
-                  cmd:'remoteExecution',
-                  to:cm.column.sharingWith,
-                  shareName: cm.column.shareName,
-                  from:GE.Account.nick,
-                  selectionRange: obj.selection,
-                  code: obj.code,
-                  shouldDelay: true,
-                })
-              ) 
-            }else{
-            	console.log( 'Remote code execution was not enabled for this shared editing session.')
-            }
-          }else{
-          	console.log( 'This is column is not part of a shared editing session' )
-          }
-        },
-        
-        "Shift-Ctrl-=": function(cm) {
-          var col = GE.Layout.getFocusedColumn( true )
-          col.fontSize += .2
-          
-          col.bodyElement.css({ fontSize: col.fontSize + 'em'})
-          col.editor.refresh()
-        },
-        
-        "Shift-Ctrl--": function(cm) {
-          var col = GE.Layout.getFocusedColumn( true )
-          col.fontSize -= .2
-          
-          col.bodyElement.css({ fontSize: col.fontSize + 'em'})
-          col.editor.refresh()
-        },
-        
-        "Shift-Ctrl-Alt-=": function(cm) {
-          if( GE.Layout._textBGOpacity < 1 ) {
-            GE.Layout._textBGOpacity = GE.Layout._textBGOpacity + .2 > 1 ? 1 : GE.Layout._textBGOpacity + .2
-            GE.Layout.textBGOpacity( GE.Layout._textBGOpacity )
-          }
-        },
-        
-        "Shift-Ctrl-Alt--": function(cm) {
-          if( GE.Layout._textBGOpacity >0 ) {
-            GE.Layout._textBGOpacity = GE.Layout._textBGOpacity - .2 < 0 ? 0 : GE.Layout._textBGOpacity - .2
-            GE.Layout.textBGOpacity( GE.Layout._textBGOpacity )
-          }          
-        },
-      }
-    },
-    flash: function(cm, pos) {
-      var sel,
-          cb = function() { sel.clear() }
-    
-      if (pos !== null) {
-				if( pos.start ) { // if called from a findBlock keymap
-		      sel = cm.markText( pos.start, pos.end, { className:"CodeMirror-highlight" } );
-				}else{ // called with single line
-	        sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
-				}
-      }else{ // called with selected block
-        sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } );
-      }
-    
-      window.setTimeout(cb, 250);
-    },
   },
 	
 	getSelectionCodeColumn : function( cm, findBlock ) {
@@ -754,7 +489,7 @@ var GE = Gibber.Environment = {
       this.col.bodyElement.remove()
       
       //this.getForum()
-      var iframe = $('<iframe src="'+SERVER_URL+':4567">')
+      var iframe = $('<iframe src="'+GE.SERVER_URL+':4567">')
       iframe.css({
         width:'98%',
         height:'100%',
@@ -769,7 +504,7 @@ var GE = Gibber.Environment = {
     getForum : function() {
       $( '#docs' ).empty()
       $.ajax({
-        url: SERVER_URL+':4567',
+        url: GE.SERVER_URL+':4567',
         dataType:'html'
       })
       .done( function( data ) {
@@ -796,9 +531,9 @@ var GE = Gibber.Environment = {
     init : function() {
       //var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
       //col.bodyElement.remove()
-      //console.log( "SERVER_URL", SERVER_URL )
+      //console.log( "GE.SERVER_URL", GE.SERVER_URL )
       $.ajax({
-        url: SERVER_URL + "/welcome",
+        url: GE.SERVER_URL + "/welcome",
         dataType:'html'
       })
       .done( function( data ) {
@@ -808,469 +543,6 @@ var GE = Gibber.Environment = {
         // col.bodyElement = welcome
         // GE.Layout.setColumnBodyHeight( col )
       })
-    },
-  }, 
-  Browser : {
-    setupSearchGUI : function() {
-      var btns = $( '.searchOption' )
-
-      for( var i = 0; i < btns.length; i++ ) {
-        !function() {
-          var num = i, btn = btns[ num ]
-          
-          btn.state = 0
-          
-          $( btn ).on( 'click', function() {
-            for( var j = 0; j < btns.length; j++ ) {
-              var bgColor
-              
-              btns[ j ].state = btns[ j ] === btn
-              
-              bgColor = btns[ j ].state ? '#666' : '#000'
-              
-              $( btns[ j ] ).css({ backgroundColor:bgColor })
-            }
-          })
-          
-        }()
-      }
-      
-      btns[0].click()
-      
-      $( '.search input').on( 'keypress', function(e) { if( e.keyCode === 13 ) { $('.browserSearch').click() }})
-      
-      $( '.browserSearch' ).on( 'click', GE.Browser.search )
-    },
-    open: function() {
-      var col = GE.Layout.addColumn({ header:'Browse Giblets' })
-      
-      //col.element.addClass( 'browser' )
-      
-      col.bodyElement.remove()
-      
-      $.ajax({
-        url: SERVER_URL + "/browser",
-        dataType:'html'
-      })
-      .done( function( data ) {
-        var browser = $( data ), cells
-        
-        $( col.element ).append( browser[0] );
-        $('head').append( browser[1] )
-        $( '#search_button' ).on( 'click', GE.Browser.search )
-        col.bodyElement = browser;
-        GE.Layout.setColumnBodyHeight( col )
-        
-        cells = browser.find('td')
-        
-        var types = [ 'searchHEADER','search','tutorialsHEADER','audio', '_2d', '_3d', 'misc', 'userHEADER','recent', 'userfiles' ], prev
-        for( var i = 0; i < cells.length; i++ ) {
-          (function() {
-            var cell = cells[ i ]
-            if( $(cell).hasClass('browserHeader') ) return;
-            
-            $(cell).find('h3').on('click', function() { 
-              var div = $(cell).find('div')
-              div.toggle()
-              if( div.is(':visible') ) {
-                $(this).find('#browser_updown').html('&#9652;') 
-              }else{
-                $(this).find('#browser_updown').html('&#9662;') 
-              }
-            })
-            
-            var links = $(cell).find('li')
-            for( var j = 0; j < links.length; j++ ) {
-              (function() {
-                var num = j, type = types[ i ], link = links[j]
-                if( typeof Gibber.Environment.Browser.files[ type ] !== 'undefined' ) {
-                  var pub = Gibber.Environment.Browser.files[ type ][ num ], obj, id
-                  
-                  if( typeof pub === 'undefined' ) {
-                    console.log( 'UNDEFINED', type, num )
-                    return;
-                  }
-                  
-                  obj = pub.value || pub, // recently added has slightly different format
-                  id = pub.id || obj._id  // see above
-                      
-                  $( link ).on( 'mouseover', function() {
-                    $( link ).css({ background:'#444' })
-                    if( prev ) {
-                      $( prev ).css({ background:'transparent' })
-                    }
-                    prev = link
-                    $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
-                    $( '#browser_notes' ).text( obj.notes )
-                    $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
-                    $( '#browser_author' ).text( id.split('/')[0] )
-                  })
-                }
-              })()
-            }
-          })()
-        }
-        //$('#browser_audio_header').on('click', GE.Browser.updown)
-        GE.Browser.setupSearchGUI()
-      })
-    },
-
-    // publication name : author : rating : code fragment?
-    search : function(e) {
-      var btns = $( '.searchOption' ),
-          btnText = [ 'tags','code','author' ],
-          queryFilter = '', query = null
-      
-      query = $( '.browser .search input' ).val()
-      
-      if( query === '' ) {
-        GE.Message.post( 'You must type in a search query.' )
-        return
-      }
-      
-      for( var i = 0; i < btns.length; i++ ) {
-        if( btns[ i ].state ){
-          queryFilter = btnText[ i ]
-        }
-      }
-      
-      var data = {
-        'query': query,
-        filter:  queryFilter 
-      }
-      
-      console.log( data )
-      
-      $( '.searchResults' ).remove()
-      
-      // var sr = $('<div class="searchResults">').css({ width:'5em', height:'5em', display:'block', position:'relative', 'box-sizing': 'content-box !important' }) 
-      // var spinner = GE.Spinner.spin( sr )
-      
-      $( '.browser .search td' ).append( $('<p class="searchResults">Getting search results...</p>'))
-      
-      
-      //var data = { query:$( '#search_field' ).val() }
-      $.post(
-        SERVER_URL + '/search',
-        data,
-        function ( data ) {
-          
-          $('.searchResults').remove()
-          
-          var results = $( '<ul class="searchResults">' ), 
-              count = 0
-              
-          //console.log( data )
-          if( data.error ) {
-            console.error( data.error )
-            return  
-          }
-          for( var i = 0; i < data.rows.length; i++ ) {
-            count++
-            if( data.rows[i] === null ) continue; // sometimes things go missing...
-            
-            (function() {
-              var d = JSON.parse( data.rows[ i ] ),
-                  pubname = d._id,
-                  li = $( '<li>' )
-              
-              $('.searchResults').remove()
-                  
-              li.html( pubname )
-                .on( 'click', function() { 
-                  GE.Browser.openCode( pubname ) 
-                })
-                .hover( function() { 
-                  li.css({ backgroundColor:'#444'})
-                  GE.Browser.displayFileMetadata( d )
-                }, 
-                  function() { li.css({ backgroundColor:'rgba(0,0,0,0)' })
-                })
-                .css({ cursor: 'pointer' })
-                
-              results.append( li )
-            })()
-          }
-          
-          var h4 = $('<h4 class="searchResults">Results</h4>').css({ display:'inline-block', width:'10em', marginBottom:0 }),
-              clearBtn = $('<button class="searchResults">clear results</button>').on('click', function() { 
-                $('.searchResults').remove()
-                clearBtn.remove()
-                h4.remove()
-              })
-              
-          $( '.browser .search td' ).append( h4, clearBtn )
-          
-          if( data.rows.length === 0 ) {
-            $( '.browser .search td' ).append( $('<p class="searchResults">No results were found for your search</p>') )
-          }
-          
-          $( '.browser .search td' ).append( results )
-        },
-        'json'
-      )
-      
-    },
-    
-    displayFileMetadata: function( obj ) {
-      $( '#browser_title' ).text( obj._id.split('/')[2].split('*')[0] )//$( link ).text() )
-      $( '#browser_notes' ).text( obj.notes )
-      $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
-      $( '#browser_author' ).text( obj._id.split('/')[0] )
-    },
-    
-    openCode : function( addr ) {
-      // console.log( "ADDR", addr )
-      $.post(
-        SERVER_URL + '/retrieve',
-        { address:addr },
-        function( d ) {
-          //console.log( d )
-          var data = JSON.parse( d ),
-              col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
-              
-          col.editor.setValue( data.text )
-          col.fileInfo = data
-          col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
-          
-          //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
-          return false
-        }
-      )
-    },
-  },
-  
-  Account : {
-    nick: null,
-    init : function() {
-      $('.login a').on('click', function(e) { 
-        GE.Account.createLoginWindow()
-      })
-      
-      GE.Account.loginStatus()
-    },
-    
-    loginStatus : function() {
-      $.ajax({ 
-        url: SERVER_URL + '/loginStatus',
-        dataType:'json'
-      }).done( function( response ) { 
-        if( response.username !== null ) {
-          $( '.login' ).empty()
-          $( '.login' ).append( $('<span>welcome, ' + response.username + '.  </span>' ) )
-
-          GE.Account.nick = response.username
-
-          $( '.login' ).append( $('<a href="#">' )
-            .text( ' logout ')
-            .on( 'click', function(e) {
-              $.ajax({
-                type:"GET",
-                url: SERVER_URL + '/logout', 
-                dataType:'json'
-              }).done( function( data ) {
-                $( '.login' ).empty()
-                $( '.login' ).append( $('<a href="#">' )
-                  .text( 'please login' )
-                  .on('click', function(e) { 
-                    GE.Account.createLoginWindow()
-                  })
-                )
-              })
-            })
-          )
-        }
-      }) 
-    },
-    
-    createLoginWindow : function() {
-      $.ajax({ 
-        url:SERVER_URL + '/login',
-        dataType:'html'
-      }).done( function(response) { 
-        $('body').append( response ); 
-        $("#username").focus() 
-      }) 
-    },
-    
-    login: function() {
-      $.ajax({
-        type:"POST",
-        url: SERVER_URL + '/login', 
-        data:{ username: $("#username").val(), password: $("#password").val() }, 
-        dataType:'json'
-      })
-      .done( function (data) {
-        if( !data.error ) {
-          // console.log( "LOGIN RESPONSE", data )
-          $( '.login' ).empty()
-          $( '.login' ).append( $('<span>welcome, ' + data.username + '.  </span>' ) )
-          GE.Account.nick = data.username
-
-          $( '.login' ).append( $('<a href="#">' )
-            .text( ' logout ')
-            .on( 'click', function(e) {
-              $.ajax({
-                type:"GET",
-                url: SERVER_URL + '/logout', 
-                dataType:'json'
-              }).done( function(data) {
-                GE.Account.nick = null
-
-                $( '.login' ).empty()
-
-                $( '.login' ).append( $('<a href="#">' )
-                  .text( 'please login' )
-                  .on('click', function(e) { 
-                    GE.Account.createLoginWindow()
-                  })
-                )
-              })
-            })
-          )
-          $( '#loginForm' ).remove()
-        }else{
-          $( "#loginForm h5" ).text( "Your name or password was incorrect. Please try again." )
-        }
-      })
-      .fail( function(error) {console.log( error )})
-
-      return false
-    },
-    newAccountForm: function() {
-      var col = GE.Layout.addColumn({ header:'Create an account' })
-      col.bodyElement.remove()
-      GE.Account.newAccountColumn = col
-
-      $( '#loginForm' ).remove()
-      $.ajax({
-        url: SERVER_URL + '/snippets/create_account.ejs',
-        dataType:'html'
-      }).done( function( data ) {        
-        col.element.append( data )
-        col.bodyElement = data
-        
-        GE.Layout.setColumnBodyHeight( col )
-        //$( col.element ).append( data ); 
-      })
-
-      return false
-    },
-    newPublicationForm: function() {
-      if( GE.Account.nick !== null ) {
-        var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Publish a Giblet' })
-        
-        GE.Account.publicationColumn = col
-
-        col.element.addClass('publication_form')
-        
-        col.bodyElement.remove()
-        
-        $.ajax({
-          url: SERVER_URL + "/create_publication",
-          dataType:'html'
-        })
-        .done( function( data ) {
-          $( col.element ).append( data ); 
-          for( var i = 0; i < GE.Layout.columns.length; i++ ) {
-            var _col = GE.Layout.columns[ i ]
-            if( _col && _col.isCodeColumn ) {
-              $('#new_publication_column').append( $( '<option>' + _col.id + '</option>' ) )
-            }
-          }
-        })
-      }else{
-        GE.Message.post('You must log in before publishing. Click the link in the upper right corner of the window to login (and create an account if necessary).')
-      }
-    },
-    processNewAccount: function() {
-      var col = GE.Layout.columns[ GE.Layout.columns.length - 1],
-          date = new Date(),
-          data = { 
-            _id: $( '#new_account_username' ).val(),
-            type: 'user',
-            password:  $( '#new_account_password' ).val(),
-            joinDate:  [ date.getMonth() + 1, date.getDate(), date.getFullYear() ],
-            website:  $('#new_account_website').val(),
-            affiliation:  $('#new_account_affiliation').val(),
-            email:  $('#new_account_email').val(),
-            following: [],
-            friends: [],
-          }
-
-      $.post(
-        SERVER_URL + '/createNewUser',
-        data,
-        function (data, error) {
-          if( data ) {
-            GE.Message.post('New account created. Please login to verify your username and password.'); 
-          } else { 
-            GE.Message.post( 'The account could not be created. Try a different username' )
-            console.log( "RESPONSE", response )
-          }
-          return false;
-        },    
-        'json'
-      )
-
-      // col.element.remove()
-      GE.Layout.removeColumn( GE.Account.newAccountColumn.id )     
-    },
-    publish : function() {
-      var url = SERVER_URL + '/publish'
-      
-      //GE.Spinner.spin( $('.publication_form')[0] 
-      
-      var columnNumber = $( '#new_publication_column' ).val()
-      
-      console.log( Gibber.Environment.Account.nick )
-      $.ajax({
-        type:"POST",
-        url: SERVER_URL + '/publish',
-        data: {
-          name: $( '#new_publication_name' ).val(),
-          code: GE.Layout.columns[ columnNumber ].editor.getValue(),
-          permissions: $( '#new_publication_permissions' ).prop( 'checked' ),
-          tags: $( '#new_publication_tags' ).val().split(','),
-          notes: $( '#new_publication_notes' ).val(), 
-          instrument: false, //$( '#new_publication_instrument' ).prop( 'checked' ),
-          username: Gibber.Environment.Account.nick
-         },
-        dataType:'json'
-      })
-      .done( function ( data ) {
-        if( data.error ) {
-          GE.Message.post( 'There was an error writing to Gibber\'s database. Error: ' + data.error )
-        }else{
-          GE.Message.post( 'Your publication has been saved to: ' + SERVER_URL + '/?path=' + data.url )
-        }
-        GE.Layout.removeColumn( parseInt( $( '.publication_form' ).attr( 'id' ) ) )
-
-        return false
-      })
-      .fail( function(e) { console.log( "FAILED TO PUBLISH", e ) } )
-      
-      return false 
-    },
-    updateDocument : function( revisions, previous, notes, column ) {
-      var msg = {
-        type: 'POST',
-        url:  SERVER_URL + '/update',
-        data: previous,
-        dataType: 'json'
-      }
-      
-      $.extend( msg.data, revisions )
-      msg.data.revisionNotes = notes
-      
-      var promise = $.ajax( msg ).then( 
-        function(d) { 
-          column.fileInfo._rev = d._rev; 
-          column.revision = JSON.stringify( column.fileInfo )
-          GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
-        },
-        function(d) { console.error( d.error ) }
-      )
     },
   },
 }
