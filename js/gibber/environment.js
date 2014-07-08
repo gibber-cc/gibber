@@ -9,13 +9,7 @@ var SERVER_URL = 'http://gibber.mat.ucsb.edu'
 var GE = Gibber.Environment = {
   init : function() { 
     $script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
-      $script( [/*'external/codemirror/addons/closebrackets', 
-                'external/codemirror/addons/matchbrackets', 
-                'external/codemirror/addons/comment',
-                'external/codemirror/addons/show-hint',
-                'external/codemirror/addons/javascript-hint',
-                'external/codemirror/clike',*/
-                'gibber/mappings',
+      $script( ['gibber/mappings',
                 'gibber/gibber_interface',
                 'gibber/console',
                 'gibber/mouse',
@@ -50,7 +44,7 @@ var GE = Gibber.Environment = {
       });
     })
 
-    $script( ['external/color', 'external/injectCSS'], 'theme', function() {
+    $script( ['external/color', 'external/injectCSS', 'gibber/theme'], 'theme', function() {
       if( !window.isInstrument ) {
         GE.Theme.init()
         GE.Storage.init()
@@ -110,61 +104,7 @@ var GE = Gibber.Environment = {
       localStorage.setObject( "gibber2", this.values );
     },
   },
-  
-  Theme : {
-    init : function() {      
-      this.default = {
-          comment:    Color('#888'),
-          number:     Color('#69d'),
-          string:     Color('#d44'),
-          variable:   Color('#ccc'),
-          bracket:    Color('#f8f8f2'),
-          keyword:    Color('#ccc'),
-          property:   Color('#ccc'),
-          attribute:  Color('#ccc'),
-          atom:       Color('#006600'),
-          cursor:     { 'border-left':'1px solid #f00' },
-          highlight : { background: '#c00' },
-          'variable-2': Color('#ccc'),          
-      }
-      
-      this.applyTheme( this.default )
-      
-      window.theme = this.changeThemeProperty
-    },   
-    
-    nontext : [ 'cursor', 'selected', 'matchingbracket', 'lines', 'highlight' ],
-    
-    applyTheme : function( theme ) {
-      var obj = {}
-      for( var key in theme ) {
-        var prop = theme[ key ],
-            prefix = this.nontext.indexOf( key ) === -1 ? '.cm-s-gibber span.cm-' : '.CodeMirror-'
-            
-        if( prop.opaquer ) { // only way to test if typeof Color object...
-          obj[ prefix + key ] = {
-            color : prop.rgbaString()
-          }
-        } else if( typeof prop === 'object') {
-          var obj2 = {}
-          for( var key2 in prop ) {
-            var prop2 = prop[ key2 ]
-            obj2[ key2 ] = typeof prop2.rgbaString === 'function' ? prop2.rgbaString() : prop2; // Color object or other property / string value...
-          }
-          obj[ prefix + key ] = obj2
-        }
-      }
-      
-      $.injectCSS( obj )
-    },
-    
-    changeThemeProperty : function( property, newValue ) {
-      var obj = {}
-      obj[ property ] = newValue
-      
-      GE.Theme.applyTheme( obj )
-    },
-  },
+
   Help : {
     open : function() {
       this.col = GE.Layout.addColumn({ header:'Help' })
