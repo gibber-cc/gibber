@@ -5,8 +5,8 @@
 //var GE.SERVER_URL = 'http://gibber.mat.ucsb.edu'
 
 var GE = Gibber.Environment = {
-  SERVER_URL : 'http://127.0.0.1:8080',
-  //SERVER_URL : 'http://gibber.mat.ucsb.edu',
+  //SERVER_URL : 'http://127.0.0.1:8080',
+  SERVER_URL : 'http://gibber.mat.ucsb.edu',
 
   init : function() { 
     $script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
@@ -484,36 +484,8 @@ var GE = Gibber.Environment = {
   
   Forum : {
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Forums' })
-
-      this.col.bodyElement.remove()
-      
-      //this.getForum()
-      var iframe = $('<iframe src="'+GE.SERVER_URL+':4567">')
-      iframe.css({
-        width:'98%',
-        height:'100%',
-        border:0
-      })
-      this.col.element.append( iframe ) 
-            
-      this.col.bodyElement = iframe
-      GE.Layout.setColumnBodyHeight( this.col)
-
+      window.open( 'http://lurk.org/groups/gibber' )
     },
-    getForum : function() {
-      $( '#docs' ).empty()
-      $.ajax({
-        url: GE.SERVER_URL+':4567',
-        dataType:'html'
-      })
-      .done( function( data ) {
-        var help = $( data )
-        $( GE.Help.col.element ).append( help )
-        GE.Help.col.bodyElement = help
-        GE.Layout.setColumnBodyHeight( GE.Help.col )
-      }) 
-    }, 
   },
   
   Spinner: {
