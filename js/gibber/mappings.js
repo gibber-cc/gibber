@@ -358,8 +358,10 @@
         if( target.object.mod ) { // second case accomodates modding individual [0][1][2] properties fo vectors
           //console.log( target.object, target.object.mod )
           target.object.mod( target.name, mapping, '=' )
-        }else{
+        }else if (target.modObject) {
           target.modObject.mod( target.modName, mapping, '=' )
+        }else{
+          target.object.mod( target.name, mapping, '=' ) 
         }
         
         mapping.remove = function() {

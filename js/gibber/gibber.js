@@ -32,7 +32,8 @@ window.Gibber = window.G = {
       'gibber/audio/drums',
       'gibber/audio/audio_input',
       'gibber/audio/sampler',
-      'gibber/audio/postprocessing',            
+      'gibber/audio/postprocessing',
+      'gibber/audio/arp',            
       'gibber/utilities',
       'external/esprima',
 			], 'gibber', function() {
@@ -487,7 +488,8 @@ window.Gibber = window.G = {
       obj.seq = Gibber.Seq({ doNotStart:true, scale:obj.scale, priority:priority })
     }
     
-    fnc.seq = function( v,d ) {      
+    fnc.seq = function( v,d ) {  
+
       var args = {
             key: key,
             values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],

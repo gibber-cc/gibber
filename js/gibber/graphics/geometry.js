@@ -181,6 +181,7 @@ for( var key in types) {
               })
               
               Gibber.defineSequencedProperty( obj, '_' + propertyName )
+              Gibber.defineRampedProperty( obj, '_' + propertyName )
             })()
           }
                     
@@ -252,6 +253,7 @@ for( var key in types) {
           
           property.mappings = []
           Gibber.defineSequencedProperty( obj, prop )
+          Gibber.defineRampedProperty( obj, prop )
           
         })( this )
         

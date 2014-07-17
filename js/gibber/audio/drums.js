@@ -145,6 +145,7 @@
   			arguments[0].kit = obj.kit;
   		}
   	}
+    
 	
   	for(var key in obj.kit) {
   		var drum = obj.kit[key];
@@ -208,6 +209,23 @@
       	  //obj.seq = Seq( props[0] );
           
           break;
+
+        case 'function': case 'array':
+          var length = props[0].length || props[0].getValues().length,
+              durations = typeof arguments[1] !== 'undefined' ? arguments[1] : Gibber.Clock.Time( 1 / length )
+          
+          if( typeof durations !== 'function' ) durations = Gibber.Clock.Time( durations )
+              
+          obj.seq.add({
+            key:'note',
+            values:[ props[0] ],
+            durations: durations,
+            target:obj
+          })
+          
+          obj.pattern = obj.seq.seqs[ obj.seq.seqs.length - 1 ].values[ 0 ]
+          
+          break;
         default:
           break;
       }
@@ -232,8 +250,27 @@
         for( var i = 0; i < nt.length; i++ ) {
           var note = nt[ i ]
 
-      		for(var key in this.kit) {
-      			if(note === this.kit[key].symbol) {
+          if( typeof note === 'string' ) {
+        		for( var key in this.kit ) {
+        			if( note === this.kit[ key ].symbol ) {
+        				this[ key ].sampler.note( 1, this[key].amp );
+                var p = this.pitch() 
+                if( this[ key ].sampler.pitch !== p )
+                  this[ key ].sampler.pitch = p
+        				break;
+        			}
+        		}
+          }else{
+            var drum = obj[ Object.keys( obj.kit )[ note ] ]
+            drum.sampler.note( 1, drum.sampler.amp )
+            if( drum.sampler.pitch !== p )
+              drum.sampler.pitch = p
+          }
+        }
+      }else{
+        if( typeof nt === 'string' ) {
+      		for( var key in this.kit ) {
+      			if( nt === this.kit[ key ].symbol ) {
       				this[ key ].sampler.note( 1, this[key].amp );
               var p = this.pitch() 
               if( this[ key ].sampler.pitch !== p )
@@ -241,17 +278,17 @@
       				break;
       			}
       		}
+        }else{
+          var keys = Object.keys( obj.kit ),
+              num = Math.abs( nt ),
+              key = keys[ num % keys.length ], 
+              drum = obj[ key ]
+              
+          drum.sampler.note( 1, drum.sampler.amp )
+          
+          if( drum.sampler.pitch !== p )
+            drum.sampler.pitch = p
         }
-      }else{
-    		for(var key in this.kit) {
-    			if(nt === this.kit[key].symbol) {
-    				this[ key ].sampler.note( 1, this[key].amp );
-            var p = this.pitch() 
-            if( this[ key ].sampler.pitch !== p )
-              this[ key ].sampler.pitch = p
-    				break;
-    			}
-    		}
       }
   	}
     
@@ -264,13 +301,6 @@
             
     obj.seq.start( true )
 
-    // obj.kill = function() {
-    //   var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
-    //   end.disconnect()
-    //        
-    //   obj.seq.kill()
-    // }
-
     Object.defineProperties( obj, {
       offset: {
         get: function() { return obj.seq.offset },
@@ -278,7 +308,8 @@
       }
     })
         
-    obj.toString = function() { return '> Drums : ' + obj.seq.seqs[0].values.join('') }
+    obj.toString = function() { return 'Drums : ' + obj.seq.seqs[0].values.join('') }
+    
     return obj
   }
   

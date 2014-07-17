@@ -212,7 +212,7 @@
       set: function() {}
     })
     
-    obj.toString = function() { return '> Grains' }
+    oscillator.toString = function() { return 'Grains' }
     return oscillator
   }
   
