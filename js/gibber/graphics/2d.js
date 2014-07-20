@@ -102,6 +102,7 @@
           return this
         },
         _update: function() {
+          this.clear()
           this.save()
           for( var i = 0; i < this.graph.length; i++ ) {
             var shape = this.graph[ i ]
@@ -155,13 +156,14 @@
           return this
         },
         Square : function() {
-          $.extend( this, {
+          var sqr = {}
+          $.extend( sqr, {
             ctx: that,
             stroke: null,
             fill: 'gray',
             _update: function() {},
             draw: function() {
-              that.square( this.x, this.y, this.size )
+              that.square( Math.floor(this.x * that.width), Math.floor(this.y * that.height), Math.floor(this.size * that.width) )
               if( this.stroke ) that.stroke( this.stroke )
               if( this.fill   ) that.fill( this.fill )
             },
@@ -172,21 +174,21 @@
               z  = v
             }
           })
-          var x = y = size = 200,
+          var x = y = size = .2,
             z = that.graph.length;
 
-          Object.defineProperties( this, {
+          Object.defineProperties( sqr, {
             x: { 
               get: function() { return x },
-              set: function(v) { that.clearRect( this.x, this.y, this.size, this.size ); x = v; }
+              set: function(v) { x = v; }
             },
             y: { 
               get: function() { return y },
-              set: function(v) { that.clearRect( this.x, this.y, this.size, this.size ); y = v; }
+              set: function(v) { y = v; }
             },
             size: { 
               get: function() { return size },
-              set: function(v) { that.clearRect( this.x, this.y, this.size, this.size ); sizex = v; }
+              set: function(v) {  sizex = v; }
             },
             z: { 
               get: function() { return z },
@@ -199,7 +201,9 @@
             },
            
           })
-          that.graph.push( this )
+          that.graph.push( sqr )
+          
+          return sqr
         },
         reorderGraph : function() {
           if( z > v ) {

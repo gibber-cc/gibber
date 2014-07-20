@@ -2,9 +2,21 @@
 
 "use strict"
 
+var parametricFunc = function() {
+  var points = rndf(-50,50,3)
+  
+  return { x:points[0], y:points[1], z:points[2] }
+}
+
 var types = {
       Cube:   { width:50, height:50, depth:50 },
       Sphere: { radius:50, segments:16, rings: 16 },
+      Tetrahedron: { radius:50, detail: 0 },
+      Octahedron: { radius:50, detail: 0 },
+      Icosahedron: { radius:50, detail: 0 },
+      Cylinder: { radiusTop:20, radiusBottom:20, height:100, radiusSegments:8, heightSegments:1, openEnded:false},
+      Parametric: { func: parametricFunc, slices:8, stacks:8 },
+      
       Torus:  { radius:50, tube:10, radialSegments:8, tubularSegments:8, arc:Math.PI * 2 },
       TorusKnot: { radius: 50, tube:20, radialSegments:64, tubularSegments: 8, p:5, q:3, heightScale:1 },
       Plane: { width:1, height:1, segmentsWidth:1, segmentsHeight:1 },
