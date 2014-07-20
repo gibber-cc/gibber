@@ -9,7 +9,7 @@ var parametricFunc = function() {
 }
 
 var types = {
-      Cube:   { width:50, height:50, depth:50 },
+      Cube:  { width:50, height:50, depth:50 },
       Sphere: { radius:50, segments:16, rings: 16 },
       Tetrahedron: { radius:50, detail: 0 },
       Octahedron: { radius:50, detail: 0 },
@@ -18,7 +18,7 @@ var types = {
       Parametric: { func: parametricFunc, slices:8, stacks:8 },
       
       Torus:  { radius:50, tube:10, radialSegments:8, tubularSegments:8, arc:Math.PI * 2 },
-      TorusKnot: { radius: 50, tube:20, radialSegments:64, tubularSegments: 8, p:5, q:3, heightScale:1 },
+      TorusKnot: { radius: 50, tube:5, radialSegments:64, tubularSegments: 8, p:5, q:3, heightScale:1 },
       Plane: { width:1, height:1, segmentsWidth:1, segmentsHeight:1 },
     },
     vectors = [ 'rotation', 'scale', 'position' ],
@@ -89,12 +89,12 @@ for( var key in types) {
 
       this.name = type
       
-      this.fill =     args.fill || new THREE.Color(0xffffff)
+      this.color =    new THREE.Color( args.color ) || new THREE.Color(0xffffff)
       var hasShader = typeof arguments[0] !== 'undefined' && arguments[0].shader
       
       if( !hasShader) {
         if( !args.texture ) {
-          this.material = new THREE.MeshPhongMaterial( { color: this.fill, shading: THREE.FlatShading, shininess: 50 } )
+          this.material = new THREE.MeshPhongMaterial( { color: this.color, shading: THREE.FlatShading, shininess: 50 } )
         }else{
           this.material = new THREE.MeshBasicMaterial({ map: args.texture, affectedByDistance:false, useScreenCoordinates:true })
         }
@@ -438,6 +438,13 @@ for( var key in types) {
           console.log( type + ' is removed.' ) 
         },
         set: function() {}
+      })
+      
+      Object.defineProperty( this, 'color', {
+        get: function() { return this.material.color },
+        set: function(v) {
+          this.material.color.set( v )
+        }
       })
       
       this.toString = function() { return this.name }
