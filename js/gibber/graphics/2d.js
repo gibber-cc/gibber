@@ -60,6 +60,7 @@
           //Gibber.Graphics.ctx = null 
           //cnvs = null
         },
+        shouldClear: false,
         _fill : that.fill,
         _stroke : that.stroke,
         _rotate : that.rotate,
@@ -116,7 +117,9 @@
         update : function() {},
         draw : function() {},
         clear: function() {
-          this.clearRect( 0,0,this.right,this.bottom )
+          if( this.shouldClear ) 
+            this.clearRect( 0,0,this.right,this.bottom )
+            
           this.texture.needsUpdate = true
           return this
         },
