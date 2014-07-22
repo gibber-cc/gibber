@@ -18,7 +18,7 @@
 
   window.Keys = Gibber.Environment.Keys = {
     bind: function( key, fcn ) {
-      Mousetrap.bind( key, fcn );
+      Mousetrap.bind( key, fcn )
     }
   }
   

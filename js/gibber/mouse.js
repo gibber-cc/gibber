@@ -68,8 +68,18 @@
           _m.onvaluechange()
         }
       },
-      _onmousedown : function() { _m[ 'button' ] = 1 },
-      _onmouseup : function() { _m[ 'button' ] = 0 },
+      _onmousedown : function() { 
+        _m[ 'button' ] = 1 
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
+      _onmouseup : function() { 
+        _m[ 'button' ] = 0 
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
       on: function() {
         if( ! _m.isOn ) {
           _m.ww = $( window ).width()
@@ -95,7 +105,7 @@
     
     // create getter layer that turns mouse event handlers on as needed
     for( var prop in mappingProperties ) {
-      ( function() {
+      !function() {
         var name = prop,
             Name = prop.charAt(0).toUpperCase() + prop.slice(1)
         
@@ -104,63 +114,18 @@
           get: function() {
             if( Name !== "Button" ) {
               _m.on();
-            }else{
-              $( window ).on( 'mousedown', _m._onmousedown )
-              $( window ).on( 'mouseup',   _m._onmouseup   )
             }
           },
           set: function(v) {}
         })
-      })()
+      }()
     }
     
-    Gibber.createProxyProperties( _m, mappingProperties, true )
+    $( window ).on( 'mousedown', _m._onmousedown )
+    $( window ).on( 'mouseup',   _m._onmouseup   )
     
-    //_m.on()
-    /*for( var prop in mappingProperties ) {
-      ( function( obj ) {
-        var _prop = prop,
-            property = mappingProperties[ _prop ],
-            mapping = $.extend( {}, property, {
-              Name  : _prop.charAt(0).toUpperCase() + _prop.slice(1),
-              name  : _prop,
-              type  : 'mapping',
-              value : obj[ _prop ], 
-              object: obj,
-              targets:[],
-            }),
-            oldSetter = obj.__lookupSetter__( _prop )
+    Gibber.createProxyProperties( _m, mappingProperties, true )
 
-        Object.defineProperty( obj, _prop, {
-          get: function() { return mapping.value },
-          set: function(v) {
-            if( typeof v === 'object' && v.type === 'mapping' ) {
-              Gibber.createMappingObject( mapping, v )
-            }else{
-              if(mapping.mapping) mapping.mapping.remove()
-
-              mapping.value = v
-            }
-          }
-        })
-        Object.defineProperty( obj, mapping.Name, {
-          get: function() {
-            if( mapping.Name !== "Button" ) {
-              this.on();
-            }else{
-              $( window ).on( 'mousedown', this._onmousedown )
-              $( window ).on( 'mouseup',   this._onmouseup   )
-            }
-            return mapping
-          },
-          set: function(v) {
-            if( typeof v === 'object' && v.type === 'mapping' ) {
-              Gibber.createMappingObject( mapping, v )
-            }
-          }
-        })
-      })( _m )*/
-      //}
     return _m
   })() 
 })()

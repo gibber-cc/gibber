@@ -211,7 +211,7 @@
           break;
 
         case 'function': case 'array':
-          var length = props[0].length || props[0].getValues().length,
+          var length = props[0].length || props[0].values.length,
               durations = typeof arguments[1] !== 'undefined' ? arguments[1] : Gibber.Clock.Time( 1 / length )
           
           if( typeof durations !== 'function' ) durations = Gibber.Clock.Time( durations )
