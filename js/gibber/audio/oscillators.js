@@ -85,7 +85,7 @@
         
         Gibber.createProxyProperties( oscillator, mappingProperties )
 
-        var proxyMethods = [ 'note' ]
+        var proxyMethods = [ 'note','send' ]
         
         if( name === 'Sampler' ) { proxyMethods.push( 'pickBuffer' ) }
         

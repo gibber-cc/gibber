@@ -155,7 +155,7 @@
 			
       shader.mappingObjects = []
         
-      shader.uniform = function(_name, _min, _max, _value) {
+      shader.uniform = function(_name, _value, _min, _max ) {
         _min = isNaN( _min ) ? 0 : _min
         _max = isNaN( _max ) ? 1 : _max        
         _value = isNaN( _value ) ? _min + (_max - _min) / 2 : _value

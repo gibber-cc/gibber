@@ -68,7 +68,7 @@
 
       Gibber.processArguments2( oscillator, args, name )
 
-      oscillator.toString = function() { return '> ' + name }
+      oscillator.toString = function() { return name }
       
       return oscillator
   }

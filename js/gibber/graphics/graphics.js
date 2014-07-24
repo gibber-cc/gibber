@@ -13,7 +13,7 @@ var Graphics = Gibber.Graphics = {
   graph: [],
   
   load : function() {
-    $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d', 'gibber/graphics/shapes2d'], 'graphics', function() {
+    $script( [ 'external/three/three.min', 'external/three/stats.min', 'gibber/graphics/geometry','gibber/graphics/2d', /*'gibber/graphics/shapes2d'*/ ], 'graphics', function() {
       $script([
         'external/three/postprocessing/EffectComposer',
         'external/three/postprocessing/RenderPass',

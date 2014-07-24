@@ -159,7 +159,7 @@
         //obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
         
-        Gibber.createProxyMethods( obj, [ 'note', 'chord' ] )
+        Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
                 
         obj.name = name 
         

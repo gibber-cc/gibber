@@ -230,6 +230,8 @@
         
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] ) 
         
+        Gibber.createProxyMethods( obj, [ 'send' ] )
+        
         Gibber.processArguments2( obj, args, obj.name )
         
         args.input = 0

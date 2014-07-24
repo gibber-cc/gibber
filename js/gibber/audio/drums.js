@@ -99,7 +99,7 @@
         }
         
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
-        Gibber.createProxyMethods( obj, [ 'note' ] )
+        Gibber.createProxyMethods( obj, [ 'note', 'send' ] )
         
         obj.toString = function() { return '> ' + name }
         
@@ -297,7 +297,7 @@
     obj.shuffle = function() { obj.seq.shuffle() }
     obj.reset = function() { obj.seq.reset() }
 
-    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start' ] )
+    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start','send','note' ] )
             
     obj.seq.start( true )
 
@@ -369,7 +369,7 @@
     obj.shuffle = function() { obj.seq.shuffle() }
     obj.reset = function() { obj.seq.reset() }
 
-    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start' ] )
+    Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start','send' ] )
 
     if( typeof props !== 'undefined') {
       switch( $.type( props[0] ) ) {

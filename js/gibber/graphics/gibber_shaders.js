@@ -92,9 +92,9 @@ var Shaders = Gibber.Graphics.GibberShaders = {
     ].join('\n')
     
     var shader = Shader( frag )
-    shader.uniform( 'xCount', 4, 1, 100 )
-    shader.uniform( 'yCount', 4, 1, 100 )
-    shader.uniform( 'blend', 0, 1, 0 )
+    shader.uniform( 'xCount', 4, 1, 100, 'float' )
+    shader.uniform( 'yCount', 4, 1, 100, 'float' )
+    shader.uniform( 'blend', 0, 1, 0, 'float' )
     
     shader.uniforms.colorX = { type:'c', value:{ r:1, g:1, b:1 } }
     shader.uniforms.colorY = { type:'c', value:{ r:1, g:1, b:1 } }
@@ -102,11 +102,11 @@ var Shaders = Gibber.Graphics.GibberShaders = {
     Object.defineProperties( shader, {
       colorX: {
         get: function()  { return shader.uniforms.colorX.value },
-        set: function(v) { shader.uniforms.colorX.value = v }        
+        set: function(v) { shader.uniforms.colorX.value = Color(v) }        
       },
       colorY: {
         get: function()  { return shader.uniforms.colorY.value },
-        set: function(v) { shader.uniforms.colorY.value = v }        
+        set: function(v) { shader.uniforms.colorY.value = Color(v) }
       }
     })
     
@@ -141,12 +141,12 @@ var Shaders = Gibber.Graphics.GibberShaders = {
     ].join('\n')
     
     var shader = Shader( frag )
-    shader.uniform( 'blend', 0, 1, 0 )
-    shader.uniform( 'thickness', 0, 1, .1 )
-    shader.uniform( 'x', 0, 1, .5 )
-    shader.uniform( 'y', 0, 1, .5 )
-    shader.uniform( 'speed', -1, 1, 1 )               
-    shader.uniform( 'radius', 0, 1, .05 )
+    shader.uniform( 'blend', 1, 0, 1, 'float' )
+    shader.uniform( 'thickness', .1, 0, 1, 'float' )
+    shader.uniform( 'x', .5, 0, 1, 'float' )
+    shader.uniform( 'y', .5, 0, 1, 'float' )
+    shader.uniform( 'speed', 1, -1, 1, 'float' )               
+    shader.uniform( 'radius', .05, 0, 1, 'float' )
     
     shader.uniforms.color = { type:'c', value:{ r:1, g:0, b:0 } }
     // shader.uniforms.colorY = { type:'c', value:{ r:1, g:1, b:1 } }
@@ -198,8 +198,8 @@ var Shaders = Gibber.Graphics.GibberShaders = {
 		].join("\n")
     
     var shader = Shader( frag, vert )
-    shader.uniform( 'amount', 0, .1, .01 )
-    shader.uniform( 'blend', 0, 1, 1 )
+    shader.uniform( 'amount', .01, 0, 1, 'float' )
+    shader.uniform( 'blend', 1, 0, 1, 'float' )
   
     return shader
   },

@@ -103,7 +103,7 @@
           return this
         },
         _update: function() {
-          this.clear()
+          if( this.shouldClear ) this.clear()
           this.save()
           for( var i = 0; i < this.graph.length; i++ ) {
             var shape = this.graph[ i ]
@@ -117,8 +117,7 @@
         update : function() {},
         draw : function() {},
         clear: function() {
-          if( this.shouldClear ) 
-            this.clearRect( 0,0,this.right,this.bottom )
+          this.clearRect( 0,0,this.right,this.bottom )
             
           this.texture.needsUpdate = true
           return this
@@ -158,56 +157,181 @@
           this.closePath()
           return this
         },
-        Square : function() {
-          var sqr = {}
-          $.extend( sqr, {
-            ctx: that,
-            stroke: null,
-            fill: 'gray',
-            _update: function() {},
-            draw: function() {
-              that.square( Math.floor(this.x * that.width), Math.floor(this.y * that.height), Math.floor(this.size * that.width) )
+        shapes: {
+          Shape : function() {
+            var sqr = {
+              ctx: that,
+              stroke: null,
+              fill: 'gray',
+              mods:[],
+              _update: function() {
+        				for( var i = 0; i < this.mods.length; i++ ) {
+        					var mod = this.mods[ i ],
+                      val,
+                      prop,
+                      upper,
+                      newVal
+
+                  val  = this[ mod.name ]()
+                  upper = mod.name.toUpperCase()
+          
+        					switch( mod.type ) {
+        						case "+":
+        							newVal = typeof mod.modulator === "number" ?  val + mod.modulator * mod.mult : val + mod.modulator.getValue() * mod.mult
+        							break
+        						case "++":
+        							newVal += typeof mod.modulator === "number" ? val + Math.abs( mod.modulator * mod.mult) : val + Math.abs( mod.modulator.getValue() * mod.mult )
+        							break							
+        						case "-" :
+        							newVal = typeof mod.modulator === "number" ? val - mod.modulator * mod.mult : val - mod.modulator.getValue() * mod.mult
+        							break
+        						case "=":
+        							newVal = typeof mod.modulator === "number" ? mod.modulator : mod.modulator.getValue() * mod.mult
+        							break
+        						default:
+        						break;	
+        					}
+                  this[ mod.name ]( newVal )
+                }
+              },
+              remove: function() {
+                that.graph.splice( that.graph.indexOf( this ), 1 )
+              },
+              changeZ : function( v ) {
+                z  = v
+              },
+        			mod : function( _name, _modulator, _type, _mult ) {
+        				this.mods.push({ name:_name, modulator:_modulator, type:_type || "+", mult: _mult || 1 })
+        
+                return this
+        			},
+      
+              removeMod : function( name ) {
+                if( name ) {
+                  for( var i = this.mods.length - 1; i >= 0; i-- ) {
+                    var m = this.mods[ i ]
+                    if( m.name === name ) {
+                      this.mods.splice( i, 1 )
+                      //break
+                    }
+                  }
+                }else{
+                  this.mods = []
+                }
+              }
+            }
+          
+            that.shouldClear = true
+          
+            var x = 0,
+                y = 0,
+                width = height = .2,
+                z = that.graph.length;
+
+            Object.defineProperties( sqr, {
+              'x': { 
+                configurable: true,
+                get: function() { return x },
+                set: function(v) { x = v; }
+              },
+              'y': {
+                configurable: true, 
+                get: function() { return y },
+                set: function(v) { y = v; }
+              },
+              'z': { 
+                get: function() { return z },
+                set: function(v) { 
+                  that.reorderGraph() 
+                  that.graph.splice( that.graph.indexOf( this ),1 )
+                  that.graph.splice( v, 0, this )
+                  z = v
+                }
+              },
+            })
+                    
+            var zeroToOne = { min:0, max:1, timescale:'graphics', output:Gibber.LINEAR },
+                mappings = {
+                  x: that.zeroToOne,
+                  y: that.zeroToOne,
+                }
+
+            Gibber.createProxyProperties( sqr, mappings )
+          
+            that.graph.push( sqr )
+          
+            return sqr
+          },
+          Rectangle : function() {
+            var rect = that.shapes.Shape(),
+                mappings = {
+                  width: that.zeroToOne,
+                  height: that.zeroToOne
+                }
+            
+            rect.draw = function() {
+              that.rectangle( Math.floor(this.x() * that.width), Math.floor(this.y() * that.height), Math.floor(this.width() * that.width), Math.floor(this.height() * that.height) )
               if( this.stroke ) that.stroke( this.stroke )
               if( this.fill   ) that.fill( this.fill )
-            },
-            remove: function() {
-              that.graph.splice( that.graph.indexOf( this ), 1 )
-            },
-            changeZ : function( v ) {
-              z  = v
             }
-          })
-          var x = y = size = .2,
-            z = that.graph.length;
+            
+            var width = height = .2
+            Object.defineProperties( rect, {
+              'width': {
+                configurable: true,
+                get: function() { return width },
+                set: function(v) { width = v; }
+              },
+              'height': {
+                configurable: true,
+                get: function() { return height },
+                set: function(v) { height = v; }
+              },
+            })
 
-          Object.defineProperties( sqr, {
-            x: { 
-              get: function() { return x },
-              set: function(v) { x = v; }
-            },
-            y: { 
-              get: function() { return y },
-              set: function(v) { y = v; }
-            },
-            size: { 
-              get: function() { return size },
-              set: function(v) {  sizex = v; }
-            },
-            z: { 
-              get: function() { return z },
-              set: function(v) { 
-                that.reorderGraph() 
-                that.graph.splice( that.graph.indexOf( this ),1 )
-                that.graph.splice( v, 0, this )
-                z = v
-              }
-            },
-           
-          })
-          that.graph.push( sqr )
+            Gibber.createProxyProperties( rect, mappings )
+            
+            if( typeof arguments[0] === 'object' ) $.extend( rect, arguments[0] )
+            
+            return rect
+          },
           
-          return sqr
+          Polygon: function() {
+            var shape = that.shapes.Shape(),
+                mappings = {
+                  radius: that.zeroToOne,
+                  sides: { min:3, max:20, output:Gibber.LINEAR, timescale:'graphics' }
+                }
+            
+            shape.draw = function() {
+              that.polygon( Math.floor(this.x() * that.width), Math.floor(this.y() * that.height), Math.floor(this.radius() * that.width), this.sides() )
+              if( this.stroke ) that.stroke( this.stroke )
+              if( this.fill   ) that.fill( this.fill )
+            }
+            
+            var radius = .2, sides = 5
+            Object.defineProperties( shape, {
+              'radius': {
+                configurable: true,
+                get: function() { return radius },
+                set: function(v) { radius = v; }
+              },
+              'sides': {
+                configurable: true,
+                get: function() { return sides },
+                set: function(v) { sides = v; }
+              },
+            })
+
+            Gibber.createProxyProperties( shape, mappings )
+            
+            if( typeof arguments[0] === 'object' ) $.extend( shape, arguments[0] )
+            
+            console.log( 'SHAPE', shape, shape.draw )
+            return shape
+          }
         },
+        zeroToOne: { min:0, max:1, timescale:'graphics', output:Gibber.LINEAR },
         reorderGraph : function() {
           if( z > v ) {
              for( var i = v; i < that.graph.length; i++ ){ 
@@ -294,5 +418,22 @@
   }
 
   window.Canvas = TwoD.Canvas
+  window.Rectangle = function() {
+    var args = Array.prototype.slice.call( arguments, 0 )
+    
+    if( !Gibber.Graphics.canvas2d ) TwoD.Canvas()
+    
+    return Gibber.Graphics.canvas2d.shapes[ 'Rectangle' ].apply( null, args )
+  }
+  
+  window.Polygon = function() {
+    var args = Array.prototype.slice.call( arguments, 0 )
+    
+    if( !Gibber.Graphics.canvas2d ) TwoD.Canvas()
+    
+    return Gibber.Graphics.canvas2d.shapes[ 'Polygon' ].apply( null, args )
+  }
+  
+  
 
 })()
