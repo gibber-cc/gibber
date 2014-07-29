@@ -326,7 +326,7 @@ app.post( '/publish', function( req, res, next ) {
         name: req.body.name,
         author: req.body.username,
         type: 'publication',
-        publicationDate: [''+year, ''+month, ''+day, ''+time],
+        publicationDate: [year, month, day, time],
         text: req.body.code,
         tags: req.body.tags,
         permissions : req.body.permissions,
