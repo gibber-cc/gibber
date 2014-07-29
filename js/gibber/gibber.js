@@ -217,7 +217,14 @@ window.Gibber = window.G = {
     return this
   },
 
-  log: function( msg ) { console.log( msg ) },
+  log: function( msg ) { 
+    console.log( "LOG", typeof msg )
+    if( typeof msg !== 'function' ) {
+      console.log( msg )
+    }else{
+      console.log( 'Function' )
+    }
+  },
   
   scriptCallbacks: [],
   
@@ -243,7 +250,11 @@ window.Gibber = window.G = {
 			//console.log( start, end, src )
 			try{
 				result = eval( src )
-        log( result )
+        if( typeof result !== 'function' ) {
+          log( result )
+        }else{
+          log( 'Function' )
+        }
 			}catch( e ) {
 				console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
 			}
