@@ -400,7 +400,7 @@ window.Gibber = window.G = {
         max = typeof target.max === 'function' ? target.max() : target.max,
         _min = typeof from.min === 'function' ? from.min() : from.min,
         _max = typeof from.max === 'function' ? from.max() : from.max
-
+        
     if( typeof from.object === 'undefined' && from.Value) { // if using an interface object directly to map
       from = from.Value
     }
@@ -603,7 +603,7 @@ window.Gibber = window.G = {
         propertyDict = useMappings ? dict || obj.mappingProperties[ propertyName ] : null,
         __n = propertyName.charAt(0).toUpperCase() + propertyName.slice(1),
         mapping, fnc
-        
+            
     mapping = $.extend( {}, propertyDict, {
       Name  : __n,
       name  : propertyName,

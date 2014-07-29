@@ -164,12 +164,12 @@
     graphics: {
       graphics: function( target, from ) {
         // rewrite getValue function of Map object to call Map callback and then return appropriate value
-
         var map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
             old = map.getValue.bind( map ),
             mapping
         
         map.getValue = function() {
+          //console.log( from.name, from, target.min, target.max, from.min, from.max )
           map.callback( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
           return old()
         }

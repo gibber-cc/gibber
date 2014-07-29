@@ -1,10 +1,9 @@
 ( function() {
 
 "use strict"
-// REMEMBER TO CHECK WELCOME.INIT()
-//var GE.SERVER_URL = 'http://gibber.mat.ucsb.edu'
 
 var GE = Gibber.Environment = {
+  // REMEMBER TO CHECK WELCOME.INIT()
   //SERVER_URL : 'http://127.0.0.1:8080',
   SERVER_URL : 'http://gibber.mat.ucsb.edu',
 
