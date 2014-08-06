@@ -9,6 +9,7 @@
     columns : [],
     defaultColumnSize : 500,
     resizeHandleSize  : 8,
+    minColumnWidth: 300,
     columnID : 0,
     isFullScreen: false,
     _textBGOpacity : 0,
@@ -35,6 +36,12 @@
           width0 = windowWidth * .75,
           width1 = windowWidth * .25
           
+      if( width1 < Layout.minColumnWidth ) {
+        var diff = Layout.minColumnWidth - width1
+        width1 = Layout.minColumnWidth
+        width0 -= diff
+      }
+      
       Layout.columns[0].setWidth( width0 )
       Layout.columns[1].setWidth( width1 )
       
@@ -266,7 +273,7 @@
         var col = _col,
         columnResizeHandler = function(e) {
           var newWidthCandidate = e.pageX - col.element.position().left
-          col.width = newWidthCandidate > 300 ? newWidthCandidate : 300
+          col.width = newWidthCandidate > Layout.minColumnWidth ? newWidthCandidate : Layout.minColumnWidth
           col.element.width( col.width )
           
           if( col.onresize ) col.onresize( col.width )
