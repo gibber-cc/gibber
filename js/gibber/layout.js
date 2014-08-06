@@ -96,6 +96,13 @@
           $.publish('/layout/resizeWindow', { w:_w, h:_h } )
           w = _w
           h = _h
+          
+          if( Layout.isFullScreen ) {
+            $.publish( '/layout/contentResize', { w: $( window ).width(), h:$( window ).height(), offset:0 } )
+          }else{
+            var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+            $.publish( '/layout/contentResize', { w: $( window ).width(), h:height, offset: $('thead').height() } )
+          }
         }
       }
     

@@ -2,6 +2,7 @@
   "use strict"
   
   var _m = null,
+      headerFooterHeight = 0, 
       mappingProperties = {
         x : {
           min:0, max:1,
@@ -61,9 +62,10 @@
         // console.log( prefix, upper )
         _m[ 'prev' + upper + 'X' ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
         _m[ 'prev' + upper + 'Y' ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
-        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX / _m.ww 
-        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY / _m.wh 
-
+        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX // / _m.ww 
+        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - headerFooterHeight// / _m.wh 
+        
+        //console.log( e )
         if( typeof _m.onvaluechange === 'function' ) {
           _m.onvaluechange()
         }
@@ -80,12 +82,22 @@
           _m.onvaluechange()
         }
       },
-      on: function() {
+      on: function() {        
         if( ! _m.isOn ) {
-          _m.ww = $( window ).width()
-          _m.wh = $( window ).height()
-          $( window ).on( 'mousemove', _m._onmousemove )
           _m.isOn = true
+          
+          _m.X.max = _m.ww = $( window ).width()
+          
+          if( Layout.isFullScreen ) {
+            _m.Y.max = _m.wh = $( window ).height()
+          }else{
+            var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+            _m.Y.max =  _m.wh = height
+          }
+          
+          headerFooterHeight = $( 'thead' ).height()
+          
+          $( window ).on( 'mousemove', _m._onmousemove )
         }
       },
       off: function() {
@@ -103,11 +115,23 @@
       },
     })
     
+    if( Layout.isFullScreen ) {
+      mappingProperties.x.max = $( window ).width()
+      mappingProperties.y.max = $( window ).height()
+    }else{
+      var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+      mappingProperties.x.max = $( window ).width()
+      mappingProperties.y.max = height
+    }
+    
+    //mappingProperties.x.max = $( window ).width()
+    //mappingProperties.y.max = $( window ).height()
     // create getter layer that turns mouse event handlers on as needed
     for( var prop in mappingProperties ) {
       !function() {
         var name = prop,
-            Name = prop.charAt(0).toUpperCase() + prop.slice(1)
+            Name = prop.charAt(0).toUpperCase() + prop.slice(1),
+            value = _m[ prop ]
         
         Object.defineProperty( _m, Name, {
           configurable:true,
@@ -115,11 +139,17 @@
             if( Name !== "Button" ) {
               _m.on();
             }
+            return value 
           },
-          set: function(v) {}
+          set: function(v) { value = v; return _m }
         })
       }()
     }
+    
+    $.subscribe( '/layout/contentResize', function( e, obj ) {
+      _m.ww = _m.X.max = obj.w
+      _m.wh = _m.Y.max = obj.h
+    })
     
     $( window ).on( 'mousedown', _m._onmousedown )
     $( window ).on( 'mouseup',   _m._onmouseup   )

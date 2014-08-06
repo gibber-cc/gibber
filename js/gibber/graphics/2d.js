@@ -51,6 +51,17 @@
         three.empty()
         three.append( canvas )
       }
+      
+      $.subscribe( '/layout/contentResize', function( e, msg ) {
+        console.log( msg )
+        three.width( msg.width )
+        three.height( msg.height )
+        //canvas.width = msg.width
+        //canvas.height = msg.height
+        $( canvas ).css({ width: msg.width, height: msg.height })
+      })
+      
+      
       $.extend( that, {
         canvas: canvas,
         texture: tex || { needsUpdate: function() {} }, 
@@ -131,9 +142,14 @@
         },
         circle : function( x,y,radius ) {
           if( radius > 0 ) {
+            this.save()
+            
+            this.translate(x,y)
             this.beginPath()
-              this.arc( x, y, radius, 0, Math.PI * 2)
+              this.arc( 0,0, radius, 0, Math.PI * 2)
             this.closePath()
+            
+            this.restore()
           }
           return this
         },

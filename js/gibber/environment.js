@@ -22,6 +22,7 @@ var GE = Gibber.Environment = {
                 'gibber/keymaps',
                 'gibber/browser',
                 'gibber/account',
+                //'gibber/demos',
                 ], function() {
 
         GE.Keymap.init()
@@ -39,6 +40,7 @@ var GE = Gibber.Environment = {
           GE.Console.open()
           GE.Welcome.init()
           GE.Share.open()
+          //GE.Demos.open()
           GE.Layout.createBoundariesForInitialLayout()
         }
         
