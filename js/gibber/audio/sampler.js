@@ -59,9 +59,7 @@
         },
         set: function(v) {
           if( v < 1 ) {
-
             __start = v * oscillator.length
-                        console.log( "__start = ", __start)
           }else{
             __start = v
           }
