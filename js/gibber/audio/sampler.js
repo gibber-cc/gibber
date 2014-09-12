@@ -15,6 +15,16 @@
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
     },
+    start: {
+      min:0, max:1,
+      output:Gibber.LINEAR,
+      timescale:'audio'
+    },
+    end: {
+      min:0, max:1,
+      output:Gibber.LINEAR,
+      timescale:'audio'
+    },
     out: {
       min: 0, max: 1,
       output: Gibber.LINEAR,
@@ -40,6 +50,40 @@
       $.extend( true, oscillator, Gibber.ugen )
       
       oscillator.fx.ugen = oscillator
+      
+      var oldStart = oscillator.__lookupSetter__('start'),
+          __start = 0
+      Object.defineProperty(oscillator, 'start', {
+        get: function() { 
+          return __start 
+        },
+        set: function(v) {
+          if( v < 1 ) {
+
+            __start = v * oscillator.length
+                        console.log( "__start = ", __start)
+          }else{
+            __start = v
+          }
+          oldStart( __start )
+        }
+      })
+      
+      var oldEnd = oscillator.__lookupSetter__('end'),
+          __end = 1
+      Object.defineProperty(oscillator, 'end', {
+        get: function() { 
+          return __end 
+        },
+        set: function(v) {
+          if( v < 1 ) {
+            __end = v * oscillator.length
+          }else{
+            __end = v
+          }
+          oldEnd( __end )
+        }
+      })
       
       Object.defineProperty(oscillator, '_', {
         get: function() { 
