@@ -15,16 +15,16 @@
       output: Gibber.LOGARITHMIC,
       timescale: 'audio',
     },
-    start: {
-      min:0, max:1,
-      output:Gibber.LINEAR,
-      timescale:'audio'
-    },
-    end: {
-      min:0, max:1,
-      output:Gibber.LINEAR,
-      timescale:'audio'
-    },
+    // start: {
+    //   min:0, max:1,
+    //   output:Gibber.LINEAR,
+    //   timescale:'audio'
+    // },
+    // end: {
+    //   min:0, max:1,
+    //   output:Gibber.LINEAR,
+    //   timescale:'audio'
+    // },
     out: {
       min: 0, max: 1,
       output: Gibber.LINEAR,
@@ -58,12 +58,12 @@
           return __start 
         },
         set: function(v) {
-          if( v < 1 ) {
+          if( v <= 1 ) {
             __start = v * oscillator.length
           }else{
             __start = v
           }
-          oldStart( __start )
+          oldStart.call( oscillator, __start )
         }
       })
       
@@ -74,12 +74,12 @@
           return __end 
         },
         set: function(v) {
-          if( v < 1 ) {
+          if( v <= 1 ) {
             __end = v * oscillator.length
           }else{
             __end = v
           }
-          oldEnd( __end )
+          oldEnd.call( oscillator, __end )
         }
       })
       
