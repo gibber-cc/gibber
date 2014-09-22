@@ -315,7 +315,7 @@ var Gibber = {
     
     var fromTimescale = from.Name !== 'Out' ? from.timescale : 'audioOut' // check for audio Out, which is a faux property
     
-    //console.log( target.timescale, fromTimescale )
+    console.log( target.timescale, fromTimescale )
     
     mapping = Gibber.mappings[ target.timescale ][ fromTimescale ]( target, from )
     
@@ -618,6 +618,7 @@ var Gibber = {
 
 Gibber.Utilities = require( './utilities' )( Gibber )
 Gibber.Audio = require( './audio' )( Gibber )
+Gibber.mappings = require( './mappings' )( Gibber, Gibber.Audio.Core )
 //Gibber.Graphics = require( './graphics/graphics' )( Gibber )
 
 module.exports = Gibber

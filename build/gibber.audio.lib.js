@@ -173,9 +173,7 @@ Audio = {
     Audio.Master.amp = 1
     
     Audio.Core.clear()
-    
-    //Audio.Master.connect( Audio.Core.out )
-    //Audio.Core.dirty( Audio.Master )
+
     Audio.Core.out.addConnection( Audio.Master, 1 );
     Audio.Master.destinations.push( Audio.Core.out );
   
@@ -3786,7 +3784,7 @@ var Gibber = {
     
     var fromTimescale = from.Name !== 'Out' ? from.timescale : 'audioOut' // check for audio Out, which is a faux property
     
-    //console.log( target.timescale, fromTimescale )
+    console.log( target.timescale, fromTimescale )
     
     mapping = Gibber.mappings[ target.timescale ][ fromTimescale ]( target, from )
     
@@ -4089,18 +4087,15 @@ var Gibber = {
 
 Gibber.Utilities = _dereq_( './utilities' )( Gibber )
 Gibber.Audio = _dereq_( './audio' )( Gibber )
+Gibber.mappings = _dereq_( './mappings' )( Gibber, Gibber.Audio.Core )
 //Gibber.Graphics = require( './graphics/graphics' )( Gibber )
 
 module.exports = Gibber
 
 })()
-},{"./audio":3,"./dollar":17,"./utilities":21}],19:[function(_dereq_,module,exports){
-!function() {  
+},{"./audio":3,"./dollar":17,"./mappings":19,"./utilities":21}],19:[function(_dereq_,module,exports){
+module.exports = function( Gibber, Gibberish ) {  
   var mappings = {
-    outputCurves: {
-      LINEAR:0,
-      LOGARITHMIC:1
-    },
     audio : {
       graphics: function( target, from ) {
 				if( typeof from.object.track === 'undefined' ) from.object.track = {}
@@ -4730,10 +4725,15 @@ module.exports = Gibber
         return mapping
       }
     },
-  }
+  } 
   
-  module.exports = mappings
-}()
+  return mappings
+}
+
+module.exports.outputCurves= {
+  LINEAR:0,
+  LOGARITHMIC:1
+}
 },{}],20:[function(_dereq_,module,exports){
 !function() {
   
