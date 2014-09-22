@@ -84,9 +84,6 @@ Audio = {
     $.extend( Gibber.Presets, Audio.FX.Presets )
     
     //$.extend( Audio, Audio.Core )
-    
-    console.log("PRESETS", Audio.Synths.Presets, Gibber.Presets )
-
   },
   // override for Gibber.Audio method
   defineUgenProperty : function(key, initValue, obj) {

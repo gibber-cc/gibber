@@ -35,11 +35,6 @@
     "sequencing",
     "gibber"
   ],
-  "author": {
-    "name": "Charlie Roberts",
-    "email": "charlie@charlie-roberts.com",
-    "url": "http://www.charlie-roberts.com/"
-  },
-  "license": "MIT",
-  "readmeFilename": "README.md"
+  "author": "Charlie Roberts <charlie@charlie-roberts.com> (http://www.charlie-roberts.com/)",
+  "license": "MIT"
 }

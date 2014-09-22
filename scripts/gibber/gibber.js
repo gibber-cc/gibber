@@ -18,6 +18,10 @@ var Gibber = {
     if( Gibber.Audio ) {
       Gibber.Audio.export( target )
     }
+    
+    if( Gibber.Graphics ) {
+      Gibber.Graphics.export( target )
+    }
   },
   
   init: function( _options ) {                        
@@ -31,7 +35,8 @@ var Gibber = {
       var options = {
         globalize: true,
         canvas: null,
-        target: window
+        target: window,
+        graphicsMode:'3d'
       }
       
       if( typeof _options === 'object' ) $.extend( options, _options )
@@ -41,10 +46,17 @@ var Gibber = {
       
         if( options.globalize ) {
           options.target.Master = Gibber.Audio.Master    
-          Gibber.export( options.target )        
         }else{
           $.extend( Gibber, Gibber.Audio )
         }
+      }
+      
+      if( Gibber.Graphics ) {
+        Gibber.Graphics.init( options.graphicsMode )
+      }
+      
+      if( options.globalize ) {
+        Gibber.export( options.target )
       }
       
       options.target.$ = $ // TODO: geez louise
@@ -606,6 +618,7 @@ var Gibber = {
 
 Gibber.Utilities = require( './utilities' )( Gibber )
 Gibber.Audio = require( './audio' )( Gibber )
+Gibber.Graphics = require( './graphics/graphics' )( Gibber )
 
 module.exports = Gibber
 
