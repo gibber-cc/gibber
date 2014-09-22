@@ -150,8 +150,8 @@ Audio = {
     return this
   },
   clear: function() {
-    Audio.analysisUgens.length = 0
-    Audio.sequencers.length = 0
+    // Audio.analysisUgens.length = 0
+    // Audio.sequencers.length = 0
   
     for( var i = 0; i < Audio.Master.inputs.length; i++ ) {
       Audio.Master.inputs[ i ].value.disconnect()
@@ -164,6 +164,11 @@ Audio = {
     Audio.Master.fx.remove()
   
     Audio.Master.amp = 1
+    
+    Audio.Core.clear()
+
+    Audio.Core.out.addConnection( Audio.Master, 1 );
+    Audio.Master.destinations.push( Audio.Core.out );
   
     console.log( 'Audio stopped.')
   },

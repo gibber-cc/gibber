@@ -7,7 +7,7 @@ var browserify = require( 'gulp-browserify' ),
 
 gulp.task( 'client', function(){
   var out = gulp.src( './scripts/gibber/gibber.js')
-    .pipe( browserify({ standalone:'Gibber', bare:true }) )
+    .pipe( browserify({ standalone:'Gibber', bare:true, ignore:'./graphics/graphics' }) )
     .pipe( rename('gibber.audio.lib.js') )
     .pipe( gulp.dest('./build/') )
     .pipe( buffer() )

@@ -91,9 +91,6 @@ Audio = {
     $.extend( Gibber.Presets, Audio.FX.Presets )
     
     //$.extend( Audio, Audio.Core )
-    
-    console.log("PRESETS", Audio.Synths.Presets, Gibber.Presets )
-
   },
   // override for Gibber.Audio method
   defineUgenProperty : function(key, initValue, obj) {
@@ -160,8 +157,8 @@ Audio = {
     return this
   },
   clear: function() {
-    Audio.analysisUgens.length = 0
-    Audio.sequencers.length = 0
+    // Audio.analysisUgens.length = 0
+    // Audio.sequencers.length = 0
   
     for( var i = 0; i < Audio.Master.inputs.length; i++ ) {
       Audio.Master.inputs[ i ].value.disconnect()
@@ -174,6 +171,13 @@ Audio = {
     Audio.Master.fx.remove()
   
     Audio.Master.amp = 1
+    
+    Audio.Core.clear()
+    
+    //Audio.Master.connect( Audio.Core.out )
+    //Audio.Core.dirty( Audio.Master )
+    Audio.Core.out.addConnection( Audio.Master, 1 );
+    Audio.Master.destinations.push( Audio.Core.out );
   
     console.log( 'Audio stopped.')
   },
@@ -3485,6 +3489,10 @@ var Gibber = {
     if( Gibber.Audio ) {
       Gibber.Audio.export( target )
     }
+    
+    if( Gibber.Graphics ) {
+      Gibber.Graphics.export( target )
+    }
   },
   
   init: function( _options ) {                        
@@ -3498,7 +3506,8 @@ var Gibber = {
       var options = {
         globalize: true,
         canvas: null,
-        target: window
+        target: window,
+        graphicsMode:'3d'
       }
       
       if( typeof _options === 'object' ) $.extend( options, _options )
@@ -3508,10 +3517,17 @@ var Gibber = {
       
         if( options.globalize ) {
           options.target.Master = Gibber.Audio.Master    
-          Gibber.export( options.target )        
         }else{
           $.extend( Gibber, Gibber.Audio )
         }
+      }
+      
+      if( Gibber.Graphics ) {
+        Gibber.Graphics.init( options.graphicsMode )
+      }
+      
+      if( options.globalize ) {
+        Gibber.export( options.target )
       }
       
       options.target.$ = $ // TODO: geez louise
@@ -4073,6 +4089,7 @@ var Gibber = {
 
 Gibber.Utilities = _dereq_( './utilities' )( Gibber )
 Gibber.Audio = _dereq_( './audio' )( Gibber )
+//Gibber.Graphics = require( './graphics/graphics' )( Gibber )
 
 module.exports = Gibber
 
