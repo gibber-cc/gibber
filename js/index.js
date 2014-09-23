@@ -1,4 +1,19 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f._Gibber=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./js/main.js":[function(require,module,exports){
+!function() {
+  "use strict"
+  
+  window.$ = require( './gibber/dollar' )
+  require( './external/injectCSS.js' )
+
+  window.Gibber = require( 'gibber.lib' )
+
+  Gibber.Environment = require( './gibber/environment' )( Gibber )
+
+  Gibber.init()
+
+  Gibber.Environment.init()
+}()
+},{"./external/injectCSS.js":"/www/gibber.libraries/js/external/injectCSS.js","./gibber/dollar":"/www/gibber.libraries/js/gibber/dollar.js","./gibber/environment":"/www/gibber.libraries/js/gibber/environment.js","gibber.lib":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/gibber.js"}],"/www/gibber.libraries/js/external/codemirror/javascript.js":[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -6,7 +21,7 @@
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
-    mod(_dereq_( "codemirror" ));
+    mod(require( "codemirror" ));
   else if (typeof define == "function" && define.amd) // AMD
     define(["../../lib/codemirror"], mod);
   else // Plain browser env
@@ -683,7 +698,7 @@ CodeMirror.defineMIME("text/typescript", { name: "javascript", typescript: true 
 CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript: true });
 
 });
-},{"codemirror":14}],2:[function(_dereq_,module,exports){
+},{"codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/js/external/injectCSS.js":[function(require,module,exports){
 /*
  * jquery.injectCSS.js - jquery css injection plugin
  * Copyright (C) 2013, Robert Kajic (robert@kajic.com)
@@ -860,24 +875,9 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
         return container;
     };
 }($));
-},{}],3:[function(_dereq_,module,exports){
-!function() {
-  "use strict"
-  
-  window.$ = _dereq_( './gibber/dollar' )
-  _dereq_( './external/injectCSS.js' )
-
-  window.Gibber = _dereq_( 'gibber.lib' )
-
-  Gibber.Environment = _dereq_( './gibber/environment' )( Gibber )
-
-  Gibber.init()
-
-  Gibber.Environment.init()
-}()
-},{"./external/injectCSS.js":2,"./gibber/dollar":8,"./gibber/environment":9,"gibber.lib":20}],4:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/account.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
-  var GE, $ = _dereq_( './dollar' );
+  var GE, $ = require( './dollar' );
   
   var Account = {
     nick: null,
@@ -1121,10 +1121,10 @@ module.exports = function( Gibber ) {
   return Account
 }
 
-},{"./dollar":8}],5:[function(_dereq_,module,exports){
+},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/browser.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
-      $ = _dereq_( './dollar' )
+      $ = require( './dollar' )
       
   var Browser = {
     demoColumn: null,
@@ -1427,8 +1427,8 @@ module.exports = function( Gibber ) {
   return Browser
 }
 
-},{"./dollar":8}],6:[function(_dereq_,module,exports){
-var $ = _dereq_( './dollar' )
+},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
+var $ = require( './dollar' )
 
 console.log( $ )
 
@@ -1847,10 +1847,10 @@ module.exports = function( Gibber ) {
   
   return Column
 }
-},{"./dollar":8}],7:[function(_dereq_,module,exports){
+},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/console.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
-      $ = _dereq_( './dollar' ),
+      $ = require( './dollar' ),
       console_footer,
       tfoot,
       nl2br  = function (str, is_xhtml) {   
@@ -2023,8 +2023,8 @@ module.exports = function( Gibber ) {
 
   return Console
 }
-},{"./dollar":8}],8:[function(_dereq_,module,exports){
-var $ = _dereq_( 'jquery' ),
+},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/dollar.js":[function(require,module,exports){
+var $ = require( 'jquery' ),
     jQuery = $
 
 !function() {
@@ -2058,29 +2058,31 @@ var $ = _dereq_( 'jquery' ),
 
   module.exports = $
 }()
-},{"jquery":21}],9:[function(_dereq_,module,exports){
+},{"jquery":"/www/gibber.libraries/node_modules/jquery/dist/jquery.js"}],"/www/gibber.libraries/js/gibber/environment.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"
 
-var MT = _dereq_( 'coreh-mousetrap' ),
-    $  = _dereq_( './dollar' )
+var MT = require( 'coreh-mousetrap' ),
+    $  = require( './dollar' )
     
 var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
   SERVER_URL : 'http://127.0.0.1:8080',
   //SERVER_URL : 'http://gibber.mat.ucsb.edu',
   
-  CodeMirror:   _dereq_( 'codemirror' ),
-  CodeMirrorJS: _dereq_( '../external/codemirror/javascript' ),
-  Layout:       _dereq_( './layout' )( Gibber ),
-  Account:      _dereq_( './account' )( Gibber ),
-  Console:      _dereq_( './console' )( Gibber ),
+  CodeMirror:   require( 'codemirror' ),
+  CodeMirrorJS: require( '../external/codemirror/javascript' ),
+  Layout:       require( './layout' )( Gibber ),
+  Account:      require( './account' )( Gibber ),
+  Console:      require( './console' )( Gibber ),
   Mousetrap:    MT,
-  Keys:         _dereq_( './keys' )( MT ),
-  Keymap:       _dereq_( './keymaps' )( Gibber ),
-  Browser:      _dereq_( './browser' )( Gibber ),
-  Theme:        _dereq_( './theme' )( Gibber ),
+  Keys:         require( './keys' )( MT ),
+  Keymap:       require( './keymaps' )( Gibber ),
+  Browser:      require( './browser' )( Gibber ),
+  Theme:        require( './theme' )( Gibber ),
+  Esprima:      require( 'esprima' ),
+  Mouse:        require( './mouse' ),
   
   init : function() { 
     GE.Keymap.init()
@@ -2100,7 +2102,16 @@ var GE = {
       GE.Theme.init()
       //GE.Share.open()
       //GE.Demos.open()
-      //GE.Layout.createBoundariesForInitialLayout()
+      
+      GE.Menu.init()
+      GE.Layout.createBoundariesForInitialLayout()
+      
+      GE.Metronome.init()
+      GE.Metronome.on()
+      Gibber.Clock.addMetronome( GE.Metronome )
+      
+      GE.Mouse = GE.Mouse( Gibber )
+      window.Mouse = GE.Mouse      
     }
     
     /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
@@ -2301,13 +2312,53 @@ var GE = {
 			'glsl-vertex'   : 'x-shader/x-vertex'      
 		},
 		javascript : {
+      _run: function( script, pos, cm ) { // called by Gibber.Environment.Keymap.modes.javascript
+    		var _start = pos.start ? pos.start.line : pos.line,
+    				tree
+    
+    	  try{
+    			tree = GE.Esprima.parse( script, { loc:true, range:true } )
+    		}catch(e) {
+    			console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
+    			return
+    		}
+    
+        // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
+          var obj = tree.body[ __i__ ],
+    					start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
+    					end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
+    				  src   = cm.getRange( start, end ),
+              result = null
+			
+    			//console.log( start, end, src )
+    			try{
+    				result = eval( src )
+            if( typeof result !== 'function' ) {
+              log( result )
+            }else{
+              log( 'Function' )
+            }
+    			}catch( e ) {
+    				console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
+    			}
+      
+          if( Gibber.scriptCallbacks.length > 0 ) {
+            for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+              Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+            }
+          }
+        }
+      },
+
 			run : function( column, value, position, codemirror, shouldDelay ) {
 				if( shouldDelay ) {
 					Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
 				}else{
-					Gibber.run( value, position, codemirror ) 
+					GE.modes.javascript._run( value, position, codemirror ) 
 				}
 			},
+      
 			default: [
 	      "/*To execute code, select it and hit Ctrl+Enter.",
         "* Ctrl+. stops audio. Press the help button for",
@@ -2618,10 +2669,10 @@ var GE = {
 
 return GE
 }
-},{"../external/codemirror/javascript":1,"./account":4,"./browser":5,"./console":7,"./dollar":8,"./keymaps":10,"./keys":11,"./layout":12,"./theme":13,"codemirror":14,"coreh-mousetrap":19}],10:[function(_dereq_,module,exports){
+},{"../external/codemirror/javascript":"/www/gibber.libraries/js/external/codemirror/javascript.js","./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./console":"/www/gibber.libraries/js/gibber/console.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
-  var $ = _dereq_( './dollar' )
+  var $ = require( './dollar' )
   
   console.log( "DOLLAR", $ )
   var Keymap = {
@@ -2850,7 +2901,7 @@ module.exports = function( Gibber ) {
 }
 
 
-},{"./dollar":8}],11:[function(_dereq_,module,exports){
+},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/keys.js":[function(require,module,exports){
 module.exports = function( Gibber, Mousetrap ) {
   "use strict"
   
@@ -2870,6 +2921,7 @@ module.exports = function( Gibber, Mousetrap ) {
 
   Keys = {
     bind: function( key, fcn ) {
+      console.log( Mousetrap )
       Mousetrap.bind( key, fcn )
     },
     
@@ -2883,12 +2935,12 @@ module.exports = function( Gibber, Mousetrap ) {
   return Keys
 }
 
-},{}],12:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/layout.js":[function(require,module,exports){
 module.exports = function( Gibber ) { 
   'use strict'
   
   var GE,
-      $ = _dereq_( './dollar' );
+      $ = require( './dollar' );
   
   var Layout = {
     focusedColumn : null,
@@ -2898,7 +2950,7 @@ module.exports = function( Gibber ) {
     resizeHandleSize  : 8,
     minColumnWidth: 300,
     columnID : 0,
-    Column: _dereq_( './column')( Gibber ),
+    Column: require( './column')( Gibber ),
     isFullScreen: false,
     _textBGOpacity : 0,
     __fullScreenColumn__: null,
@@ -3234,9 +3286,171 @@ module.exports = function( Gibber ) {
   
   return Layout
 }
-},{"./column":6,"./dollar":8}],13:[function(_dereq_,module,exports){
+},{"./column":"/www/gibber.libraries/js/gibber/column.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/mouse.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
-  var GE, Color = _dereq_( 'color' )
+  "use strict"
+  
+  var _m = null,
+      headerFooterHeight = 0, 
+      mappingProperties = {
+        x : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        y : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        shiftX : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        shiftY : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        ctrlX : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        ctrlY : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        button : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+      }
+
+
+    if( _m !== null ) return _m
+
+    _m = {} 
+
+    var storeX = 0, storeY = 0
+    
+    
+    $.extend( _m, {
+      x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
+      isOn : false,
+      name: 'Mouse',
+      _onmousemove : function( e ) {
+        // console.log( e )
+        var prefix = '', upper = ''
+        if( e.shiftKey ) prefix = 'shift'
+        if( e.ctrlKey ) prefix = 'ctrl'
+        
+        upper = prefix === '' ? '' :  prefix.charAt(0).toUpperCase() + prefix.slice(1),
+        // console.log( prefix, upper )
+        _m[ 'prev' + upper + 'X' ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
+        _m[ 'prev' + upper + 'Y' ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
+        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX // / _m.ww 
+        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - headerFooterHeight// / _m.wh 
+        
+        //console.log( e )
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
+      _onmousedown : function() { 
+        _m[ 'button' ] = 1 
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
+      _onmouseup : function() { 
+        _m[ 'button' ] = 0 
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
+      on: function() {        
+        if( ! _m.isOn ) {
+          _m.isOn = true
+          
+          _m.X.max = _m.ww = $( window ).width()
+          
+          if( Layout.isFullScreen ) {
+            _m.Y.max = _m.wh = $( window ).height()
+          }else{
+            var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+            _m.Y.max =  _m.wh = height
+          }
+          
+          headerFooterHeight = $( 'thead' ).height()
+          
+          $( window ).on( 'mousemove', _m._onmousemove )
+        }
+      },
+      off: function() {
+        if( _m.isOn ) {
+          $( window ).off( 'mousemove', _m._onmousemove  )
+          _m.isOn = false
+        }
+      },
+      toggle : function() {
+        if( _m.isOn ) {
+          _m.off()
+        }else{
+          _m.on()
+        }
+      },
+    })
+    
+    if( Gibber.Environment.Layout.isFullScreen ) {
+      mappingProperties.x.max = $( window ).width()
+      mappingProperties.y.max = $( window ).height()
+    }else{
+      var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+      mappingProperties.x.max = $( window ).width()
+      mappingProperties.y.max = height
+    }
+    
+    //mappingProperties.x.max = $( window ).width()
+    //mappingProperties.y.max = $( window ).height()
+    // create getter layer that turns mouse event handlers on as needed
+    for( var prop in mappingProperties ) {
+      !function() {
+        var name = prop,
+            Name = prop.charAt(0).toUpperCase() + prop.slice(1),
+            value = _m[ prop ]
+        
+        Object.defineProperty( _m, Name, {
+          configurable:true,
+          get: function() {
+            if( Name !== "Button" ) {
+              _m.on();
+            }
+            return value 
+          },
+          set: function(v) { value = v; return _m }
+        })
+      }()
+    }
+    
+    $.subscribe( '/layout/contentResize', function( e, obj ) {
+      _m.ww = _m.X.max = obj.w
+      _m.wh = _m.Y.max = obj.h
+    })
+    
+    $( window ).on( 'mousedown', _m._onmousedown )
+    $( window ).on( 'mouseup',   _m._onmouseup   )
+    
+    Gibber.createProxyProperties( _m, mappingProperties, true )
+    
+    return _m
+}
+},{}],"/www/gibber.libraries/js/gibber/theme.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+  var GE, Color = require( 'color' )
   
   var Theme = {
     init : function() {
@@ -3299,7 +3513,7 @@ module.exports = function( Gibber ) {
   
   return Theme
 }
-},{"color":15}],14:[function(_dereq_,module,exports){
+},{"color":"/www/gibber.libraries/node_modules/color/color.js"}],"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js":[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -11132,10 +11346,10 @@ module.exports = function( Gibber ) {
   return CodeMirror;
 });
 
-},{}],15:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/color/color.js":[function(require,module,exports){
 /* MIT license */
-var convert = _dereq_("color-convert"),
-    string = _dereq_("color-string");
+var convert = require("color-convert"),
+    string = require("color-string");
 
 module.exports = function(cssString) {
    return new Color(cssString);
@@ -11562,7 +11776,7 @@ Color.prototype.setChannel = function(space, index, val) {
    return this;
 }
 
-},{"color-convert":17,"color-string":18}],16:[function(_dereq_,module,exports){
+},{"color-convert":"/www/gibber.libraries/node_modules/color/node_modules/color-convert/index.js","color-string":"/www/gibber.libraries/node_modules/color/node_modules/color-string/color-string.js"}],"/www/gibber.libraries/node_modules/color/node_modules/color-convert/conversions.js":[function(require,module,exports){
 /* MIT license */
 
 module.exports = {
@@ -12254,8 +12468,8 @@ for (var key in cssKeywords) {
   reverseKeywords[JSON.stringify(cssKeywords[key])] = key;
 }
 
-},{}],17:[function(_dereq_,module,exports){
-var conversions = _dereq_("./conversions");
+},{}],"/www/gibber.libraries/node_modules/color/node_modules/color-convert/index.js":[function(require,module,exports){
+var conversions = require("./conversions");
 
 var convert = function() {
    return new Converter();
@@ -12347,9 +12561,9 @@ Converter.prototype.getValues = function(space) {
 });
 
 module.exports = convert;
-},{"./conversions":16}],18:[function(_dereq_,module,exports){
+},{"./conversions":"/www/gibber.libraries/node_modules/color/node_modules/color-convert/conversions.js"}],"/www/gibber.libraries/node_modules/color/node_modules/color-string/color-string.js":[function(require,module,exports){
 /* MIT license */
-var convert = _dereq_("color-convert");
+var convert = require("color-convert");
 
 module.exports = {
    getRgba: getRgba,
@@ -12561,7 +12775,7 @@ function hexDouble(num) {
   return (str.length < 2) ? "0" + str : str;
 }
 
-},{"color-convert":17}],19:[function(_dereq_,module,exports){
+},{"color-convert":"/www/gibber.libraries/node_modules/color/node_modules/color-convert/index.js"}],"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js":[function(require,module,exports){
 /*global define:false */
 /**
  * Copyright 2013 Craig Campbell
@@ -13514,17 +13728,3777 @@ module.exports = function() {
 
 }
 
-},{}],20:[function(_dereq_,module,exports){
-(function (global){
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f._Gibber=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/esprima/esprima.js":[function(require,module,exports){
+/*
+  Copyright (C) 2013 Ariya Hidayat <ariya.hidayat@gmail.com>
+  Copyright (C) 2013 Thaddee Tyl <thaddee.tyl@gmail.com>
+  Copyright (C) 2013 Mathias Bynens <mathias@qiwi.be>
+  Copyright (C) 2012 Ariya Hidayat <ariya.hidayat@gmail.com>
+  Copyright (C) 2012 Mathias Bynens <mathias@qiwi.be>
+  Copyright (C) 2012 Joost-Wim Boekesteijn <joost-wim@boekesteijn.nl>
+  Copyright (C) 2012 Kris Kowal <kris.kowal@cixar.com>
+  Copyright (C) 2012 Yusuke Suzuki <utatane.tea@gmail.com>
+  Copyright (C) 2012 Arpad Borsos <arpad.borsos@googlemail.com>
+  Copyright (C) 2011 Ariya Hidayat <ariya.hidayat@gmail.com>
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/*jslint bitwise:true plusplus:true */
+/*global esprima:true, define:true, exports:true, window: true,
+throwErrorTolerant: true,
+throwError: true, generateStatement: true, peek: true,
+parseAssignmentExpression: true, parseBlock: true, parseExpression: true,
+parseFunctionDeclaration: true, parseFunctionExpression: true,
+parseFunctionSourceElements: true, parseVariableIdentifier: true,
+parseLeftHandSideExpression: true,
+parseUnaryExpression: true,
+parseStatement: true, parseSourceElement: true */
+
+(function (root, factory) {
+    'use strict';
+
+    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js,
+    // Rhino, and plain browser loading.
+
+    /* istanbul ignore next */
+    if (typeof define === 'function' && define.amd) {
+        define(['exports'], factory);
+    } else if (typeof exports !== 'undefined') {
+        factory(exports);
+    } else {
+        factory((root.esprima = {}));
+    }
+}(this, function (exports) {
+    'use strict';
+
+    var Token,
+        TokenName,
+        FnExprTokens,
+        Syntax,
+        PropertyKind,
+        Messages,
+        Regex,
+        SyntaxTreeDelegate,
+        source,
+        strict,
+        index,
+        lineNumber,
+        lineStart,
+        length,
+        delegate,
+        lookahead,
+        state,
+        extra;
+
+    Token = {
+        BooleanLiteral: 1,
+        EOF: 2,
+        Identifier: 3,
+        Keyword: 4,
+        NullLiteral: 5,
+        NumericLiteral: 6,
+        Punctuator: 7,
+        StringLiteral: 8,
+        RegularExpression: 9
+    };
+
+    TokenName = {};
+    TokenName[Token.BooleanLiteral] = 'Boolean';
+    TokenName[Token.EOF] = '<end>';
+    TokenName[Token.Identifier] = 'Identifier';
+    TokenName[Token.Keyword] = 'Keyword';
+    TokenName[Token.NullLiteral] = 'Null';
+    TokenName[Token.NumericLiteral] = 'Numeric';
+    TokenName[Token.Punctuator] = 'Punctuator';
+    TokenName[Token.StringLiteral] = 'String';
+    TokenName[Token.RegularExpression] = 'RegularExpression';
+
+    // A function following one of those tokens is an expression.
+    FnExprTokens = ['(', '{', '[', 'in', 'typeof', 'instanceof', 'new',
+                    'return', 'case', 'delete', 'throw', 'void',
+                    // assignment operators
+                    '=', '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '>>>=',
+                    '&=', '|=', '^=', ',',
+                    // binary/unary operators
+                    '+', '-', '*', '/', '%', '++', '--', '<<', '>>', '>>>', '&',
+                    '|', '^', '!', '~', '&&', '||', '?', ':', '===', '==', '>=',
+                    '<=', '<', '>', '!=', '!=='];
+
+    Syntax = {
+        AssignmentExpression: 'AssignmentExpression',
+        ArrayExpression: 'ArrayExpression',
+        BlockStatement: 'BlockStatement',
+        BinaryExpression: 'BinaryExpression',
+        BreakStatement: 'BreakStatement',
+        CallExpression: 'CallExpression',
+        CatchClause: 'CatchClause',
+        ConditionalExpression: 'ConditionalExpression',
+        ContinueStatement: 'ContinueStatement',
+        DoWhileStatement: 'DoWhileStatement',
+        DebuggerStatement: 'DebuggerStatement',
+        EmptyStatement: 'EmptyStatement',
+        ExpressionStatement: 'ExpressionStatement',
+        ForStatement: 'ForStatement',
+        ForInStatement: 'ForInStatement',
+        FunctionDeclaration: 'FunctionDeclaration',
+        FunctionExpression: 'FunctionExpression',
+        Identifier: 'Identifier',
+        IfStatement: 'IfStatement',
+        Literal: 'Literal',
+        LabeledStatement: 'LabeledStatement',
+        LogicalExpression: 'LogicalExpression',
+        MemberExpression: 'MemberExpression',
+        NewExpression: 'NewExpression',
+        ObjectExpression: 'ObjectExpression',
+        Program: 'Program',
+        Property: 'Property',
+        ReturnStatement: 'ReturnStatement',
+        SequenceExpression: 'SequenceExpression',
+        SwitchStatement: 'SwitchStatement',
+        SwitchCase: 'SwitchCase',
+        ThisExpression: 'ThisExpression',
+        ThrowStatement: 'ThrowStatement',
+        TryStatement: 'TryStatement',
+        UnaryExpression: 'UnaryExpression',
+        UpdateExpression: 'UpdateExpression',
+        VariableDeclaration: 'VariableDeclaration',
+        VariableDeclarator: 'VariableDeclarator',
+        WhileStatement: 'WhileStatement',
+        WithStatement: 'WithStatement'
+    };
+
+    PropertyKind = {
+        Data: 1,
+        Get: 2,
+        Set: 4
+    };
+
+    // Error messages should be identical to V8.
+    Messages = {
+        UnexpectedToken:  'Unexpected token %0',
+        UnexpectedNumber:  'Unexpected number',
+        UnexpectedString:  'Unexpected string',
+        UnexpectedIdentifier:  'Unexpected identifier',
+        UnexpectedReserved:  'Unexpected reserved word',
+        UnexpectedEOS:  'Unexpected end of input',
+        NewlineAfterThrow:  'Illegal newline after throw',
+        InvalidRegExp: 'Invalid regular expression',
+        UnterminatedRegExp:  'Invalid regular expression: missing /',
+        InvalidLHSInAssignment:  'Invalid left-hand side in assignment',
+        InvalidLHSInForIn:  'Invalid left-hand side in for-in',
+        MultipleDefaultsInSwitch: 'More than one default clause in switch statement',
+        NoCatchOrFinally:  'Missing catch or finally after try',
+        UnknownLabel: 'Undefined label \'%0\'',
+        Redeclaration: '%0 \'%1\' has already been declared',
+        IllegalContinue: 'Illegal continue statement',
+        IllegalBreak: 'Illegal break statement',
+        IllegalReturn: 'Illegal return statement',
+        StrictModeWith:  'Strict mode code may not include a with statement',
+        StrictCatchVariable:  'Catch variable may not be eval or arguments in strict mode',
+        StrictVarName:  'Variable name may not be eval or arguments in strict mode',
+        StrictParamName:  'Parameter name eval or arguments is not allowed in strict mode',
+        StrictParamDupe: 'Strict mode function may not have duplicate parameter names',
+        StrictFunctionName:  'Function name may not be eval or arguments in strict mode',
+        StrictOctalLiteral:  'Octal literals are not allowed in strict mode.',
+        StrictDelete:  'Delete of an unqualified identifier in strict mode.',
+        StrictDuplicateProperty:  'Duplicate data property in object literal not allowed in strict mode',
+        AccessorDataProperty:  'Object literal may not have data and accessor property with the same name',
+        AccessorGetSet:  'Object literal may not have multiple get/set accessors with the same name',
+        StrictLHSAssignment:  'Assignment to eval or arguments is not allowed in strict mode',
+        StrictLHSPostfix:  'Postfix increment/decrement may not have eval or arguments operand in strict mode',
+        StrictLHSPrefix:  'Prefix increment/decrement may not have eval or arguments operand in strict mode',
+        StrictReservedWord:  'Use of future reserved word in strict mode'
+    };
+
+    // See also tools/generate-unicode-regex.py.
+    Regex = {
+        NonAsciiIdentifierStart: new RegExp('[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F0\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]'),
+        NonAsciiIdentifierPart: new RegExp('[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u0487\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05F0-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u0800-\u082D\u0840-\u085B\u08A0\u08A2-\u08AC\u08E4-\u08FE\u0900-\u0963\u0966-\u096F\u0971-\u0977\u0979-\u097F\u0981-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BEF\u0C01-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58\u0C59\u0C60-\u0C63\u0C66-\u0C6F\u0C82\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D02\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D57\u0D60-\u0D63\u0D66-\u0D6F\u0D7A-\u0D7F\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1380-\u138F\u13A0-\u13F4\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F0\u1700-\u170C\u170E-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u180B-\u180D\u1810-\u1819\u1820-\u1877\u1880-\u18AA\u18B0-\u18F5\u1900-\u191C\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19D9\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1B00-\u1B4B\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1CD0-\u1CD2\u1CD4-\u1CF6\u1D00-\u1DE6\u1DFC-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u200C\u200D\u203F\u2040\u2054\u2071\u207F\u2090-\u209C\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099\u309A\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66F\uA674-\uA67D\uA67F-\uA697\uA69F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA827\uA840-\uA873\uA880-\uA8C4\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA900-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A\uAA7B\uAA80-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uABC0-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE26\uFE33\uFE34\uFE4D-\uFE4F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF3F\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]')
+    };
+
+    // Ensure the condition is true, otherwise throw an error.
+    // This is only to have a better contract semantic, i.e. another safety net
+    // to catch a logic error. The condition shall be fulfilled in normal case.
+    // Do NOT use this to enforce a certain condition on any user input.
+
+    function assert(condition, message) {
+        /* istanbul ignore if */
+        if (!condition) {
+            throw new Error('ASSERT: ' + message);
+        }
+    }
+
+    function isDecimalDigit(ch) {
+        return (ch >= 48 && ch <= 57);   // 0..9
+    }
+
+    function isHexDigit(ch) {
+        return '0123456789abcdefABCDEF'.indexOf(ch) >= 0;
+    }
+
+    function isOctalDigit(ch) {
+        return '01234567'.indexOf(ch) >= 0;
+    }
+
+
+    // 7.2 White Space
+
+    function isWhiteSpace(ch) {
+        return (ch === 0x20) || (ch === 0x09) || (ch === 0x0B) || (ch === 0x0C) || (ch === 0xA0) ||
+            (ch >= 0x1680 && [0x1680, 0x180E, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x202F, 0x205F, 0x3000, 0xFEFF].indexOf(ch) >= 0);
+    }
+
+    // 7.3 Line Terminators
+
+    function isLineTerminator(ch) {
+        return (ch === 0x0A) || (ch === 0x0D) || (ch === 0x2028) || (ch === 0x2029);
+    }
+
+    // 7.6 Identifier Names and Identifiers
+
+    function isIdentifierStart(ch) {
+        return (ch === 0x24) || (ch === 0x5F) ||  // $ (dollar) and _ (underscore)
+            (ch >= 0x41 && ch <= 0x5A) ||         // A..Z
+            (ch >= 0x61 && ch <= 0x7A) ||         // a..z
+            (ch === 0x5C) ||                      // \ (backslash)
+            ((ch >= 0x80) && Regex.NonAsciiIdentifierStart.test(String.fromCharCode(ch)));
+    }
+
+    function isIdentifierPart(ch) {
+        return (ch === 0x24) || (ch === 0x5F) ||  // $ (dollar) and _ (underscore)
+            (ch >= 0x41 && ch <= 0x5A) ||         // A..Z
+            (ch >= 0x61 && ch <= 0x7A) ||         // a..z
+            (ch >= 0x30 && ch <= 0x39) ||         // 0..9
+            (ch === 0x5C) ||                      // \ (backslash)
+            ((ch >= 0x80) && Regex.NonAsciiIdentifierPart.test(String.fromCharCode(ch)));
+    }
+
+    // 7.6.1.2 Future Reserved Words
+
+    function isFutureReservedWord(id) {
+        switch (id) {
+        case 'class':
+        case 'enum':
+        case 'export':
+        case 'extends':
+        case 'import':
+        case 'super':
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    function isStrictModeReservedWord(id) {
+        switch (id) {
+        case 'implements':
+        case 'interface':
+        case 'package':
+        case 'private':
+        case 'protected':
+        case 'public':
+        case 'static':
+        case 'yield':
+        case 'let':
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    function isRestrictedWord(id) {
+        return id === 'eval' || id === 'arguments';
+    }
+
+    // 7.6.1.1 Keywords
+
+    function isKeyword(id) {
+        if (strict && isStrictModeReservedWord(id)) {
+            return true;
+        }
+
+        // 'const' is specialized as Keyword in V8.
+        // 'yield' and 'let' are for compatiblity with SpiderMonkey and ES.next.
+        // Some others are from future reserved words.
+
+        switch (id.length) {
+        case 2:
+            return (id === 'if') || (id === 'in') || (id === 'do');
+        case 3:
+            return (id === 'var') || (id === 'for') || (id === 'new') ||
+                (id === 'try') || (id === 'let');
+        case 4:
+            return (id === 'this') || (id === 'else') || (id === 'case') ||
+                (id === 'void') || (id === 'with') || (id === 'enum');
+        case 5:
+            return (id === 'while') || (id === 'break') || (id === 'catch') ||
+                (id === 'throw') || (id === 'const') || (id === 'yield') ||
+                (id === 'class') || (id === 'super');
+        case 6:
+            return (id === 'return') || (id === 'typeof') || (id === 'delete') ||
+                (id === 'switch') || (id === 'export') || (id === 'import');
+        case 7:
+            return (id === 'default') || (id === 'finally') || (id === 'extends');
+        case 8:
+            return (id === 'function') || (id === 'continue') || (id === 'debugger');
+        case 10:
+            return (id === 'instanceof');
+        default:
+            return false;
+        }
+    }
+
+    // 7.4 Comments
+
+    function addComment(type, value, start, end, loc) {
+        var comment, attacher;
+
+        assert(typeof start === 'number', 'Comment must have valid position');
+
+        // Because the way the actual token is scanned, often the comments
+        // (if any) are skipped twice during the lexical analysis.
+        // Thus, we need to skip adding a comment if the comment array already
+        // handled it.
+        if (state.lastCommentStart >= start) {
+            return;
+        }
+        state.lastCommentStart = start;
+
+        comment = {
+            type: type,
+            value: value
+        };
+        if (extra.range) {
+            comment.range = [start, end];
+        }
+        if (extra.loc) {
+            comment.loc = loc;
+        }
+        extra.comments.push(comment);
+        if (extra.attachComment) {
+            extra.leadingComments.push(comment);
+            extra.trailingComments.push(comment);
+        }
+    }
+
+    function skipSingleLineComment(offset) {
+        var start, loc, ch, comment;
+
+        start = index - offset;
+        loc = {
+            start: {
+                line: lineNumber,
+                column: index - lineStart - offset
+            }
+        };
+
+        while (index < length) {
+            ch = source.charCodeAt(index);
+            ++index;
+            if (isLineTerminator(ch)) {
+                if (extra.comments) {
+                    comment = source.slice(start + offset, index - 1);
+                    loc.end = {
+                        line: lineNumber,
+                        column: index - lineStart - 1
+                    };
+                    addComment('Line', comment, start, index - 1, loc);
+                }
+                if (ch === 13 && source.charCodeAt(index) === 10) {
+                    ++index;
+                }
+                ++lineNumber;
+                lineStart = index;
+                return;
+            }
+        }
+
+        if (extra.comments) {
+            comment = source.slice(start + offset, index);
+            loc.end = {
+                line: lineNumber,
+                column: index - lineStart
+            };
+            addComment('Line', comment, start, index, loc);
+        }
+    }
+
+    function skipMultiLineComment() {
+        var start, loc, ch, comment;
+
+        if (extra.comments) {
+            start = index - 2;
+            loc = {
+                start: {
+                    line: lineNumber,
+                    column: index - lineStart - 2
+                }
+            };
+        }
+
+        while (index < length) {
+            ch = source.charCodeAt(index);
+            if (isLineTerminator(ch)) {
+                if (ch === 0x0D && source.charCodeAt(index + 1) === 0x0A) {
+                    ++index;
+                }
+                ++lineNumber;
+                ++index;
+                lineStart = index;
+                if (index >= length) {
+                    throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+                }
+            } else if (ch === 0x2A) {
+                // Block comment ends with '*/'.
+                if (source.charCodeAt(index + 1) === 0x2F) {
+                    ++index;
+                    ++index;
+                    if (extra.comments) {
+                        comment = source.slice(start + 2, index - 2);
+                        loc.end = {
+                            line: lineNumber,
+                            column: index - lineStart
+                        };
+                        addComment('Block', comment, start, index, loc);
+                    }
+                    return;
+                }
+                ++index;
+            } else {
+                ++index;
+            }
+        }
+
+        throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+    }
+
+    function skipComment() {
+        var ch, start;
+
+        start = (index === 0);
+        while (index < length) {
+            ch = source.charCodeAt(index);
+
+            if (isWhiteSpace(ch)) {
+                ++index;
+            } else if (isLineTerminator(ch)) {
+                ++index;
+                if (ch === 0x0D && source.charCodeAt(index) === 0x0A) {
+                    ++index;
+                }
+                ++lineNumber;
+                lineStart = index;
+                start = true;
+            } else if (ch === 0x2F) { // U+002F is '/'
+                ch = source.charCodeAt(index + 1);
+                if (ch === 0x2F) {
+                    ++index;
+                    ++index;
+                    skipSingleLineComment(2);
+                    start = true;
+                } else if (ch === 0x2A) {  // U+002A is '*'
+                    ++index;
+                    ++index;
+                    skipMultiLineComment();
+                } else {
+                    break;
+                }
+            } else if (start && ch === 0x2D) { // U+002D is '-'
+                // U+003E is '>'
+                if ((source.charCodeAt(index + 1) === 0x2D) && (source.charCodeAt(index + 2) === 0x3E)) {
+                    // '-->' is a single-line comment
+                    index += 3;
+                    skipSingleLineComment(3);
+                } else {
+                    break;
+                }
+            } else if (ch === 0x3C) { // U+003C is '<'
+                if (source.slice(index + 1, index + 4) === '!--') {
+                    ++index; // `<`
+                    ++index; // `!`
+                    ++index; // `-`
+                    ++index; // `-`
+                    skipSingleLineComment(4);
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    function scanHexEscape(prefix) {
+        var i, len, ch, code = 0;
+
+        len = (prefix === 'u') ? 4 : 2;
+        for (i = 0; i < len; ++i) {
+            if (index < length && isHexDigit(source[index])) {
+                ch = source[index++];
+                code = code * 16 + '0123456789abcdef'.indexOf(ch.toLowerCase());
+            } else {
+                return '';
+            }
+        }
+        return String.fromCharCode(code);
+    }
+
+    function getEscapedIdentifier() {
+        var ch, id;
+
+        ch = source.charCodeAt(index++);
+        id = String.fromCharCode(ch);
+
+        // '\u' (U+005C, U+0075) denotes an escaped character.
+        if (ch === 0x5C) {
+            if (source.charCodeAt(index) !== 0x75) {
+                throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+            }
+            ++index;
+            ch = scanHexEscape('u');
+            if (!ch || ch === '\\' || !isIdentifierStart(ch.charCodeAt(0))) {
+                throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+            }
+            id = ch;
+        }
+
+        while (index < length) {
+            ch = source.charCodeAt(index);
+            if (!isIdentifierPart(ch)) {
+                break;
+            }
+            ++index;
+            id += String.fromCharCode(ch);
+
+            // '\u' (U+005C, U+0075) denotes an escaped character.
+            if (ch === 0x5C) {
+                id = id.substr(0, id.length - 1);
+                if (source.charCodeAt(index) !== 0x75) {
+                    throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+                }
+                ++index;
+                ch = scanHexEscape('u');
+                if (!ch || ch === '\\' || !isIdentifierPart(ch.charCodeAt(0))) {
+                    throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+                }
+                id += ch;
+            }
+        }
+
+        return id;
+    }
+
+    function getIdentifier() {
+        var start, ch;
+
+        start = index++;
+        while (index < length) {
+            ch = source.charCodeAt(index);
+            if (ch === 0x5C) {
+                // Blackslash (U+005C) marks Unicode escape sequence.
+                index = start;
+                return getEscapedIdentifier();
+            }
+            if (isIdentifierPart(ch)) {
+                ++index;
+            } else {
+                break;
+            }
+        }
+
+        return source.slice(start, index);
+    }
+
+    function scanIdentifier() {
+        var start, id, type;
+
+        start = index;
+
+        // Backslash (U+005C) starts an escaped character.
+        id = (source.charCodeAt(index) === 0x5C) ? getEscapedIdentifier() : getIdentifier();
+
+        // There is no keyword or literal with only one character.
+        // Thus, it must be an identifier.
+        if (id.length === 1) {
+            type = Token.Identifier;
+        } else if (isKeyword(id)) {
+            type = Token.Keyword;
+        } else if (id === 'null') {
+            type = Token.NullLiteral;
+        } else if (id === 'true' || id === 'false') {
+            type = Token.BooleanLiteral;
+        } else {
+            type = Token.Identifier;
+        }
+
+        return {
+            type: type,
+            value: id,
+            lineNumber: lineNumber,
+            lineStart: lineStart,
+            start: start,
+            end: index
+        };
+    }
+
+
+    // 7.7 Punctuators
+
+    function scanPunctuator() {
+        var start = index,
+            code = source.charCodeAt(index),
+            code2,
+            ch1 = source[index],
+            ch2,
+            ch3,
+            ch4;
+
+        switch (code) {
+
+        // Check for most common single-character punctuators.
+        case 0x2E:  // . dot
+        case 0x28:  // ( open bracket
+        case 0x29:  // ) close bracket
+        case 0x3B:  // ; semicolon
+        case 0x2C:  // , comma
+        case 0x7B:  // { open curly brace
+        case 0x7D:  // } close curly brace
+        case 0x5B:  // [
+        case 0x5D:  // ]
+        case 0x3A:  // :
+        case 0x3F:  // ?
+        case 0x7E:  // ~
+            ++index;
+            if (extra.tokenize) {
+                if (code === 0x28) {
+                    extra.openParenToken = extra.tokens.length;
+                } else if (code === 0x7B) {
+                    extra.openCurlyToken = extra.tokens.length;
+                }
+            }
+            return {
+                type: Token.Punctuator,
+                value: String.fromCharCode(code),
+                lineNumber: lineNumber,
+                lineStart: lineStart,
+                start: start,
+                end: index
+            };
+
+        default:
+            code2 = source.charCodeAt(index + 1);
+
+            // '=' (U+003D) marks an assignment or comparison operator.
+            if (code2 === 0x3D) {
+                switch (code) {
+                case 0x2B:  // +
+                case 0x2D:  // -
+                case 0x2F:  // /
+                case 0x3C:  // <
+                case 0x3E:  // >
+                case 0x5E:  // ^
+                case 0x7C:  // |
+                case 0x25:  // %
+                case 0x26:  // &
+                case 0x2A:  // *
+                    index += 2;
+                    return {
+                        type: Token.Punctuator,
+                        value: String.fromCharCode(code) + String.fromCharCode(code2),
+                        lineNumber: lineNumber,
+                        lineStart: lineStart,
+                        start: start,
+                        end: index
+                    };
+
+                case 0x21: // !
+                case 0x3D: // =
+                    index += 2;
+
+                    // !== and ===
+                    if (source.charCodeAt(index) === 0x3D) {
+                        ++index;
+                    }
+                    return {
+                        type: Token.Punctuator,
+                        value: source.slice(start, index),
+                        lineNumber: lineNumber,
+                        lineStart: lineStart,
+                        start: start,
+                        end: index
+                    };
+                }
+            }
+        }
+
+        // 4-character punctuator: >>>=
+
+        ch4 = source.substr(index, 4);
+
+        if (ch4 === '>>>=') {
+            index += 4;
+            return {
+                type: Token.Punctuator,
+                value: ch4,
+                lineNumber: lineNumber,
+                lineStart: lineStart,
+                start: start,
+                end: index
+            };
+        }
+
+        // 3-character punctuators: === !== >>> <<= >>=
+
+        ch3 = ch4.substr(0, 3);
+
+        if (ch3 === '>>>' || ch3 === '<<=' || ch3 === '>>=') {
+            index += 3;
+            return {
+                type: Token.Punctuator,
+                value: ch3,
+                lineNumber: lineNumber,
+                lineStart: lineStart,
+                start: start,
+                end: index
+            };
+        }
+
+        // Other 2-character punctuators: ++ -- << >> && ||
+        ch2 = ch3.substr(0, 2);
+
+        if ((ch1 === ch2[1] && ('+-<>&|'.indexOf(ch1) >= 0)) || ch2 === '=>') {
+            index += 2;
+            return {
+                type: Token.Punctuator,
+                value: ch2,
+                lineNumber: lineNumber,
+                lineStart: lineStart,
+                start: start,
+                end: index
+            };
+        }
+
+        // 1-character punctuators: < > = ! + - * % & | ^ /
+        if ('<>=!+-*%&|^/'.indexOf(ch1) >= 0) {
+            ++index;
+            return {
+                type: Token.Punctuator,
+                value: ch1,
+                lineNumber: lineNumber,
+                lineStart: lineStart,
+                start: start,
+                end: index
+            };
+        }
+
+        throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+    }
+
+    // 7.8.3 Numeric Literals
+
+    function scanHexLiteral(start) {
+        var number = '';
+
+        while (index < length) {
+            if (!isHexDigit(source[index])) {
+                break;
+            }
+            number += source[index++];
+        }
+
+        if (number.length === 0) {
+            throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+        }
+
+        if (isIdentifierStart(source.charCodeAt(index))) {
+            throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+        }
+
+        return {
+            type: Token.NumericLiteral,
+            value: parseInt('0x' + number, 16),
+            lineNumber: lineNumber,
+            lineStart: lineStart,
+            start: start,
+            end: index
+        };
+    }
+
+    function scanOctalLiteral(start) {
+        var number = '0' + source[index++];
+        while (index < length) {
+            if (!isOctalDigit(source[index])) {
+                break;
+            }
+            number += source[index++];
+        }
+
+        if (isIdentifierStart(source.charCodeAt(index)) || isDecimalDigit(source.charCodeAt(index))) {
+            throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+        }
+
+        return {
+            type: Token.NumericLiteral,
+            value: parseInt(number, 8),
+            octal: true,
+            lineNumber: lineNumber,
+            lineStart: lineStart,
+            start: start,
+            end: index
+        };
+    }
+
+    function scanNumericLiteral() {
+        var number, start, ch;
+
+        ch = source[index];
+        assert(isDecimalDigit(ch.charCodeAt(0)) || (ch === '.'),
+            'Numeric literal must start with a decimal digit or a decimal point');
+
+        start = index;
+        number = '';
+        if (ch !== '.') {
+            number = source[index++];
+            ch = source[index];
+
+            // Hex number starts with '0x'.
+            // Octal number starts with '0'.
+            if (number === '0') {
+                if (ch === 'x' || ch === 'X') {
+                    ++index;
+                    return scanHexLiteral(start);
+                }
+                if (isOctalDigit(ch)) {
+                    return scanOctalLiteral(start);
+                }
+
+                // decimal number starts with '0' such as '09' is illegal.
+                if (ch && isDecimalDigit(ch.charCodeAt(0))) {
+                    throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+                }
+            }
+
+            while (isDecimalDigit(source.charCodeAt(index))) {
+                number += source[index++];
+            }
+            ch = source[index];
+        }
+
+        if (ch === '.') {
+            number += source[index++];
+            while (isDecimalDigit(source.charCodeAt(index))) {
+                number += source[index++];
+            }
+            ch = source[index];
+        }
+
+        if (ch === 'e' || ch === 'E') {
+            number += source[index++];
+
+            ch = source[index];
+            if (ch === '+' || ch === '-') {
+                number += source[index++];
+            }
+            if (isDecimalDigit(source.charCodeAt(index))) {
+                while (isDecimalDigit(source.charCodeAt(index))) {
+                    number += source[index++];
+                }
+            } else {
+                throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+            }
+        }
+
+        if (isIdentifierStart(source.charCodeAt(index))) {
+            throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+        }
+
+        return {
+            type: Token.NumericLiteral,
+            value: parseFloat(number),
+            lineNumber: lineNumber,
+            lineStart: lineStart,
+            start: start,
+            end: index
+        };
+    }
+
+    // 7.8.4 String Literals
+
+    function scanStringLiteral() {
+        var str = '', quote, start, ch, code, unescaped, restore, octal = false, startLineNumber, startLineStart;
+        startLineNumber = lineNumber;
+        startLineStart = lineStart;
+
+        quote = source[index];
+        assert((quote === '\'' || quote === '"'),
+            'String literal must starts with a quote');
+
+        start = index;
+        ++index;
+
+        while (index < length) {
+            ch = source[index++];
+
+            if (ch === quote) {
+                quote = '';
+                break;
+            } else if (ch === '\\') {
+                ch = source[index++];
+                if (!ch || !isLineTerminator(ch.charCodeAt(0))) {
+                    switch (ch) {
+                    case 'u':
+                    case 'x':
+                        restore = index;
+                        unescaped = scanHexEscape(ch);
+                        if (unescaped) {
+                            str += unescaped;
+                        } else {
+                            index = restore;
+                            str += ch;
+                        }
+                        break;
+                    case 'n':
+                        str += '\n';
+                        break;
+                    case 'r':
+                        str += '\r';
+                        break;
+                    case 't':
+                        str += '\t';
+                        break;
+                    case 'b':
+                        str += '\b';
+                        break;
+                    case 'f':
+                        str += '\f';
+                        break;
+                    case 'v':
+                        str += '\x0B';
+                        break;
+
+                    default:
+                        if (isOctalDigit(ch)) {
+                            code = '01234567'.indexOf(ch);
+
+                            // \0 is not octal escape sequence
+                            if (code !== 0) {
+                                octal = true;
+                            }
+
+                            if (index < length && isOctalDigit(source[index])) {
+                                octal = true;
+                                code = code * 8 + '01234567'.indexOf(source[index++]);
+
+                                // 3 digits are only allowed when string starts
+                                // with 0, 1, 2, 3
+                                if ('0123'.indexOf(ch) >= 0 &&
+                                        index < length &&
+                                        isOctalDigit(source[index])) {
+                                    code = code * 8 + '01234567'.indexOf(source[index++]);
+                                }
+                            }
+                            str += String.fromCharCode(code);
+                        } else {
+                            str += ch;
+                        }
+                        break;
+                    }
+                } else {
+                    ++lineNumber;
+                    if (ch ===  '\r' && source[index] === '\n') {
+                        ++index;
+                    }
+                    lineStart = index;
+                }
+            } else if (isLineTerminator(ch.charCodeAt(0))) {
+                break;
+            } else {
+                str += ch;
+            }
+        }
+
+        if (quote !== '') {
+            throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+        }
+
+        return {
+            type: Token.StringLiteral,
+            value: str,
+            octal: octal,
+            startLineNumber: startLineNumber,
+            startLineStart: startLineStart,
+            lineNumber: lineNumber,
+            lineStart: lineStart,
+            start: start,
+            end: index
+        };
+    }
+
+    function testRegExp(pattern, flags) {
+        var value;
+        try {
+            value = new RegExp(pattern, flags);
+        } catch (e) {
+            throwError({}, Messages.InvalidRegExp);
+        }
+        return value;
+    }
+
+    function scanRegExpBody() {
+        var ch, str, classMarker, terminated, body;
+
+        ch = source[index];
+        assert(ch === '/', 'Regular expression literal must start with a slash');
+        str = source[index++];
+
+        classMarker = false;
+        terminated = false;
+        while (index < length) {
+            ch = source[index++];
+            str += ch;
+            if (ch === '\\') {
+                ch = source[index++];
+                // ECMA-262 7.8.5
+                if (isLineTerminator(ch.charCodeAt(0))) {
+                    throwError({}, Messages.UnterminatedRegExp);
+                }
+                str += ch;
+            } else if (isLineTerminator(ch.charCodeAt(0))) {
+                throwError({}, Messages.UnterminatedRegExp);
+            } else if (classMarker) {
+                if (ch === ']') {
+                    classMarker = false;
+                }
+            } else {
+                if (ch === '/') {
+                    terminated = true;
+                    break;
+                } else if (ch === '[') {
+                    classMarker = true;
+                }
+            }
+        }
+
+        if (!terminated) {
+            throwError({}, Messages.UnterminatedRegExp);
+        }
+
+        // Exclude leading and trailing slash.
+        body = str.substr(1, str.length - 2);
+        return {
+            value: body,
+            literal: str
+        };
+    }
+
+    function scanRegExpFlags() {
+        var ch, str, flags, restore;
+
+        str = '';
+        flags = '';
+        while (index < length) {
+            ch = source[index];
+            if (!isIdentifierPart(ch.charCodeAt(0))) {
+                break;
+            }
+
+            ++index;
+            if (ch === '\\' && index < length) {
+                ch = source[index];
+                if (ch === 'u') {
+                    ++index;
+                    restore = index;
+                    ch = scanHexEscape('u');
+                    if (ch) {
+                        flags += ch;
+                        for (str += '\\u'; restore < index; ++restore) {
+                            str += source[restore];
+                        }
+                    } else {
+                        index = restore;
+                        flags += 'u';
+                        str += '\\u';
+                    }
+                    throwErrorTolerant({}, Messages.UnexpectedToken, 'ILLEGAL');
+                } else {
+                    str += '\\';
+                    throwErrorTolerant({}, Messages.UnexpectedToken, 'ILLEGAL');
+                }
+            } else {
+                flags += ch;
+                str += ch;
+            }
+        }
+
+        return {
+            value: flags,
+            literal: str
+        };
+    }
+
+    function scanRegExp() {
+        var start, body, flags, pattern, value;
+
+        lookahead = null;
+        skipComment();
+        start = index;
+
+        body = scanRegExpBody();
+        flags = scanRegExpFlags();
+        value = testRegExp(body.value, flags.value);
+
+        if (extra.tokenize) {
+            return {
+                type: Token.RegularExpression,
+                value: value,
+                lineNumber: lineNumber,
+                lineStart: lineStart,
+                start: start,
+                end: index
+            };
+        }
+
+        return {
+            literal: body.literal + flags.literal,
+            value: value,
+            start: start,
+            end: index
+        };
+    }
+
+    function collectRegex() {
+        var pos, loc, regex, token;
+
+        skipComment();
+
+        pos = index;
+        loc = {
+            start: {
+                line: lineNumber,
+                column: index - lineStart
+            }
+        };
+
+        regex = scanRegExp();
+        loc.end = {
+            line: lineNumber,
+            column: index - lineStart
+        };
+
+        /* istanbul ignore next */
+        if (!extra.tokenize) {
+            // Pop the previous token, which is likely '/' or '/='
+            if (extra.tokens.length > 0) {
+                token = extra.tokens[extra.tokens.length - 1];
+                if (token.range[0] === pos && token.type === 'Punctuator') {
+                    if (token.value === '/' || token.value === '/=') {
+                        extra.tokens.pop();
+                    }
+                }
+            }
+
+            extra.tokens.push({
+                type: 'RegularExpression',
+                value: regex.literal,
+                range: [pos, index],
+                loc: loc
+            });
+        }
+
+        return regex;
+    }
+
+    function isIdentifierName(token) {
+        return token.type === Token.Identifier ||
+            token.type === Token.Keyword ||
+            token.type === Token.BooleanLiteral ||
+            token.type === Token.NullLiteral;
+    }
+
+    function advanceSlash() {
+        var prevToken,
+            checkToken;
+        // Using the following algorithm:
+        // https://github.com/mozilla/sweet.js/wiki/design
+        prevToken = extra.tokens[extra.tokens.length - 1];
+        if (!prevToken) {
+            // Nothing before that: it cannot be a division.
+            return collectRegex();
+        }
+        if (prevToken.type === 'Punctuator') {
+            if (prevToken.value === ']') {
+                return scanPunctuator();
+            }
+            if (prevToken.value === ')') {
+                checkToken = extra.tokens[extra.openParenToken - 1];
+                if (checkToken &&
+                        checkToken.type === 'Keyword' &&
+                        (checkToken.value === 'if' ||
+                         checkToken.value === 'while' ||
+                         checkToken.value === 'for' ||
+                         checkToken.value === 'with')) {
+                    return collectRegex();
+                }
+                return scanPunctuator();
+            }
+            if (prevToken.value === '}') {
+                // Dividing a function by anything makes little sense,
+                // but we have to check for that.
+                if (extra.tokens[extra.openCurlyToken - 3] &&
+                        extra.tokens[extra.openCurlyToken - 3].type === 'Keyword') {
+                    // Anonymous function.
+                    checkToken = extra.tokens[extra.openCurlyToken - 4];
+                    if (!checkToken) {
+                        return scanPunctuator();
+                    }
+                } else if (extra.tokens[extra.openCurlyToken - 4] &&
+                        extra.tokens[extra.openCurlyToken - 4].type === 'Keyword') {
+                    // Named function.
+                    checkToken = extra.tokens[extra.openCurlyToken - 5];
+                    if (!checkToken) {
+                        return collectRegex();
+                    }
+                } else {
+                    return scanPunctuator();
+                }
+                // checkToken determines whether the function is
+                // a declaration or an expression.
+                if (FnExprTokens.indexOf(checkToken.value) >= 0) {
+                    // It is an expression.
+                    return scanPunctuator();
+                }
+                // It is a declaration.
+                return collectRegex();
+            }
+            return collectRegex();
+        }
+        if (prevToken.type === 'Keyword') {
+            return collectRegex();
+        }
+        return scanPunctuator();
+    }
+
+    function advance() {
+        var ch;
+
+        skipComment();
+
+        if (index >= length) {
+            return {
+                type: Token.EOF,
+                lineNumber: lineNumber,
+                lineStart: lineStart,
+                start: index,
+                end: index
+            };
+        }
+
+        ch = source.charCodeAt(index);
+
+        if (isIdentifierStart(ch)) {
+            return scanIdentifier();
+        }
+
+        // Very common: ( and ) and ;
+        if (ch === 0x28 || ch === 0x29 || ch === 0x3B) {
+            return scanPunctuator();
+        }
+
+        // String literal starts with single quote (U+0027) or double quote (U+0022).
+        if (ch === 0x27 || ch === 0x22) {
+            return scanStringLiteral();
+        }
+
+
+        // Dot (.) U+002E can also start a floating-point number, hence the need
+        // to check the next character.
+        if (ch === 0x2E) {
+            if (isDecimalDigit(source.charCodeAt(index + 1))) {
+                return scanNumericLiteral();
+            }
+            return scanPunctuator();
+        }
+
+        if (isDecimalDigit(ch)) {
+            return scanNumericLiteral();
+        }
+
+        // Slash (/) U+002F can also start a regex.
+        if (extra.tokenize && ch === 0x2F) {
+            return advanceSlash();
+        }
+
+        return scanPunctuator();
+    }
+
+    function collectToken() {
+        var loc, token, range, value;
+
+        skipComment();
+        loc = {
+            start: {
+                line: lineNumber,
+                column: index - lineStart
+            }
+        };
+
+        token = advance();
+        loc.end = {
+            line: lineNumber,
+            column: index - lineStart
+        };
+
+        if (token.type !== Token.EOF) {
+            value = source.slice(token.start, token.end);
+            extra.tokens.push({
+                type: TokenName[token.type],
+                value: value,
+                range: [token.start, token.end],
+                loc: loc
+            });
+        }
+
+        return token;
+    }
+
+    function lex() {
+        var token;
+
+        token = lookahead;
+        index = token.end;
+        lineNumber = token.lineNumber;
+        lineStart = token.lineStart;
+
+        lookahead = (typeof extra.tokens !== 'undefined') ? collectToken() : advance();
+
+        index = token.end;
+        lineNumber = token.lineNumber;
+        lineStart = token.lineStart;
+
+        return token;
+    }
+
+    function peek() {
+        var pos, line, start;
+
+        pos = index;
+        line = lineNumber;
+        start = lineStart;
+        lookahead = (typeof extra.tokens !== 'undefined') ? collectToken() : advance();
+        index = pos;
+        lineNumber = line;
+        lineStart = start;
+    }
+
+    function Position(line, column) {
+        this.line = line;
+        this.column = column;
+    }
+
+    function SourceLocation(startLine, startColumn, line, column) {
+        this.start = new Position(startLine, startColumn);
+        this.end = new Position(line, column);
+    }
+
+    SyntaxTreeDelegate = {
+
+        name: 'SyntaxTree',
+
+        processComment: function (node) {
+            var lastChild, trailingComments;
+
+            if (node.type === Syntax.Program) {
+                if (node.body.length > 0) {
+                    return;
+                }
+            }
+
+            if (extra.trailingComments.length > 0) {
+                if (extra.trailingComments[0].range[0] >= node.range[1]) {
+                    trailingComments = extra.trailingComments;
+                    extra.trailingComments = [];
+                } else {
+                    extra.trailingComments.length = 0;
+                }
+            } else {
+                if (extra.bottomRightStack.length > 0 &&
+                        extra.bottomRightStack[extra.bottomRightStack.length - 1].trailingComments &&
+                        extra.bottomRightStack[extra.bottomRightStack.length - 1].trailingComments[0].range[0] >= node.range[1]) {
+                    trailingComments = extra.bottomRightStack[extra.bottomRightStack.length - 1].trailingComments;
+                    delete extra.bottomRightStack[extra.bottomRightStack.length - 1].trailingComments;
+                }
+            }
+
+            // Eating the stack.
+            while (extra.bottomRightStack.length > 0 && extra.bottomRightStack[extra.bottomRightStack.length - 1].range[0] >= node.range[0]) {
+                lastChild = extra.bottomRightStack.pop();
+            }
+
+            if (lastChild) {
+                if (lastChild.leadingComments && lastChild.leadingComments[lastChild.leadingComments.length - 1].range[1] <= node.range[0]) {
+                    node.leadingComments = lastChild.leadingComments;
+                    delete lastChild.leadingComments;
+                }
+            } else if (extra.leadingComments.length > 0 && extra.leadingComments[extra.leadingComments.length - 1].range[1] <= node.range[0]) {
+                node.leadingComments = extra.leadingComments;
+                extra.leadingComments = [];
+            }
+
+
+            if (trailingComments) {
+                node.trailingComments = trailingComments;
+            }
+
+            extra.bottomRightStack.push(node);
+        },
+
+        markEnd: function (node, startToken) {
+            if (extra.range) {
+                node.range = [startToken.start, index];
+            }
+            if (extra.loc) {
+                node.loc = new SourceLocation(
+                    startToken.startLineNumber === undefined ?  startToken.lineNumber : startToken.startLineNumber,
+                    startToken.start - (startToken.startLineStart === undefined ?  startToken.lineStart : startToken.startLineStart),
+                    lineNumber,
+                    index - lineStart
+                );
+                this.postProcess(node);
+            }
+
+            if (extra.attachComment) {
+                this.processComment(node);
+            }
+            return node;
+        },
+
+        postProcess: function (node) {
+            if (extra.source) {
+                node.loc.source = extra.source;
+            }
+            return node;
+        },
+
+        createArrayExpression: function (elements) {
+            return {
+                type: Syntax.ArrayExpression,
+                elements: elements
+            };
+        },
+
+        createAssignmentExpression: function (operator, left, right) {
+            return {
+                type: Syntax.AssignmentExpression,
+                operator: operator,
+                left: left,
+                right: right
+            };
+        },
+
+        createBinaryExpression: function (operator, left, right) {
+            var type = (operator === '||' || operator === '&&') ? Syntax.LogicalExpression :
+                        Syntax.BinaryExpression;
+            return {
+                type: type,
+                operator: operator,
+                left: left,
+                right: right
+            };
+        },
+
+        createBlockStatement: function (body) {
+            return {
+                type: Syntax.BlockStatement,
+                body: body
+            };
+        },
+
+        createBreakStatement: function (label) {
+            return {
+                type: Syntax.BreakStatement,
+                label: label
+            };
+        },
+
+        createCallExpression: function (callee, args) {
+            return {
+                type: Syntax.CallExpression,
+                callee: callee,
+                'arguments': args
+            };
+        },
+
+        createCatchClause: function (param, body) {
+            return {
+                type: Syntax.CatchClause,
+                param: param,
+                body: body
+            };
+        },
+
+        createConditionalExpression: function (test, consequent, alternate) {
+            return {
+                type: Syntax.ConditionalExpression,
+                test: test,
+                consequent: consequent,
+                alternate: alternate
+            };
+        },
+
+        createContinueStatement: function (label) {
+            return {
+                type: Syntax.ContinueStatement,
+                label: label
+            };
+        },
+
+        createDebuggerStatement: function () {
+            return {
+                type: Syntax.DebuggerStatement
+            };
+        },
+
+        createDoWhileStatement: function (body, test) {
+            return {
+                type: Syntax.DoWhileStatement,
+                body: body,
+                test: test
+            };
+        },
+
+        createEmptyStatement: function () {
+            return {
+                type: Syntax.EmptyStatement
+            };
+        },
+
+        createExpressionStatement: function (expression) {
+            return {
+                type: Syntax.ExpressionStatement,
+                expression: expression
+            };
+        },
+
+        createForStatement: function (init, test, update, body) {
+            return {
+                type: Syntax.ForStatement,
+                init: init,
+                test: test,
+                update: update,
+                body: body
+            };
+        },
+
+        createForInStatement: function (left, right, body) {
+            return {
+                type: Syntax.ForInStatement,
+                left: left,
+                right: right,
+                body: body,
+                each: false
+            };
+        },
+
+        createFunctionDeclaration: function (id, params, defaults, body) {
+            return {
+                type: Syntax.FunctionDeclaration,
+                id: id,
+                params: params,
+                defaults: defaults,
+                body: body,
+                rest: null,
+                generator: false,
+                expression: false
+            };
+        },
+
+        createFunctionExpression: function (id, params, defaults, body) {
+            return {
+                type: Syntax.FunctionExpression,
+                id: id,
+                params: params,
+                defaults: defaults,
+                body: body,
+                rest: null,
+                generator: false,
+                expression: false
+            };
+        },
+
+        createIdentifier: function (name) {
+            return {
+                type: Syntax.Identifier,
+                name: name
+            };
+        },
+
+        createIfStatement: function (test, consequent, alternate) {
+            return {
+                type: Syntax.IfStatement,
+                test: test,
+                consequent: consequent,
+                alternate: alternate
+            };
+        },
+
+        createLabeledStatement: function (label, body) {
+            return {
+                type: Syntax.LabeledStatement,
+                label: label,
+                body: body
+            };
+        },
+
+        createLiteral: function (token) {
+            return {
+                type: Syntax.Literal,
+                value: token.value,
+                raw: source.slice(token.start, token.end)
+            };
+        },
+
+        createMemberExpression: function (accessor, object, property) {
+            return {
+                type: Syntax.MemberExpression,
+                computed: accessor === '[',
+                object: object,
+                property: property
+            };
+        },
+
+        createNewExpression: function (callee, args) {
+            return {
+                type: Syntax.NewExpression,
+                callee: callee,
+                'arguments': args
+            };
+        },
+
+        createObjectExpression: function (properties) {
+            return {
+                type: Syntax.ObjectExpression,
+                properties: properties
+            };
+        },
+
+        createPostfixExpression: function (operator, argument) {
+            return {
+                type: Syntax.UpdateExpression,
+                operator: operator,
+                argument: argument,
+                prefix: false
+            };
+        },
+
+        createProgram: function (body) {
+            return {
+                type: Syntax.Program,
+                body: body
+            };
+        },
+
+        createProperty: function (kind, key, value) {
+            return {
+                type: Syntax.Property,
+                key: key,
+                value: value,
+                kind: kind
+            };
+        },
+
+        createReturnStatement: function (argument) {
+            return {
+                type: Syntax.ReturnStatement,
+                argument: argument
+            };
+        },
+
+        createSequenceExpression: function (expressions) {
+            return {
+                type: Syntax.SequenceExpression,
+                expressions: expressions
+            };
+        },
+
+        createSwitchCase: function (test, consequent) {
+            return {
+                type: Syntax.SwitchCase,
+                test: test,
+                consequent: consequent
+            };
+        },
+
+        createSwitchStatement: function (discriminant, cases) {
+            return {
+                type: Syntax.SwitchStatement,
+                discriminant: discriminant,
+                cases: cases
+            };
+        },
+
+        createThisExpression: function () {
+            return {
+                type: Syntax.ThisExpression
+            };
+        },
+
+        createThrowStatement: function (argument) {
+            return {
+                type: Syntax.ThrowStatement,
+                argument: argument
+            };
+        },
+
+        createTryStatement: function (block, guardedHandlers, handlers, finalizer) {
+            return {
+                type: Syntax.TryStatement,
+                block: block,
+                guardedHandlers: guardedHandlers,
+                handlers: handlers,
+                finalizer: finalizer
+            };
+        },
+
+        createUnaryExpression: function (operator, argument) {
+            if (operator === '++' || operator === '--') {
+                return {
+                    type: Syntax.UpdateExpression,
+                    operator: operator,
+                    argument: argument,
+                    prefix: true
+                };
+            }
+            return {
+                type: Syntax.UnaryExpression,
+                operator: operator,
+                argument: argument,
+                prefix: true
+            };
+        },
+
+        createVariableDeclaration: function (declarations, kind) {
+            return {
+                type: Syntax.VariableDeclaration,
+                declarations: declarations,
+                kind: kind
+            };
+        },
+
+        createVariableDeclarator: function (id, init) {
+            return {
+                type: Syntax.VariableDeclarator,
+                id: id,
+                init: init
+            };
+        },
+
+        createWhileStatement: function (test, body) {
+            return {
+                type: Syntax.WhileStatement,
+                test: test,
+                body: body
+            };
+        },
+
+        createWithStatement: function (object, body) {
+            return {
+                type: Syntax.WithStatement,
+                object: object,
+                body: body
+            };
+        }
+    };
+
+    // Return true if there is a line terminator before the next token.
+
+    function peekLineTerminator() {
+        var pos, line, start, found;
+
+        pos = index;
+        line = lineNumber;
+        start = lineStart;
+        skipComment();
+        found = lineNumber !== line;
+        index = pos;
+        lineNumber = line;
+        lineStart = start;
+
+        return found;
+    }
+
+    // Throw an exception
+
+    function throwError(token, messageFormat) {
+        var error,
+            args = Array.prototype.slice.call(arguments, 2),
+            msg = messageFormat.replace(
+                /%(\d)/g,
+                function (whole, index) {
+                    assert(index < args.length, 'Message reference must be in range');
+                    return args[index];
+                }
+            );
+
+        if (typeof token.lineNumber === 'number') {
+            error = new Error('Line ' + token.lineNumber + ': ' + msg);
+            error.index = token.start;
+            error.lineNumber = token.lineNumber;
+            error.column = token.start - lineStart + 1;
+        } else {
+            error = new Error('Line ' + lineNumber + ': ' + msg);
+            error.index = index;
+            error.lineNumber = lineNumber;
+            error.column = index - lineStart + 1;
+        }
+
+        error.description = msg;
+        throw error;
+    }
+
+    function throwErrorTolerant() {
+        try {
+            throwError.apply(null, arguments);
+        } catch (e) {
+            if (extra.errors) {
+                extra.errors.push(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+
+    // Throw an exception because of the token.
+
+    function throwUnexpected(token) {
+        if (token.type === Token.EOF) {
+            throwError(token, Messages.UnexpectedEOS);
+        }
+
+        if (token.type === Token.NumericLiteral) {
+            throwError(token, Messages.UnexpectedNumber);
+        }
+
+        if (token.type === Token.StringLiteral) {
+            throwError(token, Messages.UnexpectedString);
+        }
+
+        if (token.type === Token.Identifier) {
+            throwError(token, Messages.UnexpectedIdentifier);
+        }
+
+        if (token.type === Token.Keyword) {
+            if (isFutureReservedWord(token.value)) {
+                throwError(token, Messages.UnexpectedReserved);
+            } else if (strict && isStrictModeReservedWord(token.value)) {
+                throwErrorTolerant(token, Messages.StrictReservedWord);
+                return;
+            }
+            throwError(token, Messages.UnexpectedToken, token.value);
+        }
+
+        // BooleanLiteral, NullLiteral, or Punctuator.
+        throwError(token, Messages.UnexpectedToken, token.value);
+    }
+
+    // Expect the next token to match the specified punctuator.
+    // If not, an exception will be thrown.
+
+    function expect(value) {
+        var token = lex();
+        if (token.type !== Token.Punctuator || token.value !== value) {
+            throwUnexpected(token);
+        }
+    }
+
+    // Expect the next token to match the specified keyword.
+    // If not, an exception will be thrown.
+
+    function expectKeyword(keyword) {
+        var token = lex();
+        if (token.type !== Token.Keyword || token.value !== keyword) {
+            throwUnexpected(token);
+        }
+    }
+
+    // Return true if the next token matches the specified punctuator.
+
+    function match(value) {
+        return lookahead.type === Token.Punctuator && lookahead.value === value;
+    }
+
+    // Return true if the next token matches the specified keyword
+
+    function matchKeyword(keyword) {
+        return lookahead.type === Token.Keyword && lookahead.value === keyword;
+    }
+
+    // Return true if the next token is an assignment operator
+
+    function matchAssign() {
+        var op;
+
+        if (lookahead.type !== Token.Punctuator) {
+            return false;
+        }
+        op = lookahead.value;
+        return op === '=' ||
+            op === '*=' ||
+            op === '/=' ||
+            op === '%=' ||
+            op === '+=' ||
+            op === '-=' ||
+            op === '<<=' ||
+            op === '>>=' ||
+            op === '>>>=' ||
+            op === '&=' ||
+            op === '^=' ||
+            op === '|=';
+    }
+
+    function consumeSemicolon() {
+        var line;
+
+        // Catch the very common case first: immediately a semicolon (U+003B).
+        if (source.charCodeAt(index) === 0x3B || match(';')) {
+            lex();
+            return;
+        }
+
+        line = lineNumber;
+        skipComment();
+        if (lineNumber !== line) {
+            return;
+        }
+
+        if (lookahead.type !== Token.EOF && !match('}')) {
+            throwUnexpected(lookahead);
+        }
+    }
+
+    // Return true if provided expression is LeftHandSideExpression
+
+    function isLeftHandSide(expr) {
+        return expr.type === Syntax.Identifier || expr.type === Syntax.MemberExpression;
+    }
+
+    // 11.1.4 Array Initialiser
+
+    function parseArrayInitialiser() {
+        var elements = [], startToken;
+
+        startToken = lookahead;
+        expect('[');
+
+        while (!match(']')) {
+            if (match(',')) {
+                lex();
+                elements.push(null);
+            } else {
+                elements.push(parseAssignmentExpression());
+
+                if (!match(']')) {
+                    expect(',');
+                }
+            }
+        }
+
+        lex();
+
+        return delegate.markEnd(delegate.createArrayExpression(elements), startToken);
+    }
+
+    // 11.1.5 Object Initialiser
+
+    function parsePropertyFunction(param, first) {
+        var previousStrict, body, startToken;
+
+        previousStrict = strict;
+        startToken = lookahead;
+        body = parseFunctionSourceElements();
+        if (first && strict && isRestrictedWord(param[0].name)) {
+            throwErrorTolerant(first, Messages.StrictParamName);
+        }
+        strict = previousStrict;
+        return delegate.markEnd(delegate.createFunctionExpression(null, param, [], body), startToken);
+    }
+
+    function parseObjectPropertyKey() {
+        var token, startToken;
+
+        startToken = lookahead;
+        token = lex();
+
+        // Note: This function is called only from parseObjectProperty(), where
+        // EOF and Punctuator tokens are already filtered out.
+
+        if (token.type === Token.StringLiteral || token.type === Token.NumericLiteral) {
+            if (strict && token.octal) {
+                throwErrorTolerant(token, Messages.StrictOctalLiteral);
+            }
+            return delegate.markEnd(delegate.createLiteral(token), startToken);
+        }
+
+        return delegate.markEnd(delegate.createIdentifier(token.value), startToken);
+    }
+
+    function parseObjectProperty() {
+        var token, key, id, value, param, startToken;
+
+        token = lookahead;
+        startToken = lookahead;
+
+        if (token.type === Token.Identifier) {
+
+            id = parseObjectPropertyKey();
+
+            // Property Assignment: Getter and Setter.
+
+            if (token.value === 'get' && !match(':')) {
+                key = parseObjectPropertyKey();
+                expect('(');
+                expect(')');
+                value = parsePropertyFunction([]);
+                return delegate.markEnd(delegate.createProperty('get', key, value), startToken);
+            }
+            if (token.value === 'set' && !match(':')) {
+                key = parseObjectPropertyKey();
+                expect('(');
+                token = lookahead;
+                if (token.type !== Token.Identifier) {
+                    expect(')');
+                    throwErrorTolerant(token, Messages.UnexpectedToken, token.value);
+                    value = parsePropertyFunction([]);
+                } else {
+                    param = [ parseVariableIdentifier() ];
+                    expect(')');
+                    value = parsePropertyFunction(param, token);
+                }
+                return delegate.markEnd(delegate.createProperty('set', key, value), startToken);
+            }
+            expect(':');
+            value = parseAssignmentExpression();
+            return delegate.markEnd(delegate.createProperty('init', id, value), startToken);
+        }
+        if (token.type === Token.EOF || token.type === Token.Punctuator) {
+            throwUnexpected(token);
+        } else {
+            key = parseObjectPropertyKey();
+            expect(':');
+            value = parseAssignmentExpression();
+            return delegate.markEnd(delegate.createProperty('init', key, value), startToken);
+        }
+    }
+
+    function parseObjectInitialiser() {
+        var properties = [], property, name, key, kind, map = {}, toString = String, startToken;
+
+        startToken = lookahead;
+
+        expect('{');
+
+        while (!match('}')) {
+            property = parseObjectProperty();
+
+            if (property.key.type === Syntax.Identifier) {
+                name = property.key.name;
+            } else {
+                name = toString(property.key.value);
+            }
+            kind = (property.kind === 'init') ? PropertyKind.Data : (property.kind === 'get') ? PropertyKind.Get : PropertyKind.Set;
+
+            key = '$' + name;
+            if (Object.prototype.hasOwnProperty.call(map, key)) {
+                if (map[key] === PropertyKind.Data) {
+                    if (strict && kind === PropertyKind.Data) {
+                        throwErrorTolerant({}, Messages.StrictDuplicateProperty);
+                    } else if (kind !== PropertyKind.Data) {
+                        throwErrorTolerant({}, Messages.AccessorDataProperty);
+                    }
+                } else {
+                    if (kind === PropertyKind.Data) {
+                        throwErrorTolerant({}, Messages.AccessorDataProperty);
+                    } else if (map[key] & kind) {
+                        throwErrorTolerant({}, Messages.AccessorGetSet);
+                    }
+                }
+                map[key] |= kind;
+            } else {
+                map[key] = kind;
+            }
+
+            properties.push(property);
+
+            if (!match('}')) {
+                expect(',');
+            }
+        }
+
+        expect('}');
+
+        return delegate.markEnd(delegate.createObjectExpression(properties), startToken);
+    }
+
+    // 11.1.6 The Grouping Operator
+
+    function parseGroupExpression() {
+        var expr;
+
+        expect('(');
+
+        expr = parseExpression();
+
+        expect(')');
+
+        return expr;
+    }
+
+
+    // 11.1 Primary Expressions
+
+    function parsePrimaryExpression() {
+        var type, token, expr, startToken;
+
+        if (match('(')) {
+            return parseGroupExpression();
+        }
+
+        if (match('[')) {
+            return parseArrayInitialiser();
+        }
+
+        if (match('{')) {
+            return parseObjectInitialiser();
+        }
+
+        type = lookahead.type;
+        startToken = lookahead;
+
+        if (type === Token.Identifier) {
+            expr =  delegate.createIdentifier(lex().value);
+        } else if (type === Token.StringLiteral || type === Token.NumericLiteral) {
+            if (strict && lookahead.octal) {
+                throwErrorTolerant(lookahead, Messages.StrictOctalLiteral);
+            }
+            expr = delegate.createLiteral(lex());
+        } else if (type === Token.Keyword) {
+            if (matchKeyword('function')) {
+                return parseFunctionExpression();
+            }
+            if (matchKeyword('this')) {
+                lex();
+                expr = delegate.createThisExpression();
+            } else {
+                throwUnexpected(lex());
+            }
+        } else if (type === Token.BooleanLiteral) {
+            token = lex();
+            token.value = (token.value === 'true');
+            expr = delegate.createLiteral(token);
+        } else if (type === Token.NullLiteral) {
+            token = lex();
+            token.value = null;
+            expr = delegate.createLiteral(token);
+        } else if (match('/') || match('/=')) {
+            if (typeof extra.tokens !== 'undefined') {
+                expr = delegate.createLiteral(collectRegex());
+            } else {
+                expr = delegate.createLiteral(scanRegExp());
+            }
+            peek();
+        } else {
+            throwUnexpected(lex());
+        }
+
+        return delegate.markEnd(expr, startToken);
+    }
+
+    // 11.2 Left-Hand-Side Expressions
+
+    function parseArguments() {
+        var args = [];
+
+        expect('(');
+
+        if (!match(')')) {
+            while (index < length) {
+                args.push(parseAssignmentExpression());
+                if (match(')')) {
+                    break;
+                }
+                expect(',');
+            }
+        }
+
+        expect(')');
+
+        return args;
+    }
+
+    function parseNonComputedProperty() {
+        var token, startToken;
+
+        startToken = lookahead;
+        token = lex();
+
+        if (!isIdentifierName(token)) {
+            throwUnexpected(token);
+        }
+
+        return delegate.markEnd(delegate.createIdentifier(token.value), startToken);
+    }
+
+    function parseNonComputedMember() {
+        expect('.');
+
+        return parseNonComputedProperty();
+    }
+
+    function parseComputedMember() {
+        var expr;
+
+        expect('[');
+
+        expr = parseExpression();
+
+        expect(']');
+
+        return expr;
+    }
+
+    function parseNewExpression() {
+        var callee, args, startToken;
+
+        startToken = lookahead;
+        expectKeyword('new');
+        callee = parseLeftHandSideExpression();
+        args = match('(') ? parseArguments() : [];
+
+        return delegate.markEnd(delegate.createNewExpression(callee, args), startToken);
+    }
+
+    function parseLeftHandSideExpressionAllowCall() {
+        var previousAllowIn, expr, args, property, startToken;
+
+        startToken = lookahead;
+
+        previousAllowIn = state.allowIn;
+        state.allowIn = true;
+        expr = matchKeyword('new') ? parseNewExpression() : parsePrimaryExpression();
+        state.allowIn = previousAllowIn;
+
+        for (;;) {
+            if (match('.')) {
+                property = parseNonComputedMember();
+                expr = delegate.createMemberExpression('.', expr, property);
+            } else if (match('(')) {
+                args = parseArguments();
+                expr = delegate.createCallExpression(expr, args);
+            } else if (match('[')) {
+                property = parseComputedMember();
+                expr = delegate.createMemberExpression('[', expr, property);
+            } else {
+                break;
+            }
+            delegate.markEnd(expr, startToken);
+        }
+
+        return expr;
+    }
+
+    function parseLeftHandSideExpression() {
+        var previousAllowIn, expr, property, startToken;
+
+        startToken = lookahead;
+
+        previousAllowIn = state.allowIn;
+        expr = matchKeyword('new') ? parseNewExpression() : parsePrimaryExpression();
+        state.allowIn = previousAllowIn;
+
+        while (match('.') || match('[')) {
+            if (match('[')) {
+                property = parseComputedMember();
+                expr = delegate.createMemberExpression('[', expr, property);
+            } else {
+                property = parseNonComputedMember();
+                expr = delegate.createMemberExpression('.', expr, property);
+            }
+            delegate.markEnd(expr, startToken);
+        }
+
+        return expr;
+    }
+
+    // 11.3 Postfix Expressions
+
+    function parsePostfixExpression() {
+        var expr, token, startToken = lookahead;
+
+        expr = parseLeftHandSideExpressionAllowCall();
+
+        if (lookahead.type === Token.Punctuator) {
+            if ((match('++') || match('--')) && !peekLineTerminator()) {
+                // 11.3.1, 11.3.2
+                if (strict && expr.type === Syntax.Identifier && isRestrictedWord(expr.name)) {
+                    throwErrorTolerant({}, Messages.StrictLHSPostfix);
+                }
+
+                if (!isLeftHandSide(expr)) {
+                    throwErrorTolerant({}, Messages.InvalidLHSInAssignment);
+                }
+
+                token = lex();
+                expr = delegate.markEnd(delegate.createPostfixExpression(token.value, expr), startToken);
+            }
+        }
+
+        return expr;
+    }
+
+    // 11.4 Unary Operators
+
+    function parseUnaryExpression() {
+        var token, expr, startToken;
+
+        if (lookahead.type !== Token.Punctuator && lookahead.type !== Token.Keyword) {
+            expr = parsePostfixExpression();
+        } else if (match('++') || match('--')) {
+            startToken = lookahead;
+            token = lex();
+            expr = parseUnaryExpression();
+            // 11.4.4, 11.4.5
+            if (strict && expr.type === Syntax.Identifier && isRestrictedWord(expr.name)) {
+                throwErrorTolerant({}, Messages.StrictLHSPrefix);
+            }
+
+            if (!isLeftHandSide(expr)) {
+                throwErrorTolerant({}, Messages.InvalidLHSInAssignment);
+            }
+
+            expr = delegate.createUnaryExpression(token.value, expr);
+            expr = delegate.markEnd(expr, startToken);
+        } else if (match('+') || match('-') || match('~') || match('!')) {
+            startToken = lookahead;
+            token = lex();
+            expr = parseUnaryExpression();
+            expr = delegate.createUnaryExpression(token.value, expr);
+            expr = delegate.markEnd(expr, startToken);
+        } else if (matchKeyword('delete') || matchKeyword('void') || matchKeyword('typeof')) {
+            startToken = lookahead;
+            token = lex();
+            expr = parseUnaryExpression();
+            expr = delegate.createUnaryExpression(token.value, expr);
+            expr = delegate.markEnd(expr, startToken);
+            if (strict && expr.operator === 'delete' && expr.argument.type === Syntax.Identifier) {
+                throwErrorTolerant({}, Messages.StrictDelete);
+            }
+        } else {
+            expr = parsePostfixExpression();
+        }
+
+        return expr;
+    }
+
+    function binaryPrecedence(token, allowIn) {
+        var prec = 0;
+
+        if (token.type !== Token.Punctuator && token.type !== Token.Keyword) {
+            return 0;
+        }
+
+        switch (token.value) {
+        case '||':
+            prec = 1;
+            break;
+
+        case '&&':
+            prec = 2;
+            break;
+
+        case '|':
+            prec = 3;
+            break;
+
+        case '^':
+            prec = 4;
+            break;
+
+        case '&':
+            prec = 5;
+            break;
+
+        case '==':
+        case '!=':
+        case '===':
+        case '!==':
+            prec = 6;
+            break;
+
+        case '<':
+        case '>':
+        case '<=':
+        case '>=':
+        case 'instanceof':
+            prec = 7;
+            break;
+
+        case 'in':
+            prec = allowIn ? 7 : 0;
+            break;
+
+        case '<<':
+        case '>>':
+        case '>>>':
+            prec = 8;
+            break;
+
+        case '+':
+        case '-':
+            prec = 9;
+            break;
+
+        case '*':
+        case '/':
+        case '%':
+            prec = 11;
+            break;
+
+        default:
+            break;
+        }
+
+        return prec;
+    }
+
+    // 11.5 Multiplicative Operators
+    // 11.6 Additive Operators
+    // 11.7 Bitwise Shift Operators
+    // 11.8 Relational Operators
+    // 11.9 Equality Operators
+    // 11.10 Binary Bitwise Operators
+    // 11.11 Binary Logical Operators
+
+    function parseBinaryExpression() {
+        var marker, markers, expr, token, prec, stack, right, operator, left, i;
+
+        marker = lookahead;
+        left = parseUnaryExpression();
+
+        token = lookahead;
+        prec = binaryPrecedence(token, state.allowIn);
+        if (prec === 0) {
+            return left;
+        }
+        token.prec = prec;
+        lex();
+
+        markers = [marker, lookahead];
+        right = parseUnaryExpression();
+
+        stack = [left, token, right];
+
+        while ((prec = binaryPrecedence(lookahead, state.allowIn)) > 0) {
+
+            // Reduce: make a binary expression from the three topmost entries.
+            while ((stack.length > 2) && (prec <= stack[stack.length - 2].prec)) {
+                right = stack.pop();
+                operator = stack.pop().value;
+                left = stack.pop();
+                expr = delegate.createBinaryExpression(operator, left, right);
+                markers.pop();
+                marker = markers[markers.length - 1];
+                delegate.markEnd(expr, marker);
+                stack.push(expr);
+            }
+
+            // Shift.
+            token = lex();
+            token.prec = prec;
+            stack.push(token);
+            markers.push(lookahead);
+            expr = parseUnaryExpression();
+            stack.push(expr);
+        }
+
+        // Final reduce to clean-up the stack.
+        i = stack.length - 1;
+        expr = stack[i];
+        markers.pop();
+        while (i > 1) {
+            expr = delegate.createBinaryExpression(stack[i - 1].value, stack[i - 2], expr);
+            i -= 2;
+            marker = markers.pop();
+            delegate.markEnd(expr, marker);
+        }
+
+        return expr;
+    }
+
+
+    // 11.12 Conditional Operator
+
+    function parseConditionalExpression() {
+        var expr, previousAllowIn, consequent, alternate, startToken;
+
+        startToken = lookahead;
+
+        expr = parseBinaryExpression();
+
+        if (match('?')) {
+            lex();
+            previousAllowIn = state.allowIn;
+            state.allowIn = true;
+            consequent = parseAssignmentExpression();
+            state.allowIn = previousAllowIn;
+            expect(':');
+            alternate = parseAssignmentExpression();
+
+            expr = delegate.createConditionalExpression(expr, consequent, alternate);
+            delegate.markEnd(expr, startToken);
+        }
+
+        return expr;
+    }
+
+    // 11.13 Assignment Operators
+
+    function parseAssignmentExpression() {
+        var token, left, right, node, startToken;
+
+        token = lookahead;
+        startToken = lookahead;
+
+        node = left = parseConditionalExpression();
+
+        if (matchAssign()) {
+            // LeftHandSideExpression
+            if (!isLeftHandSide(left)) {
+                throwErrorTolerant({}, Messages.InvalidLHSInAssignment);
+            }
+
+            // 11.13.1
+            if (strict && left.type === Syntax.Identifier && isRestrictedWord(left.name)) {
+                throwErrorTolerant(token, Messages.StrictLHSAssignment);
+            }
+
+            token = lex();
+            right = parseAssignmentExpression();
+            node = delegate.markEnd(delegate.createAssignmentExpression(token.value, left, right), startToken);
+        }
+
+        return node;
+    }
+
+    // 11.14 Comma Operator
+
+    function parseExpression() {
+        var expr, startToken = lookahead;
+
+        expr = parseAssignmentExpression();
+
+        if (match(',')) {
+            expr = delegate.createSequenceExpression([ expr ]);
+
+            while (index < length) {
+                if (!match(',')) {
+                    break;
+                }
+                lex();
+                expr.expressions.push(parseAssignmentExpression());
+            }
+
+            delegate.markEnd(expr, startToken);
+        }
+
+        return expr;
+    }
+
+    // 12.1 Block
+
+    function parseStatementList() {
+        var list = [],
+            statement;
+
+        while (index < length) {
+            if (match('}')) {
+                break;
+            }
+            statement = parseSourceElement();
+            if (typeof statement === 'undefined') {
+                break;
+            }
+            list.push(statement);
+        }
+
+        return list;
+    }
+
+    function parseBlock() {
+        var block, startToken;
+
+        startToken = lookahead;
+        expect('{');
+
+        block = parseStatementList();
+
+        expect('}');
+
+        return delegate.markEnd(delegate.createBlockStatement(block), startToken);
+    }
+
+    // 12.2 Variable Statement
+
+    function parseVariableIdentifier() {
+        var token, startToken;
+
+        startToken = lookahead;
+        token = lex();
+
+        if (token.type !== Token.Identifier) {
+            throwUnexpected(token);
+        }
+
+        return delegate.markEnd(delegate.createIdentifier(token.value), startToken);
+    }
+
+    function parseVariableDeclaration(kind) {
+        var init = null, id, startToken;
+
+        startToken = lookahead;
+        id = parseVariableIdentifier();
+
+        // 12.2.1
+        if (strict && isRestrictedWord(id.name)) {
+            throwErrorTolerant({}, Messages.StrictVarName);
+        }
+
+        if (kind === 'const') {
+            expect('=');
+            init = parseAssignmentExpression();
+        } else if (match('=')) {
+            lex();
+            init = parseAssignmentExpression();
+        }
+
+        return delegate.markEnd(delegate.createVariableDeclarator(id, init), startToken);
+    }
+
+    function parseVariableDeclarationList(kind) {
+        var list = [];
+
+        do {
+            list.push(parseVariableDeclaration(kind));
+            if (!match(',')) {
+                break;
+            }
+            lex();
+        } while (index < length);
+
+        return list;
+    }
+
+    function parseVariableStatement() {
+        var declarations;
+
+        expectKeyword('var');
+
+        declarations = parseVariableDeclarationList();
+
+        consumeSemicolon();
+
+        return delegate.createVariableDeclaration(declarations, 'var');
+    }
+
+    // kind may be `const` or `let`
+    // Both are experimental and not in the specification yet.
+    // see http://wiki.ecmascript.org/doku.php?id=harmony:const
+    // and http://wiki.ecmascript.org/doku.php?id=harmony:let
+    function parseConstLetDeclaration(kind) {
+        var declarations, startToken;
+
+        startToken = lookahead;
+
+        expectKeyword(kind);
+
+        declarations = parseVariableDeclarationList(kind);
+
+        consumeSemicolon();
+
+        return delegate.markEnd(delegate.createVariableDeclaration(declarations, kind), startToken);
+    }
+
+    // 12.3 Empty Statement
+
+    function parseEmptyStatement() {
+        expect(';');
+        return delegate.createEmptyStatement();
+    }
+
+    // 12.4 Expression Statement
+
+    function parseExpressionStatement() {
+        var expr = parseExpression();
+        consumeSemicolon();
+        return delegate.createExpressionStatement(expr);
+    }
+
+    // 12.5 If statement
+
+    function parseIfStatement() {
+        var test, consequent, alternate;
+
+        expectKeyword('if');
+
+        expect('(');
+
+        test = parseExpression();
+
+        expect(')');
+
+        consequent = parseStatement();
+
+        if (matchKeyword('else')) {
+            lex();
+            alternate = parseStatement();
+        } else {
+            alternate = null;
+        }
+
+        return delegate.createIfStatement(test, consequent, alternate);
+    }
+
+    // 12.6 Iteration Statements
+
+    function parseDoWhileStatement() {
+        var body, test, oldInIteration;
+
+        expectKeyword('do');
+
+        oldInIteration = state.inIteration;
+        state.inIteration = true;
+
+        body = parseStatement();
+
+        state.inIteration = oldInIteration;
+
+        expectKeyword('while');
+
+        expect('(');
+
+        test = parseExpression();
+
+        expect(')');
+
+        if (match(';')) {
+            lex();
+        }
+
+        return delegate.createDoWhileStatement(body, test);
+    }
+
+    function parseWhileStatement() {
+        var test, body, oldInIteration;
+
+        expectKeyword('while');
+
+        expect('(');
+
+        test = parseExpression();
+
+        expect(')');
+
+        oldInIteration = state.inIteration;
+        state.inIteration = true;
+
+        body = parseStatement();
+
+        state.inIteration = oldInIteration;
+
+        return delegate.createWhileStatement(test, body);
+    }
+
+    function parseForVariableDeclaration() {
+        var token, declarations, startToken;
+
+        startToken = lookahead;
+        token = lex();
+        declarations = parseVariableDeclarationList();
+
+        return delegate.markEnd(delegate.createVariableDeclaration(declarations, token.value), startToken);
+    }
+
+    function parseForStatement() {
+        var init, test, update, left, right, body, oldInIteration;
+
+        init = test = update = null;
+
+        expectKeyword('for');
+
+        expect('(');
+
+        if (match(';')) {
+            lex();
+        } else {
+            if (matchKeyword('var') || matchKeyword('let')) {
+                state.allowIn = false;
+                init = parseForVariableDeclaration();
+                state.allowIn = true;
+
+                if (init.declarations.length === 1 && matchKeyword('in')) {
+                    lex();
+                    left = init;
+                    right = parseExpression();
+                    init = null;
+                }
+            } else {
+                state.allowIn = false;
+                init = parseExpression();
+                state.allowIn = true;
+
+                if (matchKeyword('in')) {
+                    // LeftHandSideExpression
+                    if (!isLeftHandSide(init)) {
+                        throwErrorTolerant({}, Messages.InvalidLHSInForIn);
+                    }
+
+                    lex();
+                    left = init;
+                    right = parseExpression();
+                    init = null;
+                }
+            }
+
+            if (typeof left === 'undefined') {
+                expect(';');
+            }
+        }
+
+        if (typeof left === 'undefined') {
+
+            if (!match(';')) {
+                test = parseExpression();
+            }
+            expect(';');
+
+            if (!match(')')) {
+                update = parseExpression();
+            }
+        }
+
+        expect(')');
+
+        oldInIteration = state.inIteration;
+        state.inIteration = true;
+
+        body = parseStatement();
+
+        state.inIteration = oldInIteration;
+
+        return (typeof left === 'undefined') ?
+                delegate.createForStatement(init, test, update, body) :
+                delegate.createForInStatement(left, right, body);
+    }
+
+    // 12.7 The continue statement
+
+    function parseContinueStatement() {
+        var label = null, key;
+
+        expectKeyword('continue');
+
+        // Optimize the most common form: 'continue;'.
+        if (source.charCodeAt(index) === 0x3B) {
+            lex();
+
+            if (!state.inIteration) {
+                throwError({}, Messages.IllegalContinue);
+            }
+
+            return delegate.createContinueStatement(null);
+        }
+
+        if (peekLineTerminator()) {
+            if (!state.inIteration) {
+                throwError({}, Messages.IllegalContinue);
+            }
+
+            return delegate.createContinueStatement(null);
+        }
+
+        if (lookahead.type === Token.Identifier) {
+            label = parseVariableIdentifier();
+
+            key = '$' + label.name;
+            if (!Object.prototype.hasOwnProperty.call(state.labelSet, key)) {
+                throwError({}, Messages.UnknownLabel, label.name);
+            }
+        }
+
+        consumeSemicolon();
+
+        if (label === null && !state.inIteration) {
+            throwError({}, Messages.IllegalContinue);
+        }
+
+        return delegate.createContinueStatement(label);
+    }
+
+    // 12.8 The break statement
+
+    function parseBreakStatement() {
+        var label = null, key;
+
+        expectKeyword('break');
+
+        // Catch the very common case first: immediately a semicolon (U+003B).
+        if (source.charCodeAt(index) === 0x3B) {
+            lex();
+
+            if (!(state.inIteration || state.inSwitch)) {
+                throwError({}, Messages.IllegalBreak);
+            }
+
+            return delegate.createBreakStatement(null);
+        }
+
+        if (peekLineTerminator()) {
+            if (!(state.inIteration || state.inSwitch)) {
+                throwError({}, Messages.IllegalBreak);
+            }
+
+            return delegate.createBreakStatement(null);
+        }
+
+        if (lookahead.type === Token.Identifier) {
+            label = parseVariableIdentifier();
+
+            key = '$' + label.name;
+            if (!Object.prototype.hasOwnProperty.call(state.labelSet, key)) {
+                throwError({}, Messages.UnknownLabel, label.name);
+            }
+        }
+
+        consumeSemicolon();
+
+        if (label === null && !(state.inIteration || state.inSwitch)) {
+            throwError({}, Messages.IllegalBreak);
+        }
+
+        return delegate.createBreakStatement(label);
+    }
+
+    // 12.9 The return statement
+
+    function parseReturnStatement() {
+        var argument = null;
+
+        expectKeyword('return');
+
+        if (!state.inFunctionBody) {
+            throwErrorTolerant({}, Messages.IllegalReturn);
+        }
+
+        // 'return' followed by a space and an identifier is very common.
+        if (source.charCodeAt(index) === 0x20) {
+            if (isIdentifierStart(source.charCodeAt(index + 1))) {
+                argument = parseExpression();
+                consumeSemicolon();
+                return delegate.createReturnStatement(argument);
+            }
+        }
+
+        if (peekLineTerminator()) {
+            return delegate.createReturnStatement(null);
+        }
+
+        if (!match(';')) {
+            if (!match('}') && lookahead.type !== Token.EOF) {
+                argument = parseExpression();
+            }
+        }
+
+        consumeSemicolon();
+
+        return delegate.createReturnStatement(argument);
+    }
+
+    // 12.10 The with statement
+
+    function parseWithStatement() {
+        var object, body;
+
+        if (strict) {
+            // TODO(ikarienator): Should we update the test cases instead?
+            skipComment();
+            throwErrorTolerant({}, Messages.StrictModeWith);
+        }
+
+        expectKeyword('with');
+
+        expect('(');
+
+        object = parseExpression();
+
+        expect(')');
+
+        body = parseStatement();
+
+        return delegate.createWithStatement(object, body);
+    }
+
+    // 12.10 The swith statement
+
+    function parseSwitchCase() {
+        var test, consequent = [], statement, startToken;
+
+        startToken = lookahead;
+        if (matchKeyword('default')) {
+            lex();
+            test = null;
+        } else {
+            expectKeyword('case');
+            test = parseExpression();
+        }
+        expect(':');
+
+        while (index < length) {
+            if (match('}') || matchKeyword('default') || matchKeyword('case')) {
+                break;
+            }
+            statement = parseStatement();
+            consequent.push(statement);
+        }
+
+        return delegate.markEnd(delegate.createSwitchCase(test, consequent), startToken);
+    }
+
+    function parseSwitchStatement() {
+        var discriminant, cases, clause, oldInSwitch, defaultFound;
+
+        expectKeyword('switch');
+
+        expect('(');
+
+        discriminant = parseExpression();
+
+        expect(')');
+
+        expect('{');
+
+        cases = [];
+
+        if (match('}')) {
+            lex();
+            return delegate.createSwitchStatement(discriminant, cases);
+        }
+
+        oldInSwitch = state.inSwitch;
+        state.inSwitch = true;
+        defaultFound = false;
+
+        while (index < length) {
+            if (match('}')) {
+                break;
+            }
+            clause = parseSwitchCase();
+            if (clause.test === null) {
+                if (defaultFound) {
+                    throwError({}, Messages.MultipleDefaultsInSwitch);
+                }
+                defaultFound = true;
+            }
+            cases.push(clause);
+        }
+
+        state.inSwitch = oldInSwitch;
+
+        expect('}');
+
+        return delegate.createSwitchStatement(discriminant, cases);
+    }
+
+    // 12.13 The throw statement
+
+    function parseThrowStatement() {
+        var argument;
+
+        expectKeyword('throw');
+
+        if (peekLineTerminator()) {
+            throwError({}, Messages.NewlineAfterThrow);
+        }
+
+        argument = parseExpression();
+
+        consumeSemicolon();
+
+        return delegate.createThrowStatement(argument);
+    }
+
+    // 12.14 The try statement
+
+    function parseCatchClause() {
+        var param, body, startToken;
+
+        startToken = lookahead;
+        expectKeyword('catch');
+
+        expect('(');
+        if (match(')')) {
+            throwUnexpected(lookahead);
+        }
+
+        param = parseVariableIdentifier();
+        // 12.14.1
+        if (strict && isRestrictedWord(param.name)) {
+            throwErrorTolerant({}, Messages.StrictCatchVariable);
+        }
+
+        expect(')');
+        body = parseBlock();
+        return delegate.markEnd(delegate.createCatchClause(param, body), startToken);
+    }
+
+    function parseTryStatement() {
+        var block, handlers = [], finalizer = null;
+
+        expectKeyword('try');
+
+        block = parseBlock();
+
+        if (matchKeyword('catch')) {
+            handlers.push(parseCatchClause());
+        }
+
+        if (matchKeyword('finally')) {
+            lex();
+            finalizer = parseBlock();
+        }
+
+        if (handlers.length === 0 && !finalizer) {
+            throwError({}, Messages.NoCatchOrFinally);
+        }
+
+        return delegate.createTryStatement(block, [], handlers, finalizer);
+    }
+
+    // 12.15 The debugger statement
+
+    function parseDebuggerStatement() {
+        expectKeyword('debugger');
+
+        consumeSemicolon();
+
+        return delegate.createDebuggerStatement();
+    }
+
+    // 12 Statements
+
+    function parseStatement() {
+        var type = lookahead.type,
+            expr,
+            labeledBody,
+            key,
+            startToken;
+
+        if (type === Token.EOF) {
+            throwUnexpected(lookahead);
+        }
+
+        if (type === Token.Punctuator && lookahead.value === '{') {
+            return parseBlock();
+        }
+
+        startToken = lookahead;
+
+        if (type === Token.Punctuator) {
+            switch (lookahead.value) {
+            case ';':
+                return delegate.markEnd(parseEmptyStatement(), startToken);
+            case '(':
+                return delegate.markEnd(parseExpressionStatement(), startToken);
+            default:
+                break;
+            }
+        }
+
+        if (type === Token.Keyword) {
+            switch (lookahead.value) {
+            case 'break':
+                return delegate.markEnd(parseBreakStatement(), startToken);
+            case 'continue':
+                return delegate.markEnd(parseContinueStatement(), startToken);
+            case 'debugger':
+                return delegate.markEnd(parseDebuggerStatement(), startToken);
+            case 'do':
+                return delegate.markEnd(parseDoWhileStatement(), startToken);
+            case 'for':
+                return delegate.markEnd(parseForStatement(), startToken);
+            case 'function':
+                return delegate.markEnd(parseFunctionDeclaration(), startToken);
+            case 'if':
+                return delegate.markEnd(parseIfStatement(), startToken);
+            case 'return':
+                return delegate.markEnd(parseReturnStatement(), startToken);
+            case 'switch':
+                return delegate.markEnd(parseSwitchStatement(), startToken);
+            case 'throw':
+                return delegate.markEnd(parseThrowStatement(), startToken);
+            case 'try':
+                return delegate.markEnd(parseTryStatement(), startToken);
+            case 'var':
+                return delegate.markEnd(parseVariableStatement(), startToken);
+            case 'while':
+                return delegate.markEnd(parseWhileStatement(), startToken);
+            case 'with':
+                return delegate.markEnd(parseWithStatement(), startToken);
+            default:
+                break;
+            }
+        }
+
+        expr = parseExpression();
+
+        // 12.12 Labelled Statements
+        if ((expr.type === Syntax.Identifier) && match(':')) {
+            lex();
+
+            key = '$' + expr.name;
+            if (Object.prototype.hasOwnProperty.call(state.labelSet, key)) {
+                throwError({}, Messages.Redeclaration, 'Label', expr.name);
+            }
+
+            state.labelSet[key] = true;
+            labeledBody = parseStatement();
+            delete state.labelSet[key];
+            return delegate.markEnd(delegate.createLabeledStatement(expr, labeledBody), startToken);
+        }
+
+        consumeSemicolon();
+
+        return delegate.markEnd(delegate.createExpressionStatement(expr), startToken);
+    }
+
+    // 13 Function Definition
+
+    function parseFunctionSourceElements() {
+        var sourceElement, sourceElements = [], token, directive, firstRestricted,
+            oldLabelSet, oldInIteration, oldInSwitch, oldInFunctionBody, startToken;
+
+        startToken = lookahead;
+        expect('{');
+
+        while (index < length) {
+            if (lookahead.type !== Token.StringLiteral) {
+                break;
+            }
+            token = lookahead;
+
+            sourceElement = parseSourceElement();
+            sourceElements.push(sourceElement);
+            if (sourceElement.expression.type !== Syntax.Literal) {
+                // this is not directive
+                break;
+            }
+            directive = source.slice(token.start + 1, token.end - 1);
+            if (directive === 'use strict') {
+                strict = true;
+                if (firstRestricted) {
+                    throwErrorTolerant(firstRestricted, Messages.StrictOctalLiteral);
+                }
+            } else {
+                if (!firstRestricted && token.octal) {
+                    firstRestricted = token;
+                }
+            }
+        }
+
+        oldLabelSet = state.labelSet;
+        oldInIteration = state.inIteration;
+        oldInSwitch = state.inSwitch;
+        oldInFunctionBody = state.inFunctionBody;
+
+        state.labelSet = {};
+        state.inIteration = false;
+        state.inSwitch = false;
+        state.inFunctionBody = true;
+
+        while (index < length) {
+            if (match('}')) {
+                break;
+            }
+            sourceElement = parseSourceElement();
+            if (typeof sourceElement === 'undefined') {
+                break;
+            }
+            sourceElements.push(sourceElement);
+        }
+
+        expect('}');
+
+        state.labelSet = oldLabelSet;
+        state.inIteration = oldInIteration;
+        state.inSwitch = oldInSwitch;
+        state.inFunctionBody = oldInFunctionBody;
+
+        return delegate.markEnd(delegate.createBlockStatement(sourceElements), startToken);
+    }
+
+    function parseParams(firstRestricted) {
+        var param, params = [], token, stricted, paramSet, key, message;
+        expect('(');
+
+        if (!match(')')) {
+            paramSet = {};
+            while (index < length) {
+                token = lookahead;
+                param = parseVariableIdentifier();
+                key = '$' + token.value;
+                if (strict) {
+                    if (isRestrictedWord(token.value)) {
+                        stricted = token;
+                        message = Messages.StrictParamName;
+                    }
+                    if (Object.prototype.hasOwnProperty.call(paramSet, key)) {
+                        stricted = token;
+                        message = Messages.StrictParamDupe;
+                    }
+                } else if (!firstRestricted) {
+                    if (isRestrictedWord(token.value)) {
+                        firstRestricted = token;
+                        message = Messages.StrictParamName;
+                    } else if (isStrictModeReservedWord(token.value)) {
+                        firstRestricted = token;
+                        message = Messages.StrictReservedWord;
+                    } else if (Object.prototype.hasOwnProperty.call(paramSet, key)) {
+                        firstRestricted = token;
+                        message = Messages.StrictParamDupe;
+                    }
+                }
+                params.push(param);
+                paramSet[key] = true;
+                if (match(')')) {
+                    break;
+                }
+                expect(',');
+            }
+        }
+
+        expect(')');
+
+        return {
+            params: params,
+            stricted: stricted,
+            firstRestricted: firstRestricted,
+            message: message
+        };
+    }
+
+    function parseFunctionDeclaration() {
+        var id, params = [], body, token, stricted, tmp, firstRestricted, message, previousStrict, startToken;
+
+        startToken = lookahead;
+
+        expectKeyword('function');
+        token = lookahead;
+        id = parseVariableIdentifier();
+        if (strict) {
+            if (isRestrictedWord(token.value)) {
+                throwErrorTolerant(token, Messages.StrictFunctionName);
+            }
+        } else {
+            if (isRestrictedWord(token.value)) {
+                firstRestricted = token;
+                message = Messages.StrictFunctionName;
+            } else if (isStrictModeReservedWord(token.value)) {
+                firstRestricted = token;
+                message = Messages.StrictReservedWord;
+            }
+        }
+
+        tmp = parseParams(firstRestricted);
+        params = tmp.params;
+        stricted = tmp.stricted;
+        firstRestricted = tmp.firstRestricted;
+        if (tmp.message) {
+            message = tmp.message;
+        }
+
+        previousStrict = strict;
+        body = parseFunctionSourceElements();
+        if (strict && firstRestricted) {
+            throwError(firstRestricted, message);
+        }
+        if (strict && stricted) {
+            throwErrorTolerant(stricted, message);
+        }
+        strict = previousStrict;
+
+        return delegate.markEnd(delegate.createFunctionDeclaration(id, params, [], body), startToken);
+    }
+
+    function parseFunctionExpression() {
+        var token, id = null, stricted, firstRestricted, message, tmp, params = [], body, previousStrict, startToken;
+
+        startToken = lookahead;
+        expectKeyword('function');
+
+        if (!match('(')) {
+            token = lookahead;
+            id = parseVariableIdentifier();
+            if (strict) {
+                if (isRestrictedWord(token.value)) {
+                    throwErrorTolerant(token, Messages.StrictFunctionName);
+                }
+            } else {
+                if (isRestrictedWord(token.value)) {
+                    firstRestricted = token;
+                    message = Messages.StrictFunctionName;
+                } else if (isStrictModeReservedWord(token.value)) {
+                    firstRestricted = token;
+                    message = Messages.StrictReservedWord;
+                }
+            }
+        }
+
+        tmp = parseParams(firstRestricted);
+        params = tmp.params;
+        stricted = tmp.stricted;
+        firstRestricted = tmp.firstRestricted;
+        if (tmp.message) {
+            message = tmp.message;
+        }
+
+        previousStrict = strict;
+        body = parseFunctionSourceElements();
+        if (strict && firstRestricted) {
+            throwError(firstRestricted, message);
+        }
+        if (strict && stricted) {
+            throwErrorTolerant(stricted, message);
+        }
+        strict = previousStrict;
+
+        return delegate.markEnd(delegate.createFunctionExpression(id, params, [], body), startToken);
+    }
+
+    // 14 Program
+
+    function parseSourceElement() {
+        if (lookahead.type === Token.Keyword) {
+            switch (lookahead.value) {
+            case 'const':
+            case 'let':
+                return parseConstLetDeclaration(lookahead.value);
+            case 'function':
+                return parseFunctionDeclaration();
+            default:
+                return parseStatement();
+            }
+        }
+
+        if (lookahead.type !== Token.EOF) {
+            return parseStatement();
+        }
+    }
+
+    function parseSourceElements() {
+        var sourceElement, sourceElements = [], token, directive, firstRestricted;
+
+        while (index < length) {
+            token = lookahead;
+            if (token.type !== Token.StringLiteral) {
+                break;
+            }
+
+            sourceElement = parseSourceElement();
+            sourceElements.push(sourceElement);
+            if (sourceElement.expression.type !== Syntax.Literal) {
+                // this is not directive
+                break;
+            }
+            directive = source.slice(token.start + 1, token.end - 1);
+            if (directive === 'use strict') {
+                strict = true;
+                if (firstRestricted) {
+                    throwErrorTolerant(firstRestricted, Messages.StrictOctalLiteral);
+                }
+            } else {
+                if (!firstRestricted && token.octal) {
+                    firstRestricted = token;
+                }
+            }
+        }
+
+        while (index < length) {
+            sourceElement = parseSourceElement();
+            /* istanbul ignore if */
+            if (typeof sourceElement === 'undefined') {
+                break;
+            }
+            sourceElements.push(sourceElement);
+        }
+        return sourceElements;
+    }
+
+    function parseProgram() {
+        var body, startToken;
+
+        skipComment();
+        peek();
+        startToken = lookahead;
+        strict = false;
+
+        body = parseSourceElements();
+        return delegate.markEnd(delegate.createProgram(body), startToken);
+    }
+
+    function filterTokenLocation() {
+        var i, entry, token, tokens = [];
+
+        for (i = 0; i < extra.tokens.length; ++i) {
+            entry = extra.tokens[i];
+            token = {
+                type: entry.type,
+                value: entry.value
+            };
+            if (extra.range) {
+                token.range = entry.range;
+            }
+            if (extra.loc) {
+                token.loc = entry.loc;
+            }
+            tokens.push(token);
+        }
+
+        extra.tokens = tokens;
+    }
+
+    function tokenize(code, options) {
+        var toString,
+            token,
+            tokens;
+
+        toString = String;
+        if (typeof code !== 'string' && !(code instanceof String)) {
+            code = toString(code);
+        }
+
+        delegate = SyntaxTreeDelegate;
+        source = code;
+        index = 0;
+        lineNumber = (source.length > 0) ? 1 : 0;
+        lineStart = 0;
+        length = source.length;
+        lookahead = null;
+        state = {
+            allowIn: true,
+            labelSet: {},
+            inFunctionBody: false,
+            inIteration: false,
+            inSwitch: false,
+            lastCommentStart: -1
+        };
+
+        extra = {};
+
+        // Options matching.
+        options = options || {};
+
+        // Of course we collect tokens here.
+        options.tokens = true;
+        extra.tokens = [];
+        extra.tokenize = true;
+        // The following two fields are necessary to compute the Regex tokens.
+        extra.openParenToken = -1;
+        extra.openCurlyToken = -1;
+
+        extra.range = (typeof options.range === 'boolean') && options.range;
+        extra.loc = (typeof options.loc === 'boolean') && options.loc;
+
+        if (typeof options.comment === 'boolean' && options.comment) {
+            extra.comments = [];
+        }
+        if (typeof options.tolerant === 'boolean' && options.tolerant) {
+            extra.errors = [];
+        }
+
+        try {
+            peek();
+            if (lookahead.type === Token.EOF) {
+                return extra.tokens;
+            }
+
+            token = lex();
+            while (lookahead.type !== Token.EOF) {
+                try {
+                    token = lex();
+                } catch (lexError) {
+                    token = lookahead;
+                    if (extra.errors) {
+                        extra.errors.push(lexError);
+                        // We have to break on the first error
+                        // to avoid infinite loops.
+                        break;
+                    } else {
+                        throw lexError;
+                    }
+                }
+            }
+
+            filterTokenLocation();
+            tokens = extra.tokens;
+            if (typeof extra.comments !== 'undefined') {
+                tokens.comments = extra.comments;
+            }
+            if (typeof extra.errors !== 'undefined') {
+                tokens.errors = extra.errors;
+            }
+        } catch (e) {
+            throw e;
+        } finally {
+            extra = {};
+        }
+        return tokens;
+    }
+
+    function parse(code, options) {
+        var program, toString;
+
+        toString = String;
+        if (typeof code !== 'string' && !(code instanceof String)) {
+            code = toString(code);
+        }
+
+        delegate = SyntaxTreeDelegate;
+        source = code;
+        index = 0;
+        lineNumber = (source.length > 0) ? 1 : 0;
+        lineStart = 0;
+        length = source.length;
+        lookahead = null;
+        state = {
+            allowIn: true,
+            labelSet: {},
+            inFunctionBody: false,
+            inIteration: false,
+            inSwitch: false,
+            lastCommentStart: -1
+        };
+
+        extra = {};
+        if (typeof options !== 'undefined') {
+            extra.range = (typeof options.range === 'boolean') && options.range;
+            extra.loc = (typeof options.loc === 'boolean') && options.loc;
+            extra.attachComment = (typeof options.attachComment === 'boolean') && options.attachComment;
+
+            if (extra.loc && options.source !== null && options.source !== undefined) {
+                extra.source = toString(options.source);
+            }
+
+            if (typeof options.tokens === 'boolean' && options.tokens) {
+                extra.tokens = [];
+            }
+            if (typeof options.comment === 'boolean' && options.comment) {
+                extra.comments = [];
+            }
+            if (typeof options.tolerant === 'boolean' && options.tolerant) {
+                extra.errors = [];
+            }
+            if (extra.attachComment) {
+                extra.range = true;
+                extra.comments = [];
+                extra.bottomRightStack = [];
+                extra.trailingComments = [];
+                extra.leadingComments = [];
+            }
+        }
+
+        try {
+            program = parseProgram();
+            if (typeof extra.comments !== 'undefined') {
+                program.comments = extra.comments;
+            }
+            if (typeof extra.tokens !== 'undefined') {
+                filterTokenLocation();
+                program.tokens = extra.tokens;
+            }
+            if (typeof extra.errors !== 'undefined') {
+                program.errors = extra.errors;
+            }
+        } catch (e) {
+            throw e;
+        } finally {
+            extra = {};
+        }
+
+        return program;
+    }
+
+    // Sync with *.json manifests.
+    exports.version = '1.2.2';
+
+    exports.tokenize = tokenize;
+
+    exports.parse = parse;
+
+    // Deep copy.
+   /* istanbul ignore next */
+    exports.Syntax = (function () {
+        var name, types = {};
+
+        if (typeof Object.create === 'function') {
+            types = Object.create(null);
+        }
+
+        for (name in Syntax) {
+            if (Syntax.hasOwnProperty(name)) {
+                types[name] = Syntax[name];
+            }
+        }
+
+        if (typeof Object.freeze === 'function') {
+            Object.freeze(types);
+        }
+
+        return types;
+    }());
+
+}));
+/* vim: set sw=4 ts=4 et tw=80 : */
+
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js":[function(require,module,exports){
+!function(e,t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?module.exports=t():e.Gibberish=t()}(this,function(){function createInput(){console.log("connecting audio input..."),navigator.webkitGetUserMedia({audio:!0},function(e){console.log("audio input connected"),Gibberish.mediaStreamSource=Gibberish.context.createMediaStreamSource(e),Gibberish.mediaStreamSource.connect(Gibberish.node),_hasInput=!0},function(){console.log("error opening audio input")})}var Gibberish={memo:{},codeblock:[],analysisCodeblock:[],analysisUgens:[],dirtied:[],id:0,isDirty:!1,out:null,debug:!1,callback:"",audioFiles:{},sequencers:[],callbackArgs:["input"],callbackObjects:[],analysisCallbackArgs:[],analysisCallbackObjects:[],createCallback:function(){this.memo={},this.codeblock.length=0,this.callbackArgs.length=0,this.callbackObjects.length=0,this.analysisCallbackArgs.length=0,this.dirtied.length=0,this.codestring="",this.args=["input"],this.memo={},this.out.codegen();var e=this.codeblock.slice(0);if(this.analysisUgens.length>0){this.analysisCodeblock.length=0;for(var t=0;t<this.analysisUgens.length;t++)this.analysisCallbackArgs.push(this.analysisUgens[t].analysisSymbol)}if(this.args=this.args.concat(this.callbackArgs),this.args=this.args.concat(this.analysisCallbackArgs),this.codestring+=e.join("	"),this.codestring+="\n	",this.analysisUgens.length>0){this.analysisCodeblock.length=0;for(var t=0;t<this.analysisUgens.length;t++)this.codeblock.length=0,this.analysisUgens[t].analysisCodegen();this.codestring+=this.analysisCodeblock.join("\n	"),this.codestring+="\n	"}return this.codestring+="return "+this.out.variable+";\n",this.callbackString=this.codestring,this.debug&&console.log(this.callbackString),[this.args,this.codestring]},audioProcess:function(e){var t,i,n=e.outputBuffer.getChannelData(0),s=e.outputBuffer.getChannelData(1),r=e.inputBuffer.getChannelData(0),a=Gibberish,o=a.callback,h=a.sequencers,u=(Gibberish.out.callback,a.callbackObjects.slice(0));u.unshift(0);for(var c=0,l=e.outputBuffer.length;l>c;c++){for(var b=0;b<h.length;b++)h[b].tick();if(a.isDirty){t=a.createCallback();try{o=a.callback=new Function(t[0],t[1])}catch(e){console.error("ERROR WITH CALLBACK : \n\n",t)}a.isDirty=!1,u=a.callbackObjects.slice(0),u.unshift(0)}u[0]=r[c],i=o.apply(null,u),n[c]=i[0],s[c]=i[1]}},audioProcessFirefox:function(e){var t,i=Gibberish,n=i.callback,s=i.sequencers,r=i.callbackObjects.slice(0);r.unshift(0);for(var a=0,o=e.length;o>a;a+=2){for(var h=0;h<s.length;h++)s[h].tick();if(i.isDirty){t=i.createCallback();try{n=i.callback=new Function(t[0],t[1])}catch(u){console.error("ERROR WITH CALLBACK : \n\n",n)}i.isDirty=!1,r=i.callbackObjects.slice(0),r.unshift(0)}var c=n.apply(null,r);e[a]=c[0],e[a+1]=c[1]}},clear:function(){this.out.inputs.length=0,this.analysisUgens.length=0,this.sequencers.length=0,this.callbackArgs.length=2,this.callbackObjects.length=1,Gibberish.dirty(this.out)},dirty:function(e){if("undefined"!=typeof e){for(var t=!1,i=0;i<this.dirtied.length;i++)this.dirtied[i].variable===e.variable&&(t=!0);t||(this.isDirty=!0,this.dirtied.push(e))}else this.isDirty=!0},generateSymbol:function(e){return e+"_"+this.id++},AudioDataDestination:function(e,t){var i=new Audio;i.mozSetup(2,e);var n,s=0,r=e/2,a=null;setInterval(function(){var e;if(a){if(e=i.mozWriteAudio(a.subarray(n)),s+=e,n+=e,n<a.length)return;a=null}var o=i.mozCurrentSampleOffset(),h=o+r-s;if(h>0){var u=new Float32Array(h);t(u),e=i.mozWriteAudio(u),o=i.mozCurrentSampleOffset(),e<u.length&&(a=u,n=e),s+=e}},100)},init:function(){var e,t,i="undefined"==typeof arguments[0]?1024:arguments[0];return"undefined"!=typeof webkitAudioContext?e=webkitAudioContext:"undefined"!=typeof AudioContext&&(e=AudioContext),t=function(){if("undefined"!=typeof e){if(document&&document.documentElement&&"ontouchstart"in document.documentElement&&(window.removeEventListener("touchstart",t),"ontouchstart"in document.documentElement)){var i=Gibberish.context.createBufferSource();i.connect(Gibberish.context.destination),i.noteOn(0)}}else alert("Your browser does not support javascript audio synthesis. Please download a modern web browser that is not Internet Explorer.");Gibberish.onstart&&Gibberish.onstart()},Gibberish.context=new e,Gibberish.node=Gibberish.context.createScriptProcessor(i,2,2,Gibberish.context.sampleRate),Gibberish.node.onaudioprocess=Gibberish.audioProcess,Gibberish.node.connect(Gibberish.context.destination),Gibberish.out=new Gibberish.Bus2,Gibberish.out.codegen(),Gibberish.dirty(Gibberish.out),document&&document.documentElement&&"ontouchstart"in document.documentElement?window.addEventListener("touchstart",t):t(),this},makePanner:function(){for(var e=[],t=[],i=Math.sqrt(2)/2,n=0;1024>n;n++){var s=-1+n/1024*2;e[n]=i*(Math.cos(s)-Math.sin(s)),t[n]=i*(Math.cos(s)+Math.sin(s))}return function(i,n,s){var r,a,o,h,u,c,l="object"==typeof i,b=l?i[0]:i,p=l?i[1]:i;return r=1023*(n+1)/2,a=0|r,o=r-a,a=1023&a,h=1023===a?0:a+1,u=e[a],c=e[h],s[0]=(u+o*(c-u))*b,u=t[a],c=t[h],s[1]=(u+o*(c-u))*p,s}},defineUgenProperty:function(e,t,i){var n=i.properties[e]={value:t,binops:[],parent:i,name:e};Object.defineProperty(i,e,{configurable:!0,get:function(){return n.value},set:function(e){n.value=e,Gibberish.dirty(i)}})},polyInit:function(e){e.mod=e.polyMod,e.removeMod=e.removePolyMod,e.voicesClear=function(){if(e.children.length>0){for(var t=0;t<e.children.length;t++)e.children[t].disconnect();e.children.length=0,e.voiceCount=0}};for(var t in e.polyProperties)!function(t){var i=e.polyProperties[t];Object.defineProperty(e,t,{configurable:!0,get:function(){return i},set:function(n){i=n;for(var s=0;s<e.children.length;s++)e.children[s][t]=i}})}(t);var i=e.maxVoices;Object.defineProperty(e,"maxVoices",{get:function(){return i},set:function(e){i=e,this.voicesClear(),this.initVoices()}})},interpolate:function(e,t){var i=0|t,n=i+1>e.length-1?0:i+1;return frac=t-i,e[i]+frac*(e[n]-e[i])},pushUnique:function(e,t){for(var i=e,n=!0,s=0;s<t.length;s++)if(i===t[s]){n=!1;break}n&&t.push(i)},"export":function(e,t){for(var i in Gibberish[e])t[i]=Gibberish[e][i]},ugen:function(){Gibberish.extend(this,{processProperties:function(){if("object"!=typeof arguments[0][0]||"undefined"!=typeof arguments[0][0].type||Array.isArray(arguments[0][0])||"op"===arguments[0][0].name){var e=0;for(var t in this.properties)"object"==typeof this.properties[t]&&"undefined"!=typeof this.properties[t].binops?"undefined"!=typeof arguments[0][e]&&(this.properties[t].value=arguments[0][e++]):"undefined"!=typeof arguments[0][e]&&(this.properties[t]=arguments[0][e++])}else{var i=arguments[0][0];for(var t in i)"undefined"!=typeof i[t]&&("object"==typeof this.properties[t]&&"undefined"!=typeof this.properties[t].binops?this.properties[t].value=i[t]:this[t]=i[t])}return this},valueOf:function(){return this.codegen(),this.variable},codegen:function(){var e="",t=null;if(Gibberish.memo[this.symbol])return Gibberish.memo[this.symbol];t=this.variable?this.variable:Gibberish.generateSymbol("v"),Gibberish.memo[this.symbol]=t,this.variable=t,e+="var "+t+" = "+this.symbol+"(";for(var i in this.properties){var n=this.properties[i],s="";if(Array.isArray(n.value)){0===n.value.length&&(s=0);for(var r=0;r<n.value.length;r++){var a=n.value[r];s+="object"==typeof a?null!==a?a.valueOf():"null":"function"==typeof n.value?n.value():n.value,s+=r<n.value.length-1?", ":""}}else"object"==typeof n.value?null!==n.value&&(s=n.value.codegen?n.value.valueOf():n.value):"undefined"!==n.name&&(s="function"==typeof n.value?n.value():n.value);if(0!=n.binops.length){for(var o=0;o<n.binops.length;o++)e+="(";for(var h=0;h<n.binops.length;h++){var u,c=n.binops[h];u="number"==typeof c.ugen?c.ugen:null!==c.ugen?c.ugen.valueOf():"null","="===c.binop?(e=e.replace(s,""),e+=u):"++"===c.binop?e+=" + Math.abs("+u+")":(0===h&&(e+=s),e+=" "+c.binop+" "+u+")")}}else e+=s;e+=", "}return" "===e.charAt(e.length-1)&&(e=e.slice(0,-2)),e+=");\n",this.codeblock=e,-1===Gibberish.codeblock.indexOf(this.codeblock)&&Gibberish.codeblock.push(this.codeblock),-1===Gibberish.callbackArgs.indexOf(this.symbol)&&"op"!==this.name&&Gibberish.callbackArgs.push(this.symbol),-1===Gibberish.callbackObjects.indexOf(this.callback)&&"op"!==this.name&&Gibberish.callbackObjects.push(this.callback),this.dirty=!1,t},init:function(){if(this.initalized||(this.symbol=Gibberish.generateSymbol(this.name),this.codeblock=null,this.variable=null),"undefined"==typeof this.properties&&(this.properties={}),!this.initialized){this.destinations=[];for(var e in this.properties)Gibberish.defineUgenProperty(e,this.properties[e],this)}if(arguments.length>0&&"object"==typeof arguments[0][0]&&"undefined"===arguments[0][0].type){var t=arguments[0][0];for(var e in t)this[e]=t[e]}return this.initialized=!0,this},mod:function(e,t,i){var n=this.properties[e],s={ugen:t,binop:i};n.binops.push(s),Gibberish.dirty(this)},removeMod:function(e,t){if("undefined"==typeof t)this.properties[e].binops.length=0;else if("number"==typeof t)this.properties[e].binops.splice(t,1);else if("object"==typeof t)for(var i=0,n=this.properties[e].binops.length;n>i;i++)this.properties[e].binops[i].ugen===t&&this.properties[e].binops.splice(i,1);Gibberish.dirty(this)},polyMod:function(e,t,i){for(var n=0;n<this.children.length;n++)this.children[n].mod(e,t,i);Gibberish.dirty(this)},removePolyMod:function(){var e=Array.prototype.slice.call(arguments,0);if("amp"!==arguments[0]&&"pan"!==arguments[0])for(var t=0;t<this.children.length;t++)this.children[t].removeMod.apply(this.children[t],e);else this.removeMod.apply(this,e);Gibberish.dirty(this)},smooth:function(e){var t=new Gibberish.OnePole;this.mod(e,t,"=")},connect:function(e,t){return"undefined"==typeof e&&(e=Gibberish.out),-1===this.destinations.indexOf(e)&&(e.addConnection(this,1,t),this.destinations.push(e)),this},send:function(e,t){return-1===this.destinations.indexOf(e)?(e.addConnection(this,t),this.destinations.push(e)):e.adjustSendAmount(this,t),this},disconnect:function(e,t){var i;if(e)i=this.destinations.indexOf(e),i>-1&&this.destinations.splice(i,1),e.removeConnection(this);else{for(var n=0;n<this.destinations.length;n++)this.destinations[n].removeConnection(this);this.destinations=[]}return Gibberish.dirty(this),this}})}};Array2=function(){this.length=0},Array2.prototype=[],Array2.prototype.remove=function(e,t){if(t="undefined"==typeof t?!0:t,"undefined"==typeof e){for(var i=0;i<this.length;i++)delete this[i];this.length=0}else if("number"==typeof e)this.splice(e,1);else if("string"==typeof e){for(var n=[],i=0;i<this.length;i++){var s=this[i];if(s.type===e||s.name===e){if(!t)return void this.splice(i,1);n.push(i)}}for(var i=0;i<n.length;i++)this.splice(n[i],1)}else if("object"==typeof e)for(var r=this.indexOf(e);r>-1;)this.splice(r,1),r=this.indexOf(e);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.get=function(e){if("number"==typeof e)return this[e];if("string"==typeof e)for(var t=0;t<this.length;t++){var i=this[t];if(i.name===e)return i}else if("object"==typeof e){var n=this.indexOf(e);if(n>-1)return this[n]}return null},Array2.prototype.replace=function(e,t){if(t.parent=this,t.input=e.input,"number"!=typeof e){var i=this.indexOf(e);i>-1&&this.splice(i,1,t)}else this.splice(e,1,t);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.insert=function(e,t){if(e.parent=this,this.input=this.parent,Array.isArray(e))for(var i=0;i<e.length;i++)this.splice(t+i,0,e[i]);else this.splice(t,0,e);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.add=function(){for(var e=0;e<arguments.length;e++)arguments[e].parent=this,arguments[e].input=this.parent,this.push(arguments[e]);this.parent&&(console.log("DIRTYING"),Gibberish.dirty(this.parent))};var rnd=Math.random;Gibberish.rndf=function(e,t,i,n){if(n="undefined"==typeof n?!0:n,"undefined"==typeof i&&"object"!=typeof e){1==arguments.length?(t=arguments[0],e=0):2==arguments.length?(e=arguments[0],t=arguments[1]):(e=0,t=1);var s=t-e,r=Math.random(),a=s*r;return e+a}var o=[],h=[];"undefined"==typeof i&&(i=t||e.length);for(var u=0;i>u;u++){var c;if("object"==typeof arguments[0])c=arguments[0][rndi(0,arguments[0].length-1)];else if(n)c=Gibberish.rndf(e,t);else{for(c=Gibberish.rndf(e,t);h.indexOf(c)>-1;)c=Gibberish.rndf(e,t);h.push(c)}o.push(c)}return o},Gibberish.Rndf=function(){{var e,t,i,n;Math.random}return 0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):3===arguments.length?(e=arguments[0],t=arguments[1],i=arguments[2]):(e=arguments[0],t=arguments[1],i=arguments[2],n=arguments[3]),function(){var s,r,a;return r="function"==typeof e?e():e,a="function"==typeof t?t():t,s="undefined"==typeof i?Gibberish.rndf(r,a):Gibberish.rndf(r,a,i,n)}},Gibberish.rndi=function(e,t,i,n){var s;if(0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):(e=arguments[0],t=arguments[1],i=arguments[2],n=arguments[3]),s=t-e,i>s&&(n=!0),"undefined"==typeof i)return s=t-e,Math.round(e+Math.random()*s);for(var r=[],a=[],o=0;i>o;o++){var h;if(n)h=Gibberish.rndi(e,t);else{for(h=Gibberish.rndi(e,t);a.indexOf(h)>-1;)h=Gibberish.rndi(e,t);a.push(h)}r.push(h)}return r},Gibberish.Rndi=function(){{var e,t,i,n,s;Math.random,Math.round}return 0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):3===arguments.length?(e=arguments[0],t=arguments[1],i=arguments[2]):(e=arguments[0],t=arguments[1],i=arguments[2],n=arguments[3]),s=t-e,"number"==typeof i&&i>s&&(n=!0),function(){var s,r,a;return r="function"==typeof e?e():e,a="function"==typeof t?t():t,s="undefined"==typeof i?Gibberish.rndi(r,a):Gibberish.rndi(r,a,i,n)}},Gibberish.extend=function(e,t){for(var i in t){{i.split(".")}t[i]instanceof Array&&t[i].length<100?(e[i]=t[i].slice(0),"fx"===i&&(e[i].parent=t[i].parent)):"object"!=typeof t[i]||null===t[i]||t[i]instanceof Float32Array?e[i]=t[i]:(e[i]=e[i]||{},arguments.callee(e[i],t[i]))}return e},Function.prototype.clone=function(){return eval("["+this.toString()+"]")[0]},String.prototype.format=function(e,t,i){function n(){var n=this,s=arguments.length+1;for(e=0;s>e;i=arguments[e++])t=i,n=n.replace(RegExp("\\{"+(e-1)+"\\}","g"),t);return n}return n.native=String.prototype.format,n}(),Gibberish.future=function(e,t){var i=new Gibberish.Sequencer({values:[function(){},function(){e(),i.stop(),i.disconnect()}],durations:[t]}).start();return i.cancel=function(){i.stop(),i.disconnect()},i},Gibberish.Proxy=function(){var e=0;Gibberish.extend(this,{name:"proxy",type:"effect",properties:{},callback:function(){return e}}).init(),this.input=arguments[0],e=this.input.parent[this.input.name],delete this.input.parent[this.input.name],this.input.parent.properties[this.input.name].value=this,Object.defineProperty(this.input.parent,this.input.name,{get:function(){return e},set:function(t){e=t}}),Gibberish.dirty(this.input.parent)},Gibberish.Proxy.prototype=new Gibberish.ugen,Gibberish.Proxy2=function(){var e=arguments[0],t=arguments[1];Gibberish.extend(this,{name:"proxy2",type:"effect",properties:{},callback:function(){var i=e[t];return Array.isArray(i)?(i[0]+i[1]+i[2])/3:i}}).init(),this.getInput=function(){return e},this.setInput=function(t){e=t},this.getName=function(){return t},this.setName=function(e){t=e}},Gibberish.Proxy2.prototype=new Gibberish.ugen,Gibberish.Proxy3=function(){var e=arguments[0],t=arguments[1];Gibberish.extend(this,{name:"proxy3",type:"effect",properties:{},callback:function(){var i=e[t];return i||0}}),this.init(),this.codegen=function(){console.log(" CALLED "),this.variable||(this.variable=Gibberish.generateSymbol("v")),Gibberish.callbackArgs.push(this.symbol),Gibberish.callbackObjects.push(this.callback),this.codeblock="var "+this.variable+" = "+this.symbol+"("+e.properties[t].codegen()+");\n"}},Gibberish.Proxy3.prototype=new Gibberish.ugen,Gibberish.oscillator=function(){this.type="oscillator",this.oscillatorInit=function(){return this.fx=new Array2,this.fx.parent=this,this}},Gibberish.oscillator.prototype=new Gibberish.ugen,Gibberish._oscillator=new Gibberish.oscillator,Gibberish.Wavetable=function(){var e=0,t=null,i=Gibberish.context.sampleRate/1024,n=0;this.properties={frequency:440,amp:.25,sync:0},this.getTable=function(){return t},this.setTable=function(e){t=e,i=Gibberish.context.sampleRate/t.length},this.getTableFreq=function(){return i},this.setTableFreq=function(e){i=e},this.getPhase=function(){return e},this.setPhase=function(t){e=t},this.callback=function(s,r){var a,o,h,u,c,l;for(e+=s/i;e>=1024;)e-=1024;return a=0|e,o=e-a,a=1023&a,h=1023===a?0:a+1,u=t[a],c=t[h],0!==l&&(n=l),(u+o*(c-u))*r}},Gibberish.Wavetable.prototype=Gibberish._oscillator,Gibberish.Table=function(e){this.__proto__=new Gibberish.Wavetable,this.name="table";var t=2*Math.PI;if("undefined"==typeof e){e=new Float32Array(1024);for(var i=1024;i--;)e[i]=Math.sin(i/1024*t)}this.setTable(e),this.init(),this.oscillatorInit()},Gibberish.asmSine=function(e,t,i){"use asm";function n(){for(var e=1024,t=1024;e=e-1|0;)t-=1,h[e>>2]=+a(+(t/1024)*6.2848);c=44100/1024}function s(e,t,i){e=+e,t=+t,i=+i;var n=0,s=0,r=0,a=0,l=0,b=0;return o=+(o+e/c),o>=1024&&(o=+(o-1024)),n=+u(o),a=o-n,s=~~n,r=(s|0)==1024?0:s+1|0,l=+h[s>>2],b=+h[r>>2],+((l+a*(b-l))*t)}function r(e){return e|=0,+h[e>>2]}var a=e.Math.sin,o=0,h=new e.Float32Array(i),u=e.Math.floor,c=0;return{init:n,gen:s,get:r}},Gibberish.asmSine2=function(){this.properties={frequency:440,amp:.5,sr:Gibberish.context.sampleRate},this.name="sine";var e=new ArrayBuffer(4096),t=Gibberish.asmSine(window,null,e);return t.init(),this.getTable=function(){return e},this.get=t.get,this.callback=t.gen,this.init(),this.oscillatorInit(),this.processProperties(arguments),this},Gibberish.asmSine2.prototype=Gibberish._oscillator,Gibberish.Sine=function(){this.__proto__=new Gibberish.Wavetable,this.name="sine";for(var e=2*Math.PI,t=new Float32Array(1024),i=1024;i--;)t[i]=Math.sin(i/1024*e);this.setTable(t),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Sine2=function(){this.__proto__=new Gibberish.Sine,this.name="sine2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(n,s,r){var a=e(n,s);return i=t(a,r,i)},this.init(),this.oscillatorInit(),Gibberish.defineUgenProperty("pan",0,this),this.processProperties(arguments)},Gibberish.Square=function(){this.__proto__=new Gibberish.Wavetable,this.name="square";for(var e=(2*Math.PI,new Float32Array(1024)),t=1024;t--;)e[t]=t/1024>.5?1:-1;this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw=function(){this.__proto__=new Gibberish.Wavetable,this.name="saw";for(var e=new Float32Array(1024),t=1024;t--;)e[t]=4*((t/1024/2+.25)%.5-.25);this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw2=function(){this.__proto__=new Gibberish.Saw,this.name="saw2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(n,s,r){var a=e(n,s);return i=t(a,r,i)},this.init(),Gibberish.defineUgenProperty("pan",0,this)},Gibberish.Triangle=function(){this.__proto__=new Gibberish.Wavetable,this.name="triangle";for(var e=new Float32Array(1024),t=Math.abs,i=1024;i--;)e[i]=1-4*t((i/1024+.25)%1-.5);this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Triangle2=function(){this.__proto__=new Gibberish.Triangle,this.name="triangle2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(n,s,r){var a=e(n,s);return t(a,r,i)},this.init(),this.oscillatorInit(),Gibberish.defineUgenProperty("pan",0,this),this.processProperties(arguments)},Gibberish.Saw3=function(){var e=0,t=0,i=2.5,n=-1.5,s=0,r=Math.sin,a=11;pi_2=2*Math.PI,flip=0,signHistory=0,ignore=!1,sr=Gibberish.context.sampleRate,Gibberish.extend(this,{name:"saw",properties:{frequency:440,amp:.15,sync:0,sr:Gibberish.context.sampleRate},callback:function(o){var h=o/sr,u=.5-h,c=a*u*u*u*u,l=.376-.752*h,b=1-2*h,p=0;return t+=h,t-=t>1?2:0,e=.5*(e+r(pi_2*(t+e*c))),p=i*e+n*s,s=e,p+=l,p*=b}}),Object.defineProperty(this,"scale",{get:function(){return a},set:function(e){a=e}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw3.prototype=Gibberish._oscillator,Gibberish.PWM=function(){var e=0,t=0,i=0,n=0,s=0,r=2.5,a=-1.5,o=Math.sin,h=11;pi_2=2*Math.PI,test=0,sr=Gibberish.context.sampleRate,Gibberish.extend(this,{name:"pwm",properties:{frequency:440,amp:.15,pulsewidth:.05,sr:Gibberish.context.sampleRate},callback:function(u,c,l){var b=u/sr,p=.5-b,f=h*p*p*p*p,d=1-2*b,g=0;return s+=b,s-=s>1?2:0,e=.5*(e+o(pi_2*(s+e*f))),t=.5*(t+o(pi_2*(s+t*f+l))),g=t-e,g=r*g+a*(i-n),i=e,n=t,g*d*c}}),Object.defineProperty(this,"scale",{get:function(){return h},set:function(e){h=e}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.PWM.prototype=Gibberish._oscillator,Gibberish.Noise=function(){var e=Math.random;Gibberish.extend(this,{name:"noise",properties:{amp:1},callback:function(t){return(2*e()-1)*t}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Noise.prototype=Gibberish._oscillator,Gibberish.KarplusStrong=function(){var e=[0],t=0,i=Math.random,n=Gibberish.makePanner(),s=Gibberish.context.sampleRate,r=[0,0];Gibberish.extend(this,{name:"karplus_strong",frequency:0,properties:{blend:1,damping:0,amp:1,channels:2,pan:0},note:function(t){var n=Math.floor(s/t);e.length=0;for(var r=0;n>r;r++)e[r]=2*i()-1;this.frequency=t},callback:function(s,a,o,h,u){var c=e.shift(),l=i()>s?-1:1;a=a>0?a:0;var b=l*(c+t)*(.5-a/100);return t=b,e.push(b),b*=o,1===h?b:n(b,u,r)}}).init().oscillatorInit().processProperties(arguments)},Gibberish.KarplusStrong.prototype=Gibberish._oscillator,Gibberish.PolyKarplusStrong=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"poly_karplus_strong",maxVoices:5,voiceCount:0,_frequency:0,polyProperties:{blend:1,damping:0},note:function(e,t){var i=this.children[this.voiceCount++];this.voiceCount>=this.maxVoices&&(this.voiceCount=0),i.note(e,t),this._frequency=e},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={blend:this.blend,damping:this.damping,channels:2,amp:1},i=new Gibberish.KarplusStrong(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),this.initialized=!1,Gibberish._synth.oscillatorInit.call(this),Gibberish.dirty(this)},Gibberish.bus=function(){this.type="bus",this.inputCodegen=function(){var e,t=this.value.valueOf();return e=t+", "+this.amp,this.codeblock=e,e},this.addConnection=function(){var e=arguments[2],t={value:arguments[0],amp:arguments[1],codegen:this.inputCodegen,valueOf:function(){return this.codegen()}};"undefined"!=typeof e?this.inputs.splice(e,0,t):this.inputs.push(t),Gibberish.dirty(this)},this.removeConnection=function(e){for(var t=0;t<this.inputs.length;t++)if(this.inputs[t].value===e){this.inputs.splice(t,1),Gibberish.dirty(this);break}},this.adjustSendAmount=function(e,t){for(var i=0;i<this.inputs.length;i++)if(this.inputs[i].value===e){this.inputs[i].amp=t,Gibberish.dirty(this);break}},this.callback=function(){var e=arguments[arguments.length-2],t=arguments[arguments.length-1];output[0]=output[1]=0;for(var i=0;i<arguments.length-2;i+=2){var n="object"==typeof arguments[i],s=arguments[i+1];output[0]+=n?arguments[i][0]*s:arguments[i]*s,output[1]+=n?arguments[i][1]*s:arguments[i]*s}return output[0]*=e,output[1]*=e,panner(output,t,output)}},Gibberish.bus.prototype=new Gibberish.ugen,Gibberish._bus=new Gibberish.bus,Gibberish.Bus=function(){return Gibberish.extend(this,{name:"bus",properties:{inputs:[],amp:1},callback:function(){for(var e=0,t=arguments.length-1,i=arguments[t],n=0;t>n;n++)e+=arguments[n];return e*=i}}),this.init(),this.processProperties(arguments),this},Gibberish.Bus.prototype=Gibberish._bus,Gibberish.Bus2=function(){this.name="bus2",this.type="bus",this.properties={inputs:[],amp:1,pan:0};var e=[0,0],t=Gibberish.makePanner();this.callback=function(){var i=arguments,n=i.length,s=i[n-2],r=i[n-1];e[0]=e[1]=0;for(var a=0,o=n-2;o>a;a+=2){var h="object"==typeof i[a],u=i[a+1];e[0]+=h?i[a][0]*u||0:i[a]*u||0,e[1]+=h?i[a][1]*u||0:i[a]*u||0}return e[0]*=s,e[1]*=s,t(e,r,e)},this.show=function(){console.log(e,args)},this.getOutput=function(){return e},this.getArgs=function(){return args},this.init(arguments),this.processProperties(arguments)},Gibberish.Bus2.prototype=Gibberish._bus,Gibberish.envelope=function(){this.type="envelope"},Gibberish.envelope.prototype=new Gibberish.ugen,Gibberish._envelope=new Gibberish.envelope,Gibberish.ExponentialDecay=function(){var e=Math.pow,t=0,i=0;Gibberish.extend(this,{name:"ExponentialDecay",properties:{decay:.5,length:11050},callback:function(n,s){return t=e(n,i),i+=1/s,t},trigger:function(){i="number"==typeof arguments[0]?arguments[0]:0}}).init()},Gibberish.ExponentialDecay.prototype=Gibberish._envelope,Gibberish.Line=function(e,t,i,n){var s,r={name:"line",properties:{start:e||0,end:isNaN(t)?1:t,time:i||Gibberish.context.sampleRate,loops:n||!1},retrigger:function(e,t){a=0,this.start=s,this.end=e,this.time=t,o=(e-s)/t}},a=0,o=(t-e)/i;return this.callback=function(e,t,i,n){return s=i>a?e+a++*o:t,a=s>=t&&n?0:a,s},Gibberish.extend(this,r),this.init(),this},Gibberish.Line.prototype=Gibberish._envelope,Gibberish.AD=function(e,t){var i=0,n=0;Gibberish.extend(this,{name:"AD",properties:{attack:e||1e4,decay:t||1e4},run:function(){return n=0,i=0,this},callback:function(e,t){if(e=0>e?22050:e,t=0>t?22050:t,0===n){var s=1/e;i+=s,i>=1&&n++}else if(1===n){var s=1/t;i-=s,0>=i&&(i=0,n++)}return i},getState:function(){return n}}).init().processProperties(arguments)},Gibberish.AD.prototype=Gibberish._envelope,Gibberish.ADSR=function(e,t,i,n,s,r,a){var o={name:"adsr",type:"envelope",requireReleaseTrigger:"undefined"!=typeof a?a:!1,properties:{attack:isNaN(e)?1e4:e,decay:isNaN(t)?1e4:t,sustain:isNaN(i)?22050:i,release:isNaN(n)?1e4:n,attackLevel:s||1,sustainLevel:r||.5,releaseTrigger:0},run:function(){this.setPhase(0),this.setState(0)},stop:function(){this.releaseTrigger=1}};Gibberish.extend(this,o);var h=0,u=0,c=0,l=this;return this.callback=function(e,t,i,n,s,r,a){var o=0;return c=1===c?1:a,0===u?(o=h/e*s,++h/e===1&&(u++,h=t)):1===u?(o=h/t*(s-r)+r,--h<=0&&(null!==i?(u+=1,h=i):(u+=2,h=n))):2===u?(o=r,l.requireReleaseTrigger&&c?(u++,h=n,l.releaseTrigger=0,c=0):0!==h--||l.requireReleaseTrigger||(u++,h=n)):3===u&&(h--,o=h/n*r,0>=h&&u++),o},this.call=function(){return this.callback(this.attack,this.decay,this.sustain,this.release,this.attackLevel,this.sustainLevel,this.releaseTrigger)},this.setPhase=function(e){h=e},this.setState=function(e){u=e,h=0},this.getState=function(){return u},this.init(),this},Gibberish.ADSR.prototype=Gibberish._envelope,Gibberish.ADR=function(e,t,i,n,s){var r={name:"adr",type:"envelope",properties:{attack:isNaN(e)?11025:e,decay:isNaN(t)?11025:t,release:isNaN(i)?22050:i,attackLevel:n||1,releaseLevel:s||.2},run:function(){this.setPhase(0),this.setState(0)}};Gibberish.extend(this,r);var a=0,o=0;return this.callback=function(e,t,i,n,s){var r=0;return 0===o?(r=a/e*n,++a/e===1&&(o++,a=t)):1===o?(r=a/t*(n-s)+s,--a<=0&&(o+=1,a=i)):2===o&&(a--,r=a/i*s,0>=a&&o++),r},this.setPhase=function(e){a=e},this.setState=function(e){o=e,a=0},this.getState=function(){return o},this.init(),this},Gibberish.ADR.prototype=Gibberish._envelope,Gibberish.analysis=function(){this.type="analysis",this.codegen=function(){if(Gibberish.memo[this.symbol])return Gibberish.memo[this.symbol];var e=this.variable?this.variable:Gibberish.generateSymbol("v");return Gibberish.memo[this.symbol]=e,this.variable=e,Gibberish.callbackArgs.push(this.symbol),Gibberish.callbackObjects.push(this.callback),this.codeblock="var "+this.variable+" = "+this.symbol+"();\n",-1===Gibberish.codeblock.indexOf(this.codeblock)&&Gibberish.codeblock.push(this.codeblock),this.variable},this.analysisCodegen=function(){var e=0;this.input.codegen?(e=this.input.codegen(),e.indexOf("op")>-1&&console.log("ANALYSIS BUG")):e=this.input.value?"undefined"!=typeof this.input.value.codegen?this.input.value.codegen():this.input.value:"null";var t=this.analysisSymbol+"("+e+",";for(var i in this.properties)"input"!==i&&(t+=this[i]+",");return t=t.slice(0,-1),t+=");",this.analysisCodeblock=t,-1===Gibberish.analysisCodeblock.indexOf(this.analysisCodeblock)&&Gibberish.analysisCodeblock.push(this.analysisCodeblock),-1===Gibberish.callbackObjects.indexOf(this.analysisCallback)&&Gibberish.callbackObjects.push(this.analysisCallback),t},this.remove=function(){Gibberish.analysisUgens.splice(Gibberish.analysisUgens.indexOf(this),1)},this.analysisInit=function(){this.analysisSymbol=Gibberish.generateSymbol(this.name),Gibberish.analysisUgens.push(this),Gibberish.dirty()}},Gibberish.analysis.prototype=new Gibberish.ugen,Gibberish._analysis=new Gibberish.analysis,Gibberish.Follow=function(){this.name="follow",this.properties={input:0,bufferSize:4410,mult:1,useAbsoluteValue:!0};var e=Math.abs,t=[0],i=0,n=0,s=0;this.analysisCallback=function(r,a,o,h){"object"==typeof r&&(r=r[0]+r[1]),i+=h?e(r):r,i-=t[n],t[n]=h?e(r):r,n=(n+1)%a,t[n]=t[n]?t[n]:0,s=i/a*o},this.callback=this.getValue=function(){return s},this.init(),this.analysisInit(),this.processProperties(arguments);var r=(this.__lookupSetter__("bufferSize"),this.bufferSize);Object.defineProperty(this,"bufferSize",{get:function(){return r},set:function(e){r=e,i=0,t=[0],n=0}})},Gibberish.Follow.prototype=Gibberish._analysis,Gibberish.SingleSampleDelay=function(){this.name="single_sample_delay",this.properties={input:arguments[0]||0,amp:arguments[1]||1};var e=0;this.analysisCallback=function(t){e=t},this.callback=function(){return e},this.getValue=function(){return e},this.init(),this.analysisInit(),this.processProperties(arguments)},Gibberish.SingleSampleDelay.prototype=Gibberish._analysis,Gibberish.Record=function(e,t,i){var n=new Float32Array(t),s=0,r=!1,a=this;Gibberish.extend(this,{name:"record",oncomplete:i,properties:{input:0,size:t||0},analysisCallback:function(e,t){r&&(n[s++]="object"==typeof e?e[0]+e[1]:e,s>=t&&(r=!1,a.remove()))},record:function(){return s=0,r=!0,this},getBuffer:function(){return n},getPhase:function(){return s},remove:function(){"undefined"!=typeof this.oncomplete&&this.oncomplete();for(var e=0;e<Gibberish.analysisUgens.length;e++){var t=Gibberish.analysisUgens[e];if(t===this)return Gibberish.callbackArgs.indexOf(this.analysisSymbol)>-1&&Gibberish.callbackArgs.splice(Gibberish.callbackArgs.indexOf(this.analysisSymbol),1),Gibberish.callbackObjects.indexOf(this.analysisCallback)>-1&&Gibberish.callbackObjects.splice(Gibberish.callbackObjects.indexOf(this.analysisCallback),1),void Gibberish.analysisUgens.splice(e,1)}}}),this.properties.input=e,this.init(),this.analysisInit(),Gibberish.dirty()},Gibberish.Record.prototype=Gibberish._analysis,Gibberish.effect=function(){this.type="effect"},Gibberish.effect.prototype=new Gibberish.ugen,Gibberish._effect=new Gibberish.effect,Gibberish.Distortion=function(){var e=Math.abs,t=Math.log,i=Math.LN2;Gibberish.extend(this,{name:"distortion",properties:{input:0,amount:50},callback:function(n,s){var r;return s=s>2?s:2,"number"==typeof n?(r=n*s,n=r/(1+e(r))/(t(s)/i)):(r=n[0]*s,n[0]=r/(1+e(r))/(t(s)/i),r=n[1]*s,n[1]=r/(1+e(r))/(t(s)/i)),n}}).init().processProperties(arguments)},Gibberish.Distortion.prototype=Gibberish._effect,Gibberish.Gain=function(){Gibberish.extend(this,{name:"gain",properties:{input:0,amount:1},callback:function(e,t){return"number"==typeof e?e*=t:(e[0]*=t,e[1]*=t),e}}).init().processProperties(arguments)},Gibberish.Gain.prototype=Gibberish._effect,Gibberish.Delay=function(){var e=[],t=0;e.push(new Float32Array(2*Gibberish.context.sampleRate)),e.push(new Float32Array(2*Gibberish.context.sampleRate)),Gibberish.extend(this,{name:"delay",properties:{input:0,time:22050,feedback:.5,wet:1,dry:1},callback:function(i,n,s,r,a){var o="number"==typeof i?1:2,h=t++%88200,u=(h+(0|n))%88200;
+return 1===o?(e[0][u]=(i+e[0][h])*s,i=i*a+e[0][h]*r):(e[0][u]=(i[0]+e[0][h])*s,i[0]=i[0]*a+e[0][h]*r,e[1][u]=(i[1]+e[1][h])*s,i[1]=i[1]*a+e[1][h]*r),i}});var i=Math.round(this.properties.time);Object.defineProperty(this,"time",{configurable:!0,get:function(){return i},set:function(e){i=Math.round(e),Gibberish.dirty(this)}}),this.init(),this.processProperties(arguments)},Gibberish.Delay.prototype=Gibberish._effect,Gibberish.Decimator=function(){var e=0,t=[],i=Math.pow,n=Math.floor;Gibberish.extend(this,{name:"decimator",properties:{input:0,bitDepth:16,sampleRate:1},callback:function(s,r,a){e+=a;var o="number"==typeof s?1:2;if(1===o){if(e>=1){var h=i(r,2);t[0]=n(s*h)/h,e-=1}s=t[0]}else{if(e>=1){var h=i(r,2);t[0]=n(s[0]*h)/h,t[1]=n(s[1]*h)/h,e-=1}s=t}return s}}).init().processProperties(arguments)},Gibberish.Decimator.prototype=Gibberish._effect,Gibberish.RingModulation=function(){var e=(new Gibberish.Sine).callback,t=[0,0];Gibberish.extend(this,{name:"ringmod",properties:{input:0,frequency:440,amp:.5,mix:.5},callback:function(i,n,s,r){var a="number"==typeof i?1:2,o=1===a?i:i[0],h=e(n,s);if(o=o*(1-r)+o*h*r,2===a){var u=i[1];return u=u*(1-r)+u*h*r,t[0]=o,t[1]=u,t}return o}}).init().processProperties(arguments)},Gibberish.RingModulation.prototype=Gibberish._effect,Gibberish.DCBlock=function(){var e=0,t=0;Gibberish.extend(this,{name:"dcblock",type:"effect",properties:{input:0},reset:function(){e=0,t=0},callback:function(i){var n=i-e+.9997*t;return e=i,t=n,n}}).init().processProperties(arguments)},Gibberish.DCBlock.prototype=Gibberish._effect,Gibberish.Tremolo=function(){var e=(new Gibberish.Sine).callback;Gibberish.extend(this,{name:"tremolo",type:"effect",properties:{input:0,frequency:2.5,amp:.5},callback:function(t,i,n){var s="number"==typeof t?1:2,r=e(i,n);return 1===s?t*=r:(t[0]*=r,t[1]*=r),t}}).init().processProperties(arguments)},Gibberish.Tremolo.prototype=Gibberish._effect,Gibberish.OnePole=function(){var e=0;Gibberish.extend(this,{name:"onepole",type:"effect",properties:{input:0,a0:.15,b1:.85},callback:function(t,i,n){var s=t*i+e*n;return e=s,s},smooth:function(t,i){this.input=i[t],e=this.input,i[t]=this,this.obj=i,this.property=t,this.oldSetter=i.__lookupSetter__(t),this.oldGetter=i.__lookupGetter__(t);var n=this;Object.defineProperty(i,t,{get:function(){return n.input},set:function(e){n.input=e}})},remove:function(){Object.defineProperty(this.obj,this.property,{get:this.oldGetter,set:this.oldSetter}),this.obj[this.property]=this.input}}).init().processProperties(arguments)},Gibberish.OnePole.prototype=Gibberish._effect,Gibberish.Filter24=function(){var e=[0,0,0,0],t=[0,0,0,0],i=[0,0],n=isNaN(arguments[0])?.1:arguments[0],s=isNaN(arguments[1])?3:arguments[1];_isLowPass="undefined"!=typeof arguments[2]?arguments[2]:!0,Gibberish.extend(this,{name:"filter24",properties:{input:0,cutoff:n,resonance:s,isLowPass:_isLowPass},callback:function(n,s,r,a){var o="number"==typeof n?1:2,h=1===o?n:n[0],u=e[3]*r;if(u=u>1?1:u,s=0>s?0:s,s=s>1?1:s,h-=u,e[0]=e[0]+(-e[0]+h)*s,e[1]=e[1]+(-e[1]+e[0])*s,e[2]=e[2]+(-e[2]+e[1])*s,e[3]=e[3]+(-e[3]+e[2])*s,h=a?e[3]:h-e[3],2===o){var c=n[1];return u=t[3]*r,u=u>1?1:u,c-=u,t[0]=t[0]+(-t[0]+c)*s,t[1]=t[1]+(-t[1]+t[0])*s,t[2]=t[2]+(-t[2]+t[1])*s,t[3]=t[3]+(-t[3]+t[2])*s,c=a?t[3]:c-t[3],i[0]=h,i[1]=c,i}return h}}).init().processProperties(arguments)},Gibberish.Filter24.prototype=Gibberish._effect,Gibberish.SVF=function(){var e=[0,0],t=[0,0],i=Math.PI,n=[0,0];Gibberish.extend(this,{name:"SVF",properties:{input:0,cutoff:440,Q:2,mode:0,sr:Gibberish.context.sampleRate},callback:function(s,r,a,o,h){var u="number"==typeof s?1:2,c=1===u?s:s[0],l=2*i*r/h;a=1/a;var b=t[0]+l*e[0],p=c-b-a*e[0],f=l*p+e[0],d=p+b;if(e[0]=f,t[0]=b,c=0===o?b:1===o?p:2===o?f:d,2===u){var g=s[1],b=t[1]+l*e[1],p=g-b-a*e[1],f=l*p+e[1],d=p+b;e[1]=f,t[1]=b,g=0===o?b:1===o?p:2===o?f:d,n[0]=c,n[1]=g}else n=c;return n}}).init().processProperties(arguments)},Gibberish.SVF.prototype=Gibberish._effect,Gibberish.Biquad=function(){var e=x2=y1=y2=0,t=[0,0],i=.001639,n=.003278,s=.001639,r=-1.955777,a=.960601,o="LP",h=2e3,u=.5,c=Gibberish.context.sampleRate;Gibberish.extend(this,{name:"biquad",properties:{input:null},calculateCoefficients:function(){switch(o){case"LP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),b=t/(2*u);i=(1-l)/2,n=1-l,s=i,a0=1+b,r=-2*l,a=1-b;break;case"HP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),b=t/(2*u);i=(1+l)/2,n=-(1+l),s=i,a0=1+b,r=-2*l,a=1-b;break;case"BP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),p=Math.log(2)/2*u*e/t,b=t*(Math.exp(p)-Math.exp(-p))/2;i=b,n=0,s=-b,a0=1+b,r=-2*l,a=1-b;break;default:return}i/=a0,n/=a0,s/=a0,r/=a0,a/=a0},callback:function(o){var h="number"==typeof o?1:2,u=0,c=0,l=1===h?o:o[0];return u=i*l+n*e+s*x2-r*y1-a*y2,x2=e,e=o,y2=y1,y1=u,2===h&&(inR=o[1],c=i*inR+n*e[1]+s*x2[1]-r*y1[1]-a*y2[1],x2[1]=e[1],e[1]=o[1],y2[1]=y1[1],y1[1]=c,t[0]=u,t[1]=c),1===h?u:t}}).init(),Object.defineProperties(this,{mode:{get:function(){return o},set:function(e){o=e,this.calculateCoefficients()}},cutoff:{get:function(){return h},set:function(e){h=e,this.calculateCoefficients()}},Q:{get:function(){return u},set:function(e){u=e,this.calculateCoefficients()}}}),this.processProperties(arguments),this.calculateCoefficients()},Gibberish.Biquad.prototype=Gibberish._effect,Gibberish.Flanger=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=(new Gibberish.Sine).callback,n=Gibberish.interpolate,s=-100,r=0;Gibberish.extend(this,{name:"flanger",properties:{input:0,rate:.25,feedback:0,amount:125,offset:125},callback:function(a,o,h,u){var c="number"==typeof a?1:2,l=s+i(o,.95*u);l>t?l-=t:0>l&&(l+=t);var b=n(e[0],l);return e[0][r]=1===c?a+b*h:a[0]+b*h,2===c?(a[0]+=b,b=n(e[1],l),e[1][r]=a[1]+b*h,a[1]+=b):a+=b,++r>=t&&(r=0),++s>=t&&(s=0),a}}).init().processProperties(arguments),s=-1*this.offset},Gibberish.Flanger.prototype=Gibberish._effect,Gibberish.Vibrato=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=(new Gibberish.Sine).callback,n=Gibberish.interpolate,s=-100,r=0;Gibberish.extend(this,{name:"vibrato",properties:{input:0,rate:5,amount:.5,offset:125},callback:function(a,o,h,u){var c="number"==typeof a?1:2,l=s+i(o,h*u-1);l>t?l-=t:0>l&&(l+=t);var b=n(e[0],l);return e[0][r]=1===c?a:a[0],2===c?(a[0]=b,b=n(e[1],l),e[1][r]=a[1],a[1]=b):a=b,++r>=t&&(r=0),++s>=t&&(s=0),a}}).init().processProperties(arguments),s=-1*this.offset},Gibberish.Vibrato.prototype=Gibberish._effect,Gibberish.BufferShuffler=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=0,n=0,s=0,r=0,a=0,o=Math.random,h=1,u=!1,c=!1,l=!1,b=Gibberish.interpolate,p=!1,f=1,d=!1,g=Gibberish.rndf,m=[0,0];Gibberish.extend(this,{name:"buffer_shuffler",properties:{input:0,chance:.25,rate:11025,length:22050,reverseChange:.5,pitchChance:.5,pitchMin:.25,pitchMax:2,wet:1,dry:0},callback:function(y,G,v,k,x,_,w,A,S,P){var R="number"==typeof y?1:2;a?++r%(k-400)===0&&(u=!1,c=!0,h=1,r=0):(e[0][n]=1===R?y:y[0],e[1][n]=1===R?y:y[1],n++,n%=t,d=0===n?1:d,s++,s%v==0&&o()<G&&(l=o()<x,a=!0,l||(i=n-k,0>i&&(i=t+i)),p=o()<_,p&&(f=g(w,A)),h=1,u=!0,c=!1)),i+=l?-1*f:f,0>i?i+=t:i>=t&&(i-=t);var q,M,C,I,T=b(e[0],i);return u?(h-=.0025,C=T*(1-h),q=1===R?C+y*h:C+y[0]*h,2===R&&(I=b(e[1],i),C=I*(1-h),M=1===R?q:C+y[1]*h),.0025>=h&&(u=!1)):c?(h-=.0025,C=T*h,q=1===R?C+y*h:C+y[0]*(1-h),2===R&&(I=b(e[1],i),C=I*h,M=C+y[1]*(1-h)),.0025>=h&&(c=!1,a=!1,l=!1,f=1,p=0)):1===R?q=a&&d?T*S+y*P:y:(I=b(e[1],i),q=a&&d?T*S+y[0]*P:y[0],M=a&&d?I*S+y[1]*P:y[1]),m=[q,M],1===R?q:m}}).init().processProperties(arguments)},Gibberish.BufferShuffler.prototype=Gibberish._effect,Gibberish.AllPass=function(e){var t=-1,i=new Float32Array(e||500),n=i.length;Gibberish.extend(this,{name:"allpass",properties:{input:0},callback:function(e){t=++t%n;var s=i[t],r=-1*e+s;return i[t]=e+.5*s,r}})},Gibberish.Comb=function(e){var t=new Float32Array(e||1200),i=t.length,n=0,s=0;Gibberish.extend(this,{name:"comb",properties:{input:0,feedback:.84,damping:.2},callback:function(e,r,a){var o=++n%i,h=t[o];return s=h*(1-a)+s*a,t[o]=e+s*r,h}})},Gibberish.Reverb=function(){var e={combCount:8,combTuning:[1116,1188,1277,1356,1422,1491,1557,1617],allPassCount:4,allPassTuning:[556,441,341,225],allPassFeedback:.5,fixedGain:.015,scaleDamping:.4,scaleRoom:.28,offsetRoom:.7,stereoSpread:23},t=.84,i=[],n=[],s=[0,0];Gibberish.extend(this,{name:"reverb",roomSize:.5,properties:{input:0,wet:.5,dry:.55,roomSize:.84,damping:.5},callback:function(e,t,r,a,o){for(var h="object"==typeof e?2:1,u=1===h?e:e[0]+e[1],c=.015*u,l=c,b=0;8>b;b++){var p=i[b](c,.98*a,.4*o);l+=p}for(var b=0;4>b;b++)l=n[b](l);return s[0]=s[1]=u*r+l*t,s}}).init().processProperties(arguments),this.setFeedback=function(e){t=e};for(var r=0;8>r;r++)i.push(new Gibberish.Comb(e.combTuning[r]).callback);for(var r=0;4>r;r++)n.push(new Gibberish.AllPass(e.allPassTuning[r],e.allPassFeedback).callback)},Gibberish.Reverb.prototype=Gibberish._effect,Gibberish.Granulator=function(e){var t=[];buffer=null,interpolate=Gibberish.interpolate,panner=Gibberish.makePanner(),bufferLength=0,debug=0,write=0,self=this,out=[0,0],_out=[0,0],rndf=Gibberish.rndf,numberOfGrains=e.numberOfGrains||20,Gibberish.extend(this,{name:"granulator",bufferLength:88200,reverse:!0,spread:.5,properties:{speed:1,speedMin:-0,speedMax:0,grainSize:1e3,position:.5,positionMin:0,positionMax:0,amp:.2,fade:.1,pan:0,shouldWrite:!1},setBuffer:function(e){buffer=e,bufferLength=e.length},callback:function(e,i,n,s,r,a,o,h,u,c){for(var l=0;numberOfGrains>l;l++){var b=t[l];if(b._speed>0){b.pos>b.end&&(b.pos=(o+rndf(r,a))*buffer.length,b.start=b.pos,b.end=b.start+s,b._speed=e+rndf(i,n),b._speed=b._speed<.1?.1:b._speed,b._speed=b._speed<.1&&b._speed>0?.1:b._speed,b._speed=b._speed>-.1&&b._speed<0?-.1:b._speed,b.fadeAmount=b._speed*u*s,b.pan=rndf(-1*self.spread,self.spread));for(var p=b.pos;p>buffer.length;)p-=buffer.length;for(;0>p;)p+=buffer.length;var f=interpolate(buffer,p);f*=b.pos<b.fadeAmount+b.start?(b.pos-b.start)/b.fadeAmount:1,f*=b.pos>b.end-b.fadeAmount?(b.end-b.pos)/b.fadeAmount:1}else{b.pos<b.end&&(b.pos=(o+rndf(r,a))*buffer.length,b.start=b.pos,b.end=b.start-s,b._speed=e+rndf(i,n),b._speed=b._speed<.1&&b._speed>0?.1:b._speed,b._speed=b._speed>-.1&&b._speed<0?-.1:b._speed,b.fadeAmount=b._speed*u*s);for(var p=b.pos;p>buffer.length;)p-=buffer.length;for(;0>p;)p+=buffer.length;var f=interpolate(buffer,p);f*=b.pos>b.start-b.fadeAmount?(b.start-b.pos)/b.fadeAmount:1,f*=b.pos<b.end+b.fadeAmount?(b.end-b.pos)/b.fadeAmount:1}_out=panner(f*h,b.pan,_out),out[0]+=_out[0],out[1]+=_out[1],b.pos+=b._speed}return panner(out,c,out)}}).init().processProperties(arguments);for(var i=0;numberOfGrains>i;i++)t[i]={pos:self.position+Gibberish.rndf(self.positionMin,self.positionMax),_speed:self.speed+Gibberish.rndf(self.speedMin,self.speedMax)},t[i].start=t[i].pos,t[i].end=t[i].pos+self.grainSize,t[i].fadeAmount=t[i]._speed*self.fade*self.grainSize,t[i].pan=Gibberish.rndf(-1*self.spread,self.spread);"undefined"!=typeof e.buffer&&(buffer=e.buffer,bufferLength=buffer.length)},Gibberish.Granulator.prototype=Gibberish._effect,Gibberish.synth=function(){this.type="oscillator",this.oscillatorInit=function(){this.fx=new Array2,this.fx.parent=this}},Gibberish.synth.prototype=new Gibberish.ugen,Gibberish._synth=new Gibberish.synth,Gibberish.Synth=function(e){this.name="synth",this.properties={frequency:0,pulsewidth:.5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,glide:.15,amp:.25,channels:2,pan:0,sr:Gibberish.context.sampleRate},this.note=function(e,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&e===c)return void(this.releaseTrigger=1);this.frequency=c=e,this.releaseTrigger=0}else this.frequency[0]=c=e,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,n=i.getState,s=i.callback,r=new Gibberish.PWM,a=r.callback,o=(new Gibberish.OnePole).callback,h=Gibberish.makePanner(),u=this,c=0,l=[0,0];i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,r,c,b,p,f,d,g,m,y,G,v,k){m=m>=1?.99999:m,e=o(e,1-m,m);var x,_;return t?(x=s(r,c,b,p,f,d,g),g&&(u.releaseTrigger=0),n()<4?(_=a(e,1,i,k)*x*y,1===G?_:h(_,v,l)):(_=l[0]=l[1]=0,1===G?_:l)):n()<2?(x=s(r,c),_=a(e,1,i,k)*x*y,1===G?_:h(_,v,l)):(_=l[0]=l[1]=0,1===G?_:l)},this.getEnv=function(){return i},this.getOsc=function(){return r},this.setOsc=function(e){r=e,a=r.callback};var b="PWM";Object.defineProperty(this,"waveform",{get:function(){return b},set:function(e){this.setOsc(new Gibberish[e])}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Synth.prototype=Gibberish._synth,Gibberish.PolySynth=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polysynth",maxVoices:5,voiceCount:0,frequencies:[],_frequency:0,polyProperties:{frequency:0,glide:0,attack:22050,decay:22050,pulsewidth:.5,waveform:"PWM"},note:function(e,t){var i=this.frequencies.indexOf(e),n=i>-1?i:this.voiceCount++,s=this.children[n];s.note(e,t),-1===i?(this.frequencies[n]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[n]},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={waveform:this.waveform,attack:this.attack,decay:this.decay,pulsewidth:this.pulsewidth,channels:2,amp:1,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1},i=new Gibberish.Synth(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.Synth2=function(e){this.name="synth2",this.properties={frequency:0,pulsewidth:.5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,cutoff:.25,resonance:3.5,useLowPassFilter:!0,glide:.15,amp:.25,channels:1,pan:0,sr:Gibberish.context.sampleRate},this.note=function(e,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&e===l)return void(this.releaseTrigger=1);this.frequency=l=e,this.releaseTrigger=0}else this.frequency[0]=l=e,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,n=i.getState,s=i.callback,r=new Gibberish.PWM,a=r.callback,o=new Gibberish.Filter24,h=o.callback,u=(new Gibberish.OnePole).callback,c=Gibberish.makePanner(),l=0,b=this,p=[0,0];i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,r,o,l,f,d,g,m,y,G,v,k,x,_,w,A){k=k>=1?.99999:k,e=u(e,1-k,k);var S,P;return t?(S=s(r,o,l,f,d,g,m),m&&(b.releaseTrigger=0),n()<4?(P=h(a(e,.15,i,A),y*S,G,v)*S*x,1===_?P:c(P,w,p)):(P=p[0]=p[1]=0,1===_?P:p)):n()<2?(S=s(r,o),P=h(a(e,.15,i,A),y*S,G,v)*S*x,1===_?P:c(P,w,p)):(P=p[0]=p[1]=0,1===_?P:p)},this.getUseADSR=function(){return t},this.getEnv=function(){return i},this.getOsc=function(){return r},this.setOsc=function(e){r=e,a=r.callback};var f="PWM";Object.defineProperty(this,"waveform",{get:function(){return f},set:function(e){this.setOsc(new Gibberish[e])}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Synth2.prototype=Gibberish._synth,Gibberish.PolySynth2=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polysynth2",maxVoices:5,voiceCount:0,frequencies:[],_frequency:0,polyProperties:{frequency:0,glide:0,attack:22050,decay:22050,pulsewidth:.5,resonance:3.5,cutoff:.25,useLowPassFilter:!0,waveform:"PWM"},note:function(e,t){var i=this.frequencies.indexOf(e),n=i>-1?i:this.voiceCount++,s=this.children[n];s.note(e,t),-1===i?(this.frequencies[n]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[n]},initVoices:function(){this.dirty=!0;for(var e=0;e<this.maxVoices;e++){var t={attack:this.attack,decay:this.decay,pulsewidth:this.pulsewidth,channels:2,amp:1,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1},i=new Gibberish.Synth2(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.FMSynth=function(e){this.name="fmSynth",this.properties={frequency:0,cmRatio:2,index:5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,glide:.15,amp:.25,channels:2,pan:0},this.note=function(e,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&e===l)return void(this.releaseTrigger=1);this.frequency=l=e,this.releaseTrigger=0}else this.frequency[0]=l=e,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,n=i.getState,s=i.callback,r=(new Gibberish.Sine).callback,a=(new Gibberish.Sine).callback,o=(new Gibberish.OnePole).callback,h=Gibberish.makePanner(),u=[0,0],c=this,l=0;i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,l,b,p,f,d,g,m,y,G,v,k,x){var _,w,A;return G>=1&&(G=.9999),e=o(e,1-G,G),t?(_=s(b,p,f,d,g,m,y),y&&(c.releaseTrigger=0),n()<4?(A=a(e*i,e*l)*_,w=r(e+A,1)*_*v,1===k?w:h(w,x,u)):(w=u[0]=u[1]=0,1===k?w:u)):n()<2?(_=s(b,p),A=a(e*i,e*l)*_,w=r(e+A,1)*_*v,1===k?w:h(w,x,u)):(w=u[0]=u[1]=0,1===k?w:u)},this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.FMSynth.prototype=Gibberish._synth,Gibberish.PolyFM=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polyfm",maxVoices:5,voiceCount:0,children:[],frequencies:[],_frequency:0,polyProperties:{glide:0,attack:22050,decay:22050,index:5,cmRatio:2},note:function(e,t){var i=this.frequencies.indexOf(e),n=i>-1?i:this.voiceCount++,s=this.children[n];s.note(e,t),-1===i?(this.frequencies[n]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[n]},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={attack:this.attack,decay:this.decay,cmRatio:this.cmRatio,index:this.index,channels:2,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1,amp:1},i=new Gibberish.FMSynth(t);i.connect(this),this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.Sampler=function(){function e(e){Gibberish.context.decodeAudioData(e,function(e){r=e.getChannelData(0),o.length=t=o.end=a=r.length,o.isPlaying=!0,o.buffers[o.file]=r,Gibberish.audioFiles[o.file]=r,o.onload&&o.onload(),0!==o.playOnLoad&&o.note(o.playOnLoad),o.isLoaded=!0},function(e){console.log("Error decoding file",e)})}var t=1,i=Gibberish.interpolate,n=Gibberish.makePanner(),s=[0,0],r=null,a=1,o=this;if(Gibberish.extend(this,{name:"sampler",file:null,isLoaded:!1,playOnLoad:0,buffers:{},properties:{pitch:1,amp:1,isRecording:!1,isPlaying:!0,input:0,length:0,start:0,end:1,loops:0,pan:0},_onload:function(e){r=e.channels[0],a=e.length,o.end=a,o.length=t=a,o.isPlaying=!0,Gibberish.audioFiles[o.file]=r,o.buffers[o.file]=r,o.onload&&o.onload(),0!==o.playOnLoad&&o.note(o.playOnLoad),o.isLoaded=!0},switchBuffer:function(e){if("string"==typeof e)"undefined"!=typeof o.buffers[e]&&(r=o.buffers[e],a=o.end=o.length=r.length);else if("number"==typeof e){var t=Object.keys(o.buffers);if(0===t.length)return;r=o.buffers[t[e]],a=o.end=o.length=r.length}},floatTo16BitPCM:function(e,t,i){for(var n=0;n<i.length-1;n++,t+=2){var s=Math.max(-1,Math.min(1,i[n]));e.setInt16(t,0>s?32768*s:32767*s,!0)}},encodeWAV:function(){function e(e,t,i){for(var n=0;n<i.length;n++)e.setUint8(t+n,i.charCodeAt(n))}var t=this.getBuffer(),i=new ArrayBuffer(44+2*t.length),n=new DataView(i),s=Gibberish.context.sampleRate;return e(n,0,"RIFF"),n.setUint32(4,32+2*t.length,!0),e(n,8,"WAVE"),e(n,12,"fmt "),n.setUint32(16,16,!0),n.setUint16(20,1,!0),n.setUint16(22,1,!0),n.setUint32(24,s,!0),n.setUint32(28,4*s,!0),n.setUint16(32,2,!0),n.setUint16(34,16,!0),e(n,36,"data"),n.setUint32(40,2*t.length,!0),this.floatTo16BitPCM(n,44,t),n},download:function(){var e=this.encodeWAV(),t=new Blob([e]),i=window.webkitURL.createObjectURL(t),n=window.document.createElement("a");n.href=i,n.download="output.wav";var s=document.createEvent("Event");s.initEvent("click",!0,!0),n.dispatchEvent(s)},note:function(e,i){switch(typeof e){case"number":this.pitch=e;break;case"function":this.pitch=e();break;case"object":Array.isArray(e)&&(this.pitch=e[0])}if("number"==typeof i&&(this.amp=i),null!==this.function){this.isPlaying=!0;var n;switch(typeof this.pitch){case"number":n=this.pitch;break;case"function":n=this.pitch();break;case"object":n=Array.isArray(this.pitch)?this.pitch[0]:this.pitch,"function"==typeof n&&(n=n())}t=n>0||"object"==typeof n?this.start:this.end}},getBuffer:function(){return r},setBuffer:function(e){r=e},getPhase:function(){return t},setPhase:function(e){t=e},getNumberOfBuffers:function(){return Object.keys(o.buffers).length-1},callback:function(e,a,o,h,u,c,l,b,p,f){var d=0;return t+=e,b>t&&t>0?(e>0?d=null!==r&&h?i(r,t):0:t>l?d=null!==r&&h?i(r,t):0:t=p?b:t,n(d*a,f,s)):(t=p&&e>0?l:t,t=p&&0>e?b:t,s[0]=s[1]=d,s)}}).init().oscillatorInit().processProperties(arguments),"undefined"!=typeof arguments[0]&&("string"==typeof arguments[0]?(this.file=arguments[0],this.pitch=0):"object"==typeof arguments[0]&&arguments[0].file&&(this.file=arguments[0].file)),"undefined"!=typeof Gibberish.audioFiles[this.file])r=Gibberish.audioFiles[this.file],this.end=this.bufferLength=r.length,this.buffers[this.file]=r,t=this.bufferLength,Gibberish.dirty(this),this.onload&&this.onload();else if(null!==this.file){var e,h=new XMLHttpRequest;h.open("GET",this.file,!0),h.responseType="arraybuffer",h.onload=function(){e(this.response)},h.send()}else"undefined"!=typeof this.buffer&&(this.isLoaded=!0,r=this.buffer,this.end=this.bufferLength=r.length||88200,t=this.bufferLength,arguments[0]&&arguments[0].loops&&(this.loops=1),Gibberish.dirty(this),this.onload&&this.onload())},Gibberish.Sampler.prototype=Gibberish._oscillator,Gibberish.Sampler.prototype.record=function(e,t){this.isRecording=!0;var i=this;return this.recorder=new Gibberish.Record(e,t,function(){i.setBuffer(this.getBuffer()),i.end=bufferLength=i.getBuffer().length,i.setPhase(i.end),i.isRecording=!1}).record(),this},Gibberish.MonoSynth=function(){Gibberish.extend(this,{name:"monosynth",properties:{attack:1e4,decay:1e4,cutoff:.2,resonance:2.5,amp1:1,amp2:1,amp3:1,filterMult:.3,isLowPass:!0,pulsewidth:.5,amp:.6,detune2:.01,detune3:-.01,octave2:1,octave3:-1,glide:0,pan:0,frequency:0,channels:2},waveform:"Saw3",note:function(e,n){"undefined"!=typeof n&&0!==n&&(this.amp=n),0!==n&&("object"!=typeof this.frequency?this.frequency=e:(this.frequency[0]=e,Gibberish.dirty(this)),i()>0&&t.run())},_note:function(e,i){if("object"!=typeof this.frequency){if(useADSR&&e===lastFrequency&&0===i)return void(this.releaseTrigger=1);0!==i&&(this.frequency=lastFrequency=e),this.releaseTrigger=0}else 0!==i&&(this.frequency[0]=lastFrequency=e),this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof i&&0!==i&&(this.amp=i),0!==i&&t.run()}});var e=this.waveform;Object.defineProperty(this,"waveform",{get:function(){return e},set:function(t){e!==t&&(e=t,r=(new Gibberish[t]).callback,a=(new Gibberish[t]).callback,o=(new Gibberish[t]).callback)}});var t=new Gibberish.AD(this.attack,this.decay),i=t.getState,n=t.callback,s=(new Gibberish.Filter24).callback,r=new Gibberish[this.waveform](this.frequency,this.amp1).callback,a=new Gibberish[this.waveform](this.frequency2,this.amp2).callback,o=new Gibberish[this.waveform](this.frequency3,this.amp3).callback,h=(new Gibberish.OnePole).callback,u=Gibberish.makePanner(),c=[0,0];this.callback=function(e,t,l,b,p,f,d,g,m,y,G,v,k,x,_,w,A,S,P){if(i()<2){w>=1&&(w=.9999),S=h(S,1-w,w);var R=S;if(x>0)for(var q=0;x>q;q++)R*=2;else if(0>x)for(var q=0;q>x;q--)R/=2;var M=S;if(_>0)for(var q=0;_>q;q++)M*=2;else if(0>_)for(var q=0;q>_;q--)M/=2;R+=v>0?(2*S-S)*v:(S-S/2)*v,M+=k>0?(2*S-S)*k:(S-S/2)*k;var C=r(S,p,y)+a(R,f,y)+o(M,d,y),I=n(e,t),T=s(C,l+g*I,b,m,1)*I;return T*=G,c[0]=c[1]=T,1===P?c:u(T,A,c)}return c[0]=c[1]=0,c},this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.MonoSynth.prototype=Gibberish._synth,Gibberish.Binops={"export":function(e){Gibberish.export("Binops",e||window)},operator:function(){var e=new Gibberish.ugen,t=arguments[0],i=Array.prototype.slice.call(arguments,1);e.name="op",e.properties={};for(var n=0;n<i.length;n++)e.properties[n]=i[n];return e.init.apply(e,i),e.codegen=function(){var e,i="( ";e=Object.keys(this.properties);for(var n=0;n<e.length;n++){var s="object"==typeof this[n];i+=s?this[n].codegen():this[n],n<e.length-1&&(i+=" "+t+" ")}return i+=" )",this.codeblock=i,i},e.valueOf=function(){return e.codegen()},e},Add:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("+"),Gibberish.Binops.operator.apply(null,e)},Sub:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("-"),Gibberish.Binops.operator.apply(null,e)},Mul:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("*"),Gibberish.Binops.operator.apply(null,e)},Div:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("/"),Gibberish.Binops.operator.apply(null,e)},Mod:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("%"),Gibberish.Binops.operator.apply(null,e)},Abs:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"abs",properties:{},callback:Math.abs.bind(t)};return t.__proto__=new Gibberish.ugen,t.properties[0]=e[0],t.init(),t},Sqrt:function(){var e=(Array.prototype.slice.call(arguments,0),{name:"sqrt",properties:{},callback:Math.sqrt.bind(e)});return e.__proto__=new Gibberish.ugen,e.properties[i]=arguments[0],e.init(),e},Pow:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"pow",properties:{},callback:Math.pow.bind(t)};t.__proto__=new Gibberish.ugen;for(var i=0;i<e.length;i++)t.properties[i]=e[i];return t.init(),console.log(t.callback),t},Clamp:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"clamp",properties:{input:0,min:0,max:1},callback:function(e,t,i){return t>e?e=t:e>i&&(e=i),e}};return t.__proto__=new Gibberish.ugen,t.init(),t.processProperties(e),t},Merge:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"merge",properties:{},callback:function(e){return e[0]+e[1]}};t.__proto__=new Gibberish.ugen;for(var i=0;i<e.length;i++)t.properties[i]=e[i];return t.init(),t},Map:function(e,t,i,n,s,r,a){var o=Math.pow,h=0,u=0,c={name:"map",properties:{input:e,outputMin:t,outputMax:i,inputMin:n,inputMax:s,curve:r||h,wrap:a||!1},callback:function(e,t,i,n,s,r,a){var h,c=i-t,l=s-n,b=(e-n)/l;return b>1?b=a?b%1:1:0>b&&(b=a?1+b%1:0),h=0===r?t+b*c:t+o(b,1.5)*c,u=h,h},getValue:function(){return u},invert:function(){var e=c.outputMin;c.outputMin=c.outputMax,c.outputMax=e}};return c.__proto__=new Gibberish.ugen,c.init(),c}},Gibberish.Time={bpm:120,"export":function(e){Gibberish.export("Time",e||window)},ms:function(e){return e*Gibberish.context.sampleRate/1e3},seconds:function(e){return e*Gibberish.context.sampleRate},beats:function(e){return function(){var t=Gibberish.context.sampleRate/(Gibberish.Time.bpm/60);return t*e}}},Gibberish.Sequencer2=function(){var e=this,t=0;Gibberish.extend(this,{target:null,key:null,values:null,valuesIndex:0,durations:null,durationsIndex:0,nextTime:0,playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!0,keysAndValues:null,counts:{},properties:{rate:1,isRunning:!1,nextTime:0},offset:0,name:"seq",callback:function(i,n,s){if(n){if(t>=s){if(null!==e.values){if(e.target){var r=e.values[e.valuesIndex++];"function"==typeof r&&(r=r()),"function"==typeof e.target[e.key]?e.target[e.key](r):e.target[e.key]=r}else"function"==typeof e.values[e.valuesIndex]&&e.values[e.valuesIndex++]();e.valuesIndex>=e.values.length&&(e.valuesIndex=0)}else if(null!==e.keysAndValues)for(var a in e.keysAndValues){var o=e.counts[a]++,r=e.keysAndValues[a][o];"function"==typeof r&&(r=r()),"function"==typeof e.target[a]?e.target[a](r):e.target[a]=r,e.counts[a]>=e.keysAndValues[a].length&&(e.counts[a]=0),e.chose&&e.chose(a,o)}else"function"==typeof e.target[e.key]&&e.target[e.key]();if(t-=s,Array.isArray(e.durations)){var h=e.durations[e.durationsIndex++];e.nextTime="function"==typeof h?h():h,e.chose&&e.chose("durations",e.durationsIndex-1),e.durationsIndex>=e.durations.length&&(e.durationsIndex=0)}else{var h=e.durations;e.nextTime="function"==typeof h?h():h}return e.repeatTarget&&(e.repeatCount++,e.repeatCount===e.repeatTarget&&(e.isRunning=!1,e.repeatCount=0)),0}t+=i}return 0},start:function(e){return e||(t=0),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(){for(i in this.keysAndValues)this.shuffleArray(this.keysAndValues[i])},shuffleArray:function(e){for(var t,i,n=e.length;n;t=parseInt(Math.random()*n),i=e[--n],e[n]=e[t],e[t]=i);}}),this.init(arguments),this.processProperties(arguments);for(var i in this.keysAndValues)this.counts[i]=0;this.oscillatorInit(),t+=this.offset,this.connect()},Gibberish.Sequencer2.prototype=Gibberish._oscillator,Gibberish.Sequencer=function(){Gibberish.extend(this,{target:null,key:null,values:null,valuesIndex:0,durations:null,durationsIndex:0,nextTime:0,phase:0,isRunning:!1,playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!0,keysAndValues:null,counts:{},offset:0,name:"seq",tick:function(){if(this.isRunning){if(this.phase>=this.nextTime){if(null!==this.values){if(this.target){var e=this.values[this.valuesIndex++];if("function"==typeof e)try{e=e()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+e.toString()),this.values.splice(this.valuesIndex-1,1),this.valuesIndex--}"function"==typeof this.target[this.key]?this.target[this.key](e):this.target[this.key]=e}else if("function"==typeof this.values[this.valuesIndex])try{this.values[this.valuesIndex++]()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+this.values[this.valuesIndex-1].toString()),this.values.splice(this.valuesIndex-1,1),this.valuesIndex--}this.valuesIndex>=this.values.length&&(this.valuesIndex=0)}else if(null!==this.keysAndValues)for(var i in this.keysAndValues){var n="function"==typeof this.keysAndValues[i].pick?this.keysAndValues[i].pick():this.counts[i]++,e=this.keysAndValues[i][n];if("function"==typeof e)try{e=e()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+e.toString()),this.keysAndValues[i].splice(n,1),"function"!=typeof this.keysAndValues[i].pick&&this.counts[i]--}"function"==typeof this.target[i]?this.target[i](e):this.target[i]=e,this.counts[i]>=this.keysAndValues[i].length&&(this.counts[i]=0)}else"function"==typeof this.target[this.key]&&this.target[this.key]();
+if(this.phase-=this.nextTime,Array.isArray(this.durations)){var s="function"==typeof this.durations.pick?this.durations[this.durations.pick()]:this.durations[this.durationsIndex++];this.nextTime="function"==typeof s?s():s,this.durationsIndex>=this.durations.length&&(this.durationsIndex=0)}else{var s=this.durations;this.nextTime="function"==typeof s?s():s}return void(this.repeatTarget&&(this.repeatCount++,this.repeatCount===this.repeatTarget&&(this.isRunning=!1,this.repeatCount=0)))}this.phase++}},start:function(e){return e||(this.phase=this.offset),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(){for(e in this.keysAndValues)this.shuffleArray(this.keysAndValues[e])},shuffleArray:function(e){for(var t,i,n=e.length;n;t=parseInt(Math.random()*n),i=e[--n],e[n]=e[t],e[t]=i);},disconnect:function(){var e=Gibberish.sequencers.indexOf(this);Gibberish.sequencers.splice(e,1),this.isConnected=!1},connect:function(){return-1===Gibberish.sequencers.indexOf(this)&&Gibberish.sequencers.push(this),this.isConnected=!0,this}});for(var e in arguments[0])this[e]=arguments[0][e];for(var e in this.keysAndValues)this.counts[e]=0;this.connect(),this.phase+=this.offset},Gibberish.Sequencer.prototype=Gibberish._oscillator,Gibberish.PolySeq=function(){var e=this,t=0,i=function(e,t){return t>e?-1:e>t?1:0};Gibberish.extend(this,{seqs:[],timeline:{},playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!1,properties:{rate:1,isRunning:!1,nextTime:0},offset:0,autofire:[],name:"polyseq",getPhase:function(){return t},timeModifier:null,add:function(i){i.valuesIndex=i.durationsIndex=0,e.seqs.push(i),null===i.durations&&e.autofire.push(i),"undefined"!=typeof e.timeline[t]?i.priority?e.timeline[t].unshift(i):e.timeline[t].push(i):e.timeline[t]=[i],!e.scale||"frequency"!==i.key&&"note"!==i.key||e.applyScale&&e.applyScale(),e.nextTime=t,i.shouldStop=!1},callback:function(n,s,r){var a;if(s){if(t>=r){var o=e.timeline[r],h=t-r;if("undefined"==typeof o)return;e.autofire.length&&(o=o.concat(e.autofire));for(var u=0;u<o.length;u++){var c=o[u];if(!c.shouldStop){var l=c.values.pick?c.values.pick():c.valuesIndex++%c.values.length,b=c.values[l];if("function"==typeof b&&(b=b()),c.target&&("function"==typeof c.target[c.key]?c.target[c.key](b):c.target[c.key]=b),e.chose&&e.chose(c.key,l),null!==c.durations){if(Array.isArray(c.durations)){var l=c.durations.pick?c.durations.pick():c.durationsIndex++,p=c.durations[l];a="function"==typeof p?p():p,c.durationsIndex>=c.durations.length&&(c.durationsIndex=0),e.chose&&e.chose("durations",l)}else{var p=c.durations;a="function"==typeof p?p():p}var f;f=null!==e.timeModifier?e.timeModifier(a)+t:a+t,f-=h,a-=h,"undefined"==typeof e.timeline[f]?e.timeline[f]=[c]:c.priority?e.timeline[f].unshift(c):e.timeline[f].push(c)}}}delete e.timeline[r];var d=Object.keys(e.timeline),g=d.length;if(g>1){for(var m=0;g>m;m++)d[m]=parseFloat(d[m]);d=d.sort(i),e.nextTime=d[0]}else e.nextTime=parseFloat(d[0])}t+=n}return 0},start:function(e,i){if(e&&this.offset){t=0,this.nextTime=this.offset;var n=""+this.offset;this.timeline={},this.timeline[n]=[];for(var s=0;s<this.seqs.length;s++){var r=this.seqs[s];r.valuesIndex=r.durationsIndex=r.shouldStop=0,this.timeline[n].push(r)}}else{t=0,this.nextTime=0,this.timeline={0:[]};for(var s=0;s<this.seqs.length;s++){var r=this.seqs[s];r.valuesIndex=r.durationsIndex=r.shouldStop=0,this.timeline[0].push(r)}}return this.isConnected||(this.connect(Gibberish.Master,i),this.isConnected=!0),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this.isConnected&&(this.disconnect(),this.isConnected=!1),this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(e){if("undefined"!=typeof e)for(var t=0;t<this.seqs.length;t++)this.seqs[t].key===e&&this.shuffleArray(this.seqs[t].values);else for(var t=0;t<this.seqs.length;t++)this.shuffleArray(this.seqs[t].values)},shuffleArray:function(e){for(var t,i,n=e.length;n;t=parseInt(Math.random()*n),i=e[--n],e[n]=e[t],e[t]=i);}}),this.init(arguments),this.processProperties(arguments),this.oscillatorInit()},Gibberish.PolySeq.prototype=Gibberish._oscillator;var _hasInput=!1;return Gibberish.Input=function(){var e=[];_hasInput||createInput(),this.type=this.name="input",this.fx=new Array2,this.fx.parent=this,this.properties={input:"input",amp:.5,channels:1},this.callback=function(t,i,n){return 1===n?e=t*i:(e[0]=t[0]*i,e[1]=t[1]*i),e},this.init(arguments),this.processProperties(arguments)},Gibberish.Input.prototype=new Gibberish.ugen,Gibberish.Kick=function(){var e=!1,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,n=.2,s=.8;Gibberish.extend(this,{name:"kick",properties:{pitch:50,__decay:20,__tone:1e3,amp:2,sr:Gibberish.context.sampleRate},callback:function(n,s,r,a,o){var h=e?60:0;return h=t(h,n,s,2,o),h=i(h,r,.5,0,o),h*=a,e=!1,h},note:function(t,i,n,s){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.decay=i),"number"==typeof n&&(this.tone=n),"number"==typeof s&&(this.amp=s),e=!0}}).init().oscillatorInit(),Object.defineProperties(this,{decay:{get:function(){return n},set:function(e){n=e>1?1:e,this.__decay=100*n}},tone:{get:function(){return s},set:function(e){s=e>1?1:e,this.__tone=220+1400*e}}}),this.processProperties(arguments)},Gibberish.Kick.prototype=Gibberish._oscillator,Gibberish.Conga=function(){var e=!1,t=(new Gibberish.SVF).callback;Gibberish.extend(this,{name:"conga",properties:{pitch:190,amp:2,sr:Gibberish.context.sampleRate},callback:function(i,n,s){var r=e?60:0;return r=t(r,i,50,2,s),r*=n,e=!1,r},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),e=!0}}).init().oscillatorInit(),this.processProperties(arguments)},Gibberish.Conga.prototype=Gibberish._oscillator,Gibberish.Clave=function(){var e=!1,t=new Gibberish.SVF,i=t.callback;Gibberish.extend(this,{name:"clave",properties:{pitch:2500,amp:1,sr:Gibberish.context.sampleRate},callback:function(t,n,s){var r=e?2:0;return r=i(r,t,5,2,s),r*=n,e=!1,r},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),e=!0}}).init().oscillatorInit(),this.bpf=t,this.processProperties(arguments)},Gibberish.Clave.prototype=Gibberish._oscillator,Gibberish.Tom=function(){var e=!1,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,n=new Gibberish.ExponentialDecay,s=n.callback,r=Math.random;Gibberish.extend(this,{name:"tom",properties:{pitch:80,amp:.5,sr:Gibberish.context.sampleRate},callback:function(n,a,o){var h,u=e?60:0;return u=t(u,n,30,2,o),h=16*r()-8,h=h>0?h:0,h*=s(.05,11025),h=i(h,120,.5,0,o),u+=h,u*=a,e=!1,u},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),n.trigger(),e=!0}}).init().oscillatorInit(),n.trigger(1),this.processProperties(arguments)},Gibberish.Tom.prototype=Gibberish._oscillator,Gibberish.Cowbell=function(){var e=new Gibberish.Square,t=new Gibberish.Square,i=e.callback,n=t.callback,s=new Gibberish.SVF({mode:2}),r=s.callback,a=new Gibberish.ExponentialDecay(.0025,10500),o=a.callback;Gibberish.extend(this,{name:"cowbell",properties:{amp:1,pitch:560,bpfFreq:1e3,bpfRez:3,decay:22050,decayCoeff:1e-4,sr:Gibberish.context.sampleRate},callback:function(e,t,s,a,h,u,c){var l;return l=i(t,1,1,0),l+=n(845,1,1,0),l=r(l,s,a,2,c),l*=o(u,h),l*=e},note:function(e){a.trigger(),e&&(this.decay=e)}}).init().oscillatorInit().processProperties(arguments),this.bpf=s,this.eg=a,a.trigger(1)},Gibberish.Cowbell.prototype=Gibberish._oscillator,Gibberish.Snare=function(){var e=(new Gibberish.SVF).callback,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,n=new Gibberish.ExponentialDecay(.0025,11025),s=n.callback,r=Math.random,a=0;Gibberish.extend(this,{name:"snare",properties:{cutoff:1e3,decay:11025,tune:0,snappy:.5,amp:1,sr:Gibberish.context.sampleRate},callback:function(n,o,h,u,c,l){var b,p,f=0,d=0;return f=s(.0025,o),f>.005&&(d=(2*r()-1)*f,d=i(d,n+1e3*h,.5,1,l),d*=u,d=d>0?d:0,a=f,b=e(a,180*(h+1),15,2,l),p=t(a,330*(h+1),15,2,l),d+=b,d+=.8*p,d*=c),d},note:function(e,t,i,s){"number"==typeof e&&(this.tune=e),"number"==typeof s&&(this.cutoff=s),"number"==typeof i&&(this.snappy=i),"number"==typeof t&&(this.amp=t),n.trigger()}}).init().oscillatorInit().processProperties(arguments),n.trigger(1)},Gibberish.Snare.prototype=Gibberish._oscillator,Gibberish.Hat=function(){{var e=new Gibberish.Square,t=new Gibberish.Square,i=new Gibberish.Square,n=new Gibberish.Square,s=new Gibberish.Square,r=new Gibberish.Square,a=e.callback,o=t.callback,h=i.callback,u=n.callback,c=s.callback,l=r.callback,b=new Gibberish.SVF({mode:2}),p=b.callback,f=new Gibberish.Filter24,d=f.callback,g=new Gibberish.ExponentialDecay(.0025,10500),m=g.callback,y=new Gibberish.ExponentialDecay(.1,7500);y.callback}Gibberish.extend(this,{name:"hat",properties:{amp:1,pitch:325,bpfFreq:7e3,bpfRez:2,hpfFreq:.975,hpfRez:0,decay:3500,decay2:3e3,sr:Gibberish.context.sampleRate},callback:function(e,t,i,n,s,r,b,f,g){var y;return y=a(t,1,.5,0),y+=o(1.4471*t,.75,1,0),y+=h(1.617*t,1,1,0),y+=u(1.9265*t,1,1,0),y+=c(2.5028*t,1,1,0),y+=l(2.6637*t,.75,1,0),y=p(y,i,n,2,g),y*=m(.001,b),y=d(y,s,r,0,1),y*=e},note:function(e,t){g.trigger(),y.trigger(),e&&(this.decay=e),t&&(this.decay2=t)}}).init().oscillatorInit().processProperties(arguments),this.bpf=b,this.hpf=f,g.trigger(1),y.trigger(1)},Gibberish.Hat.prototype=Gibberish._oscillator,Gibberish});
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/teoria.min.js":[function(require,module,exports){
 (function(){function t(t,e){return t=r[t],e=r[e],t.distance>e.distance?e.distance+12-t.distance:e.distance-t.distance}function e(t,e,i){for(;i>0;i--)t+=e;return t}function i(t,e){if("string"!=typeof t)return null;this.name=t,this.duration=e||4,this.accidental={value:0,sign:""};var i=t.match(/^([abcdefgh])(x|#|bb|b?)(-?\d*)/i);if(i&&t===i[0]&&0!==i[3].length)this.name=i[1].toLowerCase(),this.octave=parseFloat(i[3]),0!==i[2].length&&(this.accidental.sign=i[2].toLowerCase(),this.accidental.value=y[i[2]]);else{t=t.replace(/\u2032/g,"'").replace(/\u0375/g,",");var n=t.match(/^(,*)([abcdefgh])(x|#|bb|b?)([,\']*)$/i);if(!n||5!==n.length||t!==n[0])throw Error("Invalid note format");if(""===n[1]&&""===n[4])this.octave=n[2]===n[2].toLowerCase()?3:2;else if(""!==n[1]&&""===n[4]){if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation.");this.octave=2-n[1].length}else{if(""!==n[1]||""===n[4])throw Error("Invalid note format");if(n[4].match(/^'+$/)){if(n[2]===n[2].toUpperCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=3+n[4].length}else{if(!n[4].match(/^,+$/))throw Error("Invalid characters after note name.");if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=2-n[4].length}}this.name=n[2].toLowerCase(),0!==n[3].length&&(this.accidental.sign=n[3].toLowerCase(),this.accidental.value=y[n[3]])}}function n(t,e){if(!(t instanceof i))return null;e=e||"",this.name=t.name.toUpperCase()+t.accidental.sign+e,this.root=t,this.notes=[t],this.quality="major",this.type="major";var n,r,o,s,h,m=[],u=!1,c="quality",d=!1,p=!1,v=null;for(s=0,h=e.length;h>s;s++){for(n=e[s];" "===n||"("===n||")"===n;)n=e[++s];if(!n)break;if(r=n.charCodeAt(0),o=h>=s+3?e.substr(s,3):"","quality"===c)"M"===n||("maj"===o||916===r?(this.type="major",m.push("M7"),u=!0,(e[s+3]&&"7"===e[s+3]||916===r&&"7"===e[s+1])&&s++):"m"===n||"-"===n||"min"===o?this.quality=this.type="minor":111===r||176===r||"dim"===o?(this.quality="minor",this.type="diminished"):"+"===n||"aug"===o?(this.quality="major",this.type="augmented"):216===r||248===r?(this.quality="minor",this.type="diminished",m.push("m7"),u=!0):"sus"===o?(this.quality="sus",this.type=e[s+3]&&"2"===e[s+3]?"sus2":"sus4"):"5"===n?(this.quality="power",this.type="power"):s-=1),o in l&&(s+=2),c="";else if("#"===n)d=!0;else if("b"===n)p=!0;else if("5"===n)d?(v="A5","major"===this.quality&&(this.type="augmented")):p&&(v="d5","minor"===this.quality&&(this.type="diminished")),p=d=!1;else if("6"===n)m.push("M6"),p=d=!1;else if("7"===n)"diminished"===this.type?m.push("d7"):m.push("m7"),u=!0,p=d=!1;else if("9"===n)u||m.push("m7"),p?m.push("m9"):d?m.push("A9"):m.push("M9"),p=d=!1;else{if("1"!==n)throw Error("Unexpected character: '"+n+"' in chord name");n=e[++s],"1"===n?p?m.push("d11"):d?m.push("A11"):m.push("P11"):"3"===n&&(p?m.push("m13"):d?m.push("A13"):m.push("M13")),p=d=!1}}for(var y=0,g=f[this.type].length;g>y;y++)"5"===f[this.type][y][1]&&v?this.notes.push(a.interval(this.root,v)):this.notes.push(a.interval(this.root,f[this.type][y]));for(y=0,g=m.length;g>y;y++)this.notes.push(a.interval(this.root,m[y]))}var a={},r={c:{name:"c",distance:0,index:0},d:{name:"d",distance:2,index:1},e:{name:"e",distance:4,index:2},f:{name:"f",distance:5,index:3},g:{name:"g",distance:7,index:4},a:{name:"a",distance:9,index:5},b:{name:"b",distance:11,index:6},h:{name:"h",distance:11,index:6}},o=["c","d","e","f","g","a","b"],s={.25:"longa",.5:"breve",1:"whole",2:"half",4:"quarter",8:"eighth",16:"sixteenth",32:"thirty-second",64:"sixty-fourth",128:"hundred-twenty-eighth"},h=[{name:"unison",quality:"perfect",size:0},{name:"second",quality:"minor",size:1},{name:"third",quality:"minor",size:3},{name:"fourth",quality:"perfect",size:5},{name:"fifth",quality:"perfect",size:7},{name:"sixth",quality:"minor",size:8},{name:"seventh",quality:"minor",size:10},{name:"octave",quality:"perfect",size:12},{name:"ninth",quality:"minor",size:13},{name:"tenth",quality:"minor",size:15},{name:"eleventh",quality:"perfect",size:17},{name:"twelfth",quality:"perfect",size:19},{name:"thirteenth",quality:"minor",size:20},{name:"fourteenth",quality:"minor",size:22},{name:"fifteenth",quality:"perfect",size:24}],m={unison:0,second:1,third:2,fourth:3,fifth:4,sixth:5,seventh:6,octave:7,ninth:8,tenth:9,eleventh:10,twelfth:11,thirteenth:12,fourteenth:13,fifteenth:14},l={P:"perfect",M:"major",m:"minor",A:"augmented",d:"diminished",perf:"perfect",maj:"major",min:"minor",aug:"augmented",dim:"diminished"},u={perfect:"P",major:"M",minor:"m",augmented:"A",diminished:"d"},c={P:"P",M:"m",m:"M",A:"d",d:"A"},d={perfect:["diminished","perfect","augmented"],minor:["diminished","minor","major","augmented"]},f={major:["M3","P5"],minor:["m3","P5"],augmented:["M3","A5"],diminished:["m3","d5"],sus2:["M2","P5"],sus4:["P4","P5"],power:["P5"]},p={major:"M",minor:"m",augmented:"aug",diminished:"dim",power:"5"},v={"-2":"bb","-1":"b",0:"",1:"#",2:"x"},y={bb:-2,b:-1,"#":1,x:2};i.prototype={key:function(t){return t?7*(this.octave-1)+3+Math.ceil(r[this.name].distance/2):12*(this.octave-1)+4+r[this.name].distance+this.accidental.value},fq:function(t){return t=t||440,t*Math.pow(2,(this.key()-49)/12)},scale:function(t,e){return a.scale.list(this,t,e)},interval:function(t,e){return a.interval(this,t,e)},chord:function(t){return t=t||"major",t in p&&(t=p[t]),new n(this,t)},helmholtz:function(){var t,i=3>this.octave?this.name.toUpperCase():this.name.toLowerCase();return 2>=this.octave?(t=e("",",",2-this.octave),t+i+this.accidental.sign):(t=e("","'",this.octave-3),i+this.accidental.sign+t)},scientific:function(){return this.name.toUpperCase()+this.accidental.sign+("number"==typeof this.octave?this.octave:"")},enharmonics:function(){var t=[],e=this.key(),i=this.interval("m2","up"),n=this.interval("m2","down"),a=i.key()-i.accidental.value,r=n.key()-n.accidental.value,o=e-a;return 3>o&&o>-3&&(i.accidental={value:o,sign:v[o]},t.push(i)),o=e-r,3>o&&o>-3&&(n.accidental={value:o,sign:v[o]},t.push(n)),t},valueName:function(){return s[this.duration]},toString:function(t){return t="boolean"==typeof t?t:"number"==typeof this.octave?!1:!0,this.name.toLowerCase()+this.accidental.sign+(t?"":this.octave)}},n.prototype.dominant=function(t){return t=t||"",new n(this.root.interval("P5"),t)},n.prototype.subdominant=function(t){return t=t||"",new n(this.root.interval("P4"),t)},n.prototype.parallel=function(t){if(t=t||"","triad"!==this.chordType()||"diminished"===this.quality||"augmented"===this.quality)throw Error("Only major/minor triads have parallel chords");return"major"===this.quality?new n(this.root.interval("m3","down"),"m"):new n(this.root.interval("m3","up"))},n.prototype.chordType=function(){var t,e,i;if(2===this.notes.length)return"dyad";if(3===this.notes.length){e={unison:!1,third:!1,fifth:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);return e.unison&&e.third&&e.fifth?"triad":"trichord"}if(4===this.notes.length){e={unison:!1,third:!1,fifth:!1,seventh:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);if(e.unison&&e.third&&e.fifth&&e.seventh)return"tetrad"}return"unknown"},n.prototype.toString=function(){return this.name},a.note=function(t,e){return new i(t,e)},a.note.fromKey=function(t){var e=440*Math.pow(2,(t-49)/12);return a.frequency.note(e).note},a.chord=function(t){var e;if(e=t.match(/^([abcdefgh])(x|#|bb|b?)/i),e&&e[0])return new n(new i(e[0].toLowerCase()),t.substr(e[0].length));throw Error("Invalid Chord. Couldn't find note name")},a.frequency={note:function(t,e){e=e||440;var n,a,s,h,m,l,u;return n=Math.round(49+12*((Math.log(t)-Math.log(e))/Math.log(2))),u=e*Math.pow(2,(n-49)/12),l=1200*(Math.log(t/u)/Math.log(2)),a=Math.floor((n-4)/12),s=n-12*a-4,h=r[o[Math.round(s/2)]],m=h.name,s>h.distance?m+="#":h.distance>s&&(m+="b"),{note:new i(m+(a+1)),cents:l}}},a.interval=function(t,e,n){if("string"==typeof e){"down"===n&&(e=a.interval.invert(e));var r=l[e[0]],o=parseFloat(e.substr(1));if(!r||isNaN(o)||1>o)throw Error("Invalid string-interval format");return a.interval.from(t,{quality:r,interval:h[o-1].name},n)}if(e instanceof i&&t instanceof i)return a.interval.between(t,e);throw Error("Invalid parameters")},a.interval.from=function(e,n,a){n.direction=a||n.direction||"up";var s,l,u,c,f,p;if(f=m[n.interval],p=h[f],f>7&&(f-=7),f=r[e.name].index+f,f>o.length-1&&(f-=o.length),s=o[f],-1===d[p.quality].indexOf(n.quality)||-1===d[p.quality].indexOf(p.quality))throw Error("Invalid interval quality");return l=d[p.quality].indexOf(n.quality)-d[p.quality].indexOf(p.quality),u=p.size+l-t(e.name,s),e.octave&&(c=Math.floor((e.key()-e.accidental.value+t(e.name,s)-4)/12)+1+Math.floor(m[n.interval]/7)),u+=e.accidental.value,u>=11&&(u-=12),u>-3&&3>u&&(s+=v[u]),"down"===a&&c--,new i(s+(c||""))},a.interval.between=function(t,e){var i,n,a,o,s,m,l=t.key(),c=e.key();if(i=c-l,i>24||-25>i)throw Error("Too big interval. Highest interval is a augmented fifteenth (25 semitones)");return 0>i&&(o=t,t=e,e=o),a=r[e.name].index-r[t.name].index+7*(e.octave-t.octave),n=h[a],m=d[n.quality][Math.abs(i)-n.size+1],s=u[m]+(""+Number(a+1)),{name:n.name,quality:m,direction:i>0?"up":"down",simple:s}},a.interval.invert=function(t){if(2!==t.length&&3!==t.length)return!1;var e=c[t[0]],i=2===t.length?parseFloat(t[1]):parseFloat(t.substr(1));return i>8&&(i-=7),8!==i&&1!==i&&(i=9-i),e+(""+i)},a.scale={list:function(t,e,n){var r,o,s=[],h=[];if(!(t instanceof i))return!1;if("string"==typeof e&&(e=a.scale.scales[e],!e))return!1;for(s.push(t),n&&h.push(t.name+(t.accidental.sign||"")),r=0,o=e.length;o>r;r++)s.push(a.interval(t,e[r])),n&&h.push(s[r+1].name+(s[r+1].accidental.sign||""));return n?h:s},scales:{major:["M2","M3","P4","P5","M6","M7"],ionian:["M2","M3","P4","P5","M6","M7"],dorian:["M2","m3","P4","P5","M6","m7"],phrygian:["m2","m3","P4","P5","m6","m7"],lydian:["M2","M3","A4","P5","M6","M7"],mixolydian:["M2","M3","P4","P5","M6","m7"],minor:["M2","m3","P4","P5","m6","m7"],aeolian:["M2","m3","P4","P5","m6","m7"],locrian:["m2","m3","P4","d5","m6","m7"],majorpentatonic:["M2","M3","P5","M6"],minorpentatonic:["m3","P4","P5","m7"],chromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"],harmonicchromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"]}},module.exports=a})();
-},{}],2:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   
 "use strict"
 var times = [],
-    $ = _dereq_( './dollar' ),
-    Gibberish = _dereq_( 'gibberish-dsp' ),
+    $ = require( './dollar' ),
+    Gibberish = require( 'gibberish-dsp' ),
     Audio
 
 Audio = {
@@ -13889,28 +17863,28 @@ Audio = {
   }
 }
 
-Audio.Core = _dereq_( 'gibberish-dsp' )
+Audio.Core = require( 'gibberish-dsp' )
 Audio.Core._init = Audio.Core.init.bind( Audio.Core )
 delete Audio.Core.init
 
-Audio.Clock =          _dereq_( './clock' )( Gibber )
-Audio.Seqs =           _dereq_( './seq')( Gibber )
-Audio.Theory =         _dereq_( './audio/theory' )( Gibber )
-Audio.FX =             _dereq_( './audio/fx' )( Gibber )
-Audio.Oscillators =    _dereq_( './audio/oscillators' )( Gibber )
-Audio.Synths =         _dereq_( './audio/synths' )( Gibber )
-Audio.Busses =         _dereq_( './audio/bus' )( Gibber )
-Audio.Analysis =       _dereq_( './audio/analysis' )( Gibber )
-Audio.Envelopes =      _dereq_( './audio/envelopes' )( Gibber )
-Audio.Percussion =     _dereq_( './audio/drums' )( Gibber )
-Audio.Input =          _dereq_( './audio/audio_input' )( Gibber )
-Audio.Samplers =       _dereq_( './audio/sampler' )( Gibber )
-Audio.PostProcessing = _dereq_( './audio/postprocessing' )( Gibber )
-Audio.Arp =            _dereq_( './audio/arp' )( Gibber )
+Audio.Clock =          require( './clock' )( Gibber )
+Audio.Seqs =           require( './seq')( Gibber )
+Audio.Theory =         require( './audio/theory' )( Gibber )
+Audio.FX =             require( './audio/fx' )( Gibber )
+Audio.Oscillators =    require( './audio/oscillators' )( Gibber )
+Audio.Synths =         require( './audio/synths' )( Gibber )
+Audio.Busses =         require( './audio/bus' )( Gibber )
+Audio.Analysis =       require( './audio/analysis' )( Gibber )
+Audio.Envelopes =      require( './audio/envelopes' )( Gibber )
+Audio.Percussion =     require( './audio/drums' )( Gibber )
+Audio.Input =          require( './audio/audio_input' )( Gibber )
+Audio.Samplers =       require( './audio/sampler' )( Gibber )
+Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
+Audio.Arp =            require( './audio/arp' )( Gibber )
 
 return Audio
 }
-},{"./audio/analysis":3,"./audio/arp":4,"./audio/audio_input":5,"./audio/bus":6,"./audio/drums":7,"./audio/envelopes":8,"./audio/fx":9,"./audio/oscillators":10,"./audio/postprocessing":11,"./audio/sampler":12,"./audio/synths":13,"./audio/theory":14,"./clock":15,"./dollar":16,"./seq":18,"gibberish-dsp":43}],3:[function(_dereq_,module,exports){
+},{"./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","./clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/clock.js","./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","./seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/seq.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
 !function() {
   "use strict"
   
@@ -13918,10 +17892,10 @@ return Audio
       mappingProperties = { 
         value:{ min: 0, max: 255, output: LOGARITHMIC, wrap:false, timescale: 'graphics' } 
       },
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      $ = _dereq_( '../dollar' ),
-      curves = _dereq_('../mappings').outputCurves,
+      $ = require( '../dollar' ),
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
   
@@ -13988,7 +17962,7 @@ return Audio
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Analysis }
   
 }()
-},{"../dollar":16,"../mappings":17,"gibberish-dsp":43}],4:[function(_dereq_,module,exports){
+},{"../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js":[function(require,module,exports){
 /**#Arp - Sequencer
 The Arpeggiator takes a chord and plays the individual notes comprising it in succession, with different possible patterns.
 It is basically an extended [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) object. The available patterns are:  
@@ -14009,9 +17983,9 @@ b = Arp('c2m7', _32, 'updown2', 4).slave(s);
 **/
 !function() {
   
-var theory = _dereq_('../../external/teoria.min'),
-    $ = _dereq_( '../dollar' ),
-    Seq    = _dereq_('../seq'),
+var theory = require('../../external/teoria.min'),
+    $ = require( '../dollar' ),
+    Seq    = require('../seq'),
     Gibber,
     Arp
     
@@ -14149,14 +18123,14 @@ Arp = function(notation, beats, pattern, mult, scale) {
 module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Arp }
 
 }()
-},{"../../external/teoria.min":1,"../dollar":16,"../seq":18}],5:[function(_dereq_,module,exports){
+},{"../../external/teoria.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/teoria.min.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/seq.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js":[function(require,module,exports){
 !function() { 
   "use strict"
   
   var Input = {},
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      curves = _dereq_('../mappings').outputCurves,
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       mappingProperties = {
@@ -14206,14 +18180,14 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Input }
 
 }()
-},{"../mappings":17,"gibberish-dsp":43}],6:[function(_dereq_,module,exports){
+},{"../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js":[function(require,module,exports){
 !function() {
   "use strict"
   
-  var $ = _dereq_( '../dollar' ),//require('zepto-browserify').Zepto,
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+  var $ = require( '../dollar' ),//require('zepto-browserify').Zepto,
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,// = require( '../gibber' ),
-      curves = _dereq_('../mappings').outputCurves,
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
       
@@ -14343,16 +18317,16 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
   
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Busses }
 }()
-},{"../dollar":16,"../mappings":17,"gibberish-dsp":43}],7:[function(_dereq_,module,exports){
+},{"../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js":[function(require,module,exports){
 (function() {
   "use strict"
   
   var Percussion = { Presets:{} }, 
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      $ = _dereq_( '../dollar' ),
-      Clock = _dereq_('../clock')(),
-      curves = _dereq_('../mappings').outputCurves,
+      $ = require( '../dollar' ),
+      Clock = require('../clock')(),
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC, 
       types = [
@@ -14946,16 +18920,16 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Percussion }
 })()
 
-},{"../clock":15,"../dollar":16,"../mappings":17,"gibberish-dsp":43}],8:[function(_dereq_,module,exports){
+},{"../clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/clock.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js":[function(require,module,exports){
 !function() {
   "use strict"
   
   var Envelopes = {},
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      $ = _dereq_( '../dollar' ),
-      Clock = _dereq_('../clock')(),
-      curves = _dereq_('../mappings').outputCurves,
+      $ = require( '../dollar' ),
+      Clock = require('../clock')(),
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       types = [
@@ -15011,15 +18985,15 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
 
 }()
 
-},{"../clock":15,"../dollar":16,"../mappings":17,"gibberish-dsp":43}],9:[function(_dereq_,module,exports){
+},{"../clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/clock.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js":[function(require,module,exports){
 !function() {
   "use strict"
   
   var FX = { Presets: {} },
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      $ = _dereq_( '../dollar' ),
-      curves = _dereq_('../mappings').outputCurves,
+      $ = require( '../dollar' ),
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
       
@@ -15350,15 +19324,15 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
 
 }()
 
-},{"../dollar":16,"../mappings":17,"gibberish-dsp":43}],10:[function(_dereq_,module,exports){
+},{"../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js":[function(require,module,exports){
 !function() {
   "use strict"
   
-  var $ = _dereq_( '../dollar' ),
+  var $ = require( '../dollar' ),
       Oscillators = { Presets: {} },
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      curves = _dereq_('../mappings').outputCurves,
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
   
@@ -15609,12 +19583,12 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Oscillators }
 
 }()
-},{"../dollar":16,"../mappings":17,"gibberish-dsp":43}],11:[function(_dereq_,module,exports){
+},{"../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js":[function(require,module,exports){
 !function() {
   "use strict";
   
   var PostProcessing,
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
       compressor = null, 
       end = null,
@@ -15760,16 +19734,16 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return PostProcessing }
   
 }()
-},{"gibberish-dsp":43}],12:[function(_dereq_,module,exports){
+},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js":[function(require,module,exports){
 !function() { 
   "use strict"
   
   var Samplers = { Presets:{} },
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      $ = _dereq_( '../dollar' ),
-      Clock = _dereq_('../clock')(),
-      curves = _dereq_('../mappings').outputCurves,
+      $ = require( '../dollar' ),
+      Clock = require('../clock')(),
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
 
@@ -15995,16 +19969,16 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
   
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Samplers }  
 }()
-},{"../clock":15,"../dollar":16,"../mappings":17,"gibberish-dsp":43}],13:[function(_dereq_,module,exports){
+},{"../clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/clock.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
 !function() {
   "use strict"
   
   var Synths = { Presets: {} },
-      Gibberish = _dereq_( 'gibberish-dsp' ),
+      Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      $ = _dereq_( '../dollar' ),
-      Clock = _dereq_('../clock')(),
-      curves = _dereq_('../mappings').outputCurves,
+      $ = require( '../dollar' ),
+      Clock = require('../clock')(),
+      curves = require('../mappings').outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
 
@@ -16404,12 +20378,12 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
 
 }()
 
-},{"../clock":15,"../dollar":16,"../mappings":17,"gibberish-dsp":43}],14:[function(_dereq_,module,exports){
+},{"../clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/clock.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","../mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js":[function(require,module,exports){
 !function() {
   "use strict"
 
-var teoria = _dereq_('../../external/teoria.min'),
-    $ = _dereq_( '../dollar' ),
+var teoria = require('../../external/teoria.min'),
+    $ = require( '../dollar' ),
     Gibber
 
 var Theory = {
@@ -16707,16 +20681,16 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
 //window.Scale = Gibber.Theory.Scale
 
 }()
-},{"../../external/teoria.min":1,"../dollar":16}],15:[function(_dereq_,module,exports){
+},{"../../external/teoria.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/teoria.min.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/clock.js":[function(require,module,exports){
 (function() {
   
 "use strict"
 var times = [],
-    $ = _dereq_( './dollar' ),//require('zepto-browserify').Zepto,
-    curves = _dereq_('./mappings').outputCurves,
+    $ = require( './dollar' ),//require('zepto-browserify').Zepto,
+    curves = require('./mappings').outputCurves,
     LINEAR = curves.LINEAR,
     LOGARITHMIC = curves.LOGARITHMIC, 
-    Gibberish = _dereq_( 'gibberish-dsp' ),
+    Gibberish = require( 'gibberish-dsp' ),
     Gibber
 
 var Clock = {
@@ -16743,7 +20717,11 @@ var Clock = {
 					if( typeof Clock.codeToExecute[ i ].function === 'function' ) {
 						Clock.codeToExecute[ i ].function()
 					}else{
-	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            if( Gibber.Environment ) {
+              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ]._run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }else{
+  	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }
 					}
         }catch( e ) {
           console.error( "FAILED TO EXECUTE CODE:", Clock.codeToExecute[ i ].code , e)
@@ -16887,7 +20865,7 @@ var Clock = {
 module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Clock; }
 
 })()
-},{"./dollar":16,"./mappings":17,"gibberish-dsp":43}],16:[function(_dereq_,module,exports){
+},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js":[function(require,module,exports){
 (function (global){
 !function() {
 
@@ -16979,14 +20957,10 @@ $.publish = function( key, data ) {
 module.exports = $
 
 }()
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],17:[function(_dereq_,module,exports){
-!function() {  
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/mappings.js":[function(require,module,exports){
+module.exports = function( Gibber, Gibberish ) {  
   var mappings = {
-    outputCurves: {
-      LINEAR:0,
-      LOGARITHMIC:1
-    },
     audio : {
       graphics: function( target, from ) {
 				if( typeof from.object.track === 'undefined' ) from.object.track = {}
@@ -17616,18 +21590,23 @@ module.exports = $
         return mapping
       }
     },
-  }
+  } 
   
-  module.exports = mappings
-}()
-},{}],18:[function(_dereq_,module,exports){
+  return mappings
+}
+
+module.exports.outputCurves= {
+  LINEAR:0,
+  LOGARITHMIC:1
+}
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/seq.js":[function(require,module,exports){
 !function() {
   
   //"use strict"
   
-  var Gibberish = _dereq_( 'gibberish-dsp' ),
+  var Gibberish = require( 'gibberish-dsp' ),
       Gibber,
-      $ = _dereq_( './dollar' ),
+      $ = require( './dollar' ),
       doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart', 'priority' ]
 
   var makeNoteFunction = function( notes, obj ) {
@@ -17935,7 +21914,7 @@ module.exports = $
   module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Seqs }
   
 }()
-},{"./dollar":16,"gibberish-dsp":43}],19:[function(_dereq_,module,exports){
+},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/dollar.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/CopyShader.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -17983,7 +21962,7 @@ THREE.CopyShader = {
 
 };
 
-},{}],20:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/DotScreenPass.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -18039,7 +22018,7 @@ THREE.DotScreenPass.prototype = {
 
 };
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/EffectComposer.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -18185,7 +22164,7 @@ THREE.EffectComposer.quad = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), nul
 THREE.EffectComposer.scene = new THREE.Scene();
 THREE.EffectComposer.scene.add( THREE.EffectComposer.quad );
 
-},{}],22:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/FilmPass.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -18241,7 +22220,7 @@ THREE.FilmPass.prototype = {
 
 };
 
-},{}],23:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/MaskPass.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -18329,7 +22308,7 @@ THREE.ClearMaskPass.prototype = {
 
 };
 
-},{}],24:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/RenderPass.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -18382,7 +22361,7 @@ THREE.RenderPass.prototype = {
 
 };
 
-},{}],25:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/ShaderPass.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  */
@@ -18435,7 +22414,7 @@ THREE.ShaderPass.prototype = {
 
 };
 
-},{}],26:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/BleachBypassShader.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -18501,7 +22480,7 @@ THREE.BleachBypassShader = {
 
 };
 
-},{}],27:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ColorifyShader.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -18552,7 +22531,7 @@ THREE.ColorifyShader = {
 
 };
 
-},{}],28:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/DotScreenShader.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -18622,7 +22601,7 @@ THREE.DotScreenShader = {
 
 };
 
-},{}],29:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/EdgeShader.js":[function(require,module,exports){
 /**
  * @author zz85 / https://github.com/zz85 | https://www.lab4games.net/zz85/blog
  *
@@ -18717,7 +22696,7 @@ THREE.EdgeShader = {
 	].join("\n")
 };
 
-},{}],30:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FilmShader.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -18823,7 +22802,7 @@ THREE.FilmShader = {
 
 };
 
-},{}],31:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FocusShader.js":[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -18916,7 +22895,7 @@ THREE.FocusShader = {
 	].join("\n")
 };
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/KaleidoShader.js":[function(require,module,exports){
 /**
  * @author felixturner / http://airtight.cc/
  *
@@ -18978,7 +22957,7 @@ THREE.KaleidoShader = {
 
 };
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ShaderGodRays.js":[function(require,module,exports){
 /**
  * @author huwb / http://huwbowles.com/
  *
@@ -19288,7 +23267,7 @@ THREE.ShaderGodRays = {
 
 };
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/three.min.js":[function(require,module,exports){
 // three.js - http://github.com/mrdoob/three.js
 
 !function(){
@@ -20004,7 +23983,7 @@ fragmentShader:"uniform vec3 color;\nuniform sampler2D map;\nuniform float opaci
 
 module.exports = THREE
 }()
-},{}],35:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/dollar.js":[function(require,module,exports){
 (function (global){
 !function() {
 
@@ -20096,8 +24075,8 @@ $.publish = function( key, data ) {
 module.exports = $
 
 }()
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],36:[function(_dereq_,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/2d.js":[function(require,module,exports){
 !function() {
   var cnvs = null, Gibber, Graphics
 
@@ -20554,8 +24533,8 @@ module.exports = $
   module.exports = function( _Gibber, _Graphics ) { Gibber = _Gibber; Graphics = _Graphics; return TwoD; }
 
 }()
-},{}],37:[function(_dereq_,module,exports){
-var $ = _dereq_('../dollar' )
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/geometry.js":[function(require,module,exports){
+var $ = require('../dollar' )
 
 module.exports = function( Gibber, Graphics, THREE ){ 
 
@@ -21074,7 +25053,7 @@ return Geometry;
 
 }
 
-},{"../dollar":35}],38:[function(_dereq_,module,exports){
+},{"../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/dollar.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/gibber_shaders.js":[function(require,module,exports){
 module.exports = function( Gibber, Graphics ) {
 
 "use strict"
@@ -21292,12 +25271,12 @@ return Shaders
 //$.extend( window, Gibber.Graphics.Geometry )
 
 }
-},{}],39:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/graphics.js":[function(require,module,exports){
 !function() {
 
 "use strict"
 
-var $ = _dereq_('../dollar'),
+var $ = require('../dollar'),
 
 Graphics = {
   canvas :  null,
@@ -21308,7 +25287,7 @@ Graphics = {
   resolution: 1,
   fps: null,
   graph: [],
-  THREE: _dereq_('../../external/three/three.min'),
+  THREE: require('../../external/three/three.min'),
   
   export: function( target ) {
     Graphics.Geometry.export( target )
@@ -21615,37 +25594,37 @@ Graphics = {
 }
 
 module.exports = function( Gibber ) { 
-  Graphics.Geometry = _dereq_( './geometry' )( Gibber, Graphics, Graphics.THREE )
-  Graphics.TwoD = _dereq_( './2d' )( Gibber, Graphics )
+  Graphics.Geometry = require( './geometry' )( Gibber, Graphics, Graphics.THREE )
+  Graphics.TwoD = require( './2d' )( Gibber, Graphics )
   
-  _dereq_( '../../external/three/postprocessing/EffectComposer' )
-  _dereq_( '../../external/three/postprocessing/RenderPass' )
-  _dereq_( '../../external/three/postprocessing/MaskPass' )
-  _dereq_( '../../external/three/postprocessing/ShaderPass' )
-  _dereq_( '../../external/three/postprocessing/CopyShader' )
-  _dereq_( '../../external/three/postprocessing/shaders/DotScreenShader' )
-  _dereq_( '../../external/three/postprocessing/DotScreenPass' )
-  _dereq_( '../../external/three/postprocessing/FilmPass' )
-  _dereq_( '../../external/three/postprocessing/shaders/FilmShader' )
-  _dereq_( '../../external/three/postprocessing/shaders/KaleidoShader' )
-  _dereq_( '../../external/three/postprocessing/shaders/EdgeShader' )
-  _dereq_( '../../external/three/postprocessing/shaders/FocusShader' )
-  _dereq_( '../../external/three/postprocessing/shaders/ShaderGodRays' )
-  _dereq_( '../../external/three/postprocessing/shaders/BleachBypassShader' )
-  _dereq_( '../../external/three/postprocessing/shaders/ColorifyShader' )
+  require( '../../external/three/postprocessing/EffectComposer' )
+  require( '../../external/three/postprocessing/RenderPass' )
+  require( '../../external/three/postprocessing/MaskPass' )
+  require( '../../external/three/postprocessing/ShaderPass' )
+  require( '../../external/three/postprocessing/CopyShader' )
+  require( '../../external/three/postprocessing/shaders/DotScreenShader' )
+  require( '../../external/three/postprocessing/DotScreenPass' )
+  require( '../../external/three/postprocessing/FilmPass' )
+  require( '../../external/three/postprocessing/shaders/FilmShader' )
+  require( '../../external/three/postprocessing/shaders/KaleidoShader' )
+  require( '../../external/three/postprocessing/shaders/EdgeShader' )
+  require( '../../external/three/postprocessing/shaders/FocusShader' )
+  require( '../../external/three/postprocessing/shaders/ShaderGodRays' )
+  require( '../../external/three/postprocessing/shaders/BleachBypassShader' )
+  require( '../../external/three/postprocessing/shaders/ColorifyShader' )
   
-  Graphics.PostProcessing = _dereq_( './postprocessing' )( Gibber, Graphics )
+  Graphics.PostProcessing = require( './postprocessing' )( Gibber, Graphics )
   Graphics.PostProcessing.init()
-  Graphics.Shaders = _dereq_( './shader' )( Gibber, Graphics )
-  Graphics.GibberShaders = _dereq_( './gibber_shaders' )( Gibber, Graphics )
-  Graphics.Video = _dereq_( './video' )( Gibber, Graphics )
+  Graphics.Shaders = require( './shader' )( Gibber, Graphics )
+  Graphics.GibberShaders = require( './gibber_shaders' )( Gibber, Graphics )
+  Graphics.Video = require( './video' )( Gibber, Graphics )
     
   return Graphics; 
 }
 
 }()
 
-},{"../../external/three/postprocessing/CopyShader":19,"../../external/three/postprocessing/DotScreenPass":20,"../../external/three/postprocessing/EffectComposer":21,"../../external/three/postprocessing/FilmPass":22,"../../external/three/postprocessing/MaskPass":23,"../../external/three/postprocessing/RenderPass":24,"../../external/three/postprocessing/ShaderPass":25,"../../external/three/postprocessing/shaders/BleachBypassShader":26,"../../external/three/postprocessing/shaders/ColorifyShader":27,"../../external/three/postprocessing/shaders/DotScreenShader":28,"../../external/three/postprocessing/shaders/EdgeShader":29,"../../external/three/postprocessing/shaders/FilmShader":30,"../../external/three/postprocessing/shaders/FocusShader":31,"../../external/three/postprocessing/shaders/KaleidoShader":32,"../../external/three/postprocessing/shaders/ShaderGodRays":33,"../../external/three/three.min":34,"../dollar":35,"./2d":36,"./geometry":37,"./gibber_shaders":38,"./postprocessing":40,"./shader":41,"./video":42}],40:[function(_dereq_,module,exports){
+},{"../../external/three/postprocessing/CopyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/CopyShader.js","../../external/three/postprocessing/DotScreenPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/DotScreenPass.js","../../external/three/postprocessing/EffectComposer":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/EffectComposer.js","../../external/three/postprocessing/FilmPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/FilmPass.js","../../external/three/postprocessing/MaskPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/MaskPass.js","../../external/three/postprocessing/RenderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/RenderPass.js","../../external/three/postprocessing/ShaderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/ShaderPass.js","../../external/three/postprocessing/shaders/BleachBypassShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/BleachBypassShader.js","../../external/three/postprocessing/shaders/ColorifyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ColorifyShader.js","../../external/three/postprocessing/shaders/DotScreenShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/DotScreenShader.js","../../external/three/postprocessing/shaders/EdgeShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/EdgeShader.js","../../external/three/postprocessing/shaders/FilmShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FilmShader.js","../../external/three/postprocessing/shaders/FocusShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FocusShader.js","../../external/three/postprocessing/shaders/KaleidoShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/KaleidoShader.js","../../external/three/postprocessing/shaders/ShaderGodRays":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ShaderGodRays.js","../../external/three/three.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/three.min.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/dollar.js","./2d":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/2d.js","./geometry":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/geometry.js","./gibber_shaders":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/gibber_shaders.js","./postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/postprocessing.js","./shader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/shader.js","./video":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/video.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/postprocessing.js":[function(require,module,exports){
 module.exports = function( Gibber, Graphics ) {
 
 "use strict"
@@ -22271,7 +26250,7 @@ return PP
 
 }
 
-},{}],41:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/shader.js":[function(require,module,exports){
 module.exports = function( Gibber, Graphics ) {
   var GG = Gibber.Graphics
 	
@@ -22490,7 +26469,7 @@ module.exports = function( Gibber, Graphics ) {
     //   return null
     // } 
 }
-},{}],42:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/video.js":[function(require,module,exports){
 /*
 a = Video()
 
@@ -22569,20 +26548,293 @@ module.exports = function( Gibber, Graphics ) {
   
   return Video 
 }
-},{}],43:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibberish-dsp/build/gibberish.min.js":[function(require,module,exports){
 !function(e,t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?module.exports=t():e.Gibberish=t()}(this,function(){function createInput(){console.log("connecting audio input..."),navigator.webkitGetUserMedia({audio:!0},function(e){console.log("audio input connected"),Gibberish.mediaStreamSource=Gibberish.context.createMediaStreamSource(e),Gibberish.mediaStreamSource.connect(Gibberish.node),_hasInput=!0},function(){console.log("error opening audio input")})}var Gibberish={memo:{},codeblock:[],analysisCodeblock:[],analysisUgens:[],dirtied:[],id:0,isDirty:!1,out:null,debug:!1,callback:"",audioFiles:{},sequencers:[],callbackArgs:["input"],callbackObjects:[],analysisCallbackArgs:[],analysisCallbackObjects:[],createCallback:function(){this.memo={},this.codeblock.length=0,this.callbackArgs.length=0,this.callbackObjects.length=0,this.analysisCallbackArgs.length=0,this.dirtied.length=0,this.codestring="",this.args=["input"],this.memo={},this.out.codegen();var e=this.codeblock.slice(0);if(this.analysisUgens.length>0){this.analysisCodeblock.length=0;for(var t=0;t<this.analysisUgens.length;t++)this.analysisCallbackArgs.push(this.analysisUgens[t].analysisSymbol)}if(this.args=this.args.concat(this.callbackArgs),this.args=this.args.concat(this.analysisCallbackArgs),this.codestring+=e.join("	"),this.codestring+="\n	",this.analysisUgens.length>0){this.analysisCodeblock.length=0;for(var t=0;t<this.analysisUgens.length;t++)this.codeblock.length=0,this.analysisUgens[t].analysisCodegen();this.codestring+=this.analysisCodeblock.join("\n	"),this.codestring+="\n	"}return this.codestring+="return "+this.out.variable+";\n",this.callbackString=this.codestring,this.debug&&console.log(this.callbackString),[this.args,this.codestring]},audioProcess:function(e){var t,i,n=e.outputBuffer.getChannelData(0),s=e.outputBuffer.getChannelData(1),r=e.inputBuffer.getChannelData(0),a=Gibberish,o=a.callback,h=a.sequencers,u=(Gibberish.out.callback,a.callbackObjects.slice(0));u.unshift(0);for(var c=0,l=e.outputBuffer.length;l>c;c++){for(var b=0;b<h.length;b++)h[b].tick();if(a.isDirty){t=a.createCallback();try{o=a.callback=new Function(t[0],t[1])}catch(e){console.error("ERROR WITH CALLBACK : \n\n",t)}a.isDirty=!1,u=a.callbackObjects.slice(0),u.unshift(0)}u[0]=r[c],i=o.apply(null,u),n[c]=i[0],s[c]=i[1]}},audioProcessFirefox:function(e){var t,i=Gibberish,n=i.callback,s=i.sequencers,r=i.callbackObjects.slice(0);r.unshift(0);for(var a=0,o=e.length;o>a;a+=2){for(var h=0;h<s.length;h++)s[h].tick();if(i.isDirty){t=i.createCallback();try{n=i.callback=new Function(t[0],t[1])}catch(u){console.error("ERROR WITH CALLBACK : \n\n",n)}i.isDirty=!1,r=i.callbackObjects.slice(0),r.unshift(0)}var c=n.apply(null,r);e[a]=c[0],e[a+1]=c[1]}},clear:function(){this.out.inputs.length=0,this.analysisUgens.length=0,this.sequencers.length=0,this.callbackArgs.length=2,this.callbackObjects.length=1,Gibberish.dirty(this.out)},dirty:function(e){if("undefined"!=typeof e){for(var t=!1,i=0;i<this.dirtied.length;i++)this.dirtied[i].variable===e.variable&&(t=!0);t||(this.isDirty=!0,this.dirtied.push(e))}else this.isDirty=!0},generateSymbol:function(e){return e+"_"+this.id++},AudioDataDestination:function(e,t){var i=new Audio;i.mozSetup(2,e);var n,s=0,r=e/2,a=null;setInterval(function(){var e;if(a){if(e=i.mozWriteAudio(a.subarray(n)),s+=e,n+=e,n<a.length)return;a=null}var o=i.mozCurrentSampleOffset(),h=o+r-s;if(h>0){var u=new Float32Array(h);t(u),e=i.mozWriteAudio(u),o=i.mozCurrentSampleOffset(),e<u.length&&(a=u,n=e),s+=e}},100)},init:function(){var e,t,i="undefined"==typeof arguments[0]?1024:arguments[0];return"undefined"!=typeof webkitAudioContext?e=webkitAudioContext:"undefined"!=typeof AudioContext&&(e=AudioContext),t=function(){if("undefined"!=typeof e){if(document&&document.documentElement&&"ontouchstart"in document.documentElement&&(window.removeEventListener("touchstart",t),"ontouchstart"in document.documentElement)){var i=Gibberish.context.createBufferSource();i.connect(Gibberish.context.destination),i.noteOn(0)}}else alert("Your browser does not support javascript audio synthesis. Please download a modern web browser that is not Internet Explorer.");Gibberish.onstart&&Gibberish.onstart()},Gibberish.context=new e,Gibberish.node=Gibberish.context.createScriptProcessor(i,2,2,Gibberish.context.sampleRate),Gibberish.node.onaudioprocess=Gibberish.audioProcess,Gibberish.node.connect(Gibberish.context.destination),Gibberish.out=new Gibberish.Bus2,Gibberish.out.codegen(),Gibberish.dirty(Gibberish.out),document&&document.documentElement&&"ontouchstart"in document.documentElement?window.addEventListener("touchstart",t):t(),this},makePanner:function(){for(var e=[],t=[],i=Math.sqrt(2)/2,n=0;1024>n;n++){var s=-1+n/1024*2;e[n]=i*(Math.cos(s)-Math.sin(s)),t[n]=i*(Math.cos(s)+Math.sin(s))}return function(i,n,s){var r,a,o,h,u,c,l="object"==typeof i,b=l?i[0]:i,p=l?i[1]:i;return r=1023*(n+1)/2,a=0|r,o=r-a,a=1023&a,h=1023===a?0:a+1,u=e[a],c=e[h],s[0]=(u+o*(c-u))*b,u=t[a],c=t[h],s[1]=(u+o*(c-u))*p,s}},defineUgenProperty:function(e,t,i){var n=i.properties[e]={value:t,binops:[],parent:i,name:e};Object.defineProperty(i,e,{configurable:!0,get:function(){return n.value},set:function(e){n.value=e,Gibberish.dirty(i)}})},polyInit:function(e){e.mod=e.polyMod,e.removeMod=e.removePolyMod,e.voicesClear=function(){if(e.children.length>0){for(var t=0;t<e.children.length;t++)e.children[t].disconnect();e.children.length=0,e.voiceCount=0}};for(var t in e.polyProperties)!function(t){var i=e.polyProperties[t];Object.defineProperty(e,t,{configurable:!0,get:function(){return i},set:function(n){i=n;for(var s=0;s<e.children.length;s++)e.children[s][t]=i}})}(t);var i=e.maxVoices;Object.defineProperty(e,"maxVoices",{get:function(){return i},set:function(e){i=e,this.voicesClear(),this.initVoices()}})},interpolate:function(e,t){var i=0|t,n=i+1>e.length-1?0:i+1;return frac=t-i,e[i]+frac*(e[n]-e[i])},pushUnique:function(e,t){for(var i=e,n=!0,s=0;s<t.length;s++)if(i===t[s]){n=!1;break}n&&t.push(i)},"export":function(e,t){for(var i in Gibberish[e])t[i]=Gibberish[e][i]},ugen:function(){Gibberish.extend(this,{processProperties:function(){if("object"!=typeof arguments[0][0]||"undefined"!=typeof arguments[0][0].type||Array.isArray(arguments[0][0])||"op"===arguments[0][0].name){var e=0;for(var t in this.properties)"object"==typeof this.properties[t]&&"undefined"!=typeof this.properties[t].binops?"undefined"!=typeof arguments[0][e]&&(this.properties[t].value=arguments[0][e++]):"undefined"!=typeof arguments[0][e]&&(this.properties[t]=arguments[0][e++])}else{var i=arguments[0][0];for(var t in i)"undefined"!=typeof i[t]&&("object"==typeof this.properties[t]&&"undefined"!=typeof this.properties[t].binops?this.properties[t].value=i[t]:this[t]=i[t])}return this},valueOf:function(){return this.codegen(),this.variable},codegen:function(){var e="",t=null;if(Gibberish.memo[this.symbol])return Gibberish.memo[this.symbol];t=this.variable?this.variable:Gibberish.generateSymbol("v"),Gibberish.memo[this.symbol]=t,this.variable=t,e+="var "+t+" = "+this.symbol+"(";for(var i in this.properties){var n=this.properties[i],s="";if(Array.isArray(n.value)){0===n.value.length&&(s=0);for(var r=0;r<n.value.length;r++){var a=n.value[r];s+="object"==typeof a?null!==a?a.valueOf():"null":"function"==typeof n.value?n.value():n.value,s+=r<n.value.length-1?", ":""}}else"object"==typeof n.value?null!==n.value&&(s=n.value.codegen?n.value.valueOf():n.value):"undefined"!==n.name&&(s="function"==typeof n.value?n.value():n.value);if(0!=n.binops.length){for(var o=0;o<n.binops.length;o++)e+="(";for(var h=0;h<n.binops.length;h++){var u,c=n.binops[h];u="number"==typeof c.ugen?c.ugen:null!==c.ugen?c.ugen.valueOf():"null","="===c.binop?(e=e.replace(s,""),e+=u):"++"===c.binop?e+=" + Math.abs("+u+")":(0===h&&(e+=s),e+=" "+c.binop+" "+u+")")}}else e+=s;e+=", "}return" "===e.charAt(e.length-1)&&(e=e.slice(0,-2)),e+=");\n",this.codeblock=e,-1===Gibberish.codeblock.indexOf(this.codeblock)&&Gibberish.codeblock.push(this.codeblock),-1===Gibberish.callbackArgs.indexOf(this.symbol)&&"op"!==this.name&&Gibberish.callbackArgs.push(this.symbol),-1===Gibberish.callbackObjects.indexOf(this.callback)&&"op"!==this.name&&Gibberish.callbackObjects.push(this.callback),this.dirty=!1,t},init:function(){if(this.initalized||(this.symbol=Gibberish.generateSymbol(this.name),this.codeblock=null,this.variable=null),"undefined"==typeof this.properties&&(this.properties={}),!this.initialized){this.destinations=[];for(var e in this.properties)Gibberish.defineUgenProperty(e,this.properties[e],this)}if(arguments.length>0&&"object"==typeof arguments[0][0]&&"undefined"===arguments[0][0].type){var t=arguments[0][0];for(var e in t)this[e]=t[e]}return this.initialized=!0,this},mod:function(e,t,i){var n=this.properties[e],s={ugen:t,binop:i};n.binops.push(s),Gibberish.dirty(this)},removeMod:function(e,t){if("undefined"==typeof t)this.properties[e].binops.length=0;else if("number"==typeof t)this.properties[e].binops.splice(t,1);else if("object"==typeof t)for(var i=0,n=this.properties[e].binops.length;n>i;i++)this.properties[e].binops[i].ugen===t&&this.properties[e].binops.splice(i,1);Gibberish.dirty(this)},polyMod:function(e,t,i){for(var n=0;n<this.children.length;n++)this.children[n].mod(e,t,i);Gibberish.dirty(this)},removePolyMod:function(){var e=Array.prototype.slice.call(arguments,0);if("amp"!==arguments[0]&&"pan"!==arguments[0])for(var t=0;t<this.children.length;t++)this.children[t].removeMod.apply(this.children[t],e);else this.removeMod.apply(this,e);Gibberish.dirty(this)},smooth:function(e){var t=new Gibberish.OnePole;this.mod(e,t,"=")},connect:function(e,t){return"undefined"==typeof e&&(e=Gibberish.out),-1===this.destinations.indexOf(e)&&(e.addConnection(this,1,t),this.destinations.push(e)),this},send:function(e,t){return-1===this.destinations.indexOf(e)?(e.addConnection(this,t),this.destinations.push(e)):e.adjustSendAmount(this,t),this},disconnect:function(e,t){var i;if(e)i=this.destinations.indexOf(e),i>-1&&this.destinations.splice(i,1),e.removeConnection(this);else{for(var n=0;n<this.destinations.length;n++)this.destinations[n].removeConnection(this);this.destinations=[]}return Gibberish.dirty(this),this}})}};Array2=function(){this.length=0},Array2.prototype=[],Array2.prototype.remove=function(e,t){if(t="undefined"==typeof t?!0:t,"undefined"==typeof e){for(var i=0;i<this.length;i++)delete this[i];this.length=0}else if("number"==typeof e)this.splice(e,1);else if("string"==typeof e){for(var n=[],i=0;i<this.length;i++){var s=this[i];if(s.type===e||s.name===e){if(!t)return void this.splice(i,1);n.push(i)}}for(var i=0;i<n.length;i++)this.splice(n[i],1)}else if("object"==typeof e)for(var r=this.indexOf(e);r>-1;)this.splice(r,1),r=this.indexOf(e);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.get=function(e){if("number"==typeof e)return this[e];if("string"==typeof e)for(var t=0;t<this.length;t++){var i=this[t];if(i.name===e)return i}else if("object"==typeof e){var n=this.indexOf(e);if(n>-1)return this[n]}return null},Array2.prototype.replace=function(e,t){if(t.parent=this,t.input=e.input,"number"!=typeof e){var i=this.indexOf(e);i>-1&&this.splice(i,1,t)}else this.splice(e,1,t);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.insert=function(e,t){if(e.parent=this,this.input=this.parent,Array.isArray(e))for(var i=0;i<e.length;i++)this.splice(t+i,0,e[i]);else this.splice(t,0,e);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.add=function(){for(var e=0;e<arguments.length;e++)arguments[e].parent=this,arguments[e].input=this.parent,this.push(arguments[e]);this.parent&&(console.log("DIRTYING"),Gibberish.dirty(this.parent))};var rnd=Math.random;Gibberish.rndf=function(e,t,i,n){if(n="undefined"==typeof n?!0:n,"undefined"==typeof i&&"object"!=typeof e){1==arguments.length?(t=arguments[0],e=0):2==arguments.length?(e=arguments[0],t=arguments[1]):(e=0,t=1);var s=t-e,r=Math.random(),a=s*r;return e+a}var o=[],h=[];"undefined"==typeof i&&(i=t||e.length);for(var u=0;i>u;u++){var c;if("object"==typeof arguments[0])c=arguments[0][rndi(0,arguments[0].length-1)];else if(n)c=Gibberish.rndf(e,t);else{for(c=Gibberish.rndf(e,t);h.indexOf(c)>-1;)c=Gibberish.rndf(e,t);h.push(c)}o.push(c)}return o},Gibberish.Rndf=function(){{var e,t,i,n;Math.random}return 0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):3===arguments.length?(e=arguments[0],t=arguments[1],i=arguments[2]):(e=arguments[0],t=arguments[1],i=arguments[2],n=arguments[3]),function(){var s,r,a;return r="function"==typeof e?e():e,a="function"==typeof t?t():t,s="undefined"==typeof i?Gibberish.rndf(r,a):Gibberish.rndf(r,a,i,n)}},Gibberish.rndi=function(e,t,i,n){var s;if(0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):(e=arguments[0],t=arguments[1],i=arguments[2],n=arguments[3]),s=t-e,i>s&&(n=!0),"undefined"==typeof i)return s=t-e,Math.round(e+Math.random()*s);for(var r=[],a=[],o=0;i>o;o++){var h;if(n)h=Gibberish.rndi(e,t);else{for(h=Gibberish.rndi(e,t);a.indexOf(h)>-1;)h=Gibberish.rndi(e,t);a.push(h)}r.push(h)}return r},Gibberish.Rndi=function(){{var e,t,i,n,s;Math.random,Math.round}return 0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):3===arguments.length?(e=arguments[0],t=arguments[1],i=arguments[2]):(e=arguments[0],t=arguments[1],i=arguments[2],n=arguments[3]),s=t-e,"number"==typeof i&&i>s&&(n=!0),function(){var s,r,a;return r="function"==typeof e?e():e,a="function"==typeof t?t():t,s="undefined"==typeof i?Gibberish.rndi(r,a):Gibberish.rndi(r,a,i,n)}},Gibberish.extend=function(e,t){for(var i in t){{i.split(".")}t[i]instanceof Array&&t[i].length<100?(e[i]=t[i].slice(0),"fx"===i&&(e[i].parent=t[i].parent)):"object"!=typeof t[i]||null===t[i]||t[i]instanceof Float32Array?e[i]=t[i]:(e[i]=e[i]||{},arguments.callee(e[i],t[i]))}return e},Function.prototype.clone=function(){return eval("["+this.toString()+"]")[0]},String.prototype.format=function(e,t,i){function n(){var n=this,s=arguments.length+1;for(e=0;s>e;i=arguments[e++])t=i,n=n.replace(RegExp("\\{"+(e-1)+"\\}","g"),t);return n}return n.native=String.prototype.format,n}(),Gibberish.future=function(e,t){var i=new Gibberish.Sequencer({values:[function(){},function(){e(),i.stop(),i.disconnect()}],durations:[t]}).start();return i.cancel=function(){i.stop(),i.disconnect()},i},Gibberish.Proxy=function(){var e=0;Gibberish.extend(this,{name:"proxy",type:"effect",properties:{},callback:function(){return e}}).init(),this.input=arguments[0],e=this.input.parent[this.input.name],delete this.input.parent[this.input.name],this.input.parent.properties[this.input.name].value=this,Object.defineProperty(this.input.parent,this.input.name,{get:function(){return e},set:function(t){e=t}}),Gibberish.dirty(this.input.parent)},Gibberish.Proxy.prototype=new Gibberish.ugen,Gibberish.Proxy2=function(){var e=arguments[0],t=arguments[1];Gibberish.extend(this,{name:"proxy2",type:"effect",properties:{},callback:function(){var i=e[t];return Array.isArray(i)?(i[0]+i[1]+i[2])/3:i}}).init(),this.getInput=function(){return e},this.setInput=function(t){e=t},this.getName=function(){return t},this.setName=function(e){t=e}},Gibberish.Proxy2.prototype=new Gibberish.ugen,Gibberish.Proxy3=function(){var e=arguments[0],t=arguments[1];Gibberish.extend(this,{name:"proxy3",type:"effect",properties:{},callback:function(){var i=e[t];return i||0}}),this.init(),this.codegen=function(){console.log(" CALLED "),this.variable||(this.variable=Gibberish.generateSymbol("v")),Gibberish.callbackArgs.push(this.symbol),Gibberish.callbackObjects.push(this.callback),this.codeblock="var "+this.variable+" = "+this.symbol+"("+e.properties[t].codegen()+");\n"}},Gibberish.Proxy3.prototype=new Gibberish.ugen,Gibberish.oscillator=function(){this.type="oscillator",this.oscillatorInit=function(){return this.fx=new Array2,this.fx.parent=this,this}},Gibberish.oscillator.prototype=new Gibberish.ugen,Gibberish._oscillator=new Gibberish.oscillator,Gibberish.Wavetable=function(){var e=0,t=null,i=Gibberish.context.sampleRate/1024,n=0;this.properties={frequency:440,amp:.25,sync:0},this.getTable=function(){return t},this.setTable=function(e){t=e,i=Gibberish.context.sampleRate/t.length},this.getTableFreq=function(){return i},this.setTableFreq=function(e){i=e},this.getPhase=function(){return e},this.setPhase=function(t){e=t},this.callback=function(s,r){var a,o,h,u,c,l;for(e+=s/i;e>=1024;)e-=1024;return a=0|e,o=e-a,a=1023&a,h=1023===a?0:a+1,u=t[a],c=t[h],0!==l&&(n=l),(u+o*(c-u))*r}},Gibberish.Wavetable.prototype=Gibberish._oscillator,Gibberish.Table=function(e){this.__proto__=new Gibberish.Wavetable,this.name="table";var t=2*Math.PI;if("undefined"==typeof e){e=new Float32Array(1024);for(var i=1024;i--;)e[i]=Math.sin(i/1024*t)}this.setTable(e),this.init(),this.oscillatorInit()},Gibberish.asmSine=function(e,t,i){"use asm";function n(){for(var e=1024,t=1024;e=e-1|0;)t-=1,h[e>>2]=+a(+(t/1024)*6.2848);c=44100/1024}function s(e,t,i){e=+e,t=+t,i=+i;var n=0,s=0,r=0,a=0,l=0,b=0;return o=+(o+e/c),o>=1024&&(o=+(o-1024)),n=+u(o),a=o-n,s=~~n,r=(s|0)==1024?0:s+1|0,l=+h[s>>2],b=+h[r>>2],+((l+a*(b-l))*t)}function r(e){return e|=0,+h[e>>2]}var a=e.Math.sin,o=0,h=new e.Float32Array(i),u=e.Math.floor,c=0;return{init:n,gen:s,get:r}},Gibberish.asmSine2=function(){this.properties={frequency:440,amp:.5,sr:Gibberish.context.sampleRate},this.name="sine";var e=new ArrayBuffer(4096),t=Gibberish.asmSine(window,null,e);return t.init(),this.getTable=function(){return e},this.get=t.get,this.callback=t.gen,this.init(),this.oscillatorInit(),this.processProperties(arguments),this},Gibberish.asmSine2.prototype=Gibberish._oscillator,Gibberish.Sine=function(){this.__proto__=new Gibberish.Wavetable,this.name="sine";for(var e=2*Math.PI,t=new Float32Array(1024),i=1024;i--;)t[i]=Math.sin(i/1024*e);this.setTable(t),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Sine2=function(){this.__proto__=new Gibberish.Sine,this.name="sine2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(n,s,r){var a=e(n,s);return i=t(a,r,i)},this.init(),this.oscillatorInit(),Gibberish.defineUgenProperty("pan",0,this),this.processProperties(arguments)},Gibberish.Square=function(){this.__proto__=new Gibberish.Wavetable,this.name="square";for(var e=(2*Math.PI,new Float32Array(1024)),t=1024;t--;)e[t]=t/1024>.5?1:-1;this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw=function(){this.__proto__=new Gibberish.Wavetable,this.name="saw";for(var e=new Float32Array(1024),t=1024;t--;)e[t]=4*((t/1024/2+.25)%.5-.25);this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw2=function(){this.__proto__=new Gibberish.Saw,this.name="saw2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(n,s,r){var a=e(n,s);return i=t(a,r,i)},this.init(),Gibberish.defineUgenProperty("pan",0,this)},Gibberish.Triangle=function(){this.__proto__=new Gibberish.Wavetable,this.name="triangle";for(var e=new Float32Array(1024),t=Math.abs,i=1024;i--;)e[i]=1-4*t((i/1024+.25)%1-.5);this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Triangle2=function(){this.__proto__=new Gibberish.Triangle,this.name="triangle2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(n,s,r){var a=e(n,s);return t(a,r,i)},this.init(),this.oscillatorInit(),Gibberish.defineUgenProperty("pan",0,this),this.processProperties(arguments)},Gibberish.Saw3=function(){var e=0,t=0,i=2.5,n=-1.5,s=0,r=Math.sin,a=11;pi_2=2*Math.PI,flip=0,signHistory=0,ignore=!1,sr=Gibberish.context.sampleRate,Gibberish.extend(this,{name:"saw",properties:{frequency:440,amp:.15,sync:0,sr:Gibberish.context.sampleRate},callback:function(o){var h=o/sr,u=.5-h,c=a*u*u*u*u,l=.376-.752*h,b=1-2*h,p=0;return t+=h,t-=t>1?2:0,e=.5*(e+r(pi_2*(t+e*c))),p=i*e+n*s,s=e,p+=l,p*=b}}),Object.defineProperty(this,"scale",{get:function(){return a},set:function(e){a=e}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw3.prototype=Gibberish._oscillator,Gibberish.PWM=function(){var e=0,t=0,i=0,n=0,s=0,r=2.5,a=-1.5,o=Math.sin,h=11;pi_2=2*Math.PI,test=0,sr=Gibberish.context.sampleRate,Gibberish.extend(this,{name:"pwm",properties:{frequency:440,amp:.15,pulsewidth:.05,sr:Gibberish.context.sampleRate},callback:function(u,c,l){var b=u/sr,p=.5-b,f=h*p*p*p*p,d=1-2*b,g=0;return s+=b,s-=s>1?2:0,e=.5*(e+o(pi_2*(s+e*f))),t=.5*(t+o(pi_2*(s+t*f+l))),g=t-e,g=r*g+a*(i-n),i=e,n=t,g*d*c}}),Object.defineProperty(this,"scale",{get:function(){return h},set:function(e){h=e}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.PWM.prototype=Gibberish._oscillator,Gibberish.Noise=function(){var e=Math.random;Gibberish.extend(this,{name:"noise",properties:{amp:1},callback:function(t){return(2*e()-1)*t}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Noise.prototype=Gibberish._oscillator,Gibberish.KarplusStrong=function(){var e=[0],t=0,i=Math.random,n=Gibberish.makePanner(),s=Gibberish.context.sampleRate,r=[0,0];Gibberish.extend(this,{name:"karplus_strong",frequency:0,properties:{blend:1,damping:0,amp:1,channels:2,pan:0},note:function(t){var n=Math.floor(s/t);e.length=0;for(var r=0;n>r;r++)e[r]=2*i()-1;this.frequency=t},callback:function(s,a,o,h,u){var c=e.shift(),l=i()>s?-1:1;a=a>0?a:0;var b=l*(c+t)*(.5-a/100);return t=b,e.push(b),b*=o,1===h?b:n(b,u,r)}}).init().oscillatorInit().processProperties(arguments)},Gibberish.KarplusStrong.prototype=Gibberish._oscillator,Gibberish.PolyKarplusStrong=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"poly_karplus_strong",maxVoices:5,voiceCount:0,_frequency:0,polyProperties:{blend:1,damping:0},note:function(e,t){var i=this.children[this.voiceCount++];this.voiceCount>=this.maxVoices&&(this.voiceCount=0),i.note(e,t),this._frequency=e},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={blend:this.blend,damping:this.damping,channels:2,amp:1},i=new Gibberish.KarplusStrong(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),this.initialized=!1,Gibberish._synth.oscillatorInit.call(this),Gibberish.dirty(this)},Gibberish.bus=function(){this.type="bus",this.inputCodegen=function(){var e,t=this.value.valueOf();return e=t+", "+this.amp,this.codeblock=e,e},this.addConnection=function(){var e=arguments[2],t={value:arguments[0],amp:arguments[1],codegen:this.inputCodegen,valueOf:function(){return this.codegen()}};"undefined"!=typeof e?this.inputs.splice(e,0,t):this.inputs.push(t),Gibberish.dirty(this)},this.removeConnection=function(e){for(var t=0;t<this.inputs.length;t++)if(this.inputs[t].value===e){this.inputs.splice(t,1),Gibberish.dirty(this);break}},this.adjustSendAmount=function(e,t){for(var i=0;i<this.inputs.length;i++)if(this.inputs[i].value===e){this.inputs[i].amp=t,Gibberish.dirty(this);break}},this.callback=function(){var e=arguments[arguments.length-2],t=arguments[arguments.length-1];output[0]=output[1]=0;for(var i=0;i<arguments.length-2;i+=2){var n="object"==typeof arguments[i],s=arguments[i+1];output[0]+=n?arguments[i][0]*s:arguments[i]*s,output[1]+=n?arguments[i][1]*s:arguments[i]*s}return output[0]*=e,output[1]*=e,panner(output,t,output)}},Gibberish.bus.prototype=new Gibberish.ugen,Gibberish._bus=new Gibberish.bus,Gibberish.Bus=function(){return Gibberish.extend(this,{name:"bus",properties:{inputs:[],amp:1},callback:function(){for(var e=0,t=arguments.length-1,i=arguments[t],n=0;t>n;n++)e+=arguments[n];return e*=i}}),this.init(),this.processProperties(arguments),this},Gibberish.Bus.prototype=Gibberish._bus,Gibberish.Bus2=function(){this.name="bus2",this.type="bus",this.properties={inputs:[],amp:1,pan:0};var e=[0,0],t=Gibberish.makePanner();this.callback=function(){var i=arguments,n=i.length,s=i[n-2],r=i[n-1];e[0]=e[1]=0;for(var a=0,o=n-2;o>a;a+=2){var h="object"==typeof i[a],u=i[a+1];e[0]+=h?i[a][0]*u||0:i[a]*u||0,e[1]+=h?i[a][1]*u||0:i[a]*u||0}return e[0]*=s,e[1]*=s,t(e,r,e)},this.show=function(){console.log(e,args)},this.getOutput=function(){return e},this.getArgs=function(){return args},this.init(arguments),this.processProperties(arguments)},Gibberish.Bus2.prototype=Gibberish._bus,Gibberish.envelope=function(){this.type="envelope"},Gibberish.envelope.prototype=new Gibberish.ugen,Gibberish._envelope=new Gibberish.envelope,Gibberish.ExponentialDecay=function(){var e=Math.pow,t=0,i=0;Gibberish.extend(this,{name:"ExponentialDecay",properties:{decay:.5,length:11050},callback:function(n,s){return t=e(n,i),i+=1/s,t},trigger:function(){i="number"==typeof arguments[0]?arguments[0]:0}}).init()},Gibberish.ExponentialDecay.prototype=Gibberish._envelope,Gibberish.Line=function(e,t,i,n){var s,r={name:"line",properties:{start:e||0,end:isNaN(t)?1:t,time:i||Gibberish.context.sampleRate,loops:n||!1},retrigger:function(e,t){a=0,this.start=s,this.end=e,this.time=t,o=(e-s)/t}},a=0,o=(t-e)/i;return this.callback=function(e,t,i,n){return s=i>a?e+a++*o:t,a=s>=t&&n?0:a,s},Gibberish.extend(this,r),this.init(),this},Gibberish.Line.prototype=Gibberish._envelope,Gibberish.AD=function(e,t){var i=0,n=0;Gibberish.extend(this,{name:"AD",properties:{attack:e||1e4,decay:t||1e4},run:function(){return n=0,i=0,this},callback:function(e,t){if(e=0>e?22050:e,t=0>t?22050:t,0===n){var s=1/e;i+=s,i>=1&&n++}else if(1===n){var s=1/t;i-=s,0>=i&&(i=0,n++)}return i},getState:function(){return n}}).init().processProperties(arguments)},Gibberish.AD.prototype=Gibberish._envelope,Gibberish.ADSR=function(e,t,i,n,s,r,a){var o={name:"adsr",type:"envelope",requireReleaseTrigger:"undefined"!=typeof a?a:!1,properties:{attack:isNaN(e)?1e4:e,decay:isNaN(t)?1e4:t,sustain:isNaN(i)?22050:i,release:isNaN(n)?1e4:n,attackLevel:s||1,sustainLevel:r||.5,releaseTrigger:0},run:function(){this.setPhase(0),this.setState(0)},stop:function(){this.releaseTrigger=1}};Gibberish.extend(this,o);var h=0,u=0,c=0,l=this;return this.callback=function(e,t,i,n,s,r,a){var o=0;return c=1===c?1:a,0===u?(o=h/e*s,++h/e===1&&(u++,h=t)):1===u?(o=h/t*(s-r)+r,--h<=0&&(null!==i?(u+=1,h=i):(u+=2,h=n))):2===u?(o=r,l.requireReleaseTrigger&&c?(u++,h=n,l.releaseTrigger=0,c=0):0!==h--||l.requireReleaseTrigger||(u++,h=n)):3===u&&(h--,o=h/n*r,0>=h&&u++),o},this.call=function(){return this.callback(this.attack,this.decay,this.sustain,this.release,this.attackLevel,this.sustainLevel,this.releaseTrigger)},this.setPhase=function(e){h=e},this.setState=function(e){u=e,h=0},this.getState=function(){return u},this.init(),this},Gibberish.ADSR.prototype=Gibberish._envelope,Gibberish.ADR=function(e,t,i,n,s){var r={name:"adr",type:"envelope",properties:{attack:isNaN(e)?11025:e,decay:isNaN(t)?11025:t,release:isNaN(i)?22050:i,attackLevel:n||1,releaseLevel:s||.2},run:function(){this.setPhase(0),this.setState(0)}};Gibberish.extend(this,r);var a=0,o=0;return this.callback=function(e,t,i,n,s){var r=0;return 0===o?(r=a/e*n,++a/e===1&&(o++,a=t)):1===o?(r=a/t*(n-s)+s,--a<=0&&(o+=1,a=i)):2===o&&(a--,r=a/i*s,0>=a&&o++),r},this.setPhase=function(e){a=e},this.setState=function(e){o=e,a=0},this.getState=function(){return o},this.init(),this},Gibberish.ADR.prototype=Gibberish._envelope,Gibberish.analysis=function(){this.type="analysis",this.codegen=function(){if(Gibberish.memo[this.symbol])return Gibberish.memo[this.symbol];var e=this.variable?this.variable:Gibberish.generateSymbol("v");return Gibberish.memo[this.symbol]=e,this.variable=e,Gibberish.callbackArgs.push(this.symbol),Gibberish.callbackObjects.push(this.callback),this.codeblock="var "+this.variable+" = "+this.symbol+"();\n",-1===Gibberish.codeblock.indexOf(this.codeblock)&&Gibberish.codeblock.push(this.codeblock),this.variable},this.analysisCodegen=function(){var e=0;this.input.codegen?(e=this.input.codegen(),e.indexOf("op")>-1&&console.log("ANALYSIS BUG")):e=this.input.value?"undefined"!=typeof this.input.value.codegen?this.input.value.codegen():this.input.value:"null";var t=this.analysisSymbol+"("+e+",";for(var i in this.properties)"input"!==i&&(t+=this[i]+",");return t=t.slice(0,-1),t+=");",this.analysisCodeblock=t,-1===Gibberish.analysisCodeblock.indexOf(this.analysisCodeblock)&&Gibberish.analysisCodeblock.push(this.analysisCodeblock),-1===Gibberish.callbackObjects.indexOf(this.analysisCallback)&&Gibberish.callbackObjects.push(this.analysisCallback),t},this.remove=function(){Gibberish.analysisUgens.splice(Gibberish.analysisUgens.indexOf(this),1)},this.analysisInit=function(){this.analysisSymbol=Gibberish.generateSymbol(this.name),Gibberish.analysisUgens.push(this),Gibberish.dirty()}},Gibberish.analysis.prototype=new Gibberish.ugen,Gibberish._analysis=new Gibberish.analysis,Gibberish.Follow=function(){this.name="follow",this.properties={input:0,bufferSize:4410,mult:1,useAbsoluteValue:!0};var e=Math.abs,t=[0],i=0,n=0,s=0;this.analysisCallback=function(r,a,o,h){"object"==typeof r&&(r=r[0]+r[1]),i+=h?e(r):r,i-=t[n],t[n]=h?e(r):r,n=(n+1)%a,t[n]=t[n]?t[n]:0,s=i/a*o},this.callback=this.getValue=function(){return s},this.init(),this.analysisInit(),this.processProperties(arguments);var r=(this.__lookupSetter__("bufferSize"),this.bufferSize);Object.defineProperty(this,"bufferSize",{get:function(){return r},set:function(e){r=e,i=0,t=[0],n=0}})},Gibberish.Follow.prototype=Gibberish._analysis,Gibberish.SingleSampleDelay=function(){this.name="single_sample_delay",this.properties={input:arguments[0]||0,amp:arguments[1]||1};var e=0;this.analysisCallback=function(t){e=t},this.callback=function(){return e},this.getValue=function(){return e},this.init(),this.analysisInit(),this.processProperties(arguments)},Gibberish.SingleSampleDelay.prototype=Gibberish._analysis,Gibberish.Record=function(e,t,i){var n=new Float32Array(t),s=0,r=!1,a=this;Gibberish.extend(this,{name:"record",oncomplete:i,properties:{input:0,size:t||0},analysisCallback:function(e,t){r&&(n[s++]="object"==typeof e?e[0]+e[1]:e,s>=t&&(r=!1,a.remove()))},record:function(){return s=0,r=!0,this},getBuffer:function(){return n},getPhase:function(){return s},remove:function(){"undefined"!=typeof this.oncomplete&&this.oncomplete();for(var e=0;e<Gibberish.analysisUgens.length;e++){var t=Gibberish.analysisUgens[e];if(t===this)return Gibberish.callbackArgs.indexOf(this.analysisSymbol)>-1&&Gibberish.callbackArgs.splice(Gibberish.callbackArgs.indexOf(this.analysisSymbol),1),Gibberish.callbackObjects.indexOf(this.analysisCallback)>-1&&Gibberish.callbackObjects.splice(Gibberish.callbackObjects.indexOf(this.analysisCallback),1),void Gibberish.analysisUgens.splice(e,1)}}}),this.properties.input=e,this.init(),this.analysisInit(),Gibberish.dirty()},Gibberish.Record.prototype=Gibberish._analysis,Gibberish.effect=function(){this.type="effect"},Gibberish.effect.prototype=new Gibberish.ugen,Gibberish._effect=new Gibberish.effect,Gibberish.Distortion=function(){var e=Math.abs,t=Math.log,i=Math.LN2;Gibberish.extend(this,{name:"distortion",properties:{input:0,amount:50},callback:function(n,s){var r;return s=s>2?s:2,"number"==typeof n?(r=n*s,n=r/(1+e(r))/(t(s)/i)):(r=n[0]*s,n[0]=r/(1+e(r))/(t(s)/i),r=n[1]*s,n[1]=r/(1+e(r))/(t(s)/i)),n}}).init().processProperties(arguments)},Gibberish.Distortion.prototype=Gibberish._effect,Gibberish.Gain=function(){Gibberish.extend(this,{name:"gain",properties:{input:0,amount:1},callback:function(e,t){return"number"==typeof e?e*=t:(e[0]*=t,e[1]*=t),e}}).init().processProperties(arguments)},Gibberish.Gain.prototype=Gibberish._effect,Gibberish.Delay=function(){var e=[],t=0;e.push(new Float32Array(2*Gibberish.context.sampleRate)),e.push(new Float32Array(2*Gibberish.context.sampleRate)),Gibberish.extend(this,{name:"delay",properties:{input:0,time:22050,feedback:.5,wet:1,dry:1},callback:function(i,n,s,r,a){var o="number"==typeof i?1:2,h=t++%88200,u=(h+(0|n))%88200;
 return 1===o?(e[0][u]=(i+e[0][h])*s,i=i*a+e[0][h]*r):(e[0][u]=(i[0]+e[0][h])*s,i[0]=i[0]*a+e[0][h]*r,e[1][u]=(i[1]+e[1][h])*s,i[1]=i[1]*a+e[1][h]*r),i}});var i=Math.round(this.properties.time);Object.defineProperty(this,"time",{configurable:!0,get:function(){return i},set:function(e){i=Math.round(e),Gibberish.dirty(this)}}),this.init(),this.processProperties(arguments)},Gibberish.Delay.prototype=Gibberish._effect,Gibberish.Decimator=function(){var e=0,t=[],i=Math.pow,n=Math.floor;Gibberish.extend(this,{name:"decimator",properties:{input:0,bitDepth:16,sampleRate:1},callback:function(s,r,a){e+=a;var o="number"==typeof s?1:2;if(1===o){if(e>=1){var h=i(r,2);t[0]=n(s*h)/h,e-=1}s=t[0]}else{if(e>=1){var h=i(r,2);t[0]=n(s[0]*h)/h,t[1]=n(s[1]*h)/h,e-=1}s=t}return s}}).init().processProperties(arguments)},Gibberish.Decimator.prototype=Gibberish._effect,Gibberish.RingModulation=function(){var e=(new Gibberish.Sine).callback,t=[0,0];Gibberish.extend(this,{name:"ringmod",properties:{input:0,frequency:440,amp:.5,mix:.5},callback:function(i,n,s,r){var a="number"==typeof i?1:2,o=1===a?i:i[0],h=e(n,s);if(o=o*(1-r)+o*h*r,2===a){var u=i[1];return u=u*(1-r)+u*h*r,t[0]=o,t[1]=u,t}return o}}).init().processProperties(arguments)},Gibberish.RingModulation.prototype=Gibberish._effect,Gibberish.DCBlock=function(){var e=0,t=0;Gibberish.extend(this,{name:"dcblock",type:"effect",properties:{input:0},reset:function(){e=0,t=0},callback:function(i){var n=i-e+.9997*t;return e=i,t=n,n}}).init().processProperties(arguments)},Gibberish.DCBlock.prototype=Gibberish._effect,Gibberish.Tremolo=function(){var e=(new Gibberish.Sine).callback;Gibberish.extend(this,{name:"tremolo",type:"effect",properties:{input:0,frequency:2.5,amp:.5},callback:function(t,i,n){var s="number"==typeof t?1:2,r=e(i,n);return 1===s?t*=r:(t[0]*=r,t[1]*=r),t}}).init().processProperties(arguments)},Gibberish.Tremolo.prototype=Gibberish._effect,Gibberish.OnePole=function(){var e=0;Gibberish.extend(this,{name:"onepole",type:"effect",properties:{input:0,a0:.15,b1:.85},callback:function(t,i,n){var s=t*i+e*n;return e=s,s},smooth:function(t,i){this.input=i[t],e=this.input,i[t]=this,this.obj=i,this.property=t,this.oldSetter=i.__lookupSetter__(t),this.oldGetter=i.__lookupGetter__(t);var n=this;Object.defineProperty(i,t,{get:function(){return n.input},set:function(e){n.input=e}})},remove:function(){Object.defineProperty(this.obj,this.property,{get:this.oldGetter,set:this.oldSetter}),this.obj[this.property]=this.input}}).init().processProperties(arguments)},Gibberish.OnePole.prototype=Gibberish._effect,Gibberish.Filter24=function(){var e=[0,0,0,0],t=[0,0,0,0],i=[0,0],n=isNaN(arguments[0])?.1:arguments[0],s=isNaN(arguments[1])?3:arguments[1];_isLowPass="undefined"!=typeof arguments[2]?arguments[2]:!0,Gibberish.extend(this,{name:"filter24",properties:{input:0,cutoff:n,resonance:s,isLowPass:_isLowPass},callback:function(n,s,r,a){var o="number"==typeof n?1:2,h=1===o?n:n[0],u=e[3]*r;if(u=u>1?1:u,s=0>s?0:s,s=s>1?1:s,h-=u,e[0]=e[0]+(-e[0]+h)*s,e[1]=e[1]+(-e[1]+e[0])*s,e[2]=e[2]+(-e[2]+e[1])*s,e[3]=e[3]+(-e[3]+e[2])*s,h=a?e[3]:h-e[3],2===o){var c=n[1];return u=t[3]*r,u=u>1?1:u,c-=u,t[0]=t[0]+(-t[0]+c)*s,t[1]=t[1]+(-t[1]+t[0])*s,t[2]=t[2]+(-t[2]+t[1])*s,t[3]=t[3]+(-t[3]+t[2])*s,c=a?t[3]:c-t[3],i[0]=h,i[1]=c,i}return h}}).init().processProperties(arguments)},Gibberish.Filter24.prototype=Gibberish._effect,Gibberish.SVF=function(){var e=[0,0],t=[0,0],i=Math.PI,n=[0,0];Gibberish.extend(this,{name:"SVF",properties:{input:0,cutoff:440,Q:2,mode:0,sr:Gibberish.context.sampleRate},callback:function(s,r,a,o,h){var u="number"==typeof s?1:2,c=1===u?s:s[0],l=2*i*r/h;a=1/a;var b=t[0]+l*e[0],p=c-b-a*e[0],f=l*p+e[0],d=p+b;if(e[0]=f,t[0]=b,c=0===o?b:1===o?p:2===o?f:d,2===u){var g=s[1],b=t[1]+l*e[1],p=g-b-a*e[1],f=l*p+e[1],d=p+b;e[1]=f,t[1]=b,g=0===o?b:1===o?p:2===o?f:d,n[0]=c,n[1]=g}else n=c;return n}}).init().processProperties(arguments)},Gibberish.SVF.prototype=Gibberish._effect,Gibberish.Biquad=function(){var e=x2=y1=y2=0,t=[0,0],i=.001639,n=.003278,s=.001639,r=-1.955777,a=.960601,o="LP",h=2e3,u=.5,c=Gibberish.context.sampleRate;Gibberish.extend(this,{name:"biquad",properties:{input:null},calculateCoefficients:function(){switch(o){case"LP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),b=t/(2*u);i=(1-l)/2,n=1-l,s=i,a0=1+b,r=-2*l,a=1-b;break;case"HP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),b=t/(2*u);i=(1+l)/2,n=-(1+l),s=i,a0=1+b,r=-2*l,a=1-b;break;case"BP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),p=Math.log(2)/2*u*e/t,b=t*(Math.exp(p)-Math.exp(-p))/2;i=b,n=0,s=-b,a0=1+b,r=-2*l,a=1-b;break;default:return}i/=a0,n/=a0,s/=a0,r/=a0,a/=a0},callback:function(o){var h="number"==typeof o?1:2,u=0,c=0,l=1===h?o:o[0];return u=i*l+n*e+s*x2-r*y1-a*y2,x2=e,e=o,y2=y1,y1=u,2===h&&(inR=o[1],c=i*inR+n*e[1]+s*x2[1]-r*y1[1]-a*y2[1],x2[1]=e[1],e[1]=o[1],y2[1]=y1[1],y1[1]=c,t[0]=u,t[1]=c),1===h?u:t}}).init(),Object.defineProperties(this,{mode:{get:function(){return o},set:function(e){o=e,this.calculateCoefficients()}},cutoff:{get:function(){return h},set:function(e){h=e,this.calculateCoefficients()}},Q:{get:function(){return u},set:function(e){u=e,this.calculateCoefficients()}}}),this.processProperties(arguments),this.calculateCoefficients()},Gibberish.Biquad.prototype=Gibberish._effect,Gibberish.Flanger=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=(new Gibberish.Sine).callback,n=Gibberish.interpolate,s=-100,r=0;Gibberish.extend(this,{name:"flanger",properties:{input:0,rate:.25,feedback:0,amount:125,offset:125},callback:function(a,o,h,u){var c="number"==typeof a?1:2,l=s+i(o,.95*u);l>t?l-=t:0>l&&(l+=t);var b=n(e[0],l);return e[0][r]=1===c?a+b*h:a[0]+b*h,2===c?(a[0]+=b,b=n(e[1],l),e[1][r]=a[1]+b*h,a[1]+=b):a+=b,++r>=t&&(r=0),++s>=t&&(s=0),a}}).init().processProperties(arguments),s=-1*this.offset},Gibberish.Flanger.prototype=Gibberish._effect,Gibberish.Vibrato=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=(new Gibberish.Sine).callback,n=Gibberish.interpolate,s=-100,r=0;Gibberish.extend(this,{name:"vibrato",properties:{input:0,rate:5,amount:.5,offset:125},callback:function(a,o,h,u){var c="number"==typeof a?1:2,l=s+i(o,h*u-1);l>t?l-=t:0>l&&(l+=t);var b=n(e[0],l);return e[0][r]=1===c?a:a[0],2===c?(a[0]=b,b=n(e[1],l),e[1][r]=a[1],a[1]=b):a=b,++r>=t&&(r=0),++s>=t&&(s=0),a}}).init().processProperties(arguments),s=-1*this.offset},Gibberish.Vibrato.prototype=Gibberish._effect,Gibberish.BufferShuffler=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=0,n=0,s=0,r=0,a=0,o=Math.random,h=1,u=!1,c=!1,l=!1,b=Gibberish.interpolate,p=!1,f=1,d=!1,g=Gibberish.rndf,m=[0,0];Gibberish.extend(this,{name:"buffer_shuffler",properties:{input:0,chance:.25,rate:11025,length:22050,reverseChange:.5,pitchChance:.5,pitchMin:.25,pitchMax:2,wet:1,dry:0},callback:function(y,G,v,k,x,_,w,A,S,P){var R="number"==typeof y?1:2;a?++r%(k-400)===0&&(u=!1,c=!0,h=1,r=0):(e[0][n]=1===R?y:y[0],e[1][n]=1===R?y:y[1],n++,n%=t,d=0===n?1:d,s++,s%v==0&&o()<G&&(l=o()<x,a=!0,l||(i=n-k,0>i&&(i=t+i)),p=o()<_,p&&(f=g(w,A)),h=1,u=!0,c=!1)),i+=l?-1*f:f,0>i?i+=t:i>=t&&(i-=t);var q,M,C,I,T=b(e[0],i);return u?(h-=.0025,C=T*(1-h),q=1===R?C+y*h:C+y[0]*h,2===R&&(I=b(e[1],i),C=I*(1-h),M=1===R?q:C+y[1]*h),.0025>=h&&(u=!1)):c?(h-=.0025,C=T*h,q=1===R?C+y*h:C+y[0]*(1-h),2===R&&(I=b(e[1],i),C=I*h,M=C+y[1]*(1-h)),.0025>=h&&(c=!1,a=!1,l=!1,f=1,p=0)):1===R?q=a&&d?T*S+y*P:y:(I=b(e[1],i),q=a&&d?T*S+y[0]*P:y[0],M=a&&d?I*S+y[1]*P:y[1]),m=[q,M],1===R?q:m}}).init().processProperties(arguments)},Gibberish.BufferShuffler.prototype=Gibberish._effect,Gibberish.AllPass=function(e){var t=-1,i=new Float32Array(e||500),n=i.length;Gibberish.extend(this,{name:"allpass",properties:{input:0},callback:function(e){t=++t%n;var s=i[t],r=-1*e+s;return i[t]=e+.5*s,r}})},Gibberish.Comb=function(e){var t=new Float32Array(e||1200),i=t.length,n=0,s=0;Gibberish.extend(this,{name:"comb",properties:{input:0,feedback:.84,damping:.2},callback:function(e,r,a){var o=++n%i,h=t[o];return s=h*(1-a)+s*a,t[o]=e+s*r,h}})},Gibberish.Reverb=function(){var e={combCount:8,combTuning:[1116,1188,1277,1356,1422,1491,1557,1617],allPassCount:4,allPassTuning:[556,441,341,225],allPassFeedback:.5,fixedGain:.015,scaleDamping:.4,scaleRoom:.28,offsetRoom:.7,stereoSpread:23},t=.84,i=[],n=[],s=[0,0];Gibberish.extend(this,{name:"reverb",roomSize:.5,properties:{input:0,wet:.5,dry:.55,roomSize:.84,damping:.5},callback:function(e,t,r,a,o){for(var h="object"==typeof e?2:1,u=1===h?e:e[0]+e[1],c=.015*u,l=c,b=0;8>b;b++){var p=i[b](c,.98*a,.4*o);l+=p}for(var b=0;4>b;b++)l=n[b](l);return s[0]=s[1]=u*r+l*t,s}}).init().processProperties(arguments),this.setFeedback=function(e){t=e};for(var r=0;8>r;r++)i.push(new Gibberish.Comb(e.combTuning[r]).callback);for(var r=0;4>r;r++)n.push(new Gibberish.AllPass(e.allPassTuning[r],e.allPassFeedback).callback)},Gibberish.Reverb.prototype=Gibberish._effect,Gibberish.Granulator=function(e){var t=[];buffer=null,interpolate=Gibberish.interpolate,panner=Gibberish.makePanner(),bufferLength=0,debug=0,write=0,self=this,out=[0,0],_out=[0,0],rndf=Gibberish.rndf,numberOfGrains=e.numberOfGrains||20,Gibberish.extend(this,{name:"granulator",bufferLength:88200,reverse:!0,spread:.5,properties:{speed:1,speedMin:-0,speedMax:0,grainSize:1e3,position:.5,positionMin:0,positionMax:0,amp:.2,fade:.1,pan:0,shouldWrite:!1},setBuffer:function(e){buffer=e,bufferLength=e.length},callback:function(e,i,n,s,r,a,o,h,u,c){for(var l=0;numberOfGrains>l;l++){var b=t[l];if(b._speed>0){b.pos>b.end&&(b.pos=(o+rndf(r,a))*buffer.length,b.start=b.pos,b.end=b.start+s,b._speed=e+rndf(i,n),b._speed=b._speed<.1?.1:b._speed,b._speed=b._speed<.1&&b._speed>0?.1:b._speed,b._speed=b._speed>-.1&&b._speed<0?-.1:b._speed,b.fadeAmount=b._speed*u*s,b.pan=rndf(-1*self.spread,self.spread));for(var p=b.pos;p>buffer.length;)p-=buffer.length;for(;0>p;)p+=buffer.length;var f=interpolate(buffer,p);f*=b.pos<b.fadeAmount+b.start?(b.pos-b.start)/b.fadeAmount:1,f*=b.pos>b.end-b.fadeAmount?(b.end-b.pos)/b.fadeAmount:1}else{b.pos<b.end&&(b.pos=(o+rndf(r,a))*buffer.length,b.start=b.pos,b.end=b.start-s,b._speed=e+rndf(i,n),b._speed=b._speed<.1&&b._speed>0?.1:b._speed,b._speed=b._speed>-.1&&b._speed<0?-.1:b._speed,b.fadeAmount=b._speed*u*s);for(var p=b.pos;p>buffer.length;)p-=buffer.length;for(;0>p;)p+=buffer.length;var f=interpolate(buffer,p);f*=b.pos>b.start-b.fadeAmount?(b.start-b.pos)/b.fadeAmount:1,f*=b.pos<b.end+b.fadeAmount?(b.end-b.pos)/b.fadeAmount:1}_out=panner(f*h,b.pan,_out),out[0]+=_out[0],out[1]+=_out[1],b.pos+=b._speed}return panner(out,c,out)}}).init().processProperties(arguments);for(var i=0;numberOfGrains>i;i++)t[i]={pos:self.position+Gibberish.rndf(self.positionMin,self.positionMax),_speed:self.speed+Gibberish.rndf(self.speedMin,self.speedMax)},t[i].start=t[i].pos,t[i].end=t[i].pos+self.grainSize,t[i].fadeAmount=t[i]._speed*self.fade*self.grainSize,t[i].pan=Gibberish.rndf(-1*self.spread,self.spread);"undefined"!=typeof e.buffer&&(buffer=e.buffer,bufferLength=buffer.length)},Gibberish.Granulator.prototype=Gibberish._effect,Gibberish.synth=function(){this.type="oscillator",this.oscillatorInit=function(){this.fx=new Array2,this.fx.parent=this}},Gibberish.synth.prototype=new Gibberish.ugen,Gibberish._synth=new Gibberish.synth,Gibberish.Synth=function(e){this.name="synth",this.properties={frequency:0,pulsewidth:.5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,glide:.15,amp:.25,channels:2,pan:0,sr:Gibberish.context.sampleRate},this.note=function(e,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&e===c)return void(this.releaseTrigger=1);this.frequency=c=e,this.releaseTrigger=0}else this.frequency[0]=c=e,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,n=i.getState,s=i.callback,r=new Gibberish.PWM,a=r.callback,o=(new Gibberish.OnePole).callback,h=Gibberish.makePanner(),u=this,c=0,l=[0,0];i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,r,c,b,p,f,d,g,m,y,G,v,k){m=m>=1?.99999:m,e=o(e,1-m,m);var x,_;return t?(x=s(r,c,b,p,f,d,g),g&&(u.releaseTrigger=0),n()<4?(_=a(e,1,i,k)*x*y,1===G?_:h(_,v,l)):(_=l[0]=l[1]=0,1===G?_:l)):n()<2?(x=s(r,c),_=a(e,1,i,k)*x*y,1===G?_:h(_,v,l)):(_=l[0]=l[1]=0,1===G?_:l)},this.getEnv=function(){return i},this.getOsc=function(){return r},this.setOsc=function(e){r=e,a=r.callback};var b="PWM";Object.defineProperty(this,"waveform",{get:function(){return b},set:function(e){this.setOsc(new Gibberish[e])}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Synth.prototype=Gibberish._synth,Gibberish.PolySynth=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polysynth",maxVoices:5,voiceCount:0,frequencies:[],_frequency:0,polyProperties:{frequency:0,glide:0,attack:22050,decay:22050,pulsewidth:.5,waveform:"PWM"},note:function(e,t){var i=this.frequencies.indexOf(e),n=i>-1?i:this.voiceCount++,s=this.children[n];s.note(e,t),-1===i?(this.frequencies[n]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[n]},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={waveform:this.waveform,attack:this.attack,decay:this.decay,pulsewidth:this.pulsewidth,channels:2,amp:1,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1},i=new Gibberish.Synth(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.Synth2=function(e){this.name="synth2",this.properties={frequency:0,pulsewidth:.5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,cutoff:.25,resonance:3.5,useLowPassFilter:!0,glide:.15,amp:.25,channels:1,pan:0,sr:Gibberish.context.sampleRate},this.note=function(e,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&e===l)return void(this.releaseTrigger=1);this.frequency=l=e,this.releaseTrigger=0}else this.frequency[0]=l=e,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,n=i.getState,s=i.callback,r=new Gibberish.PWM,a=r.callback,o=new Gibberish.Filter24,h=o.callback,u=(new Gibberish.OnePole).callback,c=Gibberish.makePanner(),l=0,b=this,p=[0,0];i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,r,o,l,f,d,g,m,y,G,v,k,x,_,w,A){k=k>=1?.99999:k,e=u(e,1-k,k);var S,P;return t?(S=s(r,o,l,f,d,g,m),m&&(b.releaseTrigger=0),n()<4?(P=h(a(e,.15,i,A),y*S,G,v)*S*x,1===_?P:c(P,w,p)):(P=p[0]=p[1]=0,1===_?P:p)):n()<2?(S=s(r,o),P=h(a(e,.15,i,A),y*S,G,v)*S*x,1===_?P:c(P,w,p)):(P=p[0]=p[1]=0,1===_?P:p)},this.getUseADSR=function(){return t},this.getEnv=function(){return i},this.getOsc=function(){return r},this.setOsc=function(e){r=e,a=r.callback};var f="PWM";Object.defineProperty(this,"waveform",{get:function(){return f},set:function(e){this.setOsc(new Gibberish[e])}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Synth2.prototype=Gibberish._synth,Gibberish.PolySynth2=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polysynth2",maxVoices:5,voiceCount:0,frequencies:[],_frequency:0,polyProperties:{frequency:0,glide:0,attack:22050,decay:22050,pulsewidth:.5,resonance:3.5,cutoff:.25,useLowPassFilter:!0,waveform:"PWM"},note:function(e,t){var i=this.frequencies.indexOf(e),n=i>-1?i:this.voiceCount++,s=this.children[n];s.note(e,t),-1===i?(this.frequencies[n]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[n]},initVoices:function(){this.dirty=!0;for(var e=0;e<this.maxVoices;e++){var t={attack:this.attack,decay:this.decay,pulsewidth:this.pulsewidth,channels:2,amp:1,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1},i=new Gibberish.Synth2(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.FMSynth=function(e){this.name="fmSynth",this.properties={frequency:0,cmRatio:2,index:5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,glide:.15,amp:.25,channels:2,pan:0},this.note=function(e,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&e===l)return void(this.releaseTrigger=1);this.frequency=l=e,this.releaseTrigger=0}else this.frequency[0]=l=e,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,n=i.getState,s=i.callback,r=(new Gibberish.Sine).callback,a=(new Gibberish.Sine).callback,o=(new Gibberish.OnePole).callback,h=Gibberish.makePanner(),u=[0,0],c=this,l=0;i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,l,b,p,f,d,g,m,y,G,v,k,x){var _,w,A;return G>=1&&(G=.9999),e=o(e,1-G,G),t?(_=s(b,p,f,d,g,m,y),y&&(c.releaseTrigger=0),n()<4?(A=a(e*i,e*l)*_,w=r(e+A,1)*_*v,1===k?w:h(w,x,u)):(w=u[0]=u[1]=0,1===k?w:u)):n()<2?(_=s(b,p),A=a(e*i,e*l)*_,w=r(e+A,1)*_*v,1===k?w:h(w,x,u)):(w=u[0]=u[1]=0,1===k?w:u)},this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.FMSynth.prototype=Gibberish._synth,Gibberish.PolyFM=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polyfm",maxVoices:5,voiceCount:0,children:[],frequencies:[],_frequency:0,polyProperties:{glide:0,attack:22050,decay:22050,index:5,cmRatio:2},note:function(e,t){var i=this.frequencies.indexOf(e),n=i>-1?i:this.voiceCount++,s=this.children[n];s.note(e,t),-1===i?(this.frequencies[n]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[n]},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={attack:this.attack,decay:this.decay,cmRatio:this.cmRatio,index:this.index,channels:2,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1,amp:1},i=new Gibberish.FMSynth(t);i.connect(this),this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.Sampler=function(){function e(e){Gibberish.context.decodeAudioData(e,function(e){r=e.getChannelData(0),o.length=t=o.end=a=r.length,o.isPlaying=!0,o.buffers[o.file]=r,Gibberish.audioFiles[o.file]=r,o.onload&&o.onload(),0!==o.playOnLoad&&o.note(o.playOnLoad),o.isLoaded=!0},function(e){console.log("Error decoding file",e)})}var t=1,i=Gibberish.interpolate,n=Gibberish.makePanner(),s=[0,0],r=null,a=1,o=this;if(Gibberish.extend(this,{name:"sampler",file:null,isLoaded:!1,playOnLoad:0,buffers:{},properties:{pitch:1,amp:1,isRecording:!1,isPlaying:!0,input:0,length:0,start:0,end:1,loops:0,pan:0},_onload:function(e){r=e.channels[0],a=e.length,o.end=a,o.length=t=a,o.isPlaying=!0,Gibberish.audioFiles[o.file]=r,o.buffers[o.file]=r,o.onload&&o.onload(),0!==o.playOnLoad&&o.note(o.playOnLoad),o.isLoaded=!0},switchBuffer:function(e){if("string"==typeof e)"undefined"!=typeof o.buffers[e]&&(r=o.buffers[e],a=o.end=o.length=r.length);else if("number"==typeof e){var t=Object.keys(o.buffers);if(0===t.length)return;r=o.buffers[t[e]],a=o.end=o.length=r.length}},floatTo16BitPCM:function(e,t,i){for(var n=0;n<i.length-1;n++,t+=2){var s=Math.max(-1,Math.min(1,i[n]));e.setInt16(t,0>s?32768*s:32767*s,!0)}},encodeWAV:function(){function e(e,t,i){for(var n=0;n<i.length;n++)e.setUint8(t+n,i.charCodeAt(n))}var t=this.getBuffer(),i=new ArrayBuffer(44+2*t.length),n=new DataView(i),s=Gibberish.context.sampleRate;return e(n,0,"RIFF"),n.setUint32(4,32+2*t.length,!0),e(n,8,"WAVE"),e(n,12,"fmt "),n.setUint32(16,16,!0),n.setUint16(20,1,!0),n.setUint16(22,1,!0),n.setUint32(24,s,!0),n.setUint32(28,4*s,!0),n.setUint16(32,2,!0),n.setUint16(34,16,!0),e(n,36,"data"),n.setUint32(40,2*t.length,!0),this.floatTo16BitPCM(n,44,t),n},download:function(){var e=this.encodeWAV(),t=new Blob([e]),i=window.webkitURL.createObjectURL(t),n=window.document.createElement("a");n.href=i,n.download="output.wav";var s=document.createEvent("Event");s.initEvent("click",!0,!0),n.dispatchEvent(s)},note:function(e,i){switch(typeof e){case"number":this.pitch=e;break;case"function":this.pitch=e();break;case"object":Array.isArray(e)&&(this.pitch=e[0])}if("number"==typeof i&&(this.amp=i),null!==this.function){this.isPlaying=!0;var n;switch(typeof this.pitch){case"number":n=this.pitch;break;case"function":n=this.pitch();break;case"object":n=Array.isArray(this.pitch)?this.pitch[0]:this.pitch,"function"==typeof n&&(n=n())}t=n>0||"object"==typeof n?this.start:this.end}},getBuffer:function(){return r},setBuffer:function(e){r=e},getPhase:function(){return t},setPhase:function(e){t=e},getNumberOfBuffers:function(){return Object.keys(o.buffers).length-1},callback:function(e,a,o,h,u,c,l,b,p,f){var d=0;return t+=e,b>t&&t>0?(e>0?d=null!==r&&h?i(r,t):0:t>l?d=null!==r&&h?i(r,t):0:t=p?b:t,n(d*a,f,s)):(t=p&&e>0?l:t,t=p&&0>e?b:t,s[0]=s[1]=d,s)}}).init().oscillatorInit().processProperties(arguments),"undefined"!=typeof arguments[0]&&("string"==typeof arguments[0]?(this.file=arguments[0],this.pitch=0):"object"==typeof arguments[0]&&arguments[0].file&&(this.file=arguments[0].file)),"undefined"!=typeof Gibberish.audioFiles[this.file])r=Gibberish.audioFiles[this.file],this.end=this.bufferLength=r.length,this.buffers[this.file]=r,t=this.bufferLength,Gibberish.dirty(this),this.onload&&this.onload();else if(null!==this.file){var e,h=new XMLHttpRequest;h.open("GET",this.file,!0),h.responseType="arraybuffer",h.onload=function(){e(this.response)},h.send()}else"undefined"!=typeof this.buffer&&(this.isLoaded=!0,r=this.buffer,this.end=this.bufferLength=r.length||88200,t=this.bufferLength,arguments[0]&&arguments[0].loops&&(this.loops=1),Gibberish.dirty(this),this.onload&&this.onload())},Gibberish.Sampler.prototype=Gibberish._oscillator,Gibberish.Sampler.prototype.record=function(e,t){this.isRecording=!0;var i=this;return this.recorder=new Gibberish.Record(e,t,function(){i.setBuffer(this.getBuffer()),i.end=bufferLength=i.getBuffer().length,i.setPhase(i.end),i.isRecording=!1}).record(),this},Gibberish.MonoSynth=function(){Gibberish.extend(this,{name:"monosynth",properties:{attack:1e4,decay:1e4,cutoff:.2,resonance:2.5,amp1:1,amp2:1,amp3:1,filterMult:.3,isLowPass:!0,pulsewidth:.5,amp:.6,detune2:.01,detune3:-.01,octave2:1,octave3:-1,glide:0,pan:0,frequency:0,channels:2},waveform:"Saw3",note:function(e,n){"undefined"!=typeof n&&0!==n&&(this.amp=n),0!==n&&("object"!=typeof this.frequency?this.frequency=e:(this.frequency[0]=e,Gibberish.dirty(this)),i()>0&&t.run())},_note:function(e,i){if("object"!=typeof this.frequency){if(useADSR&&e===lastFrequency&&0===i)return void(this.releaseTrigger=1);0!==i&&(this.frequency=lastFrequency=e),this.releaseTrigger=0}else 0!==i&&(this.frequency[0]=lastFrequency=e),this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof i&&0!==i&&(this.amp=i),0!==i&&t.run()}});var e=this.waveform;Object.defineProperty(this,"waveform",{get:function(){return e},set:function(t){e!==t&&(e=t,r=(new Gibberish[t]).callback,a=(new Gibberish[t]).callback,o=(new Gibberish[t]).callback)}});var t=new Gibberish.AD(this.attack,this.decay),i=t.getState,n=t.callback,s=(new Gibberish.Filter24).callback,r=new Gibberish[this.waveform](this.frequency,this.amp1).callback,a=new Gibberish[this.waveform](this.frequency2,this.amp2).callback,o=new Gibberish[this.waveform](this.frequency3,this.amp3).callback,h=(new Gibberish.OnePole).callback,u=Gibberish.makePanner(),c=[0,0];this.callback=function(e,t,l,b,p,f,d,g,m,y,G,v,k,x,_,w,A,S,P){if(i()<2){w>=1&&(w=.9999),S=h(S,1-w,w);var R=S;if(x>0)for(var q=0;x>q;q++)R*=2;else if(0>x)for(var q=0;q>x;q--)R/=2;var M=S;if(_>0)for(var q=0;_>q;q++)M*=2;else if(0>_)for(var q=0;q>_;q--)M/=2;R+=v>0?(2*S-S)*v:(S-S/2)*v,M+=k>0?(2*S-S)*k:(S-S/2)*k;var C=r(S,p,y)+a(R,f,y)+o(M,d,y),I=n(e,t),T=s(C,l+g*I,b,m,1)*I;return T*=G,c[0]=c[1]=T,1===P?c:u(T,A,c)}return c[0]=c[1]=0,c},this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.MonoSynth.prototype=Gibberish._synth,Gibberish.Binops={"export":function(e){Gibberish.export("Binops",e||window)},operator:function(){var e=new Gibberish.ugen,t=arguments[0],i=Array.prototype.slice.call(arguments,1);e.name="op",e.properties={};for(var n=0;n<i.length;n++)e.properties[n]=i[n];return e.init.apply(e,i),e.codegen=function(){var e,i="( ";e=Object.keys(this.properties);for(var n=0;n<e.length;n++){var s="object"==typeof this[n];i+=s?this[n].codegen():this[n],n<e.length-1&&(i+=" "+t+" ")}return i+=" )",this.codeblock=i,i},e.valueOf=function(){return e.codegen()},e},Add:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("+"),Gibberish.Binops.operator.apply(null,e)},Sub:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("-"),Gibberish.Binops.operator.apply(null,e)},Mul:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("*"),Gibberish.Binops.operator.apply(null,e)},Div:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("/"),Gibberish.Binops.operator.apply(null,e)},Mod:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("%"),Gibberish.Binops.operator.apply(null,e)},Abs:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"abs",properties:{},callback:Math.abs.bind(t)};return t.__proto__=new Gibberish.ugen,t.properties[0]=e[0],t.init(),t},Sqrt:function(){var e=(Array.prototype.slice.call(arguments,0),{name:"sqrt",properties:{},callback:Math.sqrt.bind(e)});return e.__proto__=new Gibberish.ugen,e.properties[i]=arguments[0],e.init(),e},Pow:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"pow",properties:{},callback:Math.pow.bind(t)};t.__proto__=new Gibberish.ugen;for(var i=0;i<e.length;i++)t.properties[i]=e[i];return t.init(),console.log(t.callback),t},Clamp:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"clamp",properties:{input:0,min:0,max:1},callback:function(e,t,i){return t>e?e=t:e>i&&(e=i),e}};return t.__proto__=new Gibberish.ugen,t.init(),t.processProperties(e),t},Merge:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"merge",properties:{},callback:function(e){return e[0]+e[1]}};t.__proto__=new Gibberish.ugen;for(var i=0;i<e.length;i++)t.properties[i]=e[i];return t.init(),t},Map:function(e,t,i,n,s,r,a){var o=Math.pow,h=0,u=0,c={name:"map",properties:{input:e,outputMin:t,outputMax:i,inputMin:n,inputMax:s,curve:r||h,wrap:a||!1},callback:function(e,t,i,n,s,r,a){var h,c=i-t,l=s-n,b=(e-n)/l;return b>1?b=a?b%1:1:0>b&&(b=a?1+b%1:0),h=0===r?t+b*c:t+o(b,1.5)*c,u=h,h},getValue:function(){return u},invert:function(){var e=c.outputMin;c.outputMin=c.outputMax,c.outputMax=e}};return c.__proto__=new Gibberish.ugen,c.init(),c}},Gibberish.Time={bpm:120,"export":function(e){Gibberish.export("Time",e||window)},ms:function(e){return e*Gibberish.context.sampleRate/1e3},seconds:function(e){return e*Gibberish.context.sampleRate},beats:function(e){return function(){var t=Gibberish.context.sampleRate/(Gibberish.Time.bpm/60);return t*e}}},Gibberish.Sequencer2=function(){var e=this,t=0;Gibberish.extend(this,{target:null,key:null,values:null,valuesIndex:0,durations:null,durationsIndex:0,nextTime:0,playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!0,keysAndValues:null,counts:{},properties:{rate:1,isRunning:!1,nextTime:0},offset:0,name:"seq",callback:function(i,n,s){if(n){if(t>=s){if(null!==e.values){if(e.target){var r=e.values[e.valuesIndex++];"function"==typeof r&&(r=r()),"function"==typeof e.target[e.key]?e.target[e.key](r):e.target[e.key]=r}else"function"==typeof e.values[e.valuesIndex]&&e.values[e.valuesIndex++]();e.valuesIndex>=e.values.length&&(e.valuesIndex=0)}else if(null!==e.keysAndValues)for(var a in e.keysAndValues){var o=e.counts[a]++,r=e.keysAndValues[a][o];"function"==typeof r&&(r=r()),"function"==typeof e.target[a]?e.target[a](r):e.target[a]=r,e.counts[a]>=e.keysAndValues[a].length&&(e.counts[a]=0),e.chose&&e.chose(a,o)}else"function"==typeof e.target[e.key]&&e.target[e.key]();if(t-=s,Array.isArray(e.durations)){var h=e.durations[e.durationsIndex++];e.nextTime="function"==typeof h?h():h,e.chose&&e.chose("durations",e.durationsIndex-1),e.durationsIndex>=e.durations.length&&(e.durationsIndex=0)}else{var h=e.durations;e.nextTime="function"==typeof h?h():h}return e.repeatTarget&&(e.repeatCount++,e.repeatCount===e.repeatTarget&&(e.isRunning=!1,e.repeatCount=0)),0}t+=i}return 0},start:function(e){return e||(t=0),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(){for(i in this.keysAndValues)this.shuffleArray(this.keysAndValues[i])},shuffleArray:function(e){for(var t,i,n=e.length;n;t=parseInt(Math.random()*n),i=e[--n],e[n]=e[t],e[t]=i);}}),this.init(arguments),this.processProperties(arguments);for(var i in this.keysAndValues)this.counts[i]=0;this.oscillatorInit(),t+=this.offset,this.connect()},Gibberish.Sequencer2.prototype=Gibberish._oscillator,Gibberish.Sequencer=function(){Gibberish.extend(this,{target:null,key:null,values:null,valuesIndex:0,durations:null,durationsIndex:0,nextTime:0,phase:0,isRunning:!1,playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!0,keysAndValues:null,counts:{},offset:0,name:"seq",tick:function(){if(this.isRunning){if(this.phase>=this.nextTime){if(null!==this.values){if(this.target){var e=this.values[this.valuesIndex++];if("function"==typeof e)try{e=e()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+e.toString()),this.values.splice(this.valuesIndex-1,1),this.valuesIndex--}"function"==typeof this.target[this.key]?this.target[this.key](e):this.target[this.key]=e}else if("function"==typeof this.values[this.valuesIndex])try{this.values[this.valuesIndex++]()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+this.values[this.valuesIndex-1].toString()),this.values.splice(this.valuesIndex-1,1),this.valuesIndex--}this.valuesIndex>=this.values.length&&(this.valuesIndex=0)}else if(null!==this.keysAndValues)for(var i in this.keysAndValues){var n="function"==typeof this.keysAndValues[i].pick?this.keysAndValues[i].pick():this.counts[i]++,e=this.keysAndValues[i][n];if("function"==typeof e)try{e=e()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+e.toString()),this.keysAndValues[i].splice(n,1),"function"!=typeof this.keysAndValues[i].pick&&this.counts[i]--}"function"==typeof this.target[i]?this.target[i](e):this.target[i]=e,this.counts[i]>=this.keysAndValues[i].length&&(this.counts[i]=0)}else"function"==typeof this.target[this.key]&&this.target[this.key]();
 if(this.phase-=this.nextTime,Array.isArray(this.durations)){var s="function"==typeof this.durations.pick?this.durations[this.durations.pick()]:this.durations[this.durationsIndex++];this.nextTime="function"==typeof s?s():s,this.durationsIndex>=this.durations.length&&(this.durationsIndex=0)}else{var s=this.durations;this.nextTime="function"==typeof s?s():s}return void(this.repeatTarget&&(this.repeatCount++,this.repeatCount===this.repeatTarget&&(this.isRunning=!1,this.repeatCount=0)))}this.phase++}},start:function(e){return e||(this.phase=this.offset),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(){for(e in this.keysAndValues)this.shuffleArray(this.keysAndValues[e])},shuffleArray:function(e){for(var t,i,n=e.length;n;t=parseInt(Math.random()*n),i=e[--n],e[n]=e[t],e[t]=i);},disconnect:function(){var e=Gibberish.sequencers.indexOf(this);Gibberish.sequencers.splice(e,1),this.isConnected=!1},connect:function(){return-1===Gibberish.sequencers.indexOf(this)&&Gibberish.sequencers.push(this),this.isConnected=!0,this}});for(var e in arguments[0])this[e]=arguments[0][e];for(var e in this.keysAndValues)this.counts[e]=0;this.connect(),this.phase+=this.offset},Gibberish.Sequencer.prototype=Gibberish._oscillator,Gibberish.PolySeq=function(){var e=this,t=0,i=function(e,t){return t>e?-1:e>t?1:0};Gibberish.extend(this,{seqs:[],timeline:{},playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!1,properties:{rate:1,isRunning:!1,nextTime:0},offset:0,autofire:[],name:"polyseq",getPhase:function(){return t},timeModifier:null,add:function(i){i.valuesIndex=i.durationsIndex=0,e.seqs.push(i),null===i.durations&&e.autofire.push(i),"undefined"!=typeof e.timeline[t]?i.priority?e.timeline[t].unshift(i):e.timeline[t].push(i):e.timeline[t]=[i],!e.scale||"frequency"!==i.key&&"note"!==i.key||e.applyScale&&e.applyScale(),e.nextTime=t,i.shouldStop=!1},callback:function(n,s,r){var a;if(s){if(t>=r){var o=e.timeline[r],h=t-r;if("undefined"==typeof o)return;e.autofire.length&&(o=o.concat(e.autofire));for(var u=0;u<o.length;u++){var c=o[u];if(!c.shouldStop){var l=c.values.pick?c.values.pick():c.valuesIndex++%c.values.length,b=c.values[l];if("function"==typeof b&&(b=b()),c.target&&("function"==typeof c.target[c.key]?c.target[c.key](b):c.target[c.key]=b),e.chose&&e.chose(c.key,l),null!==c.durations){if(Array.isArray(c.durations)){var l=c.durations.pick?c.durations.pick():c.durationsIndex++,p=c.durations[l];a="function"==typeof p?p():p,c.durationsIndex>=c.durations.length&&(c.durationsIndex=0),e.chose&&e.chose("durations",l)}else{var p=c.durations;a="function"==typeof p?p():p}var f;f=null!==e.timeModifier?e.timeModifier(a)+t:a+t,f-=h,a-=h,"undefined"==typeof e.timeline[f]?e.timeline[f]=[c]:c.priority?e.timeline[f].unshift(c):e.timeline[f].push(c)}}}delete e.timeline[r];var d=Object.keys(e.timeline),g=d.length;if(g>1){for(var m=0;g>m;m++)d[m]=parseFloat(d[m]);d=d.sort(i),e.nextTime=d[0]}else e.nextTime=parseFloat(d[0])}t+=n}return 0},start:function(e,i){if(e&&this.offset){t=0,this.nextTime=this.offset;var n=""+this.offset;this.timeline={},this.timeline[n]=[];for(var s=0;s<this.seqs.length;s++){var r=this.seqs[s];r.valuesIndex=r.durationsIndex=r.shouldStop=0,this.timeline[n].push(r)}}else{t=0,this.nextTime=0,this.timeline={0:[]};for(var s=0;s<this.seqs.length;s++){var r=this.seqs[s];r.valuesIndex=r.durationsIndex=r.shouldStop=0,this.timeline[0].push(r)}}return this.isConnected||(this.connect(Gibberish.Master,i),this.isConnected=!0),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this.isConnected&&(this.disconnect(),this.isConnected=!1),this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(e){if("undefined"!=typeof e)for(var t=0;t<this.seqs.length;t++)this.seqs[t].key===e&&this.shuffleArray(this.seqs[t].values);else for(var t=0;t<this.seqs.length;t++)this.shuffleArray(this.seqs[t].values)},shuffleArray:function(e){for(var t,i,n=e.length;n;t=parseInt(Math.random()*n),i=e[--n],e[n]=e[t],e[t]=i);}}),this.init(arguments),this.processProperties(arguments),this.oscillatorInit()},Gibberish.PolySeq.prototype=Gibberish._oscillator;var _hasInput=!1;return Gibberish.Input=function(){var e=[];_hasInput||createInput(),this.type=this.name="input",this.fx=new Array2,this.fx.parent=this,this.properties={input:"input",amp:.5,channels:1},this.callback=function(t,i,n){return 1===n?e=t*i:(e[0]=t[0]*i,e[1]=t[1]*i),e},this.init(arguments),this.processProperties(arguments)},Gibberish.Input.prototype=new Gibberish.ugen,Gibberish.Kick=function(){var e=!1,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,n=.2,s=.8;Gibberish.extend(this,{name:"kick",properties:{pitch:50,__decay:20,__tone:1e3,amp:2,sr:Gibberish.context.sampleRate},callback:function(n,s,r,a,o){var h=e?60:0;return h=t(h,n,s,2,o),h=i(h,r,.5,0,o),h*=a,e=!1,h},note:function(t,i,n,s){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.decay=i),"number"==typeof n&&(this.tone=n),"number"==typeof s&&(this.amp=s),e=!0}}).init().oscillatorInit(),Object.defineProperties(this,{decay:{get:function(){return n},set:function(e){n=e>1?1:e,this.__decay=100*n}},tone:{get:function(){return s},set:function(e){s=e>1?1:e,this.__tone=220+1400*e}}}),this.processProperties(arguments)},Gibberish.Kick.prototype=Gibberish._oscillator,Gibberish.Conga=function(){var e=!1,t=(new Gibberish.SVF).callback;Gibberish.extend(this,{name:"conga",properties:{pitch:190,amp:2,sr:Gibberish.context.sampleRate},callback:function(i,n,s){var r=e?60:0;return r=t(r,i,50,2,s),r*=n,e=!1,r},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),e=!0}}).init().oscillatorInit(),this.processProperties(arguments)},Gibberish.Conga.prototype=Gibberish._oscillator,Gibberish.Clave=function(){var e=!1,t=new Gibberish.SVF,i=t.callback;Gibberish.extend(this,{name:"clave",properties:{pitch:2500,amp:1,sr:Gibberish.context.sampleRate},callback:function(t,n,s){var r=e?2:0;return r=i(r,t,5,2,s),r*=n,e=!1,r},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),e=!0}}).init().oscillatorInit(),this.bpf=t,this.processProperties(arguments)},Gibberish.Clave.prototype=Gibberish._oscillator,Gibberish.Tom=function(){var e=!1,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,n=new Gibberish.ExponentialDecay,s=n.callback,r=Math.random;Gibberish.extend(this,{name:"tom",properties:{pitch:80,amp:.5,sr:Gibberish.context.sampleRate},callback:function(n,a,o){var h,u=e?60:0;return u=t(u,n,30,2,o),h=16*r()-8,h=h>0?h:0,h*=s(.05,11025),h=i(h,120,.5,0,o),u+=h,u*=a,e=!1,u},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),n.trigger(),e=!0}}).init().oscillatorInit(),n.trigger(1),this.processProperties(arguments)},Gibberish.Tom.prototype=Gibberish._oscillator,Gibberish.Cowbell=function(){var e=new Gibberish.Square,t=new Gibberish.Square,i=e.callback,n=t.callback,s=new Gibberish.SVF({mode:2}),r=s.callback,a=new Gibberish.ExponentialDecay(.0025,10500),o=a.callback;Gibberish.extend(this,{name:"cowbell",properties:{amp:1,pitch:560,bpfFreq:1e3,bpfRez:3,decay:22050,decayCoeff:1e-4,sr:Gibberish.context.sampleRate},callback:function(e,t,s,a,h,u,c){var l;return l=i(t,1,1,0),l+=n(845,1,1,0),l=r(l,s,a,2,c),l*=o(u,h),l*=e},note:function(e){a.trigger(),e&&(this.decay=e)}}).init().oscillatorInit().processProperties(arguments),this.bpf=s,this.eg=a,a.trigger(1)},Gibberish.Cowbell.prototype=Gibberish._oscillator,Gibberish.Snare=function(){var e=(new Gibberish.SVF).callback,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,n=new Gibberish.ExponentialDecay(.0025,11025),s=n.callback,r=Math.random,a=0;Gibberish.extend(this,{name:"snare",properties:{cutoff:1e3,decay:11025,tune:0,snappy:.5,amp:1,sr:Gibberish.context.sampleRate},callback:function(n,o,h,u,c,l){var b,p,f=0,d=0;return f=s(.0025,o),f>.005&&(d=(2*r()-1)*f,d=i(d,n+1e3*h,.5,1,l),d*=u,d=d>0?d:0,a=f,b=e(a,180*(h+1),15,2,l),p=t(a,330*(h+1),15,2,l),d+=b,d+=.8*p,d*=c),d},note:function(e,t,i,s){"number"==typeof e&&(this.tune=e),"number"==typeof s&&(this.cutoff=s),"number"==typeof i&&(this.snappy=i),"number"==typeof t&&(this.amp=t),n.trigger()}}).init().oscillatorInit().processProperties(arguments),n.trigger(1)},Gibberish.Snare.prototype=Gibberish._oscillator,Gibberish.Hat=function(){{var e=new Gibberish.Square,t=new Gibberish.Square,i=new Gibberish.Square,n=new Gibberish.Square,s=new Gibberish.Square,r=new Gibberish.Square,a=e.callback,o=t.callback,h=i.callback,u=n.callback,c=s.callback,l=r.callback,b=new Gibberish.SVF({mode:2}),p=b.callback,f=new Gibberish.Filter24,d=f.callback,g=new Gibberish.ExponentialDecay(.0025,10500),m=g.callback,y=new Gibberish.ExponentialDecay(.1,7500);y.callback}Gibberish.extend(this,{name:"hat",properties:{amp:1,pitch:325,bpfFreq:7e3,bpfRez:2,hpfFreq:.975,hpfRez:0,decay:3500,decay2:3e3,sr:Gibberish.context.sampleRate},callback:function(e,t,i,n,s,r,b,f,g){var y;return y=a(t,1,.5,0),y+=o(1.4471*t,.75,1,0),y+=h(1.617*t,1,1,0),y+=u(1.9265*t,1,1,0),y+=c(2.5028*t,1,1,0),y+=l(2.6637*t,.75,1,0),y=p(y,i,n,2,g),y*=m(.001,b),y=d(y,s,r,0,1),y*=e},note:function(e,t){g.trigger(),y.trigger(),e&&(this.decay=e),t&&(this.decay2=t)}}).init().oscillatorInit().processProperties(arguments),this.bpf=b,this.hpf=f,g.trigger(1),y.trigger(1)},Gibberish.Hat.prototype=Gibberish._oscillator,Gibberish});
-},{}],44:[function(_dereq_,module,exports){
-arguments[4][15][0].apply(exports,arguments)
-},{"./dollar":45,"./mappings":47,"gibberish-dsp":43}],45:[function(_dereq_,module,exports){
-module.exports=_dereq_(16)
-},{}],46:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/clock.js":[function(require,module,exports){
+(function() {
+  
+"use strict"
+var times = [],
+    $ = require( './dollar' ),//require('zepto-browserify').Zepto,
+    curves = require('./mappings').outputCurves,
+    LINEAR = curves.LINEAR,
+    LOGARITHMIC = curves.LOGARITHMIC, 
+    Gibberish = require( 'gibberish-dsp' ),
+    Gibber
+
+var Clock = {
+  seq : null, 
+  bpm : null,
+  maxMeasures: 44,
+  baseBPM : 120,
+  metronome : null,
+  currentBeat : 0,
+  beatsPerMeasure : 4,
+  codeToExecute : [],
+  signature: { lower: 4, upper: 4 },
+  sequencers:[],
+  timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
+  phase : 0,
+  
+  processBeat : function() {
+    Clock.currentBeat = Clock.currentBeat >= Clock.signature.upper ? 1 : Clock.currentBeat + 1
+    
+    if( Clock.currentBeat === 1 && Clock.codeToExecute.length > 0) {
+      
+      for( var i = 0; i < Clock.codeToExecute.length; i++ ) {
+        try {
+					if( typeof Clock.codeToExecute[ i ].function === 'function' ) {
+						Clock.codeToExecute[ i ].function()
+					}else{
+            if( Gibber.Environment ) {
+              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ]._run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }else{
+  	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }
+					}
+        }catch( e ) {
+          console.error( "FAILED TO EXECUTE CODE:", Clock.codeToExecute[ i ].code , e)
+        }
+      }
+      
+      Clock.codeToExecute.length = 0
+    }
+    
+    if( Clock.metronome !== null ) {
+      Clock.metronome.draw( Clock.currentBeat, Clock.signature.upper )
+    }
+    
+    Clock.phase += Clock.beats( 1 )
+  },
+  
+  getTimeSinceStart : function() {
+    return Clock.phase + Clock.seq.phase
+  },
+  
+  reset : function() {
+    this.phase = 0
+    this.currentBeat = 0
+    this.rate = 1
+    this.start()
+  },
+  
+  tap : function() {
+    var time = Gibber.Clock.getTimeSinceStart()
+    if( times[2] && time - times[2] > 88200 ) {
+      times.length = 0
+    }
+    times.unshift( time )
+  
+    while( times.length > 3 ) times.pop()
+  
+    if( times.length === 3) {
+    	var average = ((times[0] + times[1]) - times[2] * 2) / 3.,
+          bps = 44100 / average,
+          bpm = bps * 60
+    
+      Gibber.Clock.bpm = bpm
+    }
+  },
+  
+  start : function( shouldInit ) {    
+    if( shouldInit ) {
+      $.extend( this, {
+        properties: { rate: 1 },
+        name:'master_clock',
+        callback : function( rate ) {
+          return rate
+        }
+      })
+    
+      this.__proto__ = new Gibberish.ugen()
+      this.__proto__.init.call( this )
+
+      var bpm = this.baseBPM
+      Object.defineProperty(Clock, 'bpm', {
+        get: function() { return bpm },
+        set: function(v) { 
+          bpm = v;
+          Clock.rate = bpm / Clock.baseBPM
+        }
+      })
+      
+      Object.defineProperty(this, 'timeSignature', {
+        get: function() { return Clock.signature.upper + '/' + Clock.signature.lower },
+        set: function(v) { 
+          var values = v.split('/')
+          if( values.length === 2 && ( values[0] !== Clock.signature.upper || values[1] !== Clock.signature.lower ) ) {
+            Clock.signature.upper = parseInt( values[0] )
+            Clock.signature.lower = parseInt( values[1] )
+            Clock.currentBeat = Clock.currentBeat != 1 ? 0 : 1
+          }
+        }
+      })
+      
+      Gibber.createProxyProperties( this, {
+        rate : { min: .1, max: 2, output: LINEAR, timescale: 'audio' },
+        bpm : { min: 20, max: 200, output: LINEAR, timescale: 'audio' },        
+      })
+    }
+    
+    Clock.seq = new Gibberish.PolySeq({
+      seqs : [{
+        target:Clock,
+        values: [ Clock.processBeat.bind( Clock ) ],
+        durations:[ 1/4 ],
+      }],
+      rate: Clock,
+    })
+    Clock.seq.connect().start()
+    Clock.seq.timeModifier = Clock.time.bind( Clock )
+  },
+  
+  addMetronome: function( metronome ) {
+    this.metronome = metronome
+    this.metronome.init()
+  },
+  
+  time : function(v) {
+    var timeInSamples, beat;
+    
+    if( v < this.maxMeasures ) {
+      timeInSamples = Clock.beats( v * Clock.signature.lower )
+    }else{
+      timeInSamples = v
+    }
+        
+    return timeInSamples
+  },
+  
+  Time : function(v) {
+    var timeFunction, beat;
+    
+    if( v < this.maxMeasures ) {
+      timeFunction = Clock.Beats( v * Clock.signature.lower )
+    }else{
+      timeFunction = Clock.Beats( v )
+    }
+    
+    return timeFunction
+  },
+  
+  beats : function(val) {
+    var sampleRate = typeof Gibberish.context !== 'undefined' ? Gibberish.context.sampleRate : 44100,
+        samplesPerBeat = sampleRate / ( Clock.baseBPM / 60 )
+        
+    return samplesPerBeat * ( val * ( 4 / Clock.signature.lower ) );
+  },
+  
+  Beats : function(val) {
+    return function() {
+      return Gibber.Clock.beats( val )
+    }
+  }
+}
+
+module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Clock; }
+
+})()
+},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/mappings.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/dollar.js":[function(require,module,exports){
+(function (global){
+!function() {
+
+"use strict"
+
+var hasZepto = typeof Zepto === 'function',
+    hasJQuery = typeof jQuery === 'function',
+    has$ = typeof global.$ === 'object' || typeof global.$ === 'function',
+    $ = null,
+    hasConflict = hasZepto || hasJQuery || has$,
+    isArray = Array.isArray,
+    isObject = function( obj ) { return typeof obj === 'object' },
+    isPlainObject = function( obj ) {
+      return isObject(obj) && Object.getPrototypeOf( obj ) == Object.prototype
+    }
+
+if( !hasConflict ) {
+  $ = {}
+}else if( hasJQuery ) {
+  $ = jQuery 
+}else if( hasZepto ) {
+  $ = Zepto
+}else if( has$ ){
+  $ = global.$
+}else{
+  $ = {}
+}
+
+// taken from Zepto: zeptojs.com
+function extend(target, source, deep) {
+  for (var key in source)
+    if (deep && (isPlainObject(source[key]) || isArray(source[key]))) {
+      if (isPlainObject(source[key]) && !isPlainObject(target[key]))
+        target[key] = {}
+      if (isArray(source[key]) && !isArray(target[key]))
+        target[key] = []
+      extend(target[key], source[key], deep)
+    }
+    else if (source[key] !== undefined) target[key] = source[key]
+}
+
+if( !hasConflict ) {
+  // Copy all but undefined properties from one or more
+  // objects to the `target` object.
+  $.extend = function( target ){
+    var deep, args = Array.prototype.slice.call(arguments, 1)
+
+    if (typeof target === 'boolean') {
+      deep = target
+      target = args.shift()
+    }
+    args.forEach(function(arg){ extend(target, arg, deep) })
+    return target
+  }
+  
+  $.isArray = Array.isArray 
+  $.isPlainObject = isPlainObject
+
+  $.type = function( val ) {
+    return typeof val
+  }
+}
+
+var events = {}
+$.subscribe   = function( key, fcn ) { 
+  if( typeof events[ key ] === 'undefined' ) {
+    events[ key ] = []
+  }
+  events[ key ].push( fcn )
+}
+
+$.unsubscribe = function( key, fcn ) {
+  if( typeof events[ key ] !== 'undefined' ) {
+    var arr = events[ key ]
+    
+    arr.splice( arr.indexOf( fcn ), 1 )
+  }
+}
+
+$.publish = function( key, data ) {
+  if( typeof events[ key ] !== 'undefined' ) {
+    var arr = events[ key ]
+    for( var i = 0; i < arr.length; i++ ) {
+      arr[ i ]( data )
+    }
+  }
+}
+
+module.exports = $
+
+}()
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/gibber.js":[function(require,module,exports){
 (function() {
 //"use strict" 
 // can't use strict because eval is used to evaluate user code in the run method
 // I should wrap this in a Function call instead...
-var $ = _dereq_( './dollar' )
+var $ = require( './dollar' )
 
 var Gibber = {
   Presets: {},
@@ -23196,15 +27448,15 @@ var Gibber = {
   },  
 }
 
-Gibber.Utilities = _dereq_( './utilities' )( Gibber )
-Gibber.Audio    = _dereq_( 'gibber.audio.lib/scripts/gibber/audio' )( Gibber )
-Gibber.Graphics = _dereq_( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
-Gibber.mappings = _dereq_( './mappings' )( Gibber, Gibber.Audio.Core )
+Gibber.Utilities = require( './utilities' )( Gibber )
+Gibber.Audio    = require( 'gibber.audio.lib/scripts/gibber/audio' )( Gibber )
+Gibber.Graphics = require( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
+Gibber.mappings = require( './mappings' )( Gibber, Gibber.Audio.Core )
 
 module.exports = Gibber
 
 })()
-},{"./dollar":45,"./mappings":47,"./utilities":48,"gibber.audio.lib/scripts/gibber/audio":2,"gibber.graphics.lib/scripts/gibber/graphics/graphics":39}],47:[function(_dereq_,module,exports){
+},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/mappings.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/utilities.js","gibber.audio.lib/scripts/gibber/audio":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio.js","gibber.graphics.lib/scripts/gibber/graphics/graphics":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/graphics.js"}],"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/mappings.js":[function(require,module,exports){
 module.exports = function( Gibber, Gibberish ) {  
   var mappings = {
     audio : {
@@ -23845,17 +28097,17 @@ module.exports.outputCurves= {
   LINEAR:0,
   LOGARITHMIC:1
 }
-},{}],48:[function(_dereq_,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/utilities.js":[function(require,module,exports){
 !function() {
 "use strict"
 
 var soloGroup = [],
     isSoloing = false,
     Gibber,
-    $ = _dereq_( './dollar' ),
+    $ = require( './dollar' ),
     Synths = { Presets: {} },
-    Gibberish = _dereq_( 'gibberish-dsp' ),
-    Clock = _dereq_('./clock')( Gibber ),
+    Gibberish = require( 'gibberish-dsp' ),
+    Clock = require('./clock')( Gibber ),
     rnd = Math.random,
 
     Utilities = {
@@ -23978,17 +28230,19 @@ var soloGroup = [],
       },
 
       future : function(func, time) { 
-        var __seq = new Gibberish.Sequencer({
-          values:[
-            function(){},
-            function() {
-              func();
-              __seq.stop();
-              __seq.disconnect();
+        var count = 0
+        
+        var __seq = Gibber.Audio.Seqs.Seq(
+          function() {
+            if( count === 1 ) {
+              func()
+              __seq.stop()
+              __seq.disconnect()
             }
-          ],
-          durations:[ Gibber.Clock.time( time ) ]
-        }).start()
+            count++
+          }, 
+          Gibber.Audio.Clock.time( time ) 
+        )
     
         return function(){ __seq.stop(); __seq.disconnect(); }
       },
@@ -24255,11 +28509,7 @@ var soloGroup = [],
 
 }()
 
-},{"./clock":44,"./dollar":45,"gibberish-dsp":43}]},{},[46])
-(46)
-});
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],21:[function(_dereq_,module,exports){
+},{"./clock":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/clock.js","./dollar":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/dollar.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibberish-dsp/build/gibberish.min.js"}],"/www/gibber.libraries/node_modules/jquery/dist/jquery.js":[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.1
  * http://jquery.com/
@@ -33451,6 +37701,4 @@ return jQuery;
 
 }));
 
-},{}]},{},[3])
-(3)
-});
+},{}]},{},["./js/main.js"]);

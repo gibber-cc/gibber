@@ -1,4 +1,4 @@
-( function() {
+module.exports = function( Gibber ) {
   "use strict"
   
   var _m = null,
@@ -41,12 +41,13 @@
         },
       }
 
-  window.Mouse = Gibber.Environment.Mouse = ( function() {
+
     if( _m !== null ) return _m
 
     _m = {} 
-    
+
     var storeX = 0, storeY = 0
+    
     
     $.extend( _m, {
       x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
@@ -115,7 +116,7 @@
       },
     })
     
-    if( Layout.isFullScreen ) {
+    if( Gibber.Environment.Layout.isFullScreen ) {
       mappingProperties.x.max = $( window ).width()
       mappingProperties.y.max = $( window ).height()
     }else{
@@ -155,7 +156,6 @@
     $( window ).on( 'mouseup',   _m._onmouseup   )
     
     Gibber.createProxyProperties( _m, mappingProperties, true )
-
+    
     return _m
-  })() 
-})()
+}

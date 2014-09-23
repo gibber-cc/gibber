@@ -20,6 +20,8 @@ var GE = {
   Keymap:       require( './keymaps' )( Gibber ),
   Browser:      require( './browser' )( Gibber ),
   Theme:        require( './theme' )( Gibber ),
+  Esprima:      require( 'esprima' ),
+  Mouse:        require( './mouse' ),
   
   init : function() { 
     GE.Keymap.init()
@@ -39,7 +41,16 @@ var GE = {
       GE.Theme.init()
       //GE.Share.open()
       //GE.Demos.open()
-      //GE.Layout.createBoundariesForInitialLayout()
+      
+      GE.Menu.init()
+      GE.Layout.createBoundariesForInitialLayout()
+      
+      GE.Metronome.init()
+      GE.Metronome.on()
+      Gibber.Clock.addMetronome( GE.Metronome )
+      
+      GE.Mouse = GE.Mouse( Gibber )
+      window.Mouse = GE.Mouse      
     }
     
     /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
@@ -240,13 +251,53 @@ var GE = {
 			'glsl-vertex'   : 'x-shader/x-vertex'      
 		},
 		javascript : {
+      _run: function( script, pos, cm ) { // called by Gibber.Environment.Keymap.modes.javascript
+    		var _start = pos.start ? pos.start.line : pos.line,
+    				tree
+    
+    	  try{
+    			tree = GE.Esprima.parse( script, { loc:true, range:true } )
+    		}catch(e) {
+    			console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
+    			return
+    		}
+    
+        // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
+          var obj = tree.body[ __i__ ],
+    					start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
+    					end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
+    				  src   = cm.getRange( start, end ),
+              result = null
+			
+    			//console.log( start, end, src )
+    			try{
+    				result = eval( src )
+            if( typeof result !== 'function' ) {
+              log( result )
+            }else{
+              log( 'Function' )
+            }
+    			}catch( e ) {
+    				console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
+    			}
+      
+          if( Gibber.scriptCallbacks.length > 0 ) {
+            for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+              Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+            }
+          }
+        }
+      },
+
 			run : function( column, value, position, codemirror, shouldDelay ) {
 				if( shouldDelay ) {
 					Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
 				}else{
-					Gibber.run( value, position, codemirror ) 
+					GE.modes.javascript._run( value, position, codemirror ) 
 				}
 			},
+      
 			default: [
 	      "/*To execute code, select it and hit Ctrl+Enter.",
         "* Ctrl+. stops audio. Press the help button for",

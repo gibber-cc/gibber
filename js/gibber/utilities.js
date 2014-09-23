@@ -136,6 +136,8 @@ Gibber.Utilities = {
       durations:[ Gibber.Clock.time( time ) ]
     }).start()
     
+    console.log( Gibber.Clock.time( time ), __seq )
+     
     return function(){ __seq.stop(); __seq.disconnect(); }
   },
   

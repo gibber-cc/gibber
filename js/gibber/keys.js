@@ -17,6 +17,7 @@ module.exports = function( Gibber, Mousetrap ) {
 
   Keys = {
     bind: function( key, fcn ) {
+      console.log( Mousetrap )
       Mousetrap.bind( key, fcn )
     },
     
