@@ -1,10 +1,15 @@
-!function() {
-  var GE = Gibber.Environment
+module.exports = function( Gibber ) {
+  var GE, CodeMirror
+  var $ = require( './dollar' )
   
+  console.log( "DOLLAR", $ )
   var Keymap = {
     init : function() {
+      GE = Gibber.Environment
+      CodeMirror = GE.CodeMirror
+      
       // this has to be done here so that it works when no editors are focused
-      $(window).on('keydown', function(e) {
+      $( window ).on( 'keydown', function( e ) {
           if( e.which === 70 && e.ctrlKey && e.altKey ) {
           if( e.shiftKey ) {
             if( GE.Layout.fullScreenColumn === null ) {
@@ -220,7 +225,6 @@
     },
   }
   
-  GE.Keymap = Keymap
-  
-}()
+  return Keymap
+}
 

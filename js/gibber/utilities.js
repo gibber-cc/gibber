@@ -204,11 +204,31 @@ Gibber.Utilities = {
   
     return output
   },
+  weight : function() {
+    var weights = Array.prototype.slice.call( arguments, 0 )
+    this.pick = function() {
+      var returnValue = this[0],
+          total = 0,
+          _rnd = rndf();
+  
+      for(var i = 0; i < weights.length; i++) {
+        total += weights[i];
+        if( _rnd < total ) { 
+          returnValue = i;
+          break;
+        }
+      }
+      return returnValue;
+    }
+    
+  	return this
+  }
 }
 
 window.solo = Gibber.Utilities.solo
 window.future = Gibber.Utilities.future // TODO: fix global reference
 Array.prototype.random = Array.prototype.rnd = Gibber.Utilities.random
+Array.prototype.weight = Gibber.Utilities.weight
 Array.prototype.fill = Gibber.Utilities.fill
 Array.prototype.choose = Gibber.Utilities.choose
 Array.prototype.Rnd = Gibber.Utilities.random2

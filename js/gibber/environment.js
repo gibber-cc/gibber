@@ -1,14 +1,48 @@
-( function() {
+module.exports = function( Gibber ) {
 
 "use strict"
 
-var GE = Gibber.Environment = {
+var MT = require( 'coreh-mousetrap' ),
+    $  = require( './dollar' )
+    
+var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
-  //SERVER_URL : 'http://127.0.0.1:8080',
-  SERVER_URL : 'http://gibber.mat.ucsb.edu',
-
+  SERVER_URL : 'http://127.0.0.1:8080',
+  //SERVER_URL : 'http://gibber.mat.ucsb.edu',
+  
+  CodeMirror:   require( 'codemirror' ),
+  CodeMirrorJS: require( '../external/codemirror/javascript' ),
+  Layout:       require( './layout' )( Gibber ),
+  Account:      require( './account' )( Gibber ),
+  Console:      require( './console' )( Gibber ),
+  Mousetrap:    MT,
+  Keys:         require( './keys' )( MT ),
+  Keymap:       require( './keymaps' )( Gibber ),
+  Browser:      require( './browser' )( Gibber ),
+  Theme:        require( './theme' )( Gibber ),
+  
   init : function() { 
-    $script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
+    GE.Keymap.init()
+    
+    $( '#layoutTable' ).attr( 'height', $( window ).height() )
+    $( '#contentCell' ).width( $( window ).width() )
+    
+    Gibber.proxy( window )
+    
+    if( !Gibber.isInstrument ) {
+      GE.Layout.init( GE )
+      window.Layout = GE.Layout
+      GE.Account.init()
+      GE.Console.init()
+      //GE.Console.open()
+      GE.Welcome.init()
+      GE.Theme.init()
+      //GE.Share.open()
+      //GE.Demos.open()
+      //GE.Layout.createBoundariesForInitialLayout()
+    }
+    
+    /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
       $script( ['gibber/mappings',
                 'gibber/gibber_interface',
                 'gibber/console',
@@ -22,9 +56,9 @@ var GE = Gibber.Environment = {
                 'gibber/keymaps',
                 'gibber/browser',
                 'gibber/account',
-                //'gibber/demos',
+                'gibber/demos',
                 ], function() {
-
+      
         GE.Keymap.init()
 
         $( '#layoutTable' ).attr( 'height', $( window ).height() )
@@ -37,14 +71,14 @@ var GE = Gibber.Environment = {
           window.Layout = GE.Layout
           GE.Account.init()
           GE.Console.init()
-          GE.Console.open()
+          //GE.Console.open()
           GE.Welcome.init()
           GE.Share.open()
           //GE.Demos.open()
           GE.Layout.createBoundariesForInitialLayout()
         }
         
-        window.Notation = Gibber.Environment.Notation
+        window.Notation = GE.Notation
         
         $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
       });
@@ -58,9 +92,10 @@ var GE = Gibber.Environment = {
       }
     })
     
-    $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
-      Gibber.Graphics.load()
-    })
+    // $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
+    //   Gibber.Graphics.load()
+    // })
+    */
   },
   selectCurrentBlock: function( editor ) { // thanks to graham wakefield
       var pos = editor.getCursor();
@@ -520,4 +555,5 @@ var GE = Gibber.Environment = {
   },
 }
 
-})()
+return GE
+}

@@ -1,9 +1,9 @@
 <h1 id="tremolo">Tremolo</h1>
 <p>Basic amplitude modulation effect</p>
 <p>Example:</p>
-<pre><code>a = Synth({ attack:<span class="number">44</span>, decay:<span class="number">44100</span> }).play( Rndi(<span class="number">100</span>,<span class="number">1000</span>), <span class="number">1</span>/<span class="number">2</span> )
+<pre><code>a = Synth({ attack:44, decay:44100 }).play( Rndi(100,1000), 1/2 )
 
-r = Tremolo({ amp: <span class="number">1</span>, frequency:<span class="number">.5</span> })
+r = Tremolo({ amp: 1, frequency:.5 })
 
 a.fx.add( r )</code></pre>
 <h2 id="properties">Properties</h2>

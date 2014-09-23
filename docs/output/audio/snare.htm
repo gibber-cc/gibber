@@ -2,9 +2,9 @@
 <p>A synthesized snare drum generator with a built-in sequencer.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code><span class="comment">// use random tunings for each snare hit  </span>
-a = Snare().play( Rndf(<span class="number">.5</span>, <span class="number">1.5</span>), <span class="number">1</span>/<span class="number">2</span> )  
-a.decay = <span class="number">22050</span></code></pre>
+<pre><code>// use random tunings for each snare hit  
+a = Snare().play( Rndf(.5, 1.5), 1/2 )  
+a.decay = 22050</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>decay</em> : Int. The length of noise decay in the snare sound in samples. IMPORTANT NOTE: At some point this will change to a value between {0,1}, but for now you specify this in samples.</li>

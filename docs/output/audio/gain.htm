@@ -1,11 +1,11 @@
 <h1 id="gain">Gain</h1>
 <p>Basic amplitude control for insertion in fx chains.</p>
 <p>Example:</p>
-<pre><code>a = Synth({ attack:<span class="number">44</span>, decay:<span class="number">44100</span> }).play( Rndi(<span class="number">100</span>,<span class="number">1000</span>), <span class="number">1</span>/<span class="number">2</span> )
+<pre><code>a = Synth({ attack:44, decay:44100 }).play( Rndi(100,1000), 1/2 )
 
-a.fx.add( Crush( <span class="number">2</span>, <span class="number">.1</span> ) )
+a.fx.add( Crush( 2, .1 ) )
 
-b = Gain({ amp: <span class="number">.5</span> })
+b = Gain({ amp: .5 })
 
 a.fx.add( b )</code></pre>
 <h2 id="properties">Properties</h2>

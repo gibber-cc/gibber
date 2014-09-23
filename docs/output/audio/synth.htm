@@ -2,9 +2,9 @@
 <p>A selectable oscillator attached to an Attack / Decay envelope. The attack decay envelope modulates the amplitude of the oscillator.
 Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code>a = Synth({ maxVoices:<span class="number">4</span>, waveform:<span class="string">'PWM'</span>, attack:ms(<span class="number">1</span>), decay:ms(<span class="number">1000</span>) })
+<pre><code>a = Synth({ maxVoices:4, waveform:&#39;PWM&#39;, attack:ms(1), decay:ms(1000) })
 
-a.play( [<span class="number">440</span>, <span class="number">880</span>, <span class="number">1320</span>], <span class="number">1</span>/<span class="number">4</span> )</code></pre>
+a.play( [440, 880, 1320], 1/4 )</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>frequency</em> : Hz. default range { 50, 3200 }. default value 440.</li>

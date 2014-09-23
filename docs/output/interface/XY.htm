@@ -3,11 +3,11 @@
 array of children, each one representing a X and a Y position. Thus to access the X
 property of the first child (using a zero-index array), we use my_xy_widget[0].x.</p>
 <p>Example:</p>
-<pre><code><span class="comment">// map pitch and amplitude of two sine waves to XY control.</span>
+<pre><code>// map pitch and amplitude of two sine waves to XY control.
 
-xy = XY({ numChildren:<span class="number">2</span> })
-sine1 = Sine( xy[ <span class="number">0</span> ].X, xy[ <span class="number">0</span> ].Y )
-sine2 = Sine( xy[ <span class="number">1</span> ].X, xy[ <span class="number">1</span> ].Y )</code></pre>
+xy = XY({ numChildren:2 })
+sine1 = Sine( xy[ 0 ].X, xy[ 0 ].Y )
+sine2 = Sine( xy[ 1 ].X, xy[ 1 ].Y )</code></pre>
 <h2 id="properties">Properties</h2>
 <p>See the <a href="javascript:Gibber.Environment.Docs.openFile(&#39;interface&#39;,&#39;Widget&#39;)">Widget</a> prototype for many other relevant properties.</p>
 <ul>

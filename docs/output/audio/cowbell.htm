@@ -2,8 +2,8 @@
 <p>Classic 808 cowbell with two square waves feeding a bandpass filter and an exponential decay envelope.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code><span class="comment">// use random tunings for each Tom hit  </span>
-a = Cowbell().play( Rndf(<span class="number">5500</span>, <span class="number">44100</span>), <span class="number">1</span>/<span class="number">2</span> )</code></pre>
+<pre><code>// use random tunings for each Tom hit  
+a = Cowbell().play( Rndf(5500, 44100), 1/2 )</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>pitch</em> : Int. The pitch of the first square wave in Hz. TODO: this should be a single float where 1 gives yields the classic 565 / 845 frequencies.</li>

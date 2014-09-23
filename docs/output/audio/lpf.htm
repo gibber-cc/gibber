@@ -1,11 +1,11 @@
 <h1 id="lpf">LPF</h1>
 <p>A 24db per octave resonant filter. </p>
 <p>Example:</p>
-<pre><code>d = XOX( <span class="string">'x*o*x*o-'</span> )
+<pre><code>d = XOX( &#39;x*o*x*o-&#39; )
 
 l = LPF()
-l.cutoff = Add( <span class="number">.4</span>, Sine(<span class="number">.2</span>, <span class="number">.3</span>)._ )
-l.resonance = <span class="number">4</span>
+l.cutoff = Add( .4, Sine(.2, .3)._ )
+l.resonance = 4
 
 d.fx.add( d )</code></pre>
 <h2 id="properties">Properties</h2>

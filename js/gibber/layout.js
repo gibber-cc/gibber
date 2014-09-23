@@ -1,7 +1,8 @@
-( function() { 
+module.exports = function( Gibber ) { 
   'use strict'
   
-  var GE;
+  var GE,
+      $ = require( './dollar' );
   
   var Layout = {
     focusedColumn : null,
@@ -11,6 +12,7 @@
     resizeHandleSize  : 8,
     minColumnWidth: 300,
     columnID : 0,
+    Column: require( './column')( Gibber ),
     isFullScreen: false,
     _textBGOpacity : 0,
     __fullScreenColumn__: null,
@@ -33,8 +35,8 @@
     },
     createBoundariesForInitialLayout : function() {
       var windowWidth = $( window ).width(),
-          width0 = windowWidth * .75,
-          width1 = windowWidth * .25
+          width0 = Layout.minColumnWidth,
+          width1 = windowWidth - width0
           
       if( width1 < Layout.minColumnWidth ) {
         var diff = Layout.minColumnWidth - width1
@@ -47,11 +49,16 @@
       
       Layout.resizeColumns()
     },
-    init : function( _GE ) {
-      GE = _GE
+    init : function() {
+      GE = Gibber.Environment
       $( '#contentCell' ).empty()
-    
+      
+      GE.Browser.open()
+      
       this.addColumn({ fullScreen:false, type:'code', autofocus:true })
+      
+      GE.Browser.demoColumn = Layout.columns[1]
+      
       // var opacityDiv = $('#opacity')
       //     
       // opacityDiv.css({
@@ -193,7 +200,7 @@
     },
 
     addColumn : function( options ) {
-      return new this.Column( options, this )
+      return new Layout.Column( options, this )
     },
   
     load : function( name ) {       
@@ -339,5 +346,5 @@
     scrollToColumnNumber : function( columnNumber ) { },
   }
   
-  Gibber.Environment.Layout = window.Layout = Layout
-})()
+  return Layout
+}

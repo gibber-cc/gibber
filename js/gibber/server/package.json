@@ -1,0 +1,28 @@
+{
+  "name": "gibber.server",
+  "version": "0.0.0",
+  "description": "server modules for Gibber",
+  "main": "main.js",
+  "dependencies": {
+    "connect": "~2.11.0",
+    "express": "~3.4.4",
+    "ejs": "~0.8.4",
+    "cradle": "~0.6.7",
+    "passport-local": "~0.1.6",
+    "passport": "~0.1.17",
+    "request": "~2.36.0",
+    "share": "~0.6.3",
+    "connect-flash": "~0.1.1",
+    "socket.io": "~0.9.16",
+    "ws": "~0.4.31"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gibber"
+  ],
+  "author": "Charlie Roberts <charlie@charlie-roberts.com> (http://www.charlie-roberts.com/)",
+  "license": "MIT"
+}

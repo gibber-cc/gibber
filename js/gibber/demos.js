@@ -1,121 +1,47 @@
-module.exports = function( Gibber ) {
-  var GE,
-      $ = require( './dollar' )
-      
-  var Browser = {
-    demoColumn: null,
-    setupSearchGUI : function() {
-      var btns = $( '.searchOption' )
-
-      for( var i = 0; i < btns.length; i++ ) {
-        !function() {
-          var num = i, btn = btns[ num ]
-          
-          btn.state = 0
-          
-          $( btn ).on( 'click', function() {
-            for( var j = 0; j < btns.length; j++ ) {
-              var bgColor
-              
-              btns[ j ].state = btns[ j ] === btn
-              
-              bgColor = btns[ j ].state ? '#666' : '#000'
-              
-              $( btns[ j ] ).css({ backgroundColor:bgColor })
-            }
-          })
-          
-        }()
-      }
-      
-      //btns[0].click()
-      
-      $( '.search input').on( 'keypress', function(e) { if( e.keyCode === 13 ) { $('.browserSearch').click() }})
-      
-      $( '.browserSearch' ).on( 'click', GE.Browser.search )
-    },
-    
-    currentBrowserSection: null,
-    openBrowserSection: function( section ) {
-      GE.Browser.currentBrowserSection.hide()
-      
-      GE.Browser.currentBrowserSection = $( '#browser_' + section )
-      
-      GE.Browser.currentBrowserSection.show()
-    },
-    
+!function() {
+  var GE = Gibber.Environment
+  
+  var Demos = {
     open: function() {
-      GE = Gibber.Environment
-      
-      var col = GE.Layout.addColumn({ header:'Browse Giblets' })
+      var col = GE.Layout.addColumn({ header:'Demos' })
       
       //col.element.addClass( 'browser' )
       
       col.bodyElement.remove()
       
       $.ajax({
-        url: GE.SERVER_URL + "/browser",
+        url: GE.SERVER_URL + "/demos",
         dataType:'html'
       })
       .done( function( data ) {
-        var browser = $( data ), cells, lastDiv
+        var browser = $( data ), cells
         
         $( col.element ).append( browser[0] );
-        $('head').append( browser[1] )
-        $( '#search_button' ).on( 'click', GE.Browser.search )
-        col.bodyElement = browser;
+        $( 'head' ).append( browser[1] )
+        col.bodyElement = browser
         GE.Layout.setColumnBodyHeight( col )
         
-        linksDivs = $( '.browserLinks' )
-        headers = $( '.browserHeading' )
+        cells = browser.find('td')
         
-        GE.Browser.currentBrowserSection = $('#browser_demos')
-        
-        $('#browser_tutorials_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'tutorials') )
-        $('#browser_demos_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'demos') )
-        $('#browser_search_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'search') )
-        $('#browser_recent_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'recent') )
-        $('#browser_user_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'user') )        
-        
-        for( var i = 0; i < headers.length; i++ ) {
-          
-          !function() {
-            var cell = $( headers[ i ] ).parent()
+        var types = [ 'tutorialsHEADER','audio', 'visual', 'audiovisual' ], prev
+        for( var i = 0; i < cells.length; i++ ) {
+          (function() {
+            var cell = cells[ i ]
+            if( $(cell).hasClass('browserHeader') ) return;
             
-            if( $( cell ).hasClass( 'browserHeader' ) ) return;
-            
-            $( cell ).find( 'h3' ).on( 'click', function() { 
-              var div = $( cell ).find( 'div' )
+            $(cell).find('h3').on('click', function() { 
+              var div = $(cell).find('div')
               div.toggle()
-              if( div.is( ':visible' ) ) {
-                $( this ).find( '#browser_updown' ).html( '&#9652;' ) 
+              if( div.is(':visible') ) {
+                $(this).find('#browser_updown').html('&#9652;') 
               }else{
-                $( this ).find( '#browser_updown' ).html( '&#9662;' ) 
+                $(this).find('#browser_updown').html('&#9662;') 
               }
             })
-          }()
-        }
-        
-        //var types = [ 'searchHEADER','search','tutorialsHEADER','audio', '_2d', '_3d', 'misc', 'userHEADER','recent', 'userfiles' ], prev
-        var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent', 'userfiles' ], prev
-        for( var i = 0; i < linksDivs.length; i++ ) {
-          (function() {
-            var cell = linksDivs[ i ]
-            // if( $( cell ).hasClass( 'browserHeader' ) ) return;
-            // 
-            // $(cell).find( 'h3' ).on( 'click', function() { 
-            //   var div = $(cell).find('div')
-            //   div.toggle()
-            //   if( div.is( ':visible' ) ) {
-            //     $( this ).find( '#browser_updown' ).html( '&#9652;' ) 
-            //   }else{
-            //     $( this ).find( '#browser_updown' ).html( '&#9662;' ) 
-            //   }
-            // })
             
-            var links = $( cell ).find( 'li' )
-            
-              for( var j = 0; j < links.length; j++ ) {
+            var links = $(cell).find('li')
+
+            for( var j = 0; j < links.length; j++ ) {
               (function() {
                 var num = j, type = types[ i ], link = links[j]
                 if( typeof Gibber.Environment.Browser.files[ type ] !== 'undefined' ) {
@@ -273,32 +199,7 @@ module.exports = function( Gibber ) {
         }
       )
     },
-    openDemo : function( addr ) {
-      // console.log( "ADDR", addr )
-      $.post(
-        GE.SERVER_URL + '/retrieve',
-        { address:addr },
-        function( d ) {
-          //console.log( d )
-          var data = JSON.parse( d ),
-              col = Browser.demoColumn === null || Browser.demoColumn.isClosed ? GE.Layout.addColumn({ fullScreen:false, type:'code' }) : Browser.demoColumn
-              
-          col.editor.setValue( data.text )
-          col.fileInfo = data
-          col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
-
-          Browser.demoColumn = col
-          
-          Gibber.clear()
-          
-          GE.modes.javascript.run( col, data.text, { start:{ line:0, ch:0 }, end:{ line:col.editor.lastLine(), ch:0 }}, col.editor, true )
-          
-          //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
-          return false
-        }
-      )
-    },
   }
   
-  return Browser
-}
+  GE.Demos = Demos
+}()

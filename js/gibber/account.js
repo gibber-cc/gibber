@@ -1,14 +1,16 @@
-!function() {
-  var GE = Gibber.Environment
+module.exports = function( Gibber ) {
+  var GE, $ = require( './dollar' );
   
   var Account = {
     nick: null,
     init : function() {
+      GE = Gibber.Environment
+      
       $('.login a').on('click', function(e) { 
-        GE.Account.createLoginWindow()
+        Account.createLoginWindow()
       })
       
-      GE.Account.loginStatus()
+      Account.loginStatus()
     },
     
     loginStatus : function() {
@@ -20,8 +22,10 @@
           $( '.login' ).empty()
           $( '.login' ).append( $('<span>welcome, ' + response.username + '.  </span>' ) )
 
-          GE.Account.nick = response.username
-
+          Account.nick = response.username
+          
+          console.log("I AM LOGGED IN", Account.nick )
+          
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
             .on( 'click', function(e) {
@@ -34,7 +38,7 @@
                 $( '.login' ).append( $('<a href="#">' )
                   .text( 'please login' )
                   .on('click', function(e) { 
-                    GE.Account.createLoginWindow()
+                    Account.createLoginWindow()
                   })
                 )
               })
@@ -66,8 +70,9 @@
           // console.log( "LOGIN RESPONSE", data )
           $( '.login' ).empty()
           $( '.login' ).append( $('<span>welcome, ' + data.username + '.  </span>' ) )
-          GE.Account.nick = data.username
-
+          Account.nick = data.username
+          
+          console.log("I am logged in", Account.nick, data.username )
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
             .on( 'click', function(e) {
@@ -76,14 +81,14 @@
                 url: GE.SERVER_URL + '/logout', 
                 dataType:'json'
               }).done( function(data) {
-                GE.Account.nick = null
+                Account.nick = null
 
                 $( '.login' ).empty()
 
                 $( '.login' ).append( $('<a href="#">' )
                   .text( 'please login' )
                   .on('click', function(e) { 
-                    GE.Account.createLoginWindow()
+                    Account.createLoginWindow()
                   })
                 )
               })
@@ -101,7 +106,7 @@
     newAccountForm: function() {
       var col = GE.Layout.addColumn({ header:'Create an account' })
       col.bodyElement.remove()
-      GE.Account.newAccountColumn = col
+      Account.newAccountColumn = col
 
       $( '#loginForm' ).remove()
       $.ajax({
@@ -118,10 +123,10 @@
       return false
     },
     newPublicationForm: function() {
-      if( GE.Account.nick !== null ) {
+      if( Account.nick !== null ) {
         var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Publish a Giblet' })
         
-        GE.Account.publicationColumn = col
+        Account.publicationColumn = col
 
         col.element.addClass('publication_form')
         
@@ -175,7 +180,7 @@
       )
 
       // col.element.remove()
-      GE.Layout.removeColumn( GE.Account.newAccountColumn.id )     
+      GE.Layout.removeColumn( Account.newAccountColumn.id )     
     },
     publish : function() {
       var url = GE.SERVER_URL + '/publish'
@@ -235,5 +240,5 @@
     },
   }
     
-  GE.Account = Account
-}()
+  return Account
+}

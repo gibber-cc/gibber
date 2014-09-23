@@ -33,8 +33,7 @@ Share = Gibber.Environment.Share = {
           
           column.editor.setValue( val )
 
-          column.header.append( $('<span>').text( 'sharing with ' + sharingWith )
-            .css({ paddingLeft:5}) )
+          column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5}) )
 
           if( typeof cb === 'function' ) cb()
       });      

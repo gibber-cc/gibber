@@ -2,10 +2,10 @@
 <p>Record and playback audiofiles at variable speeds. Recordings made using the sampler can be rendered to .wav files by the browser using the <em>download</em>() method.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code>a = XOX(<span class="string">'x*o*x*o-'</span>)
-b = Sampler.record( a, <span class="number">2</span> ) <span class="comment">// record for two measures</span>
+<pre><code>a = XOX(&#39;x*o*x*o-&#39;)
+b = Sampler.record( a, 2 ) // record for two measures
 
-b.note( -<span class="number">2</span> ) <span class="comment">// play in reverse at twice the recorded speed / pitch</span></code></pre>
+b.note( -2 ) // play in reverse at twice the recorded speed / pitch</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>pitch</em> : Float. Default range: { 1, 4 }. Default value: 1. This property determines the speed of sample playback. Negative values play the sample in reverse. This value can also be set using the note() method.</li>

@@ -11,16 +11,16 @@
 <p>There are a few different drum kits that come with Gibber (with hopefully more to follow). The kits are electronic (the default), original and beatbox. The example below shows how to load a different than the default electronic one.</p>
 <p>Finally, note that each individual sound is actually an instance of the Gibber Sampler object. This means you can add effects to the individual sounds in addition to the kit as a whole.</p>
 <p>Example:</p>
-<pre><code>a = Drums( <span class="string">'xoxo'</span> ) <span class="comment">// each note is a quarter note in duration  </span>
-a.fx.add( Delay( <span class="number">1</span>/<span class="number">64</span>) )  
+<pre><code>a = Drums( &#39;xoxo&#39; ) // each note is a quarter note in duration  
+a.fx.add( Delay( 1/64) )  
 
-b = Drums( <span class="string">'***-'</span>, <span class="number">1</span>/<span class="number">8</span> ) <span class="comment">// each note is an eighth note  </span>
+b = Drums( &#39;***-&#39;, 1/8 ) // each note is an eighth note  
 b.hat.fx.add( Distortion() )  
-b.pitch = <span class="number">2</span>  
+b.pitch = 2  
 
 c = Drums({  
-  kit:<span class="string">'beatbox'</span>,  
-  note:<span class="string">'Tfk8p'</span>  
+  kit:&#39;beatbox&#39;,  
+  note:&#39;Tfk8p&#39;  
 })</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>

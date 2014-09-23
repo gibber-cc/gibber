@@ -2,9 +2,9 @@
 <p>Implementation of the Schroeder/Moorer model.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code>a = Pluck().play( Rndi(<span class="number">100</span>,<span class="number">1000</span>), <span class="number">1</span>/<span class="number">4</span> )
+<pre><code>a = Pluck().play( Rndi(100,1000), 1/4 )
 
-r = Reverb({ roomSize: Add( <span class="number">.75</span>, Sine( <span class="number">.05</span>, <span class="number">.245</span> )._ ) })
+r = Reverb({ roomSize: Add( .75, Sine( .05, .245 )._ ) })
 
 a.fx.add( r )</code></pre>
 <h2 id="properties">Properties</h2>

@@ -2,8 +2,8 @@
 <p>A synthesized clave with a built-in sequencer, generated using a resonant bandpass filter fed by an impulse.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code><span class="comment">// use random tunings for each clave hit  </span>
-a = Clave().play( Rndf(<span class="number">1500</span>, <span class="number">5000</span>), <span class="number">1</span>/<span class="number">16</span> )</code></pre>
+<pre><code>// use random tunings for each clave hit  
+a = Clave().play( Rndf(1500, 5000), 1/16 )</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>pitch</em> : Float. The cutoff frequency of the resonant filter used to generate the clave sound. This is also set by the note method.</li>

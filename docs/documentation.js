@@ -4,12 +4,12 @@ var marked = require( 'marked' ),
     fs = require('fs'),
     list;
 
-marked.setOptions({
-  highlight: function (code, lang) {
-    return hljs.highlight('javascript', code).value; 
-  },
-  lang:'javascript'
-})
+// marked.setOptions({
+//   highlight: function (code, lang) {
+//     return hljs.highlight('javascript', code).value; 
+//   },
+//   lang:'javascript'
+// })
 
 list = [
   'audio/sine',
@@ -37,7 +37,7 @@ list = [
   'audio/schizo',
   'audio/ringmod',
   'audio/drums',
-  'audio/xox',  
+  'audio/edrums',  
   'audio/kick',
   'audio/snare',
   'audio/hat',
@@ -45,6 +45,11 @@ list = [
   'audio/cowbell',
   'audio/conga',
   'audio/tom',
+  'audio/bus',
+  'audio/input',  
+  
+  'singletons/gibber.clock',
+  'singletons/gibber',  
 
   'graphics/film',
   'graphics/dots',

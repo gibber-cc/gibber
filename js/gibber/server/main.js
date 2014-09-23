@@ -254,12 +254,12 @@ app.get( '/tag', function( req, res ) {
 
 app.get( '/recent', function( req, res ) {
   request(
-    { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
+    { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=20', json: true }, 
     function(e,r,b) {
       res.send({ results: b.rows })
       // console.log(b.rows)
     }
-  )
+  ) 
 })
 
 app.get( '/account', ensureAuthenticated, function(req, res){
@@ -421,59 +421,81 @@ app.get( '/credits', function( req,res,next ) {
 app.locals.inspect = require('util').inspect;
 
 app.get( '/browser', function( req, res, next ) {
-  request( { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=10', json: true }, 
-    function(__e,__r,__b) {
-      var recent = []
-      for( var i = 0; i < __b.rows.length; i++ ){
-        //console.log( __b.rows[i].value )
-        recent.push( __b.rows[i].value )
-      }
-      request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
-        // console.log( (JSON.parse(b)).rows )
-        var _audio = [], _3d = [], _2d = [], _misc=[], demoRows = JSON.parse( b ).rows
+  var demos = {}
+  request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
+    var audio = [], visual = [], audiovisual = [], demoRows = JSON.parse( b ).rows
 
-        for( var i =0; i < demoRows.length; i++ ) {
-          var cat = 'misc', row = demoRows[ i ]
-          //console.log( row )
-          if( row.key.split('*').length > 0 ) {
-            cat = row.key.split('*')[1]
-            switch( cat ) {
-              case '2d' :
-                _2d.push( row ); break;
-              case '3d' : _3d.push( row ); break;
-              case 'audio' : _audio.push( row ); break;
-              default:
-                _misc.push( row ); break;
+    for( var i =0; i < demoRows.length; i++ ) {
+      var cat, row = demoRows[ i ]
+      
+      cat = row.value.category || 'audiovisual'
+      
+      switch( cat ) {
+        case 'Visual': visual.push( row ); break;
+        case 'Audio' : audio.push(  row ); break;
+        default: audiovisual.push(  row ); break;
+      }
+    }
+    
+    demos.visual = visual; demos.audio = audio; demos.audiovisual = audiovisual;
+    
+    request( { uri:'http://localhost:5984/gibber/_design/test/_view/recent?descending=true&limit=20', json: true }, 
+      function(__e,__r,__b) {
+        var recent = []
+        for( var i = 0; i < __b.rows.length; i++ ){
+          //console.log( __b.rows[i].value )
+          recent.push( __b.rows[i].value )
+        }
+        request( 'http://localhost:5984/gibber/_design/test/_view/tutorials', function(e,r,b) {
+          // console.log( (JSON.parse(b)).rows )
+          var _audio = [], _3d = [], _2d = [], _misc=[], demoRows = JSON.parse( b ).rows
+
+          for( var i =0; i < demoRows.length; i++ ) {
+            var cat = 'misc', row = demoRows[ i ]
+            //console.log( row )
+            if( row.key.split('*').length > 0 ) {
+              cat = row.key.split('*')[1]
+              switch( cat ) {
+                case '2d' :
+                  _2d.push( row ); break;
+                case '3d' : _3d.push( row ); break;
+                case 'audio' : _audio.push( row ); break;
+                default:
+                  _misc.push( row ); break;
+              }
             }
           }
-        }
-
-        if( req.user ) {
-          request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
+          
+          console.log( req )
+          if( req.user ) {
+            console.log("USER ACCOUNT")
+            request( 'http://localhost:5984/gibber/_design/test/_view/publications?key=%22'+req.user.username+'%22', function(e,r,_b) {
+              res.render( 'browser', {
+                user: req.user,
+                demos:demos,
+                audio:_audio,
+                _2d:_2d,
+                _3d:_3d,
+                misc:_misc,
+                userfiles:(JSON.parse(_b)).rows,
+                recent: recent, 
+              });
+            })
+          }else{
+            console.log("NO USER ACCOUNT")
             res.render( 'browser', {
               user: req.user,
-              demos:( JSON.parse(b) ).rows,
+              demos:demos,
               audio:_audio,
               _2d:_2d,
               _3d:_3d,
               misc:_misc,
-              userfiles:(JSON.parse(_b)).rows,
-              recent: recent, 
+              userfiles:[],
+              recent:recent,
             });
-          })
-        }else{
-          res.render( 'browser', {
-            user: req.user,
-            demos:(JSON.parse(b)).rows,
-            audio:_audio,
-            _2d:_2d,
-            _3d:_3d,
-            misc:_misc,
-            userfiles:[],
-            recent:recent,
-          });
-        }
-      });
+          }
+        });
+      })
   })
 })
 
@@ -486,6 +508,28 @@ app.get( '/chat', function( req, res, next ) {
     res.render( 'chat' )
   }
 })
+
+app.get( '/demos', function( req, res, next ) {
+  console.log('DEMOS')
+  request( 'http://localhost:5984/gibber/_design/test/_view/demos', function(e,r,b) {
+    var audio = [], visual = [], audiovisual = [], demoRows = JSON.parse( b ).rows
+
+    for( var i =0; i < demoRows.length; i++ ) {
+      var cat, row = demoRows[ i ]
+      
+      cat = row.demoCategory || 'audiovisual'
+      
+      switch( cat ) {
+        case 'visual': visual.push( row ); break;
+        case 'audio' : audio.push(  row ); break;
+        default: audiovisual.push( row );  break;
+      }
+    }
+    
+    res.render( 'demos', { audio:audio, visual:visual, audiovisual:audiovisual})
+  })
+})
+
 
 app.post( '/search', function( req, res, next) {
   var result = {},

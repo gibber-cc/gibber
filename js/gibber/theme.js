@@ -1,21 +1,23 @@
-!function() {
-  var GE = Gibber.Environment
+module.exports = function( Gibber ) {
+  var GE, Color = require( 'color' )
   
   var Theme = {
-    init : function() {      
+    init : function() {
+      GE = Gibber.Environment
+      
       this.default = {
-          comment:    Color('#888'),
-          number:     Color('#69d'),
-          string:     Color('#d44'),
-          variable:   Color('#ccc'),
-          bracket:    Color('#f8f8f2'),
-          keyword:    Color('#ccc'),
-          property:   Color('#ccc'),
-          attribute:  Color('#ccc'),
-          atom:       Color('#006600'),
+          comment:    Color( '#888' ),
+          number:     Color( '#69d' ),
+          string:     Color( '#d44' ),
+          variable:   Color( '#ccc' ),
+          bracket:    Color( '#f8f8f2' ),
+          keyword:    Color( '#ccc' ),
+          property:   Color( '#ccc' ),
+          attribute:  Color( '#ccc' ),
+          atom:       Color( '#00aa00' ),
           cursor:     { 'border-left':'1px solid #f00' },
           highlight : { background: '#c00' },
-          'variable-2': Color('#ccc'),          
+          'variable-2': Color( '#ccc' ),          
       }
     
       this.applyTheme( this.default )
@@ -58,8 +60,5 @@
     },
   }
   
-  GE.Theme = Theme
-  window.Theme = Theme
-
-}()
-
+  return Theme
+}

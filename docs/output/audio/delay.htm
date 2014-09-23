@@ -1,13 +1,13 @@
 <h1 id="delay">Delay</h1>
 <p>Simple echo effect with variable delay time and feedback.</p>
 <p>Example:</p>
-<pre><code>a = Pluck().play( Rndi(<span class="number">100</span>,<span class="number">1000</span>), <span class="number">1</span>/<span class="number">4</span> )
+<pre><code>a = Pluck().play( Rndi(100,1000), 1/4 )
 
 d = Delay()
 
 q = Seq({
-  time: Rndi( ms(<span class="number">2</span>), ms(<span class="number">500</span>) ),
-  durations:<span class="number">1</span>/<span class="number">2</span>,
+  time: Rndi( ms(2), ms(500) ),
+  durations:1/2,
   target: d 
 })
 

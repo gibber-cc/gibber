@@ -2,8 +2,8 @@
 <p>A synthesized tom with a built-in sequencer, generated using a resonant bandpass filter fed by an impulse combined with noise feeding into a lowpass filter.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code><span class="comment">// use random tunings for each Tom hit  </span>
-a = Tom().play( Rndf(<span class="number">80</span>, <span class="number">160</span>), <span class="number">1</span>/<span class="number">8</span> )</code></pre>
+<pre><code>// use random tunings for each Tom hit  
+a = Tom().play( Rndf(80, 160), 1/8 )</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>pitch</em> : Float. The cutoff frequency of the resonant filter used to generate the Tom sound. This is also set by the note method.</li>

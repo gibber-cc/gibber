@@ -3,9 +3,9 @@
 <p>The second and third oscillators can be detuned from the first using the detune2 and detune3 properties, which are measured in octaves. Thus, a detune2 value of -1 means the second oscillator will be an octave beneath the first. These properties can be modulated.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code>a = Mono({ waveform:<span class="string">'Saw'</span>, filterMult:<span class="number">0</span>, resonance:<span class="number">4</span>, detune2:<span class="number">.05</span>, detune3:-<span class="number">.05</span> })
+<pre><code>a = Mono({ waveform:&#39;Saw&#39;, filterMult:0, resonance:4, detune2:.05, detune3:-.05 })
 
-a.play( [<span class="number">440</span>, <span class="number">880</span>, <span class="number">1320</span>], <span class="number">1</span>/<span class="number">4</span> )</code></pre>
+a.play( [440, 880, 1320], 1/4 )</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>frequency</em> : Hz. default range { 50, 3200 }. default value 440.</li>

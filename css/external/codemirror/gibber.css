@@ -10,7 +10,7 @@
 /*.CodeMirror-cursor:before{ content:'|'; }*/
 
 .cm-s-gibber span.cm-comment {color: #666;}
-.cm-s-gibber span.cm-atom {color: #006600;}
+.cm-s-gibber span.cm-atom {color: #009900;}
 .cm-s-gibber span.cm-number {color: #779;}
       
 .cm-s-gibber span.cm-property, .cm-s-gibber span.cm-attribute {color: #ccc;}

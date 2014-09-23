@@ -1,14 +1,14 @@
 <h1 id="kaleidoscope">Kaleidoscope</h1>
 <p>Aptly named, this shader creates a kaleidoscope effect that can be rotated.</p>
 <p>Example:</p>
-<pre><code>a = Knot({ tube:<span class="number">3</span> })
-a.scale = <span class="number">2</span>
-a.spin( <span class="number">.05</span> )
+<pre><code>a = Knot({ tube:3 })
+a.scale = 2
+a.spin( .05 )
 
 k = Kaleidoscope()
 k.sides = Slider()
-k.update = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="keyword">this</span>.angle += <span class="number">.005</span>
+k.update = function() {
+  this.angle += .005
 }</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>

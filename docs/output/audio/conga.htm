@@ -2,8 +2,8 @@
 <p>Impulse feeding resonant bandpass filter. Similar to the synth Kick sound but without the additional lowpass filter.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code><span class="comment">// use random tunings for each Tom hit  </span>
-a = Conga().play( Rndf(<span class="number">160</span>, <span class="number">480</span>), <span class="number">1</span>/<span class="number">8</span> )</code></pre>
+<pre><code>// use random tunings for each Tom hit  
+a = Conga().play( Rndf(160, 480), 1/8 )</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>pitch</em> : Float. The cutoff frequency of the resonant filter used to generate the Tom sound. This is also set by the note method.</li>

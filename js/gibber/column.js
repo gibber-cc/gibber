@@ -1,9 +1,16 @@
-( function() { 
+var $ = require( './dollar' )
+
+console.log( $ )
+
+module.exports = function( Gibber ) { 
   'use strict'
   
-  var GE = Gibber.Environment
+  var GE, CodeMirror
   
   var Column = function( options ) {
+    GE = Gibber.Environment
+    CodeMirror = GE.CodeMirror
+    
     options = options || {}
 
     var isCodeColumn = options.type === 'code',
@@ -48,7 +55,7 @@
     col.resizeHandle.width( resizeHandleSize )
   
     col.closeButton.addClass( 'closeButton' )
-      .on( 'click', function(e) { Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose(); })
+      .on( 'click', function(e) { Layout.removeColumn( colNumber );  col.isClosed = true; if( col.onclose ) col.onclose(); })
       .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
       .html( '&#10005;' )
       .attr( 'title', 'close column' )
@@ -182,11 +189,9 @@
     }
     
     col.__proto__ = Proto
-    
+        
     return col
   }
-  
-  Gibber.Environment.Layout.Column = Column
   
   var Proto = {
     toggle:             function() { $( this.element ).toggle() },            
@@ -274,6 +279,36 @@
           GE.Message.post( 'The current text is the same as what is in the database; no update was performed.')
         }
       }
+    },
+    
+    load: function( addr ) {
+      var col = this, fnc = null
+      log( 'now loading ' + addr )
+      $.post(
+        GE.SERVER_URL + '/retrieve',
+        { address:addr },
+        function( d ) {
+          //console.log( d )
+          var data = JSON.parse( d )
+
+          col.editor.setValue( data.text )
+          col.fileInfo = data
+          col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
+          
+          //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
+          if( fnc ) { fnc() }
+          
+          log( 'loading ' + addr + ' completed.' )
+          
+          return false
+        }
+      )
+      
+      return { done: function(_fnc) { fnc = _fnc } }
+    },
+    
+    run: function() {
+      GE.modes.javascript.run( this, this.editor.getValue(), { start:{ line:0, ch:0 }, end:{ line:this.editor.lastLine(), ch:0 }}, this.editor, true )
     },
     
     setWidth: function( w ) {
@@ -380,5 +415,5 @@
     }
   }
   
-  window.Column = Column
-})()
+  return Column
+}

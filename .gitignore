@@ -39,3 +39,5 @@ Thumbs.db
 # TextMate #
 ############
 .tm_properties
+
+node_modules

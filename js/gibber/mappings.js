@@ -309,7 +309,9 @@
         return mapping
       },
       audioOut : function( target, from ) {
+        console.log( target.Name, target.object )
         if( typeof target.object[ target.Name ].mapping === 'undefined') {
+          console.log("MAKING A MAPPING")
           var mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, 0, 1, 0 )   
           if( typeof from.object.track !== 'undefined' ) {
             mapping.follow = from.object.track
@@ -351,6 +353,7 @@
             
           }
         }else{
+          console.log("REPLACING MAPPING")
           mapping.replace( from.object, from.name, from.Name )
           return mapping
         }
@@ -361,8 +364,16 @@
         }else if (target.modObject) {
           target.modObject.mod( target.modName, mapping, '=' )
         }else{
-          target.object.mod( target.name, mapping, '=' ) 
+          !function() {
+            var _mapping = mapping
+            target.object.update = function() { 
+              target.object[ target.name ]( _mapping.getValue() )
+            }
+          }()
+          //target.object.mod( target.name, mapping, '=' ) 
         }
+        
+        //target.object[ target.Name ].mapping = mapping
         
         mapping.remove = function() {
           this.bus.disconnect()
@@ -377,8 +388,11 @@
 
           if( target.object.mod ) {
             target.object.removeMod( target.name )
-          }else{
+          }else if( target.modObject ) {
             target.modObject.removeMod( target.modName )
+          }else{
+            console.log( 'removing update ')
+            //target.object.update = function() {}
           }
           
           delete target.object[ target.Name ].mapping

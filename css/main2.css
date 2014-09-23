@@ -264,6 +264,16 @@ tfoot, thead {
   color:#bbb;
 }
 
+#browser_tutorials, #browser_search, #browser_user, #browser_recent { display: none; }
+/*#browser_tutorials, #browser_search, #browser_user, #browser_recent, #browser_demo { display: none; }*/
+
+#browser_main{ 
+  height:70%; 
+  width:95%;
+  overflow:scroll;
+}
+#browser_meta{ height:30%; width:95%; display:block; }
+
 .console-error {
   font-weight:bold;
   color:#c00;
@@ -388,6 +398,7 @@ tfoot, thead {
 .browser {
   color:#aaa;
   font-size:.9em;
+  background-color:rgba(0,0,0,.5);
 }
 
 .browser table { margin-top: 10px; width:97%; }
@@ -425,7 +436,7 @@ tfoot, thead {
   padding-top: 1em !important;  
 }
 
-.browser h2 { font-size:1em; background-color:#222; }
+.browser h2 { font-size:1em; }
 
 .browser h3 {
 /*  background:#333;*/
@@ -459,7 +470,7 @@ tfoot, thead {
   border-top:1px solid #bbb;
   display:block;
   overflow: scroll;
-  height:29%;
+  height:25%;
 }
 
 #browser_meta p { margin-top: .15em;}

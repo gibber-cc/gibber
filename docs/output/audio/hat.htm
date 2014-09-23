@@ -2,8 +2,8 @@
 <p>A synthesized hihat drum sound with a built-in sequencer. Consists of six detuned sequencers feeding split into separate bandpass and hipass filters.</p>
 <p>Inherits from Ugen.</p>
 <p>Example:</p>
-<pre><code><span class="comment">// use random decays for each hihat hit  </span>
-a = Hat().play( Rndi(<span class="number">1000</span>, <span class="number">11025</span>), <span class="number">1</span>/<span class="number">8</span> )</code></pre>
+<pre><code>// use random decays for each hihat hit  
+a = Hat().play( Rndi(1000, 11025), 1/8 )</code></pre>
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>decay</em> : Int. The length of the decay in samples. IMPORTANT NOTE: At some point this will change to a value between {0,1}, but for now you specify this in samples.</li>

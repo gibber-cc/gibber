@@ -6,7 +6,7 @@ var times = []
 var Clock = Gibber.Clock = {
   seq : null, 
   bpm : null,
-  maxMeasures: 20,
+  maxMeasures: 44,
   baseBPM : 120,
   metronome : null,
   currentBeat : 0,

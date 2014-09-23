@@ -1,4 +1,4 @@
-( function() {
+module.exports = function( Gibber, Mousetrap ) {
   "use strict"
   
   var _k = null,
@@ -13,16 +13,19 @@
           timescale:'interface',
           output: Gibber.LINEAR
         },
-      }
+      },
 
-
-  window.Keys = Gibber.Environment.Keys = {
+  Keys = {
     bind: function( key, fcn ) {
       Mousetrap.bind( key, fcn )
+    },
+    
+    init: function() {
+      Mousetrap.stopCallback = function(e, element, combo ) {
+        return false
+      }
     }
   }
-  
-  Mousetrap.stopCallback = function(e, element, combo ) {
-    return false
-  }
-})()
+
+  return Keys
+}
