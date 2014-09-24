@@ -147,7 +147,7 @@ module.exports = function( Gibber ) {
       }()
     }
     
-    $.subscribe( '/layout/contentResize', function( e, obj ) {
+    $.subscribe( '/layout/contentResize', function( obj ) {
       _m.ww = _m.X.max = obj.w
       _m.wh = _m.Y.max = obj.h
     })

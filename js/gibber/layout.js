@@ -88,9 +88,11 @@ module.exports = function( Gibber ) {
       window.Columns = this.columns
     
       $( window ).resize( this.onResizeWindow )
-      $.subscribe( '/layout/resizeWindow', function( e,dict ) { Layout.resize( dict.w, dict.h ) } )
+      $.subscribe( '/layout/resizeWindow', function( dict ) { Layout.resize( dict.w, dict.h ) } )
       
       this.__fullScreenColumn__ = GE.Layout.addColumn({ type:'code' })
+      GE.Layout.columns.splice( GE.Layout.columns.indexOf( this.__fullScreenColumn__ ) )
+      
       var w = $( window ).width(), h = $( window ).height()
       this.__fullScreenColumn__.header.hide()
       this.__fullScreenColumn__.toggleResizeHandle()
@@ -99,8 +101,6 @@ module.exports = function( Gibber ) {
       this.__fullScreenColumn__.editor.setSize( w,h )
       this.__fullScreenColumn__.isFullScreen = true
       this.__fullScreenColumn__.editor._handlers.focus.length = 0
-      
-      GE.Layout.columns.splice( GE.Layout.columns.indexOf( this.__fullScreenColumn__ ) )
     },
     
     onResizeWindow : (function() {

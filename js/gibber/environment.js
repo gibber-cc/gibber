@@ -13,6 +13,7 @@ var GE = {
   
   CodeMirror:   require( 'codemirror' ),
   CodeMirrorJS: require( '../external/codemirror/javascript' ),
+  CodeMirrorC:  require( '../external/codemirror/clike' ),  
   Layout:       require( './layout' )( Gibber ),
   Account:      require( './account' )( Gibber ),
   Console:      require( './console' )( Gibber ),

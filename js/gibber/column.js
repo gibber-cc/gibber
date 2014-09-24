@@ -285,7 +285,7 @@ module.exports = function( Gibber ) {
     
     load: function( addr ) {
       var col = this, fnc = null
-      log( 'now loading ' + addr )
+      Gibber.log( 'now loading ' + addr )
       $.post(
         GE.SERVER_URL + '/retrieve',
         { address:addr },
@@ -300,7 +300,7 @@ module.exports = function( Gibber ) {
           //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
           if( fnc ) { fnc() }
           
-          log( 'loading ' + addr + ' completed.' )
+          Gibber.log( 'loading ' + addr + ' completed.' )
           
           return false
         }
