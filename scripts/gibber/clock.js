@@ -33,7 +33,11 @@ var Clock = {
 					if( typeof Clock.codeToExecute[ i ].function === 'function' ) {
 						Clock.codeToExecute[ i ].function()
 					}else{
-	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            if( Gibber.Environment ) {
+              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ]._run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }else{
+  	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }
 					}
         }catch( e ) {
           console.error( "FAILED TO EXECUTE CODE:", Clock.codeToExecute[ i ].code , e)

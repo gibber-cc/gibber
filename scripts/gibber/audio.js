@@ -26,9 +26,9 @@ Audio = {
     // target.solo = Gibber.Utilities.solo    
     
 		target.Clock = Audio.Clock
-    target.Seq = Audio.Seq
+    target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
-    target.ScaleSeq = Audio.ScaleSeq
+    target.ScaleSeq = Audio.Seqs.ScaleSeq
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     

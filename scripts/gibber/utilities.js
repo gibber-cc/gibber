@@ -130,17 +130,19 @@ var soloGroup = [],
       },
 
       future : function(func, time) { 
-        var __seq = new Gibberish.Sequencer({
-          values:[
-            function(){},
-            function() {
-              func();
-              __seq.stop();
-              __seq.disconnect();
+        var count = 0
+        
+        var __seq = Gibber.Audio.Seqs.Seq(
+          function() {
+            if( count === 1 ) {
+              func()
+              __seq.stop()
+              __seq.disconnect()
             }
-          ],
-          durations:[ Gibber.Clock.time( time ) ]
-        }).start()
+            count++
+          }, 
+          Gibber.Audio.Clock.time( time ) 
+        )
     
         return function(){ __seq.stop(); __seq.disconnect(); }
       },
