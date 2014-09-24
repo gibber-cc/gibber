@@ -2,7 +2,6 @@ module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
   
-  console.log( "DOLLAR", $ )
   var Keymap = {
     init : function() {
       GE = Gibber.Environment
@@ -105,6 +104,11 @@ module.exports = function( Gibber ) {
         "Ctrl-Enter": function(cm) {
 					var obj = GE.getSelectionCodeColumn( cm, false )
 					GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+          return false
+        },
+        
+        "Ctrl-.": function(cm) {
+          Gibber.clear()
           return false
         },
         

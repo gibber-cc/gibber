@@ -1,7 +1,5 @@
 var $ = require( './dollar' )
 
-console.log( $ )
-
 module.exports = function( Gibber ) { 
   'use strict'
   
@@ -116,7 +114,7 @@ module.exports = function( Gibber ) {
         lineWrapping: false,
         tabSize: 2,
         lineNumbers:false,
-        // cursorBlinkRate: 530,
+        cursorBlinkRate: 530,
         autofocus: options.autofocus || false,
       })
       
@@ -206,7 +204,9 @@ module.exports = function( Gibber ) {
         GE.Layout.__fullScreenColumn__.editor.setValue( this.editor.getValue() )
         
         GE.Layout.fullScreenColumn = this
-        if( Graphics.running ) Graphics.assignWidthAndHeight() 
+        if( Gibber.Graphics ){
+          if( Gibber.Graphics.running ) Gibber.Graphics.assignWidthAndHeight() 
+        }
         GE.Layout.isFullScreen = true
       }else{
         GE.Layout.toggle()
@@ -217,7 +217,9 @@ module.exports = function( Gibber ) {
         this.editor.focus()        
 
         GE.Layout.fullScreenColumn = null
-        if( Graphics.running ) Graphics.assignWidthAndHeight() 
+        if( Gibber.Graphics ){
+          if( Gibber.Graphics.running ) Gibber.Graphics.assignWidthAndHeight() 
+        }
         GE.Layout.isFullScreen = false        
       }
     },

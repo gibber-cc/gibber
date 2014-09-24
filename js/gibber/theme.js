@@ -15,7 +15,7 @@ module.exports = function( Gibber ) {
           property:   Color( '#ccc' ),
           attribute:  Color( '#ccc' ),
           atom:       Color( '#00aa00' ),
-          cursor:     { 'border-left':'1px solid #f00' },
+          //cursor:     { 'border-left':'1px solid #f00' },
           highlight : { background: '#c00' },
           'variable-2': Color( '#ccc' ),          
       }

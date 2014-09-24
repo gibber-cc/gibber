@@ -41,6 +41,7 @@
 
 .CodeMirror-code * {
   height:1.25em;
+/*  font-family: "Menlo", "Consolas", "Ubuntu Mono", "Courier", monospace;*/
 }
 
 .CodeMirror-gutters {

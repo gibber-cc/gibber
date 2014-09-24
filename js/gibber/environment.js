@@ -1,8 +1,9 @@
 module.exports = function( Gibber ) {
 
-"use strict"
+// "use strict" TODO: no strict because of eval for user code. wrap
+// im function object instead?
 
-var MT = require( 'coreh-mousetrap' ),
+var MT = require( 'coreh-mousetrap' )(),
     $  = require( './dollar' )
     
 var GE = {
@@ -16,12 +17,13 @@ var GE = {
   Account:      require( './account' )( Gibber ),
   Console:      require( './console' )( Gibber ),
   Mousetrap:    MT,
-  Keys:         require( './keys' )( MT ),
+  Keys:         require( './keys' )( Gibber, MT ),
   Keymap:       require( './keymaps' )( Gibber ),
   Browser:      require( './browser' )( Gibber ),
   Theme:        require( './theme' )( Gibber ),
   Esprima:      require( 'esprima' ),
-  Mouse:        require( './mouse' ),
+  Mouse:        require( './mouse' ), // pass Gibber later
+  Docs:         require( './docs' )( Gibber ),
   
   init : function() { 
     GE.Keymap.init()
@@ -34,8 +36,22 @@ var GE = {
     if( !Gibber.isInstrument ) {
       GE.Layout.init( GE )
       window.Layout = GE.Layout
+      window.Column = GE.Layout.Column
+      
+      window.load = Gibber.import
+      window.Graphics = Gibber.Graphics
+      window.Color = Gibber.Graphics.Color
+      
+      
+      // the window.module global is deprecated and will be removed at some point!
+      // I don't trust using it now that Gibber has moved to browserify
+      module = window.module = Gibber.import
+      
       GE.Account.init()
+      
       GE.Console.init()
+      Gibber.log = GE.Console.log
+      
       //GE.Console.open()
       GE.Welcome.init()
       GE.Theme.init()
@@ -50,7 +66,10 @@ var GE = {
       Gibber.Clock.addMetronome( GE.Metronome )
       
       GE.Mouse = GE.Mouse( Gibber )
-      window.Mouse = GE.Mouse      
+      window.Mouse = GE.Mouse
+      
+      // keymaps handles this when it occurs within codemirror instances
+      Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )    
     }
     
     /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
@@ -252,42 +271,44 @@ var GE = {
 		},
 		javascript : {
       _run: function( script, pos, cm ) { // called by Gibber.Environment.Keymap.modes.javascript
-    		var _start = pos.start ? pos.start.line : pos.line,
-    				tree
-    
-    	  try{
-    			tree = GE.Esprima.parse( script, { loc:true, range:true } )
-    		}catch(e) {
-    			console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
-    			return
-    		}
-    
-        // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
-        for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
-          var obj = tree.body[ __i__ ],
-    					start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
-    					end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
-    				  src   = cm.getRange( start, end ),
-              result = null
-			
-    			//console.log( start, end, src )
-    			try{
-    				result = eval( src )
-            if( typeof result !== 'function' ) {
-              log( result )
-            }else{
-              log( 'Function' )
-            }
-    			}catch( e ) {
-    				console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
-    			}
-      
-          if( Gibber.scriptCallbacks.length > 0 ) {
-            for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
-              Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
-            }
-          }
-        }
+        eval( script )
+        // var _start = pos.start ? pos.start.line : pos.line,
+        //     tree
+        //     
+        //         try{
+        //   tree = GE.Esprima.parse( script, { loc:true, range:true } )
+        // }catch(e) {
+        //   console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
+        //   return
+        // }
+        //     
+        //         // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        //         for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
+        //           var obj = tree.body[ __i__ ],
+        //       start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
+        //       end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
+        //       src   = cm.getRange( start, end ),
+        //               result = null
+        //       
+        //   //console.log( start, end, src )
+        //   try{
+        //     result = eval( src )
+        //             if( typeof result !== 'function' ) {
+        //               log( result )
+        //             }else{
+        //               log( 'Function' )
+        //             }
+        //   }catch( e ) {
+        //     console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
+        //             console.log( e )
+        //   }
+        //       
+        //           if( Gibber.scriptCallbacks.length > 0 ) {
+        //             for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+        //               Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+        //             }
+        //           }
+        //         }
       },
 
 			run : function( column, value, position, codemirror, shouldDelay ) {

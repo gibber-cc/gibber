@@ -1,4 +1,4 @@
-!function() {
+module.exports = function( Gibber ) {
   var GE = Gibber.Environment
   
   var Docs = {
@@ -52,6 +52,6 @@
     },
   } 
   
-  GE.Docs = Docs
-}()
+  return Docs
+}
 
