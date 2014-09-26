@@ -404,7 +404,7 @@ tfoot, thead {
 .browser table { margin-top: 10px; width:97%; }
 
 .browser table tr td div { 
-  display:none; 
+/*  display:none; */
   padding-left:1em; 
   font-size:.9em;
 }
@@ -417,14 +417,15 @@ tfoot, thead {
 }
 
 .search .browserSearch {
-  right:0;
   display:inline;
   background-color:#ccc;
   color:#333;
-  float:right;
 }
 
-.browser input { min-width:15em;}
+.browser input { 
+  width:100%; 
+  margin-bottom:1em;
+}
 
 .browser li {
   color:#bbb;
@@ -460,6 +461,9 @@ tfoot, thead {
   padding:0;
 }
 
+.recentDate {
+  font-size:.9em;
+}
 #scroller {
   display:block;
   overflow: scroll;

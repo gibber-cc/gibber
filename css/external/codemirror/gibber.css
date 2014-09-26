@@ -47,3 +47,7 @@
 .CodeMirror-gutters {
   background:transparent;
 }
+
+.CodeMirror-activeline-background {
+  background: rgba(0,0,0,.5); 
+}

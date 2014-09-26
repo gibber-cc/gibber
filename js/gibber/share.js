@@ -1,11 +1,11 @@
-( function() {
+module.exports = function( Gibber ) {
 
 "use strict"
 
 var GE = Gibber.Environment,
     doc = null,
 
-Share = Gibber.Environment.Share = {
+Share = {
   docs : [],
   potentialShareNum: 0,
   prompt: null,
@@ -126,4 +126,6 @@ Share = Gibber.Environment.Share = {
   },
 }
 
-})()
+return Share 
+
+}

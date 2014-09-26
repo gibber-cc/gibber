@@ -77,7 +77,7 @@ module.exports = function( Gibber ) {
         $('#browser_recent_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'recent') )
         $('#browser_user_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'user') )        
         
-        for( var i = 0; i < headers.length; i++ ) {
+        /*for( var i = 0; i < headers.length; i++ ) {
           
           !function() {
             var cell = $( headers[ i ] ).parent()
@@ -94,7 +94,7 @@ module.exports = function( Gibber ) {
               }
             })
           }()
-        }
+        }*/
         
         //var types = [ 'searchHEADER','search','tutorialsHEADER','audio', '_2d', '_3d', 'misc', 'userHEADER','recent', 'userfiles' ], prev
         var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent', 'userfiles' ], prev
@@ -117,9 +117,12 @@ module.exports = function( Gibber ) {
             
               for( var j = 0; j < links.length; j++ ) {
               (function() {
-                var num = j, type = types[ i ], link = links[j]
-                if( typeof Gibber.Environment.Browser.files[ type ] !== 'undefined' ) {
-                  var pub = Gibber.Environment.Browser.files[ type ][ num ], obj, id
+                // TODO: could this be any hackier???
+                var num = j, type = types[ i ], link = links[j], demoTypeName = type.slice(5).toLowerCase()
+                var pubCategory = Gibber.Environment.Browser.files[ type ] || Gibber.Environment.Browser.files.demos[ demoTypeName ]
+                
+                if( typeof pubCategory !== 'undefined' ) {
+                  var pub = pubCategory[ num ], obj, id
                   
                   if( typeof pub === 'undefined' ) {
                     console.log( 'UNDEFINED', type, num )

@@ -12,8 +12,8 @@ var GE = {
   //SERVER_URL : 'http://gibber.mat.ucsb.edu',
   
   CodeMirror:   require( 'codemirror' ),
-  CodeMirrorJS: require( '../external/codemirror/javascript' ),
-  CodeMirrorC:  require( '../external/codemirror/clike' ),  
+  CodeMirrorJS: require( 'codemirror/mode/javascript/javascript' ),
+  CodeMirrorC:  require( 'codemirror/mode/clike/clike' ),  
   Layout:       require( './layout' )( Gibber ),
   Account:      require( './account' )( Gibber ),
   Console:      require( './console' )( Gibber ),
@@ -25,6 +25,8 @@ var GE = {
   Esprima:      require( 'esprima' ),
   Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
+  Chat:         require( './chat' )( Gibber ),
+  // Share:        require( './share' )( Gibber ),  
   
   init : function() { 
     GE.Keymap.init()
@@ -42,8 +44,7 @@ var GE = {
       window.load = Gibber.import
       window.Graphics = Gibber.Graphics
       window.Color = Gibber.Graphics.Color
-      
-      
+
       // the window.module global is deprecated and will be removed at some point!
       // I don't trust using it now that Gibber has moved to browserify
       module = window.module = Gibber.import
@@ -627,6 +628,11 @@ var GE = {
     },
   },
 }
+
+require( 'codemirror/addon/comment/comment' )
+require( 'codemirror/addon/edit/matchbrackets' )
+require( 'codemirror/addon/edit/closebrackets' )
+// require( 'codemirror/addon/selection/active-line' )
 
 return GE
 }

@@ -1,16 +1,20 @@
-( function() {
+module.exports = function( Gibber ) {
 
 "use strict"
 
-var GE = Gibber.Environment, Chat;
+var GE, Layout, Chat;
 
-Chat = window.Chat = Gibber.Environment.Chat = {
+Chat = {
   socket : null,
   lobbyElement: null,
   roomElement: null,
   currentRoom: 'lobby',
   intialized : false,
+  io: require( '../external/socket.io.min' ),
   open : function() {
+    GE = Gibber.Environment
+    Layout = GE.Layout
+    
     if( GE.Account.nick === null ) {
       GE.Message.post( 'You must log in before chatting. Click the link in the upper right corner of the window to login (and create an account if necessary).' )
       return
@@ -20,7 +24,9 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.column.bodyElement.remove()
     
     this.column.onclose = function() {
+      console.log( 'you have left the chat server.' )
       Chat.lobbyElement = null
+      Chat.roomElement  = null
       // Chat.socket.close()
     }
     // this.column.header.append( $( '<span>lobby</span>') )
@@ -35,25 +41,25 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       .on( 'click', function() { Chat.moveToRoom( 'test' ) } )
       .hide()
 
-    // this.addButton = $('<button>' )
-    //   .text( 'create room' )
-    //   .on( 'click', Chat.createRoom )
-    //   .css({right:0 })
+    this.addButton = $('<button>' )
+      .text( 'create room' )
+      .on( 'click', Chat.createRoom )
+      .css({ right:0 })
 
-    this.lobbyRoom.append( this.lobby, this.room /*this.addButton*/ )
+    this.lobbyRoom.append( this.lobby, this.room, this.addButton )
 
     this.column.header.append( this.lobbyRoom )
 
     if( !this.initialized ) {
-      $script( 'external/socket.io.min', function() {
+      //$script( 'external/socket.io.min', function() {
         // console.log( 'socket io loaded' )
-        Chat.socket = io.connect('http://gibber.mat.ucsb.edu');
+        Chat.socket = Chat.io.connect( GE.SERVER_URL );
 
         // this.socket = new WebSocket( socketString );
 
         Chat.socket.on( 'message', function( data ) {
           data = JSON.parse( data )
-          // console.log( data )
+
           if( data.msg ) {
             if( Chat.handlers[ data.msg ] ) {
               Chat.handlers[ data.msg ]( data )
@@ -68,14 +74,12 @@ Chat = window.Chat = Gibber.Environment.Chat = {
           Chat.moveToLobby()
           Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
         })
-      })
+        //})
     }else{
       Chat.moveToLobby()
     }
     this.initialized = true;
     Layout.setColumnBodyHeight( this.column )
-    
-    this.column.onclose = function() { console.log( 'you have left the chat server.' ) }
   },
 
   moveToLobby : function () {
@@ -102,7 +106,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     this.currentRoom = 'lobby'
     this.room.css({ color:'#ccc', background:'#333' })
     this.room.hide()
-    //this.addButton.show()
+    this.addButton.show()
     
     this.socket.send( JSON.stringify({ cmd:'listRooms' }) )
   },
@@ -113,7 +117,7 @@ Chat = window.Chat = Gibber.Environment.Chat = {
       this.lobby.css({ color:'#ccc', background:'#333' })
     }
     this.room.show()
-    // this.addButton.hide()
+    this.addButton.hide()
 
     if( this.roomElement === null ) {
       this.roomElement = $( '<div>' ).addClass( 'chatroom' )
@@ -251,13 +255,13 @@ Chat = window.Chat = Gibber.Environment.Chat = {
     },
     roomAdded : function( data ) { // response for when any user creates a room...
       if( Chat.currentRoom === 'lobby' ) { 
-        Chat.lobbyElement.empty()
+        Chat.lobbyElement.find('ul').remove()
         Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
       }
     },
     roomDeleted : function( data ) {
       if( Chat.currentRoom === 'lobby' ) { 
-        Chat.lobbyElement.empty()
+        Chat.lobbyElement.find('ul').remove()
         Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
       }
     },
@@ -331,4 +335,6 @@ Chat = window.Chat = Gibber.Environment.Chat = {
   },
 }
 
-})()
+return Chat
+
+}

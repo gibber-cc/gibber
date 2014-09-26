@@ -164,21 +164,22 @@ module.exports = function( Gibber ) {
             friends: [],
           }
 
-      $.post(
-        GE.SERVER_URL + '/createNewUser',
-        data,
-        function (data, error) {
-          if( data ) {
-            GE.Message.post('New account created. Please login to verify your username and password.'); 
-          } else { 
-            GE.Message.post( 'The account could not be created. Try a different username' )
-            console.log( "RESPONSE", response )
-          }
-          return false;
-        },    
-        'json'
+        $.ajax({
+          type:"POST",
+          url: GE.SERVER_URL + '/createNewUser', 
+          'data':data, 
+          dataType:'json'
+        }).done(
+          function (data, error) {
+            if( data ) {
+              GE.Message.post('New account created. Please login to verify your username and password.'); 
+            } else { 
+              GE.Message.post( 'The account could not be created. Try a different username' )
+              console.log( "RESPONSE", response )
+            }
+            return false;
+        })    
       )
-
       // col.element.remove()
       GE.Layout.removeColumn( Account.newAccountColumn.id )     
     },

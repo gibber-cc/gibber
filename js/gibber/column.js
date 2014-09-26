@@ -115,6 +115,7 @@ module.exports = function( Gibber ) {
         tabSize: 2,
         lineNumbers:false,
         cursorBlinkRate: 530,
+        styleActiveLine:true,
         autofocus: options.autofocus || false,
       })
       

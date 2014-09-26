@@ -13,1144 +13,7 @@
 
   Gibber.Environment.init()
 }()
-},{"./external/injectCSS.js":"/www/gibber.libraries/js/external/injectCSS.js","./gibber/dollar":"/www/gibber.libraries/js/gibber/dollar.js","./gibber/environment":"/www/gibber.libraries/js/gibber/environment.js","gibber.lib":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/gibber.js"}],"/www/gibber.libraries/js/external/codemirror/clike.js":[function(require,module,exports){
-// CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
-
-(function(mod) {
-  if (typeof exports == "object" && typeof module == "object") // CommonJS
-    mod(require("codemirror"));
-  else if (typeof define == "function" && define.amd) // AMD
-    define(["codemirror"], mod);
-  else // Plain browser env
-    mod(CodeMirror);
-})(function(CodeMirror) {
-"use strict";
-
-CodeMirror.defineMode("clike", function(config, parserConfig) {
-  var indentUnit = config.indentUnit,
-      statementIndentUnit = parserConfig.statementIndentUnit || indentUnit,
-      dontAlignCalls = parserConfig.dontAlignCalls,
-      keywords = parserConfig.keywords || {},
-      builtin = parserConfig.builtin || {},
-      blockKeywords = parserConfig.blockKeywords || {},
-      atoms = parserConfig.atoms || {},
-      hooks = parserConfig.hooks || {},
-      multiLineStrings = parserConfig.multiLineStrings;
-  var isOperatorChar = /[+\-*&%=<>!?|\/]/;
-
-  var curPunc;
-
-  function tokenBase(stream, state) {
-    var ch = stream.next();
-    if (hooks[ch]) {
-      var result = hooks[ch](stream, state);
-      if (result !== false) return result;
-    }
-    if (ch == '"' || ch == "'") {
-      state.tokenize = tokenString(ch);
-      return state.tokenize(stream, state);
-    }
-    if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
-      curPunc = ch;
-      return null;
-    }
-    if (/\d/.test(ch)) {
-      stream.eatWhile(/[\w\.]/);
-      return "number";
-    }
-    if (ch == "/") {
-      if (stream.eat("*")) {
-        state.tokenize = tokenComment;
-        return tokenComment(stream, state);
-      }
-      if (stream.eat("/")) {
-        stream.skipToEnd();
-        return "comment";
-      }
-    }
-    if (isOperatorChar.test(ch)) {
-      stream.eatWhile(isOperatorChar);
-      return "operator";
-    }
-    stream.eatWhile(/[\w\$_]/);
-    var cur = stream.current();
-    if (keywords.propertyIsEnumerable(cur)) {
-      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
-      return "keyword";
-    }
-    if (builtin.propertyIsEnumerable(cur)) {
-      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
-      return "builtin";
-    }
-    if (atoms.propertyIsEnumerable(cur)) return "atom";
-    return "variable";
-  }
-
-  function tokenString(quote) {
-    return function(stream, state) {
-      var escaped = false, next, end = false;
-      while ((next = stream.next()) != null) {
-        if (next == quote && !escaped) {end = true; break;}
-        escaped = !escaped && next == "\\";
-      }
-      if (end || !(escaped || multiLineStrings))
-        state.tokenize = null;
-      return "string";
-    };
-  }
-
-  function tokenComment(stream, state) {
-    var maybeEnd = false, ch;
-    while (ch = stream.next()) {
-      if (ch == "/" && maybeEnd) {
-        state.tokenize = null;
-        break;
-      }
-      maybeEnd = (ch == "*");
-    }
-    return "comment";
-  }
-
-  function Context(indented, column, type, align, prev) {
-    this.indented = indented;
-    this.column = column;
-    this.type = type;
-    this.align = align;
-    this.prev = prev;
-  }
-  function pushContext(state, col, type) {
-    var indent = state.indented;
-    if (state.context && state.context.type == "statement")
-      indent = state.context.indented;
-    return state.context = new Context(indent, col, type, null, state.context);
-  }
-  function popContext(state) {
-    var t = state.context.type;
-    if (t == ")" || t == "]" || t == "}")
-      state.indented = state.context.indented;
-    return state.context = state.context.prev;
-  }
-
-  // Interface
-
-  return {
-    startState: function(basecolumn) {
-      return {
-        tokenize: null,
-        context: new Context((basecolumn || 0) - indentUnit, 0, "top", false),
-        indented: 0,
-        startOfLine: true
-      };
-    },
-
-    token: function(stream, state) {
-      var ctx = state.context;
-      if (stream.sol()) {
-        if (ctx.align == null) ctx.align = false;
-        state.indented = stream.indentation();
-        state.startOfLine = true;
-      }
-      if (stream.eatSpace()) return null;
-      curPunc = null;
-      var style = (state.tokenize || tokenBase)(stream, state);
-      if (style == "comment" || style == "meta") return style;
-      if (ctx.align == null) ctx.align = true;
-
-      if ((curPunc == ";" || curPunc == ":" || curPunc == ",") && ctx.type == "statement") popContext(state);
-      else if (curPunc == "{") pushContext(state, stream.column(), "}");
-      else if (curPunc == "[") pushContext(state, stream.column(), "]");
-      else if (curPunc == "(") pushContext(state, stream.column(), ")");
-      else if (curPunc == "}") {
-        while (ctx.type == "statement") ctx = popContext(state);
-        if (ctx.type == "}") ctx = popContext(state);
-        while (ctx.type == "statement") ctx = popContext(state);
-      }
-      else if (curPunc == ctx.type) popContext(state);
-      else if (((ctx.type == "}" || ctx.type == "top") && curPunc != ';') || (ctx.type == "statement" && curPunc == "newstatement"))
-        pushContext(state, stream.column(), "statement");
-      state.startOfLine = false;
-      return style;
-    },
-
-    indent: function(state, textAfter) {
-      if (state.tokenize != tokenBase && state.tokenize != null) return CodeMirror.Pass;
-      var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
-      if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
-      var closing = firstChar == ctx.type;
-      if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : statementIndentUnit);
-      else if (ctx.align && (!dontAlignCalls || ctx.type != ")")) return ctx.column + (closing ? 0 : 1);
-      else if (ctx.type == ")" && !closing) return ctx.indented + statementIndentUnit;
-      else return ctx.indented + (closing ? 0 : indentUnit);
-    },
-
-    electricChars: "{}",
-    blockCommentStart: "/*",
-    blockCommentEnd: "*/",
-    lineComment: "//",
-    fold: "brace"
-  };
-});
-
-  function words(str) {
-    var obj = {}, words = str.split(" ");
-    for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
-    return obj;
-  }
-  var cKeywords = "auto if break int case long char register continue return default short do sizeof " +
-    "double static else struct entry switch extern typedef float union for unsigned " +
-    "goto while enum void const signed volatile";
-
-  function cppHook(stream, state) {
-    if (!state.startOfLine) return false;
-    for (;;) {
-      if (stream.skipTo("\\")) {
-        stream.next();
-        if (stream.eol()) {
-          state.tokenize = cppHook;
-          break;
-        }
-      } else {
-        stream.skipToEnd();
-        state.tokenize = null;
-        break;
-      }
-    }
-    return "meta";
-  }
-
-  function cpp11StringHook(stream, state) {
-    stream.backUp(1);
-    // Raw strings.
-    if (stream.match(/(R|u8R|uR|UR|LR)/)) {
-      var match = stream.match(/"([^\s\\()]{0,16})\(/);
-      if (!match) {
-        return false;
-      }
-      state.cpp11RawStringDelim = match[1];
-      state.tokenize = tokenRawString;
-      return tokenRawString(stream, state);
-    }
-    // Unicode strings/chars.
-    if (stream.match(/(u8|u|U|L)/)) {
-      if (stream.match(/["']/, /* eat */ false)) {
-        return "string";
-      }
-      return false;
-    }
-    // Ignore this hook.
-    stream.next();
-    return false;
-  }
-
-  // C#-style strings where "" escapes a quote.
-  function tokenAtString(stream, state) {
-    var next;
-    while ((next = stream.next()) != null) {
-      if (next == '"' && !stream.eat('"')) {
-        state.tokenize = null;
-        break;
-      }
-    }
-    return "string";
-  }
-
-  // C++11 raw string literal is <prefix>"<delim>( anything )<delim>", where
-  // <delim> can be a string up to 16 characters long.
-  function tokenRawString(stream, state) {
-    // Escape characters that have special regex meanings.
-    var delim = state.cpp11RawStringDelim.replace(/[^\w\s]/g, '\\$&');
-    var match = stream.match(new RegExp(".*?\\)" + delim + '"'));
-    if (match)
-      state.tokenize = null;
-    else
-      stream.skipToEnd();
-    return "string";
-  }
-
-  function def(mimes, mode) {
-    if (typeof mimes == "string") mimes = [mimes];
-    var words = [];
-    function add(obj) {
-      if (obj) for (var prop in obj) if (obj.hasOwnProperty(prop))
-        words.push(prop);
-    }
-    add(mode.keywords);
-    add(mode.builtin);
-    add(mode.atoms);
-    if (words.length) {
-      mode.helperType = mimes[0];
-      CodeMirror.registerHelper("hintWords", mimes[0], words);
-    }
-
-    for (var i = 0; i < mimes.length; ++i)
-      CodeMirror.defineMIME(mimes[i], mode);
-  }
-
-  def(["text/x-csrc", "text/x-c", "text/x-chdr"], {
-    name: "clike",
-    keywords: words(cKeywords),
-    blockKeywords: words("case do else for if switch while struct"),
-    atoms: words("null"),
-    hooks: {"#": cppHook},
-    modeProps: {fold: ["brace", "include"]}
-  });
-
-  def(["text/x-c++src", "text/x-c++hdr"], {
-    name: "clike",
-    keywords: words(cKeywords + " asm dynamic_cast namespace reinterpret_cast try bool explicit new " +
-                    "static_cast typeid catch operator template typename class friend private " +
-                    "this using const_cast inline public throw virtual delete mutable protected " +
-                    "wchar_t alignas alignof constexpr decltype nullptr noexcept thread_local final " +
-                    "static_assert override"),
-    blockKeywords: words("catch class do else finally for if struct switch try while"),
-    atoms: words("true false null"),
-    hooks: {
-      "#": cppHook,
-      "u": cpp11StringHook,
-      "U": cpp11StringHook,
-      "L": cpp11StringHook,
-      "R": cpp11StringHook
-    },
-    modeProps: {fold: ["brace", "include"]}
-  });
-  def("text/x-java", {
-    name: "clike",
-    keywords: words("abstract assert boolean break byte case catch char class const continue default " +
-                    "do double else enum extends final finally float for goto if implements import " +
-                    "instanceof int interface long native new package private protected public " +
-                    "return short static strictfp super switch synchronized this throw throws transient " +
-                    "try void volatile while"),
-    blockKeywords: words("catch class do else finally for if switch try while"),
-    atoms: words("true false null"),
-    hooks: {
-      "@": function(stream) {
-        stream.eatWhile(/[\w\$_]/);
-        return "meta";
-      }
-    },
-    modeProps: {fold: ["brace", "import"]}
-  });
-  def("text/x-csharp", {
-    name: "clike",
-    keywords: words("abstract as base break case catch checked class const continue" +
-                    " default delegate do else enum event explicit extern finally fixed for" +
-                    " foreach goto if implicit in interface internal is lock namespace new" +
-                    " operator out override params private protected public readonly ref return sealed" +
-                    " sizeof stackalloc static struct switch this throw try typeof unchecked" +
-                    " unsafe using virtual void volatile while add alias ascending descending dynamic from get" +
-                    " global group into join let orderby partial remove select set value var yield"),
-    blockKeywords: words("catch class do else finally for foreach if struct switch try while"),
-    builtin: words("Boolean Byte Char DateTime DateTimeOffset Decimal Double" +
-                    " Guid Int16 Int32 Int64 Object SByte Single String TimeSpan UInt16 UInt32" +
-                    " UInt64 bool byte char decimal double short int long object"  +
-                    " sbyte float string ushort uint ulong"),
-    atoms: words("true false null"),
-    hooks: {
-      "@": function(stream, state) {
-        if (stream.eat('"')) {
-          state.tokenize = tokenAtString;
-          return tokenAtString(stream, state);
-        }
-        stream.eatWhile(/[\w\$_]/);
-        return "meta";
-      }
-    }
-  });
-  def("text/x-scala", {
-    name: "clike",
-    keywords: words(
-
-      /* scala */
-      "abstract case catch class def do else extends false final finally for forSome if " +
-      "implicit import lazy match new null object override package private protected return " +
-      "sealed super this throw trait try trye type val var while with yield _ : = => <- <: " +
-      "<% >: # @ " +
-
-      /* package scala */
-      "assert assume require print println printf readLine readBoolean readByte readShort " +
-      "readChar readInt readLong readFloat readDouble " +
-
-      "AnyVal App Application Array BufferedIterator BigDecimal BigInt Char Console Either " +
-      "Enumeration Equiv Error Exception Fractional Function IndexedSeq Integral Iterable " +
-      "Iterator List Map Numeric Nil NotNull Option Ordered Ordering PartialFunction PartialOrdering " +
-      "Product Proxy Range Responder Seq Serializable Set Specializable Stream StringBuilder " +
-      "StringContext Symbol Throwable Traversable TraversableOnce Tuple Unit Vector :: #:: " +
-
-      /* package java.lang */
-      "Boolean Byte Character CharSequence Class ClassLoader Cloneable Comparable " +
-      "Compiler Double Exception Float Integer Long Math Number Object Package Pair Process " +
-      "Runtime Runnable SecurityManager Short StackTraceElement StrictMath String " +
-      "StringBuffer System Thread ThreadGroup ThreadLocal Throwable Triple Void"
-
-
-    ),
-    multiLineStrings: true,
-    blockKeywords: words("catch class do else finally for forSome if match switch try while"),
-    atoms: words("true false null"),
-    hooks: {
-      "@": function(stream) {
-        stream.eatWhile(/[\w\$_]/);
-        return "meta";
-      }
-    }
-  });
-  def(["x-shader/x-vertex", "x-shader/x-fragment"], {
-    name: "clike",
-    keywords: words("float int bool void " +
-                    "vec2 vec3 vec4 ivec2 ivec3 ivec4 bvec2 bvec3 bvec4 " +
-                    "mat2 mat3 mat4 " +
-                    "sampler1D sampler2D sampler3D samplerCube " +
-                    "sampler1DShadow sampler2DShadow" +
-                    "const attribute uniform varying " +
-                    "break continue discard return " +
-                    "for while do if else struct " +
-                    "in out inout"),
-    blockKeywords: words("for while do if else struct"),
-    builtin: words("radians degrees sin cos tan asin acos atan " +
-                    "pow exp log exp2 sqrt inversesqrt " +
-                    "abs sign floor ceil fract mod min max clamp mix step smootstep " +
-                    "length distance dot cross normalize ftransform faceforward " +
-                    "reflect refract matrixCompMult " +
-                    "lessThan lessThanEqual greaterThan greaterThanEqual " +
-                    "equal notEqual any all not " +
-                    "texture1D texture1DProj texture1DLod texture1DProjLod " +
-                    "texture2D texture2DProj texture2DLod texture2DProjLod " +
-                    "texture3D texture3DProj texture3DLod texture3DProjLod " +
-                    "textureCube textureCubeLod " +
-                    "shadow1D shadow2D shadow1DProj shadow2DProj " +
-                    "shadow1DLod shadow2DLod shadow1DProjLod shadow2DProjLod " +
-                    "dFdx dFdy fwidth " +
-                    "noise1 noise2 noise3 noise4"),
-    atoms: words("true false " +
-                "gl_FragColor gl_SecondaryColor gl_Normal gl_Vertex " +
-                "gl_MultiTexCoord0 gl_MultiTexCoord1 gl_MultiTexCoord2 gl_MultiTexCoord3 " +
-                "gl_MultiTexCoord4 gl_MultiTexCoord5 gl_MultiTexCoord6 gl_MultiTexCoord7 " +
-                "gl_FogCoord " +
-                "gl_Position gl_PointSize gl_ClipVertex " +
-                "gl_FrontColor gl_BackColor gl_FrontSecondaryColor gl_BackSecondaryColor " +
-                "gl_TexCoord gl_FogFragCoord " +
-                "gl_FragCoord gl_FrontFacing " +
-                "gl_FragColor gl_FragData gl_FragDepth " +
-                "gl_ModelViewMatrix gl_ProjectionMatrix gl_ModelViewProjectionMatrix " +
-                "gl_TextureMatrix gl_NormalMatrix gl_ModelViewMatrixInverse " +
-                "gl_ProjectionMatrixInverse gl_ModelViewProjectionMatrixInverse " +
-                "gl_TexureMatrixTranspose gl_ModelViewMatrixInverseTranspose " +
-                "gl_ProjectionMatrixInverseTranspose " +
-                "gl_ModelViewProjectionMatrixInverseTranspose " +
-                "gl_TextureMatrixInverseTranspose " +
-                "gl_NormalScale gl_DepthRange gl_ClipPlane " +
-                "gl_Point gl_FrontMaterial gl_BackMaterial gl_LightSource gl_LightModel " +
-                "gl_FrontLightModelProduct gl_BackLightModelProduct " +
-                "gl_TextureColor gl_EyePlaneS gl_EyePlaneT gl_EyePlaneR gl_EyePlaneQ " +
-                "gl_FogParameters " +
-                "gl_MaxLights gl_MaxClipPlanes gl_MaxTextureUnits gl_MaxTextureCoords " +
-                "gl_MaxVertexAttribs gl_MaxVertexUniformComponents gl_MaxVaryingFloats " +
-                "gl_MaxVertexTextureImageUnits gl_MaxTextureImageUnits " +
-                "gl_MaxFragmentUniformComponents gl_MaxCombineTextureImageUnits " +
-                "gl_MaxDrawBuffers"),
-    hooks: {"#": cppHook},
-    modeProps: {fold: ["brace", "include"]}
-  });
-
-  def("text/x-nesc", {
-    name: "clike",
-    keywords: words(cKeywords + "as atomic async call command component components configuration event generic " +
-                    "implementation includes interface module new norace nx_struct nx_union post provides " +
-                    "signal task uses abstract extends"),
-    blockKeywords: words("case do else for if switch while struct"),
-    atoms: words("null"),
-    hooks: {"#": cppHook},
-    modeProps: {fold: ["brace", "include"]}
-  });
-
-});
-},{"codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/js/external/codemirror/javascript.js":[function(require,module,exports){
-// CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
-
-// TODO actually recognize syntax of TypeScript constructs
-
-(function(mod) {
-  if (typeof exports == "object" && typeof module == "object") // CommonJS
-    mod(require( "codemirror" ));
-  else if (typeof define == "function" && define.amd) // AMD
-    define(["../../lib/codemirror"], mod);
-  else // Plain browser env
-    mod(CodeMirror);
-})(function(CodeMirror) {
-"use strict";
-
-CodeMirror.defineMode("javascript", function(config, parserConfig) {
-  var indentUnit = config.indentUnit;
-  var statementIndent = parserConfig.statementIndent;
-  var jsonldMode = parserConfig.jsonld;
-  var jsonMode = parserConfig.json || jsonldMode;
-  var isTS = parserConfig.typescript;
-  var wordRE = parserConfig.wordCharacters || /[\w$]/;
-
-  // Tokenizer
-
-  var keywords = function(){
-    function kw(type) {return {type: type, style: "keyword"};}
-    var A = kw("keyword a"), B = kw("keyword b"), C = kw("keyword c");
-    var operator = kw("operator"), atom = {type: "atom", style: "atom"};
-
-    var jsKeywords = {
-      "if": kw("if"), "while": A, "with": A, "else": B, "do": B, "try": B, "finally": B,
-      "return": C, "break": C, "continue": C, "new": C, "delete": C, "throw": C, "debugger": C,
-      "var": kw("var"), "const": kw("var"), "let": kw("var"),
-      "function": kw("function"), "catch": kw("catch"),
-      "for": kw("for"), "switch": kw("switch"), "case": kw("case"), "default": kw("default"),
-      "in": operator, "typeof": operator, "instanceof": operator,
-      "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom, "Infinity": atom,
-      "this": kw("this"), "module": kw("module"), "class": kw("class"), "super": kw("atom"),
-      "yield": C, "export": kw("export"), "import": kw("import"), "extends": C
-    };
-
-    // Extend the 'normal' keywords with the TypeScript language extensions
-    if (isTS) {
-      var type = {type: "variable", style: "variable-3"};
-      var tsKeywords = {
-        // object-like things
-        "interface": kw("interface"),
-        "extends": kw("extends"),
-        "constructor": kw("constructor"),
-
-        // scope modifiers
-        "public": kw("public"),
-        "private": kw("private"),
-        "protected": kw("protected"),
-        "static": kw("static"),
-
-        // types
-        "string": type, "number": type, "bool": type, "any": type
-      };
-
-      for (var attr in tsKeywords) {
-        jsKeywords[attr] = tsKeywords[attr];
-      }
-    }
-
-    return jsKeywords;
-  }();
-
-  var isOperatorChar = /[+\-*&%=<>!?|~^]/;
-  var isJsonldKeyword = /^@(context|id|value|language|type|container|list|set|reverse|index|base|vocab|graph)"/;
-
-  function readRegexp(stream) {
-    var escaped = false, next, inSet = false;
-    while ((next = stream.next()) != null) {
-      if (!escaped) {
-        if (next == "/" && !inSet) return;
-        if (next == "[") inSet = true;
-        else if (inSet && next == "]") inSet = false;
-      }
-      escaped = !escaped && next == "\\";
-    }
-  }
-
-  // Used as scratch variables to communicate multiple values without
-  // consing up tons of objects.
-  var type, content;
-  function ret(tp, style, cont) {
-    type = tp; content = cont;
-    return style;
-  }
-  function tokenBase(stream, state) {
-    var ch = stream.next();
-    if (ch == '"' || ch == "'") {
-      state.tokenize = tokenString(ch);
-      return state.tokenize(stream, state);
-    } else if (ch == "." && stream.match(/^\d+(?:[eE][+\-]?\d+)?/)) {
-      return ret("number", "number");
-    } else if (ch == "." && stream.match("..")) {
-      return ret("spread", "meta");
-    } else if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
-      return ret(ch);
-    } else if (ch == "=" && stream.eat(">")) {
-      return ret("=>", "operator");
-    } else if (ch == "0" && stream.eat(/x/i)) {
-      stream.eatWhile(/[\da-f]/i);
-      return ret("number", "number");
-    } else if (/\d/.test(ch)) {
-      stream.match(/^\d*(?:\.\d*)?(?:[eE][+\-]?\d+)?/);
-      return ret("number", "number");
-    } else if (ch == "/") {
-      if (stream.eat("*")) {
-        state.tokenize = tokenComment;
-        return tokenComment(stream, state);
-      } else if (stream.eat("/")) {
-        stream.skipToEnd();
-        return ret("comment", "comment");
-      } else if (state.lastType == "operator" || state.lastType == "keyword c" ||
-               state.lastType == "sof" || /^[\[{}\(,;:]$/.test(state.lastType)) {
-        readRegexp(stream);
-        stream.eatWhile(/[gimy]/); // 'y' is "sticky" option in Mozilla
-        return ret("regexp", "string-2");
-      } else {
-        stream.eatWhile(isOperatorChar);
-        return ret("operator", "operator", stream.current());
-      }
-    } else if (ch == "`") {
-      state.tokenize = tokenQuasi;
-      return tokenQuasi(stream, state);
-    } else if (ch == "#") {
-      stream.skipToEnd();
-      return ret("error", "error");
-    } else if (isOperatorChar.test(ch)) {
-      stream.eatWhile(isOperatorChar);
-      return ret("operator", "operator", stream.current());
-    } else if (wordRE.test(ch)) {
-      stream.eatWhile(wordRE);
-      var word = stream.current(), known = keywords.propertyIsEnumerable(word) && keywords[word];
-      return (known && state.lastType != ".") ? ret(known.type, known.style, word) :
-                     ret("variable", "variable", word);
-    }
-  }
-
-  function tokenString(quote) {
-    return function(stream, state) {
-      var escaped = false, next;
-      if (jsonldMode && stream.peek() == "@" && stream.match(isJsonldKeyword)){
-        state.tokenize = tokenBase;
-        return ret("jsonld-keyword", "meta");
-      }
-      while ((next = stream.next()) != null) {
-        if (next == quote && !escaped) break;
-        escaped = !escaped && next == "\\";
-      }
-      if (!escaped) state.tokenize = tokenBase;
-      return ret("string", "string");
-    };
-  }
-
-  function tokenComment(stream, state) {
-    var maybeEnd = false, ch;
-    while (ch = stream.next()) {
-      if (ch == "/" && maybeEnd) {
-        state.tokenize = tokenBase;
-        break;
-      }
-      maybeEnd = (ch == "*");
-    }
-    return ret("comment", "comment");
-  }
-
-  function tokenQuasi(stream, state) {
-    var escaped = false, next;
-    while ((next = stream.next()) != null) {
-      if (!escaped && (next == "`" || next == "$" && stream.eat("{"))) {
-        state.tokenize = tokenBase;
-        break;
-      }
-      escaped = !escaped && next == "\\";
-    }
-    return ret("quasi", "string-2", stream.current());
-  }
-
-  var brackets = "([{}])";
-  // This is a crude lookahead trick to try and notice that we're
-  // parsing the argument patterns for a fat-arrow function before we
-  // actually hit the arrow token. It only works if the arrow is on
-  // the same line as the arguments and there's no strange noise
-  // (comments) in between. Fallback is to only notice when we hit the
-  // arrow, and not declare the arguments as locals for the arrow
-  // body.
-  function findFatArrow(stream, state) {
-    if (state.fatArrowAt) state.fatArrowAt = null;
-    var arrow = stream.string.indexOf("=>", stream.start);
-    if (arrow < 0) return;
-
-    var depth = 0, sawSomething = false;
-    for (var pos = arrow - 1; pos >= 0; --pos) {
-      var ch = stream.string.charAt(pos);
-      var bracket = brackets.indexOf(ch);
-      if (bracket >= 0 && bracket < 3) {
-        if (!depth) { ++pos; break; }
-        if (--depth == 0) break;
-      } else if (bracket >= 3 && bracket < 6) {
-        ++depth;
-      } else if (wordRE.test(ch)) {
-        sawSomething = true;
-      } else if (sawSomething && !depth) {
-        ++pos;
-        break;
-      }
-    }
-    if (sawSomething && !depth) state.fatArrowAt = pos;
-  }
-
-  // Parser
-
-  var atomicTypes = {"atom": true, "number": true, "variable": true, "string": true, "regexp": true, "this": true, "jsonld-keyword": true};
-
-  function JSLexical(indented, column, type, align, prev, info) {
-    this.indented = indented;
-    this.column = column;
-    this.type = type;
-    this.prev = prev;
-    this.info = info;
-    if (align != null) this.align = align;
-  }
-
-  function inScope(state, varname) {
-    for (var v = state.localVars; v; v = v.next)
-      if (v.name == varname) return true;
-    for (var cx = state.context; cx; cx = cx.prev) {
-      for (var v = cx.vars; v; v = v.next)
-        if (v.name == varname) return true;
-    }
-  }
-
-  function parseJS(state, style, type, content, stream) {
-    var cc = state.cc;
-    // Communicate our context to the combinators.
-    // (Less wasteful than consing up a hundred closures on every call.)
-    cx.state = state; cx.stream = stream; cx.marked = null, cx.cc = cc; cx.style = style;
-
-    if (!state.lexical.hasOwnProperty("align"))
-      state.lexical.align = true;
-
-    while(true) {
-      var combinator = cc.length ? cc.pop() : jsonMode ? expression : statement;
-      if (combinator(type, content)) {
-        while(cc.length && cc[cc.length - 1].lex)
-          cc.pop()();
-        if (cx.marked) return cx.marked;
-        if (type == "variable" && inScope(state, content)) return "variable-2";
-        return style;
-      }
-    }
-  }
-
-  // Combinator utils
-
-  var cx = {state: null, column: null, marked: null, cc: null};
-  function pass() {
-    for (var i = arguments.length - 1; i >= 0; i--) cx.cc.push(arguments[i]);
-  }
-  function cont() {
-    pass.apply(null, arguments);
-    return true;
-  }
-  function register(varname) {
-    function inList(list) {
-      for (var v = list; v; v = v.next)
-        if (v.name == varname) return true;
-      return false;
-    }
-    var state = cx.state;
-    if (state.context) {
-      cx.marked = "def";
-      if (inList(state.localVars)) return;
-      state.localVars = {name: varname, next: state.localVars};
-    } else {
-      if (inList(state.globalVars)) return;
-      if (parserConfig.globalVars)
-        state.globalVars = {name: varname, next: state.globalVars};
-    }
-  }
-
-  // Combinators
-
-  var defaultVars = {name: "this", next: {name: "arguments"}};
-  function pushcontext() {
-    cx.state.context = {prev: cx.state.context, vars: cx.state.localVars};
-    cx.state.localVars = defaultVars;
-  }
-  function popcontext() {
-    cx.state.localVars = cx.state.context.vars;
-    cx.state.context = cx.state.context.prev;
-  }
-  function pushlex(type, info) {
-    var result = function() {
-      var state = cx.state, indent = state.indented;
-      if (state.lexical.type == "stat") indent = state.lexical.indented;
-      else for (var outer = state.lexical; outer && outer.type == ")" && outer.align; outer = outer.prev)
-        indent = outer.indented;
-      state.lexical = new JSLexical(indent, cx.stream.column(), type, null, state.lexical, info);
-    };
-    result.lex = true;
-    return result;
-  }
-  function poplex() {
-    var state = cx.state;
-    if (state.lexical.prev) {
-      if (state.lexical.type == ")")
-        state.indented = state.lexical.indented;
-      state.lexical = state.lexical.prev;
-    }
-  }
-  poplex.lex = true;
-
-  function expect(wanted) {
-    function exp(type) {
-      if (type == wanted) return cont();
-      else if (wanted == ";") return pass();
-      else return cont(exp);
-    };
-    return exp;
-  }
-
-  function statement(type, value) {
-    if (type == "var") return cont(pushlex("vardef", value.length), vardef, expect(";"), poplex);
-    if (type == "keyword a") return cont(pushlex("form"), expression, statement, poplex);
-    if (type == "keyword b") return cont(pushlex("form"), statement, poplex);
-    if (type == "{") return cont(pushlex("}"), block, poplex);
-    if (type == ";") return cont();
-    if (type == "if") {
-      if (cx.state.lexical.info == "else" && cx.state.cc[cx.state.cc.length - 1] == poplex)
-        cx.state.cc.pop()();
-      return cont(pushlex("form"), expression, statement, poplex, maybeelse);
-    }
-    if (type == "function") return cont(functiondef);
-    if (type == "for") return cont(pushlex("form"), forspec, statement, poplex);
-    if (type == "variable") return cont(pushlex("stat"), maybelabel);
-    if (type == "switch") return cont(pushlex("form"), expression, pushlex("}", "switch"), expect("{"),
-                                      block, poplex, poplex);
-    if (type == "case") return cont(expression, expect(":"));
-    if (type == "default") return cont(expect(":"));
-    if (type == "catch") return cont(pushlex("form"), pushcontext, expect("("), funarg, expect(")"),
-                                     statement, poplex, popcontext);
-    if (type == "module") return cont(pushlex("form"), pushcontext, afterModule, popcontext, poplex);
-    if (type == "class") return cont(pushlex("form"), className, poplex);
-    if (type == "export") return cont(pushlex("form"), afterExport, poplex);
-    if (type == "import") return cont(pushlex("form"), afterImport, poplex);
-    return pass(pushlex("stat"), expression, expect(";"), poplex);
-  }
-  function expression(type) {
-    return expressionInner(type, false);
-  }
-  function expressionNoComma(type) {
-    return expressionInner(type, true);
-  }
-  function expressionInner(type, noComma) {
-    if (cx.state.fatArrowAt == cx.stream.start) {
-      var body = noComma ? arrowBodyNoComma : arrowBody;
-      if (type == "(") return cont(pushcontext, pushlex(")"), commasep(pattern, ")"), poplex, expect("=>"), body, popcontext);
-      else if (type == "variable") return pass(pushcontext, pattern, expect("=>"), body, popcontext);
-    }
-
-    var maybeop = noComma ? maybeoperatorNoComma : maybeoperatorComma;
-    if (atomicTypes.hasOwnProperty(type)) return cont(maybeop);
-    if (type == "function") return cont(functiondef, maybeop);
-    if (type == "keyword c") return cont(noComma ? maybeexpressionNoComma : maybeexpression);
-    if (type == "(") return cont(pushlex(")"), maybeexpression, comprehension, expect(")"), poplex, maybeop);
-    if (type == "operator" || type == "spread") return cont(noComma ? expressionNoComma : expression);
-    if (type == "[") return cont(pushlex("]"), arrayLiteral, poplex, maybeop);
-    if (type == "{") return contCommasep(objprop, "}", null, maybeop);
-    if (type == "quasi") { return pass(quasi, maybeop); }
-    return cont();
-  }
-  function maybeexpression(type) {
-    if (type.match(/[;\}\)\],]/)) return pass();
-    return pass(expression);
-  }
-  function maybeexpressionNoComma(type) {
-    if (type.match(/[;\}\)\],]/)) return pass();
-    return pass(expressionNoComma);
-  }
-
-  function maybeoperatorComma(type, value) {
-    if (type == ",") return cont(expression);
-    return maybeoperatorNoComma(type, value, false);
-  }
-  function maybeoperatorNoComma(type, value, noComma) {
-    var me = noComma == false ? maybeoperatorComma : maybeoperatorNoComma;
-    var expr = noComma == false ? expression : expressionNoComma;
-    if (type == "=>") return cont(pushcontext, noComma ? arrowBodyNoComma : arrowBody, popcontext);
-    if (type == "operator") {
-      if (/\+\+|--/.test(value)) return cont(me);
-      if (value == "?") return cont(expression, expect(":"), expr);
-      return cont(expr);
-    }
-    if (type == "quasi") { return pass(quasi, me); }
-    if (type == ";") return;
-    if (type == "(") return contCommasep(expressionNoComma, ")", "call", me);
-    if (type == ".") return cont(property, me);
-    if (type == "[") return cont(pushlex("]"), maybeexpression, expect("]"), poplex, me);
-  }
-  function quasi(type, value) {
-    if (type != "quasi") return pass();
-    if (value.slice(value.length - 2) != "${") return cont(quasi);
-    return cont(expression, continueQuasi);
-  }
-  function continueQuasi(type) {
-    if (type == "}") {
-      cx.marked = "string-2";
-      cx.state.tokenize = tokenQuasi;
-      return cont(quasi);
-    }
-  }
-  function arrowBody(type) {
-    findFatArrow(cx.stream, cx.state);
-    return pass(type == "{" ? statement : expression);
-  }
-  function arrowBodyNoComma(type) {
-    findFatArrow(cx.stream, cx.state);
-    return pass(type == "{" ? statement : expressionNoComma);
-  }
-  function maybelabel(type) {
-    if (type == ":") return cont(poplex, statement);
-    return pass(maybeoperatorComma, expect(";"), poplex);
-  }
-  function property(type) {
-    if (type == "variable") {cx.marked = "property"; return cont();}
-  }
-  function objprop(type, value) {
-    if (type == "variable" || cx.style == "keyword") {
-      cx.marked = "property";
-      if (value == "get" || value == "set") return cont(getterSetter);
-      return cont(afterprop);
-    } else if (type == "number" || type == "string") {
-      cx.marked = jsonldMode ? "property" : (cx.style + " property");
-      return cont(afterprop);
-    } else if (type == "jsonld-keyword") {
-      return cont(afterprop);
-    } else if (type == "[") {
-      return cont(expression, expect("]"), afterprop);
-    }
-  }
-  function getterSetter(type) {
-    if (type != "variable") return pass(afterprop);
-    cx.marked = "property";
-    return cont(functiondef);
-  }
-  function afterprop(type) {
-    if (type == ":") return cont(expressionNoComma);
-    if (type == "(") return pass(functiondef);
-  }
-  function commasep(what, end) {
-    function proceed(type) {
-      if (type == ",") {
-        var lex = cx.state.lexical;
-        if (lex.info == "call") lex.pos = (lex.pos || 0) + 1;
-        return cont(what, proceed);
-      }
-      if (type == end) return cont();
-      return cont(expect(end));
-    }
-    return function(type) {
-      if (type == end) return cont();
-      return pass(what, proceed);
-    };
-  }
-  function contCommasep(what, end, info) {
-    for (var i = 3; i < arguments.length; i++)
-      cx.cc.push(arguments[i]);
-    return cont(pushlex(end, info), commasep(what, end), poplex);
-  }
-  function block(type) {
-    if (type == "}") return cont();
-    return pass(statement, block);
-  }
-  function maybetype(type) {
-    if (isTS && type == ":") return cont(typedef);
-  }
-  function typedef(type) {
-    if (type == "variable"){cx.marked = "variable-3"; return cont();}
-  }
-  function vardef() {
-    return pass(pattern, maybetype, maybeAssign, vardefCont);
-  }
-  function pattern(type, value) {
-    if (type == "variable") { register(value); return cont(); }
-    if (type == "[") return contCommasep(pattern, "]");
-    if (type == "{") return contCommasep(proppattern, "}");
-  }
-  function proppattern(type, value) {
-    if (type == "variable" && !cx.stream.match(/^\s*:/, false)) {
-      register(value);
-      return cont(maybeAssign);
-    }
-    if (type == "variable") cx.marked = "property";
-    return cont(expect(":"), pattern, maybeAssign);
-  }
-  function maybeAssign(_type, value) {
-    if (value == "=") return cont(expressionNoComma);
-  }
-  function vardefCont(type) {
-    if (type == ",") return cont(vardef);
-  }
-  function maybeelse(type, value) {
-    if (type == "keyword b" && value == "else") return cont(pushlex("form", "else"), statement, poplex);
-  }
-  function forspec(type) {
-    if (type == "(") return cont(pushlex(")"), forspec1, expect(")"), poplex);
-  }
-  function forspec1(type) {
-    if (type == "var") return cont(vardef, expect(";"), forspec2);
-    if (type == ";") return cont(forspec2);
-    if (type == "variable") return cont(formaybeinof);
-    return pass(expression, expect(";"), forspec2);
-  }
-  function formaybeinof(_type, value) {
-    if (value == "in" || value == "of") { cx.marked = "keyword"; return cont(expression); }
-    return cont(maybeoperatorComma, forspec2);
-  }
-  function forspec2(type, value) {
-    if (type == ";") return cont(forspec3);
-    if (value == "in" || value == "of") { cx.marked = "keyword"; return cont(expression); }
-    return pass(expression, expect(";"), forspec3);
-  }
-  function forspec3(type) {
-    if (type != ")") cont(expression);
-  }
-  function functiondef(type, value) {
-    if (value == "*") {cx.marked = "keyword"; return cont(functiondef);}
-    if (type == "variable") {register(value); return cont(functiondef);}
-    if (type == "(") return cont(pushcontext, pushlex(")"), commasep(funarg, ")"), poplex, statement, popcontext);
-  }
-  function funarg(type) {
-    if (type == "spread") return cont(funarg);
-    return pass(pattern, maybetype);
-  }
-  function className(type, value) {
-    if (type == "variable") {register(value); return cont(classNameAfter);}
-  }
-  function classNameAfter(type, value) {
-    if (value == "extends") return cont(expression, classNameAfter);
-    if (type == "{") return cont(pushlex("}"), classBody, poplex);
-  }
-  function classBody(type, value) {
-    if (type == "variable" || cx.style == "keyword") {
-      cx.marked = "property";
-      if (value == "get" || value == "set") return cont(classGetterSetter, functiondef, classBody);
-      return cont(functiondef, classBody);
-    }
-    if (value == "*") {
-      cx.marked = "keyword";
-      return cont(classBody);
-    }
-    if (type == ";") return cont(classBody);
-    if (type == "}") return cont();
-  }
-  function classGetterSetter(type) {
-    if (type != "variable") return pass();
-    cx.marked = "property";
-    return cont();
-  }
-  function afterModule(type, value) {
-    if (type == "string") return cont(statement);
-    if (type == "variable") { register(value); return cont(maybeFrom); }
-  }
-  function afterExport(_type, value) {
-    if (value == "*") { cx.marked = "keyword"; return cont(maybeFrom, expect(";")); }
-    if (value == "default") { cx.marked = "keyword"; return cont(expression, expect(";")); }
-    return pass(statement);
-  }
-  function afterImport(type) {
-    if (type == "string") return cont();
-    return pass(importSpec, maybeFrom);
-  }
-  function importSpec(type, value) {
-    if (type == "{") return contCommasep(importSpec, "}");
-    if (type == "variable") register(value);
-    return cont();
-  }
-  function maybeFrom(_type, value) {
-    if (value == "from") { cx.marked = "keyword"; return cont(expression); }
-  }
-  function arrayLiteral(type) {
-    if (type == "]") return cont();
-    return pass(expressionNoComma, maybeArrayComprehension);
-  }
-  function maybeArrayComprehension(type) {
-    if (type == "for") return pass(comprehension, expect("]"));
-    if (type == ",") return cont(commasep(expressionNoComma, "]"));
-    return pass(commasep(expressionNoComma, "]"));
-  }
-  function comprehension(type) {
-    if (type == "for") return cont(forspec, comprehension);
-    if (type == "if") return cont(expression, comprehension);
-  }
-
-  // Interface
-
-  return {
-    startState: function(basecolumn) {
-      var state = {
-        tokenize: tokenBase,
-        lastType: "sof",
-        cc: [],
-        lexical: new JSLexical((basecolumn || 0) - indentUnit, 0, "block", false),
-        localVars: parserConfig.localVars,
-        context: parserConfig.localVars && {vars: parserConfig.localVars},
-        indented: 0
-      };
-      if (parserConfig.globalVars && typeof parserConfig.globalVars == "object")
-        state.globalVars = parserConfig.globalVars;
-      return state;
-    },
-
-    token: function(stream, state) {
-      if (stream.sol()) {
-        if (!state.lexical.hasOwnProperty("align"))
-          state.lexical.align = false;
-        state.indented = stream.indentation();
-        findFatArrow(stream, state);
-      }
-      if (state.tokenize != tokenComment && stream.eatSpace()) return null;
-      var style = state.tokenize(stream, state);
-      if (type == "comment") return style;
-      state.lastType = type == "operator" && (content == "++" || content == "--") ? "incdec" : type;
-      return parseJS(state, style, type, content, stream);
-    },
-
-    indent: function(state, textAfter) {
-      if (state.tokenize == tokenComment) return CodeMirror.Pass;
-      if (state.tokenize != tokenBase) return 0;
-      var firstChar = textAfter && textAfter.charAt(0), lexical = state.lexical;
-      // Kludge to prevent 'maybelse' from blocking lexical scope pops
-      if (!/^\s*else\b/.test(textAfter)) for (var i = state.cc.length - 1; i >= 0; --i) {
-        var c = state.cc[i];
-        if (c == poplex) lexical = lexical.prev;
-        else if (c != maybeelse) break;
-      }
-      if (lexical.type == "stat" && firstChar == "}") lexical = lexical.prev;
-      if (statementIndent && lexical.type == ")" && lexical.prev.type == "stat")
-        lexical = lexical.prev;
-      var type = lexical.type, closing = firstChar == type;
-
-      if (type == "vardef") return lexical.indented + (state.lastType == "operator" || state.lastType == "," ? lexical.info + 1 : 0);
-      else if (type == "form" && firstChar == "{") return lexical.indented;
-      else if (type == "form") return lexical.indented + indentUnit;
-      else if (type == "stat")
-        return lexical.indented + (state.lastType == "operator" || state.lastType == "," ? statementIndent || indentUnit : 0);
-      else if (lexical.info == "switch" && !closing && parserConfig.doubleIndentSwitch != false)
-        return lexical.indented + (/^(?:case|default)\b/.test(textAfter) ? indentUnit : 2 * indentUnit);
-      else if (lexical.align) return lexical.column + (closing ? 0 : 1);
-      else return lexical.indented + (closing ? 0 : indentUnit);
-    },
-
-    electricChars: ":{}",
-    blockCommentStart: jsonMode ? null : "/*",
-    blockCommentEnd: jsonMode ? null : "*/",
-    lineComment: jsonMode ? null : "//",
-    fold: "brace",
-
-    helperType: jsonMode ? "json" : "javascript",
-    jsonldMode: jsonldMode,
-    jsonMode: jsonMode
-  };
-});
-
-CodeMirror.registerHelper("wordChars", "javascript", /[\w$]/);
-
-CodeMirror.defineMIME("text/javascript", "javascript");
-CodeMirror.defineMIME("text/ecmascript", "javascript");
-CodeMirror.defineMIME("application/javascript", "javascript");
-CodeMirror.defineMIME("application/x-javascript", "javascript");
-CodeMirror.defineMIME("application/ecmascript", "javascript");
-CodeMirror.defineMIME("application/json", {name: "javascript", json: true});
-CodeMirror.defineMIME("application/x-json", {name: "javascript", json: true});
-CodeMirror.defineMIME("application/ld+json", {name: "javascript", jsonld: true});
-CodeMirror.defineMIME("text/typescript", { name: "javascript", typescript: true });
-CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript: true });
-
-});
-},{"codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/js/external/injectCSS.js":[function(require,module,exports){
+},{"./external/injectCSS.js":"/www/gibber.libraries/js/external/injectCSS.js","./gibber/dollar":"/www/gibber.libraries/js/gibber/dollar.js","./gibber/environment":"/www/gibber.libraries/js/gibber/environment.js","gibber.lib":"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/gibber.js"}],"/www/gibber.libraries/js/external/injectCSS.js":[function(require,module,exports){
 /*
  * jquery.injectCSS.js - jquery css injection plugin
  * Copyright (C) 2013, Robert Kajic (robert@kajic.com)
@@ -1327,6 +190,9 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
         return container;
     };
 }($));
+},{}],"/www/gibber.libraries/js/external/socket.io.min.js":[function(require,module,exports){
+/*! Socket.IO.min.js build:0.9.16, production. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
+var io="undefined"==typeof module?{}:module.exports;(function(){(function(a,b){var c=a;c.version="0.9.16",c.protocol=1,c.transports=[],c.j=[],c.sockets={},c.connect=function(a,d){var e=c.util.parseUri(a),f,g;b&&b.location&&(e.protocol=e.protocol||b.location.protocol.slice(0,-1),e.host=e.host||(b.document?b.document.domain:b.location.hostname),e.port=e.port||b.location.port),f=c.util.uniqueUri(e);var h={host:e.host,secure:"https"==e.protocol,port:e.port||("https"==e.protocol?443:80),query:e.query||""};c.util.merge(h,d);if(h["force new connection"]||!c.sockets[f])g=new c.Socket(h);return!h["force new connection"]&&g&&(c.sockets[f]=g),g=g||c.sockets[f],g.of(e.path.length>1?e.path:"")}})("object"==typeof module?module.exports:this.io={},this),function(a,b){var c=a.util={},d=/^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/,e=["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"];c.parseUri=function(a){var b=d.exec(a||""),c={},f=14;while(f--)c[e[f]]=b[f]||"";return c},c.uniqueUri=function(a){var c=a.protocol,d=a.host,e=a.port;return"document"in b?(d=d||document.domain,e=e||(c=="https"&&document.location.protocol!=="https:"?443:document.location.port)):(d=d||"localhost",!e&&c=="https"&&(e=443)),(c||"http")+"://"+d+":"+(e||80)},c.query=function(a,b){var d=c.chunkQuery(a||""),e=[];c.merge(d,c.chunkQuery(b||""));for(var f in d)d.hasOwnProperty(f)&&e.push(f+"="+d[f]);return e.length?"?"+e.join("&"):""},c.chunkQuery=function(a){var b={},c=a.split("&"),d=0,e=c.length,f;for(;d<e;++d)f=c[d].split("="),f[0]&&(b[f[0]]=f[1]);return b};var f=!1;c.load=function(a){if("document"in b&&document.readyState==="complete"||f)return a();c.on(b,"load",a,!1)},c.on=function(a,b,c,d){a.attachEvent?a.attachEvent("on"+b,c):a.addEventListener&&a.addEventListener(b,c,d)},c.request=function(a){if(a&&"undefined"!=typeof XDomainRequest&&!c.ua.hasCORS)return new XDomainRequest;if("undefined"!=typeof XMLHttpRequest&&(!a||c.ua.hasCORS))return new XMLHttpRequest;if(!a)try{return new(window[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(b){}return null},"undefined"!=typeof window&&c.load(function(){f=!0}),c.defer=function(a){if(!c.ua.webkit||"undefined"!=typeof importScripts)return a();c.load(function(){setTimeout(a,100)})},c.merge=function(b,d,e,f){var g=f||[],h=typeof e=="undefined"?2:e,i;for(i in d)d.hasOwnProperty(i)&&c.indexOf(g,i)<0&&(typeof b[i]!="object"||!h?(b[i]=d[i],g.push(d[i])):c.merge(b[i],d[i],h-1,g));return b},c.mixin=function(a,b){c.merge(a.prototype,b.prototype)},c.inherit=function(a,b){function c(){}c.prototype=b.prototype,a.prototype=new c},c.isArray=Array.isArray||function(a){return Object.prototype.toString.call(a)==="[object Array]"},c.intersect=function(a,b){var d=[],e=a.length>b.length?a:b,f=a.length>b.length?b:a;for(var g=0,h=f.length;g<h;g++)~c.indexOf(e,f[g])&&d.push(f[g]);return d},c.indexOf=function(a,b,c){for(var d=a.length,c=c<0?c+d<0?0:c+d:c||0;c<d&&a[c]!==b;c++);return d<=c?-1:c},c.toArray=function(a){var b=[];for(var c=0,d=a.length;c<d;c++)b.push(a[c]);return b},c.ua={},c.ua.hasCORS="undefined"!=typeof XMLHttpRequest&&function(){try{var a=new XMLHttpRequest}catch(b){return!1}return a.withCredentials!=undefined}(),c.ua.webkit="undefined"!=typeof navigator&&/webkit/i.test(navigator.userAgent),c.ua.iDevice="undefined"!=typeof navigator&&/iPad|iPhone|iPod/i.test(navigator.userAgent)}("undefined"!=typeof io?io:module.exports,this),function(a,b){function c(){}a.EventEmitter=c,c.prototype.on=function(a,c){return this.$events||(this.$events={}),this.$events[a]?b.util.isArray(this.$events[a])?this.$events[a].push(c):this.$events[a]=[this.$events[a],c]:this.$events[a]=c,this},c.prototype.addListener=c.prototype.on,c.prototype.once=function(a,b){function d(){c.removeListener(a,d),b.apply(this,arguments)}var c=this;return d.listener=b,this.on(a,d),this},c.prototype.removeListener=function(a,c){if(this.$events&&this.$events[a]){var d=this.$events[a];if(b.util.isArray(d)){var e=-1;for(var f=0,g=d.length;f<g;f++)if(d[f]===c||d[f].listener&&d[f].listener===c){e=f;break}if(e<0)return this;d.splice(e,1),d.length||delete this.$events[a]}else(d===c||d.listener&&d.listener===c)&&delete this.$events[a]}return this},c.prototype.removeAllListeners=function(a){return a===undefined?(this.$events={},this):(this.$events&&this.$events[a]&&(this.$events[a]=null),this)},c.prototype.listeners=function(a){return this.$events||(this.$events={}),this.$events[a]||(this.$events[a]=[]),b.util.isArray(this.$events[a])||(this.$events[a]=[this.$events[a]]),this.$events[a]},c.prototype.emit=function(a){if(!this.$events)return!1;var c=this.$events[a];if(!c)return!1;var d=Array.prototype.slice.call(arguments,1);if("function"==typeof c)c.apply(this,d);else{if(!b.util.isArray(c))return!1;var e=c.slice();for(var f=0,g=e.length;f<g;f++)e[f].apply(this,d)}return!0}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(exports,nativeJSON){function f(a){return a<10?"0"+a:a}function date(a,b){return isFinite(a.valueOf())?a.getUTCFullYear()+"-"+f(a.getUTCMonth()+1)+"-"+f(a.getUTCDate())+"T"+f(a.getUTCHours())+":"+f(a.getUTCMinutes())+":"+f(a.getUTCSeconds())+"Z":null}function quote(a){return escapable.lastIndex=0,escapable.test(a)?'"'+a.replace(escapable,function(a){var b=meta[a];return typeof b=="string"?b:"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)})+'"':'"'+a+'"'}function str(a,b){var c,d,e,f,g=gap,h,i=b[a];i instanceof Date&&(i=date(a)),typeof rep=="function"&&(i=rep.call(b,a,i));switch(typeof i){case"string":return quote(i);case"number":return isFinite(i)?String(i):"null";case"boolean":case"null":return String(i);case"object":if(!i)return"null";gap+=indent,h=[];if(Object.prototype.toString.apply(i)==="[object Array]"){f=i.length;for(c=0;c<f;c+=1)h[c]=str(c,i)||"null";return e=h.length===0?"[]":gap?"[\n"+gap+h.join(",\n"+gap)+"\n"+g+"]":"["+h.join(",")+"]",gap=g,e}if(rep&&typeof rep=="object"){f=rep.length;for(c=0;c<f;c+=1)typeof rep[c]=="string"&&(d=rep[c],e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e))}else for(d in i)Object.prototype.hasOwnProperty.call(i,d)&&(e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e));return e=h.length===0?"{}":gap?"{\n"+gap+h.join(",\n"+gap)+"\n"+g+"}":"{"+h.join(",")+"}",gap=g,e}}"use strict";if(nativeJSON&&nativeJSON.parse)return exports.JSON={parse:nativeJSON.parse,stringify:nativeJSON.stringify};var JSON=exports.JSON={},cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"},rep;JSON.stringify=function(a,b,c){var d;gap="",indent="";if(typeof c=="number")for(d=0;d<c;d+=1)indent+=" ";else typeof c=="string"&&(indent=c);rep=b;if(!b||typeof b=="function"||typeof b=="object"&&typeof b.length=="number")return str("",{"":a});throw new Error("JSON.stringify")},JSON.parse=function(text,reviver){function walk(a,b){var c,d,e=a[b];if(e&&typeof e=="object")for(c in e)Object.prototype.hasOwnProperty.call(e,c)&&(d=walk(e,c),d!==undefined?e[c]=d:delete e[c]);return reviver.call(a,b,e)}var j;text=String(text),cx.lastIndex=0,cx.test(text)&&(text=text.replace(cx,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:\s*\[)+/g,"")))return j=eval("("+text+")"),typeof reviver=="function"?walk({"":j},""):j;throw new SyntaxError("JSON.parse")}}("undefined"!=typeof io?io:module.exports,typeof JSON!="undefined"?JSON:undefined),function(a,b){var c=a.parser={},d=c.packets=["disconnect","connect","heartbeat","message","json","event","ack","error","noop"],e=c.reasons=["transport not supported","client not handshaken","unauthorized"],f=c.advice=["reconnect"],g=b.JSON,h=b.util.indexOf;c.encodePacket=function(a){var b=h(d,a.type),c=a.id||"",i=a.endpoint||"",j=a.ack,k=null;switch(a.type){case"error":var l=a.reason?h(e,a.reason):"",m=a.advice?h(f,a.advice):"";if(l!==""||m!=="")k=l+(m!==""?"+"+m:"");break;case"message":a.data!==""&&(k=a.data);break;case"event":var n={name:a.name};a.args&&a.args.length&&(n.args=a.args),k=g.stringify(n);break;case"json":k=g.stringify(a.data);break;case"connect":a.qs&&(k=a.qs);break;case"ack":k=a.ackId+(a.args&&a.args.length?"+"+g.stringify(a.args):"")}var o=[b,c+(j=="data"?"+":""),i];return k!==null&&k!==undefined&&o.push(k),o.join(":")},c.encodePayload=function(a){var b="";if(a.length==1)return a[0];for(var c=0,d=a.length;c<d;c++){var e=a[c];b+="\ufffd"+e.length+"\ufffd"+a[c]}return b};var i=/([^:]+):([0-9]+)?(\+)?:([^:]+)?:?([\s\S]*)?/;c.decodePacket=function(a){var b=a.match(i);if(!b)return{};var c=b[2]||"",a=b[5]||"",h={type:d[b[1]],endpoint:b[4]||""};c&&(h.id=c,b[3]?h.ack="data":h.ack=!0);switch(h.type){case"error":var b=a.split("+");h.reason=e[b[0]]||"",h.advice=f[b[1]]||"";break;case"message":h.data=a||"";break;case"event":try{var j=g.parse(a);h.name=j.name,h.args=j.args}catch(k){}h.args=h.args||[];break;case"json":try{h.data=g.parse(a)}catch(k){}break;case"connect":h.qs=a||"";break;case"ack":var b=a.match(/^([0-9]+)(\+)?(.*)/);if(b){h.ackId=b[1],h.args=[];if(b[3])try{h.args=b[3]?g.parse(b[3]):[]}catch(k){}}break;case"disconnect":case"heartbeat":}return h},c.decodePayload=function(a){if(a.charAt(0)=="\ufffd"){var b=[];for(var d=1,e="";d<a.length;d++)a.charAt(d)=="\ufffd"?(b.push(c.decodePacket(a.substr(d+1).substr(0,e))),d+=Number(e)+1,e=""):e+=a.charAt(d);return b}return[c.decodePacket(a)]}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b){function c(a,b){this.socket=a,this.sessid=b}a.Transport=c,b.util.mixin(c,b.EventEmitter),c.prototype.heartbeats=function(){return!0},c.prototype.onData=function(a){this.clearCloseTimeout(),(this.socket.connected||this.socket.connecting||this.socket.reconnecting)&&this.setCloseTimeout();if(a!==""){var c=b.parser.decodePayload(a);if(c&&c.length)for(var d=0,e=c.length;d<e;d++)this.onPacket(c[d])}return this},c.prototype.onPacket=function(a){return this.socket.setHeartbeatTimeout(),a.type=="heartbeat"?this.onHeartbeat():(a.type=="connect"&&a.endpoint==""&&this.onConnect(),a.type=="error"&&a.advice=="reconnect"&&(this.isOpen=!1),this.socket.onPacket(a),this)},c.prototype.setCloseTimeout=function(){if(!this.closeTimeout){var a=this;this.closeTimeout=setTimeout(function(){a.onDisconnect()},this.socket.closeTimeout)}},c.prototype.onDisconnect=function(){return this.isOpen&&this.close(),this.clearTimeouts(),this.socket.onDisconnect(),this},c.prototype.onConnect=function(){return this.socket.onConnect(),this},c.prototype.clearCloseTimeout=function(){this.closeTimeout&&(clearTimeout(this.closeTimeout),this.closeTimeout=null)},c.prototype.clearTimeouts=function(){this.clearCloseTimeout(),this.reopenTimeout&&clearTimeout(this.reopenTimeout)},c.prototype.packet=function(a){this.send(b.parser.encodePacket(a))},c.prototype.onHeartbeat=function(a){this.packet({type:"heartbeat"})},c.prototype.onOpen=function(){this.isOpen=!0,this.clearCloseTimeout(),this.socket.onOpen()},c.prototype.onClose=function(){var a=this;this.isOpen=!1,this.socket.onClose(),this.onDisconnect()},c.prototype.prepareUrl=function(){var a=this.socket.options;return this.scheme()+"://"+a.host+":"+a.port+"/"+a.resource+"/"+b.protocol+"/"+this.name+"/"+this.sessid},c.prototype.ready=function(a,b){b.call(this)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(a){this.options={port:80,secure:!1,document:"document"in c?document:!1,resource:"socket.io",transports:b.transports,"connect timeout":1e4,"try multiple transports":!0,reconnect:!0,"reconnection delay":500,"reconnection limit":Infinity,"reopen delay":3e3,"max reconnection attempts":10,"sync disconnect on unload":!1,"auto connect":!0,"flash policy port":10843,manualFlush:!1},b.util.merge(this.options,a),this.connected=!1,this.open=!1,this.connecting=!1,this.reconnecting=!1,this.namespaces={},this.buffer=[],this.doBuffer=!1;if(this.options["sync disconnect on unload"]&&(!this.isXDomain()||b.util.ua.hasCORS)){var d=this;b.util.on(c,"beforeunload",function(){d.disconnectSync()},!1)}this.options["auto connect"]&&this.connect()}function e(){}a.Socket=d,b.util.mixin(d,b.EventEmitter),d.prototype.of=function(a){return this.namespaces[a]||(this.namespaces[a]=new b.SocketNamespace(this,a),a!==""&&this.namespaces[a].packet({type:"connect"})),this.namespaces[a]},d.prototype.publish=function(){this.emit.apply(this,arguments);var a;for(var b in this.namespaces)this.namespaces.hasOwnProperty(b)&&(a=this.of(b),a.$emit.apply(a,arguments))},d.prototype.handshake=function(a){function f(b){b instanceof Error?(c.connecting=!1,c.onError(b.message)):a.apply(null,b.split(":"))}var c=this,d=this.options,g=["http"+(d.secure?"s":"")+":/",d.host+":"+d.port,d.resource,b.protocol,b.util.query(this.options.query,"t="+ +(new Date))].join("/");if(this.isXDomain()&&!b.util.ua.hasCORS){var h=document.getElementsByTagName("script")[0],i=document.createElement("script");i.src=g+"&jsonp="+b.j.length,h.parentNode.insertBefore(i,h),b.j.push(function(a){f(a),i.parentNode.removeChild(i)})}else{var j=b.util.request();j.open("GET",g,!0),this.isXDomain()&&(j.withCredentials=!0),j.onreadystatechange=function(){j.readyState==4&&(j.onreadystatechange=e,j.status==200?f(j.responseText):j.status==403?c.onError(j.responseText):(c.connecting=!1,!c.reconnecting&&c.onError(j.responseText)))},j.send(null)}},d.prototype.getTransport=function(a){var c=a||this.transports,d;for(var e=0,f;f=c[e];e++)if(b.Transport[f]&&b.Transport[f].check(this)&&(!this.isXDomain()||b.Transport[f].xdomainCheck(this)))return new b.Transport[f](this,this.sessionid);return null},d.prototype.connect=function(a){if(this.connecting)return this;var c=this;return c.connecting=!0,this.handshake(function(d,e,f,g){function h(a){c.transport&&c.transport.clearTimeouts(),c.transport=c.getTransport(a);if(!c.transport)return c.publish("connect_failed");c.transport.ready(c,function(){c.connecting=!0,c.publish("connecting",c.transport.name),c.transport.open(),c.options["connect timeout"]&&(c.connectTimeoutTimer=setTimeout(function(){if(!c.connected){c.connecting=!1;if(c.options["try multiple transports"]){var a=c.transports;while(a.length>0&&a.splice(0,1)[0]!=c.transport.name);a.length?h(a):c.publish("connect_failed")}}},c.options["connect timeout"]))})}c.sessionid=d,c.closeTimeout=f*1e3,c.heartbeatTimeout=e*1e3,c.transports||(c.transports=c.origTransports=g?b.util.intersect(g.split(","),c.options.transports):c.options.transports),c.setHeartbeatTimeout(),h(c.transports),c.once("connect",function(){clearTimeout(c.connectTimeoutTimer),a&&typeof a=="function"&&a()})}),this},d.prototype.setHeartbeatTimeout=function(){clearTimeout(this.heartbeatTimeoutTimer);if(this.transport&&!this.transport.heartbeats())return;var a=this;this.heartbeatTimeoutTimer=setTimeout(function(){a.transport.onClose()},this.heartbeatTimeout)},d.prototype.packet=function(a){return this.connected&&!this.doBuffer?this.transport.packet(a):this.buffer.push(a),this},d.prototype.setBuffer=function(a){this.doBuffer=a,!a&&this.connected&&this.buffer.length&&(this.options.manualFlush||this.flushBuffer())},d.prototype.flushBuffer=function(){this.transport.payload(this.buffer),this.buffer=[]},d.prototype.disconnect=function(){if(this.connected||this.connecting)this.open&&this.of("").packet({type:"disconnect"}),this.onDisconnect("booted");return this},d.prototype.disconnectSync=function(){var a=b.util.request(),c=["http"+(this.options.secure?"s":"")+":/",this.options.host+":"+this.options.port,this.options.resource,b.protocol,"",this.sessionid].join("/")+"/?disconnect=1";a.open("GET",c,!1),a.send(null),this.onDisconnect("booted")},d.prototype.isXDomain=function(){var a=c.location.port||("https:"==c.location.protocol?443:80);return this.options.host!==c.location.hostname||this.options.port!=a},d.prototype.onConnect=function(){this.connected||(this.connected=!0,this.connecting=!1,this.doBuffer||this.setBuffer(!1),this.emit("connect"))},d.prototype.onOpen=function(){this.open=!0},d.prototype.onClose=function(){this.open=!1,clearTimeout(this.heartbeatTimeoutTimer)},d.prototype.onPacket=function(a){this.of(a.endpoint).onPacket(a)},d.prototype.onError=function(a){a&&a.advice&&a.advice==="reconnect"&&(this.connected||this.connecting)&&(this.disconnect(),this.options.reconnect&&this.reconnect()),this.publish("error",a&&a.reason?a.reason:a)},d.prototype.onDisconnect=function(a){var b=this.connected,c=this.connecting;this.connected=!1,this.connecting=!1,this.open=!1;if(b||c)this.transport.close(),this.transport.clearTimeouts(),b&&(this.publish("disconnect",a),"booted"!=a&&this.options.reconnect&&!this.reconnecting&&this.reconnect())},d.prototype.reconnect=function(){function e(){if(a.connected){for(var b in a.namespaces)a.namespaces.hasOwnProperty(b)&&""!==b&&a.namespaces[b].packet({type:"connect"});a.publish("reconnect",a.transport.name,a.reconnectionAttempts)}clearTimeout(a.reconnectionTimer),a.removeListener("connect_failed",f),a.removeListener("connect",f),a.reconnecting=!1,delete a.reconnectionAttempts,delete a.reconnectionDelay,delete a.reconnectionTimer,delete a.redoTransports,a.options["try multiple transports"]=c}function f(){if(!a.reconnecting)return;if(a.connected)return e();if(a.connecting&&a.reconnecting)return a.reconnectionTimer=setTimeout(f,1e3);a.reconnectionAttempts++>=b?a.redoTransports?(a.publish("reconnect_failed"),e()):(a.on("connect_failed",f),a.options["try multiple transports"]=!0,a.transports=a.origTransports,a.transport=a.getTransport(),a.redoTransports=!0,a.connect()):(a.reconnectionDelay<d&&(a.reconnectionDelay*=2),a.connect(),a.publish("reconnecting",a.reconnectionDelay,a.reconnectionAttempts),a.reconnectionTimer=setTimeout(f,a.reconnectionDelay))}this.reconnecting=!0,this.reconnectionAttempts=0,this.reconnectionDelay=this.options["reconnection delay"];var a=this,b=this.options["max reconnection attempts"],c=this.options["try multiple transports"],d=this.options["reconnection limit"];this.options["try multiple transports"]=!1,this.reconnectionTimer=setTimeout(f,this.reconnectionDelay),this.on("connect",f)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(a,b){this.socket=a,this.name=b||"",this.flags={},this.json=new d(this,"json"),this.ackPackets=0,this.acks={}}function d(a,b){this.namespace=a,this.name=b}a.SocketNamespace=c,b.util.mixin(c,b.EventEmitter),c.prototype.$emit=b.EventEmitter.prototype.emit,c.prototype.of=function(){return this.socket.of.apply(this.socket,arguments)},c.prototype.packet=function(a){return a.endpoint=this.name,this.socket.packet(a),this.flags={},this},c.prototype.send=function(a,b){var c={type:this.flags.json?"json":"message",data:a};return"function"==typeof b&&(c.id=++this.ackPackets,c.ack=!0,this.acks[c.id]=b),this.packet(c)},c.prototype.emit=function(a){var b=Array.prototype.slice.call(arguments,1),c=b[b.length-1],d={type:"event",name:a};return"function"==typeof c&&(d.id=++this.ackPackets,d.ack="data",this.acks[d.id]=c,b=b.slice(0,b.length-1)),d.args=b,this.packet(d)},c.prototype.disconnect=function(){return this.name===""?this.socket.disconnect():(this.packet({type:"disconnect"}),this.$emit("disconnect")),this},c.prototype.onPacket=function(a){function d(){c.packet({type:"ack",args:b.util.toArray(arguments),ackId:a.id})}var c=this;switch(a.type){case"connect":this.$emit("connect");break;case"disconnect":this.name===""?this.socket.onDisconnect(a.reason||"booted"):this.$emit("disconnect",a.reason);break;case"message":case"json":var e=["message",a.data];a.ack=="data"?e.push(d):a.ack&&this.packet({type:"ack",ackId:a.id}),this.$emit.apply(this,e);break;case"event":var e=[a.name].concat(a.args);a.ack=="data"&&e.push(d),this.$emit.apply(this,e);break;case"ack":this.acks[a.ackId]&&(this.acks[a.ackId].apply(this,a.args),delete this.acks[a.ackId]);break;case"error":a.advice?this.socket.onError(a):a.reason=="unauthorized"?this.$emit("connect_failed",a.reason):this.$emit("error",a.reason)}},d.prototype.send=function(){this.namespace.flags[this.name]=!0,this.namespace.send.apply(this.namespace,arguments)},d.prototype.emit=function(){this.namespace.flags[this.name]=!0,this.namespace.emit.apply(this.namespace,arguments)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(a){b.Transport.apply(this,arguments)}a.websocket=d,b.util.inherit(d,b.Transport),d.prototype.name="websocket",d.prototype.open=function(){var a=b.util.query(this.socket.options.query),d=this,e;return e||(e=c.MozWebSocket||c.WebSocket),this.websocket=new e(this.prepareUrl()+a),this.websocket.onopen=function(){d.onOpen(),d.socket.setBuffer(!1)},this.websocket.onmessage=function(a){d.onData(a.data)},this.websocket.onclose=function(){d.onClose(),d.socket.setBuffer(!0)},this.websocket.onerror=function(a){d.onError(a)},this},b.util.ua.iDevice?d.prototype.send=function(a){var b=this;return setTimeout(function(){b.websocket.send(a)},0),this}:d.prototype.send=function(a){return this.websocket.send(a),this},d.prototype.payload=function(a){for(var b=0,c=a.length;b<c;b++)this.packet(a[b]);return this},d.prototype.close=function(){return this.websocket.close(),this},d.prototype.onError=function(a){this.socket.onError(a)},d.prototype.scheme=function(){return this.socket.options.secure?"wss":"ws"},d.check=function(){return"WebSocket"in c&&!("__addTask"in WebSocket)||"MozWebSocket"in c},d.xdomainCheck=function(){return!0},b.transports.push("websocket")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(){b.Transport.websocket.apply(this,arguments)}a.flashsocket=c,b.util.inherit(c,b.Transport.websocket),c.prototype.name="flashsocket",c.prototype.open=function(){var a=this,c=arguments;return WebSocket.__addTask(function(){b.Transport.websocket.prototype.open.apply(a,c)}),this},c.prototype.send=function(){var a=this,c=arguments;return WebSocket.__addTask(function(){b.Transport.websocket.prototype.send.apply(a,c)}),this},c.prototype.close=function(){return WebSocket.__tasks.length=0,b.Transport.websocket.prototype.close.call(this),this},c.prototype.ready=function(a,d){function e(){var b=a.options,e=b["flash policy port"],g=["http"+(b.secure?"s":"")+":/",b.host+":"+b.port,b.resource,"static/flashsocket","WebSocketMain"+(a.isXDomain()?"Insecure":"")+".swf"];c.loaded||(typeof WEB_SOCKET_SWF_LOCATION=="undefined"&&(WEB_SOCKET_SWF_LOCATION=g.join("/")),e!==843&&WebSocket.loadFlashPolicyFile("xmlsocket://"+b.host+":"+e),WebSocket.__initialize(),c.loaded=!0),d.call(f)}var f=this;if(document.body)return e();b.util.load(e)},c.check=function(){return typeof WebSocket!="undefined"&&"__initialize"in WebSocket&&!!swfobject?swfobject.getFlashPlayerVersion().major>=10:!1},c.xdomainCheck=function(){return!0},typeof window!="undefined"&&(WEB_SOCKET_DISABLE_AUTO_INITIALIZATION=!0),b.transports.push("flashsocket")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports);if("undefined"!=typeof window)var swfobject=function(){function A(){if(t)return;try{var a=i.getElementsByTagName("body")[0].appendChild(Q("span"));a.parentNode.removeChild(a)}catch(b){return}t=!0;var c=l.length;for(var d=0;d<c;d++)l[d]()}function B(a){t?a():l[l.length]=a}function C(b){if(typeof h.addEventListener!=a)h.addEventListener("load",b,!1);else if(typeof i.addEventListener!=a)i.addEventListener("load",b,!1);else if(typeof h.attachEvent!=a)R(h,"onload",b);else if(typeof h.onload=="function"){var c=h.onload;h.onload=function(){c(),b()}}else h.onload=b}function D(){k?E():F()}function E(){var c=i.getElementsByTagName("body")[0],d=Q(b);d.setAttribute("type",e);var f=c.appendChild(d);if(f){var g=0;(function(){if(typeof f.GetVariable!=a){var b=f.GetVariable("$version");b&&(b=b.split(" ")[1].split(","),y.pv=[parseInt(b[0],10),parseInt(b[1],10),parseInt(b[2],10)])}else if(g<10){g++,setTimeout(arguments.callee,10);return}c.removeChild(d),f=null,F()})()}else F()}function F(){var b=m.length;if(b>0)for(var c=0;c<b;c++){var d=m[c].id,e=m[c].callbackFn,f={success:!1,id:d};if(y.pv[0]>0){var g=P(d);if(g)if(S(m[c].swfVersion)&&!(y.wk&&y.wk<312))U(d,!0),e&&(f.success=!0,f.ref=G(d),e(f));else if(m[c].expressInstall&&H()){var h={};h.data=m[c].expressInstall,h.width=g.getAttribute("width")||"0",h.height=g.getAttribute("height")||"0",g.getAttribute("class")&&(h.styleclass=g.getAttribute("class")),g.getAttribute("align")&&(h.align=g.getAttribute("align"));var i={},j=g.getElementsByTagName("param"),k=j.length;for(var l=0;l<k;l++)j[l].getAttribute("name").toLowerCase()!="movie"&&(i[j[l].getAttribute("name")]=j[l].getAttribute("value"));I(h,i,d,e)}else J(g),e&&e(f)}else{U(d,!0);if(e){var n=G(d);n&&typeof n.SetVariable!=a&&(f.success=!0,f.ref=n),e(f)}}}}function G(c){var d=null,e=P(c);if(e&&e.nodeName=="OBJECT")if(typeof e.SetVariable!=a)d=e;else{var f=e.getElementsByTagName(b)[0];f&&(d=f)}return d}function H(){return!u&&S("6.0.65")&&(y.win||y.mac)&&!(y.wk&&y.wk<312)}function I(b,c,d,e){u=!0,r=e||null,s={success:!1,id:d};var g=P(d);if(g){g.nodeName=="OBJECT"?(p=K(g),q=null):(p=g,q=d),b.id=f;if(typeof b.width==a||!/%$/.test(b.width)&&parseInt(b.width,10)<310)b.width="310";if(typeof b.height==a||!/%$/.test(b.height)&&parseInt(b.height,10)<137)b.height="137";i.title=i.title.slice(0,47)+" - Flash Player Installation";var j=y.ie&&y.win?["Active"].concat("").join("X"):"PlugIn",k="MMredirectURL="+h.location.toString().replace(/&/g,"%26")+"&MMplayerType="+j+"&MMdoctitle="+i.title;typeof c.flashvars!=a?c.flashvars+="&"+k:c.flashvars=k;if(y.ie&&y.win&&g.readyState!=4){var l=Q("div");d+="SWFObjectNew",l.setAttribute("id",d),g.parentNode.insertBefore(l,g),g.style.display="none",function(){g.readyState==4?g.parentNode.removeChild(g):setTimeout(arguments.callee,10)}()}L(b,c,d)}}function J(a){if(y.ie&&y.win&&a.readyState!=4){var b=Q("div");a.parentNode.insertBefore(b,a),b.parentNode.replaceChild(K(a),b),a.style.display="none",function(){a.readyState==4?a.parentNode.removeChild(a):setTimeout(arguments.callee,10)}()}else a.parentNode.replaceChild(K(a),a)}function K(a){var c=Q("div");if(y.win&&y.ie)c.innerHTML=a.innerHTML;else{var d=a.getElementsByTagName(b)[0];if(d){var e=d.childNodes;if(e){var f=e.length;for(var g=0;g<f;g++)(e[g].nodeType!=1||e[g].nodeName!="PARAM")&&e[g].nodeType!=8&&c.appendChild(e[g].cloneNode(!0))}}}return c}function L(c,d,f){var g,h=P(f);if(y.wk&&y.wk<312)return g;if(h){typeof c.id==a&&(c.id=f);if(y.ie&&y.win){var i="";for(var j in c)c[j]!=Object.prototype[j]&&(j.toLowerCase()=="data"?d.movie=c[j]:j.toLowerCase()=="styleclass"?i+=' class="'+c[j]+'"':j.toLowerCase()!="classid"&&(i+=" "+j+'="'+c[j]+'"'));var k="";for(var l in d)d[l]!=Object.prototype[l]&&(k+='<param name="'+l+'" value="'+d[l]+'" />');h.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+i+">"+k+"</object>",n[n.length]=c.id,g=P(c.id)}else{var m=Q(b);m.setAttribute("type",e);for(var o in c)c[o]!=Object.prototype[o]&&(o.toLowerCase()=="styleclass"?m.setAttribute("class",c[o]):o.toLowerCase()!="classid"&&m.setAttribute(o,c[o]));for(var p in d)d[p]!=Object.prototype[p]&&p.toLowerCase()!="movie"&&M(m,p,d[p]);h.parentNode.replaceChild(m,h),g=m}}return g}function M(a,b,c){var d=Q("param");d.setAttribute("name",b),d.setAttribute("value",c),a.appendChild(d)}function N(a){var b=P(a);b&&b.nodeName=="OBJECT"&&(y.ie&&y.win?(b.style.display="none",function(){b.readyState==4?O(a):setTimeout(arguments.callee,10)}()):b.parentNode.removeChild(b))}function O(a){var b=P(a);if(b){for(var c in b)typeof b[c]=="function"&&(b[c]=null);b.parentNode.removeChild(b)}}function P(a){var b=null;try{b=i.getElementById(a)}catch(c){}return b}function Q(a){return i.createElement(a)}function R(a,b,c){a.attachEvent(b,c),o[o.length]=[a,b,c]}function S(a){var b=y.pv,c=a.split(".");return c[0]=parseInt(c[0],10),c[1]=parseInt(c[1],10)||0,c[2]=parseInt(c[2],10)||0,b[0]>c[0]||b[0]==c[0]&&b[1]>c[1]||b[0]==c[0]&&b[1]==c[1]&&b[2]>=c[2]?!0:!1}function T(c,d,e,f){if(y.ie&&y.mac)return;var g=i.getElementsByTagName("head")[0];if(!g)return;var h=e&&typeof e=="string"?e:"screen";f&&(v=null,w=null);if(!v||w!=h){var j=Q("style");j.setAttribute("type","text/css"),j.setAttribute("media",h),v=g.appendChild(j),y.ie&&y.win&&typeof i.styleSheets!=a&&i.styleSheets.length>0&&(v=i.styleSheets[i.styleSheets.length-1]),w=h}y.ie&&y.win?v&&typeof v.addRule==b&&v.addRule(c,d):v&&typeof i.createTextNode!=a&&v.appendChild(i.createTextNode(c+" {"+d+"}"))}function U(a,b){if(!x)return;var c=b?"visible":"hidden";t&&P(a)?P(a).style.visibility=c:T("#"+a,"visibility:"+c)}function V(b){var c=/[\\\"<>\.;]/,d=c.exec(b)!=null;return d&&typeof encodeURIComponent!=a?encodeURIComponent(b):b}var a="undefined",b="object",c="Shockwave Flash",d="ShockwaveFlash.ShockwaveFlash",e="application/x-shockwave-flash",f="SWFObjectExprInst",g="onreadystatechange",h=window,i=document,j=navigator,k=!1,l=[D],m=[],n=[],o=[],p,q,r,s,t=!1,u=!1,v,w,x=!0,y=function(){var f=typeof i.getElementById!=a&&typeof i.getElementsByTagName!=a&&typeof i.createElement!=a,g=j.userAgent.toLowerCase(),l=j.platform.toLowerCase(),m=l?/win/.test(l):/win/.test(g),n=l?/mac/.test(l):/mac/.test(g),o=/webkit/.test(g)?parseFloat(g.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):!1,p=!1,q=[0,0,0],r=null;if(typeof j.plugins!=a&&typeof j.plugins[c]==b)r=j.plugins[c].description,r&&(typeof j.mimeTypes==a||!j.mimeTypes[e]||!!j.mimeTypes[e].enabledPlugin)&&(k=!0,p=!1,r=r.replace(/^.*\s+(\S+\s+\S+$)/,"$1"),q[0]=parseInt(r.replace(/^(.*)\..*$/,"$1"),10),q[1]=parseInt(r.replace(/^.*\.(.*)\s.*$/,"$1"),10),q[2]=/[a-zA-Z]/.test(r)?parseInt(r.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0);else if(typeof h[["Active"].concat("Object").join("X")]!=a)try{var s=new(window[["Active"].concat("Object").join("X")])(d);s&&(r=s.GetVariable("$version"),r&&(p=!0,r=r.split(" ")[1].split(","),q=[parseInt(r[0],10),parseInt(r[1],10),parseInt(r[2],10)]))}catch(t){}return{w3:f,pv:q,wk:o,ie:p,win:m,mac:n}}(),z=function(){if(!y.w3)return;(typeof i.readyState!=a&&i.readyState=="complete"||typeof i.readyState==a&&(i.getElementsByTagName("body")[0]||i.body))&&A(),t||(typeof i.addEventListener!=a&&i.addEventListener("DOMContentLoaded",A,!1),y.ie&&y.win&&(i.attachEvent(g,function(){i.readyState=="complete"&&(i.detachEvent(g,arguments.callee),A())}),h==top&&function(){if(t)return;try{i.documentElement.doScroll("left")}catch(a){setTimeout(arguments.callee,0);return}A()}()),y.wk&&function(){if(t)return;if(!/loaded|complete/.test(i.readyState)){setTimeout(arguments.callee,0);return}A()}(),C(A))}(),W=function(){y.ie&&y.win&&window.attachEvent("onunload",function(){var a=o.length;for(var b=0;b<a;b++)o[b][0].detachEvent(o[b][1],o[b][2]);var c=n.length;for(var d=0;d<c;d++)N(n[d]);for(var e in y)y[e]=null;y=null;for(var f in swfobject)swfobject[f]=null;swfobject=null})}();return{registerObject:function(a,b,c,d){if(y.w3&&a&&b){var e={};e.id=a,e.swfVersion=b,e.expressInstall=c,e.callbackFn=d,m[m.length]=e,U(a,!1)}else d&&d({success:!1,id:a})},getObjectById:function(a){if(y.w3)return G(a)},embedSWF:function(c,d,e,f,g,h,i,j,k,l){var m={success:!1,id:d};y.w3&&!(y.wk&&y.wk<312)&&c&&d&&e&&f&&g?(U(d,!1),B(function(){e+="",f+="";var n={};if(k&&typeof k===b)for(var o in k)n[o]=k[o];n.data=c,n.width=e,n.height=f;var p={};if(j&&typeof j===b)for(var q in j)p[q]=j[q];if(i&&typeof i===b)for(var r in i)typeof p.flashvars!=a?p.flashvars+="&"+r+"="+i[r]:p.flashvars=r+"="+i[r];if(S(g)){var s=L(n,p,d);n.id==d&&U(d,!0),m.success=!0,m.ref=s}else{if(h&&H()){n.data=h,I(n,p,d,l);return}U(d,!0)}l&&l(m)})):l&&l(m)},switchOffAutoHideShow:function(){x=!1},ua:y,getFlashPlayerVersion:function(){return{major:y.pv[0],minor:y.pv[1],release:y.pv[2]}},hasFlashPlayerVersion:S,createSWF:function(a,b,c){return y.w3?L(a,b,c):undefined},showExpressInstall:function(a,b,c,d){y.w3&&H()&&I(a,b,c,d)},removeSWF:function(a){y.w3&&N(a)},createCSS:function(a,b,c,d){y.w3&&T(a,b,c,d)},addDomLoadEvent:B,addLoadEvent:C,getQueryParamValue:function(a){var b=i.location.search||i.location.hash;if(b){/\?/.test(b)&&(b=b.split("?")[1]);if(a==null)return V(b);var c=b.split("&");for(var d=0;d<c.length;d++)if(c[d].substring(0,c[d].indexOf("="))==a)return V(c[d].substring(c[d].indexOf("=")+1))}return""},expressInstallCallback:function(){if(u){var a=P(f);a&&p&&(a.parentNode.replaceChild(p,a),q&&(U(q,!0),y.ie&&y.win&&(p.style.display="block")),r&&r(s)),u=!1}}}}();(function(){if("undefined"==typeof window||window.WebSocket)return;var a=window.console;if(!a||!a.log||!a.error)a={log:function(){},error:function(){}};if(!swfobject.hasFlashPlayerVersion("10.0.0")){a.error("Flash Player >= 10.0.0 is required.");return}location.protocol=="file:"&&a.error("WARNING: web-socket-js doesn't work in file:///... URL unless you set Flash Security Settings properly. Open the page via Web server i.e. http://..."),WebSocket=function(a,b,c,d,e){var f=this;f.__id=WebSocket.__nextId++,WebSocket.__instances[f.__id]=f,f.readyState=WebSocket.CONNECTING,f.bufferedAmount=0,f.__events={},b?typeof b=="string"&&(b=[b]):b=[],setTimeout(function(){WebSocket.__addTask(function(){WebSocket.__flash.create(f.__id,a,b,c||null,d||0,e||null)})},0)},WebSocket.prototype.send=function(a){if(this.readyState==WebSocket.CONNECTING)throw"INVALID_STATE_ERR: Web Socket connection has not been established";var b=WebSocket.__flash.send(this.__id,encodeURIComponent(a));return b<0?!0:(this.bufferedAmount+=b,!1)},WebSocket.prototype.close=function(){if(this.readyState==WebSocket.CLOSED||this.readyState==WebSocket.CLOSING)return;this.readyState=WebSocket.CLOSING,WebSocket.__flash.close(this.__id)},WebSocket.prototype.addEventListener=function(a,b,c){a in this.__events||(this.__events[a]=[]),this.__events[a].push(b)},WebSocket.prototype.removeEventListener=function(a,b,c){if(!(a in this.__events))return;var d=this.__events[a];for(var e=d.length-1;e>=0;--e)if(d[e]===b){d.splice(e,1);break}},WebSocket.prototype.dispatchEvent=function(a){var b=this.__events[a.type]||[];for(var c=0;c<b.length;++c)b[c](a);var d=this["on"+a.type];d&&d(a)},WebSocket.prototype.__handleEvent=function(a){"readyState"in a&&(this.readyState=a.readyState),"protocol"in a&&(this.protocol=a.protocol);var b;if(a.type=="open"||a.type=="error")b=this.__createSimpleEvent(a.type);else if(a.type=="close")b=this.__createSimpleEvent("close");else{if(a.type!="message")throw"unknown event type: "+a.type;var c=decodeURIComponent(a.message);b=this.__createMessageEvent("message",c)}this.dispatchEvent(b)},WebSocket.prototype.__createSimpleEvent=function(a){if(document.createEvent&&window.Event){var b=document.createEvent("Event");return b.initEvent(a,!1,!1),b}return{type:a,bubbles:!1,cancelable:!1}},WebSocket.prototype.__createMessageEvent=function(a,b){if(document.createEvent&&window.MessageEvent&&!window.opera){var c=document.createEvent("MessageEvent");return c.initMessageEvent("message",!1,!1,b,null,null,window,null),c}return{type:a,data:b,bubbles:!1,cancelable:!1}},WebSocket.CONNECTING=0,WebSocket.OPEN=1,WebSocket.CLOSING=2,WebSocket.CLOSED=3,WebSocket.__flash=null,WebSocket.__instances={},WebSocket.__tasks=[],WebSocket.__nextId=0,WebSocket.loadFlashPolicyFile=function(a){WebSocket.__addTask(function(){WebSocket.__flash.loadManualPolicyFile(a)})},WebSocket.__initialize=function(){if(WebSocket.__flash)return;WebSocket.__swfLocation&&(window.WEB_SOCKET_SWF_LOCATION=WebSocket.__swfLocation);if(!window.WEB_SOCKET_SWF_LOCATION){a.error("[WebSocket] set WEB_SOCKET_SWF_LOCATION to location of WebSocketMain.swf");return}var b=document.createElement("div");b.id="webSocketContainer",b.style.position="absolute",WebSocket.__isFlashLite()?(b.style.left="0px",b.style.top="0px"):(b.style.left="-100px",b.style.top="-100px");var c=document.createElement("div");c.id="webSocketFlash",b.appendChild(c),document.body.appendChild(b),swfobject.embedSWF(WEB_SOCKET_SWF_LOCATION,"webSocketFlash","1","1","10.0.0",null,null,{hasPriority:!0,swliveconnect:!0,allowScriptAccess:"always"},null,function(b){b.success||a.error("[WebSocket] swfobject.embedSWF failed")})},WebSocket.__onFlashInitialized=function(){setTimeout(function(){WebSocket.__flash=document.getElementById("webSocketFlash"),WebSocket.__flash.setCallerUrl(location.href),WebSocket.__flash.setDebug(!!window.WEB_SOCKET_DEBUG);for(var a=0;a<WebSocket.__tasks.length;++a)WebSocket.__tasks[a]();WebSocket.__tasks=[]},0)},WebSocket.__onFlashEvent=function(){return setTimeout(function(){try{var b=WebSocket.__flash.receiveEvents();for(var c=0;c<b.length;++c)WebSocket.__instances[b[c].webSocketId].__handleEvent(b[c])}catch(d){a.error(d)}},0),!0},WebSocket.__log=function(b){a.log(decodeURIComponent(b))},WebSocket.__error=function(b){a.error(decodeURIComponent(b))},WebSocket.__addTask=function(a){WebSocket.__flash?a():WebSocket.__tasks.push(a)},WebSocket.__isFlashLite=function(){if(!window.navigator||!window.navigator.mimeTypes)return!1;var a=window.navigator.mimeTypes["application/x-shockwave-flash"];return!a||!a.enabledPlugin||!a.enabledPlugin.filename?!1:a.enabledPlugin.filename.match(/flashlite/i)?!0:!1},window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION||(window.addEventListener?window.addEventListener("load",function(){WebSocket.__initialize()},!1):window.attachEvent("onload",function(){WebSocket.__initialize()}))})(),function(a,b,c){function d(a){if(!a)return;b.Transport.apply(this,arguments),this.sendBuffer=[]}function e(){}a.XHR=d,b.util.inherit(d,b.Transport),d.prototype.open=function(){return this.socket.setBuffer(!1),this.onOpen(),this.get(),this.setCloseTimeout(),this},d.prototype.payload=function(a){var c=[];for(var d=0,e=a.length;d<e;d++)c.push(b.parser.encodePacket(a[d]));this.send(b.parser.encodePayload(c))},d.prototype.send=function(a){return this.post(a),this},d.prototype.post=function(a){function d(){this.readyState==4&&(this.onreadystatechange=e,b.posting=!1,this.status==200?b.socket.setBuffer(!1):b.onClose())}function f(){this.onload=e,b.socket.setBuffer(!1)}var b=this;this.socket.setBuffer(!0),this.sendXHR=this.request("POST"),c.XDomainRequest&&this.sendXHR instanceof XDomainRequest?this.sendXHR.onload=this.sendXHR.onerror=f:this.sendXHR.onreadystatechange=d,this.sendXHR.send(a)},d.prototype.close=function(){return this.onClose(),this},d.prototype.request=function(a){var c=b.util.request(this.socket.isXDomain()),d=b.util.query(this.socket.options.query,"t="+ +(new Date));c.open(a||"GET",this.prepareUrl()+d,!0);if(a=="POST")try{c.setRequestHeader?c.setRequestHeader("Content-type","text/plain;charset=UTF-8"):c.contentType="text/plain"}catch(e){}return c},d.prototype.scheme=function(){return this.socket.options.secure?"https":"http"},d.check=function(a,d){try{var e=b.util.request(d),f=c.XDomainRequest&&e instanceof XDomainRequest,g=a&&a.options&&a.options.secure?"https:":"http:",h=c.location&&g!=c.location.protocol;if(e&&(!f||!h))return!0}catch(i){}return!1},d.xdomainCheck=function(a){return d.check(a,!0)}}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(a){b.Transport.XHR.apply(this,arguments)}a.htmlfile=c,b.util.inherit(c,b.Transport.XHR),c.prototype.name="htmlfile",c.prototype.get=function(){this.doc=new(window[["Active"].concat("Object").join("X")])("htmlfile"),this.doc.open(),this.doc.write("<html></html>"),this.doc.close(),this.doc.parentWindow.s=this;var a=this.doc.createElement("div");a.className="socketio",this.doc.body.appendChild(a),this.iframe=this.doc.createElement("iframe"),a.appendChild(this.iframe);var c=this,d=b.util.query(this.socket.options.query,"t="+ +(new Date));this.iframe.src=this.prepareUrl()+d,b.util.on(window,"unload",function(){c.destroy()})},c.prototype._=function(a,b){a=a.replace(/\\\//g,"/"),this.onData(a);try{var c=b.getElementsByTagName("script")[0];c.parentNode.removeChild(c)}catch(d){}},c.prototype.destroy=function(){if(this.iframe){try{this.iframe.src="about:blank"}catch(a){}this.doc=null,this.iframe.parentNode.removeChild(this.iframe),this.iframe=null,CollectGarbage()}},c.prototype.close=function(){return this.destroy(),b.Transport.XHR.prototype.close.call(this)},c.check=function(a){if(typeof window!="undefined"&&["Active"].concat("Object").join("X")in window)try{var c=new(window[["Active"].concat("Object").join("X")])("htmlfile");return c&&b.Transport.XHR.check(a)}catch(d){}return!1},c.xdomainCheck=function(){return!1},b.transports.push("htmlfile")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(){b.Transport.XHR.apply(this,arguments)}function e(){}a["xhr-polling"]=d,b.util.inherit(d,b.Transport.XHR),b.util.merge(d,b.Transport.XHR),d.prototype.name="xhr-polling",d.prototype.heartbeats=function(){return!1},d.prototype.open=function(){var a=this;return b.Transport.XHR.prototype.open.call(a),!1},d.prototype.get=function(){function b(){this.readyState==4&&(this.onreadystatechange=e,this.status==200?(a.onData(this.responseText),a.get()):a.onClose())}function d(){this.onload=e,this.onerror=e,a.retryCounter=1,a.onData(this.responseText),a.get()}function f(){a.retryCounter++,!a.retryCounter||a.retryCounter>3?a.onClose():a.get()}if(!this.isOpen)return;var a=this;this.xhr=this.request(),c.XDomainRequest&&this.xhr instanceof XDomainRequest?(this.xhr.onload=d,this.xhr.onerror=f):this.xhr.onreadystatechange=b,this.xhr.send(null)},d.prototype.onClose=function(){b.Transport.XHR.prototype.onClose.call(this);if(this.xhr){this.xhr.onreadystatechange=this.xhr.onload=this.xhr.onerror=e;try{this.xhr.abort()}catch(a){}this.xhr=null}},d.prototype.ready=function(a,c){var d=this;b.util.defer(function(){c.call(d)})},b.transports.push("xhr-polling")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b,c){function e(a){b.Transport["xhr-polling"].apply(this,arguments),this.index=b.j.length;var c=this;b.j.push(function(a){c._(a)})}var d=c.document&&"MozAppearance"in c.document.documentElement.style;a["jsonp-polling"]=e,b.util.inherit(e,b.Transport["xhr-polling"]),e.prototype.name="jsonp-polling",e.prototype.post=function(a){function i(){j(),c.socket.setBuffer(!1)}function j(){c.iframe&&c.form.removeChild(c.iframe);try{h=document.createElement('<iframe name="'+c.iframeId+'">')}catch(a){h=document.createElement("iframe"),h.name=c.iframeId}h.id=c.iframeId,c.form.appendChild(h),c.iframe=h}var c=this,d=b.util.query(this.socket.options.query,"t="+ +(new Date)+"&i="+this.index);if(!this.form){var e=document.createElement("form"),f=document.createElement("textarea"),g=this.iframeId="socketio_iframe_"+this.index,h;e.className="socketio",e.style.position="absolute",e.style.top="0px",e.style.left="0px",e.style.display="none",e.target=g,e.method="POST",e.setAttribute("accept-charset","utf-8"),f.name="d",e.appendChild(f),document.body.appendChild(e),this.form=e,this.area=f}this.form.action=this.prepareUrl()+d,j(),this.area.value=b.JSON.stringify(a);try{this.form.submit()}catch(k){}this.iframe.attachEvent?h.onreadystatechange=function(){c.iframe.readyState=="complete"&&i()}:this.iframe.onload=i,this.socket.setBuffer(!0)},e.prototype.get=function(){var a=this,c=document.createElement("script"),e=b.util.query(this.socket.options.query,"t="+ +(new Date)+"&i="+this.index);this.script&&(this.script.parentNode.removeChild(this.script),this.script=null),c.async=!0,c.src=this.prepareUrl()+e,c.onerror=function(){a.onClose()};var f=document.getElementsByTagName("script")[0];f.parentNode.insertBefore(c,f),this.script=c,d&&setTimeout(function(){var a=document.createElement("iframe");document.body.appendChild(a),document.body.removeChild(a)},100)},e.prototype._=function(a){return this.onData(a),this.isOpen&&this.get(),this},e.prototype.ready=function(a,c){var e=this;if(!d)return c.call(this);b.util.load(function(){c.call(e)})},e.check=function(){return"document"in c},e.xdomainCheck=function(){return!0},b.transports.push("jsonp-polling")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),typeof define=="function"&&define.amd&&define([],function(){return io})})()
 },{}],"/www/gibber.libraries/js/gibber/account.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, $ = require( './dollar' );
@@ -1653,7 +519,7 @@ module.exports = function( Gibber ) {
         $('#browser_recent_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'recent') )
         $('#browser_user_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'user') )        
         
-        for( var i = 0; i < headers.length; i++ ) {
+        /*for( var i = 0; i < headers.length; i++ ) {
           
           !function() {
             var cell = $( headers[ i ] ).parent()
@@ -1670,7 +536,7 @@ module.exports = function( Gibber ) {
               }
             })
           }()
-        }
+        }*/
         
         //var types = [ 'searchHEADER','search','tutorialsHEADER','audio', '_2d', '_3d', 'misc', 'userHEADER','recent', 'userfiles' ], prev
         var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent', 'userfiles' ], prev
@@ -1693,9 +559,12 @@ module.exports = function( Gibber ) {
             
               for( var j = 0; j < links.length; j++ ) {
               (function() {
-                var num = j, type = types[ i ], link = links[j]
-                if( typeof Gibber.Environment.Browser.files[ type ] !== 'undefined' ) {
-                  var pub = Gibber.Environment.Browser.files[ type ][ num ], obj, id
+                // TODO: could this be any hackier???
+                var num = j, type = types[ i ], link = links[j], demoTypeName = type.slice(5).toLowerCase()
+                var pubCategory = Gibber.Environment.Browser.files[ type ] || Gibber.Environment.Browser.files.demos[ demoTypeName ]
+                
+                if( typeof pubCategory !== 'undefined' ) {
+                  var pub = pubCategory[ num ], obj, id
                   
                   if( typeof pub === 'undefined' ) {
                     console.log( 'UNDEFINED', type, num )
@@ -1879,7 +748,349 @@ module.exports = function( Gibber ) {
   return Browser
 }
 
-},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
+},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/chat.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+"use strict"
+
+var GE, Layout, Chat;
+
+Chat = {
+  socket : null,
+  lobbyElement: null,
+  roomElement: null,
+  currentRoom: 'lobby',
+  intialized : false,
+  io: require( '../external/socket.io.min' ),
+  open : function() {
+    GE = Gibber.Environment
+    Layout = GE.Layout
+    
+    if( GE.Account.nick === null ) {
+      GE.Message.post( 'You must log in before chatting. Click the link in the upper right corner of the window to login (and create an account if necessary).' )
+      return
+    }
+    
+    this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'Chat' })
+    this.column.bodyElement.remove()
+    
+    this.column.onclose = function() {
+      console.log( 'you have left the chat server.' )
+      Chat.lobbyElement = null
+      Chat.roomElement  = null
+      // Chat.socket.close()
+    }
+    // this.column.header.append( $( '<span>lobby</span>') )
+    this.lobbyRoom = $( '<div>' ).css({ display:'inline', marginLeft:'2em' })
+    
+    this.lobby = $( '<button>' )
+      .text( 'lobby' )
+      .on( 'click', function() { Chat.moveToLobby() } )
+
+    this.room =  $( '<button>' )
+      .text( 'room' )
+      .on( 'click', function() { Chat.moveToRoom( 'test' ) } )
+      .hide()
+
+    this.addButton = $('<button>' )
+      .text( 'create room' )
+      .on( 'click', Chat.createRoom )
+      .css({ right:0 })
+
+    this.lobbyRoom.append( this.lobby, this.room, this.addButton )
+
+    this.column.header.append( this.lobbyRoom )
+
+    if( !this.initialized ) {
+      //$script( 'external/socket.io.min', function() {
+        // console.log( 'socket io loaded' )
+        Chat.socket = Chat.io.connect( GE.SERVER_URL );
+
+        // this.socket = new WebSocket( socketString );
+
+        Chat.socket.on( 'message', function( data ) {
+          data = JSON.parse( data )
+
+          if( data.msg ) {
+            if( Chat.handlers[ data.msg ] ) {
+              Chat.handlers[ data.msg ]( data )
+            }else{
+              console.error( 'Cannot process message ' + data.msg + ' from server' )
+            }
+          }
+        })
+        
+        Chat.socket.on( 'connect', function() {
+          console.log( 'you are now connected to the chat server' )
+          Chat.moveToLobby()
+          Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+        })
+        //})
+    }else{
+      Chat.moveToLobby()
+    }
+    this.initialized = true;
+    Layout.setColumnBodyHeight( this.column )
+  },
+
+  moveToLobby : function () {
+    if( this.lobbyElement === null ) {
+      this.lobbyElement = $( '<div>' ).addClass( 'chatlobby' )
+      this.column.element.append( this.lobbyElement )
+      this.lobbyElement.append( $('<h3>Available Chatrooms</h3>').css({ marginLeft:'.5em' }) )
+    }else{
+      this.lobbyElement.empty()
+      this.lobbyElement.append( $('<h3>Available Chatrooms</h3>').css({ marginLeft:'.5em' }) )
+      this.lobbyElement.show()
+      this.column.bodyElement = this.lobbyElement
+
+      if( this.roomElement !== null ) this.roomElement.hide()
+    }
+
+    GE.Layout.setColumnBodyHeight( this.column )
+    this.lobby.css({ color:'#333', background:'#ccc' })
+
+    if( this.currentRoom !== 'lobby' ) {
+      this.socket.send( JSON.stringify({ cmd:'leaveRoom', room:this.currentRoom }) ) 
+    }
+
+    this.currentRoom = 'lobby'
+    this.room.css({ color:'#ccc', background:'#333' })
+    this.room.hide()
+    this.addButton.show()
+    
+    this.socket.send( JSON.stringify({ cmd:'listRooms' }) )
+  },
+
+  moveToRoom : function( roomName, occupants ) {
+    if( this.currentRoom === 'lobby' ) {
+      this.lobbyElement.hide()
+      this.lobby.css({ color:'#ccc', background:'#333' })
+    }
+    this.room.show()
+    this.addButton.hide()
+
+    if( this.roomElement === null ) {
+      this.roomElement = $( '<div>' ).addClass( 'chatroom' )
+      this.messages = $( '<ul>')
+        .css({
+          display:'block',
+          height:'calc(100% - 5em - ' +this.column.header.outerHeight()+ 'px)',
+          width: 'calc(100% - 1em - ' + GE.Layout.resizeHandleSize +'px)',
+          margin:0,
+          padding:'.5em',
+          'box-sizing':'border-box !important',
+          'overflow-y':'auto',
+        })
+      this.msgPrompt = $( '<span>' )
+        .text( 'enter msg : ' )
+        .css({
+          left:0,
+          bottom:0,
+          position:'absolute',
+          display:'inline-block',
+          width:'6em',
+          height:'5em',
+          lineHeight:'5em',
+          background:'#191919',
+          color:'#ccc',
+          paddingLeft:'.5em',
+        })
+      
+      this.msgField = $( '<textarea>' ).css({
+        position:'absolute',
+        left:'6em',
+        bottom:0,
+        height: '5em',
+        verticalAlign: 'center',
+        width:'calc(100% - 6em - ' + GE.Layout.resizeHandleSize +'px )', 
+        background:'#aaa',
+        color:'#333',
+        fontSize:'1em',
+      })
+      .keydown(function(event) {
+        if (event.keyCode == 13) {
+          Chat.socket.send( JSON.stringify({ cmd:'message', text:this.value, user:GE.Account.nick }) )
+          this.value = ''
+          event.preventDefault() 
+        }
+      })
+
+      this.roomElement.append( this.messages, this.msgPrompt, this.msgField )
+      this.column.element.append( this.roomElement )
+    }else{
+      this.roomElement.find('ul').empty()
+      this.roomElement.show()
+      if( this.lobbyElement !== null ) this.lobbyElement.hide()
+    }
+
+    var welcomeString = "You are now in chatroom " + roomName + "."
+    if( occupants.length > 0 ) {
+      welcomeString += " Your fellow gibberers are: "
+      for( var i = 0; i < occupants.length; i++ ){
+        welcomeString += occupants[i]
+        welcomeString += i < occupants.length - 1 ? ', ' : '.'
+      }
+    }
+
+    this.messages.append( $('<li>').text( welcomeString ).css({ color:'#b00'}) )
+
+    this.column.bodyElement = this.roomElement
+    GE.Layout.setColumnBodyHeight( this.column )
+    this.room
+      .css({ color:'#333', background:'#ccc' })
+      .text( roomName )
+
+    this.currentRoom = roomName
+  },
+  
+  createRoom : function() {
+    var name = window.prompt( "Enter a name for the chatroom." ),
+        msg  = {}
+    
+    if( name === null || name === '' ) return
+
+    msg.name = name
+    msg.password = null
+    msg.cmd = 'createRoom'
+    Chat.socket.send( JSON.stringify( msg ) )
+  },
+  handlers : {
+    messageSent : function( data ) {
+      /* msg sent successfully, do nothing for now */
+    },
+    registered : function( data ) {
+      /* successfully registered nick, do nothing for now */
+    },
+    listRooms : function( data ) {
+      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })
+
+      for( var key in data.rooms ) {
+        (function() {
+          var _key = key,  
+              msg = JSON.stringify( { cmd:'joinRoom', room:_key } ),
+              lock = data.rooms[ _key ].password ? " - password required" : " - open",
+              userCount = data.rooms[ _key ].userCount,
+              link = $( '<span>').text( _key + "  " + lock + ' - ' + userCount + ' gibberer(s)' )
+                .on( 'click', function() { Chat.socket.send( msg ) } )
+                .css({ cursor:'pointer' }),
+              li = $( '<li>').append( link )
+              
+          roomList.append( li )
+        })()
+      }
+
+      Chat.lobbyElement.append( roomList )
+    },
+    incomingMessage: function( data ) {
+      var name = $( '<span>' )
+            .text( data.nick )
+            .addClass( (GE.Account.nick === data.nick ? 'messageFromSelf' : 'messageFromOther' ))
+            .on( 'click', function() {
+              GE.Share.promptToShareWith( data.nick )
+            })
+            .css({ cursor:'pointer' }),
+          li = $( '<li class="message">' )
+            .text(  " : " +  data.incomingMessage )
+
+      li.prepend( name )
+      Chat.messages.append( li )
+      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+
+      if( Chat.onMsg ) {
+        Chat.onMsg( data.nick, data.incomingMessage )
+      }
+    },
+    roomCreated: function( data ) { // response for when the user creates a room...
+
+    },
+    roomAdded : function( data ) { // response for when any user creates a room...
+      if( Chat.currentRoom === 'lobby' ) { 
+        Chat.lobbyElement.find('ul').remove()
+        Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
+      }
+    },
+    roomDeleted : function( data ) {
+      if( Chat.currentRoom === 'lobby' ) { 
+        Chat.lobbyElement.find('ul').remove()
+        Chat.socket.send( JSON.stringify({ cmd:'listRooms' }) )
+      }
+    },
+    roomJoined: function( data ) {
+      Chat.moveToRoom( data.roomJoined, data.occupants )
+    },
+    roomLeft: function( data ) {
+      
+    },
+    arrival : function( data ) {
+      var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
+      Chat.messages.append( msg )
+      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+    },
+    departure : function( data ) {
+      var msg = $( '<span>' ).text( data.nick + ' has left the chatroom.' ).css({ color:'#b00', display:'block' })
+      Chat.messages.append( msg )
+      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+    },
+    collaborationRequest: function( data ) {
+      var div = $('<div>'),
+          msg = null,
+          h3  = $('<h3>').text( data.from + ' would like to collaboratively edit code with you. Choose a response:' ),
+          radioY = $('<input type="radio" name="yesorno" value="edit">Allow '+data.from+' to code with me.</input><br>'),
+          radioYY = $('<input type="radio" name="yesorno" value="editandexecute">Allow '+data.from+' to code with me and execute code remotely.</input><br>'),
+          radioN = $('<input type="radio" name="yesorno" value="no">Do not let '+data.from+' code with me.</input><br>'),
+
+          submit = $('<button>')
+            .text('submit')
+            .on( 'click', function() {
+              var val =  $('input[type=radio]:checked').val()
+              Chat.socket.send( JSON.stringify({ cmd:'collaborationResponse', response:val, to:data.from }) )
+              GE.Share.willAcceptRemoteExecution = val === 'editandexecute'
+              msg.remove()
+            })
+      
+      div.append( h3, radioY )
+      if( data.enableRemoteExecution ) div.append( radioYY )
+      div.append( radioN, submit )
+      
+      msg =  GE.Message.postHTML( div )
+    },
+    collaborationResponse: function( data ) {
+      GE.Share.collaborationResponse({ from: data.from, response: data.response })
+    },
+    shareReady : function( data ) {
+      GE.Share.acceptCollaborationRequest( data )
+      
+    },
+    remoteExecution : function( data ) {
+      var column, cm
+      console.log( "SHARE NAME", data.shareName, data )
+      for( var i = 0; i < GE.Layout.columns.length; i++ ){ 
+        var _column = GE.Layout.columns[i]
+        if( _column && _column.shareName === data.shareName ) {
+          column = _column
+          break
+        }
+      }
+      if( typeof column === 'undefined' ) { console.log("CANNOT FIND COLUMN FOR REMOTE EXECUTION"); return }
+      
+      cm  = column.editor
+
+      // from, selectionRange, code
+      if( column.allowRemoteExecution ) {
+        GE.Keymap.flash( cm, data.selectionRange )
+
+        Gibber.run( data.code, data.selectionRange, cm )
+      }
+    },
+  },
+}
+
+return Chat
+
+}
+
+},{"../external/socket.io.min":"/www/gibber.libraries/js/external/socket.io.min.js"}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
 var $ = require( './dollar' )
 
 module.exports = function( Gibber ) { 
@@ -1997,6 +1208,7 @@ module.exports = function( Gibber ) {
         tabSize: 2,
         lineNumbers:false,
         cursorBlinkRate: 530,
+        styleActiveLine:true,
         autofocus: options.autofocus || false,
       })
       
@@ -2586,8 +1798,8 @@ var GE = {
   //SERVER_URL : 'http://gibber.mat.ucsb.edu',
   
   CodeMirror:   require( 'codemirror' ),
-  CodeMirrorJS: require( '../external/codemirror/javascript' ),
-  CodeMirrorC:  require( '../external/codemirror/clike' ),  
+  CodeMirrorJS: require( 'codemirror/mode/javascript/javascript' ),
+  CodeMirrorC:  require( 'codemirror/mode/clike/clike' ),  
   Layout:       require( './layout' )( Gibber ),
   Account:      require( './account' )( Gibber ),
   Console:      require( './console' )( Gibber ),
@@ -2599,6 +1811,8 @@ var GE = {
   Esprima:      require( 'esprima' ),
   Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
+  Chat:         require( './chat' )( Gibber ),
+  // Share:        require( './share' )( Gibber ),  
   
   init : function() { 
     GE.Keymap.init()
@@ -2616,8 +1830,7 @@ var GE = {
       window.load = Gibber.import
       window.Graphics = Gibber.Graphics
       window.Color = Gibber.Graphics.Color
-      
-      
+
       // the window.module global is deprecated and will be removed at some point!
       // I don't trust using it now that Gibber has moved to browserify
       module = window.module = Gibber.import
@@ -3202,9 +2415,14 @@ var GE = {
   },
 }
 
+require( 'codemirror/addon/comment/comment' )
+require( 'codemirror/addon/edit/matchbrackets' )
+require( 'codemirror/addon/edit/closebrackets' )
+// require( 'codemirror/addon/selection/active-line' )
+
 return GE
 }
-},{"../external/codemirror/clike":"/www/gibber.libraries/js/external/codemirror/clike.js","../external/codemirror/javascript":"/www/gibber.libraries/js/external/codemirror/javascript.js","./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
@@ -4052,7 +3270,474 @@ module.exports = function( Gibber ) {
   
   return Theme
 }
-},{"color":"/www/gibber.libraries/node_modules/color/color.js"}],"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js":[function(require,module,exports){
+},{"color":"/www/gibber.libraries/node_modules/color/color.js"}],"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js":[function(require,module,exports){
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+  "use strict";
+
+  var noOptions = {};
+  var nonWS = /[^\s\u00a0]/;
+  var Pos = CodeMirror.Pos;
+
+  function firstNonWS(str) {
+    var found = str.search(nonWS);
+    return found == -1 ? 0 : found;
+  }
+
+  CodeMirror.commands.toggleComment = function(cm) {
+    var minLine = Infinity, ranges = cm.listSelections(), mode = null;
+    for (var i = ranges.length - 1; i >= 0; i--) {
+      var from = ranges[i].from(), to = ranges[i].to();
+      if (from.line >= minLine) continue;
+      if (to.line >= minLine) to = Pos(minLine, 0);
+      minLine = from.line;
+      if (mode == null) {
+        if (cm.uncomment(from, to)) mode = "un";
+        else { cm.lineComment(from, to); mode = "line"; }
+      } else if (mode == "un") {
+        cm.uncomment(from, to);
+      } else {
+        cm.lineComment(from, to);
+      }
+    }
+  };
+
+  CodeMirror.defineExtension("lineComment", function(from, to, options) {
+    if (!options) options = noOptions;
+    var self = this, mode = self.getModeAt(from);
+    var commentString = options.lineComment || mode.lineComment;
+    if (!commentString) {
+      if (options.blockCommentStart || mode.blockCommentStart) {
+        options.fullLines = true;
+        self.blockComment(from, to, options);
+      }
+      return;
+    }
+    var firstLine = self.getLine(from.line);
+    if (firstLine == null) return;
+    var end = Math.min(to.ch != 0 || to.line == from.line ? to.line + 1 : to.line, self.lastLine() + 1);
+    var pad = options.padding == null ? " " : options.padding;
+    var blankLines = options.commentBlankLines || from.line == to.line;
+
+    self.operation(function() {
+      if (options.indent) {
+        var baseString = firstLine.slice(0, firstNonWS(firstLine));
+        for (var i = from.line; i < end; ++i) {
+          var line = self.getLine(i), cut = baseString.length;
+          if (!blankLines && !nonWS.test(line)) continue;
+          if (line.slice(0, cut) != baseString) cut = firstNonWS(line);
+          self.replaceRange(baseString + commentString + pad, Pos(i, 0), Pos(i, cut));
+        }
+      } else {
+        for (var i = from.line; i < end; ++i) {
+          if (blankLines || nonWS.test(self.getLine(i)))
+            self.replaceRange(commentString + pad, Pos(i, 0));
+        }
+      }
+    });
+  });
+
+  CodeMirror.defineExtension("blockComment", function(from, to, options) {
+    if (!options) options = noOptions;
+    var self = this, mode = self.getModeAt(from);
+    var startString = options.blockCommentStart || mode.blockCommentStart;
+    var endString = options.blockCommentEnd || mode.blockCommentEnd;
+    if (!startString || !endString) {
+      if ((options.lineComment || mode.lineComment) && options.fullLines != false)
+        self.lineComment(from, to, options);
+      return;
+    }
+
+    var end = Math.min(to.line, self.lastLine());
+    if (end != from.line && to.ch == 0 && nonWS.test(self.getLine(end))) --end;
+
+    var pad = options.padding == null ? " " : options.padding;
+    if (from.line > end) return;
+
+    self.operation(function() {
+      if (options.fullLines != false) {
+        var lastLineHasText = nonWS.test(self.getLine(end));
+        self.replaceRange(pad + endString, Pos(end));
+        self.replaceRange(startString + pad, Pos(from.line, 0));
+        var lead = options.blockCommentLead || mode.blockCommentLead;
+        if (lead != null) for (var i = from.line + 1; i <= end; ++i)
+          if (i != end || lastLineHasText)
+            self.replaceRange(lead + pad, Pos(i, 0));
+      } else {
+        self.replaceRange(endString, to);
+        self.replaceRange(startString, from);
+      }
+    });
+  });
+
+  CodeMirror.defineExtension("uncomment", function(from, to, options) {
+    if (!options) options = noOptions;
+    var self = this, mode = self.getModeAt(from);
+    var end = Math.min(to.line, self.lastLine()), start = Math.min(from.line, end);
+
+    // Try finding line comments
+    var lineString = options.lineComment || mode.lineComment, lines = [];
+    var pad = options.padding == null ? " " : options.padding, didSomething;
+    lineComment: {
+      if (!lineString) break lineComment;
+      for (var i = start; i <= end; ++i) {
+        var line = self.getLine(i);
+        var found = line.indexOf(lineString);
+        if (found > -1 && !/comment/.test(self.getTokenTypeAt(Pos(i, found + 1)))) found = -1;
+        if (found == -1 && (i != end || i == start) && nonWS.test(line)) break lineComment;
+        if (found > -1 && nonWS.test(line.slice(0, found))) break lineComment;
+        lines.push(line);
+      }
+      self.operation(function() {
+        for (var i = start; i <= end; ++i) {
+          var line = lines[i - start];
+          var pos = line.indexOf(lineString), endPos = pos + lineString.length;
+          if (pos < 0) continue;
+          if (line.slice(endPos, endPos + pad.length) == pad) endPos += pad.length;
+          didSomething = true;
+          self.replaceRange("", Pos(i, pos), Pos(i, endPos));
+        }
+      });
+      if (didSomething) return true;
+    }
+
+    // Try block comments
+    var startString = options.blockCommentStart || mode.blockCommentStart;
+    var endString = options.blockCommentEnd || mode.blockCommentEnd;
+    if (!startString || !endString) return false;
+    var lead = options.blockCommentLead || mode.blockCommentLead;
+    var startLine = self.getLine(start), endLine = end == start ? startLine : self.getLine(end);
+    var open = startLine.indexOf(startString), close = endLine.lastIndexOf(endString);
+    if (close == -1 && start != end) {
+      endLine = self.getLine(--end);
+      close = endLine.lastIndexOf(endString);
+    }
+    if (open == -1 || close == -1 ||
+        !/comment/.test(self.getTokenTypeAt(Pos(start, open + 1))) ||
+        !/comment/.test(self.getTokenTypeAt(Pos(end, close + 1))))
+      return false;
+
+    // Avoid killing block comments completely outside the selection.
+    // Positions of the last startString before the start of the selection, and the first endString after it.
+    var lastStart = startLine.lastIndexOf(startString, from.ch);
+    var firstEnd = lastStart == -1 ? -1 : startLine.slice(0, from.ch).indexOf(endString, lastStart + startString.length);
+    if (lastStart != -1 && firstEnd != -1 && firstEnd + endString.length != from.ch) return false;
+    // Positions of the first endString after the end of the selection, and the last startString before it.
+    firstEnd = endLine.indexOf(endString, to.ch);
+    var almostLastStart = endLine.slice(to.ch).lastIndexOf(startString, firstEnd - to.ch);
+    lastStart = (firstEnd == -1 || almostLastStart == -1) ? -1 : to.ch + almostLastStart;
+    if (firstEnd != -1 && lastStart != -1 && lastStart != to.ch) return false;
+
+    self.operation(function() {
+      self.replaceRange("", Pos(end, close - (pad && endLine.slice(close - pad.length, close) == pad ? pad.length : 0)),
+                        Pos(end, close + endString.length));
+      var openEnd = open + startString.length;
+      if (pad && startLine.slice(openEnd, openEnd + pad.length) == pad) openEnd += pad.length;
+      self.replaceRange("", Pos(start, open), Pos(start, openEnd));
+      if (lead) for (var i = start + 1; i <= end; ++i) {
+        var line = self.getLine(i), found = line.indexOf(lead);
+        if (found == -1 || nonWS.test(line.slice(0, found))) continue;
+        var foundEnd = found + lead.length;
+        if (pad && line.slice(foundEnd, foundEnd + pad.length) == pad) foundEnd += pad.length;
+        self.replaceRange("", Pos(i, found), Pos(i, foundEnd));
+      }
+    });
+    return true;
+  });
+});
+
+},{"../../lib/codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js":[function(require,module,exports){
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+  var DEFAULT_BRACKETS = "()[]{}''\"\"";
+  var DEFAULT_EXPLODE_ON_ENTER = "[]{}";
+  var SPACE_CHAR_REGEX = /\s/;
+
+  var Pos = CodeMirror.Pos;
+
+  CodeMirror.defineOption("autoCloseBrackets", false, function(cm, val, old) {
+    if (old != CodeMirror.Init && old)
+      cm.removeKeyMap("autoCloseBrackets");
+    if (!val) return;
+    var pairs = DEFAULT_BRACKETS, explode = DEFAULT_EXPLODE_ON_ENTER;
+    if (typeof val == "string") pairs = val;
+    else if (typeof val == "object") {
+      if (val.pairs != null) pairs = val.pairs;
+      if (val.explode != null) explode = val.explode;
+    }
+    var map = buildKeymap(pairs);
+    if (explode) map.Enter = buildExplodeHandler(explode);
+    cm.addKeyMap(map);
+  });
+
+  function charsAround(cm, pos) {
+    var str = cm.getRange(Pos(pos.line, pos.ch - 1),
+                          Pos(pos.line, pos.ch + 1));
+    return str.length == 2 ? str : null;
+  }
+
+  // Project the token type that will exists after the given char is
+  // typed, and use it to determine whether it would cause the start
+  // of a string token.
+  function enteringString(cm, pos, ch) {
+    var line = cm.getLine(pos.line);
+    var token = cm.getTokenAt(pos);
+    if (/\bstring2?\b/.test(token.type)) return false;
+    var stream = new CodeMirror.StringStream(line.slice(0, pos.ch) + ch + line.slice(pos.ch), 4);
+    stream.pos = stream.start = token.start;
+    for (;;) {
+      var type1 = cm.getMode().token(stream, token.state);
+      if (stream.pos >= pos.ch + 1) return /\bstring2?\b/.test(type1);
+      stream.start = stream.pos;
+    }
+  }
+
+  function buildKeymap(pairs) {
+    var map = {
+      name : "autoCloseBrackets",
+      Backspace: function(cm) {
+        if (cm.getOption("disableInput")) return CodeMirror.Pass;
+        var ranges = cm.listSelections();
+        for (var i = 0; i < ranges.length; i++) {
+          if (!ranges[i].empty()) return CodeMirror.Pass;
+          var around = charsAround(cm, ranges[i].head);
+          if (!around || pairs.indexOf(around) % 2 != 0) return CodeMirror.Pass;
+        }
+        for (var i = ranges.length - 1; i >= 0; i--) {
+          var cur = ranges[i].head;
+          cm.replaceRange("", Pos(cur.line, cur.ch - 1), Pos(cur.line, cur.ch + 1));
+        }
+      }
+    };
+    var closingBrackets = "";
+    for (var i = 0; i < pairs.length; i += 2) (function(left, right) {
+      if (left != right) closingBrackets += right;
+      map["'" + left + "'"] = function(cm) {
+        if (cm.getOption("disableInput")) return CodeMirror.Pass;
+        var ranges = cm.listSelections(), type, next;
+        for (var i = 0; i < ranges.length; i++) {
+          var range = ranges[i], cur = range.head, curType;
+          var next = cm.getRange(cur, Pos(cur.line, cur.ch + 1));
+          if (!range.empty())
+            curType = "surround";
+          else if (left == right && next == right) {
+            if (cm.getRange(cur, Pos(cur.line, cur.ch + 3)) == left + left + left)
+              curType = "skipThree";
+            else
+              curType = "skip";
+          } else if (left == right && cur.ch > 1 &&
+                     cm.getRange(Pos(cur.line, cur.ch - 2), cur) == left + left &&
+                     (cur.ch <= 2 || cm.getRange(Pos(cur.line, cur.ch - 3), Pos(cur.line, cur.ch - 2)) != left))
+            curType = "addFour";
+          else if (left == '"' || left == "'") {
+            if (!CodeMirror.isWordChar(next) && enteringString(cm, cur, left)) curType = "both";
+            else return CodeMirror.Pass;
+          } else if (cm.getLine(cur.line).length == cur.ch || closingBrackets.indexOf(next) >= 0 || SPACE_CHAR_REGEX.test(next))
+            curType = "both";
+          else
+            return CodeMirror.Pass;
+          if (!type) type = curType;
+          else if (type != curType) return CodeMirror.Pass;
+        }
+
+        cm.operation(function() {
+          if (type == "skip") {
+            cm.execCommand("goCharRight");
+          } else if (type == "skipThree") {
+            for (var i = 0; i < 3; i++)
+              cm.execCommand("goCharRight");
+          } else if (type == "surround") {
+            var sels = cm.getSelections();
+            for (var i = 0; i < sels.length; i++)
+              sels[i] = left + sels[i] + right;
+            cm.replaceSelections(sels, "around");
+          } else if (type == "both") {
+            cm.replaceSelection(left + right, null);
+            cm.execCommand("goCharLeft");
+          } else if (type == "addFour") {
+            cm.replaceSelection(left + left + left + left, "before");
+            cm.execCommand("goCharRight");
+          }
+        });
+      };
+      if (left != right) map["'" + right + "'"] = function(cm) {
+        var ranges = cm.listSelections();
+        for (var i = 0; i < ranges.length; i++) {
+          var range = ranges[i];
+          if (!range.empty() ||
+              cm.getRange(range.head, Pos(range.head.line, range.head.ch + 1)) != right)
+            return CodeMirror.Pass;
+        }
+        cm.execCommand("goCharRight");
+      };
+    })(pairs.charAt(i), pairs.charAt(i + 1));
+    return map;
+  }
+
+  function buildExplodeHandler(pairs) {
+    return function(cm) {
+      if (cm.getOption("disableInput")) return CodeMirror.Pass;
+      var ranges = cm.listSelections();
+      for (var i = 0; i < ranges.length; i++) {
+        if (!ranges[i].empty()) return CodeMirror.Pass;
+        var around = charsAround(cm, ranges[i].head);
+        if (!around || pairs.indexOf(around) % 2 != 0) return CodeMirror.Pass;
+      }
+      cm.operation(function() {
+        cm.replaceSelection("\n\n", null);
+        cm.execCommand("goCharLeft");
+        ranges = cm.listSelections();
+        for (var i = 0; i < ranges.length; i++) {
+          var line = ranges[i].head.line;
+          cm.indentLine(line, null, true);
+          cm.indentLine(line + 1, null, true);
+        }
+      });
+    };
+  }
+});
+
+},{"../../lib/codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js":[function(require,module,exports){
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+  var ie_lt8 = /MSIE \d/.test(navigator.userAgent) &&
+    (document.documentMode == null || document.documentMode < 8);
+
+  var Pos = CodeMirror.Pos;
+
+  var matching = {"(": ")>", ")": "(<", "[": "]>", "]": "[<", "{": "}>", "}": "{<"};
+
+  function findMatchingBracket(cm, where, strict, config) {
+    var line = cm.getLineHandle(where.line), pos = where.ch - 1;
+    var match = (pos >= 0 && matching[line.text.charAt(pos)]) || matching[line.text.charAt(++pos)];
+    if (!match) return null;
+    var dir = match.charAt(1) == ">" ? 1 : -1;
+    if (strict && (dir > 0) != (pos == where.ch)) return null;
+    var style = cm.getTokenTypeAt(Pos(where.line, pos + 1));
+
+    var found = scanForBracket(cm, Pos(where.line, pos + (dir > 0 ? 1 : 0)), dir, style || null, config);
+    if (found == null) return null;
+    return {from: Pos(where.line, pos), to: found && found.pos,
+            match: found && found.ch == match.charAt(0), forward: dir > 0};
+  }
+
+  // bracketRegex is used to specify which type of bracket to scan
+  // should be a regexp, e.g. /[[\]]/
+  //
+  // Note: If "where" is on an open bracket, then this bracket is ignored.
+  //
+  // Returns false when no bracket was found, null when it reached
+  // maxScanLines and gave up
+  function scanForBracket(cm, where, dir, style, config) {
+    var maxScanLen = (config && config.maxScanLineLength) || 10000;
+    var maxScanLines = (config && config.maxScanLines) || 1000;
+
+    var stack = [];
+    var re = config && config.bracketRegex ? config.bracketRegex : /[(){}[\]]/;
+    var lineEnd = dir > 0 ? Math.min(where.line + maxScanLines, cm.lastLine() + 1)
+                          : Math.max(cm.firstLine() - 1, where.line - maxScanLines);
+    for (var lineNo = where.line; lineNo != lineEnd; lineNo += dir) {
+      var line = cm.getLine(lineNo);
+      if (!line) continue;
+      var pos = dir > 0 ? 0 : line.length - 1, end = dir > 0 ? line.length : -1;
+      if (line.length > maxScanLen) continue;
+      if (lineNo == where.line) pos = where.ch - (dir < 0 ? 1 : 0);
+      for (; pos != end; pos += dir) {
+        var ch = line.charAt(pos);
+        if (re.test(ch) && (style === undefined || cm.getTokenTypeAt(Pos(lineNo, pos + 1)) == style)) {
+          var match = matching[ch];
+          if ((match.charAt(1) == ">") == (dir > 0)) stack.push(ch);
+          else if (!stack.length) return {pos: Pos(lineNo, pos), ch: ch};
+          else stack.pop();
+        }
+      }
+    }
+    return lineNo - dir == (dir > 0 ? cm.lastLine() : cm.firstLine()) ? false : null;
+  }
+
+  function matchBrackets(cm, autoclear, config) {
+    // Disable brace matching in long lines, since it'll cause hugely slow updates
+    var maxHighlightLen = cm.state.matchBrackets.maxHighlightLineLength || 1000;
+    var marks = [], ranges = cm.listSelections();
+    for (var i = 0; i < ranges.length; i++) {
+      var match = ranges[i].empty() && findMatchingBracket(cm, ranges[i].head, false, config);
+      if (match && cm.getLine(match.from.line).length <= maxHighlightLen) {
+        var style = match.match ? "CodeMirror-matchingbracket" : "CodeMirror-nonmatchingbracket";
+        marks.push(cm.markText(match.from, Pos(match.from.line, match.from.ch + 1), {className: style}));
+        if (match.to && cm.getLine(match.to.line).length <= maxHighlightLen)
+          marks.push(cm.markText(match.to, Pos(match.to.line, match.to.ch + 1), {className: style}));
+      }
+    }
+
+    if (marks.length) {
+      // Kludge to work around the IE bug from issue #1193, where text
+      // input stops going to the textare whever this fires.
+      if (ie_lt8 && cm.state.focused) cm.display.input.focus();
+
+      var clear = function() {
+        cm.operation(function() {
+          for (var i = 0; i < marks.length; i++) marks[i].clear();
+        });
+      };
+      if (autoclear) setTimeout(clear, 800);
+      else return clear;
+    }
+  }
+
+  var currentlyHighlighted = null;
+  function doMatchBrackets(cm) {
+    cm.operation(function() {
+      if (currentlyHighlighted) {currentlyHighlighted(); currentlyHighlighted = null;}
+      currentlyHighlighted = matchBrackets(cm, false, cm.state.matchBrackets);
+    });
+  }
+
+  CodeMirror.defineOption("matchBrackets", false, function(cm, val, old) {
+    if (old && old != CodeMirror.Init)
+      cm.off("cursorActivity", doMatchBrackets);
+    if (val) {
+      cm.state.matchBrackets = typeof val == "object" ? val : {};
+      cm.on("cursorActivity", doMatchBrackets);
+    }
+  });
+
+  CodeMirror.defineExtension("matchBrackets", function() {matchBrackets(this, true);});
+  CodeMirror.defineExtension("findMatchingBracket", function(pos, strict, config){
+    return findMatchingBracket(this, pos, strict, config);
+  });
+  CodeMirror.defineExtension("scanForBracket", function(pos, dir, style, config){
+    return scanForBracket(this, pos, dir, style, config);
+  });
+});
+
+},{"../../lib/codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js":[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -11885,7 +11570,1146 @@ module.exports = function( Gibber ) {
   return CodeMirror;
 });
 
-},{}],"/www/gibber.libraries/node_modules/color/color.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js":[function(require,module,exports){
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+"use strict";
+
+CodeMirror.defineMode("clike", function(config, parserConfig) {
+  var indentUnit = config.indentUnit,
+      statementIndentUnit = parserConfig.statementIndentUnit || indentUnit,
+      dontAlignCalls = parserConfig.dontAlignCalls,
+      keywords = parserConfig.keywords || {},
+      builtin = parserConfig.builtin || {},
+      blockKeywords = parserConfig.blockKeywords || {},
+      atoms = parserConfig.atoms || {},
+      hooks = parserConfig.hooks || {},
+      multiLineStrings = parserConfig.multiLineStrings;
+  var isOperatorChar = /[+\-*&%=<>!?|\/]/;
+
+  var curPunc;
+
+  function tokenBase(stream, state) {
+    var ch = stream.next();
+    if (hooks[ch]) {
+      var result = hooks[ch](stream, state);
+      if (result !== false) return result;
+    }
+    if (ch == '"' || ch == "'") {
+      state.tokenize = tokenString(ch);
+      return state.tokenize(stream, state);
+    }
+    if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
+      curPunc = ch;
+      return null;
+    }
+    if (/\d/.test(ch)) {
+      stream.eatWhile(/[\w\.]/);
+      return "number";
+    }
+    if (ch == "/") {
+      if (stream.eat("*")) {
+        state.tokenize = tokenComment;
+        return tokenComment(stream, state);
+      }
+      if (stream.eat("/")) {
+        stream.skipToEnd();
+        return "comment";
+      }
+    }
+    if (isOperatorChar.test(ch)) {
+      stream.eatWhile(isOperatorChar);
+      return "operator";
+    }
+    stream.eatWhile(/[\w\$_]/);
+    var cur = stream.current();
+    if (keywords.propertyIsEnumerable(cur)) {
+      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
+      return "keyword";
+    }
+    if (builtin.propertyIsEnumerable(cur)) {
+      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
+      return "builtin";
+    }
+    if (atoms.propertyIsEnumerable(cur)) return "atom";
+    return "variable";
+  }
+
+  function tokenString(quote) {
+    return function(stream, state) {
+      var escaped = false, next, end = false;
+      while ((next = stream.next()) != null) {
+        if (next == quote && !escaped) {end = true; break;}
+        escaped = !escaped && next == "\\";
+      }
+      if (end || !(escaped || multiLineStrings))
+        state.tokenize = null;
+      return "string";
+    };
+  }
+
+  function tokenComment(stream, state) {
+    var maybeEnd = false, ch;
+    while (ch = stream.next()) {
+      if (ch == "/" && maybeEnd) {
+        state.tokenize = null;
+        break;
+      }
+      maybeEnd = (ch == "*");
+    }
+    return "comment";
+  }
+
+  function Context(indented, column, type, align, prev) {
+    this.indented = indented;
+    this.column = column;
+    this.type = type;
+    this.align = align;
+    this.prev = prev;
+  }
+  function pushContext(state, col, type) {
+    var indent = state.indented;
+    if (state.context && state.context.type == "statement")
+      indent = state.context.indented;
+    return state.context = new Context(indent, col, type, null, state.context);
+  }
+  function popContext(state) {
+    var t = state.context.type;
+    if (t == ")" || t == "]" || t == "}")
+      state.indented = state.context.indented;
+    return state.context = state.context.prev;
+  }
+
+  // Interface
+
+  return {
+    startState: function(basecolumn) {
+      return {
+        tokenize: null,
+        context: new Context((basecolumn || 0) - indentUnit, 0, "top", false),
+        indented: 0,
+        startOfLine: true
+      };
+    },
+
+    token: function(stream, state) {
+      var ctx = state.context;
+      if (stream.sol()) {
+        if (ctx.align == null) ctx.align = false;
+        state.indented = stream.indentation();
+        state.startOfLine = true;
+      }
+      if (stream.eatSpace()) return null;
+      curPunc = null;
+      var style = (state.tokenize || tokenBase)(stream, state);
+      if (style == "comment" || style == "meta") return style;
+      if (ctx.align == null) ctx.align = true;
+
+      if ((curPunc == ";" || curPunc == ":" || curPunc == ",") && ctx.type == "statement") popContext(state);
+      else if (curPunc == "{") pushContext(state, stream.column(), "}");
+      else if (curPunc == "[") pushContext(state, stream.column(), "]");
+      else if (curPunc == "(") pushContext(state, stream.column(), ")");
+      else if (curPunc == "}") {
+        while (ctx.type == "statement") ctx = popContext(state);
+        if (ctx.type == "}") ctx = popContext(state);
+        while (ctx.type == "statement") ctx = popContext(state);
+      }
+      else if (curPunc == ctx.type) popContext(state);
+      else if (((ctx.type == "}" || ctx.type == "top") && curPunc != ';') || (ctx.type == "statement" && curPunc == "newstatement"))
+        pushContext(state, stream.column(), "statement");
+      state.startOfLine = false;
+      return style;
+    },
+
+    indent: function(state, textAfter) {
+      if (state.tokenize != tokenBase && state.tokenize != null) return CodeMirror.Pass;
+      var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
+      if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
+      var closing = firstChar == ctx.type;
+      if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : statementIndentUnit);
+      else if (ctx.align && (!dontAlignCalls || ctx.type != ")")) return ctx.column + (closing ? 0 : 1);
+      else if (ctx.type == ")" && !closing) return ctx.indented + statementIndentUnit;
+      else return ctx.indented + (closing ? 0 : indentUnit);
+    },
+
+    electricChars: "{}",
+    blockCommentStart: "/*",
+    blockCommentEnd: "*/",
+    lineComment: "//",
+    fold: "brace"
+  };
+});
+
+  function words(str) {
+    var obj = {}, words = str.split(" ");
+    for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+    return obj;
+  }
+  var cKeywords = "auto if break int case long char register continue return default short do sizeof " +
+    "double static else struct entry switch extern typedef float union for unsigned " +
+    "goto while enum void const signed volatile";
+
+  function cppHook(stream, state) {
+    if (!state.startOfLine) return false;
+    for (;;) {
+      if (stream.skipTo("\\")) {
+        stream.next();
+        if (stream.eol()) {
+          state.tokenize = cppHook;
+          break;
+        }
+      } else {
+        stream.skipToEnd();
+        state.tokenize = null;
+        break;
+      }
+    }
+    return "meta";
+  }
+
+  function cpp11StringHook(stream, state) {
+    stream.backUp(1);
+    // Raw strings.
+    if (stream.match(/(R|u8R|uR|UR|LR)/)) {
+      var match = stream.match(/"([^\s\\()]{0,16})\(/);
+      if (!match) {
+        return false;
+      }
+      state.cpp11RawStringDelim = match[1];
+      state.tokenize = tokenRawString;
+      return tokenRawString(stream, state);
+    }
+    // Unicode strings/chars.
+    if (stream.match(/(u8|u|U|L)/)) {
+      if (stream.match(/["']/, /* eat */ false)) {
+        return "string";
+      }
+      return false;
+    }
+    // Ignore this hook.
+    stream.next();
+    return false;
+  }
+
+  // C#-style strings where "" escapes a quote.
+  function tokenAtString(stream, state) {
+    var next;
+    while ((next = stream.next()) != null) {
+      if (next == '"' && !stream.eat('"')) {
+        state.tokenize = null;
+        break;
+      }
+    }
+    return "string";
+  }
+
+  // C++11 raw string literal is <prefix>"<delim>( anything )<delim>", where
+  // <delim> can be a string up to 16 characters long.
+  function tokenRawString(stream, state) {
+    // Escape characters that have special regex meanings.
+    var delim = state.cpp11RawStringDelim.replace(/[^\w\s]/g, '\\$&');
+    var match = stream.match(new RegExp(".*?\\)" + delim + '"'));
+    if (match)
+      state.tokenize = null;
+    else
+      stream.skipToEnd();
+    return "string";
+  }
+
+  function def(mimes, mode) {
+    if (typeof mimes == "string") mimes = [mimes];
+    var words = [];
+    function add(obj) {
+      if (obj) for (var prop in obj) if (obj.hasOwnProperty(prop))
+        words.push(prop);
+    }
+    add(mode.keywords);
+    add(mode.builtin);
+    add(mode.atoms);
+    if (words.length) {
+      mode.helperType = mimes[0];
+      CodeMirror.registerHelper("hintWords", mimes[0], words);
+    }
+
+    for (var i = 0; i < mimes.length; ++i)
+      CodeMirror.defineMIME(mimes[i], mode);
+  }
+
+  def(["text/x-csrc", "text/x-c", "text/x-chdr"], {
+    name: "clike",
+    keywords: words(cKeywords),
+    blockKeywords: words("case do else for if switch while struct"),
+    atoms: words("null"),
+    hooks: {"#": cppHook},
+    modeProps: {fold: ["brace", "include"]}
+  });
+
+  def(["text/x-c++src", "text/x-c++hdr"], {
+    name: "clike",
+    keywords: words(cKeywords + " asm dynamic_cast namespace reinterpret_cast try bool explicit new " +
+                    "static_cast typeid catch operator template typename class friend private " +
+                    "this using const_cast inline public throw virtual delete mutable protected " +
+                    "wchar_t alignas alignof constexpr decltype nullptr noexcept thread_local final " +
+                    "static_assert override"),
+    blockKeywords: words("catch class do else finally for if struct switch try while"),
+    atoms: words("true false null"),
+    hooks: {
+      "#": cppHook,
+      "u": cpp11StringHook,
+      "U": cpp11StringHook,
+      "L": cpp11StringHook,
+      "R": cpp11StringHook
+    },
+    modeProps: {fold: ["brace", "include"]}
+  });
+  def("text/x-java", {
+    name: "clike",
+    keywords: words("abstract assert boolean break byte case catch char class const continue default " +
+                    "do double else enum extends final finally float for goto if implements import " +
+                    "instanceof int interface long native new package private protected public " +
+                    "return short static strictfp super switch synchronized this throw throws transient " +
+                    "try void volatile while"),
+    blockKeywords: words("catch class do else finally for if switch try while"),
+    atoms: words("true false null"),
+    hooks: {
+      "@": function(stream) {
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      }
+    },
+    modeProps: {fold: ["brace", "import"]}
+  });
+  def("text/x-csharp", {
+    name: "clike",
+    keywords: words("abstract as base break case catch checked class const continue" +
+                    " default delegate do else enum event explicit extern finally fixed for" +
+                    " foreach goto if implicit in interface internal is lock namespace new" +
+                    " operator out override params private protected public readonly ref return sealed" +
+                    " sizeof stackalloc static struct switch this throw try typeof unchecked" +
+                    " unsafe using virtual void volatile while add alias ascending descending dynamic from get" +
+                    " global group into join let orderby partial remove select set value var yield"),
+    blockKeywords: words("catch class do else finally for foreach if struct switch try while"),
+    builtin: words("Boolean Byte Char DateTime DateTimeOffset Decimal Double" +
+                    " Guid Int16 Int32 Int64 Object SByte Single String TimeSpan UInt16 UInt32" +
+                    " UInt64 bool byte char decimal double short int long object"  +
+                    " sbyte float string ushort uint ulong"),
+    atoms: words("true false null"),
+    hooks: {
+      "@": function(stream, state) {
+        if (stream.eat('"')) {
+          state.tokenize = tokenAtString;
+          return tokenAtString(stream, state);
+        }
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      }
+    }
+  });
+  def("text/x-scala", {
+    name: "clike",
+    keywords: words(
+
+      /* scala */
+      "abstract case catch class def do else extends false final finally for forSome if " +
+      "implicit import lazy match new null object override package private protected return " +
+      "sealed super this throw trait try trye type val var while with yield _ : = => <- <: " +
+      "<% >: # @ " +
+
+      /* package scala */
+      "assert assume require print println printf readLine readBoolean readByte readShort " +
+      "readChar readInt readLong readFloat readDouble " +
+
+      "AnyVal App Application Array BufferedIterator BigDecimal BigInt Char Console Either " +
+      "Enumeration Equiv Error Exception Fractional Function IndexedSeq Integral Iterable " +
+      "Iterator List Map Numeric Nil NotNull Option Ordered Ordering PartialFunction PartialOrdering " +
+      "Product Proxy Range Responder Seq Serializable Set Specializable Stream StringBuilder " +
+      "StringContext Symbol Throwable Traversable TraversableOnce Tuple Unit Vector :: #:: " +
+
+      /* package java.lang */
+      "Boolean Byte Character CharSequence Class ClassLoader Cloneable Comparable " +
+      "Compiler Double Exception Float Integer Long Math Number Object Package Pair Process " +
+      "Runtime Runnable SecurityManager Short StackTraceElement StrictMath String " +
+      "StringBuffer System Thread ThreadGroup ThreadLocal Throwable Triple Void"
+
+
+    ),
+    multiLineStrings: true,
+    blockKeywords: words("catch class do else finally for forSome if match switch try while"),
+    atoms: words("true false null"),
+    hooks: {
+      "@": function(stream) {
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      }
+    }
+  });
+  def(["x-shader/x-vertex", "x-shader/x-fragment"], {
+    name: "clike",
+    keywords: words("float int bool void " +
+                    "vec2 vec3 vec4 ivec2 ivec3 ivec4 bvec2 bvec3 bvec4 " +
+                    "mat2 mat3 mat4 " +
+                    "sampler1D sampler2D sampler3D samplerCube " +
+                    "sampler1DShadow sampler2DShadow" +
+                    "const attribute uniform varying " +
+                    "break continue discard return " +
+                    "for while do if else struct " +
+                    "in out inout"),
+    blockKeywords: words("for while do if else struct"),
+    builtin: words("radians degrees sin cos tan asin acos atan " +
+                    "pow exp log exp2 sqrt inversesqrt " +
+                    "abs sign floor ceil fract mod min max clamp mix step smootstep " +
+                    "length distance dot cross normalize ftransform faceforward " +
+                    "reflect refract matrixCompMult " +
+                    "lessThan lessThanEqual greaterThan greaterThanEqual " +
+                    "equal notEqual any all not " +
+                    "texture1D texture1DProj texture1DLod texture1DProjLod " +
+                    "texture2D texture2DProj texture2DLod texture2DProjLod " +
+                    "texture3D texture3DProj texture3DLod texture3DProjLod " +
+                    "textureCube textureCubeLod " +
+                    "shadow1D shadow2D shadow1DProj shadow2DProj " +
+                    "shadow1DLod shadow2DLod shadow1DProjLod shadow2DProjLod " +
+                    "dFdx dFdy fwidth " +
+                    "noise1 noise2 noise3 noise4"),
+    atoms: words("true false " +
+                "gl_FragColor gl_SecondaryColor gl_Normal gl_Vertex " +
+                "gl_MultiTexCoord0 gl_MultiTexCoord1 gl_MultiTexCoord2 gl_MultiTexCoord3 " +
+                "gl_MultiTexCoord4 gl_MultiTexCoord5 gl_MultiTexCoord6 gl_MultiTexCoord7 " +
+                "gl_FogCoord " +
+                "gl_Position gl_PointSize gl_ClipVertex " +
+                "gl_FrontColor gl_BackColor gl_FrontSecondaryColor gl_BackSecondaryColor " +
+                "gl_TexCoord gl_FogFragCoord " +
+                "gl_FragCoord gl_FrontFacing " +
+                "gl_FragColor gl_FragData gl_FragDepth " +
+                "gl_ModelViewMatrix gl_ProjectionMatrix gl_ModelViewProjectionMatrix " +
+                "gl_TextureMatrix gl_NormalMatrix gl_ModelViewMatrixInverse " +
+                "gl_ProjectionMatrixInverse gl_ModelViewProjectionMatrixInverse " +
+                "gl_TexureMatrixTranspose gl_ModelViewMatrixInverseTranspose " +
+                "gl_ProjectionMatrixInverseTranspose " +
+                "gl_ModelViewProjectionMatrixInverseTranspose " +
+                "gl_TextureMatrixInverseTranspose " +
+                "gl_NormalScale gl_DepthRange gl_ClipPlane " +
+                "gl_Point gl_FrontMaterial gl_BackMaterial gl_LightSource gl_LightModel " +
+                "gl_FrontLightModelProduct gl_BackLightModelProduct " +
+                "gl_TextureColor gl_EyePlaneS gl_EyePlaneT gl_EyePlaneR gl_EyePlaneQ " +
+                "gl_FogParameters " +
+                "gl_MaxLights gl_MaxClipPlanes gl_MaxTextureUnits gl_MaxTextureCoords " +
+                "gl_MaxVertexAttribs gl_MaxVertexUniformComponents gl_MaxVaryingFloats " +
+                "gl_MaxVertexTextureImageUnits gl_MaxTextureImageUnits " +
+                "gl_MaxFragmentUniformComponents gl_MaxCombineTextureImageUnits " +
+                "gl_MaxDrawBuffers"),
+    hooks: {"#": cppHook},
+    modeProps: {fold: ["brace", "include"]}
+  });
+
+  def("text/x-nesc", {
+    name: "clike",
+    keywords: words(cKeywords + "as atomic async call command component components configuration event generic " +
+                    "implementation includes interface module new norace nx_struct nx_union post provides " +
+                    "signal task uses abstract extends"),
+    blockKeywords: words("case do else for if switch while struct"),
+    atoms: words("null"),
+    hooks: {"#": cppHook},
+    modeProps: {fold: ["brace", "include"]}
+  });
+
+});
+
+},{"../../lib/codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js":[function(require,module,exports){
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+// TODO actually recognize syntax of TypeScript constructs
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+"use strict";
+
+CodeMirror.defineMode("javascript", function(config, parserConfig) {
+  var indentUnit = config.indentUnit;
+  var statementIndent = parserConfig.statementIndent;
+  var jsonldMode = parserConfig.jsonld;
+  var jsonMode = parserConfig.json || jsonldMode;
+  var isTS = parserConfig.typescript;
+  var wordRE = parserConfig.wordCharacters || /[\w$]/;
+
+  // Tokenizer
+
+  var keywords = function(){
+    function kw(type) {return {type: type, style: "keyword"};}
+    var A = kw("keyword a"), B = kw("keyword b"), C = kw("keyword c");
+    var operator = kw("operator"), atom = {type: "atom", style: "atom"};
+
+    var jsKeywords = {
+      "if": kw("if"), "while": A, "with": A, "else": B, "do": B, "try": B, "finally": B,
+      "return": C, "break": C, "continue": C, "new": C, "delete": C, "throw": C, "debugger": C,
+      "var": kw("var"), "const": kw("var"), "let": kw("var"),
+      "function": kw("function"), "catch": kw("catch"),
+      "for": kw("for"), "switch": kw("switch"), "case": kw("case"), "default": kw("default"),
+      "in": operator, "typeof": operator, "instanceof": operator,
+      "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom, "Infinity": atom,
+      "this": kw("this"), "module": kw("module"), "class": kw("class"), "super": kw("atom"),
+      "yield": C, "export": kw("export"), "import": kw("import"), "extends": C
+    };
+
+    // Extend the 'normal' keywords with the TypeScript language extensions
+    if (isTS) {
+      var type = {type: "variable", style: "variable-3"};
+      var tsKeywords = {
+        // object-like things
+        "interface": kw("interface"),
+        "extends": kw("extends"),
+        "constructor": kw("constructor"),
+
+        // scope modifiers
+        "public": kw("public"),
+        "private": kw("private"),
+        "protected": kw("protected"),
+        "static": kw("static"),
+
+        // types
+        "string": type, "number": type, "bool": type, "any": type
+      };
+
+      for (var attr in tsKeywords) {
+        jsKeywords[attr] = tsKeywords[attr];
+      }
+    }
+
+    return jsKeywords;
+  }();
+
+  var isOperatorChar = /[+\-*&%=<>!?|~^]/;
+  var isJsonldKeyword = /^@(context|id|value|language|type|container|list|set|reverse|index|base|vocab|graph)"/;
+
+  function readRegexp(stream) {
+    var escaped = false, next, inSet = false;
+    while ((next = stream.next()) != null) {
+      if (!escaped) {
+        if (next == "/" && !inSet) return;
+        if (next == "[") inSet = true;
+        else if (inSet && next == "]") inSet = false;
+      }
+      escaped = !escaped && next == "\\";
+    }
+  }
+
+  // Used as scratch variables to communicate multiple values without
+  // consing up tons of objects.
+  var type, content;
+  function ret(tp, style, cont) {
+    type = tp; content = cont;
+    return style;
+  }
+  function tokenBase(stream, state) {
+    var ch = stream.next();
+    if (ch == '"' || ch == "'") {
+      state.tokenize = tokenString(ch);
+      return state.tokenize(stream, state);
+    } else if (ch == "." && stream.match(/^\d+(?:[eE][+\-]?\d+)?/)) {
+      return ret("number", "number");
+    } else if (ch == "." && stream.match("..")) {
+      return ret("spread", "meta");
+    } else if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
+      return ret(ch);
+    } else if (ch == "=" && stream.eat(">")) {
+      return ret("=>", "operator");
+    } else if (ch == "0" && stream.eat(/x/i)) {
+      stream.eatWhile(/[\da-f]/i);
+      return ret("number", "number");
+    } else if (/\d/.test(ch)) {
+      stream.match(/^\d*(?:\.\d*)?(?:[eE][+\-]?\d+)?/);
+      return ret("number", "number");
+    } else if (ch == "/") {
+      if (stream.eat("*")) {
+        state.tokenize = tokenComment;
+        return tokenComment(stream, state);
+      } else if (stream.eat("/")) {
+        stream.skipToEnd();
+        return ret("comment", "comment");
+      } else if (state.lastType == "operator" || state.lastType == "keyword c" ||
+               state.lastType == "sof" || /^[\[{}\(,;:]$/.test(state.lastType)) {
+        readRegexp(stream);
+        stream.eatWhile(/[gimy]/); // 'y' is "sticky" option in Mozilla
+        return ret("regexp", "string-2");
+      } else {
+        stream.eatWhile(isOperatorChar);
+        return ret("operator", "operator", stream.current());
+      }
+    } else if (ch == "`") {
+      state.tokenize = tokenQuasi;
+      return tokenQuasi(stream, state);
+    } else if (ch == "#") {
+      stream.skipToEnd();
+      return ret("error", "error");
+    } else if (isOperatorChar.test(ch)) {
+      stream.eatWhile(isOperatorChar);
+      return ret("operator", "operator", stream.current());
+    } else if (wordRE.test(ch)) {
+      stream.eatWhile(wordRE);
+      var word = stream.current(), known = keywords.propertyIsEnumerable(word) && keywords[word];
+      return (known && state.lastType != ".") ? ret(known.type, known.style, word) :
+                     ret("variable", "variable", word);
+    }
+  }
+
+  function tokenString(quote) {
+    return function(stream, state) {
+      var escaped = false, next;
+      if (jsonldMode && stream.peek() == "@" && stream.match(isJsonldKeyword)){
+        state.tokenize = tokenBase;
+        return ret("jsonld-keyword", "meta");
+      }
+      while ((next = stream.next()) != null) {
+        if (next == quote && !escaped) break;
+        escaped = !escaped && next == "\\";
+      }
+      if (!escaped) state.tokenize = tokenBase;
+      return ret("string", "string");
+    };
+  }
+
+  function tokenComment(stream, state) {
+    var maybeEnd = false, ch;
+    while (ch = stream.next()) {
+      if (ch == "/" && maybeEnd) {
+        state.tokenize = tokenBase;
+        break;
+      }
+      maybeEnd = (ch == "*");
+    }
+    return ret("comment", "comment");
+  }
+
+  function tokenQuasi(stream, state) {
+    var escaped = false, next;
+    while ((next = stream.next()) != null) {
+      if (!escaped && (next == "`" || next == "$" && stream.eat("{"))) {
+        state.tokenize = tokenBase;
+        break;
+      }
+      escaped = !escaped && next == "\\";
+    }
+    return ret("quasi", "string-2", stream.current());
+  }
+
+  var brackets = "([{}])";
+  // This is a crude lookahead trick to try and notice that we're
+  // parsing the argument patterns for a fat-arrow function before we
+  // actually hit the arrow token. It only works if the arrow is on
+  // the same line as the arguments and there's no strange noise
+  // (comments) in between. Fallback is to only notice when we hit the
+  // arrow, and not declare the arguments as locals for the arrow
+  // body.
+  function findFatArrow(stream, state) {
+    if (state.fatArrowAt) state.fatArrowAt = null;
+    var arrow = stream.string.indexOf("=>", stream.start);
+    if (arrow < 0) return;
+
+    var depth = 0, sawSomething = false;
+    for (var pos = arrow - 1; pos >= 0; --pos) {
+      var ch = stream.string.charAt(pos);
+      var bracket = brackets.indexOf(ch);
+      if (bracket >= 0 && bracket < 3) {
+        if (!depth) { ++pos; break; }
+        if (--depth == 0) break;
+      } else if (bracket >= 3 && bracket < 6) {
+        ++depth;
+      } else if (wordRE.test(ch)) {
+        sawSomething = true;
+      } else if (sawSomething && !depth) {
+        ++pos;
+        break;
+      }
+    }
+    if (sawSomething && !depth) state.fatArrowAt = pos;
+  }
+
+  // Parser
+
+  var atomicTypes = {"atom": true, "number": true, "variable": true, "string": true, "regexp": true, "this": true, "jsonld-keyword": true};
+
+  function JSLexical(indented, column, type, align, prev, info) {
+    this.indented = indented;
+    this.column = column;
+    this.type = type;
+    this.prev = prev;
+    this.info = info;
+    if (align != null) this.align = align;
+  }
+
+  function inScope(state, varname) {
+    for (var v = state.localVars; v; v = v.next)
+      if (v.name == varname) return true;
+    for (var cx = state.context; cx; cx = cx.prev) {
+      for (var v = cx.vars; v; v = v.next)
+        if (v.name == varname) return true;
+    }
+  }
+
+  function parseJS(state, style, type, content, stream) {
+    var cc = state.cc;
+    // Communicate our context to the combinators.
+    // (Less wasteful than consing up a hundred closures on every call.)
+    cx.state = state; cx.stream = stream; cx.marked = null, cx.cc = cc; cx.style = style;
+
+    if (!state.lexical.hasOwnProperty("align"))
+      state.lexical.align = true;
+
+    while(true) {
+      var combinator = cc.length ? cc.pop() : jsonMode ? expression : statement;
+      if (combinator(type, content)) {
+        while(cc.length && cc[cc.length - 1].lex)
+          cc.pop()();
+        if (cx.marked) return cx.marked;
+        if (type == "variable" && inScope(state, content)) return "variable-2";
+        return style;
+      }
+    }
+  }
+
+  // Combinator utils
+
+  var cx = {state: null, column: null, marked: null, cc: null};
+  function pass() {
+    for (var i = arguments.length - 1; i >= 0; i--) cx.cc.push(arguments[i]);
+  }
+  function cont() {
+    pass.apply(null, arguments);
+    return true;
+  }
+  function register(varname) {
+    function inList(list) {
+      for (var v = list; v; v = v.next)
+        if (v.name == varname) return true;
+      return false;
+    }
+    var state = cx.state;
+    if (state.context) {
+      cx.marked = "def";
+      if (inList(state.localVars)) return;
+      state.localVars = {name: varname, next: state.localVars};
+    } else {
+      if (inList(state.globalVars)) return;
+      if (parserConfig.globalVars)
+        state.globalVars = {name: varname, next: state.globalVars};
+    }
+  }
+
+  // Combinators
+
+  var defaultVars = {name: "this", next: {name: "arguments"}};
+  function pushcontext() {
+    cx.state.context = {prev: cx.state.context, vars: cx.state.localVars};
+    cx.state.localVars = defaultVars;
+  }
+  function popcontext() {
+    cx.state.localVars = cx.state.context.vars;
+    cx.state.context = cx.state.context.prev;
+  }
+  function pushlex(type, info) {
+    var result = function() {
+      var state = cx.state, indent = state.indented;
+      if (state.lexical.type == "stat") indent = state.lexical.indented;
+      else for (var outer = state.lexical; outer && outer.type == ")" && outer.align; outer = outer.prev)
+        indent = outer.indented;
+      state.lexical = new JSLexical(indent, cx.stream.column(), type, null, state.lexical, info);
+    };
+    result.lex = true;
+    return result;
+  }
+  function poplex() {
+    var state = cx.state;
+    if (state.lexical.prev) {
+      if (state.lexical.type == ")")
+        state.indented = state.lexical.indented;
+      state.lexical = state.lexical.prev;
+    }
+  }
+  poplex.lex = true;
+
+  function expect(wanted) {
+    function exp(type) {
+      if (type == wanted) return cont();
+      else if (wanted == ";") return pass();
+      else return cont(exp);
+    };
+    return exp;
+  }
+
+  function statement(type, value) {
+    if (type == "var") return cont(pushlex("vardef", value.length), vardef, expect(";"), poplex);
+    if (type == "keyword a") return cont(pushlex("form"), expression, statement, poplex);
+    if (type == "keyword b") return cont(pushlex("form"), statement, poplex);
+    if (type == "{") return cont(pushlex("}"), block, poplex);
+    if (type == ";") return cont();
+    if (type == "if") {
+      if (cx.state.lexical.info == "else" && cx.state.cc[cx.state.cc.length - 1] == poplex)
+        cx.state.cc.pop()();
+      return cont(pushlex("form"), expression, statement, poplex, maybeelse);
+    }
+    if (type == "function") return cont(functiondef);
+    if (type == "for") return cont(pushlex("form"), forspec, statement, poplex);
+    if (type == "variable") return cont(pushlex("stat"), maybelabel);
+    if (type == "switch") return cont(pushlex("form"), expression, pushlex("}", "switch"), expect("{"),
+                                      block, poplex, poplex);
+    if (type == "case") return cont(expression, expect(":"));
+    if (type == "default") return cont(expect(":"));
+    if (type == "catch") return cont(pushlex("form"), pushcontext, expect("("), funarg, expect(")"),
+                                     statement, poplex, popcontext);
+    if (type == "module") return cont(pushlex("form"), pushcontext, afterModule, popcontext, poplex);
+    if (type == "class") return cont(pushlex("form"), className, poplex);
+    if (type == "export") return cont(pushlex("form"), afterExport, poplex);
+    if (type == "import") return cont(pushlex("form"), afterImport, poplex);
+    return pass(pushlex("stat"), expression, expect(";"), poplex);
+  }
+  function expression(type) {
+    return expressionInner(type, false);
+  }
+  function expressionNoComma(type) {
+    return expressionInner(type, true);
+  }
+  function expressionInner(type, noComma) {
+    if (cx.state.fatArrowAt == cx.stream.start) {
+      var body = noComma ? arrowBodyNoComma : arrowBody;
+      if (type == "(") return cont(pushcontext, pushlex(")"), commasep(pattern, ")"), poplex, expect("=>"), body, popcontext);
+      else if (type == "variable") return pass(pushcontext, pattern, expect("=>"), body, popcontext);
+    }
+
+    var maybeop = noComma ? maybeoperatorNoComma : maybeoperatorComma;
+    if (atomicTypes.hasOwnProperty(type)) return cont(maybeop);
+    if (type == "function") return cont(functiondef, maybeop);
+    if (type == "keyword c") return cont(noComma ? maybeexpressionNoComma : maybeexpression);
+    if (type == "(") return cont(pushlex(")"), maybeexpression, comprehension, expect(")"), poplex, maybeop);
+    if (type == "operator" || type == "spread") return cont(noComma ? expressionNoComma : expression);
+    if (type == "[") return cont(pushlex("]"), arrayLiteral, poplex, maybeop);
+    if (type == "{") return contCommasep(objprop, "}", null, maybeop);
+    if (type == "quasi") { return pass(quasi, maybeop); }
+    return cont();
+  }
+  function maybeexpression(type) {
+    if (type.match(/[;\}\)\],]/)) return pass();
+    return pass(expression);
+  }
+  function maybeexpressionNoComma(type) {
+    if (type.match(/[;\}\)\],]/)) return pass();
+    return pass(expressionNoComma);
+  }
+
+  function maybeoperatorComma(type, value) {
+    if (type == ",") return cont(expression);
+    return maybeoperatorNoComma(type, value, false);
+  }
+  function maybeoperatorNoComma(type, value, noComma) {
+    var me = noComma == false ? maybeoperatorComma : maybeoperatorNoComma;
+    var expr = noComma == false ? expression : expressionNoComma;
+    if (type == "=>") return cont(pushcontext, noComma ? arrowBodyNoComma : arrowBody, popcontext);
+    if (type == "operator") {
+      if (/\+\+|--/.test(value)) return cont(me);
+      if (value == "?") return cont(expression, expect(":"), expr);
+      return cont(expr);
+    }
+    if (type == "quasi") { return pass(quasi, me); }
+    if (type == ";") return;
+    if (type == "(") return contCommasep(expressionNoComma, ")", "call", me);
+    if (type == ".") return cont(property, me);
+    if (type == "[") return cont(pushlex("]"), maybeexpression, expect("]"), poplex, me);
+  }
+  function quasi(type, value) {
+    if (type != "quasi") return pass();
+    if (value.slice(value.length - 2) != "${") return cont(quasi);
+    return cont(expression, continueQuasi);
+  }
+  function continueQuasi(type) {
+    if (type == "}") {
+      cx.marked = "string-2";
+      cx.state.tokenize = tokenQuasi;
+      return cont(quasi);
+    }
+  }
+  function arrowBody(type) {
+    findFatArrow(cx.stream, cx.state);
+    return pass(type == "{" ? statement : expression);
+  }
+  function arrowBodyNoComma(type) {
+    findFatArrow(cx.stream, cx.state);
+    return pass(type == "{" ? statement : expressionNoComma);
+  }
+  function maybelabel(type) {
+    if (type == ":") return cont(poplex, statement);
+    return pass(maybeoperatorComma, expect(";"), poplex);
+  }
+  function property(type) {
+    if (type == "variable") {cx.marked = "property"; return cont();}
+  }
+  function objprop(type, value) {
+    if (type == "variable" || cx.style == "keyword") {
+      cx.marked = "property";
+      if (value == "get" || value == "set") return cont(getterSetter);
+      return cont(afterprop);
+    } else if (type == "number" || type == "string") {
+      cx.marked = jsonldMode ? "property" : (cx.style + " property");
+      return cont(afterprop);
+    } else if (type == "jsonld-keyword") {
+      return cont(afterprop);
+    } else if (type == "[") {
+      return cont(expression, expect("]"), afterprop);
+    }
+  }
+  function getterSetter(type) {
+    if (type != "variable") return pass(afterprop);
+    cx.marked = "property";
+    return cont(functiondef);
+  }
+  function afterprop(type) {
+    if (type == ":") return cont(expressionNoComma);
+    if (type == "(") return pass(functiondef);
+  }
+  function commasep(what, end) {
+    function proceed(type) {
+      if (type == ",") {
+        var lex = cx.state.lexical;
+        if (lex.info == "call") lex.pos = (lex.pos || 0) + 1;
+        return cont(what, proceed);
+      }
+      if (type == end) return cont();
+      return cont(expect(end));
+    }
+    return function(type) {
+      if (type == end) return cont();
+      return pass(what, proceed);
+    };
+  }
+  function contCommasep(what, end, info) {
+    for (var i = 3; i < arguments.length; i++)
+      cx.cc.push(arguments[i]);
+    return cont(pushlex(end, info), commasep(what, end), poplex);
+  }
+  function block(type) {
+    if (type == "}") return cont();
+    return pass(statement, block);
+  }
+  function maybetype(type) {
+    if (isTS && type == ":") return cont(typedef);
+  }
+  function typedef(type) {
+    if (type == "variable"){cx.marked = "variable-3"; return cont();}
+  }
+  function vardef() {
+    return pass(pattern, maybetype, maybeAssign, vardefCont);
+  }
+  function pattern(type, value) {
+    if (type == "variable") { register(value); return cont(); }
+    if (type == "[") return contCommasep(pattern, "]");
+    if (type == "{") return contCommasep(proppattern, "}");
+  }
+  function proppattern(type, value) {
+    if (type == "variable" && !cx.stream.match(/^\s*:/, false)) {
+      register(value);
+      return cont(maybeAssign);
+    }
+    if (type == "variable") cx.marked = "property";
+    return cont(expect(":"), pattern, maybeAssign);
+  }
+  function maybeAssign(_type, value) {
+    if (value == "=") return cont(expressionNoComma);
+  }
+  function vardefCont(type) {
+    if (type == ",") return cont(vardef);
+  }
+  function maybeelse(type, value) {
+    if (type == "keyword b" && value == "else") return cont(pushlex("form", "else"), statement, poplex);
+  }
+  function forspec(type) {
+    if (type == "(") return cont(pushlex(")"), forspec1, expect(")"), poplex);
+  }
+  function forspec1(type) {
+    if (type == "var") return cont(vardef, expect(";"), forspec2);
+    if (type == ";") return cont(forspec2);
+    if (type == "variable") return cont(formaybeinof);
+    return pass(expression, expect(";"), forspec2);
+  }
+  function formaybeinof(_type, value) {
+    if (value == "in" || value == "of") { cx.marked = "keyword"; return cont(expression); }
+    return cont(maybeoperatorComma, forspec2);
+  }
+  function forspec2(type, value) {
+    if (type == ";") return cont(forspec3);
+    if (value == "in" || value == "of") { cx.marked = "keyword"; return cont(expression); }
+    return pass(expression, expect(";"), forspec3);
+  }
+  function forspec3(type) {
+    if (type != ")") cont(expression);
+  }
+  function functiondef(type, value) {
+    if (value == "*") {cx.marked = "keyword"; return cont(functiondef);}
+    if (type == "variable") {register(value); return cont(functiondef);}
+    if (type == "(") return cont(pushcontext, pushlex(")"), commasep(funarg, ")"), poplex, statement, popcontext);
+  }
+  function funarg(type) {
+    if (type == "spread") return cont(funarg);
+    return pass(pattern, maybetype);
+  }
+  function className(type, value) {
+    if (type == "variable") {register(value); return cont(classNameAfter);}
+  }
+  function classNameAfter(type, value) {
+    if (value == "extends") return cont(expression, classNameAfter);
+    if (type == "{") return cont(pushlex("}"), classBody, poplex);
+  }
+  function classBody(type, value) {
+    if (type == "variable" || cx.style == "keyword") {
+      cx.marked = "property";
+      if (value == "get" || value == "set") return cont(classGetterSetter, functiondef, classBody);
+      return cont(functiondef, classBody);
+    }
+    if (value == "*") {
+      cx.marked = "keyword";
+      return cont(classBody);
+    }
+    if (type == ";") return cont(classBody);
+    if (type == "}") return cont();
+  }
+  function classGetterSetter(type) {
+    if (type != "variable") return pass();
+    cx.marked = "property";
+    return cont();
+  }
+  function afterModule(type, value) {
+    if (type == "string") return cont(statement);
+    if (type == "variable") { register(value); return cont(maybeFrom); }
+  }
+  function afterExport(_type, value) {
+    if (value == "*") { cx.marked = "keyword"; return cont(maybeFrom, expect(";")); }
+    if (value == "default") { cx.marked = "keyword"; return cont(expression, expect(";")); }
+    return pass(statement);
+  }
+  function afterImport(type) {
+    if (type == "string") return cont();
+    return pass(importSpec, maybeFrom);
+  }
+  function importSpec(type, value) {
+    if (type == "{") return contCommasep(importSpec, "}");
+    if (type == "variable") register(value);
+    return cont();
+  }
+  function maybeFrom(_type, value) {
+    if (value == "from") { cx.marked = "keyword"; return cont(expression); }
+  }
+  function arrayLiteral(type) {
+    if (type == "]") return cont();
+    return pass(expressionNoComma, maybeArrayComprehension);
+  }
+  function maybeArrayComprehension(type) {
+    if (type == "for") return pass(comprehension, expect("]"));
+    if (type == ",") return cont(commasep(expressionNoComma, "]"));
+    return pass(commasep(expressionNoComma, "]"));
+  }
+  function comprehension(type) {
+    if (type == "for") return cont(forspec, comprehension);
+    if (type == "if") return cont(expression, comprehension);
+  }
+
+  // Interface
+
+  return {
+    startState: function(basecolumn) {
+      var state = {
+        tokenize: tokenBase,
+        lastType: "sof",
+        cc: [],
+        lexical: new JSLexical((basecolumn || 0) - indentUnit, 0, "block", false),
+        localVars: parserConfig.localVars,
+        context: parserConfig.localVars && {vars: parserConfig.localVars},
+        indented: 0
+      };
+      if (parserConfig.globalVars && typeof parserConfig.globalVars == "object")
+        state.globalVars = parserConfig.globalVars;
+      return state;
+    },
+
+    token: function(stream, state) {
+      if (stream.sol()) {
+        if (!state.lexical.hasOwnProperty("align"))
+          state.lexical.align = false;
+        state.indented = stream.indentation();
+        findFatArrow(stream, state);
+      }
+      if (state.tokenize != tokenComment && stream.eatSpace()) return null;
+      var style = state.tokenize(stream, state);
+      if (type == "comment") return style;
+      state.lastType = type == "operator" && (content == "++" || content == "--") ? "incdec" : type;
+      return parseJS(state, style, type, content, stream);
+    },
+
+    indent: function(state, textAfter) {
+      if (state.tokenize == tokenComment) return CodeMirror.Pass;
+      if (state.tokenize != tokenBase) return 0;
+      var firstChar = textAfter && textAfter.charAt(0), lexical = state.lexical;
+      // Kludge to prevent 'maybelse' from blocking lexical scope pops
+      if (!/^\s*else\b/.test(textAfter)) for (var i = state.cc.length - 1; i >= 0; --i) {
+        var c = state.cc[i];
+        if (c == poplex) lexical = lexical.prev;
+        else if (c != maybeelse) break;
+      }
+      if (lexical.type == "stat" && firstChar == "}") lexical = lexical.prev;
+      if (statementIndent && lexical.type == ")" && lexical.prev.type == "stat")
+        lexical = lexical.prev;
+      var type = lexical.type, closing = firstChar == type;
+
+      if (type == "vardef") return lexical.indented + (state.lastType == "operator" || state.lastType == "," ? lexical.info + 1 : 0);
+      else if (type == "form" && firstChar == "{") return lexical.indented;
+      else if (type == "form") return lexical.indented + indentUnit;
+      else if (type == "stat")
+        return lexical.indented + (state.lastType == "operator" || state.lastType == "," ? statementIndent || indentUnit : 0);
+      else if (lexical.info == "switch" && !closing && parserConfig.doubleIndentSwitch != false)
+        return lexical.indented + (/^(?:case|default)\b/.test(textAfter) ? indentUnit : 2 * indentUnit);
+      else if (lexical.align) return lexical.column + (closing ? 0 : 1);
+      else return lexical.indented + (closing ? 0 : indentUnit);
+    },
+
+    electricChars: ":{}",
+    blockCommentStart: jsonMode ? null : "/*",
+    blockCommentEnd: jsonMode ? null : "*/",
+    lineComment: jsonMode ? null : "//",
+    fold: "brace",
+
+    helperType: jsonMode ? "json" : "javascript",
+    jsonldMode: jsonldMode,
+    jsonMode: jsonMode
+  };
+});
+
+CodeMirror.registerHelper("wordChars", "javascript", /[\w$]/);
+
+CodeMirror.defineMIME("text/javascript", "javascript");
+CodeMirror.defineMIME("text/ecmascript", "javascript");
+CodeMirror.defineMIME("application/javascript", "javascript");
+CodeMirror.defineMIME("application/x-javascript", "javascript");
+CodeMirror.defineMIME("application/ecmascript", "javascript");
+CodeMirror.defineMIME("application/json", {name: "javascript", json: true});
+CodeMirror.defineMIME("application/x-json", {name: "javascript", json: true});
+CodeMirror.defineMIME("application/ld+json", {name: "javascript", jsonld: true});
+CodeMirror.defineMIME("text/typescript", { name: "javascript", typescript: true });
+CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript: true });
+
+});
+
+},{"../../lib/codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js"}],"/www/gibber.libraries/node_modules/color/color.js":[function(require,module,exports){
 /* MIT license */
 var convert = require("color-convert"),
     string = require("color-string");
@@ -27282,7 +28106,7 @@ Graphics = {
   },
   
   init : function( mode, container, noThree ) {
-    // console.log("INIT", mode, noThree )
+    console.log("INIT", mode, noThree )
     this.canvas = document.createElement('div')
     
     if( typeof noThree !== 'undefined' ) { 
@@ -27341,7 +28165,7 @@ Graphics = {
     
     if( !this.noThree ) {
       try{
-        //console.log( 'creating scene....')
+        console.log( 'creating scene....')
         this.createScene( this.mode )
       }catch(e) {
         console.log(e)
@@ -27507,20 +28331,21 @@ Graphics = {
       }
 
       this.graph.length = 0
-      // if( this.PostProcessing ) this.PostProcessing.fx.length = 0
-      // if( !this.noThree ) {
-      //   for( var j = this.PostProcessing.fx - 1; j >= 0; j-- ) {
-      //     this.PostProcessing.fx[ j ].remove()
-      //   }
-      // }
+      if( this.PostProcessing ) this.PostProcessing.fx.length = 0
+      if( !this.noThree ) {
+        for( var j = this.PostProcessing.fx - 1; j >= 0; j-- ) {
+          this.PostProcessing.fx[ j ].remove()
+        }
+      }
       
-      //this.PostProcessing.fx.length = 0
-      //this.PostProcessing.isRunning = false
+      this.PostProcessing.fx.length = 0
+      this.PostProcessing.isRunning = false
       
-      //this.canvas.remove()
-      //this.canvas = null
-      //this.ctx = null
-      this.running = false
+      // something in hear messes thigns up...
+      // this.canvas.remove()
+      // this.canvas = null
+      // this.ctx = null
+      // this.running = false
     }
   },
   render : function() {
