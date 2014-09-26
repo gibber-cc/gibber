@@ -179,8 +179,9 @@ module.exports = function( Gibber ) {
     Layout.handleResizeEventForColumn( col )
   
     Layout.resizeColumns()
-
-    $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).offset().left }, 'slow' );
+    
+    console.log("ANIMATING", $( '#' + col.id ).offset().left, col.id )
+    $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).position().left }, 'slow' );
   
     if( window.loadFile && window.loadFile.error && Layout.columns.length === 1 ) {
       console.log( window.loadFile )

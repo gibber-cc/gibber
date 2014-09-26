@@ -96,7 +96,32 @@ module.exports = function( Gibber ) {
           )
           $( '#loginForm' ).remove()
         }else{
-          $( "#loginForm h5" ).text( "Your name or password was incorrect. Please try again." )
+          $( "#loginForm h5" ).html( "Your name or password was incorrect. Please try again. ")
+          var passwordRequest = $('<span>Click here if you\'ve forgotten your password.</span>')
+          
+          passwordRequest.on( 'click', function( e ) {
+            console.log('CLICK')
+            $.ajax({
+              url: GE.SERVER_URL + '/requestPassword',
+              dataType:'json',
+              type:'POST',
+              data: { username: $("#username").val() }
+            }).done( function( data, error ) {
+              var msg = data.msg
+              
+              if( data ) {
+                if( data.result === 'success' ) {
+                  msg += '. Please check your email for the password reminder and then try to login again.'
+                }
+
+                $( "#loginForm h5" ).html( msg )
+              }
+            })
+          })
+          
+          passwordRequest.css({ textDecoration:'underline' })
+          
+          $( "#loginForm h5" ).append( passwordRequest )
         }
       })
       .fail( function(error) {console.log( error )})
@@ -164,22 +189,21 @@ module.exports = function( Gibber ) {
             friends: [],
           }
 
-        $.ajax({
-          type:"POST",
-          url: GE.SERVER_URL + '/createNewUser', 
-          'data':data, 
-          dataType:'json'
-        }).done(
-          function (data, error) {
-            if( data ) {
-              GE.Message.post('New account created. Please login to verify your username and password.'); 
-            } else { 
-              GE.Message.post( 'The account could not be created. Try a different username' )
-              console.log( "RESPONSE", response )
-            }
-            return false;
-        })    
-      )
+      $.ajax({
+        type:"POST",
+        url: GE.SERVER_URL + '/createNewUser', 
+        'data':data, 
+        dataType:'json'
+      }).done(
+        function (data, error) {
+          if( data ) {
+            GE.Message.post('New account created. Please login to verify your username and password.'); 
+          } else { 
+            GE.Message.post( 'The account could not be created. Try a different username' )
+            console.log( "RESPONSE", response )
+          }
+          return false;
+      })    
       // col.element.remove()
       GE.Layout.removeColumn( Account.newAccountColumn.id )     
     },
