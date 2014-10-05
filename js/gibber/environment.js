@@ -26,7 +26,8 @@ var GE = {
   Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
-  // Share:        require( './share' )( Gibber ),  
+  Share:        require( './share' )( Gibber ),
+  //Share:        require( './share' )( Gibber ),  
   
   init : function() { 
     GE.Keymap.init()
@@ -57,7 +58,7 @@ var GE = {
       //GE.Console.open()
       GE.Welcome.init()
       GE.Theme.init()
-      //GE.Share.open()
+      GE.Share.init()
       //GE.Demos.open()
       
       GE.Menu.init()
@@ -613,7 +614,7 @@ var GE = {
     init : function() {
       //var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
       //col.bodyElement.remove()
-      //console.log( "GE.SERVER_URL", GE.SERVER_URL )
+      //console.log( "GE.Rtc", GE.Rtc )
       $.ajax({
         url: GE.SERVER_URL + "/welcome",
         dataType:'html'

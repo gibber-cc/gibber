@@ -126,23 +126,12 @@
     <table>
       <thead><th></th><th></th></thead>
       <tbody>
-      <tr><td class='browserHeader'><h2>Your Files</h2></td></tr>
-      <tr><td>
-      <% if( userfiles.length > 0 ) { %>  
-      <tr><td>
-          <!-- <h3>Your Files <span id='browser_updown'>&#9662;</span></h3> -->
+        <tr><td class='browserHeader'><h2>Your Files</h2></td></tr>
+        <tr><td 'browserLinks'>
           <div id='browser_userfiles'>
-          <ul>
-          <% for(var i=0; i<userfiles.length; i++) { %>
-            <li onclick="Gibber.Environment.Browser.openCode('<%- userfiles[i].id %>')"><%- userfiles[i].id.split('/')[2] %></li>
-          <% } %>
-         </ul>
-         </div>
-      </td></tr>
-      <% } else { %>
-        <p>You are not currently logged in. Please log in to see your files.</p>
-      <% } %>
-    </tbody>
+          <p>You are not currently logged in. Please log in to see your files.</p>
+        </td></tr>
+      </tbody>
     </table>
   </div>
   

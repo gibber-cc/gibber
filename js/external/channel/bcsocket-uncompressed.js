@@ -1,4 +1,4 @@
-(function(){
+!function(){
 function e() {
   return function() {
   }
@@ -2716,6 +2716,7 @@ $.prototype.CONNECTING = $.CONNECTING = $.CONNECTING = 0;
 $.prototype.OPEN = $.OPEN = $.OPEN = 1;
 $.prototype.CLOSING = $.CLOSING = $.cb = 2;
 $.prototype.CLOSED = $.CLOSED = $.CLOSED = 3;
-("undefined" !== typeof exports && null !== exports ? exports : window).BCSocket = $;
 
-})();
+module.exports = $;
+
+}();

@@ -190,9 +190,121 @@
         return container;
     };
 }($));
-},{}],"/www/gibber.libraries/js/external/socket.io.min.js":[function(require,module,exports){
-/*! Socket.IO.min.js build:0.9.16, production. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
-var io="undefined"==typeof module?{}:module.exports;(function(){(function(a,b){var c=a;c.version="0.9.16",c.protocol=1,c.transports=[],c.j=[],c.sockets={},c.connect=function(a,d){var e=c.util.parseUri(a),f,g;b&&b.location&&(e.protocol=e.protocol||b.location.protocol.slice(0,-1),e.host=e.host||(b.document?b.document.domain:b.location.hostname),e.port=e.port||b.location.port),f=c.util.uniqueUri(e);var h={host:e.host,secure:"https"==e.protocol,port:e.port||("https"==e.protocol?443:80),query:e.query||""};c.util.merge(h,d);if(h["force new connection"]||!c.sockets[f])g=new c.Socket(h);return!h["force new connection"]&&g&&(c.sockets[f]=g),g=g||c.sockets[f],g.of(e.path.length>1?e.path:"")}})("object"==typeof module?module.exports:this.io={},this),function(a,b){var c=a.util={},d=/^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/,e=["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"];c.parseUri=function(a){var b=d.exec(a||""),c={},f=14;while(f--)c[e[f]]=b[f]||"";return c},c.uniqueUri=function(a){var c=a.protocol,d=a.host,e=a.port;return"document"in b?(d=d||document.domain,e=e||(c=="https"&&document.location.protocol!=="https:"?443:document.location.port)):(d=d||"localhost",!e&&c=="https"&&(e=443)),(c||"http")+"://"+d+":"+(e||80)},c.query=function(a,b){var d=c.chunkQuery(a||""),e=[];c.merge(d,c.chunkQuery(b||""));for(var f in d)d.hasOwnProperty(f)&&e.push(f+"="+d[f]);return e.length?"?"+e.join("&"):""},c.chunkQuery=function(a){var b={},c=a.split("&"),d=0,e=c.length,f;for(;d<e;++d)f=c[d].split("="),f[0]&&(b[f[0]]=f[1]);return b};var f=!1;c.load=function(a){if("document"in b&&document.readyState==="complete"||f)return a();c.on(b,"load",a,!1)},c.on=function(a,b,c,d){a.attachEvent?a.attachEvent("on"+b,c):a.addEventListener&&a.addEventListener(b,c,d)},c.request=function(a){if(a&&"undefined"!=typeof XDomainRequest&&!c.ua.hasCORS)return new XDomainRequest;if("undefined"!=typeof XMLHttpRequest&&(!a||c.ua.hasCORS))return new XMLHttpRequest;if(!a)try{return new(window[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(b){}return null},"undefined"!=typeof window&&c.load(function(){f=!0}),c.defer=function(a){if(!c.ua.webkit||"undefined"!=typeof importScripts)return a();c.load(function(){setTimeout(a,100)})},c.merge=function(b,d,e,f){var g=f||[],h=typeof e=="undefined"?2:e,i;for(i in d)d.hasOwnProperty(i)&&c.indexOf(g,i)<0&&(typeof b[i]!="object"||!h?(b[i]=d[i],g.push(d[i])):c.merge(b[i],d[i],h-1,g));return b},c.mixin=function(a,b){c.merge(a.prototype,b.prototype)},c.inherit=function(a,b){function c(){}c.prototype=b.prototype,a.prototype=new c},c.isArray=Array.isArray||function(a){return Object.prototype.toString.call(a)==="[object Array]"},c.intersect=function(a,b){var d=[],e=a.length>b.length?a:b,f=a.length>b.length?b:a;for(var g=0,h=f.length;g<h;g++)~c.indexOf(e,f[g])&&d.push(f[g]);return d},c.indexOf=function(a,b,c){for(var d=a.length,c=c<0?c+d<0?0:c+d:c||0;c<d&&a[c]!==b;c++);return d<=c?-1:c},c.toArray=function(a){var b=[];for(var c=0,d=a.length;c<d;c++)b.push(a[c]);return b},c.ua={},c.ua.hasCORS="undefined"!=typeof XMLHttpRequest&&function(){try{var a=new XMLHttpRequest}catch(b){return!1}return a.withCredentials!=undefined}(),c.ua.webkit="undefined"!=typeof navigator&&/webkit/i.test(navigator.userAgent),c.ua.iDevice="undefined"!=typeof navigator&&/iPad|iPhone|iPod/i.test(navigator.userAgent)}("undefined"!=typeof io?io:module.exports,this),function(a,b){function c(){}a.EventEmitter=c,c.prototype.on=function(a,c){return this.$events||(this.$events={}),this.$events[a]?b.util.isArray(this.$events[a])?this.$events[a].push(c):this.$events[a]=[this.$events[a],c]:this.$events[a]=c,this},c.prototype.addListener=c.prototype.on,c.prototype.once=function(a,b){function d(){c.removeListener(a,d),b.apply(this,arguments)}var c=this;return d.listener=b,this.on(a,d),this},c.prototype.removeListener=function(a,c){if(this.$events&&this.$events[a]){var d=this.$events[a];if(b.util.isArray(d)){var e=-1;for(var f=0,g=d.length;f<g;f++)if(d[f]===c||d[f].listener&&d[f].listener===c){e=f;break}if(e<0)return this;d.splice(e,1),d.length||delete this.$events[a]}else(d===c||d.listener&&d.listener===c)&&delete this.$events[a]}return this},c.prototype.removeAllListeners=function(a){return a===undefined?(this.$events={},this):(this.$events&&this.$events[a]&&(this.$events[a]=null),this)},c.prototype.listeners=function(a){return this.$events||(this.$events={}),this.$events[a]||(this.$events[a]=[]),b.util.isArray(this.$events[a])||(this.$events[a]=[this.$events[a]]),this.$events[a]},c.prototype.emit=function(a){if(!this.$events)return!1;var c=this.$events[a];if(!c)return!1;var d=Array.prototype.slice.call(arguments,1);if("function"==typeof c)c.apply(this,d);else{if(!b.util.isArray(c))return!1;var e=c.slice();for(var f=0,g=e.length;f<g;f++)e[f].apply(this,d)}return!0}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(exports,nativeJSON){function f(a){return a<10?"0"+a:a}function date(a,b){return isFinite(a.valueOf())?a.getUTCFullYear()+"-"+f(a.getUTCMonth()+1)+"-"+f(a.getUTCDate())+"T"+f(a.getUTCHours())+":"+f(a.getUTCMinutes())+":"+f(a.getUTCSeconds())+"Z":null}function quote(a){return escapable.lastIndex=0,escapable.test(a)?'"'+a.replace(escapable,function(a){var b=meta[a];return typeof b=="string"?b:"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)})+'"':'"'+a+'"'}function str(a,b){var c,d,e,f,g=gap,h,i=b[a];i instanceof Date&&(i=date(a)),typeof rep=="function"&&(i=rep.call(b,a,i));switch(typeof i){case"string":return quote(i);case"number":return isFinite(i)?String(i):"null";case"boolean":case"null":return String(i);case"object":if(!i)return"null";gap+=indent,h=[];if(Object.prototype.toString.apply(i)==="[object Array]"){f=i.length;for(c=0;c<f;c+=1)h[c]=str(c,i)||"null";return e=h.length===0?"[]":gap?"[\n"+gap+h.join(",\n"+gap)+"\n"+g+"]":"["+h.join(",")+"]",gap=g,e}if(rep&&typeof rep=="object"){f=rep.length;for(c=0;c<f;c+=1)typeof rep[c]=="string"&&(d=rep[c],e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e))}else for(d in i)Object.prototype.hasOwnProperty.call(i,d)&&(e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e));return e=h.length===0?"{}":gap?"{\n"+gap+h.join(",\n"+gap)+"\n"+g+"}":"{"+h.join(",")+"}",gap=g,e}}"use strict";if(nativeJSON&&nativeJSON.parse)return exports.JSON={parse:nativeJSON.parse,stringify:nativeJSON.stringify};var JSON=exports.JSON={},cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"},rep;JSON.stringify=function(a,b,c){var d;gap="",indent="";if(typeof c=="number")for(d=0;d<c;d+=1)indent+=" ";else typeof c=="string"&&(indent=c);rep=b;if(!b||typeof b=="function"||typeof b=="object"&&typeof b.length=="number")return str("",{"":a});throw new Error("JSON.stringify")},JSON.parse=function(text,reviver){function walk(a,b){var c,d,e=a[b];if(e&&typeof e=="object")for(c in e)Object.prototype.hasOwnProperty.call(e,c)&&(d=walk(e,c),d!==undefined?e[c]=d:delete e[c]);return reviver.call(a,b,e)}var j;text=String(text),cx.lastIndex=0,cx.test(text)&&(text=text.replace(cx,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:\s*\[)+/g,"")))return j=eval("("+text+")"),typeof reviver=="function"?walk({"":j},""):j;throw new SyntaxError("JSON.parse")}}("undefined"!=typeof io?io:module.exports,typeof JSON!="undefined"?JSON:undefined),function(a,b){var c=a.parser={},d=c.packets=["disconnect","connect","heartbeat","message","json","event","ack","error","noop"],e=c.reasons=["transport not supported","client not handshaken","unauthorized"],f=c.advice=["reconnect"],g=b.JSON,h=b.util.indexOf;c.encodePacket=function(a){var b=h(d,a.type),c=a.id||"",i=a.endpoint||"",j=a.ack,k=null;switch(a.type){case"error":var l=a.reason?h(e,a.reason):"",m=a.advice?h(f,a.advice):"";if(l!==""||m!=="")k=l+(m!==""?"+"+m:"");break;case"message":a.data!==""&&(k=a.data);break;case"event":var n={name:a.name};a.args&&a.args.length&&(n.args=a.args),k=g.stringify(n);break;case"json":k=g.stringify(a.data);break;case"connect":a.qs&&(k=a.qs);break;case"ack":k=a.ackId+(a.args&&a.args.length?"+"+g.stringify(a.args):"")}var o=[b,c+(j=="data"?"+":""),i];return k!==null&&k!==undefined&&o.push(k),o.join(":")},c.encodePayload=function(a){var b="";if(a.length==1)return a[0];for(var c=0,d=a.length;c<d;c++){var e=a[c];b+="\ufffd"+e.length+"\ufffd"+a[c]}return b};var i=/([^:]+):([0-9]+)?(\+)?:([^:]+)?:?([\s\S]*)?/;c.decodePacket=function(a){var b=a.match(i);if(!b)return{};var c=b[2]||"",a=b[5]||"",h={type:d[b[1]],endpoint:b[4]||""};c&&(h.id=c,b[3]?h.ack="data":h.ack=!0);switch(h.type){case"error":var b=a.split("+");h.reason=e[b[0]]||"",h.advice=f[b[1]]||"";break;case"message":h.data=a||"";break;case"event":try{var j=g.parse(a);h.name=j.name,h.args=j.args}catch(k){}h.args=h.args||[];break;case"json":try{h.data=g.parse(a)}catch(k){}break;case"connect":h.qs=a||"";break;case"ack":var b=a.match(/^([0-9]+)(\+)?(.*)/);if(b){h.ackId=b[1],h.args=[];if(b[3])try{h.args=b[3]?g.parse(b[3]):[]}catch(k){}}break;case"disconnect":case"heartbeat":}return h},c.decodePayload=function(a){if(a.charAt(0)=="\ufffd"){var b=[];for(var d=1,e="";d<a.length;d++)a.charAt(d)=="\ufffd"?(b.push(c.decodePacket(a.substr(d+1).substr(0,e))),d+=Number(e)+1,e=""):e+=a.charAt(d);return b}return[c.decodePacket(a)]}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b){function c(a,b){this.socket=a,this.sessid=b}a.Transport=c,b.util.mixin(c,b.EventEmitter),c.prototype.heartbeats=function(){return!0},c.prototype.onData=function(a){this.clearCloseTimeout(),(this.socket.connected||this.socket.connecting||this.socket.reconnecting)&&this.setCloseTimeout();if(a!==""){var c=b.parser.decodePayload(a);if(c&&c.length)for(var d=0,e=c.length;d<e;d++)this.onPacket(c[d])}return this},c.prototype.onPacket=function(a){return this.socket.setHeartbeatTimeout(),a.type=="heartbeat"?this.onHeartbeat():(a.type=="connect"&&a.endpoint==""&&this.onConnect(),a.type=="error"&&a.advice=="reconnect"&&(this.isOpen=!1),this.socket.onPacket(a),this)},c.prototype.setCloseTimeout=function(){if(!this.closeTimeout){var a=this;this.closeTimeout=setTimeout(function(){a.onDisconnect()},this.socket.closeTimeout)}},c.prototype.onDisconnect=function(){return this.isOpen&&this.close(),this.clearTimeouts(),this.socket.onDisconnect(),this},c.prototype.onConnect=function(){return this.socket.onConnect(),this},c.prototype.clearCloseTimeout=function(){this.closeTimeout&&(clearTimeout(this.closeTimeout),this.closeTimeout=null)},c.prototype.clearTimeouts=function(){this.clearCloseTimeout(),this.reopenTimeout&&clearTimeout(this.reopenTimeout)},c.prototype.packet=function(a){this.send(b.parser.encodePacket(a))},c.prototype.onHeartbeat=function(a){this.packet({type:"heartbeat"})},c.prototype.onOpen=function(){this.isOpen=!0,this.clearCloseTimeout(),this.socket.onOpen()},c.prototype.onClose=function(){var a=this;this.isOpen=!1,this.socket.onClose(),this.onDisconnect()},c.prototype.prepareUrl=function(){var a=this.socket.options;return this.scheme()+"://"+a.host+":"+a.port+"/"+a.resource+"/"+b.protocol+"/"+this.name+"/"+this.sessid},c.prototype.ready=function(a,b){b.call(this)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(a){this.options={port:80,secure:!1,document:"document"in c?document:!1,resource:"socket.io",transports:b.transports,"connect timeout":1e4,"try multiple transports":!0,reconnect:!0,"reconnection delay":500,"reconnection limit":Infinity,"reopen delay":3e3,"max reconnection attempts":10,"sync disconnect on unload":!1,"auto connect":!0,"flash policy port":10843,manualFlush:!1},b.util.merge(this.options,a),this.connected=!1,this.open=!1,this.connecting=!1,this.reconnecting=!1,this.namespaces={},this.buffer=[],this.doBuffer=!1;if(this.options["sync disconnect on unload"]&&(!this.isXDomain()||b.util.ua.hasCORS)){var d=this;b.util.on(c,"beforeunload",function(){d.disconnectSync()},!1)}this.options["auto connect"]&&this.connect()}function e(){}a.Socket=d,b.util.mixin(d,b.EventEmitter),d.prototype.of=function(a){return this.namespaces[a]||(this.namespaces[a]=new b.SocketNamespace(this,a),a!==""&&this.namespaces[a].packet({type:"connect"})),this.namespaces[a]},d.prototype.publish=function(){this.emit.apply(this,arguments);var a;for(var b in this.namespaces)this.namespaces.hasOwnProperty(b)&&(a=this.of(b),a.$emit.apply(a,arguments))},d.prototype.handshake=function(a){function f(b){b instanceof Error?(c.connecting=!1,c.onError(b.message)):a.apply(null,b.split(":"))}var c=this,d=this.options,g=["http"+(d.secure?"s":"")+":/",d.host+":"+d.port,d.resource,b.protocol,b.util.query(this.options.query,"t="+ +(new Date))].join("/");if(this.isXDomain()&&!b.util.ua.hasCORS){var h=document.getElementsByTagName("script")[0],i=document.createElement("script");i.src=g+"&jsonp="+b.j.length,h.parentNode.insertBefore(i,h),b.j.push(function(a){f(a),i.parentNode.removeChild(i)})}else{var j=b.util.request();j.open("GET",g,!0),this.isXDomain()&&(j.withCredentials=!0),j.onreadystatechange=function(){j.readyState==4&&(j.onreadystatechange=e,j.status==200?f(j.responseText):j.status==403?c.onError(j.responseText):(c.connecting=!1,!c.reconnecting&&c.onError(j.responseText)))},j.send(null)}},d.prototype.getTransport=function(a){var c=a||this.transports,d;for(var e=0,f;f=c[e];e++)if(b.Transport[f]&&b.Transport[f].check(this)&&(!this.isXDomain()||b.Transport[f].xdomainCheck(this)))return new b.Transport[f](this,this.sessionid);return null},d.prototype.connect=function(a){if(this.connecting)return this;var c=this;return c.connecting=!0,this.handshake(function(d,e,f,g){function h(a){c.transport&&c.transport.clearTimeouts(),c.transport=c.getTransport(a);if(!c.transport)return c.publish("connect_failed");c.transport.ready(c,function(){c.connecting=!0,c.publish("connecting",c.transport.name),c.transport.open(),c.options["connect timeout"]&&(c.connectTimeoutTimer=setTimeout(function(){if(!c.connected){c.connecting=!1;if(c.options["try multiple transports"]){var a=c.transports;while(a.length>0&&a.splice(0,1)[0]!=c.transport.name);a.length?h(a):c.publish("connect_failed")}}},c.options["connect timeout"]))})}c.sessionid=d,c.closeTimeout=f*1e3,c.heartbeatTimeout=e*1e3,c.transports||(c.transports=c.origTransports=g?b.util.intersect(g.split(","),c.options.transports):c.options.transports),c.setHeartbeatTimeout(),h(c.transports),c.once("connect",function(){clearTimeout(c.connectTimeoutTimer),a&&typeof a=="function"&&a()})}),this},d.prototype.setHeartbeatTimeout=function(){clearTimeout(this.heartbeatTimeoutTimer);if(this.transport&&!this.transport.heartbeats())return;var a=this;this.heartbeatTimeoutTimer=setTimeout(function(){a.transport.onClose()},this.heartbeatTimeout)},d.prototype.packet=function(a){return this.connected&&!this.doBuffer?this.transport.packet(a):this.buffer.push(a),this},d.prototype.setBuffer=function(a){this.doBuffer=a,!a&&this.connected&&this.buffer.length&&(this.options.manualFlush||this.flushBuffer())},d.prototype.flushBuffer=function(){this.transport.payload(this.buffer),this.buffer=[]},d.prototype.disconnect=function(){if(this.connected||this.connecting)this.open&&this.of("").packet({type:"disconnect"}),this.onDisconnect("booted");return this},d.prototype.disconnectSync=function(){var a=b.util.request(),c=["http"+(this.options.secure?"s":"")+":/",this.options.host+":"+this.options.port,this.options.resource,b.protocol,"",this.sessionid].join("/")+"/?disconnect=1";a.open("GET",c,!1),a.send(null),this.onDisconnect("booted")},d.prototype.isXDomain=function(){var a=c.location.port||("https:"==c.location.protocol?443:80);return this.options.host!==c.location.hostname||this.options.port!=a},d.prototype.onConnect=function(){this.connected||(this.connected=!0,this.connecting=!1,this.doBuffer||this.setBuffer(!1),this.emit("connect"))},d.prototype.onOpen=function(){this.open=!0},d.prototype.onClose=function(){this.open=!1,clearTimeout(this.heartbeatTimeoutTimer)},d.prototype.onPacket=function(a){this.of(a.endpoint).onPacket(a)},d.prototype.onError=function(a){a&&a.advice&&a.advice==="reconnect"&&(this.connected||this.connecting)&&(this.disconnect(),this.options.reconnect&&this.reconnect()),this.publish("error",a&&a.reason?a.reason:a)},d.prototype.onDisconnect=function(a){var b=this.connected,c=this.connecting;this.connected=!1,this.connecting=!1,this.open=!1;if(b||c)this.transport.close(),this.transport.clearTimeouts(),b&&(this.publish("disconnect",a),"booted"!=a&&this.options.reconnect&&!this.reconnecting&&this.reconnect())},d.prototype.reconnect=function(){function e(){if(a.connected){for(var b in a.namespaces)a.namespaces.hasOwnProperty(b)&&""!==b&&a.namespaces[b].packet({type:"connect"});a.publish("reconnect",a.transport.name,a.reconnectionAttempts)}clearTimeout(a.reconnectionTimer),a.removeListener("connect_failed",f),a.removeListener("connect",f),a.reconnecting=!1,delete a.reconnectionAttempts,delete a.reconnectionDelay,delete a.reconnectionTimer,delete a.redoTransports,a.options["try multiple transports"]=c}function f(){if(!a.reconnecting)return;if(a.connected)return e();if(a.connecting&&a.reconnecting)return a.reconnectionTimer=setTimeout(f,1e3);a.reconnectionAttempts++>=b?a.redoTransports?(a.publish("reconnect_failed"),e()):(a.on("connect_failed",f),a.options["try multiple transports"]=!0,a.transports=a.origTransports,a.transport=a.getTransport(),a.redoTransports=!0,a.connect()):(a.reconnectionDelay<d&&(a.reconnectionDelay*=2),a.connect(),a.publish("reconnecting",a.reconnectionDelay,a.reconnectionAttempts),a.reconnectionTimer=setTimeout(f,a.reconnectionDelay))}this.reconnecting=!0,this.reconnectionAttempts=0,this.reconnectionDelay=this.options["reconnection delay"];var a=this,b=this.options["max reconnection attempts"],c=this.options["try multiple transports"],d=this.options["reconnection limit"];this.options["try multiple transports"]=!1,this.reconnectionTimer=setTimeout(f,this.reconnectionDelay),this.on("connect",f)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(a,b){this.socket=a,this.name=b||"",this.flags={},this.json=new d(this,"json"),this.ackPackets=0,this.acks={}}function d(a,b){this.namespace=a,this.name=b}a.SocketNamespace=c,b.util.mixin(c,b.EventEmitter),c.prototype.$emit=b.EventEmitter.prototype.emit,c.prototype.of=function(){return this.socket.of.apply(this.socket,arguments)},c.prototype.packet=function(a){return a.endpoint=this.name,this.socket.packet(a),this.flags={},this},c.prototype.send=function(a,b){var c={type:this.flags.json?"json":"message",data:a};return"function"==typeof b&&(c.id=++this.ackPackets,c.ack=!0,this.acks[c.id]=b),this.packet(c)},c.prototype.emit=function(a){var b=Array.prototype.slice.call(arguments,1),c=b[b.length-1],d={type:"event",name:a};return"function"==typeof c&&(d.id=++this.ackPackets,d.ack="data",this.acks[d.id]=c,b=b.slice(0,b.length-1)),d.args=b,this.packet(d)},c.prototype.disconnect=function(){return this.name===""?this.socket.disconnect():(this.packet({type:"disconnect"}),this.$emit("disconnect")),this},c.prototype.onPacket=function(a){function d(){c.packet({type:"ack",args:b.util.toArray(arguments),ackId:a.id})}var c=this;switch(a.type){case"connect":this.$emit("connect");break;case"disconnect":this.name===""?this.socket.onDisconnect(a.reason||"booted"):this.$emit("disconnect",a.reason);break;case"message":case"json":var e=["message",a.data];a.ack=="data"?e.push(d):a.ack&&this.packet({type:"ack",ackId:a.id}),this.$emit.apply(this,e);break;case"event":var e=[a.name].concat(a.args);a.ack=="data"&&e.push(d),this.$emit.apply(this,e);break;case"ack":this.acks[a.ackId]&&(this.acks[a.ackId].apply(this,a.args),delete this.acks[a.ackId]);break;case"error":a.advice?this.socket.onError(a):a.reason=="unauthorized"?this.$emit("connect_failed",a.reason):this.$emit("error",a.reason)}},d.prototype.send=function(){this.namespace.flags[this.name]=!0,this.namespace.send.apply(this.namespace,arguments)},d.prototype.emit=function(){this.namespace.flags[this.name]=!0,this.namespace.emit.apply(this.namespace,arguments)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(a){b.Transport.apply(this,arguments)}a.websocket=d,b.util.inherit(d,b.Transport),d.prototype.name="websocket",d.prototype.open=function(){var a=b.util.query(this.socket.options.query),d=this,e;return e||(e=c.MozWebSocket||c.WebSocket),this.websocket=new e(this.prepareUrl()+a),this.websocket.onopen=function(){d.onOpen(),d.socket.setBuffer(!1)},this.websocket.onmessage=function(a){d.onData(a.data)},this.websocket.onclose=function(){d.onClose(),d.socket.setBuffer(!0)},this.websocket.onerror=function(a){d.onError(a)},this},b.util.ua.iDevice?d.prototype.send=function(a){var b=this;return setTimeout(function(){b.websocket.send(a)},0),this}:d.prototype.send=function(a){return this.websocket.send(a),this},d.prototype.payload=function(a){for(var b=0,c=a.length;b<c;b++)this.packet(a[b]);return this},d.prototype.close=function(){return this.websocket.close(),this},d.prototype.onError=function(a){this.socket.onError(a)},d.prototype.scheme=function(){return this.socket.options.secure?"wss":"ws"},d.check=function(){return"WebSocket"in c&&!("__addTask"in WebSocket)||"MozWebSocket"in c},d.xdomainCheck=function(){return!0},b.transports.push("websocket")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(){b.Transport.websocket.apply(this,arguments)}a.flashsocket=c,b.util.inherit(c,b.Transport.websocket),c.prototype.name="flashsocket",c.prototype.open=function(){var a=this,c=arguments;return WebSocket.__addTask(function(){b.Transport.websocket.prototype.open.apply(a,c)}),this},c.prototype.send=function(){var a=this,c=arguments;return WebSocket.__addTask(function(){b.Transport.websocket.prototype.send.apply(a,c)}),this},c.prototype.close=function(){return WebSocket.__tasks.length=0,b.Transport.websocket.prototype.close.call(this),this},c.prototype.ready=function(a,d){function e(){var b=a.options,e=b["flash policy port"],g=["http"+(b.secure?"s":"")+":/",b.host+":"+b.port,b.resource,"static/flashsocket","WebSocketMain"+(a.isXDomain()?"Insecure":"")+".swf"];c.loaded||(typeof WEB_SOCKET_SWF_LOCATION=="undefined"&&(WEB_SOCKET_SWF_LOCATION=g.join("/")),e!==843&&WebSocket.loadFlashPolicyFile("xmlsocket://"+b.host+":"+e),WebSocket.__initialize(),c.loaded=!0),d.call(f)}var f=this;if(document.body)return e();b.util.load(e)},c.check=function(){return typeof WebSocket!="undefined"&&"__initialize"in WebSocket&&!!swfobject?swfobject.getFlashPlayerVersion().major>=10:!1},c.xdomainCheck=function(){return!0},typeof window!="undefined"&&(WEB_SOCKET_DISABLE_AUTO_INITIALIZATION=!0),b.transports.push("flashsocket")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports);if("undefined"!=typeof window)var swfobject=function(){function A(){if(t)return;try{var a=i.getElementsByTagName("body")[0].appendChild(Q("span"));a.parentNode.removeChild(a)}catch(b){return}t=!0;var c=l.length;for(var d=0;d<c;d++)l[d]()}function B(a){t?a():l[l.length]=a}function C(b){if(typeof h.addEventListener!=a)h.addEventListener("load",b,!1);else if(typeof i.addEventListener!=a)i.addEventListener("load",b,!1);else if(typeof h.attachEvent!=a)R(h,"onload",b);else if(typeof h.onload=="function"){var c=h.onload;h.onload=function(){c(),b()}}else h.onload=b}function D(){k?E():F()}function E(){var c=i.getElementsByTagName("body")[0],d=Q(b);d.setAttribute("type",e);var f=c.appendChild(d);if(f){var g=0;(function(){if(typeof f.GetVariable!=a){var b=f.GetVariable("$version");b&&(b=b.split(" ")[1].split(","),y.pv=[parseInt(b[0],10),parseInt(b[1],10),parseInt(b[2],10)])}else if(g<10){g++,setTimeout(arguments.callee,10);return}c.removeChild(d),f=null,F()})()}else F()}function F(){var b=m.length;if(b>0)for(var c=0;c<b;c++){var d=m[c].id,e=m[c].callbackFn,f={success:!1,id:d};if(y.pv[0]>0){var g=P(d);if(g)if(S(m[c].swfVersion)&&!(y.wk&&y.wk<312))U(d,!0),e&&(f.success=!0,f.ref=G(d),e(f));else if(m[c].expressInstall&&H()){var h={};h.data=m[c].expressInstall,h.width=g.getAttribute("width")||"0",h.height=g.getAttribute("height")||"0",g.getAttribute("class")&&(h.styleclass=g.getAttribute("class")),g.getAttribute("align")&&(h.align=g.getAttribute("align"));var i={},j=g.getElementsByTagName("param"),k=j.length;for(var l=0;l<k;l++)j[l].getAttribute("name").toLowerCase()!="movie"&&(i[j[l].getAttribute("name")]=j[l].getAttribute("value"));I(h,i,d,e)}else J(g),e&&e(f)}else{U(d,!0);if(e){var n=G(d);n&&typeof n.SetVariable!=a&&(f.success=!0,f.ref=n),e(f)}}}}function G(c){var d=null,e=P(c);if(e&&e.nodeName=="OBJECT")if(typeof e.SetVariable!=a)d=e;else{var f=e.getElementsByTagName(b)[0];f&&(d=f)}return d}function H(){return!u&&S("6.0.65")&&(y.win||y.mac)&&!(y.wk&&y.wk<312)}function I(b,c,d,e){u=!0,r=e||null,s={success:!1,id:d};var g=P(d);if(g){g.nodeName=="OBJECT"?(p=K(g),q=null):(p=g,q=d),b.id=f;if(typeof b.width==a||!/%$/.test(b.width)&&parseInt(b.width,10)<310)b.width="310";if(typeof b.height==a||!/%$/.test(b.height)&&parseInt(b.height,10)<137)b.height="137";i.title=i.title.slice(0,47)+" - Flash Player Installation";var j=y.ie&&y.win?["Active"].concat("").join("X"):"PlugIn",k="MMredirectURL="+h.location.toString().replace(/&/g,"%26")+"&MMplayerType="+j+"&MMdoctitle="+i.title;typeof c.flashvars!=a?c.flashvars+="&"+k:c.flashvars=k;if(y.ie&&y.win&&g.readyState!=4){var l=Q("div");d+="SWFObjectNew",l.setAttribute("id",d),g.parentNode.insertBefore(l,g),g.style.display="none",function(){g.readyState==4?g.parentNode.removeChild(g):setTimeout(arguments.callee,10)}()}L(b,c,d)}}function J(a){if(y.ie&&y.win&&a.readyState!=4){var b=Q("div");a.parentNode.insertBefore(b,a),b.parentNode.replaceChild(K(a),b),a.style.display="none",function(){a.readyState==4?a.parentNode.removeChild(a):setTimeout(arguments.callee,10)}()}else a.parentNode.replaceChild(K(a),a)}function K(a){var c=Q("div");if(y.win&&y.ie)c.innerHTML=a.innerHTML;else{var d=a.getElementsByTagName(b)[0];if(d){var e=d.childNodes;if(e){var f=e.length;for(var g=0;g<f;g++)(e[g].nodeType!=1||e[g].nodeName!="PARAM")&&e[g].nodeType!=8&&c.appendChild(e[g].cloneNode(!0))}}}return c}function L(c,d,f){var g,h=P(f);if(y.wk&&y.wk<312)return g;if(h){typeof c.id==a&&(c.id=f);if(y.ie&&y.win){var i="";for(var j in c)c[j]!=Object.prototype[j]&&(j.toLowerCase()=="data"?d.movie=c[j]:j.toLowerCase()=="styleclass"?i+=' class="'+c[j]+'"':j.toLowerCase()!="classid"&&(i+=" "+j+'="'+c[j]+'"'));var k="";for(var l in d)d[l]!=Object.prototype[l]&&(k+='<param name="'+l+'" value="'+d[l]+'" />');h.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+i+">"+k+"</object>",n[n.length]=c.id,g=P(c.id)}else{var m=Q(b);m.setAttribute("type",e);for(var o in c)c[o]!=Object.prototype[o]&&(o.toLowerCase()=="styleclass"?m.setAttribute("class",c[o]):o.toLowerCase()!="classid"&&m.setAttribute(o,c[o]));for(var p in d)d[p]!=Object.prototype[p]&&p.toLowerCase()!="movie"&&M(m,p,d[p]);h.parentNode.replaceChild(m,h),g=m}}return g}function M(a,b,c){var d=Q("param");d.setAttribute("name",b),d.setAttribute("value",c),a.appendChild(d)}function N(a){var b=P(a);b&&b.nodeName=="OBJECT"&&(y.ie&&y.win?(b.style.display="none",function(){b.readyState==4?O(a):setTimeout(arguments.callee,10)}()):b.parentNode.removeChild(b))}function O(a){var b=P(a);if(b){for(var c in b)typeof b[c]=="function"&&(b[c]=null);b.parentNode.removeChild(b)}}function P(a){var b=null;try{b=i.getElementById(a)}catch(c){}return b}function Q(a){return i.createElement(a)}function R(a,b,c){a.attachEvent(b,c),o[o.length]=[a,b,c]}function S(a){var b=y.pv,c=a.split(".");return c[0]=parseInt(c[0],10),c[1]=parseInt(c[1],10)||0,c[2]=parseInt(c[2],10)||0,b[0]>c[0]||b[0]==c[0]&&b[1]>c[1]||b[0]==c[0]&&b[1]==c[1]&&b[2]>=c[2]?!0:!1}function T(c,d,e,f){if(y.ie&&y.mac)return;var g=i.getElementsByTagName("head")[0];if(!g)return;var h=e&&typeof e=="string"?e:"screen";f&&(v=null,w=null);if(!v||w!=h){var j=Q("style");j.setAttribute("type","text/css"),j.setAttribute("media",h),v=g.appendChild(j),y.ie&&y.win&&typeof i.styleSheets!=a&&i.styleSheets.length>0&&(v=i.styleSheets[i.styleSheets.length-1]),w=h}y.ie&&y.win?v&&typeof v.addRule==b&&v.addRule(c,d):v&&typeof i.createTextNode!=a&&v.appendChild(i.createTextNode(c+" {"+d+"}"))}function U(a,b){if(!x)return;var c=b?"visible":"hidden";t&&P(a)?P(a).style.visibility=c:T("#"+a,"visibility:"+c)}function V(b){var c=/[\\\"<>\.;]/,d=c.exec(b)!=null;return d&&typeof encodeURIComponent!=a?encodeURIComponent(b):b}var a="undefined",b="object",c="Shockwave Flash",d="ShockwaveFlash.ShockwaveFlash",e="application/x-shockwave-flash",f="SWFObjectExprInst",g="onreadystatechange",h=window,i=document,j=navigator,k=!1,l=[D],m=[],n=[],o=[],p,q,r,s,t=!1,u=!1,v,w,x=!0,y=function(){var f=typeof i.getElementById!=a&&typeof i.getElementsByTagName!=a&&typeof i.createElement!=a,g=j.userAgent.toLowerCase(),l=j.platform.toLowerCase(),m=l?/win/.test(l):/win/.test(g),n=l?/mac/.test(l):/mac/.test(g),o=/webkit/.test(g)?parseFloat(g.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):!1,p=!1,q=[0,0,0],r=null;if(typeof j.plugins!=a&&typeof j.plugins[c]==b)r=j.plugins[c].description,r&&(typeof j.mimeTypes==a||!j.mimeTypes[e]||!!j.mimeTypes[e].enabledPlugin)&&(k=!0,p=!1,r=r.replace(/^.*\s+(\S+\s+\S+$)/,"$1"),q[0]=parseInt(r.replace(/^(.*)\..*$/,"$1"),10),q[1]=parseInt(r.replace(/^.*\.(.*)\s.*$/,"$1"),10),q[2]=/[a-zA-Z]/.test(r)?parseInt(r.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0);else if(typeof h[["Active"].concat("Object").join("X")]!=a)try{var s=new(window[["Active"].concat("Object").join("X")])(d);s&&(r=s.GetVariable("$version"),r&&(p=!0,r=r.split(" ")[1].split(","),q=[parseInt(r[0],10),parseInt(r[1],10),parseInt(r[2],10)]))}catch(t){}return{w3:f,pv:q,wk:o,ie:p,win:m,mac:n}}(),z=function(){if(!y.w3)return;(typeof i.readyState!=a&&i.readyState=="complete"||typeof i.readyState==a&&(i.getElementsByTagName("body")[0]||i.body))&&A(),t||(typeof i.addEventListener!=a&&i.addEventListener("DOMContentLoaded",A,!1),y.ie&&y.win&&(i.attachEvent(g,function(){i.readyState=="complete"&&(i.detachEvent(g,arguments.callee),A())}),h==top&&function(){if(t)return;try{i.documentElement.doScroll("left")}catch(a){setTimeout(arguments.callee,0);return}A()}()),y.wk&&function(){if(t)return;if(!/loaded|complete/.test(i.readyState)){setTimeout(arguments.callee,0);return}A()}(),C(A))}(),W=function(){y.ie&&y.win&&window.attachEvent("onunload",function(){var a=o.length;for(var b=0;b<a;b++)o[b][0].detachEvent(o[b][1],o[b][2]);var c=n.length;for(var d=0;d<c;d++)N(n[d]);for(var e in y)y[e]=null;y=null;for(var f in swfobject)swfobject[f]=null;swfobject=null})}();return{registerObject:function(a,b,c,d){if(y.w3&&a&&b){var e={};e.id=a,e.swfVersion=b,e.expressInstall=c,e.callbackFn=d,m[m.length]=e,U(a,!1)}else d&&d({success:!1,id:a})},getObjectById:function(a){if(y.w3)return G(a)},embedSWF:function(c,d,e,f,g,h,i,j,k,l){var m={success:!1,id:d};y.w3&&!(y.wk&&y.wk<312)&&c&&d&&e&&f&&g?(U(d,!1),B(function(){e+="",f+="";var n={};if(k&&typeof k===b)for(var o in k)n[o]=k[o];n.data=c,n.width=e,n.height=f;var p={};if(j&&typeof j===b)for(var q in j)p[q]=j[q];if(i&&typeof i===b)for(var r in i)typeof p.flashvars!=a?p.flashvars+="&"+r+"="+i[r]:p.flashvars=r+"="+i[r];if(S(g)){var s=L(n,p,d);n.id==d&&U(d,!0),m.success=!0,m.ref=s}else{if(h&&H()){n.data=h,I(n,p,d,l);return}U(d,!0)}l&&l(m)})):l&&l(m)},switchOffAutoHideShow:function(){x=!1},ua:y,getFlashPlayerVersion:function(){return{major:y.pv[0],minor:y.pv[1],release:y.pv[2]}},hasFlashPlayerVersion:S,createSWF:function(a,b,c){return y.w3?L(a,b,c):undefined},showExpressInstall:function(a,b,c,d){y.w3&&H()&&I(a,b,c,d)},removeSWF:function(a){y.w3&&N(a)},createCSS:function(a,b,c,d){y.w3&&T(a,b,c,d)},addDomLoadEvent:B,addLoadEvent:C,getQueryParamValue:function(a){var b=i.location.search||i.location.hash;if(b){/\?/.test(b)&&(b=b.split("?")[1]);if(a==null)return V(b);var c=b.split("&");for(var d=0;d<c.length;d++)if(c[d].substring(0,c[d].indexOf("="))==a)return V(c[d].substring(c[d].indexOf("=")+1))}return""},expressInstallCallback:function(){if(u){var a=P(f);a&&p&&(a.parentNode.replaceChild(p,a),q&&(U(q,!0),y.ie&&y.win&&(p.style.display="block")),r&&r(s)),u=!1}}}}();(function(){if("undefined"==typeof window||window.WebSocket)return;var a=window.console;if(!a||!a.log||!a.error)a={log:function(){},error:function(){}};if(!swfobject.hasFlashPlayerVersion("10.0.0")){a.error("Flash Player >= 10.0.0 is required.");return}location.protocol=="file:"&&a.error("WARNING: web-socket-js doesn't work in file:///... URL unless you set Flash Security Settings properly. Open the page via Web server i.e. http://..."),WebSocket=function(a,b,c,d,e){var f=this;f.__id=WebSocket.__nextId++,WebSocket.__instances[f.__id]=f,f.readyState=WebSocket.CONNECTING,f.bufferedAmount=0,f.__events={},b?typeof b=="string"&&(b=[b]):b=[],setTimeout(function(){WebSocket.__addTask(function(){WebSocket.__flash.create(f.__id,a,b,c||null,d||0,e||null)})},0)},WebSocket.prototype.send=function(a){if(this.readyState==WebSocket.CONNECTING)throw"INVALID_STATE_ERR: Web Socket connection has not been established";var b=WebSocket.__flash.send(this.__id,encodeURIComponent(a));return b<0?!0:(this.bufferedAmount+=b,!1)},WebSocket.prototype.close=function(){if(this.readyState==WebSocket.CLOSED||this.readyState==WebSocket.CLOSING)return;this.readyState=WebSocket.CLOSING,WebSocket.__flash.close(this.__id)},WebSocket.prototype.addEventListener=function(a,b,c){a in this.__events||(this.__events[a]=[]),this.__events[a].push(b)},WebSocket.prototype.removeEventListener=function(a,b,c){if(!(a in this.__events))return;var d=this.__events[a];for(var e=d.length-1;e>=0;--e)if(d[e]===b){d.splice(e,1);break}},WebSocket.prototype.dispatchEvent=function(a){var b=this.__events[a.type]||[];for(var c=0;c<b.length;++c)b[c](a);var d=this["on"+a.type];d&&d(a)},WebSocket.prototype.__handleEvent=function(a){"readyState"in a&&(this.readyState=a.readyState),"protocol"in a&&(this.protocol=a.protocol);var b;if(a.type=="open"||a.type=="error")b=this.__createSimpleEvent(a.type);else if(a.type=="close")b=this.__createSimpleEvent("close");else{if(a.type!="message")throw"unknown event type: "+a.type;var c=decodeURIComponent(a.message);b=this.__createMessageEvent("message",c)}this.dispatchEvent(b)},WebSocket.prototype.__createSimpleEvent=function(a){if(document.createEvent&&window.Event){var b=document.createEvent("Event");return b.initEvent(a,!1,!1),b}return{type:a,bubbles:!1,cancelable:!1}},WebSocket.prototype.__createMessageEvent=function(a,b){if(document.createEvent&&window.MessageEvent&&!window.opera){var c=document.createEvent("MessageEvent");return c.initMessageEvent("message",!1,!1,b,null,null,window,null),c}return{type:a,data:b,bubbles:!1,cancelable:!1}},WebSocket.CONNECTING=0,WebSocket.OPEN=1,WebSocket.CLOSING=2,WebSocket.CLOSED=3,WebSocket.__flash=null,WebSocket.__instances={},WebSocket.__tasks=[],WebSocket.__nextId=0,WebSocket.loadFlashPolicyFile=function(a){WebSocket.__addTask(function(){WebSocket.__flash.loadManualPolicyFile(a)})},WebSocket.__initialize=function(){if(WebSocket.__flash)return;WebSocket.__swfLocation&&(window.WEB_SOCKET_SWF_LOCATION=WebSocket.__swfLocation);if(!window.WEB_SOCKET_SWF_LOCATION){a.error("[WebSocket] set WEB_SOCKET_SWF_LOCATION to location of WebSocketMain.swf");return}var b=document.createElement("div");b.id="webSocketContainer",b.style.position="absolute",WebSocket.__isFlashLite()?(b.style.left="0px",b.style.top="0px"):(b.style.left="-100px",b.style.top="-100px");var c=document.createElement("div");c.id="webSocketFlash",b.appendChild(c),document.body.appendChild(b),swfobject.embedSWF(WEB_SOCKET_SWF_LOCATION,"webSocketFlash","1","1","10.0.0",null,null,{hasPriority:!0,swliveconnect:!0,allowScriptAccess:"always"},null,function(b){b.success||a.error("[WebSocket] swfobject.embedSWF failed")})},WebSocket.__onFlashInitialized=function(){setTimeout(function(){WebSocket.__flash=document.getElementById("webSocketFlash"),WebSocket.__flash.setCallerUrl(location.href),WebSocket.__flash.setDebug(!!window.WEB_SOCKET_DEBUG);for(var a=0;a<WebSocket.__tasks.length;++a)WebSocket.__tasks[a]();WebSocket.__tasks=[]},0)},WebSocket.__onFlashEvent=function(){return setTimeout(function(){try{var b=WebSocket.__flash.receiveEvents();for(var c=0;c<b.length;++c)WebSocket.__instances[b[c].webSocketId].__handleEvent(b[c])}catch(d){a.error(d)}},0),!0},WebSocket.__log=function(b){a.log(decodeURIComponent(b))},WebSocket.__error=function(b){a.error(decodeURIComponent(b))},WebSocket.__addTask=function(a){WebSocket.__flash?a():WebSocket.__tasks.push(a)},WebSocket.__isFlashLite=function(){if(!window.navigator||!window.navigator.mimeTypes)return!1;var a=window.navigator.mimeTypes["application/x-shockwave-flash"];return!a||!a.enabledPlugin||!a.enabledPlugin.filename?!1:a.enabledPlugin.filename.match(/flashlite/i)?!0:!1},window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION||(window.addEventListener?window.addEventListener("load",function(){WebSocket.__initialize()},!1):window.attachEvent("onload",function(){WebSocket.__initialize()}))})(),function(a,b,c){function d(a){if(!a)return;b.Transport.apply(this,arguments),this.sendBuffer=[]}function e(){}a.XHR=d,b.util.inherit(d,b.Transport),d.prototype.open=function(){return this.socket.setBuffer(!1),this.onOpen(),this.get(),this.setCloseTimeout(),this},d.prototype.payload=function(a){var c=[];for(var d=0,e=a.length;d<e;d++)c.push(b.parser.encodePacket(a[d]));this.send(b.parser.encodePayload(c))},d.prototype.send=function(a){return this.post(a),this},d.prototype.post=function(a){function d(){this.readyState==4&&(this.onreadystatechange=e,b.posting=!1,this.status==200?b.socket.setBuffer(!1):b.onClose())}function f(){this.onload=e,b.socket.setBuffer(!1)}var b=this;this.socket.setBuffer(!0),this.sendXHR=this.request("POST"),c.XDomainRequest&&this.sendXHR instanceof XDomainRequest?this.sendXHR.onload=this.sendXHR.onerror=f:this.sendXHR.onreadystatechange=d,this.sendXHR.send(a)},d.prototype.close=function(){return this.onClose(),this},d.prototype.request=function(a){var c=b.util.request(this.socket.isXDomain()),d=b.util.query(this.socket.options.query,"t="+ +(new Date));c.open(a||"GET",this.prepareUrl()+d,!0);if(a=="POST")try{c.setRequestHeader?c.setRequestHeader("Content-type","text/plain;charset=UTF-8"):c.contentType="text/plain"}catch(e){}return c},d.prototype.scheme=function(){return this.socket.options.secure?"https":"http"},d.check=function(a,d){try{var e=b.util.request(d),f=c.XDomainRequest&&e instanceof XDomainRequest,g=a&&a.options&&a.options.secure?"https:":"http:",h=c.location&&g!=c.location.protocol;if(e&&(!f||!h))return!0}catch(i){}return!1},d.xdomainCheck=function(a){return d.check(a,!0)}}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(a){b.Transport.XHR.apply(this,arguments)}a.htmlfile=c,b.util.inherit(c,b.Transport.XHR),c.prototype.name="htmlfile",c.prototype.get=function(){this.doc=new(window[["Active"].concat("Object").join("X")])("htmlfile"),this.doc.open(),this.doc.write("<html></html>"),this.doc.close(),this.doc.parentWindow.s=this;var a=this.doc.createElement("div");a.className="socketio",this.doc.body.appendChild(a),this.iframe=this.doc.createElement("iframe"),a.appendChild(this.iframe);var c=this,d=b.util.query(this.socket.options.query,"t="+ +(new Date));this.iframe.src=this.prepareUrl()+d,b.util.on(window,"unload",function(){c.destroy()})},c.prototype._=function(a,b){a=a.replace(/\\\//g,"/"),this.onData(a);try{var c=b.getElementsByTagName("script")[0];c.parentNode.removeChild(c)}catch(d){}},c.prototype.destroy=function(){if(this.iframe){try{this.iframe.src="about:blank"}catch(a){}this.doc=null,this.iframe.parentNode.removeChild(this.iframe),this.iframe=null,CollectGarbage()}},c.prototype.close=function(){return this.destroy(),b.Transport.XHR.prototype.close.call(this)},c.check=function(a){if(typeof window!="undefined"&&["Active"].concat("Object").join("X")in window)try{var c=new(window[["Active"].concat("Object").join("X")])("htmlfile");return c&&b.Transport.XHR.check(a)}catch(d){}return!1},c.xdomainCheck=function(){return!1},b.transports.push("htmlfile")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(){b.Transport.XHR.apply(this,arguments)}function e(){}a["xhr-polling"]=d,b.util.inherit(d,b.Transport.XHR),b.util.merge(d,b.Transport.XHR),d.prototype.name="xhr-polling",d.prototype.heartbeats=function(){return!1},d.prototype.open=function(){var a=this;return b.Transport.XHR.prototype.open.call(a),!1},d.prototype.get=function(){function b(){this.readyState==4&&(this.onreadystatechange=e,this.status==200?(a.onData(this.responseText),a.get()):a.onClose())}function d(){this.onload=e,this.onerror=e,a.retryCounter=1,a.onData(this.responseText),a.get()}function f(){a.retryCounter++,!a.retryCounter||a.retryCounter>3?a.onClose():a.get()}if(!this.isOpen)return;var a=this;this.xhr=this.request(),c.XDomainRequest&&this.xhr instanceof XDomainRequest?(this.xhr.onload=d,this.xhr.onerror=f):this.xhr.onreadystatechange=b,this.xhr.send(null)},d.prototype.onClose=function(){b.Transport.XHR.prototype.onClose.call(this);if(this.xhr){this.xhr.onreadystatechange=this.xhr.onload=this.xhr.onerror=e;try{this.xhr.abort()}catch(a){}this.xhr=null}},d.prototype.ready=function(a,c){var d=this;b.util.defer(function(){c.call(d)})},b.transports.push("xhr-polling")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b,c){function e(a){b.Transport["xhr-polling"].apply(this,arguments),this.index=b.j.length;var c=this;b.j.push(function(a){c._(a)})}var d=c.document&&"MozAppearance"in c.document.documentElement.style;a["jsonp-polling"]=e,b.util.inherit(e,b.Transport["xhr-polling"]),e.prototype.name="jsonp-polling",e.prototype.post=function(a){function i(){j(),c.socket.setBuffer(!1)}function j(){c.iframe&&c.form.removeChild(c.iframe);try{h=document.createElement('<iframe name="'+c.iframeId+'">')}catch(a){h=document.createElement("iframe"),h.name=c.iframeId}h.id=c.iframeId,c.form.appendChild(h),c.iframe=h}var c=this,d=b.util.query(this.socket.options.query,"t="+ +(new Date)+"&i="+this.index);if(!this.form){var e=document.createElement("form"),f=document.createElement("textarea"),g=this.iframeId="socketio_iframe_"+this.index,h;e.className="socketio",e.style.position="absolute",e.style.top="0px",e.style.left="0px",e.style.display="none",e.target=g,e.method="POST",e.setAttribute("accept-charset","utf-8"),f.name="d",e.appendChild(f),document.body.appendChild(e),this.form=e,this.area=f}this.form.action=this.prepareUrl()+d,j(),this.area.value=b.JSON.stringify(a);try{this.form.submit()}catch(k){}this.iframe.attachEvent?h.onreadystatechange=function(){c.iframe.readyState=="complete"&&i()}:this.iframe.onload=i,this.socket.setBuffer(!0)},e.prototype.get=function(){var a=this,c=document.createElement("script"),e=b.util.query(this.socket.options.query,"t="+ +(new Date)+"&i="+this.index);this.script&&(this.script.parentNode.removeChild(this.script),this.script=null),c.async=!0,c.src=this.prepareUrl()+e,c.onerror=function(){a.onClose()};var f=document.getElementsByTagName("script")[0];f.parentNode.insertBefore(c,f),this.script=c,d&&setTimeout(function(){var a=document.createElement("iframe");document.body.appendChild(a),document.body.removeChild(a)},100)},e.prototype._=function(a){return this.onData(a),this.isOpen&&this.get(),this},e.prototype.ready=function(a,c){var e=this;if(!d)return c.call(this);b.util.load(function(){c.call(e)})},e.check=function(){return"document"in c},e.xdomainCheck=function(){return!0},b.transports.push("jsonp-polling")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),typeof define=="function"&&define.amd&&define([],function(){return io})})()
+},{}],"/www/gibber.libraries/js/external/sharenew/share-codemirror.js":[function(require,module,exports){
+(function (__dirname){
+(function () {
+  'use strict';
+
+  function shareCodeMirror(cm, ctx) {
+    if (!ctx.provides.text) throw new Error('Cannot attach to non-text document');
+
+    var suppress = false;
+    var text = ctx.get() || ''; // Due to a bug in share - get() returns undefined for empty docs.
+    cm.setValue(text);
+    check();
+
+    // *** remote -> local changes
+
+    ctx.onInsert = function (pos, text) {
+      suppress = true;
+      cm.replaceRange(text, cm.posFromIndex(pos));
+      suppress = false;
+      check();
+    };
+
+    ctx.onRemove = function (pos, length) {
+      suppress = true;
+      var from = cm.posFromIndex(pos);
+      var to = cm.posFromIndex(pos + length);
+      cm.replaceRange('', from, to);
+      suppress = false;
+      check();
+    };
+
+    // *** local -> remote changes
+
+    cm.on('change', function (cm, change) {
+      if (suppress) return;
+      applyToShareJS(cm, change);
+      check();
+    });
+
+    // Convert a CodeMirror change into an op understood by share.js
+    function applyToShareJS(cm, change) {
+      // CodeMirror changes give a text replacement.
+      // I tuned this operation a little bit, for speed.
+      var startPos = 0;  // Get character position from # of chars in each line.
+      var i = 0;         // i goes through all lines.
+
+      while (i < change.from.line) {
+        startPos += cm.lineInfo(i).text.length + 1;   // Add 1 for '\n'
+        i++;
+      }
+
+      startPos += change.from.ch;
+
+      if (change.to.line == change.from.line && change.to.ch == change.from.ch) {
+        // nothing was removed.
+      } else {
+        // delete.removed contains an array of removed lines as strings, so this adds
+        // all the lengths. Later change.removed.length - 1 is added for the \n-chars
+        // (-1 because the linebreak on the last line won't get deleted)
+        var delLen = 0;
+        for (var rm = 0; rm < change.removed.length; rm++) {
+          delLen += change.removed[rm].length;
+        }
+        delLen += change.removed.length - 1;
+        ctx.remove(startPos, delLen);
+      }
+      if (change.text) {
+        ctx.insert(startPos, change.text.join('\n'));
+      }
+      if (change.next) {
+        applyToShareJS(cm, change.next);
+      }
+    }
+
+    function check() {
+      setTimeout(function () {
+        var cmText = cm.getValue();
+        var otText = ctx.get() || '';
+
+        if (cmText != otText) {
+          console.error("Text does not match!");
+          console.error("cm: " + cmText);
+          console.error("ot: " + otText);
+          // Replace the editor text with the ctx snapshot.
+          cm.setValue(ctx.get() || '');
+        }
+      }, 0);
+    }
+
+    return ctx;
+  }
+
+  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    // Node.js
+    module.exports = shareCodeMirror;
+    module.exports.scriptsDir = __dirname;
+  } else {
+    if (typeof define === 'function' && define.amd) {
+      // Require.js & co
+      define([], function () {
+        return shareCodeMirror;
+      });
+    } else {
+      // Browser, no AMD
+      window.sharejs.Doc.prototype.attachCodeMirror = function(cm, ctx) {
+        if(!ctx) ctx = this.createContext();
+        shareCodeMirror(cm, ctx);
+      };
+    }
+  }
+})();
+
+}).call(this,"/js/external/sharenew")
+},{}],"/www/gibber.libraries/js/external/sharenew/text.js":[function(require,module,exports){
+(function(){var r={exports:{}},e=r.exports;e.name="text",e.uri="http://sharejs.org/types/textv1",e.create=function(r){if(null!=r&&"string"!=typeof r)throw Error("Initial data must be a string");return r||""};var t=Array.isArray||function(r){return"[object Array]"===Object.prototype.toString.call(r)},n=function(r){if(!t(r))throw Error("Op must be an array of components");for(var e=null,n=0;r.length>n;n++){var o=r[n];switch(typeof o){case"object":if(!("number"==typeof o.d&&o.d>0))throw Error("Object components must be deletes of size > 0");break;case"string":if(!(o.length>0))throw Error("Inserts cannot be empty");break;case"number":if(!(o>0))throw Error("Skip components must be >0");if("number"==typeof e)throw Error("Adjacent skip components should be combined")}e=o}if("number"==typeof e)throw Error("Op has a trailing skip")},o=function(r){return function(e){return e&&0!==e.d?0===r.length?r.push(e):typeof e==typeof r[r.length-1]?"object"==typeof e?r[r.length-1].d+=e.d:r[r.length-1]+=e:r.push(e):void 0}},s=function(r){var e=0,t=0,n=function(n,o){if(e===r.length)return-1===n?null:n;var s,i=r[e];return"number"==typeof i?-1===n||n>=i-t?(s=i-t,++e,t=0,s):(t+=n,n):"string"==typeof i?-1===n||"i"===o||n>=i.length-t?(s=i.slice(t),++e,t=0,s):(s=i.slice(t,t+n),t+=n,s):-1===n||"d"===o||n>=i.d-t?(s={d:i.d-t},++e,t=0,s):(t+=n,{d:n})},o=function(){return r[e]};return[n,o]},i=function(r){return"number"==typeof r?r:r.length||r.d},a=function(r){return r.length>0&&"number"==typeof r[r.length-1]&&r.pop(),r};e.normalize=function(r){for(var e=[],t=o(e),n=0;r.length>n;n++)t(r[n]);return a(e)},e.apply=function(r,e){if("string"!=typeof r)throw Error("Snapshot should be a string");n(e);for(var t=[],o=0;e.length>o;o++){var s=e[o];switch(typeof s){case"number":if(s>r.length)throw Error("The op is too long for this document");t.push(r.slice(0,s)),r=r.slice(s);break;case"string":t.push(s);break;case"object":r=r.slice(s.d)}}return t.join("")+r},e.transform=function(r,e,t){if("left"!=t&&"right"!=t)throw Error("side ("+t+") must be 'left' or 'right'");n(r),n(e);for(var c=[],f=o(c),u=s(r),l=u[0],h=u[1],p=0;e.length>p;p++){var b,g,m=e[p];switch(typeof m){case"number":for(b=m;b>0;)g=l(b,"i"),f(g),"string"!=typeof g&&(b-=i(g));break;case"string":"left"===t&&"string"==typeof h()&&f(l(-1)),f(m.length);break;case"object":for(b=m.d;b>0;)switch(g=l(b,"i"),typeof g){case"number":b-=g;break;case"string":f(g);break;case"object":b-=g.d}}}for(;m=l(-1);)f(m);return a(c)},e.compose=function(r,e){n(r),n(e);for(var t=[],c=o(t),f=s(r)[0],u=0;e.length>u;u++){var l,h,p=e[u];switch(typeof p){case"number":for(l=p;l>0;)h=f(l,"d"),c(h),"object"!=typeof h&&(l-=i(h));break;case"string":c(p);break;case"object":for(l=p.d;l>0;)switch(h=f(l,"d"),typeof h){case"number":c({d:h}),l-=h;break;case"string":l-=h.length;break;case"object":c(h)}}}for(;p=f(-1);)c(p);return a(t)};var c=function(r,e){for(var t=0,n=0;e.length>n;n++){var o=e[n];if(t>=r)break;switch(typeof o){case"number":if(t+o>=r)return r;t+=o;break;case"string":t+=o.length,r+=o.length;break;case"object":r-=Math.min(o.d,r-t)}}return r};e.transformSelection=function(r,e,t){var n=0;if(t){for(var o=0;e.length>o;o++){var s=e[o];switch(typeof s){case"number":n+=s;break;case"string":n+=s.length}}return n}return"number"==typeof r?c(r,e):[c(r[0],e),c(r[1],e)]},e.transformCursor=e.transformSelection,e.selectionEq=function(r,e){return null!=r[0]&&r[0]===r[1]&&(r=r[0]),null!=e[0]&&e[0]===e[1]&&(e=e[0]),r===e||null!=r[0]&&null!=e[0]&&r[0]===e[0]&&r[1]==e[1]};var f=window.ottypes=window.ottypes||{},u=r.exports;f[u.name]=u,u.uri&&(f[u.uri]=u)})();
 },{}],"/www/gibber.libraries/js/gibber/account.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, $ = require( './dollar' );
@@ -217,11 +329,11 @@ module.exports = function( Gibber ) {
         if( response.username !== null ) {
           $( '.login' ).empty()
           $( '.login' ).append( $('<span>welcome, ' + response.username + '.  </span>' ) )
-
+          
+          $.publish('/account/login', response.username )
+          
           Account.nick = response.username
-          
-          console.log("I AM LOGGED IN", Account.nick )
-          
+                    
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
             .on( 'click', function(e) {
@@ -231,6 +343,10 @@ module.exports = function( Gibber ) {
                 dataType:'json'
               }).done( function( data ) {
                 $( '.login' ).empty()
+                
+                Account.nick = null
+                $.publish( '/account/logout', response.username )
+                
                 $( '.login' ).append( $('<a href="#">' )
                   .text( 'please login' )
                   .on('click', function(e) { 
@@ -268,6 +384,8 @@ module.exports = function( Gibber ) {
           $( '.login' ).append( $('<span>welcome, ' + data.username + '.  </span>' ) )
           Account.nick = data.username
           
+          $.publish('/account/login', data.username )
+          
           console.log("I am logged in", Account.nick, data.username )
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
@@ -276,8 +394,9 @@ module.exports = function( Gibber ) {
                 type:"GET",
                 url: GE.SERVER_URL + '/logout', 
                 dataType:'json'
-              }).done( function(data) {
+              }).done( function(_data) {
                 Account.nick = null
+                $.publish( '/account/logout', data.username )
 
                 $( '.login' ).empty()
 
@@ -296,7 +415,6 @@ module.exports = function( Gibber ) {
           var passwordRequest = $('<span>Click here if you\'ve forgotten your password.</span>')
           
           passwordRequest.on( 'click', function( e ) {
-            console.log('CLICK')
             $.ajax({
               url: GE.SERVER_URL + '/requestPassword',
               dataType:'json',
@@ -471,6 +589,7 @@ module.exports = function( Gibber ) {
       
   var Browser = {
     demoColumn: null,
+    userFilesLoaded: false,
     setupSearchGUI : function() {
       var btns = $( '.searchOption' )
 
@@ -542,43 +661,12 @@ module.exports = function( Gibber ) {
         $('#browser_demos_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'demos') )
         $('#browser_search_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'search') )
         $('#browser_recent_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'recent') )
-        $('#browser_user_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'user') )        
+        $('#browser_user_button').on( 'click', function() { GE.Browser.openBrowserSection('user') })
         
-        /*for( var i = 0; i < headers.length; i++ ) {
-          
-          !function() {
-            var cell = $( headers[ i ] ).parent()
-            
-            if( $( cell ).hasClass( 'browserHeader' ) ) return;
-            
-            $( cell ).find( 'h3' ).on( 'click', function() { 
-              var div = $( cell ).find( 'div' )
-              div.toggle()
-              if( div.is( ':visible' ) ) {
-                $( this ).find( '#browser_updown' ).html( '&#9652;' ) 
-              }else{
-                $( this ).find( '#browser_updown' ).html( '&#9662;' ) 
-              }
-            })
-          }()
-        }*/
-        
-        //var types = [ 'searchHEADER','search','tutorialsHEADER','audio', '_2d', '_3d', 'misc', 'userHEADER','recent', 'userfiles' ], prev
-        var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent', 'userfiles' ], prev
+        var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent' ], prev
         for( var i = 0; i < linksDivs.length; i++ ) {
           (function() {
             var cell = linksDivs[ i ]
-            // if( $( cell ).hasClass( 'browserHeader' ) ) return;
-            // 
-            // $(cell).find( 'h3' ).on( 'click', function() { 
-            //   var div = $(cell).find('div')
-            //   div.toggle()
-            //   if( div.is( ':visible' ) ) {
-            //     $( this ).find( '#browser_updown' ).html( '&#9652;' ) 
-            //   }else{
-            //     $( this ).find( '#browser_updown' ).html( '&#9662;' ) 
-            //   }
-            // })
             
             var links = $( cell ).find( 'li' )
             
@@ -588,6 +676,7 @@ module.exports = function( Gibber ) {
                 var num = j, type = types[ i ], link = links[j], demoTypeName = type.slice(5).toLowerCase()
                 var pubCategory = Gibber.Environment.Browser.files[ type ] || Gibber.Environment.Browser.files.demos[ demoTypeName ]
                 
+                //console.log( "category", type, pubCategory )
                 if( typeof pubCategory !== 'undefined' ) {
                   var pub = pubCategory[ num ], obj, id
                   
@@ -616,6 +705,61 @@ module.exports = function( Gibber ) {
           })()
         }
         //$('#browser_audio_header').on('click', GE.Browser.updown)
+        
+        $.subscribe( '/account/login', function( _name ) {
+          $.ajax({
+            type:'POST',
+            url: GE.SERVER_URL + "/userfiles",
+            data:{},
+            dataType:'json',
+          })
+          .done( function( data ) {
+            var userdiv = $( '#browser_userfiles' )
+            console.log( userdiv )
+            userdiv.empty()
+            
+            var list = $( '<ul>' ), prev
+            
+            for( var j = 0; j < data.files.length; j++ ) {
+              !function() {
+                var num = j,
+                    file = data.files[ num ],
+                    obj = file.value,
+                    id = file.id,
+                    link
+                
+                GE.Browser.files.userfiles.push( file )
+                
+                link = $('<li>')
+                  .text( id.split('/')[2] )
+                  .on( 'click', function() {
+                    Gibber.Environment.Browser.openCode( id )
+                  })
+                
+                $( link ).on( 'mouseover', function() {
+                  $( link ).css({ background:'#444' })
+                  if( prev ) {
+                    $( prev ).css({ background:'transparent' })
+                  }
+                  prev = link
+                  $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
+                  $( '#browser_notes' ).text( obj.notes )
+                  $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
+                  $( '#browser_author' ).text( id.split('/')[0] )
+                })
+                
+                list.append( link )
+              }()
+            }
+            userdiv.append( list )
+          })
+        })
+        
+        $.subscribe( '/account/logout', function( _name ) {
+          $( '#browser_userfiles' ).find( 'li' ).remove()
+          GE.Browser.files.userfiles.length = 0
+        })
+        
         GE.Browser.setupSearchGUI()
       })
     },
@@ -643,8 +787,6 @@ module.exports = function( Gibber ) {
         'query': query,
         filter:  queryFilter 
       }
-      
-      console.log( data )
       
       $( '.searchResults' ).remove()
       
@@ -730,7 +872,6 @@ module.exports = function( Gibber ) {
         GE.SERVER_URL + '/retrieve',
         { address:addr },
         function( d ) {
-          //console.log( d )
           var data = JSON.parse( d ),
               col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
               
@@ -772,7 +913,6 @@ module.exports = function( Gibber ) {
   
   return Browser
 }
-
 },{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/chat.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
@@ -786,7 +926,6 @@ Chat = {
   roomElement: null,
   currentRoom: 'lobby',
   intialized : false,
-  io: require( '../external/socket.io.min' ),
   open : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
@@ -803,7 +942,9 @@ Chat = {
       console.log( 'you have left the chat server.' )
       Chat.lobbyElement = null
       Chat.roomElement  = null
-      // Chat.socket.close()
+      Chat.socket.close()
+      Chat.initialized = false
+      
     }
     // this.column.header.append( $( '<span>lobby</span>') )
     this.lobbyRoom = $( '<div>' ).css({ display:'inline', marginLeft:'2em' })
@@ -827,30 +968,25 @@ Chat = {
     this.column.header.append( this.lobbyRoom )
 
     if( !this.initialized ) {
-      //$script( 'external/socket.io.min', function() {
-        // console.log( 'socket io loaded' )
-        Chat.socket = Chat.io.connect( GE.SERVER_URL );
+      Chat.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
+      Chat.socket.onmessage = function( e ) {
+        var data = e.data
+        data = JSON.parse( data )
 
-        // this.socket = new WebSocket( socketString );
-
-        Chat.socket.on( 'message', function( data ) {
-          data = JSON.parse( data )
-
-          if( data.msg ) {
-            if( Chat.handlers[ data.msg ] ) {
-              Chat.handlers[ data.msg ]( data )
-            }else{
-              console.error( 'Cannot process message ' + data.msg + ' from server' )
-            }
+       if( data.msg ) {
+          if( Chat.handlers[ data.msg ] ) {
+            Chat.handlers[ data.msg ]( data )
+          }else{
+            console.error( 'Cannot process message ' + data.msg + ' from server' )
           }
-        })
-        
-        Chat.socket.on( 'connect', function() {
-          console.log( 'you are now connected to the chat server' )
-          Chat.moveToLobby()
-          Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
-        })
-        //})
+        }
+      }
+      
+      Chat.socket.onopen = function() {
+        console.log( 'you are now connected to the chat server' )
+        Chat.moveToLobby()
+        Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+      } 
     }else{
       Chat.moveToLobby()
     }
@@ -1017,7 +1153,9 @@ Chat = {
             .css({ cursor:'pointer' }),
           li = $( '<li class="message">' )
             .text(  " : " +  data.incomingMessage )
-
+      
+      console.log( data )
+      
       li.prepend( name )
       Chat.messages.append( li )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
@@ -1049,8 +1187,10 @@ Chat = {
     },
     arrival : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
-      Chat.messages.append( msg )
-      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+      if( Chat.messages ) {
+        $( Chat.messages ).append( msg )
+        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+      }
     },
     departure : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has left the chatroom.' ).css({ color:'#b00', display:'block' })
@@ -1084,8 +1224,8 @@ Chat = {
       GE.Share.collaborationResponse({ from: data.from, response: data.response })
     },
     shareReady : function( data ) {
+      console.log("ACCEPTING REQUEST FROM CHAT")
       GE.Share.acceptCollaborationRequest( data )
-      
     },
     remoteExecution : function( data ) {
       var column, cm
@@ -1115,7 +1255,7 @@ return Chat
 
 }
 
-},{"../external/socket.io.min":"/www/gibber.libraries/js/external/socket.io.min.js"}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
 var $ = require( './dollar' )
 
 module.exports = function( Gibber ) { 
@@ -1297,8 +1437,8 @@ module.exports = function( Gibber ) {
     Layout.handleResizeEventForColumn( col )
   
     Layout.resizeColumns()
-    
-    console.log("ANIMATING", $( '#' + col.id ).offset().left, col.id )
+
+    //console.log("ANIMATING", $( '#' + col.id ).offset().left, col.id )
     $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).position().left }, 'slow' );
   
     if( window.loadFile && window.loadFile.error && Layout.columns.length === 1 ) {
@@ -1838,7 +1978,8 @@ var GE = {
   Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
-  // Share:        require( './share' )( Gibber ),  
+  Share:        require( './share' )( Gibber ),
+  //Share:        require( './share' )( Gibber ),  
   
   init : function() { 
     GE.Keymap.init()
@@ -1869,7 +2010,7 @@ var GE = {
       //GE.Console.open()
       GE.Welcome.init()
       GE.Theme.init()
-      //GE.Share.open()
+      GE.Share.init()
       //GE.Demos.open()
       
       GE.Menu.init()
@@ -2425,7 +2566,7 @@ var GE = {
     init : function() {
       //var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
       //col.bodyElement.remove()
-      //console.log( "GE.SERVER_URL", GE.SERVER_URL )
+      //console.log( "GE.Rtc", GE.Rtc )
       $.ajax({
         url: GE.SERVER_URL + "/welcome",
         dataType:'html'
@@ -2448,7 +2589,7 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
-},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
@@ -3231,7 +3372,200 @@ module.exports = function( Gibber ) {
     
     return _m
 }
-},{}],"/www/gibber.libraries/js/gibber/theme.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/share.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+"use strict"
+
+//require( '../external/sharenew/share.uncompressed' )
+//require( 'share' ).client
+var sharejs = require( 'share/lib/client' )
+require( '../external/sharenew/text' )
+require( '../external/sharenew/share-codemirror' )
+
+var GE,
+    Layout,
+
+Share = {
+  docs : [],
+  potentialShareNum: 0,
+  prompt: null,
+  init : function() {
+    GE = Gibber.Environment
+    Layout = GE.Layout
+  },
+
+  createDoc : function( columnNumber, cb, sharingWith ) {
+    if( GE.Account.nick !== null && typeof Share.docs[ columnNumber ] === 'undefined' ) {
+      
+      var sjs = Share.sjs = new sharejs.Connection( GE.Chat.socket )
+      sjs.debug = true
+      sjs.on( 'connecting', function( e ) { 
+        console.log("CONNECTING TO SHARE.JS")
+      })
+      
+      sjs.on( 'connected', function( e ) { 
+        console.log("CONNECTED TO SHARE.JS")
+      })
+      sjs.on( 'error', function( e ) { 
+        console.log("SHARE.JS CONNECTION ERROR")
+      })
+      console.log( sjs )
+      //console.log( "SOCKET", GE.Chat.socket )
+      
+      var doc = sjs.get( 'users', 'testing')//GE.Account.nick + columnNumber )
+      // console.log(doc);
+      doc.subscribe();
+      console.log("CREATING DOC", doc )
+      doc.whenReady( function () {
+        if ( !doc.type) doc.create( 'text' )
+        if ( doc.type && doc.type.name === 'text' )
+        
+        var column = Layout.columns[ columnNumber ],
+            val = column.value
+        
+        console.log("DOC IS MADE")
+        
+        column.shareName = GE.Account.nick + columnNumber
+        column.sharingWith = sharingWith
+      
+        Share.docs[ columnNumber ] = doc
+      
+        doc.attachCodeMirror( column.editor )
+        
+        column.editor.setValue( val )
+      
+        column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
+      
+        if( typeof cb === 'function' ) cb()
+      });  
+    }
+  },
+  openExistingDoc : function( docName, column ) {
+    if( GE.Account.nick !== null ) {
+      if( !column ) column = Layout.columns[ 0 ]
+      var sjs = new sharejs.Connection( GE.Chat.socket )
+      
+      if( Share.willAcceptRemoteExecution ) {
+        column.allowRemoteExecution = true
+        Share.willAcceptRemoteExecution = false
+      }
+      
+      var doc = sjs.get( 'gibber', GE.Account.nick + columnNumber )
+
+      doc.subscribe();
+
+      doc.whenReady( function () {
+        if ( !doc.type) doc.create( 'text' )
+        if ( doc.type && doc.type.name === 'text' )
+        
+        var column = Layout.columns[ columnNumber ],
+            val = column.value
+        
+        column.shareName = docName
+        // column.sharingWith = sharingWith
+      
+        Share.docs[ columnNumber ] = doc
+      
+        doc.attachCodeMirror( column.editor )
+        
+        // column.editor.setValue( val )
+      
+        // column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
+      
+        // if( typeof cb === 'function' ) cb()
+      }); 
+      // sharejs.open( docName, 'text', function(error, newDoc) {
+      //   if( !column ) column = Columns[ 0 ]
+      //   
+      //   if( Share.willAcceptRemoteExecution ) {
+      //     column.allowRemoteExecution = true
+      //     Share.willAcceptRemoteExecution = false
+      //   }
+      //    
+      //   Share.docs[ column.number ] = newDoc
+      // 
+      //   column.shareName = docName
+      // 
+      //   Share.docs[ column.number ].attach_cm( column.editor )
+      // }); 
+
+    }
+  },
+  promptToShareWith : function( nick ) {
+    var div = $('<div>'),
+        hdr = $('<h3>').text( 'User : ' + nick ).css({ display:'inline' }),
+        info = $('<button>').text( 'Display User Info' ).css({ marginLeft:'2em' }),
+        columns = $('<select>'),
+        collaborate = $('<span>').text( 'Collaborate on Column ID#: ' ),
+        shareBtn = $('<button>')
+          .text( 'Share' )
+          .on( 'click', function() {
+            Share.checkIfUserWantsToCollaborate( nick, $( div ).find( 'select' ).val(), enableRemoteExecution.is(':checked') )
+            $( div ).append( $('<h4>').text( 'wating for approval from ' + nick + '...' ) )
+          }),
+        enableRemoteExecution = $('<input type="checkbox">')
+    
+
+    for( var i = 0; i < GE.Layout.columns.length; i++ ) {
+      var col = GE.Layout.columns[ i ]
+      if( col && col.isCodeColumn ) {
+        columns .append('<option value='+ col.id + '>' + col.id + '</option>')
+      }
+    }
+    Share.prompt = div
+    div.append( hdr, info, $('<br>'), $('<br>'),
+                collaborate, columns, $('<br>'), 
+                $('<span>').text('Enable remote code execution?'), enableRemoteExecution, '<br>',
+                shareBtn )
+
+
+    GE.Message.postHTML( div )
+  },
+  checkIfUserWantsToCollaborate : function( username, columnNumber, remoteExecution ) {
+    Share.potentialShareNum = columnNumber
+
+    GE.Chat.socket.send( JSON.stringify({
+      cmd: 'collaborationRequest', from:GE.Account.nick, to:username, enableRemoteExecution:remoteExecution
+    }) ) 
+  },
+  collaborationResponse : function( msg ) {
+    var from = msg.from, 
+        response = msg.response,
+        cb = function() {
+          GE.Chat.socket.send( JSON.stringify({
+            cmd: 'shareCreated', from:GE.Account.nick, to: msg.from, shareName:GE.Account.nick + Share.potentialShareNum
+          }) )
+        }
+
+    if( response !== 'no' ) {
+      Share.prompt.find( 'h4' ).text( msg.from + ' accepts your request. You are now coding together.' )
+      Share.createDoc( Share.potentialShareNum, cb, msg.from )
+      Layout.columns[ Share.potentialShareNum ].allowRemoteExecution = response === 'editandexecute'
+    }else{
+      Share.prompt.find( 'h4' ).text( msg.from + 'has rejected your request to code together.' )
+    }
+  },
+
+  // this message is forwarded from the socket server (currently the chat socket server)
+  acceptCollaborationRequest : function( data ) {
+    console.log("ACCEPT COLLABORATION REQUEST CALLED ")
+    var column = GE.Layout.addColumn({ type:'code' })
+    
+    column.allowRemoteExecution = data.allowRemoteExecution  
+    column.sharingWith = data.from 
+
+    column.header.append( $('<span>').text( 'sharing with ' + data.from ).css({ paddingLeft:5}) )
+
+    Share.openExistingDoc( data.shareName, column )
+  },
+}
+
+return Share 
+
+}
+
+},{"../external/sharenew/share-codemirror":"/www/gibber.libraries/js/external/sharenew/share-codemirror.js","../external/sharenew/text":"/www/gibber.libraries/js/external/sharenew/text.js","share/lib/client":"/www/gibber.libraries/node_modules/share/lib/client/index.js"}],"/www/gibber.libraries/js/gibber/theme.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, Color = require( 'color' )
   
@@ -29656,7 +29990,6 @@ Interface.Panel = function() {
     
     touchEvent : function(event) {
       if(self.active) {
-        console.log( event )
         if( typeof event.changedTouches === 'undefined' && event.originalEvent ) {
           event.changedTouches = event.originalEvent.changedTouches
         }
@@ -29756,6 +30089,7 @@ Interface.Panel = function() {
         }
         this.shouldDraw.length = 0;
       }
+      $.publish('/draw')
     },
     
     getWidgetWithName: function( name ) {
@@ -30292,6 +30626,206 @@ Interface.Widget = {
   ],
 };
 
+
+Interface.HBox = function() {
+  var me = this
+  Interface.extend(this, {
+    type : 'HBox',    
+    
+    children: [],
+    proxyPanel : { active:true, x:0, y:0, width:1, height:1, shouldDraw:[], useRelativeSizesAndPositions:true }, // needed for absolute widths / heights which are set in _init call
+    
+    add: function() {
+      for( var i = 0; i < arguments.length; i++ ) {
+        var child = arguments[ i ]
+        if( this.children.indexOf( child ) === -1 ) this.children.push( child )
+        child.panel = this.proxyPanel
+        child.ctx = this.panel.ctx
+      }
+      
+      this.layout()
+      this.draw()
+    },
+    
+    layout : function() {
+      var w = (this.width / this.children.length) / this.width,
+          _widthUsed = 0;
+      
+      for( var i = 0; i < this.children.length; i++ ) {
+        var child = this.children[ i ]
+        
+        child.x = _widthUsed + this.x
+        child.y = this.y * (1 / this.height)
+        
+        child.width = w 
+        child.height = 1
+        
+        _widthUsed += w
+      }
+      return this
+    },
+    
+    draw: function() {
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+      
+      for( var i = 0; i < this.children.length; i++ ) {
+        this.children[ i ].draw()
+      }
+    },
+    
+    refresh: function() {      
+      for( var i = 0; i < this.proxyPanel.shouldDraw.length; i++ ) {
+        this.proxyPanel.shouldDraw[ i ].draw()
+      }
+      this.proxyPanel.shouldDraw.length = 0
+    },
+    
+    mouseEvent: function(e){
+      // e.x -= this._x()
+      // e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].mouseEvent( e ) 
+      } 
+    },
+    
+    touchEvent: function(e){
+      // e.x -= this._x()
+      // e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].touchEvent( e ) 
+      } 
+    },
+
+    _init: function() {
+      this.useRelativeSizesAndPositions = this.panel.useRelativeSizesAndPositions
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+      this.proxyPanel.__proto__ = this.panel
+      
+      $.subscribe('/draw', this.refresh.bind( this ) )
+      
+      Object.defineProperties(this, {
+        bounds : {
+          configurable: true,
+          get : function() { return bounds; },
+          set : function(_bounds) { 
+            bounds = _bounds; this.x = bounds[0]; this.y = bounds[1]; this.width = bounds[2]; this.height = bounds[3]; 
+            this.layout()
+            this.draw()
+          }
+        },
+      })
+    }
+  })
+  .init( arguments[0] )
+};
+Interface.HBox.prototype = Interface.Widget;
+
+Interface.VBox = function() {
+  Interface.extend(this, {
+    type : 'VBox',    
+    
+    children: [],
+    proxyPanel : { active:true, x:0, y:0, width:1, height:1, shouldDraw:[], useRelativeSizesAndPositions:true }, // needed for absolute widths / heights which are set in _init call
+    
+    add: function() {
+      for( var i = 0; i < arguments.length; i++ ) {
+        var child = arguments[ i ]
+        this.children.push( child )
+        child.panel = this.proxyPanel
+        child.ctx = this.panel.ctx
+      }
+      
+      this.layout()
+      this.draw()
+    },
+    
+    layout : function() {
+      var h = this.height  / this.children.length,
+          _heightUsed = 0;
+      
+      for( var i = 0; i < this.children.length; i++ ) {
+        var child = this.children[ i ]
+        
+        child.x = this.x
+        child.y = (this.y + _heightUsed ) * (1 / this.height)
+        //
+        child.width = 1
+        child.height = h * ( 1/this.height)
+        
+        _heightUsed += h
+      }
+      
+      return this
+    },
+    
+    draw: function() {
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+      
+      for( var i = 0; i < this.children.length; i++ ) {
+        this.children[ i ].draw()
+      }
+    },
+    
+    refresh: function() {      
+      for( var i = 0; i < this.proxyPanel.shouldDraw.length; i++ ) {
+        this.proxyPanel.shouldDraw[ i ].draw()
+      }
+      this.proxyPanel.shouldDraw.length = 0
+    },
+    
+    mouseEvent: function(e){
+      // e.x -= this._x()
+      // e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].mouseEvent( e ) 
+      } 
+    },
+    
+    touchEvent: function(e){
+      e.x -= this._x()
+      e.y -= this._y()
+      for( var i = 0; i < this.children.length; i++ ) { 
+        var child = this.children[ i ]
+        
+        this.children[ i ].touchEvent( e ) 
+      } 
+    },
+
+    _init: function() {
+      this.useRelativeSizesAndPositions = this.panel.useRelativeSizesAndPositions
+      this.proxyPanel.width = this._width()
+      this.proxyPanel.height = this._height()
+      this.proxyPanel.__proto__ = this.panel
+      
+      $.subscribe('/draw', this.refresh.bind( this ) )
+      
+      Object.defineProperties(this, {
+        bounds : {
+          configurable: true,
+          get : function() { return bounds; },
+          set : function(_bounds) { 
+            bounds = _bounds; this.x = bounds[0]; this.y = bounds[1]; this.width = bounds[2]; this.height = bounds[3]; 
+            this.layout()
+            this.draw()
+          }
+        },
+      })
+    }
+  })
+  .init( arguments[0] )
+};
+Interface.VBox.prototype = Interface.Widget;
+
+
 /**#Interface.Slider - Widget
 A vertical or horizontal slider.
 
@@ -30647,9 +31181,6 @@ String. A text label to print at the textLocation coordinates of the button.
 Set. A set of x and y coordinates which position the the label within the bounds.
 **/
 
-
-
-
 Interface.ButtonV = function() {
   Interface.extend(this, {
     type : 'ButtonV',    
@@ -30849,11 +31380,10 @@ Interface.ButtonV = function() {
       }
     },
     touchend   : function(e) {
-      this.isTouchOver = false;
-      if( this.requiresFocus || ( !this.requiresFocus && this.isTouchOver) ) {
-        this.isTouchOver = false;
+      if( this.momentary && this.requiresFocus || ( !this.requiresFocus && this.isTouchOver) ) {
         this.changeValue();
       }
+      this.isTouchOver = false;
     },
   })
   .init( arguments[0] );
@@ -30864,8 +31394,7 @@ Interface.ButtonV.prototype = Interface.Widget;
 /**#Interface.Piano - Widget
 A piano with adjustable ranges of pitches 
 
-*contributed by Jonathan Simozar
-
+*contributed by Jonathan Simozar, with modifications by thecharlie
 
 ## Example Usage##
 `var c = new Interface.Piano({ 
@@ -31865,7 +32394,7 @@ Interface.XY = function() {
     touchmove : function(touch) {
       for(var t = 0; t < this.children.length; t++) {
         _t = this.children[t];
-        if(touch.identifier == _t.identifier) {
+        if(touch.identifier === _t.identifier) {
           this.changeValue(_t, touch.x - this._x(), touch.y - this._y());
 
           var now = {x:touch.x - this._x(), y:touch.y - this._y()};
@@ -31884,8 +32413,10 @@ Interface.XY = function() {
         var _t = this.children[t];
         
         if(touch.identifier === _t.identifier) {
-          _t.vx = _t.velocity.x;
-          _t.vy = _t.velocity.y;
+          if( _t.velocity ) {
+            _t.vx = _t.velocity.x;
+            _t.vy = _t.velocity.y;
+          }
           
           _t.lastPosition = null;
           _t.isActive = false;
@@ -32105,10 +32636,11 @@ Interface.Label = function() {
           rect.x =  x - metrics.width;
           break;
       }
+
       switch(this.vAlign) {
         case 'middle':
           y = (this._y() + this._height() / 2)
-          rect.y = y - metrics.height / 2;
+          rect.y = y - this.size / 2;
           break;
         case 'top':
           y = this._y();
@@ -32116,7 +32648,7 @@ Interface.Label = function() {
           break; 
         case 'bottom':
           y = this._y() + this._height();
-          rect.y =  y - metrics.height;
+          rect.y =  y - this.size / 2;
           break;
       }
       this.ctx.clearRect(rect.x, rect.y, rect.width, rect.height * 2);      
@@ -32281,6 +32813,21 @@ Interface.MultiSlider = function() {
       this.values[ sliderNum ] = value
       this._values[ sliderNum ] = value
       this.refresh()
+    },
+    resetValues : function() {
+      for( var i = 0; i < this.count; i++ ) {
+        this.values[ i ] = this.min + (this.max - this.min) * this._values[ i ];
+        
+        if(this.target !== "OSC") {
+          this.sendTargetMessage();
+        }else{
+          if(Interface.OSC)
+            Interface.OSC.send( this.key, 'if', [ sliderHit, this.values[ sliderHit ] ] );
+        }
+        if(this.onvaluechange) this.onvaluechange(sliderHit, this.values[ sliderHit ]);
+      }
+      
+      this.refresh();
     },
     changeValue : function( xOffset, yOffset ) {
       if(this.hasFocus || !this.requiresFocus) {
@@ -33019,83 +33566,349 @@ Interface.Paint = function() {
         this.animate()
       }
     },
-    /*
-    trackTouch : function(xPos, yPos, _touch) {
-      var closestDiff = 10000;
-      var touchFound = null;
-      var touchNum = null;
-      
-      for(var i = 0; i < this.children.length; i++) {
-        var touch = this.children[i];
-        var xdiff = Math.abs(touch.x - xPos);
-        var ydiff = Math.abs(touch.y - yPos);
-
-        if(xdiff + ydiff < closestDiff && !touch.isActive) {
-          closestDiff = xdiff + ydiff;
-          touchFound = touch;
-          touchNum = i;
-        }
-      }
-      
-      touchFound.isActive = true;
-      touchFound.vx = 0;
-      touchFound.vy = 0;
-      touchFound.identifier = _touch.identifier;
-      touchFound.childID = touchNum;
-
-      if(touchFound != null)
-        this.changeValue(touchFound, xPos, yPos);
-    
-      this.lastTouched = touchFound;
-      return touchFound.childID;
-    },
     touchstart : function(touch) {
-      // if(this.hitTest(touch)) {
-      //   this.trackTouch(touch.x - this.x, touch.y - this.y, touch);
-      // }
-    },
-    touchmove : function(touch) {
-      for(var t = 0; t < this.children.length; t++) {
-        _t = this.children[t];
-        if(touch.identifier == _t.identifier) {
-          this.changeValue(_t, touch.x - this._x(), touch.y - this._y());
-
-          var now = {x:touch.x - this._x(), y:touch.y - this._y()};
-          
-          if(_t.lastPosition !== null) {
-            _t.velocity = {x:now.x - _t.lastPosition.x, y:now.y - _t.lastPosition.y };
-          }
-          _t.lastPosition = now;
-        }
-      }
-    },
-    touchend : function(touch) {
-      var found = false;
-      var tu = null;
-      for(var t = 0; t < this.children.length; t++) {
-        var _t = this.children[t];
+      if(this.hitTest(touch)) {
+        this.lines = []
+        this.animationPoint = 0
         
-        if(touch.identifier === _t.identifier) {
-          _t.vx = _t.velocity.x;
-          _t.vy = _t.velocity.y;
-          
-          _t.lastPosition = null;
-          _t.isActive = false;
-          
+        if( this.lines.length === 0 ) {
+          this.startTime = Date.now()
+        }
 
-          found = true;
-          tu = t.childID;
+        this.lines.push( [] )
+        this.isDrawing = true;
+        this.isAnimating = false;
+      }
+      
+      this.activeTouch = touch
+    },
+    
+    touchmove : function(touch) {
+      if(this.hitTest(touch) && this.activeTouch !== null) {
+        if( this.isDrawing ) {
+          var points = this.lines[ this.lines.length - 1 ]
+          if( points ) {
+            points.push({ x:touch.x / this._width(), y:touch.y / this._height(), timestamp: Date.now() - this.startTime })
+            this.draw()
+          }
+        }  
+      }
+    },
+    
+    touchend : function(touch) {
+      this.isDrawing = false
+      if( this.lines.length > 0 ) {
+        this.isAnimating = true;
+        this.animate()
+      }
+    },
+  })
+  .init( arguments[0] );
+}
+Interface.Paint.prototype = Interface.Widget;
+
+Interface.Patchbay = function() {
+  Interface.extend(this, {
+    type:"Patchbay",
+    points: [],
+    minWidth:80,
+    cableWidth:5,
+    start:null,
+    over:null,
+    connections:[],
+    rowLength:null,
+    selectedConnection: null,
+    patchOutlineWidth:3,
+    
+    draw : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height(),
+          length = this.points.length
+        
+      this.ctx.fillStyle = this._background();
+      this.ctx.strokeStyle = this._stroke();
+      this.ctx.clearRect(x, y, width, height);          
+      
+      this.layout()
+      this.drawSegments()
+      this.drawPatchPoints()
+      this.drawConnections()
+      //this.drawLabels()
+    },
+    
+    layout: function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height()
+      
+      this.rows = 1
+      
+      this.patchWidth = width / this.points.length
+      
+      if( this.patchWidth < this.minWidth ) {
+        this.patchWidth = this.minWidth
+      }
+      
+      this.rows = Math.ceil( (this.patchWidth * this.points.length) / width )
+            
+      this.patchHeight = height / this.rows
+      
+      
+      this.columns = Math.floor( width / this.patchWidth )
+    },
+    
+    drawSegments : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height(),
+          length = this.points.length
+          
+      this.ctx.fillStyle = this._fill();
+
+      var totalWidth = 0, row = 1
+      
+      //console.log("SEGMENT, START:", this.start, 'OVER:', this.over )
+      for( var i = 0; i < this.points.length; i++ ) {
+        if( this.start === i ) {
+          this.ctx.fillStyle = "#777"            
+          this.ctx.fillRect(x + totalWidth, y + (this.patchHeight * (row-1)), this.patchWidth, this.patchHeight  );
+        }else if( this.over === i ) {
+          this.ctx.fillStyle = "#744"
+          this.ctx.fillRect(x + totalWidth, y + (this.patchHeight * (row-1)), this.patchWidth, this.patchHeight );
+        }
+        
+        this.ctx.fillStyle = this._stroke()
+        this.ctx.textBaseline = 'middle'
+        this.ctx.textAlign = 'center'
+        this.ctx.font = this._font()
+        this.ctx.font = 'normal 12px Helvetica'
+        
+        if( typeof this.points[i].name !== 'undefined' ) { 
+          this.ctx.fillText( this.points[ i ].name ,  totalWidth + this.patchWidth / 2, y + ((row-1) * this.patchHeight + .1 * this.patchHeight)  )
+        }
+        
+        if( typeof this.points[i].name2 !== 'undefined' ) {
+          this.ctx.fillText( this.points[ i ].name2 , totalWidth + this.patchWidth / 2, y + ((row-1) * this.patchHeight + .9 * this.patchHeight)  )
+        }
+  
+        totalWidth += this.patchWidth
+        
+        this.points[ i ].row = row
+        
+        if( totalWidth + this.patchWidth > width ) {
+          totalWidth = 0
+          row++
         }
       }
-      if(found) { this.touchUp = tu; }
-      //if(!found) console.log("NOT FOUND", touch.identifier);
     },
-    */
+    
+    drawPatchPoints : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height(),
+          length = this.points.length
+          
+      this.ctx.fillStyle = this._background();
+    
+      var totalWidth = 0, row = 1
+      for( var i = 0; i < this.points.length; i++ ) {
+        //this.ctx.fillRect(totalWidth, y, patchWidth, patchHeight);
+        this.ctx.beginPath()
+        this.ctx.arc( totalWidth + this.patchWidth / 2, y + this.patchHeight / 2 + (this.patchHeight * (row-1)), this.patchWidth/4, 0, Math.PI*2, true); 
+        this.ctx.closePath()
+        
+        this.ctx.fill()
+        
+        this.ctx.lineWidth = this.patchOutlineWidth
+        this.ctx.stroke()
+        
+        this.points[i].row = row
+        
+        this.ctx.lineWidth = 1
+        this.ctx.strokeRect(totalWidth, y + (this.patchHeight * (row-1)), this.patchWidth, this.patchHeight );
+              
+        totalWidth += this.patchWidth
+        if( totalWidth + this.patchWidth > width ) {
+          totalWidth = 0
+          row++
+        }
+      }
+      
+      //console.log("TOTAL ROWS = ", row )
+    },
+    
+    drawConnections : function() {
+      var x = this._x(), y = this._y(), width = this._width(), height = this._height()
+      
+      this.ctx.lineWidth = this.cableWidth
+      
+      for( var i = 0; i < this.connections.length; i++ ) {
+        var connection = this.connections[ i ],
+            origin = this.connections[ i ][ 0 ],
+            destination = this.connections[ i ][ 1 ],
+            startX = x + this.patchWidth * (origin % this.columns) + this.patchWidth / 2,
+            startY = y + (this.patchHeight / 2) + (this.patchHeight * Math.floor(origin / this.columns) ),
+            endX   = x + this.patchWidth * (destination % this.columns) + this.patchWidth / 2,
+            endY   = y + (this.patchHeight / 2) + (this.patchHeight * Math.floor(destination / this.columns) ),
+            ctrl1X = startX,
+            ctrl1Y = startY + this.patchHeight * .5,
+            ctrl2X = endX,
+            ctrl2Y = endY + this.patchHeight * .5
+        
+            //console.log( "ORIGIN", this.points[origin].row, "DESTINATION", this.points[destination].row )
+        if( connection.selected ) {
+          this.ctx.strokeStyle = '#0f0'
+        }else{
+          var grd = this.ctx.createLinearGradient(startX, startY, endX, endY);
+          
+          grd.addColorStop( 0.000, 'rgba(64, 64, 64, 1.000)' )          
+          grd.addColorStop( 1.000, 'rgba(204, 204, 204, 1.000)' )
+
+          
+          this.ctx.strokeStyle = grd
+        }
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo( startX, startY )
+        this.ctx.bezierCurveTo( ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY );
+        this.ctx.stroke()
+
+        connection.edge = [startX, startY, ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY]
+      }
+    },
+    
+    _init : function() {
+      var x = this._x(),
+          y = this._y(),
+          width = this._width(),
+          height= this._height()
+          
+      this.patchWidth = width / this.points.length
+      this.patchHeight = height
+      this.rows = 1 
+    },
+    
+    createConnection : function( connection ) {
+      var start = this.points[ connection[0] ],
+          end   = this.points[ connection[1] ]
+      
+      if( end.output !== false ) {
+        this.connections.push( connection )
+      
+        if( this.onconnection ) { 
+          this.onconnection( start, end ) 
+        }
+      }
+    },
+    
+    changeValue : function( xOffset, yOffset ) {  },
+    
+    hitTestEdges: function(e) {
+      var hit = false,
+          x = e.x - this._x(),
+          y = e.y - this._y()
+      
+      for( var i = 0; i < this.connections.length; i++ ) {
+        var edge = this.connections[ i ].edge
+        
+        this.ctx.beginPath()
+        this.ctx.moveTo( edge[0], edge[1] )
+        this.ctx.bezierCurveTo( edge[2], edge[3], edge[4], edge[5], edge[6], edge[7] );
+        if( this.ctx.isPointInStroke( x,y ) ) {
+          this.connections.forEach( function( elem, index, array ){
+            elem.selected = false
+          })
+          
+          this.connections[ i ].selected = true
+          this.selectedConnection = this.connections[ i ]
+          
+          hit = true
+          
+          break;
+        }
+      }
+      
+      return hit
+    },
+  
+    mousedown : function(e, hit) {
+      if( hit && Interface.mouseDown ) {
+        if( !this.hitTestEdges( e ) ) {
+          //this.start = Math.floor( ( e.x - this._x() / this._width() / this.rows ) / ( this._width() / this.points.length / this.rows ) )
+          var _x = Math.floor( ( e.x - this._x() / this._width() ) / ( this._width() / this.columns ) ),
+              _y = Math.floor( ( e.y - this._y() / this._height()) / ( this._height() / this.rows ) )
+                        
+          this.start = _y * this.columns + _x
+          
+          if( this.selectedConnection !== null ) {
+            this.selectedConnection.selected = false
+            this.selectedConnection = null
+          }        
+        }
+        
+        this.draw()
+      }
+    },
+    mousemove : function(e, hit) { 
+      if( hit && Interface.mouseDown ) {
+        var _x = Math.floor( ( e.x - this._x() / this._width() ) / ( this._width() / this.columns) ),
+            _y = Math.floor( ( e.y - this._y() / this._height()) / ( this._height() / this.rows ) )
+            
+        var prevOver = this.over
+        this.over = _y * this.columns + _x
+        
+        if( this.over !== prevOver ) {
+          this.draw()
+        }
+      }
+    },
+    mouseup   : function(e, hit) { 
+      if( hit ) {
+        var _x = Math.floor( ( e.x - this._x() / this._width() ) / ( this._width() / this.columns ) ),
+            _y = Math.floor( ( e.y - this._y() / this._height()) / ( this._height() / this.rows ) ),
+            over = _y * this.columns + _x
+            
+        // var over = Math.floor( ( e.x - this._x() / this._width() / this.rows ) / ( this._width() / this.points.length / this.rows ) )
+        
+        if( this.start !== over && this.start !== null ) {
+          var connection = [ this.start, over ],
+              isFound = false
+              
+          for( var i = 0; i < this.connections.length; i++ ) {
+            if( this.connections[i][0] === connection[0] && this.connections[i][1] === connection[1] ) {
+              isFound = true
+            }
+          }
+          
+          if( !isFound ) this.createConnection( connection )
+        }
+      }
+      
+      this.over = null
+      this.start = null
+      this.draw()
+    },
+    
+    onkeydown: function(e) {
+      var key = Interface.keyCodeToChar[ e.keyCode ]
+            
+      if( key === 'Delete' || key === 'Backspace' ) {
+        if( this.selectedConnection !== null ) {
+          this.deleteConnection( this.selectedConnection )
+          e.preventDefault()
+        }
+      }
+    },
+    
+    deleteConnection: function( connection ) {
+      this.connections.splice( this.connections.indexOf( connection ), 1 )
+      
+      if( this.ondisconnection ) { this.ondisconnection( this.points[ connection[0] ], this.points[ connection[1] ] ) }
+      
+      this.draw()
+    },
+    
+    touchstart : function(e, hit) { if(hit) this.changeValue( e.x - this._x(), e.y - this._y() ); },
+    touchmove  : function(e, hit) { if(hit) this.changeValue( e.x - this._x(), e.y - this._y() ); },
+    touchend   : function(e, hit) { if(hit) this.changeValue( e.x - this._x(), e.y - this._y() ); },  
   })
   .init( arguments[0] );
 }
 
-Interface.Paint.prototype = Interface.Widget;
+Interface.Patchbay.prototype = Interface.Widget;
 
 Interface.defineChildProperties = function(widget, properties) {
   for(var j = 0; j < properties.length; j++) {
@@ -33114,6 +33927,36 @@ Interface.defineChildProperties = function(widget, properties) {
     })();
   }
 };
+
+(function ($) {
+	var cache = {};
+
+	$.publish = function(/* String */topic, /* Array? */args){
+		if(typeof cache[topic] === 'object') {	
+			cache[topic].forEach(function(property){
+				property.apply($, args || []);
+			});
+		}
+	};
+
+	$.subscribe = function(/* String */topic, /* Function */callback){
+		if(!cache[topic]){
+			cache[topic] = [];
+		}
+		cache[topic].push(callback);
+		return [topic, callback]; // Array
+	};
+
+	$.unsubscribe = function(/* Array */handle){
+		var t = handle[0];
+		cache[t] && $.each(cache[t], function(idx){
+			if(this == handle[1]){
+				cache[t].splice(idx, 1);
+			}
+		});
+	};
+
+})($);
 
 module.exports = Interface
 
@@ -43254,7 +44097,7 @@ module.exports = function( Gibber ) {
       target.VBox     = I.vbox
       target.Crossfader = I.crossfader
       target.Accelerometer = I.accelerometer
-      target.Orientation = I.orientation  
+      target.Orientation = I.orientation      
     }
   }
   
@@ -54466,4 +55309,3833 @@ return jQuery;
 
 }));
 
-},{}]},{},["./js/main.js"]);
+},{}],"/www/gibber.libraries/node_modules/share/lib/client/connection.js":[function(require,module,exports){
+var Doc, Query;
+if (typeof require !== 'undefined') {
+  Doc = require('./doc').Doc;
+  Query = require('./query').Query;
+  MicroEvent = require('./microevent');
+} else {
+  Doc   = exports.Doc;
+  Query = exports.Query
+}
+
+
+/**
+ * Handles communication with the sharejs server and provides queries and
+ * documents.
+ *
+ * We create a connection with a socket object
+ *   connection = new sharejs.Connection(sockset)
+ * The socket may be any object handling the websocket protocol. See the
+ * documentation of bindToSocket() for details. We then wait for the connection
+ * to connect
+ *   connection.on('connected', ...)
+ * and are finally able to work with shared documents
+ *   connection.get('food', 'steak') // Doc 
+ *
+ * @param socket @see bindToSocket
+ */
+var Connection = exports.Connection = function (socket) {
+  // Map of collection -> docName -> doc object for created documents.
+  // (created documents MUST BE UNIQUE)
+  this.collections = {};
+
+  // Each query is created with an id that the server uses when it sends us
+  // info about the query (updates, etc).
+  //this.nextQueryId = (Math.random() * 1000) |0;
+  this.nextQueryId = 1;
+
+  // Map from query ID -> query object.
+  this.queries = {};
+
+  // State of the connection. The correspoding events are emmited when this
+  // changes. Available states are:
+  // - 'connecting'   The connection has been established, but we don't have our
+  //                  client ID yet
+  // - 'connected'    We have connected and recieved our client ID. Ready for data.
+  // - 'disconnected' The connection is closed, but it will reconnect automatically.
+  // - 'stopped'      The connection is closed, and should not reconnect.
+  this.state = 'disconnected'
+
+  // This is a helper variable the document uses to see whether we're currently
+  // in a 'live' state. It is true if we're connected, or if you're using
+  // browserchannel and connecting.
+  this.canSend = false
+
+  // Reset some more state variables.
+  this.reset();
+
+  this.debug = false;
+
+  // I'll store the most recent 100 messages so when errors occur we can see
+  // what happened.
+  this.messageBuffer = [];
+
+  this.bindToSocket(socket);
+}
+MicroEvent.mixin(Connection);
+
+
+/**
+ * Use socket to communicate with server
+ *
+ * Socket is an object that can handle the websocket protocol. This method
+ * installs the onopen, onclose, onmessage and onerror handlers on the socket to
+ * handle communication and sends messages by calling socket.send(msg). The
+ * sockets `readyState` property is used to determine the initaial state.
+ *
+ * @param socket Handles the websocket protocol
+ * @param socket.readyState
+ * @param socket.close
+ * @param socket.send
+ * @param socket.onopen
+ * @param socket.onclose
+ * @param socket.onmessage
+ * @param socket.onerror
+ */
+Connection.prototype.bindToSocket = function(socket) {
+  // if (this.socket) {
+  //   delete this.socket.onopen
+  //   delete this.socket.onclose
+  //   delete this.socket.onmessage
+  //   delete this.socket.onerror
+  // }
+
+  // TODO: Check that the socket is in the 'connecting' state.
+
+  this.socket = socket;
+  // This logic is replicated in setState - consider calling setState here
+  // instead.
+  this.state = (socket.readyState === 0 || socket.readyState === 1) ? 'connecting' : 'disconnected';
+  this.canSend = this.state === 'connecting' && socket.canSendWhileConnecting;
+
+  var connection = this
+  
+  socket._onmessage = socket.onmessage.bind( socket )
+  socket.onmessage = function(msg) {
+    console.log("SHARE MESSAGE")
+    var data = msg.data;
+
+    // Fall back to supporting old browserchannel 1.x API which implemented the
+    // websocket API incorrectly. This will be removed at some point
+    if (!data) data = msg;
+    
+    // Some transports don't need parsing.
+    if (typeof data === 'string') data = JSON.parse(data);
+
+    if (connection.debug) console.log('RECV', JSON.stringify(data));
+
+    connection.messageBuffer.push({
+      t: (new Date()).toTimeString(),
+      recv:JSON.stringify(data)
+    });
+    while (connection.messageBuffer.length > 100) {
+      connection.messageBuffer.shift();
+    }
+    
+    try{
+      socket._onmessage( msg )
+    }catch(e){}
+    
+    try {
+      connection.handleMessage(data);
+    } catch (e) {
+      console.log("ERROR", e )
+      connection.emit('error', e);
+      // We could also restart the connection here, although that might result
+      // in infinite reconnection bugs.
+      throw e;
+    }
+  }
+
+  socket.onopen = function() {
+    connection._setState('connecting');
+  };
+
+  socket.onerror = function(e) {
+    // This isn't the same as a regular error, because it will happen normally
+    // from time to time. Your connection should probably automatically
+    // reconnect anyway, but that should be triggered off onclose not onerror.
+    // (onclose happens when onerror gets called anyway).
+    connection.emit('connection error', e);
+  };
+
+  socket.onclose = function(reason) {
+    connection._setState('disconnected', reason);
+    if (reason === 'Closed' || reason === 'Stopped by server') {
+      connection._setState('stopped', reason);
+    }
+  };
+};
+
+
+/**
+ * @param {object} msg
+ * @param {String} msg.a action
+ */
+Connection.prototype.handleMessage = function(msg) {
+  // Switch on the message action. Most messages are for documents and are
+  // handled in the doc class.
+  switch (msg.a) {
+    case 'init':
+      // Client initialization packet. This bundle of joy contains our client
+      // ID.
+      if (msg.protocol !== 0) throw new Error('Invalid protocol version');
+      if (typeof msg.id != 'string') throw new Error('Invalid client id');
+
+      this.id = msg.id;
+      this._setState('connected');
+      break;
+
+    case 'qfetch':
+    case 'qsub':
+    case 'q':
+    case 'qunsub':
+      // Query message. Pass this to the appropriate query object.
+      var query = this.queries[msg.id];
+      if (query) query._onMessage(msg);
+      break;
+
+    case 'bs':
+      // Bulk subscribe response. The responses for each document are contained within.
+      var result = msg.s;
+      for (var cName in result) {
+        for (var docName in result[cName]) {
+          var doc = this.get(cName, docName);
+          if (!doc) {
+            if (console) console.error('Message for unknown doc. Ignoring.', msg);
+            break;
+          }
+
+          var msg = result[cName][docName];
+          if (typeof msg === 'object') {
+            doc._handleSubscribe(msg.error, msg);
+          } else {
+            // The msg will be true if we simply resubscribed.
+            doc._handleSubscribe(null, null);
+          }
+        }
+      }
+      break;
+
+    default:
+      // Document message. Pull out the referenced document and forward the
+      // message.
+      var collection, docName, doc;
+      if (msg.d) {
+        collection = this._lastReceivedCollection = msg.c;
+        docName = this._lastReceivedDoc = msg.d;
+      } else {
+        collection = msg.c = this._lastReceivedCollection;
+        docName = msg.d = this._lastReceivedDoc;
+      }
+
+      this.get(collection, docName)._onMessage(msg);
+  }
+};
+
+
+Connection.prototype.reset = function() {
+  this.id = this.lastError =
+    this._lastReceivedCollection = this._lastReceivedDoc =
+    this._lastSentCollection = this._lastSentDoc = null;
+
+  this.seq = 1;
+};
+
+
+// Set the connection's state. The connection is basically a state machine.
+Connection.prototype._setState = function(newState, data) {
+  if (this.state === newState) return;
+
+  // I made a state diagram. The only invalid transitions are getting to
+  // 'connecting' from anywhere other than 'disconnected' and getting to
+  // 'connected' from anywhere other than 'connecting'.
+  if ((newState === 'connecting' && (this.state !== 'disconnected' && this.state !== 'stopped'))
+      || (newState === 'connected' && this.state !== 'connecting')) {
+    throw new Error("Cannot transition directly from " + this.state + " to " + newState);
+  }
+
+  this.state = newState;
+  this.canSend = (newState === 'connecting' && this.socket.canSendWhileConnecting) || newState === 'connected';
+
+  if (newState === 'disconnected') this.reset();
+
+  this.emit(newState, data);
+
+  // & Emit the event to all documents & queries. It might make sense for
+  // documents to just register for this stuff using events, but that couples
+  // connections and documents a bit much. Its not a big deal either way.
+  this.opQueue = [];
+  this.bsStart();
+  for (var c in this.collections) {
+    var collection = this.collections[c];
+    for (var docName in collection) {
+      collection[docName]._onConnectionStateChanged(newState, data);
+    }
+  }
+
+
+  // Its important that operations are resent in the same order that they were
+  // originally sent. If we don't sort, an op with a high sequence number will
+  // convince the server not to accept any ops with earlier sequence numbers.
+  this.opQueue.sort(function(a, b) { return a.seq - b.seq; });
+  for (var i = 0; i < this.opQueue.length; i++) {
+    this.send(this.opQueue[i]);
+  }
+
+  this.opQueue = null;
+  this.bsEnd();
+  
+  // Its important that query resubscribes are sent after documents to make sure
+  // the server knows all the documents we're subscribed to when it issues the
+  // queries internally.
+
+  // No bulk subscribe for queries yet.
+  for (var id in this.queries) {
+    this.queries[id]._onConnectionStateChanged(newState, data);
+  }
+};
+
+// So, there's an awful error case where the client sends two requests (which
+// fail), then reconnects. The documents could have _onConnectionStateChanged
+// called in the wrong order and the operations then get sent with reversed
+// sequence numbers. This causes the server to incorrectly reject the second
+// sent op. So we need to queue the operations while we're reconnecting and
+// resend them in the correct order.
+Connection.prototype.sendOp = function(data) {
+  if (this.opQueue) {
+    this.opQueue.push(data);
+  } else {
+    this.send(data);
+  }
+};
+
+Connection.prototype.bsStart = function() {
+  this.subscribeData = {};
+};
+
+Connection.prototype.bsEnd = function() {
+  // Only send bulk subscribe if not empty. Its weird using a for loop for
+  // this, but it works pretty well.
+  for (var __unused in this.subscribeData) { 
+    this.send({a:'bs', s:this.subscribeData});
+    break;
+  }
+
+  this.subscribeData = null;
+};
+
+// This is called by the document class when the document wants to subscribe.
+// We could just send a subscribe message, but during reconnect that causes a
+// bajillion messages over browserchannel. During reconnect we'll aggregate,
+// similar to sendOp.
+Connection.prototype.sendSubscribe = function(collection, name, v) {
+  if (this.subscribeData) {
+    var data = this.subscribeData;
+    if (!data[collection]) data[collection] = {};
+
+    data[collection][name] = v || null;
+  } else {
+    var msg = {a:'sub', c:collection, d:name};
+    if (v != null) msg.v = v;
+    this.send(msg);
+  }
+};
+
+
+/**
+ * Sends a message down the socket
+ */
+Connection.prototype.send = function(msg) {
+  if (this.debug) console.log("SEND", JSON.stringify(msg));
+  this.messageBuffer.push({t:Date.now(), send:JSON.stringify(msg)});
+  while (this.messageBuffer.length > 100) {
+    this.messageBuffer.shift();
+  }
+
+  if (msg.d) { // The document the message refers to. Not set for queries.
+    var collection = msg.c;
+    var docName = msg.d;
+    if (collection === this._lastSentCollection && docName === this._lastSentDoc) {
+      delete msg.c;
+      delete msg.d;
+    } else {
+      this._lastSentCollection = collection;
+      this._lastSentDoc = docName;
+    }
+  }
+
+  if (!this.socket.canSendJSON)
+    msg = JSON.stringify(msg);
+  
+  this.socket.send(msg);
+};
+
+
+/**
+ * Closes the socket and emits 'disconnected'
+ */
+Connection.prototype.disconnect = function() {
+  this.socket.close();
+};
+
+
+/**
+ * @deprecated
+ */
+Connection.prototype.getExisting = function(collection, name) {
+  console.trace('getExisting is deprecated. Use get() instead');
+  if (this.collections[collection]) return this.collections[collection][name];
+};
+
+
+/**
+ * @deprecated
+ */
+Connection.prototype.getOrCreate = function(collection, name, data) {
+  console.trace('getOrCreate is deprecated. Use get() instead');
+  return this.get(collection, name, data);
+};
+
+
+/**
+ * Get or create a document.
+ *
+ * @param collection
+ * @param name
+ * @param [data] ingested into document if created
+ * @return {Doc}
+ */
+Connection.prototype.get = function(collection, name, data) {
+  var collectionObject = this.collections[collection];
+  if (!collectionObject)
+    collectionObject = this.collections[collection] = {};
+
+  var doc = collectionObject[name];
+  if (!doc)
+    doc = collectionObject[name] = new Doc(this, collection, name);
+
+  // Even if the document isn't new, its possible the document was created
+  // manually and then tried to be re-created with data (suppose a query
+  // returns with data for the document). We should hydrate the document
+  // immediately if we can because the query callback will expect the document
+  // to have data.
+  if (data && data.data !== undefined && !doc.state)
+    doc.ingestData(data);
+
+  return doc;
+};
+
+
+/**
+ * Remove document from this.collections
+ *
+ * @private
+ */
+Connection.prototype._destroyDoc = function(doc) {
+  var collectionObject = this.collections[doc.collection];
+  if (!collectionObject) return;
+
+  delete collectionObject[doc.name];
+
+  // Delete the collection container if its empty. This could be a source of
+  // memory leaks if you slowly make a billion collections, which you probably
+  // won't do anyway, but whatever.
+  if (!hasKeys(collectionObject))
+    delete this.collections[doc.collection];
+};
+ 
+
+function hasKeys(object) {
+  for (var key in object) return true;
+  return false;
+};
+
+
+// Helper for createFetchQuery and createSubscribeQuery, below.
+Connection.prototype._createQuery = function(type, collection, q, options, callback) {
+  if (type !== 'fetch' && type !== 'sub')
+    throw new Error('Invalid query type: ' + type);
+
+  if (!options) options = {};
+  var id = this.nextQueryId++;
+  var query = new Query(type, this, id, collection, q, options, callback);
+  this.queries[id] = query;
+  query._execute();
+  return query;
+};
+
+// Internal function. Use query.destroy() to remove queries.
+Connection.prototype._destroyQuery = function(query) {
+  delete this.queries[query.id];
+};
+
+// The query options object can contain the following fields:
+//
+// docMode: What to do with documents that are in the result set. Can be
+//   null/undefined (default), 'fetch' or 'subscribe'. Fetch mode indicates
+//   that the server should send document snapshots to the client for all query
+//   results. These will be hydrated into the document objects before the query
+//   result callbacks are returned. Subscribe mode gets document snapshots and
+//   automatically subscribes the client to all results. Note that the
+//   documents *WILL NOT* be automatically unsubscribed when the query is
+//   destroyed. (ShareJS doesn't have enough information to do that safely).
+//   Beware of memory leaks when using this option.
+//
+// poll: Forcably enable or disable polling mode. Polling mode will reissue the query
+//   every time anything in the collection changes (!!) so, its quite
+//   expensive.  It is automatically enabled for paginated and sorted queries.
+//   By default queries run with polling mode disabled; which will only check
+//   changed documents to test if they now match the specified query.
+//   Set to false to disable polling mode, or true to enable it. If you don't
+//   specify a poll option, polling mode is enabled or disabled automatically
+//   by the query's backend.
+//
+// backend: Set the backend source for the query. You can attach different
+//   query backends to livedb and pick which one the query should hit using
+//   this parameter.
+//
+// results: (experimental) Initial list of resultant documents. This is
+//   useful for rehydrating queries when you're using autoFetch / autoSubscribe
+//   so the server doesn't have to send over snapshots for documents the client
+//   already knows about. This is experimental - the API may change in upcoming
+//   versions.
+
+// Create a fetch query. Fetch queries are only issued once, returning the
+// results directly into the callback.
+//
+// The index is specific to the source, but if you're using mongodb it'll be
+// the collection to which the query is made.
+// The callback should have the signature function(error, results, extraData)
+// where results is a list of Doc objects.
+Connection.prototype.createFetchQuery = function(index, q, options, callback) {
+  return this._createQuery('fetch', index, q, options, callback);
+};
+
+// Create a subscribe query. Subscribe queries return with the initial data
+// through the callback, then update themselves whenever the query result set
+// changes via their own event emitter.
+//
+// If present, the callback should have the signature function(error, results, extraData)
+// where results is a list of Doc objects.
+Connection.prototype.createSubscribeQuery = function(index, q, options, callback) {
+  return this._createQuery('sub', index, q, options, callback);
+};
+
+},{"./doc":"/www/gibber.libraries/node_modules/share/lib/client/doc.js","./microevent":"/www/gibber.libraries/node_modules/share/lib/client/microevent.js","./query":"/www/gibber.libraries/node_modules/share/lib/client/query.js"}],"/www/gibber.libraries/node_modules/share/lib/client/doc.js":[function(require,module,exports){
+var types;
+
+if (typeof require !== "undefined") {
+  types = require('ottypes');
+  MicroEvent = require('./microevent');
+} else {
+  types = window.ottypes;
+}
+
+/**
+ * A Doc is a client's view on a sharejs document.
+ *
+ * It is is uniquely identified by its `name` and `collection`.  Documents
+ * should not be created directly. Create them with Connection.get()
+ *
+ *
+ *
+ * Subscriptions
+ * -------------
+ *
+ * We can subscribe a document to stay in sync with the server.
+ *   doc.subscribe(function(error) {
+ *     doc.state // = 'ready'
+ *     doc.subscribed // = true
+ *   })
+ * The server now sends us all changes concerning this document and these are
+ * applied to our snapshot. If the subscription was successful the initial
+ * snapshot and version sent by the server are loaded into the document.
+ *
+ * To stop listening to the changes we call `doc.unsubscribe()`.
+ *
+ * If we just want to load the data but not stay up-to-date, we call
+ *   doc.fetch(function(error) {
+ *     doc.snapshot // sent by server
+ *   })
+ *
+ * TODO What happens when the document does not exist yet.
+ *
+ *
+ *
+ * Editing documents
+ * ------------------
+ *
+ * To edit a document we have to create an editing context
+ *   context = doc.context()
+ * The context is an object exposing the type API of the documents OT type.
+ *   doc.type = 'text'
+ *   context.insert(0, 'In the beginning')
+ *   doc.snapshot // 'In the beginning...'
+ *
+ * If a operation is applied on the snapshot the `_onOp` on the context is
+ * called. The type implementation then usually triggers a corresponding event.
+ *
+ *
+ *
+ *
+ * Events
+ * ------
+ *
+ * You can use doc.on(eventName, callback) to subscribe to the following events:
+ * - `before op (op, localContext)` Fired before an operation is applied to the
+ *   snapshot. The document is already in locked state, so it is not allowed to
+ *   submit further operations. It may be used to read the old snapshot just
+ *   before applying an operation. The callback is passed the operation and the
+ *   editing context if the operation originated locally and `false` otherwise
+ * - `after op (op, localContext)` Fired after an operation has been applied to
+ *   the snapshot. The arguments are the same as for `before op`
+ * - `op (op, localContext)` The same as `after op` unless incremental updates
+ *   are enabled. In this case it is fired after every partial operation with
+ *   this operation as the first argument. When fired the document is in a
+ *   locked state which only allows reading operations.
+ * - `subscribed (error)` The document was subscribed
+ * - `unsubscribed (error)` The document was unsubscribed
+ * - `created (localContext)` The document was created. That means its type was
+ *   set and it has some initial data.
+ * - `del (localContext, snapshot)` Fired after the document is deleted, that is
+ *   the snapshot is null. It is passed the snapshot before delteion as an
+ *   arguments
+ * - `error`
+ *
+ * TODO rename `op` to `after partial op`
+ */
+var Doc = exports.Doc = function(connection, collection, name) {
+  this.connection = connection;
+
+  this.collection = collection;
+  this.name = name;
+
+  this.version = this.type = null;
+  this.snapshot = undefined;
+
+  // **** State in document:
+ 
+  // The action the document tries to perform with the server
+  //
+  // - subscribe
+  // - unsubscribe
+  // - fetch
+  // - submit: send an operation
+  this.action = null;
+ 
+  // The data the document object stores can be in one of the following three states:
+  //   - No data. (null) We honestly don't know whats going on.
+  //   - Floating ('floating'): we have a locally created document that hasn't
+  //     been created on the server yet)
+  //   - Live ('ready') (we have data thats current on the server at some version).
+  this.state = null;
+
+  // Our subscription status. Either we're subscribed on the server, or we aren't.
+  this.subscribed = false;
+  // Either we want to be subscribed (true), we want a new snapshot from the
+  // server ('fetch'), or we don't care (false).  This is also used when we
+  // disconnect & reconnect to decide what to do.
+  this.wantSubscribe = false;
+  // This list is used for subscribe and unsubscribe, since we'll only want to
+  // do one thing at a time.
+  this._subscribeCallbacks = [];
+
+
+  // *** end state stuff.
+
+  // This doesn't provide any standard API access right now.
+  this.provides = {};
+
+  // The editing contexts. These are usually instances of the type API when the
+  // document is ready for edits.
+  this.editingContexts = [];
+  
+  // The op that is currently roundtripping to the server, or null.
+  //
+  // When the connection reconnects, the inflight op is resubmitted.
+  //
+  // This has the same format as an entry in pendingData, which is:
+  // {[create:{...}], [del:true], [op:...], callbacks:[...], src:, seq:}
+  this.inflightData = null;
+
+  // All ops that are waiting for the server to acknowledge @inflightData
+  // This used to just be a single operation, but creates & deletes can't be composed with
+  // regular operations.
+  //
+  // This is a list of {[create:{...}], [del:true], [op:...], callbacks:[...]}
+  this.pendingData = [];
+
+  // The OT type of this document.
+  //
+  // The document also responds to the api provided by the type
+  this.type = null
+};
+
+MicroEvent.mixin(Doc);
+
+/**
+ * Unsubscribe and remove all editing contexts
+ */
+Doc.prototype.destroy = function(callback) {
+  var doc = this;
+  this.unsubscribe(function() {
+    // Don't care if there's an error unsubscribing.
+
+    setTimeout(function() {
+      // There'll probably be nothing here seeing as how we just unsubscribed.
+      for (var i = 0; i < doc._subscribeCallbacks.length; i++) {
+        doc._subscribeCallbacks[i]('Document destroyed');
+      }
+      doc._subscribeCallbacks.length = 0;
+    }, 0);
+
+    doc.connection._destroyDoc(doc);
+    doc.removeContexts();
+    if (callback) callback();
+  });
+};
+
+
+// ****** Manipulating the document snapshot, version and type.
+
+// Set the document's type, and associated properties. Most of the logic in
+// this function exists to update the document based on any added & removed API
+// methods.
+//
+// @param newType OT type provided by the ottypes library or its name or uri
+Doc.prototype._setType = function(newType) {
+  if (typeof newType === 'string') {
+    if (!types[newType]) throw new Error("Missing type " + newType);
+    newType = types[newType];
+  }
+  this.removeContexts();
+
+  // Set the new type
+  this.type = newType;
+
+  // If we removed the type from the object, also remove its snapshot.
+  if (!newType) {
+    this.provides = {};
+    this.snapshot = undefined;
+  } else if (newType.api) {
+    // Register the new type's API.
+    this.provides = newType.api.provides;
+  }
+};
+
+// Injest snapshot data. This data must include a version, snapshot and type.
+// This is used both to ingest data that was exported with a webpage and data
+// that was received from the server during a fetch.
+//
+// @param data.v    version
+// @param data.data
+// @param data.type
+// @fires ready
+Doc.prototype.ingestData = function(data) {
+  if (this.state) {
+    if (typeof console !== "undefined") console.warn('Ignoring attempt to ingest data in state', this.state);
+    return;
+  }
+  if (typeof data.v !== 'number') throw new Error('Missing version in ingested data');
+
+
+  this.version = data.v;
+  // data.data is what the server will actually send. data.snapshot is the old
+  // field name - supported now for backwards compatibility.
+  this.snapshot = data.data;
+  this._setType(data.type);
+
+  this.state = 'ready';
+  this.emit('ready');
+};
+
+// Get and return the current document snapshot.
+Doc.prototype.getSnapshot = function() {
+  return this.snapshot;
+};
+
+// The callback will be called at a time when the document has a snapshot and
+// you can start applying operations. This may be immediately.
+Doc.prototype.whenReady = function(fn) {
+  if (this.state === 'ready') {
+    fn();
+  } else {
+    this.once('ready', fn);
+  }
+};
+
+Doc.prototype.hasPending = function() {
+  return this.action != null || this.inflightData != null || !!this.pendingData.length;
+};
+
+
+// **** Helpers for network messages
+
+// Send a message to the connection from this document.
+Doc.prototype._send = function(message) {
+  message.c = this.collection;
+  message.d = this.name;
+  this.connection.send(message);
+};
+
+// This function exists so connection can call it directly for bulk subscribes.
+// It could just make a temporary object literal, thats pretty slow.
+Doc.prototype._handleSubscribe = function(err, data) {
+  if (err && err !== 'Already subscribed') {
+    if (console) console.error("Could not subscribe: " + err);
+    this.emit('error', err);
+    // There's probably a reason we couldn't subscribe. Don't retry.
+    this._setWantSubscribe(false, null, err)
+  } else {
+    if (data) this.ingestData(data);
+    this.subscribed = true;
+    this.emit('subscribe');
+    this._finishSub(true);
+  }
+
+  this._clearAction('subscribe');
+};
+
+// This is called by the connection when it receives a message for the document.
+Doc.prototype._onMessage = function(msg) {
+  if (!(msg.c === this.collection && msg.d === this.name)) {
+    // This should never happen - its a sanity check for bugs in the connection code.
+    throw new Error("Got message for wrong document.");
+  }
+
+  // msg.a = the action.
+  switch (msg.a) {
+    case 'fetch':
+      // We're done fetching. This message has no other information.
+      if (msg.data) this.ingestData(msg.data);
+      this._finishSub('fetch', msg.error);
+      if (this.wantSubscribe === 'fetch') this.wantSubscribe = false;
+      this._clearAction('fetch');
+      break;
+
+    case 'sub':
+      // Subscribe reply.
+      this._handleSubscribe(msg.error, msg.data);
+      break;
+
+    case 'unsub':
+      // Unsubscribe reply
+      this.subscribed = false;
+      this.emit('unsubscribe');
+
+      this._finishSub(false, msg.error);
+      this._clearAction('unsubscribe');
+      break;
+
+    case 'ack':
+      // Acknowledge a locally submitted operation.
+      //
+      // Usually we do nothing here - all the interesting logic happens when we
+      // get sent our op back in the op stream (which happens even if we aren't
+      // subscribed). However, if the op doesn't get accepted, we still need to
+      // clear some state.
+      //
+      // If the message error is 'Op already submitted', that means we've
+      // resent an op that the server already got. It will also be confirmed
+      // normally.
+      if (msg.error && msg.error !== 'Op already submitted') {
+        // The server has rejected an op from the client for some reason.
+        // We'll send the error message to the user and try to roll back the change.
+        if (this.inflightData) {
+          console.warn('Operation was rejected (' + msg.error + '). Trying to rollback change locally.');
+          this._tryRollback(this.inflightData);
+          this._clearInflightOp(msg.error);
+        } else {
+          // I managed to get into this state once. I'm not sure how it happened.
+          // The op was maybe double-acknowledged?
+          if (console) console.warn('Second acknowledgement message (error) received', msg, this);
+        }
+      }
+      break;
+
+    case 'op':
+      if (this.inflightData &&
+          msg.src === this.inflightData.src &&
+          msg.seq === this.inflightData.seq) {
+        // This one is mine. Accept it as acknowledged.
+        this._opAcknowledged(msg);
+        break;
+      }
+
+      if (msg.v < this.version) {
+        // This will happen naturally in the following (or similar) cases:
+        //
+        // Client is not subscribed to document.
+        // -> client submits an operation (v=10)
+        // -> client subscribes to a query which matches this document. Says we
+        //    have v=10 of the doc.
+        //
+        // <- server acknowledges the operation (v=11). Server acknowledges the
+        //    operation because the doc isn't subscribed
+        // <- server processes the query, which says the client only has v=10.
+        //    Server subscribes at v=10 not v=11, so we get another copy of the
+        //    v=10 operation.
+        //
+        // In this case, we can safely ignore the old (duplicate) operation.
+        break;
+      }
+      
+      if (msg.v > this.version) {
+        // If we get in here, it means we missed an operation from the server,
+        // or operations are being sent to the client out of order. This
+        // *should* never happen, but it currently does because of a bug in the
+        // way the query code & doc class interact. If you have a document at
+        // an old version (and not subscribed), when the document matches a
+        // query the query will send the client a snapshot of the document
+        // instead of the operations in between.
+        console.warn("Client got future operation from the server",
+            this.collection, this.name, msg);
+        break;
+      }
+
+      if (this.inflightData) xf(this.inflightData, msg);
+
+      for (var i = 0; i < this.pendingData.length; i++) {
+        xf(this.pendingData[i], msg);
+      }
+
+      this.version++;
+      this._otApply(msg, false);
+      break;
+
+    case 'meta':
+      if (console) console.warn('Unhandled meta op:', msg);
+      break;
+
+    default:
+      if (console) console.warn('Unhandled document message:', msg);
+      break;
+  }
+};
+
+// Called whenever (you guessed it!) the connection state changes. This will
+// happen when we get disconnected & reconnect.
+Doc.prototype._onConnectionStateChanged = function(state, reason) {
+  if (state === 'connecting') {
+    if (this.inflightData) {
+      this._sendOpData();
+    } else {
+      this.flush();
+    }
+  } else if (state === 'connected') {
+    // We go into the connected state once we have a sessionID. We can't send
+    // new ops until then, so we need to flush again.
+    this.flush();
+  } else if (state === 'disconnected') {
+    this.action = null;
+    this.subscribed = false;
+    if (this.subscribed) this.emit('unsubscribed');
+  }
+};
+
+
+
+
+// ****** Dealing with actions
+
+Doc.prototype._clearAction = function(expectedAction) {
+  if (this.action !== expectedAction) {
+    console.warn('Unexpected action ' + this.action + ' expected: ' + expectedAction);
+  }
+  this.action = null;
+  this.flush();
+
+  if (!this.hasPending()) {
+    this.emit('nothing pending');
+  }
+};
+
+
+
+// Send the next pending op to the server, if we can.
+//
+// Only one operation can be in-flight at a time. If an operation is already on
+// its way, or we're not currently connected, this method does nothing.
+Doc.prototype.flush = function() {
+  if (!this.connection.canSend || this.action) return;
+
+  var opData;
+  // Pump and dump any no-ops from the front of the pending op list.
+  while (this.pendingData.length && isNoOp(opData = this.pendingData[0])) {
+    var callbacks = opData.callbacks;
+    for (var i = 0; i < callbacks.length; i++) {
+      callbacks[i](opData.error);
+    }
+    this.pendingData.shift();
+  }
+
+  // We consider sending operations before considering subscribing because its
+  // convenient in access control code to not need to worry about subscribing
+  // to documents that don't exist.
+  if (!this.paused && this.pendingData.length && this.connection.state === 'connected') {
+    // Try and send any pending ops. We can't send ops while in 
+    this.inflightData = this.pendingData.shift();
+
+    // This also sets action to 'submit'.
+    this._sendOpData();
+  } else if (this.subscribed && !this.wantSubscribe) {
+    this.action = 'unsubscribe';
+    this._send({a:'unsub'});
+  } else if (!this.subscribed && this.wantSubscribe === 'fetch') {
+    this.action = 'fetch';
+    this._send(this.state === 'ready' ? {a:'fetch', v:this.version} : {a:'fetch'});
+  } else if (!this.subscribed && this.wantSubscribe) {
+    this.action = 'subscribe';
+    // Special send method needed for bulk subscribes on reconnect.
+    this.connection.sendSubscribe(this.collection, this.name, this.state === 'ready' ? this.version : null);
+  }
+};
+
+
+// ****** Subscribing, unsubscribing and fetching
+
+// These functions iare copied into the query class as well, so be careful making
+// changes here.
+
+// Value is true, false or 'fetch'.
+Doc.prototype._setWantSubscribe = function(value, callback, err) {
+  if (this.subscribed === this.wantSubscribe &&
+      (this.subscribed === value || value === 'fetch' && this.subscribed)) {
+    if (callback) callback(err);
+    return;
+  }
+  
+  if (!this.wantSubscribe !== !value) {
+    // Call all the current subscribe/unsubscribe callbacks.
+    for (var i = 0; i < this._subscribeCallbacks.length; i++) {
+      // Should I return an error here? What happened is the user unsubcribed
+      // with a callback then resubscribed straight after. Does that mean the
+      // unsubscribe failed?
+      this._subscribeCallbacks[i](err);
+    }
+    this._subscribeCallbacks.length = 0;
+  }
+
+  // If we want to subscribe, don't weaken it to a fetch.
+  if (value !== 'fetch' || this.wantSubscribe !== true)
+    this.wantSubscribe = value;
+
+  if (callback) this._subscribeCallbacks.push(callback);
+  this.flush();
+};
+
+// Open the document. There is no callback and no error handling if you're
+// already connected.
+//
+// Only call this once per document.
+Doc.prototype.subscribe = function(callback) {
+  this._setWantSubscribe(true, callback);
+};
+
+// Unsubscribe. The data will stay around in local memory, but we'll stop
+// receiving updates.
+Doc.prototype.unsubscribe = function(callback) {
+  this._setWantSubscribe(false, callback);
+};
+
+// Call to request fresh data from the server.
+Doc.prototype.fetch = function(callback) {
+  this._setWantSubscribe('fetch', callback);
+};
+
+// Called when our subscribe, fetch or unsubscribe messages are acknowledged.
+Doc.prototype._finishSub = function(value, error) {
+  if (value === this.wantSubscribe) {
+    for (var i = 0; i < this._subscribeCallbacks.length; i++) {
+      this._subscribeCallbacks[i](error);
+    }
+    this._subscribeCallbacks.length = 0;
+  }
+};
+
+
+// Operations
+
+
+// ************ Dealing with operations.
+
+// Helper function to set opData to contain a no-op.
+var setNoOp = function(opData) {
+  delete opData.op;
+  delete opData.create;
+  delete opData.del;
+};
+
+var isNoOp = function(opData) {
+  return !opData.op && !opData.create && !opData.del;
+}
+
+// Try to compose data2 into data1. Returns truthy if it succeeds, otherwise falsy.
+var tryCompose = function(type, data1, data2) {
+  if (data1.create && data2.del) {
+    setNoOp(data1);
+  } else if (data1.create && data2.op) {
+    // Compose the data into the create data.
+    var data = (data1.create.data === undefined) ? type.create() : data1.create.data;
+    data1.create.data = type.apply(data, data2.op);
+  } else if (isNoOp(data1)) {
+    data1.create = data2.create;
+    data1.del = data2.del;
+    data1.op = data2.op;
+  } else if (data1.op && data2.op && type.compose) {
+    data1.op = type.compose(data1.op, data2.op);
+  } else {
+    return false;
+  }
+  return true;
+};
+
+// Transform server op data by a client op, and vice versa. Ops are edited in place.
+var xf = function(client, server) {
+  // In this case, we're in for some fun. There are some local operations
+  // which are totally invalid - either the client continued editing a
+  // document that someone else deleted or a document was created both on the
+  // client and on the server. In either case, the local document is way
+  // invalid and the client's ops are useless.
+  //
+  // The client becomes a no-op, and we keep the server op entirely.
+  if (server.create || server.del) return setNoOp(client);
+  if (client.create) throw new Error('Invalid state. This is a bug.');
+
+  // The client has deleted the document while the server edited it. Kill the
+  // server's op.
+  if (client.del) return setNoOp(server);
+
+  // We only get here if either the server or client ops are no-op. Carry on,
+  // nothing to see here.
+  if (!server.op || !client.op) return;
+
+  // They both edited the document. This is the normal case for this function -
+  // as in, most of the time we'll end up down here.
+  //
+  // You should be wondering why I'm using client.type instead of this.type.
+  // The reason is, if we get ops at an old version of the document, this.type
+  // might be undefined or a totally different type. By pinning the type to the
+  // op data, we make sure the right type has its transform function called.
+  if (client.type.transformX) {
+    var result = client.type.transformX(client.op, server.op);
+    client.op = result[0];
+    server.op = result[1];
+  } else {
+    //console.log('xf', JSON.stringify(client.op), JSON.stringify(server.op));
+    var _c = client.type.transform(client.op, server.op, 'left');
+    var _s = client.type.transform(server.op, client.op, 'right');
+    client.op = _c; server.op = _s;
+    //console.log('->', JSON.stringify(client.op), JSON.stringify(server.op));
+  }
+};
+
+/**
+ * Applies the operation to the snapshot
+ *
+ * If the operation is create or delete it emits `create` or `del`.  Then the
+ * operation is applied to the snapshot and `op` and `after op` are emitted.  If
+ * the type supports incremental updates and `this.incremental` is true we fire
+ * `op` after every small operation.
+ *
+ * This is the only function to fire the above mentioned events.
+ *
+ * @private
+ */
+Doc.prototype._otApply = function(opData, context) {
+  this.locked = true;
+
+  if (opData.create) {
+    // If the type is currently set, it means we tried creating the document
+    // and someone else won. client create x server create = server create.
+    var create = opData.create;
+    this._setType(create.type);
+    this.snapshot = this.type.create(create.data);
+
+    // This is a bit heavyweight, but I want the created event to fire outside of the lock.
+    this.once('unlock', function() {
+      this.emit('create', context);
+    });
+  } else if (opData.del) {
+    // The type should always exist in this case. del x _ = del
+    var oldSnapshot = this.snapshot;
+    this._setType(null);
+    this.once('unlock', function() {
+      this.emit('del', context, oldSnapshot);
+    });
+  } else if (opData.op) {
+    if (!this.type) throw new Error('Document does not exist');
+
+    var type = this.type;
+
+    var op = opData.op;
+    
+    // The context needs to be told we're about to edit, just in case it needs
+    // to store any extra data. (text-tp2 has this constraint.)
+    for (var i = 0; i < this.editingContexts.length; i++) {
+      var c = this.editingContexts[i];
+      if (c != context && c._beforeOp) c._beforeOp(opData.op);
+    }
+
+    this.emit('before op', op, context);
+
+    // This exists so clients can pull any necessary data out of the snapshot
+    // before it gets changed.  Previously we kept the old snapshot object and
+    // passed it to the op event handler. However, apply no longer guarantees
+    // the old object is still valid.
+    //
+    // Because this could be totally unnecessary work, its behind a flag. set
+    // doc.incremental to enable.
+    if (this.incremental && type.incrementalApply) {
+      var _this = this;
+      type.incrementalApply(this.snapshot, op, function(o, snapshot) {
+        _this.snapshot = snapshot;
+        _this.emit('op', o, context);
+      });
+    } else {
+      // This is the most common case, simply applying the operation to the local snapshot.
+      this.snapshot = type.apply(this.snapshot, op);
+      this.emit('op', op, context);
+    }
+  }
+  // Its possible for none of the above cases to match, in which case the op is
+  // a no-op. This will happen when a document has been deleted locally and
+  // remote ops edit the document.
+
+
+  this.locked = false;
+  this.emit('unlock');
+
+  if (opData.op) {
+    var contexts = this.editingContexts;
+    // Notify all the contexts about the op (well, all the contexts except
+    // the one which initiated the submit in the first place).
+    // NOTE Handle this with events?
+    for (var i = 0; i < contexts.length; i++) {
+      var c = contexts[i];
+      if (c != context && c._onOp) c._onOp(opData.op);
+    }
+    for (var i = 0; i < contexts.length; i++) {
+      if (contexts.remove) contexts.splice(i--, 1);
+    }
+
+    return this.emit('after op', opData.op, context);
+  }
+};
+
+
+
+// ***** Sending operations
+
+
+// Actually send op data to the server.
+Doc.prototype._sendOpData = function() {
+  var d = this.inflightData;
+
+  if (this.action) throw new Error('invalid state ' + this.action + ' for sendOpData');
+  this.action = 'submit';
+
+  var msg = {a:'op', v:this.version};
+  if (d.src) {
+    msg.src = d.src;
+    msg.seq = d.seq;
+  }
+
+  if (d.op) msg.op = d.op;
+  if (d.create) msg.create = d.create;
+  if (d.del) msg.del = d.del;
+
+  msg.c = this.collection;
+  msg.d = this.name;
+
+  this.connection.sendOp(msg);
+   
+  // The first time we send an op, its id and sequence number is implicit.
+  if (!d.src) {
+    d.src = this.connection.id;
+    d.seq = this.connection.seq++;
+  }
+};
+
+
+// Queues the operation for submission to the server and applies it locally.
+//
+// Internal method called to do the actual work for submitOp(), create() and del().
+// @private
+//
+// @param opData
+// @param [opData.op]
+// @param [opData.del]
+// @param [opData.create]
+// @param [context] the editing context
+// @param [callback] called when operation is submitted
+Doc.prototype._submitOpData = function(opData, context, callback) {
+  //console.log('submit', JSON.stringify(opData), 'v=', this.version);
+
+  if (typeof context === 'function') {
+    callback = context;
+    context = true; // The default context is true.
+  }
+  if (context == null) context = true;
+
+  var error = function(err) {
+    if (callback) callback(err);
+    else if (console) console.warn('Failed attempt to submitOp:', err);
+  };
+
+  if (this.locked) {
+    return error("Cannot call submitOp from inside an 'op' event handler");
+  }
+
+  // The opData contains either op, create, delete, or none of the above (a no-op).
+  if (opData.op) {
+    if (!this.type) return error('Document has not been created');
+    // Try to normalize the op. This removes trailing skip:0's and things like that.
+    if (this.type.normalize) opData.op = this.type.normalize(opData.op);
+  }
+
+  if (!this.state) {
+    this.state = 'floating';
+  }
+
+  opData.type = this.type;
+  opData.callbacks = [];
+
+  // If the type supports composes, try to compose the operation onto the end
+  // of the last pending operation.
+  var operation;
+  var previous = this.pendingData[this.pendingData.length - 1];
+
+  if (previous && tryCompose(this.type, previous, opData)) {
+    operation = previous;
+  } else {
+    operation = opData;
+    this.pendingData.push(opData);
+  }
+  if (callback) operation.callbacks.push(callback);
+
+  this._otApply(opData, context);
+
+  // The call to flush is in a timeout so if submitOp() is called multiple
+  // times in a closure all the ops are combined before being sent to the
+  // server. It doesn't matter if flush is called a bunch of times.
+  var _this = this;
+  setTimeout((function() { _this.flush(); }), 0);
+};
+
+
+// *** Client OT entrypoints.
+
+// Submit an operation to the document.
+//
+// @param operation handled by the OT type
+// @param [context] editing context
+// @param [callback] called after operation submitted
+//
+// @fires before op, op, after op
+Doc.prototype.submitOp = function(op, context, callback) {
+  this._submitOpData({op: op}, context, callback);
+};
+
+// Create the document, which in ShareJS semantics means to set its type. Every
+// object implicitly exists in the database but has no data and no type. Create
+// sets the type of the object and can optionally set some initial data on the
+// object, depending on the type.
+//
+// @param type  OT type
+// @param data  initial
+// @param context  editing context
+// @param callback  called when operation submitted
+Doc.prototype.create = function(type, data, context, callback) {
+  if (typeof data === 'function') {
+    // Setting the context to be the callback function in this case so _submitOpData
+    // can handle the default value thing.
+    context = data;
+    data = undefined;
+  }
+
+  var op = {create: {type:type, data:data}};
+  if (this.type) {
+    if (callback) callback('Document already exists', this._opErrorContext(op));
+    return 
+  }
+
+  this._submitOpData(op, context, callback);
+};
+
+// Delete the document. This creates and submits a delete operation to the
+// server. Deleting resets the object's type to null and deletes its data. The
+// document still exists, and still has the version it used to have before you
+// deleted it (well, old version +1).
+//
+// @param context   editing context
+// @param callback  called when operation submitted
+Doc.prototype.del = function(context, callback) {
+  if (!this.type) {
+    if (callback) callback('Document does not exist');
+    return;
+  }
+
+  this._submitOpData({del: true}, context, callback);
+};
+
+
+// Stops the document from sending any operations to the server.
+Doc.prototype.pause = function() {
+  this.paused = true;
+};
+
+// Continue sending operations to the server
+Doc.prototype.resume = function() {
+  this.paused = false;
+  this.flush();
+};
+
+
+// *** Receiving operations
+
+
+// This will be called when the server rejects our operations for some reason.
+// There's not much we can do here if the OT type is noninvertable, but that
+// shouldn't happen too much in real life because readonly documents should be
+// flagged as such. (I should probably figure out a flag for that).
+//
+// This does NOT get called if our op fails to reach the server for some reason
+// - we optimistically assume it'll make it there eventually.
+Doc.prototype._tryRollback = function(opData) {
+  // This is probably horribly broken.
+  if (opData.create) {
+    this._setType(null);
+
+    // I don't think its possible to get here if we aren't in a floating state.
+    if (this.state === 'floating')
+      this.state = null;
+    else
+      console.warn('Rollback a create from state ' + this.state);
+
+  } else if (opData.op && opData.type.invert) {
+    opData.op = opData.type.invert(opData.op);
+
+    // Transform the undo operation by any pending ops.
+    for (var i = 0; i < this.pendingData.length; i++) {
+      xf(this.pendingData[i], opData);
+    }
+
+    // ... and apply it locally, reverting the changes.
+    // 
+    // This operation is applied to look like it comes from a remote context.
+    // I'm still not 100% sure about this functionality, because its really a
+    // local op. Basically, the problem is that if the client's op is rejected
+    // by the server, the editor window should update to reflect the undo.
+    this._otApply(opData, false);
+  } else if (opData.op || opData.del) {
+    // This is where an undo stack would come in handy.
+    this._setType(null);
+    this.version = null;
+    this.state = null;
+    this.subscribed = false;
+    this.emit('error', "Op apply failed and the operation could not be reverted");
+
+    // Trigger a fetch. In our invalid state, we can't really do anything.
+    this.fetch();
+    this.flush();
+  }
+};
+
+Doc.prototype._opErrorContext = function(op) {
+  return {
+    collection: this.collection,
+    name: this.name,
+    opData: op || this.inflightData
+  };
+};
+
+Doc.prototype._clearInflightOp = function(error) {
+  var callbacks = this.inflightData.callbacks;
+  var context = this._opErrorContext();
+  // There's no nice way to pass this context back to the caller - I settled on
+  // using simple strings for error messages, and now this is hurting me. I'll
+  // fix this API in sharejs 0.8.
+  for (var i = 0; i < callbacks.length; i++) {
+    callbacks[i](error || this.inflightData.error, context);
+  }
+
+  this.inflightData = null;
+  this._clearAction('submit');
+
+  if (!this.pendingData.length) {
+    // This isn't a very good name.
+    this.emit('nothing pending');
+  }
+};
+
+// This is called when the server acknowledges an operation from the client.
+Doc.prototype._opAcknowledged = function(msg) {
+  // Our inflight op has been acknowledged, so we can throw away the inflight data.
+  // (We were only holding on to it incase we needed to resend the op.)
+  if (!this.state) {
+    throw new Error('opAcknowledged called from a null state. This should never happen.');
+  } else if (this.state === 'floating') {
+    if (!this.inflightData.create) throw new Error('Cannot acknowledge an op.');
+
+    // Our create has been acknowledged. This is the same as ingesting some data.
+    this.version = msg.v;
+    this.state = 'ready';
+    var _this = this;
+    setTimeout(function() { _this.emit('ready'); }, 0);
+  } else {
+    // We already have a snapshot. The snapshot should be at the acknowledged
+    // version, because the server has sent us all the ops that have happened
+    // before acknowledging our op.
+
+    // This should never happen - something is out of order.
+    if (msg.v !== this.version)
+      throw new Error('Invalid version from server. This can happen when you submit ops in a submitOp callback.');
+  }
+  
+  // The op was committed successfully. Increment the version number
+  this.version++;
+
+  this._clearInflightOp();
+};
+
+
+// Creates an editing context
+//
+// The context is an object responding to getSnapshot(), submitOp() and
+// destroy(). It also has all the methods from the OT type mixed in.
+// If the document is destroyed, the detach() method is called on the context.
+Doc.prototype.createContext = function() {
+  var type = this.type;
+  if (!type) throw new Error('Missing type');
+
+  // I could use the prototype chain to do this instead, but Object.create
+  // isn't defined on old browsers. This will be fine.
+  var doc = this;
+  var context = {
+    getSnapshot: function() {
+      return doc.snapshot;
+    },
+    submitOp: function(op, callback) {
+      doc.submitOp(op, context, callback);
+    },
+    destroy: function() {
+      if (this.detach) {
+        this.detach();
+        // Don't double-detach.
+        delete this.detach;
+      }
+      // It will be removed from the actual editingContexts list next time
+      // we receive an op on the document (and the list is iterated through).
+      //
+      // This is potentially dodgy, allowing a memory leak if you create &
+      // destroy a whole bunch of contexts without receiving or sending any ops
+      // to the document.
+      //
+      // NOTE Why can't we destroy contexts immediately?
+      delete this._onOp;
+      this.remove = true;
+    },
+
+    // This is dangerous, but really really useful for debugging. I hope people
+    // don't depend on it.
+    _doc: this,
+  };
+
+  if (type.api) {
+    // Copy everything else from the type's API into the editing context.
+    for (var k in type.api) {
+      context[k] = type.api[k];
+    }
+  } else {
+    context.provides = {};
+  }
+
+  this.editingContexts.push(context);
+
+  return context;
+};
+
+
+/**
+ * Destroy all editing contexts
+ */
+Doc.prototype.removeContexts = function() {
+  for (var i = 0; i < this.editingContexts.length; i++) {
+    this.editingContexts[i].destroy();
+  }
+  this.editingContexts.length = 0;
+};
+
+},{"./microevent":"/www/gibber.libraries/node_modules/share/lib/client/microevent.js","ottypes":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/index.js"}],"/www/gibber.libraries/node_modules/share/lib/client/index.js":[function(require,module,exports){
+
+exports.Connection = require('./connection').Connection;
+exports.Doc = require('./doc').Doc;
+exports.registerType = require('./register').registerType;
+},{"./connection":"/www/gibber.libraries/node_modules/share/lib/client/connection.js","./doc":"/www/gibber.libraries/node_modules/share/lib/client/doc.js","./register":"/www/gibber.libraries/node_modules/share/lib/client/register.js"}],"/www/gibber.libraries/node_modules/share/lib/client/microevent.js":[function(require,module,exports){
+// This is a simple rewrite of microevent.js. I've changed the
+// function names to be consistent with node.js EventEmitter.
+//
+// microevent.js is copyright Jerome Etienne, and licensed under the MIT license:
+// https://github.com/jeromeetienne/microevent.js
+
+var MicroEvent = function() {};
+
+MicroEvent.prototype.on = function(event, fn) {
+  var events = this._events = this._events || {};
+  (events[event] = events[event] || []).push(fn);
+};
+
+MicroEvent.prototype.removeListener = function(event, fn) {
+  var events = this._events = this._events || {};
+  var listeners = events[event] = events[event] || [];
+
+  // Sadly, no IE8 support for indexOf.
+  var i = 0;
+  while (i < listeners.length) {
+    if (listeners[i] === fn) {
+      listeners[i] = undefined;
+    }
+    i++;
+  }
+
+  // Compact the list when no event handler is actually running.
+  setTimeout(function() {
+    events[event] = [];
+    var fn;
+    for (var i = 0; i < listeners.length; i++) {
+      // Only add back event handlers which exist.
+      if ((fn = listeners[i])) events[event].push(fn);
+    }
+  }, 0);
+};
+
+MicroEvent.prototype.emit = function(event) {
+  var events = this._events;
+  var args = Array.prototype.splice.call(arguments, 1);
+
+  if (!events || !events[event]) {
+    if (event == 'error') {
+      if (console) {
+        console.error.apply(console, args);
+      }
+    }
+    return;
+  }
+
+  var listeners = events[event];
+  for (var i = 0; i < listeners.length; i++) {
+    if (listeners[i]) {
+      listeners[i].apply(this, args);
+    }
+  }
+};
+
+MicroEvent.prototype.once = function(event, fn) {
+  var listener, _this = this;
+  this.on(event, listener = function() {
+    _this.removeListener(event, listener);
+    fn.apply(_this, arguments);
+  });
+};
+
+MicroEvent.mixin = function(obj) {
+  var proto = obj.prototype || obj;
+  proto.on = MicroEvent.prototype.on;
+  proto.removeListener = MicroEvent.prototype.removeListener;
+  proto.emit = MicroEvent.prototype.emit;
+  proto.once = MicroEvent.prototype.once;
+  return obj;
+};
+
+if (typeof module !== "undefined") module.exports = MicroEvent;
+
+
+},{}],"/www/gibber.libraries/node_modules/share/lib/client/query.js":[function(require,module,exports){
+var Doc;
+if (typeof require !== 'undefined') {
+  Doc = require('./doc').Doc;
+}
+
+// Queries are live requests to the database for particular sets of fields.
+//
+// The server actively tells the client when there's new data that matches
+// a set of conditions.
+var Query = exports.Query = function(type, connection, id, collection, query, options, callback) {
+  // 'fetch' or 'sub'
+  this.type = type;
+
+  this.connection = connection;
+  this.id = id;
+  this.collection = collection;
+
+  // The query itself. For mongo, this should look something like {"data.x":5}
+  this.query = query;
+
+  // Resultant document action for the server. Fetch mode will automatically
+  // fetch all results. Subscribe mode will automatically subscribe all
+  // results. Results are never unsubscribed.
+  this.docMode = options.docMode; // undefined, 'fetch' or 'sub'.
+  if (this.docMode === 'subscribe') this.docMode = 'sub';
+
+  // Do we repoll the entire query whenever anything changes? (As opposed to
+  // just polling the changed item). This needs to be enabled to be able to use
+  // ordered queries (sortby:) and paginated queries. Set to undefined, it will
+  // be enabled / disabled automatically based on the query's properties.
+  this.poll = options.poll;
+
+  // The backend we actually hit. If this isn't defined, it hits the snapshot
+  // database. Otherwise this can be used to hit another configured query
+  // index.
+  this.backend = options.backend || options.source;
+
+  // A list of resulting documents. These are actual documents, complete with
+  // data and all the rest. If fetch is false, these documents will not
+  // have any data. You should manually call fetch() or subscribe() on them.
+  //
+  // Calling subscribe() might be a good idea anyway, as you won't be
+  // subscribed to the documents by default.
+  this.knownDocs = options.knownDocs || [];
+  this.results = [];
+
+  // Do we have some initial data?
+  this.ready = false;
+
+  this.callback = callback;
+};
+Query.prototype.action = 'qsub';
+
+// Helper for subscribe & fetch, since they share the same message format.
+//
+// This function actually issues the query.
+Query.prototype._execute = function() {
+  if (!this.connection.canSend) return;
+
+  if (this.docMode) {
+    var collectionVersions = {};
+    // Collect the version of all the documents in the current result set so we
+    // don't need to be sent their snapshots again.
+    for (var i = 0; i < this.knownDocs.length; i++) {
+      var doc = this.knownDocs[i];
+      // If we're subscribed, the server already knows which version of the doc
+      // we have.
+      if (!doc.subscribed && doc.action !== 'subscribe') {
+        var c = collectionVersions[doc.collection] = collectionVersions[doc.collection] || {};
+        c[doc.name] = doc.version;
+      }
+    }
+  }
+
+  var msg = {
+    a: 'q' + this.type,
+    id: this.id,
+    c: this.collection,
+    o: {},
+    q: this.query,
+  };
+
+  if (this.docMode) {
+    msg.o.m = this.docMode === 'sub' ? 'fetch' : this.docMode;
+    // This should be omitted if empty, but whatever.
+    msg.o.vs = collectionVersions;
+  }
+  if (this.backend != null) msg.o.b = this.backend;
+  if (this.poll !== undefined) msg.o.p = this.poll;
+
+  this.connection.send(msg);
+};
+
+// Make a list of documents from the list of server-returned data objects
+Query.prototype._dataToDocs = function(data) {
+  var results = [];
+  var lastType;
+  this.connection.bsStart();
+  for (var i = 0; i < data.length; i++) {
+    var docData = data[i];
+
+    // Types are only put in for the first result in the set and every time the type changes in the list.
+    if (docData.type) {
+      lastType = docData.type;
+    } else {
+      docData.type = lastType;
+    }
+
+    var doc = this.connection.get(docData.c || this.collection, docData.d, docData);
+    // Force the document to know its subscribed if we're in docmode:subscribe.
+    if (this.docMode === 'sub') {
+      doc.subscribe();
+    }
+    results.push(doc);
+  }
+  this.connection.bsEnd();
+  return results;
+};
+
+// Destroy the query object. Any subsequent messages for the query will be
+// ignored by the connection. You should unsubscribe from the query before
+// destroying it.
+Query.prototype.destroy = function() {
+  if (this.connection.canSend && this.type === 'sub') {
+    this.connection.send({a:'qunsub', id:this.id});
+  }
+
+  this.connection._destroyQuery(this);
+};
+
+Query.prototype._onConnectionStateChanged = function(state, reason) {
+  if (this.connection.state === 'connecting') {
+    this._execute();
+  }
+};
+
+// Internal method called from connection to pass server messages to the query.
+Query.prototype._onMessage = function(msg) {
+  if ((msg.a === 'qfetch') !== (this.type === 'fetch')) {
+    if (console) console.warn('Invalid message sent to query', msg, this);
+    return;
+  }
+
+  if (msg.error) this.emit('error', msg.error);
+
+  switch (msg.a) {
+    case 'qfetch':
+      var results = msg.data ? this._dataToDocs(msg.data) : undefined;
+      if (this.callback) this.callback(msg.error, results, msg.extra);
+      // Once a fetch query gets its data, it is destroyed.
+      this.connection._destroyQuery(this);
+      break;
+
+    case 'q':
+      // Query diff data (inserts and removes)
+      if (msg.diff) {
+        // We need to go through the list twice. First, we'll ingest all the
+        // new documents and set them as subscribed.  After that we'll emit
+        // events and actually update our list. This avoids race conditions
+        // around setting documents to be subscribed & unsubscribing documents
+        // in event callbacks.
+        for (var i = 0; i < msg.diff.length; i++) {
+          var d = msg.diff[i];
+          if (d.type === 'insert') d.values = this._dataToDocs(d.values);
+        }
+
+        for (var i = 0; i < msg.diff.length; i++) {
+          var d = msg.diff[i];
+          switch (d.type) {
+            case 'insert':
+              var newDocs = d.values;
+              Array.prototype.splice.apply(this.results, [d.index, 0].concat(newDocs));
+              this.emit('insert', newDocs, d.index);
+              break;
+            case 'remove':
+              var howMany = d.howMany || 1;
+              var removed = this.results.splice(d.index, howMany);
+              this.emit('remove', removed, d.index);
+              break;
+            case 'move':
+              var howMany = d.howMany || 1;
+              var docs = this.results.splice(d.from, howMany);
+              Array.prototype.splice.apply(this.results, [d.to, 0].concat(docs));
+              this.emit('move', docs, d.from, d.to);
+              break;
+          }
+        }
+      }
+
+      if (msg.extra) {
+        this.emit('extra', msg.extra);
+      }
+      break;
+    case 'qsub':
+      // This message replaces the entire result set with the set passed.
+      if (!msg.error) {
+        var previous = this.results;
+
+        // Then add everything in the new result set.
+        this.results = this.knownDocs = this._dataToDocs(msg.data);
+        this.extra = msg.extra;
+
+        this.ready = true;
+        this.emit('change', this.results, previous);
+      }
+      if (this.callback) {
+        this.callback(msg.error, this.results, this.extra);
+        delete this.callback;
+      }
+      break;
+  }
+};
+
+// Change the thing we're searching for. This isn't fully supported on the
+// backend (it destroys the old query and makes a new one) - but its
+// programatically useful and I might add backend support at some point.
+Query.prototype.setQuery = function(q) {
+  if (this.type !== 'sub') throw new Error('cannot change a fetch query');
+
+  this.query = q;
+  if (this.connection.canSend) {
+    // There's no 'change' message to send to the server. Just resubscribe.
+    this.connection.send({a:'qunsub', id:this.id});
+    this._execute();
+  }
+};
+
+var MicroEvent;
+if (typeof require !== 'undefined') {
+  MicroEvent = require('./microevent');
+}
+
+MicroEvent.mixin(Query);
+
+
+},{"./doc":"/www/gibber.libraries/node_modules/share/lib/client/doc.js","./microevent":"/www/gibber.libraries/node_modules/share/lib/client/microevent.js"}],"/www/gibber.libraries/node_modules/share/lib/client/register.js":[function(require,module,exports){
+var types;
+if (typeof require !== "undefined") {
+  types = require('ottypes');
+} else {
+  types = window.ottypes;
+}
+
+exports.registerType = function(type) {
+  if (type.name) types[type.name] = type;
+  if (type.uri) types[type.uri] = type;
+};
+},{"ottypes":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/index.js"}],"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/helpers.js":[function(require,module,exports){
+// These methods let you build a transform function from a transformComponent
+// function for OT types like JSON0 in which operations are lists of components
+// and transforming them requires N^2 work. I find it kind of nasty that I need
+// this, but I'm not really sure what a better solution is. Maybe I should do
+// this automatically to types that don't have a compose function defined.
+
+// Add transform and transformX functions for an OT type which has
+// transformComponent defined.  transformComponent(destination array,
+// component, other component, side)
+exports._bootstrapTransform = function(type, transformComponent, checkValidOp, append) {
+  var transformComponentX = function(left, right, destLeft, destRight) {
+    transformComponent(destLeft, left, right, 'left');
+    transformComponent(destRight, right, left, 'right');
+  };
+
+  var transformX = type.transformX = function(leftOp, rightOp) {
+    checkValidOp(leftOp);
+    checkValidOp(rightOp);
+    var newRightOp = [];
+
+    for (var i = 0; i < rightOp.length; i++) {
+      var rightComponent = rightOp[i];
+
+      // Generate newLeftOp by composing leftOp by rightComponent
+      var newLeftOp = [];
+      var k = 0;
+      while (k < leftOp.length) {
+        var nextC = [];
+        transformComponentX(leftOp[k], rightComponent, newLeftOp, nextC);
+        k++;
+
+        if (nextC.length === 1) {
+          rightComponent = nextC[0];
+        } else if (nextC.length === 0) {
+          for (var j = k; j < leftOp.length; j++) {
+            append(newLeftOp, leftOp[j]);
+          }
+          rightComponent = null;
+          break;
+        } else {
+          // Recurse.
+          var pair = transformX(leftOp.slice(k), nextC);
+          for (var l = 0; l < pair[0].length; l++) {
+            append(newLeftOp, pair[0][l]);
+          }
+          for (var r = 0; r < pair[1].length; r++) {
+            append(newRightOp, pair[1][r]);
+          }
+          rightComponent = null;
+          break;
+        }
+      }
+
+      if (rightComponent != null) {
+        append(newRightOp, rightComponent);
+      }
+      leftOp = newLeftOp;
+    }
+    return [leftOp, newRightOp];
+  };
+
+  // Transforms op with specified type ('left' or 'right') by otherOp.
+  type.transform = type['transform'] = function(op, otherOp, type) {
+    if (!(type === 'left' || type === 'right'))
+      throw new Error("type must be 'left' or 'right'");
+
+    if (otherOp.length === 0) return op;
+
+    if (op.length === 1 && otherOp.length === 1)
+      return transformComponent([], op[0], otherOp[0], type);
+
+    if (type === 'left')
+      return transformX(op, otherOp)[0];
+    else
+      return transformX(otherOp, op)[1];
+  };
+};
+
+},{}],"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/index.js":[function(require,module,exports){
+
+var register = function(type) {
+  exports[type.name] = type;
+  if (type.uri) {
+    return exports[type.uri] = type;
+  }
+};
+
+// Import all the built-in types. Requiring directly rather than in register()
+// so browserify works.
+register(require('./simple'));
+
+register(require('./text'));
+register(require('./text-tp2'));
+
+// This is deprecated, but exported for json0.
+register(require('./text0'));
+register(require('./json0'));
+
+
+},{"./json0":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/json0.js","./simple":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/simple.js","./text":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/text.js","./text-tp2":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/text-tp2.js","./text0":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/text0.js"}],"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/json0.js":[function(require,module,exports){
+/*
+ This is the implementation of the JSON OT type.
+
+ Spec is here: https://github.com/josephg/ShareJS/wiki/JSON-Operations
+
+ Note: This is being made obsolete. It will soon be replaced by the JSON2 type.
+*/
+
+/**
+ * UTILITY FUNCTIONS
+ */
+
+/**
+ * Checks if the passed object is an Array instance. Can't use Array.isArray
+ * yet because its not supported on IE8.
+ *
+ * @param obj
+ * @returns {boolean}
+ */
+var isArray = function(obj) {
+  return Object.prototype.toString.call(obj) == '[object Array]';
+};
+
+/**
+ * Clones the passed object using JSON serialization (which is slow).
+ *
+ * hax, copied from test/types/json. Apparently this is still the fastest way
+ * to deep clone an object, assuming we have browser support for JSON.  @see
+ * http://jsperf.com/cloning-an-object/12
+ */
+var clone = function(o) {
+  return JSON.parse(JSON.stringify(o));
+};
+
+/**
+ * JSON OT Type
+ * @type {*}
+ */
+var json = {
+  name: 'json0',
+  uri: 'http://sharejs.org/types/JSONv0'
+};
+
+// You can register another OT type as a subtype in a JSON document using
+// the following function. This allows another type to handle certain
+// operations instead of the builtin JSON type.
+var subtypes = {};
+json.registerSubtype = function(subtype) {
+  subtypes[subtype.name] = subtype;
+};
+
+json.create = function(data) {
+  // Null instead of undefined if you don't pass an argument.
+  return data === undefined ? null : clone(data);
+};
+
+json.invertComponent = function(c) {
+  var c_ = {p: c.p};
+
+  // handle subtype ops
+  if (c.t && subtypes[c.t]) {
+    c_.t = c.t;
+    c_.o = subtypes[c.t].invert(c.o);
+  }
+
+  if (c.si !== void 0) c_.sd = c.si;
+  if (c.sd !== void 0) c_.si = c.sd;
+  if (c.oi !== void 0) c_.od = c.oi;
+  if (c.od !== void 0) c_.oi = c.od;
+  if (c.li !== void 0) c_.ld = c.li;
+  if (c.ld !== void 0) c_.li = c.ld;
+  if (c.na !== void 0) c_.na = -c.na;
+
+  if (c.lm !== void 0) {
+    c_.lm = c.p[c.p.length-1];
+    c_.p = c.p.slice(0,c.p.length-1).concat([c.lm]);
+  }
+
+  return c_;
+};
+
+json.invert = function(op) {
+  var op_ = op.slice().reverse();
+  var iop = [];
+  for (var i = 0; i < op_.length; i++) {
+    iop.push(json.invertComponent(op_[i]));
+  }
+  return iop;
+};
+
+json.checkValidOp = function(op) {
+  for (var i = 0; i < op.length; i++) {
+    if (!isArray(op[i].p)) throw new Error('Missing path');
+  }
+};
+
+json.checkList = function(elem) {
+  if (!isArray(elem))
+    throw new Error('Referenced element not a list');
+};
+
+json.checkObj = function(elem) {
+  if (elem.constructor !== Object) {
+    throw new Error("Referenced element not an object (it was " + JSON.stringify(elem) + ")");
+  }
+};
+
+// helper functions to convert old string ops to and from subtype ops
+function convertFromText(c) {
+  c.t = 'text0';
+  var o = {p: c.p.pop()};
+  if (c.si != null) o.i = c.si;
+  if (c.sd != null) o.d = c.sd;
+  c.o = [o];
+}
+
+function convertToText(c) {
+  c.p.push(c.o[0].p);
+  if (c.o[0].i != null) c.si = c.o[0].i;
+  if (c.o[0].d != null) c.sd = c.o[0].d;
+  delete c.t;
+  delete c.o;
+}
+
+json.apply = function(snapshot, op) {
+  json.checkValidOp(op);
+
+  op = clone(op);
+
+  var container = {
+    data: snapshot
+  };
+
+  for (var i = 0; i < op.length; i++) {
+    var c = op[i];
+
+    // convert old string ops to use subtype for backwards compatibility
+    if (c.si != null || c.sd != null)
+      convertFromText(c);
+
+    var parent = null;
+    var parentKey = null;
+    var elem = container;
+    var key = 'data';
+
+    for (var j = 0; j < c.p.length; j++) {
+      var p = c.p[j];
+
+      parent = elem;
+      parentKey = key;
+      elem = elem[key];
+      key = p;
+
+      if (parent == null)
+        throw new Error('Path invalid');
+    }
+
+    // handle subtype ops
+    if (c.t && c.o !== void 0 && subtypes[c.t]) {
+      elem[key] = subtypes[c.t].apply(elem[key], c.o);
+
+    // Number add
+    } else if (c.na !== void 0) {
+      if (typeof elem[key] != 'number')
+        throw new Error('Referenced element not a number');
+
+      elem[key] += c.na;
+    }
+
+    // List replace
+    else if (c.li !== void 0 && c.ld !== void 0) {
+      json.checkList(elem);
+      // Should check the list element matches c.ld
+      elem[key] = c.li;
+    }
+
+    // List insert
+    else if (c.li !== void 0) {
+      json.checkList(elem);
+      elem.splice(key,0, c.li);
+    }
+
+    // List delete
+    else if (c.ld !== void 0) {
+      json.checkList(elem);
+      // Should check the list element matches c.ld here too.
+      elem.splice(key,1);
+    }
+
+    // List move
+    else if (c.lm !== void 0) {
+      json.checkList(elem);
+      if (c.lm != key) {
+        var e = elem[key];
+        // Remove it...
+        elem.splice(key,1);
+        // And insert it back.
+        elem.splice(c.lm,0,e);
+      }
+    }
+
+    // Object insert / replace
+    else if (c.oi !== void 0) {
+      json.checkObj(elem);
+
+      // Should check that elem[key] == c.od
+      elem[key] = c.oi;
+    }
+
+    // Object delete
+    else if (c.od !== void 0) {
+      json.checkObj(elem);
+
+      // Should check that elem[key] == c.od
+      delete elem[key];
+    }
+
+    else {
+      throw new Error('invalid / missing instruction in op');
+    }
+  }
+
+  return container.data;
+};
+
+// Helper to break an operation up into a bunch of small ops.
+json.shatter = function(op) {
+  var results = [];
+  for (var i = 0; i < op.length; i++) {
+    results.push([op[i]]);
+  }
+  return results;
+};
+
+// Helper for incrementally applying an operation to a snapshot. Calls yield
+// after each op component has been applied.
+json.incrementalApply = function(snapshot, op, _yield) {
+  for (var i = 0; i < op.length; i++) {
+    var smallOp = [op[i]];
+    snapshot = json.apply(snapshot, smallOp);
+    // I'd just call this yield, but thats a reserved keyword. Bah!
+    _yield(smallOp, snapshot);
+  }
+
+  return snapshot;
+};
+
+// Checks if two paths, p1 and p2 match.
+var pathMatches = json.pathMatches = function(p1, p2, ignoreLast) {
+  if (p1.length != p2.length)
+    return false;
+
+  for (var i = 0; i < p1.length; i++) {
+    if (p1[i] !== p2[i] && (!ignoreLast || i !== p1.length - 1))
+      return false;
+  }
+
+  return true;
+};
+
+json.append = function(dest,c) {
+  c = clone(c);
+
+  if (dest.length === 0) {
+    dest.push(c);
+    return;
+  }
+
+  var last = dest[dest.length - 1];
+
+  // convert old string ops to use subtype for backwards compatibility
+  if ((c.si != null || c.sd != null) && (last.si != null || last.sd != null)) {
+    convertFromText(c);
+    convertFromText(last);
+  }
+
+  if (pathMatches(c.p, last.p)) {
+    // handle subtype ops
+    if (c.t && last.t && c.t === last.t && subtypes[c.t]) {
+      last.o = subtypes[c.t].compose(last.o, c.o);
+
+      // convert back to old string ops
+      if (c.si != null || c.sd != null) {
+        var p = c.p;
+        for (var i = 0; i < last.o.length - 1; i++) {
+          c.o = [last.o.pop()];
+          c.p = p.slice();
+          convertToText(c);
+          dest.push(c);
+        }
+
+        convertToText(last);
+      }
+    } else if (last.na != null && c.na != null) {
+      dest[dest.length - 1] = {p: last.p, na: last.na + c.na};
+    } else if (last.li !== undefined && c.li === undefined && c.ld === last.li) {
+      // insert immediately followed by delete becomes a noop.
+      if (last.ld !== undefined) {
+        // leave the delete part of the replace
+        delete last.li;
+      } else {
+        dest.pop();
+      }
+    } else if (last.od !== undefined && last.oi === undefined && c.oi !== undefined && c.od === undefined) {
+      last.oi = c.oi;
+    } else if (last.oi !== undefined && c.od !== undefined) {
+      // The last path component inserted something that the new component deletes (or replaces).
+      // Just merge them.
+      if (c.oi !== undefined) {
+        last.oi = c.oi;
+      } else if (last.od !== undefined) {
+        delete last.oi;
+      } else {
+        // An insert directly followed by a delete turns into a no-op and can be removed.
+        dest.pop();
+      }
+    } else if (c.lm !== undefined && c.p[c.p.length - 1] === c.lm) {
+      // don't do anything
+    } else {
+      dest.push(c);
+    }
+  } else {
+    // convert string ops back
+    if ((c.si != null || c.sd != null) && (last.si != null || last.sd != null)) {
+      convertToText(c);
+      convertToText(last);
+    }
+
+    dest.push(c);
+  }
+};
+
+json.compose = function(op1,op2) {
+  json.checkValidOp(op1);
+  json.checkValidOp(op2);
+
+  var newOp = clone(op1);
+
+  for (var i = 0; i < op2.length; i++) {
+    json.append(newOp,op2[i]);
+  }
+
+  return newOp;
+};
+
+json.normalize = function(op) {
+  var newOp = [];
+
+  op = isArray(op) ? op : [op];
+
+  for (var i = 0; i < op.length; i++) {
+    var c = op[i];
+    if (c.p == null) c.p = [];
+
+    json.append(newOp,c);
+  }
+
+  return newOp;
+};
+
+// Returns the common length of the paths of ops a and b
+json.commonLengthForOps = function(a, b) {
+  var alen = a.p.length;
+  var blen = b.p.length;
+  if (a.na != null || a.t)
+    alen++;
+
+  if (b.na != null || b.t)
+    blen++;
+
+  if (alen === 0) return -1;
+  if (blen === 0) return null;
+
+  alen--;
+  blen--;
+
+  for (var i = 0; i < alen; i++) {
+    var p = a.p[i];
+    if (i >= blen || p !== b.p[i])
+      return null;
+  }
+
+  return alen;
+};
+
+// Returns true if an op can affect the given path
+json.canOpAffectPath = function(op, path) {
+  return json.commonLengthForOps({p:path}, op) != null;
+};
+
+// transform c so it applies to a document with otherC applied.
+json.transformComponent = function(dest, c, otherC, type) {
+  c = clone(c);
+
+  var common = json.commonLengthForOps(otherC, c);
+  var common2 = json.commonLengthForOps(c, otherC);
+  var cplength = c.p.length;
+  var otherCplength = otherC.p.length;
+
+  if (c.na != null || c.t)
+    cplength++;
+
+  if (otherC.na != null || otherC.t)
+    otherCplength++;
+
+  // if c is deleting something, and that thing is changed by otherC, we need to
+  // update c to reflect that change for invertibility.
+  if (common2 != null && otherCplength > cplength && c.p[common2] == otherC.p[common2]) {
+    if (c.ld !== void 0) {
+      var oc = clone(otherC);
+      oc.p = oc.p.slice(cplength);
+      c.ld = json.apply(clone(c.ld),[oc]);
+    } else if (c.od !== void 0) {
+      var oc = clone(otherC);
+      oc.p = oc.p.slice(cplength);
+      c.od = json.apply(clone(c.od),[oc]);
+    }
+  }
+
+  if (common != null) {
+    var commonOperand = cplength == otherCplength;
+
+    // backward compatibility for old string ops
+    var oc = otherC;
+    if ((c.si != null || c.sd != null) && (otherC.si != null || otherC.sd != null)) {
+      convertFromText(c);
+      oc = clone(otherC);
+      convertFromText(oc);
+    }
+
+    // handle subtype ops
+    if (oc.t && subtypes[oc.t]) {
+      if (c.t && c.t === oc.t) {
+        var res = subtypes[c.t].transform(c.o, oc.o, type);
+
+        if (res.length > 0) {
+          // convert back to old string ops
+          if (c.si != null || c.sd != null) {
+            var p = c.p;
+            for (var i = 0; i < res.length; i++) {
+              c.o = [res[i]];
+              c.p = p.slice();
+              convertToText(c);
+              json.append(dest, c);
+            }
+          } else {
+            c.o = res;
+            json.append(dest, c);
+          }
+        }
+
+        return dest;
+      }
+    }
+
+    // transform based on otherC
+    else if (otherC.na !== void 0) {
+      // this case is handled below
+    } else if (otherC.li !== void 0 && otherC.ld !== void 0) {
+      if (otherC.p[common] === c.p[common]) {
+        // noop
+
+        if (!commonOperand) {
+          return dest;
+        } else if (c.ld !== void 0) {
+          // we're trying to delete the same element, -> noop
+          if (c.li !== void 0 && type === 'left') {
+            // we're both replacing one element with another. only one can survive
+            c.ld = clone(otherC.li);
+          } else {
+            return dest;
+          }
+        }
+      }
+    } else if (otherC.li !== void 0) {
+      if (c.li !== void 0 && c.ld === undefined && commonOperand && c.p[common] === otherC.p[common]) {
+        // in li vs. li, left wins.
+        if (type === 'right')
+          c.p[common]++;
+      } else if (otherC.p[common] <= c.p[common]) {
+        c.p[common]++;
+      }
+
+      if (c.lm !== void 0) {
+        if (commonOperand) {
+          // otherC edits the same list we edit
+          if (otherC.p[common] <= c.lm)
+            c.lm++;
+          // changing c.from is handled above.
+        }
+      }
+    } else if (otherC.ld !== void 0) {
+      if (c.lm !== void 0) {
+        if (commonOperand) {
+          if (otherC.p[common] === c.p[common]) {
+            // they deleted the thing we're trying to move
+            return dest;
+          }
+          // otherC edits the same list we edit
+          var p = otherC.p[common];
+          var from = c.p[common];
+          var to = c.lm;
+          if (p < to || (p === to && from < to))
+            c.lm--;
+
+        }
+      }
+
+      if (otherC.p[common] < c.p[common]) {
+        c.p[common]--;
+      } else if (otherC.p[common] === c.p[common]) {
+        if (otherCplength < cplength) {
+          // we're below the deleted element, so -> noop
+          return dest;
+        } else if (c.ld !== void 0) {
+          if (c.li !== void 0) {
+            // we're replacing, they're deleting. we become an insert.
+            delete c.ld;
+          } else {
+            // we're trying to delete the same element, -> noop
+            return dest;
+          }
+        }
+      }
+
+    } else if (otherC.lm !== void 0) {
+      if (c.lm !== void 0 && cplength === otherCplength) {
+        // lm vs lm, here we go!
+        var from = c.p[common];
+        var to = c.lm;
+        var otherFrom = otherC.p[common];
+        var otherTo = otherC.lm;
+        if (otherFrom !== otherTo) {
+          // if otherFrom == otherTo, we don't need to change our op.
+
+          // where did my thing go?
+          if (from === otherFrom) {
+            // they moved it! tie break.
+            if (type === 'left') {
+              c.p[common] = otherTo;
+              if (from === to) // ugh
+                c.lm = otherTo;
+            } else {
+              return dest;
+            }
+          } else {
+            // they moved around it
+            if (from > otherFrom) c.p[common]--;
+            if (from > otherTo) c.p[common]++;
+            else if (from === otherTo) {
+              if (otherFrom > otherTo) {
+                c.p[common]++;
+                if (from === to) // ugh, again
+                  c.lm++;
+              }
+            }
+
+            // step 2: where am i going to put it?
+            if (to > otherFrom) {
+              c.lm--;
+            } else if (to === otherFrom) {
+              if (to > from)
+                c.lm--;
+            }
+            if (to > otherTo) {
+              c.lm++;
+            } else if (to === otherTo) {
+              // if we're both moving in the same direction, tie break
+              if ((otherTo > otherFrom && to > from) ||
+                  (otherTo < otherFrom && to < from)) {
+                if (type === 'right') c.lm++;
+              } else {
+                if (to > from) c.lm++;
+                else if (to === otherFrom) c.lm--;
+              }
+            }
+          }
+        }
+      } else if (c.li !== void 0 && c.ld === undefined && commonOperand) {
+        // li
+        var from = otherC.p[common];
+        var to = otherC.lm;
+        p = c.p[common];
+        if (p > from) c.p[common]--;
+        if (p > to) c.p[common]++;
+      } else {
+        // ld, ld+li, si, sd, na, oi, od, oi+od, any li on an element beneath
+        // the lm
+        //
+        // i.e. things care about where their item is after the move.
+        var from = otherC.p[common];
+        var to = otherC.lm;
+        p = c.p[common];
+        if (p === from) {
+          c.p[common] = to;
+        } else {
+          if (p > from) c.p[common]--;
+          if (p > to) c.p[common]++;
+          else if (p === to && from > to) c.p[common]++;
+        }
+      }
+    }
+    else if (otherC.oi !== void 0 && otherC.od !== void 0) {
+      if (c.p[common] === otherC.p[common]) {
+        if (c.oi !== void 0 && commonOperand) {
+          // we inserted where someone else replaced
+          if (type === 'right') {
+            // left wins
+            return dest;
+          } else {
+            // we win, make our op replace what they inserted
+            c.od = otherC.oi;
+          }
+        } else {
+          // -> noop if the other component is deleting the same object (or any parent)
+          return dest;
+        }
+      }
+    } else if (otherC.oi !== void 0) {
+      if (c.oi !== void 0 && c.p[common] === otherC.p[common]) {
+        // left wins if we try to insert at the same place
+        if (type === 'left') {
+          json.append(dest,{p: c.p, od:otherC.oi});
+        } else {
+          return dest;
+        }
+      }
+    } else if (otherC.od !== void 0) {
+      if (c.p[common] == otherC.p[common]) {
+        if (!commonOperand)
+          return dest;
+        if (c.oi !== void 0) {
+          delete c.od;
+        } else {
+          return dest;
+        }
+      }
+    }
+  }
+
+  json.append(dest,c);
+  return dest;
+};
+
+if (exports._bootstrapTransform) {
+  exports._bootstrapTransform(json, json.transformComponent, json.checkValidOp, json.append);
+} else {
+  require('./helpers')._bootstrapTransform(json, json.transformComponent, json.checkValidOp, json.append);
+}
+
+/**
+ * Register a subtype for string operations, using the text0 type.
+ */
+if (typeof text === 'undefined')
+  var text = typeof require !== "undefined" ? require('./text0') : window.ottypes.text;
+
+json.registerSubtype(text);
+module.exports = json;
+
+},{"./helpers":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/helpers.js","./text0":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/text0.js"}],"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/simple.js":[function(require,module,exports){
+// This is a really simple OT type. Its not compiled with the web client, but it could be.
+//
+// Its mostly included for demonstration purposes and its used in the meta unit tests.
+//
+// This defines a really simple text OT type which only allows inserts. (No deletes).
+//
+// Ops look like:
+//   {position:#, text:"asdf"}
+//
+// Document snapshots look like:
+//   {str:string}
+
+module.exports = {
+  // The name of the OT type. The type itself is exposed to ottypes[type.name] and ottypes[type.uri].
+  // The name can be used instead of the actual type in all API methods in ShareJS.
+  name: 'simple',
+
+  // Canonical name.
+  uri: 'http://sharejs.org/types/simple',
+
+  // Create a new document snapshot. Initial data can be passed in.
+  create: function(initial) {
+    if (initial == null)
+      initial = '';
+
+    return {str: initial};
+  },
+
+  // Apply the given op to the document snapshot. Returns the new snapshot.
+  apply: function(snapshot, op) {
+    if (op.position < 0 || op.position > snapshot.str.length)
+      throw new Error('Invalid position');
+
+    var str = snapshot.str;
+    str = str.slice(0, op.position) + op.text + str.slice(op.position);
+    return {str: str};
+  },
+
+  // Transform op1 by op2. Returns transformed version of op1.
+  // Sym describes the symmetry of the operation. Its either 'left' or 'right'
+  // depending on whether the op being transformed comes from the client or the
+  // server.
+  transform: function(op1, op2, sym) {
+    var pos = op1.position;
+
+    if (op2.position < pos || (op2.position === pos && sym === 'left')) {
+      pos += op2.text.length;
+    }
+
+    return {position: pos, text: op1.text};
+  }
+};
+
+
+},{}],"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/text-tp2.js":[function(require,module,exports){
+// A TP2 implementation of text, following this spec:
+// http://code.google.com/p/lightwave/source/browse/trunk/experimental/ot/README
+//
+// A document is made up of a string and a set of tombstones inserted throughout
+// the string. For example, 'some ', (2 tombstones), 'string'.
+//
+// This is encoded in a document as ['some ', (2 tombstones), 'string']
+// (It should be encoded as {s:'some string', t:[5, -2, 6]} because thats
+// faster in JS, but its not.)
+//
+// Ops are lists of components which iterate over the whole document. (I might
+// change this at some point, but a version thats less strict is backwards
+// compatible.)
+//
+// Components are either:
+//   N:         Skip N characters in the original document
+//   {i:'str'}: Insert 'str' at the current position in the document
+//   {i:N}:     Insert N tombstones at the current position in the document
+//   {d:N}:     Delete (tombstone) N characters at the current position in the document
+//
+// Eg: [3, {i:'hi'}, 5, {d:8}]
+//
+// Snapshots are lists with characters and tombstones. Characters are stored in strings
+// and adjacent tombstones are flattened into numbers.
+//
+// Eg, the document: 'Hello .....world' ('.' denotes tombstoned (deleted) characters)
+// would be represented by a document snapshot of ['Hello ', 5, 'world']
+
+//var append, appendDoc, componentLength, makeTake, takeDoc, transformer;
+
+var type = module.exports = {
+  name: 'text-tp2',
+  tp2: true,
+  uri: 'http://sharejs.org/types/text-tp2v1',
+  create: function(initial) {
+    if (initial == null) {
+      initial = '';
+    } else {
+      if (typeof initial != 'string') throw new Error('Initial data must be a string');
+    }
+
+    return {
+      charLength: initial.length,
+      totalLength: initial.length,
+      data: initial.length ? [initial] : []
+    };
+  },
+
+  serialize: function(doc) {
+    if (!doc.data) {
+      throw new Error('invalid doc snapshot');
+    }
+    return doc.data;
+  },
+
+  deserialize: function(data) {
+    var doc = type.create();
+    doc.data = data;
+
+    for (var i = 0; i < data.length; i++) {
+      var component = data[i];
+
+      if (typeof component === 'string') {
+        doc.charLength += component.length;
+        doc.totalLength += component.length;
+      } else {
+        doc.totalLength += component;
+      }
+    }
+
+    return doc;
+  }
+};
+
+var isArray = Array.isArray || function(obj) {
+  return Object.prototype.toString.call(obj) == '[object Array]';
+};
+
+var checkOp = function(op) {
+  if (!isArray(op)) throw new Error('Op must be an array of components');
+
+  var last = null;
+  for (var i = 0; i < op.length; i++) {
+    var c = op[i];
+    if (typeof c == 'object') {
+      // The component is an insert or a delete.
+      if (c.i !== undefined) { // Insert.
+        if (!((typeof c.i === 'string' && c.i.length > 0) // String inserts
+              || (typeof c.i === 'number' && c.i > 0))) // Tombstone inserts
+          throw new Error('Inserts must insert a string or a +ive number');
+
+      } else if (c.d !== undefined) { // Delete
+        if (!(typeof c.d === 'number' && c.d > 0))
+          throw new Error('Deletes must be a +ive number');
+
+      } else throw new Error('Operation component must define .i or .d');
+
+    } else {
+      // The component must be a skip.
+      if (typeof c != 'number') throw new Error('Op components must be objects or numbers');
+
+      if (c <= 0) throw new Error('Skip components must be a positive number');
+      if (typeof last === 'number') throw new Error('Adjacent skip components should be combined');
+    }
+
+    last = c;
+  }
+};
+
+// Take the next part from the specified position in a document snapshot.
+// position = {index, offset}. It will be updated.
+var takeDoc = type._takeDoc = function(doc, position, maxlength, tombsIndivisible) {
+  if (position.index >= doc.data.length)
+    throw new Error('Operation goes past the end of the document');
+
+  var part = doc.data[position.index];
+
+  // This can be written as an ugly-arsed giant ternary statement, but its much
+  // more readable like this. Uglify will convert it into said ternary anyway.
+  var result;
+  if (typeof part == 'string') {
+    if (maxlength != null) {
+      result = part.slice(position.offset, position.offset + maxlength);
+    } else {
+      result = part.slice(position.offset);
+    }
+  } else {
+    if (maxlength == null || tombsIndivisible) {
+      result = part - position.offset;
+    } else {
+      result = Math.min(maxlength, part - position.offset);
+    }
+  }
+
+  var resultLen = result.length || result;
+
+  if ((part.length || part) - position.offset > resultLen) {
+    position.offset += resultLen;
+  } else {
+    position.index++;
+    position.offset = 0;
+  }
+
+  return result;
+};
+
+// Append a part to the end of a document
+var appendDoc = type._appendDoc = function(doc, p) {
+  if (p === 0 || p === '') return;
+
+  if (typeof p === 'string') {
+    doc.charLength += p.length;
+    doc.totalLength += p.length;
+  } else {
+    doc.totalLength += p;
+  }
+
+  var data = doc.data;
+  if (data.length === 0) {
+    data.push(p);
+  } else if (typeof data[data.length - 1] === typeof p) {
+    data[data.length - 1] += p;
+  } else {
+    data.push(p);
+  }
+};
+
+// Apply the op to the document. The document is not modified in the process.
+type.apply = function(doc, op) {
+  if (doc.totalLength == null || doc.charLength == null || !isArray(doc.data)) {
+    throw new Error('Snapshot is invalid');
+  }
+  checkOp(op);
+
+  var newDoc = type.create();
+  var position = {index: 0, offset: 0};
+
+  for (var i = 0; i < op.length; i++) {
+    var component = op[i];
+    var remainder, part;
+
+    if (typeof component == 'number') { // Skip
+      remainder = component;
+      while (remainder > 0) {
+        part = takeDoc(doc, position, remainder);
+        appendDoc(newDoc, part);
+        remainder -= part.length || part;
+      }
+
+    } else if (component.i !== undefined) { // Insert
+      appendDoc(newDoc, component.i);
+
+    } else if (component.d !== undefined) { // Delete
+      remainder = component.d;
+      while (remainder > 0) {
+        part = takeDoc(doc, position, remainder);
+        remainder -= part.length || part;
+      }
+      appendDoc(newDoc, component.d);
+    }
+  }
+  return newDoc;
+};
+
+// Append an op component to the end of the specified op.  Exported for the
+// randomOpGenerator.
+var append = type._append = function(op, component) {
+  var last;
+
+  if (component === 0 || component.i === '' || component.i === 0 || component.d === 0) {
+    // Drop the new component.
+  } else if (op.length === 0) {
+    op.push(component);
+  } else {
+    last = op[op.length - 1];
+    if (typeof component == 'number' && typeof last == 'number') {
+      op[op.length - 1] += component;
+    } else if (component.i != null && (last.i != null) && typeof last.i === typeof component.i) {
+      last.i += component.i;
+    } else if (component.d != null && (last.d != null)) {
+      last.d += component.d;
+    } else {
+      op.push(component);
+    }
+  }
+};
+
+var take = function(op, cursor, maxlength, insertsIndivisible) {
+  if (cursor.index === op.length) return null;
+  var e = op[cursor.index];
+  var current;
+  var result;
+
+  var offset = cursor.offset;
+
+  // if the current element is a skip, an insert of a number or a delete
+  if (typeof (current = e) == 'number' || typeof (current = e.i) == 'number' || (current = e.d) != null) {
+    var c;
+    if ((maxlength == null) || current - offset <= maxlength || (insertsIndivisible && e.i != null)) {
+      // Return the rest of the current element.
+      c = current - offset;
+      ++cursor.index;
+      cursor.offset = 0;
+    } else {
+      cursor.offset += maxlength;
+      c = maxlength;
+    }
+
+    // Package the component back up.
+    if (e.i != null) {
+      return {i: c};
+    } else if (e.d != null) {
+      return {d: c};
+    } else {
+      return c;
+    }
+  } else { // Insert of a string.
+    if ((maxlength == null) || e.i.length - offset <= maxlength || insertsIndivisible) {
+      result = {i: e.i.slice(offset)};
+      ++cursor.index;
+      cursor.offset = 0;
+    } else {
+      result = {i: e.i.slice(offset, offset + maxlength)};
+      cursor.offset += maxlength;
+    }
+    return result;
+  }
+};
+
+// Find and return the length of an op component
+var componentLength = function(component) {
+  if (typeof component === 'number') {
+    return component;
+  } else if (typeof component.i === 'string') {
+    return component.i.length;
+  } else {
+    return component.d || component.i;
+  }
+};
+
+// Normalize an op, removing all empty skips and empty inserts / deletes.
+// Concatenate adjacent inserts and deletes.
+type.normalize = function(op) {
+  var newOp = [];
+  for (var i = 0; i < op.length; i++) {
+    append(newOp, op[i]);
+  }
+  return newOp;
+};
+
+// This is a helper method to transform and prune. goForwards is true for transform, false for prune.
+var transformer = function(op, otherOp, goForwards, side) {
+  checkOp(op);
+  checkOp(otherOp);
+
+  var newOp = [];
+
+  // Cursor moving over op. Used by take
+  var cursor = {index:0, offset:0};
+
+  for (var i = 0; i < otherOp.length; i++) {
+    var component = otherOp[i];
+    var len = componentLength(component);
+    var chunk;
+
+    if (component.i != null) { // Insert text or tombs
+      if (goForwards) { // Transform - insert skips over deleted parts.
+        if (side === 'left') {
+          // The left side insert should go first.
+          var next;
+          while ((next = op[cursor.index]) && next.i != null) {
+            append(newOp, take(op, cursor));
+          }
+        }
+        // In any case, skip the inserted text.
+        append(newOp, len);
+
+      } else { // Prune. Remove skips for inserts.
+        while (len > 0) {
+          chunk = take(op, cursor, len, true);
+
+          // The chunk will be null if we run out of components in the other op.
+          if (chunk === null) throw new Error('The transformed op is invalid');
+          if (chunk.d != null)
+            throw new Error('The transformed op deletes locally inserted characters - it cannot be purged of the insert.');
+
+          if (typeof chunk == 'number')
+            len -= chunk;
+          else
+            append(newOp, chunk);
+        }
+      }
+    } else { // Skips or deletes.
+      while (len > 0) {
+        chunk = take(op, cursor, len, true);
+        if (chunk === null) throw new Error('The op traverses more elements than the document has');
+
+        append(newOp, chunk);
+        if (!chunk.i) len -= componentLength(chunk);
+      }
+    }
+  }
+
+  // Append extras from op1.
+  var component;
+  while ((component = take(op, cursor))) {
+    if (component.i === undefined) {
+      throw new Error("Remaining fragments in the op: " + component);
+    }
+    append(newOp, component);
+  }
+  return newOp;
+};
+
+// transform op1 by op2. Return transformed version of op1. op1 and op2 are
+// unchanged by transform. Side should be 'left' or 'right', depending on if
+// op1.id <> op2.id.
+//
+// 'left' == client op for ShareJS.
+type.transform = function(op, otherOp, side) {
+  if (side != 'left' && side != 'right')
+    throw new Error("side (" + side + ") should be 'left' or 'right'");
+
+  return transformer(op, otherOp, true, side);
+};
+
+type.prune = function(op, otherOp) {
+  return transformer(op, otherOp, false);
+};
+
+type.compose = function(op1, op2) {
+  //var chunk, chunkLength, component, length, result, take, _, _i, _len, _ref;
+  if (op1 == null) return op2;
+
+  checkOp(op1);
+  checkOp(op2);
+
+  var result = [];
+
+  // Cursor over op1.
+  var cursor = {index:0, offset:0};
+
+  var component;
+
+  for (var i = 0; i < op2.length; i++) {
+    component = op2[i];
+    var len, chunk;
+
+    if (typeof component === 'number') { // Skip
+      // Just copy from op1.
+      len = component;
+      while (len > 0) {
+        chunk = take(op1, cursor, len);
+        if (chunk === null)
+          throw new Error('The op traverses more elements than the document has');
+
+        append(result, chunk);
+        len -= componentLength(chunk);
+      }
+
+    } else if (component.i !== undefined) { // Insert
+      append(result, {i: component.i});
+
+    } else { // Delete
+      len = component.d;
+      while (len > 0) {
+        chunk = take(op1, cursor, len);
+        if (chunk === null)
+          throw new Error('The op traverses more elements than the document has');
+
+        var chunkLength = componentLength(chunk);
+
+        if (chunk.i !== undefined)
+          append(result, {i: chunkLength});
+        else
+          append(result, {d: chunkLength});
+
+        len -= chunkLength;
+      }
+    }
+  }
+
+  // Append extras from op1.
+  while ((component = take(op1, cursor))) {
+    if (component.i === undefined) {
+      throw new Error("Remaining fragments in op1: " + component);
+    }
+    append(result, component);
+  }
+  return result;
+};
+
+
+},{}],"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/text.js":[function(require,module,exports){
+/* Text OT!
+ *
+ * This is an OT implementation for text. It is the standard implementation of
+ * text used by ShareJS.
+ *
+ * This type is composable but non-invertable. Its similar to ShareJS's old
+ * text-composable type, but its not invertable and its very similar to the
+ * text-tp2 implementation but it doesn't support tombstones or purging.
+ *
+ * Ops are lists of components which iterate over the document.
+ * Components are either:
+ *   A number N: Skip N characters in the original document
+ *   "str"     : Insert "str" at the current position in the document
+ *   {d:N}     : Delete N characters at the current position in the document
+ *
+ * Eg: [3, 'hi', 5, {d:8}]
+ *
+ * The operation does not have to skip the last characters in the document.
+ *
+ * Snapshots are strings.
+ *
+ * Cursors are either a single number (which is the cursor position) or a pair of
+ * [anchor, focus] (aka [start, end]). Be aware that end can be before start.
+ */
+
+/** @module text */
+
+exports.name = 'text';
+exports.uri = 'http://sharejs.org/types/textv1';
+
+/** Create a new text snapshot.
+ *
+ * @param {string} initial - initial snapshot data. Optional. Defaults to ''.
+ */
+exports.create = function(initial) {
+  if ((initial != null) && typeof initial !== 'string') {
+    throw Error('Initial data must be a string');
+  }
+  return initial || '';
+};
+
+var isArray = Array.isArray || function(obj) {
+  return Object.prototype.toString.call(obj) === "[object Array]";
+};
+
+/** Check the operation is valid. Throws if not valid. */
+var checkOp = function(op) {
+  if (!isArray(op)) throw Error('Op must be an array of components');
+
+  var last = null;
+  for (var i = 0; i < op.length; i++) {
+    var c = op[i];
+    switch (typeof c) {
+      case 'object':
+        // The only valid objects are {d:X} for +ive values of X.
+        if (!(typeof c.d === 'number' && c.d > 0)) throw Error('Object components must be deletes of size > 0');
+        break;
+      case 'string':
+        // Strings are inserts.
+        if (!(c.length > 0)) throw Error('Inserts cannot be empty');
+        break;
+      case 'number':
+        // Numbers must be skips. They have to be +ive numbers.
+        if (!(c > 0)) throw Error('Skip components must be >0');
+        if (typeof last === 'number') throw Error('Adjacent skip components should be combined');
+        break;
+    }
+    last = c;
+  }
+
+  if (typeof last === 'number') throw Error('Op has a trailing skip');
+};
+
+/** Check that the given selection range is valid. */
+var checkSelection = function(selection) {
+  // This may throw from simply inspecting selection[0] / selection[1]. Thats
+  // sort of ok, though it'll generate the wrong message.
+  if (typeof selection !== 'number'
+      && (typeof selection[0] !== 'number' || typeof selection[1] !== 'number'))
+    throw Error('Invalid selection');
+};
+
+/** Make a function that appends to the given operation. */
+var makeAppend = function(op) {
+  return function(component) {
+    if (!component || component.d === 0) {
+      // The component is a no-op. Ignore!
+ 
+    } else if (op.length === 0) {
+      return op.push(component);
+
+    } else if (typeof component === typeof op[op.length - 1]) {
+      if (typeof component === 'object') {
+        return op[op.length - 1].d += component.d;
+      } else {
+        return op[op.length - 1] += component;
+      }
+    } else {
+      return op.push(component);
+    }
+  };
+};
+
+/** Makes and returns utility functions take and peek. */
+var makeTake = function(op) {
+  // The index of the next component to take
+  var idx = 0;
+  // The offset into the component
+  var offset = 0;
+
+  // Take up to length n from the front of op. If n is -1, take the entire next
+  // op component. If indivisableField == 'd', delete components won't be separated.
+  // If indivisableField == 'i', insert components won't be separated.
+  var take = function(n, indivisableField) {
+    // We're at the end of the operation. The op has skips, forever. Infinity
+    // might make more sense than null here.
+    if (idx === op.length)
+      return n === -1 ? null : n;
+
+    var part;
+    var c = op[idx];
+    if (typeof c === 'number') {
+      // Skip
+      if (n === -1 || c - offset <= n) {
+        part = c - offset;
+        ++idx;
+        offset = 0;
+        return part;
+      } else {
+        offset += n;
+        return n;
+      }
+    } else if (typeof c === 'string') {
+      // Insert
+      if (n === -1 || indivisableField === 'i' || c.length - offset <= n) {
+        part = c.slice(offset);
+        ++idx;
+        offset = 0;
+        return part;
+      } else {
+        part = c.slice(offset, offset + n);
+        offset += n;
+        return part;
+      }
+    } else {
+      // Delete
+      if (n === -1 || indivisableField === 'd' || c.d - offset <= n) {
+        part = {d: c.d - offset};
+        ++idx;
+        offset = 0;
+        return part;
+      } else {
+        offset += n;
+        return {d: n};
+      }
+    }
+  };
+
+  // Peek at the next op that will be returned.
+  var peekType = function() { return op[idx]; };
+
+  return [take, peekType];
+};
+
+/** Get the length of a component */
+var componentLength = function(c) {
+  // Uglify will compress this down into a ternary
+  if (typeof c === 'number') {
+    return c;
+  } else {
+    return c.length || c.d;
+  }
+};
+
+/** Trim any excess skips from the end of an operation.
+ *
+ * There should only be at most one, because the operation was made with append.
+ */
+var trim = function(op) {
+  if (op.length > 0 && typeof op[op.length - 1] === 'number') {
+    op.pop();
+  }
+  return op;
+};
+
+exports.normalize = function(op) {
+  var newOp = [];
+  var append = makeAppend(newOp);
+  for (var i = 0; i < op.length; i++) {
+    append(op[i]);
+  }
+  return trim(newOp);
+};
+
+/** Apply an operation to a document snapshot */
+exports.apply = function(str, op) {
+  if (typeof str !== 'string') {
+    throw Error('Snapshot should be a string');
+  }
+  checkOp(op);
+
+  // We'll gather the new document here and join at the end.
+  var newDoc = [];
+
+  for (var i = 0; i < op.length; i++) {
+    var component = op[i];
+    switch (typeof component) {
+      case 'number':
+        if (component > str.length) throw Error('The op is too long for this document');
+
+        newDoc.push(str.slice(0, component));
+        // This might be slow for big strings. Consider storing the offset in
+        // str instead of rewriting it each time.
+        str = str.slice(component);
+        break;
+      case 'string':
+        newDoc.push(component);
+        break;
+      case 'object':
+        str = str.slice(component.d);
+        break;
+    }
+  }
+
+  return newDoc.join('') + str;
+};
+
+/** Transform op by otherOp.
+ *
+ * @param op - The operation to transform
+ * @param otherOp - Operation to transform it by
+ * @param side - Either 'left' or 'right'
+ */
+exports.transform = function(op, otherOp, side) {
+  if (side != 'left' && side != 'right') throw Error("side (" + side + ") must be 'left' or 'right'");
+
+  checkOp(op);
+  checkOp(otherOp);
+
+  var newOp = [];
+  var append = makeAppend(newOp);
+
+  var _fns = makeTake(op);
+  var take = _fns[0],
+      peek = _fns[1];
+
+  for (var i = 0; i < otherOp.length; i++) {
+    var component = otherOp[i];
+
+    var length, chunk;
+    switch (typeof component) {
+      case 'number': // Skip
+        length = component;
+        while (length > 0) {
+          chunk = take(length, 'i');
+          append(chunk);
+          if (typeof chunk !== 'string') {
+            length -= componentLength(chunk);
+          }
+        }
+        break;
+
+      case 'string': // Insert
+        if (side === 'left') {
+          // The left insert should go first.
+          if (typeof peek() === 'string') {
+            append(take(-1));
+          }
+        }
+
+        // Otherwise skip the inserted text.
+        append(component.length);
+        break;
+
+      case 'object': // Delete
+        length = component.d;
+        while (length > 0) {
+          chunk = take(length, 'i');
+          switch (typeof chunk) {
+            case 'number':
+              length -= chunk;
+              break;
+            case 'string':
+              append(chunk);
+              break;
+            case 'object':
+              // The delete is unnecessary now - the text has already been deleted.
+              length -= chunk.d;
+          }
+        }
+        break;
+    }
+  }
+  
+  // Append any extra data in op1.
+  while ((component = take(-1)))
+    append(component);
+  
+  return trim(newOp);
+};
+
+/** Compose op1 and op2 together and return the result */
+exports.compose = function(op1, op2) {
+  checkOp(op1);
+  checkOp(op2);
+
+  var result = [];
+  var append = makeAppend(result);
+  var take = makeTake(op1)[0];
+
+  for (var i = 0; i < op2.length; i++) {
+    var component = op2[i];
+    var length, chunk;
+    switch (typeof component) {
+      case 'number': // Skip
+        length = component;
+        while (length > 0) {
+          chunk = take(length, 'd');
+          append(chunk);
+          if (typeof chunk !== 'object') {
+            length -= componentLength(chunk);
+          }
+        }
+        break;
+
+      case 'string': // Insert
+        append(component);
+        break;
+
+      case 'object': // Delete
+        length = component.d;
+
+        while (length > 0) {
+          chunk = take(length, 'd');
+
+          switch (typeof chunk) {
+            case 'number':
+              append({d: chunk});
+              length -= chunk;
+              break;
+            case 'string':
+              length -= chunk.length;
+              break;
+            case 'object':
+              append(chunk);
+          }
+        }
+        break;
+    }
+  }
+
+  while ((component = take(-1)))
+    append(component);
+
+  return trim(result);
+};
+
+
+var transformPosition = function(cursor, op) {
+  var pos = 0;
+  for (var i = 0; i < op.length; i++) {
+    var c = op[i];
+    if (cursor <= pos) break;
+
+    // I could actually use the op_iter stuff above - but I think its simpler
+    // like this.
+    switch (typeof c) {
+      case 'number':
+        if (cursor <= pos + c)
+          return cursor;
+        pos += c;
+        break;
+
+      case 'string':
+        pos += c.length;
+        cursor += c.length;
+        break;
+
+      case 'object':
+        cursor -= Math.min(c.d, cursor - pos);
+        break;
+    }
+  }
+  return cursor;
+};
+
+exports.transformSelection = function(selection, op, isOwnOp) {
+  var pos = 0;
+  if (isOwnOp) {
+    // Just track the position. We'll teleport the cursor to the end anyway.
+    // This works because text ops don't have any trailing skips at the end - so the last
+    // component is the last thing.
+    for (var i = 0; i < op.length; i++) {
+      var c = op[i];
+      switch (typeof c) {
+        case 'number':
+          pos += c;
+          break;
+        case 'string':
+          pos += c.length;
+          break;
+        // Just eat deletes.
+      }
+    }
+    return pos;
+  } else {
+    return typeof selection === 'number' ?
+      transformPosition(selection, op) : [transformPosition(selection[0], op), transformPosition(selection[1], op)];
+  }
+};
+
+// DEPRECATED
+exports.transformCursor = exports.transformSelection;
+
+exports.selectionEq = function(c1, c2) {
+  if (c1[0] != null && c1[0] === c1[1]) c1 = c1[0];
+  if (c2[0] != null && c2[0] === c2[1]) c2 = c2[0];
+  return c1 === c2 || (c1[0] != null && c2[0] != null && c1[0] === c2[0] && c1[1] == c2[1]);
+};
+
+
+},{}],"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/text0.js":[function(require,module,exports){
+// DEPRECATED!
+//
+// This type works, but is not exported, and will be removed in a future version of this library.
+
+
+// A simple text implementation
+//
+// Operations are lists of components.
+// Each component either inserts or deletes at a specified position in the document.
+//
+// Components are either:
+//  {i:'str', p:100}: Insert 'str' at position 100 in the document
+//  {d:'str', p:100}: Delete 'str' at position 100 in the document
+//
+// Components in an operation are executed sequentially, so the position of components
+// assumes previous components have already executed.
+//
+// Eg: This op:
+//   [{i:'abc', p:0}]
+// is equivalent to this op:
+//   [{i:'a', p:0}, {i:'b', p:1}, {i:'c', p:2}]
+
+// NOTE: The global scope here is shared with other sharejs files when built with closure.
+// Be careful what ends up in your namespace.
+
+var text = module.exports = {
+  name: 'text0',
+  uri: 'http://sharejs.org/types/textv0',
+  create: function(initial) {
+    if ((initial != null) && typeof initial !== 'string') {
+      throw new Error('Initial data must be a string');
+    }
+    return initial || '';
+  }
+};
+
+/** Insert s2 into s1 at pos. */
+var strInject = function(s1, pos, s2) {
+  return s1.slice(0, pos) + s2 + s1.slice(pos);
+};
+
+/** Check that an operation component is valid. Throws if its invalid. */
+var checkValidComponent = function(c) {
+  if (typeof c.p !== 'number')
+    throw new Error('component missing position field');
+
+  if ((typeof c.i === 'string') === (typeof c.d === 'string'))
+    throw new Error('component needs an i or d field');
+
+  if (c.p < 0)
+    throw new Error('position cannot be negative');
+};
+
+/** Check that an operation is valid */
+var checkValidOp = function(op) {
+  for (var i = 0; i < op.length; i++) {
+    checkValidComponent(op[i]);
+  }
+};
+
+/** Apply op to snapshot */
+text.apply = function(snapshot, op) {
+  var deleted;
+
+  checkValidOp(op);
+  for (var i = 0; i < op.length; i++) {
+    var component = op[i];
+    if (component.i != null) {
+      snapshot = strInject(snapshot, component.p, component.i);
+    } else {
+      deleted = snapshot.slice(component.p, component.p + component.d.length);
+      if (component.d !== deleted)
+        throw new Error("Delete component '" + component.d + "' does not match deleted text '" + deleted + "'");
+
+      snapshot = snapshot.slice(0, component.p) + snapshot.slice(component.p + component.d.length);
+    }
+  }
+  return snapshot;
+};
+
+/**
+ * Append a component to the end of newOp. Exported for use by the random op
+ * generator and the JSON0 type.
+ */
+var append = text._append = function(newOp, c) {
+  if (c.i === '' || c.d === '') return;
+
+  if (newOp.length === 0) {
+    newOp.push(c);
+  } else {
+    var last = newOp[newOp.length - 1];
+
+    if (last.i != null && c.i != null && last.p <= c.p && c.p <= last.p + last.i.length) {
+      // Compose the insert into the previous insert
+      newOp[newOp.length - 1] = {i:strInject(last.i, c.p - last.p, c.i), p:last.p};
+
+    } else if (last.d != null && c.d != null && c.p <= last.p && last.p <= c.p + c.d.length) {
+      // Compose the deletes together
+      newOp[newOp.length - 1] = {d:strInject(c.d, last.p - c.p, last.d), p:c.p};
+
+    } else {
+      newOp.push(c);
+    }
+  }
+};
+
+/** Compose op1 and op2 together */
+text.compose = function(op1, op2) {
+  checkValidOp(op1);
+  checkValidOp(op2);
+  var newOp = op1.slice();
+  for (var i = 0; i < op2.length; i++) {
+    append(newOp, op2[i]);
+  }
+  return newOp;
+};
+
+/** Clean up an op */
+text.normalize = function(op) {
+  var newOp = [];
+
+  // Normalize should allow ops which are a single (unwrapped) component:
+  // {i:'asdf', p:23}.
+  // There's no good way to test if something is an array:
+  // http://perfectionkills.com/instanceof-considered-harmful-or-how-to-write-a-robust-isarray/
+  // so this is probably the least bad solution.
+  if (op.i != null || op.p != null) op = [op];
+
+  for (var i = 0; i < op.length; i++) {
+    var c = op[i];
+    if (c.p == null) c.p = 0;
+
+    append(newOp, c);
+  }
+
+  return newOp;
+};
+
+// This helper method transforms a position by an op component.
+//
+// If c is an insert, insertAfter specifies whether the transform
+// is pushed after the insert (true) or before it (false).
+//
+// insertAfter is optional for deletes.
+var transformPosition = function(pos, c, insertAfter) {
+  // This will get collapsed into a giant ternary by uglify.
+  if (c.i != null) {
+    if (c.p < pos || (c.p === pos && insertAfter)) {
+      return pos + c.i.length;
+    } else {
+      return pos;
+    }
+  } else {
+    // I think this could also be written as: Math.min(c.p, Math.min(c.p -
+    // otherC.p, otherC.d.length)) but I think its harder to read that way, and
+    // it compiles using ternary operators anyway so its no slower written like
+    // this.
+    if (pos <= c.p) {
+      return pos;
+    } else if (pos <= c.p + c.d.length) {
+      return c.p;
+    } else {
+      return pos - c.d.length;
+    }
+  }
+};
+
+// Helper method to transform a cursor position as a result of an op.
+//
+// Like transformPosition above, if c is an insert, insertAfter specifies
+// whether the cursor position is pushed after an insert (true) or before it
+// (false).
+text.transformCursor = function(position, op, side) {
+  var insertAfter = side === 'right';
+  for (var i = 0; i < op.length; i++) {
+    position = transformPosition(position, op[i], insertAfter);
+  }
+
+  return position;
+};
+
+// Transform an op component by another op component. Asymmetric.
+// The result will be appended to destination.
+//
+// exported for use in JSON type
+var transformComponent = text._tc = function(dest, c, otherC, side) {
+  //var cIntersect, intersectEnd, intersectStart, newC, otherIntersect, s;
+
+  checkValidComponent(c);
+  checkValidComponent(otherC);
+
+  if (c.i != null) {
+    // Insert.
+    append(dest, {i:c.i, p:transformPosition(c.p, otherC, side === 'right')});
+  } else {
+    // Delete
+    if (otherC.i != null) {
+      // Delete vs insert
+      var s = c.d;
+      if (c.p < otherC.p) {
+        append(dest, {d:s.slice(0, otherC.p - c.p), p:c.p});
+        s = s.slice(otherC.p - c.p);
+      }
+      if (s !== '')
+        append(dest, {d: s, p: c.p + otherC.i.length});
+
+    } else {
+      // Delete vs delete
+      if (c.p >= otherC.p + otherC.d.length)
+        append(dest, {d: c.d, p: c.p - otherC.d.length});
+      else if (c.p + c.d.length <= otherC.p)
+        append(dest, c);
+      else {
+        // They overlap somewhere.
+        var newC = {d: '', p: c.p};
+
+        if (c.p < otherC.p)
+          newC.d = c.d.slice(0, otherC.p - c.p);
+
+        if (c.p + c.d.length > otherC.p + otherC.d.length)
+          newC.d += c.d.slice(otherC.p + otherC.d.length - c.p);
+
+        // This is entirely optional - I'm just checking the deleted text in
+        // the two ops matches
+        var intersectStart = Math.max(c.p, otherC.p);
+        var intersectEnd = Math.min(c.p + c.d.length, otherC.p + otherC.d.length);
+        var cIntersect = c.d.slice(intersectStart - c.p, intersectEnd - c.p);
+        var otherIntersect = otherC.d.slice(intersectStart - otherC.p, intersectEnd - otherC.p);
+        if (cIntersect !== otherIntersect)
+          throw new Error('Delete ops delete different text in the same region of the document');
+
+        if (newC.d !== '') {
+          newC.p = transformPosition(newC.p, otherC);
+          append(dest, newC);
+        }
+      }
+    }
+  }
+
+  return dest;
+};
+
+var invertComponent = function(c) {
+  return (c.i != null) ? {d:c.i, p:c.p} : {i:c.d, p:c.p};
+};
+
+// No need to use append for invert, because the components won't be able to
+// cancel one another.
+text.invert = function(op) {
+  // Shallow copy & reverse that sucka.
+  op = op.slice().reverse();
+  for (var i = 0; i < op.length; i++) {
+    op[i] = invertComponent(op[i]);
+  }
+  return op;
+};
+
+if (exports._bootstrapTransform) {
+  exports._bootstrapTransform(text, transformComponent, checkValidOp, append);
+} else {
+  require('./helpers')._bootstrapTransform(text, transformComponent, checkValidOp, append);
+}
+
+
+},{"./helpers":"/www/gibber.libraries/node_modules/share/node_modules/ottypes/lib/helpers.js"}]},{},["./js/main.js"]);

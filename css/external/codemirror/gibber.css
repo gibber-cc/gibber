@@ -4,10 +4,10 @@
 }
 
 .codemirror-highlight { background:red !important; }
-/* .cm-s-gibber .CodeMirror-selected {background: rgba(130,130,130,.5) !important;} */
-/*.cm-s-gibber .CodeMirror-cursor { color:#f00; }/*border-left: 1px solid #f00 !important}*/*/
 
-/*.CodeMirror-cursor:before{ content:'|'; }*/
+.CodeMirror div.CodeMirror-cursor {
+  border-left: 1px solid #dd0000;
+}
 
 .cm-s-gibber span.cm-comment {color: #666;}
 .cm-s-gibber span.cm-atom {color: #009900;}

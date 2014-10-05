@@ -401,7 +401,8 @@ tfoot, thead {
   background-color:rgba(0,0,0,.5);
 }
 
-.browser table { margin-top: 10px; width:97%; }
+/* this stops the browser from going wonky if the window is resized */
+.browser table { margin-top: 10px; width:97%; height:initial !important; }
 
 .browser table tr td div { 
 /*  display:none; */

@@ -21,11 +21,11 @@ module.exports = function( Gibber ) {
         if( response.username !== null ) {
           $( '.login' ).empty()
           $( '.login' ).append( $('<span>welcome, ' + response.username + '.  </span>' ) )
-
+          
+          $.publish('/account/login', response.username )
+          
           Account.nick = response.username
-          
-          console.log("I AM LOGGED IN", Account.nick )
-          
+                    
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
             .on( 'click', function(e) {
@@ -35,6 +35,10 @@ module.exports = function( Gibber ) {
                 dataType:'json'
               }).done( function( data ) {
                 $( '.login' ).empty()
+                
+                Account.nick = null
+                $.publish( '/account/logout', response.username )
+                
                 $( '.login' ).append( $('<a href="#">' )
                   .text( 'please login' )
                   .on('click', function(e) { 
@@ -72,6 +76,8 @@ module.exports = function( Gibber ) {
           $( '.login' ).append( $('<span>welcome, ' + data.username + '.  </span>' ) )
           Account.nick = data.username
           
+          $.publish('/account/login', data.username )
+          
           console.log("I am logged in", Account.nick, data.username )
           $( '.login' ).append( $('<a href="#">' )
             .text( ' logout ')
@@ -80,8 +86,9 @@ module.exports = function( Gibber ) {
                 type:"GET",
                 url: GE.SERVER_URL + '/logout', 
                 dataType:'json'
-              }).done( function(data) {
+              }).done( function(_data) {
                 Account.nick = null
+                $.publish( '/account/logout', data.username )
 
                 $( '.login' ).empty()
 
@@ -100,7 +107,6 @@ module.exports = function( Gibber ) {
           var passwordRequest = $('<span>Click here if you\'ve forgotten your password.</span>')
           
           passwordRequest.on( 'click', function( e ) {
-            console.log('CLICK')
             $.ajax({
               url: GE.SERVER_URL + '/requestPassword',
               dataType:'json',

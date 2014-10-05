@@ -10,7 +10,6 @@ Chat = {
   roomElement: null,
   currentRoom: 'lobby',
   intialized : false,
-  io: require( '../external/socket.io.min' ),
   open : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
@@ -27,7 +26,9 @@ Chat = {
       console.log( 'you have left the chat server.' )
       Chat.lobbyElement = null
       Chat.roomElement  = null
-      // Chat.socket.close()
+      Chat.socket.close()
+      Chat.initialized = false
+      
     }
     // this.column.header.append( $( '<span>lobby</span>') )
     this.lobbyRoom = $( '<div>' ).css({ display:'inline', marginLeft:'2em' })
@@ -51,30 +52,25 @@ Chat = {
     this.column.header.append( this.lobbyRoom )
 
     if( !this.initialized ) {
-      //$script( 'external/socket.io.min', function() {
-        // console.log( 'socket io loaded' )
-        Chat.socket = Chat.io.connect( GE.SERVER_URL );
+      Chat.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
+      Chat.socket.onmessage = function( e ) {
+        var data = e.data
+        data = JSON.parse( data )
 
-        // this.socket = new WebSocket( socketString );
-
-        Chat.socket.on( 'message', function( data ) {
-          data = JSON.parse( data )
-
-          if( data.msg ) {
-            if( Chat.handlers[ data.msg ] ) {
-              Chat.handlers[ data.msg ]( data )
-            }else{
-              console.error( 'Cannot process message ' + data.msg + ' from server' )
-            }
+       if( data.msg ) {
+          if( Chat.handlers[ data.msg ] ) {
+            Chat.handlers[ data.msg ]( data )
+          }else{
+            console.error( 'Cannot process message ' + data.msg + ' from server' )
           }
-        })
-        
-        Chat.socket.on( 'connect', function() {
-          console.log( 'you are now connected to the chat server' )
-          Chat.moveToLobby()
-          Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
-        })
-        //})
+        }
+      }
+      
+      Chat.socket.onopen = function() {
+        console.log( 'you are now connected to the chat server' )
+        Chat.moveToLobby()
+        Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+      } 
     }else{
       Chat.moveToLobby()
     }
@@ -241,7 +237,9 @@ Chat = {
             .css({ cursor:'pointer' }),
           li = $( '<li class="message">' )
             .text(  " : " +  data.incomingMessage )
-
+      
+      console.log( data )
+      
       li.prepend( name )
       Chat.messages.append( li )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
@@ -273,8 +271,10 @@ Chat = {
     },
     arrival : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
-      Chat.messages.append( msg )
-      $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+      if( Chat.messages ) {
+        $( Chat.messages ).append( msg )
+        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+      }
     },
     departure : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has left the chatroom.' ).css({ color:'#b00', display:'block' })
@@ -308,8 +308,8 @@ Chat = {
       GE.Share.collaborationResponse({ from: data.from, response: data.response })
     },
     shareReady : function( data ) {
+      console.log("ACCEPTING REQUEST FROM CHAT")
       GE.Share.acceptCollaborationRequest( data )
-      
     },
     remoteExecution : function( data ) {
       var column, cm

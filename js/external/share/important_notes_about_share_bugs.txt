@@ -1,3 +1,0 @@
-I have modified share.uncompressed.js to only use the browserchannel transport. There were also bugs where the BCSocket upvalue was not being successfully populated in the connection class. I changed references to window.BCSocket to accommodate this.
-
-This took a long time to debug. DON'T EVER DELETE THIS FILE OR RISK FUTURE PAIN AND SUFFERING.

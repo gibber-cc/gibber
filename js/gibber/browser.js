@@ -4,6 +4,7 @@ module.exports = function( Gibber ) {
       
   var Browser = {
     demoColumn: null,
+    userFilesLoaded: false,
     setupSearchGUI : function() {
       var btns = $( '.searchOption' )
 
@@ -75,43 +76,12 @@ module.exports = function( Gibber ) {
         $('#browser_demos_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'demos') )
         $('#browser_search_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'search') )
         $('#browser_recent_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'recent') )
-        $('#browser_user_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'user') )        
+        $('#browser_user_button').on( 'click', function() { GE.Browser.openBrowserSection('user') })
         
-        /*for( var i = 0; i < headers.length; i++ ) {
-          
-          !function() {
-            var cell = $( headers[ i ] ).parent()
-            
-            if( $( cell ).hasClass( 'browserHeader' ) ) return;
-            
-            $( cell ).find( 'h3' ).on( 'click', function() { 
-              var div = $( cell ).find( 'div' )
-              div.toggle()
-              if( div.is( ':visible' ) ) {
-                $( this ).find( '#browser_updown' ).html( '&#9652;' ) 
-              }else{
-                $( this ).find( '#browser_updown' ).html( '&#9662;' ) 
-              }
-            })
-          }()
-        }*/
-        
-        //var types = [ 'searchHEADER','search','tutorialsHEADER','audio', '_2d', '_3d', 'misc', 'userHEADER','recent', 'userfiles' ], prev
-        var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent', 'userfiles' ], prev
+        var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent' ], prev
         for( var i = 0; i < linksDivs.length; i++ ) {
           (function() {
             var cell = linksDivs[ i ]
-            // if( $( cell ).hasClass( 'browserHeader' ) ) return;
-            // 
-            // $(cell).find( 'h3' ).on( 'click', function() { 
-            //   var div = $(cell).find('div')
-            //   div.toggle()
-            //   if( div.is( ':visible' ) ) {
-            //     $( this ).find( '#browser_updown' ).html( '&#9652;' ) 
-            //   }else{
-            //     $( this ).find( '#browser_updown' ).html( '&#9662;' ) 
-            //   }
-            // })
             
             var links = $( cell ).find( 'li' )
             
@@ -121,6 +91,7 @@ module.exports = function( Gibber ) {
                 var num = j, type = types[ i ], link = links[j], demoTypeName = type.slice(5).toLowerCase()
                 var pubCategory = Gibber.Environment.Browser.files[ type ] || Gibber.Environment.Browser.files.demos[ demoTypeName ]
                 
+                //console.log( "category", type, pubCategory )
                 if( typeof pubCategory !== 'undefined' ) {
                   var pub = pubCategory[ num ], obj, id
                   
@@ -149,6 +120,61 @@ module.exports = function( Gibber ) {
           })()
         }
         //$('#browser_audio_header').on('click', GE.Browser.updown)
+        
+        $.subscribe( '/account/login', function( _name ) {
+          $.ajax({
+            type:'POST',
+            url: GE.SERVER_URL + "/userfiles",
+            data:{},
+            dataType:'json',
+          })
+          .done( function( data ) {
+            var userdiv = $( '#browser_userfiles' )
+            console.log( userdiv )
+            userdiv.empty()
+            
+            var list = $( '<ul>' ), prev
+            
+            for( var j = 0; j < data.files.length; j++ ) {
+              !function() {
+                var num = j,
+                    file = data.files[ num ],
+                    obj = file.value,
+                    id = file.id,
+                    link
+                
+                GE.Browser.files.userfiles.push( file )
+                
+                link = $('<li>')
+                  .text( id.split('/')[2] )
+                  .on( 'click', function() {
+                    Gibber.Environment.Browser.openCode( id )
+                  })
+                
+                $( link ).on( 'mouseover', function() {
+                  $( link ).css({ background:'#444' })
+                  if( prev ) {
+                    $( prev ).css({ background:'transparent' })
+                  }
+                  prev = link
+                  $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
+                  $( '#browser_notes' ).text( obj.notes )
+                  $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
+                  $( '#browser_author' ).text( id.split('/')[0] )
+                })
+                
+                list.append( link )
+              }()
+            }
+            userdiv.append( list )
+          })
+        })
+        
+        $.subscribe( '/account/logout', function( _name ) {
+          $( '#browser_userfiles' ).find( 'li' ).remove()
+          GE.Browser.files.userfiles.length = 0
+        })
+        
         GE.Browser.setupSearchGUI()
       })
     },
@@ -176,8 +202,6 @@ module.exports = function( Gibber ) {
         'query': query,
         filter:  queryFilter 
       }
-      
-      console.log( data )
       
       $( '.searchResults' ).remove()
       
@@ -263,7 +287,6 @@ module.exports = function( Gibber ) {
         GE.SERVER_URL + '/retrieve',
         { address:addr },
         function( d ) {
-          //console.log( d )
           var data = JSON.parse( d ),
               col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
               
