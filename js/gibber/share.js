@@ -2,120 +2,111 @@ module.exports = function( Gibber ) {
 
 "use strict"
 
+// TODO: get browserify to work with these files... for now their included in the index.ejs template
+
 //require( '../external/sharenew/share.uncompressed' )
 //require( 'share' ).client
-var sharejs = require( 'share/lib/client' )
-require( '../external/sharenew/text' )
-require( '../external/sharenew/share-codemirror' )
+//var sharejs = window.sharejs = require( 'share/lib/client' )
+//require( '../external/sharenew/text' )
+//require( '../external/sharenew/share-codemirror' )
 
 var GE,
+    sharejs,
     Layout,
 
 Share = {
   docs : [],
   potentialShareNum: 0,
   prompt: null,
+  socket: null,
   init : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
+    sharejs = window.sharejs
   },
 
   createDoc : function( columnNumber, cb, sharingWith ) {
+    var ctx
     if( GE.Account.nick !== null && typeof Share.docs[ columnNumber ] === 'undefined' ) {
       
-      var sjs = Share.sjs = new sharejs.Connection( GE.Chat.socket )
-      sjs.debug = true
-      sjs.on( 'connecting', function( e ) { 
-        console.log("CONNECTING TO SHARE.JS")
-      })
+      if( Share.socket === null ) {
+        Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
+      }
       
-      sjs.on( 'connected', function( e ) { 
-        console.log("CONNECTED TO SHARE.JS")
-      })
-      sjs.on( 'error', function( e ) { 
-        console.log("SHARE.JS CONNECTION ERROR")
-      })
-      console.log( sjs )
+      var sjs = Share.sjs = new sharejs.Connection( Share.socket )
+      
+      //sjs.debug = true
+      // sjs.on( 'connecting', function( e ) { 
+      //   console.log("CONNECTING TO SHARE.JS")
+      // })
+      
+      // sjs.on( 'connected', function( e ) { 
+      //   console.log("CONNECTED TO SHARE.JS")
+      // })
+      // sjs.on( 'error', function( e ) { 
+      //   console.log("SHARE.JS CONNECTION ERROR")
+      // })
       //console.log( "SOCKET", GE.Chat.socket )
       
-      var doc = sjs.get( 'users', 'testing')//GE.Account.nick + columnNumber )
-      // console.log(doc);
+      var doc = sjs.get( 'users', GE.Account.nick + columnNumber )
+
       doc.subscribe();
-      console.log("CREATING DOC", doc )
-      doc.whenReady( function () {
-        if ( !doc.type) doc.create( 'text' )
-        if ( doc.type && doc.type.name === 'text' )
-        
-        var column = Layout.columns[ columnNumber ],
-            val = column.value
-        
-        console.log("DOC IS MADE")
-        
-        column.shareName = GE.Account.nick + columnNumber
-        column.sharingWith = sharingWith
       
-        Share.docs[ columnNumber ] = doc
+      doc.whenReady( function () {        
+        if ( !doc.type ) doc.create( 'text' )
+
+        if ( doc.type && doc.type.name === 'text' ) {
+          var column = Layout.columns[ columnNumber ],
+              val = column.value
+                
+          column.shareName = GE.Account.nick + columnNumber
+          column.sharingWith = sharingWith
       
-        doc.attachCodeMirror( column.editor )
-        
-        column.editor.setValue( val )
+          Share.docs[ columnNumber ] = doc
+          
+          var val = column.value
+          
+          doc.attachCodeMirror( column.editor )
+
+          column.editor.setValue( val )
       
-        column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
+          column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
       
-        if( typeof cb === 'function' ) cb()
+          if( typeof cb !== 'undefined' ) {
+            cb()
+          }
+        }
       });  
+      
     }
   },
   openExistingDoc : function( docName, column ) {
-    if( GE.Account.nick !== null ) {
-      if( !column ) column = Layout.columns[ 0 ]
-      var sjs = new sharejs.Connection( GE.Chat.socket )
-      
-      if( Share.willAcceptRemoteExecution ) {
-        column.allowRemoteExecution = true
-        Share.willAcceptRemoteExecution = false
-      }
-      
-      var doc = sjs.get( 'gibber', GE.Account.nick + columnNumber )
+    if( Share.socket === null ) {
+      Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
+    }
+    
+    var sjs = new sharejs.Connection( Share.socket )
+    
+    if( Share.willAcceptRemoteExecution ) {
+      column.allowRemoteExecution = true
+      Share.willAcceptRemoteExecution = false
+    }
+    
+    var doc = sjs.get( 'users', docName )
 
-      doc.subscribe();
+    doc.subscribe();
 
-      doc.whenReady( function () {
-        if ( !doc.type) doc.create( 'text' )
-        if ( doc.type && doc.type.name === 'text' )
-        
-        var column = Layout.columns[ columnNumber ],
-            val = column.value
-        
+    doc.whenReady( function () {
+      if ( !doc.type) doc.create( 'text' )
+      if ( doc.type && doc.type.name === 'text' ) {        
+      
         column.shareName = docName
         // column.sharingWith = sharingWith
-      
-        Share.docs[ columnNumber ] = doc
-      
+    
+        //Share.docs[ columnNumber ] = doc
         doc.attachCodeMirror( column.editor )
-        
-        // column.editor.setValue( val )
-      
-        // column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
-      
-        // if( typeof cb === 'function' ) cb()
-      }); 
-      // sharejs.open( docName, 'text', function(error, newDoc) {
-      //   if( !column ) column = Columns[ 0 ]
-      //   
-      //   if( Share.willAcceptRemoteExecution ) {
-      //     column.allowRemoteExecution = true
-      //     Share.willAcceptRemoteExecution = false
-      //   }
-      //    
-      //   Share.docs[ column.number ] = newDoc
-      // 
-      //   column.shareName = docName
-      // 
-      //   Share.docs[ column.number ].attach_cm( column.editor )
-      // }); 
-
-    }
+      }
+    });
   },
   promptToShareWith : function( nick ) {
     var div = $('<div>'),
@@ -162,7 +153,7 @@ Share = {
             cmd: 'shareCreated', from:GE.Account.nick, to: msg.from, shareName:GE.Account.nick + Share.potentialShareNum
           }) )
         }
-
+    
     if( response !== 'no' ) {
       Share.prompt.find( 'h4' ).text( msg.from + ' accepts your request. You are now coding together.' )
       Share.createDoc( Share.potentialShareNum, cb, msg.from )
@@ -174,7 +165,6 @@ Share = {
 
   // this message is forwarded from the socket server (currently the chat socket server)
   acceptCollaborationRequest : function( data ) {
-    console.log("ACCEPT COLLABORATION REQUEST CALLED ")
     var column = GE.Layout.addColumn({ type:'code' })
     
     column.allowRemoteExecution = data.allowRemoteExecution  

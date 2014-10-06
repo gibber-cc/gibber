@@ -137,7 +137,7 @@ module.exports = function( Gibber ) {
 						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
 
             if( cm.column.allowRemoteExecution ) {
-              Chat.socket.send( 
+              GE.Chat.socket.send( 
                 JSON.stringify({ 
                   cmd:'remoteExecution',
                   to:cm.column.sharingWith,
@@ -159,9 +159,11 @@ module.exports = function( Gibber ) {
           if( cm.column.sharingWith ) {
 						var obj = GE.getSelectionCodeColumn( cm, false )
 						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
-
+            
+            // console.log( obj.code, obj.selection, cm.column.shareName, cm.column.sharingWith )
+            
             if( cm.column.allowRemoteExecution ) {
-              Chat.socket.send( 
+              GE.Chat.socket.send( 
                 JSON.stringify({ 
                   cmd:'remoteExecution',
                   to:cm.column.sharingWith,

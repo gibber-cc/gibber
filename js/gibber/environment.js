@@ -8,7 +8,8 @@ var MT = require( 'coreh-mousetrap' )(),
     
 var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
-  SERVER_URL : 'http://127.0.0.1:8080',
+  SERVER_URL : 'http://a.local:8080',
+  //SERVER_URL : 'http://192.168.0.104:8080',
   //SERVER_URL : 'http://gibber.mat.ucsb.edu',
   
   CodeMirror:   require( 'codemirror' ),
@@ -27,7 +28,6 @@ var GE = {
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
-  //Share:        require( './share' )( Gibber ),  
   
   init : function() { 
     GE.Keymap.init()

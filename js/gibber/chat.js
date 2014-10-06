@@ -308,12 +308,10 @@ Chat = {
       GE.Share.collaborationResponse({ from: data.from, response: data.response })
     },
     shareReady : function( data ) {
-      console.log("ACCEPTING REQUEST FROM CHAT")
       GE.Share.acceptCollaborationRequest( data )
     },
     remoteExecution : function( data ) {
       var column, cm
-      console.log( "SHARE NAME", data.shareName, data )
       for( var i = 0; i < GE.Layout.columns.length; i++ ){ 
         var _column = GE.Layout.columns[i]
         if( _column && _column.shareName === data.shareName ) {
@@ -329,7 +327,7 @@ Chat = {
       if( column.allowRemoteExecution ) {
         GE.Keymap.flash( cm, data.selectionRange )
 
-        Gibber.run( data.code, data.selectionRange, cm )
+        GE.modes.javascript.run( column, data.code, data.selectionRange, cm, data.shouldDelay )
       }
     },
   },
