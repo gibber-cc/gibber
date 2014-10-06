@@ -67,7 +67,7 @@ You need to include his library at the start of your code. So, to run code in no
 AudioContext = require('web-audio-api').AudioContext
 
 // must be global! this should be fixable.
-Gibber = require('../../build/gibber.audio.lib.js')
+Gibber = require('gibber.audio.lib.js')
 Gibber.init()
 ```
 
