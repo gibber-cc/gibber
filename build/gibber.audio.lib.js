@@ -33,9 +33,9 @@ Audio = {
     // target.solo = Gibber.Utilities.solo    
     
 		target.Clock = Audio.Clock
-    target.Seq = Audio.Seq
+    target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
-    target.ScaleSeq = Audio.ScaleSeq
+    target.ScaleSeq = Audio.Seqs.ScaleSeq
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -3229,7 +3229,11 @@ var Clock = {
 					if( typeof Clock.codeToExecute[ i ].function === 'function' ) {
 						Clock.codeToExecute[ i ].function()
 					}else{
-	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            if( Gibber.Environment ) {
+              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ]._run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }else{
+  	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+            }
 					}
         }catch( e ) {
           console.error( "FAILED TO EXECUTE CODE:", Clock.codeToExecute[ i ].code , e)
@@ -4106,7 +4110,7 @@ module.exports = function( Gibber, Gibberish ) {
         
         from.object.track = proxy;
 
-        mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
         
         op.input = mapping
         
@@ -4137,7 +4141,7 @@ module.exports = function( Gibber, Gibberish ) {
         
         from.track = proxy
         
-        mapping = target.object[ target.Name ].mapping = Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
+        mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( proxy, target.min, target.max, from.min, from.max, target.output, from.wrap ) 
         
         op.input = mapping
         target.object[ target.name ] = op
@@ -4182,7 +4186,7 @@ module.exports = function( Gibber, Gibberish ) {
         }
         from.object.track = proxy
         
-        target.object[ target.name ] = Map( proxy, target.min, target.max, from.min, from.max )
+        target.object[ target.name ] = Gibber.Audio.Core.Binops.Map( proxy, target.min, target.max, from.min, from.max )
         
         mapping = target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
         
@@ -4209,7 +4213,7 @@ module.exports = function( Gibber, Gibberish ) {
       audioOut : function( target, from ) {
         var mapping
         
-        target.object[ target.name ] = Map( null, target.min, target.max, 0, 1, 0 )   
+        target.object[ target.name ] = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, 0, 1, 0 )   
         mapping = target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
         
         if( typeof from.object.track !== 'undefined' ) {
@@ -4260,7 +4264,7 @@ module.exports = function( Gibber, Gibberish ) {
     graphics: {
       graphics: function( target, from ) {
         // rewrite getValue function of Map object to call Map callback and then return appropriate value
-        var map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
+        var map = Gibber.Audio.Core.Binops.Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
             old = map.getValue.bind( map ),
             mapping
         
@@ -4295,7 +4299,7 @@ module.exports = function( Gibber, Gibberish ) {
       },
       interface: function( target, from ) {
         // console.log( "FROM", from.name, target.min, target.max, from.min, from.max )
-        var _map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
+        var _map = Gibber.Audio.Core.Binops.Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
             mapping
             
         if( typeof from.object.functions === 'undefined' ) {
@@ -4353,7 +4357,7 @@ module.exports = function( Gibber, Gibberish ) {
       audio: function( target, from ) {
         var mapping
         
-        mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
+        mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
       
         mapping.follow = typeof from.object.track !== 'undefined' ? from.object.track : new Gibberish.Follow({ input:from.object.properties[ from.name ], useAbsoluteValue: false })
         from.object.track = target.object[ target.Name ].mapping.follow
@@ -4408,7 +4412,7 @@ module.exports = function( Gibber, Gibberish ) {
         console.log( target.Name, target.object )
         if( typeof target.object[ target.Name ].mapping === 'undefined') {
           console.log("MAKING A MAPPING")
-          var mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, 0, 1, 0 )   
+          var mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, 0, 1, 0 )   
           if( typeof from.object.track !== 'undefined' ) {
             mapping.follow = from.object.track
             mapping.follow.count++
@@ -4500,7 +4504,7 @@ module.exports = function( Gibber, Gibberish ) {
       graphics: function( target, from ) {
         // rewrite getValue function of Map object to call Map callback and then return appropriate value
 
-        var map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
+        var map = Gibber.Audio.Core.Binops.Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
             old = map.getValue.bind( map ),
             mapping
         
@@ -4534,7 +4538,7 @@ module.exports = function( Gibber, Gibberish ) {
       },
       interface: function( target, from ) {
         // console.log( "FROM", from.name, target.min, target.max, from.min, from.max )
-        var _map = Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
+        var _map = Gibber.Audio.Core.Binops.Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
             mapping
             
         if( typeof from.object.functions === 'undefined' ) {
@@ -4592,7 +4596,7 @@ module.exports = function( Gibber, Gibberish ) {
       audio: function( target, from ) {
         var mapping
         
-        mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
+        mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, from.min, from.max, target.output, from.wrap )
   
         if( typeof from.object.track !== 'undefined' && from.object.track.input === from.object.properties[ from.name ] ) {
           mapping.follow = from.object.track
@@ -4650,7 +4654,7 @@ module.exports = function( Gibber, Gibberish ) {
       },
       audioOut : function( target, from ) {
         if( typeof target.object[ target.Name ].mapping === 'undefined') {
-          var mapping = target.object[ target.Name ].mapping = Map( null, target.min, target.max, 0, 1, 0 )
+          var mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, 0, 1, 0 )
           
           console.log( "MAPPING", from )
           
@@ -5182,17 +5186,19 @@ var soloGroup = [],
       },
 
       future : function(func, time) { 
-        var __seq = new Gibberish.Sequencer({
-          values:[
-            function(){},
-            function() {
-              func();
-              __seq.stop();
-              __seq.disconnect();
+        var count = 0
+        
+        var __seq = Gibber.Audio.Seqs.Seq(
+          function() {
+            if( count === 1 ) {
+              func()
+              __seq.stop()
+              __seq.disconnect()
             }
-          ],
-          durations:[ Gibber.Clock.time( time ) ]
-        }).start()
+            count++
+          }, 
+          Gibber.Audio.Clock.time( time ) 
+        )
     
         return function(){ __seq.stop(); __seq.disconnect(); }
       },
