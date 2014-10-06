@@ -1843,10 +1843,7 @@ var MT = require( 'coreh-mousetrap' )(),
     
 var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
-  SERVER_URL : 'http://a.local:8080',
-  //SERVER_URL : 'http://192.168.0.104:8080',
-  //SERVER_URL : 'http://gibber.mat.ucsb.edu',
-  
+  SERVER_URL : 'http://' + window.location.host,
   CodeMirror:   require( 'codemirror' ),
   CodeMirrorJS: require( 'codemirror/mode/javascript/javascript' ),
   CodeMirrorC:  require( 'codemirror/mode/clike/clike' ),  
