@@ -25,7 +25,8 @@ module.exports = function( Gibber ) {
       element:        $( '<div class="column">' ),
       header:         $( '<div class="columnHeader">' ),
       modeSelect:     $( '<select>' ),
-      bodyElement:    $( '<div class="editor">' ),
+      editorElement:  $( '<div class="editor">' ),
+      bodyElement:    $( '<div class="columnBody">' ),
       resizeHandle:   $( '<div class="resizeHandle">' ),
       closeButton :   $( '<button>' ),
       width:          columnWidth,
@@ -100,11 +101,14 @@ module.exports = function( Gibber ) {
     
     var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
-
+    
+    col.bodyElement.width( columnWidth - resizeHandleSize )
+    col.element.append( col.bodyElement )
+    
     if( isCodeColumn ) {
-      col.bodyElement.width( columnWidth - resizeHandleSize )
-      col.element.append( col.bodyElement )
-      col.editor = CodeMirror( col.bodyElement[0], {
+      col.editorElement.width( columnWidth - resizeHandleSize )
+      col.bodyElement.append( col.editorElement )
+      col.editor = CodeMirror( col.editorElement[0], {
         theme:  'gibber',
         keyMap: 'gibber',
         mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
@@ -159,9 +163,6 @@ module.exports = function( Gibber ) {
         col.editor.listeners = {}
       })
       
-    }else{
-      col.bodyElement.width( columnWidth - resizeHandleSize )
-      col.element.append( col.bodyElement )
     }
 
     col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
@@ -243,6 +244,7 @@ module.exports = function( Gibber ) {
           this.toggleResizeHandle()
           this.element.css({ width: w, height: h, top:0, left:0 })
           this.bodyElement.css({ width: w, height: h })
+          this.editorElement.css({ width: w, height: h })          
           this.editor.setSize( w,h )
           this.isFullScreen = true
           GE.Layout.fullScreenColumn = this
@@ -255,6 +257,7 @@ module.exports = function( Gibber ) {
           this.toggleResizeHandle()
           this.element.css({ width: _w, top:31 })
           this.bodyElement.css({ width: _w, height:_h })
+          this.editorElement.css({ width: _w, height:_h })          
           this.editor.setSize( _w, _h )
           Layout.resizeColumns()
           this.isFullScreen = false

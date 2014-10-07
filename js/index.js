@@ -522,7 +522,7 @@ module.exports = function( Gibber ) {
       
       //col.element.addClass( 'browser' )
       
-      col.bodyElement.remove()
+      //col.bodyElement.remove()
       
       $.ajax({
         url: GE.SERVER_URL + "/browser",
@@ -531,10 +531,9 @@ module.exports = function( Gibber ) {
       .done( function( data ) {
         var browser = $( data ), cells, lastDiv
         
-        $( col.element ).append( browser[0] );
-        $('head').append( browser[1] )
+        $( col.bodyElement ).append( browser[0] )
+        $( 'head' ).append( browser[1] )
         $( '#search_button' ).on( 'click', GE.Browser.search )
-        col.bodyElement = browser;
         GE.Layout.setColumnBodyHeight( col )
         
         linksDivs = $( '.browserLinks' )
@@ -1166,7 +1165,8 @@ module.exports = function( Gibber ) {
       element:        $( '<div class="column">' ),
       header:         $( '<div class="columnHeader">' ),
       modeSelect:     $( '<select>' ),
-      bodyElement:    $( '<div class="editor">' ),
+      editorElement:  $( '<div class="editor">' ),
+      bodyElement:    $( '<div class="columnBody">' ),
       resizeHandle:   $( '<div class="resizeHandle">' ),
       closeButton :   $( '<button>' ),
       width:          columnWidth,
@@ -1241,11 +1241,14 @@ module.exports = function( Gibber ) {
     
     var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
-
+    
+    col.bodyElement.width( columnWidth - resizeHandleSize )
+    col.element.append( col.bodyElement )
+    
     if( isCodeColumn ) {
-      col.bodyElement.width( columnWidth - resizeHandleSize )
-      col.element.append( col.bodyElement )
-      col.editor = CodeMirror( col.bodyElement[0], {
+      col.editorElement.width( columnWidth - resizeHandleSize )
+      col.bodyElement.append( col.editorElement )
+      col.editor = CodeMirror( col.editorElement[0], {
         theme:  'gibber',
         keyMap: 'gibber',
         mode:   mode !== 'javascript' ? 'x-shader/x-fragment' : 'javascript',
@@ -1300,9 +1303,6 @@ module.exports = function( Gibber ) {
         col.editor.listeners = {}
       })
       
-    }else{
-      col.bodyElement.width( columnWidth - resizeHandleSize )
-      col.element.append( col.bodyElement )
     }
 
     col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
@@ -1384,6 +1384,7 @@ module.exports = function( Gibber ) {
           this.toggleResizeHandle()
           this.element.css({ width: w, height: h, top:0, left:0 })
           this.bodyElement.css({ width: w, height: h })
+          this.editorElement.css({ width: w, height: h })          
           this.editor.setSize( w,h )
           this.isFullScreen = true
           GE.Layout.fullScreenColumn = this
@@ -1396,6 +1397,7 @@ module.exports = function( Gibber ) {
           this.toggleResizeHandle()
           this.element.css({ width: _w, top:31 })
           this.bodyElement.css({ width: _w, height:_h })
+          this.editorElement.css({ width: _w, height:_h })          
           this.editor.setSize( _w, _h )
           Layout.resizeColumns()
           this.isFullScreen = false
@@ -1740,14 +1742,14 @@ module.exports = function( Gibber ) {
 }
 },{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/docs.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
-  var GE = Gibber.Environment
+  var GE
   
   var Docs = {
     files: {},
     open : function() {
+      GE = Gibber.Environment
+      
       this.col = GE.Layout.addColumn({ header:'Reference' })
-
-      this.col.bodyElement.remove()
     
       this.getIndex()
     },
@@ -1770,8 +1772,7 @@ module.exports = function( Gibber ) {
       })
       .done( function( data ) {
         var docs = $( data )
-        $( GE.Docs.col.element ).append( docs )
-        GE.Docs.col.bodyElement = docs
+        GE.Docs.col.bodyElement.append( docs )
         GE.Layout.setColumnBodyHeight( GE.Docs.col )
       }) 
     },
@@ -1784,8 +1785,10 @@ module.exports = function( Gibber ) {
       .done( function( data ) {
         var docs = $( data )
         $( '#docs' ).empty()
-        $( '#docs' ).append( $('<button>').text('Back To Table of Contents')
-                            .on('click', function() { $('#docs').remove(); GE.Docs.getIndex() } ) ) 
+        $( '#docs' )
+          .append( $('<button>').text('Back To Table of Contents')
+          .on('click', function() { $('#docs').remove(); GE.Docs.getIndex() } ) ) 
+          
         $( '#docs' ).append( docs )
         GE.Docs.bodyElement = docs
         GE.Layout.setColumnBodyHeight( GE.Docs.col )
@@ -2014,9 +2017,6 @@ var GE = {
   Help : {
     open : function() {
       this.col = GE.Layout.addColumn({ header:'Help' })
-
-      this.col.bodyElement.remove()
-      
       this.getIndex()
     },
     getIndex : function() {
@@ -2027,18 +2027,14 @@ var GE = {
       })
       .done( function( data ) {
         var help = $( data )
-        $( GE.Help.col.element ).append( help )
-        GE.Help.col.bodyElement = help
+        GE.Help.col.bodyElement.append( help )
         GE.Layout.setColumnBodyHeight( GE.Help.col )
       }) 
     }, 
   },
   Credits : {
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Credits' })
-
-      this.col.bodyElement.remove()
-      
+      this.col = GE.Layout.addColumn({ header:'Credits' })      
       this.getIndex()
     },
     getIndex : function() {
@@ -2049,8 +2045,7 @@ var GE = {
       })
       .done( function( data ) {
         var credits = $( data )
-        $( GE.Credits.col.element ).append( credits )
-        GE.Credits.col.bodyElement = credits
+        GE.Credits.col.bodyElement.append( credits )
         GE.Layout.setColumnBodyHeight( GE.Credits.col )
       }) 
     }, 
@@ -3034,7 +3029,7 @@ module.exports = function( Gibber ) {
         columnResizeEndHandler = function(e) {
           $( window ).unbind( "mousemove", columnResizeHandler );
           $( window ).unbind( "mouseup", columnResizeEndHandler );
-          $( "body ").css( "-webkit-user-select", "text" );
+          $( "body").css( "-webkit-user-select", "text" );
         };
 
         col.resizeHandle.on( 'mousedown', function(e) {
@@ -3055,7 +3050,8 @@ module.exports = function( Gibber ) {
   
     resizeColumns : function( windowWidth, windowHeight ) {
       if( isNaN(windowHeight) ) windowHeight = $( window ).height()
-    
+      
+      console.log("COLUMN RESIZE")
       var totalWidth   = 0, // also used to determine x coordinate of each column
           headerHeight = $('thead').height(),
           columnHeight = windowHeight - headerHeight - $('tfoot').height()
@@ -3070,14 +3066,21 @@ module.exports = function( Gibber ) {
         })
       
         var colHeight = columnHeight - this.columns[i].header.outerHeight()
+        
         $( this.columns[ i ].bodyElement ).css({
           width : this.columns[i].width - this.resizeHandleSize, 
           height: colHeight
         })
+        
         // console.log( this.columns[i].bodyElement.width() ) 
+        
         $( this.columns[ i ].header ).width( this.columns[i].width - this.resizeHandleSize )
       
         if( this.columns[ i ].editor ) {
+          this.columns[ i ].editorElement.css({
+            width : this.columns[i].width - this.resizeHandleSize, 
+            height: colHeight
+          })
           this.columns[ i ].editor.setSize( null, colHeight )
         }
       
@@ -27115,47 +27118,60 @@ module.exports = $
           that = ctx,
           three = null;
       
-      if( typeof noThree === 'undefined' ) noThree = typeof Graphics.noThree !== 'undefined' ? Graphics.noThree : false
+      //if( typeof noThree === 'undefined' ) noThree = typeof Graphics.noThree !== 'undefined' ? Graphics.noThree : false
       
-      if( Graphics.running ) Graphics.clear()
+      //if( Graphics.running ) Graphics.clear()
 
-      Graphics.running = true
+      //Graphics.running = true
 
-      if( cnvs !== null && cnvs.sprite !== null) {
-        cnvs.sprite.remove()
-        try{
-          Graphics.scene.remove( cnvs.sprite )
-        }catch(e){ console.log("CANNOT REMOVE SPRITE") }
-      }
+      // if( cnvs !== null && cnvs.sprite !== null) {
+      //   cnvs.sprite.remove()
+      //   try{
+      //     Graphics.scene.remove( cnvs.sprite )
+      //   }catch(e){ console.log("CANNOT REMOVE SPRITE") }
+      // }
 
-      if( Graphics.canvas === null ) {
-        Graphics.init( '2d', column, false )
-      }else if( Graphics.mode === '3d' ) {
-        Graphics.use( '2d', null, false )
-      }
-
-      three = $( '#three' )
-      if( three.length ) {
-        three = three[0]
-      }
+      // if( Graphics.canvas2D === null ) {
+      //   Graphics.init( '2d', column, false )
+      // }else{
+      //   Graphics.canvas2D.style.display = 'block'
+      // }
       
-      if( column ) column.onclose = function() { Graphics.canvas = null }
+      // if( Graphics.canvas === null ) {
+//         Graphics.init( '2d', column, false )
+//       }else if( Graphics.mode === '3d' ) {
+//         Graphics.use( '2d', null, false )
+//       }
+
+      // three = $( '#three' )
+      // if( three.length ) {
+      //   three = three[0]
+      // }
       
-      three.style.display = 'block'
+      //if( column ) column.onclose = function() { Graphics.canvas = null }
       
-      canvas.width = parseInt( three.style.width )
-      canvas.height = parseInt( three.style.height )
+      //three.style.display = 'block'
+      var container = typeof column !== 'undefined' ? column.bodyElement[0] : $( 'body' )
+      // Graphics.canvas.parent === window ? window.innerWidth  : (Graphics.canvas.parent.offsetWidth ||
+      canvas.width = container === window  ? window.innerWidth  : ( container.offsetWidth  || container.width()  )
+      canvas.height = container === window ? window.innerHeight : ( container.offsetHeight || container.height() )
       canvas.style.width = canvas.width + 'px'
-      canvas.style.height = canvas.height + 'px'      
-
-      if( !Graphics.noThree ) {
-        var tex = new THREE.Texture( canvas )
-      }else{
-        three.innerHTML = ''
-        three.appendChild( canvas )
-      }
+      canvas.style.height = canvas.height + 'px'
       
-      Graphics.assignWidthAndHeight()
+      canvas.style.position = 'absolute'
+      canvas.style.left = 0
+      canvas.style.top = 0
+      
+      container.appendChild( canvas )
+
+      // if( !Graphics.noThree ) {
+      //   var tex = new THREE.Texture( canvas )
+      // }else{
+      //   three.innerHTML = ''
+      //   three.appendChild( canvas )
+      // }
+      
+      // Graphics.assignWidthAndHeight()
       
       // $.subscribe( '/layout/contentResize', function( e, msg ) {
       //   three.setAttribute( 'width', msg.width )
@@ -27175,12 +27191,19 @@ module.exports = $
             
         canvas: canvas,
         is3D: Graphics.mode === '3d',
-        texture: tex || { needsUpdate: function() {} }, 
+        texture:  { needsUpdate: function() {} },//tex || { needsUpdate: function() {} }, 
         remove : function() {
-          three.style.display = 'none'
+          //three.style.display = 'none'
+          // Graphics.canvas2D.style.display = 'none'
           //Graphics.canvas = null
           //Graphics.ctx = null 
           //cnvs = null
+        },
+        show: function() {
+          canvas.style.display = 'block'
+        },
+        hide: function() {
+          canvas.style.display = 'none'
         },
         shouldClear: false,
         _fill : that.fill,
@@ -27509,23 +27532,23 @@ module.exports = $
         }
       })
       
-      if( !Graphics.noThree ) {
-        that.sprite = new Graphics.THREE.Mesh(
-          new Graphics.THREE.PlaneGeometry( canvas.width, canvas.height, 1, 1),
-          new Graphics.THREE.MeshBasicMaterial({
-            map:tex,
-            affectedByDistance:false,
-            useScreenCoordinates:true
-          })
-        )
-        
-        that.sprite.position.x = that.sprite.position.y = that.sprite.position.z = 0
-        that.texture.needsUpdate = true 
-        
-        Graphics.scene.add( that.sprite )
-      }
-      
-      Graphics.graph.push( that )
+      // if( !Graphics.noThree ) {
+      //   that.sprite = new Graphics.THREE.Mesh(
+      //     new Graphics.THREE.PlaneGeometry( canvas.width, canvas.height, 1, 1),
+      //     new Graphics.THREE.MeshBasicMaterial({
+      //       map:tex,
+      //       affectedByDistance:false,
+      //       useScreenCoordinates:true
+      //     })
+      //   )
+      //   
+      //   that.sprite.position.x = that.sprite.position.y = that.sprite.position.z = 0
+      //   that.texture.needsUpdate = true 
+      //   
+      //   Graphics.scene.add( that.sprite )
+      // }
+      // 
+      // Graphics.graph.push( that )
       
       cnvs = that
 
@@ -27684,10 +27707,13 @@ for( var key in types) {
     var type = key,
         shape = types[ key ]
     var constructor = function() {
-      if( Graphics.canvas === null){
+      if( Graphics.canvas === null || Graphics.canvas !== Graphics.canvas3D ){
         Graphics.init('3d', null, false)
       }else if( Graphics.mode === '2d' ) {
-        Graphics.use( '3d' )
+        Graphics.init('3d', null, false)
+        //Graphics.use( '3d' )
+      }else{
+        Graphics.canvas3D.style.display = 'block'
       }
       
       Graphics.running = true 
@@ -28320,6 +28346,8 @@ var $ = require('../dollar'),
 Graphics = {
   Color: require( 'color' ),
   canvas :  null,
+  canvas2D: null,
+  canvas3D: null,
   ctx:      null,
   width:    0,
   height:   0,
@@ -28327,6 +28355,7 @@ Graphics = {
   resolution: 1,
   fps: null,
   graph: [],
+  initialized: false,
   THREE: require('../../external/three/three.min'),
   
   export: function( target ) {
@@ -28339,7 +28368,8 @@ Graphics = {
   
   init : function( mode, container, noThree ) {
     console.log("INIT", mode, noThree )
-    this.canvas = document.createElement('div')
+    //if( this.initialized ) return 
+    // this.canvas = document.createElement('div')
     
     if( typeof noThree !== 'undefined' ) { 
       this.noThree = noThree
@@ -28355,6 +28385,17 @@ Graphics = {
       if(!window.WebGLRenderingContext) {
         this.noThree = true
       }
+    }
+    
+    this.mode = mode || '3d'
+    console.log("MODE", this.mode)
+    if( this.mode === '3d' && this.canvas3D !== null ) {
+      this.canvas = this.canvas3D
+    }else if( this.mode === '2d' && this.canvas2D !== null ) {
+      this.canvas = this.canvas2D
+    }else{
+      console.log( 'CREATING GRAPHICS DIV' )
+      this.canvas = document.createElement('div')
     }
     
     if( this.noThree !== noThree ) {
@@ -28375,6 +28416,7 @@ Graphics = {
     this.canvas.style.position = this.canvas.parent === window ? 'fixed' : 'absolute'
     this.canvas.style.float    = this.canvas.parent === window ? 'none' : 'left'
     this.canvas.style.overflow = 'hidden'
+    this.canvas.style.display  = 'block'
     
     this.canvas.setAttribute( 'id', 'three' )
     
@@ -28389,11 +28431,9 @@ Graphics = {
     }
     
     this.render = this.render.bind( this )
-    this.mode = mode || '3d'
     
     //console.log( this.mode )
     if( this.mode === '2d' ) this.noThree = true
-    
     
     if( !this.noThree ) {
       try{
@@ -28404,9 +28444,15 @@ Graphics = {
         this.noThree = true
         console.log( 'Your browser supports WebGL but does not have it enabled. 2D drawing will work, but 3D geometries and shaders will not function until you turn it on.' )
         //Gibber.Environment.Message.post( 'Your browser supports WebGL but does not have it enabled. 2D drawing will work, but 3D geometries and shaders will not function until you turn it on.' )
+      }finally{
+        if( this.noThree ) {
+          this.canvas2D = this.canvas
+        }else{
+          this.canvas3D = this.canvas
+        }
       }
     }else{
-
+      this.canvas2D = this.canvas
     }
     
     var res = this.resolution, self = this
@@ -28454,7 +28500,9 @@ Graphics = {
       props.h -= $( 'tfoot' ).height()
       
       resize( null, props )  
-    })    
+    })
+    
+    this.initialized = true   
   },
   
   createScene : function( mode ) {		
@@ -28574,10 +28622,11 @@ Graphics = {
       this.PostProcessing.isRunning = false
       
       // something in hear messes thigns up...
-      // this.canvas.remove()
-      // this.canvas = null
-      // this.ctx = null
-      // this.running = false
+      this.canvas.style.display = 'none'
+      //this.canvas = null
+      //this.ctx = null
+      this.running = false
+      this.initialized = false
     }
   },
   render : function() {

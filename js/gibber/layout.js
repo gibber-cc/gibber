@@ -290,7 +290,7 @@ module.exports = function( Gibber ) {
         columnResizeEndHandler = function(e) {
           $( window ).unbind( "mousemove", columnResizeHandler );
           $( window ).unbind( "mouseup", columnResizeEndHandler );
-          $( "body ").css( "-webkit-user-select", "text" );
+          $( "body").css( "-webkit-user-select", "text" );
         };
 
         col.resizeHandle.on( 'mousedown', function(e) {
@@ -311,7 +311,8 @@ module.exports = function( Gibber ) {
   
     resizeColumns : function( windowWidth, windowHeight ) {
       if( isNaN(windowHeight) ) windowHeight = $( window ).height()
-    
+      
+      console.log("COLUMN RESIZE")
       var totalWidth   = 0, // also used to determine x coordinate of each column
           headerHeight = $('thead').height(),
           columnHeight = windowHeight - headerHeight - $('tfoot').height()
@@ -326,14 +327,21 @@ module.exports = function( Gibber ) {
         })
       
         var colHeight = columnHeight - this.columns[i].header.outerHeight()
+        
         $( this.columns[ i ].bodyElement ).css({
           width : this.columns[i].width - this.resizeHandleSize, 
           height: colHeight
         })
+        
         // console.log( this.columns[i].bodyElement.width() ) 
+        
         $( this.columns[ i ].header ).width( this.columns[i].width - this.resizeHandleSize )
       
         if( this.columns[ i ].editor ) {
+          this.columns[ i ].editorElement.css({
+            width : this.columns[i].width - this.resizeHandleSize, 
+            height: colHeight
+          })
           this.columns[ i ].editor.setSize( null, colHeight )
         }
       

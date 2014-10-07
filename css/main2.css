@@ -232,9 +232,13 @@ tfoot, thead {
   background:#333;
 }
 
+.columnBody {
+  overflow:scroll;
+}
+
 #docs, #help, .browser, #credits {
   padding: 0 .6em;
-  overflow: scroll;
+/*  overflow: scroll;*/
   -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
 }
@@ -481,24 +485,28 @@ tfoot, thead {
 #browser_meta p { margin-top: .15em;}
 #browser_meta h4 { margin-bottom:.15em; }
 
-#browser_title, #browser_auth { display: inline;}
-#browser_auth{ margin-left:1.5em;}
+#browser_title, #browser_auth { display: inline; }
+#browser_auth{ margin-left:1.5em; }
+
 .message {
   /* border-bottom:1px solid #444; */
   margin-bottom:.5em;
   width:100%;
 }
+
 .messageFromSelf {
-  padding:0 .5em;
+  padding: 0 .5em;
   color: #ddd;
   background:#600
 }
 
 .messageFromOther {
-  padding:0 .5em;
-  color:#000;
-  background:#bbb
+  padding: 0 .5em;
+  color: #000;
+  background: #bbb
 }
+
+.columnBody { overflow: scroll; }
 
 .no-select {
   -webkit-touch-callout: none;

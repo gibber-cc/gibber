@@ -52,7 +52,7 @@ module.exports = function( Gibber ) {
       
       //col.element.addClass( 'browser' )
       
-      col.bodyElement.remove()
+      //col.bodyElement.remove()
       
       $.ajax({
         url: GE.SERVER_URL + "/browser",
@@ -61,10 +61,9 @@ module.exports = function( Gibber ) {
       .done( function( data ) {
         var browser = $( data ), cells, lastDiv
         
-        $( col.element ).append( browser[0] );
-        $('head').append( browser[1] )
+        $( col.bodyElement ).append( browser[0] )
+        $( 'head' ).append( browser[1] )
         $( '#search_button' ).on( 'click', GE.Browser.search )
-        col.bodyElement = browser;
         GE.Layout.setColumnBodyHeight( col )
         
         linksDivs = $( '.browserLinks' )

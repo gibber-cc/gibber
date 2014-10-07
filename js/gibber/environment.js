@@ -179,9 +179,6 @@ var GE = {
   Help : {
     open : function() {
       this.col = GE.Layout.addColumn({ header:'Help' })
-
-      this.col.bodyElement.remove()
-      
       this.getIndex()
     },
     getIndex : function() {
@@ -192,18 +189,14 @@ var GE = {
       })
       .done( function( data ) {
         var help = $( data )
-        $( GE.Help.col.element ).append( help )
-        GE.Help.col.bodyElement = help
+        GE.Help.col.bodyElement.append( help )
         GE.Layout.setColumnBodyHeight( GE.Help.col )
       }) 
     }, 
   },
   Credits : {
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Credits' })
-
-      this.col.bodyElement.remove()
-      
+      this.col = GE.Layout.addColumn({ header:'Credits' })      
       this.getIndex()
     },
     getIndex : function() {
@@ -214,8 +207,7 @@ var GE = {
       })
       .done( function( data ) {
         var credits = $( data )
-        $( GE.Credits.col.element ).append( credits )
-        GE.Credits.col.bodyElement = credits
+        GE.Credits.col.bodyElement.append( credits )
         GE.Layout.setColumnBodyHeight( GE.Credits.col )
       }) 
     }, 

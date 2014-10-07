@@ -1,12 +1,12 @@
 module.exports = function( Gibber ) {
-  var GE = Gibber.Environment
+  var GE
   
   var Docs = {
     files: {},
     open : function() {
+      GE = Gibber.Environment
+      
       this.col = GE.Layout.addColumn({ header:'Reference' })
-
-      this.col.bodyElement.remove()
     
       this.getIndex()
     },
@@ -29,8 +29,7 @@ module.exports = function( Gibber ) {
       })
       .done( function( data ) {
         var docs = $( data )
-        $( GE.Docs.col.element ).append( docs )
-        GE.Docs.col.bodyElement = docs
+        GE.Docs.col.bodyElement.append( docs )
         GE.Layout.setColumnBodyHeight( GE.Docs.col )
       }) 
     },
@@ -43,8 +42,10 @@ module.exports = function( Gibber ) {
       .done( function( data ) {
         var docs = $( data )
         $( '#docs' ).empty()
-        $( '#docs' ).append( $('<button>').text('Back To Table of Contents')
-                            .on('click', function() { $('#docs').remove(); GE.Docs.getIndex() } ) ) 
+        $( '#docs' )
+          .append( $('<button>').text('Back To Table of Contents')
+          .on('click', function() { $('#docs').remove(); GE.Docs.getIndex() } ) ) 
+          
         $( '#docs' ).append( docs )
         GE.Docs.bodyElement = docs
         GE.Layout.setColumnBodyHeight( GE.Docs.col )
