@@ -55,4 +55,20 @@ Gibber.init()
 ``` 
 
 ## Notes
-Note that `Drums` do not work because I haven't figured out resource management yet and `Drums` uses audio samples. However, `EDrums` (which uses synthesis) works fine. 
+Note that `Drums` do not work because I haven't figured out resource management yet and `Drums` uses audio samples. However, `EDrums` (which uses synthesis) works fine.
+
+## Using in Node
+Thanks to Sebastien Piquemal's excellent node web-audio-api plugin (https://github.com/sebpiq/node-web-audio-api) you can run gibber.audio.lib code directly inside of node. Try running `npm install` and then `node test` from the top level of the repo to hear this in action.
+
+You need to include his library at the start of your code. So, to run code in node your file should start with:
+
+```javascript
+// must be global! no way to fix this that I can think of...
+AudioContext = require('web-audio-api').AudioContext
+
+// must be global! this should be fixable.
+Gibber = require('gibber.audio.lib.js')
+Gibber.init()
+```
+
+See the file in `scripts/tests` for more detail.
