@@ -34,6 +34,8 @@ Audio = {
     target.Rndf = Audio.Core.Rndf     
     target.rndi = Audio.Core.rndi
     target.rndf = Audio.Core.rndf
+    
+    target.Scale = Audio.Theory.Scale
 
 		target.module = Gibber.import
     Audio.Core.Time.export( target )

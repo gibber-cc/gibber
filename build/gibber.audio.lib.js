@@ -41,6 +41,8 @@ Audio = {
     target.Rndf = Audio.Core.Rndf     
     target.rndi = Audio.Core.rndi
     target.rndf = Audio.Core.rndf
+    
+    target.Scale = Audio.Theory.Scale
 
 		target.module = Gibber.import
     Audio.Core.Time.export( target )
@@ -2681,7 +2683,10 @@ module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gi
           })
         }
         
-        var __scale;
+        var __scale = obj.scale;
+        
+        if( obj.scale ) obj.seq.scale = __scale
+        
         Object.defineProperty(obj, 'scale', {
           get: function() { return __scale },
           set: function(v) {
