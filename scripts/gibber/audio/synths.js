@@ -95,7 +95,7 @@
             mv = 1,
             adsr = false,
             scale,
-            requireReleaseTrigger = true
+            requireReleaseTrigger = false
         
         if( typeof args[0] === 'object' ) {
           if(typeof args[0].maxVoices !== 'undefined') { 
