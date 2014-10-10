@@ -312,7 +312,6 @@ module.exports = function( Gibber ) {
     resizeColumns : function( windowWidth, windowHeight ) {
       if( isNaN(windowHeight) ) windowHeight = $( window ).height()
       
-      console.log("COLUMN RESIZE")
       var totalWidth   = 0, // also used to determine x coordinate of each column
           headerHeight = $('thead').height(),
           columnHeight = windowHeight - headerHeight - $('tfoot').height()

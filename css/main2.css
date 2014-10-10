@@ -116,6 +116,7 @@ tfoot tr { display:block; width:100% }
   height:2em; 
   overflow:hidden;
   line-height:2em;
+  background:#000 ;
   border-bottom: 1px solid #444;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -348,7 +349,7 @@ tfoot, thead {
 /*.columnHeader button { border-width:1px !important;}*/
 
 .resizeHandle {
- -moz-box-sizing: border-box !important;
+/* -moz-box-sizing: border-box !important;*/
   box-sizing: border-box !important;
   height:100%;
   background-color:transparent;

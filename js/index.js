@@ -1907,7 +1907,10 @@ var GE = {
       window.Mouse = GE.Mouse
       
       // keymaps handles this when it occurs within codemirror instances
-      Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )    
+      Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )  
+      
+      // attach canvases to table row instead of body
+      Gibber.Graphics.defaultContainer = '#mainContent'  
     }
     
     /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
@@ -3051,7 +3054,6 @@ module.exports = function( Gibber ) {
     resizeColumns : function( windowWidth, windowHeight ) {
       if( isNaN(windowHeight) ) windowHeight = $( window ).height()
       
-      console.log("COLUMN RESIZE")
       var totalWidth   = 0, // also used to determine x coordinate of each column
           headerHeight = $('thead').height(),
           columnHeight = windowHeight - headerHeight - $('tfoot').height()
@@ -3161,8 +3163,8 @@ module.exports = function( Gibber ) {
         // console.log( prefix, upper )
         _m[ 'prev' + upper + 'X' ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
         _m[ 'prev' + upper + 'Y' ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
-        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX // / _m.ww 
-        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - headerFooterHeight// / _m.wh 
+        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX - window.scrollX// / _m.ww 
+        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - window.scrollY - headerFooterHeight// / _m.wh 
         
         //console.log( e )
         if( typeof _m.onvaluechange === 'function' ) {
@@ -27104,83 +27106,86 @@ module.exports = $
 }()
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/2d.js":[function(require,module,exports){
-!function() {
-  var cnvs = null, Gibber, Graphics
-
-  var TwoD = {
-    export: function( target ) {
-      target.Canvas = TwoD.Canvas
+module.exports = function( Gibber, Graphics ) {
+  "use strict"
+  var $ = require('../dollar')
+  
+  var _that, cnvs
+  
+  var TwoD = function( container ) { 
+    return _that 
+  }
+  TwoD.export = function( target ) {
+    target.Canvas = _that.Canvas
+  }
+  
+  _that = {
+    initialized: false,
+    canvasObject:null,
+    canvas:null,
+    container:null,
+    _update : function() {
+      if( this.initialized ) {
+        if( this.canvasObject ) {
+          this.canvasObject._update()
+        }
+      }
     },
-    
-    Canvas : function( column, noThree ) {
-       var canvas = document.createElement( 'canvas' ),//$( 'canvas' ),
-          ctx = canvas.getContext( '2d' ),
-          that = ctx,
-          three = null;
+    remove: function() {
+      if( this.canvasObject ) {
+        this.canvasObject.remove()
+      }
+    },
+    init: function( container ) {
+      this.container = Graphics.getContainer( container )
+      this.initialized = true
       
-      //if( typeof noThree === 'undefined' ) noThree = typeof Graphics.noThree !== 'undefined' ? Graphics.noThree : false
-      
-      //if( Graphics.running ) Graphics.clear()
+      if( this.canvasObject === null ) {
+        this.canvasObject = _that._Canvas( container )
+        this.canvas = this.canvasObject.canvas
+        
+        if( this.container.append ) {
+          this.container.append( this.canvas )
+        }else{
+          this.container.appendChild( this.canvas )
+        }
+      }
 
-      //Graphics.running = true
+      if( !Graphics.running ) {
+        Graphics.start()
+      }
+    },
+    setSize: function( w, h ) {
+      this.canvasObject.setSize( w,h )
+    },
+    setupCameraAndLights: function() {
+      var _3d = Graphics.modes['3d'].obj
+      if( Graphics.mode === '3d' ) {
+        _3d.removeCameraAndLights()
+      }
 
-      // if( cnvs !== null && cnvs.sprite !== null) {
-      //   cnvs.sprite.remove()
-      //   try{
-      //     Graphics.scene.remove( cnvs.sprite )
-      //   }catch(e){ console.log("CANNOT REMOVE SPRITE") }
-      // }
-
-      // if( Graphics.canvas2D === null ) {
-      //   Graphics.init( '2d', column, false )
-      // }else{
-      //   Graphics.canvas2D.style.display = 'block'
-      // }
+      _3d.camera = new THREE.OrthographicCamera( Graphics.width / - 2, Graphics.width / 2, Graphics.height / 2, Graphics.height / - 2, 1, 1.00000001 );
+      _3d.camera.position.z = 1
+      _3d.resolution = .5
+      _3d.renderer.setSize( Graphics.width, Graphics.height )
+    },
+    Canvas : function( container ) {
+      //if( !this.initialized ) this.init( container )
+      if( Graphics.mode === '3d' ) {
+        Graphics.modes['3d'].obj.remove()
+      }
       
-      // if( Graphics.canvas === null ) {
-//         Graphics.init( '2d', column, false )
-//       }else if( Graphics.mode === '3d' ) {
-//         Graphics.use( '2d', null, false )
-//       }
-
-      // three = $( '#three' )
-      // if( three.length ) {
-      //   three = three[0]
-      // }
+      if( !_that.intialized ) Graphics.init( '2d', container )
       
-      //if( column ) column.onclose = function() { Graphics.canvas = null }
+      _that.canvasObject.show()
       
-      //three.style.display = 'block'
-      var container = typeof column !== 'undefined' ? column.bodyElement[0] : $( 'body' )
-      // Graphics.canvas.parent === window ? window.innerWidth  : (Graphics.canvas.parent.offsetWidth ||
-      canvas.width = container === window  ? window.innerWidth  : ( container.offsetWidth  || container.width()  )
-      canvas.height = container === window ? window.innerHeight : ( container.offsetHeight || container.height() )
-      canvas.style.width = canvas.width + 'px'
-      canvas.style.height = canvas.height + 'px'
-      
-      canvas.style.position = 'absolute'
-      canvas.style.left = 0
-      canvas.style.top = 0
-      
-      container.appendChild( canvas )
-
-      // if( !Graphics.noThree ) {
-      //   var tex = new THREE.Texture( canvas )
-      // }else{
-      //   three.innerHTML = ''
-      //   three.appendChild( canvas )
-      // }
-      
-      // Graphics.assignWidthAndHeight()
-      
-      // $.subscribe( '/layout/contentResize', function( e, msg ) {
-      //   three.setAttribute( 'width', msg.width )
-      //   three.setAttribute( 'height', msg.height )
-      // 
-      //   canvas.style.width = msg.width
-      //   canvas.style.height = msg.height
-      // })
-      
+      return _that.canvasObject
+    }.bind( _that ),
+    _Canvas : function( container ) { 
+      var canvas = document.createElement( 'canvas' ),//$( 'canvas' ),
+         ctx = canvas.getContext( '2d' ),
+         that = ctx,
+         three = null;
       
       $.extend( that, {
         top: 0,
@@ -27188,16 +27193,39 @@ module.exports = $
         left:0,
         right:canvas.width,
         center: { x: canvas.width / 2, y : canvas.height / 2 },
-            
+        init: function() {
+          //Graphics.graph.push( this )
+    
+          if( !Graphics.running ) Graphics.start()
+        },
+        setSize: function( w, h ) {
+          this.width = this.right = w
+          this.height = this.bottom = h
+          
+          this.center.x = this.width / 2
+          this.center.y = this.height / 2          
+
+          this.canvas.style.width = w + 'px'
+          this.canvas.style.height = h + 'px'
+    
+          this.canvas.width  = this.width  * Graphics.resolution
+          this.canvas.height = this.height * Graphics.resolution
+          
+          //Graphics.sizeCanvas( this.canvas )
+                    
+        },
+        removeCameraAndLights: function() {
+          
+        },
+
         canvas: canvas,
         is3D: Graphics.mode === '3d',
         texture:  { needsUpdate: function() {} },//tex || { needsUpdate: function() {} }, 
         remove : function() {
-          //three.style.display = 'none'
-          // Graphics.canvas2D.style.display = 'none'
-          //Graphics.canvas = null
-          //Graphics.ctx = null 
-          //cnvs = null
+          that.hide()
+          
+          that.draw = function() {}
+          Graphics.modes['2d'].canvas = null
         },
         show: function() {
           canvas.style.display = 'block'
@@ -27227,7 +27255,7 @@ module.exports = $
         },
         fade: function( amt, color ) {
           var store = this.alpha
-          
+  
           this.fillStyle = typeof color === 'undefined' ? 'black' : color
           this.alpha = amt
           this.fillRect( 0,0,this.width,this.height )
@@ -27259,11 +27287,10 @@ module.exports = $
           this.draw()
           this.restore()
         },
-        update : function() {},
         draw : function() {},
         clear: function() {
           this.clearRect( 0,0,this.right,this.bottom )
-            
+    
           this.texture.needsUpdate = true
           return this
         },
@@ -27277,12 +27304,12 @@ module.exports = $
         circle : function( x,y,radius ) {
           if( radius > 0 ) {
             this.save()
-            
+    
             this.translate(x,y)
             this.beginPath()
               this.arc( 0,0, radius, 0, Math.PI * 2)
             this.closePath()
-            
+    
             this.restore()
           }
           return this
@@ -27324,7 +27351,7 @@ module.exports = $
 
                   val  = this[ mod.name ]()
                   upper = mod.name.toUpperCase()
-          
+  
         					switch( mod.type ) {
         						case "+":
         							newVal = typeof mod.modulator === "number" ?  val + mod.modulator * mod.mult : val + mod.modulator.getValue() * mod.mult
@@ -27352,10 +27379,10 @@ module.exports = $
               },
         			mod : function( _name, _modulator, _type, _mult ) {
         				this.mods.push({ name:_name, modulator:_modulator, type:_type || "+", mult: _mult || 1 })
-        
+
                 return this
         			},
-      
+
               removeMod : function( name ) {
                 if( name ) {
                   for( var i = this.mods.length - 1; i >= 0; i-- ) {
@@ -27370,9 +27397,9 @@ module.exports = $
                 }
               }
             }
-          
+  
             that.shouldClear = true
-          
+  
             var x = 0,
                 y = 0,
                 width = height = .2,
@@ -27399,7 +27426,7 @@ module.exports = $
                 }
               },
             })
-                    
+            
             var zeroToOne = { min:0, max:1, timescale:'graphics', output:Gibber.LINEAR },
                 mappings = {
                   x: that.zeroToOne,
@@ -27407,9 +27434,9 @@ module.exports = $
                 }
 
             Gibber.createProxyProperties( sqr, mappings )
-          
+  
             that.graph.push( sqr )
-          
+  
             return sqr
           },
           Rectangle : function() {
@@ -27418,13 +27445,13 @@ module.exports = $
                   width: that.zeroToOne,
                   height: that.zeroToOne
                 }
-            
+    
             rect.draw = function() {
               that.rectangle( Math.floor(this.x() * that.width), Math.floor(this.y() * that.height), Math.floor(this.width() * that.width), Math.floor(this.height() * that.height) )
               if( this.stroke ) that.stroke( this.stroke )
               if( this.fill   ) that.fill( this.fill )
             }
-            
+    
             var width = height = .2
             Object.defineProperties( rect, {
               'width': {
@@ -27440,25 +27467,25 @@ module.exports = $
             })
 
             Gibber.createProxyProperties( rect, mappings )
-            
+    
             if( typeof arguments[0] === 'object' ) $.extend( rect, arguments[0] )
-            
+    
             return rect
           },
-          
+  
           Polygon: function() {
             var shape = that.shapes.Shape(),
                 mappings = {
                   radius: that.zeroToOne,
                   sides: { min:3, max:20, output:Gibber.LINEAR, timescale:'graphics' }
                 }
-            
+    
             shape.draw = function() {
               that.polygon( Math.floor(this.x() * that.width), Math.floor(this.y() * that.height), Math.floor(this.radius() * that.width), this.sides() )
               if( this.stroke ) that.stroke( this.stroke )
               if( this.fill   ) that.fill( this.fill )
             }
-            
+    
             var radius = .2, sides = 5
             Object.defineProperties( shape, {
               'radius': {
@@ -27474,10 +27501,10 @@ module.exports = $
             })
 
             Gibber.createProxyProperties( shape, mappings )
-            
+    
             if( typeof arguments[0] === 'object' ) $.extend( shape, arguments[0] )
-            
-            console.log( 'SHAPE', shape, shape.draw )
+    
+            // console.log( 'SHAPE', shape, shape.draw )
             return shape
           }
         },
@@ -27493,13 +27520,13 @@ module.exports = $
         update: function() { this.texture.needsUpdate = true; return this },
         polygon: function( x,y,radius,sides ) {
           var ca  = 360 / sides
-          
+  
           for( var i = 1; i <= sides; i++ ) {
             var angle = ca * i,
                 radians = Math.PI * 2 * ( angle / 360 ),
                 _x = Math.round( Math.sin( radians ) * radius ) + x,
                 _y = Math.round( Math.cos( radians ) * radius ) + y
-            
+    
             if( i === 1 ) {
               this.beginPath()
               this.moveTo( _x, _y )
@@ -27511,7 +27538,7 @@ module.exports = $
               radians = Math.PI * 2 * ( angle / 360 ),
               _x = Math.round( Math.sin( radians ) * radius ) + x,
               _y = Math.round( Math.cos( radians ) * radius ) + y   
-          
+  
           this.lineTo( _x, _y )
           this.closePath()
           return this
@@ -27522,34 +27549,33 @@ module.exports = $
         width:canvas.width,
         height:canvas.height,
         sprite : null,
-        hide: function() {
-          if( Graphics.scene ) Graphics.scene.remove( that.sprite )
-          Graphics.graph.splice( that, 1 )
-        },
-        show : function() {
-          Graphics.scene.add( that.sprite )
-          Graphics.graph.push( that )
+        createSprite: function() {
+          that.texture = new Graphics.THREE.Texture( canvas ),
+            
+          that.sprite = new Graphics.THREE.Mesh(
+            new Graphics.THREE.PlaneGeometry( canvas.width, canvas.height, 1, 1),
+            new Graphics.THREE.MeshBasicMaterial({
+              map:that.texture,
+              affectedByDistance:false,
+              useScreenCoordinates:true
+            })
+          )
+
+          that.sprite.position.x = that.sprite.position.y = that.sprite.position.z = 0
+          that.texture.needsUpdate = true 
+  
+          return that.sprite
         }
+        // hide: function() {
+        //   if( Graphics.scene ) Graphics.scene.remove( that.sprite )
+        //   Graphics.graph.splice( that, 1 )
+        // },
+        // show : function() {
+        //   Graphics.scene.add( that.sprite )
+        //   Graphics.graph.push( that )
+        // }
       })
-      
-      // if( !Graphics.noThree ) {
-      //   that.sprite = new Graphics.THREE.Mesh(
-      //     new Graphics.THREE.PlaneGeometry( canvas.width, canvas.height, 1, 1),
-      //     new Graphics.THREE.MeshBasicMaterial({
-      //       map:tex,
-      //       affectedByDistance:false,
-      //       useScreenCoordinates:true
-      //     })
-      //   )
-      //   
-      //   that.sprite.position.x = that.sprite.position.y = that.sprite.position.z = 0
-      //   that.texture.needsUpdate = true 
-      //   
-      //   Graphics.scene.add( that.sprite )
-      // }
-      // 
-      // Graphics.graph.push( that )
-      
+
       cnvs = that
 
       Object.defineProperties( that, {
@@ -27562,8 +27588,6 @@ module.exports = $
           set : function(v) { this.globalAlpha = v }
         }
       })
-
-      Graphics.canvas2d = that
 
       return that
     }
@@ -27586,10 +27610,147 @@ module.exports = $
   //   return Graphics.canvas2d.shapes[ 'Polygon' ].apply( null, args )
   // }
   
-  module.exports = function( _Gibber, _Graphics ) { Gibber = _Gibber; Graphics = _Graphics; return TwoD; }
+  return TwoD
+}
+},{"../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/dollar.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/3d.js":[function(require,module,exports){
+module.exports = function( Gibber, Graphics ) {
+  "use strict"
+  
+  var $ = require('../dollar')
+  
+  var ThreeD = function( container ) {    
+    var that = $.extend( {}, {
+      canvas : null,
+      ctx : null,
+      initialized :false,
+      renderer: null,
+      scene: null,
+      camera: null,
+      lights: [],
+      running: false,
+      init : function() {
+        this.container = Graphics.getContainer( container )
+        
+        this.createRenderer()
+        this.createScene()
+        this.createLights()        
+        
+        if( !Graphics.running ) {
+          Graphics.start()
+        }
+        
+        this.show()
+        this.initialized = true
+        this.running = true
+        
+        Graphics.mode = '3d'
+      },
 
-}()
-},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/geometry.js":[function(require,module,exports){
+      setSize: function( w, h ) {
+        this.renderer.setSize( w, h );
+        this.renderer.domElement.style.width = w + 'px'
+        this.renderer.domElement.style.height = h + 'px'        
+        
+        this.createCameras()
+      },
+      
+      _update : function() {        
+        if( this.initialized ) {
+          this.renderer.clear()
+
+          if( Graphics.PostProcessing && Graphics.PostProcessing.fx.length ) {
+            Graphics.PostProcessing.composer.render()
+          }else{
+            this.renderer.render( this.scene, this.camera )
+          }
+        }
+      },
+      
+      createRenderer: function() {
+        if( this.renderer !== null ) return
+        
+        this.renderer = new Graphics.THREE.WebGLRenderer();
+    
+        if( this.container.append ) {
+          this.container.append( this.renderer.domElement )
+        }else{
+          this.container.appendChild( this.renderer.domElement )
+        }
+        
+        this.canvas = this.renderer.domElement
+        
+        //Graphics.sizeCanvas( this.canvas )
+      },
+      
+      createScene : function() {
+        if( this.scene !== null ) return
+    		this.scene = new Graphics.THREE.Scene();
+      },
+      
+      createCameras: function() {
+        if( this.camera === null ) {
+    		  var VIEW_ANGLE = 45,
+    		  	  ASPECT = Graphics.width / Graphics.height,
+    		  	  NEAR = 0.1,
+    		  	  FAR = 10000;
+            
+         	this.camera = new Graphics.THREE.PerspectiveCamera(
+    		    VIEW_ANGLE,
+    		    ASPECT,
+    		    NEAR,
+    		    FAR
+    		  )
+        
+          this.scene.add( this.camera );
+        }
+        
+        this.camera.updateProjectionMatrix();
+        this.camera.position.z = 250;
+        this.camera.lookAt( this.scene.position )
+      },
+      
+      createLights: function() {
+        if( this.lights.length > 0 ) return 
+        
+        this.ambientLight = new Graphics.THREE.AmbientLight(0xFFFFFF);
+
+    		this.pointLight = new Graphics.THREE.PointLight( 0xFFFFFF )
+    		this.pointLight.position.x = 100
+    		this.pointLight.position.y = 100
+    		this.pointLight.position.z = -130
+
+    		this.pointLight2 = new Graphics.THREE.PointLight( 0x666666 )
+    		this.pointLight2.position.x = 0
+    		this.pointLight2.position.y = 0
+    		this.pointLight2.position.z = 260
+
+    		this.lights = [ this.pointLight, this.pointLight2 ]
+        this.scene.add( this.pointLight );
+        this.scene.add( this.pointLight2 );
+        // this.scene.remove( this.ambientLight );
+      },
+      
+      removeCameraAndLights: function() {
+        this.scene.remove( this.camera )
+        this.scene.remove( this.pointLight )
+        this.scene.remove( this.pointLight2 )
+        this.scene.add( this.ambientLight )
+      },
+      
+      remove : function() {
+        that.hide()
+        that.running = false
+      },
+      show: function() { that.canvas.style.display = 'block' },
+      hide: function() { that.canvas.style.display = 'none'  },
+    })      
+        
+    return that
+  }
+  
+  return ThreeD
+}
+},{"../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/dollar.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/geometry.js":[function(require,module,exports){
 var $ = require('../dollar' )
 
 module.exports = function( Gibber, Graphics, THREE ){ 
@@ -27707,14 +27868,17 @@ for( var key in types) {
     var type = key,
         shape = types[ key ]
     var constructor = function() {
-      if( Graphics.canvas === null || Graphics.canvas !== Graphics.canvas3D ){
-        Graphics.init('3d', null, false)
-      }else if( Graphics.mode === '2d' ) {
+      if( Graphics.modes['3d'].obj === null ) { //|| Graphics.canvas !== Graphics.canvas3D ){
+        Graphics.init( '3d', null )
+      }else{
+        Graphics.modes['3d'].obj.show()
+        Graphics.mode = '3d'
+      }/*else if( Graphics.mode === '2d' ) {
         Graphics.init('3d', null, false)
         //Graphics.use( '3d' )
       }else{
-        Graphics.canvas3D.style.display = 'block'
-      }
+        //Graphics.canvas3D.style.display = 'block'
+      }*/
       
       Graphics.running = true 
 
@@ -27981,7 +28145,7 @@ for( var key in types) {
 			this.mods = []
       
       this.remove = this.kill = function(shouldNotRemove) {
-        Graphics.scene.remove( this.mesh )
+        Graphics.modes['3d'].obj.scene.remove( this.mesh )
         if( !shouldNotRemove )
           Graphics.graph.splice( Graphics.graph.indexOf( this ), 1 )
           
@@ -28056,7 +28220,7 @@ for( var key in types) {
         if( arguments[0].position ) this.scale = arguments[0].position
       }
                 
-      Graphics.scene.add( this.mesh )
+      Graphics.modes[ '3d' ].obj.scene.add( this.mesh )
       Graphics.graph.push( this )
       
       this.mappings = []
@@ -28356,104 +28520,90 @@ Graphics = {
   fps: null,
   graph: [],
   initialized: false,
+  defaultContainer: 'body',
   THREE: require('../../external/three/three.min'),
   
   export: function( target ) {
     Graphics.Geometry.export( target )
-    Graphics.TwoD.export( target )
+    Graphics.modes['2d'].constructor.export( target )
+    //target.Canvas = Graphics.modes['2d'].constructor
     Graphics.PostProcessing.export( target )
     Graphics.GibberShaders.export( target )
     target.Video = Graphics.Video
   },
   
-  init : function( mode, container, noThree ) {
-    console.log("INIT", mode, noThree )
-    //if( this.initialized ) return 
-    // this.canvas = document.createElement('div')
-    
-    if( typeof noThree !== 'undefined' ) { 
-      this.noThree = noThree
+  getContainer: function( _container ) {
+    var container
+    if( typeof _container === 'undefined' || _container === null ) {
+      container = document.querySelector( Graphics.defaultContainer )
     }else{
-      if( mode === '2d' ) {
-        this.noThree = true
-      }else{
-        this.noThree = false
-      }
+      container = _container.element
     }
     
-    if( !noThree ) {
-      if(!window.WebGLRenderingContext) {
-        this.noThree = true
-      }
+    return container
+  },
+  
+  init : function( mode, container ) { 
+    if( mode === '3d' && !window.WebGLRenderingContext ) {
+      var msg = 'Your browser does not support WebGL.' + 
+                '2D drawing will work, but 3D geometries and shaders are not supported.'
+        
+      Gibber.Environment.Message.post( msg )
     }
     
     this.mode = mode || '3d'
-    console.log("MODE", this.mode)
-    if( this.mode === '3d' && this.canvas3D !== null ) {
-      this.canvas = this.canvas3D
-    }else if( this.mode === '2d' && this.canvas2D !== null ) {
-      this.canvas = this.canvas2D
-    }else{
-      console.log( 'CREATING GRAPHICS DIV' )
-      this.canvas = document.createElement('div')
+
+    if( this.modes[ this.mode ].canvas === null ) {
+                                    //Graphics.modes['2d'].constructor()
+      this.modes[ this.mode ].obj = this.modes[ this.mode ].constructor( container )
+      // if( this.mode === '2d' ) {
+      //   this.modes[ '2d' ].canvas = this.modes[ this.mode ].obj
+      // }
     }
     
-    if( this.noThree !== noThree ) {
-      //Gibber.Environment.Message.post( 'Your browser does not support WebGL. 2D drawing will work, but 3D geometries and shaders are not supported.' )
+    if( this.modes[ this.mode ].obj.init ) { this.modes[ this.mode ].obj.init() }
+    
+    if( this.modes[ this.mode ].canvas !== null ) {
+      this.canvas = this.modes[ this.mode ].canvas
+    }else{
+      this.canvas = this.modes[ this.mode ].canvas = this.modes[ this.mode ].obj.canvas
     }
     
     if( typeof container === 'undefined' || container === null ) {
-      this.canvas.parent = window
+      this.canvas.parent = document.querySelector( Graphics.defaultContainer )
     }else{
       this.canvas.parent = container.element
-      container.element.find( '.editor' ).remove()
+      //container.element.find( '.editor' ).remove()
     }
-
+    
+    this.sizeCanvas( this.canvas )
     this.assignWidthAndHeight( true )
     
-    this.canvas.style.left = 0
-    this.canvas.style.top = 0
-    this.canvas.style.position = this.canvas.parent === window ? 'fixed' : 'absolute'
-    this.canvas.style.float    = this.canvas.parent === window ? 'none' : 'left'
-    this.canvas.style.overflow = 'hidden'
-    this.canvas.style.display  = 'block'
+    this.modes[ this.mode ].obj.setSize( this.width * this.resolution, this.height * this.resolution )
     
-    this.canvas.setAttribute( 'id', 'three' )
-    
-    if( this.canvas.parent === window ) { 
-      document.querySelector('body').appendChild( this.canvas )
-    }else{
-      if( container.element.length ) {
-        container.element.append( this.canvas )
-      }else{
-        container.element.appendChild( this.canvas )
-      }
-    }
-    
-    this.render = this.render.bind( this )
+    //Graphics.sizeCanvas( this.canvas )
     
     //console.log( this.mode )
-    if( this.mode === '2d' ) this.noThree = true
     
-    if( !this.noThree ) {
-      try{
-        console.log( 'creating scene....')
-        this.createScene( this.mode )
-      }catch(e) {
-        console.log(e)
-        this.noThree = true
-        console.log( 'Your browser supports WebGL but does not have it enabled. 2D drawing will work, but 3D geometries and shaders will not function until you turn it on.' )
-        //Gibber.Environment.Message.post( 'Your browser supports WebGL but does not have it enabled. 2D drawing will work, but 3D geometries and shaders will not function until you turn it on.' )
-      }finally{
-        if( this.noThree ) {
-          this.canvas2D = this.canvas
-        }else{
-          this.canvas3D = this.canvas
-        }
-      }
-    }else{
-      this.canvas2D = this.canvas
-    }
+    // if( !this.noThree ) {
+    //   try{
+    //     console.log( 'creating scene....')
+    //     this.createScene( this.mode )
+    //   }catch(e) {
+    //     console.log(e)
+    //     this.noThree = true
+    //     console.log( 'Your browser supports WebGL but does not have it enabled. 2D drawing will work, but 3D geometries and shaders will not function until you turn it on.' )
+    //     //Gibber.Environment.Message.post( 'Your browser supports WebGL but does not have it enabled. 2D drawing will work, but 3D geometries and shaders will not function until you turn it on.' )
+    //   }finally{
+    //     if( this.noThree ) {
+    //       this.canvas2D = this.canvas
+    //     }else{
+    //       this.canvas3D = this.canvas
+    //     }
+    //   }
+    // }else{
+    //   this.canvas2D = this.canvas
+    // }
     
     var res = this.resolution, self = this
     Object.defineProperty(this, 'resolution', {
@@ -28476,134 +28626,74 @@ Graphics = {
         }
       }
     });
+    
     this.start()
 
-    var resize = function( e, props ) { // I hate Safari on 10.6 for not having bind...
-      Graphics.width = props.w
-      Graphics.height = props.h
-      
-      Graphics.canvas.css({
-        top: props.offset,
-        width: Graphics.width,
-        height: Graphics.height,
-        zIndex: -1
-      })
-
-  		Graphics.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
-      $( Graphics.renderer.domElement ).css({ width: Graphics.width, height: Graphics.height })
-    }
-    
-    $.subscribe( '/layout/contentResize', resize ) // toggle fullscreen, or toggling console bar etc.
-    
-    $.subscribe( '/layout/resizeWindow', function( e, props) {
-      props.h -= $( 'thead' ).height() 
-      props.h -= $( 'tfoot' ).height()
-      
-      resize( null, props )  
-    })
+    // var resize = function( e, props ) { // I hate Safari on 10.6 for not having bind...
+    //   Graphics.width = props.w
+    //   Graphics.height = props.h
+    //   
+    //   Graphics.canvas.css({
+    //     top: props.offset,
+    //     width: Graphics.width,
+    //     height: Graphics.height,
+    //     zIndex: -1
+    //   })
+    // 
+    //   Graphics.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
+    //   $( Graphics.renderer.domElement ).css({ width: Graphics.width, height: Graphics.height })
+    // }
+    // 
+    // $.subscribe( '/layout/contentResize', resize ) // toggle fullscreen, or toggling console bar etc.
+    // 
+    // $.subscribe( '/layout/resizeWindow', function( e, props) {
+    //   props.h -= $( 'thead' ).height() 
+    //   props.h -= $( 'tfoot' ).height()
+    //   
+    //   resize( null, props )  
+    // })
     
     this.initialized = true   
   },
   
-  createScene : function( mode ) {		
-    this.renderer = new Graphics.THREE.WebGLRenderer();
+  sizeCanvas: function( canvas ) {
+    console.log( "SIZING CANVAS", canvas, canvas.parent )
+    var body = document.querySelector( 'body' ),
+        appendedToBody = canvas.parent === body
+        
+    canvas.style.left = 0
+    canvas.style.top = appendedToBody ? 0 : 32
+    canvas.style.position = 'fixed'
+    //canvas.style.position = canvas.parent === document ? 'fixed' : 'relative'
+    canvas.style.float    = canvas.parent === document ? 'none' : 'left'
+    canvas.style.overflow = 'hidden'
+    canvas.style.display  = 'block'
     
-    //console.log( "THREE", $('#three') )
-    var _3 = $('#three')
-    
-    if( _3.append ) {
-      _3.append( this.renderer.domElement )
-    }else{
-      _3.appendChild( this.renderer.domElement )
-    }
-    
-    this.assignWidthAndHeight()
-		this.scene = new Graphics.THREE.Scene();
-		// must wait until scene and renderer are created to initialize effect composer
-
-    this.ambientLight = new Graphics.THREE.AmbientLight(0xFFFFFF);
-
-		this.pointLight = new Graphics.THREE.PointLight( 0xFFFFFF )
-		this.pointLight.position.x = 100
-		this.pointLight.position.y = 100
-		this.pointLight.position.z = -130
-
-		this.pointLight2 = new Graphics.THREE.PointLight( 0x666666 )
-		this.pointLight2.position.x = 0
-		this.pointLight2.position.y = 0
-		this.pointLight2.position.z = 260
-
-		this.lights = [ this.pointLight, this.pointLight2 ]
-    this.use( mode ); // creates camera and adds lights	
-	
-    this.camera.updateProjectionMatrix();
-    if( this.mode === '3d' ) {
-      this.camera.position.z = 250;
-      this.camera.lookAt( this.scene.position );
+    if( appendedToBody ) {
+      body.style.margin = 0
     }
   },
-  
+    
   start : function() {
     this.running = true
 		window.requestAnimationFrame( this.render );
   },
   
-  use : function( mode ) {
-    var _3 = $('#three')
+  useCanvasAsTexture: function( _canvas ) {
+    var sprite = _canvas.createSprite()
+    //_canvas.hide()
     
-    if( _3.show ) {
-      $( '#three' ).show()      
-    }else{
-      $( '#three' ).style.display = 'block'
+    if( !Graphics.initialized || Graphics.mode === '2d' ) {
+      Graphics.init( '3d' )
     }
-
-    if( mode === '2d' ) {
-      console.log("Now drawing in 2d.")
-      if( this.mode === '3d' ) {
-        this.scene.remove( this.camera )
-        this.scene.remove( this.pointLight )
-        this.scene.remove( this.pointLight2 )
-        this.scene.add( this.ambientLight )
-      }
-
-      this.camera = new Graphics.THREE.OrthographicCamera( this.width / - 2, this.width / 2, this.height / 2, this.height / - 2, 1, 1.00000001 );
-      this.camera.position.z = 1
-      this.resolution = .5
-      this.renderer.setSize( this.width, this.height )
-
-      this.mode = '2d'
-    }else{
-      console.log("Now drawing in 3d.")
-      if( this.mode === '2d' ) {
-        Graphics.canvas2d.hide()
-        if( this.scene ) this.scene.remove( this.camera )
-      }
-		  var VIEW_ANGLE = 45,
-		  	  ASPECT = this.width / this.height,
-		  	  NEAR = 0.1,
-		  	  FAR = 10000;
-
-     	this.camera = new Graphics.THREE.PerspectiveCamera(
-		    VIEW_ANGLE,
-		    ASPECT,
-		    NEAR,
-		    FAR
-		  )
-      
-      if( !this.scene ) this.scene = new Graphics.THREE.Scene();
-      
-      this.scene.add( this.camera );
-      this.camera.updateProjectionMatrix();
-      this.scene.add( this.pointLight );
-      this.scene.add( this.pointLight2 );
-      this.scene.remove( this.ambientLight );
-
-      this.camera.position.z = 250;
-      this.camera.lookAt( this.scene.position )
-
-      this.mode = '3d'
-    }
-  }, 
+    //Graphics.use( '2d' )
+    Graphics.modes['3d'].obj.scene.add( sprite )
+    
+    Graphics.modes['2d'].obj.setupCameraAndLights()
+    
+    Graphics.graph.push( _canvas )
+  },
+  
   clear : function() {
     if( this.running ) {
       for( var i = 0; i < this.graph.length; i++ ) {
@@ -28611,42 +28701,38 @@ Graphics = {
       }
 
       this.graph.length = 0
-      if( this.PostProcessing ) this.PostProcessing.fx.length = 0
-      if( !this.noThree ) {
+      
+      console.log("GRAPHICS CLEAR", this.modes )
+      
+      for( var modeName in this.modes ) {
+        var mode = this.modes[ modeName ]
+        if( mode.obj ) mode.obj.remove()
+      }
+      
+      if( this.PostProcessing ) { 
         for( var j = this.PostProcessing.fx - 1; j >= 0; j-- ) {
           this.PostProcessing.fx[ j ].remove()
         }
+        this.PostProcessing.fx.length = 0
+        this.PostProcessing.isRunning = false
       }
-      
-      this.PostProcessing.fx.length = 0
-      this.PostProcessing.isRunning = false
-      
+
       // something in hear messes thigns up...
-      this.canvas.style.display = 'none'
+      //this.canvas.style.display = 'none'
       //this.canvas = null
       //this.ctx = null
       this.running = false
-      this.initialized = false
+      //this.initialized = false
     }
   },
   render : function() {
     if( this.running ) {
   		for( var i = 0; i < this.graph.length; i++ ) {
-  			this.graph[i]._update();
-  			this.graph[i].update();
+  			this.graph[ i ]._update()
+  			this.graph[ i ].update()
   		}
       
-      if( !this.noThree ) {
-    		this.renderer.clear()
-      
-        if( this.PostProcessing && this.PostProcessing.fx.length ) {
-          this.PostProcessing.composer.render()
-        }else{
-          this.renderer.render( this.scene, this.camera )
-        }
-
-    		if( this.stats ) this.stats.update()
-      }
+      this.modes[ this.mode ].obj._update()
       
       if( this.fps === null || this.fps >= 55 ) {
         window.requestAnimationFrame( this.render )
@@ -28678,24 +28764,26 @@ Graphics = {
   
   assignWidthAndHeight : function( isInitialSetting ) { // don't run final lines before renderer is setup...
     Graphics.width  = Graphics.canvas.parent === window ? window.innerWidth  : (Graphics.canvas.parent.offsetWidth || Graphics.canvas.parent.width() ) //$( this.canvas.parent ).width() // either column or window... 
-    Graphics.height = Graphics.canvas.parent === window ? window.innerHeight : (Graphics.canvas.parent.offsetHeight || Graphics.canvas.parent.height() )//$( window ).height()
+    Graphics.height = Graphics.canvas.parent === window ? window.innerHeight : (Graphics.canvas.parent.offsetHeight || document.querySelector('.column').offsetHeight )//$( window ).height()
+    
+    console.log("GRAPHICS HEIGHT", Graphics.height)
     if( document.querySelector( '#header' ) !== null && Graphics.canvas.parent === window ) {
       if( Gibber.Environment.Layout.fullScreenColumn === null) { 
-        Graphics.height -= $( "#header" ).height() + $( "tfoot" ).height()
+        //Graphics.height -= $( "#header" ).height() + $( "tfoot" ).height()
       }
     }
     
     if( Graphics.canvas.parent === window ) {
       Graphics.canvas.style.top = document.querySelector( '#header' ) !== null ? document.querySelector( '#header' ).offsetHeight : 0
     }else{
-      var ch = Graphics.canvas.parent.find( '.columnHeader' ).outerHeight()
-      Graphics.canvas.style.top = ch
-      Graphics.height -= ch
-      
-      Graphics.width -= Graphics.canvas.parent.find( '.resizeHandle' ).outerWidth()
+      // var ch = document.querySelector( '.columnHeader' ).offsetHeight
+      // Graphics.canvas.style.top = ch
+      // Graphics.height -= ch
+      // 
+      // Graphics.width -= document.querySelector( '.resizeHandle' ).offsetWidth
     }
-    Graphics.canvas.style.width = Graphics.width + 'px'
-    Graphics.canvas.style.height = Graphics.height + 'px'
+    
+    // console.log( Graphics.width, Graphics.height, Graphics.canvas.style.width, Graphics.canvas.style.height )
     Graphics.canvas.style.zIndex = - 1
     
     // this.canvas.css({
@@ -28716,9 +28804,23 @@ Graphics = {
   
 }
 
+Graphics.render = Graphics.render.bind( Graphics )
+
 module.exports = function( Gibber ) { 
+  Graphics.modes = {
+    '2d':{
+      constructor: require( './2d' )( Gibber, Graphics ),
+      canvas: null,
+      obj: null,
+    },
+    '3d':{
+      constructor: require( './3d' )( Gibber, Graphics ),
+      canvas: null,
+      obj: null
+    }
+  }
+    
   Graphics.Geometry = require( './geometry' )( Gibber, Graphics, Graphics.THREE )
-  Graphics.TwoD = require( './2d' )( Gibber, Graphics )
   
   require( '../../external/three/postprocessing/EffectComposer' )
   require( '../../external/three/postprocessing/RenderPass' )
@@ -28747,7 +28849,7 @@ module.exports = function( Gibber ) {
 
 }()
 
-},{"../../external/three/postprocessing/CopyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/CopyShader.js","../../external/three/postprocessing/DotScreenPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/DotScreenPass.js","../../external/three/postprocessing/EffectComposer":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/EffectComposer.js","../../external/three/postprocessing/FilmPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/FilmPass.js","../../external/three/postprocessing/MaskPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/MaskPass.js","../../external/three/postprocessing/RenderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/RenderPass.js","../../external/three/postprocessing/ShaderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/ShaderPass.js","../../external/three/postprocessing/shaders/BleachBypassShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/BleachBypassShader.js","../../external/three/postprocessing/shaders/ColorifyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ColorifyShader.js","../../external/three/postprocessing/shaders/DotScreenShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/DotScreenShader.js","../../external/three/postprocessing/shaders/EdgeShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/EdgeShader.js","../../external/three/postprocessing/shaders/FilmShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FilmShader.js","../../external/three/postprocessing/shaders/FocusShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FocusShader.js","../../external/three/postprocessing/shaders/KaleidoShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/KaleidoShader.js","../../external/three/postprocessing/shaders/ShaderGodRays":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ShaderGodRays.js","../../external/three/three.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/three.min.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/dollar.js","./2d":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/2d.js","./geometry":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/geometry.js","./gibber_shaders":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/gibber_shaders.js","./postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/postprocessing.js","./shader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/shader.js","./video":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/video.js","color":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/node_modules/color/color.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/postprocessing.js":[function(require,module,exports){
+},{"../../external/three/postprocessing/CopyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/CopyShader.js","../../external/three/postprocessing/DotScreenPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/DotScreenPass.js","../../external/three/postprocessing/EffectComposer":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/EffectComposer.js","../../external/three/postprocessing/FilmPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/FilmPass.js","../../external/three/postprocessing/MaskPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/MaskPass.js","../../external/three/postprocessing/RenderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/RenderPass.js","../../external/three/postprocessing/ShaderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/ShaderPass.js","../../external/three/postprocessing/shaders/BleachBypassShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/BleachBypassShader.js","../../external/three/postprocessing/shaders/ColorifyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ColorifyShader.js","../../external/three/postprocessing/shaders/DotScreenShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/DotScreenShader.js","../../external/three/postprocessing/shaders/EdgeShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/EdgeShader.js","../../external/three/postprocessing/shaders/FilmShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FilmShader.js","../../external/three/postprocessing/shaders/FocusShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FocusShader.js","../../external/three/postprocessing/shaders/KaleidoShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/KaleidoShader.js","../../external/three/postprocessing/shaders/ShaderGodRays":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ShaderGodRays.js","../../external/three/three.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/three.min.js","../dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/dollar.js","./2d":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/2d.js","./3d":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/3d.js","./geometry":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/geometry.js","./gibber_shaders":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/gibber_shaders.js","./postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/postprocessing.js","./shader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/shader.js","./video":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/video.js","color":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/node_modules/color/color.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics/postprocessing.js":[function(require,module,exports){
 module.exports = function( Gibber, Graphics ) {
 
 "use strict"
@@ -29006,13 +29108,13 @@ var PP = {
   ].join('\n'),
   
   start: function() {
-    this.composer = new THREE.EffectComposer( Gibber.Graphics.renderer );
+    this.composer = new THREE.EffectComposer( Gibber.Graphics.modes['3d'].obj.renderer );
 
-    this.renderScene = new THREE.RenderPass( Gibber.Graphics.scene, Gibber.Graphics.camera );
-
+    this.renderScene = new THREE.RenderPass( Gibber.Graphics.modes['3d'].obj.scene, Gibber.Graphics.modes['3d'].obj.camera );
+    
     this.renderScene.clear = true;
     this.renderScene.renderToScreen = true;
-
+    
     this.composer.addPass( this.renderScene )
     this.isRunning = true
   },
@@ -29030,6 +29132,8 @@ var PP = {
           //var shader = shaderProps.shaders[0].init({ center:undefined, angle:.5, scale:.035, mix:.1 })
           if( Gibber.Graphics.canvas === null){
             Gibber.Graphics.init( '3d' )
+          }else if( Gibber.Graphics.mode === '2d' ) {
+            Gibber.Graphics.useCanvasAsTexture( Gibber.Graphics.modes['2d'].obj.canvasObject )
           }
           
           Gibber.Graphics.running = true 

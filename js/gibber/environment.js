@@ -69,7 +69,10 @@ var GE = {
       window.Mouse = GE.Mouse
       
       // keymaps handles this when it occurs within codemirror instances
-      Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )    
+      Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )  
+      
+      // attach canvases to table row instead of body
+      Gibber.Graphics.defaultContainer = '#mainContent'  
     }
     
     /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {

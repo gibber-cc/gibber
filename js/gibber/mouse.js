@@ -63,8 +63,8 @@ module.exports = function( Gibber ) {
         // console.log( prefix, upper )
         _m[ 'prev' + upper + 'X' ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
         _m[ 'prev' + upper + 'Y' ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
-        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX // / _m.ww 
-        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - headerFooterHeight// / _m.wh 
+        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX - window.scrollX// / _m.ww 
+        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - window.scrollY - headerFooterHeight// / _m.wh 
         
         //console.log( e )
         if( typeof _m.onvaluechange === 'function' ) {
