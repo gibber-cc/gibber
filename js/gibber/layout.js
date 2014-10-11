@@ -59,35 +59,9 @@ module.exports = function( Gibber ) {
       
       GE.Browser.demoColumn = Layout.columns[1]
       
-      // var opacityDiv = $('#opacity')
-      //     
-      // opacityDiv.css({
-      //   background:'transparent',
-      //   position:'relative',
-      //   width:150,
-      //   height:18,
-      //   display:'inline-block',
-      //   top:5,
-      // })
-      // opacityDiv.p = new Interface.Panel({ container:opacityDiv })
-      //     
-      // $( opacityDiv.p.canvas ).css({ width:150, height: 18, zIndex:1  })
-      // opacityDiv.p.add(
-      //   new Interface.Slider({
-      //     isVertical:false,
-      //     bounds:[0,0,.95,.95],
-      //     value:0,
-      //     max:.8,
-      //     target:Gibber.Environment.Layout, key:'textBGOpacity',
-      //     label:'text bg opacity',
-      //     background:'#000',
-      //     fill:'#333',
-      //     stroke:'#999'
-      // }))
-
       window.Columns = this.columns
     
-      $( window ).resize( this.onResizeWindow )
+      $( window ).resize( Layout.onResizeWindow )
       $.subscribe( '/layout/resizeWindow', function( dict ) { Layout.resize( dict.w, dict.h ) } )
       
       this.__fullScreenColumn__ = GE.Layout.addColumn({ type:'code' })

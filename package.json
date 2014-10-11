@@ -27,9 +27,9 @@
     "watchify": "~1.0.3",
     "vinyl-source-stream": "~1.0.0",
     "vinyl-buffer": "~1.0.0",
-    "gibber.audio.lib": "~0.0.5",
+    "gibber.audio.lib": "~0.0.6",
     "gibber.interface.lib": "~0.0.0",
-    "gibber.lib": "~1.0.3"
+    "gibber.lib": "~1.1.0"
   },
   "devDependencies": {},
   "scripts": {
