@@ -552,6 +552,9 @@
     return obj
   }
   
+  // for backwards compatibility
+  Percussion.XOX = Percussion.EDrums 
+  
   Percussion.Drums.kits = {
   	original: {
   		kick:     { file:"resources/audiofiles/kick.wav",   symbol:'x', amp:1, pitch:1, pan:0 	},

@@ -35,6 +35,8 @@ Audio = {
     target.rndi = Audio.Core.rndi
     target.rndf = Audio.Core.rndf
     
+    target.Input = Audio.Input
+    
     target.Scale = Audio.Theory.Scale
 
 		target.module = Gibber.import
@@ -179,11 +181,8 @@ Audio = {
     mappings: [],
     fx: $.extend( [], {
       add: function() {
-        console.log(0)
         var end = this.length === 0 ? this.ugen : this[ this.length - 1 ]
-        console.log(1)
         end.disconnect()
-        console.log(2)
         for( var i = 0; i < arguments.length; i++ ) {
           var fx = arguments[ i ]
           fx.input = end
@@ -192,13 +191,11 @@ Audio = {
           
           this.push( fx )
         }
-        console.log(3)
         if( this.ugen !== Audio.Master ) {
           end.connect()
         }else{
           end.connect( Audio.Core.out )
         }
-        console.log(4)
         return this.ugen
       },
       
