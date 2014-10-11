@@ -365,10 +365,12 @@ tfoot, thead {
 
 .login {
   color:#bbb;
+  background:#000;
   right:0;
   top:0;
   float:right;
-  margin-right:2em;
+/*  margin-right:2em;*/
+  padding-right:2em;
   font-size:.9em;
   height:2em;
   line-height:2em;

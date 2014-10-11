@@ -35,7 +35,7 @@ module.exports = function( Gibber ) {
       modeIndex:      0,
       isCodeColumn:   isCodeColumn,
       isFullScreen:   false,
-      resizeHandleSize  : 8,
+      'resizeHandleSize'  : resizeHandleSize,
       close: function() {
         Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose();
       }
@@ -51,8 +51,8 @@ module.exports = function( Gibber ) {
     })
   
     col.element.width( columnWidth )
-    col.resizeHandle.width( resizeHandleSize )
-  
+    col.resizeHandle.outerWidth( resizeHandleSize )
+    
     col.closeButton.addClass( 'closeButton' )
       .on( 'click', function(e) { Layout.removeColumn( colNumber );  col.isClosed = true; if( col.onclose ) col.onclose(); })
       .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
@@ -281,7 +281,13 @@ module.exports = function( Gibber ) {
         GE.Account.updateDocument({ text: this.value }, this.fileInfo, '', this )
       }else{
         if( !this.fileInfo ) {
-          GE.Message.post( 'You need to publish this file before you can save it. The publish button is at the top of the Gibber menubar.')
+          var msg = [
+            'You need to publish this file before you can save it.',
+            'The publish button is at the top-left of the Gibber menubar.\n\n',
+            'Once you have initially published the file, you can hit Ctrl+S to save future revisions.',          
+          ].join(' ')
+          
+          GE.Message.post( msg )
         }else if( this.value === this.fileInfo.text ) {
           GE.Message.post( 'The current text is the same as what is in the database; no update was performed.')
         }
