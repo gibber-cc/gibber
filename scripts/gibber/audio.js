@@ -37,6 +37,8 @@ Audio = {
     
     target.Input = Audio.Input
     
+    target.Freesound = Audio.Freesound
+    
     target.Scale = Audio.Theory.Scale
 
 		target.module = Gibber.import
@@ -373,6 +375,8 @@ Audio.Core._init = Audio.Core.init.bind( Audio.Core )
 delete Audio.Core.init
 
 Audio.Clock =          require( './clock' )( Gibber )
+Audio.Freesoundjs =    require( '../external/freesound' )
+Audio.Freesound =      require( './audio/gibber_freesound' )( Audio.Freesoundjs )
 Audio.Seqs =           require( './seq')( Gibber )
 Audio.Theory =         require( './audio/theory' )( Gibber )
 Audio.FX =             require( './audio/fx' )( Gibber )
