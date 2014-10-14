@@ -134,6 +134,12 @@ module.exports = function( Gibber ) {
             
             var list = $( '<ul>' ), prev
             
+            // var edit = $('<button>edit files</button>')
+            //   .css({ right:0, marginLeft:'4em', position:'relative' })
+            //   .on('click', function() { Browser.showFileEditingButtons() })
+            //   
+            // $('#browser_user .browserHeader h2').append( edit )
+            
             for( var j = 0; j < data.files.length; j++ ) {
               !function() {
                 var num = j,
@@ -176,6 +182,46 @@ module.exports = function( Gibber ) {
         
         GE.Browser.setupSearchGUI()
       })
+    },
+    
+    showFileEditingButtons: function() {
+      var list = $( '#browser_userfiles ul li')
+      
+      for( var i = 1; i < list.length; i++ ) {
+        !function() {
+          var listData = Browser.files.userfiles[ i ],
+              li = list[ i ]
+            
+          $(li).append( $( '<button>e</button>' ).css({ float:'right', marginLeft:'.5em', position:'relative', height:$( li ).height() }) )
+          var deleteBtn = $( '<button>x</button>' )
+            .css({ float:'right', height:$( li ).height() })
+            .on( 'click', function( e ) {
+              e.stopPropagation()
+              var msgtxt = "Are you sure you want to delete " + listData.id.split('/')[2] + "? This operation cannot be undone."
+              
+              GE.Message.confirm( msgtxt, 'cancel', 'delete' )
+                .done( function( shouldDelete ) {
+                  if( shouldDelete ) {
+                    $.ajax({
+                      type:'POST',
+                      url: GE.SERVER_URL + "/deleteUserFile",
+                      data:listData,
+                      dataType:'json',
+                    })
+                    .then( function( data ) {
+                      console.log( "DELETED?", data )
+                      li.remove()
+                    },
+                    function(e) { 
+                      console.log("SOME TYPE OF ERROR", e )
+                    })
+                  }
+                })
+            })
+          
+          $(li).append( deleteBtn )
+        }()
+      }
     },
 
     // publication name : author : rating : code fragment?

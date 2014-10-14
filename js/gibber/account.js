@@ -269,6 +269,9 @@ module.exports = function( Gibber ) {
         function(d) { console.error( d.error ) }
       )
     },
+    deleteUserFile: function( fileData ) {
+
+    },
   }
     
   return Account

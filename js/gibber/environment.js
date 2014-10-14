@@ -501,6 +501,43 @@ var GE = {
 
       return msgDiv // return so it can be removed if needed
     },
+    
+    confirm : function( msgText, btn1Text, btn2Text ) {
+      var msgDiv = $( '<div>' ),
+          _done = null
+          
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:200,
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em',
+          zIndex:1000
+        })
+        .addClass( 'message' )
+        .append( $('<p>').text( msgText ).css({ marginTop:'.5em' }) )
+        .append( $( '<button>' )
+          .on('click', function(e) { $( msgDiv ).remove(); if( _done !== null ) { _done( true )} })
+          .html( btn2Text || 'yes' )
+          .css({ float:'right', marginLeft:'1em' })
+        )
+        .append( $( '<button>' )
+          .on('click', function(e) { $( msgDiv ).remove(); if( _done !== null ) { _done( false )} })
+          .html( btn1Text || 'no' )
+          .css({ float:'right' })
+          .focus()
+        )
+
+      $( 'body' ).append( msgDiv )
+
+      return { done: function( handler ) {
+        _done = handler
+      }}
+    },
     postFlash : function( text, time, css ) {
       var msgDiv = $( '<div>' )
       .css({
