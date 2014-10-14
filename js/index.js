@@ -1348,7 +1348,7 @@ module.exports = function( Gibber ) {
         
         GE.Layout.fullScreenColumn = this
         if( Gibber.Graphics ){
-          if( Gibber.Graphics.running ) Gibber.Graphics.assignWidthAndHeight() 
+          Gibber.Graphics.assignWidthAndHeight() 
         }
         GE.Layout.isFullScreen = true
       }else{
@@ -1361,7 +1361,7 @@ module.exports = function( Gibber ) {
 
         GE.Layout.fullScreenColumn = null
         if( Gibber.Graphics ){
-          if( Gibber.Graphics.running ) Gibber.Graphics.assignWidthAndHeight() 
+          Gibber.Graphics.assignWidthAndHeight() 
         }
         GE.Layout.isFullScreen = false        
       }
@@ -2549,7 +2549,7 @@ module.exports = function( Gibber ) {
             var col = GE.Layout.columns[ i ]
             if( col === null || typeof col === 'undefined' ) continue;
             
-            if( col.id < currentColumnNumber ) {
+            if( col.id < currentColumnNumber && col.isCodeColumn ) {
               nextCol = col
               break;
             }
@@ -3180,7 +3180,8 @@ module.exports = function( Gibber ) {
           
           headerFooterHeight = $( 'thead' ).height()
           
-          $( window ).on( 'mousemove', _m._onmousemove )
+          //$( window ).on( 'mousemove', _m._onmousemove )
+          window.onmousemove = _m._onmousemove
         }
       },
       off: function() {
@@ -29061,9 +29062,9 @@ Graphics = {
 
     
     if( !isInitialSetting && Graphics.mode !== '2d' ) {
-  		Graphics.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
-      Graphics.renderer.domElement.style.width = Graphics.width + 'px'
-      Graphics.renderer.domElement.style.height = Graphics.height + 'px'      
+  		Graphics.modes['3d'].obj.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
+      Graphics.modes['3d'].obj.renderer.domElement.style.width = Graphics.width + 'px'
+      Graphics.modes['3d'].obj.renderer.domElement.style.height = Graphics.height + 'px'      
       
       //$( this.renderer.domElement ).css({ width: this.width, height: this.height })
     }

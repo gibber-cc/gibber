@@ -73,7 +73,7 @@ module.exports = function( Gibber ) {
             var col = GE.Layout.columns[ i ]
             if( col === null || typeof col === 'undefined' ) continue;
             
-            if( col.id < currentColumnNumber ) {
+            if( col.id < currentColumnNumber && col.isCodeColumn ) {
               nextCol = col
               break;
             }

@@ -208,7 +208,7 @@ module.exports = function( Gibber ) {
         
         GE.Layout.fullScreenColumn = this
         if( Gibber.Graphics ){
-          if( Gibber.Graphics.running ) Gibber.Graphics.assignWidthAndHeight() 
+          Gibber.Graphics.assignWidthAndHeight() 
         }
         GE.Layout.isFullScreen = true
       }else{
@@ -221,7 +221,7 @@ module.exports = function( Gibber ) {
 
         GE.Layout.fullScreenColumn = null
         if( Gibber.Graphics ){
-          if( Gibber.Graphics.running ) Gibber.Graphics.assignWidthAndHeight() 
+          Gibber.Graphics.assignWidthAndHeight() 
         }
         GE.Layout.isFullScreen = false        
       }

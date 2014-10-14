@@ -98,7 +98,8 @@ module.exports = function( Gibber ) {
           
           headerFooterHeight = $( 'thead' ).height()
           
-          $( window ).on( 'mousemove', _m._onmousemove )
+          //$( window ).on( 'mousemove', _m._onmousemove )
+          window.onmousemove = _m._onmousemove
         }
       },
       off: function() {
