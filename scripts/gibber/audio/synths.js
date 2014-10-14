@@ -27,7 +27,8 @@
       decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},   
+      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
+      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},
       out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },   
     },
     Synth2: {
@@ -39,6 +40,7 @@
       decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
+      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},
       cutoff : { min: 0, max: .7, output: LINEAR, timescale: 'audio' },
       resonance: { min: 0, max: 5.5, output: LINEAR, timescale: 'audio' },
       pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
@@ -67,6 +69,7 @@
       decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
+      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},  
       cmRatio : { min:.1, max:50, output:LINEAR, timescale:'audio' },
       index: { min:.1, max:50, output:LINEAR, timescale:'audio' },
       pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
@@ -171,9 +174,11 @@
                 
         obj.name = name 
         
+        console.log( "PROCESS", args, _mappingProperties[ name ] )
+        
         Gibber.processArguments2( obj, args, obj.name )
         
-        obj.toString = function() { return '> ' + name }
+        obj.toString = function() { return name }
         
         // define a continuous frequency mapping abstraction for all synths with children
         if( name !== 'Mono' ) {
@@ -336,8 +341,8 @@
 			decay	: 1/8,
       amp:.1,
       presetInit: function() {
-        this.bus = Gibber.Busses.Bus().fx.add( Gibber.Audio.FX.Delay(1/8,.75), Gibber.Audio.FX.LPF({ resonance:4 }) )
-        this.bus.fx[1].cutoff = Gibber.Binops.Add(.25, Gibber.Audio.Oscillators.Sine(.1,.2)._ )
+        this.bus = Gibber.Audio.Busses.Bus().fx.add( Gibber.Audio.FX.Delay(1/8,.75), Gibber.Audio.FX.LPF({ resonance:4 }) )
+        this.bus.fx[1].cutoff = Gibber.Audio.Binops.Add(.25, Gibber.Audio.Oscillators.Sine(.1,.2)._ )
         this.send( this.bus, .65 )
       },
     },
