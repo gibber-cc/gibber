@@ -171,7 +171,8 @@ var soloGroup = [],
             
             if( idx === -1 ) {
               if( name !== 'polyseq' &&  name !== 'Seq' ) { // TODO: please, please, don't route seqs into master bus...
-                Master.inputs[i].value = Mul( Master.inputs[i].value, 0 )
+                Master.inputs[i]._amp = Master.inputs[i].amp
+                Master.inputs[i].amp = 0//value = Mul( Master.inputs[i].value, 0 )
                 soloGroup.push( Master.inputs[i] );
               }
             }
@@ -179,7 +180,7 @@ var soloGroup = [],
           isSoloing = true;
         }else{
           for( var i = 0; i < soloGroup.length; i++ ) {
-            soloGroup[i].value = soloGroup[i].value[0]
+            soloGroup[i].amp = soloGroup[i]._amp
           }
           soloGroup.length = 0
           isSoloing = false;

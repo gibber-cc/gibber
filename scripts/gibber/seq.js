@@ -74,7 +74,7 @@
   var Seq = function() {
     var obj = {}, seq, hasScale, keyList = []
     
-    if( typeof arguments[0]  === 'object' ) {
+    if( typeof arguments[0]  === 'object' && ! Array.isArray( arguments[0] ) ) {
       var arg = arguments[0],
           durationsType = typeof arg.durations,
           targetsType = typeof arg.target ,
@@ -151,13 +151,13 @@
           }]
         }
       }  
-    }else if( typeof arguments[0] === 'function' ){
+    }else if( typeof arguments[0] === 'function' || Array.isArray( arguments[0] ) ){
       obj.seqs = [{
         key:'functions',
-        values: [ arguments[ 0 ] ],
+        values: Array.isArray( arguments[0] ) ? arguments[0] : [ arguments[ 0 ] ],
         durations: Gibber.Clock.time( arguments[ 1 ] )
       }]
-      
+            
       keyList.push('functions')
     }
       
