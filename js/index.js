@@ -607,11 +607,11 @@ module.exports = function( Gibber ) {
             
             var list = $( '<ul>' ), prev
             
-            // var edit = $('<button>edit files</button>')
-            //   .css({ right:0, marginLeft:'4em', position:'relative' })
-            //   .on('click', function() { Browser.showFileEditingButtons() })
-            //   
-            // $('#browser_user .browserHeader h2').append( edit )
+            var edit = $('<button>edit files</button>')
+              .css({ right:0, marginLeft:'4em', position:'relative' })
+              .on('click', function() { Browser.showFileEditingButtons() })
+              
+            $('#browser_user .browserHeader h2').append( edit )
             
             for( var j = 0; j < data.files.length; j++ ) {
               !function() {
@@ -22016,7 +22016,7 @@ module.exports = function( freesound ) {
       decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
       release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      // sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},  
+      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},  
       cmRatio : { min:.1, max:50, output:LINEAR, timescale:'audio' },
       index: { min:.1, max:50, output:LINEAR, timescale:'audio' },
       pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
@@ -46272,7 +46272,7 @@ var soloGroup = [],
             
             if( idx === -1 ) {
               if( name !== 'polyseq' &&  name !== 'Seq' ) { // TODO: please, please, don't route seqs into master bus...
-                Master.inputs[i].value = Mul( Master.inputs[i].value, 0 )
+                Master.inputs[i].amp = 0 //value = Mul( Master.inputs[i].value, 0 )
                 soloGroup.push( Master.inputs[i] );
               }
             }
