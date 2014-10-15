@@ -607,11 +607,11 @@ module.exports = function( Gibber ) {
             
             var list = $( '<ul>' ), prev
             
-            var edit = $('<button>edit files</button>')
-              .css({ right:0, marginLeft:'4em', position:'relative' })
-              .on('click', function() { Browser.showFileEditingButtons() })
-              
-            $('#browser_user .browserHeader h2').append( edit )
+            // var edit = $('<button>edit files</button>')
+            //   .css({ right:0, marginLeft:'4em', position:'relative' })
+            //   .on('click', function() { Browser.showFileEditingButtons() })
+            //   
+            // $('#browser_user .browserHeader h2').append( edit )
             
             for( var j = 0; j < data.files.length; j++ ) {
               !function() {
@@ -46272,7 +46272,8 @@ var soloGroup = [],
             
             if( idx === -1 ) {
               if( name !== 'polyseq' &&  name !== 'Seq' ) { // TODO: please, please, don't route seqs into master bus...
-                Master.inputs[i].amp = 0 //value = Mul( Master.inputs[i].value, 0 )
+                Master.inputs[i]._amp = Master.inputs[i].amp
+                Master.inputs[i].amp = 0//value = Mul( Master.inputs[i].value, 0 )
                 soloGroup.push( Master.inputs[i] );
               }
             }
@@ -46280,7 +46281,7 @@ var soloGroup = [],
           isSoloing = true;
         }else{
           for( var i = 0; i < soloGroup.length; i++ ) {
-            soloGroup[i].value = soloGroup[i].value[0]
+            soloGroup[i].amp = soloGroup[i]._amp
           }
           soloGroup.length = 0
           isSoloing = false;
