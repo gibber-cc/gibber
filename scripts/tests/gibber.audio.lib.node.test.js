@@ -2,7 +2,7 @@
 AudioContext = require('web-audio-api').AudioContext
 
 // must be global! this should be fixable.
-Gibber = require('../../build/gibber.audio.lib.js')
+Gibber = require('../gibber/gibber.js')
 
 console.log( 'This is a test of using gibber.audio.lib in node (gibber.audio.lib also works in the browser). If you hear beats, the test passed. ctrl+c to exit.' )
 
