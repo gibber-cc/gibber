@@ -25,7 +25,7 @@ gulp.task( 'client', function(){
 });
 
 gulp.task('watch', function() {
-  var bundler = watchify(browserify('./js/main.js', watchify.args));
+  var bundler = watchify( browserify('./js/main.js', watchify.args ) );
 
   // Optionally, you can apply transforms
   // and other configuration options on the
@@ -35,6 +35,7 @@ gulp.task('watch', function() {
   bundler.on('update', rebundle);
 
   function rebundle() {
+    console.log("recompiling...")
     return bundler.bundle()
       // log errors if they happen
       .on('error', gutil.log.bind(gutil, 'Browserify Error'))
