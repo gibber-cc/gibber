@@ -18,6 +18,18 @@
       timescale: 'audio',
       dimensions:1
     },
+    start: {
+      min: 0, max: 1,
+      output: LINEAR,
+      timescale: 'audio',
+      dimensions:1
+    },
+    end: {
+      min: 0, max: 1,
+      output: LINEAR,
+      timescale: 'audio',
+      dimensions:1
+    },
     pitch: {
       min: 1, max: 4,
       hardMin: .01, hardMax: 20,      
@@ -68,6 +80,46 @@
           }
         }
       }
+
+
+      var oldStart = oscillator.__lookupSetter__('start').bind( oscillator ),
+          __start = 0
+          
+      Object.defineProperty(oscillator, 'start', {
+        configurable: true,
+        get: function() { 
+          return __start 
+        },
+        set: function(v) {
+          if( v <= 1 ) {
+            __start = v * oscillator.bufferLength
+          }else{
+            __start = v
+          }
+          oldStart( __start )
+          
+          return __start
+        }
+      })
+      
+      var oldEnd = oscillator.__lookupSetter__('end').bind( oscillator ),
+          __end = 1
+      Object.defineProperty(oscillator, 'end', {
+        configurable:true,
+        get: function() { 
+          return __end 
+        },
+        set: function(v) {
+          if( v <= 1 ) {
+            __end = v * oscillator.bufferLength
+          }else{
+            __end = v
+          }
+          oldEnd( __end )
+          
+          return __end
+        }
+      })
       
       Gibber.createProxyProperties( oscillator, mappingProperties )
 
@@ -76,7 +128,7 @@
       Gibber.createProxyMethods( oscillator, proxyMethods )
 
       Gibber.processArguments2( oscillator, args, name )
-
+      
       oscillator.toString = function() { return name }
       
       return oscillator

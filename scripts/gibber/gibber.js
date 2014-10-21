@@ -535,7 +535,7 @@ var Gibber = {
       }
       return _fnc
     })()    
-
+    
     fnc.valueOf = function() { return mapping.value }
     mapping.toString = function() { return '> continuous mapping: ' + mapping.name  }
     

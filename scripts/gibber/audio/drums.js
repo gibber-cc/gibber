@@ -169,7 +169,7 @@
     
     Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )    
     
-  	obj.pitch(1);
+  	obj.pitch = 1;
     
     if( typeof props !== 'undefined') {
       switch( $.type( props[0] ) ) {
@@ -251,7 +251,8 @@
   	if( obj.seq && obj.seq.tick ) { Gibberish.future( obj.seq.tick, 1 ) }
     
     obj.note = function(nt) {
-      var p = typeof obj.pitch === 'function' ? obj.pitch() : obj.pitch
+      // var p = typeof obj.pitch === 'function' ? obj.pitch() : obj.pitch
+      var p = obj.pitch
       if( $.isArray( nt ) ) {
         for( var i = 0; i < nt.length; i++ ) {
           var note = nt[ i ]
@@ -260,7 +261,7 @@
         		for( var key in this.kit ) {
         			if( note === this.kit[ key ].symbol ) {
         				this[ key ].sampler.note( 1, this[key].amp );
-                var p = this.pitch() 
+                var p = this.pitch//this.pitch() 
                 if( this[ key ].sampler.pitch !== p )
                   this[ key ].sampler.pitch = p
         				break;
@@ -278,7 +279,7 @@
       		for( var key in this.kit ) {
       			if( nt === this.kit[ key ].symbol ) {
       				this[ key ].sampler.note( 1, this[key].amp );
-              var p = this.pitch() 
+              var p = this.pitch//this.pitch() 
               if( this[ key ].sampler.pitch !== p )
                 this[ key ].sampler.pitch = p
       				break;

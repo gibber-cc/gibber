@@ -62,6 +62,7 @@ Audio = {
     Gibber.Clock = Audio.Clock
           
     Gibber.Theory = Audio.Theory
+    
     Gibber.Theory.scale = Gibber.scale = Gibber.Audio.Theory.Scale( 'c4','Minor' )
     
     Audio.Core._init()
@@ -114,6 +115,8 @@ Audio = {
         prop.value = isTimeProp ? Audio.Clock.time( val ) : val
         
         Audio.Core.dirty( obj )
+        
+        return prop.value
       },
     });
 
@@ -271,7 +274,6 @@ Audio = {
     }),
       
     replaceWith: function( replacement ) {
-      console.log("REPLACE WITH")
       for( var i = 0; i < this.destinations.length; i++ ) {
         replacement.connect( this.destinations[i] )
       }
