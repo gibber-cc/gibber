@@ -88,7 +88,7 @@
         
         target.object[ target.name ] = Map( proxy, target.min, target.max, from.min, from.max )
         
-        mapping = target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
+        mapping = target.object[ target.Name ].mapping = target.object[ target.name ].value //() // must call getter function explicitly
         
         mapping.remove = function( doNotSet ) {
           if( !doNotSet ) {
@@ -114,7 +114,7 @@
         var mapping
         
         target.object[ target.name ] = Map( null, target.min, target.max, 0, 1, 0 )   
-        mapping = target.object[ target.Name ].mapping = target.object[ target.name ]() // must call getter function explicitly
+        mapping = target.object[ target.Name ].mapping = target.object[ target.name ].value //() // must call getter function explicitly
         
         if( typeof from.object.track !== 'undefined' ) {
           mapping.follow = from.object.track
@@ -206,7 +206,7 @@
           from.object.functions = {}
           from.object.onvaluechange = function() {
             for( var key in from.object.functions ) {
-              from.object.functions[ key ]()
+              from.object.functions[ key ].value //()
             }
           }
         }
@@ -352,7 +352,6 @@
             
           }
         }else{
-          console.log("REPLACING MAPPING")
           mapping.replace( from.object, from.name, from.Name )
           return mapping
         }
@@ -366,7 +365,7 @@
           !function() {
             var _mapping = mapping
             target.object.update = function() { 
-              target.object[ target.name ]( _mapping.getValue() )
+              target.object[ target.name ].value = _mapping.value //( _mapping.getValue() )
             }
           }()
           //target.object.mod( target.name, mapping, '=' ) 
@@ -530,7 +529,7 @@
         })
         
         mapping.update = function() {   
-          target.object[ target.name ]( mapping.getValue() )
+          target.object[ target.name ].value = mapping.value //( mapping.getValue() )
         }
         mapping.text = target.object
 
@@ -607,7 +606,7 @@
         }
         
         mapping.update = function() {   
-          target.object[ target.name ]( mapping.getValue() )
+          target.object[ target.name ].value = mapping.value//( mapping.getValue() )
         }
         mapping.text = target.object
 
@@ -623,7 +622,7 @@
               delete from.object.track
               this.follow.remove()
             }
-          }
+          }  
           
           Gibber.Environment.Notation.remove( mapping )
           
