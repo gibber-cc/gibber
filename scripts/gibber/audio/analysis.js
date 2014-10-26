@@ -1,4 +1,4 @@
-!function() {
+module.exports = function( Gibber ) {
   "use strict"
   
   var fft,
@@ -6,9 +6,8 @@
         value:{ min: 0, max: 255, output: LOGARITHMIC, wrap:false, timescale: 'graphics' } 
       },
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
-      $ = require( '../dollar' ),
-      curves = require('../mappings').outputCurves,
+      $ = Gibber.dollar,
+      curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
   
@@ -45,7 +44,7 @@
             child.index = num
             child.min = 0; child.max = 255; // needed to map directly to children
             
-            child.valueOf = function() { return this.value() }
+            child.valueOf = function() { return this.value.value }
           }()
         }
         
@@ -72,6 +71,7 @@
     }
   }
 
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Analysis }
+  return Analysis
+  //module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Analysis }
   
-}()
+}

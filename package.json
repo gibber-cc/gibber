@@ -1,6 +1,6 @@
 {
   "name": "gibber.audio.lib",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "standalone audio library from Gibber to use in node or in HTML documents",
   "repository": {
     "type": "git",
@@ -15,7 +15,8 @@
     "gulp-insert": "~0.4.0",
     "gulp-browserify": "~0.5.0",
     "gulp-rename": "~1.2.0",
-    "gibberish-dsp": "~2.1.4"
+    "gibberish-dsp": "~2.1.4",
+    "gibber.core.lib": "~0.0.1"
   },
   "dependencies": {
     "web-audio-api": "~0.1.5"
@@ -23,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/charlieroberts/gibber.audio.lib/issues"
   },
-  "main": "./scripts/gibber/gibber.js",
+  "main": "./scripts/gibber/audio.js",
   "scripts": {
     "test": "node ./scripts/tests/gibber.audio.lib.node.test.js"
   },

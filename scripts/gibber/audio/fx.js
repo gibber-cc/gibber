@@ -1,11 +1,10 @@
-!function() {
+module.exports = function( Gibber ) {
   "use strict"
   
   var FX = { Presets: {} },
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
-      $ = require( '../dollar' ),
-      curves = require('../mappings').outputCurves,
+      $ = Gibber.dollar,
+      curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
       
@@ -331,7 +330,6 @@
       dry: .45,
     }
   }
-  
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return FX }
 
-}()
+  return FX  
+}

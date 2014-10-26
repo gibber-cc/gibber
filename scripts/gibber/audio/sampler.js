@@ -1,12 +1,11 @@
-!function() { 
+module.exports = function( Gibber ) { 
   "use strict"
   
   var Samplers = { Presets:{} },
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
-      $ = require( '../dollar' ),
-      Clock = require('../clock')(),
-      curves = require('../mappings').outputCurves,
+      $ = Gibber.dollar,
+      Clock = require('./clock')( Gibber ),
+      curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
 
@@ -44,8 +43,7 @@
     },
     pan: { min: -1, max: 1, output: LOGARITHMIC, timescale: 'audio',},   
     note: { 
-      min: 50, max: 3200, 
-      hardMin:.01, hardMax:22050,
+      min: .1, max: 4, 
       output: LOGARITHMIC, 
       timescale: 'audio', 
       doNotProxy:true 
@@ -74,7 +72,7 @@
         oscillator.note = function( pitch ) {
           var freq = this.frequency()
           if( typeof freq === 'number' || typeof freq === 'function' ) {
-            this.frequency = typeof pitch === 'function' ? pitch() : pitch
+            this.frequency = typeof pitch === 'object' ? pitch.value : pitch
           }else{
             freq[ 0 ] = pitch
           }
@@ -282,5 +280,5 @@
   	return that;
   }
   
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Samplers }  
-}()
+  return Samplers
+}

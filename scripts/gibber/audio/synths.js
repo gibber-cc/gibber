@@ -1,12 +1,11 @@
-!function() {
+module.exports = function( Gibber ) {
   "use strict"
   
   var Synths = { Presets: {} },
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
-      $ = require( '../dollar' ),
-      Clock = require('../clock')(),
-      curves = require('../mappings').outputCurves,
+      $ = Gibber.dollar,
+      Clock = require( './clock' )( Gibber ),
+      curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
 
@@ -127,11 +126,31 @@
         
         obj.fx.ugen = obj
         
+        if( name === 'Mono' ) {
+      		obj.note = function( _frequency, amp ) {
+            if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
+      
+            if( amp !== 0 ) {
+          		if(typeof this.frequency !== 'object' ){
+                this.frequency = _frequency;
+              }else{
+                if( this.frequency.type !== 'property' ) {
+                  this.frequency[0] = _frequency;
+                  Gibberish.dirty(this);
+                }else{
+                  this.frequency = _frequency
+                }
+              }
+        
+        			if( obj.envelope.getState() > 0 ) obj.envelope.run();
+            }
+      		}
+        }
         // override note method to allow note names
         obj._note = obj.note.bind( obj )
         obj.note = function() {
           var args = Array.prototype.splice.call( arguments, 0 )
-        
+          
           if( typeof args[0] === 'string' ) {
             args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
           }else{
@@ -193,14 +212,14 @@
                    if( typeof this.children[i].frequency === 'number' ) {
                      this.children[i].frequency = __frequency
                    }else{
-                     this.children[i].frequency[0] = __frequency
+                     this.children[i].frequency[0] = __frequency // for binops
                    }
                  }
                }
             }
           })
         }
-        
+         
         var __scale = obj.scale;
         
         if( obj.scale ) obj.seq.scale = __scale
@@ -410,6 +429,6 @@
 		}
 	};
   
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Synths }
+  return Synths
 
-}()
+}

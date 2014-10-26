@@ -1,8 +1,9 @@
 module.exports = function( Gibber ) {
   
 "use strict"
+
 var times = [],
-    $ = require( './dollar' ),
+    $ = Gibber.dollar,
     Gibberish = require( 'gibberish-dsp' ),
     Audio
 
@@ -363,9 +364,9 @@ Audio = {
       var time = Audio.Clock.time( _time ),
           decay = new Audio.Core.ExponentialDecay({ decayCoefficient:.00005, length:time }),
           //ramp = Mul( decay, this.amp() )
-          line = new Audio.Core.Line( this.amp(), 0, Audio.Clock.time( time ) )
+          line = new Audio.Core.Line( this.amp.value, 0, Audio.Clock.time( time ) )
           
-      this.amp = line
+      this.amp( line )
       
       future( function() { this.amp = 0 }.bind( this ), time )
       
@@ -378,10 +379,10 @@ Audio.Core = require( 'gibberish-dsp' )
 Audio.Core._init = Audio.Core.init.bind( Audio.Core )
 delete Audio.Core.init
 
-Audio.Clock =          require( './clock' )( Gibber )
+Audio.Clock =          require( './audio/clock' )( Gibber )
 Audio.Freesoundjs =    require( '../external/freesound' )
 Audio.Freesound =      require( './audio/gibber_freesound' )( Audio.Freesoundjs )
-Audio.Seqs =           require( './seq')( Gibber )
+Audio.Seqs =           require( './audio/seq')( Gibber )
 Audio.Theory =         require( './audio/theory' )( Gibber )
 Audio.FX =             require( './audio/fx' )( Gibber )
 Audio.Oscillators =    require( './audio/oscillators' )( Gibber )
@@ -396,4 +397,5 @@ Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
 
 return Audio
+
 }
