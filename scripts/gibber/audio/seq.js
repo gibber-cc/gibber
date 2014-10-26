@@ -1,10 +1,8 @@
-!function() {
-  
+module.exports = function( Gibber ) {
   //"use strict"
   
   var Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
-      $ = require( './dollar' ),
+      $ = Gibber.dollar,
       doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart', 'priority' ]
 
   var makeNoteFunction = function( notes, obj ) {
@@ -82,6 +80,7 @@
           hasScale
       
       obj.target = arg.target
+            
       if( typeof arg.scale === 'object' ) obj.scale = arg.scale
       if( typeof arg.offset === 'number' ) obj.offset = Gibber.Clock.time( arg.offset )
       
@@ -308,7 +307,6 @@
   }
   
   var Seqs = { 'Seq': Seq, 'ScaleSeq':ScaleSeq }
-
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Seqs }
   
-}()
+  return Seqs 
+}

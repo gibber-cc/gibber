@@ -1,9 +1,8 @@
-!function() {
+module.exports = function( Gibber ) {
   "use strict";
   
   var PostProcessing,
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
       compressor = null, 
       end = null,
       hishelf = null,
@@ -144,7 +143,7 @@
       return hishelf
     },
   }
-  
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return PostProcessing }
-  
-}()
+
+  return PostProcessing
+
+}

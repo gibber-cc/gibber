@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/charlieroberts/gibber.audio.lib/issues"
   },
-  "main": "./scripts/gibber/gibber.js",
+  "main": "./scripts/gibber/audio.js",
   "scripts": {
     "test": "node ./scripts/tests/gibber.audio.lib.node.test.js"
   },

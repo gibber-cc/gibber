@@ -1,27 +1,9 @@
-/**#Arp - Sequencer
-The Arpeggiator takes a chord and plays the individual notes comprising it in succession, with different possible patterns.
-It is basically an extended [Seq](javascript:Gibber.Environment.displayDocs('Seq'\)) object. The available patterns are:  
-  
-*	*up* : Play the notes in ascending order. After the top note, drop back to the bottom  
-*	*down* : Play the notes in descending order. After the bottom note, jump to the top  
-*	*updown* : Play the notes all the way up, and then play them all the way down. The top and bottom notes repeat when changing direction  
-*	*updown2* : Play the notes all the way up, and then play them all the way down. The top and bottom notes DO NOT repeat when changing direction  
-## Example Usage ##
-`a = Sine();
-b = Arp('c2m7', _32, 'updown2', 4).slave(s);
-`
-## Constructor
-  **param** *notation* : String. The chord to be sequenced.  
-  **param** *duration* : Integer. The duration for each note in the arpeggio.  
-  **param** *pattern* : String. Default: "up". The ordering for the arpeggio.  
-  **param** *mult* : Integer. How many octaves the arpeggio should span. The default is 1.
-**/
-!function() {
+module.exports = function( Gibber ) {
   
 var theory = require('../../external/teoria.min'),
-    $ = require( '../dollar' ),
-    Seq    = require('../seq'),
-    Gibber,
+    $ = Gibber.dollar,
+    curves = Gibber.outputCurves,
+    Seq    = require('./seq'),
     Arp
     
 Arp = function(notation, beats, pattern, mult, scale) {	
@@ -155,6 +137,6 @@ Arp = function(notation, beats, pattern, mult, scale) {
 	return that;
 }
 
-module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Arp }
+return Arp
 
-}()
+}

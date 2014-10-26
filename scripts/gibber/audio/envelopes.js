@@ -1,12 +1,11 @@
-!function() {
+module.exports = function( Gibber ) {
   "use strict"
   
   var Envelopes = {},
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
-      $ = require( '../dollar' ),
-      Clock = require('../clock')(),
-      curves = require('../mappings').outputCurves,
+      $ = Gibber.dollar,
+      Clock = require('./clock')( Gibber ),
+      curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       types = [
@@ -58,6 +57,6 @@
     })()
   }
   
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Envelopes }
+  return Envelopes
 
-}()
+}

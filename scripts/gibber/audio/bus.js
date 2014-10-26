@@ -1,10 +1,9 @@
-!function() {
+module.exports = function( Gibber ) {
   "use strict"
   
-  var $ = require( '../dollar' ),//require('zepto-browserify').Zepto,
+  var $ = Gibber.dollar,//require('zepto-browserify').Zepto,
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,// = require( '../gibber' ),
-      curves = require('../mappings').outputCurves,
+      curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
       
@@ -132,5 +131,5 @@
     return obj
   }
   
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Busses }
-}()
+  return Busses
+}

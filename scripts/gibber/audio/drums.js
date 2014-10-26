@@ -1,12 +1,11 @@
-(function() {
+module.exports = function( Gibber ) {
   "use strict"
   
   var Percussion = { Presets:{} }, 
       Gibberish = require( 'gibberish-dsp' ),
-      Gibber,
-      $ = require( '../dollar' ),
-      Clock = require('../clock')(),
-      curves = require('../mappings').outputCurves,
+      $ = Gibber.dollar,
+      Clock = require('./clock')( Gibber ),
+      curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC, 
       types = [
@@ -96,7 +95,7 @@
         obj._note = obj.note.bind(obj)
         obj.note = function() {
           var args = Array.prototype.splice.call( arguments, 0 )
-
+        
           if( typeof args[0] === 'string' ) {
             args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
           }
@@ -260,28 +259,28 @@
           if( typeof note === 'string' ) {
         		for( var key in this.kit ) {
         			if( note === this.kit[ key ].symbol ) {
-        				this[ key ].sampler.note( 1, this[key].amp );
-                var p = this.pitch//this.pitch() 
-                if( this[ key ].sampler.pitch !== p )
-                  this[ key ].sampler.pitch = p
+        				this[ key ].sampler.note( p.value, this[key].amp );
+                var p = p.value //this.pitch() 
+                // if( this[ key ].sampler.pitch !== p )
+                  // this[ key ].sampler.pitch = p
         				break;
         			}
         		}
           }else{
             var drum = obj[ Object.keys( obj.kit )[ note ] ]
-            drum.sampler.note( 1, drum.sampler.amp )
-            if( drum.sampler.pitch !== p )
-              drum.sampler.pitch = p
+            drum.sampler.note( p.value, drum.sampler.amp )
+            // if( drum.sampler.pitch !== p )
+            //   drum.sampler.pitch = p
           }
         }
       }else{
         if( typeof nt === 'string' ) {
       		for( var key in this.kit ) {
       			if( nt === this.kit[ key ].symbol ) {
-      				this[ key ].sampler.note( 1, this[key].amp );
-              var p = this.pitch//this.pitch() 
-              if( this[ key ].sampler.pitch !== p )
-                this[ key ].sampler.pitch = p
+      				this[ key ].sampler.note( p.value, this[key].amp );
+              var p = this.pitch.value //this.pitch() 
+              // if( this[ key ].sampler.pitch !== p )
+              //   this[ key ].sampler.pitch = p
       				break;
       			}
       		}
@@ -291,10 +290,10 @@
               key = keys[ num % keys.length ], 
               drum = obj[ key ]
               
-          drum.sampler.note( 1, drum.sampler.amp )
+          drum.sampler.note( p.value, drum.sampler.amp )
           
-          if( drum.sampler.pitch !== p )
-            drum.sampler.pitch = p
+          // if( drum.sampler.pitch !== p )
+          //   drum.sampler.pitch = p
         }
       }
   	}
@@ -600,6 +599,6 @@
   };
   Percussion.Drums.kits.default = Percussion.Drums.kits.electronic;
   
+  return Percussion
   
-  module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Percussion }
-})()
+}

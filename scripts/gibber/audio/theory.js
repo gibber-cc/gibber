@@ -1,9 +1,8 @@
-!function() {
+module.exports = function( Gibber ) {
   "use strict"
 
 var teoria = require('../../external/teoria.min'),
-    $ = require( '../dollar' ),
-    Gibber
+    $ = Gibber.dollar
 
 var Theory = {
   Teoria: teoria,
@@ -23,15 +22,15 @@ var Theory = {
   			return _chord;
   		},
 		
-  		create : function() {
-        var __root = typeof that.root() === 'object' ? that.root() : teoria.note( that.root() ),
-            __mode = that.mode() || mode 
-            
+  		create : function( _root ) {
+        var __root = typeof _root !== 'number' ? teoria.note( _root ).fq() : _root,
+            __mode = that.mode.value || mode 
+        
   			this.notes.length = 0
       
   			if( Gibber.Theory.Scales[ __mode ] ) {
   				var scale = Gibber.Theory.Scales[ __mode ]( __root )
-  				scale.create( this.degree )
+  				scale.create( 1, __root )// this.degree.value )
   				this.notes = scale.notes
   			}
   		},
@@ -53,35 +52,47 @@ var Theory = {
   		get: function() { return mode; },
   		set: function( val ) { 
         mode = val; 
-        that.create(); 
+        that.create( _root ); 
       }	
   	});
-  
-  	var root = that.root;
-  	Object.defineProperty(that, "root", {
-      configurable:true,
-  		get: function() { return root; },
-  		set: function(val) { 
-  			root = typeof val === "string" ? teoria.note( val ) : val; 
-  			that.create();
-  		}	
-  	});
     
-    var degree = that.degree;
-    Object.defineProperty(that, "degree", {
-      configurable:true,
-      get: function() { return degree; },
-      set: function(val) {
-        degree = val;
-        that.create( degree );
-      }  
+    var _root = arguments[0] || 440;
+    
+    Object.defineProperty(that, "root", {
+      get : function() { return _root; },
+      
+      set : function(val) { 
+        if(typeof val === "number") {
+          _root = val;
+        }else if (typeof val === "string") {
+          _root = Theory.Teoria.note( val ).fq();
+        }else if (typeof val === 'object') {
+          if( val.accidental ) {
+            _root = val.fq()
+          }else{
+            _root = Theory.Teoria.note( val.value ).fq()
+          }
+        }
+        
+        that.create(_root); 
+      }
     });
+    
+    // var degree = that.degree;
+    // Object.defineProperty(that, "degree", {
+    //   configurable:true,
+    //   get: function() { return degree; },
+    //   set: function(val) {
+    //     degree = val;
+    //     that.create( degree );
+    //   }  
+    // });
 	  
     // createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
     
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
-    Gibber.createProxyProperty( that, 'degree', true, false, null, false, 1 )    
+    // Gibber.createProxyProperty( that, 'degree', true, false, null, false, 1 )    
     
     $.subscribe( '/gibber/clear', function() {
       that.seq.isConnected = false
@@ -89,8 +100,9 @@ var Theory = {
       that.seq.destinations.length = 0
     })  
     
-  	that.create();
-    that.toString = function() { return 'Scale: ' + that.root() + ', ' + that.mode() }
+    //that.create( that.root )
+    that.root = _root
+    //that.toString = function() { return 'Scale: ' + that.root() + ', ' + that.mode() }
   	return that;
   },
   
@@ -100,13 +112,12 @@ var Theory = {
       degree: ___degree || 1,
       ratios: arguments[1] || [ 1, 1.10, 1.25, 1.3333, 1.5, 1.666, 1.75 ],
 	
-      create : function( _degree ) {
+      create : function( _degree, _root ) {
         // if( typeof _degree === 'number' ) this.degree = _degree
-        //console.log("CREATE!!!!", that.degree )
         this.notes = [];
-  
-        var scaleRoot = this.root;
-      
+        
+        var scaleRoot = _root; //typeof this.root === 'number' ? this.root : teoria.note( this.root.value ).fq() ;
+        
         for( var octave = 0; octave < 8; octave++ ) {
           for( var num = 0; num < this.ratios.length; num++ ) {	
             var degreeNumber = num + _degree - 1
@@ -116,7 +127,7 @@ var Theory = {
           scaleRoot *= 2;
         }
       
-        scaleRoot = this.root;
+        scaleRoot = _root; //this.root;
   	    var negCount = 8;
         for(var octave = -1; octave >= -8; octave--) {
           scaleRoot /= 2;
@@ -138,25 +149,8 @@ var Theory = {
     		}
     		return _chord;
     	},	
-    }
+    }            
 
-    var _root = arguments[0] || 440;
-    Object.defineProperty(that, "root", {
-      get : function() { return _root; },
-      
-      set : function(val) { 
-    		if(typeof val === "number") {
-    			_root = val;
-    		}else if (typeof val === "string") {
-    			_root = Theory.Teoria.note(val).fq();
-    		}else if (typeof val === 'object') {
-    			_root = val.fq();
-    		}
-        
-    		this.create(_root); 
-      }
-    });
-    
     // var __degree = that.degree;
     // Object.defineProperty(that, "degree", {
     //       configurable:true,
@@ -173,7 +167,6 @@ var Theory = {
 //       set: function( val ) { mode = val; this.create(); }  
 //     });
     
-    that.root = _root;                   
     //that.create();
       
     return that;
@@ -296,7 +289,6 @@ var Theory = {
 
 }
 
-module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Theory; }
-//window.Scale = Gibber.Theory.Scale
+return Theory
 
-}()
+}

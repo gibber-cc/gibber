@@ -5,8 +5,16 @@ var browserify = require( 'gulp-browserify' ),
     rename = require( 'gulp-rename' );
 
 gulp.task( 'client', function(){
-  var out = gulp.src( './scripts/gibber/gibber.js')
-    .pipe( browserify({ standalone:'Gibber', bare:true, ignore:'./graphics/graphics' }) )
+  var out = gulp.src( './scripts/gibber/audio.lib.js' )//gulp.src( './node_modules/gibber.core.lib/scripts/gibber.js')
+    .pipe( browserify({ 
+      standalone:'Gibber',
+      bare:true, 
+      ignore:[
+        'gibber.graphics.lib/scripts/gibber/graphics/graphics',
+        'gibber.interface.lib/scripts/gibber/interface/interface',
+        'gibber.audio.lib/scripts/gibber/audio'
+      ]
+    }) )
     .pipe( rename('gibber.audio.lib.js') )
     .pipe( gulp.dest('./build/') )
     .pipe( buffer() )
@@ -16,6 +24,11 @@ gulp.task( 'client', function(){
     
     return out
 });
+
+/*
+Gibber.Graphics  = require( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
+Gibber.Interface = require( 'gibber.interface.lib/scripts/gibber/interface/interface' )( Gibber )
+*/
 
 gulp.task( 'p5', ['client'], function() {
   var out = gulp.src( './build/gibber.audio.lib.js'  )
