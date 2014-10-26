@@ -250,24 +250,32 @@ module.exports = function( Gibber ) {
       return false 
     },
     updateDocument : function( revisions, previous, notes, column ) {
-      var msg = {
-        type: 'POST',
-        url:  GE.SERVER_URL + '/update',
-        data: previous,
-        dataType: 'json'
+      if( Account.nick !== null && Account.nick === column.fileInfo.author ) {
+        var msg = {
+          type: 'POST',
+          url:  GE.SERVER_URL + '/update',
+          data: previous,
+          dataType: 'json'
+        }
+      
+        $.extend( msg.data, revisions )
+        msg.data.revisionNotes = notes
+      
+        var promise = $.ajax( msg ).then( 
+          function(d) { 
+            column.fileInfo._rev = d._rev; 
+            column.revision = JSON.stringify( column.fileInfo )
+            GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
+          },
+          function(d) { console.error( d.error ) }
+        )
+      }else{
+        var msg = [
+        'This file can only be updated by gibberer ' + column.fileInfo.author + '.',
+        ' If this is your account, please log in. Otherwise, create a new publication to save the data to your account.'
+        ]
+        GE.Message.post( msg.join('') )
       }
-      
-      $.extend( msg.data, revisions )
-      msg.data.revisionNotes = notes
-      
-      var promise = $.ajax( msg ).then( 
-        function(d) { 
-          column.fileInfo._rev = d._rev; 
-          column.revision = JSON.stringify( column.fileInfo )
-          GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
-        },
-        function(d) { console.error( d.error ) }
-      )
     },
     deleteUserFile: function( fileData ) {
 
