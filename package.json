@@ -15,7 +15,8 @@
     "gulp-insert": "~0.4.0",
     "gulp-browserify": "~0.5.0",
     "gulp-rename": "~1.2.0",
-    "gibberish-dsp": "~2.1.4"
+    "gibberish-dsp": "~2.1.4",
+    "gibber.core.lib": "~0.0.1"
   },
   "dependencies": {
     "web-audio-api": "~0.1.5"
