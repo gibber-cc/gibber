@@ -28539,8 +28539,8 @@ module.exports = function( Gibber, Graphics ) {
       }
     },
     hide: function() {
-      if( this.canvas ) {
-        this.canvas.hide()
+      if( this.canvasObject ) {
+        this.canvasObject.hide()
       }
     },
     remove: function() {
