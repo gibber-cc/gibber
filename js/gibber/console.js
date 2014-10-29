@@ -35,7 +35,7 @@ module.exports = function( Gibber ) {
       this.div = $( '<div>' )
       //window._console = this.parent      
       // console = this;
-      //this.on()
+      this.on()
       //window.log = this.log
     },
     html : function( html ) {
