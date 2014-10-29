@@ -28538,6 +28538,11 @@ module.exports = function( Gibber, Graphics ) {
         }
       }
     },
+    hide: function() {
+      if( this.canvas ) {
+        this.canvas.hide()
+      }
+    },
     remove: function() {
       if( this.canvasObject ) {
         this.canvasObject.remove()
@@ -29857,6 +29862,7 @@ Graphics = {
   fps: null,
   graph: [],
   initialized: false,
+  mode: null,
   defaultContainer: '#contentCell',
   THREE: require('../external/three/three.min'),
   
@@ -29888,6 +29894,8 @@ Graphics = {
       Gibber.Environment.Message.post( msg )
     }
     
+    var _mode = this.mode
+    
     this.mode = mode || '3d'
 
     if( this.modes[ this.mode ].canvas === null ) {
@@ -29898,6 +29906,10 @@ Graphics = {
       // }
     }
     
+    console.log( "_MODE", _mode )
+    if( _mode !== null && typeof _mode !== 'undefined' && _mode !== this.mode ) {
+      this.modes[ _mode ].obj.hide()
+    } 
     if( this.modes[ this.mode ].obj.init ) { this.modes[ this.mode ].obj.init( container ) }
     
     if( this.modes[ this.mode ].canvas !== null ) {
@@ -30033,6 +30045,7 @@ Graphics = {
       //this.ctx = null
       this.running = false
       //this.initialized = false
+      //this.mode = null
     }
   },
   render : function() {
