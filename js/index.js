@@ -516,127 +516,87 @@ module.exports = function( Gibber ) {
       
       $( '.browserSearch' ).on( 'click', GE.Browser.search )
     },
-    
+    column: null,
     currentBrowserSection: null,
-    openBrowserSection: function( section ) {
-      GE.Browser.currentBrowserSection.hide()
-      
-      GE.Browser.currentBrowserSection = $( '#browser_' + section )
-      
-      GE.Browser.currentBrowserSection.show()
-    },
-    
     open: function() {
       GE = Gibber.Environment
       
-      var col = GE.Layout.addColumn({ header:'Browse Giblets' })
-      
-      //col.element.addClass( 'browser' )
-      
-      //col.bodyElement.remove()
-      
+      this.column = GE.Layout.addColumn({ header:'Browse Giblets' })
+
       $.ajax({
         url: GE.SERVER_URL + "/browser",
         dataType:'html'
       })
-      .done( function( data ) {
-        var browser = $( data ), cells, lastDiv
-        
-        $( col.bodyElement ).append( browser[0] )
-        $( 'head' ).append( browser[1] )
-        $( '#search_button' ).on( 'click', GE.Browser.search )
-        GE.Layout.setColumnBodyHeight( col )
-        
-        linksDivs = $( '.browserLinks' )
-        headers = $( '.browserHeading' )
-        
-        GE.Browser.currentBrowserSection = $('#browser_demos')
-        
-        $('#browser_tutorials_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'tutorials') )
-        $('#browser_demos_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'demos') )
-        $('#browser_search_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'search') )
-        $('#browser_recent_button').on( 'click', GE.Browser.openBrowserSection.bind( GE.Browser, 'recent') )
-        $('#browser_user_button').on( 'click', function() { GE.Browser.openBrowserSection('user') })
-        
-        var types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent' ], prev
-        for( var i = 0; i < linksDivs.length; i++ ) {
-          (function() {
-            var cell = linksDivs[ i ]
-            
-            var links = $( cell ).find( 'li' )
-            
-              for( var j = 0; j < links.length; j++ ) {
-              (function() {
-                // TODO: could this be any hackier???
-                var num = j, type = types[ i ], link = links[j], demoTypeName = type.slice(5).toLowerCase()
-                var pubCategory = Gibber.Environment.Browser.files[ type ] || Gibber.Environment.Browser.files.demos[ demoTypeName ]
+      .done( Browser.onLoad )
+    },
+    
+    onLoad: function( data ) {
+      var browserHTML = $( data )
+      
+      Browser.createLayout( browserHTML )
+      
+      $.subscribe( '/account/login', function( _name ) {
+        $.ajax({
+          type:'POST',
+          url: GE.SERVER_URL + "/userfiles",
+          data:{},
+          dataType:'json',
+        })
+        .done( GE.Browser.showUserFiles )
+      })
+      
+      $.subscribe( '/account/logout', function( _name ) {
+        $( '#browser_userfiles' ).find( 'li' ).remove()
+        GE.Browser.files.userfiles.length = 0
+      })
+      
+      GE.Browser.setupSearchGUI()
+    },
+    
+    createLayout : function( browserHTML ) {      
+      $( Browser.column.bodyElement ).append( browserHTML[0] )
+      $( 'head' ).append( browserHTML[1] )
+      $( '#search_button' ).on( 'click', Browser.search )
+      GE.Layout.setColumnBodyHeight( Browser.column )
+      
+      $( '#browser_tutorials_button' ).on( 'click', Browser.openBrowserSection.bind( Browser, 'tutorials' ) )
+      $( '#browser_demos_button' ).on(     'click', Browser.openBrowserSection.bind( Browser, 'demos' ) )
+      $( '#browser_search_button' ).on(    'click', Browser.openBrowserSection.bind( Browser, 'search' ) )
+      $( '#browser_recent_button' ).on(    'click', Browser.openBrowserSection.bind( Browser, 'recent' ) )
+      $( '#browser_user_button' ).on(      'click', Browser.openBrowserSection.bind( Browser, 'user' ) )
+      
+      Browser.currentBrowserSection = $('#browser_demos')
+      Browser.createLinks()
+    },
+    
+    createLinks : function() {
+      var linksDivs = $( '.browserLinks' ),
+          types = [ 'demosAudio', 'demosVisual', 'demosAudiovisual','audio', '_2d', '_3d', 'misc', 'recent' ],
+          prev
+          
+      for( var i = 0; i < linksDivs.length; i++ ) {
+        (function() {
+          var cell = linksDivs[ i ]
+          
+          var links = $( cell ).find( 'li' )
+          
+            for( var j = 0; j < links.length; j++ ) {
+            (function() {
+              // TODO: could this be any hackier???
+              var num = j, type = types[ i ], link = links[j], demoTypeName = type.slice(5).toLowerCase()
+              var pubCategory = Browser.files[ type ] || Browser.files.demos[ demoTypeName ]
+              
+              if( typeof pubCategory !== 'undefined' ) {
+                var pub = pubCategory[ num ], obj, id
                 
-                //console.log( "category", type, pubCategory )
-                if( typeof pubCategory !== 'undefined' ) {
-                  var pub = pubCategory[ num ], obj, id
-                  
-                  if( typeof pub === 'undefined' ) {
-                    console.log( 'UNDEFINED', type, num )
-                    return;
-                  }
-                  
-                  obj = pub.value || pub, // recently added has slightly different format
-                  id = pub.id || obj._id  // see above
-                      
-                  $( link ).on( 'mouseover', function() {
-                    $( link ).css({ background:'#444' })
-                    if( prev ) {
-                      $( prev ).css({ background:'transparent' })
-                    }
-                    prev = link
-                    $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
-                    $( '#browser_notes' ).text( obj.notes )
-                    $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
-                    $( '#browser_author' ).text( id.split('/')[0] )
-                  })
+                if( typeof pub === 'undefined' ) {
+                  console.log( 'UNDEFINED', type, num )
+                  return;
                 }
-              })()
-            }
-          })()
-        }
-        //$('#browser_audio_header').on('click', GE.Browser.updown)
-        
-        $.subscribe( '/account/login', function( _name ) {
-          $.ajax({
-            type:'POST',
-            url: GE.SERVER_URL + "/userfiles",
-            data:{},
-            dataType:'json',
-          })
-          .done( function( data ) {
-            var userdiv = $( '#browser_userfiles' )
-            console.log( userdiv )
-            userdiv.empty()
-            
-            var list = $( '<ul>' ), prev
-            
-            // var edit = $('<button>edit files</button>')
-            //   .css({ right:0, marginLeft:'4em', position:'relative' })
-            //   .on('click', function() { Browser.showFileEditingButtons() })
-            //   
-            // $('#browser_user .browserHeader h2').append( edit )
-            
-            for( var j = 0; j < data.files.length; j++ ) {
-              !function() {
-                var num = j,
-                    file = data.files[ num ],
-                    obj = file.value,
-                    id = file.id,
-                    link
                 
-                GE.Browser.files.userfiles.push( file )
-                
-                link = $('<li>')
-                  .text( id.split('/')[2] )
-                  .on( 'click', function() {
-                    Gibber.Environment.Browser.openCode( id )
-                  })
-                
+                obj = pub.value || pub, // recently added has slightly different format
+                id = pub.id || obj._id  // see above
+                    
                 $( link ).on( 'mouseover', function() {
                   $( link ).css({ background:'#444' })
                   if( prev ) {
@@ -648,21 +608,57 @@ module.exports = function( Gibber ) {
                   $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
                   $( '#browser_author' ).text( id.split('/')[0] )
                 })
-                
-                list.append( link )
-              }()
+              }
+            })()
+          }
+        })()
+      }
+    },
+    
+    showUserFiles: function( data ) {
+      var userdiv = $( '#browser_userfiles' ),      
+          list = $( '<ul>' ),
+          prev
+      
+      userdiv.empty()
+      // var edit = $('<button>edit files</button>')
+      //   .css({ right:0, marginLeft:'4em', position:'relative' })
+      //   .on('click', function() { Browser.showFileEditingButtons() })
+      //   
+      // $('#browser_user .browserHeader h2').append( edit )
+      
+      for( var j = 0; j < data.files.length; j++ ) {
+        !function() {
+          var num = j,
+              file = data.files[ num ],
+              obj = file.value,
+              id = file.id,
+              link
+          
+          GE.Browser.files.userfiles.push( file )
+          
+          link = $('<li>')
+            .text( id.split('/')[2] )
+            .on( 'click', function() {
+              Gibber.Environment.Browser.openCode( id )
+            })
+          
+          $( link ).on( 'mouseover', function() {
+            $( link ).css({ background:'#444' })
+            if( prev ) {
+              $( prev ).css({ background:'transparent' })
             }
-            userdiv.append( list )
+            prev = link
+            $( '#browser_title' ).text( id.split('/')[2].split('*')[0] )//$( link ).text() )
+            $( '#browser_notes' ).text( obj.notes )
+            $( '#browser_tags' ).text( obj.tags ? obj.tags.toString() : 'none' )
+            $( '#browser_author' ).text( id.split('/')[0] )
           })
-        })
-        
-        $.subscribe( '/account/logout', function( _name ) {
-          $( '#browser_userfiles' ).find( 'li' ).remove()
-          GE.Browser.files.userfiles.length = 0
-        })
-        
-        GE.Browser.setupSearchGUI()
-      })
+          
+          list.append( link )
+        }()
+      }
+      userdiv.append( list )
     },
     
     showFileEditingButtons: function() {
@@ -703,6 +699,12 @@ module.exports = function( Gibber ) {
           $(li).append( deleteBtn )
         }()
       }
+    },
+    
+    openBrowserSection: function( section ) {
+      GE.Browser.currentBrowserSection.hide()
+      GE.Browser.currentBrowserSection = $( '#browser_' + section )
+      GE.Browser.currentBrowserSection.show()
     },
 
     // publication name : author : rating : code fragment?
