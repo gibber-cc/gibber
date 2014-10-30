@@ -19510,6 +19510,13 @@ Audio = {
 								}
 							}
 							continue;
+						}else if( typeof arg === 'object' ) {
+							for( var j = 0; j < this.length; j++ ) {
+								if( this[ j ] === arg ) {
+									this.remove( j )
+								}
+							}
+							continue;
 						}
 						
             if( typeof arg === 'number' ) { // if identified via position in fx chain
