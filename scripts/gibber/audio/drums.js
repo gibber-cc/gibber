@@ -251,7 +251,7 @@ module.exports = function( Gibber ) {
     
     obj.note = function(nt) {
       // var p = typeof obj.pitch === 'function' ? obj.pitch() : obj.pitch
-      var p = obj.pitch
+      var p = obj.pitch.value
       if( $.isArray( nt ) ) {
         for( var i = 0; i < nt.length; i++ ) {
           var note = nt[ i ]
@@ -259,8 +259,9 @@ module.exports = function( Gibber ) {
           if( typeof note === 'string' ) {
         		for( var key in this.kit ) {
         			if( note === this.kit[ key ].symbol ) {
-        				this[ key ].sampler.note( p.value, this[key].amp );
-                var p = p.value //this.pitch() 
+                console.log( p )
+        				this[ key ].sampler.note( p, this[key].amp );
+                //var p = p //this.pitch() 
                 // if( this[ key ].sampler.pitch !== p )
                   // this[ key ].sampler.pitch = p
         				break;
@@ -277,8 +278,10 @@ module.exports = function( Gibber ) {
         if( typeof nt === 'string' ) {
       		for( var key in this.kit ) {
       			if( nt === this.kit[ key ].symbol ) {
-      				this[ key ].sampler.note( p.value, this[key].amp );
-              var p = this.pitch.value //this.pitch() 
+              //console.log("PITCH", p )
+      				this[ key ].sampler.note( p, this[key].amp );
+              this[ key ].sampler.pitch = p
+              //var p = this.pitch.value //this.pitch() 
               // if( this[ key ].sampler.pitch !== p )
               //   this[ key ].sampler.pitch = p
       				break;
@@ -290,7 +293,7 @@ module.exports = function( Gibber ) {
               key = keys[ num % keys.length ], 
               drum = obj[ key ]
               
-          drum.sampler.note( p.value, drum.sampler.amp )
+          drum.sampler.note( p, drum.sampler.amp )
           
           // if( drum.sampler.pitch !== p )
           //   drum.sampler.pitch = p

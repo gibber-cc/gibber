@@ -20,7 +20,7 @@ module.exports = function( Gibber ) {
       },
 
       callback : function(input, amount) {
-        if( isNaN(input) ) {
+        if( typeof input === 'object' ) {
           input[0] *= amount
           input[1] *= amount
         }else{

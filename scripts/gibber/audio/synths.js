@@ -361,7 +361,7 @@ module.exports = function( Gibber ) {
       amp:.1,
       presetInit: function() {
         this.bus = Gibber.Audio.Busses.Bus().fx.add( Gibber.Audio.FX.Delay(1/8,.75), Gibber.Audio.FX.LPF({ resonance:4 }) )
-        this.bus.fx[1].cutoff = Gibber.Audio.Binops.Add(.25, Gibber.Audio.Oscillators.Sine(.1,.2)._ )
+        this.bus.fx[1].cutoff = Gibber.Audio.Core.Binops.Add(.25, Gibber.Audio.Oscillators.Sine(.1,.2)._ )
         this.send( this.bus, .65 )
       },
     },
