@@ -36,7 +36,9 @@ module.exports = function( Gibber ) {
       $( '.browserSearch' ).on( 'click', GE.Browser.search )
     },
     column: null,
+    userfiles: null,
     currentBrowserSection: null,
+    isLoaded: false,
     open: function() {
       GE = Gibber.Environment
       
@@ -64,12 +66,20 @@ module.exports = function( Gibber ) {
       })
     },
     
+    _onload : null, 
     onLoad: function( data ) {
       var browserHTML = $( data )
       
       Browser.createLayout( browserHTML )
 
       GE.Browser.setupSearchGUI()
+      
+      Browser.isLoaded = true
+      
+      if( Browser._onload !== null ) {
+        Browser._onload()
+        Browser._onload = null
+      }
     },
     
     createLayout : function( browserHTML ) {      
@@ -135,6 +145,11 @@ module.exports = function( Gibber ) {
     },
     
     showUserFiles: function( data ) {
+      if( !Browser.isLoaded ) {
+        Browser._onload = Browser.showUserFiles.bind( Browser, data )
+        return
+      }
+      
       var userdiv = $( '#browser_userfiles' ),      
           list = $( '<ul>' ),
           prev
