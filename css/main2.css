@@ -176,6 +176,19 @@ tfoot, thead {
   top: 1em;
 }
 
+#welcome h2 span{
+  font-size: .4em !important;
+  vertical-align:middle;
+  font-weight:normal;
+}
+
+#welcome input[type=checkbox] {
+  transform: scale(1.5);
+  -webkit-transform: scale(1.5);
+  margin-left:2em;
+  margin-right:.5em;
+}
+
 #welcome button {
   font-size:.5em !important;
   border:1px solid #666;

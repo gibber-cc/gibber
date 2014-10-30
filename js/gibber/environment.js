@@ -53,6 +53,8 @@ var GE = {
       Gibber.log = GE.Console.log
       
       //GE.Console.open()
+      GE.Storage.init() // MUST BE BEFORE WELCOME INIT
+      
       GE.Welcome.init()
       GE.Theme.init()
       GE.Share.init()
@@ -114,9 +116,11 @@ var GE = {
 
       if ( ! this.values ) {
         this.values = {
-          layouts : {}
+          showWelcomeMessage: true
         }
+        this.save()
       }
+      
     },
     
     save : function() {
@@ -565,7 +569,7 @@ var GE = {
         GE.Forum.open()
       })
       $( '#welcomeButton' ).on( 'click', function(e) {
-        GE.Welcome.init()
+        GE.Welcome.init( true )
       })
     }
   },
@@ -590,11 +594,17 @@ var GE = {
   Welcome : {
     div: null,
     close: function() {
+      var checkbox = $( GE.Welcome.div ).find( 'input' ),
+          checked = checkbox.is(':checked')
+
+      GE.Storage.values.showWelcomeMessage = !checked
+      GE.Storage.save()
+      
       GE.Welcome.div.remove(); 
       GE.Welcome.div = null;
     },
-    init : function() {      
-      if( GE.Welcome.div !== null ) return;
+    init : function( overridePreference ) {      
+      if( GE.Welcome.div !== null || !GE.Storage.values.showWelcomeMessage && !overridePreference ) return;
       
       $.ajax({
         url: GE.SERVER_URL + "/welcome",
@@ -614,7 +624,10 @@ var GE = {
           .html( 'close welcome' )
           .attr( 'title', 'close welcome' )
         
-        div.find( 'h2' ).append( welcomeDivClose )
+        var doNotShow = $( '<input type="checkbox">' ).attr( 'checked', !GE.Storage.values.showWelcomeMessage ),
+            doNotShowText = $( '<span>' ).text( 'do not show this welcome when Gibber loads' )
+        
+        div.find( 'h2' ).append( welcomeDivClose, doNotShow, doNotShowText )
         
         GE.Welcome.div = div
       })
