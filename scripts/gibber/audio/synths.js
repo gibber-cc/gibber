@@ -127,11 +127,11 @@ module.exports = function( Gibber ) {
         obj.fx.ugen = obj
         
         if( name === 'Mono' ) {
-      		obj.note = function( _frequency, amp ) {
+                  obj.note = function( _frequency, amp ) {
             if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
-      
+              
             if( amp !== 0 ) {
-          		if(typeof this.frequency !== 'object' ){
+              if(typeof this.frequency !== 'object' ){
                 this.frequency = _frequency;
               }else{
                 if( this.frequency.type !== 'property' ) {
@@ -142,9 +142,9 @@ module.exports = function( Gibber ) {
                 }
               }
         
-        			if( obj.envelope.getState() > 0 ) obj.envelope.run();
+              if( obj.envelope.getState() > 0 ) obj.envelope.run();
             }
-      		}
+                  }
         }
         // override note method to allow note names
         obj._note = obj.note.bind( obj )

@@ -43,8 +43,11 @@ Audio = {
     target.Scale = Audio.Theory.Scale
 
 		target.module = Gibber.import
+    // target.ms = Audio.Time.ms
+    // target.seconds = target.sec = Audio.Time.seconds
+    // target.minutes = target.min = Audio.Time.minutes
     Audio.Core.Time.export( target )
-    target.sec = target.seconds
+    //target.sec = target.seconds
     Audio.Core.Binops.export( target )    
   },
   init: function() {
@@ -93,7 +96,31 @@ Audio = {
     
     //$.extend( Audio, Audio.Core )
   },
-  // override for Gibber.Audio method
+  
+  Time : {
+    ms: function( num ) {
+      return {
+        mode: 'absolute',
+        value: (Gibber.Audio.Core.context.sampleRate / 1000) * num,
+        valueOf: function() { return this.value }
+      }
+    },
+    seconds: function( num ) {
+      return {
+        mode: 'absolute',
+        value: Gibber.Audio.Core.context.sampleRate * num,
+        valueOf: function() { return this.value }
+      }
+    },
+    minutes: function( num ) {
+      return {
+        mode: 'absolute',
+        value: Gibber.Audio.Core.context.sampleRate * 60 * num,
+        valueOf: function() { return this.value }
+      }
+    }
+  },
+  // override for Gibber.Audio.Core method
   defineUgenProperty : function(key, initValue, obj) {
     var isTimeProp = Audio.Clock.timeProperties.indexOf( key ) > -1,
         prop = obj.properties[ key ] = {
@@ -112,7 +139,17 @@ Audio = {
           if( obj[ mappingName ].mapping.remove )
             obj[ mappingName ].mapping.remove( true ) // pass true to avoid setting property inside of remove method
         }
-
+        
+        // if( isTimeProp ) {
+        //   if( typeof val === 'object' && val.mode ==='absolute' ) { // ms, seconds
+        //     prop.value = val.value
+        //   }else{
+        //     prop.value = Audio.Core.Binops.Mul( Audio.Clock.time( val ), Audio.Core.Binops.Div( 1, Audio.Clock.rate ) ) 
+        //   }
+        // }else{
+        //   prop.value = val
+        // }
+        // 
         prop.value = isTimeProp ? Audio.Clock.time( val ) : val
         
         Audio.Core.dirty( obj )
