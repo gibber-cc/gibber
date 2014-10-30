@@ -29,7 +29,7 @@
           <div id='browser_visual_demos' class='browserLinks'>
             <ul>
             <% for(var i=0; i< demos.visual.length; i++) { %>
-            <li onclick="Gibber.Environment.Browser.openDemo('<%- demos.visual[i].id %>')"><%- demos.visual[i].id.split('/')[2].split('*')[0]%></li>
+            <li onclick="Gibber.Environment.Browser.openDemo('<%- demos.visual[i].id %>', true)"><%- demos.visual[i].id.split('/')[2].split('*')[0]%></li>
             <% } %>
             </ul>
           </div>
@@ -40,7 +40,7 @@
           <div id='browser_audiovisual_demos' class='browserLinks'>
           <ul>
           <% for(var i=0; i< demos.audiovisual.length; i++) { %>
-          <li onclick="Gibber.Environment.Browser.openDemo('<%- demos.audiovisual[i].id %>')"><%- demos.audiovisual[i].id.split('/')[2].split('*')[0]%></li>
+          <li onclick="Gibber.Environment.Browser.openDemo('<%- demos.audiovisual[i].id %>', true)"><%- demos.audiovisual[i].id.split('/')[2].split('*')[0]%></li>
           <% } %>
          </ul>
          </div>
@@ -70,7 +70,7 @@
           <div id='browser_2d' class='browserLinks'>
             <ul>
             <% for(var i=0; i<_2d.length; i++) { %>
-            <li onclick="Gibber.Environment.Browser.openCode('<%- _2d[i].id %>')"><%- _2d[i].id.split('/')[2].split('*')[0]%></li>
+            <li onclick="Gibber.Environment.Browser.openCode('<%- _2d[i].id %>', true )"><%- _2d[i].id.split('/')[2].split('*')[0]%></li>
             <% } %>
             </ul>
           </div>
@@ -81,7 +81,7 @@
           <div id='browser_3d' class='browserLinks'>
           <ul>
           <% for(var i=0; i<_3d.length; i++) { %>
-          <li onclick="Gibber.Environment.Browser.openCode('<%- _3d[i].id %>')"><%- _3d[i].id.split('/')[2].split('*')[0]%></li>
+          <li onclick="Gibber.Environment.Browser.openCode('<%- _3d[i].id %>', true )"><%- _3d[i].id.split('/')[2].split('*')[0]%></li>
           <% } %>
          </ul>
          </div>

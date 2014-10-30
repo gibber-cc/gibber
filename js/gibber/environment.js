@@ -74,61 +74,6 @@ var GE = {
       // attach canvases to table row instead of body
       Gibber.Graphics.defaultContainer = '#mainContent'  
     }
-    
-    /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
-      $script( ['gibber/mappings',
-                'gibber/gibber_interface',
-                'gibber/console',
-                'gibber/mouse',
-                'gibber/column',
-                'external/mousetrap',
-                'gibber/chat',
-                'gibber/share',
-                'gibber/code_objects',
-                'gibber/docs',
-                'gibber/keymaps',
-                'gibber/browser',
-                'gibber/account',
-                'gibber/demos',
-                ], function() {
-      
-        GE.Keymap.init()
-
-        $( '#layoutTable' ).attr( 'height', $( window ).height() )
-        $( '#contentCell' ).width( $( window ).width() )
-
-        Gibber.proxy( window )
-
-        if( !window.isInstrument ) {
-          GE.Layout.init( GE )
-          window.Layout = GE.Layout
-          GE.Account.init()
-          GE.Console.init()
-          //GE.Console.open()
-          GE.Welcome.init()
-          GE.Share.open()
-          //GE.Demos.open()
-          GE.Layout.createBoundariesForInitialLayout()
-        }
-        
-        window.Notation = GE.Notation
-        
-        $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
-      });
-    })
-
-    $script( ['external/color', 'external/injectCSS', 'gibber/theme'], 'theme', function() {
-      if( !window.isInstrument ) {
-        GE.Theme.init()
-        GE.Storage.init()
-        GE.Menu.init()
-      }
-    })
-    
-    // $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
-    //   Gibber.Graphics.load()
-    // })
-    */
   },
   selectCurrentBlock: function( editor ) { // thanks to graham wakefield
       var pos = editor.getCursor();
@@ -619,6 +564,9 @@ var GE = {
       $( '#forumButton' ).on( 'click', function(e) {
         GE.Forum.open()
       })
+      $( '#welcomeButton' ).on( 'click', function(e) {
+        GE.Welcome.init()
+      })
     }
   },
   
@@ -640,20 +588,35 @@ var GE = {
     }
   },
   Welcome : {
-    init : function() {
-      //var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
-      //col.bodyElement.remove()
-      //console.log( "GE.Rtc", GE.Rtc )
+    div: null,
+    close: function() {
+      GE.Welcome.div.remove(); 
+      GE.Welcome.div = null;
+    },
+    init : function() {      
+      if( GE.Welcome.div !== null ) return;
+      
       $.ajax({
         url: GE.SERVER_URL + "/welcome",
         dataType:'html'
       })
       .done( function( data ) {
         var welcome = $( data )
-        GE.Console.div.append( welcome )
-        // $( col.element ).append( welcome )
-        // col.bodyElement = welcome
-        // GE.Layout.setColumnBodyHeight( col )
+        
+        var div = $('<div>').html( welcome )
+        
+        div.css({ position:'absolute', top:0, left:0, height:'100%', width:'100%', background:'rgba(0,0,0,.9)', zIndex:100  })
+        
+        GE.Browser.demoColumn.bodyElement.append( div )
+        
+        var welcomeDivClose = $( '<button>' )
+          .on( 'click', GE.Welcome.close )
+          .html( 'close welcome' )
+          .attr( 'title', 'close welcome' )
+        
+        div.find( 'h2' ).append( welcomeDivClose )
+        
+        GE.Welcome.div = div
       })
     },
   },

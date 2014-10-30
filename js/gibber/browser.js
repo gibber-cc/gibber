@@ -344,7 +344,7 @@ module.exports = function( Gibber ) {
         }
       )
     },
-    openDemo : function( addr ) {
+    openDemo : function( addr, hasGraphics ) {
       // console.log( "ADDR", addr )
       $.post(
         GE.SERVER_URL + '/retrieve',
@@ -360,7 +360,17 @@ module.exports = function( Gibber ) {
 
           Browser.demoColumn = col
           
+          if( hasGraphics ) {
+            GE.Layout.textBGOpacity( .6 )
+          }else{
+            GE.Layout.textBGOpacity( 0 )
+          }
+          
           Gibber.clear()
+          
+          if( Gibber.Environment.Welcome.div !== null ) {
+            GE.Welcome.close()
+          }
           
           GE.modes.javascript.run( col, data.text, { start:{ line:0, ch:0 }, end:{ line:col.editor.lastLine(), ch:0 }}, col.editor, true )
           

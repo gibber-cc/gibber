@@ -48,7 +48,6 @@ module.exports = function( Gibber ) {
 
     var storeX = 0, storeY = 0
     
-    
     $.extend( _m, {
       x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
       isOn : false,
@@ -66,7 +65,7 @@ module.exports = function( Gibber ) {
         storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX - window.scrollX// / _m.ww 
         storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - window.scrollY - headerFooterHeight// / _m.wh 
         
-        //console.log( e )
+        // console.log( e )
         if( typeof _m.onvaluechange === 'function' ) {
           _m.onvaluechange()
         }

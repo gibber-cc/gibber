@@ -167,17 +167,44 @@ tfoot, thead {
 
 #welcome {
   padding: 0 .5em 0 .5em;
-  overflow-y:scroll;
+  overflow-y:scroll !important;
   overflow-x:hidden;
  -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
   font-size:.95em;
+  margin-top:0;
+  top: 1em;
 }
+
+#welcome button {
+  font-size:.5em !important;
+  border:1px solid #666;
+  padding:.25em;
+  margin-left:2em;
+  background:#191919;
+  -moz-box-sizing: border-box !important;
+  box-sizing: border-box !important;
+}
+
 #welcome ul li {
   margin-bottom:1em;
   padding-left:0em;
+/*  width:35em;*/
 }
 
+#welcome { 
+  width: 40em; 
+  padding-left:1em;
+  height:100%;
+}
+
+#welcome h2 { 
+  margin-top: .5em;
+  font-size: 2em; 
+}
+/*#welcome p {
+  width:35em;
+}*/
 #welcome a {
   color:#bbb;
 }
@@ -277,7 +304,7 @@ tfoot, thead {
   width:95%;
   overflow:scroll;
 }
-#browser_meta{ height:30%; width:95%; display:block; }
+#browser_meta{ height:28%; width:95%; display:block; }
 
 .console-error {
   font-weight:bold;
@@ -482,7 +509,9 @@ tfoot, thead {
   border-top:1px solid #bbb;
   display:block;
   overflow: scroll;
-  height:25%;
+  -moz-box-sizing: border-box !important;
+  box-sizing: border-box !important;
+/*  //height:28%;*/
 }
 
 #browser_meta p { margin-top: .15em;}

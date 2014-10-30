@@ -825,7 +825,7 @@ module.exports = function( Gibber ) {
         }
       )
     },
-    openDemo : function( addr ) {
+    openDemo : function( addr, hasGraphics ) {
       // console.log( "ADDR", addr )
       $.post(
         GE.SERVER_URL + '/retrieve',
@@ -841,7 +841,17 @@ module.exports = function( Gibber ) {
 
           Browser.demoColumn = col
           
+          if( hasGraphics ) {
+            GE.Layout.textBGOpacity( .6 )
+          }else{
+            GE.Layout.textBGOpacity( 0 )
+          }
+          
           Gibber.clear()
+          
+          if( Gibber.Environment.Welcome.div !== null ) {
+            GE.Welcome.close()
+          }
           
           GE.modes.javascript.run( col, data.text, { start:{ line:0, ch:0 }, end:{ line:col.editor.lastLine(), ch:0 }}, col.editor, true )
           
@@ -1975,61 +1985,6 @@ var GE = {
       // attach canvases to table row instead of body
       Gibber.Graphics.defaultContainer = '#mainContent'  
     }
-    
-    /*$script( ['external/codemirror/codemirror-compressed', 'external/interface', 'gibber/layout', 'gibber/notation'], 'codemirror',function() {
-      $script( ['gibber/mappings',
-                'gibber/gibber_interface',
-                'gibber/console',
-                'gibber/mouse',
-                'gibber/column',
-                'external/mousetrap',
-                'gibber/chat',
-                'gibber/share',
-                'gibber/code_objects',
-                'gibber/docs',
-                'gibber/keymaps',
-                'gibber/browser',
-                'gibber/account',
-                'gibber/demos',
-                ], function() {
-      
-        GE.Keymap.init()
-
-        $( '#layoutTable' ).attr( 'height', $( window ).height() )
-        $( '#contentCell' ).width( $( window ).width() )
-
-        Gibber.proxy( window )
-
-        if( !window.isInstrument ) {
-          GE.Layout.init( GE )
-          window.Layout = GE.Layout
-          GE.Account.init()
-          GE.Console.init()
-          //GE.Console.open()
-          GE.Welcome.init()
-          GE.Share.open()
-          //GE.Demos.open()
-          GE.Layout.createBoundariesForInitialLayout()
-        }
-        
-        window.Notation = GE.Notation
-        
-        $script( 'gibber/keys', function() { Keys.bind( 'ctrl+.', Gibber.clear.bind( Gibber ) ) } )
-      });
-    })
-
-    $script( ['external/color', 'external/injectCSS', 'gibber/theme'], 'theme', function() {
-      if( !window.isInstrument ) {
-        GE.Theme.init()
-        GE.Storage.init()
-        GE.Menu.init()
-      }
-    })
-    
-    // $script( ['gibber/graphics/graphics',  'external/spinner.min'], function() {
-    //   Gibber.Graphics.load()
-    // })
-    */
   },
   selectCurrentBlock: function( editor ) { // thanks to graham wakefield
       var pos = editor.getCursor();
@@ -2520,6 +2475,9 @@ var GE = {
       $( '#forumButton' ).on( 'click', function(e) {
         GE.Forum.open()
       })
+      $( '#welcomeButton' ).on( 'click', function(e) {
+        GE.Welcome.init()
+      })
     }
   },
   
@@ -2541,20 +2499,35 @@ var GE = {
     }
   },
   Welcome : {
-    init : function() {
-      //var col = GE.Layout.addColumn({ type:'form', fullScreen:false, header:'Welcome' })
-      //col.bodyElement.remove()
-      //console.log( "GE.Rtc", GE.Rtc )
+    div: null,
+    close: function() {
+      GE.Welcome.div.remove(); 
+      GE.Welcome.div = null;
+    },
+    init : function() {      
+      if( GE.Welcome.div !== null ) return;
+      
       $.ajax({
         url: GE.SERVER_URL + "/welcome",
         dataType:'html'
       })
       .done( function( data ) {
         var welcome = $( data )
-        GE.Console.div.append( welcome )
-        // $( col.element ).append( welcome )
-        // col.bodyElement = welcome
-        // GE.Layout.setColumnBodyHeight( col )
+        
+        var div = $('<div>').html( welcome )
+        
+        div.css({ position:'absolute', top:0, left:0, height:'100%', width:'100%', background:'rgba(0,0,0,.9)', zIndex:100  })
+        
+        GE.Browser.demoColumn.bodyElement.append( div )
+        
+        var welcomeDivClose = $( '<button>' )
+          .on( 'click', GE.Welcome.close )
+          .html( 'close welcome' )
+          .attr( 'title', 'close welcome' )
+        
+        div.find( 'h2' ).append( welcomeDivClose )
+        
+        GE.Welcome.div = div
       })
     },
   },
@@ -3223,7 +3196,6 @@ module.exports = function( Gibber ) {
 
     var storeX = 0, storeY = 0
     
-    
     $.extend( _m, {
       x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
       isOn : false,
@@ -3241,7 +3213,7 @@ module.exports = function( Gibber ) {
         storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX - window.scrollX// / _m.ww 
         storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - window.scrollY - headerFooterHeight// / _m.wh 
         
-        //console.log( e )
+        // console.log( e )
         if( typeof _m.onvaluechange === 'function' ) {
           _m.onvaluechange()
         }
@@ -28539,7 +28511,7 @@ module.exports = function( Gibber, Graphics ) {
       }
     },
     hide: function() {
-      if( this.canvasObject ) {
+      if( this.canvas ) {
         this.canvasObject.hide()
       }
     },
