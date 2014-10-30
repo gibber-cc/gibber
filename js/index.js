@@ -528,12 +528,6 @@ module.exports = function( Gibber ) {
         dataType:'html'
       })
       .done( Browser.onLoad )
-    },
-    
-    onLoad: function( data ) {
-      var browserHTML = $( data )
-      
-      Browser.createLayout( browserHTML )
       
       $.subscribe( '/account/login', function( _name ) {
         $.ajax({
@@ -549,7 +543,13 @@ module.exports = function( Gibber ) {
         $( '#browser_userfiles' ).find( 'li' ).remove()
         GE.Browser.files.userfiles.length = 0
       })
+    },
+    
+    onLoad: function( data ) {
+      var browserHTML = $( data )
       
+      Browser.createLayout( browserHTML )
+
       GE.Browser.setupSearchGUI()
     },
     
@@ -1948,6 +1948,8 @@ var GE = {
     Gibber.proxy( window )
     
     if( !Gibber.isInstrument ) {
+      GE.Account.init() // must be before layout init, which opens browser and loads userfiles
+
       GE.Layout.init( GE )
       window.Layout = GE.Layout
       window.Column = GE.Layout.Column
@@ -1959,9 +1961,7 @@ var GE = {
       // the window.module global is deprecated and will be removed at some point!
       // I don't trust using it now that Gibber has moved to browserify
       module = window.module = Gibber.import
-      
-      GE.Account.init()
-      
+            
       GE.Console.init()
       Gibber.log = GE.Console.log
       

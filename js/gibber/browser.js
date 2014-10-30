@@ -47,12 +47,6 @@ module.exports = function( Gibber ) {
         dataType:'html'
       })
       .done( Browser.onLoad )
-    },
-    
-    onLoad: function( data ) {
-      var browserHTML = $( data )
-      
-      Browser.createLayout( browserHTML )
       
       $.subscribe( '/account/login', function( _name ) {
         $.ajax({
@@ -68,7 +62,13 @@ module.exports = function( Gibber ) {
         $( '#browser_userfiles' ).find( 'li' ).remove()
         GE.Browser.files.userfiles.length = 0
       })
+    },
+    
+    onLoad: function( data ) {
+      var browserHTML = $( data )
       
+      Browser.createLayout( browserHTML )
+
       GE.Browser.setupSearchGUI()
     },
     
