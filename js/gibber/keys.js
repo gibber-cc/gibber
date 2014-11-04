@@ -17,6 +17,7 @@ module.exports = function( Gibber, Mousetrap ) {
 
   Keys = {
     bind: function( key, fcn ) {
+      console.log( 'BINDING', fcn )
       Mousetrap.bind( key, fcn )
     },
     
@@ -24,7 +25,9 @@ module.exports = function( Gibber, Mousetrap ) {
       Mousetrap.stopCallback = function(e, element, combo ) {
         return false
       }
-    }
+    },
+    
+    'Mousetrap': Mousetrap
   }
 
   return Keys

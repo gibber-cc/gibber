@@ -70,6 +70,8 @@ var GE = {
       GE.Mouse = GE.Mouse( Gibber )
       window.Mouse = GE.Mouse
       
+      window.Keys = GE.Keys
+      
       // keymaps handles this when it occurs within codemirror instances
       Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )  
       
