@@ -12,7 +12,7 @@ b = Seq({
 })
 */
 
-( function() {
+module.exports = function( Gibber, Notation ) {
   var codeObjects = [ 'Sampler', 'Model' ],
       notes = [ 'c','db','d','eb','e','f','gb','g','ab','a','bb','b' ],
       makeMove = function( x, value, incr, min, max, mark, cm, newObject, propertyName, className ) {
@@ -482,4 +482,4 @@ b = Seq({
     return cb    
   }
   Gibber.Environment.Notation.on( 'global' )
-})()
+}

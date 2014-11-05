@@ -1,8 +1,8 @@
-( function() {
+module.exports = function( Gibber, Environment) {
   // TODO: some effects need to use entire lines... for example, transfrom
   // can't apply to inline elements
   
-  var GEN = Gibber.Environment.Notation = {
+  var GEN = {
     isRunning: false,
     notations: [],
     fps: 20,
@@ -219,4 +219,5 @@
     }
   }
   
-})()
+  return GEN
+}

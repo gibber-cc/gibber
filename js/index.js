@@ -1221,6 +1221,492 @@ return Chat
 
 }
 
+},{}],"/www/gibber.libraries/js/gibber/code_objects.js":[function(require,module,exports){
+/*
+a = Synth({
+  attack:44100,
+  decay: 44100
+})
+
+b = Seq({
+  note: ['bb4','eb5','gb3'].rnd(),
+  durations:[ 1/4, 1/8, 1 ].rnd(),
+  pan: Rndf(-1,1),
+  target:a
+})
+*/
+
+module.exports = function( Gibber, Notation ) {
+  var codeObjects = [ 'Sampler', 'Model' ],
+      notes = [ 'c','db','d','eb','e','f','gb','g','ab','a','bb','b' ],
+      makeMove = function( x, value, incr, min, max, mark, cm, newObject, propertyName, className ) {
+        var text = value, count = 0;
+
+        move = function( e ) {
+          var isMouseDown = true
+
+          if( e.which !== 1 ) {
+            isMouseDown = false
+            $( window ).off( 'mousemove', move )
+            if( count > 0 ) {
+              move.onend()
+            }
+            return
+            //cm.setOption( 'readOnly', false )
+          }
+          
+          // wait until mouse is actually moving (as opposed to just pressed down)
+          if( ++count === 1 ) move.startMove()
+    
+          if( isMouseDown ) {
+            var subValue = e.clientX - x
+            if( e.shiftKey ) { 
+              subValue *= 5
+            }else if( e.altKey ) {
+              subValue *= .1
+            }
+  
+            x = e.clientX            
+
+            if( move.changeValue ) {
+              text = move.changeValue( subValue )
+            }else{
+              value = value + subValue * incr
+            
+              if( value < min ) {
+                value = min
+              }else if( value > max ) {
+                value = max
+              }
+            
+              text = value % 1 === 0 ? value : value.toFixed( 3 )
+            }
+  
+            var pos = mark.find()  
+            cm.replaceRange( '' + text, pos.from, pos.to )
+
+            if( className ) { 
+              var newEnd = { line: pos.to.line, ch: pos.from.ch + ( new String( text ).length ) }
+              // mark.clear()
+              // newObject.marks.splice( newObject.marks.indexOf( mark ), 1 )
+              // 
+              // mark = cm.markText( pos.from, newEnd, { 'className': className, inclusiveLeft:true, inclusiveRight:true } ) 
+              // newObject.marks.push( mark )
+            }
+            
+            if( move.onchange )
+              move.onchange( text )
+  
+            e.preventDefault()
+          }
+        }
+        
+        move.mousedown = function( e ) { x = e.clientX }
+        move.getValue = function() { return text }
+        
+        return move
+      }
+      
+  // text objects and mappings
+  //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
+  Gibber.Environment.Notation.features[ 'global' ] = function( obj, cm, pos, start, end, src, evalStart ) {
+    if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
+      var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
+      
+      if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
+      if( right.callee ) {
+        var constructorName = right.callee.name,
+            className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
+        
+        var mark = cm.markText( start, end, { 'className': className } );
+        
+        if( !newObject.marks ) {
+          newObject.marks = []
+          
+          newObject.clearMarks = function() {
+            for( var i = 0; i < this.marks.length; i++ ) {        
+              if( this.marks[ i ].height ) { // in case this is a line handle
+                var cm = this.marks[i].parent.parent.cm
+                cm.removeLineClass( this.marks[i].lineNo(), this.marks[i].wrapClass )
+              }else{
+                this.marks[ i ].clear()
+              }
+            }
+      
+            this.marks.length = 0
+          }
+        }
+        
+        newObject.marks.push( mark )
+        
+        // for( var i = evalStart + 1; i <= evalStart + ( end.line - start.line ); i++ ) {
+        //           mark = cm.addLineClass( i, 'wrap', className )
+        //           newObject.marks.push( mark )
+        //         }
+        
+        $.subscribe( '/gibber/clear', function() {
+          if( newObject.clearMarks )
+            newObject.clearMarks()
+        })
+ 
+        newObject.text = new String( src )
+        newObject.text.mark = mark
+        newObject.text.class = '.' + className
+        newObject.text.mappingProperties = $.extend( {}, Gibber.Environment.Notation.properties )
+        newObject.text.mappingObjects = []
+        
+        newObject.tree = obj
+        
+        for( var _key in newObject.text.mappingProperties ) {
+          ( function() {
+            var key = _key,
+                property = newObject.text.mappingProperties[ key ],
+                set = property.set
+        
+            newObject.text[ '___' + key + '___' ] = property.value
+            
+            Object.defineProperty( newObject.text, key, {
+              configurable: true,
+              get: function() { return newObject.text[ '___' + key + '___' ] },
+              set: function( v ) {
+                set.call( newObject.text, v )
+              }
+            })
+        
+            Gibber.createProxyProperty( newObject.text, key, false, false, property )
+          })()
+        }
+        
+        if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
+          makeSequence( newObject, cm, pos, right, newObjectName )
+        } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
+          for( var ii = 0; ii < right.arguments.length; ii++ ) {
+            ( function() {
+              var arg = right.arguments[ ii ]
+              if( arg.type === 'Literal' ) {
+                var literal = arg, 
+                    _start = {line: start.line, ch:literal.loc.start.column },
+                    _end = {line: start.line, ch:literal.loc.end.column },
+                    mappingObject = newObject.mappingObjects[ ii ]
+                                    
+                var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, mappingObject.name, mappingObject )
+                
+                __move.onchange = function( v ) {
+                  newObject[ mappingObject.name ] = v
+                }
+              }else if( arg.type === 'ObjectExpression' ) {
+                for( var j = 0; j < arg.properties.length; j++ ) {
+                  ( function() { 
+                    var literal = arg.properties[ j ],
+                        mappingObject = newObject.mappingProperties[ literal.key.name ],
+                        _start = { line: evalStart + literal.value.loc.start.line - 1, ch:literal.value.loc.start.column },
+                        _end = { line: evalStart + literal.value.loc.end.line - 1, ch:literal.value.loc.end.column }
+                                            
+                    var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
+                    
+                    __move.onchange = function( v ) {
+                      newObject[ literal.key.name ] = v
+                    }
+                  })()
+                }
+              }
+            })()
+          }
+        }
+      }
+    }
+  }
+  
+  // drag and drop
+  //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
+  Gibber.Environment.Notation.features[ 'draganddrop' ] = function( obj, cm, pos, start, end, src, evalStart ) {    
+    if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
+      
+      var left = obj.expression.left, 
+          right = obj.expression.right, 
+          newObjectName = left.name,
+          newObject = window[ newObjectName ]
+      
+      if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
+            
+      if( right.callee ) {
+        var constructorName = right.callee.name || src.split('\n')[0].split('=')[1].trim().split('(')[0],
+            className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_dragdrop'
+        
+        if( codeObjects.indexOf( constructorName ) > -1 ){
+          // have to mark again due to cascading calls...
+          var mark = cm.markText( start, end, { 'className': className } );
+          newObject.marks.push( mark )
+        
+          if( left ) {
+            // console.log( 'MAKING A DROP', className, newObjectName )
+            // apparently cm.markText isn't synchronous
+            future( function() {
+              $( '.' + className ).on( 'drop', function( e ) { 
+                // console.log( 'GOT A DROP ', className, newObjectName )
+                // console.log( e )
+                window[ newObjectName ].ondrop( e.originalEvent.dataTransfer.items )
+                $( '.' + className ).css({ textDecoration:'none' })
+              })
+            
+              $( '.' + className ).on( 'dragenter', function( e ) { 
+                // console.log( 'DRAGOVER', className, newObjectName )
+                $( '.' + className ).css({ textDecoration:'underline' })
+              })
+            
+              $( '.' + className ).on( 'dragleave', function( e ) { 
+                // console.log( 'DRAGLEAVE', className, newObjectName )
+                $( '.' + className ).css({ textDecoration:'none' })
+              })
+            
+            }, 1/4)
+          }
+        }
+      }
+    }
+  }
+  
+  // sequencers 
+  // processSeq : function( seq, _name, cm, pos ) {
+  var makeSequence = function( seq, cm, pos, right, newObjectName ) {
+    var props = seq.tree.expression.right.arguments[0].properties,
+        targetName = typeof seq.target !== 'undefined' ? seq.target.text.split(' ')[0] : 'undefined',
+        target = window[ targetName ]
+
+    if( props ) {
+      for( var ii = 0; ii < right.arguments.length; ii++ ) {
+        seq.locations = {}
+        //for(var key in seq) {
+        var props = seq.tree.expression.right.arguments[0].properties;
+
+        if( props ) {
+          for(var ii = 0; ii < props.length; ii++) {
+            ( function() {
+              var prop = props[ii],
+                  name = prop.key.name,            
+                  mappingObject = target.mappingProperties[ name ]
+
+              if( typeof seq.properties[ name ] === 'undefined' || name === 'durations') {
+                seq.locations[ name ] = [];
+    	
+                var values = prop.value.elements; 
+                if( !values ) {
+                  if( prop.value.callee ) { // if it is an array with a random or weight method attached..
+                    if( prop.value.callee.object )
+                      values = prop.value.callee.object.elements; // use the array that is calling the method
+                  }
+                } 
+        
+                if( values ) {
+                  for( var jj = 0; jj < values.length; jj++ ) {
+                    ( function() {
+                      var value = values[ jj ],
+                       		__name = newObjectName + '_' + name + '_' + jj + '_sequence',
+                          index = jj,
+        									start, end;
+
+                      start = {
+                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                        ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
+                      }
+                      end = {
+                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                        ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
+                      }
+                  
+                      start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
+                      end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
+                      
+                      if( value.type !== 'BinaryExpression' ) {
+                        if( !mappingObject && (name !== 'note' && name !== 'frequency') ) return
+                        // only change inside quotes if string literal
+
+                        if( Gibber.Environment.Notation.enabled.reactive ) {
+                          if( isNaN( value.value ) ) {
+                            start.ch += 1
+                            end.ch -=1
+                          }
+                        
+                          var _move = makeReactive( value, cm, start, end, seq, newObjectName, __name, mappingObject, __name, true )
+                          _move.onchange = function( v ) { 
+                            seq[ name ][ index ] = isNaN(v) ? v : parseFloat( v )
+                          }
+                        
+                          if( isNaN( value.value ) && name === 'note' ) {  // string, for now we assume a note string
+                            _move.changeValue = function( amt ) {
+                              var currentValue = _move.getValue(), noteName, noteNumber, nameArray
+                            
+                              noteName = ''
+                              nameArray = currentValue.split('')
+                            
+                              var _i = 0
+                              while( isNaN( nameArray[ _i  ] ) ) {
+                                noteName += nameArray[ _i ]
+                                _i++
+                              }
+                            
+                              noteNumber = nameArray[ _i ] 
+                            
+                              var index = notes.indexOf( noteName )
+                              if( amt > 0 ) {
+                                index += 1
+                                if( index >= notes.length ) {
+                                  index = index % notes.length
+                                  noteNumber = parseInt( noteNumber ) + 1
+                                  if( noteNumber > 8 ) noteNumber = 8
+                                }
+                              }else{
+                                if( index === 0 ) {
+                                  index = notes.length -1
+                                  noteNumber = parseInt( noteNumber ) - 1
+                                  if( noteNumber < 0 ) noteNumber = 0 
+                                }else{
+                                  index -= 1
+                                }
+                              }
+                            
+                              noteName = notes[ ( index  )  % notes.length ]
+                              return noteName + noteNumber
+                            }
+                          }
+                          // highlight whole literal for second mark, quotes included
+                          start.ch -=1
+                          end.ch += 1
+                        }
+                      }
+                      
+                      var mark = cm.markText( start, end, { className:__name });
+                      seq.marks.push( mark )
+                      seq.locations[ name ].push( __name )
+                    })()
+                  }              
+                }	else {
+                  //if( name !== 'durations' ) console.log(prop)
+                  var __name = newObjectName + '_' + name + '_0_sequence'
+      
+                  var loc = prop.value.loc;
+                  var start = {
+                    line : loc.start.line + ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                    ch : loc.start.column
+                  }
+                  var end = {
+                    line : loc.end.line + ( pos.start ? pos.start.line - 1 : pos.line - 1 ),
+                    ch : loc.end.column
+                  }
+        
+                  var mark = cm.markText(start, end, { className: __name });
+                  seq.marks.push( mark )
+                  seq.locations[ name ].push( __name )
+                }
+              }
+            })()
+          }
+          
+          var lastChose = {};
+          
+          seq.chose = function( key, index ) { 
+            if( seq.locations[ key ] ) {
+              var __name = '.' + seq.locations[ key ][ index ];
+					
+              if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
+          
+              $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+          
+              setTimeout( function() {
+                $( __name ).css({ 
+                  backgroundColor: 'rgba(0,0,0,0)',
+                });
+              }, 100 )
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // reactive literals
+  /* Some ideas:
+    - drag on note names to change name, ie 'c4' to 'c#4'
+    - drag on individual characters in drum sequnce to change between different possibilities
+    - drag on values found in sequence arrays (and also use note name dragging as appropriate)
+    - per Matt, drag on particular positions in number (such as the tens digit) to only change that value
+       - maybe this could be a modal drag, such as with the shift key held?
+  */
+  
+  var disableSelection = function( cm, obj ) {
+    for( var i = 0; i < obj.ranges.length; i++ ) {
+      var selection = obj.ranges[ i ]
+      selection.anchor = selection.head
+    }
+  }
+  
+  
+  var makeReactive = function( literal, cm, start, end, obj, newObjectName, propertyName, mappingObject, extraClassName, isString ) {
+    var min = mappingObject.min, max = mappingObject.max,
+        range = max - min,
+        pixelRange = 300,
+        incr =  1 / pixelRange * range,
+        className = newObjectName + '_' + propertyName + '_' + cm.column.id + '_reactive',
+        mark, value, x, _move, cb = {}, initCursorPos
+    
+    value = typeof literal.value.value !== 'undefined' ? literal.value.value : literal.value
+
+    mark = cm.markText( start, end, { 'className': className, inclusiveLeft:true, inclusiveRight:true } )
+    obj.marks.push( mark )
+        
+    $.subscribe('/gibber/clear', function() { mark.clear() } )
+    
+    cm.listeners[ className ] = function( e ) {
+      var isMouseDown = true;
+      
+      initCursorPos = cm.getCursor();
+
+      if( _move ) { 
+        value = isString ? _move.getValue() : new Number( _move.getValue() ) // don't reset variable value to initial val
+      }
+
+      var x = e.clientX // closure variable
+
+      _move = makeMove( x, value, incr, min, max, mark, cm, obj, propertyName, extraClassName )
+      
+      var moving = false
+
+      _move.startMove = function() {
+        moving = true
+        $( '.CodeMirror-cursors' ).css({ display:'none'} )
+        cm.on( 'beforeSelectionChange', disableSelection )
+        cm.addLineClass( start.line, 'wrap', 'ew-resize' )
+        cm.setOption( 'matchBrackets', false )
+      }
+      
+      _move.onend = function() {
+        cm.setCursor( initCursorPos )
+        $( '.CodeMirror-cursors').css({ display:'block' })
+        cm.removeLineClass( start.line, 'wrap', 'ew-resize' )
+        cm.off( 'beforeSelectionChange', disableSelection )
+        cm.setOption( 'matchBrackets', true )
+      }
+
+      if( cb.onchange ) _move.onchange = cb.onchange
+      if( cb.changeValue ) _move.changeValue = cb.changeValue
+      
+      var end = function() {
+        $( window ).off( 'mouseup', end )
+        if( moving ) _move.onend() 
+      }
+      
+      $( window ).on( 'mousemove', _move )
+      $( window ).on( 'mouseup', end )                
+    }
+    
+    cb.getValue = function() {
+      return _move.getValue()
+    }
+    
+    return cb    
+  }
+  Gibber.Environment.Notation.on( 'global' )
+}
 },{}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
 var $ = require( './dollar' )
 
@@ -1932,7 +2418,8 @@ module.exports = function( Gibber ) {
 // im function object instead?
 
 var MT = require( 'coreh-mousetrap' )(),
-    $  = require( './dollar' )
+    $  = require( './dollar' ),
+    codeObjects = require( './code_objects' )
     
 var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
@@ -1953,6 +2440,7 @@ var GE = {
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
+  Notation:     require( './notation' ),
   
   init : function() { 
     GE.Keymap.init()
@@ -1994,6 +2482,10 @@ var GE = {
       GE.Metronome.init()
       GE.Metronome.on()
       Gibber.Clock.addMetronome( GE.Metronome )
+      
+      GE.Notation = GE.Notation( Gibber, GE )
+      
+      codeObjects( Gibber, GE.Notation )
       
       GE.Mouse = GE.Mouse( Gibber )
       window.Mouse = GE.Mouse
@@ -2144,53 +2636,57 @@ var GE = {
 			'glsl-vertex'   : 'x-shader/x-vertex'      
 		},
 		javascript : {
-      _run: function( script, pos, cm ) { // called by Gibber.Environment.Keymap.modes.javascript
-        eval( script )
-        // var _start = pos.start ? pos.start.line : pos.line,
-        //     tree
-        //     
-        //         try{
-        //   tree = GE.Esprima.parse( script, { loc:true, range:true } )
-        // }catch(e) {
-        //   console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
-        //   return
-        // }
-        //     
-        //         // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
-        //         for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
-        //           var obj = tree.body[ __i__ ],
-        //       start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
-        //       end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
-        //       src   = cm.getRange( start, end ),
-        //               result = null
-        //       
-        //   //console.log( start, end, src )
-        //   try{
-        //     result = eval( src )
-        //             if( typeof result !== 'function' ) {
-        //               log( result )
-        //             }else{
-        //               log( 'Function' )
-        //             }
-        //   }catch( e ) {
-        //     console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
-        //             console.log( e )
-        //   }
-        //       
-        //           if( Gibber.scriptCallbacks.length > 0 ) {
-        //             for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
-        //               Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
-        //             }
-        //           }
-        //         }
+      run: function( column, script, pos, cm, shouldDelay ) { // called by Gibber.Environment.Keymap.modes.javascript
+//        eval( script )
+        //GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+        var _start = pos.start ? pos.start.line : pos.line,
+            tree
+        
+        try{
+          tree = GE.Esprima.parse( script, { loc:true, range:true } )
+        }catch(e) {
+          console.log ( e )
+          console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
+          return
+        }
+            
+                // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
+          var obj = tree.body[ __i__ ],
+          start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
+          end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
+          src   = cm.getRange( start, end ),
+                  result = null
+              
+          //console.log( start, end, src )
+          if( !shouldDelay ) {
+            try{
+              result = eval( src )
+              // if( typeof result !== 'function' ) {
+              //   console.log( result )
+              // }
+            }catch( e ) {
+              //console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
+              console.log( e )
+            }
+          }else{
+            Gibber.Clock.codeToExecute.push({ code:script, pos:pos, 'cm':cm })
+          }
+              
+          if( Gibber.scriptCallbacks.length > 0 && !shouldDelay ) {
+            for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+              Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+            }
+          }
+        }
       },
 
-			run : function( column, value, position, codemirror, shouldDelay ) {
-				if( shouldDelay ) {
-					Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
-				}else{
-					GE.modes.javascript._run( value, position, codemirror ) 
-				}
+			_run : function( column, value, position, codemirror, shouldDelay ) {
+        // if( shouldDelay ) {
+        //   Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
+        // }else{
+					GE.modes.javascript.run( column, value, position, codemirror, shouldDelay ) 
+          //}
 			},
       
 			default: [
@@ -2572,7 +3068,7 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
-},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
@@ -2830,7 +3326,6 @@ module.exports = function( Gibber, Mousetrap ) {
 
   Keys = {
     bind: function( key, fcn ) {
-      console.log( 'BINDING', fcn )
       Mousetrap.bind( key, fcn )
     },
     
@@ -3341,6 +3836,230 @@ module.exports = function( Gibber ) {
     Gibber.createProxyProperties( _m, mappingProperties, true )
     
     return _m
+}
+},{}],"/www/gibber.libraries/js/gibber/notation.js":[function(require,module,exports){
+module.exports = function( Gibber, Environment) {
+  // TODO: some effects need to use entire lines... for example, transfrom
+  // can't apply to inline elements
+  
+  var GEN = {
+    isRunning: false,
+    notations: [],
+    fps: 20,
+    clear: null,
+    filterString: [],
+    
+    features:{ 'seq':true, 'reactive':true },
+    
+    enabled: {},
+    
+    on: function() {
+      for( var i = 0; i < arguments.length; i++ ) {
+        var name = arguments[ i ]
+        
+        if( this.features[ name ] && ! this.enabled[ name ] ) {
+          var func = this.features[ name ]
+          if( typeof func === 'function' ) {
+            if( Gibber.scriptCallbacks.indexOf( func ) === -1 ) {
+              Gibber.scriptCallbacks.push( func )
+              this.enabled[ name ] = func
+            }
+          } else {
+            this.enabled[ name ] = true
+          }
+        }
+      }
+    },
+    
+    off: function( name ) {
+      if( this.enabled[ name ] ) {
+        var val = this.enabled[ name ],
+            idx = Gibber.scriptCallbacks.indexOf( this.enabled[ name ] )
+        
+        if( typeof val === 'function' ) {    
+          Gibber.scriptCallbacks.splice( idx, 1 )
+        }
+        
+        delete this.enabled[ name ]
+      }
+    },
+    
+    add: function( obj ) {
+      this.notations.push( obj )
+      if( !this.isRunning ) {
+        this.init()
+      }
+    },
+    remove: function( obj ) {
+      this.notations.splice( this.notations.indexOf( obj ), 1 )
+    },
+    init: function() {
+      var func = function() {
+        var filtered = []
+        for( var i = 0; i < GEN.notations.length; i++ ) {
+          var notation = GEN.notations[ i ]
+              
+          notation.update()
+          
+          if( notation.text.filterString && notation.text.filterString.length > 0 ) {
+            if( filtered.indexOf( notation.text ) === -1 ) {
+              filtered.push( notation.text )
+            }
+          }
+        }
+                
+        for( var j = 0; j < filtered.length; j++ ) {
+          var filter = filtered[ j ]
+          $( filter.class ).css( '-webkit-filter', filter.filterString.join(' ') )
+          filter.filterString.length = 0
+        }
+
+        GEN.clear = future( func, ms( 1000 / GEN.fps ) )
+      }
+      func()
+      
+      this.isRunning = true
+      
+      $.subscribe( '/gibber/clear', function( e ) {
+        GEN.isRunning = false
+      })
+    },
+    
+    properties: {
+      background: {
+        min:0, max:255, value:0, timescale:'notation',
+        set: function(v) {
+          this.___background___  = Math.round( v )
+          var backgroundString = 'rgb(' + this.___background___ +',' + this.___background___ +',' + this.___background___ + ')'
+        
+          $( this.class ).css( 'background', backgroundString )
+        },
+      },
+      fontSize: {
+        min:.5, max:3, value:1, timescale:'notation',
+        set: function(v) {
+          this.___fontSize___  = v
+          var outputString = v + 'em'
+        
+          $( this.class ).css( 'font-size', outputString )
+        },
+      },
+      scale : { 
+        min:.5, max:5, value:1, timescale:'notation',
+        set: function(v) {
+          this.___scale___  = v
+          var outputString = 'scale(' + v + ')'
+          //transform: scale(0.5);
+          //console.log( outputString )
+
+          $( this.class ).css( 'transform', outputString )
+        },
+      },
+      color: {
+        min:0, max:255, value:0, timescale:'notation',
+        set: function(v) {
+          this.___color___  = Math.round( v ) 
+          var outputString = 'rgb(' + this.___color___ +',' + this.___color___ +',' + this.___color___ + ')'
+        
+          $( this.class ).css( 'color', outputString )
+        },
+      },
+      borderColor: { // TODO: NEED TO MARK LINES INSTEAD OF TOKENS
+        min:0, max:255, value:0, timescale:'notation',
+        set: function(v) {
+          this.___borderColor___  = Math.round( v )
+          var outputString = 'rgb(' + this.___borderColor__ +',' + this.___borderColor__ +',' + this.___borderColor__ + ')'
+        
+          $( this.class ).css({ 'borderColor': outputString, borderWidth:'2px' })
+        },
+      },
+      opacity: {
+        min:0, max:1, value:0, timescale:'notation',
+        set: function(v) {
+          this.___opacity___  = v
+        
+          $( this.class ).css( 'opacity', this.___opacity___ )
+        },
+      },
+      fontWeight: {
+        min:100, max:900, value:500, timescale:'notation',
+        set: function(v) {
+          this.___fontWeight___  = Math.round( v )
+        
+          $( this.class ).css( 'font-weight', this.___fontWeight___  )
+        },
+      },
+      left: {
+        min:0, max:5, value:0, timescale:'notation',
+        set: function(v) {
+          this.___left___  = v + 'em'
+        
+          $( this.class ).css( 'padding-left', this.___left___  )
+        },
+      },
+      letterSpacing: {
+        min:0, max:2, value:0, timescale:'notation',
+        set: function(v) {
+          this.___letterSpacing___  = v + 'em'
+        
+          $( this.class ).css( 'letter-spacing', this.___letterSpacing___  )
+        },
+      },
+      // filters
+      blur: {
+        min:0, max:20, value:0, timescale:'notation',
+        set: function(v) {
+          this.___blur___  = Math.round( v ) 
+          var outputString = 'blur(' + v + 'px)'
+          
+          if( !this.filterString ) this.filterString = []
+          this.filterString.push( outputString )
+        },
+      },
+      hue: {
+        min:0, max:360, value:0, timescale:'notation',
+        set: function(v) {
+          this.___blur___  = Math.round( v ) 
+          var outputString = 'hue-rotate(' + v + 'deg)'
+          
+          if( !this.filterString ) this.filterString = []
+          this.filterString.push( outputString )
+        },
+      },
+      invert: {
+        min:0, max:100, value:0, timescale:'notation',
+        set: function(v) {
+          this.___invert___  = Math.round( v ) 
+          var outputString = 'invert(' + v + '%)'
+
+          if( !this.filterString ) this.filterString = []
+          this.filterString.push( outputString )
+        },
+      },
+      saturate: {
+        min:0, max:300, value:0, timescale:'notation',
+        set: function(v) {
+          this.___saturate___  = Math.round( v ) 
+          var outputString = 'saturate(' + v + '%)'
+
+          if( !this.filterString ) this.filterString = []
+          this.filterString.push( outputString )
+        },
+      },
+      brightness: {
+        min:0, max:300, value:0, timescale:'notation',
+        set: function(v) {
+          this.___brightness___  = Math.round( v ) 
+          var outputString = 'brightness(' + v + '%)'
+
+          if( !this.filterString ) this.filterString = []
+          this.filterString.push( outputString )
+        },
+      },
+    }
+  }
+  
+  return GEN
 }
 },{}],"/www/gibber.libraries/js/gibber/share.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
@@ -20220,9 +20939,10 @@ var Clock = {
 						Clock.codeToExecute[ i ].function()
 					}else{
             if( Gibber.Environment ) {
-              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ]._run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ].run( Clock.codeToExecute[i].cm.column, Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm, false ) 
             }else{
-  	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+  	          //Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+              eval( Clock.codeToExecute[ i ].code )
             }
 					}
         }catch( e ) {

@@ -4,7 +4,8 @@ module.exports = function( Gibber ) {
 // im function object instead?
 
 var MT = require( 'coreh-mousetrap' )(),
-    $  = require( './dollar' )
+    $  = require( './dollar' ),
+    codeObjects = require( './code_objects' )
     
 var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
@@ -25,6 +26,7 @@ var GE = {
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
+  Notation:     require( './notation' ),
   
   init : function() { 
     GE.Keymap.init()
@@ -66,6 +68,10 @@ var GE = {
       GE.Metronome.init()
       GE.Metronome.on()
       Gibber.Clock.addMetronome( GE.Metronome )
+      
+      GE.Notation = GE.Notation( Gibber, GE )
+      
+      codeObjects( Gibber, GE.Notation )
       
       GE.Mouse = GE.Mouse( Gibber )
       window.Mouse = GE.Mouse
@@ -216,53 +222,57 @@ var GE = {
 			'glsl-vertex'   : 'x-shader/x-vertex'      
 		},
 		javascript : {
-      _run: function( script, pos, cm ) { // called by Gibber.Environment.Keymap.modes.javascript
-        eval( script )
-        // var _start = pos.start ? pos.start.line : pos.line,
-        //     tree
-        //     
-        //         try{
-        //   tree = GE.Esprima.parse( script, { loc:true, range:true } )
-        // }catch(e) {
-        //   console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
-        //   return
-        // }
-        //     
-        //         // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
-        //         for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
-        //           var obj = tree.body[ __i__ ],
-        //       start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
-        //       end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
-        //       src   = cm.getRange( start, end ),
-        //               result = null
-        //       
-        //   //console.log( start, end, src )
-        //   try{
-        //     result = eval( src )
-        //             if( typeof result !== 'function' ) {
-        //               log( result )
-        //             }else{
-        //               log( 'Function' )
-        //             }
-        //   }catch( e ) {
-        //     console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
-        //             console.log( e )
-        //   }
-        //       
-        //           if( Gibber.scriptCallbacks.length > 0 ) {
-        //             for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
-        //               Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
-        //             }
-        //           }
-        //         }
+      run: function( column, script, pos, cm, shouldDelay ) { // called by Gibber.Environment.Keymap.modes.javascript
+//        eval( script )
+        //GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+        var _start = pos.start ? pos.start.line : pos.line,
+            tree
+        
+        try{
+          tree = GE.Esprima.parse( script, { loc:true, range:true } )
+        }catch(e) {
+          console.log ( e )
+          console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
+          return
+        }
+            
+                // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
+          var obj = tree.body[ __i__ ],
+          start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
+          end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
+          src   = cm.getRange( start, end ),
+                  result = null
+              
+          //console.log( start, end, src )
+          if( !shouldDelay ) {
+            try{
+              result = eval( src )
+              // if( typeof result !== 'function' ) {
+              //   console.log( result )
+              // }
+            }catch( e ) {
+              //console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
+              console.log( e )
+            }
+          }else{
+            Gibber.Clock.codeToExecute.push({ code:script, pos:pos, 'cm':cm })
+          }
+              
+          if( Gibber.scriptCallbacks.length > 0 && !shouldDelay ) {
+            for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+              Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+            }
+          }
+        }
       },
 
-			run : function( column, value, position, codemirror, shouldDelay ) {
-				if( shouldDelay ) {
-					Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
-				}else{
-					GE.modes.javascript._run( value, position, codemirror ) 
-				}
+			_run : function( column, value, position, codemirror, shouldDelay ) {
+        // if( shouldDelay ) {
+        //   Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
+        // }else{
+					GE.modes.javascript.run( column, value, position, codemirror, shouldDelay ) 
+          //}
 			},
       
 			default: [
