@@ -22706,7 +22706,7 @@ module.exports = function( Gibber ) {
   
   Samplers.Sampler = function() {
     var args = Array.prototype.slice.call( arguments, 0 ),
-        file = args[0].file,
+        file = args[0] && args[0].file ? args[0].file : undefined,
         oscillator = new Gibberish.Sampler( file ).connect( Gibber.Master )
         name = 'Sampler'
          
