@@ -34,9 +34,10 @@ var Clock = {
 						Clock.codeToExecute[ i ].function()
 					}else{
             if( Gibber.Environment ) {
-              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ]._run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+              Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ].run( Clock.codeToExecute[i].cm.column, Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm, false ) 
             }else{
-  	          Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+  	          //Gibber.run( Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm )
+              eval( Clock.codeToExecute[ i ].code )
             }
 					}
         }catch( e ) {

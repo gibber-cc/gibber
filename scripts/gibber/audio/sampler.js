@@ -51,8 +51,9 @@ module.exports = function( Gibber ) {
   }
   
   Samplers.Sampler = function() {
-    var oscillator = new Gibberish.Sampler().connect( Gibber.Master ),
-        args = Array.prototype.slice.call( arguments, 0 ),
+    var args = Array.prototype.slice.call( arguments, 0 ),
+        file = args[0].file,
+        oscillator = new Gibberish.Sampler( file ).connect( Gibber.Master )
         name = 'Sampler'
          
       oscillator.type = 'Gen'
