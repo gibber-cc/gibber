@@ -46,7 +46,7 @@ list = [
   'audio/conga',
   'audio/tom',
   'audio/bus',
-  'audio/input',  
+  'audio/input',
   
   'singletons/gibber.clock',
   'singletons/gibber',  
