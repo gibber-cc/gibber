@@ -1747,7 +1747,8 @@ module.exports = function( Gibber ) {
       isFullScreen:   false,
       'resizeHandleSize'  : resizeHandleSize,
       close: function() {
-        Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose();
+        if( col.onclose ) col.onclose();
+        Layout.removeColumn( colNumber );  
       }
       
       // fullScreen:     this.makeFullScreenFunction(),
@@ -1764,7 +1765,11 @@ module.exports = function( Gibber ) {
     col.resizeHandle.outerWidth( resizeHandleSize )
     
     col.closeButton.addClass( 'closeButton' )
-      .on( 'click', function(e) { Layout.removeColumn( colNumber );  col.isClosed = true; if( col.onclose ) col.onclose(); })
+      .on( 'click', function(e) { 
+        if( col.onclose ) col.onclose();
+        Layout.removeColumn( colNumber );  
+        col.isClosed = true;  
+      })
       .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
       .html( '&#10005;' )
       .attr( 'title', 'close column' )
@@ -2994,6 +2999,10 @@ var GE = {
       $( '#forumButton' ).on( 'click', function(e) {
         GE.Forum.open()
       })
+      
+      $( '#preferencesButton' ).on( 'click', function(e) {
+        GE.Preferences.open()
+      })
       $( '#welcomeButton' ).on( 'click', function(e) {
         GE.Welcome.init( true )
       })
@@ -3050,13 +3059,40 @@ var GE = {
           .html( 'close welcome' )
           .attr( 'title', 'close welcome' )
         
-        var doNotShow = $( '<input type="checkbox">' ).attr( 'checked', !GE.Storage.values.showWelcomeMessage ),
-            doNotShowText = $( '<span>' ).text( 'do not show this welcome when Gibber loads' )
-        
-        div.find( 'h2' ).append( welcomeDivClose, doNotShow, doNotShowText )
+        div.find( 'h2' ).append( welcomeDivClose )
         
         GE.Welcome.div = div
       })
+    },
+  },
+  Preferences : {
+    div: null,
+    close: function() {
+      var showWelcomeCheckbox = $( '#preferences_showWelcomeScreen' ),
+          checked = showWelcomeCheckbox.is(':checked')
+
+      GE.Storage.values.showWelcomeMessage = checked
+      GE.Storage.save()
+    },
+    open : function() {
+      $.ajax({
+        url: GE.SERVER_URL + "/preferences",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var preferencesHTML = $( data )
+        
+        var div = $('<div>').html( preferencesHTML )
+        
+        this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
+        
+        this.column.bodyElement.append( div )
+        
+        $( '#preferences_showWelcomeScreen' ).attr( 'checked', GE.Storage.values.showWelcomeMessage ),
+        
+        this.column.onclose = this.close.bind( this )
+        
+      }.bind( this ) )
     },
   },
 }

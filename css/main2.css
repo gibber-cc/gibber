@@ -277,7 +277,7 @@ tfoot, thead {
   overflow:scroll;
 }
 
-#docs, #help, .browser, #credits {
+#docs, #help, .browser, #credits, #preferences {
   padding: 0 .6em;
 /*  overflow: scroll;*/
   -moz-box-sizing: border-box !important;

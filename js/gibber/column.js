@@ -37,7 +37,8 @@ module.exports = function( Gibber ) {
       isFullScreen:   false,
       'resizeHandleSize'  : resizeHandleSize,
       close: function() {
-        Layout.removeColumn( colNumber );  if( col.onclose ) col.onclose();
+        if( col.onclose ) col.onclose();
+        Layout.removeColumn( colNumber );  
       }
       
       // fullScreen:     this.makeFullScreenFunction(),
@@ -54,7 +55,11 @@ module.exports = function( Gibber ) {
     col.resizeHandle.outerWidth( resizeHandleSize )
     
     col.closeButton.addClass( 'closeButton' )
-      .on( 'click', function(e) { Layout.removeColumn( colNumber );  col.isClosed = true; if( col.onclose ) col.onclose(); })
+      .on( 'click', function(e) { 
+        if( col.onclose ) col.onclose();
+        Layout.removeColumn( colNumber );  
+        col.isClosed = true;  
+      })
       .css({ fontSize:'.8em', borderRight:'1px solid #666', padding:'.25em', fontWeight:'bold' })
       .html( '&#10005;' )
       .attr( 'title', 'close column' )
