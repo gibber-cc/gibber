@@ -1817,6 +1817,10 @@ module.exports = function( Gibber ) {
     var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
     
+    if( GE.Storage.values ) {
+      if( !GE.Storage.values.showSampleCodeInNewEditors ) _value = ''    
+    }
+    
     col.bodyElement.width( columnWidth - resizeHandleSize )
     col.element.append( col.bodyElement )
     
@@ -2439,6 +2443,7 @@ var GE = {
   Keys:         require( './keys' )( Gibber, MT ),
   Keymap:       require( './keymaps' )( Gibber ),
   Browser:      require( './browser' )( Gibber ),
+  Preferences:  require( './preferences' )( Gibber ),  
   Theme:        require( './theme' )( Gibber ),
   Esprima:      require( 'esprima' ),
   Mouse:        require( './mouse' ), // pass Gibber later
@@ -2456,8 +2461,10 @@ var GE = {
     Gibber.proxy( window )
     
     if( !Gibber.isInstrument ) {
+      GE.Storage.init() // load user preferences from localStorage before doing anything
+            
       GE.Account.init() // must be before layout init, which opens browser and loads userfiles
-
+      
       GE.Layout.init( GE )
       window.Layout = GE.Layout
       window.Column = GE.Layout.Column
@@ -2473,13 +2480,9 @@ var GE = {
       GE.Console.init()
       Gibber.log = GE.Console.log
       
-      //GE.Console.open()
-      GE.Storage.init() // MUST BE BEFORE WELCOME INIT
-      
       GE.Welcome.init()
       GE.Theme.init()
       GE.Share.init()
-      //GE.Demos.open()
       
       GE.Menu.init()
       GE.Layout.createBoundariesForInitialLayout()
@@ -2543,7 +2546,8 @@ var GE = {
 
       if ( ! this.values ) {
         this.values = {
-          showWelcomeMessage: true
+          showWelcomeMessage: true,
+          showSampleCodeInNewEditors: true,
         }
         this.save()
       }
@@ -3065,36 +3069,37 @@ var GE = {
       })
     },
   },
-  Preferences : {
-    div: null,
-    close: function() {
-      var showWelcomeCheckbox = $( '#preferences_showWelcomeScreen' ),
-          checked = showWelcomeCheckbox.is(':checked')
-
-      GE.Storage.values.showWelcomeMessage = checked
-      GE.Storage.save()
-    },
-    open : function() {
-      $.ajax({
-        url: GE.SERVER_URL + "/preferences",
-        dataType:'html'
-      })
-      .done( function( data ) {
-        var preferencesHTML = $( data )
-        
-        var div = $('<div>').html( preferencesHTML )
-        
-        this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
-        
-        this.column.bodyElement.append( div )
-        
-        $( '#preferences_showWelcomeScreen' ).attr( 'checked', GE.Storage.values.showWelcomeMessage ),
-        
-        this.column.onclose = this.close.bind( this )
-        
-      }.bind( this ) )
-    },
-  },
+  // Preferences : {
+//     div: null,
+//     close: function() {
+//       var showWelcomeCheckbox = $( '#preferences_showWelcomeScreen' ),
+//           checked = showWelcomeCheckbox.is(':checked')
+// 
+//       GE.Storage.values.showWelcomeMessage = checked
+//       GE.Storage.save()
+//     },
+//     open : function() {
+//       $.ajax({
+//         url: GE.SERVER_URL + "/preferences",
+//         dataType:'html'
+//       })
+//       .done( function( data ) {
+//         var preferencesHTML = $( data )
+//         
+//         var div = $('<div>').html( preferencesHTML )
+//         
+//         this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
+//         
+//         this.column.bodyElement.append( div )
+//         
+//         $( '#preferences_showWelcomeScreen' ).attr( 'checked', GE.Storage.values.showWelcomeMessage ),
+//         $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', GE.Storage.values.showSampleCodeInNewEditors ),        
+//         
+//         this.column.onclose = this.close.bind( this )
+//         
+//       }.bind( this ) )
+//     },
+//   },
 }
 
 require( 'codemirror/addon/comment/comment' )
@@ -3104,7 +3109,7 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
-},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
@@ -4097,7 +4102,57 @@ module.exports = function( Gibber, Environment) {
   
   return GEN
 }
-},{}],"/www/gibber.libraries/js/gibber/share.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/preferences.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+  var GE,
+      $ = require( './dollar' )
+      
+  var Preferences = {
+    div: null,
+    processShowWelcomeCheckBox : function() {
+      var showWelcomeCheckbox = $( '#preferences_showWelcomeScreen' ),
+          checked = showWelcomeCheckbox.is(':checked')
+
+      Gibber.Environment.Storage.values.showWelcomeMessage = checked
+    },
+    processShowSampleCodeInNewEditorsCheckbox : function() {
+      var showSampleCodeInNewEditorsCheckbox = $( '#preferences_showSampleCodeInNewEditors' ),
+          checked = showSampleCodeInNewEditorsCheckbox.is(':checked')
+
+      Gibber.Environment.Storage.values.showSampleCodeInNewEditors = checked
+    },
+    close: function() {
+      Preferences.processShowWelcomeCheckBox()
+      Preferences.processShowSampleCodeInNewEditorsCheckbox()
+      
+      Gibber.Environment.Storage.save()
+    },
+    open : function() {
+      $.ajax({
+        url: Gibber.Environment.SERVER_URL + "/preferences",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var preferencesHTML = $( data )
+  
+        var div = $('<div>').html( preferencesHTML )
+  
+        this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
+  
+        this.column.bodyElement.append( div )
+  
+        $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
+        $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
+        
+        this.column.onclose = this.close.bind( this )
+  
+      }.bind( this ) )
+    },
+  }
+  
+  return Preferences
+}
+},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/share.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"

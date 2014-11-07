@@ -20,6 +20,7 @@ var GE = {
   Keys:         require( './keys' )( Gibber, MT ),
   Keymap:       require( './keymaps' )( Gibber ),
   Browser:      require( './browser' )( Gibber ),
+  Preferences:  require( './preferences' )( Gibber ),  
   Theme:        require( './theme' )( Gibber ),
   Esprima:      require( 'esprima' ),
   Mouse:        require( './mouse' ), // pass Gibber later
@@ -37,8 +38,10 @@ var GE = {
     Gibber.proxy( window )
     
     if( !Gibber.isInstrument ) {
+      GE.Storage.init() // load user preferences from localStorage before doing anything
+            
       GE.Account.init() // must be before layout init, which opens browser and loads userfiles
-
+      
       GE.Layout.init( GE )
       window.Layout = GE.Layout
       window.Column = GE.Layout.Column
@@ -54,13 +57,9 @@ var GE = {
       GE.Console.init()
       Gibber.log = GE.Console.log
       
-      //GE.Console.open()
-      GE.Storage.init() // MUST BE BEFORE WELCOME INIT
-      
       GE.Welcome.init()
       GE.Theme.init()
       GE.Share.init()
-      //GE.Demos.open()
       
       GE.Menu.init()
       GE.Layout.createBoundariesForInitialLayout()
@@ -124,7 +123,8 @@ var GE = {
 
       if ( ! this.values ) {
         this.values = {
-          showWelcomeMessage: true
+          showWelcomeMessage: true,
+          showSampleCodeInNewEditors: true,
         }
         this.save()
       }
@@ -646,36 +646,37 @@ var GE = {
       })
     },
   },
-  Preferences : {
-    div: null,
-    close: function() {
-      var showWelcomeCheckbox = $( '#preferences_showWelcomeScreen' ),
-          checked = showWelcomeCheckbox.is(':checked')
-
-      GE.Storage.values.showWelcomeMessage = checked
-      GE.Storage.save()
-    },
-    open : function() {
-      $.ajax({
-        url: GE.SERVER_URL + "/preferences",
-        dataType:'html'
-      })
-      .done( function( data ) {
-        var preferencesHTML = $( data )
-        
-        var div = $('<div>').html( preferencesHTML )
-        
-        this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
-        
-        this.column.bodyElement.append( div )
-        
-        $( '#preferences_showWelcomeScreen' ).attr( 'checked', GE.Storage.values.showWelcomeMessage ),
-        
-        this.column.onclose = this.close.bind( this )
-        
-      }.bind( this ) )
-    },
-  },
+  // Preferences : {
+//     div: null,
+//     close: function() {
+//       var showWelcomeCheckbox = $( '#preferences_showWelcomeScreen' ),
+//           checked = showWelcomeCheckbox.is(':checked')
+// 
+//       GE.Storage.values.showWelcomeMessage = checked
+//       GE.Storage.save()
+//     },
+//     open : function() {
+//       $.ajax({
+//         url: GE.SERVER_URL + "/preferences",
+//         dataType:'html'
+//       })
+//       .done( function( data ) {
+//         var preferencesHTML = $( data )
+//         
+//         var div = $('<div>').html( preferencesHTML )
+//         
+//         this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
+//         
+//         this.column.bodyElement.append( div )
+//         
+//         $( '#preferences_showWelcomeScreen' ).attr( 'checked', GE.Storage.values.showWelcomeMessage ),
+//         $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', GE.Storage.values.showSampleCodeInNewEditors ),        
+//         
+//         this.column.onclose = this.close.bind( this )
+//         
+//       }.bind( this ) )
+//     },
+//   },
 }
 
 require( 'codemirror/addon/comment/comment' )

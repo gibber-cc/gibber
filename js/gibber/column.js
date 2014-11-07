@@ -107,6 +107,10 @@ module.exports = function( Gibber ) {
     var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
     
+    if( GE.Storage.values ) {
+      if( !GE.Storage.values.showSampleCodeInNewEditors ) _value = ''    
+    }
+    
     col.bodyElement.width( columnWidth - resizeHandleSize )
     col.element.append( col.bodyElement )
     
