@@ -71,15 +71,16 @@ module.exports = function( Gibber ) {
         }
       }
       col.modeSelect
-        .eq( 0 )
         .on( 'change', function( e ) {  
           var opt = $( this ).find( ':selected' ), idx = opt.index(), val = opt.text()
 				
           col.modeIndex = idx
 					col.mode = val
           col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
-
-					col.editor.setValue( GE.modes[ col.mode ].default )
+          
+          if( GE.Storage.values.showSampleCodeInNewEditors ){
+  					col.editor.setValue( GE.modes[ col.mode ].default )
+          }
         })
         .attr( 'title', 'set language for column' )
       
@@ -173,15 +174,31 @@ module.exports = function( Gibber ) {
       })
       
     }
+    
+    if( isCodeColumn ) {
+      var preferenceLanguage = options.mode || GE.Storage.values.defaultLanguageForEditors || mode,
+          languageIndex = 0, count = 0
 
-    col.modeIndex = typeof mode === 'undefined' || mode === 'javascript' ? 0 : 1;
-    col.modeSelect.eq( col.modeIndex )
-    col.modeSelect.addClass( 'modeSelectDropDown' )
+      for( var key in GE.modes ) {
+        if( key !== 'nameMappings' ) {
+          col.modeSelect.append( $( '<option>' ).text( key ) )
+          if( key === preferenceLanguage ) {
+            languageIndex = count
+          }
+          count++
+        }
+      }
+    
+    
+      col.modeIndex = languageIndex
+      col.modeSelect.addClass( 'modeSelectDropDown' )
   
-    if( isCodeColumn )
       $( col.modeSelect ).find( 'option' )[ col.modeIndex ].selected = true;
-  
-		col.mode = 'javascript'
+  		col.mode = preferenceLanguage
+      col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
+    }
+
+    //col.modeSelect.eq( col.modeIndex )
     col.element.addClass( colNumber )
     col.element.attr( 'id', colNumber )
     col.id = colNumber

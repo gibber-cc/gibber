@@ -389,7 +389,17 @@ module.exports = function( Gibber ) {
             GE.Welcome.close()
           }
           
-          GE.modes.javascript.run( col, data.text, { start:{ line:0, ch:0 }, end:{ line:col.editor.lastLine(), ch:0 }}, col.editor, true )
+          //run: function( column, script, pos, cm, shouldDelay ) {
+          GE.modes.javascript.run( 
+            col, 
+            data.text, 
+            { 
+              start:{ line:0, ch:0 },
+              end:{ line:col.editor.lastLine(), ch:0 }
+            }, 
+            col.editor, 
+            true 
+          )
           
           //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
           return false

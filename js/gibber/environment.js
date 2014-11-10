@@ -125,6 +125,7 @@ var GE = {
         this.values = {
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
+          defaultLanguageForEditors: 'javascript',
         }
         this.save()
       }
@@ -235,8 +236,8 @@ var GE = {
           console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
           return
         }
-            
-                // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        //console.log("TREE LENGTH", tree.body.length, tree.body, pos  )
         for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
           var obj = tree.body[ __i__ ],
           start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
@@ -244,9 +245,9 @@ var GE = {
           src   = cm.getRange( start, end ),
                   result = null
               
-          //console.log( start, end, src )
           if( !shouldDelay ) {
             try{
+              //console.log( "SRC" + __i__, src )
               result = eval( src )
               // if( typeof result !== 'function' ) {
               //   console.log( result )
@@ -256,14 +257,16 @@ var GE = {
               console.log( e )
             }
           }else{
-            Gibber.Clock.codeToExecute.push({ code:script, pos:pos, 'cm':cm })
+// Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ].run( Clock.codeToExecute[i].cm.column, Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm, false )
+            //console.log(" DELAY SRC", src )            
+            Gibber.Clock.codeToExecute.push({ code:src, pos:{ 'start':start, 'end':end }, 'cm':cm })
           }
               
-          if( Gibber.scriptCallbacks.length > 0 && !shouldDelay ) {
-            for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
-              Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
-            }
-          }
+          // if( Gibber.scriptCallbacks.length > 0 && !shouldDelay ) {
+          //   for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+          //     Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+          //   }
+          // }
         }
       },
 

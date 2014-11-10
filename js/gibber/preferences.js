@@ -16,9 +16,15 @@ module.exports = function( Gibber ) {
 
       Gibber.Environment.Storage.values.showSampleCodeInNewEditors = checked
     },
+    processDefaultLanguageForEditorsMenu : function() {
+      var opt = $( '#preferences_defaultLanguageForEditors' ).find( ':selected' ), idx = opt.index(), val = opt.text()
+      
+      Gibber.Environment.Storage.values.defaultLanguageForEditors = val
+    },
     close: function() {
       Preferences.processShowWelcomeCheckBox()
       Preferences.processShowSampleCodeInNewEditorsCheckbox()
+      Preferences.processDefaultLanguageForEditorsMenu()
       
       Gibber.Environment.Storage.save()
     },
@@ -35,7 +41,19 @@ module.exports = function( Gibber ) {
         this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
   
         this.column.bodyElement.append( div )
-  
+        
+        var language = Gibber.Environment.Storage.values.defaultLanguageForEditors,
+            languageIndex = 0, count = 0
+            
+        for( var key in Gibber.Environment.modes ) {
+          if( key !== 'nameMappings' ) {
+            if( key === language ) languageIndex = count
+            count++
+            $( '#preferences_defaultLanguageForEditors' ).append( $( '<option>' ).text( key ) )
+          }
+        }
+        
+        $( '#preferences_defaultLanguageForEditors' ).find( 'option' )[ languageIndex ].selected = true;        
         $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
         $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
         
