@@ -20713,7 +20713,7 @@ module.exports = function( Gibber ) {
 var theory = require('../../external/teoria.min'),
     $ = Gibber.dollar,
     curves = Gibber.outputCurves,
-    Seq    = require('./seq'),
+    Seq    = require('./seq')( Gibber ).Seq,
     Arp
     
 Arp = function(notation, beats, pattern, mult, scale) {	
