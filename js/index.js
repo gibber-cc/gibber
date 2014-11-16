@@ -24312,6 +24312,10 @@ param **amp** Number. Optional. The volume to use.
         
         this.frequency = lastFrequency = frequency;
         this.releaseTrigger = 0;
+        
+        if( typeof frequency === 'object' ) {
+          Gibberish.dirty( this )
+        }
       }else{
         this.frequency[0] = lastFrequency = frequency;
         this.releaseTrigger = 0;
@@ -24583,9 +24587,12 @@ param **amp** Number. Optional. The volume to use.
           lastFrequency = null
           return;
         }
-        
+
         this.frequency = lastFrequency = frequency;
         this.releaseTrigger = 0;
+        if( typeof frequency === 'object' ) {
+          Gibberish.dirty( this )
+        }
       }else{
         this.frequency[0] = lastFrequency = frequency;
         this.releaseTrigger = 0;
@@ -24851,6 +24858,10 @@ param **amp** Number. Optional. The volume to use.
         
         this.frequency = lastFrequency = frequency;
         this.releaseTrigger = 0;
+        
+        if( typeof frequency === 'object' ) {
+          Gibberish.dirty( this );
+        }
       }else{
         this.frequency[0] = lastFrequency = frequency;
         this.releaseTrigger = 0;
@@ -30652,9 +30663,10 @@ module.exports = function( Gibber ) {
           if( typeof args[0] === 'string' ) {
             args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
           }else{
-            if( typeof args[0] === 'object' ) { // for interface elements etc.
-              args[0] = args[0].valueOf()
-            }
+            // TODO: Differentiate between envelopes etc. and interface elements
+            // if( typeof args[0] === 'object' ) { // for interface elements etc.
+            //   args[0] = args[0].valueOf()
+            // }
             if( args[0] < Gibber.minNoteFrequency ) {
               var scale = obj.scale || Gibber.scale,
                   note  = scale.notes[ args[ 0 ] ]
@@ -31203,7 +31215,11 @@ var Theory = {
             note = _note
             break;
           case 'object':
-            note = _note.fq()
+            if( _note.fq )
+              note = _note.fq()
+            else
+              note = _note
+              
             break;
           case 'string':
             note = Theory.Teoria.note( _note ).fq();
