@@ -5,22 +5,22 @@ This library provides the audio capabilities of Gibber without the code editing 
 
 ## Building (for development)
 
-You can simply download the repo and skip straight to the usage section if you don't need to modify the library. If you want to modify gibber.lib, here's how to build it:
+You can simply download the repo and skip straight to the **Usage** section if you don't need to modify the library. If you want to modify gibber.lib, here's how to build it:
 
-1. If you don't have it, install npm (the node.js package manager) from http://npmjs.org
-2. Inside the top level of the repo, run `npm install` in the terminal.
-3. Run `gulp`. This is a build module that is installed in step 2.
+1. If you don't have it, install `npm` (the Node.js package manager) from [npmjs.org][].
+2. Inside the top level of the repo, run `npm install` in a terminal.
+3. Run `gulp` (`gulp` is a build module which is installed in step 2).
 
 The build outputs a UMD file, gibber.audio.lib.js, and a minified version.
 
 ## Usage
-The library can be used with plain script tags, CommonJS or AMD style includes. Below is an example HTML file that plays a simple drum beat, bass line, and random melody.
+The library can be used with plain script tags, or CommonJS-/ AMD- style includes. Below is an example HTML file which plays a simple drum beat, bass line, and random melody.
 
 ```html
 <html>
 
 <head>
-  <script src='build/gibber.lib.js'></script>
+  <script src='./build/gibber.audio.lib.js'></script>
 </head>
 
 <body></body>
@@ -47,28 +47,26 @@ c = Mono('easyfx')
 </html>
 ```
 
-If you want to use CommonJS (node or browserify), just use the following to start things off (assuming you have the module installed):
-
-```js
-Gibber = require( 'gibber.lib' )
-Gibber.init()
-``` 
-
 ## Notes
 Note that `Drums` do not work because I haven't figured out resource management yet and `Drums` uses audio samples. However, `EDrums` (which uses synthesis) works fine.
 
-## Using in Node
-Thanks to Sebastien Piquemal's excellent node web-audio-api plugin (https://github.com/sebpiq/node-web-audio-api) you can run gibber.audio.lib code directly inside of node. Try running `npm install` and then `node test` from the top level of the repo to hear this in action.
+## Using in Node.js
+Thanks to Sebastien Piquemal's excellent [web-audio-api][] Node.js plugin you can run `gibber.audio.lib` code directly inside of Node.js. Try running `npm install` and then `npm test` from the top level of the repo to hear this in action.
 
-You need to include his library at the start of your code. So, to run code in node your file should start with:
+`web-audio-api` has a dependency on `speaker`; `speaker` tries to compile a blob specific to the OS it's running on. On Windows 7 with VS2012, you will likely need to run `npm config set msvs_version 2012` from a command prompt prior to running `npm install`.
+
+You need to include `web-audio-api` at the start of your code. So, to run code in Node.js your file should start with something like (make sure the path to `gibber.audio.lib.js` is correct):
 
 ```javascript
 // must be global! no way to fix this that I can think of...
 AudioContext = require('web-audio-api').AudioContext
 
 // must be global! this should be fixable.
-Gibber = require('gibber.audio.lib.js')
+Gibber = require('./build/gibber.audio.lib.js')
 Gibber.init()
 ```
 
 See the file in `scripts/tests` for more detail.
+
+  [npmjs.org]: http://npmjs.org
+  [web-audio-api]: https://github.com/sebpiq/node-web-audio-api
