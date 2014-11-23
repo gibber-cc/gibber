@@ -269,7 +269,11 @@ var Theory = {
             note = _note
             break;
           case 'object':
-            note = _note.fq()
+            if( _note.fq )
+              note = _note.fq()
+            else
+              note = _note
+              
             break;
           case 'string':
             note = Theory.Teoria.note( _note ).fq();

@@ -154,9 +154,10 @@ module.exports = function( Gibber ) {
           if( typeof args[0] === 'string' ) {
             args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
           }else{
-            if( typeof args[0] === 'object' ) { // for interface elements etc.
-              args[0] = args[0].valueOf()
-            }
+            // TODO: Differentiate between envelopes etc. and interface elements
+            // if( typeof args[0] === 'object' ) { // for interface elements etc.
+            //   args[0] = args[0].valueOf()
+            // }
             if( args[0] < Gibber.minNoteFrequency ) {
               var scale = obj.scale || Gibber.scale,
                   note  = scale.notes[ args[ 0 ] ]
