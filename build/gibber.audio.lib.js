@@ -12042,7 +12042,7 @@ module.exports = function( Gibber ) {
     if( typeof arguments[0]  === 'object' && ! Array.isArray( arguments[0] ) ) {
       var arg = arguments[0],
           durationsType = typeof arg.durations,
-          targetsType = typeof arg.target ,
+          targetsType = typeof arg.target,
           priority = arg.priority,
           hasScale
       
@@ -12055,17 +12055,15 @@ module.exports = function( Gibber ) {
         obj.durations = arg.durations
       }else if( durationsType !== 'undefined') {
         obj.durations = [ arg.durations ]
-      }else{
-        
-      }
-      
+      }else{ }
+            
       obj.keysAndValues = {}
       obj.seqs = []
       obj.autofire = []
       
       for( var key in arg ) {
         if( doNotSequence.indexOf( key ) === -1 ) {
-          var valueType = $.type( arg[ key ] )
+          var isArray = Array.isArray( arg[key] )// $.type( arg[ key ] )
           
           var _seq = {
             key: key,
@@ -12073,9 +12071,9 @@ module.exports = function( Gibber ) {
             durations:obj.durations
           }
           
-          if( valueType === 'array' || typeof arg.length === 'number' ) {
+          if( isArray ) {
             _seq.values = arg[ key ]
-          }else if( valueType !== 'undefined' ) {
+          }else if( typeof arg[ key ] !== 'undefined' ) {
             _seq.values = [ arg[ key ] ]
           }
                     
@@ -12723,7 +12721,7 @@ var teoria = _dereq_('../../external/teoria.min'),
 
 var Theory = {
   Teoria: teoria,
-  Scale : function(_root, _mode) {
+  Scale : function( _root, _mode) {
   	var that = {
   		root: typeof _root === "string" ? teoria.note(_root) : _root,
   		notes: [],
@@ -12884,7 +12882,7 @@ var Theory = {
 //       set: function( val ) { mode = val; this.create(); }  
 //     });
     
-    //that.create();
+    that.create();
       
     return that;
   },

@@ -6,7 +6,7 @@ var teoria = require('../../external/teoria.min'),
 
 var Theory = {
   Teoria: teoria,
-  Scale : function(_root, _mode) {
+  Scale : function( _root, _mode) {
   	var that = {
   		root: typeof _root === "string" ? teoria.note(_root) : _root,
   		notes: [],
@@ -167,7 +167,7 @@ var Theory = {
 //       set: function( val ) { mode = val; this.create(); }  
 //     });
     
-    //that.create();
+    that.create();
       
     return that;
   },
