@@ -30950,7 +30950,7 @@ var teoria = require('../../external/teoria.min'),
 
 var Theory = {
   Teoria: teoria,
-  Scale : function( _root, _mode) {
+  Scale : function( _root, _mode ) {
   	var that = {
   		root: typeof _root === "string" ? teoria.note(_root) : _root,
   		notes: [],
@@ -30966,25 +30966,25 @@ var Theory = {
   			return _chord;
   		},
 		
-  		create : function( _root ) {
-        var __root = typeof _root !== 'number' ? teoria.note( _root ).fq() : _root,
-            __mode = that.mode.value || mode 
+  		create : function( __root ) {
+        var __root = typeof __root !== 'number' ? teoria.note( __root ).fq() : __root,
+            __mode = mode
         
   			this.notes.length = 0
-      
+        
   			if( Gibber.Theory.Scales[ __mode ] ) {
   				var scale = Gibber.Theory.Scales[ __mode ]( __root )
-  				scale.create( 1, __root )// this.degree.value )
+  				scale.create( __root )// this.degree.value )
   				this.notes = scale.notes
   			}
   		},
 		
-  		set : function(_root, _mode) {
+  		set : function(__root, _mode) {
   			if(Array.isArray(arguments[0])) {
   				this.root = arguments[0][0];
   				this.mode = arguments[0][1];
   			}else{
-  				this.root = _root;
+  				this.root = __root;
   				this.mode = _mode;
   			}
   		},
@@ -31000,25 +31000,24 @@ var Theory = {
       }	
   	});
     
-    var _root = arguments[0] || 440;
-    
+    var root = _root || 440;
     Object.defineProperty(that, "root", {
-      get : function() { return _root; },
+      get : function() { return root; },
       
       set : function(val) { 
         if(typeof val === "number") {
-          _root = val;
+          root = val;
         }else if (typeof val === "string") {
-          _root = Theory.Teoria.note( val ).fq();
+          root = Theory.Teoria.note( val ).fq();
         }else if (typeof val === 'object') {
           if( val.accidental ) {
-            _root = val.fq()
+            root = val.fq()
           }else{
-            _root = Theory.Teoria.note( val.value ).fq()
+            root = Theory.Teoria.note( val.value ).fq()
           }
         }
         
-        that.create(_root); 
+        that.create(root); 
       }
     });
     
@@ -31044,40 +31043,38 @@ var Theory = {
       that.seq.destinations.length = 0
     })  
     
-    //that.create( that.root )
-    that.root = _root
+    that.create( root )
     //that.toString = function() { return 'Scale: ' + that.root() + ', ' + that.mode() }
   	return that;
   },
   
-  CustomScale : function( ___degree ) {
+  CustomScale : function( _root, _ratios ) {
     var that = {
       notes : [],
-      degree: ___degree || 1,
-      ratios: arguments[1] || [ 1, 1.10, 1.25, 1.3333, 1.5, 1.666, 1.75 ],
+      degree: 1,// ___degree || 1,
+      ratios: _ratios || [ 1, 1.10, 1.25, 1.3333, 1.5, 1.666, 1.75 ],
 	
-      create : function( _degree, _root ) {
-        // if( typeof _degree === 'number' ) this.degree = _degree
+      create : function(  _root ) {
         this.notes = [];
         
-        var scaleRoot = _root; //typeof this.root === 'number' ? this.root : teoria.note( this.root.value ).fq() ;
+        var scaleRoot = typeof _root === 'number' ? _root : teoria.note( _root ).fq() ;
         
         for( var octave = 0; octave < 8; octave++ ) {
           for( var num = 0; num < this.ratios.length; num++ ) {	
-            var degreeNumber = num + _degree - 1
+            var degreeNumber = num //+ _degree - 1
             var tempRoot = scaleRoot * ( 1 + Math.floor( degreeNumber / this.ratios.length ) )
             this.notes.push( tempRoot * this.ratios[ degreeNumber % this.ratios.length ] );
           }
           scaleRoot *= 2;
         }
       
-        scaleRoot = _root; //this.root;
+        scaleRoot = typeof _root === 'number' ? _root : teoria.note( _root ).fq() ;
   	    var negCount = 8;
         for(var octave = -1; octave >= -8; octave--) {
           scaleRoot /= 2;
           for( var num = 0; num < this.ratios.length; num++ ) {
   		      var noteNum = octave * this.ratios.length + num;
-            var degreeNumber = num + _degree - 1
+            var degreeNumber = num //+ _degree - 1
             var tempRoot = scaleRoot * ( 1 + Math.floor( degreeNumber / this.ratios.length ) )
             this.notes[noteNum] = tempRoot * this.ratios[ degreeNumber % this.ratios.length ];
           }
@@ -31105,13 +31102,13 @@ var Theory = {
     //   }  
     // });
     
-  	// var mode = _mode || "aeolian";
-//     Object.defineProperty( that, "mode", {
-//       get: function() { return mode; },
-//       set: function( val ) { mode = val; this.create(); }  
-//     });
+    // var mode = _mode || "aeolian";
+    // Object.defineProperty( that, "mode", {
+    //   get: function() { return mode; },
+    //   set: function( val ) { mode = val; this.create(); }  
+    // });
     
-    that.create();
+    that.create( _root );
       
     return that;
   },
