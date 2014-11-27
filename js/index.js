@@ -2473,7 +2473,7 @@ var GE = {
   Preferences:  require( './preferences' )( Gibber ),  
   Theme:        require( './theme' )( Gibber ),
   Esprima:      require( 'esprima' ),
-  Mouse:        require( './mouse' ), // pass Gibber later
+  //Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
@@ -2522,8 +2522,8 @@ var GE = {
       
       codeObjects( Gibber, GE.Notation )
       
-      GE.Mouse = GE.Mouse( Gibber )
-      window.Mouse = GE.Mouse
+      //GE.Mouse = GE.Mouse( Gibber )
+      //window.Mouse = Gibber.Mouse
       
       window.Keys = GE.Keys
       
@@ -3139,7 +3139,7 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
-},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./mouse":"/www/gibber.libraries/js/gibber/mouse.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
@@ -3746,169 +3746,7 @@ module.exports = function( Gibber ) {
   
   return Layout
 }
-},{"./column":"/www/gibber.libraries/js/gibber/column.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/mouse.js":[function(require,module,exports){
-module.exports = function( Gibber ) {
-  "use strict"
-  
-  var _m = null,
-      headerFooterHeight = 0, 
-      mappingProperties = {
-        x : {
-          min:0, max:1,
-          timescale:'interface',
-          output: Gibber.LINEAR
-        },
-        y : {
-          min:0, max:1,
-          timescale:'interface',
-          output: Gibber.LINEAR
-        },
-        shiftX : {
-          min:0, max:1,
-          timescale:'interface',
-          output: Gibber.LINEAR
-        },
-        shiftY : {
-          min:0, max:1,
-          timescale:'interface',
-          output: Gibber.LINEAR
-        },
-        ctrlX : {
-          min:0, max:1,
-          timescale:'interface',
-          output: Gibber.LINEAR
-        },
-        ctrlY : {
-          min:0, max:1,
-          timescale:'interface',
-          output: Gibber.LINEAR
-        },
-        button : {
-          min:0, max:1,
-          timescale:'interface',
-          output: Gibber.LINEAR
-        },
-      }
-
-
-    if( _m !== null ) return _m
-
-    _m = {} 
-
-    var storeX = 0, storeY = 0
-    
-    $.extend( _m, {
-      x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
-      isOn : false,
-      name: 'Mouse',
-      _onmousemove : function( e ) {
-        // console.log( e )
-        var prefix = '', upper = ''
-        if( e.shiftKey ) prefix = 'shift'
-        if( e.ctrlKey ) prefix = 'ctrl'
-        
-        upper = prefix === '' ? '' :  prefix.charAt(0).toUpperCase() + prefix.slice(1),
-        // console.log( prefix, upper )
-        _m[ 'prev' + upper + 'X' ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
-        _m[ 'prev' + upper + 'Y' ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
-        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX - window.scrollX// / _m.ww 
-        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - window.scrollY - headerFooterHeight// / _m.wh 
-        
-        // console.log( e )
-        if( typeof _m.onvaluechange === 'function' ) {
-          _m.onvaluechange()
-        }
-      },
-      _onmousedown : function() { 
-        _m[ 'button' ] = 1 
-        if( typeof _m.onvaluechange === 'function' ) {
-          _m.onvaluechange()
-        }
-      },
-      _onmouseup : function() { 
-        _m[ 'button' ] = 0 
-        if( typeof _m.onvaluechange === 'function' ) {
-          _m.onvaluechange()
-        }
-      },
-      on: function() {        
-        if( ! _m.isOn ) {
-          _m.isOn = true
-          
-          _m.X.max = _m.ww = $( window ).width()
-          
-          if( Layout.isFullScreen ) {
-            _m.Y.max = _m.wh = $( window ).height()
-          }else{
-            var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
-            _m.Y.max =  _m.wh = height
-          }
-          
-          headerFooterHeight = $( 'thead' ).height()
-          
-          //$( window ).on( 'mousemove', _m._onmousemove )
-          window.onmousemove = _m._onmousemove
-        }
-      },
-      off: function() {
-        if( _m.isOn ) {
-          $( window ).off( 'mousemove', _m._onmousemove  )
-          _m.isOn = false
-        }
-      },
-      toggle : function() {
-        if( _m.isOn ) {
-          _m.off()
-        }else{
-          _m.on()
-        }
-      },
-    })
-    
-    if( Gibber.Environment.Layout.isFullScreen ) {
-      mappingProperties.x.max = $( window ).width()
-      mappingProperties.y.max = $( window ).height()
-    }else{
-      var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
-      mappingProperties.x.max = $( window ).width()
-      mappingProperties.y.max = height
-    }
-    
-    //mappingProperties.x.max = $( window ).width()
-    //mappingProperties.y.max = $( window ).height()
-    // create getter layer that turns mouse event handlers on as needed
-    for( var prop in mappingProperties ) {
-      !function() {
-        var name = prop,
-            Name = prop.charAt(0).toUpperCase() + prop.slice(1),
-            value = _m[ prop ]
-        
-        Object.defineProperty( _m, Name, {
-          configurable:true,
-          get: function() {
-            if( Name !== "Button" ) {
-              _m.on();
-            }
-            return value 
-          },
-          set: function(v) { value = v; return _m }
-        })
-      }()
-    }
-    
-    $.subscribe( '/layout/contentResize', function( obj ) {
-      _m.ww = _m.X.max = obj.w
-      _m.wh = _m.Y.max = obj.h
-    })
-    
-    $( window ).on( 'mousedown', _m._onmousedown )
-    $( window ).on( 'mouseup',   _m._onmouseup   )
-    
-    Gibber.createProxyProperties( _m, mappingProperties, true )
-    
-    return _m
-}
-},{}],"/www/gibber.libraries/js/gibber/notation.js":[function(require,module,exports){
+},{"./column":"/www/gibber.libraries/js/gibber/column.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/notation.js":[function(require,module,exports){
 module.exports = function( Gibber, Environment) {
   // TODO: some effects need to use entire lines... for example, transfrom
   // can't apply to inline elements
@@ -52156,8 +51994,11 @@ return Autogui
 }
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/scripts/gibber/interface.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
+  console.log( "GIBBER", Gibber )
   
-  var $ = Gibber.dollar
+  var $ = Gibber.dollar,
+      mouse = require( './mouse.js' ) // delay initialization until export
+  
   // $script( 'external/autogui' , function() {
   //   Gibber.interfaceIsReady()
   // } )
@@ -52852,7 +52693,8 @@ module.exports = function( Gibber ) {
       target.VBox     = I.vbox
       target.Crossfader = I.crossfader
       target.Accelerometer = I.accelerometer
-      target.Orientation = I.orientation      
+      target.Orientation = I.orientation
+      target.Mouse    = mouse( Gibber )
     }
   }
   
@@ -52900,7 +52742,190 @@ module.exports = function( Gibber ) {
   return I
 }
 
-},{"./autogui":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/scripts/gibber/autogui.js","interface.js":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/node_modules/interface.js/index.js"}],"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/gibber.lib.js":[function(require,module,exports){
+},{"./autogui":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/scripts/gibber/autogui.js","./mouse.js":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/scripts/gibber/mouse.js","interface.js":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/node_modules/interface.js/index.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/scripts/gibber/mouse.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+  "use strict"
+  
+  var _m = null,
+      $ = Gibber.dollar,
+      headerFooterHeight = 0, 
+      mappingProperties = {
+        x : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        y : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        shiftX : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        shiftY : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        ctrlX : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        ctrlY : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+        button : {
+          min:0, max:1,
+          timescale:'interface',
+          output: Gibber.LINEAR
+        },
+      }
+
+
+    if( _m !== null ) return _m
+
+    _m = {} 
+
+    var storeX = 0, storeY = 0
+    
+    $.extend( _m, {
+      x:0, y:0, prevX:0, prevY:0, shiftX:0, shiftY:0, prevShiftX:0, prevShiftY:0, button:0,
+      isOn : false,
+      name: 'Mouse',
+      _onmousemove : function( e ) {
+        // console.log( e )
+        var prefix = '', upper = ''
+        if( e.shiftKey ) prefix = 'shift'
+        if( e.ctrlKey ) prefix = 'ctrl'
+        
+        upper = prefix === '' ? '' :  prefix.charAt(0).toUpperCase() + prefix.slice(1),
+        // console.log( prefix, upper )
+        _m[ 'prev' + upper + 'X' ] = storeX//_m[ prefix + ( prefix === ''  ? 'x' : 'X' )]  
+        _m[ 'prev' + upper + 'Y' ] = storeY//_m[ prefix + ( prefix === ''  ? 'y' : 'Y' )]  
+        storeX = _m[ prefix  + ( prefix === '' ? 'x' : 'X' ) ] = e.pageX - window.scrollX// / _m.ww 
+        storeY = _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] = e.pageY - window.scrollY// / _m.wh 
+        
+        if( Gibber.Environment ) {
+          storeY -= headerFooterHeight
+          _m[ prefix  + ( prefix === '' ? 'y' : 'Y' ) ] -= headerFooterHeight
+        }
+        
+        // console.log( e )
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
+      _onmousedown : function() { 
+        _m[ 'button' ] = 1 
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
+      _onmouseup : function() { 
+        _m[ 'button' ] = 0 
+        if( typeof _m.onvaluechange === 'function' ) {
+          _m.onvaluechange()
+        }
+      },
+      on: function() {        
+        if( ! _m.isOn ) {
+          _m.isOn = true
+          
+          
+          if( Gibber.Environment ) {
+            _m.X.max = _m.ww = $( window ).width()
+            
+            if( Gibber.Environment.Layout.isFullScreen ) {
+              _m.Y.max = _m.wh = $( window ).height()
+            }else{
+              var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+              _m.Y.max =  _m.wh = height
+            }
+            
+            headerFooterHeight = $( 'thead' ).height()
+            
+          }else{
+            _m.X.max = window.innerWidth
+            _m.Y.max = window.innerHeight
+          }
+
+          //$( window ).on( 'mousemove', _m._onmousemove )
+          window.onmousemove = _m._onmousemove
+        }
+      },
+      off: function() {
+        if( _m.isOn ) {
+          $( window ).off( 'mousemove', _m._onmousemove  )
+          _m.isOn = false
+        }
+      },
+      toggle : function() {
+        if( _m.isOn ) {
+          _m.off()
+        }else{
+          _m.on()
+        }
+      },
+    })
+    
+    if( Gibber.Environment ) {
+      if( Gibber.Environment.Layout.isFullScreen ) {
+        mappingProperties.x.max = $( window ).width()
+        mappingProperties.y.max = $( window ).height()
+      }else{
+        var height = $( window ).height()  - $( 'thead' ).height() - $('tfoot').height()
+        mappingProperties.x.max = $( window ).width()
+        mappingProperties.y.max = height
+      }
+    }else{
+      mappingProperties.x.max = window.innerWidth
+      mappingProperties.y.max = window.innerHeight
+    }
+    
+    //mappingProperties.x.max = $( window ).width()
+    //mappingProperties.y.max = $( window ).height()
+    // create getter layer that turns mouse event handlers on as needed
+    for( var prop in mappingProperties ) {
+      !function() {
+        var name = prop,
+            Name = prop.charAt(0).toUpperCase() + prop.slice(1),
+            value = _m[ prop ]
+        
+        Object.defineProperty( _m, Name, {
+          configurable:true,
+          get: function() {
+            if( Name !== "Button" ) {
+              _m.on();
+            }
+            return value 
+          },
+          set: function(v) { value = v; return _m }
+        })
+      }()
+    }
+    
+    $.subscribe( '/layout/contentResize', function( obj ) {
+      _m.ww = _m.X.max = obj.w
+      _m.wh = _m.Y.max = obj.h
+    })
+    
+    window.onmousedown = _m._onmousedown
+    window.onmouseup   = _m._onmouseup
+    
+    //$( window ).on( 'mousedown', _m._onmousedown )
+    //$( window ).on( 'mouseup',   _m._onmouseup   )
+    
+    Gibber.createProxyProperties( _m, mappingProperties, true )
+    
+    return _m
+}
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/scripts/gibber/gibber.lib.js":[function(require,module,exports){
 !function() {
 
 var Gibber = require( 'gibber.core.lib' )
