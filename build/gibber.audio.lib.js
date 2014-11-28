@@ -10734,7 +10734,9 @@ module.exports = function( Gibber ) {
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       types = [
-        'Line',    
+        'Line', 
+        'AD',
+        'ADSR' 
       ],
       _mappingProperties = {
         Line: {
@@ -10753,6 +10755,40 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           }
+        },
+        AD: {
+          attack: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          decay: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          ADSR: {
+            attack: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            },
+            decay: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            },
+            sustain: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            },
+            release: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            }
+          },
         },
       };
   
@@ -10775,6 +10811,10 @@ module.exports = function( Gibber ) {
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] ) 
         
         Gibber.processArguments2( obj, args, obj.name )
+        
+        if( name === 'AD' || name === 'ADSR' ) {
+          Gibber.createProxyMethods( obj, ['run'] )
+        }
         
         console.log( name + ' is created.' )
         return obj
