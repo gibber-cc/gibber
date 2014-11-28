@@ -3,7 +3,9 @@
   "use strict"
   
   window.$ = require( './gibber/dollar' )
+  
   require( './external/injectCSS.js' )
+  
   window.Gibber = require( 'gibber.lib' )
 
   Gibber.Environment = require( './gibber/environment' )( Gibber )
@@ -28879,6 +28881,10 @@ module.exports = function( Gibber ) {
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] ) 
         
         Gibber.processArguments2( obj, args, obj.name )
+        
+        if( name === 'AD' || name === 'ADSR' ) {
+          Gibber.createProxyMethods( obj, ['run'] )
+        }
         
         console.log( name + ' is created.' )
         return obj
