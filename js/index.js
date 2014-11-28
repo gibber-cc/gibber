@@ -4,7 +4,6 @@
   
   window.$ = require( './gibber/dollar' )
   require( './external/injectCSS.js' )
-
   window.Gibber = require( 'gibber.lib' )
 
   Gibber.Environment = require( './gibber/environment' )( Gibber )
@@ -2531,7 +2530,9 @@ var GE = {
       Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )  
       
       // attach canvases to table row instead of body
-      Gibber.Graphics.defaultContainer = '#mainContent'  
+      Gibber.Graphics.defaultContainer = '#mainContent'
+      
+      //window.spin.stop()
     }
   },
   selectCurrentBlock: function( editor ) { // thanks to graham wakefield
@@ -28801,7 +28802,9 @@ module.exports = function( Gibber ) {
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       types = [
-        'Line',    
+        'Line', 
+        'AD',
+        'ADSR' 
       ],
       _mappingProperties = {
         Line: {
@@ -28820,6 +28823,40 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           }
+        },
+        AD: {
+          attack: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          decay: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          ADSR: {
+            attack: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            },
+            decay: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            },
+            sustain: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            },
+            release: {
+              min: 0, max: 8,
+              output: LINEAR,
+              timescale: 'audio',
+            }
+          },
         },
       };
   

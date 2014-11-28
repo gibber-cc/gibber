@@ -81,7 +81,9 @@ var GE = {
       Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )  
       
       // attach canvases to table row instead of body
-      Gibber.Graphics.defaultContainer = '#mainContent'  
+      Gibber.Graphics.defaultContainer = '#mainContent'
+      
+      //window.spin.stop()
     }
   },
   selectCurrentBlock: function( editor ) { // thanks to graham wakefield
