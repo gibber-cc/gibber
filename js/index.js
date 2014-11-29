@@ -28872,7 +28872,12 @@ module.exports = function( Gibber ) {
         var args = Array.prototype.slice.call(arguments, 0),
             obj
         
-        obj = new Gibberish[ type ]( args[0], args[1], Clock.time( args[2] ), args[3] )
+        //obj = Gibber.construct( Gibberish[ type ], obj )
+        if( typeof args[0] !== 'object' ) {
+          obj = new Gibberish[ type ]( args[0], args[1], Clock.time( args[2] ), args[3] )
+        }else{
+          obj = Gibber.construct( Gibberish[ type ], args[0] )
+        }
         //obj.type = 'Env'
         obj.name = name
       
