@@ -4123,7 +4123,7 @@ Gibberish.Line = function(start, end, time, loops) {
       incr = (end - out) / time
     }
 	};
-
+  
 	var phase = 0,
 	    incr = (end - start) / time,
       out
@@ -5824,6 +5824,105 @@ Gibberish.Reverb = function() {
 
 };
 Gibberish.Reverb.prototype = Gibberish._effect;
+
+/**#Gibberish.StereoReverb - FX
+stereo version of the reverb effect
+ 
+## Example Usage##
+`a = new Gibberish.Synth({ attack:88200, decay:88200, pan:-1 });  
+b = new Gibberish.StereoReverb({input:a, roomSize:.5, wet:1, dry;.25}).connect();
+a.note(440);
+`  
+##Constructor
+**param** *properties* : Object. A dictionary of property keys and values to assign to the Gibberish.BufferShuffler object
+**/
+/**###Gibberish.Reverb.roomSize : property
+Float. 0..1. The size of the room being emulated.
+**/	
+/**###Gibberish.Reverb.damping : property
+Float. Attenuation of high frequencies that occurs.
+**/	
+/**###Gibberish.Reverb.wet : property
+Float. Default = .75. The amount of processed signal that is output.  
+**/	
+/**###Gibberish.Reverb.dry : property
+Float. Default = .5. The amount of dry signal that is output
+**/	
+Gibberish.StereoReverb = function() {
+  var tuning =	{
+		    combCount: 		    8,
+		    combTuning: 	    [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617],
+                          
+		    allPassCount: 	  4,
+		    allPassTuning: 	  [556, 441, 341, 225],
+		    allPassFeedback:  0.5,
+                          
+		    fixedGain: 		    0.015,
+		    scaleDamping: 	  0.4,
+                          
+		    scaleRoom: 		    0.28,
+		    offsetRoom: 	    0.7,
+                          
+		    stereoSpread: 	  23
+		},
+    feedback = .84,
+    combsL = [], combsR = [],
+    apfsL  = [], apfsR = [],
+    output   = [0,0],
+    phase  = 0;
+    
+	Gibberish.extend(this, {
+		name:		"reverb",
+    
+		roomSize:	.5,
+    
+    properties: {
+      input:    0,
+  		wet:		  .5,
+  		dry:		  .55,
+      roomSize: .84,
+      damping:  .5,
+    },
+    
+    callback : function(sample, wet, dry, roomSize, damping) {
+      var channels = typeof sample === 'object' ? 2 : 1,
+          l = sample[0],
+          r = channels === 1 ? l : sample[1],
+          _outL = outL = l * .015,
+          _outR = outR = r * .015;
+						
+			for(var i = 0; i < 8; i++) { // parallel
+				outL += combsL[ i ]( _outL, roomSize * .98, (damping * .4)); // .98 is scaleRoom + offsetRoom, .4 is scaleDamping
+        outR += combsR[ i ]( _outR, roomSize * .98, (damping * .4));       
+			}
+							
+			for(var i = 0; i < 4; i++) {
+				outL = apfsL[ i ]( outL );	
+				outR = apfsR[ i ]( outR );	        
+			}
+      
+      output[0] = (l * dry) + (outL * wet);
+      output[1] = (r * dry) + (outR * wet);
+
+  		return output;
+  	},
+	})  
+  .init()
+  .processProperties(arguments);
+      
+  this.setFeedback = function(v) { feedback = v }
+  
+	for(var i = 0; i < 8; i++){
+		combsL.push( new Gibberish.Comb( tuning.combTuning[i] ).callback );
+    combsR.push( new Gibberish.Comb( tuning.combTuning[i] ).callback );
+	}
+  
+	for(var i = 0; i < 4; i++){
+		apfsL.push( new Gibberish.AllPass(tuning.allPassTuning[i], tuning.allPassFeedback ).callback );
+    apfsR.push( new Gibberish.AllPass(tuning.allPassTuning[i], tuning.allPassFeedback ).callback );    
+	}
+};
+Gibberish.StereoReverb.prototype = Gibberish._effect;
 
 /**#Gibberish.Granulator - FX
 A granulator that operates on a buffer of samples. You can get the samples from a [Sampler](javascript:displayDocs('Gibberish.Sampler'\))
@@ -10871,6 +10970,7 @@ module.exports = function( Gibber ) {
   
   var types = [
     'Reverb',
+    ['StereoReverb', 'StereoVerb'],
     'Delay',
     'Flanger',
     'Vibrato',
@@ -10885,6 +10985,19 @@ module.exports = function( Gibber ) {
   ],
   _mappingProperties = {
     Reverb: {
+      roomSize: {
+        min: .5, max: .995,
+        output: LINEAR,
+        timescale: 'audio',
+      },
+      damping: {
+        min: 0, max: 1,
+        output: LINEAR,
+        timescale: 'audio',
+      },
+      out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },
+    },
+    StereoReverb: {
       roomSize: {
         min: .5, max: .995,
         output: LINEAR,
@@ -11139,6 +11252,33 @@ module.exports = function( Gibber ) {
 	};
   
   FX.Presets.Reverb = {
+  	space : {
+  		roomSize: .99,
+  		damping: .23,
+  		wet: .75,
+  		dry: .25,
+  	},
+    small : {
+      roomSize: .6,
+      damping: .75,
+      wet: .15,
+      dry: .85,
+    },
+    medium: {
+      roomSize: .8,
+      damping: .5,
+      wet: .35,
+      dry: .65,
+    },
+    large: {
+      roomSize: .85,
+      damping: .3,
+      wet: .55,
+      dry: .45,
+    }
+  }
+  
+  FX.Presets.StereoReverb = {
   	space : {
   		roomSize: .99,
   		damping: .23,

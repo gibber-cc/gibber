@@ -37,6 +37,7 @@ module.exports = function( Gibber ) {
   
   var types = [
     'Reverb',
+    ['StereoReverb', 'StereoVerb'],
     'Delay',
     'Flanger',
     'Vibrato',
@@ -51,6 +52,19 @@ module.exports = function( Gibber ) {
   ],
   _mappingProperties = {
     Reverb: {
+      roomSize: {
+        min: .5, max: .995,
+        output: LINEAR,
+        timescale: 'audio',
+      },
+      damping: {
+        min: 0, max: 1,
+        output: LINEAR,
+        timescale: 'audio',
+      },
+      out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },
+    },
+    StereoReverb: {
       roomSize: {
         min: .5, max: .995,
         output: LINEAR,
@@ -305,6 +319,33 @@ module.exports = function( Gibber ) {
 	};
   
   FX.Presets.Reverb = {
+  	space : {
+  		roomSize: .99,
+  		damping: .23,
+  		wet: .75,
+  		dry: .25,
+  	},
+    small : {
+      roomSize: .6,
+      damping: .75,
+      wet: .15,
+      dry: .85,
+    },
+    medium: {
+      roomSize: .8,
+      damping: .5,
+      wet: .35,
+      dry: .65,
+    },
+    large: {
+      roomSize: .85,
+      damping: .3,
+      wet: .55,
+      dry: .45,
+    }
+  }
+  
+  FX.Presets.StereoReverb = {
   	space : {
   		roomSize: .99,
   		damping: .23,
