@@ -1,6 +1,6 @@
 {
   "name": "gibber",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Environment and libraries for Gibber",
   "main": "node_modules/gibber.server",
   "directories": {
