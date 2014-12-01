@@ -195,12 +195,26 @@ module.exports = function( Gibber ) {
               seq = seq.split('').rnd()
             }
             
-            if( typeof props[1] !== 'undefined') { duration = props[1] }
+            if( typeof props[1] !== 'undefined') { 
+              duration = props[1]
+              if( !Array.isArray( duration ) ) duration = [ duration ]
+              
+              var durationsPattern = Gibber.construct( Gibber.Pattern, duration )
+        
+              if( duration.randomFlag ) {
+                durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+                for( var i = 0; i < duration.randomArgs.length; i+=2 ) {
+                  durationsPattern.repeat( duration.randomArgs[ i ], duration.randomArgs[ i + 1 ] )
+                }
+              }
+              
+              duration = durationsPattern
+            }
             
             obj.seq.add({
               key:'note',
-              values:seq,
-              durations:duration,
+              values: Gibber.construct( Gibber.Pattern, seq ),
+              durations: Gibber.construct( Gibber.Pattern, [duration] ),
               target:obj
             })
           }
@@ -257,10 +271,9 @@ module.exports = function( Gibber ) {
           var note = nt[ i ]
 
           if( typeof note === 'string' ) {
-        		for( var key in this.kit ) {
-        			if( note === this.kit[ key ].symbol ) {
-                console.log( p )
-        				this[ key ].sampler.note( p, this[key].amp );
+        		for( var key in obj.kit ) {
+        			if( note === obj.kit[ key ].symbol ) {
+        				obj[ key ].sampler.note( p, obj[key].amp );
                 //var p = p //this.pitch() 
                 // if( this[ key ].sampler.pitch !== p )
                   // this[ key ].sampler.pitch = p
@@ -276,11 +289,11 @@ module.exports = function( Gibber ) {
         }
       }else{
         if( typeof nt === 'string' ) {
-      		for( var key in this.kit ) {
-      			if( nt === this.kit[ key ].symbol ) {
+      		for( var key in obj.kit ) {
+      			if( nt === obj.kit[ key ].symbol ) {
               //console.log("PITCH", p )
-      				this[ key ].sampler.note( p, this[key].amp );
-              this[ key ].sampler.pitch = p
+      				obj[ key ].sampler.note( p, obj[key].amp );
+              obj[ key ].sampler.pitch = p
               //var p = this.pitch.value //this.pitch() 
               // if( this[ key ].sampler.pitch !== p )
               //   this[ key ].sampler.pitch = p
@@ -292,7 +305,7 @@ module.exports = function( Gibber ) {
               num = Math.abs( nt ),
               key = keys[ num % keys.length ], 
               drum = obj[ key ]
-              
+          
           drum.sampler.note( p, drum.sampler.amp )
           
           // if( drum.sampler.pitch !== p )
@@ -403,20 +416,31 @@ module.exports = function( Gibber ) {
             if( seq.indexOf('.rnd(') > -1) {// || seq.indexOf('.random(') > -1 ) {
               seq = seq.split( '.rnd' )[0]
               seq = seq.split('').rnd()
-            }else if( seq.indexOf('.random(') > -1 ) {
-              seq = seq.split( '.random' )[0]
-              seq = seq.split('').rnd()
             }
             
-            if( typeof props[1] !== 'undefined') { duration = props[1] }
+            if( typeof props[1] !== 'undefined') { 
+              duration = props[1]
+              if( !Array.isArray( duration ) ) duration = [ duration ]
+              
+              var durationsPattern = Gibber.construct( Gibber.Pattern, duration )
+        
+              if( duration.randomFlag ) {
+                durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+                for( var i = 0; i < duration.randomArgs.length; i+=2 ) {
+                  durationsPattern.repeat( duration.randomArgs[ i ], duration.randomArgs[ i + 1 ] )
+                }
+              }
+              
+              duration = durationsPattern
+            }
             
             obj.seq.add({
               key:'note',
-              values:seq,
-              durations:duration,
+              values: Gibber.construct( Gibber.Pattern, seq ),
+              durations: Gibber.construct( Gibber.Pattern, [duration] ),
               target:obj
             })
-          }  
+          } 
           
           break;
         case 'object':

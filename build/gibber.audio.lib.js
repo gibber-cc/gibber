@@ -101,8 +101,6 @@ var $ = _dereq_( './dollar' )
 var Gibber = {
   dollar: $,
   Presets: {},
-  GraphicsLib: {},
-  Binops: {},
   scale : null,
   minNoteFrequency:50,
   started:false,
@@ -110,6 +108,7 @@ var Gibber = {
     LINEAR:0,
     LOGARITHMIC:1
   },
+  Pattern: _dereq_( './pattern' ),
   
   export: function( target ) {
     Gibber.Utilities.export( target )
@@ -487,25 +486,18 @@ var Gibber = {
   
   defineSequencedProperty : function( obj, key, priority ) {
     var fnc = obj[ key ], seq, seqNumber
-    
-    // for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
-    //   var s = obj.seq.seqs[ i ]
-    //   if( s.key === key ) {
-    //     seq = s,
-    //     seqNumber = i
-    //     break;
-    //   }
-    // }
-    
+
     if( !obj.seq && Gibber.Audio ) {
       obj.seq = Gibber.Audio.Seqs.Seq({ doNotStart:true, scale:obj.scale, priority:priority, target:obj })
     }
     
-    fnc.seq = function( v,d ) {  
+    fnc.seq = function( _v,_d ) {  
+      var v = $.isArray(_v) ? _v : [_v]
+      var d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null
       var args = {
             'key': key,
-            values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
-            durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
+            values: [ Gibber.construct( Gibber.Pattern, v ) ],//$.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
+            durations: d !== null ? [ Gibber.construct( Gibber.Pattern, d ) ] : null,
             target: obj,
             'priority': priority
           }
@@ -515,41 +507,56 @@ var Gibber = {
         obj.seq.seqs.splice( seqNumber, 1 )
       }
       
+      var valuesPattern = args.values[0]
+      if( v.randomFlag ) {
+        valuesPattern.filters.push( function() { return [ valuesPattern.values[ rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+        for( var i = 0; i < v.randomArgs.length; i+=2 ) {
+          valuesPattern.repeat( v.randomArgs[ i ], v.randomArgs[ i + 1 ] )
+        }
+      }
+      
+      if( d !== null ) {
+        var durationsPattern = args.durations[0]
+        if( d.randomFlag ) {
+          durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          for( var i = 0; i < d.randomArgs.length; i+=2 ) {
+            durationsPattern.repeat( d.randomArgs[ i ], d.randomArgs[ i + 1 ] )
+          }
+        }
+      }
       obj.seq.add( args )
       
       seqNumber = obj.seq.seqs.length - 1
       seq = obj.seq.seqs[ seqNumber ]
       
-      Object.defineProperties( fnc.seq, {
+      Object.defineProperties( fnc, {
         values: {
           configurable:true,
-          get: function() { return obj.seq.seqs[ seqNumber ].values },
-          set: function(v) {
-            if( !Array.isArray(v) ) {
-              v = [ v ]
+          get: function() { return obj.seq.seqs[ seqNumber ].values[ 0 ] },
+          set: function( val ) {
+            var pattern = Gibber.construct( Gibber.Pattern, val )
+            
+            if( !Array.isArray( pattern ) ) {
+              pattern = [ pattern ]
             }
-            if( key === 'note' && obj.seq.scale ) {  
-              v = makeNoteFunction( v, obj.seq )
-            }
-            obj.seq.seqs[ seqNumber ].values = v //.splice( 0, 10000, v )
-            //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].values, 'reverse' )
+            // if( key === 'note' && obj.seq.scale ) {  
+            //   v = makeNoteFunction( v, obj.seq )
+            // }
+            //console.log("NEW VALUES", v )
+            obj.seq.seqs[ seqNumber ].values = pattern
           }
         },
         durations: {
           configurable:true,
           get: function() { return obj.seq.seqs[ seqNumber ].durations },
-          set: function(v) {
-            if( !Array.isArray(v) ) {
-              v = [ v ]
+          set: function( val ) {
+            if( !Array.isArray( val ) ) {
+              val = [ val ]
             }
-            obj.seq.seqs[ seqNumber ].durations = v   //.splice( 0, 10000, v )
-            //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].durations, 'reverse' )  
+            obj.seq.seqs[ seqNumber ].durations = val   //.splice( 0, 10000, v )
           }
         },
-      })
-      
-      //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].values, 'reverse' )
-      //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].durations, 'reverse' )      
+      })     
       
       if( !obj.seq.isRunning ) {
         obj.seq.offset = Gibber.Clock.time( obj.offset )
@@ -603,8 +610,8 @@ var Gibber = {
     }
   },
   
-  createProxyMethods : function( obj, methods ) {
-    for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
+  createProxyMethods : function( obj, methods, priority ) {
+    for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ], priority ) 
   },
   
   defineProperty : function( obj, propertyName, shouldSeq, shouldRamp, mappingsDictionary, shouldUseMappings, priority, useOldGetter ) {
@@ -739,7 +746,7 @@ Gibber.mappings  = _dereq_( './mappings' )( Gibber )
 module.exports = Gibber
 
 })()
-},{"./dollar":1,"./mappings":3,"./utilities":4}],3:[function(_dereq_,module,exports){
+},{"./dollar":1,"./mappings":3,"./pattern":4,"./utilities":5}],3:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {  
   var mappings = {
     audio : {
@@ -1387,6 +1394,243 @@ module.exports.outputCurves= {
   LOGARITHMIC:1
 }
 },{}],4:[function(_dereq_,module,exports){
+!function() {
+
+"use strict"
+
+var PatternProto = {
+  concat : function( _pattern ) { this.values = this.values.concat( _pattern.values ) },    
+  toString: function() { return this.values.toString() },
+  valueOf: function() { return this.values },
+  getLength: function() {
+    var l
+    if( this.start < this.end ) {
+      l = this.end - this.start + 1
+    }else{
+      l = this.values.length + this.end - this.start + 1
+    }
+    return l
+  },
+  runFilters : function( val ) {
+    var args = [ val, 1 ] // 1 is phaseModifier
+
+    for( var i = 0; i < this.filters.length; i++ ) {
+      args = this.filters[ i ]( args )
+    }
+
+    return args
+  },
+}
+
+var Pattern = function() {
+  if( ! ( this instanceof Pattern ) ) {
+    var args = Array.prototype.slice.call( arguments, 0 )
+    return Gibber.construct( Pattern, args )
+  }
+
+  var fnc = function() {
+    var len = fnc.getLength(),
+        idx = Math.floor( fnc.start + (fnc.phase % len) ),
+        val = fnc.values[ Math.floor( idx % fnc.values.length ) ],
+        args = fnc.runFilters( val )
+    
+    fnc.phase += fnc.stepSize * args[ 1 ]
+    val = args[ 0 ]
+      
+    if( typeof val === 'function' ) val = val()
+    
+    return val
+  }
+   
+  $.extend( fnc, {
+    start : 0,
+    end   : 0,
+    phase : 0,
+    values : Array.prototype.slice.call( arguments, 0 ),
+    //values : typeof arguments[0] !== 'string' || arguments.length > 1 ? Array.prototype.slice.call( arguments, 0 ) : arguments[0].split(''),    
+    original : null,
+    storage : [],
+    stepSize : 1,
+    integersOnly : false,
+    repeats : [],
+    filters : [],
+
+    range : function() {
+      if( Array.isArray( arguments[0] ) ) {
+        fnc.start = arguments[0][0]
+        fnc.end   = arguments[0][1]
+      }else{
+        fnc.start = arguments[0]
+        fnc.end   = arguments[1]
+      }
+    },
+  
+    reverse : function() { fnc.values.reverse() },
+  
+    // repeat : function() { // repeat a value whenever it is triggered
+    //   var counts = {}
+    // 
+    //   for( var i = 0; i < arguments.length; i +=2 ) {
+    //     counts[ arguments[ i ] ] = {
+    //       phase: 0,
+    //       target: arguments[ i + 1 ]
+    //     }
+    //   }
+    // 
+    //   var filter = function( args ) {
+    //     var value = args[ 0 ], phaseModifier = args[ 1 ], output = [ value, phaseModifier ]
+    //     
+    //     //console.log( args, counts )
+    //     if( counts[ value ] ) {
+    //       counts[ value ].phase++
+    //       if( counts[ value ].phase !== counts[ value ].target ) {
+    //         output[ 1 ] = 0
+    //       }else{
+    //         counts[ value ].phase = 0
+    //         output[ 1 ] = 1
+    //       }
+    //     }
+    //   
+    //     return output
+    //   }
+    // 
+    //   fnc.filters.push( filter )
+    // 
+    //   return fnc
+    // },
+    
+    repeat: function() {
+      var counts = {}
+    
+      for( var i = 0; i < arguments.length; i +=2 ) {
+        counts[ arguments[ i ] ] = {
+          phase: 0,
+          target: arguments[ i + 1 ]
+        }
+      }
+      
+      var repeating = false, repeatValue = null
+      var filter = function( args ) {
+        var value = args[ 0 ], phaseModifier = args[ 1 ], output = [ value, phaseModifier ]
+        
+        //console.log( args, counts )
+        if( repeating === false && counts[ value ] ) {
+          repeating = true
+          repeatValue = value
+        }
+        
+        if( repeating === true ) {
+          if( counts[ repeatValue ].phase !== counts[ repeatValue ].target ) {
+            output[ 0 ] = repeatValue            
+            output[ 1 ] = 0
+            counts[ repeatValue ].phase++
+          }else{
+            counts[ repeatValue ].phase = 0
+            output[ 1 ] = 1
+            if( value !== repeatValue ) { 
+              repeating = false
+            }else{
+              counts[ repeatValue ].phase++
+            }
+          }
+        }
+      
+        return output
+      }
+    
+      fnc.filters.push( filter )
+    
+      return fnc
+    },
+  
+    reset : function() { fnc.values = fnc.original.slice( 0 ) },
+    store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ) },
+    transpose : function( amt ) { for( var i = 0; i < fnc.values.length; i++ ) fnc.values[ i ] += amt },
+    shuffle : function() { Gibber.Utilities.shuffle( fnc.values ) },
+    scale : function( amt ) { 
+      for( var i = 0; i < fnc.values.length; i++ ) {
+        fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
+      }
+    },
+
+    flip : function() {
+      var start = [],
+          ordered = null
+    
+      ordered = fnc.values.filter( function(elem) {
+      	var shouldPush = start.indexOf( elem ) === -1
+        if( shouldPush ) start.push( elem )
+        return shouldPush
+      })
+    
+      ordered = ordered.sort( function( a,b ){ return a - b } )
+    
+      for( var i = 0; i < fnc.values.length; i++ ) {
+        var pos = ordered.indexOf( fnc.values[ i ] )
+        fnc.values[ i ] = ordered[ ordered.length - pos - 1 ]
+      }
+    
+  		return fnc
+    },
+    
+    invert: function() {
+      var prime0 = fnc.values[ 0 ]
+      
+      for( var i = 1; i < fnc.values.length; i++ ) {
+        var inverse = prime0 + (prime0 - fnc.values[ i ])
+        fnc.values[ i ] = inverse
+      }
+    
+  		return fnc
+    },
+  
+    switch : function( to ) {
+      if( fnc.storage[ to ] ) {
+        fnc.values = fnc.storage[ to ].slice( 0 )
+      }
+    },
+  
+    rotate : function( amt ) {
+      if( amt > 0 ) {
+        while( amt > 0 ) {
+          var end = fnc.values.pop()
+          fnc.values.unshift( end )
+          amt--
+        }
+      }else if( amt < 0 ) {
+        while( amt < 0 ) {
+          var begin = fnc.values.shift()
+          fnc.values.push( begin )
+          amt++
+        }
+      }
+    }
+  })
+    
+  fnc.end = fnc.values.length - 1
+  
+  fnc.original = fnc.values.slice( 0 )
+  fnc.storage[ 0 ] = fnc.original.slice( 0 )
+  
+  fnc.integersOnly = fnc.values.every( function( n ) { return n === +n && n === (n|0); })
+  
+  Gibber.createProxyMethods( fnc, [
+    'rotate','switch','invert','reset', 'flip',
+    'transpose','reverse','shuffle','scale',
+    'store', 'range'
+  ], true )
+  
+  fnc.__proto__ = this.__proto__ 
+  
+  return fnc
+}
+
+Pattern.prototype = PatternProto
+
+module.exports = Pattern
+
+}()
+},{}],5:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"
@@ -1428,38 +1672,37 @@ var soloGroup = [],
         return output
       },
       random :  function() {
-        var dict = {},
-            lastChosen = null;
+        this.randomFlag = true
+        this.randomArgs = Array.prototype.slice.call( arguments, 0 )
+        // var dict = {},
+        //     lastChosen = null;
+        //     
+        // for(var i = 0; i < arguments.length; i+=2) {
+        //   dict[ "" + arguments[i] ] = { repeat: arguments[i+1], count: 0 };
+        // }
+        // 
+        // this.pick = function() {
+        //   var value = 0, index, lastValue;
+        //   if(this[lastChosen]) lastValue = this[lastChosen]
+        // 
+        //   if(lastChosen !== null && dict[ lastValue ].count++ <= dict[ lastValue ].repeat) {
+        //     index = lastChosen;
+        //     if( dict[ lastValue ].count >= dict[ lastValue ].repeat) {
+        //       dict[ lastValue ].count = 0;
+        //       lastChosen = null;
+        //     };
+        //   }else{
+        //     index = Utilities.rndi(0, this.length - 1);
+        //     value = this[index];
+        //     if( typeof dict[ ""+value ] !== 'undefined' ) {
+        //       dict[ ""+value ].count = 1;
+        //       lastChosen = index;
+        //     }else{
+        //       lastChosen = null;
+        //     }
+        //   }
     
-        for(var i = 0; i < arguments.length; i+=2) {
-          dict[ "" + arguments[i] ] = { repeat: arguments[i+1], count: 0 };
-        }
-
-        this.pick = function() {
-          var value = 0, index, lastValue;
-          if(this[lastChosen]) lastValue = this[lastChosen]
-
-          if(lastChosen !== null && dict[ lastValue ].count++ <= dict[ lastValue ].repeat) {
-            index = lastChosen;
-            if( dict[ lastValue ].count >= dict[ lastValue ].repeat) {
-              dict[ lastValue ].count = 0;
-              lastChosen = null;
-            };
-          }else{
-            index = Utilities.rndi(0, this.length - 1);
-            value = this[index];
-            if( typeof dict[ ""+value ] !== 'undefined' ) {
-              dict[ ""+value ].count = 1;
-              lastChosen = index;
-            }else{
-              lastChosen = null;
-            }
-          }
-      
-        	return index; // return index, not value as required by secondary notation stuff
-        };
-    
-        return this;
+        return this
       },
   
       random2 : function() {
@@ -1787,18 +2030,18 @@ var soloGroup = [],
         // window.solo = Utilities.solo
         // window.future = Utilities.future // TODO: fix global reference
         Array.prototype.random = Array.prototype.rnd = Utilities.random
-        Array.prototype.weight = Utilities.weight
-        Array.prototype.fill = Utilities.fill
-        Array.prototype.choose = Utilities.choose
-        // Array.prototype.Rnd = Utilities.random2
-        Array.prototype.merge = Utilities.merge
+        // Array.prototype.weight = Utilities.weight
+        // Array.prototype.fill = Utilities.fill
+        // Array.prototype.choose = Utilities.choose
+        // // Array.prototype.Rnd = Utilities.random2
+        // Array.prototype.merge = Utilities.merge
       }  
     }
   
   return Utilities
 }
 
-},{}],5:[function(_dereq_,module,exports){
+},{}],6:[function(_dereq_,module,exports){
 (function (global){
 !function (root, factory) {
   if (typeof define === "function" && define.amd) {
@@ -8343,8 +8586,7 @@ Gibberish.PolySeq = function() {
     timeModifier  : null,
     add           : function( seq ) {
       seq.valuesIndex = seq.durationsIndex = 0
-      
-      
+
       if( seq.durations === null ) {
         seq.autofire = true
         that.autofire.push( seq )
@@ -8387,8 +8629,9 @@ Gibberish.PolySeq = function() {
             var seq = seqs[ j ]
             if( seq.shouldStop ) continue;
 
-            var idx = seq.values.pick ? seq.values.pick() : seq.valuesIndex++ % seq.values.length,
-                val = seq.values[ idx ];
+            var idx = seq.values.pick ? seq.values.pick() : seq.valuesIndex++ % seq.values.length
+            
+            var val = typeof seq.values === 'function' ? seq.values() : seq.values[ idx ];
     
             if(typeof val === 'function') { val = val(); } // will also call anonymous function
     
@@ -8404,15 +8647,16 @@ Gibberish.PolySeq = function() {
              
             if( Array.isArray( seq.durations ) ) {
               var idx = seq.durations.pick ? seq.durations.pick() : seq.durationsIndex++,
-                  next = seq.durations[ idx ]
+                  next = typeof seq.durations === 'function' ? seq.durations() : seq.durations[ idx ]
 
               newNextTime = typeof next === 'function' ? next() : next;
-              if( seq.durationsIndex >= seq.durations.length ) {
+              if( typeof seq.durations !== 'function' && seq.durationsIndex >= seq.durations.length ) {
                 seq.durationsIndex = 0;
               }
               if( that.chose ) that.chose( 'durations', idx )
             }else{
-              var next = seq.durations;
+              var next = typeof seq.durations === 'function' ? seq.durations() : seq.durations;
+                            
               newNextTime = typeof next === 'function' ? next() : next;
             }
         
@@ -9018,7 +9262,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
 return Gibberish; 
 })
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 /*
  * Freesound Javascript SDK
  */
@@ -9168,9 +9412,9 @@ var freesound = module.exports = {
 };
 
 }()
-},{}],7:[function(_dereq_,module,exports){
-(function(){function t(t,e){return t=r[t],e=r[e],t.distance>e.distance?e.distance+12-t.distance:e.distance-t.distance}function e(t,e,i){for(;i>0;i--)t+=e;return t}function i(t,e){if("string"!=typeof t)return null;this.name=t,this.duration=e||4,this.accidental={value:0,sign:""};var i=t.match(/^([abcdefgh])(x|#|bb|b?)(-?\d*)/i);if(i&&t===i[0]&&0!==i[3].length)this.name=i[1].toLowerCase(),this.octave=parseFloat(i[3]),0!==i[2].length&&(this.accidental.sign=i[2].toLowerCase(),this.accidental.value=y[i[2]]);else{t=t.replace(/\u2032/g,"'").replace(/\u0375/g,",");var n=t.match(/^(,*)([abcdefgh])(x|#|bb|b?)([,\']*)$/i);if(!n||5!==n.length||t!==n[0])throw Error("Invalid note format");if(""===n[1]&&""===n[4])this.octave=n[2]===n[2].toLowerCase()?3:2;else if(""!==n[1]&&""===n[4]){if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation.");this.octave=2-n[1].length}else{if(""!==n[1]||""===n[4])throw Error("Invalid note format");if(n[4].match(/^'+$/)){if(n[2]===n[2].toUpperCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=3+n[4].length}else{if(!n[4].match(/^,+$/))throw Error("Invalid characters after note name.");if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=2-n[4].length}}this.name=n[2].toLowerCase(),0!==n[3].length&&(this.accidental.sign=n[3].toLowerCase(),this.accidental.value=y[n[3]])}}function n(t,e){if(!(t instanceof i))return null;e=e||"",this.name=t.name.toUpperCase()+t.accidental.sign+e,this.root=t,this.notes=[t],this.quality="major",this.type="major";var n,r,o,s,h,m=[],u=!1,c="quality",d=!1,p=!1,v=null;for(s=0,h=e.length;h>s;s++){for(n=e[s];" "===n||"("===n||")"===n;)n=e[++s];if(!n)break;if(r=n.charCodeAt(0),o=h>=s+3?e.substr(s,3):"","quality"===c)"M"===n||("maj"===o||916===r?(this.type="major",m.push("M7"),u=!0,(e[s+3]&&"7"===e[s+3]||916===r&&"7"===e[s+1])&&s++):"m"===n||"-"===n||"min"===o?this.quality=this.type="minor":111===r||176===r||"dim"===o?(this.quality="minor",this.type="diminished"):"+"===n||"aug"===o?(this.quality="major",this.type="augmented"):216===r||248===r?(this.quality="minor",this.type="diminished",m.push("m7"),u=!0):"sus"===o?(this.quality="sus",this.type=e[s+3]&&"2"===e[s+3]?"sus2":"sus4"):"5"===n?(this.quality="power",this.type="power"):s-=1),o in l&&(s+=2),c="";else if("#"===n)d=!0;else if("b"===n)p=!0;else if("5"===n)d?(v="A5","major"===this.quality&&(this.type="augmented")):p&&(v="d5","minor"===this.quality&&(this.type="diminished")),p=d=!1;else if("6"===n)m.push("M6"),p=d=!1;else if("7"===n)"diminished"===this.type?m.push("d7"):m.push("m7"),u=!0,p=d=!1;else if("9"===n)u||m.push("m7"),p?m.push("m9"):d?m.push("A9"):m.push("M9"),p=d=!1;else{if("1"!==n)throw Error("Unexpected character: '"+n+"' in chord name");n=e[++s],"1"===n?p?m.push("d11"):d?m.push("A11"):m.push("P11"):"3"===n&&(p?m.push("m13"):d?m.push("A13"):m.push("M13")),p=d=!1}}for(var y=0,g=f[this.type].length;g>y;y++)"5"===f[this.type][y][1]&&v?this.notes.push(a.interval(this.root,v)):this.notes.push(a.interval(this.root,f[this.type][y]));for(y=0,g=m.length;g>y;y++)this.notes.push(a.interval(this.root,m[y]))}var a={},r={c:{name:"c",distance:0,index:0},d:{name:"d",distance:2,index:1},e:{name:"e",distance:4,index:2},f:{name:"f",distance:5,index:3},g:{name:"g",distance:7,index:4},a:{name:"a",distance:9,index:5},b:{name:"b",distance:11,index:6},h:{name:"h",distance:11,index:6}},o=["c","d","e","f","g","a","b"],s={.25:"longa",.5:"breve",1:"whole",2:"half",4:"quarter",8:"eighth",16:"sixteenth",32:"thirty-second",64:"sixty-fourth",128:"hundred-twenty-eighth"},h=[{name:"unison",quality:"perfect",size:0},{name:"second",quality:"minor",size:1},{name:"third",quality:"minor",size:3},{name:"fourth",quality:"perfect",size:5},{name:"fifth",quality:"perfect",size:7},{name:"sixth",quality:"minor",size:8},{name:"seventh",quality:"minor",size:10},{name:"octave",quality:"perfect",size:12},{name:"ninth",quality:"minor",size:13},{name:"tenth",quality:"minor",size:15},{name:"eleventh",quality:"perfect",size:17},{name:"twelfth",quality:"perfect",size:19},{name:"thirteenth",quality:"minor",size:20},{name:"fourteenth",quality:"minor",size:22},{name:"fifteenth",quality:"perfect",size:24}],m={unison:0,second:1,third:2,fourth:3,fifth:4,sixth:5,seventh:6,octave:7,ninth:8,tenth:9,eleventh:10,twelfth:11,thirteenth:12,fourteenth:13,fifteenth:14},l={P:"perfect",M:"major",m:"minor",A:"augmented",d:"diminished",perf:"perfect",maj:"major",min:"minor",aug:"augmented",dim:"diminished"},u={perfect:"P",major:"M",minor:"m",augmented:"A",diminished:"d"},c={P:"P",M:"m",m:"M",A:"d",d:"A"},d={perfect:["diminished","perfect","augmented"],minor:["diminished","minor","major","augmented"]},f={major:["M3","P5"],minor:["m3","P5"],augmented:["M3","A5"],diminished:["m3","d5"],sus2:["M2","P5"],sus4:["P4","P5"],power:["P5"]},p={major:"M",minor:"m",augmented:"aug",diminished:"dim",power:"5"},v={"-2":"bb","-1":"b",0:"",1:"#",2:"x"},y={bb:-2,b:-1,"#":1,x:2};i.prototype={key:function(t){return t?7*(this.octave-1)+3+Math.ceil(r[this.name].distance/2):12*(this.octave-1)+4+r[this.name].distance+this.accidental.value},fq:function(t){return t=t||440,t*Math.pow(2,(this.key()-49)/12)},scale:function(t,e){return a.scale.list(this,t,e)},interval:function(t,e){return a.interval(this,t,e)},chord:function(t){return t=t||"major",t in p&&(t=p[t]),new n(this,t)},helmholtz:function(){var t,i=3>this.octave?this.name.toUpperCase():this.name.toLowerCase();return 2>=this.octave?(t=e("",",",2-this.octave),t+i+this.accidental.sign):(t=e("","'",this.octave-3),i+this.accidental.sign+t)},scientific:function(){return this.name.toUpperCase()+this.accidental.sign+("number"==typeof this.octave?this.octave:"")},enharmonics:function(){var t=[],e=this.key(),i=this.interval("m2","up"),n=this.interval("m2","down"),a=i.key()-i.accidental.value,r=n.key()-n.accidental.value,o=e-a;return 3>o&&o>-3&&(i.accidental={value:o,sign:v[o]},t.push(i)),o=e-r,3>o&&o>-3&&(n.accidental={value:o,sign:v[o]},t.push(n)),t},valueName:function(){return s[this.duration]},toString:function(t){return t="boolean"==typeof t?t:"number"==typeof this.octave?!1:!0,this.name.toLowerCase()+this.accidental.sign+(t?"":this.octave)}},n.prototype.dominant=function(t){return t=t||"",new n(this.root.interval("P5"),t)},n.prototype.subdominant=function(t){return t=t||"",new n(this.root.interval("P4"),t)},n.prototype.parallel=function(t){if(t=t||"","triad"!==this.chordType()||"diminished"===this.quality||"augmented"===this.quality)throw Error("Only major/minor triads have parallel chords");return"major"===this.quality?new n(this.root.interval("m3","down"),"m"):new n(this.root.interval("m3","up"))},n.prototype.chordType=function(){var t,e,i;if(2===this.notes.length)return"dyad";if(3===this.notes.length){e={unison:!1,third:!1,fifth:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);return e.unison&&e.third&&e.fifth?"triad":"trichord"}if(4===this.notes.length){e={unison:!1,third:!1,fifth:!1,seventh:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);if(e.unison&&e.third&&e.fifth&&e.seventh)return"tetrad"}return"unknown"},n.prototype.toString=function(){return this.name},a.note=function(t,e){return new i(t,e)},a.note.fromKey=function(t){var e=440*Math.pow(2,(t-49)/12);return a.frequency.note(e).note},a.chord=function(t){var e;if(e=t.match(/^([abcdefgh])(x|#|bb|b?)/i),e&&e[0])return new n(new i(e[0].toLowerCase()),t.substr(e[0].length));throw Error("Invalid Chord. Couldn't find note name")},a.frequency={note:function(t,e){e=e||440;var n,a,s,h,m,l,u;return n=Math.round(49+12*((Math.log(t)-Math.log(e))/Math.log(2))),u=e*Math.pow(2,(n-49)/12),l=1200*(Math.log(t/u)/Math.log(2)),a=Math.floor((n-4)/12),s=n-12*a-4,h=r[o[Math.round(s/2)]],m=h.name,s>h.distance?m+="#":h.distance>s&&(m+="b"),{note:new i(m+(a+1)),cents:l}}},a.interval=function(t,e,n){if("string"==typeof e){"down"===n&&(e=a.interval.invert(e));var r=l[e[0]],o=parseFloat(e.substr(1));if(!r||isNaN(o)||1>o)throw Error("Invalid string-interval format");return a.interval.from(t,{quality:r,interval:h[o-1].name},n)}if(e instanceof i&&t instanceof i)return a.interval.between(t,e);throw Error("Invalid parameters")},a.interval.from=function(e,n,a){n.direction=a||n.direction||"up";var s,l,u,c,f,p;if(f=m[n.interval],p=h[f],f>7&&(f-=7),f=r[e.name].index+f,f>o.length-1&&(f-=o.length),s=o[f],-1===d[p.quality].indexOf(n.quality)||-1===d[p.quality].indexOf(p.quality))throw Error("Invalid interval quality");return l=d[p.quality].indexOf(n.quality)-d[p.quality].indexOf(p.quality),u=p.size+l-t(e.name,s),e.octave&&(c=Math.floor((e.key()-e.accidental.value+t(e.name,s)-4)/12)+1+Math.floor(m[n.interval]/7)),u+=e.accidental.value,u>=11&&(u-=12),u>-3&&3>u&&(s+=v[u]),"down"===a&&c--,new i(s+(c||""))},a.interval.between=function(t,e){var i,n,a,o,s,m,l=t.key(),c=e.key();if(i=c-l,i>24||-25>i)throw Error("Too big interval. Highest interval is a augmented fifteenth (25 semitones)");return 0>i&&(o=t,t=e,e=o),a=r[e.name].index-r[t.name].index+7*(e.octave-t.octave),n=h[a],m=d[n.quality][Math.abs(i)-n.size+1],s=u[m]+(""+Number(a+1)),{name:n.name,quality:m,direction:i>0?"up":"down",simple:s}},a.interval.invert=function(t){if(2!==t.length&&3!==t.length)return!1;var e=c[t[0]],i=2===t.length?parseFloat(t[1]):parseFloat(t.substr(1));return i>8&&(i-=7),8!==i&&1!==i&&(i=9-i),e+(""+i)},a.scale={list:function(t,e,n){var r,o,s=[],h=[];if(!(t instanceof i))return!1;if("string"==typeof e&&(e=a.scale.scales[e],!e))return!1;for(s.push(t),n&&h.push(t.name+(t.accidental.sign||"")),r=0,o=e.length;o>r;r++)s.push(a.interval(t,e[r])),n&&h.push(s[r+1].name+(s[r+1].accidental.sign||""));return n?h:s},scales:{major:["M2","M3","P4","P5","M6","M7"],ionian:["M2","M3","P4","P5","M6","M7"],dorian:["M2","m3","P4","P5","M6","m7"],phrygian:["m2","m3","P4","P5","m6","m7"],lydian:["M2","M3","A4","P5","M6","M7"],mixolydian:["M2","M3","P4","P5","M6","m7"],minor:["M2","m3","P4","P5","m6","m7"],aeolian:["M2","m3","P4","P5","m6","m7"],locrian:["m2","m3","P4","d5","m6","m7"],majorpentatonic:["M2","M3","P5","M6"],minorpentatonic:["m3","P4","P5","m7"],chromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"],harmonicchromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"]}},module.exports=a})();
 },{}],8:[function(_dereq_,module,exports){
+(function(){function t(t,e){return t=r[t],e=r[e],t.distance>e.distance?e.distance+12-t.distance:e.distance-t.distance}function e(t,e,i){for(;i>0;i--)t+=e;return t}function i(t,e){if("string"!=typeof t)return null;this.name=t,this.duration=e||4,this.accidental={value:0,sign:""};var i=t.match(/^([abcdefgh])(x|#|bb|b?)(-?\d*)/i);if(i&&t===i[0]&&0!==i[3].length)this.name=i[1].toLowerCase(),this.octave=parseFloat(i[3]),0!==i[2].length&&(this.accidental.sign=i[2].toLowerCase(),this.accidental.value=y[i[2]]);else{t=t.replace(/\u2032/g,"'").replace(/\u0375/g,",");var n=t.match(/^(,*)([abcdefgh])(x|#|bb|b?)([,\']*)$/i);if(!n||5!==n.length||t!==n[0])throw Error("Invalid note format");if(""===n[1]&&""===n[4])this.octave=n[2]===n[2].toLowerCase()?3:2;else if(""!==n[1]&&""===n[4]){if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation.");this.octave=2-n[1].length}else{if(""!==n[1]||""===n[4])throw Error("Invalid note format");if(n[4].match(/^'+$/)){if(n[2]===n[2].toUpperCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=3+n[4].length}else{if(!n[4].match(/^,+$/))throw Error("Invalid characters after note name.");if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=2-n[4].length}}this.name=n[2].toLowerCase(),0!==n[3].length&&(this.accidental.sign=n[3].toLowerCase(),this.accidental.value=y[n[3]])}}function n(t,e){if(!(t instanceof i))return null;e=e||"",this.name=t.name.toUpperCase()+t.accidental.sign+e,this.root=t,this.notes=[t],this.quality="major",this.type="major";var n,r,o,s,h,m=[],u=!1,c="quality",d=!1,p=!1,v=null;for(s=0,h=e.length;h>s;s++){for(n=e[s];" "===n||"("===n||")"===n;)n=e[++s];if(!n)break;if(r=n.charCodeAt(0),o=h>=s+3?e.substr(s,3):"","quality"===c)"M"===n||("maj"===o||916===r?(this.type="major",m.push("M7"),u=!0,(e[s+3]&&"7"===e[s+3]||916===r&&"7"===e[s+1])&&s++):"m"===n||"-"===n||"min"===o?this.quality=this.type="minor":111===r||176===r||"dim"===o?(this.quality="minor",this.type="diminished"):"+"===n||"aug"===o?(this.quality="major",this.type="augmented"):216===r||248===r?(this.quality="minor",this.type="diminished",m.push("m7"),u=!0):"sus"===o?(this.quality="sus",this.type=e[s+3]&&"2"===e[s+3]?"sus2":"sus4"):"5"===n?(this.quality="power",this.type="power"):s-=1),o in l&&(s+=2),c="";else if("#"===n)d=!0;else if("b"===n)p=!0;else if("5"===n)d?(v="A5","major"===this.quality&&(this.type="augmented")):p&&(v="d5","minor"===this.quality&&(this.type="diminished")),p=d=!1;else if("6"===n)m.push("M6"),p=d=!1;else if("7"===n)"diminished"===this.type?m.push("d7"):m.push("m7"),u=!0,p=d=!1;else if("9"===n)u||m.push("m7"),p?m.push("m9"):d?m.push("A9"):m.push("M9"),p=d=!1;else{if("1"!==n)throw Error("Unexpected character: '"+n+"' in chord name");n=e[++s],"1"===n?p?m.push("d11"):d?m.push("A11"):m.push("P11"):"3"===n&&(p?m.push("m13"):d?m.push("A13"):m.push("M13")),p=d=!1}}for(var y=0,g=f[this.type].length;g>y;y++)"5"===f[this.type][y][1]&&v?this.notes.push(a.interval(this.root,v)):this.notes.push(a.interval(this.root,f[this.type][y]));for(y=0,g=m.length;g>y;y++)this.notes.push(a.interval(this.root,m[y]))}var a={},r={c:{name:"c",distance:0,index:0},d:{name:"d",distance:2,index:1},e:{name:"e",distance:4,index:2},f:{name:"f",distance:5,index:3},g:{name:"g",distance:7,index:4},a:{name:"a",distance:9,index:5},b:{name:"b",distance:11,index:6},h:{name:"h",distance:11,index:6}},o=["c","d","e","f","g","a","b"],s={.25:"longa",.5:"breve",1:"whole",2:"half",4:"quarter",8:"eighth",16:"sixteenth",32:"thirty-second",64:"sixty-fourth",128:"hundred-twenty-eighth"},h=[{name:"unison",quality:"perfect",size:0},{name:"second",quality:"minor",size:1},{name:"third",quality:"minor",size:3},{name:"fourth",quality:"perfect",size:5},{name:"fifth",quality:"perfect",size:7},{name:"sixth",quality:"minor",size:8},{name:"seventh",quality:"minor",size:10},{name:"octave",quality:"perfect",size:12},{name:"ninth",quality:"minor",size:13},{name:"tenth",quality:"minor",size:15},{name:"eleventh",quality:"perfect",size:17},{name:"twelfth",quality:"perfect",size:19},{name:"thirteenth",quality:"minor",size:20},{name:"fourteenth",quality:"minor",size:22},{name:"fifteenth",quality:"perfect",size:24}],m={unison:0,second:1,third:2,fourth:3,fifth:4,sixth:5,seventh:6,octave:7,ninth:8,tenth:9,eleventh:10,twelfth:11,thirteenth:12,fourteenth:13,fifteenth:14},l={P:"perfect",M:"major",m:"minor",A:"augmented",d:"diminished",perf:"perfect",maj:"major",min:"minor",aug:"augmented",dim:"diminished"},u={perfect:"P",major:"M",minor:"m",augmented:"A",diminished:"d"},c={P:"P",M:"m",m:"M",A:"d",d:"A"},d={perfect:["diminished","perfect","augmented"],minor:["diminished","minor","major","augmented"]},f={major:["M3","P5"],minor:["m3","P5"],augmented:["M3","A5"],diminished:["m3","d5"],sus2:["M2","P5"],sus4:["P4","P5"],power:["P5"]},p={major:"M",minor:"m",augmented:"aug",diminished:"dim",power:"5"},v={"-2":"bb","-1":"b",0:"",1:"#",2:"x"},y={bb:-2,b:-1,"#":1,x:2};i.prototype={key:function(t){return t?7*(this.octave-1)+3+Math.ceil(r[this.name].distance/2):12*(this.octave-1)+4+r[this.name].distance+this.accidental.value},fq:function(t){return t=t||440,t*Math.pow(2,(this.key()-49)/12)},scale:function(t,e){return a.scale.list(this,t,e)},interval:function(t,e){return a.interval(this,t,e)},chord:function(t){return t=t||"major",t in p&&(t=p[t]),new n(this,t)},helmholtz:function(){var t,i=3>this.octave?this.name.toUpperCase():this.name.toLowerCase();return 2>=this.octave?(t=e("",",",2-this.octave),t+i+this.accidental.sign):(t=e("","'",this.octave-3),i+this.accidental.sign+t)},scientific:function(){return this.name.toUpperCase()+this.accidental.sign+("number"==typeof this.octave?this.octave:"")},enharmonics:function(){var t=[],e=this.key(),i=this.interval("m2","up"),n=this.interval("m2","down"),a=i.key()-i.accidental.value,r=n.key()-n.accidental.value,o=e-a;return 3>o&&o>-3&&(i.accidental={value:o,sign:v[o]},t.push(i)),o=e-r,3>o&&o>-3&&(n.accidental={value:o,sign:v[o]},t.push(n)),t},valueName:function(){return s[this.duration]},toString:function(t){return t="boolean"==typeof t?t:"number"==typeof this.octave?!1:!0,this.name.toLowerCase()+this.accidental.sign+(t?"":this.octave)}},n.prototype.dominant=function(t){return t=t||"",new n(this.root.interval("P5"),t)},n.prototype.subdominant=function(t){return t=t||"",new n(this.root.interval("P4"),t)},n.prototype.parallel=function(t){if(t=t||"","triad"!==this.chordType()||"diminished"===this.quality||"augmented"===this.quality)throw Error("Only major/minor triads have parallel chords");return"major"===this.quality?new n(this.root.interval("m3","down"),"m"):new n(this.root.interval("m3","up"))},n.prototype.chordType=function(){var t,e,i;if(2===this.notes.length)return"dyad";if(3===this.notes.length){e={unison:!1,third:!1,fifth:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);return e.unison&&e.third&&e.fifth?"triad":"trichord"}if(4===this.notes.length){e={unison:!1,third:!1,fifth:!1,seventh:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);if(e.unison&&e.third&&e.fifth&&e.seventh)return"tetrad"}return"unknown"},n.prototype.toString=function(){return this.name},a.note=function(t,e){return new i(t,e)},a.note.fromKey=function(t){var e=440*Math.pow(2,(t-49)/12);return a.frequency.note(e).note},a.chord=function(t){var e;if(e=t.match(/^([abcdefgh])(x|#|bb|b?)/i),e&&e[0])return new n(new i(e[0].toLowerCase()),t.substr(e[0].length));throw Error("Invalid Chord. Couldn't find note name")},a.frequency={note:function(t,e){e=e||440;var n,a,s,h,m,l,u;return n=Math.round(49+12*((Math.log(t)-Math.log(e))/Math.log(2))),u=e*Math.pow(2,(n-49)/12),l=1200*(Math.log(t/u)/Math.log(2)),a=Math.floor((n-4)/12),s=n-12*a-4,h=r[o[Math.round(s/2)]],m=h.name,s>h.distance?m+="#":h.distance>s&&(m+="b"),{note:new i(m+(a+1)),cents:l}}},a.interval=function(t,e,n){if("string"==typeof e){"down"===n&&(e=a.interval.invert(e));var r=l[e[0]],o=parseFloat(e.substr(1));if(!r||isNaN(o)||1>o)throw Error("Invalid string-interval format");return a.interval.from(t,{quality:r,interval:h[o-1].name},n)}if(e instanceof i&&t instanceof i)return a.interval.between(t,e);throw Error("Invalid parameters")},a.interval.from=function(e,n,a){n.direction=a||n.direction||"up";var s,l,u,c,f,p;if(f=m[n.interval],p=h[f],f>7&&(f-=7),f=r[e.name].index+f,f>o.length-1&&(f-=o.length),s=o[f],-1===d[p.quality].indexOf(n.quality)||-1===d[p.quality].indexOf(p.quality))throw Error("Invalid interval quality");return l=d[p.quality].indexOf(n.quality)-d[p.quality].indexOf(p.quality),u=p.size+l-t(e.name,s),e.octave&&(c=Math.floor((e.key()-e.accidental.value+t(e.name,s)-4)/12)+1+Math.floor(m[n.interval]/7)),u+=e.accidental.value,u>=11&&(u-=12),u>-3&&3>u&&(s+=v[u]),"down"===a&&c--,new i(s+(c||""))},a.interval.between=function(t,e){var i,n,a,o,s,m,l=t.key(),c=e.key();if(i=c-l,i>24||-25>i)throw Error("Too big interval. Highest interval is a augmented fifteenth (25 semitones)");return 0>i&&(o=t,t=e,e=o),a=r[e.name].index-r[t.name].index+7*(e.octave-t.octave),n=h[a],m=d[n.quality][Math.abs(i)-n.size+1],s=u[m]+(""+Number(a+1)),{name:n.name,quality:m,direction:i>0?"up":"down",simple:s}},a.interval.invert=function(t){if(2!==t.length&&3!==t.length)return!1;var e=c[t[0]],i=2===t.length?parseFloat(t[1]):parseFloat(t.substr(1));return i>8&&(i-=7),8!==i&&1!==i&&(i=9-i),e+(""+i)},a.scale={list:function(t,e,n){var r,o,s=[],h=[];if(!(t instanceof i))return!1;if("string"==typeof e&&(e=a.scale.scales[e],!e))return!1;for(s.push(t),n&&h.push(t.name+(t.accidental.sign||"")),r=0,o=e.length;o>r;r++)s.push(a.interval(t,e[r])),n&&h.push(s[r+1].name+(s[r+1].accidental.sign||""));return n?h:s},scales:{major:["M2","M3","P4","P5","M6","M7"],ionian:["M2","M3","P4","P5","M6","M7"],dorian:["M2","m3","P4","P5","M6","m7"],phrygian:["m2","m3","P4","P5","m6","m7"],lydian:["M2","M3","A4","P5","M6","M7"],mixolydian:["M2","M3","P4","P5","M6","m7"],minor:["M2","m3","P4","P5","m6","m7"],aeolian:["M2","m3","P4","P5","m6","m7"],locrian:["m2","m3","P4","d5","m6","m7"],majorpentatonic:["M2","M3","P5","M6"],minorpentatonic:["m3","P4","P5","m7"],chromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"],harmonicchromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"]}},module.exports=a})();
+},{}],9:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   
 "use strict"
@@ -9616,7 +9860,7 @@ Audio.Arp =            _dereq_( './audio/arp' )( Gibber )
 return Audio
 
 }
-},{"../external/freesound":6,"./audio/analysis":9,"./audio/arp":10,"./audio/audio_input":11,"./audio/bus":12,"./audio/clock":13,"./audio/drums":14,"./audio/envelopes":15,"./audio/fx":16,"./audio/gibber_freesound":17,"./audio/oscillators":18,"./audio/postprocessing":19,"./audio/sampler":20,"./audio/seq":21,"./audio/synths":22,"./audio/theory":23,"gibberish-dsp":5}],9:[function(_dereq_,module,exports){
+},{"../external/freesound":7,"./audio/analysis":10,"./audio/arp":11,"./audio/audio_input":12,"./audio/bus":13,"./audio/clock":14,"./audio/drums":15,"./audio/envelopes":16,"./audio/fx":17,"./audio/gibber_freesound":18,"./audio/oscillators":19,"./audio/postprocessing":20,"./audio/sampler":21,"./audio/seq":22,"./audio/synths":23,"./audio/theory":24,"gibberish-dsp":6}],10:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -9694,7 +9938,7 @@ module.exports = function( Gibber ) {
   //module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Analysis }
   
 }
-},{"gibberish-dsp":5}],10:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],11:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   
 var theory = _dereq_('../../external/teoria.min'),
@@ -9721,7 +9965,6 @@ Arp = function(notation, beats, pattern, mult, scale) {
   		this.notation = _chord;
 		
   		if(typeof this.scale === 'undefined' || this.scale === null && typeof _chord === 'string') {
-        console.log( 'redoing notes...')
   			for(var i = 0; i < this.mult; i++) {
   				var tmp = [];
 			
@@ -9755,10 +9998,10 @@ Arp = function(notation, beats, pattern, mult, scale) {
   				arr = arr.concat(tmp);
   			}	
   		}			
-      this.notes = this.patterns[ this.pattern ]( arr )
+      this.notes = Gibber.construct( Gibber.Pattern, this.patterns[ this.pattern ]( arr ) )
       
       if( this.seqs[0] ) {
-        this.seqs[0].values = this.notes
+        this.seqs[0].values = [ this.notes ]
       }
   	},
 	
@@ -9769,7 +10012,15 @@ Arp = function(notation, beats, pattern, mult, scale) {
 		
   		this.chord(_chord, shouldReset); // also sets sequence
   	},
+    
+    shuffle: function() {
+      this.notes.shuffle()
+    },
 		
+    reset: function() {
+      this.notes.reset()
+    },
+    
 	  patterns : {
     	up : function(array) {
     		return array;
@@ -9795,10 +10046,10 @@ Arp = function(notation, beats, pattern, mult, scale) {
   that.seq = that
   
   // I have no idea why I need this
-  that.__shuffle = that.shuffle 
-  that.shuffle = function() {
-    that.__shuffle()
-  }
+  // that.__shuffle = that.shuffle 
+  // that.shuffle = function() {
+  //   that.__shuffle()
+  // }
   
   Gibber.createProxyMethods( that, [ 'shuffle','reset','chord' ] )
   
@@ -9837,7 +10088,7 @@ Arp = function(notation, beats, pattern, mult, scale) {
 return Arp
 
 }
-},{"../../external/teoria.min":7,"./seq":21}],11:[function(_dereq_,module,exports){
+},{"../../external/teoria.min":8,"./seq":22}],12:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) { 
   "use strict"
   
@@ -9892,7 +10143,7 @@ module.exports = function( Gibber ) {
   
   return Input
 }
-},{"gibberish-dsp":5}],12:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],13:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -10028,7 +10279,7 @@ module.exports = function( Gibber ) {
   
   return Busses
 }
-},{"gibberish-dsp":5}],13:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],14:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   
 "use strict"
@@ -10213,7 +10464,7 @@ var Clock = {
 return Clock
 
 }
-},{"gibberish-dsp":5}],14:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],15:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -10411,12 +10662,26 @@ module.exports = function( Gibber ) {
               seq = seq.split('').rnd()
             }
             
-            if( typeof props[1] !== 'undefined') { duration = props[1] }
+            if( typeof props[1] !== 'undefined') { 
+              duration = props[1]
+              if( !Array.isArray( duration ) ) duration = [ duration ]
+              
+              var durationsPattern = Gibber.construct( Gibber.Pattern, duration )
+        
+              if( duration.randomFlag ) {
+                durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+                for( var i = 0; i < duration.randomArgs.length; i+=2 ) {
+                  durationsPattern.repeat( duration.randomArgs[ i ], duration.randomArgs[ i + 1 ] )
+                }
+              }
+              
+              duration = durationsPattern
+            }
             
             obj.seq.add({
               key:'note',
-              values:seq,
-              durations:duration,
+              values: Gibber.construct( Gibber.Pattern, seq ),
+              durations: Gibber.construct( Gibber.Pattern, [duration] ),
               target:obj
             })
           }
@@ -10473,10 +10738,9 @@ module.exports = function( Gibber ) {
           var note = nt[ i ]
 
           if( typeof note === 'string' ) {
-        		for( var key in this.kit ) {
-        			if( note === this.kit[ key ].symbol ) {
-                console.log( p )
-        				this[ key ].sampler.note( p, this[key].amp );
+        		for( var key in obj.kit ) {
+        			if( note === obj.kit[ key ].symbol ) {
+        				obj[ key ].sampler.note( p, obj[key].amp );
                 //var p = p //this.pitch() 
                 // if( this[ key ].sampler.pitch !== p )
                   // this[ key ].sampler.pitch = p
@@ -10492,11 +10756,11 @@ module.exports = function( Gibber ) {
         }
       }else{
         if( typeof nt === 'string' ) {
-      		for( var key in this.kit ) {
-      			if( nt === this.kit[ key ].symbol ) {
+      		for( var key in obj.kit ) {
+      			if( nt === obj.kit[ key ].symbol ) {
               //console.log("PITCH", p )
-      				this[ key ].sampler.note( p, this[key].amp );
-              this[ key ].sampler.pitch = p
+      				obj[ key ].sampler.note( p, obj[key].amp );
+              obj[ key ].sampler.pitch = p
               //var p = this.pitch.value //this.pitch() 
               // if( this[ key ].sampler.pitch !== p )
               //   this[ key ].sampler.pitch = p
@@ -10508,7 +10772,7 @@ module.exports = function( Gibber ) {
               num = Math.abs( nt ),
               key = keys[ num % keys.length ], 
               drum = obj[ key ]
-              
+          
           drum.sampler.note( p, drum.sampler.amp )
           
           // if( drum.sampler.pitch !== p )
@@ -10619,20 +10883,31 @@ module.exports = function( Gibber ) {
             if( seq.indexOf('.rnd(') > -1) {// || seq.indexOf('.random(') > -1 ) {
               seq = seq.split( '.rnd' )[0]
               seq = seq.split('').rnd()
-            }else if( seq.indexOf('.random(') > -1 ) {
-              seq = seq.split( '.random' )[0]
-              seq = seq.split('').rnd()
             }
             
-            if( typeof props[1] !== 'undefined') { duration = props[1] }
+            if( typeof props[1] !== 'undefined') { 
+              duration = props[1]
+              if( !Array.isArray( duration ) ) duration = [ duration ]
+              
+              var durationsPattern = Gibber.construct( Gibber.Pattern, duration )
+        
+              if( duration.randomFlag ) {
+                durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+                for( var i = 0; i < duration.randomArgs.length; i+=2 ) {
+                  durationsPattern.repeat( duration.randomArgs[ i ], duration.randomArgs[ i + 1 ] )
+                }
+              }
+              
+              duration = durationsPattern
+            }
             
             obj.seq.add({
               key:'note',
-              values:seq,
-              durations:duration,
+              values: Gibber.construct( Gibber.Pattern, seq ),
+              durations: Gibber.construct( Gibber.Pattern, [duration] ),
               target:obj
             })
-          }  
+          } 
           
           break;
         case 'object':
@@ -10821,7 +11096,7 @@ module.exports = function( Gibber ) {
   return Percussion
   
 }
-},{"./clock":13,"gibberish-dsp":5}],15:[function(_dereq_,module,exports){
+},{"./clock":14,"gibberish-dsp":6}],16:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -10930,7 +11205,7 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"./clock":13,"gibberish-dsp":5}],16:[function(_dereq_,module,exports){
+},{"./clock":14,"gibberish-dsp":6}],17:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -11278,7 +11553,7 @@ module.exports = function( Gibber ) {
     }
   }
   
-  FX.Presets.StereoReverb = {
+  FX.Presets.StereoVerb = {
   	space : {
   		roomSize: .99,
   		damping: .23,
@@ -11307,7 +11582,7 @@ module.exports = function( Gibber ) {
 
   return FX  
 }
-},{"gibberish-dsp":5}],17:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],18:[function(_dereq_,module,exports){
 module.exports = function( freesound ) {
   freesound.apiKey = "4287s0onpqpp492n8snr27sp3o228nns".replace(/[a-zA-Z]/g, function(c) {
     return String.fromCharCode((c <= "Z" ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
@@ -11456,7 +11731,7 @@ module.exports = function( freesound ) {
 
   return Freesound
 }
-},{}],18:[function(_dereq_,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -11713,7 +11988,7 @@ module.exports = function( Gibber ) {
   
   return Oscillators
 }
-},{"gibberish-dsp":5}],19:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],20:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict";
   
@@ -11863,7 +12138,7 @@ module.exports = function( Gibber ) {
   return PostProcessing
 
 }
-},{"gibberish-dsp":5}],20:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],21:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) { 
   "use strict"
   
@@ -12149,45 +12424,13 @@ module.exports = function( Gibber ) {
   
   return Samplers
 }
-},{"./clock":13,"gibberish-dsp":5}],21:[function(_dereq_,module,exports){
+},{"./clock":14,"gibberish-dsp":6}],22:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   //"use strict"
   
   var Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart', 'priority' ]
-
-  var makeNoteFunction = function( notes, obj ) {
-    var _note = $.extend( [], notes ),
-        count = 0
-
-    return [function() {
-      var idx, freq
-    
-      if( typeof _note.pick === 'function' ) {
-        idx =  _note[ _note.pick() ] 
-      }else if( typeof _note[ count ] === 'function') {
-        idx = _note[ count ]()
-      }else{
-        idx = _note[ count++ ]
-      }
-      
-      if( typeof obj.scale.notes[ idx ] === 'number' ) {
-        freq = obj.scale.notes[ idx ]
-      }else{
-        try{
-          freq = obj.scale.notes[ idx ].fq()
-        }catch(e) {
-          console.error( "The frequency could not be obtained from the current scale. Did you specify an invalid mode or root note?")
-          obj.stop()
-        }
-      }          
-      //freq = typeof obj.scale.notes[ idx ] === 'number' ? obj.scale.notes[ idx ] : obj.scale.notes[ idx ].fq()			
-      if( count >= _note.length ) count = 0
-			
-      return freq
-    }]
-  }
   
   var makeChordFunction = function( notes, obj ) {
     var _note = $.extend( [], notes ),
@@ -12236,46 +12479,84 @@ module.exports = function( Gibber ) {
       if( typeof arg.scale === 'object' ) obj.scale = arg.scale
       if( typeof arg.offset === 'number' ) obj.offset = Gibber.Clock.time( arg.offset )
       
-      if( durationsType === 'array') {
-        obj.durations = arg.durations
-      }else if( durationsType !== 'undefined') {
-        obj.durations = [ arg.durations ]
-      }else{ }
+      // if( durationsType === 'object') {
+      //   obj.durations = arg.durations
+      // }else if( durationsType !== 'undefined') {
+      //   obj.durations = [ arg.durations ]
+      // }else{ }
+      obj.durations = arg.durations 
             
       obj.keysAndValues = {}
       obj.seqs = []
       obj.autofire = []
-      
-      for( var key in arg ) {
-        if( doNotSequence.indexOf( key ) === -1 ) {
-          var isArray = Array.isArray( arg[key] )// $.type( arg[ key ] )
-          
-          var _seq = {
-            key: key,
-            target: obj.target,
-            durations:obj.durations
+
+      if( obj.durations ) {
+        if( !Array.isArray( obj.durations) ) { obj.durations = [ obj.durations ] }
+        
+        var durationsPattern = Gibber.construct( Gibber.Pattern, obj.durations )
+        
+        if( obj.durations.randomFlag ) {
+          durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          for( var i = 0; i < obj.durations.randomArgs.length; i+=2 ) {
+            durationsPattern.repeat( obj.durations.randomArgs[ i ], obj.durations.randomArgs[ i + 1 ] )
           }
-          
-          if( isArray ) {
-            _seq.values = arg[ key ]
-          }else if( typeof arg[ key ] !== 'undefined' ) {
-            _seq.values = [ arg[ key ] ]
-          }
-                    
-          obj.seqs.push( _seq )
-          keyList.push( key )
         }
+      }
+      
+      for( var _key in arg ) {
+        !function() {
+          var key = _key
+          if( doNotSequence.indexOf( key ) === -1 ) {
+            var isArray = Array.isArray( arg[key] )// $.type( arg[ key ] )
+          
+            var _seq = {
+              key: key,
+              target: obj.target,
+              durations: durationsPattern,
+            }
+          
+            var valuesPattern
+            if( isArray ) {
+              valuesPattern = Gibber.construct( Gibber.Pattern, arg[ key ] )
+            }else if( typeof arg[ key ] !== 'undefined' ) {
+              valuesPattern = Gibber.construct( Gibber.Pattern, [ arg[ key ] ] )//[ arg[ key ] ]
+            }
+          
+            if( arg[ key ].randomFlag ) {
+              valuesPattern.filters.push( function() { return [ valuesPattern.values[ rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+              for( var i = 0; i < arg[ key ].randomArgs.length; i+=2 ) {
+                valuesPattern.repeat( arg[ key ].randomArgs[ i ], arg[ key ].randomArgs[ i + 1 ] )
+              }
+            }
+            
+            if( key === 'note' ) {
+              valuesPattern.filters.push( function() { 
+                var output = arguments[ 0 ][ 0 ]
+                if( output < Gibber.minNoteFrequency ) {
+                  output = obj.scale.notes[ output ]
+                }
+                
+                return [ output, arguments[0][1] ] 
+              })
+            }
+            
+            _seq.values = valuesPattern
+        
+            obj.seqs.push( _seq )
+            keyList.push( key )
+          }
+        }()
       }
       
       if( 'scale' in obj ) {
         var noteIndex = keyList.indexOf( 'note' ),
             chordIndex = keyList.indexOf( 'chord' )
             
-            //  var makeNoteFunction = function( notes, obj ) {
+        //var makeNoteFunction = function( notes, obj ) {
 
-        if( noteIndex > -1 ) {
-          obj.seqs[ noteIndex ].values = makeNoteFunction( obj.seqs[ noteIndex ].values, obj )
-        }
+        // if( noteIndex > -1 ) {
+        //   obj.seqs[ noteIndex ].values = makeNoteFunction( obj.seqs[ noteIndex ].values, obj )
+        // }
         
         if( chordIndex > -1 ) {
           var _chord = $.extend( [], obj.seqs[ chordIndex ] ),
@@ -12352,9 +12633,9 @@ module.exports = function( Gibber ) {
         Object.defineProperty( _seq, key, {
           get: function() { return _seq.seqs[ _i ].values },
           set: function(v) {
-            if( key === 'note' && _seq.scale ) {
-              v = makeNoteFunction( v, _seq )
-            }
+            // if( key === 'note' && _seq.scale ) {
+            //   v = makeNoteFunction( v, _seq )
+            // }
             _seq.seqs[ _i ].values = v  
           }
         })
@@ -12405,37 +12686,14 @@ module.exports = function( Gibber ) {
       return this
     },
     reset : function() {
-      if( Object.keys( this.save ).length !== 0 ) {
-        for( var key in this.save ) {
-          var val = this.save[ key ]
-          for( var i = 0; i < this.seqs.length; i++ ) {
-            if( this.seqs[ i ].key === key ) {
-              if( Array.isArray( val ) ) {
-                this.seqs[ i ].values = this.save[ key ].slice(0)
-              }else{
-                this.seqs[ i ].values = this.save[ key ]
-              }
-              break;
-            }
-          }
-        }
+      for( var i = 0; i < this.seqs.length; i++ ) {  
+        this.seqs[ i ].values[0].reset()
       }
     },
-    shuffle : function() { // original Gibberish.PolySeq.shuffle is deleted in constructor after being saved
-      if( Object.keys( this.save ).length === 0 ) {
-        for( var i = 0; i < this.seqs.length; i++ ) {
-          var val = this.seqs[ i ].values
-          if( Array.isArray( val ) ) {
-            this.save[ this.seqs[ i ].key ] = val.slice(0)
-          }else{
-            this.save[ this.seqs[ i ].key ] = val
-          }
-        }
+    shuffle : function() {
+      for( var i = 0; i < this.seqs.length; i++ ) {
+        this.seqs[ i ].values[0].shuffle()
       }
-      
-      var args = Array.prototype.slice.call( arguments, 0 )
-        
-      this.oldShuffle.apply( this, args )
     },
   })
   
@@ -12446,7 +12704,6 @@ module.exports = function( Gibber ) {
     args.root = args.root || 'c4'
     args.mode = args.mode || 'aeolian'
     
-    console.log( args )
     scale = Gibber.Theory.Scale( args.root, args.mode )
     
     delete args.root; delete args.mode
@@ -12460,7 +12717,7 @@ module.exports = function( Gibber ) {
   
   return Seqs 
 }
-},{"gibberish-dsp":5}],22:[function(_dereq_,module,exports){
+},{"gibberish-dsp":6}],23:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -12590,7 +12847,7 @@ module.exports = function( Gibber ) {
         obj.fx.ugen = obj
         
         if( name === 'Mono' ) {
-                  obj.note = function( _frequency, amp ) {
+            obj.note = function( _frequency, amp ) {
             if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
               
             if( amp !== 0 ) {
@@ -12897,7 +13154,7 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"./clock":13,"gibberish-dsp":5}],23:[function(_dereq_,module,exports){
+},{"./clock":14,"gibberish-dsp":6}],24:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
 
@@ -12922,8 +13179,8 @@ var Theory = {
   			return _chord;
   		},
 		
-  		create : function( __root ) {
-        var __root = typeof __root !== 'number' ? teoria.note( __root ).fq() : __root,
+  		create : function() {
+        var __root = typeof root !== 'number' ? teoria.note( root ).fq() : root,
             __mode = mode
         
   			this.notes.length = 0
@@ -12932,6 +13189,8 @@ var Theory = {
   				var scale = Gibber.Theory.Scales[ __mode ]( __root )
   				scale.create( __root )// this.degree.value )
   				this.notes = scale.notes
+  			}else{
+  			  console.log( "No scale for the mode " + mode + " exists." )
   			}
   		},
 		
@@ -12946,26 +13205,26 @@ var Theory = {
   		},
   	};
 	  
-  	var mode = _mode || "aeolian";
-  	Object.defineProperty( that, "mode", {
+  	var mode = _mode || 'aeolian';
+  	Object.defineProperty( that, 'mode', {
       configurable:true,
   		get: function() { return mode; },
   		set: function( val ) { 
         mode = val; 
-        that.create( _root ); 
+        that.create(); 
       }	
   	});
     
     var root = _root || 440;
-    Object.defineProperty(that, "root", {
+    Object.defineProperty( that, 'root', {
       get : function() { return root; },
       
-      set : function(val) { 
-        if(typeof val === "number") {
+      set : function( val ) { 
+        if( typeof val === 'number' ) {
           root = val;
-        }else if (typeof val === "string") {
+        }else if ( typeof val === 'string' ) {
           root = Theory.Teoria.note( val ).fq();
-        }else if (typeof val === 'object') {
+        }else if ( typeof val === 'object' ) {
           if( val.accidental ) {
             root = val.fq()
           }else{
@@ -12973,24 +13232,16 @@ var Theory = {
           }
         }
         
-        that.create(root); 
+        that.create() 
       }
     });
-    
-    // var degree = that.degree;
-    // Object.defineProperty(that, "degree", {
-    //   configurable:true,
-    //   get: function() { return degree; },
-    //   set: function(val) {
-    //     degree = val;
-    //     that.create( degree );
-    //   }  
-    // });
-	  
+
     // createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
-    
+    // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
+    //Gibber.defineSequencedProperty( that, 'root', 1 )
+    //Gibber.defineSequencedProperty( that, 'mode', 1 )    
     // Gibber.createProxyProperty( that, 'degree', true, false, null, false, 1 )    
     
     $.subscribe( '/gibber/clear', function() {
@@ -13010,7 +13261,7 @@ var Theory = {
       degree: 1,// ___degree || 1,
       ratios: _ratios || [ 1, 1.10, 1.25, 1.3333, 1.5, 1.666, 1.75 ],
 	
-      create : function(  _root ) {
+      create : function( _root ) {
         this.notes = [];
         
         var scaleRoot = typeof _root === 'number' ? _root : teoria.note( _root ).fq() ;
@@ -13045,24 +13296,8 @@ var Theory = {
     			_chord.push( this.notes[_notes[i] + _offset] );
     		}
     		return _chord;
-    	},	
-    }            
-
-    // var __degree = that.degree;
-    // Object.defineProperty(that, "degree", {
-    //       configurable:true,
-    //   get: function() { return __degree; },
-    //   set: function(val) {
-    //     __degree = val;
-    //     that.create();
-    //   }  
-    // });
-    
-    // var mode = _mode || "aeolian";
-    // Object.defineProperty( that, "mode", {
-    //   get: function() { return mode; },
-    //   set: function( val ) { mode = val; this.create(); }  
-    // });
+    	}
+    }
     
     that.create( _root );
       
@@ -13070,18 +13305,18 @@ var Theory = {
   },
   
   Scales : {
-    Major: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ])},
-    Ionian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ])},    
-    Dorian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 5/3, 9/5 ])},
-    Phrygian: function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 3/2, 8/5, 9/5 ])},
-    Lydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 45/32, 3/2, 5/3, 15/8 ])},
-    Mixolydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 8/5, 9/5 ])},
-    Minor: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ])},     
-    Aeolian : function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ])}, 
-    Locrian : function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 62/45, 8/5, 15/8 ])},
+    Major: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]) },
+    Ionian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]) },    
+    Dorian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 5/3, 9/5 ]) },
+    Phrygian: function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 3/2, 8/5, 9/5 ]) },
+    Lydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 45/32, 3/2, 5/3, 15/8 ]) },
+    Mixolydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 8/5, 9/5 ]) },
+    Minor: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]) },
+    Aeolian : function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]) },
+    Locrian : function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 62/45, 8/5, 15/8 ]) },
     MajorPentatonic : function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 3/2, 5/3 ] ) },
     MinorPentatonic : function( root ) { return Theory.CustomScale( root, [1, 6/5, 4/3, 3/2, 15/8] ) },
-    Chromatic: function( root ) { return Theory.CustomScale( root, [1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 15/8, 9/5 ])},
+    Chromatic: function( root ) { return Theory.CustomScale( root, [1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 15/8, 9/5 ]) },
   	// Scales contributed by Luke Taylor
   	// Half-Whole or Octatonic Scale
   	//http://en.wikipedia.org/wiki/Octatonic_scale
@@ -13193,7 +13428,7 @@ var Theory = {
 return Theory
 
 }
-},{"../../external/teoria.min":7}],24:[function(_dereq_,module,exports){
+},{"../../external/teoria.min":8}],25:[function(_dereq_,module,exports){
 !function() {
 
 var Gibber = _dereq_( 'gibber.core.lib' )
@@ -13203,6 +13438,6 @@ Gibber.Audio = _dereq_( './audio.js')( Gibber )
 module.exports = Gibber
 
 }()
-},{"./audio.js":8,"gibber.core.lib":2}]},{},[24])
-(24)
+},{"./audio.js":9,"gibber.core.lib":2}]},{},[25])
+(25)
 });

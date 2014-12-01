@@ -22,8 +22,8 @@ var Theory = {
   			return _chord;
   		},
 		
-  		create : function( __root ) {
-        var __root = typeof __root !== 'number' ? teoria.note( __root ).fq() : __root,
+  		create : function() {
+        var __root = typeof root !== 'number' ? teoria.note( root ).fq() : root,
             __mode = mode
         
   			this.notes.length = 0
@@ -32,6 +32,8 @@ var Theory = {
   				var scale = Gibber.Theory.Scales[ __mode ]( __root )
   				scale.create( __root )// this.degree.value )
   				this.notes = scale.notes
+  			}else{
+  			  console.log( "No scale for the mode " + mode + " exists." )
   			}
   		},
 		
@@ -46,26 +48,26 @@ var Theory = {
   		},
   	};
 	  
-  	var mode = _mode || "aeolian";
-  	Object.defineProperty( that, "mode", {
+  	var mode = _mode || 'aeolian';
+  	Object.defineProperty( that, 'mode', {
       configurable:true,
   		get: function() { return mode; },
   		set: function( val ) { 
         mode = val; 
-        that.create( _root ); 
+        that.create(); 
       }	
   	});
     
     var root = _root || 440;
-    Object.defineProperty(that, "root", {
+    Object.defineProperty( that, 'root', {
       get : function() { return root; },
       
-      set : function(val) { 
-        if(typeof val === "number") {
+      set : function( val ) { 
+        if( typeof val === 'number' ) {
           root = val;
-        }else if (typeof val === "string") {
+        }else if ( typeof val === 'string' ) {
           root = Theory.Teoria.note( val ).fq();
-        }else if (typeof val === 'object') {
+        }else if ( typeof val === 'object' ) {
           if( val.accidental ) {
             root = val.fq()
           }else{
@@ -73,24 +75,16 @@ var Theory = {
           }
         }
         
-        that.create(root); 
+        that.create() 
       }
     });
-    
-    // var degree = that.degree;
-    // Object.defineProperty(that, "degree", {
-    //   configurable:true,
-    //   get: function() { return degree; },
-    //   set: function(val) {
-    //     degree = val;
-    //     that.create( degree );
-    //   }  
-    // });
-	  
+
     // createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
-    
+    // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
+    //Gibber.defineSequencedProperty( that, 'root', 1 )
+    //Gibber.defineSequencedProperty( that, 'mode', 1 )    
     // Gibber.createProxyProperty( that, 'degree', true, false, null, false, 1 )    
     
     $.subscribe( '/gibber/clear', function() {
@@ -110,7 +104,7 @@ var Theory = {
       degree: 1,// ___degree || 1,
       ratios: _ratios || [ 1, 1.10, 1.25, 1.3333, 1.5, 1.666, 1.75 ],
 	
-      create : function(  _root ) {
+      create : function( _root ) {
         this.notes = [];
         
         var scaleRoot = typeof _root === 'number' ? _root : teoria.note( _root ).fq() ;
@@ -145,24 +139,8 @@ var Theory = {
     			_chord.push( this.notes[_notes[i] + _offset] );
     		}
     		return _chord;
-    	},	
-    }            
-
-    // var __degree = that.degree;
-    // Object.defineProperty(that, "degree", {
-    //       configurable:true,
-    //   get: function() { return __degree; },
-    //   set: function(val) {
-    //     __degree = val;
-    //     that.create();
-    //   }  
-    // });
-    
-    // var mode = _mode || "aeolian";
-    // Object.defineProperty( that, "mode", {
-    //   get: function() { return mode; },
-    //   set: function( val ) { mode = val; this.create(); }  
-    // });
+    	}
+    }
     
     that.create( _root );
       
@@ -170,18 +148,18 @@ var Theory = {
   },
   
   Scales : {
-    Major: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ])},
-    Ionian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ])},    
-    Dorian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 5/3, 9/5 ])},
-    Phrygian: function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 3/2, 8/5, 9/5 ])},
-    Lydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 45/32, 3/2, 5/3, 15/8 ])},
-    Mixolydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 8/5, 9/5 ])},
-    Minor: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ])},     
-    Aeolian : function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ])}, 
-    Locrian : function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 62/45, 8/5, 15/8 ])},
+    Major: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]) },
+    Ionian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8 ]) },    
+    Dorian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 5/3, 9/5 ]) },
+    Phrygian: function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 3/2, 8/5, 9/5 ]) },
+    Lydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 45/32, 3/2, 5/3, 15/8 ]) },
+    Mixolydian: function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 4/3, 3/2, 8/5, 9/5 ]) },
+    Minor: function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]) },
+    Aeolian : function( root ) { return Theory.CustomScale( root, [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5 ]) },
+    Locrian : function( root ) { return Theory.CustomScale( root, [1, 16/15, 6/5, 4/3, 62/45, 8/5, 15/8 ]) },
     MajorPentatonic : function( root ) { return Theory.CustomScale( root, [1, 9/8, 5/4, 3/2, 5/3 ] ) },
     MinorPentatonic : function( root ) { return Theory.CustomScale( root, [1, 6/5, 4/3, 3/2, 15/8] ) },
-    Chromatic: function( root ) { return Theory.CustomScale( root, [1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 15/8, 9/5 ])},
+    Chromatic: function( root ) { return Theory.CustomScale( root, [1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 15/8, 9/5 ]) },
   	// Scales contributed by Luke Taylor
   	// Half-Whole or Octatonic Scale
   	//http://en.wikipedia.org/wiki/Octatonic_scale

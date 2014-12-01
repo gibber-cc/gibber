@@ -24,7 +24,6 @@ Arp = function(notation, beats, pattern, mult, scale) {
   		this.notation = _chord;
 		
   		if(typeof this.scale === 'undefined' || this.scale === null && typeof _chord === 'string') {
-        console.log( 'redoing notes...')
   			for(var i = 0; i < this.mult; i++) {
   				var tmp = [];
 			
@@ -58,10 +57,10 @@ Arp = function(notation, beats, pattern, mult, scale) {
   				arr = arr.concat(tmp);
   			}	
   		}			
-      this.notes = this.patterns[ this.pattern ]( arr )
+      this.notes = Gibber.construct( Gibber.Pattern, this.patterns[ this.pattern ]( arr ) )
       
       if( this.seqs[0] ) {
-        this.seqs[0].values = this.notes
+        this.seqs[0].values = [ this.notes ]
       }
   	},
 	
@@ -72,7 +71,15 @@ Arp = function(notation, beats, pattern, mult, scale) {
 		
   		this.chord(_chord, shouldReset); // also sets sequence
   	},
+    
+    shuffle: function() {
+      this.notes.shuffle()
+    },
 		
+    reset: function() {
+      this.notes.reset()
+    },
+    
 	  patterns : {
     	up : function(array) {
     		return array;
@@ -98,10 +105,10 @@ Arp = function(notation, beats, pattern, mult, scale) {
   that.seq = that
   
   // I have no idea why I need this
-  that.__shuffle = that.shuffle 
-  that.shuffle = function() {
-    that.__shuffle()
-  }
+  // that.__shuffle = that.shuffle 
+  // that.shuffle = function() {
+  //   that.__shuffle()
+  // }
   
   Gibber.createProxyMethods( that, [ 'shuffle','reset','chord' ] )
   

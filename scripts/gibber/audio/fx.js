@@ -345,7 +345,7 @@ module.exports = function( Gibber ) {
     }
   }
   
-  FX.Presets.StereoReverb = {
+  FX.Presets.StereoVerb = {
   	space : {
   		roomSize: .99,
   		damping: .23,
