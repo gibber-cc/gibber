@@ -247,12 +247,12 @@ module.exports = function( Gibber ) {
       this.stop().disconnect()
     },
     applyScale : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {
-        var s = this.seqs[ i ]
-        if( s.key === 'note' || s.key === 'frequency' ) {
-          s.values = makeNoteFunction( s.values, this )
-        }
-      }
+      // for( var i = 0; i < this.seqs.length; i++ ) {
+      //   var s = this.seqs[ i ]
+      //   if( s.key === 'note' || s.key === 'frequency' ) {
+      //     s.values = makeNoteFunction( s.values, this )
+      //   }
+      // }
     },
     once : function() {
       this.repeat( 1 )
