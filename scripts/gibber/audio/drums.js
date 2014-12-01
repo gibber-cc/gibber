@@ -523,8 +523,8 @@ module.exports = function( Gibber ) {
           var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
           
           for( var i = 0; i < seqs.length; i++ ) {
-            !function() {
-              var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
+            !function( num ) {
+              var seq = seqs[ num ], duration, hasTime = false, idx = seq.indexOf(',')
 
               if( idx > -1 ) {
                 var _value = seq.substr( 0, idx ),
@@ -570,7 +570,7 @@ module.exports = function( Gibber ) {
               Object.defineProperties( obj.note, {
                 values: {
                   configurable:true,
-                  get: function() { return obj.seq.seqs[ seqNumber ].values[ 0 ] },
+                  get: function() { return obj.seq.seqs[ seqNumber ].values },
                   set: function( val ) {
                     var pattern = Gibber.construct( Gibber.Pattern, val )
     
@@ -595,7 +595,7 @@ module.exports = function( Gibber ) {
                   }
                 },
               })
-            }() 
+            }( i ) 
           }
           
           break;

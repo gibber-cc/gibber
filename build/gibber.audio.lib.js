@@ -548,7 +548,7 @@ var Gibber = {
         },
         durations: {
           configurable:true,
-          get: function() { return obj.seq.seqs[ seqNumber ].durations },
+          get: function() { return obj.seq.seqs[ seqNumber ].durations[ 0 ] },
           set: function( val ) {
             if( !Array.isArray( val ) ) {
               val = [ val ]
@@ -10633,102 +10633,7 @@ module.exports = function( Gibber ) {
 	
   	obj.connect();
     
-    Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )    
-    
-  	obj.pitch = 1;
-    
-    if( typeof props !== 'undefined') {
-      switch( $.type( props[0] ) ) {
-        case 'string':
-          var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
-          
-          for( var i = 0; i < seqs.length; i++ ) {
-            var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
-
-            if( idx > -1 ) {
-              var _value = seq.substr( 0, idx ),
-                  duration = seq.substr( idx + 1 )
-              
-              duration = eval(duration)
-              hasTime = true
-              seq = _value.trim().split('')
-            }else{
-              seq = seq.trim().split('')
-              duration = 1 / seq.length  
-            }
-            
-            if( seq.indexOf('.rnd(') > -1) {// || seq.indexOf('.random(') > -1 ) {
-              seq = seq.split( '.rnd' )[0]
-              seq = seq.split('').rnd()
-            }
-            
-            if( typeof props[1] !== 'undefined') { 
-              duration = props[1]
-              if( !Array.isArray( duration ) ) duration = [ duration ]
-              
-              var durationsPattern = Gibber.construct( Gibber.Pattern, duration )
-        
-              if( duration.randomFlag ) {
-                durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
-                for( var i = 0; i < duration.randomArgs.length; i+=2 ) {
-                  durationsPattern.repeat( duration.randomArgs[ i ], duration.randomArgs[ i + 1 ] )
-                }
-              }
-              
-              duration = durationsPattern
-            }
-            
-            obj.seq.add({
-              key:'note',
-              values: Gibber.construct( Gibber.Pattern, seq ),
-              durations: Gibber.construct( Gibber.Pattern, [duration] ),
-              target:obj
-            })
-          }
-
-          break;
-        case 'object':
-      		if( typeof props[0].note === 'string' ) props[0].note = props[0].note.split("")
-      		props[0].target = obj
-          props[0].durations = props[0].durations ? Gibber.Clock.Time( props[0].durations ) : Gibber.Clock.Time( 1 / props[0].note.length )
-          props[0].offset = props[0].offset ? Gibber.Clock.time( props[0].offset ) : 0
-      	  //obj.seq = Seq( props[0] );
-          
-          break;
-
-        case 'function': case 'array':
-          var length = props[0].length || props[0].values.length,
-              durations = typeof arguments[1] !== 'undefined' ? arguments[1] : Gibber.Clock.Time( 1 / length )
-          
-          if( typeof durations !== 'function' ) durations = Gibber.Clock.Time( durations )
-              
-          obj.seq.add({
-            key:'note',
-            values:[ props[0] ],
-            durations: durations,
-            target:obj
-          })
-          
-          obj.pattern = obj.seq.seqs[ obj.seq.seqs.length - 1 ].values[ 0 ]
-          
-          break;
-        default:
-          break;
-      }
-    }
-
-  	if( typeof props === "undefined" ) props = {};
-	
-  	if( props.pitch ) obj.pitch = props.pitch;
-	
-  	if( typeof props.snare !== "undefined" ) 	{ $.extend( obj.snare.sampler, props.snare ); $.extend( obj.snare, props.snare); }
-  	if( typeof props.kick !== "undefined" ) 	{ $.extend( obj.kick.sampler, props.kick ); $.extend( obj.kick, props.kick); }
-  	if( typeof props.hat !== "undefined" ) 	{ $.extend( obj.hat.sampler, props.hat ); $.extend( obj.hat, props.hat); }
-  	if( typeof props.openHat !== "undefined" ) { $.extend( obj.openHat.sampler, props.openHat ); $.extend( obj.openHat, props.openHat); }
- 	
-  	obj.amp   = isNaN(_amp) ? 1 : _amp;
-	
-  	if( obj.seq && obj.seq.tick ) { Gibberish.future( obj.seq.tick, 1 ) }
+    Gibber.createProxyProperties( obj, _mappingProperties[ 'Drums' ] )
     
     obj.note = function(nt) {
       // var p = typeof obj.pitch === 'function' ? obj.pitch() : obj.pitch
@@ -10780,6 +10685,131 @@ module.exports = function( Gibber ) {
         }
       }
   	}
+    
+  	obj.pitch = 1;
+    
+    if( typeof props !== 'undefined') {
+      switch( $.type( props[0] ) ) {
+        case 'string':
+          var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
+          
+          for( var i = 0; i < seqs.length; i++ ) {
+            var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
+
+            if( idx > -1 ) {
+              var _value = seq.substr( 0, idx ),
+                  duration = seq.substr( idx + 1 )
+              
+              duration = eval(duration)
+              hasTime = true
+              seq = _value.trim().split('')
+            }else{
+              seq = seq.trim().split('')
+              duration = 1 / seq.length  
+            }
+            
+            if( seq.indexOf('.rnd(') > -1) {// || seq.indexOf('.random(') > -1 ) {
+              seq = seq.split( '.rnd' )[0]
+              seq = seq.split('').rnd()
+            }
+            
+            if( typeof props[1] !== 'undefined') { 
+              duration = props[1]
+              if( !Array.isArray( duration ) ) duration = [ duration ]
+              
+              var durationsPattern = Gibber.construct( Gibber.Pattern, duration )
+        
+              if( duration.randomFlag ) {
+                durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+                for( var i = 0; i < duration.randomArgs.length; i+=2 ) {
+                  durationsPattern.repeat( duration.randomArgs[ i ], duration.randomArgs[ i + 1 ] )
+                }
+              }
+              
+              duration = durationsPattern
+            }
+            
+            obj.seq.add({
+              key:'note',
+              values: Gibber.construct( Gibber.Pattern, seq ),
+              durations: Gibber.construct( Gibber.Pattern, [duration] ),
+              target:obj
+            })
+            
+            var seqNumber = obj.seq.seqs.length - 1
+            Object.defineProperties( obj.note, {
+              values: {
+                configurable:true,
+                get: function() { return obj.seq.seqs[ seqNumber ].values },
+                set: function( val ) {
+                  var pattern = Gibber.construct( Gibber.Pattern, val )
+  
+                  if( !Array.isArray( pattern ) ) {
+                    pattern = [ pattern ]
+                  }
+                  // if( key === 'note' && obj.seq.scale ) {  
+                  //   v = makeNoteFunction( v, obj.seq )
+                  // }
+                  //console.log("NEW VALUES", v )
+                  obj.seq.seqs[ seqNumber ].values = pattern
+                }
+              },
+              durations: {
+                configurable:true,
+                get: function() { return obj.seq.seqs[ seqNumber ].durations },
+                set: function( val ) {
+                  if( !Array.isArray( val ) ) {
+                    val = [ val ]
+                  }
+                  obj.seq.seqs[ seqNumber ].durations = val   //.splice( 0, 10000, v )
+                }
+              },
+            })
+          }
+
+          break;
+        case 'object':
+      		if( typeof props[0].note === 'string' ) props[0].note = props[0].note.split("")
+      		props[0].target = obj
+          props[0].durations = props[0].durations ? Gibber.Clock.Time( props[0].durations ) : Gibber.Clock.Time( 1 / props[0].note.length )
+          props[0].offset = props[0].offset ? Gibber.Clock.time( props[0].offset ) : 0
+      	  //obj.seq = Seq( props[0] );
+          
+          break;
+
+        case 'function': case 'array':
+          var length = props[0].length || props[0].values.length,
+              durations = typeof arguments[1] !== 'undefined' ? arguments[1] : Gibber.Clock.Time( 1 / length )
+          
+          if( typeof durations !== 'function' ) durations = Gibber.Clock.Time( durations )
+              
+          obj.seq.add({
+            key:'note',
+            values:[ props[0] ],
+            durations: durations,
+            target:obj
+          })
+          
+          obj.pattern = obj.seq.seqs[ obj.seq.seqs.length - 1 ].values[ 0 ]
+          
+          break;
+        default:
+          break;
+      }
+    }
+
+  	if( typeof props === "undefined" ) props = {};
+	
+  	if( props.pitch ) obj.pitch = props.pitch;
+	
+  	if( typeof props.snare !== "undefined" ) 	{ $.extend( obj.snare.sampler, props.snare ); $.extend( obj.snare, props.snare); }
+  	if( typeof props.kick !== "undefined" ) 	{ $.extend( obj.kick.sampler, props.kick ); $.extend( obj.kick, props.kick); }
+  	if( typeof props.hat !== "undefined" ) 	{ $.extend( obj.hat.sampler, props.hat ); $.extend( obj.hat, props.hat); }
+  	if( typeof props.openHat !== "undefined" ) { $.extend( obj.openHat.sampler, props.openHat ); $.extend( obj.openHat, props.openHat); }
+ 	
+  	obj.amp   = isNaN(_amp) ? 1 : _amp;
+	
+  	if( obj.seq && obj.seq.tick ) { Gibberish.future( obj.seq.tick, 1 ) }
     
     obj.start = function() { obj.seq.start( true ) }
     obj.stop = function() { obj.seq.stop() }
@@ -10960,8 +10990,8 @@ module.exports = function( Gibber ) {
           var notes = props[0], _seqs = [], _durations = [], __durations = [], seqs = notes.split('|'), timeline = {}
           
           for( var i = 0; i < seqs.length; i++ ) {
-            !function() {
-              var seq = seqs[i], duration, hasTime = false, idx = seq.indexOf(',')
+            !function( num ) {
+              var seq = seqs[ num ], duration, hasTime = false, idx = seq.indexOf(',')
 
               if( idx > -1 ) {
                 var _value = seq.substr( 0, idx ),
@@ -11007,7 +11037,7 @@ module.exports = function( Gibber ) {
               Object.defineProperties( obj.note, {
                 values: {
                   configurable:true,
-                  get: function() { return obj.seq.seqs[ seqNumber ].values[ 0 ] },
+                  get: function() { return obj.seq.seqs[ seqNumber ].values },
                   set: function( val ) {
                     var pattern = Gibber.construct( Gibber.Pattern, val )
     
@@ -11032,7 +11062,7 @@ module.exports = function( Gibber ) {
                   }
                 },
               })
-            }() 
+            }( i ) 
           }
           
           break;
