@@ -1,0 +1,69 @@
+<div style="width:100%; color:#ccc; padding:.5em;">  
+  <form id='newPublicationForm'>
+    <table style='width:90%'>
+      <thead><tr><td></td><td></td></tr></thead>
+      <tbody>
+      <tr>
+        <td>
+          file name (required)&nbsp;&nbsp;  
+        </td>
+        <td>
+          <input style='border:0; margin-left:0;' id='new_publication_name' \>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          column # to publish (required)&nbsp;&nbsp;  
+        </td>
+        <td>
+          <select style='border:0; margin-left:0;' id='new_publication_column' \>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr><td>Allow giblet to appear in search results:</td>
+        <td><input type='checkbox' id='new_publication_permissions' checked></td></tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <!-- <tr><td>Publish giblet as instrument:</td>
+        <td><input type='checkbox' id='new_publication_instrument'></td></tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr><td></td><td>&nbsp;</td></tr> -->
+      <tr>
+        <td>
+          notes&nbsp;&nbsp;
+        </td>
+        <td>
+          <textarea style='width:100%; height:5em' id='new_publication_notes'></textarea>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>
+      <tr>
+        <td>
+          tags (comma separated)&nbsp;&nbsp;
+        </td>
+        <td>
+          <input style='border:0; margin-left:0;' id='new_publication_tags'>
+        </td>
+      </tr>
+      <tr><td></td><td>&nbsp;</td></tr>    
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+        <td>
+          <button style="margin-left:0; padding:1em;" onclick='Gibber.Environment.Account.publish(); return false;'>Publish</button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <p style="padding-top:2em">
+            Once a file is published, you can save changes you make by hitting Ctrl+S inside any editor that has the file open. You must be logged in to save revisions. A revision history is kept; you can access this by hitting the ? button at the top of a column displaying the file.
+          </p>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </form>  
+</div>

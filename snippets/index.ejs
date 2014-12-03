@@ -1,0 +1,148 @@
+<html>
+<head>
+  <% if( isInstrument === true ) { %>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <% } %>
+  
+  <link rel="stylesheet" href="../css/main2.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="../css/external/codemirror/codemirror.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="../css/external/codemirror/gibber.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <!-- <link rel="stylesheet" href="../css/external/codemirror/show-hint.css" type="text/css" media="screen" title="no title" charset="utf-8"> -->
+  <script src="../js/external/spinner.min.js" type="text/javascript" charset="utf-8"></script>
+  
+  <% if( loadFile !== null) { %>
+  <script type="text/javascript">
+    window.loadFile = <%- loadFile %>
+    window.isInstrument = <%- isInstrument %>
+    //if( window.isInstrument ) alert("INSTRUMENT")
+  </script>
+  <% } %>
+  
+  <script src="share.uncompressed.js"></script>
+  <script src="share-codemirror.js"></script>
+  
+</head>
+
+<body>
+
+<% if( isInstrument === "false" ) { %>
+
+<table role='presentation' border='0' id='layoutTable'>
+  <thead id='mainHeader'>
+    <tr>
+      <td id='header'>
+        <canvas></canvas>
+        <h1>gibber</h1>
+        <!-- <span class='addColumn'>add column :</span> -->
+        <ul>
+          <li><button id='browseButton'>browse</button></li>
+          <li><button id='publishButton'>publish</button></li>
+          <li><button id='chatButton'>chat / collaborate</button></li>
+          <li><button id='consoleButton'>console</button></li>
+          <li><button id='addCodeButton'>code</button></li>          
+          <li><button id='helpButton'>help</button></li>
+          <li><button id='forumButton'>forum / mailing list</button></li>          
+          <li><button id='creditsButton'>credits</button></li>
+          <li><a href="https://docs.google.com/forms/d/1rmgsV-lZ7Y7ylpYe3aw7HrQih2txY1C8M62eOq4bzk0/viewform" target="_blank"><button id='feedbackButton'>feedback</button></a></li>
+          <li><button id='preferencesButton'>preferences</button></li>          
+          <li><button id='welcomeButton'>welcome</button></li>
+        </ul>
+        <div id='opacity'></div>
+        <div class='login'><a href="#">please login</a></div>
+      </td>
+    </tr>
+  </thead>
+  
+  <tbody id='mainContent'>
+    <tr>
+      <td id='contentCell'>
+        <!-- have to wrap in div for scrolling on x-axis... freakin' html -->
+        <!-- <div id='content'></div>  -->
+      </td>
+    </tr>
+  </tbody>
+  
+  <tfoot>
+    <tr>
+      <td id='footer'>
+      </td>
+    </tr>
+  </tfoot>
+
+</table>
+<% } %>
+
+</body>
+<script>
+window.spin = new Spinner({ color:'#fff', lines: 17, length:20, width:4, radius:29, corners:0, rotate:0, trail:23, speed:.7, direction:1 })
+  .spin( document.getElementsByTagName('body')[0] );
+
+
+var headerSpan = document.createElement('span')
+headerSpan.setAttribute('style', "width:25em; position:absolute; margin:0;" )
+
+var number = document.createElement('span')
+number.innerHTML = 0
+number.style = 'display:inline'
+
+var txt = document.createElement('span')
+txt.innerHTML = "% of " //loaded; total size = "
+txt.style = 'display:inline'
+
+var size = document.createElement('span')
+size.innerHTML = " "
+size.style = 'display:inline'
+
+headerSpan.appendChild( number )
+headerSpan.appendChild( txt )
+headerSpan.appendChild( size )
+
+var loaded = document.createElement('span')
+loaded.innerHTML = ' loaded.'
+
+headerSpan.appendChild( loaded )
+
+spin.el.appendChild( headerSpan )
+
+var oReq = new XMLHttpRequest();
+
+oReq.addEventListener("progress", updateProgress, false);
+oReq.addEventListener("load", transferComplete, false);
+oReq.addEventListener("error", transferFailed, false);
+
+oReq.open( 'GET', '../js/index.js', true );
+oReq.send()
+
+function updateProgress (oEvent) {
+  if (oEvent.lengthComputable) {
+    var percentComplete = oEvent.loaded / oEvent.total;
+    number.innerHTML = Math.round( percentComplete * 100 )
+    
+    var sizeString = new String( "" + oEvent.total )
+    sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
+    size.innerHTML = sizeString
+  } else {
+    // Unable to compute progress information since the total size is unknown
+  }
+}
+
+function transferComplete( evt ) {
+  var script = document.createElement('script')
+  script.innerHTML = evt.srcElement.responseText
+  document.querySelector( 'head' ).appendChild( script )
+  headerSpan.style.cssText += 'display:none;'
+  spin.stop()
+}
+
+function transferFailed(evt) {
+  alert("An error occurred while loading Gibber's main javascript file. Please refresh the page to try again.");
+}
+</script>
+
+<!-- <script src="../js/index.js" type="text/javascript" charset="utf-8"></script> -->
+
+
+</html>

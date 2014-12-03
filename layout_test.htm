@@ -1,0 +1,82 @@
+<html>
+<!-- this is just a test file to get the layout correct, it is not used by gibber -->
+<head>
+  <script src="js/external/zepto.min.js" type="text/javascript" charset="utf-8"></script>
+
+  <style>
+  body { margin: 0; }
+  
+  .login{ position:absolute; right: 1em; top:.5em;}
+  
+  table { border-spacing:0; }
+  
+  thead { margin:0; position:fixed; width:100%; height:2em; overflow:hidden; }
+  th { padding: 0;}
+  h1 {
+    margin:0;
+    display:block;
+  }
+  
+  tbody { 
+    vertical-align:top;
+    display:block;
+    margin-top:2em;
+    overflow-y:hidden;
+  }
+  
+  tfoot { margin:0; position:fixed; width:100%; border-top:1px solid #666; bottom:0; height:2em; background:blue;}
+  
+  #contentCell { padding:0; }
+  
+  .column {
+    width:800px; 
+    border:1px solid:#f00;
+    overflow-y:auto;
+  }
+  </style>
+</head>
+
+<body>
+
+<table role='presentation' border='0' id='layoutTable'>
+  
+  <thead>
+    <tr>
+      <th id='header'>
+        <!-- <canvas></canvas> -->
+        <h1>gibber</h1>
+        <a href="#" class='login'>please login</a>
+      </th>
+    </tr>
+  </thead>
+  
+  <tbody>
+    <tr>
+      <td id='contentCell'>
+        <div class='column col0' style='background:green;'>
+          <div style='display:block; width:5em; background:yellow; height:5000px'></div>
+        </div>    
+        <div class='column col1' style='background:red;'></div>
+      </td>
+    </tr>
+  </tbody>
+  
+  <tfoot>
+    <tr>
+      <td id='footer'>footer</td>
+    </tr>
+  </tfoot>
+
+</table>
+
+</body>
+
+<script>
+  $('tfoot').width($(window).width())
+  $('.column').height( $(window).height() - $('thead').height() - $('tfoot').height() )
+  $('.col1').css({ top:$('thead').height(), left: $('.col0').width(), position:'absolute' })
+  //$('tbody').css({ top: $('#header').height() })
+  //$( '#contentCell' ).css({ width: '3000px' })
+  //$( '#contentCell' ).attr( 'width', '3000')
+</script>
+</html>

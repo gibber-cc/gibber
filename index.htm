@@ -1,134 +1,67 @@
-<!DOCTYPE html>
 <html>
-	<head>
-		<title>Gibber</title>
-		<link rel="stylesheet" href="css/main.css">
-		<link rel="stylesheet" href="js/codemirror/codemirror.css">
-		<link rel="stylesheet" href="css/elegant.css">
-		<link rel="stylesheet" href="css/thecharlie.css">
-		<link rel="stylesheet" href="css/dcmegamenu.css">
-	</head>
-	<body>
-		<div class="demo-container">
-			<ul id="mega-menu-1" class="mega-menu">
-				<li class="nolink" style="padding:0">
-					<span class="floaty">GIBBER</span>
-					<span class="num" id="beat1">&nbsp;</span>
-					<span class="num" id="beat2">&nbsp;</span>
-					<span class="num" id="beat3">&nbsp;</span>
-					<span class="num" id="beat4">&nbsp;</span>															
-				</li>
-				<li><a>Load</a>
-					<ul id="fileList"></ul>	
-				</li>
-				<li><a>Save</a>
-					<ul>
-						<label for="filename" >filename :</label>
-						<input id="filename">
-						<button onclick='Gibber.Environment.saveWithName( $("#filename").val() )'>Save</button>
-					</ul>
-				</li>
-				<!-- <li><a>Demos</a>
-					<ul><a><li>SubItem 11</li></a>
-						<a><li>SubItem 21</li></a>
-					</ul>
-				</li>
-				<li><a>Tutorials</a>
-					<ul><a><li>SubItem 11</li></a>
-						<a><li>SubItem 21</li></a>
-					</ul>
-				</li> -->
-				<li><a>Join Session</a>
-					<ul><li>
-						<label for="username">username :</label>
-						<input id="username"><br>
-						<label for="ip">ip address :</label>
-						<input id="ip">
-						<button onclick='
-							G.log("ATTEMPTING TO CONNECT TO MASTER...");
-							Gibber.Environment.slave($("#username").val(), $("#ip").val());
-							$(Gibber.Environment.joinWindow).remove();
-							Gibber.Environment.isJoinOpen = false;'
-						>Join</button>
-					</li>
-					</ul>
-				</li>
-				<li><a>Help</a>
-					<ul>
-						<li><a id="aboutMenuItem">About</a></li>
-						<li><a href="#" onclick="Gibber.Environment.toggleSidebar(); Gibber.Environment.displayTOC();">Reference</a>
-						<li><a id="tutorialMenuItem">Intro Tutorial</a></li>
-						<li><a id="quickstartMenuItem">Quickstart</a></li>
-						<li><a id="keyCommandMenuItem">Key Commands</a></li>
-						<li><a href="http:://www.charlie-roberts.com/gibber/info">Website</a></li>
-						<li><a href="http://charlie-roberts.com/gibber/info/?forum=gibber">Forum</a></li>
-					</ul>
-				</li>
-				<!--<li><a onclick="CodeMirror.keyMap.gibber['Ctrl-Enter'](window.editor);">Execute</a></li>-->
-				
-			</ul>
-		</div>
-		
-		<div id="about" style="display:none">
-			<p>
-			<a href="http://www.charlie-roberts.com/gibber/info">Gibber</a> is a JavaScript live coding environment with a relatively easy syntax. Gibber has only been tested in Chrome. The syntax is layered on top of the excellent <a href="https://github.com/jussi-kalliokoski/audiolib.js">audioLib.js library</a> by <a href="https://github.com/jussi-kalliokoski">Jussi Kalliokoski</a>. Gibber is open-source and <a href="https://github.com/charlieroberts/Gibber">available for download</a>.</p>
-			<p>Other projects/code that contribute to Gibber:</p>
-			<ul>
-				<li><a href="http://codemirror.net">CodeMirror</a></li>
-				<li><a href="http://jquery.com">jQuery</a></li>
-				<li><a href="http://saebekassebil.github.com/teoria/docs/teoria.html">teoria.js</a></li>
-				<li><a href="http://www.designchemical.com/lab/jquery-mega-drop-down-menu-plugin/options/">Design Chemical Mega Menu</a></li>
-				<li><a href="http://www.ericmmartin.com/projects/simplemodal/">SimpleModal jQuery plugin</a></li>
-				<li><a href="http://nodejs.org">Node.js</a></li>
-			</ul>
-			<p><a href="http://toplap.org">Learn more about live coding at Toplap.org</a></p>
-			<p>Some live coding environments that were particularly inspiring to this project:</p>
-			<ul>
-				<li><a href="http://www.ixi-audio.net/ixilang/">ixi lang</a></li>
-				<li><a href="http://www.sketchpatch.net/livecodelab/index.html">Livecodelab</a></li>
-				<li><a href="http://chuck.cs.princeton.edu/">ChucK</a></li>
-			</ul>
-			</div>
-		</div>
-		
-		<div id="keyCommands" style="display:none">
-			<ul style="list-style:none">
-				<li><pre>Ctrl-Return </pre> executes selected code. If no code is selected current line of the cursor is run.</li>
-				<li><pre>Ctrl-Shift-Return</pre> executes code at the start of the next measure. </li>
-				<li><pre>Ctrl-Shift-Alt/Option-Return</pre> executes code at the start of the next beat.</li>										
-				<li><pre>Ctrl .</pre> toggles the audio on and off</li>
-				<li><pre>Ctrl ` (backtick)</pre> clears all audio generators, use this to start over without refreshing the page and losing your code</li>
-				<li><pre>Ctrl +- (Cmd +- on OS X) </pre>change font size up and down.</li>
-			</ul>
-		</div>
-		
-		
-		<div id="quickstart" style="display:none">
-			<ul class="startlist">
-				<li>Click on a line of code.</li>
-				<li>Hit Ctrl-return to execute the selected line.</li>
-				<li>You can also highlight multiple lines to be executed at once. Most of the tutorial files that come with Gibber are designed to be run one line at a time.</li>
-				<li> Shift-ctrl-return executes code at the start of the next measure; this is useful to ensure the timing of arpeggios, drum beats, etc. line up correctly.
-				</li><li> To kill current oscillators / fx in memory, hit Cntrl-` (backtick).</li>
-				<li> Under Options, load up different files to learn how things work.</li>
-				<li> Check out <a href="http://www.charlie-roberts.com/gibber/info">the documentation</a> and visit <a href="http://charlie-roberts.com/gibber/info/?forum=gibber">the forum</a> to ask questions!</li>
-			</ul>
-		</div>		
-		<div style="width:100%">
-			<textarea id="code" name="code">
-			</textarea>
-			<div id="sidebar">
-				<input style="right:0" id="docsSearchInput" value=""></input><button id="searchButton">Search</button>
-				<button id="tocButton">TOC</button>
-				<button id="closeSidebarButton">X</button>
-				<div id="docs"></div>
-			</div>
-		</div>
-		<div id="resizeButton" style="display:block; width:10px; height:10px;">&#9660;</div>
-		<div id="console">
-			<span class="consoleprompt" style="margin-left:.5em">>&nbsp;<span class="consoletext"></span></span>
-		</div>
-		
-	</body>
-	<script data-main="js/main.js" src="js/require-jquery.js"></script>	
+
+<head>
+  <script src="js/external/script.min.js" type="text/javascript" charset="utf-8"></script>
+
+  <link rel="stylesheet" href="css/main2.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="css/external/codemirror/codemirror.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="css/external/codemirror/gibber.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="css/external/codemirror/show-hint.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  
+</head>
+
+<body>
+
+<table role='presentation' border='0' id='layoutTable'>
+  
+  <thead id='mainHeader'>
+    <tr>
+      <td id='header'>
+        <canvas></canvas>
+        <h1>gibber</h1>
+        <!-- <span class='addColumn'>add column :</span> -->
+        <ul>
+          <li><button id='browseButton' title='browse examples and user-submitted giblets'>browse</button></li>
+          <li><button id='publishButton' title='publish a giblet'>publish</button></li>
+          <li><button id='chatButton' title='chat and collaborate with other gibberers'>chat / collaborate</button></li>
+          <li><button id='consoleButton' title='view errors and log messages'>console</button></li>
+          <li><button id='addCodeButton' title='create a new code column'>code</button></li>          
+          <li><button id='helpButton' title='display help'>help</button></li>
+          <li><button id='creditsButton' title='show credits'>credits</button></li>
+          <li><button id='forumButton' title='show discussion forum'>forum</button></li>          
+        </ul>
+        <div id='opacity'></div>
+        <div class='login'><a href="#">please login</a></div>
+      </td>
+    </tr>
+  </thead>
+  
+  <tbody id='mainContent'>
+    <tr>
+      <td id='contentCell'>
+        loading
+        <!-- have to wrap in div for scrolling on x-axis... freakin' html -->
+        <!-- <div id='content'></div>  -->
+      </td>
+    </tr>
+  </tbody>
+  
+  <tfoot>
+    <tr>
+      <td id='footer'>
+      </td>
+    </tr>
+  </tfoot>
+
+</table>
+
+</body>
+
+<script>
+  
+  $script.path( 'js/' )
+  $script( 'main' )
+  
+</script>
+
 </html>
