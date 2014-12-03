@@ -31959,7 +31959,14 @@ var Gibber = {
           var returnValue = property
           
           if( typeof v !== 'undefined' ) { 
-            obj[ propertyName ] = v
+            //obj[ propertyName ] = v
+            //property.value = v
+            if( property.oldSetter ) {
+              property.oldSetter.call( obj, v )
+            }else{
+              obj[ propertyName ] = v
+            }  
+            
             returnValue = obj
           }
           
@@ -32708,19 +32715,19 @@ module.exports = function( Gibber ) {
         
         mapping.remove = function() {
           console.log("MAPPING REMOVE")
-          this.bus.disconnect()
-          
-          if( this.follow ) {
-            this.follow.count--
-            if( this.follow.count === 0) {
-              delete from.object.track
-              this.follow.remove()
-            }
-          }
-          
-          Gibber.Environment.Notation.remove( mapping )
-          
-          delete target.object[ target.Name ].mapping
+          // this.bus.disconnect()
+          // 
+          // if( this.follow ) {
+          //   this.follow.count--
+          //   if( this.follow.count === 0) {
+          //     delete from.object.track
+          //     this.follow.remove()
+          //   }
+          // }
+          // 
+          // Gibber.Environment.Notation.remove( mapping )
+          // 
+          // delete target.object[ target.Name ].mapping
         }
         return mapping
       }
