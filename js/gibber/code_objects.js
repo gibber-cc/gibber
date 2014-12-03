@@ -153,6 +153,7 @@ module.exports = function( Gibber, Notation ) {
           })()
         }
         
+        /*
         if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
         } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
@@ -188,7 +189,7 @@ module.exports = function( Gibber, Notation ) {
               }
             })()
           }
-        }
+        }*/
       }
     }
   }

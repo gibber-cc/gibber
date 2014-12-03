@@ -264,11 +264,11 @@ var GE = {
             Gibber.Clock.codeToExecute.push({ code:src, pos:{ 'start':start, 'end':end }, 'cm':cm })
           }
               
-          // if( Gibber.scriptCallbacks.length > 0 && !shouldDelay ) {
-          //   for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
-          //     Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
-          //   }
-          // }
+          if( Gibber.scriptCallbacks.length > 0 && !shouldDelay ) {
+            for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+              Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+            }
+          }
         }
       },
 

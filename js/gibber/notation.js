@@ -14,6 +14,7 @@ module.exports = function( Gibber, Environment) {
     enabled: {},
     
     on: function() {
+      console.log( "NOTATIONS ON" )
       for( var i = 0; i < arguments.length; i++ ) {
         var name = arguments[ i ]
         
@@ -46,15 +47,18 @@ module.exports = function( Gibber, Environment) {
     
     add: function( obj ) {
       this.notations.push( obj )
+      console.log( this.notations, this, obj, GEN === Gibber.Environment.Notation )
       if( !this.isRunning ) {
         this.init()
       }
     },
     remove: function( obj ) {
-      this.notations.splice( this.notations.indexOf( obj ), 1 )
+      console.log("CALLING REMOVE")
+      //this.notations.splice( this.notations.indexOf( obj ), 1 )
     },
     init: function() {
       var func = function() {
+        //  console.log(" RUNNING NOTATION UPDATE ", GEN.notations )
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {
           var notation = GEN.notations[ i ]
