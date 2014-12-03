@@ -22191,7 +22191,6 @@ Gibberish.Line = function(start, end, time, loops) {
       this.time = time
       
       incr = (end - out) / time
-      console.log( "RETRIG INCREMENT", incr )
     },
     
     getPhase: function() { return phase },
@@ -22203,7 +22202,7 @@ Gibberish.Line = function(start, end, time, loops) {
 	    incr = (end - start) / time,
       out
   
-  console.log("INCREMENT", incr, end, start, time )
+  //console.log("INCREMENT", incr, end, start, time )
   
 	this.callback = function(start, end, time, loops) {
 		out = phase < time ? start + ( phase++ * incr) : end;
@@ -28114,15 +28113,13 @@ module.exports = function( Gibber ) {
   return Busses
 }
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js":[function(require,module,exports){
-module.exports = function( Gibber ) {
+!function() {
   
-"use strict"
-
 var times = [],
-    $ = Gibber.dollar,//require('zepto-browserify').Zepto,
-    curves = Gibber.outputCurves,
-    LINEAR = curves.LINEAR,
-    LOGARITHMIC = curves.LOGARITHMIC, 
+    $ = null,
+    curves = null,
+    LINEAR = null,
+    LOGARITHMIC = null,
     Gibberish = require( 'gibberish-dsp' )
 
 var Clock = {
@@ -28260,7 +28257,6 @@ var Clock = {
   time : function(v) {
     var timeInSamples, beat;
     
-
     if( v < Clock.maxMeasures ) {
       timeInSamples = Clock.beats( v * Clock.signature.lower )
     }else{
@@ -28295,9 +28291,20 @@ var Clock = {
   }
 }
 
-return Clock
+module.exports = function( Gibber ) {
+  
+  "use strict"
+
+  $ = Gibber.dollar,//require('zepto-browserify').Zepto,
+  curves = Gibber.outputCurves,
+  LINEAR = curves.LINEAR,
+  LOGARITHMIC = curves.LOGARITHMIC
+
+  return Clock
 
 }
+
+}()
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
@@ -29073,7 +29080,8 @@ module.exports = function( Gibber ) {
             obj
         
         if( typeof args[0] !== 'object' ) {
-          obj = new Gibberish[ type ]( args[0], args[1], Clock.time( args[2] ), args[3] )
+          // console.log( args[0], args[1], args[2], Gibber.Clock.time( args[2] ) )
+          obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }
@@ -32635,7 +32643,9 @@ module.exports = function( Gibber ) {
         return mapping
       },
       audioOut : function( target, from ) {
+        console.log("NOTATION > AUDIO OUT 1")
         if( typeof target.object[ target.Name ].mapping === 'undefined') {
+          console.log("NOTATION > AUDIO OUT 2 ")
           var mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, 0, 1, 0 )
           
           if( typeof from.object.track !== 'undefined' && from.object.track.input === from.object.properties[ from.propertyName ] ) {
@@ -32658,9 +32668,9 @@ module.exports = function( Gibber ) {
           mapping.input = mapping.follow
           mapping.bus = new Gibber.Audio.Core.Bus2({ amp:0 }).connect()
           mapping.connect( mapping.bus )
-        
+          
           mapping.replace = function( replacementObject, key, Key  ) {
-            // _console.log( key, replacementObject )
+            console.log( "REPLACE", key, replacementObject )
             
             // what if new mapping isn't audio type?
             if ( replacementObject[ Key ].timescale === from.timescale ) {
@@ -32692,6 +32702,7 @@ module.exports = function( Gibber ) {
         Gibber.Environment.Notation.add( mapping )
         
         mapping.remove = function() {
+          console.log("MAPPING REMOVE")
           this.bus.disconnect()
           
           if( this.follow ) {
