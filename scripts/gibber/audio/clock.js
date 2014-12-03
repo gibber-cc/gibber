@@ -144,12 +144,12 @@ var Clock = {
   time : function(v) {
     var timeInSamples, beat;
     
-    if( v < this.maxMeasures ) {
+
+    if( v < Clock.maxMeasures ) {
       timeInSamples = Clock.beats( v * Clock.signature.lower )
     }else{
       timeInSamples = v
     }
-        
     return timeInSamples
   },
   

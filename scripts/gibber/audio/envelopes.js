@@ -4,7 +4,7 @@ module.exports = function( Gibber ) {
   var Envelopes = {},
       Gibberish = require( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require('./clock')( Gibber ),
+      Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
@@ -77,7 +77,6 @@ module.exports = function( Gibber ) {
         var args = Array.prototype.slice.call(arguments, 0),
             obj
         
-        //obj = Gibber.construct( Gibberish[ type ], obj )
         if( typeof args[0] !== 'object' ) {
           obj = new Gibberish[ type ]( args[0], args[1], Clock.time( args[2] ), args[3] )
         }else{
