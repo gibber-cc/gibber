@@ -1,17 +1,3 @@
-/*
-a = Synth({
-  attack:44100,
-  decay: 44100
-})
-
-b = Seq({
-  note: ['bb4','eb5','gb3'].rnd(),
-  durations:[ 1/4, 1/8, 1 ].rnd(),
-  pan: Rndf(-1,1),
-  target:a
-})
-*/
-
 module.exports = function( Gibber, Notation ) {
   var codeObjects = [ 'Sampler', 'Model' ],
       notes = [ 'c','db','d','eb','e','f','gb','g','ab','a','bb','b' ],
@@ -86,18 +72,21 @@ module.exports = function( Gibber, Notation ) {
   // text objects and mappings
   //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
   Gibber.Environment.Notation.features[ 'global' ] = function( obj, cm, pos, start, end, src, evalStart ) {
+    console.log( obj )
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
       
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
-      if( right.callee ) {
+      if( right.callee ) {        
         var constructorName = right.callee.name,
             className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
         
+        console.log( className, constructorName, newObjectName )
         var mark = cm.markText( start, end, { 'className': className } );
         
         if( !newObject.marks ) {
           newObject.marks = []
+          newObject.locations = {}
           
           newObject.clearMarks = function() {
             for( var i = 0; i < this.marks.length; i++ ) {        
@@ -115,6 +104,82 @@ module.exports = function( Gibber, Notation ) {
         
         newObject.marks.push( mark )
         
+        var object = right.callee,
+            prevObject = right
+            
+        while( typeof object !== 'undefined' ) {
+          if( object.property ) {
+            if( object.property.name === 'seq' ) {
+              
+              for( var i = 0; i < prevObject.arguments.length; i++ ) {
+                !function() {
+                  var values = prevObject.arguments[i].elements,
+                      valuesOrDurations = i === 0 ? 'values' : 'durations';
+                  
+                  newObject.locations[ object.object.property.name + valuesOrDurations ] = []
+                  
+                  // if( !values ) {
+                  //   if( prop.value.callee ) { // if it is an array with a random or weight method attached..
+                  //     if( prop.value.callee.object )
+                  //       values = prop.value.callee.object.elements; // use the array that is calling the method
+                  //   }
+                  // } 
+                  if( values ) {
+                    for( var jj = 0; jj < values.length; jj++ ) {
+                      ( function() {
+                        var value = values[ jj ],
+                         		__name = newObjectName + '_' + object.object.property.name + '_' + valuesOrDurations + '_' + jj + '_sequence',
+                            index = jj,
+          									start, end;
+
+                        start = {
+                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                          ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
+                        }
+                        end = {
+                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                          ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
+                        }
+                
+                        start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
+                        end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
+                    
+                        var mark = cm.markText( start, end, { className:__name });
+                        newObject.marks.push( mark )
+                        newObject.locations[ object.object.property.name + valuesOrDurations ].push( __name )
+                      })()
+                    }
+                  }
+                  var seq = newObject
+                  
+                  if( seq[ object.object.property.name ] && seq[ object.object.property.name ][ valuesOrDurations ].filters ) {
+                    var _name_ = object.object.property.name, lastChose = {}
+                    
+                    seq[ _name_ ][ valuesOrDurations ].filters.push( function() {
+                      if( seq.locations[ _name_ + valuesOrDurations ] ) {
+                        var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
+	
+                        if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+                        
+                        $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+  
+                        setTimeout( function() {
+                          $( __name ).css({ 
+                            backgroundColor: 'rgba(0,0,0,0)',
+                          });
+                        }, 100 )
+                      }
+                      return arguments[0]
+                    })
+                  }
+                }()
+              }
+            }
+          }
+          
+          prevObject = object
+          object = object.object || object.callee
+        }
         // for( var i = evalStart + 1; i <= evalStart + ( end.line - start.line ); i++ ) {
         //           mark = cm.addLineClass( i, 'wrap', className )
         //           newObject.marks.push( mark )
@@ -152,11 +217,10 @@ module.exports = function( Gibber, Notation ) {
             Gibber.createProxyProperty( newObject.text, key, false, false, property )
           })()
         }
-        
-        
+
         if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
-        } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
+        } /*else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
           for( var ii = 0; ii < right.arguments.length; ii++ ) {
             ( function() {
               var arg = right.arguments[ ii ]
@@ -189,7 +253,7 @@ module.exports = function( Gibber, Notation ) {
               }
             })()
           }
-        }
+        }*/
       }
     }
   }
@@ -378,7 +442,6 @@ module.exports = function( Gibber, Notation ) {
                 }
                 
                 var lastChose = {};
-                console.log("SEQ NAME", name, seq[ name ] )
                 
                 if( seq[ name ] && seq[ name ].filters ) {
                   var _name_ = name
