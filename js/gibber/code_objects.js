@@ -153,7 +153,7 @@ module.exports = function( Gibber, Notation ) {
           })()
         }
         
-        /*
+        
         if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
         } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
@@ -189,7 +189,7 @@ module.exports = function( Gibber, Notation ) {
               }
             })()
           }
-        }*/
+        }
       }
     }
   }
@@ -249,7 +249,8 @@ module.exports = function( Gibber, Notation ) {
     var props = seq.tree.expression.right.arguments[0].properties,
         targetName = typeof seq.target !== 'undefined' ? seq.target.text.split(' ')[0] : 'undefined',
         target = window[ targetName ]
-
+    
+    console.log( "MAKING SEQUENCE NOTATION" )
     if( props ) {
       for( var ii = 0; ii < right.arguments.length; ii++ ) {
         seq.locations = {}
@@ -375,27 +376,51 @@ module.exports = function( Gibber, Notation ) {
                   seq.marks.push( mark )
                   seq.locations[ name ].push( __name )
                 }
+                
+                var lastChose = {};
+                console.log("SEQ NAME", name, seq[ name ] )
+                
+                if( seq[ name ] && seq[ name ].filters ) {
+                  var _name_ = name
+                  seq[ _name_ ].filters.push( function() { 
+                    if( seq.locations[ _name_ ] ) {
+                      var __name = '.' + seq.locations[ _name_ ][ arguments[0][2] ];
+		
+                      if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+    
+                      $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+    
+                      setTimeout( function() {
+                        $( __name ).css({ 
+                          backgroundColor: 'rgba(0,0,0,0)',
+                        });
+                      }, 100 )
+                    }
+                    return arguments[0]
+                  })
+                }
               }
             })()
           }
           
-          var lastChose = {};
-          
-          seq.chose = function( key, index ) { 
-            if( seq.locations[ key ] ) {
-              var __name = '.' + seq.locations[ key ][ index ];
-					
-              if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
-          
-              $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
-          
-              setTimeout( function() {
-                $( __name ).css({ 
-                  backgroundColor: 'rgba(0,0,0,0)',
-                });
-              }, 100 )
-            }
-          }
+          // var lastChose = {};
+          // 
+          // seq.chose = function( key, index ) {
+          //   console.log( "SEQ.CHOSE", key, index ) 
+          //   if( seq.locations[ key ] ) {
+          //     var __name = '.' + seq.locations[ key ][ index ];
+          //           
+          //     if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
+          // 
+          //     $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+          // 
+          //     setTimeout( function() {
+          //       $( __name ).css({ 
+          //         backgroundColor: 'rgba(0,0,0,0)',
+          //       });
+          //     }, 100 )
+          //   }
+          // }
         }
       }
     }

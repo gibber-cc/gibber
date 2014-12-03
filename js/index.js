@@ -1388,7 +1388,7 @@ module.exports = function( Gibber, Notation ) {
           })()
         }
         
-        /*
+        
         if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
         } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
@@ -1424,7 +1424,7 @@ module.exports = function( Gibber, Notation ) {
               }
             })()
           }
-        }*/
+        }
       }
     }
   }
@@ -1484,7 +1484,8 @@ module.exports = function( Gibber, Notation ) {
     var props = seq.tree.expression.right.arguments[0].properties,
         targetName = typeof seq.target !== 'undefined' ? seq.target.text.split(' ')[0] : 'undefined',
         target = window[ targetName ]
-
+    
+    console.log( "MAKING SEQUENCE NOTATION" )
     if( props ) {
       for( var ii = 0; ii < right.arguments.length; ii++ ) {
         seq.locations = {}
@@ -1610,27 +1611,51 @@ module.exports = function( Gibber, Notation ) {
                   seq.marks.push( mark )
                   seq.locations[ name ].push( __name )
                 }
+                
+                var lastChose = {};
+                console.log("SEQ NAME", name, seq[ name ] )
+                
+                if( seq[ name ] && seq[ name ].filters ) {
+                  var _name_ = name
+                  seq[ _name_ ].filters.push( function() { 
+                    if( seq.locations[ _name_ ] ) {
+                      var __name = '.' + seq.locations[ _name_ ][ arguments[0][2] ];
+		
+                      if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+    
+                      $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+    
+                      setTimeout( function() {
+                        $( __name ).css({ 
+                          backgroundColor: 'rgba(0,0,0,0)',
+                        });
+                      }, 100 )
+                    }
+                    return arguments[0]
+                  })
+                }
               }
             })()
           }
           
-          var lastChose = {};
-          
-          seq.chose = function( key, index ) { 
-            if( seq.locations[ key ] ) {
-              var __name = '.' + seq.locations[ key ][ index ];
-					
-              if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
-          
-              $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
-          
-              setTimeout( function() {
-                $( __name ).css({ 
-                  backgroundColor: 'rgba(0,0,0,0)',
-                });
-              }, 100 )
-            }
-          }
+          // var lastChose = {};
+          // 
+          // seq.chose = function( key, index ) {
+          //   console.log( "SEQ.CHOSE", key, index ) 
+          //   if( seq.locations[ key ] ) {
+          //     var __name = '.' + seq.locations[ key ][ index ];
+          //           
+          //     if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
+          // 
+          //     $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+          // 
+          //     setTimeout( function() {
+          //       $( __name ).css({ 
+          //         backgroundColor: 'rgba(0,0,0,0)',
+          //       });
+          //     }, 100 )
+          //   }
+          // }
         }
       }
     }
@@ -3767,7 +3792,6 @@ module.exports = function( Gibber, Environment) {
     enabled: {},
     
     on: function() {
-      console.log( "NOTATIONS ON" )
       for( var i = 0; i < arguments.length; i++ ) {
         var name = arguments[ i ]
         
@@ -3800,14 +3824,12 @@ module.exports = function( Gibber, Environment) {
     
     add: function( obj ) {
       this.notations.push( obj )
-      console.log( this.notations, this, obj, GEN === Gibber.Environment.Notation )
       if( !this.isRunning ) {
         this.init()
       }
     },
     remove: function( obj ) {
-      console.log("CALLING REMOVE")
-      //this.notations.splice( this.notations.indexOf( obj ), 1 )
+      this.notations.splice( this.notations.indexOf( obj ), 1 )
     },
     init: function() {
       var func = function() {
@@ -30404,7 +30426,10 @@ module.exports = function( Gibber ) {
         var durationsPattern = Gibber.construct( Gibber.Pattern, obj.durations )
         
         if( obj.durations.randomFlag ) {
-          durationsPattern.filters.push( function() { return [ durationsPattern.values[ Gibber.Utilities.rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          durationsPattern.filters.push( function() { 
+            var idx = Gibber.Utilities.rndi(0, durationsPattern.values.length - 1)
+            return [ durationsPattern.values[ idx ], 1, idx ] 
+          })
           for( var i = 0; i < obj.durations.randomArgs.length; i+=2 ) {
             durationsPattern.repeat( obj.durations.randomArgs[ i ], obj.durations.randomArgs[ i + 1 ] )
           }
@@ -30431,7 +30456,10 @@ module.exports = function( Gibber ) {
             }
           
             if( arg[ key ].randomFlag ) {
-              valuesPattern.filters.push( function() { return [ valuesPattern.values[ Gibber.Utilities.rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+              valuesPattern.filters.push( function() {
+                var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
+                return [ valuesPattern.values[ idx ], 1, idx ] 
+              })
               for( var i = 0; i < arg[ key ].randomArgs.length; i+=2 ) {
                 valuesPattern.repeat( arg[ key ].randomArgs[ i ], arg[ key ].randomArgs[ i + 1 ] )
               }
@@ -30441,15 +30469,20 @@ module.exports = function( Gibber ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
                 if( output < Gibber.minNoteFrequency ) {
-                  output = obj.scale.notes[ output ]
+                  if( obj.scale ) {
+                    output = obj.scale.notes[ output ]
+                  }else{
+                    output = Gibber.scale.notes[ output ]
+                  }
                 }
                 
-                return [ output, arguments[0][1] ] 
+                return [ output, arguments[0][1], arguments[0][2] ] 
               })
             }
             
             _seq.values = valuesPattern
-        
+            
+            console.log( "SEQ", key, valuesPattern )
             obj.seqs.push( _seq )
             keyList.push( key )
           }
@@ -30550,7 +30583,7 @@ module.exports = function( Gibber ) {
       })(seq)
     }
     
-    var _durations = null
+    var _durations = durationsPattern
     Object.defineProperty( seq, 'durations', {
       get: function() { return _durations },
       set: function(v) {
@@ -31847,7 +31880,10 @@ var Gibber = {
       
       var valuesPattern = args.values[0]
       if( v.randomFlag ) {
-        valuesPattern.filters.push( function() { return [ valuesPattern.values[ Gibber.Utilities.rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+        valuesPattern.filters.push( function() {
+          var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
+          return [ valuesPattern.values[ idx ], 1, idx ] 
+        })
         for( var i = 0; i < v.randomArgs.length; i+=2 ) {
           valuesPattern.repeat( v.randomArgs[ i ], v.randomArgs[ i + 1 ] )
         }
@@ -31856,7 +31892,10 @@ var Gibber = {
       if( d !== null ) {
         var durationsPattern = args.durations[0]
         if( d.randomFlag ) {
-          durationsPattern.filters.push( function() { return [ durationsPattern.values[ Gibber.Utilities.rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          durationsPattern.filters.push( function() { 
+            var idx = Gibber.Utilities.rndi(0, durationsPattern.values.length - 1)
+            return [ durationsPattern.values[ idx ], 1, idx ] 
+          })
           for( var i = 0; i < d.randomArgs.length; i+=2 ) {
             durationsPattern.repeat( d.randomArgs[ i ], d.randomArgs[ i + 1 ] )
           }
@@ -32655,9 +32694,7 @@ module.exports = function( Gibber ) {
         return mapping
       },
       audioOut : function( target, from ) {
-        console.log("NOTATION > AUDIO OUT 1")
         if( typeof target.object[ target.Name ].mapping === 'undefined') {
-          console.log("NOTATION > AUDIO OUT 2 ")
           var mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, 0, 1, 0 )
           
           if( typeof from.object.track !== 'undefined' && from.object.track.input === from.object.properties[ from.propertyName ] ) {
@@ -32681,9 +32718,7 @@ module.exports = function( Gibber ) {
           mapping.bus = new Gibber.Audio.Core.Bus2({ amp:0 }).connect()
           mapping.connect( mapping.bus )
           
-          mapping.replace = function( replacementObject, key, Key  ) {
-            console.log( "REPLACE", key, replacementObject )
-            
+          mapping.replace = function( replacementObject, key, Key  ) {            
             // what if new mapping isn't audio type?
             if ( replacementObject[ Key ].timescale === from.timescale ) {
               var idx = mapping.follow.input[ from.Name ].targets.indexOf( target )
@@ -32714,20 +32749,19 @@ module.exports = function( Gibber ) {
         Gibber.Environment.Notation.add( mapping )
         
         mapping.remove = function() {
-          console.log("MAPPING REMOVE")
-          // this.bus.disconnect()
-          // 
-          // if( this.follow ) {
-          //   this.follow.count--
-          //   if( this.follow.count === 0) {
-          //     delete from.object.track
-          //     this.follow.remove()
-          //   }
-          // }
-          // 
-          // Gibber.Environment.Notation.remove( mapping )
-          // 
-          // delete target.object[ target.Name ].mapping
+          this.bus.disconnect()
+          
+          if( this.follow ) {
+            this.follow.count--
+            if( this.follow.count === 0) {
+              delete from.object.track
+              this.follow.remove()
+            }
+          }
+          
+          Gibber.Environment.Notation.remove( mapping )
+          
+          delete target.object[ target.Name ].mapping
         }
         return mapping
       }
@@ -32759,8 +32793,8 @@ var PatternProto = {
     }
     return l
   },
-  runFilters : function( val ) {
-    var args = [ val, 1 ] // 1 is phaseModifier
+  runFilters : function( val, idx ) {
+    var args = [ val, 1, idx ] // 1 is phaseModifier
 
     for( var i = 0; i < this.filters.length; i++ ) {
       args = this.filters[ i ]( args )
@@ -32780,7 +32814,7 @@ var Pattern = function() {
     var len = fnc.getLength(),
         idx = Math.floor( fnc.start + (fnc.phase % len) ),
         val = fnc.values[ Math.floor( idx % fnc.values.length ) ],
-        args = fnc.runFilters( val )
+        args = fnc.runFilters( val, idx )
     
     fnc.phase += fnc.stepSize * args[ 1 ]
     val = args[ 0 ]
@@ -32859,7 +32893,7 @@ var Pattern = function() {
       
       var repeating = false, repeatValue = null
       var filter = function( args ) {
-        var value = args[ 0 ], phaseModifier = args[ 1 ], output = [ value, phaseModifier ]
+        var value = args[ 0 ], phaseModifier = args[ 1 ], output = args//output = [ value, phaseModifier ]
         
         //console.log( args, counts )
         if( repeating === false && counts[ value ] ) {
