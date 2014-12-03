@@ -22191,12 +22191,19 @@ Gibberish.Line = function(start, end, time, loops) {
       this.time = time
       
       incr = (end - out) / time
-    }
+      console.log( "RETRIG INCREMENT", incr )
+    },
+    
+    getPhase: function() { return phase },
+    getIncr: function() { return incr },
+    getOut: function() { return out }
 	};
   
 	var phase = 0,
 	    incr = (end - start) / time,
       out
+  
+  console.log("INCREMENT", incr, end, start, time )
   
 	this.callback = function(start, end, time, loops) {
 		out = phase < time ? start + ( phase++ * incr) : end;
@@ -26483,7 +26490,7 @@ Gibberish.PolySeq = function() {
               if( that.chose ) that.chose( 'durations', idx )
             }else{
               var next = typeof seq.durations === 'function' ? seq.durations() : seq.durations;
-                            
+              
               newNextTime = typeof next === 'function' ? next() : next;
             }
         
@@ -28253,12 +28260,12 @@ var Clock = {
   time : function(v) {
     var timeInSamples, beat;
     
-    if( v < this.maxMeasures ) {
+
+    if( v < Clock.maxMeasures ) {
       timeInSamples = Clock.beats( v * Clock.signature.lower )
     }else{
       timeInSamples = v
     }
-        
     return timeInSamples
   },
   
@@ -28298,7 +28305,7 @@ module.exports = function( Gibber ) {
   var Percussion = { Presets:{} }, 
       Gibberish = require( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require('./clock')( Gibber ),
+      Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC, 
@@ -28985,14 +28992,14 @@ module.exports = function( Gibber ) {
   return Percussion
   
 }
-},{"./clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js":[function(require,module,exports){
+},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Envelopes = {},
       Gibberish = require( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require('./clock')( Gibber ),
+      Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
@@ -29065,7 +29072,6 @@ module.exports = function( Gibber ) {
         var args = Array.prototype.slice.call(arguments, 0),
             obj
         
-        //obj = Gibber.construct( Gibberish[ type ], obj )
         if( typeof args[0] !== 'object' ) {
           obj = new Gibberish[ type ]( args[0], args[1], Clock.time( args[2] ), args[3] )
         }else{
@@ -29094,7 +29100,7 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"./clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js":[function(require,module,exports){
+},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -30385,7 +30391,7 @@ module.exports = function( Gibber ) {
         var durationsPattern = Gibber.construct( Gibber.Pattern, obj.durations )
         
         if( obj.durations.randomFlag ) {
-          durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          durationsPattern.filters.push( function() { return [ durationsPattern.values[ Gibber.Utilities.rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
           for( var i = 0; i < obj.durations.randomArgs.length; i+=2 ) {
             durationsPattern.repeat( obj.durations.randomArgs[ i ], obj.durations.randomArgs[ i + 1 ] )
           }
@@ -30412,7 +30418,7 @@ module.exports = function( Gibber ) {
             }
           
             if( arg[ key ].randomFlag ) {
-              valuesPattern.filters.push( function() { return [ valuesPattern.values[ rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+              valuesPattern.filters.push( function() { return [ valuesPattern.values[ Gibber.Utilities.rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
               for( var i = 0; i < arg[ key ].randomArgs.length; i+=2 ) {
                 valuesPattern.repeat( arg[ key ].randomArgs[ i ], arg[ key ].randomArgs[ i + 1 ] )
               }
@@ -30736,7 +30742,7 @@ module.exports = function( Gibber ) {
         obj.fx.ugen = obj
         
         if( name === 'Mono' ) {
-            obj.note = function( _frequency, amp ) {
+          obj.note = function( _frequency, amp ) {
             if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
               
             if( amp !== 0 ) {
@@ -31828,7 +31834,7 @@ var Gibber = {
       
       var valuesPattern = args.values[0]
       if( v.randomFlag ) {
-        valuesPattern.filters.push( function() { return [ valuesPattern.values[ rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+        valuesPattern.filters.push( function() { return [ valuesPattern.values[ Gibber.Utilities.rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
         for( var i = 0; i < v.randomArgs.length; i+=2 ) {
           valuesPattern.repeat( v.randomArgs[ i ], v.randomArgs[ i + 1 ] )
         }
@@ -31837,7 +31843,7 @@ var Gibber = {
       if( d !== null ) {
         var durationsPattern = args.durations[0]
         if( d.randomFlag ) {
-          durationsPattern.filters.push( function() { return [ durationsPattern.values[ rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          durationsPattern.filters.push( function() { return [ durationsPattern.values[ Gibber.Utilities.rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
           for( var i = 0; i < d.randomArgs.length; i+=2 ) {
             durationsPattern.repeat( d.randomArgs[ i ], d.randomArgs[ i + 1 ] )
           }
