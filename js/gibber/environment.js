@@ -1,1158 +1,693 @@
-define(['gibber/gibber', 'gibber/default_scripts', 'codemirror/codemirror', 'gibber/graphics', 'gibber/notation','gibber/tutorials', "js/codemirror/util/loadmode.js", "js/codemirror/util/overlay.js", 'jquery.simplemodal', 'node/socket.io.min', 'megamenu/jquery.hoverIntent.minified', 'megamenu/jquery.dcmegamenu.1.3.3.min', 'gibber/interface' ], function(_Gibber, defaults, CodeMirror, _graphics, _notation) {
+module.exports = function( Gibber ) {
 
-  _Gibber.Interface = _Interface;
-  _Gibber.Interface.init( _Gibber );
+// "use strict" TODO: no strict because of eval for user code. wrap
+// im function object instead?
+
+var MT = require( 'coreh-mousetrap' )(),
+    $  = require( './dollar' ),
+    codeObjects = require( './code_objects' )
+    
+var GE = {
+  // REMEMBER TO CHECK WELCOME.INIT()
+  SERVER_URL : 'http://' + window.location.host,
+  CodeMirror:   require( 'codemirror' ),
+  CodeMirrorJS: require( 'codemirror/mode/javascript/javascript' ),
+  CodeMirrorC:  require( 'codemirror/mode/clike/clike' ),  
+  Layout:       require( './layout' )( Gibber ),
+  Account:      require( './account' )( Gibber ),
+  Console:      require( './console' )( Gibber ),
+  Mousetrap:    MT,
+  Keys:         require( './keys' )( Gibber, MT ),
+  Keymap:       require( './keymaps' )( Gibber ),
+  Browser:      require( './browser' )( Gibber ),
+  Preferences:  require( './preferences' )( Gibber ),  
+  Theme:        require( './theme' )( Gibber ),
+  Esprima:      require( 'esprima' ),
+  //Mouse:        require( './mouse' ), // pass Gibber later
+  Docs:         require( './docs' )( Gibber ),
+  Chat:         require( './chat' )( Gibber ),
+  Share:        require( './share' )( Gibber ),
+  Notation:     require( './notation' ),
   
-  window.Graphics = _graphics;
-    Storage.prototype.setObject = function(key, value) {
-        this.setItem(key, JSON.stringify(value));
+  init : function() { 
+    GE.Keymap.init()
+    
+    $( '#layoutTable' ).attr( 'height', $( window ).height() )
+    $( '#contentCell' ).width( $( window ).width() )
+    
+    Gibber.proxy( window )
+    
+    if( !Gibber.isInstrument ) {
+      GE.Storage.init() // load user preferences from localStorage before doing anything
+            
+      GE.Account.init() // must be before layout init, which opens browser and loads userfiles
+      
+      GE.Layout.init( GE )
+      window.Layout = GE.Layout
+      window.Column = GE.Layout.Column
+      
+      window.load = Gibber.import
+      window.Graphics = Gibber.Graphics
+      window.Color = Gibber.Graphics.Color
+
+      // the window.module global is deprecated and will be removed at some point!
+      // I don't trust using it now that Gibber has moved to browserify
+      module = window.module = Gibber.import
+            
+      GE.Console.init()
+      Gibber.log = GE.Console.log
+      
+      GE.Welcome.init()
+      GE.Theme.init()
+      GE.Share.init()
+      
+      GE.Menu.init()
+      GE.Layout.createBoundariesForInitialLayout()
+      
+      GE.Metronome.init()
+      GE.Metronome.on()
+      Gibber.Clock.addMetronome( GE.Metronome )
+      
+      GE.Notation = GE.Notation( Gibber, GE )
+      
+      codeObjects( Gibber, GE.Notation )
+      
+      //GE.Mouse = GE.Mouse( Gibber )
+      //window.Mouse = Gibber.Mouse
+      
+      window.Keys = GE.Keys
+      
+      // keymaps handles this when it occurs within codemirror instances
+      Gibber.Environment.Keys.bind( 'ctrl+.', function() { Gibber.clear() } )  
+      
+      // attach canvases to table row instead of body
+      Gibber.Graphics.defaultContainer = '#mainContent'
+      
+      //window.spin.stop()
     }
+  },
+  selectCurrentBlock: function( editor ) { // thanks to graham wakefield
+      var pos = editor.getCursor();
+      var startline = pos.line;
+      var endline = pos.line;
+      
+      while ( startline > 0 && editor.getLine( startline ) !== "" ) {
+        startline--;
+      }
+      while( endline < editor.lineCount() && editor.getLine( endline ) !== "" ) {
+        endline++;
+      }
+      
+      var pos1 = {
+          line: startline,
+          ch: 0
+      }
+      var pos2 = {
+          line: endline,
+          ch: 0
+      }
+      var str = editor.getRange( pos1, pos2 )
 
-    Storage.prototype.getObject = function(key) {
-        var value = this.getItem(key);
-        return value && JSON.parse(value);
-    }
+      return {
+          start: pos1,
+          end: pos2,
+          text: str
+      }
+  },
+  
+  Storage : {
+    values : null,
+    init : function() {
+      Storage.prototype.setObject = function( key, value ) { this.setItem( key, JSON.stringify( value ) ); }
+      Storage.prototype.getObject = function( key ) { var value = this.getItem( key ); return value && JSON.parse( value ); }
+      
+      this.values = localStorage.getObject( "gibber2" )
 
-    _Gibber.log = function(val) {
-        $(".consoletext").text(val);
-        console.log(val);
-    }
-    var Environment = {
-        autocompleteLayer: null,
-        removeFile: function(fileName) {
-            var tmp = localStorage.getObject('scripts');
-            if (typeof tmp[fileName] === 'undefined') {
-                G.log("File " + fileName + " does not exist so I won't bother removing it. Huh?");
-                return;
-            }
-            delete tmp[fileName];
-            localStorage.setObject('scripts', tmp);
-            this.createFileList();
-        },
-        save: function(code) {
-            var scripts;
-            if (typeof localStorage.scripts === "undefined") {
-                scripts = {};
-            } else {
-                scripts = localStorage.getObject("scripts");
-            }
-            var name = window.prompt("Enter name for file");
-            scripts[name] = code;
-            localStorage.setObject("scripts", scripts);
-            Gibber.Environment.createFileList(name);
-        },
-        startOSC: function() {
-            Gibber.Environment.OSC = io.connect('http://127.0.0.1:8080/');
-            //Gibber.Environment.OSC.on( 'OSC', function(msg) { console.log(msg); } );
-            return Gibber.Environment.OSC;
-        },
-        slave: function(name, ip) {
-            $("#info").html("");
+      if ( ! this.values ) {
+        this.values = {
+          showWelcomeMessage: true,
+          showSampleCodeInNewEditors: true,
+          defaultLanguageForEditors: 'javascript',
+        }
+        this.save()
+      }
+      
+    },
+    
+    save : function() {
+      localStorage.setObject( "gibber2", this.values );
+    },
+  },
 
-            console.log("Name " + name + " : ip " + ip);
-            Gibber.Environment.slaveSocket = io.connect('http://' + ip + ':8080/'); // has to match port node.js is running on
-            Gibber.Environment.slaveSocket.on('connect', function() {
-                G.log("CONNECTED TO MASTER AS " + name);
-                Gibber.Environment.slaveSocket.emit('name', {
-                    "name": name
-                });
-            });
-            Gibber.Environment.slaveSocket.on('chat', function(msg) {
-                var p = $("<p>");
-                $(p).css("padding", "0px 10px");
-                $(p).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                
-                $("#info").append(p);
-                $("#info").scrollTop($("#info").height());
-            });
-        },
-        republicish: function(userName) {
-            G.log("STARTING REPUBLICISH");
-            $("#sidebar").html("");
-            
-            Gibber.Environment.toggleSidebar();
-            window.editor.refresh();
+  Help : {
+    open : function() {
+      this.col = GE.Layout.addColumn({ header:'Help' })
+      this.getIndex()
+    },
+    getIndex : function() {
+      $( '#docs' ).empty()
+      $.ajax({
+        url: GE.SERVER_URL + "/help",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var help = $( data )
+        GE.Help.col.bodyElement.append( help )
+        GE.Layout.setColumnBodyHeight( GE.Help.col )
+      }) 
+    }, 
+  },
+  Credits : {
+    open : function() {
+      this.col = GE.Layout.addColumn({ header:'Credits' })      
+      this.getIndex()
+    },
+    getIndex : function() {
+      $( '#docs' ).empty()
+      $.ajax({
+        url: GE.SERVER_URL + "/credits",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var credits = $( data )
+        GE.Credits.col.bodyElement.append( credits )
+        GE.Layout.setColumnBodyHeight( GE.Credits.col )
+      }) 
+    }, 
+  },
+	
+	getSelectionCodeColumn : function( cm, findBlock ) {
+		var pos = cm.getCursor(), 
+				text = null,
+			  column = GE.Layout.fullScreenColumn === null ? GE.Layout.columns[ GE.Layout.focusedColumn ] : GE.Layout.__fullScreenColumn__
+		
+    if( column.mode.indexOf('glsl') > -1 ) { // glsl always executes entire block
+      var lastLine = cm.getLine( cm.lineCount() - 1 )
+      pos ={ start:{ line:0, ch:0 }, end: { line:cm.lineCount() - 1, ch:lastLine.length - 1 } }
+      text = column.value
+    }else{
+  		if( !findBlock ) {
+  			text = cm.getDoc().getSelection()
 
-            G.E = G.Environment;
-            G.E.republicish = {
-                name: userName,
-                users: [],
-                addUser: function(userName) {
-                    if (this.users.indexOf(userName) === -1) {
-                        this.users.push(userName);
-                    }
-                },
-                removeUser: function(userName) {
-                    var idx = this.users.indexOf(userName);
-                    if (idx !== -1) {
-                        this.users.splice(idx, 1);
-                    }
-                },
-                codeCount: 0,
-            };
-            G.E.R = G.E.republicish;
-
-            G.E.R.addUser(G.E.R.name);
-
-            if (!G.E.socket) {
-                G.E.socket = io.connect('http://localhost:8080/');
-            }
-
-            G.E.socket.on('connect', function() {
-                G.E.socket.emit('joinRepublic', G.E.R.name);
-            });
-
-            G.E.socket.on('userList', function(msg) {
-                for (var i = 0; i < msg.users.length; i++) {
-                    G.E.R.addUser(msg.users[i]);
-                }
-                G.E.socket.emit('addUser', G.E.R.name);
-            });
-
-            G.E.socket.on('addUser', function(msg) {
-                G.E.R.addUser(msg);
-            });
-            G.E.socket.on('removeUser', function(msg) {
-                G.E.R.removeUser(msg);
-            });
-
-            G.E.socket.on('chat', function(msg) {
-                //Gibber.Environment.sessionHistory.push( { user: msg.user, text:msg.text, time: new Date() - Gibber.Environment.sessionStart} );
-                var p = $("<p>");
-                $(p)
-                    .css("padding", "0px 10px");
-                $(p)
-                    .html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                $("#sidebar")
-                    .append(p);
-                $("#sidebar")
-                    .scrollTop($("#sidebar")[0].scrollHeight);
-            });
-
-            G.E.socket.on('claimCode', function(msg) {
-                $("#block" + msg.codeblockNumber)
-                    .off('mouseup');
-                $("#block" + msg.codeblockNumber)
-                    .text(msg.name);
-                $("#block" + msg.codeblockNumber)
-                    .css({
-                    backgroundColor: "#a00"
-                });
-            });
-            G.E.R.code = function(msg) {
-                var d = $("<div>");
-
-                $(d).css({
-                    'padding': '0px 10px',
-                    marginBottom: '10px',
-                });
-                $(d).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.code);
-
-                var b = $("<button>paste code in editor</button>");
-                $(b).on('mouseup', function() {
-                    var code = window.editor.getValue();
-                    window.editor.setValue(code + "\n" + msg.code);
-                });
-                $(d).append(b);
-
-                /*
-				var b2 = $("<button>claim code</button>");
-                b2.codeblockNumber = msg.codeblockNumber;
-                (function() {
-                    var num = msg.codeblockNumber;
-                    $(b2)
-                        .on('mouseup', function() {
-                        //console.log("CLAIMING CODE????", b2.codeblockNumber, G.E.R.name);
-                        G.E.socket.emit('claimCode', {
-                            name: G.E.R.name,
-                            codeNumber: num
-                        });
-                    });
-                    $(b2)
-                        .attr("id", "block" + num);
-                })();
-
-                $(d).append(b2);
-				*/
-
-                $("#sidebar").append(d);
-                $("#sidebar").scrollTop($("#sidebar")[0].scrollHeight);
-            };
-
-            G.E.socket.on('code', function(msg) {
-                G.E.R.code(msg);
-            });
-
-            CodeMirror.keyMap.gibber["Ctrl-M"] = function(cm) {
-                var msg = prompt("enter msg to send");
-
-                if (msg != null) {
-                    G.E.socket.emit('chat', {
-                        user: G.E.R.name,
-                        "text": msg
-                    });
-                }
-            };
-
-            CodeMirror.keyMap.gibber["Ctrl-S"] = function(cm) {
-                var selectedUsers = [];
-                for (var i = 0; i < G.E.R.users.length; i++) {
-                    selectedUsers.push(G.E.R.users[i]);
-                }
-
-                var v = cm.getSelection();
-                var pos = null;
-                if (v === "") {
-                    pos = cm.getCursor();
-                    v = cm.getLine(pos.line);
-                }
-
-                G.E.socket.emit('code', {
-                    recipients: selectedUsers,
-                    code: v
-                });
-            };
-
-            CodeMirror.keyMap.gibber["Ctrl-Alt-S"] = function(cm) {
-                var v = cm.getSelection();
-                var pos = null;
-                if (v === "") {
-                    pos = cm.getCursor();
-                    v = cm.getLine(pos.line);
-                }
-                var d = $("<div>");
-                $(d)
-                    .css({
-                    minWidth: '15em',
-                    padding: 0,
-                });
-                var ul = $("<ul>");
-                $(ul)
-                    .css({
-                    'list-style': 'none',
-                    'padding': 0,
-                    'margin': 0,
-                    'border': '1px solid #ccc',
-                });
-                var allListItems = [];
-                for (var i = 0; i < G.E.R.users.length; i++) {
-                    (function() {
-                        var l = $("<li>");
-                        l._selected = false;
-                        $(l)
-                            .text(G.E.R.users[i]);
-                        if (i !== 0) {
-                            $(l)
-                                .css({
-                                'border-top': "1px solid #ccc",
-                            });
-                        }
-                        $(l)
-                            .css({
-                            textAlign: 'center',
-                            padding: '0 5px',
-                        });
-                        $(l)
-                            .on('mousedown', function() {
-                            console.log("SELECT", l._selected);
-                            l._selected = !l._selected;
-                            if (l._selected) {
-                                $(l)
-                                    .css('background-color', '#333');
-                            } else {
-                                $(l)
-                                    .css('background-color', '#000');
-                            }
-                        });
-                        allListItems.push(l);
-                        $(ul)
-                            .append(l);
-                    })();
-                }
-                $(d)
-                    .append(ul);
-
-                var b = $('<button>Send Code</button>');
-                $(b)
-                    .on('mouseup', function() {
-                    var selectedUsers = [];
-
-                    for (var i = 0; i < allListItems.length; i++) {
-                        if (allListItems[i]._selected === true) {
-                            selectedUsers.push($(allListItems[i])
-                                .text());
-                        }
-                    }
-
-                    G.log("SENDING CODE TO REPUBLIC" + v);
-                    G.E.socket.emit('code', {
-                        recipients: selectedUsers,
-                        code: v
-                    });
-                    $.modal.close();
-                });
-                $(b)
-                    .css({
-                    float: 'right',
-                    marginTop: '1em',
-                });
-
-                var b2 = $('<button>Send Code To All</button>');
-                $(b2)
-                    .on('mouseup', function() {
-                    var selectedUsers = [];
-
-                    for (var i = 0; i < allListItems.length; i++) {
-                        selectedUsers.push($(allListItems[i])
-                            .text());
-                    }
-
-                    G.E.socket.emit('code', {
-                        recipients: selectedUsers,
-                        code: v
-                    });
-                    $.modal.close();
-                });
-                $(b2)
-                    .css({
-                    float: 'right',
-                    marginTop: '1em',
-                });
-
-                $(d)
-                    .append(b);
-                $(d)
-                    .append(b2);
-                $.modal(d, {});
-            };
-        },
-        master: function() {
-            G.log("CALLING MASTER");
-            $("#sidebar")
-                .html("");
-
-            Gibber.Environment.masterSocket = io.connect('http://localhost:8080/');
-            Gibber.Environment.masterSocket.on('connect', function() {
-                G.callback.phase = 0;
-                window.editor.setValue("");
-                Gibber.Environment.insert("// MASTER SESSION START\n\n");
-                Gibber.Environment.sessionStart = new Date();
-                Gibber.Environment.sessionHistory = [];
-                Gibber.Environment.masterSocket.on('code', function(msg) {
-                    Gibber.Environment.insert(msg.code);
-                    Gibber.Environment.sessionHistory.push({
-                        code: msg.code,
-                        time: new Date() - Gibber.Environment.sessionStart
-                    });
-                    window.editor.scrollTo(0, $(".CodeMirror-scroll > div")
-                        .outerHeight());
-
-                    Gibber.callback.addCallback(msg.code, _1);
-                });
-                Gibber.Environment.masterSocket.on('chat', function(msg) {
-                    Gibber.Environment.sessionHistory.push({
-                        user: msg.user,
-                        text: msg.text,
-                        time: new Date() - Gibber.Environment.sessionStart
-                    });
-                    
-                    var p = $("<p>");
-                    
-                    $(p).css("padding", "0px 10px");
-                    $(p).html("<h2 style='display:inline'>" + msg.user + " :</h2>" + " " + msg.text);
-                    
-                    $("#info").append(p);
-                    $("#info").scrollTop( $("#info").height() );
-                });
-
-                Gibber.Environment.masterSocket.emit('master', null);
-            });
-        },
-
-        saveSession: function(name) {
-            var sessions = localStorage.getObject("sessions");
-            if (typeof sessions === "undefined" || sessions === null) {
-                sessions = {};
-            }
-
-            sessions[name] = G.Environment.sessionHistory;
-            localStorage.setObject("sessions", sessions);
-        },
-
-        saveWithName: function(name) {
-            var scripts;
-            if (typeof localStorage.scripts === "undefined") {
-                scripts = {};
-            } else {
-                scripts = localStorage.getObject("scripts");
-            }
-
-            var text = window.editor.getValue();
-
-            scripts[name] = text;
-            localStorage.setObject("scripts", scripts);
-            Gibber.Environment.createUserFileList();
-            G.log(name + " has been saved.")
-        },
-
-        load: function(fileName) {
-            console.log("LOADING", fileName, defaults);
-            var scripts = localStorage.getObject("scripts"),
-                code = null;
-            
-            if (scripts != null) {
-              if ( typeof scripts[fileName] !== "undefined" ) {
-                code = scripts[ fileName ];
-              }
-            }
-            
-            if ( typeof defaults.tutorials[ fileName ] !== "undefined" ) {
-              code = defaults.tutorials[ fileName ];
-            }else if ( typeof defaults.demos[ fileName ] !== "undefined" ) {
-              code = defaults.demos[ fileName ];
-            }
-            
-            if (code != null) {
-              window.editor.setValue(code);
-            } else {
-              G.log("The file " + fileName + " is not found");
-            }
-        },
-
-        loadAndSet: function(fileName) {
-            /*var code = this.load(fileName);
-			if(code != null) {
-				window.editor.setValue(code);
-			}*/
-        },
-
-        createTutorialAndDemoList: function() {
-          var scripts = defaults;
-          var sel = $("#tutorialsFileList");
-          for (var name in scripts.tutorials) {
-            var opt = $("<li>");
-            if (scripts[name] !== "LABEL START") {
-              var cb = function(_name) {
-                var n = _name;
-                return function() {
-                  Gibber.Environment.load(n);
-                }
-              }
-              
-              var a = $("<a>");
-              $(a).text(name);
-              $(opt).bind("click", cb(name));
-              $(opt).append(a);
-            } else {
-              $(opt).text(" " + name);
-              $(opt).addClass('listHeader');
-            }
-            $(sel).append(opt);
-          }
-          
-          var sel = $("#demosFileList");
-          for (var name in scripts.demos) {
-            var opt = $("<li>");
-            if (scripts[name] !== "LABEL START") {
-              var cb = function(_name) {
-                var n = _name;
-                return function() {
-                  Gibber.Environment.load(n);
-                }
-              }
-              
-              var a = $("<a>");
-              $(a).text(name);
-              $(opt).bind("click", cb(name));
-              $(opt).append(a);
-            } else {
-              $(opt).text(" " + name);
-              $(opt).addClass('listHeader');
-            }
-            $(sel).append(opt);
-          }
-        },
-        
-        createUserFileList: function(savedFile) {
-          var sel = $("#userFileList").empty();
-          var userScripts = localStorage.getObject("scripts")
-          
-          for (var name in userScripts) {
-            var opt = $("<li>");
-
-            var cb = function(_name) {
-              var n = _name;
-              return function() {
-                Gibber.Environment.load(n);
-              }
-            }
-            
-            var a = $("<a>");
-            $(a).text(name);
-            $(opt).bind("click", cb(name));
-            $(opt).append(a);
-            
-            sel.append( opt )
-          }
-          //this.addScriptsToList( userScripts );
-        },
-
-        insert: function(code) {
-            var endLine = window.editor.lineCount() - 1;
-            window.editor.setLine(endLine, window.editor.getLine(endLine) + " \n" + code);
-        },
-
-        loadTutorial: function(name) {
-            console.log("LOADING TUTORIAL " + name + name.charAt(name.length - 1));
-            if (name.charAt(name.length - 1) === "_") {
-                Gibber.clear();
-                name = name.substring(0, name.length - 1);
-            }
-            window.editor.setValue(Gibber.tutorials[name]);
-        },
-    		fullScreen : function() {
-			$("#console").toggle();
-			$("#header").toggle();
-
-			$("#container").css("height", "100%");
-			$("#container").css("width", "100%");
-						
-			$("#three").css({
-				top : 0,
-				height: "100%",
-				width: "100%",
-			});
+  	    if ( text === "") {
+  	      text = cm.getLine( pos.line )
+  	    }else{
+          pos = { start: cm.getCursor('start'), end: cm.getCursor('end') }
+  	    	//pos = null
+  	    }
+  		}else{
+        var startline = pos.line, 
+  					endline = pos.line,
+  					pos1, pos2, sel
+      
+        while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
+        while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
+      
+        pos1 = { line: startline, ch: 0 }
+        pos2 = { line: endline, ch: 0 }
 			
-			$("#three").attr("width", screen.width);
-			$("#three").attr("height", screen.height);
+        text = cm.getRange( pos1, pos2 )
 
-			//$("canvas").attr({width:screen.width, height:screen.height});			
-			// if($("#three").top() === 50) {
-			// 	$("#three").css("top", 0);
-			// }else{
-			// 	$("#three").css("top", 50);
-			// }
-			
-			//if(Graphics.initialized) {
-			console.log("CALLING GRAPHICS FULL SCREEN");
-			Graphics.fullScreen();
-				//}
+        pos = { start: pos1, end: pos2 }
+  		}
+    }
+		
+    GE.Keymap.flash(cm, pos)
+		
+		return { selection: pos, code: text, column:column }
+	},
+  
+	//TODO : this should probably be moved to the Gibber object at some point as it's not environment specific
+	modes : {
+		nameMappings : {
+			'javascript' : 'javascript',
+			'glsl-fragment' : 'x-shader/x-fragment',
+			'glsl-vertex'   : 'x-shader/x-vertex'      
 		},
-        init: function() {
-            $(window).resize(Gibber.Environment.editorResize);
-            
-            this.createUserFileList();
-            
-            this.createTutorialAndDemoList();
-            
-            this.createEditor();
-            
-            this.createMenus();
-            
-            this.setupKeyBindings();
-
-            this.setupDocumentation();
-            
-            this.graphics = _graphics;
-            
-        },
+		javascript : {
+      run: function( column, script, pos, cm, shouldDelay ) { // called by Gibber.Environment.Keymap.modes.javascript
+//        eval( script )
+        //GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+        var _start = pos.start ? pos.start.line : pos.line,
+            tree
         
-        useNotations : function() {},
-        _useNotations : function() {
-          //console.log("NOTATION")
-          Gibber.Notation = _notation;
-          Gibber.Notation.init();
-        },
-        
-        setupDocumentation : function() {
-          $.getJSON("js/gibber/documentation.js", function(data, ts, xgr) {
-              Gibber.docs = data;
-
-              var tags = [];
-              Gibber.toc = {};
-              for (var key in Gibber.docs) {
-                  var obj = Gibber.docs[key];
-                  tags.push({
-                      text: key,
-                      obj: key,
-                      type: "object",
-                      class: obj.key,
-                  });
-                  if (typeof Gibber.toc[obj.type] === "undefined") {
-                      Gibber.toc[obj.type] = [];
-                  }
-                  Gibber.toc[obj.type].push(key);
-
-                  if (typeof obj.methods !== "undefined") {
-                      for (var method in obj.methods) {
-                          tags.push({
-                              text: method + "( " + key + " )",
-                              obj: key,
-                              type: "method",
-                              name: method,
-                          });
-                      }
-                  }
-                  if (typeof obj.properties !== "undefined") {
-                      for (var prop in obj.properties) {
-                          tags.push({
-                              text: prop + "( " + key + " )",
-                              obj: key,
-                              type: "property",
-                              name: prop,
-                          });
-                      }
-                  }
-              }
-
-              Gibber.Environment.tags = tags;
-              Gibber.Environment.displayTOC();
-              //Gibber.Environment.displayDocs("Seq");
-          });
-          $("#resizeButton").on("mousedown", function(e) {
-              $("body").css( "-webkit-user-select", "none" );
-              Gibber.prevMouse = e.screenX;
-              $(window).mousemove(function(e) {
-                $(".CodeMirror").width( e.pageX );
-                
-                $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
-                $("#sidebar").height( $(".CodeMirror").outerHeight() );
-
-                $("#resizeButton").css({
-                  position: "absolute",
-                    display: "block",
-                    top: $(".header").height() - 2,
-                    left: Math.floor(e.pageX + 3),
-                  });
-              });
+        try{
+          tree = GE.Esprima.parse( script, { loc:true, range:true } )
+        }catch(e) {
+          console.log ( e )
+          console.error( "Parse error on line " + ( _start + e.lineNumber ) + " : " + e.message.split(':')[1] )
+          return
+        }
+        // must wrap i with underscores to avoid confusion in the eval statement with commands that use proxy i
+        //console.log("TREE LENGTH", tree.body.length, tree.body, pos  )
+        for( var __i__ = 0; __i__ < tree.body.length; __i__++ ) {
+          var obj = tree.body[ __i__ ],
+          start = { line:_start + obj.loc.start.line - 1, ch: obj.loc.start.column },
+          end   = { line:_start + obj.loc.end.line - 1, ch: obj.loc.end.column },
+          src   = cm.getRange( start, end ),
+                  result = null
               
-              $(window).mouseup(function(e) {
-                  $(window).unbind("mousemove");
-                  $(window).unbind("mouseup");
-                  
-                  $("body").css("-webkit-user-select", "text");
-                  
-                  Gibber.codeWidth = $(".CodeMirror").width();
-              });
-          });
-
-          $("#searchButton").on("click", function(e) {
-              Gibber.Environment.displayDocs($("#docsSearchInput").val());
-          });
-          $("#tocButton").on("click", function(e) {
-              Gibber.Environment.displayTOC();
-          });
-          $("#closeSidebarButton").on("click", function(e) {
-              Gibber.Environment.toggleSidebar();
-          });
-
-          $("#docsSearchInput").change(function(e) {
-            if ( $(e.target).is(":focus") || $(e.target).parents().has(Gibber.Environment.autocompleteLayer) ) {
-              Gibber.Environment.displayDocs( $("#docsSearchInput").val() );
-            } else {
-              Gibber.Environment.autocompleteLayer.remove();
+          if( !shouldDelay ) {
+            try{
+              //console.log( "SRC" + __i__, src )
+              result = eval( src )
+              // if( typeof result !== 'function' ) {
+              //   console.log( result )
+              // }
+            }catch( e ) {
+              //console.error( "Error evaluating expression beginning on line " + (start.line + 1) + '\n' + e.message )
+              console.log( e )
             }
-          });
-          
-          $("#docsSearchInput").focus(function(e) {
-              Gibber.Environment.autocompleteLayer = $("<div>");
-              Gibber.Environment.autocompleteLayer.css({
-                  position: "absolute",
-                  top: 22,
-                  left: 0,
-                  width: "200px",
-                  display: "block",
-                  background: "rgba(180, 180, 180,.95)",
-                  listStyle: "none",
-                  padding: "0 5px 0px 5px",
-                  "overflow-y": "auto",
-              });
-              
-              $("#sidebar").append(Gibber.Environment.autocompleteLayer);
-          });
-          
-          $("#docsSearchInput").keyup(function(e) {
-              var arr = [];
-              var val = e.target.value;
-              if (val.length !== 0) {
-                for (var i = 0; i < Gibber.Environment.tags.length; i++) {
-                  if (Gibber.Environment.tags[i].text.indexOf(val) > -1) {
-                      arr.push(Gibber.Environment.tags[i]);
-                  }
-                }
-              }
-              
-              $(Gibber.Environment.autocompleteLayer).empty();
-              $(Gibber.Environment.autocompleteLayer).append("<ul>");
-              
-              for (var i = 0; i < arr.length; i++) {
-                var li = $("<li>");
-                
-                $(li).css({
-                  cursor: "pointer",
-                  width: "90%",
-                });
-                
-                if (i === arr.length - 1) {
-                  $(li).css({
-                    marginBottom: '10px',
-                  });
-                }
-                
-                $(li).text(arr[i].text);
-                
-                (function() {
-                  var _item = arr[i];
-                  $(li).on("click", function(e) {
-                    Gibber.Environment.displayDocs(_item.obj);
-                    $(Gibber.Environment.autocompleteLayer).remove();
-                    if (_item.type !== "object") {
-                      $("#sidebar").scrollTop( $("*:contains(" + _item.obj + "." + _item.name + "):last").offset().top - 40 );
-                    }
-                  });
-                })();
-                $(Gibber.Environment.autocompleteLayer).append(li);
-              }
-          });
-        },
-        
-        createMenus : function() {
-          $("#mega-menu-1").dcMegaMenu({
-              speed: 'fast',
-          });
-          
-          $.extend($.modal.defaults, {
-              onOpen: function(dialog) {
-                dialog.overlay.fadeIn('fast', function() {
-                    //dialog.data.hide();
-                  dialog.container.fadeIn('fast', function() {
-                    dialog.data.slideDown('fast');
-                  });
-                });
-              },
-              onClose: function(dialog) {
-                dialog.data.fadeOut('slow', function() {
-                  dialog.container.hide('slow', function() {
-                    dialog.overlay.slideUp('slow', function() {
-                      $.modal.close();
-                    });
-                  });
-                });
-              },
-              overlayClose: true,
-              position: ["40px", null],
-              containerCss: {
-                fontSize:'.8em',
-                backgroundColor: "rgba(60,60,60,.9)",
-                listStyle: "none",
-                border: "1px solid #aaa",
-                padding: "10px",
-                color:"#ccc",
-              }
-          });
-
-          $("#keyCommandMenuItem").bind("click", function() {
-              $("#keyCommands").modal();
-          });
-
-          $("#tutorialMenuItem").bind("click", function() {
-              Gibber.Environment.loadTutorial("intro");
-          });
-
-          $("#quickstartMenuItem").bind("click", function() {
-            $("#quickstart").modal({
-                minHeight: "325px",
-                maxWidth: "500px",
-            });
-          });
-          $("#aboutMenuItem").bind("click", function() {
-            $("#about").modal({
-                minHeight: "325px",
-                maxWidth: "500px",
-            });
-          });
-        },
-        
-        createEditor : function() {
-          CodeMirror.modeURL = "js/codemirror/mode/%N/%N.js";
-          
-          var isOpaque = true;
-          var timeout = null;
-          
-          window.editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-              lineNumbers: false,
-              autofocus: true,
-              indentUnit: 2,
-              matchBrackets: true,
-              tabSize: 2,
-              smartIndent: true,
-              onCursorActivity: function() {
-                window.editor.setLineClass( hlLine, null, null );
-                hlLine = editor.setLineClass( editor.getCursor().line, null, "activeline" );
-                
-                /*if(Graphics.initialized) {
-                  if(timeout != null) { 
-                    clearTimeout( timeout );
-                    timeout = null
-                  }
-                  if(isOpaque) {
-                    timeout = setTimeout( function() { 
-                      $('.CodeMirror pre').fadeTo(500, .1)
-                      isOpaque = false;
-                      timeout = null
-                    }, 3000);
-                  }else{
-                    $('.CodeMirror pre').fadeTo(250, 1)
-                    isOpaque = true;
-                  }
-                }*/
-              },
-              onChange:function(e,i) {
-                //window.editor.markText({line:0, ch:0}, {line:window.editor.lineCount() - 1, ch:0}, "highlightLine");
-                
-                /*if(Graphics.initialized) {
-                  if(timeout != null) { 
-                    clearTimeout( timeout );
-                    timeout = null
-                  }
-                  if(isOpaque) {
-                    timeout = setTimeout( function() { 
-                      $('.CodeMirror pre').fadeTo(500, .1)
-                      isOpaque = false;
-                      timeout = null
-                    }, 3000);
-                  }else{
-                    $('.CodeMirror pre').fadeTo(250, 1)
-                    isOpaque = true;
-                  }
-                }*/
-              }
-          });
-          var hlLine = window.editor.setLineClass(0, "activeline");
-
-          CodeMirror.autoLoadMode(window.editor, "javascript");
-          window.CodeMirror = CodeMirror;
-          window.editor.setOption("mode", "javascript");
-          window.editor.setOption("theme", "thecharlie");
-
-          CodeMirror.defineMode("links", function(config, parserConfig) {
-              var linksOverlay = {
-                  token: function(stream, state) {
-                      if (stream.match(/^\b(next\ tutorial:([^\s]+))\b/)) {
-                          return "link";
-                      }
-                      stream.skipToEnd();
-                  }
-              };
-              return CodeMirror.overlayParser(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), linksOverlay);
-          });
-          $('.CodeMirror').css("display", "inline-block");
-          $('.CodeMirror').delegate(".cm-link", "click", function(e) {
-              var url = $(event.target).text();
-              Gibber.Environment.loadTutorial(url.split(":")[1]);
-          });
-
-          CodeMirror.autoLoadMode(window.editor, "links");
-          window.editor.setOption("mode", "links");
-          
-          this.load("resampling (default)");
-          this.editorResize();
-        },
-        
-        flash: function(cm, pos) {
-          if (pos !== null) {
-            v = cm.getLine(pos.line);
-
-            cm.setLineClass(pos.line, null, "highlightLine")
-
-            var cb = (function() {
-                cm.setLineClass(pos.line, null, null);
-            });
-
-            window.setTimeout(cb, 250);
-
-          } else {
-            var sel = cm.markText(cm.getCursor(true), cm.getCursor(false), "highlightLine");
-
-            var cb = (function() {
-                sel.clear();
-            });
-
-            window.setTimeout(cb, 250);
+          }else{
+// Gibber.Environment.modes[ Clock.codeToExecute[ i ].cm.doc.mode.name ].run( Clock.codeToExecute[i].cm.column, Clock.codeToExecute[ i ].code, Clock.codeToExecute[ i ].pos, Clock.codeToExecute[ i ].cm, false )
+            //console.log(" DELAY SRC", src )            
+            Gibber.Clock.codeToExecute.push({ code:src, pos:{ 'start':start, 'end':end }, 'cm':cm })
           }
-        },
-        fontSize : 1,
-        setupKeyBindings : function() {
-          
-          CodeMirror.keyMap.gibber = {
-              fallthrough: "default",
-
-              /*"Shift-Ctrl-." : function(cm) { 
-      					_Gibber.nextSlide();
-      				},
-      				"Shift-Ctrl-," : function(cm) { 
-      					_Gibber.prevSlide();
-      				},*/
-
-              "Ctrl-Enter": function(cm) {
-                  var v = cm.getSelection();
-                  var pos = null;
-                  if (v === "") {
-                      pos = cm.getCursor();
-                      v = cm.getLine( pos.line );
-                  }
-                  Gibber.Environment.flash(cm, pos);
-                  Gibber.runScript( v, pos, cm );
-              },
-              "Cmd-S": function(cm) {
-                  var name = window.prompt("enter name for file:")
-                  Gibber.Environment.saveWithName(name);
-              },
-              "Cmd-L": function(cm) {
-                  var name = window.prompt("enter name of file to load:")
-                  Gibber.Environment.load(name);
-              },
-			
-              "Shift-Ctrl-Enter": function(cm) {
-                  var v = cm.getSelection();
-                  var pos = null;
-                  if (v === "") {
-                      pos = cm.getCursor();
-                      v = cm.getLine(pos.line);
-                  }
-                  Gibber.Environment.flash(cm, pos);
-                  Gibber.callback.addCallback(v, _1);
-              },
-              "Shift-Alt-Enter": function(cm) {
-                  var result = Gibber.Environment.selectCurrentBlock();
-                  
-                  console.log(result)
-                  Gibber.runScript( result.text, cm.getCursor(), cm );
-                  
-                  //Gibber.runScript(result.text);
-
-                  // highlight:
-                  var sel = editor.markText(result.start, result.end, "highlightLine");
-                  window.setTimeout(function() {
-                      sel.clear();
-                  }, 250);
-              },
-              "Shift-Ctrl-Alt-Enter": function(cm) {
-                  var result = Gibber.Environment.selectCurrentBlock();
-
-                  Gibber.callback.addCallback(result.text, _1);
-
-                  // highlight:
-                  var sel = editor.markText(result.start, result.end, "highlightLine");
-                  window.setTimeout(function() {
-                      sel.clear();
-                  }, 250);
-              },
               
-              "Shift-Ctrl-=": function(cm) {
-                  Gibber.Environment.fontSize += .2;
-                  $('.CodeMirror').css({ fontSize:Gibber.Environment.fontSize + 'em' })
-              },
-              "Shift-Ctrl--": function(cm) {
-                  Gibber.Environment.fontSize -= .2;
-                  $('.CodeMirror').css({ fontSize:Gibber.Environment.fontSize + 'em' })
-              },              
-              "Ctrl-`": function(cm) {
-                  Gibber.clear();
-                  Gibber.audioInit = false;
-              },
-              "Ctrl-.": function(cm) {
-                  Gibber.clear();
-                  Gibber.audioInit = false;
-              },
-              "Ctrl-/": function(cm) { // for international keyboards...
-                  Gibber.clear();
-                  Gibber.audioInit = false;
-              },
-              "Ctrl-I": function(cm) {
-                  Gibber.Environment.toggleSidebar();
-                  cm.refresh();
-              },
-              "Ctrl-Alt-2": function(cm) {
-                  console.log("CALLING CTRL-ALT-2");
-                  var v = cm.getSelection();
-                  var pos = null;
-                  if (v === "") {
-                      pos = cm.getCursor();
-                      v = cm.getLine(pos.line);
-                  }
-                  console.log("CALLED SLAVE SEND");
-                  Gibber.Environment.slaveSocket.send(v);
-              },
-              "Shift-Alt-2": function(cm) {
-                  var result = Gibber.Environment.selectCurrentBlock();
+          // if( Gibber.scriptCallbacks.length > 0 && !shouldDelay ) {
+          //   for( var ___i___ = 0; ___i___ < Gibber.scriptCallbacks.length; ___i___++ ) {
+          //     Gibber.scriptCallbacks[ ___i___ ]( obj, cm, pos, start, end, src, _start )
+          //   }
+          // }
+        }
+      },
 
-                  Gibber.Environment.slaveSocket.send(result.text);
-
-                  // highlight:
-                  var sel = editor.markText(result.start, result.end, "highlightLine");
-                  window.setTimeout(function() {
-                      sel.clear();
-                  }, 250);
-              },
-          };
-
-          window.editor.setOption("keyMap", "gibber");
-        },
+			_run : function( column, value, position, codemirror, shouldDelay ) {
+        // if( shouldDelay ) {
+        //   Gibber.Clock.codeToExecute.push({ code:value, pos:position, cm:codemirror })
+        // }else{
+					GE.modes.javascript.run( column, value, position, codemirror, shouldDelay ) 
+          //}
+			},
+      
+			default: [
+	      "/*To execute code, select it and hit Ctrl+Enter.",
+        "* Ctrl+. stops audio. Press the help button for",
+        "* more keystrokes to use in Gibber.",
+        "*",
+	      "* Giblet #1 - by thecharlie",
+	      "* In this sketch, the mouse position drives the",
+	      "* pitch of drums, the carrier to modulation",
+	      "* ratio of FM synthesis, and the feedback and",
+	      "* time of a delay.",
+	      "*/",
+	      "",
+	      "a = Drums('x*o*x*o-')",
+	      "a.pitch = Mouse.Y",
+	      "",
+	      "b = FM({ ",
+	      "  attack:  ms(1),",
+	      "  index:   a.Out,",
+	      "  cmRatio: Mouse.X",
+	      "})",
+	      "",
+	      "b.fx.add(",
+	      "  Delay({",
+	      "    time:     Mouse.X,",
+	      "    feedback: Mouse.Y",
+	      "  })",
+	      ")",
+	      "",
+	      "b.play( ",
+	      "  ['c2','c2','c2','c3','c4'].random(),",
+	      "  [1/4,1/8,1/16].random(1/16,2) ",
+	      ")"
+	    ].join('\n'),
+		},
+		'glsl-fragment' : { 
+			run: function( column, value, position, codemirror, shouldDelay ) {        
+        value = Gibber.Graphics.PostProcessing.defs + value
         
-        runLoadFile : function() {
-          var scripts = localStorage.getObject("scripts");
+	    	column.shader.material = new THREE.ShaderMaterial({
+	    		uniforms: column.shader.uniforms,
+	    		vertexShader: column.shader.vertexText || Gibber.Graphics.Shaders.defaultVertex,
+	    		fragmentShader: value
+	    	});
+			},
+			default: [
+      "// to execute changes to shader, hit ctrl+enter",
+      "// or ctrl+shift+enter to execute at next measure",
+      "",
+      "// defaults to .05 but should be mapped",
+      "uniform float amp;",
+      "// time is updated automatically at 1/60 per frame",
+      "uniform float time;",
+      "",
+      "// texture passed to shader",
+      "uniform sampler2D tDiffuse;",
+      "// pixel coordinate from {0,1}",
+      "varying vec2 p;",
+      "",
+      "void main() {",
+      "  // normalize pixel coordinates to {-1,1}",
+      "  vec2 uv = 2. * p - 1.;",
+      "  float _out = 0.;",
+      "",
+      "  for( float i = 0.; i < 8.; i++ ){",
+      "    uv.x += sin( uv.y + time ) * amp;",
+      "    uv.x = abs( 1./uv.x ) * amp;    ",
+      "    _out += abs( uv.x ) * amp;    ",
+      "  }",
+      "",
+      "  gl_FragColor = vec4( 1.-_out );",
+      "}",
+			].join( '\n' ),
+		},
+    'glsl-vertex' : {
+			run: function( column, value, position, codemirror, shouldDelay ) {
+	      var shader = Gibber.Graphics.Shaders.make( column.shader.fragmentText, value )
+        column.shader.vertexText = value
+	    	column.shader.material = new THREE.ShaderMaterial({
+	    		uniforms: column.shader.uniforms,
+	    		vertexShader: value,
+	    		fragmentShader: column.shader.fragmentText || Gibber.Graphics.Shaders.defaultFragment
+	    	});
+			},
+      default : [
+        "// note:varying vec3 position provides vertex position by default",
+        "// as are projectionMatrix and modelViewMatrix",
+        "varying vec2 p;",
+        "uniform float amp;",
+        "uniform float time;",
+        "",
+        "float rand(vec2 co){",
+        "  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);",
+        "}",
+        "",
+        "void main() {",
+        "  p = uv; // pass to fragment shader",
+        "  vec3 _position = position.xyz;",
+        "  float amt = 10.;",
+        "",
+        "  // both position and amp are needed to (kindof) guarantee seeds",
+        "  // that will yield random values.",
+        "  _position.x += (-amt + rand(position.xy * amp) * amt * 2.) * amp;",
+        "  _position.y += (-amt + rand(position.yz * amp) * amt * 2.) * amp;  ",
+        "  _position.z += (-amt + rand(position.xz * amp) * amt * 2.) * amp;",
+        "",
+        "  gl_Position = ",
+        "    projectionMatrix * ",
+        "    modelViewMatrix * ",
+        "    vec4( _position, 1.0 );",
+        "}",
+    	].join("\n"),
+    }
+	},
+  Metronome : {
+    shouldDraw: true,
+    canvas: null,
+    ctx: null,
+    width: null,
+    height: null,
+    color: '#252525',
+    
+    draw: function( beat, beatsPerMeasure ) {
+      if( this.shouldDraw && this.ctx !== null ) {
+        var beatWidth = this.width / beatsPerMeasure,
+            beatPos = ( beat - 1 ) * beatWidth;
+      
+        this.ctx.clearRect( 0, 0, this.width, this.height )
+        this.ctx.fillRect(  beatPos, 0,  beatWidth, this.height )
+      }
+    },
+    
+    init: function() {
+      this.canvas = $( "#header canvas" )
+      this.ctx = this.canvas[0].getContext( '2d' )
+    
+      this.width = this.canvas.width()
+      this.height = this.canvas.height()      
+    
+      this.canvas.attr( 'width', this.width )
+      this.canvas.attr( 'height', this.height )
+    
+      this.ctx.fillStyle = this.color
+    
+      var color = this.color
+      Object.defineProperty( this, 'color', {
+        get: function() { return color; },
+        set: function(v) { color = v; this.ctx.fillStyle = color; }
+      })
+      
+      window.Metronome = this
+    },
+    
+    off : function() {
+      this.ctx.clearRect( 0, 0, this.width, this.height )
+      this.shouldDraw = false;
+    },
+    
+    on : function() { this.shouldDraw = true; },
+  },
+  
+  Message: {
+    post : function( msgText ) {
+      var msgDiv = $( '<div>' )
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:200,
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em',
+          zIndex:1000
+        })
+        .addClass( 'message' )
+        .append( $( '<button>' )
+          .on('click', function(e) { $( msgDiv ).remove(); })
+          .html('&#10005;')
+        )
+      
+      msgDiv.append( $('<p>').text( msgText ).css({ marginTop:'.5em' }) )
+      
+      $( 'body' ).append( msgDiv )
 
-          if (!scripts) scripts = {};
+      return msgDiv // return so it can be removed if needed
+    },
+    
+    confirm : function( msgText, btn1Text, btn2Text ) {
+      var msgDiv = $( '<div>' ),
+          _done = null
+          
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:200,
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em',
+          zIndex:1000
+        })
+        .addClass( 'message' )
+        .append( $('<p>').text( msgText ).css({ marginTop:'.5em' }) )
+        .append( $( '<button>' )
+          .on('click', function(e) { $( msgDiv ).remove(); if( _done !== null ) { _done( true )} })
+          .html( btn2Text || 'yes' )
+          .css({ float:'right', marginLeft:'1em' })
+        )
+        .append( $( '<button>' )
+          .on('click', function(e) { $( msgDiv ).remove(); if( _done !== null ) { _done( false )} })
+          .html( btn1Text || 'no' )
+          .css({ float:'right' })
+          .focus()
+        )
 
-          if (typeof scripts.loadFile !== "undefined") {
-              eval(scripts.loadFile);
-          }
-        },
+      $( 'body' ).append( msgDiv )
 
-        selectCurrentBlock: function() { // thanks to graham wakefield
-            var pos = editor.getCursor();
-            var startline = pos.line;
-            var endline = pos.line;
-            while (startline > 0 && editor.getLine(startline) !== "") {
-                startline--;
-            }
-            while (endline < editor.lineCount() && editor.getLine(endline) !== "") {
-                endline++;
-            }
-            var pos1 = {
-                line: startline,
-                ch: 0
-            }
-            var pos2 = {
-                line: endline,
-                ch: 0
-            }
-            var str = editor.getRange(pos1, pos2);
+      return { done: function( handler ) {
+        _done = handler
+      }}
+    },
+    postFlash : function( text, time, css ) {
+      var msgDiv = $( '<div>' )
+      .css({
+        position:'fixed',
+        display:'block',
+        width:450,
+        height:'3em',
+        left: $( "thead" ).width() / 2 - 225,
+        top: $( window ).height() / 2 - 100,
+        backgroundColor: 'rgba(0,0,0,.85)',
+        border:'1px solid #666',
+        padding:'.5em',
+        zIndex:1000
+      })
+      .addClass( 'message' )
+      
+      if( css ) msgDiv.css( css )
+        
+      msgDiv.append( $('<p>').text( text ) )
+    
+      $( 'body' ).append( msgDiv )
+      
+      time = time || 2000
+      
+      msgDiv.fadeOut( time, function() { msgDiv.remove() } )
+    },
+    postHTML : function( html ) {
+      var msgDiv = $( '<div>' )
+      msgDiv.css({
+          position:'fixed',
+          display:'block',
+          width:450,
+          height:200,
+          left: $( "thead" ).width() / 2 - 225,
+          top: $( window ).height() / 2 - 100,
+          backgroundColor: 'rgba(0,0,0,.85)',
+          border:'1px solid #666',
+          padding:'.5em',
+          zIndex:1000
+        })
+        .addClass( 'message' )
+        .append( $( '<button>' )
+          .on('click', function(e) { $( msgDiv ).remove(); })
+          .html('&#10005;')
+        )
+      
+      msgDiv.append( html  )
+      
+      $( 'body' ).append( msgDiv )
+      
+      return msgDiv
+    },
+  },
+  
+  Menu : {
+    init: function() {
+      $( '#publishButton' ).on( 'click', function(e) {
+        GE.Account.newPublicationForm()
+      })
+      $( '#browseButton' ).on( 'click', function(e) {
+        GE.Browser.open()
+      })
+      $( '#addCodeButton' ).on( 'click', function(e) {
+        GE.Layout.addColumn({ fullScreen:true, type:'code' })
+      })
+      $( '#consoleButton' ).on( 'click', function(e) {
+        GE.Console.open()
+      })
+      $( '#chatButton' ).on( 'click', function(e) {
+        GE.Chat.open()
+      })
+      $( '#helpButton' ).on( 'click', function(e) {
+        GE.Help.open()
+      })
+      $( '#creditsButton' ).on( 'click', function(e) {
+        console.log('credits!')
+        GE.Credits.open()
+      })
+      $( '#forumButton' ).on( 'click', function(e) {
+        GE.Forum.open()
+      })
+      
+      $( '#preferencesButton' ).on( 'click', function(e) {
+        GE.Preferences.open()
+      })
+      $( '#welcomeButton' ).on( 'click', function(e) {
+        GE.Welcome.init( true )
+      })
+    }
+  },
+  
+  Forum : {
+    open : function() {
+      window.open( 'http://lurk.org/groups/gibber' )
+    },
+  },
+  
+  Spinner: {
+    current : null,
+    spin: function( target ) {
+      $( target ).spin('small', '#fff')
+      
+      return function() { $( target ).spin( false ) }
+    },
+    remove: function() {
+      this.current.stop()
+    }
+  },
+  Welcome : {
+    div: null,
+    close: function() {
+      var checkbox = $( GE.Welcome.div ).find( 'input' ),
+          checked = checkbox.is(':checked')
 
-            return {
-                start: pos1,
-                end: pos2,
-                text: str
-            };
-        },
+      GE.Storage.values.showWelcomeMessage = !checked
+      GE.Storage.save()
+      
+      GE.Welcome.div.remove(); 
+      GE.Welcome.div = null;
+    },
+    init : function( overridePreference ) {      
+      if( GE.Welcome.div !== null || !GE.Storage.values.showWelcomeMessage && !overridePreference ) return;
+      
+      $.ajax({
+        url: GE.SERVER_URL + "/welcome",
+        dataType:'html'
+      })
+      .done( function( data ) {
+        var welcome = $( data )
+        
+        var div = $('<div>').html( welcome )
+        
+        div.css({ position:'absolute', top:0, left:0, height:'100%', width:'100%', background:'rgba(0,0,0,.9)', zIndex:100  })
+        
+        GE.Browser.demoColumn.bodyElement.append( div )
+        
+        var welcomeDivClose = $( '<button>' )
+          .on( 'click', GE.Welcome.close )
+          .html( 'close welcome' )
+          .attr( 'title', 'close welcome' )
+        
+        div.find( 'h2' ).append( welcomeDivClose )
+        
+        GE.Welcome.div = div
+      })
+    },
+  },
+  // Preferences : {
+//     div: null,
+//     close: function() {
+//       var showWelcomeCheckbox = $( '#preferences_showWelcomeScreen' ),
+//           checked = showWelcomeCheckbox.is(':checked')
+// 
+//       GE.Storage.values.showWelcomeMessage = checked
+//       GE.Storage.save()
+//     },
+//     open : function() {
+//       $.ajax({
+//         url: GE.SERVER_URL + "/preferences",
+//         dataType:'html'
+//       })
+//       .done( function( data ) {
+//         var preferencesHTML = $( data )
+//         
+//         var div = $('<div>').html( preferencesHTML )
+//         
+//         this.column = Layout.addColumn({ type:'form', fullScreen:false, header:'User Preferences' })
+//         
+//         this.column.bodyElement.append( div )
+//         
+//         $( '#preferences_showWelcomeScreen' ).attr( 'checked', GE.Storage.values.showWelcomeMessage ),
+//         $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', GE.Storage.values.showSampleCodeInNewEditors ),        
+//         
+//         this.column.onclose = this.close.bind( this )
+//         
+//       }.bind( this ) )
+//     },
+//   },
+}
 
-        displayDocs: function(obj) {
-            if (typeof Gibber.docs[obj] === "undefined") return;
-            $("#docs").html(Gibber.docs[obj].text);
-            $("#docs").append("<h2>Methods</h2>");
-            
-            var count = 0;
-            for (var key in Gibber.docs[obj].methods) {
-                var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].methods[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "rgba(30,30,30,.75)" : "transparent";
-                $(html).css({
-                    "background-color": bgColor,
-                    "border-color": "#ccc",
-                    "border-width": "0px 0px 1px 0px",
-                    "border-style": "solid",
-                });
-                $("#docs").append(html);
-            }
-            
-            $("#docs").append("<h2>Properties</h2>");
-            
-            for (var key in Gibber.docs[obj].properties) {
-                var html = $("<div style='padding-top:5px'>" + Gibber.docs[obj].properties[key] + "</div>");
-                var bgColor = count++ % 2 === 0 ? "rgba(30,30,30,.75)" : "transparent";
-                
-                $(html).css({
-                    "background-color": bgColor,
-                    "border-color": "#ccc",
-                    "border-width": "0px 0px 1px 0px",
-                    "border-style": "solid",
-                });
-                
-                $("#docs").append(html);
-            }
-        },
+require( 'codemirror/addon/comment/comment' )
+require( 'codemirror/addon/edit/matchbrackets' )
+require( 'codemirror/addon/edit/closebrackets' )
+// require( 'codemirror/addon/selection/active-line' )
 
-        displayTOC: function() {
-            $("#docs").empty();
-            
-            for (var key in Gibber.toc) {
-                var cat = Gibber.toc[key];
-                if (cat.length > 0) {
-                    var ul = $("<ul style='list-style:none; padding: 0px 5px;'>");
-                    var h2 = $("<h2>" + key + "</h2>");
-                    //var ul = $("<ul>");
-                    for (var i = 0; i < cat.length; i++) {
-                        var li = $("<li>");
-                        
-                        var a = $("<a style='cursor:pointer'>");
-                        
-                        (function() {
-                            var text = cat[i];
-                            a.text(text);
-                            a.click(function() {
-                                Gibber.Environment.displayDocs(text);
-                            });
-                        })();
-                        
-                        $(li).append(a);
-                        $(ul).append(li);
-                    }
-                    $("#docs").append(h2);
-                    $("#docs").append(ul);
-                }
-            }
-        },
-
-        toggleSidebar: function() {
-            $('#sidebar').toggle();
-            $('#resizeButton').toggle();
-            //header
-            //$('#sidebar').css("display", "inline");
-            if ($("#sidebar").css("display") == "none") {
-                $('.CodeMirror').css("width", "100%");
-                //$('.CodeMirror-scroll').css("width", "100%");
-                $('#console').css("width", "100%");
-            } else {
-                if (typeof Gibber.codeWidth !== "undefined") { //if docs/editor split has not been resized
-                    $(".CodeMirror").width( Gibber.codeWidth );
-                    $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
-                    $("#sidebar").height( $(".CodeMirror").outerHeight() );
-
-                    $("#resizeButton").css({
-                        position: "absolute",
-                        display: "block",
-                        top: $(".header").height(),
-                        left: Gibber.codeWidth,
-                    });
-                } else {
-                    $("#resizeButton").css({
-                        position: "absolute",
-                        display: "block",
-                        top: $(".header").height(),
-                        left: "70%",
-                    });
-                    
-                    $('#console').css("width", "70%");
-
-                    $('.CodeMirror').css("width", "70%");
-                    $('.CodeMirror').css("margin", "0");
-                    
-                    $("#sidebar").width( $("body").width() - $(".CodeMirror").outerWidth() - 8 );
-                    $("#sidebar").height( $(".CodeMirror").outerHeight() );
-                }
-            }
-        },
-
-        editorResize: function() {
-            var one = $('#console').innerHeight();
-            var remaining_height = parseInt( $(window).height() - one - $("#mega-menu-1").outerHeight() + 7 );
-
-            var scroll = window.editor.getScrollerElement();
-            $(scroll).height( remaining_height );
-
-            window.editor.refresh();
-        },
-    };
-    window.republicish = Environment.republicish;
-    return Environment;
-});
+return GE
+}
