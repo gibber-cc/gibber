@@ -102,28 +102,41 @@ module.exports = function( Gibber, Notation ) {
         var constructorName = right.callee.name,
             className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
         
-        console.log( className, constructorName, newObjectName )
+        //console.log( className, constructorName, newObjectName )
         var mark = cm.markText( start, end, { 'className': className } );
         
         if( !newObject.marks ) {
-          newObject.marks = []
+          newObject.marks = {}
           newObject.locations = {}
           
           newObject.clearMarks = function() {
-            for( var i = 0; i < this.marks.length; i++ ) {        
-              if( this.marks[ i ].height ) { // in case this is a line handle
-                var cm = this.marks[i].parent.parent.cm
-                cm.removeLineClass( this.marks[i].lineNo(), this.marks[i].wrapClass )
-              }else{
-                this.marks[ i ].clear()
+            
+            for( var key in this.marks ) {
+              var marks = this.marks[ key ]
+              for( var i = 0; i < marks.length; i++ ) {        
+                if( marks[ i ].height ) { // in case this is a line handle
+                  var cm = marks[i].parent.parent.cm
+                  cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
+                }else{
+                  marks[ i ].clear()
+                }
               }
             }
+            
+            // for( var i = 0; i < this.marks.length; i++ ) {        
+            //   if( this.marks[ i ].height ) { // in case this is a line handle
+            //     var cm = this.marks[i].parent.parent.cm
+            //     cm.removeLineClass( this.marks[i].lineNo(), this.marks[i].wrapClass )
+            //   }else{
+            //     this.marks[ i ].clear()
+            //   }
+            // }
       
-            this.marks.length = 0
+            this.marks = {}
           }
         }
         
-        newObject.marks.push( mark )
+        newObject.marks.global = [ mark ]
         
         var object = right.callee,
             prevObject = right
@@ -137,16 +150,22 @@ module.exports = function( Gibber, Notation ) {
                   var values = prevObject.arguments[i].elements,
                       valuesOrDurations = i === 0 ? 'values' : 'durations';
                   
+                  newObject.marks[ object.object.property.name + valuesOrDurations ] = []
                   newObject.locations[ object.object.property.name + valuesOrDurations ] = []
                   
+                  var isArray = true
                   if( !values ) {
                     //console.log( prevObject.arguments[i].callee.object.elements )
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
                         values = prevObject.arguments[i].callee.object.elements; // use the array that is calling the method
                       }else{
-                        values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function
+                        values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
+                        isArray = false
                       }
+                    }else{
+                      values = [ prevObject.arguments[i] ]
+                      isArray = false 
                     }
                   } 
                   
@@ -170,8 +189,8 @@ module.exports = function( Gibber, Notation ) {
                         start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
                         end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
                     
-                        var mark = cm.markText( start, end, { className:__name });
-                        newObject.marks.push( mark )
+                        var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+                        newObject.marks[ object.object.property.name + valuesOrDurations ].push( mark )
                         newObject.locations[ object.object.property.name + valuesOrDurations ].push( __name )
                       })()
                     }
@@ -180,6 +199,28 @@ module.exports = function( Gibber, Notation ) {
 
                     if( seq[ object.object.property.name ] && seq[ object.object.property.name ][ valuesOrDurations ].filters ) {
                       var _name_ = object.object.property.name, lastChose = {}
+                      
+                      if( isArray ) { 
+                        var start, end
+                        
+                        seq[ _name_ ][ valuesOrDurations ].arrayText = src.substring( prevObject.arguments[i].range[0], prevObject.arguments[i].range[1] - 2 );
+                        
+                        start = {
+                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                          ch : prevObject.arguments[i].loc.start.column + 1 // plus one to remove array bracket
+                        }
+                        end = {
+                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                          ch : prevObject.arguments[i].loc.end.column - 1   // minus one to remove array bracket
+                        }
+                
+                        start.line += prevObject.arguments[i].loc.start.line
+                        end.line   += prevObject.arguments[i].loc.end.line
+                    
+                        seq[ _name_ ][ valuesOrDurations ].arrayMark = cm.markText( start, end );
+                        
+                        console.log( seq[ _name_ ][ valuesOrDurations ].arrayText, seq[ _name_ ][ valuesOrDurations ].arrayMark.find() )
+                      }
                       
                       seq[ _name_ ][ valuesOrDurations ].filters.push( function() {
                         if( seq.locations[ _name_ + valuesOrDurations ] ) {
