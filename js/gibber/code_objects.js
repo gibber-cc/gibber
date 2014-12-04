@@ -1,3 +1,25 @@
+/*
+Gibber.Environment.Notation.on('seq')
+
+a = Pluck()
+	.pan.seq( Rndf(-1,1), [1/8,1/4,1/2] )
+
+
+a = Pluck()
+	.note.seq( [0,1,2,3], [1/2,1/4] )
+	.pan.seq( Rndf(-1,1), [1/8,1/4,1/2] )
+	.damping.seq( [.5,.6,.2,.1].rnd(), [1/4] )
+
+a = Pluck()
+b = Seq({
+  note:[0,1,2,4,7,12,13].rnd(),
+  durations:[1/4,1/8,1/16].rnd(1/16,2),
+  target:a
+})
+
+a.text.opacity = a.Out
+*/
+
 module.exports = function( Gibber, Notation ) {
   var codeObjects = [ 'Sampler', 'Model' ],
       notes = [ 'c','db','d','eb','e','f','gb','g','ab','a','bb','b' ],
@@ -72,7 +94,6 @@ module.exports = function( Gibber, Notation ) {
   // text objects and mappings
   //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
   Gibber.Environment.Notation.features[ 'global' ] = function( obj, cm, pos, start, end, src, evalStart ) {
-    console.log( obj )
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
       
@@ -118,12 +139,17 @@ module.exports = function( Gibber, Notation ) {
                   
                   newObject.locations[ object.object.property.name + valuesOrDurations ] = []
                   
-                  // if( !values ) {
-                  //   if( prop.value.callee ) { // if it is an array with a random or weight method attached..
-                  //     if( prop.value.callee.object )
-                  //       values = prop.value.callee.object.elements; // use the array that is calling the method
-                  //   }
-                  // } 
+                  if( !values ) {
+                    //console.log( prevObject.arguments[i].callee.object.elements )
+                    if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
+                      if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
+                        values = prevObject.arguments[i].callee.object.elements; // use the array that is calling the method
+                      }else{
+                        values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function
+                      }
+                    }
+                  } 
+                  
                   if( values ) {
                     for( var jj = 0; jj < values.length; jj++ ) {
                       ( function() {
@@ -149,28 +175,33 @@ module.exports = function( Gibber, Notation ) {
                         newObject.locations[ object.object.property.name + valuesOrDurations ].push( __name )
                       })()
                     }
-                  }
-                  var seq = newObject
-                  
-                  if( seq[ object.object.property.name ] && seq[ object.object.property.name ][ valuesOrDurations ].filters ) {
-                    var _name_ = object.object.property.name, lastChose = {}
                     
-                    seq[ _name_ ][ valuesOrDurations ].filters.push( function() {
-                      if( seq.locations[ _name_ + valuesOrDurations ] ) {
-                        var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
+                    var seq = newObject
+
+                    if( seq[ object.object.property.name ] && seq[ object.object.property.name ][ valuesOrDurations ].filters ) {
+                      var _name_ = object.object.property.name, lastChose = {}
+                      
+                      seq[ _name_ ][ valuesOrDurations ].filters.push( function() {
+                        if( seq.locations[ _name_ + valuesOrDurations ] ) {
+                          var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
 	
-                        if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+                          if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
                         
-                        $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
-  
-                        setTimeout( function() {
-                          $( __name ).css({ 
-                            backgroundColor: 'rgba(0,0,0,0)',
-                          });
-                        }, 100 )
-                      }
-                      return arguments[0]
-                    })
+                          $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+                          
+                          if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
+                            // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
+                          }
+                          
+                          setTimeout( function() {
+                            $( __name ).css({ 
+                              backgroundColor: 'rgba(0,0,0,0)',
+                            });
+                          }, 100 )
+                        }
+                        return arguments[0]
+                      })
+                    }
                   }
                 }()
               }
@@ -465,25 +496,6 @@ module.exports = function( Gibber, Notation ) {
               }
             })()
           }
-          
-          // var lastChose = {};
-          // 
-          // seq.chose = function( key, index ) {
-          //   console.log( "SEQ.CHOSE", key, index ) 
-          //   if( seq.locations[ key ] ) {
-          //     var __name = '.' + seq.locations[ key ][ index ];
-          //           
-          //     if( typeof lastChose[ key ] === 'undefined') lastChose[ key ] = []
-          // 
-          //     $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
-          // 
-          //     setTimeout( function() {
-          //       $( __name ).css({ 
-          //         backgroundColor: 'rgba(0,0,0,0)',
-          //       });
-          //     }, 100 )
-          //   }
-          // }
         }
       }
     }
