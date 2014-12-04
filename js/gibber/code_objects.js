@@ -195,15 +195,18 @@ module.exports = function( Gibber, Notation ) {
                       })()
                     }
                     
-                    var seq = newObject
+                    var seq = newObject,
+                        _name_ = object.object.property.name, 
+                        pattern = seq[ _name_ ][ valuesOrDurations ]
 
-                    if( seq[ object.object.property.name ] && seq[ object.object.property.name ][ valuesOrDurations ].filters ) {
-                      var _name_ = object.object.property.name, lastChose = {}
+                    if( seq[ _name_ ] && pattern.filters ) {
+                      var lastChose = {}
                       
                       if( isArray ) { 
                         var start, end
                         
-                        seq[ _name_ ][ valuesOrDurations ].arrayText = src.substring( prevObject.arguments[i].range[0], prevObject.arguments[i].range[1] - 2 );
+                        pattern.arrayText = src.substring( prevObject.arguments[i].range[0] + 1, prevObject.arguments[i].range[1] - 1 );
+                        pattern.originalArrayText = pattern.arrayText.slice( 0 )
                         
                         start = {
                           line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
@@ -217,12 +220,12 @@ module.exports = function( Gibber, Notation ) {
                         start.line += prevObject.arguments[i].loc.start.line
                         end.line   += prevObject.arguments[i].loc.end.line
                     
-                        seq[ _name_ ][ valuesOrDurations ].arrayMark = cm.markText( start, end );
+                        pattern.arrayMark = cm.markText( start, end );
                         
-                        console.log( seq[ _name_ ][ valuesOrDurations ].arrayText, seq[ _name_ ][ valuesOrDurations ].arrayMark.find() )
+                        //console.log( pattern.arrayText, pattern.arrayMark.find() )
                       }
-                      
-                      seq[ _name_ ][ valuesOrDurations ].filters.push( function() {
+
+                      pattern.filters.push( function() {
                         if( seq.locations[ _name_ + valuesOrDurations ] ) {
                           var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
 	
@@ -242,6 +245,40 @@ module.exports = function( Gibber, Notation ) {
                         }
                         return arguments[0]
                       })
+                      
+                      pattern.onchange = function() {
+                        var patternValues = pattern.arrayText.split(','),
+                            newPatternText = pattern.values.join(','),
+                            arrayPos = pattern.arrayMark.find(),
+                            charCount = 0
+                                                
+                        cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
+                        
+                        for( var jj = 0; jj < pattern.values.length; jj++ ) {
+                          var value = pattern.values[ jj ],
+                           		__name = newObjectName + '_' + _name_ + '_' + valuesOrDurations + '_' + jj + '_sequence',
+                              index = jj,
+                              length = ( value + '' ).length,
+                              start = {
+                                line : arrayPos.from.line,
+                                ch :   arrayPos.from.ch + charCount
+                              },
+                              end = {
+                                line : arrayPos.to.line,
+                                ch :   arrayPos.from.ch + charCount + length
+                              }
+                          
+                          charCount += jj !== pattern.values.length - 1 ? length + 1 : length
+                  
+                          var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+                          newObject.marks[ _name_ + valuesOrDurations ].push( mark )
+                          newObject.locations[ _name_ + valuesOrDurations ].push( __name )
+                        }
+                        
+                        arrayPos.to.ch = arrayPos.from.ch + charCount
+                        pattern.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
+                        pattern.arrayText = newPatternText
+                      }
                     }
                   }
                 }()
@@ -386,7 +423,7 @@ module.exports = function( Gibber, Notation ) {
         targetName = typeof seq.target !== 'undefined' ? seq.target.text.split(' ')[0] : 'undefined',
         target = window[ targetName ]
     
-    console.log( "MAKING SEQUENCE NOTATION" )
+    //console.log( "MAKING SEQUENCE NOTATION" )
     if( props ) {
       for( var ii = 0; ii < right.arguments.length; ii++ ) {
         seq.locations = {}
@@ -624,4 +661,31 @@ module.exports = function( Gibber, Notation ) {
     return cb    
   }
   Gibber.Environment.Notation.on( 'global' )
+  
+  var PW = Gibber.Environment.Notation.PatternWatcher = {
+    dirty: [],
+    clear: function() { this.dirty.length = 0 },
+    fps: 30,
+    check: function() {
+      for( var i = 0; i < this.dirty.length; i++ ) {
+        this.dirty[ i ].onchange()
+      }
+      this.dirty.length = 0
+    },
+    interval: null,
+    start: function() {
+      this.interval = setInterval( this.check.bind( PW ), 1000 / this.fps )
+    },
+    stop: function() {
+      clearInterval( this.interval )
+    }
+  }
+  
+  Gibber.Pattern.prototype._onchange = function() {
+    if( PW.dirty.indexOf( this ) === -1 ) {
+      PW.dirty.push( this )
+    }
+  }
+  
+  PW.start()
 }
