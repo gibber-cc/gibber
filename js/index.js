@@ -1330,13 +1330,25 @@ module.exports = function( Gibber, Notation ) {
   //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
   Gibber.Environment.Notation.features[ 'global' ] = function( obj, cm, pos, start, end, src, evalStart ) {
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
-      var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = window[ newObjectName ]
+      var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = null
+      
+      if( left.type === 'MemberExpression' ) {
+        newObjectName = src.split( '=' )[0].trim()
+        eval( "newObject = " + newObjectName )
+      }else{
+        newObject = window[ newObjectName ]
+      }
+      
+      //console.log("NEW OBJECT", newObject, newObjectName + '.' )
       
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
       if( right.callee ) {        
-        var constructorName = right.callee.name,
-            className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
+        var constructorName = null, className = null
         
+        constructorName = right.callee.name ? right.callee.name : right.callee.object.object.callee.name
+        className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
+        
+        //console.log("CONSTRUCTOR NAME", constructorName )
         //console.log( className, constructorName, newObjectName )
         var mark = cm.markText( start, end, { 'className': className } );
         
@@ -1357,15 +1369,6 @@ module.exports = function( Gibber, Notation ) {
                 }
               }
             }
-            
-            // for( var i = 0; i < this.marks.length; i++ ) {        
-            //   if( this.marks[ i ].height ) { // in case this is a line handle
-            //     var cm = this.marks[i].parent.parent.cm
-            //     cm.removeLineClass( this.marks[i].lineNo(), this.marks[i].wrapClass )
-            //   }else{
-            //     this.marks[ i ].clear()
-            //   }
-            // }
       
             this.marks = {}
           }
@@ -1379,7 +1382,6 @@ module.exports = function( Gibber, Notation ) {
         while( typeof object !== 'undefined' ) {
           if( object.property ) {
             if( object.property.name === 'seq' ) {
-              
               for( var i = 0; i < prevObject.arguments.length; i++ ) {
                 !function() {
                   var values = prevObject.arguments[i].elements,
@@ -1390,6 +1392,7 @@ module.exports = function( Gibber, Notation ) {
                   
                   var isArray = true
                   if( !values ) {
+                    console.log( prevObject.arguments[i] )
                     //console.log( prevObject.arguments[i].callee.object.elements )
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
@@ -1408,9 +1411,11 @@ module.exports = function( Gibber, Notation ) {
                     for( var jj = 0; jj < values.length; jj++ ) {
                       ( function() {
                         var value = values[ jj ],
-                         		__name = newObjectName + '_' + object.object.property.name + '_' + valuesOrDurations + '_' + jj + '_sequence',
+                         		__name = newObjectName.replace('.','') + '_' + object.object.property.name + '_' + valuesOrDurations + '_' + jj + '_sequence',
                             index = jj,
           									start, end;
+                        
+                        //console.log( "PROP", object.object.property.name, __name )
 
                         start = {
                           line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
@@ -1433,14 +1438,14 @@ module.exports = function( Gibber, Notation ) {
                     var seq = newObject,
                         _name_ = object.object.property.name, 
                         pattern = seq[ _name_ ][ valuesOrDurations ]
-
+                    
                     if( seq[ _name_ ] && pattern.filters ) {
                       var lastChose = {}
                       
                       if( isArray ) { 
                         var start, end
                         
-                        pattern.arrayText = src.substring( prevObject.arguments[i].range[0] + 1, prevObject.arguments[i].range[1] - 1 );
+                        pattern.arrayText = src.substring( prevObject.arguments[i].range[0], prevObject.arguments[i].range[1] - 2 );
                         pattern.originalArrayText = pattern.arrayText.slice( 0 )
                         
                         start = {
@@ -1461,6 +1466,7 @@ module.exports = function( Gibber, Notation ) {
                       }
 
                       pattern.filters.push( function() {
+                        //console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
                         if( seq.locations[ _name_ + valuesOrDurations ] ) {
                           var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
 	
@@ -1522,7 +1528,9 @@ module.exports = function( Gibber, Notation ) {
           }
           
           prevObject = object
+          //console.log("OBJECT 1", object )
           object = object.object || object.callee
+          //console.log("OBJECT 2", object )
         }
         // for( var i = evalStart + 1; i <= evalStart + ( end.line - start.line ); i++ ) {
         //           mark = cm.addLineClass( i, 'wrap', className )
@@ -1598,6 +1606,128 @@ module.exports = function( Gibber, Notation ) {
             })()
           }
         }*/
+      }
+    }
+    else if( obj.type === 'ExpressionStatement' && obj.expression.type === 'CallExpression' ) {
+      if( src.indexOf( 'seq' ) > -1 ) {
+        var args = obj.expression.arguments,
+            nextObject = obj.expression.callee,
+            object = null,
+            caller = null, prevObject = null, pattern = null, path = [], property = null
+        
+        var count = 0    
+        while( typeof nextObject !== 'undefined' ) {
+          object = nextObject
+          if( count++ !== 0 && object.property ) path.push( object.property.name )
+          nextObject = object.object
+        }
+        
+        caller = window[ object.name ]
+        
+        eval( 'property = ' + object.name + '.' + path.reverse().join( '.' ) )
+        
+        //console.log( caller, pattern )
+        if( !caller.marks ) {
+          caller.marks = {}
+          caller.locations = {}
+          caller.clearMarks = function() {
+            for( var key in this.marks ) {
+              var marks = this.marks[ key ]
+              for( var i = 0; i < marks.length; i++ ) {        
+                if( marks[ i ].height ) { // in case this is a line handle
+                  var cm = marks[i].parent.parent.cm
+                  cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
+                }else{
+                  marks[ i ].clear()
+                }
+              }
+            }
+      
+            this.marks = {}
+          }
+        }
+        
+        for( var _j = 0; _j < args.length; _j++ ) {
+          !function( j ) {
+            var values = args[ j ].elements,
+                valuesOrDurations = j === 0 ? 'values' : 'durations',
+                propertyName = obj.expression.callee.object.property.name,
+                isArray = true
+            
+            // console.log("PROPERTY NAME", propertyName, "VD", valuesOrDurations )
+            if( !values ) {
+              //console.log( args[j] )
+              if( args[j].callee ) { // if it is an array with a random or weight method attached..
+                if( args[j].callee.object && args[j].callee.object.elements ) {
+                  values = args[j].callee.object.elements; // use the array that is calling the method
+                }else{
+                  values = [ args[j] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
+                  isArray = false
+                }
+              }else{
+                values = [ args[j] ]
+                isArray = false 
+              }
+            }
+            
+            var seq = caller,
+                _name_ = propertyName, 
+                pattern = property[ valuesOrDurations ]
+          
+            var lastChose = {}
+            pattern.filters.push( function() {
+              // console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
+              if( seq.locations[ _name_ + valuesOrDurations ] ) {
+                var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
+
+                if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+            
+                $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+              
+                if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
+                  // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
+                }
+              
+                setTimeout( function() {
+                  $( __name ).css({ 
+                    backgroundColor: 'rgba(0,0,0,0)',
+                  });
+                }, 100 )
+              }
+              return arguments[0]
+            }) 
+          
+            caller.marks[ propertyName + valuesOrDurations ] = []
+            caller.locations[ propertyName + valuesOrDurations ] = []
+            var propNameStart = ( object.name.replace('.','_') ) + '_' + path.join( '_' ) + '_' + valuesOrDurations + '_'
+            
+            for( var jj = 0; jj < values.length; jj++ ) {
+              ( function() {
+                var value = values[ jj ],
+                 		__name = propNameStart + jj,
+                    index = jj,
+    								start, end;
+                    // console.log( "PROP", propertyName, __name )
+
+                start = {
+                  line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                  ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
+                }
+                end = {
+                  line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                  ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
+                }
+    
+                start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
+                end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
+        
+                var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+                caller.marks[ propertyName + valuesOrDurations ].push( mark )
+                caller.locations[ propertyName + valuesOrDurations ].push( __name )
+              })()
+            }
+          }(_j)
+        }
       }
     }
   }
@@ -31356,9 +31486,11 @@ var Theory = {
         that.create() 
       }
     });
-
+    
     // createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
     // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
+    
+    that.gibber = true // needed since createProxyProperties isn't called where this is normally set
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
     //Gibber.defineSequencedProperty( that, 'root', 1 )
