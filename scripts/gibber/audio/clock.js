@@ -1,12 +1,10 @@
-module.exports = function( Gibber ) {
+!function() {
   
-"use strict"
-
 var times = [],
-    $ = Gibber.dollar,//require('zepto-browserify').Zepto,
-    curves = Gibber.outputCurves,
-    LINEAR = curves.LINEAR,
-    LOGARITHMIC = curves.LOGARITHMIC, 
+    $ = null,
+    curves = null,
+    LINEAR = null,
+    LOGARITHMIC = null,
     Gibberish = require( 'gibberish-dsp' )
 
 var Clock = {
@@ -144,7 +142,6 @@ var Clock = {
   time : function(v) {
     var timeInSamples, beat;
     
-
     if( v < Clock.maxMeasures ) {
       timeInSamples = Clock.beats( v * Clock.signature.lower )
     }else{
@@ -179,6 +176,17 @@ var Clock = {
   }
 }
 
-return Clock
+module.exports = function( Gibber ) {
+  
+  "use strict"
+
+  $ = Gibber.dollar,//require('zepto-browserify').Zepto,
+  curves = Gibber.outputCurves,
+  LINEAR = curves.LINEAR,
+  LOGARITHMIC = curves.LOGARITHMIC
+
+  return Clock
 
 }
+
+}()

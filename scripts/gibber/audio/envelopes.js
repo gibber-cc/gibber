@@ -78,7 +78,8 @@ module.exports = function( Gibber ) {
             obj
         
         if( typeof args[0] !== 'object' ) {
-          obj = new Gibberish[ type ]( args[0], args[1], Clock.time( args[2] ), args[3] )
+          // console.log( args[0], args[1], args[2], Gibber.Clock.time( args[2] ) )
+          obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }

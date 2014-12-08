@@ -69,7 +69,10 @@ module.exports = function( Gibber ) {
         var durationsPattern = Gibber.construct( Gibber.Pattern, obj.durations )
         
         if( obj.durations.randomFlag ) {
-          durationsPattern.filters.push( function() { return [ durationsPattern.values[ Gibber.Utilities.rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          durationsPattern.filters.push( function() { 
+            var idx = Gibber.Utilities.rndi(0, durationsPattern.values.length - 1)
+            return [ durationsPattern.values[ idx ], 1, idx ] 
+          })
           for( var i = 0; i < obj.durations.randomArgs.length; i+=2 ) {
             durationsPattern.repeat( obj.durations.randomArgs[ i ], obj.durations.randomArgs[ i + 1 ] )
           }
@@ -96,7 +99,10 @@ module.exports = function( Gibber ) {
             }
           
             if( arg[ key ].randomFlag ) {
-              valuesPattern.filters.push( function() { return [ valuesPattern.values[ Gibber.Utilities.rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+              valuesPattern.filters.push( function() {
+                var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
+                return [ valuesPattern.values[ idx ], 1, idx ] 
+              })
               for( var i = 0; i < arg[ key ].randomArgs.length; i+=2 ) {
                 valuesPattern.repeat( arg[ key ].randomArgs[ i ], arg[ key ].randomArgs[ i + 1 ] )
               }
@@ -106,15 +112,20 @@ module.exports = function( Gibber ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
                 if( output < Gibber.minNoteFrequency ) {
-                  output = obj.scale.notes[ output ]
+                  if( obj.scale ) {
+                    output = obj.scale.notes[ output ]
+                  }else{
+                    output = Gibber.scale.notes[ output ]
+                  }
                 }
                 
-                return [ output, arguments[0][1] ] 
+                return [ output, arguments[0][1], arguments[0][2] ] 
               })
             }
             
             _seq.values = valuesPattern
-        
+            
+            console.log( "SEQ", key, valuesPattern )
             obj.seqs.push( _seq )
             keyList.push( key )
           }
@@ -215,7 +226,7 @@ module.exports = function( Gibber ) {
       })(seq)
     }
     
-    var _durations = null
+    var _durations = durationsPattern
     Object.defineProperty( seq, 'durations', {
       get: function() { return _durations },
       set: function(v) {

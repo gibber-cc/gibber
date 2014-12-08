@@ -144,7 +144,7 @@ module.exports = function( Gibber ) {
         
               if( obj.envelope.getState() > 0 ) obj.envelope.run();
             }
-                  }
+          }
         }
         // override note method to allow note names
         obj._note = obj.note.bind( obj )

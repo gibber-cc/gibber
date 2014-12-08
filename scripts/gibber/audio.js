@@ -331,7 +331,6 @@ Audio = {
       for( var i = 0; i < this.mappingObjects.length; i++ ) {
         var mapping = this.mappingObjects[ i ]
         
-        console.log( mapping )
         if( mapping.targets.length > 0 ) {
           for( var j = 0; j < mapping.targets.length; j++ ) {
             var _mapping = mapping.targets[ j ]
