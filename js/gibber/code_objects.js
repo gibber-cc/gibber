@@ -145,7 +145,140 @@ module.exports = function( Gibber, Notation ) {
             prevObject = right
             
         while( typeof object !== 'undefined' ) {
-          if( object.property ) {
+          if( object.name === 'Drums' || object.name === 'EDrums' ) {
+            var values = right.arguments
+            if( values[0] ) {
+              var location = values[0].loc,
+                  pattern = newObject.note.values
+                  
+              pattern.arrayText = values[0].value
+              pattern.arrayMark = cm.markText( 
+                {line:pos.start.line + location.start.line - 1, ch:location.start.column + 1 }, 
+                {line:pos.start.line + location.start.line - 1, ch:location.end.column - 1 }
+              )
+                  
+              newObject.marks.note_values = []
+              newObject.locations.note_values = []
+              
+              for( var i = 0; i < values[0].value.length; i++ ) {
+                !function(jj) {
+                  var value = values[0].value[ jj ],
+                   		__name = newObjectName + '_note_values_' + jj,
+    									start, end;
+                  
+                  start = {
+                    line : pos.start.line + location.start.line - 1,
+                    ch : location.start.column + 1 + jj
+                  }
+                  end = {
+                    line : pos.start.line + location.start.line - 1,
+                    ch : location.start.column + 2 + jj
+                  }
+                  
+                  //console.log( "PROP", value, __name, start, end )
+                  
+                  var mark = cm.markText( start, end, { className:__name });
+                  newObject.marks[ "note_values" ].push( mark )
+                  newObject.locations[ "note_values" ].push( __name )
+                }( i ) 
+              }
+              
+              var _name_ = "note_",
+                  valuesOrDurations = 'values',
+                  lastChose = {}
+              
+              // push update function to Notation.priority so it can be called after applying
+              // all other notations... this will make it visible.
+              var updateFunction = function() {
+                if( newObject.locations[ _name_ + valuesOrDurations ] && updateFunction.shouldTrigger ) {
+                  var __name = '.' + newObject.locations[ _name_ + valuesOrDurations ][ updateFunction.index ];
+
+                  if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+                
+                  $( __name ).css({ backgroundColor:'rgba(255,0,0,1)' });
+                  
+                  setTimeout( function() {
+                    $( __name ).css({ 
+                      backgroundColor: 'rgba(0,0,0,0)',
+                    });
+                    
+                  }, 100 )
+                  
+                  updateFunction.shouldTrigger = false
+                }
+              }
+              updateFunction.index = null
+              updateFunction.shouldTrigger = false
+              
+              Notation.add( { update: updateFunction }, true )
+              
+              pattern.filters.push( function() {
+                if( arguments[0][2] !== updateFunction.index ) {
+                  updateFunction.shouldTrigger = true
+                  updateFunction.index = arguments[0][2]
+                }
+                
+                return arguments[0]
+              } )
+              
+              // Notation.priority.push( { update: function() {
+              //   //console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
+              //   if( newObject.locations[ _name_ + valuesOrDurations ] ) {
+              //     var __name = '.' + newObject.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
+              // 
+              //     if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+              //   
+              //     $( __name ).css({ backgroundColor:'rgba(255,0,0,1)' });
+              //     //$( __name ).css({ cssText:'background-color: rgba(255,0,0,1) !important' });
+              //     if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
+              //       // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
+              //     }
+              //     
+              //     setTimeout( function() {
+              //       $( __name ).css({ 
+              //         backgroundColor: 'rgba(0,0,0,0)',
+              //       });
+              //       // $( __name ).css({ cssText:'background-color: rgba(0,0,0,0) !important' });
+              //       
+              //     }, 100 )
+              //   }
+              //   return arguments[0]
+              // }} )
+              
+              pattern.onchange = function() {
+                var patternValues = pattern.arrayText.split(''),
+                    newPatternText = pattern.values.join(''),
+                    arrayPos = pattern.arrayMark.find(),
+                    charCount = 0
+                                        
+                cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
+                
+                for( var jj = 0; jj < pattern.values.length; jj++ ) {
+                  var value = pattern.values[ jj ],
+                   		__name = newObjectName + '_note_values_' + jj,
+                      length = ( value + '' ).length,
+                      start = {
+                        line : arrayPos.from.line,
+                        ch :   arrayPos.from.ch + charCount
+                      },
+                      end = {
+                        line : arrayPos.to.line,
+                        ch :   arrayPos.from.ch + charCount + 1
+                      }
+                  
+                  charCount += 1 //jj !== pattern.values.length - 1 ? length + 1 : length
+          
+                  var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+                  newObject.marks[ _name_ + valuesOrDurations ].push( mark )
+                  newObject.locations[ _name_ + valuesOrDurations ].push( __name )
+                }
+                
+                arrayPos.to.ch = arrayPos.from.ch + charCount
+                pattern.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
+                pattern.arrayText = newPatternText
+              }
+            }
+          } else if( object.property ) { 
             if( object.property.name === 'seq' ) {
               for( var i = 0; i < prevObject.arguments.length; i++ ) {
                 !function() {
@@ -157,7 +290,7 @@ module.exports = function( Gibber, Notation ) {
                   
                   var isArray = true
                   if( !values ) {
-                    console.log( prevObject.arguments[i] )
+                    //console.log( prevObject.arguments[i] )
                     //console.log( prevObject.arguments[i].callee.object.elements )
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
@@ -817,5 +950,5 @@ module.exports = function( Gibber, Notation ) {
     }
   }
   
-  PW.start()
+  //PW.start()
 }

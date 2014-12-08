@@ -13,6 +13,8 @@ module.exports = function( Gibber, Environment) {
     
     enabled: {},
     
+    priority: [],
+    
     on: function() {
       for( var i = 0; i < arguments.length; i++ ) {
         var name = arguments[ i ]
@@ -44,8 +46,13 @@ module.exports = function( Gibber, Environment) {
       }
     },
     
-    add: function( obj ) {
-      this.notations.push( obj )
+    add: function( obj, priority ) {
+      if( !priority ) {
+        this.notations.push( obj )
+      }else{
+        this.priority.push( obj )
+      }
+      
       if( !this.isRunning ) {
         this.init()
       }
@@ -74,7 +81,13 @@ module.exports = function( Gibber, Environment) {
           $( filter.class ).css( '-webkit-filter', filter.filterString.join(' ') )
           filter.filterString.length = 0
         }
-
+        
+        for( var k = 0; k < GEN.priority.length; k++ ) {
+          GEN.priority[ k ].update()
+        }
+        
+        //Gibber.Environment.Notation.PatternWatcher.check()
+        
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
       func()
@@ -83,6 +96,8 @@ module.exports = function( Gibber, Environment) {
       
       $.subscribe( '/gibber/clear', function( e ) {
         GEN.isRunning = false
+        GEN.notations.length = 0
+        GEN.priority.length = 0
       })
     },
     
