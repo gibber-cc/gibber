@@ -30436,7 +30436,11 @@ module.exports = function( Gibber ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
                 if( output < Gibber.minNoteFrequency ) {
-                  output = obj.scale.notes[ output ]
+                  if( obj.scale ) {
+                    output = obj.scale.notes[ output ]
+                  }else{
+                    output = Gibber.scale.notes[ output ]
+                  }
                 }
                 
                 return [ output, arguments[0][1] ] 
