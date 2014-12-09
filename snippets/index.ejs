@@ -131,7 +131,7 @@ function updateProgress (oEvent) {
 
 function transferComplete( evt ) {
   var script = document.createElement('script')
-  script.innerHTML = evt.srcElement.responseText
+  script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
   document.querySelector( 'head' ).appendChild( script )
   headerSpan.style.cssText += 'display:none;'
   spin.stop()
