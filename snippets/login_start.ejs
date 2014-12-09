@@ -6,10 +6,12 @@
   </button>
   
   <div style="margin: 0em 1em .5em auto; width:15em; color:#ccc">
-    <h5 style="margin:0">Enter your username and password</h5>
-    <input style="width:100%" id='username' value='username' />
-    <input style="width:100%; margin-top:1em" id='password' type='password' value='password' />
-    <button id='loginSubmit' style='margin:1em 0; float:right' onclick='Gibber.Environment.Account.login()'>Submit</button>
+    <form name="loginForm" onsubmit="return Gibber.Environment.Account.login();" autocomplete="off">
+      <h5 style="margin:0">Enter your username and password</h5>
+      <input style="width:100%" id="username" placeholder="username" />
+      <input style="width:100%; margin-top:1em" id="password" type="password" placeholder="password" />
+      <button id="loginSubmit" style="margin:1em 0; float:right" type="submit">Submit</button>
+    </form>
     <p style='margin-top:2em'>Don't have an account? <a href='#' style='color:#ccc' onclick='Gibber.Environment.Account.newAccountForm()'>Create one.</a></p>
   </div>
 </div>
