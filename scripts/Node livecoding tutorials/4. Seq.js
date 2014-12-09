@@ -20,12 +20,12 @@ Gibber.init()
 // When you create a `Seq` you give a bunch of arrays for properties you want
 // to sequence. For example, if we want to sequence notes and change the
 // amplitude and panning for each note:
-a = Synth({attack:ms(1)})
-b = Seq({note:['A4', 'Bb4', 'C5', 'G4'],
-        amp:[0.2 , 0.4, 0.6, 0.05 ],
-        pan:[-0.5, 0.5 ],
-        durations:1/4,
-        target:a})
+a = Synth({attack: ms(1)})
+b = Seq({note: ['A4', 'Bb4', 'C5', 'G4'],
+        amp: [0.2 , 0.4, 0.6, 0.05 ],
+        pan: [-0.5, 0.5 ],
+        durations: 1/4,
+        target: a})
 
 // The above `Seq` object targets one synth and advances through the various
 // sequences it contains every 1/4 note. The arrays holding the values are
@@ -36,7 +36,7 @@ Gibber.clear()
 
 // Alternatively to the above notation, we could also do the following using
 // the synth's built-in `Seq` object.
-a = Synth({attack:ms(1)}
+a = Synth({attack: ms(1)}
           ).note.seq(['A4', 'Bb4', 'C5', 'G4'], 1/4
           ).amp.seq([0.2, 0.4, 0.6, 0.05 ], 1/4
           ).pan.seq([-0.5, 0.5], 1/4)
@@ -76,14 +76,14 @@ s.seq.reset()
 Gibber.clear()
 
 // For more complex sequencing you can make a dedicated sequencer object
-t = Synth({attack:44}
+t = Synth({attack: 44}
           ).fx.add(
                 Vibrato(),
                 Reverb()
                )
-u = Seq({note:['c4', 'c5'].random(),
+u = Seq({note: ['c4', 'c5'].random(),
         durations: [1/4, 1/8].random(),
-        target:t}
+        target: t}
         )
 
 // Assign new values to the note sequence

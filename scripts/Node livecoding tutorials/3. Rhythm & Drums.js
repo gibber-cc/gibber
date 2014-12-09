@@ -58,9 +58,9 @@ Gibber.clear()
 // containing the individual notes. Here we use the `split()` method to do the
 // same thing. We also randomize the pitch of the drums in one sequence.
 z = EDrums()
-k = Seq({note:'x...x..xx..xx...'.split(''), durations: 1/16, target:z})
-h = Seq({note:'*.*.*-***.*-*.**'.split(''), durations: 1/16, target:z})
-s = Seq({note:'.o'.split(''), durations:1/4, target:z})
+k = Seq({note: 'x...x..xx..xx...'.split(''), durations: 1/16, target: z})
+h = Seq({note: '*.*.*-***.*-*.**'.split(''), durations: 1/16, target: z})
+s = Seq({note: '.o'.split(''), durations: 1/4, target: z})
 
 Gibber.clear()
 

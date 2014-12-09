@@ -11,11 +11,11 @@ Gibber.init()
 
 // Synths that take advantage of this scale system include `Synth`, `Synth2`,
 // `Mono,` `FM` and `Pluck`.
-s = Synth({attack:ms(10),
-           decay:ms(50)}
+s = Synth({attack: ms(10),
+           decay: ms(50)}
           ).note.seq([0, 1, 5, 3, 0, 6, 7, -5], 1/16)
-ss = Synth({attack:ms(10),
-            decay:ms(50)}
+ss = Synth({attack: ms(10),
+            decay: ms(50)}
            ).note.seq([0, 4, 3, 6, 4, 5, 9, -3], 1/16)
 
 // Route strings to shared bus with reverb
@@ -100,4 +100,4 @@ Gibber.scale = Gibber.Theory.CustomScale('c4',
 
 Gibber.clear()
 
-// Next up: Chords & Arpeggios
+// Next up: Patterns & Seq

@@ -7,7 +7,7 @@ Gibber.init()
 // For efficiency reasons, synths are created only being able to play one note
 // at a time. To fix this, you must set the maxVoices property of a synth to a
 // higher number.
-a = FM({maxVoices:4})
+a = FM({maxVoices: 4})
 
 // Once this is done, you can call the chord method on a synth.
 // You can define chords in terms of Gibber's scale objects, or pass in
@@ -41,7 +41,7 @@ Gibber.clear()
 
 // We can also create randomized chords using `rndi()` and `Rndi()`. `Rndi()`
 // will create a different chord everytime a sequencer calls it.
-b = Pluck({maxVoices:4})
+b = Pluck({maxVoices: 4})
 
 // Create a three-note chord with notes in between the root and an octave
 // higher.
@@ -62,7 +62,7 @@ Gibber.clear()
 // updown - play notes up and down, repeating top and bottom notes
 // updown2 - play notes up and down but only play top and bottom notes once
 //           per arpeggio.
-c = Synth({maxVoices:10, attack:44})
+c = Synth({maxVoices: 10, attack: 44})
 
 // Chord, speed, pattern, number of octaves
 d = Arp('c4maj7', 1/8,
