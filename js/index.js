@@ -1340,12 +1340,12 @@ module.exports = function( Gibber, Notation ) {
       }
       
       //console.log("NEW OBJECT", newObject, newObjectName + '.' )
-      
+      console.log( obj )
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
       if( right.callee ) {        
         var constructorName = null, className = null
         
-        constructorName = right.callee.name ? right.callee.name : right.callee.object.object.callee.name
+        constructorName = right.callee.name ? right.callee.name : right.callee.object.object ? right.callee.object.object.callee.name : right.callee.object.callee.name
         className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
         
         //console.log("CONSTRUCTOR NAME", constructorName )
@@ -1377,11 +1377,15 @@ module.exports = function( Gibber, Notation ) {
         newObject.marks.global = [ mark ]
         
         var object = right.callee,
-            prevObject = right
-            
+            prevObject = right, counting = 0
+        
         while( typeof object !== 'undefined' ) {
           if( object.name === 'Drums' || object.name === 'EDrums' ) {
             var values = right.arguments
+            
+            if( values[0] && typeof values[0].value === 'undefined' ) {
+              values = prevObject.arguments // needed in case drums properties are also sequenced
+            }
             if( values[0] ) {
               var location = values[0].loc,
                   pattern = newObject.note.values
@@ -1480,7 +1484,9 @@ module.exports = function( Gibber, Notation ) {
               //   return arguments[0]
               // }} )
               
+              console.log("CREATING ON CHANGE")
               pattern.onchange = function() {
+                console.log("PATTERN ON CHANGE")
                 var patternValues = pattern.arrayText.split(''),
                     newPatternText = pattern.values.join(''),
                     arrayPos = pattern.arrayMark.find(),
@@ -4307,7 +4313,7 @@ module.exports = function( Gibber, Environment) {
           GEN.priority[ k ].update()
         }
         
-        //Gibber.Environment.Notation.PatternWatcher.check()
+        Gibber.Environment.Notation.PatternWatcher.check()
         
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
@@ -30939,7 +30945,6 @@ module.exports = function( Gibber ) {
             
             _seq.values = valuesPattern
             
-            console.log( "SEQ", key, valuesPattern )
             obj.seqs.push( _seq )
             keyList.push( key )
           }
@@ -33305,9 +33310,13 @@ var Pattern = function() {
 
   var fnc = function() {
     var len = fnc.getLength(),
-        idx = Math.floor( fnc.start + (fnc.phase % len ) ),
-        val = fnc.values[ Math.floor( idx % fnc.values.length ) ],
-        args = fnc.runFilters( val, idx )
+        idx, val, args
+    
+    
+    idx = fnc.phase >-1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
+    
+    val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
+    args = fnc.runFilters( val, idx )
         
     fnc.phase += fnc.stepSize * args[ 1 ]
     val = args[ 0 ]

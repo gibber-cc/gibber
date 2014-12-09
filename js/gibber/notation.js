@@ -86,7 +86,7 @@ module.exports = function( Gibber, Environment) {
           GEN.priority[ k ].update()
         }
         
-        //Gibber.Environment.Notation.PatternWatcher.check()
+        Gibber.Environment.Notation.PatternWatcher.check()
         
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
