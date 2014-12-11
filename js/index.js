@@ -1255,6 +1255,152 @@ b = Seq({
 a.text.opacity = a.Out
 */
 
+
+// push update function to Notation.priority so it can be called after applying
+// all other notations... this will make it visible.
+
+var uid = 0
+
+var createUpdateFunction = function( obj, name, color ) {
+  var lastChose = {},
+      color = color || 'rgba(255,255,255,1)'
+  
+  var updateFunction = function() {
+    if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
+      var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
+          span = $( spanName )
+      
+      if( typeof lastChose[ name ] === 'undefined') lastChose[ name ] = []
+  
+      span.css({ backgroundColor:color });
+    
+      setTimeout( function() {
+        span.css({ 
+          backgroundColor: 'rgba(0,0,0,0)',
+        });
+      
+      }, 100 )
+    
+      updateFunction.shouldTrigger = false
+    }
+  }
+  updateFunction.index = null
+  updateFunction.shouldTrigger = false
+  
+  return updateFunction
+}
+
+//pattern.onchange = createOnChange( newObject, newObjectName, valuesOrDurations, 'note_values' )
+
+var createOnChange = function( obj, objName, patternName, cm, join ) {
+  join = join || ''
+  var joinLength = join.length
+  
+  return function() {
+    var patternValues = this.arrayText.split(''),
+        newPatternText = this.values.join( join ),
+        arrayPos = this.arrayMark.find(),
+        charCount = 0
+    
+    cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
+
+    for( var jj = 0; jj < this.values.length; jj++ ) {
+      var value = this.values[ jj ],
+       		__name = objName + '_' + patternName +'_' + jj,
+          length = ( value + '' ).length,
+          start = {
+            line : arrayPos.from.line,
+            ch :   arrayPos.from.ch + charCount
+          },
+          end = {
+            line : arrayPos.to.line,
+            ch :   arrayPos.from.ch + charCount + 1
+          }
+  
+      charCount += jj !== this.values.length - 1 ? length + joinLength : length
+      
+      var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+      obj.marks[ patternName ].push( mark )
+      obj.locations[ patternName ].push( __name )
+    }
+
+    arrayPos.to.ch = arrayPos.from.ch + charCount
+    this.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
+    this.arrayText = newPatternText
+  }
+}
+
+var initializeMarks = function( obj, className, start, end, cm ) {
+  var mark = cm.markText( start, end, { 'className': className } );
+  
+  if( !obj.marks ) {
+    obj.marks = {}
+    obj.locations = {}
+    
+    obj.clearMarks = function() {
+      
+      for( var key in this.marks ) {
+        var marks = this.marks[ key ]
+        for( var i = 0; i < marks.length; i++ ) {        
+          if( marks[ i ].height ) { // in case this is a line handle
+            var cm = marks[i].parent.parent.cm
+            cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
+          }else{
+            marks[ i ].clear()
+          }
+        }
+      }
+
+      this.marks = {}
+    }
+  }
+  
+  obj.marks.global = [ mark ]
+  
+  return mark
+}
+
+var markArray = function( values, object, objectName, patternName, pos, cm, location ) {
+  for( var jj = 0; jj < values.length; jj++ ) {
+    ( function() {
+      var value = values[ jj ],
+       		__name = objectName.replace('.','') + '_' + patternName + '_' + jj,
+          index = jj,
+					start, end;
+            
+      if( !location ) { // Drums and EDrums pass location
+        start = {
+          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+          ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
+        }
+        end = {
+          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+          ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
+        }
+        start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
+        end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
+      }else{
+        start = {
+          line : pos.start.line + location.start.line - 1,
+          ch : location.start.column + 1 + jj
+        }
+        end = {
+          line : pos.start.line + location.start.line - 1,
+          ch : location.start.column + 2 + jj
+        }
+      }
+
+      var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+      object.marks[ patternName ].push( mark )
+      object.locations[ patternName ].push( __name )
+    })()
+  }
+}
+
+var getConstructorName = function( callee ) {
+  return callee.name ? callee.name : callee.object.object ? callee.object.object.callee.name : callee.object.callee.name
+}
+
 module.exports = function( Gibber, Notation ) {
   var codeObjects = [ 'Sampler', 'Model' ],
       notes = [ 'c','db','d','eb','e','f','gb','g','ab','a','bb','b' ],
@@ -1333,55 +1479,25 @@ module.exports = function( Gibber, Notation ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = null
       
       if( left.type === 'MemberExpression' ) {
+        console.log( "LEFT NAME", left )
         newObjectName = src.split( '=' )[0].trim()
         eval( "newObject = " + newObjectName )
       }else{
         newObject = window[ newObjectName ]
       }
-      
-      //console.log("NEW OBJECT", newObject, newObjectName + '.' )
-      console.log( obj )
+
       if( ! newObject || ! newObject.gibber ) return // only process Gibber objects
-      if( right.callee ) {        
-        var constructorName = null, className = null
-        
-        constructorName = right.callee.name ? right.callee.name : right.callee.object.object ? right.callee.object.object.callee.name : right.callee.object.callee.name
-        className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
-        
-        //console.log("CONSTRUCTOR NAME", constructorName )
-        //console.log( className, constructorName, newObjectName )
-        var mark = cm.markText( start, end, { 'className': className } );
-        
-        if( !newObject.marks ) {
-          newObject.marks = {}
-          newObject.locations = {}
-          
-          newObject.clearMarks = function() {
-            
-            for( var key in this.marks ) {
-              var marks = this.marks[ key ]
-              for( var i = 0; i < marks.length; i++ ) {        
-                if( marks[ i ].height ) { // in case this is a line handle
-                  var cm = marks[i].parent.parent.cm
-                  cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
-                }else{
-                  marks[ i ].clear()
-                }
-              }
-            }
       
-            this.marks = {}
-          }
-        }
-        
-        newObject.marks.global = [ mark ]
-        
-        var object = right.callee,
+      if( right.callee ) {        
+        var constructorName = getConstructorName( right.callee ), 
+            className = constructorName + '_' + newObjectName + '_' + cm.column.id + '_global'
+            mark = initializeMarks( newObject, className, start, end, cm ),
+            object = right.callee,
             prevObject = right, counting = 0
         
         while( typeof object !== 'undefined' ) {
           if( object.name === 'Drums' || object.name === 'EDrums' ) {
-            var values = right.arguments
+            var values = right.arguments, patternName = 'note_values'
             
             if( values[0] && typeof values[0].value === 'undefined' ) {
               values = prevObject.arguments // needed in case drums properties are also sequenced
@@ -1396,143 +1512,39 @@ module.exports = function( Gibber, Notation ) {
                 {line:pos.start.line + location.start.line - 1, ch:location.end.column - 1 }
               )
                   
-              newObject.marks.note_values = []
-              newObject.locations.note_values = []
+              newObject.marks[ patternName ] = []
+              newObject.locations[ patternName ] = []
               
-              for( var i = 0; i < values[0].value.length; i++ ) {
-                !function(jj) {
-                  var value = values[0].value[ jj ],
-                   		__name = newObjectName + '_note_values_' + jj,
-    									start, end;
-                  
-                  start = {
-                    line : pos.start.line + location.start.line - 1,
-                    ch : location.start.column + 1 + jj
-                  }
-                  end = {
-                    line : pos.start.line + location.start.line - 1,
-                    ch : location.start.column + 2 + jj
-                  }
-                  
-                  //console.log( "PROP", value, __name, start, end )
-                  
-                  var mark = cm.markText( start, end, { className:__name });
-                  newObject.marks[ "note_values" ].push( mark )
-                  newObject.locations[ "note_values" ].push( __name )
-                }( i ) 
-              }
+              markArray( values[0].value, newObject, newObjectName, patternName, pos, cm, location )
               
-              var _name_ = "note_",
-                  valuesOrDurations = 'values',
-                  lastChose = {}
-              
-              // push update function to Notation.priority so it can be called after applying
-              // all other notations... this will make it visible.
-              var updateFunction = function() {
-                if( newObject.locations[ _name_ + valuesOrDurations ] && updateFunction.shouldTrigger ) {
-                  var __name = '.' + newObject.locations[ _name_ + valuesOrDurations ][ updateFunction.index ];
-
-                  if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
-                
-                  $( __name ).css({ backgroundColor:'rgba(255,0,0,1)' });
-                  
-                  setTimeout( function() {
-                    $( __name ).css({ 
-                      backgroundColor: 'rgba(0,0,0,0)',
-                    });
-                    
-                  }, 100 )
-                  
-                  updateFunction.shouldTrigger = false
-                }
-              }
-              updateFunction.index = null
-              updateFunction.shouldTrigger = false
-              
-              Notation.add( { update: updateFunction }, true )
+              pattern.update = createUpdateFunction( newObject, patternName, 'rgba(255,0,0,1)' )
+              Notation.add( pattern, true )
               
               pattern.filters.push( function() {
-                if( arguments[0][2] !== updateFunction.index ) {
-                  updateFunction.shouldTrigger = true
-                  updateFunction.index = arguments[0][2]
+                if( arguments[0][2] !== pattern.update.index ) {
+                  pattern.update.shouldTrigger = true
+                  pattern.update.index = arguments[0][2]
                 }
                 
                 return arguments[0]
               } )
               
-              // Notation.priority.push( { update: function() {
-              //   //console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
-              //   if( newObject.locations[ _name_ + valuesOrDurations ] ) {
-              //     var __name = '.' + newObject.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
-              // 
-              //     if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
-              //   
-              //     $( __name ).css({ backgroundColor:'rgba(255,0,0,1)' });
-              //     //$( __name ).css({ cssText:'background-color: rgba(255,0,0,1) !important' });
-              //     if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
-              //       // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
-              //     }
-              //     
-              //     setTimeout( function() {
-              //       $( __name ).css({ 
-              //         backgroundColor: 'rgba(0,0,0,0)',
-              //       });
-              //       // $( __name ).css({ cssText:'background-color: rgba(0,0,0,0) !important' });
-              //       
-              //     }, 100 )
-              //   }
-              //   return arguments[0]
-              // }} )
-              
-              console.log("CREATING ON CHANGE")
-              pattern.onchange = function() {
-                console.log("PATTERN ON CHANGE")
-                var patternValues = pattern.arrayText.split(''),
-                    newPatternText = pattern.values.join(''),
-                    arrayPos = pattern.arrayMark.find(),
-                    charCount = 0
-                                        
-                cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
-                
-                for( var jj = 0; jj < pattern.values.length; jj++ ) {
-                  var value = pattern.values[ jj ],
-                   		__name = newObjectName + '_note_values_' + jj,
-                      length = ( value + '' ).length,
-                      start = {
-                        line : arrayPos.from.line,
-                        ch :   arrayPos.from.ch + charCount
-                      },
-                      end = {
-                        line : arrayPos.to.line,
-                        ch :   arrayPos.from.ch + charCount + 1
-                      }
-                  
-                  charCount += 1 //jj !== pattern.values.length - 1 ? length + 1 : length
-          
-                  var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
-                  newObject.marks[ _name_ + valuesOrDurations ].push( mark )
-                  newObject.locations[ _name_ + valuesOrDurations ].push( __name )
-                }
-                
-                arrayPos.to.ch = arrayPos.from.ch + charCount
-                pattern.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
-                pattern.arrayText = newPatternText
-              }
+              pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, '' )
+                            
             }
           } else if( object.property ) { 
             if( object.property.name === 'seq' ) {
               for( var i = 0; i < prevObject.arguments.length; i++ ) {
                 !function() {
                   var values = prevObject.arguments[i].elements,
-                      valuesOrDurations = i === 0 ? 'values' : 'durations';
+                      valuesOrDurations = i === 0 ? 'values' : 'durations',
+                      patternName = object.object.property.name + '_' + valuesOrDurations;
                   
-                  newObject.marks[ object.object.property.name + valuesOrDurations ] = []
-                  newObject.locations[ object.object.property.name + valuesOrDurations ] = []
+                  newObject.marks[ patternName ] = []
+                  newObject.locations[ patternName ] = []
                   
                   var isArray = true
                   if( !values ) {
-                    //console.log( prevObject.arguments[i] )
-                    //console.log( prevObject.arguments[i].callee.object.elements )
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
                         values = prevObject.arguments[i].callee.object.elements; // use the array that is calling the method
@@ -1547,32 +1559,7 @@ module.exports = function( Gibber, Notation ) {
                   } 
                   
                   if( values ) {
-                    for( var jj = 0; jj < values.length; jj++ ) {
-                      ( function() {
-                        var value = values[ jj ],
-                         		__name = newObjectName.replace('.','') + '_' + object.object.property.name + '_' + valuesOrDurations + '_' + jj + '_sequence',
-                            index = jj,
-          									start, end;
-                        
-                        //console.log( "PROP", object.object.property.name, __name )
-
-                        start = {
-                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                          ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
-                        }
-                        end = {
-                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                          ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
-                        }
-                
-                        start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
-                        end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
-                    
-                        var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
-                        newObject.marks[ object.object.property.name + valuesOrDurations ].push( mark )
-                        newObject.locations[ object.object.property.name + valuesOrDurations ].push( __name )
-                      })()
-                    }
+                    markArray( values, newObject, newObjectName, patternName, pos, cm )
                     
                     var seq = newObject,
                         _name_ = object.object.property.name, 
@@ -1601,64 +1588,23 @@ module.exports = function( Gibber, Notation ) {
                     
                         pattern.arrayMark = cm.markText( start, end );
                         
-                        //console.log( pattern.arrayText, pattern.arrayMark.find() )
                       }
-
-                      pattern.filters.push( function() {
-                        //console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
-                        if( seq.locations[ _name_ + valuesOrDurations ] ) {
-                          var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
-	
-                          if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
-                        
-                          $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
-                          
-                          if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
-                            // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
-                          }
-                          
-                          setTimeout( function() {
-                            $( __name ).css({ 
-                              backgroundColor: 'rgba(0,0,0,0)',
-                            });
-                          }, 100 )
-                        }
-                        return arguments[0]
-                      })
                       
-                      pattern.onchange = function() {
-                        var patternValues = pattern.arrayText.split(','),
-                            newPatternText = pattern.values.join(','),
-                            arrayPos = pattern.arrayMark.find(),
-                            charCount = 0
-                                                
-                        cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
-                        
-                        for( var jj = 0; jj < pattern.values.length; jj++ ) {
-                          var value = pattern.values[ jj ],
-                           		__name = newObjectName + '_' + _name_ + '_' + valuesOrDurations + '_' + jj + '_sequence',
-                              index = jj,
-                              length = ( value + '' ).length,
-                              start = {
-                                line : arrayPos.from.line,
-                                ch :   arrayPos.from.ch + charCount
-                              },
-                              end = {
-                                line : arrayPos.to.line,
-                                ch :   arrayPos.from.ch + charCount + length
-                              }
-                          
-                          charCount += jj !== pattern.values.length - 1 ? length + 1 : length
-                  
-                          var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
-                          newObject.marks[ _name_ + valuesOrDurations ].push( mark )
-                          newObject.locations[ _name_ + valuesOrDurations ].push( __name )
+                      pattern.update = createUpdateFunction( newObject, patternName )
+              
+                      Notation.add( pattern, true )
+              
+                      pattern.filters.push( function() {
+                        if( arguments[0][2] !== pattern.update.index ) {
+                          pattern.update.shouldTrigger = true
+                          pattern.update.index = arguments[0][2]
                         }
-                        
-                        arrayPos.to.ch = arrayPos.from.ch + charCount
-                        pattern.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
-                        pattern.arrayText = newPatternText
-                      }
+                                      
+                        return arguments[0]
+                      } )
+                      
+                      
+                      pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',' )
                     }
                   }
                 }()
@@ -1746,7 +1692,7 @@ module.exports = function( Gibber, Notation ) {
           }
         }*/
       }
-    }
+    }/*
     else if( obj.type === 'ExpressionStatement' && obj.expression.type === 'CallExpression' ) {
       if( src.indexOf( 'seq' ) > -1 ) {
         var args = obj.expression.arguments,
@@ -1868,7 +1814,7 @@ module.exports = function( Gibber, Notation ) {
           }(_j)
         }
       }
-    }
+    }*/
   }
   
   // drag and drop
@@ -4325,6 +4271,7 @@ module.exports = function( Gibber, Environment) {
         GEN.isRunning = false
         GEN.notations.length = 0
         GEN.priority.length = 0
+        if( GEN.clear ) GEN.clear()
       })
     },
     
@@ -33312,7 +33259,6 @@ var Pattern = function() {
     var len = fnc.getLength(),
         idx, val, args
     
-    
     idx = fnc.phase >-1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
     
     val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
@@ -33349,8 +33295,23 @@ var Pattern = function() {
         fnc.end   = arguments[1]
       }
     },
-  
-    reverse : function() { fnc.values.reverse(); fnc._onchange() },
+   
+    reverse : function() { 
+      //fnc.values.reverse(); 
+      var array = fnc.values,
+          left = null,
+          right = null,
+          length = array.length,
+          temporary;
+          
+      for (left = 0, right = length - 1; left < right; left += 1, right -= 1) {
+          temporary = array[left];
+          array[left] = array[right];
+          array[right] = temporary;
+      }
+      
+      fnc._onchange() 
+    },
   
     // repeat : function() { // repeat a value whenever it is triggered
     //   var counts = {}

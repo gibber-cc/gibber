@@ -98,6 +98,7 @@ module.exports = function( Gibber, Environment) {
         GEN.isRunning = false
         GEN.notations.length = 0
         GEN.priority.length = 0
+        if( GEN.clear ) GEN.clear()
       })
     },
     
