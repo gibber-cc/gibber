@@ -63,38 +63,41 @@ var createUpdateFunction = function( obj, name, color ) {
 var createOnChange = function( obj, objName, patternName, cm, join ) {
   join = join || ''
   var joinLength = join.length
-  
-  
+
   return function() {
-    var patternValues = this.arrayText.split(''),
-        newPatternText = this.values.join( join ),
+    var newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
-        charCount = 0
+        charCount = 0,
+        start = {
+          line : arrayPos.from.line,
+          ch :   arrayPos.from.ch + charCount
+        },
+        end = {
+          line : arrayPos.to.line,
+          ch :   arrayPos.from.ch + charCount + 1
+        }
     
-    obj.marks[ patternName ].length = obj.locations[ patternName ].length = 0
+    obj.marks[ patternName ].length = 0
+    obj.locations[ patternName ].length = 0
     
     cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
-
-    for( var jj = 0; jj < this.values.length; jj++ ) {
-      var value = this.values[ jj ],
-       		__name = objName + '_' + patternName +'_' + jj,
-          length = ( value + '' ).length,
-          start = {
-            line : arrayPos.from.line,
-            ch :   arrayPos.from.ch + charCount
-          },
-          end = {
-            line : arrayPos.to.line,
-            ch :   arrayPos.from.ch + charCount + 1
-          }
-  
-      charCount += jj !== this.values.length - 1 ? length + joinLength : length
+     
+    for( var i = 0; i < this.values.length; i++ ) {
+      var value = this.values[ i ],
+           __name = objName + '_' + patternName +'_' + i,
+          length = ( value + '' ).length
+          
+      start.ch = arrayPos.from.ch + charCount
+      end.ch   = start.ch + length
       
-      var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
-      obj.marks[ patternName ].push( mark )
+      charCount += i !== this.values.length - 1 ? length + joinLength : length
+      
+      obj.marks[ patternName ].push( 
+        cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true }) 
+      )
       obj.locations[ patternName ].push( __name )
     }
-
+    
     arrayPos.to.ch = arrayPos.from.ch + charCount
     this.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
     this.arrayText = newPatternText
@@ -133,39 +136,38 @@ var initializeMarks = function( obj, className, start, end, cm ) {
 }
 
 var markArray = function( values, object, objectName, patternName, pos, cm, location ) {
-  for( var jj = 0; jj < values.length; jj++ ) {
-    ( function() {
-      var value = values[ jj ],
-       		__name = objectName.replace('.','') + '_' + patternName + '_' + jj,
-          index = jj,
-					start, end;
-      
-      if( !location ) { // Drums and EDrums pass location
-        start = {
-          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-          ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
-        }
-        end = {
-          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-          ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
-        }
-        start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
-        end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
-      }else{
-        start = {
-          line : pos.start.line + location.start.line - 1,
-          ch : location.start.column + 1 + jj
-        }
-        end = {
-          line : pos.start.line + location.start.line - 1,
-          ch : location.start.column + 2 + jj
-        }
+  for( var i = 0; i < values.length; i++ ) {
+    var value = values[ i ],
+     		__name = objectName.replace('.','') + '_' + patternName + '_' + i,
+        index = i,
+				start, end;
+    
+    if( !location ) { // Drums and EDrums pass location
+      start = {
+        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+        ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
       }
+      end = {
+        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+        ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
+      }
+      
+      start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
+      end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
+    }else{
+      start = {
+        line : pos.start.line + location.start.line - 1,
+        ch : location.start.column + 1 + i
+      }
+      end = {
+        line : pos.start.line + location.start.line - 1,
+        ch : location.start.column + 2 + i
+      }
+    }
 
-      var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
-      object.marks[ patternName ].push( mark )
-      object.locations[ patternName ].push( __name )
-    })()
+    var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+    object.marks[ patternName ].push( mark )
+    object.locations[ patternName ].push( __name )
   }
 }
 
