@@ -62,32 +62,29 @@ module.exports = function( Gibber, Environment) {
     },
     init: function() {
       var func = function() {
-        //  console.log(" RUNNING NOTATION UPDATE ", GEN.notations )
+        Gibber.Environment.Notation.PatternWatcher.check()
+        
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {
           var notation = GEN.notations[ i ]
               
           notation.update()
           
-          if( notation.text.filterString && notation.text.filterString.length > 0 ) {
+          if( notation.text && notation.text.filterString && notation.text.filterString.length > 0 ) {
             if( filtered.indexOf( notation.text ) === -1 ) {
               filtered.push( notation.text )
             }
           }
         }
-                
+
         for( var j = 0; j < filtered.length; j++ ) {
           var filter = filtered[ j ]
           $( filter.class ).css( '-webkit-filter', filter.filterString.join(' ') )
           filter.filterString.length = 0
         }
         
-        for( var k = 0; k < GEN.priority.length; k++ ) {
-          GEN.priority[ k ].update()
-        }
-        
-        Gibber.Environment.Notation.PatternWatcher.check()
-        
+        for( var k = 0; k < GEN.priority.length; k++ ) { GEN.priority[ k ].update() }
+                
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
       func()

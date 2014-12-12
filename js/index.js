@@ -1266,6 +1266,10 @@ var createUpdateFunction = function( obj, name, color ) {
       color = color || 'rgba(255,255,255,1)'
   
   var updateFunction = function() {
+    // if( name.indexOf('reverse_values') > -1 ) { 
+    //   console.log( "FIRING" , obj.locations[ name ], updateFunction.shouldTrigger ) 
+    // }
+    
     if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
       var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
           span = $( spanName )
@@ -1280,7 +1284,6 @@ var createUpdateFunction = function( obj, name, color ) {
         });
       
       }, 100 )
-    
       updateFunction.shouldTrigger = false
     }
   }
@@ -1296,11 +1299,14 @@ var createOnChange = function( obj, objName, patternName, cm, join ) {
   join = join || ''
   var joinLength = join.length
   
+  
   return function() {
     var patternValues = this.arrayText.split(''),
         newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
         charCount = 0
+    
+    obj.marks[ patternName ].length = obj.locations[ patternName ].length = 0
     
     cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
 
@@ -1352,6 +1358,7 @@ var initializeMarks = function( obj, className, start, end, cm ) {
       }
 
       this.marks = {}
+      this.locations = {}
     }
   }
   
@@ -1367,7 +1374,7 @@ var markArray = function( values, object, objectName, patternName, pos, cm, loca
        		__name = objectName.replace('.','') + '_' + patternName + '_' + jj,
           index = jj,
 					start, end;
-            
+      
       if( !location ) { // Drums and EDrums pass location
         start = {
           line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
@@ -1521,10 +1528,10 @@ module.exports = function( Gibber, Notation ) {
               Notation.add( pattern, true )
               
               pattern.filters.push( function() {
-                if( arguments[0][2] !== pattern.update.index ) {
+                //if( arguments[0][2] !== pattern.update.index ) {
                   pattern.update.shouldTrigger = true
                   pattern.update.index = arguments[0][2]
-                }
+                //}
                 
                 return arguments[0]
               } )
@@ -1595,10 +1602,10 @@ module.exports = function( Gibber, Notation ) {
                       Notation.add( pattern, true )
               
                       pattern.filters.push( function() {
-                        if( arguments[0][2] !== pattern.update.index ) {
+                        //if( arguments[0][2] !== pattern.update.index ) {
                           pattern.update.shouldTrigger = true
                           pattern.update.index = arguments[0][2]
-                        }
+                          //}
                                       
                         return arguments[0]
                       } )
@@ -1692,14 +1699,14 @@ module.exports = function( Gibber, Notation ) {
           }
         }*/
       }
-    }/*
-    else if( obj.type === 'ExpressionStatement' && obj.expression.type === 'CallExpression' ) {
+    }
+    else if( obj.type === 'ExpressionStatement' && obj.expression.type === 'CallExpression' ) { // e.g. drums.note.values.rotate.seq( 1,1 )
       if( src.indexOf( 'seq' ) > -1 ) {
         var args = obj.expression.arguments,
             nextObject = obj.expression.callee,
             object = null,
             caller = null, prevObject = null, pattern = null, path = [], property = null
-        
+                    
         var count = 0    
         while( typeof nextObject !== 'undefined' ) {
           object = nextObject
@@ -1711,7 +1718,6 @@ module.exports = function( Gibber, Notation ) {
         
         eval( 'property = ' + object.name + '.' + path.reverse().join( '.' ) )
         
-        //console.log( caller, pattern )
         if( !caller.marks ) {
           caller.marks = {}
           caller.locations = {}
@@ -1729,6 +1735,7 @@ module.exports = function( Gibber, Notation ) {
             }
       
             this.marks = {}
+            this.locations = {}
           }
         }
         
@@ -1754,67 +1761,89 @@ module.exports = function( Gibber, Notation ) {
                 isArray = false 
               }
             }
-            
+
             var seq = caller,
-                _name_ = propertyName, 
+                _name_ = propertyName,
+                patternName = propertyName + '_' + valuesOrDurations,
                 pattern = property[ valuesOrDurations ]
+            
+            caller.marks[ patternName ]     = []
+            caller.locations[ patternName ] = []
+            
+            markArray( values, caller, object.name, patternName, pos, cm )
           
-            var lastChose = {}
+            pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)' )
+            
+            Notation.add( pattern, false )
+            
             pattern.filters.push( function() {
-              // console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
-              if( seq.locations[ _name_ + valuesOrDurations ] ) {
-                var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
-
-                if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
-            
-                $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+              //console.log("REVERSE FILTER", pattern.update.shouldTrigger, arguments[0], pattern.update.index )
+              //if( arguments[0][2] !== pattern.update.index ) {
+                pattern.update.shouldTrigger = true
+                pattern.update.index = arguments[0][2]
+                //}
               
-                if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
-                  // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
-                }
-              
-                setTimeout( function() {
-                  $( __name ).css({ 
-                    backgroundColor: 'rgba(0,0,0,0)',
-                  });
-                }, 100 )
-              }
               return arguments[0]
-            }) 
-          
-            caller.marks[ propertyName + valuesOrDurations ] = []
-            caller.locations[ propertyName + valuesOrDurations ] = []
-            var propNameStart = ( object.name.replace('.','_') ) + '_' + path.join( '_' ) + '_' + valuesOrDurations + '_'
+            } )
             
-            for( var jj = 0; jj < values.length; jj++ ) {
-              ( function() {
-                var value = values[ jj ],
-                 		__name = propNameStart + jj,
-                    index = jj,
-    								start, end;
-                    // console.log( "PROP", propertyName, __name )
-
-                start = {
-                  line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                  ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
-                }
-                end = {
-                  line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                  ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
-                }
-    
-                start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
-                end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
-        
-                var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
-                caller.marks[ propertyName + valuesOrDurations ].push( mark )
-                caller.locations[ propertyName + valuesOrDurations ].push( __name )
-              })()
-            }
+            pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
+          
+          //   var lastChose = {}
+          //   pattern.filters.push( function() {
+          //     // console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
+          //     if( seq.locations[ _name_ + valuesOrDurations ] ) {
+          //       var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
+          //   
+          //       if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
+          //   
+          //       $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
+          //     
+          //       if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
+          //         // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
+          //       }
+          //     
+          //       setTimeout( function() {
+          //         $( __name ).css({ 
+          //           backgroundColor: 'rgba(0,0,0,0)',
+          //         });
+          //       }, 100 )
+          //     }
+          //     return arguments[0]
+          //   }) 
+          //             
+          //   caller.marks[ propertyName + valuesOrDurations ] = []
+          //   caller.locations[ propertyName + valuesOrDurations ] = []
+          //   var propNameStart = ( object.name.replace('.','_') ) + '_' + path.join( '_' ) + '_' + valuesOrDurations + '_'
+          //   
+          //   for( var jj = 0; jj < values.length; jj++ ) {
+          //     ( function() {
+          //       var value = values[ jj ],
+          //            __name = propNameStart + jj,
+          //           index = jj,
+          //                       start, end;
+          //           // console.log( "PROP", propertyName, __name )
+          //   
+          //       start = {
+          //         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+          //         ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
+          //       }
+          //       end = {
+          //         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+          //         ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
+          //       }
+          //       
+          //       start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
+          //       end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
+          //           
+          //       var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+          //       caller.marks[ propertyName + valuesOrDurations ].push( mark )
+          //       caller.locations[ propertyName + valuesOrDurations ].push( __name )
+          //     })()
+          //   }
           }(_j)
         }
       }
-    }*/
+    }
   }
   
   // drag and drop
@@ -4235,32 +4264,29 @@ module.exports = function( Gibber, Environment) {
     },
     init: function() {
       var func = function() {
-        //  console.log(" RUNNING NOTATION UPDATE ", GEN.notations )
+        Gibber.Environment.Notation.PatternWatcher.check()
+        
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {
           var notation = GEN.notations[ i ]
               
           notation.update()
           
-          if( notation.text.filterString && notation.text.filterString.length > 0 ) {
+          if( notation.text && notation.text.filterString && notation.text.filterString.length > 0 ) {
             if( filtered.indexOf( notation.text ) === -1 ) {
               filtered.push( notation.text )
             }
           }
         }
-                
+
         for( var j = 0; j < filtered.length; j++ ) {
           var filter = filtered[ j ]
           $( filter.class ).css( '-webkit-filter', filter.filterString.join(' ') )
           filter.filterString.length = 0
         }
         
-        for( var k = 0; k < GEN.priority.length; k++ ) {
-          GEN.priority[ k ].update()
-        }
-        
-        Gibber.Environment.Notation.PatternWatcher.check()
-        
+        for( var k = 0; k < GEN.priority.length; k++ ) { GEN.priority[ k ].update() }
+                
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
       func()
@@ -33259,7 +33285,11 @@ var Pattern = function() {
     var len = fnc.getLength(),
         idx, val, args
     
-    idx = fnc.phase >-1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
+    if( len === 1 ) { 
+      idx = 0 
+    }else{
+      idx = fnc.phase >-1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
+    }
     
     val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
     args = fnc.runFilters( val, idx )
@@ -33312,38 +33342,6 @@ var Pattern = function() {
       
       fnc._onchange() 
     },
-  
-    // repeat : function() { // repeat a value whenever it is triggered
-    //   var counts = {}
-    // 
-    //   for( var i = 0; i < arguments.length; i +=2 ) {
-    //     counts[ arguments[ i ] ] = {
-    //       phase: 0,
-    //       target: arguments[ i + 1 ]
-    //     }
-    //   }
-    // 
-    //   var filter = function( args ) {
-    //     var value = args[ 0 ], phaseModifier = args[ 1 ], output = [ value, phaseModifier ]
-    //     
-    //     //console.log( args, counts )
-    //     if( counts[ value ] ) {
-    //       counts[ value ].phase++
-    //       if( counts[ value ].phase !== counts[ value ].target ) {
-    //         output[ 1 ] = 0
-    //       }else{
-    //         counts[ value ].phase = 0
-    //         output[ 1 ] = 1
-    //       }
-    //     }
-    //   
-    //     return output
-    //   }
-    // 
-    //   fnc.filters.push( filter )
-    // 
-    //   return fnc
-    // },
     
     repeat: function() {
       var counts = {}
