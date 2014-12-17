@@ -2141,7 +2141,7 @@ module.exports = function( Gibber, Notation ) {
     
     return cb    
   }
-  Gibber.Environment.Notation.on( 'global' )
+  //Gibber.Environment.Notation.on( 'global' )
   
   var PW = Gibber.Environment.Notation.PatternWatcher = {
     dirty: [],
@@ -4234,6 +4234,8 @@ module.exports = function( Gibber, Environment) {
             this.enabled[ name ] = true
           }
         }
+        
+        if( name === 'global' ) { GEN.PatternWatcher.start() }
       }
     },
     
@@ -4266,7 +4268,7 @@ module.exports = function( Gibber, Environment) {
     },
     init: function() {
       var func = function() {
-        Gibber.Environment.Notation.PatternWatcher.check()
+        //Gibber.Environment.Notation.PatternWatcher.check()
         
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {
@@ -22801,6 +22803,7 @@ Gibberish.ADSR = function(attack, decay, sustain, release, attackLevel, sustainL
   this.call = function() {
     return this.callback( this.attack, this.decay, this.sustain, this.release, this.attackLevel, this.sustainLevel, this.releaseTrigger )
   };
+  this.getPhase = function() { return phase; };
 	this.setPhase = function(newPhase) { phase = newPhase; };
 	this.setState = function(newState) { state = newState; phase = 0; };
 	this.getState = function() { return state; };		
@@ -27763,6 +27766,7 @@ Audio = {
     // target.seconds = target.sec = Audio.Time.seconds
     // target.minutes = target.min = Audio.Time.minutes
     Audio.Core.Time.export( target )
+    Audio.Clock.export( target )
     //target.sec = target.seconds
     Audio.Core.Binops.export( target )    
   },
@@ -28600,6 +28604,12 @@ var Clock = {
   sequencers:[],
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
   phase : 0,
+  export: function( target ) {
+    target.beats = Clock.beats
+    target.Beats = Clock.Beats
+    target.measures = Clock.measures
+    target.Measures = Clock.measures
+  },
   
   processBeat : function() {
     Clock.currentBeat = Clock.currentBeat >= Clock.signature.upper ? 1 : Clock.currentBeat + 1
@@ -28753,6 +28763,14 @@ var Clock = {
     return function() {
       return Gibber.Clock.beats( val )
     }
+  },
+  
+  measures: function( val ) {
+    return Clock.beats( val * Clock.signature.upper )
+  },
+  
+  Measures: function( val ) {
+    return Clock.Beats( val * Clock.signature.upper )
   }
 }
 
@@ -28760,7 +28778,7 @@ module.exports = function( Gibber ) {
   
   "use strict"
 
-  $ = Gibber.dollar,//require('zepto-browserify').Zepto,
+  $ = Gibber.dollar,
   curves = Gibber.outputCurves,
   LINEAR = curves.LINEAR,
   LOGARITHMIC = curves.LOGARITHMIC
@@ -29945,6 +29963,21 @@ module.exports = function( Gibber ) {
       damping: .3,
       wet: .55,
       dry: .45,
+    }
+  }
+  
+  FX.Presets.Crush = {
+    clean: {
+      sampleRate:1,
+      bitDepth:16
+    },
+    dirty:{
+      sampleRate:.25,
+      bitDepth:4
+    },
+    filthy:{
+      sampleRate:.1,
+      bitDepth:2.5
     }
   }
 

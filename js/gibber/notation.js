@@ -30,6 +30,8 @@ module.exports = function( Gibber, Environment) {
             this.enabled[ name ] = true
           }
         }
+        
+        if( name === 'global' ) { GEN.PatternWatcher.start() }
       }
     },
     
@@ -62,7 +64,7 @@ module.exports = function( Gibber, Environment) {
     },
     init: function() {
       var func = function() {
-        Gibber.Environment.Notation.PatternWatcher.check()
+        //Gibber.Environment.Notation.PatternWatcher.check()
         
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {

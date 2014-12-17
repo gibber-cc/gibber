@@ -906,7 +906,7 @@ module.exports = function( Gibber, Notation ) {
     
     return cb    
   }
-  Gibber.Environment.Notation.on( 'global' )
+  //Gibber.Environment.Notation.on( 'global' )
   
   var PW = Gibber.Environment.Notation.PatternWatcher = {
     dirty: [],
