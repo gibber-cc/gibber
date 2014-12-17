@@ -13,6 +13,8 @@ module.exports = function( Gibber, Environment) {
     
     enabled: {},
     
+    priority: [],
+    
     on: function() {
       for( var i = 0; i < arguments.length; i++ ) {
         var name = arguments[ i ]
@@ -28,6 +30,8 @@ module.exports = function( Gibber, Environment) {
             this.enabled[ name ] = true
           }
         }
+        
+        if( name === 'global' ) { GEN.PatternWatcher.start() }
       }
     },
     
@@ -44,8 +48,13 @@ module.exports = function( Gibber, Environment) {
       }
     },
     
-    add: function( obj ) {
-      this.notations.push( obj )
+    add: function( obj, priority ) {
+      if( !priority ) {
+        this.notations.push( obj )
+      }else{
+        this.priority.push( obj )
+      }
+      
       if( !this.isRunning ) {
         this.init()
       }
@@ -55,25 +64,29 @@ module.exports = function( Gibber, Environment) {
     },
     init: function() {
       var func = function() {
+        //Gibber.Environment.Notation.PatternWatcher.check()
+        
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {
           var notation = GEN.notations[ i ]
               
           notation.update()
           
-          if( notation.text.filterString && notation.text.filterString.length > 0 ) {
+          if( notation.text && notation.text.filterString && notation.text.filterString.length > 0 ) {
             if( filtered.indexOf( notation.text ) === -1 ) {
               filtered.push( notation.text )
             }
           }
         }
-                
+
         for( var j = 0; j < filtered.length; j++ ) {
           var filter = filtered[ j ]
           $( filter.class ).css( '-webkit-filter', filter.filterString.join(' ') )
           filter.filterString.length = 0
         }
-
+        
+        for( var k = 0; k < GEN.priority.length; k++ ) { GEN.priority[ k ].update() }
+                
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
       func()
@@ -82,6 +95,9 @@ module.exports = function( Gibber, Environment) {
       
       $.subscribe( '/gibber/clear', function( e ) {
         GEN.isRunning = false
+        GEN.notations.length = 0
+        GEN.priority.length = 0
+        if( GEN.clear ) GEN.clear()
       })
     },
     
