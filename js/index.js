@@ -2986,6 +2986,8 @@ var GE = {
       // attach canvases to table row instead of body
       Gibber.Graphics.defaultContainer = '#mainContent'
       
+      Gibber.Audio.SoundFont.path = './resources/soundfonts/'
+      
       //window.spin.stop()
     }
   },
@@ -3031,6 +3033,8 @@ var GE = {
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
           defaultLanguageForEditors: 'javascript',
+          saveSoundFonts:true,
+          soundfonts:{},
         }
         this.save()
       }
@@ -4465,10 +4469,17 @@ module.exports = function( Gibber ) {
       
       Gibber.Environment.Storage.values.defaultLanguageForEditors = val
     },
+    processSaveSoundFonts : function() {
+      var soundFontsCheckbox = $( '#preferences_saveSoundFonts' ),
+          checked = soundFontsCheckbox.is(':checked')
+      
+      Gibber.Environment.Storage.values.saveSoundFonts = checked
+    },
     close: function() {
       Preferences.processShowWelcomeCheckBox()
       Preferences.processShowSampleCodeInNewEditorsCheckbox()
       Preferences.processDefaultLanguageForEditorsMenu()
+      Preferences.processSaveSoundFonts()
       
       Gibber.Environment.Storage.save()
     },
@@ -4500,6 +4511,7 @@ module.exports = function( Gibber ) {
         $( '#preferences_defaultLanguageForEditors' ).find( 'option' )[ languageIndex ].selected = true;        
         $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
         $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
+        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts ),
         
         this.column.onclose = this.close.bind( this )
   
@@ -27561,7 +27573,225 @@ Gibberish.Hat = function() {
   _eg2.trigger(1);
 };
 Gibberish.Hat.prototype = Gibberish._oscillator;
-return Gibberish; 
+
+/* IMPORTANT README
+*
+* This class depends on having access to a folder of soundfonts that have been converted to
+* binary string representations. More specifically, soundfonts designed to work with MIDI.js:
+*
+* https://github.com/gleitz/midi-js-soundfonts
+*
+* At some point it would be nice to make another soundfont system, as MIDI.js does not support
+* defining loop points.
+*
+* By default soundfonts should be found in a folder named 'resources/soundfonts' one level above
+* the location of the gibberish.js library (or gibberish.min.js). You can pass a different path
+* as the second argument to the Gibberish.SoundFont constructor; the first is the name of the soundfont
+* minus the "-mp3.js" extension. So, for example:
+*
+* b = new Gibberish.SoundFont( 'choir_aahs' ).connect()
+* b.note( 'C4' )
+*
+* Note that you can only use note names, not frequency values.
+*/
+
+(function() {
+  var cents = function(base, _cents) { return base * Math.pow(2,_cents/1200) },
+      MIDI = { Soundfont: { instruments: {} } },
+      SF = MIDI.Soundfont
+  
+  // TODO: GET RID OF THIS GLOBAL!!!! It's in there because we're using soundfonts meant for MIDI.js
+  window.MIDI = MIDI
+  
+  var getScript = function( scriptPath, handler ) {
+    var oReq = new XMLHttpRequest();
+
+    // oReq.addEventListener("progress", updateProgress, false);
+    oReq.addEventListener("load", transferComplete, false);
+    oReq.addEventListener("error", function(e){ console.log( "SF load error", e ) }, false);
+
+    oReq.open( 'GET', scriptPath, true );
+    oReq.send()
+
+    function updateProgress (oEvent) {
+      if (oEvent.lengthComputable) {
+        var percentComplete = oEvent.loaded / oEvent.total;
+        number.innerHTML = Math.round( percentComplete * 100 )
+
+        var sizeString = new String( "" + oEvent.total )
+        sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
+        size.innerHTML = sizeString
+      } else {
+        // Unable to compute progress information since the total size is unknown
+      }
+    }
+
+    function transferComplete( evt ) {
+      var script = document.createElement('script')
+      script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
+      document.querySelector( 'head' ).appendChild( script )
+      handler( script ) 
+    }
+  }
+  
+  var Base64Binary = {
+  	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+	
+  	// will return a  Uint8Array type
+  	decodeArrayBuffer: function(input) {
+  		var bytes = (input.length/4) * 3;
+  		var ab = new ArrayBuffer(bytes);
+  		this.decode(input, ab);
+		
+  		return ab;
+  	},
+	
+  	decode: function(input, arrayBuffer) {
+  		//get last chars to see if are valid
+  		var lkey1 = this._keyStr.indexOf(input.charAt(input.length-1));		 
+  		var lkey2 = this._keyStr.indexOf(input.charAt(input.length-2));		 
+	
+  		var bytes = (input.length/4) * 3;
+  		if (lkey1 == 64) bytes--; //padding chars, so skip
+  		if (lkey2 == 64) bytes--; //padding chars, so skip
+		
+  		var uarray;
+  		var chr1, chr2, chr3;
+  		var enc1, enc2, enc3, enc4;
+  		var i = 0;
+  		var j = 0;
+		
+  		if (arrayBuffer)
+  			uarray = new Uint8Array(arrayBuffer);
+  		else
+  			uarray = new Uint8Array(bytes);
+		
+  		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+		
+  		for (i=0; i<bytes; i+=3) {	
+  			//get the 3 octects in 4 ascii chars
+  			enc1 = this._keyStr.indexOf(input.charAt(j++));
+  			enc2 = this._keyStr.indexOf(input.charAt(j++));
+  			enc3 = this._keyStr.indexOf(input.charAt(j++));
+  			enc4 = this._keyStr.indexOf(input.charAt(j++));
+	
+  			chr1 = (enc1 << 2) | (enc2 >> 4);
+  			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+  			chr3 = ((enc3 & 3) << 6) | enc4;
+	
+  			uarray[i] = chr1;			
+  			if (enc3 != 64) uarray[i+1] = chr2;
+  			if (enc4 != 64) uarray[i+2] = chr3;
+  		}
+	
+  		return uarray;	
+  	}
+  }
+  
+  var decodeBuffers = function( obj ) {
+    var count = 0,
+        font = SF[ obj.instrumentFileName ]
+        
+    if( typeof SF.instruments[ obj.instrumentFileName ] === 'undefined' ) {
+      SF.instruments[ obj.instrumentFileName ] = {}
+    }
+    
+    obj.buffers = SF.instruments[ obj.instrumentFileName ]
+    
+    for( var note in font ) {
+      count++
+      !function() {
+        var _note = note
+        
+        var base = font[ _note ].split(",")[1]
+        var arrayBuffer = Base64Binary.decodeArrayBuffer( base );
+        
+        Gibberish.context.decodeAudioData( arrayBuffer, function( _buffer ) {
+          SF.instruments[ obj.instrumentFileName ][ _note ] = _buffer.getChannelData( 0 )
+          count--
+          if( count <= 0 ) { 
+            console.log("Soundfont " + obj.instrumentFileName + " is loaded.")
+            obj.isLoaded = true
+            if( obj.onload ) obj.onload()
+          }
+        }, function(e) { console.log("ERROR", e.err, arguments, _note ) } )
+        
+      }()
+    }
+  }
+  
+  Gibberish.SoundFont = function( instrumentFileName, pathToResources ) {
+    var that = this
+    Gibberish.extend(this, {
+      'instrumentFileName': instrumentFileName,
+      name:'soundfont',
+      properties: {
+        amp:1,
+        pan:0
+      },
+      playing:[],
+      buffers:{},
+      onload: null,
+      out:[0,0],
+      isLoaded: false,
+      resourcePath: pathToResources || './resources/soundfonts/',
+      
+      callback: function( amp, pan ) {
+        var val = 0
+        for( var i = this.playing.length -1; i >= 0; i-- ) {
+          var note = this.playing[ i ]
+          
+          val += this.interpolate( note.buffer, note.phase )
+          
+          note.phase += note.increment
+          if( note.phase > note.length ) {
+            this.playing.splice( this.playing.indexOf( note ), 1 )
+          }
+        }
+        
+        return this.panner( val * amp, pan, this.out );
+      }.bind( this ),
+      
+      note: function( name, amp, cents ) {
+        if( this.isLoaded ) {
+          this.playing.push({
+            buffer:this.buffers[ name ],
+            phase:0,
+            increment: cents || 0,
+            length:this.buffers[ name ].length,
+            'amp': isNaN( amp ) ? 1 : amp
+          })
+        }
+      },
+      interpolate: Gibberish.interpolate.bind( this ),
+      panner: Gibberish.makePanner()
+    })
+    .init()
+    .oscillatorInit()
+    
+    if( typeof arguments[0] === 'object' && arguments[0].instrumentFileName ) {
+      this.instrumentFileName = arguments[0].instrumentFileName
+    }
+    
+    // if already loaded, or if passed a buffer to use...
+    if( !SF.instruments[ this.instrumentFileName ] && typeof pathToResources !== 'object' ) {
+      getScript( 'resources/soundfonts/' + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
+    }else{
+      if( typeof pathToResources === 'object' ) {
+        SF[ this.instrumentFileName ] = pathToResources
+        decodeBuffers( this )
+      }else{
+        this.buffers = SF.instruments[ this.instrumentFileName ]
+        this.isLoaded = true
+        setTimeout( function() { if( this.onload ) this.onload() }.bind( this ), 0 )
+      }
+    }
+    return this
+  }
+  Gibberish.SoundFont.storage = SF
+  Gibberish.SoundFont.prototype = Gibberish._oscillator;
+})()
+  return Gibberish; 
 })
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js":[function(require,module,exports){
@@ -27749,6 +27979,7 @@ Audio = {
     target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
     target.ScaleSeq = Audio.Seqs.ScaleSeq
+    target.SoundFont = Audio.SoundFont
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -28158,11 +28389,12 @@ Audio.Input =          require( './audio/audio_input' )( Gibber )
 Audio.Samplers =       require( './audio/sampler' )( Gibber )
 Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
+Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
 
 return Audio
 
 }
-},{"../external/freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js","./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
+},{"../external/freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js","./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/soundfont":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -31072,41 +31304,43 @@ module.exports = function( Gibber ) {
     seq.toString = function() { return '> Seq' }
     seq.gibber = true
     
+    $.extend( seq, {
+      constructor: Seq,
+      replaceWith: function( replacement ) { this.kill() },
+      kill: function() { 
+        if( this.target && this.target.sequencers )
+          this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
+      
+          console.log("SEQ KILL", this )
+        this.stop().disconnect()
+      },
+      applyScale : function() {
+        // for( var i = 0; i < this.seqs.length; i++ ) {
+        //   var s = this.seqs[ i ]
+        //   if( s.key === 'note' || s.key === 'frequency' ) {
+        //     s.values = makeNoteFunction( s.values, this )
+        //   }
+        // }
+      },
+      once : function() {
+        this.repeat( 1 )
+        return this
+      },
+      reset : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {  
+          this.seqs[ i ].values[0].reset()
+        }
+      },
+      shuffle : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {
+          this.seqs[ i ].values[0].shuffle()
+        }
+      },
+    })
     return seq
   }
   
-  $.extend( Gibberish.PolySeq.prototype, {
-    constructor: Seq,
-    replaceWith: function( replacement ) { this.kill() },
-    kill: function() { 
-      if( this.target && this.target.sequencers )
-        this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-      
-      this.stop().disconnect()
-    },
-    applyScale : function() {
-      // for( var i = 0; i < this.seqs.length; i++ ) {
-      //   var s = this.seqs[ i ]
-      //   if( s.key === 'note' || s.key === 'frequency' ) {
-      //     s.values = makeNoteFunction( s.values, this )
-      //   }
-      // }
-    },
-    once : function() {
-      this.repeat( 1 )
-      return this
-    },
-    reset : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {  
-        this.seqs[ i ].values[0].reset()
-      }
-    },
-    shuffle : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {
-        this.seqs[ i ].values[0].shuffle()
-      }
-    },
-  })
+
   
   var ScaleSeq = function() {
     var args = arguments[0],
@@ -31128,7 +31362,139 @@ module.exports = function( Gibber ) {
   
   return Seqs 
 }
-},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
+},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js":[function(require,module,exports){
+module.exports = function( Gibber, pathToSoundFonts ) {
+  var Gibberish = require( 'gibberish-dsp' ),
+      curves = Gibber.outputCurves,
+      teoria = require( './theory' )( Gibber ).Teoria,
+      LINEAR = curves.LINEAR,
+      LOGARITHMIC = curves.LOGARITHMIC,
+      mappingProperties = {
+        amp: {
+          min: 0, max: 1,
+          hardMax:2,
+          output: LOGARITHMIC,
+          timescale: 'audio',
+          dimensions:1
+        }
+      },
+      cents = function(base, _cents) {
+        return base * Math.pow(2,_cents/1200)
+      }
+  
+  var SoundFont = function( soundFontName ) {
+    var obj, path = SoundFont.path
+    
+    if( Gibber.Environment ) {
+      if( Gibber.Environment.Storage.values.soundfonts ) {
+        if( Gibber.Environment.Storage.values.soundfonts[ soundFontName ] ) {
+          path = Gibber.Environment.Storage.values.soundfonts[ soundFontName ]
+        }
+      }
+    }
+    
+    obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
+
+    $.extend( true, obj, Gibber.Audio.ugenTemplate )
+    obj.fx.ugen = obj
+    obj.chord = Gibber.Theory.chord
+    
+    Object.defineProperty(obj, '_', {
+      get: function() { 
+        oscillator.kill();
+        return oscillator 
+      },
+      set: function() {}
+    })
+    
+    obj.onload = function() {
+      
+      if( Gibber.Environment && Gibber.Environment.Storage.values.saveSoundFonts ) {
+        if( !Gibber.Environment.Storage.values.soundfonts ) {
+          Gibber.Environment.Storage.values.soundfonts = {}
+        }else{
+          if( Gibber.Environment.Storage.values.soundfonts[ soundFontName] ) return
+        }
+        
+        Gibber.Environment.Storage.values.soundfonts[ soundFontName ] = Gibber.Audio.Core.SoundFont.storage[ soundFontName ]
+        
+        try{
+          Gibber.Environment.Storage.save()
+        }catch(e){
+          console.log("STORAGE ERROR", e )
+          
+          if( e.name === 'QuotaExceededError' ) {
+            console.log('Your localStorage for Gibber has been exceeded; we can\'t save the soundfile. It is still usable.')
+          }
+        }
+      }
+    }
+    
+    obj._note = obj.note.bind( obj ) 
+    obj.note = function( name, amp ) {
+      if( typeof name === 'number' ) {
+        if( name < Gibber.minNoteFrequency ) {
+          var scale = this.scale || Gibber.scale,
+              note  = scale.notes[ name ]
+              
+          if( this.octave && this.octave !== 0 ) {
+            var sign = this.octave > 0 ? 1 : 0,
+                num  = Math.abs( this.octave )
+            
+            for( var i = 0; i < num; i++ ) {
+              note *= sign ? 2 : .5
+            }
+          }
+          
+          name = note
+        }
+        var tNote = teoria.frequency.note( name ),
+            noteName, _cents = 0
+        
+        if( tNote.note.accidental.value === 1 && tNote.note.accidental.sign !== 'b' ) { 
+          var enharmonics = tNote.note.enharmonics()
+          for( var i = 0; i < enharmonics.length; i++ ) {
+            var enharmonic = enharmonics[ i ]
+            if( enharmonic.accidental.sign === 'b' ) {
+              tNote.note = enharmonic
+              break;
+            }
+          }
+        }
+        
+        _cents = tNote.cents 
+        
+        noteName =  tNote.note.name.toUpperCase() 
+        if( tNote.note.accidental.value !== 0) {
+          noteName += tNote.note.accidental.sign
+        }
+        noteName += tNote.note.octave
+        
+        name = noteName
+      }
+      
+      
+      obj._note( name, isNaN( amp ) ? 1 : amp, cents(1, _cents) )
+      // this.playing.push({
+      //   buffer:this.buffers[ name ],
+      //   phase:0,
+      //   increment: cents(1, _cents),
+      //   length:this.buffers[ name ].length,
+      //   'amp': isNaN( amp ) ? 1 : amp
+      // })
+    }
+    
+    Gibber.createProxyProperties( obj, mappingProperties )
+    Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
+  
+    return obj
+  }
+  
+  SoundFont.path = pathToSoundFonts || "../../../resources/soundfonts/"
+  
+  return SoundFont
+}
+},{"./theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
