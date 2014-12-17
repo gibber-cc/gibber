@@ -20,6 +20,12 @@ var Clock = {
   sequencers:[],
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
   phase : 0,
+  export: function( target ) {
+    target.beats = Clock.beats
+    target.Beats = Clock.Beats
+    target.measures = Clock.measures
+    target.Measures = Clock.measures
+  },
   
   processBeat : function() {
     Clock.currentBeat = Clock.currentBeat >= Clock.signature.upper ? 1 : Clock.currentBeat + 1
@@ -173,6 +179,14 @@ var Clock = {
     return function() {
       return Gibber.Clock.beats( val )
     }
+  },
+  
+  measures: function( val ) {
+    return Clock.beats( val * Clock.signature.upper )
+  },
+  
+  Measures: function( val ) {
+    return Clock.Beats( val * Clock.signature.upper )
   }
 }
 
@@ -180,7 +194,7 @@ module.exports = function( Gibber ) {
   
   "use strict"
 
-  $ = Gibber.dollar,//require('zepto-browserify').Zepto,
+  $ = Gibber.dollar,
   curves = Gibber.outputCurves,
   LINEAR = curves.LINEAR,
   LOGARITHMIC = curves.LOGARITHMIC

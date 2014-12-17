@@ -371,6 +371,21 @@ module.exports = function( Gibber ) {
       dry: .45,
     }
   }
+  
+  FX.Presets.Crush = {
+    clean: {
+      sampleRate:1,
+      bitDepth:16
+    },
+    dirty:{
+      sampleRate:.25,
+      bitDepth:4
+    },
+    filthy:{
+      sampleRate:.1,
+      bitDepth:2.5
+    }
+  }
 
   return FX  
 }

@@ -509,7 +509,10 @@ var Gibber = {
       
       var valuesPattern = args.values[0]
       if( v.randomFlag ) {
-        valuesPattern.filters.push( function() { return [ valuesPattern.values[ Gibber.Utilities.rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+        valuesPattern.filters.push( function() {
+          var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
+          return [ valuesPattern.values[ idx ], 1, idx ] 
+        })
         for( var i = 0; i < v.randomArgs.length; i+=2 ) {
           valuesPattern.repeat( v.randomArgs[ i ], v.randomArgs[ i + 1 ] )
         }
@@ -518,37 +521,53 @@ var Gibber = {
       if( d !== null ) {
         var durationsPattern = args.durations[0]
         if( d.randomFlag ) {
-          durationsPattern.filters.push( function() { return [ durationsPattern.values[ Gibber.Utilities.rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          durationsPattern.filters.push( function() { 
+            var idx = Gibber.Utilities.rndi(0, durationsPattern.values.length - 1)
+            return [ durationsPattern.values[ idx ], 1, idx ] 
+          })
           for( var i = 0; i < d.randomArgs.length; i+=2 ) {
             durationsPattern.repeat( d.randomArgs[ i ], d.randomArgs[ i + 1 ] )
           }
         }
       }
       obj.seq.add( args )
-      
-      seqNumber = obj.seq.seqs.length - 1
-      seq = obj.seq.seqs[ seqNumber ]
+            
+      seqNumber = d !== null ? obj.seq.seqs.length - 1 : obj.seq.autofire.length - 1
+      seq = d !== null ? obj.seq.seqs[ seqNumber ] : obj.seq.autofire[ seqNumber ]
       
       Object.defineProperties( fnc, {
         values: {
           configurable:true,
-          get: function() { return obj.seq.seqs[ seqNumber ].values[ 0 ] },
+          get: function() { 
+            if( d !== null ) { // then use autofire array
+              return obj.seq.seqs[ seqNumber ].values[0]
+            }else{
+              return obj.seq.autofire[ seqNumber ].values[0]
+            }
+          },
           set: function( val ) {
             var pattern = Gibber.construct( Gibber.Pattern, val )
             
             if( !Array.isArray( pattern ) ) {
               pattern = [ pattern ]
             }
-            // if( key === 'note' && obj.seq.scale ) {  
-            //   v = makeNoteFunction( v, obj.seq )
-            // }
-            //console.log("NEW VALUES", v )
-            obj.seq.seqs[ seqNumber ].values = pattern
+
+            if( d !== null ) {
+              obj.seq.seqs[ seqNumber ].values = pattern
+            }else{
+              obj.seq.autofire[ seqNumber ].values = pattern
+            }
           }
         },
         durations: {
           configurable:true,
-          get: function() { return obj.seq.seqs[ seqNumber ].durations[ 0 ] },
+          get: function() { 
+            if( d !== null ) { // then it's not an autofire seq
+              return obj.seq.seqs[ seqNumber ].durations[ 0 ] 
+            }else{
+              return null
+            }
+          },
           set: function( val ) {
             if( !Array.isArray( val ) ) {
               val = [ val ]
@@ -556,12 +575,32 @@ var Gibber = {
             obj.seq.seqs[ seqNumber ].durations = val   //.splice( 0, 10000, v )
           }
         },
-      })     
+      })
+      
+      // console.log( "D", d )
+      // console.log( "DURATIONS", obj.seq.seqs[seqNumber].durations[0] )
+      // if( d !== null ) {
+      //   console.log( "DEFINING DURATIONS", fnc )
+      //   fnc.durations.seq = function( _v, _d ) {
+      //     console.log("SEQUENCING DURATIONS")
+      //     var args = {
+      //       'key': 'durations',
+      //       values: [ Gibber.construct( Gibber.Pattern, _v ) ],//$.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
+      //       durations: d !== null ? [ Gibber.construct( Gibber.Pattern, _d ) ] : null,
+      //       target: fnc.durations,
+      //       'priority': 0
+      //     }
+      //   } 
+      //   obj.seq.add( args )
+      //   //Gibber.defineSequencedProperty( fnc, 'durations', false )
+      // }
       
       if( !obj.seq.isRunning ) {
         obj.seq.offset = Gibber.Clock.time( obj.offset )
         obj.seq.start( true, priority )
       }
+      
+      // console.log( key, fnc.values, fnc.durations )
       return obj
     }
     
@@ -621,7 +660,14 @@ var Gibber = {
           var returnValue = property
           
           if( typeof v !== 'undefined' ) { 
-            obj[ propertyName ] = v
+            //obj[ propertyName ] = v
+            //property.value = v
+            if( property.oldSetter ) {
+              property.oldSetter.call( obj, v )
+            }else{
+              obj[ propertyName ] = v
+            }  
+            
             returnValue = obj
           }
           
@@ -1333,10 +1379,8 @@ module.exports = function( Gibber ) {
           mapping.input = mapping.follow
           mapping.bus = new Gibber.Audio.Core.Bus2({ amp:0 }).connect()
           mapping.connect( mapping.bus )
-        
-          mapping.replace = function( replacementObject, key, Key  ) {
-            // _console.log( key, replacementObject )
-            
+          
+          mapping.replace = function( replacementObject, key, Key  ) {            
             // what if new mapping isn't audio type?
             if ( replacementObject[ Key ].timescale === from.timescale ) {
               var idx = mapping.follow.input[ from.Name ].targets.indexOf( target )
@@ -1404,15 +1448,15 @@ var PatternProto = {
   valueOf: function() { return this.values },
   getLength: function() {
     var l
-    if( this.start < this.end ) {
+    if( this.start <= this.end ) {
       l = this.end - this.start + 1
     }else{
       l = this.values.length + this.end - this.start + 1
     }
     return l
   },
-  runFilters : function( val ) {
-    var args = [ val, 1 ] // 1 is phaseModifier
+  runFilters : function( val, idx ) {
+    var args = [ val, 1, idx ] // 1 is phaseModifier
 
     for( var i = 0; i < this.filters.length; i++ ) {
       args = this.filters[ i ]( args )
@@ -1420,6 +1464,7 @@ var PatternProto = {
 
     return args
   },
+  _onchange : function() {},
 }
 
 var Pattern = function() {
@@ -1430,13 +1475,20 @@ var Pattern = function() {
 
   var fnc = function() {
     var len = fnc.getLength(),
-        idx = Math.floor( fnc.start + (fnc.phase % len) ),
-        val = fnc.values[ Math.floor( idx % fnc.values.length ) ],
-        args = fnc.runFilters( val )
+        idx, val, args
     
+    if( len === 1 ) { 
+      idx = 0 
+    }else{
+      idx = fnc.phase >-1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
+    }
+    
+    val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
+    args = fnc.runFilters( val, idx )
+        
     fnc.phase += fnc.stepSize * args[ 1 ]
     val = args[ 0 ]
-      
+    
     if( typeof val === 'function' ) val = val()
     
     return val
@@ -1454,6 +1506,7 @@ var Pattern = function() {
     integersOnly : false,
     repeats : [],
     filters : [],
+    onchange : null,
 
     range : function() {
       if( Array.isArray( arguments[0] ) ) {
@@ -1464,40 +1517,23 @@ var Pattern = function() {
         fnc.end   = arguments[1]
       }
     },
-  
-    reverse : function() { fnc.values.reverse() },
-  
-    // repeat : function() { // repeat a value whenever it is triggered
-    //   var counts = {}
-    // 
-    //   for( var i = 0; i < arguments.length; i +=2 ) {
-    //     counts[ arguments[ i ] ] = {
-    //       phase: 0,
-    //       target: arguments[ i + 1 ]
-    //     }
-    //   }
-    // 
-    //   var filter = function( args ) {
-    //     var value = args[ 0 ], phaseModifier = args[ 1 ], output = [ value, phaseModifier ]
-    //     
-    //     //console.log( args, counts )
-    //     if( counts[ value ] ) {
-    //       counts[ value ].phase++
-    //       if( counts[ value ].phase !== counts[ value ].target ) {
-    //         output[ 1 ] = 0
-    //       }else{
-    //         counts[ value ].phase = 0
-    //         output[ 1 ] = 1
-    //       }
-    //     }
-    //   
-    //     return output
-    //   }
-    // 
-    //   fnc.filters.push( filter )
-    // 
-    //   return fnc
-    // },
+   
+    reverse : function() { 
+      //fnc.values.reverse(); 
+      var array = fnc.values,
+          left = null,
+          right = null,
+          length = array.length,
+          temporary;
+          
+      for (left = 0, right = length - 1; left < right; left += 1, right -= 1) {
+          temporary = array[left];
+          array[left] = array[right];
+          array[right] = temporary;
+      }
+      
+      fnc._onchange() 
+    },
     
     repeat: function() {
       var counts = {}
@@ -1511,7 +1547,7 @@ var Pattern = function() {
       
       var repeating = false, repeatValue = null
       var filter = function( args ) {
-        var value = args[ 0 ], phaseModifier = args[ 1 ], output = [ value, phaseModifier ]
+        var value = args[ 0 ], phaseModifier = args[ 1 ], output = args//output = [ value, phaseModifier ]
         
         //console.log( args, counts )
         if( repeating === false && counts[ value ] ) {
@@ -1543,14 +1579,21 @@ var Pattern = function() {
       return fnc
     },
   
-    reset : function() { fnc.values = fnc.original.slice( 0 ) },
+    reset : function() { fnc.values = fnc.original.slice( 0 ); fnc._onchange() },
     store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ) },
-    transpose : function( amt ) { for( var i = 0; i < fnc.values.length; i++ ) fnc.values[ i ] += amt },
-    shuffle : function() { Gibber.Utilities.shuffle( fnc.values ) },
+    transpose : function( amt ) { 
+      for( var i = 0; i < fnc.values.length; i++ ) fnc.values[ i ] += amt; 
+      fnc._onchange()
+    },
+    shuffle : function() { 
+      Gibber.Utilities.shuffle( fnc.values )
+      fnc._onchange()
+    },
     scale : function( amt ) { 
       for( var i = 0; i < fnc.values.length; i++ ) {
         fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
       }
+      fnc._onchange()
     },
 
     flip : function() {
@@ -1569,6 +1612,8 @@ var Pattern = function() {
         var pos = ordered.indexOf( fnc.values[ i ] )
         fnc.values[ i ] = ordered[ ordered.length - pos - 1 ]
       }
+      
+      fnc._onchange()
     
   		return fnc
     },
@@ -1580,7 +1625,9 @@ var Pattern = function() {
         var inverse = prime0 + (prime0 - fnc.values[ i ])
         fnc.values[ i ] = inverse
       }
-    
+      
+      fnc._onchange()
+      
   		return fnc
     },
   
@@ -1588,6 +1635,8 @@ var Pattern = function() {
       if( fnc.storage[ to ] ) {
         fnc.values = fnc.storage[ to ].slice( 0 )
       }
+      
+      fnc._onchange()
     },
   
     rotate : function( amt ) {
@@ -1604,6 +1653,8 @@ var Pattern = function() {
           amt++
         }
       }
+      
+      fnc._onchange()
     }
   })
     
@@ -1619,6 +1670,10 @@ var Pattern = function() {
     'transpose','reverse','shuffle','scale',
     'store', 'range'
   ], true )
+  
+  Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
+  // Gibber.defineSequencedProperty( fnc, 'end' )  
+  // Gibber.defineSequencedProperty( fnc, 'start' )  
   
   fnc.__proto__ = this.__proto__ 
   
@@ -4364,7 +4419,6 @@ Gibberish.Line = function(start, end, time, loops) {
       this.time = time
       
       incr = (end - out) / time
-      console.log( "RETRIG INCREMENT", incr )
     },
     
     getPhase: function() { return phase },
@@ -4376,7 +4430,7 @@ Gibberish.Line = function(start, end, time, loops) {
 	    incr = (end - start) / time,
       out
   
-  console.log("INCREMENT", incr, end, start, time )
+  //console.log("INCREMENT", incr, end, start, time )
   
 	this.callback = function(start, end, time, loops) {
 		out = phase < time ? start + ( phase++ * incr) : end;
@@ -4509,6 +4563,7 @@ Gibberish.ADSR = function(attack, decay, sustain, release, attackLevel, sustainL
   this.call = function() {
     return this.callback( this.attack, this.decay, this.sustain, this.release, this.attackLevel, this.sustainLevel, this.releaseTrigger )
   };
+  this.getPhase = function() { return phase; };
 	this.setPhase = function(newPhase) { phase = newPhase; };
 	this.setState = function(newState) { state = newState; phase = 0; };
 	this.getState = function() { return state; };		
@@ -9266,7 +9321,219 @@ Gibberish.Hat = function() {
   _eg2.trigger(1);
 };
 Gibberish.Hat.prototype = Gibberish._oscillator;
-return Gibberish; 
+
+/* IMPORTANT README
+*
+* This class depends on having access to a folder of soundfonts that have been converted to
+* binary string representations. More specifically, soundfonts designed to work with MIDI.js:
+*
+* https://github.com/gleitz/midi-js-soundfonts
+*
+* At some point it would be nice to make another soundfont system, as MIDI.js does not support
+* defining loop points.
+*
+* By default soundfonts should be found in a folder named 'resources/soundfonts' one level above
+* the location of the gibberish.js library (or gibberish.min.js). You can pass a different path
+* as the second argument to the Gibberish.SoundFont constructor; the first is the name of the soundfont
+* minus the "-mp3.js" extension. So, for example:
+*
+* b = new Gibberish.SoundFont( 'choir_aahs' ).connect()
+* b.note( 'C4' )
+*
+* Note that you can only use note names, not frequency values.
+*/
+
+(function() {
+  var cents = function(base, _cents) { return base * Math.pow(2,_cents/1200) },
+      MIDI = { Soundfont: { instruments: {} } },
+      SF = MIDI.Soundfont
+  
+  // TODO: GET RID OF THIS GLOBAL!!!! It's in there because we're using soundfonts meant for MIDI.js
+  window.MIDI = MIDI
+  
+  var getScript = function( scriptPath, handler ) {
+    var oReq = new XMLHttpRequest();
+
+    // oReq.addEventListener("progress", updateProgress, false);
+    oReq.addEventListener("load", transferComplete, false);
+    oReq.addEventListener("error", function(e){ console.log( "SF load error", e ) }, false);
+
+    oReq.open( 'GET', scriptPath, true );
+    oReq.send()
+
+    function updateProgress (oEvent) {
+      if (oEvent.lengthComputable) {
+        var percentComplete = oEvent.loaded / oEvent.total;
+        number.innerHTML = Math.round( percentComplete * 100 )
+
+        var sizeString = new String( "" + oEvent.total )
+        sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
+        size.innerHTML = sizeString
+      } else {
+        // Unable to compute progress information since the total size is unknown
+      }
+    }
+
+    function transferComplete( evt ) {
+      var script = document.createElement('script')
+      script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
+      document.querySelector( 'head' ).appendChild( script )
+      handler( script ) 
+    }
+  }
+  
+  var Base64Binary = {
+  	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+	
+  	// will return a  Uint8Array type
+  	decodeArrayBuffer: function(input) {
+  		var bytes = (input.length/4) * 3;
+  		var ab = new ArrayBuffer(bytes);
+  		this.decode(input, ab);
+		
+  		return ab;
+  	},
+	
+  	decode: function(input, arrayBuffer) {
+  		//get last chars to see if are valid
+  		var lkey1 = this._keyStr.indexOf(input.charAt(input.length-1));		 
+  		var lkey2 = this._keyStr.indexOf(input.charAt(input.length-2));		 
+	
+  		var bytes = (input.length/4) * 3;
+  		if (lkey1 == 64) bytes--; //padding chars, so skip
+  		if (lkey2 == 64) bytes--; //padding chars, so skip
+		
+  		var uarray;
+  		var chr1, chr2, chr3;
+  		var enc1, enc2, enc3, enc4;
+  		var i = 0;
+  		var j = 0;
+		
+  		if (arrayBuffer)
+  			uarray = new Uint8Array(arrayBuffer);
+  		else
+  			uarray = new Uint8Array(bytes);
+		
+  		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+		
+  		for (i=0; i<bytes; i+=3) {	
+  			//get the 3 octects in 4 ascii chars
+  			enc1 = this._keyStr.indexOf(input.charAt(j++));
+  			enc2 = this._keyStr.indexOf(input.charAt(j++));
+  			enc3 = this._keyStr.indexOf(input.charAt(j++));
+  			enc4 = this._keyStr.indexOf(input.charAt(j++));
+	
+  			chr1 = (enc1 << 2) | (enc2 >> 4);
+  			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+  			chr3 = ((enc3 & 3) << 6) | enc4;
+	
+  			uarray[i] = chr1;			
+  			if (enc3 != 64) uarray[i+1] = chr2;
+  			if (enc4 != 64) uarray[i+2] = chr3;
+  		}
+	
+  		return uarray;	
+  	}
+  }
+    
+  Gibberish.SoundFont = function( instrumentFileName, pathToResources ) {
+    var that = this
+    Gibberish.extend(this, {
+      'instrumentFileName': instrumentFileName,
+      name:'soundfont',
+      properties: {
+        amp:1,
+        pan:0
+      },
+      playing:[],
+      buffers:{},
+      onload: null,
+      out:[0,0],
+      isLoaded: false,
+      resourcePath: pathToResources || './resources/soundfonts/',
+      
+      callback: function( amp, pan ) {
+        var val = 0
+        for( var i = this.playing.length -1; i >= 0; i-- ) {
+          var note = this.playing[ i ]
+          
+          val += this.interpolate( note.buffer, note.phase )
+          
+          note.phase += note.increment
+          if( note.phase > note.length ) {
+            this.playing.splice( this.playing.indexOf( note ), 1 )
+          }
+        }
+        
+        return this.panner( val * amp, pan, this.out );
+      }.bind( this ),
+      
+      note: function( name, amp, cents ) {
+        if( this.isLoaded ) {
+          this.playing.push({
+            buffer:this.buffers[ name ],
+            phase:0,
+            increment: cents || 0,
+            length:this.buffers[ name ].length,
+            'amp': isNaN( amp ) ? 1 : amp
+          })
+        }
+      },
+      interpolate: Gibberish.interpolate.bind( this ),
+      panner: Gibberish.makePanner()
+    })
+    .init()
+    .oscillatorInit()
+    
+    if( typeof arguments[0] === 'object' && arguments[0].instrumentFileName ) {
+      this.instrumentFileName = arguments[0].instrumentFileName
+    }
+    
+    if( !SF.instruments[ this.instrumentFileName ] ) {
+    
+      getScript( 'resources/soundfonts/' + this.instrumentFileName + '-mp3.js', function() {
+        
+        var font = SF[ this.instrumentFileName ]
+        
+        if( typeof SF.instruments[ this.instrumentFileName ] === 'undefined' ) {
+          SF.instruments[ this.instrumentFileName ] = {}
+        }
+        
+        this.buffers = SF.instruments[ this.instrumentFileName ]
+        
+        var count = 0
+        for( var note in font ) {
+          count++
+          !function() {
+            var _note = note
+            
+            var base = SF[ this.instrumentFileName ][ _note ].split(",")[1]
+            var arrayBuffer = Base64Binary.decodeArrayBuffer( base );
+            
+            Gibberish.context.decodeAudioData( arrayBuffer, function( _buffer ) {
+              SF.instruments[ this.instrumentFileName ][ _note ] = _buffer.getChannelData( 0 )
+              count--
+              if( count <= 0 ) { 
+                console.log("Soundfont " + this.instrumentFileName + " is loaded.")
+                this.isLoaded = true
+                if( this.onload ) this.onload()
+              }
+            }.bind( this ), function(e) { console.log("ERROR", e.err, arguments, _note ) } )
+            
+          }.bind( this )()
+        }
+        
+      }.bind( this ) )
+    }else{
+      this.buffers = SF.instruments[ this.instrumentFileName ]
+      this.isLoaded = true
+      setTimeout( function() { if( this.onload ) this.onload() }.bind( this ), 0 )
+    }
+    return this
+  }
+  Gibberish.SoundFont.prototype = Gibberish._oscillator;
+})()
+  return Gibberish; 
 })
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],7:[function(_dereq_,module,exports){
@@ -9454,6 +9721,7 @@ Audio = {
     target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
     target.ScaleSeq = Audio.Seqs.ScaleSeq
+    target.SoundFont = Audio.SoundFont
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -9471,6 +9739,7 @@ Audio = {
     // target.seconds = target.sec = Audio.Time.seconds
     // target.minutes = target.min = Audio.Time.minutes
     Audio.Core.Time.export( target )
+    Audio.Clock.export( target )
     //target.sec = target.seconds
     Audio.Core.Binops.export( target )    
   },
@@ -9755,7 +10024,6 @@ Audio = {
       for( var i = 0; i < this.mappingObjects.length; i++ ) {
         var mapping = this.mappingObjects[ i ]
         
-        console.log( mapping )
         if( mapping.targets.length > 0 ) {
           for( var j = 0; j < mapping.targets.length; j++ ) {
             var _mapping = mapping.targets[ j ]
@@ -9863,11 +10131,12 @@ Audio.Input =          _dereq_( './audio/audio_input' )( Gibber )
 Audio.Samplers =       _dereq_( './audio/sampler' )( Gibber )
 Audio.PostProcessing = _dereq_( './audio/postprocessing' )( Gibber )
 Audio.Arp =            _dereq_( './audio/arp' )( Gibber )
+Audio.SoundFont =      _dereq_( './audio/soundfont' )( Gibber )
 
 return Audio
 
 }
-},{"../external/freesound":7,"./audio/analysis":10,"./audio/arp":11,"./audio/audio_input":12,"./audio/bus":13,"./audio/clock":14,"./audio/drums":15,"./audio/envelopes":16,"./audio/fx":17,"./audio/gibber_freesound":18,"./audio/oscillators":19,"./audio/postprocessing":20,"./audio/sampler":21,"./audio/seq":22,"./audio/synths":23,"./audio/theory":24,"gibberish-dsp":6}],10:[function(_dereq_,module,exports){
+},{"../external/freesound":7,"./audio/analysis":10,"./audio/arp":11,"./audio/audio_input":12,"./audio/bus":13,"./audio/clock":14,"./audio/drums":15,"./audio/envelopes":16,"./audio/fx":17,"./audio/gibber_freesound":18,"./audio/oscillators":19,"./audio/postprocessing":20,"./audio/sampler":21,"./audio/seq":22,"./audio/soundfont":23,"./audio/synths":24,"./audio/theory":25,"gibberish-dsp":6}],10:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -10287,15 +10556,13 @@ module.exports = function( Gibber ) {
   return Busses
 }
 },{"gibberish-dsp":6}],14:[function(_dereq_,module,exports){
-module.exports = function( Gibber ) {
+!function() {
   
-"use strict"
-
 var times = [],
-    $ = Gibber.dollar,//require('zepto-browserify').Zepto,
-    curves = Gibber.outputCurves,
-    LINEAR = curves.LINEAR,
-    LOGARITHMIC = curves.LOGARITHMIC, 
+    $ = null,
+    curves = null,
+    LINEAR = null,
+    LOGARITHMIC = null,
     Gibberish = _dereq_( 'gibberish-dsp' )
 
 var Clock = {
@@ -10311,6 +10578,12 @@ var Clock = {
   sequencers:[],
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
   phase : 0,
+  export: function( target ) {
+    target.beats = Clock.beats
+    target.Beats = Clock.Beats
+    target.measures = Clock.measures
+    target.Measures = Clock.measures
+  },
   
   processBeat : function() {
     Clock.currentBeat = Clock.currentBeat >= Clock.signature.upper ? 1 : Clock.currentBeat + 1
@@ -10433,7 +10706,6 @@ var Clock = {
   time : function(v) {
     var timeInSamples, beat;
     
-
     if( v < Clock.maxMeasures ) {
       timeInSamples = Clock.beats( v * Clock.signature.lower )
     }else{
@@ -10465,12 +10737,31 @@ var Clock = {
     return function() {
       return Gibber.Clock.beats( val )
     }
+  },
+  
+  measures: function( val ) {
+    return Clock.beats( val * Clock.signature.upper )
+  },
+  
+  Measures: function( val ) {
+    return Clock.Beats( val * Clock.signature.upper )
   }
 }
 
-return Clock
+module.exports = function( Gibber ) {
+  
+  "use strict"
+
+  $ = Gibber.dollar,
+  curves = Gibber.outputCurves,
+  LINEAR = curves.LINEAR,
+  LOGARITHMIC = curves.LOGARITHMIC
+
+  return Clock
 
 }
+
+}()
 },{"gibberish-dsp":6}],15:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
@@ -11246,7 +11537,8 @@ module.exports = function( Gibber ) {
             obj
         
         if( typeof args[0] !== 'object' ) {
-          obj = new Gibberish[ type ]( args[0], args[1], Clock.time( args[2] ), args[3] )
+          // console.log( args[0], args[1], args[2], Gibber.Clock.time( args[2] ) )
+          obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }
@@ -11645,6 +11937,21 @@ module.exports = function( Gibber ) {
       damping: .3,
       wet: .55,
       dry: .45,
+    }
+  }
+  
+  FX.Presets.Crush = {
+    clean: {
+      sampleRate:1,
+      bitDepth:16
+    },
+    dirty:{
+      sampleRate:.25,
+      bitDepth:4
+    },
+    filthy:{
+      sampleRate:.1,
+      bitDepth:2.5
     }
   }
 
@@ -12564,7 +12871,10 @@ module.exports = function( Gibber ) {
         var durationsPattern = Gibber.construct( Gibber.Pattern, obj.durations )
         
         if( obj.durations.randomFlag ) {
-          durationsPattern.filters.push( function() { return [ durationsPattern.values[ Gibber.Utilities.rndi(0, durationsPattern.values.length - 1) ], 1 ] } )
+          durationsPattern.filters.push( function() { 
+            var idx = Gibber.Utilities.rndi(0, durationsPattern.values.length - 1)
+            return [ durationsPattern.values[ idx ], 1, idx ] 
+          })
           for( var i = 0; i < obj.durations.randomArgs.length; i+=2 ) {
             durationsPattern.repeat( obj.durations.randomArgs[ i ], obj.durations.randomArgs[ i + 1 ] )
           }
@@ -12591,7 +12901,10 @@ module.exports = function( Gibber ) {
             }
           
             if( arg[ key ].randomFlag ) {
-              valuesPattern.filters.push( function() { return [ valuesPattern.values[ Gibber.Utilities.rndi(0, valuesPattern.values.length - 1) ], 1 ] } )
+              valuesPattern.filters.push( function() {
+                var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
+                return [ valuesPattern.values[ idx ], 1, idx ] 
+              })
               for( var i = 0; i < arg[ key ].randomArgs.length; i+=2 ) {
                 valuesPattern.repeat( arg[ key ].randomArgs[ i ], arg[ key ].randomArgs[ i + 1 ] )
               }
@@ -12601,15 +12914,19 @@ module.exports = function( Gibber ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
                 if( output < Gibber.minNoteFrequency ) {
-                  output = obj.scale.notes[ output ]
+                  if( obj.scale ) {
+                    output = obj.scale.notes[ output ]
+                  }else{
+                    output = Gibber.scale.notes[ output ]
+                  }
                 }
                 
-                return [ output, arguments[0][1] ] 
+                return [ output, arguments[0][1], arguments[0][2] ] 
               })
             }
             
             _seq.values = valuesPattern
-        
+            
             obj.seqs.push( _seq )
             keyList.push( key )
           }
@@ -12710,7 +13027,7 @@ module.exports = function( Gibber ) {
       })(seq)
     }
     
-    var _durations = null
+    var _durations = durationsPattern
     Object.defineProperty( seq, 'durations', {
       get: function() { return _durations },
       set: function(v) {
@@ -12729,41 +13046,43 @@ module.exports = function( Gibber ) {
     seq.toString = function() { return '> Seq' }
     seq.gibber = true
     
+    $.extend( seq, {
+      constructor: Seq,
+      replaceWith: function( replacement ) { this.kill() },
+      kill: function() { 
+        if( this.target && this.target.sequencers )
+          this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
+      
+          console.log("SEQ KILL", this )
+        this.stop().disconnect()
+      },
+      applyScale : function() {
+        // for( var i = 0; i < this.seqs.length; i++ ) {
+        //   var s = this.seqs[ i ]
+        //   if( s.key === 'note' || s.key === 'frequency' ) {
+        //     s.values = makeNoteFunction( s.values, this )
+        //   }
+        // }
+      },
+      once : function() {
+        this.repeat( 1 )
+        return this
+      },
+      reset : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {  
+          this.seqs[ i ].values[0].reset()
+        }
+      },
+      shuffle : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {
+          this.seqs[ i ].values[0].shuffle()
+        }
+      },
+    })
     return seq
   }
   
-  $.extend( Gibberish.PolySeq.prototype, {
-    constructor: Seq,
-    replaceWith: function( replacement ) { this.kill() },
-    kill: function() { 
-      if( this.target && this.target.sequencers )
-        this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-      
-      this.stop().disconnect()
-    },
-    applyScale : function() {
-      // for( var i = 0; i < this.seqs.length; i++ ) {
-      //   var s = this.seqs[ i ]
-      //   if( s.key === 'note' || s.key === 'frequency' ) {
-      //     s.values = makeNoteFunction( s.values, this )
-      //   }
-      // }
-    },
-    once : function() {
-      this.repeat( 1 )
-      return this
-    },
-    reset : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {  
-        this.seqs[ i ].values[0].reset()
-      }
-    },
-    shuffle : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {
-        this.seqs[ i ].values[0].shuffle()
-      }
-    },
-  })
+
   
   var ScaleSeq = function() {
     var args = arguments[0],
@@ -12786,6 +13105,107 @@ module.exports = function( Gibber ) {
   return Seqs 
 }
 },{"gibberish-dsp":6}],23:[function(_dereq_,module,exports){
+module.exports = function( Gibber, pathToSoundFonts ) {
+  var Gibberish = _dereq_( 'gibberish-dsp' ),
+      curves = Gibber.outputCurves,
+      teoria = _dereq_( './theory' )( Gibber ).Teoria,
+      LINEAR = curves.LINEAR,
+      LOGARITHMIC = curves.LOGARITHMIC,
+      mappingProperties = {
+        amp: {
+          min: 0, max: 1,
+          hardMax:2,
+          output: LOGARITHMIC,
+          timescale: 'audio',
+          dimensions:1
+        }
+      },
+      cents = function(base, _cents) {
+        return base * Math.pow(2,_cents/1200)
+      }
+  
+  var SoundFont = function( soundFontName ) {
+    var obj
+        
+    obj = new Gibberish.SoundFont( arguments[0], SoundFont.path ).connect( Gibber.Master )
+
+    $.extend( true, obj, Gibber.Audio.ugenTemplate )
+    obj.fx.ugen = obj
+    obj.chord = Gibber.Theory.chord
+    
+    Object.defineProperty(obj, '_', {
+      get: function() { 
+        oscillator.kill();
+        return oscillator 
+      },
+      set: function() {}
+    })
+    
+    obj._note = obj.note.bind( obj ) 
+    obj.note = function( name, amp ) {
+      if( typeof name === 'number' ) {
+        if( name < Gibber.minNoteFrequency ) {
+          var scale = this.scale || Gibber.scale,
+              note  = scale.notes[ name ]
+              
+          if( this.octave && this.octave !== 0 ) {
+            var sign = this.octave > 0 ? 1 : 0,
+                num  = Math.abs( this.octave )
+            
+            for( var i = 0; i < num; i++ ) {
+              note *= sign ? 2 : .5
+            }
+          }
+          
+          name = note
+        }
+        var tNote = teoria.frequency.note( name ),
+            noteName, _cents = 0
+        
+        if( tNote.note.accidental.value === 1 && tNote.note.accidental.sign !== 'b' ) { 
+          var enharmonics = tNote.note.enharmonics()
+          for( var i = 0; i < enharmonics.length; i++ ) {
+            var enharmonic = enharmonics[ i ]
+            if( enharmonic.accidental.sign === 'b' ) {
+              tNote.note = enharmonic
+              break;
+            }
+          }
+        }
+        
+        _cents = tNote.cents 
+        
+        noteName =  tNote.note.name.toUpperCase() 
+        if( tNote.note.accidental.value !== 0) {
+          noteName += tNote.note.accidental.sign
+        }
+        noteName += tNote.note.octave
+        
+        name = noteName
+      }
+      
+      
+      obj._note( name, isNaN( amp ) ? 1 : amp, cents(1, _cents) )
+      // this.playing.push({
+      //   buffer:this.buffers[ name ],
+      //   phase:0,
+      //   increment: cents(1, _cents),
+      //   length:this.buffers[ name ].length,
+      //   'amp': isNaN( amp ) ? 1 : amp
+      // })
+    }
+    
+    Gibber.createProxyProperties( obj, mappingProperties )
+    Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
+  
+    return obj
+  }
+  
+  SoundFont.path = pathToSoundFonts || "../../../resources/soundfonts/"
+  
+  return SoundFont
+}
+},{"./theory":25,"gibberish-dsp":6}],24:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -12932,7 +13352,7 @@ module.exports = function( Gibber ) {
         
               if( obj.envelope.getState() > 0 ) obj.envelope.run();
             }
-                  }
+          }
         }
         // override note method to allow note names
         obj._note = obj.note.bind( obj )
@@ -13222,7 +13642,7 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"./clock":14,"gibberish-dsp":6}],24:[function(_dereq_,module,exports){
+},{"./clock":14,"gibberish-dsp":6}],25:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
 
@@ -13303,9 +13723,11 @@ var Theory = {
         that.create() 
       }
     });
-
+    
     // createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings ) {
     // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
+    
+    that.gibber = true // needed since createProxyProperties isn't called where this is normally set
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
     //Gibber.defineSequencedProperty( that, 'root', 1 )
@@ -13496,16 +13918,14 @@ var Theory = {
 return Theory
 
 }
-},{"../../external/teoria.min":8}],25:[function(_dereq_,module,exports){
+},{"../../external/teoria.min":8}],26:[function(_dereq_,module,exports){
 !function() {
 
 var Gibber = _dereq_( 'gibber.core.lib' )
 Gibber.Audio = _dereq_( './audio.js')( Gibber )
-//Gibber.mappings  = require( 'gibber.core.lib/scripts/mappings' )( Gibber, Gibber.Audio.Core )//require( './mappings' )( Gibber, Gibber.Audio.Core )
-
 module.exports = Gibber
 
 }()
-},{"./audio.js":9,"gibber.core.lib":2}]},{},[25])
-(25)
+},{"./audio.js":9,"gibber.core.lib":2}]},{},[26])
+(26)
 });

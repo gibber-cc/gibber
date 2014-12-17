@@ -30,6 +30,7 @@ Audio = {
     target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
     target.ScaleSeq = Audio.Seqs.ScaleSeq
+    target.SoundFont = Audio.SoundFont
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -47,6 +48,7 @@ Audio = {
     // target.seconds = target.sec = Audio.Time.seconds
     // target.minutes = target.min = Audio.Time.minutes
     Audio.Core.Time.export( target )
+    Audio.Clock.export( target )
     //target.sec = target.seconds
     Audio.Core.Binops.export( target )    
   },
@@ -438,6 +440,7 @@ Audio.Input =          require( './audio/audio_input' )( Gibber )
 Audio.Samplers =       require( './audio/sampler' )( Gibber )
 Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
+Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
 
 return Audio
 

@@ -125,7 +125,6 @@ module.exports = function( Gibber ) {
             
             _seq.values = valuesPattern
             
-            console.log( "SEQ", key, valuesPattern )
             obj.seqs.push( _seq )
             keyList.push( key )
           }
@@ -245,41 +244,43 @@ module.exports = function( Gibber ) {
     seq.toString = function() { return '> Seq' }
     seq.gibber = true
     
+    $.extend( seq, {
+      constructor: Seq,
+      replaceWith: function( replacement ) { this.kill() },
+      kill: function() { 
+        if( this.target && this.target.sequencers )
+          this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
+      
+          console.log("SEQ KILL", this )
+        this.stop().disconnect()
+      },
+      applyScale : function() {
+        // for( var i = 0; i < this.seqs.length; i++ ) {
+        //   var s = this.seqs[ i ]
+        //   if( s.key === 'note' || s.key === 'frequency' ) {
+        //     s.values = makeNoteFunction( s.values, this )
+        //   }
+        // }
+      },
+      once : function() {
+        this.repeat( 1 )
+        return this
+      },
+      reset : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {  
+          this.seqs[ i ].values[0].reset()
+        }
+      },
+      shuffle : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {
+          this.seqs[ i ].values[0].shuffle()
+        }
+      },
+    })
     return seq
   }
   
-  $.extend( Gibberish.PolySeq.prototype, {
-    constructor: Seq,
-    replaceWith: function( replacement ) { this.kill() },
-    kill: function() { 
-      if( this.target && this.target.sequencers )
-        this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-      
-      this.stop().disconnect()
-    },
-    applyScale : function() {
-      // for( var i = 0; i < this.seqs.length; i++ ) {
-      //   var s = this.seqs[ i ]
-      //   if( s.key === 'note' || s.key === 'frequency' ) {
-      //     s.values = makeNoteFunction( s.values, this )
-      //   }
-      // }
-    },
-    once : function() {
-      this.repeat( 1 )
-      return this
-    },
-    reset : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {  
-        this.seqs[ i ].values[0].reset()
-      }
-    },
-    shuffle : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {
-        this.seqs[ i ].values[0].shuffle()
-      }
-    },
-  })
+
   
   var ScaleSeq = function() {
     var args = arguments[0],
