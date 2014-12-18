@@ -1,0 +1,131 @@
+module.exports = function( Gibber, pathToSoundFonts ) {
+  var Gibberish = require( 'gibberish-dsp' ),
+      curves = Gibber.outputCurves,
+      teoria = require( './theory' )( Gibber ).Teoria,
+      LINEAR = curves.LINEAR,
+      LOGARITHMIC = curves.LOGARITHMIC,
+      mappingProperties = {
+        amp: {
+          min: 0, max: 1,
+          hardMax:2,
+          output: LOGARITHMIC,
+          timescale: 'audio',
+          dimensions:1
+        }
+      },
+      cents = function(base, _cents) {
+        return base * Math.pow(2,_cents/1200)
+      }
+  
+  var SoundFont = function( soundFontName ) {
+    var obj, path = SoundFont.path
+    
+    if( Gibber.Environment ) {
+      if( Gibber.Environment.Storage.values.soundfonts ) {
+        if( Gibber.Environment.Storage.values.soundfonts[ soundFontName ] ) {
+          path = Gibber.Environment.Storage.values.soundfonts[ soundFontName ]
+        }
+      }
+    }
+    
+    obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
+
+    $.extend( true, obj, Gibber.Audio.ugenTemplate )
+    obj.fx.ugen = obj
+    obj.chord = Gibber.Theory.chord
+    
+    Object.defineProperty(obj, '_', {
+      get: function() { 
+        oscillator.kill();
+        return oscillator 
+      },
+      set: function() {}
+    })
+    
+    obj.onload = function() {
+      
+      if( Gibber.Environment && Gibber.Environment.Storage.values.saveSoundFonts ) {
+        if( !Gibber.Environment.Storage.values.soundfonts ) {
+          Gibber.Environment.Storage.values.soundfonts = {}
+        }else{
+          if( Gibber.Environment.Storage.values.soundfonts[ soundFontName] ) return
+        }
+        
+        Gibber.Environment.Storage.values.soundfonts[ soundFontName ] = Gibber.Audio.Core.SoundFont.storage[ soundFontName ]
+        
+        try{
+          Gibber.Environment.Storage.save()
+        }catch(e){
+          console.log("STORAGE ERROR", e )
+          
+          if( e.name === 'QuotaExceededError' ) {
+            console.log('Your localStorage for Gibber has been exceeded; we can\'t save the soundfile. It is still usable.')
+          }
+        }
+      }
+    }
+    
+    obj._note = obj.note.bind( obj ) 
+    obj.note = function( name, amp ) {
+      if( typeof name === 'number' ) {
+        if( name < Gibber.minNoteFrequency ) {
+          var scale = this.scale || Gibber.scale,
+              note  = scale.notes[ name ]
+              
+          if( this.octave && this.octave !== 0 ) {
+            var sign = this.octave > 0 ? 1 : 0,
+                num  = Math.abs( this.octave )
+            
+            for( var i = 0; i < num; i++ ) {
+              note *= sign ? 2 : .5
+            }
+          }
+          
+          name = note
+        }
+        var tNote = teoria.frequency.note( name ),
+            noteName, _cents = 0
+        
+        if( tNote.note.accidental.value === 1 && tNote.note.accidental.sign !== 'b' ) { 
+          var enharmonics = tNote.note.enharmonics()
+          for( var i = 0; i < enharmonics.length; i++ ) {
+            var enharmonic = enharmonics[ i ]
+            if( enharmonic.accidental.sign === 'b' ) {
+              tNote.note = enharmonic
+              break;
+            }
+          }
+        }
+        
+        _cents = tNote.cents 
+        
+        noteName =  tNote.note.name.toUpperCase() 
+        if( tNote.note.accidental.value !== 0) {
+          noteName += tNote.note.accidental.sign
+        }
+        noteName += tNote.note.octave
+        
+        name = noteName
+      }
+      
+      
+      obj._note( name, isNaN( amp ) ? 1 : amp, cents(1, _cents) )
+      // this.playing.push({
+      //   buffer:this.buffers[ name ],
+      //   phase:0,
+      //   increment: cents(1, _cents),
+      //   length:this.buffers[ name ].length,
+      //   'amp': isNaN( amp ) ? 1 : amp
+      // })
+    }
+    
+    Gibber.createProxyProperties( obj, mappingProperties )
+    Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
+  
+    return obj
+  }
+  
+  SoundFont.path = pathToSoundFonts || "../../../resources/soundfonts/"
+  
+  return SoundFont
+}
