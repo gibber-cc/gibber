@@ -2281,10 +2281,10 @@ module.exports = function( Gibber ) {
       mode = modes[ options.mode ]
     }
     
-    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 2, // make sure it's only on the first load
+    var shouldDisplayLoadFile = window.loadFile && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 2, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
     
-    console.log("LOAD FILE DISPLAY", shouldDisplayLoadFile, col )
+    //console.log("LOAD FILE DISPLAY", shouldDisplayLoadFile, col )
     
     if( GE.Storage.values ) {
       if( !GE.Storage.values.showSampleCodeInNewEditors ) _value = ''    
