@@ -1,4 +1,7 @@
+!function() {
+
 var $ = require( './dollar' )
+var initialized = false
 
 module.exports = function( Gibber ) { 
   'use strict'
@@ -105,8 +108,10 @@ module.exports = function( Gibber ) {
       mode = modes[ options.mode ]
     }
     
-    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
+    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 2, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
+    
+    //console.log("LOAD FILE DISPLAY", shouldDisplayLoadFile, col )
     
     if( GE.Storage.values ) {
       if( !GE.Storage.values.showSampleCodeInNewEditors ) _value = ''    
@@ -188,8 +193,7 @@ module.exports = function( Gibber ) {
           count++
         }
       }
-    
-    
+
       col.modeIndex = languageIndex
       col.modeSelect.addClass( 'modeSelectDropDown' )
   
@@ -197,7 +201,10 @@ module.exports = function( Gibber ) {
   		col.mode = preferenceLanguage
       col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
     }
-
+    
+    if( shouldDisplayLoadFile ) {
+      col.editor.setValue( window.loadFile.text )
+    }
     //col.modeSelect.eq( col.modeIndex )
     col.element.addClass( colNumber )
     col.element.attr( 'id', colNumber )
@@ -456,3 +463,5 @@ module.exports = function( Gibber ) {
   
   return Column
 }
+
+}()
