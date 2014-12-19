@@ -1516,10 +1516,14 @@ module.exports = function( Gibber, Notation ) {
                   pattern = newObject.note.values
                   
               pattern.arrayText = values[0].value
+              pattern.originalArrayText = pattern.arrayText.slice( 0 )
+              
               pattern.arrayMark = cm.markText( 
                 {line:pos.start.line + location.start.line - 1, ch:location.start.column + 1 }, 
                 {line:pos.start.line + location.start.line - 1, ch:location.end.column - 1 }
               )
+              
+              pattern.cm = cm
                   
               newObject.marks[ patternName ] = []
               newObject.locations[ patternName ] = []
@@ -1552,6 +1556,8 @@ module.exports = function( Gibber, Notation ) {
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
                   
+                  console.log( object.object.property.name )
+                  
                   var isArray = true
                   if( !values ) {
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
@@ -1573,6 +1579,8 @@ module.exports = function( Gibber, Notation ) {
                     var seq = newObject,
                         _name_ = object.object.property.name, 
                         pattern = seq[ _name_ ][ valuesOrDurations ]
+                    
+                    pattern.cm = cm
                     
                     if( seq[ _name_ ] && pattern.filters ) {
                       var lastChose = {}
@@ -1746,16 +1754,18 @@ module.exports = function( Gibber, Notation ) {
             var values = args[ j ].elements,
                 valuesOrDurations = j === 0 ? 'values' : 'durations',
                 propertyName = obj.expression.callee.object.property.name,
-                isArray = true
+                isArray = true, isRnd = false
             
-            // console.log("PROPERTY NAME", propertyName, "VD", valuesOrDurations )
+            console.log("PROPERTY NAME", propertyName, "VD", valuesOrDurations )
             if( !values ) {
               //console.log( args[j] )
               if( args[j].callee ) { // if it is an array with a random or weight method attached..
                 if( args[j].callee.object && args[j].callee.object.elements ) {
                   values = args[j].callee.object.elements; // use the array that is calling the method
                 }else{
-                  values = [ args[j] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
+                  // Rndf or Rndi or any anonymous function. TODO: single literal values
+                  values = [ args[j] ]
+                  isRnd = true
                   isArray = false
                 }
               }else{
@@ -1773,7 +1783,8 @@ module.exports = function( Gibber, Notation ) {
             caller.locations[ patternName ] = []
             
             markArray( values, caller, object.name, patternName, pos, cm )
-          
+            
+            pattern.cm = cm
             pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)' )
             
             Notation.add( pattern, false )
@@ -2145,10 +2156,20 @@ module.exports = function( Gibber, Notation ) {
   
   var PW = Gibber.Environment.Notation.PatternWatcher = {
     dirty: [],
-    clear: function() { this.dirty.length = 0 },
+    changed:[],
+    clear: function() { 
+      for( var i = 0; i < this.changed.length; i++ ) {
+        this.changed[i].arrayText = this.changed[i].originalArrayText
+        var mark = this.changed[i].arrayMark.find()
+        this.changed[i].cm.replaceRange( this.changed[i].arrayText, mark.from, mark.to )
+      }
+      this.changed.length = 0
+      this.dirty.length = 0 
+    },
     fps: 30,
     check: function() {
       for( var i = 0; i < this.dirty.length; i++ ) {
+        if( this.changed.indexOf( this.dirty[ i ] ) === -1 ) this.changed.push( this.dirty[ i ] )
         this.dirty[ i ].onchange()
       }
       this.dirty.length = 0
@@ -2161,6 +2182,8 @@ module.exports = function( Gibber, Notation ) {
       clearInterval( this.interval )
     }
   }
+  
+  $.subscribe( '/gibber/clear', PW.clear.bind( PW ) )
   
   Gibber.Pattern.prototype._onchange = function() {
     if( PW.dirty.indexOf( this ) === -1 ) {
@@ -27610,7 +27633,10 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
       SF = MIDI.Soundfont
   
   // TODO: GET RID OF THIS GLOBAL!!!! It's in there because we're using soundfonts meant for MIDI.js
-  window.MIDI = MIDI
+  if( typeof window === 'object' )
+    window.MIDI = MIDI
+  else
+    global.MIDI = MIDI
   
   var getScript = function( scriptPath, handler ) {
     var oReq = new XMLHttpRequest();
@@ -27766,7 +27792,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
           this.playing.push({
             buffer:this.buffers[ name ],
             phase:0,
-            increment: cents || 0,
+            increment: isNaN( cents ) ? 1 : 1 + cents,
             length:this.buffers[ name ].length,
             'amp': isNaN( amp ) ? 1 : amp
           })
@@ -31389,7 +31415,18 @@ module.exports = function( Gibber, pathToSoundFonts ) {
       },
       cents = function(base, _cents) {
         return base * Math.pow(2,_cents/1200)
-      }
+      },
+      sensibleNames;
+  
+  sensibleNames = {
+    piano : 'acoustic_grand_piano',
+    guitar: 'electric_guitar_clean',
+    bass  : 'acoustic_bass',
+    organ : 'rock_organ',
+    brass : 'synth_brass_1',
+    strings:'synth_strings_1',
+    choir : 'choir_aahs',
+  }
   
   var SoundFont = function( soundFontName ) {
     var obj, path = SoundFont.path
@@ -31401,6 +31438,8 @@ module.exports = function( Gibber, pathToSoundFonts ) {
         }
       }
     }
+    
+    if( sensibleNames[ soundFontName ] ) soundFontName = sensibleNames[ soundFontName ];
     
     obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
 
