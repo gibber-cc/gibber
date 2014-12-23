@@ -1234,6 +1234,9 @@ return Chat
 
 },{}],"/www/gibber.libraries/js/gibber/code_objects.js":[function(require,module,exports){
 /*
+// TODO: CREATE ARRAY .arrayMark for values in expression call.
+
+
 Gibber.Environment.Notation.on('seq')
 
 a = Pluck()
@@ -1261,56 +1264,92 @@ a.text.opacity = a.Out
 
 var uid = 0
 
-var createUpdateFunction = function( obj, name, color ) {
+var createUpdateFunction = function( obj, name, color, isRnd ) {
   var lastChose = {},
-      color = color || 'rgba(255,255,255,1)'
+      color = color || 'rgba(255,255,255,1)',
+      updateFunction
   
-  var updateFunction = function() {
-    // if( name.indexOf('reverse_values') > -1 ) { 
-    //   console.log( "FIRING" , obj.locations[ name ], updateFunction.shouldTrigger ) 
-    // }
+  if( isRnd ) {
+    updateFunction = createRndUpdateFunction( obj, name )
+  }else{
+    updateFunction = function() {
+      // if( name.indexOf('reverse_values') > -1 ) { 
+      //   console.log( "FIRING" , obj.locations[ name ], updateFunction.shouldTrigger ) 
+      // }
     
-    if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
-      var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
-          span = $( spanName )
+      if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
+        var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
+            span = $( spanName )
       
-      if( typeof lastChose[ name ] === 'undefined') lastChose[ name ] = []
+        if( typeof lastChose[ name ] === 'undefined') lastChose[ name ] = []
   
-      span.css({ backgroundColor:color });
+        span.css({ backgroundColor:color });
     
-      setTimeout( function() {
-        span.css({ 
-          backgroundColor: 'rgba(0,0,0,0)',
-        });
+        setTimeout( function() {
+          span.css({ 
+            backgroundColor: 'rgba(0,0,0,0)',
+          });
       
-      }, 100 )
-      updateFunction.shouldTrigger = false
+        }, 100 )
+        updateFunction.shouldTrigger = false
+      }
     }
+    updateFunction.index = null
+    updateFunction.shouldTrigger = false
   }
-  updateFunction.index = null
-  updateFunction.shouldTrigger = false
   
   return updateFunction
 }
 
-//pattern.onchange = createOnChange( newObject, newObjectName, valuesOrDurations, 'note_values' )
+var createRndUpdateFunction = function( obj, name ) {
+  var update = function() {
+    if( obj.marks[ name ][ update.index ] && update.shouldTrigger ) {
+      var pos = obj.marks[ name ][0].find()
+      
+      if( typeof update.value !== 'string' ) update.value += ''
+      
+      if( update.value.length > 6 ) {
+        update.value = update.value.slice( 0,6 )
+      }
+          
+      update.pattern.cm.replaceRange( update.value, pos.from, pos.to )
+      
+      pos.from.ch = pos.to.ch + update.value.length
+      
+      update.pattern.arrayMark = obj.marks[name][0]
+      
+      update.shouldTrigger = false
+      
+      if( Gibber.Environment.Notation.PatternWatcher.changed.indexOf( update.pattern ) === -1 ) {
+        Gibber.Environment.Notation.PatternWatcher.changed.push( update.pattern )
+      }
+    }
+  }
+  update.value = 0
+  update.index = 0
+  
+  return update
+}
 
+//pattern.onchange = createOnChange( newObject, newObjectName, valuesOrDurations, 'note_values' )
+// createOnChange( newObject, newObjectName, patternName, cm, '' )
 var createOnChange = function( obj, objName, patternName, cm, join ) {
   join = join || ''
   var joinLength = join.length
 
-  return function() {
+  return function() { // "this" is the pattern object, as function is assigned to pattern.onchange
     var newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
-        charCount = 0,
-        start = {
-          line : arrayPos.from.line,
-          ch :   arrayPos.from.ch + charCount
-        },
-        end = {
-          line : arrayPos.to.line,
-          ch :   arrayPos.from.ch + charCount + 1
-        }
+        charCount = 0, start, end;
+        
+    start = {
+      line : arrayPos.from.line,
+      ch :   arrayPos.from.ch + charCount
+    }
+    end = {
+      line : arrayPos.to.line,
+      ch :   arrayPos.from.ch + charCount + 1
+    }
     
     obj.marks[ patternName ].length = 0
     obj.locations[ patternName ].length = 0
@@ -1335,6 +1374,7 @@ var createOnChange = function( obj, objName, patternName, cm, join ) {
     
     arrayPos.to.ch = arrayPos.from.ch + charCount
     this.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
+    
     this.arrayText = newPatternText
   }
 }
@@ -1370,14 +1410,40 @@ var initializeMarks = function( obj, className, start, end, cm ) {
   return mark
 }
 
-var markArray = function( values, object, objectName, patternName, pos, cm, location ) {
+var markArray = function( values, treeNode, object, objectName, patternName, pos, cm, location, src ) {
+  var split = patternName.split( '_' )
+  
+  pattern = object[ split[0] ][ split[1] ]
+
+  if( typeof src === 'undefined' ) src = location
+  
+  if( src && !pattern.arrayText ) {
+    if( values.length !== 1 ) {
+      pattern.arrayText = src.substring( treeNode.range[0], treeNode.range[1] );
+      pattern.originalArrayText = pattern.arrayText.slice(0)
+      pattern.arrayMark = cm.markText( 
+        { line: pos.start ? pos.start.line : pos.line - 1, ch: pos.start ? pos.start.column : treeNode.range[0] }, 
+        { line:pos.end ? pos.end.line : pos.line - 1, ch:pos.end ? pos.end.ch : treeNode.range[1] } 
+      )
+    }else{
+      var loc = values[0].loc
+      pattern.arrayText = src.substring( loc.start.column, loc.end.column );
+      pattern.originalArrayText = pattern.arrayText.slice(0)
+      pattern.arrayMark = cm.markText( 
+        { line: pos.start.line + loc.start.line - 1, ch: loc.start.column }, 
+        { line: pos.end.line + loc.end.line - 1, ch:loc.end.column } 
+      )
+    }
+  }
+  
+  
   for( var i = 0; i < values.length; i++ ) {
     var value = values[ i ],
      		__name = objectName.replace('.','') + '_' + patternName + '_' + i,
         index = i,
-				start, end;
+				start, end
     
-    if( !location ) { // Drums and EDrums pass location
+    if( typeof location !== 'object' ) { // Drums and EDrums pass location, otherwise src code as string
       start = {
         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
         ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
@@ -1484,11 +1550,19 @@ module.exports = function( Gibber, Notation ) {
   // text objects and mappings
   //G.scriptCallbacks.push( function( obj, cm, pos, start, end, src, evalStart ) {
   Gibber.Environment.Notation.features[ 'global' ] = function( obj, cm, pos, start, end, src, evalStart ) {
+    
+    // if ctrl+enter to execute line, instead of block or selection
+    if( !pos.start ) {
+      pos = {
+        start:{line:pos.line, ch:0 }, 
+        end:{line:pos.line, ch:src.length }
+      }
+    }
+    
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = null
       
       if( left.type === 'MemberExpression' ) {
-        console.log( "LEFT NAME", left )
         newObjectName = src.split( '=' )[0].trim()
         eval( "newObject = " + newObjectName )
       }else{
@@ -1516,15 +1590,18 @@ module.exports = function( Gibber, Notation ) {
                   pattern = newObject.note.values
                   
               pattern.arrayText = values[0].value
+              pattern.originalArrayText = pattern.arrayText.slice( 0 )
+
               pattern.arrayMark = cm.markText( 
                 {line:pos.start.line + location.start.line - 1, ch:location.start.column + 1 }, 
                 {line:pos.start.line + location.start.line - 1, ch:location.end.column - 1 }
               )
+              
+              pattern.cm = cm
                   
               newObject.marks[ patternName ] = []
               newObject.locations[ patternName ] = []
-              
-              markArray( values[0].value, newObject, newObjectName, patternName, pos, cm, location )
+              markArray( values[0].value, object, newObject, newObjectName, patternName, pos, cm, location, src )
               
               pattern.update = createUpdateFunction( newObject, patternName, 'rgba(255,0,0,1)' )
               Notation.add( pattern, true )
@@ -1547,7 +1624,8 @@ module.exports = function( Gibber, Notation ) {
                 !function() {
                   var values = prevObject.arguments[i].elements,
                       valuesOrDurations = i === 0 ? 'values' : 'durations',
-                      patternName = object.object.property.name + '_' + valuesOrDurations;
+                      patternName = object.object.property.name + '_' + valuesOrDurations,
+                      isRnd = false
                   
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
@@ -1558,6 +1636,7 @@ module.exports = function( Gibber, Notation ) {
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
                         values = prevObject.arguments[i].callee.object.elements; // use the array that is calling the method
                       }else{
+                        isRnd = true
                         values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
                         isArray = false
                       }
@@ -1568,53 +1647,57 @@ module.exports = function( Gibber, Notation ) {
                   } 
                   
                   if( values ) {
-                    markArray( values, newObject, newObjectName, patternName, pos, cm )
+                    markArray( values, object, newObject, newObjectName, patternName, pos, cm )
                     
                     var seq = newObject,
                         _name_ = object.object.property.name, 
                         pattern = seq[ _name_ ][ valuesOrDurations ]
                     
+                    pattern.cm = cm
+                    
                     if( seq[ _name_ ] && pattern.filters ) {
                       var lastChose = {}
+                        var start, end, 
+                            valuesStart = isArray ? prevObject.arguments[i].range[0] + 1 : prevObject.arguments[i].range[0], 
+                            valuesEnd = isArray ? prevObject.arguments[i].range[1] - 1 : prevObject.arguments[i].range[1]
+                        
+                      pattern.arrayText = src.substring( valuesStart, valuesEnd );
+                      pattern.originalArrayText = pattern.arrayText.slice( 0 )
                       
-                      if( isArray ) { 
-                        var start, end
-                        
-                        pattern.arrayText = src.substring( prevObject.arguments[i].range[0], prevObject.arguments[i].range[1] - 2 );
-                        pattern.originalArrayText = pattern.arrayText.slice( 0 )
-                        
-                        start = {
-                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                          ch : prevObject.arguments[i].loc.start.column + 1 // plus one to remove array bracket
-                        }
-                        end = {
-                          line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                          ch : prevObject.arguments[i].loc.end.column - 1   // minus one to remove array bracket
-                        }
-                
-                        start.line += prevObject.arguments[i].loc.start.line
-                        end.line   += prevObject.arguments[i].loc.end.line
-                    
-                        pattern.arrayMark = cm.markText( start, end );
-                        
+                      start = {
+                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                        ch : prevObject.arguments[i].loc.start.column + 1 // plus one to remove array bracket
                       }
-                      
-                      pattern.update = createUpdateFunction( newObject, patternName )
+                      end = {
+                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                        ch : prevObject.arguments[i].loc.end.column - 1   // minus one to remove array bracket
+                      }
               
-                      Notation.add( pattern, true )
-              
-                      pattern.filters.push( function() {
-                        //if( arguments[0][2] !== pattern.update.index ) {
-                          pattern.update.shouldTrigger = true
-                          pattern.update.index = arguments[0][2]
-                          //}
-                                      
-                        return arguments[0]
-                      } )
+                      start.line += prevObject.arguments[i].loc.start.line
+                      end.line   += prevObject.arguments[i].loc.end.line
+                  
+                      pattern.arrayMark = cm.markText( start, end );
                       
-                      
-                      pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',' )
                     }
+                    //pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isRnd )
+                    
+                    pattern.update = createUpdateFunction( newObject, patternName, 'rgba(255,255,255,1)', isRnd )
+                    pattern.update.pattern = pattern
+                    pattern.cm = cm
+                    
+                    Notation.add( pattern, true )
+            
+                    pattern.filters.push( function() {
+                      //if( arguments[0][2] !== pattern.update.index ) {
+                        pattern.update.shouldTrigger = true
+                        pattern.update.index = arguments[0][2]
+                        //}
+                                    
+                      return arguments[0]
+                    } )
+                    
+                    
+                    pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',' )
                   }
                 }()
               }
@@ -1708,17 +1791,34 @@ module.exports = function( Gibber, Notation ) {
             nextObject = obj.expression.callee,
             object = null,
             caller = null, prevObject = null, pattern = null, path = [], property = null
-                    
+        
         var count = 0    
         while( typeof nextObject !== 'undefined' ) {
           object = nextObject
-          if( count++ !== 0 && object.property ) path.push( object.property.name )
-          nextObject = object.object
+          if( count++ !== 0 && nextObject.property ) path.push( nextObject.property.name )
+          
+          nextObject = nextObject.object
+        }
+
+        path.reverse()
+        
+        var propertyName = ''
+        switch( path.length ) {
+          case 1:
+            caller = window[ object.name ]
+            propertyName = object.name + '.' + path[0]
+            break;
+          case 2: 
+            caller = window[ object.name ][ path[0] ]
+            propertyName = object.name + '.' + path.join('.')
+            break;
+          case 3:
+            caller = window[ object.name ][ path[0] ][ path[1] ]
+            propertyName = object.name + '.' + path.join('.')
+            break;
         }
         
-        caller = window[ object.name ]
-        
-        eval( 'property = ' + object.name + '.' + path.reverse().join( '.' ) )
+        eval( 'property = ' + propertyName ) //object.name + '.' + path.reverse().join( '.' ) )
         
         if( !caller.marks ) {
           caller.marks = {}
@@ -1746,16 +1846,17 @@ module.exports = function( Gibber, Notation ) {
             var values = args[ j ].elements,
                 valuesOrDurations = j === 0 ? 'values' : 'durations',
                 propertyName = obj.expression.callee.object.property.name,
-                isArray = true
+                isArray = true, isRnd = false
             
-            // console.log("PROPERTY NAME", propertyName, "VD", valuesOrDurations )
             if( !values ) {
               //console.log( args[j] )
               if( args[j].callee ) { // if it is an array with a random or weight method attached..
                 if( args[j].callee.object && args[j].callee.object.elements ) {
                   values = args[j].callee.object.elements; // use the array that is calling the method
                 }else{
-                  values = [ args[j] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
+                  // Rndf or Rndi or any anonymous function. TODO: single literal values
+                  values = [ args[j] ]
+                  isRnd = true
                   isArray = false
                 }
               }else{
@@ -1772,76 +1873,25 @@ module.exports = function( Gibber, Notation ) {
             caller.marks[ patternName ]     = []
             caller.locations[ patternName ] = []
             
-            markArray( values, caller, object.name, patternName, pos, cm )
-          
-            pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)' )
+            markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
-            Notation.add( pattern, false )
-            
+            pattern.cm = cm
+            // 
+            // 
             pattern.filters.push( function() {
-              //console.log("REVERSE FILTER", pattern.update.shouldTrigger, arguments[0], pattern.update.index )
-              //if( arguments[0][2] !== pattern.update.index ) {
-                pattern.update.shouldTrigger = true
-                pattern.update.index = arguments[0][2]
-                //}
+              pattern.update.shouldTrigger = true
+              pattern.update.index = arguments[0][2]
+              pattern.update.value = arguments[0][0]
               
               return arguments[0]
             } )
-            
+                        
             pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
-          
-          //   var lastChose = {}
-          //   pattern.filters.push( function() {
-          //     // console.log(" FILTER CALLED ", _name_ + valuesOrDurations )
-          //     if( seq.locations[ _name_ + valuesOrDurations ] ) {
-          //       var __name = '.' + seq.locations[ _name_ + valuesOrDurations ][ arguments[0][2] ];
-          //   
-          //       if( typeof lastChose[ _name_ ] === 'undefined') lastChose[ _name_ ] = []
-          //   
-          //       $( __name ).css({ backgroundColor:'rgba(200,200,200,1)' });
-          //     
-          //       if( _name_ === 'pan' && valuesOrDurations === 'values' ) {
-          //         // console.log("PAN FLASH", __name, arguments[0][2], _name_, valuesOrDurations )
-          //       }
-          //     
-          //       setTimeout( function() {
-          //         $( __name ).css({ 
-          //           backgroundColor: 'rgba(0,0,0,0)',
-          //         });
-          //       }, 100 )
-          //     }
-          //     return arguments[0]
-          //   }) 
-          //             
-          //   caller.marks[ propertyName + valuesOrDurations ] = []
-          //   caller.locations[ propertyName + valuesOrDurations ] = []
-          //   var propNameStart = ( object.name.replace('.','_') ) + '_' + path.join( '_' ) + '_' + valuesOrDurations + '_'
-          //   
-          //   for( var jj = 0; jj < values.length; jj++ ) {
-          //     ( function() {
-          //       var value = values[ jj ],
-          //            __name = propNameStart + jj,
-          //           index = jj,
-          //                       start, end;
-          //           // console.log( "PROP", propertyName, __name )
-          //   
-          //       start = {
-          //         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-          //         ch : value.type === 'BinaryExpression' ? value.left.loc.start.column : value.loc.start.column
-          //       }
-          //       end = {
-          //         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-          //         ch : value.type === 'BinaryExpression' ? value.right.loc.end.column : value.loc.end.column
-          //       }
-          //       
-          //       start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
-          //       end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
-          //           
-          //       var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
-          //       caller.marks[ propertyName + valuesOrDurations ].push( mark )
-          //       caller.locations[ propertyName + valuesOrDurations ].push( __name )
-          //     })()
-          //   }
+
+            pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isRnd )
+            pattern.update.pattern = pattern
+            
+            Notation.add( pattern, false )           
           }(_j)
         }
       }
@@ -2145,10 +2195,23 @@ module.exports = function( Gibber, Notation ) {
   
   var PW = Gibber.Environment.Notation.PatternWatcher = {
     dirty: [],
-    clear: function() { this.dirty.length = 0 },
+    changed:[],
+    clear: function() { 
+      for( var i = 0; i < this.changed.length; i++ ) {
+        
+        this.changed[i].arrayText = this.changed[i].originalArrayText
+        
+        var mark = !this.changed[i].arrayMark ? this.changed[i].values[0].arrayMark.find() : this.changed[i].arrayMark.find()
+        
+        this.changed[i].cm.replaceRange( this.changed[i].arrayText, mark.from, mark.to )
+      }
+      this.changed.length = 0
+      this.dirty.length = 0 
+    },
     fps: 30,
     check: function() {
       for( var i = 0; i < this.dirty.length; i++ ) {
+        if( this.changed.indexOf( this.dirty[ i ] ) === -1 ) this.changed.push( this.dirty[ i ] )
         this.dirty[ i ].onchange()
       }
       this.dirty.length = 0
@@ -2161,6 +2224,8 @@ module.exports = function( Gibber, Notation ) {
       clearInterval( this.interval )
     }
   }
+  
+  $.subscribe( '/gibber/clear', PW.clear.bind( PW ) )
   
   Gibber.Pattern.prototype._onchange = function() {
     if( PW.dirty.indexOf( this ) === -1 ) {
@@ -27561,7 +27626,228 @@ Gibberish.Hat = function() {
   _eg2.trigger(1);
 };
 Gibberish.Hat.prototype = Gibberish._oscillator;
-return Gibberish; 
+
+/* IMPORTANT README
+*
+* This class depends on having access to a folder of soundfonts that have been converted to
+* binary string representations. More specifically, soundfonts designed to work with MIDI.js:
+*
+* https://github.com/gleitz/midi-js-soundfonts
+*
+* At some point it would be nice to make another soundfont system, as MIDI.js does not support
+* defining loop points.
+*
+* By default soundfonts should be found in a folder named 'resources/soundfonts' one level above
+* the location of the gibberish.js library (or gibberish.min.js). You can pass a different path
+* as the second argument to the Gibberish.SoundFont constructor; the first is the name of the soundfont
+* minus the "-mp3.js" extension. So, for example:
+*
+* b = new Gibberish.SoundFont( 'choir_aahs' ).connect()
+* b.note( 'C4' )
+*
+* Note that you can only use note names, not frequency values.
+*/
+
+(function() {
+  var cents = function(base, _cents) { return base * Math.pow(2,_cents/1200) },
+      MIDI = { Soundfont: { instruments: {} } },
+      SF = MIDI.Soundfont
+  
+  // TODO: GET RID OF THIS GLOBAL!!!! It's in there because we're using soundfonts meant for MIDI.js
+  if( typeof window === 'object' )
+    window.MIDI = MIDI
+  else
+    global.MIDI = MIDI
+  
+  var getScript = function( scriptPath, handler ) {
+    var oReq = new XMLHttpRequest();
+
+    // oReq.addEventListener("progress", updateProgress, false);
+    oReq.addEventListener("load", transferComplete, false);
+    oReq.addEventListener("error", function(e){ console.log( "SF load error", e ) }, false);
+
+    oReq.open( 'GET', scriptPath, true );
+    oReq.send()
+
+    function updateProgress (oEvent) {
+      if (oEvent.lengthComputable) {
+        var percentComplete = oEvent.loaded / oEvent.total;
+        number.innerHTML = Math.round( percentComplete * 100 )
+
+        var sizeString = new String( "" + oEvent.total )
+        sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
+        size.innerHTML = sizeString
+      } else {
+        // Unable to compute progress information since the total size is unknown
+      }
+    }
+
+    function transferComplete( evt ) {
+      var script = document.createElement('script')
+      script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
+      document.querySelector( 'head' ).appendChild( script )
+      handler( script ) 
+    }
+  }
+  
+  var Base64Binary = {
+  	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+	
+  	// will return a  Uint8Array type
+  	decodeArrayBuffer: function(input) {
+  		var bytes = (input.length/4) * 3;
+  		var ab = new ArrayBuffer(bytes);
+  		this.decode(input, ab);
+		
+  		return ab;
+  	},
+	
+  	decode: function(input, arrayBuffer) {
+  		//get last chars to see if are valid
+  		var lkey1 = this._keyStr.indexOf(input.charAt(input.length-1));		 
+  		var lkey2 = this._keyStr.indexOf(input.charAt(input.length-2));		 
+	
+  		var bytes = (input.length/4) * 3;
+  		if (lkey1 == 64) bytes--; //padding chars, so skip
+  		if (lkey2 == 64) bytes--; //padding chars, so skip
+		
+  		var uarray;
+  		var chr1, chr2, chr3;
+  		var enc1, enc2, enc3, enc4;
+  		var i = 0;
+  		var j = 0;
+		
+  		if (arrayBuffer)
+  			uarray = new Uint8Array(arrayBuffer);
+  		else
+  			uarray = new Uint8Array(bytes);
+		
+  		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+		
+  		for (i=0; i<bytes; i+=3) {	
+  			//get the 3 octects in 4 ascii chars
+  			enc1 = this._keyStr.indexOf(input.charAt(j++));
+  			enc2 = this._keyStr.indexOf(input.charAt(j++));
+  			enc3 = this._keyStr.indexOf(input.charAt(j++));
+  			enc4 = this._keyStr.indexOf(input.charAt(j++));
+	
+  			chr1 = (enc1 << 2) | (enc2 >> 4);
+  			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+  			chr3 = ((enc3 & 3) << 6) | enc4;
+	
+  			uarray[i] = chr1;			
+  			if (enc3 != 64) uarray[i+1] = chr2;
+  			if (enc4 != 64) uarray[i+2] = chr3;
+  		}
+	
+  		return uarray;	
+  	}
+  }
+  
+  var decodeBuffers = function( obj ) {
+    var count = 0,
+        font = SF[ obj.instrumentFileName ]
+        
+    if( typeof SF.instruments[ obj.instrumentFileName ] === 'undefined' ) {
+      SF.instruments[ obj.instrumentFileName ] = {}
+    }
+    
+    obj.buffers = SF.instruments[ obj.instrumentFileName ]
+    
+    for( var note in font ) {
+      count++
+      !function() {
+        var _note = note
+        
+        var base = font[ _note ].split(",")[1]
+        var arrayBuffer = Base64Binary.decodeArrayBuffer( base );
+        
+        Gibberish.context.decodeAudioData( arrayBuffer, function( _buffer ) {
+          SF.instruments[ obj.instrumentFileName ][ _note ] = _buffer.getChannelData( 0 )
+          count--
+          if( count <= 0 ) { 
+            console.log("Soundfont " + obj.instrumentFileName + " is loaded.")
+            obj.isLoaded = true
+            if( obj.onload ) obj.onload()
+          }
+        }, function(e) { console.log("ERROR", e.err, arguments, _note ) } )
+        
+      }()
+    }
+  }
+  
+  Gibberish.SoundFont = function( instrumentFileName, pathToResources ) {
+    var that = this
+    Gibberish.extend(this, {
+      'instrumentFileName': instrumentFileName,
+      name:'soundfont',
+      properties: {
+        amp:1,
+        pan:0
+      },
+      playing:[],
+      buffers:{},
+      onload: null,
+      out:[0,0],
+      isLoaded: false,
+      resourcePath: pathToResources || './resources/soundfonts/',
+      
+      callback: function( amp, pan ) {
+        var val = 0
+        for( var i = this.playing.length -1; i >= 0; i-- ) {
+          var note = this.playing[ i ]
+          
+          val += this.interpolate( note.buffer, note.phase )
+          
+          note.phase += note.increment
+          if( note.phase > note.length ) {
+            this.playing.splice( this.playing.indexOf( note ), 1 )
+          }
+        }
+        
+        return this.panner( val * amp, pan, this.out );
+      }.bind( this ),
+      
+      note: function( name, amp, cents ) {
+        if( this.isLoaded ) {
+          this.playing.push({
+            buffer:this.buffers[ name ],
+            phase:0,
+            increment: isNaN( cents ) ? 1 : 1 + cents,
+            length:this.buffers[ name ].length,
+            'amp': isNaN( amp ) ? 1 : amp
+          })
+        }
+      },
+      interpolate: Gibberish.interpolate.bind( this ),
+      panner: Gibberish.makePanner()
+    })
+    .init()
+    .oscillatorInit()
+    
+    if( typeof arguments[0] === 'object' && arguments[0].instrumentFileName ) {
+      this.instrumentFileName = arguments[0].instrumentFileName
+    }
+    
+    // if already loaded, or if passed a buffer to use...
+    if( !SF.instruments[ this.instrumentFileName ] && typeof pathToResources !== 'object' ) {
+      getScript( 'resources/soundfonts/' + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
+    }else{
+      if( typeof pathToResources === 'object' ) {
+        SF[ this.instrumentFileName ] = pathToResources
+        decodeBuffers( this )
+      }else{
+        this.buffers = SF.instruments[ this.instrumentFileName ]
+        this.isLoaded = true
+        setTimeout( function() { if( this.onload ) this.onload() }.bind( this ), 0 )
+      }
+    }
+    return this
+  }
+  Gibberish.SoundFont.storage = SF
+  Gibberish.SoundFont.prototype = Gibberish._oscillator;
+})()
+  return Gibberish; 
 })
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js":[function(require,module,exports){
@@ -27749,6 +28035,7 @@ Audio = {
     target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
     target.ScaleSeq = Audio.Seqs.ScaleSeq
+    target.SoundFont = Audio.SoundFont
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -28158,11 +28445,12 @@ Audio.Input =          require( './audio/audio_input' )( Gibber )
 Audio.Samplers =       require( './audio/sampler' )( Gibber )
 Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
+Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
 
 return Audio
 
 }
-},{"../external/freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js","./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
+},{"../external/freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js","./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/soundfont":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -29151,7 +29439,7 @@ module.exports = function( Gibber ) {
       }
     })
         
-    obj.toString = function() { return 'Drums : ' + obj.seq.seqs[0].values.join('') }
+    //obj.toString = function() { return 'Drums : ' + obj.seq.seqs[0].values.join('') }
     
     return obj
   }
@@ -31072,41 +31360,43 @@ module.exports = function( Gibber ) {
     seq.toString = function() { return '> Seq' }
     seq.gibber = true
     
+    $.extend( seq, {
+      constructor: Seq,
+      replaceWith: function( replacement ) { this.kill() },
+      kill: function() { 
+        if( this.target && this.target.sequencers )
+          this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
+      
+          console.log("SEQ KILL", this )
+        this.stop().disconnect()
+      },
+      applyScale : function() {
+        // for( var i = 0; i < this.seqs.length; i++ ) {
+        //   var s = this.seqs[ i ]
+        //   if( s.key === 'note' || s.key === 'frequency' ) {
+        //     s.values = makeNoteFunction( s.values, this )
+        //   }
+        // }
+      },
+      once : function() {
+        this.repeat( 1 )
+        return this
+      },
+      reset : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {  
+          this.seqs[ i ].values[0].reset()
+        }
+      },
+      shuffle : function() {
+        for( var i = 0; i < this.seqs.length; i++ ) {
+          this.seqs[ i ].values[0].shuffle()
+        }
+      },
+    })
     return seq
   }
   
-  $.extend( Gibberish.PolySeq.prototype, {
-    constructor: Seq,
-    replaceWith: function( replacement ) { this.kill() },
-    kill: function() { 
-      if( this.target && this.target.sequencers )
-        this.target.sequencers.splice( this.target.sequencers.indexOf( this ), 1 )
-      
-      this.stop().disconnect()
-    },
-    applyScale : function() {
-      // for( var i = 0; i < this.seqs.length; i++ ) {
-      //   var s = this.seqs[ i ]
-      //   if( s.key === 'note' || s.key === 'frequency' ) {
-      //     s.values = makeNoteFunction( s.values, this )
-      //   }
-      // }
-    },
-    once : function() {
-      this.repeat( 1 )
-      return this
-    },
-    reset : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {  
-        this.seqs[ i ].values[0].reset()
-      }
-    },
-    shuffle : function() {
-      for( var i = 0; i < this.seqs.length; i++ ) {
-        this.seqs[ i ].values[0].shuffle()
-      }
-    },
-  })
+
   
   var ScaleSeq = function() {
     var args = arguments[0],
@@ -31128,7 +31418,152 @@ module.exports = function( Gibber ) {
   
   return Seqs 
 }
-},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
+},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js":[function(require,module,exports){
+module.exports = function( Gibber, pathToSoundFonts ) {
+  var Gibberish = require( 'gibberish-dsp' ),
+      curves = Gibber.outputCurves,
+      teoria = require( './theory' )( Gibber ).Teoria,
+      LINEAR = curves.LINEAR,
+      LOGARITHMIC = curves.LOGARITHMIC,
+      mappingProperties = {
+        amp: {
+          min: 0, max: 1,
+          hardMax:2,
+          output: LOGARITHMIC,
+          timescale: 'audio',
+          dimensions:1
+        }
+      },
+      cents = function(base, _cents) {
+        return base * Math.pow(2,_cents/1200)
+      },
+      sensibleNames;
+  
+  sensibleNames = {
+    piano : 'acoustic_grand_piano',
+    guitar: 'electric_guitar_clean',
+    bass  : 'acoustic_bass',
+    organ : 'rock_organ',
+    brass : 'synth_brass_1',
+    strings:'synth_strings_1',
+    choir : 'choir_aahs',
+  }
+  
+  var SoundFont = function( soundFontName ) {
+    var obj, path = SoundFont.path
+    
+    if( Gibber.Environment ) {
+      if( Gibber.Environment.Storage.values.soundfonts ) {
+        if( Gibber.Environment.Storage.values.soundfonts[ soundFontName ] ) {
+          path = Gibber.Environment.Storage.values.soundfonts[ soundFontName ]
+        }
+      }
+    }
+    
+    if( sensibleNames[ soundFontName ] ) soundFontName = sensibleNames[ soundFontName ];
+    
+    obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
+
+    $.extend( true, obj, Gibber.Audio.ugenTemplate )
+    obj.fx.ugen = obj
+    obj.chord = Gibber.Theory.chord
+    
+    Object.defineProperty(obj, '_', {
+      get: function() { 
+        oscillator.kill();
+        return oscillator 
+      },
+      set: function() {}
+    })
+    
+    obj.onload = function() {
+      
+      if( Gibber.Environment && Gibber.Environment.Storage.values.saveSoundFonts ) {
+        if( !Gibber.Environment.Storage.values.soundfonts ) {
+          Gibber.Environment.Storage.values.soundfonts = {}
+        }else{
+          if( Gibber.Environment.Storage.values.soundfonts[ soundFontName] ) return
+        }
+        
+        Gibber.Environment.Storage.values.soundfonts[ soundFontName ] = Gibber.Audio.Core.SoundFont.storage[ soundFontName ]
+        
+        try{
+          Gibber.Environment.Storage.save()
+        }catch(e){
+          console.log("STORAGE ERROR", e )
+          
+          if( e.name === 'QuotaExceededError' ) {
+            console.log('Your localStorage for Gibber has been exceeded; we can\'t save the soundfile. It is still usable.')
+          }
+        }
+      }
+    }
+    
+    obj._note = obj.note.bind( obj ) 
+    obj.note = function( name, amp ) {
+      if( typeof name === 'number' ) {
+        if( name < Gibber.minNoteFrequency ) {
+          var scale = this.scale || Gibber.scale,
+              note  = scale.notes[ name ]
+              
+          if( this.octave && this.octave !== 0 ) {
+            var sign = this.octave > 0 ? 1 : 0,
+                num  = Math.abs( this.octave )
+            
+            for( var i = 0; i < num; i++ ) {
+              note *= sign ? 2 : .5
+            }
+          }
+          
+          name = note
+        }
+        var tNote = teoria.frequency.note( name ),
+            noteName, _cents = 0
+        
+        if( tNote.note.accidental.value === 1 && tNote.note.accidental.sign !== 'b' ) { 
+          var enharmonics = tNote.note.enharmonics()
+          for( var i = 0; i < enharmonics.length; i++ ) {
+            var enharmonic = enharmonics[ i ]
+            if( enharmonic.accidental.sign === 'b' ) {
+              tNote.note = enharmonic
+              break;
+            }
+          }
+        }
+        
+        _cents = tNote.cents 
+        
+        noteName =  tNote.note.name.toUpperCase() 
+        if( tNote.note.accidental.value !== 0) {
+          noteName += tNote.note.accidental.sign
+        }
+        noteName += tNote.note.octave
+        
+        name = noteName
+      }
+      
+      
+      obj._note( name, isNaN( amp ) ? 1 : amp, cents(1, _cents) )
+      // this.playing.push({
+      //   buffer:this.buffers[ name ],
+      //   phase:0,
+      //   increment: cents(1, _cents),
+      //   length:this.buffers[ name ].length,
+      //   'amp': isNaN( amp ) ? 1 : amp
+      // })
+    }
+    
+    Gibber.createProxyProperties( obj, mappingProperties )
+    Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
+  
+    return obj
+  }
+  
+  SoundFont.path = pathToSoundFonts || "../../../resources/soundfonts/"
+  
+  return SoundFont
+}
+},{"./theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -33333,6 +33768,9 @@ var Pattern = function() {
     val = args[ 0 ]
     
     if( typeof val === 'function' ) val = val()
+    
+    // if pattern has update function, set new value
+    if( fnc.update ) fnc.update.value = val
     
     return val
   }
