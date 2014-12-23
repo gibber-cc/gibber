@@ -446,8 +446,10 @@ module.exports = function( Gibber, Notation ) {
                     }
                     //pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isRnd )
                     
-                    pattern.update = createUpdateFunction( newObject, patternName, isRnd )
-            
+                    pattern.update = createUpdateFunction( newObject, patternName, 'rgba(255,255,255,1)', isRnd )
+                    pattern.update.pattern = pattern
+                    pattern.cm = cm
+                    
                     Notation.add( pattern, true )
             
                     pattern.filters.push( function() {
