@@ -218,7 +218,8 @@ module.exports = function( Gibber ) {
       
       //GE.Spinner.spin( $('.publication_form')[0] 
       
-      var columnNumber = $( '#new_publication_column' ).val()
+      var columnNumber = $( '#new_publication_column' ).val(),
+          column = GE.Layout.columns[ columnNumber ]
       
       console.log( Gibber.Environment.Account.nick )
       $.ajax({
@@ -226,7 +227,8 @@ module.exports = function( Gibber ) {
         url: GE.SERVER_URL + '/publish',
         data: {
           name: $( '#new_publication_name' ).val(),
-          code: GE.Layout.columns[ columnNumber ].editor.getValue(),
+          code: column.editor.getValue(),
+          language: column.mode,
           permissions: $( '#new_publication_permissions' ).prop( 'checked' ),
           tags: $( '#new_publication_tags' ).val().split(','),
           notes: $( '#new_publication_notes' ).val(), 

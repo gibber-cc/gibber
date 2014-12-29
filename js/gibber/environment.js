@@ -23,7 +23,6 @@ var GE = {
   Preferences:  require( './preferences' )( Gibber ),  
   Theme:        require( './theme' )( Gibber ),
   Esprima:      require( 'esprima' ),
-  //Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),

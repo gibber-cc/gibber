@@ -412,7 +412,8 @@ module.exports = function( Gibber ) {
       
       //GE.Spinner.spin( $('.publication_form')[0] 
       
-      var columnNumber = $( '#new_publication_column' ).val()
+      var columnNumber = $( '#new_publication_column' ).val(),
+          column = GE.Layout.columns[ columnNumber ]
       
       console.log( Gibber.Environment.Account.nick )
       $.ajax({
@@ -420,7 +421,8 @@ module.exports = function( Gibber ) {
         url: GE.SERVER_URL + '/publish',
         data: {
           name: $( '#new_publication_name' ).val(),
-          code: GE.Layout.columns[ columnNumber ].editor.getValue(),
+          code: column.editor.getValue(),
+          language: column.mode,
           permissions: $( '#new_publication_permissions' ).prop( 'checked' ),
           tags: $( '#new_publication_tags' ).val().split(','),
           notes: $( '#new_publication_notes' ).val(), 
@@ -856,6 +858,13 @@ module.exports = function( Gibber ) {
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
+          
+          if( data.language && col.mode !== data.language ) {
+            col.mode === GE.modes.nameMappings[ data.language ] || data.language
+            col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
+          }else if ( typeof data.language === 'undefined' && col.mode !== 'javascript' ) {
+            col.editor.setOption( 'mode', 'javascript' )
+          }
 
           Browser.demoColumn = col
           
@@ -2253,12 +2262,15 @@ module.exports = function( Gibber ) {
         Layout = Gibber.Environment.Layout,
         lastColumnWidth = 0, 
         colNumber = Layout.columns.length,
-        mode  = 'javascript',
+        mode  = options.mode || 'javascript',
         modeIndex = 0,
         columnWidth = options.width ? options.width : Layout.defaultColumnSize,
         col = {},
         resizeHandleSize = Layout.resizeHandleSize
-        
+    
+        //if( GE.modes.nameMappings[ mode ] ) mode = GE.modes.nameMappings[ mode ]
+    
+    console.log( "MODE", mode )
     $.extend( col, {
       element:        $( '<div class="column">' ),
       header:         $( '<div class="columnHeader">' ),
@@ -2303,10 +2315,8 @@ module.exports = function( Gibber ) {
       .attr( 'title', 'close column' )
   
     if( isCodeColumn ) {
-      for( var key in GE.modes ) {
-        if( key !== 'nameMappings' ) {
-          col.modeSelect.append( $( '<option>' ).text( key ) )
-        }
+      for( var key in GE.modes.nameMappings ) {
+        col.modeSelect.append( $( '<option>' ).text( key ) )
       }
       col.modeSelect
         .on( 'change', function( e ) {  
@@ -2343,13 +2353,13 @@ module.exports = function( Gibber ) {
       mode = modes[ options.mode ]
     }
     
-    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
+    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 2, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
     
-    if( GE.Storage.values ) {
+    if( GE.Storage.values && !shouldDisplayLoadFile ) {
       if( !GE.Storage.values.showSampleCodeInNewEditors ) _value = ''    
     }
-    
+     
     col.bodyElement.width( columnWidth - resizeHandleSize )
     col.element.append( col.bodyElement )
     
@@ -2642,13 +2652,18 @@ module.exports = function( Gibber ) {
       
         return
       }
-  
+      
+      var pathWithOriginalLibraryVersion = 'v' + (this.fileInfo.libVersion || '1') + '/?p=' + this.fileInfo.author + '/publications/' + this.fileInfo.name
+      
+      console.log( pathWithOriginalLibraryVersion )
+      
       html = [
         "<table>",
         "<tr><td><h2 style='display:inline; font-weight:normal; font-size:2em'> " + this.fileInfo.name + "</h2></td></tr>",
         "<tr><td><b>author</b>: " + this.fileInfo.author + "</td></tr>",
         "<tr><td><b>tags</b>: " + (this.fileInfo.tags || 'none') + "</td></tr>",
         "<tr><td><b>notes</b>: " + (this.fileInfo.notes || 'none') + "</td></tr>",
+        "<tr><td><b>library version</b>: v" + (this.fileInfo.libVersion || '1') + " <a class='versionLink' href='" + pathWithOriginalLibraryVersion + "'>open with this version of gibber</a></td></tr>",        
         "</table>"
       ].join('\n')
   
@@ -2991,7 +3006,6 @@ var GE = {
   Preferences:  require( './preferences' )( Gibber ),  
   Theme:        require( './theme' )( Gibber ),
   Esprima:      require( 'esprima' ),
-  //Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
@@ -3989,8 +4003,19 @@ module.exports = function( Gibber ) {
       $( '#contentCell' ).empty()
       
       GE.Browser.open()
+      var options = {
+        fullScreen:false, type:'code', autofocus:true,
+      }
       
-      this.addColumn({ fullScreen:false, type:'code', autofocus:true })
+      if( window.loadFile ) {
+        $.extend( options, window.loadFile )
+        if( window.loadFile.language ) {
+          options.mode = window.loadFile.language
+        }
+        options.type = 'code' // must override database 'publication' value
+      }
+      console.log( options )
+      this.addColumn( options )
       
       GE.Browser.demoColumn = Layout.columns[1]
       
@@ -33797,8 +33822,10 @@ var Pattern = function() {
         fnc.start = arguments[0]
         fnc.end   = arguments[1]
       }
+      
+      return fnc;
     },
-   
+     
     reverse : function() { 
       //fnc.values.reverse(); 
       var array = fnc.values,
@@ -33814,6 +33841,8 @@ var Pattern = function() {
       }
       
       fnc._onchange() 
+      
+      return fnc;
     },
     
     repeat: function() {
@@ -33860,21 +33889,27 @@ var Pattern = function() {
       return fnc
     },
   
-    reset : function() { fnc.values = fnc.original.slice( 0 ); fnc._onchange() },
-    store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ) },
+    reset : function() { fnc.values = fnc.original.slice( 0 ); fnc._onchange(); return fnc; },
+    store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
     transpose : function( amt ) { 
       for( var i = 0; i < fnc.values.length; i++ ) fnc.values[ i ] += amt; 
       fnc._onchange()
+      
+      return fnc
     },
     shuffle : function() { 
       Gibber.Utilities.shuffle( fnc.values )
       fnc._onchange()
+      
+      return fnc
     },
     scale : function( amt ) { 
       for( var i = 0; i < fnc.values.length; i++ ) {
         fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
       }
       fnc._onchange()
+      
+      return fnc
     },
 
     flip : function() {
@@ -33918,6 +33953,8 @@ var Pattern = function() {
       }
       
       fnc._onchange()
+      
+      return fnc
     },
   
     rotate : function( amt ) {
@@ -33936,9 +33973,13 @@ var Pattern = function() {
       }
       
       fnc._onchange()
+      
+      return fnc
     }
   })
-    
+  
+  fnc.retrograde = fnc.reverse.bind( fnc )
+  
   fnc.end = fnc.values.length - 1
   
   fnc.original = fnc.values.slice( 0 )
