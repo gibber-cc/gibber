@@ -378,8 +378,10 @@ module.exports = function( Gibber ) {
           if( data.language && col.mode !== data.language ) {
             col.mode === GE.modes.nameMappings[ data.language ] || data.language
             col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
+            col.setLanguageSelect( data.language )
           }else if ( typeof data.language === 'undefined' && col.mode !== 'javascript' ) {
             col.editor.setOption( 'mode', 'javascript' )
+            col.setLanguageSelect( 'javascript ')
           }
 
           Browser.demoColumn = col

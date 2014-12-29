@@ -862,8 +862,10 @@ module.exports = function( Gibber ) {
           if( data.language && col.mode !== data.language ) {
             col.mode === GE.modes.nameMappings[ data.language ] || data.language
             col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
+            col.setLanguageSelect( data.language )
           }else if ( typeof data.language === 'undefined' && col.mode !== 'javascript' ) {
             col.editor.setOption( 'mode', 'javascript' )
+            col.setLanguageSelect( 'javascript ')
           }
 
           Browser.demoColumn = col
@@ -2472,6 +2474,26 @@ module.exports = function( Gibber ) {
     toggle:             function() { $( this.element ).toggle() },            
     toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
     
+    setLanguageSelect: function( language, shouldAppend ) {
+      var languageIndex = 0, count = 0
+
+      for( var key in GE.modes ) {
+        if( key !== 'nameMappings' ) {
+          if( shouldAppend) col.modeSelect.append( $( '<option>' ).text( key ) )
+          
+          if( key === language ) {
+            languageIndex = count
+            if( !shouldAppend ) break
+          }
+          count++
+        }
+      }
+    
+    
+      this.modeIndex = languageIndex
+      $( this.modeSelect ).find( 'option' )[ this.modeIndex ].selected = true;
+    },
+    
     fullScreen : function() {
       if( GE.Layout.fullScreenColumn === null ) {
         GE.Layout.toggle()
@@ -2576,11 +2598,22 @@ module.exports = function( Gibber ) {
         { address:addr },
         function( d ) {
           //console.log( d )
-          var data = JSON.parse( d )
+          var data = JSON.parse( d ), lang = 'javascript'
 
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
+          
+          if( data.language ) {
+            col.setLanguageSelect( data.language )
+            
+            var langCheck = GE.modes.nameMappings[ data.language ]
+            if( langCheck ) {
+              lang = langCheck
+            }
+            
+            col.editor.setOption( 'mode', lang )
+          }
           
           //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
           if( fnc ) { fnc() }
