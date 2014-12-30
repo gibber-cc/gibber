@@ -565,3 +565,7 @@ tfoot, thead {
 .ew-resize {
   cursor: ew-resize !important;
 }
+
+.versionLink {
+  color:#ccc !important;
+}

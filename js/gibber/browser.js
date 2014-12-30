@@ -374,6 +374,15 @@ module.exports = function( Gibber ) {
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
+          
+          if( data.language && col.mode !== data.language ) {
+            col.mode === GE.modes.nameMappings[ data.language ] || data.language
+            col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
+            col.setLanguageSelect( data.language )
+          }else if ( typeof data.language === 'undefined' && col.mode !== 'javascript' ) {
+            col.editor.setOption( 'mode', 'javascript' )
+            col.setLanguageSelect( 'javascript ')
+          }
 
           Browser.demoColumn = col
           

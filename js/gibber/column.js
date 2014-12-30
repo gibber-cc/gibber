@@ -15,12 +15,15 @@ module.exports = function( Gibber ) {
         Layout = Gibber.Environment.Layout,
         lastColumnWidth = 0, 
         colNumber = Layout.columns.length,
-        mode  = 'javascript',
+        mode  = options.mode || 'javascript',
         modeIndex = 0,
         columnWidth = options.width ? options.width : Layout.defaultColumnSize,
         col = {},
         resizeHandleSize = Layout.resizeHandleSize
-        
+    
+        //if( GE.modes.nameMappings[ mode ] ) mode = GE.modes.nameMappings[ mode ]
+    
+    console.log( "MODE", mode )
     $.extend( col, {
       element:        $( '<div class="column">' ),
       header:         $( '<div class="columnHeader">' ),
@@ -65,10 +68,8 @@ module.exports = function( Gibber ) {
       .attr( 'title', 'close column' )
   
     if( isCodeColumn ) {
-      for( var key in GE.modes ) {
-        if( key !== 'nameMappings' ) {
-          col.modeSelect.append( $( '<option>' ).text( key ) )
-        }
+      for( var key in GE.modes.nameMappings ) {
+        col.modeSelect.append( $( '<option>' ).text( key ) )
       }
       col.modeSelect
         .on( 'change', function( e ) {  
@@ -105,13 +106,13 @@ module.exports = function( Gibber ) {
       mode = modes[ options.mode ]
     }
     
-    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 1, // make sure it's only on the first load
+    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 2, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
     
-    if( GE.Storage.values ) {
+    if( GE.Storage.values && !shouldDisplayLoadFile ) {
       if( !GE.Storage.values.showSampleCodeInNewEditors ) _value = ''    
     }
-    
+     
     col.bodyElement.width( columnWidth - resizeHandleSize )
     col.element.append( col.bodyElement )
     
@@ -181,7 +182,6 @@ module.exports = function( Gibber ) {
 
       for( var key in GE.modes ) {
         if( key !== 'nameMappings' ) {
-          col.modeSelect.append( $( '<option>' ).text( key ) )
           if( key === preferenceLanguage ) {
             languageIndex = count
           }
@@ -211,7 +211,6 @@ module.exports = function( Gibber ) {
     $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).position().left }, 'slow' );
   
     if( window.loadFile && window.loadFile.error && Layout.columns.length === 1 ) {
-      console.log( window.loadFile )
       GE.Message.post('You attempted to load a document that does not exist. Please check the URL you entered and try again.')
     }
     
@@ -223,6 +222,26 @@ module.exports = function( Gibber ) {
   var Proto = {
     toggle:             function() { $( this.element ).toggle() },            
     toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+    
+    setLanguageSelect: function( language, shouldAppend ) {
+      var languageIndex = 0, count = 0
+
+      for( var key in GE.modes ) {
+        if( key !== 'nameMappings' ) {
+          if( shouldAppend) col.modeSelect.append( $( '<option>' ).text( key ) )
+          
+          if( key === language ) {
+            languageIndex = count
+            if( !shouldAppend ) break
+          }
+          count++
+        }
+      }
+    
+    
+      this.modeIndex = languageIndex
+      $( this.modeSelect ).find( 'option' )[ this.modeIndex ].selected = true;
+    },
     
     fullScreen : function() {
       if( GE.Layout.fullScreenColumn === null ) {
@@ -328,11 +347,22 @@ module.exports = function( Gibber ) {
         { address:addr },
         function( d ) {
           //console.log( d )
-          var data = JSON.parse( d )
+          var data = JSON.parse( d ), lang = 'javascript'
 
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
+          
+          if( data.language ) {
+            col.setLanguageSelect( data.language )
+            
+            var langCheck = GE.modes.nameMappings[ data.language ]
+            if( langCheck ) {
+              lang = langCheck
+            }
+            
+            col.editor.setOption( 'mode', lang )
+          }
           
           //if( d.author === 'gibber' && d.name.indexOf('*') > -1 ) d.name = d.name.split( '*' )[0] // for demo files with names like Rhythm*audio*
           if( fnc ) { fnc() }
@@ -404,13 +434,18 @@ module.exports = function( Gibber ) {
       
         return
       }
-  
+      
+      var pathWithOriginalLibraryVersion = 'v' + (this.fileInfo.libVersion || '1') + '/?p=' + this.fileInfo.author + '/publications/' + this.fileInfo.name
+      
+      console.log( pathWithOriginalLibraryVersion )
+      
       html = [
         "<table>",
         "<tr><td><h2 style='display:inline; font-weight:normal; font-size:2em'> " + this.fileInfo.name + "</h2></td></tr>",
         "<tr><td><b>author</b>: " + this.fileInfo.author + "</td></tr>",
         "<tr><td><b>tags</b>: " + (this.fileInfo.tags || 'none') + "</td></tr>",
         "<tr><td><b>notes</b>: " + (this.fileInfo.notes || 'none') + "</td></tr>",
+        "<tr><td><b>library version</b>: v" + (this.fileInfo.libVersion || '1') + " <a class='versionLink' href='" + pathWithOriginalLibraryVersion + "'>open with this version of gibber</a></td></tr>",        
         "</table>"
       ].join('\n')
   
