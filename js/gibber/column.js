@@ -182,7 +182,6 @@ module.exports = function( Gibber ) {
 
       for( var key in GE.modes ) {
         if( key !== 'nameMappings' ) {
-          col.modeSelect.append( $( '<option>' ).text( key ) )
           if( key === preferenceLanguage ) {
             languageIndex = count
           }
@@ -212,7 +211,6 @@ module.exports = function( Gibber ) {
     $( 'html,body' ).animate({ scrollLeft: $( '#' + col.id ).position().left }, 'slow' );
   
     if( window.loadFile && window.loadFile.error && Layout.columns.length === 1 ) {
-      console.log( window.loadFile )
       GE.Message.post('You attempted to load a document that does not exist. Please check the URL you entered and try again.')
     }
     
