@@ -124,6 +124,10 @@ var Gibber = {
     if( Gibber.Interface ) {
       Gibber.Interface.export( target )
     }
+    
+    if( Gibber.Communication ) { 
+      Gibber.Communication.export( target )
+    }
   },
   
   init: function( _options ) {                        
@@ -342,11 +346,12 @@ var Gibber = {
   },
   
   clear : function() {
-    if( Gibber.Audio ) Gibber.Audio.clear();
+    var args = Array.prototype.slice.call( arguments, 0 )
+    if( Gibber.Audio ) Gibber.Audio.clear.apply( Gibber.Audio, args );
     
-    if( Gibber.Graphics ) Gibber.Graphics.clear()
+    if( Gibber.Graphics ) Gibber.Graphics.clear( Gibber.Graphics, args )
 
-    Gibber.proxy( window )
+    Gibber.proxy( window, [ a ] )
 		
     $.publish( '/gibber/clear', {} )
         
@@ -358,7 +363,7 @@ var Gibber = {
     
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
-      if( typeof window[ lt ] !== 'undefined' ) { 
+      if( typeof window[ lt ] !== 'undefined' && arguments[1].indexOf( window[ lt ] ) === -1 ) { 
         delete window[ lt ] 
         delete window[ '___' + lt ]
       }
@@ -1491,6 +1496,9 @@ var Pattern = function() {
     
     if( typeof val === 'function' ) val = val()
     
+    // if pattern has update function, set new value
+    if( fnc.update ) fnc.update.value = val
+    
     return val
   }
    
@@ -1516,8 +1524,10 @@ var Pattern = function() {
         fnc.start = arguments[0]
         fnc.end   = arguments[1]
       }
+      
+      return fnc;
     },
-   
+     
     reverse : function() { 
       //fnc.values.reverse(); 
       var array = fnc.values,
@@ -1533,6 +1543,8 @@ var Pattern = function() {
       }
       
       fnc._onchange() 
+      
+      return fnc;
     },
     
     repeat: function() {
@@ -1579,21 +1591,27 @@ var Pattern = function() {
       return fnc
     },
   
-    reset : function() { fnc.values = fnc.original.slice( 0 ); fnc._onchange() },
-    store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ) },
+    reset : function() { fnc.values = fnc.original.slice( 0 ); fnc._onchange(); return fnc; },
+    store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
     transpose : function( amt ) { 
       for( var i = 0; i < fnc.values.length; i++ ) fnc.values[ i ] += amt; 
       fnc._onchange()
+      
+      return fnc
     },
     shuffle : function() { 
       Gibber.Utilities.shuffle( fnc.values )
       fnc._onchange()
+      
+      return fnc
     },
     scale : function( amt ) { 
       for( var i = 0; i < fnc.values.length; i++ ) {
         fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
       }
       fnc._onchange()
+      
+      return fnc
     },
 
     flip : function() {
@@ -1637,6 +1655,8 @@ var Pattern = function() {
       }
       
       fnc._onchange()
+      
+      return fnc
     },
   
     rotate : function( amt ) {
@@ -1655,9 +1675,13 @@ var Pattern = function() {
       }
       
       fnc._onchange()
+      
+      return fnc
     }
   })
-    
+  
+  fnc.retrograde = fnc.reverse.bind( fnc )
+  
   fnc.end = fnc.values.length - 1
   
   fnc.original = fnc.values.slice( 0 )
@@ -9901,12 +9925,15 @@ Audio = {
   clear: function() {
     // Audio.analysisUgens.length = 0
     // Audio.sequencers.length = 0
-  
+    var args = Array.prototype.slice.call( arguments, 0 )
+    
     for( var i = 0; i < Audio.Master.inputs.length; i++ ) {
-      Audio.Master.inputs[ i ].value.disconnect()
+      if( args.indexOf( Audio.Master.inputs[ i ].value) === -1 ) {
+        Audio.Master.inputs[ i ].value.disconnect()
+      }
     }
   
-    Audio.Master.inputs.length = 0
+    Audio.Master.inputs.length = arguments.length
   
     Audio.Clock.reset()
   
@@ -10591,7 +10618,7 @@ var Clock = {
     target.beats = Clock.beats
     target.Beats = Clock.Beats
     target.measures = Clock.measures
-    target.Measures = Clock.measures
+    target.Measures = Clock.Measures
   },
   
   processBeat : function() {
@@ -11134,7 +11161,7 @@ module.exports = function( Gibber ) {
       }
     })
         
-    obj.toString = function() { return 'Drums : ' + obj.seq.seqs[0].values.join('') }
+    //obj.toString = function() { return 'Drums : ' + obj.seq.seqs[0].values.join('') }
     
     return obj
   }
@@ -13131,7 +13158,18 @@ module.exports = function( Gibber, pathToSoundFonts ) {
       },
       cents = function(base, _cents) {
         return base * Math.pow(2,_cents/1200)
-      }
+      },
+      sensibleNames;
+  
+  sensibleNames = {
+    piano : 'acoustic_grand_piano',
+    guitar: 'electric_guitar_clean',
+    bass  : 'acoustic_bass',
+    organ : 'rock_organ',
+    brass : 'synth_brass_1',
+    strings:'synth_strings_1',
+    choir : 'choir_aahs',
+  }
   
   var SoundFont = function( soundFontName ) {
     var obj, path = SoundFont.path
@@ -13144,6 +13182,8 @@ module.exports = function( Gibber, pathToSoundFonts ) {
       }
     }
     
+    if( sensibleNames[ soundFontName ] ) soundFontName = sensibleNames[ soundFontName ];
+    
     obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
 
     $.extend( true, obj, Gibber.Audio.ugenTemplate )
@@ -13152,8 +13192,8 @@ module.exports = function( Gibber, pathToSoundFonts ) {
     
     Object.defineProperty(obj, '_', {
       get: function() { 
-        oscillator.kill();
-        return oscillator 
+        obj.kill();
+        return obj 
       },
       set: function() {}
     })
@@ -13490,13 +13530,30 @@ module.exports = function( Gibber ) {
   Synths.Presets.Synth = {
   	short:  { attack: 44, decay: 1/16, },
   	bleep:  { waveform:'Sine', attack:44, decay:1/16 },
-    rhodes: { waveform:'Sine', maxVoices:4, presetInit: function() { this.fx.add( Gibber.Audio.FX.Tremolo(2, .2) ) }, attack:44, decay:1 },
-    calvin: { waveform:'PWM',  maxVoices:4, amp:.075, presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay(1/6,.5), Gibber.Audio.FX.Vibrato() ) }, attack:44, decay:1/4 }    
+    cascade: { waveform:'Sine', maxVoices:10, attack:Clock.maxMeasures, decay:Clock.beats(1/32),
+      presetInit: function() { 
+        this.fx.add( Gibber.Audio.FX.Delay(1/9,.2), Gibber.Audio.FX.Flanger() )
+        this.pan = Sine( .25, 1 )._
+      }
+    },
+    rhodes: { waveform:'Sine', maxVoices:4, attack:44, decay:1, 
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Tremolo(2, .2) ) },
+    },
+    calvin: { waveform:'PWM',  maxVoices:4, amp:.075, attack:Clock.maxMeasures, decay:1/4,
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay(1/6,.5), Gibber.Audio.FX.Vibrato() ) }  
+    },
+    warble: { waveform:'Sine', attack:Clock.maxMeasures,
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Vibrato(2), Gibber.Audio.FX.Delay( 1/6, .75 ) ) } 
+    },
   }
   
   Synths.Presets.Synth2 = {
-    pad2: { waveform:'Saw', maxVoices:4, attack:1.5, decay:1/2, cutoff:.3, filterMult:.35, resonance:4.5, amp:1.25 },
-    pad4: { waveform:'Saw', maxVoices:4, attack:2, decay:2, cutoff:.3, filterMult:.35, resonance:4.5, amp:1.25 },     
+    pad2: { waveform:'Saw', maxVoices:4, attack:1.5, decay:1/2, cutoff:.3, filterMult:.35, resonance:4.5, amp:.2, 
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay( 1/9, .75 ) ) } 
+    },
+    pad4: { waveform:'Saw', maxVoices:4, attack:2, decay:2, cutoff:.3, filterMult:.35, resonance:4.5, amp:.2,
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay( 1/9, .75 ) ) }
+    },     
   }
   
   Synths.Presets.Mono = {

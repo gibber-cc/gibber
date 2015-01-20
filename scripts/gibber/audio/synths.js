@@ -242,13 +242,30 @@ module.exports = function( Gibber ) {
   Synths.Presets.Synth = {
   	short:  { attack: 44, decay: 1/16, },
   	bleep:  { waveform:'Sine', attack:44, decay:1/16 },
-    rhodes: { waveform:'Sine', maxVoices:4, presetInit: function() { this.fx.add( Gibber.Audio.FX.Tremolo(2, .2) ) }, attack:44, decay:1 },
-    calvin: { waveform:'PWM',  maxVoices:4, amp:.075, presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay(1/6,.5), Gibber.Audio.FX.Vibrato() ) }, attack:44, decay:1/4 }    
+    cascade: { waveform:'Sine', maxVoices:10, attack:Clock.maxMeasures, decay:Clock.beats(1/32),
+      presetInit: function() { 
+        this.fx.add( Gibber.Audio.FX.Delay(1/9,.2), Gibber.Audio.FX.Flanger() )
+        this.pan = Sine( .25, 1 )._
+      }
+    },
+    rhodes: { waveform:'Sine', maxVoices:4, attack:44, decay:1, 
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Tremolo(2, .2) ) },
+    },
+    calvin: { waveform:'PWM',  maxVoices:4, amp:.075, attack:Clock.maxMeasures, decay:1/4,
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay(1/6,.5), Gibber.Audio.FX.Vibrato() ) }  
+    },
+    warble: { waveform:'Sine', attack:Clock.maxMeasures,
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Vibrato(2), Gibber.Audio.FX.Delay( 1/6, .75 ) ) } 
+    },
   }
   
   Synths.Presets.Synth2 = {
-    pad2: { waveform:'Saw', maxVoices:4, attack:1.5, decay:1/2, cutoff:.3, filterMult:.35, resonance:4.5, amp:1.25 },
-    pad4: { waveform:'Saw', maxVoices:4, attack:2, decay:2, cutoff:.3, filterMult:.35, resonance:4.5, amp:1.25 },     
+    pad2: { waveform:'Saw', maxVoices:4, attack:1.5, decay:1/2, cutoff:.3, filterMult:.35, resonance:4.5, amp:.2, 
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay( 1/9, .75 ) ) } 
+    },
+    pad4: { waveform:'Saw', maxVoices:4, attack:2, decay:2, cutoff:.3, filterMult:.35, resonance:4.5, amp:.2,
+      presetInit: function() { this.fx.add( Gibber.Audio.FX.Delay( 1/9, .75 ) ) }
+    },     
   }
   
   Synths.Presets.Mono = {

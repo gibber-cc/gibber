@@ -24,7 +24,7 @@ var Clock = {
     target.beats = Clock.beats
     target.Beats = Clock.Beats
     target.measures = Clock.measures
-    target.Measures = Clock.measures
+    target.Measures = Clock.Measures
   },
   
   processBeat : function() {

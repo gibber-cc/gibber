@@ -201,12 +201,15 @@ Audio = {
   clear: function() {
     // Audio.analysisUgens.length = 0
     // Audio.sequencers.length = 0
-  
+    var args = Array.prototype.slice.call( arguments, 0 )
+    
     for( var i = 0; i < Audio.Master.inputs.length; i++ ) {
-      Audio.Master.inputs[ i ].value.disconnect()
+      if( args.indexOf( Audio.Master.inputs[ i ].value) === -1 ) {
+        Audio.Master.inputs[ i ].value.disconnect()
+      }
     }
   
-    Audio.Master.inputs.length = 0
+    Audio.Master.inputs.length = arguments.length
   
     Audio.Clock.reset()
   

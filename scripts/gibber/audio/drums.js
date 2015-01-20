@@ -360,7 +360,7 @@ module.exports = function( Gibber ) {
       }
     })
         
-    obj.toString = function() { return 'Drums : ' + obj.seq.seqs[0].values.join('') }
+    //obj.toString = function() { return 'Drums : ' + obj.seq.seqs[0].values.join('') }
     
     return obj
   }

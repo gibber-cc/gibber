@@ -15,7 +15,18 @@ module.exports = function( Gibber, pathToSoundFonts ) {
       },
       cents = function(base, _cents) {
         return base * Math.pow(2,_cents/1200)
-      }
+      },
+      sensibleNames;
+  
+  sensibleNames = {
+    piano : 'acoustic_grand_piano',
+    guitar: 'electric_guitar_clean',
+    bass  : 'acoustic_bass',
+    organ : 'rock_organ',
+    brass : 'synth_brass_1',
+    strings:'synth_strings_1',
+    choir : 'choir_aahs',
+  }
   
   var SoundFont = function( soundFontName ) {
     var obj, path = SoundFont.path
@@ -28,6 +39,8 @@ module.exports = function( Gibber, pathToSoundFonts ) {
       }
     }
     
+    if( sensibleNames[ soundFontName ] ) soundFontName = sensibleNames[ soundFontName ];
+    
     obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
 
     $.extend( true, obj, Gibber.Audio.ugenTemplate )
@@ -36,8 +49,8 @@ module.exports = function( Gibber, pathToSoundFonts ) {
     
     Object.defineProperty(obj, '_', {
       get: function() { 
-        oscillator.kill();
-        return oscillator 
+        obj.kill();
+        return obj 
       },
       set: function() {}
     })
