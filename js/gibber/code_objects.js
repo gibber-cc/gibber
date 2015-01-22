@@ -29,12 +29,14 @@ a.text.opacity = a.Out
 
 var uid = 0
 
-var createUpdateFunction = function( obj, name, color, isRnd ) {
+var createUpdateFunction = function( obj, name, color, isFunc ) {
   var lastChose = {},
-      color = color || 'rgba(255,255,255,1)',
-      updateFunction
+      updateFunction, lastSpan,
+      Notation = Gibber.Environment.Notation,
+      color = color || Notation.flashColor,
+      lastType = Notation.phaseIndicatorType
   
-  if( isRnd ) {
+  if( isFunc ) {
     updateFunction = createRndUpdateFunction( obj, name )
   }else{
     updateFunction = function() {
@@ -45,17 +47,57 @@ var createUpdateFunction = function( obj, name, color, isRnd ) {
       if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
         var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
             span = $( spanName )
-      
+
         if( typeof lastChose[ name ] === 'undefined') lastChose[ name ] = []
-  
-        span.css({ backgroundColor:color });
-    
-        setTimeout( function() {
-          span.css({ 
-            backgroundColor: 'rgba(0,0,0,0)',
-          });
-      
-        }, 100 )
+
+        if( Notation.phaseIndicatorType === 'border' ) {
+          var noChange = false
+
+          if( lastSpan ) { 
+            lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+            noChange = span.selector === lastSpan.selector
+          }
+
+          if( !noChange ) {
+            if( span.length === 1 ) {
+              span.css({ borderColor:color, borderWidth:1, paddingLeft:0, paddingRight:0 })
+            }else{
+              span.css({ borderWidth:0, borderTopWidth:1, borderBottomWidth:1, borderTopColor:color, borderBottomColor:color })
+              $( span[0] ).css({ borderLeftColor:color, borderLeftWidth:1, paddingLeft:0})
+              $( span[ span.length - 1 ] ).css({ borderRightColor: color, borderRightWidth:1, paddingRight:0 })
+            }
+          }else{
+            setTimeout( function() { 
+              span.css({ borderColor:color })
+            }, 100 )
+          }
+        }else if( Notation.phaseIndicatorType === 'flash' ) {
+          if( lastSpan && (lastType === 'border' ||  lastType === 'borderTopBottom' )) { 
+            lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+          }
+          
+          span.css({ backgroundColor:color });
+          
+          setTimeout( function() {
+            span.css({ 
+              backgroundColor: 'rgba(0,0,0,0)',
+            });
+          }, 25 )
+        }else if( Notation.phaseIndicatorType === 'borderTopBottom') {
+          if( lastSpan ) { 
+            if( lastType === 'border' ) { 
+              lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+            }else{
+              lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
+            }
+          }
+
+          
+          span.css({ borderTopColor:color, borderBottomColor:color })
+        }
+        
+        lastType = Notation.phaseIndicatorType
+        lastSpan = span
         updateFunction.shouldTrigger = false
       }
     }
@@ -76,10 +118,15 @@ var createRndUpdateFunction = function( obj, name ) {
       if( update.value.length > 6 ) {
         update.value = update.value.slice( 0,6 )
       }
-          
-      update.pattern.cm.replaceRange( update.value, pos.from, pos.to )
-      
-      pos.from.ch = pos.to.ch + update.value.length
+      if( Gibber.Environment.Notation.showRandomOriginalText ) {
+        //update.pattern.cm.replaceRange( update.pattern.originalArrayText + '/* ' + update.value + ' */', pos.from, pos.to )
+        update.pattern.cm.replaceRange( update.pattern.originalArrayText + '/* ' + update.value + ' */', pos.from, pos.to )
+        pos.from.ch = pos.to.ch + update.value.length + update.pattern.originalArrayText.length + 6
+        update.pattern.arrayText = update.pattern.originalArrayText + update.value // need to update for check in restoreOriginalText method
+      }else{
+        update.pattern.cm.replaceRange( update.value, pos.from, pos.to )
+        pos.from.ch = pos.to.ch + update.value.length
+      }
       
       update.pattern.arrayMark = obj.marks[name][0]
       
@@ -115,28 +162,31 @@ var createOnChange = function( obj, objName, patternName, cm, join ) {
       line : arrayPos.to.line,
       ch :   arrayPos.from.ch + charCount + 1
     }
-    
+
     obj.marks[ patternName ].length = 0
     obj.locations[ patternName ].length = 0
-    
+
     cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
-     
+
     for( var i = 0; i < this.values.length; i++ ) {
       var value = this.values[ i ],
            __name = objName + '_' + patternName +'_' + i,
           length = ( value + '' ).length
-          
+
       start.ch = arrayPos.from.ch + charCount
       end.ch   = start.ch + length
-      
+
       charCount += i !== this.values.length - 1 ? length + joinLength : length
-      
+
       obj.marks[ patternName ].push( 
-        cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true }) 
+        cm.markText( start, end, { 
+          className:__name, inclusiveLeft:true, inclusiveRight:true,
+          css:"border-width:0; border-color:transparent; border-style:solid"
+        }) 
       )
       obj.locations[ patternName ].push( __name )
     }
-    
+
     arrayPos.to.ch = arrayPos.from.ch + charCount
     this.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
     
@@ -152,8 +202,17 @@ var initializeMarks = function( obj, className, start, end, cm ) {
     obj.locations = {}
     
     obj.clearMarks = function() {
-      
       for( var key in this.marks ) {
+        if( key !== 'global' ) { // IMPORTANT: MUST OCCUR BEFORE CLEARING MARKS TO RESTORE ORIGINAL TEXT
+          var prop = key.split('_')[0], propIndex = Gibber.Environment.Notation.priority.indexOf( obj[ prop ].values )
+          
+          if( propIndex > -1 ) {
+            obj[ prop ].values.restoreOriginalText()
+            obj[ prop ].durations.restoreOriginalText()
+            Gibber.Environment.Notation.priority.splice( propIndex, 2 )
+          }
+        }
+        
         var marks = this.marks[ key ]
         for( var i = 0; i < marks.length; i++ ) {        
           if( marks[ i ].height ) { // in case this is a line handle
@@ -163,12 +222,14 @@ var initializeMarks = function( obj, className, start, end, cm ) {
             marks[ i ].clear()
           }
         }
+        //console.log("KEY", key, key.split('_')[0] )
       }
 
       this.marks = {}
       this.locations = {}
     }
   }
+  
   
   obj.marks.global = [ mark ]
   
@@ -179,7 +240,9 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
   var split = patternName.split( '_' )
   
   pattern = object[ split[0] ][ split[1] ]
-
+  
+  //console.log( "MARK ARRAY", values, values.length )
+    
   if( typeof src === 'undefined' ) src = location
   
   if( src && !pattern.arrayText ) {
@@ -200,7 +263,6 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
       )
     }
   }
-  
   
   for( var i = 0; i < values.length; i++ ) {
     var value = values[ i ],
@@ -231,7 +293,10 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
       }
     }
 
-    var mark = cm.markText( start, end, { className:__name, inclusiveLeft:true, inclusiveRight:true });
+    var mark = cm.markText( start, end, { 
+      className:__name, inclusiveLeft:true, inclusiveRight:true, 
+      css:"padding:1; border-width:0; display:inline-block; border-color:transparent; border-style:solid; box-sizing:border-box;"
+    });
     object.marks[ patternName ].push( mark )
     object.locations[ patternName ].push( __name )
   }
@@ -327,7 +392,8 @@ module.exports = function( Gibber, Notation ) {
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = null
       
-      if( left.type === 'MemberExpression' ) {
+      
+      if( left.type === 'MemberExpression' && obj.expression.operator === '=' ) { // not *=, /=, -= etc.
         newObjectName = src.split( '=' )[0].trim()
         eval( "newObject = " + newObjectName )
       }else{
@@ -389,8 +455,9 @@ module.exports = function( Gibber, Notation ) {
                 !function() {
                   var values = prevObject.arguments[i].elements,
                       valuesOrDurations = i === 0 ? 'values' : 'durations',
-                      patternName = object.object.property.name + '_' + valuesOrDurations,
-                      isRnd = false
+                      propName = object.object.property.name,
+                      patternName = propName + '_' + valuesOrDurations,
+                      isFunc = false
                   
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
@@ -401,11 +468,15 @@ module.exports = function( Gibber, Notation ) {
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
                         values = prevObject.arguments[i].callee.object.elements; // use the array that is calling the method
                       }else{
-                        isRnd = true
+                        isFunc = true
                         values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
                         isArray = false
                       }
                     }else{
+                      if( typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function' ) {
+                        isFunc = true
+                      }
+                      
                       values = [ prevObject.arguments[i] ]
                       isArray = false 
                     }
@@ -444,24 +515,32 @@ module.exports = function( Gibber, Notation ) {
                       pattern.arrayMark = cm.markText( start, end );
                       
                     }
-                    //pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isRnd )
+                    //pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isFunc )
                     
-                    pattern.update = createUpdateFunction( newObject, patternName, 'rgba(255,255,255,1)', isRnd )
+                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.flashColor, isFunc )
                     pattern.update.pattern = pattern
                     pattern.cm = cm
                     
+                    pattern.restoreOriginalText = function() {
+                      if( this.arrayText === this.originalArrayText ) return
+                      this.arrayText = this.originalArrayText
+
+                      var mark = !this.arrayMark ? this.values[0].arrayMark.find() : this.arrayMark.find()
+
+                      this.cm.replaceRange( this.arrayText, mark.from, mark.to )
+                    }
+
                     Notation.add( pattern, true )
-            
+
                     pattern.filters.push( function() {
                       //if( arguments[0][2] !== pattern.update.index ) {
                         pattern.update.shouldTrigger = true
                         pattern.update.index = arguments[0][2]
                         //}
-                                    
+
                       return arguments[0]
                     } )
-                    
-                    
+
                     pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',' )
                   }
                 }()
@@ -479,10 +558,10 @@ module.exports = function( Gibber, Notation ) {
         //           newObject.marks.push( mark )
         //         }
         
-        $.subscribe( '/gibber/clear', function() {
-          if( newObject.clearMarks )
-            newObject.clearMarks()
-        })
+        // $.subscribe( '/gibber/clear', function() {
+        //   if( newObject.clearMarks )
+        //     newObject.clearMarks()
+        // })
  
         newObject.text = new String( src )
         newObject.text.mark = mark
@@ -588,22 +667,22 @@ module.exports = function( Gibber, Notation ) {
         if( !caller.marks ) {
           caller.marks = {}
           caller.locations = {}
-          caller.clearMarks = function() {
-            for( var key in this.marks ) {
-              var marks = this.marks[ key ]
-              for( var i = 0; i < marks.length; i++ ) {        
-                if( marks[ i ].height ) { // in case this is a line handle
-                  var cm = marks[i].parent.parent.cm
-                  cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
-                }else{
-                  marks[ i ].clear()
-                }
-              }
-            }
-      
-            this.marks = {}
-            this.locations = {}
-          }
+          // caller.clearMarks = function() {
+          //   for( var key in this.marks ) {
+          //     var marks = this.marks[ key ]
+          //     for( var i = 0; i < marks.length; i++ ) {        
+          //       if( marks[ i ].height ) { // in case this is a line handle
+          //         var cm = marks[i].parent.parent.cm
+          //         cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
+          //       }else{
+          //         marks[ i ].clear()
+          //       }
+          //     }
+          //   }
+          //       
+          //   this.marks = {}
+          //   this.locations = {}
+          // }
         }
         
         for( var _j = 0; _j < args.length; _j++ ) {
@@ -611,7 +690,7 @@ module.exports = function( Gibber, Notation ) {
             var values = args[ j ].elements,
                 valuesOrDurations = j === 0 ? 'values' : 'durations',
                 propertyName = obj.expression.callee.object.property.name,
-                isArray = true, isRnd = false
+                isArray = true, isFunc = false
             
             if( !values ) {
               //console.log( args[j] )
@@ -621,7 +700,7 @@ module.exports = function( Gibber, Notation ) {
                 }else{
                   // Rndf or Rndi or any anonymous function. TODO: single literal values
                   values = [ args[j] ]
-                  isRnd = true
+                  isFunc = true
                   isArray = false
                 }
               }else{
@@ -653,8 +732,17 @@ module.exports = function( Gibber, Notation ) {
                         
             pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
 
-            pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isRnd )
+            pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isFunc )
             pattern.update.pattern = pattern
+            
+            pattern.restoreOriginalText = function() {
+              if( this.arrayText === this.originalArrayText ) return
+              this.arrayText = this.originalArrayText
+        
+              var mark = !this.arrayMark ? this.values[0].arrayMark.find() : this.arrayMark.find()
+        
+              this.cm.replaceRange( this.arrayText, mark.from, mark.to )
+            }
             
             Notation.add( pattern, false )           
           }(_j)
@@ -963,12 +1051,7 @@ module.exports = function( Gibber, Notation ) {
     changed:[],
     clear: function() { 
       for( var i = 0; i < this.changed.length; i++ ) {
-        
-        this.changed[i].arrayText = this.changed[i].originalArrayText
-        
-        var mark = !this.changed[i].arrayMark ? this.changed[i].values[0].arrayMark.find() : this.changed[i].arrayMark.find()
-        
-        this.changed[i].cm.replaceRange( this.changed[i].arrayText, mark.from, mark.to )
+        this.changed[i].restoreOriginalText()
       }
       this.changed.length = 0
       this.dirty.length = 0 

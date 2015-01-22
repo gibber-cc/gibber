@@ -67,7 +67,7 @@ var GE = {
       GE.Metronome.on()
       Gibber.Clock.addMetronome( GE.Metronome )
       
-      GE.Notation = GE.Notation( Gibber, GE )
+      GE.Notation = window.Notation = GE.Notation( Gibber, GE )
       
       codeObjects( Gibber, GE.Notation )
       
