@@ -2355,7 +2355,7 @@ module.exports = function( Gibber ) {
     
         //if( GE.modes.nameMappings[ mode ] ) mode = GE.modes.nameMappings[ mode ]
     
-    console.log( "MODE", mode )
+    //console.log( "MODE", mode )
     $.extend( col, {
       element:        $( '<div class="column">' ),
       header:         $( '<div class="columnHeader">' ),
@@ -4128,7 +4128,7 @@ module.exports = function( Gibber ) {
         }
         options.type = 'code' // must override database 'publication' value
       }
-      console.log( options )
+      //console.log( options )
       this.addColumn( options )
       
       GE.Browser.demoColumn = Layout.columns[1]
@@ -54425,8 +54425,6 @@ return Autogui
 }
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/scripts/gibber/interface.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
-  console.log( "GIBBER", Gibber )
-  
   var $ = Gibber.dollar,
       mouse = require( './mouse.js' ) // delay initialization until export
   

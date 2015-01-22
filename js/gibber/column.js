@@ -23,7 +23,7 @@ module.exports = function( Gibber ) {
     
         //if( GE.modes.nameMappings[ mode ] ) mode = GE.modes.nameMappings[ mode ]
     
-    console.log( "MODE", mode )
+    //console.log( "MODE", mode )
     $.extend( col, {
       element:        $( '<div class="column">' ),
       header:         $( '<div class="columnHeader">' ),

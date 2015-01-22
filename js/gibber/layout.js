@@ -65,7 +65,7 @@ module.exports = function( Gibber ) {
         }
         options.type = 'code' // must override database 'publication' value
       }
-      console.log( options )
+      //console.log( options )
       this.addColumn( options )
       
       GE.Browser.demoColumn = Layout.columns[1]
