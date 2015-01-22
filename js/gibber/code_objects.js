@@ -462,6 +462,8 @@ module.exports = function( Gibber, Notation ) {
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
                   
+                  console.log( object.object.property.name )
+                  
                   var isArray = true
                   if( !values ) {
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..

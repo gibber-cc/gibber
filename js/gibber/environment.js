@@ -82,6 +82,8 @@ var GE = {
       // attach canvases to table row instead of body
       Gibber.Graphics.defaultContainer = '#mainContent'
       
+      Gibber.Audio.SoundFont.path = './resources/soundfonts/'
+      
       //window.spin.stop()
     }
   },
@@ -127,6 +129,8 @@ var GE = {
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
           defaultLanguageForEditors: 'javascript',
+          saveSoundFonts:true,
+          soundfonts:{},
         }
         this.save()
       }

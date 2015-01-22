@@ -1708,6 +1708,8 @@ module.exports = function( Gibber, Notation ) {
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
                   
+                  console.log( object.object.property.name )
+                  
                   var isArray = true
                   if( !values ) {
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
@@ -2330,7 +2332,10 @@ module.exports = function( Gibber, Notation ) {
   //PW.start()
 }
 },{}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
+!function() {
+
 var $ = require( './dollar' )
+var initialized = false
 
 module.exports = function( Gibber ) { 
   'use strict'
@@ -2438,6 +2443,7 @@ module.exports = function( Gibber ) {
       mode = modes[ options.mode ]
     }
     
+
     var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 2, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
     
@@ -2520,8 +2526,7 @@ module.exports = function( Gibber ) {
           count++
         }
       }
-    
-    
+
       col.modeIndex = languageIndex
       col.modeSelect.addClass( 'modeSelectDropDown' )
   
@@ -2529,7 +2534,10 @@ module.exports = function( Gibber ) {
   		col.mode = preferenceLanguage
       col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
     }
-
+    
+    if( shouldDisplayLoadFile ) {
+      col.editor.setValue( window.loadFile.text )
+    }
     //col.modeSelect.eq( col.modeIndex )
     col.element.addClass( colNumber )
     col.element.attr( 'id', colNumber )
@@ -2823,6 +2831,9 @@ module.exports = function( Gibber ) {
   
   return Column
 }
+
+}()
+
 },{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/console.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
@@ -3179,6 +3190,8 @@ var GE = {
       // attach canvases to table row instead of body
       Gibber.Graphics.defaultContainer = '#mainContent'
       
+      Gibber.Audio.SoundFont.path = './resources/soundfonts/'
+      
       //window.spin.stop()
     }
   },
@@ -3224,6 +3237,8 @@ var GE = {
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
           defaultLanguageForEditors: 'javascript',
+          saveSoundFonts:true,
+          soundfonts:{},
         }
         this.save()
       }
@@ -4675,10 +4690,17 @@ module.exports = function( Gibber ) {
       
       Gibber.Environment.Storage.values.defaultLanguageForEditors = val
     },
+    processSaveSoundFonts : function() {
+      var soundFontsCheckbox = $( '#preferences_saveSoundFonts' ),
+          checked = soundFontsCheckbox.is(':checked')
+      
+      Gibber.Environment.Storage.values.saveSoundFonts = checked
+    },
     close: function() {
       Preferences.processShowWelcomeCheckBox()
       Preferences.processShowSampleCodeInNewEditorsCheckbox()
       Preferences.processDefaultLanguageForEditorsMenu()
+      Preferences.processSaveSoundFonts()
       
       Gibber.Environment.Storage.save()
     },
@@ -4710,6 +4732,7 @@ module.exports = function( Gibber ) {
         $( '#preferences_defaultLanguageForEditors' ).find( 'option' )[ languageIndex ].selected = true;        
         $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
         $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
+        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts ),
         
         this.column.onclose = this.close.bind( this )
   

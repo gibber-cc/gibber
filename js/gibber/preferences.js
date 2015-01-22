@@ -21,10 +21,17 @@ module.exports = function( Gibber ) {
       
       Gibber.Environment.Storage.values.defaultLanguageForEditors = val
     },
+    processSaveSoundFonts : function() {
+      var soundFontsCheckbox = $( '#preferences_saveSoundFonts' ),
+          checked = soundFontsCheckbox.is(':checked')
+      
+      Gibber.Environment.Storage.values.saveSoundFonts = checked
+    },
     close: function() {
       Preferences.processShowWelcomeCheckBox()
       Preferences.processShowSampleCodeInNewEditorsCheckbox()
       Preferences.processDefaultLanguageForEditorsMenu()
+      Preferences.processSaveSoundFonts()
       
       Gibber.Environment.Storage.save()
     },
@@ -56,6 +63,7 @@ module.exports = function( Gibber ) {
         $( '#preferences_defaultLanguageForEditors' ).find( 'option' )[ languageIndex ].selected = true;        
         $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
         $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
+        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts ),
         
         this.column.onclose = this.close.bind( this )
   
