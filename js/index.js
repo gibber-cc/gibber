@@ -28262,55 +28262,58 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
 Gibberish.Vocoder = function() {
   var encoders = [], decoders = [], amps = [], store = [], 
       abs = Math.abs, sqrt = Math.sqrt, phase = 0, output = [0,0],
-      encoderObjects = [], decoderObjects = [], envelopeSize = 512,
-      history = [
-        [0],[0],[0],[0],[0],[0],[0],[0]
-      ],
-      sums = [ 0,0,0,0,0,0,0,0 ],
-      env = [
-        0,0,0,0,0,0,0,0
-      ],
+      encoderObjects = [], decoderObjects = [], envelopeSize = 128,
+      history = [],
+      sums = [],
+      env = [],
       index = 0,
-      cutoffs = [
+      original_cutoffs = [
         330, 440, 554, 880, 1100, 1660, 2220, 3140
-      ];
+      ],
+      cutoffs = [],
+      startFreq = arguments[3] || 330,
+      endFreq   = arguments[4] || 3200,
+      numberOfBands = arguments[2] || 16,
+      Q = arguments[5] || .15;
   
 	this.name =	"vocoder";
   
 	this.properties = {
     carrier:  arguments[0] || null,
     modulator:arguments[1] || null,
-    amp:		  .25,
+    amp:		  1,
 	  pan:		  0
   }
   
-  // sum += useAbsoluteValue ? abs(input) : input;
-  // sum -= history[index];
-  //
-  // history[index] = useAbsoluteValue ? abs(input) : input;
-  //
-  // index = (index + 1) % bufferSize;
-  //
-  // history[index] = history[index] ? history[index] : 0;
-  // value = (sum / bufferSize) * mult;
 
-	for(var i = 0; i < 8; i++) {
-		encoderObjects[i] = new Gibberish.Biquad({ mode:'BP', Q:10, cutoff:cutoffs[i] });
+  // filter band formula adapted from https://github.com/cwilso/Vocoder/blob/master/js/vocoder.js
+	var totalRangeInCents = 1200 * Math.log( endFreq / startFreq ) / Math.LN2,
+	    centsPerBand = totalRangeInCents / numberOfBands,
+	    scale = Math.pow( 2, centsPerBand / 1200 ),  // This is the scaling for successive bands
+	    currentFreq = startFreq;
+
+	for(var i = 0; i < numberOfBands; i++) {
+		encoderObjects[i] = new Gibberish.Biquad({ mode:'BP', Q:Q, cutoff:currentFreq });
     encoders[i] = encoderObjects[i].callback
-		decoderObjects[i] = new Gibberish.Biquad({ mode:'BP', Q:10, cutoff:cutoffs[i] });
+		decoderObjects[i] = new Gibberish.Biquad({ mode:'BP', Q:Q, cutoff:currentFreq });
     decoders[i] = decoderObjects[i].callback    
 		
-		amps[i] = 0;
-		store[i] = 0;
-    // rms[i] = 0;
+    history[ i ] = [ 0 ]
+    sums[ i ] = 0
+    env[ i ] = 0
+    
+		currentFreq = currentFreq * scale;
 	}
   
+  //console.log( numberOfBands, startFreq, endFreq, Q )
+  
   this.callback = function( carrier, modulator, amp, pan ) {
-    var historyIndex = ( index + 1 ) % envelopeSize, sum,
+    var historyIndex = ( index + 1 ) % envelopeSize,
         modValue = typeof modulator !== 'number' ? modulator[0] + modulator[1] : modulator,
-        encValue
+        carrierValue = typeof carrier !== 'number' ? carrier[0] + carrier[1] : carrier,
+        encValue, out = 0
         
-		for(var i = 0; i < 8; i++) {
+		for(var i = 0; i < numberOfBands; i++) {
       encValue = abs( encoders[ i ]( modValue ) )
       
       sums[ i ] += encValue
@@ -28320,32 +28323,12 @@ Gibberish.Vocoder = function() {
       history[ i ][ historyIndex ] = history[ i ][ historyIndex ] ? history[ i ][ historyIndex ] : 0
       
       env[ i ] = sums[ i ] / envelopeSize
-      //rms[i] //+= encValue * encValue
+      
+      out += decoders[i]( carrierValue ) * env[ i ];
 		}
-    //if( index ===  1022 ) console.log( env )
     index = historyIndex
-    // if( ++phase % 128 === 0) {
-    //   for(var i = 0; i < 8; i++) {
-    //     amps[i] = sqrt( rms[i] / 128 );
-    //     rms[i] = 0;
-    //   }
-    //   phase = 0;
-    //   //console.log(amps[0], amps[1], amps[2], amps[3], bpVal );
-    // }
-    
-		var x0, x1, x2, x3, x4, x5, x6, x7,
-        carrierValue = typeof carrier !== 'number' ? carrier[0] + carrier[1] : carrier
-    
-		x0 = decoders[0]( carrierValue * env[0] );
-		x1 = decoders[1]( carrierValue * env[1] );
-		x2 = decoders[2]( carrierValue * env[2] );
-		x3 = decoders[3]( carrierValue * env[3] );
-		x4 = decoders[4]( carrierValue * env[4] );
-		x5 = decoders[5]( carrierValue * env[5] );
-		x6 = decoders[6]( carrierValue * env[6] );
-		x7 = decoders[7]( carrierValue * env[7] );
 	
-    output[0] = output[1] = (x0 + x1 + x2 + x3 + x4 + x5 + x6 + x7) * amp;
+    output[0] = output[1] = out * amp * 16;
 
 		return output;
 	}
@@ -32831,8 +32814,8 @@ module.exports = function( Gibber ) {
         out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },     
       }
       
-  Vocoder.Vocoder = function( carrier, modulator ) {
-    var vocoder = new Gibberish.Vocoder( carrier, modulator ).connect( Gibber.Master )
+  Vocoder.Vocoder = function( carrier, modulator, numBands, startFreq, endFreq, Q ) {
+    var vocoder = new Gibberish.Vocoder( carrier, modulator, numBands, startFreq, endFreq, Q ).connect( Gibber.Master )
     
     vocoder.type = 'Gen'
     
@@ -32842,7 +32825,7 @@ module.exports = function( Gibber ) {
     
     return vocoder
   }
-  
+
   return Vocoder
 }
       
