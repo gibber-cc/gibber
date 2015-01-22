@@ -54,8 +54,19 @@ module.exports = function( Gibber ) {
       $( '#contentCell' ).empty()
       
       GE.Browser.open()
+      var options = {
+        fullScreen:false, type:'code', autofocus:true,
+      }
       
-      this.addColumn({ fullScreen:false, type:'code', autofocus:true })
+      if( window.loadFile ) {
+        $.extend( options, window.loadFile )
+        if( window.loadFile.language ) {
+          options.mode = window.loadFile.language
+        }
+        options.type = 'code' // must override database 'publication' value
+      }
+      //console.log( options )
+      this.addColumn( options )
       
       GE.Browser.demoColumn = Layout.columns[1]
       

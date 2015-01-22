@@ -348,6 +348,9 @@ tfoot, thead {
 
 }
 
+.leftBorder{ border-left-width:1; }
+.rightBorder{ border-right-width:1; }
+
 .columnHeader {
  -moz-box-sizing: border-box !important;
   box-sizing: border-box !important;
@@ -564,4 +567,8 @@ tfoot, thead {
 
 .ew-resize {
   cursor: ew-resize !important;
+}
+
+.versionLink {
+  color:#ccc !important;
 }

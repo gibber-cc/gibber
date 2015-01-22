@@ -8,7 +8,9 @@ module.exports = function( Gibber, Environment) {
     fps: 20,
     clear: null,
     filterString: [],
-    
+    showRandomOriginalText:true,
+    phaseIndicatorType : 'flash', // flash || border currently are the two options
+    flashColor: 'rgba(255,255,255,1)',
     features:{ 'seq':true, 'reactive':true },
     
     enabled: {},
@@ -16,6 +18,10 @@ module.exports = function( Gibber, Environment) {
     priority: [],
     
     on: function() {
+      if( arguments.length === 0 ) { // by default turn global pattern seq on??? 
+        arguments[0] = 'global'
+        arguments.length = 1
+      }
       for( var i = 0; i < arguments.length; i++ ) {
         var name = arguments[ i ]
         

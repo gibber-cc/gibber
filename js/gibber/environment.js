@@ -23,7 +23,6 @@ var GE = {
   Preferences:  require( './preferences' )( Gibber ),  
   Theme:        require( './theme' )( Gibber ),
   Esprima:      require( 'esprima' ),
-  //Mouse:        require( './mouse' ), // pass Gibber later
   Docs:         require( './docs' )( Gibber ),
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
@@ -68,7 +67,7 @@ var GE = {
       GE.Metronome.on()
       Gibber.Clock.addMetronome( GE.Metronome )
       
-      GE.Notation = GE.Notation( Gibber, GE )
+      GE.Notation = window.Notation = GE.Notation( Gibber, GE )
       
       codeObjects( Gibber, GE.Notation )
       
