@@ -32825,6 +32825,71 @@ module.exports = function( Gibber ) {
     
     return vocoder
   }
+  
+  Vocoder.Robot = function( _options ) {
+    var carrier, modulator, options = _options || {}, robot
+    
+    robot = Gibber.Audio.Vocoder.Vocoder( null, null, options.numBands || 16 )
+    
+    robot.disconnect()
+    
+    if( isNaN( options.maxVoices ) ) { options.maxVoices = 1 }
+    if( isNaN( options.resonance ) ) { options.resonance = 4 }
+    if( isNaN( options.attack    ) ) { options.attack = ms(1) }
+    if( isNaN( options.decay     ) ) { options.decay = measures(8) }
+    if( isNaN( options.pulsewidth) ) { options.pulsewidth = .05 }  
+
+    robot.carrier = Gibber.Audio.Synths.Synth2( options )
+    robot.note = robot.carrier.note.bind( robot )
+    robot._note = robot.carrier._note.bind( robot )
+    robot.chord = robot.carrier.chord.bind( robot )
+    //robot._note = robot.carrier._note.bind( robot )
+    robot.carrier._
+    
+    // in case robot.say.seq is called before module is loaded...
+    var storeSayValues, storeSayDurations, storeInit = false
+    robot.say = function( values, durations ) {
+      if( storeInit === false ) {
+        storeSayValues = values
+        storeSayDurations = durations
+        storeInit = true
+      }
+    }
+    
+    function initRobot() {
+      robot.modulator = Speak( options )
+      robot.modulator._
+
+      robot.say = robot.modulator.say.bind( robot )
+      Gibber.defineSequencedProperty( robot, 'say' )
+      
+      if( storeInit ) {
+        robot.say.values = storeSayValues
+        robot.say.durations = storeSayDurations
+      }
+      
+      robot.connect()
+    }
+    
+    if( ! Gibber.Modules[ 'gibber/publications/SpeakLib' ] ) {
+      Gibber.import( 'gibber/publications/SpeakLib' ).done( function(speak) {
+        var clear = setInterval( function() {
+          if( typeof Speak !== 'undefined' ) {
+            initRobot()
+            clearInterval( clear )
+          } 
+        }, 250 )
+      })
+    }else{
+      initRobot()
+    }
+
+    Gibber.defineSequencedProperty( robot, 'say' )
+    Gibber.defineSequencedProperty( robot, 'chord' )    
+    Gibber.defineSequencedProperty( robot, 'note' )
+    
+    return robot
+  }
 
   return Vocoder
 }
