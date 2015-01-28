@@ -47,8 +47,40 @@ c = Mono('easyfx')
 </html>
 ```
 
-## Notes
-Note that `Drums` do not work because I haven't figured out resource management yet and `Drums` uses audio samples. However, `EDrums` (which uses synthesis) works fine.
+##Using Drum Samples
+Gibber will look for a folder named 'resources' that lives in the same directory as your index.html and sketch.js files. Inside this folder is where you should place any audio samples you'd like to use or the Gibber drum samples. So, a sample directory that uses the standard Gibber Drums object might look like this:
+
+
+    yourProjectDirectory
+      > resources
+        > audiofiles
+          > electronic 
+            kick.wav
+            hat.wav
+            snare.wav
+            openhat.wav
+      index.html
+      sketch.js
+
+Audio resources *can only be loaded from a running webserver*, as HTTP is used to transfer the files. There is always the EDrums object to use if such a server
+is unavailable... it provides synthetic drums that are tweakable instead of the sample-based drums used by the Drums object.
+
+## Using SoundFonts
+In a similar fashion to the drum and audio samples, soundfonts must be placed in a directory named 'soundfonts' inside a directory named 'resources' that lives in your project directory.
+
+    yourProjectDirectory
+      > resources
+        > soundfonts
+        accordion-mp3.js
+        acoustic-bass-mp3.js
+        acoustic-grand-piano-mp3.js
+        ... etc.
+      index.html
+      sketch.js
+
+The actual soundfont used has been converted by Benjamin Gleitzman at the following repo: https://github.com/gleitz/midi-js-soundfonts
+
+You only need the .js files to be stored on your server, the actual .mp3s aren't needed. As with the Drums samples, the SoundFont object only works if you load the .html file from a running web server.
 
 ## Using in Node.js
 Thanks to Sebastien Piquemal's excellent [web-audio-api][] Node.js plugin you can run `gibber.audio.lib` code directly inside of Node.js. Try running `npm install` and then `npm test` from the top level of the repo to hear this in action.
