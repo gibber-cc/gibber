@@ -1279,29 +1279,37 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
   var lastChose = {},
       updateFunction, lastSpan,
       Notation = Gibber.Environment.Notation,
-      color = color || Notation.flashColor,
-      lastType = Notation.phaseIndicatorType
+      color = color || Notation.phaseIndicatorColor,
+      lastType = Notation.phaseIndicatorStyle
+  
+  color = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + Notation.phaseIndicatorAlpha + ')'
   
   if( isFunc ) {
     updateFunction = createRndUpdateFunction( obj, name )
+    updateFunction.clear = updateFunction.restoreOriginalText
   }else{
     updateFunction = function() {
       // if( name.indexOf('reverse_values') > -1 ) { 
       //   console.log( "FIRING" , obj.locations[ name ], updateFunction.shouldTrigger ) 
       // }
-    
       if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
         var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
             span = $( spanName )
 
         if( typeof lastChose[ name ] === 'undefined') lastChose[ name ] = []
-
-        if( Notation.phaseIndicatorType === 'border' ) {
-          var noChange = false
-
-          if( lastSpan ) { 
-            lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+        
+        var noChange = false
+        
+        if( Notation.phaseIndicatorStyle === 'border' ) {
+          if( lastSpan  ) { 
             noChange = span.selector === lastSpan.selector
+            if( !noChange ) {
+              lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+            }else{
+              if( parseInt( lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+                noChange = false
+              }
+            }
           }
 
           if( !noChange ) {
@@ -1312,12 +1320,30 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
               $( span[0] ).css({ borderLeftColor:color, borderLeftWidth:1, paddingLeft:0})
               $( span[ span.length - 1 ] ).css({ borderRightColor: color, borderRightWidth:1, paddingRight:0 })
             }
+          }
+        }else if( Notation.phaseIndicatorStyle === 'underscore' ) {
+          if( lastSpan ) { 
+            lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
+            noChange = span.selector === lastSpan.selector
+            if( noChange ) {
+              if( parseInt( lastSpan.css( 'border-bottom-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+                noChange = false
+              } 
+            }
+          }
+
+          if( !noChange ) {
+            if( span.length === 1 ) {
+              span.css({ borderColor:color, borderBottomWidth:1, paddingBottom:0 })
+            }else{
+              span.css({ borderWidth:0, borderBottomWidth:1, borderBottomColor:color })
+            }
           }else{
             setTimeout( function() { 
               span.css({ borderColor:color })
             }, 100 )
           }
-        }else if( Notation.phaseIndicatorType === 'flash' ) {
+        }else if( Notation.phaseIndicatorStyle === 'flash' ) {
           if( lastSpan && (lastType === 'border' ||  lastType === 'borderTopBottom' )) { 
             lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
           }
@@ -1328,8 +1354,8 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
             span.css({ 
               backgroundColor: 'rgba(0,0,0,0)',
             });
-          }, 25 )
-        }else if( Notation.phaseIndicatorType === 'borderTopBottom') {
+          }, 75 )
+        }else if( Notation.phaseIndicatorStyle === 'borderTopBottom') {
           if( lastSpan ) { 
             if( lastType === 'border' ) { 
               lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
@@ -1338,53 +1364,105 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
             }
           }
 
-          
           span.css({ borderTopColor:color, borderBottomColor:color })
         }
-        
-        lastType = Notation.phaseIndicatorType
+
+        lastType = Notation.phaseIndicatorStyle
         lastSpan = span
         updateFunction.shouldTrigger = false
       }
     }
     updateFunction.index = null
     updateFunction.shouldTrigger = false
+
+    updateFunction.clear = function() {
+      switch( Notation.phaseIndicatorStyle ) {
+        case 'border' :
+          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+          break;
+        case 'underscore' :
+          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
+          break;
+        default:
+          break
+      }
+    }
   }
-  
+
+  window.myupdate = updateFunction
+
   return updateFunction
+}
+
+var parseHTMLEntities = function(str) {
+    return str.replace(/&#([0-9]{1,4});/gi, function(match, numStr) {
+        var num = parseInt(numStr, 10); // read num as normal number
+        return String.fromCharCode(num);
+    });
 }
 
 var createRndUpdateFunction = function( obj, name ) {
   var update = function() {
     if( obj.marks[ name ][ update.index ] && update.shouldTrigger ) {
-      var pos = obj.marks[ name ][0].find()
+      var pos = obj.marks[ name ][0].find(),
+          pattern = update.pattern,
+          cm = pattern.cm
       
       if( typeof update.value !== 'string' ) update.value += ''
-      
-      if( update.value.length > 6 ) {
-        update.value = update.value.slice( 0,6 )
-      }
-      if( Gibber.Environment.Notation.showRandomOriginalText ) {
-        //update.pattern.cm.replaceRange( update.pattern.originalArrayText + '/* ' + update.value + ' */', pos.from, pos.to )
-        update.pattern.cm.replaceRange( update.pattern.originalArrayText + '/* ' + update.value + ' */', pos.from, pos.to )
-        pos.from.ch = pos.to.ch + update.value.length + update.pattern.originalArrayText.length + 6
-        update.pattern.arrayText = update.pattern.originalArrayText + update.value // need to update for check in restoreOriginalText method
+            
+      if( update.value.indexOf( ',' ) > -1 ) { // should be an array
+        update.value = '[' + update.value + ']'
       }else{
-        update.pattern.cm.replaceRange( update.value, pos.from, pos.to )
-        pos.from.ch = pos.to.ch + update.value.length
+        if( update.value.length > 6 ) {
+          update.value = update.value.slice( 0,6 )
+        }
       }
       
+      switch( Gibber.Environment.Notation.functionOutputIndicatorStyle ) {
+        case 'comment':
+          update.pattern.cm.replaceRange( update.pattern.originalArrayText + '/* ' + update.value + ' */', pos.from, pos.to )
+          pos.from.ch = pos.to.ch + update.value.length + update.pattern.originalArrayText.length + 6
+          update.pattern.arrayText = update.pattern.originalArrayText + update.value // need to update for check in restoreOriginalText method
+          break;
+        case 'replace':
+          update.pattern.cm.replaceRange( update.value, pos.from, pos.to )
+          pos.from.ch = pos.to.ch + update.value.length
+          update.pattern.arrayText = update.value // need to update for check in restoreOriginalText method
+          break;
+      }
+
       update.pattern.arrayMark = obj.marks[name][0]
-      
+
       update.shouldTrigger = false
-      
+
       if( Gibber.Environment.Notation.PatternWatcher.changed.indexOf( update.pattern ) === -1 ) {
         Gibber.Environment.Notation.PatternWatcher.changed.push( update.pattern )
       }
+      
+      // TODO: Only works with last element in call to seq...
+      // if( Notation.functionOutputShouldFlash ) {
+      //   var spanName = '.' + obj.marks[ name ][ update.index ].className,
+      //       span = $( spanName ),
+      //       color = Notation.phaseIndicatorColor
+      //   
+      //       console.log("SETUP FLASH FOR", spanName )
+      //   color = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + Notation.phaseIndicatorAlpha + ')'
+      //   
+      //   span.css({ backgroundColor:'green' });
+      //   
+      //   setTimeout( function() {
+      //     span.css({ 
+      //       backgroundColor: 'rgba(255,0,0,1)',
+      //     });
+      //   }, 75 )
+      // }
+      update.init = 1
     }
   }
+  update.lastLength = 0
   update.value = 0
   update.index = 0
+  update.init = 0
   
   return update
 }
@@ -1427,7 +1505,7 @@ var createOnChange = function( obj, objName, patternName, cm, join ) {
       obj.marks[ patternName ].push( 
         cm.markText( start, end, { 
           className:__name, inclusiveLeft:true, inclusiveRight:true,
-          css:"border-width:0; border-color:transparent; border-style:solid"
+          //css:"border-width:0; border-color:transparent; border-style:solid"
         }) 
       )
       obj.locations[ patternName ].push( __name )
@@ -1453,9 +1531,11 @@ var initializeMarks = function( obj, className, start, end, cm ) {
           var prop = key.split('_')[0], propIndex = Gibber.Environment.Notation.priority.indexOf( obj[ prop ].values )
           
           if( propIndex > -1 ) {
-            obj[ prop ].values.restoreOriginalText()
-            obj[ prop ].durations.restoreOriginalText()
-            Gibber.Environment.Notation.priority.splice( propIndex, 2 )
+            if( typeof obj[ prop ].values.restoreOriginalText === 'function' ) {
+              obj[ prop ].values.restoreOriginalText()
+              obj[ prop ].durations.restoreOriginalText()
+              Gibber.Environment.Notation.priority.splice( propIndex, 2 )
+            }
           }
         }
         
@@ -1657,6 +1737,7 @@ module.exports = function( Gibber, Notation ) {
         
         while( typeof object !== 'undefined' ) {
           if( object.name === 'Drums' || object.name === 'EDrums' ) {
+            //if( !Gibber.Environment.Notation.features.seq ) continue;
             var values = right.arguments, patternName = 'note_values'
             
             if( values[0] && typeof values[0].value === 'undefined' ) {
@@ -1680,7 +1761,7 @@ module.exports = function( Gibber, Notation ) {
               newObject.locations[ patternName ] = []
               markArray( values[0].value, object, newObject, newObjectName, patternName, pos, cm, location, src )
               
-              pattern.update = createUpdateFunction( newObject, patternName, 'rgba(255,0,0,1)' )
+              pattern.update = createUpdateFunction( newObject, patternName, [255,0,0] )
               Notation.add( pattern, true )
               
               pattern.filters.push( function() {
@@ -1707,9 +1788,7 @@ module.exports = function( Gibber, Notation ) {
                   
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
-                  
-                  console.log( object.object.property.name )
-                  
+                                    
                   var isArray = true
                   if( !values ) {
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
@@ -1740,11 +1819,14 @@ module.exports = function( Gibber, Notation ) {
                     pattern.cm = cm
                     
                     if( seq[ _name_ ] && pattern.filters ) {
-                      var lastChose = {}
                         var start, end, 
                             valuesStart = isArray ? prevObject.arguments[i].range[0] + 1 : prevObject.arguments[i].range[0], 
                             valuesEnd = isArray ? prevObject.arguments[i].range[1] - 1 : prevObject.arguments[i].range[1]
-                        
+                      
+                      // TODO: if code is executed in a large block, valuesStart and valuesEnd gives position in the entire
+                      // block. HOWEVER, src only represnets the current individual expression being exectued. So this only
+                      // works the expression is executed individually.
+                      
                       pattern.arrayText = src.substring( valuesStart, valuesEnd );
                       pattern.originalArrayText = pattern.arrayText.slice( 0 )
                       
@@ -1763,9 +1845,8 @@ module.exports = function( Gibber, Notation ) {
                       pattern.arrayMark = cm.markText( start, end );
                       
                     }
-                    //pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isFunc )
                     
-                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.flashColor, isFunc )
+                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, isFunc )
                     pattern.update.pattern = pattern
                     pattern.cm = cm
                     
@@ -1777,6 +1858,8 @@ module.exports = function( Gibber, Notation ) {
 
                       this.cm.replaceRange( this.arrayText, mark.from, mark.to )
                     }
+                    
+                    if( isFunc ) pattern.update.clear = pattern.restoreOriginalText.bind( pattern )
 
                     Notation.add( pattern, true )
 
@@ -1789,7 +1872,7 @@ module.exports = function( Gibber, Notation ) {
                       return arguments[0]
                     } )
 
-                    pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',' )
+                    pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',' )                    
                   }
                 }()
               }
@@ -1841,7 +1924,8 @@ module.exports = function( Gibber, Notation ) {
 
         if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
-        } /*else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
+        } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
+          var propertyKeys = Object.keys( newObject.mappingProperties )
           for( var ii = 0; ii < right.arguments.length; ii++ ) {
             ( function() {
               var arg = right.arguments[ ii ]
@@ -1849,12 +1933,13 @@ module.exports = function( Gibber, Notation ) {
                 var literal = arg, 
                     _start = {line: start.line, ch:literal.loc.start.column },
                     _end = {line: start.line, ch:literal.loc.end.column },
-                    mappingObject = newObject.mappingObjects[ ii ]
-                                    
-                var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, mappingObject.name, mappingObject )
-                
+                    key = propertyKeys[ ii ],
+                    mappingObject = newObject.mappingProperties[ key ]
+                    
+                var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, key, mappingObject )
+
                 __move.onchange = function( v ) {
-                  newObject[ mappingObject.name ] = v
+                  newObject[ key ] = v
                 }
               }else if( arg.type === 'ObjectExpression' ) {
                 for( var j = 0; j < arg.properties.length; j++ ) {
@@ -1867,6 +1952,7 @@ module.exports = function( Gibber, Notation ) {
                     var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
                     
                     __move.onchange = function( v ) {
+
                       newObject[ literal.key.name ] = v
                     }
                   })()
@@ -1874,7 +1960,7 @@ module.exports = function( Gibber, Notation ) {
               }
             })()
           }
-        }*/
+        }
       }
     }
     else if( obj.type === 'ExpressionStatement' && obj.expression.type === 'CallExpression' ) { // e.g. drums.note.values.rotate.seq( 1,1 )
@@ -1980,7 +2066,7 @@ module.exports = function( Gibber, Notation ) {
                         
             pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
 
-            pattern.update = createUpdateFunction( caller, patternName, 'rgba(255,255,255,1)', isFunc )
+            pattern.update = createUpdateFunction( caller, patternName, Gibber.Environment.Notation.phaseIndicatorColor, isFunc )
             pattern.update.pattern = pattern
             
             pattern.restoreOriginalText = function() {
@@ -2018,7 +2104,8 @@ module.exports = function( Gibber, Notation ) {
         if( codeObjects.indexOf( constructorName ) > -1 ){
           // have to mark again due to cascading calls...
           var mark = cm.markText( start, end, { 'className': className } );
-          newObject.marks.push( mark )
+          
+          newObject.marks.draganddrop = mark //newObject.marks.push( mark )
         
           if( left ) {
             // console.log( 'MAKING A DROP', className, newObjectName )
@@ -2239,7 +2326,10 @@ module.exports = function( Gibber, Notation ) {
     value = typeof literal.value.value !== 'undefined' ? literal.value.value : literal.value
 
     mark = cm.markText( start, end, { 'className': className, inclusiveLeft:true, inclusiveRight:true } )
-    obj.marks.push( mark )
+    
+    if( !obj.marks.properties ) obj.marks.properties = {}
+    
+    obj.marks.properties[ propertyName ] =  mark
         
     $.subscribe('/gibber/clear', function() { mark.clear() } )
     
@@ -4424,26 +4514,30 @@ module.exports = function( Gibber ) {
 module.exports = function( Gibber, Environment) {
   // TODO: some effects need to use entire lines... for example, transfrom
   // can't apply to inline elements
-  
+  var phaseIndicatorStyle = 'flash'
   var GEN = {
     isRunning: false,
     notations: [],
     fps: 20,
     clear: null,
     filterString: [],
-    showRandomOriginalText:true,
-    phaseIndicatorType : 'flash', // flash || border currently are the two options
-    flashColor: 'rgba(255,255,255,1)',
-    features:{ 'seq':true, 'reactive':true },
-    
+    functionOutputIndicatorStyle:'comment', // also 'replace' and 'stylize' 
+    functionOutputShouldFlash:true,
+    phaseIndicatorColor: [255,255,255],
+    phaseIndicatorAlpha: 1,
+    features:{ seq:true, reactive:true, draganddrop:true },
+
     enabled: {},
-    
+
     priority: [],
-    
+
     on: function() {
       if( arguments.length === 0 ) { // by default turn global pattern seq on??? 
         arguments[0] = 'global'
         arguments.length = 1
+      }
+      if( !GEN.enabled.global ) {
+        arguments[ arguments.length ] = 'global'
       }
       for( var i = 0; i < arguments.length; i++ ) {
         var name = arguments[ i ]
@@ -4459,24 +4553,24 @@ module.exports = function( Gibber, Environment) {
             this.enabled[ name ] = true
           }
         }
-        
+
         if( name === 'global' ) { GEN.PatternWatcher.start() }
       }
     },
-    
+
     off: function( name ) {
       if( this.enabled[ name ] ) {
         var val = this.enabled[ name ],
             idx = Gibber.scriptCallbacks.indexOf( this.enabled[ name ] )
-        
+
         if( typeof val === 'function' ) {    
           Gibber.scriptCallbacks.splice( idx, 1 )
         }
-        
+
         delete this.enabled[ name ]
       }
     },
-    
+
     add: function( obj, priority ) {
       if( !priority ) {
         this.notations.push( obj )
@@ -4494,7 +4588,7 @@ module.exports = function( Gibber, Environment) {
     init: function() {
       var func = function() {
         //Gibber.Environment.Notation.PatternWatcher.check()
-        
+
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {
           var notation = GEN.notations[ i ]
@@ -4513,21 +4607,33 @@ module.exports = function( Gibber, Environment) {
           $( filter.class ).css( '-webkit-filter', filter.filterString.join(' ') )
           filter.filterString.length = 0
         }
-        
+
         for( var k = 0; k < GEN.priority.length; k++ ) { GEN.priority[ k ].update() }
-                
+
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
       func()
-      
+
       this.isRunning = true
-      
+
       $.subscribe( '/gibber/clear', function( e ) {
         GEN.isRunning = false
-        GEN.notations.length = 0
-        GEN.priority.length = 0
+        GEN.clearNotations()
         if( GEN.clear ) GEN.clear()
       })
+    },
+
+    clearNotations: function() {
+      for( var i = 0; i < GEN.notations.length; i++ ) {
+        if( GEN.notations[ i ] && GEN.notations[ i ].update )
+          if( GEN.notations[i].update.clear ) GEN.notations[ i ].update.clear()
+      }
+      for( var i = 0; i < GEN.priority.length; i++ ) {
+        if( GEN.priority[ i ] && GEN.priority[ i ].update  )
+          if( GEN.priority[i].update.clear ) GEN.priority[ i ].update.clear()
+      }
+      GEN.notations.length = 0
+      GEN.priority.length = 0
     },
     
     properties: {
@@ -4663,6 +4769,14 @@ module.exports = function( Gibber, Environment) {
       },
     }
   }
+  
+  Object.defineProperty( GEN, 'phaseIndicatorStyle', {
+    get: function() { return phaseIndicatorStyle },
+    set: function(v) {
+      // GEN.clearNotations()
+      phaseIndicatorStyle = v
+    }
+  })
   
   return GEN
 }
@@ -29544,15 +29658,14 @@ var Clock = {
   
   beats : function(val) {
     var sampleRate = typeof Gibberish.context !== 'undefined' ? Gibberish.context.sampleRate : 44100,
-        samplesPerBeat = sampleRate / ( Clock.baseBPM / 60 )
+        beatsPerSecond = Clock.bpm / 60,
+        samplesPerBeat = sampleRate / beatsPerSecond
         
-    return samplesPerBeat * ( val * ( 4 / Clock.signature.lower ) );
+    return samplesPerBeat * val
   },
   
   Beats : function(val) {
-    return function() {
-      return Gibber.Clock.beats( val )
-    }
+    return Gibber.clock.beats.bind( null, val )
   },
   
   measures: function( val ) {
@@ -31743,6 +31856,38 @@ module.exports = function( Gibber ) {
             
             _seq.values = valuesPattern
             
+            _seq.stop = function() { _seq.shouldStop = true } 
+    
+            // TODO: property specific stop/start/shuffle etc. for polyseq
+            _seq.start = function() {
+              _seq.shouldStop = false
+              seq.timeline[0] = [ _seq ]                
+              seq.nextTime = 0
+      
+              if( !seq.isRunning ) { 
+                seq.start( false, priority )
+              }
+            }
+    
+            _seq.repeat = function( numberOfTimes ) {
+              var repeatCount = 0
+      
+              var filter = function( args, ptrn ) {
+                if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
+                  repeatCount++
+                  if( repeatCount === numberOfTimes ) {
+                    ptrn.seq.stop()
+                  }
+                }
+                return args
+              }
+      
+              valuesPattern.filters.push( filter )
+            }
+            
+            valuesPattern.seq = _seq
+            //durationsPattern.seq = _seq 
+            
             obj.seqs.push( _seq )
             keyList.push( key )
           }
@@ -31788,7 +31933,9 @@ module.exports = function( Gibber ) {
         values: Array.isArray( arguments[0] ) ? arguments[0] : [ arguments[ 0 ] ],
         durations: Gibber.Clock.time( arguments[ 1 ] )
       }]
-            
+      if( typeof arguments[1] === 'function' || Array.isArray( arguments[1] ) ) {
+        obj.seqs[0].durations = arguments[ 1  ]
+      }
       keyList.push('functions')
     }
       
@@ -31894,12 +32041,21 @@ module.exports = function( Gibber ) {
           this.seqs[ i ].values[0].shuffle()
         }
       },
+      // repeat : function( numberOfTimes ) { 
+      //   var repeatCount = 0
+      //   
+      //   var filter = function( args, ptrn ) {
+      //     if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
+      //       ptrn.seq.stop()
+      //     }
+      //     return args
+      //   }
+      //   
+      // }
     })
     return seq
   }
-  
-
-  
+    
   var ScaleSeq = function() {
     var args = arguments[0],
         scale
@@ -32885,8 +33041,16 @@ module.exports = function( Gibber ) {
     }
 
     Gibber.defineSequencedProperty( robot, 'say' )
+    console.log(0)
     Gibber.defineSequencedProperty( robot, 'chord' )    
+    console.log(1)    
     Gibber.defineSequencedProperty( robot, 'note' )
+    console.log(2)    
+    
+    $.extend( true, robot, Gibber.Audio.ugenTemplate )
+    
+    Gibber.createProxyProperties( robot, mappingProperties )
+    
     
     return robot
   }
@@ -33364,6 +33528,7 @@ var Gibber = {
   export: function( target ) {
     Gibber.Utilities.export( target )
     target.Pattern = Gibber.Pattern 
+    target.Score = Gibber.Score
     
     if( Gibber.Audio ) {
       Gibber.Audio.export( target )
@@ -33716,7 +33881,7 @@ var Gibber = {
       dimensions:1
     })
     
-    Object.defineProperties( from.object[    from.Name ], {
+    Object.defineProperties( from.object[ from.Name ], {
       'min' : {
         configurable:true,
         get : function() { return _min },
@@ -33754,11 +33919,11 @@ var Gibber = {
     }
     
     fnc.seq = function( _v,_d ) {  
-      var v = $.isArray(_v) ? _v : [_v]
-      var d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null
-      var args = {
+      var v = $.isArray(_v) ? _v : [_v],
+          d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
+          args = {
             'key': key,
-            values: [ Gibber.construct( Gibber.Pattern, v ) ],//$.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
+            values: [ Gibber.construct( Gibber.Pattern, v ) ],
             durations: d !== null ? [ Gibber.construct( Gibber.Pattern, d ) ] : null,
             target: obj,
             'priority': priority
@@ -33779,7 +33944,7 @@ var Gibber = {
           valuesPattern.repeat( v.randomArgs[ i ], v.randomArgs[ i + 1 ] )
         }
       }
-      
+
       if( d !== null ) {
         var durationsPattern = args.durations[0]
         if( d.randomFlag ) {
@@ -33791,7 +33956,12 @@ var Gibber = {
             durationsPattern.repeat( d.randomArgs[ i ], d.randomArgs[ i + 1 ] )
           }
         }
+        
+        durationsPattern.seq = obj.seq
       }
+      
+      valuesPattern.seq = obj.seq
+      
       obj.seq.add( args )
             
       seqNumber = d !== null ? obj.seq.seqs.length - 1 : obj.seq.autofire.length - 1
@@ -33877,6 +34047,22 @@ var Gibber = {
       if( !obj.seq.isRunning ) { 
         obj.seq.start( false, priority )
       }
+    }
+    
+    fnc.seq.repeat = function( numberOfTimes ) {
+      var repeatCount = 0
+      
+      var filter = function( args, ptrn ) {
+        if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
+          repeatCount++
+          if( repeatCount === numberOfTimes ) {
+            ptrn.seq.stop()
+          }
+        }
+        return args
+      }
+      
+      fnc.values.filters.push( filter )
     }
   },
   
@@ -34050,11 +34236,12 @@ Gibber.Utilities = require( './utilities' )( Gibber )
 // Gibber.Graphics  = require( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
 // Gibber.Interface = require( 'gibber.interface.lib/scripts/gibber/interface/interface' )( Gibber )
 Gibber.mappings  = require( './mappings' )( Gibber )
+Gibber.Score     = require( './score' )( Gibber )
 
 module.exports = Gibber
 
 })()
-},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
+},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js","./score":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/score.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
 module.exports = function( Gibber ) {  
   var mappings = {
     audio : {
@@ -34721,7 +34908,7 @@ var PatternProto = {
     var args = [ val, 1, idx ] // 1 is phaseModifier
 
     for( var i = 0; i < this.filters.length; i++ ) {
-      args = this.filters[ i ]( args )
+      args = this.filters[ i ]( args, this )
     }
 
     return args
@@ -34769,7 +34956,6 @@ var Pattern = function() {
     storage : [],
     stepSize : 1,
     integersOnly : false,
-    repeats : [],
     filters : [],
     onchange : null,
 
@@ -34794,9 +34980,9 @@ var Pattern = function() {
           temporary;
           
       for (left = 0, right = length - 1; left < right; left += 1, right -= 1) {
-          temporary = array[left];
-          array[left] = array[right];
-          array[right] = temporary;
+        temporary = array[left];
+        array[left] = array[right];
+        array[right] = temporary;
       }
       
       fnc._onchange() 
@@ -34816,7 +35002,7 @@ var Pattern = function() {
       
       var repeating = false, repeatValue = null
       var filter = function( args ) {
-        var value = args[ 0 ], phaseModifier = args[ 1 ], output = args//output = [ value, phaseModifier ]
+        var value = args[ 0 ], phaseModifier = args[ 1 ], output = args
         
         //console.log( args, counts )
         if( repeating === false && counts[ value ] ) {
@@ -34966,6 +35152,89 @@ Pattern.prototype = PatternProto
 module.exports = Pattern
 
 }()
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/score.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+"use strict"
+
+var ScoreProto = {
+  start: function() { this.seq.start() },
+  stop:  function() { this.seq.stop()  },
+  jumpTo:function() {},
+}
+
+var Score = function( data ) {
+  if( ! ( this instanceof Score ) ) {
+    var args = Array.prototype.slice.call( arguments, 0 )
+    return Gibber.construct( Score, args )
+  }
+
+  this.data = data
+  this._schedule = []
+  this.schedule  = []  
+  this.functions = []
+  
+  this.functions.push( function() {} ) // blank function to start
+  
+  for( var i = 0; i < data.length; i+=2 ) {
+    this._schedule.push( data[ i ] )
+    this.functions.push( data[ i+1 ] )    
+  }
+  
+  if( !Gibber.Audio ) {
+    console.error( 'No audio sequencer available; score cannot be constructed' )
+    return null
+  }
+  
+  var currentTime = 0
+  
+  for( var i = 0; i < this._schedule.length; i++ ) {
+    var nextTime = this._schedule[ i ] - currentTime
+    currentTime += this._schedule[ i ]
+    this.schedule.push( this._schedule[i] )//nextTime )
+  } 
+  
+  this.scheduleFunction
+  
+  this.seq = new Gibber.Audio.Seqs.Seq({ functions:this.functions, durations:this.scheduleFunction, doNotStart:true })
+
+  var repeatCount = 0, numberOfTimes = 1
+    
+  var filter = function( args, ptrn ) {
+    if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
+      repeatCount++
+      if( repeatCount === numberOfTimes ) {
+        ptrn.seq.stop()
+      }
+    }
+    return args
+  }
+    
+  this.seq.functions.seq.repeat( 1 )
+  this.seq.timeModifier = null//Gibber.Clock.time.bind( Gibber.Clock )
+  
+  //this.values = this.seq.functions
+  
+  //this.seq.functions.values.filters.push( filter )
+  
+  // Gibber.createProxyMethods( fnc, [
+  //   'rotate','switch','invert','reset', 'flip',
+  //   'transpose','reverse','shuffle','scale',
+  //   'store', 'range'
+  // ], true )
+  // 
+  // Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
+  // Gibber.defineSequencedProperty( fnc, 'end' )  
+  // Gibber.defineSequencedProperty( fnc, 'start' )  
+  
+  // fnc.__proto__ = this.__proto__  
+}
+
+Score.prototype = ScoreProto
+
+return Score
+
+}
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
