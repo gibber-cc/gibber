@@ -28939,26 +28939,28 @@ Audio = {
     }),
       
     replaceWith: function( replacement ) {
-      for( var i = 0; i < this.destinations.length; i++ ) {
-        replacement.connect( this.destinations[i] )
-      }
+      if( replacement.connect ) {
+        for( var i = 0; i < this.destinations.length; i++ ) {
+          replacement.connect( this.destinations[i] )
+        }
       
-      for( var i = 0; i < this.sequencers.length; i++ ) {
-        this.sequencers[ i ].target = replacement
-        replacement.sequencers.push( this.sequencers[i] )
-      }
+        for( var i = 0; i < this.sequencers.length; i++ ) {
+          this.sequencers[ i ].target = replacement
+          replacement.sequencers.push( this.sequencers[i] )
+        }
       
-      for( var i = 0; i < this.mappingObjects.length; i++ ) {
-        var mapping = this.mappingObjects[ i ]
+        for( var i = 0; i < this.mappingObjects.length; i++ ) {
+          var mapping = this.mappingObjects[ i ]
         
-        if( mapping.targets.length > 0 ) {
-          for( var j = 0; j < mapping.targets.length; j++ ) {
-            var _mapping = mapping.targets[ j ]
+          if( mapping.targets.length > 0 ) {
+            for( var j = 0; j < mapping.targets.length; j++ ) {
+              var _mapping = mapping.targets[ j ]
             
-            if( replacement.mappingProperties[ mapping.name ] ) {
-              _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
-            }else{ // replacement object does not have property that was assigned to mapping
-              _mapping[ 0 ].mapping.remove()
+              if( replacement.mappingProperties[ mapping.name ] ) {
+                _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
+              }else{ // replacement object does not have property that was assigned to mapping
+                _mapping[ 0 ].mapping.remove()
+              }
             }
           }
         }
@@ -30755,6 +30757,7 @@ module.exports = function( Gibber ) {
         
         obj.toString = function() { return '> ' + name }
         
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()
@@ -31790,6 +31793,61 @@ a = Score([
   
   seconds(.5),function() { a.rewind(); a.next() }
 ]).start()
+
+-----
+synth = Synth('bleep')
+synth2 = Synth('bleep', {maxVoices:4})
+
+// you need to uncomment the line below after the kick drum comes in
+// and execute it
+
+score.next()
+
+score = Score([
+  0, synth.note.score( 'c4', 1/4 ),
+  
+  measures(1), synth.note.score( ['c4','c5'], 1/8 ),
+  
+  measures(1), synth.note.score( ['c2','c3','c4','c5'], 1/16 ),
+  
+  measures(1), function() {
+    kick = Kick().note.seq( 55,1/4 )
+  },
+  
+  Score.wait, null,
+  
+  0, synth2.note.score('bb4',1/4 ),
+  
+  measures(1), synth2.chord.score( [['bb4','g4']], 1/4 ),
+  
+  measures(2), synth2.chord.score( [['c5','f4']], 1/4 ),
+  
+  measures(2), function() {
+    synth2.chord.seq( [['eb4','bb4','d5']], 1/6 )
+    synth2.note.seq.stop()
+    synth2.fx.add( Delay(1/9,.35) )
+    
+    synth2.fadeOut(32)
+  },
+  
+  measures(4), function() {
+    ks = Pluck()
+    	.note.seq( Rndi(100,600), 1/16 )
+    	.blend.seq( Rndf() )
+    	.fx.add( Schizo('paranoid') )
+    
+    Clock.rate = Line( 1, 1.1, 8 )
+  },
+  
+  measures(8), function() {
+		Master.fadeOut( 8 )
+  },
+  
+  measures(8), Gibber.clear
+  
+]).start()
+
+
 */
 
 module.exports = function( Gibber ) {
@@ -32566,6 +32624,8 @@ module.exports = function( Gibber ) {
 
         obj.fx.ugen = obj
         
+        //Gibber.processArguments2( obj, args, name )        
+        
         if( name === 'Vocoder' ) return obj
         
         if( name === 'Mono' ) {
@@ -32675,6 +32735,7 @@ module.exports = function( Gibber ) {
           }
         })
         
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()
@@ -33951,7 +34012,7 @@ var Gibber = {
       
         $.extend( obj, preset )
         
-        if( obj.presetInit ) obj.presetInit() 
+        //if( obj.presetInit ) obj.presetInit() 
       }else if( $.isPlainObject( firstArg ) && typeof firstArg.type === 'undefined' ) {
         $.extend( obj, firstArg )
       }else{
@@ -34455,10 +34516,13 @@ Gibber.Utilities = require( './utilities' )( Gibber )
 // Gibber.Graphics  = require( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
 // Gibber.Interface = require( 'gibber.interface.lib/scripts/gibber/interface/interface' )( Gibber )
 Gibber.mappings  = require( './mappings' )( Gibber )
+// TODO: Make Score work without requiring audio
+// Gibber.Score     = require( './score' )//( Gibber ) // only initialize once Gibber.Audio.Core is loaded, otherwise problems
+
 module.exports = Gibber
 
 })()
-},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js","./score":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/score.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
+},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
 module.exports = function( Gibber ) {  
   var mappings = {
     audio : {
@@ -35369,89 +35433,6 @@ Pattern.prototype = PatternProto
 module.exports = Pattern
 
 }()
-},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/score.js":[function(require,module,exports){
-module.exports = function( Gibber ) {
-
-"use strict"
-
-var ScoreProto = {
-  start: function() { this.seq.start() },
-  stop:  function() { this.seq.stop()  },
-  jumpTo:function() {},
-}
-
-var Score = function( data ) {
-  if( ! ( this instanceof Score ) ) {
-    var args = Array.prototype.slice.call( arguments, 0 )
-    return Gibber.construct( Score, args )
-  }
-
-  this.data = data
-  this._schedule = []
-  this.schedule  = []  
-  this.functions = []
-  
-  this.functions.push( function() {} ) // blank function to start
-  
-  for( var i = 0; i < data.length; i+=2 ) {
-    this._schedule.push( data[ i ] )
-    this.functions.push( data[ i+1 ] )    
-  }
-  
-  if( !Gibber.Audio ) {
-    console.error( 'No audio sequencer available; score cannot be constructed' )
-    return null
-  }
-  
-  var currentTime = 0
-  
-  for( var i = 0; i < this._schedule.length; i++ ) {
-    var nextTime = this._schedule[ i ] - currentTime
-    currentTime += this._schedule[ i ]
-    this.schedule.push( this._schedule[i] )//nextTime )
-  } 
-  
-  this.scheduleFunction
-  
-  this.seq = new Gibber.Audio.Seqs.Seq({ functions:this.functions, durations:this.scheduleFunction, doNotStart:true })
-
-  var repeatCount = 0, numberOfTimes = 1
-    
-  var filter = function( args, ptrn ) {
-    if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
-      repeatCount++
-      if( repeatCount === numberOfTimes ) {
-        ptrn.seq.stop()
-      }
-    }
-    return args
-  }
-    
-  this.seq.functions.seq.repeat( 1 )
-  this.seq.timeModifier = null//Gibber.Clock.time.bind( Gibber.Clock )
-  
-  //this.values = this.seq.functions
-  
-  //this.seq.functions.values.filters.push( filter )
-  
-  // Gibber.createProxyMethods( fnc, [
-  //   'rotate','switch','invert','reset', 'flip',
-  //   'transpose','reverse','shuffle','scale',
-  //   'store', 'range'
-  // ], true )
-  // 
-  // Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
-  // Gibber.defineSequencedProperty( fnc, 'end' )  
-  // Gibber.defineSequencedProperty( fnc, 'start' )  
-  
-  // fnc.__proto__ = this.__proto__  
-}
-
-Score.prototype = ScoreProto
-
-return Score
-
-}
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
