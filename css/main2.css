@@ -273,9 +273,9 @@ tfoot, thead {
   background:#333;
 }
 
-.columnBody {
+/*.columnBody {
   overflow:scroll;
-}
+}*/
 
 #docs, #help, .browser, #credits, #preferences {
   padding: 0 .6em;
@@ -554,7 +554,7 @@ tfoot, thead {
   background: #bbb
 }
 
-.columnBody { overflow: scroll; }
+/*.columnBody { overflow: scroll; }*/
 
 .no-select {
   -webkit-touch-callout: none;
