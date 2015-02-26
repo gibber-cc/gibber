@@ -1275,23 +1275,192 @@ a.text.opacity = a.Out
 
 var uid = 0
 
-var createUpdateFunction = function( obj, name, color, isFunc ) {
+var sides = ['Top','Right','Bottom','Left']
+
+var phaseIndicators = {
+  border: function( info ) {
+    if( info.lastSpan  ) { 
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( !noChange ) {
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+      }else{
+        if( parseInt( info.lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+        }
+      }
+    }
+
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color, borderWidth:1, paddingLeft:0, paddingRight:0 })
+      }else{
+        info.span.css({ borderWidth:0, borderTopWidth:1, borderBottomWidth:1, borderTopColor:info.color, borderBottomColor:info.color })
+        $( info.span[0] ).css({ borderLeftColor:info.color, borderLeftWidth:1, paddingLeft:0})
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: info.color, borderRightWidth:1, paddingRight:0 })
+      }
+    }
+  },
+  underscore: function( info ) {
+    if( info.lastSpan ) { 
+      info.lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( noChange ) {
+        if( parseInt( info.lastSpan.css( 'border-bottom-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+        } 
+      }
+    }
+
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color, borderBottomWidth:1, paddingBottom:0 })
+      }else{
+        info.span.css({ borderWidth:0, borderBottomWidth:1, borderBottomColor:info.color })
+      }
+    }else{
+      setTimeout( function() { 
+        info.span.css({ borderColor:info.color })
+      }, 100 )
+    }
+  },
+  flash: function( info ) {
+    if( info.lastSpan && ( info.lastType === 'border' ||  info.lastType === 'borderTopBottom' )) { 
+      info.lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+    }
+    
+    info.span.css({ backgroundColor:info.color });
+    
+    setTimeout( function() {
+      info.span.css({ 
+        backgroundColor: 'rgba(0,0,0,0)',
+      });
+    }, 75 )
+  },
+  flashBorder: function( info ) {
+    if( info.lastSpan  ) { 
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( !noChange ) {
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+      }else{
+        if( parseInt( info.lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+        }
+      }
+    }
+
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color, borderWidth:1, paddingLeft:0, paddingRight:0 })
+      }else{
+        info.span.css({ borderWidth:0, borderTopWidth:1, borderBottomWidth:1, borderTopColor:info.color, borderBottomColor:info.color })
+        $( info.span[0] ).css({ borderLeftColor:info.color, borderLeftWidth:1, paddingLeft:0})
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: info.color, borderRightWidth:1, paddingRight:0 })
+      }
+    }
+    
+    var mute = 'rgba(255,255,255,.25)'
+    
+    setTimeout( function() {
+      info.span.css({ 
+        borderColor: mute
+      });
+    }, 75 )
+  },
+  flashBorder2: function( info ) {
+    var mute = info.muteColor
+    
+    if( info.lastSpan  ) { 
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( !noChange ) {
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+      }else{
+        if( parseInt( info.lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+          info.borderSide = 0
+        }else{
+          info.borderSide++
+        }
+      }
+    }
+    
+    if( info.span.length === 1 ) {
+      info.span.css({ borderWidth:1, padding:0 })
+    }else{
+      // info.span.css({ padding:0, borderTopWidth:1, borderBottomWidth:1, borderLeftWidth:0, borderRightWidth:0 })
+      // $( info.span[ info.span.length - 1 ] ).css({ borderRightWidth:1 })
+      // $( info.span[0] ).css({ borderLeftWidth:1 })
+    }
+    
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color })
+      }else{
+        // info.span.css({ borderColor:'transparent', borderTopColor:info.color, borderBottomColor:info.color })
+        // $( info.span[0] ).css({ borderColor:'transparent', borderLeftColor:info.color })
+        // $( info.span[ info.span.length - 1 ] ).css({ borderColor:'transparent', borderRightColor: info.color })
+        info.span.css({ borderTopColor:info.color, borderBottomColor: info.color })
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: info.color })
+        $( info.span[0] ).css({ borderLeftColor:info.color })
+      }
+      
+      setTimeout( function() {
+        info.span.css({ 
+          borderColor: mute
+        });
+      }, 75 )
+      
+    }else{
+      var side = sides[ info.borderSide % sides.length ]
+      
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:mute })
+        info.span.css( 'border'+side+'Color', info.color )
+      }else{
+        info.span.css({ borderColor:'transparent' })
+
+        info.span.css({ borderTopColor:side === 'Top' ? info.color : mute, borderBottomColor: side === 'Bottom' ? info.color : mute })
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: side === 'Right' ? info.color : mute })
+        $( info.span[0] ).css({ borderLeftColor:side === 'Left' ? info.color : mute })
+      }
+    }
+    
+    
+    // setTimeout( function() {
+    //   info.span.css({ 
+    //     borderColor: mute
+    //   });
+    // }, 75 )
+  },
+  borderTopBottom: function( lastSpan, span, color, lastType ) {
+    if( lastSpan ) { 
+      if( lastType === 'border' ) { 
+        lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+      }else{
+        lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
+      }
+    }
+
+    span.css({ borderTopColor:color, borderBottomColor:color })
+  }
+}
+
+var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
   var lastChose = {},
       updateFunction, lastSpan,
       Notation = Gibber.Environment.Notation,
       color = color || Notation.phaseIndicatorColor,
-      lastType = Notation.phaseIndicatorStyle
+      muteColor = muteColor || Notation.phaseIndicatorColorMute,
+      lastType = Notation.phaseIndicatorStyle,
+      info = { borderSide:0 }
   
   color = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + Notation.phaseIndicatorAlpha + ')'
+  muteColor = 'rgba(' + muteColor[0] + ',' + muteColor[1] + ',' + muteColor[2] + ',' + Notation.phaseIndicatorAlpha + ')'
   
   if( isFunc ) {
     updateFunction = createRndUpdateFunction( obj, name )
     updateFunction.clear = updateFunction.restoreOriginalText
   }else{
     updateFunction = function() {
-      // if( name.indexOf('reverse_values') > -1 ) { 
-      //   console.log( "FIRING" , obj.locations[ name ], updateFunction.shouldTrigger ) 
-      // }
       if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
         var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
             span = $( spanName )
@@ -1300,71 +1469,14 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
         
         var noChange = false
         
-        if( Notation.phaseIndicatorStyle === 'border' ) {
-          if( lastSpan  ) { 
-            noChange = span.selector === lastSpan.selector
-            if( !noChange ) {
-              lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
-            }else{
-              if( parseInt( lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
-                noChange = false
-              }
-            }
-          }
-
-          if( !noChange ) {
-            if( span.length === 1 ) {
-              span.css({ borderColor:color, borderWidth:1, paddingLeft:0, paddingRight:0 })
-            }else{
-              span.css({ borderWidth:0, borderTopWidth:1, borderBottomWidth:1, borderTopColor:color, borderBottomColor:color })
-              $( span[0] ).css({ borderLeftColor:color, borderLeftWidth:1, paddingLeft:0})
-              $( span[ span.length - 1 ] ).css({ borderRightColor: color, borderRightWidth:1, paddingRight:0 })
-            }
-          }
-        }else if( Notation.phaseIndicatorStyle === 'underscore' ) {
-          if( lastSpan ) { 
-            lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
-            noChange = span.selector === lastSpan.selector
-            if( noChange ) {
-              if( parseInt( lastSpan.css( 'border-bottom-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
-                noChange = false
-              } 
-            }
-          }
-
-          if( !noChange ) {
-            if( span.length === 1 ) {
-              span.css({ borderColor:color, borderBottomWidth:1, paddingBottom:0 })
-            }else{
-              span.css({ borderWidth:0, borderBottomWidth:1, borderBottomColor:color })
-            }
-          }else{
-            setTimeout( function() { 
-              span.css({ borderColor:color })
-            }, 100 )
-          }
-        }else if( Notation.phaseIndicatorStyle === 'flash' ) {
-          if( lastSpan && (lastType === 'border' ||  lastType === 'borderTopBottom' )) { 
-            lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
-          }
-          
-          span.css({ backgroundColor:color });
-          
-          setTimeout( function() {
-            span.css({ 
-              backgroundColor: 'rgba(0,0,0,0)',
-            });
-          }, 75 )
-        }else if( Notation.phaseIndicatorStyle === 'borderTopBottom') {
-          if( lastSpan ) { 
-            if( lastType === 'border' ) { 
-              lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
-            }else{
-              lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
-            }
-          }
-
-          span.css({ borderTopColor:color, borderBottomColor:color })
+        info.lastSpan = lastSpan
+        info.span = span
+        info.color = color
+        info.muteColor = muteColor
+        info.lastType = lastType
+        
+        for( var i = 0; i < Notation.phaseIndicatorStyles.length; i++ ) {
+          phaseIndicators[ Notation.phaseIndicatorStyles[ i ] ]( info )
         }
 
         lastType = Notation.phaseIndicatorStyle
@@ -1372,16 +1484,17 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
         updateFunction.shouldTrigger = false
       }
     }
+    
     updateFunction.index = null
     updateFunction.shouldTrigger = false
 
     updateFunction.clear = function() {
       switch( Notation.phaseIndicatorStyle ) {
         case 'border' :
-          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:0 })
           break;
         case 'underscore' :
-          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
+          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:0 })
           break;
         default:
           break
@@ -1506,11 +1619,14 @@ var createOnChange = function( obj, objName, patternName, cm, join ) {
         cm.markText( start, end, { 
           className:__name, inclusiveLeft:true, inclusiveRight:true,
           //css:"border-width:0; border-color:transparent; border-style:solid"
+          css:'padding:0; border-width:0; border-top-width:1px; border-bottom-width:1px; display:inline-block; border-color:transparent; border-style:solid; box-sizing:border-box;',
+          startStyle:'leftBorder',
+          endStyle:  'rightBorder'
         }) 
       )
       obj.locations[ patternName ].push( __name )
     }
-
+    
     arrayPos.to.ch = arrayPos.from.ch + charCount
     this.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
     
@@ -1621,8 +1737,12 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
 
     var mark = cm.markText( start, end, { 
       className:__name, inclusiveLeft:true, inclusiveRight:true, 
-      css:"padding:1; border-width:0; display:inline-block; border-color:transparent; border-style:solid; box-sizing:border-box;"
+      css:'padding:0; border-width:0; border-top-width:1px; border-bottom-width:1px; display:inline-block; border-color:transparent; border-style:solid; box-sizing:border-box;',
+      startStyle:'leftBorder',
+      endStyle:  'rightBorder'
     });
+
+    
     object.marks[ patternName ].push( mark )
     object.locations[ patternName ].push( __name )
   }
@@ -1761,7 +1881,7 @@ module.exports = function( Gibber, Notation ) {
               newObject.locations[ patternName ] = []
               markArray( values[0].value, object, newObject, newObjectName, patternName, pos, cm, location, src )
               
-              pattern.update = createUpdateFunction( newObject, patternName, [255,0,0] )
+              pattern.update = createUpdateFunction( newObject, patternName, [255,0,0], [127,0,0] )
               Notation.add( pattern, true )
               
               pattern.filters.push( function() {
@@ -1846,7 +1966,7 @@ module.exports = function( Gibber, Notation ) {
                       
                     }
                     
-                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, isFunc )
+                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
                     pattern.update.pattern = pattern
                     pattern.cm = cm
                     
@@ -2066,7 +2186,7 @@ module.exports = function( Gibber, Notation ) {
                         
             pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
 
-            pattern.update = createUpdateFunction( caller, patternName, Gibber.Environment.Notation.phaseIndicatorColor, isFunc )
+            pattern.update = createUpdateFunction( caller, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
             pattern.update.pattern = pattern
             
             pattern.restoreOriginalText = function() {
@@ -3246,6 +3366,7 @@ var GE = {
       window.load = Gibber.import
       window.Graphics = Gibber.Graphics
       window.Color = Gibber.Graphics.Color
+      window.Chat = GE.Chat
 
       // the window.module global is deprecated and will be removed at some point!
       // I don't trust using it now that Gibber has moved to browserify
@@ -4519,11 +4640,13 @@ module.exports = function( Gibber, Environment) {
     isRunning: false,
     notations: [],
     fps: 20,
+    phaseIndicatorStyles: ['flashBorder2'],
     clear: null,
     filterString: [],
     functionOutputIndicatorStyle:'comment', // also 'replace' and 'stylize' 
     functionOutputShouldFlash:true,
     phaseIndicatorColor: [255,255,255],
+    phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
     features:{ seq:true, reactive:true, draganddrop:true },
 
@@ -4770,13 +4893,13 @@ module.exports = function( Gibber, Environment) {
     }
   }
   
-  Object.defineProperty( GEN, 'phaseIndicatorStyle', {
-    get: function() { return phaseIndicatorStyle },
-    set: function(v) {
-      // GEN.clearNotations()
-      phaseIndicatorStyle = v
-    }
-  })
+  // Object.defineProperty( GEN, 'phaseIndicatorStyle', {
+  //   get: function() { return phaseIndicatorStyle },
+  //   set: function(v) {
+  //     // GEN.clearNotations()
+  //     phaseIndicatorStyle = v
+  //   }
+  // })
   
   return GEN
 }
@@ -28155,11 +28278,11 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
 /* IMPORTANT README
 *
 * This class depends on having access to a folder of soundfonts that have been converted to
-* binary string representations. More specifically, soundfonts designed to work with MIDI.js:
+* binary string representations. More specifically, soundfonts designed to work with GenMIDI.js:
 *
 * https://github.com/gleitz/midi-js-soundfonts
 *
-* At some point it would be nice to make another soundfont system, as MIDI.js does not support
+* At some point it would be nice to make another soundfont system, as GenMIDI.js does not support
 * defining loop points.
 *
 * By default soundfonts should be found in a folder named 'resources/soundfonts' one level above
@@ -28175,19 +28298,18 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
 
 (function() {
   var cents = function(base, _cents) { return base * Math.pow(2,_cents/1200) },
-      MIDI = { Soundfont: { instruments: {} } },
-      SF = MIDI.Soundfont
+      GenMIDI = { Soundfont: { instruments: {} } },
+      SF = GenMIDI.Soundfont
   
-  // TODO: GET RID OF THIS GLOBAL!!!! It's unfortunately in there because we're using soundfonts meant for MIDI.js
+  // TODO: GET RID OF THIS GLOBAL!!!! It's unfortunately in there because we're using soundfonts meant for GenMIDI.js
   if( typeof window === 'object' )
-    window.MIDI = MIDI
+    window.GenMIDI = GenMIDI
   else
-    global.MIDI = MIDI
+    global.GenMIDI = GenMIDI
   
   var getScript = function( scriptPath, handler ) {
     var oReq = new XMLHttpRequest();
-
-    // oReq.addEventListener("progress", updateProgress, false);
+    
     oReq.addEventListener("load", transferComplete, false);
     oReq.addEventListener("error", function(e){ console.log( "SF load error", e ) }, false);
 
@@ -28202,12 +28324,15 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
         var sizeString = new String( "" + oEvent.total )
         sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
         size.innerHTML = sizeString
+        
+        console.log( percentComplete, "%" )
       } else {
         // Unable to compute progress information since the total size is unknown
       }
     }
 
     function transferComplete( evt ) {
+      console.log("COMPLETE", scriptPath)
       var script = document.createElement('script')
       script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
       document.querySelector( 'head' ).appendChild( script )
@@ -28356,6 +28481,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
     
     // if already loaded, or if passed a buffer to use...
     if( !SF.instruments[ this.instrumentFileName ] && typeof pathToResources !== 'object' ) {
+      console.log("DOWNLOADING SOUNDFONT")
       getScript( 'resources/soundfonts/' + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
     }else{
       if( typeof pathToResources === 'object' ) {
@@ -28398,7 +28524,6 @@ Gibberish.Vocoder = function() {
     amp:		  1,
 	  pan:		  0
   }
-  
 
   // filter band formula adapted from https://github.com/cwilso/Vocoder/blob/master/js/vocoder.js
 	var totalRangeInCents = 1200 * Math.log( endFreq / startFreq ) / Math.LN2,
@@ -28442,7 +28567,7 @@ Gibberish.Vocoder = function() {
 		}
     index = historyIndex
 	
-    output[0] = output[1] = out * amp * 16;
+    output[0] = output[1] = out * amp * 16; // look, ma... 16 IS MAGIC!!!
 
 		return output;
 	}
@@ -30043,7 +30168,7 @@ module.exports = function( Gibber ) {
     
     obj.start = function() { obj.seq.start( true ) }
     obj.stop = function() { obj.seq.stop() }
-    obj.shuffle = function() { obj.seq.shuffle() }
+    obj.shuffle = function() { obj.note.values.shuffle() }
     obj.reset = function() { obj.seq.reset() }
 
     Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start','send','note' ] )
@@ -30384,6 +30509,13 @@ module.exports = function( Gibber ) {
   	},
   };
   Percussion.Drums.kits.default = Percussion.Drums.kits.electronic;
+  
+  Percussion.Presets.Kick = {
+    short: { decay:.1, amp:.75 }
+  }
+  Percussion.Presets.Snare = {
+    crack: { snappy:1, offset:1/4 }
+  }
   
   return Percussion
   
@@ -31737,13 +31869,9 @@ module.exports = function( Gibber ) {
 Score is a Seq(ish) object, with pause, start / stop, rewind, fast-forward.
 It's internal phase is 
 
-Score has play() method to start it running. next() advances to next element,
-regardless of whether or not the score is running, however, it does not start
-the transport if it is stopped.
-
-onend event handler
-onpause event handler
-onplay event handler
+Score has start() method to start it running. next() advances to next element,
+regardless of whether or not the score is running, and stats the transport running.
+rewind() moves the score index to the first position.
 */
 
 /*
@@ -31751,103 +31879,7 @@ Passed Timing           Result
 =============           ======
 Numeric literal         place function in timeline and store reference
 a Function              callback. register to receive and advance. must use pub/sub.
-score.pause             pause until next() method is called
-*/
-
-/*
-a = Score([
-  0, console.log.bind( null, 'test1'),
-  seconds(.5),console.log.bind( null, 'test2'),
-  Score.wait, null,
-  seconds(.5),console.log.bind( null, 'test3'),
-  seconds(.5),console.log.bind( null, 'test4'),
-  seconds(.5),function() { a.rewind(); a.next() }
-])
-
-b = Score([
-  100, console.log.bind(null,"B"),
-  100, console.log.bind(null,"F"),  
-  a.oncomplete, function() {
-  	console.log("C")
-  }
-])
-.start()
-
-a.start()
-
------
-a = Score([
-  0, console.log.bind( null, 'test1'),
-  seconds(.5),console.log.bind( null, 'test2'),
-  
-  Score.wait, null,
-  
-  seconds(.5),console.log.bind( null, 'test3'),
-  
-  seconds(.5), Score([
-    0, console.log.bind(null,"A"),
-    beats(2), console.log.bind(null,"B")
-  ]),
-  
-  Score.wait, null,
-  
-  seconds(.5),function() { a.rewind(); a.next() }
-]).start()
-
------
-synth = Synth('bleep')
-synth2 = Synth('bleep', {maxVoices:4})
-
-// you need to uncomment the line below after the kick drum comes in
-// and execute it
-
-score.next()
-
-score = Score([
-  0, synth.note.score( 'c4', 1/4 ),
-  
-  measures(1), synth.note.score( ['c4','c5'], 1/8 ),
-  
-  measures(1), synth.note.score( ['c2','c3','c4','c5'], 1/16 ),
-  
-  measures(1), function() {
-    kick = Kick().note.seq( 55,1/4 )
-  },
-  
-  Score.wait, null,
-  
-  0, synth2.note.score('bb4',1/4 ),
-  
-  measures(1), synth2.chord.score( [['bb4','g4']], 1/4 ),
-  
-  measures(2), synth2.chord.score( [['c5','f4']], 1/4 ),
-  
-  measures(2), function() {
-    synth2.chord.seq( [['eb4','bb4','d5']], 1/6 )
-    synth2.note.seq.stop()
-    synth2.fx.add( Delay(1/9,.35) )
-    
-    synth2.fadeOut(32)
-  },
-  
-  measures(4), function() {
-    ks = Pluck()
-    	.note.seq( Rndi(100,600), 1/16 )
-    	.blend.seq( Rndf() )
-    	.fx.add( Schizo('paranoid') )
-    
-    Clock.rate = Line( 1, 1.1, 8 )
-  },
-  
-  measures(8), function() {
-		Master.fadeOut( 8 )
-  },
-  
-  measures(8), Gibber.clear
-  
-]).start()
-
-
+Score.wait             pause until next() method is called
 */
 
 module.exports = function( Gibber ) {
@@ -31879,6 +31911,8 @@ var ScoreProto = {
   
   pause: function() {
     this.isPaused = true
+    
+    return this
   },
   
   next: function() {
@@ -31886,7 +31920,9 @@ var ScoreProto = {
       this.connect()
     }
     this.isPaused = false
-  }
+    
+    return this
+  },
 }
 
 var proto = new Gibberish.ugen()
@@ -32000,18 +32036,159 @@ var Score = function( data, opts ) {
   
   this.nextTime = this.schedule[ 0 ]
   
+  var _rate = this.rate,
+      oldRate  = this.__lookupSetter__( 'rate' )
+   
+  Object.defineProperty( this, 'rate', {
+    get : function() { return _rate },
+    set : function(v) {
+      _rate = Mul( Gibber.Clock, v )
+      oldRate.call( this, _rate )
+    }
+  })
+  
+  this.rate = this.rate // trigger meta-programming tie to master clock
+  
   Gibber.createProxyProperties( this, {
     rate : { min: .1, max: 2, output: 0, timescale: 'audio' },
   })
 }
 
 Score.wait = -987654321
+Score.combine = function() {
+  var score = [ 0, arguments[ 0 ] ]
+  
+  for( var i = 1; i < arguments.length; i++ ) {
+    var timeIndex = i * 2,
+        valueIndex = timeIndex +  1,
+        previousValueIndex = timeIndex - 1
+
+    score[ timeIndex  ] = score[ previousValueIndex ].oncomplete
+    score[ valueIndex ] = arguments[ i ]
+  }
+  
+  return Score( score )
+}
 
 Score.prototype = proto
 
 return Score
 
 }
+
+/*
+a = Score([
+  0, console.log.bind( null, 'test1'),
+  seconds(.5),console.log.bind( null, 'test2'),
+  Score.wait, null,
+  seconds(.5),console.log.bind( null, 'test3'),
+  seconds(.5),console.log.bind( null, 'test4'),
+  seconds(.5),function() { a.rewind(); a.next() }
+])
+
+b = Score([
+  100, console.log.bind(null,"B"),
+  100, console.log.bind(null,"F"),  
+  a.oncomplete, function() {
+  	console.log("C")
+  }
+])
+.start()
+
+a.start()
+
+-----
+a = Score([
+  0, console.log.bind( null, 'test1'),
+  seconds(.5),console.log.bind( null, 'test2'),
+  
+  Score.wait, null,
+  
+  seconds(.5),console.log.bind( null, 'test3'),
+  
+  seconds(.5), Score([
+    0, console.log.bind(null,"A"),
+    beats(2), console.log.bind(null,"B")
+  ]),
+  
+  Score.wait, null,
+  
+  seconds(.5),function() { a.rewind(); a.next() }
+]).start()
+
+-----
+synth = Synth('bleep')
+synth2 = Synth('bleep', {maxVoices:4})
+
+// you need to uncomment the line below after the kick drum comes in
+// and execute it
+
+score.next()
+
+score = Score([
+  0, synth.note.score( 'c4', 1/4 ),
+  
+  measures(1), synth.note.score( ['c4','c5'], 1/8 ),
+  
+  measures(1), synth.note.score( ['c2','c3','c4','c5'], 1/16 ),
+  
+  measures(1), function() {
+    kick = Kick().note.seq( 55,1/4 )
+  },
+  
+  Score.wait, null,
+  
+  0, synth2.note.score('bb4',1/4 ),
+  
+  measures(1), synth2.chord.score( [['bb4','g4']], 1/4 ),
+  
+  measures(2), synth2.chord.score( [['c5','f4']], 1/4 ),
+  
+  measures(2), function() {
+    synth2.chord.seq( [['eb4','bb4','d5']], 1/6 )
+    synth2.note.seq.stop()
+    synth2.fx.add( Delay(1/9,.35) )
+    
+    synth2.fadeOut(32)
+  },
+  
+  measures(4), function() {
+    ks = Pluck()
+    	.note.seq( Rndi(100,600), 1/16 )
+    	.blend.seq( Rndf() )
+    	.fx.add( Schizo('paranoid') )
+    
+    Clock.rate = Line( 1, 1.1, 8 )
+  },
+  
+  measures(8), function() {
+		Master.fadeOut( 8 )
+  },
+  
+  measures(8), Gibber.clear
+  
+]).start()
+
+------
+
+synth = Synth('bleep')
+
+verse =  Score([ beats(1/2), synth.note.bind( synth, 'c4' ) ])
+chorus = Score([ beats(1/2), synth.note.bind( synth, 'd4' ) ])
+bridge = Score([ beats(1/2), synth.note.bind( synth, 'e4' ) ])
+
+song = Score([
+  0,                 verse,
+  verse.oncomplete,  chorus,
+  chorus.oncomplete, verse,
+  verse.oncomplete,  chorus,
+  chorus.oncomplete, bridge,
+  bridge.oncomplete, chorus  
+])
+
+song.start()
+
+*/
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   //"use strict"
@@ -32745,6 +32922,7 @@ module.exports = function( Gibber ) {
   Synths.Presets.Synth = {
   	short:  { attack: 44, decay: 1/16, },
   	bleep:  { waveform:'Sine', attack:44, decay:1/16 },
+    bleepEcho: { waveform:'Sine', attack:44, decay:1/16, presetInit:function() { this.fx.add( Delay(1/6,.85 ) ) } },
     cascade: { waveform:'Sine', maxVoices:10, attack:Clock.maxMeasures, decay:Clock.beats(1/32),
       presetInit: function() { 
         this.fx.add( Gibber.Audio.FX.Delay(1/9,.2), Gibber.Audio.FX.Flanger() )
@@ -33040,6 +33218,7 @@ var Theory = {
     // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
     
     that.gibber = true // needed since createProxyProperties isn't called where this is normally set
+                              // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
     //Gibber.defineSequencedProperty( that, 'root', 1 )
@@ -33318,11 +33497,8 @@ module.exports = function( Gibber ) {
     }
 
     Gibber.defineSequencedProperty( robot, 'say' )
-    console.log(0)
     Gibber.defineSequencedProperty( robot, 'chord' )    
-    console.log(1)    
     Gibber.defineSequencedProperty( robot, 'note' )
-    console.log(2)    
     
     $.extend( true, robot, Gibber.Audio.ugenTemplate )
     
@@ -33339,7 +33515,7 @@ module.exports = function( Gibber ) {
 module.exports = function( Gibber ) {
   var Comm = {
     export: function( target ) {
-      target.MIDI = this.MIDI
+      target._MIDI_ = this.MIDI
     },
     
     MIDI: require( './midi.js')( Gibber )
@@ -34486,7 +34662,7 @@ var Gibber = {
       })
     }
   },
-  
+                                 //obj, propertyName, shouldSeq, shouldRamp, mappingsDictionary, shouldUseMappings, priority, useOldGetter
   createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority ) {
     _useMappings = _useMappings === false ? false : true
     
@@ -35281,7 +35457,7 @@ var Pattern = function() {
         }
       }
       
-      var repeating = false, repeatValue = null
+      var repeating = false, repeatValue = null, repeatIndex = null
       var filter = function( args ) {
         var value = args[ 0 ], phaseModifier = args[ 1 ], output = args
         
@@ -35289,12 +35465,15 @@ var Pattern = function() {
         if( repeating === false && counts[ value ] ) {
           repeating = true
           repeatValue = value
+          repeatIndex = args[2]
         }
         
         if( repeating === true ) {
           if( counts[ repeatValue ].phase !== counts[ repeatValue ].target ) {
             output[ 0 ] = repeatValue            
             output[ 1 ] = 0
+            output[ 2 ] = repeatIndex
+            //[ val, 1, idx ]
             counts[ repeatValue ].phase++
           }else{
             counts[ repeatValue ].phase = 0

@@ -348,8 +348,8 @@ tfoot, thead {
 
 }
 
-.leftBorder{ border-left-width:1; }
-.rightBorder{ border-right-width:1; }
+.leftBorder{ border-left-width:1px !important; }
+.rightBorder{ border-right-width:1px !important; }
 
 .columnHeader {
  -moz-box-sizing: border-box !important;

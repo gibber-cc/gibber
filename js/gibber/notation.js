@@ -6,11 +6,13 @@ module.exports = function( Gibber, Environment) {
     isRunning: false,
     notations: [],
     fps: 20,
+    phaseIndicatorStyles: ['flashBorder2'],
     clear: null,
     filterString: [],
     functionOutputIndicatorStyle:'comment', // also 'replace' and 'stylize' 
     functionOutputShouldFlash:true,
     phaseIndicatorColor: [255,255,255],
+    phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
     features:{ seq:true, reactive:true, draganddrop:true },
 
@@ -257,13 +259,13 @@ module.exports = function( Gibber, Environment) {
     }
   }
   
-  Object.defineProperty( GEN, 'phaseIndicatorStyle', {
-    get: function() { return phaseIndicatorStyle },
-    set: function(v) {
-      // GEN.clearNotations()
-      phaseIndicatorStyle = v
-    }
-  })
+  // Object.defineProperty( GEN, 'phaseIndicatorStyle', {
+  //   get: function() { return phaseIndicatorStyle },
+  //   set: function(v) {
+  //     // GEN.clearNotations()
+  //     phaseIndicatorStyle = v
+  //   }
+  // })
   
   return GEN
 }

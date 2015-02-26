@@ -48,6 +48,7 @@ var GE = {
       window.load = Gibber.import
       window.Graphics = Gibber.Graphics
       window.Color = Gibber.Graphics.Color
+      window.Chat = GE.Chat
 
       // the window.module global is deprecated and will be removed at some point!
       // I don't trust using it now that Gibber has moved to browserify

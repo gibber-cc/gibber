@@ -29,23 +29,192 @@ a.text.opacity = a.Out
 
 var uid = 0
 
-var createUpdateFunction = function( obj, name, color, isFunc ) {
+var sides = ['Top','Right','Bottom','Left']
+
+var phaseIndicators = {
+  border: function( info ) {
+    if( info.lastSpan  ) { 
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( !noChange ) {
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+      }else{
+        if( parseInt( info.lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+        }
+      }
+    }
+
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color, borderWidth:1, paddingLeft:0, paddingRight:0 })
+      }else{
+        info.span.css({ borderWidth:0, borderTopWidth:1, borderBottomWidth:1, borderTopColor:info.color, borderBottomColor:info.color })
+        $( info.span[0] ).css({ borderLeftColor:info.color, borderLeftWidth:1, paddingLeft:0})
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: info.color, borderRightWidth:1, paddingRight:0 })
+      }
+    }
+  },
+  underscore: function( info ) {
+    if( info.lastSpan ) { 
+      info.lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( noChange ) {
+        if( parseInt( info.lastSpan.css( 'border-bottom-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+        } 
+      }
+    }
+
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color, borderBottomWidth:1, paddingBottom:0 })
+      }else{
+        info.span.css({ borderWidth:0, borderBottomWidth:1, borderBottomColor:info.color })
+      }
+    }else{
+      setTimeout( function() { 
+        info.span.css({ borderColor:info.color })
+      }, 100 )
+    }
+  },
+  flash: function( info ) {
+    if( info.lastSpan && ( info.lastType === 'border' ||  info.lastType === 'borderTopBottom' )) { 
+      info.lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+    }
+    
+    info.span.css({ backgroundColor:info.color });
+    
+    setTimeout( function() {
+      info.span.css({ 
+        backgroundColor: 'rgba(0,0,0,0)',
+      });
+    }, 75 )
+  },
+  flashBorder: function( info ) {
+    if( info.lastSpan  ) { 
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( !noChange ) {
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+      }else{
+        if( parseInt( info.lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+        }
+      }
+    }
+
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color, borderWidth:1, paddingLeft:0, paddingRight:0 })
+      }else{
+        info.span.css({ borderWidth:0, borderTopWidth:1, borderBottomWidth:1, borderTopColor:info.color, borderBottomColor:info.color })
+        $( info.span[0] ).css({ borderLeftColor:info.color, borderLeftWidth:1, paddingLeft:0})
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: info.color, borderRightWidth:1, paddingRight:0 })
+      }
+    }
+    
+    var mute = 'rgba(255,255,255,.25)'
+    
+    setTimeout( function() {
+      info.span.css({ 
+        borderColor: mute
+      });
+    }, 75 )
+  },
+  flashBorder2: function( info ) {
+    var mute = info.muteColor
+    
+    if( info.lastSpan  ) { 
+      var noChange = info.span.selector === info.lastSpan.selector
+      if( !noChange ) {
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+      }else{
+        if( parseInt( info.lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
+          noChange = false
+          info.borderSide = 0
+        }else{
+          info.borderSide++
+        }
+      }
+    }
+    
+    if( info.span.length === 1 ) {
+      info.span.css({ borderWidth:1, padding:0 })
+    }else{
+      // info.span.css({ padding:0, borderTopWidth:1, borderBottomWidth:1, borderLeftWidth:0, borderRightWidth:0 })
+      // $( info.span[ info.span.length - 1 ] ).css({ borderRightWidth:1 })
+      // $( info.span[0] ).css({ borderLeftWidth:1 })
+    }
+    
+    if( !noChange ) {
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:info.color })
+      }else{
+        // info.span.css({ borderColor:'transparent', borderTopColor:info.color, borderBottomColor:info.color })
+        // $( info.span[0] ).css({ borderColor:'transparent', borderLeftColor:info.color })
+        // $( info.span[ info.span.length - 1 ] ).css({ borderColor:'transparent', borderRightColor: info.color })
+        info.span.css({ borderTopColor:info.color, borderBottomColor: info.color })
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: info.color })
+        $( info.span[0] ).css({ borderLeftColor:info.color })
+      }
+      
+      setTimeout( function() {
+        info.span.css({ 
+          borderColor: mute
+        });
+      }, 75 )
+      
+    }else{
+      var side = sides[ info.borderSide % sides.length ]
+      
+      if( info.span.length === 1 ) {
+        info.span.css({ borderColor:mute })
+        info.span.css( 'border'+side+'Color', info.color )
+      }else{
+        info.span.css({ borderColor:'transparent' })
+
+        info.span.css({ borderTopColor:side === 'Top' ? info.color : mute, borderBottomColor: side === 'Bottom' ? info.color : mute })
+        $( info.span[ info.span.length - 1 ] ).css({ borderRightColor: side === 'Right' ? info.color : mute })
+        $( info.span[0] ).css({ borderLeftColor:side === 'Left' ? info.color : mute })
+      }
+    }
+    
+    
+    // setTimeout( function() {
+    //   info.span.css({ 
+    //     borderColor: mute
+    //   });
+    // }, 75 )
+  },
+  borderTopBottom: function( lastSpan, span, color, lastType ) {
+    if( lastSpan ) { 
+      if( lastType === 'border' ) { 
+        lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+      }else{
+        lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
+      }
+    }
+
+    span.css({ borderTopColor:color, borderBottomColor:color })
+  }
+}
+
+var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
   var lastChose = {},
       updateFunction, lastSpan,
       Notation = Gibber.Environment.Notation,
       color = color || Notation.phaseIndicatorColor,
-      lastType = Notation.phaseIndicatorStyle
+      muteColor = muteColor || Notation.phaseIndicatorColorMute,
+      lastType = Notation.phaseIndicatorStyle,
+      info = { borderSide:0 }
   
   color = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + Notation.phaseIndicatorAlpha + ')'
+  muteColor = 'rgba(' + muteColor[0] + ',' + muteColor[1] + ',' + muteColor[2] + ',' + Notation.phaseIndicatorAlpha + ')'
   
   if( isFunc ) {
     updateFunction = createRndUpdateFunction( obj, name )
     updateFunction.clear = updateFunction.restoreOriginalText
   }else{
     updateFunction = function() {
-      // if( name.indexOf('reverse_values') > -1 ) { 
-      //   console.log( "FIRING" , obj.locations[ name ], updateFunction.shouldTrigger ) 
-      // }
       if( obj.locations[ name ] && updateFunction.shouldTrigger ) {
         var spanName = '.' + obj.locations[ name ][ updateFunction.index ],
             span = $( spanName )
@@ -54,71 +223,14 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
         
         var noChange = false
         
-        if( Notation.phaseIndicatorStyle === 'border' ) {
-          if( lastSpan  ) { 
-            noChange = span.selector === lastSpan.selector
-            if( !noChange ) {
-              lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
-            }else{
-              if( parseInt( lastSpan.css( 'border-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
-                noChange = false
-              }
-            }
-          }
-
-          if( !noChange ) {
-            if( span.length === 1 ) {
-              span.css({ borderColor:color, borderWidth:1, paddingLeft:0, paddingRight:0 })
-            }else{
-              span.css({ borderWidth:0, borderTopWidth:1, borderBottomWidth:1, borderTopColor:color, borderBottomColor:color })
-              $( span[0] ).css({ borderLeftColor:color, borderLeftWidth:1, paddingLeft:0})
-              $( span[ span.length - 1 ] ).css({ borderRightColor: color, borderRightWidth:1, paddingRight:0 })
-            }
-          }
-        }else if( Notation.phaseIndicatorStyle === 'underscore' ) {
-          if( lastSpan ) { 
-            lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
-            noChange = span.selector === lastSpan.selector
-            if( noChange ) {
-              if( parseInt( lastSpan.css( 'border-bottom-width' ) ) !== 1 ) { // this actually returns 1 for '1px 0px 1px 1px' etc
-                noChange = false
-              } 
-            }
-          }
-
-          if( !noChange ) {
-            if( span.length === 1 ) {
-              span.css({ borderColor:color, borderBottomWidth:1, paddingBottom:0 })
-            }else{
-              span.css({ borderWidth:0, borderBottomWidth:1, borderBottomColor:color })
-            }
-          }else{
-            setTimeout( function() { 
-              span.css({ borderColor:color })
-            }, 100 )
-          }
-        }else if( Notation.phaseIndicatorStyle === 'flash' ) {
-          if( lastSpan && (lastType === 'border' ||  lastType === 'borderTopBottom' )) { 
-            lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
-          }
-          
-          span.css({ backgroundColor:color });
-          
-          setTimeout( function() {
-            span.css({ 
-              backgroundColor: 'rgba(0,0,0,0)',
-            });
-          }, 75 )
-        }else if( Notation.phaseIndicatorStyle === 'borderTopBottom') {
-          if( lastSpan ) { 
-            if( lastType === 'border' ) { 
-              lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
-            }else{
-              lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
-            }
-          }
-
-          span.css({ borderTopColor:color, borderBottomColor:color })
+        info.lastSpan = lastSpan
+        info.span = span
+        info.color = color
+        info.muteColor = muteColor
+        info.lastType = lastType
+        
+        for( var i = 0; i < Notation.phaseIndicatorStyles.length; i++ ) {
+          phaseIndicators[ Notation.phaseIndicatorStyles[ i ] ]( info )
         }
 
         lastType = Notation.phaseIndicatorStyle
@@ -126,16 +238,17 @@ var createUpdateFunction = function( obj, name, color, isFunc ) {
         updateFunction.shouldTrigger = false
       }
     }
+    
     updateFunction.index = null
     updateFunction.shouldTrigger = false
 
     updateFunction.clear = function() {
       switch( Notation.phaseIndicatorStyle ) {
         case 'border' :
-          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:1 })
+          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:0 })
           break;
         case 'underscore' :
-          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
+          lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:0 })
           break;
         default:
           break
@@ -260,11 +373,14 @@ var createOnChange = function( obj, objName, patternName, cm, join ) {
         cm.markText( start, end, { 
           className:__name, inclusiveLeft:true, inclusiveRight:true,
           //css:"border-width:0; border-color:transparent; border-style:solid"
+          css:'padding:0; border-width:0; border-top-width:1px; border-bottom-width:1px; display:inline-block; border-color:transparent; border-style:solid; box-sizing:border-box;',
+          startStyle:'leftBorder',
+          endStyle:  'rightBorder'
         }) 
       )
       obj.locations[ patternName ].push( __name )
     }
-
+    
     arrayPos.to.ch = arrayPos.from.ch + charCount
     this.arrayMark = cm.markText( arrayPos.from, arrayPos.to )
     
@@ -375,8 +491,12 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
 
     var mark = cm.markText( start, end, { 
       className:__name, inclusiveLeft:true, inclusiveRight:true, 
-      css:"padding:1; border-width:0; display:inline-block; border-color:transparent; border-style:solid; box-sizing:border-box;"
+      css:'padding:0; border-width:0; border-top-width:1px; border-bottom-width:1px; display:inline-block; border-color:transparent; border-style:solid; box-sizing:border-box;',
+      startStyle:'leftBorder',
+      endStyle:  'rightBorder'
     });
+
+    
     object.marks[ patternName ].push( mark )
     object.locations[ patternName ].push( __name )
   }
@@ -515,7 +635,7 @@ module.exports = function( Gibber, Notation ) {
               newObject.locations[ patternName ] = []
               markArray( values[0].value, object, newObject, newObjectName, patternName, pos, cm, location, src )
               
-              pattern.update = createUpdateFunction( newObject, patternName, [255,0,0] )
+              pattern.update = createUpdateFunction( newObject, patternName, [255,0,0], [127,0,0] )
               Notation.add( pattern, true )
               
               pattern.filters.push( function() {
@@ -600,7 +720,7 @@ module.exports = function( Gibber, Notation ) {
                       
                     }
                     
-                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, isFunc )
+                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
                     pattern.update.pattern = pattern
                     pattern.cm = cm
                     
@@ -820,7 +940,7 @@ module.exports = function( Gibber, Notation ) {
                         
             pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
 
-            pattern.update = createUpdateFunction( caller, patternName, Gibber.Environment.Notation.phaseIndicatorColor, isFunc )
+            pattern.update = createUpdateFunction( caller, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
             pattern.update.pattern = pattern
             
             pattern.restoreOriginalText = function() {
