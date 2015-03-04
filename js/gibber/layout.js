@@ -34,18 +34,22 @@ module.exports = function( Gibber ) {
       $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
     },
     createBoundariesForInitialLayout : function() {
-      var windowWidth = $( window ).width(),
-          width0 = Layout.minColumnWidth,
-          width1 = windowWidth - width0
+      if( Gibber.Environment.Storage.values.showBrowserOnLaunch ) {
+        var windowWidth = $( window ).width(),
+            width0 = Layout.minColumnWidth,
+            width1 = windowWidth - width0
           
-      if( width1 < Layout.minColumnWidth ) {
-        var diff = Layout.minColumnWidth - width1
-        width1 = Layout.minColumnWidth
-        width0 -= diff
-      }
+        if( width1 < Layout.minColumnWidth ) {
+          var diff = Layout.minColumnWidth - width1
+          width1 = Layout.minColumnWidth
+          width0 -= diff
+        }
       
-      Layout.columns[0].setWidth( width0 )
-      Layout.columns[1].setWidth( width1 )
+        Layout.columns[0].setWidth( width0 )
+        Layout.columns[1].setWidth( width1 )
+      }else{
+        Layout.columns[0].setWidth( $( window ).width() )
+      }
       
       Layout.resizeColumns()
     },
@@ -53,7 +57,9 @@ module.exports = function( Gibber ) {
       GE = Gibber.Environment
       $( '#contentCell' ).empty()
       
-      GE.Browser.open()
+      if( Gibber.Environment.Storage.values.showBrowserOnLaunch )
+        GE.Browser.open()
+        
       var options = {
         fullScreen:false, type:'code', autofocus:true,
       }

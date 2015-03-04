@@ -88,15 +88,17 @@ module.exports = function( Gibber ) {
         })
         .attr( 'title', 'set language for column' )
       
+      col.headerText = $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' )
       col.header
         .append( col.closeButton )
-        .append( $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' ) )
+        .append( col.headerText )
         .append( col.modeSelect )
       
     }else{
+      col.headerText = $( '<span>' ).html( '&nbsp;' + (options.header || '') )
       col.header
         .append( col.closeButton )
-        .append( $( '<span>' ).html( '&nbsp;' + (options.header || '') ) )
+        .append( col.headerText )
     }
   
     col.element.append( col.header, col.resizeHandle )
@@ -228,6 +230,9 @@ module.exports = function( Gibber ) {
   var Proto = {
     toggle:             function() { $( this.element ).toggle() },            
     toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+    setHeader: function( text ) {
+      $( this.headerText ).text( text )
+    },
     
     setLanguageSelect: function( language, shouldAppend ) {
       var languageIndex = 0, count = 0

@@ -27,6 +27,7 @@ var GE = {
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
   Notation:     require( './notation' ),
+  Gabber:       null, // required in init method
   
   init : function() { 
     GE.Keymap.init()
@@ -84,6 +85,8 @@ var GE = {
       
       Gibber.Audio.SoundFont.path = './resources/soundfonts/'
       
+      window.Gabber = GE.Gabber = require( './performance' )( Gibber )
+      window.Chat = GE.Chat
       //window.spin.stop()
     }
   },

@@ -19,13 +19,14 @@ Share = {
   potentialShareNum: 0,
   prompt: null,
   socket: null,
+  documentCount: 0,
   init : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
     sharejs = window.sharejs
   },
 
-  createDoc : function( columnNumber, cb, sharingWith ) {
+  createDoc : function( columnNumber, cb, sharingWith, shareName ) {
     var ctx
     if( GE.Account.nick !== null && typeof Share.docs[ columnNumber ] === 'undefined' ) {
       
@@ -47,8 +48,9 @@ Share = {
       //   console.log("SHARE.JS CONNECTION ERROR")
       // })
       //console.log( "SOCKET", GE.Chat.socket )
+      if( typeof shareName === 'undefined' ) shareName = GE.Account.nick + columnNumber
       
-      var doc = sjs.get( 'users', GE.Account.nick + columnNumber )
+      var doc = sjs.get( 'users', shareName )
 
       doc.subscribe();
       
@@ -59,7 +61,7 @@ Share = {
           var column = Layout.columns[ columnNumber ],
               val = column.value
                 
-          column.shareName = GE.Account.nick + columnNumber
+          column.shareName = shareName
           column.sharingWith = sharingWith
       
           Share.docs[ columnNumber ] = doc
@@ -70,9 +72,9 @@ Share = {
 
           column.editor.setValue( val )
       
-          column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
+          if( sharingWith !== null ) column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
       
-          if( typeof cb !== 'undefined' ) {
+          if( typeof cb === 'function' ) {
             cb()
           }
         }
@@ -80,6 +82,49 @@ Share = {
       
     }
   },
+  
+  shareEditor: function( editor, name ) {
+    if( Share.socket === null ) {
+      Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
+    }
+    
+    var sjs = Share.sjs = new sharejs.Connection( Share.socket )
+    
+    sjs.debug = true
+    sjs.on( 'connecting', function( e ) { 
+      console.log("CONNECTING TO SHARE.JS")
+    })
+    
+    sjs.on( 'connected', function( e ) { 
+      console.log("CONNECTED TO SHARE.JS")
+    })
+    sjs.on( 'error', function( e ) { 
+      console.log("SHARE.JS CONNECTION ERROR")
+    })
+    
+    var doc = sjs.get( 'users', name )
+
+    doc.subscribe();
+    
+    var _value = editor.getValue()
+    
+    doc.whenReady( function () {        
+      if ( !doc.type ) doc.create( 'text' )
+
+      if ( doc.type && doc.type.name === 'text' ) {    
+        Share.docs.push( doc )
+        
+        doc.attachCodeMirror( editor )
+
+        editor.setValue( _value )
+    
+        if( typeof cb === 'function' ) {
+          cb()
+        }
+      }
+    }); 
+  },
+  
   openExistingDoc : function( docName, column ) {
     if( Share.socket === null ) {
       Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
@@ -108,6 +153,22 @@ Share = {
       }
     });
   },
+  
+  openDocGabber: function( docName, element ) {
+    var doc = Share.sjs.get( 'users', docName )
+    
+    
+    console.log("GABBER ELEMENT", element )
+    doc.subscribe();
+
+    doc.whenReady( function () {
+      if ( !doc.type) doc.create( 'text' )
+      if ( doc.type && doc.type.name === 'text' ) {        
+        doc.attachCodeMirror( element )
+      }
+    });
+  },
+  
   promptToShareWith : function( nick ) {
     var div = $('<div>'),
         hdr = $('<h3>').text( 'User : ' + nick ).css({ display:'inline' }),

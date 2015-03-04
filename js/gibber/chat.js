@@ -9,7 +9,7 @@ Chat = {
   lobbyElement: null,
   roomElement: null,
   currentRoom: 'lobby',
-  intialized : false,
+  initialized : false,
   open : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
@@ -56,7 +56,8 @@ Chat = {
       Chat.socket.onmessage = function( e ) {
         var data = e.data
         data = JSON.parse( data )
-
+      
+        console.log("DATA = ", data )
        if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
@@ -173,8 +174,10 @@ Chat = {
     if( occupants.length > 0 ) {
       welcomeString += " Your fellow gibberers are: "
       for( var i = 0; i < occupants.length; i++ ){
-        welcomeString += occupants[i]
-        welcomeString += i < occupants.length - 1 ? ', ' : '.'
+        if( occupants[ i ] !== GE.Account.nick ) {
+          welcomeString += occupants[i]
+          welcomeString += i < occupants.length - 1 ? ', ' : '.'
+        }
       }
     }
 
@@ -189,9 +192,9 @@ Chat = {
     this.currentRoom = roomName
   },
   
-  createRoom : function() {
-    var name = window.prompt( "Enter a name for the chatroom." ),
-        msg  = {}
+  createRoom : function( name ) {
+    var msg = {}
+    if( typeof name === 'undefined' ) name = window.prompt( "Enter a name for the chatroom." )
     
     if( name === null || name === '' ) return
 
@@ -208,8 +211,8 @@ Chat = {
       /* successfully registered nick, do nothing for now */
     },
     listRooms : function( data ) {
-      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })
-
+      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })      
+      
       for( var key in data.rooms ) {
         (function() {
           var _key = key,  
@@ -224,8 +227,12 @@ Chat = {
           roomList.append( li )
         })()
       }
-
+      
+      Chat.rooms = data.rooms
+      
       Chat.lobbyElement.append( roomList )
+      
+      $.publish( 'Chat.roomsListed', Chat.rooms )
     },
     incomingMessage: function( data ) {
       var name = $( '<span>' )
@@ -237,9 +244,7 @@ Chat = {
             .css({ cursor:'pointer' }),
           li = $( '<li class="message">' )
             .text(  " : " +  data.incomingMessage )
-      
-      console.log( data )
-      
+
       li.prepend( name )
       Chat.messages.append( li )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
@@ -248,8 +253,9 @@ Chat = {
         Chat.onMsg( data.nick, data.incomingMessage )
       }
     },
-    roomCreated: function( data ) { // response for when the user creates a room...
-
+    roomCreated: function( data ) { // response for when the user creates room...
+      console.log( data )
+      $.publish( 'Chat.roomCreated', { name:data.name })
     },
     roomAdded : function( data ) { // response for when any user creates a room...
       if( Chat.currentRoom === 'lobby' ) { 
@@ -265,6 +271,7 @@ Chat = {
     },
     roomJoined: function( data ) {
       Chat.moveToRoom( data.roomJoined, data.occupants )
+      $.publish( 'Chat.roomJoined', data )
     },
     roomLeft: function( data ) {
       
@@ -273,13 +280,15 @@ Chat = {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
       if( Chat.messages ) {
         $( Chat.messages ).append( msg )
-        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop( 'scrollHeight' ) )
       }
+      $.publish( 'Chat.arrival', data )
     },
     departure : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has left the chatroom.' ).css({ color:'#b00', display:'block' })
       Chat.messages.append( msg )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+      $.publish('Chat.departure', data )
     },
     collaborationRequest: function( data ) {
       var div = $('<div>'),

@@ -915,7 +915,7 @@ Chat = {
   lobbyElement: null,
   roomElement: null,
   currentRoom: 'lobby',
-  intialized : false,
+  initialized : false,
   open : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
@@ -962,7 +962,8 @@ Chat = {
       Chat.socket.onmessage = function( e ) {
         var data = e.data
         data = JSON.parse( data )
-
+      
+        console.log("DATA = ", data )
        if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
@@ -1079,8 +1080,10 @@ Chat = {
     if( occupants.length > 0 ) {
       welcomeString += " Your fellow gibberers are: "
       for( var i = 0; i < occupants.length; i++ ){
-        welcomeString += occupants[i]
-        welcomeString += i < occupants.length - 1 ? ', ' : '.'
+        if( occupants[ i ] !== GE.Account.nick ) {
+          welcomeString += occupants[i]
+          welcomeString += i < occupants.length - 1 ? ', ' : '.'
+        }
       }
     }
 
@@ -1095,9 +1098,9 @@ Chat = {
     this.currentRoom = roomName
   },
   
-  createRoom : function() {
-    var name = window.prompt( "Enter a name for the chatroom." ),
-        msg  = {}
+  createRoom : function( name ) {
+    var msg = {}
+    if( typeof name === 'undefined' ) name = window.prompt( "Enter a name for the chatroom." )
     
     if( name === null || name === '' ) return
 
@@ -1114,8 +1117,8 @@ Chat = {
       /* successfully registered nick, do nothing for now */
     },
     listRooms : function( data ) {
-      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })
-
+      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })      
+      
       for( var key in data.rooms ) {
         (function() {
           var _key = key,  
@@ -1130,8 +1133,12 @@ Chat = {
           roomList.append( li )
         })()
       }
-
+      
+      Chat.rooms = data.rooms
+      
       Chat.lobbyElement.append( roomList )
+      
+      $.publish( 'Chat.roomsListed', Chat.rooms )
     },
     incomingMessage: function( data ) {
       var name = $( '<span>' )
@@ -1143,9 +1150,7 @@ Chat = {
             .css({ cursor:'pointer' }),
           li = $( '<li class="message">' )
             .text(  " : " +  data.incomingMessage )
-      
-      console.log( data )
-      
+
       li.prepend( name )
       Chat.messages.append( li )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
@@ -1154,8 +1159,9 @@ Chat = {
         Chat.onMsg( data.nick, data.incomingMessage )
       }
     },
-    roomCreated: function( data ) { // response for when the user creates a room...
-
+    roomCreated: function( data ) { // response for when the user creates room...
+      console.log( data )
+      $.publish( 'Chat.roomCreated', { name:data.name })
     },
     roomAdded : function( data ) { // response for when any user creates a room...
       if( Chat.currentRoom === 'lobby' ) { 
@@ -1171,6 +1177,7 @@ Chat = {
     },
     roomJoined: function( data ) {
       Chat.moveToRoom( data.roomJoined, data.occupants )
+      $.publish( 'Chat.roomJoined', data )
     },
     roomLeft: function( data ) {
       
@@ -1179,13 +1186,15 @@ Chat = {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
       if( Chat.messages ) {
         $( Chat.messages ).append( msg )
-        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop( 'scrollHeight' ) )
       }
+      $.publish( 'Chat.arrival', data )
     },
     departure : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has left the chatroom.' ).css({ color:'#b00', display:'block' })
       Chat.messages.append( msg )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+      $.publish('Chat.departure', data )
     },
     collaborationRequest: function( data ) {
       var div = $('<div>'),
@@ -2422,15 +2431,17 @@ module.exports = function( Gibber ) {
         })
         .attr( 'title', 'set language for column' )
       
+      col.headerText = $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' )
       col.header
         .append( col.closeButton )
-        .append( $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' ) )
+        .append( col.headerText )
         .append( col.modeSelect )
       
     }else{
+      col.headerText = $( '<span>' ).html( '&nbsp;' + (options.header || '') )
       col.header
         .append( col.closeButton )
-        .append( $( '<span>' ).html( '&nbsp;' + (options.header || '') ) )
+        .append( col.headerText )
     }
   
     col.element.append( col.header, col.resizeHandle )
@@ -2562,6 +2573,9 @@ module.exports = function( Gibber ) {
   var Proto = {
     toggle:             function() { $( this.element ).toggle() },            
     toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+    setHeader: function( text ) {
+      $( this.headerText ).text( text )
+    },
     
     setLanguageSelect: function( language, shouldAppend ) {
       var languageIndex = 0, count = 0
@@ -3135,6 +3149,7 @@ var GE = {
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
   Notation:     require( './notation' ),
+  Gabber:       null, // required in init method
   
   init : function() { 
     GE.Keymap.init()
@@ -3192,6 +3207,8 @@ var GE = {
       
       Gibber.Audio.SoundFont.path = './resources/soundfonts/'
       
+      window.Gabber = GE.Gabber = require( './performance' )( Gibber )
+      window.Chat = GE.Chat
       //window.spin.stop()
     }
   },
@@ -3802,7 +3819,7 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
-},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./performance":"/www/gibber.libraries/js/gibber/performance.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
@@ -4112,18 +4129,22 @@ module.exports = function( Gibber ) {
       $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
     },
     createBoundariesForInitialLayout : function() {
-      var windowWidth = $( window ).width(),
-          width0 = Layout.minColumnWidth,
-          width1 = windowWidth - width0
+      if( Gibber.Environment.Storage.values.showBrowserOnLaunch ) {
+        var windowWidth = $( window ).width(),
+            width0 = Layout.minColumnWidth,
+            width1 = windowWidth - width0
           
-      if( width1 < Layout.minColumnWidth ) {
-        var diff = Layout.minColumnWidth - width1
-        width1 = Layout.minColumnWidth
-        width0 -= diff
-      }
+        if( width1 < Layout.minColumnWidth ) {
+          var diff = Layout.minColumnWidth - width1
+          width1 = Layout.minColumnWidth
+          width0 -= diff
+        }
       
-      Layout.columns[0].setWidth( width0 )
-      Layout.columns[1].setWidth( width1 )
+        Layout.columns[0].setWidth( width0 )
+        Layout.columns[1].setWidth( width1 )
+      }else{
+        Layout.columns[0].setWidth( $( window ).width() )
+      }
       
       Layout.resizeColumns()
     },
@@ -4131,7 +4152,9 @@ module.exports = function( Gibber ) {
       GE = Gibber.Environment
       $( '#contentCell' ).empty()
       
-      GE.Browser.open()
+      if( Gibber.Environment.Storage.values.showBrowserOnLaunch )
+        GE.Browser.open()
+        
       var options = {
         fullScreen:false, type:'code', autofocus:true,
       }
@@ -4666,6 +4689,185 @@ module.exports = function( Gibber, Environment) {
   
   return GEN
 }
+},{}],"/www/gibber.libraries/js/gibber/performance.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+"use strict"
+
+var Environment = Gibber.Environment,
+    Layout = Environment.Layout,
+    Chat = Environment.Chat,
+    CodeMirror = Environment.CodeMirror,
+    Share = Environment.Share,
+    Account = Environment.Account
+    
+var Gabber = {
+  column: null,
+  name: null,
+  userShareName:null,
+  occupants: null,
+  userShareColumn: null, // the column used in the performance by this client
+  enableRemoteExecution: false,
+  performers: {},
+  init: function( name ) {
+    this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
+        
+    this.column = Layout.addColumn({ type:'gabber', header:'Gabber : ' + name })
+    this.name = name || null
+    
+    this.userShareName = this.name + ':' + Account.nick
+    
+    if( !Chat.initialized ) Chat.open()
+    Chat.handlers.gabber = Gabber.onGabber
+    
+    if( this.name !== null ) Gabber.createPerformance( this.userShareName )
+    
+    $.subscribe( 'Chat.arrival', Gabber.onNewPerformerAdded )
+    $.subscribe( 'Chat.departure', Gabber.onPerform )
+    
+    Gabber.initializeKeyMap()
+  },
+  createPerformance : function( name ) {
+    console.log( "SHARE NAME", name  )
+    Share.createDoc( this.userShareColumn.number, null, null, name )
+    $.subscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
+  },
+  joinPerformance: function( name ) {
+    this.name = name
+    Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+    this.column.setHeader( 'Gabber: ' + name )
+  },
+  onRoomsListed: function( rooms ) {    
+    $.unsubscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
+    
+    if( Gabber.name in rooms === false ) {
+      $.subscribe( 'Chat.roomCreated', Gabber.onRoomCreated )
+      Chat.createRoom( Gabber.name )
+    }else{
+      $.subscribe( 'Chat.roomJoined', Gabber.onRoomJoined )
+      Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+      Environment.Message.post( 'The chatroom you specified already exists. Now joining.' )
+    }
+  },
+  onRoomCreated: function() {
+    $.unsubscribe( 'Chat.roomCreated', Gabber.onRoomCreated )
+    Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+  },
+  onRoomJoined: function( data ) {
+    $.unsubscribe( 'Chat.roomJoined', Gabber.onRoomJoined )
+    if( data.roomJoined !== Gabber.name ) {
+      Environment.Message.Post( 'For some reason, the wrong performance was joined. Please try again.' )
+    }else{
+      Gabber.performers = data.occupants
+      
+      for( var i = 0; i < data.occupants.length; i++ ) {
+        Gabber.createSharedLayout( data.occupants[i] )
+      }
+    }
+    Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+  },
+  onNewPerformerAdded: function( data ) {
+    if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
+      Gabber.createSharedLayout( data.nick )
+    }
+  },
+  onPerformerRemoved: function( data ) {
+    if( Gibber.performers[ data.nick ] !== null ) {
+      Gabber.performers[ data.nick ].remove() 
+      Gabber.performers[ data.nick ] = null
+    }
+  },
+  createSharedLayout: function( name ) {
+    var element = $( '<div>' )
+    element.header = $('<h2>').text( name ) 
+    element.append( element.header )
+    
+    element.code = $( '<div class="editor">' )
+    element.header.on( 'mousedown', function() { element.code.toggle() } )
+      .addClass( 'no-select' )
+      .css({ 
+        cursor: 'pointer',
+        backgroundColor: '#333',
+        marginBottom:'.25em' 
+      })
+    
+    //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )
+    element.code.css({ height: parseInt( Gabber.column.bodyElement.css( 'height' ) ) / 3 })
+    
+    element.append( element.code )
+        
+    Gabber.column.bodyElement.append( element )
+    
+    element.editor = CodeMirror( element.code[0], {
+      theme:  'gibber',
+      keyMap: 'gibber',
+      mode:   'javascript',
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      value: 'testing 1 2 3',
+      lineWrapping: false,
+      tabSize: 2,
+      lineNumbers:false,
+      cursorBlinkRate: 530,
+      styleActiveLine:true,
+      autofocus: false,
+    })
+    
+    console.log("NAME", Gabber.name + ':' + name )
+    Share.openDocGabber( Gabber.name + ':' + name, element.editor )
+    
+    Gabber.performers[ name ] = element
+
+    return element
+  },
+  onGabber: function( msg ) {
+    console.log("GABBER MESSAGE RECEIVED!", msg )
+    var cm  = Gabber.performers[ msg.from ].editor
+
+    Environment.Keymap.flash( cm, msg.selectionRange )
+
+    Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
+  },
+  createMessage: function( selection ) {
+    var msg = { 
+      cmd:            'gabber',
+      gabberName:     Gabber.name,
+      from:           Account.nick,
+      selectionRange: selection.selection, // range
+      code:           selection.code,
+      shouldExecute:  Gabber.enableRemoteExecution,
+    }
+    
+    return msg
+  },
+  initializeKeyMap: function() {
+    CodeMirror.keyMap.gibber[ 'Ctrl-2' ] = function( cm ) {
+			var obj = Environment.getSelectionCodeColumn( cm, false )
+      
+			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+      
+      var msg = Gabber.createMessage( obj )
+      msg.shouldDelay = false
+      
+      Chat.socket.send( JSON.stringify( msg ) ) 
+		}
+    
+    CodeMirror.keyMap.gibber[ 'Shift-Ctrl-2' ] = function( cm ) {
+			var obj = Environment.getSelectionCodeColumn( cm, false )
+      
+			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+      
+      var msg = Gabber.createMessage( obj )
+      msg.shouldDelay = true
+      
+      Chat.socket.send( JSON.stringify( msg ) ) 
+    }
+  },
+}
+
+return Gabber
+
+}
 },{}],"/www/gibber.libraries/js/gibber/preferences.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
@@ -4685,6 +4887,12 @@ module.exports = function( Gibber ) {
 
       Gibber.Environment.Storage.values.showSampleCodeInNewEditors = checked
     },
+    processShowBrowserOnLaunchCheckbox : function() {
+      var showBrowserOnLaunchCheckbox = $( '#preferences_showBrowserOnLaunch' ),
+          checked = showBrowserOnLaunchCheckbox.is(':checked')
+
+      Gibber.Environment.Storage.values.showBrowserOnLaunch = checked
+    },
     processDefaultLanguageForEditorsMenu : function() {
       var opt = $( '#preferences_defaultLanguageForEditors' ).find( ':selected' ), idx = opt.index(), val = opt.text()
       
@@ -4701,6 +4909,7 @@ module.exports = function( Gibber ) {
       Preferences.processShowSampleCodeInNewEditorsCheckbox()
       Preferences.processDefaultLanguageForEditorsMenu()
       Preferences.processSaveSoundFonts()
+      Preferences.processShowBrowserOnLaunchCheckbox()      
       
       Gibber.Environment.Storage.save()
     },
@@ -4730,9 +4939,10 @@ module.exports = function( Gibber ) {
         }
         
         $( '#preferences_defaultLanguageForEditors' ).find( 'option' )[ languageIndex ].selected = true;        
-        $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
-        $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
-        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts ),
+        $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage )
+        $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors )
+        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts )
+        $( '#preferences_showBrowserOnLaunch' ).attr( 'checked', Gibber.Environment.Storage.values.showBrowserOnLaunch )
         
         this.column.onclose = this.close.bind( this )
   
@@ -4764,13 +4974,14 @@ Share = {
   potentialShareNum: 0,
   prompt: null,
   socket: null,
+  documentCount: 0,
   init : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
     sharejs = window.sharejs
   },
 
-  createDoc : function( columnNumber, cb, sharingWith ) {
+  createDoc : function( columnNumber, cb, sharingWith, shareName ) {
     var ctx
     if( GE.Account.nick !== null && typeof Share.docs[ columnNumber ] === 'undefined' ) {
       
@@ -4792,8 +5003,9 @@ Share = {
       //   console.log("SHARE.JS CONNECTION ERROR")
       // })
       //console.log( "SOCKET", GE.Chat.socket )
+      if( typeof shareName === 'undefined' ) shareName = GE.Account.nick + columnNumber
       
-      var doc = sjs.get( 'users', GE.Account.nick + columnNumber )
+      var doc = sjs.get( 'users', shareName )
 
       doc.subscribe();
       
@@ -4804,7 +5016,7 @@ Share = {
           var column = Layout.columns[ columnNumber ],
               val = column.value
                 
-          column.shareName = GE.Account.nick + columnNumber
+          column.shareName = shareName
           column.sharingWith = sharingWith
       
           Share.docs[ columnNumber ] = doc
@@ -4815,9 +5027,9 @@ Share = {
 
           column.editor.setValue( val )
       
-          column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
+          if( sharingWith !== null ) column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
       
-          if( typeof cb !== 'undefined' ) {
+          if( typeof cb === 'function' ) {
             cb()
           }
         }
@@ -4825,6 +5037,49 @@ Share = {
       
     }
   },
+  
+  shareEditor: function( editor, name ) {
+    if( Share.socket === null ) {
+      Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
+    }
+    
+    var sjs = Share.sjs = new sharejs.Connection( Share.socket )
+    
+    sjs.debug = true
+    sjs.on( 'connecting', function( e ) { 
+      console.log("CONNECTING TO SHARE.JS")
+    })
+    
+    sjs.on( 'connected', function( e ) { 
+      console.log("CONNECTED TO SHARE.JS")
+    })
+    sjs.on( 'error', function( e ) { 
+      console.log("SHARE.JS CONNECTION ERROR")
+    })
+    
+    var doc = sjs.get( 'users', name )
+
+    doc.subscribe();
+    
+    var _value = editor.getValue()
+    
+    doc.whenReady( function () {        
+      if ( !doc.type ) doc.create( 'text' )
+
+      if ( doc.type && doc.type.name === 'text' ) {    
+        Share.docs.push( doc )
+        
+        doc.attachCodeMirror( editor )
+
+        editor.setValue( _value )
+    
+        if( typeof cb === 'function' ) {
+          cb()
+        }
+      }
+    }); 
+  },
+  
   openExistingDoc : function( docName, column ) {
     if( Share.socket === null ) {
       Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
@@ -4853,6 +5108,22 @@ Share = {
       }
     });
   },
+  
+  openDocGabber: function( docName, element ) {
+    var doc = Share.sjs.get( 'users', docName )
+    
+    
+    console.log("GABBER ELEMENT", element )
+    doc.subscribe();
+
+    doc.whenReady( function () {
+      if ( !doc.type) doc.create( 'text' )
+      if ( doc.type && doc.type.name === 'text' ) {        
+        doc.attachCodeMirror( element )
+      }
+    });
+  },
+  
   promptToShareWith : function( nick ) {
     var div = $('<div>'),
         hdr = $('<h3>').text( 'User : ' + nick ).css({ display:'inline' }),
@@ -27614,7 +27885,8 @@ function createInput() {
 	    Gibberish.mediaStreamSource.connect( Gibberish.node );
 			_hasInput = true;
 		},
-    function() { 
+    function( e ) { 
+      console.log( e )
       console.log( 'error opening audio input')
     }
 	)
@@ -28041,11 +28313,11 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
 /* IMPORTANT README
 *
 * This class depends on having access to a folder of soundfonts that have been converted to
-* binary string representations. More specifically, soundfonts designed to work with MIDI.js:
+* binary string representations. More specifically, soundfonts designed to work with GenMIDI.js:
 *
 * https://github.com/gleitz/midi-js-soundfonts
 *
-* At some point it would be nice to make another soundfont system, as MIDI.js does not support
+* At some point it would be nice to make another soundfont system, as GenMIDI.js does not support
 * defining loop points.
 *
 * By default soundfonts should be found in a folder named 'resources/soundfonts' one level above
@@ -28061,19 +28333,18 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
 
 (function() {
   var cents = function(base, _cents) { return base * Math.pow(2,_cents/1200) },
-      MIDI = { Soundfont: { instruments: {} } },
-      SF = MIDI.Soundfont
+      GenMIDI = { Soundfont: { instruments: {} } },
+      SF = GenMIDI.Soundfont
   
-  // TODO: GET RID OF THIS GLOBAL!!!! It's unfortunately in there because we're using soundfonts meant for MIDI.js
+  // TODO: GET RID OF THIS GLOBAL!!!! It's unfortunately in there because we're using soundfonts meant for GenMIDI.js
   if( typeof window === 'object' )
-    window.MIDI = MIDI
+    window.GenMIDI = GenMIDI
   else
-    global.MIDI = MIDI
+    global.GenMIDI = GenMIDI
   
   var getScript = function( scriptPath, handler ) {
     var oReq = new XMLHttpRequest();
-
-    // oReq.addEventListener("progress", updateProgress, false);
+    
     oReq.addEventListener("load", transferComplete, false);
     oReq.addEventListener("error", function(e){ console.log( "SF load error", e ) }, false);
 
@@ -28088,12 +28359,15 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
         var sizeString = new String( "" + oEvent.total )
         sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
         size.innerHTML = sizeString
+        
+        console.log( percentComplete, "%" )
       } else {
         // Unable to compute progress information since the total size is unknown
       }
     }
 
     function transferComplete( evt ) {
+      console.log("COMPLETE", scriptPath)
       var script = document.createElement('script')
       script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
       document.querySelector( 'head' ).appendChild( script )
@@ -28242,6 +28516,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
     
     // if already loaded, or if passed a buffer to use...
     if( !SF.instruments[ this.instrumentFileName ] && typeof pathToResources !== 'object' ) {
+      console.log("DOWNLOADING SOUNDFONT")
       getScript( 'resources/soundfonts/' + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
     }else{
       if( typeof pathToResources === 'object' ) {
@@ -28284,7 +28559,6 @@ Gibberish.Vocoder = function() {
     amp:		  1,
 	  pan:		  0
   }
-  
 
   // filter band formula adapted from https://github.com/cwilso/Vocoder/blob/master/js/vocoder.js
 	var totalRangeInCents = 1200 * Math.log( endFreq / startFreq ) / Math.LN2,
@@ -28328,7 +28602,7 @@ Gibberish.Vocoder = function() {
 		}
     index = historyIndex
 	
-    output[0] = output[1] = out * amp * 16;
+    output[0] = output[1] = out * amp * 16; // look, ma... 16 IS MAGIC!!!
 
 		return output;
 	}
@@ -28825,26 +29099,28 @@ Audio = {
     }),
       
     replaceWith: function( replacement ) {
-      for( var i = 0; i < this.destinations.length; i++ ) {
-        replacement.connect( this.destinations[i] )
-      }
+      if( replacement.connect ) {
+        for( var i = 0; i < this.destinations.length; i++ ) {
+          replacement.connect( this.destinations[i] )
+        }
       
-      for( var i = 0; i < this.sequencers.length; i++ ) {
-        this.sequencers[ i ].target = replacement
-        replacement.sequencers.push( this.sequencers[i] )
-      }
+        for( var i = 0; i < this.sequencers.length; i++ ) {
+          this.sequencers[ i ].target = replacement
+          replacement.sequencers.push( this.sequencers[i] )
+        }
       
-      for( var i = 0; i < this.mappingObjects.length; i++ ) {
-        var mapping = this.mappingObjects[ i ]
+        for( var i = 0; i < this.mappingObjects.length; i++ ) {
+          var mapping = this.mappingObjects[ i ]
         
-        if( mapping.targets.length > 0 ) {
-          for( var j = 0; j < mapping.targets.length; j++ ) {
-            var _mapping = mapping.targets[ j ]
+          if( mapping.targets.length > 0 ) {
+            for( var j = 0; j < mapping.targets.length; j++ ) {
+              var _mapping = mapping.targets[ j ]
             
-            if( replacement.mappingProperties[ mapping.name ] ) {
-              _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
-            }else{ // replacement object does not have property that was assigned to mapping
-              _mapping[ 0 ].mapping.remove()
+              if( replacement.mappingProperties[ mapping.name ] ) {
+                _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
+              }else{ // replacement object does not have property that was assigned to mapping
+                _mapping[ 0 ].mapping.remove()
+              }
             }
           }
         }
@@ -29927,7 +30203,7 @@ module.exports = function( Gibber ) {
     
     obj.start = function() { obj.seq.start( true ) }
     obj.stop = function() { obj.seq.stop() }
-    obj.shuffle = function() { obj.seq.shuffle() }
+    obj.shuffle = function() { obj.note.values.shuffle() }
     obj.reset = function() { obj.seq.reset() }
 
     Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start','send','note' ] )
@@ -30268,6 +30544,13 @@ module.exports = function( Gibber ) {
   	},
   };
   Percussion.Drums.kits.default = Percussion.Drums.kits.electronic;
+  
+  Percussion.Presets.Kick = {
+    short: { decay:.1, amp:.75 }
+  }
+  Percussion.Presets.Snare = {
+    crack: { snappy:1, offset:1/4 }
+  }
   
   return Percussion
   
@@ -30641,6 +30924,7 @@ module.exports = function( Gibber ) {
         
         obj.toString = function() { return '> ' + name }
         
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()
@@ -31620,13 +31904,9 @@ module.exports = function( Gibber ) {
 Score is a Seq(ish) object, with pause, start / stop, rewind, fast-forward.
 It's internal phase is 
 
-Score has play() method to start it running. next() advances to next element,
-regardless of whether or not the score is running, however, it does not start
-the transport if it is stopped.
-
-onend event handler
-onpause event handler
-onplay event handler
+Score has start() method to start it running. next() advances to next element,
+regardless of whether or not the score is running, and stats the transport running.
+rewind() moves the score index to the first position.
 */
 
 /*
@@ -31634,48 +31914,7 @@ Passed Timing           Result
 =============           ======
 Numeric literal         place function in timeline and store reference
 a Function              callback. register to receive and advance. must use pub/sub.
-score.pause             pause until next() method is called
-*/
-
-/*
-a = Score([
-  0, console.log.bind( null, 'test1'),
-  seconds(.5),console.log.bind( null, 'test2'),
-  Score.wait, null,
-  seconds(.5),console.log.bind( null, 'test3'),
-  seconds(.5),console.log.bind( null, 'test4'),
-  seconds(.5),function() { a.rewind(); a.next() }
-])
-
-b = Score([
-  100, console.log.bind(null,"B"),
-  100, console.log.bind(null,"F"),  
-  a.oncomplete, function() {
-  	console.log("C")
-  }
-])
-.start()
-
-a.start()
-
------
-a = Score([
-  0, console.log.bind( null, 'test1'),
-  seconds(.5),console.log.bind( null, 'test2'),
-  
-  Score.wait, null,
-  
-  seconds(.5),console.log.bind( null, 'test3'),
-  
-  seconds(.5), Score([
-    0, console.log.bind(null,"A"),
-    beats(2), console.log.bind(null,"B")
-  ]),
-  
-  Score.wait, null,
-  
-  seconds(.5),function() { a.rewind(); a.next() }
-]).start()
+Score.wait             pause until next() method is called
 */
 
 module.exports = function( Gibber ) {
@@ -31707,6 +31946,8 @@ var ScoreProto = {
   
   pause: function() {
     this.isPaused = true
+    
+    return this
   },
   
   next: function() {
@@ -31714,7 +31955,9 @@ var ScoreProto = {
       this.connect()
     }
     this.isPaused = false
-  }
+    
+    return this
+  },
 }
 
 var proto = new Gibberish.ugen()
@@ -31828,18 +32071,159 @@ var Score = function( data, opts ) {
   
   this.nextTime = this.schedule[ 0 ]
   
+  var _rate = this.rate,
+      oldRate  = this.__lookupSetter__( 'rate' )
+   
+  Object.defineProperty( this, 'rate', {
+    get : function() { return _rate },
+    set : function(v) {
+      _rate = Mul( Gibber.Clock, v )
+      oldRate.call( this, _rate )
+    }
+  })
+  
+  this.rate = this.rate // trigger meta-programming tie to master clock
+  
   Gibber.createProxyProperties( this, {
     rate : { min: .1, max: 2, output: 0, timescale: 'audio' },
   })
 }
 
 Score.wait = -987654321
+Score.combine = function() {
+  var score = [ 0, arguments[ 0 ] ]
+  
+  for( var i = 1; i < arguments.length; i++ ) {
+    var timeIndex = i * 2,
+        valueIndex = timeIndex +  1,
+        previousValueIndex = timeIndex - 1
+
+    score[ timeIndex  ] = score[ previousValueIndex ].oncomplete
+    score[ valueIndex ] = arguments[ i ]
+  }
+  
+  return Score( score )
+}
 
 Score.prototype = proto
 
 return Score
 
 }
+
+/*
+a = Score([
+  0, console.log.bind( null, 'test1'),
+  seconds(.5),console.log.bind( null, 'test2'),
+  Score.wait, null,
+  seconds(.5),console.log.bind( null, 'test3'),
+  seconds(.5),console.log.bind( null, 'test4'),
+  seconds(.5),function() { a.rewind(); a.next() }
+])
+
+b = Score([
+  100, console.log.bind(null,"B"),
+  100, console.log.bind(null,"F"),  
+  a.oncomplete, function() {
+  	console.log("C")
+  }
+])
+.start()
+
+a.start()
+
+-----
+a = Score([
+  0, console.log.bind( null, 'test1'),
+  seconds(.5),console.log.bind( null, 'test2'),
+  
+  Score.wait, null,
+  
+  seconds(.5),console.log.bind( null, 'test3'),
+  
+  seconds(.5), Score([
+    0, console.log.bind(null,"A"),
+    beats(2), console.log.bind(null,"B")
+  ]),
+  
+  Score.wait, null,
+  
+  seconds(.5),function() { a.rewind(); a.next() }
+]).start()
+
+-----
+synth = Synth('bleep')
+synth2 = Synth('bleep', {maxVoices:4})
+
+// you need to uncomment the line below after the kick drum comes in
+// and execute it
+
+score.next()
+
+score = Score([
+  0, synth.note.score( 'c4', 1/4 ),
+  
+  measures(1), synth.note.score( ['c4','c5'], 1/8 ),
+  
+  measures(1), synth.note.score( ['c2','c3','c4','c5'], 1/16 ),
+  
+  measures(1), function() {
+    kick = Kick().note.seq( 55,1/4 )
+  },
+  
+  Score.wait, null,
+  
+  0, synth2.note.score('bb4',1/4 ),
+  
+  measures(1), synth2.chord.score( [['bb4','g4']], 1/4 ),
+  
+  measures(2), synth2.chord.score( [['c5','f4']], 1/4 ),
+  
+  measures(2), function() {
+    synth2.chord.seq( [['eb4','bb4','d5']], 1/6 )
+    synth2.note.seq.stop()
+    synth2.fx.add( Delay(1/9,.35) )
+    
+    synth2.fadeOut(32)
+  },
+  
+  measures(4), function() {
+    ks = Pluck()
+    	.note.seq( Rndi(100,600), 1/16 )
+    	.blend.seq( Rndf() )
+    	.fx.add( Schizo('paranoid') )
+    
+    Clock.rate = Line( 1, 1.1, 8 )
+  },
+  
+  measures(8), function() {
+		Master.fadeOut( 8 )
+  },
+  
+  measures(8), Gibber.clear
+  
+]).start()
+
+------
+
+synth = Synth('bleep')
+
+verse =  Score([ beats(1/2), synth.note.bind( synth, 'c4' ) ])
+chorus = Score([ beats(1/2), synth.note.bind( synth, 'd4' ) ])
+bridge = Score([ beats(1/2), synth.note.bind( synth, 'e4' ) ])
+
+song = Score([
+  0,                 verse,
+  verse.oncomplete,  chorus,
+  chorus.oncomplete, verse,
+  verse.oncomplete,  chorus,
+  chorus.oncomplete, bridge,
+  bridge.oncomplete, chorus  
+])
+
+song.start()
+
+*/
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   //"use strict"
@@ -32452,6 +32836,8 @@ module.exports = function( Gibber ) {
 
         obj.fx.ugen = obj
         
+        //Gibber.processArguments2( obj, args, name )        
+        
         if( name === 'Vocoder' ) return obj
         
         if( name === 'Mono' ) {
@@ -32561,6 +32947,7 @@ module.exports = function( Gibber ) {
           }
         })
         
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()
@@ -32570,6 +32957,7 @@ module.exports = function( Gibber ) {
   Synths.Presets.Synth = {
   	short:  { attack: 44, decay: 1/16, },
   	bleep:  { waveform:'Sine', attack:44, decay:1/16 },
+    bleepEcho: { waveform:'Sine', attack:44, decay:1/16, presetInit:function() { this.fx.add( Delay(1/6,.85 ) ) } },
     cascade: { waveform:'Sine', maxVoices:10, attack:Clock.maxMeasures, decay:Clock.beats(1/32),
       presetInit: function() { 
         this.fx.add( Gibber.Audio.FX.Delay(1/9,.2), Gibber.Audio.FX.Flanger() )
@@ -32865,6 +33253,7 @@ var Theory = {
     // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
     
     that.gibber = true // needed since createProxyProperties isn't called where this is normally set
+                              // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
     //Gibber.defineSequencedProperty( that, 'root', 1 )
@@ -33143,11 +33532,8 @@ module.exports = function( Gibber ) {
     }
 
     Gibber.defineSequencedProperty( robot, 'say' )
-    console.log(0)
     Gibber.defineSequencedProperty( robot, 'chord' )    
-    console.log(1)    
     Gibber.defineSequencedProperty( robot, 'note' )
-    console.log(2)    
     
     $.extend( true, robot, Gibber.Audio.ugenTemplate )
     
@@ -33164,7 +33550,7 @@ module.exports = function( Gibber ) {
 module.exports = function( Gibber ) {
   var Comm = {
     export: function( target ) {
-      target.MIDI = this.MIDI
+      target._MIDI_ = this.MIDI
     },
     
     MIDI: require( './midi.js')( Gibber )
@@ -33608,6 +33994,186 @@ module.exports = $
 
 }()
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/euclidean.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+"use strict"
+
+var flatten = function(){
+   var flat = [];
+   for (var i = 0, l = this.length; i < l; i++){
+       var type = Object.prototype.toString.call(this[i]).split(' ').pop().split(']').shift().toLowerCase();
+       if (type) { flat = flat.concat(/^(array|collection|arguments|object)$/.test(type) ? flatten.call(this[i]) : this[i]); }
+   }
+   return flat;
+}
+
+var createStartingArray = function( length, ones ) {
+  var out = []
+  for( var i = 0; i < ones; i++ ) {
+    out.push([1])
+  }
+  for( var j = i; j < length; j++ ) {
+    out.push(0)
+  }
+  return out
+}
+
+var printArray = function( array ) {
+  var str = ''
+  for( var i = 0; i < array.length; i++ ) {
+    var outerElement = array[ i ]
+    if( Array.isArray( outerElement ) ) {
+      str += '['
+      for( var j = 0; j < outerElement.length; j++ ) {
+        str += outerElement[ j ]
+      }
+      str += '] '
+    }else{
+      str += outerElement + ''
+    }
+  }
+
+  return str
+}
+
+var arraysEqual = function(a, b) {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length != b.length) return false;
+
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+var getLargestArrayCount = function( input ) {
+  var length = 0, count = 0
+
+  for( var i = 0; i < input.length; i++ ) {
+    if( Array.isArray( input[ i ] ) ) { 
+      if( input[ i ].length > length ) {
+        length = input[ i ].length
+        count = 1
+      }else if( input[ i ].length === length ) {
+        count++
+      }
+    }
+  }
+
+  return count
+}
+
+var Euclid = function( ones,length, dur ) {
+  var count = 0,
+      out = createStartingArray( length, ones )
+
+ 	function Inner( n,k ) {
+    var operationCount = count++ === 0 ? k : getLargestArrayCount( out ),
+        moveCandidateCount = out.length - operationCount,
+        numberOfMoves = operationCount >= moveCandidateCount ? moveCandidateCount : operationCount
+
+    if( numberOfMoves > 1 || count === 1 ) {
+      for( var i = 0; i < numberOfMoves; i++ ) {
+        var willBeMoved = out.pop(), isArray = Array.isArray( willBeMoved )
+        out[ i ].push( willBeMoved )
+        if( isArray ) { 
+          flatten.call( out[ i ] )
+        }
+      }
+    }
+
+    if( n % k !== 0 ) {
+      return Inner( k, n % k )
+    }else {
+      return flatten.call( out )
+    }
+  }
+
+  return calculateRhythms( Inner( length, ones ), dur )
+}
+// E(5,8) = [ .25, .125, .25, .125, .25 ]
+var calculateRhythms = function( values,dur ) {
+  var out = []
+  
+  console.log( values, dur )
+  if( typeof dur === 'undefined' ) dur = 1 / values.length
+
+  var idx = 0,
+      currentDur = 0
+  
+  while( idx < values.length ) {
+    idx++
+    currentDur += dur
+    
+    if( values[ idx ] == 1 || idx === values.length ) {
+      out.push( currentDur )
+      currentDur = 0
+    } 
+  }
+  
+  return out
+}
+
+var answers = {
+  '1,4' : '1000',
+  '2,3' : '101',
+  '2,5' : '10100',
+  '3,4' : '1011',
+  '3,5' : '10101',
+  '3,7' : '1010100',
+  '3,8' : '10010010',
+  '4,7' : '1010101',
+  '4,9' : '101010100',
+  '4,11': '10010010010',
+  '5,6' : '101111',
+  '5,7' : '1011011',
+  '5,8' : '10110110',
+  '5,9' : '101010101',
+  '5,11': '10101010100',
+  '5,12': '100101001010',
+  '5,16': '1001001001001000',
+  '7,8' : '10111111',
+  '11,24': '100101010101001010101010'
+}
+
+Euclid.test = function( testKey ) {
+  var failed = 0, passed = 0
+
+  if( typeof testKey !== 'string' ) {
+    for( var key in answers ) {
+      var expectedResult = answers[ key ],
+          result = flatten.call( Euclid.apply( null, key.split(',') ) ).join('')
+
+      console.log( result, expectedResult )
+
+      if( result === expectedResult ) {
+        console.log("TEST PASSED", key )
+        passed++
+      }else{
+        console.log("TEST FAILED", key )
+        failed++
+      }
+    }
+    console.log("*****************************TEST RESULTS - Passed: " + passed + ", Failed: " + failed )
+  }else{
+    var expectedResult = answers[testKey],
+				result = flatten.call( Euclid.apply( null, testKey.split(',') ) ).join('')
+
+    console.log( result, expectedResult )
+
+    if( result == expectedResult ) {
+      console.log("TEST PASSED FOR", testKey)
+    }else{
+      console.log("TEST FAILED FOR", testKey)
+    }
+  }
+}
+
+return Euclid
+
+}
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/gibber.js":[function(require,module,exports){
 (function() {
 //"use strict" 
@@ -33631,6 +34197,7 @@ var Gibber = {
     Gibber.Utilities.export( target )
     target.Pattern = Gibber.Pattern 
     target.Score = Gibber.Score
+    target.Euclid = Gibber.Euclid
     
     if( Gibber.Audio ) {
       Gibber.Audio.export( target )
@@ -33714,7 +34281,7 @@ var Gibber = {
         Gibber.Environment.SERVER_URL + '/gibber/'+path, {},
         function( d ) {
           d = JSON.parse( d )
-                    
+                              
           var f = new Function( 'return ' + d.text )
           
           Gibber.Modules[ path ] = f()
@@ -33837,7 +34404,7 @@ var Gibber = {
       
         $.extend( obj, preset )
         
-        if( obj.presetInit ) obj.presetInit() 
+        //if( obj.presetInit ) obj.presetInit() 
       }else if( $.isPlainObject( firstArg ) && typeof firstArg.type === 'undefined' ) {
         $.extend( obj, firstArg )
       }else{
@@ -34311,7 +34878,7 @@ var Gibber = {
       })
     }
   },
-  
+                                 //obj, propertyName, shouldSeq, shouldRamp, mappingsDictionary, shouldUseMappings, priority, useOldGetter
   createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority ) {
     _useMappings = _useMappings === false ? false : true
     
@@ -34341,13 +34908,14 @@ Gibber.Utilities = require( './utilities' )( Gibber )
 // Gibber.Graphics  = require( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
 // Gibber.Interface = require( 'gibber.interface.lib/scripts/gibber/interface/interface' )( Gibber )
 Gibber.mappings  = require( './mappings' )( Gibber )
+Gibber.Euclid = require( './euclidean' )( Gibber )
 // TODO: Make Score work without requiring audio
 // Gibber.Score     = require( './score' )//( Gibber ) // only initialize once Gibber.Audio.Core is loaded, otherwise problems
 
 module.exports = Gibber
 
 })()
-},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
+},{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js","./euclidean":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/euclidean.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
 module.exports = function( Gibber ) {  
   var mappings = {
     audio : {
@@ -34998,7 +35566,7 @@ module.exports.outputCurves= {
 "use strict"
 
 var PatternProto = {
-  concat : function( _pattern ) { this.values = this.values.concat( _pattern.values ) },    
+  concat : function( _pattern ) { this.values = this.values.concat( _pattern.values ) },  
   toString: function() { return this.values.toString() },
   valueOf: function() { return this.values },
   getLength: function() {
@@ -35106,7 +35674,7 @@ var Pattern = function() {
         }
       }
       
-      var repeating = false, repeatValue = null
+      var repeating = false, repeatValue = null, repeatIndex = null
       var filter = function( args ) {
         var value = args[ 0 ], phaseModifier = args[ 1 ], output = args
         
@@ -35114,12 +35682,15 @@ var Pattern = function() {
         if( repeating === false && counts[ value ] ) {
           repeating = true
           repeatValue = value
+          repeatIndex = args[2]
         }
         
         if( repeating === true ) {
           if( counts[ repeatValue ].phase !== counts[ repeatValue ].target ) {
             output[ 0 ] = repeatValue            
             output[ 1 ] = 0
+            output[ 2 ] = repeatIndex
+            //[ val, 1, idx ]
             counts[ repeatValue ].phase++
           }else{
             counts[ repeatValue ].phase = 0
@@ -35663,7 +36234,7 @@ var soloGroup = [],
         // Array.prototype.choose = Utilities.choose
         // // Array.prototype.Rnd = Utilities.random2
         // Array.prototype.merge = Utilities.merge
-      }  
+      }
     }
   
   return Utilities

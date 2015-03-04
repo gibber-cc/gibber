@@ -16,6 +16,12 @@ module.exports = function( Gibber ) {
 
       Gibber.Environment.Storage.values.showSampleCodeInNewEditors = checked
     },
+    processShowBrowserOnLaunchCheckbox : function() {
+      var showBrowserOnLaunchCheckbox = $( '#preferences_showBrowserOnLaunch' ),
+          checked = showBrowserOnLaunchCheckbox.is(':checked')
+
+      Gibber.Environment.Storage.values.showBrowserOnLaunch = checked
+    },
     processDefaultLanguageForEditorsMenu : function() {
       var opt = $( '#preferences_defaultLanguageForEditors' ).find( ':selected' ), idx = opt.index(), val = opt.text()
       
@@ -32,6 +38,7 @@ module.exports = function( Gibber ) {
       Preferences.processShowSampleCodeInNewEditorsCheckbox()
       Preferences.processDefaultLanguageForEditorsMenu()
       Preferences.processSaveSoundFonts()
+      Preferences.processShowBrowserOnLaunchCheckbox()      
       
       Gibber.Environment.Storage.save()
     },
@@ -61,9 +68,10 @@ module.exports = function( Gibber ) {
         }
         
         $( '#preferences_defaultLanguageForEditors' ).find( 'option' )[ languageIndex ].selected = true;        
-        $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
-        $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
-        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts ),
+        $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage )
+        $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors )
+        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts )
+        $( '#preferences_showBrowserOnLaunch' ).attr( 'checked', Gibber.Environment.Storage.values.showBrowserOnLaunch )
         
         this.column.onclose = this.close.bind( this )
   
