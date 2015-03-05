@@ -11,7 +11,7 @@ module.exports = function( Gibber, Environment) {
     showRandomOriginalText:true,
     phaseIndicatorType : 'flash', // flash || border currently are the two options
     flashColor: 'rgba(255,255,255,1)',
-    features:{ 'seq':true, 'reactive':true },
+    features:{ 'seq':false, 'reactive':false },
     
     enabled: {},
     

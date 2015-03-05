@@ -10,6 +10,7 @@ Chat = {
   roomElement: null,
   currentRoom: 'lobby',
   initialized : false,
+  onSocketConnect: null,
   open : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
@@ -57,8 +58,7 @@ Chat = {
         var data = e.data
         data = JSON.parse( data )
       
-        console.log("DATA = ", data )
-       if( data.msg ) {
+        if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
           }else{
@@ -71,6 +71,9 @@ Chat = {
         console.log( 'you are now connected to the chat server' )
         Chat.moveToLobby()
         Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+        if( Chat.onSocketConnect !== null ) {
+          Chat.onSocketConnect()
+        }
       } 
     }else{
       Chat.moveToLobby()

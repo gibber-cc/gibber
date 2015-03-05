@@ -916,6 +916,7 @@ Chat = {
   roomElement: null,
   currentRoom: 'lobby',
   initialized : false,
+  onSocketConnect: null,
   open : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
@@ -963,8 +964,7 @@ Chat = {
         var data = e.data
         data = JSON.parse( data )
       
-        console.log("DATA = ", data )
-       if( data.msg ) {
+        if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
           }else{
@@ -977,6 +977,9 @@ Chat = {
         console.log( 'you are now connected to the chat server' )
         Chat.moveToLobby()
         Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+        if( Chat.onSocketConnect !== null ) {
+          Chat.onSocketConnect()
+        }
       } 
     }else{
       Chat.moveToLobby()
@@ -3344,6 +3347,46 @@ var GE = {
 		
 		return { selection: pos, code: text, column:column }
 	},
+  // getSelectionCodeForEditor : function( editor, findBlock ) {
+  //   var pos = cm.getCursor(), 
+  //       text = null,
+  //       column = GE.Layout.fullScreenColumn === null ? GE.Layout.columns[ GE.Layout.focusedColumn ] : GE.Layout.__fullScreenColumn__
+  //   
+  //     if( column.mode.indexOf('glsl') > -1 ) { // glsl always executes entire block
+  //       var lastLine = cm.getLine( cm.lineCount() - 1 )
+  //       pos ={ start:{ line:0, ch:0 }, end: { line:cm.lineCount() - 1, ch:lastLine.length - 1 } }
+  //       text = column.value
+  //     }else{
+  //       if( !findBlock ) {
+  //         text = cm.getDoc().getSelection()
+  // 
+  //         if ( text === "") {
+  //           text = cm.getLine( pos.line )
+  //         }else{
+  //           pos = { start: cm.getCursor('start'), end: cm.getCursor('end') }
+  //           //pos = null
+  //         }
+  //       }else{
+  //         var startline = pos.line, 
+  //             endline = pos.line,
+  //             pos1, pos2, sel
+  //       
+  //         while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
+  //         while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
+  //       
+  //         pos1 = { line: startline, ch: 0 }
+  //         pos2 = { line: endline, ch: 0 }
+  //     
+  //         text = cm.getRange( pos1, pos2 )
+  // 
+  //         pos = { start: pos1, end: pos2 }
+  //       }
+  //     }
+  //   
+  //     GE.Keymap.flash(cm, pos)
+  //   
+  //   return { selection: pos, code: text, column:column }
+  // },
   
 	//TODO : this should probably be moved to the Gibber object at some point as it's not environment specific
 	modes : {
@@ -4457,7 +4500,7 @@ module.exports = function( Gibber, Environment) {
     showRandomOriginalText:true,
     phaseIndicatorType : 'flash', // flash || border currently are the two options
     flashColor: 'rgba(255,255,255,1)',
-    features:{ 'seq':true, 'reactive':true },
+    features:{ 'seq':false, 'reactive':false },
     
     enabled: {},
     
@@ -4700,6 +4743,21 @@ var Environment = Gibber.Environment,
     CodeMirror = Environment.CodeMirror,
     Share = Environment.Share,
     Account = Environment.Account
+
+/*
+
+If remote execution is not enabled, then we have to stream output envelope data to
+each person; easy. However, if it is (every client is rendering every other client's audio)
+then we need to do some trickery with the bus to make things work. Before executing client
+code we substitute their individual bus for the master. For example:
+    
+    var tmp = Gibber.Audio.Master
+    Gibber.Audio.Master = client.Master
+    
+    ... execute Code... 
+    Gibber.Audio.Master = tmp
+*/
+
     
 var Gabber = {
   column: null,
@@ -4709,16 +4767,21 @@ var Gabber = {
   userShareColumn: null, // the column used in the performance by this client
   enableRemoteExecution: false,
   performers: {},
+  masterInitFlag: false,
   init: function( name ) {
     this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
-        
+    this.userShareColumn.editor.shareName = Account.nick
+    
     this.column = Layout.addColumn({ type:'gabber', header:'Gabber : ' + name })
+    
     this.name = name || null
     
     this.userShareName = this.name + ':' + Account.nick
     
     if( !Chat.initialized ) Chat.open()
     Chat.handlers.gabber = Gabber.onGabber
+    Chat.handlers.tock = Gabber.onTock
+    Chat.handlers['gabber.start'] = Gabber.onStart
     
     if( this.name !== null ) Gabber.createPerformance( this.userShareName )
     
@@ -4726,7 +4789,104 @@ var Gabber = {
     $.subscribe( 'Chat.departure', Gabber.onPerform )
     
     Gabber.initializeKeyMap()
+    
+    Clock.seq.stop()
+
+    Chat.onSocketConnect = Gabber.sendTick
+    //Gibber.Audio.Core.onBlock = Gabber.sendTick
   },
+  
+  start: function() {
+    Chat.socket.send( JSON.stringify({ cmd:'gabber.start', gabberName:Gabber.name }) )
+  },
+  
+  sendTick: function() {
+    Gabber.phaseSnapshot = Gibber.Audio.Clock.getPhase()
+    Gabber.timeSnapshot  = Gibber.Audio.Core.context.currentTime
+    Chat.socket.send( JSON.stringify({ cmd:'tick' }) )
+  },
+  runningAverage: ( function() {
+    var n = 0, sum = 0
+    
+    var avg = function( p ) {
+      sum += p
+      n++
+      return sum / n
+    }
+    
+    avg.setN = function( v ) { n = v }
+    avg.setSum = function( v ) { sum = v }    
+
+    return avg
+  })(),
+  correctionFlag: false,
+  mode:0, // 0 for initialize, 1 for running
+  correctPhase: function() {
+    Gabber.correctionFlag = true
+  },
+  onStart: function() {
+    //Gabber.correctionFlag = false
+    /* 
+        schedule start for two seconds into the future, minus the running average of half the latency/jitter
+        at start, reset Master.Clock.phase to 0 and flash start message to screen.
+    */
+    console.log("ON START", Gabber.rtt / 2)
+    future( function() { 
+      Gibber.clear()
+      Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
+    }, ms(2000) + ( (Gabber.rtt / 2) * ms(1) ) )
+  },
+  calculateRoundtripAverage: function() {
+    // var sum = 0
+    var lowest = 100000000
+    for( var i = 0; i < Gabber.roundtrips.length; i++ ) {
+      //sum += Gabber.roundtrips[i]
+      if( Gabber.roundtrips[i] < lowest ) lowest = Gabber.roundtrips[i]
+    }
+    //Gabber.rtt = sum / Gabber.roundtrips.length
+    Gabber.rtt = lowest
+    console.log( "ROUNDTRIPTIME AVG", Gabber.rtt )
+  },
+  roundtrips: [],
+  onTock: function( msg ) {
+    var localPhase = Gibber.Audio.Clock.getPhase(),
+        localTime = Gibber.Audio.Core.context.currentTime
+    
+    if( Gabber.mode === 0 ) {
+      //var roundtripTime = localPhase - Gabber.phaseSnapshot
+      var roundtripTime = localTime - Gabber.timeSnapshot
+      Gabber.roundtrips.push( roundtripTime )
+      if( Gabber.roundtrips.length > 20 ) {
+        Gabber.calculateRoundtripAverage()
+      }else{
+        Gabber.sendTick()
+      }
+    }else{
+      var diffPhase = msg.masterAudioPhase - localPhase,
+          correctPhase = msg.masterAudioPhase + ( localPhase - Gabber.phaseSnapshot ) / 2,
+          phaseCorrection = correctPhase - localPhase
+        
+      if( !Gabber.masterInitFlag ) {
+        Gibber.Audio.Clock.setPhase( correctPhase )
+        Gabber.masterInitFlag = true
+      }
+    
+      var avg = Gabber.runningAverage( phaseCorrection )
+    
+      if( Gabber.correctionFlag ) {
+        Gibber.Audio.Clock.setPhase( correctPhase - avg )
+      
+        Gabber.runningAverage.setN( 0 )
+        Gabber.runningAverage.setSum( 0 )
+      
+        Gabber.correctionFlag = false
+      }
+    }
+    
+    //console.log("running avg correction", avg )
+    //console.log( "phase correction", phaseCorrection, localPhase - Gabber.phaseSnapshot )
+  },
+  
   createPerformance : function( name ) {
     console.log( "SHARE NAME", name  )
     Share.createDoc( this.userShareColumn.number, null, null, name )
@@ -4783,12 +4943,14 @@ var Gabber = {
     element.append( element.header )
     
     element.code = $( '<div class="editor">' )
+    element.code.css({ overflow:'scroll' })
+    
     element.header.on( 'mousedown', function() { element.code.toggle() } )
       .addClass( 'no-select' )
       .css({ 
         cursor: 'pointer',
         backgroundColor: '#333',
-        marginBottom:'.25em' 
+        marginBottom:'.25em',
       })
     
     //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )
@@ -4813,6 +4975,8 @@ var Gabber = {
       autofocus: false,
     })
     
+    element.editor.shareName = name
+    
     console.log("NAME", Gabber.name + ':' + name )
     Share.openDocGabber( Gabber.name + ':' + name, element.editor )
     
@@ -4821,21 +4985,40 @@ var Gabber = {
     return element
   },
   onGabber: function( msg ) {
-    console.log("GABBER MESSAGE RECEIVED!", msg )
-    var cm  = Gabber.performers[ msg.from ].editor
-
+    //console.log("GABBER MESSAGE RECEIVED!", msg )
+    var cm, owner = false
+    
+    if( msg.shareName === Account.nick ) {
+      cm = Gabber.userShareColumn.editor
+      owner = true
+    }else{
+      cm = Gabber.performers[ msg.shareName ].editor
+    }
+    
+    //if( !owner ) {
+    cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+    
     Environment.Keymap.flash( cm, msg.selectionRange )
 
     Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
   },
-  createMessage: function( selection ) {
+  createMessage: function( selection, shareName ) {
     var msg = { 
       cmd:            'gabber',
       gabberName:     Gabber.name,
       from:           Account.nick,
+      'shareName':    shareName || Account.nick,        
       selectionRange: selection.selection, // range
       code:           selection.code,
       shouldExecute:  Gabber.enableRemoteExecution,
+    }
+    
+    if( typeof msg.selectionRange.start === 'undefined' ) {
+      var range = {
+        start: { line:msg.selectionRange.line, ch:0 },
+        end: { line:msg.selectionRange.line, ch:msg.code.length - 1 }
+      }
+      msg.selectionRange = range
     }
     
     return msg
@@ -4846,9 +5029,11 @@ var Gabber = {
       
 			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
       
-      var msg = Gabber.createMessage( obj )
+      var msg = Gabber.createMessage( obj, cm.shareName )
       msg.shouldDelay = false
       
+      cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+
       Chat.socket.send( JSON.stringify( msg ) ) 
 		}
     
@@ -4857,8 +5042,10 @@ var Gabber = {
       
 			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
       
-      var msg = Gabber.createMessage( obj )
+      var msg = Gabber.createMessage( obj, cm.shareName )
       msg.shouldDelay = true
+      
+      cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
       
       Chat.socket.send( JSON.stringify( msg ) ) 
     }
@@ -21147,7 +21334,7 @@ var Gibberish = {
   callbackObjects   : [],        // ugen function callbacks used in main audio callback
   analysisCallbackArgs    : [],
   analysisCallbackObjects : [],
-  
+  onBlock: null,
 /**###Gibberish.createCallback : method
 Perform codegen on all dirty ugens and re-create the audio callback. This method is called automatically in the default Gibberish sample loop whenever Gibberish.isDirty is true.
 **/
@@ -21236,7 +21423,9 @@ param **Audio Event** : Object. The HTML5 audio event object.
         objs = me.callbackObjects.slice(0),
         callbackArgs, callbackBody, _callback, val
 
-        objs.unshift(0)
+    if( me.onBlock !== null ) me.onBlock( me.context )
+    
+    objs.unshift(0)
         
 		for(var i = 0, _bl = e.outputBuffer.length; i < _bl; i++){
       
@@ -27632,6 +27821,7 @@ Gibberish.PolySeq = function() {
     autofire      : [],
     name          : 'polyseq',
     getPhase      : function() { return phase },
+    setPhase      : function(v) { phase = v },
     timeModifier  : null,
     add           : function( seq ) {
       seq.valuesIndex = seq.durationsIndex = 0
@@ -28985,15 +29175,19 @@ Audio = {
     }
   
     Audio.Master.inputs.length = arguments.length
-  
-    Audio.Clock.reset()
+    
+    if( Audio.Clock.shouldResetOnClear !== false ) {
+      Audio.Clock.reset()
+    }
   
     Audio.Master.fx.remove()
   
     Audio.Master.amp = 1
     
     Audio.Core.clear()
-
+    
+    Audio.Clock.seq.connect()
+    
     Audio.Core.out.addConnection( Audio.Master, 1 );
     Audio.Master.destinations.push( Audio.Core.out );
   
@@ -29669,6 +29863,7 @@ var Clock = {
   codeToExecute : [],
   signature: { lower: 4, upper: 4 },
   sequencers:[],
+  shouldResetOnClear:true,
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
   phase : 0,
   export: function( target ) {
@@ -29718,7 +29913,7 @@ var Clock = {
     this.phase = 0
     this.currentBeat = 0
     this.rate = 1
-    this.start()
+    this.start( false )
   },
   
   tap : function() {
@@ -29740,15 +29935,18 @@ var Clock = {
   },
   
   start : function( shouldInit ) {    
+    var _phase = 0
+    
     if( shouldInit ) {
       $.extend( this, {
         properties: { rate: 1 },
         name:'master_clock',
         callback : function( rate ) {
+          _phase++ 
           return rate
         }
       })
-    
+     
       this.__proto__ = new Gibberish.ugen()
       this.__proto__.init.call( this )
 
@@ -29777,18 +29975,24 @@ var Clock = {
         rate : { min: .1, max: 2, output: LINEAR, timescale: 'audio' },
         bpm : { min: 20, max: 200, output: LINEAR, timescale: 'audio' },        
       })
+      
+      this.setPhase = function( v ) { _phase = v }
+      this.getPhase = function() { return _phase }
+      
+      Clock.seq = new Gibberish.PolySeq({
+        seqs : [{
+          target:Clock,
+          values: [ Clock.processBeat.bind( Clock ) ],
+          durations:[ 1/4 ],
+        }],
+        rate: Clock,
+      })
+      Clock.seq.connect().start()
+      Clock.seq.timeModifier = Clock.time.bind( Clock )
+    }else{
+      Clock.seq.setPhase(0)
+      Clock.seq.connect().start()
     }
-    
-    Clock.seq = new Gibberish.PolySeq({
-      seqs : [{
-        target:Clock,
-        values: [ Clock.processBeat.bind( Clock ) ],
-        durations:[ 1/4 ],
-      }],
-      rate: Clock,
-    })
-    Clock.seq.connect().start()
-    Clock.seq.timeModifier = Clock.time.bind( Clock )
   },
   
   addMetronome: function( metronome ) {

@@ -222,6 +222,46 @@ var GE = {
 		
 		return { selection: pos, code: text, column:column }
 	},
+  // getSelectionCodeForEditor : function( editor, findBlock ) {
+  //   var pos = cm.getCursor(), 
+  //       text = null,
+  //       column = GE.Layout.fullScreenColumn === null ? GE.Layout.columns[ GE.Layout.focusedColumn ] : GE.Layout.__fullScreenColumn__
+  //   
+  //     if( column.mode.indexOf('glsl') > -1 ) { // glsl always executes entire block
+  //       var lastLine = cm.getLine( cm.lineCount() - 1 )
+  //       pos ={ start:{ line:0, ch:0 }, end: { line:cm.lineCount() - 1, ch:lastLine.length - 1 } }
+  //       text = column.value
+  //     }else{
+  //       if( !findBlock ) {
+  //         text = cm.getDoc().getSelection()
+  // 
+  //         if ( text === "") {
+  //           text = cm.getLine( pos.line )
+  //         }else{
+  //           pos = { start: cm.getCursor('start'), end: cm.getCursor('end') }
+  //           //pos = null
+  //         }
+  //       }else{
+  //         var startline = pos.line, 
+  //             endline = pos.line,
+  //             pos1, pos2, sel
+  //       
+  //         while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
+  //         while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
+  //       
+  //         pos1 = { line: startline, ch: 0 }
+  //         pos2 = { line: endline, ch: 0 }
+  //     
+  //         text = cm.getRange( pos1, pos2 )
+  // 
+  //         pos = { start: pos1, end: pos2 }
+  //       }
+  //     }
+  //   
+  //     GE.Keymap.flash(cm, pos)
+  //   
+  //   return { selection: pos, code: text, column:column }
+  // },
   
 	//TODO : this should probably be moved to the Gibber object at some point as it's not environment specific
 	modes : {
