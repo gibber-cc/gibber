@@ -62,11 +62,13 @@ module.exports = function( Gibber ) {
       }) 
     },
     
-    login: function() {
+    login: function( username, password ) {
+      if( !username ) username = $( '#username' ).val()
+      if( !password ) password = $( '#password' ).val()
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/login', 
-        data:{ username: $("#username").val(), password: $("#password").val() }, 
+        data:{ 'username': username, 'password': password }, 
         dataType:'json'
       })
       .done( function (data) {

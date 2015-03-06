@@ -256,11 +256,13 @@ module.exports = function( Gibber ) {
       }) 
     },
     
-    login: function() {
+    login: function( username, password ) {
+      if( !username ) username = $( '#username' ).val()
+      if( !password ) password = $( '#password' ).val()
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/login', 
-        data:{ username: $("#username").val(), password: $("#password").val() }, 
+        data:{ 'username': username, 'password': password }, 
         dataType:'json'
       })
       .done( function (data) {
@@ -4742,7 +4744,11 @@ var Environment = Gibber.Environment,
     Chat = Environment.Chat,
     CodeMirror = Environment.CodeMirror,
     Share = Environment.Share,
-    Account = Environment.Account
+    Account = Environment.Account,
+    TICKTOCKMODE = 0,
+    PIDMODE = 1,
+    CHRISTIANMODE = 2,
+    Filters = require('./pid.js')
 
 /*
 
@@ -4768,6 +4774,8 @@ var Gabber = {
   enableRemoteExecution: false,
   performers: {},
   masterInitFlag: false,
+  follower:null,
+  localPhase: 0,
   init: function( name ) {
     this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
     this.userShareColumn.editor.shareName = Account.nick
@@ -4793,7 +4801,8 @@ var Gabber = {
     Clock.seq.stop()
 
     Chat.onSocketConnect = Gabber.sendTick
-    //Gibber.Audio.Core.onBlock = Gabber.sendTick
+    
+    Gabber.follower = Follow( Master )
   },
   
   start: function() {
@@ -4803,6 +4812,7 @@ var Gabber = {
   sendTick: function() {
     Gabber.phaseSnapshot = Gibber.Audio.Clock.getPhase()
     Gabber.timeSnapshot  = Gibber.Audio.Core.context.currentTime
+    Gabber.localPhase += 1024
     Chat.socket.send( JSON.stringify({ cmd:'tick' }) )
   },
   runningAverage: ( function() {
@@ -4821,20 +4831,18 @@ var Gabber = {
   })(),
   correctionFlag: false,
   mode:0, // 0 for initialize, 1 for running
-  correctPhase: function() {
-    Gabber.correctionFlag = true
-  },
-  onStart: function() {
-    //Gabber.correctionFlag = false
-    /* 
-        schedule start for two seconds into the future, minus the running average of half the latency/jitter
-        at start, reset Master.Clock.phase to 0 and flash start message to screen.
-    */
-    console.log("ON START", Gabber.rtt / 2)
-    future( function() { 
-      Gibber.clear()
-      Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
-    }, ms(2000) + ( (Gabber.rtt / 2) * ms(1) ) )
+  correctPhase: function() { Gabber.correctionFlag = true },
+  onTickTock: function( msg ) {
+    var localPhase = Gibber.Audio.Clock.getPhase(),
+        localTime  = Gibber.Audio.Core.context.currentTime,
+        roundtripTime = localTime - Gabber.timeSnapshot
+        
+    Gabber.roundtrips.push( roundtripTime )
+    if( Gabber.roundtrips.length > 20 ) {
+      Gabber.calculateRoundtripAverage()
+    }else{
+      Gabber.sendTick()
+    }
   },
   calculateRoundtripAverage: function() {
     // var sum = 0
@@ -4847,46 +4855,52 @@ var Gabber = {
     Gabber.rtt = lowest
     console.log( "ROUNDTRIPTIME AVG", Gabber.rtt )
   },
-  roundtrips: [],
-  onTock: function( msg ) {
-    var localPhase = Gibber.Audio.Clock.getPhase(),
-        localTime = Gibber.Audio.Core.context.currentTime
-    
-    if( Gabber.mode === 0 ) {
-      //var roundtripTime = localPhase - Gabber.phaseSnapshot
-      var roundtripTime = localTime - Gabber.timeSnapshot
-      Gabber.roundtrips.push( roundtripTime )
-      if( Gabber.roundtrips.length > 20 ) {
-        Gabber.calculateRoundtripAverage()
-      }else{
-        Gabber.sendTick()
-      }
-    }else{
-      var diffPhase = msg.masterAudioPhase - localPhase,
-          correctPhase = msg.masterAudioPhase + ( localPhase - Gabber.phaseSnapshot ) / 2,
-          phaseCorrection = correctPhase - localPhase
-        
-      if( !Gabber.masterInitFlag ) {
-        Gibber.Audio.Clock.setPhase( correctPhase )
-        Gabber.masterInitFlag = true
-      }
-    
-      var avg = Gabber.runningAverage( phaseCorrection )
-    
-      if( Gabber.correctionFlag ) {
-        Gibber.Audio.Clock.setPhase( correctPhase - avg )
-      
-        Gabber.runningAverage.setN( 0 )
-        Gabber.runningAverage.setSum( 0 )
-      
-        Gabber.correctionFlag = false
-      }
-    }
-    
-    //console.log("running avg correction", avg )
-    //console.log( "phase correction", phaseCorrection, localPhase - Gabber.phaseSnapshot )
+  onStart: function() {
+    //console.log("ON START", Gabber.rtt / 2)
+    //future( Gabber.onPIDStart, ms(2000) + ( (Gabber.rtt / 2) * ms(1) ) )
+    Gabber.onPIDStart()
   },
+  onPIDStart : function() {
+    Gibber.clear()
+    Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
+    Gabber.mode = PIDMODE
+    Gibber.Audio.Core.onBlock = Gabber.sendTick
+  },
+  roundtrips: [],
+  storing:[],
+  'PID': Filters.PID(),
+  onPID: function( msg ) { Gabber.PID.run( msg ) },
+  onTock: function( msg ) {    
+    if( Gabber.mode === TICKTOCKMODE ) {
+      Gabber.onTickTock( msg )
+    }else if ( Gabber.mode === PIDMODE ){
+      Gabber.onPID( msg )
+    }else if ( Gabber.mode === CHRISTIANMODE ){
+      Gabber.onChristian( msg )
+    }
+  },
+  onChristian: function( msg ) {
+    var diffPhase       = msg.masterAudioPhase - localPhase,
+        correctPhase    = msg.masterAudioPhase + ( localPhase - Gabber.phaseSnapshot ) / 2,
+        phaseCorrection = correctPhase - localPhase
+    
+      
+    if( !Gabber.masterInitFlag ) {
+      Gibber.Audio.Clock.setPhase( correctPhase )
+      Gabber.masterInitFlag = true
+    }
   
+    var avg = Gabber.runningAverage( phaseCorrection )
+  
+    if( Gabber.correctionFlag ) {
+      Gibber.Audio.Clock.setPhase( correctPhase - avg )
+    
+      Gabber.runningAverage.setN( 0 )
+      Gabber.runningAverage.setSum( 0 )
+    
+      Gabber.correctionFlag = false
+    }
+  },
   createPerformance : function( name ) {
     console.log( "SHARE NAME", name  )
     Share.createDoc( this.userShareColumn.number, null, null, name )
@@ -5054,6 +5068,99 @@ var Gabber = {
 
 return Gabber
 
+}
+},{"./pid.js":"/www/gibber.libraries/js/gibber/pid.js"}],"/www/gibber.libraries/js/gibber/pid.js":[function(require,module,exports){
+var Filters = module.exports = {
+  Average: function() {
+    var n = 0, sum = 0, lastAvg = 0, avg = 0
+    
+    var avg = function( p ) {
+      sum += p
+      n++
+    }
+    
+    avg.setN   = function( v )  { n = v }
+    avg.setSum = function( v )  { sum = v }
+    avg.getLastAvg = function() { return lastAvg }
+    
+    avg.getAvg = function() { 
+      avg = sum / n; 
+      sum = n = 0;
+      lastAvg = avg;
+      return avg; 
+    }
+
+    return avg
+  },
+  RunningMean: function( N ) {
+    var sum = 0, index = 0, n = 0, data = []
+    
+    for( var i = 0; i < N; i++ ) data[ i ] = 0
+    
+    return function( sample ) {
+      if( n !== N ) n++
+      
+      sum -= data[ index ]
+      data[ index ] = sample
+      sum += sample
+      index++
+      
+      if( index === N ) index = 0
+      
+      return sum / n
+    }
+  },
+  PID: function() {
+    var pid = {
+      Kp: .01,
+      Ki: .00001,
+      initialized: false,
+      currentCount: 0,
+      targetCount: 44,
+      integralPhaseCorrection:0,
+      
+      runningMean: Filters.RunningMean( 150 ),
+      
+      run: function( msg ) {
+        var localPhase               = Gabber.localPhase,//Gibber.Audio.Clock.getPhase(),
+            masterPhase              = msg.masterAudioPhase,
+            immediatePhaseCorrection = masterPhase - Gabber.localPhase,
+            controlledPhaseCorrection
+        
+        if( !this.initialized ) {
+          //Gibber.Audio.Clock.setPhase( masterPhase )
+          Gabber.localPhase = masterPhase
+          this.initialized = 1
+        }else{
+          var meanPhaseCorrection = this.runningMean( immediatePhaseCorrection )
+          
+          ///console.log( meanPhaseCorrection, immediatePhaseCorrection )
+          this.integralPhaseCorrection += immediatePhaseCorrection 
+          
+          //controlledPhaseCorrection = immediatePhaseCorrection + ( this.Kp * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
+          controlledPhaseCorrection = ( this.Kp * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
+          
+          Gabber.localPhase += controlledPhaseCorrection
+          
+          for( var i = 0, l = Seq.children.length; i < l; i++ ) {
+            var seq = Seq.children[i]
+            seq.adjustPhase( controlledPhaseCorrection )
+          }
+          //Gibber.Audio.Clock.setPhase( Gabber.localPhase )
+          
+          //console.log( controlledPhaseCorrection )
+          //console.log( localPhase, masterPhase, immediatePhaseCorrection, controlledPhaseCorrection, this.integralPhaseCorrection )
+          // console.log( 
+          //   'master:', masterPhase, 
+          //   'local:',  Gabber.localPhase + controlledPhaseCorrection, 
+          //   'offBy:',  masterPhase - Gabber.localPhase + controlledPhaseCorrection  
+          // )
+        }
+      }
+    }
+    
+    return pid
+  }
 }
 },{}],"/www/gibber.libraries/js/gibber/preferences.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
@@ -23893,6 +24000,8 @@ Gibberish.Follow = function() {
     mult : 1,
     useAbsoluteValue:true // for amplitude following, false for other values
   };
+  
+  this.storage = [];
     
   var abs = Math.abs,
       history = [0],
@@ -23925,11 +24034,13 @@ Gibberish.Follow = function() {
   
   var oldBufferSize = this.__lookupSetter__( 'bufferSize' ),
       bs = this.bufferSize
-      
+  
   Object.defineProperty( this, 'bufferSize', {
     get: function() { return bs },
     set: function(v) { bs = v; sum = 0; history = [0]; index = 0; }
   })
+  
+  this.getStorage = function() { return this.storage; }
 };
 Gibberish.Follow.prototype = Gibberish._analysis;
 
@@ -27822,6 +27933,7 @@ Gibberish.PolySeq = function() {
     name          : 'polyseq',
     getPhase      : function() { return phase },
     setPhase      : function(v) { phase = v },
+    adjustPhase   : function(v) { phase += v },
     timeModifier  : null,
     add           : function( seq ) {
       seq.valuesIndex = seq.durationsIndex = 0
@@ -32718,6 +32830,8 @@ module.exports = function( Gibber ) {
       
           console.log("SEQ KILL", this )
         this.stop().disconnect()
+        
+        Seq.children.splice( Seq.children.indexOf( this ), 1 )
       },
       applyScale : function() {
         // for( var i = 0; i < this.seqs.length; i++ ) {
@@ -32753,9 +32867,14 @@ module.exports = function( Gibber ) {
       //   
       // }
     })
+    
+    Seq.children.push( seq )
+    
     return seq
   }
-    
+  
+  Seq.children = []
+  
   var ScaleSeq = function() {
     var args = arguments[0],
         scale
