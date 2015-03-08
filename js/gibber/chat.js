@@ -57,7 +57,7 @@ Chat = {
       Chat.socket.onmessage = function( e ) {
         var data = e.data
         data = JSON.parse( data )
-      
+        
         if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
@@ -276,9 +276,7 @@ Chat = {
       Chat.moveToRoom( data.roomJoined, data.occupants )
       $.publish( 'Chat.roomJoined', data )
     },
-    roomLeft: function( data ) {
-      
-    },
+    roomLeft: function( data ) {},
     arrival : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
       if( Chat.messages ) {

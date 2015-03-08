@@ -965,7 +965,7 @@ Chat = {
       Chat.socket.onmessage = function( e ) {
         var data = e.data
         data = JSON.parse( data )
-      
+        
         if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
@@ -1184,9 +1184,7 @@ Chat = {
       Chat.moveToRoom( data.roomJoined, data.occupants )
       $.publish( 'Chat.roomJoined', data )
     },
-    roomLeft: function( data ) {
-      
-    },
+    roomLeft: function( data ) {},
     arrival : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
       if( Chat.messages ) {
@@ -4049,6 +4047,33 @@ module.exports = function( Gibber ) {
           }
         },
         
+        'Shift-Alt-2' : function(cm) {
+          if( cm.column.sharingWith ) {
+						var obj = GE.getSelectionCodeColumn( cm, false )
+						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
+            
+            // console.log( obj.code, obj.selection, cm.column.shareName, cm.column.sharingWith )
+          
+            if( cm.column.allowRemoteExecution ) {
+              GE.Chat.socket.send( 
+                JSON.stringify({ 
+                  cmd:'remoteExecution',
+                  to:cm.column.sharingWith,
+                  shareName: cm.column.shareName,
+                  from:GE.Account.nick,
+                  selectionRange: obj.selection,
+                  code: obj.code,
+                  shouldDelay: true,
+                })
+              ) 
+            }else{
+            	console.log( 'Remote code execution was not enabled for this shared editing session.')
+            }
+          }else{
+          	console.log( 'This is column is not part of a shared editing session' )
+          }
+        },
+        
         "Shift-Ctrl-=": function(cm) {
           var col = GE.Layout.getFocusedColumn( true )
           col.fontSize += .2
@@ -4763,7 +4788,10 @@ code we substitute their individual bus for the master. For example:
     ... execute Code... 
     Gibber.Audio.Master = tmp
 */
-
+var em = function (input) {
+    var emSize = parseFloat($("body").css("font-size"));
+    return (emSize * input);
+}
     
 var Gabber = {
   column: null,
@@ -4776,12 +4804,16 @@ var Gabber = {
   masterInitFlag: false,
   follower:null,
   localPhase: 0,
+  headerSize:'1em',
+  correctionBuffer:[],
+  correctionBufferSize:255,
   init: function( name ) {
     this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
     this.userShareColumn.editor.shareName = Account.nick
     
     this.column = Layout.addColumn({ type:'gabber', header:'Gabber : ' + name })
-    
+    this.column.bodyElement.css( 'overflow', 'scroll' )
+
     this.name = name || null
     
     this.userShareName = this.name + ':' + Account.nick
@@ -4790,6 +4822,9 @@ var Gabber = {
     Chat.handlers.gabber = Gabber.onGabber
     Chat.handlers.tock = Gabber.onTock
     Chat.handlers['gabber.start'] = Gabber.onStart
+    
+    Chat.handlers['gabber.Ki'] = function( msg ) { console.log("MSG", msg); Gabber.PID.Ki = msg.value }
+    Chat.handlers['gabber.Kp'] = function( msg ) { console.log("MSG", msg); Gabber.PID.Kp = msg.value }
     
     if( this.name !== null ) Gabber.createPerformance( this.userShareName )
     
@@ -4803,6 +4838,11 @@ var Gabber = {
     Chat.onSocketConnect = Gabber.sendTick
     
     Gabber.follower = Follow( Master )
+    
+    for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
+      Gabber.correctionBuffer[ i ] = 0
+    }
+
   },
   
   start: function() {
@@ -4865,6 +4905,28 @@ var Gabber = {
     Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
     Gabber.mode = PIDMODE
     Gibber.Audio.Core.onBlock = Gabber.sendTick
+    
+    Gabber.canvas = Canvas()
+    
+    Gabber.canvas.draw = function() {
+      var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
+          originY = Gabber.canvas.height / 2,
+          lastX = 0, lastY = originY
+          
+      Gabber.canvas.clear()
+      
+      Gabber.canvas.beginPath()
+        Gabber.canvas.moveTo( lastX, lastY )
+        
+        for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
+          var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
+          
+          Gabber.canvas.lineTo( nextX, nextY )
+        }
+        
+      //Gabber.canvas.closePath()
+      Gabber.canvas.stroke( 'red' )
+    }
   },
   roundtrips: [],
   storing:[],
@@ -4902,9 +4964,20 @@ var Gabber = {
     }
   },
   createPerformance : function( name ) {
-    console.log( "SHARE NAME", name  )
-    Share.createDoc( this.userShareColumn.number, null, null, name )
-    $.subscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
+    var rooms = null, roomFunc = function( r ){ rooms = r }
+    
+    $.subscribe( 'Chat.roomsListed', roomFunc ) 
+    
+    Share.createDoc( this.userShareColumn.number, 
+      function() { 
+        if( rooms !== null ) {
+          Gabber.onRoomsListed( rooms )
+        }else{
+          $.unsubscribe( 'Chat.roomsListed', roomFunc )
+          $.subscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
+        }
+      }, null, name 
+    )
   },
   joinPerformance: function( name ) {
     this.name = name
@@ -4920,7 +4993,6 @@ var Gabber = {
     }else{
       $.subscribe( 'Chat.roomJoined', Gabber.onRoomJoined )
       Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
-      Environment.Message.post( 'The chatroom you specified already exists. Now joining.' )
     }
   },
   onRoomCreated: function() {
@@ -4932,17 +5004,38 @@ var Gabber = {
     if( data.roomJoined !== Gabber.name ) {
       Environment.Message.Post( 'For some reason, the wrong performance was joined. Please try again.' )
     }else{
-      Gabber.performers = data.occupants
-      
       for( var i = 0; i < data.occupants.length; i++ ) {
         Gabber.createSharedLayout( data.occupants[i] )
       }
+      Gabber.layoutSharedPerformers()
     }
     Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+  },
+  layoutSharedPerformers: function() {
+    var performers = Gabber.performers,
+        colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
+        numPerformers = Object.keys( performers ).length,
+        numberOfVisiblePerformers = 0,
+        elemHeight = 0
+        
+    for( var key in performers ) {
+      if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
+    }
+    
+    colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
+    
+    elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
+
+    console.log( "CH", colHeight, "EH", elemHeight, "NE", numPerformers, "NV", numberOfVisiblePerformers )
+    for( var key in performers ) {
+      if( performers[key].element.is(':visible') )
+        performers[ key ].code.css( 'height', elemHeight )
+    }
   },
   onNewPerformerAdded: function( data ) {
     if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
       Gabber.createSharedLayout( data.nick )
+      Gabber.layoutSharedPerformers()
     }
   },
   onPerformerRemoved: function( data ) {
@@ -4952,29 +5045,37 @@ var Gabber = {
     }
   },
   createSharedLayout: function( name ) {
-    var element = $( '<div>' )
-    element.header = $('<h2>').text( name ) 
-    element.append( element.header )
+    var performer = {},
+        element = $( '<div>' )
+        
+    performer.element = element
     
-    element.code = $( '<div class="editor">' )
-    element.code.css({ overflow:'scroll' })
+    performer.header = $('<h4>').text( name ) 
+    element.append( performer.header )
     
-    element.header.on( 'mousedown', function() { element.code.toggle() } )
+    performer.code = $( '<div class="editor">' )
+    performer.code.css({ overflow:'scroll' })
+    
+    performer.header.on( 'mousedown', function() { 
+      performer.code.toggle()
+      setTimeout( Gabber.layoutSharedPerformers, 20 )
+    })
       .addClass( 'no-select' )
       .css({ 
         cursor: 'pointer',
         backgroundColor: '#333',
-        marginBottom:'.25em',
+        // marginBottom:'.25em',
+        // marginTop:'.25em',
+        height:Gabber.headerSize,
+        margin:0
       })
     
-    //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )
-    element.code.css({ height: parseInt( Gabber.column.bodyElement.css( 'height' ) ) / 3 })
-    
-    element.append( element.code )
+    //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )    
+    element.append( performer.code )
         
     Gabber.column.bodyElement.append( element )
     
-    element.editor = CodeMirror( element.code[0], {
+    performer.editor = CodeMirror( performer.code[0], {
       theme:  'gibber',
       keyMap: 'gibber',
       mode:   'javascript',
@@ -4989,14 +5090,15 @@ var Gabber = {
       autofocus: false,
     })
     
-    element.editor.shareName = name
+    performer.editor.setSize( null, 'auto' )
+    performer.editor.shareName = name
+    performer.editor.sharingWith = name    
     
-    console.log("NAME", Gabber.name + ':' + name )
-    Share.openDocGabber( Gabber.name + ':' + name, element.editor )
+    Share.openDocGabber( Gabber.name + ':' + name, performer.editor )
     
-    Gabber.performers[ name ] = element
+    Gabber.performers[ name ] = performer
 
-    return element
+    return performer
   },
   onGabber: function( msg ) {
     //console.log("GABBER MESSAGE RECEIVED!", msg )
@@ -5066,6 +5168,34 @@ var Gabber = {
   },
 }
 
+Object.defineProperty( Gabber, 'Ki', {
+  get: function()  { return Gabber.PID.Ki },
+  set: function(v) { 
+    Gabber.PID.Ki = v
+    var msg = { 
+      cmd:  'gabber.Ki',
+      gabberName:Gabber.name,      
+      value: v
+    }
+    
+    Chat.socket.send( JSON.stringify( msg ) )
+  }  
+})
+
+Object.defineProperty( Gabber, 'Kp', {
+  get: function()  { return Gabber.PID.Ki },
+  set: function(v) { 
+    Gabber.PID.Kp = v
+    var msg = {
+      cmd:  'gabber.Kp',
+      gabberName:Gabber.name,
+      value: v
+    };
+    
+    Chat.socket.send( JSON.stringify( msg ) )
+  }
+})
+
 return Gabber
 
 }
@@ -5115,7 +5245,7 @@ var Filters = module.exports = {
       Kp: .01,
       Ki: .00001,
       initialized: false,
-      currentCount: 0,
+      phase: 0,
       targetCount: 44,
       integralPhaseCorrection:0,
       
@@ -5146,6 +5276,9 @@ var Filters = module.exports = {
             var seq = Seq.children[i]
             seq.adjustPhase( controlledPhaseCorrection )
           }
+          
+          //if( Gabber.correctionBuffer.leng)
+          Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = controlledPhaseCorrection
           //Gibber.Audio.Clock.setPhase( Gabber.localPhase )
           
           //console.log( controlledPhaseCorrection )
@@ -5303,23 +5436,21 @@ Share = {
 
       doc.subscribe();
       
-      doc.whenReady( function () {        
-        if ( !doc.type ) doc.create( 'text' )
+      doc.whenReady( function () {  
+        var column = Layout.columns[ columnNumber ],
+            val = column.value
+                  
+        if ( !doc.type ) doc.create( 'text', val )
 
-        if ( doc.type && doc.type.name === 'text' ) {
-          var column = Layout.columns[ columnNumber ],
-              val = column.value
-                
+        if ( doc.type && doc.type.name === 'text' ) {      
           column.shareName = shareName
           column.sharingWith = sharingWith
       
           Share.docs[ columnNumber ] = doc
-          
-          var val = column.value
-          
+                    
           doc.attachCodeMirror( column.editor )
 
-          column.editor.setValue( val )
+          //column.editor.setValue( val )
       
           if( sharingWith !== null ) column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
       

@@ -54,23 +54,21 @@ Share = {
 
       doc.subscribe();
       
-      doc.whenReady( function () {        
-        if ( !doc.type ) doc.create( 'text' )
+      doc.whenReady( function () {  
+        var column = Layout.columns[ columnNumber ],
+            val = column.value
+                  
+        if ( !doc.type ) doc.create( 'text', val )
 
-        if ( doc.type && doc.type.name === 'text' ) {
-          var column = Layout.columns[ columnNumber ],
-              val = column.value
-                
+        if ( doc.type && doc.type.name === 'text' ) {      
           column.shareName = shareName
           column.sharingWith = sharingWith
       
           Share.docs[ columnNumber ] = doc
-          
-          var val = column.value
-          
+                    
           doc.attachCodeMirror( column.editor )
 
-          column.editor.setValue( val )
+          //column.editor.setValue( val )
       
           if( sharingWith !== null ) column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
       
