@@ -498,7 +498,8 @@ module.exports = function( Gibber ) {
         !function() {
           var num = i, btn = btns[ num ]
           
-          btn.state = 0
+          btn.state = num === 1
+          if( btn.state ) $( btn ).css({ backgroundColor:'#666' })
           
           $( btn ).on( 'click', function() {
             for( var j = 0; j < btns.length; j++ ) {
@@ -731,7 +732,7 @@ module.exports = function( Gibber ) {
     search : function(e) {
       var btns = $( '.searchOption' ),
           btnText = [ 'tags','code','author' ],
-          queryFilter = '', query = null
+          queryFilter = 'code', query = null
       
       query = $( '.browser .search input' ).val()
       
@@ -743,6 +744,7 @@ module.exports = function( Gibber ) {
       for( var i = 0; i < btns.length; i++ ) {
         if( btns[ i ].state ){
           queryFilter = btnText[ i ]
+          break;
         }
       }
       
@@ -4855,20 +4857,6 @@ var Gabber = {
     Gabber.localPhase += 1024
     Chat.socket.send( JSON.stringify({ cmd:'tick' }) )
   },
-  runningAverage: ( function() {
-    var n = 0, sum = 0
-    
-    var avg = function( p ) {
-      sum += p
-      n++
-      return sum / n
-    }
-    
-    avg.setN = function( v ) { n = v }
-    avg.setSum = function( v ) { sum = v }    
-
-    return avg
-  })(),
   correctionFlag: false,
   mode:0, // 0 for initialize, 1 for running
   correctPhase: function() { Gabber.correctionFlag = true },
@@ -4906,27 +4894,27 @@ var Gabber = {
     Gabber.mode = PIDMODE
     Gibber.Audio.Core.onBlock = Gabber.sendTick
     
-    Gabber.canvas = Canvas()
-    
-    Gabber.canvas.draw = function() {
-      var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
-          originY = Gabber.canvas.height / 2,
-          lastX = 0, lastY = originY
-          
-      Gabber.canvas.clear()
-      
-      Gabber.canvas.beginPath()
-        Gabber.canvas.moveTo( lastX, lastY )
-        
-        for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
-          var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
-          
-          Gabber.canvas.lineTo( nextX, nextY )
-        }
-        
-      //Gabber.canvas.closePath()
-      Gabber.canvas.stroke( 'red' )
-    }
+    // Gabber.canvas = Canvas()
+    // 
+    // Gabber.canvas.draw = function() {
+    //   var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
+    //       originY = Gabber.canvas.height / 2,
+    //       lastX = 0, lastY = originY
+    //       
+    //   Gabber.canvas.clear()
+    //   
+    //   Gabber.canvas.beginPath()
+    //     Gabber.canvas.moveTo( lastX, lastY )
+    //     
+    //     for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
+    //       var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
+    //       
+    //       Gabber.canvas.lineTo( nextX, nextY )
+    //     }
+    //     
+    //   //Gabber.canvas.closePath()
+    //   Gabber.canvas.stroke( 'red' )
+    // }
   },
   roundtrips: [],
   storing:[],
@@ -5011,27 +4999,6 @@ var Gabber = {
     }
     Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
   },
-  layoutSharedPerformers: function() {
-    var performers = Gabber.performers,
-        colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
-        numPerformers = Object.keys( performers ).length,
-        numberOfVisiblePerformers = 0,
-        elemHeight = 0
-        
-    for( var key in performers ) {
-      if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
-    }
-    
-    colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
-    
-    elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
-
-    console.log( "CH", colHeight, "EH", elemHeight, "NE", numPerformers, "NV", numberOfVisiblePerformers )
-    for( var key in performers ) {
-      if( performers[key].element.is(':visible') )
-        performers[ key ].code.css( 'height', elemHeight )
-    }
-  },
   onNewPerformerAdded: function( data ) {
     if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
       Gabber.createSharedLayout( data.nick )
@@ -5054,7 +5021,7 @@ var Gabber = {
     element.append( performer.header )
     
     performer.code = $( '<div class="editor">' )
-    performer.code.css({ overflow:'scroll' })
+    performer.code.css({ overflow:'scroll', height:'auto' })
     
     performer.header.on( 'mousedown', function() { 
       performer.code.toggle()
@@ -5100,10 +5067,31 @@ var Gabber = {
 
     return performer
   },
+  layoutSharedPerformers: function() {
+    var performers = Gabber.performers,
+        colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
+        numPerformers = Object.keys( performers ).length,
+        numberOfVisiblePerformers = 0,
+        elemHeight = 0
+        
+    for( var key in performers ) {
+      if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
+    }
+    
+    colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
+    
+    elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
+
+    for( var key in performers ) {
+      if( performers[key].element.is(':visible') )
+        performers[ key ].code.css( 'height', '50%' ) //elemHeight )
+    }
+  },
   onGabber: function( msg ) {
     //console.log("GABBER MESSAGE RECEIVED!", msg )
     var cm, owner = false
     
+    console.log( "SHARENAME", msg.shareName, "NICK", Account.nick )
     if( msg.shareName === Account.nick ) {
       cm = Gabber.userShareColumn.editor
       owner = true
@@ -5111,31 +5099,51 @@ var Gabber = {
       cm = Gabber.performers[ msg.shareName ].editor
     }
     
-    //if( !owner ) {
-    cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+    if( !owner ) {
+      console.log( "RANGE", msg.selectionRange )
+      
+      setTimeout( function() {
+        cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      }, 50 )
     
-    Environment.Keymap.flash( cm, msg.selectionRange )
+      Environment.Keymap.flash( cm, msg.selectionRange )
 
-    Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
+      Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
+    }
   },
-  createMessage: function( selection, shareName ) {
+  createMessage: function( selection, shareName, cm ) {
+    var tmp = selection.code.split('\n')
+    tmp[0] = tmp[0] + ' /* ' + Account.nick + ' */'
+    tmp = tmp.join('')
+
+    if( typeof selection.selection.start === 'undefined' ) {
+      var range = {
+        start: { line:selection.selection.line, ch:0 },
+        end: { line:selection.selection.line, ch:tmp.length }
+      }
+      selection.selection = range
+    }
+    
+    cm.replaceRange( tmp, selection.selection.start, selection.selection.end )
+    cm.markText( selection.selection.start, selection.selection.end, { css:'background-color:rgba(0,0,255,.3);' })
+    
     var msg = { 
       cmd:            'gabber',
       gabberName:     Gabber.name,
       from:           Account.nick,
       'shareName':    shareName || Account.nick,        
       selectionRange: selection.selection, // range
-      code:           selection.code,
+      code:           tmp,
       shouldExecute:  Gabber.enableRemoteExecution,
     }
     
-    if( typeof msg.selectionRange.start === 'undefined' ) {
-      var range = {
-        start: { line:msg.selectionRange.line, ch:0 },
-        end: { line:msg.selectionRange.line, ch:msg.code.length - 1 }
-      }
-      msg.selectionRange = range
-    }
+    // if( typeof msg.selectionRange.start === 'undefined' ) {
+    //   var range = {
+    //     start: { line:msg.selectionRange.line, ch:0 },
+    //     end: { line:msg.selectionRange.line, ch:msg.code.length - 1 }
+    //   }
+    //   msg.selectionRange = range
+    // }
     
     return msg
   },
@@ -5145,10 +5153,12 @@ var Gabber = {
       
 			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
       
-      var msg = Gabber.createMessage( obj, cm.shareName )
+      var msg = Gabber.createMessage( obj, cm.shareName, cm )
       msg.shouldDelay = false
       
-      cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      console.log( "CM", cm )
+      
+      //cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
 
       Chat.socket.send( JSON.stringify( msg ) ) 
 		}
@@ -5158,10 +5168,16 @@ var Gabber = {
       
 			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
       
-      var msg = Gabber.createMessage( obj, cm.shareName )
+      var msg = Gabber.createMessage( obj, cm.shareName, cm )
       msg.shouldDelay = true
       
-      cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      console.log( "CM", cm )
+      
+      // if( cm.shareName !== Account.nick ) {
+      //   cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      // }else{
+      //   cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(0,0,255,.2);' })
+      // }
       
       Chat.socket.send( JSON.stringify( msg ) ) 
     }
@@ -22872,7 +22888,8 @@ param **amp** Number. The amplitude to be used to calculate output.
     //   }
     //   //console.log( "FLIP", sign, signHistory, count, sync )
     // }
-    if( sign !== 0 ) signHistory = sign
+    // 
+    // if( sign !== 0 ) signHistory = sign
     
     return ( val1 + ( frac * (val2 - val1) ) ) * amp;
   }
@@ -23843,6 +23860,7 @@ Gibberish.Line = function(start, end, time, loops) {
   //console.log("INCREMENT", incr, end, start, time )
   
 	this.callback = function(start, end, time, loops) {
+    var incr = (end - start) / time
 		out = phase < time ? start + ( phase++ * incr) : end;
 				
 		phase = (out >= end && loops) ? 0 : phase;
@@ -23850,7 +23868,10 @@ Gibberish.Line = function(start, end, time, loops) {
 		return out;
 	};
   
+  this.setPhase = function(v) { phase = v; }
+  
   Gibberish.extend(this, that);
+  
   this.init();
 
   return this;
@@ -28562,6 +28583,100 @@ Gibberish.Tom = function() {
 }
 Gibberish.Tom.prototype = Gibberish._oscillator;
 
+Gibberish.Clap = function() {
+  var _bpf = new Gibberish.Biquad(),
+      bpf  = _bpf.callback,
+      _bpf2 = new Gibberish.Biquad(),
+      bpf2 = _bpf2.callback,
+      _bpf3 = new Gibberish.Biquad(),
+      bpf3 = _bpf3.callback,      
+      _eg = new Gibberish.ExponentialDecay(),
+      eg  = _eg.callback,
+      _eg2 = new Gibberish.ExponentialDecay(),
+      eg2 = _eg2.callback,
+      _ad  = new Gibberish.Line(),
+      ad = _ad.callback,
+      _lfo = new Gibberish.Saw(),
+      lfo = _lfo.callback,
+      rnd = Math.random,
+      cutoff = 1000,
+      rez = 2.5,
+      env1K = .025,
+      env2K = .9,
+      env1Dur = 30 * 44.1,
+      env2Dur = 660,
+      freq = 100
+      
+  _bpf.mode = _bpf2.mode = 'BP'
+  _bpf3.mode = 'BP'
+  _bpf3.cutoff = 2400
+  
+  _bpf.cutoff = _bpf2.cutoff = 1000
+  _bpf.Q = 2
+  _bpf2.Q = 1
+      
+  Gibberish.extend(this, {
+  	name:		"clap",
+    properties:	{ amp:.5, sr:Gibberish.context.sampleRate },
+	
+  	callback: function( amp, sr ) {
+  		var out = 0, noiseBPF, noise, env;
+			      
+      noiseBPF = rnd() * 4 - 2 //* 4 - 2
+		  noiseBPF = noiseBPF > 0 ? noiseBPF : 0;
+      
+      noise = rnd() * 4 - 2 //* 16 - 8
+		  noise = noise > 0 ? noise : 0;
+      
+  		out = bpf2( bpf( noiseBPF ) ) //, cutoff, rez, 2, sr ); // mode 2 is bp
+      
+      out *= eg2( env2K, env2Dur )
+      
+      noise = bpf3( lfo( freq, noise ) * eg( env1K, env1Dur ) )//ad( 1,0, env1Dur, false ) );
+      
+      out += noise;
+  		out *= amp;
+		
+  		return out;
+  	},
+
+  	note : function( amp ) {
+  		if(typeof amp === 'number') this.amp = amp;
+		  
+      _eg2.trigger();
+      _eg.trigger();
+      _ad.setPhase(0);
+      _lfo.setPhase(0);
+
+  	},
+  })
+  .init()
+  .oscillatorInit();
+  
+  // _eg.trigger(1)
+  // _eg2.trigger(1)
+  
+  this.getBPF = function() { return _bpf; }
+  this.getBPF2 = function() { return _bpf2; }
+  this.getBPF3 = function() { return _bpf3; }
+  this.getLine = function() { return _ad; }
+  
+  this.setEnvK = function( k1,k2,d1,d2 ) {
+    env1K = k1
+    if( k2 ) env2K = k2
+    if( d1 ) env1Dur = d1
+    if( d2 ) env2Dur = d2    
+  }
+  
+  this.setFreq = function(v) { freq = v }
+  
+  this.setRez = function(v) { rez = v; }
+  this.setCutoff = function(v) { cutoff = v; }  
+  
+  this.processProperties(arguments);
+}
+Gibberish.Clap.prototype = Gibberish._oscillator;
+
 // http://www.soundonsound.com/sos/Sep02/articles/synthsecrets09.asp
 Gibberish.Cowbell = function() {
   var _s1 = new Gibberish.Square(),
@@ -30320,6 +30435,7 @@ module.exports = function( Gibber ) {
         'Cowbell',
         'Clave',
         'Tom',
+        'Clap'
       ],
       _mappingProperties = {
         Drums: {
@@ -30360,6 +30476,10 @@ module.exports = function( Gibber ) {
           out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },
           amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',}, },
         Tom     : { 
+          out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },
+          amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',}, 
+        },
+        Clap     : { 
           out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },
           amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',}, 
         },
@@ -33309,7 +33429,9 @@ module.exports = function( Gibber ) {
                   this.frequency = _frequency
                 }
               }
-        
+              
+              this.lastFrequency = this.frequency
+              
               if( obj.envelope.getState() > 0 ) obj.envelope.run();
             }
           }
@@ -33358,10 +33480,15 @@ module.exports = function( Gibber ) {
         //obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
         
-        Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
+        obj.trig = function() {
+          this.note( this.lastFrequency )
+        }
+        
+        Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send', 'trig' ] )
                 
         obj.name = name 
         
+
         //console.log( "PROCESS", args, _mappingProperties[ name ] )
         
         //Gibber.processArguments2( obj, args, obj.name )

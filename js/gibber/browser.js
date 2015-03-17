@@ -12,7 +12,8 @@ module.exports = function( Gibber ) {
         !function() {
           var num = i, btn = btns[ num ]
           
-          btn.state = 0
+          btn.state = num === 1
+          if( btn.state ) $( btn ).css({ backgroundColor:'#666' })
           
           $( btn ).on( 'click', function() {
             for( var j = 0; j < btns.length; j++ ) {
@@ -245,7 +246,7 @@ module.exports = function( Gibber ) {
     search : function(e) {
       var btns = $( '.searchOption' ),
           btnText = [ 'tags','code','author' ],
-          queryFilter = '', query = null
+          queryFilter = 'code', query = null
       
       query = $( '.browser .search input' ).val()
       
@@ -257,6 +258,7 @@ module.exports = function( Gibber ) {
       for( var i = 0; i < btns.length; i++ ) {
         if( btns[ i ].state ){
           queryFilter = btnText[ i ]
+          break;
         }
       }
       

@@ -93,20 +93,6 @@ var Gabber = {
     Gabber.localPhase += 1024
     Chat.socket.send( JSON.stringify({ cmd:'tick' }) )
   },
-  runningAverage: ( function() {
-    var n = 0, sum = 0
-    
-    var avg = function( p ) {
-      sum += p
-      n++
-      return sum / n
-    }
-    
-    avg.setN = function( v ) { n = v }
-    avg.setSum = function( v ) { sum = v }    
-
-    return avg
-  })(),
   correctionFlag: false,
   mode:0, // 0 for initialize, 1 for running
   correctPhase: function() { Gabber.correctionFlag = true },
@@ -144,27 +130,27 @@ var Gabber = {
     Gabber.mode = PIDMODE
     Gibber.Audio.Core.onBlock = Gabber.sendTick
     
-    Gabber.canvas = Canvas()
-    
-    Gabber.canvas.draw = function() {
-      var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
-          originY = Gabber.canvas.height / 2,
-          lastX = 0, lastY = originY
-          
-      Gabber.canvas.clear()
-      
-      Gabber.canvas.beginPath()
-        Gabber.canvas.moveTo( lastX, lastY )
-        
-        for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
-          var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
-          
-          Gabber.canvas.lineTo( nextX, nextY )
-        }
-        
-      //Gabber.canvas.closePath()
-      Gabber.canvas.stroke( 'red' )
-    }
+    // Gabber.canvas = Canvas()
+    // 
+    // Gabber.canvas.draw = function() {
+    //   var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
+    //       originY = Gabber.canvas.height / 2,
+    //       lastX = 0, lastY = originY
+    //       
+    //   Gabber.canvas.clear()
+    //   
+    //   Gabber.canvas.beginPath()
+    //     Gabber.canvas.moveTo( lastX, lastY )
+    //     
+    //     for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
+    //       var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
+    //       
+    //       Gabber.canvas.lineTo( nextX, nextY )
+    //     }
+    //     
+    //   //Gabber.canvas.closePath()
+    //   Gabber.canvas.stroke( 'red' )
+    // }
   },
   roundtrips: [],
   storing:[],
@@ -249,27 +235,6 @@ var Gabber = {
     }
     Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
   },
-  layoutSharedPerformers: function() {
-    var performers = Gabber.performers,
-        colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
-        numPerformers = Object.keys( performers ).length,
-        numberOfVisiblePerformers = 0,
-        elemHeight = 0
-        
-    for( var key in performers ) {
-      if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
-    }
-    
-    colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
-    
-    elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
-
-    console.log( "CH", colHeight, "EH", elemHeight, "NE", numPerformers, "NV", numberOfVisiblePerformers )
-    for( var key in performers ) {
-      if( performers[key].element.is(':visible') )
-        performers[ key ].code.css( 'height', elemHeight )
-    }
-  },
   onNewPerformerAdded: function( data ) {
     if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
       Gabber.createSharedLayout( data.nick )
@@ -292,7 +257,7 @@ var Gabber = {
     element.append( performer.header )
     
     performer.code = $( '<div class="editor">' )
-    performer.code.css({ overflow:'scroll' })
+    performer.code.css({ overflow:'scroll', height:'auto' })
     
     performer.header.on( 'mousedown', function() { 
       performer.code.toggle()
@@ -338,10 +303,31 @@ var Gabber = {
 
     return performer
   },
+  layoutSharedPerformers: function() {
+    var performers = Gabber.performers,
+        colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
+        numPerformers = Object.keys( performers ).length,
+        numberOfVisiblePerformers = 0,
+        elemHeight = 0
+        
+    for( var key in performers ) {
+      if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
+    }
+    
+    colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
+    
+    elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
+
+    for( var key in performers ) {
+      if( performers[key].element.is(':visible') )
+        performers[ key ].code.css( 'height', '50%' ) //elemHeight )
+    }
+  },
   onGabber: function( msg ) {
     //console.log("GABBER MESSAGE RECEIVED!", msg )
     var cm, owner = false
     
+    console.log( "SHARENAME", msg.shareName, "NICK", Account.nick )
     if( msg.shareName === Account.nick ) {
       cm = Gabber.userShareColumn.editor
       owner = true
@@ -349,31 +335,51 @@ var Gabber = {
       cm = Gabber.performers[ msg.shareName ].editor
     }
     
-    //if( !owner ) {
-    cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+    if( !owner ) {
+      console.log( "RANGE", msg.selectionRange )
+      
+      setTimeout( function() {
+        cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      }, 50 )
     
-    Environment.Keymap.flash( cm, msg.selectionRange )
+      Environment.Keymap.flash( cm, msg.selectionRange )
 
-    Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
+      Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
+    }
   },
-  createMessage: function( selection, shareName ) {
+  createMessage: function( selection, shareName, cm ) {
+    var tmp = selection.code.split('\n')
+    tmp[0] = tmp[0] + ' /* ' + Account.nick + ' */'
+    tmp = tmp.join('')
+
+    if( typeof selection.selection.start === 'undefined' ) {
+      var range = {
+        start: { line:selection.selection.line, ch:0 },
+        end: { line:selection.selection.line, ch:tmp.length }
+      }
+      selection.selection = range
+    }
+    
+    cm.replaceRange( tmp, selection.selection.start, selection.selection.end )
+    cm.markText( selection.selection.start, selection.selection.end, { css:'background-color:rgba(0,0,255,.3);' })
+    
     var msg = { 
       cmd:            'gabber',
       gabberName:     Gabber.name,
       from:           Account.nick,
       'shareName':    shareName || Account.nick,        
       selectionRange: selection.selection, // range
-      code:           selection.code,
+      code:           tmp,
       shouldExecute:  Gabber.enableRemoteExecution,
     }
     
-    if( typeof msg.selectionRange.start === 'undefined' ) {
-      var range = {
-        start: { line:msg.selectionRange.line, ch:0 },
-        end: { line:msg.selectionRange.line, ch:msg.code.length - 1 }
-      }
-      msg.selectionRange = range
-    }
+    // if( typeof msg.selectionRange.start === 'undefined' ) {
+    //   var range = {
+    //     start: { line:msg.selectionRange.line, ch:0 },
+    //     end: { line:msg.selectionRange.line, ch:msg.code.length - 1 }
+    //   }
+    //   msg.selectionRange = range
+    // }
     
     return msg
   },
@@ -383,10 +389,12 @@ var Gabber = {
       
 			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
       
-      var msg = Gabber.createMessage( obj, cm.shareName )
+      var msg = Gabber.createMessage( obj, cm.shareName, cm )
       msg.shouldDelay = false
       
-      cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      console.log( "CM", cm )
+      
+      //cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
 
       Chat.socket.send( JSON.stringify( msg ) ) 
 		}
@@ -396,10 +404,16 @@ var Gabber = {
       
 			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
       
-      var msg = Gabber.createMessage( obj, cm.shareName )
+      var msg = Gabber.createMessage( obj, cm.shareName, cm )
       msg.shouldDelay = true
       
-      cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      console.log( "CM", cm )
+      
+      // if( cm.shareName !== Account.nick ) {
+      //   cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      // }else{
+      //   cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(0,0,255,.2);' })
+      // }
       
       Chat.socket.send( JSON.stringify( msg ) ) 
     }
