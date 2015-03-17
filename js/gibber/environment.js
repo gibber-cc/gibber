@@ -586,9 +586,9 @@ var GE = {
         console.log('credits!')
         GE.Credits.open()
       })
-      $( '#forumButton' ).on( 'click', function(e) {
-        GE.Forum.open()
-      })
+      // $( '#forumButton' ).on( 'click', function(e) {
+      //   GE.Forum.open()
+      // })
       
       $( '#preferencesButton' ).on( 'click', function(e) {
         GE.Preferences.open()

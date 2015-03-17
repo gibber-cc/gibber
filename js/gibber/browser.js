@@ -248,7 +248,6 @@ module.exports = function( Gibber ) {
           btnText = [ 'tags','code','author' ],
           queryFilter = 'code', query = null
       
-      console.log("SEARCH", queryFilter )
       query = $( '.browser .search input' ).val()
       
       if( query === '' ) {
