@@ -3713,7 +3713,8 @@ param **amp** Number. The amplitude to be used to calculate output.
     //   }
     //   //console.log( "FLIP", sign, signHistory, count, sync )
     // }
-    if( sign !== 0 ) signHistory = sign
+    // 
+    // if( sign !== 0 ) signHistory = sign
     
     return ( val1 + ( frac * (val2 - val1) ) ) * amp;
   }
@@ -4684,6 +4685,7 @@ Gibberish.Line = function(start, end, time, loops) {
   //console.log("INCREMENT", incr, end, start, time )
   
 	this.callback = function(start, end, time, loops) {
+    var incr = (end - start) / time
 		out = phase < time ? start + ( phase++ * incr) : end;
 				
 		phase = (out >= end && loops) ? 0 : phase;
@@ -4691,7 +4693,10 @@ Gibberish.Line = function(start, end, time, loops) {
 		return out;
 	};
   
+  this.setPhase = function(v) { phase = v; }
+  
   Gibberish.extend(this, that);
+  
   this.init();
 
   return this;
@@ -9404,39 +9409,56 @@ Gibberish.Tom = function() {
 Gibberish.Tom.prototype = Gibberish._oscillator;
 
 Gibberish.Clap = function() {
-  var bpf = new Gibberish.SVF().callback,
+  var _bpf = new Gibberish.Biquad(),
+      bpf  = _bpf.callback,
+      _bpf2 = new Gibberish.Biquad(),
+      bpf2 = _bpf2.callback,
+      _bpf3 = new Gibberish.Biquad(),
+      bpf3 = _bpf3.callback,      
       _eg = new Gibberish.ExponentialDecay(),
       eg  = _eg.callback,
       _eg2 = new Gibberish.ExponentialDecay(),
       eg2 = _eg2.callback,
-      _ad  = new Gibberish.AD(),
+      _ad  = new Gibberish.Line(),
       ad = _ad.callback,
-      lfo = new Gibberish.Saw().callback,
+      _lfo = new Gibberish.Saw(),
+      lfo = _lfo.callback,
       rnd = Math.random,
       cutoff = 1000,
-      rez = 2.5
+      rez = 2.5,
+      env1K = .025,
+      env2K = .9,
+      env1Dur = 30 * 44.1,
+      env2Dur = 660,
+      freq = 100
+      
+  _bpf.mode = _bpf2.mode = 'BP'
+  _bpf3.mode = 'BP'
+  _bpf3.cutoff = 2400
+  
+  _bpf.cutoff = _bpf2.cutoff = 1000
+  _bpf.Q = 2
+  _bpf2.Q = 1
       
   Gibberish.extend(this, {
-  	name:		"tom",
+  	name:		"clap",
     properties:	{ amp:.5, sr:Gibberish.context.sampleRate },
 	
   	callback: function( amp, sr ) {
   		var out = 0, noiseBPF, noise, env;
 			      
-      noiseBPF = rnd() * 16 - 8
+      noiseBPF = rnd() * 4 - 2 //* 4 - 2
 		  noiseBPF = noiseBPF > 0 ? noiseBPF : 0;
       
-      noise = rnd() * 16 - 8
+      noise = rnd() * 4 - 2 //* 16 - 8
 		  noise = noise > 0 ? noise : 0;
       
-  		out = bpf( noiseBPF, cutoff, rez, 2, sr ); // mode 2 is bp
+  		out = bpf2( bpf( noiseBPF ) ) //, cutoff, rez, 2, sr ); // mode 2 is bp
       
-      //out *= lfo( 100, 1 );      
-      out *= eg2( .025, 11050 )
+      out *= eg2( env2K, env2Dur )
       
-      noise *= lfo( 100, eg( .075, 440 ) );
+      noise = bpf3( lfo( freq, noise ) * eg( env1K, env1Dur ) )//ad( 1,0, env1Dur, false ) );
       
-      out *= .25;
       out += noise;
   		out *= amp;
 		
@@ -9448,17 +9470,31 @@ Gibberish.Clap = function() {
 		  
       _eg2.trigger();
       _eg.trigger();
-      _ad.run();
+      _ad.setPhase(0);
+      _lfo.setPhase(0);
 
   	},
   })
   .init()
   .oscillatorInit();
   
-  _eg.trigger(1)
-  _eg2.trigger(1)
+  // _eg.trigger(1)
+  // _eg2.trigger(1)
   
-  this.getBPF = function() { return bpf; }
+  this.getBPF = function() { return _bpf; }
+  this.getBPF2 = function() { return _bpf2; }
+  this.getBPF3 = function() { return _bpf3; }
+  this.getLine = function() { return _ad; }
+  
+  this.setEnvK = function( k1,k2,d1,d2 ) {
+    env1K = k1
+    if( k2 ) env2K = k2
+    if( d1 ) env1Dur = d1
+    if( d2 ) env2Dur = d2    
+  }
+  
+  this.setFreq = function(v) { freq = v }
+  
   this.setRez = function(v) { rez = v; }
   this.setCutoff = function(v) { cutoff = v; }  
   
@@ -10136,7 +10172,7 @@ Audio = {
     
     // target.future = Gibber.Utilities.future
     // target.solo = Gibber.Utilities.solo    
-    target.Score = Audio.Score    
+    target.Score = Audio.Score
 		target.Clock = Audio.Clock
     target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
@@ -10177,6 +10213,7 @@ Audio = {
       if( __onstart !== null ) { __onstart() }
     }
     
+    Audio.Score = Audio.Score( Gibber )
     Gibber.Clock = Audio.Clock
           
     Gibber.Theory = Audio.Theory
@@ -10564,7 +10601,7 @@ Audio.Vocoder =        require( './audio/vocoder' )( Gibber )
 Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
 Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
-Audio.Score =          require( './audio/score')( Gibber )
+Audio.Score =          require( './audio/score' )
 
 return Audio
 
@@ -13277,7 +13314,8 @@ module.exports = function( Gibber ) {
 
 "use strict"
 
-var Gibberish = require( 'gibberish-dsp' )
+var Gibberish = require( 'gibberish-dsp' ),
+    $ = Gibber.dollar
 
 var ScoreProto = {
   start: function() { 

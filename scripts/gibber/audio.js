@@ -26,7 +26,7 @@ Audio = {
     
     // target.future = Gibber.Utilities.future
     // target.solo = Gibber.Utilities.solo    
-    target.Score = Audio.Score    
+    target.Score = Audio.Score
 		target.Clock = Audio.Clock
     target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
@@ -67,6 +67,7 @@ Audio = {
       if( __onstart !== null ) { __onstart() }
     }
     
+    Audio.Score = Audio.Score( Gibber )
     Gibber.Clock = Audio.Clock
           
     Gibber.Theory = Audio.Theory
@@ -454,7 +455,7 @@ Audio.Vocoder =        require( './audio/vocoder' )( Gibber )
 Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
 Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
-Audio.Score =          require( './audio/score')( Gibber )
+Audio.Score =          require( './audio/score' )
 
 return Audio
 

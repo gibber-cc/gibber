@@ -19,7 +19,8 @@ module.exports = function( Gibber ) {
 
 "use strict"
 
-var Gibberish = require( 'gibberish-dsp' )
+var Gibberish = require( 'gibberish-dsp' ),
+    $ = Gibber.dollar
 
 var ScoreProto = {
   start: function() { 
