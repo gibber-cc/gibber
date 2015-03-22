@@ -5,7 +5,8 @@ var times = [],
     curves = null,
     LINEAR = null,
     LOGARITHMIC = null,
-    Gibberish = require( 'gibberish-dsp' )
+    Gibberish = require( 'gibberish-dsp' ),
+    Gibber
 
 var Clock = {
   seq : null, 
@@ -18,6 +19,7 @@ var Clock = {
   codeToExecute : [],
   signature: { lower: 4, upper: 4 },
   sequencers:[],
+  shouldResetOnClear:true,
   timeProperties : [ 'attack', 'decay', 'sustain', 'release', 'offset', 'time' ],
   phase : 0,
   export: function( target ) {
@@ -67,7 +69,7 @@ var Clock = {
     this.phase = 0
     this.currentBeat = 0
     this.rate = 1
-    this.start()
+    this.start( false )
   },
   
   tap : function() {
@@ -89,15 +91,18 @@ var Clock = {
   },
   
   start : function( shouldInit ) {    
+    var _phase = 0
+    
     if( shouldInit ) {
       $.extend( this, {
         properties: { rate: 1 },
         name:'master_clock',
         callback : function( rate ) {
+          _phase++ 
           return rate
         }
       })
-    
+     
       this.__proto__ = new Gibberish.ugen()
       this.__proto__.init.call( this )
 
@@ -126,18 +131,24 @@ var Clock = {
         rate : { min: .1, max: 2, output: LINEAR, timescale: 'audio' },
         bpm : { min: 20, max: 200, output: LINEAR, timescale: 'audio' },        
       })
+      
+      this.setPhase = function( v ) { _phase = v }
+      this.getPhase = function() { return _phase }
+      
+      Clock.seq = new Gibberish.PolySeq({
+        seqs : [{
+          target:Clock,
+          values: [ Clock.processBeat.bind( Clock ) ],
+          durations:[ 1/4 ],
+        }],
+        rate: Clock,
+      })
+      Clock.seq.connect().start()
+      Clock.seq.timeModifier = Clock.time.bind( Clock )
+    }else{
+      Clock.seq.setPhase(0)
+      Clock.seq.connect().start()
     }
-    
-    Clock.seq = new Gibberish.PolySeq({
-      seqs : [{
-        target:Clock,
-        values: [ Clock.processBeat.bind( Clock ) ],
-        durations:[ 1/4 ],
-      }],
-      rate: Clock,
-    })
-    Clock.seq.connect().start()
-    Clock.seq.timeModifier = Clock.time.bind( Clock )
   },
   
   addMetronome: function( metronome ) {
@@ -170,15 +181,14 @@ var Clock = {
   
   beats : function(val) {
     var sampleRate = typeof Gibberish.context !== 'undefined' ? Gibberish.context.sampleRate : 44100,
-        samplesPerBeat = sampleRate / ( Clock.baseBPM / 60 )
+        beatsPerSecond = Clock.bpm / 60,
+        samplesPerBeat = sampleRate / beatsPerSecond
         
-    return samplesPerBeat * ( val * ( 4 / Clock.signature.lower ) );
+    return samplesPerBeat * val
   },
   
   Beats : function(val) {
-    return function() {
-      return Gibber.Clock.beats( val )
-    }
+    return Gibber.clock.beats.bind( null, val )
   },
   
   measures: function( val ) {
@@ -190,10 +200,10 @@ var Clock = {
   }
 }
 
-module.exports = function( Gibber ) {
+module.exports = function( __Gibber ) {
   
   "use strict"
-
+  Gibber = __Gibber
   $ = Gibber.dollar,
   curves = Gibber.outputCurves,
   LINEAR = curves.LINEAR,

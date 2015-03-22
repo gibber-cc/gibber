@@ -125,6 +125,38 @@ module.exports = function( Gibber ) {
             
             _seq.values = valuesPattern
             
+            _seq.stop = function() { _seq.shouldStop = true } 
+    
+            // TODO: property specific stop/start/shuffle etc. for polyseq
+            _seq.start = function() {
+              _seq.shouldStop = false
+              seq.timeline[0] = [ _seq ]                
+              seq.nextTime = 0
+      
+              if( !seq.isRunning ) { 
+                seq.start( false, priority )
+              }
+            }
+    
+            _seq.repeat = function( numberOfTimes ) {
+              var repeatCount = 0
+      
+              var filter = function( args, ptrn ) {
+                if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
+                  repeatCount++
+                  if( repeatCount === numberOfTimes ) {
+                    ptrn.seq.stop()
+                  }
+                }
+                return args
+              }
+      
+              valuesPattern.filters.push( filter )
+            }
+            
+            valuesPattern.seq = _seq
+            //durationsPattern.seq = _seq 
+            
             obj.seqs.push( _seq )
             keyList.push( key )
           }
@@ -170,7 +202,9 @@ module.exports = function( Gibber ) {
         values: Array.isArray( arguments[0] ) ? arguments[0] : [ arguments[ 0 ] ],
         durations: Gibber.Clock.time( arguments[ 1 ] )
       }]
-            
+      if( typeof arguments[1] === 'function' || Array.isArray( arguments[1] ) ) {
+        obj.seqs[0].durations = arguments[ 1  ]
+      }
       keyList.push('functions')
     }
       
@@ -253,6 +287,8 @@ module.exports = function( Gibber ) {
       
           console.log("SEQ KILL", this )
         this.stop().disconnect()
+        
+        Seq.children.splice( Seq.children.indexOf( this ), 1 )
       },
       applyScale : function() {
         // for( var i = 0; i < this.seqs.length; i++ ) {
@@ -276,11 +312,25 @@ module.exports = function( Gibber ) {
           this.seqs[ i ].values[0].shuffle()
         }
       },
+      // repeat : function( numberOfTimes ) { 
+      //   var repeatCount = 0
+      //   
+      //   var filter = function( args, ptrn ) {
+      //     if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
+      //       ptrn.seq.stop()
+      //     }
+      //     return args
+      //   }
+      //   
+      // }
     })
+    
+    Seq.children.push( seq )
+    
     return seq
   }
   
-
+  Seq.children = []
   
   var ScaleSeq = function() {
     var args = arguments[0],

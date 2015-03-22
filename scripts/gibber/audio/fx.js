@@ -257,6 +257,7 @@ module.exports = function( Gibber ) {
         
         obj.toString = function() { return '> ' + name }
         
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()

@@ -19,18 +19,20 @@ Audio = {
     $.extend( target, Audio.Seqs )    
     $.extend( target, Audio.Samplers )
     $.extend( target, Audio.PostProcessing )
+    $.extend( target, Audio.Vocoder )
     
     target.Theory = Audio.Theory
     $.extend( target, Audio.Analysis ) 
     
     // target.future = Gibber.Utilities.future
     // target.solo = Gibber.Utilities.solo    
-    
+    target.Score = Audio.Score    
 		target.Clock = Audio.Clock
     target.Seq = Audio.Seqs.Seq
     target.Arp = Audio.Arp // move Arp to sequencers?
     target.ScaleSeq = Audio.Seqs.ScaleSeq
     target.SoundFont = Audio.SoundFont
+    target.Speak = Audio.Speak
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -210,15 +212,19 @@ Audio = {
     }
   
     Audio.Master.inputs.length = arguments.length
-  
-    Audio.Clock.reset()
+    
+    if( Audio.Clock.shouldResetOnClear !== false ) {
+      Audio.Clock.reset()
+    }
   
     Audio.Master.fx.remove()
   
     Audio.Master.amp = 1
     
     Audio.Core.clear()
-
+    
+    Audio.Clock.seq.connect()
+    
     Audio.Core.out.addConnection( Audio.Master, 1 );
     Audio.Master.destinations.push( Audio.Core.out );
   
@@ -324,26 +330,28 @@ Audio = {
     }),
       
     replaceWith: function( replacement ) {
-      for( var i = 0; i < this.destinations.length; i++ ) {
-        replacement.connect( this.destinations[i] )
-      }
+      if( replacement.connect ) {
+        for( var i = 0; i < this.destinations.length; i++ ) {
+          replacement.connect( this.destinations[i] )
+        }
       
-      for( var i = 0; i < this.sequencers.length; i++ ) {
-        this.sequencers[ i ].target = replacement
-        replacement.sequencers.push( this.sequencers[i] )
-      }
+        for( var i = 0; i < this.sequencers.length; i++ ) {
+          this.sequencers[ i ].target = replacement
+          replacement.sequencers.push( this.sequencers[i] )
+        }
       
-      for( var i = 0; i < this.mappingObjects.length; i++ ) {
-        var mapping = this.mappingObjects[ i ]
+        for( var i = 0; i < this.mappingObjects.length; i++ ) {
+          var mapping = this.mappingObjects[ i ]
         
-        if( mapping.targets.length > 0 ) {
-          for( var j = 0; j < mapping.targets.length; j++ ) {
-            var _mapping = mapping.targets[ j ]
+          if( mapping.targets.length > 0 ) {
+            for( var j = 0; j < mapping.targets.length; j++ ) {
+              var _mapping = mapping.targets[ j ]
             
-            if( replacement.mappingProperties[ mapping.name ] ) {
-              _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
-            }else{ // replacement object does not have property that was assigned to mapping
-              _mapping[ 0 ].mapping.remove()
+              if( replacement.mappingProperties[ mapping.name ] ) {
+                _mapping[ 0 ].mapping.replace( replacement, mapping.name, mapping.Name )
+              }else{ // replacement object does not have property that was assigned to mapping
+                _mapping[ 0 ].mapping.remove()
+              }
             }
           }
         }
@@ -441,9 +449,12 @@ Audio.Envelopes =      require( './audio/envelopes' )( Gibber )
 Audio.Percussion =     require( './audio/drums' )( Gibber )
 Audio.Input =          require( './audio/audio_input' )( Gibber )
 Audio.Samplers =       require( './audio/sampler' )( Gibber )
+// Audio.Speak =          require( './audio/speak' )( Gibber )
+Audio.Vocoder =        require( './audio/vocoder' )( Gibber )
 Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
 Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
+Audio.Score =          require( './audio/score')( Gibber )
 
 return Audio
 

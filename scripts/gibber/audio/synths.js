@@ -82,7 +82,7 @@ module.exports = function( Gibber ) {
       damping :{ min: 0, max: 1, output: LINEAR, timescale: 'audio' },
       pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
       out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },     
-    },
+    }
   }
 
   for( var i = 0; i < types.length; i++ ) {
@@ -90,41 +90,35 @@ module.exports = function( Gibber ) {
     (function() {
       var type = Array.isArray( types[ i ] ) ? types[ i ][ 0 ] : types[ i ],
           name = Array.isArray( types[ i ] ) ? types[ i ][ 1 ] : types[ i ]
-     
+
       Synths[ name ] = function() {
-        var args = Array.prototype.slice.call(arguments),
+        var args = Array.prototype.slice.call( arguments, 0 ),
             obj,
             mv = 1,
             adsr = false,
             scale,
-            requireReleaseTrigger = false
+            requireReleaseTrigger = false,
+            opts = {},
+            optionsNum = typeof args[0] === 'string' ? 1 : 0
         
-        if( typeof args[0] === 'object' ) {
-          if(typeof args[0].maxVoices !== 'undefined') { 
-            if( args[0].maxVoices ) mv = args[0].maxVoices
+        Gibber.processArguments2( opts, args, name )
+        
+        for( var key in opts ) {
+          if( Gibber.Audio.Clock.timeProperties.indexOf( key ) > -1 ) {
+            opts[ key ] = Gibber.Clock.time( opts[key] )
           }
-          if( typeof args[0].useADSR !== 'undefined' ) {
-            adsr = args[0].useADSR
-            if( typeof args[0].requireReleaseTrigger !== 'undefined' ) {
-              requireReleaseTrigger = args[0].requireReleaseTrigger
-            }
-          }else{
-            requireReleaseTrigger = false
-          }
-          if( typeof args[0].useADSR !== 'undefined' ) {
-            adsr = args[0].useADSR
-          }
-          if( typeof args[0].scale !== 'undefined' ) {
-            scale = args[0].scale
-          } 
         }
         
-        obj = new Gibberish[ type ]({ maxVoices: mv, useADSR:adsr, requireReleaseTrigger:requireReleaseTrigger, scale:scale }).connect( Gibber.Master )
+        obj = new Gibberish[ type ]( opts ).connect( Gibber.Master )
         obj.type = 'Gen'
         
         $.extend( true, obj, Gibber.Audio.ugenTemplate )
-        
+
         obj.fx.ugen = obj
+        
+        //Gibber.processArguments2( obj, args, name )        
+        
+        if( name === 'Vocoder' ) return obj
         
         if( name === 'Mono' ) {
           obj.note = function( _frequency, amp ) {
@@ -141,7 +135,9 @@ module.exports = function( Gibber ) {
                   this.frequency = _frequency
                 }
               }
-        
+              
+              this.lastFrequency = this.frequency
+              
               if( obj.envelope.getState() > 0 ) obj.envelope.run();
             }
           }
@@ -190,13 +186,18 @@ module.exports = function( Gibber ) {
         //obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
         
-        Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
+        obj.trig = function() {
+          this.note( this.lastFrequency )
+        }
+        
+        Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send', 'trig' ] )
                 
         obj.name = name 
         
+
         //console.log( "PROCESS", args, _mappingProperties[ name ] )
         
-        Gibber.processArguments2( obj, args, obj.name )
+        //Gibber.processArguments2( obj, args, obj.name )
         
         obj.toString = function() { return name }
         
@@ -233,6 +234,7 @@ module.exports = function( Gibber ) {
           }
         })
         
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()
@@ -242,6 +244,7 @@ module.exports = function( Gibber ) {
   Synths.Presets.Synth = {
   	short:  { attack: 44, decay: 1/16, },
   	bleep:  { waveform:'Sine', attack:44, decay:1/16 },
+    bleepEcho: { waveform:'Sine', attack:44, decay:1/16, presetInit:function() { this.fx.add( Delay(1/6,.85 ) ) } },
     cascade: { waveform:'Sine', maxVoices:10, attack:Clock.maxMeasures, decay:Clock.beats(1/32),
       presetInit: function() { 
         this.fx.add( Gibber.Audio.FX.Delay(1/9,.2), Gibber.Audio.FX.Flanger() )
@@ -269,7 +272,7 @@ module.exports = function( Gibber ) {
   }
   
   Synths.Presets.Mono = {
-  	short : { attack: 44, decay: 1/16,},
+  	short : { attack: 44, decay: 1/16 },
   
   	lead : {
   		presetInit : function() { this.fx.add( Gibber.Audio.FX.Delay(1/4, .35), Gibber.Audio.FX.Reverb() ) },
