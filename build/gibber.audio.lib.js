@@ -1,12 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Gibber=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./scripts/gibber/audio.lib.js":[function(require,module,exports){
-!function() {
-
-var Gibber = require( 'gibber.core.lib' )
-Gibber.Audio = require( './audio.js')( Gibber )
-module.exports = Gibber
-
-}()
-},{"./audio.js":"/www/gibber.audio.lib/scripts/gibber/audio.js","gibber.core.lib":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/gibber.js"}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/dollar.js":[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Gibber=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){
 !function() {
 
@@ -98,8 +90,8 @@ $.publish = function( key, data ) {
 module.exports = $
 
 }()
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/euclidean.js":[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],2:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"
@@ -279,12 +271,12 @@ Euclid.test = function( testKey ) {
 return Euclid
 
 }
-},{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/gibber.js":[function(require,module,exports){
+},{}],3:[function(_dereq_,module,exports){
 (function() {
 //"use strict" 
 // can't use strict because eval is used to evaluate user code in the run method
 // I should wrap this in a Function call instead...
-var $ = require( './dollar' )
+var $ = _dereq_( './dollar' )
 
 var Gibber = {
   dollar: $,
@@ -296,7 +288,7 @@ var Gibber = {
     LINEAR:0,
     LOGARITHMIC:1
   },
-  Pattern: require( './pattern' ),
+  Pattern: _dereq_( './pattern' ),
   
   export: function( target ) {
     Gibber.Utilities.export( target )
@@ -338,11 +330,12 @@ var Gibber = {
       
       if( typeof _options === 'object' ) $.extend( options, _options )
       
+      Gibber.Pattern = Gibber.Pattern( Gibber )
       if( Gibber.Audio ) {
         Gibber.Audio.init() 
       
         if( options.globalize ) {
-          options.target.Master = Gibber.Audio.Master    
+          //options.target.Master = Gibber.Audio.Master    
         }else{
           var _export = Gibber.export.bind( Gibber )
           $.extend( Gibber, Gibber.Audio )
@@ -547,7 +540,8 @@ var Gibber = {
     
     if( Gibber.Graphics ) Gibber.Graphics.clear( Gibber.Graphics, args )
 
-    Gibber.proxy( window, [ a ] )
+    //Gibber.proxy( window, [ a ] )
+    Gibber.proxy( window )
 		
     $.publish( '/gibber/clear', {} )
         
@@ -559,7 +553,7 @@ var Gibber = {
     
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
-      if( typeof window[ lt ] !== 'undefined' && arguments[1].indexOf( window[ lt ] ) === -1 ) { 
+      if( typeof window[ lt ] !== 'undefined' ) { //&& arguments[1].indexOf( window[ lt ] ) === -1 ) { 
         delete window[ lt ] 
         delete window[ '___' + lt ]
       }
@@ -1008,19 +1002,19 @@ var Gibber = {
   },  
 }
 
-Gibber.Utilities = require( './utilities' )( Gibber )
+Gibber.Utilities = _dereq_( './utilities' )( Gibber )
 // Gibber.Audio     = require( 'gibber.audio.lib/scripts/gibber/audio' )( Gibber )
 // Gibber.Graphics  = require( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
 // Gibber.Interface = require( 'gibber.interface.lib/scripts/gibber/interface/interface' )( Gibber )
-Gibber.mappings  = require( './mappings' )( Gibber )
-Gibber.Euclid = require( './euclidean' )( Gibber )
+Gibber.mappings  = _dereq_( './mappings' )( Gibber )
+Gibber.Euclid = _dereq_( './euclidean' )( Gibber )
 // TODO: Make Score work without requiring audio
 // Gibber.Score     = require( './score' )//( Gibber ) // only initialize once Gibber.Audio.Core is loaded, otherwise problems
 
 module.exports = Gibber
 
 })()
-},{"./dollar":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/dollar.js","./euclidean":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/euclidean.js","./mappings":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/pattern.js","./utilities":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
+},{"./dollar":1,"./euclidean":2,"./mappings":4,"./pattern":5,"./utilities":6}],4:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {  
   var mappings = {
     audio : {
@@ -1665,10 +1659,12 @@ module.exports.outputCurves= {
   LINEAR:0,
   LOGARITHMIC:1
 }
-},{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/pattern.js":[function(require,module,exports){
-!function() {
+},{}],5:[function(_dereq_,module,exports){
+module.exports = function( Gibber ) {
 
 "use strict"
+
+var $ = _dereq_( './dollar' )
 
 var PatternProto = {
   concat : function( _pattern ) { this.values = this.values.concat( _pattern.values ) },  
@@ -1931,10 +1927,10 @@ var Pattern = function() {
 
 Pattern.prototype = PatternProto
 
-module.exports = Pattern
+return Pattern
 
-}()
-},{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/utilities.js":[function(require,module,exports){
+}
+},{"./dollar":1}],6:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"
@@ -2345,7 +2341,7 @@ var soloGroup = [],
   return Utilities
 }
 
-},{}],"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js":[function(require,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 (function (global){
 !function (root, factory) {
   if (typeof define === "function" && define.amd) {
@@ -9990,8 +9986,8 @@ Gibberish.Vocoder = function() {
 Gibberish.Vocoder.prototype = Gibberish._synth
 return Gibberish; 
 })
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/www/gibber.audio.lib/scripts/external/freesound.js":[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],8:[function(_dereq_,module,exports){
 /*
  * Freesound Javascript SDK
  */
@@ -10141,16 +10137,16 @@ var freesound = module.exports = {
 };
 
 }()
-},{}],"/www/gibber.audio.lib/scripts/external/teoria.min.js":[function(require,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 (function(){function t(t,e){return t=r[t],e=r[e],t.distance>e.distance?e.distance+12-t.distance:e.distance-t.distance}function e(t,e,i){for(;i>0;i--)t+=e;return t}function i(t,e){if("string"!=typeof t)return null;this.name=t,this.duration=e||4,this.accidental={value:0,sign:""};var i=t.match(/^([abcdefgh])(x|#|bb|b?)(-?\d*)/i);if(i&&t===i[0]&&0!==i[3].length)this.name=i[1].toLowerCase(),this.octave=parseFloat(i[3]),0!==i[2].length&&(this.accidental.sign=i[2].toLowerCase(),this.accidental.value=y[i[2]]);else{t=t.replace(/\u2032/g,"'").replace(/\u0375/g,",");var n=t.match(/^(,*)([abcdefgh])(x|#|bb|b?)([,\']*)$/i);if(!n||5!==n.length||t!==n[0])throw Error("Invalid note format");if(""===n[1]&&""===n[4])this.octave=n[2]===n[2].toLowerCase()?3:2;else if(""!==n[1]&&""===n[4]){if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation.");this.octave=2-n[1].length}else{if(""!==n[1]||""===n[4])throw Error("Invalid note format");if(n[4].match(/^'+$/)){if(n[2]===n[2].toUpperCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=3+n[4].length}else{if(!n[4].match(/^,+$/))throw Error("Invalid characters after note name.");if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=2-n[4].length}}this.name=n[2].toLowerCase(),0!==n[3].length&&(this.accidental.sign=n[3].toLowerCase(),this.accidental.value=y[n[3]])}}function n(t,e){if(!(t instanceof i))return null;e=e||"",this.name=t.name.toUpperCase()+t.accidental.sign+e,this.root=t,this.notes=[t],this.quality="major",this.type="major";var n,r,o,s,h,m=[],u=!1,c="quality",d=!1,p=!1,v=null;for(s=0,h=e.length;h>s;s++){for(n=e[s];" "===n||"("===n||")"===n;)n=e[++s];if(!n)break;if(r=n.charCodeAt(0),o=h>=s+3?e.substr(s,3):"","quality"===c)"M"===n||("maj"===o||916===r?(this.type="major",m.push("M7"),u=!0,(e[s+3]&&"7"===e[s+3]||916===r&&"7"===e[s+1])&&s++):"m"===n||"-"===n||"min"===o?this.quality=this.type="minor":111===r||176===r||"dim"===o?(this.quality="minor",this.type="diminished"):"+"===n||"aug"===o?(this.quality="major",this.type="augmented"):216===r||248===r?(this.quality="minor",this.type="diminished",m.push("m7"),u=!0):"sus"===o?(this.quality="sus",this.type=e[s+3]&&"2"===e[s+3]?"sus2":"sus4"):"5"===n?(this.quality="power",this.type="power"):s-=1),o in l&&(s+=2),c="";else if("#"===n)d=!0;else if("b"===n)p=!0;else if("5"===n)d?(v="A5","major"===this.quality&&(this.type="augmented")):p&&(v="d5","minor"===this.quality&&(this.type="diminished")),p=d=!1;else if("6"===n)m.push("M6"),p=d=!1;else if("7"===n)"diminished"===this.type?m.push("d7"):m.push("m7"),u=!0,p=d=!1;else if("9"===n)u||m.push("m7"),p?m.push("m9"):d?m.push("A9"):m.push("M9"),p=d=!1;else{if("1"!==n)throw Error("Unexpected character: '"+n+"' in chord name");n=e[++s],"1"===n?p?m.push("d11"):d?m.push("A11"):m.push("P11"):"3"===n&&(p?m.push("m13"):d?m.push("A13"):m.push("M13")),p=d=!1}}for(var y=0,g=f[this.type].length;g>y;y++)"5"===f[this.type][y][1]&&v?this.notes.push(a.interval(this.root,v)):this.notes.push(a.interval(this.root,f[this.type][y]));for(y=0,g=m.length;g>y;y++)this.notes.push(a.interval(this.root,m[y]))}var a={},r={c:{name:"c",distance:0,index:0},d:{name:"d",distance:2,index:1},e:{name:"e",distance:4,index:2},f:{name:"f",distance:5,index:3},g:{name:"g",distance:7,index:4},a:{name:"a",distance:9,index:5},b:{name:"b",distance:11,index:6},h:{name:"h",distance:11,index:6}},o=["c","d","e","f","g","a","b"],s={.25:"longa",.5:"breve",1:"whole",2:"half",4:"quarter",8:"eighth",16:"sixteenth",32:"thirty-second",64:"sixty-fourth",128:"hundred-twenty-eighth"},h=[{name:"unison",quality:"perfect",size:0},{name:"second",quality:"minor",size:1},{name:"third",quality:"minor",size:3},{name:"fourth",quality:"perfect",size:5},{name:"fifth",quality:"perfect",size:7},{name:"sixth",quality:"minor",size:8},{name:"seventh",quality:"minor",size:10},{name:"octave",quality:"perfect",size:12},{name:"ninth",quality:"minor",size:13},{name:"tenth",quality:"minor",size:15},{name:"eleventh",quality:"perfect",size:17},{name:"twelfth",quality:"perfect",size:19},{name:"thirteenth",quality:"minor",size:20},{name:"fourteenth",quality:"minor",size:22},{name:"fifteenth",quality:"perfect",size:24}],m={unison:0,second:1,third:2,fourth:3,fifth:4,sixth:5,seventh:6,octave:7,ninth:8,tenth:9,eleventh:10,twelfth:11,thirteenth:12,fourteenth:13,fifteenth:14},l={P:"perfect",M:"major",m:"minor",A:"augmented",d:"diminished",perf:"perfect",maj:"major",min:"minor",aug:"augmented",dim:"diminished"},u={perfect:"P",major:"M",minor:"m",augmented:"A",diminished:"d"},c={P:"P",M:"m",m:"M",A:"d",d:"A"},d={perfect:["diminished","perfect","augmented"],minor:["diminished","minor","major","augmented"]},f={major:["M3","P5"],minor:["m3","P5"],augmented:["M3","A5"],diminished:["m3","d5"],sus2:["M2","P5"],sus4:["P4","P5"],power:["P5"]},p={major:"M",minor:"m",augmented:"aug",diminished:"dim",power:"5"},v={"-2":"bb","-1":"b",0:"",1:"#",2:"x"},y={bb:-2,b:-1,"#":1,x:2};i.prototype={key:function(t){return t?7*(this.octave-1)+3+Math.ceil(r[this.name].distance/2):12*(this.octave-1)+4+r[this.name].distance+this.accidental.value},fq:function(t){return t=t||440,t*Math.pow(2,(this.key()-49)/12)},scale:function(t,e){return a.scale.list(this,t,e)},interval:function(t,e){return a.interval(this,t,e)},chord:function(t){return t=t||"major",t in p&&(t=p[t]),new n(this,t)},helmholtz:function(){var t,i=3>this.octave?this.name.toUpperCase():this.name.toLowerCase();return 2>=this.octave?(t=e("",",",2-this.octave),t+i+this.accidental.sign):(t=e("","'",this.octave-3),i+this.accidental.sign+t)},scientific:function(){return this.name.toUpperCase()+this.accidental.sign+("number"==typeof this.octave?this.octave:"")},enharmonics:function(){var t=[],e=this.key(),i=this.interval("m2","up"),n=this.interval("m2","down"),a=i.key()-i.accidental.value,r=n.key()-n.accidental.value,o=e-a;return 3>o&&o>-3&&(i.accidental={value:o,sign:v[o]},t.push(i)),o=e-r,3>o&&o>-3&&(n.accidental={value:o,sign:v[o]},t.push(n)),t},valueName:function(){return s[this.duration]},toString:function(t){return t="boolean"==typeof t?t:"number"==typeof this.octave?!1:!0,this.name.toLowerCase()+this.accidental.sign+(t?"":this.octave)}},n.prototype.dominant=function(t){return t=t||"",new n(this.root.interval("P5"),t)},n.prototype.subdominant=function(t){return t=t||"",new n(this.root.interval("P4"),t)},n.prototype.parallel=function(t){if(t=t||"","triad"!==this.chordType()||"diminished"===this.quality||"augmented"===this.quality)throw Error("Only major/minor triads have parallel chords");return"major"===this.quality?new n(this.root.interval("m3","down"),"m"):new n(this.root.interval("m3","up"))},n.prototype.chordType=function(){var t,e,i;if(2===this.notes.length)return"dyad";if(3===this.notes.length){e={unison:!1,third:!1,fifth:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);return e.unison&&e.third&&e.fifth?"triad":"trichord"}if(4===this.notes.length){e={unison:!1,third:!1,fifth:!1,seventh:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);if(e.unison&&e.third&&e.fifth&&e.seventh)return"tetrad"}return"unknown"},n.prototype.toString=function(){return this.name},a.note=function(t,e){return new i(t,e)},a.note.fromKey=function(t){var e=440*Math.pow(2,(t-49)/12);return a.frequency.note(e).note},a.chord=function(t){var e;if(e=t.match(/^([abcdefgh])(x|#|bb|b?)/i),e&&e[0])return new n(new i(e[0].toLowerCase()),t.substr(e[0].length));throw Error("Invalid Chord. Couldn't find note name")},a.frequency={note:function(t,e){e=e||440;var n,a,s,h,m,l,u;return n=Math.round(49+12*((Math.log(t)-Math.log(e))/Math.log(2))),u=e*Math.pow(2,(n-49)/12),l=1200*(Math.log(t/u)/Math.log(2)),a=Math.floor((n-4)/12),s=n-12*a-4,h=r[o[Math.round(s/2)]],m=h.name,s>h.distance?m+="#":h.distance>s&&(m+="b"),{note:new i(m+(a+1)),cents:l}}},a.interval=function(t,e,n){if("string"==typeof e){"down"===n&&(e=a.interval.invert(e));var r=l[e[0]],o=parseFloat(e.substr(1));if(!r||isNaN(o)||1>o)throw Error("Invalid string-interval format");return a.interval.from(t,{quality:r,interval:h[o-1].name},n)}if(e instanceof i&&t instanceof i)return a.interval.between(t,e);throw Error("Invalid parameters")},a.interval.from=function(e,n,a){n.direction=a||n.direction||"up";var s,l,u,c,f,p;if(f=m[n.interval],p=h[f],f>7&&(f-=7),f=r[e.name].index+f,f>o.length-1&&(f-=o.length),s=o[f],-1===d[p.quality].indexOf(n.quality)||-1===d[p.quality].indexOf(p.quality))throw Error("Invalid interval quality");return l=d[p.quality].indexOf(n.quality)-d[p.quality].indexOf(p.quality),u=p.size+l-t(e.name,s),e.octave&&(c=Math.floor((e.key()-e.accidental.value+t(e.name,s)-4)/12)+1+Math.floor(m[n.interval]/7)),u+=e.accidental.value,u>=11&&(u-=12),u>-3&&3>u&&(s+=v[u]),"down"===a&&c--,new i(s+(c||""))},a.interval.between=function(t,e){var i,n,a,o,s,m,l=t.key(),c=e.key();if(i=c-l,i>24||-25>i)throw Error("Too big interval. Highest interval is a augmented fifteenth (25 semitones)");return 0>i&&(o=t,t=e,e=o),a=r[e.name].index-r[t.name].index+7*(e.octave-t.octave),n=h[a],m=d[n.quality][Math.abs(i)-n.size+1],s=u[m]+(""+Number(a+1)),{name:n.name,quality:m,direction:i>0?"up":"down",simple:s}},a.interval.invert=function(t){if(2!==t.length&&3!==t.length)return!1;var e=c[t[0]],i=2===t.length?parseFloat(t[1]):parseFloat(t.substr(1));return i>8&&(i-=7),8!==i&&1!==i&&(i=9-i),e+(""+i)},a.scale={list:function(t,e,n){var r,o,s=[],h=[];if(!(t instanceof i))return!1;if("string"==typeof e&&(e=a.scale.scales[e],!e))return!1;for(s.push(t),n&&h.push(t.name+(t.accidental.sign||"")),r=0,o=e.length;o>r;r++)s.push(a.interval(t,e[r])),n&&h.push(s[r+1].name+(s[r+1].accidental.sign||""));return n?h:s},scales:{major:["M2","M3","P4","P5","M6","M7"],ionian:["M2","M3","P4","P5","M6","M7"],dorian:["M2","m3","P4","P5","M6","m7"],phrygian:["m2","m3","P4","P5","m6","m7"],lydian:["M2","M3","A4","P5","M6","M7"],mixolydian:["M2","M3","P4","P5","M6","m7"],minor:["M2","m3","P4","P5","m6","m7"],aeolian:["M2","m3","P4","P5","m6","m7"],locrian:["m2","m3","P4","d5","m6","m7"],majorpentatonic:["M2","M3","P5","M6"],minorpentatonic:["m3","P4","P5","m7"],chromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"],harmonicchromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"]}},module.exports=a})();
-},{}],"/www/gibber.audio.lib/scripts/gibber/audio.js":[function(require,module,exports){
+},{}],10:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   
 "use strict"
 
 var times = [],
     $ = Gibber.dollar,
-    Gibberish = require( 'gibberish-dsp' ),
+    Gibberish = _dereq_( 'gibberish-dsp' ),
     Audio
 
 Audio = {
@@ -10198,7 +10194,9 @@ Audio = {
     Audio.Core.Time.export( target )
     Audio.Clock.export( target )
     //target.sec = target.seconds
-    Audio.Core.Binops.export( target )    
+    Audio.Core.Binops.export( target )
+    
+    target.Master = Audio.Master    
   },
   init: function() {
     // post-processing depends on having context instantiated
@@ -10578,35 +10576,35 @@ Audio = {
   }
 }
 
-Audio.Core = require( 'gibberish-dsp' )
+Audio.Core = _dereq_( 'gibberish-dsp' )
 Audio.Core._init = Audio.Core.init.bind( Audio.Core )
 delete Audio.Core.init
 
-Audio.Clock =          require( './audio/clock' )( Gibber )
-Audio.Freesoundjs =    require( '../external/freesound' )
-Audio.Freesound =      require( './audio/gibber_freesound' )( Audio.Freesoundjs )
-Audio.Seqs =           require( './audio/seq')( Gibber )
-Audio.Theory =         require( './audio/theory' )( Gibber )
-Audio.FX =             require( './audio/fx' )( Gibber )
-Audio.Oscillators =    require( './audio/oscillators' )( Gibber )
-Audio.Synths =         require( './audio/synths' )( Gibber )
-Audio.Busses =         require( './audio/bus' )( Gibber )
-Audio.Analysis =       require( './audio/analysis' )( Gibber )
-Audio.Envelopes =      require( './audio/envelopes' )( Gibber )
-Audio.Percussion =     require( './audio/drums' )( Gibber )
-Audio.Input =          require( './audio/audio_input' )( Gibber )
-Audio.Samplers =       require( './audio/sampler' )( Gibber )
+Audio.Clock =          _dereq_( './audio/clock' )( Gibber )
+Audio.Freesoundjs =    _dereq_( '../external/freesound' )
+Audio.Freesound =      _dereq_( './audio/gibber_freesound' )( Audio.Freesoundjs )
+Audio.Seqs =           _dereq_( './audio/seq')( Gibber )
+Audio.Theory =         _dereq_( './audio/theory' )( Gibber )
+Audio.FX =             _dereq_( './audio/fx' )( Gibber )
+Audio.Oscillators =    _dereq_( './audio/oscillators' )( Gibber )
+Audio.Synths =         _dereq_( './audio/synths' )( Gibber )
+Audio.Busses =         _dereq_( './audio/bus' )( Gibber )
+Audio.Analysis =       _dereq_( './audio/analysis' )( Gibber )
+Audio.Envelopes =      _dereq_( './audio/envelopes' )( Gibber )
+Audio.Percussion =     _dereq_( './audio/drums' )( Gibber )
+Audio.Input =          _dereq_( './audio/audio_input' )( Gibber )
+Audio.Samplers =       _dereq_( './audio/sampler' )( Gibber )
 // Audio.Speak =          require( './audio/speak' )( Gibber )
-Audio.Vocoder =        require( './audio/vocoder' )( Gibber )
-Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
-Audio.Arp =            require( './audio/arp' )( Gibber )
-Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
-Audio.Score =          require( './audio/score' )
+Audio.Vocoder =        _dereq_( './audio/vocoder' )( Gibber )
+Audio.PostProcessing = _dereq_( './audio/postprocessing' )( Gibber )
+Audio.Arp =            _dereq_( './audio/arp' )( Gibber )
+Audio.SoundFont =      _dereq_( './audio/soundfont' )( Gibber )
+Audio.Score =          _dereq_( './audio/score' )
 
 return Audio
 
 }
-},{"../external/freesound":"/www/gibber.audio.lib/scripts/external/freesound.js","./audio/analysis":"/www/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/envelopes":"/www/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/score":"/www/gibber.audio.lib/scripts/gibber/audio/score.js","./audio/seq":"/www/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/soundfont":"/www/gibber.audio.lib/scripts/gibber/audio/soundfont.js","./audio/synths":"/www/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.audio.lib/scripts/gibber/audio/theory.js","./audio/vocoder":"/www/gibber.audio.lib/scripts/gibber/audio/vocoder.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
+},{"../external/freesound":8,"./audio/analysis":11,"./audio/arp":12,"./audio/audio_input":13,"./audio/bus":14,"./audio/clock":15,"./audio/drums":16,"./audio/envelopes":17,"./audio/fx":18,"./audio/gibber_freesound":19,"./audio/oscillators":20,"./audio/postprocessing":21,"./audio/sampler":22,"./audio/score":23,"./audio/seq":24,"./audio/soundfont":25,"./audio/synths":26,"./audio/theory":27,"./audio/vocoder":28,"gibberish-dsp":7}],11:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -10614,7 +10612,7 @@ module.exports = function( Gibber ) {
       mappingProperties = { 
         value:{ min: 0, max: 255, output: LOGARITHMIC, wrap:false, timescale: 'graphics' } 
       },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
@@ -10684,13 +10682,13 @@ module.exports = function( Gibber ) {
   //module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Analysis }
   
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/arp.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],12:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   
-var theory = require('../../external/teoria.min'),
+var theory = _dereq_('../../external/teoria.min'),
     $ = Gibber.dollar,
     curves = Gibber.outputCurves,
-    Seq    = require('./seq')( Gibber ).Seq,
+    Seq    = _dereq_('./seq')( Gibber ).Seq,
     Arp
     
 Arp = function(notation, beats, pattern, mult, scale) {	
@@ -10834,12 +10832,12 @@ Arp = function(notation, beats, pattern, mult, scale) {
 return Arp
 
 }
-},{"../../external/teoria.min":"/www/gibber.audio.lib/scripts/external/teoria.min.js","./seq":"/www/gibber.audio.lib/scripts/gibber/audio/seq.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/audio_input.js":[function(require,module,exports){
+},{"../../external/teoria.min":9,"./seq":24}],13:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) { 
   "use strict"
   
   var Input = {},
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
@@ -10889,12 +10887,12 @@ module.exports = function( Gibber ) {
   
   return Input
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/bus.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],14:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var $ = Gibber.dollar,//require('zepto-browserify').Zepto,
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -11025,7 +11023,7 @@ module.exports = function( Gibber ) {
   
   return Busses
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/clock.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],15:[function(_dereq_,module,exports){
 !function() {
   
 var times = [],
@@ -11033,7 +11031,7 @@ var times = [],
     curves = null,
     LINEAR = null,
     LOGARITHMIC = null,
-    Gibberish = require( 'gibberish-dsp' ),
+    Gibberish = _dereq_( 'gibberish-dsp' ),
     Gibber
 
 var Clock = {
@@ -11242,12 +11240,12 @@ module.exports = function( __Gibber ) {
 }
 
 }()
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/drums.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],16:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Percussion = { Presets:{} }, 
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
@@ -11948,12 +11946,12 @@ module.exports = function( Gibber ) {
   return Percussion
   
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/envelopes.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],17:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Envelopes = {},
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
@@ -12057,12 +12055,12 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/fx.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],18:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var FX = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
@@ -12450,7 +12448,7 @@ module.exports = function( Gibber ) {
 
   return FX  
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],19:[function(_dereq_,module,exports){
 module.exports = function( freesound ) {
   freesound.apiKey = "4287s0onpqpp492n8snr27sp3o228nns".replace(/[a-zA-Z]/g, function(c) {
     return String.fromCharCode((c <= "Z" ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
@@ -12599,13 +12597,13 @@ module.exports = function( freesound ) {
 
   return Freesound
 }
-},{}],"/www/gibber.audio.lib/scripts/gibber/audio/oscillators.js":[function(require,module,exports){
+},{}],20:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var $ = Gibber.dollar,
       Oscillators = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -12856,12 +12854,12 @@ module.exports = function( Gibber ) {
   
   return Oscillators
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/postprocessing.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],21:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict";
   
   var PostProcessing,
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       compressor = null, 
       end = null,
       hishelf = null,
@@ -13006,14 +13004,14 @@ module.exports = function( Gibber ) {
   return PostProcessing
 
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/sampler.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],22:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) { 
   "use strict"
   
   var Samplers = { Presets:{} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require('./clock')( Gibber ),
+      Clock = _dereq_('./clock')( Gibber ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -13292,7 +13290,7 @@ module.exports = function( Gibber ) {
   
   return Samplers
 }
-},{"./clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/score.js":[function(require,module,exports){
+},{"./clock":15,"gibberish-dsp":7}],23:[function(_dereq_,module,exports){
 /*
 Score is a Seq(ish) object, with pause, start / stop, rewind, fast-forward.
 It's internal phase is 
@@ -13314,7 +13312,7 @@ module.exports = function( Gibber ) {
 
 "use strict"
 
-var Gibberish = require( 'gibberish-dsp' ),
+var Gibberish = _dereq_( 'gibberish-dsp' ),
     $ = Gibber.dollar
 
 var ScoreProto = {
@@ -13618,11 +13616,11 @@ song = Score([
 song.start()
 
 */
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/seq.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],24:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   //"use strict"
   
-  var Gibberish = require( 'gibberish-dsp' ),
+  var Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart', 'priority' ]
   
@@ -13973,11 +13971,11 @@ module.exports = function( Gibber ) {
   
   return Seqs 
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/soundfont.js":[function(require,module,exports){
+},{"gibberish-dsp":7}],25:[function(_dereq_,module,exports){
 module.exports = function( Gibber, pathToSoundFonts ) {
-  var Gibberish = require( 'gibberish-dsp' ),
+  var Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
-      teoria = require( './theory' )( Gibber ).Teoria,
+      teoria = _dereq_( './theory' )( Gibber ).Teoria,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       mappingProperties = {
@@ -14118,14 +14116,14 @@ module.exports = function( Gibber, pathToSoundFonts ) {
   
   return SoundFont
 }
-},{"./theory":"/www/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
+},{"./theory":27,"gibberish-dsp":7}],26:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Synths = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require( './clock' )( Gibber ),
+      Clock = _dereq_( './clock' )( Gibber ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -14575,11 +14573,11 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"./clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/theory.js":[function(require,module,exports){
+},{"./clock":15,"gibberish-dsp":7}],27:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
 
-var teoria = require('../../external/teoria.min'),
+var teoria = _dereq_('../../external/teoria.min'),
     $ = Gibber.dollar
 
 var Theory = {
@@ -14852,14 +14850,14 @@ var Theory = {
 return Theory
 
 }
-},{"../../external/teoria.min":"/www/gibber.audio.lib/scripts/external/teoria.min.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/vocoder.js":[function(require,module,exports){
+},{"../../external/teoria.min":9}],28:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Vocoder = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require( './clock' )( Gibber ),
+      Clock = _dereq_( './clock' )( Gibber ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
@@ -14954,5 +14952,14 @@ module.exports = function( Gibber ) {
   return Vocoder
 }
       
-},{"./clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}]},{},["./scripts/gibber/audio.lib.js"])("./scripts/gibber/audio.lib.js")
+},{"./clock":15,"gibberish-dsp":7}],29:[function(_dereq_,module,exports){
+!function() {
+
+var Gibber = _dereq_( 'gibber.core.lib' )
+Gibber.Audio = _dereq_( './audio.js')( Gibber )
+module.exports = Gibber
+
+}()
+},{"./audio.js":10,"gibber.core.lib":3}]},{},[29])
+(29)
 });

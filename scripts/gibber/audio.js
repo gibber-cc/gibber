@@ -52,7 +52,9 @@ Audio = {
     Audio.Core.Time.export( target )
     Audio.Clock.export( target )
     //target.sec = target.seconds
-    Audio.Core.Binops.export( target )    
+    Audio.Core.Binops.export( target )
+    
+    target.Master = Audio.Master    
   },
   init: function() {
     // post-processing depends on having context instantiated
