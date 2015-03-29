@@ -329,6 +329,7 @@ module.exports = function( Gibber ) {
       var col = this
       //    updateDocument : function( revisions, previous, notes, column ) {
       if( this.fileInfo && this.value !== this.fileInfo.text ) {
+        console.log("FILE INFO", this.fileInfo )
         GE.Account.updateDocument({ text: this.value }, this.fileInfo, '', this )
       }else{
         if( !this.fileInfo ) {
