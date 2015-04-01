@@ -232,7 +232,7 @@ module.exports = function( Gibber ) {
           permissions: $( '#new_publication_permissions' ).prop( 'checked' ),
           tags: $( '#new_publication_tags' ).val().split(','),
           notes: $( '#new_publication_notes' ).val(), 
-          instrument: false, //$( '#new_publication_instrument' ).prop( 'checked' ),
+          instrument: false,
           username: Gibber.Environment.Account.nick
          },
         dataType:'json'
@@ -241,15 +241,15 @@ module.exports = function( Gibber ) {
         if( data.error ) {
           GE.Message.post( 'There was an error writing to Gibber\'s database. Error: ' + data.error )
         }else{
-          GE.Message.post( 'Your publication has been saved to: ' + GE.SERVER_URL + '/?path=' + data.url )
+          GE.Message.post( 'Your publication has been saved to: ' + GE.SERVER_URL + '/?path=' + data._id )
         }
         GE.Layout.removeColumn( parseInt( $( '.publication_form' ).attr( 'id' ) ) )
 
         return false
       })
       .fail( function(e) { console.log( "FAILED TO PUBLISH", e ) } )
-      
-      return false 
+
+      return false
     },
     updateDocument : function( revisions, previous, notes, column ) {
       if( Account.nick !== null && Account.nick === column.fileInfo.author ) {
