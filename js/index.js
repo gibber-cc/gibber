@@ -29070,6 +29070,7 @@ Audio = {
     target.ScaleSeq = Audio.Seqs.ScaleSeq
     target.SoundFont = Audio.SoundFont
     target.Speak = Audio.Speak
+    target.Additive = Audio.Additive
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -29109,6 +29110,7 @@ Audio = {
     }
     
     Audio.Score = Audio.Score( Gibber )
+    Audio.Additive = Audio.Additive( Gibber )
     Gibber.Clock = Audio.Clock
           
     Gibber.Theory = Audio.Theory
@@ -29498,11 +29500,103 @@ Audio.Arp =            require( './audio/arp' )( Gibber )
 Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
 Audio.Score =          require( './audio/score' )
 Audio.Ensemble =       require( './audio/ensemble' )( Gibber )
+Audio.Ugen =           require( './audio/ugen')( Gibber )
+Audio.Additive =       require( './audio/additive')
 
 return Audio
 
 }
-},{"../external/freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js","./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/ensemble":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ensemble.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/score":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/score.js","./audio/seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/soundfont":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","./audio/vocoder":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/vocoder.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
+},{"../external/freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js","./audio/additive":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/additive.js","./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/ensemble":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ensemble.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/score":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/score.js","./audio/seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/soundfont":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","./audio/ugen":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ugen.js","./audio/vocoder":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/vocoder.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/additive.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+/*
+XXX = Ugen({
+  name:'Vox',
+  inputs:{ 
+    frequency:{ min:50, max:3000, default:440 },
+    amp: { min:0, max:1, default:.1 }
+  },
+  callback: function( frequency, amp ) {
+    this.out = this.sin( this.PI2 * (this.phase++ * frequency / 44100) ) * amp
+    
+    // if stereo, make this.out an array an fill appropriately
+    // do not create a new array for every sample
+    return this.out
+  },
+  init: function() {
+    this.sin = Math.sin
+    this.PI2 = Math.PI * 2
+    this.phase = 0
+    this.out =  0
+  }
+})
+*/
+    var Additive = Gibber.Audio.Ugen({
+      name:'additive',
+      inputs: {
+        frequency:{ min:50, max:3000, default:440 },
+        amp: { min:0, max:1, default:.5 }
+        //pan: { min:0, max:1, default:-1 }
+      },
+      callback: function( frequency, amp, pan ) {
+        var sines = this.sines, sine, harmonics = this.harmonics
+        
+        this.out = 0
+        
+        for( var i = 0, l = sines.length; i < l; i++  ) {
+          sine = sines[ i ]
+          this.out += sine( frequency * sine.harmonic, sine.amp )
+          // if ( phase++ % 88200 === 0 ) console.log( frequency, sine.amp, this.out )
+        }
+      
+        return this.out * amp
+      },
+      init: function() {
+        console.log("INIT", this.harmonics)
+        this.sines = []
+        //this.frequency = 440
+        //if( typeof this.harmonics === 'undefined' ) this.harmonics = [1,1]
+        
+        for( var i = 0, j = 0; i < this.harmonics.length / 2; i++, j+=2 ) {
+          var harmonicIndex = i * 2
+          this.sines[ i ] = Gibber.Audio.Oscillators.Sine(440,1)._.callback
+          this.sines[ i ].harmonic = this.harmonics[ j ]
+          this.sines[ i ].amp = this.harmonics[ j + 1 ]
+        }
+        
+        this.out = 0
+        console.log( this.sines )
+      }
+    })
+  
+  //  return Additive
+    //}
+  
+  return Additive
+}
+
+/*Sine = Ugen({
+  name:'Vox',
+  inputs:{ 
+    frequency:{ min:50, max:3000, default:440 },
+    amp: { min:0, max:1, default:.1 }
+  },
+  callback: function( frequency, amp ) {
+    this.out = this.sin( this.PI2 * (this.phase++ * frequency / 44100) ) * amp
+    return this.out
+  },
+  init: function() {
+    this.sin = Math.sin
+    this.PI2 = Math.PI * 2
+    this.phase = 0
+    this.out =  0
+  }
+})
+
+Sine.connect()
+Sine.frequency.seq( [440,880], 1/2 )
+*/
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -31090,28 +31184,28 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           },
-          ADSR: {
-            attack: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            },
-            decay: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            },
-            sustain: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            },
-            release: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            }
+        },
+        ADSR: {
+          attack: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
           },
+          decay: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          sustain: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          release: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          }
         },
       };
   
@@ -33951,7 +34045,89 @@ var Theory = {
 return Theory
 
 }
-},{"../../external/teoria.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/teoria.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/vocoder.js":[function(require,module,exports){
+},{"../../external/teoria.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/teoria.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ugen.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+var Ugen = function( desc ) {
+  var ctor = function( props ) {
+    var obj = {}
+    $.extend( obj, {
+      properties: $.extend( {}, desc.inputs ),
+      callback: desc.callback.bind( obj ),
+      _init: desc.init.bind( obj ),
+      name: desc.name
+    })
+
+    obj.__proto__ = Gibber.Audio.Core._synth
+    
+    for( var key in props ) {
+        console.log("KEY", key )
+        obj[ key ] = props[ key ]
+    }
+
+    obj.init.call( obj )
+    obj._init()
+    obj.oscillatorInit.call( obj )
+
+    Gibber.createProxyProperties( obj, obj.properties )
+    for( var key in desc.inputs ) {
+      obj[ key ] = desc.inputs[ key ].default
+    }
+
+    obj.connect( Gibber.Master )
+	
+    obj.processProperties.call( obj, arguments )
+  
+    $.extend( true, obj, Gibber.Audio.ugenTemplate )
+    obj.fx.ugen = obj
+  
+    return obj
+  }
+
+  return ctor
+}
+
+return Ugen
+
+}
+
+/*
+
+// create constructor for XXX object using ugen factory
+// this code would be used by end-users to create new ugens
+XXX = Ugen({
+  name:'Vox',
+  inputs:{ 
+    frequency:{ min:50, max:3000, default:440 },
+    amp: { min:0, max:1, default:.1 }
+  },
+  callback: function( frequency, amp ) {
+    this.out = this.sin( this.PI2 * (this.phase++ * frequency / 44100) ) * amp
+    
+    // if stereo, make this.out an array an fill appropriately
+    // do not create a new array for every sample
+    return this.out
+  },
+  init: function() {
+    this.sin = Math.sin
+    this.PI2 = Math.PI * 2
+    this.phase = 0
+    this.out =  0
+  }
+})
+
+// instantiate using constructor
+// frequency and amp are set to arguments
+a = XXX( 330, .25 )
+
+// can also pass dictionary
+b = XXX({ frequency:250, amp:.1 })
+
+// automatic sequencing of properties
+a.frequency.seq( [440,880], 1/2 )
+
+*/
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/vocoder.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
