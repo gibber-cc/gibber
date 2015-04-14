@@ -16,6 +16,8 @@ var Theory = {
   			var _chord = [];
   			_offset = _offset || 0;
 			  
+        console.log("CHORD", _notes, this )
+        
   			for(var i = 0; i < _notes.length; i++) {
   				_chord.push( this.notes[ _notes[i] + _offset ] );
   			}

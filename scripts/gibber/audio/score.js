@@ -188,8 +188,10 @@ var Score = function( data, opts ) {
   })
 }
 
-Score.wait = -987654321
-Score.combine = function() {
+Score.prototype = proto
+
+Score.prototype.wait = -987654321
+Score.prototype.combine = function() {
   var score = [ 0, arguments[ 0 ] ]
   
   for( var i = 1; i < arguments.length; i++ ) {
@@ -203,8 +205,6 @@ Score.combine = function() {
   
   return Score( score )
 }
-
-Score.prototype = proto
 
 return Score
 

@@ -188,7 +188,7 @@ var Clock = {
   },
   
   Beats : function(val) {
-    return Gibber.clock.beats.bind( null, val )
+    return Clock.beats.bind( null, val )
   },
   
   measures: function( val ) {

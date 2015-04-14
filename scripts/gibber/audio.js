@@ -33,6 +33,7 @@ Audio = {
     target.ScaleSeq = Audio.Seqs.ScaleSeq
     target.SoundFont = Audio.SoundFont
     target.Speak = Audio.Speak
+    target.Additive = Audio.Additive
 
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
@@ -44,6 +45,8 @@ Audio = {
     target.Freesound = Audio.Freesound
     
     target.Scale = Audio.Theory.Scale
+    
+    target.Ensemble = Audio.Ensemble
 
 		target.module = Gibber.import
     // target.ms = Audio.Time.ms
@@ -70,6 +73,7 @@ Audio = {
     }
     
     Audio.Score = Audio.Score( Gibber )
+    Audio.Additive = Audio.Additive( Gibber )
     Gibber.Clock = Audio.Clock
           
     Gibber.Theory = Audio.Theory
@@ -458,6 +462,9 @@ Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
 Audio.Arp =            require( './audio/arp' )( Gibber )
 Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
 Audio.Score =          require( './audio/score' )
+Audio.Ensemble =       require( './audio/ensemble' )( Gibber )
+Audio.Ugen =           require( './audio/ugen')( Gibber )
+Audio.Additive =       require( './audio/additive')
 
 return Audio
 

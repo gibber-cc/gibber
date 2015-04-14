@@ -42,28 +42,28 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           },
-          ADSR: {
-            attack: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            },
-            decay: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            },
-            sustain: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            },
-            release: {
-              min: 0, max: 8,
-              output: LINEAR,
-              timescale: 'audio',
-            }
+        },
+        ADSR: {
+          attack: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
           },
+          decay: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          sustain: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          release: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          }
         },
       };
   

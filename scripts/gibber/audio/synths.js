@@ -176,7 +176,7 @@ module.exports = function( Gibber ) {
           return this 
         }
         
-        obj.chord = Gibber.Theory.chord
+        obj.chord = Gibber.Theory.chord.bind( obj )
       
         Object.defineProperty(obj, '_', {
           get: function() { obj.kill(); return obj },
