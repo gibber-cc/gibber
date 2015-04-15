@@ -23523,9 +23523,12 @@ Gibberish.Lines = function( values, times, loops ) {
       targetTime = 0,
       end = false,
       incr
-      
+  
+  
   if( typeof values === 'undefined' ) values = [ 0,1 ]
   if( typeof times  === 'undefined' ) times  = [ 44100 ]  
+  
+  console.log( "LINES LINES", values, times, loops )
   
   targetValue = values[ valuesPhase ]
   targetTime  = times[ 0 ]
@@ -23554,6 +23557,8 @@ Gibberish.Lines = function( values, times, loops ) {
     getPhase: function() { return phase },
     getOut:   function() { return out }
 	};
+  
+  that.run = that.retrigger
   
 	this.callback = function() {
     if( phase >= targetTime && !end ) {
@@ -31087,7 +31092,9 @@ module.exports = function( Gibber ) {
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       types = [
-        'Line', 
+        'Curve',
+        'Line',
+        'Lines',
         'AD',
         'ADSR' 
       ],
@@ -31108,6 +31115,40 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           }
+        },
+        Lines: {           
+          time: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          }
+        },
+        Curve: {
+          start: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          end: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          time: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          a: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          b: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
         },
         AD: {
           attack: {
@@ -31158,6 +31199,8 @@ module.exports = function( Gibber ) {
         if( typeof args[0] !== 'object' ) {
           // console.log( args[0], args[1], args[2], Gibber.Clock.time( args[2] ) )
           obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
+        }else if( name === 'Lines' ){
+          obj = new Gibberish.Lines( args[0], args[1], args[2] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }
@@ -31168,7 +31211,7 @@ module.exports = function( Gibber ) {
         
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] ) 
         
-        Gibber.processArguments2( obj, args, obj.name )
+        if( name !== 'Lines' ) Gibber.processArguments2( obj, args, obj.name )
         
         if( name === 'AD' || name === 'ADSR' ) {
           Gibber.createProxyMethods( obj, ['run'] )
@@ -35027,6 +35070,7 @@ var Gibber = {
         //if( obj.presetInit ) obj.presetInit() 
       }else if( $.isPlainObject( firstArg ) && typeof firstArg.type === 'undefined' ) {
         $.extend( obj, firstArg )
+      }else if( $.isArray ) {
       }else{
         var keys = Object.keys( obj.properties )
                 
