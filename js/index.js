@@ -31201,6 +31201,8 @@ module.exports = function( Gibber ) {
           obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
         }else if( name === 'Lines' ){
           obj = new Gibberish.Lines( args[0], args[1], args[2] )
+        }else if( name === 'Curve' ){
+          obj = new Gibberish.Curve( args[0], args[1], args[2], args[3], args[4], args[5] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }
@@ -35070,7 +35072,6 @@ var Gibber = {
         //if( obj.presetInit ) obj.presetInit() 
       }else if( $.isPlainObject( firstArg ) && typeof firstArg.type === 'undefined' ) {
         $.extend( obj, firstArg )
-      }else if( $.isArray ) {
       }else{
         var keys = Object.keys( obj.properties )
                 
