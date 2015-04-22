@@ -436,9 +436,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
   var split = patternName.split( '_' )
   
   pattern = object[ split[0] ][ split[1] ]
-  
-  //console.log( "MARK ARRAY", values, values.length )
-    
+      
   if( typeof src === 'undefined' ) src = location
   
   if( src && !pattern.arrayText ) {
@@ -617,6 +615,7 @@ module.exports = function( Gibber, Notation ) {
             if( values[0] && typeof values[0].value === 'undefined' ) {
               values = prevObject.arguments // needed in case drums properties are also sequenced
             }
+            
             if( values[0] ) {
               var location = values[0].loc,
                   pattern = newObject.note.values
@@ -847,7 +846,13 @@ module.exports = function( Gibber, Notation ) {
         var count = 0    
         while( typeof nextObject !== 'undefined' ) {
           object = nextObject
-          if( count++ !== 0 && nextObject.property ) path.push( nextObject.property.name )
+          if( count++ !== 0 && nextObject.property ) {
+            if( nextObject.property.type === 'Literal' ) { // array index, a.note[0].values etc.
+              path.push( nextObject.property.value  )
+            }else{
+              path.push( nextObject.property.name )
+            }
+          }
           
           nextObject = nextObject.object
         }
@@ -868,9 +873,13 @@ module.exports = function( Gibber, Notation ) {
             caller = window[ object.name ][ path[0] ][ path[1] ]
             propertyName = object.name + '.' + path.join('.')
             break;
+          case 4: // a.note[0].values.rotate  for example...
+            caller = window[ object.name ][ path[0] ][ path[1] ][ path[2] ]
+            propertyName = object.name  + '.' + path[0] + '[' + path[1] + ']' + '.' + path[2] + '.' + path[3]//+ '.' + path.join('.')
+            break;
         }
         
-        eval( 'property = ' + propertyName ) //object.name + '.' + path.reverse().join( '.' ) )
+        property = caller
         
         if( !caller.marks ) {
           caller.marks = {}

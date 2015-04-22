@@ -1686,9 +1686,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
   var split = patternName.split( '_' )
   
   pattern = object[ split[0] ][ split[1] ]
-  
-  //console.log( "MARK ARRAY", values, values.length )
-    
+      
   if( typeof src === 'undefined' ) src = location
   
   if( src && !pattern.arrayText ) {
@@ -1867,6 +1865,7 @@ module.exports = function( Gibber, Notation ) {
             if( values[0] && typeof values[0].value === 'undefined' ) {
               values = prevObject.arguments // needed in case drums properties are also sequenced
             }
+            
             if( values[0] ) {
               var location = values[0].loc,
                   pattern = newObject.note.values
@@ -2097,7 +2096,13 @@ module.exports = function( Gibber, Notation ) {
         var count = 0    
         while( typeof nextObject !== 'undefined' ) {
           object = nextObject
-          if( count++ !== 0 && nextObject.property ) path.push( nextObject.property.name )
+          if( count++ !== 0 && nextObject.property ) {
+            if( nextObject.property.type === 'Literal' ) { // array index, a.note[0].values etc.
+              path.push( nextObject.property.value  )
+            }else{
+              path.push( nextObject.property.name )
+            }
+          }
           
           nextObject = nextObject.object
         }
@@ -2118,9 +2123,13 @@ module.exports = function( Gibber, Notation ) {
             caller = window[ object.name ][ path[0] ][ path[1] ]
             propertyName = object.name + '.' + path.join('.')
             break;
+          case 4: // a.note[0].values.rotate  for example...
+            caller = window[ object.name ][ path[0] ][ path[1] ][ path[2] ]
+            propertyName = object.name  + '.' + path[0] + '[' + path[1] + ']' + '.' + path[2] + '.' + path[3]//+ '.' + path.join('.')
+            break;
         }
         
-        eval( 'property = ' + propertyName ) //object.name + '.' + path.reverse().join( '.' ) )
+        property = caller
         
         if( !caller.marks ) {
           caller.marks = {}
@@ -3455,10 +3464,16 @@ var GE = {
           defaultLanguageForEditors: 'javascript',
           saveSoundFonts:true,
           soundfonts:{},
+          onload:null
         }
         this.save()
-      }
-      
+      }else if( this.values.onload ) {
+        try{
+          eval( this.values.onload )
+        }catch(e) {
+          GE.Message.post("There was an error running your preload code:\n" + GE.Storage.values.onload )
+        }
+      }      
     },
     
     save : function() {
@@ -4048,6 +4063,17 @@ module.exports = function( Gibber ) {
         fallthrough: "default",
 
         "Ctrl-Space" : function( cm ) { CodeMirror.showHint(cm, CodeMirror.javascriptHint ) },
+        
+        'Ctrl-P' : function( cm ) {
+					var obj = GE.getSelectionCodeColumn( cm, false )
+					//GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+          GE.Storage.values.onload = obj.code
+          GE.Storage.save()
+          
+          GE.Message.postFlash( 'Preload code has been saved.' )
+          
+          return false
+        },
         
         "Shift-Ctrl-Right" : function( cm ) {
           //console.log( GE.Layout.fullScreenColumn )
@@ -23527,14 +23553,12 @@ Gibberish.Lines = function( values, times, loops ) {
   
   if( typeof values === 'undefined' ) values = [ 0,1 ]
   if( typeof times  === 'undefined' ) times  = [ 44100 ]  
-  
-  console.log( "LINES LINES", values, times, loops )
-  
+    
   targetValue = values[ valuesPhase ]
   targetTime  = times[ 0 ]
   
   incr = ( targetValue - values[0] ) / targetTime
-  console.log( "current", out, "target", targetValue, "incr", incr )
+  //console.log( "current", out, "target", targetValue, "incr", incr )
   
   loops = loops || false
   
@@ -30528,8 +30552,9 @@ module.exports = function( Gibber ) {
               
               duration = durationsPattern
             }
-              
-            obj.note.seq( Gibber.construct( Gibber.Pattern, seq ), Gibber.construct( Gibber.Pattern, [duration] ), i )
+            
+            obj.note.seq( seq, [duration], i )
+            //obj.note.seq( Gibber.construct( Gibber.Pattern, seq ), Gibber.construct( Gibber.Pattern, [duration] ), i )
           }
 
           break;
@@ -32601,8 +32626,11 @@ var Score = function( data, opts ) {
             if( fnc instanceof Score ) {
               if( !fnc.codeblock ) {
                 fnc.start()
+                console.log("STARTING SCORE")
               }else{
                 fnc.rewind().next()
+                //fnc.rewind().next()
+                //fnc()
               }
             }else{
               fnc()
@@ -32657,8 +32685,8 @@ var Score = function( data, opts ) {
 
 Score.prototype = proto
 
-Score.prototype.wait = -987654321
-Score.prototype.combine = function() {
+Score.wait = -987654321
+Score.combine = function() {
   var score = [ 0, arguments[ 0 ] ]
   
   for( var i = 1; i < arguments.length; i++ ) {
@@ -35257,7 +35285,6 @@ var Gibber = {
       if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
         _v = _v.split('')
         if( typeof _d === 'undefined' ) _d = 1 / _v.length
-        console.log(_v, _d )
       }
       
       var v = $.isArray(_v) ? _v : [_v],
@@ -35269,6 +35296,28 @@ var Gibber = {
             target: obj,
             'priority': priority
           }
+      
+      // var v = $.isArray(_v) ? _v : [_v],
+      //     d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
+      //     args = {
+      //       'key': key,
+      //       values: [ Gibber.construct( Gibber.Pattern, v ) ],
+      //       durations: d !== null ? [ Gibber.construct( Gibber.Pattern, d ) ] : null,
+      //       target: obj,
+      //       'priority': priority
+      //     }
+          
+      // var v = $.isArray(_v) ? _v : [_v],
+      //     d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
+      //     __values = _v instanceof Pattern ? [ v ] : [ Gibber.construct( Gibber.Pattern, v ) ]
+      //     __durations = _d instanceof Pattern ? [ d ] : typeof _d !== 'undefined' ? [ Gibber.construct( Gibber.Pattern, d )] : null,
+      //     args = {
+      //       'key': key,
+      //       values: __values,
+      //       durations: __durations,
+      //       target: obj,
+      //       'priority': priority
+      //     }
       
       if( typeof num === 'undefined' ) num = 0
        
@@ -35404,7 +35453,7 @@ var Gibber = {
     }
     
     fnc.score = function( __v__, __d__ ) {
-      return fnc.seq.bind( null, __v__, __d__ )
+      return fnc.seq.bind( obj, __v__, __d__ )
     }
     
     Object.defineProperties( fnc, {
@@ -36244,7 +36293,7 @@ module.exports.outputCurves= {
   LOGARITHMIC:1
 }
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js":[function(require,module,exports){
-  module.exports = function( Gibber ) {
+module.exports = function( Gibber ) {
 
 "use strict"
 
@@ -36269,7 +36318,7 @@ var PatternProto = {
     for( var i = 0; i < this.filters.length; i++ ) {
       args = this.filters[ i ]( args, this )
     }
-
+    
     return args
   },
   _onchange : function() {},
@@ -36293,7 +36342,7 @@ var Pattern = function() {
     
     val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
     args = fnc.runFilters( val, idx )
-        
+    
     fnc.phase += fnc.stepSize * args[ 1 ]
     val = args[ 0 ]
     
@@ -36511,8 +36560,6 @@ var Pattern = function() {
   ], true )
   
   Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
-  // Gibber.defineSequencedProperty( fnc, 'end' )  
-  // Gibber.defineSequencedProperty( fnc, 'start' )  
   
   fnc.__proto__ = this.__proto__ 
   

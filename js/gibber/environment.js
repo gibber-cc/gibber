@@ -132,10 +132,16 @@ var GE = {
           defaultLanguageForEditors: 'javascript',
           saveSoundFonts:true,
           soundfonts:{},
+          onload:null
         }
         this.save()
-      }
-      
+      }else if( this.values.onload ) {
+        try{
+          eval( this.values.onload )
+        }catch(e) {
+          GE.Message.post("There was an error running your preload code:\n" + GE.Storage.values.onload )
+        }
+      }      
     },
     
     save : function() {
