@@ -85,6 +85,8 @@ var GE = {
       
       Gibber.Audio.SoundFont.path = './resources/soundfonts/'
       
+      GE.Storage.runUserSetup()
+      
       //window.spin.stop()
     }
   },
@@ -135,18 +137,22 @@ var GE = {
           onload:null
         }
         this.save()
-      }else if( this.values.onload ) {
-        try{
-          eval( this.values.onload )
-        }catch(e) {
-          GE.Message.post("There was an error running your preload code:\n" + GE.Storage.values.onload )
-        }
       }      
     },
     
     save : function() {
       localStorage.setObject( "gibber2", this.values );
     },
+    
+    runUserSetup: function() {
+      if( this.values.onload ) {
+        try{
+          eval( this.values.onload )
+        }catch(e) {
+          GE.Message.post("There was an error running your preload code:\n" + GE.Storage.values.onload )
+        }
+      }
+    }
   },
 
   Help : {
