@@ -2129,7 +2129,8 @@ module.exports = function( Gibber, Notation ) {
             break;
         }
         
-        property = caller
+        console.log("PATH LENGTH", path.length, path, caller, propertyName )
+        property = eval( propertyName )
         
         if( !caller.marks ) {
           caller.marks = {}
@@ -2186,6 +2187,7 @@ module.exports = function( Gibber, Notation ) {
             
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
+            console.log("PROPERTY = ", propertyName, valuesOrDurations )
             pattern.cm = cm
             // 
             // 
@@ -33641,6 +33643,22 @@ module.exports = function( Gibber ) {
   		filterMult:.2,
   		resonance:1,
       amp:.65
+    },
+    
+    edgy: {
+      presetInit: function() {
+        this.decay = 1/8
+        this.attack = ms(1)
+      },
+      octave: -2,
+  		octave2 : -1,
+  		cutoff: .5,
+  		filterMult:.2,
+      resonance:1, 
+      waveform:'PWM', 
+      pulsewidth:.2,
+      detune2:0,
+      amp:.2,
     },
   
   	easy : {
