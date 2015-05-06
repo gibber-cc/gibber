@@ -44,9 +44,15 @@ var Gabber = {
   localPhase: 0,
   headerSize:'1em',
   correctionBuffer:[],
+  beforeCorrectionBuffer: [],
   correctionBufferSize:255,
   init: function( name ) {
     this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
+    
+    if( Account.nick === null ) {
+      Account.nick = 'anon' + rndi(0,8,3).join('')
+    }
+    
     this.userShareColumn.editor.shareName = Account.nick
     
     this.column = Layout.addColumn({ type:'gabber', header:'Gabber : ' + name })
@@ -63,11 +69,12 @@ var Gabber = {
     
     Chat.handlers['gabber.Ki'] = function( msg ) { console.log("MSG", msg); Gabber.PID.Ki = msg.value }
     Chat.handlers['gabber.Kp'] = function( msg ) { console.log("MSG", msg); Gabber.PID.Kp = msg.value }
+    Chat.handlers['gabber.KpMean'] = function( msg ) { console.log("MSG", msg); Gabber.PID.KpMean = msg.value }    
     
     if( this.name !== null ) Gabber.createPerformance( this.userShareName )
     
     $.subscribe( 'Chat.arrival', Gabber.onNewPerformerAdded )
-    $.subscribe( 'Chat.departure', Gabber.onPerform )
+    $.subscribe( 'Chat.departure', Gabber.onPerformerRemoved )
     
     Gabber.initializeKeyMap()
     
@@ -88,25 +95,25 @@ var Gabber = {
   },
   
   sendTick: function() {
-    Gabber.phaseSnapshot = Gibber.Audio.Clock.getPhase()
-    Gabber.timeSnapshot  = Gibber.Audio.Core.context.currentTime
+    //Gabber.phaseSnapshot = Gibber.Audio.Clock.getPhase()
+    //Gabber.timeSnapshot  = Gibber.Audio.Core.context.currentTime
     Gabber.localPhase += 1024
-    Chat.socket.send( JSON.stringify({ cmd:'tick' }) )
+    //Chat.socket.send( JSON.stringify({ cmd:'tick' }) )
   },
   correctionFlag: false,
   mode:0, // 0 for initialize, 1 for running
   correctPhase: function() { Gabber.correctionFlag = true },
   onTickTock: function( msg ) {
-    var localPhase = Gibber.Audio.Clock.getPhase(),
-        localTime  = Gibber.Audio.Core.context.currentTime,
-        roundtripTime = localTime - Gabber.timeSnapshot
-        
-    Gabber.roundtrips.push( roundtripTime )
-    if( Gabber.roundtrips.length > 20 ) {
-      Gabber.calculateRoundtripAverage()
-    }else{
-      Gabber.sendTick()
-    }
+    // var localPhase = Gibber.Audio.Clock.getPhase(),
+    //     localTime  = Gibber.Audio.Core.context.currentTime,
+    //     roundtripTime = localTime - Gabber.timeSnapshot
+    //     
+    // Gabber.roundtrips.push( roundtripTime )
+    // if( Gabber.roundtrips.length > 20 ) {
+    //   Gabber.calculateRoundtripAverage()
+    // }else{
+    //   Gabber.sendTick()
+    // }
   },
   calculateRoundtripAverage: function() {
     // var sum = 0
@@ -120,7 +127,6 @@ var Gabber = {
     console.log( "ROUNDTRIPTIME AVG", Gabber.rtt )
   },
   onStart: function() {
-    //console.log("ON START", Gabber.rtt / 2)
     //future( Gabber.onPIDStart, ms(2000) + ( (Gabber.rtt / 2) * ms(1) ) )
     Gabber.onPIDStart()
   },
@@ -130,33 +136,51 @@ var Gabber = {
     Gabber.mode = PIDMODE
     Gibber.Audio.Core.onBlock = Gabber.sendTick
     
-    // Gabber.canvas = Canvas()
-    // 
-    // Gabber.canvas.draw = function() {
-    //   var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
-    //       originY = Gabber.canvas.height / 2,
-    //       lastX = 0, lastY = originY
-    //       
-    //   Gabber.canvas.clear()
-    //   
-    //   Gabber.canvas.beginPath()
-    //     Gabber.canvas.moveTo( lastX, lastY )
-    //     
-    //     for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
-    //       var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
-    //       
-    //       Gabber.canvas.lineTo( nextX, nextY )
-    //     }
-    //     
-    //   //Gabber.canvas.closePath()
-    //   Gabber.canvas.stroke( 'red' )
-    // }
+    
+  },
+  showGraph: function() {
+    if( Gabber.mode === PIDMODE ) {
+      Gabber.canvas = Canvas()
+    
+      Gabber.canvas.draw = function() {
+        var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
+            originY = Gabber.canvas.height / 2,
+            lastX = 0, lastY = originY
+          
+        Gabber.canvas.clear()
+      
+        Gabber.canvas.beginPath()
+          Gabber.canvas.moveTo( lastX, lastY )
+        
+          for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
+            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
+          
+            Gabber.canvas.lineTo( nextX, nextY )
+          }
+        
+        //Gabber.canvas.closePath()
+        Gabber.canvas.stroke( 'red' )
+        
+        Gabber.canvas.beginPath()
+          Gabber.canvas.moveTo( lastX, lastY )
+        
+          for( var i = 0; i < Gabber.beforeCorrectionBufferSize; i++ ) {
+            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.beforeCorrectionBuffer[ i ] * originY / 5
+          
+            Gabber.canvas.lineTo( nextX, nextY )
+          }
+        
+        //Gabber.canvas.closePath()
+        Gabber.canvas.stroke( 'blue' )
+      }
+    }
   },
   roundtrips: [],
   storing:[],
   'PID': Filters.PID(),
   onPID: function( msg ) { Gabber.PID.run( msg ) },
   onTock: function( msg ) {    
+    //console.log("TOCK MESSAGE", msg )
     if( Gabber.mode === TICKTOCKMODE ) {
       Gabber.onTickTock( msg )
     }else if ( Gabber.mode === PIDMODE ){
@@ -327,7 +351,6 @@ var Gabber = {
     //console.log("GABBER MESSAGE RECEIVED!", msg )
     var cm, owner = false
     
-    console.log( "SHARENAME", msg.shareName, "NICK", Account.nick )
     if( msg.shareName === Account.nick ) {
       cm = Gabber.userShareColumn.editor
       owner = true
@@ -335,9 +358,7 @@ var Gabber = {
       cm = Gabber.performers[ msg.shareName ].editor
     }
     
-    if( !owner ) {
-      console.log( "RANGE", msg.selectionRange )
-      
+    if( !owner ) {      
       setTimeout( function() {
         cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
       }, 50 )
@@ -435,11 +456,25 @@ Object.defineProperty( Gabber, 'Ki', {
 })
 
 Object.defineProperty( Gabber, 'Kp', {
-  get: function()  { return Gabber.PID.Ki },
+  get: function()  { return Gabber.PID.Kp },
   set: function(v) { 
     Gabber.PID.Kp = v
     var msg = {
       cmd:  'gabber.Kp',
+      gabberName:Gabber.name,
+      value: v
+    };
+    
+    Chat.socket.send( JSON.stringify( msg ) )
+  }
+})
+
+Object.defineProperty( Gabber, 'KpMean', {
+  get: function()  { return Gabber.PID.KpMean },
+  set: function(v) { 
+    Gabber.PID.KpMean = v
+    var msg = {
+      cmd:  'gabber.KpMean',
       gabberName:Gabber.name,
       value: v
     };

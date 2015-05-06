@@ -40,12 +40,14 @@ var Filters = module.exports = {
   },
   PID: function() {
     var pid = {
-      Kp: .01,
+      Kp: .8,
       Ki: .00001,
+      KpMean:.01,      
       initialized: false,
       phase: 0,
-      targetCount: 44,
+      targetCount: 88,
       integralPhaseCorrection:0,
+      brutalityThreshold: .1 * Gibber.Audio.Core.sampleRate,
       
       runningMean: Filters.RunningMean( 150 ),
       
@@ -54,19 +56,30 @@ var Filters = module.exports = {
             masterPhase              = msg.masterAudioPhase,
             immediatePhaseCorrection = masterPhase - Gabber.localPhase,
             controlledPhaseCorrection
-        
-        if( !this.initialized ) {
+                
+        //if( !this.initialized ) {
+        if( Math.abs( immediatePhaseCorrection ) > brutalityThreshold ) {
           //Gibber.Audio.Clock.setPhase( masterPhase )
           Gabber.localPhase = masterPhase
-          this.initialized = 1
+          //this.initialized = 1
+          return
         }else{
+          // XXX (ky)
+          // consider not using this mean stuff. a properly tuned PI-controller should take care of this in the I-part.
           var meanPhaseCorrection = this.runningMean( immediatePhaseCorrection )
           
           ///console.log( meanPhaseCorrection, immediatePhaseCorrection )
           this.integralPhaseCorrection += immediatePhaseCorrection 
           
-          //controlledPhaseCorrection = immediatePhaseCorrection + ( this.Kp * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
-          controlledPhaseCorrection = ( this.Kp * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
+          // XXX (ky)
+          // this is actual PI control. 0.05 should be called Kp, the Kp below should be called KiMean
+          //
+          controlledPhaseCorrection = this.Kp * immediatePhaseCorrection + ( this.KpMean * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
+          
+          // XXX (ky)
+          // this is actually just I-control (not PI). do not use this... 
+          //controlledPhaseCorrection = ( this.Kp * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
+          Gabber.beforeCorrectionBuffer[ this.phase % Gabber.correctionBufferSize ] = masterPhase - Gabber.localPhase//controlledPhaseCorrection
           
           Gabber.localPhase += controlledPhaseCorrection
           
@@ -74,18 +87,22 @@ var Filters = module.exports = {
             var seq = Seq.children[i]
             seq.adjustPhase( controlledPhaseCorrection )
           }
+           
+          //Gibber.Audio.Clock.setPhase( Gibber.Audio.Clock.getPhase() + controlledPhaseCorrection )
           
-          //if( Gabber.correctionBuffer.leng)
-          Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = controlledPhaseCorrection
-          //Gibber.Audio.Clock.setPhase( Gabber.localPhase )
+          // store correction for displaying graph of error
+          Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = masterPhase - Gabber.localPhase//controlledPhaseCorrection
           
           //console.log( controlledPhaseCorrection )
           //console.log( localPhase, masterPhase, immediatePhaseCorrection, controlledPhaseCorrection, this.integralPhaseCorrection )
-          // console.log( 
-          //   'master:', masterPhase, 
-          //   'local:',  Gabber.localPhase + controlledPhaseCorrection, 
-          //   'offBy:',  masterPhase - Gabber.localPhase + controlledPhaseCorrection  
-          // )
+          if( this.phase % this.targetCount === 0 ) {
+            console.log( 
+              'master:', masterPhase, 
+              'local:',  Gabber.localPhase, 
+              'offBy:',  masterPhase - Gabber.localPhase,
+              'phaseCorrection:', controlledPhaseCorrection
+            )
+          }
         }
       }
     }
