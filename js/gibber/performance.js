@@ -153,7 +153,7 @@ var Gabber = {
           Gabber.canvas.moveTo( lastX, lastY )
         
           for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
-            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 5
+            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 20
           
             Gabber.canvas.lineTo( nextX, nextY )
           }
@@ -178,7 +178,10 @@ var Gabber = {
   roundtrips: [],
   storing:[],
   'PID': Filters.PID(),
-  onPID: function( msg ) { Gabber.PID.run( msg ) },
+  onPID: function( msg ) { 
+    //console.log("PID MESSAGE")
+    Gabber.PID.run( msg ) 
+  },
   onTock: function( msg ) {    
     //console.log("TOCK MESSAGE", msg )
     if( Gabber.mode === TICKTOCKMODE ) {
