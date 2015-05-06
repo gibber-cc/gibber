@@ -153,8 +153,8 @@ var Gabber = {
           Gabber.canvas.moveTo( lastX, lastY )
         
           for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
-            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 20
-          
+            var nextX = pixelsPerPoint * i, nextY = originY + (Gabber.correctionBuffer[ i ] * originY) / 20
+            
             Gabber.canvas.lineTo( nextX, nextY )
           }
         

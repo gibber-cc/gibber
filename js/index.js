@@ -4917,8 +4917,8 @@ var Gabber = {
           Gabber.canvas.moveTo( lastX, lastY )
         
           for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
-            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] * originY / 20
-          
+            var nextX = pixelsPerPoint * i, nextY = originY + (Gabber.correctionBuffer[ i ] * originY) / 20
+            
             Gabber.canvas.lineTo( nextX, nextY )
           }
         
@@ -5303,8 +5303,8 @@ var Filters = module.exports = {
   },
   PID: function() {
     var pid = {
-      Kp: .005,
-      Ki: .00001,
+      Kp: .000,
+      Ki: .00000,
       KpMean:.01,      
       initialized: false,
       phase: 0,
@@ -5347,7 +5347,7 @@ var Filters = module.exports = {
           
           ///console.log( meanPhaseCorrection, immediatePhaseCorrection )
           //this.integralPhaseCorrection = this.Kp * meanPhaseCorrection
-          var phaseCorrection = this.Kp * meanError + this.Ki * meanErrorLong
+          var phaseCorrection = this.Kp * meanError + this.Ki * this.errorIntegral
           //this.integralPhaseCorrection += immediatePhaseCorrection 
           
           // XXX (ky)
@@ -5378,7 +5378,7 @@ var Filters = module.exports = {
             console.log( 
               'master:', masterPhase, 
               'local:',  Gabber.localPhase, 
-              'offBy:',  masterPhase - Gabber.localPhase,
+              'meanError:',  meanError,
               'phaseCorrection:', phaseCorrection
             )
           }
