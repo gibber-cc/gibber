@@ -131,12 +131,13 @@ var Gabber = {
     Gabber.onPIDStart()
   },
   onPIDStart : function() {
-    Gibber.clear()
-    Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
-    Gabber.mode = PIDMODE
-    Gibber.Audio.Core.onBlock = Gabber.sendTick
-    
-    
+    if( !Gabber.initialized ) {
+      Gibber.clear()
+      Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
+      Gabber.mode = PIDMODE
+      Gibber.Audio.Core.onBlock = Gabber.sendTick
+      Gabber.initialized = true
+    }
   },
   showGraph: function() {
     if( Gabber.mode === PIDMODE ) {
@@ -153,7 +154,7 @@ var Gabber = {
           Gabber.canvas.moveTo( lastX, lastY )
         
           for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
-            var nextX = pixelsPerPoint * i, nextY = originY + (Gabber.correctionBuffer[ i ] * originY) / 20
+            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] //* (originY / 20)
             
             Gabber.canvas.lineTo( nextX, nextY )
           }
@@ -165,7 +166,7 @@ var Gabber = {
           Gabber.canvas.moveTo( lastX, lastY )
         
           for( var i = 0; i < Gabber.beforeCorrectionBufferSize; i++ ) {
-            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.beforeCorrectionBuffer[ i ] * originY / 5
+            var nextX = pixelsPerPoint * i, nextY = originY + (Gabber.beforeCorrectionBuffer[ i ] / 20) * originY
           
             Gabber.canvas.lineTo( nextX, nextY )
           }
@@ -290,15 +291,15 @@ var Gabber = {
       performer.code.toggle()
       setTimeout( Gabber.layoutSharedPerformers, 20 )
     })
-      .addClass( 'no-select' )
-      .css({ 
-        cursor: 'pointer',
-        backgroundColor: '#333',
-        // marginBottom:'.25em',
-        // marginTop:'.25em',
-        height:Gabber.headerSize,
-        margin:0
-      })
+    .addClass( 'no-select' )
+    .css({ 
+      cursor: 'pointer',
+      backgroundColor: '#333',
+      // marginBottom:'.25em',
+      // marginTop:'.25em',
+      height:Gabber.headerSize,
+      margin:0
+    })
     
     //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )    
     element.append( performer.code )

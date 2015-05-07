@@ -39,15 +39,17 @@ var Filters = module.exports = {
     }
     
     rm.reset = function() {
-      console.log("MEAN RESET")
       for( var i = 0; i < N; i++ ) data[ i ] = 0
+      sum = 0
+      index = 0
+      n = 0
     }
     
     return rm
   },
   PID: function() {
     var pid = {
-      Kp: .000,
+      Kp: .005,
       Ki: .00000,
       KpMean:.01,      
       initialized: false,
@@ -69,19 +71,25 @@ var Filters = module.exports = {
         this.errorIntegral += errorRaw
         //if( !this.initialized ) {
         if( Math.abs( errorRaw ) > this.brutalityThreshold ) {
-          //Gibber.Audio.Clock.setPhase( masterPhase )
           console.log("BRUTAL CORRECTION", errorRaw )
           Gabber.localPhase = masterPhase
           
           if( !this.initialized ) { 
             this.initialized = 1
+            Gibber.Audio.Clock.setPhase( masterPhase )
+
             Clock.seq.start()
+          }else{
+            for( var i = 0, l = Seq.children.length; i < l; i++ ) {
+              var seq = Seq.children[i]
+              seq.adjustPhase( errorRaw )
+            }
           }
           
           this.errorIntegral = 0
           this.runningMean.reset()
           this.runningMeanLong.reset()          
-          
+
           return
         }else{
           // XXX (ky)
