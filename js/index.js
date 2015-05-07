@@ -4810,6 +4810,7 @@ var Gabber = {
   correctionBuffer:[],
   beforeCorrectionBuffer: [],
   correctionBufferSize:255,
+  tabs:[],
   init: function( name ) {
     this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
     
@@ -5039,31 +5040,51 @@ var Gabber = {
       Gabber.performers[ data.nick ] = null
     }
   },
+  addTabButton: function( name, cb ) {
+    var btn = $( '<button>' + name + '</button>' )
+      .on( 'mousedown', cb )
+      .css( 'margin-left', '1em' )
+      
+    Gabber.column.header.append( btn )
+  },
+  openTab: function() {
+    for( var i = 0; i < Gabber.tabs.length; i++ ) {
+      var tab = Gabber.tabs[ i ]
+      if( tab !== this ) {
+        tab.hide()
+      }
+    }
+    
+    this.show()
+  },
   createSharedLayout: function( name ) {
     var performer = {},
         element = $( '<div>' )
         
     performer.element = element
     
-    performer.header = $('<h4>').text( name ) 
-    element.append( performer.header )
+    Gabber.tabs.push( element )
+    Gabber.addTabButton( name, Gabber.openTab.bind( element ) )
+    
+    // performer.header = $('<h4>').text( name ) 
+    // element.append( performer.header )
     
     performer.code = $( '<div class="editor">' )
     performer.code.css({ overflow:'scroll', height:'auto' })
     
-    performer.header.on( 'mousedown', function() { 
-      performer.code.toggle()
-      setTimeout( Gabber.layoutSharedPerformers, 20 )
-    })
-      .addClass( 'no-select' )
-      .css({ 
-        cursor: 'pointer',
-        backgroundColor: '#333',
-        // marginBottom:'.25em',
-        // marginTop:'.25em',
-        height:Gabber.headerSize,
-        margin:0
-      })
+    // performer.header.on( 'mousedown', function() { 
+    //   performer.code.toggle()
+    //   setTimeout( Gabber.layoutSharedPerformers, 20 )
+    // })
+    // .addClass( 'no-select' )
+    // .css({ 
+    //   cursor: 'pointer',
+    //   backgroundColor: '#333',
+    //   // marginBottom:'.25em',
+    //   // marginTop:'.25em',
+    //   height:Gabber.headerSize,
+    //   margin:0
+    // })
     
     //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )    
     element.append( performer.code )
@@ -5096,24 +5117,24 @@ var Gabber = {
     return performer
   },
   layoutSharedPerformers: function() {
-    var performers = Gabber.performers,
-        colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
-        numPerformers = Object.keys( performers ).length,
-        numberOfVisiblePerformers = 0,
-        elemHeight = 0
-        
-    for( var key in performers ) {
-      if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
-    }
-    
-    colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
-    
-    elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
-
-    for( var key in performers ) {
-      if( performers[key].element.is(':visible') )
-        performers[ key ].code.css( 'height', '50%' ) //elemHeight )
-    }
+    // var performers = Gabber.performers,
+    //     colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
+    //     numPerformers = Object.keys( performers ).length,
+    //     numberOfVisiblePerformers = 0,
+    //     elemHeight = 0
+    //     
+    // for( var key in performers ) {
+    //   if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
+    // }
+    // 
+    // colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
+    // 
+    // elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
+    // 
+    // for( var key in performers ) {
+    //   if( performers[key].element.is(':visible') )
+    //     performers[ key ].code.css( 'height', '50%' ) //elemHeight )
+    // }
   },
   onGabber: function( msg ) {
     //console.log("GABBER MESSAGE RECEIVED!", msg )
