@@ -1,83 +1,71 @@
 var Filters = module.exports = {
-  Average: function() {
-    var n = 0, sum = 0, lastAvg = 0, avg = 0
-    
-    var avg = function( p ) {
-      sum += p
-      n++
-    }
-    
-    avg.setN   = function( v )  { n = v }
-    avg.setSum = function( v )  { sum = v }
-    avg.getLastAvg = function() { return lastAvg }
-    
-    avg.getAvg = function() { 
-      avg = sum / n; 
-      sum = n = 0;
-      lastAvg = avg;
-      return avg; 
-    }
-
-    return avg
-  },
   RunningMean: function( N ) {
     var sum = 0, index = 0, n = 0, data = []
-    
+
     for( var i = 0; i < N; i++ ) data[ i ] = 0
-    
-    var rm = function( sample ) {
+
+    var runningMean = function( sample ) {
       if( n !== N ) n++
-      
+
       sum -= data[ index ]
       data[ index ] = sample
       sum += sample
       index++
-      
+
       if( index === N ) index = 0
-      
+
       return sum / n
     }
-    
-    rm.reset = function() {
+
+    runningMean.reset = function() {
       for( var i = 0; i < N; i++ ) data[ i ] = 0
       sum = 0
       index = 0
       n = 0
     }
-    
-    return rm
+
+    return runningMean
   },
+
   PID: function() {
     var pid = {
       Kp: .005,
-      Ki: .00000,
-      KpMean:.01,      
+      Ki: .00000, // XXX may be removed in the future
       initialized: false,
       phase: 0,
       targetCount: 88,
-      integralPhaseCorrection:0,
+      // XXX make this use actual sample rate
       brutalityThreshold: .1 * 44100, //Gibber.Audio.Core.sampleRate,
-      
+
       runningMean: Filters.RunningMean( 50 ),
-      runningMeanLong: Filters.RunningMean( 250 ),
       errorIntegral : 0,
-      
+
       run: function( msg ) {
-        var localPhase               = Gabber.localPhase,//Gibber.Audio.Clock.getPhase(),
-            masterPhase              = msg.masterAudioPhase,
-            errorRaw                 = masterPhase - Gabber.localPhase,
-            controlledPhaseCorrection
-        
+        var masterPhase              = msg.masterAudioPhase,
+            errorRaw                 = masterPhase - Gabber.localPhase
+
+        // integrate (aka sum, accumulate) all the raw error measurements
+        // XXX may be removed in the future
         this.errorIntegral += errorRaw
-        //if( !this.initialized ) {
+
         if( Math.abs( errorRaw ) > this.brutalityThreshold ) {
+
+          // "brutal" control regime: we are noticably, musically "off time" so
+          // we should jump forward (or backward) to the correct moment in the
+          // piece.
+
           console.log("BRUTAL CORRECTION", errorRaw )
+
+          // "brutally" adjust the variable under control
+          //
           Gabber.localPhase = masterPhase
-          
-          if( !this.initialized ) { 
+
+          // perform control "actuation": this is where we try to make Gibber's
+          // state and behaviour reflect the controlled timing of the PID.
+          //
+          if( !this.initialized ) {
             this.initialized = 1
             Gibber.Audio.Clock.setPhase( masterPhase )
-
             Clock.seq.start()
           }else{
             for( var i = 0, l = Seq.children.length; i < l; i++ ) {
@@ -85,51 +73,47 @@ var Filters = module.exports = {
               seq.adjustPhase( errorRaw )
             }
           }
-          
+
+          // clear/reset now invalid memory/history of the PID controller
+          //
           this.errorIntegral = 0
           this.runningMean.reset()
-          this.runningMeanLong.reset()          
 
-          return
         }else{
-          // XXX (ky)
-          // consider not using this mean stuff. a properly tuned PI-controller should take care of this in the I-part.
-          var meanError = this.runningMean( errorRaw )
-          var meanErrorLong = this.runningMeanLong( errorRaw )
-          
-          ///console.log( meanPhaseCorrection, immediatePhaseCorrection )
-          //this.integralPhaseCorrection = this.Kp * meanPhaseCorrection
-          var phaseCorrection = this.Kp * meanError + this.Ki * this.errorIntegral
-          //this.integralPhaseCorrection += immediatePhaseCorrection 
-          
-          // XXX (ky)
-          // this is actual PI control. 0.05 should be called Kp, the Kp below should be called KiMean
+
+          // de-noise the error signal using a running mean. the error signal
+          // is the difference between the reported master/server phase and our
+          // local phase, but this can be very noisy.
           //
-          // controlledPhaseCorrection = this.Kp * immediatePhaseCorrection + ( this.KpMean * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
-          
-          // XXX (ky)
-          // this is actually just I-control (not PI). do not use this... 
-          //controlledPhaseCorrection = ( this.Kp * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
-          // Gabber.beforeCorrectionBuffer[ this.phase % Gabber.correctionBufferSize ] = masterPhase - Gabber.localPhase//controlledPhaseCorrection
-          
-          Gabber.localPhase += phaseCorrection //this.integralPhaseCorrection //controlledPhaseCorrection
-          
+          var meanError = this.runningMean( errorRaw )
+
+          // use PID controller to calulate how we should correct our local
+          // phase to match that of the server/master. XXX the integral term
+          // may be removed in the future.
+          //
+          var phaseCorrection = this.Kp * meanError + this.Ki * this.errorIntegral
+
+          // adjust the variable under control
+          //
+          Gabber.localPhase += phaseCorrection
+
+          // perform control "actuation": this is where we try to make Gibber's
+          // state and behaviour reflect the controlled timing of the PID.
+          //
           for( var i = 0, l = Seq.children.length; i < l; i++ ) {
             var seq = Seq.children[i]
             seq.adjustPhase( phaseCorrection )
           }
-           
-          //Gibber.Audio.Clock.setPhase( Gibber.Audio.Clock.getPhase() + phaseCorrection )
-          
-          // store correction for displaying graph of error
-          Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = meanError//controlledPhaseCorrection
-        
-          //console.log( controlledPhaseCorrection )
-          //console.log( localPhase, masterPhase, immediatePhaseCorrection, controlledPhaseCorrection, this.integralPhaseCorrection )
+
+          // store and display information useful if tuning, testing, and debugging
+          //
+
+          Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = meanError
+
           if( this.phase % this.targetCount === 0 ) {
-            console.log( 
-              'master:', masterPhase, 
-              'local:',  Gabber.localPhase, 
+            console.log(
+              'master:', masterPhase,
+              'local:',  Gabber.localPhase,
               'meanError:',  meanError,
               'phaseCorrection:', phaseCorrection
             )
@@ -137,7 +121,7 @@ var Filters = module.exports = {
         }
       }
     }
-    
+
     return pid
   }
 }
