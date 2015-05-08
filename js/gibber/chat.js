@@ -330,7 +330,7 @@ Chat = {
         }
       }
       if( typeof column === 'undefined' ) { console.log("CANNOT FIND COLUMN FOR REMOTE EXECUTION"); return }
-      
+      console.log(data)
       cm  = column.editor
 
       // from, selectionRange, code

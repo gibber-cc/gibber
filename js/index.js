@@ -1240,7 +1240,7 @@ Chat = {
         }
       }
       if( typeof column === 'undefined' ) { console.log("CANNOT FIND COLUMN FOR REMOTE EXECUTION"); return }
-      
+      console.log(data)
       cm  = column.editor
 
       // from, selectionRange, code
@@ -4810,7 +4810,7 @@ var Gabber = {
   correctionBuffer:[],
   beforeCorrectionBuffer: [],
   correctionBufferSize:255,
-  tabs:[],
+  tabs:{},
   init: function( name ) {
     this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
     
@@ -4832,9 +4832,18 @@ var Gabber = {
     Chat.handlers.tock = Gabber.onTock
     Chat.handlers['gabber.start'] = Gabber.onStart
     
-    Chat.handlers['gabber.Ki'] = function( msg ) { console.log("MSG", msg); Gabber.PID.Ki = msg.value }
-    Chat.handlers['gabber.Kp'] = function( msg ) { console.log("MSG", msg); Gabber.PID.Kp = msg.value }
-    Chat.handlers['gabber.KpMean'] = function( msg ) { console.log("MSG", msg); Gabber.PID.KpMean = msg.value }    
+    // Chat.handlers['gabber.Ki'] = function( msg ) { Gabber.PID.Ki = msg.value }
+    // Chat.handlers['gabber.Kp'] = function( msg ) { Gabber.PID.Kp = msg.value }
+    // Chat.handlers['gabber.KpMean'] = function( msg ) { Gabber.PID.KpMean = msg.value } 
+    
+    Chat.handlers['gabber.shared.add'] = function( msg ) {
+      Gabber.shared.add( msg.name, msg.value, false )
+    } 
+    
+    Gabber.shared.add( 'Ki', 0, false )
+    Gabber.shared.add( 'Kp', .005, false ) 
+    Gabber.shared.add( 'KpMean', .01, false )
+    Gabber.shared.add( 'brutalityThreshold', .1 * Gibber.Audio.Core.context.sampleRate, false )
     
     if( this.name !== null ) Gabber.createPerformance( this.userShareName )
     
@@ -4853,6 +4862,42 @@ var Gabber = {
       Gabber.correctionBuffer[ i ] = 0
     }
 
+  },
+  
+  shared: {
+    add: function( name, value, shouldDistribute ) {
+      var _value = value || 0
+      
+      if( typeof shouldDistribute === 'undefined' ) shouldDistribute = true
+      
+      Object.defineProperty( Gabber.shared, name, {
+        get: function()  { return _value },
+        set: function(v) { 
+          _value = v
+          var msg = { 
+            cmd:  'gabber.shared',
+            'name': name,
+            gabberName:Gabber.name,      
+            value: _value
+          }
+    
+          Chat.socket.send( JSON.stringify( msg ) )
+        }  
+      })
+      
+      Chat.handlers[ 'gabber.shared.' + name ] = function( msg ) { _value = msg.value }
+      
+      if( shouldDistribute ) {
+        var msg = { 
+          cmd:  'gabber.shared.add',
+          'name': name,
+          gabberName:Gabber.name,      
+          value: _value
+        }
+
+        Chat.socket.send( JSON.stringify( msg ) )
+      }
+    }
   },
   
   start: function() {
@@ -4897,7 +4942,9 @@ var Gabber = {
   },
   onPIDStart : function() {
     if( !Gabber.initialized ) {
+      var rate = parseFloat( Clock.rate ) // tmp storage
       Gibber.clear()
+      Clock.rate = rate
       Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
       Gabber.mode = PIDMODE
       Gibber.Audio.Core.onBlock = Gabber.sendTick
@@ -4945,7 +4992,6 @@ var Gabber = {
   storing:[],
   'PID': Filters.PID(),
   onPID: function( msg ) { 
-    //console.log("PID MESSAGE")
     Gabber.PID.run( msg ) 
   },
   onTock: function( msg ) {    
@@ -5044,12 +5090,13 @@ var Gabber = {
     var btn = $( '<button>' + name + '</button>' )
       .on( 'mousedown', cb )
       .css( 'margin-left', '1em' )
+      .addClass( name )
       
     Gabber.column.header.append( btn )
   },
   openTab: function() {
-    for( var i = 0; i < Gabber.tabs.length; i++ ) {
-      var tab = Gabber.tabs[ i ]
+    for( var key in Gibber.tabs ) {
+      var tab = Gabber.tabs[ key ]
       if( tab !== this ) {
         tab.hide()
       }
@@ -5057,13 +5104,22 @@ var Gabber = {
     
     this.show()
   },
+  flashTab: function( name, color ) {
+    var elem = $( '.' + name ),
+        prevBackground = elem.css('background'), 
+        prevColor = elem.css('color')
+        
+    elem.css({ background: 'white', color:'black' })
+    
+    setTimeout( function() { elem.css({ background:prevBackground,color:prevColor }) }, 150 )
+  },
   createSharedLayout: function( name ) {
     var performer = {},
         element = $( '<div>' )
         
     performer.element = element
     
-    Gabber.tabs.push( element )
+    Gabber.tabs[ name ] = element 
     Gabber.addTabButton( name, Gabber.openTab.bind( element ) )
     
     // performer.header = $('<h4>').text( name ) 
@@ -5137,7 +5193,6 @@ var Gabber = {
     // }
   },
   onGabber: function( msg ) {
-    //console.log("GABBER MESSAGE RECEIVED!", msg )
     var cm, owner = false
     
     if( msg.shareName === Account.nick ) {
@@ -5201,9 +5256,7 @@ var Gabber = {
       
       var msg = Gabber.createMessage( obj, cm.shareName, cm )
       msg.shouldDelay = false
-      
-      console.log( "CM", cm )
-      
+            
       //cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
 
       Chat.socket.send( JSON.stringify( msg ) ) 
@@ -5212,13 +5265,11 @@ var Gabber = {
     CodeMirror.keyMap.gibber[ 'Shift-Ctrl-2' ] = function( cm ) {
 			var obj = Environment.getSelectionCodeColumn( cm, false )
       
-			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
       
       var msg = Gabber.createMessage( obj, cm.shareName, cm )
       msg.shouldDelay = true
-      
-      console.log( "CM", cm )
-      
+            
       // if( cm.shareName !== Account.nick ) {
       //   cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
       // }else{
@@ -5326,29 +5377,31 @@ var Filters = module.exports = {
     return rm
   },
   PID: function() {
-    var pid = {
-      Kp: .005,
-      Ki: .00000,
-      KpMean:.01,      
+    var pid = {     
       initialized: false,
       phase: 0,
       targetCount: 88,
       integralPhaseCorrection:0,
-      brutalityThreshold: .1 * 44100, //Gibber.Audio.Core.sampleRate,
+      sampleRateRatio: Gibber.Audio.Core.context.sampleRate / 44100, // mySampleRate / masterSampleRate... which is always 44100
       
       runningMean: Filters.RunningMean( 50 ),
       runningMeanLong: Filters.RunningMean( 250 ),
       errorIntegral : 0,
+      shouldRecord:false,
+      recordBuffer:[],
+      glitch: function( amount ) {
+        Gabber.localPhase += amount
+      },
       
       run: function( msg ) {
         var localPhase               = Gabber.localPhase,//Gibber.Audio.Clock.getPhase(),
-            masterPhase              = msg.masterAudioPhase,
+            masterPhase              = msg.masterAudioPhase * this.sampleRateRatio,
             errorRaw                 = masterPhase - Gabber.localPhase,
             controlledPhaseCorrection
         
         this.errorIntegral += errorRaw
         //if( !this.initialized ) {
-        if( Math.abs( errorRaw ) > this.brutalityThreshold ) {
+        if( Math.abs( errorRaw ) > Gabber.shared.brutalityThreshold ) {
           console.log("BRUTAL CORRECTION", errorRaw )
           Gabber.localPhase = masterPhase
           
@@ -5366,7 +5419,10 @@ var Filters = module.exports = {
           
           this.errorIntegral = 0
           this.runningMean.reset()
-          this.runningMeanLong.reset()          
+          this.runningMeanLong.reset()
+          
+          if( this.shouldRecord )
+            this.recordBuffer.push( [ "brutal", localPhase, masterPhase, errorRaw ] )          
 
           return
         }else{
@@ -5377,7 +5433,7 @@ var Filters = module.exports = {
           
           ///console.log( meanPhaseCorrection, immediatePhaseCorrection )
           //this.integralPhaseCorrection = this.Kp * meanPhaseCorrection
-          var phaseCorrection = this.Kp * meanError + this.Ki * this.errorIntegral
+          var phaseCorrection = Gabber.shared.Kp * meanError + Gabber.shared.Ki * this.errorIntegral
           //this.integralPhaseCorrection += immediatePhaseCorrection 
           
           // XXX (ky)
@@ -5397,8 +5453,8 @@ var Filters = module.exports = {
             seq.adjustPhase( phaseCorrection )
           }
            
-          //Gibber.Audio.Clock.setPhase( Gibber.Audio.Clock.getPhase() + phaseCorrection )
-          
+          if( this.shouldRecord )
+            this.recordBuffer.push( [ "gentle", localPhase, masterPhase, meanError, phaseCorrection, Gabber.localPhase ] )
           // store correction for displaying graph of error
           Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = meanError//controlledPhaseCorrection
         

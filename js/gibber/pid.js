@@ -48,29 +48,31 @@ var Filters = module.exports = {
     return rm
   },
   PID: function() {
-    var pid = {
-      Kp: .005,
-      Ki: .00000,
-      KpMean:.01,      
+    var pid = {     
       initialized: false,
       phase: 0,
       targetCount: 88,
       integralPhaseCorrection:0,
-      brutalityThreshold: .1 * 44100, //Gibber.Audio.Core.sampleRate,
+      sampleRateRatio: Gibber.Audio.Core.context.sampleRate / 44100, // mySampleRate / masterSampleRate... which is always 44100
       
       runningMean: Filters.RunningMean( 50 ),
       runningMeanLong: Filters.RunningMean( 250 ),
       errorIntegral : 0,
+      shouldRecord:false,
+      recordBuffer:[],
+      glitch: function( amount ) {
+        Gabber.localPhase += amount
+      },
       
       run: function( msg ) {
         var localPhase               = Gabber.localPhase,//Gibber.Audio.Clock.getPhase(),
-            masterPhase              = msg.masterAudioPhase,
+            masterPhase              = msg.masterAudioPhase * this.sampleRateRatio,
             errorRaw                 = masterPhase - Gabber.localPhase,
             controlledPhaseCorrection
         
         this.errorIntegral += errorRaw
         //if( !this.initialized ) {
-        if( Math.abs( errorRaw ) > this.brutalityThreshold ) {
+        if( Math.abs( errorRaw ) > Gabber.shared.brutalityThreshold ) {
           console.log("BRUTAL CORRECTION", errorRaw )
           Gabber.localPhase = masterPhase
           
@@ -88,7 +90,10 @@ var Filters = module.exports = {
           
           this.errorIntegral = 0
           this.runningMean.reset()
-          this.runningMeanLong.reset()          
+          this.runningMeanLong.reset()
+          
+          if( this.shouldRecord )
+            this.recordBuffer.push( [ "brutal", localPhase, masterPhase, errorRaw ] )          
 
           return
         }else{
@@ -99,7 +104,7 @@ var Filters = module.exports = {
           
           ///console.log( meanPhaseCorrection, immediatePhaseCorrection )
           //this.integralPhaseCorrection = this.Kp * meanPhaseCorrection
-          var phaseCorrection = this.Kp * meanError + this.Ki * this.errorIntegral
+          var phaseCorrection = Gabber.shared.Kp * meanError + Gabber.shared.Ki * this.errorIntegral
           //this.integralPhaseCorrection += immediatePhaseCorrection 
           
           // XXX (ky)
@@ -119,8 +124,8 @@ var Filters = module.exports = {
             seq.adjustPhase( phaseCorrection )
           }
            
-          //Gibber.Audio.Clock.setPhase( Gibber.Audio.Clock.getPhase() + phaseCorrection )
-          
+          if( this.shouldRecord )
+            this.recordBuffer.push( [ "gentle", localPhase, masterPhase, meanError, phaseCorrection, Gabber.localPhase ] )
           // store correction for displaying graph of error
           Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = meanError//controlledPhaseCorrection
         
