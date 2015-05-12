@@ -2058,7 +2058,8 @@ module.exports = function( Gibber, Notation ) {
                     _end = {line: start.line, ch:literal.loc.end.column },
                     key = propertyKeys[ ii ],
                     mappingObject = newObject.mappingProperties[ key ]
-                    
+                
+                console.log( "REACTIVE IS MADE" )
                 var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, key, mappingObject )
 
                 __move.onchange = function( v ) {
@@ -2071,7 +2072,8 @@ module.exports = function( Gibber, Notation ) {
                         mappingObject = newObject.mappingProperties[ literal.key.name ],
                         _start = { line: evalStart + literal.value.loc.start.line - 1, ch:literal.value.loc.start.column },
                         _end = { line: evalStart + literal.value.loc.end.line - 1, ch:literal.value.loc.end.column }
-                                            
+                    
+                    console.log("REACTIVE IS MADE")                        
                     var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
                     
                     __move.onchange = function( v ) {
@@ -2129,8 +2131,7 @@ module.exports = function( Gibber, Notation ) {
             break;
         }
         
-        console.log("PATH LENGTH", path.length, path, caller, propertyName )
-        property = eval( propertyName )
+        property = caller
         
         if( !caller.marks ) {
           caller.marks = {}
@@ -2187,7 +2188,6 @@ module.exports = function( Gibber, Notation ) {
             
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
-            console.log("PROPERTY = ", propertyName, valuesOrDurations )
             pattern.cm = cm
             // 
             // 
@@ -30188,7 +30188,7 @@ var Clock = {
       
       this.setPhase = function( v ) { _phase = v }
       this.getPhase = function() { return _phase }
-      
+
       Clock.seq = new Gibberish.PolySeq({
         seqs : [{
           target:Clock,
@@ -30197,8 +30197,10 @@ var Clock = {
         }],
         rate: Clock,
       })
+      Gibber.Audio.Seqs.Seq.children.push( Clock.seq ) // needed for Gabber
       Clock.seq.connect().start()
       Clock.seq.timeModifier = Clock.time.bind( Clock )
+      
     }else{
       Clock.seq.setPhase(0)
       Clock.seq.connect().start()
@@ -41212,6 +41214,31 @@ var types = [
   }
 })
 
+Vec2.random = function( min, max ) {
+	if( typeof min === 'undefined' ) min = 0
+	if( typeof max === 'undefined' ) max = min + 1
+  return Vec2( rndf(min,max), rndf(min,max) )
+}
+
+Vec2.div = function( _vec, scalar ) {
+  var vec = _vec.clone()
+  vec.divideScalar( scalar )
+  return vec
+}
+
+Vec2.sub = function( a, b ) {
+  var vec = a.clone()
+  vec.sub( b )
+  return vec
+}
+
+THREE.Vector2.prototype.limit = function( limit ) {
+	if( this.length() > limit ) {
+    this.normalize()
+    this.multiplyScalar( limit )
+  }
+}
+
 var types = {
       Cube:  { width:50, height:50, depth:50 },
       Sphere: { radius:50, segments:16, rings: 16 },
@@ -42673,36 +42700,36 @@ var PP = {
   },
 }
 
-var types = [
-  [ 'Vec2', 'Vector2', 'vec2' ],
-  [ 'Vec3', 'Vector3', 'vec3' ],
-  [ 'Vec4', 'Vector4', 'vec4' ],    
-]
-.forEach( function( element, index, array ) {
-  var type = element[ 0 ],
-    threeType = element[ 1 ] || element[ 0 ],
-    shaderType = element[ 2 ] || 'f'
-    
-  window[ type ] = function() {
-    var args = Array.prototype.slice.call( arguments, 0 ),
-        obj
-    
-    if( Array.isArray( args[0] ) ) {
-      var _args = []
-      for( var i = 0; i < args[0].length; i++ ) {
-        _args[ i ] = args[0][ i ]
-      }
-      args = _args
-    }    
-        
-    obj = Gibber.construct( THREE[ threeType ], args )
-    
-    obj.name = type
-    obj.shaderType = shaderType
-    
-    return obj
-  }
-})
+// var types = [
+//   [ 'Vec2', 'Vector2', 'vec2' ],
+//   [ 'Vec3', 'Vector3', 'vec3' ],
+//   [ 'Vec4', 'Vector4', 'vec4' ],    
+// ]
+// .forEach( function( element, index, array ) {
+//   var type = element[ 0 ],
+//     threeType = element[ 1 ] || element[ 0 ],
+//     shaderType = element[ 2 ] || 'f'
+//     
+//   window[ type ] = function() {
+//     var args = Array.prototype.slice.call( arguments, 0 ),
+//         obj
+//     
+//     if( Array.isArray( args[0] ) ) {
+//       var _args = []
+//       for( var i = 0; i < args[0].length; i++ ) {
+//         _args[ i ] = args[0][ i ]
+//       }
+//       args = _args
+//     }    
+//         
+//     obj = Gibber.construct( THREE[ threeType ], args )
+//     
+//     obj.name = type
+//     obj.shaderType = shaderType
+//     
+//     return obj
+//   }
+// })
 
 var threeTypes = {
   'vec2' : 'v2',

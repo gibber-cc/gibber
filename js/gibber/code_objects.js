@@ -808,7 +808,8 @@ module.exports = function( Gibber, Notation ) {
                     _end = {line: start.line, ch:literal.loc.end.column },
                     key = propertyKeys[ ii ],
                     mappingObject = newObject.mappingProperties[ key ]
-                    
+                
+                console.log( "REACTIVE IS MADE" )
                 var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, key, mappingObject )
 
                 __move.onchange = function( v ) {
@@ -821,7 +822,8 @@ module.exports = function( Gibber, Notation ) {
                         mappingObject = newObject.mappingProperties[ literal.key.name ],
                         _start = { line: evalStart + literal.value.loc.start.line - 1, ch:literal.value.loc.start.column },
                         _end = { line: evalStart + literal.value.loc.end.line - 1, ch:literal.value.loc.end.column }
-                                            
+                    
+                    console.log("REACTIVE IS MADE")                        
                     var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
                     
                     __move.onchange = function( v ) {
