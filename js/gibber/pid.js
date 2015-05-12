@@ -35,7 +35,7 @@ var Filters = module.exports = {
       
       if( index === N ) index = 0
       
-      return sum / n
+      return sum / 50
     }
     
     rm.reset = function() {

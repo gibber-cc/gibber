@@ -5101,7 +5101,7 @@ var Gabber = {
         tab.hide()
       }
     }
-    
+    console.log("SHOWING", this )
     this.show()
   },
   flashTab: function( name, color ) {
@@ -5364,7 +5364,7 @@ var Filters = module.exports = {
       
       if( index === N ) index = 0
       
-      return sum / n
+      return sum / 50
     }
     
     rm.reset = function() {

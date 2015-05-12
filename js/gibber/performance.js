@@ -337,7 +337,7 @@ var Gabber = {
         tab.hide()
       }
     }
-    
+    console.log("SHOWING", this )
     this.show()
   },
   flashTab: function( name, color ) {
