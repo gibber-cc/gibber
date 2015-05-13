@@ -25477,7 +25477,9 @@ Gibberish.Granulator = function(properties) {
       _out        = [0,0],
       rndf        = Gibberish.rndf,
       numberOfGrains = properties.numberOfGrains || 20;
-      
+  
+      console.log( "NUMBER OF GRAINS", numberOfGrains )
+  
 	Gibberish.extend(this, { 
 		name:		        "granulator",
 		bufferLength:   88200,
@@ -25560,6 +25562,8 @@ Gibberish.Granulator = function(properties) {
   .init()
   .processProperties(arguments);
   
+  
+  
 	for(var i = 0; i < numberOfGrains; i++) {
 		grains[i] = {
 			pos : self.position + Gibberish.rndf(self.positionMin, self.positionMax),
@@ -25569,7 +25573,11 @@ Gibberish.Granulator = function(properties) {
 		grains[i].end = grains[i].pos + self.grainSize;
 		grains[i].fadeAmount = grains[i]._speed * (self.fade * self.grainSize);
 		grains[i].pan = Gibberish.rndf(self.spread * -1, self.spread);
+    
+    console.log( "GRAIN", i, "POS", grains[i].pos, "SPEED", grains[i]._speed )
 	}
+  
+  this.grains = grains
 			
 	/*if(typeof properties.input !== "undefined") { 
 			this.shouldWrite = true;
@@ -31977,9 +31985,16 @@ module.exports = function( Gibber ) {
   Oscillators.Grains = function() {
     var props = typeof arguments[0] === 'object' ? arguments[0] : arguments[1],
         bufferLength = props.bufferLength || 88200,
-        a = Sampler().record( props.input, bufferLength ),
+        a,
+        //a/ = Sampler().record( props.input, bufferLength ),
         oscillator
-  
+    
+    if( props.input ) {
+      a = Sampler().record( props.input, bufferLength )
+    }else if( props.buffer ) {
+      bufferLength = props.buffer.length
+    }
+    
     if(typeof arguments[0] === 'string') {
       var preset = Gibber.Presets.Grains[ arguments[0] ]
       if( typeof props !== 'undefined') $.extend( preset, props )
@@ -32002,15 +32017,22 @@ module.exports = function( Gibber ) {
   		if(shouldLoop === false) {
   			future( function() { mappingObject.position = curPos }, Gibber.Clock.time( time ) );
   		}
+      
+      return oscillator
   	}
-
-    future( function() {
-  	  oscillator.setBuffer( a.getBuffer() );
-      oscillator.connect()
-  	  oscillator.loop( 0, 1, bufferLength ); // min looping automatically
     
-      a.disconnect()
-    }, bufferLength + 1)
+    if( a ){
+      future( function() {
+    	  oscillator.setBuffer( a.getBuffer() );
+        oscillator.connect()
+    	  oscillator.loop( 0, 1, bufferLength ); // min looping automatically
+    
+        a.disconnect()
+      }, bufferLength + 1)
+    }else{
+      oscillator.connect()
+      oscillator.loop( 0, 1, bufferLength );
+    }
     
     oscillator.type = 'Gen'
 
@@ -32307,7 +32329,7 @@ module.exports = function( Gibber ) {
         },
         set: function(v) {
           if( v <= 1 ) {
-            __start = v * oscillator.bufferLength
+            __start = v * oscillator.length
           }else{
             __start = v
           }
@@ -32326,7 +32348,7 @@ module.exports = function( Gibber ) {
         },
         set: function(v) {
           if( v <= 1 ) {
-            __end = v * oscillator.bufferLength
+            __end = v * oscillator.length
           }else{
             __end = v
           }
