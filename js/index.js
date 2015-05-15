@@ -29116,7 +29116,8 @@ Audio = {
     target.SoundFont = Audio.SoundFont
     target.Speak = Audio.Speak
     target.Additive = Audio.Additive
-
+    target.Ugen = Audio.Ugen
+    
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
     target.rndi = Audio.Core.rndi
@@ -34113,19 +34114,31 @@ var Ugen = function( desc ) {
     obj.__proto__ = Gibber.Audio.Core._synth
     
     for( var key in props ) {
-        console.log("KEY", key )
-        obj[ key ] = props[ key ]
+      obj[ key ] = props[ key ]
     }
-
+    
+    var doNotCopy = ['name','inputs','callback','init']
+    
+    for( var key in desc ) {
+      if( doNotCopy.indexOf( key ) === -1 ) {
+        obj[ key ] = desc[ key ].bind( obj )
+      }
+    }
+    
     obj.init.call( obj )
-    obj._init()
     obj.oscillatorInit.call( obj )
 
     Gibber.createProxyProperties( obj, obj.properties )
     for( var key in desc.inputs ) {
-      obj[ key ] = desc.inputs[ key ].default
-    }
-
+      if( ! props[ key ] ) {
+        obj[ key ] = desc.inputs[ key ].default
+      }else{
+        obj[ key ] = props[ key ]
+      }
+    }  
+    
+    obj._init()
+    
     obj.connect( Gibber.Master )
 	
     obj.processProperties.call( obj, arguments )
