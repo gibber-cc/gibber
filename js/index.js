@@ -35933,44 +35933,49 @@ var Gibber = {
     console.log( 'Gibber has been cleared.' )
   },
   
+  singleton: function( lt, target ) {
+    if( !target ) target = window 
+    
+    if( typeof target[ lt ] !== 'undefined' ) { //&& arguments[1].indexOf( window[ lt ] ) === -1 ) { 
+      delete target[ lt ] 
+      delete target[ '___' + lt ]
+    }
+
+		var ltr = lt;
+  
+		Object.defineProperty( target, ltr, {
+      configurable: true,
+			get:function() { return target[ '___'+ltr] },
+			set:function( newObj ) {
+        if( newObj ) {
+          if( target[ '___'+ltr ] ) { 
+            if( typeof target[ '___'+ltr ].replaceWith === 'function' ) {
+              target[ '___'+ltr ].replaceWith( newObj )
+              console.log( target[ '___'+ltr ].name + ' was replaced with ' + newObj.name )
+            }
+          }
+          target[ '___'+ltr ] = newObj
+        }else{
+				  if( target[ '___'+ltr ] ) {
+				  	 var variable = target[ '___'+ltr ]
+				  	 if( variable ) {
+				  		 if( typeof variable.kill === 'function' /*&& target[ '___'+ltr ].destinations.length > 0 */) {
+				  			 variable.kill();
+				  		 }
+				  	 }
+				  }
+        }
+      }
+    });
+  },
   proxy: function( target ) {
 		var letters = "abcdefghijklmnopqrstuvwxyz"
     
 		for(var l = 0; l < letters.length; l++) {
-			var lt = letters.charAt(l);
-      if( typeof window[ lt ] !== 'undefined' ) { //&& arguments[1].indexOf( window[ lt ] ) === -1 ) { 
-        delete window[ lt ] 
-        delete window[ '___' + lt ]
-      }
 
-      (function() {
-				var ltr = lt;
+			var lt = letters.charAt(l);
+      Gibber.singleton( lt, target )
       
-				Object.defineProperty( target, ltr, {
-          configurable: true,
-					get:function() { return target[ '___'+ltr] },
-					set:function( newObj ) {
-            if( newObj ) {
-              if( target[ '___'+ltr ] ) { 
-                if( typeof target[ '___'+ltr ].replaceWith === 'function' ) {
-                  target[ '___'+ltr ].replaceWith( newObj )
-                  console.log( target[ '___'+ltr ].name + ' was replaced with ' + newObj.name )
-                }
-              }
-              target[ '___'+ltr ] = newObj
-            }else{
-						  if( target[ '___'+ltr ] ) {
-						  	 var variable = target[ '___'+ltr ]
-						  	 if( variable ) {
-						  		 if( typeof variable.kill === 'function' /*&& target[ '___'+ltr ].destinations.length > 0 */) {
-						  			 variable.kill();
-						  		 }
-						  	 }
-						  }
-            }
-          }
-        });
-      })();     
     }
   },
 
