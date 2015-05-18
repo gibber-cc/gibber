@@ -37260,7 +37260,18 @@ var Pattern = function() {
     reset : function() { fnc.values = fnc.original.slice( 0 ); fnc._onchange(); return fnc; },
     store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
     transpose : function( amt ) { 
-      for( var i = 0; i < fnc.values.length; i++ ) fnc.values[ i ] += amt; 
+      for( var i = 0; i < fnc.values.length; i++ ) { 
+        var val = fnc.values[ i ]
+        
+        if( $.isArray( val ) ) {
+          for( var j = 0; j < val.length; j++ ) {
+            val[ j ] = fnc.integersOnly ? Math.round( val[ j ] + amt ) : val[ j ] + amt
+          }
+        }else{
+          fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] + amt ) : fnc.values[ i ] + amt
+        }
+      }
+      
       fnc._onchange()
       
       return fnc
@@ -37273,7 +37284,14 @@ var Pattern = function() {
     },
     scale : function( amt ) { 
       for( var i = 0; i < fnc.values.length; i++ ) {
-        fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
+        var val = fnc.values[ i ]
+        if( $.isArray( val ) ) {
+          for( var j = 0; j < val.length; j++ ) {
+            val[ j ] = fnc.integersOnly ? Math.round( val[ j ] * amt ) : val[ j ] * amt
+          }
+        }else{
+          fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
+        }
       }
       fnc._onchange()
       
