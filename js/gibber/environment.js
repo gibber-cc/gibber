@@ -49,6 +49,7 @@ var GE = {
       window.load = Gibber.import
       window.Graphics = Gibber.Graphics
       window.Color = Gibber.Graphics.Color
+      window.Chat = GE.Chat
 
       // the window.module global is deprecated and will be removed at some point!
       // I don't trust using it now that Gibber has moved to browserify
@@ -87,6 +88,8 @@ var GE = {
       
       window.Gabber = GE.Gabber = require( './performance' )( Gibber )
       window.Chat = GE.Chat
+      GE.Storage.runUserSetup()
+      
       //window.spin.stop()
     }
   },
@@ -134,15 +137,25 @@ var GE = {
           defaultLanguageForEditors: 'javascript',
           saveSoundFonts:true,
           soundfonts:{},
+          onload:null
         }
         this.save()
-      }
-      
+      }      
     },
     
     save : function() {
       localStorage.setObject( "gibber2", this.values );
     },
+    
+    runUserSetup: function() {
+      if( this.values.onload ) {
+        try{
+          eval( this.values.onload )
+        }catch(e) {
+          GE.Message.post("There was an error running your preload code:\n" + GE.Storage.values.onload )
+        }
+      }
+    }
   },
 
   Help : {
@@ -628,9 +641,9 @@ var GE = {
         console.log('credits!')
         GE.Credits.open()
       })
-      $( '#forumButton' ).on( 'click', function(e) {
-        GE.Forum.open()
-      })
+      // $( '#forumButton' ).on( 'click', function(e) {
+      //   GE.Forum.open()
+      // })
       
       $( '#preferencesButton' ).on( 'click', function(e) {
         GE.Preferences.open()

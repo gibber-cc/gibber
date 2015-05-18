@@ -28,6 +28,17 @@ module.exports = function( Gibber ) {
 
         "Ctrl-Space" : function( cm ) { CodeMirror.showHint(cm, CodeMirror.javascriptHint ) },
         
+        'Ctrl-P' : function( cm ) {
+					var obj = GE.getSelectionCodeColumn( cm, false )
+					//GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+          GE.Storage.values.onload = obj.code
+          GE.Storage.save()
+          
+          GE.Message.postFlash( 'Preload code has been saved.' )
+          
+          return false
+        },
+        
         "Shift-Ctrl-Right" : function( cm ) {
           //console.log( GE.Layout.fullScreenColumn )
           var currentColumnNumber = GE.Layout.getFocusedColumn().id,

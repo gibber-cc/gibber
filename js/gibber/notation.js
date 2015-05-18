@@ -1,26 +1,32 @@
 module.exports = function( Gibber, Environment) {
   // TODO: some effects need to use entire lines... for example, transfrom
   // can't apply to inline elements
-  
+  var phaseIndicatorStyle = 'flash'
   var GEN = {
     isRunning: false,
     notations: [],
     fps: 20,
+    phaseIndicatorStyles: ['flashBorder2'],
     clear: null,
     filterString: [],
-    showRandomOriginalText:true,
-    phaseIndicatorType : 'flash', // flash || border currently are the two options
-    flashColor: 'rgba(255,255,255,1)',
-    features:{ 'seq':false, 'reactive':false },
+    functionOutputIndicatorStyle:'comment', // also 'replace' and 'stylize' 
+    functionOutputShouldFlash:true,
+    phaseIndicatorColor: [255,255,255],
+    phaseIndicatorColorMute: [127,127,127],
+    phaseIndicatorAlpha: 1,
+    features:{ seq:true, reactive:true, draganddrop:true },
     
     enabled: {},
-    
+
     priority: [],
-    
+
     on: function() {
       if( arguments.length === 0 ) { // by default turn global pattern seq on??? 
         arguments[0] = 'global'
         arguments.length = 1
+      }
+      if( !GEN.enabled.global ) {
+        arguments[ arguments.length ] = 'global'
       }
       for( var i = 0; i < arguments.length; i++ ) {
         var name = arguments[ i ]
@@ -36,24 +42,24 @@ module.exports = function( Gibber, Environment) {
             this.enabled[ name ] = true
           }
         }
-        
+
         if( name === 'global' ) { GEN.PatternWatcher.start() }
       }
     },
-    
+
     off: function( name ) {
       if( this.enabled[ name ] ) {
         var val = this.enabled[ name ],
             idx = Gibber.scriptCallbacks.indexOf( this.enabled[ name ] )
-        
+
         if( typeof val === 'function' ) {    
           Gibber.scriptCallbacks.splice( idx, 1 )
         }
-        
+
         delete this.enabled[ name ]
       }
     },
-    
+
     add: function( obj, priority ) {
       if( !priority ) {
         this.notations.push( obj )
@@ -71,7 +77,7 @@ module.exports = function( Gibber, Environment) {
     init: function() {
       var func = function() {
         //Gibber.Environment.Notation.PatternWatcher.check()
-        
+
         var filtered = []
         for( var i = 0; i < GEN.notations.length; i++ ) {
           var notation = GEN.notations[ i ]
@@ -90,21 +96,33 @@ module.exports = function( Gibber, Environment) {
           $( filter.class ).css( '-webkit-filter', filter.filterString.join(' ') )
           filter.filterString.length = 0
         }
-        
+
         for( var k = 0; k < GEN.priority.length; k++ ) { GEN.priority[ k ].update() }
-                
+
         GEN.clear = future( func, ms( 1000 / GEN.fps ) )
       }
       func()
-      
+
       this.isRunning = true
-      
+
       $.subscribe( '/gibber/clear', function( e ) {
         GEN.isRunning = false
-        GEN.notations.length = 0
-        GEN.priority.length = 0
+        GEN.clearNotations()
         if( GEN.clear ) GEN.clear()
       })
+    },
+
+    clearNotations: function() {
+      for( var i = 0; i < GEN.notations.length; i++ ) {
+        if( GEN.notations[ i ] && GEN.notations[ i ].update )
+          if( GEN.notations[i].update.clear ) GEN.notations[ i ].update.clear()
+      }
+      for( var i = 0; i < GEN.priority.length; i++ ) {
+        if( GEN.priority[ i ] && GEN.priority[ i ].update  )
+          if( GEN.priority[i].update.clear ) GEN.priority[ i ].update.clear()
+      }
+      GEN.notations.length = 0
+      GEN.priority.length = 0
     },
     
     properties: {
@@ -240,6 +258,14 @@ module.exports = function( Gibber, Environment) {
       },
     }
   }
+  
+  // Object.defineProperty( GEN, 'phaseIndicatorStyle', {
+  //   get: function() { return phaseIndicatorStyle },
+  //   set: function(v) {
+  //     // GEN.clearNotations()
+  //     phaseIndicatorStyle = v
+  //   }
+  // })
   
   return GEN
 }

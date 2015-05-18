@@ -348,8 +348,8 @@ tfoot, thead {
 
 }
 
-.leftBorder{ border-left-width:1; }
-.rightBorder{ border-right-width:1; }
+.leftBorder{ border-left-width:1px !important; }
+.rightBorder{ border-right-width:1px !important; }
 
 .columnHeader {
  -moz-box-sizing: border-box !important;
@@ -572,3 +572,6 @@ tfoot, thead {
 .versionLink {
   color:#ccc !important;
 }
+
+/* Not sure why this is suddenly needed, but line numbers are screwed up without it */
+.CodeMirror-gutter-wrapper { position:absolute; }
