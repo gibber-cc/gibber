@@ -15,7 +15,7 @@ module.exports = function( Gibber, Environment) {
     phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
     features:{ seq:true, reactive:true, draganddrop:true },
-
+    
     enabled: {},
 
     priority: [],

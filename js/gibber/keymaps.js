@@ -193,6 +193,33 @@ module.exports = function( Gibber ) {
           }
         },
         
+        'Shift-Alt-2' : function(cm) {
+          if( cm.column.sharingWith ) {
+						var obj = GE.getSelectionCodeColumn( cm, false )
+						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
+            
+            // console.log( obj.code, obj.selection, cm.column.shareName, cm.column.sharingWith )
+          
+            if( cm.column.allowRemoteExecution ) {
+              GE.Chat.socket.send( 
+                JSON.stringify({ 
+                  cmd:'remoteExecution',
+                  to:cm.column.sharingWith,
+                  shareName: cm.column.shareName,
+                  from:GE.Account.nick,
+                  selectionRange: obj.selection,
+                  code: obj.code,
+                  shouldDelay: true,
+                })
+              ) 
+            }else{
+            	console.log( 'Remote code execution was not enabled for this shared editing session.')
+            }
+          }else{
+          	console.log( 'This is column is not part of a shared editing session' )
+          }
+        },
+        
         "Shift-Ctrl-=": function(cm) {
           var col = GE.Layout.getFocusedColumn( true )
           col.fontSize += .2

@@ -256,11 +256,13 @@ module.exports = function( Gibber ) {
       }) 
     },
     
-    login: function() {
+    login: function( username, password ) {
+      if( !username ) username = $( '#username' ).val()
+      if( !password ) password = $( '#password' ).val()
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/login', 
-        data:{ username: $("#username").val(), password: $("#password").val() }, 
+        data:{ 'username': username, 'password': password }, 
         dataType:'json'
       })
       .done( function (data) {
@@ -919,7 +921,8 @@ Chat = {
   lobbyElement: null,
   roomElement: null,
   currentRoom: 'lobby',
-  intialized : false,
+  initialized : false,
+  onSocketConnect: null,
   open : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
@@ -966,8 +969,8 @@ Chat = {
       Chat.socket.onmessage = function( e ) {
         var data = e.data
         data = JSON.parse( data )
-
-       if( data.msg ) {
+        
+        if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
           }else{
@@ -980,6 +983,9 @@ Chat = {
         console.log( 'you are now connected to the chat server' )
         Chat.moveToLobby()
         Chat.socket.send( JSON.stringify({ cmd:'register', nick:GE.Account.nick }) )
+        if( Chat.onSocketConnect !== null ) {
+          Chat.onSocketConnect()
+        }
       } 
     }else{
       Chat.moveToLobby()
@@ -1083,8 +1089,10 @@ Chat = {
     if( occupants.length > 0 ) {
       welcomeString += " Your fellow gibberers are: "
       for( var i = 0; i < occupants.length; i++ ){
-        welcomeString += occupants[i]
-        welcomeString += i < occupants.length - 1 ? ', ' : '.'
+        if( occupants[ i ] !== GE.Account.nick ) {
+          welcomeString += occupants[i]
+          welcomeString += i < occupants.length - 1 ? ', ' : '.'
+        }
       }
     }
 
@@ -1099,9 +1107,9 @@ Chat = {
     this.currentRoom = roomName
   },
   
-  createRoom : function() {
-    var name = window.prompt( "Enter a name for the chatroom." ),
-        msg  = {}
+  createRoom : function( name ) {
+    var msg = {}
+    if( typeof name === 'undefined' ) name = window.prompt( "Enter a name for the chatroom." )
     
     if( name === null || name === '' ) return
 
@@ -1118,8 +1126,8 @@ Chat = {
       /* successfully registered nick, do nothing for now */
     },
     listRooms : function( data ) {
-      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })
-
+      var roomList = $( '<ul>' ).css({ paddingLeft:'1em' })      
+      
       for( var key in data.rooms ) {
         (function() {
           var _key = key,  
@@ -1134,8 +1142,12 @@ Chat = {
           roomList.append( li )
         })()
       }
-
+      
+      Chat.rooms = data.rooms
+      
       Chat.lobbyElement.append( roomList )
+      
+      $.publish( 'Chat.roomsListed', Chat.rooms )
     },
     incomingMessage: function( data ) {
       var name = $( '<span>' )
@@ -1147,9 +1159,7 @@ Chat = {
             .css({ cursor:'pointer' }),
           li = $( '<li class="message">' )
             .text(  " : " +  data.incomingMessage )
-      
-      console.log( data )
-      
+
       li.prepend( name )
       Chat.messages.append( li )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
@@ -1158,8 +1168,9 @@ Chat = {
         Chat.onMsg( data.nick, data.incomingMessage )
       }
     },
-    roomCreated: function( data ) { // response for when the user creates a room...
-
+    roomCreated: function( data ) { // response for when the user creates room...
+      console.log( data )
+      $.publish( 'Chat.roomCreated', { name:data.name })
     },
     roomAdded : function( data ) { // response for when any user creates a room...
       if( Chat.currentRoom === 'lobby' ) { 
@@ -1175,21 +1186,22 @@ Chat = {
     },
     roomJoined: function( data ) {
       Chat.moveToRoom( data.roomJoined, data.occupants )
+      $.publish( 'Chat.roomJoined', data )
     },
-    roomLeft: function( data ) {
-      
-    },
+    roomLeft: function( data ) {},
     arrival : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
       if( Chat.messages ) {
         $( Chat.messages ).append( msg )
-        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+        $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop( 'scrollHeight' ) )
       }
+      $.publish( 'Chat.arrival', data )
     },
     departure : function( data ) {
       var msg = $( '<span>' ).text( data.nick + ' has left the chatroom.' ).css({ color:'#b00', display:'block' })
       Chat.messages.append( msg )
       $( Chat.messages ).prop( 'scrollTop', Chat.messages.prop('scrollHeight') )
+      $.publish('Chat.departure', data )
     },
     collaborationRequest: function( data ) {
       var div = $('<div>'),
@@ -1230,7 +1242,7 @@ Chat = {
         }
       }
       if( typeof column === 'undefined' ) { console.log("CANNOT FIND COLUMN FOR REMOTE EXECUTION"); return }
-      
+      console.log(data)
       cm  = column.editor
 
       // from, selectionRange, code
@@ -2647,15 +2659,17 @@ module.exports = function( Gibber ) {
         })
         .attr( 'title', 'set language for column' )
       
+      col.headerText = $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' )
       col.header
         .append( col.closeButton )
-        .append( $( '<span>' ).html( '&nbsp;id #: ' + colNumber + '&nbsp;&nbsp;&nbsp;language:' ) )
+        .append( col.headerText )
         .append( col.modeSelect )
       
     }else{
+      col.headerText = $( '<span>' ).html( '&nbsp;' + (options.header || '') )
       col.header
         .append( col.closeButton )
-        .append( $( '<span>' ).html( '&nbsp;' + (options.header || '') ) )
+        .append( col.headerText )
     }
   
     col.element.append( col.header, col.resizeHandle )
@@ -2787,6 +2801,9 @@ module.exports = function( Gibber ) {
   var Proto = {
     toggle:             function() { $( this.element ).toggle() },            
     toggleResizeHandle: function() { $( this.element ).find( '.resizeHandle' ).toggle() },
+    setHeader: function( text ) {
+      $( this.headerText ).text( text )
+    },
     
     setLanguageSelect: function( language, shouldAppend ) {
       var languageIndex = 0, count = 0
@@ -3361,6 +3378,7 @@ var GE = {
   Chat:         require( './chat' )( Gibber ),
   Share:        require( './share' )( Gibber ),
   Notation:     require( './notation' ),
+  Gabber:       null, // required in init method
   
   init : function() { 
     GE.Keymap.init()
@@ -3419,6 +3437,8 @@ var GE = {
       
       Gibber.Audio.SoundFont.path = './resources/soundfonts/'
       
+      window.Gabber = GE.Gabber = require( './performance' )( Gibber )
+      window.Chat = GE.Chat
       GE.Storage.runUserSetup()
       
       //window.spin.stop()
@@ -3566,6 +3586,46 @@ var GE = {
 		
 		return { selection: pos, code: text, column:column }
 	},
+  // getSelectionCodeForEditor : function( editor, findBlock ) {
+  //   var pos = cm.getCursor(), 
+  //       text = null,
+  //       column = GE.Layout.fullScreenColumn === null ? GE.Layout.columns[ GE.Layout.focusedColumn ] : GE.Layout.__fullScreenColumn__
+  //   
+  //     if( column.mode.indexOf('glsl') > -1 ) { // glsl always executes entire block
+  //       var lastLine = cm.getLine( cm.lineCount() - 1 )
+  //       pos ={ start:{ line:0, ch:0 }, end: { line:cm.lineCount() - 1, ch:lastLine.length - 1 } }
+  //       text = column.value
+  //     }else{
+  //       if( !findBlock ) {
+  //         text = cm.getDoc().getSelection()
+  // 
+  //         if ( text === "") {
+  //           text = cm.getLine( pos.line )
+  //         }else{
+  //           pos = { start: cm.getCursor('start'), end: cm.getCursor('end') }
+  //           //pos = null
+  //         }
+  //       }else{
+  //         var startline = pos.line, 
+  //             endline = pos.line,
+  //             pos1, pos2, sel
+  //       
+  //         while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
+  //         while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
+  //       
+  //         pos1 = { line: startline, ch: 0 }
+  //         pos2 = { line: endline, ch: 0 }
+  //     
+  //         text = cm.getRange( pos1, pos2 )
+  // 
+  //         pos = { start: pos1, end: pos2 }
+  //       }
+  //     }
+  //   
+  //     GE.Keymap.flash(cm, pos)
+  //   
+  //   return { selection: pos, code: text, column:column }
+  // },
   
 	//TODO : this should probably be moved to the Gibber object at some point as it's not environment specific
 	modes : {
@@ -4041,7 +4101,7 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
-},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./performance":"/www/gibber.libraries/js/gibber/performance.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
   var $ = require( './dollar' )
@@ -4237,6 +4297,33 @@ module.exports = function( Gibber ) {
           }
         },
         
+        'Shift-Alt-2' : function(cm) {
+          if( cm.column.sharingWith ) {
+						var obj = GE.getSelectionCodeColumn( cm, false )
+						GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
+            
+            // console.log( obj.code, obj.selection, cm.column.shareName, cm.column.sharingWith )
+          
+            if( cm.column.allowRemoteExecution ) {
+              GE.Chat.socket.send( 
+                JSON.stringify({ 
+                  cmd:'remoteExecution',
+                  to:cm.column.sharingWith,
+                  shareName: cm.column.shareName,
+                  from:GE.Account.nick,
+                  selectionRange: obj.selection,
+                  code: obj.code,
+                  shouldDelay: true,
+                })
+              ) 
+            }else{
+            	console.log( 'Remote code execution was not enabled for this shared editing session.')
+            }
+          }else{
+          	console.log( 'This is column is not part of a shared editing session' )
+          }
+        },
+        
         "Shift-Ctrl-=": function(cm) {
           var col = GE.Layout.getFocusedColumn( true )
           col.fontSize += .2
@@ -4362,18 +4449,22 @@ module.exports = function( Gibber ) {
       $.injectCSS({ '.CodeMirror-lines pre': {background:color} })
     },
     createBoundariesForInitialLayout : function() {
-      var windowWidth = $( window ).width(),
-          width0 = Layout.minColumnWidth,
-          width1 = windowWidth - width0
+      if( Gibber.Environment.Storage.values.showBrowserOnLaunch ) {
+        var windowWidth = $( window ).width(),
+            width0 = Layout.minColumnWidth,
+            width1 = windowWidth - width0
           
-      if( width1 < Layout.minColumnWidth ) {
-        var diff = Layout.minColumnWidth - width1
-        width1 = Layout.minColumnWidth
-        width0 -= diff
-      }
+        if( width1 < Layout.minColumnWidth ) {
+          var diff = Layout.minColumnWidth - width1
+          width1 = Layout.minColumnWidth
+          width0 -= diff
+        }
       
-      Layout.columns[0].setWidth( width0 )
-      Layout.columns[1].setWidth( width1 )
+        Layout.columns[0].setWidth( width0 )
+        Layout.columns[1].setWidth( width1 )
+      }else{
+        Layout.columns[0].setWidth( $( window ).width() )
+      }
       
       Layout.resizeColumns()
     },
@@ -4381,7 +4472,9 @@ module.exports = function( Gibber ) {
       GE = Gibber.Environment
       $( '#contentCell' ).empty()
       
-      GE.Browser.open()
+      if( Gibber.Environment.Storage.values.showBrowserOnLaunch )
+        GE.Browser.open()
+        
       var options = {
         fullScreen:false, type:'code', autofocus:true,
       }
@@ -4688,7 +4781,7 @@ module.exports = function( Gibber, Environment) {
     phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
     features:{ seq:true, reactive:true, draganddrop:true },
-
+    
     enabled: {},
 
     priority: [],
@@ -4942,6 +5035,720 @@ module.exports = function( Gibber, Environment) {
   
   return GEN
 }
+},{}],"/www/gibber.libraries/js/gibber/performance.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+"use strict"
+
+var Environment = Gibber.Environment,
+    Layout = Environment.Layout,
+    Chat = Environment.Chat,
+    CodeMirror = Environment.CodeMirror,
+    Share = Environment.Share,
+    Account = Environment.Account,
+    TICKTOCKMODE = 0,
+    PIDMODE = 1,
+    CHRISTIANMODE = 2,
+    Filters = require('./pid.js')
+
+/*
+
+If remote execution is not enabled, then we have to stream output envelope data to
+each person; easy. However, if it is (every client is rendering every other client's audio)
+then we need to do some trickery with the bus to make things work. Before executing client
+code we substitute their individual bus for the master. For example:
+    
+    var tmp = Gibber.Audio.Master
+    Gibber.Audio.Master = client.Master
+    
+    ... execute Code... 
+    Gibber.Audio.Master = tmp
+*/
+var em = function (input) {
+    var emSize = parseFloat($("body").css("font-size"));
+    return (emSize * input);
+}
+    
+var Gabber = {
+  column: null,
+  name: null,
+  userShareName:null,
+  occupants: null,
+  userShareColumn: null, // the column used in the performance by this client
+  enableRemoteExecution: false,
+  performers: {},
+  masterInitFlag: false,
+  follower:null,
+  localPhase: 0,
+  headerSize:'1em',
+  correctionBuffer:[],
+  beforeCorrectionBuffer: [],
+  correctionBufferSize:255,
+  tabs:{},
+  init: function( name ) {
+    this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
+    
+    if( Account.nick === null ) {
+      Account.nick = 'anon' + rndi(0,8,3).join('')
+    }
+    
+    this.userShareColumn.editor.shareName = Account.nick
+    
+    this.column = Layout.addColumn({ type:'gabber', header:'Gabber : ' + name })
+    this.column.bodyElement.css( 'overflow', 'scroll' )
+
+    this.name = name || null
+    
+    this.userShareName = this.name + ':' + Account.nick
+    
+    if( !Chat.initialized ) Chat.open()
+    Chat.handlers.gabber = Gabber.onGabber
+    Chat.handlers.tock = Gabber.onTock
+    Chat.handlers['gabber.start'] = Gabber.onStart
+    
+    // Chat.handlers['gabber.Ki'] = function( msg ) { Gabber.PID.Ki = msg.value }
+    // Chat.handlers['gabber.Kp'] = function( msg ) { Gabber.PID.Kp = msg.value }
+    // Chat.handlers['gabber.KpMean'] = function( msg ) { Gabber.PID.KpMean = msg.value } 
+    
+    Chat.handlers['gabber.shared.add'] = function( msg ) {
+      Gabber.shared.add( msg.name, msg.value, false )
+    } 
+    
+    Gabber.shared.add( 'Ki', 0, false )
+    Gabber.shared.add( 'Kp', .005, false ) 
+    Gabber.shared.add( 'KpMean', .01, false )
+    Gabber.shared.add( 'brutalityThreshold', .1 * Gibber.Audio.Core.context.sampleRate, false )
+    
+    if( this.name !== null ) Gabber.createPerformance( this.userShareName )
+    
+    $.subscribe( 'Chat.arrival', Gabber.onNewPerformerAdded )
+    $.subscribe( 'Chat.departure', Gabber.onPerformerRemoved )
+    
+    Gabber.initializeKeyMap()
+    
+    Clock.seq.stop()
+
+    Chat.onSocketConnect = Gabber.sendTick
+    
+    Gabber.follower = Follow( Master )
+    
+    for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
+      Gabber.correctionBuffer[ i ] = 0
+    }
+
+  },
+  
+  shared: {
+    add: function( name, value, shouldDistribute ) {
+      var _value = value || 0
+      
+      if( typeof shouldDistribute === 'undefined' ) shouldDistribute = true
+      
+      Object.defineProperty( Gabber.shared, name, {
+        get: function()  { return _value },
+        set: function(v) { 
+          _value = v
+          var msg = { 
+            cmd:  'gabber.shared',
+            'name': name,
+            gabberName:Gabber.name,      
+            value: _value
+          }
+    
+          Chat.socket.send( JSON.stringify( msg ) )
+        }  
+      })
+      
+      Chat.handlers[ 'gabber.shared.' + name ] = function( msg ) { _value = msg.value }
+      
+      if( shouldDistribute ) {
+        var msg = { 
+          cmd:  'gabber.shared.add',
+          'name': name,
+          gabberName:Gabber.name,      
+          value: _value
+        }
+
+        Chat.socket.send( JSON.stringify( msg ) )
+      }
+    }
+  },
+  
+  start: function() {
+    Chat.socket.send( JSON.stringify({ cmd:'gabber.start', gabberName:Gabber.name }) )
+  },
+  
+  sendTick: function() {
+    //Gabber.phaseSnapshot = Gibber.Audio.Clock.getPhase()
+    //Gabber.timeSnapshot  = Gibber.Audio.Core.context.currentTime
+    Gabber.localPhase += 1024
+    //Chat.socket.send( JSON.stringify({ cmd:'tick' }) )
+  },
+  correctionFlag: false,
+  mode:0, // 0 for initialize, 1 for running
+  correctPhase: function() { Gabber.correctionFlag = true },
+  onTickTock: function( msg ) {
+    // var localPhase = Gibber.Audio.Clock.getPhase(),
+    //     localTime  = Gibber.Audio.Core.context.currentTime,
+    //     roundtripTime = localTime - Gabber.timeSnapshot
+    //     
+    // Gabber.roundtrips.push( roundtripTime )
+    // if( Gabber.roundtrips.length > 20 ) {
+    //   Gabber.calculateRoundtripAverage()
+    // }else{
+    //   Gabber.sendTick()
+    // }
+  },
+  calculateRoundtripAverage: function() {
+    // var sum = 0
+    var lowest = 100000000
+    for( var i = 0; i < Gabber.roundtrips.length; i++ ) {
+      //sum += Gabber.roundtrips[i]
+      if( Gabber.roundtrips[i] < lowest ) lowest = Gabber.roundtrips[i]
+    }
+    //Gabber.rtt = sum / Gabber.roundtrips.length
+    Gabber.rtt = lowest
+    console.log( "ROUNDTRIPTIME AVG", Gabber.rtt )
+  },
+  onStart: function() {
+    //future( Gabber.onPIDStart, ms(2000) + ( (Gabber.rtt / 2) * ms(1) ) )
+    Gabber.onPIDStart()
+  },
+  onPIDStart : function() {
+    if( !Gabber.initialized ) {
+      var rate = parseFloat( Clock.rate ) // tmp storage
+      Gibber.clear()
+      Clock.rate = rate
+      Gibber.Audio.Clock.shouldResetOnClear = false // never let time be reset during gabber performance
+      Gabber.mode = PIDMODE
+      Gibber.Audio.Core.onBlock = Gabber.sendTick
+      Gabber.initialized = true
+    }
+  },
+  showGraph: function() {
+    if( Gabber.mode === PIDMODE ) {
+      Gabber.canvas = Canvas()
+    
+      Gabber.canvas.draw = function() {
+        var pixelsPerPoint = Gabber.canvas.width / Gabber.correctionBufferSize,
+            originY = Gabber.canvas.height / 2,
+            lastX = 0, lastY = originY
+          
+        Gabber.canvas.clear()
+      
+        Gabber.canvas.beginPath()
+          Gabber.canvas.moveTo( lastX, lastY )
+        
+          for( var i = 0; i < Gabber.correctionBufferSize; i++ ) {
+            var nextX = pixelsPerPoint * i, nextY = originY + Gabber.correctionBuffer[ i ] //* (originY / 20)
+            
+            Gabber.canvas.lineTo( nextX, nextY )
+          }
+        
+        //Gabber.canvas.closePath()
+        Gabber.canvas.stroke( 'red' )
+        
+        Gabber.canvas.beginPath()
+          Gabber.canvas.moveTo( lastX, lastY )
+        
+          for( var i = 0; i < Gabber.beforeCorrectionBufferSize; i++ ) {
+            var nextX = pixelsPerPoint * i, nextY = originY + (Gabber.beforeCorrectionBuffer[ i ] / 20) * originY
+          
+            Gabber.canvas.lineTo( nextX, nextY )
+          }
+        
+        //Gabber.canvas.closePath()
+        Gabber.canvas.stroke( 'blue' )
+      }
+    }
+  },
+  roundtrips: [],
+  storing:[],
+  'PID': Filters.PID(),
+  onPID: function( msg ) { 
+    Gabber.PID.run( msg ) 
+  },
+  onTock: function( msg ) {    
+    //console.log("TOCK MESSAGE", msg )
+    if( Gabber.mode === TICKTOCKMODE ) {
+      Gabber.onTickTock( msg )
+    }else if ( Gabber.mode === PIDMODE ){
+      Gabber.onPID( msg )
+    }else if ( Gabber.mode === CHRISTIANMODE ){
+      Gabber.onChristian( msg )
+    }
+  },
+  onChristian: function( msg ) {
+    var diffPhase       = msg.masterAudioPhase - localPhase,
+        correctPhase    = msg.masterAudioPhase + ( localPhase - Gabber.phaseSnapshot ) / 2,
+        phaseCorrection = correctPhase - localPhase
+    
+      
+    if( !Gabber.masterInitFlag ) {
+      Gibber.Audio.Clock.setPhase( correctPhase )
+      Gabber.masterInitFlag = true
+    }
+  
+    var avg = Gabber.runningAverage( phaseCorrection )
+  
+    if( Gabber.correctionFlag ) {
+      Gibber.Audio.Clock.setPhase( correctPhase - avg )
+    
+      Gabber.runningAverage.setN( 0 )
+      Gabber.runningAverage.setSum( 0 )
+    
+      Gabber.correctionFlag = false
+    }
+  },
+  createPerformance : function( name ) {
+    var rooms = null, roomFunc = function( r ){ rooms = r }
+    
+    $.subscribe( 'Chat.roomsListed', roomFunc ) 
+    
+    Share.createDoc( this.userShareColumn.number, 
+      function() { 
+        if( rooms !== null ) {
+          Gabber.onRoomsListed( rooms )
+        }else{
+          $.unsubscribe( 'Chat.roomsListed', roomFunc )
+          $.subscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
+        }
+      }, null, name 
+    )
+  },
+  joinPerformance: function( name ) {
+    this.name = name
+    Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+    this.column.setHeader( 'Gabber: ' + name )
+  },
+  onRoomsListed: function( rooms ) {    
+    $.unsubscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
+    
+    if( Gabber.name in rooms === false ) {
+      $.subscribe( 'Chat.roomCreated', Gabber.onRoomCreated )
+      Chat.createRoom( Gabber.name )
+    }else{
+      $.subscribe( 'Chat.roomJoined', Gabber.onRoomJoined )
+      Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+    }
+  },
+  onRoomCreated: function() {
+    $.unsubscribe( 'Chat.roomCreated', Gabber.onRoomCreated )
+    Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+  },
+  onRoomJoined: function( data ) {
+    $.unsubscribe( 'Chat.roomJoined', Gabber.onRoomJoined )
+    if( data.roomJoined !== Gabber.name ) {
+      Environment.Message.Post( 'For some reason, the wrong performance was joined. Please try again.' )
+    }else{
+      for( var i = 0; i < data.occupants.length; i++ ) {
+        Gabber.createSharedLayout( data.occupants[i] )
+      }
+      Gabber.layoutSharedPerformers()
+    }
+    Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
+  },
+  onNewPerformerAdded: function( data ) {
+    if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
+      Gabber.createSharedLayout( data.nick )
+      Gabber.layoutSharedPerformers()
+    }
+  },
+  onPerformerRemoved: function( data ) {
+    if( Gibber.performers[ data.nick ] !== null ) {
+      Gabber.performers[ data.nick ].remove() 
+      Gabber.performers[ data.nick ] = null
+    }
+  },
+  addTabButton: function( name, cb ) {
+    var btn = $( '<button>' + name + '</button>' )
+      .on( 'mousedown', cb )
+      .css( 'margin-left', '1em' )
+      .addClass( name )
+      
+    Gabber.column.header.append( btn )
+  },
+  openTab: function() {
+    for( var key in Gibber.tabs ) {
+      var tab = Gabber.tabs[ key ]
+      if( tab !== this ) {
+        tab.hide()
+      }
+    }
+    console.log("SHOWING", this )
+    this.show()
+  },
+  flashTab: function( name, color ) {
+    var elem = $( '.' + name ),
+        prevBackground = elem.css('background'), 
+        prevColor = elem.css('color')
+        
+    elem.css({ background: 'white', color:'black' })
+    
+    setTimeout( function() { elem.css({ background:prevBackground,color:prevColor }) }, 150 )
+  },
+  createSharedLayout: function( name ) {
+    var performer = {},
+        element = $( '<div>' )
+        
+    performer.element = element
+    
+    Gabber.tabs[ name ] = element 
+    Gabber.addTabButton( name, Gabber.openTab.bind( element ) )
+    
+    // performer.header = $('<h4>').text( name ) 
+    // element.append( performer.header )
+    
+    performer.code = $( '<div class="editor">' )
+    performer.code.css({ overflow:'scroll', height:'auto' })
+    
+    // performer.header.on( 'mousedown', function() { 
+    //   performer.code.toggle()
+    //   setTimeout( Gabber.layoutSharedPerformers, 20 )
+    // })
+    // .addClass( 'no-select' )
+    // .css({ 
+    //   cursor: 'pointer',
+    //   backgroundColor: '#333',
+    //   // marginBottom:'.25em',
+    //   // marginTop:'.25em',
+    //   height:Gabber.headerSize,
+    //   margin:0
+    // })
+    
+    //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )    
+    element.append( performer.code )
+        
+    Gabber.column.bodyElement.append( element )
+    
+    performer.editor = CodeMirror( performer.code[0], {
+      theme:  'gibber',
+      keyMap: 'gibber',
+      mode:   'javascript',
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      value: 'testing 1 2 3',
+      lineWrapping: false,
+      tabSize: 2,
+      lineNumbers:false,
+      cursorBlinkRate: 530,
+      styleActiveLine:true,
+      autofocus: false,
+    })
+    
+    performer.editor.setSize( null, 'auto' )
+    performer.editor.shareName = name
+    performer.editor.sharingWith = name    
+    
+    Share.openDocGabber( Gabber.name + ':' + name, performer.editor )
+    
+    Gabber.performers[ name ] = performer
+
+    return performer
+  },
+  layoutSharedPerformers: function() {
+    // var performers = Gabber.performers,
+    //     colHeight = parseInt( Gabber.column.bodyElement.css( 'height' ) ),
+    //     numPerformers = Object.keys( performers ).length,
+    //     numberOfVisiblePerformers = 0,
+    //     elemHeight = 0
+    //     
+    // for( var key in performers ) {
+    //   if( performers[ key ].element.is(':visible') ) numberOfVisiblePerformers++
+    // }
+    // 
+    // colHeight -= (numPerformers - 1) * em( parseFloat( Gabber.headerSize ) )
+    // 
+    // elemHeight = colHeight //numberOfVisiblePerformers < 4 ? colHeight / numberOfVisiblePerformers : 3
+    // 
+    // for( var key in performers ) {
+    //   if( performers[key].element.is(':visible') )
+    //     performers[ key ].code.css( 'height', '50%' ) //elemHeight )
+    // }
+  },
+  onGabber: function( msg ) {
+    var cm, owner = false
+    
+    if( msg.shareName === Account.nick ) {
+      cm = Gabber.userShareColumn.editor
+      owner = true
+    }else{
+      cm = Gabber.performers[ msg.shareName ].editor
+    }
+    
+    if( !owner ) {      
+      setTimeout( function() {
+        cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      }, 50 )
+    
+      Environment.Keymap.flash( cm, msg.selectionRange )
+
+      Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
+    }
+  },
+  createMessage: function( selection, shareName, cm ) {
+    var tmp = selection.code.split('\n')
+    tmp[0] = tmp[0] + ' /* ' + Account.nick + ' */'
+    tmp = tmp.join('')
+
+    if( typeof selection.selection.start === 'undefined' ) {
+      var range = {
+        start: { line:selection.selection.line, ch:0 },
+        end: { line:selection.selection.line, ch:tmp.length }
+      }
+      selection.selection = range
+    }
+    
+    cm.replaceRange( tmp, selection.selection.start, selection.selection.end )
+    cm.markText( selection.selection.start, selection.selection.end, { css:'background-color:rgba(0,0,255,.3);' })
+    
+    var msg = { 
+      cmd:            'gabber',
+      gabberName:     Gabber.name,
+      from:           Account.nick,
+      'shareName':    shareName || Account.nick,        
+      selectionRange: selection.selection, // range
+      code:           tmp,
+      shouldExecute:  Gabber.enableRemoteExecution,
+    }
+    
+    // if( typeof msg.selectionRange.start === 'undefined' ) {
+    //   var range = {
+    //     start: { line:msg.selectionRange.line, ch:0 },
+    //     end: { line:msg.selectionRange.line, ch:msg.code.length - 1 }
+    //   }
+    //   msg.selectionRange = range
+    // }
+    
+    return msg
+  },
+  initializeKeyMap: function() {
+    CodeMirror.keyMap.gibber[ 'Ctrl-2' ] = function( cm ) {
+			var obj = Environment.getSelectionCodeColumn( cm, false )
+      
+			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+      
+      var msg = Gabber.createMessage( obj, cm.shareName, cm )
+      msg.shouldDelay = false
+            
+      //cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+
+      Chat.socket.send( JSON.stringify( msg ) ) 
+		}
+    
+    CodeMirror.keyMap.gibber[ 'Shift-Ctrl-2' ] = function( cm ) {
+			var obj = Environment.getSelectionCodeColumn( cm, false )
+      
+			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
+      
+      var msg = Gabber.createMessage( obj, cm.shareName, cm )
+      msg.shouldDelay = true
+            
+      // if( cm.shareName !== Account.nick ) {
+      //   cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+      // }else{
+      //   cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(0,0,255,.2);' })
+      // }
+      
+      Chat.socket.send( JSON.stringify( msg ) ) 
+    }
+  },
+}
+
+Object.defineProperty( Gabber, 'Ki', {
+  get: function()  { return Gabber.PID.Ki },
+  set: function(v) { 
+    Gabber.PID.Ki = v
+    var msg = { 
+      cmd:  'gabber.Ki',
+      gabberName:Gabber.name,      
+      value: v
+    }
+    
+    Chat.socket.send( JSON.stringify( msg ) )
+  }  
+})
+
+Object.defineProperty( Gabber, 'Kp', {
+  get: function()  { return Gabber.PID.Kp },
+  set: function(v) { 
+    Gabber.PID.Kp = v
+    var msg = {
+      cmd:  'gabber.Kp',
+      gabberName:Gabber.name,
+      value: v
+    };
+    
+    Chat.socket.send( JSON.stringify( msg ) )
+  }
+})
+
+Object.defineProperty( Gabber, 'KpMean', {
+  get: function()  { return Gabber.PID.KpMean },
+  set: function(v) { 
+    Gabber.PID.KpMean = v
+    var msg = {
+      cmd:  'gabber.KpMean',
+      gabberName:Gabber.name,
+      value: v
+    };
+    
+    Chat.socket.send( JSON.stringify( msg ) )
+  }
+})
+
+return Gabber
+
+}
+},{"./pid.js":"/www/gibber.libraries/js/gibber/pid.js"}],"/www/gibber.libraries/js/gibber/pid.js":[function(require,module,exports){
+var Filters = module.exports = {
+  Average: function() {
+    var n = 0, sum = 0, lastAvg = 0, avg = 0
+    
+    var avg = function( p ) {
+      sum += p
+      n++
+    }
+    
+    avg.setN   = function( v )  { n = v }
+    avg.setSum = function( v )  { sum = v }
+    avg.getLastAvg = function() { return lastAvg }
+    
+    avg.getAvg = function() { 
+      avg = sum / n; 
+      sum = n = 0;
+      lastAvg = avg;
+      return avg; 
+    }
+
+    return avg
+  },
+  RunningMean: function( N ) {
+    var sum = 0, index = 0, n = 0, data = []
+    
+    for( var i = 0; i < N; i++ ) data[ i ] = 0
+    
+    var rm = function( sample ) {
+      if( n !== N ) n++
+      
+      sum -= data[ index ]
+      data[ index ] = sample
+      sum += sample
+      index++
+      
+      if( index === N ) index = 0
+      
+      return sum / 50
+    }
+    
+    rm.reset = function() {
+      for( var i = 0; i < N; i++ ) data[ i ] = 0
+      sum = 0
+      index = 0
+      n = 0
+    }
+    
+    return rm
+  },
+  PID: function() {
+    var pid = {     
+      initialized: false,
+      phase: 0,
+      targetCount: 88,
+      integralPhaseCorrection:0,
+      sampleRateRatio: Gibber.Audio.Core.context.sampleRate / 44100, // mySampleRate / masterSampleRate... which is always 44100
+      
+      runningMean: Filters.RunningMean( 50 ),
+      runningMeanLong: Filters.RunningMean( 250 ),
+      errorIntegral : 0,
+      shouldRecord:false,
+      recordBuffer:[],
+      glitch: function( amount ) {
+        Gabber.localPhase += amount
+      },
+      
+      run: function( msg ) {
+        var localPhase               = Gabber.localPhase,//Gibber.Audio.Clock.getPhase(),
+            masterPhase              = msg.masterAudioPhase * this.sampleRateRatio,
+            errorRaw                 = masterPhase - Gabber.localPhase,
+            controlledPhaseCorrection
+        
+        this.errorIntegral += errorRaw
+        //if( !this.initialized ) {
+        if( Math.abs( errorRaw ) > Gabber.shared.brutalityThreshold ) {
+          console.log("BRUTAL CORRECTION", errorRaw )
+          Gabber.localPhase = masterPhase
+          
+          if( !this.initialized ) { 
+            this.initialized = 1
+            Gibber.Audio.Clock.setPhase( masterPhase )
+
+            Clock.seq.start()
+          }else{
+            for( var i = 0, l = Seq.children.length; i < l; i++ ) {
+              var seq = Seq.children[i]
+              seq.adjustPhase( errorRaw )
+            }
+          }
+          
+          this.errorIntegral = 0
+          this.runningMean.reset()
+          this.runningMeanLong.reset()
+          
+          if( this.shouldRecord )
+            this.recordBuffer.push( [ "brutal", localPhase, masterPhase, errorRaw ] )          
+
+          return
+        }else{
+          // XXX (ky)
+          // consider not using this mean stuff. a properly tuned PI-controller should take care of this in the I-part.
+          var meanError = this.runningMean( errorRaw )
+          var meanErrorLong = this.runningMeanLong( errorRaw )
+          
+          ///console.log( meanPhaseCorrection, immediatePhaseCorrection )
+          //this.integralPhaseCorrection = this.Kp * meanPhaseCorrection
+          var phaseCorrection = Gabber.shared.Kp * meanError + Gabber.shared.Ki * this.errorIntegral
+          //this.integralPhaseCorrection += immediatePhaseCorrection 
+          
+          // XXX (ky)
+          // this is actual PI control. 0.05 should be called Kp, the Kp below should be called KiMean
+          //
+          // controlledPhaseCorrection = this.Kp * immediatePhaseCorrection + ( this.KpMean * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
+          
+          // XXX (ky)
+          // this is actually just I-control (not PI). do not use this... 
+          //controlledPhaseCorrection = ( this.Kp * meanPhaseCorrection + this.Ki * this.integralPhaseCorrection )
+          // Gabber.beforeCorrectionBuffer[ this.phase % Gabber.correctionBufferSize ] = masterPhase - Gabber.localPhase//controlledPhaseCorrection
+          
+          Gabber.localPhase += phaseCorrection //this.integralPhaseCorrection //controlledPhaseCorrection
+          
+          for( var i = 0, l = Seq.children.length; i < l; i++ ) {
+            var seq = Seq.children[i]
+            seq.adjustPhase( phaseCorrection )
+          }
+           
+          if( this.shouldRecord )
+            this.recordBuffer.push( [ "gentle", localPhase, masterPhase, meanError, phaseCorrection, Gabber.localPhase ] )
+          // store correction for displaying graph of error
+          Gabber.correctionBuffer[ this.phase++ % Gabber.correctionBufferSize ] = meanError//controlledPhaseCorrection
+        
+          //console.log( controlledPhaseCorrection )
+          //console.log( localPhase, masterPhase, immediatePhaseCorrection, controlledPhaseCorrection, this.integralPhaseCorrection )
+          if( this.phase % this.targetCount === 0 ) {
+            console.log( 
+              'master:', masterPhase, 
+              'local:',  Gabber.localPhase, 
+              'meanError:',  meanError,
+              'phaseCorrection:', phaseCorrection
+            )
+          }
+        }
+      }
+    }
+    
+    return pid
+  }
+}
 },{}],"/www/gibber.libraries/js/gibber/preferences.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
@@ -4961,6 +5768,12 @@ module.exports = function( Gibber ) {
 
       Gibber.Environment.Storage.values.showSampleCodeInNewEditors = checked
     },
+    processShowBrowserOnLaunchCheckbox : function() {
+      var showBrowserOnLaunchCheckbox = $( '#preferences_showBrowserOnLaunch' ),
+          checked = showBrowserOnLaunchCheckbox.is(':checked')
+
+      Gibber.Environment.Storage.values.showBrowserOnLaunch = checked
+    },
     processDefaultLanguageForEditorsMenu : function() {
       var opt = $( '#preferences_defaultLanguageForEditors' ).find( ':selected' ), idx = opt.index(), val = opt.text()
       
@@ -4977,6 +5790,7 @@ module.exports = function( Gibber ) {
       Preferences.processShowSampleCodeInNewEditorsCheckbox()
       Preferences.processDefaultLanguageForEditorsMenu()
       Preferences.processSaveSoundFonts()
+      Preferences.processShowBrowserOnLaunchCheckbox()      
       
       Gibber.Environment.Storage.save()
     },
@@ -5006,9 +5820,10 @@ module.exports = function( Gibber ) {
         }
         
         $( '#preferences_defaultLanguageForEditors' ).find( 'option' )[ languageIndex ].selected = true;        
-        $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage ),
-        $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors ),
-        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts ),
+        $( '#preferences_showWelcomeScreen' ).attr( 'checked', Gibber.Environment.Storage.values.showWelcomeMessage )
+        $( '#preferences_showSampleCodeInNewEditors' ).attr( 'checked', Gibber.Environment.Storage.values.showSampleCodeInNewEditors )
+        $( '#preferences_saveSoundFonts' ).attr( 'checked', Gibber.Environment.Storage.values.saveSoundFonts )
+        $( '#preferences_showBrowserOnLaunch' ).attr( 'checked', Gibber.Environment.Storage.values.showBrowserOnLaunch )
         
         this.column.onclose = this.close.bind( this )
   
@@ -5040,13 +5855,14 @@ Share = {
   potentialShareNum: 0,
   prompt: null,
   socket: null,
+  documentCount: 0,
   init : function() {
     GE = Gibber.Environment
     Layout = GE.Layout
     sharejs = window.sharejs
   },
 
-  createDoc : function( columnNumber, cb, sharingWith ) {
+  createDoc : function( columnNumber, cb, sharingWith, shareName ) {
     var ctx
     if( GE.Account.nick !== null && typeof Share.docs[ columnNumber ] === 'undefined' ) {
       
@@ -5068,32 +5884,31 @@ Share = {
       //   console.log("SHARE.JS CONNECTION ERROR")
       // })
       //console.log( "SOCKET", GE.Chat.socket )
+      if( typeof shareName === 'undefined' ) shareName = GE.Account.nick + columnNumber
       
-      var doc = sjs.get( 'users', GE.Account.nick + columnNumber )
+      var doc = sjs.get( 'users', shareName )
 
       doc.subscribe();
       
-      doc.whenReady( function () {        
-        if ( !doc.type ) doc.create( 'text' )
+      doc.whenReady( function () {  
+        var column = Layout.columns[ columnNumber ],
+            val = column.value
+                  
+        if ( !doc.type ) doc.create( 'text', val )
 
-        if ( doc.type && doc.type.name === 'text' ) {
-          var column = Layout.columns[ columnNumber ],
-              val = column.value
-                
-          column.shareName = GE.Account.nick + columnNumber
+        if ( doc.type && doc.type.name === 'text' ) {      
+          column.shareName = shareName
           column.sharingWith = sharingWith
       
           Share.docs[ columnNumber ] = doc
-          
-          var val = column.value
-          
+                    
           doc.attachCodeMirror( column.editor )
 
-          column.editor.setValue( val )
+          //column.editor.setValue( val )
       
-          column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
+          if( sharingWith !== null ) column.header.append( $('<span>').text( 'sharing with ' + sharingWith ).css({ paddingLeft:5 }) )
       
-          if( typeof cb !== 'undefined' ) {
+          if( typeof cb === 'function' ) {
             cb()
           }
         }
@@ -5101,6 +5916,49 @@ Share = {
       
     }
   },
+  
+  shareEditor: function( editor, name ) {
+    if( Share.socket === null ) {
+      Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
+    }
+    
+    var sjs = Share.sjs = new sharejs.Connection( Share.socket )
+    
+    sjs.debug = true
+    sjs.on( 'connecting', function( e ) { 
+      console.log("CONNECTING TO SHARE.JS")
+    })
+    
+    sjs.on( 'connected', function( e ) { 
+      console.log("CONNECTED TO SHARE.JS")
+    })
+    sjs.on( 'error', function( e ) { 
+      console.log("SHARE.JS CONNECTION ERROR")
+    })
+    
+    var doc = sjs.get( 'users', name )
+
+    doc.subscribe();
+    
+    var _value = editor.getValue()
+    
+    doc.whenReady( function () {        
+      if ( !doc.type ) doc.create( 'text' )
+
+      if ( doc.type && doc.type.name === 'text' ) {    
+        Share.docs.push( doc )
+        
+        doc.attachCodeMirror( editor )
+
+        editor.setValue( _value )
+    
+        if( typeof cb === 'function' ) {
+          cb()
+        }
+      }
+    }); 
+  },
+  
   openExistingDoc : function( docName, column ) {
     if( Share.socket === null ) {
       Share.socket = new WebSocket( 'ws' + GE.SERVER_URL.split( 'http' )[1] )
@@ -5129,6 +5987,22 @@ Share = {
       }
     });
   },
+  
+  openDocGabber: function( docName, element ) {
+    var doc = Share.sjs.get( 'users', docName )
+    
+    
+    console.log("GABBER ELEMENT", element )
+    doc.subscribe();
+
+    doc.whenReady( function () {
+      if ( !doc.type) doc.create( 'text' )
+      if ( doc.type && doc.type.name === 'text' ) {        
+        doc.attachCodeMirror( element )
+      }
+    });
+  },
+  
   promptToShareWith : function( nick ) {
     var div = $('<div>'),
         hdr = $('<h3>').text( 'User : ' + nick ).css({ display:'inline' }),
