@@ -77,7 +77,7 @@ var Gabber = {
     } 
     
     Gabber.shared.add( 'Ki', 0, false )
-    Gabber.shared.add( 'Kp', .005, false ) 
+    Gabber.shared.add( 'Kp', .05, false ) 
     Gabber.shared.add( 'KpMean', .01, false )
     Gabber.shared.add( 'brutalityThreshold', .1 * Gibber.Audio.Core.context.sampleRate, false )
     
