@@ -35936,6 +35936,13 @@ var Gibber = {
   singleton: function( lt, target ) {
     if( !target ) target = window 
     
+    if( $.isArray( lt ) ) {
+      for( var i = 0; i < lt.length; i++ ) {
+        Gibber.singleton( lt[ i ], target )
+      }
+      return
+    }
+    
     if( typeof target[ lt ] !== 'undefined' ) { //&& arguments[1].indexOf( window[ lt ] ) === -1 ) { 
       delete target[ lt ] 
       delete target[ '___' + lt ]
