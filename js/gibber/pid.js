@@ -131,7 +131,7 @@ var Filters = module.exports = {
         
           //console.log( controlledPhaseCorrection )
           //console.log( localPhase, masterPhase, immediatePhaseCorrection, controlledPhaseCorrection, this.integralPhaseCorrection )
-          if( this.phase % this.targetCount === 0 ) {
+          if( this.phase % this.targetCount === 0 && Gabber.log ) {
             console.log( 
               'master:', masterPhase, 
               'local:',  Gabber.localPhase, 
