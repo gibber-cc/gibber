@@ -1983,7 +1983,6 @@ module.exports = function( Gibber, Notation ) {
                     
                     pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
                     pattern.update.pattern = pattern
-                    pattern.cm = cm
                     
                     pattern.restoreOriginalText = function() {
                       if( this.arrayText === this.originalArrayText ) return
@@ -2134,6 +2133,7 @@ module.exports = function( Gibber, Notation ) {
             propertyName = object.name + '.' + path.join('.')
             break;
           case 3:
+            // a.note.values.rotate
             caller = window[ object.name ][ path[0] ][ path[1] ]
             propertyName = object.name + '.' + path.join('.')
             break;
@@ -2143,7 +2143,15 @@ module.exports = function( Gibber, Notation ) {
             break;
         }
         
-        property = caller
+        
+        //console.log( "SEQ NAME", propertyName, path.length, path[0], path[1] )
+        if( path.length === 3 ) {
+          property = caller[ path[2] ]
+        }else if( path.length === 4 ) {
+          property = caller[ path[2] ][ path[3] ]
+        }else{
+          property = caller
+        }
         
         if( !caller.marks ) {
           caller.marks = {}
@@ -2201,15 +2209,14 @@ module.exports = function( Gibber, Notation ) {
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
             pattern.cm = cm
-            // 
-            // 
+
             pattern.filters.push( function() {
               pattern.update.shouldTrigger = true
               pattern.update.index = arguments[0][2]
               pattern.update.value = arguments[0][0]
               
               return arguments[0]
-            } )
+            })
                         
             pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
 
@@ -36268,13 +36275,14 @@ var Gibber = {
   },
   
   defineSequencedProperty : function( obj, key, priority ) {
-    var fnc = obj[ key ], seq, seqNumber, seqs = {}, _num = 1000
+    var fnc = obj[ key ], seqNumber, seqNumHash = {}, seqs = {}
 
     if( !obj.seq && Gibber.Audio ) {
       obj.seq = Gibber.Audio.Seqs.Seq({ doNotStart:true, scale:obj.scale, priority:priority, target:obj })
     }
     
     fnc.seq = function( _v,_d, num ) {
+      var seq
       if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
         _v = _v.split('')
         if( typeof _d === 'undefined' ) _d = 1 / _v.length
@@ -36312,15 +36320,14 @@ var Gibber = {
       //       'priority': priority
       //     }
       
-      if( typeof num === 'undefined' ) num = 0
+      if( typeof num === 'undefined' ) num = 0 // _num++
        
-      if( typeof seqs[num] !== 'undefined' ) {
-        seqs[num].shouldStop = true
-        obj.seq.seqs.splice( num, 1 )
+      if( typeof seqs[ num ] !== 'undefined' ) {
+        seqs[ num ].shouldStop = true
+        delete seqs[ num ]
+        //obj.seq.seqs.splice( seqNumHash[ num ], 1 )
       }
-      
-      console.log( "NUM", num, args.values[0], fnc[ num ], fnc  )
-      
+            
       var valuesPattern = args.values[0]
       if( v.randomFlag ) {
         valuesPattern.filters.push( function() {
@@ -36350,20 +36357,23 @@ var Gibber = {
       valuesPattern.seq = obj.seq
       
       obj.seq.add( args )
-            
+      
+      seqNumber = obj.seq.seqs.length - 1
+      seqs[ num ] = seq = obj.seq.seqs[ seqNumber ]
+      seqNumHash[ num ] = seqNumber   
       //seqNumber = d !== null ? obj.seq.seqs.length - 1 : obj.seq.autofire.length - 1
-      seqs[num] = d !== null ? obj.seq.seqs[ num ] : obj.seq.autofire[ num ]
+      //seqs[ seqNumber ] = d !== null ? obj.seq.seqs[ num ] : obj.seq.autofire[ num ]
       
-      fnc[ key+num ] = {}
+      fnc[ num ] = {}
       
-      Object.defineProperties( fnc[ key+num ], {
+      Object.defineProperties( fnc[ num ], {
         values: {
           configurable:true,
           get: function() { 
             if( d !== null ) { // then use autofire array
-              return obj.seq.seqs[ num ].values[0]
+              return obj.seq.seqs[ seqNumber ].values[0]
             }else{
-              return obj.seq.autofire[ num ].values[0]
+              return obj.seq.autofire[ seqNumber ].values[0]
             }
           },
           set: function( val ) {
@@ -36374,9 +36384,9 @@ var Gibber = {
             }
 
             if( d !== null ) {
-              obj.seq.seqs[ num ].values = pattern
+              obj.seq.seqs[ seqNumber ].values = pattern
             }else{
-              obj.seq.autofire[ num ].values = pattern
+              obj.seq.autofire[ seqNumber ].values = pattern
             }
           }
         },
@@ -36384,7 +36394,7 @@ var Gibber = {
           configurable:true,
           get: function() { 
             if( d !== null ) { // then it's not an autofire seq
-              return obj.seq.seqs[ num ].durations[ 0 ] 
+              return obj.seq.seqs[ seqNumber ].durations[ 0 ] 
             }else{
               return null
             }
@@ -36400,12 +36410,12 @@ var Gibber = {
               pattern = [ pattern ]
             }
             
-            obj.seq.seqs[ num ].durations = pattern   //.splice( 0, 10000, v )
+            obj.seq.seqs[ seqNumber ].durations = pattern   //.splice( 0, 10000, v )
           },
         },
       })
       
-      fnc[ key+num ].seq = function( v, d ) {
+      fnc[ num ].seq = function( v, d ) {
         fnc.seq( v,d, num ) 
       }
       
@@ -36413,56 +36423,56 @@ var Gibber = {
         obj.seq.offset = Gibber.Clock.time( obj.offset )
         obj.seq.start( true, priority )
       }
+            
+      fnc.seq.stop = function() { seqs[ seqNumber ].shouldStop = true } 
+    
+      // TODO: property specific stop/start/shuffle etc. for polyseq
+      fnc.seq.start = function() {
+        seqs[ seqNumber ].shouldStop = false
+        obj.seq.timeline[0] = [ seq ]                
+        obj.seq.nextTime = 0
+      
+        if( !obj.seq.isRunning ) { 
+          obj.seq.start( false, priority )
+        }
+      }
+    
+      fnc.seq.repeat = function( numberOfTimes ) {
+        var repeatCount = 0
+      
+        var filter = function( args, ptrn ) {
+          if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
+            repeatCount++
+            if( repeatCount === numberOfTimes ) {
+              ptrn.seq.stop()
+            }
+          }
+          return args
+        }
+      
+        fnc.values.filters.push( filter )
+      }
+    
+      fnc.score = function( __v__, __d__ ) {
+        return fnc.seq.bind( obj, __v__, __d__ )
+      }
+    
+      Object.defineProperties( fnc, {
+        values: { 
+          configurable: true,
+          get: function() { return fnc[ 0 ].values },
+          set: function( val ) { return fnc[ 0 ].values = val },
+        },
+        durations: { 
+          configurable: true,
+          get: function() { return fnc[ 0 ].durations },
+          set: function( val ) { return fnc[ 0 ].durations = val },
+        }
+      })
       
       // console.log( key, fnc.values, fnc.durations )
       return obj
     }
-    
-    fnc.seq.stop = function() { seqs[num].shouldStop = true } 
-    
-    // TODO: property specific stop/start/shuffle etc. for polyseq
-    fnc.seq.start = function() {
-      seqs[num].shouldStop = false
-      obj.seq.timeline[0] = [ seq ]                
-      obj.seq.nextTime = 0
-      
-      if( !obj.seq.isRunning ) { 
-        obj.seq.start( false, priority )
-      }
-    }
-    
-    fnc.seq.repeat = function( numberOfTimes ) {
-      var repeatCount = 0
-      
-      var filter = function( args, ptrn ) {
-        if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
-          repeatCount++
-          if( repeatCount === numberOfTimes ) {
-            ptrn.seq.stop()
-          }
-        }
-        return args
-      }
-      
-      fnc.values.filters.push( filter )
-    }
-    
-    fnc.score = function( __v__, __d__ ) {
-      return fnc.seq.bind( obj, __v__, __d__ )
-    }
-    
-    Object.defineProperties( fnc, {
-      values: { 
-        configurable: true,
-        get: function() { return fnc[key+0].values },
-        set: function( val ) { return fnc[key+0].values = val },
-      },
-      durations: { 
-        configurable: true,
-        get: function() { return fnc[key+0].durations },
-        set: function( val ) { return fnc[key+0].durations = val },
-      }
-    })
   },
   
   defineRampedProperty : function( obj, _key ) {

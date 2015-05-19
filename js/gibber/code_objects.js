@@ -721,7 +721,6 @@ module.exports = function( Gibber, Notation ) {
                     
                     pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
                     pattern.update.pattern = pattern
-                    pattern.cm = cm
                     
                     pattern.restoreOriginalText = function() {
                       if( this.arrayText === this.originalArrayText ) return
@@ -872,6 +871,7 @@ module.exports = function( Gibber, Notation ) {
             propertyName = object.name + '.' + path.join('.')
             break;
           case 3:
+            // a.note.values.rotate
             caller = window[ object.name ][ path[0] ][ path[1] ]
             propertyName = object.name + '.' + path.join('.')
             break;
@@ -881,7 +881,15 @@ module.exports = function( Gibber, Notation ) {
             break;
         }
         
-        property = caller
+        
+        //console.log( "SEQ NAME", propertyName, path.length, path[0], path[1] )
+        if( path.length === 3 ) {
+          property = caller[ path[2] ]
+        }else if( path.length === 4 ) {
+          property = caller[ path[2] ][ path[3] ]
+        }else{
+          property = caller
+        }
         
         if( !caller.marks ) {
           caller.marks = {}
@@ -939,15 +947,14 @@ module.exports = function( Gibber, Notation ) {
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
             pattern.cm = cm
-            // 
-            // 
+
             pattern.filters.push( function() {
               pattern.update.shouldTrigger = true
               pattern.update.index = arguments[0][2]
               pattern.update.value = arguments[0][0]
               
               return arguments[0]
-            } )
+            })
                         
             pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
 
