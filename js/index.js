@@ -2123,14 +2123,16 @@ module.exports = function( Gibber, Notation ) {
         path.reverse()
         
         var propertyName = ''
+        
+        //console.log( "PATH LENGTH", path.length, path, object.name   )
         switch( path.length ) {
           case 1:
             caller = window[ object.name ]
-            propertyName = object.name + '.' + path[0]
+            propertyName = path[0]
             break;
           case 2: 
             caller = window[ object.name ][ path[0] ]
-            propertyName = object.name + '.' + path.join('.')
+            propertyName = object.name + '.' + path[ 1 ]
             break;
           case 3:
             // a.note.values.rotate
@@ -2145,12 +2147,16 @@ module.exports = function( Gibber, Notation ) {
         
         
         //console.log( "SEQ NAME", propertyName, path.length, path[0], path[1] )
-        if( path.length === 3 ) {
+        if( path.length === 1 ) {
+          property = caller[ path[0] ]
+        }else if( path.length === 2 ) {
+          property = caller[ path[0] ]
+        }else if( path.length === 3 ) {
           property = caller[ path[2] ]
         }else if( path.length === 4 ) {
           property = caller[ path[2] ][ path[3] ]
         }else{
-          property = caller
+          property = caller[ path[0] ]
         }
         
         if( !caller.marks ) {
@@ -2197,7 +2203,8 @@ module.exports = function( Gibber, Notation ) {
                 isArray = false 
               }
             }
-
+            
+            //console.log( valuesOrDurations, propertyName )
             var seq = caller,
                 _name_ = propertyName,
                 patternName = propertyName + '_' + valuesOrDurations,
@@ -2206,6 +2213,7 @@ module.exports = function( Gibber, Notation ) {
             caller.marks[ patternName ]     = []
             caller.locations[ patternName ] = []
             
+            //console.log( patternName, caller )
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
             pattern.cm = cm
