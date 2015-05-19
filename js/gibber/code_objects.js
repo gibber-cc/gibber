@@ -207,7 +207,7 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
       lastType = Notation.phaseIndicatorStyle,
       info = { borderSide:0 }
   
-  console.log("UPDATE", name, isFunc )
+  //console.log("UPDATE", name, isFunc )
   
   color = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + Notation.phaseIndicatorAlpha + ')'
   muteColor = 'rgba(' + muteColor[0] + ',' + muteColor[1] + ',' + muteColor[2] + ',' + Notation.phaseIndicatorAlpha + ')'
@@ -342,7 +342,7 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
   join = join || ''
   var joinLength = join.length
   
-  console.log("ON CHANGE", patternName, seqNumber )
+  //console.log("ON CHANGE", patternName, seqNumber )
   return function() { // "this" is the pattern object, as function is assigned to pattern.onchange
     var newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
@@ -480,7 +480,6 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
         index = i,
 				start, end
     
-    console.log( "CLASS NAME", __name )
     if( typeof location !== 'object' ) { // Drums and EDrums pass location, otherwise src code as string
       start = {
         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
@@ -668,17 +667,20 @@ module.exports = function( Gibber, Notation ) {
             }
           } else if( object.property ) { 
             if( object.property.name === 'seq' ) {
-              for( var i = 0; i < prevObject.arguments.length; i++ ) {
+              var hasSeqNumber = prevObject.arguments.length > 2,
+                  seqNumber = hasSeqNumber ? prevObject.arguments[2].value : null
+              
+              for( var i = 0; i < 2; i++ ) { // 2 is values + duration but not seqNumber
                 !function() {
                   var values = prevObject.arguments[i].elements,
                       valuesOrDurations = i === 0 ? 'values' : 'durations',
                       propName = object.object.property.name,
-                      patternName = propName + '_' + valuesOrDurations,
+                      patternName = hasSeqNumber ? propName + seqNumber + '_' + valuesOrDurations : propName + '_' + valuesOrDurations,
                       isFunc = false
                   
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
-                                    
+                  
                   var isArray = true
                   if( !values ) {
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
@@ -704,14 +706,14 @@ module.exports = function( Gibber, Notation ) {
                     
                     var seq = newObject,
                         _name_ = object.object.property.name, 
-                        pattern = seq[ _name_ ][ valuesOrDurations ]
-                    
+                        pattern = hasSeqNumber ? seq[ _name_ ][ seqNumber ][ valuesOrDurations ] : seq[ _name_ ][ valuesOrDurations ]
+
                     pattern.cm = cm
                     
                     if( seq[ _name_ ] && pattern.filters ) {
                         var start, end, 
                             valuesStart = isArray ? prevObject.arguments[i].range[0] + 1 : prevObject.arguments[i].range[0], 
-                            valuesEnd = isArray ? prevObject.arguments[i].range[1] - 1 : prevObject.arguments[i].range[1]
+                            valuesEnd   = isArray ? prevObject.arguments[i].range[1] - 1 : prevObject.arguments[i].range[1]
                       
                       // TODO: if code is executed in a large block, valuesStart and valuesEnd gives position in the entire
                       // block. HOWEVER, src only represnets the current individual expression being exectued. So this only
@@ -747,7 +749,7 @@ module.exports = function( Gibber, Notation ) {
 
                       this.cm.replaceRange( this.arrayText, mark.from, mark.to )
                     }
-                    
+
                     if( isFunc ) pattern.update.clear = pattern.restoreOriginalText.bind( pattern )
 
                     Notation.add( pattern, true )
@@ -761,7 +763,7 @@ module.exports = function( Gibber, Notation ) {
                       return arguments[0]
                     } )
 
-                    pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',' )                    
+                    pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',', seqNumber )
                   }
                 }()
               }
@@ -950,7 +952,7 @@ module.exports = function( Gibber, Notation ) {
           // }
         }
         
-        for( var _j = 0; _j < args.length; _j++ ) {
+        for( var _j = 0; _j < 2; _j++ ) { // 2 is values & durations but not seqNumber
           !function( j ) {
             var values = args[ j ].elements,
                 valuesOrDurations = j === 0 ? 'values' : 'durations',
