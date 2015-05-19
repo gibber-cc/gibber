@@ -36296,6 +36296,10 @@ var Gibber = {
         if( typeof _d === 'undefined' ) _d = 1 / _v.length
       }
       
+      if( typeof obj.seq === 'function' ) {
+        obj.seq = obj.object.seq // cube.position etc. TODO: Fix this hack!
+      }
+      
       var v = $.isArray(_v) ? _v : [_v],
           d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
           args = {
