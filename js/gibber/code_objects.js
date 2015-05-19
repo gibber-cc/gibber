@@ -207,6 +207,8 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
       lastType = Notation.phaseIndicatorStyle,
       info = { borderSide:0 }
   
+  console.log("UPDATE", name, isFunc )
+  
   color = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + Notation.phaseIndicatorAlpha + ')'
   muteColor = 'rgba(' + muteColor[0] + ',' + muteColor[1] + ',' + muteColor[2] + ',' + Notation.phaseIndicatorAlpha + ')'
   
@@ -336,14 +338,17 @@ var createRndUpdateFunction = function( obj, name ) {
 
 //pattern.onchange = createOnChange( newObject, newObjectName, valuesOrDurations, 'note_values' )
 // createOnChange( newObject, newObjectName, patternName, cm, '' )
-var createOnChange = function( obj, objName, patternName, cm, join ) {
+var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) {
   join = join || ''
   var joinLength = join.length
-
+  
+  console.log("ON CHANGE", patternName, seqNumber )
   return function() { // "this" is the pattern object, as function is assigned to pattern.onchange
     var newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
+        
+        console.log( "ARRAY POS", arrayPos  )
         
     start = {
       line : arrayPos.from.line,
@@ -433,10 +438,21 @@ var initializeMarks = function( obj, className, start, end, cm ) {
 }
 
 var markArray = function( values, treeNode, object, objectName, patternName, pos, cm, location, src ) {
-  var split = patternName.split( '_' )
+  var pattern,
+      //hasSeqNumber = patternName.indexOf('[') > -1,
+      split = patternName.split( '_' ), 
+      lastChar = split[0][ split[0].length - 1 ],
+      hasSeqNumber = !isNaN( lastChar ),
+      seqNumber
   
-  pattern = object[ split[0] ][ split[1] ]
-      
+  if( hasSeqNumber ) {
+    seqNumber = parseInt( lastChar )
+    var propName = split[0].substring( 0, split[0].length - 1 ) 
+    pattern = object[ propName ][ seqNumber ][ split[1] ]
+  }else{
+    pattern = object[ split[0] ][ split[1] ]    
+  }
+   
   if( typeof src === 'undefined' ) src = location
   
   if( src && !pattern.arrayText ) {
@@ -464,6 +480,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
         index = i,
 				start, end
     
+    console.log( "CLASS NAME", __name )
     if( typeof location !== 'object' ) { // Drums and EDrums pass location, otherwise src code as string
       start = {
         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
@@ -842,7 +859,7 @@ module.exports = function( Gibber, Notation ) {
         var args = obj.expression.arguments,
             nextObject = obj.expression.callee,
             object = null,
-            caller = null, prevObject = null, pattern = null, path = [], property = null
+            caller = null, prevObject = null, pattern = null, path = [], property = null, hasSeqNumber = typeof args[2] !== 'undefined', seqNumber
         
         var count = 0    
         while( typeof nextObject !== 'undefined' ) {
@@ -863,14 +880,29 @@ module.exports = function( Gibber, Notation ) {
         var propertyName = ''
         
         //console.log( "PATH LENGTH", path.length, path, object.name   )
+        
+        if( hasSeqNumber ) {
+          seqNumber = args[2].raw
+        }
         switch( path.length ) {
           case 1:
-            caller = window[ object.name ]
-            propertyName = path[0]
+            if( hasSeqNumber ) {
+              caller = window[ object.name ]//[ seqNumber ]
+              propertyName = path[0] + seqNumber
+            }else{
+              caller = window[ object.name ]
+              propertyName = path[0]
+            }
             break;
           case 2: 
-            caller = window[ object.name ][ path[0] ]
-            propertyName = object.name + '.' + path[ 1 ]
+            if( hasSeqNumber ) {
+              caller = window[ object.name ][ path[0] ]
+              propertyName = object.name + '.' + path[ 1 ] + seqNumber
+            }else{
+              caller = window[ object.name ][ path[0] ]
+              propertyName = object.name + '.' + path[ 1 ]  
+            }
+            
             break;
           case 3:
             // a.note.values.rotate
@@ -922,7 +954,7 @@ module.exports = function( Gibber, Notation ) {
           !function( j ) {
             var values = args[ j ].elements,
                 valuesOrDurations = j === 0 ? 'values' : 'durations',
-                propertyName = obj.expression.callee.object.property.name,
+                //propertyName = obj.expression.callee.object.property.name,
                 isArray = true, isFunc = false
             
             if( !values ) {
@@ -964,7 +996,7 @@ module.exports = function( Gibber, Notation ) {
               return arguments[0]
             })
                         
-            pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',' )
+            pattern.onchange = createOnChange( caller, object.name, patternName, cm, ',', seqNumber )
 
             pattern.update = createUpdateFunction( caller, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
             pattern.update.pattern = pattern
