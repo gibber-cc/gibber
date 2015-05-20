@@ -33387,10 +33387,10 @@ module.exports = function( Gibber ) {
         that.children[ that.currentLoop ].record( that.input, that.length );
     
         var seq = {
-          target: that.children[ that.currentLoop],
+          target: that.children[ that.currentLoop ],
           durations: that.length,
           key:'note',
-          values: [ null ] 
+          values: [ 1 ] 
         }
 
         that.seq.add( seq )
@@ -33409,7 +33409,7 @@ module.exports = function( Gibber ) {
           target: that.children[ that.currentLoop ],
           durations: that.length,
           key:'note',
-          values: [ null ] 
+          values: [ 1 ] 
         }
 
         that.seq.add( seq )
@@ -33438,7 +33438,7 @@ module.exports = function( Gibber ) {
     Gibber.createProxyProperties( that, { pitch:mappingProperties.pitch } )
         
     that.stop = function() { that.seq.stop(); }
-    that.play = function() { that.seq.play(); }
+    that.play = function() { that.seq.start(); }
 	
   	return that;
   }
