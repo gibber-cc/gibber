@@ -33020,8 +33020,10 @@ module.exports = function( Gibber ) {
       hishelf = null,
       lowshelf = null,
       postgraph = null,
+      initialized = false,
       init = function() {
         postgraph = [ Gibberish.node, Gibberish.context.destination ]
+        initialized = true
       },
       disconnectGraph = function() {
         for( var i = 0; i < postgraph.length - 1; i++ ) {
@@ -33054,6 +33056,8 @@ module.exports = function( Gibber ) {
     Compressor : function( position ) {
       if( compressor === null ) {
         
+        if( !initialized ) init()
+        
         compressor = Gibberish.context.createDynamicsCompressor()
         
         var _threshold = compressor.threshold,
@@ -33080,7 +33084,7 @@ module.exports = function( Gibber ) {
           },
         }) 
         
-        PP.insert( compressor, position )
+        insert( compressor, position )
       }
       
       return compressor
@@ -33088,6 +33092,9 @@ module.exports = function( Gibber ) {
     
     LowShelf : function( position ) {
       if( lowshelf === null ) {
+        
+        if( !initialized ) init()
+        
         lowshelf = Gibberish.context.createBiquadFilter()
             
         lowshelf.type = 3 // lowshelf
@@ -33115,7 +33122,7 @@ module.exports = function( Gibber ) {
           },
         })
         
-        PP.insert( lowshelf, position )
+        insert( lowshelf, position )
       }
       
       return lowshelf
@@ -33123,6 +33130,9 @@ module.exports = function( Gibber ) {
     
     HiShelf : function( position ) {
       if( hishelf === null ) {
+        
+        if( !initialized ) init()
+        
         hishelf = Gibberish.context.createBiquadFilter()
             
         hishelf.type = 4 // hishelf
@@ -33149,7 +33159,7 @@ module.exports = function( Gibber ) {
           },
         })
         
-        PP.insert( hishelf, position )
+        insert( hishelf, position )
       }
       
       return hishelf
