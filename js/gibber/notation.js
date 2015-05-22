@@ -14,24 +14,26 @@ module.exports = function( Gibber, Environment) {
     phaseIndicatorColor: [255,255,255],
     phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
-    features:{ seq:true, reactive:true, draganddrop:true },
+    selected: { seq:false, reactive:false, draganddrop:true },
+    features:{},
     
     enabled: {},
 
     priority: [],
 
     on: function() {
-      if( arguments.length === 0 ) { // by default turn global pattern seq on??? 
-        arguments[0] = 'global'
-        arguments.length = 1
+      var args = Array.prototype.slice.call( arguments, 0 )
+      if( args.length === 0 ) { // by default turn global pattern seq on??? 
+        args[0] = 'global'
+        args.length = 1
       }
       if( !GEN.enabled.global ) {
-        arguments[ arguments.length ] = 'global'
+        args.unshift( 'global' )
+        args.unshift( 'seq' )
       }
-      for( var i = 0; i < arguments.length; i++ ) {
-        var name = arguments[ i ]
-        
-        if( this.features[ name ] && ! this.enabled[ name ] ) {
+      for( var i = 0; i < args.length; i++ ) {
+        var name = args[ i ]
+        if( ! this.enabled[ name ] ) {
           var func = this.features[ name ]
           if( typeof func === 'function' ) {
             if( Gibber.scriptCallbacks.indexOf( func ) === -1 ) {
@@ -41,9 +43,10 @@ module.exports = function( Gibber, Environment) {
           } else {
             this.enabled[ name ] = true
           }
+          this.selected[ name ] = true
         }
 
-        if( name === 'global' ) { GEN.PatternWatcher.start() }
+        if( args.indexOf( 'global' > -1 ) ) { GEN.PatternWatcher.start() }
       }
     },
 
@@ -57,6 +60,7 @@ module.exports = function( Gibber, Environment) {
         }
 
         delete this.enabled[ name ]
+        this.selected[ name ] = false
       }
     },
 

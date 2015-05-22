@@ -1534,6 +1534,8 @@ var parseHTMLEntities = function(str) {
 
 var createRndUpdateFunction = function( obj, name ) {
   var update = function() {
+    if( !obj || ! obj.marks || !obj.marks[ name ] ) return
+    
     if( obj.marks[ name ][ update.index ] && update.shouldTrigger ) {
       var pos = obj.marks[ name ][0].find(),
           pattern = update.pattern,
@@ -1908,6 +1910,8 @@ module.exports = function( Gibber, Notation ) {
                   
               newObject.marks[ patternName ] = []
               newObject.locations[ patternName ] = []
+              
+              if( !Gibber.Environment.Notation.selected[ 'seq'] ) return
               markArray( values[0].value, object, newObject, newObjectName, patternName, pos, cm, location, src )
               
               pattern.update = createUpdateFunction( newObject, patternName, [255,0,0], [127,0,0] )
@@ -1941,6 +1945,8 @@ module.exports = function( Gibber, Notation ) {
                   newObject.marks[ patternName ] = []
                   newObject.locations[ patternName ] = []
                   
+                  if( !Gibber.Environment.Notation.selected[ 'seq'] ) return
+                  
                   var isArray = true
                   if( !values ) {
                     if( prevObject.arguments[i].callee ) { // if it is an array with a random or weight method attached..
@@ -1959,9 +1965,7 @@ module.exports = function( Gibber, Notation ) {
                       values = [ prevObject.arguments[i] ]
                       isArray = false 
                     }
-                  } 
-                                    
-                  if( values ) {
+                  } else{
                     markArray( values, object, newObject, newObjectName, patternName, pos, cm )
                     
                     var seq = newObject,
@@ -2073,7 +2077,7 @@ module.exports = function( Gibber, Notation ) {
           })()
         }
 
-        if( constructorName === 'Seq' && Gibber.Environment.Notation.enabled[ 'seq' ] ) {
+        if( constructorName === 'Seq' && Gibber.Environment.Notation.selected[ 'seq' ] ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
         } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
           var propertyKeys = Object.keys( newObject.mappingProperties )
@@ -2087,7 +2091,6 @@ module.exports = function( Gibber, Notation ) {
                     key = propertyKeys[ ii ],
                     mappingObject = newObject.mappingProperties[ key ]
                 
-                console.log( "REACTIVE IS MADE" )
                 var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, key, mappingObject )
 
                 __move.onchange = function( v ) {
@@ -2101,7 +2104,6 @@ module.exports = function( Gibber, Notation ) {
                         _start = { line: evalStart + literal.value.loc.start.line - 1, ch:literal.value.loc.start.column },
                         _end = { line: evalStart + literal.value.loc.end.line - 1, ch:literal.value.loc.end.column }
                     
-                    console.log("REACTIVE IS MADE")                        
                     var __move = makeReactive( literal, cm, _start, _end, newObject, newObjectName, literal.key.name, mappingObject )
                     
                     __move.onchange = function( v ) {
@@ -2117,7 +2119,7 @@ module.exports = function( Gibber, Notation ) {
       }
     }
     else if( obj.type === 'ExpressionStatement' && obj.expression.type === 'CallExpression' ) { // e.g. drums.note.values.rotate.seq( 1,1 )
-      if( src.indexOf( 'seq' ) > -1 ) {
+      if( src.indexOf( 'seq' ) > -1 && src.indexOf( 'Notation.on' ) === -1 ) {
         var args = obj.expression.arguments,
             nextObject = obj.expression.callee,
             object = null,
@@ -2246,6 +2248,7 @@ module.exports = function( Gibber, Notation ) {
             caller.marks[ patternName ]     = []
             caller.locations[ patternName ] = []
             
+            if( !Gibber.Environment.Notation.selected[ 'seq'] ) return
             //console.log( patternName, caller )
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
@@ -4828,24 +4831,26 @@ module.exports = function( Gibber, Environment) {
     phaseIndicatorColor: [255,255,255],
     phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
-    features:{ seq:true, reactive:true, draganddrop:true },
+    selected: { seq:false, reactive:false, draganddrop:true },
+    features:{},
     
     enabled: {},
 
     priority: [],
 
     on: function() {
-      if( arguments.length === 0 ) { // by default turn global pattern seq on??? 
-        arguments[0] = 'global'
-        arguments.length = 1
+      var args = Array.prototype.slice.call( arguments, 0 )
+      if( args.length === 0 ) { // by default turn global pattern seq on??? 
+        args[0] = 'global'
+        args.length = 1
       }
       if( !GEN.enabled.global ) {
-        arguments[ arguments.length ] = 'global'
+        args.unshift( 'global' )
+        args.unshift( 'seq' )
       }
-      for( var i = 0; i < arguments.length; i++ ) {
-        var name = arguments[ i ]
-        
-        if( this.features[ name ] && ! this.enabled[ name ] ) {
+      for( var i = 0; i < args.length; i++ ) {
+        var name = args[ i ]
+        if( ! this.enabled[ name ] ) {
           var func = this.features[ name ]
           if( typeof func === 'function' ) {
             if( Gibber.scriptCallbacks.indexOf( func ) === -1 ) {
@@ -4855,9 +4860,10 @@ module.exports = function( Gibber, Environment) {
           } else {
             this.enabled[ name ] = true
           }
+          this.selected[ name ] = true
         }
 
-        if( name === 'global' ) { GEN.PatternWatcher.start() }
+        if( args.indexOf( 'global' > -1 ) ) { GEN.PatternWatcher.start() }
       }
     },
 
@@ -4871,6 +4877,7 @@ module.exports = function( Gibber, Environment) {
         }
 
         delete this.enabled[ name ]
+        this.selected[ name ] = false
       }
     },
 
