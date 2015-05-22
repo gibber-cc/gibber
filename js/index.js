@@ -1610,8 +1610,6 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
         
-        console.log( "ARRAY POS", arrayPos  )
-        
     start = {
       line : arrayPos.from.line,
       ch :   arrayPos.from.ch + charCount
@@ -1949,7 +1947,7 @@ module.exports = function( Gibber, Notation ) {
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
                         values = prevObject.arguments[i].callee.object.elements; // use the array that is calling the method
                       }else{
-                        isFunc = true
+                        isFunc = typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function'
                         values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
                         isArray = false
                       }
@@ -1962,7 +1960,7 @@ module.exports = function( Gibber, Notation ) {
                       isArray = false 
                     }
                   } 
-                  
+                                    
                   if( values ) {
                     markArray( values, object, newObject, newObjectName, patternName, pos, cm )
                     
@@ -2149,7 +2147,7 @@ module.exports = function( Gibber, Notation ) {
           seqNumber = args[2].raw
         }
         switch( path.length ) {
-          case 1:
+          case 1: //a.note.seq
             if( hasSeqNumber ) {
               caller = window[ object.name ]//[ seqNumber ]
               propertyName = path[0] + seqNumber
@@ -2157,8 +2155,9 @@ module.exports = function( Gibber, Notation ) {
               caller = window[ object.name ]
               propertyName = path[0]
             }
+
             break;
-          case 2: 
+          case 2: //a.position.x.seq or a.note[0].seq?
             if( hasSeqNumber ) {
               caller = window[ object.name ][ path[0] ]
               propertyName = object.name + '.' + path[ 1 ] + seqNumber
@@ -2169,18 +2168,18 @@ module.exports = function( Gibber, Notation ) {
             
             break;
           case 3:
-            // a.note.values.rotate
+            // a.note.values.rotate.seq
             caller = window[ object.name ][ path[0] ][ path[1] ]
-            propertyName = object.name + '.' + path.join('.')
+            propertyName = path[2]
             break;
-          case 4: // a.note[0].values.rotate  for example...
+          case 4: // a.note[0].values.rotate.seq  for example...
             caller = window[ object.name ][ path[0] ][ path[1] ][ path[2] ]
             propertyName = object.name  + '.' + path[0] + '[' + path[1] + ']' + '.' + path[2] + '.' + path[3]//+ '.' + path.join('.')
             break;
         }
+                
         
-        
-        //console.log( "SEQ NAME", propertyName, path.length, path[0], path[1] )
+        // console.log( propertyName, caller, path[0], path[1], path[2] )
         if( path.length === 1 ) {
           property = caller[ path[0] ]
         }else if( path.length === 2 ) {
@@ -33012,51 +33011,78 @@ module.exports = function( Gibber ) {
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict";
+  var loadBuffer = function(ctx, filename, callback) {
+    var request = new XMLHttpRequest();
+    request.open("GET", filename, true);
+    request.responseType = "arraybuffer";
+    request.onload = function() {
+      Gibberish.context.decodeAudioData( request.response, function(_buffer) {
+        callback( _buffer )
+      }) 
+    };
+    request.send();
+  }
   
-  var PostProcessing,
-      Gibberish = require( 'gibberish-dsp' ),
-      compressor = null, 
+  var compressor = null, 
+      Gibberish,
       end = null,
       hishelf = null,
       lowshelf = null,
       postgraph = null,
-      initialized = false,
-      init = function() {
-        postgraph = [ Gibberish.node, Gibberish.context.destination ]
-        initialized = true
-      },
-      disconnectGraph = function() {
-        for( var i = 0; i < postgraph.length - 1; i++ ) {
-          postgraph[ i ].disconnect( postgraph[ i + 1 ] )
-        }
-      },
-      connectGraph = function() {
-        for( var i = 0; i < postgraph.length - 1; i++ ) {
-          postgraph[ i ].connect( postgraph[ i + 1 ] )
-        }
-      },
-      insert = function( node, position ) { 
-        if( typeof position !== 'undefined' ) {
-          if( position > 0 && position < postgraph.length - 1 ) {
-            disconnectGraph()
-            postgraph.splice( position, 0, node )
-          }else{
-            console.error( 'Invalid position for inserting into postprocessing graph: ', position )
-            return
-          }
-        }else{
-          disconnectGraph()
-          postgraph.splice( 1, 0, node )
-        }
-      
-        connectGraph()
-      };
+      masterverb = null;
   
-  var PP = PostProcessing = {
+  var PP = Gibber.AudioPostProcessing = {
+    initialized: false,    
+    getPostgraph : function() { return postgraph },
+
+    init : function() {
+      if( !this.initialized ) {
+        Gibberish = Gibber.Audio.Core
+        postgraph = [ Gibberish.node, Gibberish.context.destination ]
+        this.initialized = true
+        $.subscribe( '/gibber/clear', PP.clear.bind( this ) )
+      }
+    },
+    
+    clear : function() {
+      this.disconnectGraph()
+      postgraph = [ Gibberish.node, Gibberish.context.destination ]
+      this.connectGraph()
+    },
+    
+    disconnectGraph: function() {
+      for( var i = 0; i < postgraph.length - 1; i++ ) {
+        postgraph[ i ].disconnect( postgraph[ i + 1 ] )
+      }
+    },
+    
+    connectGraph : function() {
+      for( var i = 0; i < postgraph.length - 1; i++ ) {
+        postgraph[ i ].connect( postgraph[ i + 1 ] )
+      }
+    },
+    
+    insert: function( node, position ) { 
+      if( typeof position !== 'undefined' ) {
+        if( position > 0 && position < postgraph.length - 1 ) {
+          PP.disconnectGraph()
+          postgraph.splice( position, 0, node )
+        }else{
+          console.error( 'Invalid position for inserting into postprocessing graph: ', position )
+          return
+        }
+      }else{
+        PP.disconnectGraph()
+        postgraph.splice( 1, 0, node )
+      }
+      
+      PP.connectGraph()
+    },
+    
     Compressor : function( position ) {
       if( compressor === null ) {
         
-        if( !initialized ) init()
+        PP.init()
         
         compressor = Gibberish.context.createDynamicsCompressor()
         
@@ -33084,17 +33110,56 @@ module.exports = function( Gibber ) {
           },
         }) 
         
-        insert( compressor, position )
+        PP.insert( compressor, position )
       }
       
       return compressor
     },
     
+    MasterVerb: function( verb ) {
+      if( masterverb === null ) {
+        if( typeof verb === 'undefined' ) verb = 'smallPlate'
+        
+        masterverb = Gibberish.context.createConvolver();
+        masterverb.impulseName = verb
+        
+        loadBuffer( Gibberish.context, 'resources/impulses/' + verb + '.wav', function( _buffer ) {
+          masterverb.buffer = _buffer
+        })
+        
+        //postgraph[ 0 ].connect( masterverb, 2, 0 )
+        //postgraph[ 0 ].connect( masterverb, 3, 1 )        
+        
+        Gibberish.reverbOut.connect( masterverb )
+        
+        masterverb.gainNode = Gibberish.context.createGain()
+        
+        masterverb.gainNode.connect( Gibberish.context.destination )
+        masterverb.connect( masterverb.gainNode )
+        
+        Object.defineProperty( masterverb, 'gain', {
+          get: function() { 
+            return masterverb.gainNode.gain.value
+          },
+          set: function(v) {
+            masterverb.gainNode.gain.value = v
+          }
+        })
+        
+        masterverb.gain = .2
+        //175314__recordinghopkins__large-dark-plate-01.wav
+      }else if( verb !== masterverb.impulseName ) {
+        loadBuffer( Gibberish.context, 'resources/impulses/' + verb + '.wav', function( _buffer ) {
+          masterverb.impulseName = verb
+          masterverb.buffer = _buffer
+        })
+      }
+      
+      return masterverb
+    },
+    
     LowShelf : function( position ) {
       if( lowshelf === null ) {
-        
-        if( !initialized ) init()
-        
         lowshelf = Gibberish.context.createBiquadFilter()
             
         lowshelf.type = 3 // lowshelf
@@ -33122,17 +33187,14 @@ module.exports = function( Gibber ) {
           },
         })
         
-        insert( lowshelf, position )
+        PP.insert( lowshelf, position )
       }
       
       return lowshelf
     },
-    
+     
     HiShelf : function( position ) {
       if( hishelf === null ) {
-        
-        if( !initialized ) init()
-        
         hishelf = Gibberish.context.createBiquadFilter()
             
         hishelf.type = 4 // hishelf
@@ -33159,17 +33221,16 @@ module.exports = function( Gibber ) {
           },
         })
         
-        insert( hishelf, position )
+        PP.insert( hishelf, position )
       }
       
       return hishelf
     },
   }
-
-  return PostProcessing
-
+  
+  return PP
 }
-},{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js":[function(require,module,exports){
 module.exports = function( Gibber ) { 
   "use strict"
   

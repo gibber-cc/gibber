@@ -348,8 +348,6 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
         
-        console.log( "ARRAY POS", arrayPos  )
-        
     start = {
       line : arrayPos.from.line,
       ch :   arrayPos.from.ch + charCount
@@ -687,7 +685,7 @@ module.exports = function( Gibber, Notation ) {
                       if( prevObject.arguments[i].callee.object && prevObject.arguments[i].callee.object.elements ) {
                         values = prevObject.arguments[i].callee.object.elements; // use the array that is calling the method
                       }else{
-                        isFunc = true
+                        isFunc = typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function'
                         values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
                         isArray = false
                       }
@@ -700,7 +698,7 @@ module.exports = function( Gibber, Notation ) {
                       isArray = false 
                     }
                   } 
-                  
+                                    
                   if( values ) {
                     markArray( values, object, newObject, newObjectName, patternName, pos, cm )
                     
@@ -887,7 +885,7 @@ module.exports = function( Gibber, Notation ) {
           seqNumber = args[2].raw
         }
         switch( path.length ) {
-          case 1:
+          case 1: //a.note.seq
             if( hasSeqNumber ) {
               caller = window[ object.name ]//[ seqNumber ]
               propertyName = path[0] + seqNumber
@@ -895,8 +893,9 @@ module.exports = function( Gibber, Notation ) {
               caller = window[ object.name ]
               propertyName = path[0]
             }
+
             break;
-          case 2: 
+          case 2: //a.position.x.seq or a.note[0].seq?
             if( hasSeqNumber ) {
               caller = window[ object.name ][ path[0] ]
               propertyName = object.name + '.' + path[ 1 ] + seqNumber
@@ -907,18 +906,18 @@ module.exports = function( Gibber, Notation ) {
             
             break;
           case 3:
-            // a.note.values.rotate
+            // a.note.values.rotate.seq
             caller = window[ object.name ][ path[0] ][ path[1] ]
-            propertyName = object.name + '.' + path.join('.')
+            propertyName = path[2]
             break;
-          case 4: // a.note[0].values.rotate  for example...
+          case 4: // a.note[0].values.rotate.seq  for example...
             caller = window[ object.name ][ path[0] ][ path[1] ][ path[2] ]
             propertyName = object.name  + '.' + path[0] + '[' + path[1] + ']' + '.' + path[2] + '.' + path[3]//+ '.' + path.join('.')
             break;
         }
+                
         
-        
-        //console.log( "SEQ NAME", propertyName, path.length, path[0], path[1] )
+        // console.log( propertyName, caller, path[0], path[1], path[2] )
         if( path.length === 1 ) {
           property = caller[ path[0] ]
         }else if( path.length === 2 ) {
