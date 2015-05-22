@@ -33362,7 +33362,7 @@ module.exports = function( Gibber ) {
       
       Gibber.createProxyProperties( oscillator, mappingProperties )
 
-      var proxyMethods = [ 'note', 'pickBuffer' ]
+      var proxyMethods = [ 'note', 'pickBuffer', 'switchBuffer' ]
       
       Gibber.createProxyMethods( oscillator, proxyMethods )
 
