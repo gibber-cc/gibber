@@ -1606,8 +1606,9 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
   join = join || ''
   var joinLength = join.length
   
-  //console.log("ON CHANGE", patternName, seqNumber )
+  // console.log("ON CHANGE", patternName, seqNumber, obj  )
   return function() { // "this" is the pattern object, as function is assigned to pattern.onchange
+   //console.log( "CHANGE", this )
     var newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
@@ -33449,6 +33450,46 @@ module.exports = function( Gibber ) {
 
     return this;
   };
+  
+  Gibberish.Sampler.prototype.load = function( url ) {
+    var xhr = new XMLHttpRequest(), initSound
+        
+    xhr.open( 'GET', url, true )
+    xhr.responseType = 'arraybuffer'
+    xhr.onload = function( e ) { initSound( this.response ) }
+    xhr.send()
+    
+    console.log("now loading sample", url )
+    xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
+    
+    var self = this, buffer, bufferLength = 0, phase = 0
+    
+    this.file = url
+    
+    function initSound( arrayBuffer ) {
+      Gibber.Audio.Core.context.decodeAudioData( arrayBuffer, function( _buffer ) {
+        buffer = _buffer.getChannelData(0)
+  			self.length = self.end = bufferLength = buffer.length
+        self.setPhase( self.end )
+        self.setBuffer( buffer )
+        self.isPlaying = true;
+  			self.buffers[ self.file ] = buffer;
+
+  			console.log("sample loaded | ", self.file, " | length | ", bufferLength);
+  			Gibberish.audioFiles[self.file] = buffer;
+			
+        if(self.onload) self.onload();
+      
+        if(self.playOnLoad !== 0) self.note( self.playOnLoad );
+      
+  			self.isLoaded = true;
+      }, function(e) {
+        console.log('Error decoding file', e);
+      }); 
+    };
+    
+    return this
+  }
   
 
   Samplers.Looper = function(input, length, numberOfLoops) {

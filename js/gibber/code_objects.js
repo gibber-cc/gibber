@@ -344,8 +344,9 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
   join = join || ''
   var joinLength = join.length
   
-  //console.log("ON CHANGE", patternName, seqNumber )
+  // console.log("ON CHANGE", patternName, seqNumber, obj  )
   return function() { // "this" is the pattern object, as function is assigned to pattern.onchange
+   //console.log( "CHANGE", this )
     var newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
