@@ -34355,6 +34355,10 @@ module.exports = function( Gibber, pathToSoundFonts ) {
 module.exports = function( Gibber ) {
   "use strict"
   
+  function isInt(value) {
+    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
+  }
+  
   var Synths = { Presets: {} },
       Gibberish = require( 'gibberish-dsp' ),
       $ = Gibber.dollar,
@@ -34510,7 +34514,20 @@ module.exports = function( Gibber ) {
             // }
             if( args[0] < Gibber.minNoteFrequency ) {
               var scale = obj.scale || Gibber.scale,
-                  note  = scale.notes[ args[ 0 ] ]
+                  noteValue = args[0],
+                  isNoteInteger = isInt( noteValue ),
+                  note
+              
+              if( isNoteInteger ) {                      
+                note  = scale.notes[ args[ 0 ]  ]
+              }else{
+                var noteFloor = scale.notes[ Math.floor( args[ 0 ] )  ],
+                    noteCeil  = scale.notes[ Math.ceil( args[ 0 ] )  ],
+                    float = args[0] % 1,
+                    diff = noteCeil - noteFloor
+                
+                note = noteFloor + float * diff
+              }
                   
               if( obj.octave && obj.octave !== 0 ) {
                 var sign = obj.octave > 0 ? 1 : 0,
