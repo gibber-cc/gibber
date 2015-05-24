@@ -2310,9 +2310,9 @@ module.exports = function( Gibber, Notation ) {
             // apparently cm.markText isn't synchronous
             future( function() {
               $( '.' + className ).on( 'drop', function( e ) { 
-                // console.log( 'GOT A DROP ', className, newObjectName )
-                // console.log( e )
-                window[ newObjectName ].ondrop( e.originalEvent.dataTransfer.items )
+                //console.log( 'GOT A DROP ', className, newObjectName )
+                console.log( "DROP", e )
+                window[ newObjectName ].ondrop( e.originalEvent.dataTransfer.items || e.originalEvent.dataTransfer.files )
                 $( '.' + className ).css({ textDecoration:'none' })
               })
             
@@ -33413,7 +33413,7 @@ module.exports = function( Gibber ) {
             reader = new FileReader(),
             that = _that, item;
         
-        item = file.webkitGetAsEntry()
+        item = file.webkitGetAsEntry ? file.webkitGetAsEntry() : file
         
         if( item.isDirectory ) {
           var dirReader = item.createReader()
