@@ -33456,27 +33456,26 @@ module.exports = function( Gibber ) {
         
     xhr.open( 'GET', url, true )
     xhr.responseType = 'arraybuffer'
-    xhr.onload = function( e ) { initSound( this.response ) }
+    xhr.onload = function( e ) { initSound( this.response, url ) }
     xhr.send()
     
     console.log("now loading sample", url )
     xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
     
     var self = this, buffer, bufferLength = 0, phase = 0
-    
-    this.file = url
-    
-    function initSound( arrayBuffer ) {
+        
+    function initSound( arrayBuffer, filename ) {
       Gibber.Audio.Core.context.decodeAudioData( arrayBuffer, function( _buffer ) {
-        buffer = _buffer.getChannelData(0)
-  			self.length = self.end = bufferLength = buffer.length
+        var buffer = _buffer.getChannelData(0)
+  			self.length = self.end = buffer.length
         self.setPhase( self.end )
         self.setBuffer( buffer )
         self.isPlaying = true;
-  			self.buffers[ self.file ] = buffer;
+  			self.buffers[ filename ] = buffer;
+        this.file = filename
 
-  			console.log("sample loaded | ", self.file, " | length | ", bufferLength);
-  			Gibberish.audioFiles[self.file] = buffer;
+  			console.log("sample loaded | ", filename, " | length | ", buffer.length );
+  			Gibberish.audioFiles[ filename ] = buffer;
 			
         if(self.onload) self.onload();
       
