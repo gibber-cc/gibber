@@ -25,11 +25,10 @@ module.exports = function( Gibber, Environment) {
       var args = Array.prototype.slice.call( arguments, 0 )
       if( args.length === 0 ) { // by default turn global pattern seq on??? 
         args[0] = 'global'
-        args.length = 1
+        args[1] = 'seq'
       }
-      if( !GEN.enabled.global ) {
+      if( !GEN.enabled.global && args.indexOf( 'global' ) === -1 ) {
         args.unshift( 'global' )
-        args.unshift( 'seq' )
       }
       for( var i = 0; i < args.length; i++ ) {
         var name = args[ i ]
