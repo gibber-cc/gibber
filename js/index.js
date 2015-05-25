@@ -33490,6 +33490,62 @@ module.exports = function( Gibber ) {
     return this
   }
   
+  Gibberish.Sampler.prototype.loadDir = function( dir ) {
+    var xhr = new XMLHttpRequest(), initSound
+        
+    xhr.open( 'GET', dir, true )
+    xhr.responseType = 'html'
+    xhr.onload = function( e ) { loadDir( this.response, dir ) }
+    xhr.send()
+    
+    console.log("now loading directory", dir )
+    xhr.onerror = function( e ) { console.error( "Error loading directory", e )}
+    
+    var self = this
+        
+    function loadDir( response, dir ) {
+      /*Gibber.Audio.Core.context.decodeAudioData( arrayBuffer, function( _buffer ) {
+        var buffer = _buffer.getChannelData(0)
+  			self.length = self.end = buffer.length
+        self.setPhase( self.end )
+        self.setBuffer( buffer )
+        self.isPlaying = true;
+  			self.buffers[ filename ] = buffer;
+        this.file = filename
+
+  			console.log("sample loaded | ", filename, " | length | ", buffer.length );
+  			Gibberish.audioFiles[ filename ] = buffer;
+			
+        if(self.onload) self.onload();
+      
+        if(self.playOnLoad !== 0) self.note( self.playOnLoad );
+      
+  			self.isLoaded = true;
+      }, function(e) {
+        console.log('Error decoding file', e);
+      });*/
+        console.log( "RESPONSE", response )
+        
+        var page = $( response )
+        
+        var links = $( page ).find( 'a' )
+        
+        console.log( "LINK", links ) 
+        
+        for( var i = 0; i < links.length; i++ ) {
+          var link = links[ i ],
+              split = link.href.split( '/' ),
+              url   = split[ split.length - 1 ]
+              
+          if( url !== '' && url !== '.DS_Store' && url !== 'node-ecstatic' ) {
+            self.load( dir + '/' + url )
+          }
+        }
+    };
+    
+    return this
+  }
+  
 
   Samplers.Looper = function(input, length, numberOfLoops) {
   	var that = Bus();
