@@ -2637,9 +2637,7 @@ module.exports = function( Gibber ) {
     CodeMirror = GE.CodeMirror
     
     options = options || {}
-    
-    console.log( 'CODE COLUMN TYPE', options.type )
-    
+        
     var isCodeColumn = options.type === 'code',
         Layout = Gibber.Environment.Layout,
         lastColumnWidth = 0, 
@@ -2708,7 +2706,7 @@ module.exports = function( Gibber ) {
 					col.mode = val
           col.editor.setOption( 'mode', GE.modes.nameMappings[ col.mode ] )
           
-          if( GE.Storage.values.showSampleCodeInNewEditors ){
+          if( typeof GE.Storage.values.showSampleCodeInNewEditors === 'undefined' || GE.Storage.values.showSampleCodeInNewEditors ){
   					col.editor.setValue( GE.modes[ col.mode ].default )
           }
         })
@@ -2738,7 +2736,7 @@ module.exports = function( Gibber ) {
     }
     
 
-    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Layout.columns.length === 2, // make sure it's only on the first load
+    var shouldDisplayLoadFile = typeof window.loadFile !== 'undefined' && window.loadFile !== null && typeof window.loadFile.error === 'undefined' && Gibber.Environment.isInitializing, // make sure it's only on the first load
         _value = shouldDisplayLoadFile ? window.loadFile.text  :  GE.modes[ mode ].default;
     
     if( GE.Storage.values && !shouldDisplayLoadFile ) {
@@ -2830,8 +2828,9 @@ module.exports = function( Gibber ) {
     }
     
     if( shouldDisplayLoadFile ) {
-      if( col.editor )
+      if( col.editor ) {
         col.editor.setValue( window.loadFile.text )
+      }
     }
     //col.modeSelect.eq( col.modeIndex )
     col.element.addClass( colNumber )
@@ -3435,6 +3434,7 @@ var GE = {
   Share:        require( './share' )( Gibber ),
   Notation:     require( './notation' ),
   Gabber:       null, // required in init method
+  isInitializing: true,
   
   init : function() { 
     GE.Keymap.init()
@@ -3497,6 +3497,7 @@ var GE = {
       window.Chat = GE.Chat
       GE.Storage.runUserSetup()
       
+      GE.isInitializing = false
       //window.spin.stop()
     }
   },
@@ -3542,7 +3543,7 @@ var GE = {
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
           defaultLanguageForEditors: 'javascript',
-          saveSoundFonts:true,
+          saveSoundFonts:false,
           soundfonts:{},
           onload:null
         }

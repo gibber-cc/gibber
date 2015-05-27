@@ -28,6 +28,7 @@ var GE = {
   Share:        require( './share' )( Gibber ),
   Notation:     require( './notation' ),
   Gabber:       null, // required in init method
+  isInitializing: true,
   
   init : function() { 
     GE.Keymap.init()
@@ -90,6 +91,7 @@ var GE = {
       window.Chat = GE.Chat
       GE.Storage.runUserSetup()
       
+      GE.isInitializing = false
       //window.spin.stop()
     }
   },
@@ -135,7 +137,7 @@ var GE = {
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
           defaultLanguageForEditors: 'javascript',
-          saveSoundFonts:true,
+          saveSoundFonts:false,
           soundfonts:{},
           onload:null
         }
