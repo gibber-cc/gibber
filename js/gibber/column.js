@@ -1,5 +1,6 @@
 !function() {
 
+
 var $ = require( './dollar' )
 var initialized = false
 
@@ -13,7 +14,9 @@ module.exports = function( Gibber ) {
     CodeMirror = GE.CodeMirror
     
     options = options || {}
-
+    
+    console.log( 'CODE COLUMN TYPE', options.type )
+    
     var isCodeColumn = options.type === 'code',
         Layout = Gibber.Environment.Layout,
         lastColumnWidth = 0, 
@@ -204,7 +207,8 @@ module.exports = function( Gibber ) {
     }
     
     if( shouldDisplayLoadFile ) {
-      col.editor.setValue( window.loadFile.text )
+      if( col.editor )
+        col.editor.setValue( window.loadFile.text )
     }
     //col.modeSelect.eq( col.modeIndex )
     col.element.addClass( colNumber )
