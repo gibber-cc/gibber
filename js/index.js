@@ -1934,7 +1934,6 @@ module.exports = function( Gibber, Notation ) {
             if( object.property.name === 'seq' ) {
               var hasSeqNumber = prevObject.arguments.length > 2,
                   seqNumber = hasSeqNumber ? prevObject.arguments[2].value : null
-              
               for( var i = 0; i < 2; i++ ) { // 2 is values + duration but not seqNumber
                 !function() {
                   var values = prevObject.arguments[i].elements,
@@ -1964,72 +1963,71 @@ module.exports = function( Gibber, Notation ) {
                       }
                       
                       values = [ prevObject.arguments[i] ]
-                      isArray = false 
+                      isArray = false   
                     }
-                  } else{
-                    markArray( values, object, newObject, newObjectName, patternName, pos, cm )
-                    
-                    var seq = newObject,
-                        _name_ = object.object.property.name, 
-                        pattern = hasSeqNumber ? seq[ _name_ ][ seqNumber ][ valuesOrDurations ] : seq[ _name_ ][ valuesOrDurations ]
-
-                    pattern.cm = cm
-                    
-                    if( seq[ _name_ ] && pattern.filters ) {
-                        var start, end, 
-                            valuesStart = isArray ? prevObject.arguments[i].range[0] + 1 : prevObject.arguments[i].range[0], 
-                            valuesEnd   = isArray ? prevObject.arguments[i].range[1] - 1 : prevObject.arguments[i].range[1]
-                      
-                      // TODO: if code is executed in a large block, valuesStart and valuesEnd gives position in the entire
-                      // block. HOWEVER, src only represnets the current individual expression being exectued. So this only
-                      // works the expression is executed individually.
-                      
-                      pattern.arrayText = src.substring( valuesStart, valuesEnd );
-                      pattern.originalArrayText = pattern.arrayText.slice( 0 )
-                      
-                      start = {
-                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                        ch : prevObject.arguments[i].loc.start.column + 1 // plus one to remove array bracket
-                      }
-                      end = {
-                        line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
-                        ch : prevObject.arguments[i].loc.end.column - 1   // minus one to remove array bracket
-                      }
-              
-                      start.line += prevObject.arguments[i].loc.start.line
-                      end.line   += prevObject.arguments[i].loc.end.line
-                  
-                      pattern.arrayMark = cm.markText( start, end );
-                      
-                    }
-                    
-                    pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
-                    pattern.update.pattern = pattern
-                    
-                    pattern.restoreOriginalText = function() {
-                      if( this.arrayText === this.originalArrayText ) return
-                      this.arrayText = this.originalArrayText
-
-                      var mark = !this.arrayMark ? this.values[0].arrayMark.find() : this.arrayMark.find()
-
-                      this.cm.replaceRange( this.arrayText, mark.from, mark.to )
-                    }
-
-                    if( isFunc ) pattern.update.clear = pattern.restoreOriginalText.bind( pattern )
-
-                    Notation.add( pattern, true )
-
-                    pattern.filters.push( function() {
-                      //if( arguments[0][2] !== pattern.update.index ) {
-                        pattern.update.shouldTrigger = true
-                        pattern.update.index = arguments[0][2]
-                        //}
-
-                      return arguments[0]
-                    } )
-
-                    pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',', seqNumber )
                   }
+                  markArray( values, object, newObject, newObjectName, patternName, pos, cm )
+                  
+                  var seq = newObject,
+                      _name_ = object.object.property.name, 
+                      pattern = hasSeqNumber ? seq[ _name_ ][ seqNumber ][ valuesOrDurations ] : seq[ _name_ ][ valuesOrDurations ]
+
+                  pattern.cm = cm
+                  
+                  if( seq[ _name_ ] && pattern.filters ) {
+                      var start, end, 
+                          valuesStart = isArray ? prevObject.arguments[i].range[0] + 1 : prevObject.arguments[i].range[0], 
+                          valuesEnd   = isArray ? prevObject.arguments[i].range[1] - 1 : prevObject.arguments[i].range[1]
+                    
+                    // TODO: if code is executed in a large block, valuesStart and valuesEnd gives position in the entire
+                    // block. HOWEVER, src only represnets the current individual expression being exectued. So this only
+                    // works the expression is executed individually.
+                    
+                    pattern.arrayText = src.substring( valuesStart, valuesEnd );
+                    pattern.originalArrayText = pattern.arrayText.slice( 0 )
+                    
+                    start = {
+                      line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                      ch : prevObject.arguments[i].loc.start.column + 1 // plus one to remove array bracket
+                    }
+                    end = {
+                      line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
+                      ch : prevObject.arguments[i].loc.end.column - 1   // minus one to remove array bracket
+                    }
+            
+                    start.line += prevObject.arguments[i].loc.start.line
+                    end.line   += prevObject.arguments[i].loc.end.line
+                
+                    pattern.arrayMark = cm.markText( start, end );
+                    
+                  }
+                  
+                  pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
+                  pattern.update.pattern = pattern
+                  
+                  pattern.restoreOriginalText = function() {
+                    if( this.arrayText === this.originalArrayText ) return
+                    this.arrayText = this.originalArrayText
+
+                    var mark = !this.arrayMark ? this.values[0].arrayMark.find() : this.arrayMark.find()
+
+                    this.cm.replaceRange( this.arrayText, mark.from, mark.to )
+                  }
+
+                  if( isFunc ) pattern.update.clear = pattern.restoreOriginalText.bind( pattern )
+
+                  Notation.add( pattern, true )
+
+                  pattern.filters.push( function() {
+                    //if( arguments[0][2] !== pattern.update.index ) {
+                      pattern.update.shouldTrigger = true
+                      pattern.update.index = arguments[0][2]
+                      //}
+
+                    return arguments[0]
+                  } )
+
+                  pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',', seqNumber )
                 }()
               }
             }
@@ -2149,6 +2147,7 @@ module.exports = function( Gibber, Notation ) {
         if( hasSeqNumber ) {
           seqNumber = args[2].raw
         }
+        
         switch( path.length ) {
           case 1: //a.note.seq
             if( hasSeqNumber ) {
@@ -2216,8 +2215,10 @@ module.exports = function( Gibber, Notation ) {
           // }
         }
         
-        for( var _j = 0; _j < 2; _j++ ) { // 2 is values & durations but not seqNumber
+        for( var _j = 0; _j < args.length; _j++ ) { // 2 is values & durations but not seqNumber
           !function( j ) {
+            if( typeof args[j] === 'undefined' ) return
+            
             var values = args[ j ].elements,
                 valuesOrDurations = j === 0 ? 'values' : 'durations',
                 //propertyName = obj.expression.callee.object.property.name,
@@ -32193,7 +32194,7 @@ module.exports = function( Gibber ) {
         
         if( name !== 'Lines' ) Gibber.processArguments2( obj, args, obj.name )
         
-        if( name === 'AD' || name === 'ADSR' ) {
+        if( name === '.' || name === 'ADSR' ) {
           Gibber.createProxyMethods( obj, ['run'] )
         }
         
