@@ -2598,7 +2598,9 @@ module.exports = function( Gibber, Notation ) {
     changed:[],
     clear: function() { 
       for( var i = 0; i < this.changed.length; i++ ) {
-        this.changed[i].restoreOriginalText()
+        if( typeof this.changed[i].restoreOriginalText === 'function' ) {
+          this.changed[i].restoreOriginalText()
+        }
       }
       this.changed.length = 0
       this.dirty.length = 0 
@@ -2607,7 +2609,9 @@ module.exports = function( Gibber, Notation ) {
     check: function() {
       for( var i = 0; i < this.dirty.length; i++ ) {
         if( this.changed.indexOf( this.dirty[ i ] ) === -1 ) this.changed.push( this.dirty[ i ] )
-        this.dirty[ i ].onchange()
+        if( typeof this.dirty[i].onchange === 'function' ) {
+          this.dirty[ i ].onchange()
+        }
       }
       this.dirty.length = 0
     },
