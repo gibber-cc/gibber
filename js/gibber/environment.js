@@ -87,8 +87,12 @@ var GE = {
       
       Gibber.Audio.SoundFont.path = './resources/soundfonts/'
       
+      /* TODO: create export function!!! */      
       window.Gabber = GE.Gabber = require( './performance' )( Gibber )
       window.Chat = GE.Chat
+      window.flash = GE.Message.postFlash
+      window.post = GE.Message.post
+
       GE.Storage.runUserSetup()
       
       GE.isInitializing = false
