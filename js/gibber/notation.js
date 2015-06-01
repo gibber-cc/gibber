@@ -1,12 +1,11 @@
 module.exports = function( Gibber, Environment) {
   // TODO: some effects need to use entire lines... for example, transfrom
   // can't apply to inline elements
-  var phaseIndicatorStyle = 'flash'
   var GEN = {
     isRunning: false,
     notations: [],
     fps: 20,
-    phaseIndicatorStyles: ['flashBorder2'],
+    phaseIndicatorStyles: ['flashBorder'],
     clear: null,
     filterString: [],
     functionOutputIndicatorStyle:'comment', // also 'replace' and 'stylize' 
@@ -20,6 +19,11 @@ module.exports = function( Gibber, Environment) {
     enabled: {},
 
     priority: [],
+    
+    switchPhaseIndicator: function( indicator ) {
+      GEN.phaseIndicatorStyles.length = 0
+      GEN.phaseIndicatorStyles.push( indicator )
+    },
 
     on: function() {
       var args = Array.prototype.slice.call( arguments, 0 )
@@ -262,13 +266,16 @@ module.exports = function( Gibber, Environment) {
     }
   }
   
-  // Object.defineProperty( GEN, 'phaseIndicatorStyle', {
-  //   get: function() { return phaseIndicatorStyle },
-  //   set: function(v) {
-  //     // GEN.clearNotations()
-  //     phaseIndicatorStyle = v
-  //   }
-  // })
+  /*
+  Object.defineProperty( GEN, 'phaseIndicatorStyle', {
+    get: function() { return GEN.phaseIndicatorStyles },
+    set: function(v) {
+      GEN.clearNotations()
+      GEN.phaseIndicatorStyles.length = 0
+      GEN.phaseIndicatorStyles.push( v )
+    }
+  })
+  */
   
   return GEN
 }

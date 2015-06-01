@@ -55,7 +55,7 @@ var phaseIndicators = {
     }
   },
   underscore: function( info ) {
-    if( info.lastSpan ) { 
+    /*if( info.lastSpan ) { 
       info.lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderBottomWidth:0, paddingBottom:1 })
       var noChange = info.span.selector === info.lastSpan.selector
       if( noChange ) {
@@ -75,7 +75,16 @@ var phaseIndicators = {
       setTimeout( function() { 
         info.span.css({ borderColor:info.color })
       }, 100 )
+    }*/
+    if( info.lastSpan ) { 
+      if( info.lastType === 'border' ) { 
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+      }else{
+        info.lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
+      }
     }
+
+    info.span.css({ borderBottomColor:info.color })
   },
   flash: function( info ) {
     if( info.lastSpan && ( info.lastType === 'border' ||  info.lastType === 'borderTopBottom' )) { 
@@ -90,7 +99,7 @@ var phaseIndicators = {
       });
     }, 75 )
   },
-  flashBorder: function( info ) {
+  flashBorderOld: function( info ) {
     if( info.lastSpan  ) { 
       var noChange = info.span.selector === info.lastSpan.selector
       if( !noChange ) {
@@ -120,7 +129,7 @@ var phaseIndicators = {
       });
     }, 75 )
   },
-  flashBorder2: function( info ) {
+  flashBorder: function( info ) {
     var mute = info.muteColor
     
     if( info.lastSpan  ) { 
@@ -185,16 +194,16 @@ var phaseIndicators = {
     //   });
     // }, 75 )
   },
-  borderTopBottom: function( lastSpan, span, color, lastType ) {
-    if( lastSpan ) { 
-      if( lastType === 'border' ) { 
-        lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
+  borderTopBottom: function( info ) { //lastSpan, span, color, lastType ) {
+    if( info.lastSpan ) { 
+      if( info.lastType === 'border' ) { 
+        info.lastSpan.css({ borderColor:'rgba(0,0,0,0)' })
       }else{
-        lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
+        info.lastSpan.css({ borderTopColor:'rgba(0,0,0,0)', borderBottomColor:'rgba(0,0,0,0)' })
       }
     }
 
-    span.css({ borderTopColor:color, borderBottomColor:color })
+    info.span.css({ borderTopColor:info.color, borderBottomColor:info.color })
   }
 }
 
@@ -204,7 +213,7 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
       Notation = Gibber.Environment.Notation,
       color = color || Notation.phaseIndicatorColor,
       muteColor = muteColor || Notation.phaseIndicatorColorMute,
-      lastType = Notation.phaseIndicatorStyle,
+      lastType = null,//Notation.phaseIndicatorStyle,
       info = { borderSide:0 }
   
   //console.log("UPDATE", name, isFunc )
@@ -244,7 +253,7 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
     updateFunction.index = null
     updateFunction.shouldTrigger = false
 
-    updateFunction.clear = function() {
+    /*updateFunction.clear = function() {
       switch( Notation.phaseIndicatorStyle ) {
         case 'border' :
           lastSpan.css({ borderColor:'rgba(0,0,0,0)', borderWidth:0, padding:0 })
@@ -255,7 +264,7 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
         default:
           break
       }
-    }
+    }*/
   }
 
   window.myupdate = updateFunction
