@@ -1621,7 +1621,9 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
     var newPatternText = this.values.join( join ),
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
-        
+    
+    if( typeof arrayPos !== 'object' ) return
+    
     start = {
       line : arrayPos.from.line,
       ch :   arrayPos.from.ch + charCount
