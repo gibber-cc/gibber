@@ -360,7 +360,8 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
     
-    if( typeof arrayPos !== 'object' ) return
+    console.log( "THIS ON CHANGE", this )
+    //if( typeof arrayPos !== 'object' ) return
     
     start = {
       line : arrayPos.from.line,
@@ -1000,7 +1001,7 @@ module.exports = function( Gibber, Notation ) {
             caller.locations[ patternName ] = []
             
             if( !Gibber.Environment.Notation.selected[ 'seq'] ) return
-            //console.log( patternName, caller )
+            console.log( patternName, caller )
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
             pattern.cm = cm

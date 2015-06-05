@@ -1622,7 +1622,8 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
     
-    if( typeof arrayPos !== 'object' ) return
+    console.log( "THIS ON CHANGE", this )
+    //if( typeof arrayPos !== 'object' ) return
     
     start = {
       line : arrayPos.from.line,
@@ -2262,7 +2263,7 @@ module.exports = function( Gibber, Notation ) {
             caller.locations[ patternName ] = []
             
             if( !Gibber.Environment.Notation.selected[ 'seq'] ) return
-            //console.log( patternName, caller )
+            console.log( patternName, caller )
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
             pattern.cm = cm
@@ -27773,6 +27774,7 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
     
     console.log("now loading sample", self.file )
     xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
+    
     function initSound( arrayBuffer ) {
       Gibberish.context.decodeAudioData(arrayBuffer, function(_buffer) {
         buffer = _buffer.getChannelData(0)
@@ -27949,7 +27951,7 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
   	},
 	});
   
-	var waveform = this.waveform;
+	var waveform = waveform1 = waveform2 = waveform3 = this.waveform;
 	Object.defineProperty(this, "waveform", {
 		get: function() { return waveform; },
 		set: function(value) {
@@ -27962,6 +27964,22 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
 			}
 		},
 	});
+  
+  Object.defineProperties( this, {
+    waveform1: {
+      get: function() { return waveform1 },
+      set: function(v) { waveform1 = v; osc1 = new Gibberish[ v ]().callback; }
+    },
+    waveform2: {
+      get: function() { return waveform2 },
+      set: function(v) { waveform2 = v; osc2 = new Gibberish[ v ]().callback; }
+    },
+    waveform3: {
+      get: function() { return waveform3 },
+      set: function(v) { waveform3 = v; osc3 = new Gibberish[ v ]().callback; }
+    },
+  })
+  
   
 	var _envelope = new Gibberish.AD(this.attack, this.decay),
       envstate  = _envelope.getState,
@@ -30470,7 +30488,7 @@ Audio = {
     fadeOut : function( _time ) {
       var time = Audio.Clock.time( _time ),
           decay = new Audio.Core.ExponentialDecay({ decayCoefficient:.00005, length:time }),
-          //ramp = Mul( decay, this.amp() )
+          // ramp = Mul( decay, this.amp() )
           line = new Audio.Core.Line( this.amp.value, 0, Audio.Clock.time( time ) )
           
       this.amp( line )
