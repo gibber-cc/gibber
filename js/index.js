@@ -30497,6 +30497,21 @@ Audio = {
       
       return this
     },
+    fadeOut2 : function( _time ) {
+      var time = Audio.Clock.time( _time ),
+          decay = new Audio.Core.ExponentialDecay({ decayCoefficient:.00005, length:time }),
+          // ramp = Mul( decay, this.amp() )
+          line = new Audio.Core.Line( this.amp.value, 0, Audio.Clock.time( time ) )
+          
+      this.amp( line )
+      
+      future( function() { 
+        this.amp = 0
+        this.kill()
+      }.bind( this ), time )
+      
+      return this
+    },
   }
 }
 
@@ -32669,7 +32684,7 @@ module.exports = function( freesound ) {
         sampler.buffer = Freesound.loaded[filename];
         sampler.bufferLength = sampler.buffer.length;
         sampler.isLoaded = true;
-        sampler.end = sampler.bufferLength;
+        //sampler.end = sampler.bufferLength;
         sampler.setBuffer(sampler.buffer);
         sampler.setPhase(sampler.bufferLength);
         sampler.filename = filename;
