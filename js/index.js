@@ -24455,17 +24455,21 @@ Gibberish.Ease.prototype = Gibberish._envelope;
 
 // quadratic bezier
 // adapted from http://www.flong.com/texts/code/shapers_bez/
-Gibberish.Curve = function( start, end, time, a, b, loops ) {
+Gibberish.Curve = function( start, end, time, a, b, fadeIn, loops ) {
   var sqrt = Math.sqrt, 
       out = 0,
       phase = 0
       
+      console.log("FDAE IN ", fadeIn )
   start = start || 0
   end = end || 1
   time = time || Gibberish.context.sampleRate
   a = a || .940
   b = b || .260
   loops = loops || false
+  fadeIn = typeof fadeIn === 'undefined' ? 1 : fadeIn
+  
+  console.log("FADE IN", fadeIn )
   
 	var that = { 
 		name:		'curve',
@@ -24492,6 +24496,8 @@ Gibberish.Curve = function( start, end, time, a, b, loops ) {
         y = (1-2*b) * (t*t) + (2*b) * t
     
     out = phase < time ? start + ( y * ( end - start ) ) : end
+    
+    if( !fadeIn ) out =  1 - out
     
 		//out = phase < time ? start + ( phase++ * incr) : end;
 				
@@ -30487,11 +30493,9 @@ Audio = {
     
     fadeOut : function( _time ) {
       var time = Audio.Clock.time( _time ),
-          decay = new Audio.Core.ExponentialDecay({ decayCoefficient:.00005, length:time }),
-          // ramp = Mul( decay, this.amp() )
-          line = new Audio.Core.Line( this.amp.value, 0, Audio.Clock.time( time ) )
+          curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp( line )
+      this.amp = curve
       
       future( function() { this.amp = 0 }.bind( this ), time )
       
@@ -30499,11 +30503,9 @@ Audio = {
     },
     fadeOut2 : function( _time ) {
       var time = Audio.Clock.time( _time ),
-          decay = new Audio.Core.ExponentialDecay({ decayCoefficient:.00005, length:time }),
-          // ramp = Mul( decay, this.amp() )
-          line = new Audio.Core.Line( this.amp.value, 0, Audio.Clock.time( time ) )
+          curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp( line )
+      this.amp = curve
       
       future( function() { 
         this.amp = 0
@@ -32132,6 +32134,7 @@ module.exports = function( Gibber ) {
       types = [
         'Curve',
         'Line',
+        'Ease',
         'Lines',
         'AD',
         'ADSR' 
@@ -32160,6 +32163,23 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           }
+        },
+        Ease: {
+          /*start: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          end: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          time: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },*/
         },
         Curve: {
           start: {
@@ -32236,11 +32256,13 @@ module.exports = function( Gibber ) {
         
         if( typeof args[0] !== 'object' ) {
           // console.log( args[0], args[1], args[2], Gibber.Clock.time( args[2] ) )
-          obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
+          obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3], args[4], args[5], args[6] )
         }else if( name === 'Lines' ){
           obj = new Gibberish.Lines( args[0], args[1], args[2] )
-        }else if( name === 'Curve' ){
-          obj = new Gibberish.Curve( args[0], args[1], args[2], args[3], args[4], args[5] )
+        }else if( name === 'Ease' ){
+          obj = new Gibberish.Ease( args[0], args[1], args[2], args[3], args[4] )
+        }else if( name === 'Curve' ){ // not needed?
+          obj = new Gibberish.Curve( args[0], args[1], args[2], args[3], args[4], args[5], args[6] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }
