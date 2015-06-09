@@ -34073,7 +34073,6 @@ param **amp** Number. Optional. The volume to use.
         
         if( __pitch > 0 ) { //|| typeof __pitch === 'object' || typeof this.pitch === 'function' ) {
           phase = this.start;
-          //console.log("PHASE :: ", phase, this.start )
 				}else{
           phase = this.end;
 				}
@@ -40352,10 +40351,9 @@ module.exports = function( Gibber ) {
         }
       }
 
-
       var oldStart = oscillator.__lookupSetter__('start').bind( oscillator ),
           __start = 0
-          
+      
       Object.defineProperty(oscillator, 'start', {
         configurable: true,
         get: function() { 
@@ -40368,6 +40366,7 @@ module.exports = function( Gibber ) {
             __start = v
           }
           oldStart( __start )
+          oscillator.setPhase( __start ) // TODO: HACK! Why doesn't this work automatically?
           
           return __start
         }
@@ -40387,6 +40386,7 @@ module.exports = function( Gibber ) {
             __end = v
           }
           oldEnd( __end )
+          oscillator.setPhase( __end ) // TODO: HACK! Why doesn't this work automatically?
           
           return __end
         }
