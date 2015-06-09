@@ -134,8 +134,11 @@ var Score = function( data, opts ) {
             if( fnc instanceof Score ) {
               if( !fnc.codeblock ) {
                 fnc.start()
+                console.log("STARTING SCORE")
               }else{
                 fnc.rewind().next()
+                //fnc.rewind().next()
+                //fnc()
               }
             }else{
               fnc()
@@ -190,8 +193,8 @@ var Score = function( data, opts ) {
 
 Score.prototype = proto
 
-Score.prototype.wait = -987654321
-Score.prototype.combine = function() {
+Score.wait = -987654321
+Score.combine = function() {
   var score = [ 0, arguments[ 0 ] ]
   
   for( var i = 1; i < arguments.length; i++ ) {

@@ -91,7 +91,7 @@ module.exports = function( Gibber ) {
         },
         set: function(v) {
           if( v <= 1 ) {
-            __start = v * oscillator.bufferLength
+            __start = v * oscillator.length
           }else{
             __start = v
           }
@@ -110,7 +110,7 @@ module.exports = function( Gibber ) {
         },
         set: function(v) {
           if( v <= 1 ) {
-            __end = v * oscillator.bufferLength
+            __end = v * oscillator.length
           }else{
             __end = v
           }
@@ -122,7 +122,7 @@ module.exports = function( Gibber ) {
       
       Gibber.createProxyProperties( oscillator, mappingProperties )
 
-      var proxyMethods = [ 'note', 'pickBuffer' ]
+      var proxyMethods = [ 'note', 'pickBuffer', 'switchBuffer' ]
       
       Gibber.createProxyMethods( oscillator, proxyMethods )
 
@@ -173,7 +173,7 @@ module.exports = function( Gibber ) {
             reader = new FileReader(),
             that = _that, item;
         
-        item = file.webkitGetAsEntry()
+        item = file.webkitGetAsEntry ? file.webkitGetAsEntry() : file
         
         if( item.isDirectory ) {
           var dirReader = item.createReader()
@@ -211,6 +211,76 @@ module.exports = function( Gibber ) {
     return this;
   };
   
+  Gibberish.Sampler.prototype.load = function( url ) {
+    var xhr = new XMLHttpRequest(), initSound
+        
+    xhr.open( 'GET', url, true )
+    xhr.responseType = 'arraybuffer'
+    xhr.onload = function( e ) { initSound( this.response, url ) }
+    xhr.send()
+    
+    console.log("now loading sample", url )
+    xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
+    
+    var self = this, buffer, bufferLength = 0, phase = 0
+        
+    function initSound( arrayBuffer, filename ) {
+      Gibber.Audio.Core.context.decodeAudioData( arrayBuffer, function( _buffer ) {
+        var buffer = _buffer.getChannelData(0)
+  			self.length = self.end = buffer.length
+        self.setPhase( self.end )
+        self.setBuffer( buffer )
+        self.isPlaying = true;
+  			self.buffers[ filename ] = buffer;
+        this.file = filename
+
+  			console.log("sample loaded | ", filename, " | length | ", buffer.length );
+  			Gibberish.audioFiles[ filename ] = buffer;
+			
+        if(self.onload) self.onload();
+      
+        if(self.playOnLoad !== 0) self.note( self.playOnLoad );
+      
+  			self.isLoaded = true;
+      }, function(e) {
+        console.log('Error decoding file', e);
+      }); 
+    };
+    
+    return this
+  }
+  
+  Gibberish.Sampler.prototype.loadDir = function( dir ) {
+    var xhr = new XMLHttpRequest(), initSound
+        
+    xhr.open( 'GET', dir, true )
+    xhr.responseType = 'html'
+    xhr.onload = function( e ) { loadDir( this.response, dir ) }
+    xhr.send()
+    
+    console.log("now loading directory", dir )
+    xhr.onerror = function( e ) { console.error( "Error loading directory", e )}
+    
+    var self = this
+        
+    function loadDir( response, dir ) {       
+        var page = $( response ),
+            links = $( page ).find( 'a' )
+        
+        for( var i = 0; i < links.length; i++ ) {
+          var link = links[ i ],
+              split = link.href.split( '/' ),
+              url   = split[ split.length - 1 ]
+              
+          if( url !== '' && url !== '.DS_Store' && url !== 'node-ecstatic' ) {
+            self.load( dir + '/' + url )
+          }
+        }
+    };
+    
+    return this
+  }
+  
 
   Samplers.Looper = function(input, length, numberOfLoops) {
   	var that = Bus();
@@ -225,10 +295,10 @@ module.exports = function( Gibber ) {
         that.children[ that.currentLoop ].record( that.input, that.length );
     
         var seq = {
-          target: that.children[ that.currentLoop],
+          target: that.children[ that.currentLoop ],
           durations: that.length,
           key:'note',
-          values: [ null ] 
+          values: [ 1 ] 
         }
 
         that.seq.add( seq )
@@ -247,7 +317,7 @@ module.exports = function( Gibber ) {
           target: that.children[ that.currentLoop ],
           durations: that.length,
           key:'note',
-          values: [ null ] 
+          values: [ 1 ] 
         }
 
         that.seq.add( seq )
@@ -276,7 +346,7 @@ module.exports = function( Gibber ) {
     Gibber.createProxyProperties( that, { pitch:mappingProperties.pitch } )
         
     that.stop = function() { that.seq.stop(); }
-    that.play = function() { that.seq.play(); }
+    that.play = function() { that.seq.start(); }
 	
   	return that;
   }

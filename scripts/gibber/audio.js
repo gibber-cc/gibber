@@ -34,7 +34,8 @@ Audio = {
     target.SoundFont = Audio.SoundFont
     target.Speak = Audio.Speak
     target.Additive = Audio.Additive
-
+    target.Ugen = Audio.Ugen
+    
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
     target.rndi = Audio.Core.rndi
@@ -425,13 +426,24 @@ Audio = {
     
     fadeOut : function( _time ) {
       var time = Audio.Clock.time( _time ),
-          decay = new Audio.Core.ExponentialDecay({ decayCoefficient:.00005, length:time }),
-          //ramp = Mul( decay, this.amp() )
-          line = new Audio.Core.Line( this.amp.value, 0, Audio.Clock.time( time ) )
+          curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp( line )
+      this.amp = curve
       
       future( function() { this.amp = 0 }.bind( this ), time )
+      
+      return this
+    },
+    fadeOut2 : function( _time ) {
+      var time = Audio.Clock.time( _time ),
+          curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
+          
+      this.amp = curve
+      
+      future( function() { 
+        this.amp = 0
+        this.kill()
+      }.bind( this ), time )
       
       return this
     },

@@ -289,8 +289,9 @@ module.exports = function( Gibber ) {
               
               duration = durationsPattern
             }
-              
-            obj.note.seq( Gibber.construct( Gibber.Pattern, seq ), Gibber.construct( Gibber.Pattern, [duration] ), i )
+            
+            obj.note.seq( seq, [duration], i )
+            //obj.note.seq( Gibber.construct( Gibber.Pattern, seq ), Gibber.construct( Gibber.Pattern, [duration] ), i )
           }
 
           break;

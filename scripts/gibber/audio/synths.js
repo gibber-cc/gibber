@@ -1,6 +1,10 @@
 module.exports = function( Gibber ) {
   "use strict"
   
+  function isInt(value) {
+    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
+  }
+  
   var Synths = { Presets: {} },
       Gibberish = require( 'gibberish-dsp' ),
       $ = Gibber.dollar,
@@ -156,7 +160,20 @@ module.exports = function( Gibber ) {
             // }
             if( args[0] < Gibber.minNoteFrequency ) {
               var scale = obj.scale || Gibber.scale,
-                  note  = scale.notes[ args[ 0 ] ]
+                  noteValue = args[0],
+                  isNoteInteger = isInt( noteValue ),
+                  note
+              
+              if( isNoteInteger ) {                      
+                note  = scale.notes[ args[ 0 ]  ]
+              }else{
+                var noteFloor = scale.notes[ Math.floor( args[ 0 ] )  ],
+                    noteCeil  = scale.notes[ Math.ceil( args[ 0 ] )  ],
+                    float = args[0] % 1,
+                    diff = noteCeil - noteFloor
+                
+                note = noteFloor + float * diff
+              }
                   
               if( obj.octave && obj.octave !== 0 ) {
                 var sign = obj.octave > 0 ? 1 : 0,
@@ -287,12 +304,7 @@ module.exports = function( Gibber ) {
 
   	winsome : {
   		presetInit : function() { 
-        //this.fx.add( Delay(1/4, .35), Reverb() ) 
-        this.lfo = Gibber.Audio.Oscillators.Sine( .234375 )._
-        
-        this.lfo.amp = .075
-        this.lfo.frequency = 2
-        
+        this.lfo = Gibber.Audio.Oscillators.Sine( 2, .075 )._
         this.cutoff = this.lfo
         this.detune2 = this.lfo
       },
@@ -319,6 +331,22 @@ module.exports = function( Gibber ) {
   		filterMult:.2,
   		resonance:1,
       amp:.65
+    },
+    
+    edgy: {
+      presetInit: function() {
+        this.decay = 1/8
+        this.attack = ms(1)
+      },
+      octave: -2,
+  		octave2 : -1,
+  		cutoff: .5,
+  		filterMult:.2,
+      resonance:1, 
+      waveform:'PWM', 
+      pulsewidth:.2,
+      detune2:0,
+      amp:.2,
     },
   
   	easy : {

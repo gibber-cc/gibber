@@ -168,9 +168,16 @@ module.exports = function( Gibber ) {
   Oscillators.Grains = function() {
     var props = typeof arguments[0] === 'object' ? arguments[0] : arguments[1],
         bufferLength = props.bufferLength || 88200,
-        a = Sampler().record( props.input, bufferLength ),
+        a,
+        //a/ = Sampler().record( props.input, bufferLength ),
         oscillator
-  
+    
+    if( props.input ) {
+      a = Sampler().record( props.input, bufferLength )
+    }else if( props.buffer ) {
+      bufferLength = props.buffer.length
+    }
+    
     if(typeof arguments[0] === 'string') {
       var preset = Gibber.Presets.Grains[ arguments[0] ]
       if( typeof props !== 'undefined') $.extend( preset, props )
@@ -193,15 +200,22 @@ module.exports = function( Gibber ) {
   		if(shouldLoop === false) {
   			future( function() { mappingObject.position = curPos }, Gibber.Clock.time( time ) );
   		}
+      
+      return oscillator
   	}
-
-    future( function() {
-  	  oscillator.setBuffer( a.getBuffer() );
-      oscillator.connect()
-  	  oscillator.loop( 0, 1, bufferLength ); // min looping automatically
     
-      a.disconnect()
-    }, bufferLength + 1)
+    if( a ){
+      future( function() {
+    	  oscillator.setBuffer( a.getBuffer() );
+        oscillator.connect()
+    	  oscillator.loop( 0, 1, bufferLength ); // min looping automatically
+    
+        a.disconnect()
+      }, bufferLength + 1)
+    }else{
+      oscillator.connect()
+      oscillator.loop( 0, 1, bufferLength );
+    }
     
     oscillator.type = 'Gen'
 

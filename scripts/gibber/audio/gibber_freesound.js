@@ -21,7 +21,7 @@ module.exports = function( freesound ) {
         sampler.buffer = Freesound.loaded[filename];
         sampler.bufferLength = sampler.buffer.length;
         sampler.isLoaded = true;
-        sampler.end = sampler.bufferLength;
+        //sampler.end = sampler.bufferLength;
         sampler.setBuffer(sampler.buffer);
         sampler.setPhase(sampler.bufferLength);
         sampler.filename = filename;

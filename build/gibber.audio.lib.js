@@ -698,7 +698,6 @@ var Gibber = {
       if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
         _v = _v.split('')
         if( typeof _d === 'undefined' ) _d = 1 / _v.length
-        console.log(_v, _d )
       }
       
       var v = $.isArray(_v) ? _v : [_v],
@@ -710,6 +709,28 @@ var Gibber = {
             target: obj,
             'priority': priority
           }
+      
+      // var v = $.isArray(_v) ? _v : [_v],
+      //     d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
+      //     args = {
+      //       'key': key,
+      //       values: [ Gibber.construct( Gibber.Pattern, v ) ],
+      //       durations: d !== null ? [ Gibber.construct( Gibber.Pattern, d ) ] : null,
+      //       target: obj,
+      //       'priority': priority
+      //     }
+          
+      // var v = $.isArray(_v) ? _v : [_v],
+      //     d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
+      //     __values = _v instanceof Pattern ? [ v ] : [ Gibber.construct( Gibber.Pattern, v ) ]
+      //     __durations = _d instanceof Pattern ? [ d ] : typeof _d !== 'undefined' ? [ Gibber.construct( Gibber.Pattern, d )] : null,
+      //     args = {
+      //       'key': key,
+      //       values: __values,
+      //       durations: __durations,
+      //       target: obj,
+      //       'priority': priority
+      //     }
       
       if( typeof num === 'undefined' ) num = 0
        
@@ -845,7 +866,7 @@ var Gibber = {
     }
     
     fnc.score = function( __v__, __d__ ) {
-      return fnc.seq.bind( null, __v__, __d__ )
+      return fnc.seq.bind( obj, __v__, __d__ )
     }
     
     Object.defineProperties( fnc, {
@@ -1685,7 +1706,7 @@ module.exports.outputCurves= {
   LOGARITHMIC:1
 }
 },{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/pattern.js":[function(require,module,exports){
-  module.exports = function( Gibber ) {
+module.exports = function( Gibber ) {
 
 "use strict"
 
@@ -1710,7 +1731,7 @@ var PatternProto = {
     for( var i = 0; i < this.filters.length; i++ ) {
       args = this.filters[ i ]( args, this )
     }
-
+    
     return args
   },
   _onchange : function() {},
@@ -1734,7 +1755,7 @@ var Pattern = function() {
     
     val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
     args = fnc.runFilters( val, idx )
-        
+    
     fnc.phase += fnc.stepSize * args[ 1 ]
     val = args[ 0 ]
     
@@ -1952,8 +1973,6 @@ var Pattern = function() {
   ], true )
   
   Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
-  // Gibber.defineSequencedProperty( fnc, 'end' )  
-  // Gibber.defineSequencedProperty( fnc, 'start' )  
   
   fnc.__proto__ = this.__proto__ 
   
@@ -4849,15 +4868,16 @@ Gibberish.Lines = function( values, times, loops ) {
       targetTime = 0,
       end = false,
       incr
-      
+  
+  
   if( typeof values === 'undefined' ) values = [ 0,1 ]
   if( typeof times  === 'undefined' ) times  = [ 44100 ]  
-  
+    
   targetValue = values[ valuesPhase ]
   targetTime  = times[ 0 ]
   
   incr = ( targetValue - values[0] ) / targetTime
-  console.log( "current", out, "target", targetValue, "incr", incr )
+  //console.log( "current", out, "target", targetValue, "incr", incr )
   
   loops = loops || false
   
@@ -4880,6 +4900,8 @@ Gibberish.Lines = function( values, times, loops ) {
     getPhase: function() { return phase },
     getOut:   function() { return out }
 	};
+  
+  that.run = that.retrigger
   
 	this.callback = function() {
     if( phase >= targetTime && !end ) {
@@ -11477,7 +11499,7 @@ var Clock = {
       
       this.setPhase = function( v ) { _phase = v }
       this.getPhase = function() { return _phase }
-      
+
       Clock.seq = new Gibberish.PolySeq({
         seqs : [{
           target:Clock,
@@ -11486,8 +11508,10 @@ var Clock = {
         }],
         rate: Clock,
       })
+      Gibber.Audio.Seqs.Seq.children.push( Clock.seq ) // needed for Gabber
       Clock.seq.connect().start()
       Clock.seq.timeModifier = Clock.time.bind( Clock )
+      
     }else{
       Clock.seq.setPhase(0)
       Clock.seq.connect().start()
@@ -11849,8 +11873,9 @@ module.exports = function( Gibber ) {
               
               duration = durationsPattern
             }
-              
-            obj.note.seq( Gibber.construct( Gibber.Pattern, seq ), Gibber.construct( Gibber.Pattern, [duration] ), i )
+            
+            obj.note.seq( seq, [duration], i )
+            //obj.note.seq( Gibber.construct( Gibber.Pattern, seq ), Gibber.construct( Gibber.Pattern, [duration] ), i )
           }
 
           break;
@@ -12413,7 +12438,9 @@ module.exports = function( Gibber ) {
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       types = [
-        'Line', 
+        'Curve',
+        'Line',
+        'Lines',
         'AD',
         'ADSR' 
       ],
@@ -12434,6 +12461,40 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           }
+        },
+        Lines: {           
+          time: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          }
+        },
+        Curve: {
+          start: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          end: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          time: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          a: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          b: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
         },
         AD: {
           attack: {
@@ -12484,6 +12545,10 @@ module.exports = function( Gibber ) {
         if( typeof args[0] !== 'object' ) {
           // console.log( args[0], args[1], args[2], Gibber.Clock.time( args[2] ) )
           obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
+        }else if( name === 'Lines' ){
+          obj = new Gibberish.Lines( args[0], args[1], args[2] )
+        }else if( name === 'Curve' ){
+          obj = new Gibberish.Curve( args[0], args[1], args[2], args[3], args[4], args[5] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }
@@ -12494,7 +12559,7 @@ module.exports = function( Gibber ) {
         
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] ) 
         
-        Gibber.processArguments2( obj, args, obj.name )
+        if( name !== 'Lines' ) Gibber.processArguments2( obj, args, obj.name )
         
         if( name === 'AD' || name === 'ADSR' ) {
           Gibber.createProxyMethods( obj, ['run'] )
@@ -13882,8 +13947,11 @@ var Score = function( data, opts ) {
             if( fnc instanceof Score ) {
               if( !fnc.codeblock ) {
                 fnc.start()
+                console.log("STARTING SCORE")
               }else{
                 fnc.rewind().next()
+                //fnc.rewind().next()
+                //fnc()
               }
             }else{
               fnc()
@@ -13938,8 +14006,8 @@ var Score = function( data, opts ) {
 
 Score.prototype = proto
 
-Score.prototype.wait = -987654321
-Score.prototype.combine = function() {
+Score.wait = -987654321
+Score.combine = function() {
   var score = [ 0, arguments[ 0 ] ]
   
   for( var i = 1; i < arguments.length; i++ ) {
@@ -14861,12 +14929,7 @@ module.exports = function( Gibber ) {
 
   	winsome : {
   		presetInit : function() { 
-        //this.fx.add( Delay(1/4, .35), Reverb() ) 
-        this.lfo = Gibber.Audio.Oscillators.Sine( .234375 )._
-        
-        this.lfo.amp = .075
-        this.lfo.frequency = 2
-        
+        this.lfo = Gibber.Audio.Oscillators.Sine( 2, .075 )._
         this.cutoff = this.lfo
         this.detune2 = this.lfo
       },
@@ -14893,6 +14956,22 @@ module.exports = function( Gibber ) {
   		filterMult:.2,
   		resonance:1,
       amp:.65
+    },
+    
+    edgy: {
+      presetInit: function() {
+        this.decay = 1/8
+        this.attack = ms(1)
+      },
+      octave: -2,
+  		octave2 : -1,
+  		cutoff: .5,
+  		filterMult:.2,
+      resonance:1, 
+      waveform:'PWM', 
+      pulsewidth:.2,
+      detune2:0,
+      amp:.2,
     },
   
   	easy : {

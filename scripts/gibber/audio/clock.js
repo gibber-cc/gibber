@@ -134,7 +134,7 @@ var Clock = {
       
       this.setPhase = function( v ) { _phase = v }
       this.getPhase = function() { return _phase }
-      
+
       Clock.seq = new Gibberish.PolySeq({
         seqs : [{
           target:Clock,
@@ -143,8 +143,10 @@ var Clock = {
         }],
         rate: Clock,
       })
+      Gibber.Audio.Seqs.Seq.children.push( Clock.seq ) // needed for Gabber
       Clock.seq.connect().start()
       Clock.seq.timeModifier = Clock.time.bind( Clock )
+      
     }else{
       Clock.seq.setPhase(0)
       Clock.seq.connect().start()
