@@ -31568,21 +31568,22 @@ Gibberish.Delay = function() {
   
   Gibberish.extend(this, {
   	name:"delay",
-  	properties:{ input:0, time: 22050, feedback: .5, wet:1, dry:1 },
+  	properties:{ input:0, time: 22050, feedback: .5, wet:1, dry:1, rate:1 },
 				
-  	callback : function(sample, time, feedback, wet, dry) {
+  	callback : function(sample, time, feedback, wet, dry, rate ) {
       var channels = typeof sample === 'number' ? 1 : 2;
       
   		var _phase = phase++ % 88200;
+      time = time / rate;
+  		var delayPos = (_phase + ( time | 0 )) % 88200;
       
-  		var delayPos = (_phase + (time | 0)) % 88200;
       if(channels === 1) {
-  			buffers[0][delayPos] =  ( sample + buffers[0][_phase] ) * feedback;
+  			buffers[0][delayPos] =  sample + (buffers[0][_phase] ) * feedback;
         sample = (sample * dry) + (buffers[0][_phase] * wet);
       }else{
-  			buffers[0][delayPos] =  (sample[0] + buffers[0][_phase]) * feedback;
+  			buffers[0][delayPos] =  sample[0] + buffers[0][_phase] * feedback;
         sample[0] = (sample[0] * dry) + (buffers[0][_phase] * wet);
-  			buffers[1][delayPos] =  (sample[1] + buffers[1][_phase]) * feedback;
+  			buffers[1][delayPos] =  sample[1] + buffers[1][_phase] * feedback;
         sample[1] = (sample[1] * dry) + (buffers[1][_phase] * wet);
       }
       
@@ -39332,6 +39333,8 @@ module.exports = function( Gibber ) {
         
         Gibber.processArguments2( obj, args, obj.name )
         
+        if( name === 'Delay' ) obj.rate = Gibber.Clock
+        
         args.input = 0
         
         obj.toString = function() { return '> ' + name }
@@ -44606,6 +44609,9 @@ var Pattern = function() {
     stepSize : 1,
     integersOnly : false,
     filters : [],
+    /*humanize: function() {
+      
+    },*/
     onchange : null,
 
     range : function() {
