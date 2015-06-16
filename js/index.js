@@ -41472,9 +41472,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
 module.exports = function( Gibber ) {
   "use strict"
   
-  function isInt(value) {
-    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
-  }
+  function isInt(value) { return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value)) }
   
   var Synths = { Presets: {} },
       Gibberish = require( 'gibberish-dsp' ),
@@ -41622,42 +41620,7 @@ module.exports = function( Gibber ) {
         obj.note = function() {
           var args = Array.prototype.splice.call( arguments, 0 )
           
-          if( typeof args[0] === 'string' ) {
-            args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
-          }else{
-            // TODO: Differentiate between envelopes etc. and interface elements
-            // if( typeof args[0] === 'object' ) { // for interface elements etc.
-            //   args[0] = args[0].valueOf()
-            // }
-            if( args[0] < Gibber.minNoteFrequency ) {
-              var scale = obj.scale || Gibber.scale,
-                  noteValue = args[0],
-                  isNoteInteger = isInt( noteValue ),
-                  note
-              
-              if( isNoteInteger ) {                      
-                note  = scale.notes[ args[ 0 ]  ]
-              }else{
-                var noteFloor = scale.notes[ Math.floor( args[ 0 ] )  ],
-                    noteCeil  = scale.notes[ Math.ceil( args[ 0 ] )  ],
-                    float = args[0] % 1,
-                    diff = noteCeil - noteFloor
-                
-                note = noteFloor + float * diff
-              }
-                  
-              if( obj.octave && obj.octave !== 0 ) {
-                var sign = obj.octave > 0 ? 1 : 0,
-                    num  = Math.abs( obj.octave )
-                
-                for( var i = 0; i < num; i++ ) {
-                  note *= sign ? 2 : .5
-                }
-              }
-              
-              args[ 0 ] = note
-            }
-          }
+          args[ 0 ] = Gibber.Theory.processFrequency( obj, args[ 0 ] )
           
           this._note.apply( this, args )
           
@@ -41958,7 +41921,8 @@ module.exports = function( Gibber ) {
   "use strict"
 
 var teoria = require('../../external/teoria.min'),
-    $ = Gibber.dollar
+    $ = Gibber.dollar,
+    isInt = function(value) { return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value)) }
 
 var Theory = {
   Teoria: teoria,
@@ -42173,6 +42137,40 @@ var Theory = {
     Shruti: function(root) { return Theory.CustomScale( root, [1,256/243,16/15,10/9,9/8,32/27,6/5,5/4,81/64,4/3,27/20,45/32,729/512,3/2,128/81,8/5,5/3,27/16,16/9,9/5,15/8,243/128,2] ); },
   },
   
+  processFrequency: function( obj, frequency ) {
+    var note = frequency
+    if( typeof frequency === 'string' ) {
+      note = Gibber.Theory.Teoria.note( frequency ).fq()
+    }else if( frequency < Gibber.minNoteFrequency ) {
+      var scale = obj.scale || Gibber.scale,
+          noteValue = frequency,
+          isNoteInteger = isInt( noteValue ),
+          note
+      
+      if( isNoteInteger ) {                      
+        note  = scale.notes[ frequency  ]
+      }else{
+        var noteFloor = scale.notes[ Math.floor( args[ 0 ] )  ],
+            noteCeil  = scale.notes[ Math.ceil( args[ 0 ] )  ],
+            float = args[0] % 1,
+            diff = noteCeil - noteFloor
+        
+        note = noteFloor + float * diff
+      }
+          
+      if( obj.octave && obj.octave !== 0 ) {
+        var sign = obj.octave > 0 ? 1 : 0,
+            num  = Math.abs( obj.octave )
+        
+        for( var i = 0; i < num; i++ ) {
+          note *= sign ? 2 : .5
+        }
+      }
+    }
+    
+    return note
+  },
+  
 	chord : function( val, volume ) {
 		this.notation = val;
 			
@@ -42226,7 +42224,7 @@ var Theory = {
 	
 		return this;
 	}
-
+ 
 }
 
 return Theory
@@ -42247,15 +42245,18 @@ var Ugen = function( desc ) {
 
     obj.__proto__ = Gibber.Audio.Core._synth
     
-    for( var key in props ) {
-      obj[ key ] = props[ key ]
+    if( typeof props === 'object' ) {
+      for( var key in props ) {
+        obj[ key ] = props[ key ]
+      }
     }
     
-    var doNotCopy = ['name','inputs','callback','init']
+    var doNotCopy = ['name','inputs','callback','init'], methods = []
     
     for( var key in desc ) {
       if( doNotCopy.indexOf( key ) === -1 ) {
         obj[ key ] = desc[ key ].bind( obj )
+        methods.push( key )
       }
     }
     
@@ -42263,6 +42264,8 @@ var Ugen = function( desc ) {
     obj.oscillatorInit.call( obj )
 
     Gibber.createProxyProperties( obj, obj.properties )
+    Gibber.createProxyMethods( obj, methods )
+    
     for( var key in desc.inputs ) {
       if( ! props[ key ] ) {
         obj[ key ] = desc.inputs[ key ].default
@@ -42275,7 +42278,7 @@ var Ugen = function( desc ) {
     
     obj.connect( Gibber.Master )
 	
-    obj.processProperties.call( obj, arguments )
+    Gibber.processArguments2( obj, Array.prototype.slice.call( arguments, 0), obj.name )
   
     $.extend( true, obj, Gibber.Audio.ugenTemplate )
     obj.fx.ugen = obj
