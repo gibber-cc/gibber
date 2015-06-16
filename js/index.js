@@ -42252,33 +42252,34 @@ var Ugen = function( desc ) {
     }
     
     var doNotCopy = ['name','inputs','callback','init'], methods = []
-    
+
     for( var key in desc ) {
       if( doNotCopy.indexOf( key ) === -1 ) {
         obj[ key ] = desc[ key ].bind( obj )
         methods.push( key )
       }
     }
-    
+
     obj.init.call( obj )
     obj.oscillatorInit.call( obj )
 
     Gibber.createProxyProperties( obj, obj.properties )
     Gibber.createProxyMethods( obj, methods )
-    
+
     for( var key in desc.inputs ) {
-      if( ! props[ key ] ) {
-        obj[ key ] = desc.inputs[ key ].default
-      }else{
+      if( typeof props === 'object' && props[ key ] ) {
         obj[ key ] = props[ key ]
+      }else{
+        obj[ key ] = desc.inputs[ key ].default
       }
     }  
-    
+
     obj._init()
     
     obj.connect( Gibber.Master )
-	
-    Gibber.processArguments2( obj, Array.prototype.slice.call( arguments, 0), obj.name )
+	  
+    if( arguments.length > 0 )
+      Gibber.processArguments2( obj, Array.prototype.slice.call( arguments, 0), obj.name )
   
     $.extend( true, obj, Gibber.Audio.ugenTemplate )
     obj.fx.ugen = obj
