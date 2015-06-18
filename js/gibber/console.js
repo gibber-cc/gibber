@@ -1,6 +1,6 @@
 module.exports = function( Gibber ) {
   var GE,
-      $ = require( './dollar' ),
+      $ = Gibber.dollar, //require( './dollar' ),
       console_footer,
       tfoot,
       nl2br  = function (str, is_xhtml) {   

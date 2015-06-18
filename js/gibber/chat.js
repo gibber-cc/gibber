@@ -280,6 +280,7 @@ Chat = {
     },
     roomLeft: function( data ) {},
     arrival : function( data ) {
+      console.log("ARRIVAL", data  )
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
       if( Chat.messages ) {
         $( Chat.messages ).append( msg )

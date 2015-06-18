@@ -193,7 +193,7 @@
 }($));
 },{}],"/www/gibber.libraries/js/gibber/account.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
-  var GE, $ = require( './dollar' );
+  var GE, $ = Gibber.dollar
   
   var Account = {
     nick: null,
@@ -485,10 +485,10 @@ module.exports = function( Gibber ) {
   return Account
 }
 
-},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/browser.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/browser.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
-      $ = require( './dollar' )
+      $ = Gibber.dollar //require( './dollar' )
       
   var Browser = {
     demoColumn: null,
@@ -909,7 +909,7 @@ module.exports = function( Gibber ) {
   
   return Browser
 }
-},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/chat.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/chat.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"
@@ -1192,6 +1192,7 @@ Chat = {
     },
     roomLeft: function( data ) {},
     arrival : function( data ) {
+      console.log("ARRIVAL", data  )
       var msg = $( '<span>' ).text( data.nick + ' has joined the chatroom.' ).css({ color:'#b00', dislay:'block' })
       if( Chat.messages ) {
         $( Chat.messages ).append( msg )
@@ -2642,12 +2643,13 @@ module.exports = function( Gibber, Notation ) {
 !function() {
 
 
-var $ = require( './dollar' )
+
 var initialized = false
 
 module.exports = function( Gibber ) { 
   'use strict'
   
+  var $ = Gibber.dollar
   var GE, CodeMirror
   
   var Column = function( options ) {
@@ -3150,10 +3152,10 @@ module.exports = function( Gibber ) {
 
 }()
 
-},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/console.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/console.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
-      $ = require( './dollar' ),
+      $ = Gibber.dollar, //require( './dollar' ),
       console_footer,
       tfoot,
       nl2br  = function (str, is_xhtml) {   
@@ -3326,7 +3328,7 @@ module.exports = function( Gibber ) {
 
   return Console
 }
-},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/docs.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/docs.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE
   
@@ -3428,9 +3430,9 @@ module.exports = function( Gibber ) {
 // im function object instead?
 
 var MT = require( 'coreh-mousetrap' )(),
-    $  = require( './dollar' ),
+    $  = Gibber.dollar, //require( './dollar' ),
     codeObjects = require( './code_objects' )
-    
+
 var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
   SERVER_URL : 'http://' + window.location.host,
@@ -3461,6 +3463,31 @@ var GE = {
     $( '#contentCell' ).width( $( window ).width() )
     
     Gibber.proxy( window )
+    
+    var events = {}
+    $.subscribe   = function( key, fcn ) {
+      if( typeof events[ key ] === 'undefined' ) {
+        events[ key ] = []
+      }
+      events[ key ].push( fcn )
+    }
+
+    $.unsubscribe = function( key, fcn ) {
+      if( typeof events[ key ] !== 'undefined' ) {
+        var arr = events[ key ]
+
+        arr.splice( arr.indexOf( fcn ), 1 )
+      }
+    }
+
+    $.publish = function( key, data ) {
+      if( typeof events[ key ] !== 'undefined' ) {
+        var arr = events[ key ]
+        for( var i = 0; i < arr.length; i++ ) {
+          arr[ i ]( data )
+        }
+      }
+    }
     
     if( !Gibber.isInstrument ) {
       GE.Storage.init() // load user preferences from localStorage before doing anything
@@ -3520,6 +3547,8 @@ var GE = {
       GE.Storage.runUserSetup()
       
       GE.isInitializing = false
+      
+      
       //window.spin.stop()
     }
   },
@@ -3562,6 +3591,7 @@ var GE = {
 
       if ( ! this.values ) {
         this.values = {
+          showBrowserOnLaunch:true,
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
           defaultLanguageForEditors: 'javascript',
@@ -4180,10 +4210,10 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
-},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./performance":"/www/gibber.libraries/js/gibber/performance.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
+},{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./performance":"/www/gibber.libraries/js/gibber/performance.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
-  var $ = require( './dollar' )
+  var $ = Gibber.dollar// require( './dollar' )
   
   var Keymap = {
     init : function() {
@@ -4191,7 +4221,7 @@ module.exports = function( Gibber ) {
       CodeMirror = GE.CodeMirror
       
       // this has to be done here so that it works when no editors are focused
-      $( window ).on( 'keydown', function( e ) {
+      window.onkeydown = function( e ) {
           if( e.which === 70 && e.ctrlKey && e.altKey ) {
           if( e.shiftKey ) {
             if( GE.Layout.fullScreenColumn === null ) {
@@ -4204,7 +4234,7 @@ module.exports = function( Gibber ) {
             e.preventDefault()
           }
         }
-      })
+      }
       
       CodeMirror.keyMap.gibber = {
         fallthrough: "default",
@@ -4456,7 +4486,7 @@ module.exports = function( Gibber ) {
 }
 
 
-},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/keys.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/keys.js":[function(require,module,exports){
 module.exports = function( Gibber, Mousetrap ) {
   "use strict"
   
@@ -4496,7 +4526,7 @@ module.exports = function( Gibber ) {
   'use strict'
   
   var GE,
-      $ = require( './dollar' );
+      $ = Gibber.dollar //require( './dollar' );
   
   var Layout = {
     focusedColumn : null,
@@ -4842,7 +4872,7 @@ module.exports = function( Gibber ) {
   
   return Layout
 }
-},{"./column":"/www/gibber.libraries/js/gibber/column.js","./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/notation.js":[function(require,module,exports){
+},{"./column":"/www/gibber.libraries/js/gibber/column.js"}],"/www/gibber.libraries/js/gibber/notation.js":[function(require,module,exports){
 module.exports = function( Gibber, Environment) {
   // TODO: some effects need to use entire lines... for example, transfrom
   // can't apply to inline elements
@@ -5413,7 +5443,7 @@ var Gabber = {
   onRoomsListed: function( rooms ) {    
     $.unsubscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
     
-    if( Gabber.name in rooms === false ) {
+    if( !rooms || Gabber.name in rooms === false ) {
       $.subscribe( 'Chat.roomCreated', Gabber.onRoomCreated )
       Chat.createRoom( Gabber.name )
     }else{
@@ -5438,6 +5468,7 @@ var Gabber = {
     Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
   },
   onNewPerformerAdded: function( data ) {
+    console.log("PERFORMER ADDED", data )
     if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
       Gabber.createSharedLayout( data.nick )
       Gabber.layoutSharedPerformers()
@@ -5698,6 +5729,7 @@ Object.defineProperty( Gabber, 'KpMean', {
 return Gabber
 
 }
+
 },{"./pid.js":"/www/gibber.libraries/js/gibber/pid.js"}],"/www/gibber.libraries/js/gibber/pid.js":[function(require,module,exports){
 var Filters = module.exports = {
   Average: function() {
@@ -5850,7 +5882,7 @@ var Filters = module.exports = {
 },{}],"/www/gibber.libraries/js/gibber/preferences.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE,
-      $ = require( './dollar' )
+      $ = Gibber.dollar // require( './dollar' )
       
   var Preferences = {
     div: null,
@@ -5931,7 +5963,7 @@ module.exports = function( Gibber ) {
   
   return Preferences
 }
-},{"./dollar":"/www/gibber.libraries/js/gibber/dollar.js"}],"/www/gibber.libraries/js/gibber/share.js":[function(require,module,exports){
+},{}],"/www/gibber.libraries/js/gibber/share.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"

@@ -286,7 +286,7 @@ var Gabber = {
   onRoomsListed: function( rooms ) {    
     $.unsubscribe( 'Chat.roomsListed', Gabber.onRoomsListed )
     
-    if( Gabber.name in rooms === false ) {
+    if( !rooms || Gabber.name in rooms === false ) {
       $.subscribe( 'Chat.roomCreated', Gabber.onRoomCreated )
       Chat.createRoom( Gabber.name )
     }else{
@@ -311,6 +311,7 @@ var Gabber = {
     Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
   },
   onNewPerformerAdded: function( data ) {
+    console.log("PERFORMER ADDED", data )
     if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
       Gabber.createSharedLayout( data.nick )
       Gabber.layoutSharedPerformers()

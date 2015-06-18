@@ -4,9 +4,9 @@ module.exports = function( Gibber ) {
 // im function object instead?
 
 var MT = require( 'coreh-mousetrap' )(),
-    $  = require( './dollar' ),
+    $  = Gibber.dollar, //require( './dollar' ),
     codeObjects = require( './code_objects' )
-    
+
 var GE = {
   // REMEMBER TO CHECK WELCOME.INIT()
   SERVER_URL : 'http://' + window.location.host,
@@ -37,6 +37,31 @@ var GE = {
     $( '#contentCell' ).width( $( window ).width() )
     
     Gibber.proxy( window )
+    
+    var events = {}
+    $.subscribe   = function( key, fcn ) {
+      if( typeof events[ key ] === 'undefined' ) {
+        events[ key ] = []
+      }
+      events[ key ].push( fcn )
+    }
+
+    $.unsubscribe = function( key, fcn ) {
+      if( typeof events[ key ] !== 'undefined' ) {
+        var arr = events[ key ]
+
+        arr.splice( arr.indexOf( fcn ), 1 )
+      }
+    }
+
+    $.publish = function( key, data ) {
+      if( typeof events[ key ] !== 'undefined' ) {
+        var arr = events[ key ]
+        for( var i = 0; i < arr.length; i++ ) {
+          arr[ i ]( data )
+        }
+      }
+    }
     
     if( !Gibber.isInstrument ) {
       GE.Storage.init() // load user preferences from localStorage before doing anything
@@ -96,6 +121,8 @@ var GE = {
       GE.Storage.runUserSetup()
       
       GE.isInitializing = false
+      
+      
       //window.spin.stop()
     }
   },
@@ -138,6 +165,7 @@ var GE = {
 
       if ( ! this.values ) {
         this.values = {
+          showBrowserOnLaunch:true,
           showWelcomeMessage: true,
           showSampleCodeInNewEditors: true,
           defaultLanguageForEditors: 'javascript',

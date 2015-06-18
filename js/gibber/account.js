@@ -1,5 +1,5 @@
 module.exports = function( Gibber ) {
-  var GE, $ = require( './dollar' );
+  var GE, $ = Gibber.dollar
   
   var Account = {
     nick: null,
