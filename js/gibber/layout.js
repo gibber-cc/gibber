@@ -2,7 +2,7 @@ module.exports = function( Gibber ) {
   'use strict'
   
   var GE,
-      $ = require( './dollar' );
+      $ = Gibber.dollar //require( './dollar' );
   
   var Layout = {
     focusedColumn : null,

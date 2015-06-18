@@ -1,6 +1,6 @@
 module.exports = function( Gibber ) {
   var GE,
-      $ = require( './dollar' )
+      $ = Gibber.dollar //require( './dollar' )
       
   var Browser = {
     demoColumn: null,

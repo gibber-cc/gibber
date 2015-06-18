@@ -311,6 +311,7 @@ var Gabber = {
     Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
   },
   onNewPerformerAdded: function( data ) {
+    console.log("PERFORMER ADDED", data )
     if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
       Gabber.createSharedLayout( data.nick )
       Gabber.layoutSharedPerformers()

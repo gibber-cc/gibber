@@ -1,12 +1,13 @@
 !function() {
 
 
-var $ = require( './dollar' )
+
 var initialized = false
 
 module.exports = function( Gibber ) { 
   'use strict'
   
+  var $ = Gibber.dollar
   var GE, CodeMirror
   
   var Column = function( options ) {
