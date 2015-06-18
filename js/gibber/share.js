@@ -155,8 +155,6 @@ Share = {
   openDocGabber: function( docName, element ) {
     var doc = Share.sjs.get( 'users', docName )
     
-    
-    console.log("GABBER ELEMENT", element )
     doc.subscribe();
 
     doc.whenReady( function () {

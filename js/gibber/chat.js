@@ -58,6 +58,9 @@ Chat = {
         var data = e.data
         data = JSON.parse( data )
         
+        // if( data.msg !== 'tock' )
+          // console.log("MSG RECEIVED", data )
+        
         if( data.msg ) {
           if( Chat.handlers[ data.msg ] ) {
             Chat.handlers[ data.msg ]( data )
@@ -124,8 +127,8 @@ Chat = {
       this.messages = $( '<ul>')
         .css({
           display:'block',
-          height:'calc(100% - 5em - ' +this.column.header.outerHeight()+ 'px)',
-          width: 'calc(100% - 1em - ' + GE.Layout.resizeHandleSize +'px)',
+          height:'calc(100% - 5em - ' + this.column.header.outerHeight() + 'px)',
+          width: 'calc(100% - 1em - ' + GE.Layout.resizeHandleSize + 'px)',
           margin:0,
           padding:'.5em',
           'box-sizing':'border-box !important',
@@ -257,7 +260,6 @@ Chat = {
       }
     },
     roomCreated: function( data ) { // response for when the user creates room...
-      console.log( data )
       $.publish( 'Chat.roomCreated', { name:data.name })
     },
     roomAdded : function( data ) { // response for when any user creates a room...
@@ -330,7 +332,6 @@ Chat = {
         }
       }
       if( typeof column === 'undefined' ) { console.log("CANNOT FIND COLUMN FOR REMOTE EXECUTION"); return }
-      console.log(data)
       cm  = column.editor
 
       // from, selectionRange, code

@@ -327,18 +327,26 @@ var Gabber = {
       .on( 'mousedown', cb )
       .css( 'margin-left', '1em' )
       .addClass( name )
-      
+    
     Gabber.column.header.append( btn )
+    
+    return btn
   },
   openTab: function() {
-    for( var key in Gibber.tabs ) {
-      var tab = Gabber.tabs[ key ]
-      if( tab !== this ) {
-        tab.hide()
+    if( Gabber.openTab !== this ) {
+      for( var key in Gabber.tabs ) {
+        var tab = Gabber.tabs[ key ]
+        if( tab !== this ) {
+          tab.performer.header.css({ background:'#222', color:'#ccc' })
+          tab.hide()
+        }
       }
+
+      this.show()
+      this.performer.header.css({ background:'#ccc', color:'black' })
+      
+      Gabber.openTab = this
     }
-    console.log("SHOWING", this )
-    this.show()
   },
   flashTab: function( name, color ) {
     var elem = $( '.' + name ),
@@ -354,31 +362,16 @@ var Gabber = {
         element = $( '<div>' )
         
     performer.element = element
+    performer.element.name = name
+    performer.element.performer = performer
     
     Gabber.tabs[ name ] = element 
-    Gabber.addTabButton( name, Gabber.openTab.bind( element ) )
     
-    // performer.header = $('<h4>').text( name ) 
-    // element.append( performer.header )
+    performer.header = Gabber.addTabButton( name, Gabber.openTab.bind( element ) )
     
     performer.code = $( '<div class="editor">' )
     performer.code.css({ overflow:'scroll', height:'auto' })
-    
-    // performer.header.on( 'mousedown', function() { 
-    //   performer.code.toggle()
-    //   setTimeout( Gabber.layoutSharedPerformers, 20 )
-    // })
-    // .addClass( 'no-select' )
-    // .css({ 
-    //   cursor: 'pointer',
-    //   backgroundColor: '#333',
-    //   // marginBottom:'.25em',
-    //   // marginTop:'.25em',
-    //   height:Gabber.headerSize,
-    //   margin:0
-    // })
-    
-    //console.log( "HEIGHT", Gabber.column.bodyElement.css( 'height' ) )    
+
     element.append( performer.code )
         
     Gabber.column.bodyElement.append( element )
@@ -400,7 +393,9 @@ var Gabber = {
     
     performer.editor.setSize( null, 'auto' )
     performer.editor.shareName = name
-    performer.editor.sharingWith = name    
+    performer.editor.sharingWith = name
+    
+    //console.log("SHARED EDITOR WITH NAME", name )
     
     Share.openDocGabber( Gabber.name + ':' + name, performer.editor )
     
@@ -430,10 +425,13 @@ var Gabber = {
   },
   onGabber: function( msg ) {
     var cm, owner = false
-    
-    if( msg.shareName === Account.nick ) {
+      
+    // console.log( "GABBER", msg )
+    if( msg.shareName === Account.nick && !msg.individualTarget ) {
       cm = Gabber.userShareColumn.editor
       owner = true
+    }else if( msg.individualTarget ){
+      cm = Gabber.userShareColumn.editor
     }else{
       cm = Gabber.performers[ msg.shareName ].editor
     }
@@ -448,7 +446,7 @@ var Gabber = {
       Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
     }
   },
-  createMessage: function( selection, shareName, cm ) {
+  createMessage: function( selection, shareName, cm, to ) {
     var tmp = selection.code.split('\n')
     tmp[0] = tmp[0] + ' /* ' + Account.nick + ' */'
     tmp = tmp.join('')
@@ -474,6 +472,10 @@ var Gabber = {
       shouldExecute:  Gabber.enableRemoteExecution,
     }
     
+    if( to ) {
+      msg.to = to
+    }
+    
     // if( typeof msg.selectionRange.start === 'undefined' ) {
     //   var range = {
     //     start: { line:msg.selectionRange.line, ch:0 },
@@ -490,9 +492,16 @@ var Gabber = {
       
 			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
       
-      var msg = Gabber.createMessage( obj, cm.shareName, cm )
+      var msg
+      if( cm.shareName === Gabber.name ) { // send to all performers
+        msg = Gabber.createMessage( obj, cm.shareName, cm )
+      }else{ // send to a single perfomer (from executing in their shared column)
+        msg = Gabber.createMessage( obj, cm.shareName, cm, cm.shareName )
+      }
+      
       msg.shouldDelay = false
-            
+      msg.shouldExecute = true
+      
       //cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
 
       Chat.socket.send( JSON.stringify( msg ) ) 
