@@ -1624,7 +1624,6 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
     
-    console.log( "THIS ON CHANGE", this )
     //if( typeof arrayPos !== 'object' ) return
     
     start = {
@@ -1721,7 +1720,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
       lastChar = split[0][ split[0].length - 1 ],
       hasSeqNumber = !isNaN( lastChar ),
       seqNumber
-  
+
   if( hasSeqNumber ) {
     seqNumber = parseInt( lastChar )
     var propName = split[0].substring( 0, split[0].length - 1 ) 
@@ -2147,11 +2146,12 @@ module.exports = function( Gibber, Notation ) {
             }else{
               path.push( nextObject.property.name )
             }
-          }
+          }/*else if( nextObject.type === 'Identifier' ) {
+            path.push( nextObject.name )
+          }*/
           
           nextObject = nextObject.object
         }
-
         path.reverse()
         
         var propertyName = ''
@@ -2173,18 +2173,19 @@ module.exports = function( Gibber, Notation ) {
             }
 
             break;
-          case 2: //a.position.x.seq or a.note[0].seq?
+          case 2: //a.position.x.seq or a.note[0].seq? what about Gibber.scale.root?            
             if( hasSeqNumber ) {
               caller = window[ object.name ][ path[0] ]
               propertyName = object.name + '.' + path[ 1 ] + seqNumber
             }else{
               caller = window[ object.name ][ path[0] ]
-              propertyName = object.name + '.' + path[ 1 ]  
+              propertyName = path[1] // object.name + '.' + path[0] + '.' + path[ 1 ]  
             }
             
             break;
           case 3:
             // a.note.values.rotate.seq
+            // console.log( "OBJ NAME", object.name, path[0], path[1], path[2] )
             caller = window[ object.name ][ path[0] ][ path[1] ]
             propertyName = path[2]
             break;
@@ -2195,11 +2196,12 @@ module.exports = function( Gibber, Notation ) {
         }
                 
         
-        // console.log( propertyName, caller, path[0], path[1], path[2] )
+        // console.log( path, propertyName, path.length, caller, path[0], path[1], path[2] )
         if( path.length === 1 ) {
           property = caller[ path[0] ]
         }else if( path.length === 2 ) {
-          property = caller[ path[0] ]
+          // property = caller[ path[0] ][ path[1] ]
+          property = caller[ path[1] ]//[ path[1] ]
         }else if( path.length === 3 ) {
           property = caller[ path[2] ]
         }else if( path.length === 4 ) {
@@ -2255,7 +2257,7 @@ module.exports = function( Gibber, Notation ) {
               }
             }
             
-            //console.log( valuesOrDurations, propertyName )
+            //console.log( valuesOrDurations, propertyName, property )
             var seq = caller,
                 _name_ = propertyName,
                 patternName = propertyName + '_' + valuesOrDurations,
@@ -2265,7 +2267,7 @@ module.exports = function( Gibber, Notation ) {
             caller.locations[ patternName ] = []
             
             if( !Gibber.Environment.Notation.selected[ 'seq'] ) return
-            console.log( patternName, caller )
+            //console.log( patternName, caller )
             markArray( values, object, caller, object.name, patternName, pos, cm, src )
             
             pattern.cm = cm
