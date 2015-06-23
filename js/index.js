@@ -859,7 +859,7 @@ module.exports = function( Gibber ) {
         function( d ) {
           //console.log( d )
           var data = JSON.parse( d ),
-              col = Browser.demoColumn === null || Browser.demoColumn.isClosed ? GE.Layout.addColumn({ fullScreen:false, type:'code' }) : Browser.demoColumn
+              col = Browser.demoColumn === null || typeof Browser.demoColumn === 'undefined' || Browser.demoColumn.isClosed ? GE.Layout.addColumn({ fullScreen:false, type:'code' }) : Browser.demoColumn
               
           col.editor.setValue( data.text )
           col.fileInfo = data
