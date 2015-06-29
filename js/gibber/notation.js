@@ -54,14 +54,22 @@ module.exports = function( Gibber, Environment) {
     },
 
     off: function( name ) {
+      if( typeof name === 'undefined' ) {
+        for( var key in this.enabled ) {
+          GEN.off( key )
+        }
+        return
+      }
       if( this.enabled[ name ] ) {
         var val = this.enabled[ name ],
             idx = Gibber.scriptCallbacks.indexOf( this.enabled[ name ] )
 
-        if( typeof val === 'function' ) {    
+        if( typeof val === 'function' ) { 
           Gibber.scriptCallbacks.splice( idx, 1 )
         }
-
+        
+        if( name === 'global' ) GEN.PatternWatcher.stop()
+          
         delete this.enabled[ name ]
         this.selected[ name ] = false
       }

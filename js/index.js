@@ -1756,6 +1756,32 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
         index = i,
 				start, end
     
+    if( value === null) { // whitespace, used for rests in sequences
+      var startColumn, endColumn,
+          prevValue = i > 0 ? values[ i - 1 ] : null,
+          nextValue = i < values.length - 1 ? values[ i + 1 ] : null,
+          lineNumber = pos.start.line - 1 //+ loc.start.line - 1
+      
+      if( prevValue ) {
+        startColumn = prevValue.loc.end + 1
+      }else{
+        startColumn = pos.start.column + 1
+      }
+      
+      if( nextValue ) {
+        endColumn = nextValue.loc.start - 1
+      }else{
+        endColumn = pos.end.column - 1
+      }
+      
+      value = {
+        loc: {
+          start:{ column: startColumn, line: lineNumber },
+          end:{ column: endColumn, line: lineNumber }
+        }
+      }
+    }
+    
     if( typeof location !== 'object' ) { // Drums and EDrums pass location, otherwise src code as string
       start = {
         line : ( pos.start ? pos.start.line - 1 : pos.line - 1),
@@ -1979,6 +2005,7 @@ module.exports = function( Gibber, Notation ) {
                       isArray = false   
                     }
                   }
+
                   markArray( values, object, newObject, newObjectName, patternName, pos, cm )
                   
                   var seq = newObject,
@@ -4931,14 +4958,22 @@ module.exports = function( Gibber, Environment) {
     },
 
     off: function( name ) {
+      if( typeof name === 'undefined' ) {
+        for( var key in this.enabled ) {
+          GEN.off( key )
+        }
+        return
+      }
       if( this.enabled[ name ] ) {
         var val = this.enabled[ name ],
             idx = Gibber.scriptCallbacks.indexOf( this.enabled[ name ] )
 
-        if( typeof val === 'function' ) {    
+        if( typeof val === 'function' ) { 
           Gibber.scriptCallbacks.splice( idx, 1 )
         }
-
+        
+        if( name === 'global' ) GEN.PatternWatcher.stop()
+          
         delete this.enabled[ name ]
         this.selected[ name ] = false
       }
