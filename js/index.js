@@ -30522,6 +30522,8 @@ Gibberish.KarplusStrong = function() {
     properties: { blend:1, damping:0, amp:1, channels:2, pan:0  },
   
     note : function(frequency) {
+      if( typeof frequency === 'undefined' ) return
+
       var _size = Math.floor(sr / frequency);
       buffer.length = 0;
     
@@ -30942,8 +30944,6 @@ Gibberish.Curve = function( start, end, time, a, b, fadeIn, loops ) {
   b = b || .260
   loops = loops || false
   fadeIn = typeof fadeIn === 'undefined' ? 1 : fadeIn
-  
-  console.log("FADE IN", fadeIn )
   
 	var that = { 
 		name:		'curve',
@@ -31612,7 +31612,7 @@ Gibberish.Delay = function() {
   	name:"delay",
   	properties:{ input:0, time: 22050, feedback: .5, wet:1, dry:1, rate:1 },
 				
-  	callback : function(sample, time, feedback, wet, dry, rate ) {
+  	callback : function( sample, time, feedback, wet, dry, rate ) {
       var channels = typeof sample === 'number' ? 1 : 2;
       
   		var _phase = phase++ % 88200;
@@ -33115,6 +33115,7 @@ param **frequency** Number. The frequency for the oscillator.
 param **amp** Number. Optional. The volume to use.  
 **/    
 	this.note = function(frequency, amp) {
+    if( typeof frequency === 'undefined' ) return
     if( amp !== 0 ) {
   		if( typeof this.frequency !== 'object' ){
         if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
@@ -33260,6 +33261,8 @@ param **frequency** Number. The frequency for the oscillator.
 param **amp** Number. Optional. The volume to use.  
 **/  
     note : function(_frequency, amp) {
+      if( typeof _frequency === 'undefined' ) return
+
       var lastNoteIndex = this.frequencies.indexOf( _frequency ),
           idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
           synth = this.children[ idx ];
@@ -33393,6 +33396,7 @@ param **frequency** Number. The frequency for the oscillator.
 param **amp** Number. Optional. The volume to use.  
 **/      
 	this.note = function(frequency, amp) {
+    if( typeof frequency === 'undefined' ) return
     if( amp !== 0 ) {
   		if(typeof this.frequency !== 'object'){
         if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
@@ -33542,6 +33546,8 @@ param **frequency** Number. The frequency for the oscillator.
 param **amp** Number. Optional. The volume to use.  
 **/  
     note : function(_frequency, amp) {
+      if( typeof frequency === 'undefined' ) return
+
       var lastNoteIndex = this.frequencies.indexOf( _frequency ),
           idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
           synth = this.children[ idx ];
@@ -33660,6 +33666,7 @@ param **amp** Number. Optional. The volume to use.
 **/
 
 	this.note = function(frequency, amp) {
+    if( typeof frequency === 'undefined' ) return
     //console.log( frequency, lastFrequency, this.releaseTrigger, amp )
     if( amp !== 0 ) {
   		if(typeof this.frequency !== 'object'){
@@ -33800,6 +33807,8 @@ param **frequency** Number. The frequency for the carrier oscillator. The modula
 param **amp** Number. Optional. The volume to use.  
 **/
     note : function(_frequency, amp) {
+      if( typeof _frequency === 'undefined' ) return
+
       var lastNoteIndex = this.frequencies.indexOf( _frequency ),
           idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
           synth = this.children[ idx ];
@@ -34065,7 +34074,8 @@ param **pitch** Number. The speed the sample is played back at.
 param **amp** Number. Optional. The volume to use.
 **/    
 		note: function(pitch, amp) {
-      
+      if( typeof pitch === 'undefined' ) return
+
       switch( typeof pitch ) {
         case 'number' :
           this.pitch = pitch
@@ -34392,6 +34402,8 @@ param **note or frequency** : String or Integer. You can pass a note name, such 
 param **amp** : Optional. Float. The volume of the note, usually between 0..1. The main amp property of the Synth will also affect note amplitude.
 **/				
 		note : function(_frequency, amp) {
+      if( typeof _frequency === 'undefined' ) return
+
       if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
       
       if( amp !== 0 ) {
@@ -34407,6 +34419,8 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
       }
 		},
   	_note : function(frequency, amp) {
+      if( typeof frequency === 'undefined' ) return
+        
   		if(typeof this.frequency !== 'object'){
         if( useADSR && frequency === lastFrequency && amp === 0) {
           this.releaseTrigger = 1;
@@ -41036,6 +41050,7 @@ module.exports = function( Gibber ) {
       if( typeof obj.scale.notes[ idx ] === 'number' ) {
         freq = obj.scale.notes[ idx ]
       }else{
+        if( typeof idx === 'undefined' ) return // rest
         try{
           freq = obj.scale.notes[ idx ].fq()
         }catch(e) {
@@ -41124,7 +41139,7 @@ module.exports = function( Gibber ) {
             if( key === 'note' ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
-                if( output < Gibber.minNoteFrequency ) {
+                if( output && output < Gibber.minNoteFrequency ) {
                   if( obj.scale ) {
                     output = obj.scale.notes[ output ]
                   }else{
@@ -41290,7 +41305,7 @@ module.exports = function( Gibber ) {
     
     seq.toString = function() { return '> Seq' }
     seq.gibber = true
-    
+     
     $.extend( seq, {
       constructor: Seq,
       replaceWith: function( replacement ) { this.kill() },
@@ -41637,6 +41652,7 @@ module.exports = function( Gibber ) {
         
         if( name === 'Mono' ) {
           obj.note = function( _frequency, amp ) {
+            if( typeof _frequency === 'undefined' ) return // rest
             if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
               
             if( amp !== 0 ) {
@@ -41662,6 +41678,8 @@ module.exports = function( Gibber ) {
         obj.note = function() {
           var args = Array.prototype.splice.call( arguments, 0 )
           
+          if( typeof args[0] === 'undefined' ) return
+
           args[ 0 ] = Gibber.Theory.processFrequency( obj, args[ 0 ] )
           
           this._note.apply( this, args )
