@@ -1557,8 +1557,8 @@ var createRndUpdateFunction = function( obj, name ) {
       if( update.value.indexOf( ',' ) > -1 ) { // should be an array
         update.value = '[' + update.value + ']'
       }else{
-        if( update.value.length > 6 ) {
-          update.value = update.value.slice( 0,6 )
+        if( update.value.length > Gibber.Environment.Notation.floatLengthLimit ) {
+          update.value = update.value.slice( 0,Gibber.Environment.Notation.floatLengthLimit )
         }
       }
       
@@ -4917,6 +4917,7 @@ module.exports = function( Gibber, Environment) {
     phaseIndicatorColor: [255,255,255],
     phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
+    floatLengthLimit:6,
     selected: { seq:false, reactive:false, draganddrop:true },
     features:{},
     
@@ -42245,9 +42246,9 @@ var Theory = {
       if( isNoteInteger ) {                      
         note  = scale.notes[ frequency  ]
       }else{
-        var noteFloor = scale.notes[ Math.floor( args[ 0 ] )  ],
-            noteCeil  = scale.notes[ Math.ceil( args[ 0 ] )  ],
-            float = args[0] % 1,
+        var noteFloor = scale.notes[ Math.floor( noteValue )  ],
+            noteCeil  = scale.notes[ Math.ceil( noteValue )  ],
+            float = noteValue % 1,
             diff = noteCeil - noteFloor
         
         note = noteFloor + float * diff

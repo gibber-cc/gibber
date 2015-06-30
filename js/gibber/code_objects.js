@@ -293,8 +293,8 @@ var createRndUpdateFunction = function( obj, name ) {
       if( update.value.indexOf( ',' ) > -1 ) { // should be an array
         update.value = '[' + update.value + ']'
       }else{
-        if( update.value.length > 6 ) {
-          update.value = update.value.slice( 0,6 )
+        if( update.value.length > Gibber.Environment.Notation.floatLengthLimit ) {
+          update.value = update.value.slice( 0,Gibber.Environment.Notation.floatLengthLimit )
         }
       }
       

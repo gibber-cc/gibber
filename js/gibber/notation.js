@@ -13,6 +13,7 @@ module.exports = function( Gibber, Environment) {
     phaseIndicatorColor: [255,255,255],
     phaseIndicatorColorMute: [127,127,127],
     phaseIndicatorAlpha: 1,
+    floatLengthLimit:6,
     selected: { seq:false, reactive:false, draganddrop:true },
     features:{},
     
