@@ -11,6 +11,8 @@ var Environment = Gibber.Environment,
     TICKTOCKMODE = 0,
     PIDMODE = 1,
     CHRISTIANMODE = 2,
+    LOCAL = 0,
+    REMOTE = 1,
     Filters = require('./pid.js')
 
 /*
@@ -47,7 +49,7 @@ var Gabber = {
   beforeCorrectionBuffer: [],
   correctionBufferSize:255,
   tabs:{},
-  init: function( name ) {
+  init: function( name, performanceMode ) {
     this.userShareColumn = Layout.columns[ Layout.focusedColumn ]
     
     if( Account.nick === null ) {
@@ -62,6 +64,10 @@ var Gabber = {
     this.name = name || null
     
     this.userShareName = this.name + ':' + Account.nick
+    
+    if( typeof performanceMode === 'undefined' ) performanceMode = LOCAL
+    
+    Gabber.performanceMode = performanceMode ? 1 : 0
     
     if( !Chat.initialized ) Chat.open()
     Chat.handlers.gabber = Gabber.onGabber
@@ -311,7 +317,6 @@ var Gabber = {
     Chat.socket.send( JSON.stringify({ cmd:'joinRoom', room:Gabber.name }) )
   },
   onNewPerformerAdded: function( data ) {
-    console.log("PERFORMER ADDED", data )
     if( ! Gabber.performers[ data.nick ] && data.nick !== Account.nick ) {
       Gabber.createSharedLayout( data.nick )
       Gabber.layoutSharedPerformers()
@@ -437,19 +442,33 @@ var Gabber = {
       cm = Gabber.performers[ msg.shareName ].editor
     }
     
-    if( !owner ) {      
-      setTimeout( function() {
-        cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
-      }, 50 )
+    if( !owner && Gabber.blocked.indexOf( msg.shareName ) === -1 ) {
+      
+      if( Gabber.performanceMode === LOCAL ) {
+        setTimeout( function() {
+          cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
+        }, 50 )
+      }
     
       Environment.Keymap.flash( cm, msg.selectionRange )
 
       Environment.modes.javascript.run( cm.column, msg.code, msg.selectionRange, cm, msg.shouldDelay )
     }
   },
+  block: function( name ) {
+    if( Gabber.blocked.indexOf( name ) === -1 ) Gabber.blocked.push( name )
+  },
+  unblock: function( name ) {
+    var idx = Gabber.blocked.indexOf( name )
+    if( idx > -1 ) Gabber.blocked.splice( idx, 1 )
+  },
+  blocked: [],
+  
   createMessage: function( selection, shareName, cm, to ) {
     var tmp = selection.code.split('\n')
-    tmp[0] = tmp[0] + ' /* ' + Account.nick + ' */'
+    if( Gabber.performanceMode === LOCAL ) {
+      tmp[0] = tmp[0] + ' /* ' + Account.nick + ' */'
+    }
     tmp = tmp.join('')
 
     if( typeof selection.selection.start === 'undefined' ) {
@@ -461,7 +480,10 @@ var Gabber = {
     }
     
     cm.replaceRange( tmp, selection.selection.start, selection.selection.end )
-    cm.markText( selection.selection.start, selection.selection.end, { css:'background-color:rgba(0,0,255,.3);' })
+    
+    if( Gabber.performanceMode === LOCAL ) {
+      cm.markText( selection.selection.start, selection.selection.end, { css:'background-color:rgba(0,0,255,.3);' })
+    }
     
     var msg = { 
       cmd:            'gabber',
@@ -524,50 +546,84 @@ var Gabber = {
       
       Chat.socket.send( JSON.stringify( msg ) ) 
     }
+    
+    if( Gabber.performanceMode === REMOTE ) {
+      CodeMirror.keyMap.gibber[ 'Ctrl-Enter' ] = function( cm ) {
+  			var obj = Environment.getSelectionCodeColumn( cm, false )
+      
+  			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+      
+        var msg = Gabber.createMessage( obj, cm.shareName, cm )
+      
+        msg.shouldDelay = false
+        msg.shouldExecute = true
+
+        Chat.socket.send( JSON.stringify( msg ) )
+        
+        return false
+      }
+			
+      CodeMirror.keyMap.gibber[ 'Shift-Ctrl-Enter' ] = function(cm) {
+  			var obj = Environment.getSelectionCodeColumn( cm, false )
+      
+  			Environment.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, true )
+      
+        var msg = Gabber.createMessage( obj, cm.shareName, cm )
+        msg.shouldDelay = true
+      
+        Chat.socket.send( JSON.stringify( msg ) ) 
+      }
+      
+      /*"Alt-Enter": function(cm) {
+			  var obj = GE.getSelectionCodeColumn( cm, true )
+				GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
+      },*/
+    }
+    
   },
 }
 
-Object.defineProperty( Gabber, 'Ki', {
-  get: function()  { return Gabber.PID.Ki },
-  set: function(v) { 
-    Gabber.PID.Ki = v
-    var msg = { 
-      cmd:  'gabber.Ki',
-      gabberName:Gabber.name,      
-      value: v
-    }
-    
-    Chat.socket.send( JSON.stringify( msg ) )
-  }  
-})
-
-Object.defineProperty( Gabber, 'Kp', {
-  get: function()  { return Gabber.PID.Kp },
-  set: function(v) { 
-    Gabber.PID.Kp = v
-    var msg = {
-      cmd:  'gabber.Kp',
-      gabberName:Gabber.name,
-      value: v
-    };
-    
-    Chat.socket.send( JSON.stringify( msg ) )
-  }
-})
-
-Object.defineProperty( Gabber, 'KpMean', {
-  get: function()  { return Gabber.PID.KpMean },
-  set: function(v) { 
-    Gabber.PID.KpMean = v
-    var msg = {
-      cmd:  'gabber.KpMean',
-      gabberName:Gabber.name,
-      value: v
-    };
-    
-    Chat.socket.send( JSON.stringify( msg ) )
-  }
-})
+// Object.defineProperty( Gabber, 'Ki', {
+//   get: function()  { return Gabber.PID.Ki },
+//   set: function(v) {
+//     Gabber.PID.Ki = v
+//     var msg = {
+//       cmd:  'gabber.Ki',
+//       gabberName:Gabber.name,
+//       value: v
+//     }
+//
+//     Chat.socket.send( JSON.stringify( msg ) )
+//   }
+// })
+//
+// Object.defineProperty( Gabber, 'Kp', {
+//   get: function()  { return Gabber.PID.Kp },
+//   set: function(v) {
+//     Gabber.PID.Kp = v
+//     var msg = {
+//       cmd:  'gabber.Kp',
+//       gabberName:Gabber.name,
+//       value: v
+//     };
+//
+//     Chat.socket.send( JSON.stringify( msg ) )
+//   }
+// })
+//
+// Object.defineProperty( Gabber, 'KpMean', {
+//   get: function()  { return Gabber.PID.KpMean },
+//   set: function(v) {
+//     Gabber.PID.KpMean = v
+//     var msg = {
+//       cmd:  'gabber.KpMean',
+//       gabberName:Gabber.name,
+//       value: v
+//     };
+//
+//     Chat.socket.send( JSON.stringify( msg ) )
+//   }
+// })
 
 return Gabber
 
