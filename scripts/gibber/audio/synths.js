@@ -1,9 +1,7 @@
 module.exports = function( Gibber ) {
   "use strict"
   
-  function isInt(value) {
-    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
-  }
+  function isInt(value) { return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value)) }
   
   var Synths = { Presets: {} },
       Gibberish = require( 'gibberish-dsp' ),
@@ -126,6 +124,7 @@ module.exports = function( Gibber ) {
         
         if( name === 'Mono' ) {
           obj.note = function( _frequency, amp ) {
+            if( typeof _frequency === 'undefined' ) return // rest
             if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
               
             if( amp !== 0 ) {
@@ -151,42 +150,9 @@ module.exports = function( Gibber ) {
         obj.note = function() {
           var args = Array.prototype.splice.call( arguments, 0 )
           
-          if( typeof args[0] === 'string' ) {
-            args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
-          }else{
-            // TODO: Differentiate between envelopes etc. and interface elements
-            // if( typeof args[0] === 'object' ) { // for interface elements etc.
-            //   args[0] = args[0].valueOf()
-            // }
-            if( args[0] < Gibber.minNoteFrequency ) {
-              var scale = obj.scale || Gibber.scale,
-                  noteValue = args[0],
-                  isNoteInteger = isInt( noteValue ),
-                  note
-              
-              if( isNoteInteger ) {                      
-                note  = scale.notes[ args[ 0 ]  ]
-              }else{
-                var noteFloor = scale.notes[ Math.floor( args[ 0 ] )  ],
-                    noteCeil  = scale.notes[ Math.ceil( args[ 0 ] )  ],
-                    float = args[0] % 1,
-                    diff = noteCeil - noteFloor
-                
-                note = noteFloor + float * diff
-              }
-                  
-              if( obj.octave && obj.octave !== 0 ) {
-                var sign = obj.octave > 0 ? 1 : 0,
-                    num  = Math.abs( obj.octave )
-                
-                for( var i = 0; i < num; i++ ) {
-                  note *= sign ? 2 : .5
-                }
-              }
-              
-              args[ 0 ] = note
-            }
-          }
+          if( typeof args[0] === 'undefined' ) return
+
+          args[ 0 ] = Gibber.Theory.processFrequency( obj, args[ 0 ] )
           
           this._note.apply( this, args )
           

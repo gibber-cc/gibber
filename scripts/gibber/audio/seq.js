@@ -23,6 +23,7 @@ module.exports = function( Gibber ) {
       if( typeof obj.scale.notes[ idx ] === 'number' ) {
         freq = obj.scale.notes[ idx ]
       }else{
+        if( typeof idx === 'undefined' ) return // rest
         try{
           freq = obj.scale.notes[ idx ].fq()
         }catch(e) {
@@ -111,7 +112,7 @@ module.exports = function( Gibber ) {
             if( key === 'note' ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
-                if( output < Gibber.minNoteFrequency ) {
+                if( output && output < Gibber.minNoteFrequency ) {
                   if( obj.scale ) {
                     output = obj.scale.notes[ output ]
                   }else{
@@ -277,7 +278,7 @@ module.exports = function( Gibber ) {
     
     seq.toString = function() { return '> Seq' }
     seq.gibber = true
-    
+     
     $.extend( seq, {
       constructor: Seq,
       replaceWith: function( replacement ) { this.kill() },

@@ -253,6 +253,8 @@ module.exports = function( Gibber ) {
         
         Gibber.processArguments2( obj, args, obj.name )
         
+        if( name === 'Delay' ) obj.rate = Gibber.Clock
+        
         args.input = 0
         
         obj.toString = function() { return '> ' + name }

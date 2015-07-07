@@ -2,7 +2,8 @@ module.exports = function( Gibber ) {
   "use strict"
 
 var teoria = require('../../external/teoria.min'),
-    $ = Gibber.dollar
+    $ = Gibber.dollar,
+    isInt = function(value) { return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value)) }
 
 var Theory = {
   Teoria: teoria,
@@ -217,6 +218,40 @@ var Theory = {
     Shruti: function(root) { return Theory.CustomScale( root, [1,256/243,16/15,10/9,9/8,32/27,6/5,5/4,81/64,4/3,27/20,45/32,729/512,3/2,128/81,8/5,5/3,27/16,16/9,9/5,15/8,243/128,2] ); },
   },
   
+  processFrequency: function( obj, frequency ) {
+    var note = frequency
+    if( typeof frequency === 'string' ) {
+      note = Gibber.Theory.Teoria.note( frequency ).fq()
+    }else if( frequency < Gibber.minNoteFrequency ) {
+      var scale = obj.scale || Gibber.scale,
+          noteValue = frequency,
+          isNoteInteger = isInt( noteValue ),
+          note
+      
+      if( isNoteInteger ) {                      
+        note  = scale.notes[ frequency  ]
+      }else{
+        var noteFloor = scale.notes[ Math.floor( noteValue )  ],
+            noteCeil  = scale.notes[ Math.ceil( noteValue )  ],
+            float = noteValue % 1,
+            diff = noteCeil - noteFloor
+        
+        note = noteFloor + float * diff
+      }
+          
+      if( obj.octave && obj.octave !== 0 ) {
+        var sign = obj.octave > 0 ? 1 : 0,
+            num  = Math.abs( obj.octave )
+        
+        for( var i = 0; i < num; i++ ) {
+          note *= sign ? 2 : .5
+        }
+      }
+    }
+    
+    return note
+  },
+  
 	chord : function( val, volume ) {
 		this.notation = val;
 			
@@ -270,7 +305,7 @@ var Theory = {
 	
 		return this;
 	}
-
+ 
 }
 
 return Theory

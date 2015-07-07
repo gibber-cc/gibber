@@ -53,9 +53,15 @@ module.exports = function( Gibber ) {
   Samplers.Sampler = function() {
     var args = Array.prototype.slice.call( arguments, 0 ),
         file = args[0] && args[0].file ? args[0].file : undefined,
+        oscillator, buffer, name = 'Sampler'
+        
+      if( args[0] && args[0].buffer ) { buffer = args[0].buffer }
+      if( buffer ) {
+        oscillator = new Gibberish.Sampler({ 'buffer':buffer }).connect( Gibber.Master )
+      }else{
         oscillator = new Gibberish.Sampler( file ).connect( Gibber.Master )
-        name = 'Sampler'
-         
+      }
+
       oscillator.type = 'Gen'
       $.extend( true, oscillator, Gibber.Audio.ugenTemplate )
       
@@ -80,10 +86,9 @@ module.exports = function( Gibber ) {
         }
       }
 
-
       var oldStart = oscillator.__lookupSetter__('start').bind( oscillator ),
           __start = 0
-          
+      
       Object.defineProperty(oscillator, 'start', {
         configurable: true,
         get: function() { 
@@ -96,6 +101,7 @@ module.exports = function( Gibber ) {
             __start = v
           }
           oldStart( __start )
+          oscillator.setPhase( __start ) // TODO: HACK! Why doesn't this work automatically?
           
           return __start
         }
@@ -115,6 +121,7 @@ module.exports = function( Gibber ) {
             __end = v
           }
           oldEnd( __end )
+          oscillator.setPhase( __end ) // TODO: HACK! Why doesn't this work automatically?
           
           return __end
         }
@@ -210,6 +217,11 @@ module.exports = function( Gibber ) {
 
     return this;
   };
+  
+  Gibberish.Sampler.prototype.done = function( func ) {
+    this.onload =  func
+    return this
+  }
   
   Gibberish.Sampler.prototype.load = function( url ) {
     var xhr = new XMLHttpRequest(), initSound
