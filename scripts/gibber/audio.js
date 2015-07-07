@@ -44,6 +44,8 @@ Audio = {
     target.Input = Audio.Input
     
     target.Freesound = Audio.Freesound
+    target.Freesound2 = Audio.Freesound2
+    target.Freesoundjs2 = Audio.Freesoundjs2
     
     target.Scale = Audio.Theory.Scale
     
@@ -457,6 +459,8 @@ delete Audio.Core.init
 Audio.Clock =          require( './audio/clock' )( Gibber )
 Audio.Freesoundjs =    require( '../external/freesound' )
 Audio.Freesound =      require( './audio/gibber_freesound' )( Audio.Freesoundjs )
+Audio.Freesoundjs2 =   require( '../external/freesound2' )
+Audio.Freesound2 =     require( './audio/gibber_freesound2' )( Audio.Freesoundjs2 )
 Audio.Seqs =           require( './audio/seq')( Gibber )
 Audio.Theory =         require( './audio/theory' )( Gibber )
 Audio.FX =             require( './audio/fx' )( Gibber )
@@ -476,7 +480,7 @@ Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
 Audio.Score =          require( './audio/score' )
 Audio.Ensemble =       require( './audio/ensemble' )( Gibber )
 Audio.Ugen =           require( './audio/ugen')( Gibber )
-Audio.Additive =       require( './audio/additive')
+Audio.Additive =       require( './audio/additive' )
 
 return Audio
 

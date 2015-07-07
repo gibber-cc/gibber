@@ -1,12 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Gibber=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./scripts/gibber/audio.lib.js":[function(require,module,exports){
-!function() {
-
-var Gibber = require( 'gibber.core.lib' )
-Gibber.Audio = require( './audio.js')( Gibber )
-module.exports = Gibber
-
-}()
-},{"./audio.js":"/www/gibber.audio.lib/scripts/gibber/audio.js","gibber.core.lib":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/gibber.js"}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/dollar.js":[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Gibber=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){
 !function() {
 
@@ -98,197 +90,19 @@ $.publish = function( key, data ) {
 module.exports = $
 
 }()
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/euclidean.js":[function(require,module,exports){
-module.exports = function( Gibber ) {
-
-"use strict"
-
-var flatten = function(){
-   var flat = [];
-   for (var i = 0, l = this.length; i < l; i++){
-       var type = Object.prototype.toString.call(this[i]).split(' ').pop().split(']').shift().toLowerCase();
-       if (type) { flat = flat.concat(/^(array|collection|arguments|object)$/.test(type) ? flatten.call(this[i]) : this[i]); }
-   }
-   return flat;
-}
-
-var createStartingArray = function( length, ones ) {
-  var out = []
-  for( var i = 0; i < ones; i++ ) {
-    out.push([1])
-  }
-  for( var j = i; j < length; j++ ) {
-    out.push(0)
-  }
-  return out
-}
-
-var printArray = function( array ) {
-  var str = ''
-  for( var i = 0; i < array.length; i++ ) {
-    var outerElement = array[ i ]
-    if( Array.isArray( outerElement ) ) {
-      str += '['
-      for( var j = 0; j < outerElement.length; j++ ) {
-        str += outerElement[ j ]
-      }
-      str += '] '
-    }else{
-      str += outerElement + ''
-    }
-  }
-
-  return str
-}
-
-var arraysEqual = function(a, b) {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (a.length != b.length) return false;
-
-  for (var i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
-var getLargestArrayCount = function( input ) {
-  var length = 0, count = 0
-
-  for( var i = 0; i < input.length; i++ ) {
-    if( Array.isArray( input[ i ] ) ) { 
-      if( input[ i ].length > length ) {
-        length = input[ i ].length
-        count = 1
-      }else if( input[ i ].length === length ) {
-        count++
-      }
-    }
-  }
-
-  return count
-}
-
-var Euclid = function( ones,length, dur ) {
-  var count = 0,
-      out = createStartingArray( length, ones )
-
- 	function Inner( n,k ) {
-    var operationCount = count++ === 0 ? k : getLargestArrayCount( out ),
-        moveCandidateCount = out.length - operationCount,
-        numberOfMoves = operationCount >= moveCandidateCount ? moveCandidateCount : operationCount
-
-    if( numberOfMoves > 1 || count === 1 ) {
-      for( var i = 0; i < numberOfMoves; i++ ) {
-        var willBeMoved = out.pop(), isArray = Array.isArray( willBeMoved )
-        out[ i ].push( willBeMoved )
-        if( isArray ) { 
-          flatten.call( out[ i ] )
-        }
-      }
-    }
-
-    if( n % k !== 0 ) {
-      return Inner( k, n % k )
-    }else {
-      return flatten.call( out )
-    }
-  }
-
-  return calculateRhythms( Inner( length, ones ), dur )
-}
-// E(5,8) = [ .25, .125, .25, .125, .25 ]
-var calculateRhythms = function( values,dur ) {
-  var out = []
-  
-  console.log( values, dur )
-  if( typeof dur === 'undefined' ) dur = 1 / values.length
-
-  var idx = 0,
-      currentDur = 0
-  
-  while( idx < values.length ) {
-    idx++
-    currentDur += dur
-    
-    if( values[ idx ] == 1 || idx === values.length ) {
-      out.push( currentDur )
-      currentDur = 0
-    } 
-  }
-  
-  return out
-}
-
-var answers = {
-  '1,4' : '1000',
-  '2,3' : '101',
-  '2,5' : '10100',
-  '3,4' : '1011',
-  '3,5' : '10101',
-  '3,7' : '1010100',
-  '3,8' : '10010010',
-  '4,7' : '1010101',
-  '4,9' : '101010100',
-  '4,11': '10010010010',
-  '5,6' : '101111',
-  '5,7' : '1011011',
-  '5,8' : '10110110',
-  '5,9' : '101010101',
-  '5,11': '10101010100',
-  '5,12': '100101001010',
-  '5,16': '1001001001001000',
-  '7,8' : '10111111',
-  '11,24': '100101010101001010101010'
-}
-
-Euclid.test = function( testKey ) {
-  var failed = 0, passed = 0
-
-  if( typeof testKey !== 'string' ) {
-    for( var key in answers ) {
-      var expectedResult = answers[ key ],
-          result = flatten.call( Euclid.apply( null, key.split(',') ) ).join('')
-
-      console.log( result, expectedResult )
-
-      if( result === expectedResult ) {
-        console.log("TEST PASSED", key )
-        passed++
-      }else{
-        console.log("TEST FAILED", key )
-        failed++
-      }
-    }
-    console.log("*****************************TEST RESULTS - Passed: " + passed + ", Failed: " + failed )
-  }else{
-    var expectedResult = answers[testKey],
-				result = flatten.call( Euclid.apply( null, testKey.split(',') ) ).join('')
-
-    console.log( result, expectedResult )
-
-    if( result == expectedResult ) {
-      console.log("TEST PASSED FOR", testKey)
-    }else{
-      console.log("TEST FAILED FOR", testKey)
-    }
-  }
-}
-
-return Euclid
-
-}
-},{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/gibber.js":[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],2:[function(_dereq_,module,exports){
 (function() {
 //"use strict" 
 // can't use strict because eval is used to evaluate user code in the run method
 // I should wrap this in a Function call instead...
-var $ = require( './dollar' )
+var $ = _dereq_( './dollar' )
 
 var Gibber = {
   dollar: $,
   Presets: {},
+  GraphicsLib: {},
+  Binops: {},
   scale : null,
   minNoteFrequency:50,
   started:false,
@@ -296,13 +110,9 @@ var Gibber = {
     LINEAR:0,
     LOGARITHMIC:1
   },
-  Pattern: require( './pattern' ),
   
   export: function( target ) {
     Gibber.Utilities.export( target )
-    target.Pattern = Gibber.Pattern 
-    target.Score = Gibber.Score
-    target.Euclid = Gibber.Euclid
     
     if( Gibber.Audio ) {
       Gibber.Audio.export( target )
@@ -314,10 +124,6 @@ var Gibber = {
     
     if( Gibber.Interface ) {
       Gibber.Interface.export( target )
-    }
-    
-    if( Gibber.Communication ) { 
-      Gibber.Communication.export( target )
     }
   },
   
@@ -338,16 +144,13 @@ var Gibber = {
       
       if( typeof _options === 'object' ) $.extend( options, _options )
       
-      Gibber.Pattern = Gibber.Pattern( Gibber )
       if( Gibber.Audio ) {
         Gibber.Audio.init() 
       
         if( options.globalize ) {
-          //options.target.Master = Gibber.Audio.Master    
+          options.target.Master = Gibber.Audio.Master    
         }else{
-          var _export = Gibber.export.bind( Gibber )
           $.extend( Gibber, Gibber.Audio )
-          Gibber.export = _export
         }        
       }
       
@@ -377,8 +180,8 @@ var Gibber = {
   //   }
   // },
   Modules : {},
- 	import : function( path, exportTo, shouldSave ) {
-    var _done = null
+ 	import : function( path, exportTo ) {
+    var _done = null;
     console.log( 'Loading module ' + path + '...' )
 
     if( path.indexOf( 'http:' ) === -1 ) { 
@@ -387,8 +190,8 @@ var Gibber = {
         Gibber.Environment.SERVER_URL + '/gibber/'+path, {},
         function( d ) {
           d = JSON.parse( d )
-                              
-          var f = new Function( 'return ' + d.text )
+                    
+          var f = new Function( "return " + d.text )
           
           Gibber.Modules[ path ] = f()
           
@@ -399,9 +202,6 @@ var Gibber = {
           if( Gibber.Modules[ path ] ) {
             if( typeof Gibber.Modules[ path ].init === 'function' ) {
               Gibber.Modules[ path ].init()
-            }
-            if( typeof Gibber.Modules[ path ] === 'object' ) {
-              Gibber.Modules[ path ].moduleText = d.text
             }
             console.log( 'Module ' + path + ' is now loaded.' )
           }else{
@@ -510,7 +310,7 @@ var Gibber = {
       
         $.extend( obj, preset )
         
-        //if( obj.presetInit ) obj.presetInit() 
+        if( obj.presetInit ) obj.presetInit() 
       }else if( $.isPlainObject( firstArg ) && typeof firstArg.type === 'undefined' ) {
         $.extend( obj, firstArg )
       }else{
@@ -543,12 +343,10 @@ var Gibber = {
   },
   
   clear : function() {
-    var args = Array.prototype.slice.call( arguments, 0 )
-    if( Gibber.Audio ) Gibber.Audio.clear.apply( Gibber.Audio, args );
+    if( Gibber.Audio ) Gibber.Audio.clear();
     
-    if( Gibber.Graphics ) Gibber.Graphics.clear( Gibber.Graphics, args )
+    if( Gibber.Graphics ) Gibber.Graphics.clear()
 
-    //Gibber.proxy( window, [ a ] )
     Gibber.proxy( window )
 		
     $.publish( '/gibber/clear', {} )
@@ -561,7 +359,7 @@ var Gibber = {
     
 		for(var l = 0; l < letters.length; l++) {
 			var lt = letters.charAt(l);
-      if( typeof window[ lt ] !== 'undefined' ) { //&& arguments[1].indexOf( window[ lt ] ) === -1 ) { 
+      if( typeof window[ lt ] !== 'undefined' ) { 
         delete window[ lt ] 
         delete window[ '___' + lt ]
       }
@@ -611,12 +409,13 @@ var Gibber = {
         _min = typeof from.min === 'function' ? from.min() : from.min,
         _max = typeof from.max === 'function' ? from.max() : from.max
     
+    // console.log( "MAPPING", from, target )
     if( typeof from.object === 'undefined' && from.Value) { // if using an interface object directly to map
       from = from.Value
     }
     
     if( typeof target.object[ target.Name ].mapping !== 'undefined') {
-      target.object[ target.Name ].mapping.replace( from.object, from.propertyName, from.Name )
+      target.object[ target.Name ].mapping.replace( from.object, from.name, from.Name )
       return
     }
     
@@ -625,7 +424,9 @@ var Gibber = {
     }
     
     var fromTimescale = from.Name !== 'Out' ? from.timescale : 'audioOut' // check for audio Out, which is a faux property
-        
+    
+    //console.log( target.timescale, fromTimescale )
+    
     mapping = Gibber.mappings[ target.timescale ][ fromTimescale ]( target, from )
     
     //target.object[ target.name ].toString = function() { return '> continuous mapping: ' + from.name + ' -> ' + target.name }
@@ -683,164 +484,91 @@ var Gibber = {
     from.object.mappings.push( mapping )
     
     Gibber.defineSequencedProperty( target.object[ target.Name ], 'invert' )
-        
+    
     return mapping
   },
   
   defineSequencedProperty : function( obj, key, priority ) {
-    var fnc = obj[ key ], seq, seqNumber, seqs = {}
-
+    var fnc = obj[ key ], seq, seqNumber
+    
+    // for( var i = obj.seq.seqs.length - 1; i >= 0; i-- ) {
+    //   var s = obj.seq.seqs[ i ]
+    //   if( s.key === key ) {
+    //     seq = s,
+    //     seqNumber = i
+    //     break;
+    //   }
+    // }
+    
     if( !obj.seq && Gibber.Audio ) {
       obj.seq = Gibber.Audio.Seqs.Seq({ doNotStart:true, scale:obj.scale, priority:priority, target:obj })
     }
     
-    fnc.seq = function( _v,_d, num ) {
-      if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
-        _v = _v.split('')
-        if( typeof _d === 'undefined' ) _d = 1 / _v.length
-      }
-      
-      var v = $.isArray(_v) ? _v : [_v],
-          d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
-          args = {
+    fnc.seq = function( v,d ) {  
+
+      var args = {
             'key': key,
-            values: [ Gibber.construct( Gibber.Pattern, v ) ],
-            durations: d !== null ? [ Gibber.construct( Gibber.Pattern, d ) ] : null,
+            values: $.isArray(v) || v !== null && typeof v !== 'function' && typeof v.length === 'number' ? v : [v],
+            durations: $.isArray(d) ? d : typeof d !== 'undefined' ? [d] : null,
             target: obj,
             'priority': priority
           }
-      
-      // var v = $.isArray(_v) ? _v : [_v],
-      //     d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
-      //     args = {
-      //       'key': key,
-      //       values: [ Gibber.construct( Gibber.Pattern, v ) ],
-      //       durations: d !== null ? [ Gibber.construct( Gibber.Pattern, d ) ] : null,
-      //       target: obj,
-      //       'priority': priority
-      //     }
-          
-      // var v = $.isArray(_v) ? _v : [_v],
-      //     d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
-      //     __values = _v instanceof Pattern ? [ v ] : [ Gibber.construct( Gibber.Pattern, v ) ]
-      //     __durations = _d instanceof Pattern ? [ d ] : typeof _d !== 'undefined' ? [ Gibber.construct( Gibber.Pattern, d )] : null,
-      //     args = {
-      //       'key': key,
-      //       values: __values,
-      //       durations: __durations,
-      //       target: obj,
-      //       'priority': priority
-      //     }
-      
-      if( typeof num === 'undefined' ) num = 0
-       
-      if( typeof seqs[num] !== 'undefined' ) {
-        seqs[num].shouldStop = true
-        obj.seq.seqs.splice( num, 1 )
+            
+      if( typeof seq !== 'undefined' ) {
+        seq.shouldStop = true
+        obj.seq.seqs.splice( seqNumber, 1 )
       }
-      
-      var valuesPattern = args.values[0]
-      if( v.randomFlag ) {
-        valuesPattern.filters.push( function() {
-          var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
-          return [ valuesPattern.values[ idx ], 1, idx ] 
-        })
-        for( var i = 0; i < v.randomArgs.length; i+=2 ) {
-          valuesPattern.repeat( v.randomArgs[ i ], v.randomArgs[ i + 1 ] )
-        }
-      }
-
-      if( d !== null ) {
-        var durationsPattern = args.durations[0]
-        if( d.randomFlag ) {
-          durationsPattern.filters.push( function() { 
-            var idx = Gibber.Utilities.rndi(0, durationsPattern.values.length - 1)
-            return [ durationsPattern.values[ idx ], 1, idx ] 
-          })
-          for( var i = 0; i < d.randomArgs.length; i+=2 ) {
-            durationsPattern.repeat( d.randomArgs[ i ], d.randomArgs[ i + 1 ] )
-          }
-        }
-        
-        durationsPattern.seq = obj.seq
-      }
-      
-      valuesPattern.seq = obj.seq
       
       obj.seq.add( args )
-            
-      //seqNumber = d !== null ? obj.seq.seqs.length - 1 : obj.seq.autofire.length - 1
-      seqs[num] = d !== null ? obj.seq.seqs[ num ] : obj.seq.autofire[ num ]
       
-      fnc[ num ] = {}
+      seqNumber = obj.seq.seqs.length - 1
+      seq = obj.seq.seqs[ seqNumber ]
       
-      Object.defineProperties( fnc[ num ], {
+      if( args.durations === null ) { obj.seq.autofire.push( seq ) }
+      
+      Object.defineProperties( fnc.seq, {
         values: {
           configurable:true,
-          get: function() { 
-            if( d !== null ) { // then use autofire array
-              return obj.seq.seqs[ num ].values[0]
-            }else{
-              return obj.seq.autofire[ num ].values[0]
+          get: function() { return obj.seq.seqs[ seqNumber ].values },
+          set: function(v) {
+            if( !Array.isArray(v) ) {
+              v = [ v ]
             }
-          },
-          set: function( val ) {
-            var pattern = Gibber.construct( Gibber.Pattern, val )
-            
-            if( !Array.isArray( pattern ) ) {
-              pattern = [ pattern ]
+            if( key === 'note' && obj.seq.scale ) {  
+              v = makeNoteFunction( v, obj.seq )
             }
-
-            if( d !== null ) {
-              obj.seq.seqs[ num ].values = pattern
-            }else{
-              obj.seq.autofire[ num ].values = pattern
-            }
+            obj.seq.seqs[ seqNumber ].values = v //.splice( 0, 10000, v )
+            //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].values, 'reverse' )
           }
         },
         durations: {
           configurable:true,
-          get: function() { 
-            if( d !== null ) { // then it's not an autofire seq
-              return obj.seq.seqs[ num ].durations[ 0 ] 
-            }else{
-              return null
+          get: function() { return obj.seq.seqs[ seqNumber ].durations },
+          set: function(v) {
+            if( !Array.isArray(v) ) {
+              v = [ v ]
             }
-          },
-          set: function( val ) {
-            if( !Array.isArray( val ) ) {
-              val = [ val ]
-            }
-            //obj.seq.seqs[ seqNumber ].durations = val   //.splice( 0, 10000, v )
-            var pattern = Gibber.construct( Gibber.Pattern, val )
-            
-            if( !Array.isArray( pattern ) ) {
-              pattern = [ pattern ]
-            }
-            
-            obj.seq.seqs[ num ].durations = pattern   //.splice( 0, 10000, v )
-          },
+            obj.seq.seqs[ seqNumber ].durations = v   //.splice( 0, 10000, v )
+            //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].durations, 'reverse' )  
+          }
         },
       })
       
-      fnc[ num ].seq = function( v, d ) {
-        fnc.seq( v,d, num ) 
-      }
+      //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].values, 'reverse' )
+      //Gibber.defineSequencedProperty( obj.seq.seqs[ seqNumber ].durations, 'reverse' )      
       
       if( !obj.seq.isRunning ) {
         obj.seq.offset = Gibber.Clock.time( obj.offset )
         obj.seq.start( true, priority )
       }
-      
-      // console.log( key, fnc.values, fnc.durations )
       return obj
     }
     
-    fnc.seq.stop = function() { seqs[num].shouldStop = true } 
+    fnc.seq.stop = function() { seq.shouldStop = true } 
     
     // TODO: property specific stop/start/shuffle etc. for polyseq
     fnc.seq.start = function() {
-      seqs[num].shouldStop = false
+      seq.shouldStop = false
       obj.seq.timeline[0] = [ seq ]                
       obj.seq.nextTime = 0
       
@@ -848,39 +576,6 @@ var Gibber = {
         obj.seq.start( false, priority )
       }
     }
-    
-    fnc.seq.repeat = function( numberOfTimes ) {
-      var repeatCount = 0
-      
-      var filter = function( args, ptrn ) {
-        if( args[2] % (ptrn.getLength() - 1) === 0 && args[2] !== 0) {
-          repeatCount++
-          if( repeatCount === numberOfTimes ) {
-            ptrn.seq.stop()
-          }
-        }
-        return args
-      }
-      
-      fnc.values.filters.push( filter )
-    }
-    
-    fnc.score = function( __v__, __d__ ) {
-      return fnc.seq.bind( obj, __v__, __d__ )
-    }
-    
-    Object.defineProperties( fnc, {
-      values: { 
-        configurable: true,
-        get: function() { return fnc[0].values },
-        set: function( val ) { return fnc[0].values = val },
-      },
-      durations: { 
-        configurable: true,
-        get: function() { return fnc[0].durations },
-        set: function( val ) { return fnc[0].durations = val },
-      }
-    })
   },
   
   defineRampedProperty : function( obj, _key ) {
@@ -914,8 +609,8 @@ var Gibber = {
     }
   },
   
-  createProxyMethods : function( obj, methods, priority ) {
-    for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ], priority ) 
+  createProxyMethods : function( obj, methods ) {
+    for( var i = 0; i < methods.length; i++ ) Gibber.defineSequencedProperty( obj, methods[ i ] ) 
   },
   
   defineProperty : function( obj, propertyName, shouldSeq, shouldRamp, mappingsDictionary, shouldUseMappings, priority, useOldGetter ) {
@@ -924,15 +619,8 @@ var Gibber = {
         property = function( v ) {
           var returnValue = property
           
-          if( typeof v !== 'undefined' ) { 
-            //obj[ propertyName ] = v
-            //property.value = v
-            if( property.oldSetter ) {
-              property.oldSetter.call( obj, v )
-            }else{
-              obj[ propertyName ] = v
-            }  
-            
+          if( v ) { 
+            obj[ propertyName ] = v
             returnValue = obj
           }
           
@@ -952,15 +640,7 @@ var Gibber = {
       object:   obj,
       targets:  [],
       valueOf:  function() { return property.value },
-      toString: function() { 
-        var output = ""
-        if( typeof property.value === 'object' ) {
-          output = property.value.toString()
-        }else{
-          output = property.value
-        }
-        return output
-      },
+      toString: function() { return property.value.toString() },
       oldSetter: obj.__lookupSetter__( propertyName ),
       oldGetter: obj.__lookupGetter__( propertyName ),      
       oldMappingObjectGetter: obj.__lookupGetter__( Name ),
@@ -983,6 +663,7 @@ var Gibber = {
       },
       set: function( v ){
         if( (typeof v === 'function' || typeof v === 'object' && v.type === 'mapping') && ( v.type === 'property' || v.type === 'mapping' ) ) {
+          //console.log( "CREATING MAPPING", property )
           Gibber.createMappingObject( property, v )
         }else{
           if( shouldUseMappings && obj[ property.Name ] ) {
@@ -1023,7 +704,7 @@ var Gibber = {
       })
     }
   },
-                                 //obj, propertyName, shouldSeq, shouldRamp, mappingsDictionary, shouldUseMappings, priority, useOldGetter
+  
   createProxyProperty: function( obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority ) {
     _useMappings = _useMappings === false ? false : true
     
@@ -1039,7 +720,7 @@ var Gibber = {
     
     obj.mappingProperties = mappingProperties
     obj.mappingObjects = []
-        
+    
     for( var key in mappingProperties ) {
       if( ! mappingProperties[ key ].doNotProxy ) {
         Gibber.createProxyProperty( obj, key, shouldSeq, shouldRamp, mappingProperties[ key ] )
@@ -1048,19 +729,16 @@ var Gibber = {
   },  
 }
 
-Gibber.Utilities = require( './utilities' )( Gibber )
+Gibber.Utilities = _dereq_( './utilities' )( Gibber )
 // Gibber.Audio     = require( 'gibber.audio.lib/scripts/gibber/audio' )( Gibber )
 // Gibber.Graphics  = require( 'gibber.graphics.lib/scripts/gibber/graphics/graphics' )( Gibber )
 // Gibber.Interface = require( 'gibber.interface.lib/scripts/gibber/interface/interface' )( Gibber )
-Gibber.mappings  = require( './mappings' )( Gibber )
-Gibber.Euclid = require( './euclidean' )( Gibber )
-// TODO: Make Score work without requiring audio
-// Gibber.Score     = require( './score' )//( Gibber ) // only initialize once Gibber.Audio.Core is loaded, otherwise problems
+Gibber.mappings  = _dereq_( './mappings' )( Gibber )
 
 module.exports = Gibber
 
 })()
-},{"./dollar":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/dollar.js","./euclidean":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/euclidean.js","./mappings":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/pattern.js","./utilities":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
+},{"./dollar":1,"./mappings":3,"./utilities":4}],3:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {  
   var mappings = {
     audio : {
@@ -1094,14 +772,13 @@ module.exports = function( Gibber ) {
       },
       interface: function( target, from ) {
         // TODO: why does the proxy track from.name instead of from.propertyName? maybe because interface elements don't get passed to mapping init?
-        // console.log( "Making mapping : ", from.object, from, from.propertyName, target.propertyName )
-        var proxy = typeof from.track !== 'undefined' ? from.track : new Gibber.Audio.Core.Proxy2( from.object, from.propertyName ),
+        var proxy = typeof from.track !== 'undefined' ? from.track : new Gibber.Audio.Core.Proxy2( from.object, from.name ),
             op    = new Gibber.Audio.Core.OnePole({ a0:.005, b1:.995 }),
             range = target.max - target.min,
             percent = ( target.object[ target.propertyName ] - target.min ) / range,
             widgetValue = from.min + ( ( from.max - from.min ) * percent ),
             mapping
-        
+                
         if( from.object.setValue ) from.object.setValue( widgetValue )
         
         from.track = proxy
@@ -1263,7 +940,8 @@ module.exports = function( Gibber ) {
         return mapping
       },
       interface: function( target, from ) {
-        var _map = Gibber.Audio.Core.Binops.Map( from.object[ from.propertyName ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
+        // console.log( "FROM", from.propertyName, target.min, target.max, from.min, from.max )
+        var _map = Gibber.Audio.Core.Binops.Map( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap ),
             mapping
             
         if( typeof from.object.functions === 'undefined' ) {
@@ -1282,7 +960,7 @@ module.exports = function( Gibber ) {
         var fcn_name = target.propertyName + ' <- ' + from.object.propertyName + '.' + from.Name
 
         from.object.functions[ fcn_name ] = function() {
-          var val = mapping.callback( from.object[ from.propertyName ], target.min, target.max, from.min, from.max, target.output, from.wrap )
+          var val = mapping.callback( from.object[ from.name ], target.min, target.max, from.min, from.max, target.output, from.wrap )
           // target.object[ target.Name ].value = val
           // console.log( target.Name )
           target.object[ target.Name ].oldSetter.call( target.object[ target.Name ], val )
@@ -1416,6 +1094,7 @@ module.exports = function( Gibber ) {
             
           }
         }else{
+          console.log("REPLACING MAPPING")
           mapping.replace( from.object, from.propertyName, from.Name )
           return mapping
         }
@@ -1453,6 +1132,7 @@ module.exports = function( Gibber ) {
           }else if( target.modObject ) {
             target.modObject.removeMod( target.modName )
           }else{
+            console.log( 'removing update ')
             //target.object.update = function() {}
           }
           
@@ -1627,6 +1307,8 @@ module.exports = function( Gibber ) {
         if( typeof target.object[ target.Name ].mapping === 'undefined') {
           var mapping = target.object[ target.Name ].mapping = Gibber.Audio.Core.Binops.Map( null, target.min, target.max, 0, 1, 0 )
           
+          console.log( "MAPPING", from )
+          
           if( typeof from.object.track !== 'undefined' && from.object.track.input === from.object.properties[ from.propertyName ] ) {
             mapping.follow = from.object.track
             mapping.follow.count++
@@ -1647,8 +1329,10 @@ module.exports = function( Gibber ) {
           mapping.input = mapping.follow
           mapping.bus = new Gibber.Audio.Core.Bus2({ amp:0 }).connect()
           mapping.connect( mapping.bus )
-          
-          mapping.replace = function( replacementObject, key, Key  ) {            
+        
+          mapping.replace = function( replacementObject, key, Key  ) {
+            // _console.log( key, replacementObject )
+            
             // what if new mapping isn't audio type?
             if ( replacementObject[ Key ].timescale === from.timescale ) {
               var idx = mapping.follow.input[ from.Name ].targets.indexOf( target )
@@ -1705,286 +1389,7 @@ module.exports.outputCurves= {
   LINEAR:0,
   LOGARITHMIC:1
 }
-},{}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/pattern.js":[function(require,module,exports){
-module.exports = function( Gibber ) {
-
-"use strict"
-
-var $ = require( './dollar' )
-
-var PatternProto = {
-  concat : function( _pattern ) { this.values = this.values.concat( _pattern.values ) },  
-  toString: function() { return this.values.toString() },
-  valueOf: function() { return this.values },
-  getLength: function() {
-    var l
-    if( this.start <= this.end ) {
-      l = this.end - this.start + 1
-    }else{
-      l = this.values.length + this.end - this.start + 1
-    }
-    return l
-  },
-  runFilters : function( val, idx ) {
-    var args = [ val, 1, idx ] // 1 is phaseModifier
-
-    for( var i = 0; i < this.filters.length; i++ ) {
-      args = this.filters[ i ]( args, this )
-    }
-    
-    return args
-  },
-  _onchange : function() {},
-}
-
-var Pattern = function() {
-  if( ! ( this instanceof Pattern ) ) {
-    var args = Array.prototype.slice.call( arguments, 0 )
-    return Gibber.construct( Pattern, args )
-  }
-
-  var fnc = function() {
-    var len = fnc.getLength(),
-        idx, val, args
-    
-    if( len === 1 ) { 
-      idx = 0 
-    }else{
-      idx = fnc.phase >-1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
-    }
-    
-    val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
-    args = fnc.runFilters( val, idx )
-    
-    fnc.phase += fnc.stepSize * args[ 1 ]
-    val = args[ 0 ]
-    
-    if( typeof val === 'function' ) val = val()
-    
-    // if pattern has update function, set new value
-    if( fnc.update ) fnc.update.value = val
-    
-    return val
-  }
-   
-  $.extend( fnc, {
-    start : 0,
-    end   : 0,
-    phase : 0,
-    values : Array.prototype.slice.call( arguments, 0 ),
-    //values : typeof arguments[0] !== 'string' || arguments.length > 1 ? Array.prototype.slice.call( arguments, 0 ) : arguments[0].split(''),    
-    original : null,
-    storage : [],
-    stepSize : 1,
-    integersOnly : false,
-    filters : [],
-    onchange : null,
-
-    range : function() {
-      if( Array.isArray( arguments[0] ) ) {
-        fnc.start = arguments[0][0]
-        fnc.end   = arguments[0][1]
-      }else{
-        fnc.start = arguments[0]
-        fnc.end   = arguments[1]
-      }
-      
-      return fnc;
-    },
-    
-    set: function() {
-      fnc.values.length = 0
-      
-      for( var i = 0; i < arguments[0].length; i++ ) {
-        fnc.values.push( arguments[0][i] )
-      }
-      
-      if( fnc.end > fnc.values.length - 1 ) { fnc.end = fnc.values.length - 1 }
-    },
-     
-    reverse : function() { 
-      //fnc.values.reverse(); 
-      var array = fnc.values,
-          left = null,
-          right = null,
-          length = array.length,
-          temporary;
-          
-      for (left = 0, right = length - 1; left < right; left += 1, right -= 1) {
-        temporary = array[left];
-        array[left] = array[right];
-        array[right] = temporary;
-      }
-      
-      fnc._onchange() 
-      
-      return fnc;
-    },
-    
-    repeat: function() {
-      var counts = {}
-    
-      for( var i = 0; i < arguments.length; i +=2 ) {
-        counts[ arguments[ i ] ] = {
-          phase: 0,
-          target: arguments[ i + 1 ]
-        }
-      }
-      
-      var repeating = false, repeatValue = null, repeatIndex = null
-      var filter = function( args ) {
-        var value = args[ 0 ], phaseModifier = args[ 1 ], output = args
-        
-        //console.log( args, counts )
-        if( repeating === false && counts[ value ] ) {
-          repeating = true
-          repeatValue = value
-          repeatIndex = args[2]
-        }
-        
-        if( repeating === true ) {
-          if( counts[ repeatValue ].phase !== counts[ repeatValue ].target ) {
-            output[ 0 ] = repeatValue            
-            output[ 1 ] = 0
-            output[ 2 ] = repeatIndex
-            //[ val, 1, idx ]
-            counts[ repeatValue ].phase++
-          }else{
-            counts[ repeatValue ].phase = 0
-            output[ 1 ] = 1
-            if( value !== repeatValue ) { 
-              repeating = false
-            }else{
-              counts[ repeatValue ].phase++
-            }
-          }
-        }
-      
-        return output
-      }
-    
-      fnc.filters.push( filter )
-    
-      return fnc
-    },
-  
-    reset : function() { fnc.values = fnc.original.slice( 0 ); fnc._onchange(); return fnc; },
-    store : function() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
-    transpose : function( amt ) { 
-      for( var i = 0; i < fnc.values.length; i++ ) fnc.values[ i ] += amt; 
-      fnc._onchange()
-      
-      return fnc
-    },
-    shuffle : function() { 
-      Gibber.Utilities.shuffle( fnc.values )
-      fnc._onchange()
-      
-      return fnc
-    },
-    scale : function( amt ) { 
-      for( var i = 0; i < fnc.values.length; i++ ) {
-        fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
-      }
-      fnc._onchange()
-      
-      return fnc
-    },
-
-    flip : function() {
-      var start = [],
-          ordered = null
-    
-      ordered = fnc.values.filter( function(elem) {
-      	var shouldPush = start.indexOf( elem ) === -1
-        if( shouldPush ) start.push( elem )
-        return shouldPush
-      })
-    
-      ordered = ordered.sort( function( a,b ){ return a - b } )
-    
-      for( var i = 0; i < fnc.values.length; i++ ) {
-        var pos = ordered.indexOf( fnc.values[ i ] )
-        fnc.values[ i ] = ordered[ ordered.length - pos - 1 ]
-      }
-      
-      fnc._onchange()
-    
-  		return fnc
-    },
-    
-    invert: function() {
-      var prime0 = fnc.values[ 0 ]
-      
-      for( var i = 1; i < fnc.values.length; i++ ) {
-        var inverse = prime0 + (prime0 - fnc.values[ i ])
-        fnc.values[ i ] = inverse
-      }
-      
-      fnc._onchange()
-      
-  		return fnc
-    },
-  
-    switch : function( to ) {
-      if( fnc.storage[ to ] ) {
-        fnc.values = fnc.storage[ to ].slice( 0 )
-      }
-      
-      fnc._onchange()
-      
-      return fnc
-    },
-  
-    rotate : function( amt ) {
-      if( amt > 0 ) {
-        while( amt > 0 ) {
-          var end = fnc.values.pop()
-          fnc.values.unshift( end )
-          amt--
-        }
-      }else if( amt < 0 ) {
-        while( amt < 0 ) {
-          var begin = fnc.values.shift()
-          fnc.values.push( begin )
-          amt++
-        }
-      }
-      
-      fnc._onchange()
-      
-      return fnc
-    }
-  })
-  
-  fnc.retrograde = fnc.reverse.bind( fnc )
-  
-  fnc.end = fnc.values.length - 1
-  
-  fnc.original = fnc.values.slice( 0 )
-  fnc.storage[ 0 ] = fnc.original.slice( 0 )
-  
-  fnc.integersOnly = fnc.values.every( function( n ) { return n === +n && n === (n|0); })
-  
-  Gibber.createProxyMethods( fnc, [
-    'rotate','switch','invert','reset', 'flip',
-    'transpose','reverse','shuffle','scale',
-    'store', 'range', 'set'
-  ], true )
-  
-  Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
-  
-  fnc.__proto__ = this.__proto__ 
-  
-  return fnc
-}
-
-Pattern.prototype = PatternProto
-
-return Pattern
-
-}
-},{"./dollar":"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/dollar.js"}],"/www/gibber.audio.lib/node_modules/gibber.core.lib/scripts/utilities.js":[function(require,module,exports){
+},{}],4:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
 
 "use strict"
@@ -2026,37 +1431,38 @@ var soloGroup = [],
         return output
       },
       random :  function() {
-        this.randomFlag = true
-        this.randomArgs = Array.prototype.slice.call( arguments, 0 )
-        // var dict = {},
-        //     lastChosen = null;
-        //     
-        // for(var i = 0; i < arguments.length; i+=2) {
-        //   dict[ "" + arguments[i] ] = { repeat: arguments[i+1], count: 0 };
-        // }
-        // 
-        // this.pick = function() {
-        //   var value = 0, index, lastValue;
-        //   if(this[lastChosen]) lastValue = this[lastChosen]
-        // 
-        //   if(lastChosen !== null && dict[ lastValue ].count++ <= dict[ lastValue ].repeat) {
-        //     index = lastChosen;
-        //     if( dict[ lastValue ].count >= dict[ lastValue ].repeat) {
-        //       dict[ lastValue ].count = 0;
-        //       lastChosen = null;
-        //     };
-        //   }else{
-        //     index = Utilities.rndi(0, this.length - 1);
-        //     value = this[index];
-        //     if( typeof dict[ ""+value ] !== 'undefined' ) {
-        //       dict[ ""+value ].count = 1;
-        //       lastChosen = index;
-        //     }else{
-        //       lastChosen = null;
-        //     }
-        //   }
+        var dict = {},
+            lastChosen = null;
     
-        return this
+        for(var i = 0; i < arguments.length; i+=2) {
+          dict[ "" + arguments[i] ] = { repeat: arguments[i+1], count: 0 };
+        }
+
+        this.pick = function() {
+          var value = 0, index, lastValue;
+          if(this[lastChosen]) lastValue = this[lastChosen]
+
+          if(lastChosen !== null && dict[ lastValue ].count++ <= dict[ lastValue ].repeat) {
+            index = lastChosen;
+            if( dict[ lastValue ].count >= dict[ lastValue ].repeat) {
+              dict[ lastValue ].count = 0;
+              lastChosen = null;
+            };
+          }else{
+            index = Utilities.rndi(0, this.length - 1);
+            value = this[index];
+            if( typeof dict[ ""+value ] !== 'undefined' ) {
+              dict[ ""+value ].count = 1;
+              lastChosen = index;
+            }else{
+              lastChosen = null;
+            }
+          }
+      
+        	return index; // return index, not value as required by secondary notation stuff
+        };
+    
+        return this;
       },
   
       random2 : function() {
@@ -2384,7853 +1790,6273 @@ var soloGroup = [],
         // window.solo = Utilities.solo
         // window.future = Utilities.future // TODO: fix global reference
         Array.prototype.random = Array.prototype.rnd = Utilities.random
-        // Array.prototype.weight = Utilities.weight
-        // Array.prototype.fill = Utilities.fill
-        // Array.prototype.choose = Utilities.choose
-        // // Array.prototype.Rnd = Utilities.random2
-        // Array.prototype.merge = Utilities.merge
-      }
+        Array.prototype.weight = Utilities.weight
+        Array.prototype.fill = Utilities.fill
+        Array.prototype.choose = Utilities.choose
+        // Array.prototype.Rnd = Utilities.random2
+        Array.prototype.merge = Utilities.merge
+      }  
     }
   
   return Utilities
 }
 
-},{}],"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js":[function(require,module,exports){
-(function (global){
-!function (root, factory) {
-  if (typeof define === "function" && define.amd) {
-    define([], factory);
-  } else if (typeof exports === "object") {
-    module.exports = factory();
-  } else {
-  root.Gibberish = factory();
+},{}],5:[function(_dereq_,module,exports){
+!function(e,t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?module.exports=t():e.Gibberish=t()}(this,function(){function createInput(){console.log("connecting audio input..."),navigator.getUserMedia({audio:!0},function(e){console.log("audio input connected"),Gibberish.mediaStreamSource=Gibberish.context.createMediaStreamSource(e),Gibberish.mediaStreamSource.connect(Gibberish.node),_hasInput=!0},function(){console.log("error opening audio input")})}var Gibberish={memo:{},codeblock:[],analysisCodeblock:[],analysisUgens:[],dirtied:[],id:0,isDirty:!1,out:null,debug:!1,callback:"",audioFiles:{},sequencers:[],callbackArgs:["input"],callbackObjects:[],analysisCallbackArgs:[],analysisCallbackObjects:[],createCallback:function(){this.memo={},this.codeblock.length=0,this.callbackArgs.length=0,this.callbackObjects.length=0,this.analysisCallbackArgs.length=0,this.dirtied.length=0,this.codestring="",this.args=["input"],this.memo={},this.out.codegen();var e=this.codeblock.slice(0);if(this.analysisUgens.length>0){this.analysisCodeblock.length=0;for(var t=0;t<this.analysisUgens.length;t++)this.analysisCallbackArgs.push(this.analysisUgens[t].analysisSymbol)}if(this.args=this.args.concat(this.callbackArgs),this.args=this.args.concat(this.analysisCallbackArgs),this.codestring+=e.join("	"),this.codestring+="\n	",this.analysisUgens.length>0){this.analysisCodeblock.length=0;for(var t=0;t<this.analysisUgens.length;t++)this.codeblock.length=0,this.analysisUgens[t].analysisCodegen();this.codestring+=this.analysisCodeblock.join("\n	"),this.codestring+="\n	"}return this.codestring+="return "+this.out.variable+";\n",this.callbackString=this.codestring,this.debug&&console.log(this.callbackString),[this.args,this.codestring]},audioProcess:function(e){var t,i,s=e.outputBuffer.getChannelData(0),n=e.outputBuffer.getChannelData(1),r=e.inputBuffer.getChannelData(0),a=Gibberish,o=a.callback,h=a.sequencers,u=(Gibberish.out.callback,a.callbackObjects.slice(0));u.unshift(0);for(var c=0,l=e.outputBuffer.length;l>c;c++){for(var b=0;b<h.length;b++)h[b].tick();if(a.isDirty){t=a.createCallback();try{o=a.callback=new Function(t[0],t[1])}catch(e){console.error("ERROR WITH CALLBACK : \n\n",t)}a.isDirty=!1,u=a.callbackObjects.slice(0),u.unshift(0)}u[0]=r[c],i=o.apply(null,u),s[c]=i[0],n[c]=i[1]}},audioProcessFirefox:function(e){var t,i=Gibberish,s=i.callback,n=i.sequencers,r=i.callbackObjects.slice(0);r.unshift(0);for(var a=0,o=e.length;o>a;a+=2){for(var h=0;h<n.length;h++)n[h].tick();if(i.isDirty){t=i.createCallback();try{s=i.callback=new Function(t[0],t[1])}catch(u){console.error("ERROR WITH CALLBACK : \n\n",s)}i.isDirty=!1,r=i.callbackObjects.slice(0),r.unshift(0)}var c=s.apply(null,r);e[a]=c[0],e[a+1]=c[1]}},clear:function(){this.out.inputs.length=0,this.analysisUgens.length=0,this.sequencers.length=0,this.callbackArgs.length=2,this.callbackObjects.length=1,Gibberish.dirty(this.out)},dirty:function(e){if("undefined"!=typeof e){for(var t=!1,i=0;i<this.dirtied.length;i++)this.dirtied[i].variable===e.variable&&(t=!0);t||(this.isDirty=!0,this.dirtied.push(e))}else this.isDirty=!0},generateSymbol:function(e){return e+"_"+this.id++},AudioDataDestination:function(e,t){var i=new Audio;i.mozSetup(2,e);var s,n=0,r=e/2,a=null;setInterval(function(){var e;if(a){if(e=i.mozWriteAudio(a.subarray(s)),n+=e,s+=e,s<a.length)return;a=null}var o=i.mozCurrentSampleOffset(),h=o+r-n;if(h>0){var u=new Float32Array(h);t(u),e=i.mozWriteAudio(u),o=i.mozCurrentSampleOffset(),e<u.length&&(a=u,s=e),n+=e}},100)},init:function(){var e,t,i="undefined"==typeof arguments[0]?1024:arguments[0];return"undefined"!=typeof webkitAudioContext?e=webkitAudioContext:"undefined"!=typeof AudioContext&&(e=AudioContext),t=function(){if("undefined"!=typeof e){if(document&&document.documentElement&&"ontouchstart"in document.documentElement&&(window.removeEventListener("touchstart",t),"ontouchstart"in document.documentElement)){var i=Gibberish.context.createBufferSource();i.connect(Gibberish.context.destination),i.noteOn(0)}}else alert("Your browser does not support javascript audio synthesis. Please download a modern web browser that is not Internet Explorer.");Gibberish.onstart&&Gibberish.onstart()},Gibberish.context=new e,Gibberish.node=Gibberish.context.createScriptProcessor(i,2,2,Gibberish.context.sampleRate),Gibberish.node.onaudioprocess=Gibberish.audioProcess,Gibberish.node.connect(Gibberish.context.destination),Gibberish.out=new Gibberish.Bus2,Gibberish.out.codegen(),Gibberish.dirty(Gibberish.out),document&&document.documentElement&&"ontouchstart"in document.documentElement?window.addEventListener("touchstart",t):t(),this},makePanner:function(){for(var e=[],t=[],i=Math.sqrt(2)/2,s=0;1024>s;s++){var n=-1+s/1024*2;e[s]=i*(Math.cos(n)-Math.sin(n)),t[s]=i*(Math.cos(n)+Math.sin(n))}return function(i,s,n){var r,a,o,h,u,c,l="object"==typeof i,b=l?i[0]:i,p=l?i[1]:i;return r=1023*(s+1)/2,a=0|r,o=r-a,a=1023&a,h=1023===a?0:a+1,u=e[a],c=e[h],n[0]=(u+o*(c-u))*b,u=t[a],c=t[h],n[1]=(u+o*(c-u))*p,n}},defineUgenProperty:function(e,t,i){var s=i.properties[e]={value:t,binops:[],parent:i,name:e};Object.defineProperty(i,e,{configurable:!0,get:function(){return s.value},set:function(e){s.value=e,Gibberish.dirty(i)}})},polyInit:function(e){e.mod=e.polyMod,e.removeMod=e.removePolyMod,e.voicesClear=function(){if(e.children.length>0){for(var t=0;t<e.children.length;t++)e.children[t].disconnect();e.children.length=0,e.voiceCount=0}};for(var t in e.polyProperties)!function(t){var i=e.polyProperties[t];Object.defineProperty(e,t,{configurable:!0,get:function(){return i},set:function(s){i=s;for(var n=0;n<e.children.length;n++)e.children[n][t]=i}})}(t);var i=e.maxVoices;Object.defineProperty(e,"maxVoices",{get:function(){return i},set:function(e){i=e,this.voicesClear(),this.initVoices()}})},interpolate:function(e,t){var i=0|t,s=i+1>e.length-1?0:i+1;return frac=t-i,e[i]+frac*(e[s]-e[i])},pushUnique:function(e,t){for(var i=e,s=!0,n=0;n<t.length;n++)if(i===t[n]){s=!1;break}s&&t.push(i)},"export":function(e,t){for(var i in Gibberish[e])t[i]=Gibberish[e][i]},ugen:function(){Gibberish.extend(this,{processProperties:function(){if("object"!=typeof arguments[0][0]||"undefined"!=typeof arguments[0][0].type||Array.isArray(arguments[0][0])||"op"===arguments[0][0].name){var e=0;for(var t in this.properties)"object"==typeof this.properties[t]&&"undefined"!=typeof this.properties[t].binops?"undefined"!=typeof arguments[0][e]&&(this.properties[t].value=arguments[0][e++]):"undefined"!=typeof arguments[0][e]&&(this.properties[t]=arguments[0][e++])}else{var i=arguments[0][0];for(var t in i)"undefined"!=typeof i[t]&&("object"==typeof this.properties[t]&&"undefined"!=typeof this.properties[t].binops?this.properties[t].value=i[t]:this[t]=i[t])}return this},valueOf:function(){return this.codegen(),this.variable},codegen:function(){var e="",t=null;if(Gibberish.memo[this.symbol])return Gibberish.memo[this.symbol];t=this.variable?this.variable:Gibberish.generateSymbol("v"),Gibberish.memo[this.symbol]=t,this.variable=t,e+="var "+t+" = "+this.symbol+"(";for(var i in this.properties){var s=this.properties[i],n="";if(Array.isArray(s.value)){0===s.value.length&&(n=0);for(var r=0;r<s.value.length;r++){var a=s.value[r];n+="object"==typeof a?null!==a?a.valueOf():"null":"function"==typeof s.value?s.value():s.value,n+=r<s.value.length-1?", ":""}}else"object"==typeof s.value?null!==s.value&&(n=s.value.codegen?s.value.valueOf():s.value):"undefined"!==s.name&&(n="function"==typeof s.value?s.value():s.value);if(0!=s.binops.length){for(var o=0;o<s.binops.length;o++)e+="(";for(var h=0;h<s.binops.length;h++){var u,c=s.binops[h];u="number"==typeof c.ugen?c.ugen:null!==c.ugen?c.ugen.valueOf():"null","="===c.binop?(e=e.replace(n,""),e+=u):"++"===c.binop?e+=" + Math.abs("+u+")":(0===h&&(e+=n),e+=" "+c.binop+" "+u+")")}}else e+=n;e+=", "}return" "===e.charAt(e.length-1)&&(e=e.slice(0,-2)),e+=");\n",this.codeblock=e,-1===Gibberish.codeblock.indexOf(this.codeblock)&&Gibberish.codeblock.push(this.codeblock),-1===Gibberish.callbackArgs.indexOf(this.symbol)&&"op"!==this.name&&Gibberish.callbackArgs.push(this.symbol),-1===Gibberish.callbackObjects.indexOf(this.callback)&&"op"!==this.name&&Gibberish.callbackObjects.push(this.callback),this.dirty=!1,t},init:function(){if(this.initalized||(this.symbol=Gibberish.generateSymbol(this.name),this.codeblock=null,this.variable=null),"undefined"==typeof this.properties&&(this.properties={}),!this.initialized){this.destinations=[];for(var e in this.properties)Gibberish.defineUgenProperty(e,this.properties[e],this)}if(arguments.length>0&&"object"==typeof arguments[0][0]&&"undefined"===arguments[0][0].type){var t=arguments[0][0];for(var e in t)this[e]=t[e]}return this.initialized=!0,this},mod:function(e,t,i){var s=this.properties[e],n={ugen:t,binop:i};s.binops.push(n),Gibberish.dirty(this)},removeMod:function(e,t){if("undefined"==typeof t)this.properties[e].binops.length=0;else if("number"==typeof t)this.properties[e].binops.splice(t,1);else if("object"==typeof t)for(var i=0,s=this.properties[e].binops.length;s>i;i++)this.properties[e].binops[i].ugen===t&&this.properties[e].binops.splice(i,1);Gibberish.dirty(this)},polyMod:function(e,t,i){for(var s=0;s<this.children.length;s++)this.children[s].mod(e,t,i);Gibberish.dirty(this)},removePolyMod:function(){var e=Array.prototype.slice.call(arguments,0);if("amp"!==arguments[0]&&"pan"!==arguments[0])for(var t=0;t<this.children.length;t++)this.children[t].removeMod.apply(this.children[t],e);else this.removeMod.apply(this,e);Gibberish.dirty(this)},smooth:function(e){var t=new Gibberish.OnePole;this.mod(e,t,"=")},connect:function(e,t){return"undefined"==typeof e&&(e=Gibberish.out),-1===this.destinations.indexOf(e)&&(e.addConnection(this,1,t),this.destinations.push(e)),this},send:function(e,t){return-1===this.destinations.indexOf(e)?(e.addConnection(this,t),this.destinations.push(e)):e.adjustSendAmount(this,t),this},disconnect:function(e,t){var i;if(e)i=this.destinations.indexOf(e),i>-1&&this.destinations.splice(i,1),e.removeConnection(this);else{for(var s=0;s<this.destinations.length;s++)this.destinations[s].removeConnection(this);this.destinations=[]}return Gibberish.dirty(this),this}})}};Array2=function(){this.length=0},Array2.prototype=[],Array2.prototype.remove=function(e,t){if(t="undefined"==typeof t?!0:t,"undefined"==typeof e){for(var i=0;i<this.length;i++)delete this[i];this.length=0}else if("number"==typeof e)this.splice(e,1);else if("string"==typeof e){for(var s=[],i=0;i<this.length;i++){var n=this[i];if(n.type===e||n.name===e){if(!t)return void this.splice(i,1);s.push(i)}}for(var i=0;i<s.length;i++)this.splice(s[i],1)}else if("object"==typeof e)for(var r=this.indexOf(e);r>-1;)this.splice(r,1),r=this.indexOf(e);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.get=function(e){if("number"==typeof e)return this[e];if("string"==typeof e)for(var t=0;t<this.length;t++){var i=this[t];if(i.name===e)return i}else if("object"==typeof e){var s=this.indexOf(e);if(s>-1)return this[s]}return null},Array2.prototype.replace=function(e,t){if(t.parent=this,t.input=e.input,"number"!=typeof e){var i=this.indexOf(e);i>-1&&this.splice(i,1,t)}else this.splice(e,1,t);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.insert=function(e,t){if(e.parent=this,this.input=this.parent,Array.isArray(e))for(var i=0;i<e.length;i++)this.splice(t+i,0,e[i]);else this.splice(t,0,e);this.parent&&Gibberish.dirty(this.parent)},Array2.prototype.add=function(){for(var e=0;e<arguments.length;e++)arguments[e].parent=this,arguments[e].input=this.parent,this.push(arguments[e]);this.parent&&(console.log("DIRTYING"),Gibberish.dirty(this.parent))};var rnd=Math.random;Gibberish.rndf=function(e,t,i,s){if(s="undefined"==typeof s?!0:s,"undefined"==typeof i&&"object"!=typeof e){1==arguments.length?(t=arguments[0],e=0):2==arguments.length?(e=arguments[0],t=arguments[1]):(e=0,t=1);var n=t-e,r=Math.random(),a=n*r;return e+a}var o=[],h=[];"undefined"==typeof i&&(i=t||e.length);for(var u=0;i>u;u++){var c;if("object"==typeof arguments[0])c=arguments[0][rndi(0,arguments[0].length-1)];else if(s)c=Gibberish.rndf(e,t);else{for(c=Gibberish.rndf(e,t);h.indexOf(c)>-1;)c=Gibberish.rndf(e,t);h.push(c)}o.push(c)}return o},Gibberish.Rndf=function(){{var e,t,i,s;Math.random}return 0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):3===arguments.length?(e=arguments[0],t=arguments[1],i=arguments[2]):(e=arguments[0],t=arguments[1],i=arguments[2],s=arguments[3]),function(){var n,r,a;return r="function"==typeof e?e():e,a="function"==typeof t?t():t,n="undefined"==typeof i?Gibberish.rndf(r,a):Gibberish.rndf(r,a,i,s)}},Gibberish.rndi=function(e,t,i,s){var n;if(0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):(e=arguments[0],t=arguments[1],i=arguments[2],s=arguments[3]),n=t-e,i>n&&(s=!0),"undefined"==typeof i)return n=t-e,Math.round(e+Math.random()*n);for(var r=[],a=[],o=0;i>o;o++){var h;if(s)h=Gibberish.rndi(e,t);else{for(h=Gibberish.rndi(e,t);a.indexOf(h)>-1;)h=Gibberish.rndi(e,t);a.push(h)}r.push(h)}return r},Gibberish.Rndi=function(){{var e,t,i,s,n;Math.random,Math.round}return 0===arguments.length?(e=0,t=1):1===arguments.length?(t=arguments[0],e=0):2===arguments.length?(e=arguments[0],t=arguments[1]):3===arguments.length?(e=arguments[0],t=arguments[1],i=arguments[2]):(e=arguments[0],t=arguments[1],i=arguments[2],s=arguments[3]),n=t-e,"number"==typeof i&&i>n&&(s=!0),function(){var n,r,a;return r="function"==typeof e?e():e,a="function"==typeof t?t():t,n="undefined"==typeof i?Gibberish.rndi(r,a):Gibberish.rndi(r,a,i,s)}},Gibberish.extend=function(e,t){for(var i in t){{i.split(".")}t[i]instanceof Array&&t[i].length<100?(e[i]=t[i].slice(0),"fx"===i&&(e[i].parent=t[i].parent)):"object"!=typeof t[i]||null===t[i]||t[i]instanceof Float32Array?e[i]=t[i]:(e[i]=e[i]||{},arguments.callee(e[i],t[i]))}return e},Function.prototype.clone=function(){return eval("["+this.toString()+"]")[0]},String.prototype.format=function(e,t,i){function s(){var s=this,n=arguments.length+1;for(e=0;n>e;i=arguments[e++])t=i,s=s.replace(RegExp("\\{"+(e-1)+"\\}","g"),t);return s}return s.native=String.prototype.format,s}(),Gibberish.future=function(e,t){var i=new Gibberish.Sequencer({values:[function(){},function(){e(),i.stop(),i.disconnect()}],durations:[t]}).start();return i.cancel=function(){i.stop(),i.disconnect()},i},Gibberish.Proxy=function(){var e=0;Gibberish.extend(this,{name:"proxy",type:"effect",properties:{},callback:function(){return e}}).init(),this.input=arguments[0],e=this.input.parent[this.input.name],delete this.input.parent[this.input.name],this.input.parent.properties[this.input.name].value=this,Object.defineProperty(this.input.parent,this.input.name,{get:function(){return e},set:function(t){e=t}}),Gibberish.dirty(this.input.parent)},Gibberish.Proxy.prototype=new Gibberish.ugen,Gibberish.Proxy2=function(){var e=arguments[0],t=arguments[1];Gibberish.extend(this,{name:"proxy2",type:"effect",properties:{},callback:function(){var i=e[t];return Array.isArray(i)?(i[0]+i[1]+i[2])/3:i}}).init(),this.getInput=function(){return e},this.setInput=function(t){e=t},this.getName=function(){return t},this.setName=function(e){t=e}},Gibberish.Proxy2.prototype=new Gibberish.ugen,Gibberish.Proxy3=function(){var e=arguments[0],t=arguments[1];Gibberish.extend(this,{name:"proxy3",type:"effect",properties:{},callback:function(){var i=e[t];return i||0}}),this.init(),this.codegen=function(){console.log(" CALLED "),this.variable||(this.variable=Gibberish.generateSymbol("v")),Gibberish.callbackArgs.push(this.symbol),Gibberish.callbackObjects.push(this.callback),this.codeblock="var "+this.variable+" = "+this.symbol+"("+e.properties[t].codegen()+");\n"}},Gibberish.Proxy3.prototype=new Gibberish.ugen,Gibberish.oscillator=function(){this.type="oscillator",this.oscillatorInit=function(){return this.fx=new Array2,this.fx.parent=this,this}},Gibberish.oscillator.prototype=new Gibberish.ugen,Gibberish._oscillator=new Gibberish.oscillator,Gibberish.Wavetable=function(){var e=0,t=null,i=Gibberish.context.sampleRate/1024,s=0;this.properties={frequency:440,amp:.25,sync:0},this.getTable=function(){return t},this.setTable=function(e){t=e,i=Gibberish.context.sampleRate/t.length},this.getTableFreq=function(){return i},this.setTableFreq=function(e){i=e},this.getPhase=function(){return e},this.setPhase=function(t){e=t},this.callback=function(n,r){var a,o,h,u,c,l;for(e+=n/i;e>=1024;)e-=1024;return a=0|e,o=e-a,a=1023&a,h=1023===a?0:a+1,u=t[a],c=t[h],0!==l&&(s=l),(u+o*(c-u))*r}},Gibberish.Wavetable.prototype=Gibberish._oscillator,Gibberish.Table=function(e){this.__proto__=new Gibberish.Wavetable,this.name="table";var t=2*Math.PI;if("undefined"==typeof e){e=new Float32Array(1024);for(var i=1024;i--;)e[i]=Math.sin(i/1024*t)}this.setTable(e),this.init(),this.oscillatorInit()},Gibberish.asmSine=function(e,t,i){"use asm";function s(){for(var e=1024,t=1024;e=e-1|0;)t-=1,h[e>>2]=+a(+(t/1024)*6.2848);c=44100/1024}function n(e,t,i){e=+e,t=+t,i=+i;var s=0,n=0,r=0,a=0,l=0,b=0;return o=+(o+e/c),o>=1024&&(o=+(o-1024)),s=+u(o),a=o-s,n=~~s,r=(n|0)==1024?0:n+1|0,l=+h[n>>2],b=+h[r>>2],+((l+a*(b-l))*t)}function r(e){return e|=0,+h[e>>2]}var a=e.Math.sin,o=0,h=new e.Float32Array(i),u=e.Math.floor,c=0;return{init:s,gen:n,get:r}},Gibberish.asmSine2=function(){this.properties={frequency:440,amp:.5,sr:Gibberish.context.sampleRate},this.name="sine";var e=new ArrayBuffer(4096),t=Gibberish.asmSine(window,null,e);return t.init(),this.getTable=function(){return e},this.get=t.get,this.callback=t.gen,this.init(),this.oscillatorInit(),this.processProperties(arguments),this},Gibberish.asmSine2.prototype=Gibberish._oscillator,Gibberish.Sine=function(){this.__proto__=new Gibberish.Wavetable,this.name="sine";for(var e=2*Math.PI,t=new Float32Array(1024),i=1024;i--;)t[i]=Math.sin(i/1024*e);this.setTable(t),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Sine2=function(){this.__proto__=new Gibberish.Sine,this.name="sine2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(s,n,r){var a=e(s,n);return i=t(a,r,i)},this.init(),this.oscillatorInit(),Gibberish.defineUgenProperty("pan",0,this),this.processProperties(arguments)},Gibberish.Square=function(){this.__proto__=new Gibberish.Wavetable,this.name="square";for(var e=(2*Math.PI,new Float32Array(1024)),t=1024;t--;)e[t]=t/1024>.5?1:-1;this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw=function(){this.__proto__=new Gibberish.Wavetable,this.name="saw";for(var e=new Float32Array(1024),t=1024;t--;)e[t]=4*((t/1024/2+.25)%.5-.25);this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw2=function(){this.__proto__=new Gibberish.Saw,this.name="saw2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(s,n,r){var a=e(s,n);return i=t(a,r,i)},this.init(),Gibberish.defineUgenProperty("pan",0,this)},Gibberish.Triangle=function(){this.__proto__=new Gibberish.Wavetable,this.name="triangle";for(var e=new Float32Array(1024),t=Math.abs,i=1024;i--;)e[i]=1-4*t((i/1024+.25)%1-.5);this.setTable(e),this.init(arguments),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Triangle2=function(){this.__proto__=new Gibberish.Triangle,this.name="triangle2";var e=this.__proto__.callback,t=Gibberish.makePanner(),i=[0,0];this.callback=function(s,n,r){var a=e(s,n);return t(a,r,i)},this.init(),this.oscillatorInit(),Gibberish.defineUgenProperty("pan",0,this),this.processProperties(arguments)},Gibberish.Saw3=function(){var e=0,t=0,i=2.5,s=-1.5,n=0,r=Math.sin,a=11;pi_2=2*Math.PI,flip=0,signHistory=0,ignore=!1,sr=Gibberish.context.sampleRate,Gibberish.extend(this,{name:"saw",properties:{frequency:440,amp:.15,sync:0,sr:Gibberish.context.sampleRate},callback:function(o){var h=o/sr,u=.5-h,c=a*u*u*u*u,l=.376-.752*h,b=1-2*h,p=0;return t+=h,t-=t>1?2:0,e=.5*(e+r(pi_2*(t+e*c))),p=i*e+s*n,n=e,p+=l,p*=b}}),Object.defineProperty(this,"scale",{get:function(){return a},set:function(e){a=e}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Saw3.prototype=Gibberish._oscillator,Gibberish.PWM=function(){var e=0,t=0,i=0,s=0,n=0,r=2.5,a=-1.5,o=Math.sin,h=11;pi_2=2*Math.PI,test=0,sr=Gibberish.context.sampleRate,Gibberish.extend(this,{name:"pwm",properties:{frequency:440,amp:.15,pulsewidth:.05,sr:Gibberish.context.sampleRate},callback:function(u,c,l){var b=u/sr,p=.5-b,f=h*p*p*p*p,d=1-2*b,g=0;return n+=b,n-=n>1?2:0,e=.5*(e+o(pi_2*(n+e*f))),t=.5*(t+o(pi_2*(n+t*f+l))),g=t-e,g=r*g+a*(i-s),i=e,s=t,g*d*c}}),Object.defineProperty(this,"scale",{get:function(){return h},set:function(e){h=e}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.PWM.prototype=Gibberish._oscillator,Gibberish.Noise=function(){var e=Math.random;Gibberish.extend(this,{name:"noise",properties:{amp:1},callback:function(t){return(2*e()-1)*t}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Noise.prototype=Gibberish._oscillator,Gibberish.KarplusStrong=function(){var e=[0],t=0,i=Math.random,s=Gibberish.makePanner(),n=Gibberish.context.sampleRate,r=[0,0];Gibberish.extend(this,{name:"karplus_strong",frequency:0,properties:{blend:1,damping:0,amp:1,channels:2,pan:0},note:function(t){var s=Math.floor(n/t);e.length=0;for(var r=0;s>r;r++)e[r]=2*i()-1;this.frequency=t},callback:function(n,a,o,h,u){var c=e.shift(),l=i()>n?-1:1;a=a>0?a:0;var b=l*(c+t)*(.5-a/100);return t=b,e.push(b),b*=o,1===h?b:s(b,u,r)}}).init().oscillatorInit().processProperties(arguments)},Gibberish.KarplusStrong.prototype=Gibberish._oscillator,Gibberish.PolyKarplusStrong=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"poly_karplus_strong",maxVoices:5,voiceCount:0,_frequency:0,polyProperties:{blend:1,damping:0},note:function(e,t){var i=this.children[this.voiceCount++];this.voiceCount>=this.maxVoices&&(this.voiceCount=0),i.note(e,t),this._frequency=e},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={blend:this.blend,damping:this.damping,channels:2,amp:1},i=new Gibberish.KarplusStrong(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),this.initialized=!1,Gibberish._synth.oscillatorInit.call(this),Gibberish.dirty(this)},Gibberish.bus=function(){this.type="bus",this.inputCodegen=function(){var e,t=this.value.valueOf();return e=t+", "+this.amp,this.codeblock=e,e},this.addConnection=function(){var e=arguments[2],t={value:arguments[0],amp:arguments[1],codegen:this.inputCodegen,valueOf:function(){return this.codegen()}};"undefined"!=typeof e?this.inputs.splice(e,0,t):this.inputs.push(t),Gibberish.dirty(this)},this.removeConnection=function(e){for(var t=0;t<this.inputs.length;t++)if(this.inputs[t].value===e){this.inputs.splice(t,1),Gibberish.dirty(this);break}},this.adjustSendAmount=function(e,t){for(var i=0;i<this.inputs.length;i++)if(this.inputs[i].value===e){this.inputs[i].amp=t,Gibberish.dirty(this);break}},this.callback=function(){var e=arguments[arguments.length-2],t=arguments[arguments.length-1];output[0]=output[1]=0;for(var i=0;i<arguments.length-2;i+=2){var s="object"==typeof arguments[i],n=arguments[i+1];output[0]+=s?arguments[i][0]*n:arguments[i]*n,output[1]+=s?arguments[i][1]*n:arguments[i]*n}return output[0]*=e,output[1]*=e,panner(output,t,output)}},Gibberish.bus.prototype=new Gibberish.ugen,Gibberish._bus=new Gibberish.bus,Gibberish.Bus=function(){return Gibberish.extend(this,{name:"bus",properties:{inputs:[],amp:1},callback:function(){for(var e=0,t=arguments.length-1,i=arguments[t],s=0;t>s;s++)e+=arguments[s];return e*=i}}),this.init(),this.processProperties(arguments),this},Gibberish.Bus.prototype=Gibberish._bus,Gibberish.Bus2=function(){this.name="bus2",this.type="bus",this.properties={inputs:[],amp:1,pan:0};var e=[0,0],t=Gibberish.makePanner();this.callback=function(){var i=arguments,s=i.length,n=i[s-2],r=i[s-1];e[0]=e[1]=0;for(var a=0,o=s-2;o>a;a+=2){var h="object"==typeof i[a],u=i[a+1];e[0]+=h?i[a][0]*u||0:i[a]*u||0,e[1]+=h?i[a][1]*u||0:i[a]*u||0}return e[0]*=n,e[1]*=n,t(e,r,e)},this.show=function(){console.log(e,args)},this.getOutput=function(){return e},this.getArgs=function(){return args},this.init(arguments),this.processProperties(arguments)},Gibberish.Bus2.prototype=Gibberish._bus,Gibberish.envelope=function(){this.type="envelope"},Gibberish.envelope.prototype=new Gibberish.ugen,Gibberish._envelope=new Gibberish.envelope,Gibberish.ExponentialDecay=function(){var e=Math.pow,t=0,i=0;Gibberish.extend(this,{name:"ExponentialDecay",properties:{decay:.5,length:11050},callback:function(s,n){return t=e(s,i),i+=1/n,t},trigger:function(){i="number"==typeof arguments[0]?arguments[0]:0}}).init()},Gibberish.ExponentialDecay.prototype=Gibberish._envelope,Gibberish.Line=function(e,t,i,s){var n,r={name:"line",properties:{start:e||0,end:isNaN(t)?1:t,time:i||Gibberish.context.sampleRate,loops:s||!1},retrigger:function(e,t){a=0,this.start=n,this.end=e,this.time=t,o=(e-n)/t}},a=0,o=(t-e)/i;return this.callback=function(e,t,i,s){return n=i>a?e+a++*o:t,a=n>=t&&s?0:a,n},Gibberish.extend(this,r),this.init(),this},Gibberish.Line.prototype=Gibberish._envelope,Gibberish.AD=function(e,t){var i=0,s=0;Gibberish.extend(this,{name:"AD",properties:{attack:e||1e4,decay:t||1e4},run:function(){return s=0,i=0,this},callback:function(e,t){if(e=0>e?22050:e,t=0>t?22050:t,0===s){var n=1/e;i+=n,i>=1&&s++}else if(1===s){var n=1/t;i-=n,0>=i&&(i=0,s++)}return i},getState:function(){return s}}).init().processProperties(arguments)},Gibberish.AD.prototype=Gibberish._envelope,Gibberish.ADSR=function(e,t,i,s,n,r,a){var o={name:"adsr",type:"envelope",requireReleaseTrigger:"undefined"!=typeof a?a:!1,properties:{attack:isNaN(e)?1e4:e,decay:isNaN(t)?1e4:t,sustain:isNaN(i)?22050:i,release:isNaN(s)?1e4:s,attackLevel:n||1,sustainLevel:r||.5,releaseTrigger:0},run:function(){this.setPhase(0),this.setState(0)},stop:function(){this.releaseTrigger=1}};Gibberish.extend(this,o);var h=0,u=0,c=0,l=this;return this.callback=function(e,t,i,s,n,r,a){var o=0;return c=1===c?1:a,0===u?(o=h/e*n,++h/e>=1&&(u++,h=t)):1===u?(o=h/t*(n-r)+r,--h<=0&&(null!==i?(u+=1,h=i):(u+=2,h=s))):2===u?(o=r,l.requireReleaseTrigger&&c?(u++,h=s,l.releaseTrigger=0,c=0):h--<=0&&!l.requireReleaseTrigger&&(u++,h=s)):3===u&&(h--,o=h/s*r,0>=h&&u++),o},this.call=function(){return this.callback(this.attack,this.decay,this.sustain,this.release,this.attackLevel,this.sustainLevel,this.releaseTrigger)},this.setPhase=function(e){h=e},this.setState=function(e){u=e,h=0},this.getState=function(){return u},this.init(),this},Gibberish.ADSR.prototype=Gibberish._envelope,Gibberish.ADR=function(e,t,i,s,n){var r={name:"adr",type:"envelope",properties:{attack:isNaN(e)?11025:e,decay:isNaN(t)?11025:t,release:isNaN(i)?22050:i,attackLevel:s||1,releaseLevel:n||.2},run:function(){this.setPhase(0),this.setState(0)}};Gibberish.extend(this,r);var a=0,o=0;return this.callback=function(e,t,i,s,n){var r=0;return 0===o?(r=a/e*s,++a/e===1&&(o++,a=t)):1===o?(r=a/t*(s-n)+n,--a<=0&&(o+=1,a=i)):2===o&&(a--,r=a/i*n,0>=a&&o++),r},this.setPhase=function(e){a=e},this.setState=function(e){o=e,a=0},this.getState=function(){return o},this.init(),this},Gibberish.ADR.prototype=Gibberish._envelope,Gibberish.analysis=function(){this.type="analysis",this.codegen=function(){if(Gibberish.memo[this.symbol])return Gibberish.memo[this.symbol];var e=this.variable?this.variable:Gibberish.generateSymbol("v");return Gibberish.memo[this.symbol]=e,this.variable=e,Gibberish.callbackArgs.push(this.symbol),Gibberish.callbackObjects.push(this.callback),this.codeblock="var "+this.variable+" = "+this.symbol+"();\n",-1===Gibberish.codeblock.indexOf(this.codeblock)&&Gibberish.codeblock.push(this.codeblock),this.variable},this.analysisCodegen=function(){var e=0;this.input.codegen?(e=this.input.codegen(),e.indexOf("op")>-1&&console.log("ANALYSIS BUG")):e=this.input.value?"undefined"!=typeof this.input.value.codegen?this.input.value.codegen():this.input.value:"null";var t=this.analysisSymbol+"("+e+",";for(var i in this.properties)"input"!==i&&(t+=this[i]+",");return t=t.slice(0,-1),t+=");",this.analysisCodeblock=t,-1===Gibberish.analysisCodeblock.indexOf(this.analysisCodeblock)&&Gibberish.analysisCodeblock.push(this.analysisCodeblock),-1===Gibberish.callbackObjects.indexOf(this.analysisCallback)&&Gibberish.callbackObjects.push(this.analysisCallback),t},this.remove=function(){Gibberish.analysisUgens.splice(Gibberish.analysisUgens.indexOf(this),1)},this.analysisInit=function(){this.analysisSymbol=Gibberish.generateSymbol(this.name),Gibberish.analysisUgens.push(this),Gibberish.dirty()}},Gibberish.analysis.prototype=new Gibberish.ugen,Gibberish._analysis=new Gibberish.analysis,Gibberish.Follow=function(){this.name="follow",this.properties={input:0,bufferSize:4410,mult:1,useAbsoluteValue:!0};var e=Math.abs,t=[0],i=0,s=0,n=0;this.analysisCallback=function(r,a,o,h){"object"==typeof r&&(r=r[0]+r[1]),i+=h?e(r):r,i-=t[s],t[s]=h?e(r):r,s=(s+1)%a,t[s]=t[s]?t[s]:0,n=i/a*o},this.callback=this.getValue=function(){return n},this.init(),this.analysisInit(),this.processProperties(arguments);var r=(this.__lookupSetter__("bufferSize"),this.bufferSize);Object.defineProperty(this,"bufferSize",{get:function(){return r},set:function(e){r=e,i=0,t=[0],s=0}})},Gibberish.Follow.prototype=Gibberish._analysis,Gibberish.SingleSampleDelay=function(){this.name="single_sample_delay",this.properties={input:arguments[0]||0,amp:arguments[1]||1};var e=0;this.analysisCallback=function(t){e=t},this.callback=function(){return e},this.getValue=function(){return e},this.init(),this.analysisInit(),this.processProperties(arguments)},Gibberish.SingleSampleDelay.prototype=Gibberish._analysis,Gibberish.Record=function(e,t,i){var s=new Float32Array(t),n=0,r=!1,a=this;Gibberish.extend(this,{name:"record",oncomplete:i,properties:{input:0,size:t||0},analysisCallback:function(e,t){r&&(s[n++]="object"==typeof e?e[0]+e[1]:e,n>=t&&(r=!1,a.remove()))},record:function(){return n=0,r=!0,this},getBuffer:function(){return s},getPhase:function(){return n},remove:function(){"undefined"!=typeof this.oncomplete&&this.oncomplete();for(var e=0;e<Gibberish.analysisUgens.length;e++){var t=Gibberish.analysisUgens[e];if(t===this)return Gibberish.callbackArgs.indexOf(this.analysisSymbol)>-1&&Gibberish.callbackArgs.splice(Gibberish.callbackArgs.indexOf(this.analysisSymbol),1),Gibberish.callbackObjects.indexOf(this.analysisCallback)>-1&&Gibberish.callbackObjects.splice(Gibberish.callbackObjects.indexOf(this.analysisCallback),1),void Gibberish.analysisUgens.splice(e,1)}}}),this.properties.input=e,this.init(),this.analysisInit(),Gibberish.dirty()},Gibberish.Record.prototype=Gibberish._analysis,Gibberish.effect=function(){this.type="effect"},Gibberish.effect.prototype=new Gibberish.ugen,Gibberish._effect=new Gibberish.effect,Gibberish.Distortion=function(){var e=Math.abs,t=Math.log,i=Math.LN2;Gibberish.extend(this,{name:"distortion",properties:{input:0,amount:50},callback:function(s,n){var r;return n=n>2?n:2,"number"==typeof s?(r=s*n,s=r/(1+e(r))/(t(n)/i)):(r=s[0]*n,s[0]=r/(1+e(r))/(t(n)/i),r=s[1]*n,s[1]=r/(1+e(r))/(t(n)/i)),s}}).init().processProperties(arguments)},Gibberish.Distortion.prototype=Gibberish._effect,Gibberish.Gain=function(){Gibberish.extend(this,{name:"gain",properties:{input:0,amount:1},callback:function(e,t){return"number"==typeof e?e*=t:(e[0]*=t,e[1]*=t),e}}).init().processProperties(arguments)},Gibberish.Gain.prototype=Gibberish._effect,Gibberish.Delay=function(){var e=[],t=0;e.push(new Float32Array(2*Gibberish.context.sampleRate)),e.push(new Float32Array(2*Gibberish.context.sampleRate)),Gibberish.extend(this,{name:"delay",properties:{input:0,time:22050,feedback:.5,wet:1,dry:1},callback:function(i,s,n,r,a){var o="number"==typeof i?1:2,h=t++%88200,u=(h+(0|s))%88200;
+return 1===o?(e[0][u]=(i+e[0][h])*n,i=i*a+e[0][h]*r):(e[0][u]=(i[0]+e[0][h])*n,i[0]=i[0]*a+e[0][h]*r,e[1][u]=(i[1]+e[1][h])*n,i[1]=i[1]*a+e[1][h]*r),i}});var i=Math.round(this.properties.time);Object.defineProperty(this,"time",{configurable:!0,get:function(){return i},set:function(e){i=Math.round(e),Gibberish.dirty(this)}}),this.init(),this.processProperties(arguments)},Gibberish.Delay.prototype=Gibberish._effect,Gibberish.Decimator=function(){var e=0,t=[],i=Math.pow,s=Math.floor;Gibberish.extend(this,{name:"decimator",properties:{input:0,bitDepth:16,sampleRate:1},callback:function(n,r,a){e+=a;var o="number"==typeof n?1:2;if(1===o){if(e>=1){var h=i(r,2);t[0]=s(n*h)/h,e-=1}n=t[0]}else{if(e>=1){var h=i(r,2);t[0]=s(n[0]*h)/h,t[1]=s(n[1]*h)/h,e-=1}n=t}return n}}).init().processProperties(arguments)},Gibberish.Decimator.prototype=Gibberish._effect,Gibberish.RingModulation=function(){var e=(new Gibberish.Sine).callback,t=[0,0];Gibberish.extend(this,{name:"ringmod",properties:{input:0,frequency:440,amp:.5,mix:.5},callback:function(i,s,n,r){var a="number"==typeof i?1:2,o=1===a?i:i[0],h=e(s,n);if(o=o*(1-r)+o*h*r,2===a){var u=i[1];return u=u*(1-r)+u*h*r,t[0]=o,t[1]=u,t}return o}}).init().processProperties(arguments)},Gibberish.RingModulation.prototype=Gibberish._effect,Gibberish.DCBlock=function(){var e=0,t=0;Gibberish.extend(this,{name:"dcblock",type:"effect",properties:{input:0},reset:function(){e=0,t=0},callback:function(i){var s=i-e+.9997*t;return e=i,t=s,s}}).init().processProperties(arguments)},Gibberish.DCBlock.prototype=Gibberish._effect,Gibberish.Tremolo=function(){var e=(new Gibberish.Sine).callback;Gibberish.extend(this,{name:"tremolo",type:"effect",properties:{input:0,frequency:2.5,amp:.5},callback:function(t,i,s){var n="number"==typeof t?1:2,r=e(i,s);return 1===n?t*=r:(t[0]*=r,t[1]*=r),t}}).init().processProperties(arguments)},Gibberish.Tremolo.prototype=Gibberish._effect,Gibberish.OnePole=function(){var e=0;Gibberish.extend(this,{name:"onepole",type:"effect",properties:{input:0,a0:.15,b1:.85},callback:function(t,i,s){var n=t*i+e*s;return e=n,n},smooth:function(t,i){this.input=i[t],e=this.input,i[t]=this,this.obj=i,this.property=t,this.oldSetter=i.__lookupSetter__(t),this.oldGetter=i.__lookupGetter__(t);var s=this;Object.defineProperty(i,t,{get:function(){return s.input},set:function(e){s.input=e}})},remove:function(){Object.defineProperty(this.obj,this.property,{get:this.oldGetter,set:this.oldSetter}),this.obj[this.property]=this.input}}).init().processProperties(arguments)},Gibberish.OnePole.prototype=Gibberish._effect,Gibberish.Filter24=function(){var e=[0,0,0,0],t=[0,0,0,0],i=[0,0],s=isNaN(arguments[0])?.1:arguments[0],n=isNaN(arguments[1])?3:arguments[1];_isLowPass="undefined"!=typeof arguments[2]?arguments[2]:!0,Gibberish.extend(this,{name:"filter24",properties:{input:0,cutoff:s,resonance:n,isLowPass:_isLowPass},callback:function(s,n,r,a){var o="number"==typeof s?1:2,h=1===o?s:s[0],u=e[3]*r;if(u=u>1?1:u,n=0>n?0:n,n=n>1?1:n,h-=u,e[0]=e[0]+(-e[0]+h)*n,e[1]=e[1]+(-e[1]+e[0])*n,e[2]=e[2]+(-e[2]+e[1])*n,e[3]=e[3]+(-e[3]+e[2])*n,h=a?e[3]:h-e[3],2===o){var c=s[1];return u=t[3]*r,u=u>1?1:u,c-=u,t[0]=t[0]+(-t[0]+c)*n,t[1]=t[1]+(-t[1]+t[0])*n,t[2]=t[2]+(-t[2]+t[1])*n,t[3]=t[3]+(-t[3]+t[2])*n,c=a?t[3]:c-t[3],i[0]=h,i[1]=c,i}return h}}).init().processProperties(arguments)},Gibberish.Filter24.prototype=Gibberish._effect,Gibberish.SVF=function(){var e=[0,0],t=[0,0],i=Math.PI,s=[0,0];Gibberish.extend(this,{name:"SVF",properties:{input:0,cutoff:440,Q:2,mode:0,sr:Gibberish.context.sampleRate},callback:function(n,r,a,o,h){var u="number"==typeof n?1:2,c=1===u?n:n[0],l=2*i*r/h;a=1/a;var b=t[0]+l*e[0],p=c-b-a*e[0],f=l*p+e[0],d=p+b;if(e[0]=f,t[0]=b,c=0===o?b:1===o?p:2===o?f:d,2===u){var g=n[1],b=t[1]+l*e[1],p=g-b-a*e[1],f=l*p+e[1],d=p+b;e[1]=f,t[1]=b,g=0===o?b:1===o?p:2===o?f:d,s[0]=c,s[1]=g}else s=c;return s}}).init().processProperties(arguments)},Gibberish.SVF.prototype=Gibberish._effect,Gibberish.Biquad=function(){var e=x2=y1=y2=0,t=[0,0],i=.001639,s=.003278,n=.001639,r=-1.955777,a=.960601,o="LP",h=2e3,u=.5,c=Gibberish.context.sampleRate;Gibberish.extend(this,{name:"biquad",properties:{input:null},calculateCoefficients:function(){switch(o){case"LP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),b=t/(2*u);i=(1-l)/2,s=1-l,n=i,a0=1+b,r=-2*l,a=1-b;break;case"HP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),b=t/(2*u);i=(1+l)/2,s=-(1+l),n=i,a0=1+b,r=-2*l,a=1-b;break;case"BP":var e=2*Math.PI*h/c,t=Math.sin(e),l=Math.cos(e),p=Math.log(2)/2*u*e/t,b=t*(Math.exp(p)-Math.exp(-p))/2;i=b,s=0,n=-b,a0=1+b,r=-2*l,a=1-b;break;default:return}i/=a0,s/=a0,n/=a0,r/=a0,a/=a0},callback:function(o){var h="number"==typeof o?1:2,u=0,c=0,l=1===h?o:o[0];return u=i*l+s*e+n*x2-r*y1-a*y2,x2=e,e=o,y2=y1,y1=u,2===h&&(inR=o[1],c=i*inR+s*e[1]+n*x2[1]-r*y1[1]-a*y2[1],x2[1]=e[1],e[1]=o[1],y2[1]=y1[1],y1[1]=c,t[0]=u,t[1]=c),1===h?u:t}}).init(),Object.defineProperties(this,{mode:{get:function(){return o},set:function(e){o=e,this.calculateCoefficients()}},cutoff:{get:function(){return h},set:function(e){h=e,this.calculateCoefficients()}},Q:{get:function(){return u},set:function(e){u=e,this.calculateCoefficients()}}}),this.processProperties(arguments),this.calculateCoefficients()},Gibberish.Biquad.prototype=Gibberish._effect,Gibberish.Flanger=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=(new Gibberish.Sine).callback,s=Gibberish.interpolate,n=-100,r=0;Gibberish.extend(this,{name:"flanger",properties:{input:0,rate:.25,feedback:0,amount:125,offset:125},callback:function(a,o,h,u){var c="number"==typeof a?1:2,l=n+i(o,.95*u);l>t?l-=t:0>l&&(l+=t);var b=s(e[0],l);return e[0][r]=1===c?a+b*h:a[0]+b*h,2===c?(a[0]+=b,b=s(e[1],l),e[1][r]=a[1]+b*h,a[1]+=b):a+=b,++r>=t&&(r=0),++n>=t&&(n=0),a}}).init().processProperties(arguments),n=-1*this.offset},Gibberish.Flanger.prototype=Gibberish._effect,Gibberish.Vibrato=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=(new Gibberish.Sine).callback,s=Gibberish.interpolate,n=-100,r=0;Gibberish.extend(this,{name:"vibrato",properties:{input:0,rate:5,amount:.5,offset:125},callback:function(a,o,h,u){var c="number"==typeof a?1:2,l=n+i(o,h*u-1);l>t?l-=t:0>l&&(l+=t);var b=s(e[0],l);return e[0][r]=1===c?a:a[0],2===c?(a[0]=b,b=s(e[1],l),e[1][r]=a[1],a[1]=b):a=b,++r>=t&&(r=0),++n>=t&&(n=0),a}}).init().processProperties(arguments),n=-1*this.offset},Gibberish.Vibrato.prototype=Gibberish._effect,Gibberish.BufferShuffler=function(){var e=[new Float32Array(88200),new Float32Array(88200)],t=88200,i=0,s=0,n=0,r=0,a=0,o=Math.random,h=1,u=!1,c=!1,l=!1,b=Gibberish.interpolate,p=!1,f=1,d=!1,g=Gibberish.rndf,m=[0,0];Gibberish.extend(this,{name:"buffer_shuffler",properties:{input:0,chance:.25,rate:11025,length:22050,reverseChange:.5,pitchChance:.5,pitchMin:.25,pitchMax:2,wet:1,dry:0},callback:function(y,v,G,k,x,_,w,A,S,P){var R="number"==typeof y?1:2;a?++r%(k-400)===0&&(u=!1,c=!0,h=1,r=0):(e[0][s]=1===R?y:y[0],e[1][s]=1===R?y:y[1],s++,s%=t,d=0===s?1:d,n++,n%G==0&&o()<v&&(l=o()<x,a=!0,l||(i=s-k,0>i&&(i=t+i)),p=o()<_,p&&(f=g(w,A)),h=1,u=!0,c=!1)),i+=l?-1*f:f,0>i?i+=t:i>=t&&(i-=t);var q,M,C,T,I=b(e[0],i);return u?(h-=.0025,C=I*(1-h),q=1===R?C+y*h:C+y[0]*h,2===R&&(T=b(e[1],i),C=T*(1-h),M=1===R?q:C+y[1]*h),.0025>=h&&(u=!1)):c?(h-=.0025,C=I*h,q=1===R?C+y*h:C+y[0]*(1-h),2===R&&(T=b(e[1],i),C=T*h,M=C+y[1]*(1-h)),.0025>=h&&(c=!1,a=!1,l=!1,f=1,p=0)):1===R?q=a&&d?I*S+y*P:y:(T=b(e[1],i),q=a&&d?I*S+y[0]*P:y[0],M=a&&d?T*S+y[1]*P:y[1]),m=[q,M],1===R?q:m}}).init().processProperties(arguments)},Gibberish.BufferShuffler.prototype=Gibberish._effect,Gibberish.AllPass=function(e){var t=-1,i=new Float32Array(e||500),s=i.length;Gibberish.extend(this,{name:"allpass",properties:{input:0},callback:function(e){t=++t%s;var n=i[t],r=-1*e+n;return i[t]=e+.5*n,r}})},Gibberish.Comb=function(e){var t=new Float32Array(e||1200),i=t.length,s=0,n=0;Gibberish.extend(this,{name:"comb",properties:{input:0,feedback:.84,damping:.2},callback:function(e,r,a){var o=++s%i,h=t[o];return n=h*(1-a)+n*a,t[o]=e+n*r,h}})},Gibberish.Reverb=function(){var e={combCount:8,combTuning:[1116,1188,1277,1356,1422,1491,1557,1617],allPassCount:4,allPassTuning:[556,441,341,225],allPassFeedback:.5,fixedGain:.015,scaleDamping:.4,scaleRoom:.28,offsetRoom:.7,stereoSpread:23},t=.84,i=[],s=[],n=[0,0];Gibberish.extend(this,{name:"reverb",roomSize:.5,properties:{input:0,wet:.5,dry:.55,roomSize:.84,damping:.5},callback:function(e,t,r,a,o){for(var h="object"==typeof e?2:1,u=1===h?e:e[0]+e[1],c=.015*u,l=c,b=0;8>b;b++){var p=i[b](c,.98*a,.4*o);l+=p}for(var b=0;4>b;b++)l=s[b](l);return n[0]=n[1]=u*r+l*t,n}}).init().processProperties(arguments),this.setFeedback=function(e){t=e};for(var r=0;8>r;r++)i.push(new Gibberish.Comb(e.combTuning[r]).callback);for(var r=0;4>r;r++)s.push(new Gibberish.AllPass(e.allPassTuning[r],e.allPassFeedback).callback)},Gibberish.Reverb.prototype=Gibberish._effect,Gibberish.Granulator=function(e){var t=[];buffer=null,interpolate=Gibberish.interpolate,panner=Gibberish.makePanner(),bufferLength=0,debug=0,write=0,self=this,out=[0,0],_out=[0,0],rndf=Gibberish.rndf,numberOfGrains=e.numberOfGrains||20,Gibberish.extend(this,{name:"granulator",bufferLength:88200,reverse:!0,spread:.5,properties:{speed:1,speedMin:-0,speedMax:0,grainSize:1e3,position:.5,positionMin:0,positionMax:0,amp:.2,fade:.1,pan:0,shouldWrite:!1},setBuffer:function(e){buffer=e,bufferLength=e.length},callback:function(e,i,s,n,r,a,o,h,u,c){for(var l=0;numberOfGrains>l;l++){var b=t[l];if(b._speed>0){b.pos>b.end&&(b.pos=(o+rndf(r,a))*buffer.length,b.start=b.pos,b.end=b.start+n,b._speed=e+rndf(i,s),b._speed=b._speed<.1?.1:b._speed,b._speed=b._speed<.1&&b._speed>0?.1:b._speed,b._speed=b._speed>-.1&&b._speed<0?-.1:b._speed,b.fadeAmount=b._speed*u*n,b.pan=rndf(-1*self.spread,self.spread));for(var p=b.pos;p>buffer.length;)p-=buffer.length;for(;0>p;)p+=buffer.length;var f=interpolate(buffer,p);f*=b.pos<b.fadeAmount+b.start?(b.pos-b.start)/b.fadeAmount:1,f*=b.pos>b.end-b.fadeAmount?(b.end-b.pos)/b.fadeAmount:1}else{b.pos<b.end&&(b.pos=(o+rndf(r,a))*buffer.length,b.start=b.pos,b.end=b.start-n,b._speed=e+rndf(i,s),b._speed=b._speed<.1&&b._speed>0?.1:b._speed,b._speed=b._speed>-.1&&b._speed<0?-.1:b._speed,b.fadeAmount=b._speed*u*n);for(var p=b.pos;p>buffer.length;)p-=buffer.length;for(;0>p;)p+=buffer.length;var f=interpolate(buffer,p);f*=b.pos>b.start-b.fadeAmount?(b.start-b.pos)/b.fadeAmount:1,f*=b.pos<b.end+b.fadeAmount?(b.end-b.pos)/b.fadeAmount:1}_out=panner(f*h,b.pan,_out),out[0]+=_out[0],out[1]+=_out[1],b.pos+=b._speed}return panner(out,c,out)}}).init().processProperties(arguments);for(var i=0;numberOfGrains>i;i++)t[i]={pos:self.position+Gibberish.rndf(self.positionMin,self.positionMax),_speed:self.speed+Gibberish.rndf(self.speedMin,self.speedMax)},t[i].start=t[i].pos,t[i].end=t[i].pos+self.grainSize,t[i].fadeAmount=t[i]._speed*self.fade*self.grainSize,t[i].pan=Gibberish.rndf(-1*self.spread,self.spread);"undefined"!=typeof e.buffer&&(buffer=e.buffer,bufferLength=buffer.length)},Gibberish.Granulator.prototype=Gibberish._effect,Gibberish.synth=function(){this.type="oscillator",this.oscillatorInit=function(){this.fx=new Array2,this.fx.parent=this}},Gibberish.synth.prototype=new Gibberish.ugen,Gibberish._synth=new Gibberish.synth,Gibberish.Synth=function(e){this.name="synth",this.properties={frequency:0,pulsewidth:.5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,glide:.15,amp:.25,channels:2,pan:0,sr:Gibberish.context.sampleRate},this.note=function(s,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&s===c&&e.requireReleaseTrigger)return this.releaseTrigger=1,void(c=null);this.frequency=c=s,this.releaseTrigger=0}else this.frequency[0]=c=s,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,s=i.getState,n=i.callback,r=new Gibberish.PWM,a=r.callback,o=(new Gibberish.OnePole).callback,h=Gibberish.makePanner(),u=this,c=0,l=[0,0];i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,r,c,b,p,f,d,g,m,y,v,G,k){m=m>=1?.99999:m,e=o(e,1-m,m);var x,_;return t?(x=n(r,c,b,p,f,d,g),g&&(u.releaseTrigger=0),s()<4?(_=a(e,1,i,k)*x*y,1===v?_:h(_,G,l)):(_=l[0]=l[1]=0,1===v?_:l)):s()<2?(x=n(r,c),_=a(e,1,i,k)*x*y,1===v?_:h(_,G,l)):(_=l[0]=l[1]=0,1===v?_:l)},this.getEnv=function(){return i},this.getOsc=function(){return r},this.setOsc=function(e){r=e,a=r.callback};var b="PWM";Object.defineProperty(this,"waveform",{get:function(){return b},set:function(e){this.setOsc(new Gibberish[e])}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Synth.prototype=Gibberish._synth,Gibberish.PolySynth=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polysynth",maxVoices:5,voiceCount:0,frequencies:[],_frequency:0,polyProperties:{frequency:0,glide:0,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,pulsewidth:.5,waveform:"PWM"},note:function(e,t){var i=this.frequencies.indexOf(e),s=i>-1?i:this.voiceCount++,n=this.children[s];n.note(e,t),-1===i?(this.frequencies[s]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[s]},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={waveform:this.waveform,attack:this.attack,decay:this.decay,sustain:this.sustain,release:this.release,attackLevel:this.attackLevel,sustainLevel:this.sustainLevel,pulsewidth:this.pulsewidth,channels:2,amp:1,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1},i=new Gibberish.Synth(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.Synth2=function(e){this.name="synth2",this.properties={frequency:0,pulsewidth:.5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,cutoff:.25,resonance:3.5,useLowPassFilter:!0,glide:.15,amp:.25,channels:1,pan:0,sr:Gibberish.context.sampleRate},this.note=function(s,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&s===l&&e.requireReleaseTrigger)return this.releaseTrigger=1,void(l=null);this.frequency=l=s,this.releaseTrigger=0}else this.frequency[0]=l=s,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,s=i.getState,n=i.callback,r=new Gibberish.PWM,a=r.callback,o=new Gibberish.Filter24,h=o.callback,u=(new Gibberish.OnePole).callback,c=Gibberish.makePanner(),l=0,b=this,p=[0,0];i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,r,o,l,f,d,g,m,y,v,G,k,x,_,w,A){k=k>=1?.99999:k,e=u(e,1-k,k);var S,P;return t?(S=n(r,o,l,f,d,g,m),m&&(b.releaseTrigger=0),s()<4?(P=h(a(e,.15,i,A),y*S,v,G)*S*x,1===_?P:c(P,w,p)):(P=p[0]=p[1]=0,1===_?P:p)):s()<2?(S=n(r,o),P=h(a(e,.15,i,A),y*S,v,G)*S*x,1===_?P:c(P,w,p)):(P=p[0]=p[1]=0,1===_?P:p)},this.getUseADSR=function(){return t},this.getEnv=function(){return i},this.getOsc=function(){return r},this.setOsc=function(e){r=e,a=r.callback};var f="PWM";Object.defineProperty(this,"waveform",{get:function(){return f},set:function(e){this.setOsc(new Gibberish[e])}}),this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.Synth2.prototype=Gibberish._synth,Gibberish.PolySynth2=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polysynth2",maxVoices:5,voiceCount:0,frequencies:[],_frequency:0,polyProperties:{frequency:0,glide:0,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,pulsewidth:.5,resonance:3.5,cutoff:.25,useLowPassFilter:!0,waveform:"PWM"},note:function(e,t){var i=this.frequencies.indexOf(e),s=i>-1?i:this.voiceCount++,n=this.children[s];n.note(e,t),-1===i?(this.frequencies[s]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[s]},initVoices:function(){this.dirty=!0;for(var e=0;e<this.maxVoices;e++){var t={attack:this.attack,decay:this.decay,sustain:this.sustain,release:this.release,attackLevel:this.attackLevel,sustainLevel:this.sustainLevel,pulsewidth:this.pulsewidth,channels:2,amp:1,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1},i=new Gibberish.Synth2(t).connect(this);this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.FMSynth=function(e){this.name="fmSynth",this.properties={frequency:0,cmRatio:2,index:5,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,releaseTrigger:0,glide:.15,amp:.25,channels:2,pan:0},this.note=function(s,n){if(0!==n){if("object"!=typeof this.frequency){if(t&&s===l&&e.requireReleaseTrigger)return this.releaseTrigger=1,void(l=null);this.frequency=l=s,this.releaseTrigger=0}else this.frequency[0]=l=s,this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof n&&(this.amp=n),i.run()}else this.releaseTrigger=1},e=e||{};var t="undefined"==typeof e.useADSR?!1:e.useADSR,i=t?new Gibberish.ADSR:new Gibberish.AD,s=i.getState,n=i.callback,r=(new Gibberish.Sine).callback,a=(new Gibberish.Sine).callback,o=(new Gibberish.OnePole).callback,h=Gibberish.makePanner(),u=[0,0],c=this,l=0;i.requireReleaseTrigger=e.requireReleaseTrigger||!1,this.callback=function(e,i,l,b,p,f,d,g,m,y,v,G,k,x){var _,w,A;return v>=1&&(v=.9999),e=o(e,1-v,v),t?(_=n(b,p,f,d,g,m,y),y&&(c.releaseTrigger=0),s()<4?(A=a(e*i,e*l)*_,w=r(e+A,1)*_*G,1===k?w:h(w,x,u)):(w=u[0]=u[1]=0,1===k?w:u)):s()<2?(_=n(b,p),A=a(e*i,e*l)*_,w=r(e+A,1)*_*G,1===k?w:h(w,x,u)):(w=u[0]=u[1]=0,1===k?w:u)},this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.FMSynth.prototype=Gibberish._synth,Gibberish.PolyFM=function(){this.__proto__=new Gibberish.Bus2,Gibberish.extend(this,{name:"polyfm",maxVoices:5,voiceCount:0,children:[],frequencies:[],_frequency:0,polyProperties:{glide:0,attack:22050,decay:22050,sustain:22050,release:22050,attackLevel:1,sustainLevel:.5,index:5,cmRatio:2},note:function(e,t){var i=this.frequencies.indexOf(e),s=i>-1?i:this.voiceCount++,n=this.children[s];n.note(e,t),-1===i?(this.frequencies[s]=e,this._frequency=e,this.voiceCount>=this.maxVoices&&(this.voiceCount=0)):delete this.frequencies[s]},initVoices:function(){for(var e=0;e<this.maxVoices;e++){var t={attack:this.attack,decay:this.decay,sustain:this.sustain,release:this.release,attackLevel:this.attackLevel,sustainLevel:this.sustainLevel,cmRatio:this.cmRatio,index:this.index,channels:2,useADSR:this.useADSR||!1,requireReleaseTrigger:this.requireReleaseTrigger||!1,amp:1},i=new Gibberish.FMSynth(t);i.connect(this),this.children.push(i)}}}),this.amp=1/this.maxVoices,this.children=[],"object"==typeof arguments[0]&&(this.maxVoices=arguments[0].maxVoices?arguments[0].maxVoices:this.maxVoices,this.useADSR="undefined"!=typeof arguments[0].useADSR?arguments[0].useADSR:!1,this.requireReleaseTrigger="undefined"!=typeof arguments[0].requireReleaseTrigger?arguments[0].requireReleaseTrigger:!1),Gibberish.polyInit(this),this.initVoices(),this.processProperties(arguments),Gibberish._synth.oscillatorInit.call(this)},Gibberish.Sampler=function(){function e(e){Gibberish.context.decodeAudioData(e,function(e){r=e.getChannelData(0),o.length=t=o.end=a=r.length,o.isPlaying=!0,o.buffers[o.file]=r,console.log("sample loaded | ",o.file," | length | ",a),Gibberish.audioFiles[o.file]=r,o.onload&&o.onload(),0!==o.playOnLoad&&o.note(o.playOnLoad),o.isLoaded=!0},function(e){console.log("Error decoding file",e)})}var t=1,i=Gibberish.interpolate,s=Gibberish.makePanner(),n=[0,0],r=null,a=1,o=this;if(Gibberish.extend(this,{name:"sampler",file:null,isLoaded:!1,playOnLoad:0,buffers:{},properties:{pitch:1,amp:1,isRecording:!1,isPlaying:!0,input:0,length:0,start:0,end:1,loops:0,pan:0},_onload:function(e){r=e.channels[0],a=e.length,o.end=a,o.length=t=a,o.isPlaying=!0,Gibberish.audioFiles[o.file]=r,o.buffers[o.file]=r,o.onload&&o.onload(),0!==o.playOnLoad&&o.note(o.playOnLoad),o.isLoaded=!0},switchBuffer:function(e){if("string"==typeof e)"undefined"!=typeof o.buffers[e]&&(r=o.buffers[e],a=o.end=o.length=r.length);else if("number"==typeof e){var t=Object.keys(o.buffers);if(0===t.length)return;r=o.buffers[t[e]],a=o.end=o.length=r.length}},floatTo16BitPCM:function(e,t,i){for(var s=0;s<i.length-1;s++,t+=2){var n=Math.max(-1,Math.min(1,i[s]));e.setInt16(t,0>n?32768*n:32767*n,!0)}},encodeWAV:function(){function e(e,t,i){for(var s=0;s<i.length;s++)e.setUint8(t+s,i.charCodeAt(s))}var t=this.getBuffer(),i=new ArrayBuffer(44+2*t.length),s=new DataView(i),n=Gibberish.context.sampleRate;return e(s,0,"RIFF"),s.setUint32(4,32+2*t.length,!0),e(s,8,"WAVE"),e(s,12,"fmt "),s.setUint32(16,16,!0),s.setUint16(20,1,!0),s.setUint16(22,1,!0),s.setUint32(24,n,!0),s.setUint32(28,4*n,!0),s.setUint16(32,2,!0),s.setUint16(34,16,!0),e(s,36,"data"),s.setUint32(40,2*t.length,!0),this.floatTo16BitPCM(s,44,t),s},download:function(){var e=this.encodeWAV(),t=new Blob([e]),i=window.webkitURL.createObjectURL(t),s=window.document.createElement("a");s.href=i,s.download="output.wav";var n=document.createEvent("Event");n.initEvent("click",!0,!0),s.dispatchEvent(n)},note:function(e,i){switch(typeof e){case"number":this.pitch=e;break;case"function":this.pitch=e();break;case"object":this.pitch=Array.isArray(e)?e[0]:e}if("number"==typeof i&&(this.amp=i),null!==this.function){this.isPlaying=!0;var s;switch(typeof this.pitch){case"number":s=this.pitch;break;case"function":s=this.pitch.getValue?this.pitch.getValue():this.pitch();break;case"object":s=Array.isArray(this.pitch)?this.pitch[0]:this.pitch.getValue?this.pitch.getValue():this.pitch.input.getValue(),"function"==typeof s&&(s=s())}t=s>0?this.start:this.end,Gibberish.dirty(this)}},getBuffer:function(){return r},setBuffer:function(e){r=e},getPhase:function(){return t},setPhase:function(e){t=e},getNumberOfBuffers:function(){return Object.keys(o.buffers).length-1},callback:function(e,a,o,h,u,c,l,b,p,f){var d=0;return t+=e,b>t&&t>0?(e>0?d=null!==r&&h?i(r,t):0:t>l?d=null!==r&&h?i(r,t):0:t=p?b:t,s(d*a,f,n)):(t=p&&e>0?l:t,t=p&&0>e?b:t,n[0]=n[1]=d,n)}}).init().oscillatorInit().processProperties(arguments),"undefined"!=typeof arguments[0]&&("string"==typeof arguments[0]?(this.file=arguments[0],this.pitch=0):"object"==typeof arguments[0]&&arguments[0].file&&(this.file=arguments[0].file)),"undefined"!=typeof Gibberish.audioFiles[this.file])r=Gibberish.audioFiles[this.file],this.end=this.bufferLength=r.length,this.buffers[this.file]=r,t=this.bufferLength,Gibberish.dirty(this),this.onload&&this.onload();else if(null!==this.file){var e,h=new XMLHttpRequest;h.open("GET",this.file,!0),h.responseType="arraybuffer",h.onload=function(){e(this.response)},h.send(),console.log("now loading sample",o.file),h.onerror=function(e){console.error("Sampler file loading error",e)}}else"undefined"!=typeof this.buffer&&(this.isLoaded=!0,r=this.buffer,this.end=this.bufferLength=r.length||88200,t=this.bufferLength,arguments[0]&&arguments[0].loops&&(this.loops=1),Gibberish.dirty(this),this.onload&&this.onload())},Gibberish.Sampler.prototype=Gibberish._oscillator,Gibberish.Sampler.prototype.record=function(e,t){this.isRecording=!0;var i=this;return this.recorder=new Gibberish.Record(e,t,function(){i.setBuffer(this.getBuffer()),i.end=bufferLength=i.getBuffer().length,i.setPhase(i.end),i.isRecording=!1}).record(),this},Gibberish.MonoSynth=function(){Gibberish.extend(this,{name:"monosynth",properties:{attack:1e4,decay:1e4,cutoff:.2,resonance:2.5,amp1:1,amp2:1,amp3:1,filterMult:.3,isLowPass:!0,pulsewidth:.5,amp:.6,detune2:.01,detune3:-.01,octave2:1,octave3:-1,glide:0,pan:0,frequency:0,channels:2},waveform:"Saw3",note:function(e,s){"undefined"!=typeof s&&0!==s&&(this.amp=s),0!==s&&("object"!=typeof this.frequency?this.frequency=e:(this.frequency[0]=e,Gibberish.dirty(this)),i()>0&&t.run())},_note:function(e,i){if("object"!=typeof this.frequency){if(useADSR&&e===lastFrequency&&0===i)return this.releaseTrigger=1,void(lastFrequency=null);0!==i&&(this.frequency=lastFrequency=e),this.releaseTrigger=0}else 0!==i&&(this.frequency[0]=lastFrequency=e),this.releaseTrigger=0,Gibberish.dirty(this);"undefined"!=typeof i&&0!==i&&(this.amp=i),0!==i&&t.run()}});var e=this.waveform;Object.defineProperty(this,"waveform",{get:function(){return e},set:function(t){e!==t&&(e=t,r=(new Gibberish[t]).callback,a=(new Gibberish[t]).callback,o=(new Gibberish[t]).callback)}});var t=new Gibberish.AD(this.attack,this.decay),i=t.getState,s=t.callback,n=(new Gibberish.Filter24).callback,r=new Gibberish[this.waveform](this.frequency,this.amp1).callback,a=new Gibberish[this.waveform](this.frequency2,this.amp2).callback,o=new Gibberish[this.waveform](this.frequency3,this.amp3).callback,h=(new Gibberish.OnePole).callback,u=Gibberish.makePanner(),c=[0,0];this.envelope=t,this.callback=function(e,t,l,b,p,f,d,g,m,y,v,G,k,x,_,w,A,S,P){if(i()<2){w>=1&&(w=.9999),S=h(S,1-w,w);var R=S;if(x>0)for(var q=0;x>q;q++)R*=2;else if(0>x)for(var q=0;q>x;q--)R/=2;var M=S;if(_>0)for(var q=0;_>q;q++)M*=2;else if(0>_)for(var q=0;q>_;q--)M/=2;R+=G>0?(2*S-S)*G:(S-S/2)*G,M+=k>0?(2*S-S)*k:(S-S/2)*k;var C=r(S,p,y)+a(R,f,y)+o(M,d,y),T=s(e,t),I=n(C,l+g*T,b,m,1)*T;return I*=v,c[0]=c[1]=I,1===P?c:u(I,A,c)}return c[0]=c[1]=0,c},this.init(),this.oscillatorInit(),this.processProperties(arguments)},Gibberish.MonoSynth.prototype=Gibberish._synth,Gibberish.Binops={"export":function(e){Gibberish.export("Binops",e||window)},operator:function(){var e=new Gibberish.ugen,t=arguments[0],i=Array.prototype.slice.call(arguments,1);e.name="op",e.properties={};for(var s=0;s<i.length;s++)e.properties[s]=i[s];return e.init.apply(e,i),e.codegen=function(){var e,i="( ";if("undefined"!=typeof Gibberish.memo[this.symbol])return Gibberish.memo[this.symbol];e=Object.keys(this.properties);for(var s=!1,n=0;n<e.length;n++)if(s)s=!1;else{var r="object"==typeof this[n];i+=r?this[n].codegen():this[n],"*"!==t&&"/"!==t||1!==this[n+1]?n<e.length-1&&(i+=" "+t+" "):s=!0}return i+=" )",this.codeblock=i,i},e.valueOf=function(){return e.codegen()},e},Add:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("+"),Gibberish.Binops.operator.apply(null,e)},Sub:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("-"),Gibberish.Binops.operator.apply(null,e)},Mul:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("*"),Gibberish.Binops.operator.apply(null,e)},Div:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("/"),Gibberish.Binops.operator.apply(null,e)},Mod:function(){var e=Array.prototype.slice.call(arguments,0);return e.unshift("%"),Gibberish.Binops.operator.apply(null,e)},Abs:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"abs",properties:{},callback:Math.abs.bind(t)};return t.__proto__=new Gibberish.ugen,t.properties[0]=e[0],t.init(),t},Sqrt:function(){var e=(Array.prototype.slice.call(arguments,0),{name:"sqrt",properties:{},callback:Math.sqrt.bind(e)});return e.__proto__=new Gibberish.ugen,e.properties[i]=arguments[0],e.init(),e},Pow:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"pow",properties:{},callback:Math.pow.bind(t)};t.__proto__=new Gibberish.ugen;for(var i=0;i<e.length;i++)t.properties[i]=e[i];return t.init(),console.log(t.callback),t},Clamp:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"clamp",properties:{input:0,min:0,max:1},callback:function(e,t,i){return t>e?e=t:e>i&&(e=i),e}};return t.__proto__=new Gibberish.ugen,t.init(),t.processProperties(e),t},Merge:function(){var e=Array.prototype.slice.call(arguments,0),t={name:"merge",properties:{},callback:function(e){return e[0]+e[1]}};t.__proto__=new Gibberish.ugen;for(var i=0;i<e.length;i++)t.properties[i]=e[i];return t.init(),t},Map:function(e,t,i,s,n,r,a){var o=Math.pow,h=0,u=0,c={name:"map",properties:{input:e,outputMin:t,outputMax:i,inputMin:s,inputMax:n,curve:r||h,wrap:a||!1},callback:function(e,t,i,s,n,r,a){var h,c=i-t,l=n-s,b=(e-s)/l;return b>1?b=a?b%1:1:0>b&&(b=a?1+b%1:0),h=0===r?t+b*c:t+o(b,1.5)*c,u=h,h},getValue:function(){return u},invert:function(){var e=c.outputMin;c.outputMin=c.outputMax,c.outputMax=e}};return c.__proto__=new Gibberish.ugen,c.init(),c}},Gibberish.Time={bpm:120,"export":function(e){Gibberish.export("Time",e||window)},ms:function(e){return e*Gibberish.context.sampleRate/1e3},seconds:function(e){return e*Gibberish.context.sampleRate},beats:function(e){return function(){var t=Gibberish.context.sampleRate/(Gibberish.Time.bpm/60);return t*e}}},Gibberish.Sequencer2=function(){var e=this,t=0;Gibberish.extend(this,{target:null,key:null,values:null,valuesIndex:0,durations:null,durationsIndex:0,nextTime:0,playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!0,keysAndValues:null,counts:{},properties:{rate:1,isRunning:!1,nextTime:0},offset:0,name:"seq",callback:function(i,s,n){if(s){if(t>=n){if(null!==e.values){if(e.target){var r=e.values[e.valuesIndex++];"function"==typeof r&&(r=r()),"function"==typeof e.target[e.key]?e.target[e.key](r):e.target[e.key]=r}else"function"==typeof e.values[e.valuesIndex]&&e.values[e.valuesIndex++]();e.valuesIndex>=e.values.length&&(e.valuesIndex=0)}else if(null!==e.keysAndValues)for(var a in e.keysAndValues){var o=e.counts[a]++,r=e.keysAndValues[a][o];"function"==typeof r&&(r=r()),"function"==typeof e.target[a]?e.target[a](r):e.target[a]=r,e.counts[a]>=e.keysAndValues[a].length&&(e.counts[a]=0),e.chose&&e.chose(a,o)}else"function"==typeof e.target[e.key]&&e.target[e.key]();if(t-=n,Array.isArray(e.durations)){var h=e.durations[e.durationsIndex++];e.nextTime="function"==typeof h?h():h,e.chose&&e.chose("durations",e.durationsIndex-1),e.durationsIndex>=e.durations.length&&(e.durationsIndex=0)}else{var h=e.durations;e.nextTime="function"==typeof h?h():h}return e.repeatTarget&&(e.repeatCount++,e.repeatCount===e.repeatTarget&&(e.isRunning=!1,e.repeatCount=0)),0}t+=i}return 0},start:function(e){return e||(t=0),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(){for(i in this.keysAndValues)this.shuffleArray(this.keysAndValues[i])},shuffleArray:function(e){for(var t,i,s=e.length;s;t=parseInt(Math.random()*s),i=e[--s],e[s]=e[t],e[t]=i);}}),this.init(arguments),this.processProperties(arguments);for(var i in this.keysAndValues)this.counts[i]=0;this.oscillatorInit(),t+=this.offset,this.connect()},Gibberish.Sequencer2.prototype=Gibberish._oscillator,Gibberish.Sequencer=function(){Gibberish.extend(this,{target:null,key:null,values:null,valuesIndex:0,durations:null,durationsIndex:0,nextTime:0,phase:0,isRunning:!1,playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!0,keysAndValues:null,counts:{},offset:0,name:"seq",tick:function(){if(this.isRunning){if(this.phase>=this.nextTime){if(null!==this.values){if(this.target){var e=this.values[this.valuesIndex++];if("function"==typeof e)try{e=e()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+e.toString()),this.values.splice(this.valuesIndex-1,1),this.valuesIndex--}"function"==typeof this.target[this.key]?this.target[this.key](e):this.target[this.key]=e
+}else if("function"==typeof this.values[this.valuesIndex])try{this.values[this.valuesIndex++]()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+this.values[this.valuesIndex-1].toString()),this.values.splice(this.valuesIndex-1,1),this.valuesIndex--}this.valuesIndex>=this.values.length&&(this.valuesIndex=0)}else if(null!==this.keysAndValues)for(var i in this.keysAndValues){var s="function"==typeof this.keysAndValues[i].pick?this.keysAndValues[i].pick():this.counts[i]++,e=this.keysAndValues[i][s];if("function"==typeof e)try{e=e()}catch(t){console.error("ERROR: Can't execute function triggered by Sequencer:\n"+e.toString()),this.keysAndValues[i].splice(s,1),"function"!=typeof this.keysAndValues[i].pick&&this.counts[i]--}"function"==typeof this.target[i]?this.target[i](e):this.target[i]=e,this.counts[i]>=this.keysAndValues[i].length&&(this.counts[i]=0)}else"function"==typeof this.target[this.key]&&this.target[this.key]();if(this.phase-=this.nextTime,Array.isArray(this.durations)){var n="function"==typeof this.durations.pick?this.durations[this.durations.pick()]:this.durations[this.durationsIndex++];this.nextTime="function"==typeof n?n():n,this.durationsIndex>=this.durations.length&&(this.durationsIndex=0)}else{var n=this.durations;this.nextTime="function"==typeof n?n():n}return void(this.repeatTarget&&(this.repeatCount++,this.repeatCount===this.repeatTarget&&(this.isRunning=!1,this.repeatCount=0)))}this.phase++}},start:function(e){return e||(this.phase=this.offset),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(){for(e in this.keysAndValues)this.shuffleArray(this.keysAndValues[e])},shuffleArray:function(e){for(var t,i,s=e.length;s;t=parseInt(Math.random()*s),i=e[--s],e[s]=e[t],e[t]=i);},disconnect:function(){var e=Gibberish.sequencers.indexOf(this);Gibberish.sequencers.splice(e,1),this.isConnected=!1},connect:function(){return-1===Gibberish.sequencers.indexOf(this)&&Gibberish.sequencers.push(this),this.isConnected=!0,this}});for(var e in arguments[0])this[e]=arguments[0][e];for(var e in this.keysAndValues)this.counts[e]=0;this.connect(),this.phase+=this.offset},Gibberish.Sequencer.prototype=Gibberish._oscillator,Gibberish.PolySeq=function(){var e=this,t=0,i=function(e,t){return t>e?-1:e>t?1:0};Gibberish.extend(this,{seqs:[],timeline:{},playOnce:!1,repeatCount:0,repeatTarget:null,isConnected:!1,properties:{rate:1,isRunning:!1,nextTime:0},offset:0,autofire:[],name:"polyseq",getPhase:function(){return t},timeModifier:null,add:function(i){i.valuesIndex=i.durationsIndex=0,null===i.durations?(i.autofire=!0,e.autofire.push(i)):(e.seqs.push(i),"undefined"!=typeof e.timeline[t]?i.priority?e.timeline[t].unshift(i):e.timeline[t].push(i):e.timeline[t]=[i],e.nextTime=t),!e.scale||"frequency"!==i.key&&"note"!==i.key||e.applyScale&&e.applyScale(),i.shouldStop=!1},callback:function(s,n,r){var a;if(n){if(t>=r){var o=e.timeline[r],h=t-r;if("undefined"==typeof o)return;for(var u=0;u<o.length;u++){var c=o[u];if(!c.shouldStop){var l=c.values.pick?c.values.pick():c.valuesIndex++%c.values.length,b=c.values[l];if("function"==typeof b&&(b=b()),c.target&&("function"==typeof c.target[c.key]?c.target[c.key](b):c.target[c.key]=b),e.chose&&e.chose(c.key,l),Array.isArray(c.durations)){var l=c.durations.pick?c.durations.pick():c.durationsIndex++,p=c.durations[l];a="function"==typeof p?p():p,c.durationsIndex>=c.durations.length&&(c.durationsIndex=0),e.chose&&e.chose("durations",l)}else{var p=c.durations;a="function"==typeof p?p():p}var f;f=null!==e.timeModifier?e.timeModifier(a)+t:a+t,f-=h,a-=h,"undefined"==typeof e.timeline[f]?e.timeline[f]=[c]:c.priority?e.timeline[f].unshift(c):e.timeline[f].push(c)}}for(var u=0,d=e.autofire.length;d>u;u++){var c=e.autofire[u];if(!c.shouldStop){var l=c.values.pick?c.values.pick():c.valuesIndex++%c.values.length,b=c.values[l];"function"==typeof b&&(b=b()),c.target&&("function"==typeof c.target[c.key]?c.target[c.key](b):c.target[c.key]=b),e.chose&&e.chose(c.key,l)}}delete e.timeline[r];var g=Object.keys(e.timeline),m=g.length;if(m>1){for(var y=0;m>y;y++)g[y]=parseFloat(g[y]);g=g.sort(i),e.nextTime=g[0]}else e.nextTime=parseFloat(g[0])}t+=s}return 0},start:function(e,i){if(e&&this.offset){t=0,this.nextTime=this.offset;var s=""+this.offset;this.timeline={},this.timeline[s]=[];for(var n=0;n<this.seqs.length;n++){var r=this.seqs[n];r.valuesIndex=r.durationsIndex=r.shouldStop=0,this.timeline[s].push(r)}}else{t=0,this.nextTime=0,this.timeline={0:[]};for(var n=0;n<this.seqs.length;n++){var r=this.seqs[n];r.valuesIndex=r.durationsIndex=r.shouldStop=0,this.timeline[0].push(r)}}return this.isConnected||(this.connect(Gibberish.Master,i),this.isConnected=!0),this.isRunning=!0,this},stop:function(){return this.isRunning=!1,this.isConnected&&(this.disconnect(),this.isConnected=!1),this},repeat:function(e){return this.repeatTarget=e,this},shuffle:function(e){if("undefined"!=typeof e)for(var t=0;t<this.seqs.length;t++)this.seqs[t].key===e&&this.shuffleArray(this.seqs[t].values);else for(var t=0;t<this.seqs.length;t++)this.shuffleArray(this.seqs[t].values)},shuffleArray:function(e){for(var t,i,s=e.length;s;t=parseInt(Math.random()*s),i=e[--s],e[s]=e[t],e[t]=i);}}),this.init(arguments),this.processProperties(arguments),this.oscillatorInit()},Gibberish.PolySeq.prototype=Gibberish._oscillator;var _hasInput=!1;return"object"==typeof navigator&&(navigator.getUserMedia=navigator.getUserMedia||navigator.webkitGetUserMedia||navigator.mozGetUserMedia||navigator.msGetUserMedia),Gibberish.Input=function(){var e=[];_hasInput||createInput(),this.type=this.name="input",this.fx=new Array2,this.fx.parent=this,this.properties={input:"input",amp:.5,channels:1},this.callback=function(t,i,s){return 1===s?e=t*i:(e[0]=t[0]*i,e[1]=t[1]*i),e},this.init(arguments),this.processProperties(arguments)},Gibberish.Input.prototype=new Gibberish.ugen,Gibberish.Kick=function(){var e=!1,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,s=.2,n=.8;Gibberish.extend(this,{name:"kick",properties:{pitch:50,__decay:20,__tone:1e3,amp:2,sr:Gibberish.context.sampleRate},callback:function(s,n,r,a,o){var h=e?60:0;return h=t(h,s,n,2,o),h=i(h,r,.5,0,o),h*=a,e=!1,h},note:function(t,i,s,n){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.decay=i),"number"==typeof s&&(this.tone=s),"number"==typeof n&&(this.amp=n),e=!0}}).init().oscillatorInit(),Object.defineProperties(this,{decay:{get:function(){return s},set:function(e){s=e>1?1:e,this.__decay=100*s}},tone:{get:function(){return n},set:function(e){n=e>1?1:e,this.__tone=220+1400*e}}}),this.processProperties(arguments)},Gibberish.Kick.prototype=Gibberish._oscillator,Gibberish.Conga=function(){var e=!1,t=(new Gibberish.SVF).callback;Gibberish.extend(this,{name:"conga",properties:{pitch:190,amp:2,sr:Gibberish.context.sampleRate},callback:function(i,s,n){var r=e?60:0;return r=t(r,i,50,2,n),r*=s,e=!1,r},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),e=!0}}).init().oscillatorInit(),this.processProperties(arguments)},Gibberish.Conga.prototype=Gibberish._oscillator,Gibberish.Clave=function(){var e=!1,t=new Gibberish.SVF,i=t.callback;Gibberish.extend(this,{name:"clave",properties:{pitch:2500,amp:1,sr:Gibberish.context.sampleRate},callback:function(t,s,n){var r=e?2:0;return r=i(r,t,5,2,n),r*=s,e=!1,r},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),e=!0}}).init().oscillatorInit(),this.bpf=t,this.processProperties(arguments)},Gibberish.Clave.prototype=Gibberish._oscillator,Gibberish.Tom=function(){var e=!1,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,s=new Gibberish.ExponentialDecay,n=s.callback,r=Math.random;Gibberish.extend(this,{name:"tom",properties:{pitch:80,amp:.5,sr:Gibberish.context.sampleRate},callback:function(s,a,o){var h,u=e?60:0;return u=t(u,s,30,2,o),h=16*r()-8,h=h>0?h:0,h*=n(.05,11025),h=i(h,120,.5,0,o),u+=h,u*=a,e=!1,u},note:function(t,i){"number"==typeof t&&(this.pitch=t),"number"==typeof i&&(this.amp=i),s.trigger(),e=!0}}).init().oscillatorInit(),s.trigger(1),this.processProperties(arguments)},Gibberish.Tom.prototype=Gibberish._oscillator,Gibberish.Cowbell=function(){var e=new Gibberish.Square,t=new Gibberish.Square,i=e.callback,s=t.callback,n=new Gibberish.SVF({mode:2}),r=n.callback,a=new Gibberish.ExponentialDecay(.0025,10500),o=a.callback;Gibberish.extend(this,{name:"cowbell",properties:{amp:1,pitch:560,bpfFreq:1e3,bpfRez:3,decay:22050,decayCoeff:1e-4,sr:Gibberish.context.sampleRate},callback:function(e,t,n,a,h,u,c){var l;return l=i(t,1,1,0),l+=s(845,1,1,0),l=r(l,n,a,2,c),l*=o(u,h),l*=e},note:function(e){a.trigger(),e&&(this.decay=e)}}).init().oscillatorInit().processProperties(arguments),this.bpf=n,this.eg=a,a.trigger(1)},Gibberish.Cowbell.prototype=Gibberish._oscillator,Gibberish.Snare=function(){var e=(new Gibberish.SVF).callback,t=(new Gibberish.SVF).callback,i=(new Gibberish.SVF).callback,s=new Gibberish.ExponentialDecay(.0025,11025),n=s.callback,r=Math.random,a=0;Gibberish.extend(this,{name:"snare",properties:{cutoff:1e3,decay:11025,tune:0,snappy:.5,amp:1,sr:Gibberish.context.sampleRate},callback:function(s,o,h,u,c,l){var b,p,f=0,d=0;return f=n(.0025,o),f>.005&&(d=(2*r()-1)*f,d=i(d,s+1e3*h,.5,1,l),d*=u,d=d>0?d:0,a=f,b=e(a,180*(h+1),15,2,l),p=t(a,330*(h+1),15,2,l),d+=b,d+=.8*p,d*=c),d},note:function(e,t,i,n){"number"==typeof e&&(this.tune=e),"number"==typeof n&&(this.cutoff=n),"number"==typeof i&&(this.snappy=i),"number"==typeof t&&(this.amp=t),s.trigger()}}).init().oscillatorInit().processProperties(arguments),s.trigger(1)},Gibberish.Snare.prototype=Gibberish._oscillator,Gibberish.Hat=function(){{var e=new Gibberish.Square,t=new Gibberish.Square,i=new Gibberish.Square,s=new Gibberish.Square,n=new Gibberish.Square,r=new Gibberish.Square,a=e.callback,o=t.callback,h=i.callback,u=s.callback,c=n.callback,l=r.callback,b=new Gibberish.SVF({mode:2}),p=b.callback,f=new Gibberish.Filter24,d=f.callback,g=new Gibberish.ExponentialDecay(.0025,10500),m=g.callback,y=new Gibberish.ExponentialDecay(.1,7500);y.callback}Gibberish.extend(this,{name:"hat",properties:{amp:1,pitch:325,bpfFreq:7e3,bpfRez:2,hpfFreq:.975,hpfRez:0,decay:3500,decay2:3e3,sr:Gibberish.context.sampleRate},callback:function(e,t,i,s,n,r,b,f,g){var y;return y=a(t,1,.5,0),y+=o(1.4471*t,.75,1,0),y+=h(1.617*t,1,1,0),y+=u(1.9265*t,1,1,0),y+=c(2.5028*t,1,1,0),y+=l(2.6637*t,.75,1,0),y=p(y,i,s,2,g),y*=m(.001,b),y=d(y,n,r,0,1),y*=e},note:function(e,t){g.trigger(),y.trigger(),e&&(this.decay=e),t&&(this.decay2=t)}}).init().oscillatorInit().processProperties(arguments),this.bpf=b,this.hpf=f,g.trigger(1),y.trigger(1)},Gibberish.Hat.prototype=Gibberish._oscillator,Gibberish});
+},{}],6:[function(_dereq_,module,exports){
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+var base64 = _dereq_('base64-js')
+var ieee754 = _dereq_('ieee754')
+
+exports.Buffer = Buffer
+exports.SlowBuffer = Buffer
+exports.INSPECT_MAX_BYTES = 50
+Buffer.poolSize = 8192
+
+/**
+ * If `Buffer._useTypedArrays`:
+ *   === true    Use Uint8Array implementation (fastest)
+ *   === false   Use Object implementation (compatible down to IE6)
+ */
+Buffer._useTypedArrays = (function () {
+  // Detect if browser supports Typed Arrays. Supported browsers are IE 10+, Firefox 4+,
+  // Chrome 7+, Safari 5.1+, Opera 11.6+, iOS 4.2+. If the browser does not support adding
+  // properties to `Uint8Array` instances, then that's the same as no `Uint8Array` support
+  // because we need to be able to add all the node Buffer API methods. This is an issue
+  // in Firefox 4-29. Now fixed: https://bugzilla.mozilla.org/show_bug.cgi?id=695438
+  try {
+    var buf = new ArrayBuffer(0)
+    var arr = new Uint8Array(buf)
+    arr.foo = function () { return 42 }
+    return 42 === arr.foo() &&
+        typeof arr.subarray === 'function' // Chrome 9-10 lack `subarray`
+  } catch (e) {
+    return false
   }
-}(this, function () {
-/**#Gibberish - Miscellaneous
-Gibberish is the main object used to manage the audio graph and perform codegen functions. All constructors are also inside of the Gibberish object. Gibberish can automatically generate an appropriate web audio callback for you; if you want to use this you must execute the Gibberish.init() command before creating any Gibberish ugens.
+})()
 
-## Example Usage##
-`// make a sine wave  
-Gibberish.init();  
-a = new Gibberish.Sine().connect();`
-## Constructor
-**param** *bufferSize*: Integer. Default 1024. The size of the buffer to be calculated. Since JavaScript is single-threaded, setting exceedingly large values for this will yield to stuttering in graphics and user interface performance.
-- - - -
-**/
-/**###Gibberish.audioFiles : property  
-Array. Anytime an audiofile is loaded (normally using the Sampler ugen) the resulting sample buffer is stored in this array so that it can be immediately recalled.
-**/
-/**###Gibberish.callback : property
-String. Whenever Gibberish performs code generation the resulting callback is stored here.
-**/
-/**###Gibberish.out : property
-Object. The is the 'master' bus that everything eventually gets routed to if you're using the auto-generated calback. This bus is initialized in the call to Gibberish.init.
-**/
-/**###Gibberish.dirtied : property
-Array. A list of objects that need to be codegen'd
-**/
-/**###Gibberish.isDirty : property
-Booelan. Whether or codegen should be performed.
-**/
-/**###Gibberish.codeblock : property
-Array. During codegen, each ugen's codeblock is inserted into this array. Once all the ugens have codegen'd, the array is concatenated to form the callback.
-**/
-/**###Gibberish.upvalues : property
-Array. Each ugen's callback function is stored in this array; the contents of the array become upvalues to the master callback function when it is codegen'd.
-**/
-/**###Gibberish.debug : property
-Boolean. Default false. When true, the callbackString is printed to the console whenever a codegen is performed
-**/
-/**###Gibberish.memo : property
-Object. Used in the codegen process to make sure codegen for each ugen is only performed once.
-**/
+/**
+ * Class: Buffer
+ * =============
+ *
+ * The Buffer constructor returns instances of `Uint8Array` that are augmented
+ * with function properties for all the node `Buffer` API functions. We use
+ * `Uint8Array` so that square bracket notation works as expected -- it returns
+ * a single octet.
+ *
+ * By augmenting the instances, we can avoid modifying the `Uint8Array`
+ * prototype.
+ */
+function Buffer (subject, encoding, noZero) {
+  if (!(this instanceof Buffer))
+    return new Buffer(subject, encoding, noZero)
 
+  var type = typeof subject
 
-var Gibberish = {
-  memo              : {},
-  codeblock         : [],
-  analysisCodeblock : [],
-  analysisUgens     : [],
-  dirtied           : [],
-  id                : 0,
-  isDirty           : false,  // whether or not callback needs to codegen'd
-  out               : null,   // main output bus
-  debug             : false,
-  callback          : '',
-  audioFiles        : {},
-  sequencers        : [],
-  callbackArgs      : ['input'], // names of function arguments for main audio callback
-  callbackObjects   : [],        // ugen function callbacks used in main audio callback
-  analysisCallbackArgs    : [],
-  analysisCallbackObjects : [],
-  onBlock: null,
-/**###Gibberish.createCallback : method
-Perform codegen on all dirty ugens and re-create the audio callback. This method is called automatically in the default Gibberish sample loop whenever Gibberish.isDirty is true.
-**/
-  createCallback : function() {
-    this.memo = {};
-    
-    this.codeblock.length = 0;
-    
-    this.callbackArgs.length = 0;
-    this.callbackObjects.length = 0;
-    this.analysisCallbackArgs.length = 0;
-    
-    /* generate code for dirty ugens */
-    /*for(var i = 0; i < this.dirtied.length; i++) {
-      this.dirtied[i].codegen();
-    }*/
-    this.dirtied.length = 0;
-    
-    this.codestring = ''
-    
-    this.args = ['input']
-    
-    this.memo = {};
-    
-    this.out.codegen()
-    
-    var codeblockStore = this.codeblock.slice(0)
-    
-    // we must push these here because the callback arguments are at the start of the string, 
-    // but we have to wait to codegen the analysis ugens until after their targets have been codegen'd
-    if(this.analysisUgens.length > 0) { 
-      this.analysisCodeblock.length = 0;
-      for(var i = 0; i < this.analysisUgens.length; i++) {
-        this.analysisCallbackArgs.push( this.analysisUgens[i].analysisSymbol )
-      }
+  // Workaround: node's base64 implementation allows for non-padded strings
+  // while base64-js does not.
+  if (encoding === 'base64' && type === 'string') {
+    subject = stringtrim(subject)
+    while (subject.length % 4 !== 0) {
+      subject = subject + '='
     }
-    
-    this.args = this.args.concat( this.callbackArgs )
-    
-    this.args = this.args.concat( this.analysisCallbackArgs )
+  }
 
-    /* concatenate code for all ugens */
-    //this.memo = {};
-    
-    this.codestring += codeblockStore.join('\t') //this.codeblock.join("\t");
-    this.codestring += "\n\t";
-    
-    /* analysis codeblock */
-    if(this.analysisUgens.length > 0) {
-      this.analysisCodeblock.length = 0;
-      for(var i = 0; i < this.analysisUgens.length; i++) {
-        this.codeblock.length = 0;
-        this.analysisUgens[i].analysisCodegen();
-        /*
-        if(this.codestring !== 'undefined' ) {
-          this.codestring += this.codeblock.join("");
-          this.codestring += "\n\t";
-          this.analysisCodeblock.push ( this.analysisUgens[i].analysisCodegen() );
-        }
-        */
-      }
-      this.codestring += this.analysisCodeblock.join('\n\t');
-      this.codestring += '\n\t';
+  // Find the length
+  var length
+  if (type === 'number')
+    length = coerce(subject)
+  else if (type === 'string')
+    length = Buffer.byteLength(subject, encoding)
+  else if (type === 'object')
+    length = coerce(subject.length) // assume that object is array-like
+  else
+    throw new Error('First argument needs to be a number, array or string.')
+
+  var buf
+  if (Buffer._useTypedArrays) {
+    // Preferred: Return an augmented `Uint8Array` instance for best performance
+    buf = Buffer._augment(new Uint8Array(length))
+  } else {
+    // Fallback: Return THIS instance of Buffer (created by `new`)
+    buf = this
+    buf.length = length
+    buf._isBuffer = true
+  }
+
+  var i
+  if (Buffer._useTypedArrays && typeof subject.byteLength === 'number') {
+    // Speed optimization -- use set if we're copying from a typed array
+    buf._set(subject)
+  } else if (isArrayish(subject)) {
+    // Treat array-ish objects as a byte array
+    for (i = 0; i < length; i++) {
+      if (Buffer.isBuffer(subject))
+        buf[i] = subject.readUInt8(i)
+      else
+        buf[i] = subject[i]
     }
-    this.codestring += 'return ' + this.out.variable +';\n';
-    
-    this.callbackString = this.codestring;
-    if( this.debug ) console.log( this.callbackString );
-    
-    return [this.args, this.codestring];
-  },
+  } else if (type === 'string') {
+    buf.write(subject, 0, encoding)
+  } else if (type === 'number' && !Buffer._useTypedArrays && !noZero) {
+    for (i = 0; i < length; i++) {
+      buf[i] = 0
+    }
+  }
 
-/**###Gibberish.audioProcess : method
-The default audio callback used in Webkit browsers. This callback starts running as soon as Gibberish.init() is called.  
-  
-param **Audio Event** : Object. The HTML5 audio event object.
-**/ 
-  audioProcess : function(e){
-		var bufferL = e.outputBuffer.getChannelData(0),
-		    bufferR = e.outputBuffer.getChannelData(1),	
-		    input = e.inputBuffer.getChannelData(0),
-        me = Gibberish,
-        callback = me.callback,
-        sequencers = me.sequencers,
-        out = Gibberish.out.callback,
-        objs = me.callbackObjects.slice(0),
-        callbackArgs, callbackBody, _callback, val
+  return buf
+}
 
-    if( me.onBlock !== null ) me.onBlock( me.context )
-    
-    objs.unshift(0)
-        
-		for(var i = 0, _bl = e.outputBuffer.length; i < _bl; i++){
-      
-      for(var j = 0; j < sequencers.length; j++) { sequencers[j].tick(); }
-      
-      if(me.isDirty) {
-        _callback = me.createCallback();
-        
-        try{
-          callback = me.callback = new Function( _callback[0], _callback[1] )
-        }catch( e ) {
-          console.error( "ERROR WITH CALLBACK : \n\n", _callback )
-        }
-        
-        me.isDirty = false;
-        objs = me.callbackObjects.slice(0)
-        objs.unshift(0)
-      }
-      
-      //console.log( "CB", callback )
-      objs[0] = input[i]
-      val = callback.apply( null, objs );
-      
-			bufferL[i] = val[0];
-			bufferR[i] = val[1];      
+// STATIC METHODS
+// ==============
+
+Buffer.isEncoding = function (encoding) {
+  switch (String(encoding).toLowerCase()) {
+    case 'hex':
+    case 'utf8':
+    case 'utf-8':
+    case 'ascii':
+    case 'binary':
+    case 'base64':
+    case 'raw':
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return true
+    default:
+      return false
+  }
+}
+
+Buffer.isBuffer = function (b) {
+  return !!(b !== null && b !== undefined && b._isBuffer)
+}
+
+Buffer.byteLength = function (str, encoding) {
+  var ret
+  str = str + ''
+  switch (encoding || 'utf8') {
+    case 'hex':
+      ret = str.length / 2
+      break
+    case 'utf8':
+    case 'utf-8':
+      ret = utf8ToBytes(str).length
+      break
+    case 'ascii':
+    case 'binary':
+    case 'raw':
+      ret = str.length
+      break
+    case 'base64':
+      ret = base64ToBytes(str).length
+      break
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      ret = str.length * 2
+      break
+    default:
+      throw new Error('Unknown encoding')
+  }
+  return ret
+}
+
+Buffer.concat = function (list, totalLength) {
+  assert(isArray(list), 'Usage: Buffer.concat(list, [totalLength])\n' +
+      'list should be an Array.')
+
+  if (list.length === 0) {
+    return new Buffer(0)
+  } else if (list.length === 1) {
+    return list[0]
+  }
+
+  var i
+  if (typeof totalLength !== 'number') {
+    totalLength = 0
+    for (i = 0; i < list.length; i++) {
+      totalLength += list[i].length
+    }
+  }
+
+  var buf = new Buffer(totalLength)
+  var pos = 0
+  for (i = 0; i < list.length; i++) {
+    var item = list[i]
+    item.copy(buf, pos)
+    pos += item.length
+  }
+  return buf
+}
+
+// BUFFER INSTANCE METHODS
+// =======================
+
+function _hexWrite (buf, string, offset, length) {
+  offset = Number(offset) || 0
+  var remaining = buf.length - offset
+  if (!length) {
+    length = remaining
+  } else {
+    length = Number(length)
+    if (length > remaining) {
+      length = remaining
+    }
+  }
+
+  // must be an even number of digits
+  var strLen = string.length
+  assert(strLen % 2 === 0, 'Invalid hex string')
+
+  if (length > strLen / 2) {
+    length = strLen / 2
+  }
+  for (var i = 0; i < length; i++) {
+    var byte = parseInt(string.substr(i * 2, 2), 16)
+    assert(!isNaN(byte), 'Invalid hex string')
+    buf[offset + i] = byte
+  }
+  Buffer._charsWritten = i * 2
+  return i
+}
+
+function _utf8Write (buf, string, offset, length) {
+  var charsWritten = Buffer._charsWritten =
+    blitBuffer(utf8ToBytes(string), buf, offset, length)
+  return charsWritten
+}
+
+function _asciiWrite (buf, string, offset, length) {
+  var charsWritten = Buffer._charsWritten =
+    blitBuffer(asciiToBytes(string), buf, offset, length)
+  return charsWritten
+}
+
+function _binaryWrite (buf, string, offset, length) {
+  return _asciiWrite(buf, string, offset, length)
+}
+
+function _base64Write (buf, string, offset, length) {
+  var charsWritten = Buffer._charsWritten =
+    blitBuffer(base64ToBytes(string), buf, offset, length)
+  return charsWritten
+}
+
+function _utf16leWrite (buf, string, offset, length) {
+  var charsWritten = Buffer._charsWritten =
+    blitBuffer(utf16leToBytes(string), buf, offset, length)
+  return charsWritten
+}
+
+Buffer.prototype.write = function (string, offset, length, encoding) {
+  // Support both (string, offset, length, encoding)
+  // and the legacy (string, encoding, offset, length)
+  if (isFinite(offset)) {
+    if (!isFinite(length)) {
+      encoding = length
+      length = undefined
+    }
+  } else {  // legacy
+    var swap = encoding
+    encoding = offset
+    offset = length
+    length = swap
+  }
+
+  offset = Number(offset) || 0
+  var remaining = this.length - offset
+  if (!length) {
+    length = remaining
+  } else {
+    length = Number(length)
+    if (length > remaining) {
+      length = remaining
+    }
+  }
+  encoding = String(encoding || 'utf8').toLowerCase()
+
+  var ret
+  switch (encoding) {
+    case 'hex':
+      ret = _hexWrite(this, string, offset, length)
+      break
+    case 'utf8':
+    case 'utf-8':
+      ret = _utf8Write(this, string, offset, length)
+      break
+    case 'ascii':
+      ret = _asciiWrite(this, string, offset, length)
+      break
+    case 'binary':
+      ret = _binaryWrite(this, string, offset, length)
+      break
+    case 'base64':
+      ret = _base64Write(this, string, offset, length)
+      break
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      ret = _utf16leWrite(this, string, offset, length)
+      break
+    default:
+      throw new Error('Unknown encoding')
+  }
+  return ret
+}
+
+Buffer.prototype.toString = function (encoding, start, end) {
+  var self = this
+
+  encoding = String(encoding || 'utf8').toLowerCase()
+  start = Number(start) || 0
+  end = (end !== undefined)
+    ? Number(end)
+    : end = self.length
+
+  // Fastpath empty strings
+  if (end === start)
+    return ''
+
+  var ret
+  switch (encoding) {
+    case 'hex':
+      ret = _hexSlice(self, start, end)
+      break
+    case 'utf8':
+    case 'utf-8':
+      ret = _utf8Slice(self, start, end)
+      break
+    case 'ascii':
+      ret = _asciiSlice(self, start, end)
+      break
+    case 'binary':
+      ret = _binarySlice(self, start, end)
+      break
+    case 'base64':
+      ret = _base64Slice(self, start, end)
+      break
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      ret = _utf16leSlice(self, start, end)
+      break
+    default:
+      throw new Error('Unknown encoding')
+  }
+  return ret
+}
+
+Buffer.prototype.toJSON = function () {
+  return {
+    type: 'Buffer',
+    data: Array.prototype.slice.call(this._arr || this, 0)
+  }
+}
+
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer.prototype.copy = function (target, target_start, start, end) {
+  var source = this
+
+  if (!start) start = 0
+  if (!end && end !== 0) end = this.length
+  if (!target_start) target_start = 0
+
+  // Copy 0 bytes; we're done
+  if (end === start) return
+  if (target.length === 0 || source.length === 0) return
+
+  // Fatal error conditions
+  assert(end >= start, 'sourceEnd < sourceStart')
+  assert(target_start >= 0 && target_start < target.length,
+      'targetStart out of bounds')
+  assert(start >= 0 && start < source.length, 'sourceStart out of bounds')
+  assert(end >= 0 && end <= source.length, 'sourceEnd out of bounds')
+
+  // Are we oob?
+  if (end > this.length)
+    end = this.length
+  if (target.length - target_start < end - start)
+    end = target.length - target_start + start
+
+  var len = end - start
+
+  if (len < 100 || !Buffer._useTypedArrays) {
+    for (var i = 0; i < len; i++)
+      target[i + target_start] = this[i + start]
+  } else {
+    target._set(this.subarray(start, start + len), target_start)
+  }
+}
+
+function _base64Slice (buf, start, end) {
+  if (start === 0 && end === buf.length) {
+    return base64.fromByteArray(buf)
+  } else {
+    return base64.fromByteArray(buf.slice(start, end))
+  }
+}
+
+function _utf8Slice (buf, start, end) {
+  var res = ''
+  var tmp = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; i++) {
+    if (buf[i] <= 0x7F) {
+      res += decodeUtf8Char(tmp) + String.fromCharCode(buf[i])
+      tmp = ''
+    } else {
+      tmp += '%' + buf[i].toString(16)
+    }
+  }
+
+  return res + decodeUtf8Char(tmp)
+}
+
+function _asciiSlice (buf, start, end) {
+  var ret = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; i++)
+    ret += String.fromCharCode(buf[i])
+  return ret
+}
+
+function _binarySlice (buf, start, end) {
+  return _asciiSlice(buf, start, end)
+}
+
+function _hexSlice (buf, start, end) {
+  var len = buf.length
+
+  if (!start || start < 0) start = 0
+  if (!end || end < 0 || end > len) end = len
+
+  var out = ''
+  for (var i = start; i < end; i++) {
+    out += toHex(buf[i])
+  }
+  return out
+}
+
+function _utf16leSlice (buf, start, end) {
+  var bytes = buf.slice(start, end)
+  var res = ''
+  for (var i = 0; i < bytes.length; i += 2) {
+    res += String.fromCharCode(bytes[i] + bytes[i+1] * 256)
+  }
+  return res
+}
+
+Buffer.prototype.slice = function (start, end) {
+  var len = this.length
+  start = clamp(start, len, 0)
+  end = clamp(end, len, len)
+
+  if (Buffer._useTypedArrays) {
+    return Buffer._augment(this.subarray(start, end))
+  } else {
+    var sliceLen = end - start
+    var newBuf = new Buffer(sliceLen, undefined, true)
+    for (var i = 0; i < sliceLen; i++) {
+      newBuf[i] = this[i + start]
+    }
+    return newBuf
+  }
+}
+
+// `get` will be removed in Node 0.13+
+Buffer.prototype.get = function (offset) {
+  console.log('.get() is deprecated. Access using array indexes instead.')
+  return this.readUInt8(offset)
+}
+
+// `set` will be removed in Node 0.13+
+Buffer.prototype.set = function (v, offset) {
+  console.log('.set() is deprecated. Access using array indexes instead.')
+  return this.writeUInt8(v, offset)
+}
+
+Buffer.prototype.readUInt8 = function (offset, noAssert) {
+  if (!noAssert) {
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset < this.length, 'Trying to read beyond buffer length')
+  }
+
+  if (offset >= this.length)
+    return
+
+  return this[offset]
+}
+
+function _readUInt16 (buf, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 1 < buf.length, 'Trying to read beyond buffer length')
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  var val
+  if (littleEndian) {
+    val = buf[offset]
+    if (offset + 1 < len)
+      val |= buf[offset + 1] << 8
+  } else {
+    val = buf[offset] << 8
+    if (offset + 1 < len)
+      val |= buf[offset + 1]
+  }
+  return val
+}
+
+Buffer.prototype.readUInt16LE = function (offset, noAssert) {
+  return _readUInt16(this, offset, true, noAssert)
+}
+
+Buffer.prototype.readUInt16BE = function (offset, noAssert) {
+  return _readUInt16(this, offset, false, noAssert)
+}
+
+function _readUInt32 (buf, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  var val
+  if (littleEndian) {
+    if (offset + 2 < len)
+      val = buf[offset + 2] << 16
+    if (offset + 1 < len)
+      val |= buf[offset + 1] << 8
+    val |= buf[offset]
+    if (offset + 3 < len)
+      val = val + (buf[offset + 3] << 24 >>> 0)
+  } else {
+    if (offset + 1 < len)
+      val = buf[offset + 1] << 16
+    if (offset + 2 < len)
+      val |= buf[offset + 2] << 8
+    if (offset + 3 < len)
+      val |= buf[offset + 3]
+    val = val + (buf[offset] << 24 >>> 0)
+  }
+  return val
+}
+
+Buffer.prototype.readUInt32LE = function (offset, noAssert) {
+  return _readUInt32(this, offset, true, noAssert)
+}
+
+Buffer.prototype.readUInt32BE = function (offset, noAssert) {
+  return _readUInt32(this, offset, false, noAssert)
+}
+
+Buffer.prototype.readInt8 = function (offset, noAssert) {
+  if (!noAssert) {
+    assert(offset !== undefined && offset !== null,
+        'missing offset')
+    assert(offset < this.length, 'Trying to read beyond buffer length')
+  }
+
+  if (offset >= this.length)
+    return
+
+  var neg = this[offset] & 0x80
+  if (neg)
+    return (0xff - this[offset] + 1) * -1
+  else
+    return this[offset]
+}
+
+function _readInt16 (buf, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 1 < buf.length, 'Trying to read beyond buffer length')
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  var val = _readUInt16(buf, offset, littleEndian, true)
+  var neg = val & 0x8000
+  if (neg)
+    return (0xffff - val + 1) * -1
+  else
+    return val
+}
+
+Buffer.prototype.readInt16LE = function (offset, noAssert) {
+  return _readInt16(this, offset, true, noAssert)
+}
+
+Buffer.prototype.readInt16BE = function (offset, noAssert) {
+  return _readInt16(this, offset, false, noAssert)
+}
+
+function _readInt32 (buf, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  var val = _readUInt32(buf, offset, littleEndian, true)
+  var neg = val & 0x80000000
+  if (neg)
+    return (0xffffffff - val + 1) * -1
+  else
+    return val
+}
+
+Buffer.prototype.readInt32LE = function (offset, noAssert) {
+  return _readInt32(this, offset, true, noAssert)
+}
+
+Buffer.prototype.readInt32BE = function (offset, noAssert) {
+  return _readInt32(this, offset, false, noAssert)
+}
+
+function _readFloat (buf, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
+  }
+
+  return ieee754.read(buf, offset, littleEndian, 23, 4)
+}
+
+Buffer.prototype.readFloatLE = function (offset, noAssert) {
+  return _readFloat(this, offset, true, noAssert)
+}
+
+Buffer.prototype.readFloatBE = function (offset, noAssert) {
+  return _readFloat(this, offset, false, noAssert)
+}
+
+function _readDouble (buf, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset + 7 < buf.length, 'Trying to read beyond buffer length')
+  }
+
+  return ieee754.read(buf, offset, littleEndian, 52, 8)
+}
+
+Buffer.prototype.readDoubleLE = function (offset, noAssert) {
+  return _readDouble(this, offset, true, noAssert)
+}
+
+Buffer.prototype.readDoubleBE = function (offset, noAssert) {
+  return _readDouble(this, offset, false, noAssert)
+}
+
+Buffer.prototype.writeUInt8 = function (value, offset, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset < this.length, 'trying to write beyond buffer length')
+    verifuint(value, 0xff)
+  }
+
+  if (offset >= this.length) return
+
+  this[offset] = value
+}
+
+function _writeUInt16 (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 1 < buf.length, 'trying to write beyond buffer length')
+    verifuint(value, 0xffff)
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  for (var i = 0, j = Math.min(len - offset, 2); i < j; i++) {
+    buf[offset + i] =
+        (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
+            (littleEndian ? i : 1 - i) * 8
+  }
+}
+
+Buffer.prototype.writeUInt16LE = function (value, offset, noAssert) {
+  _writeUInt16(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeUInt16BE = function (value, offset, noAssert) {
+  _writeUInt16(this, value, offset, false, noAssert)
+}
+
+function _writeUInt32 (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 3 < buf.length, 'trying to write beyond buffer length')
+    verifuint(value, 0xffffffff)
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  for (var i = 0, j = Math.min(len - offset, 4); i < j; i++) {
+    buf[offset + i] =
+        (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
+  }
+}
+
+Buffer.prototype.writeUInt32LE = function (value, offset, noAssert) {
+  _writeUInt32(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeUInt32BE = function (value, offset, noAssert) {
+  _writeUInt32(this, value, offset, false, noAssert)
+}
+
+Buffer.prototype.writeInt8 = function (value, offset, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset < this.length, 'Trying to write beyond buffer length')
+    verifsint(value, 0x7f, -0x80)
+  }
+
+  if (offset >= this.length)
+    return
+
+  if (value >= 0)
+    this.writeUInt8(value, offset, noAssert)
+  else
+    this.writeUInt8(0xff + value + 1, offset, noAssert)
+}
+
+function _writeInt16 (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 1 < buf.length, 'Trying to write beyond buffer length')
+    verifsint(value, 0x7fff, -0x8000)
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  if (value >= 0)
+    _writeUInt16(buf, value, offset, littleEndian, noAssert)
+  else
+    _writeUInt16(buf, 0xffff + value + 1, offset, littleEndian, noAssert)
+}
+
+Buffer.prototype.writeInt16LE = function (value, offset, noAssert) {
+  _writeInt16(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeInt16BE = function (value, offset, noAssert) {
+  _writeInt16(this, value, offset, false, noAssert)
+}
+
+function _writeInt32 (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 3 < buf.length, 'Trying to write beyond buffer length')
+    verifsint(value, 0x7fffffff, -0x80000000)
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  if (value >= 0)
+    _writeUInt32(buf, value, offset, littleEndian, noAssert)
+  else
+    _writeUInt32(buf, 0xffffffff + value + 1, offset, littleEndian, noAssert)
+}
+
+Buffer.prototype.writeInt32LE = function (value, offset, noAssert) {
+  _writeInt32(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeInt32BE = function (value, offset, noAssert) {
+  _writeInt32(this, value, offset, false, noAssert)
+}
+
+function _writeFloat (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 3 < buf.length, 'Trying to write beyond buffer length')
+    verifIEEE754(value, 3.4028234663852886e+38, -3.4028234663852886e+38)
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  ieee754.write(buf, value, offset, littleEndian, 23, 4)
+}
+
+Buffer.prototype.writeFloatLE = function (value, offset, noAssert) {
+  _writeFloat(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeFloatBE = function (value, offset, noAssert) {
+  _writeFloat(this, value, offset, false, noAssert)
+}
+
+function _writeDouble (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    assert(value !== undefined && value !== null, 'missing value')
+    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
+    assert(offset !== undefined && offset !== null, 'missing offset')
+    assert(offset + 7 < buf.length,
+        'Trying to write beyond buffer length')
+    verifIEEE754(value, 1.7976931348623157E+308, -1.7976931348623157E+308)
+  }
+
+  var len = buf.length
+  if (offset >= len)
+    return
+
+  ieee754.write(buf, value, offset, littleEndian, 52, 8)
+}
+
+Buffer.prototype.writeDoubleLE = function (value, offset, noAssert) {
+  _writeDouble(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
+  _writeDouble(this, value, offset, false, noAssert)
+}
+
+// fill(value, start=0, end=buffer.length)
+Buffer.prototype.fill = function (value, start, end) {
+  if (!value) value = 0
+  if (!start) start = 0
+  if (!end) end = this.length
+
+  if (typeof value === 'string') {
+    value = value.charCodeAt(0)
+  }
+
+  assert(typeof value === 'number' && !isNaN(value), 'value is not a number')
+  assert(end >= start, 'end < start')
+
+  // Fill 0 bytes; we're done
+  if (end === start) return
+  if (this.length === 0) return
+
+  assert(start >= 0 && start < this.length, 'start out of bounds')
+  assert(end >= 0 && end <= this.length, 'end out of bounds')
+
+  for (var i = start; i < end; i++) {
+    this[i] = value
+  }
+}
+
+Buffer.prototype.inspect = function () {
+  var out = []
+  var len = this.length
+  for (var i = 0; i < len; i++) {
+    out[i] = toHex(this[i])
+    if (i === exports.INSPECT_MAX_BYTES) {
+      out[i + 1] = '...'
+      break
+    }
+  }
+  return '<Buffer ' + out.join(' ') + '>'
+}
+
+/**
+ * Creates a new `ArrayBuffer` with the *copied* memory of the buffer instance.
+ * Added in Node 0.12. Only available in browsers that support ArrayBuffer.
+ */
+Buffer.prototype.toArrayBuffer = function () {
+  if (typeof Uint8Array !== 'undefined') {
+    if (Buffer._useTypedArrays) {
+      return (new Buffer(this)).buffer
+    } else {
+      var buf = new Uint8Array(this.length)
+      for (var i = 0, len = buf.length; i < len; i += 1)
+        buf[i] = this[i]
+      return buf.buffer
+    }
+  } else {
+    throw new Error('Buffer.toArrayBuffer not supported in this browser')
+  }
+}
+
+// HELPER FUNCTIONS
+// ================
+
+function stringtrim (str) {
+  if (str.trim) return str.trim()
+  return str.replace(/^\s+|\s+$/g, '')
+}
+
+var BP = Buffer.prototype
+
+/**
+ * Augment a Uint8Array *instance* (not the Uint8Array class!) with Buffer methods
+ */
+Buffer._augment = function (arr) {
+  arr._isBuffer = true
+
+  // save reference to original Uint8Array get/set methods before overwriting
+  arr._get = arr.get
+  arr._set = arr.set
+
+  // deprecated, will be removed in node 0.13+
+  arr.get = BP.get
+  arr.set = BP.set
+
+  arr.write = BP.write
+  arr.toString = BP.toString
+  arr.toLocaleString = BP.toString
+  arr.toJSON = BP.toJSON
+  arr.copy = BP.copy
+  arr.slice = BP.slice
+  arr.readUInt8 = BP.readUInt8
+  arr.readUInt16LE = BP.readUInt16LE
+  arr.readUInt16BE = BP.readUInt16BE
+  arr.readUInt32LE = BP.readUInt32LE
+  arr.readUInt32BE = BP.readUInt32BE
+  arr.readInt8 = BP.readInt8
+  arr.readInt16LE = BP.readInt16LE
+  arr.readInt16BE = BP.readInt16BE
+  arr.readInt32LE = BP.readInt32LE
+  arr.readInt32BE = BP.readInt32BE
+  arr.readFloatLE = BP.readFloatLE
+  arr.readFloatBE = BP.readFloatBE
+  arr.readDoubleLE = BP.readDoubleLE
+  arr.readDoubleBE = BP.readDoubleBE
+  arr.writeUInt8 = BP.writeUInt8
+  arr.writeUInt16LE = BP.writeUInt16LE
+  arr.writeUInt16BE = BP.writeUInt16BE
+  arr.writeUInt32LE = BP.writeUInt32LE
+  arr.writeUInt32BE = BP.writeUInt32BE
+  arr.writeInt8 = BP.writeInt8
+  arr.writeInt16LE = BP.writeInt16LE
+  arr.writeInt16BE = BP.writeInt16BE
+  arr.writeInt32LE = BP.writeInt32LE
+  arr.writeInt32BE = BP.writeInt32BE
+  arr.writeFloatLE = BP.writeFloatLE
+  arr.writeFloatBE = BP.writeFloatBE
+  arr.writeDoubleLE = BP.writeDoubleLE
+  arr.writeDoubleBE = BP.writeDoubleBE
+  arr.fill = BP.fill
+  arr.inspect = BP.inspect
+  arr.toArrayBuffer = BP.toArrayBuffer
+
+  return arr
+}
+
+// slice(start, end)
+function clamp (index, len, defaultValue) {
+  if (typeof index !== 'number') return defaultValue
+  index = ~~index;  // Coerce to integer.
+  if (index >= len) return len
+  if (index >= 0) return index
+  index += len
+  if (index >= 0) return index
+  return 0
+}
+
+function coerce (length) {
+  // Coerce length to a number (possibly NaN), round up
+  // in case it's fractional (e.g. 123.456) then do a
+  // double negate to coerce a NaN to 0. Easy, right?
+  length = ~~Math.ceil(+length)
+  return length < 0 ? 0 : length
+}
+
+function isArray (subject) {
+  return (Array.isArray || function (subject) {
+    return Object.prototype.toString.call(subject) === '[object Array]'
+  })(subject)
+}
+
+function isArrayish (subject) {
+  return isArray(subject) || Buffer.isBuffer(subject) ||
+      subject && typeof subject === 'object' &&
+      typeof subject.length === 'number'
+}
+
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
+}
+
+function utf8ToBytes (str) {
+  var byteArray = []
+  for (var i = 0; i < str.length; i++) {
+    var b = str.charCodeAt(i)
+    if (b <= 0x7F)
+      byteArray.push(str.charCodeAt(i))
+    else {
+      var start = i
+      if (b >= 0xD800 && b <= 0xDFFF) i++
+      var h = encodeURIComponent(str.slice(start, i+1)).substr(1).split('%')
+      for (var j = 0; j < h.length; j++)
+        byteArray.push(parseInt(h[j], 16))
+    }
+  }
+  return byteArray
+}
+
+function asciiToBytes (str) {
+  var byteArray = []
+  for (var i = 0; i < str.length; i++) {
+    // Node's code seems to be doing this and not & 0x7F..
+    byteArray.push(str.charCodeAt(i) & 0xFF)
+  }
+  return byteArray
+}
+
+function utf16leToBytes (str) {
+  var c, hi, lo
+  var byteArray = []
+  for (var i = 0; i < str.length; i++) {
+    c = str.charCodeAt(i)
+    hi = c >> 8
+    lo = c % 256
+    byteArray.push(lo)
+    byteArray.push(hi)
+  }
+
+  return byteArray
+}
+
+function base64ToBytes (str) {
+  return base64.toByteArray(str)
+}
+
+function blitBuffer (src, dst, offset, length) {
+  var pos
+  for (var i = 0; i < length; i++) {
+    if ((i + offset >= dst.length) || (i >= src.length))
+      break
+    dst[i + offset] = src[i]
+  }
+  return i
+}
+
+function decodeUtf8Char (str) {
+  try {
+    return decodeURIComponent(str)
+  } catch (err) {
+    return String.fromCharCode(0xFFFD) // UTF 8 invalid char
+  }
+}
+
+/*
+ * We have to make sure that the value is a valid integer. This means that it
+ * is non-negative. It has no fractional component and that it does not
+ * exceed the maximum allowed value.
+ */
+function verifuint (value, max) {
+  assert(typeof value === 'number', 'cannot write a non-number as a number')
+  assert(value >= 0, 'specified a negative value for writing an unsigned value')
+  assert(value <= max, 'value is larger than maximum value for type')
+  assert(Math.floor(value) === value, 'value has a fractional component')
+}
+
+function verifsint (value, max, min) {
+  assert(typeof value === 'number', 'cannot write a non-number as a number')
+  assert(value <= max, 'value larger than maximum allowed value')
+  assert(value >= min, 'value smaller than minimum allowed value')
+  assert(Math.floor(value) === value, 'value has a fractional component')
+}
+
+function verifIEEE754 (value, max, min) {
+  assert(typeof value === 'number', 'cannot write a non-number as a number')
+  assert(value <= max, 'value larger than maximum allowed value')
+  assert(value >= min, 'value smaller than minimum allowed value')
+}
+
+function assert (test, message) {
+  if (!test) throw new Error(message || 'Failed assertion')
+}
+
+},{"base64-js":7,"ieee754":8}],7:[function(_dereq_,module,exports){
+var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+;(function (exports) {
+	'use strict';
+
+  var Arr = (typeof Uint8Array !== 'undefined')
+    ? Uint8Array
+    : Array
+
+	var PLUS   = '+'.charCodeAt(0)
+	var SLASH  = '/'.charCodeAt(0)
+	var NUMBER = '0'.charCodeAt(0)
+	var LOWER  = 'a'.charCodeAt(0)
+	var UPPER  = 'A'.charCodeAt(0)
+	var PLUS_URL_SAFE = '-'.charCodeAt(0)
+	var SLASH_URL_SAFE = '_'.charCodeAt(0)
+
+	function decode (elt) {
+		var code = elt.charCodeAt(0)
+		if (code === PLUS ||
+		    code === PLUS_URL_SAFE)
+			return 62 // '+'
+		if (code === SLASH ||
+		    code === SLASH_URL_SAFE)
+			return 63 // '/'
+		if (code < NUMBER)
+			return -1 //no match
+		if (code < NUMBER + 10)
+			return code - NUMBER + 26 + 26
+		if (code < UPPER + 26)
+			return code - UPPER
+		if (code < LOWER + 26)
+			return code - LOWER + 26
+	}
+
+	function b64ToByteArray (b64) {
+		var i, j, l, tmp, placeHolders, arr
+
+		if (b64.length % 4 > 0) {
+			throw new Error('Invalid string. Length must be a multiple of 4')
 		}
-  },
-/**###Gibberish.audioProcessFirefox : method
-The default audio callback used in Firefox. This callback starts running as soon as Gibberish.init() is called.  
-  
-param **Sound Data** : Object. The buffer of audio data to be filled
-**/   
-  audioProcessFirefox : function(soundData) { // callback for firefox
-    var me = Gibberish,
-        callback = me.callback,
-        sequencers = me.sequencers,
-        objs = me.callbackObjects.slice(0),
-        _callback
+
+		// the number of equal signs (place holders)
+		// if there are two placeholders, than the two characters before it
+		// represent one byte
+		// if there is only one, then the three characters before it represent 2 bytes
+		// this is just a cheap hack to not do indexOf twice
+		var len = b64.length
+		placeHolders = '=' === b64.charAt(len - 2) ? 2 : '=' === b64.charAt(len - 1) ? 1 : 0
+
+		// base64 is 4/3 + up to two characters of the original data
+		arr = new Arr(b64.length * 3 / 4 - placeHolders)
+
+		// if there are placeholders, only get up to the last complete 4 chars
+		l = placeHolders > 0 ? b64.length - 4 : b64.length
+
+		var L = 0
+
+		function push (v) {
+			arr[L++] = v
+		}
+
+		for (i = 0, j = 0; i < l; i += 4, j += 3) {
+			tmp = (decode(b64.charAt(i)) << 18) | (decode(b64.charAt(i + 1)) << 12) | (decode(b64.charAt(i + 2)) << 6) | decode(b64.charAt(i + 3))
+			push((tmp & 0xFF0000) >> 16)
+			push((tmp & 0xFF00) >> 8)
+			push(tmp & 0xFF)
+		}
+
+		if (placeHolders === 2) {
+			tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4)
+			push(tmp & 0xFF)
+		} else if (placeHolders === 1) {
+			tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2)
+			push((tmp >> 8) & 0xFF)
+			push(tmp & 0xFF)
+		}
+
+		return arr
+	}
+
+	function uint8ToBase64 (uint8) {
+		var i,
+			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
+			output = "",
+			temp, length
+
+		function encode (num) {
+			return lookup.charAt(num)
+		}
+
+		function tripletToBase64 (num) {
+			return encode(num >> 18 & 0x3F) + encode(num >> 12 & 0x3F) + encode(num >> 6 & 0x3F) + encode(num & 0x3F)
+		}
+
+		// go through the array every three bytes, we'll deal with trailing stuff later
+		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
+			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+			output += tripletToBase64(temp)
+		}
+
+		// pad the end with zeros, but make sure to not forget the extra bytes
+		switch (extraBytes) {
+			case 1:
+				temp = uint8[uint8.length - 1]
+				output += encode(temp >> 2)
+				output += encode((temp << 4) & 0x3F)
+				output += '=='
+				break
+			case 2:
+				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1])
+				output += encode(temp >> 10)
+				output += encode((temp >> 4) & 0x3F)
+				output += encode((temp << 2) & 0x3F)
+				output += '='
+				break
+		}
+
+		return output
+	}
+
+	exports.toByteArray = b64ToByteArray
+	exports.fromByteArray = uint8ToBase64
+}(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
+
+},{}],8:[function(_dereq_,module,exports){
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var nBits = -7
+  var i = isLE ? (nBytes - 1) : 0
+  var d = isLE ? -1 : 1
+  var s = buffer[offset + i]
+
+  i += d
+
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
+  } else {
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
+
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
+  var i = isLE ? 0 : (nBytes - 1)
+  var d = isLE ? 1 : -1
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
+
+  value = Math.abs(value)
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0
+    e = eMax
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2)
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--
+      c *= 2
+    }
+    if (e + eBias >= 1) {
+      value += rt / c
+    } else {
+      value += rt * Math.pow(2, 1 - eBias)
+    }
+    if (value * c >= 2) {
+      e++
+      c /= 2
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0
+      e = eMax
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen)
+      e = e + eBias
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128
+}
+
+},{}],9:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      }
+      throw TypeError('Uncaught, unspecified "error" event.');
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    return false;
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        len = arguments.length;
+        args = new Array(len - 1);
+        for (i = 1; i < len; i++)
+          args[i - 1] = arguments[i];
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    len = arguments.length;
+    args = new Array(len - 1);
+    for (i = 1; i < len; i++)
+      args[i - 1] = arguments[i];
+
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    var m;
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  var ret;
+  if (!emitter._events || !emitter._events[type])
+    ret = 0;
+  else if (isFunction(emitter._events[type]))
+    ret = 1;
+  else
+    ret = emitter._events[type].length;
+  return ret;
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+},{}],10:[function(_dereq_,module,exports){
+var http = module.exports;
+var EventEmitter = _dereq_('events').EventEmitter;
+var Request = _dereq_('./lib/request');
+var url = _dereq_('url')
+
+http.request = function (params, cb) {
+    if (typeof params === 'string') {
+        params = url.parse(params)
+    }
+    if (!params) params = {};
+    if (!params.host && !params.port) {
+        params.port = parseInt(window.location.port, 10);
+    }
+    if (!params.host && params.hostname) {
+        params.host = params.hostname;
+    }
+    
+    if (!params.scheme) params.scheme = window.location.protocol.split(':')[0];
+    if (!params.host) {
+        params.host = window.location.hostname || window.location.host;
+    }
+    if (/:/.test(params.host)) {
+        if (!params.port) {
+            params.port = params.host.split(':')[1];
+        }
+        params.host = params.host.split(':')[0];
+    }
+    if (!params.port) params.port = params.scheme == 'https' ? 443 : 80;
+    
+    var req = new Request(new xhrHttp, params);
+    if (cb) req.on('response', cb);
+    return req;
+};
+
+http.get = function (params, cb) {
+    params.method = 'GET';
+    var req = http.request(params, cb);
+    req.end();
+    return req;
+};
+
+http.Agent = function () {};
+http.Agent.defaultMaxSockets = 4;
+
+var xhrHttp = (function () {
+    if (typeof window === 'undefined') {
+        throw new Error('no window object present');
+    }
+    else if (window.XMLHttpRequest) {
+        return window.XMLHttpRequest;
+    }
+    else if (window.ActiveXObject) {
+        var axs = [
+            'Msxml2.XMLHTTP.6.0',
+            'Msxml2.XMLHTTP.3.0',
+            'Microsoft.XMLHTTP'
+        ];
+        for (var i = 0; i < axs.length; i++) {
+            try {
+                var ax = new(window.ActiveXObject)(axs[i]);
+                return function () {
+                    if (ax) {
+                        var ax_ = ax;
+                        ax = null;
+                        return ax_;
+                    }
+                    else {
+                        return new(window.ActiveXObject)(axs[i]);
+                    }
+                };
+            }
+            catch (e) {}
+        }
+        throw new Error('ajax not supported in this browser')
+    }
+    else {
+        throw new Error('ajax not supported in this browser');
+    }
+})();
+
+http.STATUS_CODES = {
+    100 : 'Continue',
+    101 : 'Switching Protocols',
+    102 : 'Processing',                 // RFC 2518, obsoleted by RFC 4918
+    200 : 'OK',
+    201 : 'Created',
+    202 : 'Accepted',
+    203 : 'Non-Authoritative Information',
+    204 : 'No Content',
+    205 : 'Reset Content',
+    206 : 'Partial Content',
+    207 : 'Multi-Status',               // RFC 4918
+    300 : 'Multiple Choices',
+    301 : 'Moved Permanently',
+    302 : 'Moved Temporarily',
+    303 : 'See Other',
+    304 : 'Not Modified',
+    305 : 'Use Proxy',
+    307 : 'Temporary Redirect',
+    400 : 'Bad Request',
+    401 : 'Unauthorized',
+    402 : 'Payment Required',
+    403 : 'Forbidden',
+    404 : 'Not Found',
+    405 : 'Method Not Allowed',
+    406 : 'Not Acceptable',
+    407 : 'Proxy Authentication Required',
+    408 : 'Request Time-out',
+    409 : 'Conflict',
+    410 : 'Gone',
+    411 : 'Length Required',
+    412 : 'Precondition Failed',
+    413 : 'Request Entity Too Large',
+    414 : 'Request-URI Too Large',
+    415 : 'Unsupported Media Type',
+    416 : 'Requested Range Not Satisfiable',
+    417 : 'Expectation Failed',
+    418 : 'I\'m a teapot',              // RFC 2324
+    422 : 'Unprocessable Entity',       // RFC 4918
+    423 : 'Locked',                     // RFC 4918
+    424 : 'Failed Dependency',          // RFC 4918
+    425 : 'Unordered Collection',       // RFC 4918
+    426 : 'Upgrade Required',           // RFC 2817
+    428 : 'Precondition Required',      // RFC 6585
+    429 : 'Too Many Requests',          // RFC 6585
+    431 : 'Request Header Fields Too Large',// RFC 6585
+    500 : 'Internal Server Error',
+    501 : 'Not Implemented',
+    502 : 'Bad Gateway',
+    503 : 'Service Unavailable',
+    504 : 'Gateway Time-out',
+    505 : 'HTTP Version Not Supported',
+    506 : 'Variant Also Negotiates',    // RFC 2295
+    507 : 'Insufficient Storage',       // RFC 4918
+    509 : 'Bandwidth Limit Exceeded',
+    510 : 'Not Extended',               // RFC 2774
+    511 : 'Network Authentication Required' // RFC 6585
+};
+},{"./lib/request":11,"events":9,"url":28}],11:[function(_dereq_,module,exports){
+var Stream = _dereq_('stream');
+var Response = _dereq_('./response');
+var Base64 = _dereq_('Base64');
+var inherits = _dereq_('inherits');
+
+var Request = module.exports = function (xhr, params) {
+    var self = this;
+    self.writable = true;
+    self.xhr = xhr;
+    self.body = [];
+    
+    self.uri = (params.scheme || 'http') + '://'
+        + params.host
+        + (params.port ? ':' + params.port : '')
+        + (params.path || '/')
+    ;
+    
+    if (typeof params.withCredentials === 'undefined') {
+        params.withCredentials = true;
+    }
+
+    try { xhr.withCredentials = params.withCredentials }
+    catch (e) {}
+    
+    xhr.open(
+        params.method || 'GET',
+        self.uri,
+        true
+    );
+
+    self._headers = {};
+    
+    if (params.headers) {
+        var keys = objectKeys(params.headers);
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            if (!self.isSafeRequestHeader(key)) continue;
+            var value = params.headers[key];
+            self.setHeader(key, value);
+        }
+    }
+    
+    if (params.auth) {
+        //basic auth
+        this.setHeader('Authorization', 'Basic ' + Base64.btoa(params.auth));
+    }
+
+    var res = new Response;
+    res.on('close', function () {
+        self.emit('close');
+    });
+    
+    res.on('ready', function () {
+        self.emit('response', res);
+    });
+    
+    xhr.onreadystatechange = function () {
+        // Fix for IE9 bug
+        // SCRIPT575: Could not complete the operation due to error c00c023f
+        // It happens when a request is aborted, calling the success callback anyway with readyState === 4
+        if (xhr.__aborted) return;
+        res.handle(xhr);
+    };
+};
+
+inherits(Request, Stream);
+
+Request.prototype.setHeader = function (key, value) {
+    this._headers[key.toLowerCase()] = value
+};
+
+Request.prototype.getHeader = function (key) {
+    return this._headers[key.toLowerCase()]
+};
+
+Request.prototype.removeHeader = function (key) {
+    delete this._headers[key.toLowerCase()]
+};
+
+Request.prototype.write = function (s) {
+    this.body.push(s);
+};
+
+Request.prototype.destroy = function (s) {
+    this.xhr.__aborted = true;
+    this.xhr.abort();
+    this.emit('close');
+};
+
+Request.prototype.end = function (s) {
+    if (s !== undefined) this.body.push(s);
+
+    var keys = objectKeys(this._headers);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var value = this._headers[key];
+        if (isArray(value)) {
+            for (var j = 0; j < value.length; j++) {
+                this.xhr.setRequestHeader(key, value[j]);
+            }
+        }
+        else this.xhr.setRequestHeader(key, value)
+    }
+
+    if (this.body.length === 0) {
+        this.xhr.send('');
+    }
+    else if (typeof this.body[0] === 'string') {
+        this.xhr.send(this.body.join(''));
+    }
+    else if (isArray(this.body[0])) {
+        var body = [];
+        for (var i = 0; i < this.body.length; i++) {
+            body.push.apply(body, this.body[i]);
+        }
+        this.xhr.send(body);
+    }
+    else if (/Array/.test(Object.prototype.toString.call(this.body[0]))) {
+        var len = 0;
+        for (var i = 0; i < this.body.length; i++) {
+            len += this.body[i].length;
+        }
+        var body = new(this.body[0].constructor)(len);
+        var k = 0;
         
-    objs.unshift(0)
-    for (var i=0, size=soundData.length; i<size; i+=2) {
-      
-      for(var j = 0; j < sequencers.length; j++) { sequencers[j].tick(); }
-      
-      if(me.isDirty) {
-        _callback = me.createCallback();
+        for (var i = 0; i < this.body.length; i++) {
+            var b = this.body[i];
+            for (var j = 0; j < b.length; j++) {
+                body[k++] = b[j];
+            }
+        }
+        this.xhr.send(body);
+    }
+    else {
+        var body = '';
+        for (var i = 0; i < this.body.length; i++) {
+            body += this.body[i].toString();
+        }
+        this.xhr.send(body);
+    }
+};
+
+// Taken from http://dxr.mozilla.org/mozilla/mozilla-central/content/base/src/nsXMLHttpRequest.cpp.html
+Request.unsafeHeaders = [
+    "accept-charset",
+    "accept-encoding",
+    "access-control-request-headers",
+    "access-control-request-method",
+    "connection",
+    "content-length",
+    "cookie",
+    "cookie2",
+    "content-transfer-encoding",
+    "date",
+    "expect",
+    "host",
+    "keep-alive",
+    "origin",
+    "referer",
+    "te",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+    "user-agent",
+    "via"
+];
+
+Request.prototype.isSafeRequestHeader = function (headerName) {
+    if (!headerName) return false;
+    return indexOf(Request.unsafeHeaders, headerName.toLowerCase()) === -1;
+};
+
+var objectKeys = Object.keys || function (obj) {
+    var keys = [];
+    for (var key in obj) keys.push(key);
+    return keys;
+};
+
+var isArray = Array.isArray || function (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+var indexOf = function (xs, x) {
+    if (xs.indexOf) return xs.indexOf(x);
+    for (var i = 0; i < xs.length; i++) {
+        if (xs[i] === x) return i;
+    }
+    return -1;
+};
+
+},{"./response":12,"Base64":13,"inherits":14,"stream":21}],12:[function(_dereq_,module,exports){
+var Stream = _dereq_('stream');
+var util = _dereq_('util');
+
+var Response = module.exports = function (res) {
+    this.offset = 0;
+    this.readable = true;
+};
+
+util.inherits(Response, Stream);
+
+var capable = {
+    streaming : true,
+    status2 : true
+};
+
+function parseHeaders (res) {
+    var lines = res.getAllResponseHeaders().split(/\r?\n/);
+    var headers = {};
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (line === '') continue;
+        
+        var m = line.match(/^([^:]+):\s*(.*)/);
+        if (m) {
+            var key = m[1].toLowerCase(), value = m[2];
+            
+            if (headers[key] !== undefined) {
+            
+                if (isArray(headers[key])) {
+                    headers[key].push(value);
+                }
+                else {
+                    headers[key] = [ headers[key], value ];
+                }
+            }
+            else {
+                headers[key] = value;
+            }
+        }
+        else {
+            headers[line] = true;
+        }
+    }
+    return headers;
+}
+
+Response.prototype.getResponse = function (xhr) {
+    var respType = String(xhr.responseType).toLowerCase();
+    if (respType === 'blob') return xhr.responseBlob || xhr.response;
+    if (respType === 'arraybuffer') return xhr.response;
+    return xhr.responseText;
+}
+
+Response.prototype.getHeader = function (key) {
+    return this.headers[key.toLowerCase()];
+};
+
+Response.prototype.handle = function (res) {
+    if (res.readyState === 2 && capable.status2) {
+        try {
+            this.statusCode = res.status;
+            this.headers = parseHeaders(res);
+        }
+        catch (err) {
+            capable.status2 = false;
+        }
+        
+        if (capable.status2) {
+            this.emit('ready');
+        }
+    }
+    else if (capable.streaming && res.readyState === 3) {
+        try {
+            if (!this.statusCode) {
+                this.statusCode = res.status;
+                this.headers = parseHeaders(res);
+                this.emit('ready');
+            }
+        }
+        catch (err) {}
         
         try {
-          callback = me.callback = new Function( _callback[0], _callback[1] )
-        }catch( e ) {
-          console.error( 'ERROR WITH CALLBACK : \n\n', callback )
+            this._emitData(res);
         }
-        me.isDirty = false;
-        objs = me.callbackObjects.slice(0)
-        objs.unshift(0)       
-      }      
-      
-			var val = callback.apply(null, objs);
-      
-			soundData[i] = val[0];
-      soundData[i+1] = val[1];
-    }
-  },
-/**###Gibberish.clear : method
-Remove all objects from Gibberish graph and perform codegen... kills all running sound and CPU usage.
-**/   
-  clear : function() {
-    this.out.inputs.length = 0;
-    this.analysisUgens.length = 0;
-    this.sequencers.length = 0;
-    
-    this.callbackArgs.length = 2
-    this.callbackObjects.length = 1
-    
-    Gibberish.dirty(this.out);
-  },
-
-/**###Gibberish.dirty : method
-Tell Gibberish a ugen needs to be codegen'd and mark the entire callback as needing regeneration  
-  
-param **Ugen** : Object. The ugen that is 'dirtied'... that has a property value changed.
-**/     
-	dirty : function(ugen) {
-    if(typeof ugen !== 'undefined') {
-      var found = false;
-      for(var i = 0; i < this.dirtied.length; i++) {
-        if(this.dirtied[i].variable === ugen.variable) found = true;
-      }
-    
-      if(!found) {
-        this.isDirty = true;
-        this.dirtied.push(ugen);
-      }
-    }else{
-      this.isDirty = true;
-    }
-	},
-
-/**###Gibberish.generateSymbol : method
-Generate a unique symbol for a given ugen using its name and a unique id number.  
-  
-param **name** : String. The name of the ugen; for example, reverb, delay etc.
-**/       
-	generateSymbol : function(name) {
-		return name + "_" + this.id++; 
-	},
-  
-  // as taken from here: https://wiki.mozilla.org/Audio_Data_API#Standardization_Note
-  // only the number of channels is changed in the audio.mozSetup() call
-  
-/**###Gibberish.AudioDataDestination : method
-Used to generate callback for Firefox.  
-  
-param **sampleRate** : String. The sampleRate for the audio callback to run at. NOT THE BUFFER SIZE.  
-param **readFn** : Function. The audio callback to use.
-**/ 
-  AudioDataDestination : function(sampleRate, readFn) { // for Firefox Audio Data API
-    // Initialize the audio output.
-    var audio = new Audio();
-    audio.mozSetup(2, sampleRate);
-
-    var currentWritePosition = 0;
-    var prebufferSize = sampleRate / 2; // buffer 500ms
-    var tail = null, tailPosition;
-
-    // The function called with regular interval to populate 
-    // the audio output buffer.
-    setInterval(function() {
-      var written;
-      // Check if some data was not written in previous attempts.
-      if(tail) {
-        written = audio.mozWriteAudio(tail.subarray(tailPosition));
-        currentWritePosition += written;
-        tailPosition += written;
-        if(tailPosition < tail.length) {
-          // Not all the data was written, saving the tail...
-          return; // ... and exit the function.
+        catch (err) {
+            capable.streaming = false;
         }
-        tail = null;
-      }
-
-      // Check if we need add some data to the audio output.
-      var currentPosition = audio.mozCurrentSampleOffset();
-      var available = currentPosition + prebufferSize - currentWritePosition;
-      if(available > 0) {
-        // Request some sound data from the callback function.
-        var soundData = new Float32Array(available);
-        readFn(soundData);
-
-        // Writting the data.
-        written = audio.mozWriteAudio(soundData);
-        currentPosition = audio.mozCurrentSampleOffset();
-        if(written < soundData.length) {
-          // Not all the data was written, saving the tail.
-          tail = soundData;
-          tailPosition = written;
+    }
+    else if (res.readyState === 4) {
+        if (!this.statusCode) {
+            this.statusCode = res.status;
+            this.emit('ready');
         }
-        currentWritePosition += written;
-      }
-    }, 100);
-  },
-/**###Gibberish.AudioDataDestination : method
-Create a callback and start it running. Note that in iOS audio callbacks can only be created in response to user events. Thus, in iOS this method assigns an event handler to the HTML body that creates the callback as soon as the body is touched; at that point the event handler is removed. 
-**/   
-  init : function() {
-    // TODO: GET A BETTER TEST FOR THIS. The problem is that browserify adds a process object... not sure how robust
-    // testing for the presence of the version property will be
-    var isNode = typeof global !== 'undefined',
-        bufferSize = typeof arguments[0] === 'undefined' ? 1024 : arguments[0], 
-        audioContext,
-        start
-    
-    if( typeof webkitAudioContext !== 'undefined' ) {
-      audioContext = webkitAudioContext
-    }else if ( typeof AudioContext !== 'undefined' ) {
-      audioContext = AudioContext
-    }
-
-    // we will potentially delay start of audio until touch of screen for iOS devices
-    start = function() {
-      if( typeof audioContext !== 'undefined' ) {
-        if( document && document.documentElement && 'ontouchstart' in document.documentElement ) {
-          window.removeEventListener('touchstart', start);
-
-          if('ontouchstart' in document.documentElement){ // required to start audio under iOS 6
-            var mySource = Gibberish.context.createBufferSource();
-            mySource.connect(Gibberish.context.destination);
-            mySource.noteOn(0);
-          }
+        this._emitData(res);
+        
+        if (res.error) {
+            this.emit('error', this.getResponse(res));
         }
-      }else{
-        alert('Your browser does not support javascript audio synthesis. Please download a modern web browser that is not Internet Explorer.')
+        else this.emit('end');
+        
+        this.emit('close');
+    }
+};
+
+Response.prototype._emitData = function (res) {
+    var respBody = this.getResponse(res);
+    if (respBody.toString().match(/ArrayBuffer/)) {
+        this.emit('data', new Uint8Array(respBody, this.offset));
+        this.offset = respBody.byteLength;
+        return;
+    }
+    if (respBody.length > this.offset) {
+        this.emit('data', respBody.slice(this.offset));
+        this.offset = respBody.length;
+    }
+};
+
+var isArray = Array.isArray || function (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+},{"stream":21,"util":30}],13:[function(_dereq_,module,exports){
+;(function () {
+
+  var object = typeof exports != 'undefined' ? exports : this; // #8: web workers
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+
+  function InvalidCharacterError(message) {
+    this.message = message;
+  }
+  InvalidCharacterError.prototype = new Error;
+  InvalidCharacterError.prototype.name = 'InvalidCharacterError';
+
+  // encoder
+  // [https://gist.github.com/999166] by [https://github.com/nignag]
+  object.btoa || (
+  object.btoa = function (input) {
+    for (
+      // initialize result and counter
+      var block, charCode, idx = 0, map = chars, output = '';
+      // if the next input index does not exist:
+      //   change the mapping table to "="
+      //   check if d has no fractional digits
+      input.charAt(idx | 0) || (map = '=', idx % 1);
+      // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
+      output += map.charAt(63 & block >> 8 - idx % 1 * 8)
+    ) {
+      charCode = input.charCodeAt(idx += 3/4);
+      if (charCode > 0xFF) {
+        throw new InvalidCharacterError("'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");
       }
-      
-      if( Gibberish.onstart ) Gibberish.onstart()
+      block = block << 8 | charCode;
     }
-    
-    Gibberish.context = new audioContext();
-    Gibberish.node = Gibberish.context.createScriptProcessor(bufferSize, 2, 2, Gibberish.context.sampleRate);	
-    Gibberish.node.onaudioprocess = Gibberish.audioProcess;
-    Gibberish.node.connect(Gibberish.context.destination);
-    
-    Gibberish.out = new Gibberish.Bus2();
-    Gibberish.out.codegen(); // make sure bus is first upvalue so that clearing works correctly
-    Gibberish.dirty(Gibberish.out);
-    
-    if( document && document.documentElement && 'ontouchstart' in document.documentElement ) {
-      window.addEventListener('touchstart', start);
-    }else{
-      start();
-    }
-    
-    return this;
-  },
-  
-/**###Gibberish.makePanner : method
-Create and return an object that can be used to pan a stereo source.
-**/ 
-  //   makePanner : function() {
-  //   var sin = Math.sin;
-  //   var cos = Math.cos;
-  //   var sqrtTwoOverTwo = Math.sqrt(2) / 2;
-  //     
-  //   var f = function(val, pan, array) {
-  //       var isObject = typeof val === 'object';
-  //       var l = isObject ? val[0] : val;
-  //       var r = isObject ? val[1] : val;
-  //           
-  //       array[0] = l * (sqrtTwoOverTwo * (cos(pan) - sin(pan)) );
-  //       array[1] = r * (sqrtTwoOverTwo * (cos(pan) + sin(pan)) );
-  //           
-  //     return array;
-  //   };
-  //         
-  //   return f;
-  // },
-  
-makePanner : function() {
-  // thanks to grrrwaaa for this
-  // create pan curve arrays (once-only): 
-	var panTableL = [], panTableR = [];
-	var sqrtTwoOverTwo = Math.sqrt(2) / 2;
-
-	for( var i = 0; i < 1024; i++ ) { 
-		var pan = -1 + ( i / 1024 ) * 2;
-		panTableL[i] = (sqrtTwoOverTwo * (Math.cos(pan) - Math.sin(pan)) );
-		panTableR[i] = (sqrtTwoOverTwo * (Math.cos(pan) + Math.sin(pan)) );
-	}
-
-  return function(val, pan, output) {
-    var isObject = typeof val === 'object',
-        l = isObject ? val[0] : val,
-        r = isObject ? val[1] : val,
-        _index, index, frac, index2, val1, val2;
-      
-    _index  = ((pan + 1) * 1023) / 2
-    index   = _index | 0
-    frac    = _index - index;
-    index   = index & 1023;
-    index2  = index === 1023 ? 0 : index + 1;
-    
-    val1    = panTableL[index];
-    val2    = panTableL[index2];
-    output[0] = ( val1 + ( frac * (val2 - val1) ) ) * l;
-    
-    val1    = panTableR[index];
-    val2    = panTableR[index2];
-    output[1] = ( val1 + ( frac * (val2 - val1) ) ) * r;
-    
     return output;
-	}
-},
-  // IMPORTANT: REMEMBER THIS IS OVERRIDDEN IN GIBBER
-  defineUgenProperty : function(key, initValue, obj) {
-    var prop = obj.properties[key] = {
-      value:  initValue,
-      binops: [],
-      parent : obj,
-      name : key,
-    };
+  });
 
-    Object.defineProperty(obj, key, {
-      configurable: true,
-      get: function() { return prop.value },
-      set: function(val) { 
-        prop.value = val;
-        Gibberish.dirty(obj);
-      },
-    });
-  },
-/**###Gibberish.polyInit : method
-For ugens with polyphony, add metaprogramming that passes on property changes to the 'children' of the polyphonic object. Polyphonic ugens in Gibberish are just single instances that are routed into a shared bus, along with a few special methods for voice allocation etc.  
-  
-param **Ugen** : Object. The polyphonic ugen
-**/ 
-  polyInit : function(ugen) {
-    ugen.mod = ugen.polyMod;
-    ugen.removeMod = ugen.removePolyMod;
-    
-    ugen.voicesClear = function() {
-      if( ugen.children.length > 0 ) {
-        for( var i = 0; i < ugen.children.length; i++ ) {
-          ugen.children[ i ].disconnect()
-        }
-        ugen.children.length = 0
-        ugen.voiceCount = 0
+  // decoder
+  // [https://gist.github.com/1020396] by [https://github.com/atk]
+  object.atob || (
+  object.atob = function (input) {
+    input = input.replace(/=+$/, '');
+    if (input.length % 4 == 1) {
+      throw new InvalidCharacterError("'atob' failed: The string to be decoded is not correctly encoded.");
+    }
+    for (
+      // initialize result and counters
+      var bc = 0, bs, buffer, idx = 0, output = '';
+      // get next character
+      buffer = input.charAt(idx++);
+      // character found in table? initialize bit storage and add its ascii value;
+      ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+        // and if not first of each 4 characters,
+        // convert the first 8 bits to one ascii character
+        bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+    ) {
+      // try to find character in table (0-63, not found => -1)
+      buffer = chars.indexOf(buffer);
+    }
+    return output;
+  });
+
+}());
+
+},{}],14:[function(_dereq_,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
       }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],15:[function(_dereq_,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
     }
-    
-    for(var key in ugen.polyProperties) {
-      (function(_key) {
-        var value = ugen.polyProperties[_key];
-        
-        Object.defineProperty(ugen, _key, {
-          configurable: true,
-          get : function() { return value; },
-          set : function(val) { 
-            value = val;
-            for(var i = 0; i < ugen.children.length; i++) {
-              ugen.children[i][_key] = value;
-            }
-          },
-        });
-        
-      })(key);
-    }
-    
-    var maxVoices = ugen.maxVoices
-    Object.defineProperty( ugen, 'maxVoices', {
-      get: function() { return maxVoices },
-      set: function(v) { maxVoices = v; this.voicesClear(); this.initVoices() }
-    })
-  },
-  
-/**###Gibberish.interpolate : method
-Similiar to makePanner, this method returns a function that can be used to linearly interpolate between to values. The resulting function takes an array and a floating point position index and returns a value.
-**/   
-	interpolate : function(arr, phase){
-		var	index	  = phase | 0, // round down
-        index2  = index + 1 > arr.length - 1 ? 0 : index + 1;
-				frac	  = phase - index;
-    				
-    return arr[index] + frac * (arr[index2] - arr[index]);
-	},
-  
-  pushUnique : function(item, array) {
-		var obj = item;
-		var shouldAdd = true;
-    
-		for(var j = 0; j < array.length; j++) {
-			if(obj === array[j]) {
-				shouldAdd = false;
-				break;
-			}
-		}
-    
-		if(shouldAdd) {
-			array.push(obj);
-		}
-  },
-  
-  export : function(key, obj) {
-    for(var _key in Gibberish[key]) {
-      //console.log("exporting", _key, "from", key);
-      obj[_key] = Gibberish[key][_key];
-    }
-  },
 
-/**###Gibberish.ugen : method
-Creates a prototype object that is used by all ugens.
-**/    
-  ugen : function() {
-    Gibberish.extend(this, {
-  
-/**#Ugen - Miscellaneous
-The prototype object that all ugens inherit from
-**/
-/**###Ugen.processProperties : method
-Used to assign and process arguments passed to the constructor functions of ugens.  
-  
-param **argumentList** : Array. A list of arguments (may be a single dictionary) passed to a ugen constructor.
-**/     
-
-      processProperties : function(args){
-        if(typeof arguments[0][0] === 'object' && typeof arguments[0][0].type === 'undefined' && !Array.isArray(arguments[0][0]) && arguments[0][0].name !== 'op') {
-          var dict = arguments[0][0];
-          for(var key in dict) {
-            if(typeof dict[key] !== 'undefined') {
-              if(typeof this.properties[key] === 'object' && typeof this.properties[key].binops !== 'undefined') {
-                this.properties[key].value = dict[key];
-              }else{
-                this[key] = dict[key];
-              } 
-            }
-          }
-        }else{
-          var i = 0;
-          for(var key in this.properties) {
-            if(typeof this.properties[key] === 'object' && typeof this.properties[key].binops !== 'undefined') {
-              if(typeof arguments[0][i] !== 'undefined'){
-                this.properties[key].value = arguments[0][i++];
-              }
-            }else{
-              if(typeof arguments[0][i] !== 'undefined') {
-                this.properties[key] = arguments[0][i++];
-              }
-            }
-          }
-        }
-        return this;
-      },
-      
-      valueOf: function() {
-        this.codegen()
-        //console.log( "VALUEOF", this.variable )
-        return this.variable
-      },
-/**###Ugen.codegen : method
-Generates output code (as a string) used inside audio callback
-**/   
-      codegen : function() {
-        var s = '', 
-            v = null,
-            initialized = false;
-        
-        if(Gibberish.memo[this.symbol]) {
-          //console.log("MEMO" + this.symbol);
-          return Gibberish.memo[this.symbol];
-        }else{
-          // we generate the symbol and use it to create our codeblock, but only if the ugen doesn't already have a variable assigned. 
-          // since the memo is cleared every time the callback is created, we need to check to see if this exists. 
-          v = this.variable ? this.variable : Gibberish.generateSymbol('v');
-          Gibberish.memo[this.symbol] = v;
-          this.variable = v;
-        }
-
-        s += 'var ' + v + " = " + this.symbol + "(";
-
-        for(var key in this.properties) {
-          var property = this.properties[key];
-          var value = '';
-          //if(this.name === "single_sample_delay") { console.log( "SSD PROP" + key ); }
-          if( Array.isArray( property.value ) ) {
-            if(property.value.length === 0) value = 0;  // primarily for busses
-            
-            for(var i = 0; i < property.value.length; i++) {
-              var member = property.value[i];
-              if( typeof member === 'object' ) {
-            		value += member !== null ? member.valueOf() : 'null';
-              }else{
-                if(typeof property.value === 'function') {
-                  value += property.value();
-                }else{
-                  value += property.value;
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
                 }
-              }
-              value += i < property.value.length - 1 ? ', ' : '';
             }
-            
-          }else if( typeof property.value === 'object' ) {
-            if( property.value !== null) {
-              value = property.value.codegen ? property.value.valueOf() : property.value
-            }
-          }else if( property.name !== 'undefined'){
-            if(typeof property.value === 'function') {
-              value = property.value();
-            }else{
-              value = property.value;
-            }
-          }
-          
+        }, true);
 
-          if(property.binops.length != 0) {
-            for( var k = 0; k < property.binops.length; k++) {
-              s += '(' // all leading parenthesis...
-            }
-            for(var j = 0; j < property.binops.length; j++) {
-              var op = property.binops[j],
-                  val;
-                  
-              if( typeof op.ugen === 'number') {
-                  val = op.ugen;
-              }else{
-                  val = op.ugen !== null ? op.ugen.valueOf() : 'null';
-              }
-              
-              if(op.binop === "=") {
-                s = s.replace(value, "");
-                s += val;
-              }else if(op.binop === "++"){
-                s += ' + Math.abs(' + val + ')';
-              }else{
-                if( j === 0) s+= value
-                s += " " + op.binop + " " + val + ")";
-              }
-              
-            }
-          }else{
-            s += value
-          }
-
-          s += ", ";
-        }
-        
-        if(s.charAt(s.length - 1) === " ")
-          s = s.slice(0, -2); // remove trailing spaces
-      
-        s += ");\n";
-        
-        this.codeblock = s;
-        
-        if( Gibberish.codeblock.indexOf( this.codeblock ) === -1 ) Gibberish.codeblock.push( this.codeblock )
-        if( Gibberish.callbackArgs.indexOf( this.symbol ) === -1 && this.name !== 'op') { Gibberish.callbackArgs.push( this.symbol ) }
-        if( Gibberish.callbackObjects.indexOf( this.callback ) === -1 && this.name !== 'op' ) { Gibberish.callbackObjects.push( this.callback ) }
-        
-        this.dirty = false;        
-        
-        return v;
-      },
-
-/**###Ugen.defineUgenProperty : method
-Creates getters and setters for ugen properties that automatically dirty the ugen whenever the property value is changed.  
-  
-param **key** : String. The name of a property to add getter / setters for.  
-param **value** : Any. The initival value to set the property to
-**/       
-      
-/**###Ugen.init : method
-Initialize ugen by calling defineUgenProperty for every key in the ugen's properties dictionary, generating a unique id for the ugen and various other small tasks.
-**/             
-      init : function() {
-        if(!this.initalized) {
-          this.symbol = Gibberish.generateSymbol(this.name);
-          this.codeblock = null;
-          this.variable = null;
-        }
-        
-        if(typeof this.properties === 'undefined') {
-          this.properties = {};
-        }
-        
-        if(!this.initialized) {
-          this.destinations = [];
-          for(var key in this.properties) {
-            Gibberish.defineUgenProperty(key, this.properties[key], this);
-          }
-        }
-        
-        if(arguments.length > 0 && typeof arguments[0][0] === 'object' && arguments[0][0].type === 'undefined') {
-          var options = arguments[0][0];
-          for(var key in options) {
-            this[key] = options[key];
-          }
-        }
-                        
-        this.initialized = true;
-        
-        return this;
-      },
-/**###Ugen.mod : method
-Modulate a property of a ugen on a per-sample basis.  
-  
-param **key** : String. The name of the property to modulate  
-param **value** : Any. The object or number value to modulate the property with  
-param **op** : String. Default "+". The operation to perform. Can be +,-,*,/,= or ++. ++ adds and returns the absolute value.
-**/            
-      mod : function(name, value, op) {
-        var property = this.properties[ name ];
-        var mod = { ugen:value, binop:op };
-       	property.binops.push( mod );
-        
-        Gibberish.dirty( this );
-      },
-/**###Ugen.removeMod : method
-Remove a modulation from a ugen.  
-  
-param **key** : String. The name of the property to remove the modulation from  
-param **arg** : Number or Object. Optional. This determines which modulation to remove if more than one are assigned to the property. If this argument is undefined, all modulations are removed. If the argument is a number, the number represents a modulation in the order that they were applied (an array index). If the argument is an object, it removes a modulation that
-is using a matching object as the modulator.
-**/                  
-      removeMod : function(name, arg) {
-        if(typeof arg === 'undefined' ) {
-          this.properties[name].binops.length = 0;
-        }else if(typeof arg === 'number') {
-          this.properties[name].binops.splice(arg, 1);
-        }else if(typeof arg === 'object') {
-          for(var i = 0, j = this.properties[name].binops.length; i < j; i++) {
-            if(this.properties[name].binops[i].ugen === arg) {
-              this.properties[name].binops.splice(i, 1);
-            }
-          }
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
         };
-        
-        Gibberish.dirty( this );
-      },
-
-/**###Ugen.polyMod : method
-Applies a modulation to all children of a polyphonic ugen  
-  
-param **key** : String. The name of the property to modulate  
-param **value** : Any. The object or number value to modulate the property with  
-param **op** : String. Default "+". The operation to perform. Can be +,-,*,/,= or ++. ++ adds and returns the absolute value.
-**/       
-  		polyMod : function(name, modulator, type) {
-  			for(var i = 0; i < this.children.length; i++) {
-  				this.children[i].mod(name, modulator, type);
-  			}
-  			Gibberish.dirty(this);
-  		},
-
-/**###Ugen.removePolyMod : method
-Removes a modulation from all children of a polyphonic ugen. The arguments  
-  
-param **arg** : Number or Object. Optional. This determines which modulation to remove if more than one are assigned to the property. If this argument is undefined, all modulations are removed. If the argument is a number, the number represents a modulation in the order that they were applied (an array index). If the argument is an object, it removes a modulation that
-is using a matching object as the modulator.
-**/       
-  		removePolyMod : function() {
-  			var args = Array.prototype.slice.call(arguments, 0);
-        
-  			if(arguments[0] !== "amp" && arguments[0] !== "pan") {
-  				for(var i = 0; i < this.children.length; i++) {
-  					this.children[i].removeMod.apply(this.children[i], args);
-  				}
-  			}else{
-  				this.removeMod.apply(this, args);
-  			}
-        
-  			Gibberish.dirty(this);
-  		},
-      
-      smooth : function(property, amount) {
-        var op = new Gibberish.OnePole();
-        this.mod(property, op, "=");
-      },
-/**###Ugen.connect : method
-Connect the output of a ugen to a bus.  
-  
-param **bus** : Bus ugen. Optional. The bus to connect the ugen to. If no argument is passed the ugen is connect to Gibberish.out. Gibberish.out is automatically created when Gibberish.init() is called and can be thought of as the master stereo output for Gibberish.
-**/      
-      connect : function(bus, position) {
-        if(typeof bus === 'undefined') bus = Gibberish.out;
-        
-        if(this.destinations.indexOf(bus) === -1 ){
-          bus.addConnection( this, 1, position );
-          this.destinations.push( bus );
-        }
-        return this;
-      },
-/**###Ugen.send : method
-Send an arbitrary amount of output to a bus  
-  
-param **bus** : Bus ugen. The bus to send the ugen to.  
-param **amount** : Float. The amount of signal to send to the bus. 
-**/      
-      send : function(bus, amount) {
-        if(this.destinations.indexOf(bus) === -1 ){
-          bus.addConnection( this, amount );
-          this.destinations.push( bus );
-        }else{
-          bus.adjustSendAmount(this, amount);
-        }
-        return this;
-      },
-/**###Ugen.disconnect : method
-Disconnect a ugen from a bus (or all busses). This stops all audio and signal processing for the ugen.  
-  
-param **bus** : Bus ugen. Optional. The bus to disconnect the ugen from. If this argument is undefined the ugen will be disconnected from all busses.
-**/      
-      disconnect : function(bus, tempDisconnect ) { // tempDisconnect is used to do a short disconnect and reconnect
-        var idx
-        
-        if( !tempDisconnect ) {
-          /*if( this.children ) {
-            for(var i = 0; i < this.children.length; i++) {
-              this.children[i].disconnect( this )
-            }
-          }else if( typeof this.input === 'object' ) {
-            this.input.disconnect( null, tempDisconnect )
-          }*/
-          
-          /*var idx = Gibberish.callbackArgs.indexOf( this.symbol )
-          Gibberish.callbackArgs.splice(idx, 1)
-        
-          idx = Gibberish.callbackObjects.indexOf( this.callback )        
-          Gibberish.callbackObjects.splice(idx, 1)*/
-        }
-        
-        if( !bus ) {
-          for(var i = 0; i < this.destinations.length; i++) {
-            this.destinations[i].removeConnection( this );
-          }
-          this.destinations = [];
-        }else{
-          idx = this.destinations.indexOf(bus);
-          if(idx > -1) {
-            this.destinations.splice(idx, 1);
-          }
-          bus.removeConnection( this );
-        }
-        
-        Gibberish.dirty( this )
-        return this;
-      },
-    });
-  },
-};
-
-
-Array2 = function() { 
-  this.length = 0;
-};
-
-Array2.prototype = [];
-	
-Array2.prototype.remove = function(arg, searchDeep) { // searchDeep when true removes -all- matches, when false returns first one found.
-	searchDeep = typeof searchDeep === 'undefined' ? true : searchDeep;
-	if(typeof arg === "undefined") { // clear all
-		for(var i = 0; i < this.length; i++) {
-			delete this[i];
-		}
-		this.length = 0;
-	}else if(typeof arg === "number") {
-		this.splice(arg,1);
-	}else if(typeof arg === "string"){ // find named member and remove
-		var removeMe = [];
-		for(var i = 0; i < this.length; i++) {
-			var member = this[i];
-			if(member.type === arg || member.name === arg) {
-				if(!searchDeep) {
-					this.splice(i,1);
-					return;
-				}else{
-					removeMe.push(i);
-				}
-			}
-		}
-		for(var i = 0; i < removeMe.length; i++) {
-			this.splice( removeMe[i], 1);
-		}
-	}else if(typeof arg === "object") {
-		var idx = this.indexOf(arg);
-		while(idx > -1) {
-			this.splice(idx,1);
-			idx = this.indexOf(arg);
-		}
-	}
-	if(this.parent) Gibberish.dirty(this.parent);
-};
-	
-Array2.prototype.get = function(arg) {
-	if(typeof arg === "number") {
-		return this[arg];
-	}else if(typeof arg === "string"){ // find named member and remove
-		for(var i = 0; i < this.length; i++) {
-			var member = this[i];
-
-			if(member.name === arg) {
-				return member;
-			}
-		}
-	}else if(typeof arg === "object") {
-		var idx = this.indexOf(arg);
-		if(idx > -1) {
-			return this[idx];
-		}
-	}
-	return null;
-};
-	
-
-Array2.prototype.replace = function(oldObj, newObj) {
-	newObj.parent = this;
-  newObj.input = oldObj.input;
-  
-	if(typeof oldObj != "number") {
-		var idx = this.indexOf(oldObj);
-		if(idx > -1) {
-			this.splice(idx, 1, newObj);
-		}
-	}else{
-		this.splice(oldObj, 1, newObj);
-	}
-	if(this.parent) Gibberish.dirty(this.parent);
-};
-
-Array2.prototype.insert = function(v, pos) {
-	v.parent = this;
-  this.input = this.parent;
-  
-	if(Array.isArray(v)) {
-		for(var i = 0; i < v.length; i++) {
-			this.splice(pos + i, 0, v[i]);
-		}
-	}else{
-		this.splice(pos,0,v);
-	}
-	if(this.parent) Gibberish.dirty(this.parent);
-};
-
-Array2.prototype.add = function() {
-	for(var i = 0; i < arguments.length; i++) {
-		arguments[i].parent = this;
-    arguments[i].input = this.parent;
-		//console.log(this.parent, this.parent.channels);
-		//if(typeof this.parent.channels === "number") {
-			//console.log("CHANGING CHANNELS");
-			//arguments[i].channels = this.parent.channels;
-    //}
-		this.push(arguments[i]);
-	}
-	//console.log("ADDING ::: this.parent = ", this.parent)
-	if(this.parent) {  
-    console.log("DIRTYING");
-  	Gibberish.dirty(this.parent);
-  }
-		
-};
-	
-var rnd = Math.random;
-Gibberish.rndf = function(min, max, number, canRepeat) {
-  canRepeat = typeof canRepeat === "undefined" ? true : canRepeat;
-	if(typeof number === "undefined" && typeof min != "object") {
-		if(arguments.length == 1) {
-			max = arguments[0]; min = 0;
-		}else if(arguments.length == 2) {
-			min = arguments[0];
-			max = arguments[1];
-		}else{
-			min = 0;
-			max = 1;
-		}
-
-		var diff = max - min,
-		    r = Math.random(),
-		    rr = diff * r
-	
-		return min + rr;
-	}else{
-		var output = [];
-		var tmp = [];
-		if(typeof number === "undefined") {
-			number = max || min.length;
-		}
-		
-		for(var i = 0; i < number; i++) {
-			var num;
-			if(typeof arguments[0] === "object") {
-				num = arguments[0][rndi(0, arguments[0].length - 1)];
-			}else{
-				if(canRepeat) {
-					num = Gibberish.rndf(min, max);
-				}else{
-          num = Gibberish.rndf(min, max);
-          while(tmp.indexOf(num) > -1) {
-            num = Gibberish.rndf(min, max);
-          }
-					tmp.push(num);
-				}
-			}
-			output.push(num);
-		}
-		return output;
-	}
-};
-  
-Gibberish.Rndf = function() {
-  var _min, _max, quantity, random = Math.random, canRepeat;
-    
-  if(arguments.length === 0) {
-    _min = 0; _max = 1;
-  }else if(arguments.length === 1) {
-    _max = arguments[0]; _min = 0;
-  }else if(arguments.length === 2) {
-    _min = arguments[0]; _max = arguments[1];
-  }else if(arguments.length === 3) {
-    _min = arguments[0]; _max = arguments[1]; quantity = arguments[2];
-  }else{
-    _min = arguments[0]; _max = arguments[1]; quantity = arguments[2]; canRepeat = arguments[3];
-  }    
-  
-  return function() {
-    var value, min, max, range;
-    
-    min = typeof _min === 'function' ? _min() : _min
-    max = typeof _max === 'function' ? _max() : _max
-      
-    if( typeof quantity === 'undefined') {
-      value = Gibberish.rndf( min, max )
-    }else{
-      value = Gibberish.rndf( min, max, quantity, canRepeat )
-    }
-    
-    return value;
-  }
-};
-
-Gibberish.rndi = function( min, max, number, canRepeat ) {
-  var range;
-    
-  if(arguments.length === 0) {
-    min = 0; max = 1;
-  }else if(arguments.length === 1) {
-    max = arguments[0]; min = 0;
-  }else if( arguments.length === 2 ){
-    min = arguments[0]; max = arguments[1];
-  }else{
-    min = arguments[0]; max = arguments[1]; number = arguments[2]; canRepeat = arguments[3];
-  }    
-  
-  range = max - min
-  if( range < number ) canRepeat = true
-  
-  if( typeof number === 'undefined' ) {
-    range = max - min
-    return Math.round( min + Math.random() * range );
-  }else{
-		var output = [];
-		var tmp = [];
-		
-		for(var i = 0; i < number; i++) {
-			var num;
-			if(canRepeat) {
-				num = Gibberish.rndi(min, max);
-			}else{
-				num = Gibberish.rndi(min, max);
-				while(tmp.indexOf(num) > -1) {
-					num = Gibberish.rndi(min, max);
-				}
-				tmp.push(num);
-			}
-			output.push(num);
-		}
-		return output;
-  }
-};
-
-Gibberish.Rndi = function() {
-  var _min, _max, quantity, random = Math.random, round = Math.round, canRepeat, range;
-    
-  if(arguments.length === 0) {
-    _min = 0; _max = 1;
-  }else if(arguments.length === 1) {
-    _max = arguments[0]; _min = 0;
-  }else if(arguments.length === 2) {
-    _min = arguments[0]; _max = arguments[1];
-  }else if(arguments.length === 3) {
-    _min = arguments[0]; _max = arguments[1]; quantity = arguments[2];
-  }else{
-    _min = arguments[0]; _max = arguments[1]; quantity = arguments[2]; canRepeat = arguments[3];
-  }  
-  
-  range = _max - _min
-  if( typeof quantity === 'number' && range < quantity ) canRepeat = true
-  
-  return function() {
-    var value, min, max, range;
-    
-    min = typeof _min === 'function' ? _min() : _min
-    max = typeof _max === 'function' ? _max() : _max
-    
-    if( typeof quantity === 'undefined') {
-      value = Gibberish.rndi( min, max )
-    }else{
-      value = Gibberish.rndi( min, max, quantity, canRepeat )
-    }
-    
-    return value;
-  }
-};
-
-Gibberish.extend = function(destination, source) {
-    for (var property in source) {
-			var keys = property.split(".");
-			if(source[property] instanceof Array && source[property].length < 100) { // don't copy large array buffers
-		    destination[property] = source[property].slice(0);
-				if(property === "fx") {
-					destination[property].parent = source[property].parent;
-				}
-      }else if (typeof source[property] === "object" && source[property] !== null && !(source[property] instanceof Float32Array) ) {
-          destination[property] = destination[property] || {};
-          arguments.callee(destination[property], source[property]);
-      } else {
-          destination[property] = source[property];
-      }
-    }
-    return destination;
-};
-	
-Function.prototype.clone=function(){
-    return eval('['+this.toString()+']')[0];
-};
-
-String.prototype.format = function(i, safe, arg) {
-    function format() {
-        var str = this,
-            len = arguments.length + 1;
-
-        for (i = 0; i < len; arg = arguments[i++]) {
-            safe = arg; //typeof arg === 'object' ? JSON.stringify(arg) : arg;
-            str = str.replace(RegExp('\\{' + (i - 1) + '\\}', 'g'), safe);
-        }
-        return str;
     }
 
-    format.native = String.prototype.format;
-
-    return format;
-}();
-
-Gibberish.future = function(func, time) { 
-  var seq = new Gibberish.Sequencer({
-    values:[
-      function(){},
-      function() {
-        func();
-        seq.stop();
-        seq.disconnect();
-      }
-    ],
-    durations:[ time ]
-  }).start()
-  
-  seq.cancel = function() {
-    seq.stop();
-    seq.disconnect();
-  }
-  
-  return seq
-}
-Gibberish.Proxy = function() {
-  var value = 0;
-      
-	Gibberish.extend(this, {
-  	name: 'proxy',
-    type: 'effect',
-    
-    properties : {},
-    
-    callback : function() {
-      return value;
-    },
-  }).init();
-  
-  this.input = arguments[0];
-  
-  value = this.input.parent[ this.input.name ];
-  delete this.input.parent[ this.input.name ];
-    
-  this.input.parent.properties[ this.input.name ].value = this;
-  
-  Object.defineProperty( this.input.parent, this.input.name, {
-    get : function(){ return value; },
-    set : function(_value) { value = _value; }
-  });
-  Gibberish.dirty(this.input.parent);
-};
-Gibberish.Proxy.prototype = new Gibberish.ugen();
-
-Gibberish.Proxy2 = function() {
-  var input = arguments[0],
-      name = arguments[1],
-      phase = 0
-      
-	Gibberish.extend( this, {
-  	name: 'proxy2',
-    type: 'effect',
-    
-    properties : { },
-    
-    callback : function() {
-      var v = input[ name ]
-      // if( phase++ % 44100 === 0 ) console.log( v, input, name)
-      return Array.isArray( v ) ? ( v[0] + v[1] + v[2] ) / 3 : v
-    },
-  }).init();
-  
-  this.getInput = function() { return input }
-  this.setInput = function( v ) { input = v }
-  this.getName = function() { return name }
-  this.setName = function( v ) { name = v }
-};
-Gibberish.Proxy2.prototype = new Gibberish.ugen();
-
-Gibberish.Proxy3 = function() {
-  var input = arguments[0],
-      name = arguments[1],
-      phase = 0
-      
-	Gibberish.extend( this, {
-  	name: 'proxy3',
-    type: 'effect',
-    
-    properties : { },
-    
-    callback : function() {
-      var v = input[ name ]
-      //if( phase++ % 44100 === 0 ) console.log( v, input, name)
-      return v || 0
-    },
-  })
-  
-  this.init();
-  
-  this.codegen = function() {
-    // if(Gibberish.memo[this.symbol]) {
-    //   return Gibberish.memo[this.symbol];
-    // }
-    
-    console.log(" CALLED ")
-    if( ! this.variable ) this.variable = Gibberish.generateSymbol('v');
-    Gibberish.callbackArgs.push( this.symbol )
-    Gibberish.callbackObjects.push( this.callback )
-
-    this.codeblock = "var " + this.variable + " = " + this.symbol + "(" + input.properties[ name ].codegen() + ");\n"
-  }
-  
-};
-Gibberish.Proxy3.prototype = new Gibberish.ugen();
-Gibberish.oscillator = function() {
-  this.type = 'oscillator';
-  
-  this.oscillatorInit = function() {
-    this.fx = new Array2; 
-    this.fx.parent = this;
-    
-    return this;
-  }
-};
-Gibberish.oscillator.prototype = new Gibberish.ugen();
-Gibberish._oscillator = new Gibberish.oscillator();
-
-/**#Gibberish.Table - Oscillator
-An wavetable oscillator.
-
-## Example Usage##
-`// fill the wavetable with random samples
-Gibberish.init();  
-a = new Gibberish.Table();  
-var t = []  
-for( var i = 0; i < 1024; i++ ) { t[ i ] = Gibberish.rndf(-1,1) }  
-a.setTable( t )  
-a.connect()  
-`
-- - - -
-**/
-/**###Gibberish.Table.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Table.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-
-Gibberish.Wavetable = function() {
-  var phase = 0,
-      table = null,
-      tableFreq = Gibberish.context.sampleRate / 1024,
-      signHistory = 0,
-      flip = 0;
-  
-  this.properties = {
-    frequency : 440,
-    amp : .25,
-    sync: 0
-  };
-  
-/**###Gibberish.Wavetable.setTable : method  
-Assign an array representing one cycle of a waveform to use.  
-
-param **table** Float32Array. Assign an array to be used as the wavetable.
-**/     
-  this.getTable = function() { return table; }
-  this.setTable = function(_table) { table = _table; tableFreq = Gibberish.context.sampleRate / table.length }
-  
-  this.getTableFreq = function() { return tableFreq }
-  this.setTableFreq = function( v ) { tableFreq = v;  }  
-  
-  this.getPhase = function()  { return phase }
-  this.setPhase = function(v) { phase = v }
-
-/**###Gibberish.Wavetable.callback : method  
-Returns a single sample of output.  
-
-param **frequency** Number. The frequency to be used to calculate output.  
-param **amp** Number. The amplitude to be used to calculate output.  
-**/   
-  this.callback = function(frequency, amp, sync) { 
-    var index, frac, index2, val1, val2, sign;
-            
-    phase += frequency / tableFreq;
-    while(phase >= 1024) phase -= 1024;  
-    
-    index   = phase | 0;
-    frac    = phase - index;
-    index   = index & 1023;
-    index2  = index === 1023 ? 0 : index + 1;
-    val1    = table[index];
-    val2    = table[index2];
-    
-    // sign = typeof sync == 'number' ? sync ? sync < 0 ? -1 : 1 : isNaN(sync) ? NaN : 0 : NaN;
-    // if( sign !== signHistory && sign !== 0) {
-    //   flip++
-    //   
-    //   if( flip === 2 ){
-    //     phase = 0
-    //     flip = 0
-    //   }
-    //   //console.log( "FLIP", sign, signHistory, count, sync )
-    // }
-    // 
-    // if( sign !== 0 ) signHistory = sign
-    
-    return ( val1 + ( frac * (val2 - val1) ) ) * amp;
-  }
-}
-Gibberish.Wavetable.prototype = Gibberish._oscillator;
-
-Gibberish.Table = function( table ) {
-  this.__proto__ = new Gibberish.Wavetable();
-  
-  this.name = 'table';
-  
-  var pi_2 = Math.PI * 2
-  
-  if( typeof table === 'undefined' ) { 
-    table = new Float32Array(1024);
-    for(var i = 1024; i--;) { table[i] = Math.sin( (i / 1024) * pi_2); }
-  }
-  
-  this.setTable( table );
-
-  this.init();
-  this.oscillatorInit();
-  //this.processProperties( arguments );
-}
-
-Gibberish.asmSine = function (stdlib, foreign, heap) {
-    "use asm";
-
-    var sin = stdlib.Math.sin;
-    var phase = 0.0;
-    var out = new stdlib.Float32Array(heap);
-    var floor = stdlib.Math.floor;
-    var tableFreq = 0.0;
-    
-    function init() {
-      var i = 1024;
-      var j = 1024.0;
-      var test = 0.0;
-      for (;  i = (i - 1) | 0; ) {
-        j = j - 1.0;
-        out[i >> 2] = +(sin( +(j / 1024.0) * 6.2848));
-      }  
-      tableFreq = 44100.0 / 1024.0;
-    }
-    
-    function gen(freq, amp, sr) {
-      freq = +freq;
-      amp = +amp;
-      sr = +sr;
-      
-      var index = 0.0,
-          index1 = 0,
-          index2 = 0,
-          frac = 0.0,
-          val1 = 0.0,
-          val2 = 0.0;
-      
-      phase = +(phase + freq / tableFreq);
-      if(phase >= 1024.0) phase = +(phase - 1024.0);
-          
-      index = +floor(phase);
-      frac = phase - index;
-      
-      index1 = (~~index);
-      if((index1 | 0) == (1024 | 0)) {
-        index2 = 0
-      } else { 
-        index2 = (index1 + 1) | 0;
-      }
-      
-      val1 = +out[ index1 >> 2 ];
-      val2 = +out[ index2 >> 2 ];
-          
-      return +((val1 + (frac * (val2 - val1))) * amp);
-    }
-    
-    function get(idx) {
-      idx = idx|0;
-      return +out[idx >> 2];
-    }
-
-    return {
-      init:init,
-      gen: gen,
-      get: get,
-    }
-};
-
-/*
-    phase += frequency / tableFreq;
-    while(phase >= 1024) phase -= 1024;  
-    
-    index   = phase | 0;
-    frac    = phase - index;
-    index   = index & 1023;
-    index2  = index === 1023 ? 0 : index + 1;
-    val1    = table[index];
-    val2    = table[index2];
-        
-    return ( val1 + ( frac * (val2 - val1) ) ) * amp;
-*/
-
-
-
-
-
-/*function gen (freq, amp, sr) {
-    freq = +freq;
-    amp  = +amp;
-    sr = +sr;
-    
-    phase = +(phase + +(+(freq / sr) * 3.14159 * 2.0));
-    
-    return +(+sin(phase) * amp);
-}*/
-//var pi_2 = (3.14159 * 2.0);
-
-
-Gibberish.asmSine2 = function () {    
-    this.properties = { frequency:440.0, amp:.5, sr: Gibberish.context.sampleRate }
-    this.name = 'sine'
-    var buf = new ArrayBuffer(4096);
-    var asm = Gibberish.asmSine(window, null, buf);
-    asm.init();
-    
-    this.getTable = function() { return buf; }
-    this.get = asm.get;
-    this.callback = asm.gen;
-    this.init();
-    this.oscillatorInit();
-    this.processProperties( arguments );
-    
-    return  this;
-}
-Gibberish.asmSine2.prototype = Gibberish._oscillator;
-/**#Gibberish.Sine - Oscillator
-A sinewave calculated on a per-sample basis.
-
-## Example Usage##
-`// make a sine wave  
-Gibberish.init();  
-a = new Gibberish.Sine().connect();`
-- - - -
-**/
-/**###Gibberish.Sine.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Sine.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-
-Gibberish.Sine = function() {
-  this.__proto__ = new Gibberish.Wavetable();
-  
-  this.name = 'sine';
-  
-  var pi_2 = Math.PI * 2, 
-      table = new Float32Array(1024);
-      
-  for(var i = 1024; i--;) { table[i] = Math.sin( (i / 1024) * pi_2); }
-  
-  this.setTable( table );
-
-  this.init( arguments );
-  this.oscillatorInit();
-  this.processProperties( arguments );
-};
-
-/**#Gibberish.Sine2 - Oscillator
-A sinewave calculated on a per-sample basis that can be panned.
-
-## Example Usage##
-`// make a sine wave  
-Gibberish.init();  
-a = new Gibberish.Sine2(880, .5, -.25).connect();`
-- - - -
-**/
-/**###Gibberish.Sine2.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Sine2.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-/**###Gibberish.Sine2.pan : property  
-Number. -1..1. The position of the sinewave in the stereo spectrum
-**/
-Gibberish.Sine2 = function() {
-  this.__proto__ = new Gibberish.Sine();
-  this.name = "sine2";
-    
-  var sine = this.__proto__.callback,
-      panner = Gibberish.makePanner(),
-      output = [0,0];
-
-/**###Gibberish.Sine2.callback : method  
-Returns a stereo sample of output as an array.  
-  
-param **frequency** Number. The frequency to be used to calculate output.  
-param **amp** Number. The amplitude to be used to calculate output.  
-param **pan** Number. The position in the stereo spectrum of the signal.
-**/  
-  this.callback = function(frequency, amp, pan) {
-    var out = sine(frequency, amp);
-    output = panner(out, pan, output);
-    return output;
-  }
-
-  this.init();
-  this.oscillatorInit();
-  Gibberish.defineUgenProperty('pan', 0, this);
-  this.processProperties(arguments);  
-};
-
-Gibberish.Square = function() {
-  this.__proto__ = new Gibberish.Wavetable();
-  
-  this.name = 'square';
-  
-  var pi_2 = Math.PI * 2, 
-      table = new Float32Array(1024);
-      
-  for(var i = 1024; i--;) { 
-    table[i] = i / 1024 > .5 ? 1 : -1;
-  }
-  
-  this.setTable( table );
-
-  this.init( arguments );
-  this.oscillatorInit();
-  this.processProperties( arguments );
-};
-
-/**#Gibberish.Saw - Oscillator
-A non-bandlimited saw wave calculated on a per-sample basis.
-
-## Example Usage##
-`// make a saw wave  
-Gibberish.init();  
-a = new Gibberish.Saw(330, .4).connect();`
-- - - -
-**/
-/**###Gibberish.Saw.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Saw.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-Gibberish.Saw = function() {
-  this.__proto__ = new Gibberish.Wavetable();
-  
-  this.name = 'saw';
-  
-  var table = new Float32Array(1024);
-      
-  for(var i = 1024; i--;) { table[i] = (((i / 1024) / 2 + 0.25) % 0.5 - 0.25) * 4; }
-  
-  this.setTable( table );
-
-  this.init( arguments );
-  this.oscillatorInit();
-  this.processProperties( arguments );
-};
-
-/**#Gibberish.Saw2 - Oscillator
-A stereo, non-bandlimited saw wave calculated on a per-sample basis.
-
-## Example Usage##
-`// make a saw wave  
-Gibberish.init();  
-a = new Gibberish.Saw2(330, .4).connect();`
-- - - -
-**/
-/**###Gibberish.Saw.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Saw.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-Gibberish.Saw2 = function() {
-  this.__proto__ = new Gibberish.Saw();
-  this.name = "saw2";
-  
-  var saw = this.__proto__.callback,
-      panner = Gibberish.makePanner(),
-      output = [0,0];
-
-/**###Gibberish.Saw2.callback : method  
-Returns a stereo sample of output as an array.  
-  
-param **frequency** Number. The frequency to be used to calculate output.  
-param **amp** Number. The amplitude to be used to calculate output.  
-param **pan** Number. The position in the stereo spectrum of the signal.
-**/    
-  this.callback = function(frequency, amp, pan) {
-    var out = saw(frequency, amp);
-    output = panner(out, pan, output);
-    return output;
-  };
-
-  this.init();
-  Gibberish.defineUgenProperty('pan', 0, this);
-  
-};
-
-/**#Gibberish.Triangle - Oscillator
-A triangle calculated on a per-sample basis.
-
-## Example Usage##
-`// make a triangle wave  
-Gibberish.init();  
-a = new Gibberish.Triangle({frequency:570, amp:.35}).connect();`
-- - - -
-**/
-/**###Gibberish.Triangle.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Triangle.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-
-Gibberish.Triangle = function() {
-  this.__proto__ = new Gibberish.Wavetable();
-  
-  this.name = 'triangle';
-  
-  var table = new Float32Array(1024),
-      abs = Math.abs;
-      
-  for(var i = 1024; i--;) { table[i] = 1 - 4 * abs(( (i / 1024) + 0.25) % 1 - 0.5); }
-  
-  this.setTable( table );
-
-  this.init( arguments );
-  this.oscillatorInit();
-  this.processProperties( arguments );
-};
-
-/**#Gibberish.Triangle2 - Oscillator
-A triangle calculated on a per-sample basis that can be panned.
-
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.Triangle2(880, .5, -.25).connect();`
-- - - -
-**/
-/**###Gibberish.Triangle2.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Triangle2.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-/**###Gibberish.Triangle2.pan : property  
-Number. -1..1. The position of the triangle wave in the stereo spectrum
-**/
- 
-Gibberish.Triangle2 = function() {
-  this.__proto__ = new Gibberish.Triangle();
-  this.name = "triangle2";
-    
-  var triangle = this.__proto__.callback,
-      panner = Gibberish.makePanner(),
-      output = [0,0];
-
-/**###Gibberish.Triangle2.callback : method  
-Returns a stereo sample of output as an array.  
-  
-param **frequency** Number. The frequency to be used to calculate output.  
-param **amp** Number. The amplitude to be used to calculate output.  
-param **pan** Number. The position in the stereo spectrum of the signal.
-**/    
-  this.callback = function(frequency, amp, pan) {
-    var out = triangle(frequency, amp);
-    return panner(out, pan, output);
-  };
-
-  this.init();
-  this.oscillatorInit();
-  Gibberish.defineUgenProperty('pan', 0, this);
-  this.processProperties(arguments);
-};
-
-/**#Gibberish.Saw3 - Oscillator
-A bandlimited saw wave created using FM feedback, see http://scp.web.elte.hu/papers/synthesis1.pdf.  
-  
-## Example Usage##
-`// make a saw wave  
-Gibberish.init();  
-a = new Gibberish.Saw3(330, .4).connect();`
-- - - -
-**/
-/**###Gibberish.Saw3.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.Saw3.amp : property  
-Number. A linear value specifying relative ampltiude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-
-Gibberish.Saw3 = function() {
-  var osc = 0,
-      phase = 0,
-      a0 = 2.5,
-      a1 = -1.5,
-      history = 0,
-      sin = Math.sin,
-      scale = 11;
-      pi_2 = Math.PI * 2,
-      flip = 0,
-      signHistory = 0,
-      ignore = false,
-      sr = Gibberish.context.sampleRate;
-      
-  Gibberish.extend(this, {
-    name: 'saw',
-    properties : {
-      frequency: 440,
-      amp: .15,
-      sync:0,
-      sr: Gibberish.context.sampleRate,
-    },
-/**###Gibberish.Saw3.callback : method  
-Returns a single sample of output.  
-  
-param **frequency** Number. The frequency to be used to calculate output.  
-param **amp** Number. The amplitude to be used to calculate output.  
-**/    
-    callback : function(frequency, amp, sync) {
-      var w = frequency / sr,
-          n = .5 - w,
-          scaling = scale * n * n * n * n,
-          DC = .376 - w * .752,
-          norm = 1 - 2 * w,
-          out = 0,
-          sign;
-          
-      phase += w;
-      phase -= phase > 1 ? 2 : 0;
-      
-      osc = (osc + sin(pi_2 * (phase + osc * scaling))) * .5;
-      out = a0 * osc + a1 * history;
-      history = osc;
-      out += DC;
-      out *= norm;
-
-      // sign = typeof sync == 'number' ? sync ? sync < 0 ? -1 : 1 : isNaN(sync) ? NaN : 0 : NaN;
-      // if( sign !== signHistory && sign !== 0) {
-      //   flip++
-      //   
-      //   if( flip === 2 ){
-      //     phase = 0
-      //     flip = 0
-      //   }
-      //   //console.log( "FLIP", sign, signHistory, count, sync )
-      // }
-      // if( sign !== 0 ) signHistory = sign
-      
-      return out;
-    }
-  });
-  
-  /*
-    .1 : 1 1
-    0  : 0 1   // ignored
-  -.1  : -1 1  // flip
-  -.2  : -1 -1 
-  */
-  
-  Object.defineProperty(this, 'scale', {
-    get : function() { return scale; },
-    set : function(val) { scale = val; }
-  });
-  
-  this.init();
-  this.oscillatorInit();
-  this.processProperties(arguments);
-}
-Gibberish.Saw3.prototype = Gibberish._oscillator;
-
-/**#Gibberish.PWM - Oscillator
-A bandlimited pulsewidth modulation wave created using FM feedback, see http://scp.web.elte.hu/papers/synthesis1.pdf.
-  
-## Example Usage##
-`// make a pwm wave  
-Gibberish.init();  
-a = new Gibberish.PWM(330, .4, .9).connect();`
-- - - -
-**/
-/**###Gibberish.PWM.frequency : property  
-Number. From 20 - 20000 hz.
-**/
-/**###Gibberish.PWM.amp : property  
-Number. A linear value specifying relative ampltiude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-/**###Gibberish.PWM.pulsewidth : property  
-Number. 0..1. The width of the waveform's duty cycle.
-**/
-Gibberish.PWM = function() {
-  var osc = 0,
-      osc2= 0,
-      _osc= 0,
-      _osc2=0,
-      phase = 0,
-      a0 = 2.5,
-      a1 = -1.5,
-      history = 0,
-      sin = Math.sin,
-      scale = 11;
-      pi_2 = Math.PI * 2,
-      test = 0,
-      sr = Gibberish.context.sampleRate;
-
-  Gibberish.extend(this, {
-    name: 'pwm',
-    properties : {
-      frequency: 440,
-      amp: .15,
-      pulsewidth: .05,
-      sr: Gibberish.context.sampleRate,
-    },
-/**###Gibberish.PWM.callback : method  
-Returns a single sample of output.  
-  
-param **frequency** Number. The frequency to be used to calculate output.  
-param **amp** Number. The amplitude to be used to calculate output.  
-param **pulsewidth** Number. The duty cycle of the waveform
-**/    
-    callback : function(frequency, amp, pulsewidth) {
-      var w = frequency / sr,
-          n = .5 - w,
-          scaling = scale * n * n * n * n,
-          DC = .376 - w * .752,
-          norm = 1 - 2 * w,
-          out = 0;
-          
-      phase += w;
-      phase -= phase > 1 ? 2 : 0;
-      
-      osc = (osc  + sin( pi_2 * (phase + osc  * scaling ) ) ) * .5;
-      osc2 =(osc2 + sin( pi_2 * (phase + osc2 * scaling + pulsewidth) ) ) * .5;
-      out = osc2 - osc;
-      
-      out = a0 * out + a1 * (_osc - _osc2);
-      _osc = osc;
-      _osc2 = osc2;
-
-      return out * norm * amp;
-    },
-  });
-  
-  Object.defineProperty(this, 'scale', {
-    get : function() { return scale; },
-    set : function(val) { scale = val; }
-  });
-  
-  this.init();
-  this.oscillatorInit();
-  this.processProperties(arguments);  
-};
-Gibberish.PWM.prototype = Gibberish._oscillator;
-
-/**#Gibberish.Noise - Oscillator
-A white noise oscillator
-
-## Example Usage##
-`// make some noise
-Gibberish.init();  
-a = new Gibberish.Noise(.4).connect();`
-- - - -
-**/
-/**###Gibberish.Noise.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-Gibberish.Noise = function() {
-  var rnd = Math.random;
-  
-  Gibberish.extend(this, {
-    name:'noise',
-    properties: {
-      amp:1,
-    },
-    
-    callback : function(amp){ 
-      return (rnd() * 2 - 1) * amp;
-    },
-  });
-  
-  this.init();
-  this.oscillatorInit();
-  this.processProperties(arguments);  
-};
-Gibberish.Noise.prototype = Gibberish._oscillator;
-// this file is dependent on oscillators.js
-
-/**#Gibberish.KarplusStrong - Physical Model
-A plucked-string model.  
-  
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.KarplusStrong({ damping:.6 }).connect();  
-a.note(440);
-`
-- - - -
-**/
-/**###Gibberish.KarplusStrong.blend : property  
-Number. 0..1. The likelihood that the sign of any given sample will be flipped. A value of 1 means there is no chance, a value of 0 means each samples sign will be flipped. This introduces noise into the model which can be used for various effects.
-**/
-/**###Gibberish.KarplusStrong.damping : property  
-Number. 0..1. Higher amounts of damping shorten the decay of the sound generated by each note.
-**/
-/**###Gibberish.KarplusStrong.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-/**###Gibberish.KarplusStrong.channels : property  
-Number. Default 2. If two channels, the signal may be panned.
-**/
-/**###Gibberish.KarplusStrong.pan : property  
-Number. Default 0. The position in the stereo spectrum for the sound, from -1..1.
-**/
-Gibberish.KarplusStrong = function() {
-  var phase   = 0,
-      buffer  = [0],
-      last    = 0,
-      rnd     = Math.random,
-      panner  = Gibberish.makePanner(),
-      sr      = Gibberish.context.sampleRate,
-      out     = [0,0];
-      
-  Gibberish.extend(this, {
-    name:"karplus_strong",
-    frequency : 0,
-    properties: { blend:1, damping:0, amp:1, channels:2, pan:0  },
-  
-    note : function(frequency) {
-      var _size = Math.floor(sr / frequency);
-      buffer.length = 0;
-    
-      for(var i = 0; i < _size; i++) {
-        buffer[i] = rnd() * 2 - 1; // white noise
-      }
-      
-      this.frequency = frequency;
-    },
-
-    callback : function(blend, damping, amp, channels, pan) { 
-      var val = buffer.shift();
-      var rndValue = (rnd() > blend) ? -1 : 1;
-				
-  	  damping = damping > 0 ? damping : 0;
-				
-      var value = rndValue * (val + last) * (.5 - damping / 100);
-
-      last = value;
-
-      buffer.push(value);
-				
-      value *= amp;
-      return channels === 1 ? value : panner(value, pan, out);
-    },
-  })
-  .init()
-  .oscillatorInit()
-  .processProperties(arguments);
-};
-Gibberish.KarplusStrong.prototype = Gibberish._oscillator;
-
-Gibberish.PolyKarplusStrong = function() {
-  this.__proto__ = new Gibberish.Bus2();
-  
-  Gibberish.extend(this, {
-    name:     "poly_karplus_strong",
-    maxVoices:    5,
-    voiceCount:   0,
-    _frequency: 0,
-    
-    polyProperties : {
-  		blend:			1,
-      damping:    0,
-    },
-
-    note : function(_frequency, amp) {
-      var synth = this.children[this.voiceCount++];
-      if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
-      synth.note(_frequency, amp);
-      this._frequency = _frequency;
-    },
-    initVoices: function() {
-      for(var i = 0; i < this.maxVoices; i++) {
-        var props = {
-          blend:   this.blend,
-          damping: this.damping,
-          channels: 2,
-          amp:      1,
-        };
-        var synth = new Gibberish.KarplusStrong(props).connect(this);
-
-        this.children.push(synth);
-      }
-    }
-  });
-  
-  this.amp = 1 / this.maxVoices;
-  this.children = [];
-  
-  if(typeof arguments[0] === 'object') {
-    this.maxVoices = arguments[0].maxVoices ? arguments[0].maxVoices : this.maxVoices
-  }
-  
-  Gibberish.polyInit(this);
-  this.initVoices()
-  
-  this.processProperties(arguments);
-  
-  this.initialized = false
-  Gibberish._synth.oscillatorInit.call(this);
-  Gibberish.dirty( this )
-};
-/**#Gibberish.Bus - Miscellaneous
-Create a mono routing bus. A bus callback routes all it's inputs and scales them by the amplitude of the bus.  
-  
-For a stereo routing bus, see [Bus2](javascript:displayDocs('Gibberish.Bus2'\))
-
-##Example Usage##    
-`a = new Gibberish.Bus();  
-b = new Gibberish.Sine(440).connect(a);  
-c = new Gibberish.Sine(880).connect(a);  
-a.amp = .1;  
-a.connect();`
-  
-## Constructor     
-**param** *properties*: Object. A dictionary of property values (see below) to set for the bus on initialization.
-**/
-/**###Gibberish.Bus.amp : property  
-Array. Read-only. Relative volume for the sum of all ugens connected to the bus.
-**/
-Gibberish.bus = function(){
-  this.type = 'bus';
-  
-  this.inputCodegen = function() {
-    //console.log( this, this.value, this.value.valueOf() )
-    var val = this.value.valueOf();
-    var str;
-    
-    /*if( this.value.name === 'Drums' ) {
-      str = '[ ' + val + '[0] * ' + this.amp + ', ' + val + '[1] * ' + this.amp + ']'  // works!
-    }else{
-      str = this.amp === 1 ? val : val + ' * ' + this.amp;
-    }*/
-      
-    str = val + ', ' + this.amp 
-    this.codeblock = str;
-    return str;
-  };
-
-  this.addConnection = function() {
-    var position = arguments[2]
-    var arg = { 
-      value:	      arguments[0], 
-      amp:		      arguments[1], 
-      codegen:      this.inputCodegen,
-      valueOf:      function() { return this.codegen() }
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
     };
-    
-    if( typeof position !== 'undefined' ) {
-      this.inputs.splice( position,0,arg );
-    }else{
-      this.inputs.push( arg );
-    }
+})();
 
-    Gibberish.dirty( this );
-  };
-  
-  this.removeConnection = function(ugen) {
-    for(var i = 0; i < this.inputs.length; i++) {
-      if(this.inputs[i].value === ugen) {
-        this.inputs.splice(i,1);
-        Gibberish.dirty(this);
-        break;
-      }
-    }
-  };
-  
-  this.adjustSendAmount = function(ugen, amp) {
-    for(var i = 0; i < this.inputs.length; i++) {
-      if(this.inputs[i].value === ugen) {
-        this.inputs[i].amp = amp;
-        Gibberish.dirty(this);
-        break;
-      }
-    }
-  };
-  
-  this.callback = function() {
-    var amp = arguments[arguments.length - 2]; // use arguments to accommodate arbitray number of inputs without using array
-    var pan = arguments[arguments.length - 1];
-    
-    output[0] = output[1] = 0;
-    
-    for(var i = 0; i < arguments.length - 2; i+=2) {
-      var isObject = typeof arguments[i] === 'object',
-          _amp = arguments[i + 1]
-          
-      output[0] += isObject ? arguments[i][0] * _amp :arguments[i] * _amp;
-      output[1] += isObject ? arguments[i][1] * _amp: arguments[i] * _amp;
-    }
-    
-    output[0] *= amp;
-    output[1] *= amp;
-    
-    return panner(output, pan, output);
-  };
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
 };
 
-Gibberish.bus.prototype = new Gibberish.ugen();
-Gibberish._bus = new Gibberish.bus();
+},{}],16:[function(_dereq_,module,exports){
+(function (global){
+/*! http://mths.be/punycode v1.2.4 by @mathias */
+;(function(root) {
 
-Gibberish.Bus = function() {
-  Gibberish.extend(this, {
-    name : 'bus',
-        
-    properties : {
-      inputs :  [],
-      amp :     1,
-    },
+	/** Detect free variables */
+	var freeExports = typeof exports == 'object' && exports;
+	var freeModule = typeof module == 'object' && module &&
+		module.exports == freeExports && module;
+	var freeGlobal = typeof global == 'object' && global;
+	if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal) {
+		root = freeGlobal;
+	}
 
-    callback : function() {
-      var out = 0;
-      var length = arguments.length - 1;
-      var amp = arguments[length]; // use arguments to accommodate arbitray number of inputs without using array
-      
-      for(var i = 0; i < length; i++) {
-        out += arguments[i];
-      }
-      out *= amp;
-      
-      return out;
-    },
-  });
+	/**
+	 * The `punycode` object.
+	 * @name punycode
+	 * @type Object
+	 */
+	var punycode,
 
-  this.init();
-  this.processProperties(arguments);
-  
-  return this;
-};
-Gibberish.Bus.prototype = Gibberish._bus;
+	/** Highest positive signed 32-bit float value */
+	maxInt = 2147483647, // aka. 0x7FFFFFFF or 2^31-1
 
-/**#Gibberish.Bus2 - Miscellaneous
-Create a stereo outing bus. A bus callback routes all it's inputs and scales them by the amplitude of the bus.
+	/** Bootstring parameters */
+	base = 36,
+	tMin = 1,
+	tMax = 26,
+	skew = 38,
+	damp = 700,
+	initialBias = 72,
+	initialN = 128, // 0x80
+	delimiter = '-', // '\x2D'
 
-##Example Usage##    
-`a = new Gibberish.Bus2();  
-b = new Gibberish.Sine(440).connect(a);  
-c = new Gibberish.Sine(880).connect(a);  
-  
-d = new Gibberish.Sequencer({ target:a, key:'pan', values:[-.75,.75], durations:[ 22050 ] }).start();
-a.connect();`
-  
-## Constructor     
-**param** *properties*: Object. A dictionary of property values (see below) to set for the bus on initialization.
-**/
-/**###Gibberish.Bus.amp : property  
-Array. Read-only. Relative volume for the sum of all ugens connected to the bus.
-**/
-Gibberish.Bus2 = function() {
-  this.name = 'bus2';
-  this.type = 'bus';
-  
-  this.properties = {
-    inputs :  [],
-    amp :     1,
-    pan :     0,
-  };
-  
-  var output = [0,0],
-      panner = Gibberish.makePanner(),
-      phase = 0;
-  
-  this.callback = function() {
-    // use arguments to accommodate arbitray number of inputs without using array    
-    var args = arguments,
-        length = args.length,
-        amp = args[length - 2], 
-        pan = args[length - 1]
-    
-    output[0] = output[1] = 0;
-    
-    //if(phase++ % 44100 === 0) console.log(args)
-    for(var i = 0, l = length - 2; i < l; i+= 2) {
-      var isObject = typeof args[i] === 'object',
-          _amp = args[i + 1]
-          
-      output[0] += isObject ? args[i][0] * _amp || 0 : args[i] * _amp || 0;
-      output[1] += isObject ? args[i][1] * _amp || 0 : args[i] * _amp || 0;
-    }
-    
-    output[0] *= amp;
-    output[1] *= amp;
-    
-    return panner(output, pan, output);
-  };
-  
-  this.show = function() { console.log(output, args) }
-  this.getOutput = function() { return output }
-  this.getArgs = function() { return args }
-  
-  //this.initialized = false;
-  this.init( arguments );
-  this.processProperties( arguments );
-};
-Gibberish.Bus2.prototype = Gibberish._bus;
-Gibberish.envelope = function() {
-    this.type = 'envelope';
-};
-Gibberish.envelope.prototype = new Gibberish.ugen();
-Gibberish._envelope = new Gibberish.envelope();
+	/** Regular expressions */
+	regexPunycode = /^xn--/,
+	regexNonASCII = /[^ -~]/, // unprintable ASCII chars + non-ASCII chars
+	regexSeparators = /\x2E|\u3002|\uFF0E|\uFF61/g, // RFC 3490 separators
 
-Gibberish.ExponentialDecay = function(){
-	var pow = Math.pow,
-      value = 0,
-      phase = 0;
-      
-  Gibberish.extend(this, {
-  	name:"ExponentialDecay",
-  	properties: { decay:.5, length:11050 },
+	/** Error messages */
+	errors = {
+		'overflow': 'Overflow: input needs wider integers to process',
+		'not-basic': 'Illegal input >= 0x80 (not a basic code point)',
+		'invalid-input': 'Invalid input'
+	},
 
-  	callback: function( decay, length ) {
-  		value = pow( decay, phase );
-  		phase += 1 / length;
+	/** Convenience shortcuts */
+	baseMinusTMin = base - tMin,
+	floor = Math.floor,
+	stringFromCharCode = String.fromCharCode,
 
-  		return value;
-  	},
-    
-    trigger : function() {
-      phase = typeof arguments[0] === 'number' ? arguments[0] : 0;
-    },
-  })
-  .init()
-};
-Gibberish.ExponentialDecay.prototype = Gibberish._envelope;
+	/** Temporary variable */
+	key;
 
-Gibberish.Line = function(start, end, time, loops) {
-	var that = { 
-		name:		'line',
+	/*--------------------------------------------------------------------------*/
 
-    properties : {
-  		start:	start || 0,
-  		end:		isNaN(end) ? 1 : end,
-  		time:		time || Gibberish.context.sampleRate,
-  		loops:	loops || false,
-    },
-    
-    retrigger: function( end, time ) {
-      phase = 0;
-      this.start = out
-      this.end = end
-      this.time = time
-      
-      incr = (end - out) / time
-    },
-    
-    getPhase: function() { return phase },
-    getIncr: function() { return incr },
-    getOut: function() { return out }
-	};
-  
-	var phase = 0,
-	    incr = (end - start) / time,
-      out
-  
-  //console.log("INCREMENT", incr, end, start, time )
-  
-	this.callback = function(start, end, time, loops) {
-    var incr = (end - start) / time
-		out = phase < time ? start + ( phase++ * incr) : end;
-				
-		phase = (out >= end && loops) ? 0 : phase;
-		
-		return out;
-	};
-  
-  this.setPhase = function(v) { phase = v; }
-  
-  Gibberish.extend(this, that);
-  
-  this.init();
+	/**
+	 * A generic error utility function.
+	 * @private
+	 * @param {String} type The error type.
+	 * @returns {Error} Throws a `RangeError` with the applicable error message.
+	 */
+	function error(type) {
+		throw RangeError(errors[type]);
+	}
 
-  return this;
-};
-Gibberish.Line.prototype = Gibberish._envelope;
+	/**
+	 * A generic `Array#map` utility function.
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} callback The function that gets called for every array
+	 * item.
+	 * @returns {Array} A new array of values returned by the callback function.
+	 */
+	function map(array, fn) {
+		var length = array.length;
+		while (length--) {
+			array[length] = fn(array[length]);
+		}
+		return array;
+	}
 
-Gibberish.Ease = function( start, end, time, easein, loops ) {
-  var sqrt = Math.sqrt, out = 0, phase = 0
-      
-  start = start || 0
-  end = end || 1
-  time = time || Gibberish.context.sampleRate
-  loops = loops || false
-  easein = typeof easein === 'undefined' ? 1 : easein
-  
-	var that = { 
-		name:		'ease',
-    properties : {},
-    retrigger: function( end, time ) {
-      phase = 0;
-      this.start = out
-      this.end = end
-      this.time = time      
-    },
-    
-    getPhase: function() { return phase },
-    getOut: function() { return out }
-	};
-  
-	this.callback = function() {
-    var x = phase++ / time,
-        y = easein ? 1 - sqrt( 1 - x * x ) : sqrt( 1 - ((1-x) * (1-x)) )
-    
-    out = phase < time ? start + ( y * ( end - start ) ) : end
-    
-		//out = phase < time ? start + ( phase++ * incr) : end;
-				
-		phase = (out >= end && loops) ? 0 : phase;
-		
-		return out;
-	};
-  
-  this.setPhase = function(v) { phase = v; }
-  this.setEase = function(v) {
-    easein = v
-  }
-  
-  Gibberish.extend(this, that);
-  
-  this.init();
+	/**
+	 * A simple `Array#map`-like wrapper to work with domain name strings.
+	 * @private
+	 * @param {String} domain The domain name.
+	 * @param {Function} callback The function that gets called for every
+	 * character.
+	 * @returns {Array} A new string of characters returned by the callback
+	 * function.
+	 */
+	function mapDomain(string, fn) {
+		return map(string.split(regexSeparators), fn).join('.');
+	}
 
-  return this;
-};
-Gibberish.Ease.prototype = Gibberish._envelope;
-
-// quadratic bezier
-// adapted from http://www.flong.com/texts/code/shapers_bez/
-Gibberish.Curve = function( start, end, time, a, b, loops ) {
-  var sqrt = Math.sqrt, 
-      out = 0,
-      phase = 0
-      
-  start = start || 0
-  end = end || 1
-  time = time || Gibberish.context.sampleRate
-  a = a || .940
-  b = b || .260
-  loops = loops || false
-  
-	var that = { 
-		name:		'curve',
-
-    properties : {},
-    
-    retrigger: function( end, time ) {
-      phase = 0;
-      this.start = out
-      this.end = end
-      this.time = time
-      
-      incr = (end - out) / time
-    },
-    
-    getPhase: function() { return phase },
-    getOut: function() { return out }
-	};
-  
-	this.callback = function() {
-    var x = phase++ / time,
-        om2a = 1 - 2 * a,
-        t = ( sqrt( a*a + om2a*x ) - a ) / om2a,
-        y = (1-2*b) * (t*t) + (2*b) * t
-    
-    out = phase < time ? start + ( y * ( end - start ) ) : end
-    
-		//out = phase < time ? start + ( phase++ * incr) : end;
-				
-		phase = (out >= end && loops) ? 0 : phase;
-		
-		return out;
-	};
-  
-  this.setPhase = function(v) { phase = v; }
-  
-  Gibberish.extend(this, that);
-  
-  this.init();
-
-  return this;
-};
-Gibberish.Curve.prototype = Gibberish._envelope;
-
-Gibberish.Lines = function( values, times, loops ) {
-  var out = values[0],
-      phase = 0,
-      valuesPhase = 1,
-      timesPhase = 0,
-      targetValue = 0,
-      targetTime = 0,
-      end = false,
-      incr
-  
-  
-  if( typeof values === 'undefined' ) values = [ 0,1 ]
-  if( typeof times  === 'undefined' ) times  = [ 44100 ]  
-    
-  targetValue = values[ valuesPhase ]
-  targetTime  = times[ 0 ]
-  
-  incr = ( targetValue - values[0] ) / targetTime
-  //console.log( "current", out, "target", targetValue, "incr", incr )
-  
-  loops = loops || false
-  
-	var that = { 
-		name:		'lines',
-
-    properties : {},
-    
-    retrigger: function() {
-      phase = 0
-      out = values[0]
-      targetTime = times[ 0 ]
-      targetValue = values[ 1 ]
-      valuesPhase = 1
-      timesPhase = 0
-      incr = ( targetValue - out ) / targetTime
-      end = false
-    },
-    
-    getPhase: function() { return phase },
-    getOut:   function() { return out }
-	};
-  
-  that.run = that.retrigger
-  
-	this.callback = function() {
-    if( phase >= targetTime && !end ) {
-      if( valuesPhase < values.length - 1 ) {
-        var timeStep = times[ ++timesPhase % times.length ]
-        targetTime = phase + timeStep
-        targetValue = values[ ++valuesPhase % values.length ]
-        incr = ( targetValue - out ) / timeStep        
-      }else{
-        if( !loops ) {
-          end = true
-          out = values[ values.length - 1 ]
-        }else{
-          phase = 0
-          out = values[0]
-          targetTime = times[ 0 ]
-          targetValue = values[ 1 ]
-          valuesPhase = 1
-          timesPhase = 0
-          incr = ( targetValue - out ) / targetTime
-        }
-      }
-    }else if( !end ) {
-      out += incr
-      phase++
-    }
-		
-		return out;
-	};
-  
-  this.setPhase = function(v) { phase = v; }
-  
-  Gibberish.extend(this, that);
-  
-  this.init();
-
-  return this;
-};
-Gibberish.Lines.prototype = Gibberish._envelope;
-
-Gibberish.AD = function(_attack, _decay) {
-  var phase = 0,
-      state = 0;
-      
-  Gibberish.extend( this,{
-    name : "AD",
-  	properties : {
-      attack :	_attack || 10000,
-  	  decay  :	_decay  || 10000,
-    },
-
-  	run : function() {
-  		state = 0;
-      phase = 0;
-  		return this;			
-    },
-  	callback : function(attack,decay) {
-  		attack = attack < 0 ? 22050 : attack;
-  		decay  = decay  < 0 ? 22050 : decay;				
-  		if(state === 0){
-  			var incr = 1 / attack;
-  			phase += incr;
-  			if(phase >=1) {
-  				state++;
-  			}
-  		}else if(state === 1){
-  			var incr = 1 / decay;
-  			phase -= incr;
-  			if(phase <= 0) {
-  				phase = 0;
-  				state++;;
-  			}			
-  		}
-  		return phase;
-    },
-    getState : function() { return state; },
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.AD.prototype = Gibberish._envelope;
-
-Gibberish.ADSR = function(attack, decay, sustain, release, attackLevel, sustainLevel, requireReleaseTrigger) {
-	var that = { 
-    name:   "adsr",
-		type:		"envelope",
-    'requireReleaseTrigger' : typeof requireReleaseTrigger !== 'undefined' ? requireReleaseTrigger : false,
-    
-    properties: {
-  		attack:		isNaN(attack) ? 10000 : attack,
-  		decay:		isNaN(decay) ? 10000 : decay,
-  		sustain: 	isNaN(sustain) ? 22050 : sustain,
-  		release:	isNaN(release) ? 10000 : release,
-  		attackLevel:  attackLevel || 1,
-  		sustainLevel: sustainLevel || .5,
-      releaseTrigger: 0,
-    },
-
-		run: function() {
-			this.setPhase(0);
-			this.setState(0);
-		},
-    stop : function() {
-      this.releaseTrigger = 1
-    }
-	};
-	Gibberish.extend(this, that);
-	
-	var phase = 0,
-	    state = 0,
-      rt  = 0,
-      obj = this;
-      
-  this.callback = function(attack,decay,sustain,release,attackLevel,sustainLevel,releaseTrigger) {
-		var val = 0;
-    rt = rt === 1 ? 1 : releaseTrigger;
-		if(state === 0){
-			val = phase / attack * attackLevel;
-			if(++phase / attack >= 1) {
-				state++;
-				phase = decay;
+	/**
+	 * Creates an array containing the numeric code points of each Unicode
+	 * character in the string. While JavaScript uses UCS-2 internally,
+	 * this function will convert a pair of surrogate halves (each of which
+	 * UCS-2 exposes as separate characters) into a single code point,
+	 * matching UTF-16.
+	 * @see `punycode.ucs2.encode`
+	 * @see <http://mathiasbynens.be/notes/javascript-encoding>
+	 * @memberOf punycode.ucs2
+	 * @name decode
+	 * @param {String} string The Unicode input string (UCS-2).
+	 * @returns {Array} The new array of code points.
+	 */
+	function ucs2decode(string) {
+		var output = [],
+		    counter = 0,
+		    length = string.length,
+		    value,
+		    extra;
+		while (counter < length) {
+			value = string.charCodeAt(counter++);
+			if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
+				// high surrogate, and there is a next character
+				extra = string.charCodeAt(counter++);
+				if ((extra & 0xFC00) == 0xDC00) { // low surrogate
+					output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
+				} else {
+					// unmatched surrogate; only append this code unit, in case the next
+					// code unit is the high surrogate of a surrogate pair
+					output.push(value);
+					counter--;
+				}
+			} else {
+				output.push(value);
 			}
-		}else if(state === 1) {
-			val = phase / decay * (attackLevel - sustainLevel) + sustainLevel;
-			if(--phase <= 0) {
-				if(sustain !== null){
-					state += 1;
-					phase = sustain;
-				}else{
-					state += 2;
-					phase = release;
+		}
+		return output;
+	}
+
+	/**
+	 * Creates a string based on an array of numeric code points.
+	 * @see `punycode.ucs2.decode`
+	 * @memberOf punycode.ucs2
+	 * @name encode
+	 * @param {Array} codePoints The array of numeric code points.
+	 * @returns {String} The new Unicode string (UCS-2).
+	 */
+	function ucs2encode(array) {
+		return map(array, function(value) {
+			var output = '';
+			if (value > 0xFFFF) {
+				value -= 0x10000;
+				output += stringFromCharCode(value >>> 10 & 0x3FF | 0xD800);
+				value = 0xDC00 | value & 0x3FF;
+			}
+			output += stringFromCharCode(value);
+			return output;
+		}).join('');
+	}
+
+	/**
+	 * Converts a basic code point into a digit/integer.
+	 * @see `digitToBasic()`
+	 * @private
+	 * @param {Number} codePoint The basic numeric code point value.
+	 * @returns {Number} The numeric value of a basic code point (for use in
+	 * representing integers) in the range `0` to `base - 1`, or `base` if
+	 * the code point does not represent a value.
+	 */
+	function basicToDigit(codePoint) {
+		if (codePoint - 48 < 10) {
+			return codePoint - 22;
+		}
+		if (codePoint - 65 < 26) {
+			return codePoint - 65;
+		}
+		if (codePoint - 97 < 26) {
+			return codePoint - 97;
+		}
+		return base;
+	}
+
+	/**
+	 * Converts a digit/integer into a basic code point.
+	 * @see `basicToDigit()`
+	 * @private
+	 * @param {Number} digit The numeric value of a basic code point.
+	 * @returns {Number} The basic code point whose value (when used for
+	 * representing integers) is `digit`, which needs to be in the range
+	 * `0` to `base - 1`. If `flag` is non-zero, the uppercase form is
+	 * used; else, the lowercase form is used. The behavior is undefined
+	 * if `flag` is non-zero and `digit` has no uppercase form.
+	 */
+	function digitToBasic(digit, flag) {
+		//  0..25 map to ASCII a..z or A..Z
+		// 26..35 map to ASCII 0..9
+		return digit + 22 + 75 * (digit < 26) - ((flag != 0) << 5);
+	}
+
+	/**
+	 * Bias adaptation function as per section 3.4 of RFC 3492.
+	 * http://tools.ietf.org/html/rfc3492#section-3.4
+	 * @private
+	 */
+	function adapt(delta, numPoints, firstTime) {
+		var k = 0;
+		delta = firstTime ? floor(delta / damp) : delta >> 1;
+		delta += floor(delta / numPoints);
+		for (/* no initialization */; delta > baseMinusTMin * tMax >> 1; k += base) {
+			delta = floor(delta / baseMinusTMin);
+		}
+		return floor(k + (baseMinusTMin + 1) * delta / (delta + skew));
+	}
+
+	/**
+	 * Converts a Punycode string of ASCII-only symbols to a string of Unicode
+	 * symbols.
+	 * @memberOf punycode
+	 * @param {String} input The Punycode string of ASCII-only symbols.
+	 * @returns {String} The resulting string of Unicode symbols.
+	 */
+	function decode(input) {
+		// Don't use UCS-2
+		var output = [],
+		    inputLength = input.length,
+		    out,
+		    i = 0,
+		    n = initialN,
+		    bias = initialBias,
+		    basic,
+		    j,
+		    index,
+		    oldi,
+		    w,
+		    k,
+		    digit,
+		    t,
+		    /** Cached calculation results */
+		    baseMinusT;
+
+		// Handle the basic code points: let `basic` be the number of input code
+		// points before the last delimiter, or `0` if there is none, then copy
+		// the first basic code points to the output.
+
+		basic = input.lastIndexOf(delimiter);
+		if (basic < 0) {
+			basic = 0;
+		}
+
+		for (j = 0; j < basic; ++j) {
+			// if it's not a basic code point
+			if (input.charCodeAt(j) >= 0x80) {
+				error('not-basic');
+			}
+			output.push(input.charCodeAt(j));
+		}
+
+		// Main decoding loop: start just after the last delimiter if any basic code
+		// points were copied; start at the beginning otherwise.
+
+		for (index = basic > 0 ? basic + 1 : 0; index < inputLength; /* no final expression */) {
+
+			// `index` is the index of the next character to be consumed.
+			// Decode a generalized variable-length integer into `delta`,
+			// which gets added to `i`. The overflow checking is easier
+			// if we increase `i` as we go, then subtract off its starting
+			// value at the end to obtain `delta`.
+			for (oldi = i, w = 1, k = base; /* no condition */; k += base) {
+
+				if (index >= inputLength) {
+					error('invalid-input');
+				}
+
+				digit = basicToDigit(input.charCodeAt(index++));
+
+				if (digit >= base || digit > floor((maxInt - i) / w)) {
+					error('overflow');
+				}
+
+				i += digit * w;
+				t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
+
+				if (digit < t) {
+					break;
+				}
+
+				baseMinusT = base - t;
+				if (w > floor(maxInt / baseMinusT)) {
+					error('overflow');
+				}
+
+				w *= baseMinusT;
+
+			}
+
+			out = output.length + 1;
+			bias = adapt(i - oldi, out, oldi == 0);
+
+			// `i` was supposed to wrap around from `out` to `0`,
+			// incrementing `n` each time, so we'll fix that now:
+			if (floor(i / out) > maxInt - n) {
+				error('overflow');
+			}
+
+			n += floor(i / out);
+			i %= out;
+
+			// Insert `n` at position `i` of the output
+			output.splice(i++, 0, n);
+
+		}
+
+		return ucs2encode(output);
+	}
+
+	/**
+	 * Converts a string of Unicode symbols to a Punycode string of ASCII-only
+	 * symbols.
+	 * @memberOf punycode
+	 * @param {String} input The string of Unicode symbols.
+	 * @returns {String} The resulting Punycode string of ASCII-only symbols.
+	 */
+	function encode(input) {
+		var n,
+		    delta,
+		    handledCPCount,
+		    basicLength,
+		    bias,
+		    j,
+		    m,
+		    q,
+		    k,
+		    t,
+		    currentValue,
+		    output = [],
+		    /** `inputLength` will hold the number of code points in `input`. */
+		    inputLength,
+		    /** Cached calculation results */
+		    handledCPCountPlusOne,
+		    baseMinusT,
+		    qMinusT;
+
+		// Convert the input in UCS-2 to Unicode
+		input = ucs2decode(input);
+
+		// Cache the length
+		inputLength = input.length;
+
+		// Initialize the state
+		n = initialN;
+		delta = 0;
+		bias = initialBias;
+
+		// Handle the basic code points
+		for (j = 0; j < inputLength; ++j) {
+			currentValue = input[j];
+			if (currentValue < 0x80) {
+				output.push(stringFromCharCode(currentValue));
+			}
+		}
+
+		handledCPCount = basicLength = output.length;
+
+		// `handledCPCount` is the number of code points that have been handled;
+		// `basicLength` is the number of basic code points.
+
+		// Finish the basic string - if it is not empty - with a delimiter
+		if (basicLength) {
+			output.push(delimiter);
+		}
+
+		// Main encoding loop:
+		while (handledCPCount < inputLength) {
+
+			// All non-basic code points < n have been handled already. Find the next
+			// larger one:
+			for (m = maxInt, j = 0; j < inputLength; ++j) {
+				currentValue = input[j];
+				if (currentValue >= n && currentValue < m) {
+					m = currentValue;
 				}
 			}
-		}else if(state === 2) {
-			val = sustainLevel;
-      if( obj.requireReleaseTrigger && rt ){
-        state++;
-        phase = release;
-        obj.releaseTrigger = 0;
-        rt = 0;
-      }else if(phase-- <= 0 && !obj.requireReleaseTrigger) {
-				state++;
-				phase = release;
+
+			// Increase `delta` enough to advance the decoder's <n,i> state to <m,0>,
+			// but guard against overflow
+			handledCPCountPlusOne = handledCPCount + 1;
+			if (m - n > floor((maxInt - delta) / handledCPCountPlusOne)) {
+				error('overflow');
 			}
-		}else if(state === 3) {
-      phase--;
-			val = (phase / release) * sustainLevel;
-			if(phase <= 0) {
-        state++;
-      }
-		}
-		return val;
-	};
-  this.call = function() {
-    return this.callback( this.attack, this.decay, this.sustain, this.release, this.attackLevel, this.sustainLevel, this.releaseTrigger )
-  };
-  this.getPhase = function() { return phase; };
-	this.setPhase = function(newPhase) { phase = newPhase; };
-	this.setState = function(newState) { state = newState; phase = 0; };
-	this.getState = function() { return state; };		
-	
-  this.init();
-  
-	return this;
-};
-Gibberish.ADSR.prototype = Gibberish._envelope;
 
-Gibberish.ADR = function(attack, decay, release, attackLevel, releaseLevel) {
-	var that = { 
-    name:   "adr",
-		type:		"envelope",
-    
-    properties: {
-  		attack:		isNaN(attack) ? 11025 : attack,
-  		decay:		isNaN(decay) ? 11025 : decay,
-  		release:	isNaN(release) ? 22050 : release,
-  		attackLevel:  attackLevel || 1,
-  		releaseLevel: releaseLevel || .2,
-    },
+			delta += (m - n) * handledCPCountPlusOne;
+			n = m;
 
-		run: function() {
-			this.setPhase(0);
-			this.setState(0);
-		},
-	};
-	Gibberish.extend(this, that);
-	
-	var phase = 0;
-	var state = 0;
-  
-	this.callback = function(attack,decay,release,attackLevel,releaseLevel) {
-		var val = 0;
-		if(state === 0){
-			val = phase / attack * attackLevel;
-			if(++phase / attack === 1) {
-				state++;
-				phase = decay;
-			}
-		}else if(state === 1) {
-			val = (phase / decay) * (attackLevel - releaseLevel) + releaseLevel;
-			if(--phase <= 0) {
-					state += 1;
-					phase = release;
-			}
-		}else if(state === 2){
-      phase--;
-      
-			val = (phase / release) * releaseLevel;
-			if(phase <= 0) {
-        state++;
-      }
-		}
-		return val;
-	};
-	this.setPhase = function(newPhase) { phase = newPhase; };
-	this.setState = function(newState) { state = newState; phase = 0; };
-	this.getState = function() { return state; };		
-	
-  this.init();
-  
-	return this;
-};
-Gibberish.ADR.prototype = Gibberish._envelope;
-/*
-Analysis ugens have two callbacks, one to perform the analysis and one to output the results.
-This allows the analysis to occur at the end of the callback while the outback can occur at
-the beginning, in effect using a single sample delay.
+			for (j = 0; j < inputLength; ++j) {
+				currentValue = input[j];
 
-Because of the two callbacks, there are also two codegen methods. The default codegens used by
-the analysis prototype object should be fine for most applications.
-*/
-
-Gibberish.analysis = function() {
-  this.type = 'analysis';
-  
-  this.codegen = function() {
-    if(Gibberish.memo[this.symbol]) {
-      return Gibberish.memo[this.symbol];
-    }else{
-      var v = this.variable ? this.variable : Gibberish.generateSymbol('v');
-      Gibberish.memo[this.symbol] = v;
-      this.variable = v;
-      Gibberish.callbackArgs.push( this.symbol )
-      Gibberish.callbackObjects.push( this.callback )
-    }
-        
-    this.codeblock = "var " + this.variable + " = " + this.symbol + "();\n";
-    
-    if( Gibberish.codeblock.indexOf( this.codeblock ) === -1 ) Gibberish.codeblock.push( this.codeblock )
-    return this.variable;
-  }
-  
-  this.analysisCodegen = function() {
-    // TODO: can this be memoized somehow?
-    //if(Gibberish.memo[this.analysisSymbol]) {
-    //  return Gibberish.memo[this.analysisSymbol];
-    //}else{
-    // Gibberish.memo[this.symbol] = v;
-    // console.log( this.input )
-    
-    var input = 0;
-    if(this.input.codegen){
-      input = this.input.codegen()
-      //console.log( "PROPERTY UGEN", input)
-      if(input.indexOf('op') > -1) console.log("ANALYSIS BUG")
-    }else if( this.input.value ){
-      input = typeof this.input.value.codegen !== 'undefined' ? this.input.value.codegen() : this.input.value
-    }else{
-      input = 'null'
-    }
-    
-    var s = this.analysisSymbol + "(" + input + ",";
-    for(var key in this.properties) {
-      if(key !== 'input') {
-        s += this[key] + ",";
-      }
-    }
-    s = s.slice(0, -1); // remove trailing comma
-    s += ");";
-  
-    this.analysisCodeblock = s;
-    
-    if( Gibberish.analysisCodeblock.indexOf( this.analysisCodeblock ) === -1 ) Gibberish.analysisCodeblock.push( this.analysisCodeblock )
-    
-    if( Gibberish.callbackObjects.indexOf( this.analysisCallback) === -1 ) Gibberish.callbackObjects.push( this.analysisCallback )
-    
-    //console.log( this.analysisCallback )
-        
-    return s;
-  };
-  
-  this.remove = function() {
-    Gibberish.analysisUgens.splice( Gibberish.analysisUgens.indexOf( this ), 1 )
-  }
-  
-  this.analysisInit = function() {
-    this.analysisSymbol = Gibberish.generateSymbol(this.name);
-    Gibberish.analysisUgens.push( this );
-    Gibberish.dirty(); // dirty in case analysis is not connected to graph, 
-  };
-  
-};
-Gibberish.analysis.prototype = new Gibberish.ugen();
-Gibberish._analysis = new Gibberish.analysis();
-
-Gibberish.Follow = function() {
-  this.name = 'follow';
-    
-  this.properties = {
-    input : 0,
-    bufferSize : 4410,
-    mult : 1,
-    useAbsoluteValue:true // for amplitude following, false for other values
-  };
-  
-  this.storage = [];
-    
-  var abs = Math.abs,
-      history = [0],
-      sum = 0,
-      index = 0,
-      value = 0,
-      phase = 0;
-      
-  this.analysisCallback = function(input, bufferSize, mult, useAbsoluteValue ) {
-    if( typeof input === 'object' ) input = input[0] + input[1]
-    
-  	sum += useAbsoluteValue ? abs(input) : input;
-  	sum -= history[index];
-    
-  	history[index] = useAbsoluteValue ? abs(input) : input;
-    
-  	index = (index + 1) % bufferSize;
-			
-    // if history[index] isn't defined set it to 0 
-    // TODO: does this really need to happen here? I guess there were clicks on initialization...
-    history[index] = history[index] ? history[index] : 0;
-  	value = (sum / bufferSize) * mult;
-  };
-    
-  this.callback = this.getValue = function() { return value; };
-    
-  this.init();
-  this.analysisInit();
-  this.processProperties( arguments );
-  
-  var oldBufferSize = this.__lookupSetter__( 'bufferSize' ),
-      bs = this.bufferSize
-  
-  Object.defineProperty( this, 'bufferSize', {
-    get: function() { return bs },
-    set: function(v) { bs = v; sum = 0; history = [0]; index = 0; }
-  })
-  
-  this.getStorage = function() { return this.storage; }
-};
-Gibberish.Follow.prototype = Gibberish._analysis;
-
-Gibberish.SingleSampleDelay = function() {
-  this.name = 'single_sample_delay';
-  
-  this.properties = {
-    input : arguments[0] || 0,
-    amp   : arguments[1] || 1,
-  };
-  
-  var value = 0,
-      phase = 0;
-  
-  this.analysisCallback = function(input, amp) {
-    /*if(typeof input === 'object') {
-      value = typeof input === 'object' ? [input[0] * amp, input[1] * amp ] : input * amp;
-    }else{
-      value = input * amp;
-    }*/
-    value = input
-    //if(phase++ % 44100 === 0) console.log(value, input, amp)
-  };
-  
-  this.callback = function() {
-    //if(phase % 44100 === 0) console.log(value)
-    
-    return value;
-  };
-  
-  this.getValue = function() { return value }
-  this.init();
-  this.analysisInit();
-  this.processProperties( arguments );
-  
-};
-Gibberish.SingleSampleDelay.prototype = Gibberish._analysis;
-
-Gibberish.Record = function(_input, _size, oncomplete) {
-  var buffer      = new Float32Array(_size),
-      phase       = 0,
-      isRecording = false,
-      self        = this;
-
-  Gibberish.extend(this, {
-    name: 'record',
-    'oncomplete' :  oncomplete,
-    
-    properties: {
-      input:   0,
-      size:    _size || 0,
-    },
-    
-    analysisCallback : function(input, length) {
-      if(isRecording) {
-        buffer[phase++] = typeof input === 'object' ? input[0] + input[1] : input;
-        
-        if(phase >= length) {
-          isRecording = false;
-          self.remove();
-        }
-      }
-    },
-    
-    record : function() {
-      phase = 0;
-      isRecording = true;
-      return this;
-    },
-    
-    getBuffer : function() { return buffer; },
-    getPhase : function() { return phase; },
-    
-    remove : function() {
-      if(typeof this.oncomplete !== 'undefined') this.oncomplete();
-      
-      for(var i = 0; i < Gibberish.analysisUgens.length; i++) {
-        var ugen = Gibberish.analysisUgens[i];
-        if(ugen === this) {
-          if( Gibberish.callbackArgs.indexOf( this.analysisSymbol) > -1 ) {
-            Gibberish.callbackArgs.splice( Gibberish.callbackArgs.indexOf( this.analysisSymbol), 1 )
-          }
-          if( Gibberish.callbackObjects.indexOf( this.analysisCallback ) > -1 ) {
-            Gibberish.callbackObjects.splice( Gibberish.callbackObjects.indexOf( this.analysisCallback ), 1 )
-          }
-          Gibberish.analysisUgens.splice(i, 1);
-          return;
-        }
-      }
-    },
-  });
-  // cannot be assigned within extend call
-  this.properties.input = _input;
-
-  this.init();
-  this.analysisInit();
-  
-  Gibberish.dirty(); // ugen is not attached to anything else
-};
-Gibberish.Record.prototype = Gibberish._analysis;
-Gibberish.effect = function() {
-    this.type = 'effect';
-};
-Gibberish.effect.prototype = new Gibberish.ugen();
-Gibberish._effect = new Gibberish.effect();
-
-/**#Gibberish.Distortion - FX
-A simple waveshaping distortion that adaptively scales its gain based on the amount of distortion applied.
-  
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Distortion({ input:a, amount:30 }).connect();  
-a.note(440);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Distortion.amount : property  
-Number. The amount of distortion to apply. This number cannot be set lower than 2.
-**/
-Gibberish.Distortion = function() {
-  var abs = Math.abs, 
-      log = Math.log, 
-      ln2 = Math.LN2;
-  
-  Gibberish.extend(this, {
-    name : 'distortion',
-    
-    properties : {
-      input  : 0,
-      amount : 50,
-    },
-    
-    callback : function(input, amount) {
-      var x;
-      amount = amount > 2 ? amount : 2;
-      if(typeof input === 'number') {
-    		x = input * amount;
-    		input = (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
-      }else{
-        x = input[0] * amount;
-        input[0] = (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide
-        x = input[1] * amount;
-        input[1] = (x / (1 + abs(x))) / (log(amount) / ln2); //TODO: get rid of log / divide      
-      }
-  		return input;
-    },
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.Distortion.prototype = Gibberish._effect;
-
-/**#Gibberish.Gain - FX
-Amplitude attenutation / gain.
-  
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Distortion({ input:a, amount:30 })
-c = new Gibberish.Gain({ input:b, amount:.5 }).connect()
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Gain.amount : property  
-Number. The amount of gain to multiply the inpyt signal by.
-**/
-Gibberish.Gain = function() {  
-  
-  Gibberish.extend(this, {
-    name : 'gain',
-    
-    properties : {
-      input  : 0,
-      amount : 1,
-    },
-    
-    callback : function(input, amount) {
-      if(typeof input === 'number') {
-        input *= amount;
-      }else{
-        input[0] *=amount;
-        input[1] *=amount;
-      }
-  		return input;
-    },
-  })
-  .init()
-  .processProperties(arguments);
-  
-};
-Gibberish.Gain.prototype = Gibberish._effect;
-
-/**#Gibberish.Delay - FX
-A simple echo effect.
-  
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Delay({ input:a, time:22050, feedback:.35 }).connect();  
-a.note(440);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Delay.time : property  
-Number. The delay time as measured in samples
-**/
-/**###Gibberish.Delay.feedback : property  
-Number. The amount of feedback that the delay puts into its buffers.
-**/
-Gibberish.Delay = function() {
-  var buffers = [],
-      phase = 0;
-  
-  buffers.push( new Float32Array(Gibberish.context.sampleRate * 2) );
-  buffers.push( new Float32Array(Gibberish.context.sampleRate * 2) );
-  
-  Gibberish.extend(this, {
-  	name:"delay",
-  	properties:{ input:0, time: 22050, feedback: .5, wet:1, dry:1 },
-				
-  	callback : function(sample, time, feedback, wet, dry) {
-      var channels = typeof sample === 'number' ? 1 : 2;
-      
-  		var _phase = phase++ % 88200;
-      
-  		var delayPos = (_phase + (time | 0)) % 88200;
-      if(channels === 1) {
-  			buffers[0][delayPos] =  ( sample + buffers[0][_phase] ) * feedback;
-        sample = (sample * dry) + (buffers[0][_phase] * wet);
-      }else{
-  			buffers[0][delayPos] =  (sample[0] + buffers[0][_phase]) * feedback;
-        sample[0] = (sample[0] * dry) + (buffers[0][_phase] * wet);
-  			buffers[1][delayPos] =  (sample[1] + buffers[1][_phase]) * feedback;
-        sample[1] = (sample[1] * dry) + (buffers[1][_phase] * wet);
-      }
-      
-  		return sample;
-  	},
-  });
-  
-  var time = Math.round( this.properties.time );
-  Object.defineProperty(this, 'time', {
-    configurable: true,
-    get: function() { return time; },
-    set: function(v) { time = Math.round(v); Gibberish.dirty( this ) }
-  });
-  
-  this.init();
-  this.processProperties(arguments);
-  
-};
-Gibberish.Delay.prototype = Gibberish._effect;
-
-/**#Gibberish.Decimator - FX
-A bit-crusher / sample rate reducer. Adapted from code / comments at http://musicdsp.org/showArchiveComment.php?ArchiveID=124
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Decimator({ input:a, bitDepth:4.2, sampleRate:.33 }).connect();  
-a.note(440);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Decimator.bitDepth : property  
-Float. 0..16. The number of bits the signal is truncated to. May be a floating point number.
-**/
-/**###Gibberish.Decimator.sampleRate : property  
-Number. 0..1. The sample rate to use where 0 is 0 Hz and 1 is nyquist.
-**/
-Gibberish.Decimator = function() {
-  var counter = 0,
-      hold = [],
-      pow = Math.pow,
-      floor = Math.floor;
-      
-  Gibberish.extend(this, {
-  	name:"decimator",
-  	properties:{ input:0, bitDepth: 16, sampleRate: 1 },
-				
-  	callback : function(sample, depth, rate) {
-  		counter += rate;
-      var channels = typeof sample === 'number' ? 1 : 2;
-      
-      if(channels === 1) {
-  			if(counter >= 1) {
-  				var bitMult = pow( depth, 2.0 );
-  				hold[0]  = floor( sample * bitMult ) / bitMult;
-  				counter -= 1;
-  			}
-  			sample = hold[0];
-      }else{
-  			if(counter >= 1) {
-  				var bitMult = pow( depth, 2.0 );
-  				hold[0]  = floor( sample[0] * bitMult ) / bitMult;
-  				hold[1]  = floor( sample[1] * bitMult ) / bitMult;          
-  				counter -= 1;
-  			}
-  			sample = hold;
-      }
-					
-  		return sample;
-  	},
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.Decimator.prototype = Gibberish._effect;
-
-/**#Gibberish.RingModulation - FX
-The name says it all. This ugen also has a mix property to control the ratio of wet to dry output.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.RingModulation({ input:a, frequency:1000, amp:.4, mix:1 }).connect();  
-a.note(440);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.RingModulation.frequency : property  
-Float. The frequency of the ring modulation modulator wave.
-**/
-/**###Gibberish.RingModulation.amp : property  
-Float. The amplitude of the ring modulation modulator wave.
-**/
-/**###Gibberish.RingModulation.mix : property  
-Float. 0..1. The wet/dry output ratio. A value of 1 means a completely wet signal, a value of 0 means completely dry.
-**/
-Gibberish.RingModulation = function() {
-  var sin = new Gibberish.Sine().callback,
-      output = [0,0];
-      
-  Gibberish.extend( this, { 
-  	name : "ringmod",
-  
-	  properties : { input:0, frequency:440, amp:.5, mix:.5 },
-
-    callback : function(sample, frequency, amp, mix) {
-      var channels = typeof sample === 'number' ? 1 : 2;
-      var output1 = channels === 1 ? sample : sample[0];
-      
-      var mod = sin(frequency, amp);
-      
-      output1 = output1 * (1-mix) + (output1 * mod) * mix;
-      
-      if(channels === 2) {
-        var output2 = sample[1];
-        output2 = output2 * (1-mix) + (output2 * mod) * mix;
-
-        output[0] = output1;
-        output[1] = output2;
-        return output;
-      }
-      
-		  return output1; // return mono
-  	},
-  })
-  .init()
-  .processProperties(arguments); 
-};
-Gibberish.RingModulation.prototype = Gibberish._effect;
-
-
-/**#Gibberish.DCBlock - FX
-A one-pole filter for removing bias.
-
-## Example Usage##
-` `  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.DCBlock.input : property  
-Float. The input ugen to remove bias from.
-**/
-
-Gibberish.DCBlock = function() {
-  var x1 = 0, y1 = 0
-
-	Gibberish.extend(this, {
-  	name: 'dcblock',
-    type: 'effect',
-    
-    properties : {
-      input : 0, 
-    },
-    
-    reset : function() {
-      x1 = 0;
-      y1 = 0;
-    },
-    
-    callback : function(input) {
-      var y = input - x1 + y1 * .9997
-      x1 = input
-      y1 = y
-    
-      return y;
-    }
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.DCBlock.prototype = Gibberish._effect;
-
-/**#Gibberish.Tremolo - FX
-A basic amplitude modulation effect.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 }).connect();  
-b = new Gibberish.Tremolo({input:a, frequency:4, amp:1});   
-a.note(880);   
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Tremolo.input : property  
-Float. The input to apply the tremolo effect to
-**/
-/**###Gibberish.Tremolo.frequency : property  
-Float. The speed of the tremolo effect, measured in Hz
-**/
-/**###Gibberish.Tremolo.amp : property  
-Float. The magnitude of the tremolo effect.
-**/
-
-Gibberish.Tremolo = function() {
-  var modulationCallback = new Gibberish.Sine().callback
-  
-	Gibberish.extend(this, {
-  	name: 'tremolo',
-    type: 'effect',
-    
-    properties : {
-      input : 0,
-      frequency:2.5,
-      amp:.5,
-    },
-  
-    callback : function( input, frequency, amp ) {
-      var channels = typeof input === 'number' ? 1 : 2,
-          modAmount = modulationCallback( frequency, amp )
-      
-      if(channels === 1) {
-        input *= modAmount
-      }else{
-        input[0] *= modAmount
-        input[1] *= modAmount
-      }
-      
-      return input;
-    }
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.Tremolo.prototype = Gibberish._effect;
-
-/**#Gibberish.OnePole - FX
-A one-pole filter for smoothing property values. This is particularly useful when the properties are being controlled interactively. You use the smooth method to apply the filter.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 }).connect();  
-b = new Gibberish.OnePole({input:a.properties.frequency, a0:.0001, b1:.9999});  
-b.smooth('frequency', a);  
-a.note(880);  
-a.note(440);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.OnePole.input : property  
-Float. The property to smooth. You should always refer to this property through the properties dictionary of the ugen. In general it is much easier to use the smooth method of the OnePole than to set this property manually.
-**/
-/**###Gibberish.OnePole.a0 : property  
-Float. The value the input is multiplied by.
-**/
-/**###Gibberish.OnePole.b1 : property  
-Float. The value this pole of the filter is multiplied by.
-**/
-Gibberish.OnePole = function() {
-  var history = 0,
-      phase = 0;
-      
-	Gibberish.extend(this, {
-  	name: 'onepole',
-    type: 'effect',
-    
-    properties : {
-      input : 0,
-      a0 : .15,           
-      b1 : .85, 
-    },
-    
-    callback : function(input, a0, b1) {
-      var out = input * a0 + history * b1;
-      history = out;
-    
-      return out;
-    },
-
-/**###Gibberish.OnePole.smooth : method  
-Use this to apply the filter to a property of an object.
-
-param **propertyName** String. The name of the property to smooth.  
-param **object** Object. The object containing the property to be smoothed
-**/    
-    smooth : function(property, obj) {
-      this.input = obj[ property ]
-      history = this.input
-      obj[ property ] = this
-      
-      this.obj = obj
-      this.property = property
-      
-      this.oldSetter = obj.__lookupSetter__( property )
-      this.oldGetter = obj.__lookupGetter__( property )
-      
-      var op = this
-      Object.defineProperty( obj, property, {
-        get : function() { return op.input },
-        set : function(v) { 
-          op.input = v
-        }
-      })
-    },
-
-/**###Gibberish.OnePole.remove : method  
-Remove OnePole from assigned ugen property. This will effectively remove the filter from the graph and return the normal target ugen property behavior.
-**/      
-    remove : function() {
-      Object.defineProperty( this.obj, this.property, {
-        get: this.oldGetter,
-        set: this.oldSetter
-      })
-      
-      this.obj[ this.property ] = this.input
-    }
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.OnePole.prototype = Gibberish._effect;
-
-/**#Gibberish.Filter24 - FX
-A four pole ladder filter. Adapted from Arif Ove Karlsne's 24dB ladder approximation: http://musicdsp.org/showArchiveComment.php?ArchiveID=141.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Filter24({input:a, cutoff:.2, resonance:4}).connect();  
-a.note(1760);   
-a.note(440);  
-a.isLowPass = false;  
-a.note(220);  
-a.note(1760);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Filter24.input : property  
-Object. The ugen that should feed the filter.
-**/
-/**###Gibberish.Filter24.cutoff : property  
-Number. 0..1. The cutoff frequency for the synth's filter.
-**/
-/**###Gibberish.Filter24.resonance : property  
-Number. 0..50. Values above 4.5 are likely to produce shrieking feedback. You are warned.
-**/
-/**###Gibberish.Filter24.isLowPass : property  
-Boolean. Default true. Whether to use a low-pass or high-pass filter.
-**/
-Gibberish.Filter24 = function() {
-  var poles  = [0,0,0,0],
-      poles2 = [0,0,0,0],
-      output = [0,0],
-      phase  = 0,
-      _cutoff = isNaN(arguments[0]) ? .1 : arguments[0],
-      _resonance = isNaN(arguments[1]) ? 3 : arguments[1]
-      _isLowPass = typeof arguments[2] !== 'undefined' ? arguments[2] : true;
-      
-  Gibberish.extend( this, { 
-  	name : "filter24",
-  
-	  properties : { input:0, cutoff:_cutoff, resonance:_resonance, isLowPass:_isLowPass },
-
-    callback : function(sample, cutoff, resonance, isLowPass) {
-      var channels = typeof sample === 'number' ? 1 : 2;
-      var output1 = channels === 1 ? sample : sample[0];
-      
-			var rezz = poles[3] * resonance; 
-			rezz = rezz > 1 ? 1 : rezz;
-						
-			cutoff = cutoff < 0 ? 0 : cutoff;
-			cutoff = cutoff > 1 ? 1 : cutoff;
-						
-			output1 -= rezz;
-
-			poles[0] = poles[0] + ((-poles[0] + output1) * cutoff);
-			poles[1] = poles[1] + ((-poles[1] + poles[0])  * cutoff);
-			poles[2] = poles[2] + ((-poles[2] + poles[1])  * cutoff);
-			poles[3] = poles[3] + ((-poles[3] + poles[2])  * cutoff);
-
-			output1 = isLowPass ? poles[3] : output1 - poles[3];
-      
-      if(channels === 2) {
-        var output2 = sample[1];
-
-  			rezz = poles2[3] * resonance; 
-  			rezz = rezz > 1 ? 1 : rezz;
-
-  			output2 -= rezz;
-
-  			poles2[0] = poles2[0] + ((-poles2[0] + output2) * cutoff);
-  			poles2[1] = poles2[1] + ((-poles2[1] + poles2[0])  * cutoff);
-  			poles2[2] = poles2[2] + ((-poles2[2] + poles2[1])  * cutoff);
-  			poles2[3] = poles2[3] + ((-poles2[3] + poles2[2])  * cutoff);
-
-  			output2 = isLowPass ? poles2[3] : output2 - poles2[3];
-        output[0] = output1;
-        output[1] = output2;
-        
-        return output;
-      }
-      
-		  return output1; // return mono
-  	},
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.Filter24.prototype = Gibberish._effect;
-
-/**#Gibberish.SVF - FX
-A two-pole state variable filter. This filter calculates coefficients on a per-sample basis, so that you can easily modulate cutoff and Q. Can switch between low-pass, high-pass, band and notch modes.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.SVF({input:a, cutoff:200, Q:4, mode:0});  
-a.note(1760);   
-a.note(440);  
-a.mode = 2;
-a.note(220);  
-a.note(1760);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.SVF.input : property  
-Object. The ugen that should feed the filter.
-**/
-/**###Gibberish.SVF.cutoff : property  
-Number. 0..22050. The cutoff frequency for the synth's filter. Note that unlike the Filter24, this is measured in Hz.
-**/
-/**###Gibberish.SVF.resonance : property  
-Number. 0..50. Values above 4.5 are likely to produce shrieking feedback. You are warned.
-**/
-/**###Gibberish.SVF.mode : property  
-Number. 0..3. 0 = lowpass, 1 = highpass, 2 = bandpass, 3 = notch.
-**/
-Gibberish.SVF = function() {
-	var d1 = [0,0], d2 = [0,0], pi= Math.PI, out = [0,0];
-  
-  Gibberish.extend( this, {
-  	name:"SVF",
-  	properties : { input:0, cutoff:440, Q:2, mode:0, sr: Gibberish.context.sampleRate },
-				
-  	callback: function(sample, frequency, Q, mode, sr) {
-      var channels = typeof sample === 'number' ? 1 : 2;
-      var output1 = channels === 1 ? sample : sample[0];
-      
-  		var f1 = 2 * pi * frequency / sr;
-  		Q = 1 / Q;
-					
-			var l = d2[0] + f1 * d1[0];
-			var h = output1 - l - Q * d1[0];
-			var b = f1 * h + d1[0];
-			var n = h + l;
-						
-			d1[0] = b;
-			d2[0] = l;
-      
-			if(mode === 0) 
-				output1 = l;
-			else if(mode === 1)
-				output1 = h;
-			else if(mode === 2)
-				output1 = b;
-			else
-				output1 = n;
-        
-      if(channels === 2) {
-        var output2 = sample[1];
-  			var l = d2[1] + f1 * d1[1];
-  			var h = output2 - l - Q * d1[1];
-  			var b = f1 * h + d1[1];
-  			var n = h + l;
-						
-  			d1[1] = b;
-  			d2[1] = l;
-      
-  			if(mode === 0) 
-  				output2 = l;
-  			else if(mode === 1)
-  				output2 = h;
-  			else if(mode === 2)
-  				output2 = b;
-  			else
-  				output2 = n;
-          
-        out[0] = output1; out[1] = output2;
-      }else{
-        out = output1;
-      }
-
-  		return out;
-  	},
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.SVF.prototype = Gibberish._effect;
-
-/**#Gibberish.Biquad - FX
-A two-pole biquad filter. Currently, you must manually call calculateCoefficients every time mode, cutoff or Q changes; thus this filter isn't good for samplerate modulation.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Biquad({input:a, cutoff:200, Q:4, mode:"LP"}).connect();  
-a.note(1760);   
-a.note(440);  
-a.mode = "HP";
-a.note(220);  
-a.note(1760);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Biquad.input : property  
-Object. The ugen that should feed the filter.
-**/
-/**###Gibberish.Biquad.cutoff : property  
-Number. 0..22050. The cutoff frequency for the synth's filter. Note that unlike the Filter24, this is measured in Hz.
-**/
-/**###Gibberish.Biquad.Q : property  
-Number. 0..50. Values above 4.5 are likely to produce shrieking feedback. You are warned.
-**/
-/**###Gibberish.Biquad.mode : property  
-Number. 0..3. "LP" = lowpass, "HP" = highpass, "BP" = bandpass
-**/
-Gibberish.Biquad = function() {
-  var x1L = 0,
-      x2L = 0,
-      y1L = 0,
-      y2L = 0,
-      x1R = 0,
-      x2R = 0,
-      y1R = 0,
-      y2R = 0,
-      out = [0,0],
-	    b0 = 0.001639,
-	    b1 = 0.003278,
-	    b2 = 0.001639,
-	    a1 = -1.955777,
-	    a2 = 0.960601,
-      _mode = "LP",
-    	_cutoff = 2000,
-      _Q = .5,
-      sr = Gibberish.context.sampleRate,
-      _phase = 0;
-      
-	Gibberish.extend(this, {
-		name: "biquad",
-
-	  properties: {
-      input: null,
-	  },
-
-	  calculateCoefficients: function() {
-      switch (_mode) {
-	      case "LP":
-           var w0 = 2 * Math.PI * _cutoff / sr,
-               sinw0 = Math.sin(w0),
-               cosw0 = Math.cos(w0),
-               alpha = sinw0 / (2 * _Q);
-           b0 = (1 - cosw0) / 2,
-           b1 = 1 - cosw0,
-           b2 = b0,
-           a0 = 1 + alpha,
-           a1 = -2 * cosw0,
-           a2 = 1 - alpha;
-           break;
-	       case "HP":
-           var w0 = 2 * Math.PI * _cutoff / sr,
-               sinw0 = Math.sin(w0),
-               cosw0 = Math.cos(w0),
-               alpha = sinw0 / (2 * _Q);
-           b0 = (1 + cosw0) / 2,
-           b1 = -(1 + cosw0),
-           b2 = b0,
-           a0 = 1 + alpha,
-           a1 = -2 * cosw0,
-           a2 = 1 - alpha;
-           break;
-	       case "BP":
-           var w0 = 2 * Math.PI * _cutoff / sr,
-               sinw0 = Math.sin(w0),
-               cosw0 = Math.cos(w0),
-               toSinh = Math.log(2) / 2 * _Q * w0 / sinw0,
-               alpha = sinw0 * (Math.exp(toSinh) - Math.exp(-toSinh)) / 2;
-           b0 = alpha,
-           b1 = 0,
-           b2 = -alpha,
-           a0 = 1 + alpha,
-           a1 = -2 * cosw0,
-           a2 = 1 - alpha;
-           break;
-	       default:
-           return;
-       }
-
-       b0 = b0 / a0;
-       b1 = b1 / a0;
-       b2 = b2 / a0;
-       a1 = a1 / a0;
-       a2 = a2 / a0;
-       
-    },
-
-    callback: function( x ) {
-      var channels = isNaN( x ) ? 2 : 1,
-          outL = 0,
-          outR = 0,
-          inL = channels === 1 ? x : x[0];
-      
-      //if( _phase++ % 22050 === 0 ) console.log( "X IS ", typeof x )
-
-      outL = b0 * inL + b1 * x1L + b2 * x2L - a1 * y1L - a2 * y2L;
-
-      x2L = x1L;
-      x1L = inL;
-      y2L = y1L;
-      y1L = outL;
-
-      if(channels === 2) {
-        inR = x[1];
-        outR = b0 * inR + b1 * x1R + b2 * x2R - a1 * y1R - a2 * y2R;
-        x2R = x1R;
-        x1R = inR;
-        y2R = y1R;
-        y1R = outR;
-
-        out[0] = outL;
-        out[1] = outR;
-      }
-      return channels === 1 ? outL : out;
-    },
-	})
-  .init();
-
-  Object.defineProperties(this, {
-    mode : {
-      get: function() { return _mode; },
-      set: function(v) { _mode = v; this.calculateCoefficients(); }
-    },
-    cutoff : {
-      get: function() { return _cutoff; },
-      set: function(v) { _cutoff = v; this.calculateCoefficients(); }
-    },
-    Q : {
-      get: function() { return _Q; },
-      set: function(v) { _Q = v; this.calculateCoefficients(); }
-    },
-  })
-  
-  this.processProperties(arguments);
-  
-  this.calculateCoefficients();
-};
-Gibberish.Biquad.prototype = Gibberish._effect;
-
-/**#Gibberish.Flanger - FX
-Classic flanging effect with feedback.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Flanger({input:a, rate:.5, amount:125, feedback:.5}).connect();  
-a.note(440);  
-a.feedback = 0;  
-a.note(440);  
-a.rate = 4;
-a.note(440);
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Flanger.input : property  
-Object. The ugen that should feed the flagner.
-**/
-/**###Gibberish.Flanger.rate : property  
-Number. The speed at which the delay line tap position is modulated.
-**/
-/**###Gibberish.Flanger.amount : property  
-Number. The amount of time, in samples, that the delay line tap position varies by.
-**/
-/**###Gibberish.Flanger.feedback : property  
-Number. The amount of output that should be fed back into the delay line
-**/
-/**###Gibberish.Flanger.offset : property  
-Number. The base offset of the delay line tap from the current time. Large values (> 500) lead to chorusing effects.
-**/
-
-Gibberish.Flanger = function() {
-	var buffers =	        [ new Float32Array(88200), new Float32Array(88200) ],
-	    bufferLength =    88200,
-	    delayModulation =	new Gibberish.Sine().callback,
-	    interpolate =		  Gibberish.interpolate,
-	    readIndex =			  -100,
-	    writeIndex = 		  0,
-	    phase =				    0;
-      
-	Gibberish.extend(this, {
-    name:"flanger",
-    properties:{ input:0, rate:.25, feedback:0, amount:125, offset:125 },
-    
-    callback : function(sample, delayModulationRate, feedback, delayModulationAmount, offset) {
-      var channels = typeof sample === 'number' ? 1 : 2;
-      
-  		var delayIndex = readIndex + delayModulation( delayModulationRate, delayModulationAmount * .95 );
-
-  		if(delayIndex > bufferLength) {
-  			delayIndex -= bufferLength;
-  		}else if(delayIndex < 0) {
-  			delayIndex += bufferLength;
-  		}
-					
-			var delayedSample = interpolate(buffers[0], delayIndex);
-			buffers[0][writeIndex] = channels === 1 ? sample + (delayedSample * feedback): sample[0] + (delayedSample * feedback);
-				
-      if(channels === 2) {
-        sample[0] += delayedSample;
-        
-  			delayedSample = interpolate(buffers[1], delayIndex);
-  			buffers[1][writeIndex] = sample[1] + (delayedSample * feedback);
-        
-        sample[1] += delayedSample;
-      }else{
-        sample += delayedSample;
-      }
-			
-  		if(++writeIndex >= bufferLength) writeIndex = 0;
-  		if(++readIndex  >= bufferLength) readIndex  = 0;
-
-  		return sample;
-  	},	
-  })
-  .init()
-  .processProperties(arguments);
-
-	readIndex = this.offset * -1;
-};
-Gibberish.Flanger.prototype = Gibberish._effect;
-
-/**#Gibberish.Vibrato - FX
-Delay line vibrato effect.
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:44, decay:44100 });  
-b = new Gibberish.Vibrato({input:a, rate:4, amount:125 }).connect();  
-a.note(440);  
-a.rate = .5;
-a.note(440);
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Vibrato.input : property  
-Object. The ugen that should feed the vibrato.
-**/
-/**###Gibberish.Vibrato.rate : property  
-Number. The speed at which the delay line tap position is modulated.
-**/
-/**###Gibberish.Vibrato.amount : property  
-Number. The size of the delay line modulation; effectively the amount of vibrato to produce, 
-**/
-/**###Gibberish.Vibrato.offset : property  
-Number. The base offset of the delay line tap from the current time.
-**/
-Gibberish.Vibrato = function() {
-	var buffers =	        [ new Float32Array(88200), new Float32Array(88200) ],
-	    bufferLength =    88200,
-	    delayModulation =	new Gibberish.Sine().callback,
-	    interpolate =		  Gibberish.interpolate,
-	    readIndex =			  -100,
-	    writeIndex = 		  0,
-	    phase =				    0;
-      
-	Gibberish.extend(this, {
-    name:"vibrato",
-  	properties:{ input:0, rate:5, amount:.5, offset:125 },
-    
-  	callback : function(sample, delayModulationRate, delayModulationAmount, offset) {
-      var channels = typeof sample === 'number' ? 1 : 2;
-      
-  		var delayIndex = readIndex + delayModulation( delayModulationRate, delayModulationAmount * offset - 1 );
-
-  		if(delayIndex > bufferLength) {
-  			delayIndex -= bufferLength;
-  		}else if(delayIndex < 0) {
-  			delayIndex += bufferLength;
-  		}
-					
-			var delayedSample = interpolate(buffers[0], delayIndex);
-			buffers[0][writeIndex] = channels === 1 ? sample : sample[0];
-				
-      if(channels === 2) {
-        sample[0] = delayedSample;
-        
-  			delayedSample = interpolate(buffers[1], delayIndex);
-  			buffers[1][writeIndex] = sample[1];
-        
-        sample[1] = delayedSample;
-      }else{
-        sample = delayedSample;
-      }
-			
-  		if(++writeIndex >= bufferLength) writeIndex = 0;
-  		if(++readIndex  >= bufferLength) readIndex  = 0;
-
-  		return sample;
-  	},	
-  })
-  .init()
-  .processProperties(arguments);
-
-	readIndex = this.offset * -1;
-};
-Gibberish.Vibrato.prototype = Gibberish._effect;
-
-/**#Gibberish.BufferShuffler - FX
-A buffer shuffling / stuttering effect with reversing and pitch-shifting
-
-## Example Usage##
-`a = new Gibberish.Synth({ attack:88200, decay:88200 });  
-b = new Gibberish.BufferShuffler({input:a, chance:.25, amount:125, rate:44100, pitchMin:-4, pitchMax:4 }).connect();  
-a.note(440);
-`  
-##Constructor##
-**param** *properties* : Object. A dictionary of property keys and values to assign to the Gibberish.BufferShuffler object
-- - - - 
-**/
-/**###Gibberish.BufferShuffler.chance : property
-Float. Range 0..1. Default .25. The likelihood that incoming audio will be shuffled.
-**/
-/**###Gibberish.BufferShuffler.rate : property
-Integer, in samples. Default 11025. How often Gibberish.BufferShuffler will randomly decide whether or not to shuffle.
-**/
-/**###Gibberish.BufferShuffler.length : property
-Integer, in samples. Default 22050. The length of time to play stuttered audio when stuttering occurs.
-**/
-/**###Gibberish.BufferShuffler.reverseChance : property
-Float. Range 0..1. Default .5. The likelihood that stuttered audio will be reversed
-**/
-/**###Gibberish.BufferShuffler.pitchChance : property
-Float. Range 0..1. Default .5. The likelihood that stuttered audio will be repitched.
-**/
-/**###Gibberish.BufferShuffler.pitchMin : property
-Float. Range 0..1. Default .25. The lowest playback speed used to repitch the audio
-**/
-/**###Gibberish.BufferShuffler.pitchMax : property
-Float. Range 0..1. Default 2. The highest playback speed used to repitch the audio.
-**/
-/**###Gibberish.BufferShuffler.wet : property
-Float. Range 0..1. Default 1. When shuffling, the amplitude of the wet signal
-**/
-/**###Gibberish.BufferShuffler.dry : property
-Float. Range 0..1. Default 0. When shuffling, the amplitude of the dry signal
-**/
-
-Gibberish.BufferShuffler = function() {
-	var buffers = [ new Float32Array(88200), new Float32Array(88200) ],
-    	bufferLength = 88200,  
-  		readIndex = 0,
-  		writeIndex = 0,
-  		randomizeCheckIndex = 0,
-  		shuffleTimeKeeper = 0,
-  		isShuffling = 0,
-  		random = Math.random,
-  		fadeIndex = 0,
-  		fadeAmount = 1,
-  		isFadingWetIn = false,
-  		isFadingDryIn = false,
-  		reversed = false,
-  		interpolate = Gibberish.interpolate,
-  		pitchShifting = false,
-  		speed = 1,
-  		isBufferFull = false,
-      rndf = Gibberish.rndf,
-      _output = [0,0];
-	
-	Gibberish.extend(this, {
-    name:"buffer_shuffler",
-	
-  	properties: { input:0, chance:.25, rate:11025, length:22050, reverseChange:.5, pitchChance:.5, pitchMin:.25, pitchMax:2, wet:1, dry:0 },
-
-  	callback : function(sample, chance, rate, length, reverseChance, pitchChance, pitchMin, pitchMax, wet, dry) {
-      var channels = typeof sample === 'number' ? 1 : 2;
-      
-  		if(!isShuffling) {
-        buffers[0][writeIndex] = channels === 1 ? sample : sample[0];
-        buffers[1][writeIndex] = channels === 1 ? sample : sample[1]; // won't be used but with one handle but probably cheaper than an if statement?
-                
-  			writeIndex++
-  			writeIndex %= bufferLength;
-
-  			isBufferFull = writeIndex === 0 ? 1 : isBufferFull; // don't output buffered audio until a buffer is full... otherwise you just get a gap
-						
-  			randomizeCheckIndex++;
-
-  			if(randomizeCheckIndex % rate == 0 && random() < chance) {
-  				reversed = random() < reverseChance;
-  				isShuffling = true;
-  				if(!reversed) {
-  					readIndex = writeIndex - length;
-  					if(readIndex < 0) readIndex = bufferLength + readIndex;
-  				}
-  				pitchShifting = random() < pitchChance;
-  				if(pitchShifting) {
-  					speed = rndf(pitchMin, pitchMax);
-  				}
-  				fadeAmount = 1;
-  				isFadingWetIn = true;
-  				isFadingDryIn = false;
-  			}
-  		}else if(++shuffleTimeKeeper % (length - 400) === 0) {
-  			isFadingWetIn = false;
-  			isFadingDryIn = true;
-  			fadeAmount = 1;
-  			shuffleTimeKeeper = 0;
-  		}
-					
-  		readIndex += reversed ? speed * -1 : speed;
-  		if(readIndex < 0) {
-  			readIndex += bufferLength;
-  		}else if( readIndex >= bufferLength ) {
-  			readIndex -= bufferLength;
-  		}	
-  		var outSampleL = interpolate(buffers[0], readIndex);
-			
-      var outL, outR, shuffle, outSampleR;			
-			if(isFadingWetIn) {						
-				fadeAmount -= .0025;
-        
-        shuffle = (outSampleL * (1 - fadeAmount));
-				outL = channels === 1 ? shuffle + (sample * fadeAmount) : shuffle + (sample[0] * fadeAmount);
-        
-        if(channels === 2) {
-          outSampleR = interpolate(buffers[1], readIndex);
-          shuffle = (outSampleR * (1 - fadeAmount));
-          outR = channels === 1 ? outL : shuffle + (sample[1] * fadeAmount);
-        }
-
-				if(fadeAmount <= .0025) isFadingWetIn = false;
-			}else if(isFadingDryIn) {						
-				fadeAmount -= .0025;
-        
-        shuffle = outSampleL * fadeAmount;
-				outL = channels === 1 ? shuffle + (sample * fadeAmount) : shuffle + (sample[0] * (1 - fadeAmount));
-        
-        if(channels === 2) {
-          outSampleR = interpolate(buffers[1], readIndex);
-          shuffle = outSampleR * fadeAmount;
-          outR = shuffle + (sample[1] * (1 - fadeAmount));
-        }
-        
-				if(fadeAmount <= .0025) { 
-					isFadingDryIn = false;
-					isShuffling = false;
-					reversed = false;
-					speed = 1;
-					pitchShifting = 0;
+				if (currentValue < n && ++delta > maxInt) {
+					error('overflow');
 				}
-			}else{
-        if(channels === 1) {
-          outL = isShuffling && isBufferFull ? (outSampleL * wet) + sample * dry : sample;
-        }else{
-          outSampleR = interpolate(buffers[1], readIndex);
-          outL = isShuffling && isBufferFull ? (outSampleL * wet) + sample[0] * dry : sample[0];
-          outR = isShuffling && isBufferFull ? (outSampleR * wet) + sample[1] * dry : sample[1];          
-        }
-			}
-      _output = [outL, outR];
-  		return channels === 1 ? outL : _output;
-  	},
-  })
-  .init()
-  .processProperties(arguments);
-};
-Gibberish.BufferShuffler.prototype = Gibberish._effect;
 
-Gibberish.AllPass = function(time, feedback) {
-	var index  = -1,
-    	buffer =	new Float32Array(time || 500),
-      bufferLength = buffer.length;
-  
-  Gibberish.extend(this, {
-		name:		"allpass",
-    properties: {
-      input   : 0,
-    },
-    callback : function(sample) {
-  		index = ++index % bufferLength;
-  		var bufferSample = buffer[index];
-  		var out = -1 * sample + bufferSample;
+				if (currentValue == n) {
+					// Represent delta as a generalized variable-length integer
+					for (q = delta, k = base; /* no condition */; k += base) {
+						t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
+						if (q < t) {
+							break;
+						}
+						qMinusT = q - t;
+						baseMinusT = base - t;
+						output.push(
+							stringFromCharCode(digitToBasic(t + qMinusT % baseMinusT, 0))
+						);
+						q = floor(qMinusT / baseMinusT);
+					}
 
-  		buffer[index] = sample + (bufferSample * .5);
-  		return out;
-  	},
-	});
-  
-};
-/*
-adapted from audioLib.js, in turn adapted from Freeverb source code
-this is actually a lowpass-feedback-comb filter (https://ccrma.stanford.edu/~jos/pasp/Lowpass_Feedback_Comb_Filter.html)
-*/
-Gibberish.Comb = function(time) {
-	var buffer = new Float32Array(time || 1200),
-    	bufferLength = buffer.length,
-    	index = 0,
-    	store = 0;
-      
-	Gibberish.extend(this, {
-		name:		"comb",
-    properties : {
-      input : 0,
-      feedback : .84,
-      damping: .2,
-  		//time:		time || 1200,
-    },
-    
-    /*
-		self.sample	= self.buffer[self.index];
-		self.store	= self.sample * self.invDamping + self.store * self.damping;
-		self.buffer[self.index++] = s + self.store * self.feedback;
-    */
-    
-  	callback: function(sample, feedback, damping) {
-  		var currentPos = ++index % bufferLength;
-			var out = buffer[currentPos];
-						
-			store = (out * (1 - damping)) + (store * damping);
-						
-			buffer[currentPos] = sample + (store * feedback);
-
-  		return out;
-  	},
-	});
-  
-};
-
-/**#Gibberish.Reverb - FX
-based off audiolib.js reverb and freeverb
- 
-## Example Usage##
-`a = new Gibberish.Synth({ attack:88200, decay:88200 });  
-b = new Gibberish.Reverb({input:a, roomSize:.5, wet:1, dry;.25}).connect();
-a.note(440);
-`  
-##Constructor
-**param** *properties* : Object. A dictionary of property keys and values to assign to the Gibberish.BufferShuffler object
-**/
-/**###Gibberish.Reverb.roomSize : property
-Float. 0..1. The size of the room being emulated.
-**/	
-/**###Gibberish.Reverb.damping : property
-Float. Attenuation of high frequencies that occurs.
-**/	
-/**###Gibberish.Reverb.wet : property
-Float. Default = .75. The amount of processed signal that is output.  
-**/	
-/**###Gibberish.Reverb.dry : property
-Float. Default = .5. The amount of dry signal that is output
-**/	
-
-Gibberish.Reverb = function() {
-  var tuning =	{
-		    combCount: 		    8,
-		    combTuning: 	    [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617],
-                          
-		    allPassCount: 	  4,
-		    allPassTuning: 	  [556, 441, 341, 225],
-		    allPassFeedback:  0.5,
-                          
-		    fixedGain: 		    0.015,
-		    scaleDamping: 	  0.4,
-                          
-		    scaleRoom: 		    0.28,
-		    offsetRoom: 	    0.7,
-                          
-		    stereoSpread: 	  23
-		},
-    feedback = .84,
-    combs = [],
-    apfs  = [],
-    output   = [0,0],
-    phase  = 0;
-    
-	Gibberish.extend(this, {
-		name:		"reverb",
-    
-		roomSize:	.5,
-    
-    properties: {
-      input:    0,
-  		wet:		  .5,
-  		dry:		  .55,
-      roomSize: .84,
-      damping:  .5,
-    },
-    
-    callback : function(sample, wet, dry, roomSize, damping) {
-      var channels = typeof sample === 'object' ? 2 : 1;
-      
-			var input = channels === 1 ? sample : sample[0] + sample[1]; // converted to fake stereo
-
-			var _out = input * .015;
-      var out = _out;
-						
-			for(var i = 0; i < 8; i++) {
-				var filt = combs[i](_out, roomSize * .98, (damping * .4)); // .98 is scaleRoom + offsetRoom, .4 is scaleDamping
-				out += filt;				
-			}
-							
-			for(var i = 0; i < 4; i++) {
-				out = apfs[i](out);	
-			}
-      
-      output[0] = output[1] = (input * dry) + (out * wet);
-
-  		return output;
-  	},
-	})  
-  .init()
-  .processProperties(arguments);
-      
-  this.setFeedback = function(v) { feedback = v }
-  
-	for(var i = 0; i < 8; i++){
-		combs.push( new Gibberish.Comb( tuning.combTuning[i] ).callback );
-	}
-  
-	for(var i = 0; i < 4; i++){
-		apfs.push( new Gibberish.AllPass(tuning.allPassTuning[i], tuning.allPassFeedback ).callback );
-	}
-
-};
-Gibberish.Reverb.prototype = Gibberish._effect;
-
-/**#Gibberish.StereoReverb - FX
-stereo version of the reverb effect
- 
-## Example Usage##
-`a = new Gibberish.Synth({ attack:88200, decay:88200, pan:-1 });  
-b = new Gibberish.StereoReverb({input:a, roomSize:.5, wet:1, dry;.25}).connect();
-a.note(440);
-`  
-##Constructor
-**param** *properties* : Object. A dictionary of property keys and values to assign to the Gibberish.BufferShuffler object
-**/
-/**###Gibberish.Reverb.roomSize : property
-Float. 0..1. The size of the room being emulated.
-**/	
-/**###Gibberish.Reverb.damping : property
-Float. Attenuation of high frequencies that occurs.
-**/	
-/**###Gibberish.Reverb.wet : property
-Float. Default = .75. The amount of processed signal that is output.  
-**/	
-/**###Gibberish.Reverb.dry : property
-Float. Default = .5. The amount of dry signal that is output
-**/	
-Gibberish.StereoReverb = function() {
-  var tuning =	{
-		    combCount: 		    8,
-		    combTuning: 	    [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617],
-                          
-		    allPassCount: 	  4,
-		    allPassTuning: 	  [556, 441, 341, 225],
-		    allPassFeedback:  0.5,
-                          
-		    fixedGain: 		    0.015,
-		    scaleDamping: 	  0.4,
-                          
-		    scaleRoom: 		    0.28,
-		    offsetRoom: 	    0.7,
-                          
-		    stereoSpread: 	  23
-		},
-    feedback = .84,
-    combsL = [], combsR = [],
-    apfsL  = [], apfsR = [],
-    output   = [0,0],
-    phase  = 0;
-    
-	Gibberish.extend(this, {
-		name:		"reverb",
-    
-		roomSize:	.5,
-    
-    properties: {
-      input:    0,
-  		wet:		  .5,
-  		dry:		  .55,
-      roomSize: .84,
-      damping:  .5,
-    },
-    
-    callback : function(sample, wet, dry, roomSize, damping) {
-      var channels = typeof sample === 'object' ? 2 : 1,
-          l = sample[0],
-          r = channels === 1 ? l : sample[1],
-          _outL = outL = l * .015,
-          _outR = outR = r * .015;
-						
-			for(var i = 0; i < 8; i++) { // parallel
-				outL += combsL[ i ]( _outL, roomSize * .98, (damping * .4)); // .98 is scaleRoom + offsetRoom, .4 is scaleDamping
-        outR += combsR[ i ]( _outR, roomSize * .98, (damping * .4));       
-			}
-							
-			for(var i = 0; i < 4; i++) {
-				outL = apfsL[ i ]( outL );	
-				outR = apfsR[ i ]( outR );	        
-			}
-      
-      output[0] = (l * dry) + (outL * wet);
-      output[1] = (r * dry) + (outR * wet);
-
-  		return output;
-  	},
-	})  
-  .init()
-  .processProperties(arguments);
-      
-  this.setFeedback = function(v) { feedback = v }
-  
-	for(var i = 0; i < 8; i++){
-		combsL.push( new Gibberish.Comb( tuning.combTuning[i] ).callback );
-    combsR.push( new Gibberish.Comb( tuning.combTuning[i] ).callback );
-	}
-  
-	for(var i = 0; i < 4; i++){
-		apfsL.push( new Gibberish.AllPass(tuning.allPassTuning[i], tuning.allPassFeedback ).callback );
-    apfsR.push( new Gibberish.AllPass(tuning.allPassTuning[i], tuning.allPassFeedback ).callback );    
-	}
-};
-Gibberish.StereoReverb.prototype = Gibberish._effect;
-
-/**#Gibberish.Granulator - FX
-A granulator that operates on a buffer of samples. You can get the samples from a [Sampler](javascript:displayDocs('Gibberish.Sampler'\))
-object.
-
-## Example Usage ##
-`a = new Gibberish.Sampler('resources/trumpet.wav');  
-// wait until sample is loaded to create granulator  
-a.onload = function() {  
-  b = new Gibberish.Granulator({  
-    buffer:a.getBuffer(),  
-    grainSize:1000,  
-    speedMin: -2,  
-    speedMax: 2,  
-  });  
-  b.mod('position', new Gibberish.Sine(.1, .45), '+');  
-  b.connect();  
-};`
-## Constructor
-**param** *propertiesList*: Object. At a minimum you should define the input to granulate. See the example.
-**/
-/**###Gibberish.Granulator.speed : property
-Float. The playback rate, in samples, of each grain
-**/
-/**###Gibberish.Granulator.speedMin : property
-Float. When set, the playback rate will vary on a per grain basis from (grain.speed + grain.speedMin) -> (grain.speed + grain.speedMax). This value should almost always be negative.
-**/
-/**###Gibberish.Granulator.speedMax : property
-Float. When set, the playback rate will vary on a per grain basis from (grain.speed + grain.speedMin) -> (grain.speed + grain.speedMax).
-**/
-/**###Gibberish.Granulator.grainSize : property
-Integer. The length, in samples, of each grain
-**/
-/**###Gibberish.Granulator.position : property
-Float. The center position of the grain cloud. 0 represents the start of the buffer, 1 represents the end.
-**/
-/**###Gibberish.Granulator.positionMin : property
-Float. The left boundary on the time axis of the grain cloud.
-**/
-/**###Gibberish.Granulator.positionMax : property
-Float. The right boundary on the time axis of the grain cloud.
-**/
-/**###Gibberish.Granulator.buffer : property
-Object. The input buffer to granulate.
-**/
-/**###Gibberish.Granulator.numberOfGrains : property
-Float. The number of grains in the cloud. Can currently only be set on initialization.
-**/
-
-Gibberish.Granulator = function(properties) {
-	var grains      = [];
-	    buffer      = null,
-	    interpolate = Gibberish.interpolate,
-      panner      = Gibberish.makePanner(),
-      bufferLength= 0,
-	    debug       = 0,
-	    write       = 0,
-      self        = this,
-      out         = [0,0],
-      _out        = [0,0],
-      rndf        = Gibberish.rndf,
-      numberOfGrains = properties.numberOfGrains || 20;
-      
-	Gibberish.extend(this, { 
-		name:		        "granulator",
-		bufferLength:   88200,
-		reverse:	      true,
-		spread:		      .5,
-    
-    properties : {
-      speed: 		    1,
-      speedMin:     -0,
-      speedMax: 	  .0,
-      grainSize: 	  1000,
-      position:	    .5,
-      positionMin:  0,
-      positionMax:  0,
-      amp:		      .2,
-      fade:		      .1,
-      pan:		      0,
-      shouldWrite:  false,
-    },
-    
-    setBuffer : function(b) { buffer = b; bufferLength = b.length },
-    
-    callback : function(speed, speedMin, speedMax, grainSize, positionMin, positionMax, position, amp, fade, pan, shouldWrite) {
-    		for(var i = 0; i < numberOfGrains; i++) {
-    			var grain = grains[i];
-					
-    			if(grain._speed > 0) {
-    				if(grain.pos > grain.end) {
-    					grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
-    					grain.start = grain.pos;
-    					grain.end = grain.start + grainSize;
-    					grain._speed = speed + rndf(speedMin, speedMax);
-    					grain._speed = grain._speed < .1 ? .1 : grain._speed;
-    					grain._speed = grain._speed < .1 && grain._speed > 0 ? .1 : grain._speed;							
-    					grain._speed = grain._speed > -.1 && grain._speed < 0 ? -.1 : grain._speed;							
-    					grain.fadeAmount = grain._speed * (fade * grainSize);
-    					grain.pan = rndf(self.spread * -1, self.spread);
-    				}
-						
-    				var _pos = grain.pos;
-    				while(_pos > buffer.length) _pos -= buffer.length;
-    				while(_pos < 0) _pos += buffer.length;
-						
-    				var _val = interpolate(buffer, _pos);
-					
-    				_val *= grain.pos < grain.fadeAmount + grain.start ? (grain.pos - grain.start) / grain.fadeAmount : 1;
-    				_val *= grain.pos > (grain.end - grain.fadeAmount) ? (grain.end - grain.pos)   / grain.fadeAmount : 1;
-						
-    			}else {
-    				if(grain.pos < grain.end) {
-    					grain.pos = (position + rndf(positionMin, positionMax)) * buffer.length;
-    					grain.start = grain.pos;
-    					grain.end = grain.start - grainSize;
-    					grain._speed = speed + rndf(speedMin, speedMax);
-    					grain._speed = grain._speed < .1 && grain._speed > 0 ? .1 : grain._speed;							
-    					grain._speed = grain._speed > -.1 && grain._speed < 0 ? -.1 : grain._speed;	
-    					grain.fadeAmount = grain._speed * (fade * grainSize);							
-    				}
-						
-    				var _pos = grain.pos;
-    				while(_pos > buffer.length) _pos -= buffer.length;
-    				while(_pos < 0) _pos += buffer.length;
-					
-    				var _val = interpolate(buffer, _pos);
-					
-    				_val *= grain.pos > grain.start - grain.fadeAmount ? (grain.start - grain.pos) / grain.fadeAmount : 1;
-    				_val *= grain.pos < (grain.end + grain.fadeAmount) ? (grain.end - grain.pos) / grain.fadeAmount : 1;
-    			}
-					
-    			_out = panner(_val * amp, grain.pan, _out);
-          out[0] += _out[0];
-          out[1] += _out[1];
-    			
-          grain.pos += grain._speed;
-    		}
-				
-    		return panner(out, pan, out);
-    	},
-	})
-  .init()
-  .processProperties(arguments);
-  
-	for(var i = 0; i < numberOfGrains; i++) {
-		grains[i] = {
-			pos : self.position + Gibberish.rndf(self.positionMin, self.positionMax),
-			_speed : self.speed + Gibberish.rndf(self.speedMin, self.speedMax),
-		}
-		grains[i].start = grains[i].pos;
-		grains[i].end = grains[i].pos + self.grainSize;
-		grains[i].fadeAmount = grains[i]._speed * (self.fade * self.grainSize);
-		grains[i].pan = Gibberish.rndf(self.spread * -1, self.spread);
-	}
-			
-	/*if(typeof properties.input !== "undefined") { 
-			this.shouldWrite = true;
-      
-			this.sampler = new Gibberish.Sampler();
-			this.sampler.connect();
-			this.sampler.record(properties.buffer, this.bufferLength);
-      
-			buffer = this.sampler.buffer;
-	}else*/ if(typeof properties.buffer !== 'undefined') {
-	  buffer = properties.buffer;
-    bufferLength = buffer.length;
-	}
-
-};
-Gibberish.Granulator.prototype = Gibberish._effect;
-Gibberish.synth = function() {
-  this.type = 'oscillator';
-    
-  this.oscillatorInit = function() {
-    this.fx = new Array2; 
-    this.fx.parent = this;
-  };
-};
-Gibberish.synth.prototype = new Gibberish.ugen();
-Gibberish._synth = new Gibberish.synth();
-
-/**#Gibberish.Synth - Synth
-Oscillator + attack / decay envelope.
-  
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.Synth({ attack:44, decay:44100 }).connect();  
-a.note(880);  
-a.waveform = "Triangle";  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Synth.frequency : property  
-Number. The frequency for the carrier oscillator. This is normally set using the note method but can also be modulated.
-**/
-/**###Gibberish.Synth.pulsewidth : property  
-Number. The duty cycle for PWM synthesis
-**/
-/**###Gibberish.Synth.attack : property  
-Number. The length of the attack portion of the envelope in samples. Note that the synth's envelope affects both amplitude and the index of the synth.
-**/
-/**###Gibberish.Synth.decay : property  
-Number. The length of the decay portion of the envelope in samples. Note that the synth's envelope affects both amplitude and the index of the synth.
-**/
-/**###Gibberish.Synth.glide : property  
-Number. The synth has a one-pole filter attached to the carrier frequency. Set glide to a value between .999 and 1 to get pitch sweep between notes.
-**/
-/**###Gibberish.Synth.amp : property  
-Number. The relative amplitude level of the synth.
-**/
-/**###Gibberish.Synth.channels : property  
-Number. Default 2. Mono or Stereo synthesis.
-**/
-/**###Gibberish.Synth.pan : property  
-Number. Default 0. If the synth has two channels, this determines its position in the stereo spectrum.
-**/
-/**###Gibberish.Synth.waveform : property  
-String. The type of waveform to use. Options include 'Sine', 'Triangle', 'PWM', 'Saw' etc.
-**/
-		
-Gibberish.Synth = function(properties) {
-	this.name =	"synth";
-
-	this.properties = {
-	  frequency:0,
-    pulsewidth:.5,
-	  attack:		22050,
-	  decay:		22050,
-    sustain:  22050,
-    release:  22050,
-    attackLevel: 1,
-    sustainLevel: .5,
-    releaseTrigger: 0,
-    glide:    .15,
-    amp:		  .25,
-    channels: 2,
-	  pan:		  0,
-    sr:       Gibberish.context.sampleRate,
-  };
-/**###Gibberish.Synth.note : method  
-Generate an enveloped note at the provided frequency  
-  
-param **frequency** Number. The frequency for the oscillator.  
-param **amp** Number. Optional. The volume to use.  
-**/    
-	this.note = function(frequency, amp) {
-    if( amp !== 0 ) {
-  		if( typeof this.frequency !== 'object' ){
-        if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
-          this.releaseTrigger = 1;
-          lastFrequency = null
-          return;
-        }
-        
-        this.frequency = lastFrequency = frequency;
-        this.releaseTrigger = 0;
-        
-        if( typeof frequency === 'object' ) {
-          Gibberish.dirty( this )
-        }
-      }else{
-        this.frequency[0] = lastFrequency = frequency;
-        this.releaseTrigger = 0;
-        Gibberish.dirty(this);
-      }
-					
-  		if( typeof amp !== 'undefined') this.amp = amp;
-	  
-      _envelope.run();
-    }else{
-      this.releaseTrigger = 1;
-    }
-	};
-  
-  properties = properties || {}
-  
-	var useADSR     = typeof properties.useADSR === 'undefined' ? false : properties.useADSR,
-      _envelope   = useADSR ? new Gibberish.ADSR() : new Gibberish.AD(),
-      envstate    = _envelope.getState,
-      envelope    = _envelope.callback,
-      _osc        = new Gibberish.PWM(),
-	    osc         = _osc.callback,
-      lag         = new Gibberish.OnePole().callback,
-    	panner      = Gibberish.makePanner(),
-      obj         = this,
-      lastFrequency = 0,
-      phase = 0,
-    	out         = [0,0];
-      
-  _envelope.requireReleaseTrigger = properties.requireReleaseTrigger || false;
-      
-  this.callback = function(frequency, pulsewidth, attack, decay, sustain,release,attackLevel,sustainLevel,releaseTrigger, glide, amp, channels, pan, sr) {
-    glide = glide >= 1 ? .99999 : glide;
-    frequency = lag(frequency, 1-glide, glide);
-    
-    var env, val
-    if( useADSR ) {
-      env = envelope( attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger );
-      if( releaseTrigger ) {
-        obj.releaseTrigger = 0
-      }
-
-      if( envstate() < 4 ) {
-  			val = osc( frequency, 1, pulsewidth, sr ) * env * amp;
-    
-  			return channels === 1 ? val : panner(val, pan, out);
-      }else{
-  		  val = out[0] = out[1] = 0;
-        return channels === 1 ? val : out
-      }
-    }else{
-  		if(envstate() < 2) {
-        env = envelope(attack, decay);
-  			val = osc( frequency, 1, pulsewidth, sr ) * env * amp;
-      
-  			return channels === 1 ? val : panner(val, pan, out);
-      }else{
-  		  val = out[0] = out[1] = 0;
-        return channels === 1 ? val : out
-      }
-    }
-	};
-  
-  this.getEnv = function() { return _envelope; }
-  this.getOsc = function() { return _osc; };
-  this.setOsc = function(val) { _osc = val; osc = _osc.callback };
-  
-  var waveform = "PWM";
-  Object.defineProperty(this, 'waveform', {
-    get : function() { return waveform; },
-    set : function(val) { this.setOsc( new Gibberish[val]() ); }
-  });
-  
-  this.init();
-  this.oscillatorInit();
-	this.processProperties(arguments);
-};
-Gibberish.Synth.prototype = Gibberish._synth;
-
-/**#Gibberish.PolySynth - Synth
-A polyphonic version of [Synth](javascript:displayDocs('Gibberish.Synth'\)). There are two additional properties for the polyphonic version of the synth. The polyphonic version consists of multiple Synths being fed into a single [Bus](javascript:displayDocs('Gibberish.Bus'\)) object.
-  
-## Example Usage ##
-`Gibberish.init();  
-a = new Gibberish.PolySytn({ attack:88200, decay:88200, maxVoices:10 }).connect();  
-a.note(880);  
-a.note(1320); 
-a.note(1760);  
-`  
-## Constructor   
-One important property to pass to the constructor is the maxVoices property, which defaults to 5. This controls how many voices are allocated to the synth and cannot be changed after initialization.  
-  
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.PolySynth.children : property  
-Array. Read-only. An array holding all of the child FMSynth objects.
-**/
-/**###Gibberish.PolySynth.maxVoices : property  
-Number. The number of voices of polyphony the synth has. May only be set in initialization properties passed to constrcutor.
-**/
-Gibberish.PolySynth = function() {
-  this.__proto__ = new Gibberish.Bus2();
-  
-  Gibberish.extend(this, {
-    name:     "polysynth",
-    maxVoices:    5,
-    voiceCount:   0,
-    frequencies:  [],
-    _frequency: 0,
-    
-    polyProperties : {
-      frequency: 0,
-  		glide:			0,
-      attack: 22050,
-      decay:  22050,
-      sustain:22050,
-      release:22050,
-      attackLevel: 1,
-      sustainLevel: .5,      
-      pulsewidth:.5,
-      waveform:"PWM",
-    },
-
-/**###Gibberish.PolySynth.note : method  
-Generate an enveloped note at the provided frequency using a simple voice allocation system where if all children are active, the one active the longest cancels its current note and begins playing a new one.    
-  
-param **frequency** Number. The frequency for the oscillator. 
-param **amp** Number. Optional. The volume to use.  
-**/  
-    note : function(_frequency, amp) {
-      var lastNoteIndex = this.frequencies.indexOf( _frequency ),
-          idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
-          synth = this.children[ idx ];
-      
-      synth.note( _frequency, amp);
-            
-      if( lastNoteIndex === -1) {
-        this.frequencies[ idx ] = _frequency;
-        this._frequency = _frequency
-        if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
-      }else{
-        delete this.frequencies[ idx ]
-      }
-    },
-    
-    initVoices: function() {
-      for(var i = 0; i < this.maxVoices; i++) {
-        var props = {
-          waveform: this.waveform,
-    			attack: 	this.attack,
-    			decay:		this.decay,
-          sustain:  this.sustain,
-          release:  this.release,
-          attackLevel: this.attackLevel,
-          sustainLevel: this.sustainLevel,
-          pulsewidth: this.pulsewidth,
-          channels: 2,
-          amp:      1,
-          useADSR : this.useADSR || false,
-          requireReleaseTrigger: this.requireReleaseTrigger || false,
-        },
-        synth = new Gibberish.Synth( props ).connect( this );
-
-        this.children.push(synth);
-      }
-    },
-  });
-  
-  this.amp = 1 / this.maxVoices;
-    
-  this.children = [];
-  
-  if(typeof arguments[0] === 'object') {
-    this.maxVoices = arguments[0].maxVoices ? arguments[0].maxVoices : this.maxVoices
-    this.useADSR = typeof arguments[0].useADSR !== 'undefined' ? arguments[ 0 ].useADSR : false
-    this.requireReleaseTrigger = typeof arguments[0].requireReleaseTrigger !== 'undefined' ? arguments[ 0 ].requireReleaseTrigger : false    
-  }
-  
-  Gibberish.polyInit(this);
-  this.initVoices()
-  
-  this.processProperties(arguments);
-  
-  Gibberish._synth.oscillatorInit.call(this);
-};
-
-/**#Gibberish.Synth2 - Synth
-Oscillator + attack / decay envelope + 24db ladder filter. Basically the same as the [Synth](javascript:displayDocs('Gibberish.Synth'\)) object but with the addition of the filter. Note that the envelope controls both the amplitude of the oscillator and the cutoff frequency of the filter.
-  
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.Synth2({ attack:44, decay:44100, cutoff:.2, resonance:4 }).connect();  
-a.note(880);  
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.Synth2.frequency : property  
-Number. The frequency for the carrier oscillator. This is normally set using the note method but can also be modulated.
-**/
-/**###Gibberish.Synth2.pulsewidth : property  
-Number. The duty cycle for PWM synthesis
-**/
-/**###Gibberish.Synth2.attack : property  
-Number. The length of the attack portion of the envelope in samples. Note that the synth's envelope affects both amplitude and the index of the synth.
-**/
-/**###Gibberish.Synth2.decay : property  
-Number. The length of the decay portion of the envelope in samples. Note that the synth's envelope affects both amplitude and the index of the synth.
-**/
-/**###Gibberish.Synth2.cutoff : property  
-Number. 0..1. The cutoff frequency for the synth's filter.
-**/
-/**###Gibberish.Synth2.resonance : property  
-Number. 0..50. Values above 4.5 are likely to produce shrieking feedback. You are warned.
-**/
-/**###Gibberish.Synth2.useLowPassFilter : property  
-Boolean. Default true. Whether to use a high-pass or low-pass filter.
-**/
-/**###Gibberish.Synth2.glide : property  
-Number. The synth has a one-pole filter attached to the carrier frequency. Set glide to a value between .999 and 1 to get pitch sweep between notes.
-**/
-/**###Gibberish.Synth2.amp : property  
-Number. The relative amplitude level of the synth.
-**/
-/**###Gibberish.Synth2.channels : property  
-Number. Default 2. Mono or Stereo synthesis.
-**/
-/**###Gibberish.Synth2.pan : property  
-Number. Default 0. If the synth has two channels, this determines its position in the stereo spectrum.
-**/
-/**###Gibberish.Synth2.waveform : property  
-String. The type of waveform to use. Options include 'Sine', 'Triangle', 'PWM', 'Saw' etc.
-**/
-Gibberish.Synth2 = function(properties) {
-	this.name =	"synth2";
-
-	this.properties = {
-	  frequency:0,
-    pulsewidth:.5,
-	  attack:		22050,
-	  decay:		22050,
-    sustain:  22050,
-    release:  22050,
-    attackLevel: 1,
-    sustainLevel: .5,
-    releaseTrigger: 0,
-    cutoff:   .25,
-    resonance:3.5,
-    useLowPassFilter:true,
-    glide:    .15,
-    amp:		  .25,
-    channels: 1,
-	  pan:		  0,
-    sr:       Gibberish.context.sampleRate,
-  };
-/**###Gibberish.Synth2.note : method  
-Generate an enveloped note at the provided frequency  
-  
-param **frequency** Number. The frequency for the oscillator.  
-param **amp** Number. Optional. The volume to use.  
-**/      
-	this.note = function(frequency, amp) {
-    if( amp !== 0 ) {
-  		if(typeof this.frequency !== 'object'){
-        if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
-          this.releaseTrigger = 1;
-          lastFrequency = null
-          return;
-        }
-
-        this.frequency = lastFrequency = frequency;
-        this.releaseTrigger = 0;
-        if( typeof frequency === 'object' ) {
-          Gibberish.dirty( this )
-        }
-      }else{
-        this.frequency[0] = lastFrequency = frequency;
-        this.releaseTrigger = 0;
-        Gibberish.dirty(this);
-      }
-					
-  		if( typeof amp !== 'undefined') this.amp = amp;
-	  
-      _envelope.run();
-    }else{
-      this.releaseTrigger = 1;
-    }
-	};
-  
-  properties = properties || {}
-  
-	var useADSR     = typeof properties.useADSR === 'undefined' ? false : properties.useADSR,
-      _envelope   = useADSR ? new Gibberish.ADSR() : new Gibberish.AD(),
-      envstate    = _envelope.getState,
-      envelope    = _envelope.callback,
-      _osc        = new Gibberish.PWM(),
-	    osc         = _osc.callback,      
-      _filter     = new Gibberish.Filter24(),
-      filter      = _filter.callback,
-      lag         = new Gibberish.OnePole().callback,
-    	panner      = Gibberish.makePanner(),
-      lastFrequency = 0,
-      obj         = this,
-    	out         = [0,0];
-      
-  _envelope.requireReleaseTrigger = properties.requireReleaseTrigger || false;
-        
-  this.callback = function(frequency, pulsewidth, attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger, cutoff, resonance, isLowPass, glide, amp, channels, pan, sr) {
-    glide = glide >= 1 ? .99999 : glide;
-    frequency = lag(frequency, 1-glide, glide);
-    
-    var env, val
-    if( useADSR ) {
-      env = envelope( attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger );
-      if( releaseTrigger ) {
-        obj.releaseTrigger = 0
-      }
-
-      if( envstate() < 4 ) {
-  			val = filter ( osc( frequency, .15, pulsewidth, sr ), cutoff * env, resonance, isLowPass ) * env * amp;
-    
-  			return channels === 1 ? val : panner(val, pan, out);
-      }else{
-  		  val = out[0] = out[1] = 0;
-        return channels === 1 ? val : out
-      }
-    }else{
-      if( envstate() < 2) {
-			  env = envelope(attack, decay);
-			  val = filter ( osc( frequency, .15, pulsewidth, sr ), cutoff * env, resonance, isLowPass ) * env * amp;
-      
-    		return channels === 1 ? val : panner(val, pan, out);
-      }else{
-    	  val = out[0] = out[1] = 0;
-        return channels === 1 ? val : out;
-      }
-    }
-	};
-  this.getUseADSR = function() { return useADSR; }
-  this.getEnv = function() { return _envelope; };
-  this.getOsc = function() { return _osc; };
-  this.setOsc = function(val) { _osc = val; osc = _osc.callback };
-  
-  var waveform = "PWM";
-  Object.defineProperty(this, 'waveform', {
-    get : function() { return waveform; },
-    set : function(val) { this.setOsc( new Gibberish[val]() ); }
-  });
-  
-  this.init();
-  this.oscillatorInit();
-	this.processProperties(arguments);
-};
-Gibberish.Synth2.prototype = Gibberish._synth;
-
-/**#Gibberish.PolySynth2 - Synth
-A polyphonic version of [Synth2](javascript:displayDocs('Gibberish.Synth2'\)). There are two additional properties for the polyphonic version of the synth. The polyphonic version consists of multiple Synths being fed into a single [Bus](javascript:displayDocs('Gibberish.Bus'\)) object.
-  
-## Example Usage ##
-`Gibberish.init();  
-a = new Gibberish.PolySynth2({ attack:88200, decay:88200, maxVoices:10 }).connect();  
-a.note(880);  
-a.note(1320); 
-a.note(1760);  
-`  
-## Constructor   
-One important property to pass to the constructor is the maxVoices property, which defaults to 5. This controls how many voices are allocated to the synth and cannot be changed after initialization.  
-  
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.PolySynth2.children : property  
-Array. Read-only. An array holding all of the child FMSynth objects.
-**/
-/**###Gibberish.PolySynth2.maxVoices : property  
-Number. The number of voices of polyphony the synth has. May only be set in initialization properties passed to constrcutor.
-**/
-
-Gibberish.PolySynth2 = function() {
-  this.__proto__ = new Gibberish.Bus2();
-  
-  Gibberish.extend(this, {
-    name:     "polysynth2",
-    maxVoices:    5,
-    voiceCount:   0,
-    frequencies:  [],
-    _frequency: 0,
-    
-    polyProperties : {
-      frequency: 0,
-      glide:			0,
-      attack: 22050,
-      decay:  22050,
-      sustain:22050,
-      release:22050,
-      attackLevel: 1,
-      sustainLevel: .5,      
-      pulsewidth:.5,
-      resonance: 3.5,
-      cutoff:.25,
-      useLowPassFilter:true,
-      waveform:"PWM",
-    },
-
-/**###Gibberish.PolySynth2.note : method  
-Generate an enveloped note at the provided frequency using a simple voice allocation system where if all children are active, the one active the longest cancels its current note and begins playing a new one.    
-  
-param **frequency** Number. The frequency for the oscillator. 
-param **amp** Number. Optional. The volume to use.  
-**/  
-    note : function(_frequency, amp) {
-      var lastNoteIndex = this.frequencies.indexOf( _frequency ),
-          idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
-          synth = this.children[ idx ];
-      
-      synth.note(_frequency, amp);
-            
-      if( lastNoteIndex === -1) {
-        this.frequencies[ idx ] = _frequency;
-        this._frequency = _frequency
-        if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
-      }else{
-        delete this.frequencies[ idx ]
-      }
-    },
-    
-    initVoices: function() {
-      this.dirty = true;
-      for(var i = 0; i < this.maxVoices; i++) {
-        var props = {
-    			attack: 	this.attack,
-    			decay:		this.decay,
-          sustain:  this.sustain,
-          release:  this.release,
-          attackLevel: this.attackLevel,
-          sustainLevel: this.sustainLevel,
-          pulsewidth: this.pulsewidth,
-          channels: 2,
-          amp:      1,
-          useADSR:  this.useADSR || false,
-          requireReleaseTrigger: this.requireReleaseTrigger || false,
-        },
-        synth = new Gibberish.Synth2( props ).connect( this );
-
-        this.children.push(synth);
-      }
-    },
-  });
-  
-  this.amp = 1 / this.maxVoices;
-    
-  this.children = [];
-  
-  if(typeof arguments[0] === 'object') {
-    this.maxVoices = arguments[0].maxVoices ? arguments[0].maxVoices : this.maxVoices
-    this.useADSR = typeof arguments[0].useADSR !== 'undefined' ? arguments[ 0 ].useADSR : false
-    this.requireReleaseTrigger = typeof arguments[0].requireReleaseTrigger !== 'undefined' ? arguments[ 0 ].requireReleaseTrigger : false
-  }
-  
-  Gibberish.polyInit(this);
-  
-  this.initVoices()
-
-  this.processProperties(arguments);
-  Gibberish._synth.oscillatorInit.call(this);
-};
-
-/**#Gibberish.FMSynth - Synth
-Classic 2-op FM synthesis with an attached attack / decay envelope.
-  
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.FMSynth({ cmRatio:5, index:3 }).connect();
-a.note(880);`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.FMSynth.frequency : property  
-Number. The frequency for the carrier oscillator. This is normally set using the note method but can also be modulated.
-**/
-/**###Gibberish.FMSynth.cmRatio : property  
-Number. The carrier-to-modulation ratio. A cmRatio of 2 means that the carrier frequency will be twice the frequency of the modulator.
-**/
-/**###Gibberish.FMSynth.attack : property  
-Number. The length of the attack portion of the envelope in samples. Note that the synth's envelope affects both amplitude and the index of the synth.
-**/
-/**###Gibberish.FMSynth.decay : property  
-Number. The length of the decay portion of the envelope in samples. Note that the synth's envelope affects both amplitude and the index of the synth.
-**/
-/**###Gibberish.FMSynth.glide : property  
-Number. The synth has a one-pole filter attached to the carrier frequency. Set glide to a value between .999 and 1 to get pitch sweep between notes.
-**/
-/**###Gibberish.FMSynth.amp : property  
-Number. The relative amplitude level of the synth.
-**/
-/**###Gibberish.FMSynth.channels : property  
-Number. Default 2. Mono or Stereo synthesis.
-**/
-/**###Gibberish.FMSynth.pan : property  
-Number. Default 0. If the synth has two channels, this determines its position in the stereo spectrum.
-**/
-Gibberish.FMSynth = function(properties) {
-	this.name =	"fmSynth";
-
-	this.properties = {
-	  frequency:0,
-	  cmRatio:	2,
-	  index:		5,			
-	  attack:		22050,
-	  decay:		22050,
-    sustain:  22050,
-    release:  22050,
-    attackLevel: 1,
-    sustainLevel: .5,
-    releaseTrigger: 0,
-    glide:    .15,
-    amp:		  .25,
-    channels: 2,
-	  pan:		  0,
-  };
-/**###Gibberish.FMSynth.note : method  
-Generate an enveloped note at the provided frequency  
-  
-param **frequency** Number. The frequency for the carrier oscillator. The modulator frequency will be calculated automatically from this value in conjunction with the synth's carrier to modulation ratio  
-param **amp** Number. Optional. The volume to use.  
-**/
-
-	this.note = function(frequency, amp) {
-    //console.log( frequency, lastFrequency, this.releaseTrigger, amp )
-    if( amp !== 0 ) {
-  		if(typeof this.frequency !== 'object'){
-        if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
-          this.releaseTrigger = 1;
-          lastFrequency = null
-          return;
-        }
-        
-        this.frequency = lastFrequency = frequency;
-        this.releaseTrigger = 0;
-        
-        if( typeof frequency === 'object' ) {
-          Gibberish.dirty( this );
-        }
-      }else{
-        this.frequency[0] = lastFrequency = frequency;
-        this.releaseTrigger = 0;
-        Gibberish.dirty(this);
-      }
-					
-  		if( typeof amp !== 'undefined') this.amp = amp;
-	  
-      _envelope.run();
-    }else{
-      this.releaseTrigger = 1;
-    }
-	};
-  
-  properties = properties || {}
-  
-	var useADSR     = typeof properties.useADSR === 'undefined' ? false : properties.useADSR,
-      _envelope   = useADSR ? new Gibberish.ADSR() : new Gibberish.AD(),
-      envstate    = _envelope.getState,
-      envelope    = _envelope.callback,
-	    carrier     = new Gibberish.Sine().callback,
-	    modulator   = new Gibberish.Sine().callback,
-      lag         = new Gibberish.OnePole().callback,
-    	panner      = Gibberish.makePanner(),
-    	out         = [0,0],
-      obj         = this,
-      lastFrequency = 0,
-      phase = 0,
-      check = false;
-
-  _envelope.requireReleaseTrigger = properties.requireReleaseTrigger || false;
-
-  this.callback = function(frequency, cmRatio, index, attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger, glide, amp, channels, pan) {
-    var env, val, mod
-        
-    if(glide >= 1) glide = .9999;
-    frequency = lag(frequency, 1-glide, glide);
-    
-    if( useADSR ) {
-      env = envelope( attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger );
-      if( releaseTrigger ) {
-        obj.releaseTrigger = 0
-      }
-
-      if( envstate() < 4 ) {
-        mod = modulator(frequency * cmRatio, frequency * index) * env;
-  			val = carrier( frequency + mod, 1 ) * env * amp;
-    
-  			return channels === 1 ? val : panner(val, pan, out);
-      }else{
-  		  val = out[0] = out[1] = 0;
-        return channels === 1 ? val : out
-      }
-    }else{
-      if( envstate() < 2 ) {
-  			env = envelope(attack, decay);
-  			mod = modulator(frequency * cmRatio, frequency * index) * env;
-  			val = carrier( frequency + mod, 1 ) * env * amp;
-
-        //if( phase++ % 44105 === 0 ) console.log( panner(val, pan, out) channels )
-  			return channels === 1 ? val : panner(val, pan, out);
-      }else{
-  		  val = out[0] = out[1] = 0;
-        return channels === 1 ? val : out;
-      }
-    }
-	};
-  
-  this.init();
-  this.oscillatorInit();
-	this.processProperties(arguments);
-};
-Gibberish.FMSynth.prototype = Gibberish._synth;
-/**#Gibberish.PolyFM - Synth
-A polyphonic version of [FMSynth](javascript:displayDocs('Gibberish.FMSynth'\)). There are two additional properties for the polyphonic version of the synth. The polyphonic version consists of multiple FMSynths being fed into a single [Bus](javascript:displayDocs('Gibberish.Bus'\)) object.
-  
-## Example Usage ##
-`Gibberish.init();  
-a = new Gibberish.PolyFM({ cmRatio:5, index:3, attack:88200, decay:88200 }).connect();  
-a.note(880);  
-a.note(1320);  
-`  
-## Constructor   
-One important property to pass to the constructor is the maxVoices property, which defaults to 5. This controls how many voices are allocated to the synth and cannot be changed after initialization.  
-  
-**param** *properties*: Object. A dictionary of property values (see below) to set for the synth on initialization.
-- - - -
-**/
-/**###Gibberish.PolyFM.children : property  
-Array. Read-only. An array holding all of the child FMSynth objects.
-**/
-/**###Gibberish.PolyFM.maxVoices : property  
-Number. The number of voices of polyphony the synth has. May only be set in initialization properties passed to constrcutor.
-**/
-
-
-Gibberish.PolyFM = function() {
-  this.__proto__ = new Gibberish.Bus2();
-  
-	Gibberish.extend(this, {
-    name:     "polyfm",
-		maxVoices:		5,
-		voiceCount:		0,
-    children: [],
-    frequencies: [],
-    _frequency: 0,
-    
-    polyProperties : {
-      glide:		 0,
-      attack: 22050,
-      decay:  22050,
-      sustain:22050,
-      release:22050,
-      attackLevel: 1,
-      sustainLevel: .5,
-      index:  5,
-      cmRatio:2,
-    },
-/**###Gibberish.PolyFM.note : method  
-Generate an enveloped note at the provided frequency using a simple voice allocation system where if all children are active, the one active the longest cancels its current note and begins playing a new one.    
-  
-param **frequency** Number. The frequency for the carrier oscillator. The modulator frequency will be calculated automatically from this value in conjunction with the synth's  
-param **amp** Number. Optional. The volume to use.  
-**/
-    note : function(_frequency, amp) {
-      var lastNoteIndex = this.frequencies.indexOf( _frequency ),
-          idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
-          synth = this.children[ idx ];
-      
-      synth.note(_frequency, amp);
-      
-      if( lastNoteIndex === -1) {
-        this.frequencies[ idx ] = _frequency;
-        this._frequency = _frequency
-        if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
-      }else{
-        delete this.frequencies[ idx ]
-      }
-    },
-    
-    initVoices : function() {
-    	for(var i = 0; i < this.maxVoices; i++) {
-    		var props = {
-    			attack: 	this.attack,
-    			decay:		this.decay,
-          sustain:  this.sustain,
-          release:  this.release,
-          attackLevel: this.attackLevel,
-          sustainLevel: this.sustainLevel,
-    			cmRatio:	this.cmRatio,
-    			index:		this.index,
-          channels: 2,
-          useADSR : this.useADSR || false,      
-          requireReleaseTrigger: this.requireReleaseTrigger || false,
-    			amp: 		  1,
-    		};
-
-    		var synth = new Gibberish.FMSynth(props);
-    		synth.connect(this);
-
-    		this.children.push(synth);
-    	}
-    },
-	}); 
-     
-  this.amp = 1 / this.maxVoices;
-    
-  this.children = [];
-  
-  if(typeof arguments[0] === 'object') {
-    this.maxVoices = arguments[0].maxVoices ? arguments[0].maxVoices : this.maxVoices
-    this.useADSR = typeof arguments[0].useADSR !== 'undefined' ? arguments[ 0 ].useADSR : false    
-    this.requireReleaseTrigger = typeof arguments[0].requireReleaseTrigger !== 'undefined' ? arguments[ 0 ].requireReleaseTrigger : false    
-  }
-  
-  Gibberish.polyInit(this);
-  this.initVoices()
-  
-	this.processProperties(arguments);
-  Gibberish._synth.oscillatorInit.call(this);
-};
-// this file is dependent on oscillators.js
-
-/**#Gibberish.Sampler - Oscillator
-Sample recording and playback.
-  
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.Sampler({ file:'resources/snare.wav' }).connect();  
-// wait until sample has downloaded  
-a.note(2);  
-a.note(1);  
-a.note(-.5);  
-b = new Gibberish.Sampler().connect();  
-b.record(a, 88200); // record two seconds of a playing  
-a.note(8);  
-// wait a bit    
-b.note(1);`
-`
-## Constructor
-###syntax 1  
-**param** *filepath*: String. A path to the audiofile to be opened by the sampler.  
-###syntax 2    
-**param** *properties*: Object. A dictionary of property values (see below) to set for the sampler on initialization.
-- - - -
-**/
-/**###Gibberish.Sampler.pitch : property  
-Number. The speed that the sample is played back at. A pitch of 1 means the sample plays forward at speed it was recorded at, a pitch of -4 means the sample plays backwards at 4 times the speed it was recorded at.
-**/
-/**###Gibberish.Sampler.amp : property  
-Number. A linear value specifying relative amplitude, ostensibly from 0..1 but can be higher, or lower when used for modulation.
-**/
-/**###Gibberish.Sampler.playOnLoad : property  
-Number. If this value is set to be non-zero, the sampler will trigger a note at the provided pitch as soon as the sample is downloaded. 
-**/
-/**###Gibberish.Sampler.isRecording : property  
-Boolean. Tells the sample to record into it's buffer. This is handled automatically by the object; there is no need to manually set this property.
-**/
-/**###Gibberish.Sampler.isPlaying : property  
-Number. 0..1. Tells the sample to record into it's buffer. This is handled automatically by the object; there is no need to manually set this property.
-**/
-/**###Gibberish.Sampler.input : property  
-Object. The object the sampler is tapping into and recording.
-**/
-/**###Gibberish.Sampler.length : property  
-Number. The length of the Sampler's buffer.
-**/
-/**###Gibberish.Sampler.start : property  
-Number. When the Sampler's note method is called, sample playback begins at this sample.
-**/
-/**###Gibberish.Sampler.end : property  
-Number. When the Sampler's note method is called, sample playback ends at this sample.
-**/
-/**###Gibberish.Sampler.loops : property  
-Boolean. When true, sample playback loops continuously between the start and end property values.
-**/
-/**###Gibberish.Sampler.pan : property  
-Number. -1..1. Position of the Sampler in the stereo spectrum.
-**/
-
-Gibberish.Sampler = function() {
-	var phase = 1,
-	    interpolate = Gibberish.interpolate,
-	    write = 0,
-	    panner = Gibberish.makePanner(),
-	    debug = 0 ,
-	    shouldLoop = 0,
-	    out = [0,0],
-      buffer = null,
-      bufferLength = 1,
-      self = this,
-      count = 0;
-      
-	Gibberish.extend(this, {
-		name: 			"sampler",
-    
-		file: 			null,
-		isLoaded: 	false,
-    playOnLoad :  0,
-    buffers: {},
-    properties : {
-    	pitch:			  1,
-  		amp:			    1,
-  		isRecording: 	false,
-  		isPlaying : 	true,
-  		input:	 		  0,
-  		length : 		  0,
-      start :       0,
-      end :         1,
-      loops :       0,
-      pan :         0,
-    },
-    
-/**###Gibberish.Sampler.onload : method  
-This is an event handler that is called when a sampler has finished loading an audio file.
-Use this to trigger a set of events upon downloading the sample. 
-  
-param **buffer** Object. The decoded sampler buffers from the audio file
-**/ 
-		_onload : 		function(decoded) {
-			buffer = decoded.channels[0]; 
-			bufferLength = decoded.length;
-			self.length = bufferLength
-			self.end = bufferLength;
-      self.length = phase = bufferLength;
-      self.isPlaying = true;
-					
-			//console.log("LOADED ", self.file, bufferLength);
-			Gibberish.audioFiles[self.file] = buffer;
-			self.buffers[ self.file ] = buffer;
-      
-      if(self.onload) self.onload();
-      
-      if(self.playOnLoad !== 0) self.note(self.playOnLoad);
-      
-			self.isLoaded = true;
-		},
-    
-    switchBuffer: function( bufferID ) { // accepts either number or string
-      if( typeof bufferID === 'string' ) {
-        if( typeof self.buffers[ bufferID ] !== 'undefined' ) {
-          buffer = self.buffers[ bufferID ]
-          bufferLength = self.end = self.length = buffer.length
-        }
-      }else if( typeof bufferID === 'number' ){
-        var keys = Object.keys( self.buffers )
-        if( keys.length === 0 ) return 
-        //console.log( "KEY", keys, keys[ bufferID ], bufferID )
-        buffer = self.buffers[ keys[ bufferID ] ]
-        bufferLength = self.end = self.length = buffer.length
-      }
-    },
-    
-    floatTo16BitPCM : function(output, offset, input){
-      //console.log(output.length, offset, input.length )
-      for (var i = 0; i < input.length - 1; i++, offset+=2){
-        var s = Math.max(-1, Math.min(1, input[i]));
-        output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-      }
-    },
-    encodeWAV : function(){
-      //console.log("BUFFER LENGTH" + _buffer.length);
-      var _buffer = this.getBuffer(),
-          wavBuffer = new ArrayBuffer(44 + _buffer.length * 2),
-          view = new DataView(wavBuffer),
-          sampleRate = Gibberish.context.sampleRate;
-      
-      function writeString(view, offset, string){
-        for (var i = 0; i < string.length; i++){
-          view.setUint8(offset + i, string.charCodeAt(i));
-        }
-      }
-
-      /* RIFF identifier */
-      writeString(view, 0, 'RIFF');
-      /* file length */
-      view.setUint32(4, 32 + _buffer.length * 2, true);
-      /* RIFF type */
-      writeString(view, 8, 'WAVE');
-      /* format chunk identifier */
-      writeString(view, 12, 'fmt ');
-      /* format chunk length */
-      view.setUint32(16, 16, true);
-      /* sample format (raw) */
-      view.setUint16(20, 1, true);
-      /* channel count */
-      view.setUint16(22, 1, true);
-      /* sample rate */
-      view.setUint32(24, sampleRate, true);
-      /* byte rate (sample rate * block align) */
-      view.setUint32(28, sampleRate * 4, true);
-      /* block align (channel count * bytes per sample) */
-      view.setUint16(32, 2, true);
-      /* bits per sample */
-      view.setUint16(34, 16, true);
-      /* data chunk identifier */
-      writeString(view, 36, 'data');
-      /* data chunk length */
-      view.setUint32(40, _buffer.length * 2, true);
-
-      this.floatTo16BitPCM(view, 44, _buffer);
-
-      return view;
-    },
-/**###Gibberish.Sampler.download : method  
-Download the sampler buffer as a .wav file. In conjunction with the record method, this enables the Sampler
-to record and downlaod Gibberish sessions.
-**/  
-    download : function() {
-      var blob = this.encodeWAV();
-      var audioBlob = new Blob( [ blob ] );
-
-      var url =  window.webkitURL.createObjectURL( audioBlob );
-      var link = window.document.createElement('a');
-      link.href = url;
-      link.download = 'output.wav';
-      
-      var click = document.createEvent("Event");
-      click.initEvent("click", true, true);
-      
-      link.dispatchEvent(click);
-    },
-
-/**###Gibberish.Sampler.note : method  
-Trigger playback of the samplers buffer
-  
-param **pitch** Number. The speed the sample is played back at.  
-param **amp** Number. Optional. The volume to use.
-**/    
-		note: function(pitch, amp) {
-      
-      switch( typeof pitch ) {
-        case 'number' :
-          this.pitch = pitch
-          break;
-        case 'function' :
-          this.pitch = pitch()
-          break;
-        case 'object' :
-          if( Array.isArray(pitch) ) {
-            this.pitch = pitch[ 0 ]
-          }else{
-            this.pitch = pitch
-          }
-          break;
-      }
-      // if(typeof this.pitch === 'number' || typeof this.pitch === 'function' ){
-      //   this.pitch = pitch;
-      // }else if(typeof this.pitch === 'object'){
-      //   this.pitch[0] = pitch;
-      //   Gibberish.dirty(this);
-      // }
-      
-			if(typeof amp === 'number') this.amp = amp;
-			
-			if(this.function !== null) {
-				this.isPlaying = true;	// needed to allow playback after recording
-        
-        var __pitch;// = typeof this.pitch === 'number' || typeof this.pitch === 'function' ? this.pitch : this.pitch[0];  // account for modulations
-                
-        switch( typeof this.pitch ) {
-          case 'number' :
-            __pitch = this.pitch
-            break;
-          case 'function' :
-            __pitch = this.pitch.getValue ? this.pitch.getValue() : this.pitch()
-            break;
-          case 'object' :
-            if( Array.isArray( this.pitch ) ) {
-              __pitch = this.pitch[ 0 ]
-            } else {
-              __pitch = this.pitch.getValue ? this.pitch.getValue() : this.pitch.input.getValue()              
-            }
-            
-            if( typeof __pitch === 'function' ) __pitch = __pitch()
-            
-            break;
-        }
-        
-        if( __pitch > 0 ) { //|| typeof __pitch === 'object' || typeof this.pitch === 'function' ) {
-          phase = this.start;
-          //console.log("PHASE :: ", phase, this.start )
-				}else{
-          phase = this.end;
+					output.push(stringFromCharCode(digitToBasic(q, 0)));
+					bias = adapt(delta, handledCPCountPlusOne, handledCPCount == basicLength);
+					delta = 0;
+					++handledCPCount;
 				}
-        
-        Gibberish.dirty( this )
-        
-        //this.pitch = __pitch;
 			}
+
+			++delta;
+			++n;
+
+		}
+		return output.join('');
+	}
+
+	/**
+	 * Converts a Punycode string representing a domain name to Unicode. Only the
+	 * Punycoded parts of the domain name will be converted, i.e. it doesn't
+	 * matter if you call it on a string that has already been converted to
+	 * Unicode.
+	 * @memberOf punycode
+	 * @param {String} domain The Punycode domain name to convert to Unicode.
+	 * @returns {String} The Unicode representation of the given Punycode
+	 * string.
+	 */
+	function toUnicode(domain) {
+		return mapDomain(domain, function(string) {
+			return regexPunycode.test(string)
+				? decode(string.slice(4).toLowerCase())
+				: string;
+		});
+	}
+
+	/**
+	 * Converts a Unicode string representing a domain name to Punycode. Only the
+	 * non-ASCII parts of the domain name will be converted, i.e. it doesn't
+	 * matter if you call it with a domain that's already in ASCII.
+	 * @memberOf punycode
+	 * @param {String} domain The domain name to convert, as a Unicode string.
+	 * @returns {String} The Punycode representation of the given domain name.
+	 */
+	function toASCII(domain) {
+		return mapDomain(domain, function(string) {
+			return regexNonASCII.test(string)
+				? 'xn--' + encode(string)
+				: string;
+		});
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	/** Define the public API */
+	punycode = {
+		/**
+		 * A string representing the current Punycode.js version number.
+		 * @memberOf punycode
+		 * @type String
+		 */
+		'version': '1.2.4',
+		/**
+		 * An object of methods to convert from JavaScript's internal character
+		 * representation (UCS-2) to Unicode code points, and back.
+		 * @see <http://mathiasbynens.be/notes/javascript-encoding>
+		 * @memberOf punycode
+		 * @type Object
+		 */
+		'ucs2': {
+			'decode': ucs2decode,
+			'encode': ucs2encode
 		},
-/**###Gibberish.Sampler.record : method  
-Record the output of a Gibberish ugen for a given amount of time
-  
-param **ugen** Object. The Gibberish ugen to be recorded.
-param **recordLength** Number (in samples). How long to record for.
-**/     
-    // record : function(input, recordLength) {
-    //       this.isRecording = true;
-    //       
-    //       var self = this;
-    //       
-    //       this.recorder = new Gibberish.Record(input, recordLength, function() {
-    //         self.setBuffer( this.getBuffer() );
-    //         self.end = bufferLength = self.getBuffer().length;
-    //         self.setPhase( self.end )
-    //         self.isRecording = false;
-    //       })
-    //       .record();
-    //       
-    //       return this;
-    // },
+		'decode': decode,
+		'encode': encode,
+		'toASCII': toASCII,
+		'toUnicode': toUnicode
+	};
 
-/**###Gibberish.Sampler.getBuffer : method  
-Returns a pointer to the Sampler's internal buffer.  
-**/
-    getBuffer : function() { return buffer; },
-    setBuffer : function(b) { buffer = b },
-    getPhase : function() { return phase },
-    setPhase : function(p) { phase = p },
-    getNumberOfBuffers: function() { return Object.keys( self.buffers ).length - 1 },
-    
-/**###Gibberish.Sampler.callback : method  
-Return a single sample. It's a pretty lengthy method signature, they are all properties that have already been listed:  
-
-_pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
-**/    
-  	callback :function(_pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan) {
-  		var val = 0;
-  		phase += _pitch;				
-
-  		if(phase < end && phase > 0) {
-  			if(_pitch > 0) {
-					val = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
-  			}else{
-  				if(phase > start) {
-  					val = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
-  				}else{
-  					phase = loops ? end : phase;
-  				}
-  			}
-        // var __out = panner(val * amp, pan, out);
-        // if( count++ % 22050 === 0 ) console.log( __out )
-        // if( ! isNaN( __out ) ) {console.log("CRAP", __out )}
-        // return __out
-        return panner(val * amp, pan, out);
-  		}
-  		phase = loops && _pitch > 0 ? start : phase;
-  		phase = loops && _pitch < 0 ? end : phase;
-				
-  		out[0] = out[1] = val;
-  		return out;
-  	},
-	})
-  .init()
-  .oscillatorInit()
-  .processProperties(arguments);
-  
-	if(typeof arguments[0] !== "undefined") {
-		if(typeof arguments[0] === "string") {
-			this.file = arguments[0];
-      this.pitch = 0;
-			//this.isPlaying = true;
-		}else if(typeof arguments[0] === "object") {
-			if(arguments[0].file) {
-				this.file = arguments[0].file;
-				//this.isPlaying = true;
+	/** Expose `punycode` */
+	// Some AMD build optimizers, like r.js, check for specific condition patterns
+	// like the following:
+	if (
+		typeof define == 'function' &&
+		typeof define.amd == 'object' &&
+		define.amd
+	) {
+		define('punycode', function() {
+			return punycode;
+		});
+	} else if (freeExports && !freeExports.nodeType) {
+		if (freeModule) { // in Node.js or RingoJS v0.8.0+
+			freeModule.exports = punycode;
+		} else { // in Narwhal or RingoJS v0.7.0-
+			for (key in punycode) {
+				punycode.hasOwnProperty(key) && (freeExports[key] = punycode[key]);
 			}
 		}
+	} else { // in Rhino or a web browser
+		root.punycode = punycode;
 	}
-  
-  //console.log(this);
-  		
-	/*var _end = 1;
-	Object.defineProperty(that, "end", {
-		get : function() { return _end; },
-		set : function(val) {
-			if(val > 1) val = 1;
-			_end = val * that.bufferLength - 1;
-			Gibberish.dirty(that);
-		}
-	});
-	var _start = 0;
-	Object.defineProperty(that, "start", {
-		get : function() { return _start; },
-		set : function(val) {
-			if(val < 0) val = 0;
-			_start = val * that.bufferLength - 1;
-			Gibberish.dirty(that);
-		}
-	});
-	var _loops = 0;
-	Object.defineProperty(that, "loops", {
-		get : function() { return _loops; },
-		set : function(val) {
-			_loops = val;
-			that.function.setLoops(_loops);
-		}
-	});
-  */
-  
-	if(typeof Gibberish.audioFiles[this.file] !== "undefined") {
-		buffer =  Gibberish.audioFiles[this.file];
-		this.end = this.bufferLength = buffer.length;
-		this.buffers[ this.file ] = buffer;
-    
-    phase = this.bufferLength;
-    Gibberish.dirty(this);
-    
-    if(this.onload) this.onload();
-	}else if(this.file !== null){
-    var xhr = new XMLHttpRequest(), initSound
-        
-    xhr.open( 'GET', this.file, true )
-    xhr.responseType = 'arraybuffer'
-    xhr.onload = function( e ) { initSound( this.response ) }
-    xhr.send()
-    
-    console.log("now loading sample", self.file )
-    xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
-    function initSound( arrayBuffer ) {
-      Gibberish.context.decodeAudioData(arrayBuffer, function(_buffer) {
-        buffer = _buffer.getChannelData(0)
-  			self.length = phase = self.end = bufferLength = buffer.length
-        self.isPlaying = true;
-  			self.buffers[ self.file ] = buffer;
 
-  			console.log("sample loaded | ", self.file, " | length | ", bufferLength);
-  			Gibberish.audioFiles[self.file] = buffer;
-			
-        if(self.onload) self.onload();
-      
-        if(self.playOnLoad !== 0) self.note( self.playOnLoad );
-      
-  			self.isLoaded = true;
-      }, function(e) {
-        console.log('Error decoding file', e);
-      }); 
+}(this));
+
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],17:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+'use strict';
+
+// If obj.hasOwnProperty has been overridden, then calling
+// obj.hasOwnProperty(prop) will break.
+// See: https://github.com/joyent/node/issues/1707
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+module.exports = function(qs, sep, eq, options) {
+  sep = sep || '&';
+  eq = eq || '=';
+  var obj = {};
+
+  if (typeof qs !== 'string' || qs.length === 0) {
+    return obj;
+  }
+
+  var regexp = /\+/g;
+  qs = qs.split(sep);
+
+  var maxKeys = 1000;
+  if (options && typeof options.maxKeys === 'number') {
+    maxKeys = options.maxKeys;
+  }
+
+  var len = qs.length;
+  // maxKeys <= 0 means that we should not limit keys count
+  if (maxKeys > 0 && len > maxKeys) {
+    len = maxKeys;
+  }
+
+  for (var i = 0; i < len; ++i) {
+    var x = qs[i].replace(regexp, '%20'),
+        idx = x.indexOf(eq),
+        kstr, vstr, k, v;
+
+    if (idx >= 0) {
+      kstr = x.substr(0, idx);
+      vstr = x.substr(idx + 1);
+    } else {
+      kstr = x;
+      vstr = '';
     }
-	}else if(typeof this.buffer !== 'undefined' ) {
-		this.isLoaded = true;
-					
-		buffer = this.buffer;
-    this.end = this.bufferLength = buffer.length || 88200;
-		    
-		phase = this.bufferLength;
-		if(arguments[0] && arguments[0].loops) {
-			this.loops = 1;
-		}
-    Gibberish.dirty(this);
-    
-    if(this.onload) this.onload();
-	}
+
+    k = decodeURIComponent(kstr);
+    v = decodeURIComponent(vstr);
+
+    if (!hasOwnProperty(obj, k)) {
+      obj[k] = v;
+    } else if (isArray(obj[k])) {
+      obj[k].push(v);
+    } else {
+      obj[k] = [obj[k], v];
+    }
+  }
+
+  return obj;
 };
-Gibberish.Sampler.prototype = Gibberish._oscillator;
-Gibberish.Sampler.prototype.record = function(input, recordLength) {
-  this.isRecording = true;
-  
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+},{}],18:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+'use strict';
+
+var stringifyPrimitive = function(v) {
+  switch (typeof v) {
+    case 'string':
+      return v;
+
+    case 'boolean':
+      return v ? 'true' : 'false';
+
+    case 'number':
+      return isFinite(v) ? v : '';
+
+    default:
+      return '';
+  }
+};
+
+module.exports = function(obj, sep, eq, name) {
+  sep = sep || '&';
+  eq = eq || '=';
+  if (obj === null) {
+    obj = undefined;
+  }
+
+  if (typeof obj === 'object') {
+    return map(objectKeys(obj), function(k) {
+      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+      if (isArray(obj[k])) {
+        return obj[k].map(function(v) {
+          return ks + encodeURIComponent(stringifyPrimitive(v));
+        }).join(sep);
+      } else {
+        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+      }
+    }).join(sep);
+
+  }
+
+  if (!name) return '';
+  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+         encodeURIComponent(stringifyPrimitive(obj));
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+function map (xs, f) {
+  if (xs.map) return xs.map(f);
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    res.push(f(xs[i], i));
+  }
+  return res;
+}
+
+var objectKeys = Object.keys || function (obj) {
+  var res = [];
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) res.push(key);
+  }
+  return res;
+};
+
+},{}],19:[function(_dereq_,module,exports){
+'use strict';
+
+exports.decode = exports.parse = _dereq_('./decode');
+exports.encode = exports.stringify = _dereq_('./encode');
+
+},{"./decode":17,"./encode":18}],20:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a duplex stream is just a stream that is both readable and writable.
+// Since JS doesn't have multiple prototypal inheritance, this class
+// prototypally inherits from Readable, and then parasitically from
+// Writable.
+
+module.exports = Duplex;
+var inherits = _dereq_('inherits');
+var setImmediate = _dereq_('process/browser.js').nextTick;
+var Readable = _dereq_('./readable.js');
+var Writable = _dereq_('./writable.js');
+
+inherits(Duplex, Readable);
+
+Duplex.prototype.write = Writable.prototype.write;
+Duplex.prototype.end = Writable.prototype.end;
+Duplex.prototype._write = Writable.prototype._write;
+
+function Duplex(options) {
+  if (!(this instanceof Duplex))
+    return new Duplex(options);
+
+  Readable.call(this, options);
+  Writable.call(this, options);
+
+  if (options && options.readable === false)
+    this.readable = false;
+
+  if (options && options.writable === false)
+    this.writable = false;
+
+  this.allowHalfOpen = true;
+  if (options && options.allowHalfOpen === false)
+    this.allowHalfOpen = false;
+
+  this.once('end', onend);
+}
+
+// the no-half-open enforcer
+function onend() {
+  // if we allow half-open state, or if the writable side ended,
+  // then we're ok.
+  if (this.allowHalfOpen || this._writableState.ended)
+    return;
+
+  // no more data can be written.
+  // But allow more writes to happen in this tick.
   var self = this;
-  
-  this.recorder = new Gibberish.Record(input, recordLength, function() {
-    self.setBuffer( this.getBuffer() );
-    self.end = bufferLength = self.getBuffer().length;
-    self.setPhase( self.end )
-    self.isRecording = false;
-  })
-  .record();
-  
+  setImmediate(function () {
+    self.end();
+  });
+}
+
+},{"./readable.js":24,"./writable.js":26,"inherits":14,"process/browser.js":22}],21:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+module.exports = Stream;
+
+var EE = _dereq_('events').EventEmitter;
+var inherits = _dereq_('inherits');
+
+inherits(Stream, EE);
+Stream.Readable = _dereq_('./readable.js');
+Stream.Writable = _dereq_('./writable.js');
+Stream.Duplex = _dereq_('./duplex.js');
+Stream.Transform = _dereq_('./transform.js');
+Stream.PassThrough = _dereq_('./passthrough.js');
+
+// Backwards-compat with node 0.4.x
+Stream.Stream = Stream;
+
+
+
+// old-style streams.  Note that the pipe method (the only relevant
+// part of this class) is overridden in the Readable class.
+
+function Stream() {
+  EE.call(this);
+}
+
+Stream.prototype.pipe = function(dest, options) {
+  var source = this;
+
+  function ondata(chunk) {
+    if (dest.writable) {
+      if (false === dest.write(chunk) && source.pause) {
+        source.pause();
+      }
+    }
+  }
+
+  source.on('data', ondata);
+
+  function ondrain() {
+    if (source.readable && source.resume) {
+      source.resume();
+    }
+  }
+
+  dest.on('drain', ondrain);
+
+  // If the 'end' option is not supplied, dest.end() will be called when
+  // source gets the 'end' or 'close' events.  Only dest.end() once.
+  if (!dest._isStdio && (!options || options.end !== false)) {
+    source.on('end', onend);
+    source.on('close', onclose);
+  }
+
+  var didOnEnd = false;
+  function onend() {
+    if (didOnEnd) return;
+    didOnEnd = true;
+
+    dest.end();
+  }
+
+
+  function onclose() {
+    if (didOnEnd) return;
+    didOnEnd = true;
+
+    if (typeof dest.destroy === 'function') dest.destroy();
+  }
+
+  // don't leave dangling pipes when there are errors.
+  function onerror(er) {
+    cleanup();
+    if (EE.listenerCount(this, 'error') === 0) {
+      throw er; // Unhandled stream error in pipe.
+    }
+  }
+
+  source.on('error', onerror);
+  dest.on('error', onerror);
+
+  // remove all the event listeners that were added.
+  function cleanup() {
+    source.removeListener('data', ondata);
+    dest.removeListener('drain', ondrain);
+
+    source.removeListener('end', onend);
+    source.removeListener('close', onclose);
+
+    source.removeListener('error', onerror);
+    dest.removeListener('error', onerror);
+
+    source.removeListener('end', cleanup);
+    source.removeListener('close', cleanup);
+
+    dest.removeListener('close', cleanup);
+  }
+
+  source.on('end', cleanup);
+  source.on('close', cleanup);
+
+  dest.on('close', cleanup);
+
+  dest.emit('pipe', source);
+
+  // Allow for unix-like usage: A.pipe(B).pipe(C)
+  return dest;
+};
+
+},{"./duplex.js":20,"./passthrough.js":23,"./readable.js":24,"./transform.js":25,"./writable.js":26,"events":9,"inherits":14}],22:[function(_dereq_,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],23:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a passthrough stream.
+// basically just the most minimal sort of Transform stream.
+// Every written chunk gets output as-is.
+
+module.exports = PassThrough;
+
+var Transform = _dereq_('./transform.js');
+var inherits = _dereq_('inherits');
+inherits(PassThrough, Transform);
+
+function PassThrough(options) {
+  if (!(this instanceof PassThrough))
+    return new PassThrough(options);
+
+  Transform.call(this, options);
+}
+
+PassThrough.prototype._transform = function(chunk, encoding, cb) {
+  cb(null, chunk);
+};
+
+},{"./transform.js":25,"inherits":14}],24:[function(_dereq_,module,exports){
+(function (process){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+module.exports = Readable;
+Readable.ReadableState = ReadableState;
+
+var EE = _dereq_('events').EventEmitter;
+var Stream = _dereq_('./index.js');
+var Buffer = _dereq_('buffer').Buffer;
+var setImmediate = _dereq_('process/browser.js').nextTick;
+var StringDecoder;
+
+var inherits = _dereq_('inherits');
+inherits(Readable, Stream);
+
+function ReadableState(options, stream) {
+  options = options || {};
+
+  // the point at which it stops calling _read() to fill the buffer
+  // Note: 0 is a valid value, means "don't call _read preemptively ever"
+  var hwm = options.highWaterMark;
+  this.highWaterMark = (hwm || hwm === 0) ? hwm : 16 * 1024;
+
+  // cast to ints.
+  this.highWaterMark = ~~this.highWaterMark;
+
+  this.buffer = [];
+  this.length = 0;
+  this.pipes = null;
+  this.pipesCount = 0;
+  this.flowing = false;
+  this.ended = false;
+  this.endEmitted = false;
+  this.reading = false;
+
+  // In streams that never have any data, and do push(null) right away,
+  // the consumer can miss the 'end' event if they do some I/O before
+  // consuming the stream.  So, we don't emit('end') until some reading
+  // happens.
+  this.calledRead = false;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, becuase any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // whenever we return null, then we set a flag to say
+  // that we're awaiting a 'readable' event emission.
+  this.needReadable = false;
+  this.emittedReadable = false;
+  this.readableListening = false;
+
+
+  // object stream flag. Used to make read(n) ignore n and to
+  // make all the buffer merging and length checks go away
+  this.objectMode = !!options.objectMode;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // when piping, we only care about 'readable' events that happen
+  // after read()ing all the bytes and not getting any pushback.
+  this.ranOut = false;
+
+  // the number of writers that are awaiting a drain event in .pipe()s
+  this.awaitDrain = 0;
+
+  // if true, a maybeReadMore has been scheduled
+  this.readingMore = false;
+
+  this.decoder = null;
+  this.encoding = null;
+  if (options.encoding) {
+    if (!StringDecoder)
+      StringDecoder = _dereq_('string_decoder').StringDecoder;
+    this.decoder = new StringDecoder(options.encoding);
+    this.encoding = options.encoding;
+  }
+}
+
+function Readable(options) {
+  if (!(this instanceof Readable))
+    return new Readable(options);
+
+  this._readableState = new ReadableState(options, this);
+
+  // legacy
+  this.readable = true;
+
+  Stream.call(this);
+}
+
+// Manually shove something into the read() buffer.
+// This returns true if the highWaterMark has not been hit yet,
+// similar to how Writable.write() returns true if you should
+// write() some more.
+Readable.prototype.push = function(chunk, encoding) {
+  var state = this._readableState;
+
+  if (typeof chunk === 'string' && !state.objectMode) {
+    encoding = encoding || state.defaultEncoding;
+    if (encoding !== state.encoding) {
+      chunk = new Buffer(chunk, encoding);
+      encoding = '';
+    }
+  }
+
+  return readableAddChunk(this, state, chunk, encoding, false);
+};
+
+// Unshift should *always* be something directly out of read()
+Readable.prototype.unshift = function(chunk) {
+  var state = this._readableState;
+  return readableAddChunk(this, state, chunk, '', true);
+};
+
+function readableAddChunk(stream, state, chunk, encoding, addToFront) {
+  var er = chunkInvalid(state, chunk);
+  if (er) {
+    stream.emit('error', er);
+  } else if (chunk === null || chunk === undefined) {
+    state.reading = false;
+    if (!state.ended)
+      onEofChunk(stream, state);
+  } else if (state.objectMode || chunk && chunk.length > 0) {
+    if (state.ended && !addToFront) {
+      var e = new Error('stream.push() after EOF');
+      stream.emit('error', e);
+    } else if (state.endEmitted && addToFront) {
+      var e = new Error('stream.unshift() after end event');
+      stream.emit('error', e);
+    } else {
+      if (state.decoder && !addToFront && !encoding)
+        chunk = state.decoder.write(chunk);
+
+      // update the buffer info.
+      state.length += state.objectMode ? 1 : chunk.length;
+      if (addToFront) {
+        state.buffer.unshift(chunk);
+      } else {
+        state.reading = false;
+        state.buffer.push(chunk);
+      }
+
+      if (state.needReadable)
+        emitReadable(stream);
+
+      maybeReadMore(stream, state);
+    }
+  } else if (!addToFront) {
+    state.reading = false;
+  }
+
+  return needMoreData(state);
+}
+
+
+
+// if it's past the high water mark, we can push in some more.
+// Also, if we have no data yet, we can stand some
+// more bytes.  This is to work around cases where hwm=0,
+// such as the repl.  Also, if the push() triggered a
+// readable event, and the user called read(largeNumber) such that
+// needReadable was set, then we ought to push more, so that another
+// 'readable' event will be triggered.
+function needMoreData(state) {
+  return !state.ended &&
+         (state.needReadable ||
+          state.length < state.highWaterMark ||
+          state.length === 0);
+}
+
+// backwards compatibility.
+Readable.prototype.setEncoding = function(enc) {
+  if (!StringDecoder)
+    StringDecoder = _dereq_('string_decoder').StringDecoder;
+  this._readableState.decoder = new StringDecoder(enc);
+  this._readableState.encoding = enc;
+};
+
+// Don't raise the hwm > 128MB
+var MAX_HWM = 0x800000;
+function roundUpToNextPowerOf2(n) {
+  if (n >= MAX_HWM) {
+    n = MAX_HWM;
+  } else {
+    // Get the next highest power of 2
+    n--;
+    for (var p = 1; p < 32; p <<= 1) n |= n >> p;
+    n++;
+  }
+  return n;
+}
+
+function howMuchToRead(n, state) {
+  if (state.length === 0 && state.ended)
+    return 0;
+
+  if (state.objectMode)
+    return n === 0 ? 0 : 1;
+
+  if (isNaN(n) || n === null) {
+    // only flow one buffer at a time
+    if (state.flowing && state.buffer.length)
+      return state.buffer[0].length;
+    else
+      return state.length;
+  }
+
+  if (n <= 0)
+    return 0;
+
+  // If we're asking for more than the target buffer level,
+  // then raise the water mark.  Bump up to the next highest
+  // power of 2, to prevent increasing it excessively in tiny
+  // amounts.
+  if (n > state.highWaterMark)
+    state.highWaterMark = roundUpToNextPowerOf2(n);
+
+  // don't have that much.  return null, unless we've ended.
+  if (n > state.length) {
+    if (!state.ended) {
+      state.needReadable = true;
+      return 0;
+    } else
+      return state.length;
+  }
+
+  return n;
+}
+
+// you can override either this method, or the async _read(n) below.
+Readable.prototype.read = function(n) {
+  var state = this._readableState;
+  state.calledRead = true;
+  var nOrig = n;
+
+  if (typeof n !== 'number' || n > 0)
+    state.emittedReadable = false;
+
+  // if we're doing read(0) to trigger a readable event, but we
+  // already have a bunch of data in the buffer, then just trigger
+  // the 'readable' event and move on.
+  if (n === 0 &&
+      state.needReadable &&
+      (state.length >= state.highWaterMark || state.ended)) {
+    emitReadable(this);
+    return null;
+  }
+
+  n = howMuchToRead(n, state);
+
+  // if we've ended, and we're now clear, then finish it up.
+  if (n === 0 && state.ended) {
+    if (state.length === 0)
+      endReadable(this);
+    return null;
+  }
+
+  // All the actual chunk generation logic needs to be
+  // *below* the call to _read.  The reason is that in certain
+  // synthetic stream cases, such as passthrough streams, _read
+  // may be a completely synchronous operation which may change
+  // the state of the read buffer, providing enough data when
+  // before there was *not* enough.
+  //
+  // So, the steps are:
+  // 1. Figure out what the state of things will be after we do
+  // a read from the buffer.
+  //
+  // 2. If that resulting state will trigger a _read, then call _read.
+  // Note that this may be asynchronous, or synchronous.  Yes, it is
+  // deeply ugly to write APIs this way, but that still doesn't mean
+  // that the Readable class should behave improperly, as streams are
+  // designed to be sync/async agnostic.
+  // Take note if the _read call is sync or async (ie, if the read call
+  // has returned yet), so that we know whether or not it's safe to emit
+  // 'readable' etc.
+  //
+  // 3. Actually pull the requested chunks out of the buffer and return.
+
+  // if we need a readable event, then we need to do some reading.
+  var doRead = state.needReadable;
+
+  // if we currently have less than the highWaterMark, then also read some
+  if (state.length - n <= state.highWaterMark)
+    doRead = true;
+
+  // however, if we've ended, then there's no point, and if we're already
+  // reading, then it's unnecessary.
+  if (state.ended || state.reading)
+    doRead = false;
+
+  if (doRead) {
+    state.reading = true;
+    state.sync = true;
+    // if the length is currently zero, then we *need* a readable event.
+    if (state.length === 0)
+      state.needReadable = true;
+    // call internal read method
+    this._read(state.highWaterMark);
+    state.sync = false;
+  }
+
+  // If _read called its callback synchronously, then `reading`
+  // will be false, and we need to re-evaluate how much data we
+  // can return to the user.
+  if (doRead && !state.reading)
+    n = howMuchToRead(nOrig, state);
+
+  var ret;
+  if (n > 0)
+    ret = fromList(n, state);
+  else
+    ret = null;
+
+  if (ret === null) {
+    state.needReadable = true;
+    n = 0;
+  }
+
+  state.length -= n;
+
+  // If we have nothing in the buffer, then we want to know
+  // as soon as we *do* get something into the buffer.
+  if (state.length === 0 && !state.ended)
+    state.needReadable = true;
+
+  // If we happened to read() exactly the remaining amount in the
+  // buffer, and the EOF has been seen at this point, then make sure
+  // that we emit 'end' on the very next tick.
+  if (state.ended && !state.endEmitted && state.length === 0)
+    endReadable(this);
+
+  return ret;
+};
+
+function chunkInvalid(state, chunk) {
+  var er = null;
+  if (!Buffer.isBuffer(chunk) &&
+      'string' !== typeof chunk &&
+      chunk !== null &&
+      chunk !== undefined &&
+      !state.objectMode &&
+      !er) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  return er;
+}
+
+
+function onEofChunk(stream, state) {
+  if (state.decoder && !state.ended) {
+    var chunk = state.decoder.end();
+    if (chunk && chunk.length) {
+      state.buffer.push(chunk);
+      state.length += state.objectMode ? 1 : chunk.length;
+    }
+  }
+  state.ended = true;
+
+  // if we've ended and we have some data left, then emit
+  // 'readable' now to make sure it gets picked up.
+  if (state.length > 0)
+    emitReadable(stream);
+  else
+    endReadable(stream);
+}
+
+// Don't emit readable right away in sync mode, because this can trigger
+// another read() call => stack overflow.  This way, it might trigger
+// a nextTick recursion warning, but that's not so bad.
+function emitReadable(stream) {
+  var state = stream._readableState;
+  state.needReadable = false;
+  if (state.emittedReadable)
+    return;
+
+  state.emittedReadable = true;
+  if (state.sync)
+    setImmediate(function() {
+      emitReadable_(stream);
+    });
+  else
+    emitReadable_(stream);
+}
+
+function emitReadable_(stream) {
+  stream.emit('readable');
+}
+
+
+// at this point, the user has presumably seen the 'readable' event,
+// and called read() to consume some data.  that may have triggered
+// in turn another _read(n) call, in which case reading = true if
+// it's in progress.
+// However, if we're not ended, or reading, and the length < hwm,
+// then go ahead and try to read some more preemptively.
+function maybeReadMore(stream, state) {
+  if (!state.readingMore) {
+    state.readingMore = true;
+    setImmediate(function() {
+      maybeReadMore_(stream, state);
+    });
+  }
+}
+
+function maybeReadMore_(stream, state) {
+  var len = state.length;
+  while (!state.reading && !state.flowing && !state.ended &&
+         state.length < state.highWaterMark) {
+    stream.read(0);
+    if (len === state.length)
+      // didn't get any data, stop spinning.
+      break;
+    else
+      len = state.length;
+  }
+  state.readingMore = false;
+}
+
+// abstract method.  to be overridden in specific implementation classes.
+// call cb(er, data) where data is <= n in length.
+// for virtual (non-string, non-buffer) streams, "length" is somewhat
+// arbitrary, and perhaps not very meaningful.
+Readable.prototype._read = function(n) {
+  this.emit('error', new Error('not implemented'));
+};
+
+Readable.prototype.pipe = function(dest, pipeOpts) {
+  var src = this;
+  var state = this._readableState;
+
+  switch (state.pipesCount) {
+    case 0:
+      state.pipes = dest;
+      break;
+    case 1:
+      state.pipes = [state.pipes, dest];
+      break;
+    default:
+      state.pipes.push(dest);
+      break;
+  }
+  state.pipesCount += 1;
+
+  var doEnd = (!pipeOpts || pipeOpts.end !== false) &&
+              dest !== process.stdout &&
+              dest !== process.stderr;
+
+  var endFn = doEnd ? onend : cleanup;
+  if (state.endEmitted)
+    setImmediate(endFn);
+  else
+    src.once('end', endFn);
+
+  dest.on('unpipe', onunpipe);
+  function onunpipe(readable) {
+    if (readable !== src) return;
+    cleanup();
+  }
+
+  function onend() {
+    dest.end();
+  }
+
+  // when the dest drains, it reduces the awaitDrain counter
+  // on the source.  This would be more elegant with a .once()
+  // handler in flow(), but adding and removing repeatedly is
+  // too slow.
+  var ondrain = pipeOnDrain(src);
+  dest.on('drain', ondrain);
+
+  function cleanup() {
+    // cleanup event handlers once the pipe is broken
+    dest.removeListener('close', onclose);
+    dest.removeListener('finish', onfinish);
+    dest.removeListener('drain', ondrain);
+    dest.removeListener('error', onerror);
+    dest.removeListener('unpipe', onunpipe);
+    src.removeListener('end', onend);
+    src.removeListener('end', cleanup);
+
+    // if the reader is waiting for a drain event from this
+    // specific writer, then it would cause it to never start
+    // flowing again.
+    // So, if this is awaiting a drain, then we just call it now.
+    // If we don't know, then assume that we are waiting for one.
+    if (!dest._writableState || dest._writableState.needDrain)
+      ondrain();
+  }
+
+  // if the dest has an error, then stop piping into it.
+  // however, don't suppress the throwing behavior for this.
+  // check for listeners before emit removes one-time listeners.
+  var errListeners = EE.listenerCount(dest, 'error');
+  function onerror(er) {
+    unpipe();
+    if (errListeners === 0 && EE.listenerCount(dest, 'error') === 0)
+      dest.emit('error', er);
+  }
+  dest.once('error', onerror);
+
+  // Both close and finish should trigger unpipe, but only once.
+  function onclose() {
+    dest.removeListener('finish', onfinish);
+    unpipe();
+  }
+  dest.once('close', onclose);
+  function onfinish() {
+    dest.removeListener('close', onclose);
+    unpipe();
+  }
+  dest.once('finish', onfinish);
+
+  function unpipe() {
+    src.unpipe(dest);
+  }
+
+  // tell the dest that it's being piped to
+  dest.emit('pipe', src);
+
+  // start the flow if it hasn't been started already.
+  if (!state.flowing) {
+    // the handler that waits for readable events after all
+    // the data gets sucked out in flow.
+    // This would be easier to follow with a .once() handler
+    // in flow(), but that is too slow.
+    this.on('readable', pipeOnReadable);
+
+    state.flowing = true;
+    setImmediate(function() {
+      flow(src);
+    });
+  }
+
+  return dest;
+};
+
+function pipeOnDrain(src) {
+  return function() {
+    var dest = this;
+    var state = src._readableState;
+    state.awaitDrain--;
+    if (state.awaitDrain === 0)
+      flow(src);
+  };
+}
+
+function flow(src) {
+  var state = src._readableState;
+  var chunk;
+  state.awaitDrain = 0;
+
+  function write(dest, i, list) {
+    var written = dest.write(chunk);
+    if (false === written) {
+      state.awaitDrain++;
+    }
+  }
+
+  while (state.pipesCount && null !== (chunk = src.read())) {
+
+    if (state.pipesCount === 1)
+      write(state.pipes, 0, null);
+    else
+      forEach(state.pipes, write);
+
+    src.emit('data', chunk);
+
+    // if anyone needs a drain, then we have to wait for that.
+    if (state.awaitDrain > 0)
+      return;
+  }
+
+  // if every destination was unpiped, either before entering this
+  // function, or in the while loop, then stop flowing.
+  //
+  // NB: This is a pretty rare edge case.
+  if (state.pipesCount === 0) {
+    state.flowing = false;
+
+    // if there were data event listeners added, then switch to old mode.
+    if (EE.listenerCount(src, 'data') > 0)
+      emitDataEvents(src);
+    return;
+  }
+
+  // at this point, no one needed a drain, so we just ran out of data
+  // on the next readable event, start it over again.
+  state.ranOut = true;
+}
+
+function pipeOnReadable() {
+  if (this._readableState.ranOut) {
+    this._readableState.ranOut = false;
+    flow(this);
+  }
+}
+
+
+Readable.prototype.unpipe = function(dest) {
+  var state = this._readableState;
+
+  // if we're not piping anywhere, then do nothing.
+  if (state.pipesCount === 0)
+    return this;
+
+  // just one destination.  most common case.
+  if (state.pipesCount === 1) {
+    // passed in one, but it's not the right one.
+    if (dest && dest !== state.pipes)
+      return this;
+
+    if (!dest)
+      dest = state.pipes;
+
+    // got a match.
+    state.pipes = null;
+    state.pipesCount = 0;
+    this.removeListener('readable', pipeOnReadable);
+    state.flowing = false;
+    if (dest)
+      dest.emit('unpipe', this);
+    return this;
+  }
+
+  // slow case. multiple pipe destinations.
+
+  if (!dest) {
+    // remove all.
+    var dests = state.pipes;
+    var len = state.pipesCount;
+    state.pipes = null;
+    state.pipesCount = 0;
+    this.removeListener('readable', pipeOnReadable);
+    state.flowing = false;
+
+    for (var i = 0; i < len; i++)
+      dests[i].emit('unpipe', this);
+    return this;
+  }
+
+  // try to find the right one.
+  var i = indexOf(state.pipes, dest);
+  if (i === -1)
+    return this;
+
+  state.pipes.splice(i, 1);
+  state.pipesCount -= 1;
+  if (state.pipesCount === 1)
+    state.pipes = state.pipes[0];
+
+  dest.emit('unpipe', this);
+
   return this;
 };
-/**#Gibberish.MonoSynth - Synth
-A three oscillator monosynth for bass and lead lines. You can set the octave and tuning offsets for oscillators 2 & 3. There is a 24db filter and an envelope controlling
-both the amplitude and filter cutoff.
-## Example Usage##
-`  
-t = new Gibberish.Mono({  
-	cutoff:0,  
-	filterMult:.5,  
-	attack:_8,  
-	decay:_8,  
-	octave2:-1,  
-	octave3:-1,  
-	detune2:.01,  
-	glide:_12,  
-}).connect();  
-t.note("C3");  `
-## Constructors
-  param **arguments** : Object. A dictionary of property values to set upon initialization. See the properties section and the example usage section for details.
-**/
-/**###Gibberish.MonoSynth.waveform : property
-String. The primary oscillator to be used. Can currently be 'Sine', 'Square', 'Noise', 'Triangle' or 'Saw'. 
-**/
-/**###Gibberish.MonoSynth.attack : property
-Integer. The length, in samples, of the attack of the amplitude envelope.
-**/
-/**###Gibberish.MonoSynth.decay : property
-Integer. The length, in samples, of the decay of the amplitude envelope.
-**/
-/**###Gibberish.MonoSynth.amp : property
-Float. The peak amplitude of the synth, usually between 0..1
-**/
-/**###Gibberish.MonoSynth.cutoff : property
-Float. The frequency cutoff for the synth's filter. Range is 0..1.
-**/
-/**###Gibberish.MonoSynth.filterMult : property
-Float. As the envelope on the synth progress, the filter cutoff will also change by this amount * the envelope amount.
-**/
-/**###Gibberish.MonoSynth.resonance : property
-Float. The emphasis placed on the filters cutoff frequency. 0..50, however, GOING OVER 5 IS DANGEROUS TO YOUR EARS (ok, maybe 6 is all right...)
-**/
-/**###Gibberish.MonoSynth.octave2 : property
-Integer. The octave difference between oscillator 1 and oscillator 2. Can be positive (higher osc2) or negative (lower osc 2) or 0 (same octave).
-**/
-/**###Gibberish.MonoSynth.detune2 : property
-Float. The amount, from -1..1, the oscillator 2 is detuned. A value of -.5 means osc2 is half an octave lower than osc1. A value of .01 means osc2 is .01 octaves higher than osc1.
-**/
-/**###Gibberish.MonoSynth.octave3 : property
-Integer. The octave difference between oscillator 1 and oscillator 3. Can be positive (higher osc3) or negative (lower osc 3) or 0 (same octave).
-**/
-/**###Gibberish.MonoSynth.detune3 : property
-Float. The amount, from -1..1, the oscillator 3 is detuned. A value of -.5 means osc3 is half an octave lower than osc1. A value of .01 means osc3 is .01 octaves higher than osc1.
-**/
-/**###Gibberish.MonoSynth.glide : property
-Integer. The length in time, in samples, to slide in pitch from one note to the next.
-**/
-Gibberish.MonoSynth = function() {  
-	Gibberish.extend(this, { 
-    name:       'monosynth',
-    
-    properties: {
-  		attack:			10000,
-  		decay:			10000,
-  		cutoff:			.2,
-  		resonance:	2.5,
-  		amp1:			  1,
-  		amp2:			  1,
-  		amp3:			  1,
-  		filterMult:	.3,
-  		isLowPass:	true,
-      pulsewidth: .5,
-  		amp:		    .6,
-  		detune2:		.01,
-  		detune3:		-.01,
-  		octave2:		1,
-  		octave3:		-1,
-      glide:      0,
-  		pan:			  0,
-  		frequency:	0,
-      channels:   2,
-    },
-    
-		waveform:		"Saw3",
-/**###Gibberish.MonoSynth.note : method
-param **note or frequency** : String or Integer. You can pass a note name, such as "A#4", or a frequency value, such as 440.
-param **amp** : Optional. Float. The volume of the note, usually between 0..1. The main amp property of the Synth will also affect note amplitude.
-**/				
-		note : function(_frequency, amp) {
-      if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
-      
-      if( amp !== 0 ) {
-    		if(typeof this.frequency !== 'object'){
-      
-          this.frequency = _frequency;
-        }else{
-          this.frequency[0] = _frequency;
-          Gibberish.dirty(this);
-        }
-        
-  			if(envstate() > 0 ) _envelope.run();
+
+// set up data events if they are asked for
+// Ensure readable listeners eventually get something
+Readable.prototype.on = function(ev, fn) {
+  var res = Stream.prototype.on.call(this, ev, fn);
+
+  if (ev === 'data' && !this._readableState.flowing)
+    emitDataEvents(this);
+
+  if (ev === 'readable' && this.readable) {
+    var state = this._readableState;
+    if (!state.readableListening) {
+      state.readableListening = true;
+      state.emittedReadable = false;
+      state.needReadable = true;
+      if (!state.reading) {
+        this.read(0);
+      } else if (state.length) {
+        emitReadable(this, state);
       }
-		},
-  	_note : function(frequency, amp) {
-  		if(typeof this.frequency !== 'object'){
-        if( useADSR && frequency === lastFrequency && amp === 0) {
-          this.releaseTrigger = 1;
-          lastFrequency = null
-          return;
-        }
-        if( amp !== 0 ) {
-          this.frequency = lastFrequency = frequency;
-        }
-        this.releaseTrigger = 0;
-      }else{
-        if( amp !== 0 ) {
-          this.frequency[0] = lastFrequency = frequency;
-        }
-        this.releaseTrigger = 0;
-        Gibberish.dirty(this);
-      }
-					
-  		if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
-	  
-      if( amp !== 0 ) { _envelope.run(); }
-  	},
-	});
-  
-	var waveform = this.waveform;
-	Object.defineProperty(this, "waveform", {
-		get: function() { return waveform; },
-		set: function(value) {
-			if(waveform !== value) {
-				waveform = value;
-						
-				osc1 = new Gibberish[ value ]().callback;
-				osc2 = new Gibberish[ value ]().callback;
-				osc3 = new Gibberish[ value ]().callback;
-			}
-		},
-	});
-  
-	var _envelope = new Gibberish.AD(this.attack, this.decay),
-      envstate  = _envelope.getState,
-      envelope  = _envelope.callback,
-      filter    = new Gibberish.Filter24().callback,
-    	osc1      = new Gibberish[this.waveform](this.frequency,  this.amp1).callback,
-    	osc2      = new Gibberish[this.waveform](this.frequency2, this.amp2).callback,
-    	osc3      = new Gibberish[this.waveform](this.frequency3, this.amp3).callback,
-      lag       = new Gibberish.OnePole().callback,      
-    	panner    = Gibberish.makePanner(),
-    	out       = [0,0];
-  
-  this.envelope = _envelope
-  
-  this.callback = function(attack, decay, cutoff, resonance, amp1, amp2, amp3, filterMult, isLowPass, pulsewidth, masterAmp, detune2, detune3, octave2, octave3, glide, pan, frequency, channels) {
-		if(envstate() < 2) {
-      if(glide >= 1) glide = .9999;
-      frequency = lag(frequency, 1-glide, glide);
-      
-			var frequency2 = frequency;
-			if(octave2 > 0) {
-				for(var i = 0; i < octave2; i++) {
-					frequency2 *= 2;
-				}
-			}else if(octave2 < 0) {
-				for(var i = 0; i > octave2; i--) {
-					frequency2 /= 2;
-				}
-			}
-					
-			var frequency3 = frequency;
-			if(octave3 > 0) {
-				for(var i = 0; i < octave3; i++) {
-					frequency3 *= 2;
-				}
-			}else if(octave3 < 0) {
-				for(var i = 0; i > octave3; i--) {
-					frequency3 /= 2;
-				}
-			}
-				
-			frequency2 += detune2 > 0 ? ((frequency * 2) - frequency) * detune2 : (frequency - (frequency / 2)) * detune2;
-			frequency3 += detune3 > 0 ? ((frequency * 2) - frequency) * detune3 : (frequency - (frequency / 2)) * detune3;
-							
-			var oscValue = osc1(frequency, amp1, pulsewidth) + osc2(frequency2, amp2, pulsewidth) + osc3(frequency3, amp3, pulsewidth);
-			var envResult = envelope(attack, decay);
-			var val = filter( oscValue, cutoff + filterMult * envResult, resonance, isLowPass, 1) * envResult;
-			val *= masterAmp;
-			out[0] = out[1] = val;
-			return channels === 1 ? out : panner(val, pan, out);
-		}else{
-			out[0] = out[1] = 0;
-			return out;
-		}
-	}; 
-  
-  this.init();
-  this.oscillatorInit();     
-	this.processProperties(arguments);
+    }
+  }
+
+  return res;
 };
-Gibberish.MonoSynth.prototype = Gibberish._synth; 
-/**#Gibberish.Binops - Miscellaneous
-These objects create binary operations - mathematical operations taking two arguments - and create signal processing functions using them. They are primarily used for
-modulation purposes. You can export the constructors for easier use similar to the [Time](javascript:displayDocs('Gibberish.Time'\)) constructors.
+Readable.prototype.addListener = Readable.prototype.on;
 
-Add, Sub, Mul and Div can actually take as many arguments as you wish. For example, Add(1,2,3,4) will return an object that outputs 10. You can stack multiple oscillators this way as well.
-
-##Example Usage   
-`// This example creates a tremolo effect via amplitude modulation  
-Gibberish.Binops.export(); // now all constructors are also part of the window object  
-mod = new Gibberish.Sine(4, .25);  
-sin = new Gibberish.Sine( 440, add( .5, mod ) ).connect();  
-`
-**/
-
-Gibberish.Binops = {
-/**###Gibberish.Binops.export : method  
-Use this to export the constructor methods of Gibberish.Binops so that you can tersely refer to them.
-
-param **target** object, default window. The object to export the Gibberish.Binops constructors into.
-**/  
-  export: function(target) {
-    Gibberish.export("Binops", target || window);
-  },
-  
-  operator : function () {
-    var me = new Gibberish.ugen(),
-        op = arguments[0],
-        args = Array.prototype.slice.call(arguments, 1);
-    
-    me.name = 'op';
-    me.properties = {};
-    for(var i = 0; i < args.length; i++) { 
-      me.properties[i] = args[i]; 
-    }
-    me.init.apply( me, args );
-    
-    me.codegen = function() {      
-      var keys, out = "( ";
-      
-      if(typeof Gibberish.memo[this.symbol] !== 'undefined') { return Gibberish.memo[this.symbol]; }
-      
-      keys = Object.keys(this.properties);
-            
-      var shouldSkip = false;
-      for(var i = 0; i < keys.length; i++) {
-        if( shouldSkip ) { shouldSkip = false; continue; }
-                
-        var isObject = typeof this[i] === 'object';
-        
-        var shouldPush = false;
-        if(isObject) {
-          out += this[i].codegen();
-        }else{
-          out += this[i];
-        }
-        
-        if( ( op === '*' || op === '/' ) && this[ i + 1 ] === 1 ) { 
-          shouldSkip = true; continue; 
-        }
-        
-        if(i < keys.length - 1) { out += " " + op + " "; }
-        
-        //if( isObject && shouldPush ) Gibberish.codeblock.push(this[i].codeblock); 
-      }
-      
-      out += " )";
-      
-      this.codeblock = out;
-      //Gibberish.memo[this.symbol] = out;
-      
-      return out;
-    };
-    
-    me.valueOf = function() { return me.codegen() }
-        
-    //me.processProperties.apply( me, args );
-
-    return me;
-  },
-  
-/**###Gibberish.Binops.Add : method  
-Create an object that sums all arguments at audio rate. The arguments may be unit generators, numbers, or any mix of the two.
-**/
-  Add : function() {
-    var args = Array.prototype.slice.call(arguments, 0);
-    args.unshift('+');
-    
-    return Gibberish.Binops.operator.apply(null, args);
-  },
-
-/**###Gibberish.Binops.Sub : method  
-Create an object that starts with the first argument and subtracts all subsequent arguments at audio rate. The arguments may be unit generators, numbers, or any mix of the two.
-**/
-  Sub : function() {
-    var args = Array.prototype.slice.call(arguments, 0);
-    args.unshift('-');
-    
-    return Gibberish.Binops.operator.apply(null, args);
-  },
-
-/**###Gibberish.Binops.Mul : method  
-Create an object that calculates the product of all arguments at audio rate. The arguments may be unit generators, numbers, or any mix of the two.
-**/
-  Mul : function() {
-    var args = Array.prototype.slice.call(arguments, 0);
-    args.unshift('*');
-    
-    return Gibberish.Binops.operator.apply(null, args);
-  },
-
-/**###Gibberish.Binops.Div : method  
-Create an object that takes the first argument and divides it by all subsequent arguments at audio rate. The arguments may be unit generators, numbers, or any mix of the two.
-**/
-  Div : function() {
-    var args = Array.prototype.slice.call(arguments, 0);
-    args.unshift('/');
-    
-    return Gibberish.Binops.operator.apply(null, args);
-  },
-
-/**###Gibberish.Binops.Mod : method  
-Create an object that takes the divides the first argument by the second and returns the remainder at audio rate. The arguments may be unit generators, numbers, or any mix of the two.
-**/  
-  Mod : function() {
-    var args = Array.prototype.slice.call(arguments, 0);
-    args.unshift('%');
-    
-    return Gibberish.Binops.operator.apply(null, args);
-
-  },
-
-/**###Gibberish.Binops.Abs : method  
-Create an object that returns the absolute value of the (single) argument. The argument may be a unit generator or number.
-**/  
-  Abs : function() {
-    var args = Array.prototype.slice.call(arguments, 0),
-    me = {
-      name : 'abs',
-      properties : {},
-      callback : Math.abs.bind( me ),
-    };
-    me.__proto__ = new Gibberish.ugen();
-    me.properties[0] = args[0];
-    me.init();
-
-    return me;
-  },
-/**###Gibberish.Binops.Sqrt : method  
-Create an object that returns the square root of the (single) argument. The argument may be a unit generator or number.
-**/    
-  Sqrt : function() {
-    var args = Array.prototype.slice.call(arguments, 0),
-    me = {
-      name : 'sqrt',
-      properties : {},
-      callback : Math.sqrt.bind(me),
-    };
-    me.__proto__ = new Gibberish.ugen();    
-    me.properties[i] = arguments[0];
-    me.init();
-
-    return me;
-  },
-
-/**###Gibberish.Binops.Pow : method  
-Create an object that returns the first argument raised to the power of the second argument. The arguments may be a unit generators or numbers.
-**/      
-  Pow : function() {
-    var args = Array.prototype.slice.call(arguments, 0),
-    me = {
-      name : 'pow',
-      properties : {},
-      callback : Math.pow.bind(me),
-    };
-    me.__proto__ = new Gibberish.ugen();
-  
-    for(var i = 0; i < args.length; i++) { me.properties[i] = args[i]; }
-    me.init();
-    
-    console.log( me.callback )
-    return me;
-  },
-  
-  Clamp : function() {
-    var args = Array.prototype.slice.call(arguments, 0),
-    me = {
-      name : 'clamp',
-      properties : { input:0, min:0, max:1 },
-      callback : function( input, min, max ) {
-        if( input < min ) {
-          input = min
-        }else if( input > max ) {
-          input = max
-        }
-        return input
-      },
-    };
-    me.__proto__ = new Gibberish.ugen();
-
-    me.init();
-    me.processProperties( args );
-
-    return me;
-  },
-  
-  Merge : function() {
-    var args = Array.prototype.slice.call(arguments, 0),
-    me = {
-      name : 'merge',
-      properties : {},
-      callback : function(a) {
-        return a[0] + a[1];
-      },
-    };
-    me.__proto__ = new Gibberish.ugen();
-  
-    for(var i = 0; i < args.length; i++) {
-      me.properties[i] = args[i];
-    }
-    me.init();
-
-    return me;
-  },
-            
-  Map : function( prop, _outputMin, _outputMax, _inputMin, _inputMax, _curve, _wrap) {
-    var pow = Math.pow,
-    LINEAR = 0,
-    LOGARITHMIC = 1,
-    base = 0,
-    phase = 0,
-    _value = 0,
-    me = {
-      name : 'map',
-      properties : { input:prop, outputMin:_outputMin, outputMax:_outputMax, inputMin:_inputMin, inputMax:_inputMax, curve:_curve || LINEAR, wrap: _wrap || false },
-      callback : function( v, v1Min, v1Max, v2Min, v2Max, curve, wrap ) {
-        var range1 = v1Max-v1Min,
-            range2 = v2Max - v2Min,
-            percent = (v - v2Min) / range2,
-            val 
-        
-        if( percent > 1 ) {
-          percent = wrap ? percent % 1 : 1
-        }else if( percent < 0 ) {
-          percent = wrap ? 1 + (percent % 1) : 0
-        }
-        
-        val = curve === 0 ? v1Min + ( percent * range1 ) : v1Min + pow( percent, 1.5 ) * range1
-        
-        _value = val
-        // if(phase++ % 22050 === 0 ) console.log( _value, percent, v )
-        return val
-      },
-      // map_22(v_28, 0, 255, -1, 1, 0, false);
-      getValue: function() { return _value },
-      invert: function() {
-        var tmp = me.outputMin
-        me.outputMin = me.outputMax
-        me.outputMax = tmp
-      }
-    }
-  
-    me.__proto__ = new Gibberish.ugen()
-  
-    me.init()
-
-    return me
-  },
+// pause() and resume() are remnants of the legacy readable stream API
+// If the user uses them, then switch into old mode.
+Readable.prototype.resume = function() {
+  emitDataEvents(this);
+  this.read(0);
+  this.emit('resume');
 };
-/**#Gibberish.Time - Miscellaneous
-This object is used to simplify timing in Gibberish. It contains an export function to place its methods in another object (like window)
-so that you can code more tersely. The methods of the Time object translate ms, seconds and beats into samples. The default bpm is 120.
 
-##Example Usage   
-`Gibberish.Time.export(); // now all methods are also part of the window object
-a = new Gibberish.Sine(440).connect();  
-b = new Gibberish.Sequencer({ target:a, key:'frequency', durations:[ seconds(1), ms(500), beats( .5 ) ], values:[220,440,880] }).start()  
-`
-**/
-
-/**###Gibberish.Time.bpm : property  
-Number. Default 120. The beats per minute setting used whenever a call to the beats method is made.
-**/
-
-/**###Gibberish.Time.export : method  
-Use this to export the methods of Gibberish.Time so that you can tersely refer to them.
-
-param **target** object, default window. The object to export the Gibberish.Time methods into.
-**/  
-
-/**###Gibberish.Time.ms : method  
-Convert the parameter from milliseconds to samples.
-
-param **ms** number. The number of milliseconds to convert.
-**/  
-
-/**###Gibberish.Time.seconds : method  
-Convert the parameter from seconds to samples.
-
-param **seconds** number. The number of seconds to convert.
-**/  
-
-/**###Gibberish.Time.beats : method  
-Return a function that converts the parameter from beats to samples. This method uses the bpm property of the Gibberish.Time object to determine the duration of a sample.
-You can use the function returned by this method in a Sequencer; if Gibberish.Time.bpm is changed before the function is executed the function will use the updated value.
-
-param **seconds** number. The number of seconds to convert.
-**/  
-
-Gibberish.Time = {
-  bpm: 120,
-  
-  export: function(target) {
-    Gibberish.export("Time", target || window);
-  },
-  
-  ms : function(val) {
-    return val * Gibberish.context.sampleRate / 1000;
-  },
-  
-  seconds : function(val) {
-    return val * Gibberish.context.sampleRate;
-  },
-  
-  beats : function(val) {
-    return function() { 
-      var samplesPerBeat = Gibberish.context.sampleRate / ( Gibberish.Time.bpm / 60 ) ;
-      return samplesPerBeat * val ;
-    }
-  },
+Readable.prototype.pause = function() {
+  emitDataEvents(this, true);
+  this.emit('pause');
 };
-/**#Gibberish.Sequencer - Miscellaneous
-A sample-accurate sequencer that can sequence changes to properties, method calls or anonymous function calls.
-  
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.Synth({ attack:44, decay:44100 }).connect();  
-b = new Gibberish.Sequencer({ target:a, key:'note', durations:[11025, 22050], values:[440, 880] }).start()
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the sequencer on initialization.
-- - - -
-**/
-/**###Gibberish.Sequencer.target : property  
-Object. An object for the sequencer to control. May be null if you are sequencing anonymous functions.
-**/
-/**###Gibberish.Sequencer.key : property  
-String. The name of the method or property you would like to sequnce on the Sequencer's target object.
-**/
-/**###Gibberish.Sequencer.durations : property  
-Array. The number of samples between each advancement of the Sequencer. Once the Sequencer arrives at the end of this list, it loops back to the beginning
-**/
-/**###Gibberish.Sequencer.keysAndValues : property  
-Object. A dictionary holding a set of values to be sequenced. The keys of the dictionary determine which methods and properties to sequence on the Sequencer's target object and
-each key has an array of values representing the sequence for that key.
-  
-`Gibberish.init();  
-a = new Gibberish.Synth({ attack:44, decay:44100 }).connect();  
-b = new Gibberish.Sequencer({ target:a, durations:[11025, 22050], keysAndValues:{ 'note':[440,880], 'amp':[.2,.4] } }).start()
-`
-**/
 
-Gibberish.Sequencer2 = function() {
-  var that = this,
-      phase = 0;
-  
-  Gibberish.extend(this, {
-    target        : null,
-    key           : null,
-    values        : null,
-    valuesIndex   : 0,
-    durations     : null,
-    durationsIndex: 0,
-    nextTime      : 0,
-    playOnce      : false,
-    repeatCount   : 0,
-    repeatTarget  : null,
-    isConnected   : true,
-    keysAndValues : null,
-    counts        : {},
-    properties    : { rate: 1, isRunning:false, nextTime:0 },
-    offset        : 0,
-    name          : 'seq',
-    
-    callback : function(rate, isRunning, nextTime) {
-      if(isRunning) {
-        if(phase >= nextTime) {
-          if(that.values !== null) {
-            if(that.target) {
-              var val = that.values[ that.valuesIndex++ ];
-              
-              if(typeof val === 'function') { val = val(); }
-              
-              if(typeof that.target[that.key] === 'function') {
-                that.target[that.key]( val );
-              }else{
-                that.target[that.key] = val;
-              }
-            }else{
-              if(typeof that.values[ that.valuesIndex ] === 'function') {
-                that.values[ that.valuesIndex++ ]();
-              }
-            }
-            if(that.valuesIndex >= that.values.length) that.valuesIndex = 0;
-          }else if(that.keysAndValues !== null) {
-            for(var key in that.keysAndValues) {
-              var index = that.counts[key]++;
-              var val = that.keysAndValues[key][index];
-              
-              if(typeof val === 'function') { val = val(); }
-              
-              if(typeof that.target[key] === 'function') {
-                that.target[key]( val );
-              }else{
-                that.target[key] = val;
-              }
-              if(that.counts[key] >= that.keysAndValues[key].length) {
-                that.counts[key] = 0;
-              }
-              if( that.chose ) that.chose( key, index )
-            }
-          }else if(typeof that.target[that.key] === 'function') {
-            that.target[that.key]();
-          }
-          
-          phase -= nextTime;
-        
-          if(Array.isArray(that.durations)) {
-            var next = that.durations[ that.durationsIndex++ ];
-            that.nextTime = typeof next === 'function' ? next() : next;
-            if( that.chose ) that.chose( 'durations', that.durationsIndex - 1 )
-            if( that.durationsIndex >= that.durations.length) {
-              that.durationsIndex = 0;
-            }
-          }else{
-            var next = that.durations;
-            that.nextTime = typeof next === 'function' ? next() : next;
-          }
-          
-          if(that.repeatTarget) {
-            that.repeatCount++;
-            if(that.repeatCount === that.repeatTarget) {
-              that.isRunning = false;
-              that.repeatCount = 0;
-            }
-          }
-          
-          return 0;
-        }
-      
-        phase += rate; //that.rate;
-      }
-      return 0;
-    },
-    
-/**###Gibberish.Sequencer.start : method  
-Start the sequencer running.
+function emitDataEvents(stream, startPaused) {
+  var state = stream._readableState;
 
-param **shouldKeepOffset** boolean, default false. If true, the phase of the sequencer will not be reset when calling the start method.
-**/     
-    start : function(shouldKeepOffset) {
-      if(!shouldKeepOffset) {
-        phase = 0;
-      }
-      
-      this.isRunning = true;
-      return this;
-    },
+  if (state.flowing) {
+    // https://github.com/isaacs/readable-stream/issues/16
+    throw new Error('Cannot switch to old mode now.');
+  }
 
-/**###Gibberish.Sequencer.stop : method  
-Stop the sequencer.
-**/     
-    stop: function() {
-      this.isRunning = false;
-      return this;
-    },
-    
-/**###Gibberish.Sequencer.repeat : method  
-Play the sequencer a certain number of times and then stop it.
+  var paused = startPaused || false;
+  var readable = false;
 
-param **timesToRepeat** number. The number of times to repeat the sequence.
-**/        
-    repeat : function(times) {
-      this.repeatTarget = times;
-      return this;
-    },
-    
-    shuffle : function() {
-      for( key in this.keysAndValues ) {
-        this.shuffleArray( this.keysAndValues[ key ] )
-      }
-    },
-    
-    shuffleArray : function( arr ) {
-  		for(var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
-    },
-/**###Gibberish.Sequencer.disconnect : method  
-Each sequencer object has a tick method that is called once per sample. Use the disconnect method to stop the tick method from being called.
-**/     
-    /*disconnect : function() {
-      var idx = Gibberish.sequencers.indexOf( this );
-      Gibberish.sequencers.splice( idx, 1 );
-      this.isConnected = false;
-    },*/
-/**###Gibberish.Sequencer.connect : method  
-Each sequencer object has a tick method that is called once per sample. Use the connect method to start calling the tick method. Note that the connect
-method is called automatically when the sequencer is first created; you should only need to call it again if you call the disconnect method at some point.
-**/    
-    /*connect : function() {
-      if( Gibberish.sequencers.indexOf( this ) === -1 ) {
-        Gibberish.sequencers.push( this );
-      }
-      Gibberish.dirty( this )
-    },*/
+  // convert to an old-style stream.
+  stream.readable = true;
+  stream.pipe = Stream.prototype.pipe;
+  stream.on = stream.addListener = Stream.prototype.on;
+
+  stream.on('readable', function() {
+    readable = true;
+
+    var c;
+    while (!paused && (null !== (c = stream.read())))
+      stream.emit('data', c);
+
+    if (c === null) {
+      readable = false;
+      stream._readableState.needReadable = true;
+    }
   });
-  
-  this.init( arguments );
-  this.processProperties( arguments );
-  
-  for(var key in this.keysAndValues) {
-    this.counts[key] = 0;
-  }
-  
-  this.oscillatorInit();
-  
-  phase += this.offset
-  
-  this.connect();
-};
-Gibberish.Sequencer2.prototype = Gibberish._oscillator
-/**#Gibberish.Sequencer - Miscellaneous
-A sample-accurate sequencer that can sequence changes to properties, method calls or anonymous function calls.
-  
-## Example Usage##
-`Gibberish.init();  
-a = new Gibberish.Synth({ attack:44, decay:44100 }).connect();  
-b = new Gibberish.Sequencer({ target:a, key:'note', durations:[11025, 22050], values:[440, 880] }).start()
-`  
-## Constructor   
-**param** *properties*: Object. A dictionary of property values (see below) to set for the sequencer on initialization.
-- - - -
-**/
-/**###Gibberish.Sequencer.target : property  
-Object. An object for the sequencer to control. May be null if you are sequencing anonymous functions.
-**/
-/**###Gibberish.Sequencer.key : property  
-String. The name of the method or property you would like to sequnce on the Sequencer's target object.
-**/
-/**###Gibberish.Sequencer.durations : property  
-Array. The number of samples between each advancement of the Sequencer. Once the Sequencer arrives at the end of this list, it loops back to the beginning
-**/
-/**###Gibberish.Sequencer.keysAndValues : property  
-Object. A dictionary holding a set of values to be sequenced. The keys of the dictionary determine which methods and properties to sequence on the Sequencer's target object and
-each key has an array of values representing the sequence for that key.
-  
-`Gibberish.init();  
-a = new Gibberish.Synth({ attack:44, decay:44100 }).connect();  
-b = new Gibberish.Sequencer({ target:a, durations:[11025, 22050], keysAndValues:{ 'note':[440,880], 'amp':[.2,.4] } }).start()
-`
-**/
 
-Gibberish.Sequencer = function() {  
-  Gibberish.extend(this, {
-    target        : null,
-    key           : null,
-    values        : null,
-    valuesIndex   : 0,
-    durations     : null,
-    durationsIndex: 0,
-    nextTime      : 0,
-    phase         : 0,
-    isRunning     : false,
-    playOnce      : false,
-    repeatCount   : 0,
-    repeatTarget  : null,
-    isConnected   : true,
-    keysAndValues : null,
-    counts        : {},
-    offset        : 0,
-    name          : 'seq',
-    
-    tick : function() {
-      if(this.isRunning) {
-        if(this.phase >= this.nextTime) {
-          if(this.values !== null) {
-            if(this.target) {
-              var val = this.values[ this.valuesIndex++ ];
-              
-              if(typeof val === 'function') { 
-                try {
-                  val = val(); 
-                }catch(e) {
-                  console.error('ERROR: Can\'t execute function triggered by Sequencer:\n' + val.toString() )
-                  this.values.splice( this.valuesIndex - 1, 1)
-                  this.valuesIndex--;
-                }
-              }
-              
-              if(typeof this.target[this.key] === 'function') {
-                this.target[this.key]( val );
-              }else{
-                this.target[this.key] = val;
-              }
-            }else{
-              if(typeof this.values[ this.valuesIndex ] === 'function') {
-                try {
-                  this.values[ this.valuesIndex++ ]();
-                }catch(e) {
-                  console.error('ERROR: Can\'t execute function triggered by Sequencer:\n' + this.values[ this.valuesIndex - 1 ].toString() )
-                  this.values.splice( this.valuesIndex - 1, 1)
-                  this.valuesIndex--;
-                }
-              }
-            }
-            if(this.valuesIndex >= this.values.length) this.valuesIndex = 0;
-          }else if(this.keysAndValues !== null) {
-            for(var key in this.keysAndValues) {
-              var index = typeof this.keysAndValues[ key ].pick === 'function' ? this.keysAndValues[ key ].pick() : this.counts[key]++;
-              var val = this.keysAndValues[key][index];
-              
-              if(typeof val === 'function') { 
-                try {
-                  val = val(); 
-                }catch(e) {
-                  console.error('ERROR: Can\'t execute function triggered by Sequencer:\n' + val.toString() )
-                  this.keysAndValues[key].splice( index, 1)
-                  if( typeof this.keysAndValues[ key ].pick !== 'function' ) {
-                    this.counts[key]--;
-                  }
-                }
-              }
-              
-              if(typeof this.target[key] === 'function') {
-                this.target[key]( val );
-              }else{
-                this.target[key] = val;
-              }
-              if(this.counts[key] >= this.keysAndValues[key].length) {
-                this.counts[key] = 0;
-              }
-            }
-          }else if(typeof this.target[this.key] === 'function') {
-            this.target[this.key]();
-          }
-          
-          this.phase -= this.nextTime;
-        
-          if(Array.isArray(this.durations)) {
-            var next = typeof this.durations.pick === 'function' ? this.durations[ this.durations.pick() ] : this.durations[ this.durationsIndex++ ];
-            this.nextTime = typeof next === 'function' ? next() : next;
-            if( this.durationsIndex >= this.durations.length) {
-              this.durationsIndex = 0;
-            }
-          }else{
-            var next = this.durations;
-            this.nextTime = typeof next === 'function' ? next() : next;
-          }
-          
-          if(this.repeatTarget) {
-            this.repeatCount++;
-            if(this.repeatCount === this.repeatTarget) {
-              this.isRunning = false;
-              this.repeatCount = 0;
-            }
-          }
-          
-          return;
-        }
-      
-        this.phase++
-      }
-    },
+  stream.pause = function() {
+    paused = true;
+    this.emit('pause');
+  };
 
-/**###Gibberish.Sequencer.start : method  
-Start the sequencer running.
+  stream.resume = function() {
+    paused = false;
+    if (readable)
+      setImmediate(function() {
+        stream.emit('readable');
+      });
+    else
+      this.read(0);
+    this.emit('resume');
+  };
 
-param **shouldKeepOffset** boolean, default false. If true, the phase of the sequencer will not be reset when calling the start method.
-**/     
-    start : function(shouldKeepOffset) {
-      if(!shouldKeepOffset) {
-        this.phase = this.offset;
-      }
-      
-      this.isRunning = true;
-      return this;
-    },
-
-/**###Gibberish.Sequencer.stop : method  
-Stop the sequencer.
-**/     
-    stop: function() {
-      this.isRunning = false;
-      return this;
-    },
-    
-/**###Gibberish.Sequencer.repeat : method  
-Play the sequencer a certain number of times and then stop it.
-
-param **timesToRepeat** number. The number of times to repeat the sequence.
-**/        
-    repeat : function(times) {
-      this.repeatTarget = times;
-      return this;
-    },
-    
-    shuffle : function() {
-      for( key in this.keysAndValues ) {
-        this.shuffleArray( this.keysAndValues[ key ] )
-      }
-    },
-    
-    shuffleArray : function( arr ) {
-  		for(var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
-    },
-
-/**###Gibberish.Sequencer.disconnect : method  
-Each sequencer object has a tick method that is called once per sample. Use the disconnect method to stop the tick method from being called.
-**/     
-    disconnect : function() {
-      var idx = Gibberish.sequencers.indexOf( this );
-      Gibberish.sequencers.splice( idx, 1 );
-      this.isConnected = false;
-    },
-/**###Gibberish.Sequencer.connect : method  
-Each sequencer object has a tick method that is called once per sample. Use the connect method to start calling the tick method. Note that the connect
-method is called automatically when the sequencer is first created; you should only need to call it again if you call the disconnect method at some point.
-**/    
-    connect : function() {
-      if( Gibberish.sequencers.indexOf( this ) === -1 ) {
-        Gibberish.sequencers.push( this );
-      }
-      
-      this.isConnected = true
-      
-      return this
-    },
-  });
-  
-  for(var key in arguments[0]) {
-    this[key] = arguments[0][key];
-  }
-  
-  for(var key in this.keysAndValues) {
-    this.counts[key] = 0;
-  }
-  
-  this.connect();
-  
-  this.phase += this.offset
-  
-  //this.init( arguments );
-  //this.oscillatorInit();
-  //this.processProperties( arguments );
-};
-Gibberish.Sequencer.prototype = Gibberish._oscillator
-// TODO: must fix scale seq
-
-/*
-c = new Gibberish.Synth({ pan:-1 }).connect();
-b = new Gibberish.Synth({ pan:1 }).connect(); 
-a = new Gibberish.PolySeq({ 
-  seqs:[
-    { key:'note', target:b, values:[440,880], durations:22050 },
-    { key:'note', target:c, values:[220,1320], durations:[11025, 22050, 5512.5] },
-  ] 
-}).start()
-*/
-Gibberish.PolySeq = function() {
-  var that = this,
-      phase = 0,
-      sort = function(a,b) { if( a < b ) return -1; if( a > b ) return 1; return 0; } ;
-  
-  Gibberish.extend(this, {
-    seqs          : [],
-    timeline      : {},
-    playOnce      : false,
-    repeatCount   : 0,
-    repeatTarget  : null,
-    isConnected   : false,
-    properties    : { rate: 1, isRunning:false, nextTime:0 },
-    offset        : 0,
-    autofire      : [],
-    name          : 'polyseq',
-    getPhase      : function() { return phase },
-    setPhase      : function(v) { phase = v },
-    adjustPhase   : function(v) { phase += v },
-    timeModifier  : null,
-    add           : function( seq ) {
-      seq.valuesIndex = seq.durationsIndex = 0
-
-      if( seq.durations === null ) {
-        seq.autofire = true
-        that.autofire.push( seq )
-      }else{
-        that.seqs.push( seq )
-        
-        if( typeof that.timeline[ phase ] !== 'undefined' ) {
-          if( seq.priority ) {
-            that.timeline[ phase ].unshift( seq )
-          }else{
-            that.timeline[ phase ].push( seq )
-          }
-        }else{
-          that.timeline[ phase ] = [ seq ]
-        }
-        
-        that.nextTime = phase
-      }
-      // for Gibber... TODO: remove from Gibberish
-      if( that.scale && (seq.key === 'frequency' || seq.key === 'note') ) {
-        if( that.applyScale ) {
-          that.applyScale()
-        }
-      }
-
-      seq.shouldStop = false
-    },
-    
-    callback : function(rate, isRunning, nextTime) {
-      var newNextTime;
-      
-      if(isRunning) {
-        if(phase >= nextTime) {
-          var seqs = that.timeline[ nextTime ],
-              phaseDiff = phase - nextTime
-              
-          if( typeof seqs === 'undefined') return
-                    
-          for( var j = 0; j < seqs.length; j++ ) {
-            var seq = seqs[ j ]
-            if( seq.shouldStop ) continue;
-
-            var idx = seq.values.pick ? seq.values.pick() : seq.valuesIndex++ % seq.values.length
-            
-            var val = typeof seq.values === 'function' ? seq.values() : seq.values[ idx ];
-    
-            if(typeof val === 'function') { val = val(); } // will also call anonymous function
-    
-            if( seq.target ) {
-              if(typeof seq.target[ seq.key ] === 'function') {
-                seq.target[ seq.key ]( val );
-              }else{
-                seq.target[ seq.key ] = val;
-              }
-            }
-            
-            if( that.chose ) that.chose( seq.key, idx )
-             
-            if( Array.isArray( seq.durations ) ) {
-              var idx = seq.durations.pick ? seq.durations.pick() : seq.durationsIndex++,
-                  next = typeof seq.durations === 'function' ? seq.durations() : seq.durations[ idx ]
-
-              newNextTime = typeof next === 'function' ? next() : next;
-              if( typeof seq.durations !== 'function' && seq.durationsIndex >= seq.durations.length ) {
-                seq.durationsIndex = 0;
-              }
-              if( that.chose ) that.chose( 'durations', idx )
-            }else{
-              var next = typeof seq.durations === 'function' ? seq.durations() : seq.durations;
-              
-              newNextTime = typeof next === 'function' ? next() : next;
-            }
-        
-            var t;
-          
-            if( that.timeModifier !== null ) {
-              t = that.timeModifier( newNextTime ) + phase // TODO: remove Gibber link... how?
-            }else{
-              t = newNextTime + phase
-            }
-          
-            t -= phaseDiff
-            newNextTime -= phaseDiff
-          
-            if( typeof that.timeline[ t ] === 'undefined' ) {
-              that.timeline[ t ] = [ seq ]
-            }else{
-              if( seq.priority ) {
-                that.timeline[ t ].unshift( seq )
-              }else{
-                that.timeline[ t ].push( seq )
-              }
-            }
-          }
-          
-          for( var j = 0, l = that.autofire.length; j < l; j++ ) {
-            var seq = that.autofire[ j ]
-            if( seq.shouldStop ) continue;
-
-            var idx = seq.values.pick ? seq.values.pick() : seq.valuesIndex++ % seq.values.length,
-                val = seq.values[ idx ];
-    
-            if(typeof val === 'function') { val = val(); } // will also call anonymous function
-    
-            if( seq.target ) {
-              if(typeof seq.target[ seq.key ] === 'function') {
-                seq.target[ seq.key ]( val );
-              }else{
-                seq.target[ seq.key ] = val;
-              }
-            }
-            
-            if( that.chose ) that.chose( seq.key, idx )
-          }
-          
-          delete that.timeline[ nextTime ]
-          
-          var times = Object.keys( that.timeline ),
-              timesLength = times.length;
-          
-          if( timesLength > 1 ) {
-            for( var i = 0; i < timesLength; i++ ) {
-              times[ i ] = parseFloat( times[i] )
-            }
-          
-            times = times.sort( sort )
-            that.nextTime = times[0]
-          }else{
-            that.nextTime = parseFloat( times[0] )
-          }
-          
-          // if(that.repeatTarget) {
-          //   that.repeatCount++;
-          //   if(that.repeatCount === that.repeatTarget) {
-          //     that.isRunning = false;
-          //     that.repeatCount = 0;
-          //   }
-          // }  
-        }
-        
-        // TODO: If you set the phase to 0, it will be lower than nextTime for many many samples in a row, causing it to quickly skip
-        // through lots of key / value pairs.
-        
-        phase += rate;
-      }
-      return 0;
-    },
-  
-    start : function(shouldKeepOffset, priority) {
-      if(!shouldKeepOffset || ! this.offset ) {
-        phase = 0;
-        this.nextTime = 0;
-        
-        this.timeline = { 0:[] }
-        for( var i = 0; i < this.seqs.length; i++ ) {
-          var _seq = this.seqs[ i ]
-    
-          _seq.valuesIndex = _seq.durationsIndex = _seq.shouldStop = 0
-    
-          this.timeline[ 0 ].push( _seq )
-        }
-      }else{
-        phase = 0;
-        this.nextTime = this.offset;
-        
-        var ___key = ''+this.offset
-        
-        this.timeline = {}
-        this.timeline[ ___key ] = []
-
-        for( var i = 0; i < this.seqs.length; i++ ) {
-          var _seq = this.seqs[ i ]
-    
-          _seq.valuesIndex = _seq.durationsIndex = _seq.shouldStop = 0
-    
-          this.timeline[ ___key ].push( _seq )
-        }
-      }
-      
-      if( !this.isConnected ) {
-        this.connect( Gibberish.Master, priority )
-        this.isConnected = true
-      }
-      
-      this.isRunning = true;
-      return this;
-    },
-    
-    stop: function() {
-      this.isRunning = false;
-      
-      if( this.isConnected ) {
-        this.disconnect()
-        this.isConnected = false
-      }
-      return this;
-    },
-       
-    repeat : function(times) {
-      this.repeatTarget = times;
-      return this;
-    },
-    
-    shuffle : function( seqName ) {
-      if( typeof seqName !== 'undefined' ) {
-        for( var i = 0; i < this.seqs.length; i++ ) {
-          if( this.seqs[i].key === seqName ) {
-            this.shuffleArray( this.seqs[i].values )
-          }
-        }
-      }else{
-        for( var i = 0; i < this.seqs.length; i++ ) {
-          this.shuffleArray( this.seqs[i].values )
-        }
-      }
-    },
-    
-    shuffleArray : function( arr ) {
-  		for(var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
-    },
-
-  });
-  
-  this.init( arguments );
-  this.processProperties( arguments );
-  
-  this.oscillatorInit();
-};
-Gibberish.PolySeq.prototype = Gibberish._oscillator
-var _hasInput = false; // wait until requested to ask for permissions so annoying popup doesn't appear automatically
-
-if( typeof navigator === 'object' ) {
-  navigator.getUserMedia = ( navigator.getUserMedia       ||
-                             navigator.webkitGetUserMedia ||
-                             navigator.mozGetUserMedia    ||
-                             navigator.msGetUserMedia )
+  // now make it start, just in case it hadn't already.
+  stream.emit('readable');
 }
-                           
-function createInput() {
-  console.log("connecting audio input...");
-  
-  navigator.getUserMedia(
-		{audio:true}, 
-		function (stream) {
-      console.log( 'audio input connected' )
-	    Gibberish.mediaStreamSource = Gibberish.context.createMediaStreamSource( stream );
-	    Gibberish.mediaStreamSource.connect( Gibberish.node );
-			_hasInput = true;
-		},
-    function( e ) { 
-      console.log( e )
-      console.log( 'error opening audio input')
+
+// wrap an old-style stream as the async data source.
+// This is *not* part of the readable stream interface.
+// It is an ugly unfortunate mess of history.
+Readable.prototype.wrap = function(stream) {
+  var state = this._readableState;
+  var paused = false;
+
+  var self = this;
+  stream.on('end', function() {
+    if (state.decoder && !state.ended) {
+      var chunk = state.decoder.end();
+      if (chunk && chunk.length)
+        self.push(chunk);
     }
-	)
-}
-/**#Gibberish.Input - Oscillator
-Accept input from computer's line-in or microphone input. Use headphones and beware feedback! Reading the audio input is currently only supported by Google Chrome.
 
-## Example Usage##
-`
-Gibberish.init();  
-a = new Gibberish.Input()  
-b = new Gibberish.Delay( a ).connect()  
-- - - -
-**/
-/**###Gibberish.Input.amp : property  
-Number. A gain multiplier for the input
-**/
-
-Gibberish.Input = function() {
-  var out = [], phase = 0;
-  
-	if(!_hasInput) { 
-		createInput(); 
-	}
-  
-  this.type = this.name = 'input'
-  
-  this.fx = new Array2() 
-  this.fx.parent = this
-  
-  this.properties = {
-    input : 'input',
-    amp : .5,  
-    channels : 1,
-  }
-  
-  this.callback = function(input, amp, channels) {
-    if(channels === 1) {
-      out = input * amp;
-    }else {
-      out[0] = input[0] * amp;
-      out[1] = input[1] * amp;      
-    }
-    return out;
-  }
-  
-  this.init( arguments )
-  this.processProperties( arguments )
-};
-Gibberish.Input.prototype = new Gibberish.ugen();
-Gibberish.Kick = function() {
-  var trigger = false,
-    	bpf = new Gibberish.SVF().callback,
-    	lpf = new Gibberish.SVF().callback,
-      _decay = .2,
-      _tone = .8;
-      
-  Gibberish.extend(this, {
-  	name:		"kick",
-    properties:	{ pitch:50, __decay:20, __tone: 1000, amp:2, sr: Gibberish.context.sampleRate },
-	
-  	callback: function(pitch, decay, tone, amp, sr) {					
-  		var out = trigger ? 60 : 0;
-			
-  		out = bpf( out, pitch, decay, 2, sr );
-  		out = lpf( out, tone, .5, 0, sr );
-		
-  		out *= amp;
-		
-  		trigger = false;
-		
-  		return out;
-  	},
-
-  	note : function(p, d, t, amp) {
-  		if(typeof p === 'number') this.pitch = p;
-  		if(typeof d === 'number') this.decay = d;
-  		if(typeof t === 'number') this.tone = t;
-  		if(typeof amp === 'number') this.amp = amp;
-		
-      trigger = true;
-  	},
-  })
-  .init()
-  .oscillatorInit();
-  
-  Object.defineProperties(this, {
-    decay :{
-      get: function() { return _decay; },
-      set: function(val) { _decay = val > 1 ? 1 : val; this.__decay = _decay * 100; }
-    },
-    tone :{
-      get: function() { return _tone; },
-      set: function(val) { _tone = val > 1 ? 1 : val; this.__tone = 220 + val * 1400;  }
-    },
+    self.push(null);
   });
-  
-  this.processProperties(arguments);
-};
-Gibberish.Kick.prototype = Gibberish._oscillator;
 
-// congas are bridged t-oscillators like kick without the low-pass filter
-Gibberish.Conga = function() {
-  var trigger = false,
-    	bpf = new Gibberish.SVF().callback,
-      _decay = .5;
-      
-  Gibberish.extend(this, {
-  	name:		"conga",
-    properties:	{ pitch:190, /*__decay:50,*/ amp:2, sr:Gibberish.context.sampleRate },
-	
-  	callback: function(pitch, /*decay,*/ amp, sr) {					
-  		var out = trigger ? 60 : 0;
-			
-  		out = bpf( out, pitch, 50, 2, sr );
-		
-  		out *= amp;
-		
-  		trigger = false;
-		
-  		return out;
-  	},
+  stream.on('data', function(chunk) {
+    if (state.decoder)
+      chunk = state.decoder.write(chunk);
+    if (!chunk || !state.objectMode && !chunk.length)
+      return;
 
-  	note : function(p, amp) {
-  		if(typeof p === 'number') this.pitch = p;
-  		if(typeof amp === 'number') this.amp = amp;
-		
-      trigger = true;
-  	},
-  })
-  .init()
-  .oscillatorInit();
+    var ret = self.push(chunk);
+    if (!ret) {
+      paused = true;
+      stream.pause();
+    }
+  });
 
-  // Object.defineProperties(this, {
-  //   decay :{
-  //     get: function() { return _decay; },
-  //     set: function(val) { _decay = val > 1 ? 1 : val; this.__decay = _decay * 100; }
-  //   }
-  // });
-  // 
-  this.processProperties(arguments);
-}
-Gibberish.Conga.prototype = Gibberish._oscillator;
-
-// clave are also bridged t-oscillators like kick without the low-pass filter
-Gibberish.Clave = function() {
-  var trigger = false,
-    	_bpf = new Gibberish.SVF(),
-      bpf = _bpf.callback,
-      _decay = .5;
-      
-  Gibberish.extend(this, {
-  	name:		"clave",
-    properties:	{ pitch:2500, /*__decay:50,*/ amp:1, sr:Gibberish.context.sampleRate },
-	
-  	callback: function(pitch, /*decay,*/ amp, sr) {					
-  		var out = trigger ? 2 : 0;
-			
-  		out = bpf( out, pitch, 5, 2, sr );
-		
-  		out *= amp;
-		
-  		trigger = false;
-		
-  		return out;
-  	},
-
-  	note : function(p, amp) {
-  		if(typeof p === 'number') this.pitch = p;
-  		if(typeof amp === 'number') this.amp = amp;
-		
-      trigger = true;
-  	},
-  })
-  .init()
-  .oscillatorInit();
-  
-  this.bpf = _bpf;
-  // Object.defineProperties(this, {
-  //   decay :{
-  //     get: function() { return _decay; },
-  //     set: function(val) { _decay = val > 1 ? 1 : val; this.__decay = _decay * 100; }
-  //   }
-  // });
-  // 
-  this.processProperties(arguments);
-}
-Gibberish.Clave.prototype = Gibberish._oscillator;
-
-// tom is tbridge with lpf'd noise
-Gibberish.Tom = function() {
-  var trigger = false,
-    	bpf = new Gibberish.SVF().callback,
-    	lpf = new Gibberish.SVF().callback,
-      _eg = new Gibberish.ExponentialDecay(),
-      eg  = _eg.callback,
-      rnd = Math.random,
-      _decay = .2,
-      _tone = .8;
-      
-  Gibberish.extend(this, {
-  	name:		"tom",
-    properties:	{ pitch:80, amp:.5, sr:Gibberish.context.sampleRate },
-	
-  	callback: function(pitch, amp, sr) {					
-  		var out = trigger ? 60 : 0,
-          noise;
-			
-  		out = bpf( out, pitch, 30, 2, sr );
-      
-      noise = rnd() * 16 - 8
-		  noise = noise > 0 ? noise : 0;
-      
-      noise *= eg(.05, 11025);
-      
-  		noise = lpf( noise, 120, .5, 0, sr );
-      
-      out += noise;
-  		out *= amp;
-		
-  		trigger = false;
-		
-  		return out;
-  	},
-
-  	note : function(p, amp) {
-  		if(typeof p === 'number') this.pitch = p;
-  		if(typeof amp === 'number') this.amp = amp;
-		  
-      _eg.trigger();
-      trigger = true;
-  	},
-  })
-  .init()
-  .oscillatorInit();
-  
-  _eg.trigger(1)
-  
-  this.processProperties(arguments);
-}
-Gibberish.Tom.prototype = Gibberish._oscillator;
-
-Gibberish.Clap = function() {
-  var _bpf = new Gibberish.Biquad(),
-      bpf  = _bpf.callback,
-      _bpf2 = new Gibberish.Biquad(),
-      bpf2 = _bpf2.callback,
-      _bpf3 = new Gibberish.Biquad(),
-      bpf3 = _bpf3.callback,      
-      _eg = new Gibberish.ExponentialDecay(),
-      eg  = _eg.callback,
-      _eg2 = new Gibberish.ExponentialDecay(),
-      eg2 = _eg2.callback,
-      _ad  = new Gibberish.Line(),
-      ad = _ad.callback,
-      _lfo = new Gibberish.Saw(),
-      lfo = _lfo.callback,
-      rnd = Math.random,
-      cutoff = 1000,
-      rez = 2.5,
-      env1K = .025,
-      env2K = .9,
-      env1Dur = 30 * 44.1,
-      env2Dur = 660,
-      freq = 100
-      
-  _bpf.mode = _bpf2.mode = 'BP'
-  _bpf3.mode = 'BP'
-  _bpf3.cutoff = 2400
-  
-  _bpf.cutoff = _bpf2.cutoff = 1000
-  _bpf.Q = 2
-  _bpf2.Q = 1
-      
-  Gibberish.extend(this, {
-  	name:		"clap",
-    properties:	{ amp:.5, sr:Gibberish.context.sampleRate },
-	
-  	callback: function( amp, sr ) {
-  		var out = 0, noiseBPF, noise, env;
-			      
-      noiseBPF = rnd() * 4 - 2 //* 4 - 2
-		  noiseBPF = noiseBPF > 0 ? noiseBPF : 0;
-      
-      noise = rnd() * 4 - 2 //* 16 - 8
-		  noise = noise > 0 ? noise : 0;
-      
-  		out = bpf2( bpf( noiseBPF ) ) //, cutoff, rez, 2, sr ); // mode 2 is bp
-      
-      out *= eg2( env2K, env2Dur )
-      
-      noise = bpf3( lfo( freq, noise ) * eg( env1K, env1Dur ) )//ad( 1,0, env1Dur, false ) );
-      
-      out += noise;
-  		out *= amp;
-		
-  		return out;
-  	},
-
-  	note : function( amp ) {
-  		if(typeof amp === 'number') this.amp = amp;
-		  
-      _eg2.trigger();
-      _eg.trigger();
-      _ad.setPhase(0);
-      _lfo.setPhase(0);
-
-  	},
-  })
-  .init()
-  .oscillatorInit();
-  
-  // _eg.trigger(1)
-  // _eg2.trigger(1)
-  
-  this.getBPF = function() { return _bpf; }
-  this.getBPF2 = function() { return _bpf2; }
-  this.getBPF3 = function() { return _bpf3; }
-  this.getLine = function() { return _ad; }
-  
-  this.setEnvK = function( k1,k2,d1,d2 ) {
-    env1K = k1
-    if( k2 ) env2K = k2
-    if( d1 ) env1Dur = d1
-    if( d2 ) env2Dur = d2    
+  // proxy all the other methods.
+  // important when wrapping filters and duplexes.
+  for (var i in stream) {
+    if (typeof stream[i] === 'function' &&
+        typeof this[i] === 'undefined') {
+      this[i] = function(method) { return function() {
+        return stream[method].apply(stream, arguments);
+      }}(i);
+    }
   }
-  
-  this.setFreq = function(v) { freq = v }
-  
-  this.setRez = function(v) { rez = v; }
-  this.setCutoff = function(v) { cutoff = v; }  
-  
-  this.processProperties(arguments);
-}
-Gibberish.Clap.prototype = Gibberish._oscillator;
 
-// http://www.soundonsound.com/sos/Sep02/articles/synthsecrets09.asp
-Gibberish.Cowbell = function() {
-  var _s1 = new Gibberish.Square(),
-      _s2 = new Gibberish.Square(),
-      s1 = _s1.callback,
-      s2 = _s2.callback,                              
+  // proxy certain important events.
+  var events = ['error', 'close', 'destroy', 'pause', 'resume'];
+  forEach(events, function(ev) {
+    stream.on(ev, function (x) {
+      return self.emit.apply(self, ev, x);
+    });
+  });
 
-      _bpf = new Gibberish.SVF({ mode:2 }),
-      bpf   = _bpf.callback,
+  // when we try to consume some more bytes, simply unpause the
+  // underlying stream.
+  self._read = function(n) {
+    if (paused) {
+      paused = false;
+      stream.resume();
+    }
+  };
 
-      _eg   = new Gibberish.ExponentialDecay( .0025, 10500 ),
-      eg    = _eg.callback;
-  
-  Gibberish.extend(this, {
-  	name: "cowbell",
-  	properties : { amp: 1, pitch: 560, bpfFreq:1000, bpfRez:3, decay:22050, decayCoeff:.0001, sr:Gibberish.context.sampleRate },
-	
-  	callback : function(amp, pitch, bpfFreq, bpfRez, decay, decayCoeff, sr) {
-  		var val;
-      
-  		val =  s1( pitch, 1, 1, 0 );
-  		val += s2( 845, 1, 1, 0 );
-		
-      val  = bpf(  val, bpfFreq, bpfRez, 2, sr );
-      		
-      val *= eg(decayCoeff, decay);
-  
-  		val *= amp;
-		  
-  		return val;
-  	},
-	
-  	note : function(_decay, _decay2) {
-      _eg.trigger()
-  		if(_decay)
-  			this.decay = _decay;
-  	}
-  })
-  .init()
-  .oscillatorInit()
-  .processProperties(arguments);
-  
-  this.bpf = _bpf;
-  this.eg = _eg;
-  
-  _eg.trigger(1);
+  return self;
 };
-Gibberish.Cowbell.prototype = Gibberish._oscillator;
 
-Gibberish.Snare = function() {
-  var bpf1      = new Gibberish.SVF().callback,
-      bpf2      = new Gibberish.SVF().callback,
-      noiseHPF  = new Gibberish.SVF().callback,
-      _eg       = new Gibberish.ExponentialDecay( .0025, 11025 ),
-      eg        = _eg.callback,            
-      rnd       = Math.random,
-      phase  = 11025,      
-      out    = 0,
-      envOut = 0;
-      
-  Gibberish.extend(this, {
-  	name: "snare",
-  	properties: { cutoff:1000, decay:11025, tune:0, snappy:.5, amp:1, sr:Gibberish.context.sampleRate },
 
-  	callback: function(cutoff, decay, tune, snappy, amp, sr) {
-  		var p1, p2, noise = 0, env = 0, out = 0;
 
-  		env = eg(.0025, decay);
-		
-  		if(env > .005) {	
-  			out = ( rnd() * 2 - 1 ) * env ;
-  			out = noiseHPF( out, cutoff + tune * 1000, .5, 1, sr );
-  			out *= snappy;
-        
-        // rectify as per instructions found here: http://ericarcher.net/devices/tr808-clone/
-        out = out > 0 ? out : 0;
-        
-  			envOut = env;
-			
-  			p1 = bpf1( envOut, 180 * (tune + 1), 15, 2, sr );
-  			p2 = bpf2( envOut, 330 * (tune + 1), 15, 2, sr );
-		
-  			out += p1; 
-  			out += p2 * .8;
-  			out *= amp;
-  		}
+// exposed for testing purposes only.
+Readable._fromList = fromList;
 
-  		return out;
-  	},
+// Pluck off n bytes from an array of buffers.
+// Length is the combined lengths of all the buffers in the list.
+function fromList(n, state) {
+  var list = state.buffer;
+  var length = state.length;
+  var stringMode = !!state.decoder;
+  var objectMode = !!state.objectMode;
+  var ret;
 
-  	note : function(t, amp, s, c) {
-      if(typeof t === 'number')   this.tune = t;					      
-  		if(typeof c === 'number')   this.cutoff = c;					
-  		if(typeof s === 'number')   this.snappy = s; 
-  		if(typeof amp === 'number') this.amp = amp;
-		
-  		_eg.trigger()
-  	},
-  })
-  .init()
-  .oscillatorInit()
-  .processProperties(arguments);
-  
-  _eg.trigger(1);
+  // nothing in the list, definitely empty.
+  if (list.length === 0)
+    return null;
+
+  if (length === 0)
+    ret = null;
+  else if (objectMode)
+    ret = list.shift();
+  else if (!n || n >= length) {
+    // read it all, truncate the array.
+    if (stringMode)
+      ret = list.join('');
+    else
+      ret = Buffer.concat(list, length);
+    list.length = 0;
+  } else {
+    // read just some of it.
+    if (n < list[0].length) {
+      // just take a part of the first list item.
+      // slice is the same for buffers and strings.
+      var buf = list[0];
+      ret = buf.slice(0, n);
+      list[0] = buf.slice(n);
+    } else if (n === list[0].length) {
+      // first list is a perfect match
+      ret = list.shift();
+    } else {
+      // complex case.
+      // we have enough to cover it, but it spans past the first buffer.
+      if (stringMode)
+        ret = '';
+      else
+        ret = new Buffer(n);
+
+      var c = 0;
+      for (var i = 0, l = list.length; i < l && c < n; i++) {
+        var buf = list[0];
+        var cpy = Math.min(n - c, buf.length);
+
+        if (stringMode)
+          ret += buf.slice(0, cpy);
+        else
+          buf.copy(ret, c, 0, cpy);
+
+        if (cpy < buf.length)
+          list[0] = buf.slice(cpy);
+        else
+          list.shift();
+
+        c += cpy;
+      }
+    }
+  }
+
+  return ret;
 }
-Gibberish.Snare.prototype = Gibberish._oscillator;
 
-Gibberish.Hat = function() {
-  var _s1 = new Gibberish.Square(),
-      _s2 = new Gibberish.Square(),
-      _s3 = new Gibberish.Square(),
-      _s4 = new Gibberish.Square(),
-      _s5 = new Gibberish.Square(),
-      _s6 = new Gibberish.Square(),
-      s1 = _s1.callback,
-      s2 = _s2.callback,
-      s3 = _s3.callback,
-      s4 = _s4.callback,
-      s5 = _s5.callback,
-      s6 = _s6.callback,                              
-      //_bpf = new Gibberish.Biquad({ mode:'BP' }),
-      _bpf = new Gibberish.SVF({ mode:2 }),
-      bpf   = _bpf.callback,
-      _hpf  = new Gibberish.Filter24(),
-      hpf   = _hpf.callback,
-      _eg   = new Gibberish.ExponentialDecay( .0025, 10500 ),
-      eg    = _eg.callback,
-      _eg2   = new Gibberish.ExponentialDecay( .1, 7500 ),
-      eg2    = _eg2.callback;        
-  
-  Gibberish.extend(this, {
-  	name: "hat",
-  	properties : { amp: 1, pitch: 325, bpfFreq:7000, bpfRez:2, hpfFreq:.975, hpfRez:0, decay:3500, decay2:3000, sr:Gibberish.context.sampleRate },
-	
-  	callback : function(amp, pitch, bpfFreq, bpfRez, hpfFreq, hpfRez, decay, decay2, sr) {
-  		var val;
-      
-  		val =  s1( pitch, 1, .5, 0 );
-  		val += s2( pitch * 1.4471, .75, 1, 0 );
-  		val += s3( pitch * 1.6170, 1, 1, 0 );
-  		val += s4( pitch * 1.9265, 1, 1, 0 );
-  		val += s5( pitch * 2.5028, 1, 1, 0 );
-  		val += s6( pitch * 2.6637, .75, 1, 0 );
-		
-      val  = bpf(  val, bpfFreq, bpfRez, 2, sr );
-      		
-  		val  *= eg(.001, decay);
-      
-      // rectify as per instructions found here: http://ericarcher.net/devices/tr808-clone/
-      // val = val > 0 ? val : 0;
-        		
-  		//sample, cutoff, resonance, isLowPass, channels
-  		val 	= hpf(val, hpfFreq, hpfRez, 0, 1 );
-  
-  		val *= amp;
-		  
-  		return val;
-  	},
-	
-  	note : function(_decay, _decay2) {
-  		_eg.trigger()
-  		_eg2.trigger()
-  		if(_decay)
-  			this.decay = _decay;
-  		if(_decay2)
-  			this.decay2 = _decay2;
-		
-  	}
-  })
-  .init()
-  .oscillatorInit()
-  .processProperties(arguments);
-  
-  this.bpf = _bpf;
-  this.hpf = _hpf;
-  
-  _eg.trigger(1);
-  _eg2.trigger(1);
+function endReadable(stream) {
+  var state = stream._readableState;
+
+  // If we get here before consuming all the bytes, then that is a
+  // bug in node.  Should never happen.
+  if (state.length > 0)
+    throw new Error('endReadable called on non-empty stream');
+
+  if (!state.endEmitted && state.calledRead) {
+    state.ended = true;
+    setImmediate(function() {
+      // Check that we didn't get one last unshift.
+      if (!state.endEmitted && state.length === 0) {
+        state.endEmitted = true;
+        stream.readable = false;
+        stream.emit('end');
+      }
+    });
+  }
+}
+
+function forEach (xs, f) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    f(xs[i], i);
+  }
+}
+
+function indexOf (xs, x) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    if (xs[i] === x) return i;
+  }
+  return -1;
+}
+
+}).call(this,_dereq_("oMfpAn"))
+},{"./index.js":21,"buffer":6,"events":9,"inherits":14,"oMfpAn":15,"process/browser.js":22,"string_decoder":27}],25:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a transform stream is a readable/writable stream where you do
+// something with the data.  Sometimes it's called a "filter",
+// but that's not a great name for it, since that implies a thing where
+// some bits pass through, and others are simply ignored.  (That would
+// be a valid example of a transform, of course.)
+//
+// While the output is causally related to the input, it's not a
+// necessarily symmetric or synchronous transformation.  For example,
+// a zlib stream might take multiple plain-text writes(), and then
+// emit a single compressed chunk some time in the future.
+//
+// Here's how this works:
+//
+// The Transform stream has all the aspects of the readable and writable
+// stream classes.  When you write(chunk), that calls _write(chunk,cb)
+// internally, and returns false if there's a lot of pending writes
+// buffered up.  When you call read(), that calls _read(n) until
+// there's enough pending readable data buffered up.
+//
+// In a transform stream, the written data is placed in a buffer.  When
+// _read(n) is called, it transforms the queued up data, calling the
+// buffered _write cb's as it consumes chunks.  If consuming a single
+// written chunk would result in multiple output chunks, then the first
+// outputted bit calls the readcb, and subsequent chunks just go into
+// the read buffer, and will cause it to emit 'readable' if necessary.
+//
+// This way, back-pressure is actually determined by the reading side,
+// since _read has to be called to start processing a new chunk.  However,
+// a pathological inflate type of transform can cause excessive buffering
+// here.  For example, imagine a stream where every byte of input is
+// interpreted as an integer from 0-255, and then results in that many
+// bytes of output.  Writing the 4 bytes {ff,ff,ff,ff} would result in
+// 1kb of data being output.  In this case, you could write a very small
+// amount of input, and end up with a very large amount of output.  In
+// such a pathological inflating mechanism, there'd be no way to tell
+// the system to stop doing the transform.  A single 4MB write could
+// cause the system to run out of memory.
+//
+// However, even in such a pathological case, only a single written chunk
+// would be consumed, and then the rest would wait (un-transformed) until
+// the results of the previous transformed chunk were consumed.
+
+module.exports = Transform;
+
+var Duplex = _dereq_('./duplex.js');
+var inherits = _dereq_('inherits');
+inherits(Transform, Duplex);
+
+
+function TransformState(options, stream) {
+  this.afterTransform = function(er, data) {
+    return afterTransform(stream, er, data);
+  };
+
+  this.needTransform = false;
+  this.transforming = false;
+  this.writecb = null;
+  this.writechunk = null;
+}
+
+function afterTransform(stream, er, data) {
+  var ts = stream._transformState;
+  ts.transforming = false;
+
+  var cb = ts.writecb;
+
+  if (!cb)
+    return stream.emit('error', new Error('no writecb in Transform class'));
+
+  ts.writechunk = null;
+  ts.writecb = null;
+
+  if (data !== null && data !== undefined)
+    stream.push(data);
+
+  if (cb)
+    cb(er);
+
+  var rs = stream._readableState;
+  rs.reading = false;
+  if (rs.needReadable || rs.length < rs.highWaterMark) {
+    stream._read(rs.highWaterMark);
+  }
+}
+
+
+function Transform(options) {
+  if (!(this instanceof Transform))
+    return new Transform(options);
+
+  Duplex.call(this, options);
+
+  var ts = this._transformState = new TransformState(options, this);
+
+  // when the writable side finishes, then flush out anything remaining.
+  var stream = this;
+
+  // start out asking for a readable event once data is transformed.
+  this._readableState.needReadable = true;
+
+  // we have implemented the _read method, and done the other things
+  // that Readable wants before the first _read call, so unset the
+  // sync guard flag.
+  this._readableState.sync = false;
+
+  this.once('finish', function() {
+    if ('function' === typeof this._flush)
+      this._flush(function(er) {
+        done(stream, er);
+      });
+    else
+      done(stream);
+  });
+}
+
+Transform.prototype.push = function(chunk, encoding) {
+  this._transformState.needTransform = false;
+  return Duplex.prototype.push.call(this, chunk, encoding);
 };
-Gibberish.Hat.prototype = Gibberish._oscillator;
 
-/* IMPORTANT README
-*
-* This class depends on having access to a folder of soundfonts that have been converted to
-* binary string representations. More specifically, soundfonts designed to work with GenMIDI.js:
-*
-* https://github.com/gleitz/midi-js-soundfonts
-*
-* At some point it would be nice to make another soundfont system, as GenMIDI.js does not support
-* defining loop points.
-*
-* By default soundfonts should be found in a folder named 'resources/soundfonts' one level above
-* the location of the gibberish.js library (or gibberish.min.js). You can pass a different path
-* as the second argument to the Gibberish.SoundFont constructor; the first is the name of the soundfont
-* minus the "-mp3.js" extension. So, for example:
-*
-* b = new Gibberish.SoundFont( 'choir_aahs' ).connect()
-* b.note( 'C4' )
-*
-* Note that you can only use note names, not frequency values.
-*/
+// This is the part where you do stuff!
+// override this function in implementation classes.
+// 'chunk' is an input chunk.
+//
+// Call `push(newChunk)` to pass along transformed output
+// to the readable side.  You may call 'push' zero or more times.
+//
+// Call `cb(err)` when you are done with this chunk.  If you pass
+// an error, then that'll put the hurt on the whole operation.  If you
+// never call cb(), then you'll never get another chunk.
+Transform.prototype._transform = function(chunk, encoding, cb) {
+  throw new Error('not implemented');
+};
 
-(function() {
-  var cents = function(base, _cents) { return base * Math.pow(2,_cents/1200) },
-      GenMIDI = { Soundfont: { instruments: {} } },
-      SF = GenMIDI.Soundfont
+Transform.prototype._write = function(chunk, encoding, cb) {
+  var ts = this._transformState;
+  ts.writecb = cb;
+  ts.writechunk = chunk;
+  ts.writeencoding = encoding;
+  if (!ts.transforming) {
+    var rs = this._readableState;
+    if (ts.needTransform ||
+        rs.needReadable ||
+        rs.length < rs.highWaterMark)
+      this._read(rs.highWaterMark);
+  }
+};
+
+// Doesn't matter what the args are here.
+// _transform does all the work.
+// That we got here means that the readable side wants more data.
+Transform.prototype._read = function(n) {
+  var ts = this._transformState;
+
+  if (ts.writechunk && ts.writecb && !ts.transforming) {
+    ts.transforming = true;
+    this._transform(ts.writechunk, ts.writeencoding, ts.afterTransform);
+  } else {
+    // mark that we need a transform, so that any data that comes in
+    // will get processed, now that we've asked for it.
+    ts.needTransform = true;
+  }
+};
+
+
+function done(stream, er) {
+  if (er)
+    return stream.emit('error', er);
+
+  // if there's nothing in the write buffer, then that means
+  // that nothing more will ever be provided
+  var ws = stream._writableState;
+  var rs = stream._readableState;
+  var ts = stream._transformState;
+
+  if (ws.length)
+    throw new Error('calling transform done when ws.length != 0');
+
+  if (ts.transforming)
+    throw new Error('calling transform done when still transforming');
+
+  return stream.push(null);
+}
+
+},{"./duplex.js":20,"inherits":14}],26:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// A bit simpler than readable streams.
+// Implement an async ._write(chunk, cb), and it'll handle all
+// the drain event emission and buffering.
+
+module.exports = Writable;
+Writable.WritableState = WritableState;
+
+var isUint8Array = typeof Uint8Array !== 'undefined'
+  ? function (x) { return x instanceof Uint8Array }
+  : function (x) {
+    return x && x.constructor && x.constructor.name === 'Uint8Array'
+  }
+;
+var isArrayBuffer = typeof ArrayBuffer !== 'undefined'
+  ? function (x) { return x instanceof ArrayBuffer }
+  : function (x) {
+    return x && x.constructor && x.constructor.name === 'ArrayBuffer'
+  }
+;
+
+var inherits = _dereq_('inherits');
+var Stream = _dereq_('./index.js');
+var setImmediate = _dereq_('process/browser.js').nextTick;
+var Buffer = _dereq_('buffer').Buffer;
+
+inherits(Writable, Stream);
+
+function WriteReq(chunk, encoding, cb) {
+  this.chunk = chunk;
+  this.encoding = encoding;
+  this.callback = cb;
+}
+
+function WritableState(options, stream) {
+  options = options || {};
+
+  // the point at which write() starts returning false
+  // Note: 0 is a valid value, means that we always return false if
+  // the entire buffer is not flushed immediately on write()
+  var hwm = options.highWaterMark;
+  this.highWaterMark = (hwm || hwm === 0) ? hwm : 16 * 1024;
+
+  // object stream flag to indicate whether or not this stream
+  // contains buffers or objects.
+  this.objectMode = !!options.objectMode;
+
+  // cast to ints.
+  this.highWaterMark = ~~this.highWaterMark;
+
+  this.needDrain = false;
+  // at the start of calling end()
+  this.ending = false;
+  // when end() has been called, and returned
+  this.ended = false;
+  // when 'finish' is emitted
+  this.finished = false;
+
+  // should we decode strings into buffers before passing to _write?
+  // this is here so that some node-core streams can optimize string
+  // handling at a lower level.
+  var noDecode = options.decodeStrings === false;
+  this.decodeStrings = !noDecode;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // not an actual buffer we keep track of, but a measurement
+  // of how much we're waiting to get pushed to some underlying
+  // socket or file.
+  this.length = 0;
+
+  // a flag to see when we're in the middle of a write.
+  this.writing = false;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, becuase any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // a flag to know if we're processing previously buffered items, which
+  // may call the _write() callback in the same tick, so that we don't
+  // end up in an overlapped onwrite situation.
+  this.bufferProcessing = false;
+
+  // the callback that's passed to _write(chunk,cb)
+  this.onwrite = function(er) {
+    onwrite(stream, er);
+  };
+
+  // the callback that the user supplies to write(chunk,encoding,cb)
+  this.writecb = null;
+
+  // the amount that is being written when _write is called.
+  this.writelen = 0;
+
+  this.buffer = [];
+}
+
+function Writable(options) {
+  // Writable ctor is applied to Duplexes, though they're not
+  // instanceof Writable, they're instanceof Readable.
+  if (!(this instanceof Writable) && !(this instanceof Stream.Duplex))
+    return new Writable(options);
+
+  this._writableState = new WritableState(options, this);
+
+  // legacy.
+  this.writable = true;
+
+  Stream.call(this);
+}
+
+// Otherwise people can pipe Writable streams, which is just wrong.
+Writable.prototype.pipe = function() {
+  this.emit('error', new Error('Cannot pipe. Not readable.'));
+};
+
+
+function writeAfterEnd(stream, state, cb) {
+  var er = new Error('write after end');
+  // TODO: defer error events consistently everywhere, not just the cb
+  stream.emit('error', er);
+  setImmediate(function() {
+    cb(er);
+  });
+}
+
+// If we get something that is not a buffer, string, null, or undefined,
+// and we're not in objectMode, then that's an error.
+// Otherwise stream chunks are all considered to be of length=1, and the
+// watermarks determine how many objects to keep in the buffer, rather than
+// how many bytes or characters.
+function validChunk(stream, state, chunk, cb) {
+  var valid = true;
+  if (!Buffer.isBuffer(chunk) &&
+      'string' !== typeof chunk &&
+      chunk !== null &&
+      chunk !== undefined &&
+      !state.objectMode) {
+    var er = new TypeError('Invalid non-string/buffer chunk');
+    stream.emit('error', er);
+    setImmediate(function() {
+      cb(er);
+    });
+    valid = false;
+  }
+  return valid;
+}
+
+Writable.prototype.write = function(chunk, encoding, cb) {
+  var state = this._writableState;
+  var ret = false;
+
+  if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (!Buffer.isBuffer(chunk) && isUint8Array(chunk))
+    chunk = new Buffer(chunk);
+  if (isArrayBuffer(chunk) && typeof Uint8Array !== 'undefined')
+    chunk = new Buffer(new Uint8Array(chunk));
   
-  // TODO: GET RID OF THIS GLOBAL!!!! It's unfortunately in there because we're using soundfonts meant for GenMIDI.js
-  if( typeof window === 'object' )
-    window.GenMIDI = GenMIDI
+  if (Buffer.isBuffer(chunk))
+    encoding = 'buffer';
+  else if (!encoding)
+    encoding = state.defaultEncoding;
+
+  if (typeof cb !== 'function')
+    cb = function() {};
+
+  if (state.ended)
+    writeAfterEnd(this, state, cb);
+  else if (validChunk(this, state, chunk, cb))
+    ret = writeOrBuffer(this, state, chunk, encoding, cb);
+
+  return ret;
+};
+
+function decodeChunk(state, chunk, encoding) {
+  if (!state.objectMode &&
+      state.decodeStrings !== false &&
+      typeof chunk === 'string') {
+    chunk = new Buffer(chunk, encoding);
+  }
+  return chunk;
+}
+
+// if we're already writing something, then just put this
+// in the queue, and wait our turn.  Otherwise, call _write
+// If we return false, then we need a drain event, so set that flag.
+function writeOrBuffer(stream, state, chunk, encoding, cb) {
+  chunk = decodeChunk(state, chunk, encoding);
+  var len = state.objectMode ? 1 : chunk.length;
+
+  state.length += len;
+
+  var ret = state.length < state.highWaterMark;
+  state.needDrain = !ret;
+
+  if (state.writing)
+    state.buffer.push(new WriteReq(chunk, encoding, cb));
   else
-    global.GenMIDI = GenMIDI
-  
-  var getScript = function( scriptPath, handler ) {
-    var oReq = new XMLHttpRequest();
-    
-    oReq.addEventListener("load", transferComplete, false);
-    oReq.addEventListener("error", function(e){ console.log( "SF load error", e ) }, false);
+    doWrite(stream, state, len, chunk, encoding, cb);
 
-    oReq.open( 'GET', scriptPath, true );
-    oReq.send()
-
-    function updateProgress (oEvent) {
-      if (oEvent.lengthComputable) {
-        var percentComplete = oEvent.loaded / oEvent.total;
-        number.innerHTML = Math.round( percentComplete * 100 )
-
-        var sizeString = new String( "" + oEvent.total )
-        sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
-        size.innerHTML = sizeString
-        
-        console.log( percentComplete, "%" )
-      } else {
-        // Unable to compute progress information since the total size is unknown
-      }
-    }
-
-    function transferComplete( evt ) {
-      console.log("COMPLETE", scriptPath)
-      var script = document.createElement('script')
-      script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
-      document.querySelector( 'head' ).appendChild( script )
-      handler( script ) 
-    }
-  }
-  
-  var Base64Binary = {
-  	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-	
-  	// will return a  Uint8Array type
-  	decodeArrayBuffer: function(input) {
-  		var bytes = (input.length/4) * 3;
-  		var ab = new ArrayBuffer(bytes);
-  		this.decode(input, ab);
-		
-  		return ab;
-  	},
-	
-  	decode: function(input, arrayBuffer) {
-  		//get last chars to see if are valid
-  		var lkey1 = this._keyStr.indexOf(input.charAt(input.length-1));		 
-  		var lkey2 = this._keyStr.indexOf(input.charAt(input.length-2));		 
-	
-  		var bytes = (input.length/4) * 3;
-  		if (lkey1 == 64) bytes--; //padding chars, so skip
-  		if (lkey2 == 64) bytes--; //padding chars, so skip
-		
-  		var uarray;
-  		var chr1, chr2, chr3;
-  		var enc1, enc2, enc3, enc4;
-  		var i = 0;
-  		var j = 0;
-		
-  		if (arrayBuffer)
-  			uarray = new Uint8Array(arrayBuffer);
-  		else
-  			uarray = new Uint8Array(bytes);
-		
-  		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-		
-  		for (i=0; i<bytes; i+=3) {	
-  			//get the 3 octects in 4 ascii chars
-  			enc1 = this._keyStr.indexOf(input.charAt(j++));
-  			enc2 = this._keyStr.indexOf(input.charAt(j++));
-  			enc3 = this._keyStr.indexOf(input.charAt(j++));
-  			enc4 = this._keyStr.indexOf(input.charAt(j++));
-	
-  			chr1 = (enc1 << 2) | (enc2 >> 4);
-  			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-  			chr3 = ((enc3 & 3) << 6) | enc4;
-	
-  			uarray[i] = chr1;			
-  			if (enc3 != 64) uarray[i+1] = chr2;
-  			if (enc4 != 64) uarray[i+2] = chr3;
-  		}
-	
-  		return uarray;	
-  	}
-  }
-  
-  var decodeBuffers = function( obj ) {
-    var count = 0,
-        font = SF[ obj.instrumentFileName ]
-        
-    if( typeof SF.instruments[ obj.instrumentFileName ] === 'undefined' ) {
-      SF.instruments[ obj.instrumentFileName ] = {}
-    }
-    
-    obj.buffers = SF.instruments[ obj.instrumentFileName ]
-    
-    for( var note in font ) {
-      count++
-      !function() {
-        var _note = note
-        
-        var base = font[ _note ].split(",")[1]
-        var arrayBuffer = Base64Binary.decodeArrayBuffer( base );
-        
-        Gibberish.context.decodeAudioData( arrayBuffer, function( _buffer ) {
-          SF.instruments[ obj.instrumentFileName ][ _note ] = _buffer.getChannelData( 0 )
-          count--
-          if( count <= 0 ) { 
-            console.log("Soundfont " + obj.instrumentFileName + " is loaded.")
-            obj.isLoaded = true
-            if( obj.onload ) obj.onload()
-          }
-        }, function(e) { console.log("ERROR", e.err, arguments, _note ) } )
-        
-      }()
-    }
-  }
-  
-  Gibberish.SoundFont = function( instrumentFileName, pathToResources ) {
-    var that = this
-    Gibberish.extend(this, {
-      'instrumentFileName': instrumentFileName,
-      name:'soundfont',
-      properties: {
-        amp:1,
-        pan:0
-      },
-      playing:[],
-      buffers:{},
-      onload: null,
-      out:[0,0],
-      isLoaded: false,
-      resourcePath: pathToResources || './resources/soundfonts/',
-      
-      callback: function( amp, pan ) {
-        var val = 0
-        for( var i = this.playing.length -1; i >= 0; i-- ) {
-          var note = this.playing[ i ]
-          
-          val += this.interpolate( note.buffer, note.phase )
-          
-          note.phase += note.increment
-          if( note.phase > note.length ) {
-            this.playing.splice( this.playing.indexOf( note ), 1 )
-          }
-        }
-        
-        return this.panner( val * amp, pan, this.out );
-      }.bind( this ),
-      
-      note: function( name, amp, cents ) {
-        if( this.isLoaded ) {
-          this.playing.push({
-            buffer:this.buffers[ name ],
-            phase:0,
-            increment: isNaN( cents ) ? 1 : 1 + cents,
-            length:this.buffers[ name ].length,
-            'amp': isNaN( amp ) ? 1 : amp
-          })
-        }
-      },
-      interpolate: Gibberish.interpolate.bind( this ),
-      panner: Gibberish.makePanner()
-    })
-    .init()
-    .oscillatorInit()
-    
-    if( typeof arguments[0] === 'object' && arguments[0].instrumentFileName ) {
-      this.instrumentFileName = arguments[0].instrumentFileName
-    }
-    
-    // if already loaded, or if passed a buffer to use...
-    if( !SF.instruments[ this.instrumentFileName ] && typeof pathToResources !== 'object' ) {
-      console.log("DOWNLOADING SOUNDFONT")
-      getScript( 'resources/soundfonts/' + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
-    }else{
-      if( typeof pathToResources === 'object' ) {
-        SF[ this.instrumentFileName ] = pathToResources
-        decodeBuffers( this )
-      }else{
-        this.buffers = SF.instruments[ this.instrumentFileName ]
-        this.isLoaded = true
-        setTimeout( function() { if( this.onload ) this.onload() }.bind( this ), 0 )
-      }
-    }
-    return this
-  }
-  Gibberish.SoundFont.storage = SF
-  Gibberish.SoundFont.prototype = Gibberish._oscillator;
-})()
-  
-Gibberish.Vocoder = function() {
-  var encoders = [], decoders = [], amps = [], store = [], 
-      abs = Math.abs, sqrt = Math.sqrt, phase = 0, output = [0,0],
-      encoderObjects = [], decoderObjects = [], envelopeSize = 128,
-      history = [],
-      sums = [],
-      env = [],
-      index = 0,
-      original_cutoffs = [
-        330, 440, 554, 880, 1100, 1660, 2220, 3140
-      ],
-      cutoffs = [],
-      startFreq = arguments[3] || 330,
-      endFreq   = arguments[4] || 3200,
-      numberOfBands = arguments[2] || 16,
-      Q = arguments[5] || .15;
-  
-	this.name =	"vocoder";
-  
-	this.properties = {
-    carrier:  arguments[0] || null,
-    modulator:arguments[1] || null,
-    amp:		  1,
-	  pan:		  0
-  }
-
-  // filter band formula adapted from https://github.com/cwilso/Vocoder/blob/master/js/vocoder.js
-	var totalRangeInCents = 1200 * Math.log( endFreq / startFreq ) / Math.LN2,
-	    centsPerBand = totalRangeInCents / numberOfBands,
-	    scale = Math.pow( 2, centsPerBand / 1200 ),  // This is the scaling for successive bands
-	    currentFreq = startFreq;
-
-	for(var i = 0; i < numberOfBands; i++) {
-		encoderObjects[i] = new Gibberish.Biquad({ mode:'BP', Q:Q, cutoff:currentFreq });
-    encoders[i] = encoderObjects[i].callback
-		decoderObjects[i] = new Gibberish.Biquad({ mode:'BP', Q:Q, cutoff:currentFreq });
-    decoders[i] = decoderObjects[i].callback    
-		
-    history[ i ] = [ 0 ]
-    sums[ i ] = 0
-    env[ i ] = 0
-    
-		currentFreq = currentFreq * scale;
-	}
-  
-  //console.log( numberOfBands, startFreq, endFreq, Q )
-  
-  this.callback = function( carrier, modulator, amp, pan ) {
-    var historyIndex = ( index + 1 ) % envelopeSize,
-        modValue = typeof modulator !== 'number' ? modulator[0] + modulator[1] : modulator,
-        carrierValue = typeof carrier !== 'number' ? carrier[0] + carrier[1] : carrier,
-        encValue, out = 0
-        
-		for(var i = 0; i < numberOfBands; i++) {
-      encValue = abs( encoders[ i ]( modValue ) )
-      
-      sums[ i ] += encValue
-      sums[ i ] -= history[ i ][ index ]
-      
-      history[ i ][ index ] = encValue
-      history[ i ][ historyIndex ] = history[ i ][ historyIndex ] ? history[ i ][ historyIndex ] : 0
-      
-      env[ i ] = sums[ i ] / envelopeSize
-      
-      out += decoders[i]( carrierValue ) * env[ i ];
-		}
-    index = historyIndex
-	
-    output[0] = output[1] = out * amp * 16; // look, ma... 16 IS MAGIC!!!
-
-		return output;
-	}
-  
-  this.getEncoders = function() { return encoderObjects }
-  this.getDecoders = function() { return decoderObjects }  
-  
-  this.init();
-  this.oscillatorInit();
-	//this.processProperties(arguments);
+  return ret;
 }
-Gibberish.Vocoder.prototype = Gibberish._synth
-return Gibberish; 
-})
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],"/www/gibber.audio.lib/scripts/external/freesound.js":[function(require,module,exports){
+
+function doWrite(stream, state, len, chunk, encoding, cb) {
+  state.writelen = len;
+  state.writecb = cb;
+  state.writing = true;
+  state.sync = true;
+  stream._write(chunk, encoding, state.onwrite);
+  state.sync = false;
+}
+
+function onwriteError(stream, state, sync, er, cb) {
+  if (sync)
+    setImmediate(function() {
+      cb(er);
+    });
+  else
+    cb(er);
+
+  stream.emit('error', er);
+}
+
+function onwriteStateUpdate(state) {
+  state.writing = false;
+  state.writecb = null;
+  state.length -= state.writelen;
+  state.writelen = 0;
+}
+
+function onwrite(stream, er) {
+  var state = stream._writableState;
+  var sync = state.sync;
+  var cb = state.writecb;
+
+  onwriteStateUpdate(state);
+
+  if (er)
+    onwriteError(stream, state, sync, er, cb);
+  else {
+    // Check if we're actually ready to finish, but don't emit yet
+    var finished = needFinish(stream, state);
+
+    if (!finished && !state.bufferProcessing && state.buffer.length)
+      clearBuffer(stream, state);
+
+    if (sync) {
+      setImmediate(function() {
+        afterWrite(stream, state, finished, cb);
+      });
+    } else {
+      afterWrite(stream, state, finished, cb);
+    }
+  }
+}
+
+function afterWrite(stream, state, finished, cb) {
+  if (!finished)
+    onwriteDrain(stream, state);
+  cb();
+  if (finished)
+    finishMaybe(stream, state);
+}
+
+// Must force callback to be called on nextTick, so that we don't
+// emit 'drain' before the write() consumer gets the 'false' return
+// value, and has a chance to attach a 'drain' listener.
+function onwriteDrain(stream, state) {
+  if (state.length === 0 && state.needDrain) {
+    state.needDrain = false;
+    stream.emit('drain');
+  }
+}
+
+
+// if there's something in the buffer waiting, then process it
+function clearBuffer(stream, state) {
+  state.bufferProcessing = true;
+
+  for (var c = 0; c < state.buffer.length; c++) {
+    var entry = state.buffer[c];
+    var chunk = entry.chunk;
+    var encoding = entry.encoding;
+    var cb = entry.callback;
+    var len = state.objectMode ? 1 : chunk.length;
+
+    doWrite(stream, state, len, chunk, encoding, cb);
+
+    // if we didn't call the onwrite immediately, then
+    // it means that we need to wait until it does.
+    // also, that means that the chunk and cb are currently
+    // being processed, so move the buffer counter past them.
+    if (state.writing) {
+      c++;
+      break;
+    }
+  }
+
+  state.bufferProcessing = false;
+  if (c < state.buffer.length)
+    state.buffer = state.buffer.slice(c);
+  else
+    state.buffer.length = 0;
+}
+
+Writable.prototype._write = function(chunk, encoding, cb) {
+  cb(new Error('not implemented'));
+};
+
+Writable.prototype.end = function(chunk, encoding, cb) {
+  var state = this._writableState;
+
+  if (typeof chunk === 'function') {
+    cb = chunk;
+    chunk = null;
+    encoding = null;
+  } else if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (typeof chunk !== 'undefined' && chunk !== null)
+    this.write(chunk, encoding);
+
+  // ignore unnecessary end() calls.
+  if (!state.ending && !state.finished)
+    endWritable(this, state, cb);
+};
+
+
+function needFinish(stream, state) {
+  return (state.ending &&
+          state.length === 0 &&
+          !state.finished &&
+          !state.writing);
+}
+
+function finishMaybe(stream, state) {
+  var need = needFinish(stream, state);
+  if (need) {
+    state.finished = true;
+    stream.emit('finish');
+  }
+  return need;
+}
+
+function endWritable(stream, state, cb) {
+  state.ending = true;
+  finishMaybe(stream, state);
+  if (cb) {
+    if (state.finished)
+      setImmediate(cb);
+    else
+      stream.once('finish', cb);
+  }
+  state.ended = true;
+}
+
+},{"./index.js":21,"buffer":6,"inherits":14,"process/browser.js":22}],27:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var Buffer = _dereq_('buffer').Buffer;
+
+function assertEncoding(encoding) {
+  if (encoding && !Buffer.isEncoding(encoding)) {
+    throw new Error('Unknown encoding: ' + encoding);
+  }
+}
+
+var StringDecoder = exports.StringDecoder = function(encoding) {
+  this.encoding = (encoding || 'utf8').toLowerCase().replace(/[-_]/, '');
+  assertEncoding(encoding);
+  switch (this.encoding) {
+    case 'utf8':
+      // CESU-8 represents each of Surrogate Pair by 3-bytes
+      this.surrogateSize = 3;
+      break;
+    case 'ucs2':
+    case 'utf16le':
+      // UTF-16 represents each of Surrogate Pair by 2-bytes
+      this.surrogateSize = 2;
+      this.detectIncompleteChar = utf16DetectIncompleteChar;
+      break;
+    case 'base64':
+      // Base-64 stores 3 bytes in 4 chars, and pads the remainder.
+      this.surrogateSize = 3;
+      this.detectIncompleteChar = base64DetectIncompleteChar;
+      break;
+    default:
+      this.write = passThroughWrite;
+      return;
+  }
+
+  this.charBuffer = new Buffer(6);
+  this.charReceived = 0;
+  this.charLength = 0;
+};
+
+
+StringDecoder.prototype.write = function(buffer) {
+  var charStr = '';
+  var offset = 0;
+
+  // if our last write ended with an incomplete multibyte character
+  while (this.charLength) {
+    // determine how many remaining bytes this buffer has to offer for this char
+    var i = (buffer.length >= this.charLength - this.charReceived) ?
+                this.charLength - this.charReceived :
+                buffer.length;
+
+    // add the new bytes to the char buffer
+    buffer.copy(this.charBuffer, this.charReceived, offset, i);
+    this.charReceived += (i - offset);
+    offset = i;
+
+    if (this.charReceived < this.charLength) {
+      // still not enough chars in this buffer? wait for more ...
+      return '';
+    }
+
+    // get the character that was split
+    charStr = this.charBuffer.slice(0, this.charLength).toString(this.encoding);
+
+    // lead surrogate (D800-DBFF) is also the incomplete character
+    var charCode = charStr.charCodeAt(charStr.length - 1);
+    if (charCode >= 0xD800 && charCode <= 0xDBFF) {
+      this.charLength += this.surrogateSize;
+      charStr = '';
+      continue;
+    }
+    this.charReceived = this.charLength = 0;
+
+    // if there are no more bytes in this buffer, just emit our char
+    if (i == buffer.length) return charStr;
+
+    // otherwise cut off the characters end from the beginning of this buffer
+    buffer = buffer.slice(i, buffer.length);
+    break;
+  }
+
+  var lenIncomplete = this.detectIncompleteChar(buffer);
+
+  var end = buffer.length;
+  if (this.charLength) {
+    // buffer the incomplete character bytes we got
+    buffer.copy(this.charBuffer, 0, buffer.length - lenIncomplete, end);
+    this.charReceived = lenIncomplete;
+    end -= lenIncomplete;
+  }
+
+  charStr += buffer.toString(this.encoding, 0, end);
+
+  var end = charStr.length - 1;
+  var charCode = charStr.charCodeAt(end);
+  // lead surrogate (D800-DBFF) is also the incomplete character
+  if (charCode >= 0xD800 && charCode <= 0xDBFF) {
+    var size = this.surrogateSize;
+    this.charLength += size;
+    this.charReceived += size;
+    this.charBuffer.copy(this.charBuffer, size, 0, size);
+    this.charBuffer.write(charStr.charAt(charStr.length - 1), this.encoding);
+    return charStr.substring(0, end);
+  }
+
+  // or just emit the charStr
+  return charStr;
+};
+
+StringDecoder.prototype.detectIncompleteChar = function(buffer) {
+  // determine how many bytes we have to check at the end of this buffer
+  var i = (buffer.length >= 3) ? 3 : buffer.length;
+
+  // Figure out if one of the last i bytes of our buffer announces an
+  // incomplete char.
+  for (; i > 0; i--) {
+    var c = buffer[buffer.length - i];
+
+    // See http://en.wikipedia.org/wiki/UTF-8#Description
+
+    // 110XXXXX
+    if (i == 1 && c >> 5 == 0x06) {
+      this.charLength = 2;
+      break;
+    }
+
+    // 1110XXXX
+    if (i <= 2 && c >> 4 == 0x0E) {
+      this.charLength = 3;
+      break;
+    }
+
+    // 11110XXX
+    if (i <= 3 && c >> 3 == 0x1E) {
+      this.charLength = 4;
+      break;
+    }
+  }
+
+  return i;
+};
+
+StringDecoder.prototype.end = function(buffer) {
+  var res = '';
+  if (buffer && buffer.length)
+    res = this.write(buffer);
+
+  if (this.charReceived) {
+    var cr = this.charReceived;
+    var buf = this.charBuffer;
+    var enc = this.encoding;
+    res += buf.slice(0, cr).toString(enc);
+  }
+
+  return res;
+};
+
+function passThroughWrite(buffer) {
+  return buffer.toString(this.encoding);
+}
+
+function utf16DetectIncompleteChar(buffer) {
+  var incomplete = this.charReceived = buffer.length % 2;
+  this.charLength = incomplete ? 2 : 0;
+  return incomplete;
+}
+
+function base64DetectIncompleteChar(buffer) {
+  var incomplete = this.charReceived = buffer.length % 3;
+  this.charLength = incomplete ? 3 : 0;
+  return incomplete;
+}
+
+},{"buffer":6}],28:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var punycode = _dereq_('punycode');
+
+exports.parse = urlParse;
+exports.resolve = urlResolve;
+exports.resolveObject = urlResolveObject;
+exports.format = urlFormat;
+
+exports.Url = Url;
+
+function Url() {
+  this.protocol = null;
+  this.slashes = null;
+  this.auth = null;
+  this.host = null;
+  this.port = null;
+  this.hostname = null;
+  this.hash = null;
+  this.search = null;
+  this.query = null;
+  this.pathname = null;
+  this.path = null;
+  this.href = null;
+}
+
+// Reference: RFC 3986, RFC 1808, RFC 2396
+
+// define these here so at least they only have to be
+// compiled once on the first module load.
+var protocolPattern = /^([a-z0-9.+-]+:)/i,
+    portPattern = /:[0-9]*$/,
+
+    // RFC 2396: characters reserved for delimiting URLs.
+    // We actually just auto-escape these.
+    delims = ['<', '>', '"', '`', ' ', '\r', '\n', '\t'],
+
+    // RFC 2396: characters not allowed for various reasons.
+    unwise = ['{', '}', '|', '\\', '^', '`'].concat(delims),
+
+    // Allowed by RFCs, but cause of XSS attacks.  Always escape these.
+    autoEscape = ['\''].concat(unwise),
+    // Characters that are never ever allowed in a hostname.
+    // Note that any invalid chars are also handled, but these
+    // are the ones that are *expected* to be seen, so we fast-path
+    // them.
+    nonHostChars = ['%', '/', '?', ';', '#'].concat(autoEscape),
+    hostEndingChars = ['/', '?', '#'],
+    hostnameMaxLen = 255,
+    hostnamePartPattern = /^[a-z0-9A-Z_-]{0,63}$/,
+    hostnamePartStart = /^([a-z0-9A-Z_-]{0,63})(.*)$/,
+    // protocols that can allow "unsafe" and "unwise" chars.
+    unsafeProtocol = {
+      'javascript': true,
+      'javascript:': true
+    },
+    // protocols that never have a hostname.
+    hostlessProtocol = {
+      'javascript': true,
+      'javascript:': true
+    },
+    // protocols that always contain a // bit.
+    slashedProtocol = {
+      'http': true,
+      'https': true,
+      'ftp': true,
+      'gopher': true,
+      'file': true,
+      'http:': true,
+      'https:': true,
+      'ftp:': true,
+      'gopher:': true,
+      'file:': true
+    },
+    querystring = _dereq_('querystring');
+
+function urlParse(url, parseQueryString, slashesDenoteHost) {
+  if (url && isObject(url) && url instanceof Url) return url;
+
+  var u = new Url;
+  u.parse(url, parseQueryString, slashesDenoteHost);
+  return u;
+}
+
+Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
+  if (!isString(url)) {
+    throw new TypeError("Parameter 'url' must be a string, not " + typeof url);
+  }
+
+  var rest = url;
+
+  // trim before proceeding.
+  // This is to support parse stuff like "  http://foo.com  \n"
+  rest = rest.trim();
+
+  var proto = protocolPattern.exec(rest);
+  if (proto) {
+    proto = proto[0];
+    var lowerProto = proto.toLowerCase();
+    this.protocol = lowerProto;
+    rest = rest.substr(proto.length);
+  }
+
+  // figure out if it's got a host
+  // user@server is *always* interpreted as a hostname, and url
+  // resolution will treat //foo/bar as host=foo,path=bar because that's
+  // how the browser resolves relative URLs.
+  if (slashesDenoteHost || proto || rest.match(/^\/\/[^@\/]+@[^@\/]+/)) {
+    var slashes = rest.substr(0, 2) === '//';
+    if (slashes && !(proto && hostlessProtocol[proto])) {
+      rest = rest.substr(2);
+      this.slashes = true;
+    }
+  }
+
+  if (!hostlessProtocol[proto] &&
+      (slashes || (proto && !slashedProtocol[proto]))) {
+
+    // there's a hostname.
+    // the first instance of /, ?, ;, or # ends the host.
+    //
+    // If there is an @ in the hostname, then non-host chars *are* allowed
+    // to the left of the last @ sign, unless some host-ending character
+    // comes *before* the @-sign.
+    // URLs are obnoxious.
+    //
+    // ex:
+    // http://a@b@c/ => user:a@b host:c
+    // http://a@b?@c => user:a host:c path:/?@c
+
+    // v0.12 TODO(isaacs): This is not quite how Chrome does things.
+    // Review our test case against browsers more comprehensively.
+
+    // find the first instance of any hostEndingChars
+    var hostEnd = -1;
+    for (var i = 0; i < hostEndingChars.length; i++) {
+      var hec = rest.indexOf(hostEndingChars[i]);
+      if (hec !== -1 && (hostEnd === -1 || hec < hostEnd))
+        hostEnd = hec;
+    }
+
+    // at this point, either we have an explicit point where the
+    // auth portion cannot go past, or the last @ char is the decider.
+    var auth, atSign;
+    if (hostEnd === -1) {
+      // atSign can be anywhere.
+      atSign = rest.lastIndexOf('@');
+    } else {
+      // atSign must be in auth portion.
+      // http://a@b/c@d => host:b auth:a path:/c@d
+      atSign = rest.lastIndexOf('@', hostEnd);
+    }
+
+    // Now we have a portion which is definitely the auth.
+    // Pull that off.
+    if (atSign !== -1) {
+      auth = rest.slice(0, atSign);
+      rest = rest.slice(atSign + 1);
+      this.auth = decodeURIComponent(auth);
+    }
+
+    // the host is the remaining to the left of the first non-host char
+    hostEnd = -1;
+    for (var i = 0; i < nonHostChars.length; i++) {
+      var hec = rest.indexOf(nonHostChars[i]);
+      if (hec !== -1 && (hostEnd === -1 || hec < hostEnd))
+        hostEnd = hec;
+    }
+    // if we still have not hit it, then the entire thing is a host.
+    if (hostEnd === -1)
+      hostEnd = rest.length;
+
+    this.host = rest.slice(0, hostEnd);
+    rest = rest.slice(hostEnd);
+
+    // pull out port.
+    this.parseHost();
+
+    // we've indicated that there is a hostname,
+    // so even if it's empty, it has to be present.
+    this.hostname = this.hostname || '';
+
+    // if hostname begins with [ and ends with ]
+    // assume that it's an IPv6 address.
+    var ipv6Hostname = this.hostname[0] === '[' &&
+        this.hostname[this.hostname.length - 1] === ']';
+
+    // validate a little.
+    if (!ipv6Hostname) {
+      var hostparts = this.hostname.split(/\./);
+      for (var i = 0, l = hostparts.length; i < l; i++) {
+        var part = hostparts[i];
+        if (!part) continue;
+        if (!part.match(hostnamePartPattern)) {
+          var newpart = '';
+          for (var j = 0, k = part.length; j < k; j++) {
+            if (part.charCodeAt(j) > 127) {
+              // we replace non-ASCII char with a temporary placeholder
+              // we need this to make sure size of hostname is not
+              // broken by replacing non-ASCII by nothing
+              newpart += 'x';
+            } else {
+              newpart += part[j];
+            }
+          }
+          // we test again with ASCII char only
+          if (!newpart.match(hostnamePartPattern)) {
+            var validParts = hostparts.slice(0, i);
+            var notHost = hostparts.slice(i + 1);
+            var bit = part.match(hostnamePartStart);
+            if (bit) {
+              validParts.push(bit[1]);
+              notHost.unshift(bit[2]);
+            }
+            if (notHost.length) {
+              rest = '/' + notHost.join('.') + rest;
+            }
+            this.hostname = validParts.join('.');
+            break;
+          }
+        }
+      }
+    }
+
+    if (this.hostname.length > hostnameMaxLen) {
+      this.hostname = '';
+    } else {
+      // hostnames are always lower case.
+      this.hostname = this.hostname.toLowerCase();
+    }
+
+    if (!ipv6Hostname) {
+      // IDNA Support: Returns a puny coded representation of "domain".
+      // It only converts the part of the domain name that
+      // has non ASCII characters. I.e. it dosent matter if
+      // you call it with a domain that already is in ASCII.
+      var domainArray = this.hostname.split('.');
+      var newOut = [];
+      for (var i = 0; i < domainArray.length; ++i) {
+        var s = domainArray[i];
+        newOut.push(s.match(/[^A-Za-z0-9_-]/) ?
+            'xn--' + punycode.encode(s) : s);
+      }
+      this.hostname = newOut.join('.');
+    }
+
+    var p = this.port ? ':' + this.port : '';
+    var h = this.hostname || '';
+    this.host = h + p;
+    this.href += this.host;
+
+    // strip [ and ] from the hostname
+    // the host field still retains them, though
+    if (ipv6Hostname) {
+      this.hostname = this.hostname.substr(1, this.hostname.length - 2);
+      if (rest[0] !== '/') {
+        rest = '/' + rest;
+      }
+    }
+  }
+
+  // now rest is set to the post-host stuff.
+  // chop off any delim chars.
+  if (!unsafeProtocol[lowerProto]) {
+
+    // First, make 100% sure that any "autoEscape" chars get
+    // escaped, even if encodeURIComponent doesn't think they
+    // need to be.
+    for (var i = 0, l = autoEscape.length; i < l; i++) {
+      var ae = autoEscape[i];
+      var esc = encodeURIComponent(ae);
+      if (esc === ae) {
+        esc = escape(ae);
+      }
+      rest = rest.split(ae).join(esc);
+    }
+  }
+
+
+  // chop off from the tail first.
+  var hash = rest.indexOf('#');
+  if (hash !== -1) {
+    // got a fragment string.
+    this.hash = rest.substr(hash);
+    rest = rest.slice(0, hash);
+  }
+  var qm = rest.indexOf('?');
+  if (qm !== -1) {
+    this.search = rest.substr(qm);
+    this.query = rest.substr(qm + 1);
+    if (parseQueryString) {
+      this.query = querystring.parse(this.query);
+    }
+    rest = rest.slice(0, qm);
+  } else if (parseQueryString) {
+    // no query string, but parseQueryString still requested
+    this.search = '';
+    this.query = {};
+  }
+  if (rest) this.pathname = rest;
+  if (slashedProtocol[lowerProto] &&
+      this.hostname && !this.pathname) {
+    this.pathname = '/';
+  }
+
+  //to support http.request
+  if (this.pathname || this.search) {
+    var p = this.pathname || '';
+    var s = this.search || '';
+    this.path = p + s;
+  }
+
+  // finally, reconstruct the href based on what has been validated.
+  this.href = this.format();
+  return this;
+};
+
+// format a parsed object into a url string
+function urlFormat(obj) {
+  // ensure it's an object, and not a string url.
+  // If it's an obj, this is a no-op.
+  // this way, you can call url_format() on strings
+  // to clean up potentially wonky urls.
+  if (isString(obj)) obj = urlParse(obj);
+  if (!(obj instanceof Url)) return Url.prototype.format.call(obj);
+  return obj.format();
+}
+
+Url.prototype.format = function() {
+  var auth = this.auth || '';
+  if (auth) {
+    auth = encodeURIComponent(auth);
+    auth = auth.replace(/%3A/i, ':');
+    auth += '@';
+  }
+
+  var protocol = this.protocol || '',
+      pathname = this.pathname || '',
+      hash = this.hash || '',
+      host = false,
+      query = '';
+
+  if (this.host) {
+    host = auth + this.host;
+  } else if (this.hostname) {
+    host = auth + (this.hostname.indexOf(':') === -1 ?
+        this.hostname :
+        '[' + this.hostname + ']');
+    if (this.port) {
+      host += ':' + this.port;
+    }
+  }
+
+  if (this.query &&
+      isObject(this.query) &&
+      Object.keys(this.query).length) {
+    query = querystring.stringify(this.query);
+  }
+
+  var search = this.search || (query && ('?' + query)) || '';
+
+  if (protocol && protocol.substr(-1) !== ':') protocol += ':';
+
+  // only the slashedProtocols get the //.  Not mailto:, xmpp:, etc.
+  // unless they had them to begin with.
+  if (this.slashes ||
+      (!protocol || slashedProtocol[protocol]) && host !== false) {
+    host = '//' + (host || '');
+    if (pathname && pathname.charAt(0) !== '/') pathname = '/' + pathname;
+  } else if (!host) {
+    host = '';
+  }
+
+  if (hash && hash.charAt(0) !== '#') hash = '#' + hash;
+  if (search && search.charAt(0) !== '?') search = '?' + search;
+
+  pathname = pathname.replace(/[?#]/g, function(match) {
+    return encodeURIComponent(match);
+  });
+  search = search.replace('#', '%23');
+
+  return protocol + host + pathname + search + hash;
+};
+
+function urlResolve(source, relative) {
+  return urlParse(source, false, true).resolve(relative);
+}
+
+Url.prototype.resolve = function(relative) {
+  return this.resolveObject(urlParse(relative, false, true)).format();
+};
+
+function urlResolveObject(source, relative) {
+  if (!source) return relative;
+  return urlParse(source, false, true).resolveObject(relative);
+}
+
+Url.prototype.resolveObject = function(relative) {
+  if (isString(relative)) {
+    var rel = new Url();
+    rel.parse(relative, false, true);
+    relative = rel;
+  }
+
+  var result = new Url();
+  Object.keys(this).forEach(function(k) {
+    result[k] = this[k];
+  }, this);
+
+  // hash is always overridden, no matter what.
+  // even href="" will remove it.
+  result.hash = relative.hash;
+
+  // if the relative url is empty, then there's nothing left to do here.
+  if (relative.href === '') {
+    result.href = result.format();
+    return result;
+  }
+
+  // hrefs like //foo/bar always cut to the protocol.
+  if (relative.slashes && !relative.protocol) {
+    // take everything except the protocol from relative
+    Object.keys(relative).forEach(function(k) {
+      if (k !== 'protocol')
+        result[k] = relative[k];
+    });
+
+    //urlParse appends trailing / to urls like http://www.example.com
+    if (slashedProtocol[result.protocol] &&
+        result.hostname && !result.pathname) {
+      result.path = result.pathname = '/';
+    }
+
+    result.href = result.format();
+    return result;
+  }
+
+  if (relative.protocol && relative.protocol !== result.protocol) {
+    // if it's a known url protocol, then changing
+    // the protocol does weird things
+    // first, if it's not file:, then we MUST have a host,
+    // and if there was a path
+    // to begin with, then we MUST have a path.
+    // if it is file:, then the host is dropped,
+    // because that's known to be hostless.
+    // anything else is assumed to be absolute.
+    if (!slashedProtocol[relative.protocol]) {
+      Object.keys(relative).forEach(function(k) {
+        result[k] = relative[k];
+      });
+      result.href = result.format();
+      return result;
+    }
+
+    result.protocol = relative.protocol;
+    if (!relative.host && !hostlessProtocol[relative.protocol]) {
+      var relPath = (relative.pathname || '').split('/');
+      while (relPath.length && !(relative.host = relPath.shift()));
+      if (!relative.host) relative.host = '';
+      if (!relative.hostname) relative.hostname = '';
+      if (relPath[0] !== '') relPath.unshift('');
+      if (relPath.length < 2) relPath.unshift('');
+      result.pathname = relPath.join('/');
+    } else {
+      result.pathname = relative.pathname;
+    }
+    result.search = relative.search;
+    result.query = relative.query;
+    result.host = relative.host || '';
+    result.auth = relative.auth;
+    result.hostname = relative.hostname || relative.host;
+    result.port = relative.port;
+    // to support http.request
+    if (result.pathname || result.search) {
+      var p = result.pathname || '';
+      var s = result.search || '';
+      result.path = p + s;
+    }
+    result.slashes = result.slashes || relative.slashes;
+    result.href = result.format();
+    return result;
+  }
+
+  var isSourceAbs = (result.pathname && result.pathname.charAt(0) === '/'),
+      isRelAbs = (
+          relative.host ||
+          relative.pathname && relative.pathname.charAt(0) === '/'
+      ),
+      mustEndAbs = (isRelAbs || isSourceAbs ||
+                    (result.host && relative.pathname)),
+      removeAllDots = mustEndAbs,
+      srcPath = result.pathname && result.pathname.split('/') || [],
+      relPath = relative.pathname && relative.pathname.split('/') || [],
+      psychotic = result.protocol && !slashedProtocol[result.protocol];
+
+  // if the url is a non-slashed url, then relative
+  // links like ../.. should be able
+  // to crawl up to the hostname, as well.  This is strange.
+  // result.protocol has already been set by now.
+  // Later on, put the first path part into the host field.
+  if (psychotic) {
+    result.hostname = '';
+    result.port = null;
+    if (result.host) {
+      if (srcPath[0] === '') srcPath[0] = result.host;
+      else srcPath.unshift(result.host);
+    }
+    result.host = '';
+    if (relative.protocol) {
+      relative.hostname = null;
+      relative.port = null;
+      if (relative.host) {
+        if (relPath[0] === '') relPath[0] = relative.host;
+        else relPath.unshift(relative.host);
+      }
+      relative.host = null;
+    }
+    mustEndAbs = mustEndAbs && (relPath[0] === '' || srcPath[0] === '');
+  }
+
+  if (isRelAbs) {
+    // it's absolute.
+    result.host = (relative.host || relative.host === '') ?
+                  relative.host : result.host;
+    result.hostname = (relative.hostname || relative.hostname === '') ?
+                      relative.hostname : result.hostname;
+    result.search = relative.search;
+    result.query = relative.query;
+    srcPath = relPath;
+    // fall through to the dot-handling below.
+  } else if (relPath.length) {
+    // it's relative
+    // throw away the existing file, and take the new path instead.
+    if (!srcPath) srcPath = [];
+    srcPath.pop();
+    srcPath = srcPath.concat(relPath);
+    result.search = relative.search;
+    result.query = relative.query;
+  } else if (!isNullOrUndefined(relative.search)) {
+    // just pull out the search.
+    // like href='?foo'.
+    // Put this after the other two cases because it simplifies the booleans
+    if (psychotic) {
+      result.hostname = result.host = srcPath.shift();
+      //occationaly the auth can get stuck only in host
+      //this especialy happens in cases like
+      //url.resolveObject('mailto:local1@domain1', 'local2@domain2')
+      var authInHost = result.host && result.host.indexOf('@') > 0 ?
+                       result.host.split('@') : false;
+      if (authInHost) {
+        result.auth = authInHost.shift();
+        result.host = result.hostname = authInHost.shift();
+      }
+    }
+    result.search = relative.search;
+    result.query = relative.query;
+    //to support http.request
+    if (!isNull(result.pathname) || !isNull(result.search)) {
+      result.path = (result.pathname ? result.pathname : '') +
+                    (result.search ? result.search : '');
+    }
+    result.href = result.format();
+    return result;
+  }
+
+  if (!srcPath.length) {
+    // no path at all.  easy.
+    // we've already handled the other stuff above.
+    result.pathname = null;
+    //to support http.request
+    if (result.search) {
+      result.path = '/' + result.search;
+    } else {
+      result.path = null;
+    }
+    result.href = result.format();
+    return result;
+  }
+
+  // if a url ENDs in . or .., then it must get a trailing slash.
+  // however, if it ends in anything else non-slashy,
+  // then it must NOT get a trailing slash.
+  var last = srcPath.slice(-1)[0];
+  var hasTrailingSlash = (
+      (result.host || relative.host) && (last === '.' || last === '..') ||
+      last === '');
+
+  // strip single dots, resolve double dots to parent dir
+  // if the path tries to go above the root, `up` ends up > 0
+  var up = 0;
+  for (var i = srcPath.length; i >= 0; i--) {
+    last = srcPath[i];
+    if (last == '.') {
+      srcPath.splice(i, 1);
+    } else if (last === '..') {
+      srcPath.splice(i, 1);
+      up++;
+    } else if (up) {
+      srcPath.splice(i, 1);
+      up--;
+    }
+  }
+
+  // if the path is allowed to go above the root, restore leading ..s
+  if (!mustEndAbs && !removeAllDots) {
+    for (; up--; up) {
+      srcPath.unshift('..');
+    }
+  }
+
+  if (mustEndAbs && srcPath[0] !== '' &&
+      (!srcPath[0] || srcPath[0].charAt(0) !== '/')) {
+    srcPath.unshift('');
+  }
+
+  if (hasTrailingSlash && (srcPath.join('/').substr(-1) !== '/')) {
+    srcPath.push('');
+  }
+
+  var isAbsolute = srcPath[0] === '' ||
+      (srcPath[0] && srcPath[0].charAt(0) === '/');
+
+  // put the host back
+  if (psychotic) {
+    result.hostname = result.host = isAbsolute ? '' :
+                                    srcPath.length ? srcPath.shift() : '';
+    //occationaly the auth can get stuck only in host
+    //this especialy happens in cases like
+    //url.resolveObject('mailto:local1@domain1', 'local2@domain2')
+    var authInHost = result.host && result.host.indexOf('@') > 0 ?
+                     result.host.split('@') : false;
+    if (authInHost) {
+      result.auth = authInHost.shift();
+      result.host = result.hostname = authInHost.shift();
+    }
+  }
+
+  mustEndAbs = mustEndAbs || (result.host && srcPath.length);
+
+  if (mustEndAbs && !isAbsolute) {
+    srcPath.unshift('');
+  }
+
+  if (!srcPath.length) {
+    result.pathname = null;
+    result.path = null;
+  } else {
+    result.pathname = srcPath.join('/');
+  }
+
+  //to support request.http
+  if (!isNull(result.pathname) || !isNull(result.search)) {
+    result.path = (result.pathname ? result.pathname : '') +
+                  (result.search ? result.search : '');
+  }
+  result.auth = relative.auth || result.auth;
+  result.slashes = result.slashes || relative.slashes;
+  result.href = result.format();
+  return result;
+};
+
+Url.prototype.parseHost = function() {
+  var host = this.host;
+  var port = portPattern.exec(host);
+  if (port) {
+    port = port[0];
+    if (port !== ':') {
+      this.port = port.substr(1);
+    }
+    host = host.substr(0, host.length - port.length);
+  }
+  if (host) this.hostname = host;
+};
+
+function isString(arg) {
+  return typeof arg === "string";
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isNull(arg) {
+  return arg === null;
+}
+function isNullOrUndefined(arg) {
+  return  arg == null;
+}
+
+},{"punycode":16,"querystring":19}],29:[function(_dereq_,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],30:[function(_dereq_,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = _dereq_('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = _dereq_('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,_dereq_("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":29,"inherits":14,"oMfpAn":15}],31:[function(_dereq_,module,exports){
 /*
  * Freesound Javascript SDK
  */
@@ -10380,16 +8206,368 @@ var freesound = module.exports = {
 };
 
 }()
-},{}],"/www/gibber.audio.lib/scripts/external/teoria.min.js":[function(require,module,exports){
+},{}],32:[function(_dereq_,module,exports){
+(function () {
+
+    var freesound = function () {        
+        var authHeader = '';
+        var clientId = '';
+        var clientSecret = '';
+        var host = 'freesound.org';
+
+        var uris = {
+            base : 'https://'+host+'/apiv2',
+            textSearch : '/search/text/',
+            contentSearch: '/search/content/',
+            combinedSearch : '/sounds/search/combined/',
+            sound : '/sounds/<sound_id>/',
+            soundAnalysis : '/sounds/<sound_id>/analysis/',
+            similarSounds : '/sounds/<sound_id>/similar/',
+            comments : '/sounds/<sound_id>/comments/',
+            download : '/sounds/<sound_id>/download/',
+            upload : '/sounds/upload/',
+            describe : '/sounds/<sound_id>/describe/',
+            pending : '/sounds/pending_uploads/',
+            bookmark : '/sounds/<sound_id>/bookmark/',
+            rate : '/sounds/<sound_id>/rate/',
+            comment : '/sounds/<sound_id>/comment/',
+            authorize : '/oauth2/authorize/',
+            logout : '/api-auth/logout/',
+            logoutAuthorize : '/oauth2/logout_and_authorize/',
+            me : '/me/',
+            user : '/users/<username>/',
+            userSounds : '/users/<username>/sounds/',
+            userPacks : '/users/<username>/packs/',
+            userBookmarkCategories : '/users/<username>/bookmark_categories/',
+            userBookmarkCategorySounds : '/users/<username>/bookmark_categories/<category_id>/sounds/',
+            pack : '/packs/<pack_id>/',
+            packSounds : '/packs/<pack_id>/sounds/',
+            packDownload : '/packs/<pack_id>/download/'            
+        };
+        
+        var makeUri = function (uri, args){
+            for (var a in args) {uri = uri.replace(/<[\w_]+>/, args[a]);}
+            return uris.base+uri;
+        };
+
+        var makeRequest = function (uri, success, error, params, wrapper, method, data, content_type){
+            if(method===undefined) method='GET';
+            if(!error)error = function(e){console.log(e)};
+            params = params || {};
+            params['format'] = 'json';
+            //params['api_key'] = '4287f0bacdcc492a8fae27fc3b228aaf';
+            var fs = this;
+            var parse_response = function (response){
+                var data = eval("(" + response + ")");
+                success(wrapper?wrapper(data):data);
+            };                      
+            var paramStr = "";
+            for(var p in params){paramStr = paramStr+"&"+p+"="+params[p];}
+            if (paramStr){
+                uri = uri +"?"+ paramStr;
+            }
+            
+            if (typeof module !== 'undefined'){ // node.js
+                var http = _dereq_("http");
+                var options = {
+                    host: host,
+                    path: uri.substring(uri.indexOf("/",8),uri.length), // first '/' after 'http://'
+                    port: '80',
+                    method: method,
+                    headers: {'Authorization': authHeader},
+                    withCredentials:false,
+                };
+                console.log( options )
+                var req = http.request(options,function(res){
+                    //res.setEncoding('utf8');            
+                    res.on('data', function (data){ 
+                        if([200,201,202].indexOf(res.statusCode)>=0)
+                            success(wrapper?wrapper(data):data);
+                        else   
+                            error(data);
+                    });                    
+                });                
+                req.on('error', error).end();
+            }
+            else{ // browser
+                var xhr;
+                try {xhr = new XMLHttpRequest();}
+                catch (e) {xhr = new ActiveXObject('Microsoft.XMLHTTP');}
+
+                xhr.onreadystatechange = function(){
+                    if (xhr.readyState === 4 && [200,201,202].indexOf(xhr.status)>=0){
+                        var data = eval("(" + xhr.responseText + ")");
+                        if(success) success(wrapper?wrapper(data):data);
+                    }
+                    else if (xhr.readyState === 4 && xhr.status !== 200){
+                        if(error) error(xhr.statusText);
+                    }
+                };
+                xhr.open(method, uri);
+                xhr.setRequestHeader('Authorization',authHeader);
+                if(content_type!==undefined)
+                    xhr.setRequestHeader('Content-Type',content_type);
+                xhr.send(data);
+            }
+    };
+    var checkOauth = function(){
+        if(authHeader.indexOf("Bearer")==-1)
+            throw("Oauth authentication required");
+    };
+        
+    var makeFD = function(obj,fd){
+        if(!fd)
+            fd = new FormData(); 
+        for (var prop in obj){
+            fd.append(prop,obj[prop])
+        }
+        return fd;
+    };
+    
+    var search = function(options, uri, success, error,wrapper){  
+        if(options.analysis_file){ 
+                makeRequest(makeUri(uri), success,error,null, wrapper, 'POST',makeFD(options));
+        }
+        else{
+                makeRequest(makeUri(uri), success,error,options, wrapper);
+        }    
+    };
+        
+    var Collection = function (jsonObject){
+        var nextOrPrev = function (which,success,error){
+            makeRequest(which,success,error,{}, Collection);
+        };        
+        jsonObject.nextPage = function (success,error){
+            nextOrPrev(jsonObject.next,success,error);
+        };
+        jsonObject.previousPage = function (success,error){
+            nextOrPrev(jsonObject.previous,success,error);
+        };
+        jsonObject.getItem = function (idx){
+            return jsonObject.results[idx];
+        }
+        
+        return jsonObject;
+    };  
+        
+    var SoundCollection = function(jsonObject){
+        var collection = Collection(jsonObject);
+        collection.getSound = function (idx){
+            return new SoundObject(collection.results[idx]);
+        };
+        return collection;
+    };
+    
+    var PackCollection = function(jsonObject){
+        var collection = Collection(jsonObject);
+        collection.getPack = function (idx){
+            return new PackObject(collection.results[idx]);
+        };   
+        return collection;
+    };
+        
+    var SoundObject = function (jsonObject){ 
+        jsonObject.getAnalysis = function(filter, success, error, showAll){
+            var params = {all: showAll?1:0};
+            makeRequest(makeUri(uris.soundAnalysis,[jsonObject.id,filter?filter:""]),success,error);
+        };
+
+        jsonObject.getSimilar = function (success, error, params){
+            makeRequest(makeUri(uris.similarSounds,[jsonObject.id]),success,error, params,SoundCollection);
+        };
+ 
+       jsonObject.getComments = function (success, error){
+            makeRequest(makeUri(uris.comments,[jsonObject.id]),success,error,{},Collection);
+       };
+
+       jsonObject.download = function (targetWindow){// can be window, new, or iframe
+            checkOauth();
+            var uri = makeUri(uris.download,[jsonObject.id]);
+            targetWindow.location = uri;
+       };
+       
+	jsonObject.comment = function (commentStr, success, error){
+            checkOauth();
+            var data = new FormData();
+            data.append('comment', comment);
+            var uri = makeUri(uris.comment,[jsonObject.id]);
+            makeRequest(uri, success, error, {}, null, 'POST', data);
+        };
+
+        jsonObject.rate = function (rating, success, error){
+            checkOauth();
+            var data = new FormData();
+            data.append('rating', rating);
+            var uri = makeUri(uris.rate,[jsonObject.id]);
+            makeRequest(uri, success, error, {}, null, 'POST', data);
+        };
+
+        jsonObject.bookmark = function (name, category,success, error){
+            checkOauth();
+            var data = new FormData();
+            data.append('name', name);
+            if(category)
+                data.append("category",category);
+            var uri = makeUri(uris.bookmark,[jsonObject.id]);            
+            makeRequest(uri, success, error, {}, null, 'POST', data);
+        };
+        
+        jsonObject.edit = function (description,success, error){
+            checkOauth();
+            var data = makeFD(description);
+            var uri = makeUri(uris.edit,[jsonObject.id]);
+            makeRequest(uri, success, error, {}, null, 'POST', data);
+        };        
+
+        return jsonObject;
+    };
+    var UserObject = function(jsonObject){
+        jsonObject.sounds = function (success, error, params){
+            var uri = makeUri(uris.userSounds,[jsonObject.username]);
+            makeRequest(uri, success, error,params,SoundCollection);            
+        };
+
+        jsonObject.packs = function (success, error){
+            var uri = makeUri(uris.userPacks,[jsonObject.username]);
+            makeRequest(uri, success, error,{},PackCollection);                    
+        };
+
+        jsonObject.bookmarkCategories = function (success, error){
+            var uri = makeUri(uris.userBookmarkCategories,[jsonObject.username]);
+            makeRequest(uri, success, error);                    
+        };
+
+        jsonObject.bookmarkCategorySounds = function (success, error,params){
+            var uri = makeUri(uris.userBookmarkCategorySounds,[jsonObject.username]);
+            makeRequest(uri, success, error,params);                    
+        };
+
+        return jsonObject;
+    };
+        
+    var PackObject = function(jsonObject){
+        jsonObject.sounds = function (success, error){
+            var uri = makeUri(uris.packSounds,[jsonObject.id]);
+            makeRequest(uri, success, error,{},SoundCollection);            
+        };
+        
+        jsonObject.download = function (targetWindow){// can be current or new window, or iframe
+            checkOauth();
+            var uri = makeUri(uris.packDownload,[jsonObject.id]);
+            targetWindow.location = uri;
+        };                
+        return jsonObject;
+    };
+                
+    return {
+            // authentication
+            setToken: function (token, type) {
+                authHeader = (type==='oauth' ? 'Bearer ':'Token ')+token;
+            },
+            setClientSecrets: function(id,secret){
+                clientId = id;
+                clientSecret = secret;
+            },
+
+            postAccessCode: function(code, success, error){
+                var post_url = uris.base+"/oauth2/access_token/"
+                var data = new FormData();
+                data.append('client_id',clientId);
+                data.append('client_secret',clientSecret);
+                data.append('code',code);
+                data.append('grant_type','authorization_code');
+                                
+                if (!success){
+                    success = function(result){
+                        setToken(result.access_token,'oauth');                        
+                    }
+                }
+                makeRequest(post_url, success, error, {}, null, 'POST', data);
+            },
+            textSearch: function(query, options, success, error){                
+                options = options || {};
+                options.query = query ? query : " ";
+                search(options,uris.textSearch,success,error,SoundCollection);
+            },                    
+            contentSearch: function(options, success, error){
+                if(!(options.target || options.analysis_file))
+                   throw("Missing target or analysis_file");
+                search(options,uris.contentSearch,success,error,SoundCollection);
+            },
+            combinedSearch:function(options, success, error){
+               if(!(options.target || options.analysis_file || options.query))
+                   throw("Missing query, target or analysis_file");
+                search(options,uris.contentSearch,success,error);
+            },
+            getSound: function(soundId,success, error){
+                makeRequest(makeUri(uris.sound, [soundId]), success,error,{}, SoundObject);
+            },
+
+            upload: function(audiofile,filename, description, success,error){
+                checkOauth();
+                var fd = new FormData();
+                fd.append('audiofile', audiofile,filename);                    
+                if(description){                    
+                    fd = makeFD(description,fd);
+                }
+                makeRequest(makeUri(uris.upload), success, error, {}, null, 'POST', fd);
+            },
+            describe: function(upload_filename , description, license, tags, success,error){
+                checkOauth();                
+                var fd = makeFD(description);
+                makeRequest(makeUri(uris.upload), success, error, {}, null, 'POST', fd);
+            },
+
+            getPendingSounds: function(success,error){
+                checkOauth();
+                makeRequest(makeUri(uris.pending), success,error,{});
+            },
+
+            // user resources
+            me: function(success,error){
+                checkOauth();
+                makeRequest(makeUri(uris.me), success,error);
+            },
+
+            getLoginURL: function(){
+                    if(clientId===undefined) throw "client_id was not set"
+                    var login_url = makeUri(uris.authorize);
+                    login_url += "?client_id="+clientId+"&response_type=code";
+                    return login_url;
+            },
+            getLogoutURL: function(){
+                var logout_url = makeUri(uris.logoutAuthorize);
+                logout_url += "?client_id="+clientId+"&response_type=code";
+                
+                return logout_url;
+            },
+
+            getUser: function(username, success,error){
+                makeRequest(makeUri(uris.user, [username]), success,error,{}, UserObject);
+            },
+        
+            getPack: function(packId,success,error){                
+                makeRequest(makeUri(uris.pack, [packId]), success,error,{}, PackObject);            
+            }        
+        }    
+    };
+
+    // compatible with CommonJS (node), AMD (requireJS) failing back to browser global 
+    // working with node requires web-audio-api module
+    if (typeof module !== 'undefined') {module.exports = freesound(); }
+    else if (typeof define === 'function' && typeof define.amd === 'object') { define("freesound", [], freesound); }
+    else {this.freesound = freesound(); }
+}());
+},{"http":10}],33:[function(_dereq_,module,exports){
 (function(){function t(t,e){return t=r[t],e=r[e],t.distance>e.distance?e.distance+12-t.distance:e.distance-t.distance}function e(t,e,i){for(;i>0;i--)t+=e;return t}function i(t,e){if("string"!=typeof t)return null;this.name=t,this.duration=e||4,this.accidental={value:0,sign:""};var i=t.match(/^([abcdefgh])(x|#|bb|b?)(-?\d*)/i);if(i&&t===i[0]&&0!==i[3].length)this.name=i[1].toLowerCase(),this.octave=parseFloat(i[3]),0!==i[2].length&&(this.accidental.sign=i[2].toLowerCase(),this.accidental.value=y[i[2]]);else{t=t.replace(/\u2032/g,"'").replace(/\u0375/g,",");var n=t.match(/^(,*)([abcdefgh])(x|#|bb|b?)([,\']*)$/i);if(!n||5!==n.length||t!==n[0])throw Error("Invalid note format");if(""===n[1]&&""===n[4])this.octave=n[2]===n[2].toLowerCase()?3:2;else if(""!==n[1]&&""===n[4]){if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation.");this.octave=2-n[1].length}else{if(""!==n[1]||""===n[4])throw Error("Invalid note format");if(n[4].match(/^'+$/)){if(n[2]===n[2].toUpperCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=3+n[4].length}else{if(!n[4].match(/^,+$/))throw Error("Invalid characters after note name.");if(n[2]===n[2].toLowerCase())throw Error("Invalid note format. Format must respect the Helmholtz notation");this.octave=2-n[4].length}}this.name=n[2].toLowerCase(),0!==n[3].length&&(this.accidental.sign=n[3].toLowerCase(),this.accidental.value=y[n[3]])}}function n(t,e){if(!(t instanceof i))return null;e=e||"",this.name=t.name.toUpperCase()+t.accidental.sign+e,this.root=t,this.notes=[t],this.quality="major",this.type="major";var n,r,o,s,h,m=[],u=!1,c="quality",d=!1,p=!1,v=null;for(s=0,h=e.length;h>s;s++){for(n=e[s];" "===n||"("===n||")"===n;)n=e[++s];if(!n)break;if(r=n.charCodeAt(0),o=h>=s+3?e.substr(s,3):"","quality"===c)"M"===n||("maj"===o||916===r?(this.type="major",m.push("M7"),u=!0,(e[s+3]&&"7"===e[s+3]||916===r&&"7"===e[s+1])&&s++):"m"===n||"-"===n||"min"===o?this.quality=this.type="minor":111===r||176===r||"dim"===o?(this.quality="minor",this.type="diminished"):"+"===n||"aug"===o?(this.quality="major",this.type="augmented"):216===r||248===r?(this.quality="minor",this.type="diminished",m.push("m7"),u=!0):"sus"===o?(this.quality="sus",this.type=e[s+3]&&"2"===e[s+3]?"sus2":"sus4"):"5"===n?(this.quality="power",this.type="power"):s-=1),o in l&&(s+=2),c="";else if("#"===n)d=!0;else if("b"===n)p=!0;else if("5"===n)d?(v="A5","major"===this.quality&&(this.type="augmented")):p&&(v="d5","minor"===this.quality&&(this.type="diminished")),p=d=!1;else if("6"===n)m.push("M6"),p=d=!1;else if("7"===n)"diminished"===this.type?m.push("d7"):m.push("m7"),u=!0,p=d=!1;else if("9"===n)u||m.push("m7"),p?m.push("m9"):d?m.push("A9"):m.push("M9"),p=d=!1;else{if("1"!==n)throw Error("Unexpected character: '"+n+"' in chord name");n=e[++s],"1"===n?p?m.push("d11"):d?m.push("A11"):m.push("P11"):"3"===n&&(p?m.push("m13"):d?m.push("A13"):m.push("M13")),p=d=!1}}for(var y=0,g=f[this.type].length;g>y;y++)"5"===f[this.type][y][1]&&v?this.notes.push(a.interval(this.root,v)):this.notes.push(a.interval(this.root,f[this.type][y]));for(y=0,g=m.length;g>y;y++)this.notes.push(a.interval(this.root,m[y]))}var a={},r={c:{name:"c",distance:0,index:0},d:{name:"d",distance:2,index:1},e:{name:"e",distance:4,index:2},f:{name:"f",distance:5,index:3},g:{name:"g",distance:7,index:4},a:{name:"a",distance:9,index:5},b:{name:"b",distance:11,index:6},h:{name:"h",distance:11,index:6}},o=["c","d","e","f","g","a","b"],s={.25:"longa",.5:"breve",1:"whole",2:"half",4:"quarter",8:"eighth",16:"sixteenth",32:"thirty-second",64:"sixty-fourth",128:"hundred-twenty-eighth"},h=[{name:"unison",quality:"perfect",size:0},{name:"second",quality:"minor",size:1},{name:"third",quality:"minor",size:3},{name:"fourth",quality:"perfect",size:5},{name:"fifth",quality:"perfect",size:7},{name:"sixth",quality:"minor",size:8},{name:"seventh",quality:"minor",size:10},{name:"octave",quality:"perfect",size:12},{name:"ninth",quality:"minor",size:13},{name:"tenth",quality:"minor",size:15},{name:"eleventh",quality:"perfect",size:17},{name:"twelfth",quality:"perfect",size:19},{name:"thirteenth",quality:"minor",size:20},{name:"fourteenth",quality:"minor",size:22},{name:"fifteenth",quality:"perfect",size:24}],m={unison:0,second:1,third:2,fourth:3,fifth:4,sixth:5,seventh:6,octave:7,ninth:8,tenth:9,eleventh:10,twelfth:11,thirteenth:12,fourteenth:13,fifteenth:14},l={P:"perfect",M:"major",m:"minor",A:"augmented",d:"diminished",perf:"perfect",maj:"major",min:"minor",aug:"augmented",dim:"diminished"},u={perfect:"P",major:"M",minor:"m",augmented:"A",diminished:"d"},c={P:"P",M:"m",m:"M",A:"d",d:"A"},d={perfect:["diminished","perfect","augmented"],minor:["diminished","minor","major","augmented"]},f={major:["M3","P5"],minor:["m3","P5"],augmented:["M3","A5"],diminished:["m3","d5"],sus2:["M2","P5"],sus4:["P4","P5"],power:["P5"]},p={major:"M",minor:"m",augmented:"aug",diminished:"dim",power:"5"},v={"-2":"bb","-1":"b",0:"",1:"#",2:"x"},y={bb:-2,b:-1,"#":1,x:2};i.prototype={key:function(t){return t?7*(this.octave-1)+3+Math.ceil(r[this.name].distance/2):12*(this.octave-1)+4+r[this.name].distance+this.accidental.value},fq:function(t){return t=t||440,t*Math.pow(2,(this.key()-49)/12)},scale:function(t,e){return a.scale.list(this,t,e)},interval:function(t,e){return a.interval(this,t,e)},chord:function(t){return t=t||"major",t in p&&(t=p[t]),new n(this,t)},helmholtz:function(){var t,i=3>this.octave?this.name.toUpperCase():this.name.toLowerCase();return 2>=this.octave?(t=e("",",",2-this.octave),t+i+this.accidental.sign):(t=e("","'",this.octave-3),i+this.accidental.sign+t)},scientific:function(){return this.name.toUpperCase()+this.accidental.sign+("number"==typeof this.octave?this.octave:"")},enharmonics:function(){var t=[],e=this.key(),i=this.interval("m2","up"),n=this.interval("m2","down"),a=i.key()-i.accidental.value,r=n.key()-n.accidental.value,o=e-a;return 3>o&&o>-3&&(i.accidental={value:o,sign:v[o]},t.push(i)),o=e-r,3>o&&o>-3&&(n.accidental={value:o,sign:v[o]},t.push(n)),t},valueName:function(){return s[this.duration]},toString:function(t){return t="boolean"==typeof t?t:"number"==typeof this.octave?!1:!0,this.name.toLowerCase()+this.accidental.sign+(t?"":this.octave)}},n.prototype.dominant=function(t){return t=t||"",new n(this.root.interval("P5"),t)},n.prototype.subdominant=function(t){return t=t||"",new n(this.root.interval("P4"),t)},n.prototype.parallel=function(t){if(t=t||"","triad"!==this.chordType()||"diminished"===this.quality||"augmented"===this.quality)throw Error("Only major/minor triads have parallel chords");return"major"===this.quality?new n(this.root.interval("m3","down"),"m"):new n(this.root.interval("m3","up"))},n.prototype.chordType=function(){var t,e,i;if(2===this.notes.length)return"dyad";if(3===this.notes.length){e={unison:!1,third:!1,fifth:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);return e.unison&&e.third&&e.fifth?"triad":"trichord"}if(4===this.notes.length){e={unison:!1,third:!1,fifth:!1,seventh:!1};for(var n=0,r=this.notes.length;r>n;n++)t=this.root.interval(this.notes[n]),i=h[parseFloat(a.interval.invert(t.simple)[1])-1],t.name in e?e[t.name]=!0:i.name in e&&(e[i.name]=!0);if(e.unison&&e.third&&e.fifth&&e.seventh)return"tetrad"}return"unknown"},n.prototype.toString=function(){return this.name},a.note=function(t,e){return new i(t,e)},a.note.fromKey=function(t){var e=440*Math.pow(2,(t-49)/12);return a.frequency.note(e).note},a.chord=function(t){var e;if(e=t.match(/^([abcdefgh])(x|#|bb|b?)/i),e&&e[0])return new n(new i(e[0].toLowerCase()),t.substr(e[0].length));throw Error("Invalid Chord. Couldn't find note name")},a.frequency={note:function(t,e){e=e||440;var n,a,s,h,m,l,u;return n=Math.round(49+12*((Math.log(t)-Math.log(e))/Math.log(2))),u=e*Math.pow(2,(n-49)/12),l=1200*(Math.log(t/u)/Math.log(2)),a=Math.floor((n-4)/12),s=n-12*a-4,h=r[o[Math.round(s/2)]],m=h.name,s>h.distance?m+="#":h.distance>s&&(m+="b"),{note:new i(m+(a+1)),cents:l}}},a.interval=function(t,e,n){if("string"==typeof e){"down"===n&&(e=a.interval.invert(e));var r=l[e[0]],o=parseFloat(e.substr(1));if(!r||isNaN(o)||1>o)throw Error("Invalid string-interval format");return a.interval.from(t,{quality:r,interval:h[o-1].name},n)}if(e instanceof i&&t instanceof i)return a.interval.between(t,e);throw Error("Invalid parameters")},a.interval.from=function(e,n,a){n.direction=a||n.direction||"up";var s,l,u,c,f,p;if(f=m[n.interval],p=h[f],f>7&&(f-=7),f=r[e.name].index+f,f>o.length-1&&(f-=o.length),s=o[f],-1===d[p.quality].indexOf(n.quality)||-1===d[p.quality].indexOf(p.quality))throw Error("Invalid interval quality");return l=d[p.quality].indexOf(n.quality)-d[p.quality].indexOf(p.quality),u=p.size+l-t(e.name,s),e.octave&&(c=Math.floor((e.key()-e.accidental.value+t(e.name,s)-4)/12)+1+Math.floor(m[n.interval]/7)),u+=e.accidental.value,u>=11&&(u-=12),u>-3&&3>u&&(s+=v[u]),"down"===a&&c--,new i(s+(c||""))},a.interval.between=function(t,e){var i,n,a,o,s,m,l=t.key(),c=e.key();if(i=c-l,i>24||-25>i)throw Error("Too big interval. Highest interval is a augmented fifteenth (25 semitones)");return 0>i&&(o=t,t=e,e=o),a=r[e.name].index-r[t.name].index+7*(e.octave-t.octave),n=h[a],m=d[n.quality][Math.abs(i)-n.size+1],s=u[m]+(""+Number(a+1)),{name:n.name,quality:m,direction:i>0?"up":"down",simple:s}},a.interval.invert=function(t){if(2!==t.length&&3!==t.length)return!1;var e=c[t[0]],i=2===t.length?parseFloat(t[1]):parseFloat(t.substr(1));return i>8&&(i-=7),8!==i&&1!==i&&(i=9-i),e+(""+i)},a.scale={list:function(t,e,n){var r,o,s=[],h=[];if(!(t instanceof i))return!1;if("string"==typeof e&&(e=a.scale.scales[e],!e))return!1;for(s.push(t),n&&h.push(t.name+(t.accidental.sign||"")),r=0,o=e.length;o>r;r++)s.push(a.interval(t,e[r])),n&&h.push(s[r+1].name+(s[r+1].accidental.sign||""));return n?h:s},scales:{major:["M2","M3","P4","P5","M6","M7"],ionian:["M2","M3","P4","P5","M6","M7"],dorian:["M2","m3","P4","P5","M6","m7"],phrygian:["m2","m3","P4","P5","m6","m7"],lydian:["M2","M3","A4","P5","M6","M7"],mixolydian:["M2","M3","P4","P5","M6","m7"],minor:["M2","m3","P4","P5","m6","m7"],aeolian:["M2","m3","P4","P5","m6","m7"],locrian:["m2","m3","P4","d5","m6","m7"],majorpentatonic:["M2","M3","P5","M6"],minorpentatonic:["m3","P4","P5","m7"],chromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"],harmonicchromatic:["m2","M2","m3","M3","P4","A4","P5","m6","M6","m7","M7"]}},module.exports=a})();
-},{}],"/www/gibber.audio.lib/scripts/gibber/audio.js":[function(require,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   
 "use strict"
 
 var times = [],
     $ = Gibber.dollar,
-    Gibberish = require( 'gibberish-dsp' ),
+    Gibberish = _dereq_( 'gibberish-dsp' ),
     Audio
 
 Audio = {
@@ -10419,7 +8597,8 @@ Audio = {
     target.SoundFont = Audio.SoundFont
     target.Speak = Audio.Speak
     target.Additive = Audio.Additive
-
+    target.Ugen = Audio.Ugen
+    
     target.Rndi = Audio.Core.Rndi
     target.Rndf = Audio.Core.Rndf     
     target.rndi = Audio.Core.rndi
@@ -10428,6 +8607,8 @@ Audio = {
     target.Input = Audio.Input
     
     target.Freesound = Audio.Freesound
+    target.Freesound2 = Audio.Freesound2
+    target.Freesoundjs2 = Audio.Freesoundjs2
     
     target.Scale = Audio.Theory.Scale
     
@@ -10810,51 +8991,64 @@ Audio = {
     
     fadeOut : function( _time ) {
       var time = Audio.Clock.time( _time ),
-          decay = new Audio.Core.ExponentialDecay({ decayCoefficient:.00005, length:time }),
-          //ramp = Mul( decay, this.amp() )
-          line = new Audio.Core.Line( this.amp.value, 0, Audio.Clock.time( time ) )
+          curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp( line )
+      this.amp = curve
       
       future( function() { this.amp = 0 }.bind( this ), time )
+      
+      return this
+    },
+    fadeOut2 : function( _time ) {
+      var time = Audio.Clock.time( _time ),
+          curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
+          
+      this.amp = curve
+      
+      future( function() { 
+        this.amp = 0
+        this.kill()
+      }.bind( this ), time )
       
       return this
     },
   }
 }
 
-Audio.Core = require( 'gibberish-dsp' )
+Audio.Core = _dereq_( 'gibberish-dsp' )
 Audio.Core._init = Audio.Core.init.bind( Audio.Core )
 delete Audio.Core.init
 
-Audio.Clock =          require( './audio/clock' )( Gibber )
-Audio.Freesoundjs =    require( '../external/freesound' )
-Audio.Freesound =      require( './audio/gibber_freesound' )( Audio.Freesoundjs )
-Audio.Seqs =           require( './audio/seq')( Gibber )
-Audio.Theory =         require( './audio/theory' )( Gibber )
-Audio.FX =             require( './audio/fx' )( Gibber )
-Audio.Oscillators =    require( './audio/oscillators' )( Gibber )
-Audio.Synths =         require( './audio/synths' )( Gibber )
-Audio.Busses =         require( './audio/bus' )( Gibber )
-Audio.Analysis =       require( './audio/analysis' )( Gibber )
-Audio.Envelopes =      require( './audio/envelopes' )( Gibber )
-Audio.Percussion =     require( './audio/drums' )( Gibber )
-Audio.Input =          require( './audio/audio_input' )( Gibber )
-Audio.Samplers =       require( './audio/sampler' )( Gibber )
+Audio.Clock =          _dereq_( './audio/clock' )( Gibber )
+Audio.Freesoundjs =    _dereq_( '../external/freesound' )
+Audio.Freesound =      _dereq_( './audio/gibber_freesound' )( Audio.Freesoundjs )
+Audio.Freesoundjs2 =   _dereq_( '../external/freesound2' )
+Audio.Freesound2 =     _dereq_( './audio/gibber_freesound2' )( Audio.Freesoundjs2 )
+Audio.Seqs =           _dereq_( './audio/seq')( Gibber )
+Audio.Theory =         _dereq_( './audio/theory' )( Gibber )
+Audio.FX =             _dereq_( './audio/fx' )( Gibber )
+Audio.Oscillators =    _dereq_( './audio/oscillators' )( Gibber )
+Audio.Synths =         _dereq_( './audio/synths' )( Gibber )
+Audio.Busses =         _dereq_( './audio/bus' )( Gibber )
+Audio.Analysis =       _dereq_( './audio/analysis' )( Gibber )
+Audio.Envelopes =      _dereq_( './audio/envelopes' )( Gibber )
+Audio.Percussion =     _dereq_( './audio/drums' )( Gibber )
+Audio.Input =          _dereq_( './audio/audio_input' )( Gibber )
+Audio.Samplers =       _dereq_( './audio/sampler' )( Gibber )
 // Audio.Speak =          require( './audio/speak' )( Gibber )
-Audio.Vocoder =        require( './audio/vocoder' )( Gibber )
-Audio.PostProcessing = require( './audio/postprocessing' )( Gibber )
-Audio.Arp =            require( './audio/arp' )( Gibber )
-Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
-Audio.Score =          require( './audio/score' )
-Audio.Ensemble =       require( './audio/ensemble' )( Gibber )
-Audio.Ugen =           require( './audio/ugen')( Gibber )
-Audio.Additive =       require( './audio/additive')
+Audio.Vocoder =        _dereq_( './audio/vocoder' )( Gibber )
+Audio.PostProcessing = _dereq_( './audio/postprocessing' )( Gibber )
+Audio.Arp =            _dereq_( './audio/arp' )( Gibber )
+Audio.SoundFont =      _dereq_( './audio/soundfont' )( Gibber )
+Audio.Score =          _dereq_( './audio/score' )
+Audio.Ensemble =       _dereq_( './audio/ensemble' )( Gibber )
+Audio.Ugen =           _dereq_( './audio/ugen')( Gibber )
+Audio.Additive =       _dereq_( './audio/additive')
 
 return Audio
 
 }
-},{"../external/freesound":"/www/gibber.audio.lib/scripts/external/freesound.js","./audio/additive":"/www/gibber.audio.lib/scripts/gibber/audio/additive.js","./audio/analysis":"/www/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/ensemble":"/www/gibber.audio.lib/scripts/gibber/audio/ensemble.js","./audio/envelopes":"/www/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/oscillators":"/www/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/score":"/www/gibber.audio.lib/scripts/gibber/audio/score.js","./audio/seq":"/www/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/soundfont":"/www/gibber.audio.lib/scripts/gibber/audio/soundfont.js","./audio/synths":"/www/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.audio.lib/scripts/gibber/audio/theory.js","./audio/ugen":"/www/gibber.audio.lib/scripts/gibber/audio/ugen.js","./audio/vocoder":"/www/gibber.audio.lib/scripts/gibber/audio/vocoder.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/additive.js":[function(require,module,exports){
+},{"../external/freesound":31,"../external/freesound2":32,"./audio/additive":35,"./audio/analysis":36,"./audio/arp":37,"./audio/audio_input":38,"./audio/bus":39,"./audio/clock":40,"./audio/drums":41,"./audio/ensemble":42,"./audio/envelopes":43,"./audio/fx":44,"./audio/gibber_freesound":45,"./audio/gibber_freesound2":46,"./audio/oscillators":47,"./audio/postprocessing":48,"./audio/sampler":49,"./audio/score":50,"./audio/seq":51,"./audio/soundfont":52,"./audio/synths":53,"./audio/theory":54,"./audio/ugen":55,"./audio/vocoder":56,"gibberish-dsp":5}],35:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
 
 /*
@@ -10943,7 +9137,7 @@ XXX = Ugen({
 Sine.connect()
 Sine.frequency.seq( [440,880], 1/2 )
 */
-},{}],"/www/gibber.audio.lib/scripts/gibber/audio/analysis.js":[function(require,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
@@ -10951,7 +9145,7 @@ module.exports = function( Gibber ) {
       mappingProperties = { 
         value:{ min: 0, max: 255, output: LOGARITHMIC, wrap:false, timescale: 'graphics' } 
       },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
@@ -11021,13 +9215,13 @@ module.exports = function( Gibber ) {
   //module.exports = function( __Gibber ) { if( typeof Gibber === 'undefined' ) { Gibber = __Gibber; } return Analysis }
   
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/arp.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],37:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   
-var theory = require('../../external/teoria.min'),
+var theory = _dereq_('../../external/teoria.min'),
     $ = Gibber.dollar,
     curves = Gibber.outputCurves,
-    Seq    = require('./seq')( Gibber ).Seq,
+    Seq    = _dereq_('./seq')( Gibber ).Seq,
     Arp
     
 Arp = function(notation, beats, pattern, mult, scale) {	
@@ -11171,12 +9365,12 @@ Arp = function(notation, beats, pattern, mult, scale) {
 return Arp
 
 }
-},{"../../external/teoria.min":"/www/gibber.audio.lib/scripts/external/teoria.min.js","./seq":"/www/gibber.audio.lib/scripts/gibber/audio/seq.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/audio_input.js":[function(require,module,exports){
+},{"../../external/teoria.min":33,"./seq":51}],38:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) { 
   "use strict"
   
   var Input = {},
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
@@ -11226,12 +9420,12 @@ module.exports = function( Gibber ) {
   
   return Input
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/bus.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],39:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var $ = Gibber.dollar,//require('zepto-browserify').Zepto,
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -11362,7 +9556,7 @@ module.exports = function( Gibber ) {
   
   return Busses
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/clock.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],40:[function(_dereq_,module,exports){
 !function() {
   
 var times = [],
@@ -11370,7 +9564,7 @@ var times = [],
     curves = null,
     LINEAR = null,
     LOGARITHMIC = null,
-    Gibberish = require( 'gibberish-dsp' ),
+    Gibberish = _dereq_( 'gibberish-dsp' ),
     Gibber
 
 var Clock = {
@@ -11581,12 +9775,12 @@ module.exports = function( __Gibber ) {
 }
 
 }()
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/drums.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],41:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Percussion = { Presets:{} }, 
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
@@ -12247,11 +10441,11 @@ module.exports = function( Gibber ) {
   return Percussion
   
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/ensemble.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],42:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
-  var Gibberish = require( 'gibberish-dsp' ),
+  var Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
@@ -12426,12 +10620,12 @@ module.exports = function( Gibber ) {
 
   return Ensemble
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/envelopes.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],43:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Envelopes = {},
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       Clock = Gibber.Clock,
       curves = Gibber.outputCurves,
@@ -12440,6 +10634,7 @@ module.exports = function( Gibber ) {
       types = [
         'Curve',
         'Line',
+        'Ease',
         'Lines',
         'AD',
         'ADSR' 
@@ -12468,6 +10663,23 @@ module.exports = function( Gibber ) {
             output: LINEAR,
             timescale: 'audio',
           }
+        },
+        Ease: {
+          /*start: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          end: {
+            min: 0, max: 1,
+            output: LINEAR,
+            timescale: 'audio',
+          },
+          time: {
+            min: 0, max: 8,
+            output: LINEAR,
+            timescale: 'audio',
+          },*/
         },
         Curve: {
           start: {
@@ -12544,11 +10756,13 @@ module.exports = function( Gibber ) {
         
         if( typeof args[0] !== 'object' ) {
           // console.log( args[0], args[1], args[2], Gibber.Clock.time( args[2] ) )
-          obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3] )
+          obj = new Gibberish[ type ]( args[0], args[1], Gibber.Clock.time( args[2] ), args[3], args[4], args[5], args[6] )
         }else if( name === 'Lines' ){
           obj = new Gibberish.Lines( args[0], args[1], args[2] )
-        }else if( name === 'Curve' ){
-          obj = new Gibberish.Curve( args[0], args[1], args[2], args[3], args[4], args[5] )
+        }else if( name === 'Ease' ){
+          obj = new Gibberish.Ease( args[0], args[1], args[2], args[3], args[4] )
+        }else if( name === 'Curve' ){ // not needed?
+          obj = new Gibberish.Curve( args[0], args[1], args[2], args[3], args[4], args[5], args[6] )
         }else{
           obj = Gibber.construct( Gibberish[ type ], args[0] )
         }
@@ -12561,7 +10775,7 @@ module.exports = function( Gibber ) {
         
         if( name !== 'Lines' ) Gibber.processArguments2( obj, args, obj.name )
         
-        if( name === 'AD' || name === 'ADSR' ) {
+        if( name === '.' || name === 'ADSR' ) {
           Gibber.createProxyMethods( obj, ['run'] )
         }
         
@@ -12575,12 +10789,12 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/fx.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],44:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var FX = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
@@ -12831,6 +11045,8 @@ module.exports = function( Gibber ) {
         
         Gibber.processArguments2( obj, args, obj.name )
         
+        if( name === 'Delay' ) obj.rate = Gibber.Clock
+        
         args.input = 0
         
         obj.toString = function() { return '> ' + name }
@@ -12968,7 +11184,7 @@ module.exports = function( Gibber ) {
 
   return FX  
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],45:[function(_dereq_,module,exports){
 module.exports = function( freesound ) {
   freesound.apiKey = "4287s0onpqpp492n8snr27sp3o228nns".replace(/[a-zA-Z]/g, function(c) {
     return String.fromCharCode((c <= "Z" ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
@@ -12992,7 +11208,7 @@ module.exports = function( freesound ) {
         sampler.buffer = Freesound.loaded[filename];
         sampler.bufferLength = sampler.buffer.length;
         sampler.isLoaded = true;
-        sampler.end = sampler.bufferLength;
+        //sampler.end = sampler.bufferLength;
         sampler.setBuffer(sampler.buffer);
         sampler.setPhase(sampler.bufferLength);
         sampler.filename = filename;
@@ -13117,13 +11333,170 @@ module.exports = function( freesound ) {
 
   return Freesound
 }
-},{}],"/www/gibber.audio.lib/scripts/gibber/audio/oscillators.js":[function(require,module,exports){
+},{}],46:[function(_dereq_,module,exports){
+module.exports = function( freesound ) {
+  freesound.setToken('6a00f80ba02b2755a044cc4ef004febfc4ccd476')
+
+  var Freesound = function() {
+    var sampler = Sampler();
+
+    var key = arguments[0] || 96541;
+    var callback = null;
+    var filename, request;
+
+    sampler.done = function(func) {
+      callback = func
+    }
+
+    var onload = function(request) {
+      Gibber.log(filename + " loaded.", request )
+      Gibber.Audio.Core.context.decodeAudioData(request.response, function(buffer) {
+        Freesound.loaded[filename] = buffer.getChannelData(0)
+        sampler.buffer = Freesound.loaded[filename];
+        sampler.bufferLength = sampler.buffer.length;
+        sampler.isLoaded = true;
+        //sampler.end = sampler.bufferLength;
+        sampler.setBuffer(sampler.buffer);
+        sampler.setPhase(sampler.bufferLength);
+        sampler.filename = filename;
+
+        sampler.send(Master, 1)
+        if (callback) {
+          callback()
+        }
+      }, function(e) {
+        console.log("Error with decoding audio data" + e.err)
+      })
+    }
+
+    // freesound query api http://www.freesound.org/docs/api/resources.html
+    if (typeof key === 'string') {
+      var query = key;
+      Gibber.log('searching freesound for ' + query)
+      // textSearch: function(query, options, success, error){ 
+        // search: function(query, page, filter, sort, num_results, fields, sounds_per_page, success, error
+      //freesound.search(query, /*page*/ 0, 'duration:[0.0 TO 10.0]', 'rating_desc', null, null, null,
+      freesound.textSearch( query, { page:1 },// page:0, filter: 'duration:[0.0 TO 10.0]', sort:'rating_desc' }, 
+        function(sounds) {
+          console.log("SOUNDS", typeof sounds, sounds )
+          sounds = JSON.parse( sounds )
+          filename = sounds.results[0].name
+          var id = sounds.results[0].id
+
+          if (typeof Freesound.loaded[filename] === 'undefined') {
+            var request = new XMLHttpRequest();
+            //Gibber.log("now downloading " + filename + ", " + sounds.sounds[0].duration + " seconds in length")
+            // https://www.freesound.org/apiv2/sounds/110011/download/
+            request.open('GET', 'https://www.freesound.org/apiv2/sounds/'+ id + '/download', true) //"?&api_key=" + freesound.apiKey, true);
+            request.responseType = 'arraybuffer';
+            //request.withCredentials = true;
+            request.onload = function( v ) {
+              console.log("WOO HOO", v )
+              onload(request)
+            };
+            request.send();
+            freesound.getSound( id, function( val ){ console.log( val ) }, null )
+          } else {
+            sampler.buffer = Freesound.loaded[filename];
+            sampler.filename = filename;
+            sampler.bufferLength = sampler.buffer.length;
+            sampler.isLoaded = true;
+            sampler.end = sampler.bufferLength;
+            sampler.setBuffer(sampler.buffer);
+            sampler.setPhase(sampler.bufferLength);
+
+            sampler.send(Master, 1)
+            if (callback) {
+              callback()
+            }
+          }
+        }, function() {
+          displayError("Error while searching...")
+        }
+      );
+    } else if (typeof key === 'object') {
+      var query = key.query,
+        filter = key.filter || "",
+        sort = key.sort || 'rating_desc',
+        page = key.page || 0;
+      pick = key.pick || 0;
+
+      Gibber.log('searching freesound for ' + query)
+
+      filter += ' duration:[0.0 TO 10.0]'
+      freesound.search(query, page, filter, sort, null, null, null,
+        function(sounds) {
+          if (sounds.num_results > 0) {
+            var num = 0;
+
+            if (typeof key.pick === 'number') {
+              num = key.pick
+            } else if (typeof key.pick === 'function') {
+              num = key.pick();
+            } else if (key.pick === 'random') {
+              num = rndi(0, sounds.sounds.length);
+            }
+
+            filename = sounds.sounds[num].original_filename
+
+            if (typeof Freesound.loaded[filename] === 'undefined') {
+              request = new XMLHttpRequest();
+              Gibber.log("now downloading " + filename + ", " + sounds.sounds[num].duration + " seconds in length")
+              request.open('GET', sounds.sounds[num].serve + "?&api_key=" + freesound.apiKey, true);
+              request.responseType = 'arraybuffer';
+              request.onload = function() {
+                onload(request)
+              };
+              request.send();
+            } else {
+              Gibber.log('using exising loaded sample ' + filename)
+              sampler.buffer = Freesound.loaded[filename];
+              sampler.bufferLength = sampler.buffer.length;
+              sampler.isLoaded = true;
+              sampler.end = sampler.bufferLength;
+              sampler.setBuffer(sampler.buffer);
+              sampler.setPhase(sampler.bufferLength);
+
+              sampler.send(Master, 1)
+              if (callback) {
+                callback()
+              }
+            }
+          } else {
+            Gibber.log("No Freesound files matched your query.")
+          }
+        }, function() {
+          console.log("Error while searching...")
+        }
+      );
+    } else if (typeof key === 'number') {
+      Gibber.log('downloading sound #' + key + ' from freesound.org')
+      freesound.get_sound(key,
+        function(sound) {
+          request = new XMLHttpRequest();
+          filename = sound.original_filename
+          request.open('GET', sound.serve + "?api_key=" + freesound.apiKey, true);
+          request.responseType = 'arraybuffer';
+          request.onload = function() {
+            onload(request)
+          };
+          request.send();
+        }
+      )
+    }
+    return sampler;
+  }
+  Freesound.loaded = {};
+
+  return Freesound
+}
+},{}],47:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var $ = Gibber.dollar,
       Oscillators = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -13288,9 +11661,16 @@ module.exports = function( Gibber ) {
   Oscillators.Grains = function() {
     var props = typeof arguments[0] === 'object' ? arguments[0] : arguments[1],
         bufferLength = props.bufferLength || 88200,
-        a = Sampler().record( props.input, bufferLength ),
+        a,
+        //a/ = Sampler().record( props.input, bufferLength ),
         oscillator
-  
+    
+    if( props.input ) {
+      a = Sampler().record( props.input, bufferLength )
+    }else if( props.buffer ) {
+      bufferLength = props.buffer.length
+    }
+    
     if(typeof arguments[0] === 'string') {
       var preset = Gibber.Presets.Grains[ arguments[0] ]
       if( typeof props !== 'undefined') $.extend( preset, props )
@@ -13313,15 +11693,22 @@ module.exports = function( Gibber ) {
   		if(shouldLoop === false) {
   			future( function() { mappingObject.position = curPos }, Gibber.Clock.time( time ) );
   		}
+      
+      return oscillator
   	}
-
-    future( function() {
-  	  oscillator.setBuffer( a.getBuffer() );
-      oscillator.connect()
-  	  oscillator.loop( 0, 1, bufferLength ); // min looping automatically
     
-      a.disconnect()
-    }, bufferLength + 1)
+    if( a ){
+      future( function() {
+    	  oscillator.setBuffer( a.getBuffer() );
+        oscillator.connect()
+    	  oscillator.loop( 0, 1, bufferLength ); // min looping automatically
+    
+        a.disconnect()
+      }, bufferLength + 1)
+    }else{
+      oscillator.connect()
+      oscillator.loop( 0, 1, bufferLength );
+    }
     
     oscillator.type = 'Gen'
 
@@ -13374,50 +11761,81 @@ module.exports = function( Gibber ) {
   
   return Oscillators
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/postprocessing.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],48:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict";
+  var loadBuffer = function(ctx, filename, callback) {
+    var request = new XMLHttpRequest();
+    request.open("GET", filename, true);
+    request.responseType = "arraybuffer";
+    request.onload = function() {
+      Gibberish.context.decodeAudioData( request.response, function(_buffer) {
+        callback( _buffer )
+      }) 
+    };
+    request.send();
+  }
   
-  var PostProcessing,
-      Gibberish = require( 'gibberish-dsp' ),
-      compressor = null, 
+  var compressor = null, 
+      Gibberish,
       end = null,
       hishelf = null,
       lowshelf = null,
       postgraph = null,
-      init = function() {
-        postgraph = [ Gibberish.node, Gibberish.context.destination ]
-      },
-      disconnectGraph = function() {
-        for( var i = 0; i < postgraph.length - 1; i++ ) {
-          postgraph[ i ].disconnect( postgraph[ i + 1 ] )
-        }
-      },
-      connectGraph = function() {
-        for( var i = 0; i < postgraph.length - 1; i++ ) {
-          postgraph[ i ].connect( postgraph[ i + 1 ] )
-        }
-      },
-      insert = function( node, position ) { 
-        if( typeof position !== 'undefined' ) {
-          if( position > 0 && position < postgraph.length - 1 ) {
-            disconnectGraph()
-            postgraph.splice( position, 0, node )
-          }else{
-            console.error( 'Invalid position for inserting into postprocessing graph: ', position )
-            return
-          }
-        }else{
-          disconnectGraph()
-          postgraph.splice( 1, 0, node )
-        }
-      
-        connectGraph()
-      };
+      masterverb = null;
   
-  var PP = PostProcessing = {
+  var PP = Gibber.AudioPostProcessing = {
+    initialized: false,    
+    getPostgraph : function() { return postgraph },
+
+    init : function() {
+      if( !this.initialized ) {
+        Gibberish = Gibber.Audio.Core
+        postgraph = [ Gibberish.node, Gibberish.context.destination ]
+        this.initialized = true
+        $.subscribe( '/gibber/clear', PP.clear.bind( this ) )
+      }
+    },
+    
+    clear : function() {
+      this.disconnectGraph()
+      postgraph = [ Gibberish.node, Gibberish.context.destination ]
+      this.connectGraph()
+    },
+    
+    disconnectGraph: function() {
+      for( var i = 0; i < postgraph.length - 1; i++ ) {
+        postgraph[ i ].disconnect( postgraph[ i + 1 ] )
+      }
+    },
+    
+    connectGraph : function() {
+      for( var i = 0; i < postgraph.length - 1; i++ ) {
+        postgraph[ i ].connect( postgraph[ i + 1 ] )
+      }
+    },
+    
+    insert: function( node, position ) { 
+      if( typeof position !== 'undefined' ) {
+        if( position > 0 && position < postgraph.length - 1 ) {
+          PP.disconnectGraph()
+          postgraph.splice( position, 0, node )
+        }else{
+          console.error( 'Invalid position for inserting into postprocessing graph: ', position )
+          return
+        }
+      }else{
+        PP.disconnectGraph()
+        postgraph.splice( 1, 0, node )
+      }
+      
+      PP.connectGraph()
+    },
+    
     Compressor : function( position ) {
       if( compressor === null ) {
+        
+        PP.init()
         
         compressor = Gibberish.context.createDynamicsCompressor()
         
@@ -13449,6 +11867,48 @@ module.exports = function( Gibber ) {
       }
       
       return compressor
+    },
+    
+    MasterVerb: function( verb ) {
+      if( masterverb === null ) {
+        if( typeof verb === 'undefined' ) verb = 'smallPlate'
+        
+        masterverb = Gibberish.context.createConvolver();
+        masterverb.impulseName = verb
+        
+        loadBuffer( Gibberish.context, 'resources/impulses/' + verb + '.wav', function( _buffer ) {
+          masterverb.buffer = _buffer
+        })
+        
+        //postgraph[ 0 ].connect( masterverb, 2, 0 )
+        //postgraph[ 0 ].connect( masterverb, 3, 1 )        
+        
+        Gibberish.reverbOut.connect( masterverb )
+        
+        masterverb.gainNode = Gibberish.context.createGain()
+        
+        masterverb.gainNode.connect( Gibberish.context.destination )
+        masterverb.connect( masterverb.gainNode )
+        
+        Object.defineProperty( masterverb, 'gain', {
+          get: function() { 
+            return masterverb.gainNode.gain.value
+          },
+          set: function(v) {
+            masterverb.gainNode.gain.value = v
+          }
+        })
+        
+        masterverb.gain = .2
+        //175314__recordinghopkins__large-dark-plate-01.wav
+      }else if( verb !== masterverb.impulseName ) {
+        loadBuffer( Gibberish.context, 'resources/impulses/' + verb + '.wav', function( _buffer ) {
+          masterverb.impulseName = verb
+          masterverb.buffer = _buffer
+        })
+      }
+      
+      return masterverb
     },
     
     LowShelf : function( position ) {
@@ -13485,7 +11945,7 @@ module.exports = function( Gibber ) {
       
       return lowshelf
     },
-    
+     
     HiShelf : function( position ) {
       if( hishelf === null ) {
         hishelf = Gibberish.context.createBiquadFilter()
@@ -13520,18 +11980,17 @@ module.exports = function( Gibber ) {
       return hishelf
     },
   }
-
-  return PostProcessing
-
+  
+  return PP
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/sampler.js":[function(require,module,exports){
+},{}],49:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) { 
   "use strict"
   
   var Samplers = { Presets:{} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require('./clock')( Gibber ),
+      Clock = _dereq_('./clock')( Gibber ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -13580,9 +12039,15 @@ module.exports = function( Gibber ) {
   Samplers.Sampler = function() {
     var args = Array.prototype.slice.call( arguments, 0 ),
         file = args[0] && args[0].file ? args[0].file : undefined,
+        oscillator, buffer, name = 'Sampler'
+        
+      if( args[0] && args[0].buffer ) { buffer = args[0].buffer }
+      if( buffer ) {
+        oscillator = new Gibberish.Sampler({ 'buffer':buffer }).connect( Gibber.Master )
+      }else{
         oscillator = new Gibberish.Sampler( file ).connect( Gibber.Master )
-        name = 'Sampler'
-         
+      }
+
       oscillator.type = 'Gen'
       $.extend( true, oscillator, Gibber.Audio.ugenTemplate )
       
@@ -13607,10 +12072,9 @@ module.exports = function( Gibber ) {
         }
       }
 
-
       var oldStart = oscillator.__lookupSetter__('start').bind( oscillator ),
           __start = 0
-          
+      
       Object.defineProperty(oscillator, 'start', {
         configurable: true,
         get: function() { 
@@ -13618,11 +12082,12 @@ module.exports = function( Gibber ) {
         },
         set: function(v) {
           if( v <= 1 ) {
-            __start = v * oscillator.bufferLength
+            __start = v * oscillator.length
           }else{
             __start = v
           }
           oldStart( __start )
+          oscillator.setPhase( __start ) // TODO: HACK! Why doesn't this work automatically?
           
           return __start
         }
@@ -13637,11 +12102,12 @@ module.exports = function( Gibber ) {
         },
         set: function(v) {
           if( v <= 1 ) {
-            __end = v * oscillator.bufferLength
+            __end = v * oscillator.length
           }else{
             __end = v
           }
           oldEnd( __end )
+          oscillator.setPhase( __end ) // TODO: HACK! Why doesn't this work automatically?
           
           return __end
         }
@@ -13649,7 +12115,7 @@ module.exports = function( Gibber ) {
       
       Gibber.createProxyProperties( oscillator, mappingProperties )
 
-      var proxyMethods = [ 'note', 'pickBuffer' ]
+      var proxyMethods = [ 'note', 'pickBuffer', 'switchBuffer' ]
       
       Gibber.createProxyMethods( oscillator, proxyMethods )
 
@@ -13700,7 +12166,7 @@ module.exports = function( Gibber ) {
             reader = new FileReader(),
             that = _that, item;
         
-        item = file.webkitGetAsEntry()
+        item = file.webkitGetAsEntry ? file.webkitGetAsEntry() : file
         
         if( item.isDirectory ) {
           var dirReader = item.createReader()
@@ -13738,6 +12204,81 @@ module.exports = function( Gibber ) {
     return this;
   };
   
+  Gibberish.Sampler.prototype.done = function( func ) {
+    this.onload =  func
+    return this
+  }
+  
+  Gibberish.Sampler.prototype.load = function( url ) {
+    var xhr = new XMLHttpRequest(), initSound
+        
+    xhr.open( 'GET', url, true )
+    xhr.responseType = 'arraybuffer'
+    xhr.onload = function( e ) { initSound( this.response, url ) }
+    xhr.send()
+    
+    console.log("now loading sample", url )
+    xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
+    
+    var self = this, buffer, bufferLength = 0, phase = 0
+        
+    function initSound( arrayBuffer, filename ) {
+      Gibber.Audio.Core.context.decodeAudioData( arrayBuffer, function( _buffer ) {
+        var buffer = _buffer.getChannelData(0)
+  			self.length = self.end = buffer.length
+        self.setPhase( self.end )
+        self.setBuffer( buffer )
+        self.isPlaying = true;
+  			self.buffers[ filename ] = buffer;
+        this.file = filename
+
+  			console.log("sample loaded | ", filename, " | length | ", buffer.length );
+  			Gibberish.audioFiles[ filename ] = buffer;
+			
+        if(self.onload) self.onload();
+      
+        if(self.playOnLoad !== 0) self.note( self.playOnLoad );
+      
+  			self.isLoaded = true;
+      }, function(e) {
+        console.log('Error decoding file', e);
+      }); 
+    };
+    
+    return this
+  }
+  
+  Gibberish.Sampler.prototype.loadDir = function( dir ) {
+    var xhr = new XMLHttpRequest(), initSound
+        
+    xhr.open( 'GET', dir, true )
+    xhr.responseType = 'html'
+    xhr.onload = function( e ) { loadDir( this.response, dir ) }
+    xhr.send()
+    
+    console.log("now loading directory", dir )
+    xhr.onerror = function( e ) { console.error( "Error loading directory", e )}
+    
+    var self = this
+        
+    function loadDir( response, dir ) {       
+        var page = $( response ),
+            links = $( page ).find( 'a' )
+        
+        for( var i = 0; i < links.length; i++ ) {
+          var link = links[ i ],
+              split = link.href.split( '/' ),
+              url   = split[ split.length - 1 ]
+              
+          if( url !== '' && url !== '.DS_Store' && url !== 'node-ecstatic' ) {
+            self.load( dir + '/' + url )
+          }
+        }
+    };
+    
+    return this
+  }
+  
 
   Samplers.Looper = function(input, length, numberOfLoops) {
   	var that = Bus();
@@ -13752,10 +12293,10 @@ module.exports = function( Gibber ) {
         that.children[ that.currentLoop ].record( that.input, that.length );
     
         var seq = {
-          target: that.children[ that.currentLoop],
+          target: that.children[ that.currentLoop ],
           durations: that.length,
           key:'note',
-          values: [ null ] 
+          values: [ 1 ] 
         }
 
         that.seq.add( seq )
@@ -13774,7 +12315,7 @@ module.exports = function( Gibber ) {
           target: that.children[ that.currentLoop ],
           durations: that.length,
           key:'note',
-          values: [ null ] 
+          values: [ 1 ] 
         }
 
         that.seq.add( seq )
@@ -13803,14 +12344,14 @@ module.exports = function( Gibber ) {
     Gibber.createProxyProperties( that, { pitch:mappingProperties.pitch } )
         
     that.stop = function() { that.seq.stop(); }
-    that.play = function() { that.seq.play(); }
+    that.play = function() { that.seq.start(); }
 	
   	return that;
   }
   
   return Samplers
 }
-},{"./clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/score.js":[function(require,module,exports){
+},{"./clock":40,"gibberish-dsp":5}],50:[function(_dereq_,module,exports){
 /*
 Score is a Seq(ish) object, with pause, start / stop, rewind, fast-forward.
 It's internal phase is 
@@ -13832,7 +12373,7 @@ module.exports = function( Gibber ) {
 
 "use strict"
 
-var Gibberish = require( 'gibberish-dsp' ),
+var Gibberish = _dereq_( 'gibberish-dsp' ),
     $ = Gibber.dollar
 
 var ScoreProto = {
@@ -14139,11 +12680,11 @@ song = Score([
 song.start()
 
 */
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/seq.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],51:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   //"use strict"
   
-  var Gibberish = require( 'gibberish-dsp' ),
+  var Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
       doNotSequence = [ 'durations', 'target', 'scale', 'offset', 'doNotStart', 'priority' ]
   
@@ -14165,6 +12706,7 @@ module.exports = function( Gibber ) {
       if( typeof obj.scale.notes[ idx ] === 'number' ) {
         freq = obj.scale.notes[ idx ]
       }else{
+        if( typeof idx === 'undefined' ) return // rest
         try{
           freq = obj.scale.notes[ idx ].fq()
         }catch(e) {
@@ -14253,7 +12795,7 @@ module.exports = function( Gibber ) {
             if( key === 'note' ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
-                if( output < Gibber.minNoteFrequency ) {
+                if( output && output < Gibber.minNoteFrequency ) {
                   if( obj.scale ) {
                     output = obj.scale.notes[ output ]
                   }else{
@@ -14419,7 +12961,7 @@ module.exports = function( Gibber ) {
     
     seq.toString = function() { return '> Seq' }
     seq.gibber = true
-    
+     
     $.extend( seq, {
       constructor: Seq,
       replaceWith: function( replacement ) { this.kill() },
@@ -14494,11 +13036,11 @@ module.exports = function( Gibber ) {
   
   return Seqs 
 }
-},{"gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/soundfont.js":[function(require,module,exports){
+},{"gibberish-dsp":5}],52:[function(_dereq_,module,exports){
 module.exports = function( Gibber, pathToSoundFonts ) {
-  var Gibberish = require( 'gibberish-dsp' ),
+  var Gibberish = _dereq_( 'gibberish-dsp' ),
       curves = Gibber.outputCurves,
-      teoria = require( './theory' )( Gibber ).Teoria,
+      teoria = _dereq_( './theory' )( Gibber ).Teoria,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
       mappingProperties = {
@@ -14639,14 +13181,16 @@ module.exports = function( Gibber, pathToSoundFonts ) {
   
   return SoundFont
 }
-},{"./theory":"/www/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
+},{"./theory":54,"gibberish-dsp":5}],53:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
+  function isInt(value) { return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value)) }
+  
   var Synths = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require( './clock' )( Gibber ),
+      Clock = _dereq_( './clock' )( Gibber ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC
@@ -14764,6 +13308,7 @@ module.exports = function( Gibber ) {
         
         if( name === 'Mono' ) {
           obj.note = function( _frequency, amp ) {
+            if( typeof _frequency === 'undefined' ) return // rest
             if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
               
             if( amp !== 0 ) {
@@ -14789,29 +13334,9 @@ module.exports = function( Gibber ) {
         obj.note = function() {
           var args = Array.prototype.splice.call( arguments, 0 )
           
-          if( typeof args[0] === 'string' ) {
-            args[0] = Gibber.Theory.Teoria.note( args[0] ).fq()
-          }else{
-            // TODO: Differentiate between envelopes etc. and interface elements
-            // if( typeof args[0] === 'object' ) { // for interface elements etc.
-            //   args[0] = args[0].valueOf()
-            // }
-            if( args[0] < Gibber.minNoteFrequency ) {
-              var scale = obj.scale || Gibber.scale,
-                  note  = scale.notes[ args[ 0 ] ]
-                  
-              if( obj.octave && obj.octave !== 0 ) {
-                var sign = obj.octave > 0 ? 1 : 0,
-                    num  = Math.abs( obj.octave )
-                
-                for( var i = 0; i < num; i++ ) {
-                  note *= sign ? 2 : .5
-                }
-              }
-              
-              args[ 0 ] = note
-            }
-          }
+          if( typeof args[0] === 'undefined' ) return
+
+          args[ 0 ] = Gibber.Theory.processFrequency( obj, args[ 0 ] )
           
           this._note.apply( this, args )
           
@@ -15107,12 +13632,13 @@ module.exports = function( Gibber ) {
 
 }
 
-},{"./clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/theory.js":[function(require,module,exports){
+},{"./clock":40,"gibberish-dsp":5}],54:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
 
-var teoria = require('../../external/teoria.min'),
-    $ = Gibber.dollar
+var teoria = _dereq_('../../external/teoria.min'),
+    $ = Gibber.dollar,
+    isInt = function(value) { return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value)) }
 
 var Theory = {
   Teoria: teoria,
@@ -15327,6 +13853,40 @@ var Theory = {
     Shruti: function(root) { return Theory.CustomScale( root, [1,256/243,16/15,10/9,9/8,32/27,6/5,5/4,81/64,4/3,27/20,45/32,729/512,3/2,128/81,8/5,5/3,27/16,16/9,9/5,15/8,243/128,2] ); },
   },
   
+  processFrequency: function( obj, frequency ) {
+    var note = frequency
+    if( typeof frequency === 'string' ) {
+      note = Gibber.Theory.Teoria.note( frequency ).fq()
+    }else if( frequency < Gibber.minNoteFrequency ) {
+      var scale = obj.scale || Gibber.scale,
+          noteValue = frequency,
+          isNoteInteger = isInt( noteValue ),
+          note
+      
+      if( isNoteInteger ) {                      
+        note  = scale.notes[ frequency  ]
+      }else{
+        var noteFloor = scale.notes[ Math.floor( noteValue )  ],
+            noteCeil  = scale.notes[ Math.ceil( noteValue )  ],
+            float = noteValue % 1,
+            diff = noteCeil - noteFloor
+        
+        note = noteFloor + float * diff
+      }
+          
+      if( obj.octave && obj.octave !== 0 ) {
+        var sign = obj.octave > 0 ? 1 : 0,
+            num  = Math.abs( obj.octave )
+        
+        for( var i = 0; i < num; i++ ) {
+          note *= sign ? 2 : .5
+        }
+      }
+    }
+    
+    return note
+  },
+  
 	chord : function( val, volume ) {
 		this.notation = val;
 			
@@ -15380,13 +13940,13 @@ var Theory = {
 	
 		return this;
 	}
-
+ 
 }
 
 return Theory
 
 }
-},{"../../external/teoria.min":"/www/gibber.audio.lib/scripts/external/teoria.min.js"}],"/www/gibber.audio.lib/scripts/gibber/audio/ugen.js":[function(require,module,exports){
+},{"../../external/teoria.min":33}],55:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
 
 var Ugen = function( desc ) {
@@ -15401,23 +13961,41 @@ var Ugen = function( desc ) {
 
     obj.__proto__ = Gibber.Audio.Core._synth
     
-    for( var key in props ) {
-        console.log("KEY", key )
+    if( typeof props === 'object' ) {
+      for( var key in props ) {
         obj[ key ] = props[ key ]
+      }
+    }
+    
+    var doNotCopy = ['name','inputs','callback','init'], methods = []
+
+    for( var key in desc ) {
+      if( doNotCopy.indexOf( key ) === -1 ) {
+        obj[ key ] = desc[ key ].bind( obj )
+        methods.push( key )
+      }
     }
 
     obj.init.call( obj )
-    obj._init()
     obj.oscillatorInit.call( obj )
 
     Gibber.createProxyProperties( obj, obj.properties )
-    for( var key in desc.inputs ) {
-      obj[ key ] = desc.inputs[ key ].default
-    }
+    Gibber.createProxyMethods( obj, methods )
 
+    for( var key in desc.inputs ) {
+      if( typeof props === 'object' && props[ key ] ) {
+        obj[ key ] = props[ key ]
+      }else{
+        obj[ key ] = desc.inputs[ key ].default
+      }
+    }  
+
+    obj._init()
+    
     obj.connect( Gibber.Master )
-	
-    obj.processProperties.call( obj, arguments )
+	  
+    if( arguments.length > 0 )
+      Gibber.processArguments2( obj, Array.prototype.slice.call( arguments, 0), obj.name )
   
     $.extend( true, obj, Gibber.Audio.ugenTemplate )
     obj.fx.ugen = obj
@@ -15468,14 +14046,14 @@ b = XXX({ frequency:250, amp:.1 })
 a.frequency.seq( [440,880], 1/2 )
 
 */
-},{}],"/www/gibber.audio.lib/scripts/gibber/audio/vocoder.js":[function(require,module,exports){
+},{}],56:[function(_dereq_,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
   
   var Vocoder = { Presets: {} },
-      Gibberish = require( 'gibberish-dsp' ),
+      Gibberish = _dereq_( 'gibberish-dsp' ),
       $ = Gibber.dollar,
-      Clock = require( './clock' )( Gibber ),
+      Clock = _dereq_( './clock' )( Gibber ),
       curves = Gibber.outputCurves,
       LINEAR = curves.LINEAR,
       LOGARITHMIC = curves.LOGARITHMIC,
@@ -15570,5 +14148,14 @@ module.exports = function( Gibber ) {
   return Vocoder
 }
       
-},{"./clock":"/www/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}]},{},["./scripts/gibber/audio.lib.js"])("./scripts/gibber/audio.lib.js")
+},{"./clock":40,"gibberish-dsp":5}],57:[function(_dereq_,module,exports){
+!function() {
+
+var Gibber = _dereq_( 'gibber.core.lib' )
+Gibber.Audio = _dereq_( './audio.js')( Gibber )
+module.exports = Gibber
+
+}()
+},{"./audio.js":34,"gibber.core.lib":2}]},{},[57])
+(57)
 });
