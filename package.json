@@ -1,13 +1,12 @@
 {
   "name": "gibber.audio.lib",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "standalone audio library from Gibber to use in node or in HTML documents",
   "repository": {
     "type": "git",
     "url": "git://github.com/charlieroberts/gibber.audio.lib"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "dependencies": {
     "gulp": "~3.8.7",
     "browserify": "~5.10.1",
