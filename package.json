@@ -6,8 +6,7 @@
     "type": "git",
     "url": "git://github.com/charlieroberts/gibber.audio.lib"
   },
-  "devDependencies": {},
-  "dependencies": {
+  "devDependencies": {
     "gulp": "~3.8.7",
     "browserify": "~5.10.1",
     "vinyl-source-stream": "~0.1.1",
@@ -16,9 +15,11 @@
     "gulp-insert": "~0.4.0",
     "gulp-browserify": "~0.5.0",
     "gulp-rename": "~1.2.0",
-    "gibberish-dsp": "~2.1.4",
-    "gibber.core.lib": "~0.0.1",
     "watchify": "~1.0.3"
+  },
+  "dependencies": {
+    "gibberish-dsp": "~2.1.4",
+    "gibber.core.lib": "~0.0.1"
   },
   "bugs": {
     "url": "https://github.com/charlieroberts/gibber.audio.lib/issues"

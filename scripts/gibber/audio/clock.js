@@ -116,6 +116,7 @@ var Clock = {
       })
       
       Object.defineProperty(this, 'timeSignature', {
+        configurable:true,
         get: function() { return Clock.signature.upper + '/' + Clock.signature.lower },
         set: function(v) { 
           var values = v.split('/')
