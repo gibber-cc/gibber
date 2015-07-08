@@ -1,6 +1,6 @@
 {
   "name": "gibber.audio.lib",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "standalone audio library from Gibber to use in node or in HTML documents",
   "repository": {
     "type": "git",
@@ -19,8 +19,7 @@
     "gibber.core.lib": "~0.0.1",
     "watchify": "~1.0.3"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "bugs": {
     "url": "https://github.com/charlieroberts/gibber.audio.lib/issues"
   },
