@@ -5714,6 +5714,7 @@ var Gabber = {
       if( cm.shareName === Gabber.name ) { // send to all performers
         msg = Gabber.createMessage( obj, cm.shareName, cm )
       }else{ // send to a single perfomer (from executing in their shared column)
+        console.log("TO SINGLE PERSON")
         msg = Gabber.createMessage( obj, cm.shareName, cm, cm.shareName )
       }
       
@@ -5722,7 +5723,9 @@ var Gabber = {
       
       //cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
 
-      Chat.socket.send( JSON.stringify( msg ) ) 
+      Chat.socket.send( JSON.stringify( msg ) )
+      
+      return false 
 		}
     
     CodeMirror.keyMap.gibber[ 'Shift-Ctrl-2' ] = function( cm ) {
@@ -5740,6 +5743,8 @@ var Gabber = {
       // }
       
       Chat.socket.send( JSON.stringify( msg ) ) 
+      
+      return false
     }
     
     if( Gabber.performanceMode === REMOTE ) {
@@ -5777,48 +5782,6 @@ var Gabber = {
     
   },
 }
-
-// Object.defineProperty( Gabber, 'Ki', {
-//   get: function()  { return Gabber.PID.Ki },
-//   set: function(v) {
-//     Gabber.PID.Ki = v
-//     var msg = {
-//       cmd:  'gabber.Ki',
-//       gabberName:Gabber.name,
-//       value: v
-//     }
-//
-//     Chat.socket.send( JSON.stringify( msg ) )
-//   }
-// })
-//
-// Object.defineProperty( Gabber, 'Kp', {
-//   get: function()  { return Gabber.PID.Kp },
-//   set: function(v) {
-//     Gabber.PID.Kp = v
-//     var msg = {
-//       cmd:  'gabber.Kp',
-//       gabberName:Gabber.name,
-//       value: v
-//     };
-//
-//     Chat.socket.send( JSON.stringify( msg ) )
-//   }
-// })
-//
-// Object.defineProperty( Gabber, 'KpMean', {
-//   get: function()  { return Gabber.PID.KpMean },
-//   set: function(v) {
-//     Gabber.PID.KpMean = v
-//     var msg = {
-//       cmd:  'gabber.KpMean',
-//       gabberName:Gabber.name,
-//       value: v
-//     };
-//
-//     Chat.socket.send( JSON.stringify( msg ) )
-//   }
-// })
 
 return Gabber
 
@@ -28779,7 +28742,6 @@ param **Audio Event** : Object. The HTML5 audio event object.
       
       if(me.isDirty) {
         _callback = me.createCallback();
-        
         try{
           callback = me.callback = new Function( _callback[0], _callback[1] )
         }catch( e ) {
@@ -37479,7 +37441,7 @@ Audio.SoundFont =      require( './audio/soundfont' )( Gibber )
 Audio.Score =          require( './audio/score' )
 Audio.Ensemble =       require( './audio/ensemble' )( Gibber )
 Audio.Ugen =           require( './audio/ugen')( Gibber )
-Audio.Additive =       require( './audio/additive')
+Audio.Additive =       require( './audio/additive' )
 
 return Audio
 
@@ -38111,6 +38073,7 @@ var Clock = {
       })
       
       Object.defineProperty(this, 'timeSignature', {
+        configurable:true,
         get: function() { return Clock.signature.upper + '/' + Clock.signature.lower },
         set: function(v) { 
           var values = v.split('/')
@@ -43690,6 +43653,12 @@ var Gibber = {
       obj.seq = Gibber.Audio.Seqs.Seq({ doNotStart:true, scale:obj.scale, priority:priority, target:obj })
     }
     
+    fnc.score = function( v,d,n ) {
+      return function() {
+        fnc.seq( v,d,n )
+      }
+    }
+    
     fnc.seq = function( _v,_d, num ) {
       var seq
       if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
@@ -43848,8 +43817,8 @@ var Gibber = {
         fnc.values.filters.push( filter )
       }
     
-      fnc.score = function( __v__, __d__ ) {
-        return fnc.seq.bind( obj, __v__, __d__ )
+      fnc[ num ].score = function( __v__, __d__ ) {
+        return fnc.seq.bind( obj, __v__, __d__, num )
       }
     
       Object.defineProperties( fnc, {

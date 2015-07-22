@@ -519,6 +519,7 @@ var Gabber = {
       if( cm.shareName === Gabber.name ) { // send to all performers
         msg = Gabber.createMessage( obj, cm.shareName, cm )
       }else{ // send to a single perfomer (from executing in their shared column)
+        console.log("TO SINGLE PERSON")
         msg = Gabber.createMessage( obj, cm.shareName, cm, cm.shareName )
       }
       
@@ -527,7 +528,9 @@ var Gabber = {
       
       //cm.markText( msg.selectionRange.start, msg.selectionRange.end, { css:'background-color:rgba(255,0,0,.2);' })
 
-      Chat.socket.send( JSON.stringify( msg ) ) 
+      Chat.socket.send( JSON.stringify( msg ) )
+      
+      return false 
 		}
     
     CodeMirror.keyMap.gibber[ 'Shift-Ctrl-2' ] = function( cm ) {
@@ -545,6 +548,8 @@ var Gabber = {
       // }
       
       Chat.socket.send( JSON.stringify( msg ) ) 
+      
+      return false
     }
     
     if( Gabber.performanceMode === REMOTE ) {
@@ -582,48 +587,6 @@ var Gabber = {
     
   },
 }
-
-// Object.defineProperty( Gabber, 'Ki', {
-//   get: function()  { return Gabber.PID.Ki },
-//   set: function(v) {
-//     Gabber.PID.Ki = v
-//     var msg = {
-//       cmd:  'gabber.Ki',
-//       gabberName:Gabber.name,
-//       value: v
-//     }
-//
-//     Chat.socket.send( JSON.stringify( msg ) )
-//   }
-// })
-//
-// Object.defineProperty( Gabber, 'Kp', {
-//   get: function()  { return Gabber.PID.Kp },
-//   set: function(v) {
-//     Gabber.PID.Kp = v
-//     var msg = {
-//       cmd:  'gabber.Kp',
-//       gabberName:Gabber.name,
-//       value: v
-//     };
-//
-//     Chat.socket.send( JSON.stringify( msg ) )
-//   }
-// })
-//
-// Object.defineProperty( Gabber, 'KpMean', {
-//   get: function()  { return Gabber.PID.KpMean },
-//   set: function(v) {
-//     Gabber.PID.KpMean = v
-//     var msg = {
-//       cmd:  'gabber.KpMean',
-//       gabberName:Gabber.name,
-//       value: v
-//     };
-//
-//     Chat.socket.send( JSON.stringify( msg ) )
-//   }
-// })
 
 return Gabber
 
