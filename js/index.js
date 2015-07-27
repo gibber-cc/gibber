@@ -37177,7 +37177,9 @@ Audio = {
   clear: function() {
     // Audio.analysisUgens.length = 0
     // Audio.sequencers.length = 0
-    var args = Array.prototype.slice.call( arguments, 0 )
+    var args = Array.prototype.slice.call( arguments, 0 ),
+        scaleSeqIsConnected = Audio.Theory.scale.seq.isConnected
+    
     
     for( var i = 0; i < Audio.Master.inputs.length; i++ ) {
       if( args.indexOf( Audio.Master.inputs[ i ].value) === -1 ) {
@@ -37198,6 +37200,10 @@ Audio = {
     Audio.Core.clear()
     
     Audio.Clock.seq.connect()
+    
+    if( scaleSeqIsConnected  ) {
+      Gibber.Theory.scale = Gibber.scale = Gibber.Audio.Theory.Scale( 'c4','Minor' )
+    }
     
     Audio.Core.out.addConnection( Audio.Master, 1 );
     Audio.Master.destinations.push( Audio.Core.out );
