@@ -34038,16 +34038,19 @@ param **buffer** Object. The decoded sampler buffers from the audio file
     
     switchBuffer: function( bufferID ) { // accepts either number or string
       if( typeof bufferID === 'string' ) {
-        if( typeof self.buffers[ bufferID ] !== 'undefined' ) {
-          buffer = self.buffers[ bufferID ]
-          bufferLength = self.end = self.length = buffer.length
+        if( typeof this.buffers[ bufferID ] !== 'undefined' ) {
+          buffer = this.buffers[ bufferID ]
+          bufferLength = this.end = this.length = buffer.length
         }
       }else if( typeof bufferID === 'number' ){
-        var keys = Object.keys( self.buffers )
+        var keys = Object.keys( this.buffers )
         if( keys.length === 0 ) return 
         //console.log( "KEY", keys, keys[ bufferID ], bufferID )
-        buffer = self.buffers[ keys[ bufferID ] ]
-        bufferLength = self.end = self.length = buffer.length
+        buffer = this.buffers[ keys[ bufferID ] ]
+        bufferLength  = this.length = buffer.length
+        this.end( bufferLength )
+        this.setPhase( 0 )
+        //console.log( bufferLength, this.end, this.length )
       }
     },
     
@@ -44734,9 +44737,6 @@ var Pattern = function() {
     stepSize : 1,
     integersOnly : false,
     filters : [],
-    /*humanize: function() {
-      
-    },*/
     onchange : null,
 
     range : function() {
@@ -44779,7 +44779,34 @@ var Pattern = function() {
       
       return fnc;
     },
-    
+    // humanize: function( randomMin, randomMax ) {
+ //      var lastAmt = 0
+ //
+ //      for( var i = 0; i < this.filters.length; i++ ) {
+ //        if( this.filters[ i ].humanize ) {
+ //          lastAmt = this.filters[ i ].lastAmt
+ //          this.filters.splice( i, 1 )
+ //          break;
+ //        }
+ //      }
+ //
+ //      var filter = function( args ) {
+ //        console.log( filter.lastAmt, args[0])
+ //        args[ 0 ] -= filter.lastAmt
+ //        filter.lastAmt = Gibber.Clock.time( Gibber.Utilities.rndi( randomMin, randomMax ) )
+ //
+ //        console.log( "LA", filter.lastAmt )
+ //        args[0] += filter.lastAmt
+ //
+ //        return args
+ //      }
+ //      filter.lastAmt = lastAmt
+ //      filter.humanize = true
+ //
+ //      this.filters.push( filter )
+ //
+ //      return this
+ //    },
     repeat: function() {
       var counts = {}
     
