@@ -44868,10 +44868,14 @@ var Pattern = function() {
         
         if( $.isArray( val ) ) {
           for( var j = 0; j < val.length; j++ ) {
-            val[ j ] = fnc.integersOnly ? Math.round( val[ j ] + amt ) : val[ j ] + amt
+            if( typeof val[ j ] === 'number' ) {
+              val[ j ] = fnc.integersOnly ? Math.round( val[ j ] + amt ) : val[ j ] + amt
+            }
           }
         }else{
-          fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] + amt ) : fnc.values[ i ] + amt
+          if( typeof val === 'number' ) {
+            fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] + amt ) : fnc.values[ i ] + amt
+          }
         }
       }
       
@@ -44890,10 +44894,14 @@ var Pattern = function() {
         var val = fnc.values[ i ]
         if( $.isArray( val ) ) {
           for( var j = 0; j < val.length; j++ ) {
-            val[ j ] = fnc.integersOnly ? Math.round( val[ j ] * amt ) : val[ j ] * amt
+            if( typeof val[ j ] === 'number' ) {
+              val[ j ] = fnc.integersOnly ? Math.round( val[ j ] * amt ) : val[ j ] * amt
+            }
           }
         }else{
-          fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
+          if( typeof val === 'number' ) {
+            fnc.values[ i ] = fnc.integersOnly ? Math.round( fnc.values[ i ] * amt ) : fnc.values[ i ] * amt
+          }
         }
       }
       fnc._onchange()
@@ -44927,8 +44935,10 @@ var Pattern = function() {
       var prime0 = fnc.values[ 0 ]
       
       for( var i = 1; i < fnc.values.length; i++ ) {
-        var inverse = prime0 + (prime0 - fnc.values[ i ])
-        fnc.values[ i ] = inverse
+        if( typeof fnc.values[ i ] === 'number' ) {
+          var inverse = prime0 + (prime0 - fnc.values[ i ])
+          fnc.values[ i ] = inverse
+        }
       }
       
       fnc._onchange()
