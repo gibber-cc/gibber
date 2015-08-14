@@ -50874,15 +50874,10 @@ var PP = {
             mappingProperties = _mappingProperties[ key ]
         
         var constructor = function() {
-          // if( 'shaders' in shaders[ key ] ) {
-          //console.log( shaderProps, shaderProps.shaders, shaderProps.shaders[0] )
-          //var shader = shaderProps.shaders[0].init({ center:undefined, angle:.5, scale:.035, mix:.1 })
-          if( Gibber.Graphics.canvas === null){
+          if( Gibber.Graphics.canvas === null || $( Gibber.Graphics.canvas ).css( 'display' ) === 'none' ){
             Gibber.Graphics.init( '3d' )
           }else if( Gibber.Graphics.mode === '2d' ) {
             Gibber.Graphics.useCanvasAsTexture( Gibber.Graphics.modes['2d'].obj.canvasObject )
-          }else if( $( Gibber.Graphics.canvas ).css( 'display' ) === 'none' ) {
-            $( Gibber.Graphics.canvas ).css( 'display', 'block' )
           }
                     
           Gibber.Graphics.running = true 
