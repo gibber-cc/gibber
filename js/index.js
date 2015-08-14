@@ -44746,12 +44746,21 @@ var Pattern = function() {
     onchange : null,
 
     range : function() {
+      var start, end
       if( Array.isArray( arguments[0] ) ) {
-        fnc.start = arguments[0][0]
-        fnc.end   = arguments[0][1]
+        start = arguments[0][0]
+        end   = arguments[0][1]
       }else{
-        fnc.start = arguments[0]
-        fnc.end   = arguments[1]
+        start = arguments[0]
+        end   = arguments[1]
+      }
+      
+      if( start < end ) {
+        fnc.start = start
+        fnc.end = end
+      }else{
+        fnc.start = end
+        fnc.end = start
       }
       
       return fnc;
@@ -50315,8 +50324,7 @@ Graphics = {
   
   init : function( mode, container ) { 
     if( mode === '3d' && !window.WebGLRenderingContext ) {
-      var msg = 'Your browser does not support WebGL.' + 
-                '2D drawing will work, but 3D geometries and shaders are not supported.'
+      var msg = 'Your browser does not support WebGL. 2D drawing will work, but 3D geometries and shaders are not supported.'
         
       Gibber.Environment.Message.post( msg )
     }
@@ -50326,14 +50334,13 @@ Graphics = {
     this.mode = mode || '3d'
 
     if( this.modes[ this.mode ].canvas === null ) {
-                                    //Graphics.modes['2d'].constructor()
       this.modes[ this.mode ].obj = this.modes[ this.mode ].constructor( container )
       // if( this.mode === '2d' ) {
       //   this.modes[ '2d' ].canvas = this.modes[ this.mode ].obj
       // }
     }
     
-    console.log( "_MODE", _mode )
+    // console.log( "_MODE", _mode )
     if( _mode !== null && typeof _mode !== 'undefined' && _mode !== this.mode ) {
       this.modes[ _mode ].obj.hide()
     } 
@@ -50380,6 +50387,13 @@ Graphics = {
     });
     
     this.start()
+    
+    if( $( this.canvas ).css( 'display' ) === 'none' ) {
+      console.log( 'toggling!' )
+      $( this.canvas ).css( 'display', 'block' )
+    }else{
+      console.log( "not hidden", $( this.canvas ).css( 'display') )
+    }
 
     var resize = function( props ) { // I hate Safari on 10.6 for not having bind...
       Graphics.width = props.w
@@ -50867,8 +50881,10 @@ var PP = {
             Gibber.Graphics.init( '3d' )
           }else if( Gibber.Graphics.mode === '2d' ) {
             Gibber.Graphics.useCanvasAsTexture( Gibber.Graphics.modes['2d'].obj.canvasObject )
+          }else if( $( Gibber.Graphics.canvas ).css( 'display' ) === 'none' ) {
+            $( Gibber.Graphics.canvas ).css( 'display', 'block' )
           }
-          
+                    
           Gibber.Graphics.running = true 
           
 					if( name !== 'Shader' ) {
