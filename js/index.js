@@ -44715,7 +44715,7 @@ var Pattern = function() {
     if( len === 1 ) { 
       idx = 0 
     }else{
-      idx = fnc.phase >-1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
+      idx = fnc.phase > -1 ? Math.floor( fnc.start + (fnc.phase % len ) ) : Math.floor( fnc.end + (fnc.phase % len ) )
     }
     
     val = fnc.values[ Math.floor( idx % fnc.values.length ) ]
@@ -44747,6 +44747,7 @@ var Pattern = function() {
 
     range : function() {
       var start, end
+      
       if( Array.isArray( arguments[0] ) ) {
         start = arguments[0][0]
         end   = arguments[0][1]
@@ -44763,17 +44764,29 @@ var Pattern = function() {
         fnc.end = start
       }
       
-      return fnc;
+      fnc._onchange()
+      
+      return fnc
     },
     
     set: function() {
+      var args = Array.isArray( arguments[ 0 ] ) ? arguments[ 0 ] : arguments
+      
       fnc.values.length = 0
       
-      for( var i = 0; i < arguments[0].length; i++ ) {
-        fnc.values.push( arguments[0][i] )
+      for( var i = 0; i < args.length; i++ ) {
+        fnc.values.push( args[ i ] )
       }
       
-      if( fnc.end > fnc.values.length - 1 ) { fnc.end = fnc.values.length - 1 }
+      fnc.end = fnc.values.length - 1
+      
+      // if( fnc.end > fnc.values.length - 1 ) {
+      //   fnc.end = fnc.values.length - 1
+      // }else if( fnc.end < )
+      
+      fnc._onchange()
+      
+      return fnc
     },
      
     reverse : function() { 
