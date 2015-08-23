@@ -34021,7 +34021,7 @@ param **buffer** Object. The decoded sampler buffers from the audio file
 			buffer = decoded.channels[0]; 
 			bufferLength = decoded.length;
 			self.length = bufferLength
-			self.end = bufferLength;
+			//self.end = bufferLength;
       self.length = phase = bufferLength;
       self.isPlaying = true;
 					
@@ -34040,7 +34040,8 @@ param **buffer** Object. The decoded sampler buffers from the audio file
       if( typeof bufferID === 'string' ) {
         if( typeof this.buffers[ bufferID ] !== 'undefined' ) {
           buffer = this.buffers[ bufferID ]
-          bufferLength = this.end = this.length = buffer.length
+          //bufferLength = this.end = this.length = buffer.length
+          bufferLength = this.length = buffer.length
         }
       }else if( typeof bufferID === 'number' ){
         var keys = Object.keys( this.buffers )
@@ -34048,7 +34049,7 @@ param **buffer** Object. The decoded sampler buffers from the audio file
         //console.log( "KEY", keys, keys[ bufferID ], bufferID )
         buffer = this.buffers[ keys[ bufferID ] ]
         bufferLength  = this.length = buffer.length
-        this.end( bufferLength )
+        //this.end( bufferLength )
         this.setPhase( 0 )
         //console.log( bufferLength, this.end, this.length )
       }
@@ -34129,7 +34130,29 @@ Trigger playback of the samplers buffer
   
 param **pitch** Number. The speed the sample is played back at.  
 param **amp** Number. Optional. The volume to use.
-**/    
+**/   
+
+/**###Gibberish.Sampler.range : method  
+Set the start and end points in a single method call
+  
+param **start** Number. The start point for sample playback, 0..1
+param **end** Number. The end point for sample playback, 0..1
+**/  
+    range: function( start, end ) {
+      if( Array.isArray( start ) ) {
+        end = start[1]
+        start = start[0] 
+      }
+      
+      if( end < start ) {
+        var tmp = start
+        start = end
+        end = tmp
+      }
+      
+      this.start = start
+      this.end = end
+    },
 		note: function(pitch, amp) {
       if( typeof pitch === 'undefined' ) return
 
@@ -34181,11 +34204,12 @@ param **amp** Number. Optional. The volume to use.
             break;
         }
         
-        if( __pitch > 0 ) { //|| typeof __pitch === 'object' || typeof this.pitch === 'function' ) {
-          phase = this.start;
-				}else{
-          phase = this.end;
-				}
+        //         if( __pitch > 0 ) { //|| typeof __pitch === 'object' || typeof this.pitch === 'function' ) {
+        //           phase = this.start;
+        // }else{
+        //           phase = this.end;
+        // }
+        phase = 0
         
         Gibberish.dirty( this )
         
@@ -34229,28 +34253,29 @@ Return a single sample. It's a pretty lengthy method signature, they are all pro
 _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
 **/    
   	callback :function(_pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan) {
-  		var val = 0;
-  		phase += _pitch;				
-
-  		if(phase < end && phase > 0) {
-  			if(_pitch > 0) {
-					val = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
-  			}else{
-  				if(phase > start) {
-  					val = buffer !== null && isPlaying ? interpolate(buffer, phase) : 0;
-  				}else{
-  					phase = loops ? end : phase;
-  				}
-  			}
-        // var __out = panner(val * amp, pan, out);
-        // if( count++ % 22050 === 0 ) console.log( __out )
-        // if( ! isNaN( __out ) ) {console.log("CRAP", __out )}
-        // return __out
-        return panner(val * amp, pan, out);
-  		}
-  		phase = loops && _pitch > 0 ? start : phase;
-  		phase = loops && _pitch < 0 ? end : phase;
-				
+  		var val = 0, startInSamples = start * length, endInSamples = end * length;
+  		phase += _pitch;
+      
+      // if( count++ % 44100 === 0 ) console.log( _pitch, startInSamples, endInSamples )
+      
+      if( buffer !== null && isPlaying ) {
+        if( _pitch > 0 ) {
+          if( startInSamples + phase < endInSamples ) {
+            val = interpolate( buffer, startInSamples + phase )
+          }else{
+            if( loops ) phase = 0
+          }
+        }else{
+          if( endInSamples + phase > startInSamples ) {
+            val = interpolate( buffer, endInSamples + phase )
+          }else{
+            if( loops ) phase = 0
+          }
+        }
+        
+        return panner( val * amp, pan, out )
+      }
+	
   		out[0] = out[1] = val;
   		return out;
   	},
@@ -34304,7 +34329,7 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
   
 	if(typeof Gibberish.audioFiles[this.file] !== "undefined") {
 		buffer =  Gibberish.audioFiles[this.file];
-		this.end = this.bufferLength = buffer.length;
+		this.end = 1; //this.bufferLength = buffer.length;
 		this.buffers[ this.file ] = buffer;
     
     phase = this.bufferLength;
@@ -34325,7 +34350,8 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
     function initSound( arrayBuffer ) {
       Gibberish.context.decodeAudioData(arrayBuffer, function(_buffer) {
         buffer = _buffer.getChannelData(0)
-  			self.length = phase = self.end = bufferLength = buffer.length
+        // self.length = phase = self.end = bufferLength = buffer.length
+        self.length = phase = bufferLength = buffer.length
         self.isPlaying = true;
   			self.buffers[ self.file ] = buffer;
 
@@ -34345,7 +34371,8 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
 		this.isLoaded = true;
 					
 		buffer = this.buffer;
-    this.end = this.bufferLength = buffer.length || 88200;
+    //this.end = this.bufferLength = buffer.length || 88200;
+    this.bufferLength = buffer.length || 88200;
 		    
 		phase = this.bufferLength;
 		if(arguments[0] && arguments[0].loops) {
@@ -34364,7 +34391,7 @@ Gibberish.Sampler.prototype.record = function(input, recordLength) {
   
   this.recorder = new Gibberish.Record(input, recordLength, function() {
     self.setBuffer( this.getBuffer() );
-    self.end = bufferLength = self.getBuffer().length;
+    bufferLength = self.getBuffer().length;
     self.setPhase( self.end )
     self.isRecording = false;
   })
@@ -40489,13 +40516,18 @@ module.exports = function( Gibber ) {
           return __start 
         },
         set: function(v) {
-          if( v <= 1 ) {
-            __start = v * oscillator.length
-          }else{
+          if( typeof v === 'number' ) {
+            // if( v <= 1 ) {
+            //   __start = v * oscillator.length
+            // }else{
+            //   __start = v
+            // }
+            __start = v
+          }else{ 
             __start = v
           }
           oldStart( __start )
-          oscillator.setPhase( __start ) // TODO: HACK! Why doesn't this work automatically?
+          // oscillator.setPhase( __start ) // TODO: HACK! Why doesn't this work automatically?
           
           return __start
         }
@@ -40509,21 +40541,21 @@ module.exports = function( Gibber ) {
           return __end 
         },
         set: function(v) {
-          if( v <= 1 ) {
-            __end = v * oscillator.length
+          if( typeof v === 'number' ) {
+            __end = v
           }else{
             __end = v
           }
           oldEnd( __end )
-          oscillator.setPhase( __end ) // TODO: HACK! Why doesn't this work automatically?
+          //oscillator.setPhase( __end ) // TODO: HACK! Why doesn't this work automatically?
           
           return __end
         }
       })
-      
+       
       Gibber.createProxyProperties( oscillator, mappingProperties )
 
-      var proxyMethods = [ 'note', 'pickBuffer', 'switchBuffer' ]
+      var proxyMethods = [ 'note', 'pickBuffer', 'switchBuffer', 'range' ]
       
       Gibber.createProxyMethods( oscillator, proxyMethods )
 
@@ -40550,7 +40582,7 @@ module.exports = function( Gibber ) {
       Gibberish.context.decodeAudioData( reader.result, function(_buffer) {
         var buffer = _buffer.getChannelData(0)
         that.setBuffer( buffer )
-  			that.length = that.end = buffer.length
+  			that.length = buffer.length
         that.buffers[ file.name ] = buffer
     
         that.isPlaying = true;
@@ -40603,7 +40635,7 @@ module.exports = function( Gibber ) {
     this.recorder = new Gibberish.Record(input, Gibber.Clock.time( recordLength ), function() {
       console.log( 'recording finished' )
       self.setBuffer( this.getBuffer() );
-      self.length = self.end = self.getBuffer().length;
+      self.length = self.getBuffer().length;
       self.setPhase( self.length )
       self.isRecording = false;
     })
@@ -40633,8 +40665,8 @@ module.exports = function( Gibber ) {
     function initSound( arrayBuffer, filename ) {
       Gibber.Audio.Core.context.decodeAudioData( arrayBuffer, function( _buffer ) {
         var buffer = _buffer.getChannelData(0)
-  			self.length = self.end = buffer.length
-        self.setPhase( self.end )
+  			self.length = buffer.length
+        self.setPhase( self.length )
         self.setBuffer( buffer )
         self.isPlaying = true;
   			self.buffers[ filename ] = buffer;
@@ -43657,10 +43689,17 @@ var Gibber = {
   
   defineSequencedProperty : function( obj, key, priority ) {
     var fnc = obj[ key ], seqNumber, seqNumHash = {}, seqs = {}
+    
+    /* 
+      seqNumHash is used to store a unique id number in the Seq objects seq array
+      that is accessed via the property name and sequence number
+    */
 
     if( !obj.seq && Gibber.Audio ) {
-      obj.seq = Gibber.Audio.Seqs.Seq({ doNotStart:true, scale:obj.scale, priority:priority, target:obj })
+      obj.seq = Gibber.Audio.Seqs.Seq({ doNotStart:true, scale:obj.scale, priority:priority, target:obj }) 
     }
+    
+    //seqs = obj.seq.seqs
     
     fnc.score = function( v,d,n ) {
       return function() {
@@ -43669,7 +43708,7 @@ var Gibber = {
     }
     
     fnc.seq = function( _v,_d, num ) {
-      var seq
+      var seq, hashNumber
       if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
         _v = _v.split('')
         if( typeof _d === 'undefined' ) _d = 1 / _v.length
@@ -43678,6 +43717,8 @@ var Gibber = {
       if( typeof obj.seq === 'function' ) {
         obj.seq = obj.object.seq // cube.position etc. TODO: Fix this hack!
       }
+      
+      seqs = obj.seq.seqs
       
       var v = $.isArray(_v) ? _v : [_v],
           d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
@@ -43691,11 +43732,14 @@ var Gibber = {
 
       
       if( typeof num === 'undefined' ) num = 0 // _num++
-       
-      if( typeof seqs[ num ] !== 'undefined' ) {
-        seqs[ num ].shouldStop = true
-        delete seqs[ num ]
-        //obj.seq.seqs.splice( seqNumHash[ num ], 1 )
+      
+      if( !seqNumHash[ key ] ) seqNumHash[ key ] = []
+      
+      hashNumber = seqs[ seqNumHash[ key ][ num ] ]
+
+      if( typeof hashNumber !== 'undefined' && typeof seqs[ hashNumber ] !== 'undefined' ) {
+        delete seqNumHash[ key ][ num ]
+        delete obj.seq.seqs[ hashNumber ]
       }
             
       var valuesPattern = args.values[0]
@@ -43730,7 +43774,9 @@ var Gibber = {
       
       seqNumber = obj.seq.seqs.length - 1
       seqs[ num ] = seq = obj.seq.seqs[ seqNumber ]
-      seqNumHash[ num ] = seqNumber   
+      
+      seqNumHash[ key ][ num ] = hashNumber = seqNumber   
+
       //seqNumber = d !== null ? obj.seq.seqs.length - 1 : obj.seq.autofire.length - 1
       //seqs[ seqNumber ] = d !== null ? obj.seq.seqs[ num ] : obj.seq.autofire[ num ]
       
@@ -43789,7 +43835,7 @@ var Gibber = {
       })
       
       fnc[ num ].seq = function( v, d ) {
-        fnc.seq( v,d, num ) 
+        fnc.seq( v,d,num ) 
       }
       
       if( !obj.seq.isRunning ) {
@@ -43797,18 +43843,55 @@ var Gibber = {
         obj.seq.start( true, priority )
       }
             
-      fnc.seq.stop = function() { seqs[ seqNumber ].shouldStop = true } 
-    
+      fnc.seq.stop = function() {
+        var seqNumbersForKey = seqNumHash[ key ]
+        
+        for( var i = 0; i < seqNumbersForKey.length; i++ ) {
+          var _num = seqNumbersForKey[ i ],
+              _seq = seqs[ _num ]
+          
+          _seq.shouldStop = true
+        }
+      }
+      
+      fnc[ num ].stop = function() {
+        seqs[ hashNumber ].shouldStop = true
+      }
+      
       // TODO: property specific stop/start/shuffle etc. for polyseq
       fnc.seq.start = function() {
-        seqs[ seqNumber ].shouldStop = false
-        obj.seq.timeline[0] = [ seq ]                
+        var seqNumbersForKey = seqNumHash[ key ]
+        
+        for( var i = 0; i < seqNumbersForKey.length; i++ ) {
+          var _num = seqNumbersForKey[ i ],
+              _seq = seqs[ _num ]
+          
+          _seq.shouldStop = false
+          
+          if( ! obj.seq.timeline[0] ) obj.seq.timeline[0] = []
+          obj.seq.timeline[0].push( _seq )
+
+          obj.seq.nextTime = 0
+        }
+
+        if( !obj.seq.isRunning ) { 
+          obj.seq.start( false, priority )
+        }
+      }
+      
+      fnc[ num ].start = function() {
+        var _seq = seqs[ hashNumber ]
+        _seq.shouldStop = false
+        
+        obj.seq.timeline[0] = [ _seq ]
         obj.seq.nextTime = 0
       
         if( !obj.seq.isRunning ) { 
           obj.seq.start( false, priority )
         }
+        seqs[ hashNumber ].shouldStop = false
       }
+      
     
       fnc.seq.repeat = function( numberOfTimes ) {
         var repeatCount = 0
@@ -45015,6 +45098,19 @@ var Pattern = function() {
   ], true )
   
   Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
+  
+  // trying to figure out a way for calls like: a.note.durations.seq( [1/8,1/16], 1/2 ) ...
+    
+  // future( function() {
+  //   fnc._seq = fnc.seq
+  //
+  //   fnc.seq = function() {
+  //     var args = Array.prototype.slice.call( arguments, 0 )
+  //
+  //     fnc.set.seq.apply( fnc, args )
+  //   }
+  // }, ms(100) )
+  
   
   fnc.__proto__ = this.__proto__ 
   
