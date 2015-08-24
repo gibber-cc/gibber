@@ -34153,6 +34153,7 @@ param **end** Number. The end point for sample playback, 0..1
       this.start = start
       this.end = end
     },
+
 		note: function(pitch, amp) {
       if( typeof pitch === 'undefined' ) return
 
@@ -35405,14 +35406,18 @@ Gibberish.PolySeq = function() {
     setPhase      : function(v) { phase = v },
     adjustPhase   : function(v) { phase += v },
     timeModifier  : null,
-    add           : function( seq ) {
+    add           : function( seq, pos ) {
       seq.valuesIndex = seq.durationsIndex = 0
 
       if( seq.durations === null ) {
         seq.autofire = true
         that.autofire.push( seq )
       }else{
-        that.seqs.push( seq )
+        if( typeof pos === 'undefined' ) {
+          that.seqs.push( seq )
+        }else{
+          that.seqs.splice( pos, 0, seq )
+        }
         
         if( typeof that.timeline[ phase ] !== 'undefined' ) {
           if( seq.priority ) {
@@ -43707,8 +43712,8 @@ var Gibber = {
       }
     }
     
-    fnc.seq = function( _v,_d, num ) {
-      var seq, hashNumber
+    fnc.seq = function( _v,_d, seqNumberForKey ) {
+      var seq, uniqueSeqID
       if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
         _v = _v.split('')
         if( typeof _d === 'undefined' ) _d = 1 / _v.length
@@ -43730,16 +43735,23 @@ var Gibber = {
             'priority': priority
           }
 
+      if( typeof seqNumberForKey === 'undefined' ) seqNumberForKey = 0 // _num++
       
-      if( typeof num === 'undefined' ) num = 0 // _num++
+      if( typeof seqNumHash[ key ] === 'undefined' ) seqNumHash[ key ] = []
       
-      if( !seqNumHash[ key ] ) seqNumHash[ key ] = []
+      uniqueSeqID = seqNumHash[ key ][ seqNumberForKey ] //seqs[  ]
       
-      hashNumber = seqs[ seqNumHash[ key ][ num ] ]
-
-      if( typeof hashNumber !== 'undefined' && typeof seqs[ hashNumber ] !== 'undefined' ) {
-        delete seqNumHash[ key ][ num ]
-        delete obj.seq.seqs[ hashNumber ]
+      var shouldSplice = -1
+        
+      //console.log( "HASH", uniqueSeqID, "numhash", seqNumHash[ key ] )
+      if( typeof uniqueSeqID !== 'undefined' && typeof seqs[ uniqueSeqID ] !== 'undefined' ) {
+        console.log( "DELETING EXISTING SEQ", uniqueSeqID )
+        //seqNumber = num //seqs[ uniqueSeqID ]
+        shouldSplice = uniqueSeqID
+        // delete seqNumHash[ key ][ num ]
+        // delete obj.seq.seqs[ uniqueSeqID ]
+      }else{
+        //seqNumber = num//obj.seq.seqs.length
       }
             
       var valuesPattern = args.values[0]
@@ -43770,19 +43782,28 @@ var Gibber = {
       
       valuesPattern.seq = obj.seq
       
-      obj.seq.add( args )
+      if( shouldSplice > -1 ) {        
+        var old = seqs.splice( shouldSplice, 1 )[ 0 ]
+        for( var timestamp in obj.seq.timeline ) {
+          var timelinePos = obj.seq.timeline[ timestamp ],
+              idx = timelinePos.indexOf( old )
+          
+          if( idx > -1 ) {
+            timelinePos.splice( idx, 1 )
+          }
+        }
+        obj.seq.add( args, shouldSplice )
+      }else{
+        obj.seq.add( args )
+        uniqueSeqID = obj.seq.seqs.length - 1
+      }
       
-      seqNumber = obj.seq.seqs.length - 1
-      seqs[ num ] = seq = obj.seq.seqs[ seqNumber ]
+      seqNumHash[ key ][ seqNumberForKey ] = uniqueSeqID
       
-      seqNumHash[ key ][ num ] = hashNumber = seqNumber   
-
-      //seqNumber = d !== null ? obj.seq.seqs.length - 1 : obj.seq.autofire.length - 1
-      //seqs[ seqNumber ] = d !== null ? obj.seq.seqs[ num ] : obj.seq.autofire[ num ]
+      //console.log( "HASH NUMBER", uniqueSeqID, "SEQ NUMBER", seqNumberForKey )
+      fnc[ seqNumberForKey ] = {}
       
-      fnc[ num ] = {}
-      
-      Object.defineProperties( fnc[ num ], {
+      Object.defineProperties( fnc[ seqNumberForKey ], {
         values: {
           configurable:true,
           get: function() { 
@@ -43802,9 +43823,9 @@ var Gibber = {
             }
 
             if( d !== null ) {
-              obj.seq.seqs[ seqNumber ].values = pattern
+              obj.seq.seqs[ uniqueSeqID ].values = pattern
             }else{
-              obj.seq.autofire[ seqNumber ].values = pattern
+              obj.seq.autofire[ uniqueSeqID ].values = pattern
             }
           }
         },
@@ -43829,13 +43850,13 @@ var Gibber = {
               pattern = [ pattern ]
             }
             
-            obj.seq.seqs[ seqNumber ].durations = pattern   //.splice( 0, 10000, v )
+            obj.seq.seqs[ uniqueSeqID ].durations = pattern   //.splice( 0, 10000, v )
           },
         },
       })
       
-      fnc[ num ].seq = function( v, d ) {
-        fnc.seq( v,d,num ) 
+      fnc[ seqNumberForKey ].seq = function( v, d ) {
+        fnc.seq( v,d,seqNumberForKey ) 
       }
       
       if( !obj.seq.isRunning ) {
@@ -43854,8 +43875,8 @@ var Gibber = {
         }
       }
       
-      fnc[ num ].stop = function() {
-        seqs[ hashNumber ].shouldStop = true
+      fnc[ seqNumberForKey ].stop = function() {
+        seqs[ uniqueSeqID ].shouldStop = true
       }
       
       // TODO: property specific stop/start/shuffle etc. for polyseq
@@ -43879,8 +43900,8 @@ var Gibber = {
         }
       }
       
-      fnc[ num ].start = function() {
-        var _seq = seqs[ hashNumber ]
+      fnc[ seqNumberForKey ].start = function() {
+        var _seq = seqs[ uniqueSeqID ]
         _seq.shouldStop = false
         
         obj.seq.timeline[0] = [ _seq ]
@@ -43889,10 +43910,9 @@ var Gibber = {
         if( !obj.seq.isRunning ) { 
           obj.seq.start( false, priority )
         }
-        seqs[ hashNumber ].shouldStop = false
+        seqs[ uniqueSeqID ].shouldStop = false
       }
-      
-    
+  
       fnc.seq.repeat = function( numberOfTimes ) {
         var repeatCount = 0
       
@@ -43909,20 +43929,20 @@ var Gibber = {
         fnc.values.filters.push( filter )
       }
     
-      fnc[ num ].score = function( __v__, __d__ ) {
-        return fnc.seq.bind( obj, __v__, __d__, num )
+      fnc[ seqNumberForKey ].score = function( __v__, __d__ ) {
+        return fnc.seq.bind( obj, __v__, __d__, seqNumberForKey )
       }
     
       Object.defineProperties( fnc, {
         values: { 
           configurable: true,
-          get: function() { return fnc[ num ].values },
-          set: function( val ) { return fnc[ num ].values = val },
+          get: function() { return fnc[ seqNumberForKey ].values },
+          set: function( val ) { return fnc[ seqNumberForKey ].values = val },
         },
         durations: { 
           configurable: true,
-          get: function() { return fnc[ num ].durations },
-          set: function( val ) { return fnc[ num ].durations = val },
+          get: function() { return fnc[ seqNumberForKey ].durations },
+          set: function( val ) { return fnc[ seqNumberForKey ].durations = val },
         }
       })
       
