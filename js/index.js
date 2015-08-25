@@ -34330,10 +34330,10 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
   
 	if(typeof Gibberish.audioFiles[this.file] !== "undefined") {
 		buffer =  Gibberish.audioFiles[this.file];
-		this.end = 1; //this.bufferLength = buffer.length;
+		this.end = 1;
 		this.buffers[ this.file ] = buffer;
     
-    phase = this.bufferLength;
+    this.length = phase = this.bufferLength = buffer.length;
     Gibberish.dirty(this);
     
     if(this.onload) this.onload();
@@ -35393,6 +35393,7 @@ Gibberish.PolySeq = function() {
   
   Gibberish.extend(this, {
     seqs          : [],
+    autofire      : [], // seqs with no scheduling that fire everytime a scheduled seq is triggered    
     timeline      : {},
     playOnce      : false,
     repeatCount   : 0,
@@ -35400,7 +35401,6 @@ Gibberish.PolySeq = function() {
     isConnected   : false,
     properties    : { rate: 1, isRunning:false, nextTime:0 },
     offset        : 0,
-    autofire      : [],
     name          : 'polyseq',
     getPhase      : function() { return phase },
     setPhase      : function(v) { phase = v },
@@ -35462,7 +35462,7 @@ Gibberish.PolySeq = function() {
             if(typeof val === 'function') { val = val(); } // will also call anonymous function
     
             if( seq.target ) {
-              if(typeof seq.target[ seq.key ] === 'function') {
+              if( typeof seq.target[ seq.key ] === 'function' ) {
                 seq.target[ seq.key ]( val );
               }else{
                 seq.target[ seq.key ] = val;
@@ -38348,7 +38348,6 @@ module.exports = function( Gibber ) {
         props = Gibber.processArguments( args, 'Drums' )
         
     $.extend( true, obj, props)
-    console.log("PROPS PROPS", props)
   
     if( Array.isArray( obj ) ) {
       obj = Gibber.construct( Gibberish.Bus2, obj ).connect( Gibber.Master )
@@ -38370,13 +38369,13 @@ module.exports = function( Gibber ) {
     
   	if(typeof arguments[0] === "object") {
   		if(arguments[0].kit) {
-  			obj.kit = Percussion.Drums.kits[arguments[0].kit];
+  			obj.kit = Percussion.Drums.kits[ arguments[ 0 ].kit ];
   			arguments[0].kit = obj.kit;
   		}
   	}
     
-  	for(var key in obj.kit) {
-  		var drum = obj.kit[key],
+  	for( var key in obj.kit ) {
+  		var drum = obj.kit[ key ],
           ugen = drum.file ? { ugen: new Gibberish.Sampler({ file:drum.file, pitch:1, amp:drum.amp }), pitch:drum.pitch, amp:drum.amp } : drum
       
       if( ugen ) {
@@ -38385,13 +38384,13 @@ module.exports = function( Gibber ) {
         if( isNaN( ugen.amp ) )   ugen.amp = 1
         if( typeof ugen.symbol === 'undefined' ) ugen.symbol = key
         
-    		obj[key] = ugen
+    		obj[ key ] = ugen
         // console.log("KEY", key, ugen, drum, obj[key], obj[key].ugen )
-    		obj[key].ugen.pan = drum.pan
+    		obj[ key ].ugen.pan = drum.pan
         if( !drum.file ) drum.ugen.disconnect() // disconnect non-sampler ugens
-    		obj[key].ugen.connect( obj )
-    		obj[key].fx = obj[key].ugen.fx
-    		obj.children.push( obj[key].ugen )
+    		obj[ key ].ugen.connect( obj )
+    		obj[ key ].fx = obj[ key ].ugen.fx
+    		obj.children.push( obj[ key ].ugen )
       }
   	}
 	
@@ -38405,6 +38404,7 @@ module.exports = function( Gibber ) {
     obj.note = function(nt) {
       // var p = typeof obj.pitch === 'function' ? obj.pitch() : obj.pitch
       var p = obj.pitch.value
+      
       if( $.isArray( nt ) ) {
         for( var i = 0; i < nt.length; i++ ) {
           var note = nt[ i ]
@@ -38563,7 +38563,7 @@ module.exports = function( Gibber ) {
 
     Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start','send' ] )
             
-    obj.seq.start( true )
+    //obj.seq.start( true )
 
     Object.defineProperties( obj, {
       offset: {
@@ -38803,8 +38803,6 @@ module.exports = function( Gibber ) {
   	obj.amp   = isNaN(_amp) ? 1 : _amp;
 	
   	if( obj.seq.tick ) { Gibberish.future( obj.seq.tick,1 ) }
-
-    //Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )
 
     // obj.kill = function() {
     //   var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this
@@ -43375,7 +43373,7 @@ var Gibber = {
     console.log( 'Loading module ' + path + '...' )
 
     if( path.indexOf( 'http:' ) === -1 ) { 
-      console.log( 'loading via post', path )
+      //console.log( 'loading via post', path )
       $.post(
         Gibber.Environment.SERVER_URL + '/gibber/'+path, {},
         function( d ) {
@@ -43713,10 +43711,12 @@ var Gibber = {
     }
     
     fnc.seq = function( _v,_d, seqNumberForKey ) {
-      var seq, uniqueSeqID
+      var seq, uniqueSeqID, autofire = false
       if( typeof _v === 'string' && ( obj.name === 'Drums' || obj.name === 'XOX' || obj.name === 'Ensemble' )) {
         _v = _v.split('')
         if( typeof _d === 'undefined' ) _d = 1 / _v.length
+      }else if( typeof _d === 'undefined' ) {
+        autofire = true
       }
       
       if( typeof obj.seq === 'function' ) {
@@ -43742,19 +43742,23 @@ var Gibber = {
       uniqueSeqID = seqNumHash[ key ][ seqNumberForKey ] //seqs[  ]
       
       var shouldSplice = -1
-        
+      
+      // // TODO: what about scheduling chords through multiple autofire note sequences?
+      // if( !autofire ) { // check and make sure autofire doesn't exist for this key
+      //   for( var i = obj.seq.autofire.length - 1; i > 0; i-- ) {
+      //     var autofireSeq = obj.seq.autofire[ i ]
+      //     if( autofireSeq.key === key ) {
+      //       obj.seq.autofire.splice( i, 1 )
+      //       break;
+      //     }
+      //   }
+      // }
       //console.log( "HASH", uniqueSeqID, "numhash", seqNumHash[ key ] )
       if( typeof uniqueSeqID !== 'undefined' && typeof seqs[ uniqueSeqID ] !== 'undefined' ) {
-        console.log( "DELETING EXISTING SEQ", uniqueSeqID )
-        //seqNumber = num //seqs[ uniqueSeqID ]
         shouldSplice = uniqueSeqID
-        // delete seqNumHash[ key ][ num ]
-        // delete obj.seq.seqs[ uniqueSeqID ]
-      }else{
-        //seqNumber = num//obj.seq.seqs.length
       }
             
-      var valuesPattern = args.values[0]
+      var valuesPattern = args.values[ 0 ]
       if( v.randomFlag ) {
         valuesPattern.filters.push( function() {
           var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
@@ -43782,8 +43786,9 @@ var Gibber = {
       
       valuesPattern.seq = obj.seq
       
+      //console.log( "SHOULD SPLICE", shouldSplice )
       if( shouldSplice > -1 ) {        
-        var old = seqs.splice( shouldSplice, 1 )[ 0 ]
+        var old = autofire ? obj.seq.autofire.splice( shouldSplice, 1 )[0] : seqs.splice( shouldSplice, 1 )[ 0 ]
         for( var timestamp in obj.seq.timeline ) {
           var timelinePos = obj.seq.timeline[ timestamp ],
               idx = timelinePos.indexOf( old )
@@ -43794,11 +43799,21 @@ var Gibber = {
         }
         obj.seq.add( args, shouldSplice )
       }else{
+        // var old = autofire ? obj.seq.autofire.splice( shouldSplice, 1 )[0] : seqs.splice( shouldSplice, 1 )[ 0 ]
+        // for( var timestamp in obj.seq.timeline ) {
+        //   var timelinePos = obj.seq.timeline[ timestamp ],
+        //       idx = timelinePos.indexOf( old )
+        //
+        //   if( idx > -1 ) {
+        //     timelinePos.splice( idx, 1 )
+        //   }
+        // }
         obj.seq.add( args )
         uniqueSeqID = obj.seq.seqs.length - 1
       }
       
-      seqNumHash[ key ][ seqNumberForKey ] = uniqueSeqID
+      if( !autofire )
+        seqNumHash[ key ][ seqNumberForKey ] = uniqueSeqID
       
       //console.log( "HASH NUMBER", uniqueSeqID, "SEQ NUMBER", seqNumberForKey )
       fnc[ seqNumberForKey ] = {}
