@@ -1696,6 +1696,7 @@ var initializeMarks = function( obj, className, start, end, cm ) {
             var cm = marks[i].parent.parent.cm
             cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
           }else{
+            console.log( "CLEARING MARKS", marks[ i ] )
             marks[ i ].clear()
           }
         }
@@ -1972,8 +1973,10 @@ module.exports = function( Gibber, Notation ) {
           } else if( object.property ) { 
             if( object.property.name === 'seq' ) {
               var hasSeqNumber = prevObject.arguments.length > 2,
+                  isAutofire   = prevObject.arguments.length === 1,
+                  loopLength   = isAutofire ? 1 : 2,
                   seqNumber = hasSeqNumber ? prevObject.arguments[2].value : null
-              for( var i = 0; i < 2; i++ ) { // 2 is values + duration but not seqNumber
+              for( var i = 0; i < loopLength; i++ ) { // 2 is values + duration but not seqNumber
                 !function() {
                   var values = prevObject.arguments[i].elements,
                       valuesOrDurations = i === 0 ? 'values' : 'durations',
@@ -2642,9 +2645,15 @@ module.exports = function( Gibber, Notation ) {
     fps: 30,
     check: function() {
       for( var i = 0; i < this.dirty.length; i++ ) {
-        if( this.changed.indexOf( this.dirty[ i ] ) === -1 ) this.changed.push( this.dirty[ i ] )
+        var dirty = this.dirty[ i ]
+        if( this.changed.indexOf( dirty ) === -1 ) this.changed.push( dirty[ i ] )
         if( typeof this.dirty[i].onchange === 'function' ) {
           this.dirty[ i ].onchange()
+        }
+        if( Array.isArray( this.dirty[ i ].updateFunctions ) ) {
+          for( var j = 0; j < this.dirty[ i ].updateFunction.length; j++ ) {
+            var func = this.idr
+          }
         }
       }
       this.dirty.length = 0
@@ -2668,6 +2677,7 @@ module.exports = function( Gibber, Notation ) {
   
   //PW.start()
 }
+
 },{}],"/www/gibber.libraries/js/gibber/column.js":[function(require,module,exports){
 !function() {
 
@@ -40673,7 +40683,7 @@ module.exports = function( Gibber ) {
         self.setBuffer( buffer )
         self.isPlaying = true;
   			self.buffers[ filename ] = buffer;
-        this.file = filename
+        self.file = filename
 
   			console.log("sample loaded | ", filename, " | length | ", buffer.length );
   			Gibberish.audioFiles[ filename ] = buffer;
@@ -40794,6 +40804,7 @@ module.exports = function( Gibber ) {
   
   return Samplers
 }
+
 },{"./clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/score.js":[function(require,module,exports){
 /*
 Score is a Seq(ish) object, with pause, start / stop, rewind, fast-forward.

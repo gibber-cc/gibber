@@ -432,6 +432,7 @@ var initializeMarks = function( obj, className, start, end, cm ) {
             var cm = marks[i].parent.parent.cm
             cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
           }else{
+            console.log( "CLEARING MARKS", marks[ i ] )
             marks[ i ].clear()
           }
         }
@@ -708,8 +709,10 @@ module.exports = function( Gibber, Notation ) {
           } else if( object.property ) { 
             if( object.property.name === 'seq' ) {
               var hasSeqNumber = prevObject.arguments.length > 2,
+                  isAutofire   = prevObject.arguments.length === 1,
+                  loopLength   = isAutofire ? 1 : 2,
                   seqNumber = hasSeqNumber ? prevObject.arguments[2].value : null
-              for( var i = 0; i < 2; i++ ) { // 2 is values + duration but not seqNumber
+              for( var i = 0; i < loopLength; i++ ) { // 2 is values + duration but not seqNumber
                 !function() {
                   var values = prevObject.arguments[i].elements,
                       valuesOrDurations = i === 0 ? 'values' : 'durations',
@@ -1378,9 +1381,15 @@ module.exports = function( Gibber, Notation ) {
     fps: 30,
     check: function() {
       for( var i = 0; i < this.dirty.length; i++ ) {
-        if( this.changed.indexOf( this.dirty[ i ] ) === -1 ) this.changed.push( this.dirty[ i ] )
+        var dirty = this.dirty[ i ]
+        if( this.changed.indexOf( dirty ) === -1 ) this.changed.push( dirty[ i ] )
         if( typeof this.dirty[i].onchange === 'function' ) {
           this.dirty[ i ].onchange()
+        }
+        if( Array.isArray( this.dirty[ i ].updateFunctions ) ) {
+          for( var j = 0; j < this.dirty[ i ].updateFunction.length; j++ ) {
+            var func = this.idr
+          }
         }
       }
       this.dirty.length = 0
