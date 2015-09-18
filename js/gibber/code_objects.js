@@ -1,28 +1,4 @@
-/*
 // TODO: CREATE ARRAY .arrayMark for values in expression call.
-
-
-Gibber.Environment.Notation.on('seq')
-
-a = Pluck()
-	.pan.seq( Rndf(-1,1), [1/8,1/4,1/2] )
-
-
-a = Pluck()
-	.note.seq( [0,1,2,3], [1/2,1/4] )
-	.pan.seq( Rndf(-1,1), [1/8,1/4,1/2] )
-	.damping.seq( [.5,.6,.2,.1].rnd(), [1/4] )
-
-a = Pluck()
-b = Seq({
-  note:[0,1,2,4,7,12,13].rnd(),
-  durations:[1/4,1/8,1/16].rnd(1/16,2),
-  target:a
-})
-
-a.text.opacity = a.Out
-*/
-
 
 // push update function to Notation.priority so it can be called after applying
 // all other notations... this will make it visible.
@@ -267,7 +243,8 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
     }*/
   }
 
-  window.myupdate = updateFunction
+  window.myupdate = updateFunctio
+
 
   return updateFunction
 }
@@ -360,7 +337,10 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
     
-    //if( typeof arrayPos !== 'object' ) return
+    if( typeof arrayPos !== 'object' ) {
+      console.log( 'BAD ARRAY POS VALUE', arrayPos, this.arrayMark )
+      return
+    }
     
     start = {
       line : arrayPos.from.line,

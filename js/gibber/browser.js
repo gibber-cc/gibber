@@ -352,8 +352,9 @@ module.exports = function( Gibber ) {
         { address:addr },
         function( d ) {
           var data = JSON.parse( d ),
-              col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
-              
+              col = GE.Layout.addColumn({ fullScreen:false, type:'code', mode: data.language })
+          
+          // col.editor.setOption( 'mode', GE.modes.nameMappings[ data.language ] ) 
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated

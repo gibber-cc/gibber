@@ -223,6 +223,8 @@ module.exports = function( Gibber ) {
       var columnNumber = $( '#new_publication_column' ).val(),
           column = GE.Layout.columns[ columnNumber ]
       
+
+      console.log( "LANGUAGE IS", column.mode ) 
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/publish',

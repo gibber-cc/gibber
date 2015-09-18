@@ -417,6 +417,8 @@ module.exports = function( Gibber ) {
       var columnNumber = $( '#new_publication_column' ).val(),
           column = GE.Layout.columns[ columnNumber ]
       
+
+      console.log( "LANGUAGE IS", column.mode ) 
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/publish',
@@ -840,8 +842,9 @@ module.exports = function( Gibber ) {
         { address:addr },
         function( d ) {
           var data = JSON.parse( d ),
-              col = GE.Layout.addColumn({ fullScreen:false, type:'code' })
-              
+              col = GE.Layout.addColumn({ fullScreen:false, type:'code', mode: data.language })
+          
+          // col.editor.setOption( 'mode', GE.modes.nameMappings[ data.language ] ) 
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
@@ -909,6 +912,7 @@ module.exports = function( Gibber ) {
   
   return Browser
 }
+
 },{}],"/www/gibber.libraries/js/gibber/chat.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
@@ -1262,31 +1266,7 @@ return Chat
 }
 
 },{}],"/www/gibber.libraries/js/gibber/code_objects.js":[function(require,module,exports){
-/*
 // TODO: CREATE ARRAY .arrayMark for values in expression call.
-
-
-Gibber.Environment.Notation.on('seq')
-
-a = Pluck()
-	.pan.seq( Rndf(-1,1), [1/8,1/4,1/2] )
-
-
-a = Pluck()
-	.note.seq( [0,1,2,3], [1/2,1/4] )
-	.pan.seq( Rndf(-1,1), [1/8,1/4,1/2] )
-	.damping.seq( [.5,.6,.2,.1].rnd(), [1/4] )
-
-a = Pluck()
-b = Seq({
-  note:[0,1,2,4,7,12,13].rnd(),
-  durations:[1/4,1/8,1/16].rnd(1/16,2),
-  target:a
-})
-
-a.text.opacity = a.Out
-*/
-
 
 // push update function to Notation.priority so it can be called after applying
 // all other notations... this will make it visible.
@@ -1531,7 +1511,8 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
     }*/
   }
 
-  window.myupdate = updateFunction
+  window.myupdate = updateFunctio
+
 
   return updateFunction
 }
@@ -1624,7 +1605,10 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         arrayPos = this.arrayMark.find(),
         charCount = 0, start, end;
     
-    //if( typeof arrayPos !== 'object' ) return
+    if( typeof arrayPos !== 'object' ) {
+      console.log( 'BAD ARRAY POS VALUE', arrayPos, this.arrayMark )
+      return
+    }
     
     start = {
       line : arrayPos.from.line,
@@ -44893,7 +44877,10 @@ var Pattern = function() {
         fnc.end = start
       }
       
-      fnc._onchange()
+      // fnc._onchange()
+      if( fnc.listeners.range ) {
+        fnc.listeners.range( fnc.start, fnc.end, fnc, fnc.range )
+      }
       
       return fnc
     },
@@ -45137,12 +45124,21 @@ var Pattern = function() {
   
   fnc.integersOnly = fnc.values.every( function( n ) { return n === +n && n === (n|0); })
   
-  Gibber.createProxyMethods( fnc, [
+  var methodNames =  [
     'rotate','switch','invert','reset', 'flip',
     'transpose','reverse','shuffle','scale',
     'store', 'range', 'set'
-  ], true )
+  ]
+
+  Gibber.createProxyMethods( fnc, methodNames , true )
   
+  // for( var i = 0; i < methodNames.length; i++ ) {
+  //  var name = methodNames[ i ]
+  //
+  //  fnc[ name ].listeners = {}
+  //  }
+  fnc.listeners = {}
+
   Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
   
   // trying to figure out a way for calls like: a.note.durations.seq( [1/8,1/16], 1/2 ) ...
@@ -45168,6 +45164,7 @@ Pattern.prototype = PatternProto
 return Pattern
 
 }
+
 },{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
