@@ -50459,6 +50459,7 @@ Graphics = {
     Graphics.PostProcessing.export( target )
     Graphics.GibberShaders.export( target )
     target.Video = Graphics.Video
+    target.ShaderMaterial = Graphics.Shaders.Material
   },
   
   getContainer: function( _container ) {
