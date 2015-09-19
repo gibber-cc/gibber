@@ -533,7 +533,7 @@ module.exports = function( Gibber ) {
     open: function() {
       GE = Gibber.Environment
       
-      this.column = GE.Layout.addColumn({ header:'Browse Giblets' })
+      this.column = GE.Layout.addColumn({ header:'Browse Giblets', type:'info' })
 
       $.ajax({
         url: GE.SERVER_URL + "/browser",
@@ -844,7 +844,6 @@ module.exports = function( Gibber ) {
           var data = JSON.parse( d ),
               col = GE.Layout.addColumn({ fullScreen:false, type:'code', mode: data.language })
           
-          // col.editor.setOption( 'mode', GE.modes.nameMappings[ data.language ] ) 
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated
@@ -2681,7 +2680,7 @@ module.exports = function( Gibber ) {
     
     options = options || {}
         
-    var isCodeColumn = options.type === 'code',
+    var isCodeColumn = options.type === 'code' || typeof options.type === 'undefined',
         Layout = Gibber.Environment.Layout,
         lastColumnWidth = 0, 
         colNumber = Layout.columns.length,
@@ -3360,8 +3359,7 @@ module.exports = function( Gibber ) {
     open : function() {
       GE = Gibber.Environment
       
-      this.col = GE.Layout.addColumn({ header:'Reference' })
-    
+      this.col = GE.Layout.addColumn({ header:'Reference', type:'info' })
       this.getIndex()
     },
     showTOC : function( section, btn ) {
@@ -3388,7 +3386,6 @@ module.exports = function( Gibber ) {
       }) 
     },
     openFile : function( group, name ) {
-      console.log( "OPENING", group, name )
       $.ajax({
         url:'docs/?group=' + group + '&file='+name,
         dataType:'html'
@@ -3643,7 +3640,7 @@ var GE = {
 
   Help : {
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Help' })
+      this.col = GE.Layout.addColumn({ header:'Help', type:'info' })
       this.getIndex()
     },
     getIndex : function() {
@@ -3661,7 +3658,7 @@ var GE = {
   },
   Credits : {
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Credits' })      
+      this.col = GE.Layout.addColumn({ header:'Credits', type:'info' })
       this.getIndex()
     },
     getIndex : function() {
@@ -4233,6 +4230,7 @@ require( 'codemirror/addon/edit/closebrackets' )
 
 return GE
 }
+
 },{"./account":"/www/gibber.libraries/js/gibber/account.js","./browser":"/www/gibber.libraries/js/gibber/browser.js","./chat":"/www/gibber.libraries/js/gibber/chat.js","./code_objects":"/www/gibber.libraries/js/gibber/code_objects.js","./console":"/www/gibber.libraries/js/gibber/console.js","./docs":"/www/gibber.libraries/js/gibber/docs.js","./keymaps":"/www/gibber.libraries/js/gibber/keymaps.js","./keys":"/www/gibber.libraries/js/gibber/keys.js","./layout":"/www/gibber.libraries/js/gibber/layout.js","./notation":"/www/gibber.libraries/js/gibber/notation.js","./performance":"/www/gibber.libraries/js/gibber/performance.js","./preferences":"/www/gibber.libraries/js/gibber/preferences.js","./share":"/www/gibber.libraries/js/gibber/share.js","./theme":"/www/gibber.libraries/js/gibber/theme.js","codemirror":"/www/gibber.libraries/node_modules/codemirror/lib/codemirror.js","codemirror/addon/comment/comment":"/www/gibber.libraries/node_modules/codemirror/addon/comment/comment.js","codemirror/addon/edit/closebrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/closebrackets.js","codemirror/addon/edit/matchbrackets":"/www/gibber.libraries/node_modules/codemirror/addon/edit/matchbrackets.js","codemirror/mode/clike/clike":"/www/gibber.libraries/node_modules/codemirror/mode/clike/clike.js","codemirror/mode/javascript/javascript":"/www/gibber.libraries/node_modules/codemirror/mode/javascript/javascript.js","coreh-mousetrap":"/www/gibber.libraries/node_modules/coreh-mousetrap/mousetrap.js","esprima":"/www/gibber.libraries/node_modules/esprima/esprima.js"}],"/www/gibber.libraries/js/gibber/keymaps.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   var GE, CodeMirror
@@ -50748,6 +50746,7 @@ Graphics.Video = require( './video' )( Gibber, Graphics )
 return Graphics; 
 
 }
+
 },{"../external/three/postprocessing/CopyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/CopyShader.js","../external/three/postprocessing/DotScreenPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/DotScreenPass.js","../external/three/postprocessing/EffectComposer":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/EffectComposer.js","../external/three/postprocessing/FilmPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/FilmPass.js","../external/three/postprocessing/MaskPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/MaskPass.js","../external/three/postprocessing/RenderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/RenderPass.js","../external/three/postprocessing/ShaderPass":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/ShaderPass.js","../external/three/postprocessing/shaders/BleachBypassShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/BleachBypassShader.js","../external/three/postprocessing/shaders/ColorifyShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ColorifyShader.js","../external/three/postprocessing/shaders/DotScreenShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/DotScreenShader.js","../external/three/postprocessing/shaders/EdgeShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/EdgeShader.js","../external/three/postprocessing/shaders/FilmShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FilmShader.js","../external/three/postprocessing/shaders/FocusShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/FocusShader.js","../external/three/postprocessing/shaders/KaleidoShader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/KaleidoShader.js","../external/three/postprocessing/shaders/ShaderGodRays":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/postprocessing/shaders/ShaderGodRays.js","../external/three/three.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/external/three/three.min.js","./2d":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/2d.js","./3d":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/3d.js","./geometry":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/geometry.js","./gibber_shaders":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/gibber_shaders.js","./postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/postprocessing.js","./shader":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/shader.js","./video":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/video.js","color":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/node_modules/color/color.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/postprocessing.js":[function(require,module,exports){
 module.exports = function( Gibber, Graphics ) {
 
@@ -51033,37 +51032,38 @@ var PP = {
           }
                     
           Gibber.Graphics.running = true 
-          
+
+          var shader 
 					if( name !== 'Shader' ) {
-	          var args = Array.prototype.slice.call( arguments,0 ),
-	              shader = shaderProps.init.call( shaderProps, args )
+	          var args = Array.prototype.slice.call( arguments,0 )
+
+            shader = shaderProps.init.call( shaderProps, args )
 					}else{
 					  shader = shaderProps.init( arguments[0], arguments[1] )
           }
           
           Gibber.createProxyProperties( shader, {  } ) // call with empty object to initialize
           
-					shader.uniform = function(_name, _value, _min, _max, type ) {
-						_min = isNaN( _min ) ? 0 : _min
-						_max = isNaN( _max ) ? 1 : _max				
-						_value = isNaN( _value ) && typeof _value !== 'object' ? _min + (_max - _min) / 2 : _value
-		        
+					shader.uniform = function(_name, _value, _min, _max, type, shouldCodeGen ) {
+						_min = _min == null ? 0 : _min
+						_max = _max == null ? 1 : _max				
+						_value = _value == null  ||  typeof _value == 'object' ? _min + (_max - _min) / 2 : _value
+		        shouldCodeGen = shouldCodeGen == null ? true : shouldCodeGen
+            
 						if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
 							_mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
 				        min:_min, max:_max,
 				        output: Gibber.LINEAR,
 				        timescale: 'graphics',
 				      }
-						}
+            }
             
             var info = getShaderInfo( _value, type, _name ),
                 shaderType = info[0],
                 threeType  = info[1],
                 shaderString = info[2]
             
-            //console.log( "TYPE = ", shaderType, threeType )
-            
-						if( typeof shader.uniforms[ _name ] === 'undefined' && ( shader.columnF ) ) {
+						if( typeof shader.uniforms[ _name ] === 'undefined' && ( shader.columnF ) && shouldCodeGen ) {
               var text = shaderString
               text += shader.columnF.editor.getValue()
               shader.columnF.editor.setValue( text )
@@ -51082,8 +51082,12 @@ var PP = {
             
             return shader
           }
-					
-          
+
+          shader.uniformNoCodeGen = function() {
+					  var args = Array.prototype.slice.call( arguments, 0 )
+            return shader.uniform( args[0], args[1] || null, args[2] || null, args[3] || null, args[4] || null, false )
+          }
+
           if( shader === null) {
             console.log( "SHADER ERROR... aborting" )
             return
@@ -51350,7 +51354,7 @@ var getShaderInfo = function( value, type, _name ) {
     }else{
       shaderType = typeof value
       if( shaderType === 'number' ) {
-        console.log("CHECKING FLOAT VS INT")
+        // console.log("CHECKING FLOAT VS INT")
         shaderType = value % 1 === 0 ? 'int' : 'float'
       } 
     }
@@ -51364,8 +51368,10 @@ var getShaderInfo = function( value, type, _name ) {
   if( isArray ) {
     threeType += shaderType.indexOf( 'vec' ) > - 1 ? 'v' : 'v1'
   }
-  
-  return [ shaderType, threeType, shaderString ]
+   
+  var out = [ shaderType, threeType, shaderString ]
+  // console.log( 'SHADER INFO', out )
+  return out
 }
 
 return PP

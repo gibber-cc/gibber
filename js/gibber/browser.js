@@ -43,7 +43,7 @@ module.exports = function( Gibber ) {
     open: function() {
       GE = Gibber.Environment
       
-      this.column = GE.Layout.addColumn({ header:'Browse Giblets' })
+      this.column = GE.Layout.addColumn({ header:'Browse Giblets', type:'info' })
 
       $.ajax({
         url: GE.SERVER_URL + "/browser",
@@ -354,7 +354,6 @@ module.exports = function( Gibber ) {
           var data = JSON.parse( d ),
               col = GE.Layout.addColumn({ fullScreen:false, type:'code', mode: data.language })
           
-          // col.editor.setOption( 'mode', GE.modes.nameMappings[ data.language ] ) 
           col.editor.setValue( data.text )
           col.fileInfo = data
           col.revision = d // retain compressed version to potentially use as attachement revision if publication is updated

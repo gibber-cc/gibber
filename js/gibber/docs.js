@@ -6,8 +6,7 @@ module.exports = function( Gibber ) {
     open : function() {
       GE = Gibber.Environment
       
-      this.col = GE.Layout.addColumn({ header:'Reference' })
-    
+      this.col = GE.Layout.addColumn({ header:'Reference', type:'info' })
       this.getIndex()
     },
     showTOC : function( section, btn ) {
@@ -34,7 +33,6 @@ module.exports = function( Gibber ) {
       }) 
     },
     openFile : function( group, name ) {
-      console.log( "OPENING", group, name )
       $.ajax({
         url:'docs/?group=' + group + '&file='+name,
         dataType:'html'

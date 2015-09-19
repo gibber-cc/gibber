@@ -16,7 +16,7 @@ module.exports = function( Gibber ) {
     
     options = options || {}
         
-    var isCodeColumn = options.type === 'code',
+    var isCodeColumn = options.type === 'code' || typeof options.type === 'undefined',
         Layout = Gibber.Environment.Layout,
         lastColumnWidth = 0, 
         colNumber = Layout.columns.length,

@@ -194,7 +194,7 @@ var GE = {
 
   Help : {
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Help' })
+      this.col = GE.Layout.addColumn({ header:'Help', type:'info' })
       this.getIndex()
     },
     getIndex : function() {
@@ -212,7 +212,7 @@ var GE = {
   },
   Credits : {
     open : function() {
-      this.col = GE.Layout.addColumn({ header:'Credits' })      
+      this.col = GE.Layout.addColumn({ header:'Credits', type:'info' })
       this.getIndex()
     },
     getIndex : function() {
