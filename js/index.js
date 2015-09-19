@@ -1510,7 +1510,7 @@ var createUpdateFunction = function( obj, name, color, muteColor, isFunc ) {
     }*/
   }
 
-  window.myupdate = updateFunctio
+  window.myupdate = updateFunction
 
 
   return updateFunction
