@@ -43409,7 +43409,21 @@ var Gibber = {
       document.head.appendChild( script )
     }
     return { done: function( fcn ) { _done =  fcn } }
- 	},  
+ 	}, 
+
+  loadText: function( path ) {
+    var _done = null
+    console.log( 'Loading text ' + path + '....' )
+
+    $.post(
+      Gibber.Environment.SERVER_URL + '/gibber/'+path, {},
+      function( d ) {
+        var json = JSON.parse( d ) 
+        if( _done ) { _done( json.text ) }
+      }
+    )
+    return { done: function( fcn ) { _done = fcn } }
+  }, 
   
   // log: function( msg ) { 
   //   //console.log( "LOG", typeof msg )
@@ -44136,6 +44150,7 @@ Gibber.Euclid = require( './euclidean' )( Gibber )
 module.exports = Gibber
 
 })()
+
 },{"./dollar":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/dollar.js","./euclidean":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/euclidean.js","./mappings":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js","./pattern":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/pattern.js","./utilities":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/utilities.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.core.lib/scripts/mappings.js":[function(require,module,exports){
 module.exports = function( Gibber ) {  
   var mappings = {
@@ -51048,7 +51063,7 @@ var PP = {
 					shader.uniform = function(_name, _value, _min, _max, type, shouldCodeGen ) {
 						_min = _min == null ? 0 : _min
 						_max = _max == null ? 1 : _max				
-						_value = _value == null  ||  typeof _value == 'object' ? _min + (_max - _min) / 2 : _value
+						_value = _value == null  ||  typeof _value !== 'object' ? _min + (_max - _min) / 2 : _value
 		        shouldCodeGen = shouldCodeGen == null ? true : shouldCodeGen
             
 						if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
@@ -51335,6 +51350,7 @@ var getShaderInfo = function( value, type, _name ) {
       }
     }
   }else{
+    console.log( 'INSIDE ARRAY CHECK', value )
     if( Array.isArray( value ) ) {
       var arrayMember = value[ 0 ],
           arrayMemberType = arrayMember.shaderType || typeof arrayMember
@@ -51361,6 +51377,8 @@ var getShaderInfo = function( value, type, _name ) {
     }
   }
   
+  console.log( 'shaderInfo', isArray, isInt, shaderType ) 
+
   shaderString = "uniform " + shaderType + " " + _name
   
   shaderString += isArray ? '[' + value.length + '];\n' : ';\n'
