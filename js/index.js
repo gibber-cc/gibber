@@ -50979,15 +50979,15 @@ var processArgs = function( args, type, shape ) {
         var columnV = null, columnF = null, out = null, shader = null
         if( fragment && typeof fragment === 'object' ) {
           columnF  = fragment
-          fragment = Gibber.Graphics.PostProcessing.defs + columnF.value
+          fragment = PP.defs + columnF.value
         }else{
-          fragment = Gibber.Graphics.PostProcessing.defs + fragment
+          fragment = PP.defs + fragment
         }
 				
         if( vertex && typeof vertex === 'object' ) {
           columnV = vertex
           vertex = columnV.value
-        }else{
+        }else if( vertex ) {
           vertex = Gibber.Graphics.PostProcessing.defs + vertex
         }
         
@@ -51022,7 +51022,7 @@ var PP = {
     "#define PI 3.14159265358979323846264",
     "float rand(vec2 co){",
     "  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);",
-    "}\n",
+    "}"
   ].join('\n'),
   
   start: function() {
