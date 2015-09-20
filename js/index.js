@@ -50980,11 +50980,15 @@ var processArgs = function( args, type, shape ) {
         if( fragment && typeof fragment === 'object' ) {
           columnF  = fragment
           fragment = Gibber.Graphics.PostProcessing.defs + columnF.value
+        }else{
+          fragment = Gibber.Graphics.PostProcessing.defs + fragment
         }
 				
         if( vertex && typeof vertex === 'object' ) {
           columnV = vertex
           vertex = columnV.value
+        }else{
+          vertex = Gibber.Graphics.PostProcessing.defs + vertex
         }
         
         shader = Gibber.Graphics.Shaders.make( fragment, vertex )
