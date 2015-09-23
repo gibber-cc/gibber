@@ -319,7 +319,6 @@ var GE = {
 		},
 		javascript : {
       run: function( column, script, pos, cm, shouldDelay ) { // called by Gibber.Environment.Keymap.modes.javascript
-//        eval( script )
         //GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
         var _start = pos.start ? pos.start.line : pos.line,
             tree

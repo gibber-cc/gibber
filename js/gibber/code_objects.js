@@ -412,7 +412,6 @@ var initializeMarks = function( obj, className, start, end, cm ) {
             var cm = marks[i].parent.parent.cm
             cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
           }else{
-            console.log( "CLEARING MARKS", marks[ i ] )
             marks[ i ].clear()
           }
         }
@@ -473,7 +472,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
         index = i,
 				start, end
     
-    if( value === null) { // whitespace, used for rests in sequences
+    if( value === null ) { // whitespace, used for rests in sequences
       var startColumn, endColumn,
           prevValue = i > 0 ? values[ i - 1 ] : null,
           nextValue = i < values.length - 1 ? values[ i + 1 ] : null,
@@ -484,7 +483,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
       }else{
         startColumn = pos.start.column + 1
       }
-      
+       
       if( nextValue ) {
         endColumn = nextValue.loc.start - 1
       }else{
@@ -714,23 +713,26 @@ module.exports = function( Gibber, Notation ) {
                         isFunc = typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function'
                         values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
                         isArray = false
+                        if( values[0].callee.name === 'Euclid' || values[0].callee.name === 'E' ) {
+                          values[0].isEuclid = true
+                          var isEuclid = true
+                        }
                       }
                     }else{
                       if( typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function' ) {
                         isFunc = true
                       }
-                      
+                       
                       values = [ prevObject.arguments[i] ]
                       isArray = false   
                     }
                   }
-
-                  markArray( values, object, newObject, newObjectName, patternName, pos, cm )
+                  if( !isEuclid ) markArray( values, object, newObject, newObjectName, patternName, pos, cm )
                   
                   var seq = newObject,
                       _name_ = object.object.property.name, 
                       pattern = hasSeqNumber ? seq[ _name_ ][ seqNumber ][ valuesOrDurations ] : seq[ _name_ ][ valuesOrDurations ]
-
+                  
                   pattern.cm = cm
                   
                   if( seq[ _name_ ] && pattern.filters ) {
@@ -756,9 +758,33 @@ module.exports = function( Gibber, Notation ) {
             
                     start.line += prevObject.arguments[i].loc.start.line
                     end.line   += prevObject.arguments[i].loc.end.line
-                
+
+                    if( isEuclid ) {
+                      start.ch -= 1
+                      var patternString = '[' + pattern.values.toString() + ']',
+                          commentedPatternString = '/* ' + patternString + ' */'
+                      end.ch += 1
+                      cm.replaceRange( commentedPatternString, end, end )
+                      
+                      start.ch = end.ch
+                      end.ch += commentedPatternString.length
+                      isFunc = false
+                      // values = pattern.values // can't replace, must have original parsing information.
+                      var tree = Gibber.Environment.Esprima.parse( patternString, { loc:true, range:true } )
+                      var expr = tree.body[0]
+                      var loc = { 'start':start, 'end':end }
+                      values = expr.expression.elements
+                      for( var z = 0; z < values.length; z++ ) {
+                        var value = values[z]
+                        value.loc.start.column += start.ch + 3
+                        value.loc.end.column += start.ch + 3
+                      }
+                      expr.loc = loc
+                      markArray( values, object, newObject, newObjectName, patternName, loc, cm )
+                      start.ch += 1
+                    }
+
                     pattern.arrayMark = cm.markText( start, end );
-                    
                   }
                   
                   pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )

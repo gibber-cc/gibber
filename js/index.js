@@ -1679,7 +1679,6 @@ var initializeMarks = function( obj, className, start, end, cm ) {
             var cm = marks[i].parent.parent.cm
             cm.removeLineClass( marks[i].lineNo(), marks[i].wrapClass )
           }else{
-            console.log( "CLEARING MARKS", marks[ i ] )
             marks[ i ].clear()
           }
         }
@@ -1740,7 +1739,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
         index = i,
 				start, end
     
-    if( value === null) { // whitespace, used for rests in sequences
+    if( value === null ) { // whitespace, used for rests in sequences
       var startColumn, endColumn,
           prevValue = i > 0 ? values[ i - 1 ] : null,
           nextValue = i < values.length - 1 ? values[ i + 1 ] : null,
@@ -1751,7 +1750,7 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
       }else{
         startColumn = pos.start.column + 1
       }
-      
+       
       if( nextValue ) {
         endColumn = nextValue.loc.start - 1
       }else{
@@ -1981,23 +1980,26 @@ module.exports = function( Gibber, Notation ) {
                         isFunc = typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function'
                         values = [ prevObject.arguments[i] ] // Rndf or Rndi or any anonymous function. TODO: single literal values
                         isArray = false
+                        if( values[0].callee.name === 'Euclid' || values[0].callee.name === 'E' ) {
+                          values[0].isEuclid = true
+                          var isEuclid = true
+                        }
                       }
                     }else{
                       if( typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function' ) {
                         isFunc = true
                       }
-                      
+                       
                       values = [ prevObject.arguments[i] ]
                       isArray = false   
                     }
                   }
-
-                  markArray( values, object, newObject, newObjectName, patternName, pos, cm )
+                  if( !isEuclid ) markArray( values, object, newObject, newObjectName, patternName, pos, cm )
                   
                   var seq = newObject,
                       _name_ = object.object.property.name, 
                       pattern = hasSeqNumber ? seq[ _name_ ][ seqNumber ][ valuesOrDurations ] : seq[ _name_ ][ valuesOrDurations ]
-
+                  
                   pattern.cm = cm
                   
                   if( seq[ _name_ ] && pattern.filters ) {
@@ -2023,9 +2025,33 @@ module.exports = function( Gibber, Notation ) {
             
                     start.line += prevObject.arguments[i].loc.start.line
                     end.line   += prevObject.arguments[i].loc.end.line
-                
+
+                    if( isEuclid ) {
+                      start.ch -= 1
+                      var patternString = '[' + pattern.values.toString() + ']',
+                          commentedPatternString = '/* ' + patternString + ' */'
+                      end.ch += 1
+                      cm.replaceRange( commentedPatternString, end, end )
+                      
+                      start.ch = end.ch
+                      end.ch += commentedPatternString.length
+                      isFunc = false
+                      // values = pattern.values // can't replace, must have original parsing information.
+                      var tree = Gibber.Environment.Esprima.parse( patternString, { loc:true, range:true } )
+                      var expr = tree.body[0]
+                      var loc = { 'start':start, 'end':end }
+                      values = expr.expression.elements
+                      for( var z = 0; z < values.length; z++ ) {
+                        var value = values[z]
+                        value.loc.start.column += start.ch + 3
+                        value.loc.end.column += start.ch + 3
+                      }
+                      expr.loc = loc
+                      markArray( values, object, newObject, newObjectName, patternName, loc, cm )
+                      start.ch += 1
+                    }
+
                     pattern.arrayMark = cm.markText( start, end );
-                    
                   }
                   
                   pattern.update = createUpdateFunction( newObject, patternName, Gibber.Environment.Notation.phaseIndicatorColor, Gibber.Environment.Notation.phaseIndicatorColorMute, isFunc )
@@ -3765,7 +3791,6 @@ var GE = {
 		},
 		javascript : {
       run: function( column, script, pos, cm, shouldDelay ) { // called by Gibber.Environment.Keymap.modes.javascript
-//        eval( script )
         //GE.modes[ obj.column.mode ].run( obj.column, obj.code, obj.selection, cm, false )
         var _start = pos.start ? pos.start.line : pos.line,
             tree
@@ -50443,6 +50468,7 @@ return Shaders
 //$.extend( window, Gibber.Graphics.Geometry )
 
 }
+
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/graphics.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
@@ -51067,12 +51093,13 @@ var PP = {
 					shader.uniform = function(_name, _value, _min, _max, type, shouldCodeGen ) {
 						_min = _min == null ? 0 : _min
 						_max = _max == null ? 1 : _max				
-						_value = _value == null  ||  typeof _value !== 'object' ? _min + (_max - _min) / 2 : _value
+						_value = _value == null ? _min + (_max - _min) / 2 : _value
+            //_value = _value == null  ||  typeof _value !== 'object' ? _min + (_max - _min) / 2 : _value
 		        shouldCodeGen = shouldCodeGen == null ? true : shouldCodeGen
             
 						if( typeof shader.mappingProperties[ _name ] === 'undefined' ) {
 							_mappingProperties[ _name ] = shader.mappingProperties[ _name ] = {
-				        min:_min, max:_max,
+				        min:_min, max:_max, value:_value,
 				        output: Gibber.LINEAR,
 				        timescale: 'graphics',
 				      }
@@ -51096,15 +51123,18 @@ var PP = {
               get : function() { return shader.uniforms[_name].value },
               set : function(v){ return shader.uniforms[_name].value = v }
             })
-            Gibber.createProxyProperty( shader, _name, true )
+            // Gibber.createProxyProperty( shader, _name, true )
             
+            shader.uniforms[ _name ].value = _value
             shader[ _name ] = _value
             
+            Gibber.createProxyProperty( shader, _name, true )
             return shader
           }
 
           shader.uniformNoCodeGen = function() {
 					  var args = Array.prototype.slice.call( arguments, 0 )
+            console.log( "NO OCDEGEN", args[1] || null )
             return shader.uniform( args[0], args[1] || null, args[2] || null, args[3] || null, args[4] || null, false )
           }
 
@@ -51142,7 +51172,7 @@ var PP = {
           
           PP.defineProperties( shader )
           
-          console.log( shader, mappingProperties )
+          // console.log( shader, mappingProperties )
           
           for( var key in mappingProperties ) {
     				var prop = mappingProperties [ key ]
@@ -51552,12 +51582,12 @@ module.exports = function( Gibber, Graphics ) {
 			
       var mappingProperties = shader.mappingProperties = {
 				amp:{
-	        min:0, max:1,
+	        min:0, max:1, value:1,
 	        output: Gibber.LINEAR,
 	        timescale: 'graphics',
 	      },
 	      time:{
-	        min:0, max:1,
+	        min:0, max:1, value:0,
 	        output: Gibber.LINEAR,
 	        timescale: 'graphics',
 	      },
@@ -51588,8 +51618,10 @@ module.exports = function( Gibber, Graphics ) {
             shader.material.uniforms[ _name ].value = v
           },
         })
-        
+         
         Gibber.createProxyProperty( shader, _name )
+        shader.material.uniforms[ _name ].value = _value
+
         shader[  _name.charAt(0).toUpperCase() + _name.slice(1) ].timescale = 'graphics' // TODO: why is this necessary?
         
         return shader
@@ -51597,7 +51629,7 @@ module.exports = function( Gibber, Graphics ) {
             
       for( var key in mappingProperties ) {
         var prop = mappingProperties [ key ]
-        shader.uniform( key, prop.min, prop.max, shader[ key ] )
+        shader.uniform( key, prop.value, prop.min, prop.max )
       }
 			
 			return shader
@@ -51626,6 +51658,7 @@ module.exports = function( Gibber, Graphics ) {
     //   return null
     // } 
 }
+
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/video.js":[function(require,module,exports){
 /*
 a = Video()
