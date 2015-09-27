@@ -1593,7 +1593,7 @@ var createRndUpdateFunction = function( obj, name ) {
           update.value = update.value.slice( 0,Gibber.Environment.Notation.floatLengthLimit )
         }
       }
-       console.log('UPDATE', update.value, update.pattern, update.pattern.originalArrayText )     
+      // console.log('UPDATE', update.value, update.pattern, update.pattern.originalArrayText )     
       switch( Gibber.Environment.Notation.functionOutputIndicatorStyle ) {
         case 'comment':
           update.pattern.cm.replaceRange( update.pattern.originalArrayText + '/* ' + update.value + ' */', pos.from, pos.to )
@@ -1657,7 +1657,7 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
         charCount = 0, start, end;
     
     if( typeof arrayPos !== 'object' ) {
-      console.log( 'BAD ARRAY POS VALUE', arrayPos, this.arrayMark )
+      //console.log( 'BAD ARRAY POS VALUE', arrayPos, this.arrayMark )
       return
     }
     
