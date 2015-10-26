@@ -22,3 +22,19 @@ f = Film()
 // map the scanline count to the hihat output
 f.sCount = a.hat.Out
 ```
+###Running Gibber Locally###
+
+In order to run Gibber locally, you need to clone the gibber.server repo:<http://github.com/charlieroberts/gibber.server>. There are instructions for running the server in its README file.
+
+###Building Gibber###
+You need to grab the following npm modules / github repos:
+
+1. gibber.audio.lib
+2. gibber.graphics.lib
+3. gibber.core.lib
+4. gibber.interface.lib
+5. gibber.communication.lib
+
+You can place all of theses repos in the node_modules folder and then run `gulp watch` to start the watching system. However, I find it is easier to clone each repo into its own location separate from the main Gibber repo, and then use `npm link` <hhtp://docs.npmjs.com/cli/link> to link them all together when building. 
+
+

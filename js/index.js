@@ -545,7 +545,7 @@ module.exports = function( Gibber ) {
         $.ajax({
           type:'POST',
           url: GE.SERVER_URL + "/userfiles",
-          data:{},
+          data:{ username:_name },
           dataType:'json',
         })
         .done( GE.Browser.showUserFiles )
@@ -1660,19 +1660,26 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
       //console.log( 'BAD ARRAY POS VALUE', arrayPos, this.arrayMark )
       return
     }
-    
+
+    var diff =this.arrayText.length - newPatternText.length
+
     start = {
       line : arrayPos.from.line,
       ch :   arrayPos.from.ch + charCount
     }
     end = {
       line : arrayPos.to.line,
-      ch :   arrayPos.from.ch + charCount + 1
+      ch :   arrayPos.from.ch + charCount
     }
+    
 
     obj.marks[ patternName ].length = 0
     obj.locations[ patternName ].length = 0
-
+    
+    //arrayPos.to.ch += diff
+    // if( arrayPos.from.line > arrayPos.to.line ) arrayPos.from.line = arrayPos.to.line
+    arrayPos.to.line = arrayPos.from.line
+    // console.log( arrayPos.from.ch, arrayPos.to.ch, arrayPos.from.line, arrayPos.to.line )
     cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
 
     for( var i = 0; i < this.values.length; i++ ) {
@@ -1763,7 +1770,10 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
   }else{
     pattern = object[ split[0] ][ split[1] ]    
   }
-   
+
+  pattern.column = cm.column
+  pattern.object = object
+
   if( typeof src === 'undefined' ) src = location
   
   if( src && !pattern.arrayText ) {
@@ -37500,7 +37510,7 @@ Audio = {
       var time = Audio.Clock.time( _time ),
           curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp = curve
+      this.amp = Audio.Core.Binops.Mul( this.amp.oldGetter(), curve )
       
       future( function() { this.amp = 0 }.bind( this ), time )
       
@@ -37510,7 +37520,7 @@ Audio = {
       var time = Audio.Clock.time( _time ),
           curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp = curve
+      this.amp = Audio.Core.Binops.Mul( this.amp.oldGetter(), curve )
       
       future( function() { 
         this.amp = 0
@@ -37555,6 +37565,7 @@ Audio.Additive =       require( './audio/additive' )
 return Audio
 
 }
+
 },{"../external/freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound.js","../external/freesound2":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/freesound2.js","./audio/additive":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/additive.js","./audio/analysis":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/analysis.js","./audio/arp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/arp.js","./audio/audio_input":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/audio_input.js","./audio/bus":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/bus.js","./audio/clock":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js","./audio/drums":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/drums.js","./audio/ensemble":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ensemble.js","./audio/envelopes":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/envelopes.js","./audio/fx":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/fx.js","./audio/gibber_freesound":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound.js","./audio/gibber_freesound2":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound2.js","./audio/oscillators":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js","./audio/postprocessing":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js","./audio/sampler":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/sampler.js","./audio/score":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/score.js","./audio/seq":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/seq.js","./audio/soundfont":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js","./audio/synths":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js","./audio/theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","./audio/ugen":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ugen.js","./audio/vocoder":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/vocoder.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/additive.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
@@ -37993,7 +38004,7 @@ module.exports = function( Gibber ) {
         obj.fx.ugen = obj
         
         Gibber.createProxyProperties( obj, mappingProperties )    
-  
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()
@@ -38063,6 +38074,7 @@ module.exports = function( Gibber ) {
   
   return Busses
 }
+
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/clock.js":[function(require,module,exports){
 !function() {
   
@@ -43819,13 +43831,18 @@ var Gibber = {
       
       var v = $.isArray(_v) ? _v : [_v],
           d = $.isArray(_d) ? _d : typeof _d !== 'undefined' ? [_d] : null,
+          valuesPattern = Gibber.construct( Gibber.Pattern, v ),
+          durationsPattern = Gibber.construct( Gibber.Pattern, d ),
           args = {
             'key': key,
-            values: [ Gibber.construct( Gibber.Pattern, v ) ],
-            durations: d !== null ? [ Gibber.construct( Gibber.Pattern, d ) ] : null,
+            values: [ valuesPattern ],
+            durations: d !== null ? [ durationsPattern ] : null,
             target: obj,
             'priority': priority
           }
+      
+      valuesPattern.patternName = key + '_values'
+      durationsPattern.patternName = key + '_durations'
 
       if( typeof seqNumberForKey === 'undefined' ) seqNumberForKey = 0 // _num++
       
@@ -43850,7 +43867,6 @@ var Gibber = {
         shouldSplice = uniqueSeqID
       }
             
-      var valuesPattern = args.values[ 0 ]
       if( v.randomFlag ) {
         valuesPattern.filters.push( function() {
           var idx = Gibber.Utilities.rndi(0, valuesPattern.values.length - 1)
@@ -43862,7 +43878,6 @@ var Gibber = {
       }
 
       if( d !== null ) {
-        var durationsPattern = args.durations[0]
         if( d.randomFlag ) {
           durationsPattern.filters.push( function() { 
             var idx = Gibber.Utilities.rndi(0, durationsPattern.values.length - 1)
@@ -44910,6 +44925,15 @@ var PatternProto = {
     
     return args
   },
+  checkForUpdateFunction: function( name, _arguments ) {
+    var args = Array.prototype.slice.call( _arguments, 0 )
+
+    if( this.listeners[ name ] ) {
+      this.listeners[ name ].apply( this, args )
+    }else if( Pattern.listeners[ name ] ) {
+      Pattern.listeners[ name ].apply( this, args )
+    }
+  },
   _onchange : function() {},
 }
 
@@ -44974,12 +44998,9 @@ var Pattern = function() {
         fnc.start = end
         fnc.end = start
       }
-      
-      // fnc._onchange()
-      if( fnc.listeners.range ) {
-        fnc.listeners.range( fnc.start, fnc.end, fnc, fnc.range )
-      }
-      
+
+      this.checkForUpdateFunction( 'range', [ fnc ] )
+
       return fnc
     },
     
@@ -45257,6 +45278,7 @@ var Pattern = function() {
   return fnc
 }
 
+Pattern.listeners = {}
 Pattern.prototype = PatternProto
 
 return Pattern

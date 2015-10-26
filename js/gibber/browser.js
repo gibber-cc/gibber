@@ -55,7 +55,7 @@ module.exports = function( Gibber ) {
         $.ajax({
           type:'POST',
           url: GE.SERVER_URL + "/userfiles",
-          data:{},
+          data:{ username:_name },
           dataType:'json',
         })
         .done( GE.Browser.showUserFiles )

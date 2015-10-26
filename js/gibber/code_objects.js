@@ -393,19 +393,26 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
       //console.log( 'BAD ARRAY POS VALUE', arrayPos, this.arrayMark )
       return
     }
-    
+
+    var diff =this.arrayText.length - newPatternText.length
+
     start = {
       line : arrayPos.from.line,
       ch :   arrayPos.from.ch + charCount
     }
     end = {
       line : arrayPos.to.line,
-      ch :   arrayPos.from.ch + charCount + 1
+      ch :   arrayPos.from.ch + charCount
     }
+    
 
     obj.marks[ patternName ].length = 0
     obj.locations[ patternName ].length = 0
-
+    
+    //arrayPos.to.ch += diff
+    // if( arrayPos.from.line > arrayPos.to.line ) arrayPos.from.line = arrayPos.to.line
+    arrayPos.to.line = arrayPos.from.line
+    // console.log( arrayPos.from.ch, arrayPos.to.ch, arrayPos.from.line, arrayPos.to.line )
     cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
 
     for( var i = 0; i < this.values.length; i++ ) {
@@ -496,7 +503,10 @@ var markArray = function( values, treeNode, object, objectName, patternName, pos
   }else{
     pattern = object[ split[0] ][ split[1] ]    
   }
-   
+
+  pattern.column = cm.column
+  pattern.object = object
+
   if( typeof src === 'undefined' ) src = location
   
   if( src && !pattern.arrayText ) {
