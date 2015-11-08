@@ -410,7 +410,7 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
     obj.locations[ patternName ].length = 0
     
     //arrayPos.to.ch += diff
-    // if( arrayPos.from.line > arrayPos.to.line ) arrayPos.from.line = arrayPos.to.line
+    if( arrayPos.from.line > arrayPos.to.line ) arrayPos.from.line = arrayPos.to.line
     arrayPos.to.line = arrayPos.from.line
     // console.log( arrayPos.from.ch, arrayPos.to.ch, arrayPos.from.line, arrayPos.to.line )
     cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
@@ -887,7 +887,7 @@ module.exports = function( Gibber, Notation ) {
         //   if( newObject.clearMarks )
         //     newObject.clearMarks()
         // })
- 
+    
         newObject.text = new String( src )
         newObject.text.mark = mark
         newObject.text.class = '.' + className

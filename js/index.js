@@ -1677,7 +1677,7 @@ var createOnChange = function( obj, objName, patternName, cm, join, seqNumber ) 
     obj.locations[ patternName ].length = 0
     
     //arrayPos.to.ch += diff
-    // if( arrayPos.from.line > arrayPos.to.line ) arrayPos.from.line = arrayPos.to.line
+    if( arrayPos.from.line > arrayPos.to.line ) arrayPos.from.line = arrayPos.to.line
     arrayPos.to.line = arrayPos.from.line
     // console.log( arrayPos.from.ch, arrayPos.to.ch, arrayPos.from.line, arrayPos.to.line )
     cm.replaceRange( newPatternText, arrayPos.from, arrayPos.to )
@@ -2154,7 +2154,7 @@ module.exports = function( Gibber, Notation ) {
         //   if( newObject.clearMarks )
         //     newObject.clearMarks()
         // })
- 
+    
         newObject.text = new String( src )
         newObject.text.mark = mark
         newObject.text.class = '.' + className
@@ -30651,9 +30651,9 @@ Gibberish.KarplusStrong = function() {
   Gibberish.extend(this, {
     name:"karplus_strong",
     frequency : 0,
-    properties: { blend:1, damping:0, amp:1, channels:2, pan:0  },
+    properties: { blend:1, damping:0, amp:1, channels:2, pan:0, velocity:1  },
   
-    note : function(frequency) {
+    note : function( frequency, velocity ) {
       if( typeof frequency === 'undefined' ) return
 
       var _size = Math.floor(sr / frequency);
@@ -30663,10 +30663,12 @@ Gibberish.KarplusStrong = function() {
         buffer[i] = rnd() * 2 - 1; // white noise
       }
       
+      if( velocity ) this.velocity = velocity
+
       this.frequency = frequency;
     },
 
-    callback : function(blend, damping, amp, channels, pan) { 
+    callback : function(blend, damping, amp, channels, pan, velocity ) { 
       var val = buffer.shift();
       var rndValue = (rnd() > blend) ? -1 : 1;
 				
@@ -30678,7 +30680,7 @@ Gibberish.KarplusStrong = function() {
 
       buffer.push(value);
 				
-      value *= amp;
+      value *= amp * velocity;
       return channels === 1 ? value : panner(value, pan, out);
     },
   })
@@ -30702,10 +30704,10 @@ Gibberish.PolyKarplusStrong = function() {
       damping:    0,
     },
 
-    note : function(_frequency, amp) {
+    note : function(_frequency, velocity) {
       var synth = this.children[this.voiceCount++];
       if(this.voiceCount >= this.maxVoices) this.voiceCount = 0;
-      synth.note(_frequency, amp);
+      synth.note(_frequency, velocity);
       this._frequency = _frequency;
     },
     initVoices: function() {
@@ -30739,6 +30741,7 @@ Gibberish.PolyKarplusStrong = function() {
   Gibberish._synth.oscillatorInit.call(this);
   Gibberish.dirty( this )
 };
+
 /**#Gibberish.Bus - Miscellaneous
 Create a mono routing bus. A bus callback routes all it's inputs and scales them by the amplitude of the bus.  
   
@@ -31068,7 +31071,6 @@ Gibberish.Curve = function( start, end, time, a, b, fadeIn, loops ) {
       out = 0,
       phase = 0
       
-      console.log("FDAE IN ", fadeIn )
   start = start || 0
   end = end || 1
   time = time || Gibberish.context.sampleRate
@@ -33238,6 +33240,7 @@ Gibberish.Synth = function(properties) {
     amp:		  .25,
     channels: 2,
 	  pan:		  0,
+    velocity: 1,
     sr:       Gibberish.context.sampleRate,
   };
 /**###Gibberish.Synth.note : method  
@@ -33246,9 +33249,16 @@ Generate an enveloped note at the provided frequency
 param **frequency** Number. The frequency for the oscillator.  
 param **amp** Number. Optional. The volume to use.  
 **/    
-	this.note = function(frequency, amp) {
+	this.note = function(frequency, velocity) {
     if( typeof frequency === 'undefined' ) return
-    if( amp !== 0 ) {
+    if( Array.isArray( arguments[0] ) ) {
+      var tmp  = arguments[0][0]
+      velocity = arguments[0][1]
+      frequency = tmp
+    }
+
+
+    if( velocity !== 0 ) {
   		if( typeof this.frequency !== 'object' ){
         if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
           this.releaseTrigger = 1;
@@ -33268,8 +33278,9 @@ param **amp** Number. Optional. The volume to use.
         Gibberish.dirty(this);
       }
 					
-  		if( typeof amp !== 'undefined') this.amp = amp;
-	  
+      if( typeof velocity !== 'undefined') {
+        this.velocity = velocity;
+      }
       _envelope.run();
     }else{
       this.releaseTrigger = 1;
@@ -33293,7 +33304,7 @@ param **amp** Number. Optional. The volume to use.
       
   _envelope.requireReleaseTrigger = properties.requireReleaseTrigger || false;
       
-  this.callback = function(frequency, pulsewidth, attack, decay, sustain,release,attackLevel,sustainLevel,releaseTrigger, glide, amp, channels, pan, sr) {
+  this.callback = function(frequency, pulsewidth, attack, decay, sustain,release,attackLevel,sustainLevel,releaseTrigger, glide, amp, channels, pan, velocity, sr) {
     glide = glide >= 1 ? .99999 : glide;
     frequency = lag(frequency, 1-glide, glide);
     
@@ -33305,7 +33316,7 @@ param **amp** Number. Optional. The volume to use.
       }
 
       if( envstate() < 4 ) {
-  			val = osc( frequency, 1, pulsewidth, sr ) * env * amp;
+  			val = osc( frequency, 1, pulsewidth, sr ) * env * velocity *  amp;
     
   			return channels === 1 ? val : panner(val, pan, out);
       }else{
@@ -33315,7 +33326,7 @@ param **amp** Number. Optional. The volume to use.
     }else{
   		if(envstate() < 2) {
         env = envelope(attack, decay);
-  			val = osc( frequency, 1, pulsewidth, sr ) * env * amp;
+  			val = osc( frequency, 1, pulsewidth, sr ) * env * velocity * amp;
       
   			return channels === 1 ? val : panner(val, pan, out);
       }else{
@@ -33383,6 +33394,7 @@ Gibberish.PolySynth = function() {
       attackLevel: 1,
       sustainLevel: .5,      
       pulsewidth:.5,
+      velocity: 1,
       waveform:"PWM",
     },
 
@@ -33392,15 +33404,15 @@ Generate an enveloped note at the provided frequency using a simple voice alloca
 param **frequency** Number. The frequency for the oscillator. 
 param **amp** Number. Optional. The volume to use.  
 **/  
-    note : function(_frequency, amp) {
+    note : function(_frequency, velocity) {
       if( typeof _frequency === 'undefined' ) return
 
       var lastNoteIndex = this.frequencies.indexOf( _frequency ),
           idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
           synth = this.children[ idx ];
-      
-      synth.note( _frequency, amp);
-            
+
+      synth.note( _frequency, velocity );
+ 
       if( lastNoteIndex === -1) {
         this.frequencies[ idx ] = _frequency;
         this._frequency = _frequency
@@ -33409,7 +33421,7 @@ param **amp** Number. Optional. The volume to use.
         delete this.frequencies[ idx ]
       }
     },
-    
+ 
     initVoices: function() {
       for(var i = 0; i < this.maxVoices; i++) {
         var props = {
@@ -33519,6 +33531,7 @@ Gibberish.Synth2 = function(properties) {
     amp:		  .25,
     channels: 1,
 	  pan:		  0,
+    velocity: 1,
     sr:       Gibberish.context.sampleRate,
   };
 /**###Gibberish.Synth2.note : method  
@@ -33527,9 +33540,9 @@ Generate an enveloped note at the provided frequency
 param **frequency** Number. The frequency for the oscillator.  
 param **amp** Number. Optional. The volume to use.  
 **/      
-	this.note = function(frequency, amp) {
+	this.note = function(frequency, velocity) {
     if( typeof frequency === 'undefined' ) return
-    if( amp !== 0 ) {
+    if( velocity !== 0 ) {
   		if(typeof this.frequency !== 'object'){
         if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
           this.releaseTrigger = 1;
@@ -33548,7 +33561,7 @@ param **amp** Number. Optional. The volume to use.
         Gibberish.dirty(this);
       }
 					
-  		if( typeof amp !== 'undefined') this.amp = amp;
+  		if( typeof velocity !== 'undefined') this.velocity = velocity;
 	  
       _envelope.run();
     }else{
@@ -33574,7 +33587,7 @@ param **amp** Number. Optional. The volume to use.
       
   _envelope.requireReleaseTrigger = properties.requireReleaseTrigger || false;
         
-  this.callback = function(frequency, pulsewidth, attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger, cutoff, resonance, isLowPass, glide, amp, channels, pan, sr) {
+  this.callback = function(frequency, pulsewidth, attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger, cutoff, resonance, isLowPass, glide, amp, channels, pan, velocity, sr) {
     glide = glide >= 1 ? .99999 : glide;
     frequency = lag(frequency, 1-glide, glide);
     
@@ -33586,7 +33599,7 @@ param **amp** Number. Optional. The volume to use.
       }
 
       if( envstate() < 4 ) {
-  			val = filter ( osc( frequency, .15, pulsewidth, sr ), cutoff * env, resonance, isLowPass ) * env * amp;
+  			val = filter ( osc( frequency, .15, pulsewidth, sr ), cutoff * env, resonance, isLowPass ) * env * velocity *  amp;
     
   			return channels === 1 ? val : panner(val, pan, out);
       }else{
@@ -33596,7 +33609,7 @@ param **amp** Number. Optional. The volume to use.
     }else{
       if( envstate() < 2) {
 			  env = envelope(attack, decay);
-			  val = filter ( osc( frequency, .15, pulsewidth, sr ), cutoff * env, resonance, isLowPass ) * env * amp;
+			  val = filter ( osc( frequency, .15, pulsewidth, sr ), cutoff * env, resonance, isLowPass ) * env * velocity *  amp;
       
     		return channels === 1 ? val : panner(val, pan, out);
       }else{
@@ -33667,6 +33680,7 @@ Gibberish.PolySynth2 = function() {
       pulsewidth:.5,
       resonance: 3.5,
       cutoff:.25,
+      velocity:1,
       useLowPassFilter:true,
       waveform:"PWM",
     },
@@ -33677,14 +33691,14 @@ Generate an enveloped note at the provided frequency using a simple voice alloca
 param **frequency** Number. The frequency for the oscillator. 
 param **amp** Number. Optional. The volume to use.  
 **/  
-    note : function(_frequency, amp) {
+    note : function(_frequency, velocity) {
       if( typeof _frequency === 'undefined' ) return
 
       var lastNoteIndex = this.frequencies.indexOf( _frequency ),
           idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
           synth = this.children[ idx ];
       
-      synth.note(_frequency, amp);
+      synth.note(_frequency, velocity);
             
       if( lastNoteIndex === -1) {
         this.frequencies[ idx ] = _frequency;
@@ -33774,7 +33788,7 @@ Number. Default 0. If the synth has two channels, this determines its position i
 Gibberish.FMSynth = function(properties) {
 	this.name =	"fmSynth";
 
-	this.properties = {
+  this.properties = {
 	  frequency:0,
 	  cmRatio:	2,
 	  index:		5,			
@@ -33788,6 +33802,7 @@ Gibberish.FMSynth = function(properties) {
     glide:    .15,
     amp:		  .25,
     channels: 2,
+    velocity: 1,
 	  pan:		  0,
   };
 /**###Gibberish.FMSynth.note : method  
@@ -33797,10 +33812,11 @@ param **frequency** Number. The frequency for the carrier oscillator. The modula
 param **amp** Number. Optional. The volume to use.  
 **/
 
-	this.note = function(frequency, amp) {
+	this.note = function(frequency, velocity) {
     if( typeof frequency === 'undefined' ) return
-    //console.log( frequency, lastFrequency, this.releaseTrigger, amp )
-    if( amp !== 0 ) {
+    //console.log( frequency, lastFrequency, this.releaseTrigger, velocity )
+    console.log( "VELOCITY", velocity )
+    if( velocity !== 0 ) {
   		if(typeof this.frequency !== 'object'){
         if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
           this.releaseTrigger = 1;
@@ -33820,7 +33836,7 @@ param **amp** Number. Optional. The volume to use.
         Gibberish.dirty(this);
       }
 					
-  		if( typeof amp !== 'undefined') this.amp = amp;
+  		if( typeof velocity !== 'undefined') this.velocity = velocity;
 	  
       _envelope.run();
     }else{
@@ -33846,14 +33862,14 @@ param **amp** Number. Optional. The volume to use.
 
   _envelope.requireReleaseTrigger = properties.requireReleaseTrigger || false;
 
-  this.callback = function(frequency, cmRatio, index, attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger, glide, amp, channels, pan) {
+  this.callback = function(frequency, cmRatio, index, attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger, glide, amp, channels, velocity, pan) {
     var env, val, mod
         
     if(glide >= 1) glide = .9999;
     frequency = lag(frequency, 1-glide, glide);
     
     if( useADSR ) {
-      env = envelope( attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger );
+      env = envelope( attack, decay, sustain, release, attackLevel, sustainLevel, releaseTrigger ) * velocity;
       if( releaseTrigger ) {
         obj.releaseTrigger = 0
       }
@@ -33861,7 +33877,7 @@ param **amp** Number. Optional. The volume to use.
       if( envstate() < 4 ) {
         mod = modulator(frequency * cmRatio, frequency * index) * env;
   			val = carrier( frequency + mod, 1 ) * env * amp;
-    
+
   			return channels === 1 ? val : panner(val, pan, out);
       }else{
   		  val = out[0] = out[1] = 0;
@@ -33869,11 +33885,11 @@ param **amp** Number. Optional. The volume to use.
       }
     }else{
       if( envstate() < 2 ) {
-  			env = envelope(attack, decay);
+  			env = envelope(attack, decay) * velocity;
   			mod = modulator(frequency * cmRatio, frequency * index) * env;
   			val = carrier( frequency + mod, 1 ) * env * amp;
 
-        //if( phase++ % 44105 === 0 ) console.log( panner(val, pan, out) channels )
+        //if( phase++ % 44105 === 0 ) console.log( panner(val, pan, out) , channels )
   			return channels === 1 ? val : panner(val, pan, out);
       }else{
   		  val = out[0] = out[1] = 0;
@@ -33920,7 +33936,8 @@ Gibberish.PolyFM = function() {
     children: [],
     frequencies: [],
     _frequency: 0,
-    
+    velocity: 1,
+
     polyProperties : {
       glide:		 0,
       attack: 22050,
@@ -33938,14 +33955,16 @@ Generate an enveloped note at the provided frequency using a simple voice alloca
 param **frequency** Number. The frequency for the carrier oscillator. The modulator frequency will be calculated automatically from this value in conjunction with the synth's  
 param **amp** Number. Optional. The volume to use.  
 **/
-    note : function(_frequency, amp) {
+    note : function(_frequency, velocity ) {
       if( typeof _frequency === 'undefined' ) return
 
       var lastNoteIndex = this.frequencies.indexOf( _frequency ),
           idx = lastNoteIndex > -1 ? lastNoteIndex : this.voiceCount++,
           synth = this.children[ idx ];
       
-      synth.note(_frequency, amp);
+      if( typeof velocity === 'undefined' ) velocity = this.velocity
+
+      synth.note(_frequency, velocity);
       
       if( lastNoteIndex === -1) {
         this.frequencies[ idx ] = _frequency;
@@ -33997,6 +34016,7 @@ param **amp** Number. Optional. The volume to use.
 	this.processProperties(arguments);
   Gibberish._synth.oscillatorInit.call(this);
 };
+
 // this file is dependent on oscillators.js
 
 /**#Gibberish.Sampler - Oscillator
@@ -34014,7 +34034,7 @@ b.record(a, 88200); // record two seconds of a playing
 a.note(8);  
 // wait a bit    
 b.note(1);`
-`
+
 ## Constructor
 ###syntax 1  
 **param** *filepath*: String. A path to the audiofile to be opened by the sampler.  
@@ -34478,6 +34498,7 @@ Gibberish.Sampler.prototype.record = function(input, recordLength) {
   
   return this;
 };
+
 /**#Gibberish.MonoSynth - Synth
 A three oscillator monosynth for bass and lead lines. You can set the octave and tuning offsets for oscillators 2 & 3. There is a 24db filter and an envelope controlling
 both the amplitude and filter cutoff.
@@ -34555,6 +34576,7 @@ Gibberish.MonoSynth = function() {
   		octave3:		-1,
       glide:      0,
   		pan:			  0,
+      velocity:   1,
   		frequency:	0,
       channels:   2,
     },
@@ -34564,12 +34586,12 @@ Gibberish.MonoSynth = function() {
 param **note or frequency** : String or Integer. You can pass a note name, such as "A#4", or a frequency value, such as 440.
 param **amp** : Optional. Float. The volume of the note, usually between 0..1. The main amp property of the Synth will also affect note amplitude.
 **/				
-		note : function(_frequency, amp) {
+		note : function(_frequency, velocity) {
       if( typeof _frequency === 'undefined' ) return
 
-      if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
+      if(typeof velocity !== 'undefined' && velocity !== 0) this.velocity = velocity;
       
-      if( amp !== 0 ) {
+      if( velocity !== 0 ) {
     		if(typeof this.frequency !== 'object'){
       
           this.frequency = _frequency;
@@ -34581,31 +34603,33 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
   			if(envstate() > 0 ) _envelope.run();
       }
 		},
-  	_note : function(frequency, amp) {
+  	/*
+    note : function(frequency, velocity) {
       if( typeof frequency === 'undefined' ) return
         
   		if(typeof this.frequency !== 'object'){
-        if( useADSR && frequency === lastFrequency && amp === 0) {
+        if( useADSR && frequency === lastFrequency && velocity === 0) {
           this.releaseTrigger = 1;
           lastFrequency = null
           return;
         }
-        if( amp !== 0 ) {
+        if( velocity !== 0 ) {
           this.frequency = lastFrequency = frequency;
         }
         this.releaseTrigger = 0;
       }else{
-        if( amp !== 0 ) {
+        if( velocity !== 0 ) {
           this.frequency[0] = lastFrequency = frequency;
         }
         this.releaseTrigger = 0;
         Gibberish.dirty(this);
       }
 					
-  		if(typeof amp !== 'undefined' && amp !== 0) this.amp = amp;
+  		if(typeof velocity !== 'undefined' && velocity !== 0) this.velocity = velocity;
 	  
-      if( amp !== 0 ) { _envelope.run(); }
+      if( velocity !== 0 ) { _envelope.run(); }
   	},
+    */
 	});
   
 	var waveform = waveform1 = waveform2 = waveform3 = this.waveform;
@@ -34651,7 +34675,7 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
   
   this.envelope = _envelope
   
-  this.callback = function(attack, decay, cutoff, resonance, amp1, amp2, amp3, filterMult, isLowPass, pulsewidth, masterAmp, detune2, detune3, octave2, octave3, glide, pan, frequency, channels) {
+  this.callback = function(attack, decay, cutoff, resonance, amp1, amp2, amp3, filterMult, isLowPass, pulsewidth, masterAmp, detune2, detune3, octave2, octave3, glide, pan, velocity, frequency, channels) {
 		if(envstate() < 2) {
       if(glide >= 1) glide = .9999;
       frequency = lag(frequency, 1-glide, glide);
@@ -34682,7 +34706,7 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
 			frequency3 += detune3 > 0 ? ((frequency * 2) - frequency) * detune3 : (frequency - (frequency / 2)) * detune3;
 							
 			var oscValue = osc1(frequency, amp1, pulsewidth) + osc2(frequency2, amp2, pulsewidth) + osc3(frequency3, amp3, pulsewidth);
-			var envResult = envelope(attack, decay);
+			var envResult = envelope(attack, decay) * velocity;
 			var val = filter( oscValue, cutoff + filterMult * envResult, resonance, isLowPass, 1) * envResult;
 			val *= masterAmp;
 			out[0] = out[1] = val;
@@ -34698,6 +34722,7 @@ param **amp** : Optional. Float. The volume of the note, usually between 0..1. T
 	this.processProperties(arguments);
 };
 Gibberish.MonoSynth.prototype = Gibberish._synth; 
+
 /**#Gibberish.Binops - Miscellaneous
 These objects create binary operations - mathematical operations taking two arguments - and create signal processing functions using them. They are primarily used for
 modulation purposes. You can export the constructors for easier use similar to the [Time](javascript:displayDocs('Gibberish.Time'\)) constructors.
@@ -36431,7 +36456,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
         for( var i = this.playing.length -1; i >= 0; i-- ) {
           var note = this.playing[ i ]
           
-          val += this.interpolate( note.buffer, note.phase )
+          val += this.interpolate( note.buffer, note.phase ) * note.velocity
           
           note.phase += note.increment
           if( note.phase > note.length ) {
@@ -36442,14 +36467,14 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
         return this.panner( val * amp, pan, this.out );
       }.bind( this ),
       
-      note: function( name, amp, cents ) {
+      note: function( name, velocity, cents ) {
         if( this.isLoaded ) {
           this.playing.push({
             buffer:this.buffers[ name ],
             phase:0,
             increment: isNaN( cents ) ? 1 : 1 + cents,
             length:this.buffers[ name ].length,
-            'amp': isNaN( amp ) ? 1 : amp
+            velocity: isNaN( velocity ) ? 1 : velocity
           })
         }
       },
@@ -36483,6 +36508,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
   Gibberish.SoundFont.prototype = Gibberish._oscillator;
 })()
   
+
 Gibberish.Vocoder = function() {
   var encoders = [], decoders = [], amps = [], store = [], 
       abs = Math.abs, sqrt = Math.sqrt, phase = 0, output = [0,0],
@@ -41642,7 +41668,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
     }
     
     obj._note = obj.note.bind( obj ) 
-    obj.note = function( name, amp ) {
+    obj.note = function( name, velocity ) {
       if( typeof name === 'number' ) {
         if( name < Gibber.minNoteFrequency ) {
           var scale = this.scale || Gibber.scale,
@@ -41684,8 +41710,9 @@ module.exports = function( Gibber, pathToSoundFonts ) {
         name = noteName
       }
       
-      
-      obj._note( name, isNaN( amp ) ? 1 : amp, cents(1, _cents) )
+      if( typeof velocity === 'undefined' ) velocity = this.velocity.value
+
+      obj._note( name, velocity, cents(1, _cents) )
       // this.playing.push({
       //   buffer:this.buffers[ name ],
       //   phase:0,
@@ -41696,6 +41723,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
     }
     
     Gibber.createProxyProperties( obj, mappingProperties )
+    Gibber.defineProperty( obj, 'velocity', true, true, { min: 0, max: 1, output: LOGARITHMIC, timescale: 'audio'}, true, true )   
     Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
   
     return obj
@@ -41705,6 +41733,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
   
   return SoundFont
 }
+
 },{"./theory":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/theory.js","gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/synths.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
@@ -41856,12 +41885,21 @@ module.exports = function( Gibber ) {
         // override note method to allow note names
         obj._note = obj.note.bind( obj )
         obj.note = function() {
-          var args = Array.prototype.splice.call( arguments, 0 )
+          var args = Array.prototype.slice.call( arguments, 0 ),
+              freq
           
           if( typeof args[0] === 'undefined' ) return
-
-          args[ 0 ] = Gibber.Theory.processFrequency( obj, args[ 0 ] )
           
+          if( Array.isArray( args[0] ) ) {
+            freq = args[0][0]
+            freq = Gibber.Theory.processFrequency( obj, freq )
+            args[0][0] = freq
+          }else{
+            args[0] = Gibber.Theory.processFrequency( obj, args[0] )
+          }
+
+          if( typeof args[1] === 'undefined' ) args[1] = this.velocity.value
+
           this._note.apply( this, args )
           
           return this 
@@ -41876,6 +41914,7 @@ module.exports = function( Gibber ) {
         
         //obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
+        Gibber.defineProperty( obj, 'velocity', true, true, { min: 0, max: 1, output: LOGARITHMIC, timescale: 'audio'}, true, true )
         
         obj.trig = function() {
           this.note( this.lastFrequency )
@@ -42245,7 +42284,7 @@ var Theory = {
     // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
     
     that.gibber = true // needed since createProxyProperties isn't called where this is normally set
-                              // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
+                              // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority 
     Gibber.createProxyProperty( that, 'root', true, false, null, false, 1 )
     Gibber.createProxyProperty( that, 'mode', true, false, null, false, 1 )
     //Gibber.defineSequencedProperty( that, 'root', 1 )
@@ -42470,6 +42509,7 @@ var Theory = {
 return Theory
 
 }
+
 },{"../../external/teoria.min":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/external/teoria.min.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ugen.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
@@ -44959,8 +44999,21 @@ var Pattern = function() {
     fnc.phase += fnc.stepSize * args[ 1 ]
     val = args[ 0 ]
     
-    if( typeof val === 'function' ) val = val()
-    
+    // check to see if value is a function, and if so evaluate it
+    if( typeof val === 'function' ) {
+      val = val()
+    }
+    /*else if ( Array.isArray( val ) ) {
+      // if val is an Array, loop through array and evaluate any functions found there. TODO: IS THIS SMART?
+
+      for( var i = 0; i < val.length; i++ ){
+        if( typeof val[ i ] === 'function' ) {
+          val[ i ] = val[ i ]()
+        }
+      }
+    }
+    */
+
     // if pattern has update function, set new value
     if( fnc.update ) fnc.update.value = val
     
