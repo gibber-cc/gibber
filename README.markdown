@@ -35,6 +35,6 @@ You need to grab the following npm modules / github repos:
 4. gibber.interface.lib
 5. gibber.communication.lib
 
-You can place all of theses repos in the node_modules folder and then run `gulp watch` to start the watching system. However, I find it is easier to clone each repo into its own location separate from the main Gibber repo, and then use `npm link` <hhtp://docs.npmjs.com/cli/link> to link them all together when building. 
+You can place all of theses repos in the node_modules folder and then run `gulp watch` to start the watching system. However, I find it is easier to clone each repo into its own location separate from the main Gibber repo, and then use `npm link` <http://docs.npmjs.com/cli/link> to link them all together when building. 
 
 
