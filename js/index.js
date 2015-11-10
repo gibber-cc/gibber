@@ -33420,6 +33420,7 @@ param **amp** Number. Optional. The volume to use.
       }else{
         delete this.frequencies[ idx ]
       }
+      this.lastChild = idx
     },
  
     initVoices: function() {
@@ -33707,6 +33708,7 @@ param **amp** Number. Optional. The volume to use.
       }else{
         delete this.frequencies[ idx ]
       }
+      this.lastChild = idx
     },
     
     initVoices: function() {
@@ -41759,67 +41761,67 @@ module.exports = function( Gibber ) {
     Synth: {
       note: { min: 50, max: 3200, output: LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: LOGARITHMIC, timescale: 'audio' },
-      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',},
-      pulsewidth :{ min: 0.01, max: .99, output: LINEAR, timescale: 'audio' },
-      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
-      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},
+      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true },
+      pulsewidth :{ min: 0.01, max: .99, output: LINEAR, timescale: 'audio' , perNote:true},
+      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
+      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio', perNote:true},
       out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },   
     },
     Synth2: {
       note: { min: 50, max: 3200, output: LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: LINEAR, timescale: 'audio' },
-      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',},
-      pulsewidth :{ min: 0.01, max: .99, output: LINEAR, timescale: 'audio' },
-      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},
-      cutoff : { min: 0, max: .7, output: LINEAR, timescale: 'audio' },
-      resonance: { min: 0, max: 5.5, output: LINEAR, timescale: 'audio' },
-      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
+      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
+      pulsewidth :{ min: 0.01, max: .99, output: LINEAR, timescale: 'audio', perNote:true },
+      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio', perNote:true},
+      cutoff : { min: 0, max: .7, output: LINEAR, timescale: 'audio', perNote:true },
+      resonance: { min: 0, max: 5.5, output: LINEAR, timescale: 'audio', perNote:true },
+      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
       out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },                
     },
     Mono: {
       note: { min: 50, max: 3200, output: LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: LINEAR, timescale: 'audio' },
-      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',},
-      pulsewidth :{ min: 0.01, max: .99, output: LINEAR, timescale: 'audio' },
-      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LOGARITHMIC, timescale:'audio'},
-      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LOGARITHMIC, timescale:'audio'},
-      cutoff : { min: 0, max: .7, output: LINEAR, timescale: 'audio' },
-      detune2: { min: 0, max: .15, output: LINEAR, timescale: 'audio' },
-      detune3: { min: 0, max: .15, output: LINEAR, timescale: 'audio' },
-      glide: { min:.99, max:.999995, output: LINEAR, timescale: 'audio'},
-      resonance: { min: 0, max: 5.5, output: LINEAR, timescale: 'audio' },
-      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
+      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
+      pulsewidth :{ min: 0.01, max: .99, output: LINEAR, timescale: 'audio', perNote:true },
+      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LOGARITHMIC, timescale:'audio', perNote:true},
+      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LOGARITHMIC, timescale:'audio', perNote:true},
+      cutoff : { min: 0, max: .7, output: LINEAR, timescale: 'audio', perNote:true },
+      detune2: { min: 0, max: .15, output: LINEAR, timescale: 'audio', perNote:true },
+      detune3: { min: 0, max: .15, output: LINEAR, timescale: 'audio', perNote:true },
+      glide: { min:.99, max:.999995, output: LINEAR, timescale: 'audio', perNote:true},
+      resonance: { min: 0, max: 5.5, output: LINEAR, timescale: 'audio', perNote:true },
+      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
       out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },
     },
     FM: {
       note: { min: 50, max: 3200, output: LOGARITHMIC, timescale: 'audio', doNotProxy:true },
       frequency: { min: 50, max: 3200, output: LINEAR, timescale: 'audio' },
-      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',},
-      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio'},
-      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio'},  
-      cmRatio : { min:.1, max:50, output:LINEAR, timescale:'audio' },
-      index: { min:.1, max:50, output:LINEAR, timescale:'audio' },
-      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
+      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
+      attack: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      decay: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      sustain: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      release: { min:Clock.maxMeasures + 1, max: 176400, output: LINEAR, timescale:'audio', perNote:true},
+      sustainLevel: { min:.01, max: 1, output: LOGARITHMIC, timescale:'audio', perNote:true},  
+      cmRatio : { min:.1, max:50, output:LINEAR, timescale:'audio', perNote:true },
+      index: { min:.1, max:50, output:LINEAR, timescale:'audio', perNote:true },
+      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
       out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },     
     },
     Pluck: {
       note: { min: 50, max: 3200, output: LOGARITHMIC, timescale: 'audio', doNotProxy:true },    
       frequency: { min: 50, max: 3200, output: LINEAR, timescale: 'audio' },
-      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio',},
-      blend :{ min: 0, max: 1, output: LINEAR, timescale: 'audio' },
-      damping :{ min: 0, max: 1, output: LINEAR, timescale: 'audio' },
-      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio',},
+      amp: { min: 0, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
+      blend :{ min: 0, max: 1, output: LINEAR, timescale: 'audio', perNote:true },
+      damping :{ min: 0, max: 1, output: LINEAR, timescale: 'audio', perNote:true },
+      pan: { min: -1, max: 1, output: LOGARITHMIC,timescale: 'audio', perNote:true,},
       out: { min: 0, max: 1, output: LINEAR, timescale: 'audio', dimensions:1 },     
     }
   }
@@ -41898,11 +41900,32 @@ module.exports = function( Gibber ) {
             args[0] = Gibber.Theory.processFrequency( obj, args[0] )
           }
 
-          if( typeof args[1] === 'undefined' ) args[1] = this.velocity.value
-
-          this._note.apply( this, args )
+          if( typeof args[1] === 'undefined' ) args[1] = this.loudness.value
           
+          this._note.apply( this, args )
+          this.processChildProperties()
+
           return this 
+        }
+        
+        var propertyKeys = Object.keys( _mappingProperties[ name ] ), voiceIncr = 0
+        obj.processChildProperties = function() {
+          for( var i = 0; i < propertyKeys.length; i++ ) {
+            var key = propertyKeys[ i ], name = key +'V', val
+            if( this[ name ] && typeof this[ name ].value !== 'undefined' ) {
+              if( Array.isArray( this[ name ].value ) ) {
+                var propIndex = voiceIncr % this[ name ].value.length
+                val = this[ name ].value[ propIndex ]
+              }else if( typeof this[ name ].value === 'function' ) {
+                val = this[ name ].value()   
+              }else{
+                val = this[ name ].value
+              }
+
+              this.children[ this.lastChild ][ key ] = val
+            }
+          }
+          voiceIncr++
         }
         
         obj.chord = Gibber.Theory.chord.bind( obj )
@@ -41914,8 +41937,8 @@ module.exports = function( Gibber ) {
         
         //obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
         Gibber.createProxyProperties( obj, _mappingProperties[ name ] )
-        Gibber.defineProperty( obj, 'velocity', true, true, { min: 0, max: 1, output: LOGARITHMIC, timescale: 'audio'}, true, true )
-        
+        Gibber.defineProperty( obj, 'loudness', true, true, { min: 0, max: 1, output: LOGARITHMIC, timescale: 'audio', perNote:true}, true, true )
+
         obj.trig = function() {
           this.note( this.lastFrequency )
         }
@@ -41924,7 +41947,7 @@ module.exports = function( Gibber ) {
                 
         obj.name = name 
         
-
+        obj.gain = obj.amp
         //console.log( "PROCESS", args, _mappingProperties[ name ] )
         
         //Gibber.processArguments2( obj, args, obj.name )
@@ -44258,6 +44281,9 @@ var Gibber = {
     _useMappings = _useMappings === false ? false : true
     
     Gibber.defineProperty( obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority )
+    if( dict && dict.perNote ) { 
+      Gibber.defineProperty( obj, _key+'V', shouldSeq, shouldRamp, dict, _useMappings, priority )
+    }
   },
   
   // obj, _key, shouldSeq, shouldRamp, dict, _useMappings, priority
