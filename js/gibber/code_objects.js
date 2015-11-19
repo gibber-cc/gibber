@@ -454,17 +454,25 @@ var initializeMarks = function( obj, className, start, end, cm ) {
     obj.clearMarks = function() {
       for( var key in this.marks ) {
         if( key !== 'global' ) { // IMPORTANT: MUST OCCUR BEFORE CLEARING MARKS TO RESTORE ORIGINAL TEXT
-          var prop = key.split('_')[0]
+          var propName = key.split('_')[0], propIndex, prop, hasIndex = false
 
-          if( typeof obj[ prop ] === 'undefined' || obj[ prop ] === null ) continue;
+          if( $.isNumeric( propName[ propName.length - 1 ] ) ) {
+            var idx = parseInt( propName[ propName.length - 1 ] )
+            propName = propName.slice( 0,-1 )
+            prop = obj[ propName ][ idx ]
+          }else{
+            prop = obj[ propName ]
+          }
 
-          var propIndex = Gibber.Environment.Notation.priority.indexOf( obj[ prop ].values )
-         // console.log( 'CHECK', prop, obj[ prop ].values ) 
-          if( propIndex > -1 && $.isPlainObject( obj[ prop ].values ) ) {
-            if( typeof obj[ prop ].values.restoreOriginalText === 'function' ) {
-              obj[ prop ].values.restoreOriginalText()
-              if( typeof obj[prop].durations.restoreOriginalText === 'function' ){
-                obj[ prop ].durations.restoreOriginalText()
+          if( typeof prop  === 'undefined' || prop  === null ) { console.log("CONTINUING", key ); continue; }
+
+          propIndex = Gibber.Environment.Notation.priority.indexOf( prop.values )
+
+          if( propIndex > -1 && $.isPlainObject( prop.values ) ) {
+            if( typeof prop.values.restoreOriginalText === 'function' ) {
+              prop.values.restoreOriginalText()
+              if( typeof prop.durations.restoreOriginalText === 'function' ){
+                prop.durations.restoreOriginalText()
               }
               Gibber.Environment.Notation.priority.splice( propIndex, 2 )
             }
