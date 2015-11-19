@@ -454,12 +454,18 @@ var initializeMarks = function( obj, className, start, end, cm ) {
     obj.clearMarks = function() {
       for( var key in this.marks ) {
         if( key !== 'global' ) { // IMPORTANT: MUST OCCUR BEFORE CLEARING MARKS TO RESTORE ORIGINAL TEXT
-          var prop = key.split('_')[0], propIndex = Gibber.Environment.Notation.priority.indexOf( obj[ prop ].values )
-          
-          if( propIndex > -1 ) {
+          var prop = key.split('_')[0]
+
+          if( typeof obj[ prop ] === 'undefined' || obj[ prop ] === null ) continue;
+
+          var propIndex = Gibber.Environment.Notation.priority.indexOf( obj[ prop ].values )
+         // console.log( 'CHECK', prop, obj[ prop ].values ) 
+          if( propIndex > -1 && $.isPlainObject( obj[ prop ].values ) ) {
             if( typeof obj[ prop ].values.restoreOriginalText === 'function' ) {
               obj[ prop ].values.restoreOriginalText()
-              obj[ prop ].durations.restoreOriginalText()
+              if( typeof obj[prop].durations.restoreOriginalText === 'function' ){
+                obj[ prop ].durations.restoreOriginalText()
+              }
               Gibber.Environment.Notation.priority.splice( propIndex, 2 )
             }
           }
