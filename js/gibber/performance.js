@@ -68,7 +68,7 @@ var Gabber = {
     if( typeof performanceMode === 'undefined' ) performanceMode = LOCAL
     
     Gabber.performanceMode = performanceMode ? 1 : 0
-    
+    console.log( "GABBER INIT!!!!!" ) 
     if( !Chat.initialized ) Chat.open()
     Chat.handlers.gabber = Gabber.onGabber
     Chat.handlers.tock = Gabber.onTock

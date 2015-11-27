@@ -1276,7 +1276,7 @@ var sides = ['Top','Right','Bottom','Left']
 
 var arrayReplacementFunc = function( pattern, cm, object, start, end ) {
   var patternString = '[', commentedPatternString
-  
+ 
   for( var x = 0; x < pattern.values.length; x++ ) {
     var val = pattern.values[ x ]
     if( $.isNumeric(val) ) {
@@ -1292,7 +1292,7 @@ var arrayReplacementFunc = function( pattern, cm, object, start, end ) {
 
     if( x <= pattern.values.length - 2 ) patternString += ','
   }
-  
+ 
   patternString += ']'
   commentedPatternString = '/* ' + patternString + ' */'
   end.ch += 1
@@ -1731,7 +1731,7 @@ var initializeMarks = function( obj, className, start, end, cm ) {
             prop = obj[ propName ]
           }
 
-          if( typeof prop  === 'undefined' || prop  === null ) { console.log("CONTINUING", key ); continue; }
+          if( typeof prop  === 'undefined' || prop  === null ) { /* console.log("CONTINUING", key ); */ continue; }
 
           propIndex = Gibber.Environment.Notation.priority.indexOf( prop.values )
 
@@ -1972,8 +1972,7 @@ module.exports = function( Gibber, Notation ) {
     
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = null
-      
-      
+ 
       if( left.type === 'MemberExpression' && obj.expression.operator === '=' ) { // not *=, /=, -= etc.
         newObjectName = src.split( '=' )[0].trim()
         eval( "newObject = " + newObjectName )
@@ -2040,6 +2039,7 @@ module.exports = function( Gibber, Notation ) {
                   isAutofire   = prevObject.arguments.length === 1,
                   loopLength   = isAutofire ? 1 : 2,
                   seqNumber = hasSeqNumber ? prevObject.arguments[2].value : null
+
               for( var i = 0; i < loopLength; i++ ) { // 2 is values + duration but not seqNumber
                 !function() {
                   var values = prevObject.arguments[i].elements,
@@ -2067,7 +2067,7 @@ module.exports = function( Gibber, Notation ) {
                         //if( replacementFunction ) 
                         //  values[0].replacementFunction = replacementFunction// Gibber.Environment.isEuclid = true
                         //  var isEuclid = true
-                        // }
+                        //}
                       }
                     }else{
                       if( typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function' ) {
@@ -2110,7 +2110,7 @@ module.exports = function( Gibber, Notation ) {
                     start.line += prevObject.arguments[i].loc.start.line
                     end.line   += prevObject.arguments[i].loc.end.line
 
-                    if( replacementFunction ) { // var arrayReplacementFunc = function( pattern, cm, start, end ) {
+                    if( replacementFunction ) {
                       values = replacementFunction( pattern, cm, object, start, end )
                     }
 
@@ -2140,13 +2140,11 @@ module.exports = function( Gibber, Notation ) {
                   Notation.add( pattern, true )
 
                   pattern.filters.push( function() {
-                    //if( arguments[0][2] !== pattern.update.index ) {
-                      pattern.update.shouldTrigger = true
-                      pattern.update.index = arguments[0][2]
-                      //}
+                    pattern.update.shouldTrigger = true
+                    pattern.update.index = arguments[0][2]
 
                     return arguments[0]
-                  } )
+                  })
 
                   pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',', seqNumber )
                 }()
@@ -2729,14 +2727,13 @@ module.exports = function( Gibber, Notation ) {
     check: function() {
       for( var i = 0; i < this.dirty.length; i++ ) {
         var dirty = this.dirty[ i ]
-        if( this.changed.indexOf( dirty ) === -1 ) this.changed.push( dirty[ i ] )
-        if( typeof this.dirty[i].onchange === 'function' ) {
-          this.dirty[ i ].onchange()
+        if( this.changed.indexOf( dirty ) === -1 ) this.changed.push( dirty )
+        if( typeof dirty.onchange === 'function' ) {
+          dirty.onchange()
         }
-        if( Array.isArray( this.dirty[ i ].updateFunctions ) ) {
-          for( var j = 0; j < this.dirty[ i ].updateFunctions.length; j++ ) {
-            var func = this.dirty[i].updateFunctions[ j ]
-            func()
+        if( Array.isArray( dirty.updateFunctions ) ) {
+          for( var j = 0; j < dirty.updateFunctions.length; j++ ) {
+            dirty.updateFunctions[ j ]()
           }
         }
       }
@@ -5355,7 +5352,7 @@ var Gabber = {
     if( typeof performanceMode === 'undefined' ) performanceMode = LOCAL
     
     Gabber.performanceMode = performanceMode ? 1 : 0
-    
+    console.log( "GABBER INIT!!!!!" ) 
     if( !Chat.initialized ) Chat.open()
     Chat.handlers.gabber = Gabber.onGabber
     Chat.handlers.tock = Gabber.onTock
@@ -36507,7 +36504,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
     // if already loaded, or if passed a buffer to use...
     if( !SF.instruments[ this.instrumentFileName ] && typeof pathToResources !== 'object' ) {
       console.log("DOWNLOADING SOUNDFONT")
-      getScript( 'resources/soundfonts/' + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
+      getScript( pathToResources + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
     }else{
       if( typeof pathToResources === 'object' ) {
         SF[ this.instrumentFileName ] = pathToResources
@@ -40214,7 +40211,7 @@ module.exports = function( Gibber ) {
     
     Gibber.createProxyMethods( oscillator, ['note'] )
     
-    obj.toString = function() { return '> Wavetable' }
+    oscillator.toString = function() { return '> Wavetable' }
     return oscillator
   }
   
@@ -40321,6 +40318,7 @@ module.exports = function( Gibber ) {
   
   return Oscillators
 }
+
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/postprocessing.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict";
@@ -41635,7 +41633,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
   
   var SoundFont = function( soundFontName ) {
     var obj, path = SoundFont.path
-    
+
     if( Gibber.Environment ) {
       if( Gibber.Environment.Storage.values.soundfonts ) {
         if( Gibber.Environment.Storage.values.soundfonts[ soundFontName ] ) {
@@ -41645,7 +41643,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
     }
     
     if( sensibleNames[ soundFontName ] ) soundFontName = sensibleNames[ soundFontName ];
-    
+
     obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
 
     $.extend( true, obj, Gibber.Audio.ugenTemplate )

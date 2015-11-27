@@ -9,7 +9,7 @@ var sides = ['Top','Right','Bottom','Left']
 
 var arrayReplacementFunc = function( pattern, cm, object, start, end ) {
   var patternString = '[', commentedPatternString
-  
+ 
   for( var x = 0; x < pattern.values.length; x++ ) {
     var val = pattern.values[ x ]
     if( $.isNumeric(val) ) {
@@ -25,7 +25,7 @@ var arrayReplacementFunc = function( pattern, cm, object, start, end ) {
 
     if( x <= pattern.values.length - 2 ) patternString += ','
   }
-  
+ 
   patternString += ']'
   commentedPatternString = '/* ' + patternString + ' */'
   end.ch += 1
@@ -464,7 +464,7 @@ var initializeMarks = function( obj, className, start, end, cm ) {
             prop = obj[ propName ]
           }
 
-          if( typeof prop  === 'undefined' || prop  === null ) { console.log("CONTINUING", key ); continue; }
+          if( typeof prop  === 'undefined' || prop  === null ) { /* console.log("CONTINUING", key ); */ continue; }
 
           propIndex = Gibber.Environment.Notation.priority.indexOf( prop.values )
 
@@ -705,8 +705,7 @@ module.exports = function( Gibber, Notation ) {
     
     if( obj.type === 'ExpressionStatement' && obj.expression.type === 'AssignmentExpression' ) {
       var left = obj.expression.left, right = obj.expression.right, newObjectName = left.name, newObject = null
-      
-      
+ 
       if( left.type === 'MemberExpression' && obj.expression.operator === '=' ) { // not *=, /=, -= etc.
         newObjectName = src.split( '=' )[0].trim()
         eval( "newObject = " + newObjectName )
@@ -773,6 +772,7 @@ module.exports = function( Gibber, Notation ) {
                   isAutofire   = prevObject.arguments.length === 1,
                   loopLength   = isAutofire ? 1 : 2,
                   seqNumber = hasSeqNumber ? prevObject.arguments[2].value : null
+
               for( var i = 0; i < loopLength; i++ ) { // 2 is values + duration but not seqNumber
                 !function() {
                   var values = prevObject.arguments[i].elements,
@@ -800,7 +800,7 @@ module.exports = function( Gibber, Notation ) {
                         //if( replacementFunction ) 
                         //  values[0].replacementFunction = replacementFunction// Gibber.Environment.isEuclid = true
                         //  var isEuclid = true
-                        // }
+                        //}
                       }
                     }else{
                       if( typeof newObject[ propName ][ valuesOrDurations ].values[0] === 'function' ) {
@@ -843,7 +843,7 @@ module.exports = function( Gibber, Notation ) {
                     start.line += prevObject.arguments[i].loc.start.line
                     end.line   += prevObject.arguments[i].loc.end.line
 
-                    if( replacementFunction ) { // var arrayReplacementFunc = function( pattern, cm, start, end ) {
+                    if( replacementFunction ) {
                       values = replacementFunction( pattern, cm, object, start, end )
                     }
 
@@ -873,13 +873,11 @@ module.exports = function( Gibber, Notation ) {
                   Notation.add( pattern, true )
 
                   pattern.filters.push( function() {
-                    //if( arguments[0][2] !== pattern.update.index ) {
-                      pattern.update.shouldTrigger = true
-                      pattern.update.index = arguments[0][2]
-                      //}
+                    pattern.update.shouldTrigger = true
+                    pattern.update.index = arguments[0][2]
 
                     return arguments[0]
-                  } )
+                  })
 
                   pattern.onchange = createOnChange( newObject, newObjectName, patternName, cm, ',', seqNumber )
                 }()
@@ -1462,14 +1460,13 @@ module.exports = function( Gibber, Notation ) {
     check: function() {
       for( var i = 0; i < this.dirty.length; i++ ) {
         var dirty = this.dirty[ i ]
-        if( this.changed.indexOf( dirty ) === -1 ) this.changed.push( dirty[ i ] )
-        if( typeof this.dirty[i].onchange === 'function' ) {
-          this.dirty[ i ].onchange()
+        if( this.changed.indexOf( dirty ) === -1 ) this.changed.push( dirty )
+        if( typeof dirty.onchange === 'function' ) {
+          dirty.onchange()
         }
-        if( Array.isArray( this.dirty[ i ].updateFunctions ) ) {
-          for( var j = 0; j < this.dirty[ i ].updateFunctions.length; j++ ) {
-            var func = this.dirty[i].updateFunctions[ j ]
-            func()
+        if( Array.isArray( dirty.updateFunctions ) ) {
+          for( var j = 0; j < dirty.updateFunctions.length; j++ ) {
+            dirty.updateFunctions[ j ]()
           }
         }
       }
