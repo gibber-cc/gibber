@@ -43525,6 +43525,7 @@ var Gibber = {
   // },
   Modules : {},
  	import : function( path, exportTo, shouldSave ) {
+    // XXX should be replaced with a Promise
     var _done = null
     console.log( 'Loading module ' + path + '...' )
 
@@ -49822,6 +49823,7 @@ module.exports = function( Gibber, Graphics ) {
       camera: null,
       lights: [],
       running: false,
+      shouldReadPixels: false,
       init : function() {
         this.container = Graphics.getContainer( container )
         
@@ -49848,13 +49850,18 @@ module.exports = function( Gibber, Graphics ) {
         
         this.createCameras()
       },
-      
+      pixels:null,
       _update : function() {        
         if( this.initialized && this.running ) {
           this.renderer.clear()
 
           if( Graphics.PostProcessing && Graphics.PostProcessing.fx.length ) {
             Graphics.PostProcessing.composer.render()
+            var gl = this.renderer.getContext()
+            if( this.shouldReadPixels ) {
+              if( this.pixels === null ) this.pixels = new Uint8Array( this.renderer.domElement.width * this.renderer.domElement.height * 4);
+              gl.readPixels( 0, 0, this.renderer.domElement.width, this.renderer.domElement.height, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels );
+            }
           }else{
             this.renderer.render( this.scene, this.camera )
           }
@@ -49954,6 +49961,7 @@ module.exports = function( Gibber, Graphics ) {
   
   return ThreeD
 }
+
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.graphics.lib/scripts/gibber/geometry.js":[function(require,module,exports){
 module.exports = function( Gibber, Graphics, THREE ){ 
 
@@ -51876,13 +51884,15 @@ module.exports = function( Gibber, Graphics ) {
       video.width    = 320;
       video.height   = 240;
       video.autoplay = true;
+    }else{
+      console.log("NO VIDEO MADE")
     }
     
     if( _videoTexture === null ) {
       navigator.getUserMedia(
         { video:true, audio:false }, 
         function(stream){ 
-          video.stream = stream;
+          video.stream = stream.getTracks()[0];
           video.src = URL.createObjectURL( stream ); 
         }, 
         function( error ){ console.log( 'Failed to get a stream due to', error ); }
@@ -51893,14 +51903,16 @@ module.exports = function( Gibber, Graphics ) {
       
       _videoTexture.remove = function() {
         Graphics.graph.splice( Graphics.graph.indexOf( _videoTexture ), 1 )
+        
         _videoTexture = null
         video.stream.stop()
       }
       
       _videoTexture.stop = function() {
         Graphics.graph.splice( Graphics.graph.indexOf( _videoTexture ), 1 ) 
-        _videoTexture = null
+        
         video.stream.stop()
+        _videoTexture = null
       }
       
       _videoTexture.update = function() {}
@@ -51918,6 +51930,7 @@ module.exports = function( Gibber, Graphics ) {
   
   return Video 
 }
+
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.interface.lib/node_modules/interface.js/index.js":[function(require,module,exports){
 /**#Interface
 A singleton object holding all widget constructors and a couple of other methods / properties. It is automatically created as soon as interface.js is loaded.
