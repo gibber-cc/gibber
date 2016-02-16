@@ -6,7 +6,6 @@
 b = Sampler.record( a, 2 ) // record for two measures
 
 b.note( -2 ) // play in reverse at twice the recorded speed / pitch</code></pre>
-
 <h2 id="properties">Properties</h2>
 <ul>
 <li><em>pitch</em> : Float. Default range: { 1, 4 }. Default value: 1. This property determines the speed of sample playback. Negative values play the sample in reverse. This value can also be set using the note() method.</li>
@@ -25,31 +24,3 @@ b.note( -2 ) // play in reverse at twice the recorded speed / pitch</code></pre>
 <li><em>stop</em>() : This method stops the sequencer that is built into the oscillator if it has been started.</li>
 <li><em>kill</em>() : Disconnect the oscillator from whatever bus it is connected to. </li>
 </ul>
-
-<h2>Loading samples via drag and drop</h2>
-<p>
-Unfortunately, due to security restrictions on web technologies, it is impossible to programmatically load files unless they are placed onto a web server. And even then, there are particular settings
-that have to be implemented on the server in order for the files to be loadable by Gibber and other web audio applications. As a workaround, Gibber lets you drag and drop files onto
-the text of Sampler objects. If you put in the following code and run it:
-
-<pre><code>Gibber.Environment.Notation.on('draganddrop’)
-
-a = Sampler()
- .note.seq( [1,2,.5,.25], 1/2 )
-</code></pre>
-
-<p>...and then drag and drop an audio file onto the Sampler() text, it will load the sample in and you’ll hear the sequence playing. It should underline the Sampler text when you’ve dragged the sample to the right place, then just let go.</p>
-
-<p>It gets a little more interesting if you drag a directory of samples on to the Sampler text. Gibber will load all the files into the Sampler object, and you can then call the pickBuffer() method to randomly choose a buffer for playback. For example, trying running the code below and then dragging a directory of samples onto the Sampler object.</p>
-
-<pre><code>
-Gibber.Environment.Notation.on('draganddrop’)
-
-a = Sampler()
- .note.seq( [1,2,.5,.25], [1/8, 1/16].rnd(1/16,2) )
- .pickBuffer.seq( null )
-</code></pre>
-
-<p>In that example, for every note that is triggered a random sample is chosen and played.</p>
-
-<p>In short, you can load samples off the local filesystem in Gibber, but you can’t do it programmatically.</p>

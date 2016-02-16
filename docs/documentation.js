@@ -16,6 +16,7 @@ list = [
   'audio/triangle',
   'audio/square',
   'audio/sampler',
+  'audio/soundfont',  
   'audio/pwm',
   'audio/noise',
   'audio/saw',
@@ -71,7 +72,11 @@ list = [
   'interface/keyboard',
   'interface/accelerometer',
   'interface/orientation',  
-  'interface/patchbay',  
+  'interface/patchbay',
+  
+  'sequencing/arp',
+  'sequencing/pattern',
+  'sequencing/seq'  
   
 ]
 

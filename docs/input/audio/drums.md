@@ -12,7 +12,7 @@ Drums objects are basically hybrid sequencers / unit generators; this means that
 
 There are a few different drum kits that come with Gibber (with hopefully more to follow). The kits are electronic (the default), original and beatbox. The example below shows how to load a different than the default electronic one.
 
-Finally, note that each individual sound is actually an instance of the Gibber Sampler object. This means you can add effects to the individual sounds in addition to the kit as a whole.
+Finally, note that each individual sound is actually an instance of the Gibber [Sampler][sampler] object. This means you can add effects to the individual sounds in addition to the kit as a whole.
 
 Example:
 ```
@@ -45,3 +45,5 @@ c = Drums({
 * _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the Drums from whatever bus it is connected to. 
+
+[sampler]: javascript:Gibber.Environment.Docs.openFile('audio','sampler')

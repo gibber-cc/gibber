@@ -37791,8 +37791,8 @@ Arp = function(notation, beats, pattern, mult, scale) {
   	notation : notation || "C4m7",
   	mult : mult || 1,
   	init : false,
-  	speed : isNaN(beats) ? _4 : beats,
-  	scale : scale || null,
+  	speed : isNaN(beats) ? 1/4 : beats,
+  	scale : scale || null,  
     
     chord : function(_chord, shouldReset) {
   		var arr = [];
@@ -41614,6 +41614,19 @@ module.exports = function( Gibber, pathToSoundFonts ) {
           output: LOGARITHMIC,
           timescale: 'audio',
           dimensions:1
+        },
+        loudness: {
+          min: 0, max: 1,
+          hardMax:2,
+          output: LOGARITHMIC,
+          timescale: 'audio',
+          dimensions:1
+        },
+        pan: {
+          min:-1, max:1,
+          output: LINEAR,
+          timescale: 'audio',
+          dimensions:1
         }
       },
       cents = function(base, _cents) {
@@ -41727,13 +41740,6 @@ module.exports = function( Gibber, pathToSoundFonts ) {
       if( typeof loudness === 'undefined' ) loudness = this.loudness.value
 
       obj._note( name, loudness, cents(1, _cents) )
-      // this.playing.push({
-      //   buffer:this.buffers[ name ],
-      //   phase:0,
-      //   increment: cents(1, _cents),
-      //   length:this.buffers[ name ].length,
-      //   'amp': isNaN( amp ) ? 1 : amp
-      // })
     }
     
     Gibber.createProxyProperties( obj, mappingProperties )
