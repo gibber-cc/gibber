@@ -49,6 +49,17 @@ list = [
   'audio/bus',
   'audio/input',
   
+  'math/abs',
+  'math/add',
+  'math/clamp',
+  'math/div',
+  'math/merge',
+  'math/mod',
+  'math/mul',
+  'math/pow',
+  'math/sqrt',
+  'math/sub',                
+  
   'singletons/gibber.clock',
   'singletons/gibber',  
 
