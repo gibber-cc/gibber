@@ -41360,7 +41360,7 @@ module.exports = function( Gibber ) {
             if( key === 'note' ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
-                if( output && output < Gibber.minNoteFrequency ) {
+                if( typeof output === 'number' && output < Gibber.minNoteFrequency ) {
                   if( obj.scale ) {
                     output = obj.scale.notes[ output ]
                   }else{
@@ -41601,6 +41601,7 @@ module.exports = function( Gibber ) {
   
   return Seqs 
 }
+
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/soundfont.js":[function(require,module,exports){
 module.exports = function( Gibber, pathToSoundFonts ) {
   var Gibberish = require( 'gibberish-dsp' ),
