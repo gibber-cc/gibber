@@ -30713,6 +30713,7 @@ Gibberish.PolyKarplusStrong = function() {
     polyProperties : {
   		blend:			1,
       damping:    0,
+      velocity:   1
     },
 
     note : function(_frequency, velocity) {
@@ -41918,7 +41919,7 @@ module.exports = function( Gibber ) {
             args[0] = Gibber.Theory.processFrequency( obj, args[0] )
           }
 
-          if( typeof args[1] === 'undefined' ) args[1] = this.velocity.value
+          if( typeof args[1] === 'undefined' ) args[1] = this.loudness.value
           
           this._note.apply( this, args )
           this.processChildProperties()
