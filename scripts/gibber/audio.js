@@ -436,7 +436,7 @@ Audio = {
       var time = Audio.Clock.time( _time ),
           curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp = curve
+      this.amp = Audio.Core.Binops.Mul( this.amp.oldGetter(), curve )
       
       future( function() { this.amp = 0 }.bind( this ), time )
       
@@ -446,7 +446,7 @@ Audio = {
       var time = Audio.Clock.time( _time ),
           curve = Gibber.Audio.Envelopes.Curve( 0, 1, time, .05, .95, false )
           
-      this.amp = curve
+      this.amp = Audio.Core.Binops.Mul( this.amp.oldGetter(), curve )
       
       future( function() { 
         this.amp = 0

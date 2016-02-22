@@ -161,7 +161,7 @@ module.exports = function( Gibber ) {
     
     Gibber.createProxyMethods( oscillator, ['note'] )
     
-    obj.toString = function() { return '> Wavetable' }
+    oscillator.toString = function() { return '> Wavetable' }
     return oscillator
   }
   

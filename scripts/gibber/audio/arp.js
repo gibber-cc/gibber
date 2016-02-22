@@ -16,8 +16,8 @@ Arp = function(notation, beats, pattern, mult, scale) {
   	notation : notation || "C4m7",
   	mult : mult || 1,
   	init : false,
-  	speed : isNaN(beats) ? _4 : beats,
-  	scale : scale || null,
+  	speed : isNaN(beats) ? 1/4 : beats,
+  	scale : scale || null,  
     
     chord : function(_chord, shouldReset) {
   		var arr = [];

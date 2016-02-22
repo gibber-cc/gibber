@@ -63,7 +63,7 @@ module.exports = function( Gibber ) {
         obj.fx.ugen = obj
         
         Gibber.createProxyProperties( obj, mappingProperties )    
-  
+        if( obj.presetInit ) obj.presetInit() 
         return obj
       }
     })()

@@ -130,7 +130,6 @@ module.exports = function( Gibber ) {
         props = Gibber.processArguments( args, 'Drums' )
         
     $.extend( true, obj, props)
-    console.log("PROPS PROPS", props)
   
     if( Array.isArray( obj ) ) {
       obj = Gibber.construct( Gibberish.Bus2, obj ).connect( Gibber.Master )
@@ -152,13 +151,13 @@ module.exports = function( Gibber ) {
     
   	if(typeof arguments[0] === "object") {
   		if(arguments[0].kit) {
-  			obj.kit = Percussion.Drums.kits[arguments[0].kit];
+  			obj.kit = Percussion.Drums.kits[ arguments[ 0 ].kit ];
   			arguments[0].kit = obj.kit;
   		}
   	}
     
-  	for(var key in obj.kit) {
-  		var drum = obj.kit[key],
+  	for( var key in obj.kit ) {
+  		var drum = obj.kit[ key ],
           ugen = drum.file ? { ugen: new Gibberish.Sampler({ file:drum.file, pitch:1, amp:drum.amp }), pitch:drum.pitch, amp:drum.amp } : drum
       
       if( ugen ) {
@@ -167,13 +166,13 @@ module.exports = function( Gibber ) {
         if( isNaN( ugen.amp ) )   ugen.amp = 1
         if( typeof ugen.symbol === 'undefined' ) ugen.symbol = key
         
-    		obj[key] = ugen
+    		obj[ key ] = ugen
         // console.log("KEY", key, ugen, drum, obj[key], obj[key].ugen )
-    		obj[key].ugen.pan = drum.pan
+    		obj[ key ].ugen.pan = drum.pan
         if( !drum.file ) drum.ugen.disconnect() // disconnect non-sampler ugens
-    		obj[key].ugen.connect( obj )
-    		obj[key].fx = obj[key].ugen.fx
-    		obj.children.push( obj[key].ugen )
+    		obj[ key ].ugen.connect( obj )
+    		obj[ key ].fx = obj[ key ].ugen.fx
+    		obj.children.push( obj[ key ].ugen )
       }
   	}
 	
@@ -187,6 +186,7 @@ module.exports = function( Gibber ) {
     obj.note = function(nt) {
       // var p = typeof obj.pitch === 'function' ? obj.pitch() : obj.pitch
       var p = obj.pitch.value
+      
       if( $.isArray( nt ) ) {
         for( var i = 0; i < nt.length; i++ ) {
           var note = nt[ i ]
@@ -345,7 +345,7 @@ module.exports = function( Gibber ) {
 
     Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset','start','send' ] )
             
-    obj.seq.start( true )
+    //obj.seq.start( true )
 
     Object.defineProperties( obj, {
       offset: {
@@ -585,8 +585,6 @@ module.exports = function( Gibber ) {
   	obj.amp   = isNaN(_amp) ? 1 : _amp;
 	
   	if( obj.seq.tick ) { Gibberish.future( obj.seq.tick,1 ) }
-
-    //Gibber.createProxyMethods( obj, [ 'play','stop','shuffle','reset' ] )
 
     // obj.kill = function() {
     //   var end = this.fx.length !== 0 ? this.fx[ this.fx.length - 1 ] : this

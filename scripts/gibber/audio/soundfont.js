@@ -11,6 +11,19 @@ module.exports = function( Gibber, pathToSoundFonts ) {
           output: LOGARITHMIC,
           timescale: 'audio',
           dimensions:1
+        },
+        loudness: {
+          min: 0, max: 1,
+          hardMax:2,
+          output: LOGARITHMIC,
+          timescale: 'audio',
+          dimensions:1
+        },
+        pan: {
+          min:-1, max:1,
+          output: LINEAR,
+          timescale: 'audio',
+          dimensions:1
         }
       },
       cents = function(base, _cents) {
@@ -30,7 +43,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
   
   var SoundFont = function( soundFontName ) {
     var obj, path = SoundFont.path
-    
+
     if( Gibber.Environment ) {
       if( Gibber.Environment.Storage.values.soundfonts ) {
         if( Gibber.Environment.Storage.values.soundfonts[ soundFontName ] ) {
@@ -40,7 +53,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
     }
     
     if( sensibleNames[ soundFontName ] ) soundFontName = sensibleNames[ soundFontName ];
-    
+
     obj = new Gibberish.SoundFont( arguments[0], path ).connect( Gibber.Master )
 
     $.extend( true, obj, Gibber.Audio.ugenTemplate )
@@ -79,7 +92,7 @@ module.exports = function( Gibber, pathToSoundFonts ) {
     }
     
     obj._note = obj.note.bind( obj ) 
-    obj.note = function( name, amp ) {
+    obj.note = function( name, loudness ) {
       if( typeof name === 'number' ) {
         if( name < Gibber.minNoteFrequency ) {
           var scale = this.scale || Gibber.scale,
@@ -121,18 +134,13 @@ module.exports = function( Gibber, pathToSoundFonts ) {
         name = noteName
       }
       
-      
-      obj._note( name, isNaN( amp ) ? 1 : amp, cents(1, _cents) )
-      // this.playing.push({
-      //   buffer:this.buffers[ name ],
-      //   phase:0,
-      //   increment: cents(1, _cents),
-      //   length:this.buffers[ name ].length,
-      //   'amp': isNaN( amp ) ? 1 : amp
-      // })
+      if( typeof loudness === 'undefined' ) loudness = this.loudness.value
+
+      obj._note( name, loudness, cents(1, _cents) )
     }
     
     Gibber.createProxyProperties( obj, mappingProperties )
+    Gibber.defineProperty( obj, 'loudness', true, true, { min: 0, max: 1, output: LOGARITHMIC, timescale: 'audio', perNote:true }, true, true )   
     Gibber.createProxyMethods( obj, [ 'note', 'chord', 'send' ] )
   
     return obj

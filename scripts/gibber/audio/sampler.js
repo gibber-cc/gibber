@@ -95,13 +95,18 @@ module.exports = function( Gibber ) {
           return __start 
         },
         set: function(v) {
-          if( v <= 1 ) {
-            __start = v * oscillator.length
-          }else{
+          if( typeof v === 'number' ) {
+            // if( v <= 1 ) {
+            //   __start = v * oscillator.length
+            // }else{
+            //   __start = v
+            // }
+            __start = v
+          }else{ 
             __start = v
           }
           oldStart( __start )
-          oscillator.setPhase( __start ) // TODO: HACK! Why doesn't this work automatically?
+          // oscillator.setPhase( __start ) // TODO: HACK! Why doesn't this work automatically?
           
           return __start
         }
@@ -115,21 +120,21 @@ module.exports = function( Gibber ) {
           return __end 
         },
         set: function(v) {
-          if( v <= 1 ) {
-            __end = v * oscillator.length
+          if( typeof v === 'number' ) {
+            __end = v
           }else{
             __end = v
           }
           oldEnd( __end )
-          oscillator.setPhase( __end ) // TODO: HACK! Why doesn't this work automatically?
+          //oscillator.setPhase( __end ) // TODO: HACK! Why doesn't this work automatically?
           
           return __end
         }
       })
-      
+       
       Gibber.createProxyProperties( oscillator, mappingProperties )
 
-      var proxyMethods = [ 'note', 'pickBuffer', 'switchBuffer' ]
+      var proxyMethods = [ 'note', 'pickBuffer', 'switchBuffer', 'range' ]
       
       Gibber.createProxyMethods( oscillator, proxyMethods )
 
@@ -156,7 +161,7 @@ module.exports = function( Gibber ) {
       Gibberish.context.decodeAudioData( reader.result, function(_buffer) {
         var buffer = _buffer.getChannelData(0)
         that.setBuffer( buffer )
-  			that.length = that.end = buffer.length
+  			that.length = buffer.length
         that.buffers[ file.name ] = buffer
     
         that.isPlaying = true;
@@ -209,7 +214,7 @@ module.exports = function( Gibber ) {
     this.recorder = new Gibberish.Record(input, Gibber.Clock.time( recordLength ), function() {
       console.log( 'recording finished' )
       self.setBuffer( this.getBuffer() );
-      self.length = self.end = self.getBuffer().length;
+      self.length = self.getBuffer().length;
       self.setPhase( self.length )
       self.isRecording = false;
     })
@@ -239,12 +244,12 @@ module.exports = function( Gibber ) {
     function initSound( arrayBuffer, filename ) {
       Gibber.Audio.Core.context.decodeAudioData( arrayBuffer, function( _buffer ) {
         var buffer = _buffer.getChannelData(0)
-  			self.length = self.end = buffer.length
-        self.setPhase( self.end )
+  			self.length = buffer.length
+        self.setPhase( self.length )
         self.setBuffer( buffer )
         self.isPlaying = true;
   			self.buffers[ filename ] = buffer;
-        this.file = filename
+        self.file = filename
 
   			console.log("sample loaded | ", filename, " | length | ", buffer.length );
   			Gibberish.audioFiles[ filename ] = buffer;
