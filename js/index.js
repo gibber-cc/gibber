@@ -34460,7 +34460,7 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
     console.log("now loading sample", self.file )
     xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
     
-    function initSound( arrayBuffer ) {
+    initSound = function( arrayBuffer ) {
       Gibberish.context.decodeAudioData(arrayBuffer, function(_buffer) {
         buffer = _buffer.getChannelData(0)
         // self.length = phase = self.end = bufferLength = buffer.length
