@@ -37157,7 +37157,7 @@ Audio = {
     
     target.Input = Audio.Input
     
-    target.Freesound = Audio.Freesound
+    target.Freesound = Audio.Freesound2
     target.Freesound2 = Audio.Freesound2
     target.Freesoundjs2 = Audio.Freesoundjs2
     
@@ -39771,6 +39771,20 @@ module.exports = function( freesound ) {
         sampler.setPhase(sampler.bufferLength);
         sampler.filename = filename;
 
+  			//self.length = buffer.length
+        //self.setPhase( self.length )
+        //self.setBuffer( buffer )
+        sampler.isPlaying = true;
+        //self.buffers[ filename ] = buffer;
+        sampler.file = filename
+
+        //console.log("sample loaded | ", filename, " | length | ", buffer.length );
+  			//Gibberish.audioFiles[ filename ] = buffer;
+			
+        if(sampler.onload) sampler.onload();
+      
+        if(sampler.playOnLoad !== 0) sampler.note( self.playOnLoad );
+
         sampler.send(Master, 1)
         if (callback) {
           callback()
@@ -39891,6 +39905,7 @@ module.exports = function( freesound ) {
 
   return Freesound
 }
+
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/gibber_freesound2.js":[function(require,module,exports){
 module.exports = function( freesound ) {
   freesound.setToken('6a00f80ba02b2755a044cc4ef004febfc4ccd476')
@@ -39917,7 +39932,14 @@ module.exports = function( freesound ) {
         sampler.setBuffer(sampler.buffer);
         sampler.setPhase(sampler.bufferLength);
         sampler.filename = filename;
-
+        sampler.length = sampler.bufferLength;
+        //self.setPhase( self.length )
+        //self.setBuffer( buffer )
+        sampler.isPlaying = true;
+        //self.buffers[ filename ] = buffer;
+        Gibberish.audioFiles[sampler.filename] = buffer;
+        sampler.buffers[ sampler.filename ] = buffer;       //
+        sampler.file = filename
         sampler.send(Master, 1)
         if (callback) {
           callback()
@@ -39936,24 +39958,27 @@ module.exports = function( freesound ) {
       //freesound.search(query, /*page*/ 0, 'duration:[0.0 TO 10.0]', 'rating_desc', null, null, null,
       freesound.textSearch( query, { page:1 },// page:0, filter: 'duration:[0.0 TO 10.0]', sort:'rating_desc' }, 
         function(sounds) {
-          console.log("SOUNDS", typeof sounds, sounds )
+          //console.log("SOUNDS", typeof sounds, sounds )
           sounds = JSON.parse( sounds )
           filename = sounds.results[0].name
           var id = sounds.results[0].id
 
           if (typeof Freesound.loaded[filename] === 'undefined') {
-            var request = new XMLHttpRequest();
-            //Gibber.log("now downloading " + filename + ", " + sounds.sounds[0].duration + " seconds in length")
-            // https://www.freesound.org/apiv2/sounds/110011/download/
-            request.open('GET', 'https://www.freesound.org/apiv2/sounds/'+ id + '/download', true) //"?&api_key=" + freesound.apiKey, true);
-            request.responseType = 'arraybuffer';
-            //request.withCredentials = true;
-            request.onload = function( v ) {
-              console.log("WOO HOO", v )
-              onload(request)
-            };
-            request.send();
-            freesound.getSound( id, function( val ){ console.log( val ) }, null )
+
+            freesound.getSound( id, function( val ){ 
+              var request = new XMLHttpRequest(),
+                  dict    = JSON.parse( val ),
+                  path    = dict.previews['preview-hq-mp3']
+
+              //Gibber.log("now downloading " + filename + ", " + sounds.sounds[0].duration + " seconds in length")
+              request.open('GET', path, true) //"?&api_key=" + freesound.apiKey, true);
+              request.responseType = 'arraybuffer';
+              //request.withCredentials = true;
+              request.onload = function( v ) {
+                onload(request)
+              };
+              request.send();
+            }, null )
           } else {
             sampler.buffer = Freesound.loaded[filename];
             sampler.filename = filename;
@@ -40048,6 +40073,7 @@ module.exports = function( freesound ) {
 
   return Freesound
 }
+
 },{}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/oscillators.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
