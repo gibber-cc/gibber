@@ -28751,7 +28751,7 @@ Perform codegen on all dirty ugens and re-create the audio callback. This method
     }*/
     this.dirtied.length = 0;
     
-    this.codestring = ''
+    this.codestring = '\t'
     
     this.args = ['input']
     
@@ -34457,7 +34457,7 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
     xhr.onload = function( e ) { initSound( this.response ) }
     xhr.send()
     
-    console.log("now loading sample", self.file )
+    //console.log("now loading sample", self.file )
     xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
     
     initSound = function( arrayBuffer ) {
@@ -34468,7 +34468,7 @@ _pitch, amp, isRecording, isPlaying, input, length, start, end, loops, pan
         self.isPlaying = true;
   			self.buffers[ self.file ] = buffer;
 
-  			console.log("sample loaded | ", self.file, " | length | ", bufferLength);
+        //console.log("sample loaded | ", self.file, " | length | ", bufferLength);
   			Gibberish.audioFiles[self.file] = buffer;
 			
         if(self.onload) self.onload();
@@ -40711,7 +40711,7 @@ module.exports = function( Gibber ) {
     
         that.isPlaying = true;
 			
-  			console.log("LOADED", file.name, buffer.length);
+        //console.log("LOADED", file.name, buffer.length);
   			Gibberish.audioFiles[ file.name ] = buffer;
 	
         if(that.onload) that.onload();
@@ -40781,7 +40781,7 @@ module.exports = function( Gibber ) {
     xhr.onload = function( e ) { initSound( this.response, url ) }
     xhr.send()
     
-    console.log("now loading sample", url )
+    //console.log("now loading sample", url )
     xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
     
     var self = this, buffer, bufferLength = 0, phase = 0
@@ -40796,7 +40796,7 @@ module.exports = function( Gibber ) {
   			self.buffers[ filename ] = buffer;
         self.file = filename
 
-  			console.log("sample loaded | ", filename, " | length | ", buffer.length );
+        //console.log("sample loaded | ", filename, " | length | ", buffer.length );
   			Gibberish.audioFiles[ filename ] = buffer;
 			
         if(self.onload) self.onload();
@@ -41737,6 +41737,8 @@ module.exports = function( Gibber, pathToSoundFonts ) {
         noteName += tNote.note.octave
         
         name = noteName
+      }else if( typeof name !== 'string' ) {
+        return 
       }
       
       if( typeof loudness === 'undefined' ) loudness = this.loudness.value
