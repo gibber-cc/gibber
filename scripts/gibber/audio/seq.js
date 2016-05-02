@@ -112,7 +112,7 @@ module.exports = function( Gibber ) {
             if( key === 'note' ) {
               valuesPattern.filters.push( function() { 
                 var output = arguments[ 0 ][ 0 ]
-                if( output && output < Gibber.minNoteFrequency ) {
+                if( typeof output === 'number' && output < Gibber.minNoteFrequency ) {
                   if( obj.scale ) {
                     output = obj.scale.notes[ output ]
                   }else{

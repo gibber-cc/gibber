@@ -26,6 +26,20 @@ module.exports = function( freesound ) {
         sampler.setPhase(sampler.bufferLength);
         sampler.filename = filename;
 
+  			//self.length = buffer.length
+        //self.setPhase( self.length )
+        //self.setBuffer( buffer )
+        sampler.isPlaying = true;
+        //self.buffers[ filename ] = buffer;
+        sampler.file = filename
+
+        //console.log("sample loaded | ", filename, " | length | ", buffer.length );
+  			//Gibberish.audioFiles[ filename ] = buffer;
+			
+        if(sampler.onload) sampler.onload();
+      
+        if(sampler.playOnLoad !== 0) sampler.note( self.playOnLoad );
+
         sampler.send(Master, 1)
         if (callback) {
           callback()

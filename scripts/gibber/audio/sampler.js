@@ -166,7 +166,7 @@ module.exports = function( Gibber ) {
     
         that.isPlaying = true;
 			
-  			console.log("LOADED", file.name, buffer.length);
+        //console.log("LOADED", file.name, buffer.length);
   			Gibberish.audioFiles[ file.name ] = buffer;
 	
         if(that.onload) that.onload();
@@ -236,7 +236,7 @@ module.exports = function( Gibber ) {
     xhr.onload = function( e ) { initSound( this.response, url ) }
     xhr.send()
     
-    console.log("now loading sample", url )
+    //console.log("now loading sample", url )
     xhr.onerror = function( e ) { console.error( "Sampler file loading error", e )}
     
     var self = this, buffer, bufferLength = 0, phase = 0
@@ -251,7 +251,7 @@ module.exports = function( Gibber ) {
   			self.buffers[ filename ] = buffer;
         self.file = filename
 
-  			console.log("sample loaded | ", filename, " | length | ", buffer.length );
+        //console.log("sample loaded | ", filename, " | length | ", buffer.length );
   			Gibberish.audioFiles[ filename ] = buffer;
 			
         if(self.onload) self.onload();

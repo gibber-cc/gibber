@@ -132,6 +132,8 @@ module.exports = function( Gibber, pathToSoundFonts ) {
         noteName += tNote.note.octave
         
         name = noteName
+      }else if( typeof name !== 'string' ) {
+        return 
       }
       
       if( typeof loudness === 'undefined' ) loudness = this.loudness.value

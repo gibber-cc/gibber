@@ -43,7 +43,7 @@ Audio = {
     
     target.Input = Audio.Input
     
-    target.Freesound = Audio.Freesound
+    target.Freesound = Audio.Freesound2
     target.Freesound2 = Audio.Freesound2
     target.Freesoundjs2 = Audio.Freesoundjs2
     
