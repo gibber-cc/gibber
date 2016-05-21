@@ -65,6 +65,7 @@ module.exports = function( Gibber ) {
     login: function( username, password ) {
       if( !username ) username = $( '#username' ).val()
       if( !password ) password = $( '#password' ).val()
+
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/login', 
@@ -267,13 +268,10 @@ module.exports = function( Gibber ) {
         $.extend( msg.data, revisions )
         msg.data.revisionNotes = notes
         
-        console.log( 'MSG', msg )
         delete msg.data.__proto__
         delete msg.__proto__
-        console.log( 'MSG after', msg, msg.data.__proto__ )
         var promise = $.ajax( msg ).then( 
           function(d) { 
-            console.log( 'file update:', d )
             column.fileInfo._rev = d._rev; 
             column.revision = JSON.stringify( column.fileInfo )
             GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 

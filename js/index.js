@@ -259,6 +259,7 @@ module.exports = function( Gibber ) {
     login: function( username, password ) {
       if( !username ) username = $( '#username' ).val()
       if( !password ) password = $( '#password' ).val()
+
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/login', 
@@ -461,13 +462,10 @@ module.exports = function( Gibber ) {
         $.extend( msg.data, revisions )
         msg.data.revisionNotes = notes
         
-        console.log( 'MSG', msg )
         delete msg.data.__proto__
         delete msg.__proto__
-        console.log( 'MSG after', msg, msg.data.__proto__ )
         var promise = $.ajax( msg ).then( 
           function(d) { 
-            console.log( 'file update:', d )
             column.fileInfo._rev = d._rev; 
             column.revision = JSON.stringify( column.fileInfo )
             GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
@@ -536,7 +534,10 @@ module.exports = function( Gibber ) {
     open: function() {
       GE = Gibber.Environment
       
-      this.column = GE.Layout.addColumn({ header:'Browse Giblets', type:'info' })
+      this.column = self = GE.Layout.addColumn({ header:'Browse Giblets', type:'info' })
+      this.column.onclose = function() {
+        Browser.isLoaded = false
+      }
 
       $.ajax({
         url: GE.SERVER_URL + "/browser",
@@ -544,15 +545,29 @@ module.exports = function( Gibber ) {
       })
       .done( Browser.onLoad )
       
-      $.subscribe( '/account/login', function( _name ) {
-        $.ajax({
-          type:'POST',
-          url: GE.SERVER_URL + "/userfiles",
-          data:{ username:_name },
-          dataType:'json',
+      if( GE.Account.nick ) {
+        if( Browser.files && Browser.files.userfiles.length > 0 ) {
+          Browser.showUserFiles( Browser.files.userfiles )
+        }else{
+          $.ajax({
+            type:'POST',
+            url: GE.SERVER_URL + "/userfiles",
+            data:{ username:GE.Account.nick },
+            dataType:'json',
+          })
+          .done( GE.Browser.showUserFiles )
+        }
+      }else{
+        $.subscribe( '/account/login', function( _name ) {
+          $.ajax({
+            type:'POST',
+            url: GE.SERVER_URL + "/userfiles",
+            data:{ username:_name },
+            dataType:'json',
+          })
+          .done( GE.Browser.showUserFiles )
         })
-        .done( GE.Browser.showUserFiles )
-      })
+      }
       
       $.subscribe( '/account/logout', function( _name ) {
         $( '#browser_userfiles' ).find( 'li' ).remove()
@@ -643,7 +658,7 @@ module.exports = function( Gibber ) {
         Browser._onload = Browser.showUserFiles.bind( Browser, data )
         return
       }
-      
+
       var userdiv = $( '#browser_userfiles' ),      
           list = $( '<ul>' ),
           prev
@@ -655,15 +670,17 @@ module.exports = function( Gibber ) {
       //   
       // $('#browser_user .browserHeader h2').append( edit )
       
-      for( var j = 0; j < data.files.length; j++ ) {
+      Browser.files.userfiles = data.files || data
+
+      for( var j = 0; j < Browser.files.userfiles.length;  j++ ) {
         !function() {
           var num = j,
-              file = data.files[ num ],
+              file = Browser.files.userfiles[ num ],
               obj = file.value,
               id = file.id,
               link
           
-          GE.Browser.files.userfiles.push( file )
+          //GE.Browser.files.userfiles.push( file )
           
           link = $('<li>')
             .text( id.split('/')[2] )
