@@ -417,8 +417,6 @@ module.exports = function( Gibber ) {
       var columnNumber = $( '#new_publication_column' ).val(),
           column = GE.Layout.columns[ columnNumber ]
       
-
-      console.log( "LANGUAGE IS", column.mode ) 
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/publish',
@@ -462,9 +460,14 @@ module.exports = function( Gibber ) {
       
         $.extend( msg.data, revisions )
         msg.data.revisionNotes = notes
-      
+        
+        console.log( 'MSG', msg )
+        delete msg.data.__proto__
+        delete msg.__proto__
+        console.log( 'MSG after', msg, msg.data.__proto__ )
         var promise = $.ajax( msg ).then( 
           function(d) { 
+            console.log( 'file update:', d )
             column.fileInfo._rev = d._rev; 
             column.revision = JSON.stringify( column.fileInfo )
             GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
@@ -30488,7 +30491,7 @@ param **amp** Number. The amplitude to be used to calculate output.
       // }
       // if( sign !== 0 ) signHistory = sign
       
-      return out;
+      return out * amp;
     }
   });
   
@@ -30623,6 +30626,7 @@ Gibberish.Noise = function() {
   this.processProperties(arguments);  
 };
 Gibberish.Noise.prototype = Gibberish._oscillator;
+
 // this file is dependent on oscillators.js
 
 /**#Gibberish.KarplusStrong - Physical Model
@@ -39937,7 +39941,7 @@ module.exports = function( freesound ) {
         //self.setBuffer( buffer )
         sampler.isPlaying = true;
         //self.buffers[ filename ] = buffer;
-        Gibberish.audioFiles[sampler.filename] = buffer;
+        Gibber.Audio.Core.audioFiles[sampler.filename] = buffer;
         sampler.buffers[ sampler.filename ] = buffer;       //
         sampler.file = filename
         sampler.send(Master, 1)
@@ -39999,17 +40003,21 @@ module.exports = function( freesound ) {
       );
     } else if (typeof key === 'object') {
       var query = key.query,
-        filter = key.filter || "",
-        sort = key.sort || 'rating_desc',
-        page = key.page || 0;
-      pick = key.pick || 0;
+          filter = key.filter || "",
+          sort = key.sort || 'rating_desc',
+          page = key.page || 0;
+      
+      pick = key.pick || 0
 
-      Gibber.log('searching freesound for ' + query)
+      Gibber.log( 'Searching freesound for ' + query )
 
       filter += ' duration:[0.0 TO 10.0]'
-      freesound.search(query, page, filter, sort, null, null, null,
-        function(sounds) {
-          if (sounds.num_results > 0) {
+      freesound.textSearch(query, null, // { 'query':query, 'page':page, 'filter':filter, 'sort':sort}, // null, null, null,
+        function( soundsJSON ) {
+          console.log( 'soundsJSON', soundsJSON )
+          var soundsDict = JSON.parse( soundsJSON )
+          console.log( 'SOUNDS DICT', soundsDict )
+          if (soundsDict.count > 0) {
             var num = 0;
 
             if (typeof key.pick === 'number') {
@@ -40017,20 +40025,25 @@ module.exports = function( freesound ) {
             } else if (typeof key.pick === 'function') {
               num = key.pick();
             } else if (key.pick === 'random') {
-              num = rndi(0, sounds.sounds.length);
+              num = rndi(0, soundsDict.results.length - 1);
             }
-
-            filename = sounds.sounds[num].original_filename
+            
+            var result = soundsDict.results[ num ]
+            console.log( 'query',  result )
+            filename = result.name 
 
             if (typeof Freesound.loaded[filename] === 'undefined') {
-              request = new XMLHttpRequest();
-              Gibber.log("now downloading " + filename + ", " + sounds.sounds[num].duration + " seconds in length")
-              request.open('GET', sounds.sounds[num].serve + "?&api_key=" + freesound.apiKey, true);
-              request.responseType = 'arraybuffer';
-              request.onload = function() {
-                onload(request)
-              };
-              request.send();
+              /*
+               *request = new XMLHttpRequest();
+               *Gibber.log("now downloading " + filename + ", " + result.duration + " seconds in length")
+               *request.open('GET', result.serve + "?&api_key=" + freesound.apiKey, true);
+               *request.responseType = 'arraybuffer';
+               *request.onload = function() {
+               *  onload(request)
+               *};
+               *request.send();
+               */
+              Freesound.getSoundByID( result.id )
             } else {
               Gibber.log('using exising loaded sample ' + filename)
               sampler.buffer = Freesound.loaded[filename];
@@ -40053,21 +40066,31 @@ module.exports = function( freesound ) {
         }
       );
     } else if (typeof key === 'number') {
-      Gibber.log('downloading sound #' + key + ' from freesound.org')
-      freesound.get_sound(key,
-        function(sound) {
-          request = new XMLHttpRequest();
-          filename = sound.original_filename
-          request.open('GET', sound.serve + "?api_key=" + freesound.apiKey, true);
-          request.responseType = 'arraybuffer';
-          request.onload = function() {
-            onload(request)
-          };
-          request.send();
-        }
-      )
+      
+      Freesound.getSoundByID( id )
     }
     return sampler;
+  }
+  Freesound.getSoundByID = function( id  ){
+    Gibber.log('downloading sound #' + key + ' from freesound.org')
+    freesound.getSound( key,
+      function( soundJSON ) {
+        var soundDict = JSON.parse( soundJSON ),
+            path = soundDict.previews['preview-hq-mp3']
+
+        filename = soundDict.name
+
+        request = new XMLHttpRequest();
+        request.open('GET', path, true);
+        request.responseType = 'arraybuffer';
+        request.onload = function() {
+          onload(request)
+        };
+        request.send();
+      },
+      function( err ) { console.log( 'ERROR with id', err ) }
+    )
+
   }
   Freesound.loaded = {};
 
@@ -65041,7 +65064,7 @@ module.exports = function( Gibber ) {
             bodyElement: document.querySelector( 'body' )
           }
         }else{
-          column = Layout.addColumn()
+          column = Layout.addColumn({ type:'interface'})
         }
       }else{
         column.bodyElement.innerHTML = ''

@@ -403,7 +403,11 @@ tfoot, thead {
   float:right;
 }
 
-.CodeMirror { color: white !important; }
+.CodeMirror { 
+  color: white !important; 
+/*  font-family: 'Source Code Pro', monospace !important;
+  font-size:.7em;*/
+}
 .CodeMirror-scroll { overflow:scroll; }
 
 .login {

@@ -22,13 +22,14 @@
     callbacks : {},
     
     newPanel : function( column ) {
+      console.log("NEW INTERFACE PANEL", column )
       if( typeof column === 'undefined' ) {
         if( Gibber.isInstrument ) {
           column = {
             bodyElement: $('body')
           }
         }else{
-          column = Layout.addColumn()
+          column = Layout.addColumn({ type:'interface' }) 
         }
       }else{
         $( column.bodyElement ).empty()

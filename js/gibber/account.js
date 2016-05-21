@@ -223,8 +223,6 @@ module.exports = function( Gibber ) {
       var columnNumber = $( '#new_publication_column' ).val(),
           column = GE.Layout.columns[ columnNumber ]
       
-
-      console.log( "LANGUAGE IS", column.mode ) 
       $.ajax({
         type:"POST",
         url: GE.SERVER_URL + '/publish',
@@ -268,9 +266,14 @@ module.exports = function( Gibber ) {
       
         $.extend( msg.data, revisions )
         msg.data.revisionNotes = notes
-      
+        
+        console.log( 'MSG', msg )
+        delete msg.data.__proto__
+        delete msg.__proto__
+        console.log( 'MSG after', msg, msg.data.__proto__ )
         var promise = $.ajax( msg ).then( 
           function(d) { 
+            console.log( 'file update:', d )
             column.fileInfo._rev = d._rev; 
             column.revision = JSON.stringify( column.fileInfo )
             GE.Message.postFlash( msg.data._id.split('/')[2] + ' has been updated.' ) 
