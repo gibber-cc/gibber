@@ -1,10 +1,10 @@
-#XY
+##XY
 A multitouch XY controller with optional built-in physics. The XY widget acts as an
 array of children, each one representing a X and a Y position. Thus to access the X
 property of the first child (using a zero-index array), we use my\_xy\_widget[0].x.
 
 Example:
-```
+```javascript
 // map pitch and amplitude of two sine waves to XY control.
 
 xy = XY({ numChildren:2 })
@@ -12,7 +12,7 @@ sine1 = Sine( xy[ 0 ].X, xy[ 0 ].Y )
 sine2 = Sine( xy[ 1 ].X, xy[ 1 ].Y )
 ```
 
-## Properties
+#### Properties
 See the [Widget][widget] prototype for many other relevant properties.
 
 * _value_  : Float. Default range: { 0, 1 }. Default: 0.
@@ -27,7 +27,5 @@ See the [Widget][widget] prototype for many other relevant properties.
 
 * _detectCollisions_ : Boolean. Default false. When false, children bounce off one another.
 
-## Methods
+#### Methods
 See the [Widget][widget] prototype for relevant methods.
-
-[widget]: javascript:Gibber.Environment.Docs.openFile('interface','Widget')

@@ -1,4 +1,4 @@
-#Drums
+##Drums
 
 A sampled drum kit with an attached sequencer for quick beat construction. The first argument to the constructor allows you to easily define beats using the following syntax:
 
@@ -15,7 +15,7 @@ There are a few different drum kits that come with Gibber (with hopefully more t
 Finally, note that each individual sound is actually an instance of the Gibber [Sampler][sampler] object. This means you can add effects to the individual sounds in addition to the kit as a whole.
 
 Example:
-```
+```javascript
 a = Drums( 'xoxo' ) // each note is a quarter note in duration  
 a.fx.add( Delay( 1/64) )  
 
@@ -29,7 +29,7 @@ c = Drums({
 })  
 ```
 
-## Properties
+#### Properties
 
 * _pitch_ : Float. default range { .25, 4 }. default value 1. The speed of sample playback.
 * _amp_ : Float. default range { 0, 1 }. default value: 1.
@@ -39,7 +39,7 @@ c = Drums({
 * _hat_: Ugen. The hihat sampler.
 * _seq_: Sequencer. The built-in Seq object.
 
-## Methods
+#### Methods
 
 * _note_( Float:frequency, Float:amp(optional) ) : This method tells the drum kit to play a single note.
 * _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.

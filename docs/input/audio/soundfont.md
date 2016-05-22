@@ -1,4 +1,4 @@
-#SoundFont
+##SoundFont
 
 Sampled-based instruments that follow the SoundFont 2 specification. The samples for SoundFonts are loaded whenever they are first instantiated and then cached for other instances. E.g. the first time you run `a = SoundFont('piano')` all the acoustic piano samples will be downloaded; if `b = SoundFont('piano')` is subsequently run the samples will not have to be loaded again as the cached data will be used.
 
@@ -13,7 +13,7 @@ synth_strings_1 = strings
 choir_aahs = choir  
 
 Example:
-```
+```javascriptjavascript
 a = SoundFont( 'piano' )
 a.note.seq( [0,1,2,3],1/8 )
 
@@ -21,12 +21,12 @@ b = SoundFont( 'kalimba' )
 b.note.seq( [14,15,16,17], 1/2 )
 ```
 
-## Properties
+#### Properties
 
 * _amp_ : Float. Default range: { 0, 1 }. Default value: 1.  
 
 * _loudness_ : Float. Determines the amplitude of individual notes, while `amp` affects all output. For example:  
-```
+```javascript
 a = SoundFont('piano')
   .note.seq( Rndi(0,14), 1/8 )
   .loudness.seq( Rndf() )
@@ -35,13 +35,13 @@ In the above example, each note will be played at a different loudness. The valu
 
 * _pan_ : Float. Default range { -1, 1 }. Default value: 0. The position in the stereo spectrum for output.
  
-## Methods
+#### Methods
 
 * _note_( Float:pitch, Float:loudness ): Begin playback at the position determined by the start property at a rate determine by the pitch argument and at a provided loudness.  
 
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
 
-## Complete Sound List
+#### Complete Sound List
   
 accordion  
 acoustic_bass  

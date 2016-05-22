@@ -1,9 +1,9 @@
-#Schizo
+##Schizo
 
 A buffer-shuffling / stuttering effect with reversing and pitch-shifting.
 
 Example:
-```
+```javascript
 d = XOX( 'x*o*x*o-' )
 
 s = Schizo({ chance:.5, rate:ms(250), length:ms(1000) })
@@ -13,7 +13,7 @@ d.fx.add( s )
 ```
 
 
-## Properties
+#### Properties
 
 * _chance_ : Default range { 0, 1 }. The likelihood that stuttering will occur at given intervals.
 * _rate_ : Default 11025. Measured in samples. How often Schizo randomly determines whether or not it should begin stuttering.
@@ -25,6 +25,6 @@ d.fx.add( s )
 * _wet_ : Float { 0,1 }, default 1. When shuffling, the amplitude of the stuttered audio.
 * _dry_ : Float { 0,1 }, default 0. When shuffling, the amplitude of the un-stuttered audio.
 
-## Methods
+#### Methods
 
 None worth mentioning.

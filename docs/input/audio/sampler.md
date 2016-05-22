@@ -1,18 +1,18 @@
-#Sampler
+##Sampler
 
 Record and playback audiofiles at variable speeds. Recordings made using the sampler can be rendered to .wav files by the browser using the _download_() method.
 
 Inherits from Ugen.
 
 Example:
-```
+```javascriptjavascript
 a = XOX('x*o*x*o-')
 b = Sampler.record( a, 2 ) // record for two measures
 
 b.note( -2 ) // play in reverse at twice the recorded speed / pitch
 ```
 
-## Properties
+#### Properties
 
 * _pitch_ : Float. Default range: { 1, 4 }. Default value: 1. This property determines the speed of sample playback. Negative values play the sample in reverse. This value can also be set using the note() method.
 * _amp_ : Float. Default range: { 0, 1 }. Default value: 1.
@@ -21,7 +21,7 @@ b.note( -2 ) // play in reverse at twice the recorded speed / pitch
 * _end_ : Float. Default range { 0, 1 }. Default value: 1. Determines the end position for sample playback as a normalized value where 0 equals the first sample and 1 represents the final sample in the buffer. 
 * _pan_ : Float. Default range { -1, 1 }. Default value: 0. The position in the stereo spectrum for output.
  
-## Methods
+#### Methods
 
 * _note_( Float:pitch, Float:amp ): Begin playback at the position determined by the start property at a rate determine by the pitch argument and at a provided amplitude.
 * _record_( Ugen:input, Float:time ): Record the output of a given unit generator for a provided amount of time.

@@ -1,4 +1,4 @@
-#Bus
+##Bus
 
 A audio bus for routing FX, or controlling amplitude and panning.
 
@@ -15,12 +15,12 @@ drums.send( bus1, .5 )
 drums.send( bus2, .5 )
 ```
 
-## Properties
+#### Properties
 
 * _amp_ : Float. Default range: { .0, 1 }. Default value: 1. Gain on the bus signal.
 * _pan_  : Float range: { -1, 1 }. Default: 0. Position of the bus in the stereo spectrum.
 * _fx_ : Array. You can `add` or `remove` fx from the bus using this array.
 
-## Methods
+#### Methods
 
 None worth mentioning.

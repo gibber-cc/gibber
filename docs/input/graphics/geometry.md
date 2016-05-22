@@ -1,4 +1,4 @@
-#3D Geometries
+##3D Geometries
 
 All 3d geometries share the methods and properties outlined below. In addition, each geometry has a set of properties that can only best (at least currently) on instantiation; they cannot be modified after a geometry has been created.
 
@@ -15,7 +15,7 @@ Thus to make Sphere with 4 rings we would use:
 a = Sphere({ rings:4 })
 ```
 
-## Properties
+#### Properties
 
 * _scale_ : This property can get/set the scale of the geometry on all three axis.
 * _scale.x_ : Default 1. Get/set the scale of the geometry along the x-axis.
@@ -33,7 +33,7 @@ a = Sphere({ rings:4 })
 * _geometry_ : The wrapped THREE.js geometry.
 * _mesh_ : The THREE.js mesh.
 
-## Methods
+#### Methods
 
 * _remove_() : Removes the geometry from the 3d scene
 * _update_() : This is user-defined function that is called once per frame of video. You can use it to update any property of the object (or carry out any other action) on a frame by frame basis. For example, to gradually increase the size of cube:

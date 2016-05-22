@@ -1,10 +1,10 @@
-#Patchbay
+##Patchbay
 
 A simple widget for establishing virtual connections. After creating connections via drag and drop,
 users can delete them by clicking on the connection and hitting delete. TODO: how to delete for touch devices?
 
 Example:
-```
+```javascript
 a = Mono()
 b = Drums('xoxo')
 
@@ -18,11 +18,10 @@ of executing the following line of code:
 a.cutoff = b.Out
 ```
 
-## Properties
+#### Properties
 * _connections_ : Array. A list of connections that have been established.
 
-## Methods
+#### Methods
 * _onconnection_ : Function( start, end ). The two objects that have been connected.
 * _ondisconnection_ : Function( start, end ). The two objects that are no longer connected.
 
-[widget]: javascript:Gibber.Environment.Docs.openFile('interface','Widget')

@@ -1,4 +1,4 @@
-# Canvas
+## Canvas
 
 The canvas object provides a 2d drawing surface for Gibber. There is only one
 canvas allowed on the screen at a time (currently). The canvas object basically
@@ -18,7 +18,7 @@ use. These extra methods and properties are described below. You should also che
 the various 2d drawing tutorials / demos found by pressing the browse button in
 the Gibber menu bar.
 
-##Properties
+####Properties
 
 * _alpha_. This is a slight shorthand for the globalAlpha property
 built-in to the HTML canvas context. Not sure why they added the global prefix
@@ -36,7 +36,7 @@ right.
 bottom.
 * _sprite_. The THREE.js Mesh object that the canvas textures.
 
-##Methods
+####Methods
 
 * _draw_(): A user defined method that is called once per frame. Use this to
 create animations.

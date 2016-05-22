@@ -1,9 +1,9 @@
-#Crossfader
+##Crossfader
 
 A horizontal crossfader. Crossfader are a type of [Widget][widget] and inherit its methods and properties.
 
 Example:
-```
+```javascript
 // crossfade between two drum loops
 
 loop1 = Drums( 'x*o*x*o-' )
@@ -16,12 +16,11 @@ loop1.amp = loop2.amp = Crossfader()
 loop2.Amp.invert()
 ```
 
-## Properties
+#### Properties
 See the [Widget][widget] prototype for many other relevant properties.
 
 * _value_  : Float. Default range: { 0, 1 }. Default: 0.
 
-## Methods
+#### Methods
 See the [Widget][widget] prototype for relevant methods.
 
-[widget]: javascript:Gibber.Environment.Docs.openFile('interface','Widget')

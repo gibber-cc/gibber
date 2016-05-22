@@ -1,4 +1,4 @@
-#Mono
+##Mono
 
 A three-oscillator monosynth feeding an Attack / Decay envelope and a 24db ladder-style filter. The attack decay envelope modulates the amplitude of the oscillator and the cutoff frequency of the filter. The filterMult property determines how much the envelope raises the base cutoff for the filter over the course of the envelope. For example, if a synth2 has a base cutoff of .1 and a filterMult of .2, the modulated filter cutoff will be .3 when the envelope is at its peak. 
 
@@ -7,13 +7,13 @@ The second and third oscillators can be detuned from the first using the detune2
 Inherits from Ugen.
 
 Example:
-```
+```javascriptjavascript
 a = Mono({ waveform:'Saw', filterMult:0, resonance:4, detune2:.05, detune3:-.05 })
 
 a.play( [440, 880, 1320], 1/4 )
 ```
 
-## Properties
+#### Properties
 
 * _frequency_ : Hz. default range { 50, 3200 }. default value 440.
 * _amp_ : Float. default range { 0, 1 }. default value: .25.
@@ -29,7 +29,7 @@ a.play( [440, 880, 1320], 1/4 )
 * _resonance_ : Float. Default range {0, 5.5}. Resonance values higher than 5 will likely blow up to some extent depending on the source material. Be careful!
 * _filterMult_ : Float. This property determines the amount the envelope will modulate the cutoff frequency by, normalized between {0,1}.
 
-## Methods
+#### Methods
 
 * _note_( Float:frequency, Float:amp(optional) ) : This method tells the synthesizer to play a single note at a particular volume.
 * _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.

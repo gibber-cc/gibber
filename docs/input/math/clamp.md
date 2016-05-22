@@ -1,4 +1,4 @@
-#Clamp
+##Clamp
 
 Clamp the output of a ugen to a range of values.
 
@@ -13,7 +13,7 @@ clamp = Clamp( mod, 0, mod.amp )
 sine.frequency = Add( 440, clamp )
 ```
 
-## Properties
+#### Properties
 
 * _input_ : Ugen. The signal that will be clamped.
 * _min_ : Float or Ugen. Define the minimum boundary for clamping.

@@ -1,20 +1,19 @@
-#Synth2
+##Synth2
 
 A selectable oscillator attached to an Attack / Decay envelope and a filter. The attack decay envelope modulates the amplitude of the oscillator and the cutoff frequency of the filter. The filterMult property determines how much the envelope raises the base cutoff for the filter over the course of the envelope. For example, if a synth2 has a base cutoff of .1 and a filterMult of .2, the modulated filter cutoff will be .3 when the envelope is at its peak. 
 
 Inherits from Ugen.
 
 Example:
-```
+```javascript
 a = Synth2({ maxVoices:4, waveform:'PWM', filterMult:0, resonance:4 })
 
 a.play( [440, 880, 1320], 1/4 )
 
 a.cutoff = Add( .2, Sine(.1, .15)._ )
-
 ```
 
-## Properties
+#### Properties
 
 * _frequency_ : Hz. default range { 50, 3200 }. default value 440.
 * _amp_ : Float. default range { 0, 1 }. default value: .25.
@@ -29,7 +28,7 @@ a.cutoff = Add( .2, Sine(.1, .15)._ )
 * _resonance_ : Float. Default range {0, 5.5}. Resonance values higher than 5 will likely blow up to some extent depending on the source material. Be careful!
 * _filterMult_ : Float. This property determines the amount the envelope will modulate the cutoff frequency by, normalized between {0,1}.
 
-## Methods
+#### Methods
 
 * _chord_( Array:frequencies, Float:amp(optional) ) : Playback multiple notes at a provided amplitude. The maxVoices property have been set to a value higher than 1 during intialization for this function to work.
 * _note_( Float:frequency, Float:amp(optional) ) : This method tells the synthesizer to play a single note at a particular volume.

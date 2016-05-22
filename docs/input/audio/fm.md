@@ -1,17 +1,17 @@
-#FM
+##FM
 
 Simple frequency modulation synthesis via two sine oscillators feeding an Attack/Decay envelope. The cmRatio property determines the ratio between the carrier and modulator frequencies. The index determines the amplitude of the modulator. The AD envelope modulates the amplitude of the overall output as well as the index property. For basic info on FM synthesis see the FM tutorial. 
 
 Inherits from Ugen.
 
 Example:
-```
+```javascriptjavascript
 a = FM({ maxVoices:4, index:10, cmRatio:1.0333 })
 
 a.chord( ['c2', 'eb2', 'g2', 'b2'] )
 ```
 
-## Properties
+#### Properties
 
 * _frequency_ : Hz. default range { 50, 3200 }. default value 440. For synths this is usually only accessed to modulate frequency; pitch of notes is generally set using the note() method, which also triggers the AD envelope.
 * _amp_ : Float. default range { 0, 1 }. default value: .25.
@@ -24,7 +24,7 @@ a.chord( ['c2', 'eb2', 'g2', 'b2'] )
 * _pan_: Float. Default range { -1, 1 }. Default value: 0. The position in the stereo spectrum of the Synth output.
 * _waveform_ : String. The name of an oscillator for the synth to use.
 
-## Methods
+#### Methods
 
 * _chord_( Array:frequencies, Float:amp(optional) ) : Playback multiple notes at a provided amplitude. The maxVoices property have been set to a value higher than 1 during intialization for this function to work.
 * _note_( Float:frequency, Float:amp(optional) ) : This method tells the synthesizer to play a single note at a particular volume.

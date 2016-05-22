@@ -1,4 +1,4 @@
-#EDrums
+##EDrums
 
 A synthesized drum kit, carefully designed to simulate a Roland TR-808 drum machine, with an attached sequencer for quick beat construction. The first
 argument to the constructor allows you to easily define beats using the following syntax:
@@ -19,7 +19,7 @@ Unlike the Drums object, each sound in the XOX object is a synthesis unit genera
 consists of a Bus object that the individual synthesizers are attached to, and a sequencer to control them.
 
 Example:
-```
+```javascript
 a = EDrums( 'xoxo' ) // each note is a quarter note in duration  
 a.fx.add( Delay( 1/64) )  
 a.snare.snappy = 1.5  
@@ -31,7 +31,7 @@ b.kick.decay = 1
 b.seq.note = 'xoxx**-o'  
 ```
 
-## Properties
+#### Properties
 * _amp_ : Float. default range { 0, 1 }. default value: 1.
 * _pan_: Float. Default range { -1, 1 }. Default value: 0. The position in the stereo spectrum of the Synth output.
 * _kick_: Ugen. The kick drum unit generator.
@@ -39,7 +39,7 @@ b.seq.note = 'xoxx**-o'
 * _hat_: Ugen. The hihat unit generator.
 * _seq_: Sequencer. The built-in Seq object.
 
-## Methods
+#### Methods
 
 * _note_( Float:frequency, Float:amp(optional) ) : This method tells the drum kit to play a single note.
 * _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.

@@ -1,4 +1,4 @@
-#Pow
+##Pow
 
 Raise the first operand to the power of the second operand on a per-sample basis. `Pow` has a constructor that accepts two values.
 
@@ -13,7 +13,7 @@ mul = Mul( sine, mod )
 mul.connect()
 ```
 
-## Properties
+#### Properties
 
 * _0_ : Float or Ugen. The first operand passed to the constructor.
 * _1_ : Float or Ugen. The second operand passed to the constructor.

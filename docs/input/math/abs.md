@@ -1,4 +1,4 @@
-#Abs
+##Abs
 
 Take the absolute value of a unit generator's output (or a number) on a per-sample basis.
 
@@ -11,6 +11,6 @@ mod = Sine( .5, 50 )._ // disconnect!
 sine.frequency = Add( 440, Abs( mod ) )
 ```
 
-## Properties
+#### Properties
 
 * _0_ : Float or Ugen. The first operand passed to the constructor.

@@ -1,16 +1,16 @@
-#Synth
+##Synth
 
 A selectable oscillator attached to an Attack / Decay envelope. The attack decay envelope modulates the amplitude of the oscillator.
 Inherits from Ugen.
 
 Example:
-```
+```javascript
 a = Synth({ maxVoices:4, waveform:'PWM', attack:ms(1), decay:ms(1000) })
 
 a.play( [440, 880, 1320], 1/4 )
 ```
 
-## Properties
+#### Properties
 
 * _frequency_ : Hz. default range { 50, 3200 }. default value 440.
 * _amp_ : Float. default range { 0, 1 }. default value: .25.
@@ -22,7 +22,7 @@ a.play( [440, 880, 1320], 1/4 )
 * _pan_: Float. Default range { -1, 1 }. Default value: 0. The position in the stereo spectrum of the Synth output.
 * _waveform_ : String. The name of an oscillator for the synth to use.
 
-## Methods
+#### Methods
 
 * _chord_( Array:frequencies, Float:amp(optional) ) : Playback multiple notes at a provided amplitude. The maxVoices property have been set to a value higher than 1 during intialization for this function to work.
 * _note_( Float:frequency, Float:amp(optional) ) : This method tells the synthesizer to play a single note at a particular volume.

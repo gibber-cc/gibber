@@ -1,4 +1,4 @@
-#Seq
+##Seq
 
 The Seq object is a standalone sequencer that can schedule calls to methods and properties on a target object. Alternatively, it can be used to quickly sequence repeated calls to an anonymous function. Scheduling occurs at audio-rate and may be modulated by audio sources.
 
@@ -20,14 +20,14 @@ c = Seq( function() {
 }, 2 )
 ```
 
-## Properties
+#### Properties
 
 * _rate_ : A Gibber [Mul][mul] object. By default this ugen takes Gibber's master clock (stored in `seq.rate[0]` and multiplies it by 1 (stored in `seq.rate[1]`. To cut the time in half, run `seq.rate[1] *= .5`.
 * _target_ : Object. When the Seq object has a target, it can be used to change properties and call methods on that `target` object.
 * _durations_: Array, Function, or Number. The scheduling used by the sequencer. This is a Gibber [Pattern][pattern] object.
 * _offset_: Time. A delay before the sequencer begins running. You can use this to schedule events that occur on off beats; for example, to get a note on beats two and four: `b = Seq({ note:0, durations:1/2, offset:1/4 })`
  
-## Methods
+#### Methods
 
 * _start_: If the sequencer is stopped, start it.
 * _stop_: If the sequencer is running, stop it.
