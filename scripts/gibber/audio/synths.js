@@ -208,10 +208,7 @@ module.exports = function( Gibber ) {
                 
         obj.name = name 
         
-
-        //console.log( "PROCESS", args, _mappingProperties[ name ] )
-        
-        //Gibber.processArguments2( obj, args, obj.name )
+        //Object.assign( obj, opts )
         
         obj.toString = function() { return name }
         

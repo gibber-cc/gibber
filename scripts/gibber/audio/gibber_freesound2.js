@@ -13,7 +13,7 @@ module.exports = function( freesound ) {
     }
 
     var onload = function(request) {
-      Gibber.log(filename + " loaded.", request )
+      Gibber.log('Freesound file ' + filename + " loaded." )
       Gibber.Audio.Core.context.decodeAudioData(request.response, function(buffer) {
         Freesound.loaded[filename] = buffer.getChannelData(0)
         sampler.buffer = Freesound.loaded[filename];
@@ -99,11 +99,9 @@ module.exports = function( freesound ) {
       Gibber.log( 'Searching freesound for ' + query )
 
       filter += ' duration:[0.0 TO 10.0]'
-      freesound.textSearch(query, null, // { 'query':query, 'page':page, 'filter':filter, 'sort':sort}, // null, null, null,
+      freesound.textSearch(query, null, 
         function( soundsJSON ) {
-          console.log( 'soundsJSON', soundsJSON )
           var soundsDict = JSON.parse( soundsJSON )
-          console.log( 'SOUNDS DICT', soundsDict )
           if (soundsDict.count > 0) {
             var num = 0;
 
@@ -116,21 +114,38 @@ module.exports = function( freesound ) {
             }
             
             var result = soundsDict.results[ num ]
-            console.log( 'query',  result )
             filename = result.name 
+            var id = result.id
 
             if (typeof Freesound.loaded[filename] === 'undefined') {
-              /*
-               *request = new XMLHttpRequest();
-               *Gibber.log("now downloading " + filename + ", " + result.duration + " seconds in length")
-               *request.open('GET', result.serve + "?&api_key=" + freesound.apiKey, true);
-               *request.responseType = 'arraybuffer';
-               *request.onload = function() {
-               *  onload(request)
-               *};
-               *request.send();
-               */
-              Freesound.getSoundByID( result.id )
+              if (typeof Freesound.loaded[filename] === 'undefined') {
+
+                freesound.getSound( id, function( val ){ 
+                  var request = new XMLHttpRequest(),
+                  dict    = JSON.parse( val ),
+                  path    = dict.previews['preview-hq-mp3']
+
+                  request.open('GET', path, true) //"?&api_key=" + freesound.apiKey, true);
+                  request.responseType = 'arraybuffer';
+                  request.onload = function( v ) {
+                    onload(request)
+                  };
+                  request.send();
+                }, null )
+              } else {
+                sampler.buffer = Freesound.loaded[filename];
+                sampler.filename = filename;
+                sampler.bufferLength = sampler.buffer.length;
+                sampler.isLoaded = true;
+                sampler.end = sampler.bufferLength;
+                sampler.setBuffer(sampler.buffer);
+                sampler.setPhase(sampler.bufferLength);
+
+                sampler.send(Master, 1)
+                if (callback) {
+                  callback()
+                }
+              }
             } else {
               Gibber.log('using exising loaded sample ' + filename)
               sampler.buffer = Freesound.loaded[filename];
@@ -153,14 +168,45 @@ module.exports = function( freesound ) {
         }
       );
     } else if (typeof key === 'number') {
-      
-      Freesound.getSoundByID( id )
+      Gibber.log( 'Searching for and downloading sound #' + key + ' from Freesound...' )
+      var id = filename = key 
+      //Freesound.getSoundByID( key )
+      if (typeof Freesound.loaded[filename] === 'undefined') {
+
+        freesound.getSound( id, function( val ){ 
+          var request = new XMLHttpRequest(),
+          dict    = JSON.parse( val ),
+          path    = dict.previews['preview-hq-mp3']
+
+          
+          request.open('GET', path, true) //"?&api_key=" + freesound.apiKey, true);
+          request.responseType = 'arraybuffer';
+          
+          request.onload = function( v ) {
+            onload(request)
+          };
+          request.send();
+        }, null )
+      } else {
+        sampler.buffer = Freesound.loaded[filename];
+        sampler.filename = filename;
+        sampler.bufferLength = sampler.buffer.length;
+        sampler.isLoaded = true;
+        sampler.end = sampler.bufferLength;
+        sampler.setBuffer(sampler.buffer);
+        sampler.setPhase(sampler.bufferLength);
+
+        sampler.send(Master, 1)
+        if (callback) {
+          callback()
+        }
+      }
     }
     return sampler;
   }
   Freesound.getSoundByID = function( id  ){
-    Gibber.log('downloading sound #' + key + ' from freesound.org')
-    freesound.getSound( key,
+    Gibber.log('downloading sound #' + id + ' from freesound.org')
+    freesound.getSound( id,
       function( soundJSON ) {
         var soundDict = JSON.parse( soundJSON ),
             path = soundDict.previews['preview-hq-mp3']
