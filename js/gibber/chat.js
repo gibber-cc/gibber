@@ -45,7 +45,7 @@ Chat = {
 
     this.addButton = $('<button>' )
       .text( 'create room' )
-      .on( 'click', Chat.createRoom )
+      .on( 'click', function() { Chat.createRoom() } )
       .css({ right:0 })
 
     this.lobbyRoom.append( this.lobby, this.room, this.addButton )
@@ -199,6 +199,7 @@ Chat = {
   },
   
   createRoom : function( name ) {
+    console.log( 'WHAT IS THE NAME?', name )
     var msg = {}
     if( typeof name === 'undefined' ) name = window.prompt( "Enter a name for the chatroom." )
     
