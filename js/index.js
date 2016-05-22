@@ -3937,37 +3937,32 @@ var GE = {
 			},
       
 			default: [
-	      "/*To execute code, select it and hit Ctrl+Enter.",
-        "* Ctrl+. stops audio. Press the help button for",
-        "* more keystrokes to use in Gibber.",
-        "*",
-	      "* Giblet #1 - by thecharlie",
-	      "* In this sketch, the mouse position drives the",
-	      "* pitch of drums, the carrier to modulation",
-	      "* ratio of FM synthesis, and the feedback and",
-	      "* time of a delay.",
-	      "*/",
-	      "",
-	      "a = Drums('x*o*x*o-')",
-	      "a.pitch = Mouse.Y",
-	      "",
-	      "b = FM({ ",
-	      "  attack:  ms(1),",
-	      "  index:   a.Out,",
-	      "  cmRatio: Mouse.X",
-	      "})",
-	      "",
-	      "b.fx.add(",
-	      "  Delay({",
-	      "    time:     Mouse.X,",
-	      "    feedback: Mouse.Y",
-	      "  })",
-	      ")",
-	      "",
-	      "b.play( ",
-	      "  ['c2','c2','c2','c3','c4'].random(),",
-	      "  [1/4,1/8,1/16].random(1/16,2) ",
-	      ")"
+        "/*",
+        "Giblet #1 - by thecharlie",
+        "In this sketch, the mouse position drives the",
+        "pitch of drums, the carrier to modulation",
+        "ratio of FM synthesis, and the feedback and",
+        "time of a delay.",
+        "*/",
+        "",
+        "a = Drums('x*o*x*o-')",
+        "a.pitch = Mouse.y",
+        "",
+        "b = FM({ attack: ms(1) })",
+        "b.index = a.out",
+        "b.cmRatio = Mouse.x",
+        "",
+        "b.fx.add(",
+        "  Delay({",
+        "    time:     Mouse.x,",
+        "    feedback: Mouse.y",
+        "  })",
+        ")",
+        "",
+        "b.note.seq( ",
+        "  ['c2','c2','c2','c3','c4'].random(),",
+        "  [1/4,1/8,1/16].random(1/16,2) ",
+        ")"
 	    ].join('\n'),
 		},
 		'glsl-fragment' : { 
@@ -28775,8 +28770,6 @@ Perform codegen on all dirty ugens and re-create the audio callback. This method
     
     this.args = ['input']
     
-    this.memo = {};
-    
     this.out.codegen()
     
     var codeblockStore = this.codeblock.slice(0)
@@ -33850,7 +33843,6 @@ param **amp** Number. Optional. The volume to use.
 	this.note = function(frequency, velocity) {
     if( typeof frequency === 'undefined' ) return
     //console.log( frequency, lastFrequency, this.releaseTrigger, velocity )
-    console.log( "VELOCITY", velocity )
     if( velocity !== 0 ) {
   		if(typeof this.frequency !== 'object'){
         if( useADSR && frequency === lastFrequency && properties.requireReleaseTrigger ) {
@@ -42035,10 +42027,7 @@ module.exports = function( Gibber ) {
                 
         obj.name = name 
         
-
-        //console.log( "PROCESS", args, _mappingProperties[ name ] )
-        
-        //Gibber.processArguments2( obj, args, obj.name )
+        //Object.assign( obj, opts )
         
         obj.toString = function() { return name }
         
