@@ -1,4 +1,4 @@
-##FM
+###FM
 
 Simple frequency modulation synthesis via two sine oscillators feeding an Attack/Decay envelope. The cmRatio property determines the ratio between the carrier and modulator frequencies. The index determines the amplitude of the modulator. The AD envelope modulates the amplitude of the overall output as well as the index property. For basic info on FM synthesis see the FM tutorial. 
 

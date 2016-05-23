@@ -1,14 +1,14 @@
-##Widget
+###Widget
 
 Most interactive elements in Gibber (but not all) have a [Widget](javascript:Gibber.Environment.Docs.openFile("graphics", "geometry")) as their object prototype. You never create a widget directly, but other elements that you create will use its methods and properties.
 
 #### Properties
 
-* _background_ : CSS color. Default : '##000'. The background color for the widget. If a background color is not assigned to the widget, the widget will
+* _background_ : CSS color. Default : '###000'. The background color for the widget. If a background color is not assigned to the widget, the widget will
 use the background of its containing panel.
-* _fill_  : CSS color. Default: '##999'. If a fill color is not assigned to the widget, the widget will
+* _fill_  : CSS color. Default: '###999'. If a fill color is not assigned to the widget, the widget will
 use the fill of its parent panel.
-* _stroke_  : CSS color. Default: '##ccc'. If a stroke color is not assigned to the widget, the widget will
+* _stroke_  : CSS color. Default: '###ccc'. If a stroke color is not assigned to the widget, the widget will
 use the stroke of its containing panel.
 * _x_ : Float. The x-coordinate for the upper-lefthand corner of the widget, expressed as a multiple of the parent panel's width. For example, a x value of .5 will place the left edge of the widget at the horizontal center of the panel.
 * _y_ : Float. The y-coordinate for the upper-lefthand corner of the widget, expressed as a multiple of the parent panel's height. For example, a x value of .5 will place the top edge of the widget at the vertical center of the panel.

@@ -1,4 +1,4 @@
-##Kick
+###Kick
 
 A synthesized kick drum generator with a built-in sequencer.
 

@@ -1,4 +1,4 @@
-##Crossfader
+###Crossfader
 
 A horizontal crossfader. Crossfader are a type of [Widget][widget] and inherit its methods and properties.
 

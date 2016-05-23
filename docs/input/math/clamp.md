@@ -1,4 +1,4 @@
-##Clamp
+###Clamp
 
 Clamp the output of a ugen to a range of values.
 

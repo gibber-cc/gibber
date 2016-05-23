@@ -1,4 +1,4 @@
-##Synth
+###Synth
 
 A selectable oscillator attached to an Attack / Decay envelope. The attack decay envelope modulates the amplitude of the oscillator.
 Inherits from Ugen.

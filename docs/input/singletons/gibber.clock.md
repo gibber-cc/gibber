@@ -1,4 +1,4 @@
-##Gibber.Clock
+###Gibber.Clock
 
 The clock controls Gibber's master tempo and meter.
 

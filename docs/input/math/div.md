@@ -1,4 +1,4 @@
-##Div
+###Div
 
 A simple unit generator to divide a pair of values on a per-sample basis, primarily for use in modulation. `Div` has a constructor that accepts two values.
 

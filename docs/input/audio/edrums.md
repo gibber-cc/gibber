@@ -1,4 +1,4 @@
-##EDrums
+###EDrums
 
 A synthesized drum kit, carefully designed to simulate a Roland TR-808 drum machine, with an attached sequencer for quick beat construction. The first
 argument to the constructor allows you to easily define beats using the following syntax:

@@ -1,4 +1,4 @@
-##Accelerometer
+###Accelerometer
 When used with sketches running on mobile devices, this widget will use the acceleration of the device as a signal.
 
 Example:

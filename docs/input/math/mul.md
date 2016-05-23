@@ -1,4 +1,4 @@
-##Mul
+###Mul
 
 A simple unit generator to multiple multiple values together on a per-sample basis, primarily for use in modulation. `Mul` has a constructor that accepts two values.
 

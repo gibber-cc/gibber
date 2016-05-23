@@ -1,4 +1,4 @@
-## Canvas
+### Canvas
 
 The canvas object provides a 2d drawing surface for Gibber. There is only one
 canvas allowed on the screen at a time (currently). The canvas object basically

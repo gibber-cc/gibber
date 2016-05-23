@@ -1,4 +1,4 @@
-##Mouse
+###Mouse
 
 This object presents signals derived from the position of the mouse cursor in the browser window.
 

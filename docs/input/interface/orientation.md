@@ -1,4 +1,4 @@
-##Orientation
+###Orientation
 When used in sketches running on mobile devices, this widget will use the orientation of the device as a signal.
 
 Example:

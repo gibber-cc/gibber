@@ -1,4 +1,4 @@
-##Arp
+###Arp
 
 The Arp object is an arpeggiator providing a variety of controls. See the Chords and Arpeggios tutorial for detailed information.
 

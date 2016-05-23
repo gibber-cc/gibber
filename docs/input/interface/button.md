@@ -1,4 +1,4 @@
-##Button
+###Button
 
 A button with variable modes. Buttons are a type of [Widget][widget] and inherit its methods and properties.
 

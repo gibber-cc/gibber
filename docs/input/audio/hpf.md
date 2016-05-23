@@ -1,4 +1,4 @@
-##HPF
+###HPF
 
 A 24db per octave, high-pass resonant filter. 
 

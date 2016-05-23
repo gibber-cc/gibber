@@ -1,5 +1,6 @@
 # Audio
-##Sine
+## Oscillators
+###Sine
 
 A sinewave oscillator built from an interpolated wavetable.
 
@@ -16,7 +17,7 @@ Inherits from Ugen.
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Triangle
+###Triangle
 
 A triangle oscillator built from an interpolated wavetable.
 
@@ -33,7 +34,7 @@ Inherits from Ugen.
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Square
+###Square
 
 A squarewave oscillator using an interpolated wavetable.
 
@@ -50,7 +51,57 @@ Inherits from Ugen.
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Sampler
+###PWM
+
+An anti-aliased pulsewave modulation oscillator built from FM feedback.
+
+Inherits from Ugen.
+
+#### Properties
+
+* _frequency_ : Hz. default range { 50, 3200 }. default value 440.
+* _amp_ : Float. default range { 0, 1 }. default value: .25.
+* _pulsewidth_ : Float. default range { 0, 1 }. default value: .5
+
+#### Methods
+
+* _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.
+* _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
+* _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
+
+###Noise
+
+A white noise oscillator. 
+
+Inherits from Ugen.
+
+#### Properties
+
+* _amp_ : Float. default range { 0, 1 }. default value: 1.
+
+#### Methods
+
+* _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
+
+###Saw
+
+A sawtooth oscillator built from an interpolated wavetable.
+
+Inherits from Ugen.
+
+#### Properties
+
+* _frequency_ : Hz. default range { 50, 3200 }. default value 440.
+* _amp_ : Float. default range { 0, 1 }. default value: .25.
+
+#### Methods
+
+* _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.
+* _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
+* _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
+
+## Synths
+###Sampler
 
 Record and playback audiofiles at variable speeds. Recordings made using the sampler can be rendered to .wav files by the browser using the _download_() method.
 
@@ -82,7 +133,7 @@ b.note( -2 ) // play in reverse at twice the recorded speed / pitch
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
 
-##SoundFont
+###SoundFont
 
 Sampled-based instruments that follow the SoundFont 2 specification. The samples for SoundFonts are loaded whenever they are first instantiated and then cached for other instances. E.g. the first time you run `a = SoundFont('piano')` all the acoustic piano samples will be downloaded; if `b = SoundFont('piano')` is subsequently run the samples will not have to be loaded again as the cached data will be used.
 
@@ -256,56 +307,7 @@ whistle
 woodblock  
 xylophone  
 
-##PWM
-
-An anti-aliased pulsewave modulation oscillator built from FM feedback.
-
-Inherits from Ugen.
-
-#### Properties
-
-* _frequency_ : Hz. default range { 50, 3200 }. default value 440.
-* _amp_ : Float. default range { 0, 1 }. default value: .25.
-* _pulsewidth_ : Float. default range { 0, 1 }. default value: .5
-
-#### Methods
-
-* _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.
-* _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
-* _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
-
-##Noise
-
-A white noise oscillator. 
-
-Inherits from Ugen.
-
-#### Properties
-
-* _amp_ : Float. default range { 0, 1 }. default value: 1.
-
-#### Methods
-
-* _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
-
-##Saw
-
-A sawtooth oscillator built from an interpolated wavetable.
-
-Inherits from Ugen.
-
-#### Properties
-
-* _frequency_ : Hz. default range { 50, 3200 }. default value 440.
-* _amp_ : Float. default range { 0, 1 }. default value: .25.
-
-#### Methods
-
-* _play_( Array:frequencies, Array:durations ) : This method accepts arrays of frequencies and durations as arguments to create and start a sequencer targeting the oscillator.
-* _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
-* _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
-
-##Synth
+###Synth
 
 A selectable oscillator attached to an Attack / Decay envelope. The attack decay envelope modulates the amplitude of the oscillator.
 Inherits from Ugen.
@@ -337,7 +339,7 @@ a.play( [440, 880, 1320], 1/4 )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
 
-##Synth2
+###Synth2
 
 A selectable oscillator attached to an Attack / Decay envelope and a filter. The attack decay envelope modulates the amplitude of the oscillator and the cutoff frequency of the filter. The filterMult property determines how much the envelope raises the base cutoff for the filter over the course of the envelope. For example, if a synth2 has a base cutoff of .1 and a filterMult of .2, the modulated filter cutoff will be .3 when the envelope is at its peak. 
 
@@ -375,7 +377,7 @@ a.cutoff = Add( .2, Sine(.1, .15)._ )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
 
-##FM
+###FM
 
 Simple frequency modulation synthesis via two sine oscillators feeding an Attack/Decay envelope. The cmRatio property determines the ratio between the carrier and modulator frequencies. The index determines the amplitude of the modulator. The AD envelope modulates the amplitude of the overall output as well as the index property. For basic info on FM synthesis see the FM tutorial. 
 
@@ -409,7 +411,7 @@ a.chord( ['c2', 'eb2', 'g2', 'b2'] )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
 
-##Mono
+###Mono
 
 A three-oscillator monosynth feeding an Attack / Decay envelope and a 24db ladder-style filter. The attack decay envelope modulates the amplitude of the oscillator and the cutoff frequency of the filter. The filterMult property determines how much the envelope raises the base cutoff for the filter over the course of the envelope. For example, if a synth2 has a base cutoff of .1 and a filterMult of .2, the modulated filter cutoff will be .3 when the envelope is at its peak. 
 
@@ -447,7 +449,7 @@ a.play( [440, 880, 1320], 1/4 )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
 
-##Pluck
+###Pluck
 
 Simple physical model of a plucked string using Karplus-Strong.
 
@@ -478,295 +480,8 @@ a.blend = Add( .5, Sine(.05, .5)._ )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. 
 
-##Flanger
-
-Flanging effect acheived through a modulated delay line.
-
-Example:
-```javascript
-a = FM().play( Rndi(100,1000), 1/4 )
-
-f = Flanger({ rate:Slider(), feedback:Slider() }) 
-
-a.fx.add( f )
-```
-
-#### Properties
-
-* _rate_ : Default range: { .01, 20 }. The speed in Hz that the delay tap position is modulated by.  
-* _feedback_  : Default range: { 0, .99 }. The amount of output signal fed back into the input.
-* _amount_ : Default range: { 25, 300 }. The size of the delay line.
-
-#### Methods
-
-None worth mentioning.
-
-##HPF
-
-A 24db per octave, high-pass resonant filter. 
-
-Example:
-```javascript
-d = XOX( 'x*o*x*o-' )
-
-h = HPF()
-h.cutoff = Add( .4, Sine(.2, .3)._ )
-h.resonance = 4
-
-d.fx.add( h )
-```
-
-#### Properties
-
-* _cutoff_ : Default range: { 0, 1 }. Float. The cutoff frequency for the filter measured from 0 to 1 where 1 is nyquist. In practice, values above .75 or so seem unstable.  
-* _resonance_ : Default range: { 0, 5.5 }. The amount of emphasis placed on the frequencies surrounding the cutoff. This can cause the filter to blow up at values above 5.5, but can also introduce pleasing distortion at high values in certain situations. Be careful!
-
-#### Methods
-
-None worth mentioning.
-
-##LPF
-
-A 24db per octave resonant filter. 
-
-Example:
-```javascript
-d = XOX( 'x*o*x*o-' )
-
-l = LPF()
-l.cutoff = Add( .4, Sine(.2, .3)._ )
-l.resonance = 4
-
-d.fx.add( d )
-```
-
-#### Properties
-
-* _cutoff_ : Default range: { 0, 1 }. Float. The cutoff frequency for the filter measured from 0 to 1 where 1 is nyquist. In practice, values above .75 or so seem unstable.  
-* _resonance_ : Default range: { 0, 5.5 }. The amount of emphasis placed on the frequencies surrounding the cutoff. This can cause the filter to blow up at values above 5.5, but can also introduce pleasing distortion at high values in certain situations. Be careful!
-
-#### Methods
-
-None worth mentioning.
-
-##Tremolo
-
-Basic amplitude modulation effect
-
-Example:
-```javascript
-a = Synth({ attack:44, decay:44100 }).play( Rndi(100,1000), 1/2 )
-
-r = Tremolo({ amp: 1, frequency:.5 })
-
-a.fx.add( r )
-```
-
-#### Properties
-
-* _frequency_ : Default range: { .05, 20 }. The frequency of the modulating oscillator. 
-* _amp_  : Default range: { 0, 1 }. Amplitude of the modulating oscillator. 
-
-#### Methods
-
-None worth mentioning.
-
-##Gain
-
-Basic amplitude control for insertion in fx chains.
-
-Example:
-```javascript
-a = Synth({ attack:44, decay:44100 }).play( Rndi(100,1000), 1/2 )
-
-a.fx.add( Crush( 2, .1 ) )
-
-b = Gain({ amp: .5 })
-
-a.fx.add( b )
-```
-
-#### Properties
-
-* _amount_  : Default range: { 0, 1 }. Constant to modulate input value by.
-
-#### Methods
-
-None worth mentioning.
-
-##Reverb
-
-Implementation of the Schroeder/Moorer model.
-
-Inherits from Ugen.
-
-Example:
-```javascript
-a = Pluck().play( Rndi(100,1000), 1/4 )
-
-r = Reverb({ roomSize: Add( .75, Sine( .05, .245 )._ ) })
-
-a.fx.add( r )
-```
-
-#### Properties
-
-* _roomSize_ : Default range: { .5, .995 }. The size of the room that is simulated.
-* _damping_  : Default range: { 0, 1 }. Attenuation of high frequencies.
-
-#### Methods
-
-None worth mentioning.
-
-##Delay
-
-Simple echo effect with variable delay time and feedback.
-
-Example:
-```javascript
-a = Pluck().play( Rndi(100,1000), 1/4 )
-
-d = Delay()
-
-q = Seq({
-  time: Rndi( ms(2), ms(500) ),
-  durations:1/2,
-  target: d 
-})
-
-a.fx.add( d )
-```
-
-#### Properties
-
-* _time_ : Default range: { 50, 88200 }. The time between echoes, measured in samples. 
-* _feedback_  : Default range: { 0, 1 }. How much output is fed back into the input of the delay. 
-
-#### Methods
-
-None worth mentioning.
-
-##Crush
-
-Digital distortion through bit-depth quantization and sample-rate reduction.
-
-Example:
-```javascript
-a = FM().play( Rndi(100,1000), 1/4 )
-
-c = Crush({ bitDepth:Slider(), sampleRate:Slider() })
-
-a.fx.add( c )
-```
-
-#### Properties
-
-* _bitDepth_ : Default range: { 1, 16 }. Float. The number of bits used in the output sample.  
-* _sampleRate_ : Default range: { 0, 1 }. Float. The sample rate of the output signal. 
-
-#### Methods
-
-None worth mentioning.
-
-##Chorus
-
-Chorusing effect acheived through a modulated delay line. This is actually just a flanger with settings that make it resemble a chorus effect.
-
-Example:
-```javascript
-a = FM().play( Rndi(100,1000), 1/4 )
-
-c = Chorus({ rate:Slider(), feedback:Slider() }) 
-
-a.fx.add( c )
-```
-
-#### Properties
-
-* _rate_ : Default range: { .01, 20 }. Default value: 1. The speed in Hz that the delay tap position is modulated by.  
-* _feedback_  : Default range: { 0, .99 }. Default: 0.The amount of output signal fed back into the input.
-* _amount_ : Default range: { 25, 300 }. Default: ms(1). The size of the delay line in samples.
-
-#### Methods
-
-None worth mentioning.
-
-##Vibrato
-
-A simple frequency modulation effect acheived using a delay line.
-
-Example:
-```javascript
-a = FM().play( Rndi(100,1000), 1/4 )
-
-v = Vibrato({ rate:Slider() }) 
-
-a.fx.add( x )
-```
-
-#### Properties
-
-* _rate_ : Default range: { .01, 20 }. The speed in Hz that the delay tap position is modulated by.  
-* _amount_ : Default range: { 25, 300 }. The size of the delay line; this effectively controls the depth of the vibrato.
-
-#### Methods
-
-None worth mentioning.
-
-##Schizo
-
-A buffer-shuffling / stuttering effect with reversing and pitch-shifting.
-
-Example:
-```javascript
-d = XOX( 'x*o*x*o-' )
-
-s = Schizo({ chance:.5, rate:ms(250), length:ms(1000) })
-
-d.fx.add( s )
-
-```
-
-
-#### Properties
-
-* _chance_ : Default range { 0, 1 }. The likelihood that stuttering will occur at given intervals.
-* _rate_ : Default 11025. Measured in samples. How often Schizo randomly determines whether or not it should begin stuttering.
-* _length_ : Default 22050. Measured in samples. The length of time that stuttered audio plays when stuttering is triggered.
-* _reverseChance_ : Float { 0 , 1 }, default .5. The chance that a particular stutter will play in reverse.
-* _pitchChance_ : Float { 0,1 }, default.5. The chance that a particular stutter will be repitched.
-* _pitchMin_ : Float, default: .25. The lowest playback rate for repitched stuttering.
-* _pitchMax_ : Float, default: 2. The highest playback rate for repitched stuttering.
-* _wet_ : Float { 0,1 }, default 1. When shuffling, the amplitude of the stuttered audio.
-* _dry_ : Float { 0,1 }, default 0. When shuffling, the amplitude of the un-stuttered audio.
-
-#### Methods
-
-None worth mentioning.
-
-##RingMod
-
-Ring modulation effect.
-
-Example:
-```javascript
-a = Pluck().play( Rndi(100,1000), 1/4 )
-
-r = RingMod({ amp: 1, frequency:440 })
-
-a.fx.add( r )
-```
-
-#### Properties
-
-* _frequency_ : Default range: { 20, 3000 }. The frequency of the modulating oscillator. 
-* _amp_  : Default range: { 0, 1 }. Amplitude of the modulating oscillator. 
-
-#### Methods
-
-None worth mentioning.
-
-##Drums
+## Drums & Percussion
+###Drums
 
 A sampled drum kit with an attached sequencer for quick beat construction. The first argument to the constructor allows you to easily define beats using the following syntax:
 
@@ -815,7 +530,7 @@ c = Drums({
 * _kill_() : Disconnect the Drums from whatever bus it is connected to. 
 
 [sampler]: javascript:Gibber.Environment.Docs.openFile('audio','sampler')
-##EDrums
+###EDrums
 
 A synthesized drum kit, carefully designed to simulate a Roland TR-808 drum machine, with an attached sequencer for quick beat construction. The first
 argument to the constructor allows you to easily define beats using the following syntax:
@@ -863,7 +578,7 @@ b.seq.note = 'xoxx**-o'
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the Drums from whatever bus it is connected to. 
 
-##Kick
+###Kick
 
 A synthesized kick drum generator with a built-in sequencer.
 
@@ -886,7 +601,7 @@ a.decay = .75
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Snare
+###Snare
 
 A synthesized snare drum generator with a built-in sequencer.
 
@@ -911,7 +626,7 @@ a.decay = 22050
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Hat
+###Hat
 
 A synthesized hihat drum sound with a built-in sequencer. Consists of six detuned sequencers feeding split into separate bandpass and hipass filters.
 
@@ -935,7 +650,7 @@ a = Hat().play( Rndi(1000, 11025), 1/8 )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Clave
+###Clave
 
 A synthesized clave with a built-in sequencer, generated using a resonant bandpass filter fed by an impulse.
 
@@ -958,7 +673,7 @@ a = Clave().play( Rndf(1500, 5000), 1/16 )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Cowbell
+###Cowbell
 
 Classic 808 cowbell with two square waves feeding a bandpass filter and an exponential decay envelope.
 
@@ -982,7 +697,7 @@ a = Cowbell().play( Rndf(5500, 44100), 1/2 )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Conga
+###Conga
 
 Impulse feeding resonant bandpass filter. Similar to the synth Kick sound but without the additional lowpass filter.
 
@@ -1005,7 +720,7 @@ a = Conga().play( Rndf(160, 480), 1/8 )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Tom
+###Tom
 
 A synthesized tom with a built-in sequencer, generated using a resonant bandpass filter fed by an impulse combined with noise feeding into a lowpass filter.
 
@@ -1028,60 +743,452 @@ a = Tom().play( Rndf(80, 160), 1/8 )
 * _stop_() : This method stops the sequencer that is built into the oscillator if it has been started.
 * _kill_() : Disconnect the oscillator from whatever bus it is connected to. Note that if the oscillator is reference by another unit generator it will continue to feed output to it.
 
-##Bus
+## Effects
+###Flanger
 
-A audio bus for routing FX, or controlling amplitude and panning.
-
-```
-drums = EDrums('x*ox*xo')
-
-bus1 = Bus().fx.add( Schizo() )
-bus1.pan = 1
-
-bus2 = Bus().fx.add( Delay({ bitDepth:3 }) )
-bus2.pan.seq( [-1,0,1], 1 )
-
-drums.send( bus1, .5 )
-drums.send( bus2, .5 )
-```
-
-#### Properties
-
-* _amp_ : Float. Default range: { .0, 1 }. Default value: 1. Gain on the bus signal.
-* _pan_  : Float range: { -1, 1 }. Default: 0. Position of the bus in the stereo spectrum.
-* _fx_ : Array. You can `add` or `remove` fx from the bus using this array.
-
-#### Methods
-
-None worth mentioning.
-
-##Input
-
-Read input from the microphone, for live-processing or sampling. Chrome is currently the only browser to support this feature.
+Flanging effect acheived through a modulated delay line.
 
 Example:
 ```javascript
-input = Input().fx.add( Delay() )
+a = FM().play( Rndi(100,1000), 1/4 )
 
-// record two measures of input and delay
-sampler = Sampler().record( input.fx[0], 2 )
-sampler.note.seq( [.5,1,2,4,.25].rnd(), 1/2 )
+f = Flanger({ rate:Slider(), feedback:Slider() }) 
 
-// disconnect input after sampler has finished recording
-input._
+a.fx.add( f )
 ```
 
 #### Properties
 
-* _amp_ : Default range: { 0, 1 }. Default value: 1. Gain stage on input.
-* _fx_ : Array. You can `add` or `remove` fx from the bus using this array.
+* _rate_ : Default range: { .01, 20 }. The speed in Hz that the delay tap position is modulated by.  
+* _feedback_  : Default range: { 0, .99 }. The amount of output signal fed back into the input.
+* _amount_ : Default range: { 25, 300 }. The size of the delay line.
 
 #### Methods
 
 None worth mentioning.
 
+###HPF
+
+A 24db per octave, high-pass resonant filter. 
+
+Example:
+```javascript
+d = XOX( 'x*o*x*o-' )
+
+h = HPF()
+h.cutoff = Add( .4, Sine(.2, .3)._ )
+h.resonance = 4
+
+d.fx.add( h )
+```
+
+#### Properties
+
+* _cutoff_ : Default range: { 0, 1 }. Float. The cutoff frequency for the filter measured from 0 to 1 where 1 is nyquist. In practice, values above .75 or so seem unstable.  
+* _resonance_ : Default range: { 0, 5.5 }. The amount of emphasis placed on the frequencies surrounding the cutoff. This can cause the filter to blow up at values above 5.5, but can also introduce pleasing distortion at high values in certain situations. Be careful!
+
+#### Methods
+
+None worth mentioning.
+
+###LPF
+
+A 24db per octave resonant filter. 
+
+Example:
+```javascript
+d = XOX( 'x*o*x*o-' )
+
+l = LPF()
+l.cutoff = Add( .4, Sine(.2, .3)._ )
+l.resonance = 4
+
+d.fx.add( d )
+```
+
+#### Properties
+
+* _cutoff_ : Default range: { 0, 1 }. Float. The cutoff frequency for the filter measured from 0 to 1 where 1 is nyquist. In practice, values above .75 or so seem unstable.  
+* _resonance_ : Default range: { 0, 5.5 }. The amount of emphasis placed on the frequencies surrounding the cutoff. This can cause the filter to blow up at values above 5.5, but can also introduce pleasing distortion at high values in certain situations. Be careful!
+
+#### Methods
+
+None worth mentioning.
+
+###Tremolo
+
+Basic amplitude modulation effect
+
+Example:
+```javascript
+a = Synth({ attack:44, decay:44100 }).play( Rndi(100,1000), 1/2 )
+
+r = Tremolo({ amp: 1, frequency:.5 })
+
+a.fx.add( r )
+```
+
+#### Properties
+
+* _frequency_ : Default range: { .05, 20 }. The frequency of the modulating oscillator. 
+* _amp_  : Default range: { 0, 1 }. Amplitude of the modulating oscillator. 
+
+#### Methods
+
+None worth mentioning.
+
+###Gain
+
+Basic amplitude control for insertion in fx chains.
+
+Example:
+```javascript
+a = Synth({ attack:44, decay:44100 }).play( Rndi(100,1000), 1/2 )
+
+a.fx.add( Crush( 2, .1 ) )
+
+b = Gain({ amp: .5 })
+
+a.fx.add( b )
+```
+
+#### Properties
+
+* _amount_  : Default range: { 0, 1 }. Constant to modulate input value by.
+
+#### Methods
+
+None worth mentioning.
+
+###Reverb
+
+Implementation of the Schroeder/Moorer model.
+
+Inherits from Ugen.
+
+Example:
+```javascript
+a = Pluck().play( Rndi(100,1000), 1/4 )
+
+r = Reverb({ roomSize: Add( .75, Sine( .05, .245 )._ ) })
+
+a.fx.add( r )
+```
+
+#### Properties
+
+* _roomSize_ : Default range: { .5, .995 }. The size of the room that is simulated.
+* _damping_  : Default range: { 0, 1 }. Attenuation of high frequencies.
+
+#### Methods
+
+None worth mentioning.
+
+###Delay
+
+Simple echo effect with variable delay time and feedback.
+
+Example:
+```javascript
+a = Pluck().play( Rndi(100,1000), 1/4 )
+
+d = Delay()
+
+q = Seq({
+  time: Rndi( ms(2), ms(500) ),
+  durations:1/2,
+  target: d 
+})
+
+a.fx.add( d )
+```
+
+#### Properties
+
+* _time_ : Default range: { 50, 88200 }. The time between echoes, measured in samples. 
+* _feedback_  : Default range: { 0, 1 }. How much output is fed back into the input of the delay. 
+
+#### Methods
+
+None worth mentioning.
+
+###Crush
+
+Digital distortion through bit-depth quantization and sample-rate reduction.
+
+Example:
+```javascript
+a = FM().play( Rndi(100,1000), 1/4 )
+
+c = Crush({ bitDepth:Slider(), sampleRate:Slider() })
+
+a.fx.add( c )
+```
+
+#### Properties
+
+* _bitDepth_ : Default range: { 1, 16 }. Float. The number of bits used in the output sample.  
+* _sampleRate_ : Default range: { 0, 1 }. Float. The sample rate of the output signal. 
+
+#### Methods
+
+None worth mentioning.
+
+###Chorus
+
+Chorusing effect acheived through a modulated delay line. This is actually just a flanger with settings that make it resemble a chorus effect.
+
+Example:
+```javascript
+a = FM().play( Rndi(100,1000), 1/4 )
+
+c = Chorus({ rate:Slider(), feedback:Slider() }) 
+
+a.fx.add( c )
+```
+
+#### Properties
+
+* _rate_ : Default range: { .01, 20 }. Default value: 1. The speed in Hz that the delay tap position is modulated by.  
+* _feedback_  : Default range: { 0, .99 }. Default: 0.The amount of output signal fed back into the input.
+* _amount_ : Default range: { 25, 300 }. Default: ms(1). The size of the delay line in samples.
+
+#### Methods
+
+None worth mentioning.
+
+###Vibrato
+
+A simple frequency modulation effect acheived using a delay line.
+
+Example:
+```javascript
+a = FM().play( Rndi(100,1000), 1/4 )
+
+v = Vibrato({ rate:Slider() }) 
+
+a.fx.add( x )
+```
+
+#### Properties
+
+* _rate_ : Default range: { .01, 20 }. The speed in Hz that the delay tap position is modulated by.  
+* _amount_ : Default range: { 25, 300 }. The size of the delay line; this effectively controls the depth of the vibrato.
+
+#### Methods
+
+None worth mentioning.
+
+###Schizo
+
+A buffer-shuffling / stuttering effect with reversing and pitch-shifting.
+
+Example:
+```javascript
+d = XOX( 'x*o*x*o-' )
+
+s = Schizo({ chance:.5, rate:ms(250), length:ms(1000) })
+
+d.fx.add( s )
+
+```
+
+
+#### Properties
+
+* _chance_ : Default range { 0, 1 }. The likelihood that stuttering will occur at given intervals.
+* _rate_ : Default 11025. Measured in samples. How often Schizo randomly determines whether or not it should begin stuttering.
+* _length_ : Default 22050. Measured in samples. The length of time that stuttered audio plays when stuttering is triggered.
+* _reverseChance_ : Float { 0 , 1 }, default .5. The chance that a particular stutter will play in reverse.
+* _pitchChance_ : Float { 0,1 }, default.5. The chance that a particular stutter will be repitched.
+* _pitchMin_ : Float, default: .25. The lowest playback rate for repitched stuttering.
+* _pitchMax_ : Float, default: 2. The highest playback rate for repitched stuttering.
+* _wet_ : Float { 0,1 }, default 1. When shuffling, the amplitude of the stuttered audio.
+* _dry_ : Float { 0,1 }, default 0. When shuffling, the amplitude of the un-stuttered audio.
+
+#### Methods
+
+None worth mentioning.
+
+###RingMod
+
+Ring modulation effect.
+
+Example:
+```javascript
+a = Pluck().play( Rndi(100,1000), 1/4 )
+
+r = RingMod({ amp: 1, frequency:440 })
+
+a.fx.add( r )
+```
+
+#### Properties
+
+* _frequency_ : Default range: { 20, 3000 }. The frequency of the modulating oscillator. 
+* _amp_  : Default range: { 0, 1 }. Amplitude of the modulating oscillator. 
+
+#### Methods
+
+None worth mentioning.
+
+## Math/Modulation
+###Abs
+
+Take the absolute value of a unit generator's output (or a number) on a per-sample basis.
+
+In the example below, note that the frequency only travels above the default pitch of the sine oscillator (440 Hz).
+```
+sine = Sine()
+
+mod = Sine( .5, 50 )._ // disconnect!
+
+sine.frequency = Add( 440, Abs( mod ) )
+```
+
+#### Properties
+
+* _0_ : Float or Ugen. The first operand passed to the constructor.
+###Add
+
+A simple unit generator to add multiple values together on a per-sample basis, primarily for use in modulation. `Add` has a constructor that accepts two values.
+
+Example:
+```javascript
+drums = EDrums('x*o*x*o-')
+
+mod = Sine( 12, .5 )._ 
+add = Add( .5, mod )
+
+drums.amp = add
+```
+
+#### Properties
+
+* _0_ : Float or Ugen. The first operand passed to the constructor.
+* _1_ : Float or Ugen. The second operand passed to the constructor.
+###Clamp
+
+Clamp the output of a ugen to a range of values.
+
+In the example below, the `clamp` ugen acts as a half-wave rectifier.
+```
+sine = Sine()
+
+mod = Sine( .5, 250 )._ // disconnect!
+
+clamp = Clamp( mod, 0, mod.amp )
+
+sine.frequency = Add( 440, clamp )
+```
+
+#### Properties
+
+* _input_ : Ugen. The signal that will be clamped.
+* _min_ : Float or Ugen. Define the minimum boundary for clamping.
+* _max_ : Float or Ugen. Define the maximum boundary for clamping.
+
+Note that math ugens do not automatically connect to the master graph as they are
+typically used for modulation. You have to explicitly call `clamp.connect()` if you
+want to connect the output directly to a bus.
+###Div
+
+A simple unit generator to divide a pair of values on a per-sample basis, primarily for use in modulation. `Div` has a constructor that accepts two values.
+
+#### Properties
+
+* _0_ : Float or Ugen. The first operand passed to the constructor.
+* _1_ : Float or Ugen. The second operand passed to the constructor.
+###Merge
+
+`Merge` accepts a stereo input and converts it to mono so that it can be used with other math / binary operators. For example, the `Drums` ugen (and most other synths / samplers) outputs a stereo signal. If we want to use this signal for modulation we need to employ `Merge`.
+
+```
+drums = Drums( 'x*ox*xo-' )
+mono = Merge( drums ) 
+
+sine = Sine()
+sine.frequency = Mul( mono, 400 )
+```
+
+#### Properties
+
+* _0_ :  Ugen. The stereo generator output to be converted into a mono signal.
+
+###Mod
+
+A simple unit generator that calculates the modulus of a pair of values on a per-sample basis. `Mod` has a constructor that accepts two values.
+
+#### Properties
+
+* _0_ : Float or Ugen. The first operand passed to the constructor.
+* _1_ : Float or Ugen. The second operand passed to the constructor.
+###Mul
+
+A simple unit generator to multiple multiple values together on a per-sample basis, primarily for use in modulation. `Mul` has a constructor that accepts two values.
+
+Simple ring modulation:
+```
+sine = Sine()
+sine.frequency.seq( Rndi(220,880), 1/4 )
+
+mod = Sine( 220, 1 )._
+
+mul = Mul( sine, mod )
+
+mul.connect()
+```
+
+#### Properties
+
+* _0_ : Float or Ugen. The first operand passed to the constructor.
+* _1_ : Float or Ugen. The second operand passed to the constructor.
+###Pow
+
+Raise the first operand to the power of the second operand on a per-sample basis. `Pow` has a constructor that accepts two values.
+
+```
+sine = Sine()
+sine.frequency.seq( Rndi(220,880), 1/4 )
+
+mod = Sine( 220, 1 )._
+
+mul = Mul( sine, mod )
+
+mul.connect()
+```
+
+#### Properties
+
+* _0_ : Float or Ugen. The first operand passed to the constructor.
+* _1_ : Float or Ugen. The second operand passed to the constructor.
+###Sqrt
+
+Take the sqrt value of a unit generator's output (or a number) on a per-sample basis.
+
+#### Properties
+
+* _0_ : Float or Ugen. The operand to take the square root of.
+###Sub
+
+A simple unit generator to subtract values on a per-sample basis, primarily for use in modulation. `Sub` has a constructor that accepts two values.
+
+Simple ring modulation:
+```
+sine = Sine()
+
+mod = Sine( .5, 50 )._ // disconnect!
+
+sine.frequency = Sub( 440, Abs( mod ) )
+```
+
+#### Properties
+
+* _0_ : Float or Ugen. The first operand passed to the constructor.
+* _1_ : Float or Ugen. The second operand passed to the constructor.
 # Graphics
-##Film
+## Shaders
+###Film
 
 A shader recreating film grain / scanline effects
 
@@ -1102,7 +1209,7 @@ f.sIntensity = Slider()
 * _sIntensity_ : Float. The strength of the scanline effect.
 * _nIntensity_ : Float. The strength of the film grain noise.
 
-##Dots
+###Dots
 
 A post-processing shader recreating the halftone technique (http://en.wikipedia.org/wiki/Halftone) 
 
@@ -1120,7 +1227,7 @@ b = Dots({ scale:.25 })
 * _center_ : THREE.Vector2. Center position of dots
 * _angle_ : Float. Angle of dots in radians
 
-##Edge
+###Edge
 
 Edge detection shader.
 
@@ -1133,7 +1240,7 @@ a.spin( .005 )
 e = Edge()
 ```
 
-##Focus
+###Focus
 
 A rough simulation of a depth of field effect.
 
@@ -1157,7 +1264,7 @@ f.waveFactor = b.out
 * _screenWidth_ : Default range { 0,1024 }.
 * _screenHeight_ : Default range { 0,1024 }.
 
-##Bleach
+###Bleach
 
 Lightens light areas and darkens other parts of the image
 Example:
@@ -1169,7 +1276,7 @@ a.spin( .005 )
 b = Bleach()
 ```
 
-##Kaleidoscope
+###Kaleidoscope
 
 Aptly named, this shader creates a kaleidoscope effect that can be rotated.
 
@@ -1191,7 +1298,7 @@ k.update = function() {
 * _sides_ : Default range { 2,36 }. The number of fragments comprising the kaleidoscope effect. 
 * _angle_ : Default range { 0,2PI }. The rotation of the fragments.
 
-##Pixellate
+###Pixellate
 
 A shader that pixellates Gibber's graphical output.
 
@@ -1213,7 +1320,7 @@ f.amount.max = .1
 * _amount_ : Default range { 0,.25 }. Amount of pixellation. A value of .25 means the screen will be pixellated into four quadrants; a value of .1 means 10 'pixels' a value of 0 means no pixellation occurs.
 * _blend_ : Default range {0,1}. Blend the pixellated texture with the texture entering the shader.
 
-##Stripes
+###Stripes
 
 A simple generative shader that creates a grid of lines.
 Example:
@@ -1235,7 +1342,8 @@ b.colorX.b = .5
 * _colorX_: { r,g,b }. Each component is in the range of 0-1.
 * _colorY_: { r,g,b }. Each component is in the range of 0-1.
 
-##3D Geometries
+## Misc
+###3D Geometries
 
 All 3d geometries share the methods and properties outlined below. In addition, each geometry has a set of properties that can only best (at least currently) on instantiation; they cannot be modified after a geometry has been created.
 
@@ -1285,7 +1393,7 @@ a.update = function() {
 ```
 * _spin_( Float:x, Float:y, Float;z ) : This method spins the geometry an amount determined by the arguments passed to it. If a single value is passed, the geometry spins around all three axis at the same speed. If three values are passed, the geometry spins on each axis according to each particular argument. If 0 is passed the object ceases spinning.
 
-## Canvas
+### Canvas
 
 The canvas object provides a 2d drawing surface for Gibber. There is only one
 canvas allowed on the screen at a time (currently). The canvas object basically
@@ -1352,7 +1460,7 @@ stroke after this to see the result.
 * _hide()_: Hide the canvas.
 
 # Sequencing
-##Arp
+###Arp
 
 The Arp object is an arpeggiator providing a variety of controls. See the Chords and Arpeggios tutorial for detailed information.
 
@@ -1389,7 +1497,7 @@ d.target = c
 
 
 
-##Pattern
+###Pattern
 
 Patterns are functions that output values from an internal list that is typically passed as an argument when the pattern is first created. These lists can be manipulated in various ways, influencing the output of the patterns. Alternatively, `filters` placed on the pattern (each filter is simply a function expected to return an array of values) can also change the output of the pattern dynamically, without affecting its underlying list.
 
@@ -1449,7 +1557,7 @@ p.rotate.seq( 1,1 )
 
 
 
-##Seq
+###Seq
 
 The Seq object is a standalone sequencer that can schedule calls to methods and properties on a target object. Alternatively, it can be used to quickly sequence repeated calls to an anonymous function. Scheduling occurs at audio-rate and may be modulated by audio sources.
 
@@ -1486,162 +1594,8 @@ c = Seq( function() {
 
 [mul]: javascript:Gibber.Environment.Docs.openFile('math','mul')
 [pattern]: javascript:Gibber.Environment.Docs.openFile('seq','pattern')
-# Math
-##Abs
-
-Take the absolute value of a unit generator's output (or a number) on a per-sample basis.
-
-In the example below, note that the frequency only travels above the default pitch of the sine oscillator (440 Hz).
-```
-sine = Sine()
-
-mod = Sine( .5, 50 )._ // disconnect!
-
-sine.frequency = Add( 440, Abs( mod ) )
-```
-
-#### Properties
-
-* _0_ : Float or Ugen. The first operand passed to the constructor.
-##Add
-
-A simple unit generator to add multiple values together on a per-sample basis, primarily for use in modulation. `Add` has a constructor that accepts two values.
-
-Example:
-```javascript
-drums = EDrums('x*o*x*o-')
-
-mod = Sine( 12, .5 )._ 
-add = Add( .5, mod )
-
-drums.amp = add
-```
-
-#### Properties
-
-* _0_ : Float or Ugen. The first operand passed to the constructor.
-* _1_ : Float or Ugen. The second operand passed to the constructor.
-##Clamp
-
-Clamp the output of a ugen to a range of values.
-
-In the example below, the `clamp` ugen acts as a half-wave rectifier.
-```
-sine = Sine()
-
-mod = Sine( .5, 250 )._ // disconnect!
-
-clamp = Clamp( mod, 0, mod.amp )
-
-sine.frequency = Add( 440, clamp )
-```
-
-#### Properties
-
-* _input_ : Ugen. The signal that will be clamped.
-* _min_ : Float or Ugen. Define the minimum boundary for clamping.
-* _max_ : Float or Ugen. Define the maximum boundary for clamping.
-
-Note that math ugens do not automatically connect to the master graph as they are
-typically used for modulation. You have to explicitly call `clamp.connect()` if you
-want to connect the output directly to a bus.
-##Div
-
-A simple unit generator to divide a pair of values on a per-sample basis, primarily for use in modulation. `Div` has a constructor that accepts two values.
-
-#### Properties
-
-* _0_ : Float or Ugen. The first operand passed to the constructor.
-* _1_ : Float or Ugen. The second operand passed to the constructor.
-##Merge
-
-`Merge` accepts a stereo input and converts it to mono so that it can be used with other math / binary operators. For example, the `Drums` ugen (and most other synths / samplers) outputs a stereo signal. If we want to use this signal for modulation we need to employ `Merge`.
-
-```
-drums = Drums( 'x*ox*xo-' )
-mono = Merge( drums ) 
-
-sine = Sine()
-sine.frequency = Mul( mono, 400 )
-```
-
-#### Properties
-
-* _0_ :  Ugen. The stereo generator output to be converted into a mono signal.
-
-##Mod
-
-A simple unit generator that calculates the modulus of a pair of values on a per-sample basis. `Mod` has a constructor that accepts two values.
-
-#### Properties
-
-* _0_ : Float or Ugen. The first operand passed to the constructor.
-* _1_ : Float or Ugen. The second operand passed to the constructor.
-##Mul
-
-A simple unit generator to multiple multiple values together on a per-sample basis, primarily for use in modulation. `Mul` has a constructor that accepts two values.
-
-Simple ring modulation:
-```
-sine = Sine()
-sine.frequency.seq( Rndi(220,880), 1/4 )
-
-mod = Sine( 220, 1 )._
-
-mul = Mul( sine, mod )
-
-mul.connect()
-```
-
-#### Properties
-
-* _0_ : Float or Ugen. The first operand passed to the constructor.
-* _1_ : Float or Ugen. The second operand passed to the constructor.
-##Pow
-
-Raise the first operand to the power of the second operand on a per-sample basis. `Pow` has a constructor that accepts two values.
-
-```
-sine = Sine()
-sine.frequency.seq( Rndi(220,880), 1/4 )
-
-mod = Sine( 220, 1 )._
-
-mul = Mul( sine, mod )
-
-mul.connect()
-```
-
-#### Properties
-
-* _0_ : Float or Ugen. The first operand passed to the constructor.
-* _1_ : Float or Ugen. The second operand passed to the constructor.
-##Sqrt
-
-Take the sqrt value of a unit generator's output (or a number) on a per-sample basis.
-
-#### Properties
-
-* _0_ : Float or Ugen. The operand to take the square root of.
-##Sub
-
-A simple unit generator to subtract values on a per-sample basis, primarily for use in modulation. `Sub` has a constructor that accepts two values.
-
-Simple ring modulation:
-```
-sine = Sine()
-
-mod = Sine( .5, 50 )._ // disconnect!
-
-sine.frequency = Sub( 440, Abs( mod ) )
-```
-
-#### Properties
-
-* _0_ : Float or Ugen. The first operand passed to the constructor.
-* _1_ : Float or Ugen. The second operand passed to the constructor.
 # Interface
-##Mouse
+###Mouse
 
 This object presents signals derived from the position of the mouse cursor in the browser window.
 
@@ -1663,7 +1617,7 @@ a.resonance = Mouse.Y
 * _off_ : Stop polling mouse position data.
 
 
-##Slider
+###Slider
 
 A vertical or horizontal slider. Sliders are a type of [Widget][widget] and inherit its methods and properties.
 
@@ -1685,17 +1639,17 @@ a.isVertical = false
 See the [Widget][widget] prototype for relevant methods.
 
 
-##Widget
+###Widget
 
 Most interactive elements in Gibber (but not all) have a [Widget](javascript:Gibber.Environment.Docs.openFile("graphics", "geometry")) as their object prototype. You never create a widget directly, but other elements that you create will use its methods and properties.
 
 #### Properties
 
-* _background_ : CSS color. Default : '##000'. The background color for the widget. If a background color is not assigned to the widget, the widget will
+* _background_ : CSS color. Default : '###000'. The background color for the widget. If a background color is not assigned to the widget, the widget will
 use the background of its containing panel.
-* _fill_  : CSS color. Default: '##999'. If a fill color is not assigned to the widget, the widget will
+* _fill_  : CSS color. Default: '###999'. If a fill color is not assigned to the widget, the widget will
 use the fill of its parent panel.
-* _stroke_  : CSS color. Default: '##ccc'. If a stroke color is not assigned to the widget, the widget will
+* _stroke_  : CSS color. Default: '###ccc'. If a stroke color is not assigned to the widget, the widget will
 use the stroke of its containing panel.
 * _x_ : Float. The x-coordinate for the upper-lefthand corner of the widget, expressed as a multiple of the parent panel's width. For example, a x value of .5 will place the left edge of the widget at the horizontal center of the panel.
 * _y_ : Float. The y-coordinate for the upper-lefthand corner of the widget, expressed as a multiple of the parent panel's height. For example, a x value of .5 will place the top edge of the widget at the vertical center of the panel.
@@ -1724,7 +1678,7 @@ under Browse > Miscellaneous for more information.
 * _\_height_ : Returns the width of the widget in pixels.
 * _setValue_ : Change the current value displayed by the widget.
 
-##Button
+###Button
 
 A button with variable modes. Buttons are a type of [Widget][widget] and inherit its methods and properties.
 
@@ -1749,7 +1703,7 @@ a = Button({ mode:'momentary' })
 See the [Widget][widget] prototype for relevant methods.
 
 [widget]: javascript:jump('interface-widget')
-##Knob
+###Knob
 
 A virtual knob with a couple of different interaction modalities. Knobs are a type of [Widget][widget] and inherit its methods and properties.
 
@@ -1770,7 +1724,7 @@ b = Knob({ usesRotation:true })
 See the [Widget][widget] prototype for relevant methods.
 
 
-##Crossfader
+###Crossfader
 
 A horizontal crossfader. Crossfader are a type of [Widget][widget] and inherit its methods and properties.
 
@@ -1797,7 +1751,7 @@ See the [Widget][widget] prototype for many other relevant properties.
 See the [Widget][widget] prototype for relevant methods.
 
 
-##XY
+###XY
 A multitouch XY controller with optional built-in physics. The XY widget acts as an
 array of children, each one representing a X and a Y position. Thus to access the X
 property of the first child (using a zero-index array), we use my\_xy\_widget[0].x.
@@ -1829,7 +1783,7 @@ See the [Widget][widget] prototype for many other relevant properties.
 #### Methods
 See the [Widget][widget] prototype for relevant methods.
 
-##Keyboard
+###Keyboard
 
 A piano-style keyboard that is a collection of buttons. Keyboard is a type of [Widget][widget] and inherits its methods and properties.
 
@@ -1853,7 +1807,7 @@ See the [Widget][widget] prototype for many other relevant properties.
 See the [Widget][widget] prototype for relevant methods.
 
 
-##Accelerometer
+###Accelerometer
 When used with sketches running on mobile devices, this widget will use the acceleration of the device as a signal.
 
 Example:
@@ -1883,7 +1837,7 @@ mapping abstractions.
 
 See the [Widget][widget] prototype for relevant methods.
 
-##Orientation
+###Orientation
 When used in sketches running on mobile devices, this widget will use the orientation of the device as a signal.
 
 Example:
@@ -1911,7 +1865,7 @@ mapping abstractions.
 See the [Widget][widget] prototype for relevant methods.
 
 
-##Patchbay
+###Patchbay
 
 A simple widget for establishing virtual connections. After creating connections via drag and drop,
 users can delete them by clicking on the connection and hitting delete. TODO: how to delete for touch devices?
@@ -1940,7 +1894,7 @@ a.cutoff = b.Out
 
 
 # Singletons
-##Gibber.Clock
+###Gibber.Clock
 
 The clock controls Gibber's master tempo and meter.
 
@@ -1970,7 +1924,7 @@ Clock.timeSignature = '3/4'
 * _Time_( Float:timeValue ): Returns a function that returns a time value using the provided argument. This is primarily used in sequencing. 
 * _beat_( Float:timeValue ): Returns the argument number of beats as a duration measured in samples.
 * _Beat_( Float:timeValue ): Returns a function returning the argument number of beats as a duration measured in samples.
-##Gibber
+###Gibber
 
 The main object of the library. 
 

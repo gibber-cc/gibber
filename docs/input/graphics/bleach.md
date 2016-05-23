@@ -1,4 +1,4 @@
-##Bleach
+###Bleach
 
 Lightens light areas and darkens other parts of the image
 Example:

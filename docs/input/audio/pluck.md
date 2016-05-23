@@ -1,4 +1,4 @@
-##Pluck
+###Pluck
 
 Simple physical model of a plucked string using Karplus-Strong.
 

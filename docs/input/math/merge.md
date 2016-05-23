@@ -1,4 +1,4 @@
-##Merge
+###Merge
 
 `Merge` accepts a stereo input and converts it to mono so that it can be used with other math / binary operators. For example, the `Drums` ugen (and most other synths / samplers) outputs a stereo signal. If we want to use this signal for modulation we need to employ `Merge`.
 

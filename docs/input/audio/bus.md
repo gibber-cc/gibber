@@ -1,4 +1,4 @@
-##Bus
+###Bus
 
 A audio bus for routing FX, or controlling amplitude and panning.
 

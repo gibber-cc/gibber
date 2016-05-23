@@ -1,4 +1,4 @@
-##Hat
+###Hat
 
 A synthesized hihat drum sound with a built-in sequencer. Consists of six detuned sequencers feeding split into separate bandpass and hipass filters.
 

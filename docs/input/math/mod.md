@@ -1,4 +1,4 @@
-##Mod
+###Mod
 
 A simple unit generator that calculates the modulus of a pair of values on a per-sample basis. `Mod` has a constructor that accepts two values.
 

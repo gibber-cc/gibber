@@ -1,4 +1,4 @@
-##Schizo
+###Schizo
 
 A buffer-shuffling / stuttering effect with reversing and pitch-shifting.
 

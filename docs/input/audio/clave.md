@@ -1,4 +1,4 @@
-##Clave
+###Clave
 
 A synthesized clave with a built-in sequencer, generated using a resonant bandpass filter fed by an impulse.
 

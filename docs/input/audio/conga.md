@@ -1,4 +1,4 @@
-##Conga
+###Conga
 
 Impulse feeding resonant bandpass filter. Similar to the synth Kick sound but without the additional lowpass filter.
 

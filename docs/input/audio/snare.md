@@ -1,4 +1,4 @@
-##Snare
+###Snare
 
 A synthesized snare drum generator with a built-in sequencer.
 

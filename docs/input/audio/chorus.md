@@ -1,4 +1,4 @@
-##Chorus
+###Chorus
 
 Chorusing effect acheived through a modulated delay line. This is actually just a flanger with settings that make it resemble a chorus effect.
 

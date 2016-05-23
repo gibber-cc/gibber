@@ -1,4 +1,4 @@
-##Vibrato
+###Vibrato
 
 A simple frequency modulation effect acheived using a delay line.
 

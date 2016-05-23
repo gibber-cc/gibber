@@ -1,4 +1,4 @@
-##Square
+###Square
 
 A squarewave oscillator using an interpolated wavetable.
 

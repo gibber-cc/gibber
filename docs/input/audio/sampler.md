@@ -1,4 +1,4 @@
-##Sampler
+###Sampler
 
 Record and playback audiofiles at variable speeds. Recordings made using the sampler can be rendered to .wav files by the browser using the _download_() method.
 

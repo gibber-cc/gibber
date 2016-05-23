@@ -1,4 +1,4 @@
-##Stripes
+###Stripes
 
 A simple generative shader that creates a grid of lines.
 Example:

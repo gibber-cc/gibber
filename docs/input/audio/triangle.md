@@ -1,4 +1,4 @@
-##Triangle
+###Triangle
 
 A triangle oscillator built from an interpolated wavetable.
 

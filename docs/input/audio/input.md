@@ -1,4 +1,4 @@
-##Input
+###Input
 
 Read input from the microphone, for live-processing or sampling. Chrome is currently the only browser to support this feature.
 

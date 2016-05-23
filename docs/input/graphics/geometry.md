@@ -1,4 +1,4 @@
-##3D Geometries
+###3D Geometries
 
 All 3d geometries share the methods and properties outlined below. In addition, each geometry has a set of properties that can only best (at least currently) on instantiation; they cannot be modified after a geometry has been created.
 

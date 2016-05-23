@@ -1,4 +1,4 @@
-##Pow
+###Pow
 
 Raise the first operand to the power of the second operand on a per-sample basis. `Pow` has a constructor that accepts two values.
 

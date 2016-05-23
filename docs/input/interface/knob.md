@@ -1,4 +1,4 @@
-##Knob
+###Knob
 
 A virtual knob with a couple of different interaction modalities. Knobs are a type of [Widget][widget] and inherit its methods and properties.
 

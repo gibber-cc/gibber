@@ -1,4 +1,4 @@
-##Pixellate
+###Pixellate
 
 A shader that pixellates Gibber's graphical output.
 

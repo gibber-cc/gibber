@@ -1,4 +1,4 @@
-##Keyboard
+###Keyboard
 
 A piano-style keyboard that is a collection of buttons. Keyboard is a type of [Widget][widget] and inherits its methods and properties.
 

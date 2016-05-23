@@ -1,4 +1,4 @@
-##Tom
+###Tom
 
 A synthesized tom with a built-in sequencer, generated using a resonant bandpass filter fed by an impulse combined with noise feeding into a lowpass filter.
 

@@ -1,4 +1,4 @@
-##Synth2
+###Synth2
 
 A selectable oscillator attached to an Attack / Decay envelope and a filter. The attack decay envelope modulates the amplitude of the oscillator and the cutoff frequency of the filter. The filterMult property determines how much the envelope raises the base cutoff for the filter over the course of the envelope. For example, if a synth2 has a base cutoff of .1 and a filterMult of .2, the modulated filter cutoff will be .3 when the envelope is at its peak. 
 

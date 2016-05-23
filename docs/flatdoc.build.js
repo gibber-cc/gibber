@@ -11,20 +11,38 @@ var marked = require( 'marked' ),
 //   lang:'javascript'
 // })
 
-audio = [
+oscillators = [
   'audio/sine',
   'audio/triangle',
   'audio/square',
-  'audio/sampler',
-  'audio/soundfont',  
   'audio/pwm',
   'audio/noise',
-  'audio/saw',
+  'audio/saw'
+]
+  
+synths = [ 
+  'audio/sampler',
+  'audio/soundfont',  
   'audio/synth',
   'audio/synth2',
   'audio/fm',
   'audio/mono',
-  'audio/pluck',
+  'audio/pluck'
+]
+
+drums = [
+  'audio/drums',
+  'audio/edrums',  
+  'audio/kick',
+  'audio/snare',
+  'audio/hat',
+  'audio/clave',
+  'audio/cowbell',
+  'audio/conga',
+  'audio/tom'
+]
+
+effects = [
   'audio/flanger',
   'audio/hpf',
   'audio/lpf',
@@ -36,16 +54,10 @@ audio = [
   'audio/chorus',
   'audio/vibrato',
   'audio/schizo',
-  'audio/ringmod',
-  'audio/drums',
-  'audio/edrums',  
-  'audio/kick',
-  'audio/snare',
-  'audio/hat',
-  'audio/clave',
-  'audio/cowbell',
-  'audio/conga',
-  'audio/tom',
+  'audio/ringmod'
+]
+
+misc = [
   'audio/bus',
   'audio/input'
 ]
@@ -68,7 +80,8 @@ singletons = [
   'singletons/gibber'
 ]
 
-graphics = [
+
+shaders = [
   'graphics/film',
   'graphics/dots',
   'graphics/edge',
@@ -77,7 +90,8 @@ graphics = [
   'graphics/kaleidoscope',
   'graphics/pixellate',
   'graphics/stripes',
-
+]
+graphics = [
   'graphics/geometry',
   'graphics/canvas'
 ]
@@ -103,13 +117,51 @@ sequencing = [
 ]
 
 output = '# Audio\n'
-for( var i = 0; i < audio.length; i++ ) {
-    var file = fs.readFileSync( __dirname + '/input/' + audio[i]  + '.md', 'utf8' )
+output +='## Oscillators\n'
+for( var i = 0; i < oscillators.length; i++ ) {
+    var file = fs.readFileSync( __dirname + '/input/' + oscillators[i]  + '.md', 'utf8' )
+    output += file
+    output += '\n'
+}
+
+output +='## Synths\n'
+for( var i = 0; i < synths.length; i++ ) {
+    var file = fs.readFileSync( __dirname + '/input/' + synths[i]  + '.md', 'utf8' )
+    output += file
+    output += '\n'
+}
+
+output +='## Drums & Percussion\n'
+for( var i = 0; i < drums.length; i++ ) {
+    var file = fs.readFileSync( __dirname + '/input/' + drums[i]  + '.md', 'utf8' )
+    output += file
+    output += '\n'
+}
+
+output +='## Effects\n'
+for( var i = 0; i < effects.length; i++ ) {
+    var file = fs.readFileSync( __dirname + '/input/' + effects[i]  + '.md', 'utf8' )
+    output += file
+    output += '\n'
+}
+
+
+output += '## Math/Modulation\n'
+for( var i = 0; i < math.length; i++ ) {
+    var file = fs.readFileSync( __dirname + '/input/' + math[i]  + '.md', 'utf8' )
     output += file
     output += '\n'
 }
 
 output += '# Graphics\n'
+output += '## Shaders\n'
+for( var i = 0; i < shaders.length; i++ ) {
+    var file = fs.readFileSync( __dirname + '/input/' + shaders[i]  + '.md', 'utf8' )
+    output += file
+    output += '\n'
+}
+
+output += '## Misc\n'
 for( var i = 0; i < graphics.length; i++ ) {
     var file = fs.readFileSync( __dirname + '/input/' + graphics[i]  + '.md', 'utf8' )
     output += file
@@ -119,13 +171,6 @@ for( var i = 0; i < graphics.length; i++ ) {
 output += '# Sequencing\n'
 for( var i = 0; i < sequencing.length; i++ ) {
     var file = fs.readFileSync( __dirname + '/input/' + sequencing[i]  + '.md', 'utf8' )
-    output += file
-    output += '\n'
-}
-
-output += '# Math\n'
-for( var i = 0; i < math.length; i++ ) {
-    var file = fs.readFileSync( __dirname + '/input/' + math[i]  + '.md', 'utf8' )
     output += file
     output += '\n'
 }

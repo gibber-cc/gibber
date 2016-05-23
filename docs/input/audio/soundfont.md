@@ -1,4 +1,4 @@
-##SoundFont
+###SoundFont
 
 Sampled-based instruments that follow the SoundFont 2 specification. The samples for SoundFonts are loaded whenever they are first instantiated and then cached for other instances. E.g. the first time you run `a = SoundFont('piano')` all the acoustic piano samples will be downloaded; if `b = SoundFont('piano')` is subsequently run the samples will not have to be loaded again as the cached data will be used.
 

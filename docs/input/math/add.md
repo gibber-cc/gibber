@@ -1,4 +1,4 @@
-##Add
+###Add
 
 A simple unit generator to add multiple values together on a per-sample basis, primarily for use in modulation. `Add` has a constructor that accepts two values.
 

@@ -1,4 +1,4 @@
-##Sub
+###Sub
 
 A simple unit generator to subtract values on a per-sample basis, primarily for use in modulation. `Sub` has a constructor that accepts two values.
 

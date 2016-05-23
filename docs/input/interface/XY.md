@@ -1,4 +1,4 @@
-##XY
+###XY
 A multitouch XY controller with optional built-in physics. The XY widget acts as an
 array of children, each one representing a X and a Y position. Thus to access the X
 property of the first child (using a zero-index array), we use my\_xy\_widget[0].x.

@@ -1,4 +1,4 @@
-##Sine
+###Sine
 
 A sinewave oscillator built from an interpolated wavetable.
 

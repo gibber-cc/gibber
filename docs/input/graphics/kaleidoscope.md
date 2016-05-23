@@ -1,4 +1,4 @@
-##Kaleidoscope
+###Kaleidoscope
 
 Aptly named, this shader creates a kaleidoscope effect that can be rotated.
 

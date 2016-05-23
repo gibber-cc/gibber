@@ -1,4 +1,4 @@
-##Dots
+###Dots
 
 A post-processing shader recreating the halftone technique (http://en.wikipedia.org/wiki/Halftone) 
 

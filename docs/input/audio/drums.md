@@ -1,4 +1,4 @@
-##Drums
+###Drums
 
 A sampled drum kit with an attached sequencer for quick beat construction. The first argument to the constructor allows you to easily define beats using the following syntax:
 

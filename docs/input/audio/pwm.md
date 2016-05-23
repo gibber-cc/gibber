@@ -1,4 +1,4 @@
-##PWM
+###PWM
 
 An anti-aliased pulsewave modulation oscillator built from FM feedback.
 

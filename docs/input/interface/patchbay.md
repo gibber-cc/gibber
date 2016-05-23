@@ -1,4 +1,4 @@
-##Patchbay
+###Patchbay
 
 A simple widget for establishing virtual connections. After creating connections via drag and drop,
 users can delete them by clicking on the connection and hitting delete. TODO: how to delete for touch devices?
