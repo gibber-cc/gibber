@@ -1,7 +1,5 @@
 // note - you must install marked with npm in order to run this file and generate docs. marked converts markdown to HTML.
-var marked = require( 'marked' ),
-    hljs = require('highlight.js'),
-    fs = require('fs'),
+var fs = require('fs'),
     audio, math, singletons, graphics, interface, sequencing;
 
 // marked.setOptions({
