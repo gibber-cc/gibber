@@ -34238,7 +34238,7 @@ param **buffer** Object. The decoded sampler buffers from the audio file
 Download the sampler buffer as a .wav file. In conjunction with the record method, this enables the Sampler
 to record and downlaod Gibberish sessions.
 **/  
-    download : function() { // thanks to Palle and Gunnar for updates!
+    download : function( filename ) { // thanks to Palle and Gunnar for updates!
       var blob = this.encodeWAV();
       var audioBlob = new Blob( [ blob ] );
 
@@ -34255,7 +34255,13 @@ to record and downlaod Gibberish sessions.
 
       var link = window.document.createElement('a');
       link.href = url;
-      link.download = 'output.wav';
+      if( typeof filename === 'undefined' ) {
+        filename = 'gibber_output.wav'
+      }else if( filename.indexOf('.wav') === -1 ) {
+        filename += '.wav'
+      }
+
+      link.download = filename || 'output.wav';
 
       var click = new MouseEvent('click', {
         'view': window,
