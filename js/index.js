@@ -38510,6 +38510,8 @@ module.exports = function( Gibber ) {
     var args = Array.prototype.slice.call(arguments),
         obj = {}, 
         props = Gibber.processArguments( args, 'Drums' )
+
+    if( typeof props === 'undefined' ) props = {}
         
     $.extend( true, obj, props)
   
@@ -39043,6 +39045,7 @@ module.exports = function( Gibber ) {
   return Percussion
   
 }
+
 },{"gibberish-dsp":"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/node_modules/gibberish-dsp/build/gibberish.js"}],"/www/gibber.libraries/node_modules/gibber.lib/node_modules/gibber.audio.lib/scripts/gibber/audio/ensemble.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
   "use strict"
