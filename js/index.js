@@ -34238,18 +34238,31 @@ param **buffer** Object. The decoded sampler buffers from the audio file
 Download the sampler buffer as a .wav file. In conjunction with the record method, this enables the Sampler
 to record and downlaod Gibberish sessions.
 **/  
-    download : function() {
+    download : function() { // thanks to Palle and Gunnar for updates!
       var blob = this.encodeWAV();
       var audioBlob = new Blob( [ blob ] );
 
-      var url =  window.webkitURL.createObjectURL( audioBlob );
+      // var url =  window.webkitURL.createObjectURL( audioBlob );
+      var url;
+      if (window.URL !== undefined) {
+        url = window.URL.createObjectURL( audioBlob );
+      } else if (window.webkitURL !== undefined) {
+        url = window.webkitURL.createObjectURL( audioBlob );
+      } else {
+        console.log('Method Unavailable: createObjectURL');
+        return;
+      }
+
       var link = window.document.createElement('a');
       link.href = url;
       link.download = 'output.wav';
-      
-      var click = document.createEvent("Event");
-      click.initEvent("click", true, true);
-      
+
+      var click = new MouseEvent('click', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+
       link.dispatchEvent(click);
     },
 
@@ -36354,6 +36367,12 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
 
     oReq.open( 'GET', scriptPath, true );
     oReq.send()
+    //console.log("COMPLETE", scriptPath, evt )
+    //var script = document.createElement('script')
+    //script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
+    //script.onload = handler
+    //script.src = scriptPath
+    //document.querySelector( 'head' ).appendChild( script )
 
     function updateProgress (oEvent) {
       if (oEvent.lengthComputable) {
@@ -36364,20 +36383,19 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
         sizeString = sizeString[0] + '.' + sizeString[1] + ' MB'
         size.innerHTML = sizeString
         
-        console.log( percentComplete, "%" )
+        Gibber.log( percentComplete, "%" )
       } else {
         // Unable to compute progress information since the total size is unknown
       }
     }
 
     function transferComplete( evt ) {
-      console.log("COMPLETE", scriptPath, evt )
       var script = document.createElement('script')
-      script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
-      script.onload = handler
+      script.innerText = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
+      //script.onload = function() { console.log('LOADED FINAL SCRIPT', handler ) }
+      //script.onerror = function( err ) { console.log( 'SCRIPT ERROR', err ) }
       document.querySelector( 'head' ).appendChild( script )
-      //eval( evt.srcElement.responseText )
-      //setTimeout( handler, 500 )
+      setTimeout( handler, 0 )
     }
   }
   
@@ -36436,7 +36454,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
   }
   
   var decodeBuffers = function( obj ) {
-    console.log('DECODING BUFFERS...', obj)
+    //console.log('DECODING BUFFERS...', obj)
     var count = 0,
         font = SF[ obj.instrumentFileName ]
         
@@ -36524,7 +36542,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
     // if already loaded, or if passed a buffer to use...
     var self = this
     if( !SF.instruments[ this.instrumentFileName ] && typeof this.resourcePath !== 'object' ) {
-      console.log("DOWNLOADING SOUNDFONT")
+      console.log("Downloading soundfont: " + this.instrumentFileName )
       getScript( this.resourcePath + this.instrumentFileName + '-mp3.js', function() { decodeBuffers( self ) } ) //decodeBuffers.bind( null, this ) )
     }else{
       if( typeof pathToResources === 'object' ) {
