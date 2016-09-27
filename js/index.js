@@ -2220,6 +2220,8 @@ module.exports = function( Gibber, Notation ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
         } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
           var propertyKeys = Object.keys( newObject.mappingProperties )
+
+          //console.log('FOUND NOT SEQ  REACTIVE ASSIGNMENT')
           for( var ii = 0; ii < right.arguments.length; ii++ ) {
             ( function() {
               var arg = right.arguments[ ii ]
@@ -2534,7 +2536,7 @@ module.exports = function( Gibber, Notation ) {
                   
                       start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
                       end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
-                      
+                      //console.log( 'VALUE', name ) 
                       if( value.type !== 'BinaryExpression' ) {
                         if( !mappingObject && (name !== 'note' && name !== 'frequency') ) return
                         // only change inside quotes if string literal
@@ -2544,7 +2546,7 @@ module.exports = function( Gibber, Notation ) {
                             start.ch += 1
                             end.ch -=1
                           }
-                        
+                          //console.log( 'REACTIVE NOTE SEQ' ) 
                           var _move = makeReactive( value, cm, start, end, seq, newObjectName, __name, mappingObject, __name, true )
                           _move.onchange = function( v ) { 
                             seq[ name ][ index ] = isNaN(v) ? v : parseFloat( v )
@@ -2594,7 +2596,7 @@ module.exports = function( Gibber, Notation ) {
                       }
                       
                       var mark = cm.markText( start, end, { className:__name });
-                      seq.marks.push( mark )
+                      seq.marks.global.push( mark )
                       seq.locations[ name ].push( __name )
                     })()
                   }              
@@ -2613,7 +2615,7 @@ module.exports = function( Gibber, Notation ) {
                   }
         
                   var mark = cm.markText(start, end, { className: __name });
-                  seq.marks.push( mark )
+                  seq.marks.global.push( mark )
                   seq.locations[ name ].push( __name )
                 }
                 
@@ -36369,11 +36371,13 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
     }
 
     function transferComplete( evt ) {
-      console.log("COMPLETE", scriptPath)
+      console.log("COMPLETE", scriptPath, evt )
       var script = document.createElement('script')
       script.innerHTML = evt.srcElement ? evt.srcElement.responseText : evt.target.responseText
+      script.onload = handler
       document.querySelector( 'head' ).appendChild( script )
-      handler( script ) 
+      //eval( evt.srcElement.responseText )
+      //setTimeout( handler, 500 )
     }
   }
   
@@ -36432,6 +36436,7 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
   }
   
   var decodeBuffers = function( obj ) {
+    console.log('DECODING BUFFERS...', obj)
     var count = 0,
         font = SF[ obj.instrumentFileName ]
         
@@ -36517,9 +36522,10 @@ Gibberish.Hat.prototype = Gibberish._oscillator;
     }
     
     // if already loaded, or if passed a buffer to use...
-    if( !SF.instruments[ this.instrumentFileName ] && typeof pathToResources !== 'object' ) {
+    var self = this
+    if( !SF.instruments[ this.instrumentFileName ] && typeof this.resourcePath !== 'object' ) {
       console.log("DOWNLOADING SOUNDFONT")
-      getScript( pathToResources + this.instrumentFileName + '-mp3.js', decodeBuffers.bind( null, this ) )
+      getScript( this.resourcePath + this.instrumentFileName + '-mp3.js', function() { decodeBuffers( self ) } ) //decodeBuffers.bind( null, this ) )
     }else{
       if( typeof pathToResources === 'object' ) {
         SF[ this.instrumentFileName ] = pathToResources
@@ -45438,6 +45444,13 @@ var Pattern = function() {
     }
   })
   
+  Object.defineProperty( fnc, 'size', {
+    get: function() { return this.values.length },
+    set: function(v){
+      Gibber.log( 'cannot set size of pattern; use pattern.set() to update pattern contents.' )
+    }
+  })
+
   fnc.retrograde = fnc.reverse.bind( fnc )
   
   fnc.end = fnc.values.length - 1

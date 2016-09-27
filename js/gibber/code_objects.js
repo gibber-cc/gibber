@@ -932,6 +932,8 @@ module.exports = function( Gibber, Notation ) {
           makeSequence( newObject, cm, pos, right, newObjectName )
         } else if( right.arguments && right.arguments.length > 0 && Gibber.Environment.Notation.enabled[ 'reactive' ] ) {
           var propertyKeys = Object.keys( newObject.mappingProperties )
+
+          //console.log('FOUND NOT SEQ  REACTIVE ASSIGNMENT')
           for( var ii = 0; ii < right.arguments.length; ii++ ) {
             ( function() {
               var arg = right.arguments[ ii ]
@@ -1246,7 +1248,7 @@ module.exports = function( Gibber, Notation ) {
                   
                       start.line += value.type === 'BinaryExpression' ? value.left.loc.start.line : value.loc.start.line
                       end.line   += value.type === 'BinaryExpression' ? value.right.loc.end.line  : value.loc.end.line
-                      
+                      //console.log( 'VALUE', name ) 
                       if( value.type !== 'BinaryExpression' ) {
                         if( !mappingObject && (name !== 'note' && name !== 'frequency') ) return
                         // only change inside quotes if string literal
@@ -1256,7 +1258,7 @@ module.exports = function( Gibber, Notation ) {
                             start.ch += 1
                             end.ch -=1
                           }
-                        
+                          //console.log( 'REACTIVE NOTE SEQ' ) 
                           var _move = makeReactive( value, cm, start, end, seq, newObjectName, __name, mappingObject, __name, true )
                           _move.onchange = function( v ) { 
                             seq[ name ][ index ] = isNaN(v) ? v : parseFloat( v )
@@ -1306,7 +1308,7 @@ module.exports = function( Gibber, Notation ) {
                       }
                       
                       var mark = cm.markText( start, end, { className:__name });
-                      seq.marks.push( mark )
+                      seq.marks.global.push( mark )
                       seq.locations[ name ].push( __name )
                     })()
                   }              
@@ -1325,7 +1327,7 @@ module.exports = function( Gibber, Notation ) {
                   }
         
                   var mark = cm.markText(start, end, { className: __name });
-                  seq.marks.push( mark )
+                  seq.marks.global.push( mark )
                   seq.locations[ name ].push( __name )
                 }
                 
