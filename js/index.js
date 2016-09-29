@@ -41436,7 +41436,7 @@ module.exports = function( Gibber ) {
       
       obj.target = arg.target
             
-      if( typeof arg.scale === 'object' ) obj.scale = arg.scale
+      if( typeof arg.scale === 'object' )  obj.scale = arg.scale
       if( typeof arg.offset === 'number' ) obj.offset = Gibber.Clock.time( arg.offset )
       
       // if( durationsType === 'object') {
@@ -41495,20 +41495,20 @@ module.exports = function( Gibber ) {
               }
             }
             
-            if( key === 'note' ) {
-              valuesPattern.filters.push( function() { 
-                var output = arguments[ 0 ][ 0 ]
-                if( typeof output === 'number' && output < Gibber.minNoteFrequency ) {
-                  if( obj.scale ) {
-                    output = obj.scale.notes[ output ]
-                  }else{
-                    output = Gibber.scale.notes[ output ]
-                  }
-                }
+            //if( key === 'note' ) {
+            //  valuesPattern.filters.push( function() { 
+            //    var output = arguments[ 0 ][ 0 ]
+            //    if( typeof output === 'number' && output < Gibber.minNoteFrequency ) {
+            //      if( obj.scale ) {
+            //        output = obj.scale.notes[ output ]
+            //      }else{
+            //        output = Gibber.scale.notes[ output ]
+            //      }
+            //    }
                 
-                return [ output, arguments[0][1], arguments[0][2] ] 
-              })
-            }
+            //    return [ output, arguments[0][1], arguments[0][2] ] 
+            //  })
+            //}
             
             _seq.values = valuesPattern
             
