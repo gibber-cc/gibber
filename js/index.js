@@ -51052,26 +51052,31 @@ Graphics = {
 	},
   
   assignWidthAndHeight : function( isInitialSetting ) { // don't run final lines before renderer is setup...
-    var cnvs = Graphics.modes[ this.mode ].canvas,
-        parent = cnvs.parentElement
+    var cnvs = this.canvas;
+    var parent = cnvs ? cnvs.parentElement : document.querySelector('body');
     
-    Graphics.width  = parent === document.querySelector('body') ? parent.offsetWidth  : (parent.offsetWidth || parent.width() ) 
+    if (this.isFullScreen) {
+      Graphics.width  = parent.offsetWidth
+      Graphics.width  = parent.offsetHeight
+    } else {
+      Graphics.width  = parent.offsetWidth || parent.width()
     
-    // TODO: sheesh
-    Graphics.height = parent === document.querySelector('body') ? parent.offsetHeight : ( $( $('#contentCell').children()[0] ).height() || parent.offsetHeight )
-    
-    if( document.querySelector( '#header' ) !== null && parent === window ) {
-      if( Gibber.Environment.Layout.fullScreenColumn === null) { 
-      }
+      // TODO: sheesh
+      Graphics.height = parent === document.querySelector('body') ? parent.offsetHeight : ( $( $('#contentCell').children()[0] ).height() || parent.offsetHeight )
     }
     
     // console.log( Graphics.width, Graphics.height, Graphics.canvas.style.width, Graphics.canvas.style.height )
-    Graphics.canvas.style.zIndex = - 1
+    if (Graphics.canvas) {
+      Graphics.canvas.style.zIndex = -1
+    }
 
     if( !isInitialSetting && Graphics.mode !== '2d' ) {
-  		Graphics.modes['3d'].obj.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
-      Graphics.modes['3d'].obj.renderer.domElement.style.width = Graphics.width + 'px'
-      Graphics.modes['3d'].obj.renderer.domElement.style.height = Graphics.height + 'px'      
+      var obj = Graphics.modes['3d'].obj
+      if (obj) {
+        obj.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
+        obj.renderer.domElement.style.width = Graphics.width + 'px'
+        obj.renderer.domElement.style.height = Graphics.height + 'px'      
+      }
       
       //$( this.renderer.domElement ).css({ width: this.width, height: this.height })
     }
