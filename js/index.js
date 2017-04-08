@@ -3052,10 +3052,10 @@ module.exports = function( Gibber ) {
         GE.Layout.__fullScreenColumn__.editor.setValue( this.editor.getValue() )
         
         GE.Layout.fullScreenColumn = this
+        GE.Layout.isFullScreen = true
         if( Gibber.Graphics ){
           Gibber.Graphics.assignWidthAndHeight() 
         }
-        GE.Layout.isFullScreen = true
       }else{
         GE.Layout.toggle()
         GE.Layout.__fullScreenColumn__.toggle()
@@ -3065,10 +3065,10 @@ module.exports = function( Gibber ) {
         this.editor.focus()        
 
         GE.Layout.fullScreenColumn = null
+        GE.Layout.isFullScreen = false        
         if( Gibber.Graphics ){
           Gibber.Graphics.assignWidthAndHeight() 
         }
-        GE.Layout.isFullScreen = false        
       }
     },
     
@@ -51053,12 +51053,16 @@ Graphics = {
   
   assignWidthAndHeight : function( isInitialSetting ) { // don't run final lines before renderer is setup...
     var cnvs = this.canvas;
-    var parent = cnvs ? cnvs.parentElement : document.querySelector('body');
+    var body = $('body');
+    var parent = cnvs ? cnvs.parentElement : body;
     
-    if (this.isFullScreen) {
+    if (Gibber.Environment.Layout.isFullScreen) {
+      body.css({ overflow: 'hidden' })
       Graphics.width  = parent.offsetWidth
-      Graphics.width  = parent.offsetHeight
+      Graphics.height = $(window).height()
+
     } else {
+      body.css({ overflow: 'scroll' })
       Graphics.width  = parent.offsetWidth || parent.width()
     
       // TODO: sheesh
