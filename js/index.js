@@ -3052,10 +3052,10 @@ module.exports = function( Gibber ) {
         GE.Layout.__fullScreenColumn__.editor.setValue( this.editor.getValue() )
         
         GE.Layout.fullScreenColumn = this
+        GE.Layout.isFullScreen = true
         if( Gibber.Graphics ){
           Gibber.Graphics.assignWidthAndHeight() 
         }
-        GE.Layout.isFullScreen = true
       }else{
         GE.Layout.toggle()
         GE.Layout.__fullScreenColumn__.toggle()
@@ -3065,10 +3065,10 @@ module.exports = function( Gibber ) {
         this.editor.focus()        
 
         GE.Layout.fullScreenColumn = null
+        GE.Layout.isFullScreen = false        
         if( Gibber.Graphics ){
           Gibber.Graphics.assignWidthAndHeight() 
         }
-        GE.Layout.isFullScreen = false        
       }
     },
     
@@ -3088,8 +3088,8 @@ module.exports = function( Gibber ) {
           this.header.hide()
           this.toggleResizeHandle()
           this.element.css({ width: w, height: h, top:0, left:0 })
-          this.bodyElement.css({ width: w, height: h })
-          this.editorElement.css({ width: w, height: h })          
+          this.bodyElement.css({ width: w, height: h, overflow: 'hidden' })
+          this.editorElement.css({ width: w, height: h })
           this.editor.setSize( w,h )
           this.isFullScreen = true
           GE.Layout.fullScreenColumn = this
@@ -3101,7 +3101,7 @@ module.exports = function( Gibber ) {
           this.header.show()
           this.toggleResizeHandle()
           this.element.css({ width: _w, top:31 })
-          this.bodyElement.css({ width: _w, height:_h })
+          this.bodyElement.css({ width: _w, height: _h, overflow: 'scroll' })
           this.editorElement.css({ width: _w, height:_h })          
           this.editor.setSize( _w, _h )
           Layout.resizeColumns()
@@ -51052,26 +51052,35 @@ Graphics = {
 	},
   
   assignWidthAndHeight : function( isInitialSetting ) { // don't run final lines before renderer is setup...
-    var cnvs = Graphics.modes[ this.mode ].canvas,
-        parent = cnvs.parentElement
+    var cnvs = this.canvas;
+    var body = $('body');
+    var parent = cnvs ? cnvs.parentElement : body;
     
-    Graphics.width  = parent === document.querySelector('body') ? parent.offsetWidth  : (parent.offsetWidth || parent.width() ) 
+    if (Gibber.Environment.Layout.isFullScreen) {
+      body.css({ overflow: 'hidden' })
+      Graphics.width  = parent.offsetWidth
+      Graphics.height = $(window).height()
+
+    } else {
+      body.css({ overflow: 'scroll' })
+      Graphics.width  = parent.offsetWidth || parent.width()
     
-    // TODO: sheesh
-    Graphics.height = parent === document.querySelector('body') ? parent.offsetHeight : ( $( $('#contentCell').children()[0] ).height() || parent.offsetHeight )
-    
-    if( document.querySelector( '#header' ) !== null && parent === window ) {
-      if( Gibber.Environment.Layout.fullScreenColumn === null) { 
-      }
+      // TODO: sheesh
+      Graphics.height = parent === document.querySelector('body') ? parent.offsetHeight : ( $( $('#contentCell').children()[0] ).height() || parent.offsetHeight )
     }
     
     // console.log( Graphics.width, Graphics.height, Graphics.canvas.style.width, Graphics.canvas.style.height )
-    Graphics.canvas.style.zIndex = - 1
+    if (Graphics.canvas) {
+      Graphics.canvas.style.zIndex = -1
+    }
 
     if( !isInitialSetting && Graphics.mode !== '2d' ) {
-  		Graphics.modes['3d'].obj.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
-      Graphics.modes['3d'].obj.renderer.domElement.style.width = Graphics.width + 'px'
-      Graphics.modes['3d'].obj.renderer.domElement.style.height = Graphics.height + 'px'      
+      var obj = Graphics.modes['3d'].obj
+      if (obj) {
+        obj.renderer.setSize( Graphics.width * Graphics.resolution, Graphics.height * Graphics.resolution );
+        obj.renderer.domElement.style.width = Graphics.width + 'px'
+        obj.renderer.domElement.style.height = Graphics.height + 'px'      
+      }
       
       //$( this.renderer.domElement ).css({ width: this.width, height: this.height })
     }

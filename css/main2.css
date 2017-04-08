@@ -129,7 +129,6 @@ tfoot tr { display:block; width:100% }
 #mainContent { 
   vertical-align:top;
   display:block;
-  margin-top:2em;
 }
 
 tfoot, thead { 

@@ -22,11 +22,12 @@ f = Film()
 // map the scanline count to the hihat output
 f.sCount = a.hat.Out
 ```
-###Running Gibber Locally###
+
+### Running Gibber Locally
 
 In order to run Gibber locally, you need to clone the gibber.server repo:<http://github.com/charlieroberts/gibber.server>. There are instructions for running the server in its README file.
 
-###Building Gibber###
+### Building Gibber
 You need to grab the following npm modules / github repos:
 
 1. gibber.audio.lib
