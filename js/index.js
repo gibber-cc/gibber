@@ -3088,8 +3088,8 @@ module.exports = function( Gibber ) {
           this.header.hide()
           this.toggleResizeHandle()
           this.element.css({ width: w, height: h, top:0, left:0 })
-          this.bodyElement.css({ width: w, height: h })
-          this.editorElement.css({ width: w, height: h })          
+          this.bodyElement.css({ width: w, height: h, overflow: 'hidden' })
+          this.editorElement.css({ width: w, height: h })
           this.editor.setSize( w,h )
           this.isFullScreen = true
           GE.Layout.fullScreenColumn = this
@@ -3101,7 +3101,7 @@ module.exports = function( Gibber ) {
           this.header.show()
           this.toggleResizeHandle()
           this.element.css({ width: _w, top:31 })
-          this.bodyElement.css({ width: _w, height:_h })
+          this.bodyElement.css({ width: _w, height: _h, overflow: 'scroll' })
           this.editorElement.css({ width: _w, height:_h })          
           this.editor.setSize( _w, _h )
           Layout.resizeColumns()
