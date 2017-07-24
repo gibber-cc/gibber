@@ -128,6 +128,8 @@ module.exports = function( Gibber ) {
     var args = Array.prototype.slice.call(arguments),
         obj = {}, 
         props = Gibber.processArguments( args, 'Drums' )
+
+    if( typeof props === 'undefined' ) props = {}
         
     $.extend( true, obj, props)
   
