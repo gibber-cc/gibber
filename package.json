@@ -18,7 +18,7 @@
     "watchify": "~1.0.3"
   },
   "dependencies": {
-    "gibberish-dsp": "2.3.2",
+    "gibberish-dsp": "~2.3.2",
     "gibber.core.lib": "~0.0.1"
   },
   "bugs": {
