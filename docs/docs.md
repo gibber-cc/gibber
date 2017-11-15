@@ -803,7 +803,7 @@ l = LPF()
 l.cutoff = Add( .4, Sine(.2, .3)._ )
 l.resonance = 4
 
-d.fx.add( d )
+d.fx.add( l )
 ```
 
 #### Properties
