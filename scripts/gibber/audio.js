@@ -8,7 +8,8 @@ var times = [],
     Audio
 
 Audio = {
-  // can't name export as Gibberish has the same name
+  initialized: false, // only run clear function if initialized
+  // can't name export as Gibberish has the same nameAudio
   export: function( target ) {
     $.extend( target, Audio.Busses )       
     $.extend( target, Audio.Oscillators )
@@ -18,7 +19,11 @@ Audio = {
     $.extend( target, Audio.FX )
     $.extend( target, Audio.Seqs )    
     $.extend( target, Audio.Samplers )
+    
+    var __clear__ = target.clear
     $.extend( target, Audio.PostProcessing )
+    target.clear = __clear__
+
     $.extend( target, Audio.Vocoder )
     
     target.Theory = Audio.Theory
@@ -43,8 +48,7 @@ Audio = {
     
     target.Input = Audio.Input
     
-    target.Freesound = Audio.Freesound2
-    target.Freesound2 = Audio.Freesound2
+    target.Freesound = Audio.Freesound
     target.Freesoundjs2 = Audio.Freesoundjs2
     
     target.Scale = Audio.Theory.Scale
@@ -62,7 +66,8 @@ Audio = {
     
     target.Master = Audio.Master    
   },
-  init: function() {
+  init: function( callback ) {
+    $ = Gibber.dollar
     // post-processing depends on having context instantiated
     var __onstart = null
     if( Audio.onstart ) __onstart = Audio.onstart
@@ -71,43 +76,50 @@ Audio = {
     
     Audio.Core.onstart = function() {
       Audio.Clock.start( true )
-              
+
+
       if( __onstart !== null ) { __onstart() }
+      
+      Audio.Score = Audio.Score( Gibber )
+      Audio.Additive = Audio.Additive( Gibber )
+      Gibber.Clock = Audio.Clock
+            
+      Gibber.Theory = Audio.Theory
+      
+      Gibber.Theory.scale = Gibber.scale = Gibber.Audio.Theory.Scale( 'c4','Minor' )
+      
+      $.extend( Gibber.Binops, Audio.Binops )
+      
+      Audio.Master = Audio.Busses.Bus().connect( Audio.Core.out )
+
+      Audio.Master.type = 'Bus'
+      Audio.Master.name = 'Master'
+
+      $.extend( true, Audio.Master, Audio.ugenTemplate ) 
+      Audio.Master.fx.ugen = Audio.Master
+      
+      Audio.ugenTemplate.connect = 
+        Audio.Core._oscillator.connect =
+        Audio.Core._synth.connect =
+        Audio.Core._effect.connect =
+        Audio.Core._bus.connect =
+        Audio.connect;
+        
+      Audio.Core.defineUgenProperty = Audio.defineUgenProperty
+      
+      Object.assign( Gibber.Presets, Audio.Synths.Presets )
+      Object.assign( Gibber.Presets, Audio.Percussion.Presets )
+      Object.assign( Gibber.Presets, Audio.FX.Presets )
+
+
+      $.publish( 'audio.init', Audio )
+      if( typeof callback === 'function' ) callback()
+
+      Audio.initialized = true
     }
     
-    Audio.Score = Audio.Score( Gibber )
-    Audio.Additive = Audio.Additive( Gibber )
-    Gibber.Clock = Audio.Clock
-          
-    Gibber.Theory = Audio.Theory
-    
-    Gibber.Theory.scale = Gibber.scale = Gibber.Audio.Theory.Scale( 'c4','Minor' )
     
     Audio.Core._init()
-    
-    $.extend( Gibber.Binops, Audio.Binops )
-    
-    Audio.Master = Audio.Busses.Bus().connect( Audio.Core.out )
-
-    Audio.Master.type = 'Bus'
-    Audio.Master.name = 'Master'
-
-    $.extend( true, Audio.Master, Audio.ugenTemplate ) 
-    Audio.Master.fx.ugen = Audio.Master
-    
-    Audio.ugenTemplate.connect = 
-      Audio.Core._oscillator.connect =
-      Audio.Core._synth.connect =
-      Audio.Core._effect.connect =
-      Audio.Core._bus.connect =
-      Audio.connect;
-      
-    Audio.Core.defineUgenProperty = Audio.defineUgenProperty
-    
-    $.extend( Gibber.Presets, Audio.Synths.Presets )
-    $.extend( Gibber.Presets, Audio.Percussion.Presets )
-    $.extend( Gibber.Presets, Audio.FX.Presets )
-    
     //$.extend( Audio, Audio.Core )
   },
   
@@ -211,10 +223,15 @@ Audio = {
     return this
   },
   clear: function() {
+    if( Audio.initialized === false ) return
     // Audio.analysisUgens.length = 0
     // Audio.sequencers.length = 0
     var args = Array.prototype.slice.call( arguments, 0 ),
-        scaleSeqIsConnected = Audio.Theory.scale.seq.isConnected
+      scaleSeqIsConnected = false
+   
+    if( Gibber.Theory.scale !== undefined ) {
+      scaleSeqIsConnected = Gibber.Theory.scale.seq.isConnected
+    }
     
     
     for( var i = 0; i < Audio.Master.inputs.length; i++ ) {
@@ -463,10 +480,8 @@ Audio.Core._init = Audio.Core.init.bind( Audio.Core )
 delete Audio.Core.init
 
 Audio.Clock =          require( './audio/clock' )( Gibber )
-Audio.Freesoundjs =    require( '../external/freesound' )
-Audio.Freesound =      require( './audio/gibber_freesound' )( Audio.Freesoundjs )
 Audio.Freesoundjs2 =   require( '../external/freesound2' )
-Audio.Freesound2 =     require( './audio/gibber_freesound2' )( Audio.Freesoundjs2 )
+Audio.Freesound =      require( './audio/gibber_freesound2' )( Audio.Freesoundjs2 )
 Audio.Seqs =           require( './audio/seq')( Gibber )
 Audio.Theory =         require( './audio/theory' )( Gibber )
 Audio.FX =             require( './audio/fx' )( Gibber )

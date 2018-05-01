@@ -31,7 +31,7 @@ module.exports = function( freesound ) {
         Gibber.Audio.Core.audioFiles[sampler.filename] = buffer;
         sampler.buffers[ sampler.filename ] = buffer;       //
         sampler.file = filename
-        sampler.send(Master, 1)
+        sampler.send( Master, 1 )
         if (callback) {
           callback()
         }
@@ -69,6 +69,8 @@ module.exports = function( freesound ) {
                 onload(request)
               };
               request.send();
+
+              console.log( 'freesound path:', path, request )
             }, null )
           } else {
             sampler.buffer = Freesound.loaded[filename];

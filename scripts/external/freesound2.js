@@ -63,13 +63,14 @@
                 var options = {
                     host: host,
                     path: uri.substring(uri.indexOf("/",8),uri.length), // first '/' after 'http://'
-                    port: '80',
+                    port: '443',
                     method: method,
                     headers: {'Authorization': authHeader},
                     withCredentials:false,
                 };
+                console.log( 'http options:', options )
                 var req = http.request(options,function(res){
-                    //res.setEncoding('utf8');            
+                    res.setEncoding('utf8');            
                     res.on('data', function (data){ 
                         if([200,201,202].indexOf(res.statusCode)>=0)
                             success(wrapper?wrapper(data):data);
@@ -93,6 +94,7 @@
                         if(error) error(xhr.statusText);
                     }
                 };
+                console.log( method, uri )
                 xhr.open(method, uri);
                 xhr.setRequestHeader('Authorization',authHeader);
                 if(content_type!==undefined)

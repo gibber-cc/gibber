@@ -13,6 +13,8 @@ You can simply download the repo and skip straight to the **Usage** section if y
 
 The build outputs a UMD file, gibber.audio.lib.js, and a minified version.
 
+NOTE: due to recent changes in Chrome (as of version 66) that require audio to be triggered by user interaction, you must now pass all your Gibber code in a function to the `Gibber.init()` method. The function will then be executed after the user clicks anywhere in the browser window, which will in turn initialize the audio engine.
+
 ## Usage
 The library can be used with plain script tags, or CommonJS-/ AMD- style includes. Below is an example HTML file which plays a simple drum beat, bass line, and random melody.
 
@@ -26,22 +28,26 @@ The library can be used with plain script tags, or CommonJS-/ AMD- style include
 <body></body>
 
 <script>
-Gibber.init() // REQUIRED!
 
-// change root of global scale every other measure
-// this will affect both bass and lead parts
-Gibber.scale.root.seq( ['c4','eb4'], 2)
+var play = function() {
+  // change root of global scale every other measure
+  // this will affect both bass and lead parts
+  Gibber.scale.root.seq( ['c4','eb4'], 2)
 
-// create bass monosynth and sequence 1/8 note octaves
-a = Mono('bass').note.seq( [0,7], 1/8 )
+  // create bass monosynth and sequence 1/8 note octaves
+  a = Mono('bass').note.seq( [0,7], 1/8 )
 
-// simple kick / snare drum pattern
-b = EDrums('xoxo')
-b.snare.snappy = 1
+  // simple kick / snare drum pattern
+  b = EDrums('xoxo')
+  b.snare.snappy = 1
 
-// create lead synth and sequence with random notes/durations
-c = Mono('easyfx')
-  .note.seq( Rndi(0,12), [1/4,1/8,1/2,1,2].rnd( 1/8,4 ) )
+  // create lead synth and sequence with random notes/durations
+  c = Mono('easyfx')
+    .note.seq( Rndi(0,12), [1/4,1/8,1/2,1,2].rnd( 1/8,4 ) )
+}
+
+Gibber.init( play ) // REQUIRED!
+
 </script>
 
 </html>
