@@ -9,23 +9,22 @@ var gbrowserify = require( 'gulp-browserify' ),
     rename = require( 'gulp-rename' );
 
 gulp.task( 'client', function(){
-  var out = gulp.src( './scripts/gibber/audio.lib.js' )//gulp.src( './node_modules/gibber.core.lib/scripts/gibber.js')
-    .pipe( gbrowserify({ 
-      standalone:'Gibber',
-      bare:true, 
-      ignore:[
-        'gibber.graphics.lib/scripts/gibber/graphics/graphics',
-        'gibber.interface.lib/scripts/gibber/interface/interface',
-        'gibber.audio.lib/scripts/gibber/audio'
-      ]
-    }) )
-    .pipe( rename('gibber.audio.lib.js') )
-    .pipe( gulp.dest('./build/') )
-    .pipe( buffer() )
+  //var out = gulp.src( './js/audio.js' )//gulp.src( './node_modules/gibber.core.lib/scripts/gibber.js')
+  const out = browserify({ standalone:'Gibber' })
+    .require( './js/audio.js', { entry: true })
+    .bundle()
+    //ignore:[
+    //  'gibber.graphics.lib/scripts/gibber/graphics/graphics',
+    //  'gibber.interface.lib/scripts/gibber/interface/interface',
+    //  'gibber.audio.lib/scripts/gibber/audio'
+    //]
+    .pipe( source('gibber.audio.js' ) )
+    .pipe( gulp.dest('./dist/') )
+/*    .pipe( buffer() )
     .pipe( uglify() )
     .pipe( rename('gibber.audio.lib.min.js') )
     .pipe( gulp.dest('./build/') )
-    
+*/    
     return out
 });
 
