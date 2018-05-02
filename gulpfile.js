@@ -1,12 +1,12 @@
-var gbrowserify = require( 'gulp-browserify' ),
-    gulp = require( 'gulp' ),
-    buffer = require( 'vinyl-buffer' ),
-    uglify = require( 'gulp-uglify' ),
-    watchify = require( 'watchify' ),
-    browserify = require( 'browserify' ),
-    gutil = require('gulp-util'),    
-    source = require('vinyl-source-stream'),
-    rename = require( 'gulp-rename' );
+// XXX this needs to be refactored... pretty old stuff in here.
+
+const gulp = require( 'gulp' ),
+      buffer = require( 'vinyl-buffer' ),
+      uglify = require( 'gulp-uglify' ),
+      watchify = require( 'watchify' ),
+      browserify = require( 'browserify' ),
+      source = require('vinyl-source-stream'),
+      rename = require( 'gulp-rename' );
 
 gulp.task( 'client', function(){
   //var out = gulp.src( './js/audio.js' )//gulp.src( './node_modules/gibber.core.lib/scripts/gibber.js')
@@ -30,11 +30,6 @@ gulp.task( 'client', function(){
 
 gulp.task('watch', function() {
   var bundler = watchify( browserify('./scripts/gibber/audio.lib.js', { standalone:'Gibber', cache: {}, packageCache: {}, fullPaths: true } ) );
-
-  // Optionally, you can apply transforms
-  // and other configuration options on the
-  // bundler just as you would with browserify
-  //bundler.transform('brfs');
 
   bundler.on('update', rebundle);
 
