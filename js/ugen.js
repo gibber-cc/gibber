@@ -1,3 +1,5 @@
+const Seq = require( './seq' )
+
 const Ugen = function( gibberishConstructor, description ) {
 
   const constructor = function( ...args ) {
@@ -14,8 +16,8 @@ const Ugen = function( gibberishConstructor, description ) {
         }
       }
 
-      obj[ propertyName ].seq = function( values, timings ) {
-        obj[ propertyName ].sequencer = Gibberish.Sequencer({ values, timings, target:__wrappedObject, key:propertyName }).start()
+      obj[ propertyName ].seq = function( values, timings, delay=0 ) {
+        obj[ propertyName ].sequencer = Seq({ values, timings, target:__wrappedObject, key:propertyName }).start( delay )
       }
     }
 
@@ -25,13 +27,13 @@ const Ugen = function( gibberishConstructor, description ) {
         obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
 
         obj[ methodName ].seq = function( values, timings, delay=0 ) {
-          obj[ methodName ].sequencer = Gibberish.Sequencer({ values, timings, target:__wrappedObject, key:methodName }).start( delay )
+          obj[ methodName ].sequencer = Seq({ values, timings, target:__wrappedObject, key:methodName }).start( delay )
         }
       }
     }
     
-    //obj.id = 10000
     obj.connect = dest => { __wrappedObject.connect( dest ); return obj } 
+    obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
 
     return obj
   }
