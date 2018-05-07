@@ -1525,7 +1525,7 @@ let gen = {
    * ... the generated function will have a signature of ( abs, p0 ).
    */
   
-  createCallback( ugen, mem, debug = false, shouldInlineMemory=false, memType = Float32Array ) {
+  createCallback( ugen, mem, debug = false, shouldInlineMemory=false, memType = Float64Array ) {
     let isStereo = Array.isArray( ugen ) && ugen.length > 1,
         callback, 
         channel1, channel2
@@ -1630,7 +1630,7 @@ let gen = {
     }
 
     callback.data = this.data
-    callback.out  = new Float32Array( 2 )
+    callback.out  = new Float64Array( 2 )
     callback.parameters = this.parameters.slice( 0 )
 
     //if( MemoryHelper.isPrototypeOf( this.memory ) ) 
@@ -1725,7 +1725,7 @@ let gen = {
 
 module.exports = gen
 
-},{"memory-helper":144}],31:[function(require,module,exports){
+},{"memory-helper":145}],31:[function(require,module,exports){
 'use strict'
 
 let gen  = require('./gen.js')
@@ -3717,9 +3717,10 @@ module.exports = ( in1, min=0, max=1 ) => {
 }
 
 },{"./floor.js":27,"./gen.js":30,"./memo.js":42,"./sub.js":65}],74:[function(require,module,exports){
-const Gibberish = require( 'gibberish-dsp' )
-const Ugen      = require( './ugen.js' )
+const Gibberish   = require( 'gibberish-dsp' )
+const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
+const Effects     = require( './effects.js' )
 
 //module.exports = function( Gibber ){
 
@@ -3763,8 +3764,7 @@ const Instruments = require( './instruments.js' )
     // XXX stop clock from being cleared.
     clear() { Gibberish.clear() },
 
-    onload() {
-    },
+    onload() {},
 
     createClock() {
       this.beat = 11025
@@ -3791,12 +3791,48 @@ const Instruments = require( './instruments.js' )
 
     createUgens() {
       this.instruments = Instruments.create() 
+      this.effects = Effects.create()
     }  
   }
 
   module.exports = Audio
 
-},{"./instruments.js":75,"./ugen.js":77,"gibberish-dsp":109}],75:[function(require,module,exports){
+},{"./effects.js":75,"./instruments.js":76,"./ugen.js":78,"gibberish-dsp":110}],75:[function(require,module,exports){
+const Gibberish = require( 'gibberish-dsp' )
+const Ugen      = require( './ugen.js' )
+
+const Effects = {
+  create() {
+    const effects = {}
+    Gibberish.effects = Gibberish.fx
+    for( let effectName in Gibberish.effects ) {
+      const gibberishConstructor = Gibberish.effects[ effectName ]
+
+      const methods = Effects.descriptions[ effectName ] === undefined ? null : Effects.descriptions[ effectName ].methods
+      const description = { 
+        properties:gibberishConstructor.defaults, 
+        methods:methods
+      }
+
+      effects[ effectName ] = Ugen( gibberishConstructor, description )      
+    }
+    return effects
+  },
+
+  descriptions: {
+    //Chorus:{ methods:[] },
+    
+    //Conga:{
+    //  methods:[ 'note','trigger' ],
+    //},
+
+  },
+  
+}
+
+module.exports = Effects
+
+},{"./ugen.js":78,"gibberish-dsp":110}],76:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -3848,7 +3884,19 @@ const Instruments = {
     },
     Synth:{
       methods:[ 'note','trigger' ],
-    }
+    },
+    PolySynth:{
+      methods:[ 'chord','note','trigger' ],
+    },
+    PolyFM:{
+      methods:[ 'chord','note','trigger' ],
+    },
+    PolyKarplus:{
+      methods:[ 'chord','note','trigger' ],
+    },
+    PolyMono:{
+      methods:[ 'chord','note','trigger' ],
+    },
 
   },
   
@@ -3856,7 +3904,7 @@ const Instruments = {
 
 module.exports = Instruments
 
-},{"./ugen.js":77,"gibberish-dsp":109}],76:[function(require,module,exports){
+},{"./ugen.js":78,"gibberish-dsp":110}],77:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 
 const Seq = function( props ) { 
@@ -3874,7 +3922,7 @@ const Seq = function( props ) {
 
 module.exports = Seq
 
-},{"gibberish-dsp":109}],77:[function(require,module,exports){
+},{"gibberish-dsp":110}],78:[function(require,module,exports){
 const Seq = require( './seq' )
 
 const Ugen = function( gibberishConstructor, description ) {
@@ -3885,9 +3933,15 @@ const Ugen = function( gibberishConstructor, description ) {
 
     // wrap properties and add sequencing to them
     for( let propertyName in description.properties ) {
+      // turn properties into functions. if function is called
+      // with no arguments, it acts as a getter. if called with
+      // an argument, it acts as a setter.
       obj[ propertyName ] = value => {
         if( value !== undefined ) {
           __wrappedObject[ propertyName ] = value
+
+          // return object for method chaining
+          return obj
         }else{
           return __wrappedObject[ propertyName ]
         }
@@ -3895,6 +3949,9 @@ const Ugen = function( gibberishConstructor, description ) {
 
       obj[ propertyName ].seq = function( values, timings, delay=0 ) {
         obj[ propertyName ].sequencer = Seq({ values, timings, target:__wrappedObject, key:propertyName }).start( delay )
+
+        // return object for method chaining
+        return obj
       }
     }
 
@@ -3905,9 +3962,14 @@ const Ugen = function( gibberishConstructor, description ) {
 
         obj[ methodName ].seq = function( values, timings, delay=0 ) {
           obj[ methodName ].sequencer = Seq({ values, timings, target:__wrappedObject, key:methodName }).start( delay )
+
+          // return object for method chaining
+          return obj
         }
       }
     }
+
+    obj.id = __wrappedObject.id
     
     obj.connect = dest => { __wrappedObject.connect( dest ); return obj } 
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
@@ -3920,7 +3982,7 @@ const Ugen = function( gibberishConstructor, description ) {
 
 module.exports = Ugen
 
-},{"./seq":76}],78:[function(require,module,exports){
+},{"./seq":77}],79:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
@@ -3931,7 +3993,7 @@ Object.assign( analyzer, {
 
 module.exports = analyzer
 
-},{"../ugen.js":138}],79:[function(require,module,exports){
+},{"../ugen.js":139}],80:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const analyzers = {
@@ -3951,7 +4013,7 @@ return analyzers
 
 }
 
-},{"./follow.js":80,"./singlesampledelay.js":81}],80:[function(require,module,exports){
+},{"./follow.js":81,"./singlesampledelay.js":82}],81:[function(require,module,exports){
 const g = require('genish.js'),
       analyzer = require('./analyzer.js'),
       ugen = require('../ugen.js');
@@ -4037,7 +4099,7 @@ module.exports = function (Gibberish) {
 
   return Follow;
 };
-},{"../ugen.js":138,"./analyzer.js":78,"genish.js":37}],81:[function(require,module,exports){
+},{"../ugen.js":139,"./analyzer.js":79,"genish.js":37}],82:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       proxy    = require( '../workletProxy.js' ),
@@ -4192,7 +4254,7 @@ return Delay
 
 }
 
-},{"../ugen.js":138,"../workletProxy.js":141,"./analyzer.js":78,"genish.js":37}],82:[function(require,module,exports){
+},{"../ugen.js":139,"../workletProxy.js":142,"./analyzer.js":79,"genish.js":37}],83:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -4220,7 +4282,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":138,"genish.js":37}],83:[function(require,module,exports){
+},{"../ugen.js":139,"genish.js":37}],84:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -4265,7 +4327,7 @@ module.exports = function( Gibberish ) {
   return ADSR
 }
 
-},{"../ugen.js":138,"genish.js":37}],84:[function(require,module,exports){
+},{"../ugen.js":139,"genish.js":37}],85:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
@@ -4300,7 +4362,7 @@ module.exports = function( Gibberish ) {
   return Envelopes
 }
 
-},{"./ad.js":82,"./adsr.js":83,"./ramp.js":85,"genish.js":37}],85:[function(require,module,exports){
+},{"./ad.js":83,"./adsr.js":84,"./ramp.js":86,"genish.js":37}],86:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -4334,7 +4396,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":138,"genish.js":37}],86:[function(require,module,exports){
+},{"../ugen.js":139,"genish.js":37}],87:[function(require,module,exports){
 /*
  * https://github.com/antimatter15/heapqueue.js/blob/master/heapqueue.js
  *
@@ -4446,7 +4508,7 @@ HeapQueue.prototype.pop = function(){
 
 module.exports = HeapQueue
 
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 let g = require( 'genish.js' )
  
 // constructor for schroeder allpass filters
@@ -4463,7 +4525,7 @@ let allPass = function( _input, length=500, feedback=.5 ) {
 
 module.exports = allPass
 
-},{"genish.js":37}],88:[function(require,module,exports){
+},{"genish.js":37}],89:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -4593,7 +4655,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":91,"genish.js":37}],89:[function(require,module,exports){
+},{"./filter.js":92,"genish.js":37}],90:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 ) {
@@ -4612,7 +4674,7 @@ let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 
 
 module.exports = combFilter
 
-},{"genish.js":37}],90:[function(require,module,exports){
+},{"genish.js":37}],91:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -4817,7 +4879,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./filter.js":91,"genish.js":37}],91:[function(require,module,exports){
+},{"./filter.js":92,"genish.js":37}],92:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let filter = Object.create( ugen )
@@ -4828,7 +4890,7 @@ Object.assign( filter, {
 
 module.exports = filter
 
-},{"../ugen.js":138}],92:[function(require,module,exports){
+},{"../ugen.js":139}],93:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -4898,7 +4960,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":91,"genish.js":37}],93:[function(require,module,exports){
+},{"./filter.js":92,"genish.js":37}],94:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const g = Gibberish.genish
@@ -4970,7 +5032,7 @@ return filters
 
 }
 
-},{"./allpass.js":87,"./biquad.js":88,"./combfilter.js":89,"./diodeFilterZDF.js":90,"./filter24.js":92,"./ladderFilterZeroDelay.js":94,"./svf.js":95}],94:[function(require,module,exports){
+},{"./allpass.js":88,"./biquad.js":89,"./combfilter.js":90,"./diodeFilterZDF.js":91,"./filter24.js":93,"./ladderFilterZeroDelay.js":95,"./svf.js":96}],95:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filterProto = require( './filter.js' )
 
@@ -5087,7 +5149,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":91,"genish.js":37}],95:[function(require,module,exports){
+},{"./filter.js":92,"genish.js":37}],96:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -5159,7 +5221,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":91,"genish.js":37}],96:[function(require,module,exports){
+},{"./filter.js":92,"genish.js":37}],97:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -5169,47 +5231,52 @@ let BitCrusher = inputProps => {
   let props = Object.assign( { bitCrusherLength: 44100 }, BitCrusher.defaults, effect.defaults, inputProps ),
       bitCrusher = Object.create( effect )
 
-  let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
-  
-  let input = g.in( 'input' ),
-      bitDepth = g.in( 'bitDepth' ),
-      sampleRate = g.in( 'sampleRate' ),
-      leftInput = isStereo ? input[ 0 ] : input,
-      rightInput = isStereo ? input[ 1 ] : null
-  
-  let storeL = g.history(0)
-  let sampleReduxCounter = g.counter( sampleRate, 0, 1 )
+  bitCrusher.__createGraph = function() {
+    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    
+    let input = g.in( 'input' ),
+        bitDepth = g.in( 'bitDepth' ),
+        sampleRate = g.in( 'sampleRate' ),
+        leftInput = isStereo ? input[ 0 ] : input,
+        rightInput = isStereo ? input[ 1 ] : null
+    
+    let storeL = g.history(0)
+    let sampleReduxCounter = g.counter( sampleRate, 0, 1 )
 
-  let bitMult = g.pow( g.mul( bitDepth, 16 ), 2 )
-  let crushedL = g.div( g.floor( g.mul( leftInput, bitMult ) ), bitMult )
+    let bitMult = g.pow( g.mul( bitDepth, 16 ), 2 )
+    let crushedL = g.div( g.floor( g.mul( leftInput, bitMult ) ), bitMult )
 
-  let outL = g.switch(
-    sampleReduxCounter.wrap,
-    crushedL,
-    storeL.out
-  )
-
-  let out
-  if( isStereo ) {
-    let storeR = g.history(0)
-    let crushedR = g.div( g.floor( g.mul( rightInput, bitMult ) ), bitMult )
-
-    let outR = ternary( 
+    let outL = g.switch(
       sampleReduxCounter.wrap,
-      crushedR,
+      crushedL,
       storeL.out
     )
 
-    out = Gibberish.factory( 
-      bitCrusher,
-      [ outL, outR ], 
-      ['fx','bitCrusher'], 
-      props 
-    )
-  }else{
-    out = Gibberish.factory( bitCrusher, outL, ['fx','bitCrusher'], props )
+    if( isStereo ) {
+      let storeR = g.history(0)
+      let crushedR = g.div( g.floor( g.mul( rightInput, bitMult ) ), bitMult )
+
+      let outR = ternary( 
+        sampleReduxCounter.wrap,
+        crushedR,
+        storeL.out
+      )
+
+      bitCrusher.graph = [ outL, outR ]
+    }else{
+      bitCrusher.graph = outL
+    }
   }
-  
+
+  bitCrusher.__createGraph()
+  bitCrusher.__requiresRecompilation = [ 'input' ]
+
+  const out = Gibberish.factory( 
+    bitCrusher,
+    bitCrusher.graph,
+    ['fx','bitCrusher'], 
+    props 
+  )
   return out 
 }
 
@@ -5223,7 +5290,7 @@ return BitCrusher
 
 }
 
-},{"./effect.js":102,"genish.js":37}],97:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],98:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -5234,82 +5301,90 @@ module.exports = function( Gibberish ) {
     let bufferShuffler = Object.create( proto ),
         bufferSize = 88200
 
-    let props = Object.assign( {}, Shuffler.defaults, effect.defaults, inputProps )
+    bufferShuffler.__createGraph = function() {
 
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false
-    let phase = g.accum( 1,0,{ shouldWrap: false })
+      let props = Object.assign( {}, Shuffler.defaults, effect.defaults, inputProps )
 
-    let input = g.in( 'input' ),
-        leftInput = isStereo ? input[ 0 ] : input,
-        rightInput = isStereo ? input[ 1 ] : null,
-        rateOfShuffling = g.in( 'rate' ),
-        chanceOfShuffling = g.in( 'chance' ),
-        reverseChance = g.in( 'reverseChance' ),
-        repitchChance = g.in( 'repitchChance' ),
-        repitchMin = g.in( 'repitchMin' ),
-        repitchMax = g.in( 'repitchMax' )
+      let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false
+      let phase = g.accum( 1,0,{ shouldWrap: false })
 
-    let pitchMemory = g.history(1)
+      let input = g.in( 'input' ),
+          leftInput = isStereo ? input[ 0 ] : input,
+          rightInput = isStereo ? input[ 1 ] : null,
+          rateOfShuffling = g.in( 'rate' ),
+          chanceOfShuffling = g.in( 'chance' ),
+          reverseChance = g.in( 'reverseChance' ),
+          repitchChance = g.in( 'repitchChance' ),
+          repitchMin = g.in( 'repitchMin' ),
+          repitchMax = g.in( 'repitchMax' )
 
-    let shouldShuffleCheck = g.eq( g.mod( phase, rateOfShuffling ), 0 )
-    let isShuffling = g.memo( g.sah( g.lt( g.noise(), chanceOfShuffling ), shouldShuffleCheck, 0 ) ) 
+      let pitchMemory = g.history(1)
 
-    // if we are shuffling and on a repeat boundary...
-    let shuffleChanged = g.memo( g.and( shouldShuffleCheck, isShuffling ) )
-    let shouldReverse = g.lt( g.noise(), reverseChance ),
-        reverseMod = g.switch( shouldReverse, -1, 1 )
+      let shouldShuffleCheck = g.eq( g.mod( phase, rateOfShuffling ), 0 )
+      let isShuffling = g.memo( g.sah( g.lt( g.noise(), chanceOfShuffling ), shouldShuffleCheck, 0 ) ) 
 
-    let pitch = g.ifelse( 
-      g.and( shuffleChanged, g.lt( g.noise(), repitchChance ) ),
-      g.memo( g.mul( g.add( repitchMin, g.mul( g.sub( repitchMax, repitchMin ), g.noise() ) ), reverseMod ) ),
-      reverseMod
-    )
+      // if we are shuffling and on a repeat boundary...
+      let shuffleChanged = g.memo( g.and( shouldShuffleCheck, isShuffling ) )
+      let shouldReverse = g.lt( g.noise(), reverseChance ),
+          reverseMod = g.switch( shouldReverse, -1, 1 )
+
+      let pitch = g.ifelse( 
+        g.and( shuffleChanged, g.lt( g.noise(), repitchChance ) ),
+        g.memo( g.mul( g.add( repitchMin, g.mul( g.sub( repitchMax, repitchMin ), g.noise() ) ), reverseMod ) ),
+        reverseMod
+      )
+      
+      // only switch pitches on repeat boundaries
+      pitchMemory.in( g.switch( shuffleChanged, pitch, pitchMemory.out ) )
+
+      let fadeLength = g.memo( g.div( rateOfShuffling, 100 ) ),
+          fadeIncr = g.memo( g.div( 1, fadeLength ) )
+
+      let bufferL = g.data( bufferSize ), bufferR = isStereo ? g.data( bufferSize ) : null
+      let readPhase = g.accum( pitchMemory.out, 0, { shouldWrap:false }) 
+      let stutter = g.wrap( g.sub( g.mod( readPhase, bufferSize ), 22050 ), 0, bufferSize )
+
+      let normalSample = g.peek( bufferL, g.accum( 1, 0, { max:88200 }), { mode:'simple' })
+
+      let stutterSamplePhase = g.switch( isShuffling, stutter, g.mod( readPhase, bufferSize ) )
+      let stutterSample = g.memo( g.peek( 
+        bufferL, 
+        stutterSamplePhase,
+        { mode:'samples' }
+      ) )
+      
+      let stutterShouldFadeIn = g.and( shuffleChanged, isShuffling )
+      let stutterPhase = g.accum( 1, shuffleChanged, { shouldWrap: false })
+
+      let fadeInAmount = g.memo( g.div( stutterPhase, fadeLength ) )
+      let fadeOutAmount = g.div( g.sub( rateOfShuffling, stutterPhase ), g.sub( rateOfShuffling, fadeLength ) )
+      
+      let fadedStutter = g.ifelse(
+        g.lt( stutterPhase, fadeLength ),
+        g.memo( g.mul( g.switch( g.lt( fadeInAmount, 1 ), fadeInAmount, 1 ), stutterSample ) ),
+        g.gt( stutterPhase, g.sub( rateOfShuffling, fadeLength ) ),
+        g.memo( g.mul( g.gtp( fadeOutAmount, 0 ), stutterSample ) ),
+        stutterSample
+      )
+      
+      let outputL = g.mix( normalSample, fadedStutter, isShuffling ) 
+
+      let pokeL = g.poke( bufferL, leftInput, g.mod( g.add( phase, 44100 ), 88200 ) )
+
+      let panner = g.pan( outputL, outputL, g.in( 'pan' ) )
+      
+      bufferShuffler.graph = [ panner.left, panner.right ]
+    }
+
+    bufferShuffler.__createGraph()
+    bufferShuffler.__requiresRecompilation = [ 'input' ]
     
-    // only switch pitches on repeat boundaries
-    pitchMemory.in( g.switch( shuffleChanged, pitch, pitchMemory.out ) )
-
-    let fadeLength = g.memo( g.div( rateOfShuffling, 100 ) ),
-        fadeIncr = g.memo( g.div( 1, fadeLength ) )
-
-    let bufferL = g.data( bufferSize ), bufferR = isStereo ? g.data( bufferSize ) : null
-    let readPhase = g.accum( pitchMemory.out, 0, { shouldWrap:false }) 
-    let stutter = g.wrap( g.sub( g.mod( readPhase, bufferSize ), 22050 ), 0, bufferSize )
-
-    let normalSample = g.peek( bufferL, g.accum( 1, 0, { max:88200 }), { mode:'simple' })
-
-    let stutterSamplePhase = g.switch( isShuffling, stutter, g.mod( readPhase, bufferSize ) )
-    let stutterSample = g.memo( g.peek( 
-      bufferL, 
-      stutterSamplePhase,
-      { mode:'samples' }
-    ) )
-    
-    let stutterShouldFadeIn = g.and( shuffleChanged, isShuffling )
-    let stutterPhase = g.accum( 1, shuffleChanged, { shouldWrap: false })
-
-    let fadeInAmount = g.memo( g.div( stutterPhase, fadeLength ) )
-    let fadeOutAmount = g.div( g.sub( rateOfShuffling, stutterPhase ), g.sub( rateOfShuffling, fadeLength ) )
-    
-    let fadedStutter = g.ifelse(
-      g.lt( stutterPhase, fadeLength ),
-      g.memo( g.mul( g.switch( g.lt( fadeInAmount, 1 ), fadeInAmount, 1 ), stutterSample ) ),
-      g.gt( stutterPhase, g.sub( rateOfShuffling, fadeLength ) ),
-      g.memo( g.mul( g.gtp( fadeOutAmount, 0 ), stutterSample ) ),
-      stutterSample
-    )
-    
-    let outputL = g.mix( normalSample, fadedStutter, isShuffling ) 
-
-    let pokeL = g.poke( bufferL, leftInput, g.mod( g.add( phase, 44100 ), 88200 ) )
-
-    let panner = g.pan( outputL, outputL, g.in( 'pan' ) )
-    
-    let out = Gibberish.factory( 
+    const out = Gibberish.factory( 
       bufferShuffler,
-      [panner.left, panner.right],
+      bufferShuffler.graph,
       ['fx','shuffler'], 
       props 
-    ) 
+    )
 
     return out 
   }
@@ -5329,75 +5404,83 @@ module.exports = function( Gibberish ) {
   return Shuffler 
 }
 
-},{"./effect.js":102,"genish.js":37}],98:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],99:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
   
 module.exports = function( Gibberish ) {
  
-let Chorus = inputProps => {
-  const props = Object.assign({}, Chorus.defaults, effect.defaults, inputProps )
+let __Chorus = inputProps => {
+  const props = Object.assign({}, __Chorus.defaults, effect.defaults, inputProps )
   
   const chorus = Object.create( Gibberish.prototypes.ugen )
 
-  const input = g.in('input'),
-        freq1 = g.in('slowFrequency'),
-        freq2 = g.in('fastFrequency'),
-        amp1  = g.in('slowGain'),
-        amp2  = g.in('fastGain')
+  chorus.__createGraph = function() {
+    const input = g.in('input'),
+          freq1 = g.in('slowFrequency'),
+          freq2 = g.in('fastFrequency'),
+          amp1  = g.in('slowGain'),
+          amp2  = g.in('fastGain')
 
-  const isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : true 
+    const isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : true 
 
-  const leftInput = isStereo ? input[0] : input
+    const leftInput = isStereo ? input[0] : input
 
-  const win0   = g.env( 'inversewelch', 1024 ),
-        win120 = g.env( 'inversewelch', 1024, 0, .333 ),
-        win240 = g.env( 'inversewelch', 1024, 0, .666 )
-  
-  const slowPhasor = g.phasor( freq1, 0, { min:0 }),
-  		  slowPeek1  = g.mul( g.peek( win0,   slowPhasor ), amp1 ),
-        slowPeek2  = g.mul( g.peek( win120, slowPhasor ), amp1 ),
-        slowPeek3  = g.mul( g.peek( win240, slowPhasor ), amp1 )
-  
-  const fastPhasor = g.phasor( freq2, 0, { min:0 }),
-  	  	fastPeek1  = g.mul( g.peek( win0,   fastPhasor ), amp2 ),
-        fastPeek2  = g.mul( g.peek( win120, fastPhasor ), amp2 ),
-        fastPeek3  = g.mul( g.peek( win240, fastPhasor ), amp2 )
+    const win0   = g.env( 'inversewelch', 1024 ),
+          win120 = g.env( 'inversewelch', 1024, 0, .333 ),
+          win240 = g.env( 'inversewelch', 1024, 0, .666 )
+    
+    const slowPhasor = g.phasor( freq1, 0, { min:0 }),
+          slowPeek1  = g.mul( g.peek( win0,   slowPhasor ), amp1 ),
+          slowPeek2  = g.mul( g.peek( win120, slowPhasor ), amp1 ),
+          slowPeek3  = g.mul( g.peek( win240, slowPhasor ), amp1 )
+    
+    const fastPhasor = g.phasor( freq2, 0, { min:0 }),
+          fastPeek1  = g.mul( g.peek( win0,   fastPhasor ), amp2 ),
+          fastPeek2  = g.mul( g.peek( win120, fastPhasor ), amp2 ),
+          fastPeek3  = g.mul( g.peek( win240, fastPhasor ), amp2 )
 
-  let sampleRate = Gibberish.mode === 'processor' ? Gibberish.processor.sampleRate : Gibberish.ctx.sampleRate
-   
-  const ms = sampleRate / 1000 
-  const maxDelayTime = 100 * ms
 
-  const time1 =  g.mul( g.add( slowPeek1, fastPeek1, 5 ), ms ),
-        time2 =  g.mul( g.add( slowPeek2, fastPeek2, 5 ), ms ),
-        time3 =  g.mul( g.add( slowPeek3, fastPeek3, 5 ), ms )
+    // XXX figure out how to ensure the proper samplerate here...
+    let sampleRate = Gibberish.mode === 'processor' ? Gibberish.processor.sampleRate || 44100 : Gibberish.ctx.sampleRate
+     
+    const ms = sampleRate / 1000 
+    const maxDelayTime = 100 * ms
 
-  const delay1L = g.delay( leftInput, time1, { size:maxDelayTime }),
-        delay2L = g.delay( leftInput, time2, { size:maxDelayTime }),
-        delay3L = g.delay( leftInput, time3, { size:maxDelayTime })
+    const time1 =  g.mul( g.add( slowPeek1, fastPeek1, 5 ), ms ),
+          time2 =  g.mul( g.add( slowPeek2, fastPeek2, 5 ), ms ),
+          time3 =  g.mul( g.add( slowPeek3, fastPeek3, 5 ), ms )
 
-  
-  const leftOutput = g.add( delay1L, delay2L, delay3L )
-  if( isStereo ) {
-    const rightInput = input[1]
-    const delay1R = g.delay(rightInput, time1, { size:maxDelayTime }),
-          delay2R = g.delay(rightInput, time2, { size:maxDelayTime }),
-          delay3R = g.delay(rightInput, time3, { size:maxDelayTime })
+    const delay1L = g.delay( leftInput, time1, { size:maxDelayTime }),
+          delay2L = g.delay( leftInput, time2, { size:maxDelayTime }),
+          delay3L = g.delay( leftInput, time3, { size:maxDelayTime })
 
-    // flip a couple delay lines for stereo effect?
-    const rightOutput = g.add( delay1R, delay2L, delay3R )
-    chorus.graph = [ g.add( delay1L, delay2R, delay3L ), rightOutput ]
-  }else{
-    chorus.graph = leftOutput
+    
+    const leftOutput = g.add( delay1L, delay2L, delay3L )
+    if( isStereo ) {
+      const rightInput = input[1]
+      const delay1R = g.delay(rightInput, time1, { size:maxDelayTime }),
+            delay2R = g.delay(rightInput, time2, { size:maxDelayTime }),
+            delay3R = g.delay(rightInput, time3, { size:maxDelayTime })
+
+      // flip a couple delay lines for stereo effect?
+      const rightOutput = g.add( delay1R, delay2L, delay3R )
+      chorus.graph = [ g.add( delay1L, delay2R, delay3L ), rightOutput ]
+    }else{
+      chorus.graph = leftOutput
+    }
   }
+
+  chorus.__createGraph()
+  chorus.__requiresRecompilation = [ 'input' ]
+
   
   const out = Gibberish.factory( chorus, chorus.graph, ['fx','chorus'], props )
 
   return out 
 }
 
-Chorus.defaults = {
+__Chorus.defaults = {
   input:0,
   slowFrequency: .18,
   slowGain:1,
@@ -5405,11 +5488,11 @@ Chorus.defaults = {
   fastGain:.2
 }
 
-return Chorus
+return __Chorus
 
 }
 
-},{"./effect.js":102,"genish.js":37}],99:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],100:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -5526,50 +5609,54 @@ module.exports = function (Gibberish) {
     const props = Object.assign({}, Reverb.defaults, effect.defaults, inputProps),
           reverb = Object.create(effect);
 
-    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true;
+    reverb.__createGraph = function () {
+      const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true;
 
-    const input = g.in('input'),
-          damping = g.in('damping'),
-          drywet = g.in('drywet'),
-          decay = g.in('decay'),
-          predelay = g.in('predelay'),
-          inbandwidth = g.in('inbandwidth'),
-          decaydiffusion1 = g.in('decaydiffusion1'),
-          decaydiffusion2 = g.in('decaydiffusion2'),
-          indiffusion1 = g.in('indiffusion1'),
-          indiffusion2 = g.in('indiffusion2');
+      const input = g.in('input'),
+            damping = g.in('damping'),
+            drywet = g.in('drywet'),
+            decay = g.in('decay'),
+            predelay = g.in('predelay'),
+            inbandwidth = g.in('inbandwidth'),
+            decaydiffusion1 = g.in('decaydiffusion1'),
+            decaydiffusion2 = g.in('decaydiffusion2'),
+            indiffusion1 = g.in('indiffusion1'),
+            indiffusion2 = g.in('indiffusion2');
 
-    const summedInput = isStereo === true ? g.add(input[0], input[1]) : input;
-    let out;
-    {
-      'use jsdsp';
+      const summedInput = isStereo === true ? g.add(input[0], input[1]) : input;
+      {
+        'use jsdsp';
 
-      // calculcate predelay
-      const predelay_samps = g.mstosamps(predelay);
-      const predelay_delay = g.delay(summedInput, predelay_samps, { size: 4410 });
-      const z_pd = g.history(0);
-      const mix1 = g.mix(z_pd.out, predelay_delay, inbandwidth);
-      z_pd.in(mix1);
+        // calculcate predelay
+        const predelay_samps = g.mstosamps(predelay);
+        const predelay_delay = g.delay(summedInput, predelay_samps, { size: 4410 });
+        const z_pd = g.history(0);
+        const mix1 = g.mix(z_pd.out, predelay_delay, inbandwidth);
+        z_pd.in(mix1);
 
-      const predelay_out = mix1;
+        const predelay_out = mix1;
 
-      // run input + predelay through all-pass chain
-      const ap_out = AllPassChain(predelay_out, indiffusion1, indiffusion2);
+        // run input + predelay through all-pass chain
+        const ap_out = AllPassChain(predelay_out, indiffusion1, indiffusion2);
 
-      // run filtered signal into "tank" model
-      const tank_outs = Tank(ap_out, decaydiffusion1, decaydiffusion2, damping, decay);
+        // run filtered signal into "tank" model
+        const tank_outs = Tank(ap_out, decaydiffusion1, decaydiffusion2, damping, decay);
 
-      const leftWet = genish.mul(genish.sub(tank_outs[1], tank_outs[2]), .6);
-      const rightWet = genish.mul(genish.sub(tank_outs[3], tank_outs[4]), .6);
+        const leftWet = genish.mul(genish.sub(tank_outs[1], tank_outs[2]), .6);
+        const rightWet = genish.mul(genish.sub(tank_outs[3], tank_outs[4]), .6);
 
-      // mix wet and dry signal for final output
-      const left = g.mix(isStereo ? input[0] : input, leftWet, drywet);
-      const right = g.mix(isStereo ? input[1] : input, rightWet, drywet);
+        // mix wet and dry signal for final output
+        const left = g.mix(isStereo ? input[0] : input, leftWet, drywet);
+        const right = g.mix(isStereo ? input[1] : input, rightWet, drywet);
 
-      out = Gibberish.factory(reverb, [left, right], ['fx', 'plate'], props);
-    }
+        reverb.graph = [left, right];
+      }
+    };
 
-    return out;
+    reverb.__createGraph();
+    reverb.__requiresRecompilation('input');
+
+    return Gibberish.factory(reverb, reverb.graph, ['fx', 'plate'], props);
   };
 
   Reverb.defaults = {
@@ -5587,7 +5674,7 @@ module.exports = function (Gibberish) {
 
   return Reverb;
 };
-},{"./effect.js":102,"genish.js":37}],100:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],101:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -5597,40 +5684,47 @@ let Delay = inputProps => {
   let props = Object.assign( { delayLength: 44100 }, Delay.defaults, inputProps ),
       delay = Object.create( effect )
 
-  let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
-  
-  let input      = g.in( 'input' ),
-      delayTime  = g.in( 'time' ),
-      wetdry     = g.in( 'wetdry' ),
-      leftInput  = isStereo ? input[ 0 ] : input,
-      rightInput = isStereo ? input[ 1 ] : null
+  delay.__createGraph = function() {
+    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
     
-  let feedback = g.in( 'feedback' )
+    let input      = g.in( 'input' ),
+        delayTime  = g.in( 'time' ),
+        wetdry     = g.in( 'wetdry' ),
+        leftInput  = isStereo ? input[ 0 ] : input,
+        rightInput = isStereo ? input[ 1 ] : null
+      
+    let feedback = g.in( 'feedback' )
 
-  // left channel
-  let feedbackHistoryL = g.history()
-  let echoL = g.delay( g.add( leftInput, g.mul( feedbackHistoryL.out, feedback ) ), delayTime, { size:props.delayLength })
-  feedbackHistoryL.in( echoL )
-  let left = g.mix( leftInput, echoL, wetdry )
+    // left channel
+    let feedbackHistoryL = g.history()
+    let echoL = g.delay( g.add( leftInput, g.mul( feedbackHistoryL.out, feedback ) ), delayTime, { size:props.delayLength })
+    feedbackHistoryL.in( echoL )
+    let left = g.mix( leftInput, echoL, wetdry )
 
-  let out
-  if( isStereo ) {
-    // right channel
-    let feedbackHistoryR = g.history()
-    let echoR = g.delay( g.add( rightInput, g.mul( feedbackHistoryR.out, feedback ) ), delayTime, { size:props.delayLength })
-    feedbackHistoryR.in( echoR )
-    const right = g.mix( rightInput, echoR, wetdry )
+    if( isStereo ) {
+      // right channel
+      let feedbackHistoryR = g.history()
+      let echoR = g.delay( g.add( rightInput, g.mul( feedbackHistoryR.out, feedback ) ), delayTime, { size:props.delayLength })
+      feedbackHistoryR.in( echoR )
+      const right = g.mix( rightInput, echoR, wetdry )
 
-    out = Gibberish.factory( 
-      delay,
-      [ left, right ], 
-      ['fx','delay'], 
-      props 
-    )
-  }else{
-    out = Gibberish.factory( delay, left, ['fx','delay'], props )
+      delay.graph = [ left, right ]
+    }else{
+      delay.graph = left 
+    }
+
   }
+
+  delay.__createGraph()
+  delay.__requiresRecompilation = [ 'input' ]
   
+  const out = Gibberish.factory( 
+    delay,
+    delay.graph, 
+    ['fx','delay'], 
+    props 
+  )
+
   return out
 }
 
@@ -5645,7 +5739,7 @@ return Delay
 
 }
 
-},{"./effect.js":102,"genish.js":37}],101:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],102:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -5665,38 +5759,44 @@ module.exports = function (Gibberish) {
     let props = Object.assign({}, Distortion.defaults, effect.defaults, inputProps),
         distortion = Object.create(effect);
 
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true;
+    distortion.__createGraph = function () {
+      let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true;
 
-    const input = g.in('input'),
-          shape1 = g.in('shape1'),
-          shape2 = g.in('shape2'),
-          pregain = g.in('pregain'),
-          postgain = g.in('postgain');
+      const input = g.in('input'),
+            shape1 = g.in('shape1'),
+            shape2 = g.in('shape2'),
+            pregain = g.in('pregain'),
+            postgain = g.in('postgain');
 
-    let lout, out;
-    {
-      'use jsdsp';
-      const linput = isStereo ? input[0] : input;
-      const ltop = genish.sub(g.exp(genish.mul(linput, genish.add(shape1, pregain))), g.exp(genish.mul(linput, genish.sub(shape2, pregain))));
-      const lbottom = genish.add(g.exp(genish.mul(linput, pregain)), g.exp(genish.mul(genish.mul(-1, linput), pregain)));
-      lout = genish.mul(genish.div(ltop, lbottom), postgain);
-    }
-
-    if (isStereo) {
-      let rout;
+      let lout, out;
       {
         'use jsdsp';
-        const rinput = isStereo ? input[1] : input;
-        const rtop = genish.sub(g.exp(genish.mul(rinput, genish.add(shape1, pregain))), g.exp(genish.mul(rinput, genish.sub(shape2, pregain))));
-        const rbottom = genish.add(g.exp(genish.mul(rinput, pregain)), g.exp(genish.mul(genish.mul(-1, rinput), pregain)));
-        rout = genish.mul(genish.div(rtop, rbottom), postgain);
+        const linput = isStereo ? input[0] : input;
+        const ltop = genish.sub(g.exp(genish.mul(linput, genish.add(shape1, pregain))), g.exp(genish.mul(linput, genish.sub(shape2, pregain))));
+        const lbottom = genish.add(g.exp(genish.mul(linput, pregain)), g.exp(genish.mul(genish.mul(-1, linput), pregain)));
+        lout = genish.mul(genish.div(ltop, lbottom), postgain);
       }
 
-      out = Gibberish.factory(distortion, [lout, rout], ['fx', 'distortion'], props);
-    } else {
-      out = Gibberish.factory(distortion, lout, ['fx', 'distortion'], props);
-    }
+      if (isStereo) {
+        let rout;
+        {
+          'use jsdsp';
+          const rinput = isStereo ? input[1] : input;
+          const rtop = genish.sub(g.exp(genish.mul(rinput, genish.add(shape1, pregain))), g.exp(genish.mul(rinput, genish.sub(shape2, pregain))));
+          const rbottom = genish.add(g.exp(genish.mul(rinput, pregain)), g.exp(genish.mul(genish.mul(-1, rinput), pregain)));
+          rout = genish.mul(genish.div(rtop, rbottom), postgain);
+        }
 
+        distortion.graph = [lout, rout];
+      } else {
+        distortion.graph = lout;
+      }
+    };
+
+    distortion.__createGraph();
+    distortion.__requiresRecompilation = ['input'];
+
+    const out = Gibberish.factory(distortion, distortion.graph, ['fx', 'distortion'], props);
     return out;
   };
 
@@ -5710,7 +5810,7 @@ module.exports = function (Gibberish) {
 
   return Distortion;
 };
-},{"./effect.js":102,"genish.js":37}],102:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],103:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let effect = Object.create( ugen )
@@ -5721,7 +5821,7 @@ Object.assign( effect, {
 
 module.exports = effect
 
-},{"../ugen.js":138}],103:[function(require,module,exports){
+},{"../ugen.js":139}],104:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const effects = {
@@ -5751,7 +5851,7 @@ return effects
 
 }
 
-},{"./bitCrusher.js":96,"./bufferShuffler.js":97,"./chorus.js":98,"./dattorro.js":99,"./delay.js":100,"./distortion.js":101,"./flanger.js":104,"./freeverb.js":105,"./ringMod.js":106,"./tremolo.js":107,"./vibrato.js":108}],104:[function(require,module,exports){
+},{"./bitCrusher.js":97,"./bufferShuffler.js":98,"./chorus.js":99,"./dattorro.js":100,"./delay.js":101,"./distortion.js":102,"./flanger.js":105,"./freeverb.js":106,"./ringMod.js":107,"./tremolo.js":108,"./vibrato.js":109}],105:[function(require,module,exports){
 let g = require( 'genish.js' ),
     proto = require( './effect.js' )
 
@@ -5761,61 +5861,67 @@ let Flanger = inputProps => {
   let props   = Object.assign( { delayLength:44100 }, Flanger.defaults, proto.defaults, inputProps ),
       flanger = Object.create( proto )
 
-  let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
-  
-  let input = g.in( 'input' ),
-      delayLength = props.delayLength,
-      feedbackCoeff = g.in( 'feedback' ),
-      modAmount = g.in( 'offset' ),
-      frequency = g.in( 'frequency' ),
-      delayBufferL = g.data( delayLength ),
-      delayBufferR
-
-  let writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
-  
-  let offset = g.mul( modAmount, 500 )
-
-  let mod = props.mod === undefined ? g.cycle( frequency ) : props.mod
-  
-  let readIdx = g.wrap( 
-    g.add( 
-      g.sub( writeIdx, offset ), 
-      mod//g.mul( mod, g.sub( offset, 1 ) ) 
-    ), 
-	  0, 
-    delayLength
-  )
-
-  let leftInput = isStereo ? input[0] : input
-
-  let delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
-  
-  g.poke( delayBufferL, g.add( leftInput, g.mul( delayedOutL, feedbackCoeff ) ), writeIdx )
-
-  let left = g.add( leftInput, delayedOutL ),
-      right, out
-
-
-  if( isStereo === true ) {
-    rightInput = input[1]
-    delayBufferR = g.data( delayLength )
+  flanger.__createGraph = function() {
+    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
     
-    let delayedOutR = g.peek( delayBufferR, readIdx, { interp:'linear', mode:'samples' })
+    let input = g.in( 'input' ),
+        delayLength = props.delayLength,
+        feedbackCoeff = g.in( 'feedback' ),
+        modAmount = g.in( 'offset' ),
+        frequency = g.in( 'frequency' ),
+        delayBufferL = g.data( delayLength ),
+        delayBufferR
 
-    g.poke( delayBufferR, g.add( rightInput, g.mul( delayedOutR, feedbackCoeff ) ), writeIdx )
-    right = g.add( rightInput, delayedOutR )
+    let writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
+    
+    let offset = g.mul( modAmount, 500 )
 
-    out = Gibberish.factory( 
-      flanger,
-      [ left, right ], 
-      ['fx','flanger'], 
-      props 
+    let mod = props.mod === undefined ? g.cycle( frequency ) : props.mod
+    
+    let readIdx = g.wrap( 
+      g.add( 
+        g.sub( writeIdx, offset ), 
+        mod//g.mul( mod, g.sub( offset, 1 ) ) 
+      ), 
+      0, 
+      delayLength
     )
 
-  }else{
-    out = Gibberish.factory( flanger, left, ['fx','flanger'], props )
+    let leftInput = isStereo ? input[0] : input
+
+    let delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
+    
+    g.poke( delayBufferL, g.add( leftInput, g.mul( delayedOutL, feedbackCoeff ) ), writeIdx )
+
+    let left = g.add( leftInput, delayedOutL ),
+        right
+
+    if( isStereo === true ) {
+      rightInput = input[1]
+      delayBufferR = g.data( delayLength )
+      
+      let delayedOutR = g.peek( delayBufferR, readIdx, { interp:'linear', mode:'samples' })
+
+      g.poke( delayBufferR, g.add( rightInput, g.mul( delayedOutR, feedbackCoeff ) ), writeIdx )
+      right = g.add( rightInput, delayedOutR )
+
+      flanger.graph = [ left, right ]
+
+    }else{
+      flanger.graph = left
+    }
   }
-  
+
+  flanger.__createGraph()
+  flanger.__requiresRecompilation = [ 'input' ]
+
+  const out = Gibberish.factory( 
+    flanger,
+    [ left, right ], 
+    ['fx','flanger'], 
+    props 
+  ) 
+
   return out 
 }
 
@@ -5830,7 +5936,7 @@ return Flanger
 
 }
 
-},{"./effect.js":102,"genish.js":37}],105:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],106:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -5856,41 +5962,49 @@ const Freeverb = inputProps => {
   let props = Object.assign( {}, Freeverb.defaults, effect.defaults, inputProps ),
       reverb = Object.create( effect ) 
    
-  let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
-  
-  let combsL = [], combsR = []
+  reverb.__createGraph = function() {
+    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    
+    let combsL = [], combsR = []
 
-  let input = g.in( 'input' ),
-      wet1 = g.in( 'wet1'), wet2 = g.in( 'wet2' ),  dry = g.in( 'dry' ), 
-      roomSize = g.in( 'roomSize' ), damping = g.in( 'damping' )
-  
-  let summedInput = isStereo === true ? g.add( input[0], input[1] ) : input,
-      attenuatedInput = g.memo( g.mul( summedInput, tuning.fixedGain ) )
-  
-  // create comb filters in parallel...
-  for( let i = 0; i < 8; i++ ) { 
-    combsL.push( 
-      combFilter( attenuatedInput, tuning.combTuning[i], g.mul(damping,.4), g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) ) 
-    )
-    combsR.push( 
-      combFilter( attenuatedInput, tuning.combTuning[i] + tuning.stereoSpread, g.mul(damping,.4), g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) ) 
-    )
-  }
-  
-  // ... and sum them with attenuated input
-  let outL = g.add( attenuatedInput, ...combsL )
-  let outR = g.add( attenuatedInput, ...combsR )
-  
-  // run through allpass filters in series
-  for( let i = 0; i < 4; i++ ) { 
-    outL = allPass( outL, tuning.allPassTuning[ i ] + tuning.stereoSpread )
-    outR = allPass( outR, tuning.allPassTuning[ i ] + tuning.stereoSpread )
-  }
-  
-  let outputL = g.add( g.mul( outL, wet1 ), g.mul( outR, wet2 ), g.mul( isStereo === true ? input[0] : input, dry ) ),
-      outputR = g.add( g.mul( outR, wet1 ), g.mul( outL, wet2 ), g.mul( isStereo === true ? input[1] : input, dry ) )
+    let input = g.in( 'input' ),
+        wet1 = g.in( 'wet1'), wet2 = g.in( 'wet2' ),  dry = g.in( 'dry' ), 
+        roomSize = g.in( 'roomSize' ), damping = g.in( 'damping' )
+    
+    let summedInput = isStereo === true ? g.add( input[0], input[1] ) : input,
+        attenuatedInput = g.memo( g.mul( summedInput, tuning.fixedGain ) )
+    
+    // create comb filters in parallel...
+    for( let i = 0; i < 8; i++ ) { 
+      combsL.push( 
+        combFilter( attenuatedInput, tuning.combTuning[i], g.mul(damping,.4), g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) ) 
+      )
+      combsR.push( 
+        combFilter( attenuatedInput, tuning.combTuning[i] + tuning.stereoSpread, g.mul(damping,.4), g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) ) 
+      )
+    }
+    
+    // ... and sum them with attenuated input
+    let outL = g.add( attenuatedInput, ...combsL )
+    let outR = g.add( attenuatedInput, ...combsR )
+    
+    // run through allpass filters in series
+    for( let i = 0; i < 4; i++ ) { 
+      outL = allPass( outL, tuning.allPassTuning[ i ] + tuning.stereoSpread )
+      outR = allPass( outR, tuning.allPassTuning[ i ] + tuning.stereoSpread )
+    }
+    
+    let outputL = g.add( g.mul( outL, wet1 ), g.mul( outR, wet2 ), g.mul( isStereo === true ? input[0] : input, dry ) ),
+        outputR = g.add( g.mul( outR, wet1 ), g.mul( outL, wet2 ), g.mul( isStereo === true ? input[1] : input, dry ) )
 
-  const out = Gibberish.factory( reverb, [ outputL, outputR ], ['fx','freeverb'], props )
+    reverb.graph = [ outputL, outputR ]
+
+  }
+
+  reverb.__createGraph()
+  reverb.__requiresRecompilation = [ 'input' ]
+
+  const out = Gibberish.factory( reverb, reverb.graph, ['fx','freeverb'], props )
 
   return out
 }
@@ -5911,7 +6025,7 @@ return Freeverb
 }
 
 
-},{"./effect.js":102,"genish.js":37}],106:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],107:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -5921,33 +6035,40 @@ let RingMod = inputProps => {
   let props   = Object.assign( {}, RingMod.defaults, effect.defaults, inputProps ),
       ringMod = Object.create( effect )
 
-  let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
-  
-  let input = g.in( 'input' ),
-      frequency = g.in( 'frequency' ),
-      gain = g.in( 'gain' ),
-      mix = g.in( 'mix' )
-  
-  let leftInput = isStereo ? input[0] : input,
-      sine = g.mul( g.cycle( frequency ), gain )
- 
-  let left = g.add( g.mul( leftInput, g.sub( 1, mix )), g.mul( g.mul( leftInput, sine ), mix ) ), 
-      right
-
-  let out
-  if( isStereo === true ) {
-    let rightInput = input[1]
-    right = g.add( g.mul( rightInput, g.sub( 1, mix )), g.mul( g.mul( rightInput, sine ), mix ) ) 
+  ringMod.__createGraph = function() {
+    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
     
-    out = Gibberish.factory( 
-      ringMod,
-      [ left, right ], 
-      'ringMod', 
-      props 
-    )
-  }else{
-    out = Gibberish.factory( ringMod, left, ['fx','ringMod'], props )
+    let input = g.in( 'input' ),
+        frequency = g.in( 'frequency' ),
+        gain = g.in( 'gain' ),
+        mix = g.in( 'mix' )
+    
+    let leftInput = isStereo ? input[0] : input,
+        sine = g.mul( g.cycle( frequency ), gain )
+   
+    let left = g.add( g.mul( leftInput, g.sub( 1, mix )), g.mul( g.mul( leftInput, sine ), mix ) ), 
+        right
+
+    let out
+    if( isStereo === true ) {
+      let rightInput = input[1]
+      right = g.add( g.mul( rightInput, g.sub( 1, mix )), g.mul( g.mul( rightInput, sine ), mix ) ) 
+      
+      ringMod.graph = [ left, right ]
+    }else{
+      ringMod.graph = left
+    }
   }
+
+  ringMod.__createGraph() 
+  ringMod.__requiresRecompilation = [ 'input' ]
+
+  const out = Gibberish.factory( 
+    ringMod,
+    ringMod.graph, 
+    'ringMod', 
+    props 
+  )
   
   return out 
 }
@@ -5963,7 +6084,7 @@ return RingMod
 
 }
 
-},{"./effect.js":102,"genish.js":37}],107:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],108:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -5973,42 +6094,48 @@ const Tremolo = inputProps => {
   const props   = Object.assign( {}, Tremolo.defaults, effect.defaults, inputProps ),
         tremolo = Object.create( effect )
 
-  const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
-  
-  const input = g.in( 'input' ),
-        frequency = g.in( 'frequency' ),
-        amount = g.in( 'amount' )
-  
-  const leftInput = isStereo ? input[0] : input
+  tremolo.__createGraph = function() {
+    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    
+    const input = g.in( 'input' ),
+          frequency = g.in( 'frequency' ),
+          amount = g.in( 'amount' )
+    
+    const leftInput = isStereo ? input[0] : input
 
-  let osc
-  if( props.shape === 'square' ) {
-    osc = g.gt( g.phasor( frequency ), 0 )
-  }else if( props.shape === 'saw' ) {
-    osc = g.gtp( g.phasor( frequency ), 0 )
-  }else{
-    osc = g.cycle( frequency )
-  }
+    let osc
+    if( props.shape === 'square' ) {
+      osc = g.gt( g.phasor( frequency ), 0 )
+    }else if( props.shape === 'saw' ) {
+      osc = g.gtp( g.phasor( frequency ), 0 )
+    }else{
+      osc = g.cycle( frequency )
+    }
 
-  const mod = g.mul( osc, amount )
- 
-  let left = g.sub( leftInput, g.mul( leftInput, mod ) ), 
-      right, out
+    const mod = g.mul( osc, amount )
+   
+    let left = g.sub( leftInput, g.mul( leftInput, mod ) ), 
+        right
 
-  if( isStereo === true ) {
-    let rightInput = input[1]
-    right = g.mul( rightInput, mod )
+    if( isStereo === true ) {
+      let rightInput = input[1]
+      right = g.mul( rightInput, mod )
 
-    out = Gibberish.factory( 
-      tremolo,
-      [ left, right ], 
-      ['fx','tremolo'], 
-      props 
-    )
-  }else{
-    out = Gibberish.factory( tremolo, left, ['fx','tremolo'], props )
+      tremolo.graph = [ left, right ]
+    }else{
+      tremolo.graph = left
+    }
   }
   
+  tremolo.__createGraph()
+  tremolo.__requiresRecompilation = [ 'input' ]
+
+  const out = Gibberish.factory( 
+    tremolo,
+    tremolo.graph,
+    ['fx','tremolo'], 
+    props 
+  ) 
   return out 
 }
 
@@ -6023,7 +6150,7 @@ return Tremolo
 
 }
 
-},{"./effect.js":102,"genish.js":37}],108:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],109:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -6033,57 +6160,63 @@ let Vibrato = inputProps => {
   let props   = Object.assign( {}, Vibrato.defaults, effect.defaults, inputProps ),
       vibrato = Object.create( effect )
 
-  let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
-  
-  let input = g.in( 'input' ),
-      delayLength = 44100,
-      feedbackCoeff = .01,//g.in( 'feedback' ),
-      modAmount = g.in( 'amount' ),
-      frequency = g.in( 'frequency' ),
-      delayBufferL = g.data( delayLength ),
-      delayBufferR
-
-  let writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
-  
-  let offset = g.mul( modAmount, 500 )
-  
-  let readIdx = g.wrap( 
-    g.add( 
-      g.sub( writeIdx, offset ), 
-      g.mul( g.cycle( frequency ), g.sub( offset, 1 ) ) 
-    ), 
-	  0, 
-    delayLength
-  )
-
-  let leftInput = isStereo ? input[0] : input
-
-  let delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
-  
-  g.poke( delayBufferL, g.add( leftInput, g.mul( delayedOutL, feedbackCoeff ) ), writeIdx )
-
-  let left = delayedOutL,
-      right, out
-
-  if( isStereo === true ) {
-    rightInput = input[1]
-    delayBufferR = g.data( delayLength )
+  vibrato.__createGraph = function() {
+    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
     
-    let delayedOutR = g.peek( delayBufferR, readIdx, { interp:'linear', mode:'samples' })
+    let input = g.in( 'input' ),
+        delayLength = 44100,
+        feedbackCoeff = .01,//g.in( 'feedback' ),
+        modAmount = g.in( 'amount' ),
+        frequency = g.in( 'frequency' ),
+        delayBufferL = g.data( delayLength ),
+        delayBufferR
 
-    g.poke( delayBufferR, g.add( rightInput, mul( delayedOutR, feedbackCoeff ) ), writeIdx )
-    right = delayedOutR
-
-    out = Gibberish.factory( 
-      vibrato,
-      [ left, right ], 
-      [ 'fx', 'vibrato'], 
-      props 
+    let writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
+    
+    let offset = g.mul( modAmount, 500 )
+    
+    let readIdx = g.wrap( 
+      g.add( 
+        g.sub( writeIdx, offset ), 
+        g.mul( g.cycle( frequency ), g.sub( offset, 1 ) ) 
+      ), 
+      0, 
+      delayLength
     )
-  }else{
-    out = Gibberish.factory( vibrato, left, ['fx','vibrato'], props )
+
+    let leftInput = isStereo ? input[0] : input
+
+    let delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
+    
+    g.poke( delayBufferL, g.add( leftInput, g.mul( delayedOutL, feedbackCoeff ) ), writeIdx )
+
+    let left = delayedOutL,
+        right, out
+
+    if( isStereo === true ) {
+      rightInput = input[1]
+      delayBufferR = g.data( delayLength )
+      
+      let delayedOutR = g.peek( delayBufferR, readIdx, { interp:'linear', mode:'samples' })
+
+      g.poke( delayBufferR, g.add( rightInput, mul( delayedOutR, feedbackCoeff ) ), writeIdx )
+      right = delayedOutR
+
+      vibrato.graph = [ left, right ]
+    }else{
+      vibrato.graph = left 
+    }
   }
-  
+
+  vibrato.__createGraph()
+  vibrato.__requiresRecompilation = [ 'input' ]
+
+  const out = Gibberish.factory( 
+    vibrato,
+    vibrato.graph,    
+    [ 'fx', 'vibrato' ], 
+    props 
+  ) 
   return out 
 }
 
@@ -6098,7 +6231,7 @@ return Vibrato
 
 }
 
-},{"./effect.js":102,"genish.js":37}],109:[function(require,module,exports){
+},{"./effect.js":103,"genish.js":37}],110:[function(require,module,exports){
 let MemoryHelper = require( 'memory-helper' ),
     genish       = require( 'genish.js' )
     
@@ -6147,7 +6280,7 @@ let Gibberish = {
     // from within the gibberish audioworklet processor node.
     this.genish.gen.mode = 'scriptProcessor'
 
-    this.memory = MemoryHelper.create( numBytes )
+    this.memory = MemoryHelper.create( numBytes, Float64Array )
 
     this.mode = window.AudioWorklet !== undefined ? 'worklet' : 'scriptprocessor'
     if( mode !== undefined ) this.mode = mode
@@ -6461,7 +6594,7 @@ Gibberish.utilities = require( './utilities.js' )( Gibberish )
 
 module.exports = Gibberish
 
-},{"./analysis/analyzers.js":79,"./envelopes/envelopes.js":84,"./filters/filters.js":93,"./fx/effect.js":102,"./fx/effects.js":103,"./instruments/instrument.js":114,"./instruments/instruments.js":115,"./instruments/polyMixin.js":119,"./instruments/polytemplate.js":120,"./misc/binops.js":124,"./misc/bus.js":125,"./misc/bus2.js":126,"./misc/monops.js":127,"./misc/panner.js":128,"./misc/time.js":129,"./oscillators/oscillators.js":132,"./scheduling/scheduler.js":135,"./scheduling/seq2.js":136,"./scheduling/sequencer.js":137,"./ugen.js":138,"./ugenTemplate.js":139,"./utilities.js":140,"genish.js":37,"memory-helper":144}],110:[function(require,module,exports){
+},{"./analysis/analyzers.js":80,"./envelopes/envelopes.js":85,"./filters/filters.js":94,"./fx/effect.js":103,"./fx/effects.js":104,"./instruments/instrument.js":115,"./instruments/instruments.js":116,"./instruments/polyMixin.js":120,"./instruments/polytemplate.js":121,"./misc/binops.js":125,"./misc/bus.js":126,"./misc/bus2.js":127,"./misc/monops.js":128,"./misc/panner.js":129,"./misc/time.js":130,"./oscillators/oscillators.js":133,"./scheduling/scheduler.js":136,"./scheduling/seq2.js":137,"./scheduling/sequencer.js":138,"./ugen.js":139,"./ugenTemplate.js":140,"./utilities.js":141,"genish.js":37,"memory-helper":145}],111:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -6498,7 +6631,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],111:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],112:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -6538,7 +6671,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],112:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],113:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -6650,7 +6783,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],113:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],114:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -6700,7 +6833,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],114:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],115:[function(require,module,exports){
 let ugen = require( '../ugen.js' ),
     g = require( 'genish.js' )
 
@@ -6721,7 +6854,7 @@ Object.assign( instrument, {
 
 module.exports = instrument
 
-},{"../ugen.js":138,"genish.js":37}],115:[function(require,module,exports){
+},{"../ugen.js":139,"genish.js":37}],116:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
 const instruments = {
@@ -6754,7 +6887,7 @@ return instruments
 
 }
 
-},{"./conga.js":110,"./cowbell.js":111,"./fm.js":112,"./hat.js":113,"./karplusstrong.js":116,"./kick.js":117,"./monosynth.js":118,"./sampler.js":121,"./snare.js":122,"./synth.js":123}],116:[function(require,module,exports){
+},{"./conga.js":111,"./cowbell.js":112,"./fm.js":113,"./hat.js":114,"./karplusstrong.js":117,"./kick.js":118,"./monosynth.js":119,"./sampler.js":122,"./snare.js":123,"./synth.js":124}],117:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -6837,7 +6970,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],117:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],118:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -6883,7 +7016,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],118:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],119:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       feedbackOsc = require( '../oscillators/fmfeedbackosc.js' )
@@ -6993,13 +7126,13 @@ module.exports = function( Gibberish ) {
   return [ Synth, PolyMono ]
 }
 
-},{"../oscillators/fmfeedbackosc.js":131,"./instrument.js":114,"genish.js":37}],119:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":132,"./instrument.js":115,"genish.js":37}],120:[function(require,module,exports){
 module.exports = {
   note( freq, gain ) {
     // will be sent to processor node via proxy method...
     if( Gibberish.mode !== 'worklet' ) {
       let voice = this.__getVoice__()
-      Object.assign( voice, this.properties )
+      //Object.assign( voice, this.properties )
       if( gain === undefined ) gain = this.gain
       voice.gain = gain
       voice.note( freq )
@@ -7073,7 +7206,7 @@ module.exports = {
   }
 }
 
-},{}],120:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 /*
  * This files creates a factory generating polysynth constructors.
  */
@@ -7097,25 +7230,28 @@ module.exports = function( Gibberish ) {
     Object.assign( stereoProto, Gibberish.mixins.polyinstrument )
 
     const Template = props => {
-      const properties = Object.assign( {}, { isStereo:true }, props )
+      const properties = Object.assign( {}, { isStereo:true, maxVoices:16 }, props )
 
-      const synth = properties.isStereo === true ? Object.create( stereoProto ) : Object.create( monoProto )
+      //const synth = properties.isStereo === true ? Object.create( stereoProto ) : Object.create( monoProto )
+      const synth = properties.isStereo === true ? Gibberish.Bus2({ __useProxy__:false }) : Gibberish.Bus({ __useProxy__:false }) 
 
-      Object.assign( synth, {
-        voices: [],
-        maxVoices: properties.maxVoices !== undefined ? properties.maxVoices : 16,
-        voiceCount: 0,
-        envCheck: _envCheck,
-        id: Gibberish.factory.getUID(),
-        dirty: true,
-        type: 'bus',
-        ugenName: 'poly' + ugen.name + '_' + synth.id,
-        inputs:[],
-        inputNames:[], //['input', 'gain'],
-        properties
-      })
+      Object.assign( 
+        synth, 
 
-      properties.panVoices = properties.isStereo
+        {
+          voices: [],
+          maxVoices: properties.maxVoices, 
+          voiceCount: 0,
+          envCheck: _envCheck,
+          dirty: true,
+          ugenName: 'poly' + ugen.name + '_' + synth.id + '_' + ( properties.isStereo ? 2 : 1 ),
+          properties
+        },
+
+        Gibberish.mixins.polyinstrument
+      )
+
+      properties.panVoices = true//false//properties.isStereo
       synth.callback.ugenName = synth.ugenName
 
       for( let i = 0; i < synth.maxVoices; i++ ) {
@@ -7159,7 +7295,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../workletProxy.js":141,"genish.js":37}],121:[function(require,module,exports){
+},{"../workletProxy.js":142,"genish.js":37}],122:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -7268,7 +7404,7 @@ module.exports = function( Gibberish ) {
   return [ Sampler, PolySampler ]
 }
 
-},{"./instrument.js":114,"genish.js":37}],122:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],123:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
   
@@ -7318,7 +7454,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],123:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],124:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -7417,7 +7553,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":114,"genish.js":37}],124:[function(require,module,exports){
+},{"./instrument.js":115,"genish.js":37}],125:[function(require,module,exports){
 const ugenproto = require( '../ugen.js' )
 const proxy     = require( '../workletProxy.js' )
 
@@ -7476,7 +7612,7 @@ module.exports = function( Gibberish ) {
   return Binops
 }
 
-},{"../ugen.js":138,"../workletProxy.js":141}],125:[function(require,module,exports){
+},{"../ugen.js":139,"../workletProxy.js":142}],126:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' ),
     proxy= require( '../workletProxy.js' )
@@ -7557,7 +7693,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":138,"../workletProxy.js":141,"genish.js":37}],126:[function(require,module,exports){
+},{"../ugen.js":139,"../workletProxy.js":142,"genish.js":37}],127:[function(require,module,exports){
 /*let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )
 
@@ -7659,9 +7795,12 @@ module.exports = function( Gibberish ) {
         bufferR = Gibberish.genish.gen.globals.panR.memory.values.idx
       }
 
-      var output = [0,0] 
+      // XXX must be same type as what is returned by genish for type checks to work correctly
+      const output = new Float64Array( 2 ) 
 
-      var bus = Object.create( Bus2 )
+      const bus = Object.create( Bus2 )
+
+      let init = false
 
       Object.assign( 
         bus,
@@ -7674,9 +7813,10 @@ module.exports = function( Gibberish ) {
 
             for( var i = 0; i < lastIdx; i++ ) {
               var input = arguments[ i ],
-                  isArray = Array.isArray( input )//input instanceof Float32Array
+                  isArray = input instanceof Float64Array
 
               output[ 0 ] += isArray ? input[ 0 ] : input
+
               output[ 1 ] += isArray ? input[ 1 ] : input
             }
 
@@ -7708,7 +7848,7 @@ module.exports = function( Gibberish ) {
 
       bus.ugenName = bus.callback.ugenName = 'bus2_' + bus.id
 
-      const out = proxy( ['Bus2'], props, bus )
+      const out = bus.__useProxy__ ?  proxy( ['Bus2'], props, bus ) : bus
 
       return out
     },
@@ -7722,7 +7862,7 @@ module.exports = function( Gibberish ) {
       }
     },
 
-    defaults: { gain:1, pan:.5 }
+    defaults: { gain:1, pan:.5, __useProxy__:true }
   })
 
   return Bus2.create.bind( Bus2 )
@@ -7730,7 +7870,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":138,"../workletProxy.js":141,"genish.js":37}],127:[function(require,module,exports){
+},{"../ugen.js":139,"../workletProxy.js":142,"genish.js":37}],128:[function(require,module,exports){
 const  g    = require( 'genish.js'  ),
        ugen = require( '../ugen.js' )
 
@@ -7792,7 +7932,7 @@ module.exports = function( Gibberish ) {
   return Monops
 }
 
-},{"../ugen.js":138,"genish.js":37}],128:[function(require,module,exports){
+},{"../ugen.js":139,"genish.js":37}],129:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 const ugen = require( '../ugen.js' )
@@ -7829,7 +7969,7 @@ return Panner
 
 }
 
-},{"../ugen.js":138,"genish.js":37}],129:[function(require,module,exports){
+},{"../ugen.js":139,"genish.js":37}],130:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const Time = {
@@ -7858,7 +7998,7 @@ module.exports = function( Gibberish ) {
   return Time
 }
 
-},{}],130:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 const genish = require('genish.js'),
       ssd = genish.history,
       noise = genish.noise;
@@ -7878,7 +8018,7 @@ module.exports = function () {
 
   return out;
 };
-},{"genish.js":37}],131:[function(require,module,exports){
+},{"genish.js":37}],132:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
@@ -7954,7 +8094,7 @@ let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
 
 module.exports = feedbackOsc
 
-},{"genish.js":37}],132:[function(require,module,exports){
+},{"genish.js":37}],133:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' ),
       feedbackOsc = require( './fmfeedbackosc.js' )
@@ -8124,7 +8264,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":138,"./brownnoise.js":130,"./fmfeedbackosc.js":131,"./pinknoise.js":133,"./wavetable.js":134,"genish.js":37}],133:[function(require,module,exports){
+},{"../ugen.js":139,"./brownnoise.js":131,"./fmfeedbackosc.js":132,"./pinknoise.js":134,"./wavetable.js":135,"genish.js":37}],134:[function(require,module,exports){
 const genish = require('genish.js'),
       ssd = genish.history,
       data = genish.data,
@@ -8149,7 +8289,7 @@ module.exports = function () {
 
   return out;
 };
-},{"genish.js":37}],134:[function(require,module,exports){
+},{"genish.js":37}],135:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )
 
@@ -8183,7 +8323,7 @@ module.exports = function( Gibberish ) {
   return Wavetable
 }
 
-},{"../ugen.js":138,"genish.js":37}],135:[function(require,module,exports){
+},{"../ugen.js":139,"genish.js":37}],136:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 const Big   = require( 'big.js' )
 
@@ -8230,7 +8370,7 @@ let Scheduler = {
 
 module.exports = Scheduler
 
-},{"../external/priorityqueue.js":86,"big.js":142}],136:[function(require,module,exports){
+},{"../external/priorityqueue.js":87,"big.js":143}],137:[function(require,module,exports){
 const g = require( 'genish.js' ),
       proxy = require( '../workletProxy.js' ),
       ugen = require( '../ugen.js' )
@@ -8330,7 +8470,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":138,"../workletProxy.js":141,"genish.js":37}],137:[function(require,module,exports){
+},{"../ugen.js":139,"../workletProxy.js":142,"genish.js":37}],138:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 const Big   = require( 'big.js' )
 const proxy = require( '../workletProxy.js' )
@@ -8401,7 +8541,7 @@ return Sequencer
 
 }
 
-},{"../external/priorityqueue.js":86,"../workletProxy.js":141,"big.js":142}],138:[function(require,module,exports){
+},{"../external/priorityqueue.js":87,"../workletProxy.js":142,"big.js":143}],139:[function(require,module,exports){
 const replace = obj => {
   if( typeof obj === 'object' ) {
     if( obj.id !== undefined ) {
@@ -8478,13 +8618,11 @@ let ugen = {
 
 module.exports = ugen
 
-},{}],139:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 const proxy = require( './workletProxy.js' )
 const effectProto = require( './fx/effect.js' )
 
 module.exports = function( Gibberish ) {
-  let uid = 0
-
   const factory = function( ugen, graph, __name, values, cb=null, shouldProxy = true ) {
     ugen.callback = cb === null ? Gibberish.genish.gen.createCallback( graph, Gibberish.memory, false, true ) : cb
 
@@ -8492,7 +8630,7 @@ module.exports = function( Gibberish ) {
 
     Object.assign( ugen, {
       type: 'ugen',
-      id: factory.getUID(), 
+      id: Gibberish.utilities.getUID(), 
       ugenName: name + '_',
       graph: graph,
       inputNames: new Set( Gibberish.genish.gen.parameters ),
@@ -8518,6 +8656,7 @@ module.exports = function( Gibberish ) {
       }
 
       Object.defineProperty( ugen, param, {
+        configurable:true,
         get() { return value },
         set( v ) {
           if( value !== v ) {
@@ -8533,6 +8672,7 @@ module.exports = function( Gibberish ) {
     if( effectProto.isPrototypeOf( ugen ) ) {
       let value = ugen.bypass
       Object.defineProperty( ugen, 'bypass', {
+        configurable:true,
         get() { return value },
         set( v ) {
           if( value !== v ) {
@@ -8548,6 +8688,7 @@ module.exports = function( Gibberish ) {
       ugen.__requiresRecompilation.forEach( prop => {
         let value = ugen[ prop ]
         Object.defineProperty( ugen, prop, {
+          configurable:true,
           get() { return value },
           set( v ) {
             if( value !== v ) {
@@ -8558,7 +8699,6 @@ module.exports = function( Gibberish ) {
               // way to solve this problem.
               values[ prop ] = v
 
-              if( Gibberish.mode !== 'worklet' ) console.log( 'redoing graph!', v )
               this.__redoGraph()
             }
           }
@@ -8571,17 +8711,19 @@ module.exports = function( Gibberish ) {
     return shouldProxy ? proxy( __name, values, ugen ) : ugen
   }
 
-  factory.getUID = () => uid++
+  factory.getUID = () => { return Gibberish.utilities.getUID() }
 
   return factory
 }
 
-},{"./fx/effect.js":102,"./workletProxy.js":141}],140:[function(require,module,exports){
-let genish = require( 'genish.js' )
+},{"./fx/effect.js":103,"./workletProxy.js":142}],141:[function(require,module,exports){
+const genish = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
 
-let utilities = {
+let uid = 0
+
+const utilities = {
   createContext( ctx, cb, resolve ) {
     let AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext
 
@@ -8730,14 +8872,16 @@ let utilities = {
 
   export( obj ) {
     obj.wrap = this.wrap
-  }
+  },
+
+  getUID() { return uid++ }
 }
 
 return utilities
 
 }
 
-},{"genish.js":37}],141:[function(require,module,exports){
+},{"genish.js":37}],142:[function(require,module,exports){
 const serialize = require('serialize-javascript')
 
 const replaceObj = obj => {
@@ -8839,6 +8983,9 @@ module.exports = function( __name, values, obj ) {
         }
 
         target[ prop ] = value
+
+        // must return true for any ES6 proxy setter
+        return true
       }
     })
 
@@ -8858,6 +9005,8 @@ module.exports = function( __name, values, obj ) {
             Gibberish.processor.messages.push( obj.id, prop, value )
         }
         target[ prop ] = value
+
+        // must return true for any ES6 proxy setter
         return true
       }
     })
@@ -8868,7 +9017,7 @@ module.exports = function( __name, values, obj ) {
   return obj
 }
 
-},{"serialize-javascript":143}],142:[function(require,module,exports){
+},{"serialize-javascript":144}],143:[function(require,module,exports){
 /* big.js v3.1.3 https://github.com/MikeMcl/big.js/LICENCE */
 ;(function (global) {
     'use strict';
@@ -10012,7 +10161,7 @@ module.exports = function( __name, values, obj ) {
     }
 })(this);
 
-},{}],143:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 /*
 Copyright (c) 2014, Yahoo! Inc. All rights reserved.
 Copyrights licensed under the New BSD License.
@@ -10133,7 +10282,7 @@ module.exports = function serialize(obj, options) {
     });
 }
 
-},{}],144:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 'use strict'
 
 let MemoryHelper = {

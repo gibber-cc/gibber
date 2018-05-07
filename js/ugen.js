@@ -8,9 +8,15 @@ const Ugen = function( gibberishConstructor, description ) {
 
     // wrap properties and add sequencing to them
     for( let propertyName in description.properties ) {
+      // turn properties into functions. if function is called
+      // with no arguments, it acts as a getter. if called with
+      // an argument, it acts as a setter.
       obj[ propertyName ] = value => {
         if( value !== undefined ) {
           __wrappedObject[ propertyName ] = value
+
+          // return object for method chaining
+          return obj
         }else{
           return __wrappedObject[ propertyName ]
         }
@@ -18,6 +24,9 @@ const Ugen = function( gibberishConstructor, description ) {
 
       obj[ propertyName ].seq = function( values, timings, delay=0 ) {
         obj[ propertyName ].sequencer = Seq({ values, timings, target:__wrappedObject, key:propertyName }).start( delay )
+
+        // return object for method chaining
+        return obj
       }
     }
 
@@ -28,9 +37,14 @@ const Ugen = function( gibberishConstructor, description ) {
 
         obj[ methodName ].seq = function( values, timings, delay=0 ) {
           obj[ methodName ].sequencer = Seq({ values, timings, target:__wrappedObject, key:methodName }).start( delay )
+
+          // return object for method chaining
+          return obj
         }
       }
     }
+
+    obj.id = __wrappedObject.id
     
     obj.connect = dest => { __wrappedObject.connect( dest ); return obj } 
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 

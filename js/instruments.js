@@ -49,7 +49,19 @@ const Instruments = {
     },
     Synth:{
       methods:[ 'note','trigger' ],
-    }
+    },
+    PolySynth:{
+      methods:[ 'chord','note','trigger' ],
+    },
+    PolyFM:{
+      methods:[ 'chord','note','trigger' ],
+    },
+    PolyKarplus:{
+      methods:[ 'chord','note','trigger' ],
+    },
+    PolyMono:{
+      methods:[ 'chord','note','trigger' ],
+    },
 
   },
   

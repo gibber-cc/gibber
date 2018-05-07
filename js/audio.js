@@ -1,6 +1,7 @@
-const Gibberish = require( 'gibberish-dsp' )
-const Ugen      = require( './ugen.js' )
+const Gibberish   = require( 'gibberish-dsp' )
+const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
+const Effects     = require( './effects.js' )
 
 //module.exports = function( Gibber ){
 
@@ -44,8 +45,7 @@ const Instruments = require( './instruments.js' )
     // XXX stop clock from being cleared.
     clear() { Gibberish.clear() },
 
-    onload() {
-    },
+    onload() {},
 
     createClock() {
       this.beat = 11025
@@ -72,6 +72,7 @@ const Instruments = require( './instruments.js' )
 
     createUgens() {
       this.instruments = Instruments.create() 
+      this.effects = Effects.create()
     }  
   }
 
