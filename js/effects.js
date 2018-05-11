@@ -2,7 +2,7 @@ const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
 const Effects = {
-  create() {
+  create( Audio ) {
     const effects = {}
     Gibberish.effects = Gibberish.fx
     for( let effectName in Gibberish.effects ) {
@@ -14,18 +14,13 @@ const Effects = {
         methods:methods
       }
 
-      effects[ effectName ] = Ugen( gibberishConstructor, description )      
+      effects[ effectName ] = Ugen( gibberishConstructor, description, Audio )      
     }
     return effects
   },
 
   descriptions: {
     //Chorus:{ methods:[] },
-    
-    //Conga:{
-    //  methods:[ 'note','trigger' ],
-    //},
-
   },
   
 }

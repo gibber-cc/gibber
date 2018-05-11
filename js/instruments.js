@@ -2,7 +2,7 @@ const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
 const Instruments = {
-  create() {
+  create( Audio ) {
     const instruments = {}
     for( let instrumentName in Gibberish.instruments ) {
       const gibberishConstructor = Gibberish.instruments[ instrumentName ]
@@ -10,10 +10,20 @@ const Instruments = {
       const methods = Instruments.descriptions[ instrumentName ] === undefined ? null : Instruments.descriptions[ instrumentName ].methods
       const description = { 
         properties:gibberishConstructor.defaults, 
-        methods:methods
+        methods:methods,
+        name:instrumentName,
+        category:'instruments'
       }
 
-      instruments[ instrumentName ] = Ugen( gibberishConstructor, description )      
+      instruments[ instrumentName ] = Ugen( gibberishConstructor, description, Audio )
+
+      //ugen.fx = new Proxy( [], {
+      //  set( target, property, value, receiver ) {
+      //    if( property === 'length' ) {
+      //      console.log( 'changing length!' )
+      //    }
+      //  }
+      //})
     }
     return instruments
   },
