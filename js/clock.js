@@ -1,9 +1,8 @@
 const Gibberish = require( 'gibberish-dsp' )
 
-module.exports = {
-  beat:11025,
+const Clock = {
   bpm:120,
-  beatCount:0,
+  __beatCount:0,
 
   init() {
     const clockFunc = ()=> {
@@ -12,22 +11,22 @@ module.exports = {
       })
     }
 
-    this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ this.beat ] ).start()
+    this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ Clock.time( 1/4 ) ] ).start()
 
     Gibberish.utilities.workletHandlers.clock = () => {
-      this.beatCount += 1
-      this.beatCount = this.beatCount % 4 
+      this.__beatCount += 1
+      this.__beatCount = this.__beatCount % 4 
 
       // XXX don't use global reference!!!
       if( Gibber.Scheduler !== undefined && Gibberish.mode !== 'processor' ) {
-        Gibber.Scheduler.seq( this.beatCount + 1, 'internal' )
+        Gibber.Scheduler.seq( this.__beatCount + 1, 'internal' )
       }
     }
   },
 
   // time accepts an input value and converts it into samples. the input value
   // may be measured in milliseconds, beats or samples.
-  time( inputTime ) {
+  time( inputTime=0 ) {
     let outputTime = inputTime
 
     // if input is an annotated time value such as what is returned
@@ -37,26 +36,39 @@ module.exports = {
         if( inputTime.type === 'samples' ) {
           outputTime = inputTime.value
         }else if( inputTime.type === 'ms' ) {
-          const samplesPerMs = Gibberish.ctx.sampleRate / 1000
-          outputTime = inputTime.value * samplesPerMs
+          outputTime = Clock.mstos( inputTime.value ) 
         }
       } 
     }else{
-      // convert beats into samples
-      const samplesPerBeat = Gibberish.ctx.sampleRate / (this.bpm / 60 )
-      outputTime = samplesPerBeat * inputTime
+      outputTime = Clock.btos( inputTime * 4 )
     }
     
     return outputTime
   },
 
+  mstos( ms ) {
+    return ( ms / 1000 ) * Gibberish.ctx.sampleRate
+  },
+
+  // convert beats to samples
   btos( beats ) {
     const samplesPerBeat = Gibberish.ctx.sampleRate / (this.bpm / 60 )
     return samplesPerBeat * beats 
   },
 
+  // convert beats to milliseconds
   btoms( beats ) {
     const samplesPerMs = Gibberish.ctx.sampleRate / 1000
     return beats * samplesPerMs
+  },
+
+  ms( value ) {
+    return { type:'ms', value }
+  },
+
+  samples( value ) {
+    return { type:'samples', value }
   }
 }
+
+module.exports = Clock

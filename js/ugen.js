@@ -1,8 +1,11 @@
-const Seq = require( './seq' )
+const __Seq = require( './seq' )
 const Presets = require( './presets.js' )
+
+const timeProps = [ 'attack', 'decay', 'sustain', 'release', 'time' ]
 
 const Ugen = function( gibberishConstructor, description, Audio ) {
 
+  const Seq = __Seq( Audio )
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
 
@@ -16,7 +19,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
       // an argument, it acts as a setter.
       obj[ propertyName ] = value => {
         if( value !== undefined ) {
-          __wrappedObject[ propertyName ] = value
+
+          __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( value ) : value
 
           // return object for method chaining
           return obj
@@ -26,11 +30,12 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
       }
 
       obj[ propertyName ].sequencers = []
-      obj[ propertyName ].seq = function( values, timings, number=0, delay=0 ) {
+      obj[ propertyName ].seq = function( values, __timings, number=0, delay=0 ) {
         let prevSeq = obj[ propertyName ].sequencers[ number ] 
         if( prevSeq !== undefined ) prevSeq.stop()
 
-        obj[ propertyName ].sequencers[ number ] = Seq({ values, timings, target:__wrappedObject, key:propertyName }).start( delay )
+        obj[ propertyName ].sequencers[ number ] = Seq({ values, timings, target:__wrappedObject, key:propertyName })
+          .start( Audio.Clock.time( delay ) )
         // return object for method chaining
         return obj
       }
@@ -48,7 +53,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
           let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
           
-          s.start( delay )
+          s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = s 
 
           // return object for method chaining
@@ -63,7 +68,6 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
 
     if( properties !== undefined && properties.__presetInit__ !== undefined ) {
-      console.log( 'obj:', obj, properties.__presetInit__ )
       properties.__presetInit__.call( obj, Audio )
     }
 

@@ -3780,10 +3780,9 @@ module.exports = Audio
 },{"./clock.js":75,"./effects.js":76,"./instruments.js":77,"./ugen.js":81,"gibberish-dsp":113}],75:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 
-module.exports = {
-  beat:11025,
+const Clock = {
   bpm:120,
-  beatCount:0,
+  __beatCount:0,
 
   init() {
     const clockFunc = ()=> {
@@ -3792,22 +3791,22 @@ module.exports = {
       })
     }
 
-    this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ this.beat ] ).start()
+    this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ Clock.time( 1/4 ) ] ).start()
 
     Gibberish.utilities.workletHandlers.clock = () => {
-      this.beatCount += 1
-      this.beatCount = this.beatCount % 4 
+      this.__beatCount += 1
+      this.__beatCount = this.__beatCount % 4 
 
       // XXX don't use global reference!!!
       if( Gibber.Scheduler !== undefined && Gibberish.mode !== 'processor' ) {
-        Gibber.Scheduler.seq( this.beatCount + 1, 'internal' )
+        Gibber.Scheduler.seq( this.__beatCount + 1, 'internal' )
       }
     }
   },
 
   // time accepts an input value and converts it into samples. the input value
   // may be measured in milliseconds, beats or samples.
-  time( inputTime ) {
+  time( inputTime=0 ) {
     let outputTime = inputTime
 
     // if input is an annotated time value such as what is returned
@@ -3817,29 +3816,42 @@ module.exports = {
         if( inputTime.type === 'samples' ) {
           outputTime = inputTime.value
         }else if( inputTime.type === 'ms' ) {
-          const samplesPerMs = Gibberish.ctx.sampleRate / 1000
-          outputTime = inputTime.value * samplesPerMs
+          outputTime = Clock.mstos( inputTime.value ) 
         }
       } 
     }else{
-      // convert beats into samples
-      const samplesPerBeat = Gibberish.ctx.sampleRate / (this.bpm / 60 )
-      outputTime = samplesPerBeat * inputTime
+      outputTime = Clock.btos( inputTime * 4 )
     }
     
     return outputTime
   },
 
+  mstos( ms ) {
+    return ( ms / 1000 ) * Gibberish.ctx.sampleRate
+  },
+
+  // convert beats to samples
   btos( beats ) {
     const samplesPerBeat = Gibberish.ctx.sampleRate / (this.bpm / 60 )
     return samplesPerBeat * beats 
   },
 
+  // convert beats to milliseconds
   btoms( beats ) {
     const samplesPerMs = Gibberish.ctx.sampleRate / 1000
     return beats * samplesPerMs
+  },
+
+  ms( value ) {
+    return { type:'ms', value }
+  },
+
+  samples( value ) {
+    return { type:'samples', value }
   }
 }
+
+module.exports = Clock
 
 },{"gibberish-dsp":113}],76:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
@@ -4024,6 +4036,8 @@ module.exports = {
 },{}],80:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 
+module.exports = function( Audio ) {
+
 const Seq = function( props ) { 
   const __values  = props.values
   const __timings = props.timings
@@ -4032,19 +4046,25 @@ const Seq = function( props ) {
   const key       = props.key
 
   const values  = Array.isArray( __values ) ? __values : [ __values ]
-  const timings = Array.isArray( __timings ) ? __timings : [ __timings ]
+  const timingsPreProcessing = Array.isArray( __timings ) ? __timings : [ __timings ]
+  const timings = timingsPreProcessing.map( Audio.Clock.time )
 
   return Gibberish.Sequencer({ values, timings, target, key })
 }
 
-module.exports = Seq
+return Seq
+
+}
 
 },{"gibberish-dsp":113}],81:[function(require,module,exports){
-const Seq = require( './seq' )
+const __Seq = require( './seq' )
 const Presets = require( './presets.js' )
+
+const timeProps = [ 'attack', 'decay', 'sustain', 'release', 'time' ]
 
 const Ugen = function( gibberishConstructor, description, Audio ) {
 
+  const Seq = __Seq( Audio )
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
 
@@ -4058,7 +4078,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
       // an argument, it acts as a setter.
       obj[ propertyName ] = value => {
         if( value !== undefined ) {
-          __wrappedObject[ propertyName ] = value
+
+          __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( value ) : value
 
           // return object for method chaining
           return obj
@@ -4068,11 +4089,12 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
       }
 
       obj[ propertyName ].sequencers = []
-      obj[ propertyName ].seq = function( values, timings, number=0, delay=0 ) {
+      obj[ propertyName ].seq = function( values, __timings, number=0, delay=0 ) {
         let prevSeq = obj[ propertyName ].sequencers[ number ] 
         if( prevSeq !== undefined ) prevSeq.stop()
 
-        obj[ propertyName ].sequencers[ number ] = Seq({ values, timings, target:__wrappedObject, key:propertyName }).start( delay )
+        obj[ propertyName ].sequencers[ number ] = Seq({ values, timings, target:__wrappedObject, key:propertyName })
+          .start( Audio.Clock.time( delay ) )
         // return object for method chaining
         return obj
       }
@@ -4090,7 +4112,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
           let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
           
-          s.start( delay )
+          s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = s 
 
           // return object for method chaining
@@ -4105,7 +4127,6 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
 
     if( properties !== undefined && properties.__presetInit__ !== undefined ) {
-      console.log( 'obj:', obj, properties.__presetInit__ )
       properties.__presetInit__.call( obj, Audio )
     }
 
@@ -5847,7 +5868,6 @@ let Delay = inputProps => {
     }else{
       delay.graph = left 
     }
-
   }
 
   delay.__createGraph()
