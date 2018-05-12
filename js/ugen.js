@@ -63,8 +63,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     }
 
     obj.id = __wrappedObject.id
-    
-    obj.connect = dest => { __wrappedObject.connect( dest ); return obj } 
+
+    obj.connect = (dest,level=1) => { __wrappedObject.connect( dest,level ); return obj } 
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
 
     if( properties !== undefined && properties.__presetInit__ !== undefined ) {

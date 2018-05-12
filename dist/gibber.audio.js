@@ -4122,8 +4122,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     }
 
     obj.id = __wrappedObject.id
-    
-    obj.connect = dest => { __wrappedObject.connect( dest ); return obj } 
+
+    obj.connect = (dest,level=1) => { __wrappedObject.connect( dest,level ); return obj } 
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
 
     if( properties !== undefined && properties.__presetInit__ !== undefined ) {
@@ -5388,9 +5388,10 @@ let BitCrusher = inputProps => {
       bitCrusher = Object.create( effect )
 
   bitCrusher.__createGraph = function() {
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo :false 
     
     let input = g.in( 'input' ),
+        inputGain = g.in( 'inputGain' ),
         bitDepth = g.in( 'bitDepth' ),
         sampleRate = g.in( 'sampleRate' ),
         leftInput = isStereo ? input[ 0 ] : input,
@@ -5400,7 +5401,7 @@ let BitCrusher = inputProps => {
     let sampleReduxCounter = g.counter( sampleRate, 0, 1 )
 
     let bitMult = g.pow( g.mul( bitDepth, 16 ), 2 )
-    let crushedL = g.div( g.floor( g.mul( leftInput, bitMult ) ), bitMult )
+    let crushedL = g.div( g.floor( g.mul( g.mul( leftInput, inputGain ), bitMult ) ), bitMult )
 
     let outL = g.switch(
       sampleReduxCounter.wrap,
@@ -5410,7 +5411,7 @@ let BitCrusher = inputProps => {
 
     if( isStereo ) {
       let storeR = g.history(0)
-      let crushedR = g.div( g.floor( g.mul( rightInput, bitMult ) ), bitMult )
+      let crushedR = g.div( g.floor( g.mul( g.mul( rightInput, inputGain ), bitMult ) ), bitMult )
 
       let outR = ternary( 
         sampleReduxCounter.wrap,
@@ -5459,20 +5460,23 @@ module.exports = function( Gibberish ) {
 
     bufferShuffler.__createGraph = function() {
 
-      let props = Object.assign( {}, Shuffler.defaults, effect.defaults, inputProps )
+      const props = Object.assign( {}, Shuffler.defaults, effect.defaults, inputProps )
 
-      let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false
-      let phase = g.accum( 1,0,{ shouldWrap: false })
+      const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false
+      const phase = g.accum( 1,0,{ shouldWrap: false })
 
-      let input = g.in( 'input' ),
-          leftInput = isStereo ? input[ 0 ] : input,
-          rightInput = isStereo ? input[ 1 ] : null,
-          rateOfShuffling = g.in( 'rate' ),
-          chanceOfShuffling = g.in( 'chance' ),
-          reverseChance = g.in( 'reverseChance' ),
-          repitchChance = g.in( 'repitchChance' ),
-          repitchMin = g.in( 'repitchMin' ),
-          repitchMax = g.in( 'repitchMax' )
+      const input = g.in( 'input' ),
+            inputGain = g.in( 'inputGain' ),
+            __leftInput = isStereo ? input[ 0 ] : input,
+            __rightInput = isStereo ? input[ 1 ] : null,
+            leftInput = g.mul( __leftInput, inputGain ),
+            rightInput = g.mul( __rightInput, inputGain ),
+            rateOfShuffling = g.in( 'rate' ),
+            chanceOfShuffling = g.in( 'chance' ),
+            reverseChance = g.in( 'reverseChance' ),
+            repitchChance = g.in( 'repitchChance' ),
+            repitchMin = g.in( 'repitchMin' ),
+            repitchMax = g.in( 'repitchMax' )
 
       let pitchMemory = g.history(1)
 
@@ -5573,14 +5577,15 @@ let __Chorus = inputProps => {
 
   chorus.__createGraph = function() {
     const input = g.in('input'),
+          inputGain = g.in( 'inputGain' ),
           freq1 = g.in('slowFrequency'),
           freq2 = g.in('fastFrequency'),
           amp1  = g.in('slowGain'),
           amp2  = g.in('fastGain')
 
-    const isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : true 
+    const isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
 
-    const leftInput = isStereo ? input[0] : input
+    const leftInput = isStereo ? g.mul( input[0], inputGain ) : g.mul( input, inputGain )
 
     const win0   = g.env( 'inversewelch', 1024 ),
           win120 = g.env( 'inversewelch', 1024, 0, .333 ),
@@ -5614,7 +5619,7 @@ let __Chorus = inputProps => {
     
     const leftOutput = g.add( delay1L, delay2L, delay3L )
     if( isStereo ) {
-      const rightInput = input[1]
+      const rightInput = g.mul( input[1], inputGain )
       const delay1R = g.delay(rightInput, time1, { size:maxDelayTime }),
             delay2R = g.delay(rightInput, time2, { size:maxDelayTime }),
             delay3R = g.delay(rightInput, time3, { size:maxDelayTime })
@@ -5769,6 +5774,7 @@ module.exports = function (Gibberish) {
       const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true;
 
       const input = g.in('input'),
+            inputGain = g.in('inputGain'),
             damping = g.in('damping'),
             drywet = g.in('drywet'),
             decay = g.in('decay'),
@@ -5779,7 +5785,7 @@ module.exports = function (Gibberish) {
             indiffusion1 = g.in('indiffusion1'),
             indiffusion2 = g.in('indiffusion2');
 
-      const summedInput = isStereo === true ? g.add(input[0], input[1]) : input;
+      const summedInput = isStereo === true ? g.mul(g.add(input[0], input[1]), inputGain) : g.mul(input, inputGain);
       {
         'use jsdsp';
 
@@ -5802,8 +5808,8 @@ module.exports = function (Gibberish) {
         const rightWet = genish.mul(genish.sub(tank_outs[3], tank_outs[4]), .6);
 
         // mix wet and dry signal for final output
-        const left = g.mix(isStereo ? input[0] : input, leftWet, drywet);
-        const right = g.mix(isStereo ? input[1] : input, rightWet, drywet);
+        const left = g.mix(isStereo ? g.mul(input[0], inputGain) : g.mul(input, inputGain), leftWet, drywet);
+        const right = g.mix(isStereo ? g.mul(input[1], inputGain) : g.mul(input, inputGain), rightWet, drywet);
 
         reverb.graph = [left, right];
       }
@@ -5837,30 +5843,31 @@ let g = require( 'genish.js' ),
 module.exports = function( Gibberish ) {
  
 let Delay = inputProps => {
-  let props = Object.assign( { delayLength: 44100 }, Delay.defaults, inputProps ),
+  let props = Object.assign( { delayLength: 44100 }, effect.defaults, Delay.defaults, inputProps ),
       delay = Object.create( effect )
 
   delay.__createGraph = function() {
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
+    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
     
-    let input      = g.in( 'input' ),
-        delayTime  = g.in( 'time' ),
-        wetdry     = g.in( 'wetdry' ),
-        leftInput  = isStereo ? input[ 0 ] : input,
-        rightInput = isStereo ? input[ 1 ] : null
+    const input      = g.in( 'input' ),
+          inputGain  = g.in( 'inputGain' ),
+          delayTime  = g.in( 'time' ),
+          wetdry     = g.in( 'wetdry' ),
+          leftInput  = isStereo ? g.mul( input[ 0 ], inputGain ) : g.mul( input, inputGain ),
+          rightInput = isStereo ? g.mul( input[ 1 ], inputGain ) : null
       
-    let feedback = g.in( 'feedback' )
+    const feedback = g.in( 'feedback' )
 
     // left channel
-    let feedbackHistoryL = g.history()
-    let echoL = g.delay( g.add( leftInput, g.mul( feedbackHistoryL.out, feedback ) ), delayTime, { size:props.delayLength })
+    const feedbackHistoryL = g.history()
+    const echoL = g.delay( g.add( leftInput, g.mul( feedbackHistoryL.out, feedback ) ), delayTime, { size:props.delayLength })
     feedbackHistoryL.in( echoL )
-    let left = g.mix( leftInput, echoL, wetdry )
+    const left = g.mix( leftInput, echoL, wetdry )
 
     if( isStereo ) {
       // right channel
-      let feedbackHistoryR = g.history()
-      let echoR = g.delay( g.add( rightInput, g.mul( feedbackHistoryR.out, feedback ) ), delayTime, { size:props.delayLength })
+      const feedbackHistoryR = g.history()
+      const echoR = g.delay( g.add( rightInput, g.mul( feedbackHistoryR.out, feedback ) ), delayTime, { size:props.delayLength })
       feedbackHistoryR.in( echoR )
       const right = g.mix( rightInput, echoR, wetdry )
 
@@ -5911,13 +5918,14 @@ const genish = g;
 module.exports = function (Gibberish) {
 
   let Distortion = inputProps => {
-    let props = Object.assign({}, Distortion.defaults, effect.defaults, inputProps),
+    let props = Object.assign({}, effect.defaults, Distortion.defaults, inputProps),
         distortion = Object.create(effect);
 
     distortion.__createGraph = function () {
-      let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true;
+      let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false;
 
       const input = g.in('input'),
+            inputGain = g.in('inputGain'),
             shape1 = g.in('shape1'),
             shape2 = g.in('shape2'),
             pregain = g.in('pregain'),
@@ -5926,7 +5934,7 @@ module.exports = function (Gibberish) {
       let lout, out;
       {
         'use jsdsp';
-        const linput = isStereo ? input[0] : input;
+        const linput = isStereo ? g.mul(input[0], inputGain) : g.mul(input, inputGain);
         const ltop = genish.sub(g.exp(genish.mul(linput, genish.add(shape1, pregain))), g.exp(genish.mul(linput, genish.sub(shape2, pregain))));
         const lbottom = genish.add(g.exp(genish.mul(linput, pregain)), g.exp(genish.mul(genish.mul(-1, linput), pregain)));
         lout = genish.mul(genish.div(ltop, lbottom), postgain);
@@ -5936,7 +5944,7 @@ module.exports = function (Gibberish) {
         let rout;
         {
           'use jsdsp';
-          const rinput = isStereo ? input[1] : input;
+          const rinput = isStereo ? g.mul(input[1], inputGain) : g.mul(input, inputGain);
           const rtop = genish.sub(g.exp(genish.mul(rinput, genish.add(shape1, pregain))), g.exp(genish.mul(rinput, genish.sub(shape2, pregain))));
           const rbottom = genish.add(g.exp(genish.mul(rinput, pregain)), g.exp(genish.mul(genish.mul(-1, rinput), pregain)));
           rout = genish.mul(genish.div(rtop, rbottom), postgain);
@@ -5971,7 +5979,8 @@ let ugen = require( '../ugen.js' )()
 let effect = Object.create( ugen )
 
 Object.assign( effect, {
-  defaults: { bypass:false }
+  defaults: { bypass:false, inputGain:1 },
+  type:'effect'
 })
 
 module.exports = effect
@@ -6017,23 +6026,23 @@ let Flanger = inputProps => {
       flanger = Object.create( proto )
 
   flanger.__createGraph = function() {
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
     
-    let input = g.in( 'input' ),
-        delayLength = props.delayLength,
-        feedbackCoeff = g.in( 'feedback' ),
-        modAmount = g.in( 'offset' ),
-        frequency = g.in( 'frequency' ),
-        delayBufferL = g.data( delayLength ),
-        delayBufferR
+    const input = g.in( 'input' ),
+          inputGain = g.in( 'inputGain' ),
+          delayLength = props.delayLength,
+          feedbackCoeff = g.in( 'feedback' ),
+          modAmount = g.in( 'offset' ),
+          frequency = g.in( 'frequency' ),
+          delayBufferL = g.data( delayLength )
 
-    let writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
+    const writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
     
-    let offset = g.mul( modAmount, 500 )
+    const offset = g.mul( modAmount, 500 )
 
-    let mod = props.mod === undefined ? g.cycle( frequency ) : props.mod
+    const mod = props.mod === undefined ? g.cycle( frequency ) : props.mod
     
-    let readIdx = g.wrap( 
+    const readIdx = g.wrap( 
       g.add( 
         g.sub( writeIdx, offset ), 
         mod//g.mul( mod, g.sub( offset, 1 ) ) 
@@ -6042,23 +6051,22 @@ let Flanger = inputProps => {
       delayLength
     )
 
-    let leftInput = isStereo ? input[0] : input
+    const leftInput = isStereo ? input[0] : input
 
-    let delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
+    const delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
     
     g.poke( delayBufferL, g.add( leftInput, g.mul( delayedOutL, feedbackCoeff ) ), writeIdx )
 
-    let left = g.add( leftInput, delayedOutL ),
-        right
+    const left = g.add( leftInput, delayedOutL )
 
     if( isStereo === true ) {
-      rightInput = input[1]
-      delayBufferR = g.data( delayLength )
+      const rightInput = input[1]
+      const delayBufferR = g.data( delayLength )
       
       let delayedOutR = g.peek( delayBufferR, readIdx, { interp:'linear', mode:'samples' })
 
       g.poke( delayBufferR, g.add( rightInput, g.mul( delayedOutR, feedbackCoeff ) ), writeIdx )
-      right = g.add( rightInput, delayedOutR )
+      const right = g.add( rightInput, delayedOutR )
 
       flanger.graph = [ left, right ]
 
@@ -6072,7 +6080,7 @@ let Flanger = inputProps => {
 
   const out = Gibberish.factory( 
     flanger,
-    [ left, right ], 
+    flanger.graph, 
     ['fx','flanger'], 
     props 
   ) 
@@ -6114,20 +6122,25 @@ const tuning = {
 }
 
 const Freeverb = inputProps => {
-  let props = Object.assign( {}, Freeverb.defaults, effect.defaults, inputProps ),
-      reverb = Object.create( effect ) 
+  const props = Object.assign( {}, effect.defaults, Freeverb.defaults, inputProps ),
+        reverb = Object.create( effect ) 
    
   reverb.__createGraph = function() {
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    const  isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
     
-    let combsL = [], combsR = []
+    const combsL = [], combsR = []
 
-    let input = g.in( 'input' ),
-        wet1 = g.in( 'wet1'), wet2 = g.in( 'wet2' ),  dry = g.in( 'dry' ), 
-        roomSize = g.in( 'roomSize' ), damping = g.in( 'damping' )
+    const input = g.in( 'input' ),
+          inputGain = g.in( 'inputGain' ),
+          wet1 = g.in( 'wet1'),
+          wet2 = g.in( 'wet2' ),  
+          dry = g.in( 'dry' ), 
+          roomSize = g.in( 'roomSize' ), 
+          damping = g.in( 'damping' )
     
-    let summedInput = isStereo === true ? g.add( input[0], input[1] ) : input,
-        attenuatedInput = g.memo( g.mul( summedInput, tuning.fixedGain ) )
+    const __summedInput = isStereo === true ? g.add( input[0], input[1] ) : input,
+         summedInput = g.mul( __summedInput, inputGain ),
+         attenuatedInput = g.memo( g.mul( summedInput, tuning.fixedGain ) )
     
     // create comb filters in parallel...
     for( let i = 0; i < 8; i++ ) { 
@@ -6139,7 +6152,7 @@ const Freeverb = inputProps => {
       )
     }
     
-    // ... and sum them with attenuated input
+    // ... and sum them with attenuated input, use of let is deliberate here
     let outL = g.add( attenuatedInput, ...combsL )
     let outR = g.add( attenuatedInput, ...combsR )
     
@@ -6149,8 +6162,8 @@ const Freeverb = inputProps => {
       outR = allPass( outR, tuning.allPassTuning[ i ] + tuning.stereoSpread )
     }
     
-    let outputL = g.add( g.mul( outL, wet1 ), g.mul( outR, wet2 ), g.mul( isStereo === true ? input[0] : input, dry ) ),
-        outputR = g.add( g.mul( outR, wet1 ), g.mul( outL, wet2 ), g.mul( isStereo === true ? input[1] : input, dry ) )
+    const outputL = g.add( g.mul( outL, wet1 ), g.mul( outR, wet2 ), g.mul( isStereo === true ? input[0] : input, dry ) ),
+          outputR = g.add( g.mul( outR, wet1 ), g.mul( outL, wet2 ), g.mul( isStereo === true ? input[1] : input, dry ) )
 
     reverb.graph = [ outputL, outputR ]
 
@@ -6166,13 +6179,12 @@ const Freeverb = inputProps => {
 
 
 Freeverb.defaults = {
-  input:0,
+  input: 0,
   wet1: 1,
   wet2: 0,
   dry: .5,
   roomSize: .84,
   damping:  .5,
-  bypass:false
 }
 
 return Freeverb 
@@ -6191,23 +6203,22 @@ let RingMod = inputProps => {
       ringMod = Object.create( effect )
 
   ringMod.__createGraph = function() {
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
     
-    let input = g.in( 'input' ),
-        frequency = g.in( 'frequency' ),
-        gain = g.in( 'gain' ),
-        mix = g.in( 'mix' )
+    const input = g.in( 'input' ),
+          inputGain = g.in( 'inputGain' ),
+          frequency = g.in( 'frequency' ),
+          gain = g.in( 'gain' ),
+          mix = g.in( 'mix' )
     
-    let leftInput = isStereo ? input[0] : input,
-        sine = g.mul( g.cycle( frequency ), gain )
+    const leftInput = isStereo ? g.mul( input[0], inputGain ) : g.mul( input, inputGain ),
+          sine = g.mul( g.cycle( frequency ), gain )
    
-    let left = g.add( g.mul( leftInput, g.sub( 1, mix )), g.mul( g.mul( leftInput, sine ), mix ) ), 
-        right
-
-    let out
+    const left = g.add( g.mul( leftInput, g.sub( 1, mix )), g.mul( g.mul( leftInput, sine ), mix ) ) 
+        
     if( isStereo === true ) {
-      let rightInput = input[1]
-      right = g.add( g.mul( rightInput, g.sub( 1, mix )), g.mul( g.mul( rightInput, sine ), mix ) ) 
+      const rightInput = g.mul( input[1], inputGain ),
+            right = g.add( g.mul( rightInput, g.sub( 1, mix )), g.mul( g.mul( rightInput, sine ), mix ) ) 
       
       ringMod.graph = [ left, right ]
     }else{
@@ -6250,13 +6261,14 @@ const Tremolo = inputProps => {
         tremolo = Object.create( effect )
 
   tremolo.__createGraph = function() {
-    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false  
     
     const input = g.in( 'input' ),
+          inputGain = g.in( 'inputGain' ),
           frequency = g.in( 'frequency' ),
           amount = g.in( 'amount' )
     
-    const leftInput = isStereo ? input[0] : input
+    const leftInput = isStereo ? g.mul( input[0], inputGain ) : g.mul( input, inputGain )
 
     let osc
     if( props.shape === 'square' ) {
@@ -6269,12 +6281,11 @@ const Tremolo = inputProps => {
 
     const mod = g.mul( osc, amount )
    
-    let left = g.sub( leftInput, g.mul( leftInput, mod ) ), 
-        right
+    const left = g.sub( leftInput, g.mul( leftInput, mod ) )
 
     if( isStereo === true ) {
-      let rightInput = input[1]
-      right = g.mul( rightInput, mod )
+      const rightInput = g.mul( input[1], inputGain ),
+            right = g.mul( rightInput, mod )
 
       tremolo.graph = [ left, right ]
     }else{
@@ -6306,31 +6317,31 @@ return Tremolo
 }
 
 },{"./effect.js":106,"genish.js":37}],112:[function(require,module,exports){
-let g = require( 'genish.js' ),
-    effect = require( './effect.js' )
+const g = require( 'genish.js' ),
+      effect = require( './effect.js' )
 
 module.exports = function( Gibberish ) {
  
-let Vibrato = inputProps => {
-  let props   = Object.assign( {}, Vibrato.defaults, effect.defaults, inputProps ),
-      vibrato = Object.create( effect )
+const Vibrato = inputProps => {
+  const props   = Object.assign( {}, Vibrato.defaults, effect.defaults, inputProps ),
+        vibrato = Object.create( effect )
 
   vibrato.__createGraph = function() {
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
+    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
     
-    let input = g.in( 'input' ),
-        delayLength = 44100,
-        feedbackCoeff = .01,//g.in( 'feedback' ),
-        modAmount = g.in( 'amount' ),
-        frequency = g.in( 'frequency' ),
-        delayBufferL = g.data( delayLength ),
-        delayBufferR
+    const input = g.in( 'input' ),
+          inputGain = g.in( 'inputGain' ),
+          delayLength = 44100,
+          feedbackCoeff = g.in( 'feedback' ),
+          modAmount = g.in( 'amount' ),
+          frequency = g.in( 'frequency' ),
+          delayBufferL = g.data( delayLength )
 
-    let writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
+    const writeIdx = g.accum( 1,0, { min:0, max:delayLength, interp:'none', mode:'samples' })
     
-    let offset = g.mul( modAmount, 500 )
+    const offset = g.mul( modAmount, 500 )
     
-    let readIdx = g.wrap( 
+    const readIdx = g.wrap( 
       g.add( 
         g.sub( writeIdx, offset ), 
         g.mul( g.cycle( frequency ), g.sub( offset, 1 ) ) 
@@ -6339,23 +6350,22 @@ let Vibrato = inputProps => {
       delayLength
     )
 
-    let leftInput = isStereo ? input[0] : input
+    const leftInput = isStereo ? g.mul( input[0], inputGain ) : g.mul( input, inputGain )
 
-    let delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
+    const delayedOutL = g.peek( delayBufferL, readIdx, { interp:'linear', mode:'samples' })
     
     g.poke( delayBufferL, g.add( leftInput, g.mul( delayedOutL, feedbackCoeff ) ), writeIdx )
 
-    let left = delayedOutL,
-        right, out
+    const left = delayedOutL
 
     if( isStereo === true ) {
-      rightInput = input[1]
-      delayBufferR = g.data( delayLength )
+      const rightInput = g.mul( input[1], inputGain )
+      const delayBufferR = g.data( delayLength )
       
-      let delayedOutR = g.peek( delayBufferR, readIdx, { interp:'linear', mode:'samples' })
+      const delayedOutR = g.peek( delayBufferR, readIdx, { interp:'linear', mode:'samples' })
 
       g.poke( delayBufferR, g.add( rightInput, mul( delayedOutR, feedbackCoeff ) ), writeIdx )
-      right = delayedOutR
+      const right = delayedOutR
 
       vibrato.graph = [ left, right ]
     }else{
@@ -6377,7 +6387,7 @@ let Vibrato = inputProps => {
 
 Vibrato.defaults = {
   input:0,
-  //feedback:.01,
+  feedback:.01,
   amount:.5,
   frequency:4
 }
@@ -6531,7 +6541,8 @@ let Gibberish = {
   },
 
   clear() {
-    this.output.inputs = [0]
+    // do not delete the gain and the pan of the master bus 
+    this.output.inputs.splice( 0, this.output.inputs.length - 2 )
     //this.output.inputNames.length = 0
     this.analyzers.length = 0
     this.scheduler.clear()
@@ -7434,13 +7445,14 @@ module.exports = function( Gibberish ) {
 
   TemplateFactory.setupProperties = function( synth, ugen, props ) {
     for( let property of props ) {
+      if( property === 'pan' ) continue
       Object.defineProperty( synth, property, {
         get() {
           return synth.properties[ property ] || ugen.defaults[ property ]
         },
         set( v ) {
           synth.properties[ property ] = v
-          for( let child of synth.inputs ) {
+          for( let child of synth.voices ) {
             child[ property ] = v
           }
         }
@@ -7967,36 +7979,40 @@ module.exports = function( Gibberish ) {
         {
           callback() {
             output[ 0 ] = output[ 1 ] = 0
-            var lastIdx = arguments.length - 1
-            var memory  = arguments[ lastIdx ]
+            const lastIdx = arguments.length - 1
+            const memory  = arguments[ lastIdx ]
+            const pan  = arguments[ lastIdx - 1 ]
+            const gain = arguments[ lastIdx - 2 ]
 
-            for( var i = 0; i < lastIdx; i++ ) {
-              var input = arguments[ i ],
-                  isArray = input instanceof Float64Array
+            for( let i = 0; i < lastIdx - 2; i+= 3 ) {
+              const input = arguments[ i ],
+                    level = arguments[ i + 1 ],
+                    isStereo = arguments[ i + 2 ]
 
-              output[ 0 ] += isArray ? input[ 0 ] : input
+              output[ 0 ] += isStereo === true ? input[ 0 ] * level : input * level
 
-              output[ 1 ] += isArray ? input[ 1 ] : input
+              output[ 1 ] += isStereo === true ? input[ 1 ] * level : input * level
             }
 
-            var panRawIndex  = .5 * 1023,
-                panBaseIndex = panRawIndex | 0,
-                panNextIndex = (panBaseIndex + 1) & 1023,
-                interpAmount = panRawIndex - panBaseIndex,
-                panL = memory[ bufferL + panBaseIndex ] 
-                  + ( interpAmount * ( memory[ bufferL + panNextIndex ] - memory[ bufferL + panBaseIndex ] ) ),
-                panR = memory[ bufferR + panBaseIndex ] 
-                  + ( interpAmount * ( memory[ bufferR + panNextIndex ] - memory[ bufferR + panBaseIndex ] ) )
+            const panRawIndex  = pan * 1023,
+                  panBaseIndex = panRawIndex | 0,
+                  panNextIndex = (panBaseIndex + 1) & 1023,
+                  interpAmount = panRawIndex - panBaseIndex,
+                  panL = memory[ bufferL + panBaseIndex ] 
+                    + ( interpAmount * ( memory[ bufferL + panNextIndex ] - memory[ bufferL + panBaseIndex ] ) ),
+                  panR = memory[ bufferR + panBaseIndex ] 
+                    + ( interpAmount * ( memory[ bufferR + panNextIndex ] - memory[ bufferR + panBaseIndex ] ) )
             
-            output[0] *= bus.gain * panL
-            output[1] *= bus.gain * panR
+            output[0] *= gain * panL
+            output[1] *= gain * panR
 
             return output
           },
           id : Gibberish.factory.getUID(),
           dirty : false,
           type : 'bus',
-          inputs:[],
+          inputs:[ 1, .5 ],
+          isStereo: true,
           __properties__:props
         },
 
@@ -8005,9 +8021,20 @@ module.exports = function( Gibberish ) {
         props
       )
 
+
       bus.ugenName = bus.callback.ugenName = 'bus2_' + bus.id
 
       const out = bus.__useProxy__ ?  proxy( ['Bus2'], props, bus ) : bus
+
+      let pan = .5
+      Object.defineProperty( out, 'pan', {
+        get() { return pan },
+        set(v){ 
+          pan = v
+          out.inputs[ out.inputs.length - 1 ] = pan
+          Gibberish.dirty( out )
+        }
+      })
 
       return out
     },
@@ -8016,7 +8043,7 @@ module.exports = function( Gibberish ) {
       let removeIdx = this.inputs.indexOf( ugen )
 
       if( removeIdx !== -1 ) {
-        this.inputs.splice( removeIdx, 1 )
+        this.inputs.splice( removeIdx, 3 )
         Gibberish.dirty( this )
       }
     },
@@ -8732,8 +8759,8 @@ const __ugen = function( __Gibberish ) {
     connect:function( target, level=1 ) {
       if( this.connected === undefined ) this.connected = []
 
-
-      let input = level === 1 ? this : Gibberish.binops.Mul( this, level )
+      //let input = level === 1 ? this : Gibberish.binops.Mul( this, level )
+      let input = this
 
       if( target === undefined || target === null ) target = Gibberish.output 
 
@@ -8743,9 +8770,10 @@ const __ugen = function( __Gibberish ) {
       } else if( target.sum && target.sum.inputs ) {
         target.sum.inputs.push( input )
       } else if( target.inputs ) {
-        target.inputs.push( input )
+        target.inputs.unshift( input, level, input.isStereo )
       } else {
         target.input = input
+        target.inputGain = level
       }
 
       Gibberish.dirty( target )
