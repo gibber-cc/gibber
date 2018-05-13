@@ -17,13 +17,6 @@ const Instruments = {
 
       instruments[ instrumentName ] = Ugen( gibberishConstructor, description, Audio )
 
-      //ugen.fx = new Proxy( [], {
-      //  set( target, property, value, receiver ) {
-      //    if( property === 'length' ) {
-      //      console.log( 'changing length!' )
-      //    }
-      //  }
-      //})
     }
     return instruments
   },

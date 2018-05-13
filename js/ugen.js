@@ -64,7 +64,36 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     obj.id = __wrappedObject.id
 
-    obj.connect = (dest,level=1) => { __wrappedObject.connect( dest,level ); return obj } 
+    obj.fx = new Proxy( [], {
+      set( target, property, value, receiver ) {
+
+        const lengthCheck = target.length
+        target[ property ] = value
+        
+        if( property === 'length' ) { 
+          if( target.length > 1 ) {
+            target[ target.length - 2 ].connect( target[ target.length - 1 ] )
+          }else if( target.length === 1 ) {
+            __wrappedObject.connect( target[ 0 ] )
+          }
+        }
+
+        return true
+      }
+    })
+
+    obj.connect = (dest,level=1) => {
+      // if no fx chain, connect directly to output
+      if( obj.fx.length === 0 ) {
+        __wrappedObject.connect( dest,level ); 
+      }else{
+        // otherwise, connect last effect in chain to output
+        obj.fx[ obj.fx.length - 1 ].__wrapped__.connect( dest, level )
+      }
+
+      return obj 
+    } 
+
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
 
     if( properties !== undefined && properties.__presetInit__ !== undefined ) {
