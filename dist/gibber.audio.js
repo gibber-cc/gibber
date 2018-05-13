@@ -5384,12 +5384,20 @@ let g = require( 'genish.js' ),
 module.exports = function( Gibberish ) {
  
 let BitCrusher = inputProps => {
-  let props = Object.assign( { bitCrusherLength: 44100 }, BitCrusher.defaults, effect.defaults, inputProps ),
-      bitCrusher = Object.create( effect )
+  const  props = Object.assign( { bitCrusherLength: 44100 }, BitCrusher.defaults, effect.defaults, inputProps ),
+         bitCrusher = Object.create( effect )
+
+  let out
 
   bitCrusher.__createGraph = function() {
-    let isStereo = props.input.isStereo !== undefined ? props.input.isStereo :false 
-    
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+      out.isStereo = isStereo
+    }
+
     let input = g.in( 'input' ),
         inputGain = g.in( 'inputGain' ),
         bitDepth = g.in( 'bitDepth' ),
@@ -5428,7 +5436,7 @@ let BitCrusher = inputProps => {
   bitCrusher.__createGraph()
   bitCrusher.__requiresRecompilation = [ 'input' ]
 
-  const out = Gibberish.factory( 
+  out = Gibberish.factory( 
     bitCrusher,
     bitCrusher.graph,
     ['fx','bitCrusher'], 
@@ -5458,11 +5466,20 @@ module.exports = function( Gibberish ) {
     let bufferShuffler = Object.create( proto ),
         bufferSize = 88200
 
+    let out
+
     bufferShuffler.__createGraph = function() {
 
       const props = Object.assign( {}, Shuffler.defaults, effect.defaults, inputProps )
 
-      const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false
+      let isStereo = false
+      if( out === undefined ) {
+        isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+      }else{
+        isStereo = out.input.isStereo
+        //out.isStereo = isStereo
+      }      
+      
       const phase = g.accum( 1,0,{ shouldWrap: false })
 
       const input = g.in( 'input' ),
@@ -5500,7 +5517,8 @@ module.exports = function( Gibberish ) {
       let fadeLength = g.memo( g.div( rateOfShuffling, 100 ) ),
           fadeIncr = g.memo( g.div( 1, fadeLength ) )
 
-      let bufferL = g.data( bufferSize ), bufferR = isStereo ? g.data( bufferSize ) : null
+      const bufferL = g.data( bufferSize )
+      const bufferR = isStereo ? g.data( bufferSize ) : null
       let readPhase = g.accum( pitchMemory.out, 0, { shouldWrap:false }) 
       let stutter = g.wrap( g.sub( g.mod( readPhase, bufferSize ), 22050 ), 0, bufferSize )
 
@@ -5539,7 +5557,7 @@ module.exports = function( Gibberish ) {
     bufferShuffler.__createGraph()
     bufferShuffler.__requiresRecompilation = [ 'input' ]
     
-    const out = Gibberish.factory( 
+    out = Gibberish.factory( 
       bufferShuffler,
       bufferShuffler.graph,
       ['fx','shuffler'], 
@@ -5572,6 +5590,7 @@ module.exports = function( Gibberish ) {
  
 let __Chorus = inputProps => {
   const props = Object.assign({}, __Chorus.defaults, effect.defaults, inputProps )
+  let out
   
   const chorus = Object.create( Gibberish.prototypes.Ugen )
 
@@ -5583,7 +5602,13 @@ let __Chorus = inputProps => {
           amp1  = g.in('slowGain'),
           amp2  = g.in('fastGain')
 
-    const isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+      out.isStereo = isStereo
+    }
 
     const leftInput = isStereo ? g.mul( input[0], inputGain ) : g.mul( input, inputGain )
 
@@ -5635,8 +5660,7 @@ let __Chorus = inputProps => {
   chorus.__createGraph()
   chorus.__requiresRecompilation = [ 'input' ]
 
-  
-  const out = Gibberish.factory( chorus, chorus.graph, ['fx','chorus'], props )
+  out = Gibberish.factory( chorus, chorus.graph, ['fx','chorus'], props )
 
   return out 
 }
@@ -5770,8 +5794,16 @@ module.exports = function (Gibberish) {
     const props = Object.assign({}, Reverb.defaults, effect.defaults, inputProps),
           reverb = Object.create(effect);
 
+    let out;
+
     reverb.__createGraph = function () {
-      const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true;
+      let isStereo = false;
+      if (out === undefined) {
+        isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false;
+      } else {
+        isStereo = out.input.isStereo;
+        out.isStereo = isStereo;
+      }
 
       const input = g.in('input'),
             inputGain = g.in('inputGain'),
@@ -5818,7 +5850,9 @@ module.exports = function (Gibberish) {
     reverb.__createGraph();
     reverb.__requiresRecompilation = ['input'];
 
-    return Gibberish.factory(reverb, reverb.graph, ['fx', 'plate'], props);
+    out = Gibberish.factory(reverb, reverb.graph, ['fx', 'plate'], props);
+
+    return out;
   };
 
   Reverb.defaults = {
@@ -5846,9 +5880,16 @@ let Delay = inputProps => {
   let props = Object.assign( { delayLength: 44100 }, effect.defaults, Delay.defaults, inputProps ),
       delay = Object.create( effect )
 
+  let out
   delay.__createGraph = function() {
-    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
-    
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+      out.isStereo = isStereo
+    }    
+
     const input      = g.in( 'input' ),
           inputGain  = g.in( 'inputGain' ),
           delayTime  = g.in( 'time' ),
@@ -5880,7 +5921,7 @@ let Delay = inputProps => {
   delay.__createGraph()
   delay.__requiresRecompilation = [ 'input' ]
   
-  const out = Gibberish.factory( 
+  out = Gibberish.factory( 
     delay,
     delay.graph, 
     ['fx','delay'], 
@@ -5919,10 +5960,17 @@ module.exports = function (Gibberish) {
 
   let Distortion = inputProps => {
     let props = Object.assign({}, effect.defaults, Distortion.defaults, inputProps),
-        distortion = Object.create(effect);
+        distortion = Object.create(effect),
+        out;
 
     distortion.__createGraph = function () {
-      let isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false;
+      let isStereo = false;
+      if (out === undefined) {
+        isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false;
+      } else {
+        isStereo = out.input.isStereo;
+        out.isStereo = isStereo;
+      }
 
       const input = g.in('input'),
             inputGain = g.in('inputGain'),
@@ -5959,7 +6007,7 @@ module.exports = function (Gibberish) {
     distortion.__createGraph();
     distortion.__requiresRecompilation = ['input'];
 
-    const out = Gibberish.factory(distortion, distortion.graph, ['fx', 'distortion'], props);
+    out = Gibberish.factory(distortion, distortion.graph, ['fx', 'distortion'], props);
     return out;
   };
 
@@ -6023,11 +6071,18 @@ module.exports = function( Gibberish ) {
  
 let Flanger = inputProps => {
   let props   = Object.assign( { delayLength:44100 }, Flanger.defaults, proto.defaults, inputProps ),
-      flanger = Object.create( proto )
+      flanger = Object.create( proto ),
+      out
 
   flanger.__createGraph = function() {
-    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
-    
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+      out.isStereo = isStereo
+    }
+
     const input = g.in( 'input' ),
           inputGain = g.in( 'inputGain' ),
           delayLength = props.delayLength,
@@ -6078,7 +6133,7 @@ let Flanger = inputProps => {
   flanger.__createGraph()
   flanger.__requiresRecompilation = [ 'input' ]
 
-  const out = Gibberish.factory( 
+  out = Gibberish.factory( 
     flanger,
     flanger.graph, 
     ['fx','flanger'], 
@@ -6124,10 +6179,16 @@ const tuning = {
 const Freeverb = inputProps => {
   const props = Object.assign( {}, effect.defaults, Freeverb.defaults, inputProps ),
         reverb = Object.create( effect ) 
-   
+
+  let out 
   reverb.__createGraph = function() {
-    const  isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
-    
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+    }    
+
     const combsL = [], combsR = []
 
     const input = g.in( 'input' ),
@@ -6145,10 +6206,20 @@ const Freeverb = inputProps => {
     // create comb filters in parallel...
     for( let i = 0; i < 8; i++ ) { 
       combsL.push( 
-        combFilter( attenuatedInput, tuning.combTuning[i], g.mul(damping,.4), g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) ) 
+        combFilter( 
+          attenuatedInput, 
+          tuning.combTuning[i], 
+          g.mul(damping,.4),
+          g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) 
+        ) 
       )
       combsR.push( 
-        combFilter( attenuatedInput, tuning.combTuning[i] + tuning.stereoSpread, g.mul(damping,.4), g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) ) 
+        combFilter( 
+          attenuatedInput, 
+          tuning.combTuning[i] + tuning.stereoSpread, 
+          g.mul(damping,.4), 
+          g.mul( tuning.scaleRoom + tuning.offsetRoom, roomSize ) 
+        ) 
       )
     }
     
@@ -6166,13 +6237,12 @@ const Freeverb = inputProps => {
           outputR = g.add( g.mul( outR, wet1 ), g.mul( outL, wet2 ), g.mul( isStereo === true ? input[1] : input, dry ) )
 
     reverb.graph = [ outputL, outputR ]
-
   }
 
   reverb.__createGraph()
   reverb.__requiresRecompilation = [ 'input' ]
 
-  const out = Gibberish.factory( reverb, reverb.graph, ['fx','freeverb'], props )
+  out = Gibberish.factory( reverb, reverb.graph, ['fx','freeverb'], props )
 
   return out
 }
@@ -6200,11 +6270,18 @@ module.exports = function( Gibberish ) {
  
 let RingMod = inputProps => {
   let props   = Object.assign( {}, RingMod.defaults, effect.defaults, inputProps ),
-      ringMod = Object.create( effect )
+      ringMod = Object.create( effect ),
+      out
 
   ringMod.__createGraph = function() {
-    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false 
-    
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+      out.isStereo = isStereo
+    }    
+
     const input = g.in( 'input' ),
           inputGain = g.in( 'inputGain' ),
           frequency = g.in( 'frequency' ),
@@ -6229,7 +6306,7 @@ let RingMod = inputProps => {
   ringMod.__createGraph() 
   ringMod.__requiresRecompilation = [ 'input' ]
 
-  const out = Gibberish.factory( 
+  out = Gibberish.factory( 
     ringMod,
     ringMod.graph, 
     [ 'fx','ringMod'], 
@@ -6259,10 +6336,17 @@ module.exports = function( Gibberish ) {
 const Tremolo = inputProps => {
   const props   = Object.assign( {}, Tremolo.defaults, effect.defaults, inputProps ),
         tremolo = Object.create( effect )
-
+  
+  let out
   tremolo.__createGraph = function() {
-    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : false  
-    
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+      out.isStereo = isStereo
+    }    
+
     const input = g.in( 'input' ),
           inputGain = g.in( 'inputGain' ),
           frequency = g.in( 'frequency' ),
@@ -6296,7 +6380,7 @@ const Tremolo = inputProps => {
   tremolo.__createGraph()
   tremolo.__requiresRecompilation = [ 'input' ]
 
-  const out = Gibberish.factory( 
+  out = Gibberish.factory( 
     tremolo,
     tremolo.graph,
     ['fx','tremolo'], 
@@ -6326,9 +6410,16 @@ const Vibrato = inputProps => {
   const props   = Object.assign( {}, Vibrato.defaults, effect.defaults, inputProps ),
         vibrato = Object.create( effect )
 
+  let out
   vibrato.__createGraph = function() {
-    const isStereo = props.input.isStereo !== undefined ? props.input.isStereo : true 
-    
+    let isStereo = false
+    if( out === undefined ) {
+      isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false 
+    }else{
+      isStereo = out.input.isStereo
+      out.isStereo = isStereo
+    }    
+
     const input = g.in( 'input' ),
           inputGain = g.in( 'inputGain' ),
           delayLength = 44100,
@@ -6376,7 +6467,7 @@ const Vibrato = inputProps => {
   vibrato.__createGraph()
   vibrato.__requiresRecompilation = [ 'input' ]
 
-  const out = Gibberish.factory( 
+  out = Gibberish.factory( 
     vibrato,
     vibrato.graph,    
     [ 'fx', 'vibrato' ], 
@@ -7864,6 +7955,113 @@ module.exports = function( Gibberish ) {
 
 
 },{"../ugen.js":142,"../workletProxy.js":145,"genish.js":37}],130:[function(require,module,exports){
+const g = require( 'genish.js' ),
+      ugen = require( '../ugen.js' )(),
+      __proxy = require( '../workletProxy.js' )
+
+module.exports = function( Gibberish ) {
+  const Bus2 = Object.create( ugen )
+  const proxy = __proxy( Gibberish )
+
+  let bufferL, bufferR
+  
+  Object.assign( Bus2, { 
+    create( props ) {
+
+      if( bufferL === undefined ) {
+        bufferL = Gibberish.genish.gen.globals.panL.memory.values.idx
+        bufferR = Gibberish.genish.gen.globals.panR.memory.values.idx
+      }
+
+      // XXX must be same type as what is returned by genish for type checks to work correctly
+      const output = new Float64Array( 2 ) 
+
+      const bus = Object.create( Bus2 )
+
+      let init = false
+
+      Object.assign( 
+        bus,
+
+        {
+          callback() {
+            output[ 0 ] = output[ 1 ] = 0
+            const lastIdx = arguments.length - 1
+            const memory  = arguments[ lastIdx ]
+            const pan  = arguments[ lastIdx - 1 ]
+            const gain = arguments[ lastIdx - 2 ]
+
+            for( let i = 0; i < lastIdx - 2; i+= 3 ) {
+              const input = arguments[ i ],
+                    level = arguments[ i + 1 ],
+                    isStereo = arguments[ i + 2 ]
+
+              output[ 0 ] += isStereo === true ? input[ 0 ] * level : input * level
+
+              output[ 1 ] += isStereo === true ? input[ 1 ] * level : input * level
+            }
+
+            const panRawIndex  = pan * 1023,
+                  panBaseIndex = panRawIndex | 0,
+                  panNextIndex = (panBaseIndex + 1) & 1023,
+                  interpAmount = panRawIndex - panBaseIndex,
+                  panL = memory[ bufferL + panBaseIndex ] 
+                    + ( interpAmount * ( memory[ bufferL + panNextIndex ] - memory[ bufferL + panBaseIndex ] ) ),
+                  panR = memory[ bufferR + panBaseIndex ] 
+                    + ( interpAmount * ( memory[ bufferR + panNextIndex ] - memory[ bufferR + panBaseIndex ] ) )
+            
+            output[0] *= gain * panL
+            output[1] *= gain * panR
+
+            return output
+          },
+          id : Gibberish.factory.getUID(),
+          dirty : false,
+          type : 'bus',
+          inputs:[ 1, .5 ],
+          isStereo: true,
+          __properties__:props
+        },
+
+        Bus2.defaults,
+
+        props
+      )
+
+
+      bus.ugenName = bus.callback.ugenName = 'bus2_' + bus.id
+
+      const out = bus.__useProxy__ ? proxy( ['Bus2'], props, bus ) : bus
+
+      let pan = .5
+      Object.defineProperty( out, 'pan', {
+        get() { return pan },
+        set(v){ 
+          pan = v
+          out.inputs[ out.inputs.length - 1 ] = pan
+          Gibberish.dirty( out )
+        }
+      })
+
+      return out
+    },
+    
+    disconnectUgen( ugen ) {
+      let removeIdx = this.inputs.indexOf( ugen )
+
+      if( removeIdx !== -1 ) {
+        this.inputs.splice( removeIdx, 3 )
+        Gibberish.dirty( this )
+      }
+    },
+
+    defaults: { gain:1, pan:.5, __useProxy__:true }
+  })
+
+  return Bus2.create.bind( Bus2 )
+
+}
+
 /*let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )
 
@@ -7947,113 +8145,6 @@ module.exports = function( Gibberish ) {
 }
 */
 
-
-const g = require( 'genish.js' ),
-      ugen = require( '../ugen.js' )(),
-      __proxy = require( '../workletProxy.js' )
-
-module.exports = function( Gibberish ) {
-  const Bus2 = Object.create( ugen )
-  const proxy = __proxy( Gibberish )
-
-  let bufferL, bufferR
-  
-  Object.assign( Bus2, { 
-    create( props ) {
-
-      if( bufferL === undefined ) {
-        bufferL = Gibberish.genish.gen.globals.panL.memory.values.idx
-        bufferR = Gibberish.genish.gen.globals.panR.memory.values.idx
-      }
-
-      // XXX must be same type as what is returned by genish for type checks to work correctly
-      const output = new Float64Array( 2 ) 
-
-      const bus = Object.create( Bus2 )
-
-      let init = false
-
-      Object.assign( 
-        bus,
-
-        {
-          callback() {
-            output[ 0 ] = output[ 1 ] = 0
-            const lastIdx = arguments.length - 1
-            const memory  = arguments[ lastIdx ]
-            const pan  = arguments[ lastIdx - 1 ]
-            const gain = arguments[ lastIdx - 2 ]
-
-            for( let i = 0; i < lastIdx - 2; i+= 3 ) {
-              const input = arguments[ i ],
-                    level = arguments[ i + 1 ],
-                    isStereo = arguments[ i + 2 ]
-
-              output[ 0 ] += isStereo === true ? input[ 0 ] * level : input * level
-
-              output[ 1 ] += isStereo === true ? input[ 1 ] * level : input * level
-            }
-
-            const panRawIndex  = pan * 1023,
-                  panBaseIndex = panRawIndex | 0,
-                  panNextIndex = (panBaseIndex + 1) & 1023,
-                  interpAmount = panRawIndex - panBaseIndex,
-                  panL = memory[ bufferL + panBaseIndex ] 
-                    + ( interpAmount * ( memory[ bufferL + panNextIndex ] - memory[ bufferL + panBaseIndex ] ) ),
-                  panR = memory[ bufferR + panBaseIndex ] 
-                    + ( interpAmount * ( memory[ bufferR + panNextIndex ] - memory[ bufferR + panBaseIndex ] ) )
-            
-            output[0] *= gain * panL
-            output[1] *= gain * panR
-
-            return output
-          },
-          id : Gibberish.factory.getUID(),
-          dirty : false,
-          type : 'bus',
-          inputs:[ 1, .5 ],
-          isStereo: true,
-          __properties__:props
-        },
-
-        Bus2.defaults,
-
-        props
-      )
-
-
-      bus.ugenName = bus.callback.ugenName = 'bus2_' + bus.id
-
-      const out = bus.__useProxy__ ?  proxy( ['Bus2'], props, bus ) : bus
-
-      let pan = .5
-      Object.defineProperty( out, 'pan', {
-        get() { return pan },
-        set(v){ 
-          pan = v
-          out.inputs[ out.inputs.length - 1 ] = pan
-          Gibberish.dirty( out )
-        }
-      })
-
-      return out
-    },
-    
-    disconnectUgen( ugen ) {
-      let removeIdx = this.inputs.indexOf( ugen )
-
-      if( removeIdx !== -1 ) {
-        this.inputs.splice( removeIdx, 3 )
-        Gibberish.dirty( this )
-      }
-    },
-
-    defaults: { gain:1, pan:.5, __useProxy__:true }
-  })
-
-  return Bus2.create.bind( Bus2 )
-
-}
 
 
 },{"../ugen.js":142,"../workletProxy.js":145,"genish.js":37}],131:[function(require,module,exports){
@@ -8804,11 +8895,33 @@ const __ugen = function( __Gibberish ) {
     },
 
     __redoGraph:function() {
+      let isStereo = this.isStereo
       this.__createGraph()
       this.callback = Gibberish.genish.gen.createCallback( this.graph, Gibberish.memory, false, true )
       this.inputNames = new Set( Gibberish.genish.gen.parameters ) 
       this.callback.ugenName = this.ugenName
       Gibberish.dirty( this )
+
+      // if channel count has changed after recompiling graph...
+      if( isStereo !== this.isStereo ) {
+        // loop through all busses the ugen is connected to
+        for( let connection of this.connected ) {
+          // set the dirty flag of the bus
+          Gibberish.dirty( connection[ 0 ] )
+
+          // check for inputs array, which indicates connection is to a bus
+          if( connection[0].inputs !== undefined ) {
+            // find the input in the busses 'inputs' array
+            const inputIdx = connection[ 0 ].inputs.indexOf( connection[ 1 ] )
+
+            // assumiing it is found...
+            if( inputIdx !== -1 ) {
+              // change stereo field
+              connection[ 0 ].inputs[ inputIdx + 2 ] = this.isStereo
+            }
+          }
+        }
+      }
     },
   }
 
