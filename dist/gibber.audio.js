@@ -3977,25 +3977,26 @@ const Presets = {
       output = {}
       const preset = Presets[ description.category ][ description.name ][ args[0] ]
 
-      for( let key in preset ) {
-        if( key === 'presetInit' ) continue
-        let value = preset[ key ]
+      if( preset !== undefined ) {
+        for( let key in preset ) {
+          if( key === 'presetInit' ) continue
+          let value = preset[ key ]
 
-        // if a value is a function, run the function to get the new value. these
-        // preset functions are passed the main audio object, which they can typically
-        // use, for example, to query the current sample rate.
-        output[ key ] = typeof value === 'function' ? value( Audio ) : value
+          // if a value is a function, run the function to get the new value. these
+          // preset functions are passed the main audio object, which they can typically
+          // use, for example, to query the current sample rate.
+          output[ key ] = typeof value === 'function' ? value( Audio ) : value
+        }
+
+        // if there is an extra argument to modify the preset...
+        if( args.length > 1 ) {
+          Object.assign( output, args[1] )
+        }
+
+        if( preset.presetInit !== undefined ) {
+          output.__presetInit__ = preset.presetInit 
+        } 
       }
-
-      // if there is an extra argument to modify the preset...
-      if( args.length > 1 ) {
-        Object.assign( output, args[1] )
-      }
-
-      if( preset.presetInit !== undefined ) {
-        console.log( 'making preset init' )
-        output.__presetInit__ = preset.presetInit 
-      } 
     }
 
     return output
