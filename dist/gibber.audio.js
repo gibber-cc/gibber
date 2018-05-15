@@ -4273,6 +4273,12 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
 
+    //const __fx = []
+    //__fx.__push = __fx.push
+    //__fx.push = function( ...args ) {
+    //  __fx.__push( ...args )
+    //  return obj
+    //}
     obj.fx = new Proxy( [], {
       set( target, property, value, receiver ) {
 
@@ -4281,9 +4287,15 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
         
         if( property === 'length' ) { 
           if( target.length > 1 ) {
+            // XXX need to store and reassign to end connection
+            target[ target.length - 2 ].disconnect()
             target[ target.length - 2 ].connect( target[ target.length - 1 ] )
+            target[ target.length - 1 ].connect()
           }else if( target.length === 1 ) {
+            // need to store and reassign
+            __wrappedObject.disconnect()
             __wrappedObject.connect( target[ 0 ] )
+            target[0].connect()
           }
         }
 
