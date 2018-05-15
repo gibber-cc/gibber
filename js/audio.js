@@ -2,6 +2,9 @@ const Gibberish   = require( 'gibberish-dsp' )
 const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
 const Effects     = require( './effects.js' )
+const Busses      = require( './busses.js' )
+const Ensemble    = require( './ensemble.js' )
+const Drums       = require( './drums.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -13,10 +16,14 @@ const Audio = {
 
 
   export( obj ) {
-    if( Audio.initialized ) 
-      Object.assign( obj, this.instruments, this.oscillators, this.effects )
-    else
+    if( Audio.initialized ){ 
+      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses )
+      obj.Ensemble = this.Ensemble
+      obj.Drums = this.Drums
+      obj.EDrums = this.EDrums
+    }else{
       Audio.exportTarget = obj
+    } 
   },
 
   init() {
@@ -53,6 +60,11 @@ const Audio = {
   createUgens() {
     this.instruments = Instruments.create( this ) 
     this.effects = Effects.create( this )
+    this.busses = Busses.create( this )
+    this.Ensemble = Ensemble( Audio )
+    this.Seq = require( './seq.js' )( Audio )
+    const drums = require( './drums.js' )( Audio )
+    Object.assign( this, drums )
   }  
 }
 

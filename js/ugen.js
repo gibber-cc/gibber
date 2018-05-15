@@ -6,6 +6,7 @@ const timeProps = [ 'attack', 'decay', 'sustain', 'release', 'time' ]
 const Ugen = function( gibberishConstructor, description, Audio ) {
 
   const Seq = __Seq( Audio )
+
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
 
@@ -64,6 +65,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     obj.id = __wrappedObject.id
 
+    if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
+
     obj.fx = new Proxy( [], {
       set( target, property, value, receiver ) {
 
@@ -99,6 +102,17 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     if( properties !== undefined && properties.__presetInit__ !== undefined ) {
       properties.__presetInit__.call( obj, Audio )
     }
+
+    // flag will only be present worklet-side, not in the processor.
+    /*const __flag = true
+    if( obj.__wrapped__.onload !== undefined ) {
+      const store = obj.__wrapped__.onload
+      obj.__wrapped__.onload = function() {
+        if( __flag !== undefined ) {
+          //store.call( obj )
+        }
+      } 
+    }*/
 
     return obj
   }
