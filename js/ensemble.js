@@ -18,6 +18,7 @@ module.exports = function( Audio ) {
         method,
         args
       }
+      cp[ dict.name ] = target
     }
 
     cp.play = function( key ) {
@@ -27,16 +28,8 @@ module.exports = function( Audio ) {
     const ens = Audio.busses.Bus2( cp )
 
     for( let key in props ) {
-      // Audio.Gibberish.worklet.ugens.get( cp[ key ].target ).connect( ens )
       props[ key ].target.connect( ens )
     }
-
-    //ens.seq = Audio.Seq({
-    //  target:ens,
-    //  key:'play',
-    //  values:loopString.split(''),
-    //  timings:1 / loopString.length
-    //}).start()
     
     return ens
   }

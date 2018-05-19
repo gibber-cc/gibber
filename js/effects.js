@@ -10,9 +10,10 @@ const Effects = {
 
       const methods = Effects.descriptions[ effectName ] === undefined ? null : Effects.descriptions[ effectName ].methods
       const description = { 
-        properties:gibberishConstructor.defaults, 
+        properties:gibberishConstructor.defaults || {}, 
         methods:methods
       }
+      description.properties.type = 'fx'
 
       effects[ effectName ] = Ugen( gibberishConstructor, description, Audio )      
     }

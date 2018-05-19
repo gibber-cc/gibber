@@ -67,13 +67,13 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
 
-    //const __fx = []
-    //__fx.__push = __fx.push
-    //__fx.push = function( ...args ) {
-    //  __fx.__push( ...args )
-    //  return obj
-    //}
-    obj.fx = new Proxy( [], {
+    const __fx = []
+    __fx.__push = __fx.push.bind( __fx )
+    __fx.add = function( ...args ) {
+      obj.fx.push( ...args )
+      return obj
+    }
+    obj.fx = new Proxy( __fx, {
       set( target, property, value, receiver ) {
 
         const lengthCheck = target.length
@@ -86,10 +86,10 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
             target[ target.length - 2 ].connect( target[ target.length - 1 ] )
             target[ target.length - 1 ].connect()
           }else if( target.length === 1 ) {
-            // need to store and reassign
+            // XXX need to store and reassign
             __wrappedObject.disconnect()
             __wrappedObject.connect( target[ 0 ] )
-            target[0].connect()
+            target[0].connect( Audio.Master )
           }
         }
 
@@ -125,6 +125,11 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
         }
       } 
     }*/
+
+    // only connect if shouldNotConneect does not equal true (for LFOs and other modulation sources)
+    if( obj.__wrapped__.type === 'instrument' || obj.__wrapped__.type === 'oscillator' ) {
+      if( typeof properties !== 'object' || properties.shouldNotConnect !== true ) obj.connect( Audio.Master )
+    }
 
     return obj
   }

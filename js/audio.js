@@ -37,6 +37,7 @@ const Audio = {
         Audio.node = processorNode
         Audio.createUgens()
         Audio.Clock.init()
+        Audio.Master = Gibberish.out
 
         if( Audio.exportTarget !== null ) Audio.export( Audio.exportTarget )
 
@@ -61,9 +62,9 @@ const Audio = {
     this.instruments = Instruments.create( this ) 
     this.effects = Effects.create( this )
     this.busses = Busses.create( this )
-    this.Ensemble = Ensemble( Audio )
-    this.Seq = require( './seq.js' )( Audio )
-    const drums = require( './drums.js' )( Audio )
+    this.Ensemble = Ensemble( this )
+    this.Seq = require( './seq.js' )( this )
+    const drums = require( './drums.js' )( this )
     Object.assign( this, drums )
   }  
 }

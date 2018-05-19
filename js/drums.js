@@ -8,10 +8,10 @@ module.exports = function( Audio ) {
     const oh = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/openHat.wav' })
 
     const drums = Audio.Ensemble({
-      'x': { target:k, method:'trigger', args:[1] },
-      'o': { target:s, method:'trigger', args:[1] },
-      '*': { target:ch, method:'trigger', args:[1] },
-      '-': { target:oh, method:'trigger', args:[1] },
+      'x': { target:k,  method:'trigger', args:[1], name:'kick' },
+      'o': { target:s,  method:'trigger', args:[1], name:'snare' },
+      '*': { target:ch, method:'trigger', args:[1], name:'closedHat' },
+      '-': { target:oh, method:'trigger', args:[1], name:'openHat' },
     })
 
     drums.seq = Audio.Seq({
@@ -25,17 +25,16 @@ module.exports = function( Audio ) {
   }
 
   const EDrums = function( score, time, props ) { 
-    // XXX what url prefix should I be using?
     const k = Audio.instruments.Kick()
     const s = Audio.instruments.Snare()
     const ch = Audio.instruments.Hat({ decay:.1, gain:.2 })
     const oh = Audio.instruments.Hat({ decay:.5, gain:.2 })
 
     const drums = Audio.Ensemble({
-      'x': { target:k, method:'trigger', args:[1] },
-      'o': { target:s, method:'trigger', args:[1] },
-      '*': { target:ch, method:'trigger', args:[.2] },
-      '-': { target:oh, method:'trigger', args:[.2] },
+      'x': { target:k, method:'trigger', args:[1], name:'kick' },
+      'o': { target:s, method:'trigger', args:[1], name:'snare' },
+      '*': { target:ch, method:'trigger', args:[.2], name:'closedHat' },
+      '-': { target:oh, method:'trigger', args:[.2], name:'openHat' },
     })
 
     drums.seq = Audio.Seq({

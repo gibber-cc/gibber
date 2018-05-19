@@ -3757,6 +3757,7 @@ const Audio = {
         Audio.node = processorNode
         Audio.createUgens()
         Audio.Clock.init()
+        Audio.Master = Gibberish.out
 
         if( Audio.exportTarget !== null ) Audio.export( Audio.exportTarget )
 
@@ -3781,9 +3782,9 @@ const Audio = {
     this.instruments = Instruments.create( this ) 
     this.effects = Effects.create( this )
     this.busses = Busses.create( this )
-    this.Ensemble = Ensemble( Audio )
-    this.Seq = require( './seq.js' )( Audio )
-    const drums = require( './drums.js' )( Audio )
+    this.Ensemble = Ensemble( this )
+    this.Seq = require( './seq.js' )( this )
+    const drums = require( './drums.js' )( this )
     Object.assign( this, drums )
   }  
 }
@@ -3906,10 +3907,10 @@ module.exports = function( Audio ) {
     const oh = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/openHat.wav' })
 
     const drums = Audio.Ensemble({
-      'x': { target:k, method:'trigger', args:[1] },
-      'o': { target:s, method:'trigger', args:[1] },
-      '*': { target:ch, method:'trigger', args:[1] },
-      '-': { target:oh, method:'trigger', args:[1] },
+      'x': { target:k,  method:'trigger', args:[1], name:'kick' },
+      'o': { target:s,  method:'trigger', args:[1], name:'snare' },
+      '*': { target:ch, method:'trigger', args:[1], name:'closedHat' },
+      '-': { target:oh, method:'trigger', args:[1], name:'openHat' },
     })
 
     drums.seq = Audio.Seq({
@@ -3923,17 +3924,16 @@ module.exports = function( Audio ) {
   }
 
   const EDrums = function( score, time, props ) { 
-    // XXX what url prefix should I be using?
     const k = Audio.instruments.Kick()
     const s = Audio.instruments.Snare()
     const ch = Audio.instruments.Hat({ decay:.1, gain:.2 })
     const oh = Audio.instruments.Hat({ decay:.5, gain:.2 })
 
     const drums = Audio.Ensemble({
-      'x': { target:k, method:'trigger', args:[1] },
-      'o': { target:s, method:'trigger', args:[1] },
-      '*': { target:ch, method:'trigger', args:[.2] },
-      '-': { target:oh, method:'trigger', args:[.2] },
+      'x': { target:k, method:'trigger', args:[1], name:'kick' },
+      'o': { target:s, method:'trigger', args:[1], name:'snare' },
+      '*': { target:ch, method:'trigger', args:[.2], name:'closedHat' },
+      '-': { target:oh, method:'trigger', args:[.2], name:'openHat' },
     })
 
     drums.seq = Audio.Seq({
@@ -3962,9 +3962,10 @@ const Effects = {
 
       const methods = Effects.descriptions[ effectName ] === undefined ? null : Effects.descriptions[ effectName ].methods
       const description = { 
-        properties:gibberishConstructor.defaults, 
+        properties:gibberishConstructor.defaults || {}, 
         methods:methods
       }
+      description.properties.type = 'fx'
 
       effects[ effectName ] = Ugen( gibberishConstructor, description, Audio )      
     }
@@ -4000,6 +4001,7 @@ module.exports = function( Audio ) {
         method,
         args
       }
+      cp[ dict.name ] = target
     }
 
     cp.play = function( key ) {
@@ -4009,16 +4011,8 @@ module.exports = function( Audio ) {
     const ens = Audio.busses.Bus2( cp )
 
     for( let key in props ) {
-      // Audio.Gibberish.worklet.ugens.get( cp[ key ].target ).connect( ens )
       props[ key ].target.connect( ens )
     }
-
-    //ens.seq = Audio.Seq({
-    //  target:ens,
-    //  key:'play',
-    //  values:loopString.split(''),
-    //  timings:1 / loopString.length
-    //}).start()
     
     return ens
   }
@@ -4185,21 +4179,23 @@ const Gibberish = require( 'gibberish-dsp' )
 
 module.exports = function( Audio ) {
 
-const Seq = function( props ) { 
-  const __values  = props.values
-  const __timings = props.timings
-  const delay     = props.delay
-  const target    = props.target
-  const key       = props.key
+  const Seq = function( props ) { 
+    const __values  = props.values
+    const __timings = props.timings
+    const delay     = props.delay
+    const target    = props.target
+    const key       = props.key
 
-  const values  = Array.isArray( __values ) ? __values : [ __values ]
-  const timingsPreProcessing = Array.isArray( __timings ) ? __timings : [ __timings ]
-  const timings = timingsPreProcessing.map( Audio.Clock.time )
+    const values  = Array.isArray( __values ) ? __values : [ __values ]
+    const timingsPreProcessing = Array.isArray( __timings ) ? __timings : [ __timings ]
 
-  return Gibberish.Sequencer({ values, timings, target, key })
-}
+    // XXX this needs to dynamically lookup the current bpm everytime a timing is accessed...
+    const timings = timingsPreProcessing.map( Audio.Clock.time )
 
-return Seq
+    return Gibberish.Sequencer({ values, timings, target, key })
+  }
+
+  return Seq
 
 }
 
@@ -4273,13 +4269,13 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
 
-    //const __fx = []
-    //__fx.__push = __fx.push
-    //__fx.push = function( ...args ) {
-    //  __fx.__push( ...args )
-    //  return obj
-    //}
-    obj.fx = new Proxy( [], {
+    const __fx = []
+    __fx.__push = __fx.push.bind( __fx )
+    __fx.add = function( ...args ) {
+      obj.fx.push( ...args )
+      return obj
+    }
+    obj.fx = new Proxy( __fx, {
       set( target, property, value, receiver ) {
 
         const lengthCheck = target.length
@@ -4292,10 +4288,10 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
             target[ target.length - 2 ].connect( target[ target.length - 1 ] )
             target[ target.length - 1 ].connect()
           }else if( target.length === 1 ) {
-            // need to store and reassign
+            // XXX need to store and reassign
             __wrappedObject.disconnect()
             __wrappedObject.connect( target[ 0 ] )
-            target[0].connect()
+            target[0].connect( Audio.Master )
           }
         }
 
@@ -4331,6 +4327,11 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
         }
       } 
     }*/
+
+    // only connect if shouldNotConneect does not equal true (for LFOs and other modulation sources)
+    if( obj.__wrapped__.type === 'instrument' || obj.__wrapped__.type === 'oscillator' ) {
+      if( typeof properties !== 'object' || properties.shouldNotConnect !== true ) obj.connect( Audio.Master )
+    }
 
     return obj
   }
@@ -5230,7 +5231,7 @@ module.exports = function( Gibberish ) {
     input:0,
     Q: .65,
     saturation: 1,
-    cutoff: 880,
+    cutoff:.5 
   }
 
   return DiodeZDF
@@ -5623,7 +5624,7 @@ let BitCrusher = inputProps => {
       let storeR = g.history(0)
       let crushedR = g.div( g.floor( g.mul( g.mul( rightInput, inputGain ), bitMult ) ), bitMult )
 
-      let outR = ternary( 
+      let outR = g.ternary( 
         sampleReduxCounter.wrap,
         crushedR,
         storeL.out
@@ -5794,7 +5795,7 @@ let __Chorus = inputProps => {
   const props = Object.assign({}, __Chorus.defaults, effect.defaults, inputProps )
   let out
   
-  const chorus = Object.create( Gibberish.prototypes.Ugen )
+  const chorus = Object.create( effect )
 
   chorus.__createGraph = function() {
     const input = g.in('input'),
@@ -6181,7 +6182,7 @@ module.exports = function (Gibberish) {
             pregain = g.in('pregain'),
             postgain = g.in('postgain');
 
-      let lout, out;
+      let lout;
       {
         'use jsdsp';
         const linput = isStereo ? g.mul(input[0], inputGain) : g.mul(input, inputGain);
@@ -6887,7 +6888,7 @@ let Gibberish = {
     callbackBody.push( '\n\treturn ' + lastLine.split( '=' )[0].split( ' ' )[1] )
 
     if( this.debug === true ) console.log( 'callback:\n', callbackBody.join('\n') )
-    this.callbackNames.push( 'memory' )
+    this.callbackNames.push( 'mem' )
     this.callbackUgens.push( this.memory.heap )
     this.callback = Function( ...this.callbackNames, callbackBody.join( '\n' ) )
     this.callback.out = []
@@ -6989,7 +6990,12 @@ let Gibberish = {
           }
 
           if( typeof input === 'number' ) {
+            if( isNaN(key) ) {
+              //console.log( 'key:', key, input )
+              line += `mem[${ugen.__addresses__[ key ]}]`//input
+            }else{
               line += input
+            }
           } else if( typeof input === 'boolean' ) {
               line += '' + input
           }else{
@@ -7027,7 +7033,7 @@ let Gibberish = {
       
       //if( ugen.type === 'bus' ) line += ', ' 
       if( ugen.type === 'analysis' || (ugen.type === 'bus' && keys.length > 0) ) line += ', '
-      if( !ugen.isop && ugen.type !== 'seq' ) line += 'memory'
+      if( !ugen.isop && ugen.type !== 'seq' ) line += 'mem'
       line += ugen.isop ? '' : ' )'
 
       block.push( line )
@@ -7300,6 +7306,8 @@ let ugen = require( '../ugen.js' )(),
 let instrument = Object.create( ugen )
 
 Object.assign( instrument, {
+  type:'instrument',
+
   note( freq ) {
     this.frequency = freq
     this.env.trigger()
@@ -9146,6 +9154,7 @@ const __ugen = function( __Gibberish ) {
 
       // if channel count has changed after recompiling graph...
       if( isStereo !== this.isStereo ) {
+        //console.log( 'CHANGING STEREO:', isStereo )
         // loop through all busses the ugen is connected to
         for( let connection of this.connected ) {
           // set the dirty flag of the bus
@@ -9161,6 +9170,9 @@ const __ugen = function( __Gibberish ) {
               // change stereo field
               connection[ 0 ].inputs[ inputIdx + 2 ] = this.isStereo
             }
+          }else if( connection[0].input !== undefined ) {
+            //console.log( 'redo graph???' )
+            connection[0].__redoGraph()
           }
         }
       }
@@ -9186,14 +9198,15 @@ module.exports = function( Gibberish ) {
     let name = Array.isArray( __name ) ? __name[ __name.length - 1 ] : __name
 
     Object.assign( ugen, {
-      type: 'ugen',
+      //type: 'ugen',
       id: Gibberish.utilities.getUID(), 
       ugenName: name + '_',
       graph: graph,
       inputNames: new Set( Gibberish.genish.gen.parameters ),
       isStereo: Array.isArray( graph ),
       dirty: true,
-      __properties__:values
+      __properties__:values,
+      __addresses__:{}
     })
     
     ugen.ugenName += ugen.id
@@ -9202,7 +9215,15 @@ module.exports = function( Gibberish ) {
     for( let param of ugen.inputNames ) {
       if( param === 'memory' ) continue
 
-      let value = values[ param ]
+      let value = values[ param ],
+          isNumber = !isNaN( value ),
+          idx
+
+      if( isNumber ) { 
+        idx = Gibberish.memory.alloc( 1 )
+        Gibberish.memory.heap[ idx ] = value
+        ugen.__addresses__[ param ] = idx
+      }
 
       // TODO: do we need to check for a setter?
       let desc = Object.getOwnPropertyDescriptor( ugen, param ),
@@ -9214,18 +9235,33 @@ module.exports = function( Gibberish ) {
 
       Object.defineProperty( ugen, param, {
         configurable:true,
-        get() { return value },
+        get() { 
+          if( isNumber ) {
+            return Gibberish.memory.heap[ idx ]
+          }else{
+            return value 
+          }
+        },
         set( v ) {
+          if( param === 'input' ) console.log( 'INPUT:', v, isNumber )
           if( value !== v ) {
-            Gibberish.dirty( ugen )
             if( setter !== undefined ) setter( v )
-            value = v
+            if( !isNaN( v ) ) {
+              Gibberish.memory.heap[ idx ] = v
+              if( isNumber === false ) Gibberish.dirty( ugen )
+              isNumber = true
+            }else{
+              value = v
+              if( isNumber === true ) Gibberish.dirty( ugen )
+              console.log( 'switching from number:', param, value )
+              isNumber = false
+            }
           }
         }
       })
     }
 
-    // add bypass dirty triffer
+    // add bypass 
     if( effectProto.isPrototypeOf( ugen ) ) {
       let value = ugen.bypass
       Object.defineProperty( ugen, 'bypass', {
@@ -9243,18 +9279,43 @@ module.exports = function( Gibberish ) {
 
     if( ugen.__requiresRecompilation !== undefined ) {
       ugen.__requiresRecompilation.forEach( prop => {
-        let value = ugen[ prop ]
+        let value = values[ prop ]
+        let isNumber = !isNaN( value )
+
         Object.defineProperty( ugen, prop, {
           configurable:true,
-          get() { return value },
+          get() { 
+            if( isNumber ) {
+              let idx = ugen.__addresses__[ prop ]
+              return Gibberish.memory.heap[ idx ]
+            }else{
+              //console.log( 'returning:', prop, value, Gibberish.mode )
+              return value 
+            }
+          },
           set( v ) {
             if( value !== v ) {
-              value = v
+              if( !isNaN( v ) ) {
+                let idx = ugen.__addrresses__[ prop ]
+                if( idx === undefined ){
+                  idx = Gibberish.memory.alloc( 1 )
+                  ugen.__addresses__[ prop ] = idx
+                }
+                value = values[ prop ] = Gibberish.memory.heap[ idx ] = v
+                isNumber = true
+              }else{
+                value = values[ prop ] = v
+                isNumber = false
+                //console.log( 'setting ugen', value, Gibberish.mode )
+                Gibberish.dirty( ugen )
+              }
+
+              //console.log( 'SETTING REDO GRAPH', prop, Gibberish.mode )
               
               // needed for filterType at the very least, becauae the props
               // are reused when re-creating the graph. This seems like a cheaper
               // way to solve this problem.
-              values[ prop ] = v
+              //values[ prop ] = v
 
               this.__redoGraph()
             }
@@ -9532,16 +9593,17 @@ const __proxy = function( __name, values, obj ) {
         return target[ prop ]
       },
       set( target, prop, value, receiver ) {
-        if( prop !== 'connected' ) {
+        if( prop !== 'connected' && prop !== 'input' && prop !== 'callback' && prop !== 'inputNames' ) {
           const __value = replaceObj( value )
-          console.log( 'setter:', prop, __value )
 
-          Gibberish.worklet.port.postMessage({ 
-            address:'set', 
-            object:obj.id,
-            name:prop,
-            value:__value
-          })
+          if( __value !== undefined ) {
+            Gibberish.worklet.port.postMessage({ 
+              address:'set', 
+              object:obj.id,
+              name:prop,
+              value:__value
+            })
+          }
         }
 
         target[ prop ] = value
