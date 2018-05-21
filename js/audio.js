@@ -4,7 +4,6 @@ const Instruments = require( './instruments.js' )
 const Effects     = require( './effects.js' )
 const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
-const Drums       = require( './drums.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -64,6 +63,12 @@ const Audio = {
     this.busses = Busses.create( this )
     this.Ensemble = Ensemble( this )
     this.Seq = require( './seq.js' )( this )
+    const Pattern = require( './pattern.js' )
+    Pattern.transfer( this, Pattern.toString() )
+    this.Pattern = Pattern( this )
+    
+    //console.log( 'pattern string:', Pattern.toString() )
+
     const drums = require( './drums.js' )( this )
     Object.assign( this, drums )
   }  
