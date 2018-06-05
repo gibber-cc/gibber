@@ -3849,9 +3849,11 @@ const Clock = {
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
+
       Gibberish.worklet.port.postMessage({
         address:'add',
-        properties:serialize(Clock),
+        properties:serialize( Clock ),
+        id:this.id,
         post: 'store'    
       })
       
@@ -3864,6 +3866,7 @@ const Clock = {
             Gibberish.worklet.port.postMessage({
               address:'set',
               object:this.id,
+              name:'bpm',
               value:bpm 
             }) 
           }
@@ -9697,7 +9700,7 @@ module.exports = function( Gibberish ) {
 
 const proxy = __proxy( Gibberish )
 
-let Sequencer = props => {
+const Sequencer = props => {
   let __seq
   const seq = {
     __isRunning:false,
@@ -9729,7 +9732,6 @@ let Sequencer = props => {
 
     start( delay = 0 ) {
       seq.__isRunning = true
-      console.log( 'starting sequencer!', Gibberish.mode )
       Gibberish.scheduler.add( delay, seq.tick, seq.priority )
       return __seq
     },
@@ -9747,7 +9749,7 @@ let Sequencer = props => {
   Object.assign( seq, properties ) 
   seq.__properties__ = properties
 
-  console.log( 'sequencer:', Gibberish.mode, seq.values, seq.timings )
+  //console.log( 'sequencer:', Gibberish.mode, seq.values, seq.timings )
   __seq =  proxy( ['Sequencer'], properties, seq )
 
   return __seq
@@ -10273,7 +10275,7 @@ const __proxy = function( __name, values, obj ) {
               const __args = args.map( __value => replaceObj( __value, true ) )
               //if( prop === 'connect' ) console.log( 'proxy connect:', __args )
 
-              console.log( 'args:', prop,  __args )
+              //console.log( 'args:', prop,  __args )
               Gibberish.worklet.port.postMessage({ 
                 address:'method', 
                 object:obj.id,

@@ -21,9 +21,11 @@ const Clock = {
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
+
       Gibberish.worklet.port.postMessage({
         address:'add',
-        properties:serialize(Clock),
+        properties:serialize( Clock ),
+        id:this.id,
         post: 'store'    
       })
       
@@ -36,6 +38,7 @@ const Clock = {
             Gibberish.worklet.port.postMessage({
               address:'set',
               object:this.id,
+              name:'bpm',
               value:bpm 
             }) 
           }
