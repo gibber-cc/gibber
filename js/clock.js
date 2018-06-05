@@ -1,17 +1,49 @@
 const Gibberish = require( 'gibberish-dsp' )
+const serialize = require( 'serialize-javascript' )
 
 const Clock = {
-  bpm:120,
   __beatCount:0,
+  id:null,
+  nogibberish:true,
+  bpm:120,
 
-  init() {
+  store:function() { 
+    Gibberish.Clock = this
+    this.init()
+  },
+
+  init:function() {
     const clockFunc = ()=> {
       Gibberish.processor.port.postMessage({
         address:'clock'
       })
     }
 
-    this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ Clock.time( 1/4 ) ] ).start()
+    if( Gibberish.mode === 'worklet' ) {
+      this.id = Gibberish.utilities.getUID()
+      Gibberish.worklet.port.postMessage({
+        address:'add',
+        properties:serialize(Clock),
+        post: 'store'    
+      })
+      
+      let bpm = 120
+      Object.defineProperty( this, 'bpm', {
+        get() { return bpm },
+        set(v){ 
+          bpm = v
+          if( Gibberish.mode === 'worklet' ) {
+            Gibberish.worklet.port.postMessage({
+              address:'set',
+              object:this.id,
+              value:bpm 
+            }) 
+          }
+        }
+      })
+    }
+
+    this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ this.time( 1/4 ) ] ).start()
 
     Gibberish.utilities.workletHandlers.clock = () => {
       this.__beatCount += 1
@@ -26,7 +58,7 @@ const Clock = {
 
   // time accepts an input value and converts it into samples. the input value
   // may be measured in milliseconds, beats or samples.
-  time( inputTime=0 ) {
+  time: function( inputTime = 0 ) {
     let outputTime = inputTime
 
     // if input is an annotated time value such as what is returned
@@ -36,37 +68,37 @@ const Clock = {
         if( inputTime.type === 'samples' ) {
           outputTime = inputTime.value
         }else if( inputTime.type === 'ms' ) {
-          outputTime = Clock.mstos( inputTime.value ) 
+          outputTime = this.mstos( inputTime.value ) 
         }
       } 
     }else{
-      outputTime = Clock.btos( inputTime * 4 )
+      outputTime = this.btos( inputTime * 4 )
     }
     
     return outputTime
   },
 
-  mstos( ms ) {
+  mstos: function( ms ) {
     return ( ms / 1000 ) * Gibberish.ctx.sampleRate
   },
 
   // convert beats to samples
-  btos( beats ) {
+  btos: function( beats ) {
     const samplesPerBeat = Gibberish.ctx.sampleRate / (this.bpm / 60 )
     return samplesPerBeat * beats 
   },
 
   // convert beats to milliseconds
-  btoms( beats ) {
+  btoms: function( beats ) {
     const samplesPerMs = Gibberish.ctx.sampleRate / 1000
     return beats * samplesPerMs
   },
 
-  ms( value ) {
+  ms: function( value ) {
     return { type:'ms', value }
   },
 
-  samples( value ) {
+  samples: function( value ) {
     return { type:'samples', value }
   }
 }

@@ -15,8 +15,8 @@ module.exports = function( Audio ) {
     }else{
       values = Audio.Pattern( __values )
     }
-    //Array.isArray( __values ) ? __values : [ __values ]
-    // const timingsPreProcessing = Array.isArray( __timings ) ? __timings : [ __timings ]
+    
+    //const timingsPreProcessing = Array.isArray( __timings ) ? __timings : [ __timings ]
     let timings
     if( Array.isArray( __timings ) ) {
       timings  = Audio.Pattern( ...__timings )
@@ -24,10 +24,10 @@ module.exports = function( Audio ) {
       timings = Audio.Pattern( __timings )
     }
 
-    timings.filters.push( args => {
-      args[ 0 ] = Gibber.Clock.time( args[0] )
+    timings.addFilter( function( args ) {
+      args[ 0 ] = Gibberish.Clock.time( args[0] )
       return args
-    })
+    } )
 
     // console.log( 'timings pattern:', timings )
     // XXX this needs to dynamically lookup the current bpm everytime a timing is accessed...

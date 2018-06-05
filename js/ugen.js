@@ -60,7 +60,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
           let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
           
-          s.start( Audio.Clock.time( delay ) )
+          s.start() // Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = s 
 
           // return object for method chaining
