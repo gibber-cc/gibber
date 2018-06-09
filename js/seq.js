@@ -27,11 +27,14 @@ module.exports = function( Audio ) {
     timings.addFilter( function( args ) {
       args[ 0 ] = Gibberish.Clock.time( args[0] )
       return args
-    } )
+    })
 
-    // console.log( 'timings pattern:', timings )
-    // XXX this needs to dynamically lookup the current bpm everytime a timing is accessed...
-    // const timings = timingsPreProcessing.map( Audio.Clock.time )
+    if( key === 'note' ) {
+      values.addFilter( function( args ) {
+        args[0] = 110
+        return args
+      })
+    }
 
     return Gibberish.Sequencer({ values, timings, target, key })
   }

@@ -7,12 +7,13 @@ const Ensemble    = require( './ensemble.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
+  Theory: require( './theory.js' ),
+
   initialized:false,
   instruments:{},
   oscillators:{},
   effects:{},
   exportTarget:null,
-
 
   export( obj ) {
     if( Audio.initialized ){ 
@@ -36,6 +37,7 @@ const Audio = {
         Audio.node = processorNode
         Audio.createUgens()
         Audio.Clock.init()
+        Audio.Theory.init()
         Audio.Master = Gibberish.out
 
         if( Audio.exportTarget !== null ) Audio.export( Audio.exportTarget )
