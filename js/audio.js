@@ -38,7 +38,7 @@ const Audio = {
         Audio.node = processorNode
         Audio.createUgens()
         Audio.Clock.init()
-        Audio.Theory.init()
+        Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
 
         if( Audio.exportTarget !== null ) Audio.export( Audio.exportTarget )
@@ -74,7 +74,25 @@ const Audio = {
 
     const drums = require( './drums.js' )( this )
     Object.assign( this, drums )
-  }  
+  },
+
+  addSequencing( obj, methodName ) {
+    obj[ methodName ].sequencers = []
+
+    obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
+      let prevSeq = obj[ methodName ].sequencers[ number ] 
+      if( prevSeq !== undefined ) prevSeq.stop()
+
+      let s = Audio.Seq({ values, timings, target:obj, key:methodName })
+
+      s.start() // Audio.Clock.time( delay ) )
+      obj[ methodName ].sequencers[ number ] = s 
+
+      // return object for method chaining
+      return obj
+    }
+  }
+  
 }
 
 module.exports = Audio

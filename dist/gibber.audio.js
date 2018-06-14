@@ -3758,7 +3758,7 @@ const Audio = {
         Audio.node = processorNode
         Audio.createUgens()
         Audio.Clock.init()
-        Audio.Theory.init()
+        Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
 
         if( Audio.exportTarget !== null ) Audio.export( Audio.exportTarget )
@@ -3794,7 +3794,25 @@ const Audio = {
 
     const drums = require( './drums.js' )( this )
     Object.assign( this, drums )
-  }  
+  },
+
+  addSequencing( obj, methodName ) {
+    obj[ methodName ].sequencers = []
+
+    obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
+      let prevSeq = obj[ methodName ].sequencers[ number ] 
+      if( prevSeq !== undefined ) prevSeq.stop()
+
+      let s = Audio.Seq({ values, timings, target:obj, key:methodName })
+
+      s.start() // Audio.Clock.time( delay ) )
+      obj[ methodName ].sequencers[ number ] = s 
+
+      // return object for method chaining
+      return obj
+    }
+  }
+  
 }
 
 module.exports = Audio
@@ -4991,6 +5009,8 @@ const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 const Tune      = require( './external/tune-api-only.js' )
 
+let Gibber = null
+
 const Theory = {
   // needed to force library to be serialized for transport to 
   // worklet processor
@@ -5029,7 +5049,9 @@ const Theory = {
     this.Tune.loadScale('et')
   },
 
-  init:function() {
+  init:function( __Gibber ) {
+    Gibber = __Gibber
+
     this.Tune = new this.__Tune()
     this.Tune.TuningList = this.__tunings
 
@@ -5051,6 +5073,9 @@ const Theory = {
         id:this.id,
         post:'store'
       })
+
+      Gibber.addSequencing( this, 'root' )
+      Gibber.addSequencing( this, 'tuning' )
     }
   },
 

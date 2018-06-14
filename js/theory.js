@@ -2,6 +2,8 @@ const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 const Tune      = require( './external/tune-api-only.js' )
 
+let Gibber = null
+
 const Theory = {
   // needed to force library to be serialized for transport to 
   // worklet processor
@@ -40,7 +42,9 @@ const Theory = {
     this.Tune.loadScale('et')
   },
 
-  init:function() {
+  init:function( __Gibber ) {
+    Gibber = __Gibber
+
     this.Tune = new this.__Tune()
     this.Tune.TuningList = this.__tunings
 
@@ -62,6 +66,9 @@ const Theory = {
         id:this.id,
         post:'store'
       })
+
+      Gibber.addSequencing( this, 'root' )
+      Gibber.addSequencing( this, 'tuning' )
     }
   },
 
