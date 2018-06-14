@@ -56,13 +56,13 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
         if( methodName !== 'chord' && methodName !== 'note' ) {
           obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
         }else{
-          obj[ '__' + methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
+          obj[ '____' + methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
           obj[ methodName ] = function( note ) {
             // this should only be for direct calls from the IDE
             let __note
             if( Gibberish.mode === 'worklet' ) {
-              __note = Theory.note( note ) 
-              obj[ '__' + methodName ]( __note ) 
+              //__note = Theory.note( note ) 
+              obj[ '____' + methodName ]( note ) 
             }
           }
 
@@ -72,7 +72,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
             address:'monkeyPatch',
             id:__wrappedObject.id,
             key:'note',
-            function:'function( note ){ const __note = Gibberish.Theory.note( note ); this.__note( __note ) }'
+            function:'function( note ){ const __note = Gibberish.Theory.note( note ); /*console.log( this );*/ this.___note( __note ) }'
           })
         }
 
