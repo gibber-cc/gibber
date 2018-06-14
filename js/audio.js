@@ -21,6 +21,7 @@ const Audio = {
       obj.Ensemble = this.Ensemble
       obj.Drums = this.Drums
       obj.EDrums = this.EDrums
+      obj.Theory = this.Theory
     }else{
       Audio.exportTarget = obj
     } 

@@ -14,18 +14,30 @@ const Theory = {
   __mode: 'aeolian',
   __root:440,
   __tunings:{
-    
-    marion:{"frequencies":[261.6255653006,271.31540105247,279.06726965397,284.8811711051,293.02063313667,303.87324917877,305.22982618403,310.07474405997,325.57848126297,334.88072358477,341.85740532612,348.83408706747,366.27579142084,379.84156147346,390.69417751556,406.97310157871,418.60090448096,427.32175665765,434.10464168396,455.80987376816,465.11211608996,474.80195184183,488.36772189445,512.78610798918,523.2511306012],"description":"Marion's 7-limit Scale # 26"}
-
+    et: {
+      frequencies:[
+        261.62558,
+        277.182617,
+        293.664764,
+        311.126984,
+        329.627563,
+        349.228241,
+        369.994415,
+        391.995422,
+        415.304688,
+        440,
+        466.163757,
+        493.883301
+      ],
+      description:'equal tempered (edo)'
+    }
   },  
 
   store:function() { 
     Gibberish.Theory = this
 
     this.Tune.TuningList = this.__tunings
-    //this.init()
-    //this.Tune = new this.__Tune()
-    //this.Tune.TuningList = this.__tunings
+    this.Tune.loadScale('et')
   },
 
   init:function() {
@@ -34,7 +46,6 @@ const Theory = {
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
-      console.log( 'initializing theory...' )
 
       // can't send prototype methods of Tune over processor
       // so they need to be explicitly assigned
@@ -49,7 +60,7 @@ const Theory = {
         address:'add',
         properties:serialize( Theory ),
         id:this.id,
-        post:'store'    
+        post:'store'
       })
     }
   },
@@ -57,7 +68,16 @@ const Theory = {
   loadScale: function( name ) {
     if( Gibberish.mode === 'worklet' ) {
       // if the scale is already loaded...
-      if( this.__tunings[ name ] !== undefined ) return
+      if( this.__tunings[ name ] !== undefined ) {
+        this.Tune.loadScale( name )
+        Gibberish.worklet.port.postMessage({
+          address:'method',
+          object:this.id,
+          name:'loadScale',
+          args:[name]
+        })
+        return
+      }
 
       fetch( 'js/external/tune.json/' + name + '.js' )
         .then( data => data.json() )
@@ -78,6 +98,7 @@ const Theory = {
           })
 
           this.__tunings[ name ] = json
+          this.Tune.loadScale( name )
         })
     }else{
       this.Tune.loadScale( name )
@@ -85,7 +106,8 @@ const Theory = {
   },
 
   note: function( idx, octave=0 ) {
-    return this.Tune.note( idx, octave )
+    const note = this.Tune.note( idx, octave )
+    return note
   },
 
   mode: function( mode ) {
@@ -110,12 +132,15 @@ const Theory = {
     if( root !== undefined ) {
       this.__root = root
       if( Gibberish.mode === 'worklet' ) {
+        this.Tune.tonicize( this.__root )
         Gibberish.worklet.port.postMessage({
-          address:'set',
+          address:'method',
           object:this.id,
           name:'root',
-          value:this.__root
+          args:[this.__root]
         }) 
+      }else{
+        this.Tune.tonicize( root )
       }
     }else{
       return this.__root
@@ -126,15 +151,8 @@ const Theory = {
 
   tuning: function( tuning ) {
     if( tuning !== undefined ) {
-      this.__tuing = tuning
-      if( Gibberish.mode === 'worklet' ) {
-        Gibberish.worklet.port.postMessage({
-          address:'set',
-          object:this.id,
-          name:'tuning',
-          value:this.__tuning
-        }) 
-      }
+      this.__tuning = tuning
+      this.loadScale( this.__tuning )
     }else{
       return this.__tuning
     }

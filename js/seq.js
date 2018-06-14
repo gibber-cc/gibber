@@ -16,7 +16,6 @@ module.exports = function( Audio ) {
       values = Audio.Pattern( __values )
     }
     
-    //const timingsPreProcessing = Array.isArray( __timings ) ? __timings : [ __timings ]
     let timings
     if( Array.isArray( __timings ) ) {
       timings  = Audio.Pattern( ...__timings )
@@ -29,12 +28,14 @@ module.exports = function( Audio ) {
       return args
     })
 
-    if( key === 'note' ) {
-      values.addFilter( function( args ) {
-        args[0] = 110
-        return args
-      })
-    }
+    //if( key === 'note' ) {
+    //  values.addFilter( function( args ) {
+    //    args[0] = Gibberish.Theory.Tune.note( args[0] )
+    //    return args
+    //  })
+    //}else if( key === 'chord' ) {
+      
+    //}
 
     return Gibberish.Sequencer({ values, timings, target, key })
   }

@@ -1,5 +1,7 @@
 const __Seq = require( './seq' )
 const Presets = require( './presets.js' )
+const Theory  = require( './theory.js' )
+const Gibberish = require( 'gibberish-dsp' )
 
 const timeProps = [ 'attack', 'decay', 'sustain', 'release', 'time' ]
 
@@ -51,7 +53,29 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
-        obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
+        if( methodName !== 'chord' && methodName !== 'note' ) {
+          obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
+        }else{
+          obj[ '__' + methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
+          obj[ methodName ] = function( note ) {
+            // this should only be for direct calls from the IDE
+            let __note
+            if( Gibberish.mode === 'worklet' ) {
+              __note = Theory.note( note ) 
+              obj[ '__' + methodName ]( __note ) 
+            }
+          }
+
+          // we have to monkey patch the note method on the Gibberish objects running
+          // inside the AudioWorkletProcessor to lookup the index in the current scale.
+          Gibberish.worklet.port.postMessage({
+            address:'monkeyPatch',
+            id:__wrappedObject.id,
+            key:'note',
+            function:'function( note ){ const __note = Gibberish.Theory.note( note ); this.__note( __note ) }'
+          })
+        }
+
         obj[ methodName ].sequencers = []
 
         obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
@@ -122,7 +146,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     }
 
     // flag will only be present worklet-side, not in the processor.
-    /*const __flag = true
+    /*
+    const __flag = true
     if( obj.__wrapped__.onload !== undefined ) {
       const store = obj.__wrapped__.onload
       obj.__wrapped__.onload = function() {
@@ -130,7 +155,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
           //store.call( obj )
         }
       } 
-    }*/
+    }
+    */
 
     // only connect if shouldNotConneect does not equal true (for LFOs and other modulation sources)
     if( obj.__wrapped__.type === 'instrument' || obj.__wrapped__.type === 'oscillator' ) {

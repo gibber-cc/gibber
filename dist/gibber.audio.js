@@ -3741,6 +3741,7 @@ const Audio = {
       obj.Ensemble = this.Ensemble
       obj.Drums = this.Drums
       obj.EDrums = this.EDrums
+      obj.Theory = this.Theory
     }else{
       Audio.exportTarget = obj
     } 
@@ -4079,7 +4080,7 @@ const Tune = function(){
 	}
 
 	// ET major, for reference
-	this.etmajor = [ 261.62558,
+	this.etmajor= [ 261.62558,
 		293.664764,
 		329.627563,
 		349.228241,
@@ -4089,9 +4090,10 @@ const Tune = function(){
 		523.25116
 	]
 
+  
   this.TuningList = null
 	// Root frequency.
-	this.tonic = 440     // * Math.pow(2,(60-69)/12);
+	this.tonic = 440
 
 	console.log("{{{{ Tune.js v0.1 Loaded }}}}");
 
@@ -4118,6 +4120,7 @@ Tune.prototype.note = function(input,octave){
 	} else {
 		newvalue = this.frequency(input,octave)
 	}
+
 	
 	return newvalue;
 
@@ -4210,49 +4213,48 @@ Tune.prototype.loadScale = function(name){
 	}
 
 	/* visualize in console */
-	console.log(" ");
-	console.log("LOADED "+name);
-	console.log(this.TuningList[name].description);
-	console.log(this.scale);
-	var vis = [];
-	for (var i=0;i<100;i++) {
-		vis[i] = " ";
-	}
-	for (var i=0;i<this.scale.length;i++) {
-		var spot = Math.round(this.scale[i] * 100 - 100);
-		if (i<10) {
-			vis.splice(spot,1,i+1);
-		} else {
-			vis.splice(spot,5,i+1);
-		}
-	}
-	var textvis = "";
-	for (var i=0;i<vis.length;i++) {
-		textvis += vis[i];
-	}
-	console.log(name)
-	console.log(textvis)
-	// ET scale vis
-	var vis = [];
-	for (var i=0;i<100;i++) {
-		vis[i] = " ";
-	}
-	for (var i=0;i<this.etmajor.length;i++) {
-		var spot = Math.round(this.etmajor[i]/this.etmajor[0] * 100 - 100);
-		if (i<10) {
-			vis.splice(spot,1,i+1);
-		} else {
-			vis.splice(spot,5,i+1);
-		}
+	//console.log(" ");
+	//console.log("LOADED "+name);
+	//console.log(this.TuningList[name].description);
+	//console.log(this.scale);
+	//var vis = [];
+	//for (var i=0;i<100;i++) {
+	//  vis[i] = " ";
+	//}
+	//for (var i=0;i<this.scale.length;i++) {
+	//  var spot = Math.round(this.scale[i] * 100 - 100);
+	//  if (i<10) {
+	//    vis.splice(spot,1,i+1);
+	//  } else {
+	//    vis.splice(spot,5,i+1);
+	//  }
+	//}
+	//var textvis = "";
+	//for (var i=0;i<vis.length;i++) {
+	//  textvis += vis[i];
+	//}
+	//console.log(name)
+	//console.log(textvis)
+	//// ET scale vis
+	//var vis = [];
+	//for (var i=0;i<100;i++) {
+	//  vis[i] = " ";
+	//}
+	//for (var i=0;i<this.etmajor.length;i++) {
+	//  var spot = Math.round(this.etmajor[i]/this.etmajor[0] * 100 - 100);
+	//  if (i<10) {
+	//    vis.splice(spot,1,i+1);
+	//  } else {
+	//    vis.splice(spot,5,i+1);
+	//  }
 		
-	}
-	var textvis = "";
-	for (var i=0;i<vis.length;i++) {
-		textvis += vis[i];
-	}
-	console.log(textvis)
-	console.log("equal-tempered major (reference)")
-
+	//}
+	//var textvis = "";
+	//for (var i=0;i<vis.length;i++) {
+	//  textvis += vis[i];
+	//}
+	//console.log(textvis)
+	//console.log("equal-tempered major (reference)")
 }
 
 /* Search the names of tunings
@@ -4288,6 +4290,7 @@ Tune.prototype.root = function(newmidi, newfreq) {
 }
 
 module.exports = Tune
+
 },{}],81:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
@@ -4426,9 +4429,6 @@ const patternWrapper = function( Gibber ) {
     _onchange() {},
 
     addFilter( filter ) {
-      if( Gibberish.mode === 'processor' ) {
-        console.log( 'adding a filter!', filter )
-      }
       this.filters.push( filter )
     }
   })
@@ -4797,7 +4797,7 @@ const patternWrapper = function( Gibber ) {
     // using the spread operator to the constructor. 
     const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters }, fnc )  
 
-    if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
+    //if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
 
     return out
   }
@@ -4958,7 +4958,6 @@ module.exports = function( Audio ) {
       values = Audio.Pattern( __values )
     }
     
-    //const timingsPreProcessing = Array.isArray( __timings ) ? __timings : [ __timings ]
     let timings
     if( Array.isArray( __timings ) ) {
       timings  = Audio.Pattern( ...__timings )
@@ -4971,12 +4970,14 @@ module.exports = function( Audio ) {
       return args
     })
 
-    if( key === 'note' ) {
-      values.addFilter( function( args ) {
-        args[0] = 110
-        return args
-      })
-    }
+    //if( key === 'note' ) {
+    //  values.addFilter( function( args ) {
+    //    args[0] = Gibberish.Theory.Tune.note( args[0] )
+    //    return args
+    //  })
+    //}else if( key === 'chord' ) {
+      
+    //}
 
     return Gibberish.Sequencer({ values, timings, target, key })
   }
@@ -5002,18 +5003,30 @@ const Theory = {
   __mode: 'aeolian',
   __root:440,
   __tunings:{
-    
-    marion:{"frequencies":[261.6255653006,271.31540105247,279.06726965397,284.8811711051,293.02063313667,303.87324917877,305.22982618403,310.07474405997,325.57848126297,334.88072358477,341.85740532612,348.83408706747,366.27579142084,379.84156147346,390.69417751556,406.97310157871,418.60090448096,427.32175665765,434.10464168396,455.80987376816,465.11211608996,474.80195184183,488.36772189445,512.78610798918,523.2511306012],"description":"Marion's 7-limit Scale # 26"}
-
+    et: {
+      frequencies:[
+        261.62558,
+        277.182617,
+        293.664764,
+        311.126984,
+        329.627563,
+        349.228241,
+        369.994415,
+        391.995422,
+        415.304688,
+        440,
+        466.163757,
+        493.883301
+      ],
+      description:'equal tempered (edo)'
+    }
   },  
 
   store:function() { 
     Gibberish.Theory = this
 
     this.Tune.TuningList = this.__tunings
-    //this.init()
-    //this.Tune = new this.__Tune()
-    //this.Tune.TuningList = this.__tunings
+    this.Tune.loadScale('et')
   },
 
   init:function() {
@@ -5022,7 +5035,6 @@ const Theory = {
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
-      console.log( 'initializing theory...' )
 
       // can't send prototype methods of Tune over processor
       // so they need to be explicitly assigned
@@ -5037,7 +5049,7 @@ const Theory = {
         address:'add',
         properties:serialize( Theory ),
         id:this.id,
-        post:'store'    
+        post:'store'
       })
     }
   },
@@ -5045,7 +5057,16 @@ const Theory = {
   loadScale: function( name ) {
     if( Gibberish.mode === 'worklet' ) {
       // if the scale is already loaded...
-      if( this.__tunings[ name ] !== undefined ) return
+      if( this.__tunings[ name ] !== undefined ) {
+        this.Tune.loadScale( name )
+        Gibberish.worklet.port.postMessage({
+          address:'method',
+          object:this.id,
+          name:'loadScale',
+          args:[name]
+        })
+        return
+      }
 
       fetch( 'js/external/tune.json/' + name + '.js' )
         .then( data => data.json() )
@@ -5066,15 +5087,16 @@ const Theory = {
           })
 
           this.__tunings[ name ] = json
+          this.Tune.loadScale( name )
         })
     }else{
-      console.log( 'tune?', this, Gibberish.mode )
       this.Tune.loadScale( name )
     }
   },
 
   note: function( idx, octave=0 ) {
-    return this.Tune.note( idx, octave )
+    const note = this.Tune.note( idx, octave )
+    return note
   },
 
   mode: function( mode ) {
@@ -5099,12 +5121,15 @@ const Theory = {
     if( root !== undefined ) {
       this.__root = root
       if( Gibberish.mode === 'worklet' ) {
+        this.Tune.tonicize( this.__root )
         Gibberish.worklet.port.postMessage({
-          address:'set',
+          address:'method',
           object:this.id,
           name:'root',
-          value:this.__root
+          args:[this.__root]
         }) 
+      }else{
+        this.Tune.tonicize( root )
       }
     }else{
       return this.__root
@@ -5115,15 +5140,8 @@ const Theory = {
 
   tuning: function( tuning ) {
     if( tuning !== undefined ) {
-      this.__tuing = tuning
-      if( Gibberish.mode === 'worklet' ) {
-        Gibberish.worklet.port.postMessage({
-          address:'set',
-          object:this.id,
-          name:'tuning',
-          value:this.__tuning
-        }) 
-      }
+      this.__tuning = tuning
+      this.loadScale( this.__tuning )
     }else{
       return this.__tuning
     }
@@ -5137,6 +5155,8 @@ module.exports = Theory
 },{"./external/tune-api-only.js":80,"gibberish-dsp":120,"serialize-javascript":88}],87:[function(require,module,exports){
 const __Seq = require( './seq' )
 const Presets = require( './presets.js' )
+const Theory  = require( './theory.js' )
+const Gibberish = require( 'gibberish-dsp' )
 
 const timeProps = [ 'attack', 'decay', 'sustain', 'release', 'time' ]
 
@@ -5188,7 +5208,29 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
-        obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
+        if( methodName !== 'chord' && methodName !== 'note' ) {
+          obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
+        }else{
+          obj[ '__' + methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
+          obj[ methodName ] = function( note ) {
+            // this should only be for direct calls from the IDE
+            let __note
+            if( Gibberish.mode === 'worklet' ) {
+              __note = Theory.note( note ) 
+              obj[ '__' + methodName ]( __note ) 
+            }
+          }
+
+          // we have to monkey patch the note method on the Gibberish objects running
+          // inside the AudioWorkletProcessor to lookup the index in the current scale.
+          Gibberish.worklet.port.postMessage({
+            address:'monkeyPatch',
+            id:__wrappedObject.id,
+            key:'note',
+            function:'function( note ){ const __note = Gibberish.Theory.note( note ); this.__note( __note ) }'
+          })
+        }
+
         obj[ methodName ].sequencers = []
 
         obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
@@ -5259,7 +5301,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     }
 
     // flag will only be present worklet-side, not in the processor.
-    /*const __flag = true
+    /*
+    const __flag = true
     if( obj.__wrapped__.onload !== undefined ) {
       const store = obj.__wrapped__.onload
       obj.__wrapped__.onload = function() {
@@ -5267,7 +5310,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
           //store.call( obj )
         }
       } 
-    }*/
+    }
+    */
 
     // only connect if shouldNotConneect does not equal true (for LFOs and other modulation sources)
     if( obj.__wrapped__.type === 'instrument' || obj.__wrapped__.type === 'oscillator' ) {
@@ -5282,7 +5326,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
 module.exports = Ugen
 
-},{"./presets.js":83,"./seq":85}],88:[function(require,module,exports){
+},{"./presets.js":83,"./seq":85,"./theory.js":86,"gibberish-dsp":120}],88:[function(require,module,exports){
 /*
 Copyright (c) 2014, Yahoo! Inc. All rights reserved.
 Copyrights licensed under the New BSD License.
@@ -7986,7 +8030,7 @@ let Gibberish = {
       }else if( obj.isFunc === true ) {
         let func =  eval( '(' + obj.value + ')' )
 
-        console.log( 'replacing function:', func )
+        //console.log( 'replacing function:', func )
 
         return func
       }

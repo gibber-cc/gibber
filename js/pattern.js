@@ -60,9 +60,6 @@ const patternWrapper = function( Gibber ) {
     _onchange() {},
 
     addFilter( filter ) {
-      if( Gibberish.mode === 'processor' ) {
-        console.log( 'adding a filter!', filter )
-      }
       this.filters.push( filter )
     }
   })
@@ -431,7 +428,7 @@ const patternWrapper = function( Gibber ) {
     // using the spread operator to the constructor. 
     const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters }, fnc )  
 
-    if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
+    //if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
 
     return out
   }
