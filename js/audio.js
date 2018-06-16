@@ -4,6 +4,7 @@ const Instruments = require( './instruments.js' )
 const Effects     = require( './effects.js' )
 const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
+const Utility     = require( './utility.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -18,6 +19,9 @@ const Audio = {
   export( obj ) {
     if( Audio.initialized ){ 
       Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses )
+      
+      Utility.export( obj )
+
       obj.Ensemble = this.Ensemble
       obj.Drums = this.Drums
       obj.EDrums = this.EDrums

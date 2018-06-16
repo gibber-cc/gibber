@@ -15,11 +15,13 @@ module.exports = {
   },
 
   shimmer: {
-    attack:10, decay:44100,
+    attack:1/128, decay:1,
     waveform:'square', 
+    filterType:2,
+    maxVoices:3,
     gain:.025,
     presetInit: function( audio ) {
-      this.fx.push( audio.effects.Chorus({ slowGain:8, fastGain:1 }) )
+      this.fx.push( audio.effects.Chorus({ slowGain:3, fastGain:.5 }) )
     }
   }
 

@@ -83,6 +83,7 @@ const Theory = {
 
       Gibber.addSequencing( this, 'root' )
       Gibber.addSequencing( this, 'tuning' )
+      Gibber.addSequencing( this, 'mode' )
 
       this.tuning('et')
     }
