@@ -13,7 +13,7 @@ const Theory = {
   id:null,
   nogibberish:true,
   __tuning:'et',
-  __mode: null,
+  __mode: 'aeolian',
   __root:440,
   __tunings:{
     et: {
