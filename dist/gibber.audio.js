@@ -5019,8 +5019,8 @@ const Theory = {
   Tune:null,
   id:null,
   nogibberish:true,
-  __tuning:'just',
-  __mode: 'aeolian',
+  __tuning:'et',
+  __mode: null,
   __root:440,
   __tunings:{
     et: {
@@ -5036,17 +5036,31 @@ const Theory = {
         415.304688,
         440,
         466.163757,
-        493.883301
+        493.883301,
+        523.251083727363
       ],
       description:'equal tempered (edo)'
     }
   },  
 
+  modes: {
+    ionian:     [0,2,4,5,7,9,11],
+    dorian:     [0,2,3,5,7,9,10],
+    phrygian:   [0,1,3,5,7,8,10],
+    lydian:     [0,2,4,6,7,9,11],
+    mixolydian: [0,2,4,5,7,9,10],
+    aeolian:    [0,2,3,5,7,8,10],
+    locrian:    [0,1,3,5,6,8,10],
+    melodicminor:[0,2,3,5,7,8,11],
+    wholeHalf:  [0,2,3,5,6,8,9,11],
+    halfWhole:  [0,1,3,4,6,7,9,10],
+    chromatic:  [0,1,2,3,4,5,6,7,8,9,10,11],
+  },
+
   store:function() { 
     Gibberish.Theory = this
 
     this.Tune.TuningList = this.__tunings
-    this.Tune.loadScale('et')
   },
 
   init:function( __Gibber ) {
@@ -5076,6 +5090,8 @@ const Theory = {
 
       Gibber.addSequencing( this, 'root' )
       Gibber.addSequencing( this, 'tuning' )
+
+      this.tuning('et')
     }
   },
 
@@ -5119,8 +5135,21 @@ const Theory = {
     }
   },
 
-  note: function( idx, octave=0 ) {
-    const note = this.Tune.note( idx, octave )
+  note: function( idx ) {
+    let finalIdx, octave = 0, mode = null
+
+    if( this.mode() !== null ) {
+      mode = this.modes[ this.mode() ]
+      octave = Math.floor( idx / mode.length )
+      finalIdx = mode[ idx % mode.length ]
+    }else{
+      finalIdx = idx
+    }
+
+    const note = this.Tune.note( finalIdx, octave )
+
+    //console.log( idx, finalIdx, mode, note, octave )
+
     return note
   },
 
@@ -5129,14 +5158,14 @@ const Theory = {
       this.__mode = mode
       if( Gibberish.mode === 'worklet' ) {
         Gibberish.worklet.port.postMessage({
-          address:'set',
+          address:'method',
           object:this.id,
           name:'mode',
-          value:this.__mode
+          args:[this.__mode]
         }) 
       }
     }else{
-      return mode
+      return this.__mode
     }
 
     return this
@@ -5183,7 +5212,17 @@ const Presets = require( './presets.js' )
 const Theory  = require( './theory.js' )
 const Gibberish = require( 'gibberish-dsp' )
 
-const timeProps = [ 'attack', 'decay', 'sustain', 'release', 'time' ]
+// what properties should be automatically (automagickally?)
+// filtered through Audio.Clock.time()?
+const __timeProps = {
+  Synth:[ 'attack', 'decay', 'sustain', 'release' ],
+  PolySynth:[ 'attack', 'decay', 'sustain', 'release' ],
+  FM:[ 'attack', 'decay', 'sustain', 'release' ],
+  PolyFM:[ 'attack', 'decay', 'sustain', 'release' ],
+  Mono:[ 'attack', 'decay', 'sustain', 'release' ],
+  PolyMono:[ 'attack', 'decay', 'sustain', 'release' ],
+  Delay:[ 'time' ], 
+}
 
 const Ugen = function( gibberishConstructor, description, Audio ) {
 
@@ -5191,6 +5230,13 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
+    const timeProps = __timeProps[ description.name ] === undefined ? [] : __timeProps[ description.name ]
+
+    for( let key in properties ) {
+      if( timeProps.indexOf( key ) > -1 ) {
+        properties[ key ] = Audio.Clock.time( properties[ key ] )
+      }
+    }
 
     const __wrappedObject = gibberishConstructor( properties )
     const obj = { __wrapped__:__wrappedObject }
@@ -5242,7 +5288,6 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
             let __note
             if( Gibberish.mode === 'worklet' ) {
               //__note = Theory.note( note ) 
-              console.log( 'note:', __note )
               obj[ '____' + methodName ]( note ) 
             }
           }
@@ -5265,7 +5310,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
           let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
           
-          s.start() // Audio.Clock.time( delay ) )
+          s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = s 
 
           // return object for method chaining
@@ -8277,12 +8322,12 @@ module.exports = function( Gibberish ) {
 }
 
 },{"./instrument.js":125,"genish.js":37}],123:[function(require,module,exports){
-let g = require( 'genish.js' ),
-    instrument = require( './instrument.js' )
+const g = require( 'genish.js' ),
+      instrument = require( './instrument.js' )
 
 module.exports = function( Gibberish ) {
 
-  let FM = inputProps => {
+  const FM = inputProps => {
     let syn = Object.create( instrument )
 
     let frequency = g.in( 'frequency' ),
@@ -8382,7 +8427,8 @@ module.exports = function( Gibberish ) {
     isLowPass:1
   }
 
-  let PolyFM = Gibberish.PolyTemplate( FM, ['glide','frequency','attack','decay','pulsewidth','pan','gain','cmRatio','index', 'saturation', 'filterMult', 'Q', 'cutoff', 'antialias', 'filterType', 'carrierWaveform', 'modulatorWaveform','filterMode', 'feedback', 'useADSR', 'sustain', 'release', 'sustainLevel' ] ) 
+  const PolyFM = Gibberish.PolyTemplate( FM, ['glide','frequency','attack','decay','pulsewidth','pan','gain','cmRatio','index', 'saturation', 'filterMult', 'Q', 'cutoff', 'antialias', 'filterType', 'carrierWaveform', 'modulatorWaveform','filterMode', 'feedback', 'useADSR', 'sustain', 'release', 'sustainLevel' ] ) 
+  PolyFM.defaults = FM.defaults
 
   return [ FM, PolyFM ]
 
@@ -8571,7 +8617,8 @@ module.exports = function( Gibberish ) {
     return envCheck
   }
 
-  let PolyKPS = Gibberish.PolyTemplate( KPS, ['frequency','decay','damping','pan','gain', 'glide'], envCheckFactory ) 
+  const PolyKPS = Gibberish.PolyTemplate( KPS, ['frequency','decay','damping','pan','gain', 'glide'], envCheckFactory ) 
+  PolyKPS.defaults = KPS.defaults
 
   return [ KPS, PolyKPS ]
 
@@ -8729,6 +8776,7 @@ module.exports = function( Gibberish ) {
     ['frequency','attack','decay','cutoff','Q',
      'detune2','detune3','pulsewidth','pan','gain', 'glide', 'saturation', 'filterMult',  'antialias', 'filterType', 'waveform', 'filterMode']
   ) 
+  PolyMono.defaults = Synth.defaults
 
   return [ Synth, PolyMono ]
 }
@@ -8793,7 +8841,9 @@ module.exports = {
       envCheck = _poly.envCheck( voice, _poly )
     }
 
-    Gibberish.blockCallbacks.push( envCheck )
+    // XXX uncomment this line to turn on dynamically connecting
+    // disconnecting individual voices from graph
+    // Gibberish.blockCallbacks.push( envCheck )
   },
 
   __getVoice__() {
@@ -9197,6 +9247,7 @@ module.exports = function( Gibberish ) {
 
   // do not include velocity, which shoudl always be per voice
   let PolySynth = Gibberish.PolyTemplate( Synth, ['frequency','attack','decay','pulsewidth','pan','gain','glide', 'saturation', 'filterMult', 'Q', 'cutoff', 'resonance', 'antialias', 'filterType', 'waveform', 'filterMode'] ) 
+  PolySynth.defaults = Synth.defaults
 
   return [ Synth, PolySynth ]
 

@@ -3,7 +3,17 @@ const Presets = require( './presets.js' )
 const Theory  = require( './theory.js' )
 const Gibberish = require( 'gibberish-dsp' )
 
-const timeProps = [ 'attack', 'decay', 'sustain', 'release', 'time' ]
+// what properties should be automatically (automagickally?)
+// filtered through Audio.Clock.time()?
+const __timeProps = {
+  Synth:[ 'attack', 'decay', 'sustain', 'release' ],
+  PolySynth:[ 'attack', 'decay', 'sustain', 'release' ],
+  FM:[ 'attack', 'decay', 'sustain', 'release' ],
+  PolyFM:[ 'attack', 'decay', 'sustain', 'release' ],
+  Mono:[ 'attack', 'decay', 'sustain', 'release' ],
+  PolyMono:[ 'attack', 'decay', 'sustain', 'release' ],
+  Delay:[ 'time' ], 
+}
 
 const Ugen = function( gibberishConstructor, description, Audio ) {
 
@@ -11,6 +21,13 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
+    const timeProps = __timeProps[ description.name ] === undefined ? [] : __timeProps[ description.name ]
+
+    for( let key in properties ) {
+      if( timeProps.indexOf( key ) > -1 ) {
+        properties[ key ] = Audio.Clock.time( properties[ key ] )
+      }
+    }
 
     const __wrappedObject = gibberishConstructor( properties )
     const obj = { __wrapped__:__wrappedObject }
@@ -84,7 +101,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
           let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
           
-          s.start() // Audio.Clock.time( delay ) )
+          s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = s 
 
           // return object for method chaining

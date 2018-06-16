@@ -12,8 +12,8 @@ const Theory = {
   Tune:null,
   id:null,
   nogibberish:true,
-  __tuning:'just',
-  __mode: 'aeolian',
+  __tuning:'et',
+  __mode: null,
   __root:440,
   __tunings:{
     et: {
@@ -29,17 +29,31 @@ const Theory = {
         415.304688,
         440,
         466.163757,
-        493.883301
+        493.883301,
+        523.251083727363
       ],
       description:'equal tempered (edo)'
     }
   },  
 
+  modes: {
+    ionian:     [0,2,4,5,7,9,11],
+    dorian:     [0,2,3,5,7,9,10],
+    phrygian:   [0,1,3,5,7,8,10],
+    lydian:     [0,2,4,6,7,9,11],
+    mixolydian: [0,2,4,5,7,9,10],
+    aeolian:    [0,2,3,5,7,8,10],
+    locrian:    [0,1,3,5,6,8,10],
+    melodicminor:[0,2,3,5,7,8,11],
+    wholeHalf:  [0,2,3,5,6,8,9,11],
+    halfWhole:  [0,1,3,4,6,7,9,10],
+    chromatic:  [0,1,2,3,4,5,6,7,8,9,10,11],
+  },
+
   store:function() { 
     Gibberish.Theory = this
 
     this.Tune.TuningList = this.__tunings
-    this.Tune.loadScale('et')
   },
 
   init:function( __Gibber ) {
@@ -69,6 +83,8 @@ const Theory = {
 
       Gibber.addSequencing( this, 'root' )
       Gibber.addSequencing( this, 'tuning' )
+
+      this.tuning('et')
     }
   },
 
@@ -112,8 +128,21 @@ const Theory = {
     }
   },
 
-  note: function( idx, octave=0 ) {
-    const note = this.Tune.note( idx, octave )
+  note: function( idx ) {
+    let finalIdx, octave = 0, mode = null
+
+    if( this.mode() !== null ) {
+      mode = this.modes[ this.mode() ]
+      octave = Math.floor( idx / mode.length )
+      finalIdx = mode[ idx % mode.length ]
+    }else{
+      finalIdx = idx
+    }
+
+    const note = this.Tune.note( finalIdx, octave )
+
+    //console.log( idx, finalIdx, mode, note, octave )
+
     return note
   },
 
@@ -122,14 +151,14 @@ const Theory = {
       this.__mode = mode
       if( Gibberish.mode === 'worklet' ) {
         Gibberish.worklet.port.postMessage({
-          address:'set',
+          address:'method',
           object:this.id,
           name:'mode',
-          value:this.__mode
+          args:[this.__mode]
         }) 
       }
     }else{
-      return mode
+      return this.__mode
     }
 
     return this
