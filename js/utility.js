@@ -32,20 +32,37 @@ const Utility = {
   },
 
   Rndf( _min = 0, _max = 1, quantity, canRepeat=true ) {
-    return function() {
-      let value, min, max
+    // have to code gen function to hard code min / max values inside, as closures
+    // or bound values won't be passed through the worklet port.XXX perhaps there should
+    // be a way to transfer a function and its upvalues through the worklet? OTOH,
+    // codegen works fine.
 
-      min = typeof _min === 'function' ? _min() : _min
-      max = typeof _max === 'function' ? _max() : _max
-  
-      if( quantity === undefined ) {
-        value = Utility.rndf( min, max )
-      }else{
-        value = Utility.rndf( min, max, quantity, canRepeat )
+    const fncString = `const min = ${_min}
+    const max = ${_max} 
+    const range = max - min
+    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
+
+    let out
+
+    if( ${quantity} > 1 ) { 
+      out = []
+      for( let i = 0; i < ${quantity}; i++ ) {
+        let num = min + Math.random() * range
+
+        if( canRepeat === false ) {
+          while( out.indexOf( num ) > -1 ) {
+            num = min + Math.random() * range
+          }
+        }
+        out[ i ] = num
       }
-
-      return value
+    }else{
+      out = min + Math.random() * range 
     }
+
+    return out;`
+    
+    return new Function( fncString )
   },
 
   rndi( min = 0, max = 1, number, canRepeat = true ) {
@@ -79,24 +96,38 @@ const Utility = {
     return out
   },
 
-  Rndi( _min = 0, _max = 1, quantity, canRepeat = true ) {
-    let range = _max - _min
-    if( typeof quantity === 'number' && range < quantity ) canRepeat = true
+  Rndi( _min = 0, _max = 1, quantity=1, canRepeat = false ) {
+    // have to code gen function to hard code min / max values inside, as closures
+    // or bound values won't be passed through the worklet port.XXX perhaps there should
+    // be a way to transfer a function and its upvalues through the worklet? OTOH,
+    // codegen works fine.
 
-    return function() {
-      let value = 0, min, max, range
+    const fncString = `const min = ${_min}
+    const max = ${_max} 
+    const range = max - min
+    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
 
-      min = typeof _min === 'function' ? _min() : _min
-      max = typeof _max === 'function' ? _max() : _max
+    let out
 
-      if( quantity === undefined ) {
-        value = Utility.rndi( min, max )
-      }else{
-        value = Utility.rndi( min, max, quantity, canRepeat )
+    if( ${quantity} > 1 ) { 
+      out = []
+      for( let i = 0; i < ${quantity}; i++ ) {
+        let num = min + Math.round( Math.random() * range );
+
+        if( canRepeat === false ) {
+          while( out.indexOf( num ) > -1 ) {
+            num = min + Math.round( Math.random() * range );
+          }
+        }
+        out[ i ] = num
       }
-
-      return value
+    }else{
+      out = min + Math.round( Math.random() * range ); 
     }
+
+    return out;`
+    
+    return new Function( fncString )
   },
 
   random() {
