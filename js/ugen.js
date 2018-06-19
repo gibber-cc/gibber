@@ -188,7 +188,11 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     // only connect if shouldNotConneect does not equal true (for LFOs and other modulation sources)
     if( obj.__wrapped__.type === 'instrument' || obj.__wrapped__.type === 'oscillator' ) {
-      if( typeof properties !== 'object' || properties.shouldNotConnect !== true ) obj.connect( Audio.Master )
+      if( typeof properties !== 'object' || properties.shouldNotConnect !== true ) {
+        // ensure that the ugen hasn't already been connected through the fx chain,
+        // possibly through initialization of a preset
+        if( obj.fx.length === 0 ) obj.connect( Audio.Master )
+      }
     }
 
     return obj
