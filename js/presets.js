@@ -35,7 +35,8 @@ const Presets = {
   },
 
   instruments: {
-    Synth: require( './presets/synth_presets.js' )
+    Synth: require( './presets/synth_presets.js' ),
+    FM:    require( './presets/fm_presets.js' )
   },
 
   effects: {
@@ -45,5 +46,6 @@ const Presets = {
 }
 
 Presets.instruments.PolySynth = Presets.instruments.Synth
+Presets.instruments.PolyFM = Presets.instruments.FM
 
 module.exports = Presets

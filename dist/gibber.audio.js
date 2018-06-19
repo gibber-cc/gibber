@@ -1726,7 +1726,7 @@ let gen = {
 
 module.exports = gen
 
-},{"memory-helper":156}],31:[function(require,module,exports){
+},{"memory-helper":157}],31:[function(require,module,exports){
 'use strict'
 
 let gen  = require('./gen.js')
@@ -3821,7 +3821,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{"./busses.js":75,"./clock.js":76,"./drums.js":77,"./effects.js":78,"./ensemble.js":79,"./instruments.js":81,"./pattern.js":82,"./seq.js":85,"./theory.js":86,"./ugen.js":87,"./utility.js":88,"gibberish-dsp":121}],75:[function(require,module,exports){
+},{"./busses.js":75,"./clock.js":76,"./drums.js":77,"./effects.js":78,"./ensemble.js":79,"./instruments.js":81,"./pattern.js":82,"./seq.js":86,"./theory.js":87,"./ugen.js":88,"./utility.js":89,"gibberish-dsp":122}],75:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -3850,7 +3850,7 @@ const Busses = {
 
 module.exports = Busses
 
-},{"./ugen.js":87,"gibberish-dsp":121}],76:[function(require,module,exports){
+},{"./ugen.js":88,"gibberish-dsp":122}],76:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 
@@ -3961,7 +3961,7 @@ const Clock = {
 
 module.exports = Clock
 
-},{"gibberish-dsp":121,"serialize-javascript":89}],77:[function(require,module,exports){
+},{"gibberish-dsp":122,"serialize-javascript":90}],77:[function(require,module,exports){
 module.exports = function( Audio ) {
 
   const Drums = function( score, time, props ) { 
@@ -4045,7 +4045,7 @@ const Effects = {
 
 module.exports = Effects
 
-},{"./ugen.js":87,"gibberish-dsp":121}],79:[function(require,module,exports){
+},{"./ugen.js":88,"gibberish-dsp":122}],79:[function(require,module,exports){
 module.exports = function( Audio ) {
   const Gibberish = Audio.Gibberish
   const Ensemble = function( props ) {
@@ -4388,7 +4388,7 @@ const Instruments = {
 
 module.exports = Instruments
 
-},{"./ugen.js":87,"gibberish-dsp":121}],82:[function(require,module,exports){
+},{"./ugen.js":88,"gibberish-dsp":122}],82:[function(require,module,exports){
 const patternWrapper = function( Gibber ) {
   "use strict"
 
@@ -4920,7 +4920,8 @@ const Presets = {
   },
 
   instruments: {
-    Synth: require( './presets/synth_presets.js' )
+    Synth: require( './presets/synth_presets.js' ),
+    FM:    require( './presets/fm_presets.js' )
   },
 
   effects: {
@@ -4930,10 +4931,74 @@ const Presets = {
 }
 
 Presets.instruments.PolySynth = Presets.instruments.Synth
+Presets.instruments.PolyFM = Presets.instruments.FM
 
 module.exports = Presets
 
-},{"./presets/synth_presets.js":84}],84:[function(require,module,exports){
+},{"./presets/fm_presets.js":84,"./presets/synth_presets.js":85}],84:[function(require,module,exports){
+module.exports = {
+
+  bass : {
+    cmRatio:1,
+    index:3,
+    attack:1/256,
+    decay:1/16,
+    octave:-2
+  },
+
+  glockenspiel : {
+    cmRatio	: 3.5307,
+    index 	: 1,
+    attack	: audio => audio.Clock.ms( 1 ),
+    decay	: audio => audio.Clock.ms( 1000 ),
+  },
+
+  frog : { //ljp
+    cmRatio: 0.1,
+    index: 2.0,
+    attack: audio => audio.Clock.ms( 300 ), 
+    decay: audio => audio.Clock.ms( 5 )
+  },
+
+  gong : {
+    cmRatio: 1.4,
+	  index: .95,
+	  attack: 1/256,
+	  decay: 2,
+	},
+
+  drum : {
+	  cmRatio: 1.40007,
+	  index: 2,
+	  attack: 1/256,
+    decay: audio => audio.Clock.ms(1000) 
+	},
+
+	drum2: {
+		cmRatio: 1 + Math.sqrt(2),
+		index: .2,
+		attack: 1/256,
+		decay: audio => audio.Clock.ms(20) 
+  },
+
+	brass : {
+    maxVoices:4,
+	  cmRatio : 1 / 1.0007,
+		index	: 5,
+		attack: audio => audio.Clock.ms(100),
+		decay	: 1,
+    gain:.5,
+  },
+
+	clarinet : {
+		cmRatio	: 3 / 2,
+		index	: 1.5,
+		attack: audio => audio.Clock.ms( 50 ), 
+		decay:  audio => audio.Clock.ms( 200 )
+	}
+}
+
+},{}],85:[function(require,module,exports){
 module.exports = {
 
   bleep: { 
@@ -4959,11 +5024,13 @@ module.exports = {
     presetInit: function( audio ) {
       this.fx.push( audio.effects.Chorus({ slowGain:3, fastGain:.5 }) )
     }
-  }
+  },
+
+  chirp: { maxVoices:1, filterType:2, cutoff:.325, decay:1/16 } 
 
 }
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 
 module.exports = function( Audio ) {
@@ -5010,7 +5077,7 @@ module.exports = function( Audio ) {
 
 }
 
-},{"gibberish-dsp":121}],86:[function(require,module,exports){
+},{"gibberish-dsp":122}],87:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 const Tune      = require( './external/tune-api-only.js' )
@@ -5213,7 +5280,7 @@ const Theory = {
 
 module.exports = Theory
 
-},{"./external/tune-api-only.js":80,"gibberish-dsp":121,"serialize-javascript":89}],87:[function(require,module,exports){
+},{"./external/tune-api-only.js":80,"gibberish-dsp":122,"serialize-javascript":90}],88:[function(require,module,exports){
 const __Seq = require( './seq' )
 const Presets = require( './presets.js' )
 const Theory  = require( './theory.js' )
@@ -5226,7 +5293,7 @@ const __timeProps = {
   PolySynth:[ 'attack', 'decay', 'sustain', 'release' ],
   FM:[ 'attack', 'decay', 'sustain', 'release' ],
   PolyFM:[ 'attack', 'decay', 'sustain', 'release' ],
-  Mono:[ 'attack', 'decay', 'sustain', 'release' ],
+  Monosynth:[ 'attack', 'decay', 'sustain', 'release' ],
   PolyMono:[ 'attack', 'decay', 'sustain', 'release' ],
   Delay:[ 'time' ], 
 }
@@ -5289,24 +5356,35 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
         if( methodName !== 'chord' && methodName !== 'note' ) {
           obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
         }else{
-          obj[ '____' + methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
-          obj[ methodName ] = function( note ) {
+          obj[ methodName ] = function( ...args ) {
             // this should only be for direct calls from the IDE
-            let __note
             if( Gibberish.mode === 'worklet' ) {
-              //__note = Theory.note( note ) 
-              obj[ '____' + methodName ]( note ) 
+              Gibberish.worklet.port.postMessage({
+                address:'method',
+                object:__wrappedObject.id,
+                name:methodName,
+                args
+              })
             }
           }
 
           // we have to monkey patch the note method on the Gibberish objects running
           // inside the AudioWorkletProcessor to lookup the index in the current scale.
-          Gibberish.worklet.port.postMessage({
-            address:'monkeyPatch',
-            id:__wrappedObject.id,
-            key:'note',
-            function:'function( note ){ const __note = Gibberish.Theory.note( note ); /*console.log( this );*/ this.___note( __note ) }'
-          })
+          if( methodName === 'note' ) {
+            Gibberish.worklet.port.postMessage({
+              address:'monkeyPatch',
+              id:__wrappedObject.id,
+              key:'note',
+              function:'function( note ){ const __note = Gibberish.Theory.note( note ); this.___note( __note ) }'
+            })
+          }else{
+            Gibberish.worklet.port.postMessage({
+              address:'monkeyPatch',
+              id:__wrappedObject.id,
+              key:'chorus',
+              function:'function( notes ){ const __notes = notes.map( Gibberish.Theory.note ); this.___chord( __notes ) }'
+            })
+          }
         }
 
         obj[ methodName ].sequencers = []
@@ -5404,7 +5482,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
 module.exports = Ugen
 
-},{"./presets.js":83,"./seq":85,"./theory.js":86,"gibberish-dsp":121}],88:[function(require,module,exports){
+},{"./presets.js":83,"./seq":86,"./theory.js":87,"gibberish-dsp":122}],89:[function(require,module,exports){
 const Utility = {
   rndf( min=0, max=1, number, canRepeat=true ) {
     let out = 0
@@ -5554,7 +5632,7 @@ const Utility = {
 
 module.exports = Utility
 
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 /*
 Copyright (c) 2014, Yahoo! Inc. All rights reserved.
 Copyrights licensed under the New BSD License.
@@ -5675,7 +5753,7 @@ module.exports = function serialize(obj, options) {
     });
 }
 
-},{}],90:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
@@ -5686,7 +5764,7 @@ Object.assign( analyzer, {
 
 module.exports = analyzer
 
-},{"../ugen.js":150}],91:[function(require,module,exports){
+},{"../ugen.js":151}],92:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const analyzers = {
@@ -5706,7 +5784,7 @@ return analyzers
 
 }
 
-},{"./follow.js":92,"./singlesampledelay.js":93}],92:[function(require,module,exports){
+},{"./follow.js":93,"./singlesampledelay.js":94}],93:[function(require,module,exports){
 const g = require('genish.js'),
       analyzer = require('./analyzer.js'),
       ugen = require('../ugen.js');
@@ -5792,7 +5870,7 @@ module.exports = function (Gibberish) {
 
   return Follow;
 };
-},{"../ugen.js":150,"./analyzer.js":90,"genish.js":37}],93:[function(require,module,exports){
+},{"../ugen.js":151,"./analyzer.js":91,"genish.js":37}],94:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       proxy    = require( '../workletProxy.js' ),
@@ -5947,7 +6025,7 @@ return Delay
 
 }
 
-},{"../ugen.js":150,"../workletProxy.js":153,"./analyzer.js":90,"genish.js":37}],94:[function(require,module,exports){
+},{"../ugen.js":151,"../workletProxy.js":154,"./analyzer.js":91,"genish.js":37}],95:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -5975,7 +6053,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":150,"genish.js":37}],95:[function(require,module,exports){
+},{"../ugen.js":151,"genish.js":37}],96:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -6020,7 +6098,7 @@ module.exports = function( Gibberish ) {
   return ADSR
 }
 
-},{"../ugen.js":150,"genish.js":37}],96:[function(require,module,exports){
+},{"../ugen.js":151,"genish.js":37}],97:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
@@ -6055,7 +6133,7 @@ module.exports = function( Gibberish ) {
   return Envelopes
 }
 
-},{"./ad.js":94,"./adsr.js":95,"./ramp.js":97,"genish.js":37}],97:[function(require,module,exports){
+},{"./ad.js":95,"./adsr.js":96,"./ramp.js":98,"genish.js":37}],98:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -6089,7 +6167,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":150,"genish.js":37}],98:[function(require,module,exports){
+},{"../ugen.js":151,"genish.js":37}],99:[function(require,module,exports){
 /*
  * https://github.com/antimatter15/heapqueue.js/blob/master/heapqueue.js
  *
@@ -6201,7 +6279,7 @@ HeapQueue.prototype.pop = function(){
 
 module.exports = HeapQueue
 
-},{}],99:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 let g = require( 'genish.js' )
  
 // constructor for schroeder allpass filters
@@ -6218,7 +6296,7 @@ let allPass = function( _input, length=500, feedback=.5 ) {
 
 module.exports = allPass
 
-},{"genish.js":37}],100:[function(require,module,exports){
+},{"genish.js":37}],101:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -6348,7 +6426,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":103,"genish.js":37}],101:[function(require,module,exports){
+},{"./filter.js":104,"genish.js":37}],102:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 ) {
@@ -6367,7 +6445,7 @@ let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 
 
 module.exports = combFilter
 
-},{"genish.js":37}],102:[function(require,module,exports){
+},{"genish.js":37}],103:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -6572,7 +6650,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./filter.js":103,"genish.js":37}],103:[function(require,module,exports){
+},{"./filter.js":104,"genish.js":37}],104:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let filter = Object.create( ugen )
@@ -6583,7 +6661,7 @@ Object.assign( filter, {
 
 module.exports = filter
 
-},{"../ugen.js":150}],104:[function(require,module,exports){
+},{"../ugen.js":151}],105:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -6653,7 +6731,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":103,"genish.js":37}],105:[function(require,module,exports){
+},{"./filter.js":104,"genish.js":37}],106:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const g = Gibberish.genish
@@ -6725,7 +6803,7 @@ return filters
 
 }
 
-},{"./allpass.js":99,"./biquad.js":100,"./combfilter.js":101,"./diodeFilterZDF.js":102,"./filter24.js":104,"./ladderFilterZeroDelay.js":106,"./svf.js":107}],106:[function(require,module,exports){
+},{"./allpass.js":100,"./biquad.js":101,"./combfilter.js":102,"./diodeFilterZDF.js":103,"./filter24.js":105,"./ladderFilterZeroDelay.js":107,"./svf.js":108}],107:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filterProto = require( './filter.js' )
 
@@ -6842,7 +6920,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":103,"genish.js":37}],107:[function(require,module,exports){
+},{"./filter.js":104,"genish.js":37}],108:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -6914,7 +6992,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":103,"genish.js":37}],108:[function(require,module,exports){
+},{"./filter.js":104,"genish.js":37}],109:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -6992,7 +7070,7 @@ return BitCrusher
 
 }
 
-},{"./effect.js":114,"genish.js":37}],109:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],110:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -7119,7 +7197,7 @@ module.exports = function( Gibberish ) {
   return Shuffler 
 }
 
-},{"./effect.js":114,"genish.js":37}],110:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],111:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
   
@@ -7214,7 +7292,7 @@ return __Chorus
 
 }
 
-},{"./effect.js":114,"genish.js":37}],111:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],112:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -7407,7 +7485,7 @@ module.exports = function (Gibberish) {
 
   return Reverb;
 };
-},{"./effect.js":114,"genish.js":37}],112:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],113:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -7479,7 +7557,7 @@ return Delay
 
 }
 
-},{"./effect.js":114,"genish.js":37}],113:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],114:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -7558,7 +7636,7 @@ module.exports = function (Gibberish) {
 
   return Distortion;
 };
-},{"./effect.js":114,"genish.js":37}],114:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],115:[function(require,module,exports){
 let ugen = require( '../ugen.js' )()
 
 let effect = Object.create( ugen )
@@ -7570,7 +7648,7 @@ Object.assign( effect, {
 
 module.exports = effect
 
-},{"../ugen.js":150}],115:[function(require,module,exports){
+},{"../ugen.js":151}],116:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const effects = {
@@ -7600,7 +7678,7 @@ return effects
 
 }
 
-},{"./bitCrusher.js":108,"./bufferShuffler.js":109,"./chorus.js":110,"./dattorro.js":111,"./delay.js":112,"./distortion.js":113,"./flanger.js":116,"./freeverb.js":117,"./ringMod.js":118,"./tremolo.js":119,"./vibrato.js":120}],116:[function(require,module,exports){
+},{"./bitCrusher.js":109,"./bufferShuffler.js":110,"./chorus.js":111,"./dattorro.js":112,"./delay.js":113,"./distortion.js":114,"./flanger.js":117,"./freeverb.js":118,"./ringMod.js":119,"./tremolo.js":120,"./vibrato.js":121}],117:[function(require,module,exports){
 let g = require( 'genish.js' ),
     proto = require( './effect.js' )
 
@@ -7691,7 +7769,7 @@ return Flanger
 
 }
 
-},{"./effect.js":114,"genish.js":37}],117:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],118:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -7799,7 +7877,7 @@ return Freeverb
 }
 
 
-},{"./effect.js":114,"genish.js":37}],118:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],119:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -7864,7 +7942,7 @@ return RingMod
 
 }
 
-},{"./effect.js":114,"genish.js":37}],119:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],120:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -7937,7 +8015,7 @@ return Tremolo
 
 }
 
-},{"./effect.js":114,"genish.js":37}],120:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],121:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -8024,7 +8102,7 @@ return Vibrato
 
 }
 
-},{"./effect.js":114,"genish.js":37}],121:[function(require,module,exports){
+},{"./effect.js":115,"genish.js":37}],122:[function(require,module,exports){
 let MemoryHelper = require( 'memory-helper' ),
     genish       = require( 'genish.js' )
     
@@ -8401,7 +8479,7 @@ Gibberish.utilities = require( './utilities.js' )( Gibberish )
 
 module.exports = Gibberish
 
-},{"./analysis/analyzers.js":91,"./envelopes/envelopes.js":96,"./filters/filters.js":105,"./fx/effect.js":114,"./fx/effects.js":115,"./instruments/instrument.js":126,"./instruments/instruments.js":127,"./instruments/polyMixin.js":131,"./instruments/polytemplate.js":132,"./misc/binops.js":136,"./misc/bus.js":137,"./misc/bus2.js":138,"./misc/monops.js":139,"./misc/panner.js":140,"./misc/time.js":141,"./oscillators/oscillators.js":144,"./scheduling/scheduler.js":147,"./scheduling/seq2.js":148,"./scheduling/sequencer.js":149,"./ugen.js":150,"./ugenTemplate.js":151,"./utilities.js":152,"./workletProxy.js":153,"genish.js":37,"memory-helper":156}],122:[function(require,module,exports){
+},{"./analysis/analyzers.js":92,"./envelopes/envelopes.js":97,"./filters/filters.js":106,"./fx/effect.js":115,"./fx/effects.js":116,"./instruments/instrument.js":127,"./instruments/instruments.js":128,"./instruments/polyMixin.js":132,"./instruments/polytemplate.js":133,"./misc/binops.js":137,"./misc/bus.js":138,"./misc/bus2.js":139,"./misc/monops.js":140,"./misc/panner.js":141,"./misc/time.js":142,"./oscillators/oscillators.js":145,"./scheduling/scheduler.js":148,"./scheduling/seq2.js":149,"./scheduling/sequencer.js":150,"./ugen.js":151,"./ugenTemplate.js":152,"./utilities.js":153,"./workletProxy.js":154,"genish.js":37,"memory-helper":157}],123:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -8438,7 +8516,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],123:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],124:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -8478,7 +8556,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],124:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],125:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -8591,7 +8669,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],125:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],126:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -8641,7 +8719,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],126:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],127:[function(require,module,exports){
 let ugen = require( '../ugen.js' )(),
     g = require( 'genish.js' )
 
@@ -8664,7 +8742,7 @@ Object.assign( instrument, {
 
 module.exports = instrument
 
-},{"../ugen.js":150,"genish.js":37}],127:[function(require,module,exports){
+},{"../ugen.js":151,"genish.js":37}],128:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
 const instruments = {
@@ -8697,7 +8775,7 @@ return instruments
 
 }
 
-},{"./conga.js":122,"./cowbell.js":123,"./fm.js":124,"./hat.js":125,"./karplusstrong.js":128,"./kick.js":129,"./monosynth.js":130,"./sampler.js":133,"./snare.js":134,"./synth.js":135}],128:[function(require,module,exports){
+},{"./conga.js":123,"./cowbell.js":124,"./fm.js":125,"./hat.js":126,"./karplusstrong.js":129,"./kick.js":130,"./monosynth.js":131,"./sampler.js":134,"./snare.js":135,"./synth.js":136}],129:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -8781,7 +8859,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],129:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],130:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -8827,7 +8905,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],130:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],131:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       feedbackOsc = require( '../oscillators/fmfeedbackosc.js' )
@@ -8938,7 +9016,7 @@ module.exports = function( Gibberish ) {
   return [ Synth, PolyMono ]
 }
 
-},{"../oscillators/fmfeedbackosc.js":143,"./instrument.js":126,"genish.js":37}],131:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":144,"./instrument.js":127,"genish.js":37}],132:[function(require,module,exports){
 module.exports = {
   note( freq, gain ) {
     // will be sent to processor node via proxy method...
@@ -9020,7 +9098,7 @@ module.exports = {
   }
 }
 
-},{}],132:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 /*
  * This files creates a factory generating polysynth constructors.
  */
@@ -9111,7 +9189,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../workletProxy.js":153,"genish.js":37}],133:[function(require,module,exports){
+},{"../workletProxy.js":154,"genish.js":37}],134:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -9260,7 +9338,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./instrument.js":126,"genish.js":37}],134:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],135:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
   
@@ -9310,7 +9388,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],135:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],136:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -9410,7 +9488,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":126,"genish.js":37}],136:[function(require,module,exports){
+},{"./instrument.js":127,"genish.js":37}],137:[function(require,module,exports){
 const ugenproto = require( '../ugen.js' )()
 const __proxy     = require( '../workletProxy.js' )
 
@@ -9470,7 +9548,7 @@ module.exports = function( Gibberish ) {
   return Binops
 }
 
-},{"../ugen.js":150,"../workletProxy.js":153}],137:[function(require,module,exports){
+},{"../ugen.js":151,"../workletProxy.js":154}],138:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )(),
     __proxy= require( '../workletProxy.js' )
@@ -9551,7 +9629,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":150,"../workletProxy.js":153,"genish.js":37}],138:[function(require,module,exports){
+},{"../ugen.js":151,"../workletProxy.js":154,"genish.js":37}],139:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       __proxy = require( '../workletProxy.js' )
@@ -9744,7 +9822,7 @@ module.exports = function( Gibberish ) {
 
 
 
-},{"../ugen.js":150,"../workletProxy.js":153,"genish.js":37}],139:[function(require,module,exports){
+},{"../ugen.js":151,"../workletProxy.js":154,"genish.js":37}],140:[function(require,module,exports){
 const  g    = require( 'genish.js'  ),
        ugen = require( '../ugen.js' )()
 
@@ -9806,7 +9884,7 @@ module.exports = function( Gibberish ) {
   return Monops
 }
 
-},{"../ugen.js":150,"genish.js":37}],140:[function(require,module,exports){
+},{"../ugen.js":151,"genish.js":37}],141:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 const ugen = require( '../ugen.js' )()
@@ -9843,7 +9921,7 @@ return Panner
 
 }
 
-},{"../ugen.js":150,"genish.js":37}],141:[function(require,module,exports){
+},{"../ugen.js":151,"genish.js":37}],142:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const Time = {
@@ -9872,7 +9950,7 @@ module.exports = function( Gibberish ) {
   return Time
 }
 
-},{}],142:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 const genish = require('genish.js'),
       ssd = genish.history,
       noise = genish.noise;
@@ -9892,7 +9970,7 @@ module.exports = function () {
 
   return out;
 };
-},{"genish.js":37}],143:[function(require,module,exports){
+},{"genish.js":37}],144:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
@@ -9968,7 +10046,7 @@ let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
 
 module.exports = feedbackOsc
 
-},{"genish.js":37}],144:[function(require,module,exports){
+},{"genish.js":37}],145:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       feedbackOsc = require( './fmfeedbackosc.js' )
@@ -10138,7 +10216,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":150,"./brownnoise.js":142,"./fmfeedbackosc.js":143,"./pinknoise.js":145,"./wavetable.js":146,"genish.js":37}],145:[function(require,module,exports){
+},{"../ugen.js":151,"./brownnoise.js":143,"./fmfeedbackosc.js":144,"./pinknoise.js":146,"./wavetable.js":147,"genish.js":37}],146:[function(require,module,exports){
 const genish = require('genish.js'),
       ssd = genish.history,
       data = genish.data,
@@ -10163,7 +10241,7 @@ module.exports = function () {
 
   return out;
 };
-},{"genish.js":37}],146:[function(require,module,exports){
+},{"genish.js":37}],147:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )()
 
@@ -10197,7 +10275,7 @@ module.exports = function( Gibberish ) {
   return Wavetable
 }
 
-},{"../ugen.js":150,"genish.js":37}],147:[function(require,module,exports){
+},{"../ugen.js":151,"genish.js":37}],148:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 const Big   = require( 'big.js' )
 
@@ -10247,7 +10325,7 @@ let Scheduler = {
 
 module.exports = Scheduler
 
-},{"../external/priorityqueue.js":98,"big.js":154}],148:[function(require,module,exports){
+},{"../external/priorityqueue.js":99,"big.js":155}],149:[function(require,module,exports){
 const g = require( 'genish.js' ),
       __proxy = require( '../workletProxy.js' ),
       ugen = require( '../ugen.js' )()
@@ -10349,7 +10427,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":150,"../workletProxy.js":153,"genish.js":37}],149:[function(require,module,exports){
+},{"../ugen.js":151,"../workletProxy.js":154,"genish.js":37}],150:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 const Big   = require( 'big.js' )
 const __proxy = require( '../workletProxy.js' )
@@ -10423,7 +10501,7 @@ return Sequencer
 
 }
 
-},{"../external/priorityqueue.js":98,"../workletProxy.js":153,"big.js":154}],150:[function(require,module,exports){
+},{"../external/priorityqueue.js":99,"../workletProxy.js":154,"big.js":155}],151:[function(require,module,exports){
 let Gibberish = null
 
 const __ugen = function( __Gibberish ) {
@@ -10538,7 +10616,7 @@ const __ugen = function( __Gibberish ) {
 
 module.exports = __ugen
 
-},{}],151:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 const __proxy = require( './workletProxy.js' )
 const effectProto = require( './fx/effect.js' )
 
@@ -10596,8 +10674,9 @@ module.exports = function( Gibberish ) {
           }
         },
         set( v ) {
-          if( param === 'input' ) console.log( 'INPUT:', v, isNumber )
+          //if( param === 'input' ) console.log( 'INPUT:', v, isNumber )
           if( value !== v ) {
+            //console.log( Gibberish.mode, 'setting:', param, v )
             if( setter !== undefined ) setter( v )
             if( !isNaN( v ) ) {
               Gibberish.memory.heap[ idx ] = v
@@ -10606,7 +10685,7 @@ module.exports = function( Gibberish ) {
             }else{
               value = v
               if( isNumber === true ) Gibberish.dirty( ugen )
-              console.log( 'switching from number:', param, value )
+              //console.log( 'switching from number:', param, value )
               isNumber = false
             }
           }
@@ -10690,7 +10769,7 @@ module.exports = function( Gibberish ) {
   return factory
 }
 
-},{"./fx/effect.js":114,"./workletProxy.js":153}],152:[function(require,module,exports){
+},{"./fx/effect.js":115,"./workletProxy.js":154}],153:[function(require,module,exports){
 const genish = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
@@ -10855,7 +10934,7 @@ return utilities
 
 }
 
-},{"genish.js":37}],153:[function(require,module,exports){
+},{"genish.js":37}],154:[function(require,module,exports){
 const serialize = require('serialize-javascript')
 
 module.exports = function( Gibberish ) {
@@ -11005,7 +11084,7 @@ return __proxy
 
 }
 
-},{"serialize-javascript":155}],154:[function(require,module,exports){
+},{"serialize-javascript":156}],155:[function(require,module,exports){
 /* big.js v3.1.3 https://github.com/MikeMcl/big.js/LICENCE */
 ;(function (global) {
     'use strict';
@@ -12149,9 +12228,9 @@ return __proxy
     }
 })(this);
 
-},{}],155:[function(require,module,exports){
-arguments[4][89][0].apply(exports,arguments)
-},{"dup":89}],156:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
+arguments[4][90][0].apply(exports,arguments)
+},{"dup":90}],157:[function(require,module,exports){
 'use strict'
 
 let MemoryHelper = {

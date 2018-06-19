@@ -23,6 +23,8 @@ module.exports = {
     presetInit: function( audio ) {
       this.fx.push( audio.effects.Chorus({ slowGain:3, fastGain:.5 }) )
     }
-  }
+  },
+
+  chirp: { maxVoices:1, filterType:2, cutoff:.325, decay:1/16 } 
 
 }

@@ -10,7 +10,7 @@ const __timeProps = {
   PolySynth:[ 'attack', 'decay', 'sustain', 'release' ],
   FM:[ 'attack', 'decay', 'sustain', 'release' ],
   PolyFM:[ 'attack', 'decay', 'sustain', 'release' ],
-  Mono:[ 'attack', 'decay', 'sustain', 'release' ],
+  Monosynth:[ 'attack', 'decay', 'sustain', 'release' ],
   PolyMono:[ 'attack', 'decay', 'sustain', 'release' ],
   Delay:[ 'time' ], 
 }
@@ -73,24 +73,35 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
         if( methodName !== 'chord' && methodName !== 'note' ) {
           obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
         }else{
-          obj[ '____' + methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
-          obj[ methodName ] = function( note ) {
+          obj[ methodName ] = function( ...args ) {
             // this should only be for direct calls from the IDE
-            let __note
             if( Gibberish.mode === 'worklet' ) {
-              //__note = Theory.note( note ) 
-              obj[ '____' + methodName ]( note ) 
+              Gibberish.worklet.port.postMessage({
+                address:'method',
+                object:__wrappedObject.id,
+                name:methodName,
+                args
+              })
             }
           }
 
           // we have to monkey patch the note method on the Gibberish objects running
           // inside the AudioWorkletProcessor to lookup the index in the current scale.
-          Gibberish.worklet.port.postMessage({
-            address:'monkeyPatch',
-            id:__wrappedObject.id,
-            key:'note',
-            function:'function( note ){ const __note = Gibberish.Theory.note( note ); /*console.log( this );*/ this.___note( __note ) }'
-          })
+          if( methodName === 'note' ) {
+            Gibberish.worklet.port.postMessage({
+              address:'monkeyPatch',
+              id:__wrappedObject.id,
+              key:'note',
+              function:'function( note ){ const __note = Gibberish.Theory.note( note ); this.___note( __note ) }'
+            })
+          }else{
+            Gibberish.worklet.port.postMessage({
+              address:'monkeyPatch',
+              id:__wrappedObject.id,
+              key:'chorus',
+              function:'function( notes ){ const __notes = notes.map( Gibberish.Theory.note ); this.___chord( __notes ) }'
+            })
+          }
         }
 
         obj[ methodName ].sequencers = []
