@@ -15,6 +15,9 @@ const __timeProps = {
   Delay:[ 'time' ], 
 }
 
+// Gibber ugens are essentially wrappers around underlying gibberish 
+// ugens, providing convenience methods for rapidly sequencing
+// and modulating them.
 const Ugen = function( gibberishConstructor, description, Audio ) {
 
   const Seq = __Seq( Audio )
@@ -23,9 +26,11 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     const properties = Presets.process( description, args, Audio ) 
     const timeProps = __timeProps[ description.name ] === undefined ? [] : __timeProps[ description.name ]
 
-    for( let key in properties ) {
-      if( timeProps.indexOf( key ) > -1 ) {
-        properties[ key ] = Audio.Clock.time( properties[ key ] )
+    if( timeProps.length > 0 ) {
+      for( let key in properties ) {
+        if( timeProps.indexOf( key ) > -1 ) {
+          properties[ key ] = Audio.Clock.time( properties[ key ] )
+        }
       }
     }
 
@@ -34,37 +39,57 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     // wrap properties and add sequencing to them
     for( let propertyName in description.properties ) {
-      // turn properties into functions. if function is called
-      // with no arguments, it acts as a getter. if called with
-      // an argument, it acts as a setter.
-      obj[ propertyName ] = value => {
-        if( value !== undefined ) {
+      obj[ '__' + propertyName ] = {
+        isProperty:true,
+        sequencers:[],
 
-          __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( value ) : value
+        get value() {
+          return __wrappedObject[ propertyName ]
+        },
+        set value(v) {
+          if( v !== undefined ) {
+            __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( v ) : v
+          }
+        },
+
+        seq( values, timings, number = 0, delay = 0 ) {
+          let prevSeq = obj[ propertyName ].sequencers[ number ] 
+          if( prevSeq !== undefined ) prevSeq.stop()
+
+          obj[ propertyName ].sequencers[ number ] = Seq({ 
+            values, 
+            timings, 
+            target:__wrappedObject, 
+            key:propertyName 
+          })
+          .start( Audio.Clock.time( delay ) )
 
           // return object for method chaining
           return obj
-        }else{
-          return __wrappedObject[ propertyName ]
         }
       }
 
-      obj[ propertyName ].sequencers = []
-      obj[ propertyName ].seq = function( values, __timings, number=0, delay=0 ) {
-        let prevSeq = obj[ propertyName ].sequencers[ number ] 
-        if( prevSeq !== undefined ) prevSeq.stop()
+      Object.defineProperty( obj, propertyName, {
+        get() { return obj[ '__' + propertyName ] },
+        set(v){
+          // XXX need to accomodate non-scalar values
+          // i.e. mappings
+          if( v !== null && typeof v !== 'object' ) 
+            obj[ '__' + propertyName ].value = v
+          else
+            obj[ '__' + propertyName ] = v
+        }
+      })
 
-        obj[ propertyName ].sequencers[ number ] = Seq({ 
-          values, 
-          __timings, 
-          target:__wrappedObject, 
-          key:propertyName 
-        })
-        .start( Audio.Clock.time( delay ) )
-      
-        // return object for method chaining
-        return obj
-      }
+
+      //Gibberish.worklet.port.postMessage({
+      //  address:'assign',
+      //  id:__wrappedObject.id,
+      //  obj: {
+      //    __mods:[],
+      //    mod( ugen, 
+      //  }
+      //})
     }
 
     // wrap methods and add sequencing to them
@@ -156,12 +181,19 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     })
 
     obj.connect = (dest,level=1) => {
-      // if no fx chain, connect directly to output
-      if( obj.fx.length === 0 ) {
-        __wrappedObject.connect( dest,level ); 
+      if( dest !== undefined && dest.isProperty === true ) {
+        dest.mods.push( obj )
+        if( dest.mods.length === 1 ) { // if first modulation
+          dest.value = Gibberish.binops.Add( dest.value, obj ) 
+        }
       }else{
-        // otherwise, connect last effect in chain to output
-        obj.fx[ obj.fx.length - 1 ].__wrapped__.connect( dest, level )
+        // if no fx chain, connect directly to output
+        if( obj.fx.length === 0 ) {
+          __wrappedObject.connect( dest,level ); 
+        }else{
+          // otherwise, connect last effect in chain to output
+          obj.fx[ obj.fx.length - 1 ].__wrapped__.connect( dest, level )
+        }
       }
 
       return obj 
@@ -173,25 +205,15 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
       properties.__presetInit__.call( obj, Audio )
     }
 
-    // flag will only be present worklet-side, not in the processor.
-    /*
-    const __flag = true
-    if( obj.__wrapped__.onload !== undefined ) {
-      const store = obj.__wrapped__.onload
-      obj.__wrapped__.onload = function() {
-        if( __flag !== undefined ) {
-          //store.call( obj )
-        }
-      } 
-    }
-    */
-
     // only connect if shouldNotConneect does not equal true (for LFOs and other modulation sources)
     if( obj.__wrapped__.type === 'instrument' || obj.__wrapped__.type === 'oscillator' ) {
       if( typeof properties !== 'object' || properties.shouldNotConnect !== true ) {
-        // ensure that the ugen hasn't already been connected through the fx chain,
-        // possibly through initialization of a preset
-        if( obj.fx.length === 0 ) obj.connect( Audio.Master )
+        
+        if( Audio.autoConnect === true ) {
+          // ensure that the ugen hasn't already been connected through the fx chain,
+          // possibly through initialization of a preset
+          if( obj.fx.length === 0 ) obj.connect( Audio.Master )
+        }
       }
     }
 

@@ -1,6 +1,7 @@
 const Gibberish   = require( 'gibberish-dsp' )
 const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
+const Oscillators = require( './oscillators.js' )
 const Effects     = require( './effects.js' )
 const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
@@ -11,6 +12,7 @@ const Audio = {
   Theory: require( './theory.js' ),
 
   initialized:false,
+  autoConnect:false,
   instruments:{},
   oscillators:{},
   effects:{},
@@ -65,6 +67,7 @@ const Audio = {
   onload() {},
 
   createUgens() {
+    this.oscillators = Oscillators.create( this )
     this.instruments = Instruments.create( this ) 
     this.effects = Effects.create( this )
     this.busses = Busses.create( this )
