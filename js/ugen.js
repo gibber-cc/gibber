@@ -42,6 +42,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
       obj[ '__' + propertyName ] = {
         isProperty:true,
         sequencers:[],
+        mods:[],
+        name:propertyName,
 
         get value() {
           return __wrappedObject[ propertyName ]
@@ -66,7 +68,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
           // return object for method chaining
           return obj
-        }
+        },
+
+        ugen:obj
       }
 
       Object.defineProperty( obj, propertyName, {
@@ -117,13 +121,16 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
               address:'monkeyPatch',
               id:__wrappedObject.id,
               key:'note',
-              function:'function( note ){ const __note = Gibberish.Theory.note( note ); this.___note( __note ) }'
+              function:`function( note ){ 
+                const __note = Gibberish.Theory.note( note );
+                this.___note( __note ) 
+              }`
             })
           }else{
             Gibberish.worklet.port.postMessage({
               address:'monkeyPatch',
               id:__wrappedObject.id,
-              key:'chorus',
+              key:'chord',
               function:'function( notes ){ const __notes = notes.map( Gibberish.Theory.note ); this.___chord( __notes ) }'
             })
           }
@@ -183,8 +190,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     obj.connect = (dest,level=1) => {
       if( dest !== undefined && dest.isProperty === true ) {
         dest.mods.push( obj )
-        if( dest.mods.length === 1 ) { // if first modulation
-          dest.value = Gibberish.binops.Add( dest.value, obj ) 
+        if( dest.mods.length !== 0 ) { // if first modulation
+          //console.log( 'mod:', dest.name )
+          dest.ugen[ dest.name ].value = Gibberish.binops.Add( dest.value, obj ) 
         }
       }else{
         // if no fx chain, connect directly to output

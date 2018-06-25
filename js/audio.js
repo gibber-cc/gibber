@@ -98,7 +98,9 @@ const Audio = {
       // return object for method chaining
       return obj
     }
-  }
+  },
+
+  printcb() { Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) }
   
 }
 

@@ -3818,7 +3818,9 @@ const Audio = {
       // return object for method chaining
       return obj
     }
-  }
+  },
+
+  printcb() { Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) }
   
 }
 
@@ -5478,6 +5480,8 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
       obj[ '__' + propertyName ] = {
         isProperty:true,
         sequencers:[],
+        mods:[],
+        name:propertyName,
 
         get value() {
           return __wrappedObject[ propertyName ]
@@ -5502,7 +5506,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
           // return object for method chaining
           return obj
-        }
+        },
+
+        ugen:obj
       }
 
       Object.defineProperty( obj, propertyName, {
@@ -5553,13 +5559,16 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
               address:'monkeyPatch',
               id:__wrappedObject.id,
               key:'note',
-              function:'function( note ){ const __note = Gibberish.Theory.note( note ); this.___note( __note ) }'
+              function:`function( note ){ 
+                const __note = Gibberish.Theory.note( note );
+                this.___note( __note ) 
+              }`
             })
           }else{
             Gibberish.worklet.port.postMessage({
               address:'monkeyPatch',
               id:__wrappedObject.id,
-              key:'chorus',
+              key:'chord',
               function:'function( notes ){ const __notes = notes.map( Gibberish.Theory.note ); this.___chord( __notes ) }'
             })
           }
@@ -5619,8 +5628,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
     obj.connect = (dest,level=1) => {
       if( dest !== undefined && dest.isProperty === true ) {
         dest.mods.push( obj )
-        if( dest.mods.length === 1 ) { // if first modulation
-          dest.value = Gibberish.binops.Add( dest.value, obj ) 
+        if( dest.mods.length !== 0 ) { // if first modulation
+          //console.log( 'mod:', dest.name )
+          dest.ugen[ dest.name ].value = Gibberish.binops.Add( dest.value, obj ) 
         }
       }else{
         // if no fx chain, connect directly to output
@@ -8899,8 +8909,7 @@ module.exports = function( Gibberish ) {
 }
 
 },{"./instrument.js":129,"genish.js":37}],129:[function(require,module,exports){
-const ugen = require( '../ugen.js' )(),
-      g = require( 'genish.js' )
+const ugen = require( '../ugen.js' )()
 
 const instrument = Object.create( ugen )
 
@@ -8908,9 +8917,17 @@ Object.assign( instrument, {
   type:'instrument',
 
   note( freq ) {
-    // if binop is present on frequency
-    if( isNaN( this.frequency ) && this.frequency.isop === true ) {
-      this.frequency.inputs[0] = freq
+    // if binop is should be used...
+    if( isNaN( this.frequency ) ) { 
+      // and if we are assigning binop for the first time...
+      if( this.frequency.isop !== true ) {
+        let obj = Gibberish.processor.ugens.get( this.frequency.id )
+        obj.inputs[0] = freq
+        this.frequency = obj
+      }else{
+        this.frequency.inputs[0] = freq
+        Gibberish.dirty( this )
+      }
     }else{
       this.frequency = freq
     }
@@ -8927,7 +8944,7 @@ Object.assign( instrument, {
 
 module.exports = instrument
 
-},{"../ugen.js":153,"genish.js":37}],130:[function(require,module,exports){
+},{"../ugen.js":153}],130:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
 const instruments = {
@@ -10703,6 +10720,8 @@ const __ugen = function( __Gibberish ) {
   }
 
   const ugen = {
+    __Gibberish:Gibberish,
+
     free:function() {
       Gibberish.genish.gen.free( this.graph )
     },
@@ -10861,7 +10880,6 @@ module.exports = function( Gibberish ) {
         set( v ) {
           //if( param === 'input' ) console.log( 'INPUT:', v, isNumber )
           if( value !== v ) {
-            //console.log( Gibberish.mode, 'setting:', param, v )
             if( setter !== undefined ) setter( v )
             if( !isNaN( v ) ) {
               Gibberish.memory.heap[ idx ] = v
@@ -10869,7 +10887,7 @@ module.exports = function( Gibberish ) {
               isNumber = true
             }else{
               value = v
-              if( isNumber === true ) Gibberish.dirty( ugen )
+              /*if( isNumber === true )*/ Gibberish.dirty( ugen )
               //console.log( 'switching from number:', param, value )
               isNumber = false
             }
