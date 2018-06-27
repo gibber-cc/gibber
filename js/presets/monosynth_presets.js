@@ -6,22 +6,23 @@ module.exports = {
   },
   
   lead : {
-    presetInit : function( audio ) { this.fx.push( audio.effects.Delay(1/4, .35) ); this.fx.push( audio.effects.Freeverb() ) },
+    presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:audio.Clock.time( 1/16 ), feedback:.65 }) ); this.fx.push( audio.effects.Freeverb() ) },
     attack: audio => audio.Clock.ms(.5),
     decay: audio => 1/2,
     octave3:0,
     cutoff:.5,
     filterMult:1,
-    Q:1,
+    Q:.5,
     filterType:2,
     filterMode:1
   },
 
   winsome : {
     presetInit : function() { 
-      this.lfo = Gibber.Audio.Oscillators.Sine( 2, .075 )._
-      this.cutoff = this.lfo
-      this.detune2 = this.lfo
+      this.lfo = Gibber.oscillators.Sine({ frequency:2, gain:.075 })
+      this.lfo.connect( this.cutoff )
+      this.lfo.connect( this.detune2 )
+      this.lfo.connect( this.detune3 )
     },
     attack: audio => audio.Clock.ms(1), 
     decay:1,

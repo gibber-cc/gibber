@@ -4400,12 +4400,15 @@ const Ugen      = require( './ugen.js' )
 const Oscillators = {
   create( Audio ) {
     const oscillators = {}
+    const defaults = {
+      frequency:220, gain:.25, pulsewidth:.5
+    }
     for( let oscillatorName in Gibberish.oscillators ) {
       const gibberishConstructor = Gibberish.oscillators[ oscillatorName ]
 
       //const methods = Oscillators.descriptions[ oscillatorName ] === undefined ? null : Oscillators.descriptions[ oscillatorName ].methods
       const description = { 
-        properties:gibberishConstructor.defaults, 
+        properties:defaults, 
         methods:[],
         name:oscillatorName,
         category:'oscillators'
@@ -5043,22 +5046,23 @@ module.exports = {
   },
   
   lead : {
-    presetInit : function( audio ) { this.fx.push( audio.effects.Delay(1/4, .35) ); this.fx.push( audio.effects.Freeverb() ) },
+    presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:audio.Clock.time( 1/16 ), feedback:.65 }) ); this.fx.push( audio.effects.Freeverb() ) },
     attack: audio => audio.Clock.ms(.5),
     decay: audio => 1/2,
     octave3:0,
     cutoff:.5,
     filterMult:1,
-    Q:1,
+    Q:.5,
     filterType:2,
     filterMode:1
   },
 
   winsome : {
     presetInit : function() { 
-      this.lfo = Gibber.Audio.Oscillators.Sine( 2, .075 )._
-      this.cutoff = this.lfo
-      this.detune2 = this.lfo
+      this.lfo = Gibber.oscillators.Sine({ frequency:2, gain:.075 })
+      this.lfo.connect( this.cutoff )
+      this.lfo.connect( this.detune2 )
+      this.lfo.connect( this.detune3 )
     },
     attack: audio => audio.Clock.ms(1), 
     decay:1,
@@ -5370,16 +5374,20 @@ const Theory = {
     if( this.mode() !== null ) {
       mode = this.modes[ this.mode() ]
       octave = Math.floor( idx / mode.length )
-      finalIdx = mode[ idx % mode.length ]
+      // XXX this looks ugly but works with negative note numbers...
+      finalIdx = idx < 0 ? mode[ (mode.length - (Math.abs(idx) % mode.length)) % mode.length ] : mode[ Math.abs( idx ) % mode.length ]
     }else{
       finalIdx = idx
     }
 
-    const note = this.Tune.note( finalIdx, octave )
+    let freq = this.Tune.note( finalIdx, octave )
 
-    //console.log( idx, finalIdx, mode, note, octave )
+    // clamp maximum frequency to avoid filter havoc and mayhem
+    if( freq > 4000 ) freq = 4000
 
-    return note
+    //console.log( idx, finalIdx, mode, mode.length, note, octave )
+
+    return freq
   },
 
   mode: function( mode ) {
@@ -6957,7 +6965,7 @@ module.exports = function( Gibberish ) {
           filteredOsc = g.filter24( input, g.in('Q'), cutoff, props.filterMode, isStereo )
           break;
         case 2:
-          filteredOsc = g.zd24( input, g.in('Q'), cutoff )
+          filteredOsc = g.zd24( input, g.min( g.in('Q'), .9999 ),  g.min( cutoff, 20000 ) )
           break;
         case 3:
           filteredOsc = g.diodeZDF( input, g.in('Q'), cutoff, g.in('saturation'), isStereo ) 
@@ -9157,16 +9165,16 @@ module.exports = function( Gibberish ) {
       }
 
       const oscSum = g.add( ...oscs ),
-            oscWithGain = g.mul( g.mul( oscSum, env ), g.in( 'gain' ) ),
+            oscWithEnv = g.mul( oscSum, env ),
             baseCutoffFreq = g.mul( g.in('cutoff'), frequency ),
             cutoff = g.mul( g.mul( baseCutoffFreq, g.pow( 2, g.in('filterMult') )), env ),
-            filteredOsc = Gibberish.filters.factory( oscWithGain, cutoff, g.in('Q'), g.in('saturation'), syn )
+            filteredOsc = Gibberish.filters.factory( oscWithEnv, cutoff, g.in('Q'), g.in('saturation'), syn )
         
       if( props.panVoices ) {  
         const panner = g.pan( filteredOsc,filteredOsc, g.in( 'pan' ) )
-        syn.graph = [ panner.left, panner.right ]
+        syn.graph = [ g.mul( panner.left, g.in('gain') ), g.mul( panner.right, g.in('gain') ) ]
       }else{
-        syn.graph = filteredOsc
+        syn.graph = g.mul( filteredOsc, g.in('gain') )
       }
 
       syn.env = env
@@ -9178,7 +9186,7 @@ module.exports = function( Gibberish ) {
     const out = Gibberish.factory( syn, syn.graph, ['instruments','Monosynth'], props )
 
     return out
-  }
+  } 
   
   Synth.defaults = {
     waveform: 'saw',

@@ -135,16 +135,20 @@ const Theory = {
     if( this.mode() !== null ) {
       mode = this.modes[ this.mode() ]
       octave = Math.floor( idx / mode.length )
-      finalIdx = mode[ idx % mode.length ]
+      // XXX this looks ugly but works with negative note numbers...
+      finalIdx = idx < 0 ? mode[ (mode.length - (Math.abs(idx) % mode.length)) % mode.length ] : mode[ Math.abs( idx ) % mode.length ]
     }else{
       finalIdx = idx
     }
 
-    const note = this.Tune.note( finalIdx, octave )
+    let freq = this.Tune.note( finalIdx, octave )
 
-    //console.log( idx, finalIdx, mode, note, octave )
+    // clamp maximum frequency to avoid filter havoc and mayhem
+    if( freq > 4000 ) freq = 4000
 
-    return note
+    //console.log( idx, finalIdx, mode, mode.length, note, octave )
+
+    return freq
   },
 
   mode: function( mode ) {
