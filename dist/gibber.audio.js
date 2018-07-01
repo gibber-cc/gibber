@@ -6660,7 +6660,8 @@ module.exports = function( Gibberish ) {
           ka4 = 0.5,
           kindx = 0   
 
-    const Q = g.memo( g.add( .5, g.mul( _Q, 11 ) ) )
+    // XXX this is where the magic number hapens for Q...
+    const Q = g.memo( g.add( .5, g.mul( _Q, g.add( 5, g.sub( 5, g.mul( g.div( freq, 20000  ), 5 ) ) ) ) ) )
     // kwd = 2 * $M_PI * acf[kindx]
     const kwd = g.memo( g.mul( Math.PI * 2, freq ) )
 
@@ -6968,7 +6969,7 @@ module.exports = function( Gibberish ) {
           filteredOsc = g.zd24( input, g.min( g.in('Q'), .9999 ),  g.min( cutoff, 20000 ) )
           break;
         case 3:
-          filteredOsc = g.diodeZDF( input, g.in('Q'), cutoff, g.in('saturation'), isStereo ) 
+          filteredOsc = g.diodeZDF( input, g.min( g.in('Q'), .9999 ), g.min( cutoff, 20000 ), g.in('saturation'), isStereo ) 
           break;
         case 4:
           filteredOsc = g.svf( input, cutoff, g.sub( 1, g.in('Q')), props.filterMode, isStereo ) 
