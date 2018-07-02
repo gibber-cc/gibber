@@ -13,6 +13,7 @@ const patternWrapper = function( Gibber ) {
   // object-specific sequencers... but just making copies of all functions is certainly
   // simpler.
   Object.assign( PatternProto, {
+    type:'pattern',
     DNR: -987654321,
     concat( _pattern ) { this.values = this.values.concat( _pattern.values ) },  
     //toString() { return this.values.toString() },
@@ -124,6 +125,7 @@ const patternWrapper = function( Gibber ) {
       end   : 0,
       phase : 0,
       values : args, 
+      isPattern: true,
       // wrap annotation update in setTimeout( func, 0 )
       __delayAnnotations:false,
       //values : typeof arguments[0] !== 'string' || arguments.length > 1 ? Array.prototype.slice.call( arguments, 0 ) : arguments[0].split(''),    

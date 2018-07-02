@@ -66,6 +66,7 @@ const Clock = {
 
     // if input is an annotated time value such as what is returned
     // by samples() or ms()...
+    // console.log( 'input time:' , inputTime )
     if( isNaN( inputTime ) ) {
       if( typeof inputTime === 'object' ) { 
         if( inputTime.type === 'samples' ) {
@@ -75,6 +76,7 @@ const Clock = {
         }
       } 
     }else{
+      // XXX 4 is a magic number, needs to account for the current time signature
       outputTime = this.btos( inputTime * 4 )
     }
     

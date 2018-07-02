@@ -15,16 +15,23 @@ module.exports = function( Audio ) {
     }else{
       values = Audio.Pattern( __values )
     }
+
     
     let timings
     if( Array.isArray( __timings ) ) {
       timings  = Audio.Pattern( ...__timings )
+    }else if( typeof __timings === 'function' && __timings.isPattern === true ) {
+      //console.log( 'found pattern passed to seq' )
+      timings = __timings
     }else{
       timings = Audio.Pattern( __timings )
     }
 
     timings.addFilter( function( args ) {
-      args[ 0 ] = Gibberish.Clock.time( args[0] )
+      if( !isNaN( args[0] ) ) {
+        args[ 0 ] = Gibberish.Clock.time( args[0] )
+      }
+
       return args
     })
 

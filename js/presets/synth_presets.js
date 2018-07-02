@@ -17,7 +17,7 @@ module.exports = {
   shimmer: {
     attack:1/128, decay:1,
     waveform:'square', 
-    filterType:2,
+    filterType:1,
     maxVoices:3,
     gain:.025,
     presetInit: function( audio ) {

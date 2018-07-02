@@ -13,7 +13,7 @@ module.exports = {
     cutoff:.5,
     filterMult:1,
     Q:.5,
-    filterType:2,
+    filterType:1,
     filterMode:1
   },
 
