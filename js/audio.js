@@ -15,6 +15,7 @@ const Audio = {
 
   initialized:false,
   autoConnect:false,
+  shouldDelay:false,
   instruments:{},
   oscillators:{},
   effects:{},
@@ -52,6 +53,14 @@ const Audio = {
         Audio.Master = Gibberish.out
 
         if( Audio.exportTarget !== null ) Audio.export( Audio.exportTarget )
+
+        Gibberish.worklet.port.__postMessage = Gibberish.worklet.port.postMessage
+
+        Gibberish.worklet.port.postMessage = function( dict ) {
+          if( Audio.shouldDelay === true ) dict.delay = true
+
+          Gibberish.worklet.port.__postMessage( dict )
+        }
 
         Audio.export( window )
 

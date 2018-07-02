@@ -9,14 +9,37 @@ const Clock = {
 
   store:function() { 
     Gibberish.Clock = this
+    this.beatCount = 0
+    this.queue = []
     this.init()
+  },
+
+  addToQueue:function( ...args ) {
+    if( Gibberish.mode === 'processor' ) {
+      args = args[0]
+      args.forEach( v => Gibberish.Clock.queue.push( v ) )
+    }else{
+      Gibberish.worklet.port.postMessage({
+        address:'method',
+        object:this.id,
+        name:'addToQueue',
+        args:serialize( args ),
+        functions:true
+      }) 
+    }
   },
 
   init:function() {
     const clockFunc = ()=> {
-      Gibberish.processor.port.postMessage({
-        address:'clock'
-      })
+      //Gibberish.processor.port.postMessage({
+      //  address:'clock'
+      //})
+      
+      this.beatCount++
+
+      if( this.beatCount % 4 === 0 ) {
+        Gibberish.processor.playQueue()//.forEach( f => { f() } )
+      }
     }
 
     if( Gibberish.mode === 'worklet' ) {
@@ -48,15 +71,16 @@ const Clock = {
 
     this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ this.time( 1/4 ) ] ).start()
 
-    Gibberish.utilities.workletHandlers.clock = () => {
+    /*Gibberish.utilities.workletHandlers.clock = () => {
       this.__beatCount += 1
       this.__beatCount = this.__beatCount % 4 
+      console.log( 'beat count:', this.__beatCount )
 
       // XXX don't use global reference!!!
       if( Gibber.Scheduler !== undefined && Gibberish.mode !== 'processor' ) {
         Gibber.Scheduler.seq( this.__beatCount + 1, 'internal' )
       }
-    }
+    }*/
   },
 
   // time accepts an input value and converts it into samples. the input value
