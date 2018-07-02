@@ -88,19 +88,22 @@ const Audio = {
   },
 
   addSequencing( obj, methodName ) {
-    obj[ methodName ].sequencers = []
 
-    obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
-      let prevSeq = obj[ methodName ].sequencers[ number ] 
-      if( prevSeq !== undefined ) prevSeq.stop()
+    if( Gibberish.mode === 'worklet' ) {
+      obj[ methodName ].sequencers = []
 
-      let s = Audio.Seq({ values, timings, target:obj, key:methodName })
+      obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
+        let prevSeq = obj[ methodName ].sequencers[ number ] 
+        if( prevSeq !== undefined ) prevSeq.stop()
 
-      s.start() // Audio.Clock.time( delay ) )
-      obj[ methodName ].sequencers[ number ] = s 
+        let s = Audio.Seq({ values, timings, target:obj, key:methodName })
 
-      // return object for method chaining
-      return obj
+        s.start() // Audio.Clock.time( delay ) )
+        obj[ methodName ].sequencers[ number ] = s 
+
+        // return object for method chaining
+        return obj
+      }
     }
   },
 

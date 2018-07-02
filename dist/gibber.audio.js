@@ -5158,7 +5158,10 @@ const patternWrapper = function( Gibber ) {
     ]
 
     // XXX restore this! 
-    // for( let key of methodNames ) { Gibber.addSequencingToMethod( fnc, key, 1 ) }
+    
+    if( Gibberish.mode === 'worklet' ) {
+      for( let key of methodNames ) { Gibber.addSequencing( fnc, key, 1 ) }
+    }
     
     fnc.listeners = {}
     fnc.sequences = {}
@@ -5167,9 +5170,9 @@ const patternWrapper = function( Gibber ) {
     
     fnc.__proto__ = PatternProto 
 
-    // 'isop' is a hack to force pattern initialization arguments to be submitted as
-    // a list, instead of in a property dictionary. When 'isop' is true, gibberish
-    // looks for an 'input' property and then passes its value (assumed to be an array)
+    // 'isPattern' is a hack to force pattern initialization arguments to be submitted as
+    // a list, instead of in a property dictionary. When 'isPattern' is true, gibberish
+    // looks for an 'inputs' property and then passes its value (assumed to be an array)
     // using the spread operator to the constructor. 
     const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters }, fnc )  
 
