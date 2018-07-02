@@ -7,6 +7,7 @@ const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
 const Utility     = require( './utility.js' )
 const Euclid      = require( './euclid.js' )
+const Hex         = require( './hex.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -30,6 +31,7 @@ const Audio = {
       obj.EDrums = this.EDrums
       obj.Theory = this.Theory
       obj.Euclid = Euclid( this )
+      obj.Hex = Hex( this )
     }else{
       Audio.exportTarget = obj
     } 

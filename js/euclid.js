@@ -110,11 +110,8 @@ let Euclid = function( ones, length, time, rotation ) {
   // re-use to avoid GC in worklet processor
   pattern.output = { time, shouldExecute:0 }
 
-  let output = { time, shouldExecute: 0 }
-  
   pattern.addFilter( ( args, ptrn ) => {
-    let val = args[ 0 ],
-        idx = args[ 2 ]
+    let val = args[ 0 ]
 
     ptrn.output.time = Gibberish.Clock.time( ptrn.time )
     ptrn.output.shouldExecute = val 
