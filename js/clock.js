@@ -20,11 +20,11 @@ const Clock = {
       args.forEach( v => Gibberish.Clock.queue.push( v ) )
     }else{
       Gibberish.worklet.port.postMessage({
-        address:'method',
-        object:this.id,
-        name:'addToQueue',
-        args:serialize( args ),
-        functions:true
+        address: 'method',
+        object: this.id,
+        name: 'addToQueue',
+        args: serialize( args ),
+        functions: true
       }) 
     }
   },

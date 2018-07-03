@@ -3758,10 +3758,10 @@ const Audio = {
     } 
   },
 
-  init() {
+  init( workletPath = './dist/gibberish_worklet.js' ) {
     this.Gibberish = Gibberish
 
-    Gibberish.workletPath = './dist/gibberish_worklet.js'
+    Gibberish.workletPath = workletPath 
 
     const p = new Promise( (resolve, reject) => {
       Gibberish.init().then( processorNode => {
@@ -3783,6 +3783,11 @@ const Audio = {
         }
 
         Audio.export( window )
+
+        // XXX this forces the gibberish scheduler to stat
+        // running, but it's about as hacky as it can get...
+        let __start = Gibber.instruments.Synth().connect()
+        __start.disconnect()
 
         resolve()
       })
@@ -3836,7 +3841,9 @@ const Audio = {
     }
   },
 
-  printcb() { Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) }
+  printcb() { 
+    Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) 
+  }
   
 }
 
@@ -3894,11 +3901,11 @@ const Clock = {
       args.forEach( v => Gibberish.Clock.queue.push( v ) )
     }else{
       Gibberish.worklet.port.postMessage({
-        address:'method',
-        object:this.id,
-        name:'addToQueue',
-        args:serialize( args ),
-        functions:true
+        address: 'method',
+        object: this.id,
+        name: 'addToQueue',
+        args: serialize( args ),
+        functions: true
       }) 
     }
   },
@@ -8742,6 +8749,7 @@ let Gibberish = {
     }else if( this.mode === 'processor' ) {
       Gibberish.load()
       Gibberish.output = this.Bus2()
+      Gibberish.callback = Gibberish.generateCallback()
     }
 
 
