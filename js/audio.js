@@ -79,7 +79,7 @@ const Audio = {
   // XXX stop clock from being cleared.
   clear() { 
     Gibberish.clear() 
-    Audio.createClock()
+    Audio.Clock.init() //createClock()
   },
 
   onload() {},

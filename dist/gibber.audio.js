@@ -3799,7 +3799,7 @@ const Audio = {
   // XXX stop clock from being cleared.
   clear() { 
     Gibberish.clear() 
-    Audio.createClock()
+    Audio.Clock.init() //createClock()
   },
 
   onload() {},
@@ -3887,6 +3887,7 @@ const Clock = {
   id:null,
   nogibberish:true,
   bpm:120,
+  seq:null,
 
   store:function() { 
     Gibberish.Clock = this
@@ -3911,6 +3912,10 @@ const Clock = {
   },
 
   init:function() {
+    // needed so that when the clock is re-initialized (for example, after clearing)
+    // gibber won't try and serialized its sequencer
+    this.seq = null
+
     const clockFunc = ()=> {
       //Gibberish.processor.port.postMessage({
       //  address:'clock'
@@ -3922,6 +3927,7 @@ const Clock = {
         Gibberish.processor.playQueue()//.forEach( f => { f() } )
       }
     }
+
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
@@ -3952,16 +3958,6 @@ const Clock = {
 
     this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ this.time( 1/4 ) ] ).start()
 
-    /*Gibberish.utilities.workletHandlers.clock = () => {
-      this.__beatCount += 1
-      this.__beatCount = this.__beatCount % 4 
-      console.log( 'beat count:', this.__beatCount )
-
-      // XXX don't use global reference!!!
-      if( Gibber.Scheduler !== undefined && Gibberish.mode !== 'processor' ) {
-        Gibber.Scheduler.seq( this.__beatCount + 1, 'internal' )
-      }
-    }*/
   },
 
   // time accepts an input value and converts it into samples. the input value
