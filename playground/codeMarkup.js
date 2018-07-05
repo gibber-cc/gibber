@@ -278,6 +278,7 @@ const Marker = {
   _updatePatternContents( pattern, patternClassName, track ) {
     let marker, pos, newMarker
 
+    if( Gibber.shouldDelay === false ) {
     if( pattern.values.length > 1 ) {
       // array of values
       for( let i = 0; i < pattern.values.length; i++) {
@@ -297,6 +298,7 @@ const Marker = {
       //marker.doc.replaceRange( '' + pattern.values[ 0 ], pos.from, pos.to )
       // newMarker = marker.doc.markText( pos.from, pos.to, { className: patternClassName + ' annotation-border' } )
       // track.markup.textMarkers[ patternClassName ] = newMarker
+    }
     }
   },
 

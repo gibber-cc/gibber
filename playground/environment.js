@@ -27,13 +27,15 @@ window.onload = function() {
 
   const workletPath = '../dist/gibberish_worklet.js' 
   Gibber.init( workletPath ).then( ()=> {
-    cm.setValue('')'
+    cm.setValue('')
   })
 
   environment.editor = cm
   environment.console = cmconsole
   window.Environment = environment
   environment.annotations = true
+
+  // XXX this should not be in 'debug' mode...
   environment.debug = true
   environment.codeMarkup = codeMarkup( Gibber )
   environment.codeMarkup.init()
@@ -118,7 +120,6 @@ CodeMirror.keyMap.playground =  {
 
       Gibber.shouldDelay = true
       func()
-      Gibber.shouldDelay = false
       
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
       const markupFunction = () => {
@@ -146,6 +147,7 @@ CodeMirror.keyMap.playground =  {
       return
     }
     
+    Gibber.shouldDelay = false
     //Gibber.printcb()
     //Gibberish.generateCallback()
     //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )

@@ -190,8 +190,7 @@ const patternWrapper = function( Gibber ) {
         return fnc
       },
        
-      reverse() { 
-        //fnc.values.reverse(); 
+      reverse() {
         let array = fnc.values,
             left = null,
             right = null,
@@ -204,7 +203,12 @@ const patternWrapper = function( Gibber ) {
           array[ right ] = temporary;
         }
         
-        fnc._onchange() 
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', array )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
+
+        fnc._onchange()
         
         return fnc
       },

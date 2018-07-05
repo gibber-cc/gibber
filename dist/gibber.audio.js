@@ -4971,8 +4971,7 @@ const patternWrapper = function( Gibber ) {
         return fnc
       },
        
-      reverse() { 
-        //fnc.values.reverse(); 
+      reverse() {
         let array = fnc.values,
             left = null,
             right = null,
@@ -4985,7 +4984,12 @@ const patternWrapper = function( Gibber ) {
           array[ right ] = temporary;
         }
         
-        fnc._onchange() 
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', array )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
+
+        fnc._onchange()
         
         return fnc
       },
@@ -11537,13 +11541,25 @@ const utilities = {
         //console.log( id, propName, value )
 
         if( obj !== undefined && propName.indexOf('.') === -1 ) { 
-          obj[ propName ] = value
+          if( obj[ propName ] !== undefined ) {
+            if( typeof obj[ propName ] !== 'function' ) {
+              obj[ propName ] = value
+            }else{
+              obj[ propName ]( value )
+            }
+          }else{
+            console.log( 'undefined single property:', id, propName, value, obj )
+          }
         }else if( obj !== undefined ) {
           const propSplit = propName.split('.')
           if( obj[ propSplit[ 0 ] ] !== undefined ) {
-            obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ] = value
+            if( typeof obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ] !== 'function' ) {
+              obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ] = value
+            }else{
+              obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ]( value )
+            }
           }else{
-            console.log( 'undefined property!', id, propSplit[0], propSplit[1], value, obj )
+            console.log( 'undefined split property!', id, propSplit[0], propSplit[1], value, obj )
           }
         }
         // XXX double check and make sure this isn't getting sent back to processornode...
