@@ -3833,7 +3833,7 @@ const Audio = {
         let s = Audio.Seq({ values, timings, target:obj, key:methodName })
 
         s.start() // Audio.Clock.time( delay ) )
-        obj[ methodName ].sequencers[ number ] = s 
+        obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
 
         // return object for method chaining
         return obj
@@ -3927,7 +3927,6 @@ const Clock = {
         Gibberish.processor.playQueue()//.forEach( f => { f() } )
       }
     }
-
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
@@ -4860,7 +4859,7 @@ const patternWrapper = function( Gibber ) {
     let fnc = function() {
       let len = fnc.getLength(),
           idx, val, args
-      
+
       if( len === 1 ) { 
         idx = 0 
       }else{
@@ -4876,6 +4875,10 @@ const patternWrapper = function( Gibber ) {
         args = fnc.runFilters( val, idx )
       
         fnc.phase += fnc.stepSize * args[ 1 ]
+
+        // XXX why is this one off from the worlet-side pattern id?
+        if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id, 'update.currentIndex', idx )
+
         val = args[ 0 ]
       }
       // check to see if value is a function, and if so evaluate it
@@ -4895,7 +4898,11 @@ const patternWrapper = function( Gibber ) {
 
       // if pattern has update function, add new value to array
       // values are popped when updated by animation scheduler
-      if( fnc.update && fnc.update.value ) fnc.update.value.unshift( val )
+      //if( fnc.update ) { 
+        // XXX why is this one off from the worklet-side pattern id?
+        //if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id + 1, 'update.currentIndex', val )
+        //fnc.update.value.unshift( val )
+      //}
       
       if( val === fnc.DNR ) val = null
 
@@ -4918,7 +4925,6 @@ const patternWrapper = function( Gibber ) {
       filters : [],
       __listeners: [],
       onchange : null,
-      id: Gibberish.utilities.getUID(),
       isop:true,
 
       range() {
@@ -5180,6 +5186,9 @@ const patternWrapper = function( Gibber ) {
       }
     })
     
+    if( Gibberish.mode === 'worklet' ) {
+      fnc.id = Gibberish.utilities.getUID()
+    }
     //fnc.filters.pattern = fnc
     fnc.retrograde = fnc.reverse.bind( fnc )
     
@@ -5213,7 +5222,7 @@ const patternWrapper = function( Gibber ) {
     // a list, instead of in a property dictionary. When 'isPattern' is true, gibberish
     // looks for an 'inputs' property and then passes its value (assumed to be an array)
     // using the spread operator to the constructor. 
-    const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters }, fnc )  
+    const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters, id:fnc.id }, fnc )  
 
     //if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
 
@@ -5869,7 +5878,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
           let prevSeq = obj[ propertyName ].sequencers[ number ] 
           if( prevSeq !== undefined ) prevSeq.stop()
 
-          obj[ propertyName ].sequencers[ number ] = Seq({ 
+          obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Seq({ 
             values, 
             timings, 
             target:__wrappedObject, 
@@ -5956,7 +5965,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
           let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
           
           s.start( Audio.Clock.time( delay ) )
-          obj[ methodName ].sequencers[ number ] = s 
+          obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
 
           // return object for method chaining
           return obj
@@ -6182,6 +6191,33 @@ const Utility = {
     this.randomArgs = Array.prototype.slice.call( arguments, 0 )
 
     return this
+  },
+
+  elementArray: function( list ) {
+    let out = []
+
+    for( var i = 0; i < list.length; i++ ) {
+      out.push( list.item( i ) )
+    }
+
+    return out
+  },
+  
+  __classListMethods: [ 'toggle', 'add', 'remove' ],
+
+  create( query ) {
+    let elementList = document.querySelectorAll( query ),
+        arr = Utility.elementArray( elementList )
+    
+    for( let method of Utility.__classListMethods ) { 
+      arr[ method ] =  style => {
+        for( let element of arr ) { 
+          element.classList[ method ]( style )
+        }
+      } 
+    }
+
+    return arr
   },
 
   export( obj ) {
@@ -8431,7 +8467,7 @@ Freeverb.defaults = {
   wet1: 1,
   wet2: 0,
   dry: .5,
-  roomSize: .84,
+  roomSize: .925,
   damping:  .5,
 }
 
@@ -8680,6 +8716,7 @@ let Gibberish = {
   debug: false,
   id: -1,
   preventProxy:false,
+  proxyEnabled: true,
 
   output: null,
 
@@ -9577,7 +9614,7 @@ module.exports = function( Gibberish ) {
     panVoices:false,
     glide: 1,
     antialias:false,
-    filterType: 2,
+    filterType: 1,
     filterMode: 0, // 0 = LP, 1 = HP, 2 = BP, 3 = Notch
     saturation:.5,
     filterMult: 4,
@@ -9700,7 +9737,7 @@ module.exports = function( Gibberish ) {
     Object.assign( stereoProto, Gibberish.mixins.polyinstrument )
 
     const Template = props => {
-      const properties = Object.assign( {}, { isStereo:true, maxVoices:16 }, props )
+      const properties = Object.assign( {}, { isStereo:true, maxVoices:4 }, props )
 
       //const synth = properties.isStereo === true ? Object.create( stereoProto ) : Object.create( monoProto )
       const synth = properties.isStereo === true ? Gibberish.Bus2({ __useProxy__:false }) : Gibberish.Bus({ __useProxy__:false }) 
@@ -10040,7 +10077,7 @@ module.exports = function( Gibberish ) {
     useADSR:false,
     shape:'linear',
     triggerRelease:false,
-    gain: 1,
+    gain: .5,
     pulsewidth:.25,
     frequency:220,
     pan: .5,
@@ -11492,14 +11529,25 @@ const utilities = {
       
       Gibberish.preventProxy = true
       for( let i = 0; i < messages.length; i+= 3 ) {
-        const id = messages[ i ]
+        const id = messages[ i ] 
         const propName = messages[ i + 1 ]
         const value = messages[ i + 2 ]
         const obj = Gibberish.worklet.ugens.get( id )
 
-        if( obj !== undefined ) obj[ propName ] = value
+        //console.log( id, propName, value )
+
+        if( obj !== undefined && propName.indexOf('.') === -1 ) { 
+          obj[ propName ] = value
+        }else if( obj !== undefined ) {
+          const propSplit = propName.split('.')
+          if( obj[ propSplit[ 0 ] ] !== undefined ) {
+            obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ] = value
+          }else{
+            console.log( 'undefined property!', id, propSplit[0], propSplit[1], value, obj )
+          }
+        }
         // XXX double check and make sure this isn't getting sent back to processornode...
-        //console.log( propName, value, obj )
+        // console.log( propName, value, obj )
       }
       Gibberish.preventProxy = false
     }
@@ -11626,16 +11674,18 @@ const __proxy = function( __name, values, obj ) {
       },
       set( target, prop, value, receiver ) {
         if( prop !== 'connected' && prop !== 'input' && prop !== 'callback' && prop !== 'inputNames' ) {
-          const __value = replaceObj( value )
+          if( Gibberish.proxyEnabled === true ) {
+            const __value = replaceObj( value )
 
-          if( __value !== undefined ) {
-            Gibberish.worklet.port.postMessage({ 
-              address:'set', 
-              object:obj.id,
-              name:prop,
-              value:__value
-            })
-          }
+            if( __value !== undefined ) {
+              Gibberish.worklet.port.postMessage({ 
+                address:'set', 
+                object:obj.id,
+                name:prop,
+                value:__value
+              })
+            }
+            }
         }
 
         target[ prop ] = value
@@ -11656,9 +11706,11 @@ const __proxy = function( __name, values, obj ) {
     const proxy = new Proxy( obj, {
       //get( target, prop, receiver ) { return target[ prop ] },
       set( target, prop, value, receiver ) {
-        if( prop.indexOf('__') === -1 ) {
-          if( Gibberish.processor !== undefined ) 
+        let valueType = typeof value
+        if( prop.indexOf('__') === -1 && valueType !== 'function' && valueType !== 'object' ) {
+          if( Gibberish.processor !== undefined ) { 
             Gibberish.processor.messages.push( obj.id, prop, value )
+          }
         }
         target[ prop ] = value
 

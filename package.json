@@ -7,6 +7,7 @@
     "url": "git://github.com/charlieroberts/gibber.audio.lib"
   },
   "devDependencies": {
+    "acorn": "^5.7.1",
     "browserify": "^16.2.0",
     "codemirror": "^5.39.0",
     "gulp": "^3.9.1",

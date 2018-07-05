@@ -113,7 +113,7 @@ const Audio = {
         let s = Audio.Seq({ values, timings, target:obj, key:methodName })
 
         s.start() // Audio.Clock.time( delay ) )
-        obj[ methodName ].sequencers[ number ] = s 
+        obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
 
         // return object for method chaining
         return obj

@@ -47,7 +47,6 @@ const Clock = {
       }
     }
 
-
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
 

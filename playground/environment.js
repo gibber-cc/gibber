@@ -1,7 +1,8 @@
-var cm, cmconsole, exampleCode, AudioContext = AudioContext || webkitAudioContext,
-isStereo = false
+const codeMarkup = require( './codeMarkup.js' )
 
-let environment = {}
+let cm, cmconsole, exampleCode, 
+    isStereo = false,
+    environment = {}
 
 window.onload = function() {
   cm = CodeMirror( document.querySelector('#editor'), {
@@ -26,12 +27,16 @@ window.onload = function() {
 
   const workletPath = '../dist/gibberish_worklet.js' 
   Gibber.init( workletPath ).then( ()=> {
-    cm.setValue('// gibber is loaded.')
+    cm.setValue('')'
   })
 
   environment.editor = cm
   environment.console = cmconsole
   window.Environment = environment
+  environment.annotations = true
+  environment.debug = true
+  environment.codeMarkup = codeMarkup( Gibber )
+  environment.codeMarkup.init()
 
   environment.displayCallbackUpdates = function() {
     Gibberish.oncallback = function( cb ) {
@@ -109,17 +114,39 @@ CodeMirror.keyMap.playground =  {
 
       flash( cm, selectedCode.selection )
 
-      var func = new Function( selectedCode.code )
+      const func = new Function( selectedCode.code )
 
       Gibber.shouldDelay = true
       func()
       Gibber.shouldDelay = false
+      
+      //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
+      const markupFunction = () => {
+              Environment.codeMarkup.process( 
+                selectedCode.code, 
+                selectedCode.selection, 
+                cm, 
+                Gibber.currentTrack 
+              ) 
+            }
+
+      markupFunction.origin = func
+
+      if( !Environment.debug ) {
+        Gibber.Scheduler.functionsToExecute.push( func )
+        if( Environment.annotations === true ) {
+          Gibber.Scheduler.functionsToExecute.push( markupFunction  )
+        }
+      }else{
+        //func()
+        if( Environment.annotations === true ) markupFunction()
+      }
     } catch (e) {
       console.log( e )
       return
     }
     
-    Gibber.printcb()
+    //Gibber.printcb()
     //Gibberish.generateCallback()
     //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },

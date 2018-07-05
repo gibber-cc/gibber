@@ -78,7 +78,7 @@ const patternWrapper = function( Gibber ) {
     let fnc = function() {
       let len = fnc.getLength(),
           idx, val, args
-      
+
       if( len === 1 ) { 
         idx = 0 
       }else{
@@ -94,6 +94,10 @@ const patternWrapper = function( Gibber ) {
         args = fnc.runFilters( val, idx )
       
         fnc.phase += fnc.stepSize * args[ 1 ]
+
+        // XXX why is this one off from the worlet-side pattern id?
+        if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id, 'update.currentIndex', idx )
+
         val = args[ 0 ]
       }
       // check to see if value is a function, and if so evaluate it
@@ -113,7 +117,11 @@ const patternWrapper = function( Gibber ) {
 
       // if pattern has update function, add new value to array
       // values are popped when updated by animation scheduler
-      if( fnc.update && fnc.update.value ) fnc.update.value.unshift( val )
+      //if( fnc.update ) { 
+        // XXX why is this one off from the worklet-side pattern id?
+        //if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id + 1, 'update.currentIndex', val )
+        //fnc.update.value.unshift( val )
+      //}
       
       if( val === fnc.DNR ) val = null
 
@@ -136,7 +144,6 @@ const patternWrapper = function( Gibber ) {
       filters : [],
       __listeners: [],
       onchange : null,
-      id: Gibberish.utilities.getUID(),
       isop:true,
 
       range() {
@@ -398,6 +405,9 @@ const patternWrapper = function( Gibber ) {
       }
     })
     
+    if( Gibberish.mode === 'worklet' ) {
+      fnc.id = Gibberish.utilities.getUID()
+    }
     //fnc.filters.pattern = fnc
     fnc.retrograde = fnc.reverse.bind( fnc )
     
@@ -431,7 +441,7 @@ const patternWrapper = function( Gibber ) {
     // a list, instead of in a property dictionary. When 'isPattern' is true, gibberish
     // looks for an 'inputs' property and then passes its value (assumed to be an array)
     // using the spread operator to the constructor. 
-    const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters }, fnc )  
+    const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters, id:fnc.id }, fnc )  
 
     //if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
 
