@@ -1,0 +1,290 @@
+/*.CodeMirror-highlight { background:red !important }
+
+body {
+  font-family:Menlo, monospace;
+  font-size:1em;
+  background:rgba(46,50,53,1);
+  margin:0; padding:0;
+  color:rgb( 153 ) !important;
+}
+
+#editor {
+  width:63%;
+  height:100%;
+  display:inline-block;
+}
+
+/
+#sidebar {
+  display:inline-block;
+  width:35%;
+  float:right;
+  height:100%;
+  border-left:1px black solid;
+  box-sizing:border-box;
+  overflow:scroll;
+  font-family:sans-serif;
+  font-weight:lighter;
+  font-size:1em
+}
+
+
+.CodeMirror {
+  font-family: 'Menlo','Source Code Pro', monospace;
+  font-size: .7em;
+  background-color:#bbb;
+  color:#000;
+  font-weight:500;
+}
+.CodeMirror {
+  font-family:Menlo, monospace;
+  font-size:.8em;
+  background:rgba(46,50,53,1);
+  color:rgb( 153 ) !important
+}
+
+span.cm-comment { color:rgb(121,121,121) !important }
+
+span.cm-property, 
+span.cm-attribute,
+span.cm-variable,
+span.cm-variable-2,
+.cm-def,
+.cm-s-default { color: rgba(173,173,173,1) !important }
+
+span.cm-keyword,
+span.cm-number, span.cm-atom { color:rgba(89, 151, 198, 1) !important }
+
+span.cm-string {color: rgb(225, 225, 225) !important }
+
+.CodeMirror-cursor {
+ background: rgba(255,255,255,.5);
+ border: none !important;
+ width: .5em !important;
+ display: block;
+}
+
+.CodeMirror-selected {
+ background:rgba(84,84,84,.5) !important;
+}
+
+.CodeMirror-highlight {
+ background:rgba(255,255,255,.5)
+}
+
+/*
+ *#console .CodeMirror { background-color:#444 }
+ *#editor  .CodeMirror { 
+ *  background-color:#bbb;
+ *  color:#4a4a4a;
+ *}
+ */
+
+/*.CodeMirror-matchingbracket{ color: #b00 !important }*/
+
+.annotation { 
+  /*padding:0px 1px;*/
+  border:1px solid transparent;
+  padding:0px;
+  box-sizing:border-box !important;
+}
+
+.annotation-full {
+  border-color: #999;
+}
+
+.annotation-highlight { background-color: #ffffff }
+
+.annotation-border { 
+  /* border-color:#999 !important; */
+  border-color:#999;
+  border-width:1px;
+  border-style:solid
+}
+
+.annotation-right-border    { border-right-color:#999 }
+.annotation-left-border     { border-left-color:#999 }
+.annotation-top-border      { border-top-color:#999 } 
+.annotation-bottom-border   { border-bottom-color:#999 }
+
+.annotation-right-border-cycle   { border-right-color:#ddd  !important }
+.annotation-left-border-cycle    { border-left-color:#ddd   !important }
+.annotation-top-border-cycle     { border-top-color:#ddd    !important } 
+.annotation-bottom-border-cycle  { border-bottom-color:#ddd !important }
+
+.annotation-no-left-border  { border-left-color:transparent  !important }
+.annotation-no-right-border { border-right-color:transparent !important }
+
+.annotation-border-left {
+  border-left-color:#999;
+}
+
+.annotation-border-right {
+  border-right-color: #999;
+}
+
+.annotation-no-horizontal-border { 
+  /* padding-left:1;  */
+  /* padding-right:1; */
+}
+
+.annotation-binop-border { 
+  /*border-color:transparent;*/
+  border-left-color:transparent !important;
+  border-right-color:transparent !important;
+}
+
+.annotation-array {
+  border-top-color:#999;
+  border-bottom-color:#999;
+}
+
+.annotation-binop {
+  border-left-color:  transparent !important;
+  border-right-color: transparent !important;
+  border-style: solid;
+}
+
+.scoreCurrentIndex { 
+  /*border: #700 1px solid */
+  /*font-weight:bold !important*/
+  background: rgba(66,70,73,1)
+}
+.euclid1 {
+  background:#ddd !important;
+  color:rgba(46,50,53,1) !important;
+}
+
+.euclid0 { background:rgba(96,100,103,1) }
+
+.pattern-update-range-outside { color:#888; }
+.pattern-update-range-inside  { 
+  /*color:#0f0 !important; */
+  text-decoration:underline;
+}
+
+.vtree-leaf-label { 	
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* Internet Explorer/Edge */
+  user-select: none;           /* Non-prefixed version, currently
+                                  not supported by any browser */
+} 
+.vtree {
+  font-family:sans-serif;
+  font-size:.8em;
+}
+/*
+#console { 
+  width:100%;
+  overflow:scroll;
+  height: calc( 100% - 4.5em );
+  color:rgb( 153,153,153 ) !important; 
+}
+#sidebar {
+  color:rgb( 173,173,173 ) !important; 
+}
+
+#lomView ul { padding: 0 }
+
+#liveDemosView ul, #maxDemosView ul, #midiDemosView ul { margin:0; padding: 0; list-style:none; cursor:pointer }
+
+#liveDemosView ul li, #maxDemosView ul li, #midiDemosView ul li { margin-bottom: 5px }
+
+#liveDemosView ul li:hover, #maxDemosView ul li:hover, #midiDemosView ul li:hover { background: rgba( 255,255,255, .15) }
+
+#splitbar {
+  display:inline-block;
+  top:0;
+  position:absolute;
+  height:100%;
+  width:5px;
+  background:#666;
+  cursor: ew-resize
+}
+
+#tabs {
+  display:inline-block;
+  top:0;
+  position:relative;
+  left:5px;
+  font-size: .8em;
+  padding-top:0;
+  box-sizing:border
+}
+
+#console_list {
+  width: 100%;
+  height:100%;
+  margin:0;
+  display: block;
+  font-family: 'Menlo', 'Source Code Pro', monospace;
+  list-style: none;
+  box-sizing:border;
+  padding:0;
+}
+
+#console_list li {
+  font-size: 1em;
+}
+
+.console_error {
+  color:red;
+}
+
+.microlib_tabs_tab {
+  padding:1em;
+  padding-top:1.5em;
+}
+
+.microlib_tabs_nav_item {
+  height:26px;
+  padding:.5em 5px 0px 5px;
+  line-height:26px;
+  color:white;
+  background:black
+}
+.microlib_tabs_nav_item.microlib_active {
+  background:rgba(89, 151, 198, .6) !important
+}
+
+.vtree{ padding-left: 0 }
+
+.demos .microlib_tabs_nav_item, .demos .microlib_tabs_nav_item.microlib_active {
+  background:transparent !important;
+  color:#ccc;
+  text-decoration:underline;
+  border:none;
+}
+
+.demos .microlib_tabs_nav_item.microlib_active {
+  color:rgba(109, 171, 238, 1) !important;
+}
+.schemas .microlib_tabs_nav_item, .schemas .microlib_tabs_nav_item.microlib_active {
+  background:transparent !important;
+  color:#ccc;
+  text-decoration:underline;
+  border:none;
+}
+
+.schemas .microlib_tabs_nav_item.microlib_active {
+  color:rgba(109, 171, 238, 1) !important;
+}
+#sidebar select, #sidebar input {
+  background:#aaa;
+  margin-bottom:10px;
+}
+
+label { margin-bottom:5px; }
+
+#help a {
+  color: #ddd
+}
+
+#help p { max-width: 24em; margin-top:0 }
+
+.demos { padding-left:0 }
+*/
+
