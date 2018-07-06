@@ -5557,27 +5557,31 @@ module.exports = {
 module.exports = {
 
   bleep: { 
-    attack:44, decay: audio => audio.Gibberish.ctx.sampleRate / 8, 
+    attack:1/256, decay:1/32, 
     waveform:'sine' 
   },
 
   bleepEcho: { 
     waveform:'sine', 
-    attack:44, decay:1024, 
-    gain:1,
+    attack:1/256, decay:1/64, 
+    gain:.25,
     presetInit: function( audio ) {
-      this.fx.push( audio.effects.Delay({ feedback:.75, time: 11025/4 }) )
+      this.fx.push( audio.effects.Delay({ feedback:.75, time: audio.Clock.time(1/16) }) )
     }
   },
 
   shimmer: {
-    attack:1/128, decay:1,
+    attack:1/128, decay:2,
     waveform:'square', 
     filterType:1,
+    cutoff:10,
+    filterMult:1,
+    Q:.6,
     maxVoices:3,
-    gain:.025,
+    gain:.1,
     presetInit: function( audio ) {
-      this.fx.push( audio.effects.Chorus({ slowGain:3, fastGain:.5 }) )
+      this.fx.add( audio.effects.Chorus({ slowGain:3, fastGain:.5 }) )
+      this.fx.add( audio.effects.Delay({ time: audio.Clock.time(1/12), feedback:.65 }) )
     }
   },
 

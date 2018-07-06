@@ -2,7 +2,7 @@ const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
 
-module.exports = ( patternObject, marker, className, cm, track ) => {
+module.exports = ( patternObject, marker, className, cm, track, patternNode, Marker ) => {
   let val ='/* ' + patternObject.values.join('')  + ' */',
       pos = marker.find(),
       end = Object.assign( {}, pos.to ),
@@ -22,6 +22,7 @@ module.exports = ( patternObject, marker, className, cm, track ) => {
 
   patternObject.commentMarker = cm.markText( pos.from, end, { className, atomic:false })
 
+  if( track.markup === undefined ) Marker.prepareObject( track )
   track.markup.textMarkers[ className ] = {}
 
   let mark = () => {

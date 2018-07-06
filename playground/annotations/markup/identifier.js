@@ -47,7 +47,7 @@ const __Identifier = function( Marker ) {
     if( patternNode.processed === true ) return 
 
     const cm = state.cm
-    const track = seq.object
+    const track = seq.target//object
     const patternObject = seq[ patternType ]
     const [ marker, className ] = mark( patternNode, state, patternType, seqNumber )
 
@@ -58,7 +58,7 @@ const __Identifier = function( Marker ) {
       if( patternObject.widget === undefined ) { // if wavepattern is inlined to .seq 
         Marker.processGen( containerNode, cm, track, patternObject, seq )
       }else{
-        patternObject.update = Marker.patternUpdates.anonymousFunction( patternObject, marker, className, cm, track )
+        patternObject.update = Marker.patternUpdates.anonymousFunction( patternObject, marker, className, cm, track, Marker )
       }
     }else{
       let updateName = typeof patternNode.callee !== 'undefined' ? patternNode.callee.name : patternNode.name
@@ -68,12 +68,12 @@ const __Identifier = function( Marker ) {
 
       if( Marker.patternUpdates[ updateName ] ) {
         if( updateName !== 'Lookup' ) {
-          patternObject.update =  Marker.patternUpdates[ updateName ]( patternObject, marker, className, cm, track, patternNode )
+          patternObject.update =  Marker.patternUpdates[ updateName ]( patternObject, marker, className, cm, track, patternNode, Marker )
         }else{
-          Marker.patternUpdates[ updateName ]( patternObject, marker, className, cm, track, patternNode, patternType, seqNumber )
+          Marker.patternUpdates[ updateName ]( patternObject, marker, className, cm, track, patternNode, patternType, seqNumber, Marker )
         }
       } else {
-        patternObject.update = Marker.patternUpdates.anonymousFunction( patternObject, marker, className, cm, track )
+        patternObject.update = Marker.patternUpdates.anonymousFunction( patternObject, marker, className, cm, track, Marker )
       }
       
       patternObject.patternName = className
