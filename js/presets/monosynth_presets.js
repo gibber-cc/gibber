@@ -34,8 +34,8 @@ module.exports = {
     octave: -2,
     octave2 : -1,
     cutoff: .5,
-    filterMult:.2,
-    resonance:1,
+    filterMult:2,
+    Q:.35,
   },
   bass2 : {
     attack: audio => audio.Clock.ms(1), 
@@ -44,9 +44,9 @@ module.exports = {
     octave2 : 0,
     octave3 : 0,      
     cutoff: .5,
-    filterMult:.2,
-    resonance:1,
-    amp:.65
+    filterMult:2,
+    Q:.5,
+    gain:.35
   },
   
   edgy: {

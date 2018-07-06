@@ -6,6 +6,7 @@ const Instruments = {
     const instruments = {}
     for( let instrumentName in Gibberish.instruments ) {
       const gibberishConstructor = Gibberish.instruments[ instrumentName ]
+      if( typeof gibberishConstructor.defaults === 'object' ) gibberishConstructor.defaults.octave = 0
 
       const methods = Instruments.descriptions[ instrumentName ] === undefined ? null : Instruments.descriptions[ instrumentName ].methods
       const description = { 

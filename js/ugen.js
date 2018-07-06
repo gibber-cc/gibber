@@ -122,7 +122,17 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
               id:__wrappedObject.id,
               key:'note',
               function:`function( note ){ 
-                const __note = Gibberish.Theory.note( note );
+                const octave = this.octave || 0
+                let notesInOctave = 7
+                const mode = Gibberish.Theory.mode()
+                if( mode !== null ) {
+                  notesInOctave = Gibberish.Theory.modes[ mode ].length
+                }else{
+                  const tuning = Gibberish.Theory.tuning()
+                  notesInOctave = Gibberish.Theory.__tunings[ tuning ].frequencies.length
+                }
+                const offset = octave * notesInOctave
+                const __note = Gibberish.Theory.note( note + offset );
                 this.___note( __note ) 
               }`
             })
