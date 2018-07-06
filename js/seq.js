@@ -44,7 +44,21 @@ module.exports = function( Audio ) {
       
     //}
 
-    return Gibberish.Sequencer({ values, timings, target, key })
+    const seq = Gibberish.Sequencer({ values, timings, target, key })
+
+    seq.clear = function() {
+      if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
+      if( seq.timings !== undefined && seq.timings.clear !== undefined ) seq.timings.clear()
+    }
+    Seq.sequencers.push( seq )
+
+    return seq
+  }
+
+  Seq.sequencers = []
+  Seq.clear = function() {
+    Seq.sequencers.forEach( seq => seq.clear() )
+    Seq.sequencers = []
   }
 
   return Seq

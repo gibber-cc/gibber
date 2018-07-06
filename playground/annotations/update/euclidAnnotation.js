@@ -112,7 +112,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     // if this gets called twice...
     if( commentPos === undefined ) return
 
-    cm.replaceRange( '', commentPos.from, { line:commentPos.to.line, ch:commentPos.to.ch+1 } )
+    cm.replaceRange( '', commentPos.from, { line:commentPos.to.line, ch:commentPos.to.ch } )
     patternObject.commentMarker.clear()
   }
 

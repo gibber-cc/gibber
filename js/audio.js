@@ -80,6 +80,7 @@ const Audio = {
   clear() { 
     Gibberish.clear() 
     Audio.Clock.init() //createClock()
+    Audio.Seq.clear()
   },
 
   onload() {},

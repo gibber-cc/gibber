@@ -1,4 +1,3 @@
-const __Seq = require( './seq' )
 const Presets = require( './presets.js' )
 const Theory  = require( './theory.js' )
 const Gibberish = require( 'gibberish-dsp' )
@@ -19,8 +18,6 @@ const __timeProps = {
 // ugens, providing convenience methods for rapidly sequencing
 // and modulating them.
 const Ugen = function( gibberishConstructor, description, Audio ) {
-
-  const Seq = __Seq( Audio )
 
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
@@ -56,9 +53,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
         seq( values, timings, number = 0, delay = 0 ) {
           let prevSeq = obj[ propertyName ].sequencers[ number ] 
-          if( prevSeq !== undefined ) prevSeq.stop()
+          if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
 
-          obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Seq({ 
+          obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Audio.Seq({ 
             values, 
             timings, 
             target:__wrappedObject, 
@@ -139,9 +136,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
         obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
           let prevSeq = obj[ methodName ].sequencers[ number ] 
-          if( prevSeq !== undefined ) prevSeq.stop()
+          if( prevSeq !== undefined ) { prevSeq.stop(); if( typeof prevSeq.clear === 'function' ) prevSeq.clear() }
 
-          let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
+          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
           
           s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 

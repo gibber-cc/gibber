@@ -6219,7 +6219,6 @@ module.exports = function( Marker ) {
   const CallExpression = function( patternNode, state, seq, patternType, index=0 ) {
     if( patternNode.processed === true ) return 
 
-    console.log( 'call:', patternNode )
     var args = Array.prototype.slice.call( arguments, 0 )
 
     if( patternNode.callee.type === 'MemberExpression' && patternNode.callee.object.type === 'ArrayExpression' ) {
@@ -6958,7 +6957,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     // if this gets called twice...
     if( commentPos === undefined ) return
 
-    cm.replaceRange( '', commentPos.from, { line:commentPos.to.line, ch:commentPos.to.ch+1 } )
+    cm.replaceRange( '', commentPos.from, { line:commentPos.to.line, ch:commentPos.to.ch } )
     patternObject.commentMarker.clear()
   }
 

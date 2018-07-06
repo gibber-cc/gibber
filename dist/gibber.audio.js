@@ -3800,6 +3800,7 @@ const Audio = {
   clear() { 
     Gibberish.clear() 
     Audio.Clock.init() //createClock()
+    Audio.Seq.clear()
   },
 
   onload() {},
@@ -5636,7 +5637,21 @@ module.exports = function( Audio ) {
       
     //}
 
-    return Gibberish.Sequencer({ values, timings, target, key })
+    const seq = Gibberish.Sequencer({ values, timings, target, key })
+
+    seq.clear = function() {
+      if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
+      if( seq.timings !== undefined && seq.timings.clear !== undefined ) seq.timings.clear()
+    }
+    Seq.sequencers.push( seq )
+
+    return seq
+  }
+
+  Seq.sequencers = []
+  Seq.clear = function() {
+    Seq.sequencers.forEach( seq => seq.clear() )
+    Seq.sequencers = []
   }
 
   return Seq
@@ -5851,7 +5866,6 @@ const Theory = {
 module.exports = Theory
 
 },{"./external/tune-api-only.js":81,"gibberish-dsp":126,"serialize-javascript":94}],92:[function(require,module,exports){
-const __Seq = require( './seq' )
 const Presets = require( './presets.js' )
 const Theory  = require( './theory.js' )
 const Gibberish = require( 'gibberish-dsp' )
@@ -5872,8 +5886,6 @@ const __timeProps = {
 // ugens, providing convenience methods for rapidly sequencing
 // and modulating them.
 const Ugen = function( gibberishConstructor, description, Audio ) {
-
-  const Seq = __Seq( Audio )
 
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
@@ -5909,9 +5921,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
         seq( values, timings, number = 0, delay = 0 ) {
           let prevSeq = obj[ propertyName ].sequencers[ number ] 
-          if( prevSeq !== undefined ) prevSeq.stop()
+          if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
 
-          obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Seq({ 
+          obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Audio.Seq({ 
             values, 
             timings, 
             target:__wrappedObject, 
@@ -5992,9 +6004,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
         obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
           let prevSeq = obj[ methodName ].sequencers[ number ] 
-          if( prevSeq !== undefined ) prevSeq.stop()
+          if( prevSeq !== undefined ) { prevSeq.stop(); if( typeof prevSeq.clear === 'function' ) prevSeq.clear() }
 
-          let s = Seq({ values, timings, target:__wrappedObject, key:methodName })
+          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
           
           s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
@@ -6093,7 +6105,7 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
 module.exports = Ugen
 
-},{"./presets.js":86,"./seq":90,"./theory.js":91,"gibberish-dsp":126}],93:[function(require,module,exports){
+},{"./presets.js":86,"./theory.js":91,"gibberish-dsp":126}],93:[function(require,module,exports){
 const Utility = {
   rndf( min=0, max=1, number, canRepeat=true ) {
     let out = 0
