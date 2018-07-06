@@ -7763,6 +7763,7 @@ window.onload = function() {
 
   cm.setSize( null, '100%' )
 
+  /*
   cmconsole = CodeMirror( document.querySelector('#main'), {
     mode:'javascript',
     value:
@@ -7772,14 +7773,14 @@ window.onload = function() {
   })     
 
   cmconsole.setSize( null, '100%' )
-
+*/
   const workletPath = '../dist/gibberish_worklet.js' 
   Gibber.init( workletPath ).then( ()=> {
     cm.setValue('')
   })
 
   environment.editor = cm
-  environment.console = cmconsole
+  //environment.console = cmconsole
   window.Environment = environment
   environment.annotations = true
 
@@ -7815,7 +7816,7 @@ window.onload = function() {
 
   //loadexample( 'deepnote.js' )
 
-  setupSplit()
+  //setupSplit()
 }
 
 

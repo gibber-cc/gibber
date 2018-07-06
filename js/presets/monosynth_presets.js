@@ -33,9 +33,11 @@ module.exports = {
     decay: 1/8,	
     octave: -2,
     octave2 : -1,
-    cutoff: .5,
-    filterMult:2,
-    Q:.35,
+    cutoff: .8,
+    filterMult:3,
+    Q:.75,
+    detune2:.0275,
+    detune3:-.0275
   },
   bass2 : {
     attack: audio => audio.Clock.ms(1), 

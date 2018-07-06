@@ -84,24 +84,17 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
             obj[ '__' + propertyName ] = v
         }
       })
-
-
-      //Gibberish.worklet.port.postMessage({
-      //  address:'assign',
-      //  id:__wrappedObject.id,
-      //  obj: {
-      //    __mods:[],
-      //    mod( ugen, 
-      //  }
-      //})
     }
 
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
-        if( methodName !== 'chord' && methodName !== 'note' ) {
+        if( methodName !== 'note' ) {
           obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
         }else{
+          // in this block we are monkey patching the note method of Gibberish synths so that
+          // they use Gibber's harmonic system inside the AudioWorkletProcessor.
+
           obj[ methodName ] = function( ...args ) {
             // this should only be for direct calls from the IDE
             if( Gibberish.mode === 'worklet' ) {
@@ -114,36 +107,32 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
             }
           }
 
-          // we have to monkey patch the note method on the Gibberish objects running
-          // inside the AudioWorkletProcessor to lookup the index in the current scale.
-          if( methodName === 'note' ) {
-            Gibberish.worklet.port.postMessage({
-              address:'monkeyPatch',
-              id:__wrappedObject.id,
-              key:'note',
-              function:`function( note ){ 
-                const octave = this.octave || 0
-                let notesInOctave = 7
-                const mode = Gibberish.Theory.mode()
-                if( mode !== null ) {
-                  notesInOctave = Gibberish.Theory.modes[ mode ].length
-                }else{
-                  const tuning = Gibberish.Theory.tuning()
-                  notesInOctave = Gibberish.Theory.__tunings[ tuning ].frequencies.length
-                }
-                const offset = octave * notesInOctave
-                const __note = Gibberish.Theory.note( note + offset );
-                this.___note( __note ) 
-              }`
-            })
-          }else{
-            Gibberish.worklet.port.postMessage({
-              address:'monkeyPatch',
-              id:__wrappedObject.id,
-              key:'chord',
-              function:'function( notes ){ const __notes = notes.map( Gibberish.Theory.note ); this.___chord( __notes ) }'
-            })
-          }
+          // when a message is received at the address 'monkeyPatch',
+          // Gibberish will create a copy of the method identified by
+          // the 'key' field, and then assign it back to the object prefaced
+          // with double underscores (e.g. __note). The function that is being
+          // patched in can then call the original function using the prefaced 
+          // name, as is done in the last line of the argument function below.
+          Gibberish.worklet.port.postMessage({
+            address:'monkeyPatch',
+            id:__wrappedObject.id,
+            key:'note',
+            function:`function( note ){ 
+              const octave = this.octave || 0
+              let notesInOctave = 7
+              const mode = Gibberish.Theory.mode()
+              if( mode !== null ) {
+                notesInOctave = Gibberish.Theory.modes[ mode ].length
+              }else{
+                const tuning = Gibberish.Theory.tuning()
+                notesInOctave = Gibberish.Theory.__tunings[ tuning ].frequencies.length
+              }
+              const offset = octave * notesInOctave
+              const __note = Gibberish.Theory.note( note + offset );
+              this.___note( __note ) 
+            }`
+          })
+          
         }
 
         obj[ methodName ].sequencers = []
@@ -165,7 +154,12 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     obj.id = __wrappedObject.id
 
+    // XXX where does shouldAddToUgen come from? Not from presets.js...
     if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
+
+    // create fx chaining api. e.g. synth.fx.add( Chorus(), Freeverb() )
+    // we use the 'add' method to enable method chaining alongside instrument calls to
+    // .connect() and .seq()
 
     const __fx = []
     __fx.__push = __fx.push.bind( __fx )
@@ -219,6 +213,9 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
 
+    // presetInit is a function in presets that triggers actions after the ugen
+    // has been instantiated... it is primarily used to add effects and modulations
+    // to a preset.
     if( properties !== undefined && properties.__presetInit__ !== undefined ) {
       properties.__presetInit__.call( obj, Audio )
     }
