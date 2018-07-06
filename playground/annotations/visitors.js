@@ -22,13 +22,22 @@ module.exports = function( Marker ) {
       // first check to see if the right operand is a callexpression
       if( expression.right.type === 'CallExpression' ) {
 
+        //console.log( 'assignment right:', expression.right.callee )
         // if standalone object (Steps, Arp, Score etc.)
-        if( Marker.standalone[ expression.right.callee.name ] ) {
+        let name
+        console.log( expression.right )
+        if( expression.right.callee.type === 'MemberExpression' ) {
+          name = expression.right.callee.object.callee.name
+        }else{
+          name = expression.right.callee.name
+        }
+        console.log( 'name:', name )
+        if( Marker.standalone[ name ] ) {
 
           const obj = window[ expression.left.name ]
           if( obj.markup === undefined ) Marker.prepareObject( obj )
 
-          Marker.standalone[ expression.right.callee.name ]( 
+          Marker.standalone[ name ]( 
             expression.right, 
             state.cm,
             obj,

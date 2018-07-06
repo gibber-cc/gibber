@@ -6,6 +6,7 @@ module.exports = function( Marker ) {
   const CallExpression = function( patternNode, state, seq, patternType, index=0 ) {
     if( patternNode.processed === true ) return 
 
+    console.log( 'call:', patternNode )
     var args = Array.prototype.slice.call( arguments, 0 )
 
     if( patternNode.callee.type === 'MemberExpression' && patternNode.callee.object.type === 'ArrayExpression' ) {

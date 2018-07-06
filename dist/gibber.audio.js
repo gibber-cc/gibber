@@ -4965,7 +4965,10 @@ const patternWrapper = function( Gibber ) {
         // if( fnc.end > fnc.values.length - 1 ) {
         //   fnc.end = fnc.values.length - 1
         // }else if( fnc.end < )
-        
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
         fnc._onchange()
         
         return fnc
@@ -5087,7 +5090,10 @@ const patternWrapper = function( Gibber ) {
             }
           }
         }
-        
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }      
         fnc._onchange()
         
         return fnc
@@ -5116,7 +5122,10 @@ const patternWrapper = function( Gibber ) {
             }
           }
         })
-
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
         fnc._onchange()
         
         return fnc
@@ -5138,7 +5147,10 @@ const patternWrapper = function( Gibber ) {
           let pos = ordered.indexOf( fnc.values[ i ] )
           fnc.values[ i ] = ordered[ ordered.length - pos - 1 ]
         }
-        
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }       
         fnc._onchange()
       
         return fnc
@@ -5154,6 +5166,11 @@ const patternWrapper = function( Gibber ) {
           }
         }
         
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
+
         fnc._onchange()
         
         return fnc
@@ -5183,7 +5200,12 @@ const patternWrapper = function( Gibber ) {
             amt++
           }
         }
-        
+
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
+
         fnc._onchange()
         
         return fnc
@@ -11548,7 +11570,7 @@ const utilities = {
               obj[ propName ]( value )
             }
           }else{
-            console.log( 'undefined single property:', id, propName, value, obj )
+            //console.log( 'undefined single property:', id, propName, value, obj )
           }
         }else if( obj !== undefined ) {
           const propSplit = propName.split('.')
@@ -11559,7 +11581,7 @@ const utilities = {
               obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ]( value )
             }
           }else{
-            console.log( 'undefined split property!', id, propSplit[0], propSplit[1], value, obj )
+            //console.log( 'undefined split property!', id, propSplit[0], propSplit[1], value, obj )
           }
         }
         // XXX double check and make sure this isn't getting sent back to processornode...

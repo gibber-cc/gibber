@@ -184,7 +184,10 @@ const patternWrapper = function( Gibber ) {
         // if( fnc.end > fnc.values.length - 1 ) {
         //   fnc.end = fnc.values.length - 1
         // }else if( fnc.end < )
-        
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
         fnc._onchange()
         
         return fnc
@@ -306,7 +309,10 @@ const patternWrapper = function( Gibber ) {
             }
           }
         }
-        
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }      
         fnc._onchange()
         
         return fnc
@@ -335,7 +341,10 @@ const patternWrapper = function( Gibber ) {
             }
           }
         })
-
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
         fnc._onchange()
         
         return fnc
@@ -357,7 +366,10 @@ const patternWrapper = function( Gibber ) {
           let pos = ordered.indexOf( fnc.values[ i ] )
           fnc.values[ i ] = ordered[ ordered.length - pos - 1 ]
         }
-        
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }       
         fnc._onchange()
       
         return fnc
@@ -373,6 +385,11 @@ const patternWrapper = function( Gibber ) {
           }
         }
         
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
+
         fnc._onchange()
         
         return fnc
@@ -402,7 +419,12 @@ const patternWrapper = function( Gibber ) {
             amt++
           }
         }
-        
+
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }
+
         fnc._onchange()
         
         return fnc
