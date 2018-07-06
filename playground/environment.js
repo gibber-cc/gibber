@@ -149,8 +149,6 @@ CodeMirror.keyMap.playground =  {
     
     Gibber.shouldDelay = false
     //Gibber.printcb()
-    //Gibberish.generateCallback()
-    //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
   'Alt-Enter'( cm ) {
     try {

@@ -6435,24 +6435,36 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   const patternObject = window[ objectName ].seq.values
 
   let drumsStringNode = node.callee.object.arguments[0]
-  console.log( 'drums annotations:', drumsStringNode )
   track.markup.textMarkers[ 'pattern' ] = []
   track.markup.textMarkers[ 'pattern' ].children = []
 
-  for( let i = 0; i < drumsStringNode.value.length; i++ ) {
-    let pos = { loc:{ start:{}, end:{}} }
-    Object.assign( pos.loc.start, drumsStringNode.loc.start )
-    Object.assign( pos.loc.end  , drumsStringNode.loc.end   )
-    pos.loc.start.ch = pos.loc.start.column + 1
-    pos.loc.start.line += Marker.offset.vertical - 1
-    pos.loc.start.ch += i
-    pos.loc.end.ch = pos.loc.start.ch + 1
-    pos.loc.end.line += Marker.offset.vertical - 1
-    //console.log( i, pos.loc )
-    let posMark = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i}` })
-    track.markup.textMarkers.pattern[ i ] = posMark
+  let nodePosStart = Object.assign( {}, drumsStringNode.loc.start ),
+      nodePosEnd   = Object.assign( {}, drumsStringNode.loc.end )
+
+  nodePosStart.line += Marker.offset.vertical - 1 
+  nodePosStart.ch = nodePosStart.column + 1
+  nodePosEnd.line += Marker.offset.vertical - 1
+  nodePosEnd.ch = nodePosEnd.column - 1
+
+  track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid0' })
+
+  let marker
+  const mark = function() {
+    let startPos = track.markup.textMarkers.string.find()//{ loc:{ start:{}, end:{}} }
+    for( let i = 0; i < drumsStringNode.value.length; i++ ) {
+      let pos = { loc:{ start:{}, end:{}} }
+      Object.assign( pos.loc.start, startPos.from )
+      Object.assign( pos.loc.end  , startPos.to )
+      pos.loc.start.ch += i
+      pos.loc.end.ch = pos.loc.start.ch + 1
+
+      marker = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i}` })
+      track.markup.textMarkers.pattern[ i ] = marker
+    }
   }
   
+  mark()
+
   let span
   const update = () => {
     let currentIdx = update.currentIndex // count++ % step.value.length
@@ -6476,11 +6488,14 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   }
 
   patternObject._onchange = () => {
-    let delay = Utility.beatsToMs( 1,  Gibber.Scheduler.bpm )
-    Gibber.Environment.animationScheduler.add( () => {
-      marker.doc.replaceRange( patternObject.values.join(''), step.loc.start, step.loc.end )
-      mark( step, key, cm, track )
-    }, delay ) 
+    //let delay = Utility.beatsToMs( 1,  Gibber.Scheduler.bpm )
+    //Gibber.Environment.animationScheduler.add( () => {
+    const pos = track.markup.textMarkers.string.find()
+    marker.doc.replaceRange( patternObject.values.join(''), pos.from, pos.to )
+    track.markup.textMarkers.string = cm.markText( pos.from, pos.to )
+    //console.log( pos, track.markup.textMarkers.string )
+    mark( pos.from.line ) 
+    //}, delay ) 
   }
 
   patternObject.update = update
@@ -6996,13 +7011,11 @@ module.exports = function( Marker ) {
         //console.log( 'assignment right:', expression.right.callee )
         // if standalone object (Steps, Arp, Score etc.)
         let name
-        console.log( expression.right )
         if( expression.right.callee.type === 'MemberExpression' ) {
           name = expression.right.callee.object.callee.name
         }else{
           name = expression.right.callee.name
         }
-        console.log( 'name:', name )
         if( Marker.standalone[ name ] ) {
 
           const obj = window[ expression.left.name ]
@@ -7884,8 +7897,6 @@ CodeMirror.keyMap.playground =  {
     
     Gibber.shouldDelay = false
     //Gibber.printcb()
-    //Gibberish.generateCallback()
-    //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
   'Alt-Enter'( cm ) {
     try {

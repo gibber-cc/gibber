@@ -25,13 +25,11 @@ module.exports = function( Marker ) {
         //console.log( 'assignment right:', expression.right.callee )
         // if standalone object (Steps, Arp, Score etc.)
         let name
-        console.log( expression.right )
         if( expression.right.callee.type === 'MemberExpression' ) {
           name = expression.right.callee.object.callee.name
         }else{
           name = expression.right.callee.name
         }
-        console.log( 'name:', name )
         if( Marker.standalone[ name ] ) {
 
           const obj = window[ expression.left.name ]
