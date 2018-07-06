@@ -6448,7 +6448,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
     pos.loc.start.ch += i
     pos.loc.end.ch = pos.loc.start.ch + 1
     pos.loc.end.line -= 1
-    console.log( i, pos.loc )
+    //console.log( i, pos.loc )
     let posMark = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${i}` })
     track.markup.textMarkers.pattern[ i ] = posMark
   }
@@ -6489,10 +6489,10 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
     span = $( spanName )
 
-    if( currentValue !== Gibber.Seq.DO_NOT_OUTPUT ) {
-      span.add( 'euclid1' )
-      setTimeout( ()=> { span.remove( 'euclid1' ) }, 50 )
-    }
+    //if( currentValue !== Gibber.Seq.DO_NOT_OUTPUT ) {
+    span.add( 'euclid1' )
+    setTimeout( ()=> { span.remove( 'euclid1' ) }, 50 )
+    //}
 
     span.add( 'euclid0' )
   }
@@ -6507,6 +6507,14 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
   patternObject.update = update
   patternObject.update.value = []
+  let currentIndex = 0
+  Object.defineProperty( patternObject.update, 'currentIndex', {
+    get() { return currentIndex },
+    set(v){ 
+      currentIndex = v; 
+      patternObject.update()
+    }
+  })
 
   Marker._addPatternFilter( patternObject )
 }  
