@@ -112,7 +112,7 @@ CodeMirror.keyMap.playground =  {
 
   'Ctrl-Enter'( cm ) {
     try {
-      var selectedCode = getSelectionCodeColumn( cm, false )
+      const selectedCode = getSelectionCodeColumn( cm, false )
 
       flash( cm, selectedCode.selection )
 
@@ -180,8 +180,21 @@ CodeMirror.keyMap.playground =  {
     //Gibberish.generateCallback()
     //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
+  'Shift-Ctrl-C'(cm) { toggleSidebar() }
 }
 
+const toggleSidebar = () => {
+    Environment.sidebar.isVisible = !Environment.sidebar.isVisible
+    let editor = document.querySelector( '#editor' )
+    if( !Environment.sidebar.isVisible ) {
+      Environment.editorWidth = editor.style.width
+      editor.style.width = '100%'
+    }else{
+      editor.style.width = Environment.editorWidth
+    }
+
+    Environment.sidebar.style.display = Environment.sidebar.isVisible ? 'block' : 'none'
+}
 var getSelectionCodeColumn = function( cm, findBlock ) {
   var pos = cm.getCursor(), 
   text = null

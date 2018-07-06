@@ -6432,7 +6432,7 @@ const $ = Utility.create
 
 module.exports = function( node, cm, track, objectName, state, cb ) {
   const Marker = Environment.codeMarkup // tsk tsk tsk global...
-  //const steps = node.arguments[ 0 ].properties
+  const patternObject = window[ objectName ].seq.values
 
   let drumsStringNode = node.callee.object.arguments[0]
   console.log( 'drums annotations:', drumsStringNode )
@@ -6444,37 +6444,15 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
     Object.assign( pos.loc.start, drumsStringNode.loc.start )
     Object.assign( pos.loc.end  , drumsStringNode.loc.end   )
     pos.loc.start.ch = pos.loc.start.column + 1
-    pos.loc.start.line -= 1
+    pos.loc.start.line += Marker.offset.vertical - 1
     pos.loc.start.ch += i
     pos.loc.end.ch = pos.loc.start.ch + 1
-    pos.loc.end.line -= 1
+    pos.loc.end.line += Marker.offset.vertical - 1
     //console.log( i, pos.loc )
-    let posMark = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${i}` })
+    let posMark = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i}` })
     track.markup.textMarkers.pattern[ i ] = posMark
   }
   
-
-    //let step = steps[ key ].value
-
-    //if( step && step.value ) { // ensure it is a correctly formed step
-    //  step.loc.start.line += Marker.offset.vertical - 1
-    //  step.loc.end.line   += Marker.offset.vertical - 1
-    //  step.loc.start.ch   = step.loc.start.column + 1
-    //  step.loc.end.ch     = step.loc.end.column - 1
-
-    //  let marker = cm.markText( step.loc.start, step.loc.end, { className:`step${key}` } )
-    //  track.markup.textMarkers.step[ key ] = marker
-
-    //  track.markup.textMarkers.step[ key ].pattern = []
-
-    //  mark( step, key, cm, track )
-
-    //  let count = 0, span, update,
-    //    _key = steps[ key ].key.value,
-    //    patternObject = window[ objectName ].seqs[ _key ].values
-
-  const patternObject = window[ objectName ].seq.values
-
   let span
   const update = () => {
     let currentIdx = update.currentIndex // count++ % step.value.length
@@ -6484,7 +6462,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
       span.remove( 'euclid1' )
     }
 
-    let spanName = `.step_${currentIdx}`,
+    let spanName = `.step_${patternObject.id}_${currentIdx}`,
       currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
 
     span = $( spanName )
@@ -6507,6 +6485,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
   patternObject.update = update
   patternObject.update.value = []
+
   let currentIndex = 0
   Object.defineProperty( patternObject.update, 'currentIndex', {
     get() { return currentIndex },
@@ -7868,7 +7847,7 @@ CodeMirror.keyMap.playground =  {
 
   'Ctrl-Enter'( cm ) {
     try {
-      var selectedCode = getSelectionCodeColumn( cm, false )
+      const selectedCode = getSelectionCodeColumn( cm, false )
 
       flash( cm, selectedCode.selection )
 
@@ -7936,8 +7915,21 @@ CodeMirror.keyMap.playground =  {
     //Gibberish.generateCallback()
     //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
+  'Shift-Ctrl-C'(cm) { toggleSidebar() }
 }
 
+const toggleSidebar = () => {
+    Environment.sidebar.isVisible = !Environment.sidebar.isVisible
+    let editor = document.querySelector( '#editor' )
+    if( !Environment.sidebar.isVisible ) {
+      Environment.editorWidth = editor.style.width
+      editor.style.width = '100%'
+    }else{
+      editor.style.width = Environment.editorWidth
+    }
+
+    Environment.sidebar.style.display = Environment.sidebar.isVisible ? 'block' : 'none'
+}
 var getSelectionCodeColumn = function( cm, findBlock ) {
   var pos = cm.getCursor(), 
   text = null
