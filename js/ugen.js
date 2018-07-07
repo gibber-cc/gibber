@@ -17,7 +17,13 @@ const __timeProps = {
 // Gibber ugens are essentially wrappers around underlying gibberish 
 // ugens, providing convenience methods for rapidly sequencing
 // and modulating them.
-const Ugen = function( gibberishConstructor, description, Audio ) {
+//
+const poolSize = 12
+
+const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool = false ) {
+
+  let   poolCount = poolSize
+  const pool = []
 
   const constructor = function( ...args ) {
     const properties = Presets.process( description, args, Audio ) 
@@ -30,6 +36,20 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
         }
       }
     }
+
+    // XXX if you want to use pooling you must also uncomment near the bottom of this file...
+    // Pooling could work for reverbs IF:
+    // 1. There would have to be separate mono and stereo pools.2
+    // 2. Reverbs would need to run with 0 input for a while so that the functions are JIT'd
+
+    //if( shouldUsePool && poolCount < pool.length ) {
+    //  pool[ poolCount ].inUse = true
+    //  const poolUgen = pool[ poolCount ].ugen
+    //  poolCount++
+    //  Object.assign( poolUgen, properties, args )
+    //  console.log( 'pool ugen:', poolUgen )
+    //  return poolUgen
+    //}
 
     const __wrappedObject = gibberishConstructor( properties )
     const obj = { __wrapped__:__wrappedObject }
@@ -231,6 +251,17 @@ const Ugen = function( gibberishConstructor, description, Audio ) {
 
     return obj
   }
+
+  //if( shouldUsePool ) {
+  //  for( let i=0; i < poolSize; i++ ) {
+  //    pool[ i ] = {
+  //      inUse:false,
+  //      ugen: constructor()
+  //    }
+  //  } 
+
+  //  poolCount = 0
+  //}
   
   return constructor
 }

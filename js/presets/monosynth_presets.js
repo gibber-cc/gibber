@@ -39,6 +39,17 @@ module.exports = {
     detune2:.0275,
     detune3:-.0275
   },
+  dark: { 
+    attack: audio => audio.Clock.ms(1),
+    decay: 1,	
+    octave: -3,
+    octave2 : -1,
+    cutoff: 1.5,
+    filterMult:3,
+    Q:.75,
+    detune2:.0275,
+    detune3:-.0275
+  },
   bass2 : {
     attack: audio => audio.Clock.ms(1), 
     decay:	1/6,
@@ -52,19 +63,17 @@ module.exports = {
   },
   
   edgy: {
-    presetInit: function() {
-      this.decay = 1/8
-      this.attack = ms(1)
-    },
+    decay:1/8,
+    attack:1/1024,
     octave: -2,
-    octave2 : -1,
+    octave2: -1,
     cutoff: .5,
-    filterMult:.2,
-    resonance:1, 
-    waveform:'PWM', 
+    filterMult:3,
+    Q:.75, 
+    waveform:'pwm', 
     pulsewidth:.2,
     detune2:0,
-    amp:.2,
+    gain:.2
   },
 
   easy : {
@@ -89,23 +98,6 @@ module.exports = {
     glide:.9995,
   },
 
-  dark : {
-    resonance:0,
-    attack:44,
-    cutoff:.075,
-    amp:.35,
-    filterMult:0
-  },
-
-  dark2 : {
-    filterMult:.1,
-    attack: audio=> audio.Clock.ms(1),
-    octave2:0,
-    octave3:0,
-    decay:1/4,
-    amp:.45,
-  },
-  
   noise: {
     resonance:20,
     decay:1/2,

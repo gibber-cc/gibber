@@ -4,6 +4,7 @@ const Ugen      = require( './ugen.js' )
 const Effects = {
   create( Audio ) {
     const effects = {}
+    const poolEffects = ['Freeverb', 'Plate', 'BufferShuffler']
     Gibberish.effects = Gibberish.fx
     for( let effectName in Gibberish.effects ) {
       const gibberishConstructor = Gibberish.effects[ effectName ]
@@ -15,7 +16,9 @@ const Effects = {
       }
       description.properties.type = 'fx'
 
-      effects[ effectName ] = Ugen( gibberishConstructor, description, Audio )      
+      const shouldUsePool = poolEffects.indexOf( effectName ) > -1 
+
+      effects[ effectName ] = Ugen( gibberishConstructor, description, Audio, shouldUsePool )
     }
     return effects
   },

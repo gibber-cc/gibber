@@ -47,11 +47,12 @@ const Audio = {
       Gibberish.init().then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode
-        Audio.createUgens()
         Audio.Clock.init()
         Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
 
+        Audio.createUgens()
+        
         if( Audio.exportTarget !== null ) Audio.export( Audio.exportTarget )
 
         Gibberish.worklet.port.__postMessage = Gibberish.worklet.port.postMessage
@@ -64,7 +65,7 @@ const Audio = {
 
         Audio.export( window )
 
-        // XXX this forces the gibberish scheduler to stat
+        // XXX this forces the gibberish scheduler to start
         // running, but it's about as hacky as it can get...
         let __start = Gibber.instruments.Synth().connect()
         __start.disconnect()

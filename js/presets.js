@@ -37,7 +37,9 @@ const Presets = {
   instruments: {
     Synth: require( './presets/synth_presets.js' ),
     FM:    require( './presets/fm_presets.js' ),
-    Monosynth: require( './presets/monosynth_presets.js' )
+    Monosynth: require( './presets/monosynth_presets.js' ),
+    PolyMono: require( './presets/monosynth_presets.js' ),
+    Snare: require( './presets/snare.js' )
   },
 
   effects: {
