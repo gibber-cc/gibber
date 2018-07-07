@@ -78,7 +78,8 @@ module.exports = function( Marker ) {
 
         Marker.markPatternsForSeq( seq, node.arguments, state, cb, node, seqNumber )
       }else{
-        Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1 )
+        // XXX need to fix this when we add gen~ expressions back in!!!
+        // Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1 )
       }
 
     },

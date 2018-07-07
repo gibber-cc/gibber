@@ -50,7 +50,7 @@ const Marker = {
       }
     }
 
-    if( findSeq === true ) {
+    if( findSeq === true && obj !== undefined ) {
       if( obj.type !== 'sequence' ) {
         obj = obj[ seqNumber ]
       } 

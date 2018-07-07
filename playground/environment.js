@@ -161,14 +161,35 @@ CodeMirror.keyMap.playground =  {
 
       Gibber.shouldDelay = true
       func()
-      Gibber.shouldDelay = false
+
+      //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
+      const markupFunction = () => {
+              Environment.codeMarkup.process( 
+                selectedCode.code, 
+                selectedCode.selection, 
+                cm, 
+                Gibber.currentTrack 
+              ) 
+            }
+
+      markupFunction.origin = func
+
+      if( !Environment.debug ) {
+        Gibber.Scheduler.functionsToExecute.push( func )
+        if( Environment.annotations === true ) {
+          Gibber.Scheduler.functionsToExecute.push( markupFunction  )
+        }
+      }else{
+        //func()
+        if( Environment.annotations === true ) markupFunction()
+      }
+
     } catch (e) {
       console.log( e )
       return
     }
-    
-    //Gibberish.generateCallback()
-    //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
+
+    Gibber.shouldDelay = false
   },
   'Ctrl-.'( cm ) {
     Gibber.clear()

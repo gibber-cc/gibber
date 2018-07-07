@@ -7064,7 +7064,8 @@ module.exports = function( Marker ) {
 
         Marker.markPatternsForSeq( seq, node.arguments, state, cb, node, seqNumber )
       }else{
-        Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1 )
+        // XXX need to fix this when we add gen~ expressions back in!!!
+        // Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1 )
       }
 
     },
@@ -7420,7 +7421,7 @@ const Marker = {
       }
     }
 
-    if( findSeq === true ) {
+    if( findSeq === true && obj !== undefined ) {
       if( obj.type !== 'sequence' ) {
         obj = obj[ seqNumber ]
       } 
@@ -7909,14 +7910,35 @@ CodeMirror.keyMap.playground =  {
 
       Gibber.shouldDelay = true
       func()
-      Gibber.shouldDelay = false
+
+      //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
+      const markupFunction = () => {
+              Environment.codeMarkup.process( 
+                selectedCode.code, 
+                selectedCode.selection, 
+                cm, 
+                Gibber.currentTrack 
+              ) 
+            }
+
+      markupFunction.origin = func
+
+      if( !Environment.debug ) {
+        Gibber.Scheduler.functionsToExecute.push( func )
+        if( Environment.annotations === true ) {
+          Gibber.Scheduler.functionsToExecute.push( markupFunction  )
+        }
+      }else{
+        //func()
+        if( Environment.annotations === true ) markupFunction()
+      }
+
     } catch (e) {
       console.log( e )
       return
     }
-    
-    //Gibberish.generateCallback()
-    //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
+
+    Gibber.shouldDelay = false
   },
   'Ctrl-.'( cm ) {
     Gibber.clear()
