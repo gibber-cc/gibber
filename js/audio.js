@@ -125,6 +125,66 @@ const Audio = {
 
   printcb() { 
     Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) 
+  },
+
+  // When a property is created, a proxy-ish object is made that is
+  // prefaced by a double underscore. This object holds the value of the 
+  // property, sequencers for the properyt, and modulations for the property.
+  // Alternative getter/setter methods can be passed as arguments.
+  createProperty( obj, name, value, post ) {
+    obj['__'+name] = { 
+      value,
+      isProperty:true,
+      sequencers:[],
+      mods:[],
+      name,
+
+      seq( values, timings, number = 0, delay = 0 ) {
+        let prevSeq = obj['__'+name].sequencers[ number ] 
+        if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
+
+        // XXX you have to add a method that does all this shit on the worklet. crap.
+        obj['__'+name].sequencers[ number ] = obj[ '__'+name ][ number ] = Audio.Seq({ 
+          values, 
+          timings, 
+          target:obj,
+          key:name
+        })
+        .start( Audio.Clock.time( delay ) )
+
+        // return object for method chaining
+        return obj
+      },
+    }
+
+    //if( getter === undefined ) {
+    const getter = () => obj['__'+name]
+    //}
+
+    //if( setter === undefined ) {
+    const setter = v => {
+        obj['__'+name].value = v
+        if( Gibberish.mode === 'worklet' ) {
+          Gibberish.worklet.port.postMessage({
+            address:'property',
+            object:obj.id,
+            name,
+            value:obj['__'+name].value
+          }) 
+        }
+      }
+    //}
+
+    Object.defineProperty( obj, name, {
+      configurable:true,
+      get: getter,
+      set: setter
+    })
+
+    if( post !== undefined ) {
+      post.call( obj )
+    }
+
   }
   
 }

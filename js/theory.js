@@ -54,6 +54,28 @@ const Theory = {
     Gibberish.Theory = this
 
     this.Tune.TuningList = this.__tunings
+
+    this.initProperties()
+  },
+
+  initProperties: function() {
+    if( Gibberish.mode === 'worklet' ) {
+      Gibber.createProperty( 
+        this, 
+        'root', 
+        440, 
+        function() { this.Tune.tonicize( this.root.value ) }
+      )
+    }else{
+      let root = 440
+      Object.defineProperty( this, 'root', {
+        get() { return root },
+        set(v) {
+          root = v
+          this.Tune.tonicize( root )
+        }
+      })
+    }
   },
 
   init:function( __Gibber ) {
@@ -81,13 +103,37 @@ const Theory = {
         post:'store'
       })
 
-      Gibber.addSequencing( this, 'root' )
+      this.initProperties()
+
+      //Gibber.addSequencing( this, 'root' )
       Gibber.addSequencing( this, 'tuning' )
       Gibber.addSequencing( this, 'mode' )
 
       this.tuning('et')
     }
+
   },
+
+  //root: function( root ) {
+  //  if( root !== undefined ) {
+  //    this.__root = root
+  //    if( Gibberish.mode === 'worklet' ) {
+  //      this.Tune.tonicize( this.__root )
+  //      Gibberish.worklet.port.postMessage({
+  //        address:'method',
+  //        object:this.id,
+  //        name:'root',
+  //        args:[this.__root]
+  //      }) 
+  //    }else{
+  //      this.Tune.tonicize( root )
+  //    }
+  //  }else{
+  //    return this.__root
+  //  }
+
+  //  return this
+  //},
 
   loadScale: function( name ) {
     if( Gibberish.mode === 'worklet' ) {
@@ -169,26 +215,6 @@ const Theory = {
     return this
   },
 
-  root: function( root ) {
-    if( root !== undefined ) {
-      this.__root = root
-      if( Gibberish.mode === 'worklet' ) {
-        this.Tune.tonicize( this.__root )
-        Gibberish.worklet.port.postMessage({
-          address:'method',
-          object:this.id,
-          name:'root',
-          args:[this.__root]
-        }) 
-      }else{
-        this.Tune.tonicize( root )
-      }
-    }else{
-      return this.__root
-    }
-
-    return this
-  },
 
   tuning: function( tuning ) {
     if( tuning !== undefined ) {

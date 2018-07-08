@@ -3845,6 +3845,66 @@ const Audio = {
 
   printcb() { 
     Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) 
+  },
+
+  // When a property is created, a proxy-ish object is made that is
+  // prefaced by a double underscore. This object holds the value of the 
+  // property, sequencers for the properyt, and modulations for the property.
+  // Alternative getter/setter methods can be passed as arguments.
+  createProperty( obj, name, value, post ) {
+    obj['__'+name] = { 
+      value,
+      isProperty:true,
+      sequencers:[],
+      mods:[],
+      name,
+
+      seq( values, timings, number = 0, delay = 0 ) {
+        let prevSeq = obj['__'+name].sequencers[ number ] 
+        if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
+
+        // XXX you have to add a method that does all this shit on the worklet. crap.
+        obj['__'+name].sequencers[ number ] = obj[ '__'+name ][ number ] = Audio.Seq({ 
+          values, 
+          timings, 
+          target:obj,
+          key:name
+        })
+        .start( Audio.Clock.time( delay ) )
+
+        // return object for method chaining
+        return obj
+      },
+    }
+
+    //if( getter === undefined ) {
+    const getter = () => obj['__'+name]
+    //}
+
+    //if( setter === undefined ) {
+    const setter = v => {
+        obj['__'+name].value = v
+        if( Gibberish.mode === 'worklet' ) {
+          Gibberish.worklet.port.postMessage({
+            address:'property',
+            object:obj.id,
+            name,
+            value:obj['__'+name].value
+          }) 
+        }
+      }
+    //}
+
+    Object.defineProperty( obj, name, {
+      configurable:true,
+      get: getter,
+      set: setter
+    })
+
+    if( post !== undefined ) {
+      post.call( obj )
+    }
+
   }
   
 }
@@ -4044,7 +4104,7 @@ module.exports = function( Audio ) {
     let __value = 1
     drums.__pitch = { 
       value: __value,
-      sProperty:true,
+      isProperty:true,
       sequencers:[],
       mods:[],
       name:'pitch',
@@ -5420,7 +5480,7 @@ const Presets = {
     FM:    require( './presets/fm_presets.js' ),
     Monosynth: require( './presets/monosynth_presets.js' ),
     PolyMono: require( './presets/monosynth_presets.js' ),
-    Snare: require( './presets/snare.js' ),
+    Snare: require( './presets/snare_presets.js' ),
     Kick: require( './presets/kick_presets.js' ),
   },
 
@@ -5435,7 +5495,7 @@ Presets.instruments.PolyFM = Presets.instruments.FM
 
 module.exports = Presets
 
-},{"./presets/distortion_presets.js":87,"./presets/fm_presets.js":88,"./presets/kick_presets.js":89,"./presets/monosynth_presets.js":90,"./presets/snare.js":91,"./presets/synth_presets.js":92}],87:[function(require,module,exports){
+},{"./presets/distortion_presets.js":87,"./presets/fm_presets.js":88,"./presets/kick_presets.js":89,"./presets/monosynth_presets.js":90,"./presets/snare_presets.js":91,"./presets/synth_presets.js":92}],87:[function(require,module,exports){
 module.exports = {
 
   crunch: {
@@ -5834,6 +5894,28 @@ const Theory = {
     Gibberish.Theory = this
 
     this.Tune.TuningList = this.__tunings
+
+    this.initProperties()
+  },
+
+  initProperties: function() {
+    if( Gibberish.mode === 'worklet' ) {
+      Gibber.createProperty( 
+        this, 
+        'root', 
+        440, 
+        function() { this.Tune.tonicize( this.root.value ) }
+      )
+    }else{
+      let root = 440
+      Object.defineProperty( this, 'root', {
+        get() { return root },
+        set(v) {
+          root = v
+          this.Tune.tonicize( root )
+        }
+      })
+    }
   },
 
   init:function( __Gibber ) {
@@ -5861,13 +5943,37 @@ const Theory = {
         post:'store'
       })
 
-      Gibber.addSequencing( this, 'root' )
+      this.initProperties()
+
+      //Gibber.addSequencing( this, 'root' )
       Gibber.addSequencing( this, 'tuning' )
       Gibber.addSequencing( this, 'mode' )
 
       this.tuning('et')
     }
+
   },
+
+  //root: function( root ) {
+  //  if( root !== undefined ) {
+  //    this.__root = root
+  //    if( Gibberish.mode === 'worklet' ) {
+  //      this.Tune.tonicize( this.__root )
+  //      Gibberish.worklet.port.postMessage({
+  //        address:'method',
+  //        object:this.id,
+  //        name:'root',
+  //        args:[this.__root]
+  //      }) 
+  //    }else{
+  //      this.Tune.tonicize( root )
+  //    }
+  //  }else{
+  //    return this.__root
+  //  }
+
+  //  return this
+  //},
 
   loadScale: function( name ) {
     if( Gibberish.mode === 'worklet' ) {
@@ -5949,26 +6055,6 @@ const Theory = {
     return this
   },
 
-  root: function( root ) {
-    if( root !== undefined ) {
-      this.__root = root
-      if( Gibberish.mode === 'worklet' ) {
-        this.Tune.tonicize( this.__root )
-        Gibberish.worklet.port.postMessage({
-          address:'method',
-          object:this.id,
-          name:'root',
-          args:[this.__root]
-        }) 
-      }else{
-        this.Tune.tonicize( root )
-      }
-    }else{
-      return this.__root
-    }
-
-    return this
-  },
 
   tuning: function( tuning ) {
     if( tuning !== undefined ) {

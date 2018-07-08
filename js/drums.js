@@ -29,7 +29,7 @@ module.exports = function( Audio ) {
     let __value = 1
     drums.__pitch = { 
       value: __value,
-      sProperty:true,
+      isProperty:true,
       sequencers:[],
       mods:[],
       name:'pitch',
