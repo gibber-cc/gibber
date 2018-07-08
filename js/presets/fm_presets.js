@@ -32,7 +32,7 @@ module.exports = {
   drum : {
 	  cmRatio: 1.40007,
 	  index: 2,
-	  attack: 1/256,
+	  attack: 1/2048,
     decay: audio => audio.Clock.ms(1000) 
 	},
 

@@ -3927,7 +3927,7 @@ const Busses = {
     const bus2Description = { 
       properties:Gibberish.Bus2.defaults,
       methods:null,
-      name:'Bus2'
+      name:'Bus2',
     }
 
     busses.Bus2 = Ugen( Gibberish.Bus2, bus2Description, Audio )
@@ -5537,7 +5537,7 @@ module.exports = {
   drum : {
 	  cmRatio: 1.40007,
 	  index: 2,
-	  attack: 1/256,
+	  attack: 1/2048,
     decay: audio => audio.Clock.ms(1000) 
 	},
 
@@ -5964,7 +5964,6 @@ const Theory = {
   },
 
   loadScale: function( name ) {
-    console.log( 'loading:', name )
     if( Gibberish.mode === 'worklet' ) {
       // if the scale is already loaded...
       if( this.__tunings[ name ] !== undefined ) {
@@ -5978,7 +5977,6 @@ const Theory = {
         return
       }
 
-      console.log( 'fetching...' )
       fetch( 'js/external/tune.json/' + name + '.js' )
         .then( data => data.json() )
         .then( json => {
@@ -9559,7 +9557,7 @@ module.exports = function( Gibberish ) {
     useADSR:false,
     shape:'linear',
     triggerRelease:false,
-    gain: 1,
+    gain: .25,
     cmRatio:2,
     index:5,
     pulsewidth:.25,
@@ -10513,7 +10511,6 @@ module.exports = function( Gibberish ) {
       const mul = Gibberish.binops.Mul( sum, props.gain )
 
       const graph = Gibberish.Panner({ input:mul, pan: props.pan })
-      
 
       graph.sum = sum
       graph.mul = mul
@@ -10557,8 +10554,10 @@ module.exports = function( Gibberish ) {
     defaults: { gain:1, inputs:[0], pan:.5 }
   })
 
-  return Bus.create.bind( Bus )
+  const constructor = Bus.create.bind( Bus )
+  constructor.defaults = Bus.defaults
 
+  return constructor
 }
 
 
@@ -10666,7 +10665,10 @@ module.exports = function( Gibberish ) {
     defaults: { gain:1, pan:.5, __useProxy__:true }
   })
 
-  return Bus2.create.bind( Bus2 )
+  const constructor = Bus2.create.bind( Bus2 )
+  constructor.defaults = Bus2.defaults
+
+  return constructor
 
 }
 

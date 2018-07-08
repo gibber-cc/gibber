@@ -127,7 +127,6 @@ const Theory = {
   },
 
   loadScale: function( name ) {
-    console.log( 'loading:', name )
     if( Gibberish.mode === 'worklet' ) {
       // if the scale is already loaded...
       if( this.__tunings[ name ] !== undefined ) {
@@ -141,7 +140,6 @@ const Theory = {
         return
       }
 
-      console.log( 'fetching...' )
       fetch( 'js/external/tune.json/' + name + '.js' )
         .then( data => data.json() )
         .then( json => {

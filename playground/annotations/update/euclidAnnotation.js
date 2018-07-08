@@ -91,19 +91,22 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
   }
 
   patternObject._onchange = () => {
-    let delay = Utility.beatsToMs( 1,  Gibber.Scheduler.bpm )
+    //let delay = Utility.beatsToMs( 1,  Gibber.Scheduler.bpm )
+
+    // markStart is a closure variable that will be used in the call
+    // to mark()
     markStart = track.markup.textMarkers[ className ][ 0 ].find()
 
-    Gibber.Environment.animationScheduler.add( () => {
+    //Gibber.Environment.animationScheduler.add( () => {
       for( let i = 0; i < patternObject.values.length; i++ ) {
 
         let markerCh = track.markup.textMarkers[ className ][ i ],
-          pos = markerCh.find()
+            pos = markerCh.find()
 
         marker.doc.replaceRange( '' + patternObject.values[ i ], pos.from, pos.to )
       }
       mark()
-    }, delay ) 
+    //}, delay ) 
   }
 
   patternObject.clear = () => {
