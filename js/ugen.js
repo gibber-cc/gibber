@@ -188,7 +188,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             function:`function( note ){ 
               const octave = this.octave || 0
               let notesInOctave = 7
-              const mode = Gibberish.Theory.mode()
+              const mode = Gibberish.Theory.mode
               if( mode !== null ) {
                 notesInOctave = Gibberish.Theory.modes[ mode ].length
               }else{

@@ -5901,11 +5901,11 @@ const Theory = {
   initProperties: function() {
     if( Gibberish.mode === 'worklet' ) {
       Gibber.createProperty( 
-        this, 
-        'root', 
-        440, 
+        this, 'root', 440, 
         function() { this.Tune.tonicize( this.root.value ) }
       )
+
+      Gibber.createProperty( this, 'mode', 'aeolian' )
     }else{
       let root = 440
       Object.defineProperty( this, 'root', {
@@ -5915,6 +5915,13 @@ const Theory = {
           this.Tune.tonicize( root )
         }
       })
+
+      let mode = 'aeolian'
+      Object.defineProperty( this, 'mode', {
+        get()  { return mode },
+        set(v) { mode = v }
+      })
+
     }
   },
 
@@ -5947,7 +5954,7 @@ const Theory = {
 
       //Gibber.addSequencing( this, 'root' )
       Gibber.addSequencing( this, 'tuning' )
-      Gibber.addSequencing( this, 'mode' )
+      //Gibber.addSequencing( this, 'mode' )
 
       this.tuning('et')
     }
@@ -6018,8 +6025,8 @@ const Theory = {
   note: function( idx ) {
     let finalIdx, octave = 0, mode = null
 
-    if( Gibberish.Theory.mode() !== null ) {
-      mode = Gibberish.Theory.modes[ Gibberish.Theory.mode() ]
+    if( Gibberish.Theory.mode !== null ) {
+      mode = Gibberish.Theory.modes[ Gibberish.Theory.mode ]
       octave = Math.floor( idx / mode.length )
       // XXX this looks ugly but works with negative note numbers...
       finalIdx = idx < 0 ? mode[ (mode.length - (Math.abs(idx) % mode.length)) % mode.length ] : mode[ Math.abs( idx ) % mode.length ]
@@ -6037,23 +6044,23 @@ const Theory = {
     return freq
   },
 
-  mode: function( mode ) {
-    if( mode !== undefined ) {
-      this.__mode = mode
-      if( Gibberish.mode === 'worklet' ) {
-        Gibberish.worklet.port.postMessage({
-          address:'method',
-          object:this.id,
-          name:'mode',
-          args:[this.__mode]
-        }) 
-      }
-    }else{
-      return this.__mode
-    }
+  //mode: function( mode ) {
+  //  if( mode !== undefined ) {
+  //    this.__mode = mode
+  //    if( Gibberish.mode === 'worklet' ) {
+  //      Gibberish.worklet.port.postMessage({
+  //        address:'method',
+  //        object:this.id,
+  //        name:'mode',
+  //        args:[this.__mode]
+  //      }) 
+  //    }
+  //  }else{
+  //    return this.__mode
+  //  }
 
-    return this
-  },
+  //  return this
+  //},
 
 
   tuning: function( tuning ) {
@@ -6261,7 +6268,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             function:`function( note ){ 
               const octave = this.octave || 0
               let notesInOctave = 7
-              const mode = Gibberish.Theory.mode()
+              const mode = Gibberish.Theory.mode
               if( mode !== null ) {
                 notesInOctave = Gibberish.Theory.modes[ mode ].length
               }else{
