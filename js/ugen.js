@@ -192,7 +192,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
               if( mode !== null ) {
                 notesInOctave = Gibberish.Theory.modes[ mode ].length
               }else{
-                const tuning = Gibberish.Theory.tuning()
+                const tuning = Gibberish.Theory.tuning
                 notesInOctave = Gibberish.Theory.__tunings[ tuning ].frequencies.length
               }
               const offset = octave * notesInOctave

@@ -3877,23 +3877,22 @@ const Audio = {
       },
     }
 
-    //if( getter === undefined ) {
     const getter = () => obj['__'+name]
-    //}
 
-    //if( setter === undefined ) {
     const setter = v => {
-        obj['__'+name].value = v
-        if( Gibberish.mode === 'worklet' ) {
-          Gibberish.worklet.port.postMessage({
-            address:'property',
-            object:obj.id,
-            name,
-            value:obj['__'+name].value
-          }) 
-        }
+      obj['__'+name].value = v
+      if( Gibberish.mode === 'worklet' ) {
+        Gibberish.worklet.port.postMessage({
+          address:'property',
+          object:obj.id,
+          name,
+          value:obj['__'+name].value
+        }) 
       }
-    //}
+      if( post !== undefined ) {
+        post.call( obj )
+      }
+    }
 
     Object.defineProperty( obj, name, {
       configurable:true,
@@ -3901,9 +3900,7 @@ const Audio = {
       set: setter
     })
 
-    if( post !== undefined ) {
-      post.call( obj )
-    }
+
 
   }
   
@@ -5902,26 +5899,35 @@ const Theory = {
     if( Gibberish.mode === 'worklet' ) {
       Gibber.createProperty( 
         this, 'root', 440, 
-        function() { this.Tune.tonicize( this.root.value ) }
+      )
+
+      Gibber.createProperty( 
+        this, 'tuning', 'et', 
+        function() { this.loadScale( this.tuning.value ) }
       )
 
       Gibber.createProperty( this, 'mode', 'aeolian' )
     }else{
-      let root = 440
       Object.defineProperty( this, 'root', {
-        get() { return root },
+        get() { return this.__root },
         set(v) {
-          root = v
-          this.Tune.tonicize( root )
+          this.__root = v
+          this.Tune.tonicize( this.__root )
         }
       })
 
-      let mode = 'aeolian'
-      Object.defineProperty( this, 'mode', {
-        get()  { return mode },
-        set(v) { mode = v }
+      Object.defineProperty( this, 'tuning', {
+        get() { return this.__tuning },
+        set(v) {
+          this.__tuning = v
+          this.loadScale( this.__tuning )
+        }
       })
 
+      Object.defineProperty( this, 'mode', {
+        get()  { return this.__mode },
+        set(v) { this.__mode = v }
+      })
     }
   },
 
@@ -5952,37 +5958,13 @@ const Theory = {
 
       this.initProperties()
 
-      //Gibber.addSequencing( this, 'root' )
-      Gibber.addSequencing( this, 'tuning' )
-      //Gibber.addSequencing( this, 'mode' )
-
-      this.tuning('et')
+      this.tuning = 'et'
     }
 
   },
 
-  //root: function( root ) {
-  //  if( root !== undefined ) {
-  //    this.__root = root
-  //    if( Gibberish.mode === 'worklet' ) {
-  //      this.Tune.tonicize( this.__root )
-  //      Gibberish.worklet.port.postMessage({
-  //        address:'method',
-  //        object:this.id,
-  //        name:'root',
-  //        args:[this.__root]
-  //      }) 
-  //    }else{
-  //      this.Tune.tonicize( root )
-  //    }
-  //  }else{
-  //    return this.__root
-  //  }
-
-  //  return this
-  //},
-
   loadScale: function( name ) {
+    console.log( 'loading:', name )
     if( Gibberish.mode === 'worklet' ) {
       // if the scale is already loaded...
       if( this.__tunings[ name ] !== undefined ) {
@@ -5996,6 +5978,7 @@ const Theory = {
         return
       }
 
+      console.log( 'fetching...' )
       fetch( 'js/external/tune.json/' + name + '.js' )
         .then( data => data.json() )
         .then( json => {
@@ -6044,35 +6027,16 @@ const Theory = {
     return freq
   },
 
-  //mode: function( mode ) {
-  //  if( mode !== undefined ) {
-  //    this.__mode = mode
-  //    if( Gibberish.mode === 'worklet' ) {
-  //      Gibberish.worklet.port.postMessage({
-  //        address:'method',
-  //        object:this.id,
-  //        name:'mode',
-  //        args:[this.__mode]
-  //      }) 
-  //    }
+  //tuning: function( tuning ) {
+  //  if( tuning !== undefined ) {
+  //    this.__tuning = tuning
+  //    this.loadScale( this.__tuning )
   //  }else{
-  //    return this.__mode
+  //    return this.__tuning
   //  }
 
   //  return this
-  //},
-
-
-  tuning: function( tuning ) {
-    if( tuning !== undefined ) {
-      this.__tuning = tuning
-      this.loadScale( this.__tuning )
-    }else{
-      return this.__tuning
-    }
-
-    return this
-  }
+  //}
 }
 
 module.exports = Theory
@@ -6272,7 +6236,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
               if( mode !== null ) {
                 notesInOctave = Gibberish.Theory.modes[ mode ].length
               }else{
-                const tuning = Gibberish.Theory.tuning()
+                const tuning = Gibberish.Theory.tuning
                 notesInOctave = Gibberish.Theory.__tunings[ tuning ].frequencies.length
               }
               const offset = octave * notesInOctave

@@ -157,23 +157,22 @@ const Audio = {
       },
     }
 
-    //if( getter === undefined ) {
     const getter = () => obj['__'+name]
-    //}
 
-    //if( setter === undefined ) {
     const setter = v => {
-        obj['__'+name].value = v
-        if( Gibberish.mode === 'worklet' ) {
-          Gibberish.worklet.port.postMessage({
-            address:'property',
-            object:obj.id,
-            name,
-            value:obj['__'+name].value
-          }) 
-        }
+      obj['__'+name].value = v
+      if( Gibberish.mode === 'worklet' ) {
+        Gibberish.worklet.port.postMessage({
+          address:'property',
+          object:obj.id,
+          name,
+          value:obj['__'+name].value
+        }) 
       }
-    //}
+      if( post !== undefined ) {
+        post.call( obj )
+      }
+    }
 
     Object.defineProperty( obj, name, {
       configurable:true,
@@ -181,9 +180,7 @@ const Audio = {
       set: setter
     })
 
-    if( post !== undefined ) {
-      post.call( obj )
-    }
+
 
   }
   
