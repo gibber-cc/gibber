@@ -14,7 +14,8 @@ const Effects = {
       const description = { 
         properties:gibberishConstructor.defaults || {}, 
         methods:methods,
-        name:effectName
+        name:effectName,
+        category:'effects'
       }
       description.properties.type = 'fx'
 

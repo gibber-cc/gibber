@@ -10,9 +10,9 @@ module.exports = {
     attack: audio => audio.Clock.ms(.5),
     decay: 1/2, 
     octave3:0,
-    cutoff:.5,
+    cutoff:1,
     filterMult:2.5,
-    Q:.5,
+    Q:.975,
     filterType:1,
     filterMode:1
   },
@@ -39,6 +39,17 @@ module.exports = {
     detune2:.0275,
     detune3:-.0275
   },
+  warble : { 
+    attack: audio => audio.Clock.ms(1),
+    decay: 1/2,	
+    octave: -3,
+    octave2 : -1,
+    cutoff: .8,
+    filterMult:3,
+    Q:.75,
+    detune2:.0275,
+    detune3:-.0275
+  }, 
   dark: { 
     attack: audio => audio.Clock.ms(1),
     decay: 1,	

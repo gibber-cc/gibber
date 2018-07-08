@@ -40,11 +40,11 @@ const Presets = {
     Monosynth: require( './presets/monosynth_presets.js' ),
     PolyMono: require( './presets/monosynth_presets.js' ),
     Snare: require( './presets/snare.js' ),
-    Kick: require( './presets/kick_presets.js' )
+    Kick: require( './presets/kick_presets.js' ),
   },
 
   effects: {
-
+    Distortion: require( './presets/distortion_presets.js' ),
   }
 
 }

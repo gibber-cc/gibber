@@ -68,7 +68,8 @@ module.exports = function( Audio ) {
       configurable:true,
       get() { return this.__pitch },
       set(v){ 
-        drums.__pitch.value = v
+        this.__pitch.value = v
+        for( let sampler of this.samplers ) sampler.rate = this.__pitch.value 
       }
     })
 
