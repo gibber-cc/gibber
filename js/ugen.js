@@ -20,6 +20,56 @@ const __timeProps = {
 //
 const poolSize = 12
 
+
+const createProperty = function( obj, propertyName, __wrappedObject, timeProps, Audio ) {
+  obj[ '__' + propertyName ] = {
+    isProperty:true,
+    sequencers:[],
+    mods:[],
+    name:propertyName,
+
+    get value() {
+      return __wrappedObject[ propertyName ]
+    },
+    set value(v) {
+      if( v !== undefined ) {
+        __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( v ) : v
+      }
+    },
+
+    seq( values, timings, number = 0, delay = 0 ) {
+      let prevSeq = obj[ propertyName ].sequencers[ number ] 
+      if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
+
+      obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Audio.Seq({ 
+        values, 
+        timings, 
+        target:__wrappedObject, 
+        key:propertyName 
+      })
+        .start( Audio.Clock.time( delay ) )
+
+      // return object for method chaining
+      return obj
+    },
+
+    ugen:obj
+  }
+
+  Object.defineProperty( obj, propertyName, {
+    get() { return obj[ '__' + propertyName ] },
+    set(v){
+      // XXX need to accomodate non-scalar values
+      // i.e. mappings
+      if( v !== null && typeof v !== 'object' ) 
+        obj[ '__' + propertyName ].value = v
+      else
+        obj[ '__' + propertyName ] = v
+    }
+  })
+
+}
+
 const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool = false ) {
 
   let   poolCount = poolSize
@@ -56,51 +106,52 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
 
     // wrap properties and add sequencing to them
     for( let propertyName in description.properties ) {
-      obj[ '__' + propertyName ] = {
-        isProperty:true,
-        sequencers:[],
-        mods:[],
-        name:propertyName,
+      createProperty( obj, propertyName, __wrappedObject, timeProps, Audio )
+      //obj[ '__' + propertyName ] = {
+      //  isProperty:true,
+      //  sequencers:[],
+      //  mods:[],
+      //  name:propertyName,
 
-        get value() {
-          return __wrappedObject[ propertyName ]
-        },
-        set value(v) {
-          if( v !== undefined ) {
-            __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( v ) : v
-          }
-        },
+      //  get value() {
+      //    return __wrappedObject[ propertyName ]
+      //  },
+      //  set value(v) {
+      //    if( v !== undefined ) {
+      //      __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( v ) : v
+      //    }
+      //  },
 
-        seq( values, timings, number = 0, delay = 0 ) {
-          let prevSeq = obj[ propertyName ].sequencers[ number ] 
-          if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
+      //  seq( values, timings, number = 0, delay = 0 ) {
+      //    let prevSeq = obj[ propertyName ].sequencers[ number ] 
+      //    if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
 
-          obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Audio.Seq({ 
-            values, 
-            timings, 
-            target:__wrappedObject, 
-            key:propertyName 
-          })
-          .start( Audio.Clock.time( delay ) )
+      //    obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Audio.Seq({ 
+      //      values, 
+      //      timings, 
+      //      target:__wrappedObject, 
+      //      key:propertyName 
+      //    })
+      //    .start( Audio.Clock.time( delay ) )
 
-          // return object for method chaining
-          return obj
-        },
+      //    // return object for method chaining
+      //    return obj
+      //  },
 
-        ugen:obj
-      }
+      //  ugen:obj
+      //}
 
-      Object.defineProperty( obj, propertyName, {
-        get() { return obj[ '__' + propertyName ] },
-        set(v){
-          // XXX need to accomodate non-scalar values
-          // i.e. mappings
-          if( v !== null && typeof v !== 'object' ) 
-            obj[ '__' + propertyName ].value = v
-          else
-            obj[ '__' + propertyName ] = v
-        }
-      })
+      //Object.defineProperty( obj, propertyName, {
+      //  get() { return obj[ '__' + propertyName ] },
+      //  set(v){
+      //    // XXX need to accomodate non-scalar values
+      //    // i.e. mappings
+      //    if( v !== null && typeof v !== 'object' ) 
+      //      obj[ '__' + propertyName ].value = v
+      //    else
+      //      obj[ '__' + propertyName ] = v
+        //}
+      //})
     }
 
     // wrap methods and add sequencing to them
@@ -263,6 +314,8 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
   //  poolCount = 0
   //}
   
+  Ugen.createProperty = createProperty
+
   return constructor
 }
 

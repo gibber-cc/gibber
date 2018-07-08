@@ -6,13 +6,15 @@ const Effects = {
     const effects = {}
     const poolEffects = ['Freeverb', 'Plate', 'BufferShuffler']
     Gibberish.effects = Gibberish.fx
+
     for( let effectName in Gibberish.effects ) {
       const gibberishConstructor = Gibberish.effects[ effectName ]
 
       const methods = Effects.descriptions[ effectName ] === undefined ? null : Effects.descriptions[ effectName ].methods
       const description = { 
         properties:gibberishConstructor.defaults || {}, 
-        methods:methods
+        methods:methods,
+        name:effectName
       }
       description.properties.type = 'fx'
 

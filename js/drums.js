@@ -1,3 +1,5 @@
+const Ugen = require( './ugen.js' )
+
 module.exports = function( Audio ) {
 
   const Drums = function( score, time, props ) { 
@@ -20,6 +22,57 @@ module.exports = function( Audio ) {
       values:score.split(''),
       timings:time === undefined ? 1 / score.length : time
     }).start()
+
+    drums.samplers = [ k,s,ch,oh ]
+
+    const obj = drums
+    let __value = 1
+    drums.__pitch = { 
+      value: __value,
+      sProperty:true,
+      sequencers:[],
+      mods:[],
+      name:'pitch',
+
+      seq( values, timings, number = 0, delay = 0 ) {
+        let prevSeq = obj.__pitch.sequencers[ number ] 
+        if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
+
+        // XXX you have to add a method that does all this shit on the worklet. crap.
+        obj.__pitch.sequencers[ number ] = obj.__pitch[ number ] = Audio.Seq({ 
+          values, 
+          timings, 
+          target:drums.__wrapped__, 
+          key:'pitch'
+        })
+        .start( Audio.Clock.time( delay ) )
+
+        // return object for method chaining
+        return obj
+      },
+    }
+
+    Audio.Gibberish.worklet.port.postMessage({
+      address:'addMethod',
+      key:'pitch',
+      function:`function( pitch ) {
+        for( let input of this.inputs ) {
+          if( typeof input === 'object' ) input.rate = pitch
+        }
+      }`,
+      id:drums.id,
+      delay:Audio.shouldDelay
+    })
+
+    Object.defineProperty( drums, 'pitch', {
+      configurable:true,
+      get() { return this.__pitch },
+      set(v){ 
+        drums.__pitch.value = v
+      }
+    })
+
+    //Ugen.createProperty( drums, 'pitch', drums.__wrapped__, [], Audio )
 
     return drums
   }

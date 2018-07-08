@@ -7,10 +7,10 @@ module.exports = {
 
   bleepEcho: { 
     waveform:'sine', 
-    attack:1/256, decay:1/64, 
+    attack:1/256, decay:1/32, 
     gain:.25,
     presetInit: function( audio ) {
-      this.fx.push( audio.effects.Delay({ feedback:.75, time: audio.Clock.time(1/16) }) )
+      this.fx.push( audio.effects.Delay({ feedback:.5, time:1/12 }) )
     }
   },
 
@@ -24,8 +24,8 @@ module.exports = {
     maxVoices:3,
     gain:.1,
     presetInit: function( audio ) {
-      this.fx.add( audio.effects.Chorus({ slowGain:3, fastGain:.5 }) )
-      this.fx.add( audio.effects.Delay({ time: audio.Clock.time(1/12), feedback:.65 }) )
+      this.fx.add( audio.effects.Chorus() )
+      //this.fx.add( audio.effects.Delay({ time:1/12, feedback:.65 }) )
     }
   },
 

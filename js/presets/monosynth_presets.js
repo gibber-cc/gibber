@@ -6,12 +6,12 @@ module.exports = {
   },
   
   lead : {
-    presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:audio.Clock.time( 1/16 ), feedback:.65 }) ); this.fx.push( audio.effects.Freeverb() ) },
+    presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:1/6, feedback:.65 }) )  },
     attack: audio => audio.Clock.ms(.5),
-    decay: audio => 1/2,
+    decay: 1/2, 
     octave3:0,
     cutoff:.5,
-    filterMult:1,
+    filterMult:2.5,
     Q:.5,
     filterType:1,
     filterMode:1
