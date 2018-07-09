@@ -8,6 +8,7 @@ const Ensemble    = require( './ensemble.js' )
 const Utility     = require( './utility.js' )
 const Euclid      = require( './euclid.js' )
 const Hex         = require( './hex.js' )
+const Freesound   = require( './freesound.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -33,6 +34,7 @@ const Audio = {
       obj.Theory = this.Theory
       obj.Euclid = Euclid( this )
       obj.Hex = Hex( this )
+      obj.Freesound = this.Freesound
     }else{
       Audio.exportTarget = obj
     } 
@@ -87,6 +89,7 @@ const Audio = {
   onload() {},
 
   createUgens() {
+    this.Freesound = Freesound( this )
     this.oscillators = Oscillators.create( this )
     this.instruments = Instruments.create( this ) 
     this.effects = Effects.create( this )
