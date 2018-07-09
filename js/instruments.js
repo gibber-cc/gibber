@@ -48,7 +48,7 @@ const Instruments = {
       methods:[ 'note','trigger' ],
     },
     Sampler:{
-      methods:[ 'note','trigger' ],
+      methods:[ 'note','trigger', 'loadFile', 'loadBuffer' ],
     },
     Snare:{
       methods:[ 'note','trigger' ],

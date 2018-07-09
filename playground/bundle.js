@@ -7854,7 +7854,6 @@ const setupSplit = function() {
 
 }
 
-
 const fixCallback = function( cb ) {
   const cbarr = cb.split( '\n' )
   cbarr.splice(1,1)
@@ -7863,10 +7862,45 @@ const fixCallback = function( cb ) {
   return cbarr.join('\n')
 }
 
+let shouldUseProxies = false
+const createProxies = function( pre, post, proxiedObj ) {
+  const newProps = post.filter( prop => pre.indexOf( prop ) === -1 )
+
+  for( let prop of newProps ) {
+    let ugen = proxiedObj[ prop ]
+
+    Object.defineProperty( proxiedObj, prop, {
+      get() { return ugen },
+      set(value) {
+
+        const member = ugen
+        if( member !== undefined && value !== undefined) {
+
+          if( typeof member === 'object' && member.__wrapped__ !== undefined ) {
+            // save copy of connections
+            const connected = member.__wrapped__.connected.slice( 0 )
+            if( member.disconnect !== undefined ) {
+              for( let connection of connected ) {
+                // 0 index is connection target
+                //console.log( 'disconnecting:', connection[1].id, connection )
+                member.disconnect( connection[ 0 ] )
+                value.connect( connection[ 0 ] ) 
+                //console.log( 'connected:', value.id )
+              }
+            }
+          }
+        }
+        ugen = value
+      }
+    })
+  }
+}
+
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
   'Ctrl-Enter'( cm ) {
+    const __prxy = window
     try {
       const selectedCode = getSelectionCodeColumn( cm, false )
 
@@ -7875,7 +7909,14 @@ CodeMirror.keyMap.playground =  {
       const func = new Function( selectedCode.code )
 
       Gibber.shouldDelay = true
+
+      const preWindowMembers = Object.keys( window )
       func()
+      const postWindowMembers = Object.keys( window )
+
+      if( preWindowMembers.length !== postWindowMembers.length ) {
+        createProxies( preWindowMembers, postWindowMembers, window )
+      }
       
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
       const markupFunction = () => {
@@ -7904,6 +7945,8 @@ CodeMirror.keyMap.playground =  {
     }
     
     Gibber.shouldDelay = false
+    shouldUseProxies = false
+    window = __prxy
     //Gibber.printcb()
   },
   'Alt-Enter'( cm ) {
@@ -7915,6 +7958,7 @@ CodeMirror.keyMap.playground =  {
       var func = new Function( selectedCode.code )
 
       Gibber.shouldDelay = true
+      shouldUseProxies = truee
       func()
 
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
@@ -7945,6 +7989,7 @@ CodeMirror.keyMap.playground =  {
     }
 
     Gibber.shouldDelay = false
+    shouldUseProxies = false
   },
   'Ctrl-.'( cm ) {
     Gibber.clear()

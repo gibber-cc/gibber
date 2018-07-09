@@ -5127,12 +5127,12 @@ module.exports = function( Audio ) {
 
           if( Freesound.loaded[ filename ] === undefined ) {
 
-            console.log( `loading freesound file: ${filename}`)
+            console.log( `loading freesound file: ${filename}` )
 
             fetch( `http://freesound.org/apiv2/sounds/${id}/?&format=json&token=6a00f80ba02b2755a044cc4ef004febfc4ccd476` )
               .then( data => data.json() )
               .then( json => {
-                let path = json.previews[ 'preview-hq-mp3' ]
+                const path = json.previews[ 'preview-hq-mp3' ]
 
                 sampler.path = path
 
@@ -5140,12 +5140,19 @@ module.exports = function( Audio ) {
 
                 sampler.__wrapped__.loadFile( path )
 
-                sampler.__wrapped__.onload = () => {
+                sampler.__wrapped__.onload = buffer => {
+                  // XXX uncomment next line to reinstate memoization of audio buffers (with errors)
+                  //Freesound.loaded[ filename ] = buffer
                   console.log( `freesound file ${filename} loaded.` )
                 }
 
                 Audio.Gibberish.proxyEnabled = true
               })
+          }else{
+            // XXX memoing the files causes an error
+            if( Audio.Gibberish.mode === 'worklet' ) {
+              sampler.loadBuffer( Freesound.loaded[ filename ] )
+            }
           }
 
         })
@@ -5463,7 +5470,7 @@ const Instruments = {
       methods:[ 'note','trigger' ],
     },
     Sampler:{
-      methods:[ 'note','trigger' ],
+      methods:[ 'note','trigger', 'loadFile', 'loadBuffer' ],
     },
     Snare:{
       methods:[ 'note','trigger' ],
@@ -18736,7 +18743,7 @@ module.exports = function( Gibberish ) {
       }
 
       if( typeof syn.onload === 'function' ){  
-        syn.onload()  
+        syn.onload( buffer || syn.data.buffer )
       }
       if( syn.end === -999999999 ) syn.end = syn.data.buffer.length - 1
     }
@@ -18750,6 +18757,14 @@ module.exports = function( Gibberish ) {
       }
 
       syn.data.onload = onload
+    }
+
+    syn.loadBuffer = function( buffer ) {
+      if( Gibberish.mode === 'processor' ) {
+        syn.data.buffer = buffer
+        syn.data.memory.values.length = syn.data.dim = buffer.length
+        syn.__redoGraph() 
+      }
     }
 
     if( props.filename !== undefined ) {
@@ -18771,7 +18786,6 @@ module.exports = function( Gibberish ) {
 
     return out
   }
-  
 
   Sampler.defaults = {
     gain: 1,
