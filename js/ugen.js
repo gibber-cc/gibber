@@ -17,9 +17,16 @@ const __timeProps = {
 // Gibber ugens are essentially wrappers around underlying gibberish 
 // ugens, providing convenience methods for rapidly sequencing
 // and modulating them.
-//
+
 const poolSize = 12
 
+// DRY method for removing a sequence and its associated annotations.
+const removeSeq = function( obj, seq ) {
+  const idx = obj.__sequencers.indexOf( seq )
+  obj.__sequencers.splice( idx, 1 )
+  seq.stop()
+  if( typeof seq.clear === 'function' ) prevSeq.clear()
+}
 
 const createProperty = function( obj, propertyName, __wrappedObject, timeProps, Audio ) {
   obj[ '__' + propertyName ] = {
@@ -39,15 +46,18 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
     seq( values, timings, number = 0, delay = 0 ) {
       let prevSeq = obj[ propertyName ].sequencers[ number ] 
-      if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
+      if( prevSeq !== undefined ) removeSeq( obj, prevSeq )
 
-      obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Audio.Seq({ 
+      const s = Audio.Seq({ 
         values, 
         timings, 
         target:__wrappedObject, 
         key:propertyName 
       })
-        .start( Audio.Clock.time( delay ) )
+      .start( Audio.Clock.time( delay ) )
+
+      obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = s
+      obj.__sequencers.push( s )
 
       // return object for method chaining
       return obj
@@ -102,56 +112,30 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     //}
 
     const __wrappedObject = gibberishConstructor( properties )
-    const obj = { __wrapped__:__wrappedObject }
+    const obj = { 
+      __wrapped__:__wrappedObject,
+      __sequencers: [], 
+
+      stop() {
+        for( let seq of this.__sequencers ) seq.stop()
+      },
+      start() {
+        for( let seq of this.__sequencers ) seq.start()
+      },
+      clear() {
+        for( let seq of this.__sequencers ) {
+          seq.stop()
+          if( seq.clear !== undefined ) seq.clear()
+          for( let connection of __wrappedObject.connected ) {
+            this.disconnect( connection[ 0 ] )
+          }
+        }
+      }
+    }
 
     // wrap properties and add sequencing to them
     for( let propertyName in description.properties ) {
       createProperty( obj, propertyName, __wrappedObject, timeProps, Audio )
-      //obj[ '__' + propertyName ] = {
-      //  isProperty:true,
-      //  sequencers:[],
-      //  mods:[],
-      //  name:propertyName,
-
-      //  get value() {
-      //    return __wrappedObject[ propertyName ]
-      //  },
-      //  set value(v) {
-      //    if( v !== undefined ) {
-      //      __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( v ) : v
-      //    }
-      //  },
-
-      //  seq( values, timings, number = 0, delay = 0 ) {
-      //    let prevSeq = obj[ propertyName ].sequencers[ number ] 
-      //    if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
-
-      //    obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = Audio.Seq({ 
-      //      values, 
-      //      timings, 
-      //      target:__wrappedObject, 
-      //      key:propertyName 
-      //    })
-      //    .start( Audio.Clock.time( delay ) )
-
-      //    // return object for method chaining
-      //    return obj
-      //  },
-
-      //  ugen:obj
-      //}
-
-      //Object.defineProperty( obj, propertyName, {
-      //  get() { return obj[ '__' + propertyName ] },
-      //  set(v){
-      //    // XXX need to accomodate non-scalar values
-      //    // i.e. mappings
-      //    if( v !== null && typeof v !== 'object' ) 
-      //      obj[ '__' + propertyName ].value = v
-      //    else
-      //      obj[ '__' + propertyName ] = v
-        //}
-      //})
     }
 
     // wrap methods and add sequencing to them
@@ -207,12 +191,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
 
         obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
           let prevSeq = obj[ methodName ].sequencers[ number ] 
-          if( prevSeq !== undefined ) { prevSeq.stop(); if( typeof prevSeq.clear === 'function' ) prevSeq.clear() }
+          if( prevSeq !== undefined ) { 
+                        removeSeq( obj, prevSeq )
+          }
 
           let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
           
           s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
+          obj.__sequencers.push( s )
 
           // return object for method chaining
           return obj

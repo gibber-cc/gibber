@@ -7900,7 +7900,6 @@ CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
   'Ctrl-Enter'( cm ) {
-    const __prxy = window
     try {
       const selectedCode = getSelectionCodeColumn( cm, false )
 
@@ -7945,9 +7944,6 @@ CodeMirror.keyMap.playground =  {
     }
     
     Gibber.shouldDelay = false
-    shouldUseProxies = false
-    window = __prxy
-    //Gibber.printcb()
   },
   'Alt-Enter'( cm ) {
     try {
@@ -7958,8 +7954,13 @@ CodeMirror.keyMap.playground =  {
       var func = new Function( selectedCode.code )
 
       Gibber.shouldDelay = true
-      shouldUseProxies = truee
+      const preWindowMembers = Object.keys( window )
       func()
+      const postWindowMembers = Object.keys( window )
+
+      if( preWindowMembers.length !== postWindowMembers.length ) {
+        createProxies( preWindowMembers, postWindowMembers, window )
+      }
 
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
       const markupFunction = () => {
@@ -7989,7 +7990,6 @@ CodeMirror.keyMap.playground =  {
     }
 
     Gibber.shouldDelay = false
-    shouldUseProxies = false
   },
   'Ctrl-.'( cm ) {
     Gibber.clear()

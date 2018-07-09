@@ -25,6 +25,8 @@ module.exports = function( Audio ) {
 
     drums.samplers = [ k,s,ch,oh ]
 
+    drums.__sequencers = [ drums.seq ]
+
     const obj = drums
     let __value = 1
     drums.__pitch = { 
@@ -36,7 +38,11 @@ module.exports = function( Audio ) {
 
       seq( values, timings, number = 0, delay = 0 ) {
         let prevSeq = obj.__pitch.sequencers[ number ] 
-        if( prevSeq !== undefined ) { prevSeq.stop(); prevSeq.clear(); }
+        if( prevSeq !== undefined ) { 
+          prevSeq.stop(); prevSeq.clear(); 
+          let idx = obj.__sequencers.indexOf( prevSeq )
+          obj.__sequencers.splice( idx, 1 )
+        }
 
         // XXX you have to add a method that does all this shit on the worklet. crap.
         obj.__pitch.sequencers[ number ] = obj.__pitch[ number ] = Audio.Seq({ 
@@ -46,6 +52,8 @@ module.exports = function( Audio ) {
           key:'pitch'
         })
         .start( Audio.Clock.time( delay ) )
+
+        obj.__sequencers.push( obj.__pitch[ number ] )
 
         // return object for method chaining
         return obj

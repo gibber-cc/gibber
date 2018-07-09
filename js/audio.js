@@ -15,7 +15,7 @@ const Audio = {
   Theory: require( './theory.js' ),
 
   initialized:false,
-  autoConnect:false,
+  autoConnect:true,
   shouldDelay:false,
   instruments:{},
   oscillators:{},
