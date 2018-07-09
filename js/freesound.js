@@ -3,12 +3,8 @@ const freesound = require( './external/freesound2.js' )
 module.exports = function( Audio ) {
   freesound.setToken( '6a00f80ba02b2755a044cc4ef004febfc4ccd476' )
 
-  const Freesound = function() {
-    const sampler = Gibber.instruments.Sampler()
-
-    var key = arguments[0] || 96541;
-    var callback = null;
-    var filename, request;
+  const Freesound = function( query ) {
+    const sampler = Audio.instruments.Sampler()
 
     //sampler.done = function(func) {
     //  callback = func
@@ -43,9 +39,10 @@ module.exports = function( Audio ) {
     //}
 
     // freesound query api http://www.freesound.org/docs/api/resources.html
-    if( typeof key === 'string' ) {
-      const query = key
+    if( typeof query === 'string' ) {
+
       console.log( 'searching freesound for ' + query )
+
       fetch( `https://freesound.org/apiv2/search/text/?query=${query}&token=6a00f80ba02b2755a044cc4ef004febfc4ccd476`)
         .then( data => data.json() )
         .then( sounds => {
@@ -53,16 +50,25 @@ module.exports = function( Audio ) {
           const id = sounds.results[0].id
 
           if( Freesound.loaded[ filename ] === undefined ) {
+
             console.log( `loading freesound file: ${filename}`)
+
             fetch( `http://freesound.org/apiv2/sounds/${id}/?&format=json&token=6a00f80ba02b2755a044cc4ef004febfc4ccd476` )
               .then( data => data.json() )
               .then( json => {
                 let path = json.previews[ 'preview-hq-mp3' ]
 
                 sampler.path = path
+
+                Audio.Gibberish.proxyEnabled = false
+
                 sampler.__wrapped__.loadFile( path )
 
-                sampler.__wrapped__.onload = () => console.log( `freesound file ${filename} loaded.` )
+                sampler.__wrapped__.onload = () => {
+                  console.log( `freesound file ${filename} loaded.` )
+                }
+
+                Audio.Gibberish.proxyEnabled = true
               })
           }
 

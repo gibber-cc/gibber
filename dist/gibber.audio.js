@@ -946,8 +946,8 @@ module.exports = ( x, y=1, properties ) => {
     load( filename ) {
       let promise = utilities.loadSample( filename, ugen )
       promise.then( ( _buffer )=> { 
-        ugen.memory.values.length = ugen.dim = _buffer.length     
-        ugen.onload() 
+        ugen.memory.values.length = ugen.dim = _buffer.length
+        if( typeof ugen.onload === 'function' ) ugen.onload() 
       })
     },
     memory : {
@@ -5079,12 +5079,8 @@ const freesound = require( './external/freesound2.js' )
 module.exports = function( Audio ) {
   freesound.setToken( '6a00f80ba02b2755a044cc4ef004febfc4ccd476' )
 
-  const Freesound = function() {
-    const sampler = Gibber.instruments.Sampler()
-
-    var key = arguments[0] || 96541;
-    var callback = null;
-    var filename, request;
+  const Freesound = function( query ) {
+    const sampler = Audio.instruments.Sampler()
 
     //sampler.done = function(func) {
     //  callback = func
@@ -5119,9 +5115,10 @@ module.exports = function( Audio ) {
     //}
 
     // freesound query api http://www.freesound.org/docs/api/resources.html
-    if( typeof key === 'string' ) {
-      const query = key
+    if( typeof query === 'string' ) {
+
       console.log( 'searching freesound for ' + query )
+
       fetch( `https://freesound.org/apiv2/search/text/?query=${query}&token=6a00f80ba02b2755a044cc4ef004febfc4ccd476`)
         .then( data => data.json() )
         .then( sounds => {
@@ -5129,16 +5126,25 @@ module.exports = function( Audio ) {
           const id = sounds.results[0].id
 
           if( Freesound.loaded[ filename ] === undefined ) {
+
             console.log( `loading freesound file: ${filename}`)
+
             fetch( `http://freesound.org/apiv2/sounds/${id}/?&format=json&token=6a00f80ba02b2755a044cc4ef004febfc4ccd476` )
               .then( data => data.json() )
               .then( json => {
                 let path = json.previews[ 'preview-hq-mp3' ]
 
                 sampler.path = path
+
+                Audio.Gibberish.proxyEnabled = false
+
                 sampler.__wrapped__.loadFile( path )
 
-                sampler.__wrapped__.onload = () => console.log( `freesound file ${filename} loaded.` )
+                sampler.__wrapped__.onload = () => {
+                  console.log( `freesound file ${filename} loaded.` )
+                }
+
+                Audio.Gibberish.proxyEnabled = true
               })
           }
 
@@ -18712,6 +18718,29 @@ module.exports = function( Gibberish ) {
       )
     }
 
+    const onload = buffer => {
+      if( Gibberish.mode === 'worklet' ) {
+        const memIdx = Gibberish.memory.alloc( syn.data.memory.values.length, true )
+
+        Gibberish.worklet.port.postMessage({
+          address:'copy',
+          id: syn.id,
+          idx: memIdx,
+          buffer: syn.data.buffer
+        })
+
+      }else if ( Gibberish.mode === 'processor' ) {
+        syn.data.buffer = buffer
+        syn.data.memory.values.length = syn.data.dim = buffer.length
+        syn.__redoGraph() 
+      }
+
+      if( typeof syn.onload === 'function' ){  
+        syn.onload()  
+      }
+      if( syn.end === -999999999 ) syn.end = syn.data.buffer.length - 1
+    }
+
     //if( props.filename ) {
     syn.loadFile = function( filename ) {
       if( Gibberish.mode !== 'processor' ) { 
@@ -18720,32 +18749,7 @@ module.exports = function( Gibberish ) {
         syn.data = g.data( new Float32Array() )
       }
 
-      syn.data.onload = buffer => {
-        if( Gibberish.mode === 'worklet' ) {
-          const memIdx = Gibberish.memory.alloc( syn.data.memory.values.length, true )
-
-          Gibberish.worklet.port.postMessage({
-            address:'copy',
-            id: syn.id,
-            idx: memIdx,
-            buffer: syn.data.buffer
-          })
-
-        }else if ( Gibberish.mode === 'processor' ) {
-          syn.data.buffer = buffer
-          syn.data.memory.values.length = syn.data.dim = buffer.length
-          syn.__redoGraph() 
-        }else{
-          syn.__redoGraph()
-        }
-
-        if( typeof syn.onload === 'function' ){  
-          syn.onload()  
-        }
-        if( syn.end === -999999999 ) syn.end = syn.data.buffer.length - 1
-
-        //syn.__createGraph()
-      }
+      syn.data.onload = onload
     }
 
     if( props.filename !== undefined ) {
@@ -18753,11 +18757,10 @@ module.exports = function( Gibberish ) {
     }else{
       syn.data = g.data( new Float32Array() )
     }
-    
+
+    syn.data.onload = onload
+
     syn.__createGraph()
-    //}else{
-    //syn.graph = g.add(0,0)
-    //}
     
     const out = Gibberish.factory( 
       syn,
@@ -20520,16 +20523,19 @@ const __proxy = function( __name, values, obj ) {
         if( typeof target[ prop ] === 'function' && prop.indexOf('__') === -1) {
           const proxy = new Proxy( target[ prop ], {
             apply( __target, thisArg, args ) {
-              const __args = args.map( __value => replaceObj( __value, true ) )
-              //if( prop === 'connect' ) console.log( 'proxy connect:', __args )
 
-              //console.log( 'args:', prop,  __args )
-              Gibberish.worklet.port.postMessage({ 
-                address:'method', 
-                object:obj.id,
-                name:prop,
-                args:__args
-              })
+              if( Gibberish.proxyEnabled === true ) {
+                const __args = args.map( __value => replaceObj( __value, true ) )
+                //if( prop === 'connect' ) console.log( 'proxy connect:', __args )
+
+                //console.log( 'args:', prop,  __args )
+                Gibberish.worklet.port.postMessage({ 
+                  address:'method', 
+                  object:obj.id,
+                  name:prop,
+                  args:__args
+                })
+              }
 
               return target[ prop ].apply( thisArg, args )
             }
@@ -20553,7 +20559,7 @@ const __proxy = function( __name, values, obj ) {
                 value:__value
               })
             }
-            }
+          }
         }
 
         target[ prop ] = value
