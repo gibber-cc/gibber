@@ -25,7 +25,7 @@ const removeSeq = function( obj, seq ) {
   const idx = obj.__sequencers.indexOf( seq )
   obj.__sequencers.splice( idx, 1 )
   seq.stop()
-  if( typeof seq.clear === 'function' ) prevSeq.clear()
+  seq.clear()
 }
 
 const createProperty = function( obj, propertyName, __wrappedObject, timeProps, Audio ) {

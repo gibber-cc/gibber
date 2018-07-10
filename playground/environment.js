@@ -10,7 +10,9 @@ window.onload = function() {
     value:  '// click in the editor to begin',
     keyMap: 'playground',
     autofocus: true,
-    matchBrackets:true
+    matchBrackets:true,
+    indentUnit:2,
+    tabSize:2
   })
 
   cm.setSize( null, '100%' )
