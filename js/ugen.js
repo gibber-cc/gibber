@@ -125,7 +125,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       clear() {
         for( let seq of this.__sequencers ) {
           seq.stop()
-          if( seq.clear !== undefined ) seq.clear()
+          seq.clear()
           for( let connection of __wrappedObject.connected ) {
             this.disconnect( connection[ 0 ] )
           }

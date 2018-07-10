@@ -131,9 +131,12 @@ const createProxies = function( pre, post, proxiedObj ) {
                 // 0 index is connection target
                 //console.log( 'disconnecting:', connection[1].id, connection )
                 member.disconnect( connection[ 0 ] )
-                value.connect( connection[ 0 ] ) 
+
+                if( connection[0] !== Gibber.Gibberish.output || Gibber.autoConnect === false )
+                  value.connect( connection[ 0 ] ) 
                 //console.log( 'connected:', value.id )
               }
+              member.clear()
             }
           }
         }

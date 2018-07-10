@@ -49,6 +49,8 @@ module.exports = function( Audio ) {
     seq.clear = function() {
       if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
       if( seq.timings !== undefined && seq.timings.clear !== undefined ) seq.timings.clear()
+      let idx = Seq.sequencers.indexOf( seq )
+      Seq.sequencers.splice( idx, 1 )
     }
     Seq.sequencers.push( seq )
 

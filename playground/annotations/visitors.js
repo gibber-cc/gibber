@@ -112,7 +112,7 @@ module.exports = function( Marker ) {
         let seq
         if( obj === undefined ) {
           // assume default sequencer ID of 0, but check for alternative argument value
-          let seqNumber = node.arguments.legnth > 2 ? node.arguments[2].raw : 0
+          let seqNumber = node.arguments.length > 2 ? node.arguments[2].raw : 0
 
           seq = Marker.getObj( state.slice( 0, endIdx ), true, seqNumber )
           Marker.markPatternsForSeq( seq, node.arguments, state, cb, node, seqNumber )
@@ -122,7 +122,7 @@ module.exports = function( Marker ) {
           // sequence from the faux-AST we created earlier. We then pass in the 
           // MemberExpression nod ethat was used to sequence this property. 
           for( let i = tree.length - 2; i >= 1; i-=2 ) {
-            let seqNumber = node.arguments.legnth > 2 ? node.arguments[2].raw : 0
+            let seqNumber = node.arguments.length > 2 ? node.arguments[2].raw : 0
 
             seq = obj[ tree[i] ][ seqNumber ]
 
