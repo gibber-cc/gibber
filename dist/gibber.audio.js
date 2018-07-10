@@ -5622,35 +5622,28 @@ const Gen  = {
     // so that changes to it are forwarded to m4l
     this.active = true
 
-    /*if( this.name === 'rate' ) {
-      str += 'in1, '
-      let pName = this[ 0 ].uid
-      str += pName
-      paramArray.push( `Param ${pName}(${this[0]()})` )
-    }else{*/
-      for( let property of def.properties ) {
-        let p = this[ property ](),
-            uid = this[ property ].uid
-        
-        //console.log( this.name, property, def.properties, uid )
-        if( Gen.isPrototypeOf( p ) ) {
-          str += p.gen( paramArray )
-        }else if( typeof p === 'number' ) {
-          //let pName = uid
-          //str += pName
-          //paramArray.push( `Param ${pName}(${p})` )
-          str += p
-        }else if( p === Gen.time ) {
-          str += p
-        }else if( typeof p === 'string' ) {
-          str += p
-        }else{
-          console.log( 'CODEGEN ERROR:', p )
-        }
-
-        if( count++ < def.properties.length - 1 ) str += ','
+    for( let property of def.properties ) {
+      let p = this[ property ](),
+          uid = this[ property ].uid
+      
+      //console.log( this.name, property, def.properties, uid )
+      if( Gen.isPrototypeOf( p ) ) {
+        str += p.gen( paramArray )
+      }else if( typeof p === 'number' ) {
+        let pName = 'p'+paramArray.length
+        //str += pName
+        paramArray.push( [`${pName}`, p ] )
+        str += `g.in('${pName}')`
+      }else if( p === Gen.time ) {
+        str += p
+      }else if( typeof p === 'string' ) {
+        str += p
+      }else{
+        console.log( 'CODEGEN ERROR:', p )
       }
-    //}
+
+      if( count++ < def.properties.length - 1 ) str += ','
+    }
     
     str += ')'
     
@@ -5739,38 +5732,56 @@ const Gen  = {
     Object.assign( obj, this.ugens )
   },
 
-  make:function( graph ) {
+  make( graph ) {
     const ugen = Gibber.Gibberish.prototypes.Ugen
     const g = Gibber.Gibberish.genish
-    
+
+    // store properties of our gen object in this array
+    // they will then become properties of our Gibber object
+    const paramArray = []
+
+    // get genish.js codelet for our graph
+    const genCode = graph.gen( paramArray )
+
+    // create a properties object out of our paramArray
+    const params = {}
+    for( let param of paramArray ) {
+      params[ param[0] ] = param[1]
+    } 
+
+    const id = Gen.getUID()
+    // pass a constructor to our worklet processor
     Gibber.Gibberish.worklet.port.postMessage({ 
       address:'addMethod', 
       id:-1,
-      key:'Test2',
+      key:'Gen' + id,
       function:`function() { 
         const g = Gibberish.genish; 
         const mymod = Object.create( Gibberish.prototypes.Ugen ); 
-        Gibberish.factory( mymod, ${graph.gen()}, 'Test2', {}, null, true ); 
+        Gibberish.factory( mymod, ${genCode}, 'Gen${id}', ${JSON.stringify(params)}, null, true ); 
         return mymod; 
       }`
     })
-    
+
+    // create a worklet-side Gibberish constructor
     const make = function() {
       const mymod = Object.create( ugen )
       // the second parameter doesn't matter in the worklet, only in the processor
       // so we can just input zeroes. hmmmm... I gues it probably matters for
       // sequencing?
       
-      return Gibber.Gibberish.factory( mymod, g.add(0,0), 'Test2', {} )
+      return Gibber.Gibberish.factory( mymod, g.add(0,0), 'Gen'+id, { properties:paramArray } )
     }
 
     // XXX do I really have to make a Gibberish constructor and a Gibber constructor to
     // turn a genish graph into a Gibber ugen? Is there a shortcut to take? Is it worth
     // writing custom code for?
 
-    const Make = Gibber.Ugen( make, { name:'Test2', properties:[], methods:[] }, Gibber )
-    
-    return Make()
+    // create a Gibber constructor using our Gibberish constructor
+    const Make = Gibber.Ugen( make, { name:'Gen'+id, properties:params, methods:[]}, Gibber )
+
+    // create Gibber ugen and pass in properties dictionary to initailize
+    return Make({ params })
   }
 }
 
@@ -7147,7 +7158,7 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
     },
     set value(v) {
       if( v !== undefined ) {
-        __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( v ) : v
+        __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 && typeof v === 'number' ? Audio.Clock.time( v ) : v
       }
     },
 
@@ -7179,12 +7190,12 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
       // XXX need to accomodate non-scalar values
       // i.e. mappings
 
-      if( isNaN( v ) || v === undefined ) return
+      if( v === NaN || v === undefined || v === null ) return
 
-      if( v !== null && typeof v !== 'object' ) 
+      //if( v !== null && typeof v !== 'object' ) 
         obj[ '__' + propertyName ].value = v
-      else
-        obj[ '__' + propertyName ] = v
+      //else
+      //  obj[ '__' + propertyName ] = v
     }
   })
 

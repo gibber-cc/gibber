@@ -7943,19 +7943,21 @@ const createProxies = function( pre, post, proxiedObj ) {
         if( member !== undefined && value !== undefined) {
 
           if( typeof member === 'object' && member.__wrapped__ !== undefined ) {
-            // save copy of connections
-            const connected = member.__wrapped__.connected.slice( 0 )
-            if( member.disconnect !== undefined ) {
-              for( let connection of connected ) {
-                // 0 index is connection target
-                //console.log( 'disconnecting:', connection[1].id, connection )
-                member.disconnect( connection[ 0 ] )
+            if( member.__wrapped__.connected !== undefined ) {
+              // save copy of connections
+              const connected = member.__wrapped__.connected.slice( 0 )
+              if( member.disconnect !== undefined ) {
+                for( let connection of connected ) {
+                  // 0 index is connection target
+                  //console.log( 'disconnecting:', connection[1].id, connection )
+                  member.disconnect( connection[ 0 ] )
 
-                if( connection[0] !== Gibber.Gibberish.output || Gibber.autoConnect === false )
-                  value.connect( connection[ 0 ] ) 
-                //console.log( 'connected:', value.id )
+                  if( connection[0] !== Gibber.Gibberish.output || Gibber.autoConnect === false )
+                    value.connect( connection[ 0 ] ) 
+                  //console.log( 'connected:', value.id )
+                }
+                member.clear()
               }
-              member.clear()
             }
           }
         }

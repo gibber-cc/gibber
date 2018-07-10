@@ -40,7 +40,7 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
     },
     set value(v) {
       if( v !== undefined ) {
-        __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 ? Audio.Clock.time( v ) : v
+        __wrappedObject[ propertyName ] = timeProps.indexOf( propertyName ) > -1 && typeof v === 'number' ? Audio.Clock.time( v ) : v
       }
     },
 
@@ -72,12 +72,12 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
       // XXX need to accomodate non-scalar values
       // i.e. mappings
 
-      if( isNaN( v ) || v === undefined ) return
+      if( v === NaN || v === undefined || v === null ) return
 
-      if( v !== null && typeof v !== 'object' ) 
+      //if( v !== null && typeof v !== 'object' ) 
         obj[ '__' + propertyName ].value = v
-      else
-        obj[ '__' + propertyName ] = v
+      //else
+      //  obj[ '__' + propertyName ] = v
     }
   })
 
