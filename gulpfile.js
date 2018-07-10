@@ -29,7 +29,7 @@ gulp.task( 'client', function(){
 });
 
 gulp.task('watch', function() {
-  var bundler = watchify( browserify('./scripts/gibber/audio.lib.js', { standalone:'Gibber', cache: {}, packageCache: {}, fullPaths: true } ) );
+  var bundler = watchify( browserify('./js/audio.js', { standalone:'Gibber', cache: {}, packageCache: {}, fullPaths: true, verbose:true } ) );
 
   bundler.on('update', rebundle);
 
@@ -37,10 +37,10 @@ gulp.task('watch', function() {
     console.log("recompiling... ", Date.now() )
     return bundler.bundle()
       // log errors if they happen
-      .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+      //.on('error', gutil.log.bind(gutil, 'Browserify Error'))
       .pipe( source( 'bundle.js' ) )
-      .pipe( rename( 'gibber.audio.lib.js' ) )
-      .pipe( gulp.dest( './build' ) )
+      .pipe( rename( 'gibber.audio.js' ) )
+      .pipe( gulp.dest( './dist/' ) )
       // .pipe( uglify() )
       // .pipe( rename('gibber.audio.lib.min.js') )
       // .pipe( gulp.dest('./build/') )

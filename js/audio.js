@@ -9,6 +9,7 @@ const Utility     = require( './utility.js' )
 const Euclid      = require( './euclid.js' )
 const Hex         = require( './hex.js' )
 const Freesound   = require( './freesound.js' )
+const Gen         = require( './gen.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -27,7 +28,9 @@ const Audio = {
       Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses )
       
       Utility.export( obj )
+      this.Gen.export( obj )
 
+      obj.gen = this.Gen.make
       obj.Ensemble = this.Ensemble
       obj.Drums = this.Drums
       obj.EDrums = this.EDrums
@@ -35,6 +38,8 @@ const Audio = {
       obj.Euclid = Euclid( this )
       obj.Hex = Hex( this )
       obj.Freesound = this.Freesound
+      obj.Clock = this.Clock
+      Master = this.Master
     }else{
       Audio.exportTarget = obj
     } 
@@ -52,6 +57,8 @@ const Audio = {
         Audio.Clock.init()
         Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
+        Audio.Ugen = Ugen
+        Audio.Gen = Gen( Gibber )
 
         Audio.createUgens()
         

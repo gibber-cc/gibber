@@ -71,6 +71,9 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
     set(v){
       // XXX need to accomodate non-scalar values
       // i.e. mappings
+
+      if( isNaN( v ) || v === undefined ) return
+
       if( v !== null && typeof v !== 'object' ) 
         obj[ '__' + propertyName ].value = v
       else
