@@ -7985,13 +7985,13 @@ CodeMirror.keyMap.playground =  {
       
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
       const markupFunction = () => {
-              Environment.codeMarkup.process( 
-                selectedCode.code, 
-                selectedCode.selection, 
-                cm, 
-                Gibber.currentTrack 
-              ) 
-            }
+        Environment.codeMarkup.process( 
+          selectedCode.code, 
+          selectedCode.selection, 
+          cm, 
+          Gibber.currentTrack 
+        ) 
+      }
 
       markupFunction.origin = func
 

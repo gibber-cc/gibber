@@ -4000,7 +4000,7 @@ const Clock = {
         post: 'store'    
       })
       
-      let bpm = 120
+      let bpm = 140
       Object.defineProperty( this, 'bpm', {
         get() { return bpm },
         set(v){ 
@@ -4017,7 +4017,8 @@ const Clock = {
       })
     }
 
-    this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ this.time( 1/4 ) ] ).start()
+    if( Gibberish.mode === 'processor' )
+      this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ ()=>Gibberish.Clock.time( 1/4 ) ] ).start()
 
   },
 
@@ -4043,6 +4044,12 @@ const Clock = {
     }
     
     return outputTime
+  },
+
+  // does not work... says Gibberish can't be found? I guess Gibberish isn't in the
+  // global scope of the worklet?
+  Time: function( inputTime ) {
+    return new Function( `return Gibberish.Clock.time( ${inputTime} )` )
   },
 
   mstos: function( ms ) {
@@ -6705,7 +6712,7 @@ const removeSeq = function( obj, seq ) {
   const idx = obj.__sequencers.indexOf( seq )
   obj.__sequencers.splice( idx, 1 )
   seq.stop()
-  if( typeof seq.clear === 'function' ) prevSeq.clear()
+  seq.clear()
 }
 
 const createProperty = function( obj, propertyName, __wrappedObject, timeProps, Audio ) {
