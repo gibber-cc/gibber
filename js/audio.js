@@ -50,6 +50,8 @@ const Audio = {
 
     Gibberish.workletPath = workletPath 
 
+    this.createPubSub()
+
     const p = new Promise( (resolve, reject) => {
       Gibberish.init().then( processorNode => {
         Audio.initialized = true
@@ -91,6 +93,8 @@ const Audio = {
     Gibberish.clear() 
     Audio.Clock.init() //createClock()
     Audio.Seq.clear()
+
+    this.publish('clear')
   },
 
   onload() {},
@@ -137,6 +141,32 @@ const Audio = {
     Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) 
   },
 
+
+  createPubSub() {
+    const events = {}
+    this.subscribe = function( key, fcn ) {
+      if( typeof events[ key ] === 'undefined' ) {
+        events[ key ] = []
+      }
+      events[ key ].push( fcn )
+    }
+
+    this.unsubscribe = function( key, fcn ) {
+      if( typeof events[ key ] !== 'undefined' ) {
+        const arr = events[ key ]
+
+        arr.splice( arr.indexOf( fcn ), 1 )
+      }
+    }
+
+    this.publish = function( key, data ) {
+      if( typeof events[ key ] !== 'undefined' ) {
+        const arr = events[ key ]
+
+        arr.forEach( v => v( data ) )
+      }
+    }
+  },
   // When a property is created, a proxy-ish object is made that is
   // prefaced by a double underscore. This object holds the value of the 
   // property, sequencers for the properyt, and modulations for the property.

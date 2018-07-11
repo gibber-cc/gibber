@@ -60,12 +60,23 @@ module.exports = function( Marker ) {
           
           Marker.globalIdentifiers[ left.name ] = right
 
-          state.containsGen = true
-          state.gen = window[ expression.left.name ]
-          cb( expression.right, state )
+          let righthandName
+          if( right.callee.object === undefined ) {
+            // no calls to .connect() or to .seq()
+            righthandName = right.callee.name
+          }else{
+            // ugen({}).connect()
+            // XXX what about handling multiple chained calls to .seq()
+            // hopefully this is handled in our earlier try/catch block...
+            righthandName = right.callee.object.callee.name 
+          }
+
+          state.containsGen = Marker.Gibber.Gen.names.indexOf( righthandName ) > -1
+          state.gen = window[ left.name ]
+          cb( right, state )
 
           // XXX does this need a track object? passing null...
-          Marker.processGen( expression, state.cm, null)
+          if( state.containsGen ) Marker.processGen( expression, state.cm, null )
 
         }
       }

@@ -8,6 +8,7 @@ const Marker = {
   waveform: require( './annotations/waveform.js' )( Gibber ),
   _patternTypes: [ 'values', 'timings', 'index' ],
   globalIdentifiers:{},
+  Gibber,
 
   acorn, walk,
 
@@ -24,6 +25,8 @@ const Marker = {
       }
     }
     this.visitors = this.__visitors( this )
+
+    Gibber.subscribe( 'clear', this.clear )
   },
 
   clear() { Marker.waveform.clear() },
