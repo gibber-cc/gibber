@@ -49,6 +49,9 @@ window.onload = function() {
     }
   }
 
+  environment.Annotations = environment.codeMarkup 
+  Gibber.Environment = environment
+
   let select = document.querySelector( 'select' ),
     files = [
     ]

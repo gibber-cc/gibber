@@ -60,10 +60,13 @@ module.exports = function( Marker ) {
           
           Marker.globalIdentifiers[ left.name ] = right
 
+          state.containsGen = true
+          state.gen = window[ expression.left.name ]
           cb( expression.right, state )
 
           // XXX does this need a track object? passing null...
-          // Marker.processGen( expression, state.cm, null)
+          Marker.processGen( expression, state.cm, null)
+
         }
       }
     },
@@ -77,7 +80,7 @@ module.exports = function( Marker ) {
       // If called from the AssignmentExpression visitor, the sequencer that is created
       // will be passed in to the argumenet obj. If this is not passed in, then we need
       // to update the state of the walk by calling the callback. 
-      if( obj === undefined ) cb( node.callee, state )
+      if( obj === undefined && state.containsGen !== true ) cb( node.callee, state )
 
       // check the state for a member .seq. We use two different techniques for this. 
       // the first finds things like "mysynth.note.seq( 0,0 )" while the second finds
@@ -140,8 +143,8 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        // Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1 )
         //cb( node.callee, state )
+        Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1, state )
       }
 
     },

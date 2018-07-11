@@ -138,7 +138,12 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
 
     // wrap properties and add sequencing to them
     for( let propertyName in description.properties ) {
-      createProperty( obj, propertyName, __wrappedObject, timeProps, Audio )
+      // XXX we have to pass id in the values dictionary under 
+      // certain conditions involoving gen ugens, but we don't 
+      // want .id to be sequencable!
+      if( propertyName !== 'id' ){
+        createProperty( obj, propertyName, __wrappedObject, timeProps, Audio )
+      }
     }
 
     // wrap methods and add sequencing to them

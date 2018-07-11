@@ -105,7 +105,7 @@ const Marker = {
   },
 
   
-  processGen( node, cm, track, patternObject=null, seq=null, lineMod=0 ) {
+  processGen( node, cm, track, patternObject=null, seq=null, lineMod=0, state ) {
     let ch = node.end, 
         line = Marker.offset.vertical + node.loc.start.line, 
         closeParenStart = ch - 1, 
@@ -129,7 +129,7 @@ const Marker = {
 
       seqExpression.arguments.forEach( function( seqArgument ) {
         if( seqArgument.type === 'CallExpression' ) {
-          const idx = Gibber.__gen.ugenNames.indexOf( seqArgument.callee.name )
+          const idx = Gibber.Gen.names.indexOf( seqArgument.callee.name )
           
           // not a gen, markup will happen elsewhere
           if( idx === -1 ) return
@@ -149,7 +149,7 @@ const Marker = {
           isAssignment = false
           node.processed = true
           //debugger
-          Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
+          Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0, state )
         } else if( seqArgument.type === 'ArrayExpression' ) {
           //console.log( 'WavePattern array' )
         }else if( seqArgument.type === 'Identifier' ) {

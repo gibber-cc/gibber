@@ -169,6 +169,8 @@ const Utility = {
     obj.rndf = this.rndf
     obj.Rndi = this.Rndi
     obj.Rndf = this.Rndf
+
+    Array.prototype.rnd = this.random
   }
 }
 

@@ -3450,10 +3450,11 @@ module.exports = x => {
 
 let gen     = require( './gen.js' ),
     lt      = require( './lt.js' ),
-    phasor  = require( './phasor.js' )
+    accum   = require( './accum.js' ),
+    div     = require( './div.js' )
 
 module.exports = ( frequency=440, pulsewidth=.5 ) => {
-  let graph = lt( accum( div( frequency, 44100 ) ), .5 )
+  let graph = lt( accum( div( frequency, 44100 ) ), pulsewidth )
 
   graph.name = `train${gen.getUID()}`
 
@@ -3461,7 +3462,7 @@ module.exports = ( frequency=440, pulsewidth=.5 ) => {
 }
 
 
-},{"./gen.js":"/Users/thecharlie/Documents/code/genish.js/js/gen.js","./lt.js":"/Users/thecharlie/Documents/code/genish.js/js/lt.js","./phasor.js":"/Users/thecharlie/Documents/code/genish.js/js/phasor.js"}],"/Users/thecharlie/Documents/code/genish.js/js/utilities.js":[function(require,module,exports){
+},{"./accum.js":"/Users/thecharlie/Documents/code/genish.js/js/accum.js","./div.js":"/Users/thecharlie/Documents/code/genish.js/js/div.js","./gen.js":"/Users/thecharlie/Documents/code/genish.js/js/gen.js","./lt.js":"/Users/thecharlie/Documents/code/genish.js/js/lt.js"}],"/Users/thecharlie/Documents/code/genish.js/js/utilities.js":[function(require,module,exports){
 'use strict'
 
 let gen = require( './gen.js' ),
@@ -5404,6 +5405,7 @@ const Gen  = {
     Gen.names.push( ...Object.keys( Gen.constants ) )
     Gen.names.push( ...Object.keys( Gen.functions ) )
     Gen.names.push( ...Object.keys( Gen.composites ) )
+    Gen.names.push( 'gen' )
 
     //Gibber.subscribe( 'clear', ()=> Gen.lastConnected.length = 0 )
   },
@@ -5531,6 +5533,7 @@ const Gen  = {
   functions: {
     phasor: { properties:[ '0' ],  str:'phasor' },
     cycle:  { properties:[ '0' ],  str:'cycle' },
+    train:  { properties:[ '0','1' ],  str:'train' },
     rate:   { properties:[ '0' ], str:'rate' },
     noise:  { properties:[], str:'noise' },
     accum:  { properties:[ '0','1' ], str:'accum' },
@@ -5750,6 +5753,8 @@ const Gen  = {
     } 
 
     const id = Gen.getUID()
+
+    params.id = Gibber.Gibberish.utilities.getUID()
     // pass a constructor to our worklet processor
     Gibber.Gibberish.worklet.port.postMessage({ 
       address:'addMethod', 
@@ -5770,7 +5775,7 @@ const Gen  = {
       // so we can just input zeroes. hmmmm... I gues it probably matters for
       // sequencing?
       
-      return Gibber.Gibberish.factory( mymod, g.add(0,0), 'Gen'+id, { properties:paramArray } )
+      return Gibber.Gibberish.factory( mymod, g.add(0,0), 'Gen'+id, params )
     }
 
     // XXX do I really have to make a Gibberish constructor and a Gibber constructor to
@@ -5778,10 +5783,30 @@ const Gen  = {
     // writing custom code for?
 
     // create a Gibber constructor using our Gibberish constructor
+    let temp = params.id
+    //delete params.id
     const Make = Gibber.Ugen( make, { name:'Gen'+id, properties:params, methods:[]}, Gibber )
 
     // create Gibber ugen and pass in properties dictionary to initailize
-    return Make({ params })
+    const out = Make({ params })
+    out.__wrapped__.id = temp 
+
+    let count = 0
+    out.__wrapped__.output = out.output = function( v ) {
+
+      // XXX should these be averaged instead of only taking every sixth sample (roughly
+      // corresponds to 58 frames a second)
+      if( count++ % 6 === 0 ) {
+        // XXX this shouldn't happen here, should happen when the annotation is created.
+        if( Gibber.Environment.Annotations.waveform.widgets[ temp ] === undefined ) {
+          Gibber.Environment.Annotations.waveform.widgets[ temp ] = out.widget
+        }
+        Gibber.Environment.Annotations.waveform.updateWidget( out.widget, v, false )
+      }
+    }
+
+
+    return out
   }
 }
 
@@ -6013,6 +6038,9 @@ const patternWrapper = function( Gibber ) {
         args = filter( args, this ) 
       }
 
+      // XXX why is this one off from the worlet-side pattern id?
+      if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( this.id, 'update.currentIndex', args[2] )
+
       return args
     },
 
@@ -6072,8 +6100,6 @@ const patternWrapper = function( Gibber ) {
       
         fnc.phase += fnc.stepSize * args[ 1 ]
 
-        // XXX why is this one off from the worlet-side pattern id?
-        if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id, 'update.currentIndex', idx )
 
         val = args[ 0 ]
       }
@@ -6859,6 +6885,16 @@ module.exports = function( Audio ) {
       values = Audio.Pattern( __values )
     }
 
+    if( __values.randomFlag ) {
+      values.addFilter( ( args,ptrn ) => {
+        const range = ptrn.values.length - 1
+        const idx = Math.round( Math.random() * range )
+        return [ ptrn.values[ idx ], 1, idx ] 
+      })
+      //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
+      //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
+      //}
+    }
     
     let timings
     if( Array.isArray( __timings ) ) {
@@ -7256,7 +7292,12 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
 
     // wrap properties and add sequencing to them
     for( let propertyName in description.properties ) {
-      createProperty( obj, propertyName, __wrappedObject, timeProps, Audio )
+      // XXX we have to pass id in the values dictionary under 
+      // certain conditions involoving gen ugens, but we don't 
+      // want .id to be sequencable!
+      if( propertyName !== 'id' ){
+        createProperty( obj, propertyName, __wrappedObject, timeProps, Audio )
+      }
     }
 
     // wrap methods and add sequencing to them
@@ -7601,6 +7642,8 @@ const Utility = {
     obj.rndf = this.rndf
     obj.Rndi = this.Rndi
     obj.Rndf = this.Rndf
+
+    Array.prototype.rnd = this.random
   }
 }
 
@@ -20571,7 +20614,7 @@ module.exports = function( Gibberish ) {
 
     Object.assign( ugen, {
       //type: 'ugen',
-      id: Gibberish.utilities.getUID(), 
+      id: values.id || Gibberish.utilities.getUID(), 
       ugenName: name + '_',
       graph: graph,
       inputNames: new Set( Gibberish.genish.gen.parameters ),
@@ -20583,6 +20626,7 @@ module.exports = function( Gibberish ) {
     
     ugen.ugenName += ugen.id
     ugen.callback.ugenName = ugen.ugenName // XXX hacky
+    ugen.callback.id = ugen.id
 
     for( let param of ugen.inputNames ) {
       if( param === 'memory' ) continue
@@ -20844,7 +20888,7 @@ const utilities = {
         const value = messages[ i + 2 ]
         const obj = Gibberish.worklet.ugens.get( id )
 
-        //console.log( id, propName, value )
+        //console.log( obj, id, propName, value )
 
         if( obj !== undefined && propName.indexOf('.') === -1 ) { 
           if( obj[ propName ] !== undefined ) {
@@ -20854,7 +20898,7 @@ const utilities = {
               obj[ propName ]( value )
             }
           }else{
-            //console.log( 'undefined single property:', id, propName, value, obj )
+            obj[ propName ] = value
           }
         }else if( obj !== undefined ) {
           const propSplit = propName.split('.')

@@ -9,7 +9,7 @@ let Gibber = null
 const Waveform = {
   widgets: { dirty:false },
   
-  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, isSeq=true ) {
+  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, isSeq=true, walkState ) {
     let widget = document.createElement( 'canvas' )
     widget.padding = 40
     widget.waveWidth = 60
@@ -20,15 +20,15 @@ const Waveform = {
     widget.style.width = ((widget.padding * 2 + widget.waveWidth) * window.devicePixelRation ) + 'px'
     widget.style.backgroundColor = 'transparent'
     widget.style.margin = '0 1em'
-    //widget.style.borderLeft = '1px solid #666'
-    //widget.style.borderRight = '1px solid #666'
+    widget.style.borderLeft = '1px solid #666'
+    widget.style.borderRight = '1px solid #666'
     widget.setAttribute( 'width', widget.padding * 2 + widget.waveWidth )
     widget.setAttribute( 'height', 13 )
     widget.ctx.fillStyle = COLORS.FILL 
     widget.ctx.strokeStyle = COLORS.STROKE
     widget.ctx.font = '10px monospace'
     widget.ctx.lineWidth = 1
-    widget.gen = patternObject !== null ? patternObject : Gibber.__gen.gen.lastConnected.shift()
+    widget.gen = patternObject !== null ? patternObject : walkState.gen//Gibber.Gen.lastConnected.shift()
     widget.values = []
     widget.storage = []
     widget.min = 10000
@@ -47,6 +47,7 @@ const Waveform = {
       }else if( node.type === 'CallExpression' ) {
         const state = cm.__state
         
+        console.log( 'node:', node )
         if( node.callee.name !== 'Lookup' ) {
           const objName = `${state[0]}`
           const track  = window.signals[0]//window[ objName ][ state[1] ]
@@ -77,7 +78,7 @@ const Waveform = {
       }
     }
 
-    //Gibber.__gen.gen.lastConnected = null
+    //Gibber.Gen.gen.lastConnected = null
 
     //for( let i = 0; i < 120; i++ ) widget.values[ i ] = 0
 
@@ -172,6 +173,7 @@ const Waveform = {
     widget.values.shift()
 
     Waveform.widgets.dirty = true
+
   },
 
   // called by animation scheduler if Waveform.widgets.dirty === true
@@ -188,8 +190,6 @@ const Waveform = {
       // ensure that a widget does not get drawn more
       // than once per frame
       if( drawn.indexOf( widget ) !== -1 ) continue
-
-      
 
       if( typeof widget === 'object' && widget.ctx !== undefined ) {
 

@@ -16,6 +16,16 @@ module.exports = function( Audio ) {
       values = Audio.Pattern( __values )
     }
 
+    if( __values.randomFlag ) {
+      values.addFilter( ( args,ptrn ) => {
+        const range = ptrn.values.length - 1
+        const idx = Math.round( Math.random() * range )
+        return [ ptrn.values[ idx ], 1, idx ] 
+      })
+      //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
+      //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
+      //}
+    }
     
     let timings
     if( Array.isArray( __timings ) ) {

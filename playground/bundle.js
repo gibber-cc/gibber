@@ -170,6 +170,8 @@ const Utility = {
     obj.rndf = this.rndf
     obj.Rndi = this.Rndi
     obj.Rndf = this.Rndf
+
+    Array.prototype.rnd = this.random
   }
 }
 
@@ -7052,10 +7054,13 @@ module.exports = function( Marker ) {
           
           Marker.globalIdentifiers[ left.name ] = right
 
+          state.containsGen = true
+          state.gen = window[ expression.left.name ]
           cb( expression.right, state )
 
           // XXX does this need a track object? passing null...
-          // Marker.processGen( expression, state.cm, null)
+          Marker.processGen( expression, state.cm, null)
+
         }
       }
     },
@@ -7069,7 +7074,7 @@ module.exports = function( Marker ) {
       // If called from the AssignmentExpression visitor, the sequencer that is created
       // will be passed in to the argumenet obj. If this is not passed in, then we need
       // to update the state of the walk by calling the callback. 
-      if( obj === undefined ) cb( node.callee, state )
+      if( obj === undefined && state.containsGen !== true ) cb( node.callee, state )
 
       // check the state for a member .seq. We use two different techniques for this. 
       // the first finds things like "mysynth.note.seq( 0,0 )" while the second finds
@@ -7132,8 +7137,8 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        // Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1 )
         //cb( node.callee, state )
+        Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1, state )
       }
 
     },
@@ -7175,7 +7180,7 @@ let Gibber = null
 const Waveform = {
   widgets: { dirty:false },
   
-  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, isSeq=true ) {
+  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, isSeq=true, walkState ) {
     let widget = document.createElement( 'canvas' )
     widget.padding = 40
     widget.waveWidth = 60
@@ -7186,15 +7191,15 @@ const Waveform = {
     widget.style.width = ((widget.padding * 2 + widget.waveWidth) * window.devicePixelRation ) + 'px'
     widget.style.backgroundColor = 'transparent'
     widget.style.margin = '0 1em'
-    //widget.style.borderLeft = '1px solid #666'
-    //widget.style.borderRight = '1px solid #666'
+    widget.style.borderLeft = '1px solid #666'
+    widget.style.borderRight = '1px solid #666'
     widget.setAttribute( 'width', widget.padding * 2 + widget.waveWidth )
     widget.setAttribute( 'height', 13 )
     widget.ctx.fillStyle = COLORS.FILL 
     widget.ctx.strokeStyle = COLORS.STROKE
     widget.ctx.font = '10px monospace'
     widget.ctx.lineWidth = 1
-    widget.gen = patternObject !== null ? patternObject : Gibber.__gen.gen.lastConnected.shift()
+    widget.gen = patternObject !== null ? patternObject : walkState.gen//Gibber.Gen.lastConnected.shift()
     widget.values = []
     widget.storage = []
     widget.min = 10000
@@ -7213,6 +7218,7 @@ const Waveform = {
       }else if( node.type === 'CallExpression' ) {
         const state = cm.__state
         
+        console.log( 'node:', node )
         if( node.callee.name !== 'Lookup' ) {
           const objName = `${state[0]}`
           const track  = window.signals[0]//window[ objName ][ state[1] ]
@@ -7243,7 +7249,7 @@ const Waveform = {
       }
     }
 
-    //Gibber.__gen.gen.lastConnected = null
+    //Gibber.Gen.gen.lastConnected = null
 
     //for( let i = 0; i < 120; i++ ) widget.values[ i ] = 0
 
@@ -7338,6 +7344,7 @@ const Waveform = {
     widget.values.shift()
 
     Waveform.widgets.dirty = true
+
   },
 
   // called by animation scheduler if Waveform.widgets.dirty === true
@@ -7354,8 +7361,6 @@ const Waveform = {
       // ensure that a widget does not get drawn more
       // than once per frame
       if( drawn.indexOf( widget ) !== -1 ) continue
-
-      
 
       if( typeof widget === 'object' && widget.ctx !== undefined ) {
 
@@ -7546,7 +7551,7 @@ const Marker = {
   },
 
   
-  processGen( node, cm, track, patternObject=null, seq=null, lineMod=0 ) {
+  processGen( node, cm, track, patternObject=null, seq=null, lineMod=0, state ) {
     let ch = node.end, 
         line = Marker.offset.vertical + node.loc.start.line, 
         closeParenStart = ch - 1, 
@@ -7570,7 +7575,7 @@ const Marker = {
 
       seqExpression.arguments.forEach( function( seqArgument ) {
         if( seqArgument.type === 'CallExpression' ) {
-          const idx = Gibber.__gen.ugenNames.indexOf( seqArgument.callee.name )
+          const idx = Gibber.Gen.names.indexOf( seqArgument.callee.name )
           
           // not a gen, markup will happen elsewhere
           if( idx === -1 ) return
@@ -7590,7 +7595,7 @@ const Marker = {
           isAssignment = false
           node.processed = true
           //debugger
-          Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
+          Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0, state )
         } else if( seqArgument.type === 'ArrayExpression' ) {
           //console.log( 'WavePattern array' )
         }else if( seqArgument.type === 'Identifier' ) {
@@ -7867,6 +7872,9 @@ window.onload = function() {
       environment.console.setValue( cb.toString() )
     }
   }
+
+  environment.Annotations = environment.codeMarkup 
+  Gibber.Environment = environment
 
   let select = document.querySelector( 'select' ),
     files = [

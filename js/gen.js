@@ -33,6 +33,7 @@ const Gen  = {
     Gen.names.push( ...Object.keys( Gen.constants ) )
     Gen.names.push( ...Object.keys( Gen.functions ) )
     Gen.names.push( ...Object.keys( Gen.composites ) )
+    Gen.names.push( 'gen' )
 
     //Gibber.subscribe( 'clear', ()=> Gen.lastConnected.length = 0 )
   },
@@ -160,6 +161,7 @@ const Gen  = {
   functions: {
     phasor: { properties:[ '0' ],  str:'phasor' },
     cycle:  { properties:[ '0' ],  str:'cycle' },
+    train:  { properties:[ '0','1' ],  str:'train' },
     rate:   { properties:[ '0' ], str:'rate' },
     noise:  { properties:[], str:'noise' },
     accum:  { properties:[ '0','1' ], str:'accum' },
@@ -379,6 +381,8 @@ const Gen  = {
     } 
 
     const id = Gen.getUID()
+
+    params.id = Gibber.Gibberish.utilities.getUID()
     // pass a constructor to our worklet processor
     Gibber.Gibberish.worklet.port.postMessage({ 
       address:'addMethod', 
@@ -399,7 +403,7 @@ const Gen  = {
       // so we can just input zeroes. hmmmm... I gues it probably matters for
       // sequencing?
       
-      return Gibber.Gibberish.factory( mymod, g.add(0,0), 'Gen'+id, { properties:paramArray } )
+      return Gibber.Gibberish.factory( mymod, g.add(0,0), 'Gen'+id, params )
     }
 
     // XXX do I really have to make a Gibberish constructor and a Gibber constructor to
@@ -407,10 +411,30 @@ const Gen  = {
     // writing custom code for?
 
     // create a Gibber constructor using our Gibberish constructor
+    let temp = params.id
+    //delete params.id
     const Make = Gibber.Ugen( make, { name:'Gen'+id, properties:params, methods:[]}, Gibber )
 
     // create Gibber ugen and pass in properties dictionary to initailize
-    return Make({ params })
+    const out = Make({ params })
+    out.__wrapped__.id = temp 
+
+    let count = 0
+    out.__wrapped__.output = out.output = function( v ) {
+
+      // XXX should these be averaged instead of only taking every sixth sample (roughly
+      // corresponds to 58 frames a second)
+      if( count++ % 6 === 0 ) {
+        // XXX this shouldn't happen here, should happen when the annotation is created.
+        if( Gibber.Environment.Annotations.waveform.widgets[ temp ] === undefined ) {
+          Gibber.Environment.Annotations.waveform.widgets[ temp ] = out.widget
+        }
+        Gibber.Environment.Annotations.waveform.updateWidget( out.widget, v, false )
+      }
+    }
+
+
+    return out
   }
 }
 

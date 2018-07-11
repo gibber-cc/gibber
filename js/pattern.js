@@ -36,6 +36,9 @@ const patternWrapper = function( Gibber ) {
         args = filter( args, this ) 
       }
 
+      // XXX why is this one off from the worlet-side pattern id?
+      if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( this.id, 'update.currentIndex', args[2] )
+
       return args
     },
 
@@ -95,8 +98,6 @@ const patternWrapper = function( Gibber ) {
       
         fnc.phase += fnc.stepSize * args[ 1 ]
 
-        // XXX why is this one off from the worlet-side pattern id?
-        if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id, 'update.currentIndex', idx )
 
         val = args[ 0 ]
       }
