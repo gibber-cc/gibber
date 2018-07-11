@@ -28,8 +28,19 @@ module.exports = {
     decay:1,
     cutoff:.2,
   },
+  pluckEcho: {
+    presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:1/6, feedback:.65 }) )  },
+    attack: audio => audio.Clock.ms(.1),
+    decay: 1/16, 
+    octave3:0,
+    cutoff:1,
+    filterMult:1.5,
+    Q:.5,
+    filterType:1,
+    filterMode:1
+  },
   bass : { 
-    attack: audio => audio.Clock.ms(1),
+    attack: audio => audio.Clock.ms(.1),
     decay: 1/8,	
     octave: -2,
     octave2 : -1,
@@ -39,6 +50,17 @@ module.exports = {
     detune2:.0275,
     detune3:-.0275
   },
+  bassPad : { 
+    attack: audio => audio.Clock.ms(.1),
+    decay: 2,	
+    octave:-3,
+    cutoff: .8,
+    filterMult:4.5,
+    Q:.55,
+    detune2:1.0125,
+    detune3:1-.0125
+  },
+
   warble : { 
     attack: audio => audio.Clock.ms(1),
     decay: 1/2,	
