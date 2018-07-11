@@ -1,8 +1,6 @@
 module.exports = function( Marker ) {
 
-
   const strip = function( unstripped ) {
-    //const unstripped = node.property.type === 'Identifier' ? node.property.name : node.property.raw )
     const stripped   = unstripped[0] === '"' || unstripped[0] === "'" ? unstripped.slice(1,-1) : unstripped
     return stripped
   }

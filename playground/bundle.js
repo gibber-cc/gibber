@@ -6994,9 +6994,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, pat
 },{}],18:[function(require,module,exports){
 module.exports = function( Marker ) {
 
-
   const strip = function( unstripped ) {
-    //const unstripped = node.property.type === 'Identifier' ? node.property.name : node.property.raw )
     const stripped   = unstripped[0] === '"' || unstripped[0] === "'" ? unstripped.slice(1,-1) : unstripped
     return stripped
   }
@@ -7190,7 +7188,16 @@ let Gibber = null
 
 const Waveform = {
   widgets: { dirty:false },
+
+  // we use this flag to start the animation clock if needed.
+  initialized: false,
   
+  // we pass in the state from the AST walk because that's the simplest place to store 
+  // a reference to the genish object that should be tied to the widge we are
+  // creating.
+
+  // XXX there's a bucnh of arguments  that could probably be removed from this function. 
+  // Definitely closeParenStart, probably also isAssignment, maybe track & patternObject.
   createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, isSeq=true, walkState ) {
     let widget = document.createElement( 'canvas' )
     widget.padding = 40
@@ -7229,7 +7236,6 @@ const Waveform = {
       }else if( node.type === 'CallExpression' ) {
         const state = cm.__state
         
-        console.log( 'node:', node )
         if( node.callee.name !== 'Lookup' ) {
           const objName = `${state[0]}`
           const track  = window.signals[0]//window[ objName ][ state[1] ]
@@ -7243,15 +7249,11 @@ const Waveform = {
           if( wave !== undefined && wave.values.type === 'WavePattern' ) {
             widget.gen = wave.values
             widget.gen.paramID += '_' + node.arguments[2].value
-            //widget.gen.widget = widget
           }
           isAssignment = true
         }else{
           widget.gen = patternObject
         }
-        //if( seq !== undefined && seq.timings.type === 'WavePattern' ) {
-          
-        //}
       } 
     }else{
       if( widget.gen.widget !== undefined && widget.gen.widget !== widget ) {
@@ -7260,36 +7262,17 @@ const Waveform = {
       }
     }
 
-    //Gibber.Gen.gen.lastConnected = null
 
-    //for( let i = 0; i < 120; i++ ) widget.values[ i ] = 0
+    widget.mark = cm.markText({ line, ch:ch }, { line, ch:ch+1 }, { replacedWith:widget })
+    widget.mark.__clear = widget.mark.clear
 
-    let replaced = false
-    //if( isAssignment === false && isSeq === false ) {
-    //  if( widget.gen !== null ) {
-    //    let oldWidget = Waveform.widgets[ widget.gen.paramID ] 
+    widget.mark.clear = function() { 
+      const pos = widget.mark.find()
+      if( pos === undefined ) return
+      widget.mark.__clear()
 
-    //    if( oldWidget !== undefined ) {
-    //      //oldWidget.parentNode.removeChild( oldWidget )
-    //      console.log( 'replaced' )
-    //      widget = oldWidget
-    //      replaced = true
-    //    } 
-    //  }
-    //}
-
-    if( replaced === false ) {
-      widget.mark = cm.markText({ line, ch:ch }, { line, ch:ch+1 }, { replacedWith:widget })
-      widget.mark.__clear = widget.mark.clear
-
-      widget.mark.clear = function() { 
-        const pos = widget.mark.find()
-        if( pos === undefined ) return
-        widget.mark.__clear()
-
-        if( isSeq === true ) { // only replace for waveforms inside of a .seq() call
-          cm.replaceRange( '', { line:pos.from.line, ch:pos.from.ch }, { line:pos.from.line, ch:pos.to.ch } ) 
-        }
+      if( isSeq === true ) { // only replace for waveforms inside of a .seq() call
+        cm.replaceRange( '', { line:pos.from.line, ch:pos.from.ch }, { line:pos.from.line, ch:pos.to.ch } ) 
       }
     }
 
@@ -7312,6 +7295,10 @@ const Waveform = {
       widget.storage.length = 0
     }
 
+    if( this.initialized === false ) {
+      this.startAnimationClock()
+      this.initialized = true
+    }
   },
 
   clear() {
@@ -7324,6 +7311,15 @@ const Waveform = {
     }
 
     Waveform.widgets = { dirty:false }
+  },
+
+  startAnimationClock() {
+    const clock = function(t) {
+      Waveform.drawWidgets()
+      window.requestAnimationFrame( clock )
+    }
+
+    clock()
   },
 
   // currently called when a network snapshot message is received providing ugen state..
