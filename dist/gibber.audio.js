@@ -3861,7 +3861,9 @@ const Audio = {
   printcb() { 
     Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) 
   },
-
+  printobj( obj ) {
+    Gibber.Gibberish.worklet.port.postMessage({ address:'print',object:obj.id }) 
+  },
 
   createPubSub() {
     const events = {}
@@ -7256,7 +7258,11 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
       // XXX need to accomodate non-scalar values
       // i.e. mappings
 
-      if( v === NaN || v === undefined || v === null ) return
+      if( v === undefined || v === null ) return
+      if( typeof v === 'number' && isNaN(v) ) {
+        console.warn('An invalid property assignment was attempted. Did you forget to use property.value?')
+        return
+      }
 
       //if( v !== null && typeof v !== 'object' ) 
         obj[ '__' + propertyName ].value = v
@@ -7384,7 +7390,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
           let prevSeq = obj[ methodName ].sequencers[ number ] 
           if( prevSeq !== undefined ) { 
-                        removeSeq( obj, prevSeq )
+             removeSeq( obj, prevSeq )
           }
 
           let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
@@ -7399,7 +7405,16 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }
     }
 
-    obj.id = __wrappedObject.id
+    let id = __wrappedObject.id
+    Object.defineProperty( __wrappedObject, 'id', {
+      configurable:false,
+      get() { return id },
+      set(v) {
+        console.log( 'tried to change id:', obj )
+        debugger
+      }
+    })
+    obj.id = id
 
     // XXX where does shouldAddToUgen come from? Not from presets.js...
     if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
@@ -20920,7 +20935,7 @@ const utilities = {
 
         //console.log( obj, id, propName, value )
 
-        if( obj !== undefined && propName.indexOf('.') === -1 ) { 
+        if( obj !== undefined && propName.indexOf('.') === -1 && propName !== 'id' ) { 
           if( obj[ propName ] !== undefined ) {
             if( typeof obj[ propName ] !== 'function' ) {
               obj[ propName ] = value
