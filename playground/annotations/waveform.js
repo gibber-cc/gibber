@@ -82,7 +82,6 @@ const Waveform = {
       }
     }
 
-
     widget.mark = cm.markText({ line, ch:ch }, { line, ch:ch+1 }, { replacedWith:widget })
     widget.mark.__clear = widget.mark.clear
 

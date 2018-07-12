@@ -7267,7 +7267,6 @@ const Waveform = {
       }
     }
 
-
     widget.mark = cm.markText({ line, ch:ch }, { line, ch:ch+1 }, { replacedWith:widget })
     widget.mark.__clear = widget.mark.clear
 
@@ -7542,7 +7541,12 @@ const Marker = {
 
     parsed.body.forEach( node => {
       state.length = 0
-      walk.recursive( node, state, Marker.visitors )
+
+      try{
+        walk.recursive( node, state, Marker.visitors )
+      }catch(e){
+        console.warn('Annotaion error ->', e )
+      }
     })
 
     Gibber.Gibberish.proxyEnabled = true
@@ -7569,7 +7573,7 @@ const Marker = {
 
   
   processGen( node, cm, track, patternObject=null, seq=null, lineMod=0, state ) {
-    let ch = node.end, 
+    let ch = node.loc.end.column, 
         line = Marker.offset.vertical + node.loc.start.line, 
         closeParenStart = ch - 1, 
         end = node.end,
@@ -7585,6 +7589,7 @@ const Marker = {
           return
         }
 
+        const characterStart = node.loc.start.line === 0 ? ch - 1 : ch - (node.loc.start.line)
         Marker.waveform.createWaveformWidget( line - 1, closeParenStart, ch-1, isAssignment, node, cm, __obj, track, false )
       }
     }else if( node.type === 'CallExpression' ) {
