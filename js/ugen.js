@@ -272,16 +272,17 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }
     })
 
-    let preModValue
     obj.connect = (dest,level=1) => {
       if( dest !== undefined && dest.isProperty === true ) {
-        if( preModValue === 0 ) { // if first modulation
-          preModValue = dest.value
+        // if first modulation for property, store it's initial
+        // value before modulating it.
+        if( dest.preModValue === undefined ) { 
+          dest.preModValue = dest.value
         }
 
         dest.mods.push( obj )
 
-        const sum = dest.mods.concat( preModValue )
+        const sum = dest.mods.concat( dest.preModValue )
         dest.ugen[ dest.name ].value = Gibberish.binops.Add( ...sum ) 
        
         obj.__wrapped__.connected.push( [ dest.ugen[ dest.name ], obj ] )
