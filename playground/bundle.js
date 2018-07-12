@@ -6386,7 +6386,7 @@ module.exports = function( Marker ) {
   const UnaryExpression = function( patternNode, state, seq, patternType, container=null, index=0 ) {
     if( patternNode.processed === true ) return 
     const cm = state.cm
-    const seqTarget = seq.object
+    const seqTarget = seq.target
     const patternObject = seq[ patternType ]
     const [ className, start, end ] = Marker._getNamesAndPosition( patternNode, state, patternType, index )
     const cssName = className
