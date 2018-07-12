@@ -6975,6 +6975,17 @@ module.exports = function( Audio ) {
       timings = Audio.Pattern( __timings )
     }
 
+    if( __timings.randomFlag ) {
+      timings.addFilter( ( args,ptrn ) => {
+        const range = ptrn.values.length - 1
+        const idx = Math.round( Math.random() * range )
+        return [ ptrn.values[ idx ], 1, idx ] 
+      })
+      //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
+      //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
+      //}
+    }
+
     timings.addFilter( function( args ) {
       if( !isNaN( args[0] ) ) {
         args[ 0 ] = Gibberish.Clock.time( args[0] )
