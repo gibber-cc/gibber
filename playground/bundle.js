@@ -7950,6 +7950,8 @@ const fixCallback = function( cb ) {
 }
 
 let shouldUseProxies = false
+environment.proxies = []
+
 const createProxies = function( pre, post, proxiedObj ) {
   const newProps = post.filter( prop => pre.indexOf( prop ) === -1 )
 
@@ -8001,6 +8003,8 @@ const createProxies = function( pre, post, proxiedObj ) {
         ugen = value
       }
     })
+
+    environment.proxies.push( prop )
   }
 }
 
@@ -8105,6 +8109,8 @@ CodeMirror.keyMap.playground =  {
       dat.GUI.__all__.forEach( v => v.destroy() )
       dat.GUI.__all__.length = 0
     }
+    for( let key of environment.proxies ) delete window[ key ]
+    environment.proxies.length = 0
     //Gibberish.generateCallback()
     //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
