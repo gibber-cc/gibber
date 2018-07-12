@@ -69,7 +69,10 @@ module.exports = function( Audio ) {
 
   Seq.sequencers = []
   Seq.clear = function() {
-    Seq.sequencers.forEach( seq => seq.clear() )
+    //Seq.sequencers.forEach( seq => seq.clear() )
+    for( let i = Seq.sequencers.length - 1; i >= 0; i-- ) {
+      Seq.sequencers[ i ].clear()
+    }
     Seq.sequencers = []
   }
 

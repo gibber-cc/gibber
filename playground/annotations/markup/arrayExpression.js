@@ -181,6 +181,7 @@ module.exports = function( Marker ) {
     patternObject.clear = () => {
       if( highlighted.className !== null ) { $( highlighted.className ).remove( 'annotation-border' ) }
       cycle.clear()
+      console.log( 'CLEARING', cssName )
       patternObject.markers.forEach( marker => marker.clear() )
       if( __clear !== null ) __clear()
     }

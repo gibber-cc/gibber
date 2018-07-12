@@ -119,8 +119,6 @@ const createProxies = function( pre, post, proxiedObj ) {
   for( let prop of newProps ) {
     let ugen = proxiedObj[ prop ]
 
-    console.log( 'proxying:', prop )
-
     Object.defineProperty( proxiedObj, prop, {
       get() { return ugen },
       set(value) {
@@ -135,13 +133,11 @@ const createProxies = function( pre, post, proxiedObj ) {
               if( member.disconnect !== undefined ) {
                 for( let connection of connected ) {
                   // 0 index is connection target
-                  console.log( 'disconnecting:', connection )
 
                   if( connection[0].isProperty === true ) {
                     // if it's a modulation
                     let idx = connection[0].mods.indexOf( ugen )
 
-                    console.log( 'property mod', idx )
                     connection[0].mods.splice( idx, 1 )
                   }else{
                     member.disconnect( connection[ 0 ] )
