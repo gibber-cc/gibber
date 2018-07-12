@@ -4124,10 +4124,11 @@ module.exports = Clock
 
 },{"gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js","serialize-javascript":"/Users/thecharlie/Documents/code/gibber.audio.lib/node_modules/serialize-javascript/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js":[function(require,module,exports){
 const Ugen = require( './ugen.js' )
+const Presets = require( './presets.js' )
 
 module.exports = function( Audio ) {
 
-  const Drums = function( score, time, props ) { 
+  const Drums = function( score, time, ...args ) { 
     // XXX what url prefix should I be using?
 
     const temp = Audio.autoConnect
@@ -4212,12 +4213,16 @@ module.exports = function( Audio ) {
       }
     })
 
+    props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
+    if( props.__presetInit__ !== undefined ) {
+      props.__presetInit__.call( drums, Audio )
+    }
     //Ugen.createProperty( drums, 'pitch', drums.__wrapped__, [], Audio )
 
     return drums
   }
 
-  const EDrums = function( score, time, props ) { 
+  const EDrums = function( score, time, ...args ) {
     const temp = Audio.autoConnect
     Audio.autoConnect = false
     
@@ -4244,13 +4249,18 @@ module.exports = function( Audio ) {
 
     if( Audio.autoConnect === true ) drums.connect()
 
+    props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
+    if( props.__presetInit__ !== undefined ) {
+      props.__presetInit__.call( drums, Audio )
+    }
+
     return drums
   }
 
   return { Drums, EDrums }
 }
 
-},{"./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js":[function(require,module,exports){
+},{"./presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js":[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -6630,6 +6640,8 @@ const Presets = {
     PolyMono: require( './presets/monosynth_presets.js' ),
     Snare: require( './presets/snare_presets.js' ),
     Kick: require( './presets/kick_presets.js' ),
+
+    EDrums: require( './presets/edrums_presets.js' ),
   },
 
   effects: {
@@ -6643,13 +6655,37 @@ Presets.instruments.PolyFM = Presets.instruments.FM
 
 module.exports = Presets
 
-},{"./presets/distortion_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/distortion_presets.js","./presets/fm_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/fm_presets.js","./presets/kick_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/kick_presets.js","./presets/monosynth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/monosynth_presets.js","./presets/snare_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/snare_presets.js","./presets/synth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/synth_presets.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/distortion_presets.js":[function(require,module,exports){
+},{"./presets/distortion_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/distortion_presets.js","./presets/edrums_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/edrums_presets.js","./presets/fm_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/fm_presets.js","./presets/kick_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/kick_presets.js","./presets/monosynth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/monosynth_presets.js","./presets/snare_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/snare_presets.js","./presets/synth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/synth_presets.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/distortion_presets.js":[function(require,module,exports){
 module.exports = {
 
   crunch: {
     pregain:10, 
     postgain:.35
   },
+
+}
+
+},{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/edrums_presets.js":[function(require,module,exports){
+module.exports = {
+
+  earshred: {
+    presetInit() {
+      this.fx.add( Distortion() )
+      this.fx[0].pregain = 500
+      this.fx[0].postgain = .06
+
+      //this.fx[0].connect( bus, .25 )
+
+      this.kick.frequency = 55
+      this.kick.decay = .975
+
+      this.snare.tune = .25
+      this.snare.snappy = 1.5
+
+      this.fx[0].shape1.value = .001
+      this.fx[0].shape2.value = -3
+    }
+  }
 
 }
 

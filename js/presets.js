@@ -41,6 +41,8 @@ const Presets = {
     PolyMono: require( './presets/monosynth_presets.js' ),
     Snare: require( './presets/snare_presets.js' ),
     Kick: require( './presets/kick_presets.js' ),
+
+    EDrums: require( './presets/edrums_presets.js' ),
   },
 
   effects: {

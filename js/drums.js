@@ -1,8 +1,9 @@
 const Ugen = require( './ugen.js' )
+const Presets = require( './presets.js' )
 
 module.exports = function( Audio ) {
 
-  const Drums = function( score, time, props ) { 
+  const Drums = function( score, time, ...args ) { 
     // XXX what url prefix should I be using?
 
     const temp = Audio.autoConnect
@@ -87,12 +88,16 @@ module.exports = function( Audio ) {
       }
     })
 
+    props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
+    if( props.__presetInit__ !== undefined ) {
+      props.__presetInit__.call( drums, Audio )
+    }
     //Ugen.createProperty( drums, 'pitch', drums.__wrapped__, [], Audio )
 
     return drums
   }
 
-  const EDrums = function( score, time, props ) { 
+  const EDrums = function( score, time, ...args ) {
     const temp = Audio.autoConnect
     Audio.autoConnect = false
     
@@ -118,6 +123,11 @@ module.exports = function( Audio ) {
     }).start()
 
     if( Audio.autoConnect === true ) drums.connect()
+
+    props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
+    if( props.__presetInit__ !== undefined ) {
+      props.__presetInit__.call( drums, Audio )
+    }
 
     return drums
   }
