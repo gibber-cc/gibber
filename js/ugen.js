@@ -135,8 +135,11 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         for( let seq of this.__sequencers ) {
           seq.clear()
         }
-        for( let connection of __wrappedObject.connected ) {
-          this.disconnect( connection[ 0 ] )
+        console.log( Gibberish.mode, __wrappedObject.connected )
+        if( __wrappedObject.connected !== undefined ) {
+          for( let connection of __wrappedObject.connected ) {
+            this.disconnect( connection[ 0 ] )
+          }
         }
         if( this.__onclear !== undefined ) {
           this.__onclear()

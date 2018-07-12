@@ -7432,8 +7432,11 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         for( let seq of this.__sequencers ) {
           seq.clear()
         }
-        for( let connection of __wrappedObject.connected ) {
-          this.disconnect( connection[ 0 ] )
+        console.log( Gibberish.mode, __wrappedObject.connected )
+        if( __wrappedObject.connected !== undefined ) {
+          for( let connection of __wrappedObject.connected ) {
+            this.disconnect( connection[ 0 ] )
+          }
         }
         if( this.__onclear !== undefined ) {
           this.__onclear()
@@ -20634,7 +20637,11 @@ const __ugen = function( __Gibberish ) {
       if( target === undefined ){
         if( Array.isArray( this.connected ) ) {
           for( let connection of this.connected ) {
-            connection[0].disconnectUgen( connection[1] )
+            if( connection[0].disconnectUgen !== undefined ) {
+              connection[0].disconnectUgen( connection[1] )
+            }else if( connection[0].input === this ) {
+              connection[0].input = 0
+            }
           }
           this.connected.length = 0
         }
@@ -20690,7 +20697,9 @@ const __ugen = function( __Gibberish ) {
             }
           }else if( connection[0].input !== undefined ) {
             //console.log( 'redo graph???' )
-            connection[0].__redoGraph()
+            if( connection[0].__redoGraph !== undefined ) {
+              connection[0].__redoGraph()
+            }
           }
         }
       }
