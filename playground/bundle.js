@@ -6852,7 +6852,6 @@ module.exports = function( classNamePrefix, patternObject ) {
 const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
-
 module.exports = ( patternObject, marker, className, cm, track, patternNode, Marker ) => {
   let val ='/* ' + patternObject.values.join('')  + ' */',
       pos = marker.find(),
@@ -6966,7 +6965,13 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     // if this gets called twice...
     if( commentPos === undefined ) return
 
-    cm.replaceRange( '', commentPos.from, { line:commentPos.to.line, ch:commentPos.to.ch } )
+    // check to see if the last character is a parenthesis... if so we could
+    // not add 1 to commentPos.to.ch so that we don't accidentally delete it.
+    const end = { line:commentPos.to.line, ch:commentPos.to.ch+1 } 
+    const text = cm.getRange( commentPos.from, end )
+    const replacement = text[ text.length - 1 ] === ')' ? ')' : '' 
+
+    cm.replaceRange( replacement, commentPos.from, end )
     patternObject.commentMarker.clear()
   }
 
