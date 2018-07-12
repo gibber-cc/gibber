@@ -3862,7 +3862,7 @@ const Audio = {
     Gibber.Gibberish.worklet.port.postMessage({ address:'callback' }) 
   },
   printobj( obj ) {
-    Gibber.Gibberish.worklet.port.postMessage({ address:'print',object:obj.id }) 
+    Gibber.Gibberish.worklet.port.postMessage({ address:'print', object:obj.id }) 
   },
 
   createPubSub() {
@@ -5822,6 +5822,7 @@ const Gen  = {
     // create Gibber ugen and pass in properties dictionary to initailize
     const out = Make({ params })
     out.__wrapped__.id = temp 
+    out.__wrapped__.connected = []
 
     let count = 0
     out.__wrapped__.output = out.output = function( v ) {
@@ -5838,6 +5839,8 @@ const Gen  = {
     }
 
 
+    out.id = temp
+    out.__isGen = true
     return out
   }
 }
@@ -6739,7 +6742,19 @@ module.exports = {
     filterType:1,
     filterMode:1
   },
-
+  // not as bright / loud
+  lead2 : {
+    presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:1/6, feedback:.65 }) )  },
+    attack: audio => audio.Clock.ms(.5),
+    decay: 1/2, 
+    octave3:0,
+    cutoff:1,
+    filterMult:2.5,
+    Q:.8,
+    gain:.175,
+    filterType:1,
+    filterMode:1
+  },
   winsome : {
     presetInit : function() { 
       this.lfo = Gibber.oscillators.Sine({ frequency:2, gain:.075 })
@@ -7282,8 +7297,10 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
       if( v === undefined || v === null ) return
       if( typeof v === 'number' && isNaN(v) ) {
-        console.warn('An invalid property assignment was attempted. Did you forget to use property.value?')
-        return
+        if( obj.__isGen !== true ) {
+          console.warn('An invalid property assignment was attempted. Did you forget to use property.value?')
+          return
+        }
       }
 
       //if( v !== null && typeof v !== 'object' ) 
@@ -7339,10 +7356,13 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       },
       clear() {
         for( let seq of this.__sequencers ) {
-          seq.stop()
           seq.clear()
           for( let connection of __wrappedObject.connected ) {
             this.disconnect( connection[ 0 ] )
+          }
+          if( this.__onclear !== undefined ) {
+            console.log( 'clearing widget:', this )
+            this.__onclear()
           }
         }
       }
@@ -7427,16 +7447,16 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }
     }
 
-    let id = __wrappedObject.id
-    Object.defineProperty( __wrappedObject, 'id', {
-      configurable:false,
-      get() { return id },
-      set(v) {
-        console.log( 'tried to change id:', obj )
-        debugger
-      }
-    })
-    obj.id = id
+    //let id = __wrappedObject.id
+    //Object.defineProperty( __wrappedObject, 'id', {
+    //  configurable:false,
+    //  get() { return id },
+    //  set(v) {
+    //    console.log( 'tried to change id:', obj )
+    //    debugger
+    //  }
+    //})
+    obj.id = __wrappedObject.id
 
     // XXX where does shouldAddToUgen come from? Not from presets.js...
     if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
@@ -7475,13 +7495,19 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }
     })
 
+    let preModValue
     obj.connect = (dest,level=1) => {
       if( dest !== undefined && dest.isProperty === true ) {
-        dest.mods.push( obj )
-        if( dest.mods.length !== 0 ) { // if first modulation
-          //console.log( 'mod:', dest.name )
-          dest.ugen[ dest.name ].value = Gibberish.binops.Add( dest.value, obj ) 
+        if( preModValue === 0 ) { // if first modulation
+          preModValue = dest.value
         }
+
+        dest.mods.push( obj )
+
+        const sum = dest.mods.concat( preModValue )
+        dest.ugen[ dest.name ].value = Gibberish.binops.Add( ...sum ) 
+       
+        obj.__wrapped__.connected.push( [ dest.ugen[ dest.name ], obj ] )
       }else{
         // if no fx chain, connect directly to output
         if( obj.fx.length === 0 ) {
@@ -20954,8 +20980,6 @@ const utilities = {
         const propName = messages[ i + 1 ]
         const value = messages[ i + 2 ]
         const obj = Gibberish.worklet.ugens.get( id )
-
-        //console.log( obj, id, propName, value )
 
         if( obj !== undefined && propName.indexOf('.') === -1 && propName !== 'id' ) { 
           if( obj[ propName ] !== undefined ) {

@@ -114,6 +114,8 @@ const Waveform = {
       widget.max = -Infinity
       widget.storage.length = 0
     }
+    
+    widget.gen.__onclear = ()=> widget.mark.clear()
 
     if( this.initialized === false ) {
       this.startAnimationClock()

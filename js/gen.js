@@ -418,6 +418,7 @@ const Gen  = {
     // create Gibber ugen and pass in properties dictionary to initailize
     const out = Make({ params })
     out.__wrapped__.id = temp 
+    out.__wrapped__.connected = []
 
     let count = 0
     out.__wrapped__.output = out.output = function( v ) {
@@ -434,6 +435,8 @@ const Gen  = {
     }
 
 
+    out.id = temp
+    out.__isGen = true
     return out
   }
 }

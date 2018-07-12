@@ -16,7 +16,19 @@ module.exports = {
     filterType:1,
     filterMode:1
   },
-
+  // not as bright / loud
+  lead2 : {
+    presetInit : function( audio ) { this.fx.push( audio.effects.Delay({ time:1/6, feedback:.65 }) )  },
+    attack: audio => audio.Clock.ms(.5),
+    decay: 1/2, 
+    octave3:0,
+    cutoff:1,
+    filterMult:2.5,
+    Q:.8,
+    gain:.175,
+    filterType:1,
+    filterMode:1
+  },
   winsome : {
     presetInit : function() { 
       this.lfo = Gibber.oscillators.Sine({ frequency:2, gain:.075 })
