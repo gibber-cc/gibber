@@ -150,19 +150,35 @@ const createProxies = function( pre, post, proxiedObj ) {
                     if( connection[0].isProperty !== true ) {
                       shouldConnect = false
                     }
+                    // don't connect new ugen to old ugen's effects chain... new
+                    // ugen should have its own chain.
+                    if( member.fx.indexOf( connection[0] ) > -1 ) {
+                      shouldConnect = false
+                    }
                   }
 
                   if( shouldConnect === true ) {
                     value.connect( connection[ 0 ] )
                   } 
-                  //console.log( 'connected:', value.id )
                 }
               }
             }
-          }
 
+            // make sure to disconnect any fx in the old ugen's fx chain
+            member.fx.forEach( effect => { 
+              effect.clear() 
+            })
+
+          }
         }
-        if( ugen.__onclear !== undefined ) ugen.__onclear()
+
+        if( ugen.clear !== undefined ) {
+          ugen.clear()
+        }else if( ugen.__onclear !== undefined ) {
+          // XXX does this condition ever happen?
+          ugen.__onclear()     
+        }
+
         ugen = value
       }
     })

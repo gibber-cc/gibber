@@ -6663,27 +6663,35 @@ module.exports = {
     postgain:.35
   },
 
+  earshred: {
+   pregain: 500,
+   postgain: .06,
+   shape1: .001,
+   shape2: -3
+  }
+
 }
 
 },{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/edrums_presets.js":[function(require,module,exports){
 module.exports = {
 
   earshred: {
+    // unfortunately you can't write normal presets for
+    // Drums and EDrums, because they don't go through
+    // the Ugen constructor in the typical way (they are
+    // processed as busses). It would also
+    // be difficult to define properties for the individual
+    // drum components (snare,kick etc.) using the standard
+    // preset format. For these reasons, all property assignment
+    // must be performed after initialization. 
     presetInit() {
-      this.fx.add( Distortion() )
-      this.fx[0].pregain = 500
-      this.fx[0].postgain = .06
-
-      //this.fx[0].connect( bus, .25 )
+      this.fx.add( Distortion('earshred') )
 
       this.kick.frequency = 55
       this.kick.decay = .975
 
       this.snare.tune = .25
       this.snare.snappy = 1.5
-
-      this.fx[0].shape1.value = .001
-      this.fx[0].shape2.value = -3
     }
   }
 
@@ -7423,13 +7431,12 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       clear() {
         for( let seq of this.__sequencers ) {
           seq.clear()
-          for( let connection of __wrappedObject.connected ) {
-            this.disconnect( connection[ 0 ] )
-          }
-          if( this.__onclear !== undefined ) {
-            console.log( 'clearing widget:', this )
-            this.__onclear()
-          }
+        }
+        for( let connection of __wrappedObject.connected ) {
+          this.disconnect( connection[ 0 ] )
+        }
+        if( this.__onclear !== undefined ) {
+          this.__onclear()
         }
       }
     }
@@ -20633,7 +20640,14 @@ const __ugen = function( __Gibberish ) {
         }
       }else{
         const connection = this.connected.find( v => v[0] === target )
-        target.disconnectUgen( connection[1] )
+        // if target is a bus...
+        if( target.disconnectUgen !== undefined ) {
+          target.disconnectUgen( connection[1] )
+        }else{
+          // must be an effect, set input to 0
+          target.input = 0
+        }
+
         const targetIdx = this.connected.indexOf( connection )
         this.connected.splice( targetIdx, 1 )
       }
@@ -20801,7 +20815,7 @@ module.exports = function( Gibberish ) {
           set( v ) {
             if( value !== v ) {
               if( !isNaN( v ) ) {
-                let idx = ugen.__addrresses__[ prop ]
+                let idx = ugen.__addresses__[ prop ]
                 if( idx === undefined ){
                   idx = Gibberish.memory.alloc( 1 )
                   ugen.__addresses__[ prop ] = idx
