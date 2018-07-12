@@ -7103,6 +7103,10 @@ module.exports = function( Marker ) {
       }
 
       if( foundSequence === true ){
+        // check if a gen ugen is stored in the state variable, if so
+        // use it as the obj varibale.
+        if( state.containsGen === true ) obj = state.gen
+
         // If called via the AssignmentExpression visitor, built up a faux-AST
         // that gives us the object and all subsequenct method calls. For example,
         // there could be many chained calls to .seq() sequencing different
@@ -7121,6 +7125,7 @@ module.exports = function( Marker ) {
         }
 
         let seq
+
         if( obj === undefined ) {
           // assume default sequencer ID of 0, but check for alternative argument value
           let seqNumber = node.arguments.length > 2 ? node.arguments[2].raw : 0
@@ -7136,6 +7141,10 @@ module.exports = function( Marker ) {
             let seqNumber = node.arguments.length > 2 ? node.arguments[2].raw : 0
 
             seq = obj[ tree[i] ][ seqNumber ]
+
+            // check and see if the object name has been passed, if not we should be
+            // able to get it from the first index of the tree
+            if( objName === undefined ) objName = tree[ 0 ]
 
             // We need to fake a state variable so that annotations are created with
             // unique class names. We pass the name of the object being sequenced 
