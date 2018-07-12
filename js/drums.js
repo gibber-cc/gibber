@@ -4,10 +4,14 @@ module.exports = function( Audio ) {
 
   const Drums = function( score, time, props ) { 
     // XXX what url prefix should I be using?
+
+    const temp = Audio.autoConnect
+    Audio.autoConnect = false
     const k  = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/kick.wav' })
     const s  = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/snare.wav' })
     const ch = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/hat.wav' })
     const oh = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/openHat.wav' })
+    Audio.autoConnect = temp
 
     const drums = Audio.Ensemble({
       'x': { target:k,  method:'trigger', args:[1], name:'kick' },
@@ -15,6 +19,8 @@ module.exports = function( Audio ) {
       '*': { target:ch, method:'trigger', args:[1], name:'closedHat' },
       '-': { target:oh, method:'trigger', args:[1], name:'openHat' },
     })
+
+    if( Audio.autoConnect === true ) drums.connect()
 
     drums.seq = Audio.Seq({
       target:drums,
