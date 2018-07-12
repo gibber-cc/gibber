@@ -143,6 +143,9 @@ const Audio = {
   printobj( obj ) {
     Gibber.Gibberish.worklet.port.postMessage({ address:'print', object:obj.id }) 
   },
+  send( msg ){
+    Gibber.Gibberish.worklet.port.postMessage( msg )
+  },
 
   createPubSub() {
     const events = {}

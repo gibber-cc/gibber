@@ -93,11 +93,16 @@ module.exports = function( Audio ) {
   }
 
   const EDrums = function( score, time, props ) { 
+    const temp = Audio.autoConnect
+    Audio.autoConnect = false
+    
     const k = Audio.instruments.Kick()
     const s = Audio.instruments.Snare()
     const ch = Audio.instruments.Hat({ decay:.1, gain:.2 })
     const oh = Audio.instruments.Hat({ decay:.5, gain:.2 })
-
+    
+    Audio.autoConnect = temp
+    
     const drums = Audio.Ensemble({
       'x': { target:k, method:'trigger', args:[1], name:'kick' },
       'o': { target:s, method:'trigger', args:[1], name:'snare' },
@@ -111,6 +116,8 @@ module.exports = function( Audio ) {
       values:score.split(''),
       timings:time === undefined ? 1 / score.length : time
     }).start()
+
+    if( Audio.autoConnect === true ) drums.connect()
 
     return drums
   }
