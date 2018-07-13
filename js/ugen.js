@@ -135,7 +135,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         for( let seq of this.__sequencers ) {
           seq.clear()
         }
-        console.log( Gibberish.mode, __wrappedObject.connected )
+        //console.log( Gibberish.mode, __wrappedObject.connected )
         if( __wrappedObject.connected !== undefined ) {
           for( let connection of __wrappedObject.connected ) {
             this.disconnect( connection[ 0 ] )
@@ -225,6 +225,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         }
       }
     }
+
 
     //let id = __wrappedObject.id
     //Object.defineProperty( __wrappedObject, 'id', {

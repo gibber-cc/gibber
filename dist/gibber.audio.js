@@ -3802,6 +3802,8 @@ const Audio = {
         let __start = Gibber.instruments.Synth().connect()
         __start.disconnect()
 
+        //Gibberish.worklet.port.postMessage({ address:'initialize' })
+
         resolve()
       })
     })
@@ -7432,7 +7434,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         for( let seq of this.__sequencers ) {
           seq.clear()
         }
-        console.log( Gibberish.mode, __wrappedObject.connected )
+        //console.log( Gibberish.mode, __wrappedObject.connected )
         if( __wrappedObject.connected !== undefined ) {
           for( let connection of __wrappedObject.connected ) {
             this.disconnect( connection[ 0 ] )
@@ -7522,6 +7524,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         }
       }
     }
+
 
     //let id = __wrappedObject.id
     //Object.defineProperty( __wrappedObject, 'id', {
@@ -17338,7 +17341,7 @@ let __Chorus = inputProps => {
     const ms = sampleRate / 1000 
     const maxDelayTime = 1000 * ms
 
-    console.log( 'sr:', sampleRate, 'ms:', ms, 'maxDelayTime:', maxDelayTime )
+    //console.log( 'sr:', sampleRate, 'ms:', ms, 'maxDelayTime:', maxDelayTime )
 
     const time1 =  g.mul( g.add( slowPeek1, fastPeek1, 5 ), ms ),
           time2 =  g.mul( g.add( slowPeek2, fastPeek2, 5 ), ms ),
@@ -17375,9 +17378,9 @@ let __Chorus = inputProps => {
 __Chorus.defaults = {
   input:0,
   slowFrequency: .18,
-  slowGain:1,
+  slowGain:3,
   fastFrequency:6,
-  fastGain:.2,
+  fastGain:1,
   inputGain:1
 }
 
@@ -19190,7 +19193,7 @@ module.exports = {
 
     // XXX uncomment this line to turn on dynamically connecting
     // disconnecting individual voices from graph
-    // Gibberish.blockCallbacks.push( envCheck )
+    //Gibberish.blockCallbacks.push( envCheck )
   },
 
   __getVoice__() {
@@ -19199,7 +19202,7 @@ module.exports = {
 
   chord( frequencies ) {
     // will be sent to processor node via proxy method...
-    if( Gibberish.mode !== 'worklet' ) {
+    if( Gibberish !== undefined && Gibberish.mode !== 'worklet' ) {
       frequencies.forEach( v => this.note( v ) )
       this.triggerChord = frequencies
     }
@@ -19259,6 +19262,8 @@ module.exports = function( Gibberish ) {
       properties.panVoices = true//false//properties.isStereo
       synth.callback.ugenName = synth.ugenName
 
+      if( properties.id !== undefined ) delete properties.id 
+
       for( let i = 0; i < synth.maxVoices; i++ ) {
         synth.voices[i] = ugen( properties )
         synth.voices[i].callback.ugenName = synth.voices[i].ugenName
@@ -19282,7 +19287,7 @@ module.exports = function( Gibberish ) {
 
   TemplateFactory.setupProperties = function( synth, ugen, props ) {
     for( let property of props ) {
-      if( property === 'pan' ) continue
+      if( property === 'pan' || property === 'id' ) continue
       Object.defineProperty( synth, property, {
         get() {
           return synth.properties[ property ] || ugen.defaults[ property ]
@@ -20824,7 +20829,7 @@ module.exports = function( Gibberish ) {
           set( v ) {
             if( value !== v ) {
               if( !isNaN( v ) ) {
-                let idx = ugen.__addresses__[ prop ]
+                let idx = ugen.__addrresses__[ prop ]
                 if( idx === undefined ){
                   idx = Gibberish.memory.alloc( 1 )
                   ugen.__addresses__[ prop ] = idx
@@ -20992,8 +20997,10 @@ const utilities = {
     state( event ){
       const messages = event.data.messages
       if( messages.length === 0 ) return
-      
+
+      // XXX is preventProxy actually used?
       Gibberish.preventProxy = true
+      Gibberish.proxyEnabled = false
       for( let i = 0; i < messages.length; i+= 3 ) {
         const id = messages[ i ] 
         const propName = messages[ i + 1 ]
@@ -21026,6 +21033,7 @@ const utilities = {
         // console.log( propName, value, obj )
       }
       Gibberish.preventProxy = false
+      Gibberish.proxyEnabled = true
     }
   },
 
@@ -21133,7 +21141,6 @@ const __proxy = function( __name, values, obj ) {
                 const __args = args.map( __value => replaceObj( __value, true ) )
                 //if( prop === 'connect' ) console.log( 'proxy connect:', __args )
 
-                //console.log( 'args:', prop,  __args )
                 Gibberish.worklet.port.postMessage({ 
                   address:'method', 
                   object:obj.id,
@@ -21142,7 +21149,11 @@ const __proxy = function( __name, values, obj ) {
                 })
               }
 
-              return target[ prop ].apply( thisArg, args )
+              const temp = Gibberish.proxyEnabled
+              Gibberish.proxyEnabled = false
+              const out =  __target.apply( thisArg, args )
+              Gibberish.proxyEnabled = temp
+              return out
             }
           })
           

@@ -81,6 +81,8 @@ const Audio = {
         let __start = Gibber.instruments.Synth().connect()
         __start.disconnect()
 
+        //Gibberish.worklet.port.postMessage({ address:'initialize' })
+
         resolve()
       })
     })
