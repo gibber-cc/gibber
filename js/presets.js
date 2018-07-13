@@ -46,6 +46,7 @@ const Presets = {
   },
 
   effects: {
+    Chorus: require( './presets/chorus_presets.js' ),
     Distortion: require( './presets/distortion_presets.js' ),
   }
 
