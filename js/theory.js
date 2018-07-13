@@ -61,15 +61,16 @@ const Theory = {
   initProperties: function() {
     if( Gibberish.mode === 'worklet' ) {
       Gibber.createProperty( 
-        this, 'root', 440, 
+        this, 'root', 440, null,1
       )
 
       Gibber.createProperty( 
         this, 'tuning', 'et', 
-        function() { this.loadScale( this.tuning.value ) }
+        function() { this.loadScale( this.tuning.value ) },
+        1
       )
 
-      Gibber.createProperty( this, 'mode', 'aeolian' )
+      Gibber.createProperty( this, 'mode', 'aeolian', null, 1 )
     }else{
       Object.defineProperty( this, 'root', {
         get() { return this.__root },

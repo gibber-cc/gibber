@@ -290,26 +290,39 @@ const Marker = {
     let marker, pos, newMarker
 
     if( Gibber.shouldDelay === false ) {
-    if( pattern.values.length > 1 ) {
-      // array of values
-      for( let i = 0; i < pattern.values.length; i++) {
-        marker = track.markup.textMarkers[ patternClassName ][ i ]
-        pos = marker.find()
+      if( pattern.values.length > 1 ) {
+        // array of values
+        for( let i = 0; i < pattern.values.length; i++) {
+          marker = track.markup.textMarkers[ patternClassName ][ i ]
 
-        const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
-        itemClass.innerText = pattern.values[ i ]
+          const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
+          itemClass.innerText = pattern.values[ i ]
+        }
+      }else{
+        if( Array.isArray( pattern.values[0] ) ) {
+          // for example, to repeatedly sequence a single chord...
+          // XXX this is a hack, the patternClassName is submitted to this function
+          // incorrectly. But at least it's an easy hack.
+          marker = track.markup.textMarkers[ patternClassName ][ 0 ]
+          pos = marker.find()
+
+          pos.from.ch += 1
+          pos.to.ch -=1
+          marker.doc.replaceRange( pattern.values[0].toString(), pos.from, pos.to )//, { className:marker.className.replace(' ', '.') })
+          //const arrayElement = document.querySelector( '.' + patternClassName )
+          //arrayElement.innerText = pattern.values[0]
+        }else{
+          // single literal
+          marker = track.markup.textMarkers[ patternClassName ]
+
+          const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
+          itemClass.innerText = pattern.values[ 0 ]
+
+          //marker.doc.replaceRange( '' + pattern.values[ 0 ], pos.from, pos.to )
+          // newMarker = marker.doc.markText( pos.from, pos.to, { className: patternClassName + ' annotation-border' } )
+          // track.markup.textMarkers[ patternClassName ] = newMarker
+        }
       }
-    }else{
-      // single literal
-      marker = track.markup.textMarkers[ patternClassName ]
-      pos = marker.find()
-
-      const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
-      itemClass.innerText = pattern.values[ 0 ]
-      //marker.doc.replaceRange( '' + pattern.values[ 0 ], pos.from, pos.to )
-      // newMarker = marker.doc.markText( pos.from, pos.to, { className: patternClassName + ' annotation-border' } )
-      // track.markup.textMarkers[ patternClassName ] = newMarker
-    }
     }
   },
 

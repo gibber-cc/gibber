@@ -8,6 +8,7 @@ module.exports = function( Audio ) {
     const delay     = props.delay
     const target    = props.target
     const key       = props.key
+    const priority  = props.priority
 
     let values
     if( Array.isArray( __values ) ) {
@@ -31,7 +32,6 @@ module.exports = function( Audio ) {
     if( Array.isArray( __timings ) ) {
       timings  = Audio.Pattern( ...__timings )
     }else if( typeof __timings === 'function' && __timings.isPattern === true ) {
-      //console.log( 'found pattern passed to seq' )
       timings = __timings
     }else{
       timings = Audio.Pattern( __timings )
@@ -56,16 +56,7 @@ module.exports = function( Audio ) {
       return args
     })
 
-    //if( key === 'note' ) {
-    //  values.addFilter( function( args ) {
-    //    args[0] = Gibberish.Theory.Tune.note( args[0] )
-    //    return args
-    //  })
-    //}else if( key === 'chord' ) {
-      
-    //}
-
-    const seq = Gibberish.Sequencer({ values, timings, target, key })
+    const seq = Gibberish.Sequencer({ values, timings, target, key, priority })
 
     seq.clear = function() {
       if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()

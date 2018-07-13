@@ -119,7 +119,7 @@ const Audio = {
     Object.assign( this, drums )
   },
 
-  addSequencing( obj, methodName ) {
+  addSequencing( obj, methodName, priority ) {
 
     if( Gibberish.mode === 'worklet' ) {
       obj[ methodName ].sequencers = []
@@ -128,7 +128,7 @@ const Audio = {
         let prevSeq = obj[ methodName ].sequencers[ number ] 
         if( prevSeq !== undefined ) prevSeq.stop()
 
-        let s = Audio.Seq({ values, timings, target:obj, key:methodName })
+        let s = Audio.Seq({ values, timings, target:obj, key:methodName, priority })
 
         s.start() // Audio.Clock.time( delay ) )
         obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
@@ -178,7 +178,7 @@ const Audio = {
   // prefaced by a double underscore. This object holds the value of the 
   // property, sequencers for the properyt, and modulations for the property.
   // Alternative getter/setter methods can be passed as arguments.
-  createProperty( obj, name, value, post ) {
+  createProperty( obj, name, value, post=null, priority=0 ) {
     obj['__'+name] = { 
       value,
       isProperty:true,
@@ -195,7 +195,8 @@ const Audio = {
           values, 
           timings, 
           target:obj,
-          key:name
+          key:name,
+          priority
         })
         .start( Audio.Clock.time( delay ) )
 
@@ -216,7 +217,7 @@ const Audio = {
           value:obj['__'+name].value
         }) 
       }
-      if( post !== undefined ) {
+      if( post !== null ) {
         post.call( obj )
       }
     }
@@ -226,9 +227,6 @@ const Audio = {
       get: getter,
       set: setter
     })
-
-
-
   }
   
 }

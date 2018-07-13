@@ -291,7 +291,29 @@ const patternWrapper = function( Gibber ) {
         return fnc
       },
     
-      reset() { fnc.values = fnc.original.slice( 0 ); fnc._onchange(); return fnc; },
+      reset() { 
+        // XXX replace with some type of standard deep copy
+        if( Array.isArray( fnc.original[0] ) ) {
+          const arr = []
+          for( let i = 0; i < fnc.original.length; i++ ) {
+            const chord = fnc.original[ i ]
+            arr[ i ] = []
+            for( let j = 0; j < chord.length; j++ ) {
+              arr[ i ][ j ] = chord[ j ] 
+            }
+          }
+          fnc.values = arr
+        }else{
+          fnc.values = fnc.original.slice(0)
+        }
+        //fnc.set( fnc.original.slice( 0 ) );
+        if( Gibberish.mode === 'processor' ) {
+          Gibberish.processor.messages.push( fnc.id, 'values', fnc.values )
+          Gibberish.processor.messages.push( fnc.id, '_onchange', true )
+        }  
+        fnc._onchange()
+        return fnc 
+      },
       store() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
 
       transpose( amt ) { 
@@ -440,21 +462,32 @@ const patternWrapper = function( Gibber ) {
     
     fnc.end = fnc.values.length - 1
     
-    fnc.original = fnc.values.slice( 0 )
+    if( Array.isArray( fnc.values[0] ) ) {
+      const arr = []
+      for( let i = 0; i < fnc.values.length; i++ ) {
+        const chord = fnc.values[ i ]
+        arr[ i ] = []
+        for( let j = 0; j < chord.length; j++ ) {
+          arr[ i ][ j ] = chord[ j ] 
+        }
+      }
+      fnc.original = arr
+    }else{
+      fnc.original = fnc.values.slice(0)
+    }
+
     fnc.storage[ 0 ] = fnc.original.slice( 0 )
-    
     fnc.integersOnly = fnc.values.every( function( n ) { return n === +n && n === (n|0); })
     
     let methodNames =  [
-      'rotate','switch','invert','reset', 'flip',
+      'rotate','switch','invert','flip',
       'transpose','reverse','shuffle','scale',
       'store', 'range', 'set'
     ]
 
-    // XXX restore this! 
-    
     if( Gibberish.mode === 'worklet' ) {
       for( let key of methodNames ) { Gibber.addSequencing( fnc, key, 1 ) }
+      Gibber.addSequencing( fnc, 'reset', 2 )
     }
     
     fnc.listeners = {}
