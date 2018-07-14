@@ -5818,7 +5818,7 @@ const Gen  = {
     Object.assign( obj, this.ugens )
   },
 
-  make( graph ) {
+  make( graph, propertyNames ) {
     const ugen = Gibber.Gibberish.prototypes.Ugen
     const g = Gibber.Gibberish.genish
 
@@ -5886,6 +5886,36 @@ const Gen  = {
           Gibber.Environment.Annotations.waveform.widgets[ temp ] = out.widget
         }
         Gibber.Environment.Annotations.waveform.updateWidget( out.widget, v, false )
+      }
+    }
+
+    // optionally map user provided names to p values for better control / sequencing
+    if( Array.isArray( propertyNames )) {
+      for( let i = 0; i < propertyNames.length; i++ ){
+        const propertyName = propertyNames[ i ]
+        if( out[ 'p'+i ] !== undefined ){
+          out[ '__'+propertyName ] = out[ 'p'+i ]
+          Object.defineProperty( out, propertyName, {
+            get() { return out[ '__' + propertyName ] },
+            set(v){
+              // XXX need to accomodate non-scalar values
+              // i.e. mappings
+
+              if( v === undefined || v === null ) return
+              //if( typeof v === 'number' && isNaN(v) ) {
+              //  if( obj.__isGen !== true ) {
+              //    console.warn('An invalid property assignment was attempted. Did you forget to use property.value?')
+              //    return
+              //  }
+              //}
+
+              //if( v !== null && typeof v !== 'object' ) 
+              out[ '__' + propertyName ].value = v
+              //else
+              //  obj[ '__' + propertyName ] = v
+            }
+          })
+        } 
       }
     }
 
@@ -7432,7 +7462,17 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
         target:__wrappedObject, 
         key:propertyName 
       })
-      .start( Audio.Clock.time( delay ) )
+
+      if( timeProps.indexOf( propertyName ) !== -1  ) {
+        s.values.addFilter( (args,ptrn) => {
+          if( Gibberish.mode === 'processor' ) {
+            args[0] = Gibberish.Clock.time( args[0] )
+            return args
+          }
+        })
+      }
+
+      s.start( Audio.Clock.time( delay ) )
 
       obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = s
       obj.__sequencers.push( s )
@@ -7443,6 +7483,7 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
     ugen:obj
   }
+
 
   Object.defineProperty( obj, propertyName, {
     get() { return obj[ '__' + propertyName ] },

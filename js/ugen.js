@@ -54,7 +54,17 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
         target:__wrappedObject, 
         key:propertyName 
       })
-      .start( Audio.Clock.time( delay ) )
+
+      if( timeProps.indexOf( propertyName ) !== -1  ) {
+        s.values.addFilter( (args,ptrn) => {
+          if( Gibberish.mode === 'processor' ) {
+            args[0] = Gibberish.Clock.time( args[0] )
+            return args
+          }
+        })
+      }
+
+      s.start( Audio.Clock.time( delay ) )
 
       obj[ propertyName ].sequencers[ number ] = obj[ propertyName ][ number ] = s
       obj.__sequencers.push( s )
@@ -65,6 +75,7 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
     ugen:obj
   }
+
 
   Object.defineProperty( obj, propertyName, {
     get() { return obj[ '__' + propertyName ] },
