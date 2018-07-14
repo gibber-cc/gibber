@@ -227,15 +227,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     }
 
 
-    //let id = __wrappedObject.id
-    //Object.defineProperty( __wrappedObject, 'id', {
-    //  configurable:false,
-    //  get() { return id },
-    //  set(v) {
-    //    console.log( 'tried to change id:', obj )
-    //    debugger
-    //  }
-    //})
+    let id = __wrappedObject.id
+    Object.defineProperty( __wrappedObject, 'id', {
+      configurable:false,
+      get() { return id },
+      set(v) {
+        console.log( 'tried to change id:', obj )
+        //debugger
+      }
+    })
     obj.id = __wrappedObject.id
 
     // XXX where does shouldAddToUgen come from? Not from presets.js...

@@ -7580,15 +7580,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     }
 
 
-    //let id = __wrappedObject.id
-    //Object.defineProperty( __wrappedObject, 'id', {
-    //  configurable:false,
-    //  get() { return id },
-    //  set(v) {
-    //    console.log( 'tried to change id:', obj )
-    //    debugger
-    //  }
-    //})
+    let id = __wrappedObject.id
+    Object.defineProperty( __wrappedObject, 'id', {
+      configurable:false,
+      get() { return id },
+      set(v) {
+        console.log( 'tried to change id:', obj )
+        //debugger
+      }
+    })
     obj.id = __wrappedObject.id
 
     // XXX where does shouldAddToUgen come from? Not from presets.js...
@@ -19385,7 +19385,8 @@ module.exports = function( Gibberish ) {
     trigger( volume ) {
       if( volume !== undefined ) this.gain = volume
 
-      if( this.rate > 0 ) {
+      // if we're playing the sample forwards...
+      if( Gibberish.memory.heap[ this.__rateStorage__.memory.values.idx ] > 0 ) {
         this.__trigger()
       }else{
         this.__phase__.value = this.data.buffer.length - 1 
@@ -19401,7 +19402,10 @@ module.exports = function( Gibberish ) {
     syn.isStereo = props.isStereo !== undefined ? props.isStereo : false
 
     const start = g.in( 'start' ), end = g.in( 'end' ), 
-          rate = g.in( 'rate' ), shouldLoop = g.in( 'loops' )
+          rate = g.in( 'rate' ), shouldLoop = g.in( 'loops' ),
+          // rate storage is used to determine whether we're playing
+          // the sample forward or in reverse, for use in the 'trigger' method.
+          rateStorage = g.data([0], 1, { meta:true })
 
     Object.assign( syn, props )
 
@@ -19424,7 +19428,14 @@ module.exports = function( Gibberish ) {
 
       syn.__phase__ = g.counter( rate, start, end, syn.__bang__, shouldLoop, { shouldWrap:false, initialValue:9999999 })
       
-      syn.graph = g.mul( 
+      syn.__rateStorage__ = rateStorage
+      rateStorage[0] = rate
+
+      // XXX we added our recorded 'rate' param and then effectively substract it,
+      // so that its presence in the graph will force genish to actually record the 
+      // rate as the input. this is extremely hacky... there should be a way to record
+      // value without having to include it in the graph!
+      syn.graph = g.add( g.mul( 
         g.ifelse( 
           g.and( g.gte( syn.__phase__, start ), g.lt( syn.__phase__, end ) ),
           g.peek( 
@@ -19435,7 +19446,7 @@ module.exports = function( Gibberish ) {
           0
         ), 
         g.in('gain') 
-      )
+      ), rateStorage[0], g.mul( rateStorage[0], -1 ) )
     }
 
     const onload = buffer => {
