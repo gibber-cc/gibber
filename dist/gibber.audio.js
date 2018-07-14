@@ -3797,6 +3797,10 @@ const Audio = {
 
         Audio.export( window )
 
+        // store last location in memory... we can clear everything else in Gibber.clear9)
+        const memIdx = Object.keys( Gibberish.memory.list ).reverse()[0]
+        this.__memoryEnd = parseInt( memIdx ) + Gibberish.memory.list[ memIdx ]
+
         // XXX this forces the gibberish scheduler to start
         // running, but it's about as hacky as it can get...
         let __start = Gibber.instruments.Synth().connect()
@@ -3817,6 +3821,27 @@ const Audio = {
     Audio.Clock.init() //createClock()
     Audio.Seq.clear()
 
+    // the idea is that we only clear memory that was filled after
+    // the initial Gibber initialization... this stops objects
+    // like Clock and Theory from having their memory cleared and
+    // from having to re-initialize them.
+
+    // fill memoy with zeros from the end initialization block onwards
+    Gibberish.memory.heap.fill( 0, this.__memoryEnd )
+
+    // get locations of all memory blocks
+    const memKeys = Object.keys( Gibberish.memory.list )
+
+    // get idx of final initialization block
+    const endIdx =  memKeys.indexOf( ''+this.__memoryEnd )
+
+    // loop through all blocks after final initialzation block
+    // and delete them in the memory list... they've already
+    // been zeroed out.
+    for( let i = endIdx; i < memKeys.length; i++ ) {
+      delete Gibberish.memory.list[ memKeys[ i ] ]
+    }
+    
     this.publish('clear')
   },
 
@@ -18416,10 +18441,11 @@ let Gibberish = {
         args:[]
       })
     }
-
-    // clear memory... XXX should this be a MemoryHelper function?
-    this.memory.heap.fill(0)
-    this.memory.list = {}
+      // clear memory... XXX should this be a MemoryHelper function?
+    //this.memory.heap.fill(0)
+    //this.memory.list = {}
+    //Gibberish.output = this.Bus2()
+    
   },
 
   generateCallback() {
