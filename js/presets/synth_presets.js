@@ -36,7 +36,14 @@ module.exports = {
       this.chorus = this.fx[0]
     }
   },
-
+  brass: {
+    attack:1/6, decay:1.5, gain:.0125,
+    filterType:1, Q:.5575, cutoff:2,
+    presetInit: function( audio ) {
+      this.fx.add( audio.effects.Chorus('lush') )
+      this.chorus = this.fx[0]
+    }
+  },
   chirp: { maxVoices:1, filterType:2, cutoff:.325, decay:1/16 } 
 
 }

@@ -292,7 +292,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }else{
         // if no fx chain, connect directly to output
         if( obj.fx.length === 0 ) {
-          __wrappedObject.connect( dest,level ); 
+           __wrappedObject.connect( dest,level )
         }else{
           // otherwise, connect last effect in chain to output
           obj.fx[ obj.fx.length - 1 ].__wrapped__.connect( dest, level )

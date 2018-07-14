@@ -4214,10 +4214,10 @@ module.exports = function( Audio ) {
     })
 
     props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
-    if( props.__presetInit__ !== undefined ) {
-      props.__presetInit__.call( drums, Audio )
+    if( props !== undefined ) {
+      Object.assign( drums, props )
+      if( props.__presetInit__ !== undefined ) props.__presetInit__.call( drums, Audio )
     }
-    //Ugen.createProperty( drums, 'pitch', drums.__wrapped__, [], Audio )
 
     return drums
   }
@@ -4250,7 +4250,7 @@ module.exports = function( Audio ) {
     if( Audio.autoConnect === true ) drums.connect()
 
     props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
-    if( props.__presetInit__ !== undefined ) {
+    if( props !== undefined && props.__presetInit__ !== undefined ) {
       props.__presetInit__.call( drums, Audio )
     }
 
@@ -7047,7 +7047,14 @@ module.exports = {
       this.chorus = this.fx[0]
     }
   },
-
+  brass: {
+    attack:1/6, decay:1.5, gain:.0125,
+    filterType:1, Q:.5575, cutoff:2,
+    presetInit: function( audio ) {
+      this.fx.add( audio.effects.Chorus('lush') )
+      this.chorus = this.fx[0]
+    }
+  },
   chirp: { maxVoices:1, filterType:2, cutoff:.325, decay:1/16 } 
 
 }
@@ -7638,7 +7645,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }else{
         // if no fx chain, connect directly to output
         if( obj.fx.length === 0 ) {
-          __wrappedObject.connect( dest,level ); 
+           __wrappedObject.connect( dest,level )
         }else{
           // otherwise, connect last effect in chain to output
           obj.fx[ obj.fx.length - 1 ].__wrapped__.connect( dest, level )
@@ -18409,6 +18416,10 @@ let Gibberish = {
         args:[]
       })
     }
+
+    // clear memory... XXX should this be a MemoryHelper function?
+    this.memory.heap.fill(0)
+    this.memory.list = {}
   },
 
   generateCallback() {
@@ -20670,12 +20681,23 @@ const __ugen = function( __Gibberish ) {
       if( target === undefined || target === null ) target = Gibberish.output 
 
 
+      // XXX I forgot, where is __addInput found? Can we control the
+      // level of the input?
       if( typeof target.__addInput == 'function' ) {
         target.__addInput( input )
       } else if( target.sum && target.sum.inputs ) {
         target.sum.inputs.push( input )
       } else if( target.inputs ) {
-        target.inputs.unshift( input, level, input.isStereo )
+        const idx = target.inputs.indexOf( input )
+
+        // if no connection exists...
+        if( idx === -1 ) {
+          target.inputs.unshift( input, level, input.isStereo )
+        }else{
+          // ... otherwise update the connection's level, which is stored
+          // one index higher in the input list.
+          target.inputs[ idx + 1 ] = level
+        }
       } else {
         target.input = input
         target.inputGain = level
@@ -20683,7 +20705,7 @@ const __ugen = function( __Gibberish ) {
 
       Gibberish.dirty( target )
 
-      this.connected.push([ target, input ])
+      this.connected.push([ target, input, level ])
       
       return this
     },
@@ -20751,7 +20773,6 @@ const __ugen = function( __Gibberish ) {
               connection[ 0 ].inputs[ inputIdx + 2 ] = this.isStereo
             }
           }else if( connection[0].input !== undefined ) {
-            //console.log( 'redo graph???' )
             if( connection[0].__redoGraph !== undefined ) {
               connection[0].__redoGraph()
             }

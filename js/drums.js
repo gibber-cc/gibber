@@ -89,10 +89,10 @@ module.exports = function( Audio ) {
     })
 
     props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
-    if( props.__presetInit__ !== undefined ) {
-      props.__presetInit__.call( drums, Audio )
+    if( props !== undefined ) {
+      Object.assign( drums, props )
+      if( props.__presetInit__ !== undefined ) props.__presetInit__.call( drums, Audio )
     }
-    //Ugen.createProperty( drums, 'pitch', drums.__wrapped__, [], Audio )
 
     return drums
   }
@@ -125,7 +125,7 @@ module.exports = function( Audio ) {
     if( Audio.autoConnect === true ) drums.connect()
 
     props = Presets.process( { name:'EDrums', category:'instruments' }, args, Audio )
-    if( props.__presetInit__ !== undefined ) {
+    if( props !== undefined && props.__presetInit__ !== undefined ) {
       props.__presetInit__.call( drums, Audio )
     }
 

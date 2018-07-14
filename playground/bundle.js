@@ -7353,7 +7353,7 @@ const Waveform = {
       widget.storage.push( value )
     }
 
-    if( widget.storage.length > 120 ) {
+    if( widget.storage.length > 2400 ) {
       widget.max = Math.max.apply( null, widget.storage )
       widget.min = Math.min.apply( null, widget.storage )
       widget.storage.length = 0
