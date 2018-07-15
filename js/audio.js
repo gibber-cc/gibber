@@ -3,6 +3,7 @@ const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
 const Oscillators = require( './oscillators.js' )
 const Effects     = require( './effects.js' )
+const Envelopes   = require( './envelopes.js' )
 const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
 const Utility     = require( './utility.js' )
@@ -25,7 +26,7 @@ const Audio = {
 
   export( obj ) {
     if( Audio.initialized ){ 
-      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses )
+      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes )
       
       Utility.export( obj )
       this.Gen.export( obj )
@@ -130,6 +131,7 @@ const Audio = {
     this.Freesound = Freesound( this )
     this.oscillators = Oscillators.create( this )
     this.instruments = Instruments.create( this ) 
+    this.envelopes   = Envelopes.create( this )
     this.effects = Effects.create( this )
     this.busses = Busses.create( this )
     this.Ensemble = Ensemble( this )

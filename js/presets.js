@@ -48,6 +48,10 @@ const Presets = {
   effects: {
     Chorus: require( './presets/chorus_presets.js' ),
     Distortion: require( './presets/distortion_presets.js' ),
+  },
+
+  misc: {
+    Bus2: require( './presets/bus2_presets.js' )
   }
 
 }

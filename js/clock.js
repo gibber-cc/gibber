@@ -72,6 +72,8 @@ const Clock = {
           }
         }
       })
+
+      this.bpm = 140
     }
 
     if( Gibberish.mode === 'processor' )

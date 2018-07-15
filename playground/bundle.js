@@ -7065,15 +7065,20 @@ module.exports = function( Marker ) {
             // ugen({}).connect()
             // XXX what about handling multiple chained calls to .seq()
             // hopefully this is handled in our earlier try/catch block...
-            righthandName = right.callee.object.callee.name 
+
+            if( right.callee.object.callee !== undefined ) 
+              righthandName = right.callee.object.callee.name 
           }
 
-          state.containsGen = Marker.Gibber.Gen.names.indexOf( righthandName ) > -1
-          state.gen = window[ left.name ]
-          cb( right, state )
+          if( righthandName !== undefined ) {
+            state.containsGen = Marker.Gibber.Gen.names.indexOf( righthandName ) > -1
+            state.gen = window[ left.name ]
 
-          // XXX does this need a track object? passing null...
-          if( state.containsGen ) Marker.processGen( expression, state.cm, null )
+            // XXX does this need a track object? passing null...
+            if( state.containsGen ) Marker.processGen( expression, state.cm, null )
+          }
+
+          cb( right, state )
 
         }
       }
@@ -7140,7 +7145,12 @@ module.exports = function( Marker ) {
           for( let i = tree.length - 2; i >= 1; i-=2 ) {
             let seqNumber = node.arguments.length > 2 ? node.arguments[2].raw : 0
 
-            seq = obj[ tree[i] ][ seqNumber ]
+            try {
+              seq = obj[ tree[i] ][ seqNumber ]
+            }catch(e) {
+              console.log( e )
+              debugger
+            }
 
             // check and see if the object name has been passed, if not we should be
             // able to get it from the first index of the tree
@@ -7212,7 +7222,7 @@ const Waveform = {
 
   // XXX there's a bucnh of arguments  that could probably be removed from this function. 
   // Definitely closeParenStart, probably also isAssignment, maybe track & patternObject.
-  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, isSeq=true, walkState ) {
+  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject=null, track, isSeq=true, walkState ) {
     let widget = document.createElement( 'canvas' )
     widget.padding = 40
     widget.waveWidth = 60
@@ -7293,7 +7303,7 @@ const Waveform = {
 
     if( widget.gen !== null ) {
       //console.log( 'paramID = ', widget.gen.paramID ) 
-      Waveform.widgets[ widget.gen.paramID ] = widget
+      Waveform.widgets[ widget.gen.id ] = widget
       widget.gen.widget = widget
     }
     
@@ -7353,7 +7363,7 @@ const Waveform = {
       widget.storage.push( value )
     }
 
-    if( widget.storage.length > 2400 ) {
+    if( widget.storage.length > 240 ) {
       widget.max = Math.max.apply( null, widget.storage )
       widget.min = Math.min.apply( null, widget.storage )
       widget.storage.length = 0

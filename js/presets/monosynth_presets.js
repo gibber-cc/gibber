@@ -65,10 +65,10 @@ module.exports = {
   bassPad : { 
     attack: audio => audio.Clock.ms(.1),
     decay: 2,	
-    octave:-3,
+    octave:-4,
     cutoff: .8,
     filterMult:4.5,
-    Q:.55,
+    Q:.725,
     detune2:1.0125,
     detune3:1-.0125
   },

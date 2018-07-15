@@ -1,5 +1,17 @@
 module.exports = {
 
+  acidBass: {
+    Q:.925,
+    filterType:2,
+    filterMult:5.5,
+    cutoff:1.25,
+    saturation:3.5,
+    attack:1/8192,
+    decay:1/10,
+    octave:-3,
+    glide:2000
+  },
+
   bleep: { 
     attack:1/256, decay:1/32, 
     waveform:'sine' 
@@ -29,15 +41,15 @@ module.exports = {
     }
   },
 
-  strings: {
-    attack:1/6, decay:1.5, gain:.0125,
+  stringPad: {
+    attack:1/2, decay:1.5, gain:.015,
     presetInit: function( audio ) {
-      this.fx.add( audio.effects.Chorus('lush') )
-      this.chorus = this.fx[0]
+      this.fx.chorus = audio.effects.Chorus('lush')
+      this.fx.add( this.fx.chorus  )
     }
   },
   brass: {
-    attack:1/6, decay:1.5, gain:.0125,
+    attack:1/6, decay:1.5, gain:.05,
     filterType:1, Q:.5575, cutoff:2,
     presetInit: function( audio ) {
       this.fx.add( audio.effects.Chorus('lush') )

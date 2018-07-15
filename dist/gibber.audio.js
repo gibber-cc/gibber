@@ -3724,6 +3724,7 @@ const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
 const Oscillators = require( './oscillators.js' )
 const Effects     = require( './effects.js' )
+const Envelopes   = require( './envelopes.js' )
 const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
 const Utility     = require( './utility.js' )
@@ -3746,7 +3747,7 @@ const Audio = {
 
   export( obj ) {
     if( Audio.initialized ){ 
-      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses )
+      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes )
       
       Utility.export( obj )
       this.Gen.export( obj )
@@ -3851,6 +3852,7 @@ const Audio = {
     this.Freesound = Freesound( this )
     this.oscillators = Oscillators.create( this )
     this.instruments = Instruments.create( this ) 
+    this.envelopes   = Envelopes.create( this )
     this.effects = Effects.create( this )
     this.busses = Busses.create( this )
     this.Ensemble = Ensemble( this )
@@ -3979,7 +3981,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{"./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js":[function(require,module,exports){
+},{"./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./envelopes.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js":[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -3990,7 +3992,8 @@ const Busses = {
     const busDescription = { 
       properties:Gibberish.Bus.defaults,
       methods:null,
-      name:'Bus'
+      name:'Bus',
+      category:'misc'
     }
 
     busses.Bus = Ugen( Gibberish.Bus, busDescription, Audio )
@@ -3999,6 +4002,7 @@ const Busses = {
       properties:Gibberish.Bus2.defaults,
       methods:null,
       name:'Bus2',
+      category:'misc'
     }
 
     busses.Bus2 = Ugen( Gibberish.Bus2, bus2Description, Audio )
@@ -4083,6 +4087,8 @@ const Clock = {
           }
         }
       })
+
+      this.bpm = 140
     }
 
     if( Gibberish.mode === 'processor' )
@@ -4362,7 +4368,40 @@ module.exports = function( Audio ) {
   return Ensemble
 }
 
-},{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js":[function(require,module,exports){
+},{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js":[function(require,module,exports){
+const Gibberish = require( 'gibberish-dsp' )
+const Ugen      = require( './ugen.js' )
+
+const Envelopes = {
+  create( Audio ) {
+    const envelopes = {}
+
+    for( let envelopeName in Gibberish.envelopes ) {
+      const gibberishConstructor = Gibberish.envelopes[ envelopeName ]
+
+      const methods = Envelopes.descriptions[ envelopeName ] === undefined ? null : Envelopes.descriptions[ envelopeName ].methods
+      const description = { 
+        properties:gibberishConstructor.defaults || {}, 
+        methods:methods,
+        name:envelopeName,
+        category:'envelopes'
+      }
+      description.properties.type = 'envelope'
+
+      envelopes[ envelopeName ] = Ugen( gibberishConstructor, description, Audio )
+    }
+    return envelopes
+  },
+
+  descriptions: {
+    //Chorus:{ methods:[] },
+  },
+  
+}
+
+module.exports = Envelopes
+
+},{"./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js":[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 let Pattern = Gibber.Pattern
@@ -6735,6 +6774,10 @@ const Presets = {
   effects: {
     Chorus: require( './presets/chorus_presets.js' ),
     Distortion: require( './presets/distortion_presets.js' ),
+  },
+
+  misc: {
+    Bus2: require( './presets/bus2_presets.js' )
   }
 
 }
@@ -6744,17 +6787,64 @@ Presets.instruments.PolyFM = Presets.instruments.FM
 
 module.exports = Presets
 
-},{"./presets/chorus_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/chorus_presets.js","./presets/distortion_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/distortion_presets.js","./presets/edrums_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/edrums_presets.js","./presets/fm_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/fm_presets.js","./presets/kick_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/kick_presets.js","./presets/monosynth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/monosynth_presets.js","./presets/snare_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/snare_presets.js","./presets/synth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/synth_presets.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/chorus_presets.js":[function(require,module,exports){
+},{"./presets/bus2_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/bus2_presets.js","./presets/chorus_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/chorus_presets.js","./presets/distortion_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/distortion_presets.js","./presets/edrums_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/edrums_presets.js","./presets/fm_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/fm_presets.js","./presets/kick_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/kick_presets.js","./presets/monosynth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/monosynth_presets.js","./presets/snare_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/snare_presets.js","./presets/synth_presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/synth_presets.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/bus2_presets.js":[function(require,module,exports){
+module.exports = {
+
+  'spaceverb': {
+    presetInit: function( audio ) {
+      this.fx.verb = audio.effects.Freeverb({ roomSize:.985, dry:1 })
+      this.fx.add( this.fx.verb )
+    }
+  },
+  'delay1/6': {
+    presetInit: function( audio ) {
+      this.fx.delay = audio.effects.Delay({ time:1/6, feedback:.35, wetdry:1 })
+      this.fx.add( this.fx.delay )
+    }
+  },
+  'delay1/5': {
+    presetInit: function( audio ) {
+      this.fx.delay = audio.effects.Delay({ time:1/5, feedback:.35, wetdry:1 })
+      this.fx.add( this.fx.delay )
+    }
+  },
+  'delay1/8': {
+    presetInit: function( audio ) {
+      this.fx.delay = audio.effects.Delay({ time:1/8, feedback:.35, wetdry:1 })
+      this.fx.add( this.fx.delay )
+    }
+  },
+  'delay1/9': {
+    presetInit: function( audio ) {
+      this.fx.delay = audio.effects.Delay({ time:1/9, feedback:.35, wetdry:1 })
+      this.fx.add( this.fx.delay )
+    }
+  },
+}
+
+},{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/chorus_presets.js":[function(require,module,exports){
 module.exports = {
 
   lush: {
     fastFrequency:4,
     fastGain:.425,
-    slowGain:3,
-    slowFrequency:.18,
+    slowGain:3.5,
+    slowFrequency:1,
     presetInit: function( audio ) {
-      this.mod1 = audio.Gen.make( cycle(.1) ).connect( this.fastFrequency )
-      this.mod2 = audio.Gen.make( cycle(.05) ).connect( this.slowGain )
+      this.mod1 = audio.Gen.make( audio.Gen.ugens.cycle(.1) ).connect( this.fastFrequency )
+      this.mod2 = audio.Gen.make( audio.Gen.ugens.cycle(.05) ).connect( this.slowGain )
+    }
+  },
+
+  warbly: {
+    fastFrequency:4,
+    fastGain:.425,
+    slowGain:3,
+    slowFrequency:1,
+    fastGain:1.5,
+    presetInit: function( audio ) {
+      this.mod1 = audio.Gen.make( audio.Gen.ugens.cycle(.1) ).connect( this.fastFrequency )
+      this.mod2 = audio.Gen.make( audio.Gen.ugens.cycle(.05) ).connect( this.slowGain )
     }
   }
 }
@@ -6788,8 +6878,8 @@ module.exports = {
     // drum components (snare,kick etc.) using the standard
     // preset format. For these reasons, all property assignment
     // must be performed after initialization. 
-    presetInit() {
-      this.fx.add( Distortion('earshred') )
+    presetInit( audio ) {
+      this.fx.add( audio.effects.Distortion('earshred') )
 
       this.kick.frequency = 55
       this.kick.decay = .975
@@ -6955,10 +7045,10 @@ module.exports = {
   bassPad : { 
     attack: audio => audio.Clock.ms(.1),
     decay: 2,	
-    octave:-3,
+    octave:-4,
     cutoff: .8,
     filterMult:4.5,
-    Q:.55,
+    Q:.725,
     detune2:1.0125,
     detune3:1-.0125
   },
@@ -7066,6 +7156,18 @@ module.exports = {
 },{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets/synth_presets.js":[function(require,module,exports){
 module.exports = {
 
+  acidBass: {
+    Q:.925,
+    filterType:2,
+    filterMult:5.5,
+    cutoff:1.25,
+    saturation:3.5,
+    attack:1/8192,
+    decay:1/10,
+    octave:-3,
+    glide:2000
+  },
+
   bleep: { 
     attack:1/256, decay:1/32, 
     waveform:'sine' 
@@ -7095,15 +7197,15 @@ module.exports = {
     }
   },
 
-  strings: {
-    attack:1/6, decay:1.5, gain:.0125,
+  stringPad: {
+    attack:1/2, decay:1.5, gain:.015,
     presetInit: function( audio ) {
-      this.fx.add( audio.effects.Chorus('lush') )
-      this.chorus = this.fx[0]
+      this.fx.chorus = audio.effects.Chorus('lush')
+      this.fx.add( this.fx.chorus  )
     }
   },
   brass: {
-    attack:1/6, decay:1.5, gain:.0125,
+    attack:1/6, decay:1.5, gain:.05,
     filterType:1, Q:.5575, cutoff:2,
     presetInit: function( audio ) {
       this.fx.add( audio.effects.Chorus('lush') )
@@ -7651,7 +7753,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       configurable:false,
       get() { return id },
       set(v) {
-        console.log( 'tried to change id:', obj )
+        //console.log( 'tried to change id:', obj )
         //debugger
       }
     })
@@ -17766,7 +17868,7 @@ let Delay = inputProps => {
 
 Delay.defaults = {
   input:0,
-  feedback:.75,
+  feedback:.5,
   time: 11025,
   wetdry: .5
 }
@@ -19389,9 +19491,11 @@ module.exports = function( Gibberish ) {
       properties.panVoices = true//false//properties.isStereo
       synth.callback.ugenName = synth.ugenName
 
+      const storedId = properties.id
       if( properties.id !== undefined ) delete properties.id 
 
       for( let i = 0; i < synth.maxVoices; i++ ) {
+        properties.id = synth.id +'_'+i
         synth.voices[i] = ugen( properties )
         synth.voices[i].callback.ugenName = synth.voices[i].ugenName
         synth.voices[i].isConnected = false
@@ -19403,6 +19507,8 @@ module.exports = function( Gibberish ) {
         const idx =  _propertyList.indexOf( 'pan' )
         if( idx  > -1 ) _propertyList.splice( idx, 1 )
       }
+
+      properties.id = storedId
 
       TemplateFactory.setupProperties( synth, ugen, properties.isStereo ? propertyList : _propertyList )
 
@@ -20804,14 +20910,19 @@ const __ugen = function( __Gibberish ) {
         const connection = this.connected.find( v => v[0] === target )
         // if target is a bus...
         if( target.disconnectUgen !== undefined ) {
-          target.disconnectUgen( connection[1] )
+          if( connection !== undefined ) {
+            target.disconnectUgen( connection[1] )
+          }
         }else{
           // must be an effect, set input to 0
           target.input = 0
         }
 
         const targetIdx = this.connected.indexOf( connection )
-        this.connected.splice( targetIdx, 1 )
+
+        if( targetIdx !== -1 ) {
+          this.connected.splice( targetIdx, 1 )
+        }
       }
     },
 

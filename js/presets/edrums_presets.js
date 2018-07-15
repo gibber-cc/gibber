@@ -9,8 +9,8 @@ module.exports = {
     // drum components (snare,kick etc.) using the standard
     // preset format. For these reasons, all property assignment
     // must be performed after initialization. 
-    presetInit() {
-      this.fx.add( Distortion('earshred') )
+    presetInit( audio ) {
+      this.fx.add( audio.effects.Distortion('earshred') )
 
       this.kick.frequency = 55
       this.kick.decay = .975

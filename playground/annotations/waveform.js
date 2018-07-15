@@ -18,7 +18,7 @@ const Waveform = {
 
   // XXX there's a bucnh of arguments  that could probably be removed from this function. 
   // Definitely closeParenStart, probably also isAssignment, maybe track & patternObject.
-  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, isSeq=true, walkState ) {
+  createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject=null, track, isSeq=true, walkState ) {
     let widget = document.createElement( 'canvas' )
     widget.padding = 40
     widget.waveWidth = 60
@@ -99,7 +99,7 @@ const Waveform = {
 
     if( widget.gen !== null ) {
       //console.log( 'paramID = ', widget.gen.paramID ) 
-      Waveform.widgets[ widget.gen.paramID ] = widget
+      Waveform.widgets[ widget.gen.id ] = widget
       widget.gen.widget = widget
     }
     
@@ -159,7 +159,7 @@ const Waveform = {
       widget.storage.push( value )
     }
 
-    if( widget.storage.length > 2400 ) {
+    if( widget.storage.length > 240 ) {
       widget.max = Math.max.apply( null, widget.storage )
       widget.min = Math.min.apply( null, widget.storage )
       widget.storage.length = 0

@@ -8,7 +8,8 @@ const Busses = {
     const busDescription = { 
       properties:Gibberish.Bus.defaults,
       methods:null,
-      name:'Bus'
+      name:'Bus',
+      category:'misc'
     }
 
     busses.Bus = Ugen( Gibberish.Bus, busDescription, Audio )
@@ -17,6 +18,7 @@ const Busses = {
       properties:Gibberish.Bus2.defaults,
       methods:null,
       name:'Bus2',
+      category:'misc'
     }
 
     busses.Bus2 = Ugen( Gibberish.Bus2, bus2Description, Audio )

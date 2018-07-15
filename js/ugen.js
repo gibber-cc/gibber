@@ -243,7 +243,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       configurable:false,
       get() { return id },
       set(v) {
-        console.log( 'tried to change id:', obj )
+        //console.log( 'tried to change id:', obj )
         //debugger
       }
     })
