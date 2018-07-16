@@ -29,7 +29,7 @@ const removeSeq = function( obj, seq ) {
 }
 
 const createProperty = function( obj, propertyName, __wrappedObject, timeProps, Audio ) {
-  obj[ '__' + propertyName ] = {
+  const prop =  obj[ '__' + propertyName ] = {
     isProperty:true,
     sequencers:[],
     mods:[],
@@ -70,6 +70,17 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
       obj.__sequencers.push( s )
 
       // return object for method chaining
+      return obj
+    },
+
+    fade( from=null, to=null, time=1 ) {
+      if( from === null ) from = prop.value
+      if( to === null ) to = prop.value
+
+      time = Gibber.Clock.time( time )
+
+      prop.value = Gibber.envelopes.Ramp({ from, to, length:time })
+
       return obj
     },
 
@@ -313,7 +324,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       return obj 
     } 
 
-    obj.disconnect = dest => { __wrappedObject.disconnect( dest ); return obj } 
+    obj.disconnect = dest => { 
+      if( dest === undefined && obj.fx.length > 0 ) {
+        obj.fx[ obj.fx.length - 1 ].disconnect()
+      }
+
+      __wrappedObject.disconnect( dest ); 
+      
+      return obj 
+    } 
 
     // presetInit is a function in presets that triggers actions after the ugen
     // has been instantiated... it is primarily used to add effects and modulations

@@ -46,7 +46,7 @@ const Audio = {
     } 
   },
 
-  init( workletPath = './dist/gibberish_worklet.js' ) {
+  init( workletPath = '../dist/gibberish_worklet.js' ) {
     this.Gibberish = Gibberish
 
     Gibberish.workletPath = workletPath 
@@ -76,6 +76,9 @@ const Audio = {
         }
 
         Audio.export( window )
+
+        let drums = Audio.Drums('x*o-')
+        drums.disconnect()
 
         // store last location in memory... we can clear everything else in Gibber.clear9)
         const memIdx = Object.keys( Gibberish.memory.list ).reverse()[0]
