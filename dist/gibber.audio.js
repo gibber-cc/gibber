@@ -7838,6 +7838,8 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     } 
 
     obj.disconnect = dest => { 
+      // if there's an effect chain, we disconnect that in addition
+      // to disconnecting the ugen itself.
       if( dest === undefined && obj.fx.length > 0 ) {
         obj.fx[ obj.fx.length - 1 ].disconnect()
       }
