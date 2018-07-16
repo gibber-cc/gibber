@@ -3767,9 +3767,11 @@ const Audio = {
     } 
   },
 
-  init( workletPath = '../dist/gibberish_worklet.js' ) {
+  //init( workletPath = '../dist/workletCopy.js', workerPath = '../dist/gibberish_worker.js' ) {
+  init( workletPath = '../dist/gibberish_worklet.js' ) { 
     this.Gibberish = Gibberish
 
+    //Gibberish.workerPath = workerPath 
     Gibberish.workletPath = workletPath 
 
     this.createPubSub()
@@ -7591,6 +7593,15 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
       if( to === null ) to = prop.value
 
       time = Gibber.Clock.time( time )
+
+      // XXX only covers condition where ramps from fades are assigned...
+      // does this need to be more generic?
+      if( isNaN( from ) && from.__wrapped__.ugenName.indexOf('ramp') > -1 ) {
+        from = from.to.value
+      }
+      if( isNaN( to ) && to.__wrapped__.ugenName.indexOf('ramp') > -1 ) {
+        to = to.to.value
+      }
 
       prop.value = Gibber.envelopes.Ramp({ from, to, length:time })
 

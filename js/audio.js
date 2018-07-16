@@ -46,9 +46,11 @@ const Audio = {
     } 
   },
 
-  init( workletPath = '../dist/gibberish_worklet.js' ) {
+  //init( workletPath = '../dist/workletCopy.js', workerPath = '../dist/gibberish_worker.js' ) {
+  init( workletPath = '../dist/gibberish_worklet.js' ) { 
     this.Gibberish = Gibberish
 
+    //Gibberish.workerPath = workerPath 
     Gibberish.workletPath = workletPath 
 
     this.createPubSub()
