@@ -77,6 +77,9 @@ const patternWrapper = function( Gibber ) {
      */
 
     let isFunction = args.length === 1 && typeof args[0] === 'function'
+    let isGen = args[0].__isGen
+
+    if( isGen === true ) { args[0].connect( Gibberish.output, 0 ) }
 
     let fnc = function() {
       let len = fnc.getLength(),
@@ -90,6 +93,10 @@ const patternWrapper = function( Gibber ) {
 
       if( isFunction ) {
         val = fnc.values[ 0 ]()
+        args = fnc.runFilters( val, idx )
+        val = args[0]
+      } else if( isGen === true ) {
+        val = fnc.values[ 0 ].callback.out[0]
         args = fnc.runFilters( val, idx )
         val = args[0]
       }else{
@@ -458,7 +465,8 @@ const patternWrapper = function( Gibber ) {
       fnc.id = Gibberish.utilities.getUID()
     }
     //fnc.filters.pattern = fnc
-    fnc.retrograde = fnc.reverse.bind( fnc )
+    // can I resotre this without making the object non-serializable?
+    //fnc.retrograde = fnc.reverse.bind( fnc )
     
     fnc.end = fnc.values.length - 1
     

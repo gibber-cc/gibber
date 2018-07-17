@@ -74,7 +74,7 @@ const Utility = {
 
     if( typeof number === 'undefined' ) {
       range = max - min
-      out = Math.round( min + Math.random() * range );
+      out = Math.round( min + Math.random() * range )
     }else{
   		let output = [],
   		    tmp = []
@@ -131,6 +131,8 @@ const Utility = {
     return new Function( fncString )
   },
 
+  btof( beats ) { return beats * ( Gibber.Clock.bpm / 60 ) },
+
   random() {
     this.randomFlag = true
     this.randomArgs = Array.prototype.slice.call( arguments, 0 )
@@ -170,6 +172,7 @@ const Utility = {
     obj.rndf = this.rndf
     obj.Rndi = this.Rndi
     obj.Rndf = this.Rndf
+    obj.btof = this.btof
 
     Array.prototype.rnd = this.random
   }

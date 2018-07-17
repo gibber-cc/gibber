@@ -3732,6 +3732,7 @@ const Euclid      = require( './euclid.js' )
 const Hex         = require( './hex.js' )
 const Freesound   = require( './freesound.js' )
 const Gen         = require( './gen.js' )
+const WavePattern = require( './wavePattern.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -3761,7 +3762,8 @@ const Audio = {
       obj.Hex = Hex( this )
       obj.Freesound = this.Freesound
       obj.Clock = this.Clock
-      Master = this.Master
+      obj.WavePattern = this.WavePattern
+      obj.Master = this.Master
     }else{
       Audio.exportTarget = obj
     } 
@@ -3785,6 +3787,7 @@ const Audio = {
         Audio.Master = Gibberish.out
         Audio.Ugen = Ugen
         Audio.Gen = Gen( Gibber )
+        Audio.WavePattern = WavePattern( Gibber )
 
         Audio.createUgens()
         
@@ -3986,7 +3989,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{"./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./envelopes.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js":[function(require,module,exports){
+},{"./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./envelopes.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","./wavePattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/wavePattern.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js":[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -5931,6 +5934,8 @@ const Gen  = {
         }
         Gibber.Environment.Annotations.waveform.updateWidget( out.widget, v, false )
       }
+
+      out.output.value = v
     }
 
     // optionally map user provided names to p values for better control / sequencing
@@ -5965,7 +5970,7 @@ const Gen  = {
 
 
     out.id = temp
-    out.__isGen = true
+    out.__isGen = out.__wrapped__.__isGen = true
     return out
   }
 }
@@ -6239,6 +6244,9 @@ const patternWrapper = function( Gibber ) {
      */
 
     let isFunction = args.length === 1 && typeof args[0] === 'function'
+    let isGen = args[0].__isGen
+
+    if( isGen === true ) { args[0].connect( Gibberish.output, 0 ) }
 
     let fnc = function() {
       let len = fnc.getLength(),
@@ -6252,6 +6260,10 @@ const patternWrapper = function( Gibber ) {
 
       if( isFunction ) {
         val = fnc.values[ 0 ]()
+        args = fnc.runFilters( val, idx )
+        val = args[0]
+      } else if( isGen === true ) {
+        val = fnc.values[ 0 ].callback.out[0]
         args = fnc.runFilters( val, idx )
         val = args[0]
       }else{
@@ -6620,7 +6632,8 @@ const patternWrapper = function( Gibber ) {
       fnc.id = Gibberish.utilities.getUID()
     }
     //fnc.filters.pattern = fnc
-    fnc.retrograde = fnc.reverse.bind( fnc )
+    // can I resotre this without making the object non-serializable?
+    //fnc.retrograde = fnc.reverse.bind( fnc )
     
     fnc.end = fnc.values.length - 1
     
@@ -7976,7 +7989,7 @@ const Utility = {
 
     if( typeof number === 'undefined' ) {
       range = max - min
-      out = Math.round( min + Math.random() * range );
+      out = Math.round( min + Math.random() * range )
     }else{
   		let output = [],
   		    tmp = []
@@ -8033,6 +8046,8 @@ const Utility = {
     return new Function( fncString )
   },
 
+  btof( beats ) { return beats * ( Gibber.Clock.bpm / 60 ) },
+
   random() {
     this.randomFlag = true
     this.randomArgs = Array.prototype.slice.call( arguments, 0 )
@@ -8072,12 +8087,30 @@ const Utility = {
     obj.rndf = this.rndf
     obj.Rndi = this.Rndi
     obj.Rndf = this.Rndf
+    obj.btof = this.btof
 
     Array.prototype.rnd = this.random
   }
 }
 
 module.exports = Utility
+
+},{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/wavePattern.js":[function(require,module,exports){
+module.exports = function( Gibber ) {
+
+  const WavePattern = function( ugen ) {
+    
+    const fnc = function() {
+      return fnc.ugen.__wrapped__.callback.out[0] 
+    }
+
+    fnc.ugen = ugen
+
+    return Gibber.Pattern( fnc )
+  }
+
+  return WavePattern
+}
 
 },{}],"/Users/thecharlie/Documents/code/gibber.audio.lib/node_modules/base64-js/index.js":[function(require,module,exports){
 'use strict'
@@ -18851,7 +18884,8 @@ module.exports = function( Gibberish ) {
     let conga = Object.create( instrument ),
         frequency = g.in( 'frequency' ),
         decay = g.in( 'decay' ),
-        gain  = g.in( 'gain' )
+        gain  = g.in( 'gain' ),
+        loudness = g.in( 'loudness' )
 
     let props = Object.assign( {}, Conga.defaults, argumentProps )
 
@@ -18859,7 +18893,7 @@ module.exports = function( Gibberish ) {
         impulse = g.mul( trigger, 60 ),
         _decay =  g.sub( .101, g.div( decay, 10 ) ), // create range of .001 - .099
         bpf = g.svf( impulse, frequency, _decay, 2, false ),
-        out = g.mul( bpf, gain )
+        out = g.mul( bpf, g.mul( loudness, gain ) )
     
 
     conga.env = trigger
@@ -18871,7 +18905,8 @@ module.exports = function( Gibberish ) {
   Conga.defaults = {
     gain: .25,
     frequency:190,
-    decay: .85
+    decay: .85,
+    loudness: 1
   }
 
   return Conga
@@ -18888,7 +18923,8 @@ module.exports = function( Gibberish ) {
     let cowbell = Object.create( instrument )
     
     const decay   = g.in( 'decay' ),
-          gain    = g.in( 'gain' )
+          gain    = g.in( 'gain' ),
+          loudness = g.in( 'loudness' )
 
     const props = Object.assign( {}, Cowbell.defaults, argumentProps )
 
@@ -18898,7 +18934,7 @@ module.exports = function( Gibberish ) {
           eg = g.decay( g.mul( decay, g.gen.samplerate * 2 ) ), 
           bpf = g.svf( g.add( s1,s2 ), bpfCutoff, 3, 2, false ),
           envBpf = g.mul( bpf, eg ),
-          out = g.mul( envBpf, gain )
+          out = g.mul( envBpf, g.mul( gain, loudness ) )
 
     cowbell.env = eg 
 
@@ -19039,7 +19075,8 @@ module.exports = function( Gibberish ) {
         tune  = g.in( 'tune' ),
         scaledTune = g.memo( g.add( .4, tune ) ),
         decay  = g.in( 'decay' ),
-        gain  = g.in( 'gain' )
+        gain  = g.in( 'gain' ),
+        loudness = g.in( 'loudness' )
 
     let props = Object.assign( {}, Hat.defaults, argumentProps )
 
@@ -19053,11 +19090,11 @@ module.exports = function( Gibberish ) {
         s5 = Gibberish.oscillators.factory( 'square', g.mul( baseFreq,2.5028 ) ),
         s6 = Gibberish.oscillators.factory( 'square', g.mul( baseFreq,2.6637 ) ),
         sum = g.add( s1,s2,s3,s4,s5,s6 ),
-        eg = g.decay( g.mul( decay, g.gen.samplerate * 2 ) ), 
+        eg = g.decay( g.mul( decay, g.gen.samplerate * 2 ), { initValue:0 }), 
         bpf = g.svf( sum, bpfCutoff, .5, 2, false ),
         envBpf = g.mul( bpf, eg ),
         hpf = g.filter24( envBpf, 0, hpfCutoff, 0 ),
-        out = g.mul( hpf, gain )
+        out = g.mul( hpf, g.mul( gain, loudness ) )
 
     hat.env = eg 
     hat.isStereo = false
@@ -19069,9 +19106,10 @@ module.exports = function( Gibberish ) {
   }
   
   Hat.defaults = {
-    gain:  1,
+    gain:  .5,
     tune: .6,
     decay:.1,
+    loudness:1
   }
 
   return Hat
@@ -19173,7 +19211,7 @@ module.exports = function( Gibberish ) {
           delay = g.delay( g.add( impulse, feedback.out ), g.div( sampleRate, slidingFrequency ), { size:2048 }),
           decayed = g.mul( delay, g.t60( g.mul( g.in('decay'), slidingFrequency ) ) ),
           damped =  g.mix( decayed, feedback.out, g.in('damping') ),
-          withGain = g.mul( damped, g.in('gain') )
+          withGain = g.mul( damped, g.mul( g.in('loudness'),g.in('gain')) )
 
     feedback.in( damped )
 
@@ -19207,7 +19245,8 @@ module.exports = function( Gibberish ) {
     frequency:220,
     pan: .5,
     glide:1,
-    panVoices:false
+    panVoices:false,
+    loudness:1
   }
 
   let envCheckFactory = ( syn,synth ) => {
@@ -19605,6 +19644,7 @@ module.exports = function( Gibberish ) {
 
     const start = g.in( 'start' ), end = g.in( 'end' ), 
           rate = g.in( 'rate' ), shouldLoop = g.in( 'loops' ),
+          loudness = g.in( 'loudness' ),
           // rate storage is used to determine whether we're playing
           // the sample forward or in reverse, for use in the 'trigger' method.
           rateStorage = g.data([0], 1, { meta:true })
@@ -19647,7 +19687,7 @@ module.exports = function( Gibberish ) {
           ),
           0
         ), 
-        g.in('gain') 
+        g.mul( loudness, g.in('gain') )
       ), rateStorage[0], g.mul( rateStorage[0], -1 ) )
     }
 
@@ -21353,7 +21393,7 @@ const serialize = require('serialize-javascript')
 module.exports = function( Gibberish ) {
 
 const replaceObj = function( obj, shouldSerializeFunctions = true ) {
-  if( typeof obj === 'object' && obj.id !== undefined ) {
+  if( typeof obj === 'object' && obj !== null && obj.id !== undefined ) {
     if( obj.__type !== 'seq' ) { // XXX why?
       return { id:obj.id, prop:obj.prop }
     }else{

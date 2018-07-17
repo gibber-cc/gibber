@@ -11,6 +11,7 @@ const Euclid      = require( './euclid.js' )
 const Hex         = require( './hex.js' )
 const Freesound   = require( './freesound.js' )
 const Gen         = require( './gen.js' )
+const WavePattern = require( './wavePattern.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -40,7 +41,8 @@ const Audio = {
       obj.Hex = Hex( this )
       obj.Freesound = this.Freesound
       obj.Clock = this.Clock
-      Master = this.Master
+      obj.WavePattern = this.WavePattern
+      obj.Master = this.Master
     }else{
       Audio.exportTarget = obj
     } 
@@ -64,6 +66,7 @@ const Audio = {
         Audio.Master = Gibberish.out
         Audio.Ugen = Ugen
         Audio.Gen = Gen( Gibber )
+        Audio.WavePattern = WavePattern( Gibber )
 
         Audio.createUgens()
         

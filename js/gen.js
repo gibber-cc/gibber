@@ -432,6 +432,8 @@ const Gen  = {
         }
         Gibber.Environment.Annotations.waveform.updateWidget( out.widget, v, false )
       }
+
+      out.output.value = v
     }
 
     // optionally map user provided names to p values for better control / sequencing
@@ -466,7 +468,7 @@ const Gen  = {
 
 
     out.id = temp
-    out.__isGen = true
+    out.__isGen = out.__wrapped__.__isGen = true
     return out
   }
 }
