@@ -7650,8 +7650,9 @@ const Marker = {
           node.processsed = true
 
           if( lineMod !== 0 ) line += Marker.offset.vertical
-          Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
-          
+          if( window[ seqArgument.name ].widget === undefined ) {
+            Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
+          }
         }
       })
 

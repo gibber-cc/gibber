@@ -6204,7 +6204,12 @@ const patternWrapper = function( Gibber ) {
       }
 
       // XXX why is this one off from the worlet-side pattern id?
-      if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( this.id, 'update.currentIndex', args[2] )
+      if( Gibberish.mode === 'processor' ) {
+        Gibberish.processor.messages.push( this.id, 'update.currentIndex', args[2] )
+        if( this.isGen === true ) {
+          Gibberish.processor.messages.push( this.id, 'waveformPoint', args[0] )
+        }
+      }
 
       return args
     },
@@ -6246,7 +6251,10 @@ const patternWrapper = function( Gibber ) {
     let isFunction = args.length === 1 && typeof args[0] === 'function'
     let isGen = args[0].__isGen
 
-    if( isGen === true ) { args[0].connect( Gibberish.output, 0 ) }
+    if( isGen === true ) { 
+      args[0].connect( Gibberish.output, 0 ) 
+    }
+
 
     let fnc = function() {
       let len = fnc.getLength(),
@@ -6264,6 +6272,7 @@ const patternWrapper = function( Gibber ) {
         val = args[0]
       } else if( isGen === true ) {
         val = fnc.values[ 0 ].callback.out[0]
+
         args = fnc.runFilters( val, idx )
         val = args[0]
       }else{
@@ -6320,6 +6329,7 @@ const patternWrapper = function( Gibber ) {
       __listeners: [],
       onchange : null,
       isop:true,
+      isGen,
 
       range() {
         let start, end
@@ -6630,6 +6640,12 @@ const patternWrapper = function( Gibber ) {
     
     if( Gibberish.mode === 'worklet' ) {
       fnc.id = Gibberish.utilities.getUID()
+
+      if( isGen === true ) {
+        fnc.waveformPoint = val => {
+          fnc.values[0].widget.values[ fnc.values[0].widget.values.length - 1 ] = { value:val } 
+        }
+      }
     }
     //fnc.filters.pattern = fnc
     // can I resotre this without making the object non-serializable?
@@ -6679,6 +6695,9 @@ const patternWrapper = function( Gibber ) {
     const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters, id:fnc.id }, fnc )  
 
     //if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
+    if( Gibberish.mode === 'worklet' && isGen === true ) {
+            
+    }
 
     return out
   }
