@@ -28,7 +28,10 @@ module.exports = {
     attack:1/256, decay:1/32, 
     waveform:'sine' 
   },
-
+  'bleep': { 
+    attack:1/256, decay:1/32, 
+    waveform:'sine' 
+  },
   'bleep.echo': { 
     waveform:'sine', 
     attack:1/256, decay:1/32, 

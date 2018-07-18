@@ -85,7 +85,9 @@ const patternWrapper = function( Gibber ) {
     let isGen = args[0].__isGen
 
     if( isGen === true ) { 
-      args[0].connect( Gibberish.output, 0 ) 
+      //args[0].connect( Gibberish.output, 0 ) 
+      Gibberish.analyzers.push( args[0] )
+      Gibberish.dirty( Gibberish.analyzers )
     }
 
 

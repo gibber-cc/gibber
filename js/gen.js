@@ -283,7 +283,6 @@ const Gen  = {
       if( count++ < def.properties.length - 1 ) str += ','
     }
 
-    console.log( 'options:', this.options )
     if( this.options !== undefined ) {
       str += ',' + JSON.stringify( this.options )
     }
