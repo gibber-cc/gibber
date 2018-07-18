@@ -291,7 +291,37 @@ const Marker = {
     let marker, pos, newMarker
 
     if( Gibber.shouldDelay === false ) {
+
+      // XXX this works fine for pattern *transformations*, but it doesn't work
+      // when you're completely replacing the contents of the pattern with a new
+      // set of values that has a different length (if the length is the same it's OK).
+      // The array needs to be re-annotated on each update if the length has changed.
+      
+      // const ArrayExpression = function( patternNode, state, seq, patternType, container=null, index=0, isLookup=false ) {
+      // XXX we're not going to have access to all the arguments for the array expression markup function. But really what it
+      // needs is the pattern node, the name (css name, e.g. a_chord_values_0), the start and the end locations. Everything else
+      // can be determiend from these four items. I think we have all of these? We also need access to codemirror, which we can
+      // get via any marker (we'll use the patternClass marker).
+      // We also need the seq the pattern is assigned to, so we can get at the target object. Actually, the target object is 'track'
+      // here, so we can probably just use that.
+
+
+
+
       if( pattern.values.length > 1 ) {
+        /*const cm = track.markup.textMarkers[ patternClassName ].doc
+        const node = pattern.node
+        const start = node.loc.start
+        const end   = node.loc.end
+        const target = track
+
+        const arrayExpressionMarkupArgs = {
+          cm,node,start,end,target,
+          useFakeArgs:true
+        }
+
+        cm.replaceText
+        */
         // array of values
         for( let i = 0; i < pattern.values.length; i++) {
           marker = track.markup.textMarkers[ patternClassName ][ i ]

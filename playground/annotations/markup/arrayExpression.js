@@ -14,11 +14,16 @@ module.exports = function( Marker ) {
     const cssName = patternName 
 
     patternObject.markers = []
+    patternObject.node = patternNode 
 
     if( target.markup === undefined ) Marker.prepareObject( target )
 
-    let count = 0
+    // create marker for entire array...
+    const arrayMarker = cm.markText( start, end, { className:cssName })
+    target.markup.textMarkers[ cssName ] = arrayMarker
 
+    // then create markers for individual elements
+    let count = 0
     for( let element of patternNode.elements ) {
       let cssClassName = patternName + '_' + count,
           elementStart = Object.assign( {}, start ),

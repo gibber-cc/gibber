@@ -151,11 +151,11 @@ span.cm-string {color: rgb(225, 225, 225) !important }
   background: rgba(66,70,73,1)
 }
 .euclid1 {
-  background:#bbb !important;
+  background:#ddd !important;
   color:rgba(46,50,53,1) !important;
 }
 
-.euclid0 { background:rgba(96,100,103,.75) }
+.euclid0 { background:rgba(96,100,103,1) }
 
 .pattern-update-range-outside { color:#888; }
 .pattern-update-range-inside  { 

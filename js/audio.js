@@ -12,6 +12,7 @@ const Hex         = require( './hex.js' )
 const Freesound   = require( './freesound.js' )
 const Gen         = require( './gen.js' )
 const WavePattern = require( './wavePattern.js' )
+const WaveObjects = require( './waveObjects.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -27,7 +28,7 @@ const Audio = {
 
   export( obj ) {
     if( Audio.initialized ){ 
-      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes )
+      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes, this.waveObjects )
       
       Utility.export( obj )
       this.Gen.export( obj )
@@ -66,6 +67,7 @@ const Audio = {
         Audio.Master = Gibberish.out
         Audio.Ugen = Ugen
         Audio.Gen = Gen( Gibber )
+        Audio.Utilities = Utility
         Audio.WavePattern = WavePattern( Gibber )
 
         Audio.createUgens()
@@ -144,6 +146,7 @@ const Audio = {
     this.busses = Busses.create( this )
     this.Ensemble = Ensemble( this )
     this.Seq = require( './seq.js' )( this )
+    this.waveObjects = WaveObjects( this )
     const Pattern = require( './pattern.js' )
     Pattern.transfer( this, Pattern.toString() )
     this.Pattern = Pattern( this )

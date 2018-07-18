@@ -12,12 +12,24 @@ module.exports = {
     glide:2000
   },
 
-  bleep: { 
+  acidBass2: {
+    Q:.78625,
+    filterType:2,
+    filterMult:5.5,
+    cutoff:1.25,
+    saturation:10,
+    attack:1/8192,
+    decay:1/10,
+    octave:-2,
+    glide:100
+  },
+
+  'bleep.dry': { 
     attack:1/256, decay:1/32, 
     waveform:'sine' 
   },
 
-  bleepEcho: { 
+  'bleep.echo': { 
     waveform:'sine', 
     attack:1/256, decay:1/32, 
     gain:.25,
@@ -56,6 +68,7 @@ module.exports = {
       this.chorus = this.fx[0]
     }
   },
+
   chirp: { maxVoices:1, filterType:2, cutoff:.325, decay:1/16 } 
 
 }

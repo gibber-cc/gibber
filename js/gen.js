@@ -1,15 +1,15 @@
 module.exports = function( Gibber ) {
   
 const binops = [ 
-  'min','max','add','sub','mul','div','rdiv','mod','rsub','rmod','absdiff',
+  'min','max','add','sub','mul','div','rdiv','mod',
   'and','or','gt','eq','eqp','gte','gtep','gtp','lt','lte','ltep','ltp','neq',
   'step' 
 ]
 
 const monops = [
-  'abs','acos','acosh','asin','asinh','atan','atan2','atanh','cos','cosh','degrees',
-  'fastcos','fastsin','fasttan','hypot','radians','sin','sinh','tan','tanh', 'floor',
-  'ceil', 'sign', 'trunc', 'fract', 'param'
+  'abs','acos','acosh','asin','asinh','atan','atan2','atanh','cos','cosh',
+  'sin','sinh','tan','tanh', 'floor',
+  'ceil', 'round', 'sign', 'trunc', 'fract', 'param'
 ]
 
 const noops = [
@@ -53,7 +53,7 @@ const Gen  = {
     obj.active = false
     
     for( let key of Gen.functions[ name ].properties ) { 
-      let value = params[ count++ ]
+      let value = params[ count++ ] || 0
       obj[ key ] = v => {
         if( v === undefined ) {
           return value
@@ -71,6 +71,13 @@ const Gen  = {
       obj[ key ].uid = Gen.getUID()
  
       // XXX Gibber.addSequencingToMethod( obj, key )
+    }
+
+    // accomodate non-audio-rate options. during codegen the compiler
+    // will check for the options property; if it exists it will write
+    // the options into the generated code.
+    if( params.length > Gen.functions[ name ].properties.length ) {
+      obj.options = params[ Gen.functions[ name ].properties.length ]
     }
 
     return obj
@@ -159,7 +166,7 @@ const Gen  = {
   },
 
   functions: {
-    phasor: { properties:[ '0' ],  str:'phasor' },
+    phasor: { properties:[ '0','1' ],  str:'phasor' },
     cycle:  { properties:[ '0' ],  str:'cycle' },
     train:  { properties:[ '0','1' ],  str:'train' },
     rate:   { properties:[ '0' ], str:'rate' },
@@ -274,6 +281,11 @@ const Gen  = {
       }
 
       if( count++ < def.properties.length - 1 ) str += ','
+    }
+
+    console.log( 'options:', this.options )
+    if( this.options !== undefined ) {
+      str += ',' + JSON.stringify( this.options )
     }
     
     str += ')'

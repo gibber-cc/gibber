@@ -130,7 +130,7 @@ const Utility = {
     return new Function( fncString )
   },
 
-  btof( beats ) { return beats * ( Gibber.Clock.bpm / 60 ) },
+  btof( beats ) { return 1 / (beats * ( 60 / Gibber.Clock.bpm )) },
 
   random() {
     this.randomFlag = true

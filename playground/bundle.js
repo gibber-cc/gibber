@@ -131,7 +131,7 @@ const Utility = {
     return new Function( fncString )
   },
 
-  btof( beats ) { return beats * ( Gibber.Clock.bpm / 60 ) },
+  btof( beats ) { return 1 / (beats * ( 60 / Gibber.Clock.bpm )) },
 
   random() {
     this.randomFlag = true
@@ -5988,11 +5988,16 @@ module.exports = function( Marker ) {
     const cssName = patternName 
 
     patternObject.markers = []
+    patternObject.node = patternNode 
 
     if( target.markup === undefined ) Marker.prepareObject( target )
 
-    let count = 0
+    // create marker for entire array...
+    const arrayMarker = cm.markText( start, end, { className:cssName })
+    target.markup.textMarkers[ cssName ] = arrayMarker
 
+    // then create markers for individual elements
+    let count = 0
     for( let element of patternNode.elements ) {
       let cssClassName = patternName + '_' + count,
           elementStart = Object.assign( {}, start ),
@@ -7361,8 +7366,8 @@ const Waveform = {
     // XXX why does beats generate a downward ramp?
     if( isFromMax ) value = 1 - value
 
-    if( typeof widget.values[76] !== 'object' ) {
-      widget.values[ 76 ] = value
+    if( typeof widget.values[60] !== 'object' ) {
+      widget.values[ 60 ] = value
       widget.storage.push( value )
     }
 
@@ -7419,7 +7424,8 @@ const Waveform = {
         widget.ctx.moveTo( widget.padding,  widget.height / 2 + 1 )
 
         const range = widget.max - widget.min
-        const wHeight = widget.height * .85 + .45
+        const wHeight = (widget.height * .85 + .45) - 1
+
 
         for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
           const data = widget.values[ i ]
@@ -7427,12 +7433,12 @@ const Waveform = {
           const value = shouldDrawDot ? data.value : data
           const scaledValue = ( value - widget.min ) / range
 
-          const yValue = scaledValue * (wHeight) - .5 
+          const yValue = scaledValue * (wHeight) - 1.5 
           
           if( shouldDrawDot === true ) {
             widget.ctx.fillStyle = COLORS.DOT
-            widget.ctx.fillRect( i + widget.padding -1, wHeight - yValue - 1.5, 3, 3)
-            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue - 1.5 )
+            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+            widget.ctx.fillRect( i + widget.padding - 1, wHeight - yValue - 1.5, 3, 3)
           }else{
             widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
           }
@@ -7772,7 +7778,37 @@ const Marker = {
     let marker, pos, newMarker
 
     if( Gibber.shouldDelay === false ) {
+
+      // XXX this works fine for pattern *transformations*, but it doesn't work
+      // when you're completely replacing the contents of the pattern with a new
+      // set of values that has a different length (if the length is the same it's OK).
+      // The array needs to be re-annotated on each update if the length has changed.
+      
+      // const ArrayExpression = function( patternNode, state, seq, patternType, container=null, index=0, isLookup=false ) {
+      // XXX we're not going to have access to all the arguments for the array expression markup function. But really what it
+      // needs is the pattern node, the name (css name, e.g. a_chord_values_0), the start and the end locations. Everything else
+      // can be determiend from these four items. I think we have all of these? We also need access to codemirror, which we can
+      // get via any marker (we'll use the patternClass marker).
+      // We also need the seq the pattern is assigned to, so we can get at the target object. Actually, the target object is 'track'
+      // here, so we can probably just use that.
+
+
+
+
       if( pattern.values.length > 1 ) {
+        /*const cm = track.markup.textMarkers[ patternClassName ].doc
+        const node = pattern.node
+        const start = node.loc.start
+        const end   = node.loc.end
+        const target = track
+
+        const arrayExpressionMarkupArgs = {
+          cm,node,start,end,target,
+          useFakeArgs:true
+        }
+
+        cm.replaceText
+        */
         // array of values
         for( let i = 0; i < pattern.values.length; i++) {
           marker = track.markup.textMarkers[ patternClassName ][ i ]

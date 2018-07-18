@@ -1,8 +1,11 @@
 module.exports = {
 
-  short : { 
-    attack: audio => audio.Clock.ms(1), 
-    decay: 1/16 
+  'short.dry' : { 
+    attack: audio => audio.Clock.ms(1) / 4, 
+    decay: 1/12,
+    cutoff:.3,
+    filterType:1,
+    filterMult:3
   },
   
   lead : {

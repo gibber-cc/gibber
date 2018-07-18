@@ -154,8 +154,8 @@ const Waveform = {
     // XXX why does beats generate a downward ramp?
     if( isFromMax ) value = 1 - value
 
-    if( typeof widget.values[76] !== 'object' ) {
-      widget.values[ 76 ] = value
+    if( typeof widget.values[60] !== 'object' ) {
+      widget.values[ 60 ] = value
       widget.storage.push( value )
     }
 
@@ -212,7 +212,8 @@ const Waveform = {
         widget.ctx.moveTo( widget.padding,  widget.height / 2 + 1 )
 
         const range = widget.max - widget.min
-        const wHeight = widget.height * .85 + .45
+        const wHeight = (widget.height * .85 + .45) - 1
+
 
         for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
           const data = widget.values[ i ]
@@ -220,12 +221,12 @@ const Waveform = {
           const value = shouldDrawDot ? data.value : data
           const scaledValue = ( value - widget.min ) / range
 
-          const yValue = scaledValue * (wHeight) - .5 
+          const yValue = scaledValue * (wHeight) - 1.5 
           
           if( shouldDrawDot === true ) {
             widget.ctx.fillStyle = COLORS.DOT
-            widget.ctx.fillRect( i + widget.padding -1, wHeight - yValue - 1.5, 3, 3)
-            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue - 1.5 )
+            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+            widget.ctx.fillRect( i + widget.padding - 1, wHeight - yValue - 1.5, 3, 3)
           }else{
             widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
           }
