@@ -3783,13 +3783,17 @@ const Audio = {
       Gibberish.init().then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode
-        Audio.Clock.init()
+        Audio.Gen = Gen( Gibber )
+        Audio.Gen.init()
+        Audio.Gen.export( Audio.Gen.ugens )
+        console.log( Audio.Gen )
         Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
         Audio.Ugen = Ugen
-        Audio.Gen = Gen( Gibber )
         Audio.Utilities = Utility
         Audio.WavePattern = WavePattern( Gibber )
+
+        Audio.Clock.init( Audio.Gen )
 
         Audio.createUgens()
         
@@ -3829,7 +3833,7 @@ const Audio = {
   // XXX stop clock from being cleared.
   clear() { 
     Gibberish.clear() 
-    Audio.Clock.init() //createClock()
+    Audio.Clock.init( Audio.Gen )
     Audio.Seq.clear()
 
     // the idea is that we only clear memory that was filled after
@@ -3837,7 +3841,7 @@ const Audio = {
     // like Clock and Theory from having their memory cleared and
     // from having to re-initialize them.
 
-    // fill memoy with zeros from the end initialization block onwards
+    // fill memory with zeros from the end initialization block onwards
     Gibberish.memory.heap.fill( 0, this.__memoryEnd )
 
     // get locations of all memory blocks
@@ -4056,7 +4060,7 @@ const Clock = {
     }
   },
 
-  init:function() {
+  init:function( Gen ) {
     // needed so that when the clock is re-initialized (for example, after clearing)
     // gibber won't try and serialized its sequencer
     this.seq = null
@@ -4075,6 +4079,7 @@ const Clock = {
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
+      this.audioClock = null
 
       Gibberish.worklet.port.postMessage({
         address:'add',
@@ -4099,12 +4104,29 @@ const Clock = {
         }
       })
 
+      this.audioClock = Gen.make( Gen.ugens.abs(1) )
+
+      //Gibberish.worklet.port.postMessage({
+      //  address:'set',
+      //  value: Gen.make( Gen.ugens.abs(1) ),
+      //  object:this.id,
+      //  name:'audioClock'
+      //})
+
       this.bpm = 140
     }
 
     if( Gibberish.mode === 'processor' )
       this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ ()=>Gibberish.Clock.time( 1/4 ) ] ).start()
 
+  },
+
+  connect: function() {
+    if( this.audioClock !== undefined ) {
+      Gibberish.analyzers.push( this.audioClock )
+      Gibberish.dirty( Gibberish.analyzers )
+      console.log( 'clock connected' )
+    }
   },
 
   // time accepts an input value and converts it into samples. the input value
@@ -7347,7 +7369,7 @@ module.exports = function( Audio ) {
       return args
     })
 
-    const seq = Gibberish.Sequencer({ values, timings, target, key, priority })
+    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate:Audio.audioClock })
 
     seq.clear = function() {
       if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
@@ -18849,7 +18871,7 @@ let Gibberish = {
     } else if( ugen.block === undefined || dirtyIndex !== -1 ) {
 
   
-      let line = `\tvar v_${ugen.id} = ` 
+      let line = `\tconst v_${ugen.id} = ` 
       
       if( !ugen.isop ) line += `${ugen.ugenName}( `
 

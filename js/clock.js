@@ -30,7 +30,7 @@ const Clock = {
     }
   },
 
-  init:function() {
+  init:function( Gen ) {
     // needed so that when the clock is re-initialized (for example, after clearing)
     // gibber won't try and serialized its sequencer
     this.seq = null
@@ -49,6 +49,7 @@ const Clock = {
 
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
+      this.audioClock = null
 
       Gibberish.worklet.port.postMessage({
         address:'add',
@@ -73,12 +74,29 @@ const Clock = {
         }
       })
 
+      this.audioClock = Gen.make( Gen.ugens.abs(1) )
+
+      //Gibberish.worklet.port.postMessage({
+      //  address:'set',
+      //  value: Gen.make( Gen.ugens.abs(1) ),
+      //  object:this.id,
+      //  name:'audioClock'
+      //})
+
       this.bpm = 140
     }
 
     if( Gibberish.mode === 'processor' )
       this.seq = Gibberish.Sequencer.make( [ clockFunc ], [ ()=>Gibberish.Clock.time( 1/4 ) ] ).start()
 
+  },
+
+  connect: function() {
+    if( this.audioClock !== undefined ) {
+      Gibberish.analyzers.push( this.audioClock )
+      Gibberish.dirty( Gibberish.analyzers )
+      console.log( 'clock connected' )
+    }
   },
 
   // time accepts an input value and converts it into samples. the input value

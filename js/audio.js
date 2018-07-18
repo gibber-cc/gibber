@@ -62,13 +62,17 @@ const Audio = {
       Gibberish.init().then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode
-        Audio.Clock.init()
+        Audio.Gen = Gen( Gibber )
+        Audio.Gen.init()
+        Audio.Gen.export( Audio.Gen.ugens )
+        console.log( Audio.Gen )
         Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
         Audio.Ugen = Ugen
-        Audio.Gen = Gen( Gibber )
         Audio.Utilities = Utility
         Audio.WavePattern = WavePattern( Gibber )
+
+        Audio.Clock.init( Audio.Gen )
 
         Audio.createUgens()
         
@@ -108,7 +112,7 @@ const Audio = {
   // XXX stop clock from being cleared.
   clear() { 
     Gibberish.clear() 
-    Audio.Clock.init() //createClock()
+    Audio.Clock.init( Audio.Gen )
     Audio.Seq.clear()
 
     // the idea is that we only clear memory that was filled after
@@ -116,7 +120,7 @@ const Audio = {
     // like Clock and Theory from having their memory cleared and
     // from having to re-initialize them.
 
-    // fill memoy with zeros from the end initialization block onwards
+    // fill memory with zeros from the end initialization block onwards
     Gibberish.memory.heap.fill( 0, this.__memoryEnd )
 
     // get locations of all memory blocks
