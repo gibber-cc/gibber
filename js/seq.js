@@ -9,6 +9,7 @@ module.exports = function( Audio ) {
     const target    = props.target
     const key       = props.key
     const priority  = props.priority
+    const rate      = props.rate || Audio.Clock.audioClock
 
     let values
     if( Array.isArray( __values ) ) {
@@ -56,7 +57,7 @@ module.exports = function( Audio ) {
       return args
     })
 
-    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate:Audio.audioClock })
+    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate })
 
     seq.clear = function() {
       if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()

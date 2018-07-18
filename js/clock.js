@@ -50,6 +50,7 @@ const Clock = {
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
       this.audioClock = null
+      this.__rate = null
 
       Gibberish.worklet.port.postMessage({
         address:'add',
@@ -75,6 +76,15 @@ const Clock = {
       })
 
       this.audioClock = Gen.make( Gen.ugens.abs(1) )
+      this.__rate = this.audioClock.__p0 
+
+      Object.defineProperty( this, 'rate', {
+        configurable:true,
+        get() { return this.__rate },
+        set(v){
+          this.audioClock.p0 = v
+        }
+      })
 
       //Gibberish.worklet.port.postMessage({
       //  address:'set',

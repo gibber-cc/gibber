@@ -52,7 +52,8 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
         values, 
         timings, 
         target:__wrappedObject, 
-        key:propertyName 
+        key:propertyName,
+        rate:Audio.Clock.audioClock
       })
 
       if( timeProps.indexOf( propertyName ) !== -1  ) {
@@ -245,7 +246,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
              removeSeq( obj, prevSeq )
           }
 
-          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
+          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName, rate:Audio.Clock.audioClock })
           
           s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 

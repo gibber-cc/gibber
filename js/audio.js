@@ -65,13 +65,13 @@ const Audio = {
         Audio.Gen = Gen( Gibber )
         Audio.Gen.init()
         Audio.Gen.export( Audio.Gen.ugens )
-        console.log( Audio.Gen )
         Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
         Audio.Ugen = Ugen
         Audio.Utilities = Utility
         Audio.WavePattern = WavePattern( Gibber )
 
+        // must wait for Gen to be initialized
         Audio.Clock.init( Audio.Gen )
 
         Audio.createUgens()

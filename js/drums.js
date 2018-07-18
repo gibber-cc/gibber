@@ -56,7 +56,8 @@ module.exports = function( Audio ) {
           values, 
           timings, 
           target:drums.__wrapped__, 
-          key:'pitch'
+          key:'pitch',
+          rate:Audio.Clock.audioClock
         })
         .start( Audio.Clock.time( delay ) )
 
@@ -119,7 +120,8 @@ module.exports = function( Audio ) {
       target:drums,
       key:'play',
       values:score.split(''),
-      timings:time === undefined ? 1 / score.length : time
+      timings:time === undefined ? 1 / score.length : time,
+      rate:Audio.Clock.audioClock
     }).start()
 
     if( Audio.autoConnect === true ) drums.connect()

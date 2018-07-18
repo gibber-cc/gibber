@@ -3786,13 +3786,13 @@ const Audio = {
         Audio.Gen = Gen( Gibber )
         Audio.Gen.init()
         Audio.Gen.export( Audio.Gen.ugens )
-        console.log( Audio.Gen )
         Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
         Audio.Ugen = Ugen
         Audio.Utilities = Utility
         Audio.WavePattern = WavePattern( Gibber )
 
+        // must wait for Gen to be initialized
         Audio.Clock.init( Audio.Gen )
 
         Audio.createUgens()
@@ -4080,6 +4080,7 @@ const Clock = {
     if( Gibberish.mode === 'worklet' ) {
       this.id = Gibberish.utilities.getUID()
       this.audioClock = null
+      this.__rate = null
 
       Gibberish.worklet.port.postMessage({
         address:'add',
@@ -4105,6 +4106,15 @@ const Clock = {
       })
 
       this.audioClock = Gen.make( Gen.ugens.abs(1) )
+      this.__rate = this.audioClock.__p0 
+
+      Object.defineProperty( this, 'rate', {
+        configurable:true,
+        get() { return this.__rate },
+        set(v){
+          this.audioClock.p0 = v
+        }
+      })
 
       //Gibberish.worklet.port.postMessage({
       //  address:'set',
@@ -4245,7 +4255,8 @@ module.exports = function( Audio ) {
           values, 
           timings, 
           target:drums.__wrapped__, 
-          key:'pitch'
+          key:'pitch',
+          rate:Audio.Clock.audioClock
         })
         .start( Audio.Clock.time( delay ) )
 
@@ -4308,7 +4319,8 @@ module.exports = function( Audio ) {
       target:drums,
       key:'play',
       values:score.split(''),
-      timings:time === undefined ? 1 / score.length : time
+      timings:time === undefined ? 1 / score.length : time,
+      rate:Audio.Clock.audioClock
     }).start()
 
     if( Audio.autoConnect === true ) drums.connect()
@@ -7322,6 +7334,7 @@ module.exports = function( Audio ) {
     const target    = props.target
     const key       = props.key
     const priority  = props.priority
+    const rate      = props.rate || Audio.Clock.audioClock
 
     let values
     if( Array.isArray( __values ) ) {
@@ -7369,7 +7382,7 @@ module.exports = function( Audio ) {
       return args
     })
 
-    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate:Audio.audioClock })
+    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate })
 
     seq.clear = function() {
       if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
@@ -7656,7 +7669,8 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
         values, 
         timings, 
         target:__wrappedObject, 
-        key:propertyName 
+        key:propertyName,
+        rate:Audio.Clock.audioClock
       })
 
       if( timeProps.indexOf( propertyName ) !== -1  ) {
@@ -7849,7 +7863,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
              removeSeq( obj, prevSeq )
           }
 
-          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
+          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName, rate:Audio.Clock.audioClock })
           
           s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
@@ -20837,9 +20851,16 @@ module.exports = function( Gibberish ) {
   const proxy = __proxy( Gibberish )
 
   Object.assign( __proto__, {
-    start() {
-      Gibberish.analyzers.push( this )
-      Gibberish.dirty( Gibberish.analyzers )
+    start( delay=0 ) {
+      if( delay !== 0 ) {
+        Gibberish.scheduler.add( delay, ()=> {
+          Gibberish.analyzers.push( this )
+          Gibberish.dirty( Gibberish.analyzers )
+        })
+      }else{
+        Gibberish.analyzers.push( this )
+        Gibberish.dirty( Gibberish.analyzers )
+      }
       return this
     },
     stop() {
@@ -20917,7 +20938,7 @@ module.exports = function( Gibberish ) {
       }
 
       seq.ugenName = seq.callback.ugenName = 'seq_' + seq.id
-      
+
       // since we're not passing our sequencer through the ugen template, we need
       // to grab a memory address for its rate so it can be sequenced and define
       // a property that manipulates that memory address.
