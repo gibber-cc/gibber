@@ -3750,7 +3750,7 @@ const Audio = {
 
   export( obj ) {
     if( Audio.initialized ){ 
-      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes, this.waveObjects )
+      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes, this.waveObjects, this.binops )
       
       Utility.export( obj )
       this.Gen.export( obj )
@@ -4141,11 +4141,11 @@ const Clock = {
       })
 
       this.audioClock = Gen.make( Gen.ugens.abs(1) )
-      this.__rate = this.audioClock.__p0 
+      //this.__rate = this.audioClock.__p0 
 
       Object.defineProperty( this, 'rate', {
         configurable:true,
-        get() { return this.__rate },
+        get() { return this.audioClock },
         set(v){
           this.audioClock.p0 = v
         }

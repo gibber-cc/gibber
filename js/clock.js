@@ -76,11 +76,11 @@ const Clock = {
       })
 
       this.audioClock = Gen.make( Gen.ugens.abs(1) )
-      this.__rate = this.audioClock.__p0 
+      //this.__rate = this.audioClock.__p0 
 
       Object.defineProperty( this, 'rate', {
         configurable:true,
-        get() { return this.__rate },
+        get() { return this.audioClock },
         set(v){
           this.audioClock.p0 = v
         }

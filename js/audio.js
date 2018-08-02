@@ -29,7 +29,7 @@ const Audio = {
 
   export( obj ) {
     if( Audio.initialized ){ 
-      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes, this.waveObjects )
+      Object.assign( obj, this.instruments, this.oscillators, this.effects, this.busses, this.envelopes, this.waveObjects, this.binops )
       
       Utility.export( obj )
       this.Gen.export( obj )
