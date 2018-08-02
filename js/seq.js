@@ -9,7 +9,7 @@ module.exports = function( Audio ) {
     const target    = props.target
     const key       = props.key
     const priority  = props.priority
-    const rate      = props.rate || Audio.Clock.audioClock
+    let   rate      = props.rate || 1
 
     let values
     if( Array.isArray( __values ) ) {
@@ -57,7 +57,11 @@ module.exports = function( Audio ) {
       return args
     })
 
-    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate })
+    //const offsetRate = Gibberish.binops.Mul(rate, Audio.Clock.audioClock )
+    // XXX we need to add priority to Sequencer2; this priority will determine the order
+    // that sequencers are added to the callback, ensuring that sequencers with higher
+    // priority will fire first.
+    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate:Audio.Clock.audioClock })
 
     seq.clear = function() {
       if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
@@ -66,6 +70,20 @@ module.exports = function( Audio ) {
       Seq.sequencers.splice( idx, 1 )
     }
     Seq.sequencers.push( seq )
+
+    //let r = Audio.Clock.audioClock
+    //Object.defineProperty( seq, 'rate', {
+    //  get() { return r },
+    //  set(v) {
+    //    r = v
+    //    Gibberish.worklet.port.postMessage({
+    //      address:'property',
+    //      object:seq.id,
+    //      name:'rate',
+    //      value:r
+    //    }) 
+    //  }
+    //})
 
     return seq
   }

@@ -6333,6 +6333,7 @@ const __Identifier = function( Marker ) {
         Marker._addPatternFilter( patternObject )
     }
 
+    if( patternObject.update !== undefined ) {
     let currentIndex = 0
     Object.defineProperty( patternObject.update, 'currentIndex', {
       get() { return currentIndex },
@@ -6341,6 +6342,7 @@ const __Identifier = function( Marker ) {
         patternObject.update()
       }
     })
+    }
 
     patternObject.marker = marker
   }
@@ -6458,7 +6460,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   nodePosEnd.line += Marker.offset.vertical - 1
   nodePosEnd.ch = nodePosEnd.column - 1
 
-  track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid0' })
+  track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid' })
 
   let marker
   const mark = function() {
@@ -6470,7 +6472,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
       pos.loc.start.ch += i
       pos.loc.end.ch = pos.loc.start.ch + 1
 
-      marker = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i}` })
+      marker = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i} euclid` })
       track.markup.textMarkers.pattern[ i ] = marker
     }
   }
@@ -6483,7 +6485,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
     if( span !== undefined ) {
       span.remove( 'euclid0' )
-      span.remove( 'euclid1' )
+      //span.remove( 'euclid1' )
     }
 
     let spanName = `.step_${patternObject.id}_${currentIdx}`,
@@ -6492,11 +6494,14 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
     span = $( spanName )
 
     //if( currentValue !== Gibber.Seq.DO_NOT_OUTPUT ) {
-    span.add( 'euclid1' )
-    setTimeout( ()=> { span.remove( 'euclid1' ) }, 50 )
+    span.add( 'euclid0' )
+    //setTimeout( ()=> { 
+    //  span.remove( 'euclid1' ) 
+    //  span.add( 'euclid0' )
+    //}, 50 )
     //}
 
-    span.add( 'euclid0' )
+    //span.add( 'euclid0' )
   }
 
   patternObject._onchange = () => {
@@ -6902,7 +6907,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     for( let i = 0; i < patternObject.values.length; i++ ) {
       track.markup.textMarkers[ className ][ i ] = cm.markText(
         memberAnnotationStart,  memberAnnotationEnd,
-        { 'className': `${className}_${i}` }
+        { 'className': `${className}_${i} euclid` }
       )
 
       memberAnnotationStart.ch += 1
@@ -6936,6 +6941,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 
     // deliberate ==
     if( currentValue == 1 ) {
+      span.add( 'euclid0' )
       span.add( 'euclid1' )
       activeSpans.push( span )
       setTimeout( ()=> { 
@@ -7107,6 +7113,7 @@ module.exports = function( Marker ) {
       // the first finds things like "mysynth.note.seq( 0,0 )" while the second finds
       // calls to constructors that are chained with calls to .seq()
       // (e.g. "synth = Synth().note.seq( 0, 1/4 )"
+
       const endIdx = state.length - 1
       const end = state[ endIdx ]
       let foundSequence = end === 'seq'
@@ -7157,7 +7164,9 @@ module.exports = function( Marker ) {
               seq = obj[ tree[i] ][ seqNumber ]
             }catch(e) {
               console.log( e )
-              debugger
+              //debugger
+              cb( node.callee, state )
+              return
             }
 
             // check and see if the object name has been passed, if not we should be
@@ -7569,6 +7578,7 @@ const Marker = {
 
     parsed.body.forEach( node => {
       state.length = 0
+      state.containsGen = false
 
       try{
         walk.recursive( node, state, Marker.visitors )
@@ -7930,7 +7940,10 @@ window.onload = function() {
     autofocus: true,
     matchBrackets:true,
     indentUnit:2,
-    tabSize:2
+    autoCloseBrackets:true,
+    tabSize:2,
+    //extraKeys:{ 'Ctrl-Space':'autocomplete' },
+    //hintOptions:{ hint:CodeMirror.hint.javascript }
   })
 
   cm.setSize( null, '100%' )

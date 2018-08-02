@@ -53,7 +53,6 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
         timings, 
         target:__wrappedObject, 
         key:propertyName,
-        rate:Audio.Clock.audioClock
       })
 
       if( timeProps.indexOf( propertyName ) !== -1  ) {
@@ -121,7 +120,7 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
 }
 
-const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool = false ) {
+const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool = false, isBinop = false ) {
 
   let   poolCount = poolSize
   const pool = []
@@ -152,10 +151,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     //  return poolUgen
     //}
 
-    const __wrappedObject = gibberishConstructor( properties )
+    let __wrappedObject
+    if( isBinop === true ) {
+      __wrappedObject = gibberishConstructor( ...args ) 
+    }else{
+      __wrappedObject = gibberishConstructor( properties )
+    }
     const obj = { 
-      __wrapped__:__wrappedObject,
-      __sequencers: [], 
+      __wrapped__ :__wrappedObject,
+      __sequencers : [], 
 
       stop() {
         for( let seq of this.__sequencers ) seq.stop()
@@ -246,7 +250,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
              removeSeq( obj, prevSeq )
           }
 
-          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName, rate:Audio.Clock.audioClock })
+          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
           
           s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 

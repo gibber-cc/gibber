@@ -100,6 +100,7 @@ module.exports = function( Marker ) {
       // the first finds things like "mysynth.note.seq( 0,0 )" while the second finds
       // calls to constructors that are chained with calls to .seq()
       // (e.g. "synth = Synth().note.seq( 0, 1/4 )"
+
       const endIdx = state.length - 1
       const end = state[ endIdx ]
       let foundSequence = end === 'seq'
@@ -150,7 +151,9 @@ module.exports = function( Marker ) {
               seq = obj[ tree[i] ][ seqNumber ]
             }catch(e) {
               console.log( e )
-              debugger
+              //debugger
+              cb( node.callee, state )
+              return
             }
 
             // check and see if the object name has been passed, if not we should be

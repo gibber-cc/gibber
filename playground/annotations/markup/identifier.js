@@ -85,6 +85,7 @@ const __Identifier = function( Marker ) {
         Marker._addPatternFilter( patternObject )
     }
 
+    if( patternObject.update !== undefined ) {
     let currentIndex = 0
     Object.defineProperty( patternObject.update, 'currentIndex', {
       get() { return currentIndex },
@@ -93,6 +94,7 @@ const __Identifier = function( Marker ) {
         patternObject.update()
       }
     })
+    }
 
     patternObject.marker = marker
   }

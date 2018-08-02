@@ -151,11 +151,18 @@ span.cm-string {color: rgb(225, 225, 225) !important }
   background: rgba(66,70,73,1)
 }
 .euclid1 {
-  background:#ddd !important;
-  color:rgba(46,50,53,1) !important;
+  /*border-color:#ddd !important; */
+  /*background-color:#666*/
 }
 
-.euclid0 { background:rgba(96,100,103,1) }
+.euclid0 {
+  border-color:#888 !important;
+  /*background:rgba(96,100,103,1) */
+}
+
+.euclid {
+  border:transparent 1px solid
+}
 
 .pattern-update-range-outside { color:#888; }
 .pattern-update-range-inside  { 

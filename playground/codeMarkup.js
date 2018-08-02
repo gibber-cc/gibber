@@ -82,6 +82,7 @@ const Marker = {
 
     parsed.body.forEach( node => {
       state.length = 0
+      state.containsGen = false
 
       try{
         walk.recursive( node, state, Marker.visitors )

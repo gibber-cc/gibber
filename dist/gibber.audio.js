@@ -3724,6 +3724,7 @@ const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
 const Oscillators = require( './oscillators.js' )
 const Effects     = require( './effects.js' )
+const Binops      = require( './binops.js' )
 const Envelopes   = require( './envelopes.js' )
 const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
@@ -3864,6 +3865,7 @@ const Audio = {
 
   createUgens() {
     this.Freesound = Freesound( this )
+    this.binops = Binops.create( this )
     this.oscillators = Oscillators.create( this )
     this.instruments = Instruments.create( this ) 
     this.envelopes   = Envelopes.create( this )
@@ -3996,7 +3998,40 @@ const Audio = {
 
 module.exports = Audio
 
-},{"./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./envelopes.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","./waveObjects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/waveObjects.js","./wavePattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/wavePattern.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js":[function(require,module,exports){
+},{"./binops.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/binops.js","./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./envelopes.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","./waveObjects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/waveObjects.js","./wavePattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/wavePattern.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/binops.js":[function(require,module,exports){
+const Gibberish = require( 'gibberish-dsp' )
+const Ugen      = require( './ugen.js' )
+
+const Binops = {
+  create( Audio ) {
+    const binops = {}
+
+    for( let binopName in Gibberish.binops ) {
+      const gibberishConstructor = Gibberish.binops[ binopName ]
+
+      const methods = Binops.descriptions[ binopName ] === undefined ? null : Binops.descriptions[ binopName ].methods
+      const description = { 
+        properties:gibberishConstructor.defaults || { 0:1, 1:1 }, 
+        methods:methods,
+        name:binopName,
+        category:'binops'
+      }
+      description.properties.type = 'binop'
+
+      binops[ binopName ] = Ugen( gibberishConstructor, description, Audio, false, true )
+    }
+    return binops
+  },
+
+  descriptions: {
+    //Chorus:{ methods:[] },
+  },
+  
+}
+
+module.exports = Binops
+
+},{"./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js":[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -7278,6 +7313,7 @@ module.exports = {
     attack:1/256, decay:1/32, 
     waveform:'sine' 
   },
+
   'bleep.echo': { 
     waveform:'sine', 
     attack:1/256, decay:1/32, 
@@ -7334,7 +7370,7 @@ module.exports = function( Audio ) {
     const target    = props.target
     const key       = props.key
     const priority  = props.priority
-    const rate      = props.rate || Audio.Clock.audioClock
+    let   rate      = props.rate || 1
 
     let values
     if( Array.isArray( __values ) ) {
@@ -7382,7 +7418,11 @@ module.exports = function( Audio ) {
       return args
     })
 
-    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate })
+    //const offsetRate = Gibberish.binops.Mul(rate, Audio.Clock.audioClock )
+    // XXX we need to add priority to Sequencer2; this priority will determine the order
+    // that sequencers are added to the callback, ensuring that sequencers with higher
+    // priority will fire first.
+    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate:Audio.Clock.audioClock })
 
     seq.clear = function() {
       if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
@@ -7391,6 +7431,20 @@ module.exports = function( Audio ) {
       Seq.sequencers.splice( idx, 1 )
     }
     Seq.sequencers.push( seq )
+
+    //let r = Audio.Clock.audioClock
+    //Object.defineProperty( seq, 'rate', {
+    //  get() { return r },
+    //  set(v) {
+    //    r = v
+    //    Gibberish.worklet.port.postMessage({
+    //      address:'property',
+    //      object:seq.id,
+    //      name:'rate',
+    //      value:r
+    //    }) 
+    //  }
+    //})
 
     return seq
   }
@@ -7670,7 +7724,6 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
         timings, 
         target:__wrappedObject, 
         key:propertyName,
-        rate:Audio.Clock.audioClock
       })
 
       if( timeProps.indexOf( propertyName ) !== -1  ) {
@@ -7738,7 +7791,7 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
 }
 
-const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool = false ) {
+const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool = false, isBinop = false ) {
 
   let   poolCount = poolSize
   const pool = []
@@ -7769,10 +7822,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     //  return poolUgen
     //}
 
-    const __wrappedObject = gibberishConstructor( properties )
+    let __wrappedObject
+    if( isBinop === true ) {
+      __wrappedObject = gibberishConstructor( ...args ) 
+    }else{
+      __wrappedObject = gibberishConstructor( properties )
+    }
     const obj = { 
-      __wrapped__:__wrappedObject,
-      __sequencers: [], 
+      __wrapped__ :__wrappedObject,
+      __sequencers : [], 
 
       stop() {
         for( let seq of this.__sequencers ) seq.stop()
@@ -7863,7 +7921,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
              removeSeq( obj, prevSeq )
           }
 
-          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName, rate:Audio.Clock.audioClock })
+          let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })
           
           s.start( Audio.Clock.time( delay ) )
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
@@ -8202,8 +8260,8 @@ module.exports = function( Gibber ) {
        return ugen 
      },
 
-     SineR( period, gain ) {
-       const ugen =  gen( floor( mul( cycle( Gibber.Utilities.btof( period ) ), gain ) ), ['frequency', 'gain'] )
+     SineR( period, gain, bias=0 ) {
+       const ugen =  gen( floor( add( bias, mul( cycle( Gibber.Utilities.btof( period ) ), gain ) ) ), ['bias', 'frequency', 'gain'] )
        ugen.isGen = ugen.__wrapped__.isGen = true
 
        return ugen
@@ -16276,6 +16334,7 @@ let analyzer = Object.create( ugen )
 
 Object.assign( analyzer, {
   __type__: 'analyzer',
+  priority:0
 })
 
 module.exports = analyzer
@@ -18790,6 +18849,15 @@ let Gibberish = {
     
   },
 
+  // used to sort analysis ugens by priority.
+  // higher priorities mean lower ordering in the array,
+  // which means they will run first in the callback function.
+  // by defult, analysis ugens are assigned a priority of 0 in the
+  // analysis prototype.
+  analysisCompare( a,b ) {
+    return b.priority - a.priority
+  },
+
   generateCallback() {
     if( this.mode === 'worklet' ) {
       Gibberish.callback = function() { return 0 }
@@ -18804,6 +18872,7 @@ let Gibberish = {
     lastLine = callbackBody[ callbackBody.length - 1]
     callbackBody.unshift( "\t'use strict'" )
 
+    this.analyzers.sort( this.analysisCompare )
     this.analyzers.forEach( v=> {
       const analysisBlock = Gibberish.processUgen( v )
       //if( Gibberish.mode === 'processor' ) {
@@ -18829,7 +18898,7 @@ let Gibberish = {
     if( this.debug === true ) console.log( 'callback:\n', callbackBody.join('\n') )
     this.callbackNames.push( 'mem' )
     this.callbackUgens.push( this.memory.heap )
-    this.callback = Function( ...this.callbackNames, callbackBody.join( '\n' ) )
+    this.callback = Function( ...this.callbackNames, callbackBody.join( '\n' ) )//.bind( null, ...this.callbackUgens )
     this.callback.out = []
 
     if( this.oncallback ) this.oncallback( this.callback )
@@ -18942,7 +19011,7 @@ let Gibberish = {
               line += input
             }
           } else if( typeof input === 'boolean' ) {
-              line += '' + input
+            line += '' + input
           }else{
             //console.log( 'key:', key, 'input:', ugen.inputs, ugen.inputs[ key ] ) 
             // XXX not sure why this has to be here, but somehow non-processed objects
@@ -18971,7 +19040,19 @@ let Gibberish = {
           }
 
           if( i < keys.length - 1 ) {
-            line += ugen.isop ? ' ' + ugen.op + ' ' : ', ' 
+            if( ugen.isop === true ) {
+              if( ugen.op === '*' || ugen.op === '/' ) {
+                if( input != 1 ) {
+                  line += ' ' + ugen.op + ' '
+                }else{
+                  line = line.slice( 0, -1 * (''+input).length )
+                }
+              }else{
+                line += ' ' + ugen.op + ' '
+              }
+            }else{
+              line += ', '
+            }
           }
         }
       }
@@ -20871,6 +20952,8 @@ module.exports = function( Gibberish ) {
     }
   })
 
+  // XXX we need to implement priority, which will in turn determine the order
+  // that the sequencers are added to the callback function.
   const Seq2 = { 
     create( inputProps ) {
       const seq = Object.create( __proto__ ),
@@ -20951,7 +21034,8 @@ module.exports = function( Gibberish ) {
         get() { return value },
         set( v ) {
           if( value !== v ) {
-            Gibberish.memory.heap[ idx ] = v
+            if( typeof v === 'number' ) Gibberish.memory.heap[ idx ] = v
+
             Gibberish.dirty( Gibberish.analyzers )
             value = v
           }
@@ -20962,7 +21046,7 @@ module.exports = function( Gibberish ) {
     }
   }
 
-  Seq2.defaults = { rate: 1 }
+  Seq2.defaults = { rate: 1, priority:0 }
 
   return Seq2.create
 

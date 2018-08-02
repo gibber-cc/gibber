@@ -20,7 +20,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   nodePosEnd.line += Marker.offset.vertical - 1
   nodePosEnd.ch = nodePosEnd.column - 1
 
-  track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid0' })
+  track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid' })
 
   let marker
   const mark = function() {
@@ -32,7 +32,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
       pos.loc.start.ch += i
       pos.loc.end.ch = pos.loc.start.ch + 1
 
-      marker = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i}` })
+      marker = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i} euclid` })
       track.markup.textMarkers.pattern[ i ] = marker
     }
   }
@@ -45,7 +45,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
     if( span !== undefined ) {
       span.remove( 'euclid0' )
-      span.remove( 'euclid1' )
+      //span.remove( 'euclid1' )
     }
 
     let spanName = `.step_${patternObject.id}_${currentIdx}`,
@@ -54,11 +54,14 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
     span = $( spanName )
 
     //if( currentValue !== Gibber.Seq.DO_NOT_OUTPUT ) {
-    span.add( 'euclid1' )
-    setTimeout( ()=> { span.remove( 'euclid1' ) }, 50 )
+    span.add( 'euclid0' )
+    //setTimeout( ()=> { 
+    //  span.remove( 'euclid1' ) 
+    //  span.add( 'euclid0' )
+    //}, 50 )
     //}
 
-    span.add( 'euclid0' )
+    //span.add( 'euclid0' )
   }
 
   patternObject._onchange = () => {

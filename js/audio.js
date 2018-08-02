@@ -3,6 +3,7 @@ const Ugen        = require( './ugen.js' )
 const Instruments = require( './instruments.js' )
 const Oscillators = require( './oscillators.js' )
 const Effects     = require( './effects.js' )
+const Binops      = require( './binops.js' )
 const Envelopes   = require( './envelopes.js' )
 const Busses      = require( './busses.js' )
 const Ensemble    = require( './ensemble.js' )
@@ -143,6 +144,7 @@ const Audio = {
 
   createUgens() {
     this.Freesound = Freesound( this )
+    this.binops = Binops.create( this )
     this.oscillators = Oscillators.create( this )
     this.instruments = Instruments.create( this ) 
     this.envelopes   = Envelopes.create( this )

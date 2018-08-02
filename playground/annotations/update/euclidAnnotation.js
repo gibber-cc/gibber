@@ -44,7 +44,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     for( let i = 0; i < patternObject.values.length; i++ ) {
       track.markup.textMarkers[ className ][ i ] = cm.markText(
         memberAnnotationStart,  memberAnnotationEnd,
-        { 'className': `${className}_${i}` }
+        { 'className': `${className}_${i} euclid` }
       )
 
       memberAnnotationStart.ch += 1
@@ -78,6 +78,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 
     // deliberate ==
     if( currentValue == 1 ) {
+      span.add( 'euclid0' )
       span.add( 'euclid1' )
       activeSpans.push( span )
       setTimeout( ()=> { 

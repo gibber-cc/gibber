@@ -12,7 +12,10 @@ window.onload = function() {
     autofocus: true,
     matchBrackets:true,
     indentUnit:2,
-    tabSize:2
+    autoCloseBrackets:true,
+    tabSize:2,
+    //extraKeys:{ 'Ctrl-Space':'autocomplete' },
+    //hintOptions:{ hint:CodeMirror.hint.javascript }
   })
 
   cm.setSize( null, '100%' )
