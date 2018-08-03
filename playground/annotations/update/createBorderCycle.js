@@ -11,7 +11,7 @@ module.exports = function( classNamePrefix, patternObject ) {
         border = 'top'
 
     // accommodate arrays
-    if( patternObject.values.length > 1 || patternObject.type === 'Lookup' ) {
+    if( patternObject.values.length > 1 || patternObject.type === 'Lookup' || isArray === true ) {
       className += '_' + patternObject.update.currentIndex
     }
 
@@ -49,7 +49,7 @@ module.exports = function( classNamePrefix, patternObject ) {
 
           break;
         default:
-          $( className ).add( 'annotation-' + border + '-border-cycle' )
+          //$( className ).add( 'annotation-' + border + '-border-cycle' )
           $( className+'_start' ).remove( 'annotation-' + border + '-border-cycle' )
           $( className+'_end' ).remove( 'annotation-' + border + '-border-cycle' )
           break;

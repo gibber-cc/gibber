@@ -165,7 +165,7 @@ module.exports = function( Marker ) {
 
         cycle.clear()
       }else{
-        cycle()
+        cycle( true )
       }
     }
 
@@ -174,7 +174,7 @@ module.exports = function( Marker ) {
       get() { return currentIndex },
       set(v){ 
         currentIndex = v; 
-        patternObject.update()
+        patternObject.update( true )
       }
     })
 

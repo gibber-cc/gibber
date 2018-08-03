@@ -156,7 +156,7 @@ const Utility = {
         arr = Utility.elementArray( elementList )
     
     for( let method of Utility.__classListMethods ) { 
-      arr[ method ] =  style => {
+      arr[ method ] = style => {
         for( let element of arr ) { 
           element.classList[ method ]( style )
         }

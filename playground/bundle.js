@@ -157,7 +157,7 @@ const Utility = {
         arr = Utility.elementArray( elementList )
     
     for( let method of Utility.__classListMethods ) { 
-      arr[ method ] =  style => {
+      arr[ method ] = style => {
         for( let element of arr ) { 
           element.classList[ method ]( style )
         }
@@ -6139,7 +6139,7 @@ module.exports = function( Marker ) {
 
         cycle.clear()
       }else{
-        cycle()
+        cycle( true )
       }
     }
 
@@ -6148,7 +6148,7 @@ module.exports = function( Marker ) {
       get() { return currentIndex },
       set(v){ 
         currentIndex = v; 
-        patternObject.update()
+        patternObject.update( true )
       }
     })
 
@@ -6781,7 +6781,7 @@ module.exports = function( classNamePrefix, patternObject ) {
         border = 'top'
 
     // accommodate arrays
-    if( patternObject.values.length > 1 || patternObject.type === 'Lookup' ) {
+    if( patternObject.values.length > 1 || patternObject.type === 'Lookup' || isArray === true ) {
       className += '_' + patternObject.update.currentIndex
     }
 
@@ -6819,7 +6819,7 @@ module.exports = function( classNamePrefix, patternObject ) {
 
           break;
         default:
-          $( className ).add( 'annotation-' + border + '-border-cycle' )
+          //$( className ).add( 'annotation-' + border + '-border-cycle' )
           $( className+'_start' ).remove( 'annotation-' + border + '-border-cycle' )
           $( className+'_end' ).remove( 'annotation-' + border + '-border-cycle' )
           break;
