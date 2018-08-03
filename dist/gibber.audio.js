@@ -3739,6 +3739,7 @@ const WaveObjects = require( './waveObjects.js' )
 const Audio = {
   Clock: require( './clock.js' ),
   Theory: require( './theory.js' ),
+  Presets: require( './presets.js' ),
 
   initialized:false,
   autoConnect:true,
@@ -3781,7 +3782,8 @@ const Audio = {
     this.createPubSub()
 
     const p = new Promise( (resolve, reject) => {
-      Gibberish.init().then( processorNode => {
+      const ctx = new AudioContext({ latencyHint:.025 })
+      Gibberish.init( {}, ctx ).then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode
         Audio.Gen = Gen( Gibber )
@@ -3998,7 +4000,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{"./binops.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/binops.js","./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./envelopes.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","./waveObjects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/waveObjects.js","./wavePattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/wavePattern.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/binops.js":[function(require,module,exports){
+},{"./binops.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/binops.js","./busses.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/busses.js","./clock.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/clock.js","./drums.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/drums.js","./effects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/effects.js","./ensemble.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ensemble.js","./envelopes.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/envelopes.js","./euclid.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/euclid.js","./freesound.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/freesound.js","./gen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/gen.js","./hex.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/hex.js","./instruments.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/instruments.js","./oscillators.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/oscillators.js","./pattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/pattern.js","./presets.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/presets.js","./seq.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/seq.js","./theory.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/theory.js","./ugen.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/ugen.js","./utility.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/utility.js","./waveObjects.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/waveObjects.js","./wavePattern.js":"/Users/thecharlie/Documents/code/gibber.audio.lib/js/wavePattern.js","gibberish-dsp":"/Users/thecharlie/Documents/code/gibberish/js/index.js"}],"/Users/thecharlie/Documents/code/gibber.audio.lib/js/binops.js":[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -19411,20 +19413,22 @@ module.exports = function( Gibberish ) {
     const props = Object.assign( {}, KPS.defaults, inputProps )
     let syn = Object.create( instrument )
     
-    let sampleRate = Gibberish.mode === 'processor' ? Gibberish.processor.sampleRate : Gibberish.ctx.sampleRate
+    let sampleRate = Gibberish.ctx.sampleRate 
 
     const trigger = g.bang(),
-          phase = g.accum( 1, trigger, { max:Infinity } ),
+          phase = g.accum( 1, trigger, { shouldWrapMax:false } ),
           env = g.gtp( g.sub( 1, g.div( phase, 200 ) ), 0 ),
           impulse = g.mul( g.noise(), env ),
           feedback = g.history(),
           frequency = g.in('frequency'),
           glide = g.in( 'glide' ),
           slidingFrequency = g.slide( frequency, glide, glide ),
-          delay = g.delay( g.add( impulse, feedback.out ), g.div( sampleRate, slidingFrequency ), { size:2048 }),
+          delay = g.delay( g.add( impulse, feedback.out ), g.div( sampleRate, slidingFrequency )),
           decayed = g.mul( delay, g.t60( g.mul( g.in('decay'), slidingFrequency ) ) ),
           damped =  g.mix( decayed, feedback.out, g.in('damping') ),
-          withGain = g.mul( damped, g.mul( g.in('loudness'),g.in('gain')) )
+          n = g.noise(),
+          blendValue = g.switch( g.gt( n, g.in('blend') ), -1, 1 ), 
+          withGain = g.mul( g.mul( blendValue, damped ), g.mul( g.in('loudness'), g.in('gain') ) )
 
     feedback.in( damped )
 
@@ -19454,12 +19458,13 @@ module.exports = function( Gibberish ) {
   KPS.defaults = {
     decay: .97,
     damping:.2,
-    gain: 1,
+    gain: .15,
     frequency:220,
     pan: .5,
     glide:1,
     panVoices:false,
-    loudness:1
+    loudness:1,
+    blend:1
   }
 
   let envCheckFactory = ( syn,synth ) => {

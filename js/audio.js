@@ -18,6 +18,7 @@ const WaveObjects = require( './waveObjects.js' )
 const Audio = {
   Clock: require( './clock.js' ),
   Theory: require( './theory.js' ),
+  Presets: require( './presets.js' ),
 
   initialized:false,
   autoConnect:true,
@@ -60,7 +61,8 @@ const Audio = {
     this.createPubSub()
 
     const p = new Promise( (resolve, reject) => {
-      Gibberish.init().then( processorNode => {
+      const ctx = new AudioContext({ latencyHint:.025 })
+      Gibberish.init( {}, ctx ).then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode
         Audio.Gen = Gen( Gibber )
