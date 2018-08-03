@@ -137,13 +137,41 @@ module.exports = {
     attack: audio=> audio.Clock.ms(1),
     decay:2,
     presetInit: function() {
-      this.fx.add( Gibber.Audio.FX.Delay( Clock.time(1/6), .3) )
+      this.fx.add( Gibber.effects.Delay( Clock.time(1/6), .3) )
     },
     amp:.3,
     octave2:0,
     octave3:0,
-    cutoff:.3,
+    cutoff:1.5,
     glide:.9995,
+    filterType:1,
+    filterMult:4,
+    Q:.5,
+  },
+  chords: {
+    attack: audio=> audio.Clock.ms(1),
+    decay:1/2,
+    presetInit: function() {
+      this.fx.add( Gibber.effects.Delay( Clock.time(1/6), .75) )
+    },
+    amp:.3,
+    octave2:0,
+    octave3:0,
+    cutoff:.5,
+    glide:.9995,
+    filterType:1,
+    filterMult:3,
+    Q:.75,
+  },
+
+  jump: { 
+    decay:1/2048, 
+    useADSR:true, 
+    sustain:1/4, 
+    release:1/1024,  
+    maxVoices:3, 
+    cutoff:35, 
+    filterMult:0 
   },
 
   noise: {
@@ -154,7 +182,7 @@ module.exports = {
     detune3:0,
     detune2:0,
     filterMult:0,
-    presetInit: function() { this.fx.add( Gibber.Audio.FX.Gain(.1), Gibber.Audio.FX.Delay(1/6,.35) ) }
+    presetInit: function() { this.fx.add( Gibber.Audio.FX.Gain(.1), Gibber.Audio.FX.Delay(1/6,.75) ) }
   },
 
 }

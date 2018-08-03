@@ -7241,13 +7241,41 @@ module.exports = {
     attack: audio=> audio.Clock.ms(1),
     decay:2,
     presetInit: function() {
-      this.fx.add( Gibber.Audio.FX.Delay( Clock.time(1/6), .3) )
+      this.fx.add( Gibber.effects.Delay( Clock.time(1/6), .3) )
     },
     amp:.3,
     octave2:0,
     octave3:0,
-    cutoff:.3,
+    cutoff:1.5,
     glide:.9995,
+    filterType:1,
+    filterMult:4,
+    Q:.5,
+  },
+  chords: {
+    attack: audio=> audio.Clock.ms(1),
+    decay:1/2,
+    presetInit: function() {
+      this.fx.add( Gibber.effects.Delay( Clock.time(1/6), .75) )
+    },
+    amp:.3,
+    octave2:0,
+    octave3:0,
+    cutoff:.5,
+    glide:.9995,
+    filterType:1,
+    filterMult:3,
+    Q:.75,
+  },
+
+  jump: { 
+    decay:1/2048, 
+    useADSR:true, 
+    sustain:1/4, 
+    release:1/1024,  
+    maxVoices:3, 
+    cutoff:35, 
+    filterMult:0 
   },
 
   noise: {
@@ -7258,7 +7286,7 @@ module.exports = {
     detune3:0,
     detune2:0,
     filterMult:0,
-    presetInit: function() { this.fx.add( Gibber.Audio.FX.Gain(.1), Gibber.Audio.FX.Delay(1/6,.35) ) }
+    presetInit: function() { this.fx.add( Gibber.Audio.FX.Gain(.1), Gibber.Audio.FX.Delay(1/6,.75) ) }
   },
 
 }
@@ -19545,7 +19573,7 @@ const g = require('genish.js'),
 
 module.exports = function (Gibberish) {
 
-  const Synth = argumentProps => {
+  const Mono = argumentProps => {
     const syn = Object.create(instrument),
           oscs = [],
           frequency = g.in('frequency'),
@@ -19558,7 +19586,7 @@ module.exports = function (Gibberish) {
           release = g.in('release'),
           loudness = g.in('loudness');
 
-    const props = Object.assign({}, Synth.defaults, argumentProps);
+    const props = Object.assign({}, Mono.defaults, argumentProps);
     Object.assign(syn, props);
 
     syn.__createGraph = function () {
@@ -19607,7 +19635,7 @@ module.exports = function (Gibberish) {
     return out;
   };
 
-  Synth.defaults = {
+  Mono.defaults = {
     waveform: 'saw',
     attack: 44,
     decay: 22050,
@@ -19624,7 +19652,6 @@ module.exports = function (Gibberish) {
     detune2: .005,
     detune3: -.005,
     cutoff: 1,
-    resonance: .25,
     Q: .5,
     panVoices: false,
     glide: 1,
@@ -19637,11 +19664,12 @@ module.exports = function (Gibberish) {
     loudness: 1
   };
 
-  let PolyMono = Gibberish.PolyTemplate(Synth, ['frequency', 'attack', 'decay', 'cutoff', 'Q', 'detune2', 'detune3', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'antialias', 'filterType', 'waveform', 'filterMode']);
-  PolyMono.defaults = Synth.defaults;
+  let PolyMono = Gibberish.PolyTemplate(Mono, ['frequency', 'attack', 'decay', 'cutoff', 'Q', 'detune2', 'detune3', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'antialias', 'filterType', 'waveform', 'filterMode']);
+  PolyMono.defaults = Mono.defaults;
 
-  return [Synth, PolyMono];
+  return [Mono, PolyMono];
 };
+
 },{"../oscillators/fmfeedbackosc.js":"/Users/thecharlie/Documents/code/gibberish/js/oscillators/fmfeedbackosc.js","./instrument.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/instrument.js","genish.js":"/Users/thecharlie/Documents/code/genish.js/js/index.js"}],"/Users/thecharlie/Documents/code/gibberish/js/instruments/polyMixin.js":[function(require,module,exports){
 // XXX TOO MANY GLOBAL GIBBERISH VALUES
 
