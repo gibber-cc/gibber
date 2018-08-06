@@ -61,7 +61,7 @@ const Audio = {
     this.createPubSub()
 
     const p = new Promise( (resolve, reject) => {
-      const ctx = new AudioContext({ latencyHint:.025 })
+      const ctx = new AudioContext({ latencyHint:.05 })
       Gibberish.init( {}, ctx ).then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode

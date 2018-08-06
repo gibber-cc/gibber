@@ -56,6 +56,9 @@ const Instruments = {
     Synth:{
       methods:[ 'note','trigger' ],
     },
+    Tom:{
+      methods:[ 'note','trigger' ],
+    },
     PolySynth:{
       methods:[ 'chord','note','trigger' ],
     },

@@ -32,6 +32,23 @@ module.exports = {
     filterType:1,
     filterMode:1
   },
+
+  dirty: { 
+    gain:.225,
+    filterType:2,
+    attack:1/2048, 
+    decay:1/4, 
+    cutoff:1.5, 
+    filterMult:4, 
+    saturation:10000, 
+    Q:.225, 
+    detune2:-.505,
+    detune3:-.5075,
+    octave:-3,
+    waveform:'pwm', 
+    pulsewidth:.15 
+  },
+
   winsome : {
     presetInit : function() { 
       this.lfo = Gibber.oscillators.Sine({ frequency:2, gain:.075 })
@@ -95,8 +112,22 @@ module.exports = {
     cutoff: 1.5,
     filterMult:3,
     Q:.75,
-    detune2:.0275,
-    detune3:-.0275
+    detune2:.0125,
+    detune3:-.0125
+  },
+  bass: { 
+    attack: audio => audio.Clock.ms(1),
+    decay: 1/4,	
+    octave: -3,
+    octave2 : -1,
+    cutoff: 1.5,
+    filterMult:3,
+    Q:.15,
+    glide:1250,
+    waveform:'pwm',
+    pulsewidth:.45,
+    detune2:.005,
+    detune3:-.005
   },
   bass2 : {
     attack: audio => audio.Clock.ms(1), 

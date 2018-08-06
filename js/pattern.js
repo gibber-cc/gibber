@@ -512,8 +512,8 @@ const patternWrapper = function( Gibber ) {
     ]
 
     if( Gibberish.mode === 'worklet' ) {
-      for( let key of methodNames ) { Gibber.addSequencing( fnc, key, 1 ) }
-      Gibber.addSequencing( fnc, 'reset', 2 )
+      for( let key of methodNames ) { Gibber.addSequencing( fnc, key, 2 ) }
+      Gibber.addSequencing( fnc, 'reset', 1 )
     }
     
     fnc.listeners = {}

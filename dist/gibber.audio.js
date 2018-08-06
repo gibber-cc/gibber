@@ -3782,7 +3782,7 @@ const Audio = {
     this.createPubSub()
 
     const p = new Promise( (resolve, reject) => {
-      const ctx = new AudioContext({ latencyHint:.025 })
+      const ctx = new AudioContext({ latencyHint:.05 })
       Gibberish.init( {}, ctx ).then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode
@@ -6197,6 +6197,9 @@ const Instruments = {
     Synth:{
       methods:[ 'note','trigger' ],
     },
+    Tom:{
+      methods:[ 'note','trigger' ],
+    },
     PolySynth:{
       methods:[ 'chord','note','trigger' ],
     },
@@ -6764,8 +6767,8 @@ const patternWrapper = function( Gibber ) {
     ]
 
     if( Gibberish.mode === 'worklet' ) {
-      for( let key of methodNames ) { Gibber.addSequencing( fnc, key, 1 ) }
-      Gibber.addSequencing( fnc, 'reset', 2 )
+      for( let key of methodNames ) { Gibber.addSequencing( fnc, key, 2 ) }
+      Gibber.addSequencing( fnc, 'reset', 1 )
     }
     
     fnc.listeners = {}
@@ -7136,6 +7139,23 @@ module.exports = {
     filterType:1,
     filterMode:1
   },
+
+  dirty: { 
+    gain:.225,
+    filterType:2,
+    attack:1/2048, 
+    decay:1/4, 
+    cutoff:1.5, 
+    filterMult:4, 
+    saturation:10000, 
+    Q:.225, 
+    detune2:-.505,
+    detune3:-.5075,
+    octave:-3,
+    waveform:'pwm', 
+    pulsewidth:.15 
+  },
+
   winsome : {
     presetInit : function() { 
       this.lfo = Gibber.oscillators.Sine({ frequency:2, gain:.075 })
@@ -7199,8 +7219,22 @@ module.exports = {
     cutoff: 1.5,
     filterMult:3,
     Q:.75,
-    detune2:.0275,
-    detune3:-.0275
+    detune2:.0125,
+    detune3:-.0125
+  },
+  bass: { 
+    attack: audio => audio.Clock.ms(1),
+    decay: 1/4,	
+    octave: -3,
+    octave2 : -1,
+    cutoff: 1.5,
+    filterMult:3,
+    Q:.15,
+    glide:1250,
+    waveform:'pwm',
+    pulsewidth:.45,
+    detune2:.005,
+    detune3:-.005
   },
   bass2 : {
     attack: audio => audio.Clock.ms(1), 
@@ -7379,8 +7413,8 @@ module.exports = {
     attack:1/6, decay:1.5, gain:.05,
     filterType:1, Q:.5575, cutoff:2,
     presetInit: function( audio ) {
-      this.fx.add( audio.effects.Chorus('lush') )
-      this.chorus = this.fx[0]
+      //this.fx.add( audio.effects.Chorus('lush') )
+      //this.chorus = this.fx[0]
     }
   },
 
@@ -18908,11 +18942,17 @@ let Gibberish = {
       //if( Gibberish.mode === 'processor' ) {
       //  console.log( 'analysis:', analysisBlock, v  )
       //}
-      const analysisLine = analysisBlock.pop()
+      let analysisLine
 
-      analysisBlock.forEach( v=> {
-        callbackBody.splice( callbackBody.length - 1, 0, v )
-      })
+      if( typeof analysisBlock === 'object' ) {
+        analysisLine = analysisBlock.pop()
+
+        analysisBlock.forEach( v => {
+          callbackBody.splice( callbackBody.length - 1, 0, v )
+        })
+      }else{
+        analysisLine = analysisBlock
+      }
 
       callbackBody.push( analysisLine )
     })
@@ -19182,7 +19222,7 @@ module.exports = function( Gibberish ) {
 
     cowbell.isStereo = false
 
-    cowbell = Gibberish.factory( cowbell, out, ['insturments', 'cowbell'], props  )
+    cowbell = Gibberish.factory( cowbell, out, ['instruments', 'cowbell'], props  )
     
     return cowbell
   }
@@ -19406,7 +19446,8 @@ const instruments = {
   Clave       : require( './conga.js' )( Gibberish ), // clave is same as conga with different defaults, see below
   Hat         : require( './hat.js' )( Gibberish ),
   Snare       : require( './snare.js' )( Gibberish ),
-  Cowbell     : require( './cowbell.js' )( Gibberish )
+  Cowbell     : require( './cowbell.js' )( Gibberish ),
+  Tom         : require( './tom.js' )( Gibberish )
 }
 
 instruments.Clave.defaults.frequency = 2500
@@ -19430,21 +19471,22 @@ return instruments
 
 }
 
-},{"./conga.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/conga.js","./cowbell.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/cowbell.js","./fm.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/fm.js","./hat.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/hat.js","./karplusstrong.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/karplusstrong.js","./kick.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/kick.js","./monosynth.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/monosynth.js","./sampler.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/sampler.js","./snare.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/snare.js","./synth.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/synth.js"}],"/Users/thecharlie/Documents/code/gibberish/js/instruments/karplusstrong.js":[function(require,module,exports){
+},{"./conga.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/conga.js","./cowbell.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/cowbell.js","./fm.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/fm.js","./hat.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/hat.js","./karplusstrong.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/karplusstrong.js","./kick.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/kick.js","./monosynth.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/monosynth.js","./sampler.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/sampler.js","./snare.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/snare.js","./synth.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/synth.js","./tom.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/tom.js"}],"/Users/thecharlie/Documents/code/gibberish/js/instruments/karplusstrong.js":[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
 module.exports = function( Gibberish ) {
 
-  const KPS = inputProps => {
+  const Karplus = inputProps => {
 
-    const props = Object.assign( {}, KPS.defaults, inputProps )
+    const props = Object.assign( {}, Karplus.defaults, inputProps )
     let syn = Object.create( instrument )
     
     let sampleRate = Gibberish.ctx.sampleRate 
 
     const trigger = g.bang(),
-          phase = g.accum( 1, trigger, { shouldWrapMax:false } ),
+          // high initialValue stops triggering on initialization
+          phase = g.accum( 1, trigger, { shouldWrapMax:false, initialValue:1000000 } ),
           env = g.gtp( g.sub( 1, g.div( phase, 200 ) ), 0 ),
           impulse = g.mul( g.noise(), env ),
           feedback = g.history(),
@@ -19460,7 +19502,7 @@ module.exports = function( Gibberish ) {
 
     feedback.in( damped )
 
-    const properties = Object.assign( {}, KPS.defaults, props )
+    const properties = Object.assign( {}, Karplus.defaults, props )
 
     Object.assign( syn, {
       properties : props,
@@ -19483,7 +19525,7 @@ module.exports = function( Gibberish ) {
     return syn
   }
   
-  KPS.defaults = {
+  Karplus.defaults = {
     decay: .97,
     damping:.2,
     gain: .15,
@@ -19511,10 +19553,10 @@ module.exports = function( Gibberish ) {
     return envCheck
   }
 
-  const PolyKPS = Gibberish.PolyTemplate( KPS, ['frequency','decay','damping','pan','gain', 'glide'], envCheckFactory ) 
-  PolyKPS.defaults = KPS.defaults
+  const PolyKarplus = Gibberish.PolyTemplate( Karplus, ['frequency','decay','damping','pan','gain', 'glide'], envCheckFactory ) 
+  PolyKarplus.defaults = Karplus.defaults
 
-  return [ KPS, PolyKPS ]
+  return [ Karplus, PolyKarplus ]
 
 }
 
@@ -19652,6 +19694,7 @@ module.exports = function (Gibberish) {
     detune2: .005,
     detune3: -.005,
     cutoff: 1,
+    resonance: .25,
     Q: .5,
     panVoices: false,
     glide: 1,
@@ -19669,7 +19712,6 @@ module.exports = function (Gibberish) {
 
   return [Mono, PolyMono];
 };
-
 },{"../oscillators/fmfeedbackosc.js":"/Users/thecharlie/Documents/code/gibberish/js/oscillators/fmfeedbackosc.js","./instrument.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/instrument.js","genish.js":"/Users/thecharlie/Documents/code/genish.js/js/index.js"}],"/Users/thecharlie/Documents/code/gibberish/js/instruments/polyMixin.js":[function(require,module,exports){
 // XXX TOO MANY GLOBAL GIBBERISH VALUES
 
@@ -20180,6 +20222,55 @@ module.exports = function (Gibberish) {
 
   return [Synth, PolySynth];
 };
+},{"./instrument.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/instrument.js","genish.js":"/Users/thecharlie/Documents/code/genish.js/js/index.js"}],"/Users/thecharlie/Documents/code/gibberish/js/instruments/tom.js":[function(require,module,exports){
+const g = require( 'genish.js' ),
+      instrument = require( './instrument.js' )
+
+module.exports = function( Gibberish ) {
+
+  const Tom = argumentProps => {
+    let tom = Object.create( instrument )
+    
+    const decay   = g.in( 'decay' ),
+          pitch   = g.in( 'frequency' ),
+          gain    = g.in( 'gain' ),
+          loudness = g.in( 'loudness' )
+
+    const props = Object.assign( {}, Tom.defaults, argumentProps )
+
+    const trigger = g.bang(),
+          impulse = g.mul( trigger, 1 ),
+          eg = g.decay( g.mul( decay, g.gen.samplerate * 2 ), { initValue:0 } ), 
+          bpf = g.mul( g.svf( impulse, pitch, .0175, 2, false ), 10 ),
+          noise = g.gtp( g.noise(), 0 ), // rectify noise
+          envelopedNoise = g.mul( noise, eg ),
+          lpf = g.mul( g.svf( envelopedNoise, 120, .5, 0, false ), 2.5 ),
+          out = g.mul( g.add( bpf, lpf ), g.mul( gain, loudness ) )
+
+    tom.env = {
+      trigger: function() {
+        eg.trigger()
+        trigger.trigger()
+      }
+    }
+
+    tom.isStereo = false
+
+    tom = Gibberish.factory( tom, out, ['instruments', 'tom'], props  )
+    
+    return tom
+  }
+  
+  Tom.defaults = {
+    gain: 1,
+    decay:.7,
+    frequency:120,
+    loudness:1
+  }
+
+  return Tom
+}
+
 },{"./instrument.js":"/Users/thecharlie/Documents/code/gibberish/js/instruments/instrument.js","genish.js":"/Users/thecharlie/Documents/code/genish.js/js/index.js"}],"/Users/thecharlie/Documents/code/gibberish/js/misc/binops.js":[function(require,module,exports){
 const ugenproto = require( '../ugen.js' )()
 const __proxy     = require( '../workletProxy.js' )

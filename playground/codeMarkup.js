@@ -338,9 +338,11 @@ const Marker = {
           marker = track.markup.textMarkers[ patternClassName ][ 0 ]
           pos = marker.find()
 
-          pos.from.ch += 1
-          pos.to.ch -=1
-          marker.doc.replaceRange( pattern.values[0].toString(), pos.from, pos.to )//, { className:marker.className.replace(' ', '.') })
+          if( pos !== undefined ) {
+            pos.from.ch += 1
+            pos.to.ch -=1
+            marker.doc.replaceRange( pattern.values[0].toString(), pos.from, pos.to )//, { className:marker.className.replace(' ', '.') })
+          }
           //const arrayElement = document.querySelector( '.' + patternClassName )
           //arrayElement.innerText = pattern.values[0]
         }else{
