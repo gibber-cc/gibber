@@ -81,19 +81,32 @@ const __Identifier = function( Marker ) {
       // store value changes in array and then pop them every time the annotation is updated
       patternObject.update.value = []
 
-      if( updateName !== 'Lookup' )
-        Marker._addPatternFilter( patternObject )
+      //if( updateName !== 'Lookup' )
+        //Marker._addPatternFilter( patternObject )
     }
 
     if( patternObject.update !== undefined ) {
-    let currentIndex = 0
-    Object.defineProperty( patternObject.update, 'currentIndex', {
-      get() { return currentIndex },
-      set(v){ 
-        currentIndex = v; 
-        patternObject.update()
-      }
-    })
+      let currentIndex = 0
+      Object.defineProperty( patternObject.update, 'currentIndex', {
+        get() { return currentIndex },
+        set(v){ 
+          if( currentIndex !== v ) {
+            currentIndex = v; 
+            patternObject.update()
+          }
+        }
+      })
+
+       let value = 0
+       Object.defineProperty( patternObject.update, 'value', {
+         get() { return value },
+         set(v){ 
+           if( value !== v ) {
+             value = v; 
+             patternObject.update()
+           }
+         }
+       })
     }
 
     patternObject.marker = marker

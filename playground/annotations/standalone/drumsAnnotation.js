@@ -48,8 +48,8 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
       //span.remove( 'euclid1' )
     }
 
-    let spanName = `.step_${patternObject.id}_${currentIdx}`,
-      currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
+    let spanName = `.step_${patternObject.id}_${currentIdx}`
+        //currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
 
     span = $( spanName )
 

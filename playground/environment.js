@@ -321,10 +321,7 @@ CodeMirror.keyMap.playground =  {
   },
   'Ctrl-.'( cm ) {
     Gibber.clear()
-    if( dat !== undefined ) {
-      dat.GUI.__all__.forEach( v => v.destroy() )
-      dat.GUI.__all__.length = 0
-    }
+
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
     //Gibberish.generateCallback()

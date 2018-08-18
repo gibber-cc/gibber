@@ -1,8 +1,10 @@
 module.exports = ( patternObject, marker, className, cm ) => {
   patternObject.commentMarker = marker
   let update = () => {
+
     if( !patternObject.commentMarker ) return
-    let patternValue = '' + patternObject.update.value.pop()
+    let patternValue = '' + patternObject.update.value
+
 
     if( patternValue.length > 8 ) patternValue = patternValue.slice(0,8) 
 

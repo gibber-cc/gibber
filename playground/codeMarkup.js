@@ -187,16 +187,28 @@ const Marker = {
 
     // automatically trigger annotation update whenever a new currentIndex value is received...
     let currentIndex = 0
+    let value = 0
     Object.defineProperty( patternObject.update, 'currentIndex', {
       get() { return currentIndex },
       set(v){ 
-        currentIndex = v; 
-        patternObject.update()
+        if( currentIndex !== v ) {
+          currentIndex = v
+          patternObject.update()
+        }
       }
     })
 
+    Object.defineProperty( patternObject.update, 'value', {
+      get() { return value },
+      set(v){
+        if( value !== v ) {
+          value = v
+          patternObject.update()
+        }
+      }
+    })
     //Marker._addPatternUpdates( patternObject, className )
-    Marker._addPatternFilter( patternObject )
+    //Marker._addPatternFilter( patternObject )
 
     patternObject.patternName = className
     patternObject._onchange = () => { Marker._updatePatternContents( patternObject, className, seqTarget ) }
@@ -211,41 +223,41 @@ const Marker = {
   // other miscellaneous tasks. Here we add a filter that schedules
   // updates for annotations everytime the target pattern outputs
   // a value.
-  _addPatternFilter( patternObject ) {
-    patternObject.filters.push( args => {
-      const wait = Gibber.Utility.beatsToMs( patternObject.nextTime + .5,  Gibber.Scheduler.bpm ),
-            idx = args[ 2 ],
-            shouldUpdate = patternObject.update.shouldUpdate
+  //_addPatternFilter( patternObject ) {
+  //  patternObject.filters.push( args => {
+  //    const wait = Gibber.Utility.beatsToMs( patternObject.nextTime + .5,  Gibber.Scheduler.bpm ),
+  //          idx = args[ 2 ],
+  //          shouldUpdate = patternObject.update.shouldUpdate
 
-      // delay is used to ensure that timings pattern is processed after values pattern,
-      // because changing the mark of the values pattern messes up the mark of the timings
-      // pattern; reversing their order of execution fixes this.  
-      if( patternObject.__delayAnnotations === true ) {
-        Gibber.Environment.animationScheduler.add( () => {
-          if( patternObject.type !== 'Lookup' ) {
-            patternObject.update.currentIndex = idx
-          }else{
-            patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
-          }
+  //    // delay is used to ensure that timings pattern is processed after values pattern,
+  //    // because changing the mark of the values pattern messes up the mark of the timings
+  //    // pattern; reversing their order of execution fixes this.  
+  //    if( patternObject.__delayAnnotations === true ) {
+  //      Gibber.Environment.animationScheduler.add( () => {
+  //        if( patternObject.type !== 'Lookup' ) {
+  //          patternObject.update.currentIndex = idx
+  //        }else{
+  //          patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
+  //        }
 
-          patternObject.update()
-        }, wait + 1 )
-      }else{
-        Gibber.Environment.animationScheduler.add( () => {
-          if( patternObject.type !== 'Lookup' ) {
-            patternObject.update.currentIndex = idx
-          }else{
-            patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
-          }
+  //        patternObject.update()
+  //      }, wait + 1 )
+  //    }else{
+  //      Gibber.Environment.animationScheduler.add( () => {
+  //        if( patternObject.type !== 'Lookup' ) {
+  //          patternObject.update.currentIndex = idx
+  //        }else{
+  //          patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
+  //        }
 
 
-         patternObject.update()
-        }, wait ) 
-      }
+  //       patternObject.update()
+  //      }, wait ) 
+  //    }
 
-      return args
-    }) 
-  },
+  //    return args
+  //  }) 
+  //},
 
   // FunctionExpression and ArrowFunctionExpression are small enough to
   // include here, as they're simply wrappers for Identifier. All other

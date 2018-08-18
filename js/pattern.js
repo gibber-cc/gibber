@@ -134,13 +134,7 @@ const patternWrapper = function( Gibber ) {
       }
       */
 
-      // if pattern has update function, add new value to array
-      // values are popped when updated by animation scheduler
-      //if( fnc.update ) { 
-        // XXX why is this one off from the worklet-side pattern id?
-        //if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id + 1, 'update.currentIndex', val )
-        //fnc.update.value.unshift( val )
-      //}
+      Gibberish.processor.messages.push( fnc.id, 'update.value', val )
       
       if( val === fnc.DNR ) val = null
 

@@ -6389,13 +6389,7 @@ const patternWrapper = function( Gibber ) {
       }
       */
 
-      // if pattern has update function, add new value to array
-      // values are popped when updated by animation scheduler
-      //if( fnc.update ) { 
-        // XXX why is this one off from the worklet-side pattern id?
-        //if( Gibberish.mode === 'processor' ) Gibberish.processor.messages.push( fnc.id + 1, 'update.currentIndex', val )
-        //fnc.update.value.unshift( val )
-      //}
+      Gibberish.processor.messages.push( fnc.id, 'update.value', val )
       
       if( val === fnc.DNR ) val = null
 
@@ -7600,6 +7594,9 @@ const Theory = {
       )
 
       Gibber.createProperty( this, 'mode', 'aeolian', null, 1 )
+
+      Gibber.createProperty( this, 'degree', 'i', null, 1 )
+
     }else{
       Object.defineProperty( this, 'root', {
         get() { return this.__root },
@@ -7621,6 +7618,49 @@ const Theory = {
         get()  { return this.__mode },
         set(v) { this.__mode = v }
       })
+    }
+  },
+
+  __degrees: { major:{}, minor:{} },
+
+  __initDegrees:function() {
+    const base = [ 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii' ]
+
+    const scales = [ { name:'minor', values:Theory.modes.aeolian }, { name:'major', values:Theory.modes.ionian } ]
+
+    for( let scale of scales ) {
+      let name = scale.name
+      let values = scale.values
+
+      for( let i = 0; i < base.length; i++ ) {
+        const chord = base[ i ]
+        this.__degrees[ name ][ chord ] = { mode:'aeolian', offset: values[i] }
+      }
+
+      for( let i = 0; i < base.length; i++ ) {
+        const chord = base[ i ].toUpperCase()
+        this.__degrees[ name ][ chord ] = { mode:'ionian', offset: values[i] }
+      }
+
+      for( let i = 0; i < base.length; i++ ) {
+        const chord = base[ i ] + '7'
+        this.__degrees[ name ][ chord ] = { mode:'dorian', offset: values[i] }
+      }
+
+      for( let i = 0; i < base.length; i++ ) {
+        const chord = base[ i ].toUpperCase() + '7'
+        this.__degrees[ name ][ chord ] = { mode:'mixolydian', offset: values[i] }
+      }
+
+      for( let i = 0; i < base.length; i++ ) {
+        const chord = base[ i ] + 'o'
+        this.__degrees[ name ][ chord ] = { mode:'locrian', offset: values[i] }
+      }
+
+      for( let i = 0; i < base.length; i++ ) {
+        const chord = base[ i ] + 'M7'
+        this.__degrees[ name ][ chord ] = { mode:'melodicminor', offset: values[i] }
+      }
     }
   },
 
@@ -7650,7 +7690,9 @@ const Theory = {
       })
 
       this.initProperties()
+      this.__initDegrees()
 
+      console.log( 'degrees:', this.degrees )
       this.tuning = 'et'
     }
 

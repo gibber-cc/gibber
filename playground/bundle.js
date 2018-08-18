@@ -6329,19 +6329,32 @@ const __Identifier = function( Marker ) {
       // store value changes in array and then pop them every time the annotation is updated
       patternObject.update.value = []
 
-      if( updateName !== 'Lookup' )
-        Marker._addPatternFilter( patternObject )
+      //if( updateName !== 'Lookup' )
+        //Marker._addPatternFilter( patternObject )
     }
 
     if( patternObject.update !== undefined ) {
-    let currentIndex = 0
-    Object.defineProperty( patternObject.update, 'currentIndex', {
-      get() { return currentIndex },
-      set(v){ 
-        currentIndex = v; 
-        patternObject.update()
-      }
-    })
+      let currentIndex = 0
+      Object.defineProperty( patternObject.update, 'currentIndex', {
+        get() { return currentIndex },
+        set(v){ 
+          if( currentIndex !== v ) {
+            currentIndex = v; 
+            patternObject.update()
+          }
+        }
+      })
+
+       let value = 0
+       Object.defineProperty( patternObject.update, 'value', {
+         get() { return value },
+         set(v){ 
+           if( value !== v ) {
+             value = v; 
+             patternObject.update()
+           }
+         }
+       })
     }
 
     patternObject.marker = marker
@@ -6488,8 +6501,8 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
       //span.remove( 'euclid1' )
     }
 
-    let spanName = `.step_${patternObject.id}_${currentIdx}`,
-      currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
+    let spanName = `.step_${patternObject.id}_${currentIdx}`
+        //currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
 
     span = $( spanName )
 
@@ -6733,8 +6746,10 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 module.exports = ( patternObject, marker, className, cm ) => {
   patternObject.commentMarker = marker
   let update = () => {
+
     if( !patternObject.commentMarker ) return
-    let patternValue = '' + patternObject.update.value.pop()
+    let patternValue = '' + patternObject.update.value
+
 
     if( patternValue.length > 8 ) patternValue = patternValue.slice(0,8) 
 
@@ -7683,16 +7698,28 @@ const Marker = {
 
     // automatically trigger annotation update whenever a new currentIndex value is received...
     let currentIndex = 0
+    let value = 0
     Object.defineProperty( patternObject.update, 'currentIndex', {
       get() { return currentIndex },
       set(v){ 
-        currentIndex = v; 
-        patternObject.update()
+        if( currentIndex !== v ) {
+          currentIndex = v
+          patternObject.update()
+        }
       }
     })
 
+    Object.defineProperty( patternObject.update, 'value', {
+      get() { return value },
+      set(v){
+        if( value !== v ) {
+          value = v
+          patternObject.update()
+        }
+      }
+    })
     //Marker._addPatternUpdates( patternObject, className )
-    Marker._addPatternFilter( patternObject )
+    //Marker._addPatternFilter( patternObject )
 
     patternObject.patternName = className
     patternObject._onchange = () => { Marker._updatePatternContents( patternObject, className, seqTarget ) }
@@ -7707,41 +7734,41 @@ const Marker = {
   // other miscellaneous tasks. Here we add a filter that schedules
   // updates for annotations everytime the target pattern outputs
   // a value.
-  _addPatternFilter( patternObject ) {
-    patternObject.filters.push( args => {
-      const wait = Gibber.Utility.beatsToMs( patternObject.nextTime + .5,  Gibber.Scheduler.bpm ),
-            idx = args[ 2 ],
-            shouldUpdate = patternObject.update.shouldUpdate
+  //_addPatternFilter( patternObject ) {
+  //  patternObject.filters.push( args => {
+  //    const wait = Gibber.Utility.beatsToMs( patternObject.nextTime + .5,  Gibber.Scheduler.bpm ),
+  //          idx = args[ 2 ],
+  //          shouldUpdate = patternObject.update.shouldUpdate
 
-      // delay is used to ensure that timings pattern is processed after values pattern,
-      // because changing the mark of the values pattern messes up the mark of the timings
-      // pattern; reversing their order of execution fixes this.  
-      if( patternObject.__delayAnnotations === true ) {
-        Gibber.Environment.animationScheduler.add( () => {
-          if( patternObject.type !== 'Lookup' ) {
-            patternObject.update.currentIndex = idx
-          }else{
-            patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
-          }
+  //    // delay is used to ensure that timings pattern is processed after values pattern,
+  //    // because changing the mark of the values pattern messes up the mark of the timings
+  //    // pattern; reversing their order of execution fixes this.  
+  //    if( patternObject.__delayAnnotations === true ) {
+  //      Gibber.Environment.animationScheduler.add( () => {
+  //        if( patternObject.type !== 'Lookup' ) {
+  //          patternObject.update.currentIndex = idx
+  //        }else{
+  //          patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
+  //        }
 
-          patternObject.update()
-        }, wait + 1 )
-      }else{
-        Gibber.Environment.animationScheduler.add( () => {
-          if( patternObject.type !== 'Lookup' ) {
-            patternObject.update.currentIndex = idx
-          }else{
-            patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
-          }
+  //        patternObject.update()
+  //      }, wait + 1 )
+  //    }else{
+  //      Gibber.Environment.animationScheduler.add( () => {
+  //        if( patternObject.type !== 'Lookup' ) {
+  //          patternObject.update.currentIndex = idx
+  //        }else{
+  //          patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
+  //        }
 
 
-         patternObject.update()
-        }, wait ) 
-      }
+  //       patternObject.update()
+  //      }, wait ) 
+  //    }
 
-      return args
-    }) 
-  },
+  //    return args
+  //  }) 
+  //},
 
   // FunctionExpression and ArrowFunctionExpression are small enough to
   // include here, as they're simply wrappers for Identifier. All other
@@ -8251,10 +8278,7 @@ CodeMirror.keyMap.playground =  {
   },
   'Ctrl-.'( cm ) {
     Gibber.clear()
-    if( dat !== undefined ) {
-      dat.GUI.__all__.forEach( v => v.destroy() )
-      dat.GUI.__all__.length = 0
-    }
+
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
     //Gibberish.generateCallback()
