@@ -15,6 +15,8 @@ module.exports = function( classNamePrefix, patternObject ) {
       className += '_' + patternObject.update.currentIndex
     }
 
+    isArray = false 
+
     switch( modCount++ % 4 ) {
       case 1: border = 'right'; break;
       case 2: border = 'bottom'; break;
