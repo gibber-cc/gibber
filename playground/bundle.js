@@ -1,186 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-const Utility = {
-  rndf( min=0, max=1, number, canRepeat=true ) {
-    let out = 0
-  	if( number === undefined ) {
-  		let diff = max - min,
-  		    r = Math.random(),
-  		    rr = diff * r
-
-  		out =  min + rr;
-  	}else{
-      let output = [],
-  		    tmp = []
-
-  		for( let i = 0; i < number; i++ ) {
-  			let num
-        if( canRepeat ) {
-          num = Utility.rndf(min, max)
-        }else{
-          num = Utility.rndf( min, max )
-          while( tmp.indexOf( num ) > -1) {
-            num = Utility.rndf( min, max )
-          }
-          tmp.push( num )
-        }
-  			output.push( num )
-  		}
-
-  		out = output
-  	}
-
-    return out
-  },
-
-  Rndf( _min = 0, _max = 1, quantity, canRepeat=true ) {
-    // have to code gen function to hard code min / max values inside, as closures
-    // or bound values won't be passed through the worklet port.XXX perhaps there should
-    // be a way to transfer a function and its upvalues through the worklet? OTOH,
-    // codegen works fine.
-
-    const fncString = `const min = ${_min}
-    const max = ${_max} 
-    const range = max - min
-    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
-
-    let out
-
-    if( ${quantity} > 1 ) { 
-      out = []
-      for( let i = 0; i < ${quantity}; i++ ) {
-        let num = min + Math.random() * range
-
-        if( canRepeat === false ) {
-          while( out.indexOf( num ) > -1 ) {
-            num = min + Math.random() * range
-          }
-        }
-        out[ i ] = num
-      }
-    }else{
-      out = min + Math.random() * range 
-    }
-
-    return out;`
-    
-    return new Function( fncString )
-  },
-
-  rndi( min = 0, max = 1, number, canRepeat = true ) {
-    let range = max - min,
-        out
-    
-    if( range < number ) canRepeat = true
-
-    if( typeof number === 'undefined' ) {
-      range = max - min
-      out = Math.round( min + Math.random() * range )
-    }else{
-  		let output = [],
-  		    tmp = []
-
-  		for( let i = 0; i < number; i++ ) {
-  			let num
-  			if( canRepeat ) {
-  				num = Utility.rndi( min, max )
-  			}else{
-  				num = Utility.rndi( min, max )
-  				while( tmp.indexOf( num ) > -1 ) {
-  					num = Utility.rndi( min, max )
-  				}
-  				tmp.push( num )
-  			}
-  			output.push( num )
-  		}
-  		out = output
-    }
-    return out
-  },
-
-  Rndi( _min = 0, _max = 1, quantity=1, canRepeat = false ) {
-    // have to code gen function to hard code min / max values inside, as closures
-    // or bound values won't be passed through the worklet port.XXX perhaps there should
-    // be a way to transfer a function and its upvalues through the worklet? OTOH,
-    // codegen works fine.
-
-    const fncString = `const min = ${_min}
-    const max = ${_max} 
-    const range = max - min
-    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
-
-    let out
-
-    if( ${quantity} > 1 ) { 
-      out = []
-      for( let i = 0; i < ${quantity}; i++ ) {
-        let num = min + Math.round( Math.random() * range );
-
-        if( canRepeat === false ) {
-          while( out.indexOf( num ) > -1 ) {
-            num = min + Math.round( Math.random() * range );
-          }
-        }
-        out[ i ] = num
-      }
-    }else{
-      out = min + Math.round( Math.random() * range ); 
-    }
-
-    return out;`
-    
-    return new Function( fncString )
-  },
-
-  btof( beats ) { return 1 / (beats * ( 60 / Gibber.Clock.bpm )) },
-
-  random() {
-    this.randomFlag = true
-    this.randomArgs = Array.prototype.slice.call( arguments, 0 )
-
-    return this
-  },
-
-  elementArray: function( list ) {
-    let out = []
-
-    for( var i = 0; i < list.length; i++ ) {
-      out.push( list.item( i ) )
-    }
-
-    return out
-  },
-  
-  __classListMethods: [ 'toggle', 'add', 'remove' ],
-
-  create( query ) {
-    let elementList = document.querySelectorAll( query ),
-        arr = Utility.elementArray( elementList )
-    
-    for( let method of Utility.__classListMethods ) { 
-      arr[ method ] = style => {
-        for( let element of arr ) { 
-          element.classList[ method ]( style )
-        }
-      } 
-    }
-
-    return arr
-  },
-
-  export( obj ) {
-    obj.rndi = this.rndi
-    obj.rndf = this.rndf
-    obj.Rndi = this.Rndi
-    obj.Rndf = this.Rndf
-    obj.btof = this.btof
-
-    Array.prototype.rnd = this.random
-  }
-}
-
-module.exports = Utility
-
-},{}],2:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -5526,7 +5344,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -5971,8 +5789,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],4:[function(require,module,exports){
-const Utility = require( '../../../js/utility.js' )
+},{}],3:[function(require,module,exports){
+const Utility = require( './utility.js' )
 const $ = Utility.create
 
 module.exports = function( Marker ) {
@@ -6172,7 +5990,7 @@ module.exports = function( Marker ) {
 }
 
 
-},{"../../../js/utility.js":1}],5:[function(require,module,exports){
+},{"./utility.js":9}],4:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -6220,7 +6038,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -6245,7 +6063,7 @@ module.exports = function( Marker ) {
   return CallExpression
 }
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 const __Identifier = function( Marker ) {
 
   const mark = function( node, state, patternType, seqNumber ) {
@@ -6345,16 +6163,16 @@ const __Identifier = function( Marker ) {
         }
       })
 
-       let value = 0
-       Object.defineProperty( patternObject.update, 'value', {
-         get() { return value },
-         set(v){ 
-           if( value !== v ) {
-             value = v; 
-             patternObject.update()
-           }
-         }
-       })
+       //let value = 0
+       //Object.defineProperty( patternObject.update, 'value', {
+       //  get() { return value },
+       //  set(v){ 
+       //    if( value !== v ) {
+       //      value = v; 
+       //      patternObject.update()
+       //    }
+       //  }
+       //})
     }
 
     patternObject.marker = marker
@@ -6366,7 +6184,7 @@ const __Identifier = function( Marker ) {
 
 module.exports = __Identifier
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function( Marker ) {
   // Marker.patternMarkupFunctions[ valuesNode.type ]( valuesNode, state, seq, 'values', container, seqNumber )
 
@@ -6402,7 +6220,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = function( Marker ) {
   
   // for negative literals e.g. -10
@@ -6450,8 +6268,190 @@ module.exports = function( Marker ) {
 
 }
 
+},{}],9:[function(require,module,exports){
+const Utility = {
+  rndf( min=0, max=1, number, canRepeat=true ) {
+    let out = 0
+  	if( number === undefined ) {
+  		let diff = max - min,
+  		    r = Math.random(),
+  		    rr = diff * r
+
+  		out =  min + rr;
+  	}else{
+      let output = [],
+  		    tmp = []
+
+  		for( let i = 0; i < number; i++ ) {
+  			let num
+        if( canRepeat ) {
+          num = Utility.rndf(min, max)
+        }else{
+          num = Utility.rndf( min, max )
+          while( tmp.indexOf( num ) > -1) {
+            num = Utility.rndf( min, max )
+          }
+          tmp.push( num )
+        }
+  			output.push( num )
+  		}
+
+  		out = output
+  	}
+
+    return out
+  },
+
+  Rndf( _min = 0, _max = 1, quantity, canRepeat=true ) {
+    // have to code gen function to hard code min / max values inside, as closures
+    // or bound values won't be passed through the worklet port.XXX perhaps there should
+    // be a way to transfer a function and its upvalues through the worklet? OTOH,
+    // codegen works fine.
+
+    const fncString = `const min = ${_min}
+    const max = ${_max} 
+    const range = max - min
+    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
+
+    let out
+
+    if( ${quantity} > 1 ) { 
+      out = []
+      for( let i = 0; i < ${quantity}; i++ ) {
+        let num = min + Math.random() * range
+
+        if( canRepeat === false ) {
+          while( out.indexOf( num ) > -1 ) {
+            num = min + Math.random() * range
+          }
+        }
+        out[ i ] = num
+      }
+    }else{
+      out = min + Math.random() * range 
+    }
+
+    return out;`
+    
+    return new Function( fncString )
+  },
+
+  rndi( min = 0, max = 1, number, canRepeat = true ) {
+    let range = max - min,
+        out
+    
+    if( range < number ) canRepeat = true
+
+    if( typeof number === 'undefined' ) {
+      range = max - min
+      out = Math.round( min + Math.random() * range )
+    }else{
+  		let output = [],
+  		    tmp = []
+
+  		for( let i = 0; i < number; i++ ) {
+  			let num
+  			if( canRepeat ) {
+  				num = Utility.rndi( min, max )
+  			}else{
+  				num = Utility.rndi( min, max )
+  				while( tmp.indexOf( num ) > -1 ) {
+  					num = Utility.rndi( min, max )
+  				}
+  				tmp.push( num )
+  			}
+  			output.push( num )
+  		}
+  		out = output
+    }
+    return out
+  },
+
+  Rndi( _min = 0, _max = 1, quantity=1, canRepeat = false ) {
+    // have to code gen function to hard code min / max values inside, as closures
+    // or bound values won't be passed through the worklet port.XXX perhaps there should
+    // be a way to transfer a function and its upvalues through the worklet? OTOH,
+    // codegen works fine.
+
+    const fncString = `const min = ${_min}
+    const max = ${_max} 
+    const range = max - min
+    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
+
+    let out
+
+    if( ${quantity} > 1 ) { 
+      out = []
+      for( let i = 0; i < ${quantity}; i++ ) {
+        let num = min + Math.round( Math.random() * range );
+
+        if( canRepeat === false ) {
+          while( out.indexOf( num ) > -1 ) {
+            num = min + Math.round( Math.random() * range );
+          }
+        }
+        out[ i ] = num
+      }
+    }else{
+      out = min + Math.round( Math.random() * range ); 
+    }
+
+    return out;`
+    
+    return new Function( fncString )
+  },
+
+  btof( beats ) { return 1 / (beats * ( 60 / Gibber.Clock.bpm )) },
+
+  random() {
+    this.randomFlag = true
+    this.randomArgs = Array.prototype.slice.call( arguments, 0 )
+
+    return this
+  },
+
+  elementArray: function( list ) {
+    let out = []
+
+    for( var i = 0; i < list.length; i++ ) {
+      out.push( list.item( i ) )
+    }
+
+    return out
+  },
+  
+  __classListMethods: [ 'toggle', 'add', 'remove' ],
+
+  create( query ) {
+    let elementList = document.querySelectorAll( query ),
+        arr = Utility.elementArray( elementList )
+    
+    for( let method of Utility.__classListMethods ) { 
+      arr[ method ] = style => {
+        for( let element of arr ) { 
+          element.classList[ method ]( style )
+        }
+      } 
+    }
+
+    return arr
+  },
+
+  export( obj ) {
+    obj.rndi = this.rndi
+    obj.rndf = this.rndf
+    obj.Rndi = this.Rndi
+    obj.Rndf = this.Rndf
+    obj.btof = this.btof
+
+    Array.prototype.rnd = this.random
+  }
+}
+
+module.exports = Utility
+
 },{}],10:[function(require,module,exports){
-const Utility = require( '../../../js/utility.js' )
+const Utility = require( './utility.js' )
 const $ = Utility.create
 
 module.exports = function( node, cm, track, objectName, state, cb ) {
@@ -6502,7 +6502,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
     }
 
     let spanName = `.step_${patternObject.id}_${currentIdx}`
-        //currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
+      //currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
 
     span = $( spanName )
 
@@ -6544,9 +6544,9 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"../../../js/utility.js":1}],11:[function(require,module,exports){
+},{"./utility.js":14}],11:[function(require,module,exports){
 
-const Utility = require( '../../../js/utility.js' )
+const Utility = require( './utility.js' )
 const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
 
@@ -6625,9 +6625,9 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"../../../js/utility.js":1,"../update/euclidAnnotation.js":16}],12:[function(require,module,exports){
+},{"../update/euclidAnnotation.js":17,"./utility.js":14}],12:[function(require,module,exports){
 
-const Utility = require( '../../../js/utility.js' )
+const Utility = require( './utility.js' )
 const $ = Utility.create
 
 module.exports = function( node, cm, track, objectName, vOffset=0 ) {
@@ -6660,8 +6660,8 @@ module.exports = function( node, cm, track, objectName, vOffset=0 ) {
   }
 }
 
-},{"../../../js/utility.js":1}],13:[function(require,module,exports){
-const Utility = require( '../../../js/utility.js' )
+},{"./utility.js":14}],13:[function(require,module,exports){
+const Utility = require( './utility.js' )
 const $ = Utility.create
 
 module.exports = function( node, cm, track, objectName, state, cb ) {
@@ -6742,7 +6742,9 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"../../../js/utility.js":1}],14:[function(require,module,exports){
+},{"./utility.js":14}],14:[function(require,module,exports){
+arguments[4][9][0].apply(exports,arguments)
+},{"dup":9}],15:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm ) => {
   patternObject.commentMarker = marker
   let update = () => {
@@ -6782,8 +6784,8 @@ module.exports = ( patternObject, marker, className, cm ) => {
 }
 
 
-},{}],15:[function(require,module,exports){
-const Utility = require( '../../../js/utility.js' )
+},{}],16:[function(require,module,exports){
+const Utility = require( './utility.js' )
 const $ = Utility.create
 
 module.exports = function( classNamePrefix, patternObject ) {
@@ -6799,8 +6801,6 @@ module.exports = function( classNamePrefix, patternObject ) {
     if( patternObject.values.length > 1 || patternObject.type === 'Lookup' || isArray === true ) {
       className += '_' + patternObject.update.currentIndex
     }
-
-    isArray = false 
 
     switch( modCount++ % 4 ) {
       case 1: border = 'right'; break;
@@ -6877,8 +6877,8 @@ module.exports = function( classNamePrefix, patternObject ) {
 }
 
 
-},{"../../../js/utility.js":1}],16:[function(require,module,exports){
-const Utility = require( '../../../js/utility.js' )
+},{"./utility.js":19}],17:[function(require,module,exports){
+const Utility = require( './utility.js' )
 const $ = Utility.create
 
 module.exports = ( patternObject, marker, className, cm, track, patternNode, Marker ) => {
@@ -7009,7 +7009,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 }
 
 
-},{"../../../js/utility.js":1}],17:[function(require,module,exports){
+},{"./utility.js":19}],18:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm, track, patternNode, patternType, seqNumber ) => {
   Gibber.Environment.codeMarkup.processGen( patternNode, cm, null, patternObject, null, -1 )
 
@@ -7027,7 +7027,9 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, pat
 }
 
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
+arguments[4][9][0].apply(exports,arguments)
+},{"dup":9}],20:[function(require,module,exports){
 module.exports = function( Marker ) {
 
   const strip = function( unstripped ) {
@@ -7235,7 +7237,7 @@ module.exports = function( Marker ) {
   return visitors
 }
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 const COLORS = {
   FILL:'rgba(46,50,53,1)',
   STROKE:'#aaa',
@@ -7510,7 +7512,8 @@ module.exports = function( __Gibber ) {
   return Waveform
 }
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
+
 const acorn = require( 'acorn' )
 const walk  = require( 'acorn/dist/walk' )
 //const Utility = require( '../js/utility.js' )
@@ -7704,11 +7707,22 @@ const Marker = {
     Object.defineProperty( patternObject.update, 'currentIndex', {
       get() { return currentIndex },
       set(v){ 
+        //if( currentIndex !== v ) {
           currentIndex = v
           patternObject.update()
+        //}
       }
     })
 
+    //Object.defineProperty( patternObject.update, 'value', {
+    //  get() { return value },
+    //  set(v){
+    //    //if( value !== v ) {
+    //      value = v
+    //      patternObject.update()
+    //    //}
+    //  }
+    //})
     //Marker._addPatternUpdates( patternObject, className )
     //Marker._addPatternFilter( patternObject )
 
@@ -7945,7 +7959,9 @@ return Marker
 
 }
 
-},{"./annotations/markup/arrayExpression.js":4,"./annotations/markup/binaryExpression.js":5,"./annotations/markup/callExpression.js":6,"./annotations/markup/identifier.js":7,"./annotations/markup/literal.js":8,"./annotations/markup/unaryExpression.js":9,"./annotations/standalone/drumsAnnotation.js":10,"./annotations/standalone/hexStepsAnnotations.js":11,"./annotations/standalone/scoreAnnotation.js":12,"./annotations/standalone/stepsAnnotation.js":13,"./annotations/update/anonymousAnnotation.js":14,"./annotations/update/createBorderCycle.js":15,"./annotations/update/euclidAnnotation.js":16,"./annotations/update/lookupAnnotation.js":17,"./annotations/visitors.js":18,"./annotations/waveform.js":19,"acorn":2,"acorn/dist/walk":3}],21:[function(require,module,exports){
+
+
+},{"./annotations/markup/arrayExpression.js":3,"./annotations/markup/binaryExpression.js":4,"./annotations/markup/callExpression.js":5,"./annotations/markup/identifier.js":6,"./annotations/markup/literal.js":7,"./annotations/markup/unaryExpression.js":8,"./annotations/standalone/drumsAnnotation.js":10,"./annotations/standalone/hexStepsAnnotations.js":11,"./annotations/standalone/scoreAnnotation.js":12,"./annotations/standalone/stepsAnnotation.js":13,"./annotations/update/anonymousAnnotation.js":15,"./annotations/update/createBorderCycle.js":16,"./annotations/update/euclidAnnotation.js":17,"./annotations/update/lookupAnnotation.js":18,"./annotations/visitors.js":20,"./annotations/waveform.js":21,"acorn":1,"acorn/dist/walk":2}],23:[function(require,module,exports){
 const codeMarkup = require( './codeMarkup.js' )
 
 let cm, cmconsole, exampleCode, 
@@ -8347,4 +8363,4 @@ var flash = function(cm, pos) {
   window.setTimeout(cb, 250);
 }
 
-},{"./codeMarkup.js":20}]},{},[21]);
+},{"./codeMarkup.js":22}]},{},[23]);

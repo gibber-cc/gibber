@@ -97,16 +97,16 @@ const __Identifier = function( Marker ) {
         }
       })
 
-       let value = 0
-       Object.defineProperty( patternObject.update, 'value', {
-         get() { return value },
-         set(v){ 
-           if( value !== v ) {
-             value = v; 
-             patternObject.update()
-           }
-         }
-       })
+       //let value = 0
+       //Object.defineProperty( patternObject.update, 'value', {
+       //  get() { return value },
+       //  set(v){ 
+       //    if( value !== v ) {
+       //      value = v; 
+       //      patternObject.update()
+       //    }
+       //  }
+       //})
     }
 
     patternObject.marker = marker

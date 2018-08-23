@@ -1,3 +1,4 @@
+
 const acorn = require( 'acorn' )
 const walk  = require( 'acorn/dist/walk' )
 //const Utility = require( '../js/utility.js' )
@@ -191,11 +192,22 @@ const Marker = {
     Object.defineProperty( patternObject.update, 'currentIndex', {
       get() { return currentIndex },
       set(v){ 
+        //if( currentIndex !== v ) {
           currentIndex = v
           patternObject.update()
+        //}
       }
     })
 
+    //Object.defineProperty( patternObject.update, 'value', {
+    //  get() { return value },
+    //  set(v){
+    //    //if( value !== v ) {
+    //      value = v
+    //      patternObject.update()
+    //    //}
+    //  }
+    //})
     //Marker._addPatternUpdates( patternObject, className )
     //Marker._addPatternFilter( patternObject )
 
@@ -431,3 +443,5 @@ const Marker = {
 return Marker
 
 }
+
+

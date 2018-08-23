@@ -8,10 +8,10 @@ module.exports = function( Audio ) {
 
     const temp = Audio.autoConnect
     Audio.autoConnect = false
-    const k  = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/kick.wav' })
-    const s  = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/snare.wav' })
-    const ch = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/hat.wav' })
-    const oh = Audio.instruments.Sampler({ filename:'http://127.0.0.1:10000/resources/openHat.wav' })
+    const k  = Audio.instruments.Sampler({ filename:'./resources/audiofiles/kick.wav' })
+    const s  = Audio.instruments.Sampler({ filename:'./resources/audiofiles/snare.wav' })
+    const ch = Audio.instruments.Sampler({ filename:'./resources/audiofiles/hat.wav' })
+    const oh = Audio.instruments.Sampler({ filename:'./resources/audiofiles/openHat.wav' })
     Audio.autoConnect = temp
 
     const drums = Audio.Ensemble({

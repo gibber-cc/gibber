@@ -149,7 +149,7 @@ span.cm-variable-2,
 .cm-s-default { color: rgba(173,173,173,1) !important }
 
 span.cm-keyword,
-span.cm-number, span.cm-atom, .cm-s-default .cm-number { color:rgba(89, 151, 198, 1) }
+span.cm-number, .cm-s-default .cm-atom, .cm-s-default .cm-number { color:rgba(89, 151, 198, 1) }
 
 span.cm-string {color: rgb(225, 225, 225) !important }
 
