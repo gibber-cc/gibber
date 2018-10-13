@@ -25,6 +25,7 @@ const Marker = {
         this.patternMarkupFunctions[ key.slice(2) ] = this.patternMarkupFunctions[ key ]( this )
       }
     }
+
     this.visitors = this.__visitors( this )
 
     Gibber.subscribe( 'clear', this.clear )
@@ -64,6 +65,7 @@ const Marker = {
   },
   
 
+  // STARTING POINT FOR PARSING / MARKUP
   process( code, position, codemirror, track ) {
     // store position offset from top of code editor
     // to use when marking patterns, since acorn will produce
@@ -179,6 +181,60 @@ const Marker = {
 
     }
     
+  },
+
+  processFade( state, node ) { 
+    let ch = node.loc.end.column, 
+        line = Marker.offset.vertical + node.loc.start.line - 1, 
+        closeParenStart = ch - 2, 
+        end = node.end
+
+    // check to see if a given object is a proxy that already has
+    // a widget created; if so, don't make another one!
+    console.log( ch, line, closeParenStart, end, node )
+    console.log( 'fade and call:', state )
+    const seqExpression = node
+
+    const gen = window[ state[0] ][ state[ 1 ] ].value
+    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, false, node, state.cm, gen, null, false, state )
+    //seqExpression.arguments.forEach( function( seqArgument ) {
+    //  if( seqArgument.type === 'CallExpression' ) {
+    //    const idx = Gibber.Gen.names.indexOf( seqArgument.callee.name )
+        
+    //    // not a gen, markup will happen elsewhere
+    //    if( idx === -1 ) return
+
+        
+    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
+    //    // XXX why don't I need the Marker offset here?
+    //    line = seqArgument.loc.end.line + lineMod
+
+    //    // for some reason arguments to .seq() include the offset,
+    //    // so we only want to add the offset in if we this is a gen~
+    //    // assignment via function call. lineMod will !== 0 if this
+    //    // is the case.
+    //    if( lineMod !== 0 ) line += Marker.offset.vertical
+
+    //    closeParenStart = ch - 1
+    //    isAssignment = false
+    //    node.processed = true
+    //    //debugger
+    //    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0, state )
+    //  } else if( seqArgument.type === 'ArrayExpression' ) {
+    //    //console.log( 'WavePattern array' )
+    //  }else if( seqArgument.type === 'Identifier' ) {
+    //    // handles 'Identifier' when pre-declared variables are passed to methods
+    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
+    //    line = seqArgument.loc.end.line + lineMod
+    //    isAssignment = false
+    //    node.processsed = true
+
+    //    if( lineMod !== 0 ) line += Marker.offset.vertical
+    //    if( window[ seqArgument.name ].widget === undefined ) {
+    //      Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
+    //    }
+    //  }
+    //})
   },
 
   _createBorderCycleFunction: require( './annotations/update/createBorderCycle.js' ),
@@ -341,7 +397,8 @@ const Marker = {
           marker = track.markup.textMarkers[ patternClassName ][ i ]
 
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
-          itemClass.innerText = pattern.values[ i ]
+          if( itemClass !== null )
+            itemClass.innerText = pattern.values[ i ]
         }
       }else{
         if( Array.isArray( pattern.values[0] ) ) {
@@ -363,7 +420,8 @@ const Marker = {
           marker = track.markup.textMarkers[ patternClassName ]
 
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
-          itemClass.innerText = pattern.values[ 0 ]
+          if( itemClass !== null )
+            itemClass.innerText = pattern.values[ 0 ]
 
           //marker.doc.replaceRange( '' + pattern.values[ 0 ], pos.from, pos.to )
           // newMarker = marker.doc.markText( pos.from, pos.to, { className: patternClassName + ' annotation-border' } )

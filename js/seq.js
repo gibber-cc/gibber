@@ -57,33 +57,33 @@ module.exports = function( Audio ) {
       return args
     })
 
+    const clear = function() {
+      this.stop()
+
+      if( this.values !== undefined && this.values.clear !== undefined ) this.values.clear()
+      if( this.timings !== undefined && this.timings.clear !== undefined ) this.timings.clear()
+
+      if( Gibberish.mode === 'worklet' ) {
+        let idx = Seq.sequencers.indexOf( this )
+        Seq.sequencers.splice( idx, 1 )
+      }
+    }
     //const offsetRate = Gibberish.binops.Mul(rate, Audio.Clock.audioClock )
     // XXX we need to add priority to Sequencer2; this priority will determine the order
     // that sequencers are added to the callback, ensuring that sequencers with higher
     // priority will fire first.
-    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate:Audio.Clock.audioClock })
+    const seq = Gibberish.Sequencer2({ values, timings, target, key, priority, rate:Audio.Clock.audioClock, clear })
 
-    seq.clear = function() {
-      if( seq.values !== undefined && seq.values.clear !== undefined ) seq.values.clear()
-      if( seq.timings !== undefined && seq.timings.clear !== undefined ) seq.timings.clear()
-      let idx = Seq.sequencers.indexOf( seq )
-      Seq.sequencers.splice( idx, 1 )
-    }
-    Seq.sequencers.push( seq )
 
-    //let r = Audio.Clock.audioClock
-    //Object.defineProperty( seq, 'rate', {
-    //  get() { return r },
-    //  set(v) {
-    //    r = v
-    //    Gibberish.worklet.port.postMessage({
-    //      address:'property',
-    //      object:seq.id,
-    //      name:'rate',
-    //      value:r
-    //    }) 
-    //  }
+
+    //Gibberish.worklet.port.postMessage({
+    //  address:'addiMethod',
+    //  properties:serialize( Clock ),
+    //  id:this.id,
+    //  post: 'store'    
     //})
+
+    Seq.sequencers.push( seq )
 
     return seq
   }

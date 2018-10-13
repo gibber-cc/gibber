@@ -14,6 +14,7 @@ const Freesound   = require( './freesound.js' )
 const Gen         = require( './gen.js' )
 const WavePattern = require( './wavePattern.js' )
 const WaveObjects = require( './waveObjects.js' )
+const Arp         = require( './arp.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -46,6 +47,7 @@ const Audio = {
       obj.Clock = this.Clock
       obj.WavePattern = this.WavePattern
       obj.Master = this.Master
+      obj.Arp = this.Arp
     }else{
       Audio.exportTarget = obj
     } 
@@ -67,6 +69,7 @@ const Audio = {
         Audio.node = processorNode
         Audio.Gen = Gen( Gibber )
         Audio.Gen.init()
+        Audio.Arp = Arp( Gibber )
         Audio.Gen.export( Audio.Gen.ugens )
         Audio.Theory.init( Gibber )
         Audio.Master = Gibberish.out
@@ -93,6 +96,7 @@ const Audio = {
 
         let drums = Audio.Drums('x*o-')
         drums.disconnect()
+        drums.stop()
 
         // store last location in memory... we can clear everything else in Gibber.clear9)
         const memIdx = Object.keys( Gibberish.memory.list ).reverse()[0]
@@ -159,6 +163,9 @@ const Audio = {
     Pattern.transfer( this, Pattern.toString() )
     this.Pattern = Pattern( this )
     
+    //const Arp = require( './arp.js' )
+    //Arp.transfer( this, Arp.toString() )
+    //this.Arp = Arp( this )
     //console.log( 'pattern string:', Pattern.toString() )
 
     const drums = require( './drums.js' )( this )
@@ -182,6 +189,8 @@ const Audio = {
         // return object for method chaining
         return obj
       }
+
+      return obj[ methodName ].sequencers
     }
   },
 

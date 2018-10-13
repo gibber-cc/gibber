@@ -43,6 +43,17 @@ const Waveform = {
     widget.min = 10000
     widget.max = -10000
 
+    let isFade = false
+
+    // is it a fade?
+    if( widget.gen.from !== undefined ) {
+      widget.min = widget.gen.from.value
+      widget.max = widget.gen.to.value
+      isFade = true
+      widget.gen = widget.gen.__wrapped__
+      widget.values = widget.gen.values
+    }
+
     if( widget.gen === null || widget.gen === undefined ) {
       if( node.expression !== undefined && node.expression.type === 'AssignmentExpression' ) {
         isAssignment = true
@@ -56,7 +67,7 @@ const Waveform = {
       }else if( node.type === 'CallExpression' ) {
         const state = cm.__state
         
-        if( node.callee.name !== 'Lookup' ) {
+        if( node.callee.name !== 'Lookup' && node.callee.property.name !== 'fade' ) {
           const objName = `${state[0]}`
           const track  = window.signals[0]//window[ objName ][ state[1] ]
           let wave
@@ -97,10 +108,11 @@ const Waveform = {
 
     widget.clear = ()=> widget.mark.clear() 
 
-    if( widget.gen !== null ) {
+    if( widget.gen !== null && widget.gen !== undefined ) {
       //console.log( 'paramID = ', widget.gen.paramID ) 
       Waveform.widgets[ widget.gen.id ] = widget
       widget.gen.widget = widget
+      widget.gen.__onclear = ()=> widget.mark.clear()
     }
     
     if( patternObject !== null ) {
@@ -108,18 +120,21 @@ const Waveform = {
       if( patternObject === Gibber.Gen.lastConnected[0] ) Gibber.Gen.lastConnected.shift()
     }
 
-    widget.onclick = ()=> {
-      widget.min = Infinity
-      widget.max = -Infinity
-      widget.storage.length = 0
+    if( !isFade ) {
+      widget.onclick = ()=> {
+        widget.min = Infinity
+        widget.max = -Infinity
+        widget.storage.length = 0
+      }
     }
     
-    widget.gen.__onclear = ()=> widget.mark.clear()
 
     if( this.initialized === false ) {
       this.startAnimationClock()
       this.initialized = true
     }
+
+    widget.isFade = isFade
   },
 
   clear() {
@@ -215,21 +230,32 @@ const Waveform = {
         const wHeight = (widget.height * .85 + .45) - 1
 
 
-        for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
-          const data = widget.values[ i ]
-          const shouldDrawDot = typeof data === 'object'
-          const value = shouldDrawDot ? data.value : data
-          const scaledValue = ( value - widget.min ) / range
+        if( widget.isFade !== true ) {
+          for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
+            const data = widget.values[ i ]
+            const shouldDrawDot = typeof data === 'object'
+            const value = shouldDrawDot ? data.value : data
+            const scaledValue = ( value - widget.min ) / range
 
-          const yValue = scaledValue * (wHeight) - 1.5 
-          
-          if( shouldDrawDot === true ) {
-            widget.ctx.fillStyle = COLORS.DOT
-            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
-            widget.ctx.fillRect( i + widget.padding - 1, wHeight - yValue - 1.5, 3, 3)
-          }else{
-            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+            const yValue = scaledValue * (wHeight) - 1.5 
+            
+            if( shouldDrawDot === true ) {
+              widget.ctx.fillStyle = COLORS.DOT
+              widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+              widget.ctx.fillRect( i + widget.padding - 1, wHeight - yValue - 1.5, 3, 3)
+            }else{
+              widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+            }
           }
+        }else{
+          widget.ctx.moveTo( widget.padding, widget.height )
+          widget.ctx.lineTo( widget.padding + widget.waveWidth, 0 )
+
+          const value = widget.values[0]
+          const percent = value / range
+
+          widget.ctx.moveTo( widget.padding + ( percent * widget.waveWidth ), widget.height )
+          widget.ctx.lineTo( widget.padding + ( percent * widget.waveWidth ), 0 )
         }
         widget.ctx.stroke()
 

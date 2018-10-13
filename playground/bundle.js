@@ -1,4 +1,186 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const Utility = {
+  rndf( min=0, max=1, number, canRepeat=true ) {
+    let out = 0
+  	if( number === undefined ) {
+  		let diff = max - min,
+  		    r = Math.random(),
+  		    rr = diff * r
+
+  		out =  min + rr;
+  	}else{
+      let output = [],
+  		    tmp = []
+
+  		for( let i = 0; i < number; i++ ) {
+  			let num
+        if( canRepeat ) {
+          num = Utility.rndf(min, max)
+        }else{
+          num = Utility.rndf( min, max )
+          while( tmp.indexOf( num ) > -1) {
+            num = Utility.rndf( min, max )
+          }
+          tmp.push( num )
+        }
+  			output.push( num )
+  		}
+
+  		out = output
+  	}
+
+    return out
+  },
+
+  Rndf( _min = 0, _max = 1, quantity, canRepeat=true ) {
+    // have to code gen function to hard code min / max values inside, as closures
+    // or bound values won't be passed through the worklet port.XXX perhaps there should
+    // be a way to transfer a function and its upvalues through the worklet? OTOH,
+    // codegen works fine.
+
+    const fncString = `const min = ${_min}
+    const max = ${_max} 
+    const range = max - min
+    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
+
+    let out
+
+    if( ${quantity} > 1 ) { 
+      out = []
+      for( let i = 0; i < ${quantity}; i++ ) {
+        let num = min + Math.random() * range
+
+        if( canRepeat === false ) {
+          while( out.indexOf( num ) > -1 ) {
+            num = min + Math.random() * range
+          }
+        }
+        out[ i ] = num
+      }
+    }else{
+      out = min + Math.random() * range 
+    }
+
+    return out;`
+    
+    return new Function( fncString )
+  },
+
+  rndi( min = 0, max = 1, number, canRepeat = true ) {
+    let range = max - min,
+        out
+    
+    if( range < number ) canRepeat = true
+
+    if( typeof number === 'undefined' ) {
+      range = max - min
+      out = Math.round( min + Math.random() * range )
+    }else{
+  		let output = [],
+  		    tmp = []
+
+  		for( let i = 0; i < number; i++ ) {
+  			let num
+  			if( canRepeat ) {
+  				num = Utility.rndi( min, max )
+  			}else{
+  				num = Utility.rndi( min, max )
+  				while( tmp.indexOf( num ) > -1 ) {
+  					num = Utility.rndi( min, max )
+  				}
+  				tmp.push( num )
+  			}
+  			output.push( num )
+  		}
+  		out = output
+    }
+    return out
+  },
+
+  Rndi( _min = 0, _max = 1, quantity=1, canRepeat = false ) {
+    // have to code gen function to hard code min / max values inside, as closures
+    // or bound values won't be passed through the worklet port.XXX perhaps there should
+    // be a way to transfer a function and its upvalues through the worklet? OTOH,
+    // codegen works fine.
+
+    const fncString = `const min = ${_min}
+    const max = ${_max} 
+    const range = max - min
+    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
+
+    let out
+
+    if( ${quantity} > 1 ) { 
+      out = []
+      for( let i = 0; i < ${quantity}; i++ ) {
+        let num = min + Math.round( Math.random() * range );
+
+        if( canRepeat === false ) {
+          while( out.indexOf( num ) > -1 ) {
+            num = min + Math.round( Math.random() * range );
+          }
+        }
+        out[ i ] = num
+      }
+    }else{
+      out = min + Math.round( Math.random() * range ); 
+    }
+
+    return out;`
+    
+    return new Function( fncString )
+  },
+
+  btof( beats ) { return 1 / (beats * ( 60 / Gibber.Clock.bpm )) },
+
+  random() {
+    this.randomFlag = true
+    this.randomArgs = Array.prototype.slice.call( arguments, 0 )
+
+    return this
+  },
+
+  elementArray: function( list ) {
+    let out = []
+
+    for( var i = 0; i < list.length; i++ ) {
+      out.push( list.item( i ) )
+    }
+
+    return out
+  },
+  
+  __classListMethods: [ 'toggle', 'add', 'remove' ],
+
+  create( query ) {
+    let elementList = document.querySelectorAll( query ),
+        arr = Utility.elementArray( elementList )
+    
+    for( let method of Utility.__classListMethods ) { 
+      arr[ method ] = style => {
+        for( let element of arr ) { 
+          element.classList[ method ]( style )
+        }
+      } 
+    }
+
+    return arr
+  },
+
+  export( obj ) {
+    obj.rndi = this.rndi
+    obj.rndf = this.rndf
+    obj.Rndi = this.Rndi
+    obj.Rndf = this.Rndf
+    obj.btof = this.btof
+
+    Array.prototype.rnd = this.random
+  }
+}
+
+module.exports = Utility
+
+},{}],2:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -5344,7 +5526,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -5789,8 +5971,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],3:[function(require,module,exports){
-const Utility = require( './utility.js' )
+},{}],4:[function(require,module,exports){
+const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
 module.exports = function( Marker ) {
@@ -5990,7 +6172,7 @@ module.exports = function( Marker ) {
 }
 
 
-},{"./utility.js":9}],4:[function(require,module,exports){
+},{"../../../js/utility.js":1}],5:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -6038,7 +6220,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -6063,7 +6245,7 @@ module.exports = function( Marker ) {
   return CallExpression
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 const __Identifier = function( Marker ) {
 
   const mark = function( node, state, patternType, seqNumber ) {
@@ -6184,7 +6366,7 @@ const __Identifier = function( Marker ) {
 
 module.exports = __Identifier
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = function( Marker ) {
   // Marker.patternMarkupFunctions[ valuesNode.type ]( valuesNode, state, seq, 'values', container, seqNumber )
 
@@ -6220,7 +6402,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = function( Marker ) {
   
   // for negative literals e.g. -10
@@ -6268,190 +6450,8 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],9:[function(require,module,exports){
-const Utility = {
-  rndf( min=0, max=1, number, canRepeat=true ) {
-    let out = 0
-  	if( number === undefined ) {
-  		let diff = max - min,
-  		    r = Math.random(),
-  		    rr = diff * r
-
-  		out =  min + rr;
-  	}else{
-      let output = [],
-  		    tmp = []
-
-  		for( let i = 0; i < number; i++ ) {
-  			let num
-        if( canRepeat ) {
-          num = Utility.rndf(min, max)
-        }else{
-          num = Utility.rndf( min, max )
-          while( tmp.indexOf( num ) > -1) {
-            num = Utility.rndf( min, max )
-          }
-          tmp.push( num )
-        }
-  			output.push( num )
-  		}
-
-  		out = output
-  	}
-
-    return out
-  },
-
-  Rndf( _min = 0, _max = 1, quantity, canRepeat=true ) {
-    // have to code gen function to hard code min / max values inside, as closures
-    // or bound values won't be passed through the worklet port.XXX perhaps there should
-    // be a way to transfer a function and its upvalues through the worklet? OTOH,
-    // codegen works fine.
-
-    const fncString = `const min = ${_min}
-    const max = ${_max} 
-    const range = max - min
-    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
-
-    let out
-
-    if( ${quantity} > 1 ) { 
-      out = []
-      for( let i = 0; i < ${quantity}; i++ ) {
-        let num = min + Math.random() * range
-
-        if( canRepeat === false ) {
-          while( out.indexOf( num ) > -1 ) {
-            num = min + Math.random() * range
-          }
-        }
-        out[ i ] = num
-      }
-    }else{
-      out = min + Math.random() * range 
-    }
-
-    return out;`
-    
-    return new Function( fncString )
-  },
-
-  rndi( min = 0, max = 1, number, canRepeat = true ) {
-    let range = max - min,
-        out
-    
-    if( range < number ) canRepeat = true
-
-    if( typeof number === 'undefined' ) {
-      range = max - min
-      out = Math.round( min + Math.random() * range )
-    }else{
-  		let output = [],
-  		    tmp = []
-
-  		for( let i = 0; i < number; i++ ) {
-  			let num
-  			if( canRepeat ) {
-  				num = Utility.rndi( min, max )
-  			}else{
-  				num = Utility.rndi( min, max )
-  				while( tmp.indexOf( num ) > -1 ) {
-  					num = Utility.rndi( min, max )
-  				}
-  				tmp.push( num )
-  			}
-  			output.push( num )
-  		}
-  		out = output
-    }
-    return out
-  },
-
-  Rndi( _min = 0, _max = 1, quantity=1, canRepeat = false ) {
-    // have to code gen function to hard code min / max values inside, as closures
-    // or bound values won't be passed through the worklet port.XXX perhaps there should
-    // be a way to transfer a function and its upvalues through the worklet? OTOH,
-    // codegen works fine.
-
-    const fncString = `const min = ${_min}
-    const max = ${_max} 
-    const range = max - min
-    const canRepeat = ${quantity} > range ? true : ${ canRepeat }
-
-    let out
-
-    if( ${quantity} > 1 ) { 
-      out = []
-      for( let i = 0; i < ${quantity}; i++ ) {
-        let num = min + Math.round( Math.random() * range );
-
-        if( canRepeat === false ) {
-          while( out.indexOf( num ) > -1 ) {
-            num = min + Math.round( Math.random() * range );
-          }
-        }
-        out[ i ] = num
-      }
-    }else{
-      out = min + Math.round( Math.random() * range ); 
-    }
-
-    return out;`
-    
-    return new Function( fncString )
-  },
-
-  btof( beats ) { return 1 / (beats * ( 60 / Gibber.Clock.bpm )) },
-
-  random() {
-    this.randomFlag = true
-    this.randomArgs = Array.prototype.slice.call( arguments, 0 )
-
-    return this
-  },
-
-  elementArray: function( list ) {
-    let out = []
-
-    for( var i = 0; i < list.length; i++ ) {
-      out.push( list.item( i ) )
-    }
-
-    return out
-  },
-  
-  __classListMethods: [ 'toggle', 'add', 'remove' ],
-
-  create( query ) {
-    let elementList = document.querySelectorAll( query ),
-        arr = Utility.elementArray( elementList )
-    
-    for( let method of Utility.__classListMethods ) { 
-      arr[ method ] = style => {
-        for( let element of arr ) { 
-          element.classList[ method ]( style )
-        }
-      } 
-    }
-
-    return arr
-  },
-
-  export( obj ) {
-    obj.rndi = this.rndi
-    obj.rndf = this.rndf
-    obj.Rndi = this.Rndi
-    obj.Rndf = this.Rndf
-    obj.btof = this.btof
-
-    Array.prototype.rnd = this.random
-  }
-}
-
-module.exports = Utility
-
 },{}],10:[function(require,module,exports){
-const Utility = require( './utility.js' )
+const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
 module.exports = function( node, cm, track, objectName, state, cb ) {
@@ -6502,7 +6502,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
     }
 
     let spanName = `.step_${patternObject.id}_${currentIdx}`
-      //currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
+        //currentValue = patternObject.update.value.pop() //step.value[ currentIdx ]
 
     span = $( spanName )
 
@@ -6544,9 +6544,9 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"./utility.js":14}],11:[function(require,module,exports){
+},{"../../../js/utility.js":1}],11:[function(require,module,exports){
 
-const Utility = require( './utility.js' )
+const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
 
@@ -6625,9 +6625,9 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"../update/euclidAnnotation.js":17,"./utility.js":14}],12:[function(require,module,exports){
+},{"../../../js/utility.js":1,"../update/euclidAnnotation.js":16}],12:[function(require,module,exports){
 
-const Utility = require( './utility.js' )
+const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
 module.exports = function( node, cm, track, objectName, vOffset=0 ) {
@@ -6660,8 +6660,8 @@ module.exports = function( node, cm, track, objectName, vOffset=0 ) {
   }
 }
 
-},{"./utility.js":14}],13:[function(require,module,exports){
-const Utility = require( './utility.js' )
+},{"../../../js/utility.js":1}],13:[function(require,module,exports){
+const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
 module.exports = function( node, cm, track, objectName, state, cb ) {
@@ -6742,9 +6742,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"./utility.js":14}],14:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
-},{"dup":9}],15:[function(require,module,exports){
+},{"../../../js/utility.js":1}],14:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm ) => {
   patternObject.commentMarker = marker
   let update = () => {
@@ -6784,8 +6782,8 @@ module.exports = ( patternObject, marker, className, cm ) => {
 }
 
 
-},{}],16:[function(require,module,exports){
-const Utility = require( './utility.js' )
+},{}],15:[function(require,module,exports){
+const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
 module.exports = function( classNamePrefix, patternObject ) {
@@ -6801,6 +6799,8 @@ module.exports = function( classNamePrefix, patternObject ) {
     if( patternObject.values.length > 1 || patternObject.type === 'Lookup' || isArray === true ) {
       className += '_' + patternObject.update.currentIndex
     }
+
+    isArray = false 
 
     switch( modCount++ % 4 ) {
       case 1: border = 'right'; break;
@@ -6877,8 +6877,8 @@ module.exports = function( classNamePrefix, patternObject ) {
 }
 
 
-},{"./utility.js":19}],17:[function(require,module,exports){
-const Utility = require( './utility.js' )
+},{"../../../js/utility.js":1}],16:[function(require,module,exports){
+const Utility = require( '../../../js/utility.js' )
 const $ = Utility.create
 
 module.exports = ( patternObject, marker, className, cm, track, patternNode, Marker ) => {
@@ -7009,7 +7009,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 }
 
 
-},{"./utility.js":19}],18:[function(require,module,exports){
+},{"../../../js/utility.js":1}],17:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm, track, patternNode, patternType, seqNumber ) => {
   Gibber.Environment.codeMarkup.processGen( patternNode, cm, null, patternObject, null, -1 )
 
@@ -7027,9 +7027,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, pat
 }
 
 
-},{}],19:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
-},{"dup":9}],20:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = function( Marker ) {
 
   const strip = function( unstripped ) {
@@ -7206,6 +7204,12 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
+        console.log( 'non-sequencing but needs annotation:', node.callee )
+        if( node.callee.object.type !== 'Identifier' && node.callee.property ) {
+          if( node.callee.property.name === 'fade' ) {
+            Marker.processFade( state, node )
+          }
+        }
         cb( node.callee, state )
         //Marker.processGen( node, state.cm, null, null, null, state.indexOf('seq') > -1 ? 0 : -1, state )
       }
@@ -7237,7 +7241,7 @@ module.exports = function( Marker ) {
   return visitors
 }
 
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 const COLORS = {
   FILL:'rgba(46,50,53,1)',
   STROKE:'#aaa',
@@ -7283,6 +7287,17 @@ const Waveform = {
     widget.min = 10000
     widget.max = -10000
 
+    let isFade = false
+
+    // is it a fade?
+    if( widget.gen.from !== undefined ) {
+      widget.min = widget.gen.from.value
+      widget.max = widget.gen.to.value
+      isFade = true
+      widget.gen = widget.gen.__wrapped__
+      widget.values = widget.gen.values
+    }
+
     if( widget.gen === null || widget.gen === undefined ) {
       if( node.expression !== undefined && node.expression.type === 'AssignmentExpression' ) {
         isAssignment = true
@@ -7296,7 +7311,7 @@ const Waveform = {
       }else if( node.type === 'CallExpression' ) {
         const state = cm.__state
         
-        if( node.callee.name !== 'Lookup' ) {
+        if( node.callee.name !== 'Lookup' && node.callee.property.name !== 'fade' ) {
           const objName = `${state[0]}`
           const track  = window.signals[0]//window[ objName ][ state[1] ]
           let wave
@@ -7337,10 +7352,11 @@ const Waveform = {
 
     widget.clear = ()=> widget.mark.clear() 
 
-    if( widget.gen !== null ) {
+    if( widget.gen !== null && widget.gen !== undefined ) {
       //console.log( 'paramID = ', widget.gen.paramID ) 
       Waveform.widgets[ widget.gen.id ] = widget
       widget.gen.widget = widget
+      widget.gen.__onclear = ()=> widget.mark.clear()
     }
     
     if( patternObject !== null ) {
@@ -7348,18 +7364,21 @@ const Waveform = {
       if( patternObject === Gibber.Gen.lastConnected[0] ) Gibber.Gen.lastConnected.shift()
     }
 
-    widget.onclick = ()=> {
-      widget.min = Infinity
-      widget.max = -Infinity
-      widget.storage.length = 0
+    if( !isFade ) {
+      widget.onclick = ()=> {
+        widget.min = Infinity
+        widget.max = -Infinity
+        widget.storage.length = 0
+      }
     }
     
-    widget.gen.__onclear = ()=> widget.mark.clear()
 
     if( this.initialized === false ) {
       this.startAnimationClock()
       this.initialized = true
     }
+
+    widget.isFade = isFade
   },
 
   clear() {
@@ -7455,21 +7474,32 @@ const Waveform = {
         const wHeight = (widget.height * .85 + .45) - 1
 
 
-        for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
-          const data = widget.values[ i ]
-          const shouldDrawDot = typeof data === 'object'
-          const value = shouldDrawDot ? data.value : data
-          const scaledValue = ( value - widget.min ) / range
+        if( widget.isFade !== true ) {
+          for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
+            const data = widget.values[ i ]
+            const shouldDrawDot = typeof data === 'object'
+            const value = shouldDrawDot ? data.value : data
+            const scaledValue = ( value - widget.min ) / range
 
-          const yValue = scaledValue * (wHeight) - 1.5 
-          
-          if( shouldDrawDot === true ) {
-            widget.ctx.fillStyle = COLORS.DOT
-            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
-            widget.ctx.fillRect( i + widget.padding - 1, wHeight - yValue - 1.5, 3, 3)
-          }else{
-            widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+            const yValue = scaledValue * (wHeight) - 1.5 
+            
+            if( shouldDrawDot === true ) {
+              widget.ctx.fillStyle = COLORS.DOT
+              widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+              widget.ctx.fillRect( i + widget.padding - 1, wHeight - yValue - 1.5, 3, 3)
+            }else{
+              widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
+            }
           }
+        }else{
+          widget.ctx.moveTo( widget.padding, widget.height )
+          widget.ctx.lineTo( widget.padding + widget.waveWidth, 0 )
+
+          const value = widget.values[0]
+          const percent = value / range
+
+          widget.ctx.moveTo( widget.padding + ( percent * widget.waveWidth ), widget.height )
+          widget.ctx.lineTo( widget.padding + ( percent * widget.waveWidth ), 0 )
         }
         widget.ctx.stroke()
 
@@ -7512,7 +7542,7 @@ module.exports = function( __Gibber ) {
   return Waveform
 }
 
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 
 const acorn = require( 'acorn' )
 const walk  = require( 'acorn/dist/walk' )
@@ -7540,6 +7570,7 @@ const Marker = {
         this.patternMarkupFunctions[ key.slice(2) ] = this.patternMarkupFunctions[ key ]( this )
       }
     }
+
     this.visitors = this.__visitors( this )
 
     Gibber.subscribe( 'clear', this.clear )
@@ -7579,6 +7610,7 @@ const Marker = {
   },
   
 
+  // STARTING POINT FOR PARSING / MARKUP
   process( code, position, codemirror, track ) {
     // store position offset from top of code editor
     // to use when marking patterns, since acorn will produce
@@ -7694,6 +7726,60 @@ const Marker = {
 
     }
     
+  },
+
+  processFade( state, node ) { 
+    let ch = node.loc.end.column, 
+        line = Marker.offset.vertical + node.loc.start.line - 1, 
+        closeParenStart = ch - 2, 
+        end = node.end
+
+    // check to see if a given object is a proxy that already has
+    // a widget created; if so, don't make another one!
+    console.log( ch, line, closeParenStart, end, node )
+    console.log( 'fade and call:', state )
+    const seqExpression = node
+
+    const gen = window[ state[0] ][ state[ 1 ] ].value
+    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, false, node, state.cm, gen, null, false, state )
+    //seqExpression.arguments.forEach( function( seqArgument ) {
+    //  if( seqArgument.type === 'CallExpression' ) {
+    //    const idx = Gibber.Gen.names.indexOf( seqArgument.callee.name )
+        
+    //    // not a gen, markup will happen elsewhere
+    //    if( idx === -1 ) return
+
+        
+    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
+    //    // XXX why don't I need the Marker offset here?
+    //    line = seqArgument.loc.end.line + lineMod
+
+    //    // for some reason arguments to .seq() include the offset,
+    //    // so we only want to add the offset in if we this is a gen~
+    //    // assignment via function call. lineMod will !== 0 if this
+    //    // is the case.
+    //    if( lineMod !== 0 ) line += Marker.offset.vertical
+
+    //    closeParenStart = ch - 1
+    //    isAssignment = false
+    //    node.processed = true
+    //    //debugger
+    //    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0, state )
+    //  } else if( seqArgument.type === 'ArrayExpression' ) {
+    //    //console.log( 'WavePattern array' )
+    //  }else if( seqArgument.type === 'Identifier' ) {
+    //    // handles 'Identifier' when pre-declared variables are passed to methods
+    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
+    //    line = seqArgument.loc.end.line + lineMod
+    //    isAssignment = false
+    //    node.processsed = true
+
+    //    if( lineMod !== 0 ) line += Marker.offset.vertical
+    //    if( window[ seqArgument.name ].widget === undefined ) {
+    //      Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
+    //    }
+    //  }
+    //})
   },
 
   _createBorderCycleFunction: require( './annotations/update/createBorderCycle.js' ),
@@ -7856,7 +7942,8 @@ const Marker = {
           marker = track.markup.textMarkers[ patternClassName ][ i ]
 
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
-          itemClass.innerText = pattern.values[ i ]
+          if( itemClass !== null )
+            itemClass.innerText = pattern.values[ i ]
         }
       }else{
         if( Array.isArray( pattern.values[0] ) ) {
@@ -7878,7 +7965,8 @@ const Marker = {
           marker = track.markup.textMarkers[ patternClassName ]
 
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
-          itemClass.innerText = pattern.values[ 0 ]
+          if( itemClass !== null )
+            itemClass.innerText = pattern.values[ 0 ]
 
           //marker.doc.replaceRange( '' + pattern.values[ 0 ], pos.from, pos.to )
           // newMarker = marker.doc.markText( pos.from, pos.to, { className: patternClassName + ' annotation-border' } )
@@ -7961,12 +8049,13 @@ return Marker
 
 
 
-},{"./annotations/markup/arrayExpression.js":3,"./annotations/markup/binaryExpression.js":4,"./annotations/markup/callExpression.js":5,"./annotations/markup/identifier.js":6,"./annotations/markup/literal.js":7,"./annotations/markup/unaryExpression.js":8,"./annotations/standalone/drumsAnnotation.js":10,"./annotations/standalone/hexStepsAnnotations.js":11,"./annotations/standalone/scoreAnnotation.js":12,"./annotations/standalone/stepsAnnotation.js":13,"./annotations/update/anonymousAnnotation.js":15,"./annotations/update/createBorderCycle.js":16,"./annotations/update/euclidAnnotation.js":17,"./annotations/update/lookupAnnotation.js":18,"./annotations/visitors.js":20,"./annotations/waveform.js":21,"acorn":1,"acorn/dist/walk":2}],23:[function(require,module,exports){
+},{"./annotations/markup/arrayExpression.js":4,"./annotations/markup/binaryExpression.js":5,"./annotations/markup/callExpression.js":6,"./annotations/markup/identifier.js":7,"./annotations/markup/literal.js":8,"./annotations/markup/unaryExpression.js":9,"./annotations/standalone/drumsAnnotation.js":10,"./annotations/standalone/hexStepsAnnotations.js":11,"./annotations/standalone/scoreAnnotation.js":12,"./annotations/standalone/stepsAnnotation.js":13,"./annotations/update/anonymousAnnotation.js":14,"./annotations/update/createBorderCycle.js":15,"./annotations/update/euclidAnnotation.js":16,"./annotations/update/lookupAnnotation.js":17,"./annotations/visitors.js":18,"./annotations/waveform.js":19,"acorn":2,"acorn/dist/walk":3}],21:[function(require,module,exports){
 const codeMarkup = require( './codeMarkup.js' )
 
 let cm, cmconsole, exampleCode, 
     isStereo = false,
-    environment = {}
+    environment = {},
+    fontSize = 1
 
 window.onload = function() {
   cm = CodeMirror( document.querySelector('#editor'), {
@@ -8291,7 +8380,22 @@ CodeMirror.keyMap.playground =  {
     //Gibberish.generateCallback()
     //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
-  'Shift-Ctrl-C'(cm) { toggleSidebar() }
+  'Shift-Ctrl-C'(cm) { toggleSidebar() },
+
+  "Shift-Ctrl-=": function(cm) {
+    fontSize += .2
+    document.querySelector('#editor').style.fontSize = fontSize + 'em'
+    document.querySelector('#editor').style.paddingLeft= (fontSize/4) + 'em'
+    cm.refresh()
+  },
+
+  "Shift-Ctrl--": function(cm) {
+    fontSize -= .2
+    document.querySelector('#editor').style.fontSize = fontSize + 'em'
+    document.querySelector('#editor').style.paddingLeft = (fontSize/4) + 'em'
+    cm.refresh()
+  },
+        
 }
 
 const toggleSidebar = () => {
@@ -8363,4 +8467,4 @@ var flash = function(cm, pos) {
   window.setTimeout(cb, 250);
 }
 
-},{"./codeMarkup.js":22}]},{},[23]);
+},{"./codeMarkup.js":20}]},{},[21]);

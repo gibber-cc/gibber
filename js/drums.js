@@ -11,7 +11,7 @@ module.exports = function( Audio ) {
     const k  = Audio.instruments.Sampler({ filename:'./resources/audiofiles/kick.wav' })
     const s  = Audio.instruments.Sampler({ filename:'./resources/audiofiles/snare.wav' })
     const ch = Audio.instruments.Sampler({ filename:'./resources/audiofiles/hat.wav' })
-    const oh = Audio.instruments.Sampler({ filename:'./resources/audiofiles/openHat.wav' })
+    const oh = Audio.instruments.Sampler({ filename:'./resources/audiofiles/openhat.wav' })
     Audio.autoConnect = temp
 
     const drums = Audio.Ensemble({

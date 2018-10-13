@@ -3,7 +3,6 @@ const patternWrapper = function( Gibber ) {
 
   // hack to pass Gibberish to pattern generator from within worklet processor
   const Gibberish = Gibber.Gibberish === undefined ? Gibber : Gibber.Gibberish
-
   let PatternProto = Object.create( function(){} )
 
   // this prototype is somewhat limited, as we want to be able to add
@@ -71,7 +70,14 @@ const patternWrapper = function( Gibber ) {
 
     addFilter( filter ) {
       this.filters.push( filter )
-    }
+    },
+
+    __methodNames:  [
+      'rotate','switch','invert','flip',
+      'transpose','reverse','shuffle','scale',
+      'store', 'range', 'set'
+    ]
+
   })
 
   let Pattern = function( ...args ) {
@@ -464,6 +470,23 @@ const patternWrapper = function( Gibber ) {
         fnc._onchange()
         
         return fnc
+      },
+
+      clear() {
+        if( Gibberish.mode === 'worklet' ) {
+          for( let key of PatternProto.__methodNames ) {
+            const sequences = fnc.sequences[ key ]
+
+            if( sequences !== undefined ) {
+              sequences.forEach( seq => {
+                seq.stop()
+                seq.clear()
+              })
+            }
+            //else
+              //console.log( 'a seqence!', key, sequences )
+          } 
+        }
       }
     })
     
@@ -499,20 +522,17 @@ const patternWrapper = function( Gibber ) {
     fnc.storage[ 0 ] = fnc.original.slice( 0 )
     fnc.integersOnly = fnc.values.every( function( n ) { return n === +n && n === (n|0); })
     
-    let methodNames =  [
-      'rotate','switch','invert','flip',
-      'transpose','reverse','shuffle','scale',
-      'store', 'range', 'set'
-    ]
 
-    if( Gibberish.mode === 'worklet' ) {
-      for( let key of methodNames ) { Gibber.addSequencing( fnc, key, 2 ) }
-      Gibber.addSequencing( fnc, 'reset', 1 )
-    }
-    
     fnc.listeners = {}
     fnc.sequences = {}
 
+    if( Gibberish.mode === 'worklet' ) {
+      for( let key of PatternProto.__methodNames ) { 
+        fnc.sequences[ key ] = Gibber.addSequencing( fnc, key, 2 ) 
+      }
+      fnc.sequences.reset = Gibber.addSequencing( fnc, 'reset', 1 )
+    }
+    
     // TODO: Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
     
     fnc.__proto__ = PatternProto 
@@ -522,11 +542,6 @@ const patternWrapper = function( Gibber ) {
     // looks for an 'inputs' property and then passes its value (assumed to be an array)
     // using the spread operator to the constructor. 
     const out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters, id:fnc.id }, fnc )  
-
-    //if( Gibberish.mode === 'processor' ) { console.log( 'filters:', out.filters ) }
-    if( Gibberish.mode === 'worklet' && isGen === true ) {
-            
-    }
 
     return out
   }

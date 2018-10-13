@@ -9,7 +9,7 @@ const binops = [
 const monops = [
   'abs','acos','acosh','asin','asinh','atan','atan2','atanh','cos','cosh',
   'sin','sinh','tan','tanh', 'floor',
-  'ceil', 'round', 'sign', 'trunc', 'fract', 'param'
+  'ceil', 'round', 'sign', 'trunc', 'fract', 'param', 'in'
 ]
 
 const noops = [
@@ -288,7 +288,7 @@ const Gen  = {
     }
     
     str += ')'
-    
+
     return str
   },
 
@@ -371,7 +371,10 @@ const Gen  = {
     Object.assign( this.ugens, Gen.constants )
     Object.assign( this.ugens, Gen.composites )
 
+    const __in = this.ugens.in
+    delete this.ugens.in
     Object.assign( obj, this.ugens )
+    this.ugens.in = __in
   },
 
   make( graph, propertyNames ) {

@@ -2,7 +2,8 @@ const codeMarkup = require( './codeMarkup.js' )
 
 let cm, cmconsole, exampleCode, 
     isStereo = false,
-    environment = {}
+    environment = {},
+    fontSize = 1
 
 window.onload = function() {
   cm = CodeMirror( document.querySelector('#editor'), {
@@ -327,7 +328,22 @@ CodeMirror.keyMap.playground =  {
     //Gibberish.generateCallback()
     //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
-  'Shift-Ctrl-C'(cm) { toggleSidebar() }
+  'Shift-Ctrl-C'(cm) { toggleSidebar() },
+
+  "Shift-Ctrl-=": function(cm) {
+    fontSize += .2
+    document.querySelector('#editor').style.fontSize = fontSize + 'em'
+    document.querySelector('#editor').style.paddingLeft= (fontSize/4) + 'em'
+    cm.refresh()
+  },
+
+  "Shift-Ctrl--": function(cm) {
+    fontSize -= .2
+    document.querySelector('#editor').style.fontSize = fontSize + 'em'
+    document.querySelector('#editor').style.paddingLeft = (fontSize/4) + 'em'
+    cm.refresh()
+  },
+        
 }
 
 const toggleSidebar = () => {

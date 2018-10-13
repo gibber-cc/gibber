@@ -22,4 +22,5 @@ module.exports = {
       this.mod2 = audio.Gen.make( audio.Gen.ugens.cycle(.05) ).connect( this.slowGain )
     }
   }
+
 }

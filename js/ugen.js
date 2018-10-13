@@ -90,6 +90,12 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
       prop.value = Gibber.envelopes.Ramp({ from, to, length:time })
 
+      prop.value.__wrapped__.values = []
+      prop.value.__wrapped__.output = v => {
+        prop.value.__wrapped__.values.unshift( v )
+        while( prop.value.__wrapped__.values.length > 60 ) prop.value.__wrapped__.values.pop()
+      }
+
       return obj
     },
 
@@ -312,27 +318,31 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     })
 
     obj.connect = (dest,level=1) => {
-      if( dest !== undefined && dest.isProperty === true ) {
-        // if first modulation for property, store it's initial
-        // value before modulating it.
-        if( dest.preModValue === undefined ) { 
-          dest.preModValue = dest.value
-        }
+      if( typeof dest !== 'number' ) {
+        if( dest !== undefined && dest.isProperty === true ) {
+          // if first modulation for property, store it's initial
+          // value before modulating it.
+          if( dest.preModValue === undefined ) { 
+            dest.preModValue = dest.value
+          }
 
-        dest.mods.push( obj )
+          dest.mods.push( obj )
 
-        const sum = dest.mods.concat( dest.preModValue )
-        dest.ugen[ dest.name ].value = Gibberish.binops.Add( ...sum ) 
-       
-        obj.__wrapped__.connected.push( [ dest.ugen[ dest.name ], obj ] )
-      }else{
-        // if no fx chain, connect directly to output
-        if( obj.fx.length === 0 ) {
-           __wrappedObject.connect( dest,level )
+          const sum = dest.mods.concat( dest.preModValue )
+          dest.ugen[ dest.name ].value = Gibberish.binops.Add( ...sum ) 
+
+          obj.__wrapped__.connected.push( [ dest.ugen[ dest.name ], obj ] )
         }else{
-          // otherwise, connect last effect in chain to output
-          obj.fx[ obj.fx.length - 1 ].__wrapped__.connect( dest, level )
+          // if no fx chain, connect directly to output
+          if( obj.fx.length === 0 ) {
+            __wrappedObject.connect( dest,level )
+          }else{
+            // otherwise, connect last effect in chain to output
+            obj.fx[ obj.fx.length - 1 ].__wrapped__.connect( dest, level )
+          }
         }
+      }else{
+        console.warn( 'You cannot connect to a number; perhaps you meant this to be the level for your connection?' )
       }
 
       return obj 
@@ -345,7 +355,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         obj.fx[ obj.fx.length - 1 ].disconnect()
       }
 
-      __wrappedObject.disconnect( dest ); 
+      __wrappedObject.disconnect(); 
       
       return obj 
     } 
