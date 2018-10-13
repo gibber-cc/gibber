@@ -174,7 +174,6 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        console.log( 'non-sequencing but needs annotation:', node.callee )
         if( node.callee.object.type !== 'Identifier' && node.callee.property ) {
           if( node.callee.property.name === 'fade' ) {
             Marker.processFade( state, node )

@@ -7204,7 +7204,6 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        console.log( 'non-sequencing but needs annotation:', node.callee )
         if( node.callee.object.type !== 'Identifier' && node.callee.property ) {
           if( node.callee.property.name === 'fade' ) {
             Marker.processFade( state, node )
@@ -7350,7 +7349,10 @@ const Waveform = {
       }
     }
 
-    widget.clear = ()=> widget.mark.clear() 
+    widget.clear = ()=> {
+      delete Waveform.widgets[ widget.gen.id ]
+      widget.mark.clear() 
+    }
 
     if( widget.gen !== null && widget.gen !== undefined ) {
       //console.log( 'paramID = ', widget.gen.paramID ) 
@@ -7445,6 +7447,8 @@ const Waveform = {
 
       const widget = Waveform.widgets[ key ]
 
+      if( widget === undefined ) continue
+
       // ensure that a widget does not get drawn more
       // than once per frame
       if( drawn.indexOf( widget ) !== -1 ) continue
@@ -7473,7 +7477,6 @@ const Waveform = {
         const range = widget.max - widget.min
         const wHeight = (widget.height * .85 + .45) - 1
 
-
         if( widget.isFade !== true ) {
           for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
             const data = widget.values[ i ]
@@ -7492,14 +7495,33 @@ const Waveform = {
             }
           }
         }else{
-          widget.ctx.moveTo( widget.padding, widget.height )
-          widget.ctx.lineTo( widget.padding + widget.waveWidth, 0 )
+          const isReversed = ( widget.gen.from > widget.gen.to )
+
+          if( !isReversed ) {
+            widget.ctx.moveTo( widget.padding, widget.height )
+            widget.ctx.lineTo( widget.padding + widget.waveWidth, 0 )
+          }else{
+            widget.ctx.moveTo( widget.padding, 0 )
+            widget.ctx.lineTo( widget.padding + widget.waveWidth, widget.height )
+          }
 
           const value = widget.values[0]
-          const percent = value / range
+          let percent = isReversed === true ? Math.abs( value / range ) : value / range
 
-          widget.ctx.moveTo( widget.padding + ( percent * widget.waveWidth ), widget.height )
-          widget.ctx.lineTo( widget.padding + ( percent * widget.waveWidth ), 0 )
+          if( !isReversed ) {
+            widget.ctx.moveTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), widget.height )
+            widget.ctx.lineTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), 0 )
+          }else{
+            widget.ctx.moveTo( widget.padding + ( (1-percent) * widget.waveWidth ), widget.height )
+            widget.ctx.lineTo( widget.padding + ( (1-percent) * widget.waveWidth ), 0 )
+          }
+
+          if( isReversed === true ) {
+            if( percent <= 0.001) widget.gen.finalize()
+          }else{
+            if( percent > 1 ) widget.gen.finalize()
+          }
+
         }
         widget.ctx.stroke()
 
@@ -7736,8 +7758,6 @@ const Marker = {
 
     // check to see if a given object is a proxy that already has
     // a widget created; if so, don't make another one!
-    console.log( ch, line, closeParenStart, end, node )
-    console.log( 'fade and call:', state )
     const seqExpression = node
 
     const gen = window[ state[0] ][ state[ 1 ] ].value

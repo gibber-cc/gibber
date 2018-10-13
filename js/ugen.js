@@ -92,8 +92,19 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
       prop.value.__wrapped__.values = []
       prop.value.__wrapped__.output = v => {
-        prop.value.__wrapped__.values.unshift( v )
-        while( prop.value.__wrapped__.values.length > 60 ) prop.value.__wrapped__.values.pop()
+        if( prop.value.__wrapped__ !== undefined ) {
+          prop.value.__wrapped__.values.unshift( v )
+          while( prop.value.__wrapped__.values.length > 60 ) prop.value.__wrapped__.values.pop()
+        }
+      }
+
+      prop.value.__wrapped__.finalize = () => {
+        const store = prop.value
+
+        // XXX I can't quite figure out why I have to wait to reset the property
+        // value here... if I don't, then the fade ugen stays assigned in the worklet processor.
+        setTimeout( ()=> obj[ propertyName ] = store.to.value, 0 )
+        store.__wrapped__.widget.clear()
       }
 
       return obj

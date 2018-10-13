@@ -191,8 +191,6 @@ const Marker = {
 
     // check to see if a given object is a proxy that already has
     // a widget created; if so, don't make another one!
-    console.log( ch, line, closeParenStart, end, node )
-    console.log( 'fade and call:', state )
     const seqExpression = node
 
     const gen = window[ state[0] ][ state[ 1 ] ].value
