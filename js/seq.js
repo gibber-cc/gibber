@@ -57,16 +57,22 @@ module.exports = function( Audio ) {
       return args
     })
 
+    // XXX delay annotations so that they occur after values annotations have occurred. There might
+    // need to be more checks for this flag in the various annotation update files... right now
+    // the check is only in createBorderCycle.js.
+    timings.__delayAnnotations = true
+
     const clear = function() {
       this.stop()
 
-      if( this.values !== undefined && this.values.clear !== undefined ) this.values.clear()
+      if( this.values  !== undefined && this.values.clear !== undefined  ) this.values.clear()
       if( this.timings !== undefined && this.timings.clear !== undefined ) this.timings.clear()
 
       if( Gibberish.mode === 'worklet' ) {
-        let idx = Seq.sequencers.indexOf( this )
-        Seq.sequencers.splice( idx, 1 )
+        const idx = Seq.sequencers.indexOf( this )
+        const seq = Seq.sequencers.splice( idx, 1 )[0]
       }
+
     }
     //const offsetRate = Gibberish.binops.Mul(rate, Audio.Clock.audioClock )
     // XXX we need to add priority to Sequencer2; this priority will determine the order
@@ -78,7 +84,7 @@ module.exports = function( Audio ) {
 
     //Gibberish.worklet.port.postMessage({
     //  address:'addiMethod',
-    //  properties:serialize( Clock ),
+    //  properties:serilize( Clock ),
     //  id:this.id,
     //  post: 'store'    
     //})

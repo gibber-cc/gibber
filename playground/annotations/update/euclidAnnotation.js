@@ -14,6 +14,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
       commentMarker,
       currentMarker, chEnd
 
+  patternObject.__delayAnnotations = false
   end.ch = pos.from.ch + val.length
 
   pos.to.ch -= 1
@@ -65,7 +66,10 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
   let count = 0, span, update, activeSpans = []
 
   update = () => {
-    let currentIdx = count++ % patternObject.values.length
+    // XXX what happened??? this should be incremented by 1, and there
+    // should be no need for Math.floor
+    count += .5
+    let currentIdx = Math.floor( count ) % patternObject.values.length
 
     if( span !== undefined ) {
       span.remove( 'euclid0' )

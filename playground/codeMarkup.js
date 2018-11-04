@@ -186,7 +186,7 @@ const Marker = {
   processFade( state, node ) { 
     let ch = node.loc.end.column, 
         line = Marker.offset.vertical + node.loc.start.line - 1, 
-        closeParenStart = ch - 2, 
+        closeParenStart = ch, 
         end = node.end
 
     // check to see if a given object is a proxy that already has
@@ -194,45 +194,7 @@ const Marker = {
     const seqExpression = node
 
     const gen = window[ state[0] ][ state[ 1 ] ].value
-    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, false, node, state.cm, gen, null, false, state )
-    //seqExpression.arguments.forEach( function( seqArgument ) {
-    //  if( seqArgument.type === 'CallExpression' ) {
-    //    const idx = Gibber.Gen.names.indexOf( seqArgument.callee.name )
-        
-    //    // not a gen, markup will happen elsewhere
-    //    if( idx === -1 ) return
-
-        
-    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
-    //    // XXX why don't I need the Marker offset here?
-    //    line = seqArgument.loc.end.line + lineMod
-
-    //    // for some reason arguments to .seq() include the offset,
-    //    // so we only want to add the offset in if we this is a gen~
-    //    // assignment via function call. lineMod will !== 0 if this
-    //    // is the case.
-    //    if( lineMod !== 0 ) line += Marker.offset.vertical
-
-    //    closeParenStart = ch - 1
-    //    isAssignment = false
-    //    node.processed = true
-    //    //debugger
-    //    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0, state )
-    //  } else if( seqArgument.type === 'ArrayExpression' ) {
-    //    //console.log( 'WavePattern array' )
-    //  }else if( seqArgument.type === 'Identifier' ) {
-    //    // handles 'Identifier' when pre-declared variables are passed to methods
-    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
-    //    line = seqArgument.loc.end.line + lineMod
-    //    isAssignment = false
-    //    node.processsed = true
-
-    //    if( lineMod !== 0 ) line += Marker.offset.vertical
-    //    if( window[ seqArgument.name ].widget === undefined ) {
-    //      Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
-    //    }
-    //  }
-    //})
+    Marker.waveform.createWaveformWidget( line, closeParenStart, ch-1, false, node, state.cm, gen, null, false, state )
   },
 
   _createBorderCycleFunction: require( './annotations/update/createBorderCycle.js' ),
@@ -253,6 +215,7 @@ const Marker = {
       }
     })
 
+    // XXX why don't I need this anymore?
     //Object.defineProperty( patternObject.update, 'value', {
     //  get() { return value },
     //  set(v){
@@ -266,7 +229,9 @@ const Marker = {
     //Marker._addPatternFilter( patternObject )
 
     patternObject.patternName = className
-    patternObject._onchange = () => { Marker._updatePatternContents( patternObject, className, seqTarget ) }
+    patternObject._onchange = () => { 
+      Marker._updatePatternContents( patternObject, className, seqTarget ) 
+    }
 
     patternObject.clear = () => {
       patternObject.marker.clear()

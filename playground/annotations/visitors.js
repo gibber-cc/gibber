@@ -174,7 +174,7 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        if( node.callee.object.type !== 'Identifier' && node.callee.property ) {
+        if( node.callee.object !== undefined && node.callee.object.type !== 'Identifier' && node.callee.property ) {
           if( node.callee.property.name === 'fade' ) {
             Marker.processFade( state, node )
           }
@@ -202,8 +202,9 @@ module.exports = function( Marker ) {
           state.unshift( strip( node.property.raw || node.property.name ) )
         }
         state.unshift( strip( node.object.name ) )
-      }
 
+        //cb( node.object, state )
+      }
     },
   }
 

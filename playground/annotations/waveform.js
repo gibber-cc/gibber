@@ -234,6 +234,9 @@ const Waveform = {
         const range = widget.max - widget.min
         const wHeight = (widget.height * .85 + .45) - 1
 
+        // needed for fades
+        let isReversed = false
+
         if( widget.isFade !== true ) {
           for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
             const data = widget.values[ i ]
@@ -252,7 +255,7 @@ const Waveform = {
             }
           }
         }else{
-          const isReversed = ( widget.gen.from > widget.gen.to )
+          isReversed = ( widget.gen.from > widget.gen.to )
 
           if( !isReversed ) {
             widget.ctx.moveTo( widget.padding, widget.height )
@@ -263,31 +266,41 @@ const Waveform = {
           }
 
           const value = widget.values[0]
-          let percent = isReversed === true ? Math.abs( value / range ) : value / range
+          if( !isNaN( value ) ) {
+            let percent = isReversed === true ? Math.abs( value / (range+widget.gen.from) ) : value / (range+widget.gen.from)
 
-          if( !isReversed ) {
-            widget.ctx.moveTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), widget.height )
-            widget.ctx.lineTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), 0 )
-          }else{
-            widget.ctx.moveTo( widget.padding + ( (1-percent) * widget.waveWidth ), widget.height )
-            widget.ctx.lineTo( widget.padding + ( (1-percent) * widget.waveWidth ), 0 )
-          }
+            if( !isReversed ) {
+              widget.ctx.moveTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), widget.height )
+              widget.ctx.lineTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), 0 )
+            }else{
+              widget.ctx.moveTo( widget.padding + ( (1-percent) * widget.waveWidth ), widget.height )
+              widget.ctx.lineTo( widget.padding + ( (1-percent) * widget.waveWidth ), 0 )
+            }
 
-          if( isReversed === true ) {
-            if( percent <= 0.001) widget.gen.finalize()
-          }else{
-            if( percent > 1 ) widget.gen.finalize()
+            // XXX we need to also check if the next value would loop the fade
+            // in which case finalizing wouldn't actually happen... then we
+            // can get rid of magic numbers here.
+            if( isReversed === true ) {
+              //console.log( 'reverse finalized', percent, widget.gen.from, widget.gen.to )
+              if( percent <= 0.01) widget.gen.finalize()
+            }else{
+              //console.log( 'finalized', percent, value, range, widget.gen.from, widget.gen.to )
+              if( percent >= .99 ) widget.gen.finalize()
+            }
           }
 
         }
         widget.ctx.stroke()
 
+        const __min = isReversed === false ? widget.min.toFixed(2) : widget.max.toFixed(2)
+        const __max = isReversed === false ? widget.max.toFixed(2) : widget.min.toFixed(2)
+
         // draw min/max
         widget.ctx.fillStyle = COLORS.STROKE
         widget.ctx.textAlign = 'right'
-        widget.ctx.fillText( widget.min.toFixed(2), widget.padding - 2, widget.height )
+        widget.ctx.fillText( __min, widget.padding - 2, widget.height )
         widget.ctx.textAlign = 'left'
-        widget.ctx.fillText( widget.max.toFixed(2), widget.waveWidth + widget.padding + 2, widget.height / 2 )
+        widget.ctx.fillText( __max, widget.waveWidth + widget.padding + 2, widget.height / 2 )
 
         // draw corners
         widget.ctx.beginPath()

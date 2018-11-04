@@ -15,6 +15,7 @@ const Gen         = require( './gen.js' )
 const WavePattern = require( './wavePattern.js' )
 const WaveObjects = require( './waveObjects.js' )
 const Arp         = require( './arp.js' )
+const __Automata  = require( './automata.js' )
 
 const Audio = {
   Clock: require( './clock.js' ),
@@ -48,6 +49,7 @@ const Audio = {
       obj.WavePattern = this.WavePattern
       obj.Master = this.Master
       obj.Arp = this.Arp
+      obj.Automata = this.Automata
     }else{
       Audio.exportTarget = obj
     } 
@@ -64,6 +66,7 @@ const Audio = {
 
     const p = new Promise( (resolve, reject) => {
       const ctx = new AudioContext({ latencyHint:.05 })
+
       Gibberish.init( {}, ctx ).then( processorNode => {
         Audio.initialized = true
         Audio.node = processorNode
@@ -162,6 +165,7 @@ const Audio = {
     const Pattern = require( './pattern.js' )
     Pattern.transfer( this, Pattern.toString() )
     this.Pattern = Pattern( this )
+    this.Automata = __Automata( this )
     
     //const Arp = require( './arp.js' )
     //Arp.transfer( this, Arp.toString() )

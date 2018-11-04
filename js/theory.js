@@ -15,6 +15,8 @@ const Theory = {
   __tuning:'et',
   __mode: 'aeolian',
   __root:440,
+  __offset:0,
+  __degree:'i',
   __tunings:{
     et: {
       frequencies:[
@@ -72,7 +74,8 @@ const Theory = {
 
       Gibber.createProperty( this, 'mode', 'aeolian', null, 1 )
 
-      Gibber.createProperty( this, 'degree', 'i', null, 1 )
+
+      Gibber.createProperty( this, 'offset', 0, null, 1 )
 
     }else{
       Object.defineProperty( this, 'root', {
@@ -95,6 +98,12 @@ const Theory = {
         get()  { return this.__mode },
         set(v) { this.__mode = v }
       })
+
+      Object.defineProperty( this, 'offset', {
+        get()  { return this.__offset },
+        set(v) { this.__offset = v }
+      })
+
     }
   },
 
@@ -169,7 +178,6 @@ const Theory = {
       this.initProperties()
       this.__initDegrees()
 
-      console.log( 'degrees:', this.degrees )
       this.tuning = 'et'
     }
 
@@ -220,6 +228,8 @@ const Theory = {
 
     if( Gibberish.Theory.mode !== null ) {
       mode = Gibberish.Theory.modes[ Gibberish.Theory.mode ]
+
+      idx += Gibberish.Theory.__offset
       octave = Math.floor( idx / mode.length )
       // XXX this looks ugly but works with negative note numbers...
       finalIdx = idx < 0 ? mode[ (mode.length - (Math.abs(idx) % mode.length)) % mode.length ] : mode[ Math.abs( idx ) % mode.length ]
@@ -230,6 +240,7 @@ const Theory = {
     let freq = Gibberish.Theory.Tune.note( finalIdx, octave )
 
     // clamp maximum frequency to avoid filter havoc and mayhem
+    // XXX is this still necessary????
     if( freq > 4000 ) freq = 4000
 
     //console.log( idx, finalIdx, mode, mode.length, note, octave )

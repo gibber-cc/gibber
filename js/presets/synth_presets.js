@@ -68,8 +68,8 @@ module.exports = {
     attack:1/6, decay:1.5, gain:.05,
     filterType:1, Q:.5575, cutoff:2,
     presetInit: function( audio ) {
-      //this.fx.add( audio.effects.Chorus('lush') )
-      //this.chorus = this.fx[0]
+      this.fx.add( audio.effects.Chorus('lush') )
+      this.chorus = this.fx[0]
     }
   },
 

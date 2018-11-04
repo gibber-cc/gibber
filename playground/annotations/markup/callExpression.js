@@ -14,7 +14,7 @@ module.exports = function( Marker ) {
 
       Marker.patternMarkupFunctions.ArrayExpression( ...args )
     } else if (patternNode.callee.type === 'Identifier' ) {
-      // function like Euclid or gen~d
+      // function like Euclid or gen~
       Marker.patternMarkupFunctions.Identifier( ...args )
     }
   }

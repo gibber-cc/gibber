@@ -101,7 +101,7 @@ let Euclid = function( ones, length, time, rotation ) {
   
   onesAndZeros = Inner( length, ones )
 
-  let pattern = Gibber.Pattern( ...onesAndZeros )//Gibber.Pattern.apply( null, onesAndZeros )
+  let pattern = Gibber.Pattern( ...onesAndZeros )
 
   if( isNaN( time ) || time === null ) time = 1 / onesAndZeros.length
 

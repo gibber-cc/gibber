@@ -6237,7 +6237,7 @@ module.exports = function( Marker ) {
 
       Marker.patternMarkupFunctions.ArrayExpression( ...args )
     } else if (patternNode.callee.type === 'Identifier' ) {
-      // function like Euclid or gen~d
+      // function like Euclid or gen~
       Marker.patternMarkupFunctions.Identifier( ...args )
     }
   }
@@ -6345,16 +6345,18 @@ const __Identifier = function( Marker ) {
         }
       })
 
-       //let value = 0
-       //Object.defineProperty( patternObject.update, 'value', {
-       //  get() { return value },
-       //  set(v){ 
-       //    if( value !== v ) {
-       //      value = v; 
-       //      patternObject.update()
-       //    }
-       //  }
-       //})
+      // XXX why was this commented out? without it, annotations for anonymous functions
+      // don't work.
+      let value = 0
+      Object.defineProperty( patternObject.update, 'value', {
+        get() { return value },
+        set(v){ 
+          if( value !== v ) {
+            value = v; 
+            patternObject.update()
+          }
+        }
+      })
     }
 
     patternObject.marker = marker
@@ -6766,6 +6768,7 @@ module.exports = ( patternObject, marker, className, cm ) => {
     if( patternObject.commentMarker ) patternObject.commentMarker.clear()
 
     patternObject.commentMarker = cm.markText( pos.from, end, { className, atomic:false })
+
   }
 
   patternObject.clear = () => {
@@ -6873,7 +6876,15 @@ module.exports = function( classNamePrefix, patternObject ) {
     lastBorder = null
   }
 
-  return cycle
+  // XXX need to delay timing annotations in case value annotations changes underlying text, in
+  // which case the underlying CSS of the line gets all wonky.
+  const __cycle = patternObject.__delayAnnotations = true ? ()=> { setTimeout( cycle, 0 ) } : cycle
+
+  // must create reference to original clear function so that it can be called via the delayed wrapper
+  // if needed... if not needed, the below assignment is a no-op.
+  __cycle.clear = cycle.clear
+
+  return __cycle
 }
 
 
@@ -6894,6 +6905,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
       commentMarker,
       currentMarker, chEnd
 
+  patternObject.__delayAnnotations = false
   end.ch = pos.from.ch + val.length
 
   pos.to.ch -= 1
@@ -6945,7 +6957,10 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
   let count = 0, span, update, activeSpans = []
 
   update = () => {
-    let currentIdx = count++ % patternObject.values.length
+    // XXX what happened??? this should be incremented by 1, and there
+    // should be no need for Math.floor
+    count += .5
+    let currentIdx = Math.floor( count ) % patternObject.values.length
 
     if( span !== undefined ) {
       span.remove( 'euclid0' )
@@ -7204,7 +7219,7 @@ module.exports = function( Marker ) {
         //console.log( 'marking pattern for seq:', seq )
       }else{
         // XXX need to fix this when we add gen~ expressions back in!!!
-        if( node.callee.object.type !== 'Identifier' && node.callee.property ) {
+        if( node.callee.object !== undefined && node.callee.object.type !== 'Identifier' && node.callee.property ) {
           if( node.callee.property.name === 'fade' ) {
             Marker.processFade( state, node )
           }
@@ -7232,8 +7247,9 @@ module.exports = function( Marker ) {
           state.unshift( strip( node.property.raw || node.property.name ) )
         }
         state.unshift( strip( node.object.name ) )
-      }
 
+        //cb( node.object, state )
+      }
     },
   }
 
@@ -7477,6 +7493,9 @@ const Waveform = {
         const range = widget.max - widget.min
         const wHeight = (widget.height * .85 + .45) - 1
 
+        // needed for fades
+        let isReversed = false
+
         if( widget.isFade !== true ) {
           for( let i = 0, len = widget.waveWidth; i < len; i++ ) {
             const data = widget.values[ i ]
@@ -7495,7 +7514,7 @@ const Waveform = {
             }
           }
         }else{
-          const isReversed = ( widget.gen.from > widget.gen.to )
+          isReversed = ( widget.gen.from > widget.gen.to )
 
           if( !isReversed ) {
             widget.ctx.moveTo( widget.padding, widget.height )
@@ -7506,31 +7525,41 @@ const Waveform = {
           }
 
           const value = widget.values[0]
-          let percent = isReversed === true ? Math.abs( value / range ) : value / range
+          if( !isNaN( value ) ) {
+            let percent = isReversed === true ? Math.abs( value / (range+widget.gen.from) ) : value / (range+widget.gen.from)
 
-          if( !isReversed ) {
-            widget.ctx.moveTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), widget.height )
-            widget.ctx.lineTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), 0 )
-          }else{
-            widget.ctx.moveTo( widget.padding + ( (1-percent) * widget.waveWidth ), widget.height )
-            widget.ctx.lineTo( widget.padding + ( (1-percent) * widget.waveWidth ), 0 )
-          }
+            if( !isReversed ) {
+              widget.ctx.moveTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), widget.height )
+              widget.ctx.lineTo( widget.padding + ( Math.abs( percent ) * widget.waveWidth ), 0 )
+            }else{
+              widget.ctx.moveTo( widget.padding + ( (1-percent) * widget.waveWidth ), widget.height )
+              widget.ctx.lineTo( widget.padding + ( (1-percent) * widget.waveWidth ), 0 )
+            }
 
-          if( isReversed === true ) {
-            if( percent <= 0.001) widget.gen.finalize()
-          }else{
-            if( percent > 1 ) widget.gen.finalize()
+            // XXX we need to also check if the next value would loop the fade
+            // in which case finalizing wouldn't actually happen... then we
+            // can get rid of magic numbers here.
+            if( isReversed === true ) {
+              //console.log( 'reverse finalized', percent, widget.gen.from, widget.gen.to )
+              if( percent <= 0.01) widget.gen.finalize()
+            }else{
+              //console.log( 'finalized', percent, value, range, widget.gen.from, widget.gen.to )
+              if( percent >= .99 ) widget.gen.finalize()
+            }
           }
 
         }
         widget.ctx.stroke()
 
+        const __min = isReversed === false ? widget.min.toFixed(2) : widget.max.toFixed(2)
+        const __max = isReversed === false ? widget.max.toFixed(2) : widget.min.toFixed(2)
+
         // draw min/max
         widget.ctx.fillStyle = COLORS.STROKE
         widget.ctx.textAlign = 'right'
-        widget.ctx.fillText( widget.min.toFixed(2), widget.padding - 2, widget.height )
+        widget.ctx.fillText( __min, widget.padding - 2, widget.height )
         widget.ctx.textAlign = 'left'
-        widget.ctx.fillText( widget.max.toFixed(2), widget.waveWidth + widget.padding + 2, widget.height / 2 )
+        widget.ctx.fillText( __max, widget.waveWidth + widget.padding + 2, widget.height / 2 )
 
         // draw corners
         widget.ctx.beginPath()
@@ -7753,7 +7782,7 @@ const Marker = {
   processFade( state, node ) { 
     let ch = node.loc.end.column, 
         line = Marker.offset.vertical + node.loc.start.line - 1, 
-        closeParenStart = ch - 2, 
+        closeParenStart = ch, 
         end = node.end
 
     // check to see if a given object is a proxy that already has
@@ -7761,45 +7790,7 @@ const Marker = {
     const seqExpression = node
 
     const gen = window[ state[0] ][ state[ 1 ] ].value
-    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, false, node, state.cm, gen, null, false, state )
-    //seqExpression.arguments.forEach( function( seqArgument ) {
-    //  if( seqArgument.type === 'CallExpression' ) {
-    //    const idx = Gibber.Gen.names.indexOf( seqArgument.callee.name )
-        
-    //    // not a gen, markup will happen elsewhere
-    //    if( idx === -1 ) return
-
-        
-    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
-    //    // XXX why don't I need the Marker offset here?
-    //    line = seqArgument.loc.end.line + lineMod
-
-    //    // for some reason arguments to .seq() include the offset,
-    //    // so we only want to add the offset in if we this is a gen~
-    //    // assignment via function call. lineMod will !== 0 if this
-    //    // is the case.
-    //    if( lineMod !== 0 ) line += Marker.offset.vertical
-
-    //    closeParenStart = ch - 1
-    //    isAssignment = false
-    //    node.processed = true
-    //    //debugger
-    //    Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0, state )
-    //  } else if( seqArgument.type === 'ArrayExpression' ) {
-    //    //console.log( 'WavePattern array' )
-    //  }else if( seqArgument.type === 'Identifier' ) {
-    //    // handles 'Identifier' when pre-declared variables are passed to methods
-    //    ch = seqArgument.loc.end.ch || seqArgument.loc.end.column
-    //    line = seqArgument.loc.end.line + lineMod
-    //    isAssignment = false
-    //    node.processsed = true
-
-    //    if( lineMod !== 0 ) line += Marker.offset.vertical
-    //    if( window[ seqArgument.name ].widget === undefined ) {
-    //      Marker.waveform.createWaveformWidget( line, closeParenStart, ch, isAssignment, node, cm, patternObject, track, lineMod === 0 )
-    //    }
-    //  }
-    //})
+    Marker.waveform.createWaveformWidget( line, closeParenStart, ch-1, false, node, state.cm, gen, null, false, state )
   },
 
   _createBorderCycleFunction: require( './annotations/update/createBorderCycle.js' ),
@@ -7820,6 +7811,7 @@ const Marker = {
       }
     })
 
+    // XXX why don't I need this anymore?
     //Object.defineProperty( patternObject.update, 'value', {
     //  get() { return value },
     //  set(v){
@@ -7833,7 +7825,9 @@ const Marker = {
     //Marker._addPatternFilter( patternObject )
 
     patternObject.patternName = className
-    patternObject._onchange = () => { Marker._updatePatternContents( patternObject, className, seqTarget ) }
+    patternObject._onchange = () => { 
+      Marker._updatePatternContents( patternObject, className, seqTarget ) 
+    }
 
     patternObject.clear = () => {
       patternObject.marker.clear()

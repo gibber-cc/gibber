@@ -46,7 +46,14 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
 
     seq( values, timings, number = 0, delay = 0 ) {
       let prevSeq = obj[ propertyName ].sequencers[ number ] 
-      if( prevSeq !== undefined ) removeSeq( obj, prevSeq )
+      if( prevSeq !== undefined ) {
+        const idx = obj.__sequencers.indexOf( prevSeq )
+        obj.__sequencers.splice( idx, 1 )
+        // XXX stop() destroys an extra sequencer for some reason????
+        //prevSeq.stop()
+        prevSeq.clear()
+        //removeSeq( obj, prevSeq )
+      }
 
       const s = Audio.Seq({ 
         values, 
@@ -88,9 +95,13 @@ const createProperty = function( obj, propertyName, __wrappedObject, timeProps, 
         to = to.to.value
       }
 
-      prop.value = Gibber.envelopes.Ramp({ from, to, length:time })
+      let value = Gibber.envelopes.Ramp({ from, to, length:time, shouldLoop:false })
 
+      prop.value = value
+
+      if( prop.value.__wrapped__ === undefined ) prop.value.__wrapped__ = {}
       prop.value.__wrapped__.values = []
+
       prop.value.__wrapped__.output = v => {
         if( prop.value.__wrapped__ !== undefined ) {
           prop.value.__wrapped__.values.unshift( v )
@@ -174,6 +185,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     }else{
       __wrappedObject = gibberishConstructor( properties )
     }
+    
     const obj = { 
       __wrapped__ :__wrappedObject,
       __sequencers : [], 
@@ -264,7 +276,11 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         obj[ methodName ].seq = function( values, timings, number=0, delay=0 ) {
           let prevSeq = obj[ methodName ].sequencers[ number ] 
           if( prevSeq !== undefined ) { 
-             removeSeq( obj, prevSeq )
+            const idx = obj.__sequencers.indexOf( prevSeq )
+            obj.__sequencers.splice( idx, 1 )
+            //prevSeq.stop()
+            prevSeq.clear()
+            // removeSeq( obj, prevSeq )
           }
 
           let s = Audio.Seq({ values, timings, target:__wrappedObject, key:methodName })

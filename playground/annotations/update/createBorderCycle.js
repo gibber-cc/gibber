@@ -88,6 +88,14 @@ module.exports = function( classNamePrefix, patternObject ) {
     lastBorder = null
   }
 
-  return cycle
+  // XXX need to delay timing annotations in case value annotations changes underlying text, in
+  // which case the underlying CSS of the line gets all wonky.
+  const __cycle = patternObject.__delayAnnotations = true ? ()=> { setTimeout( cycle, 0 ) } : cycle
+
+  // must create reference to original clear function so that it can be called via the delayed wrapper
+  // if needed... if not needed, the below assignment is a no-op.
+  __cycle.clear = cycle.clear
+
+  return __cycle
 }
 

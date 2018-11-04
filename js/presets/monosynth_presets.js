@@ -34,7 +34,7 @@ module.exports = {
   },
 
   dirty: { 
-    gain:.225,
+    gain:.325,
     filterType:2,
     attack:1/2048, 
     decay:1/4, 

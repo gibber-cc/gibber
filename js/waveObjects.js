@@ -31,7 +31,7 @@ module.exports = function( Gibber ) {
      },
 
      SineR( period, gain, bias=0 ) {
-       const ugen =  gen( floor( add( bias, mul( cycle( Gibber.Utilities.btof( period ) ), gain ) ) ), ['bias', 'frequency', 'gain'] )
+       const ugen =  gen( floor( add( bias, mul( cycle( Gibber.Utilities.btof( period ) ), gain ) ) ), ['bias', 'period', 'gain'] )
        ugen.isGen = ugen.__wrapped__.isGen = true
 
        return ugen
@@ -55,7 +55,7 @@ module.exports = function( Gibber ) {
        Object.defineProperty( ugen, 'period', {
          get() { return oldGetter() },
          set(v) {
-            oldSetter( btof(v) )
+           oldSetter( btof(v) )
          }
 
        })
