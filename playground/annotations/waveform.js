@@ -193,8 +193,9 @@ const Waveform = {
   },
 
   startAnimationClock() {
+    let phase = 0
     const clock = function(t) {
-      Waveform.drawWidgets()
+      if( phase++ % 3 === 0 ) Waveform.drawWidgets()
       window.requestAnimationFrame( clock )
     }
 
