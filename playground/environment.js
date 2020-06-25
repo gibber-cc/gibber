@@ -246,7 +246,7 @@ lead.note.seq(
   [1/2,1,2] 
 )`
 
-  const workletPath = '../node_modules/gibberish-dsp/dist/gibberish_worklet.js' 
+  const workletPath = './gibberish_worklet.js' 
   const start = () => {
     cm.setValue( defaultCode )
     const promises = Gibber.init([
