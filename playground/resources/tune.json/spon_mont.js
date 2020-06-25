@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,271.31540105247,348.83408706747,392.4383479509,428.11456140098,523.2511306012],"description":"Montford's Spondeion, a mixed septimal and undecimal pentatonic, 1923"}

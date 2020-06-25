@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,291.80478157373,326.97270111135,392.44854854484,438.22451411849,523.2511306012],"description":"Observed tuning from Chinese tamboura sienzi, Helmholtz/Ellis p. 518, nr.108"}

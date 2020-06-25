@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,280.40333801024,300.52885648597,383.0422478503,410.5345162762,523.2511306012],"description":"Surupan tone-gender Y (= mode on pamiring)"}

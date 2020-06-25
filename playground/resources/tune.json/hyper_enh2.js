@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,267.19206668997,273.00058987889,348.83408706747,392.4383479509,400.78810003496,409.50088481833,523.2511306012],"description":"Hyperenharmonic genus from Kathleen Schlesinger's enharmonic Phrygian Harmonia"}

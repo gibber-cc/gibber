@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,347.0163224393,394.26624244126,453.9405988926,523.2511306012],"description":"Observed scale of South-African bushmen, almost (4 notes) equal pentatonic"}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,296.45730715573,311.93819010347,397.0826586675,424.17395032031,523.2511306012],"description":"Gamelan Renteng Bale` bandung from Kanoman (Cheribon). 1/1=338 Hz"}

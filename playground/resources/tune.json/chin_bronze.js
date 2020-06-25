@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,299.00064605783,313.95067836072,327.03195662575,348.83408706747,392.4383479509,436.04260883433,523.2511306012],"description":"Scale found on ancient Chinese bronze instrument 3rd c.BC & \"Scholar's Lute\""}

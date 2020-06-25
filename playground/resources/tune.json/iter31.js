@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,264.53251602616,277.4816601673,358.0999925052,1395.33634826987],"description":"Iterated Kidjel Ratio Scale, IE=16/3, PD=3, SD=0"}

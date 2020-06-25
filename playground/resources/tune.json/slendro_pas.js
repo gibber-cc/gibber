@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,300.35531433711,343.03050002254,393.12919962609,450.54468214486,523.2511306012],"description":"Gamelan slendro of regent of Pasoeroean, Jaap Kunst"}

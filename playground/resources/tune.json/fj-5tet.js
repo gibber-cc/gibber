@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,300.51585203447,345.20039866051,396.52624740872,455.42228033808,523.2511306012],"description":"Franck Jedrzejewski continued fractions approx. of 5-tet"}

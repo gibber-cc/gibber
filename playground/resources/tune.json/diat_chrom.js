@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,280.31310567921,301.87565226992,348.83408706747,392.4383479509,420.46965851882,452.81347840488,523.2511306012],"description":"Diatonic- Chromatic, on the border between the chromatic and diatonic genera"}

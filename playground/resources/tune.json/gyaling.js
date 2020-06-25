@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,283.49766588023,307.55338551939,339.28638158975,347.81902735497,393.58362272115,435.9522698367],"description":"Tibetan Buddhist Gyaling tones measured from CD \"The Diamond Path\", Ligon 2002"}

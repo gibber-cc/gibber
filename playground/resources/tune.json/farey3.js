@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,313.95067836072,348.83408706747,392.4383479509,418.60090448096,523.2511306012],"description":"Farey fractions between 0 and 1 until 3rd level, normalised by 2/1"}

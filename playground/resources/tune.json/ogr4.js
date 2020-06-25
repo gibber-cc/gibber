@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,278.64197723942,336.62443200122,461.29362042034,523.2511306012],"description":"Optimal Golomb Ruler of 4 segments, length 11"}

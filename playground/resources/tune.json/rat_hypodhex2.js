@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,267.19206668997,279.06726965397,348.83408706747,380.54627680087,386.4008349055,398.6675280771,523.2511306012],"description":"1+2 rat. hexachromatic/hexenharmonic genus derived from K.S.'s 'Bastard' Hypodo"}

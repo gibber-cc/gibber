@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,279.06726965397,313.95067836072,392.4383479509,418.60090448096,523.2511306012],"description":"From Lou Harrison, a pelog style pentatonic"}

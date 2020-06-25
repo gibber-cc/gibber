@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,292.5084949701,327.03692214239,391.62201198054,436.95817401562,523.2511306012],"description":"Optimally consonant major pentatonic, John deLaubenfels, 2001"}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,298.45295203849,346.01554587335,398.38689497567,455.51656649021,523.2511306012],"description":"Observed Javanese Slendro scale, Helmholtz/Ellis p. 518, nr.94"}

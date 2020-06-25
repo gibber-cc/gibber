@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,271.31540105247,310.07474405997,348.83408706747,392.4383479509,418.60090448096,470.92601754108,523.2511306012],"description":"Ptolemy's Iastia or Lydia tuning, mixture of Tonic Diatonic & Intense Diatonic"}

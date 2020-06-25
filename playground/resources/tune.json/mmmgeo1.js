@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,291.52662303231,317.822348206,348.40303271111,392.9238840789,423.23948674937,463.96335069158,523.2511306012],"description":"Scale for MakeMicroMusic in Peppermint 24, maybe a bit like Georgian tunings"}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,310.36356181711,368.84915763691,439.03187262068,523.2511306012],"description":"Cycle of 4 equal beating minor thirds"}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,284.4818984792,320.42873367481,380.17671965621,433.44136952667,521.74210224793],"description":"Observed tuning from Chinese balloon lute p'i-p'a, Helmholtz/Ellis p. 518, nr.109"}

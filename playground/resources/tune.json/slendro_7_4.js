@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,294.32876096318,343.38355445704,392.4383479509,457.84473927605,523.2511306012],"description":"Septimal Slendro 4, from Lou Harrison, Jacques Dudon, called \"NAT\""}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,784.8766959018,1046.5022612024],"description":"Intervals > 1 with Gradus = 3"}

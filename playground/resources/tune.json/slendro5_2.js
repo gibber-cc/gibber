@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,305.22982618403,348.83408706747,392.4383479509,457.84473927605,523.2511306012],"description":"A slendro type pentatonic which is based on intervals of 7, no. 2"}

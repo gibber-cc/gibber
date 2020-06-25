@@ -262,6 +262,7 @@ lead.note.seq(
         options: { canvas:document.querySelector('canvas' ) }
       }
     ]).then( ()=> {
+      Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
       Gibber.export( window ) 
     }) 
 

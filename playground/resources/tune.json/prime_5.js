@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,294.32876096318,327.03195662575,392.4383479509,436.04260883433,523.2511306012],"description":"What Lou Harrison calls \"the Prime Pentatonic\", a widely used scale"}

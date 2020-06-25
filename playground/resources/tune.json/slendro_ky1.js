@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,297.58776037991,344.33874539242,394.68595744625,449.52853279627,523.2511306012],"description":"Kyahi Kanyut Me`sem slendro, Mangku Nagaran, Solo. 1/1=291 Hz"}

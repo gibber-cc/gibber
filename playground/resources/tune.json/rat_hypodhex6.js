@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,273.00058987889,292.04714266113,348.83408706747,380.54627680087,392.4383479509,411.73859457144,523.2511306012],"description":"2+3 rationalized hexachromatic/hexenharmonic genus from K.S.'s 'Bastard' hypod"}

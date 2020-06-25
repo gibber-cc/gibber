@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,285.29448470177,307.6953604706,387.15515639797,420.96788906714,523.2511306012],"description":"Gamelan Miring from Serdang wetan, Tangerang. 1/1=309.5 Hz"}

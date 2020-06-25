@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,273.00058987889,299.00064605783,348.83408706747,380.54627680087,392.4383479509,418.60090448096,523.2511306012],"description":"rationalized second (1+2) trichromatic genus derived from K.S.'s 'Bastard' hyp"}

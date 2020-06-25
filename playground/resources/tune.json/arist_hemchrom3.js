@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,271.81876914348,282.83844897362,348.83408706747,392.4383479509,407.72815371522,424.25767346043,523.2511306012],"description":"Dorian mode of Aristoxenos' Hemiolic Chromatic according to Ptolemy's interpret"}

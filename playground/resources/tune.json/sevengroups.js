@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,261.6255653006,275.62199471997,265.19499215873,270.69536599394,266.7406479561],"description":"Here are some suggestions for a logical system encompassing intervals into seven broad groups: skhisma, kleisma, comma,"}

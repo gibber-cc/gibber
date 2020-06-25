@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,271.31540105247,281.75060878526,348.83408706747,392.4383479509,406.97310157871,422.62591317789,523.2511306012],"description":"Soft chromatic genus is from K. Schlesinger's modified Mixolydian Harmonia"}

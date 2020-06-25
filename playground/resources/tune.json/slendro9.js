@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,299.00064605783,336.37572681506,388.70083987518,448.50096908674,523.2511306012],"description":"Low gender from Singaraja (banjar Panataran), Bali. 1/1=175 Hz. McPhee, 1966."}

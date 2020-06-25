@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,327.03195662575,348.83408706747,392.4383479509,418.60090448096,523.2511306012],"description":"1.3.5.15 2)4 hexany (1.15 tonic) degenerate, symmetrical pentatonic"}

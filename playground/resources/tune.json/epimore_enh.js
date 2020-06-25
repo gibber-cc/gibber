@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,265.11390617127,279.06726965397,348.83408706747,392.4383479509,397.67085925691,418.60090448096,523.2511306012],"description":"New Epimoric Enharmonic, Dorian mode of the 4th new Enharmonic on Hofmann's list"}
