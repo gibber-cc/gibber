@@ -23,7 +23,7 @@ gulp.task( 'client', function(){
 });
 
 gulp.task('watch', function() {
-  var bundler = watchify( browserify('./playground/environment.js', { entry:true } ) );
+  var bundler = watchify( browserify( './playground/environment.js', { entry:true } ) );
 
   bundler.on('update', rebundle);
 

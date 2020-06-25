@@ -18,10 +18,14 @@
     "acorn": "^6.2.0",
     "acorn-walk": "^6.2.0",
     "gibber.audio.lib": "latest",
-    "gibber.core.lib" : "latest",
-    "gibber.graphics.lib": "latest" 
+    "gibber.core.lib": "latest",
+    "gibber.graphics.lib": "latest",
+    "http-server": "^0.12.3"
   },
-  "scripts": {},
+  "scripts": {
+    "install": "npx gulp",
+    "start": "npx http-server . -p 8080"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/charlieroberts/gibber.git"
