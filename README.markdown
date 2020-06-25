@@ -3,7 +3,7 @@ Gibber is a live coding environment for the web browser, combining music synthes
 
 Version 1 of gibber can be found at [https://gibber.cc]. The main branch of this repo is for Version 2.
 
-###Building Gibber###
+### Building Gibber ###
 There are three main components this repo wraps, in addition to providing the editing interface.
 
 1. gibber.audio.lib
