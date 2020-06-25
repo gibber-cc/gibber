@@ -253,7 +253,7 @@ lead.note.seq(
       {
         name:    'Audio',
         plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath  }
+        options: { workletPath }
       },
       {
         name:    'Graphics',
