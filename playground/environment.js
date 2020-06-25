@@ -3,9 +3,10 @@ const Gibber = window.Gibber = require( 'gibber.core.lib' )
 const Audio  = require( 'gibber.audio.lib' )
 const Graphics = require( 'gibber.graphics.lib' )
 
+const createProxies = require( './proxies.js' )
 const codeMarkup = require( './codeMarkup.js' )
-const CodeMirror = require( 'codemirror' )
 
+const CodeMirror = require( 'codemirror' )
 require("../node_modules/codemirror/addon/dialog/dialog.js")
 require("../node_modules/acorn/dist/acorn.js")
 require("../node_modules/acorn-loose/dist/acorn-loose.js")
@@ -246,7 +247,7 @@ lead.note.seq(
   [1/2,1,2] 
 )`
 
-  const workletPath = '../node_modules/gibberish-dsp/dist/gibberish_worklet.js' 
+  const workletPath = './gibberish_worklet.js' 
   const start = () => {
     cm.setValue( defaultCode )
     const promises = Gibber.init([
@@ -375,115 +376,6 @@ const fixCallback = function( cb ) {
 let shouldUseProxies = false
 environment.proxies = []
 
-const createProxies = function( pre, post, proxiedObj ) {
-  const newProps = post.filter( prop => pre.indexOf( prop ) === -1 )
-
-  for( let prop of newProps ) {
-    let ugen = proxiedObj[ prop ]
-
-    Object.defineProperty( proxiedObj, prop, {
-      get() { return ugen },
-      set(value) {
-
-        const member = ugen
-        if( member !== undefined && value !== undefined) {
-
-          if( typeof member === 'object' && member.__wrapped__ !== undefined ) {
-            if( member.__wrapped__.connected !== undefined ) {
-              // save copy of connections
-              const connected = member.__wrapped__.connected.slice( 0 )
-              if( member.disconnect !== undefined ) {
-                for( let connection of connected ) {
-                  // 0 index is connection target
-
-                  if( connection[0].isProperty === true ) {
-                    // if it's a modulation
-                    let idx = connection[0].mods.indexOf( ugen )
-
-                    connection[0].mods.splice( idx, 1 )
-                  }else{
-                    member.disconnect( connection[ 0 ] )
-                  }
-
-                  let shouldConnect = true
-                  if( connection[0] !== Gibber.Gibberish.output || Gibber.autoConnect === false ) {
-                    if( connection[0].isProperty !== true ) {
-                      shouldConnect = false
-                    }
-                    // don't connect new ugen to old ugen's effects chain... new
-                    // ugen should have its own chain.
-                    if( member.fx.indexOf( connection[0] ) > -1 ) {
-                      shouldConnect = false
-                    }
-                  }
-
-                  if( shouldConnect === true ) {
-                    value.connect( connection[ 0 ] )
-                  } 
-                }
-
-                member.disconnect()
-              }
-              // check for effects input to copy.
-              // XXX should we do this for busses with connected ugens as well???
-              // right now we are only connecting new ugens to busses... should we
-              // also connect new busses to their prior inputs if proxied?
-              if( member.input !== undefined ) {
-                value.input = member.input
-              }
-            }
-
-            // XXX this is supposed to loop through the effecfs of the old ugen, compare them to the fx
-            // in the new ugen, and then connect to any destination busses. unfortunately it seems buggy,
-            // and I don't feel like fixing at the moment. This means that you have to reconnect effects
-            // to busses that aren't the master (or the next effect in an effect chain).
-
-            /*
-            if( member.fx !== undefined && member.fx.length > 0 && value.fx !== undefined && value.fx.length > 0 ) {
-              for( let i = 0; i < member.fx.length; i++ ) {
-                const newEffect = value.fx[ i ]
-                if( newEffect !== undefined ) {
-                  const oldEffect = member.fx[ i ]
-
-                  for( let j = 0; j < oldEffect.__wrapped__.connected.length; j++ ) {
-                    let connection = oldEffect.__wrapped__.connected[ j ][ 0 ]
-                    
-                    // check to make sure connection is not simply in fx chain...
-                    // if it is, it is probably recreatd in as part of a preset, so
-                    // don't redo it here.
-                    if( member.fx.indexOf( connection ) === -1 ) {
-                      newEffect.connect( connection, oldEffect.__wrapped__.connected[ j ][ 1 ] )  
-                    }
-                  }
-                }
-              }
-            }*/
-
-            // make sure to disconnect any fx in the old ugen's fx chain
-            member.fx.forEach( effect => { 
-              effect.disconnect()
-              effect.clear() 
-            })
-            member.fx.length = 0
-          }
-        }
-
-        if( ugen !== undefined ) {
-          if( ugen.clear !== undefined ) {
-            //ugen.clear()
-          }else if( ugen.__onclear !== undefined ) {
-            // XXX does this condition ever happen?
-            ugen.__onclear()     
-          }
-        }
-
-        ugen = value
-      }
-    })
-
-    environment.proxies.push( prop )
-  }
-}
 
 const shouldUseJSDSP = true
 
@@ -526,14 +418,14 @@ CodeMirror.keyMap.playground =  {
 
       const func = new Function( code )
 
-      Gibber.shouldDelay = true
+      Gibber.shouldDelay = Gibber.Audio.shouldDelay = true
 
       const preWindowMembers = Object.keys( window )
       func()
       const postWindowMembers = Object.keys( window )
 
       if( preWindowMembers.length !== postWindowMembers.length ) {
-        createProxies( preWindowMembers, postWindowMembers, window )
+        createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
       }
       
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
@@ -580,14 +472,14 @@ CodeMirror.keyMap.playground =  {
 
       const func = new Function( code )
 
-      Gibber.shouldDelay = false 
+      Gibber.shouldDelay = Gibber.Audio.shouldDelay = false 
 
       const preWindowMembers = Object.keys( window )
       func()
       const postWindowMembers = Object.keys( window )
 
       if( preWindowMembers.length !== postWindowMembers.length ) {
-        createProxies( preWindowMembers, postWindowMembers, window )
+        createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
       }
       
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
@@ -635,13 +527,13 @@ CodeMirror.keyMap.playground =  {
 
       var func = new Function( code )
 
-      Gibber.shouldDelay = true
+      Gibber.shouldDelay = Gibber.Audio.shouldDelay = true 
       const preWindowMembers = Object.keys( window )
       func()
       const postWindowMembers = Object.keys( window )
 
       if( preWindowMembers.length !== postWindowMembers.length ) {
-        createProxies( preWindowMembers, postWindowMembers, window )
+        createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
       }
 
       //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack )
