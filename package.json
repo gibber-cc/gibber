@@ -1,60 +1,43 @@
 {
   "name": "gibber",
-  "version": "0.0.1",
-  "description": "Environment and libraries for Gibber",
-  "main": "node_modules/gibber.server",
-  "directories": {
-    "doc": "docs"
+  "version": "2.0.0",
+  "description": "Audiovisual creative coding environment",
+  "main": "js/index.js",
+  "devDependencies": {
+    "browserify": "^16.2.0",
+    "codemirror": "^5.48.0",
+    "gulp": "^3.9.1",
+    "gulp-uglify": "^3.0.0",
+    "serialize-javascript": "^1.5.0",
+    "tern": "^0.24.1",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0",
+    "watchify": "^3.11.0"
   },
   "dependencies": {
-    "browserify": "~5.12.0",
-    "codemirror": "^4.11.0",
-    "color": "~0.7.1",
-    "coreh-mousetrap": "~2.0.0",
-    "esprima": "~1.2.2",
+    "acorn": "^6.2.0",
+    "acorn-walk": "^6.2.0",
     "gibber.audio.lib": "latest",
-    "gibber.communication.lib": "latest",
-    "gibber.core.lib": "latest",
-    "gibber.graphics.lib": "latest",
-    "gibber.interface.lib": "latest",
-    "gibber.lib": "latest",
-    "gibber.server": "latest",
-    "gibberish-dsp": "latest",
-    "gulp": "~3.8.8",
-    "gulp-browserify": "~0.5.0",
-    "gulp-insert": "~0.4.0",
-    "gulp-rename": "~1.2.0",
-    "gulp-replace": "~0.4.0",
-    "gulp-uglify": "~1.0.1",
-    "gulp-util": "~3.0.1",
-    "interface.js": "latest",
-    "jquery": "~2.1.1",
-    "jquery-commonjs": "~1.7.3",
-    "production": "~0.0.2",
-    "share": "0.7.3",
-    "vinyl-buffer": "~1.0.0",
-    "vinyl-source-stream": "~1.0.0",
-    "watchify": "~1.0.3"
+    "gibber.core.lib" : "latest",
+    "gibber.graphics.lib": "latest" 
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
-    "url": "https://github.com/charlieroberts/Gibber.git"
+    "url": "https://github.com/charlieroberts/gibber.git"
   },
   "keywords": [
     "gibber",
     "audio",
+    "music",
     "graphics",
+    "raymarching",
     "shaders",
-    "sequencing",
-    "2d"
+    "sequencing"
   ],
   "author": "Charlie Roberts <charlie@charlie-roberts.com> (http://www.charlie-roberts.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/charlieroberts/Gibber/issues"
+    "url": "https://github.com/charlieroberts/gibber/issues"
   }
 }

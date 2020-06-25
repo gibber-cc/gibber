@@ -1,47 +1,43 @@
-var gbrowserify = require( 'gulp-browserify' ),
-    gulp = require( 'gulp' ),
-    buffer = require( 'vinyl-buffer' ),
-    uglify = require( 'gulp-uglify' ),
-    rename = require( 'gulp-rename' ),
-    replace = require( 'gulp-replace' ),
-    insert = require( 'gulp-insert' );
-    gutil = require('gulp-util'),
-    source = require('vinyl-source-stream'),
-    watchify = require('watchify'),
-    browserify = require('browserify');
+const gulp        = require( 'gulp' ),
+      buffer      = require( 'vinyl-buffer' ),
+      uglify      = require( 'gulp-uglify' ),
+      watchify    = require( 'watchify' ),
+      browserify  = require( 'browserify' ),
+      source      = require('vinyl-source-stream'),
+      fs          = require( 'fs' )
 
 gulp.task( 'client', function(){
-  var out = gulp.src( './js/main.js')
-    .pipe( gbrowserify({ standalone:'Gibber', bare:true }) )
-    .pipe( replace(/Gibber\=/g, '_Gibber=')) // TODO get rid of this... why is browserify messing with the global Gibber object?
-    .pipe( rename('index.js') )
-    .pipe( gulp.dest('./js') )
-    // .pipe( buffer() )
-    // .pipe( uglify() )
-    // .pipe( rename('gibber.lib.min.js') )
-    // .pipe( gulp.dest('./build/') )
-      
+  //var out = gulp.src( './js/audio.js' )//gulp.src( './node_modules/gibber.core.lib/scripts/gibber.js')
+  const out = browserify() //, transform:['glslify'] })
+    .require( './playground/environment.js', { entry: true })
+    .bundle()
+    .on( 'error', console.log )
+    .pipe( source( 'bundle.js' ) )
+    .pipe( gulp.dest( './playground' ) )
+/*    .pipe( buffer() )
+    .pipe( uglify() )
+    .pipe( rename('gibber.audio.lib.min.js') )
+    .pipe( gulp.dest('./build/') )
+*/    
     return out
 });
 
 gulp.task('watch', function() {
-  var bundler = watchify( browserify('./js/main.js', watchify.args ) );
-
-  // Optionally, you can apply transforms
-  // and other configuration options on the
-  // bundler just as you would with browserify
-  //bundler.transform('brfs');
+  var bundler = watchify( browserify('./playground/environment.js', { entry:true } ) );
 
   bundler.on('update', rebundle);
 
   function rebundle() {
-    console.log("recompiling... ", Date.now() )
+    const date = new Date()
+    console.log("recompiling... ", date.getHours(), date.getMinutes(), date.getSeconds() )
     return bundler.bundle()
       // log errors if they happen
-      .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+      .on( 'error', console.log ) 
       .pipe( source( 'bundle.js' ) )
-      .pipe( rename( 'index.js' ) )
-      .pipe( gulp.dest( './js' ) )
+      .pipe( gulp.dest( './playground/' ) )
+      // .pipe( uglify() )
+      // .pipe( rename('gibber.audio.lib.min.js') )
+      // .pipe( gulp.dest('./build/') )
   }
 
   return rebundle();
