@@ -17,3 +17,4 @@ Assuming you have node/npm installed, you can run `npm i` in the top level of th
 Gibber loads an audio worklet that is currently assumed to be at `node_modules/gibberish-dsp/dist/gibberish_worklet.js`. If your node installation places that worklet somewhere else you can edit the location in the `environment.js` file and then run gulp again... just do a search for `gibberish_worklet` to find the relevant section of the code.
 
 Finally, `npm start` will create a server running on port 8080. To view gibber in your browser, visit `127.0.0.1:8080`.
+
