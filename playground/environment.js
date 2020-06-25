@@ -246,14 +246,14 @@ lead.note.seq(
   [1/2,1,2] 
 )`
 
-  const workletPath = './gibberish_worklet.js' 
+  const workletPath = '../node_modules/gibberish-dsp/dist/gibberish_worklet.js' 
   const start = () => {
     cm.setValue( defaultCode )
     const promises = Gibber.init([
       {
         name:    'Audio',
         plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath:'./gibberish_worklet.js' }
+        options: { workletPath  }
       },
       {
         name:    'Graphics',
