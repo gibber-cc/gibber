@@ -1,6 +1,4 @@
 const Utility = module.exports = {
-
-
   elementArray: function( list ) {
     let out = []
 

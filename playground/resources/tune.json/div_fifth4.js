@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,274.70684356563,305.22982618403,343.38355445704,392.4383479509,523.2511306012],"description":"Divided Fifth #4, From Schlesinger, see Chapter 8, p. 160"}

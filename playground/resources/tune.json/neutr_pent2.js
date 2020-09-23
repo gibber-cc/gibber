@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,301.87565226992,348.83408706747,392.4383479509,452.81347840488,523.2511306012],"description":"Quasi-Neutral Pentatonic 2, 15/13 x 52/45 in each trichord, after Dudon"}

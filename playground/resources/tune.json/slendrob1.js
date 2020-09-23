@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,307.44024341205,355.66611281954,409.9203247543,476.83364134848,523.2511306012],"description":"Gamelan miring of Musadikrama, desa Katur, Bajanegara. 1/1=434 Hz"}

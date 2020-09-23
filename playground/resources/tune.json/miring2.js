@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,279.34865171253,304.66723527068,384.42070010042,412.69311132744,523.2511306012],"description":"Gamelan Miring (Melog gender) from Serdang wetan"}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,299.00064605783,348.83408706747,398.6675280771,457.84473927605,523.2511306012],"description":"Dudon's Slendro S1 from \"Seven-Limit Slendro Mutations\", 1/1 8:2 Jan 1994"}

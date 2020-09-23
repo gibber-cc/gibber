@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,279.06726965397,348.83408706747,372.08969287196,465.11211608996,523.2511306012],"description":"Scale of ancient Greek flutist Olympos, 6th century BC as reported by Partch"}

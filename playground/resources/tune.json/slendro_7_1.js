@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,299.00064605783,341.71502406609,392.4383479509,448.50096908674,523.2511306012],"description":"Septimal Slendro 1, From HMSL Manual, also Lou Harrison, Jacques Dudon"}

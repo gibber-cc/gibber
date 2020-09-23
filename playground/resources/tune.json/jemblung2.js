@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,300.03885820455,355.06324470257,391.40016308218,451.61555914985,523.2511306012],"description":"Bamboo gamelan jemblung at Royal Batavia Society. 1/1=504 Hz."}

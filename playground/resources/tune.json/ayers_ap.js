@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,299.00064605783,336.37572681506,388.70083987518,448.50096908674,523.2511306012],"description":"Lydia Ayers' Appetizer, ICMC 96, Balinese Slendro from Singaraja,"}

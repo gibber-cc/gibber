@@ -76,30 +76,30 @@ window.onload = function() {
   } 
 
   let server
-  //Promise.all( [ getURL("../dist/gibber.def.json" ) ] ).then( defs => {
-  //  environment.server = server = new CodeMirror.TernServer({defs: defs.map( JSON.parse ), options:{ hintDelay:5000, responseFilter:filter } })
+  Promise.all( [ getURL("./gibber.def.json" ) ] ).then( defs => {
+    environment.server = server = new CodeMirror.TernServer({defs: defs.map( JSON.parse ), options:{ hintDelay:5000, responseFilter:filter } })
 
-  //  cm.setOption("extraKeys", {
-  //    "Ctrl-Space": function(cm) { server.complete(cm) },
-  //    "Ctrl-I"    : function(cm) { server.showType(cm) },
-  //    "Ctrl-O"    : function(cm) { server.showDocs(cm) }
-  //  })
+    cm.setOption("extraKeys", {
+      "Ctrl-Space": function(cm) { server.complete(cm) },
+      "Ctrl-I"    : function(cm) { server.showType(cm) },
+      "Ctrl-O"    : function(cm) { server.showDocs(cm) }
+    })
 
-  //  cm.on( 'cursorActivity', function( cm ) { 
-  //    if( environment.showArgHints === true ) {
-  //      server.updateArgHints( cm ) 
-  //    }
-  //  })
+    cm.on( 'cursorActivity', function( cm ) { 
+      if( environment.showArgHints === true ) {
+        server.updateArgHints( cm ) 
+      }
+    })
 
-  //  cm.on( 'change', function( cm, change ) {
-  //    if( environment.showCompletions === true ) {
-  //      if( change.text[ change.text.length - 1 ] === '.' ) {
-  //        //console.log( 'complete' )
-  //        server.complete( cm )
-  //      }
-  //    }
-  //  })
-  //})
+    cm.on( 'change', function( cm, change ) {
+      if( environment.showCompletions === true ) {
+        if( change.text[ change.text.length - 1 ] === '.' ) {
+          //console.log( 'complete' )
+          server.complete( cm )
+        }
+      }
+    })
+  })
 
   cm.getWrapperElement().addEventListener( 'click', e => {
     if( e.altKey === true ) {
@@ -262,6 +262,7 @@ lead.note.seq(
         options: { canvas:document.querySelector('canvas' ) }
       }
     ]).then( ()=> {
+      Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
       Gibber.export( window ) 
     }) 
 

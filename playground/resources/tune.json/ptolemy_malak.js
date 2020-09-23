@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,274.08392555301,299.00064605783,348.83408706747,392.4383479509,406.97310157871,465.11211608996,523.2511306012],"description":"Ptolemy's Malaka lyra tuning, a mixture of Intense Chrom. & Tonic Diatonic"}

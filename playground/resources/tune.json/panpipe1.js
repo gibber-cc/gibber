@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,305.78200836532,346.61566493686,386.59871897734,424.03113209229,475.68400784708,523.2511306012],"description":"Palina panpipe of Solomon Islands. 1/1=f+45c. From Ocora CD Guadalcanal"}

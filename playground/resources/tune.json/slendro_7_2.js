@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,294.32876096318,343.38355445704,392.4383479509,448.50096908674,523.2511306012],"description":"Septimal Slendro 2, From Lou Harrison, Jacques Dudon's APTOS"}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,298.87388797409,337.89601991959,388.44742741354,452.30188977628,523.2511306012],"description":"Scale of bamboo gamelan jemblung from Kalijering, slendro-like. 1/1=590 Hz."}

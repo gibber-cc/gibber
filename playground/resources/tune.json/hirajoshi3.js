@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,292.47977325983,321.54118165335,396.32121331049,415.54465627623,522.94897617031],"description":"Observed Japanese pentatonic koto scale. Helmholtz/Ellis p.519, nr.111"}

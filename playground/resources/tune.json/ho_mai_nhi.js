@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,287.78812183066,348.83408706747,392.4383479509,431.68218274599,523.2511306012],"description":"Ho Mai Nhi (Nam Hue) dan tranh scale, Vietnam"}

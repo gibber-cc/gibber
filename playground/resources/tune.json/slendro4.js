@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,294.5074669504,344.54514337401,400.3014113889,467.49486258632,523.2511306012],"description":"Low gender in saih lima from Kuta, Bali. 1/1=183 Hz. McPhee, 1966"}

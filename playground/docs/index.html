@@ -1,0 +1,69 @@
+<!doctype html>
+
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>gibber</title>
+
+  <!-- Flatdoc -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src='https://cdn.rawgit.com/rstacruz/flatdoc/v0.9.0/legacy.js'></script>
+  <script src='https://cdn.rawgit.com/rstacruz/flatdoc/v0.9.0/flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <!--<link  href='https://cdn.rawgit.com/rstacruz/flatdoc/v0.9.0/theme-white/style.css' rel='stylesheet'>-->
+  <link href='./dark.css' rel='stylesheet'>
+  <script src='https://cdn.rawgit.com/rstacruz/flatdoc/v0.9.0/theme-white/script.js'></script>
+
+  <!-- Meta -->
+  <meta content="gibber" property="og:title">
+  <meta content="gibber - live coding audiovisuals"  name="description">
+
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: Flatdoc.file('docs.md')
+    })
+  </script>
+
+  <style>
+    h2 { text-transform:none !important }
+    .level-3 { display:none }
+    .content h3 { border-bottom:none !important }
+
+    /* indent all poly synths */
+    li a[href*="poly"] { padding-left:1em }
+
+    /* ... but not poly prototype. */
+    #mixins-polyinstrument-link { padding-left:0 }
+  </style>
+
+</head>
+<body role='flatdoc' class='no-literate'>
+
+  <div class='header'>
+    <div class='left'>
+      <h1>gibber</h1>
+      <ul>
+        <li><a href='https://github.com/charlieroberts/gibber.audio.lib'>View on GitHub</a></li>
+        <li><a href='https://github.com/charlieroberts/gibber.audio.lib/issues'>Issues</a></li>
+      </ul>
+    </div>
+    <div class='right'>
+      <!-- GitHub buttons: see http://ghbtns.com -->
+      <iframe src="https://ghbtns.com/github-btn.html?user=charlieroberts&amp;repo=gibberish&amp;type=watch&amp;count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>

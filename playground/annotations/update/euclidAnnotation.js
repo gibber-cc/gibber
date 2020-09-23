@@ -123,10 +123,12 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     }
   }
 
+  let clearing = false
   patternObject._onchange = () => {
     //let delay = Utility.beatsToMs( 1,  Gibber.Scheduler.bpm )
 
     // markStart is a closure variable that will be used in the call to mark()
+    if( clearing === false ) {
     markStart = track.markup.textMarkers[ className ][ 0 ].find()
     markEnd   = track.markup.textMarkers[ className ][ patternObject.values.length - 1  ].find()
 
@@ -149,9 +151,11 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     //}
 
     mark()
+    }
   }
 
   patternObject.clear = () => {
+    clearing = true
     const commentPos = patternObject.commentMarker.find()
 
     // if this gets called twice...

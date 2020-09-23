@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,298.97057995496,344.02264297658,395.86362945285,454.20288100724,525.67465946865],"description":"Average of 30 measured slendro gamelans, W. Surjodiningrat et al., 1993."}

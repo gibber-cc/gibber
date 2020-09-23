@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,281.75060878526,305.22982618403,313.95067836072,353.19451315581,392.4383479509,523.2511306012],"description":"Zirafkend Bouzourk (IG #3, DF #9), from both Rouanet and Safi al-Din"}

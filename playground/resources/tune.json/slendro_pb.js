@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,304.72408298441,342.83241505062,399.30842833955,449.24533531117,523.2511306012],"description":"\"Blown fifth\" medium slendro, von Hornbostel"}

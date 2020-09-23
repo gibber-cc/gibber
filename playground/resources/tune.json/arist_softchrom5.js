@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,270.64713651786,280.31310567921,348.83408706747,392.4383479509,405.97070477679,420.46965851882,523.2511306012],"description":"Dorian mode of Aristoxenos' Soft Chromatic according to Ptolemy's interpretati"}

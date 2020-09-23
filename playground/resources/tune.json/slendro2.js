@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,299.13295468097,343.58614396263,395.91119354826,450.08870388136,523.2511306012],"description":"Gamelan slendro from Ranchaiyuh, distr. Tanggerang, Batavia. 1/1=282.5 Hz"}

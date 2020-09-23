@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,285.79952600623,326.97270111135,357.18467683857,523.2511306012],"description":"Scale of druri dana of Siwoli, south Nias, Jaap Kunst"}

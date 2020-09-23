@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,330.24866439584,416.02753826489,523.2511306012],"description":"Cycle of 3 equal beating thirds"}

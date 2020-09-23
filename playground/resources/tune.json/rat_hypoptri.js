@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,271.68808704293,282.55561052465,362.25078272391,392.4383479509,403.65087217807,415.52295665389,523.2511306012],"description":"Rationalized Schlesinger's Hypophrygian Harmonia in first trichromatic genus"}

@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,347.61817721989,375.37611551499],"description":"African Mboko Mouth Bow (chordophone, single string, plucked)"}

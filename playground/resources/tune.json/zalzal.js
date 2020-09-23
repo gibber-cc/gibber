@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,294.32876096318,321.08592105074,348.83408706747,392.4383479509,428.11456140098,465.11211608996,523.2511306012],"description":"Tuning of popular flute by Al Farabi & Zalzal. First tetrachord is modern Rast"}

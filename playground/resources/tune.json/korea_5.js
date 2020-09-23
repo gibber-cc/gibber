@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,294.32876096318,348.83408706747,392.4383479509,470.92601754108,523.2511306012],"description":"According to Lou Harrison, called \"the Delightful\" in Korea"}

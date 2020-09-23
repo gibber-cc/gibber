@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,300.52885648597,345.61604384578,394.49404533893,447.94973572445,522.94897617031],"description":"Sultan's gamelan Madoe kentir, Jogjakarta, Jaap Kunst"}

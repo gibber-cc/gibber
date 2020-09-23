@@ -1,0 +1,1 @@
+{"frequencies":[261.6255653006,310.92686529443,370.08842528703,441.08229727815,523.2511306012],"description":"Cycle of 4 equal beating major sixths"}
