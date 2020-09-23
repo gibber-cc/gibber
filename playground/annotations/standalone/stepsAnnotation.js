@@ -150,8 +150,8 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
       pattern.clear = () => {
         //track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid' })
-        pattern.reset()
         if( typeof __clear === 'function' ) __clear.call( pattern )
+        pattern.reset()
         if( span !== undefined ) {
           span.remove( 'euclid0' ) 
           span.remove( 'euclid1' ) 

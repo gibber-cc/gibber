@@ -88,9 +88,13 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
               effect.clear() 
             })
             member.fx.length = 0
+          }else{ // end ugen conditional
+            if( value.type === 'Steps' ) {
+              //member.stop()
+              member.clear() 
+            }
           }
         }
-
         if( ugen !== undefined ) {
           if( ugen.clear !== undefined ) {
             //ugen.clear()

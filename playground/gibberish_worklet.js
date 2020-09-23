@@ -1,4603 +1,7 @@
-const window = {}; 
+const global = typeof window === 'undefined' ? {} : window;
         let Gibberish = null; 
         let initialized = false;
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Gibberish = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'abs',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet ? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.abs' : Math.abs })
-
-      out = `${ref}abs( ${inputs[0]} )`
-
-    } else {
-      out = Math.abs( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let abs = Object.create( proto )
-
-  abs.inputs = [ x ]
-
-  return abs
-}
-
-},{"./gen.js":32}],2:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'accum',
-
-  gen() {
-    let code,
-        inputs = gen.getInputs( this ),
-        genName = 'gen.' + this.name,
-        functionBody
-
-    gen.requestMemory( this.memory )
-
-    gen.memory.heap[ this.memory.value.idx ] = this.initialValue
-
-    functionBody = this.callback( genName, inputs[0], inputs[1], `memory[${this.memory.value.idx}]` )
-
-    //gen.closures.add({ [ this.name ]: this }) 
-
-    gen.memo[ this.name ] = this.name + '_value'
-    
-    return [ this.name + '_value', functionBody ]
-  },
-
-  callback( _name, _incr, _reset, valueRef ) {
-    let diff = this.max - this.min,
-        out = '',
-        wrap = ''
-    
-    /* three different methods of wrapping, third is most expensive:
-     *
-     * 1: range {0,1}: y = x - (x | 0)
-     * 2: log2(this.max) == integer: y = x & (this.max - 1)
-     * 3: all others: if( x >= this.max ) y = this.max -x
-     *
-     */
-
-    // must check for reset before storing value for output
-    if( !(typeof this.inputs[1] === 'number' && this.inputs[1] < 1) ) { 
-      if( this.resetValue !== this.min ) {
-
-        out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.resetValue}\n\n`
-        //out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.min}\n\n`
-      }else{
-        out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.min}\n\n`
-        //out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.initialValue}\n\n`
-      }
-    }
-
-    out += `  var ${this.name}_value = ${valueRef}\n`
-    
-    if( this.shouldWrap === false && this.shouldClamp === true ) {
-      out += `  if( ${valueRef} < ${this.max } ) ${valueRef} += ${_incr}\n`
-    }else{
-      out += `  ${valueRef} += ${_incr}\n` // store output value before accumulating  
-    }
-
-    if( this.max !== Infinity  && this.shouldWrapMax ) wrap += `  if( ${valueRef} >= ${this.max} ) ${valueRef} -= ${diff}\n`
-    if( this.min !== -Infinity && this.shouldWrapMin ) wrap += `  if( ${valueRef} < ${this.min} ) ${valueRef} += ${diff}\n`
-
-    //if( this.min === 0 && this.max === 1 ) { 
-    //  wrap =  `  ${valueRef} = ${valueRef} - (${valueRef} | 0)\n\n`
-    //} else if( this.min === 0 && ( Math.log2( this.max ) | 0 ) === Math.log2( this.max ) ) {
-    //  wrap =  `  ${valueRef} = ${valueRef} & (${this.max} - 1)\n\n`
-    //} else if( this.max !== Infinity ){
-    //  wrap = `  if( ${valueRef} >= ${this.max} ) ${valueRef} -= ${diff}\n\n`
-    //}
-
-    out = out + wrap + '\n'
-
-    return out
-  },
-
-  defaults : { min:0, max:1, resetValue:0, initialValue:0, shouldWrap:true, shouldWrapMax: true, shouldWrapMin:true, shouldClamp:false }
-}
-
-module.exports = ( incr, reset=0, properties ) => {
-  const ugen = Object.create( proto )
-      
-  Object.assign( ugen, 
-    { 
-      uid:    gen.getUID(),
-      inputs: [ incr, reset ],
-      memory: {
-        value: { length:1, idx:null }
-      }
-    },
-    proto.defaults,
-    properties 
-  )
-
-  if( properties !== undefined && properties.shouldWrapMax === undefined && properties.shouldWrapMin === undefined ) {
-    if( properties.shouldWrap !== undefined ) {
-      ugen.shouldWrapMin = ugen.shouldWrapMax = properties.shouldWrap
-    }
-  }
-
-  if( properties !== undefined && properties.resetValue === undefined ) {
-    ugen.resetValue = ugen.min
-  }
-
-  if( ugen.initialValue === undefined ) ugen.initialValue = ugen.min
-
-  Object.defineProperty( ugen, 'value', {
-    get()  { 
-      //console.log( 'gen:', gen, gen.memory )
-      return gen.memory.heap[ this.memory.value.idx ] 
-    },
-    set(v) { gen.memory.heap[ this.memory.value.idx ] = v }
-  })
-
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],3:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'acos',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet ? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ 'acos': isWorklet ? 'Math.acos' :Math.acos })
-
-      out = `${ref}acos( ${inputs[0]} )` 
-
-    } else {
-      out = Math.acos( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let acos = Object.create( proto )
-
-  acos.inputs = [ x ]
-  acos.id = gen.getUID()
-  acos.name = `${acos.basename}{acos.id}`
-
-  return acos
-}
-
-},{"./gen.js":32}],4:[function(require,module,exports){
-'use strict'
-
-let gen      = require( './gen.js' ),
-    mul      = require( './mul.js' ),
-    sub      = require( './sub.js' ),
-    div      = require( './div.js' ),
-    data     = require( './data.js' ),
-    peek     = require( './peek.js' ),
-    accum    = require( './accum.js' ),
-    ifelse   = require( './ifelseif.js' ),
-    lt       = require( './lt.js' ),
-    bang     = require( './bang.js' ),
-    env      = require( './env.js' ),
-    add      = require( './add.js' ),
-    poke     = require( './poke.js' ),
-    neq      = require( './neq.js' ),
-    and      = require( './and.js' ),
-    gte      = require( './gte.js' ),
-    memo     = require( './memo.js' ),
-    utilities= require( './utilities.js' )
-
-module.exports = ( attackTime = 44100, decayTime = 44100, _props ) => {
-  const props = Object.assign({}, { shape:'exponential', alpha:5, trigger:null }, _props )
-  const _bang = props.trigger !== null ? props.trigger : bang(),
-        phase = accum( 1, _bang, { min:0, max: Infinity, initialValue:-Infinity, shouldWrap:false })
-      
-  let bufferData, bufferDataReverse, decayData, out, buffer
-
-  //console.log( 'shape:', props.shape, 'attack time:', attackTime, 'decay time:', decayTime )
-  let completeFlag = data( [0] )
-  
-  // slightly more efficient to use existing phase accumulator for linear envelopes
-  if( props.shape === 'linear' ) {
-    out = ifelse( 
-      and( gte( phase, 0), lt( phase, attackTime )),
-      div( phase, attackTime ),
-
-      and( gte( phase, 0),  lt( phase, add( attackTime, decayTime ) ) ),
-      sub( 1, div( sub( phase, attackTime ), decayTime ) ),
-      
-      neq( phase, -Infinity),
-      poke( completeFlag, 1, 0, { inline:0 }),
-
-      0 
-    )
-  } else {
-    bufferData = env({ length:1024, type:props.shape, alpha:props.alpha })
-    bufferDataReverse = env({ length:1024, type:props.shape, alpha:props.alpha, reverse:true })
-
-    out = ifelse( 
-      and( gte( phase, 0), lt( phase, attackTime ) ), 
-      peek( bufferData, div( phase, attackTime ), { boundmode:'clamp' } ), 
-
-      and( gte(phase,0), lt( phase, add( attackTime, decayTime ) ) ), 
-      peek( bufferDataReverse, div( sub( phase, attackTime ), decayTime ), { boundmode:'clamp' }),
-
-      neq( phase, -Infinity ),
-      poke( completeFlag, 1, 0, { inline:0 }),
-
-      0
-    )
-  }
-
-  const usingWorklet = gen.mode === 'worklet'
-  if( usingWorklet === true ) {
-    out.node = null
-    utilities.register( out )
-  }
-
-  // needed for gibberish... getting this to work right with worklets
-  // via promises will probably be tricky
-  out.isComplete = ()=> {
-    if( usingWorklet === true && out.node !== null ) {
-      const p = new Promise( resolve => {
-        out.node.getMemoryValue( completeFlag.memory.values.idx, resolve )
-      })
-
-      return p
-    }else{
-      return gen.memory.heap[ completeFlag.memory.values.idx ]
-    }
-  }
-
-  out.trigger = ()=> {
-    if( usingWorklet === true && out.node !== null ) {
-      out.node.port.postMessage({ key:'set', idx:completeFlag.memory.values.idx, value:0 })
-    }else{
-      gen.memory.heap[ completeFlag.memory.values.idx ] = 0
-    }
-    _bang.trigger()
-  }
-
-  return out 
-}
-
-},{"./accum.js":2,"./add.js":5,"./and.js":7,"./bang.js":11,"./data.js":18,"./div.js":23,"./env.js":24,"./gen.js":32,"./gte.js":34,"./ifelseif.js":37,"./lt.js":40,"./memo.js":44,"./mul.js":50,"./neq.js":51,"./peek.js":56,"./poke.js":58,"./sub.js":69,"./utilities.js":75}],5:[function(require,module,exports){
-'use strict'
-
-const gen = require('./gen.js')
-
-const proto = { 
-  basename:'add',
-  gen() {
-    let inputs = gen.getInputs( this ),
-        out='',
-        sum = 0, numCount = 0, adderAtEnd = false, alreadyFullSummed = true
-
-    if( inputs.length === 0 ) return 0
-
-    out = `  var ${this.name} = `
-
-    inputs.forEach( (v,i) => {
-      if( isNaN( v ) ) {
-        out += v
-        if( i < inputs.length -1 ) {
-          adderAtEnd = true
-          out += ' + '
-        }
-        alreadyFullSummed = false
-      }else{
-        sum += parseFloat( v )
-        numCount++
-      }
-    })
-
-    if( numCount > 0 ) {
-      out += adderAtEnd || alreadyFullSummed ? sum : ' + ' + sum
-    }
-
-    out += '\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  }
-}
-
-module.exports = ( ...args ) => {
-  const add = Object.create( proto )
-  add.id = gen.getUID()
-  add.name = add.basename + add.id
-  add.inputs = args
-
-  return add
-}
-
-},{"./gen.js":32}],6:[function(require,module,exports){
-'use strict'
-
-let gen      = require( './gen.js' ),
-    mul      = require( './mul.js' ),
-    sub      = require( './sub.js' ),
-    div      = require( './div.js' ),
-    data     = require( './data.js' ),
-    peek     = require( './peek.js' ),
-    accum    = require( './accum.js' ),
-    ifelse   = require( './ifelseif.js' ),
-    lt       = require( './lt.js' ),
-    bang     = require( './bang.js' ),
-    env      = require( './env.js' ),
-    param    = require( './param.js' ),
-    add      = require( './add.js' ),
-    gtp      = require( './gtp.js' ),
-    not      = require( './not.js' ),
-    and      = require( './and.js' ),
-    neq      = require( './neq.js' ),
-    poke     = require( './poke.js' )
-
-module.exports = ( attackTime=44, decayTime=22050, sustainTime=44100, sustainLevel=.6, releaseTime=44100, _props ) => {
-  let envTrigger = bang(),
-      phase = accum( 1, envTrigger, { max: Infinity, shouldWrap:false, initialValue:Infinity }),
-      shouldSustain = param( 1 ),
-      defaults = {
-         shape: 'exponential',
-         alpha: 5,
-         triggerRelease: false,
-      },
-      props = Object.assign({}, defaults, _props ),
-      bufferData, decayData, out, buffer, sustainCondition, releaseAccum, releaseCondition
-
-
-  const completeFlag = data( [0] )
-
-  bufferData = env({ length:1024, alpha:props.alpha, shift:0, type:props.shape })
-
-  sustainCondition = props.triggerRelease 
-    ? shouldSustain
-    : lt( phase, add( attackTime, decayTime, sustainTime ) )
-
-  releaseAccum = props.triggerRelease
-    ? gtp( sub( sustainLevel, accum( div( sustainLevel, releaseTime ) , 0, { shouldWrap:false }) ), 0 )
-    : sub( sustainLevel, mul( div( sub( phase, add( attackTime, decayTime, sustainTime ) ), releaseTime ), sustainLevel ) ), 
-
-  releaseCondition = props.triggerRelease
-    ? not( shouldSustain )
-    : lt( phase, add( attackTime, decayTime, sustainTime, releaseTime ) )
-
-  out = ifelse(
-    // attack 
-    lt( phase,  attackTime ), 
-    peek( bufferData, div( phase, attackTime ), { boundmode:'clamp' } ), 
-
-    // decay
-    lt( phase, add( attackTime, decayTime ) ), 
-    peek( bufferData, sub( 1, mul( div( sub( phase,  attackTime ),  decayTime ), sub( 1,  sustainLevel ) ) ), { boundmode:'clamp' }),
-
-    // sustain
-    and( sustainCondition, neq( phase, Infinity ) ),
-    peek( bufferData,  sustainLevel ),
-
-    // release
-    releaseCondition, //lt( phase,  attackTime +  decayTime +  sustainTime +  releaseTime ),
-    peek( 
-      bufferData,
-      releaseAccum, 
-      //sub(  sustainLevel, mul( div( sub( phase,  attackTime +  decayTime +  sustainTime),  releaseTime ),  sustainLevel ) ), 
-      { boundmode:'clamp' }
-    ),
-
-    neq( phase, Infinity ),
-    poke( completeFlag, 1, 0, { inline:0 }),
-
-    0
-  )
-   
-  const usingWorklet = gen.mode === 'worklet'
-  if( usingWorklet === true ) {
-    out.node = null
-    utilities.register( out )
-  }
-
-  out.trigger = ()=> {
-    shouldSustain.value = 1
-    envTrigger.trigger()
-  }
- 
-  // needed for gibberish... getting this to work right with worklets
-  // via promises will probably be tricky
-  out.isComplete = ()=> {
-    if( usingWorklet === true && out.node !== null ) {
-      const p = new Promise( resolve => {
-        out.node.getMemoryValue( completeFlag.memory.values.idx, resolve )
-      })
-
-      return p
-    }else{
-      return gen.memory.heap[ completeFlag.memory.values.idx ]
-    }
-  }
-
-
-  out.release = ()=> {
-    shouldSustain.value = 0
-    // XXX pretty nasty... grabs accum inside of gtp and resets value manually
-    // unfortunately envTrigger won't work as it's back to 0 by the time the release block is triggered...
-    if( usingWorklet && out.node !== null ) {
-      out.node.port.postMessage({ key:'set', idx:releaseAccum.inputs[0].inputs[1].memory.value.idx, value:0 })
-    }else{
-      gen.memory.heap[ releaseAccum.inputs[0].inputs[1].memory.value.idx ] = 0
-    }
-  }
-
-  return out 
-}
-
-},{"./accum.js":2,"./add.js":5,"./and.js":7,"./bang.js":11,"./data.js":18,"./div.js":23,"./env.js":24,"./gen.js":32,"./gtp.js":35,"./ifelseif.js":37,"./lt.js":40,"./mul.js":50,"./neq.js":51,"./not.js":53,"./param.js":55,"./peek.js":56,"./poke.js":58,"./sub.js":69}],7:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'and',
-
-  gen() {
-    let inputs = gen.getInputs( this ), out
-
-    out = `  var ${this.name} = (${inputs[0]} !== 0 && ${inputs[1]} !== 0) | 0\n\n`
-
-    gen.memo[ this.name ] = `${this.name}`
-
-    return [ `${this.name}`, out ]
-  },
-
-}
-
-module.exports = ( in1, in2 ) => {
-  let ugen = Object.create( proto )
-  Object.assign( ugen, {
-    uid:     gen.getUID(),
-    inputs:  [ in1, in2 ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],8:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'asin',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet ? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ 'asin': isWorklet ? 'Math.sin' : Math.asin })
-
-      out = `${ref}asin( ${inputs[0]} )` 
-
-    } else {
-      out = Math.asin( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let asin = Object.create( proto )
-
-  asin.inputs = [ x ]
-  asin.id = gen.getUID()
-  asin.name = `${asin.basename}{asin.id}`
-
-  return asin
-}
-
-},{"./gen.js":32}],9:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'atan',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet ? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ 'atan': isWorklet ? 'Math.atan' : Math.atan })
-
-      out = `${ref}atan( ${inputs[0]} )` 
-
-    } else {
-      out = Math.atan( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let atan = Object.create( proto )
-
-  atan.inputs = [ x ]
-  atan.id = gen.getUID()
-  atan.name = `${atan.basename}{atan.id}`
-
-  return atan
-}
-
-},{"./gen.js":32}],10:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' ),
-    history = require( './history.js' ),
-    mul     = require( './mul.js' ),
-    sub     = require( './sub.js' )
-
-module.exports = ( decayTime = 44100 ) => {
-  let ssd = history ( 1 ),
-      t60 = Math.exp( -6.907755278921 / decayTime )
-
-  ssd.in( mul( ssd.out, t60 ) )
-
-  ssd.out.trigger = ()=> {
-    ssd.value = 1
-  }
-
-  return sub( 1, ssd.out )
-}
-
-},{"./gen.js":32,"./history.js":36,"./mul.js":50,"./sub.js":69}],11:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js')
-
-let proto = {
-  gen() {
-    gen.requestMemory( this.memory )
-    
-    let out = 
-`  var ${this.name} = memory[${this.memory.value.idx}]
-  if( ${this.name} === 1 ) memory[${this.memory.value.idx}] = 0      
-      
-`
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  } 
-}
-
-module.exports = ( _props ) => {
-  let ugen = Object.create( proto ),
-      props = Object.assign({}, { min:0, max:1 }, _props )
-
-  ugen.name = 'bang' + gen.getUID()
-
-  ugen.min = props.min
-  ugen.max = props.max
-
-  const usingWorklet = gen.mode === 'worklet'
-  if( usingWorklet === true ) {
-    ugen.node = null
-    utilities.register( ugen )
-  }
-
-  ugen.trigger = () => {
-    if( usingWorklet === true && ugen.node !== null ) {
-      ugen.node.port.postMessage({ key:'set', idx:ugen.memory.value.idx, value:ugen.max })
-    }else{
-      gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
-    }
-  }
-
-  ugen.memory = {
-    value: { length:1, idx:null }
-  }
-
-  return ugen
-}
-
-},{"./gen.js":32}],12:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'bool',
-
-  gen() {
-    let inputs = gen.getInputs( this ), out
-
-    out = `${inputs[0]} === 0 ? 0 : 1`
-    
-    //gen.memo[ this.name ] = `gen.data.${this.name}`
-
-    //return [ `gen.data.${this.name}`, ' ' +out ]
-    return out
-  }
-}
-
-module.exports = ( in1 ) => {
-  let ugen = Object.create( proto )
-
-  Object.assign( ugen, { 
-    uid:        gen.getUID(),
-    inputs:     [ in1 ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-
-},{"./gen.js":32}],13:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'ceil',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet ? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.ceil' : Math.ceil })
-
-      out = `${ref}ceil( ${inputs[0]} )`
-
-    } else {
-      out = Math.ceil( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let ceil = Object.create( proto )
-
-  ceil.inputs = [ x ]
-
-  return ceil
-}
-
-},{"./gen.js":32}],14:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js'),
-    floor= require('./floor.js'),
-    sub  = require('./sub.js'),
-    memo = require('./memo.js')
-
-let proto = {
-  basename:'clip',
-
-  gen() {
-    let code,
-        inputs = gen.getInputs( this ),
-        out
-
-    out =
-
-` var ${this.name} = ${inputs[0]}
-  if( ${this.name} > ${inputs[2]} ) ${this.name} = ${inputs[2]}
-  else if( ${this.name} < ${inputs[1]} ) ${this.name} = ${inputs[1]}
-`
-    out = ' ' + out
-    
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  },
-}
-
-module.exports = ( in1, min=-1, max=1 ) => {
-  let ugen = Object.create( proto )
-
-  Object.assign( ugen, { 
-    min, 
-    max,
-    uid:    gen.getUID(),
-    inputs: [ in1, min, max ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./floor.js":29,"./gen.js":32,"./memo.js":44,"./sub.js":69}],15:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'cos',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    
-    const isWorklet = gen.mode === 'worklet'
-
-    const ref = isWorklet ? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ 'cos': isWorklet ? 'Math.cos' : Math.cos })
-
-      out = `${ref}cos( ${inputs[0]} )` 
-
-    } else {
-      out = Math.cos( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let cos = Object.create( proto )
-
-  cos.inputs = [ x ]
-  cos.id = gen.getUID()
-  cos.name = `${cos.basename}{cos.id}`
-
-  return cos
-}
-
-},{"./gen.js":32}],16:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'counter',
-
-  gen() {
-    let code,
-        inputs = gen.getInputs( this ),
-        genName = 'gen.' + this.name,
-        functionBody
-       
-    if( this.memory.value.idx === null ) gen.requestMemory( this.memory )
-    gen.memory.heap[ this.memory.value.idx ] = this.initialValue
-    
-    functionBody  = this.callback( genName, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4],  `memory[${this.memory.value.idx}]`, `memory[${this.memory.wrap.idx}]`  )
-
-    gen.memo[ this.name ] = this.name + '_value'
-   
-    if( gen.memo[ this.wrap.name ] === undefined ) this.wrap.gen()
-
-    return [ this.name + '_value', functionBody ]
-  },
-
-  callback( _name, _incr, _min, _max, _reset, loops, valueRef, wrapRef ) {
-    let diff = this.max - this.min,
-        out = '',
-        wrap = ''
-    // must check for reset before storing value for output
-    if( !(typeof this.inputs[3] === 'number' && this.inputs[3] < 1) ) { 
-      out += `  if( ${_reset} >= 1 ) ${valueRef} = ${_min}\n`
-    }
-
-    out += `  var ${this.name}_value = ${valueRef};\n  ${valueRef} += ${_incr}\n` // store output value before accumulating  
-    
-    if( typeof this.max === 'number' && this.max !== Infinity && typeof this.min !== 'number' ) {
-      wrap = 
-`  if( ${valueRef} >= ${this.max} &&  ${loops} > 0) {
-    ${valueRef} -= ${diff}
-    ${wrapRef} = 1
-  }else{
-    ${wrapRef} = 0
-  }\n`
-    }else if( this.max !== Infinity && this.min !== Infinity ) {
-      wrap = 
-`  if( ${valueRef} >= ${_max} &&  ${loops} > 0) {
-    ${valueRef} -= ${_max} - ${_min}
-    ${wrapRef} = 1
-  }else if( ${valueRef} < ${_min} &&  ${loops} > 0) {
-    ${valueRef} += ${_max} - ${_min}
-    ${wrapRef} = 1
-  }else{
-    ${wrapRef} = 0
-  }\n`
-    }else{
-      out += '\n'
-    }
-
-    out = out + wrap
-
-    return out
-  }
-}
-
-module.exports = ( incr=1, min=0, max=Infinity, reset=0, loops=1,  properties ) => {
-  let ugen = Object.create( proto ),
-      defaults = Object.assign( { initialValue: 0, shouldWrap:true }, properties )
-
-  Object.assign( ugen, { 
-    min:    min, 
-    max:    max,
-    initialValue: defaults.initialValue,
-    value:  defaults.initialValue,
-    uid:    gen.getUID(),
-    inputs: [ incr, min, max, reset, loops ],
-    memory: {
-      value: { length:1, idx: null },
-      wrap:  { length:1, idx: null } 
-    },
-    wrap : {
-      gen() { 
-        if( ugen.memory.wrap.idx === null ) {
-          gen.requestMemory( ugen.memory )
-        }
-        gen.getInputs( this )
-        gen.memo[ this.name ] = `memory[ ${ugen.memory.wrap.idx} ]`
-        return `memory[ ${ugen.memory.wrap.idx} ]` 
-      }
-    }
-  },
-  defaults )
- 
-  Object.defineProperty( ugen, 'value', {
-    get() {
-      if( this.memory.value.idx !== null ) {
-        return gen.memory.heap[ this.memory.value.idx ]
-      }
-    },
-    set( v ) {
-      if( this.memory.value.idx !== null ) {
-        gen.memory.heap[ this.memory.value.idx ] = v 
-      }
-    }
-  })
-  
-  ugen.wrap.inputs = [ ugen ]
-  ugen.name = `${ugen.basename}${ugen.uid}`
-  ugen.wrap.name = ugen.name + '_wrap'
-  return ugen
-} 
-
-},{"./gen.js":32}],17:[function(require,module,exports){
-'use strict'
-
-let gen  = require( './gen.js' ),
-    accum= require( './phasor.js' ),
-    data = require( './data.js' ),
-    peek = require( './peek.js' ),
-    mul  = require( './mul.js' ),
-    phasor=require( './phasor.js')
-
-let proto = {
-  basename:'cycle',
-
-  initTable() {    
-    let buffer = new Float32Array( 1024 )
-
-    for( let i = 0, l = buffer.length; i < l; i++ ) {
-      buffer[ i ] = Math.sin( ( i / l ) * ( Math.PI * 2 ) )
-    }
-
-    gen.globals.cycle = data( buffer, 1, { immutable:true } )
-  }
-
-}
-
-module.exports = ( frequency=1, reset=0, _props ) => {
-  if( typeof gen.globals.cycle === 'undefined' ) proto.initTable() 
-  const props = Object.assign({}, { min:0 }, _props )
-
-  const ugen = peek( gen.globals.cycle, phasor( frequency, reset, props ))
-  ugen.name = 'cycle' + gen.getUID()
-
-  return ugen
-}
-
-},{"./data.js":18,"./gen.js":32,"./mul.js":50,"./peek.js":56,"./phasor.js":57}],18:[function(require,module,exports){
-'use strict'
-
-const gen  = require('./gen.js'),
-      utilities = require( './utilities.js' ),
-      peek = require('./peek.js'),
-      poke = require('./poke.js')
-
-const proto = {
-  basename:'data',
-  globals: {},
-  memo:{},
-
-  gen() {
-    let idx
-    //console.log( 'data name:', this.name, proto.memo )
-    //debugger
-    if( gen.memo[ this.name ] === undefined ) {
-      let ugen = this
-      gen.requestMemory( this.memory, this.immutable ) 
-      idx = this.memory.values.idx
-      if( this.buffer !== undefined ) {
-        try {
-          gen.memory.heap.set( this.buffer, idx )
-        }catch( e ) {
-          console.log( e )
-          throw Error( 'error with request. asking for ' + this.buffer.length +'. current index: ' + gen.memoryIndex + ' of ' + gen.memory.heap.length )
-        }
-      }
-      //gen.data[ this.name ] = this
-      //return 'gen.memory' + this.name + '.buffer'
-      if( this.name.indexOf('data') === -1 ) {
-        proto.memo[ this.name ] = idx
-      }else{
-        gen.memo[ this.name ] = idx
-      }
-    }else{
-      //console.log( 'using gen data memo', proto.memo[ this.name ] )
-      idx = gen.memo[ this.name ]
-    }
-    return idx
-  },
-}
-
-module.exports = ( x, y=1, properties ) => {
-  let ugen, buffer, shouldLoad = false
-  
-  if( properties !== undefined && properties.global !== undefined ) {
-    if( gen.globals[ properties.global ] ) {
-      return gen.globals[ properties.global ]
-    }
-  }
-
-  if( typeof x === 'number' ) {
-    if( y !== 1 ) {
-      buffer = []
-      for( let i = 0; i < y; i++ ) {
-        buffer[ i ] = new Float32Array( x )
-      }
-    }else{
-      buffer = new Float32Array( x )
-    }
-  }else if( Array.isArray( x ) ) { //! (x instanceof Float32Array ) ) {
-    let size = x.length
-    buffer = new Float32Array( size )
-    for( let i = 0; i < x.length; i++ ) {
-      buffer[ i ] = x[ i ]
-    }
-  }else if( typeof x === 'string' ) {
-    //buffer = { length: y > 1 ? y : gen.samplerate * 60 } // XXX what???
-    //if( proto.memo[ x ] === undefined ) {
-      buffer = { length: y > 1 ? y : 1 } // XXX what???
-      shouldLoad = true
-    //}else{
-      //buffer = proto.memo[ x ]
-    //}
-  }else if( x instanceof Float32Array ) {
-    buffer = x
-  }
-  
-  ugen = Object.create( proto ) 
-
-  Object.assign( ugen, 
-  { 
-    buffer,
-    name: proto.basename + gen.getUID(),
-    dim:  buffer !== undefined ? buffer.length : 1, // XXX how do we dynamically allocate this?
-    channels : 1,
-    onload: null,
-    //then( fnc ) {
-    //  ugen.onload = fnc
-    //  return ugen
-    //},
-    immutable: properties !== undefined && properties.immutable === true ? true : false,
-    load( filename, __resolve ) {
-      let promise = utilities.loadSample( filename, ugen )
-      promise.then( _buffer => { 
-        proto.memo[ x ] = _buffer
-        ugen.name = filename
-        ugen.memory.values.length = ugen.dim = _buffer.length
-
-        gen.requestMemory( ugen.memory, ugen.immutable ) 
-        gen.memory.heap.set( _buffer, ugen.memory.values.idx )
-        if( typeof ugen.onload === 'function' ) ugen.onload( _buffer ) 
-        __resolve( ugen )
-      })
-    },
-    memory : {
-      values: { length:buffer !== undefined ? buffer.length : 1, idx:null }
-    }
-  },
-  properties
-  )
-
-  
-  if( properties !== undefined ) {
-    if( properties.global !== undefined ) {
-      gen.globals[ properties.global ] = ugen
-    }
-    if( properties.meta === true ) {
-      for( let i = 0, length = ugen.buffer.length; i < length; i++ ) {
-        Object.defineProperty( ugen, i, {
-          get () {
-            return peek( ugen, i, { mode:'simple', interp:'none' } )
-          },
-          set( v ) {
-            return poke( ugen, v, i )
-          }
-        })
-      }
-    }
-  }
-
-  let returnValue
-  if( shouldLoad === true ) {
-    returnValue = new Promise( (resolve,reject) => {
-      //ugen.load( x, resolve )
-      let promise = utilities.loadSample( x, ugen )
-      promise.then( _buffer => { 
-        proto.memo[ x ] = _buffer
-        ugen.memory.values.length = ugen.dim = _buffer.length
-
-        ugen.buffer = _buffer
-        //gen.once( 'memory init', ()=> {
-        //  console.log( "CALLED", ugen.memory )
-        //  gen.requestMemory( ugen.memory, ugen.immutable ) 
-        //  gen.memory.heap.set( _buffer, ugen.memory.values.idx )
-        //  if( typeof ugen.onload === 'function' ) ugen.onload( _buffer ) 
-        //})
-        
-        resolve( ugen )
-      })     
-    })
-  }else if( proto.memo[ x ] !== undefined ) {
-
-    gen.once( 'memory init', ()=> {
-      gen.requestMemory( ugen.memory, ugen.immutable ) 
-      gen.memory.heap.set( ugen.buffer, ugen.memory.values.idx )
-      if( typeof ugen.onload === 'function' ) ugen.onload( ugen.buffer ) 
-    })
-
-    returnValue = ugen
-  }else{
-    returnValue = ugen
-  }
-
-  return returnValue 
-}
-
-
-},{"./gen.js":32,"./peek.js":56,"./poke.js":58,"./utilities.js":75}],19:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' ),
-    history = require( './history.js' ),
-    sub     = require( './sub.js' ),
-    add     = require( './add.js' ),
-    mul     = require( './mul.js' ),
-    memo    = require( './memo.js' )
-
-module.exports = ( in1 ) => {
-  let x1 = history(),
-      y1 = history(),
-      filter
-
-  //History x1, y1; y = in1 - x1 + y1*0.9997; x1 = in1; y1 = y; out1 = y;
-  filter = memo( add( sub( in1, x1.out ), mul( y1.out, .9997 ) ) )
-  x1.in( in1 )
-  y1.in( filter )
-
-  return filter
-}
-
-},{"./add.js":5,"./gen.js":32,"./history.js":36,"./memo.js":44,"./mul.js":50,"./sub.js":69}],20:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' ),
-    history = require( './history.js' ),
-    mul     = require( './mul.js' ),
-    t60     = require( './t60.js' )
-
-module.exports = ( decayTime = 44100, props ) => {
-  let properties = Object.assign({}, { initValue:1 }, props ),
-      ssd = history ( properties.initValue )
-
-  ssd.in( mul( ssd.out, t60( decayTime ) ) )
-
-  ssd.out.trigger = ()=> {
-    ssd.value = 1
-  }
-
-  return ssd.out 
-}
-
-},{"./gen.js":32,"./history.js":36,"./mul.js":50,"./t60.js":71}],21:[function(require,module,exports){
-'use strict'
-
-const gen  = require( './gen.js'  ),
-      data = require( './data.js' ),
-      poke = require( './poke.js' ),
-      peek = require( './peek.js' ),
-      sub  = require( './sub.js'  ),
-      wrap = require( './wrap.js' ),
-      accum= require( './accum.js'),
-      memo = require( './memo.js' )
-
-const proto = {
-  basename:'delay',
-
-  gen() {
-    let inputs = gen.getInputs( this )
-    
-    gen.memo[ this.name ] = inputs[0]
-    
-    return inputs[0]
-  },
-}
-
-const defaults = { size: 512, interp:'none' }
-
-module.exports = ( in1, taps, properties ) => {
-  const ugen = Object.create( proto )
-  let writeIdx, readIdx, delaydata
-
-  if( Array.isArray( taps ) === false ) taps = [ taps ]
-  
-  const props = Object.assign( {}, defaults, properties )
-
-  const maxTapSize = Math.max( ...taps )
-  if( props.size < maxTapSize ) props.size = maxTapSize
-
-  delaydata = data( props.size )
-  
-  ugen.inputs = []
-
-  writeIdx = accum( 1, 0, { max:props.size, min:0 })
-  
-  for( let i = 0; i < taps.length; i++ ) {
-    ugen.inputs[ i ] = peek( delaydata, wrap( sub( writeIdx, taps[i] ), 0, props.size ),{ mode:'samples', interp:props.interp })
-  }
-  
-  ugen.outputs = ugen.inputs // XXX ugh, Ugh, UGH! but i guess it works.
-
-  poke( delaydata, in1, writeIdx )
-
-  ugen.name = `${ugen.basename}${gen.getUID()}`
-
-  return ugen
-}
-
-},{"./accum.js":2,"./data.js":18,"./gen.js":32,"./memo.js":44,"./peek.js":56,"./poke.js":58,"./sub.js":69,"./wrap.js":77}],22:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' ),
-    history = require( './history.js' ),
-    sub     = require( './sub.js' )
-
-module.exports = ( in1 ) => {
-  let n1 = history()
-    
-  n1.in( in1 )
-
-  let ugen = sub( in1, n1.out )
-  ugen.name = 'delta'+gen.getUID()
-
-  return ugen
-}
-
-},{"./gen.js":32,"./history.js":36,"./sub.js":69}],23:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js')
-
-const proto = {
-  basename:'div',
-  gen() {
-    let inputs = gen.getInputs( this ),
-        out=`  var ${this.name} = `,
-        diff = 0, 
-        numCount = 0,
-        lastNumber = inputs[ 0 ],
-        lastNumberIsUgen = isNaN( lastNumber ), 
-        divAtEnd = false
-
-    inputs.forEach( (v,i) => {
-      if( i === 0 ) return
-
-      let isNumberUgen = isNaN( v ),
-        isFinalIdx   = i === inputs.length - 1
-
-      if( !lastNumberIsUgen && !isNumberUgen ) {
-        lastNumber = lastNumber / v
-        out += lastNumber
-      }else{
-        out += `${lastNumber} / ${v}`
-      }
-
-      if( !isFinalIdx ) out += ' / ' 
-    })
-
-    out += '\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  }
-}
-
-module.exports = (...args) => {
-  const div = Object.create( proto )
-  
-  Object.assign( div, {
-    id:     gen.getUID(),
-    inputs: args,
-  })
-
-  div.name = div.basename + div.id
-  
-  return div
-}
-
-},{"./gen.js":32}],24:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen' ),
-    windows = require( './windows' ),
-    data    = require( './data' ),
-    peek    = require( './peek' ),
-    phasor  = require( './phasor' ),
-    defaults = {
-      type:'triangular', length:1024, alpha:.15, shift:0, reverse:false 
-    }
-
-module.exports = props => {
-  
-  let properties = Object.assign( {}, defaults, props )
-  let buffer = new Float32Array( properties.length )
-
-  let name = properties.type + '_' + properties.length + '_' + properties.shift + '_' + properties.reverse + '_' + properties.alpha
-  if( typeof gen.globals.windows[ name ] === 'undefined' ) { 
-
-    for( let i = 0; i < properties.length; i++ ) {
-      buffer[ i ] = windows[ properties.type ]( properties.length, i, properties.alpha, properties.shift )
-    }
-
-    if( properties.reverse === true ) { 
-      buffer.reverse()
-    }
-    gen.globals.windows[ name ] = data( buffer )
-  }
-
-  let ugen = gen.globals.windows[ name ] 
-  ugen.name = 'env' + gen.getUID()
-
-  return ugen
-}
-
-},{"./data":18,"./gen":32,"./peek":56,"./phasor":57,"./windows":76}],25:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'eq',
-
-  gen() {
-    let inputs = gen.getInputs( this ), out
-
-    out = this.inputs[0] === this.inputs[1] ? 1 : `  var ${this.name} = (${inputs[0]} === ${inputs[1]}) | 0\n\n`
-
-    gen.memo[ this.name ] = `${this.name}`
-
-    return [ `${this.name}`, out ]
-  },
-
-}
-
-module.exports = ( in1, in2 ) => {
-  let ugen = Object.create( proto )
-  Object.assign( ugen, {
-    uid:     gen.getUID(),
-    inputs:  [ in1, in2 ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],26:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'exp',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.exp' : Math.exp })
-
-      out = `${ref}exp( ${inputs[0]} )`
-
-    } else {
-      out = Math.exp( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let exp = Object.create( proto )
-
-  exp.inputs = [ x ]
-
-  return exp
-}
-
-},{"./gen.js":32}],27:[function(require,module,exports){
-/**
- * Copyright 2018 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
-
-// originally from:
-// https://github.com/GoogleChromeLabs/audioworklet-polyfill
-// I am modifying it to accept variable buffer sizes
-// and to get rid of some strange global initialization that seems required to use it
-// with browserify. Also, I added changes to fix a bug in Safari for the AudioWorkletProcessor
-// property not having a prototype (see:https://github.com/GoogleChromeLabs/audioworklet-polyfill/pull/25)
-// TODO: Why is there an iframe involved? (realm.js)
-
-const Realm = require( './realm.js' )
-
-const AWPF = function( self = window, bufferSize = 4096 ) {
-  const PARAMS = []
-  let nextPort
-
-  if (typeof AudioWorkletNode !== 'function' || !("audioWorklet" in AudioContext.prototype)) {
-    self.AudioWorkletNode = function AudioWorkletNode (context, name, options) {
-      const processor = getProcessorsForContext(context)[name];
-      const outputChannels = options && options.outputChannelCount ? options.outputChannelCount[0] : 2;
-      const scriptProcessor = context.createScriptProcessor( bufferSize, 2, outputChannels);
-
-      scriptProcessor.parameters = new Map();
-      if (processor.properties) {
-        for (let i = 0; i < processor.properties.length; i++) {
-          const prop = processor.properties[i];
-          const node = context.createGain().gain;
-          node.value = prop.defaultValue;
-          // @TODO there's no good way to construct the proxy AudioParam here
-          scriptProcessor.parameters.set(prop.name, node);
-        }
-      }
-
-      const mc = new MessageChannel();
-      nextPort = mc.port2;
-      const inst = new processor.Processor(options || {});
-      nextPort = null;
-
-      scriptProcessor.port = mc.port1;
-      scriptProcessor.processor = processor;
-      scriptProcessor.instance = inst;
-      scriptProcessor.onaudioprocess = onAudioProcess;
-      return scriptProcessor;
-    };
-
-    Object.defineProperty((self.AudioContext || self.webkitAudioContext).prototype, 'audioWorklet', {
-      get () {
-        return this.$$audioWorklet || (this.$$audioWorklet = new self.AudioWorklet(this));
-      }
-    });
-
-    /* XXX - ADDED TO OVERCOME PROBLEM IN SAFARI WHERE AUDIOWORKLETPROCESSOR PROTOTYPE IS NOT AN OBJECT */
-    const AudioWorkletProcessor = function() {
-      this.port = nextPort
-    }
-    AudioWorkletProcessor.prototype = {}
-
-    self.AudioWorklet = class AudioWorklet {
-      constructor (audioContext) {
-        this.$$context = audioContext;
-      }
-
-      addModule (url, options) {
-        return fetch(url).then(r => {
-          if (!r.ok) throw Error(r.status);
-          return r.text();
-        }).then( code => {
-          const context = {
-            sampleRate: this.$$context.sampleRate,
-            currentTime: this.$$context.currentTime,
-            AudioWorkletProcessor,
-            registerProcessor: (name, Processor) => {
-              const processors = getProcessorsForContext(this.$$context);
-              processors[name] = {
-                realm,
-                context,
-                Processor,
-                properties: Processor.parameterDescriptors || []
-              };
-            }
-          };
-
-          context.self = context;
-          const realm = new Realm(context, document.documentElement);
-          realm.exec(((options && options.transpile) || String)(code));
-          return null;
-        });
-      }
-    };
-  }
-
-  function onAudioProcess (e) {
-    const parameters = {};
-    let index = -1;
-    this.parameters.forEach((value, key) => {
-      const arr = PARAMS[++index] || (PARAMS[index] = new Float32Array(this.bufferSize));
-      // @TODO proper values here if possible
-      arr.fill(value.value);
-      parameters[key] = arr;
-    });
-    this.processor.realm.exec(
-      'self.sampleRate=sampleRate=' + this.context.sampleRate + ';' +
-      'self.currentTime=currentTime=' + this.context.currentTime
-    );
-    const inputs = channelToArray(e.inputBuffer);
-    const outputs = channelToArray(e.outputBuffer);
-    this.instance.process([inputs], [outputs], parameters);
-  }
-
-  function channelToArray (ch) {
-    const out = [];
-    for (let i = 0; i < ch.numberOfChannels; i++) {
-      out[i] = ch.getChannelData(i);
-    }
-    return out;
-  }
-
-  function getProcessorsForContext (audioContext) {
-    return audioContext.$$processors || (audioContext.$$processors = {});
-  }
-}
-
-module.exports = AWPF
-
-},{"./realm.js":28}],28:[function(require,module,exports){
-/**
- * Copyright 2018 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
-
-module.exports = function Realm (scope, parentElement) {
-  const frame = document.createElement('iframe');
-  frame.style.cssText = 'position:absolute;left:0;top:-999px;width:1px;height:1px;';
-  parentElement.appendChild(frame);
-  const win = frame.contentWindow;
-  const doc = win.document;
-  let vars = 'var window,$hook';
-  for (const i in win) {
-    if (!(i in scope) && i !== 'eval') {
-      vars += ',';
-      vars += i;
-    }
-  }
-  for (const i in scope) {
-    vars += ',';
-    vars += i;
-    vars += '=self.';
-    vars += i;
-  }
-  const script = doc.createElement('script');
-  script.appendChild(doc.createTextNode(
-    `function $hook(self,console) {"use strict";
-        ${vars};return function() {return eval(arguments[0])}}`
-  ));
-  doc.body.appendChild(script);
-  this.exec = win.$hook.call(scope, scope, console);
-}
-
-},{}],29:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'floor',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    if( isNaN( inputs[0] ) ) {
-      //gen.closures.add({ [ this.name ]: Math.floor })
-
-      out = `( ${inputs[0]} | 0 )`
-
-    } else {
-      out = inputs[0] | 0
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let floor = Object.create( proto )
-
-  floor.inputs = [ x ]
-
-  return floor
-}
-
-},{"./gen.js":32}],30:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'fold',
-
-  gen() {
-    let code,
-        inputs = gen.getInputs( this ),
-        out
-
-    out = this.createCallback( inputs[0], this.min, this.max ) 
-
-    gen.memo[ this.name ] = this.name + '_value'
-
-    return [ this.name + '_value', out ]
-  },
-
-  createCallback( v, lo, hi ) {
-    let out =
-` var ${this.name}_value = ${v},
-      ${this.name}_range = ${hi} - ${lo},
-      ${this.name}_numWraps = 0
-
-  if(${this.name}_value >= ${hi}){
-    ${this.name}_value -= ${this.name}_range
-    if(${this.name}_value >= ${hi}){
-      ${this.name}_numWraps = ((${this.name}_value - ${lo}) / ${this.name}_range) | 0
-      ${this.name}_value -= ${this.name}_range * ${this.name}_numWraps
-    }
-    ${this.name}_numWraps++
-  } else if(${this.name}_value < ${lo}){
-    ${this.name}_value += ${this.name}_range
-    if(${this.name}_value < ${lo}){
-      ${this.name}_numWraps = ((${this.name}_value - ${lo}) / ${this.name}_range- 1) | 0
-      ${this.name}_value -= ${this.name}_range * ${this.name}_numWraps
-    }
-    ${this.name}_numWraps--
-  }
-  if(${this.name}_numWraps & 1) ${this.name}_value = ${hi} + ${lo} - ${this.name}_value
-`
-    return ' ' + out
-  }
-}
-
-module.exports = ( in1, min=0, max=1 ) => {
-  let ugen = Object.create( proto )
-
-  Object.assign( ugen, { 
-    min, 
-    max,
-    uid:    gen.getUID(),
-    inputs: [ in1 ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],31:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'gate',
-  controlString:null, // insert into output codegen for determining indexing
-  gen() {
-    let inputs = gen.getInputs( this ), out
-    
-    gen.requestMemory( this.memory )
-    
-    let lastInputMemoryIdx = 'memory[ ' + this.memory.lastInput.idx + ' ]',
-        outputMemoryStartIdx = this.memory.lastInput.idx + 1,
-        inputSignal = inputs[0],
-        controlSignal = inputs[1]
-    
-    /* 
-     * we check to see if the current control inputs equals our last input
-     * if so, we store the signal input in the memory associated with the currently
-     * selected index. If not, we put 0 in the memory associated with the last selected index,
-     * change the selected index, and then store the signal in put in the memery assoicated
-     * with the newly selected index
-     */
-    
-    out =
-
-` if( ${controlSignal} !== ${lastInputMemoryIdx} ) {
-    memory[ ${lastInputMemoryIdx} + ${outputMemoryStartIdx}  ] = 0 
-    ${lastInputMemoryIdx} = ${controlSignal}
-  }
-  memory[ ${outputMemoryStartIdx} + ${controlSignal} ] = ${inputSignal}
-
-`
-    this.controlString = inputs[1]
-    this.initialized = true
-
-    gen.memo[ this.name ] = this.name
-
-    this.outputs.forEach( v => v.gen() )
-
-    return [ null, ' ' + out ]
-  },
-
-  childgen() {
-    if( this.parent.initialized === false ) {
-      gen.getInputs( this ) // parent gate is only input of a gate output, should only be gen'd once.
-    }
-
-    if( gen.memo[ this.name ] === undefined ) {
-      gen.requestMemory( this.memory )
-
-      gen.memo[ this.name ] = `memory[ ${this.memory.value.idx} ]`
-    }
-    
-    return  `memory[ ${this.memory.value.idx} ]`
-  }
-}
-
-module.exports = ( control, in1, properties ) => {
-  let ugen = Object.create( proto ),
-      defaults = { count: 2 }
-
-  if( typeof properties !== undefined ) Object.assign( defaults, properties )
-
-  Object.assign( ugen, {
-    outputs: [],
-    uid:     gen.getUID(),
-    inputs:  [ in1, control ],
-    memory: {
-      lastInput: { length:1, idx:null }
-    },
-    initialized:false
-  },
-  defaults )
-  
-  ugen.name = `${ugen.basename}${gen.getUID()}`
-
-  for( let i = 0; i < ugen.count; i++ ) {
-    ugen.outputs.push({
-      index:i,
-      gen: proto.childgen,
-      parent:ugen,
-      inputs: [ ugen ],
-      memory: {
-        value: { length:1, idx:null }
-      },
-      initialized:false,
-      name: `${ugen.name}_out${gen.getUID()}`
-    })
-  }
-
-  return ugen
-}
-
-},{"./gen.js":32}],32:[function(require,module,exports){
-'use strict'
-
-/* gen.js
- *
- * low-level code generation for unit generators
- *
- */
-const MemoryHelper = require( 'memory-helper' )
-const EE = require( 'events' ).EventEmitter
-
-const gen = {
-
-  accum:0,
-  getUID() { return this.accum++ },
-  debug:false,
-  samplerate: 44100, // change on audiocontext creation
-  shouldLocalize: false,
-  graph:null,
-  globals:{
-    windows: {},
-  },
-  mode:'worklet',
-  
-  /* closures
-   *
-   * Functions that are included as arguments to master callback. Examples: Math.abs, Math.random etc.
-   * XXX Should probably be renamed callbackProperties or something similar... closures are no longer used.
-   */
-
-  closures: new Set(),
-  params:   new Set(),
-  inputs:   new Set(),
-
-  parameters: new Set(),
-  endBlock: new Set(),
-  histories: new Map(),
-
-  memo: {},
-
-  //data: {},
-  
-  /* export
-   *
-   * place gen functions into another object for easier reference
-   */
-
-  export( obj ) {},
-
-  addToEndBlock( v ) {
-    this.endBlock.add( '  ' + v )
-  },
-  
-  requestMemory( memorySpec, immutable=false ) {
-    for( let key in memorySpec ) {
-      let request = memorySpec[ key ]
-
-      //console.log( 'requesting ' + key + ':' , JSON.stringify( request ) )
-
-      if( request.length === undefined ) {
-        console.log( 'undefined length for:', key )
-
-        continue
-      }
-
-      request.idx = gen.memory.alloc( request.length, immutable )
-    }
-  },
-
-  createMemory( amount=4096, type ) {
-    const mem = MemoryHelper.create( amount, type )
-    return mem
-  },
-
-  createCallback( ugen, mem, debug = false, shouldInlineMemory=false, memType = Float64Array ) {
-    let isStereo = Array.isArray( ugen ) && ugen.length > 1,
-        callback, 
-        channel1, channel2
-
-    if( typeof mem === 'number' || mem === undefined ) {
-      this.memory = this.createMemory( mem, memType )
-    }else{
-      this.memory = mem
-    }
-    
-    this.outputIdx = this.memory.alloc( 2, true )
-    this.emit( 'memory init' )
-
-    //console.log( 'cb memory:', mem )
-    this.graph = ugen
-    this.memo = {} 
-    this.endBlock.clear()
-    this.closures.clear()
-    this.inputs.clear()
-    this.params.clear()
-    this.globals = { windows:{} }
-    
-    this.parameters.clear()
-    
-    this.functionBody = "  'use strict'\n"
-    if( shouldInlineMemory===false ) {
-      this.functionBody += this.mode === 'worklet' ? 
-        "  var memory = this.memory\n\n" :
-        "  var memory = gen.memory\n\n"
-    }
-
-    // call .gen() on the head of the graph we are generating the callback for
-    //console.log( 'HEAD', ugen )
-    for( let i = 0; i < 1 + isStereo; i++ ) {
-      if( typeof ugen[i] === 'number' ) continue
-
-      //let channel = isStereo ? ugen[i].gen() : ugen.gen(),
-      let channel = isStereo ? this.getInput( ugen[i] ) : this.getInput( ugen ), 
-          body = ''
-
-      // if .gen() returns array, add ugen callback (graphOutput[1]) to our output functions body
-      // and then return name of ugen. If .gen() only generates a number (for really simple graphs)
-      // just return that number (graphOutput[0]).
-      body += Array.isArray( channel ) ? channel[1] + '\n' + channel[0] : channel
-
-      // split body to inject return keyword on last line
-      body = body.split('\n')
-     
-      //if( debug ) console.log( 'functionBody length', body )
-      
-      // next line is to accommodate memo as graph head
-      if( body[ body.length -1 ].trim().indexOf('let') > -1 ) { body.push( '\n' ) } 
-
-      // get index of last line
-      let lastidx = body.length - 1
-
-      // insert return keyword
-      body[ lastidx ] = '  memory[' + (this.outputIdx + i) + ']  = ' + body[ lastidx ] + '\n'
-
-      this.functionBody += body.join('\n')
-    }
-    
-    this.histories.forEach( value => {
-      if( value !== null )
-        value.gen()      
-    })
-
-    const returnStatement = isStereo ? `  return [ memory[${this.outputIdx}], memory[${this.outputIdx + 1}] ]` : `  return memory[${this.outputIdx}]`
-    
-    this.functionBody = this.functionBody.split('\n')
-
-    if( this.endBlock.size ) { 
-      this.functionBody = this.functionBody.concat( Array.from( this.endBlock ) )
-      this.functionBody.push( returnStatement )
-    }else{
-      this.functionBody.push( returnStatement )
-    }
-    // reassemble function body
-    this.functionBody = this.functionBody.join('\n')
-
-    // we can only dynamically create a named function by dynamically creating another function
-    // to construct the named function! sheesh...
-    //
-    if( shouldInlineMemory === true ) {
-      this.parameters.add( 'memory' )
-    }
-
-    let paramString = ''
-    if( this.mode === 'worklet' ) {
-      for( let name of this.parameters.values() ) {
-        paramString += name + ','
-      }
-      paramString = paramString.slice(0,-1)
-    }
-
-    const separator = this.parameters.size !== 0 && this.inputs.size > 0 ? ', ' : ''
-
-    let inputString = ''
-    if( this.mode === 'worklet' ) {
-      for( let ugen of this.inputs.values() ) {
-        inputString += ugen.name + ','
-      }
-      inputString = inputString.slice(0,-1)
-    }
-
-    let buildString = this.mode === 'worklet'
-      ? `return function( ${inputString} ${separator} ${paramString} ){ \n${ this.functionBody }\n}`
-      : `return function gen( ${ [...this.parameters].join(',') } ){ \n${ this.functionBody }\n}`
-    
-    if( this.debug || debug ) console.log( buildString ) 
-
-    callback = new Function( buildString )()
-
-    // assign properties to named function
-    for( let dict of this.closures.values() ) {
-      let name = Object.keys( dict )[0],
-          value = dict[ name ]
-
-      callback[ name ] = value
-    }
-
-    for( let dict of this.params.values() ) {
-      let name = Object.keys( dict )[0],
-          ugen = dict[ name ]
-      
-      Object.defineProperty( callback, name, {
-        configurable: true,
-        get() { return ugen.value },
-        set(v){ ugen.value = v }
-      })
-      //callback[ name ] = value
-    }
-
-    callback.members = this.closures
-    callback.data = this.data
-    callback.params = this.params
-    callback.inputs = this.inputs
-    callback.parameters = this.parameters//.slice( 0 )
-    callback.out = this.memory.heap.subarray( this.outputIdx, this.outputIdx + 2 )
-    callback.isStereo = isStereo
-
-    //if( MemoryHelper.isPrototypeOf( this.memory ) ) 
-    callback.memory = this.memory.heap
-
-    this.histories.clear()
-
-    return callback
-  },
-  
-  /* getInputs
-   *
-   * Called by each individual ugen when their .gen() method is called to resolve their various inputs.
-   * If an input is a number, return the number. If
-   * it is an ugen, call .gen() on the ugen, memoize the result and return the result. If the
-   * ugen has previously been memoized return the memoized value.
-   *
-   */
-  getInputs( ugen ) {
-    return ugen.inputs.map( gen.getInput ) 
-  },
-
-  getInput( input ) {
-    let isObject = typeof input === 'object',
-        processedInput
-
-    if( isObject ) { // if input is a ugen... 
-      //console.log( input.name, gen.memo[ input.name ] )
-      if( gen.memo[ input.name ] ) { // if it has been memoized...
-        processedInput = gen.memo[ input.name ]
-      }else if( Array.isArray( input ) ) {
-        gen.getInput( input[0] )
-        gen.getInput( input[1] )
-      }else{ // if not memoized generate code  
-        if( typeof input.gen !== 'function' ) {
-          console.log( 'no gen found:', input, input.gen )
-          input = input.graph
-        }
-        let code = input.gen()
-        //if( code.indexOf( 'Object' ) > -1 ) console.log( 'bad input:', input, code )
-        
-        if( Array.isArray( code ) ) {
-          if( !gen.shouldLocalize ) {
-            gen.functionBody += code[1]
-          }else{
-            gen.codeName = code[0]
-            gen.localizedCode.push( code[1] )
-          }
-          //console.log( 'after GEN' , this.functionBody )
-          processedInput = code[0]
-        }else{
-          processedInput = code
-        }
-      }
-    }else{ // it input is a number
-      processedInput = input
-    }
-
-    return processedInput
-  },
-
-  startLocalize() {
-    this.localizedCode = []
-    this.shouldLocalize = true
-  },
-  endLocalize() {
-    this.shouldLocalize = false
-
-    return [ this.codeName, this.localizedCode.slice(0) ]
-  },
-
-  free( graph ) {
-    if( Array.isArray( graph ) ) { // stereo ugen
-      for( let channel of graph ) {
-        this.free( channel )
-      }
-    } else {
-      if( typeof graph === 'object' ) {
-        if( graph.memory !== undefined ) {
-          for( let memoryKey in graph.memory ) {
-            this.memory.free( graph.memory[ memoryKey ].idx )
-          }
-        }
-        if( Array.isArray( graph.inputs ) ) {
-          for( let ugen of graph.inputs ) {
-            this.free( ugen )
-          }
-        }
-      }
-    }
-  }
-}
-
-gen.__proto__ = new EE()
-
-module.exports = gen
-
-},{"events":152,"memory-helper":78}],33:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'gt',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    out = `  var ${this.name} = `  
-
-    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
-      out += `(( ${inputs[0]} > ${inputs[1]}) | 0 )`
-    } else {
-      out += inputs[0] > inputs[1] ? 1 : 0 
-    }
-    out += '\n\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [this.name, out]
-  }
-}
-
-module.exports = (x,y) => {
-  let gt = Object.create( proto )
-
-  gt.inputs = [ x,y ]
-  gt.name = gt.basename + gen.getUID()
-
-  return gt
-}
-
-},{"./gen.js":32}],34:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js')
-
-let proto = {
-  name:'gte',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    out = `  var ${this.name} = `  
-
-    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
-      out += `( ${inputs[0]} >= ${inputs[1]} | 0 )`
-    } else {
-      out += inputs[0] >= inputs[1] ? 1 : 0 
-    }
-    out += '\n\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [this.name, out]
-  }
-}
-
-module.exports = (x,y) => {
-  let gt = Object.create( proto )
-
-  gt.inputs = [ x,y ]
-  gt.name = 'gte' + gen.getUID()
-
-  return gt
-}
-
-},{"./gen.js":32}],35:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'gtp',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
-      out = `(${inputs[ 0 ]} * ( ( ${inputs[0]} > ${inputs[1]} ) | 0 ) )` 
-    } else {
-      out = inputs[0] * ( ( inputs[0] > inputs[1] ) | 0 )
-    }
-    
-    return out
-  }
-}
-
-module.exports = (x,y) => {
-  let gtp = Object.create( proto )
-
-  gtp.inputs = [ x,y ]
-
-  return gtp
-}
-
-},{"./gen.js":32}],36:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-module.exports = ( in1=0 ) => {
-  let ugen = {
-    inputs: [ in1 ],
-    memory: { value: { length:1, idx: null } },
-    recorder: null,
-
-    in( v ) {
-      if( gen.histories.has( v ) ){
-        let memoHistory = gen.histories.get( v )
-        ugen.name = memoHistory.name
-        return memoHistory
-      }
-
-      let obj = {
-        gen() {
-          let inputs = gen.getInputs( ugen )
-
-          if( ugen.memory.value.idx === null ) {
-            gen.requestMemory( ugen.memory )
-            gen.memory.heap[ ugen.memory.value.idx ] = in1
-          }
-
-          let idx = ugen.memory.value.idx
-          
-          gen.addToEndBlock( 'memory[ ' + idx + ' ] = ' + inputs[ 0 ] )
-          
-          // return ugen that is being recorded instead of ssd.
-          // this effectively makes a call to ssd.record() transparent to the graph.
-          // recording is triggered by prior call to gen.addToEndBlock.
-          gen.histories.set( v, obj )
-
-          return inputs[ 0 ]
-        },
-        name: ugen.name + '_in'+gen.getUID(),
-        memory: ugen.memory
-      }
-
-      this.inputs[ 0 ] = v
-      
-      ugen.recorder = obj
-
-      return obj
-    },
-    
-    out: {
-            
-      gen() {
-        if( ugen.memory.value.idx === null ) {
-          if( gen.histories.get( ugen.inputs[0] ) === undefined ) {
-            gen.histories.set( ugen.inputs[0], ugen.recorder )
-          }
-          gen.requestMemory( ugen.memory )
-          gen.memory.heap[ ugen.memory.value.idx ] = parseFloat( in1 )
-        }
-        let idx = ugen.memory.value.idx
-         
-        return 'memory[ ' + idx + ' ] '
-      },
-    },
-
-    uid: gen.getUID(),
-  }
-  
-  ugen.out.memory = ugen.memory 
-
-  ugen.name = 'history' + ugen.uid
-  ugen.out.name = ugen.name + '_out'
-  ugen.in._name  = ugen.name = '_in'
-
-  Object.defineProperty( ugen, 'value', {
-    get() {
-      if( this.memory.value.idx !== null ) {
-        return gen.memory.heap[ this.memory.value.idx ]
-      }
-    },
-    set( v ) {
-      if( this.memory.value.idx !== null ) {
-        gen.memory.heap[ this.memory.value.idx ] = v 
-      }
-    }
-  })
-
-  return ugen
-}
-
-},{"./gen.js":32}],37:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'ifelse',
-
-  gen() {
-    let conditionals = this.inputs[0],
-        defaultValue = gen.getInput( conditionals[ conditionals.length - 1] ),
-        out = `  var ${this.name}_out = ${defaultValue}\n` 
-
-    //console.log( 'conditionals:', this.name, conditionals )
-
-    //console.log( 'defaultValue:', defaultValue )
-
-    for( let i = 0; i < conditionals.length - 2; i+= 2 ) {
-      let isEndBlock = i === conditionals.length - 3,
-          cond  = gen.getInput( conditionals[ i ] ),
-          preblock = conditionals[ i+1 ],
-          block, blockName, output
-
-      //console.log( 'pb', preblock )
-
-      if( typeof preblock === 'number' ){
-        block = preblock
-        blockName = null
-      }else{
-        if( gen.memo[ preblock.name ] === undefined ) {
-          // used to place all code dependencies in appropriate blocks
-          gen.startLocalize()
-
-          gen.getInput( preblock )
-
-          block = gen.endLocalize()
-          blockName = block[0]
-          block = block[ 1 ].join('')
-          block = '  ' + block.replace( /\n/gi, '\n  ' )
-        }else{
-          block = ''
-          blockName = gen.memo[ preblock.name ]
-        }
-      }
-
-      output = blockName === null ? 
-        `  ${this.name}_out = ${block}` :
-        `${block}  ${this.name}_out = ${blockName}`
-      
-      if( i===0 ) out += ' '
-      out += 
-` if( ${cond} === 1 ) {
-${output}
-  }`
-
-      if( !isEndBlock ) {
-        out += ` else`
-      }else{
-        out += `\n`
-      }
-    }
-
-    gen.memo[ this.name ] = `${this.name}_out`
-
-    return [ `${this.name}_out`, out ]
-  }
-}
-
-module.exports = ( ...args  ) => {
-  let ugen = Object.create( proto ),
-      conditions = Array.isArray( args[0] ) ? args[0] : args
-
-  Object.assign( ugen, {
-    uid:     gen.getUID(),
-    inputs:  [ conditions ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],38:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js')
-
-let proto = {
-  basename:'in',
-
-  gen() {
-    const isWorklet = gen.mode === 'worklet'
-
-    if( isWorklet ) {
-      gen.inputs.add( this )
-    }else{
-      gen.parameters.add( this.name )
-    }
-
-    gen.memo[ this.name ] = isWorklet === true ? this.name + '[i]' : this.name
-
-    return gen.memo[ this.name ]
-  } 
-}
-
-module.exports = ( name, inputNumber=0, channelNumber=0, defaultValue=0, min=0, max=1 ) => {
-  let input = Object.create( proto )
-
-  input.id   = gen.getUID()
-  input.name = name !== undefined ? name : `${input.basename}${input.id}`
-  Object.assign( input, { defaultValue, min, max, inputNumber, channelNumber })
-
-  input[0] = {
-    gen() {
-      if( ! gen.parameters.has( input.name ) ) gen.parameters.add( input.name )
-      return input.name + '[0]'
-    }
-  }
-  input[1] = {
-    gen() {
-      if( ! gen.parameters.has( input.name ) ) gen.parameters.add( input.name )
-      return input.name + '[1]'
-    }
-  }
-
-
-  return input
-}
-
-},{"./gen.js":32}],39:[function(require,module,exports){
-'use strict'
-
-const library = {
-  export( destination ) {
-    if( destination === window ) {
-      destination.ssd = library.history    // history is window object property, so use ssd as alias
-      destination.input = library.in       // in is a keyword in javascript
-      destination.ternary = library.switch // switch is a keyword in javascript
-
-      delete library.history
-      delete library.in
-      delete library.switch
-    }
-
-    Object.assign( destination, library )
-
-    Object.defineProperty( library, 'samplerate', {
-      get() { return library.gen.samplerate },
-      set(v) {}
-    })
-
-    library.in = destination.input
-    library.history = destination.ssd
-    library.switch = destination.ternary
-
-    destination.clip = library.clamp
-  },
-
-  gen:      require( './gen.js' ),
-  
-  abs:      require( './abs.js' ),
-  round:    require( './round.js' ),
-  param:    require( './param.js' ),
-  add:      require( './add.js' ),
-  sub:      require( './sub.js' ),
-  mul:      require( './mul.js' ),
-  div:      require( './div.js' ),
-  accum:    require( './accum.js' ),
-  counter:  require( './counter.js' ),
-  sin:      require( './sin.js' ),
-  cos:      require( './cos.js' ),
-  tan:      require( './tan.js' ),
-  tanh:     require( './tanh.js' ),
-  asin:     require( './asin.js' ),
-  acos:     require( './acos.js' ),
-  atan:     require( './atan.js' ),  
-  phasor:   require( './phasor.js' ),
-  data:     require( './data.js' ),
-  peek:     require( './peek.js' ),
-  cycle:    require( './cycle.js' ),
-  history:  require( './history.js' ),
-  delta:    require( './delta.js' ),
-  floor:    require( './floor.js' ),
-  ceil:     require( './ceil.js' ),
-  min:      require( './min.js' ),
-  max:      require( './max.js' ),
-  sign:     require( './sign.js' ),
-  dcblock:  require( './dcblock.js' ),
-  memo:     require( './memo.js' ),
-  rate:     require( './rate.js' ),
-  wrap:     require( './wrap.js' ),
-  mix:      require( './mix.js' ),
-  clamp:    require( './clamp.js' ),
-  poke:     require( './poke.js' ),
-  delay:    require( './delay.js' ),
-  fold:     require( './fold.js' ),
-  mod :     require( './mod.js' ),
-  sah :     require( './sah.js' ),
-  noise:    require( './noise.js' ),
-  not:      require( './not.js' ),
-  gt:       require( './gt.js' ),
-  gte:      require( './gte.js' ),
-  lt:       require( './lt.js' ), 
-  lte:      require( './lte.js' ), 
-  bool:     require( './bool.js' ),
-  gate:     require( './gate.js' ),
-  train:    require( './train.js' ),
-  slide:    require( './slide.js' ),
-  in:       require( './in.js' ),
-  t60:      require( './t60.js'),
-  mtof:     require( './mtof.js'),
-  ltp:      require( './ltp.js'),        // TODO: test
-  gtp:      require( './gtp.js'),        // TODO: test
-  switch:   require( './switch.js' ),
-  mstosamps:require( './mstosamps.js' ), // TODO: needs test,
-  selector: require( './selector.js' ),
-  utilities:require( './utilities.js' ),
-  pow:      require( './pow.js' ),
-  attack:   require( './attack.js' ),
-  decay:    require( './decay.js' ),
-  windows:  require( './windows.js' ),
-  env:      require( './env.js' ),
-  ad:       require( './ad.js'  ),
-  adsr:     require( './adsr.js' ),
-  ifelse:   require( './ifelseif.js' ),
-  bang:     require( './bang.js' ),
-  and:      require( './and.js' ),
-  pan:      require( './pan.js' ),
-  eq:       require( './eq.js' ),
-  neq:      require( './neq.js' ),
-  exp:      require( './exp.js' ),
-  process:  require( './process.js' ),
-  seq:      require( './seq.js' )
-}
-
-library.gen.lib = library
-
-module.exports = library
-
-},{"./abs.js":1,"./accum.js":2,"./acos.js":3,"./ad.js":4,"./add.js":5,"./adsr.js":6,"./and.js":7,"./asin.js":8,"./atan.js":9,"./attack.js":10,"./bang.js":11,"./bool.js":12,"./ceil.js":13,"./clamp.js":14,"./cos.js":15,"./counter.js":16,"./cycle.js":17,"./data.js":18,"./dcblock.js":19,"./decay.js":20,"./delay.js":21,"./delta.js":22,"./div.js":23,"./env.js":24,"./eq.js":25,"./exp.js":26,"./floor.js":29,"./fold.js":30,"./gate.js":31,"./gen.js":32,"./gt.js":33,"./gte.js":34,"./gtp.js":35,"./history.js":36,"./ifelseif.js":37,"./in.js":38,"./lt.js":40,"./lte.js":41,"./ltp.js":42,"./max.js":43,"./memo.js":44,"./min.js":45,"./mix.js":46,"./mod.js":47,"./mstosamps.js":48,"./mtof.js":49,"./mul.js":50,"./neq.js":51,"./noise.js":52,"./not.js":53,"./pan.js":54,"./param.js":55,"./peek.js":56,"./phasor.js":57,"./poke.js":58,"./pow.js":59,"./process.js":60,"./rate.js":61,"./round.js":62,"./sah.js":63,"./selector.js":64,"./seq.js":65,"./sign.js":66,"./sin.js":67,"./slide.js":68,"./sub.js":69,"./switch.js":70,"./t60.js":71,"./tan.js":72,"./tanh.js":73,"./train.js":74,"./utilities.js":75,"./windows.js":76,"./wrap.js":77}],40:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'lt',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    out = `  var ${this.name} = `  
-
-    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
-      out += `(( ${inputs[0]} < ${inputs[1]}) | 0  )`
-    } else {
-      out += inputs[0] < inputs[1] ? 1 : 0 
-    }
-    out += '\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [this.name, out]
-    
-    return out
-  }
-}
-
-module.exports = (x,y) => {
-  let lt = Object.create( proto )
-
-  lt.inputs = [ x,y ]
-  lt.name = lt.basename + gen.getUID()
-
-  return lt
-}
-
-},{"./gen.js":32}],41:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'lte',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    out = `  var ${this.name} = `  
-
-    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
-      out += `( ${inputs[0]} <= ${inputs[1]} | 0  )`
-    } else {
-      out += inputs[0] <= inputs[1] ? 1 : 0 
-    }
-    out += '\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [this.name, out]
-    
-    return out
-  }
-}
-
-module.exports = (x,y) => {
-  let lt = Object.create( proto )
-
-  lt.inputs = [ x,y ]
-  lt.name = 'lte' + gen.getUID()
-
-  return lt
-}
-
-},{"./gen.js":32}],42:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'ltp',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
-      out = `(${inputs[ 0 ]} * (( ${inputs[0]} < ${inputs[1]} ) | 0 ) )` 
-    } else {
-      out = inputs[0] * (( inputs[0] < inputs[1] ) | 0 )
-    }
-    
-    return out
-  }
-}
-
-module.exports = (x,y) => {
-  let ltp = Object.create( proto )
-
-  ltp.inputs = [ x,y ]
-
-  return ltp
-}
-
-},{"./gen.js":32}],43:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'max',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) || isNaN( inputs[1] ) ) {
-      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.max' : Math.max })
-
-      out = `${ref}max( ${inputs[0]}, ${inputs[1]} )`
-
-    } else {
-      out = Math.max( parseFloat( inputs[0] ), parseFloat( inputs[1] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = (x,y) => {
-  let max = Object.create( proto )
-
-  max.inputs = [ x,y ]
-
-  return max
-}
-
-},{"./gen.js":32}],44:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js')
-
-let proto = {
-  basename:'memo',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    out = `  var ${this.name} = ${inputs[0]}\n`
-
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  } 
-}
-
-module.exports = (in1,memoName) => {
-  let memo = Object.create( proto )
-  
-  memo.inputs = [ in1 ]
-  memo.id   = gen.getUID()
-  memo.name = memoName !== undefined ? memoName + '_' + gen.getUID() : `${memo.basename}${memo.id}`
-
-  return memo
-}
-
-},{"./gen.js":32}],45:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'min',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) || isNaN( inputs[1] ) ) {
-      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.min' : Math.min })
-
-      out = `${ref}min( ${inputs[0]}, ${inputs[1]} )`
-
-    } else {
-      out = Math.min( parseFloat( inputs[0] ), parseFloat( inputs[1] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = (x,y) => {
-  let min = Object.create( proto )
-
-  min.inputs = [ x,y ]
-
-  return min
-}
-
-},{"./gen.js":32}],46:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js'),
-    add = require('./add.js'),
-    mul = require('./mul.js'),
-    sub = require('./sub.js'),
-    memo= require('./memo.js')
-
-module.exports = ( in1, in2, t=.5 ) => {
-  let ugen = memo( add( mul(in1, sub(1,t ) ), mul( in2, t ) ) )
-  ugen.name = 'mix' + gen.getUID()
-
-  return ugen
-}
-
-},{"./add.js":5,"./gen.js":32,"./memo.js":44,"./mul.js":50,"./sub.js":69}],47:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js')
-
-module.exports = (...args) => {
-  let mod = {
-    id:     gen.getUID(),
-    inputs: args,
-
-    gen() {
-      let inputs = gen.getInputs( this ),
-          out='(',
-          diff = 0, 
-          numCount = 0,
-          lastNumber = inputs[ 0 ],
-          lastNumberIsUgen = isNaN( lastNumber ), 
-          modAtEnd = false
-
-      inputs.forEach( (v,i) => {
-        if( i === 0 ) return
-
-        let isNumberUgen = isNaN( v ),
-            isFinalIdx   = i === inputs.length - 1
-
-        if( !lastNumberIsUgen && !isNumberUgen ) {
-          lastNumber = lastNumber % v
-          out += lastNumber
-        }else{
-          out += `${lastNumber} % ${v}`
-        }
-
-        if( !isFinalIdx ) out += ' % ' 
-      })
-
-      out += ')'
-
-      return out
-    }
-  }
-  
-  return mod
-}
-
-},{"./gen.js":32}],48:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'mstosamps',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this ),
-        returnValue
-
-    if( isNaN( inputs[0] ) ) {
-      out = `  var ${this.name } = ${gen.samplerate} / 1000 * ${inputs[0]} \n\n`
-     
-      gen.memo[ this.name ] = out
-      
-      returnValue = [ this.name, out ]
-    } else {
-      out = gen.samplerate / 1000 * this.inputs[0]
-
-      returnValue = out
-    }    
-
-    return returnValue
-  }
-}
-
-module.exports = x => {
-  let mstosamps = Object.create( proto )
-
-  mstosamps.inputs = [ x ]
-  mstosamps.name = proto.basename + gen.getUID()
-
-  return mstosamps
-}
-
-},{"./gen.js":32}],49:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'mtof',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ [ this.name ]: Math.exp })
-
-      out = `( ${this.tuning} * gen.exp( .057762265 * (${inputs[0]} - 69) ) )`
-
-    } else {
-      out = this.tuning * Math.exp( .057762265 * ( inputs[0] - 69) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = ( x, props ) => {
-  let ugen = Object.create( proto ),
-      defaults = { tuning:440 }
-  
-  if( props !== undefined ) Object.assign( props.defaults )
-
-  Object.assign( ugen, defaults )
-  ugen.inputs = [ x ]
-  
-
-  return ugen
-}
-
-},{"./gen.js":32}],50:[function(require,module,exports){
-'use strict'
-
-const gen = require('./gen.js')
-
-const proto = {
-  basename: 'mul',
-
-  gen() {
-    let inputs = gen.getInputs( this ),
-        out = `  var ${this.name} = `,
-        sum = 1, numCount = 0, mulAtEnd = false, alreadyFullSummed = true
-
-    inputs.forEach( (v,i) => {
-      if( isNaN( v ) ) {
-        out += v
-        if( i < inputs.length -1 ) {
-          mulAtEnd = true
-          out += ' * '
-        }
-        alreadyFullSummed = false
-      }else{
-        if( i === 0 ) {
-          sum = v
-        }else{
-          sum *= parseFloat( v )
-        }
-        numCount++
-      }
-    })
-
-    if( numCount > 0 ) {
-      out += mulAtEnd || alreadyFullSummed ? sum : ' * ' + sum
-    }
-
-    out += '\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  }
-}
-
-module.exports = ( ...args ) => {
-  const mul = Object.create( proto )
-  
-  Object.assign( mul, {
-      id:     gen.getUID(),
-      inputs: args,
-  })
-  
-  mul.name = mul.basename + mul.id
-
-  return mul
-}
-
-},{"./gen.js":32}],51:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'neq',
-
-  gen() {
-    let inputs = gen.getInputs( this ), out
-
-    out = /*this.inputs[0] !== this.inputs[1] ? 1 :*/ `  var ${this.name} = (${inputs[0]} !== ${inputs[1]}) | 0\n\n`
-
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  },
-
-}
-
-module.exports = ( in1, in2 ) => {
-  let ugen = Object.create( proto )
-  Object.assign( ugen, {
-    uid:     gen.getUID(),
-    inputs:  [ in1, in2 ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],52:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'noise',
-
-  gen() {
-    let out
-
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    gen.closures.add({ 'noise' : isWorklet ? 'Math.random' : Math.random })
-
-    out = `  var ${this.name} = ${ref}noise()\n`
-    
-    gen.memo[ this.name ] = this.name
-
-    return [ this.name, out ]
-  }
-}
-
-module.exports = x => {
-  let noise = Object.create( proto )
-  noise.name = proto.name + gen.getUID()
-
-  return noise
-}
-
-},{"./gen.js":32}],53:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'not',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    if( isNaN( this.inputs[0] ) ) {
-      out = `( ${inputs[0]} === 0 ? 1 : 0 )`
-    } else {
-      out = !inputs[0] === 0 ? 1 : 0
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let not = Object.create( proto )
-
-  not.inputs = [ x ]
-
-  return not
-}
-
-},{"./gen.js":32}],54:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' ),
-    data = require( './data.js' ),
-    peek = require( './peek.js' ),
-    mul  = require( './mul.js' )
-
-let proto = {
-  basename:'pan', 
-  initTable() {    
-    let bufferL = new Float32Array( 1024 ),
-        bufferR = new Float32Array( 1024 )
-
-    const angToRad = Math.PI / 180
-    for( let i = 0; i < 1024; i++ ) { 
-      let pan = i * ( 90 / 1024 )
-      bufferL[i] = Math.cos( pan * angToRad ) 
-      bufferR[i] = Math.sin( pan * angToRad )
-    }
-
-    gen.globals.panL = data( bufferL, 1, { immutable:true })
-    gen.globals.panR = data( bufferR, 1, { immutable:true })
-  }
-
-}
-
-module.exports = ( leftInput, rightInput, pan =.5, properties ) => {
-  if( gen.globals.panL === undefined ) proto.initTable()
-
-  let ugen = Object.create( proto )
-
-  Object.assign( ugen, {
-    uid:     gen.getUID(),
-    inputs:  [ leftInput, rightInput ],
-    left:    mul( leftInput, peek( gen.globals.panL, pan, { boundmode:'clamp' }) ),
-    right:   mul( rightInput, peek( gen.globals.panR, pan, { boundmode:'clamp' }) )
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./data.js":18,"./gen.js":32,"./mul.js":50,"./peek.js":56}],55:[function(require,module,exports){
-'use strict'
-
-let gen = require('./gen.js')
-
-let proto = {
-  basename: 'param',
-
-  gen() {
-    gen.requestMemory( this.memory )
-    
-    gen.params.add( this )
-
-    const isWorklet = gen.mode === 'worklet'
-
-    if( isWorklet ) gen.parameters.add( this.name )
-
-    this.value = this.initialValue
-
-    gen.memo[ this.name ] = isWorklet ? this.name : `memory[${this.memory.value.idx}]`
-
-    return gen.memo[ this.name ]
-  } 
-}
-
-module.exports = ( propName=0, value=0, min=0, max=1 ) => {
-  let ugen = Object.create( proto )
-  
-  if( typeof propName !== 'string' ) {
-    ugen.name = ugen.basename + gen.getUID()
-    ugen.initialValue = propName
-  }else{
-    ugen.name = propName
-    ugen.initialValue = value
-  }
-
-  ugen.min = min
-  ugen.max = max
-  ugen.defaultValue = ugen.initialValue
-
-  // for storing worklet nodes once they're instantiated
-  ugen.waapi = null
-
-  ugen.isWorklet = gen.mode === 'worklet'
-
-  Object.defineProperty( ugen, 'value', {
-    get() {
-      if( this.memory.value.idx !== null ) {
-        return gen.memory.heap[ this.memory.value.idx ]
-      }else{
-        return this.initialValue
-      }
-    },
-    set( v ) {
-      if( this.memory.value.idx !== null ) {
-        if( this.isWorklet && this.waapi !== null ) {
-          this.waapi.value = v
-        }else{
-          gen.memory.heap[ this.memory.value.idx ] = v
-        } 
-      }
-    }
-  })
-
-  ugen.memory = {
-    value: { length:1, idx:null }
-  }
-
-  return ugen
-}
-
-},{"./gen.js":32}],56:[function(require,module,exports){
-
-const gen  = require('./gen.js'),
-      dataUgen = require('./data.js')
-
-let proto = {
-  basename:'peek',
-
-  gen() {
-    let genName = 'gen.' + this.name,
-        inputs = gen.getInputs( this ),
-        out, functionBody, next, lengthIsLog2, idx
-    
-    idx = inputs[1]
-    lengthIsLog2 = (Math.log2( this.data.buffer.length ) | 0)  === Math.log2( this.data.buffer.length )
-
-    if( this.mode !== 'simple' ) {
-
-    functionBody = `  var ${this.name}_dataIdx  = ${idx}, 
-      ${this.name}_phase = ${this.mode === 'samples' ? inputs[0] : inputs[0] + ' * ' + (this.data.buffer.length) }, 
-      ${this.name}_index = ${this.name}_phase | 0,\n`
-
-    if( this.boundmode === 'wrap' ) {
-      next = lengthIsLog2 ?
-      `( ${this.name}_index + 1 ) & (${this.data.buffer.length} - 1)` :
-      `${this.name}_index + 1 >= ${this.data.buffer.length} ? ${this.name}_index + 1 - ${this.data.buffer.length} : ${this.name}_index + 1`
-    }else if( this.boundmode === 'clamp' ) {
-      next = 
-        `${this.name}_index + 1 >= ${this.data.buffer.length - 1} ? ${this.data.buffer.length - 1} : ${this.name}_index + 1`
-    } else if( this.boundmode === 'fold' || this.boundmode === 'mirror' ) {
-      next = 
-        `${this.name}_index + 1 >= ${this.data.buffer.length - 1} ? ${this.name}_index - ${this.data.buffer.length - 1} : ${this.name}_index + 1`
-    }else{
-       next = 
-      `${this.name}_index + 1`     
-    }
-
-    if( this.interp === 'linear' ) {      
-    functionBody += `      ${this.name}_frac  = ${this.name}_phase - ${this.name}_index,
-      ${this.name}_base  = memory[ ${this.name}_dataIdx +  ${this.name}_index ],
-      ${this.name}_next  = ${next},`
-      
-      if( this.boundmode === 'ignore' ) {
-        functionBody += `
-      ${this.name}_out   = ${this.name}_index >= ${this.data.buffer.length - 1} || ${this.name}_index < 0 ? 0 : ${this.name}_base + ${this.name}_frac * ( memory[ ${this.name}_dataIdx + ${this.name}_next ] - ${this.name}_base )\n\n`
-      }else{
-        functionBody += `
-      ${this.name}_out   = ${this.name}_base + ${this.name}_frac * ( memory[ ${this.name}_dataIdx + ${this.name}_next ] - ${this.name}_base )\n\n`
-      }
-    }else{
-      functionBody += `      ${this.name}_out = memory[ ${this.name}_dataIdx + ${this.name}_index ]\n\n`
-    }
-
-    } else { // mode is simple
-      functionBody = `memory[ ${idx} + ${ inputs[0] } ]`
-      
-      return functionBody
-    }
-
-    gen.memo[ this.name ] = this.name + '_out'
-
-    return [ this.name+'_out', functionBody ]
-  },
-
-  defaults : { channels:1, mode:'phase', interp:'linear', boundmode:'wrap' }
-}
-
-module.exports = ( input_data, index=0, properties ) => {
-  let ugen = Object.create( proto )
-
-  //console.log( dataUgen, gen.data )
-
-  // XXX why is dataUgen not the actual function? some type of browserify nonsense...
-  const finalData = typeof input_data.basename === 'undefined' ? gen.lib.data( input_data ) : input_data
-
-  Object.assign( ugen, 
-    { 
-      'data':     finalData,
-      dataName:   finalData.name,
-      uid:        gen.getUID(),
-      inputs:     [ index, finalData ],
-    },
-    proto.defaults,
-    properties 
-  )
-  
-  ugen.name = ugen.basename + ugen.uid
-
-  return ugen
-}
-
-
-},{"./data.js":18,"./gen.js":32}],57:[function(require,module,exports){
-'use strict'
-
-let gen   = require( './gen.js' ),
-    accum = require( './accum.js' ),
-    mul   = require( './mul.js' ),
-    proto = { basename:'phasor' },
-    div   = require( './div.js' )
-
-const defaults = { min: -1, max: 1 }
-
-module.exports = ( frequency = 1, reset = 0, _props ) => {
-  const props = Object.assign( {}, defaults, _props )
-
-  const range = props.max - props.min
-
-  const ugen = typeof frequency === 'number' 
-    ? accum( (frequency * range) / gen.samplerate, reset, props ) 
-    : accum( 
-        div( 
-          mul( frequency, range ),
-          gen.samplerate
-        ), 
-        reset, props 
-    )
-
-  ugen.name = proto.basename + gen.getUID()
-
-  return ugen
-}
-
-},{"./accum.js":2,"./div.js":23,"./gen.js":32,"./mul.js":50}],58:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js'),
-    mul  = require('./mul.js'),
-    wrap = require('./wrap.js')
-
-let proto = {
-  basename:'poke',
-
-  gen() {
-    let dataName = 'memory',
-        inputs = gen.getInputs( this ),
-        idx, out, wrapped
-    
-    idx = this.data.gen()
-
-    //gen.requestMemory( this.memory )
-    //wrapped = wrap( this.inputs[1], 0, this.dataLength ).gen()
-    //idx = wrapped[0]
-    //gen.functionBody += wrapped[1]
-    let outputStr = this.inputs[1] === 0 ?
-      `  ${dataName}[ ${idx} ] = ${inputs[0]}\n` :
-      `  ${dataName}[ ${idx} + ${inputs[1]} ] = ${inputs[0]}\n`
-
-    if( this.inline === undefined ) {
-      gen.functionBody += outputStr
-    }else{
-      return [ this.inline, outputStr ]
-    }
-  }
-}
-module.exports = ( data, value, index, properties ) => {
-  let ugen = Object.create( proto ),
-      defaults = { channels:1 } 
-
-  if( properties !== undefined ) Object.assign( defaults, properties )
-
-  Object.assign( ugen, { 
-    data,
-    dataName:   data.name,
-    dataLength: data.buffer.length,
-    uid:        gen.getUID(),
-    inputs:     [ value, index ],
-  },
-  defaults )
-
-
-  ugen.name = ugen.basename + ugen.uid
-  
-  gen.histories.set( ugen.name, ugen )
-
-  return ugen
-}
-
-},{"./gen.js":32,"./mul.js":50,"./wrap.js":77}],59:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'pow',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) || isNaN( inputs[1] ) ) {
-      gen.closures.add({ 'pow': isWorklet ? 'Math.pow' : Math.pow })
-
-      out = `${ref}pow( ${inputs[0]}, ${inputs[1]} )` 
-
-    } else {
-      if( typeof inputs[0] === 'string' && inputs[0][0] === '(' ) {
-        inputs[0] = inputs[0].slice(1,-1)
-      }
-      if( typeof inputs[1] === 'string' && inputs[1][0] === '(' ) {
-        inputs[1] = inputs[1].slice(1,-1)
-      }
-
-      out = Math.pow( parseFloat( inputs[0] ), parseFloat( inputs[1]) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = (x,y) => {
-  let pow = Object.create( proto )
-
-  pow.inputs = [ x,y ]
-  pow.id = gen.getUID()
-  pow.name = `${pow.basename}{pow.id}`
-
-  return pow
-}
-
-},{"./gen.js":32}],60:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-const proto = {
-  basename:'process',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    gen.closures.add({ [''+this.funcname] : this.func })
-
-    out = `  var ${this.name} = gen['${this.funcname}'](`
-
-    inputs.forEach( (v,i,arr ) => {
-      out += arr[ i ]
-      if( i < arr.length - 1 ) out += ','
-    })
-
-    out += ')\n'
-
-    gen.memo[ this.name ] = this.name
-
-    return [this.name, out]
-    
-    return out
-  }
-}
-
-module.exports = (...args) => {
-  const process = {}// Object.create( proto )
-  const id = gen.getUID()
-  process.name = 'process' + id 
-
-  process.func = new Function( ...args )
-
-  //gen.globals[ process.name ] = process.func
-
-  process.call = function( ...args  ) {
-    const output = Object.create( proto )
-    output.funcname = process.name
-    output.func = process.func
-    output.name = 'process_out_' + id
-    output.process = process
-
-    output.inputs = args
-
-    return output
-  }
-
-  return process 
-}
-
-},{"./gen.js":32}],61:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' ),
-    history = require( './history.js' ),
-    sub     = require( './sub.js' ),
-    add     = require( './add.js' ),
-    mul     = require( './mul.js' ),
-    memo    = require( './memo.js' ),
-    delta   = require( './delta.js' ),
-    wrap    = require( './wrap.js' )
-
-let proto = {
-  basename:'rate',
-
-  gen() {
-    let inputs = gen.getInputs( this ),
-        phase  = history(),
-        inMinus1 = history(),
-        genName = 'gen.' + this.name,
-        filter, sum, out
-
-    gen.closures.add({ [ this.name ]: this }) 
-
-    out = 
-` var ${this.name}_diff = ${inputs[0]} - ${genName}.lastSample
-  if( ${this.name}_diff < -.5 ) ${this.name}_diff += 1
-  ${genName}.phase += ${this.name}_diff * ${inputs[1]}
-  if( ${genName}.phase > 1 ) ${genName}.phase -= 1
-  ${genName}.lastSample = ${inputs[0]}
-`
-    out = ' ' + out
-
-    return [ genName + '.phase', out ]
-  }
-}
-
-module.exports = ( in1, rate ) => {
-  let ugen = Object.create( proto )
-
-  Object.assign( ugen, { 
-    phase:      0,
-    lastSample: 0,
-    uid:        gen.getUID(),
-    inputs:     [ in1, rate ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./add.js":5,"./delta.js":22,"./gen.js":32,"./history.js":36,"./memo.js":44,"./mul.js":50,"./sub.js":69,"./wrap.js":77}],62:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'round',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.round' : Math.round })
-
-      out = `${ref}round( ${inputs[0]} )`
-
-    } else {
-      out = Math.round( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let round = Object.create( proto )
-
-  round.inputs = [ x ]
-
-  return round
-}
-
-},{"./gen.js":32}],63:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' )
-
-let proto = {
-  basename:'sah',
-
-  gen() {
-    let inputs = gen.getInputs( this ), out
-
-    //gen.data[ this.name ] = 0
-    //gen.data[ this.name + '_control' ] = 0
-
-    gen.requestMemory( this.memory )
-
-
-    out = 
-` var ${this.name}_control = memory[${this.memory.control.idx}],
-      ${this.name}_trigger = ${inputs[1]} > ${inputs[2]} ? 1 : 0
-
-  if( ${this.name}_trigger !== ${this.name}_control  ) {
-    if( ${this.name}_trigger === 1 ) 
-      memory[${this.memory.value.idx}] = ${inputs[0]}
-    
-    memory[${this.memory.control.idx}] = ${this.name}_trigger
-  }
-`
-    
-    gen.memo[ this.name ] = `memory[${this.memory.value.idx}]`//`gen.data.${this.name}`
-
-    return [ `memory[${this.memory.value.idx}]`, ' ' +out ]
-  }
-}
-
-module.exports = ( in1, control, threshold=0, properties ) => {
-  let ugen = Object.create( proto ),
-      defaults = { init:0 }
-
-  if( properties !== undefined ) Object.assign( defaults, properties )
-
-  Object.assign( ugen, { 
-    lastSample: 0,
-    uid:        gen.getUID(),
-    inputs:     [ in1, control,threshold ],
-    memory: {
-      control: { idx:null, length:1 },
-      value:   { idx:null, length:1 },
-    }
-  },
-  defaults )
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],64:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'selector',
-
-  gen() {
-    let inputs = gen.getInputs( this ), out, returnValue = 0
-    
-    switch( inputs.length ) {
-      case 2 :
-        returnValue = inputs[1]
-        break;
-      case 3 :
-        out = `  var ${this.name}_out = ${inputs[0]} === 1 ? ${inputs[1]} : ${inputs[2]}\n\n`;
-        returnValue = [ this.name + '_out', out ]
-        break;  
-      default:
-        out = 
-` var ${this.name}_out = 0
-  switch( ${inputs[0]} + 1 ) {\n`
-
-        for( let i = 1; i < inputs.length; i++ ){
-          out +=`    case ${i}: ${this.name}_out = ${inputs[i]}; break;\n` 
-        }
-
-        out += '  }\n\n'
-        
-        returnValue = [ this.name + '_out', ' ' + out ]
-    }
-
-    gen.memo[ this.name ] = this.name + '_out'
-
-    return returnValue
-  },
-}
-
-module.exports = ( ...inputs ) => {
-  let ugen = Object.create( proto )
-  
-  Object.assign( ugen, {
-    uid:     gen.getUID(),
-    inputs
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],65:[function(require,module,exports){
-'use strict'
-
-let gen   = require( './gen.js' ),
-    accum = require( './accum.js' ),
-    counter= require( './counter.js' ),
-    peek  = require( './peek.js' ),
-    ssd   = require( './history.js' ),
-    data  = require( './data.js' ),
-    proto = { basename:'seq' }
-
-module.exports = ( durations = 11025, values = [0,1], phaseIncrement = 1) => {
-  let clock
-  
-  if( Array.isArray( durations ) ) {
-    // we want a counter that is using our current
-    // rate value, but we want the rate value to be derived from
-    // the counter. must insert a single-sample dealy to avoid
-    // infinite loop.
-    const clock2 = counter( 0, 0, durations.length )
-    const __durations = peek( data( durations ), clock2, { mode:'simple' }) 
-    clock = counter( phaseIncrement, 0, __durations )
-    
-    // add one sample delay to avoid codegen loop
-    const s = ssd()
-    s.in( clock.wrap )
-    clock2.inputs[0] = s.out
-  }else{
-    // if the rate argument is a single value we don't need to
-    // do anything tricky.
-    clock = counter( phaseIncrement, 0, durations )
-  }
-  
-  const stepper = accum( clock.wrap, 0, { min:0, max:values.length })
-   
-  const ugen = peek( data( values ), stepper, { mode:'simple' })
-
-  ugen.name = proto.basename + gen.getUID()
-  ugen.trigger = clock.wrap
-
-  return ugen
-}
-
-},{"./accum.js":2,"./counter.js":16,"./data.js":18,"./gen.js":32,"./history.js":36,"./peek.js":56}],66:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  name:'sign',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.sign' : Math.sign })
-
-      out = `${ref}sign( ${inputs[0]} )`
-
-    } else {
-      out = Math.sign( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let sign = Object.create( proto )
-
-  sign.inputs = [ x ]
-
-  return sign
-}
-
-},{"./gen.js":32}],67:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'sin',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ 'sin': isWorklet ? 'Math.sin' : Math.sin })
-
-      out = `${ref}sin( ${inputs[0]} )` 
-
-    } else {
-      out = Math.sin( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let sin = Object.create( proto )
-
-  sin.inputs = [ x ]
-  sin.id = gen.getUID()
-  sin.name = `${sin.basename}{sin.id}`
-
-  return sin
-}
-
-},{"./gen.js":32}],68:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' ),
-    history = require( './history.js' ),
-    sub     = require( './sub.js' ),
-    add     = require( './add.js' ),
-    mul     = require( './mul.js' ),
-    memo    = require( './memo.js' ),
-    gt      = require( './gt.js' ),
-    div     = require( './div.js' ),
-    _switch = require( './switch.js' )
-
-module.exports = ( in1, slideUp = 1, slideDown = 1 ) => {
-  let y1 = history(0),
-      filter, slideAmount
-
-  //y (n) = y (n-1) + ((x (n) - y (n-1))/slide) 
-  slideAmount = _switch( gt(in1,y1.out), slideUp, slideDown )
-
-  filter = memo( add( y1.out, div( sub( in1, y1.out ), slideAmount ) ) )
-
-  y1.in( filter )
-
-  return filter
-}
-
-},{"./add.js":5,"./div.js":23,"./gen.js":32,"./gt.js":33,"./history.js":36,"./memo.js":44,"./mul.js":50,"./sub.js":69,"./switch.js":70}],69:[function(require,module,exports){
-'use strict'
-
-const gen = require('./gen.js')
-
-const proto = {
-  basename:'sub',
-  gen() {
-    let inputs = gen.getInputs( this ),
-        out=0,
-        diff = 0,
-        needsParens = false, 
-        numCount = 0,
-        lastNumber = inputs[ 0 ],
-        lastNumberIsUgen = isNaN( lastNumber ), 
-        subAtEnd = false,
-        hasUgens = false,
-        returnValue = 0
-
-    this.inputs.forEach( value => { if( isNaN( value ) ) hasUgens = true })
-
-    out = '  var ' + this.name + ' = '
-
-    inputs.forEach( (v,i) => {
-      if( i === 0 ) return
-
-      let isNumberUgen = isNaN( v ),
-          isFinalIdx   = i === inputs.length - 1
-
-      if( !lastNumberIsUgen && !isNumberUgen ) {
-        lastNumber = lastNumber - v
-        out += lastNumber
-        return
-      }else{
-        needsParens = true
-        out += `${lastNumber} - ${v}`
-      }
-
-      if( !isFinalIdx ) out += ' - ' 
-    })
-
-    out += '\n'
-
-    returnValue = [ this.name, out ]
-
-    gen.memo[ this.name ] = this.name
-
-    return returnValue
-  }
-
-}
-
-module.exports = ( ...args ) => {
-  let sub = Object.create( proto )
-
-  Object.assign( sub, {
-    id:     gen.getUID(),
-    inputs: args
-  })
-       
-  sub.name = 'sub' + sub.id
-
-  return sub
-}
-
-},{"./gen.js":32}],70:[function(require,module,exports){
-'use strict'
-
-let gen = require( './gen.js' )
-
-let proto = {
-  basename:'switch',
-
-  gen() {
-    let inputs = gen.getInputs( this ), out
-
-    if( inputs[1] === inputs[2] ) return inputs[1] // if both potential outputs are the same just return one of them
-    
-    out = `  var ${this.name}_out = ${inputs[0]} === 1 ? ${inputs[1]} : ${inputs[2]}\n`
-
-    gen.memo[ this.name ] = `${this.name}_out`
-
-    return [ `${this.name}_out`, out ]
-  },
-
-}
-
-module.exports = ( control, in1 = 1, in2 = 0 ) => {
-  let ugen = Object.create( proto )
-  Object.assign( ugen, {
-    uid:     gen.getUID(),
-    inputs:  [ control, in1, in2 ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./gen.js":32}],71:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'t60',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this ),
-        returnValue
-
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ [ 'exp' ]: isWorklet ? 'Math.exp' : Math.exp })
-
-      out = `  var ${this.name} = ${ref}exp( -6.907755278921 / ${inputs[0]} )\n\n`
-     
-      gen.memo[ this.name ] = out
-      
-      returnValue = [ this.name, out ]
-    } else {
-      out = Math.exp( -6.907755278921 / inputs[0] )
-
-      returnValue = out
-    }    
-
-    return returnValue
-  }
-}
-
-module.exports = x => {
-  let t60 = Object.create( proto )
-
-  t60.inputs = [ x ]
-  t60.name = proto.basename + gen.getUID()
-
-  return t60
-}
-
-},{"./gen.js":32}],72:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'tan',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ 'tan': isWorklet ? 'Math.tan' : Math.tan })
-
-      out = `${ref}tan( ${inputs[0]} )` 
-
-    } else {
-      out = Math.tan( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let tan = Object.create( proto )
-
-  tan.inputs = [ x ]
-  tan.id = gen.getUID()
-  tan.name = `${tan.basename}{tan.id}`
-
-  return tan
-}
-
-},{"./gen.js":32}],73:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js')
-
-let proto = {
-  basename:'tanh',
-
-  gen() {
-    let out,
-        inputs = gen.getInputs( this )
-    
-    
-    const isWorklet = gen.mode === 'worklet'
-    const ref = isWorklet? '' : 'gen.'
-
-    if( isNaN( inputs[0] ) ) {
-      gen.closures.add({ 'tanh': isWorklet ? 'Math.tan' : Math.tanh })
-
-      out = `${ref}tanh( ${inputs[0]} )` 
-
-    } else {
-      out = Math.tanh( parseFloat( inputs[0] ) )
-    }
-    
-    return out
-  }
-}
-
-module.exports = x => {
-  let tanh = Object.create( proto )
-
-  tanh.inputs = [ x ]
-  tanh.id = gen.getUID()
-  tanh.name = `${tanh.basename}{tanh.id}`
-
-  return tanh
-}
-
-},{"./gen.js":32}],74:[function(require,module,exports){
-'use strict'
-
-let gen     = require( './gen.js' ),
-    lt      = require( './lt.js' ),
-    accum   = require( './accum.js' ),
-    div     = require( './div.js' )
-
-module.exports = ( frequency=440, pulsewidth=.5 ) => {
-  let graph = lt( accum( div( frequency, 44100 ) ), pulsewidth )
-
-  graph.name = `train${gen.getUID()}`
-
-  return graph
-}
-
-
-},{"./accum.js":2,"./div.js":23,"./gen.js":32,"./lt.js":40}],75:[function(require,module,exports){
-'use strict'
-
-const AWPF = require( './external/audioworklet-polyfill.js' ),
-      gen  = require( './gen.js' ),
-      data = require( './data.js' )
-
-let isStereo = false
-
-const utilities = {
-  ctx: null,
-  buffers: {},
-  isStereo:false,
-
-  clear() {
-    if( this.workletNode !== undefined ) {
-      this.workletNode.disconnect()
-    }else{
-      this.callback = () => 0
-    }
-    this.clear.callbacks.forEach( v => v() )
-    this.clear.callbacks.length = 0
-
-    this.isStereo = false
-
-    if( gen.graph !== null ) gen.free( gen.graph )
-  },
-
-  createContext( bufferSize = 2048 ) {
-    const AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext
-    
-    // tell polyfill global object and buffersize
-    AWPF( window, bufferSize )
-
-    const start = () => {
-      if( typeof AC !== 'undefined' ) {
-        this.ctx = new AC({ latencyHint:.0125 })
-
-        gen.samplerate = this.ctx.sampleRate
-
-        if( document && document.documentElement && 'ontouchstart' in document.documentElement ) {
-          window.removeEventListener( 'touchstart', start )
-        }else{
-          window.removeEventListener( 'mousedown', start )
-          window.removeEventListener( 'keydown', start )
-        }
-
-        const mySource = utilities.ctx.createBufferSource()
-        mySource.connect( utilities.ctx.destination )
-        mySource.start()
-      }
-    }
-
-    if( document && document.documentElement && 'ontouchstart' in document.documentElement ) {
-      window.addEventListener( 'touchstart', start )
-    }else{
-      window.addEventListener( 'mousedown', start )
-      window.addEventListener( 'keydown', start )
-    }
-
-    return this
-  },
-
-  createScriptProcessor() {
-    this.node = this.ctx.createScriptProcessor( 1024, 0, 2 )
-    this.clearFunction = function() { return 0 }
-    if( typeof this.callback === 'undefined' ) this.callback = this.clearFunction
-
-    this.node.onaudioprocess = function( audioProcessingEvent ) {
-      var outputBuffer = audioProcessingEvent.outputBuffer;
-
-      var left = outputBuffer.getChannelData( 0 ),
-          right= outputBuffer.getChannelData( 1 ),
-          isStereo = utilities.isStereo
-
-     for( var sample = 0; sample < left.length; sample++ ) {
-        var out = utilities.callback()
-
-        if( isStereo === false ) {
-          left[ sample ] = right[ sample ] = out 
-        }else{
-          left[ sample  ] = out[0]
-          right[ sample ] = out[1]
-        }
-      }
-    }
-
-    this.node.connect( this.ctx.destination )
-
-    return this
-  },
-
-  // remove starting stuff and add tabs
-  prettyPrintCallback( cb ) {
-    // get rid of "function gen" and start with parenthesis
-    // const shortendCB = cb.toString().slice(9)
-    const cbSplit = cb.toString().split('\n')
-    const cbTrim = cbSplit.slice( 3, -2 )
-    const cbTabbed = cbTrim.map( v => '      ' + v ) 
-    
-    return cbTabbed.join('\n')
-  },
-
-  createParameterDescriptors( cb ) {
-    // [{name: 'amplitude', defaultValue: 0.25, minValue: 0, maxValue: 1}];
-    let paramStr = ''
-
-    //for( let ugen of cb.params.values() ) {
-    //  paramStr += `{ name:'${ugen.name}', defaultValue:${ugen.value}, minValue:${ugen.min}, maxValue:${ugen.max} },\n      `
-    //}
-    for( let ugen of cb.params.values() ) {
-      paramStr += `{ name:'${ugen.name}', automationRate:'k-rate', defaultValue:${ugen.defaultValue}, minValue:${ugen.min}, maxValue:${ugen.max} },\n      `
-    }
-    return paramStr
-  },
-
-  createParameterDereferences( cb ) {
-    let str = cb.params.size > 0 ? '\n      ' : ''
-    for( let ugen of cb.params.values() ) {
-      str += `const ${ugen.name} = parameters.${ugen.name}[0]\n      `
-    }
-
-    return str
-  },
-
-  createParameterArguments( cb ) {
-    let  paramList = ''
-    for( let ugen of cb.params.values() ) {
-      paramList += ugen.name + '[i],'
-    }
-    paramList = paramList.slice( 0, -1 )
-
-    return paramList
-  },
-
-  createInputDereferences( cb ) {
-    let str = cb.inputs.size > 0 ? '\n' : ''
-    for( let input of  cb.inputs.values() ) {
-      str += `const ${input.name} = inputs[ ${input.inputNumber} ][ ${input.channelNumber} ]\n      `
-    }
-
-    return str
-  },
-
-
-  createInputArguments( cb ) {
-    let  paramList = ''
-    for( let input of cb.inputs.values() ) {
-      paramList += input.name + '[i],'
-    }
-    paramList = paramList.slice( 0, -1 )
-
-    return paramList
-  },
-      
-  createFunctionDereferences( cb ) {
-    let memberString = cb.members.size > 0 ? '\n' : ''
-    let memo = {}
-    for( let dict of cb.members.values() ) {
-      const name = Object.keys( dict )[0],
-            value = dict[ name ]
-
-      if( memo[ name ] !== undefined ) continue
-      memo[ name ] = true
-
-      memberString += `      const ${name} = ${value}\n`
-    }
-
-    return memberString
-  },
-
-  createWorkletProcessor( graph, name, debug, mem=44100*10 ) {
-    //const mem = MemoryHelper.create( 4096, Float64Array )
-    const cb = gen.createCallback( graph, mem, debug )
-    const inputs = cb.inputs
-
-    // get all inputs and create appropriate audioparam initializers
-    const parameterDescriptors = this.createParameterDescriptors( cb )
-    const parameterDereferences = this.createParameterDereferences( cb )
-    const paramList = this.createParameterArguments( cb )
-    const inputDereferences = this.createInputDereferences( cb )
-    const inputList = this.createInputArguments( cb )   
-    const memberString = this.createFunctionDereferences( cb )
-
-    // change output based on number of channels.
-    const genishOutputLine = cb.isStereo === false
-      ? `left[ i ] = memory[0]`
-      : `left[ i ] = memory[0];\n\t\tright[ i ] = memory[1]\n`
-
-    const prettyCallback = this.prettyPrintCallback( cb )
-
-    /***** begin callback code ****/
-    // note that we have to check to see that memory has been passed
-    // to the worker before running the callback function, otherwise
-    // it can be passed too slowly and fail on occassion
-
-    const workletCode = `
-class ${name}Processor extends AudioWorkletProcessor {
-
-  static get parameterDescriptors() {
-    const params = [
-      ${ parameterDescriptors }      
-    ]
-    return params
-  }
- 
-  constructor( options ) {
-    super( options )
-    this.port.onmessage = this.handleMessage.bind( this )
-    this.initialized = false
-  }
-
-  handleMessage( event ) {
-    if( event.data.key === 'init' ) {
-      this.memory = event.data.memory
-      this.initialized = true
-    }else if( event.data.key === 'set' ) {
-      this.memory[ event.data.idx ] = event.data.value
-    }else if( event.data.key === 'get' ) {
-      this.port.postMessage({ key:'return', idx:event.data.idx, value:this.memory[event.data.idx] })     
-    }
-  }
-
-  process( inputs, outputs, parameters ) {
-    if( this.initialized === true ) {
-      const output = outputs[0]
-      const left   = output[ 0 ]
-      const right  = output[ 1 ]
-      const len    = left.length
-      const memory = this.memory ${parameterDereferences}${inputDereferences}${memberString}
-
-      for( let i = 0; i < len; ++i ) {
-        ${prettyCallback}
-        ${genishOutputLine}
-      }
-    }
-    return true
-  }
-}
-    
-registerProcessor( '${name}', ${name}Processor)`
-
-    
-    /***** end callback code *****/
-
-
-    if( debug === true ) console.log( workletCode )
-
-    const url = window.URL.createObjectURL(
-      new Blob(
-        [ workletCode ], 
-        { type: 'text/javascript' }
-      )
-    )
-
-    return [ url, workletCode, inputs, cb.params, cb.isStereo ] 
-  },
-
-  registeredForNodeAssignment: [],
-  register( ugen ) {
-    if( this.registeredForNodeAssignment.indexOf( ugen ) === -1 ) {
-      this.registeredForNodeAssignment.push( ugen )
-    }
-  },
-
-  playWorklet( graph, name, debug=false, mem=44100 * 60 ) {
-    utilities.clear()
-
-    const [ url, codeString, inputs, params, isStereo ] = utilities.createWorkletProcessor( graph, name, debug, mem )
-
-    const nodePromise = new Promise( (resolve,reject) => {
-   
-      utilities.ctx.audioWorklet.addModule( url ).then( ()=> {
-        const workletNode = new AudioWorkletNode( utilities.ctx, name, { outputChannelCount:[ isStereo ? 2 : 1 ] })
-
-        workletNode.callbacks = {}
-        workletNode.onmessage = function( event ) {
-          if( event.data.message === 'return' ) {
-            workletNode.callbacks[ event.data.idx ]( event.data.value )
-            delete workletNode.callbacks[ event.data.idx ]
-          }
-        }
-
-        workletNode.getMemoryValue = function( idx, cb ) {
-          this.workletCallbacks[ idx ] = cb
-          this.workletNode.port.postMessage({ key:'get', idx: idx })
-        }
-        
-        workletNode.port.postMessage({ key:'init', memory:gen.memory.heap })
-        utilities.workletNode = workletNode
-
-        utilities.registeredForNodeAssignment.forEach( ugen => ugen.node = workletNode )
-        utilities.registeredForNodeAssignment.length = 0
-
-        // assign all params as properties of node for easier reference 
-        for( let dict of inputs.values() ) {
-          const name = Object.keys( dict )[0]
-          const param = workletNode.parameters.get( name )
-      
-          Object.defineProperty( workletNode, name, {
-            set( v ) {
-              param.value = v
-            },
-            get() {
-              return param.value
-            }
-          })
-        }
-
-        for( let ugen of params.values() ) {
-          const name = ugen.name
-          const param = workletNode.parameters.get( name )
-          ugen.waapi = param 
-          // initialize?
-          param.value = ugen.defaultValue
-
-          Object.defineProperty( workletNode, name, {
-            set( v ) {
-              param.value = v
-            },
-            get() {
-              return param.value
-            }
-          })
-        }
-
-        if( utilities.console ) utilities.console.setValue( codeString )
-
-        workletNode.connect( utilities.ctx.destination )
-
-        resolve( workletNode )
-      })
-
-    })
-
-    return nodePromise
-  },
-  
-  playGraph( graph, debug, mem=44100*10, memType=Float32Array ) {
-    utilities.clear()
-    if( debug === undefined ) debug = false
-          
-    this.isStereo = Array.isArray( graph )
-
-    utilities.callback = gen.createCallback( graph, mem, debug, false, memType )
-    
-    if( utilities.console ) utilities.console.setValue( utilities.callback.toString() )
-
-    return utilities.callback
-  },
-
-  loadSample( soundFilePath, data ) {
-    const isLoaded = utilities.buffers[ soundFilePath ] !== undefined
-
-    let req = new XMLHttpRequest()
-    req.open( 'GET', soundFilePath, true )
-    req.responseType = 'arraybuffer' 
-    
-    let promise = new Promise( (resolve,reject) => {
-      if( !isLoaded ) {
-        req.onload = function() {
-          var audioData = req.response
-
-          utilities.ctx.decodeAudioData( audioData, (buffer) => {
-            data.buffer = buffer.getChannelData(0)
-            utilities.buffers[ soundFilePath ] = data.buffer
-            resolve( data.buffer )
-          })
-        }
-      }else{
-        setTimeout( ()=> resolve( utilities.buffers[ soundFilePath ] ), 0 )
-      }
-    })
-
-    if( !isLoaded ) req.send()
-
-    return promise
-  }
-
-}
-
-utilities.clear.callbacks = []
-
-module.exports = utilities
-
-},{"./data.js":18,"./external/audioworklet-polyfill.js":27,"./gen.js":32}],76:[function(require,module,exports){
-'use strict'
-
-/*
- * many windows here adapted from https://github.com/corbanbrook/dsp.js/blob/master/dsp.js
- * starting at line 1427
- * taken 8/15/16
-*/ 
-
-const windows = module.exports = { 
-  bartlett( length, index ) {
-    return 2 / (length - 1) * ((length - 1) / 2 - Math.abs(index - (length - 1) / 2)) 
-  },
-
-  bartlettHann( length, index ) {
-    return 0.62 - 0.48 * Math.abs(index / (length - 1) - 0.5) - 0.38 * Math.cos( 2 * Math.PI * index / (length - 1))
-  },
-
-  blackman( length, index, alpha ) {
-    let a0 = (1 - alpha) / 2,
-        a1 = 0.5,
-        a2 = alpha / 2
-
-    return a0 - a1 * Math.cos(2 * Math.PI * index / (length - 1)) + a2 * Math.cos(4 * Math.PI * index / (length - 1))
-  },
-
-  cosine( length, index ) {
-    return Math.cos(Math.PI * index / (length - 1) - Math.PI / 2)
-  },
-
-  gauss( length, index, alpha ) {
-    return Math.pow(Math.E, -0.5 * Math.pow((index - (length - 1) / 2) / (alpha * (length - 1) / 2), 2))
-  },
-
-  hamming( length, index ) {
-    return 0.54 - 0.46 * Math.cos( Math.PI * 2 * index / (length - 1))
-  },
-
-  hann( length, index ) {
-    return 0.5 * (1 - Math.cos( Math.PI * 2 * index / (length - 1)) )
-  },
-
-  lanczos( length, index ) {
-    let x = 2 * index / (length - 1) - 1;
-    return Math.sin(Math.PI * x) / (Math.PI * x)
-  },
-
-  rectangular( length, index ) {
-    return 1
-  },
-
-  triangular( length, index ) {
-    return 2 / length * (length / 2 - Math.abs(index - (length - 1) / 2))
-  },
-
-  // parabola
-  welch( length, _index, ignore, shift=0 ) {
-    //w[n] = 1 - Math.pow( ( n - ( (N-1) / 2 ) ) / (( N-1 ) / 2 ), 2 )
-    const index = shift === 0 ? _index : (_index + Math.floor( shift * length )) % length
-    const n_1_over2 = (length - 1) / 2 
-
-    return 1 - Math.pow( ( index - n_1_over2 ) / n_1_over2, 2 )
-  },
-  inversewelch( length, _index, ignore, shift=0 ) {
-    //w[n] = 1 - Math.pow( ( n - ( (N-1) / 2 ) ) / (( N-1 ) / 2 ), 2 )
-    let index = shift === 0 ? _index : (_index + Math.floor( shift * length )) % length
-    const n_1_over2 = (length - 1) / 2
-
-    return Math.pow( ( index - n_1_over2 ) / n_1_over2, 2 )
-  },
-
-  parabola( length, index ) {
-    if( index <= length / 2 ) {
-      return windows.inversewelch( length / 2, index ) - 1
-    }else{
-      return 1 - windows.inversewelch( length / 2, index - length / 2 )
-    }
-  },
-
-  exponential( length, index, alpha ) {
-    return Math.pow( index / length, alpha )
-  },
-
-  linear( length, index ) {
-    return index / length
-  }
-}
-
-},{}],77:[function(require,module,exports){
-'use strict'
-
-let gen  = require('./gen.js'),
-    floor= require('./floor.js'),
-    sub  = require('./sub.js'),
-    memo = require('./memo.js')
-
-let proto = {
-  basename:'wrap',
-
-  gen() {
-    let code,
-        inputs = gen.getInputs( this ),
-        signal = inputs[0], min = inputs[1], max = inputs[2],
-        out, diff
-
-    //out = `(((${inputs[0]} - ${this.min}) % ${diff}  + ${diff}) % ${diff} + ${this.min})`
-    //const long numWraps = long((v-lo)/range) - (v < lo);
-    //return v - range * double(numWraps);   
-    
-    if( this.min === 0 ) {
-      diff = max
-    }else if ( isNaN( max ) || isNaN( min ) ) {
-      diff = `${max} - ${min}`
-    }else{
-      diff = max - min
-    }
-
-    out =
-` var ${this.name} = ${inputs[0]}
-  if( ${this.name} < ${this.min} ) ${this.name} += ${diff}
-  else if( ${this.name} > ${this.max} ) ${this.name} -= ${diff}
-
-`
-
-    return [ this.name, ' ' + out ]
-  },
-}
-
-module.exports = ( in1, min=0, max=1 ) => {
-  let ugen = Object.create( proto )
-
-  Object.assign( ugen, { 
-    min, 
-    max,
-    uid:    gen.getUID(),
-    inputs: [ in1, min, max ],
-  })
-  
-  ugen.name = `${ugen.basename}${ugen.uid}`
-
-  return ugen
-}
-
-},{"./floor.js":29,"./gen.js":32,"./memo.js":44,"./sub.js":69}],78:[function(require,module,exports){
-'use strict';
-
-var MemoryHelper = {
-  create: function create() {
-    var size = arguments.length <= 0 || arguments[0] === undefined ? 4096 : arguments[0];
-    var memtype = arguments.length <= 1 || arguments[1] === undefined ? Float32Array : arguments[1];
-
-    var helper = Object.create(this);
-
-    Object.assign(helper, {
-      heap: new memtype(size),
-      list: {},
-      freeList: {}
-    });
-
-    return helper;
-  },
-  alloc: function alloc(amount) {
-    var idx = -1;
-
-    if (amount > this.heap.length) {
-      throw Error('Allocation request is larger than heap size of ' + this.heap.length);
-    }
-
-    for (var key in this.freeList) {
-      var candidateSize = this.freeList[key];
-
-      if (candidateSize >= amount) {
-        idx = key;
-
-        this.list[idx] = amount;
-
-        if (candidateSize !== amount) {
-          var newIndex = idx + amount,
-              newFreeSize = void 0;
-
-          for (var _key in this.list) {
-            if (_key > newIndex) {
-              newFreeSize = _key - newIndex;
-              this.freeList[newIndex] = newFreeSize;
-            }
-          }
-        }
-        
-        break;
-      }
-    }
-    
-    if( idx !== -1 ) delete this.freeList[ idx ]
-
-    if (idx === -1) {
-      var keys = Object.keys(this.list),
-          lastIndex = void 0;
-
-      if (keys.length) {
-        // if not first allocation...
-        lastIndex = parseInt(keys[keys.length - 1]);
-
-        idx = lastIndex + this.list[lastIndex];
-      } else {
-        idx = 0;
-      }
-
-      this.list[idx] = amount;
-    }
-
-    if (idx + amount >= this.heap.length) {
-      throw Error('No available blocks remain sufficient for allocation request.');
-    }
-    return idx;
-  },
-  free: function free(index) {
-    if (typeof this.list[index] !== 'number') {
-      throw Error('Calling free() on non-existing block.');
-    }
-
-    this.list[index] = 0;
-
-    var size = 0;
-    for (var key in this.list) {
-      if (key > index) {
-        size = key - index;
-        break;
-      }
-    }
-
-    this.freeList[index] = size;
-  }
-};
-
-module.exports = MemoryHelper;
-
-},{}],79:[function(require,module,exports){
 let ugen = require('../ugen.js');
 
 let analyzer = Object.create(ugen);
@@ -4609,7 +13,7 @@ Object.assign(analyzer, {
 
 module.exports = analyzer;
 
-},{"../ugen.js":148}],80:[function(require,module,exports){
+},{"../ugen.js":69}],2:[function(require,module,exports){
 module.exports = function (Gibberish) {
   const { In, Out, SSD } = require('./singlesampledelay.js')(Gibberish);
 
@@ -4633,7 +37,7 @@ module.exports = function (Gibberish) {
   return analyzers;
 };
 
-},{"./follow.dsp.js":81,"./singlesampledelay.js":82}],81:[function(require,module,exports){
+},{"./follow.dsp.js":3,"./singlesampledelay.js":4}],3:[function(require,module,exports){
 const g = require('genish.js'),
       analyzer = require('./analyzer.js'),
       ugen = require('../ugen.js');
@@ -4817,7 +221,7 @@ module.exports = function (Gibberish) {
   return Follow;
 };
 
-},{"../ugen.js":148,"./analyzer.js":79,"genish.js":39}],82:[function(require,module,exports){
+},{"../ugen.js":69,"./analyzer.js":1,"genish.js":114}],4:[function(require,module,exports){
 const g = require('genish.js'),
       analyzer = require('./analyzer.js'),
       proxy = require('../workletProxy.js'),
@@ -4933,7 +337,7 @@ module.exports = function (Gibberish) {
   return { In, Out, SSD };
 };
 
-},{"../ugen.js":148,"../workletProxy.js":150,"./analyzer.js":79,"genish.js":39}],83:[function(require,module,exports){
+},{"../ugen.js":69,"../workletProxy.js":71,"./analyzer.js":1,"genish.js":114}],5:[function(require,module,exports){
 const ugen = require('../ugen.js'),
       g = require('genish.js');
 
@@ -4960,7 +364,7 @@ module.exports = function (Gibberish) {
       return AD;
 };
 
-},{"../ugen.js":148,"genish.js":39}],84:[function(require,module,exports){
+},{"../ugen.js":69,"genish.js":114}],6:[function(require,module,exports){
 const ugen = require('../ugen.js'),
       g = require('genish.js');
 
@@ -5002,7 +406,7 @@ module.exports = function (Gibberish) {
   return ADSR;
 };
 
-},{"../ugen.js":148,"genish.js":39}],85:[function(require,module,exports){
+},{"../ugen.js":69,"genish.js":114}],7:[function(require,module,exports){
 const g = require('genish.js');
 
 module.exports = function (Gibberish) {
@@ -5038,7 +442,7 @@ module.exports = function (Gibberish) {
   return Envelopes;
 };
 
-},{"./ad.js":83,"./adsr.js":84,"./ramp.js":86,"genish.js":39}],86:[function(require,module,exports){
+},{"./ad.js":5,"./adsr.js":6,"./ramp.js":8,"genish.js":114}],8:[function(require,module,exports){
 const ugen = require('../ugen.js'),
       g = require('genish.js');
 
@@ -5070,7 +474,7 @@ module.exports = function (Gibberish) {
       return Ramp;
 };
 
-},{"../ugen.js":148,"genish.js":39}],87:[function(require,module,exports){
+},{"../ugen.js":69,"genish.js":114}],9:[function(require,module,exports){
 /**
  * Copyright 2018 Google LLC
  *
@@ -5206,7 +610,7 @@ const AWPF = function (self = window, bufferSize = 4096) {
 
 module.exports = AWPF;
 
-},{"./realm.js":89}],88:[function(require,module,exports){
+},{"./realm.js":11}],10:[function(require,module,exports){
 /*
  * https://github.com/antimatter15/heapqueue.js/blob/master/heapqueue.js
  *
@@ -5326,7 +730,7 @@ HeapQueue.prototype.pop = function () {
 
 module.exports = HeapQueue;
 
-},{}],89:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 
 /**
  * Copyright 2018 Google LLC
@@ -5370,7 +774,7 @@ module.exports = function Realm(scope, parentElement) {
   this.exec = win.$hook.call(scope, scope, console);
 };
 
-},{}],90:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 const __proxy = require('./workletProxy.js');
 const effectProto = require('./fx/effect.js');
 
@@ -5531,7 +935,7 @@ module.exports = function (Gibberish) {
   return factory;
 };
 
-},{"./fx/effect.js":106,"./workletProxy.js":150}],91:[function(require,module,exports){
+},{"./fx/effect.js":27,"./workletProxy.js":71}],13:[function(require,module,exports){
 let g = require('genish.js');
 
 // constructor for schroeder allpass filters
@@ -5548,7 +952,7 @@ let allPass = function (_input, length = 500, feedback = .5) {
 
 module.exports = allPass;
 
-},{"genish.js":39}],92:[function(require,module,exports){
+},{"genish.js":114}],14:[function(require,module,exports){
 let g = require('genish.js'),
     filter = require('./filter.js');
 
@@ -5705,7 +1109,7 @@ module.exports = function (Gibberish) {
   return Biquad;
 };
 
-},{"./filter.js":95,"genish.js":39}],93:[function(require,module,exports){
+},{"./filter.js":17,"genish.js":114}],15:[function(require,module,exports){
 let g = require('genish.js');
 
 let combFilter = function (_input, combLength, damping = .5 * .4, feedbackCoeff = .84) {
@@ -5724,7 +1128,7 @@ let combFilter = function (_input, combLength, damping = .5 * .4, feedbackCoeff 
 
 module.exports = combFilter;
 
-},{"genish.js":39}],94:[function(require,module,exports){
+},{"genish.js":114}],16:[function(require,module,exports){
 const g = require('genish.js'),
       filter = require('./filter.js');
 
@@ -5917,7 +1321,7 @@ module.exports = function (Gibberish) {
   return DiodeZDF;
 };
 
-},{"./filter.js":95,"genish.js":39}],95:[function(require,module,exports){
+},{"./filter.js":17,"genish.js":114}],17:[function(require,module,exports){
 let ugen = require('../ugen.js')();
 
 let filter = Object.create(ugen);
@@ -5928,7 +1332,7 @@ Object.assign(filter, {
 
 module.exports = filter;
 
-},{"../ugen.js":148}],96:[function(require,module,exports){
+},{"../ugen.js":69}],18:[function(require,module,exports){
 let g = require('genish.js'),
     filter = require('./filter.js');
 
@@ -5990,7 +1394,7 @@ module.exports = function (Gibberish) {
   return Filter24;
 };
 
-},{"./filter.js":95,"genish.js":39}],97:[function(require,module,exports){
+},{"./filter.js":17,"genish.js":114}],19:[function(require,module,exports){
 module.exports = function (Gibberish) {
 
   const g = Gibberish.genish;
@@ -6053,7 +1457,7 @@ module.exports = function (Gibberish) {
   return filters;
 };
 
-},{"./allpass.js":91,"./biquad.dsp.js":92,"./combfilter.js":93,"./diodeFilterZDF.js":94,"./filter24.js":96,"./ladder.dsp.js":98,"./svf.js":99}],98:[function(require,module,exports){
+},{"./allpass.js":13,"./biquad.dsp.js":14,"./combfilter.js":15,"./diodeFilterZDF.js":16,"./filter24.js":18,"./ladder.dsp.js":20,"./svf.js":21}],20:[function(require,module,exports){
 const genish = require('genish.js'),
       filterProto = require('./filter.js');
 
@@ -6167,7 +1571,7 @@ module.exports = function (Gibberish) {
   return Zd24;
 };
 
-},{"./filter.js":95,"genish.js":39}],99:[function(require,module,exports){
+},{"./filter.js":17,"genish.js":114}],21:[function(require,module,exports){
 const g = require('genish.js'),
       filter = require('./filter.js');
 
@@ -6240,7 +1644,7 @@ module.exports = function (Gibberish) {
   return SVF;
 };
 
-},{"./filter.js":95,"genish.js":39}],100:[function(require,module,exports){
+},{"./filter.js":17,"genish.js":114}],22:[function(require,module,exports){
 let g = require('genish.js'),
     effect = require('./effect.js');
 
@@ -6304,7 +1708,7 @@ module.exports = function (Gibberish) {
   return BitCrusher;
 };
 
-},{"./effect.js":106,"genish.js":39}],101:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],23:[function(require,module,exports){
 let g = require('genish.js'),
     effect = require('./effect.js');
 
@@ -6410,7 +1814,7 @@ module.exports = function (Gibberish) {
   return Shuffler;
 };
 
-},{"./effect.js":106,"genish.js":39}],102:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],24:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -6504,213 +1908,7 @@ module.exports = function (Gibberish) {
       return __Chorus;
 };
 
-},{"./effect.js":106,"genish.js":39}],103:[function(require,module,exports){
-const g = require('genish.js'),
-      effect = require('./effect.js');
-
-const genish = g;
-
-const AllPassChain = (in1, in2, in3, magic_coeff) => {
-  "use jsdsp";
-
-  /* in1 = predelay_out */
-  /* in2 = indiffusion1 */
-  /* in3 = indiffusion2 */
-
-  const sub1 = g.history(0); //in1 - 0
-  const d1 = g.delay(sub1.out, 142 * 1.481805046873425);
-  //sub1.inputs[1] = d1 * in2
-  sub1.in(genish.sub(in1, genish.mul(d1, in2)));
-  const ap1_out = genish.add(genish.mul(sub1.out, in2), d1);
-
-  const sub2 = g.history(0); //ap1_out - 0
-  const d2 = g.delay(sub2.out, 107 * 1.481805046873425);
-  //sub2.inputs[1] = d2 * in2
-  sub2.in(genish.sub(ap1_out, genish.mul(d2, in2)));
-  const ap2_out = genish.add(genish.mul(sub2.out, in2), d2);
-
-  const sub3 = g.history(0); //ap2_out - 0
-  const d3 = g.delay(sub3.out, 379 * 1.481805046873425);
-  //sub3.inputs[1] = d3 * in3
-  sub3.in(genish.sub(ap2_out, genish.mul(d3, in3)));
-  const ap3_out = genish.add(genish.mul(sub3.out, in3), d3);
-
-  const sub4 = g.history(0); //ap3_out - 0
-  const d4 = g.delay(sub4.out, 277 * 1.481805046873425);
-  //sub4.inputs[1] = d4 * in3
-  sub4.in(genish.sub(ap3_out, genish.mul(d4, in3)));
-  const ap4_out = genish.add(genish.mul(sub4.out, in3), d4);
-
-  return ap4_out;
-};
-
-/*const tank_outs = Tank( ap_out, decaydiffusion1, decaydiffusion2, damping, decay )*/
-const Tank = function (in1, in2, in3, in4, in5, magic_coeff) {
-
-  // 1012, 1361
-  const leftDelaySize = genish.add(16, Math.round(672 * 1.481805046873425));
-  const rightDelaySize = genish.add(16, Math.round(908 * 1.481805046873425));
-  const outs = [[], [], [], [], []];
-  {
-    "use jsdsp";
-    console.log(leftDelaySize, rightDelaySize);
-
-    /* LEFT CHANNEL */
-    const leftStart = genish.add(in1, 0);
-    const delayInput = g.history(0); //leftStart + 0
-    const delay1 = g.delay(delayInput.out, [genish.add(genish.mul(g.cycle(.1), 16), 672 * 1.481805046873425)], { size: leftDelaySize });
-    //delayInput.inputs[1] = delay1 * in2
-    delayInput.in(genish.add(leftStart, genish.mul(delay1, in2)));
-    const delayOut = genish.sub(delay1, genish.mul(delayInput, in2));
-
-    const delay2 = g.delay(delayOut, [4453 * 1.481805046873425, 353 * 1.481805046873425, 3627 * 1.481805046873425, 1190 * 1.481805046873425]);
-    outs[3].push(genish.add(delay2.outputs[1], delay2.outputs[2]));
-    outs[2].push(delay2.outputs[3]);
-
-    const mz = g.history(0);
-    const ml = g.mix(delay2, mz.out, in4);
-    mz.in(ml);
-
-    const mout = genish.mul(ml, in5);
-
-    const s1 = genish.sub(mout, 0);
-    const delay3 = g.delay(s1, [1800 * 1.481805046873425, 187 * 1.481805046873425, 1228 * 1.481805046873425]);
-    outs[2].push(delay3.outputs[1]);
-    outs[4].push(delay3.outputs[2]);
-    s1.inputs[1] = genish.mul(delay3, in3);
-    const m2 = genish.mul(s1, in3);
-    const dl2_out = genish.add(delay3, m2);
-
-    const delay4 = g.delay(dl2_out, [3720 * 1.481805046873425, 1066 * 1.481805046873425, 2673 * 1.481805046873425]);
-    outs[2].push(delay4.outputs[1]);
-    outs[3].push(delay4.outputs[2]);
-
-    /* RIGHT CHANNEL */
-    const rightStart = genish.add(genish.mul(delay4, in5), in1);
-    const delayInputR = genish.add(rightStart, 0);
-    const delay1R = g.delay(delayInputR, genish.add(genish.mul(g.cycle(.07), 16), 908 * 1.481805046873425), { size: rightDelaySize });
-    delayInputR.inputs[1] = genish.mul(delay1R, in2);
-    const delayOutR = genish.sub(delay1R, genish.mul(delayInputR, in2));
-
-    const delay2R = g.delay(delayOutR, [4217 * 1.481805046873425, 266 * 1.481805046873425, 2974 * 1.481805046873425, 2111 * 1.481805046873425]);
-    outs[1].push(genish.add(delay2R.outputs[1], delay2R.outputs[2]));
-    outs[4].push(delay2R.outputs[3]);
-
-    const mzR = g.history(0);
-    const mlR = g.mix(delay2R, mzR.out, in4);
-    mzR.in(mlR);
-
-    const moutR = genish.mul(mlR, in5);
-
-    const s1R = genish.sub(moutR, 0);
-    const delay3R = g.delay(s1R, [2656 * 1.481805046873425, 335 * 1.481805046873425, 1913 * 1.481805046873425]);
-    outs[4].push(delay3R.outputs[1]);
-    outs[2].push(delay3R.outputs[2]);
-    s1R.inputs[1] = genish.mul(delay3R, in3);
-    const m2R = genish.mul(s1R, in3);
-    const dl2_outR = genish.add(delay3R, m2R);
-
-    const delay4R = g.delay(dl2_outR, [3163 * 1.481805046873425, 121 * 1.481805046873425, 1996 * 1.481805046873425]);
-    outs[4].push(delay4.outputs[1]);
-    outs[1].push(delay4.outputs[2]);
-
-    leftStart.inputs[1] = genish.mul(delay4R, in5);
-
-    outs[1] = g.add(...outs[1]);
-    outs[2] = g.add(...outs[2]);
-    outs[3] = g.add(...outs[3]);
-    outs[4] = g.add(...outs[4]);
-  }
-  return outs;
-};
-
-module.exports = function (Gibberish) {
-
-  const Reverb = inputProps => {
-    const props = Object.assign({}, Reverb.defaults, effect.defaults, inputProps),
-          reverb = Object.create(effect);
-
-    let out;
-
-    reverb.__createGraph = function () {
-      let isStereo = false;
-      if (out === undefined) {
-        isStereo = typeof props.input.isStereo !== 'undefined' ? props.input.isStereo : false;
-      } else {
-        isStereo = out.input.isStereo;
-        out.isStereo = isStereo;
-      }
-
-      const input = g.in('input'),
-            inputGain = g.in('inputGain'),
-            damping = g.in('damping'),
-            drywet = g.in('drywet'),
-            decay = g.in('decay'),
-            predelay = g.in('predelay'),
-            inbandwidth = g.in('inbandwidth'),
-            decaydiffusion1 = g.in('decaydiffusion1'),
-            decaydiffusion2 = g.in('decaydiffusion2'),
-            indiffusion1 = g.in('indiffusion1'),
-            indiffusion2 = g.in('indiffusion2');
-
-      // adjust from original equation coefficients at 29761 hz
-      const coeff = genish.div(g.gen.samplerate, 29761);
-
-      const summedInput = isStereo === true ? g.mul(g.add(input[0], input[1]), inputGain) : g.mul(input, inputGain);
-      {
-        'use jsdsp';
-
-        // calculcate predelay
-        const predelay_samps = g.mstosamps(predelay);
-        const predelay_delay = g.delay(summedInput, predelay_samps, { size: 4410 });
-        const z_pd = g.history(0);
-        const mix1 = g.mix(z_pd.out, predelay_delay, inbandwidth);
-        z_pd.in(mix1);
-
-        const predelay_out = mix1;
-
-        // run input + predelay through all-pass chain
-        const ap_out = AllPassChain(predelay_out, indiffusion1, indiffusion2, coeff);
-
-        // run filtered signal into "tank" model
-        const tank_outs = Tank(ap_out, decaydiffusion1, decaydiffusion2, damping, decay, coeff);
-
-        const leftWet = genish.mul(genish.sub(tank_outs[1], tank_outs[2]), .6);
-        const rightWet = genish.mul(genish.sub(tank_outs[3], tank_outs[4]), .6);
-
-        // mix wet and dry signal for final output
-        const left = g.mix(isStereo ? g.mul(input[0], inputGain) : g.mul(input, inputGain), leftWet, drywet);
-        const right = g.mix(isStereo ? g.mul(input[1], inputGain) : g.mul(input, inputGain), rightWet, drywet);
-
-        reverb.graph = [left, right];
-      }
-    };
-
-    reverb.__createGraph();
-    reverb.__requiresRecompilation = ['input'];
-
-    out = Gibberish.factory(reverb, reverb.graph, ['fx', 'plate'], props);
-
-    return out;
-  };
-
-  Reverb.defaults = {
-    input: 0,
-    damping: .5,
-    drywet: .5,
-    decay: .5,
-    predelay: 10,
-    inbandwidth: .5,
-    indiffusion1: .75,
-    indiffusion2: .625,
-    decaydiffusion1: .7,
-    decaydiffusion2: .5
-  };
-
-  return Reverb;
-};
-
-},{"./effect.js":106,"genish.js":39}],104:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],25:[function(require,module,exports){
 let g = require('genish.js'),
     effect = require('./effect.js');
 
@@ -6776,7 +1974,7 @@ module.exports = function (Gibberish) {
   return Delay;
 };
 
-},{"./effect.js":106,"genish.js":39}],105:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],26:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -6857,7 +2055,7 @@ module.exports = function (Gibberish) {
   return Distortion;
 };
 
-},{"./effect.js":106,"genish.js":39}],106:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],27:[function(require,module,exports){
 let ugen = require('../ugen.js')();
 
 let effect = Object.create(ugen);
@@ -6869,12 +2067,12 @@ Object.assign(effect, {
 
 module.exports = effect;
 
-},{"../ugen.js":148}],107:[function(require,module,exports){
+},{"../ugen.js":69}],28:[function(require,module,exports){
 module.exports = function (Gibberish) {
 
   const effects = {
     Freeverb: require('./freeverb.js')(Gibberish),
-    Plate: require('./dattorro.dsp.js')(Gibberish),
+    //Plate       : require( './dattorro.dsp.js' )( Gibberish ),
     Flanger: require('./flanger.js')(Gibberish),
     Vibrato: require('./vibrato.js')(Gibberish),
     Delay: require('./delay.js')(Gibberish),
@@ -6899,7 +2097,7 @@ module.exports = function (Gibberish) {
   return effects;
 };
 
-},{"./bitCrusher.js":100,"./bufferShuffler.js":101,"./chorus.js":102,"./dattorro.dsp.js":103,"./delay.js":104,"./distortion.dsp.js":105,"./flanger.js":108,"./freeverb.js":109,"./ringMod.js":110,"./tremolo.js":111,"./vibrato.js":112,"./wavefolder.dsp.js":113}],108:[function(require,module,exports){
+},{"./bitCrusher.js":22,"./bufferShuffler.js":23,"./chorus.js":24,"./delay.js":25,"./distortion.dsp.js":26,"./flanger.js":29,"./freeverb.js":30,"./ringMod.js":31,"./tremolo.js":32,"./vibrato.js":33,"./wavefolder.dsp.js":34}],29:[function(require,module,exports){
 let g = require('genish.js'),
     proto = require('./effect.js');
 
@@ -6977,7 +2175,7 @@ module.exports = function (Gibberish) {
   return Flanger;
 };
 
-},{"./effect.js":106,"genish.js":39}],109:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],30:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -7069,7 +2267,7 @@ module.exports = function (Gibberish) {
   return Freeverb;
 };
 
-},{"./effect.js":106,"genish.js":39}],110:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],31:[function(require,module,exports){
 let g = require('genish.js'),
     effect = require('./effect.js');
 
@@ -7128,7 +2326,7 @@ module.exports = function (Gibberish) {
   return RingMod;
 };
 
-},{"./effect.js":106,"genish.js":39}],111:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],32:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -7195,7 +2393,7 @@ module.exports = function (Gibberish) {
   return Tremolo;
 };
 
-},{"./effect.js":106,"genish.js":39}],112:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],33:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -7269,7 +2467,7 @@ module.exports = function (Gibberish) {
   return Vibrato;
 };
 
-},{"./effect.js":106,"genish.js":39}],113:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],34:[function(require,module,exports){
 const g = require('genish.js'),
       effect = require('./effect.js');
 
@@ -7409,7 +2607,7 @@ module.exports = function (Gibberish) {
   return [Wavefolder, wavestage];
 };
 
-},{"./effect.js":106,"genish.js":39}],114:[function(require,module,exports){
+},{"./effect.js":27,"genish.js":114}],35:[function(require,module,exports){
 let MemoryHelper = require('memory-helper'),
     genish = require('genish.js');
 
@@ -7677,7 +2875,7 @@ let Gibberish = {
   proxyReplace(obj) {
     if (typeof obj === 'object' && obj !== null) {
       if (obj.id !== undefined) {
-        const __obj = processor.ugens.get(obj.id);
+        const __obj = Gibberish.processor.ugens.get(obj.id);
         //console.log( 'retrieved:', __obj.name )
 
         //if( obj.prop !== undefined ) console.log( 'got a ssd.out', obj )
@@ -7906,7 +3104,7 @@ Gibberish.utilities = require('./utilities.js')(Gibberish);
 
 module.exports = Gibberish;
 
-},{"./analysis/analyzer.js":79,"./analysis/analyzers.js":80,"./envelopes/envelopes.js":85,"./factory.js":90,"./filters/filters.js":97,"./fx/effect.js":106,"./fx/effects.js":107,"./instruments/instrument.js":121,"./instruments/instruments.js":122,"./instruments/polyMixin.js":126,"./instruments/polytemplate.js":127,"./misc/binops.js":132,"./misc/bus.js":133,"./misc/bus2.js":134,"./misc/monops.js":135,"./misc/panner.js":136,"./misc/time.js":137,"./oscillators/oscillators.js":140,"./scheduling/scheduler.js":144,"./scheduling/seq2.js":145,"./scheduling/sequencer.js":146,"./scheduling/tidal.js":147,"./ugen.js":148,"./utilities.js":149,"./workletProxy.js":150,"genish.js":39,"memory-helper":153}],115:[function(require,module,exports){
+},{"./analysis/analyzer.js":1,"./analysis/analyzers.js":2,"./envelopes/envelopes.js":7,"./factory.js":12,"./filters/filters.js":19,"./fx/effect.js":27,"./fx/effects.js":28,"./instruments/instrument.js":42,"./instruments/instruments.js":43,"./instruments/polyMixin.js":47,"./instruments/polytemplate.js":48,"./misc/binops.js":53,"./misc/bus.js":54,"./misc/bus2.js":55,"./misc/monops.js":56,"./misc/panner.js":57,"./misc/time.js":58,"./oscillators/oscillators.js":61,"./scheduling/scheduler.js":65,"./scheduling/seq2.js":66,"./scheduling/sequencer.js":67,"./scheduling/tidal.js":68,"./ugen.js":69,"./utilities.js":70,"./workletProxy.js":71,"genish.js":114,"memory-helper":153}],36:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -7977,7 +3175,7 @@ module.exports = function (Gibberish) {
   return Clap;
 };
 
-},{"./instrument.js":121,"genish.js":39}],116:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],37:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js'),
       __wavefold = require('../fx/wavefolder.dsp.js');
@@ -8090,7 +3288,7 @@ module.exports = function (Gibberish) {
   return [Complex, PolyComplex];
 };
 
-},{"../fx/wavefolder.dsp.js":113,"./instrument.js":121,"genish.js":39}],117:[function(require,module,exports){
+},{"../fx/wavefolder.dsp.js":34,"./instrument.js":42,"genish.js":114}],38:[function(require,module,exports){
 let g = require('genish.js'),
     instrument = require('./instrument.js');
 
@@ -8132,7 +3330,7 @@ module.exports = function (Gibberish) {
   return [Conga, PolyConga];
 };
 
-},{"./instrument.js":121,"genish.js":39}],118:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],39:[function(require,module,exports){
 let g = require('genish.js'),
     instrument = require('./instrument.js');
 
@@ -8175,7 +3373,7 @@ module.exports = function (Gibberish) {
   return Cowbell;
 };
 
-},{"./instrument.js":121,"genish.js":39}],119:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],40:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -8298,7 +3496,7 @@ module.exports = function (Gibberish) {
   return [FM, PolyFM];
 };
 
-},{"./instrument.js":121,"genish.js":39}],120:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],41:[function(require,module,exports){
 let g = require('genish.js'),
     instrument = require('./instrument.js');
 
@@ -8351,7 +3549,7 @@ module.exports = function (Gibberish) {
     return Hat;
 };
 
-},{"./instrument.js":121,"genish.js":39}],121:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],42:[function(require,module,exports){
 const ugen = require('../ugen.js')();
 
 const instrument = Object.create(ugen);
@@ -8392,7 +3590,7 @@ Object.assign(instrument, {
 
 module.exports = instrument;
 
-},{"../ugen.js":148}],122:[function(require,module,exports){
+},{"../ugen.js":69}],43:[function(require,module,exports){
 module.exports = function (Gibberish) {
 
   const instruments = {
@@ -8427,7 +3625,7 @@ module.exports = function (Gibberish) {
   return instruments;
 };
 
-},{"./clap.dsp.js":115,"./complex.dsp.js":116,"./conga.js":117,"./cowbell.js":118,"./fm.dsp.js":119,"./hat.js":120,"./karplusstrong.js":123,"./kick.js":124,"./monosynth.dsp.js":125,"./sampler.js":128,"./snare.js":129,"./synth.dsp.js":130,"./tom.js":131}],123:[function(require,module,exports){
+},{"./clap.dsp.js":36,"./complex.dsp.js":37,"./conga.js":38,"./cowbell.js":39,"./fm.dsp.js":40,"./hat.js":41,"./karplusstrong.js":44,"./kick.js":45,"./monosynth.dsp.js":46,"./sampler.js":49,"./snare.js":50,"./synth.dsp.js":51,"./tom.js":52}],44:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -8519,7 +3717,7 @@ module.exports = function (Gibberish) {
   return [Karplus, PolyKarplus];
 };
 
-},{"./instrument.js":121,"genish.js":39}],124:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],45:[function(require,module,exports){
 let g = require('genish.js'),
     instrument = require('./instrument.js');
 
@@ -8571,7 +3769,7 @@ module.exports = function (Gibberish) {
   return Kick;
 };
 
-},{"./instrument.js":121,"genish.js":39}],125:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],46:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js'),
       feedbackOsc = require('../oscillators/fmfeedbackosc.js');
@@ -8685,7 +3883,7 @@ module.exports = function (Gibberish) {
   return [Mono, PolyMono];
 };
 
-},{"../oscillators/fmfeedbackosc.js":139,"./instrument.js":121,"genish.js":39}],126:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":60,"./instrument.js":42,"genish.js":114}],47:[function(require,module,exports){
 // XXX TOO MANY GLOBAL GIBBERISH VALUES
 
 const Gibberish = require('../index.js');
@@ -8773,7 +3971,7 @@ module.exports = {
   triggerNote: null
 };
 
-},{"../index.js":114}],127:[function(require,module,exports){
+},{"../index.js":35}],48:[function(require,module,exports){
 /*
  * This files creates a factory generating polysynth constructors.
  */
@@ -8877,7 +4075,7 @@ module.exports = function (Gibberish) {
   return TemplateFactory;
 };
 
-},{"../workletProxy.js":150,"genish.js":39}],128:[function(require,module,exports){
+},{"../workletProxy.js":71,"genish.js":114}],49:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -9080,7 +4278,7 @@ module.exports = function (Gibberish) {
   return [Sampler, PolySampler];
 };
 
-},{"./instrument.js":121,"genish.js":39}],129:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],50:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -9132,7 +4330,7 @@ module.exports = function (Gibberish) {
   return Snare;
 };
 
-},{"./instrument.js":121,"genish.js":39}],130:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],51:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -9245,7 +4443,7 @@ module.exports = function (Gibberish) {
   return [Synth, PolySynth];
 };
 
-},{"./instrument.js":121,"genish.js":39}],131:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],52:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -9297,7 +4495,7 @@ module.exports = function (Gibberish) {
   return Tom;
 };
 
-},{"./instrument.js":121,"genish.js":39}],132:[function(require,module,exports){
+},{"./instrument.js":42,"genish.js":114}],53:[function(require,module,exports){
 const ugenproto = require('../ugen.js')(),
       __proxy = require('../workletProxy.js'),
       g = require('genish.js');
@@ -9414,7 +4612,7 @@ module.exports = function (Gibberish) {
   return Binops;
 };
 
-},{"../ugen.js":148,"../workletProxy.js":150,"genish.js":39}],133:[function(require,module,exports){
+},{"../ugen.js":69,"../workletProxy.js":71,"genish.js":114}],54:[function(require,module,exports){
 let g = require('genish.js'),
     ugen = require('../ugen.js')(),
     __proxy = require('../workletProxy.js');
@@ -9504,7 +4702,7 @@ module.exports = function (Gibberish) {
   return constructor;
 };
 
-},{"../ugen.js":148,"../workletProxy.js":150,"genish.js":39}],134:[function(require,module,exports){
+},{"../ugen.js":69,"../workletProxy.js":71,"genish.js":114}],55:[function(require,module,exports){
 const g = require('genish.js'),
       ugen = require('../ugen.js')(),
       __proxy = require('../workletProxy.js');
@@ -9634,7 +4832,7 @@ module.exports = function (Gibberish) {
   return constructor;
 };
 
-},{"../ugen.js":148,"../workletProxy.js":150,"genish.js":39}],135:[function(require,module,exports){
+},{"../ugen.js":69,"../workletProxy.js":71,"genish.js":114}],56:[function(require,module,exports){
 const g = require('genish.js'),
       ugen = require('../ugen.js')();
 
@@ -9696,7 +4894,7 @@ module.exports = function (Gibberish) {
   return Monops;
 };
 
-},{"../ugen.js":148,"genish.js":39}],136:[function(require,module,exports){
+},{"../ugen.js":69,"genish.js":114}],57:[function(require,module,exports){
 const g = require('genish.js');
 
 const ugen = require('../ugen.js')();
@@ -9732,7 +4930,7 @@ module.exports = function (Gibberish) {
   return Panner;
 };
 
-},{"../ugen.js":148,"genish.js":39}],137:[function(require,module,exports){
+},{"../ugen.js":69,"genish.js":114}],58:[function(require,module,exports){
 module.exports = function (Gibberish) {
 
   const Time = {
@@ -9761,7 +4959,7 @@ module.exports = function (Gibberish) {
   return Time;
 };
 
-},{}],138:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 const genish = require('genish.js'),
       ssd = genish.history,
       noise = genish.noise;
@@ -9782,7 +4980,7 @@ module.exports = function () {
   return out;
 };
 
-},{"genish.js":39}],139:[function(require,module,exports){
+},{"genish.js":114}],60:[function(require,module,exports){
 let g = require('genish.js');
 
 let feedbackOsc = function (frequency, filter, pulsewidth = .5, argumentProps) {
@@ -9838,7 +5036,7 @@ let feedbackOsc = function (frequency, filter, pulsewidth = .5, argumentProps) {
 
 module.exports = feedbackOsc;
 
-},{"genish.js":39}],140:[function(require,module,exports){
+},{"genish.js":114}],61:[function(require,module,exports){
 const g = require('genish.js'),
       ugen = require('../ugen.js')(),
       feedbackOsc = require('./fmfeedbackosc.js'),
@@ -10017,7 +5215,7 @@ module.exports = function (Gibberish) {
   return Oscillators;
 };
 
-},{"../ugen.js":148,"./brownnoise.dsp.js":138,"./fmfeedbackosc.js":139,"./pinknoise.dsp.js":141,"./polyblep.dsp.js":142,"./wavetable.js":143,"genish.js":39}],141:[function(require,module,exports){
+},{"../ugen.js":69,"./brownnoise.dsp.js":59,"./fmfeedbackosc.js":60,"./pinknoise.dsp.js":62,"./polyblep.dsp.js":63,"./wavetable.js":64,"genish.js":114}],62:[function(require,module,exports){
 const genish = require('genish.js'),
       ssd = genish.history,
       data = genish.data,
@@ -10043,7 +5241,7 @@ module.exports = function () {
   return out;
 };
 
-},{"genish.js":39}],142:[function(require,module,exports){
+},{"genish.js":114}],63:[function(require,module,exports){
 const genish = require('genish.js');
 const g = genish;
 
@@ -10102,7 +5300,7 @@ const polyBlep = function (__frequency, argumentProps) {
 
 module.exports = polyBlep;
 
-},{"genish.js":39}],143:[function(require,module,exports){
+},{"genish.js":114}],64:[function(require,module,exports){
 let g = require('genish.js'),
     ugen = require('../ugen.js')();
 
@@ -10133,7 +5331,7 @@ module.exports = function (Gibberish) {
   return Wavetable;
 };
 
-},{"../ugen.js":148,"genish.js":39}],144:[function(require,module,exports){
+},{"../ugen.js":69,"genish.js":114}],65:[function(require,module,exports){
 const Queue = require('../external/priorityqueue.js');
 
 let Gibberish = null;
@@ -10211,7 +5409,7 @@ Object.defineProperty(Scheduler, 'shouldSync', {
 
 module.exports = Scheduler;
 
-},{"../external/priorityqueue.js":88}],145:[function(require,module,exports){
+},{"../external/priorityqueue.js":10}],66:[function(require,module,exports){
 const g = require('genish.js'),
       __proxy = require('../workletProxy.js'),
       ugen = require('../ugen.js')();
@@ -10234,14 +5432,25 @@ module.exports = function (Gibberish) {
       }
       return this;
     },
-    stop() {
+    stop(delay = 0) {
       const idx = Gibberish.analyzers.indexOf(this);
-      if (idx > -1) {
-        Gibberish.analyzers.splice(idx, 1);
-        Gibberish.dirty(Gibberish.analyzers);
+      if (delay === 0) {
+        if (idx > -1) {
+          Gibberish.analyzers.splice(idx, 1);
+          Gibberish.dirty(Gibberish.analyzers);
+        }
+        this.phase = 0;
+        this.nextTime = 0;
+      } else {
+        Gibberish.scheduler.add(delay, () => {
+          if (idx > -1) {
+            Gibberish.analyzers.splice(idx, 1);
+            Gibberish.dirty(Gibberish.analyzers);
+          }
+          this.phase = 0;
+          this.nextTime = 0;
+        });
       }
-      this.phase = 0;
-      this.nextTime = 0;
 
       return this;
     },
@@ -10402,6 +5611,10 @@ module.exports = function (Gibberish) {
         }
       });
 
+      if (Gibberish.mode === 'worklet') {
+        Gibberish.utilities.createPubSub(seq);
+      }
+
       return proxy(['Sequencer2'], properties, seq);
     }
   };
@@ -10412,7 +5625,7 @@ module.exports = function (Gibberish) {
   return Seq2.create;
 };
 
-},{"../ugen.js":148,"../workletProxy.js":150,"genish.js":39}],146:[function(require,module,exports){
+},{"../ugen.js":69,"../workletProxy.js":71,"genish.js":114}],67:[function(require,module,exports){
 const __proxy = require('../workletProxy.js');
 
 module.exports = function (Gibberish) {
@@ -10427,11 +5640,27 @@ module.exports = function (Gibberish) {
       __valuesPhase: 0,
       __timingsPhase: 0,
       __type: 'seq',
+      __onlyRunsOnce: false,
+      __repeatCount: null,
 
       tick(priority) {
         let value = typeof seq.values === 'function' ? seq.values : seq.values[seq.__valuesPhase++ % seq.values.length],
             timing = typeof seq.timings === 'function' ? seq.timings : seq.timings[seq.__timingsPhase++ % seq.timings.length],
             shouldRun = true;
+
+        if (seq.__onlyRunsOnce === true) {
+          if (seq.__valuesPhase === seq.values.length) {
+            seq.stop();
+          }
+        } else if (seq.__repeatCount !== null) {
+          if (seq.__valuesPhase % seq.values.length === 0) {
+            seq.__repeatCount--;
+            if (seq.__repeatCount === 0) {
+              seq.stop();
+              seq.__repeatCount = null;
+            }
+          }
+        }
 
         if (typeof timing === 'function') timing = timing();
 
@@ -10464,6 +5693,17 @@ module.exports = function (Gibberish) {
             if (typeof value === 'function') value = value();
             seq.target[seq.key] = value;
           }
+
+          if (seq.reportOutput === true) {
+            Gibberish.processor.port.postMessage({
+              address: '__sequencer',
+              id: seq.id,
+              name: 'output',
+              value,
+              phase: seq.__valuesPhase,
+              length: seq.values.length
+            });
+          }
         }
 
         if (Gibberish.mode === 'processor') {
@@ -10475,18 +5715,52 @@ module.exports = function (Gibberish) {
 
       start(delay = 0) {
         seq.__isRunning = true;
-        Gibberish.scheduler.add(delay, seq.tick, seq.priority);
+        if (Gibberish.mode === 'processor') {
+          Gibberish.scheduler.add(delay, priority => {
+            seq.tick(priority);
+            Gibberish.processor.port.postMessage({
+              address: '__sequencer',
+              id: seq.id,
+              name: 'start'
+            });
+          }, seq.priority);
+        }
         return __seq;
       },
 
-      stop() {
-        seq.__isRunning = false;
+      stop(delay = null) {
+        if (delay === null) {
+          seq.__isRunning = false;
+
+          if (Gibberish.mode === 'processor') {
+            Gibberish.processor.port.postMessage({
+              address: '__sequencer',
+              id: seq.id,
+              name: 'stop'
+            });
+          }
+        } else {
+          Gibberish.scheduler.add(delay, seq.stop);
+        }
+        return __seq;
+      },
+
+      once() {
+        seq.__onlyRunsOnce = true;
+        return __seq;
+      },
+
+      repeat(repeatCount = 2) {
+        seq.__repeatCount = repeatCount;
         return __seq;
       }
     };
 
     props.id = Gibberish.factory.getUID();
 
+    if (Gibberish.mode === 'worklet') {
+      Gibberish.utilities.createPubSub(seq);
+    }
     // need a separate reference to the properties for worklet meta-programming
     const properties = Object.assign({}, Sequencer.defaults, props);
     Object.assign(seq, properties);
@@ -10497,16 +5771,16 @@ module.exports = function (Gibberish) {
     return __seq;
   };
 
-  Sequencer.defaults = { priority: 100000, values: [], timings: [], rate: 1 };
+  Sequencer.defaults = { priority: 100000, values: [], timings: [], rate: 1, reportOutput: false };
 
-  Sequencer.make = function (values, timings, target, key, priority) {
-    return Sequencer({ values, timings, target, key, priority });
+  Sequencer.make = function (values, timings, target, key, priority, reportOutput) {
+    return Sequencer({ values, timings, target, key, priority, reportOutput });
   };
 
   return Sequencer;
 };
 
-},{"../workletProxy.js":150}],147:[function(require,module,exports){
+},{"../workletProxy.js":71}],68:[function(require,module,exports){
 const __proxy = require('../workletProxy.js');
 const Pattern = require('tidal.pegjs');
 
@@ -10698,7 +5972,7 @@ module.exports = function (Gibberish) {
   return Sequencer;
 };
 
-},{"../workletProxy.js":150,"tidal.pegjs":170}],148:[function(require,module,exports){
+},{"../workletProxy.js":71,"tidal.pegjs":165}],69:[function(require,module,exports){
 let Gibberish = null;
 
 const __ugen = function (__Gibberish) {
@@ -10843,7 +6117,7 @@ const __ugen = function (__Gibberish) {
 
 module.exports = __ugen;
 
-},{}],149:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 const genish = require('genish.js'),
       AWPF = require('./external/audioworklet-polyfill.js');
 
@@ -10945,6 +6219,13 @@ module.exports = function (Gibberish) {
     },
 
     workletHandlers: {
+      __sequencer(event) {
+        const message = event.data;
+        const id = message.id;
+        const eventName = message.name;
+        const obj = Gibberish.worklet.ugens.get(id);
+        if (obj !== undefined) obj.publish(eventName, message);
+      },
       callback(event) {
         if (typeof Gibberish.oncallback === 'function') {
           Gibberish.oncallback(event.data.code);
@@ -11016,6 +6297,35 @@ module.exports = function (Gibberish) {
       }
     },
 
+    createPubSub(obj) {
+      const events = {};
+      obj.on = function (key, fcn) {
+        if (typeof events[key] === 'undefined') {
+          events[key] = [];
+        }
+        events[key].push(fcn);
+        return obj;
+      };
+
+      obj.off = function (key, fcn) {
+        if (typeof events[key] !== 'undefined') {
+          const arr = events[key];
+
+          arr.splice(arr.indexOf(fcn), 1);
+        }
+        return obj;
+      };
+
+      obj.publish = function (key, data) {
+        if (typeof events[key] !== 'undefined') {
+          const arr = events[key];
+
+          arr.forEach(v => v(data));
+        }
+        return obj;
+      };
+    },
+
     wrap(func, ...args) {
       const out = {
         action: 'wrap',
@@ -11043,7 +6353,7 @@ module.exports = function (Gibberish) {
   return utilities;
 };
 
-},{"./external/audioworklet-polyfill.js":87,"genish.js":39}],150:[function(require,module,exports){
+},{"./external/audioworklet-polyfill.js":9,"genish.js":114}],71:[function(require,module,exports){
 const serialize = require('serialize-javascript');
 
 module.exports = function (Gibberish) {
@@ -11107,7 +6417,7 @@ module.exports = function (Gibberish) {
     Gibberish.worklet.port.postMessage(obj.__meta__);
   };
 
-  const doNotProxy = ['connected', 'input', 'callback', 'inputNames'];
+  const doNotProxy = ['connected', 'input', 'callback', 'inputNames', 'on', 'off', 'publish'];
 
   const __proxy = function (__name, values, obj) {
 
@@ -11117,7 +6427,7 @@ module.exports = function (Gibberish) {
       // proxy for all method calls to send to worklet
       const proxy = new Proxy(obj, {
         get(target, prop, receiver) {
-          if (typeof target[prop] === 'function' && prop.indexOf('__') === -1) {
+          if (typeof target[prop] === 'function' && prop.indexOf('__') === -1 && doNotProxy.indexOf(prop) === -1) {
             const proxy = new Proxy(target[prop], {
               apply(__target, thisArg, args) {
 
@@ -11201,9 +6511,50 @@ module.exports = function (Gibberish) {
   return __proxy;
 };
 
-},{"serialize-javascript":155}],151:[function(require,module,exports){
+},{"serialize-javascript":163}],72:[function(require,module,exports){
+function bjorklund(slots, pulses){
+  var pattern = [],
+      count = [],
+      remainder = [pulses],
+      divisor = slots - pulses,
+      level = 0,
+      build_pattern = function(lv){
+        if( lv == -1 ){ pattern.push(0); }
+        else if( lv == -2 ){ pattern.push(1); }
+        else{
+          for(var x=0; x<count[lv]; x++){
+            build_pattern(lv-1);
+          }
 
-},{}],152:[function(require,module,exports){
+          if(remainder[lv]){
+            build_pattern(lv-2);
+          }
+        }
+      }
+  ;
+
+  while(remainder[level] > 1){
+    count.push(Math.floor(divisor/remainder[level]));
+    remainder.push(divisor%remainder[level]);
+    divisor = remainder[level];
+    level++;
+  }
+  count.push(divisor);
+
+  build_pattern(level);
+
+  return pattern.reverse();
+}
+
+
+module.exports = function(m, k){
+  if(m > k) return bjorklund(m, k);
+  else return bjorklund(k, m);
+};
+
+},{}],73:[function(require,module,exports){
+
+},{}],74:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -11728,9 +7079,5439 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],153:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],154:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
+/**
+ * @license Fraction.js v4.0.12 09/09/2015
+ * http://www.xarg.org/2014/03/rational-numbers-in-javascript/
+ *
+ * Copyright (c) 2015, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
+
+
+/**
+ *
+ * This class offers the possibility to calculate fractions.
+ * You can pass a fraction in different formats. Either as array, as double, as string or as an integer.
+ *
+ * Array/Object form
+ * [ 0 => <nominator>, 1 => <denominator> ]
+ * [ n => <nominator>, d => <denominator> ]
+ *
+ * Integer form
+ * - Single integer value
+ *
+ * Double form
+ * - Single double value
+ *
+ * String form
+ * 123.456 - a simple double
+ * 123/456 - a string fraction
+ * 123.'456' - a double with repeating decimal places
+ * 123.(456) - synonym
+ * 123.45'6' - a double with repeating last place
+ * 123.45(6) - synonym
+ *
+ * Example:
+ *
+ * var f = new Fraction("9.4'31'");
+ * f.mul([-4, 3]).div(4.9);
+ *
+ */
+
+(function(root) {
+
+  "use strict";
+
+  // Maximum search depth for cyclic rational numbers. 2000 should be more than enough.
+  // Example: 1/7 = 0.(142857) has 6 repeating decimal places.
+  // If MAX_CYCLE_LEN gets reduced, long cycles will not be detected and toString() only gets the first 10 digits
+  var MAX_CYCLE_LEN = 2000;
+
+  // Parsed data to avoid calling "new" all the time
+  var P = {
+    "s": 1,
+    "n": 0,
+    "d": 1
+  };
+
+  function createError(name) {
+
+    function errorConstructor() {
+      var temp = Error.apply(this, arguments);
+      temp['name'] = this['name'] = name;
+      this['stack'] = temp['stack'];
+      this['message'] = temp['message'];
+    }
+
+    /**
+     * Error constructor
+     *
+     * @constructor
+     */
+    function IntermediateInheritor() {}
+    IntermediateInheritor.prototype = Error.prototype;
+    errorConstructor.prototype = new IntermediateInheritor();
+
+    return errorConstructor;
+  }
+
+  var DivisionByZero = Fraction['DivisionByZero'] = createError('DivisionByZero');
+  var InvalidParameter = Fraction['InvalidParameter'] = createError('InvalidParameter');
+
+  function assign(n, s) {
+
+    if (isNaN(n = parseInt(n, 10))) {
+      throwInvalidParam();
+    }
+    return n * s;
+  }
+
+  function throwInvalidParam() {
+    throw new InvalidParameter();
+  }
+
+  var parse = function(p1, p2) {
+
+    var n = 0, d = 1, s = 1;
+    var v = 0, w = 0, x = 0, y = 1, z = 1;
+
+    var A = 0, B = 1;
+    var C = 1, D = 1;
+
+    var N = 10000000;
+    var M;
+
+    if (p1 === undefined || p1 === null) {
+      /* void */
+    } else if (p2 !== undefined) {
+      n = p1;
+      d = p2;
+      s = n * d;
+    } else
+      switch (typeof p1) {
+
+        case "object":
+        {
+          if ("d" in p1 && "n" in p1) {
+            n = p1["n"];
+            d = p1["d"];
+            if ("s" in p1)
+              n *= p1["s"];
+          } else if (0 in p1) {
+            n = p1[0];
+            if (1 in p1)
+              d = p1[1];
+          } else {
+            throwInvalidParam();
+          }
+          s = n * d;
+          break;
+        }
+        case "number":
+        {
+          if (p1 < 0) {
+            s = p1;
+            p1 = -p1;
+          }
+
+          if (p1 % 1 === 0) {
+            n = p1;
+          } else if (p1 > 0) { // check for != 0, scale would become NaN (log(0)), which converges really slow
+
+            if (p1 >= 1) {
+              z = Math.pow(10, Math.floor(1 + Math.log(p1) / Math.LN10));
+              p1 /= z;
+            }
+
+            // Using Farey Sequences
+            // http://www.johndcook.com/blog/2010/10/20/best-rational-approximation/
+
+            while (B <= N && D <= N) {
+              M = (A + C) / (B + D);
+
+              if (p1 === M) {
+                if (B + D <= N) {
+                  n = A + C;
+                  d = B + D;
+                } else if (D > B) {
+                  n = C;
+                  d = D;
+                } else {
+                  n = A;
+                  d = B;
+                }
+                break;
+
+              } else {
+
+                if (p1 > M) {
+                  A += C;
+                  B += D;
+                } else {
+                  C += A;
+                  D += B;
+                }
+
+                if (B > N) {
+                  n = C;
+                  d = D;
+                } else {
+                  n = A;
+                  d = B;
+                }
+              }
+            }
+            n *= z;
+          } else if (isNaN(p1) || isNaN(p2)) {
+            d = n = NaN;
+          }
+          break;
+        }
+        case "string":
+        {
+          B = p1.match(/\d+|./g);
+
+          if (B === null)
+            throwInvalidParam();
+
+          if (B[A] === '-') {// Check for minus sign at the beginning
+            s = -1;
+            A++;
+          } else if (B[A] === '+') {// Check for plus sign at the beginning
+            A++;
+          }
+
+          if (B.length === A + 1) { // Check if it's just a simple number "1234"
+            w = assign(B[A++], s);
+          } else if (B[A + 1] === '.' || B[A] === '.') { // Check if it's a decimal number
+
+            if (B[A] !== '.') { // Handle 0.5 and .5
+              v = assign(B[A++], s);
+            }
+            A++;
+
+            // Check for decimal places
+            if (A + 1 === B.length || B[A + 1] === '(' && B[A + 3] === ')' || B[A + 1] === "'" && B[A + 3] === "'") {
+              w = assign(B[A], s);
+              y = Math.pow(10, B[A].length);
+              A++;
+            }
+
+            // Check for repeating places
+            if (B[A] === '(' && B[A + 2] === ')' || B[A] === "'" && B[A + 2] === "'") {
+              x = assign(B[A + 1], s);
+              z = Math.pow(10, B[A + 1].length) - 1;
+              A += 3;
+            }
+
+          } else if (B[A + 1] === '/' || B[A + 1] === ':') { // Check for a simple fraction "123/456" or "123:456"
+            w = assign(B[A], s);
+            y = assign(B[A + 2], 1);
+            A += 3;
+          } else if (B[A + 3] === '/' && B[A + 1] === ' ') { // Check for a complex fraction "123 1/2"
+            v = assign(B[A], s);
+            w = assign(B[A + 2], s);
+            y = assign(B[A + 4], 1);
+            A += 5;
+          }
+
+          if (B.length <= A) { // Check for more tokens on the stack
+            d = y * z;
+            s = /* void */
+                    n = x + d * v + z * w;
+            break;
+          }
+
+          /* Fall through on error */
+        }
+        default:
+          throwInvalidParam();
+      }
+
+    if (d === 0) {
+      throw new DivisionByZero();
+    }
+
+    P["s"] = s < 0 ? -1 : 1;
+    P["n"] = Math.abs(n);
+    P["d"] = Math.abs(d);
+  };
+
+  function modpow(b, e, m) {
+
+    var r = 1;
+    for (; e > 0; b = (b * b) % m, e >>= 1) {
+
+      if (e & 1) {
+        r = (r * b) % m;
+      }
+    }
+    return r;
+  }
+
+
+  function cycleLen(n, d) {
+
+    for (; d % 2 === 0;
+            d /= 2) {
+    }
+
+    for (; d % 5 === 0;
+            d /= 5) {
+    }
+
+    if (d === 1) // Catch non-cyclic numbers
+      return 0;
+
+    // If we would like to compute really large numbers quicker, we could make use of Fermat's little theorem:
+    // 10^(d-1) % d == 1
+    // However, we don't need such large numbers and MAX_CYCLE_LEN should be the capstone,
+    // as we want to translate the numbers to strings.
+
+    var rem = 10 % d;
+    var t = 1;
+
+    for (; rem !== 1; t++) {
+      rem = rem * 10 % d;
+
+      if (t > MAX_CYCLE_LEN)
+        return 0; // Returning 0 here means that we don't print it as a cyclic number. It's likely that the answer is `d-1`
+    }
+    return t;
+  }
+
+
+     function cycleStart(n, d, len) {
+
+    var rem1 = 1;
+    var rem2 = modpow(10, len, d);
+
+    for (var t = 0; t < 300; t++) { // s < ~log10(Number.MAX_VALUE)
+      // Solve 10^s == 10^(s+t) (mod d)
+
+      if (rem1 === rem2)
+        return t;
+
+      rem1 = rem1 * 10 % d;
+      rem2 = rem2 * 10 % d;
+    }
+    return 0;
+  }
+
+  function gcd(a, b) {
+
+    if (!a)
+      return b;
+    if (!b)
+      return a;
+
+    while (1) {
+      a %= b;
+      if (!a)
+        return b;
+      b %= a;
+      if (!b)
+        return a;
+    }
+  };
+
+  /**
+   * Module constructor
+   *
+   * @constructor
+   * @param {number|Fraction=} a
+   * @param {number=} b
+   */
+  function Fraction(a, b) {
+
+    if (!(this instanceof Fraction)) {
+      return new Fraction(a, b);
+    }
+
+    parse(a, b);
+
+    if (Fraction['REDUCE']) {
+      a = gcd(P["d"], P["n"]); // Abuse a
+    } else {
+      a = 1;
+    }
+
+    this["s"] = P["s"];
+    this["n"] = P["n"] / a;
+    this["d"] = P["d"] / a;
+  }
+
+  /**
+   * Boolean global variable to be able to disable automatic reduction of the fraction
+   *
+   */
+  Fraction['REDUCE'] = 1;
+
+  Fraction.prototype = {
+
+    "s": 1,
+    "n": 0,
+    "d": 1,
+
+    /**
+     * Calculates the absolute value
+     *
+     * Ex: new Fraction(-4).abs() => 4
+     **/
+    "abs": function() {
+
+      return new Fraction(this["n"], this["d"]);
+    },
+
+    /**
+     * Inverts the sign of the current fraction
+     *
+     * Ex: new Fraction(-4).neg() => 4
+     **/
+    "neg": function() {
+
+      return new Fraction(-this["s"] * this["n"], this["d"]);
+    },
+
+    /**
+     * Adds two rational numbers
+     *
+     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => 467 / 30
+     **/
+    "add": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+              this["s"] * this["n"] * P["d"] + P["s"] * this["d"] * P["n"],
+              this["d"] * P["d"]
+              );
+    },
+
+    /**
+     * Subtracts two rational numbers
+     *
+     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => -427 / 30
+     **/
+    "sub": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+              this["s"] * this["n"] * P["d"] - P["s"] * this["d"] * P["n"],
+              this["d"] * P["d"]
+              );
+    },
+
+    /**
+     * Multiplies two rational numbers
+     *
+     * Ex: new Fraction("-17.(345)").mul(3) => 5776 / 111
+     **/
+    "mul": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+              this["s"] * P["s"] * this["n"] * P["n"],
+              this["d"] * P["d"]
+              );
+    },
+
+    /**
+     * Divides two rational numbers
+     *
+     * Ex: new Fraction("-17.(345)").inverse().div(3)
+     **/
+    "div": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+              this["s"] * P["s"] * this["n"] * P["d"],
+              this["d"] * P["n"]
+              );
+    },
+
+    /**
+     * Clones the actual object
+     *
+     * Ex: new Fraction("-17.(345)").clone()
+     **/
+    "clone": function() {
+      return new Fraction(this);
+    },
+
+    /**
+     * Calculates the modulo of two rational numbers - a more precise fmod
+     *
+     * Ex: new Fraction('4.(3)').mod([7, 8]) => (13/3) % (7/8) = (5/6)
+     **/
+    "mod": function(a, b) {
+
+      if (isNaN(this['n']) || isNaN(this['d'])) {
+        return new Fraction(NaN);
+      }
+
+      if (a === undefined) {
+        return new Fraction(this["s"] * this["n"] % this["d"], 1);
+      }
+
+      parse(a, b);
+      if (0 === P["n"] && 0 === this["d"]) {
+        Fraction(0, 0); // Throw DivisionByZero
+      }
+
+      /*
+       * First silly attempt, kinda slow
+       *
+       return that["sub"]({
+       "n": num["n"] * Math.floor((this.n / this.d) / (num.n / num.d)),
+       "d": num["d"],
+       "s": this["s"]
+       });*/
+
+      /*
+       * New attempt: a1 / b1 = a2 / b2 * q + r
+       * => b2 * a1 = a2 * b1 * q + b1 * b2 * r
+       * => (b2 * a1 % a2 * b1) / (b1 * b2)
+       */
+      return new Fraction(
+              this["s"] * (P["d"] * this["n"]) % (P["n"] * this["d"]),
+              P["d"] * this["d"]
+              );
+    },
+
+    /**
+     * Calculates the fractional gcd of two rational numbers
+     *
+     * Ex: new Fraction(5,8).gcd(3,7) => 1/56
+     */
+    "gcd": function(a, b) {
+
+      parse(a, b);
+
+      // gcd(a / b, c / d) = gcd(a, c) / lcm(b, d)
+
+      return new Fraction(gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]), P["d"] * this["d"]);
+    },
+
+    /**
+     * Calculates the fractional lcm of two rational numbers
+     *
+     * Ex: new Fraction(5,8).lcm(3,7) => 15
+     */
+    "lcm": function(a, b) {
+
+      parse(a, b);
+
+      // lcm(a / b, c / d) = lcm(a, c) / gcd(b, d)
+
+      if (P["n"] === 0 && this["n"] === 0) {
+        return new Fraction;
+      }
+      return new Fraction(P["n"] * this["n"], gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]));
+    },
+
+    /**
+     * Calculates the ceil of a rational number
+     *
+     * Ex: new Fraction('4.(3)').ceil() => (5 / 1)
+     **/
+    "ceil": function(places) {
+
+      places = Math.pow(10, places || 0);
+
+      if (isNaN(this["n"]) || isNaN(this["d"])) {
+        return new Fraction(NaN);
+      }
+      return new Fraction(Math.ceil(places * this["s"] * this["n"] / this["d"]), places);
+    },
+
+    /**
+     * Calculates the floor of a rational number
+     *
+     * Ex: new Fraction('4.(3)').floor() => (4 / 1)
+     **/
+    "floor": function(places) {
+
+      places = Math.pow(10, places || 0);
+
+      if (isNaN(this["n"]) || isNaN(this["d"])) {
+        return new Fraction(NaN);
+      }
+      return new Fraction(Math.floor(places * this["s"] * this["n"] / this["d"]), places);
+    },
+
+    /**
+     * Rounds a rational numbers
+     *
+     * Ex: new Fraction('4.(3)').round() => (4 / 1)
+     **/
+    "round": function(places) {
+
+      places = Math.pow(10, places || 0);
+
+      if (isNaN(this["n"]) || isNaN(this["d"])) {
+        return new Fraction(NaN);
+      }
+      return new Fraction(Math.round(places * this["s"] * this["n"] / this["d"]), places);
+    },
+
+    /**
+     * Gets the inverse of the fraction, means numerator and denumerator are exchanged
+     *
+     * Ex: new Fraction([-3, 4]).inverse() => -4 / 3
+     **/
+    "inverse": function() {
+
+      return new Fraction(this["s"] * this["d"], this["n"]);
+    },
+
+    /**
+     * Calculates the fraction to some integer exponent
+     *
+     * Ex: new Fraction(-1,2).pow(-3) => -8
+     */
+    "pow": function(m) {
+
+      if (m < 0) {
+        return new Fraction(Math.pow(this['s'] * this["d"], -m), Math.pow(this["n"], -m));
+      } else {
+        return new Fraction(Math.pow(this['s'] * this["n"], m), Math.pow(this["d"], m));
+      }
+    },
+
+    /**
+     * Check if two rational numbers are the same
+     *
+     * Ex: new Fraction(19.6).equals([98, 5]);
+     **/
+    "equals": function(a, b) {
+
+      parse(a, b);
+      return this["s"] * this["n"] * P["d"] === P["s"] * P["n"] * this["d"]; // Same as compare() === 0
+    },
+
+    /**
+     * Check if two rational numbers are the same
+     *
+     * Ex: new Fraction(19.6).equals([98, 5]);
+     **/
+    "compare": function(a, b) {
+
+      parse(a, b);
+      var t = (this["s"] * this["n"] * P["d"] - P["s"] * P["n"] * this["d"]);
+      return (0 < t) - (t < 0);
+    },
+
+    "simplify": function(eps) {
+
+      // First naive implementation, needs improvement
+
+      if (isNaN(this['n']) || isNaN(this['d'])) {
+        return this;
+      }
+
+      var cont = this['abs']()['toContinued']();
+
+      eps = eps || 0.001;
+
+      function rec(a) {
+        if (a.length === 1)
+          return new Fraction(a[0]);
+        return rec(a.slice(1))['inverse']()['add'](a[0]);
+      }
+
+      for (var i = 0; i < cont.length; i++) {
+        var tmp = rec(cont.slice(0, i + 1));
+        if (tmp['sub'](this['abs']())['abs']().valueOf() < eps) {
+          return tmp['mul'](this['s']);
+        }
+      }
+      return this;
+    },
+
+    /**
+     * Check if two rational numbers are divisible
+     *
+     * Ex: new Fraction(19.6).divisible(1.5);
+     */
+    "divisible": function(a, b) {
+
+      parse(a, b);
+      return !(!(P["n"] * this["d"]) || ((this["n"] * P["d"]) % (P["n"] * this["d"])));
+    },
+
+    /**
+     * Returns a decimal representation of the fraction
+     *
+     * Ex: new Fraction("100.'91823'").valueOf() => 100.91823918239183
+     **/
+    'valueOf': function() {
+
+      return this["s"] * this["n"] / this["d"];
+    },
+
+    /**
+     * Returns a string-fraction representation of a Fraction object
+     *
+     * Ex: new Fraction("1.'3'").toFraction() => "4 1/3"
+     **/
+    'toFraction': function(excludeWhole) {
+
+      var whole, str = "";
+      var n = this["n"];
+      var d = this["d"];
+      if (this["s"] < 0) {
+        str += '-';
+      }
+
+      if (d === 1) {
+        str += n;
+      } else {
+
+        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
+          str += whole;
+          str += " ";
+          n %= d;
+        }
+
+        str += n;
+        str += '/';
+        str += d;
+      }
+      return str;
+    },
+
+    /**
+     * Returns a latex representation of a Fraction object
+     *
+     * Ex: new Fraction("1.'3'").toLatex() => "\frac{4}{3}"
+     **/
+    'toLatex': function(excludeWhole) {
+
+      var whole, str = "";
+      var n = this["n"];
+      var d = this["d"];
+      if (this["s"] < 0) {
+        str += '-';
+      }
+
+      if (d === 1) {
+        str += n;
+      } else {
+
+        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
+          str += whole;
+          n %= d;
+        }
+
+        str += "\\frac{";
+        str += n;
+        str += '}{';
+        str += d;
+        str += '}';
+      }
+      return str;
+    },
+
+    /**
+     * Returns an array of continued fraction elements
+     *
+     * Ex: new Fraction("7/8").toContinued() => [0,1,7]
+     */
+    'toContinued': function() {
+
+      var t;
+      var a = this['n'];
+      var b = this['d'];
+      var res = [];
+
+      if (isNaN(this['n']) || isNaN(this['d'])) {
+        return res;
+      }
+
+      do {
+        res.push(Math.floor(a / b));
+        t = a % b;
+        a = b;
+        b = t;
+      } while (a !== 1);
+
+      return res;
+    },
+
+    /**
+     * Creates a string representation of a fraction with all digits
+     *
+     * Ex: new Fraction("100.'91823'").toString() => "100.(91823)"
+     **/
+    'toString': function(dec) {
+
+      var g;
+      var N = this["n"];
+      var D = this["d"];
+
+      if (isNaN(N) || isNaN(D)) {
+        return "NaN";
+      }
+
+      if (!Fraction['REDUCE']) {
+        g = gcd(N, D);
+        N /= g;
+        D /= g;
+      }
+
+      dec = dec || 15; // 15 = decimal places when no repitation
+
+      var cycLen = cycleLen(N, D); // Cycle length
+      var cycOff = cycleStart(N, D, cycLen); // Cycle start
+
+      var str = this['s'] === -1 ? "-" : "";
+
+      str += N / D | 0;
+
+      N %= D;
+      N *= 10;
+
+      if (N)
+        str += ".";
+
+      if (cycLen) {
+
+        for (var i = cycOff; i--; ) {
+          str += N / D | 0;
+          N %= D;
+          N *= 10;
+        }
+        str += "(";
+        for (var i = cycLen; i--; ) {
+          str += N / D | 0;
+          N %= D;
+          N *= 10;
+        }
+        str += ")";
+      } else {
+        for (var i = dec; N && i--; ) {
+          str += N / D | 0;
+          N %= D;
+          N *= 10;
+        }
+      }
+      return str;
+    }
+  };
+
+  if (typeof define === "function" && define["amd"]) {
+    define([], function() {
+      return Fraction;
+    });
+  } else if (typeof exports === "object") {
+    Object.defineProperty(exports, "__esModule", {'value': true});
+    Fraction['default'] = Fraction;
+    Fraction['Fraction'] = Fraction;
+    module['exports'] = Fraction;
+  } else {
+    root['Fraction'] = Fraction;
+  }
+
+})(this);
+
+},{}],76:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'abs',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet ? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.abs' : Math.abs })
+
+      out = `${ref}abs( ${inputs[0]} )`
+
+    } else {
+      out = Math.abs( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let abs = Object.create( proto )
+
+  abs.inputs = [ x ]
+
+  return abs
+}
+
+},{"./gen.js":107}],77:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'accum',
+
+  gen() {
+    let code,
+        inputs = gen.getInputs( this ),
+        genName = 'gen.' + this.name,
+        functionBody
+
+    gen.requestMemory( this.memory )
+
+    gen.memory.heap[ this.memory.value.idx ] = this.initialValue
+
+    functionBody = this.callback( genName, inputs[0], inputs[1], `memory[${this.memory.value.idx}]` )
+
+    //gen.closures.add({ [ this.name ]: this }) 
+
+    gen.memo[ this.name ] = this.name + '_value'
+    
+    return [ this.name + '_value', functionBody ]
+  },
+
+  callback( _name, _incr, _reset, valueRef ) {
+    let diff = this.max - this.min,
+        out = '',
+        wrap = ''
+    
+    /* three different methods of wrapping, third is most expensive:
+     *
+     * 1: range {0,1}: y = x - (x | 0)
+     * 2: log2(this.max) == integer: y = x & (this.max - 1)
+     * 3: all others: if( x >= this.max ) y = this.max -x
+     *
+     */
+
+    // must check for reset before storing value for output
+    if( !(typeof this.inputs[1] === 'number' && this.inputs[1] < 1) ) { 
+      if( this.resetValue !== this.min ) {
+
+        out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.resetValue}\n\n`
+        //out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.min}\n\n`
+      }else{
+        out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.min}\n\n`
+        //out += `  if( ${_reset} >=1 ) ${valueRef} = ${this.initialValue}\n\n`
+      }
+    }
+
+    out += `  var ${this.name}_value = ${valueRef}\n`
+    
+    if( this.shouldWrap === false && this.shouldClamp === true ) {
+      out += `  if( ${valueRef} < ${this.max } ) ${valueRef} += ${_incr}\n`
+    }else{
+      out += `  ${valueRef} += ${_incr}\n` // store output value before accumulating  
+    }
+
+    if( this.max !== Infinity  && this.shouldWrapMax ) wrap += `  if( ${valueRef} >= ${this.max} ) ${valueRef} -= ${diff}\n`
+    if( this.min !== -Infinity && this.shouldWrapMin ) wrap += `  if( ${valueRef} < ${this.min} ) ${valueRef} += ${diff}\n`
+
+    //if( this.min === 0 && this.max === 1 ) { 
+    //  wrap =  `  ${valueRef} = ${valueRef} - (${valueRef} | 0)\n\n`
+    //} else if( this.min === 0 && ( Math.log2( this.max ) | 0 ) === Math.log2( this.max ) ) {
+    //  wrap =  `  ${valueRef} = ${valueRef} & (${this.max} - 1)\n\n`
+    //} else if( this.max !== Infinity ){
+    //  wrap = `  if( ${valueRef} >= ${this.max} ) ${valueRef} -= ${diff}\n\n`
+    //}
+
+    out = out + wrap + '\n'
+
+    return out
+  },
+
+  defaults : { min:0, max:1, resetValue:0, initialValue:0, shouldWrap:true, shouldWrapMax: true, shouldWrapMin:true, shouldClamp:false }
+}
+
+module.exports = ( incr, reset=0, properties ) => {
+  const ugen = Object.create( proto )
+      
+  Object.assign( ugen, 
+    { 
+      uid:    gen.getUID(),
+      inputs: [ incr, reset ],
+      memory: {
+        value: { length:1, idx:null }
+      }
+    },
+    proto.defaults,
+    properties 
+  )
+
+  if( properties !== undefined && properties.shouldWrapMax === undefined && properties.shouldWrapMin === undefined ) {
+    if( properties.shouldWrap !== undefined ) {
+      ugen.shouldWrapMin = ugen.shouldWrapMax = properties.shouldWrap
+    }
+  }
+
+  if( properties !== undefined && properties.resetValue === undefined ) {
+    ugen.resetValue = ugen.min
+  }
+
+  if( ugen.initialValue === undefined ) ugen.initialValue = ugen.min
+
+  Object.defineProperty( ugen, 'value', {
+    get()  { 
+      //console.log( 'gen:', gen, gen.memory )
+      return gen.memory.heap[ this.memory.value.idx ] 
+    },
+    set(v) { gen.memory.heap[ this.memory.value.idx ] = v }
+  })
+
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],78:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'acos',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet ? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ 'acos': isWorklet ? 'Math.acos' :Math.acos })
+
+      out = `${ref}acos( ${inputs[0]} )` 
+
+    } else {
+      out = Math.acos( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let acos = Object.create( proto )
+
+  acos.inputs = [ x ]
+  acos.id = gen.getUID()
+  acos.name = `${acos.basename}{acos.id}`
+
+  return acos
+}
+
+},{"./gen.js":107}],79:[function(require,module,exports){
+'use strict'
+
+let gen      = require( './gen.js' ),
+    mul      = require( './mul.js' ),
+    sub      = require( './sub.js' ),
+    div      = require( './div.js' ),
+    data     = require( './data.js' ),
+    peek     = require( './peek.js' ),
+    accum    = require( './accum.js' ),
+    ifelse   = require( './ifelseif.js' ),
+    lt       = require( './lt.js' ),
+    bang     = require( './bang.js' ),
+    env      = require( './env.js' ),
+    add      = require( './add.js' ),
+    poke     = require( './poke.js' ),
+    neq      = require( './neq.js' ),
+    and      = require( './and.js' ),
+    gte      = require( './gte.js' ),
+    memo     = require( './memo.js' ),
+    utilities= require( './utilities.js' )
+
+module.exports = ( attackTime = 44100, decayTime = 44100, _props ) => {
+  const props = Object.assign({}, { shape:'exponential', alpha:5, trigger:null }, _props )
+  const _bang = props.trigger !== null ? props.trigger : bang(),
+        phase = accum( 1, _bang, { min:0, max: Infinity, initialValue:-Infinity, shouldWrap:false })
+      
+  let bufferData, bufferDataReverse, decayData, out, buffer
+
+  //console.log( 'shape:', props.shape, 'attack time:', attackTime, 'decay time:', decayTime )
+  let completeFlag = data( [0] )
+  
+  // slightly more efficient to use existing phase accumulator for linear envelopes
+  if( props.shape === 'linear' ) {
+    out = ifelse( 
+      and( gte( phase, 0), lt( phase, attackTime )),
+      div( phase, attackTime ),
+
+      and( gte( phase, 0),  lt( phase, add( attackTime, decayTime ) ) ),
+      sub( 1, div( sub( phase, attackTime ), decayTime ) ),
+      
+      neq( phase, -Infinity),
+      poke( completeFlag, 1, 0, { inline:0 }),
+
+      0 
+    )
+  } else {
+    bufferData = env({ length:1024, type:props.shape, alpha:props.alpha })
+    bufferDataReverse = env({ length:1024, type:props.shape, alpha:props.alpha, reverse:true })
+
+    out = ifelse( 
+      and( gte( phase, 0), lt( phase, attackTime ) ), 
+      peek( bufferData, div( phase, attackTime ), { boundmode:'clamp' } ), 
+
+      and( gte(phase,0), lt( phase, add( attackTime, decayTime ) ) ), 
+      peek( bufferDataReverse, div( sub( phase, attackTime ), decayTime ), { boundmode:'clamp' }),
+
+      neq( phase, -Infinity ),
+      poke( completeFlag, 1, 0, { inline:0 }),
+
+      0
+    )
+  }
+
+  const usingWorklet = gen.mode === 'worklet'
+  if( usingWorklet === true ) {
+    out.node = null
+    utilities.register( out )
+  }
+
+  // needed for gibberish... getting this to work right with worklets
+  // via promises will probably be tricky
+  out.isComplete = ()=> {
+    if( usingWorklet === true && out.node !== null ) {
+      const p = new Promise( resolve => {
+        out.node.getMemoryValue( completeFlag.memory.values.idx, resolve )
+      })
+
+      return p
+    }else{
+      return gen.memory.heap[ completeFlag.memory.values.idx ]
+    }
+  }
+
+  out.trigger = ()=> {
+    if( usingWorklet === true && out.node !== null ) {
+      out.node.port.postMessage({ key:'set', idx:completeFlag.memory.values.idx, value:0 })
+    }else{
+      gen.memory.heap[ completeFlag.memory.values.idx ] = 0
+    }
+    _bang.trigger()
+  }
+
+  return out 
+}
+
+},{"./accum.js":77,"./add.js":80,"./and.js":82,"./bang.js":86,"./data.js":93,"./div.js":98,"./env.js":99,"./gen.js":107,"./gte.js":109,"./ifelseif.js":112,"./lt.js":115,"./memo.js":119,"./mul.js":125,"./neq.js":126,"./peek.js":131,"./poke.js":133,"./sub.js":144,"./utilities.js":150}],80:[function(require,module,exports){
+'use strict'
+
+const gen = require('./gen.js')
+
+const proto = { 
+  basename:'add',
+  gen() {
+    let inputs = gen.getInputs( this ),
+        out='',
+        sum = 0, numCount = 0, adderAtEnd = false, alreadyFullSummed = true
+
+    if( inputs.length === 0 ) return 0
+
+    out = `  var ${this.name} = `
+
+    inputs.forEach( (v,i) => {
+      if( isNaN( v ) ) {
+        out += v
+        if( i < inputs.length -1 ) {
+          adderAtEnd = true
+          out += ' + '
+        }
+        alreadyFullSummed = false
+      }else{
+        sum += parseFloat( v )
+        numCount++
+      }
+    })
+
+    if( numCount > 0 ) {
+      out += adderAtEnd || alreadyFullSummed ? sum : ' + ' + sum
+    }
+
+    out += '\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  }
+}
+
+module.exports = ( ...args ) => {
+  const add = Object.create( proto )
+  add.id = gen.getUID()
+  add.name = add.basename + add.id
+  add.inputs = args
+
+  return add
+}
+
+},{"./gen.js":107}],81:[function(require,module,exports){
+'use strict'
+
+let gen      = require( './gen.js' ),
+    mul      = require( './mul.js' ),
+    sub      = require( './sub.js' ),
+    div      = require( './div.js' ),
+    data     = require( './data.js' ),
+    peek     = require( './peek.js' ),
+    accum    = require( './accum.js' ),
+    ifelse   = require( './ifelseif.js' ),
+    lt       = require( './lt.js' ),
+    bang     = require( './bang.js' ),
+    env      = require( './env.js' ),
+    param    = require( './param.js' ),
+    add      = require( './add.js' ),
+    gtp      = require( './gtp.js' ),
+    not      = require( './not.js' ),
+    and      = require( './and.js' ),
+    neq      = require( './neq.js' ),
+    poke     = require( './poke.js' )
+
+module.exports = ( attackTime=44, decayTime=22050, sustainTime=44100, sustainLevel=.6, releaseTime=44100, _props ) => {
+  let envTrigger = bang(),
+      phase = accum( 1, envTrigger, { max: Infinity, shouldWrap:false, initialValue:Infinity }),
+      shouldSustain = param( 1 ),
+      defaults = {
+         shape: 'exponential',
+         alpha: 5,
+         triggerRelease: false,
+      },
+      props = Object.assign({}, defaults, _props ),
+      bufferData, decayData, out, buffer, sustainCondition, releaseAccum, releaseCondition
+
+
+  const completeFlag = data( [0] )
+
+  bufferData = env({ length:1024, alpha:props.alpha, shift:0, type:props.shape })
+
+  sustainCondition = props.triggerRelease 
+    ? shouldSustain
+    : lt( phase, add( attackTime, decayTime, sustainTime ) )
+
+  releaseAccum = props.triggerRelease
+    ? gtp( sub( sustainLevel, accum( div( sustainLevel, releaseTime ) , 0, { shouldWrap:false }) ), 0 )
+    : sub( sustainLevel, mul( div( sub( phase, add( attackTime, decayTime, sustainTime ) ), releaseTime ), sustainLevel ) ), 
+
+  releaseCondition = props.triggerRelease
+    ? not( shouldSustain )
+    : lt( phase, add( attackTime, decayTime, sustainTime, releaseTime ) )
+
+  out = ifelse(
+    // attack 
+    lt( phase,  attackTime ), 
+    peek( bufferData, div( phase, attackTime ), { boundmode:'clamp' } ), 
+
+    // decay
+    lt( phase, add( attackTime, decayTime ) ), 
+    peek( bufferData, sub( 1, mul( div( sub( phase,  attackTime ),  decayTime ), sub( 1,  sustainLevel ) ) ), { boundmode:'clamp' }),
+
+    // sustain
+    and( sustainCondition, neq( phase, Infinity ) ),
+    peek( bufferData,  sustainLevel ),
+
+    // release
+    releaseCondition, //lt( phase,  attackTime +  decayTime +  sustainTime +  releaseTime ),
+    peek( 
+      bufferData,
+      releaseAccum, 
+      //sub(  sustainLevel, mul( div( sub( phase,  attackTime +  decayTime +  sustainTime),  releaseTime ),  sustainLevel ) ), 
+      { boundmode:'clamp' }
+    ),
+
+    neq( phase, Infinity ),
+    poke( completeFlag, 1, 0, { inline:0 }),
+
+    0
+  )
+   
+  const usingWorklet = gen.mode === 'worklet'
+  if( usingWorklet === true ) {
+    out.node = null
+    utilities.register( out )
+  }
+
+  out.trigger = ()=> {
+    shouldSustain.value = 1
+    envTrigger.trigger()
+  }
+ 
+  // needed for gibberish... getting this to work right with worklets
+  // via promises will probably be tricky
+  out.isComplete = ()=> {
+    if( usingWorklet === true && out.node !== null ) {
+      const p = new Promise( resolve => {
+        out.node.getMemoryValue( completeFlag.memory.values.idx, resolve )
+      })
+
+      return p
+    }else{
+      return gen.memory.heap[ completeFlag.memory.values.idx ]
+    }
+  }
+
+
+  out.release = ()=> {
+    shouldSustain.value = 0
+    // XXX pretty nasty... grabs accum inside of gtp and resets value manually
+    // unfortunately envTrigger won't work as it's back to 0 by the time the release block is triggered...
+    if( usingWorklet && out.node !== null ) {
+      out.node.port.postMessage({ key:'set', idx:releaseAccum.inputs[0].inputs[1].memory.value.idx, value:0 })
+    }else{
+      gen.memory.heap[ releaseAccum.inputs[0].inputs[1].memory.value.idx ] = 0
+    }
+  }
+
+  return out 
+}
+
+},{"./accum.js":77,"./add.js":80,"./and.js":82,"./bang.js":86,"./data.js":93,"./div.js":98,"./env.js":99,"./gen.js":107,"./gtp.js":110,"./ifelseif.js":112,"./lt.js":115,"./mul.js":125,"./neq.js":126,"./not.js":128,"./param.js":130,"./peek.js":131,"./poke.js":133,"./sub.js":144}],82:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'and',
+
+  gen() {
+    let inputs = gen.getInputs( this ), out
+
+    out = `  var ${this.name} = (${inputs[0]} !== 0 && ${inputs[1]} !== 0) | 0\n\n`
+
+    gen.memo[ this.name ] = `${this.name}`
+
+    return [ `${this.name}`, out ]
+  },
+
+}
+
+module.exports = ( in1, in2 ) => {
+  let ugen = Object.create( proto )
+  Object.assign( ugen, {
+    uid:     gen.getUID(),
+    inputs:  [ in1, in2 ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],83:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'asin',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet ? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ 'asin': isWorklet ? 'Math.sin' : Math.asin })
+
+      out = `${ref}asin( ${inputs[0]} )` 
+
+    } else {
+      out = Math.asin( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let asin = Object.create( proto )
+
+  asin.inputs = [ x ]
+  asin.id = gen.getUID()
+  asin.name = `${asin.basename}{asin.id}`
+
+  return asin
+}
+
+},{"./gen.js":107}],84:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'atan',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet ? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ 'atan': isWorklet ? 'Math.atan' : Math.atan })
+
+      out = `${ref}atan( ${inputs[0]} )` 
+
+    } else {
+      out = Math.atan( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let atan = Object.create( proto )
+
+  atan.inputs = [ x ]
+  atan.id = gen.getUID()
+  atan.name = `${atan.basename}{atan.id}`
+
+  return atan
+}
+
+},{"./gen.js":107}],85:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' ),
+    history = require( './history.js' ),
+    mul     = require( './mul.js' ),
+    sub     = require( './sub.js' )
+
+module.exports = ( decayTime = 44100 ) => {
+  let ssd = history ( 1 ),
+      t60 = Math.exp( -6.907755278921 / decayTime )
+
+  ssd.in( mul( ssd.out, t60 ) )
+
+  ssd.out.trigger = ()=> {
+    ssd.value = 1
+  }
+
+  return sub( 1, ssd.out )
+}
+
+},{"./gen.js":107,"./history.js":111,"./mul.js":125,"./sub.js":144}],86:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js')
+
+let proto = {
+  gen() {
+    gen.requestMemory( this.memory )
+    
+    let out = 
+`  var ${this.name} = memory[${this.memory.value.idx}]
+  if( ${this.name} === 1 ) memory[${this.memory.value.idx}] = 0      
+      
+`
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  } 
+}
+
+module.exports = ( _props ) => {
+  let ugen = Object.create( proto ),
+      props = Object.assign({}, { min:0, max:1 }, _props )
+
+  ugen.name = 'bang' + gen.getUID()
+
+  ugen.min = props.min
+  ugen.max = props.max
+
+  const usingWorklet = gen.mode === 'worklet'
+  if( usingWorklet === true ) {
+    ugen.node = null
+    utilities.register( ugen )
+  }
+
+  ugen.trigger = () => {
+    if( usingWorklet === true && ugen.node !== null ) {
+      ugen.node.port.postMessage({ key:'set', idx:ugen.memory.value.idx, value:ugen.max })
+    }else{
+      gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
+    }
+  }
+
+  ugen.memory = {
+    value: { length:1, idx:null }
+  }
+
+  return ugen
+}
+
+},{"./gen.js":107}],87:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'bool',
+
+  gen() {
+    let inputs = gen.getInputs( this ), out
+
+    out = `${inputs[0]} === 0 ? 0 : 1`
+    
+    //gen.memo[ this.name ] = `gen.data.${this.name}`
+
+    //return [ `gen.data.${this.name}`, ' ' +out ]
+    return out
+  }
+}
+
+module.exports = ( in1 ) => {
+  let ugen = Object.create( proto )
+
+  Object.assign( ugen, { 
+    uid:        gen.getUID(),
+    inputs:     [ in1 ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+
+},{"./gen.js":107}],88:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'ceil',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet ? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.ceil' : Math.ceil })
+
+      out = `${ref}ceil( ${inputs[0]} )`
+
+    } else {
+      out = Math.ceil( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let ceil = Object.create( proto )
+
+  ceil.inputs = [ x ]
+
+  return ceil
+}
+
+},{"./gen.js":107}],89:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js'),
+    floor= require('./floor.js'),
+    sub  = require('./sub.js'),
+    memo = require('./memo.js')
+
+let proto = {
+  basename:'clip',
+
+  gen() {
+    let code,
+        inputs = gen.getInputs( this ),
+        out
+
+    out =
+
+` var ${this.name} = ${inputs[0]}
+  if( ${this.name} > ${inputs[2]} ) ${this.name} = ${inputs[2]}
+  else if( ${this.name} < ${inputs[1]} ) ${this.name} = ${inputs[1]}
+`
+    out = ' ' + out
+    
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  },
+}
+
+module.exports = ( in1, min=-1, max=1 ) => {
+  let ugen = Object.create( proto )
+
+  Object.assign( ugen, { 
+    min, 
+    max,
+    uid:    gen.getUID(),
+    inputs: [ in1, min, max ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./floor.js":104,"./gen.js":107,"./memo.js":119,"./sub.js":144}],90:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'cos',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    
+    const isWorklet = gen.mode === 'worklet'
+
+    const ref = isWorklet ? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ 'cos': isWorklet ? 'Math.cos' : Math.cos })
+
+      out = `${ref}cos( ${inputs[0]} )` 
+
+    } else {
+      out = Math.cos( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let cos = Object.create( proto )
+
+  cos.inputs = [ x ]
+  cos.id = gen.getUID()
+  cos.name = `${cos.basename}{cos.id}`
+
+  return cos
+}
+
+},{"./gen.js":107}],91:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'counter',
+
+  gen() {
+    let code,
+        inputs = gen.getInputs( this ),
+        genName = 'gen.' + this.name,
+        functionBody
+       
+    if( this.memory.value.idx === null ) gen.requestMemory( this.memory )
+    gen.memory.heap[ this.memory.value.idx ] = this.initialValue
+    
+    functionBody  = this.callback( genName, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4],  `memory[${this.memory.value.idx}]`, `memory[${this.memory.wrap.idx}]`  )
+
+    gen.memo[ this.name ] = this.name + '_value'
+   
+    if( gen.memo[ this.wrap.name ] === undefined ) this.wrap.gen()
+
+    return [ this.name + '_value', functionBody ]
+  },
+
+  callback( _name, _incr, _min, _max, _reset, loops, valueRef, wrapRef ) {
+    let diff = this.max - this.min,
+        out = '',
+        wrap = ''
+    // must check for reset before storing value for output
+    if( !(typeof this.inputs[3] === 'number' && this.inputs[3] < 1) ) { 
+      out += `  if( ${_reset} >= 1 ) ${valueRef} = ${_min}\n`
+    }
+
+    out += `  var ${this.name}_value = ${valueRef};\n  ${valueRef} += ${_incr}\n` // store output value before accumulating  
+    
+    if( typeof this.max === 'number' && this.max !== Infinity && typeof this.min !== 'number' ) {
+      wrap = 
+`  if( ${valueRef} >= ${this.max} &&  ${loops} > 0) {
+    ${valueRef} -= ${diff}
+    ${wrapRef} = 1
+  }else{
+    ${wrapRef} = 0
+  }\n`
+    }else if( this.max !== Infinity && this.min !== Infinity ) {
+      wrap = 
+`  if( ${valueRef} >= ${_max} &&  ${loops} > 0) {
+    ${valueRef} -= ${_max} - ${_min}
+    ${wrapRef} = 1
+  }else if( ${valueRef} < ${_min} &&  ${loops} > 0) {
+    ${valueRef} += ${_max} - ${_min}
+    ${wrapRef} = 1
+  }else{
+    ${wrapRef} = 0
+  }\n`
+    }else{
+      out += '\n'
+    }
+
+    out = out + wrap
+
+    return out
+  }
+}
+
+module.exports = ( incr=1, min=0, max=Infinity, reset=0, loops=1,  properties ) => {
+  let ugen = Object.create( proto ),
+      defaults = Object.assign( { initialValue: 0, shouldWrap:true }, properties )
+
+  Object.assign( ugen, { 
+    min:    min, 
+    max:    max,
+    initialValue: defaults.initialValue,
+    value:  defaults.initialValue,
+    uid:    gen.getUID(),
+    inputs: [ incr, min, max, reset, loops ],
+    memory: {
+      value: { length:1, idx: null },
+      wrap:  { length:1, idx: null } 
+    },
+    wrap : {
+      gen() { 
+        if( ugen.memory.wrap.idx === null ) {
+          gen.requestMemory( ugen.memory )
+        }
+        gen.getInputs( this )
+        gen.memo[ this.name ] = `memory[ ${ugen.memory.wrap.idx} ]`
+        return `memory[ ${ugen.memory.wrap.idx} ]` 
+      }
+    }
+  },
+  defaults )
+ 
+  Object.defineProperty( ugen, 'value', {
+    get() {
+      if( this.memory.value.idx !== null ) {
+        return gen.memory.heap[ this.memory.value.idx ]
+      }
+    },
+    set( v ) {
+      if( this.memory.value.idx !== null ) {
+        gen.memory.heap[ this.memory.value.idx ] = v 
+      }
+    }
+  })
+  
+  ugen.wrap.inputs = [ ugen ]
+  ugen.name = `${ugen.basename}${ugen.uid}`
+  ugen.wrap.name = ugen.name + '_wrap'
+  return ugen
+} 
+
+},{"./gen.js":107}],92:[function(require,module,exports){
+'use strict'
+
+let gen  = require( './gen.js' ),
+    accum= require( './phasor.js' ),
+    data = require( './data.js' ),
+    peek = require( './peek.js' ),
+    mul  = require( './mul.js' ),
+    phasor=require( './phasor.js')
+
+let proto = {
+  basename:'cycle',
+
+  initTable() {    
+    let buffer = new Float32Array( 1024 )
+
+    for( let i = 0, l = buffer.length; i < l; i++ ) {
+      buffer[ i ] = Math.sin( ( i / l ) * ( Math.PI * 2 ) )
+    }
+
+    gen.globals.cycle = data( buffer, 1, { immutable:true } )
+  }
+
+}
+
+module.exports = ( frequency=1, reset=0, _props ) => {
+  if( typeof gen.globals.cycle === 'undefined' ) proto.initTable() 
+  const props = Object.assign({}, { min:0 }, _props )
+
+  const ugen = peek( gen.globals.cycle, phasor( frequency, reset, props ))
+  ugen.name = 'cycle' + gen.getUID()
+
+  return ugen
+}
+
+},{"./data.js":93,"./gen.js":107,"./mul.js":125,"./peek.js":131,"./phasor.js":132}],93:[function(require,module,exports){
+'use strict'
+
+const gen  = require('./gen.js'),
+      utilities = require( './utilities.js' ),
+      peek = require('./peek.js'),
+      poke = require('./poke.js')
+
+const proto = {
+  basename:'data',
+  globals: {},
+  memo:{},
+
+  gen() {
+    let idx
+    //console.log( 'data name:', this.name, proto.memo )
+    //debugger
+    if( gen.memo[ this.name ] === undefined ) {
+      let ugen = this
+      gen.requestMemory( this.memory, this.immutable ) 
+      idx = this.memory.values.idx
+      if( this.buffer !== undefined ) {
+        try {
+          gen.memory.heap.set( this.buffer, idx )
+        }catch( e ) {
+          console.log( e )
+          throw Error( 'error with request. asking for ' + this.buffer.length +'. current index: ' + gen.memoryIndex + ' of ' + gen.memory.heap.length )
+        }
+      }
+      //gen.data[ this.name ] = this
+      //return 'gen.memory' + this.name + '.buffer'
+      if( this.name.indexOf('data') === -1 ) {
+        proto.memo[ this.name ] = idx
+      }else{
+        gen.memo[ this.name ] = idx
+      }
+    }else{
+      //console.log( 'using gen data memo', proto.memo[ this.name ] )
+      idx = gen.memo[ this.name ]
+    }
+    return idx
+  },
+}
+
+module.exports = ( x, y=1, properties ) => {
+  let ugen, buffer, shouldLoad = false
+  
+  if( properties !== undefined && properties.global !== undefined ) {
+    if( gen.globals[ properties.global ] ) {
+      return gen.globals[ properties.global ]
+    }
+  }
+
+  if( typeof x === 'number' ) {
+    if( y !== 1 ) {
+      buffer = []
+      for( let i = 0; i < y; i++ ) {
+        buffer[ i ] = new Float32Array( x )
+      }
+    }else{
+      buffer = new Float32Array( x )
+    }
+  }else if( Array.isArray( x ) ) { //! (x instanceof Float32Array ) ) {
+    let size = x.length
+    buffer = new Float32Array( size )
+    for( let i = 0; i < x.length; i++ ) {
+      buffer[ i ] = x[ i ]
+    }
+  }else if( typeof x === 'string' ) {
+    //buffer = { length: y > 1 ? y : gen.samplerate * 60 } // XXX what???
+    //if( proto.memo[ x ] === undefined ) {
+      buffer = { length: y > 1 ? y : 1 } // XXX what???
+      shouldLoad = true
+    //}else{
+      //buffer = proto.memo[ x ]
+    //}
+  }else if( x instanceof Float32Array ) {
+    buffer = x
+  }
+  
+  ugen = Object.create( proto ) 
+
+  Object.assign( ugen, 
+  { 
+    buffer,
+    name: proto.basename + gen.getUID(),
+    dim:  buffer !== undefined ? buffer.length : 1, // XXX how do we dynamically allocate this?
+    channels : 1,
+    onload: null,
+    //then( fnc ) {
+    //  ugen.onload = fnc
+    //  return ugen
+    //},
+    immutable: properties !== undefined && properties.immutable === true ? true : false,
+    load( filename, __resolve ) {
+      let promise = utilities.loadSample( filename, ugen )
+      promise.then( _buffer => { 
+        proto.memo[ x ] = _buffer
+        ugen.name = filename
+        ugen.memory.values.length = ugen.dim = _buffer.length
+
+        gen.requestMemory( ugen.memory, ugen.immutable ) 
+        gen.memory.heap.set( _buffer, ugen.memory.values.idx )
+        if( typeof ugen.onload === 'function' ) ugen.onload( _buffer ) 
+        __resolve( ugen )
+      })
+    },
+    memory : {
+      values: { length:buffer !== undefined ? buffer.length : 1, idx:null }
+    }
+  },
+  properties
+  )
+
+  
+  if( properties !== undefined ) {
+    if( properties.global !== undefined ) {
+      gen.globals[ properties.global ] = ugen
+    }
+    if( properties.meta === true ) {
+      for( let i = 0, length = ugen.buffer.length; i < length; i++ ) {
+        Object.defineProperty( ugen, i, {
+          get () {
+            return peek( ugen, i, { mode:'simple', interp:'none' } )
+          },
+          set( v ) {
+            return poke( ugen, v, i )
+          }
+        })
+      }
+    }
+  }
+
+  let returnValue
+  if( shouldLoad === true ) {
+    returnValue = new Promise( (resolve,reject) => {
+      //ugen.load( x, resolve )
+      let promise = utilities.loadSample( x, ugen )
+      promise.then( _buffer => { 
+        proto.memo[ x ] = _buffer
+        ugen.memory.values.length = ugen.dim = _buffer.length
+
+        ugen.buffer = _buffer
+        //gen.once( 'memory init', ()=> {
+        //  console.log( "CALLED", ugen.memory )
+        //  gen.requestMemory( ugen.memory, ugen.immutable ) 
+        //  gen.memory.heap.set( _buffer, ugen.memory.values.idx )
+        //  if( typeof ugen.onload === 'function' ) ugen.onload( _buffer ) 
+        //})
+        
+        resolve( ugen )
+      })     
+    })
+  }else if( proto.memo[ x ] !== undefined ) {
+
+    gen.once( 'memory init', ()=> {
+      gen.requestMemory( ugen.memory, ugen.immutable ) 
+      gen.memory.heap.set( ugen.buffer, ugen.memory.values.idx )
+      if( typeof ugen.onload === 'function' ) ugen.onload( ugen.buffer ) 
+    })
+
+    returnValue = ugen
+  }else{
+    returnValue = ugen
+  }
+
+  return returnValue 
+}
+
+
+},{"./gen.js":107,"./peek.js":131,"./poke.js":133,"./utilities.js":150}],94:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' ),
+    history = require( './history.js' ),
+    sub     = require( './sub.js' ),
+    add     = require( './add.js' ),
+    mul     = require( './mul.js' ),
+    memo    = require( './memo.js' )
+
+module.exports = ( in1 ) => {
+  let x1 = history(),
+      y1 = history(),
+      filter
+
+  //History x1, y1; y = in1 - x1 + y1*0.9997; x1 = in1; y1 = y; out1 = y;
+  filter = memo( add( sub( in1, x1.out ), mul( y1.out, .9997 ) ) )
+  x1.in( in1 )
+  y1.in( filter )
+
+  return filter
+}
+
+},{"./add.js":80,"./gen.js":107,"./history.js":111,"./memo.js":119,"./mul.js":125,"./sub.js":144}],95:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' ),
+    history = require( './history.js' ),
+    mul     = require( './mul.js' ),
+    t60     = require( './t60.js' )
+
+module.exports = ( decayTime = 44100, props ) => {
+  let properties = Object.assign({}, { initValue:1 }, props ),
+      ssd = history ( properties.initValue )
+
+  ssd.in( mul( ssd.out, t60( decayTime ) ) )
+
+  ssd.out.trigger = ()=> {
+    ssd.value = 1
+  }
+
+  return ssd.out 
+}
+
+},{"./gen.js":107,"./history.js":111,"./mul.js":125,"./t60.js":146}],96:[function(require,module,exports){
+'use strict'
+
+const gen  = require( './gen.js'  ),
+      data = require( './data.js' ),
+      poke = require( './poke.js' ),
+      peek = require( './peek.js' ),
+      sub  = require( './sub.js'  ),
+      wrap = require( './wrap.js' ),
+      accum= require( './accum.js'),
+      memo = require( './memo.js' )
+
+const proto = {
+  basename:'delay',
+
+  gen() {
+    let inputs = gen.getInputs( this )
+    
+    gen.memo[ this.name ] = inputs[0]
+    
+    return inputs[0]
+  },
+}
+
+const defaults = { size: 512, interp:'none' }
+
+module.exports = ( in1, taps, properties ) => {
+  const ugen = Object.create( proto )
+  let writeIdx, readIdx, delaydata
+
+  if( Array.isArray( taps ) === false ) taps = [ taps ]
+  
+  const props = Object.assign( {}, defaults, properties )
+
+  const maxTapSize = Math.max( ...taps )
+  if( props.size < maxTapSize ) props.size = maxTapSize
+
+  delaydata = data( props.size )
+  
+  ugen.inputs = []
+
+  writeIdx = accum( 1, 0, { max:props.size, min:0 })
+  
+  for( let i = 0; i < taps.length; i++ ) {
+    ugen.inputs[ i ] = peek( delaydata, wrap( sub( writeIdx, taps[i] ), 0, props.size ),{ mode:'samples', interp:props.interp })
+  }
+  
+  ugen.outputs = ugen.inputs // XXX ugh, Ugh, UGH! but i guess it works.
+
+  poke( delaydata, in1, writeIdx )
+
+  ugen.name = `${ugen.basename}${gen.getUID()}`
+
+  return ugen
+}
+
+},{"./accum.js":77,"./data.js":93,"./gen.js":107,"./memo.js":119,"./peek.js":131,"./poke.js":133,"./sub.js":144,"./wrap.js":152}],97:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' ),
+    history = require( './history.js' ),
+    sub     = require( './sub.js' )
+
+module.exports = ( in1 ) => {
+  let n1 = history()
+    
+  n1.in( in1 )
+
+  let ugen = sub( in1, n1.out )
+  ugen.name = 'delta'+gen.getUID()
+
+  return ugen
+}
+
+},{"./gen.js":107,"./history.js":111,"./sub.js":144}],98:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js')
+
+const proto = {
+  basename:'div',
+  gen() {
+    let inputs = gen.getInputs( this ),
+        out=`  var ${this.name} = `,
+        diff = 0, 
+        numCount = 0,
+        lastNumber = inputs[ 0 ],
+        lastNumberIsUgen = isNaN( lastNumber ), 
+        divAtEnd = false
+
+    inputs.forEach( (v,i) => {
+      if( i === 0 ) return
+
+      let isNumberUgen = isNaN( v ),
+        isFinalIdx   = i === inputs.length - 1
+
+      if( !lastNumberIsUgen && !isNumberUgen ) {
+        lastNumber = lastNumber / v
+        out += lastNumber
+      }else{
+        out += `${lastNumber} / ${v}`
+      }
+
+      if( !isFinalIdx ) out += ' / ' 
+    })
+
+    out += '\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  }
+}
+
+module.exports = (...args) => {
+  const div = Object.create( proto )
+  
+  Object.assign( div, {
+    id:     gen.getUID(),
+    inputs: args,
+  })
+
+  div.name = div.basename + div.id
+  
+  return div
+}
+
+},{"./gen.js":107}],99:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen' ),
+    windows = require( './windows' ),
+    data    = require( './data' ),
+    peek    = require( './peek' ),
+    phasor  = require( './phasor' ),
+    defaults = {
+      type:'triangular', length:1024, alpha:.15, shift:0, reverse:false 
+    }
+
+module.exports = props => {
+  
+  let properties = Object.assign( {}, defaults, props )
+  let buffer = new Float32Array( properties.length )
+
+  let name = properties.type + '_' + properties.length + '_' + properties.shift + '_' + properties.reverse + '_' + properties.alpha
+  if( typeof gen.globals.windows[ name ] === 'undefined' ) { 
+
+    for( let i = 0; i < properties.length; i++ ) {
+      buffer[ i ] = windows[ properties.type ]( properties.length, i, properties.alpha, properties.shift )
+    }
+
+    if( properties.reverse === true ) { 
+      buffer.reverse()
+    }
+    gen.globals.windows[ name ] = data( buffer )
+  }
+
+  let ugen = gen.globals.windows[ name ] 
+  ugen.name = 'env' + gen.getUID()
+
+  return ugen
+}
+
+},{"./data":93,"./gen":107,"./peek":131,"./phasor":132,"./windows":151}],100:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'eq',
+
+  gen() {
+    let inputs = gen.getInputs( this ), out
+
+    out = this.inputs[0] === this.inputs[1] ? 1 : `  var ${this.name} = (${inputs[0]} === ${inputs[1]}) | 0\n\n`
+
+    gen.memo[ this.name ] = `${this.name}`
+
+    return [ `${this.name}`, out ]
+  },
+
+}
+
+module.exports = ( in1, in2 ) => {
+  let ugen = Object.create( proto )
+  Object.assign( ugen, {
+    uid:     gen.getUID(),
+    inputs:  [ in1, in2 ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],101:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'exp',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.exp' : Math.exp })
+
+      out = `${ref}exp( ${inputs[0]} )`
+
+    } else {
+      out = Math.exp( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let exp = Object.create( proto )
+
+  exp.inputs = [ x ]
+
+  return exp
+}
+
+},{"./gen.js":107}],102:[function(require,module,exports){
+/**
+ * Copyright 2018 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+// originally from:
+// https://github.com/GoogleChromeLabs/audioworklet-polyfill
+// I am modifying it to accept variable buffer sizes
+// and to get rid of some strange global initialization that seems required to use it
+// with browserify. Also, I added changes to fix a bug in Safari for the AudioWorkletProcessor
+// property not having a prototype (see:https://github.com/GoogleChromeLabs/audioworklet-polyfill/pull/25)
+// TODO: Why is there an iframe involved? (realm.js)
+
+const Realm = require( './realm.js' )
+
+const AWPF = function( self = window, bufferSize = 4096 ) {
+  const PARAMS = []
+  let nextPort
+
+  if (typeof AudioWorkletNode !== 'function' || !("audioWorklet" in AudioContext.prototype)) {
+    self.AudioWorkletNode = function AudioWorkletNode (context, name, options) {
+      const processor = getProcessorsForContext(context)[name];
+      const outputChannels = options && options.outputChannelCount ? options.outputChannelCount[0] : 2;
+      const scriptProcessor = context.createScriptProcessor( bufferSize, 2, outputChannels);
+
+      scriptProcessor.parameters = new Map();
+      if (processor.properties) {
+        for (let i = 0; i < processor.properties.length; i++) {
+          const prop = processor.properties[i];
+          const node = context.createGain().gain;
+          node.value = prop.defaultValue;
+          // @TODO there's no good way to construct the proxy AudioParam here
+          scriptProcessor.parameters.set(prop.name, node);
+        }
+      }
+
+      const mc = new MessageChannel();
+      nextPort = mc.port2;
+      const inst = new processor.Processor(options || {});
+      nextPort = null;
+
+      scriptProcessor.port = mc.port1;
+      scriptProcessor.processor = processor;
+      scriptProcessor.instance = inst;
+      scriptProcessor.onaudioprocess = onAudioProcess;
+      return scriptProcessor;
+    };
+
+    Object.defineProperty((self.AudioContext || self.webkitAudioContext).prototype, 'audioWorklet', {
+      get () {
+        return this.$$audioWorklet || (this.$$audioWorklet = new self.AudioWorklet(this));
+      }
+    });
+
+    /* XXX - ADDED TO OVERCOME PROBLEM IN SAFARI WHERE AUDIOWORKLETPROCESSOR PROTOTYPE IS NOT AN OBJECT */
+    const AudioWorkletProcessor = function() {
+      this.port = nextPort
+    }
+    AudioWorkletProcessor.prototype = {}
+
+    self.AudioWorklet = class AudioWorklet {
+      constructor (audioContext) {
+        this.$$context = audioContext;
+      }
+
+      addModule (url, options) {
+        return fetch(url).then(r => {
+          if (!r.ok) throw Error(r.status);
+          return r.text();
+        }).then( code => {
+          const context = {
+            sampleRate: this.$$context.sampleRate,
+            currentTime: this.$$context.currentTime,
+            AudioWorkletProcessor,
+            registerProcessor: (name, Processor) => {
+              const processors = getProcessorsForContext(this.$$context);
+              processors[name] = {
+                realm,
+                context,
+                Processor,
+                properties: Processor.parameterDescriptors || []
+              };
+            }
+          };
+
+          context.self = context;
+          const realm = new Realm(context, document.documentElement);
+          realm.exec(((options && options.transpile) || String)(code));
+          return null;
+        });
+      }
+    };
+  }
+
+  function onAudioProcess (e) {
+    const parameters = {};
+    let index = -1;
+    this.parameters.forEach((value, key) => {
+      const arr = PARAMS[++index] || (PARAMS[index] = new Float32Array(this.bufferSize));
+      // @TODO proper values here if possible
+      arr.fill(value.value);
+      parameters[key] = arr;
+    });
+    this.processor.realm.exec(
+      'self.sampleRate=sampleRate=' + this.context.sampleRate + ';' +
+      'self.currentTime=currentTime=' + this.context.currentTime
+    );
+    const inputs = channelToArray(e.inputBuffer);
+    const outputs = channelToArray(e.outputBuffer);
+    this.instance.process([inputs], [outputs], parameters);
+  }
+
+  function channelToArray (ch) {
+    const out = [];
+    for (let i = 0; i < ch.numberOfChannels; i++) {
+      out[i] = ch.getChannelData(i);
+    }
+    return out;
+  }
+
+  function getProcessorsForContext (audioContext) {
+    return audioContext.$$processors || (audioContext.$$processors = {});
+  }
+}
+
+module.exports = AWPF
+
+},{"./realm.js":103}],103:[function(require,module,exports){
+/**
+ * Copyright 2018 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+module.exports = function Realm (scope, parentElement) {
+  const frame = document.createElement('iframe');
+  frame.style.cssText = 'position:absolute;left:0;top:-999px;width:1px;height:1px;';
+  parentElement.appendChild(frame);
+  const win = frame.contentWindow;
+  const doc = win.document;
+  let vars = 'var window,$hook';
+  for (const i in win) {
+    if (!(i in scope) && i !== 'eval') {
+      vars += ',';
+      vars += i;
+    }
+  }
+  for (const i in scope) {
+    vars += ',';
+    vars += i;
+    vars += '=self.';
+    vars += i;
+  }
+  const script = doc.createElement('script');
+  script.appendChild(doc.createTextNode(
+    `function $hook(self,console) {"use strict";
+        ${vars};return function() {return eval(arguments[0])}}`
+  ));
+  doc.body.appendChild(script);
+  this.exec = win.$hook.call(scope, scope, console);
+}
+
+},{}],104:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'floor',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    if( isNaN( inputs[0] ) ) {
+      //gen.closures.add({ [ this.name ]: Math.floor })
+
+      out = `( ${inputs[0]} | 0 )`
+
+    } else {
+      out = inputs[0] | 0
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let floor = Object.create( proto )
+
+  floor.inputs = [ x ]
+
+  return floor
+}
+
+},{"./gen.js":107}],105:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'fold',
+
+  gen() {
+    let code,
+        inputs = gen.getInputs( this ),
+        out
+
+    out = this.createCallback( inputs[0], this.min, this.max ) 
+
+    gen.memo[ this.name ] = this.name + '_value'
+
+    return [ this.name + '_value', out ]
+  },
+
+  createCallback( v, lo, hi ) {
+    let out =
+` var ${this.name}_value = ${v},
+      ${this.name}_range = ${hi} - ${lo},
+      ${this.name}_numWraps = 0
+
+  if(${this.name}_value >= ${hi}){
+    ${this.name}_value -= ${this.name}_range
+    if(${this.name}_value >= ${hi}){
+      ${this.name}_numWraps = ((${this.name}_value - ${lo}) / ${this.name}_range) | 0
+      ${this.name}_value -= ${this.name}_range * ${this.name}_numWraps
+    }
+    ${this.name}_numWraps++
+  } else if(${this.name}_value < ${lo}){
+    ${this.name}_value += ${this.name}_range
+    if(${this.name}_value < ${lo}){
+      ${this.name}_numWraps = ((${this.name}_value - ${lo}) / ${this.name}_range- 1) | 0
+      ${this.name}_value -= ${this.name}_range * ${this.name}_numWraps
+    }
+    ${this.name}_numWraps--
+  }
+  if(${this.name}_numWraps & 1) ${this.name}_value = ${hi} + ${lo} - ${this.name}_value
+`
+    return ' ' + out
+  }
+}
+
+module.exports = ( in1, min=0, max=1 ) => {
+  let ugen = Object.create( proto )
+
+  Object.assign( ugen, { 
+    min, 
+    max,
+    uid:    gen.getUID(),
+    inputs: [ in1 ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],106:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'gate',
+  controlString:null, // insert into output codegen for determining indexing
+  gen() {
+    let inputs = gen.getInputs( this ), out
+    
+    gen.requestMemory( this.memory )
+    
+    let lastInputMemoryIdx = 'memory[ ' + this.memory.lastInput.idx + ' ]',
+        outputMemoryStartIdx = this.memory.lastInput.idx + 1,
+        inputSignal = inputs[0],
+        controlSignal = inputs[1]
+    
+    /* 
+     * we check to see if the current control inputs equals our last input
+     * if so, we store the signal input in the memory associated with the currently
+     * selected index. If not, we put 0 in the memory associated with the last selected index,
+     * change the selected index, and then store the signal in put in the memery assoicated
+     * with the newly selected index
+     */
+    
+    out =
+
+` if( ${controlSignal} !== ${lastInputMemoryIdx} ) {
+    memory[ ${lastInputMemoryIdx} + ${outputMemoryStartIdx}  ] = 0 
+    ${lastInputMemoryIdx} = ${controlSignal}
+  }
+  memory[ ${outputMemoryStartIdx} + ${controlSignal} ] = ${inputSignal}
+
+`
+    this.controlString = inputs[1]
+    this.initialized = true
+
+    gen.memo[ this.name ] = this.name
+
+    this.outputs.forEach( v => v.gen() )
+
+    return [ null, ' ' + out ]
+  },
+
+  childgen() {
+    if( this.parent.initialized === false ) {
+      gen.getInputs( this ) // parent gate is only input of a gate output, should only be gen'd once.
+    }
+
+    if( gen.memo[ this.name ] === undefined ) {
+      gen.requestMemory( this.memory )
+
+      gen.memo[ this.name ] = `memory[ ${this.memory.value.idx} ]`
+    }
+    
+    return  `memory[ ${this.memory.value.idx} ]`
+  }
+}
+
+module.exports = ( control, in1, properties ) => {
+  let ugen = Object.create( proto ),
+      defaults = { count: 2 }
+
+  if( typeof properties !== undefined ) Object.assign( defaults, properties )
+
+  Object.assign( ugen, {
+    outputs: [],
+    uid:     gen.getUID(),
+    inputs:  [ in1, control ],
+    memory: {
+      lastInput: { length:1, idx:null }
+    },
+    initialized:false
+  },
+  defaults )
+  
+  ugen.name = `${ugen.basename}${gen.getUID()}`
+
+  for( let i = 0; i < ugen.count; i++ ) {
+    ugen.outputs.push({
+      index:i,
+      gen: proto.childgen,
+      parent:ugen,
+      inputs: [ ugen ],
+      memory: {
+        value: { length:1, idx:null }
+      },
+      initialized:false,
+      name: `${ugen.name}_out${gen.getUID()}`
+    })
+  }
+
+  return ugen
+}
+
+},{"./gen.js":107}],107:[function(require,module,exports){
+'use strict'
+
+/* gen.js
+ *
+ * low-level code generation for unit generators
+ *
+ */
+const MemoryHelper = require( 'memory-helper' )
+const EE = require( 'events' ).EventEmitter
+
+const gen = {
+
+  accum:0,
+  getUID() { return this.accum++ },
+  debug:false,
+  samplerate: 44100, // change on audiocontext creation
+  shouldLocalize: false,
+  graph:null,
+  globals:{
+    windows: {},
+  },
+  mode:'worklet',
+  
+  /* closures
+   *
+   * Functions that are included as arguments to master callback. Examples: Math.abs, Math.random etc.
+   * XXX Should probably be renamed callbackProperties or something similar... closures are no longer used.
+   */
+
+  closures: new Set(),
+  params:   new Set(),
+  inputs:   new Set(),
+
+  parameters: new Set(),
+  endBlock: new Set(),
+  histories: new Map(),
+
+  memo: {},
+
+  //data: {},
+  
+  /* export
+   *
+   * place gen functions into another object for easier reference
+   */
+
+  export( obj ) {},
+
+  addToEndBlock( v ) {
+    this.endBlock.add( '  ' + v )
+  },
+  
+  requestMemory( memorySpec, immutable=false ) {
+    for( let key in memorySpec ) {
+      let request = memorySpec[ key ]
+
+      //console.log( 'requesting ' + key + ':' , JSON.stringify( request ) )
+
+      if( request.length === undefined ) {
+        console.log( 'undefined length for:', key )
+
+        continue
+      }
+
+      request.idx = gen.memory.alloc( request.length, immutable )
+    }
+  },
+
+  createMemory( amount=4096, type ) {
+    const mem = MemoryHelper.create( amount, type )
+    return mem
+  },
+
+  createCallback( ugen, mem, debug = false, shouldInlineMemory=false, memType = Float64Array ) {
+    let isStereo = Array.isArray( ugen ) && ugen.length > 1,
+        callback, 
+        channel1, channel2
+
+    if( typeof mem === 'number' || mem === undefined ) {
+      this.memory = this.createMemory( mem, memType )
+    }else{
+      this.memory = mem
+    }
+    
+    this.outputIdx = this.memory.alloc( 2, true )
+    this.emit( 'memory init' )
+
+    //console.log( 'cb memory:', mem )
+    this.graph = ugen
+    this.memo = {} 
+    this.endBlock.clear()
+    this.closures.clear()
+    this.inputs.clear()
+    this.params.clear()
+    this.globals = { windows:{} }
+    
+    this.parameters.clear()
+    
+    this.functionBody = "  'use strict'\n"
+    if( shouldInlineMemory===false ) {
+      this.functionBody += this.mode === 'worklet' ? 
+        "  var memory = this.memory\n\n" :
+        "  var memory = gen.memory\n\n"
+    }
+
+    // call .gen() on the head of the graph we are generating the callback for
+    //console.log( 'HEAD', ugen )
+    for( let i = 0; i < 1 + isStereo; i++ ) {
+      if( typeof ugen[i] === 'number' ) continue
+
+      //let channel = isStereo ? ugen[i].gen() : ugen.gen(),
+      let channel = isStereo ? this.getInput( ugen[i] ) : this.getInput( ugen ), 
+          body = ''
+
+      // if .gen() returns array, add ugen callback (graphOutput[1]) to our output functions body
+      // and then return name of ugen. If .gen() only generates a number (for really simple graphs)
+      // just return that number (graphOutput[0]).
+      body += Array.isArray( channel ) ? channel[1] + '\n' + channel[0] : channel
+
+      // split body to inject return keyword on last line
+      body = body.split('\n')
+     
+      //if( debug ) console.log( 'functionBody length', body )
+      
+      // next line is to accommodate memo as graph head
+      if( body[ body.length -1 ].trim().indexOf('let') > -1 ) { body.push( '\n' ) } 
+
+      // get index of last line
+      let lastidx = body.length - 1
+
+      // insert return keyword
+      body[ lastidx ] = '  memory[' + (this.outputIdx + i) + ']  = ' + body[ lastidx ] + '\n'
+
+      this.functionBody += body.join('\n')
+    }
+    
+    this.histories.forEach( value => {
+      if( value !== null )
+        value.gen()      
+    })
+
+    const returnStatement = isStereo ? `  return [ memory[${this.outputIdx}], memory[${this.outputIdx + 1}] ]` : `  return memory[${this.outputIdx}]`
+    
+    this.functionBody = this.functionBody.split('\n')
+
+    if( this.endBlock.size ) { 
+      this.functionBody = this.functionBody.concat( Array.from( this.endBlock ) )
+      this.functionBody.push( returnStatement )
+    }else{
+      this.functionBody.push( returnStatement )
+    }
+    // reassemble function body
+    this.functionBody = this.functionBody.join('\n')
+
+    // we can only dynamically create a named function by dynamically creating another function
+    // to construct the named function! sheesh...
+    //
+    if( shouldInlineMemory === true ) {
+      this.parameters.add( 'memory' )
+    }
+
+    let paramString = ''
+    if( this.mode === 'worklet' ) {
+      for( let name of this.parameters.values() ) {
+        paramString += name + ','
+      }
+      paramString = paramString.slice(0,-1)
+    }
+
+    const separator = this.parameters.size !== 0 && this.inputs.size > 0 ? ', ' : ''
+
+    let inputString = ''
+    if( this.mode === 'worklet' ) {
+      for( let ugen of this.inputs.values() ) {
+        inputString += ugen.name + ','
+      }
+      inputString = inputString.slice(0,-1)
+    }
+
+    let buildString = this.mode === 'worklet'
+      ? `return function( ${inputString} ${separator} ${paramString} ){ \n${ this.functionBody }\n}`
+      : `return function gen( ${ [...this.parameters].join(',') } ){ \n${ this.functionBody }\n}`
+    
+    if( this.debug || debug ) console.log( buildString ) 
+
+    callback = new Function( buildString )()
+
+    // assign properties to named function
+    for( let dict of this.closures.values() ) {
+      let name = Object.keys( dict )[0],
+          value = dict[ name ]
+
+      callback[ name ] = value
+    }
+
+    for( let dict of this.params.values() ) {
+      let name = Object.keys( dict )[0],
+          ugen = dict[ name ]
+      
+      Object.defineProperty( callback, name, {
+        configurable: true,
+        get() { return ugen.value },
+        set(v){ ugen.value = v }
+      })
+      //callback[ name ] = value
+    }
+
+    callback.members = this.closures
+    callback.data = this.data
+    callback.params = this.params
+    callback.inputs = this.inputs
+    callback.parameters = this.parameters//.slice( 0 )
+    callback.out = this.memory.heap.subarray( this.outputIdx, this.outputIdx + 2 )
+    callback.isStereo = isStereo
+
+    //if( MemoryHelper.isPrototypeOf( this.memory ) ) 
+    callback.memory = this.memory.heap
+
+    this.histories.clear()
+
+    return callback
+  },
+  
+  /* getInputs
+   *
+   * Called by each individual ugen when their .gen() method is called to resolve their various inputs.
+   * If an input is a number, return the number. If
+   * it is an ugen, call .gen() on the ugen, memoize the result and return the result. If the
+   * ugen has previously been memoized return the memoized value.
+   *
+   */
+  getInputs( ugen ) {
+    return ugen.inputs.map( gen.getInput ) 
+  },
+
+  getInput( input ) {
+    let isObject = typeof input === 'object',
+        processedInput
+
+    if( isObject ) { // if input is a ugen... 
+      //console.log( input.name, gen.memo[ input.name ] )
+      if( gen.memo[ input.name ] ) { // if it has been memoized...
+        processedInput = gen.memo[ input.name ]
+      }else if( Array.isArray( input ) ) {
+        gen.getInput( input[0] )
+        gen.getInput( input[1] )
+      }else{ // if not memoized generate code  
+        if( typeof input.gen !== 'function' ) {
+          console.log( 'no gen found:', input, input.gen )
+          input = input.graph
+        }
+        let code = input.gen()
+        //if( code.indexOf( 'Object' ) > -1 ) console.log( 'bad input:', input, code )
+        
+        if( Array.isArray( code ) ) {
+          if( !gen.shouldLocalize ) {
+            gen.functionBody += code[1]
+          }else{
+            gen.codeName = code[0]
+            gen.localizedCode.push( code[1] )
+          }
+          //console.log( 'after GEN' , this.functionBody )
+          processedInput = code[0]
+        }else{
+          processedInput = code
+        }
+      }
+    }else{ // it input is a number
+      processedInput = input
+    }
+
+    return processedInput
+  },
+
+  startLocalize() {
+    this.localizedCode = []
+    this.shouldLocalize = true
+  },
+  endLocalize() {
+    this.shouldLocalize = false
+
+    return [ this.codeName, this.localizedCode.slice(0) ]
+  },
+
+  free( graph ) {
+    if( Array.isArray( graph ) ) { // stereo ugen
+      for( let channel of graph ) {
+        this.free( channel )
+      }
+    } else {
+      if( typeof graph === 'object' ) {
+        if( graph.memory !== undefined ) {
+          for( let memoryKey in graph.memory ) {
+            this.memory.free( graph.memory[ memoryKey ].idx )
+          }
+        }
+        if( Array.isArray( graph.inputs ) ) {
+          for( let ugen of graph.inputs ) {
+            this.free( ugen )
+          }
+        }
+      }
+    }
+  }
+}
+
+gen.__proto__ = new EE()
+
+module.exports = gen
+
+},{"events":74,"memory-helper":153}],108:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'gt',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    out = `  var ${this.name} = `  
+
+    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
+      out += `(( ${inputs[0]} > ${inputs[1]}) | 0 )`
+    } else {
+      out += inputs[0] > inputs[1] ? 1 : 0 
+    }
+    out += '\n\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [this.name, out]
+  }
+}
+
+module.exports = (x,y) => {
+  let gt = Object.create( proto )
+
+  gt.inputs = [ x,y ]
+  gt.name = gt.basename + gen.getUID()
+
+  return gt
+}
+
+},{"./gen.js":107}],109:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js')
+
+let proto = {
+  name:'gte',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    out = `  var ${this.name} = `  
+
+    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
+      out += `( ${inputs[0]} >= ${inputs[1]} | 0 )`
+    } else {
+      out += inputs[0] >= inputs[1] ? 1 : 0 
+    }
+    out += '\n\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [this.name, out]
+  }
+}
+
+module.exports = (x,y) => {
+  let gt = Object.create( proto )
+
+  gt.inputs = [ x,y ]
+  gt.name = 'gte' + gen.getUID()
+
+  return gt
+}
+
+},{"./gen.js":107}],110:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'gtp',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
+      out = `(${inputs[ 0 ]} * ( ( ${inputs[0]} > ${inputs[1]} ) | 0 ) )` 
+    } else {
+      out = inputs[0] * ( ( inputs[0] > inputs[1] ) | 0 )
+    }
+    
+    return out
+  }
+}
+
+module.exports = (x,y) => {
+  let gtp = Object.create( proto )
+
+  gtp.inputs = [ x,y ]
+
+  return gtp
+}
+
+},{"./gen.js":107}],111:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+module.exports = ( in1=0 ) => {
+  let ugen = {
+    inputs: [ in1 ],
+    memory: { value: { length:1, idx: null } },
+    recorder: null,
+
+    in( v ) {
+      if( gen.histories.has( v ) ){
+        let memoHistory = gen.histories.get( v )
+        ugen.name = memoHistory.name
+        return memoHistory
+      }
+
+      let obj = {
+        gen() {
+          let inputs = gen.getInputs( ugen )
+
+          if( ugen.memory.value.idx === null ) {
+            gen.requestMemory( ugen.memory )
+            gen.memory.heap[ ugen.memory.value.idx ] = in1
+          }
+
+          let idx = ugen.memory.value.idx
+          
+          gen.addToEndBlock( 'memory[ ' + idx + ' ] = ' + inputs[ 0 ] )
+          
+          // return ugen that is being recorded instead of ssd.
+          // this effectively makes a call to ssd.record() transparent to the graph.
+          // recording is triggered by prior call to gen.addToEndBlock.
+          gen.histories.set( v, obj )
+
+          return inputs[ 0 ]
+        },
+        name: ugen.name + '_in'+gen.getUID(),
+        memory: ugen.memory
+      }
+
+      this.inputs[ 0 ] = v
+      
+      ugen.recorder = obj
+
+      return obj
+    },
+    
+    out: {
+            
+      gen() {
+        if( ugen.memory.value.idx === null ) {
+          if( gen.histories.get( ugen.inputs[0] ) === undefined ) {
+            gen.histories.set( ugen.inputs[0], ugen.recorder )
+          }
+          gen.requestMemory( ugen.memory )
+          gen.memory.heap[ ugen.memory.value.idx ] = parseFloat( in1 )
+        }
+        let idx = ugen.memory.value.idx
+         
+        return 'memory[ ' + idx + ' ] '
+      },
+    },
+
+    uid: gen.getUID(),
+  }
+  
+  ugen.out.memory = ugen.memory 
+
+  ugen.name = 'history' + ugen.uid
+  ugen.out.name = ugen.name + '_out'
+  ugen.in._name  = ugen.name = '_in'
+
+  Object.defineProperty( ugen, 'value', {
+    get() {
+      if( this.memory.value.idx !== null ) {
+        return gen.memory.heap[ this.memory.value.idx ]
+      }
+    },
+    set( v ) {
+      if( this.memory.value.idx !== null ) {
+        gen.memory.heap[ this.memory.value.idx ] = v 
+      }
+    }
+  })
+
+  return ugen
+}
+
+},{"./gen.js":107}],112:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'ifelse',
+
+  gen() {
+    let conditionals = this.inputs[0],
+        defaultValue = gen.getInput( conditionals[ conditionals.length - 1] ),
+        out = `  var ${this.name}_out = ${defaultValue}\n` 
+
+    //console.log( 'conditionals:', this.name, conditionals )
+
+    //console.log( 'defaultValue:', defaultValue )
+
+    for( let i = 0; i < conditionals.length - 2; i+= 2 ) {
+      let isEndBlock = i === conditionals.length - 3,
+          cond  = gen.getInput( conditionals[ i ] ),
+          preblock = conditionals[ i+1 ],
+          block, blockName, output
+
+      //console.log( 'pb', preblock )
+
+      if( typeof preblock === 'number' ){
+        block = preblock
+        blockName = null
+      }else{
+        if( gen.memo[ preblock.name ] === undefined ) {
+          // used to place all code dependencies in appropriate blocks
+          gen.startLocalize()
+
+          gen.getInput( preblock )
+
+          block = gen.endLocalize()
+          blockName = block[0]
+          block = block[ 1 ].join('')
+          block = '  ' + block.replace( /\n/gi, '\n  ' )
+        }else{
+          block = ''
+          blockName = gen.memo[ preblock.name ]
+        }
+      }
+
+      output = blockName === null ? 
+        `  ${this.name}_out = ${block}` :
+        `${block}  ${this.name}_out = ${blockName}`
+      
+      if( i===0 ) out += ' '
+      out += 
+` if( ${cond} === 1 ) {
+${output}
+  }`
+
+      if( !isEndBlock ) {
+        out += ` else`
+      }else{
+        out += `\n`
+      }
+    }
+
+    gen.memo[ this.name ] = `${this.name}_out`
+
+    return [ `${this.name}_out`, out ]
+  }
+}
+
+module.exports = ( ...args  ) => {
+  let ugen = Object.create( proto ),
+      conditions = Array.isArray( args[0] ) ? args[0] : args
+
+  Object.assign( ugen, {
+    uid:     gen.getUID(),
+    inputs:  [ conditions ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],113:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js')
+
+let proto = {
+  basename:'in',
+
+  gen() {
+    const isWorklet = gen.mode === 'worklet'
+
+    if( isWorklet ) {
+      gen.inputs.add( this )
+    }else{
+      gen.parameters.add( this.name )
+    }
+
+    gen.memo[ this.name ] = isWorklet === true ? this.name + '[i]' : this.name
+
+    return gen.memo[ this.name ]
+  } 
+}
+
+module.exports = ( name, inputNumber=0, channelNumber=0, defaultValue=0, min=0, max=1 ) => {
+  let input = Object.create( proto )
+
+  input.id   = gen.getUID()
+  input.name = name !== undefined ? name : `${input.basename}${input.id}`
+  Object.assign( input, { defaultValue, min, max, inputNumber, channelNumber })
+
+  input[0] = {
+    gen() {
+      if( ! gen.parameters.has( input.name ) ) gen.parameters.add( input.name )
+      return input.name + '[0]'
+    }
+  }
+  input[1] = {
+    gen() {
+      if( ! gen.parameters.has( input.name ) ) gen.parameters.add( input.name )
+      return input.name + '[1]'
+    }
+  }
+
+
+  return input
+}
+
+},{"./gen.js":107}],114:[function(require,module,exports){
+'use strict'
+
+const library = {
+  export( destination ) {
+    if( destination === window ) {
+      destination.ssd = library.history    // history is window object property, so use ssd as alias
+      destination.input = library.in       // in is a keyword in javascript
+      destination.ternary = library.switch // switch is a keyword in javascript
+
+      delete library.history
+      delete library.in
+      delete library.switch
+    }
+
+    Object.assign( destination, library )
+
+    Object.defineProperty( library, 'samplerate', {
+      get() { return library.gen.samplerate },
+      set(v) {}
+    })
+
+    library.in = destination.input
+    library.history = destination.ssd
+    library.switch = destination.ternary
+
+    destination.clip = library.clamp
+  },
+
+  gen:      require( './gen.js' ),
+  
+  abs:      require( './abs.js' ),
+  round:    require( './round.js' ),
+  param:    require( './param.js' ),
+  add:      require( './add.js' ),
+  sub:      require( './sub.js' ),
+  mul:      require( './mul.js' ),
+  div:      require( './div.js' ),
+  accum:    require( './accum.js' ),
+  counter:  require( './counter.js' ),
+  sin:      require( './sin.js' ),
+  cos:      require( './cos.js' ),
+  tan:      require( './tan.js' ),
+  tanh:     require( './tanh.js' ),
+  asin:     require( './asin.js' ),
+  acos:     require( './acos.js' ),
+  atan:     require( './atan.js' ),  
+  phasor:   require( './phasor.js' ),
+  data:     require( './data.js' ),
+  peek:     require( './peek.js' ),
+  cycle:    require( './cycle.js' ),
+  history:  require( './history.js' ),
+  delta:    require( './delta.js' ),
+  floor:    require( './floor.js' ),
+  ceil:     require( './ceil.js' ),
+  min:      require( './min.js' ),
+  max:      require( './max.js' ),
+  sign:     require( './sign.js' ),
+  dcblock:  require( './dcblock.js' ),
+  memo:     require( './memo.js' ),
+  rate:     require( './rate.js' ),
+  wrap:     require( './wrap.js' ),
+  mix:      require( './mix.js' ),
+  clamp:    require( './clamp.js' ),
+  poke:     require( './poke.js' ),
+  delay:    require( './delay.js' ),
+  fold:     require( './fold.js' ),
+  mod :     require( './mod.js' ),
+  sah :     require( './sah.js' ),
+  noise:    require( './noise.js' ),
+  not:      require( './not.js' ),
+  gt:       require( './gt.js' ),
+  gte:      require( './gte.js' ),
+  lt:       require( './lt.js' ), 
+  lte:      require( './lte.js' ), 
+  bool:     require( './bool.js' ),
+  gate:     require( './gate.js' ),
+  train:    require( './train.js' ),
+  slide:    require( './slide.js' ),
+  in:       require( './in.js' ),
+  t60:      require( './t60.js'),
+  mtof:     require( './mtof.js'),
+  ltp:      require( './ltp.js'),        // TODO: test
+  gtp:      require( './gtp.js'),        // TODO: test
+  switch:   require( './switch.js' ),
+  mstosamps:require( './mstosamps.js' ), // TODO: needs test,
+  selector: require( './selector.js' ),
+  utilities:require( './utilities.js' ),
+  pow:      require( './pow.js' ),
+  attack:   require( './attack.js' ),
+  decay:    require( './decay.js' ),
+  windows:  require( './windows.js' ),
+  env:      require( './env.js' ),
+  ad:       require( './ad.js'  ),
+  adsr:     require( './adsr.js' ),
+  ifelse:   require( './ifelseif.js' ),
+  bang:     require( './bang.js' ),
+  and:      require( './and.js' ),
+  pan:      require( './pan.js' ),
+  eq:       require( './eq.js' ),
+  neq:      require( './neq.js' ),
+  exp:      require( './exp.js' ),
+  process:  require( './process.js' ),
+  seq:      require( './seq.js' )
+}
+
+library.gen.lib = library
+
+module.exports = library
+
+},{"./abs.js":76,"./accum.js":77,"./acos.js":78,"./ad.js":79,"./add.js":80,"./adsr.js":81,"./and.js":82,"./asin.js":83,"./atan.js":84,"./attack.js":85,"./bang.js":86,"./bool.js":87,"./ceil.js":88,"./clamp.js":89,"./cos.js":90,"./counter.js":91,"./cycle.js":92,"./data.js":93,"./dcblock.js":94,"./decay.js":95,"./delay.js":96,"./delta.js":97,"./div.js":98,"./env.js":99,"./eq.js":100,"./exp.js":101,"./floor.js":104,"./fold.js":105,"./gate.js":106,"./gen.js":107,"./gt.js":108,"./gte.js":109,"./gtp.js":110,"./history.js":111,"./ifelseif.js":112,"./in.js":113,"./lt.js":115,"./lte.js":116,"./ltp.js":117,"./max.js":118,"./memo.js":119,"./min.js":120,"./mix.js":121,"./mod.js":122,"./mstosamps.js":123,"./mtof.js":124,"./mul.js":125,"./neq.js":126,"./noise.js":127,"./not.js":128,"./pan.js":129,"./param.js":130,"./peek.js":131,"./phasor.js":132,"./poke.js":133,"./pow.js":134,"./process.js":135,"./rate.js":136,"./round.js":137,"./sah.js":138,"./selector.js":139,"./seq.js":140,"./sign.js":141,"./sin.js":142,"./slide.js":143,"./sub.js":144,"./switch.js":145,"./t60.js":146,"./tan.js":147,"./tanh.js":148,"./train.js":149,"./utilities.js":150,"./windows.js":151,"./wrap.js":152}],115:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'lt',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    out = `  var ${this.name} = `  
+
+    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
+      out += `(( ${inputs[0]} < ${inputs[1]}) | 0  )`
+    } else {
+      out += inputs[0] < inputs[1] ? 1 : 0 
+    }
+    out += '\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [this.name, out]
+    
+    return out
+  }
+}
+
+module.exports = (x,y) => {
+  let lt = Object.create( proto )
+
+  lt.inputs = [ x,y ]
+  lt.name = lt.basename + gen.getUID()
+
+  return lt
+}
+
+},{"./gen.js":107}],116:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'lte',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    out = `  var ${this.name} = `  
+
+    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
+      out += `( ${inputs[0]} <= ${inputs[1]} | 0  )`
+    } else {
+      out += inputs[0] <= inputs[1] ? 1 : 0 
+    }
+    out += '\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [this.name, out]
+    
+    return out
+  }
+}
+
+module.exports = (x,y) => {
+  let lt = Object.create( proto )
+
+  lt.inputs = [ x,y ]
+  lt.name = 'lte' + gen.getUID()
+
+  return lt
+}
+
+},{"./gen.js":107}],117:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'ltp',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    if( isNaN( this.inputs[0] ) || isNaN( this.inputs[1] ) ) {
+      out = `(${inputs[ 0 ]} * (( ${inputs[0]} < ${inputs[1]} ) | 0 ) )` 
+    } else {
+      out = inputs[0] * (( inputs[0] < inputs[1] ) | 0 )
+    }
+    
+    return out
+  }
+}
+
+module.exports = (x,y) => {
+  let ltp = Object.create( proto )
+
+  ltp.inputs = [ x,y ]
+
+  return ltp
+}
+
+},{"./gen.js":107}],118:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'max',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) || isNaN( inputs[1] ) ) {
+      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.max' : Math.max })
+
+      out = `${ref}max( ${inputs[0]}, ${inputs[1]} )`
+
+    } else {
+      out = Math.max( parseFloat( inputs[0] ), parseFloat( inputs[1] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = (x,y) => {
+  let max = Object.create( proto )
+
+  max.inputs = [ x,y ]
+
+  return max
+}
+
+},{"./gen.js":107}],119:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js')
+
+let proto = {
+  basename:'memo',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    out = `  var ${this.name} = ${inputs[0]}\n`
+
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  } 
+}
+
+module.exports = (in1,memoName) => {
+  let memo = Object.create( proto )
+  
+  memo.inputs = [ in1 ]
+  memo.id   = gen.getUID()
+  memo.name = memoName !== undefined ? memoName + '_' + gen.getUID() : `${memo.basename}${memo.id}`
+
+  return memo
+}
+
+},{"./gen.js":107}],120:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'min',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) || isNaN( inputs[1] ) ) {
+      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.min' : Math.min })
+
+      out = `${ref}min( ${inputs[0]}, ${inputs[1]} )`
+
+    } else {
+      out = Math.min( parseFloat( inputs[0] ), parseFloat( inputs[1] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = (x,y) => {
+  let min = Object.create( proto )
+
+  min.inputs = [ x,y ]
+
+  return min
+}
+
+},{"./gen.js":107}],121:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js'),
+    add = require('./add.js'),
+    mul = require('./mul.js'),
+    sub = require('./sub.js'),
+    memo= require('./memo.js')
+
+module.exports = ( in1, in2, t=.5 ) => {
+  let ugen = memo( add( mul(in1, sub(1,t ) ), mul( in2, t ) ) )
+  ugen.name = 'mix' + gen.getUID()
+
+  return ugen
+}
+
+},{"./add.js":80,"./gen.js":107,"./memo.js":119,"./mul.js":125,"./sub.js":144}],122:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js')
+
+module.exports = (...args) => {
+  let mod = {
+    id:     gen.getUID(),
+    inputs: args,
+
+    gen() {
+      let inputs = gen.getInputs( this ),
+          out='(',
+          diff = 0, 
+          numCount = 0,
+          lastNumber = inputs[ 0 ],
+          lastNumberIsUgen = isNaN( lastNumber ), 
+          modAtEnd = false
+
+      inputs.forEach( (v,i) => {
+        if( i === 0 ) return
+
+        let isNumberUgen = isNaN( v ),
+            isFinalIdx   = i === inputs.length - 1
+
+        if( !lastNumberIsUgen && !isNumberUgen ) {
+          lastNumber = lastNumber % v
+          out += lastNumber
+        }else{
+          out += `${lastNumber} % ${v}`
+        }
+
+        if( !isFinalIdx ) out += ' % ' 
+      })
+
+      out += ')'
+
+      return out
+    }
+  }
+  
+  return mod
+}
+
+},{"./gen.js":107}],123:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'mstosamps',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this ),
+        returnValue
+
+    if( isNaN( inputs[0] ) ) {
+      out = `  var ${this.name } = ${gen.samplerate} / 1000 * ${inputs[0]} \n\n`
+     
+      gen.memo[ this.name ] = out
+      
+      returnValue = [ this.name, out ]
+    } else {
+      out = gen.samplerate / 1000 * this.inputs[0]
+
+      returnValue = out
+    }    
+
+    return returnValue
+  }
+}
+
+module.exports = x => {
+  let mstosamps = Object.create( proto )
+
+  mstosamps.inputs = [ x ]
+  mstosamps.name = proto.basename + gen.getUID()
+
+  return mstosamps
+}
+
+},{"./gen.js":107}],124:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'mtof',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ [ this.name ]: Math.exp })
+
+      out = `( ${this.tuning} * gen.exp( .057762265 * (${inputs[0]} - 69) ) )`
+
+    } else {
+      out = this.tuning * Math.exp( .057762265 * ( inputs[0] - 69) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = ( x, props ) => {
+  let ugen = Object.create( proto ),
+      defaults = { tuning:440 }
+  
+  if( props !== undefined ) Object.assign( props.defaults )
+
+  Object.assign( ugen, defaults )
+  ugen.inputs = [ x ]
+  
+
+  return ugen
+}
+
+},{"./gen.js":107}],125:[function(require,module,exports){
+'use strict'
+
+const gen = require('./gen.js')
+
+const proto = {
+  basename: 'mul',
+
+  gen() {
+    let inputs = gen.getInputs( this ),
+        out = `  var ${this.name} = `,
+        sum = 1, numCount = 0, mulAtEnd = false, alreadyFullSummed = true
+
+    inputs.forEach( (v,i) => {
+      if( isNaN( v ) ) {
+        out += v
+        if( i < inputs.length -1 ) {
+          mulAtEnd = true
+          out += ' * '
+        }
+        alreadyFullSummed = false
+      }else{
+        if( i === 0 ) {
+          sum = v
+        }else{
+          sum *= parseFloat( v )
+        }
+        numCount++
+      }
+    })
+
+    if( numCount > 0 ) {
+      out += mulAtEnd || alreadyFullSummed ? sum : ' * ' + sum
+    }
+
+    out += '\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  }
+}
+
+module.exports = ( ...args ) => {
+  const mul = Object.create( proto )
+  
+  Object.assign( mul, {
+      id:     gen.getUID(),
+      inputs: args,
+  })
+  
+  mul.name = mul.basename + mul.id
+
+  return mul
+}
+
+},{"./gen.js":107}],126:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'neq',
+
+  gen() {
+    let inputs = gen.getInputs( this ), out
+
+    out = /*this.inputs[0] !== this.inputs[1] ? 1 :*/ `  var ${this.name} = (${inputs[0]} !== ${inputs[1]}) | 0\n\n`
+
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  },
+
+}
+
+module.exports = ( in1, in2 ) => {
+  let ugen = Object.create( proto )
+  Object.assign( ugen, {
+    uid:     gen.getUID(),
+    inputs:  [ in1, in2 ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],127:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'noise',
+
+  gen() {
+    let out
+
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    gen.closures.add({ 'noise' : isWorklet ? 'Math.random' : Math.random })
+
+    out = `  var ${this.name} = ${ref}noise()\n`
+    
+    gen.memo[ this.name ] = this.name
+
+    return [ this.name, out ]
+  }
+}
+
+module.exports = x => {
+  let noise = Object.create( proto )
+  noise.name = proto.name + gen.getUID()
+
+  return noise
+}
+
+},{"./gen.js":107}],128:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'not',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    if( isNaN( this.inputs[0] ) ) {
+      out = `( ${inputs[0]} === 0 ? 1 : 0 )`
+    } else {
+      out = !inputs[0] === 0 ? 1 : 0
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let not = Object.create( proto )
+
+  not.inputs = [ x ]
+
+  return not
+}
+
+},{"./gen.js":107}],129:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' ),
+    data = require( './data.js' ),
+    peek = require( './peek.js' ),
+    mul  = require( './mul.js' )
+
+let proto = {
+  basename:'pan', 
+  initTable() {    
+    let bufferL = new Float32Array( 1024 ),
+        bufferR = new Float32Array( 1024 )
+
+    const angToRad = Math.PI / 180
+    for( let i = 0; i < 1024; i++ ) { 
+      let pan = i * ( 90 / 1024 )
+      bufferL[i] = Math.cos( pan * angToRad ) 
+      bufferR[i] = Math.sin( pan * angToRad )
+    }
+
+    gen.globals.panL = data( bufferL, 1, { immutable:true })
+    gen.globals.panR = data( bufferR, 1, { immutable:true })
+  }
+
+}
+
+module.exports = ( leftInput, rightInput, pan =.5, properties ) => {
+  if( gen.globals.panL === undefined ) proto.initTable()
+
+  let ugen = Object.create( proto )
+
+  Object.assign( ugen, {
+    uid:     gen.getUID(),
+    inputs:  [ leftInput, rightInput ],
+    left:    mul( leftInput, peek( gen.globals.panL, pan, { boundmode:'clamp' }) ),
+    right:   mul( rightInput, peek( gen.globals.panR, pan, { boundmode:'clamp' }) )
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./data.js":93,"./gen.js":107,"./mul.js":125,"./peek.js":131}],130:[function(require,module,exports){
+'use strict'
+
+let gen = require('./gen.js')
+
+let proto = {
+  basename: 'param',
+
+  gen() {
+    gen.requestMemory( this.memory )
+    
+    gen.params.add( this )
+
+    const isWorklet = gen.mode === 'worklet'
+
+    if( isWorklet ) gen.parameters.add( this.name )
+
+    this.value = this.initialValue
+
+    gen.memo[ this.name ] = isWorklet ? this.name : `memory[${this.memory.value.idx}]`
+
+    return gen.memo[ this.name ]
+  } 
+}
+
+module.exports = ( propName=0, value=0, min=0, max=1 ) => {
+  let ugen = Object.create( proto )
+  
+  if( typeof propName !== 'string' ) {
+    ugen.name = ugen.basename + gen.getUID()
+    ugen.initialValue = propName
+  }else{
+    ugen.name = propName
+    ugen.initialValue = value
+  }
+
+  ugen.min = min
+  ugen.max = max
+  ugen.defaultValue = ugen.initialValue
+
+  // for storing worklet nodes once they're instantiated
+  ugen.waapi = null
+
+  ugen.isWorklet = gen.mode === 'worklet'
+
+  Object.defineProperty( ugen, 'value', {
+    get() {
+      if( this.memory.value.idx !== null ) {
+        return gen.memory.heap[ this.memory.value.idx ]
+      }else{
+        return this.initialValue
+      }
+    },
+    set( v ) {
+      if( this.memory.value.idx !== null ) {
+        if( this.isWorklet && this.waapi !== null ) {
+          this.waapi.value = v
+        }else{
+          gen.memory.heap[ this.memory.value.idx ] = v
+        } 
+      }
+    }
+  })
+
+  ugen.memory = {
+    value: { length:1, idx:null }
+  }
+
+  return ugen
+}
+
+},{"./gen.js":107}],131:[function(require,module,exports){
+
+const gen  = require('./gen.js'),
+      dataUgen = require('./data.js')
+
+let proto = {
+  basename:'peek',
+
+  gen() {
+    let genName = 'gen.' + this.name,
+        inputs = gen.getInputs( this ),
+        out, functionBody, next, lengthIsLog2, idx
+    
+    idx = inputs[1]
+    lengthIsLog2 = (Math.log2( this.data.buffer.length ) | 0)  === Math.log2( this.data.buffer.length )
+
+    if( this.mode !== 'simple' ) {
+
+    functionBody = `  var ${this.name}_dataIdx  = ${idx}, 
+      ${this.name}_phase = ${this.mode === 'samples' ? inputs[0] : inputs[0] + ' * ' + (this.data.buffer.length) }, 
+      ${this.name}_index = ${this.name}_phase | 0,\n`
+
+    if( this.boundmode === 'wrap' ) {
+      next = lengthIsLog2 ?
+      `( ${this.name}_index + 1 ) & (${this.data.buffer.length} - 1)` :
+      `${this.name}_index + 1 >= ${this.data.buffer.length} ? ${this.name}_index + 1 - ${this.data.buffer.length} : ${this.name}_index + 1`
+    }else if( this.boundmode === 'clamp' ) {
+      next = 
+        `${this.name}_index + 1 >= ${this.data.buffer.length - 1} ? ${this.data.buffer.length - 1} : ${this.name}_index + 1`
+    } else if( this.boundmode === 'fold' || this.boundmode === 'mirror' ) {
+      next = 
+        `${this.name}_index + 1 >= ${this.data.buffer.length - 1} ? ${this.name}_index - ${this.data.buffer.length - 1} : ${this.name}_index + 1`
+    }else{
+       next = 
+      `${this.name}_index + 1`     
+    }
+
+    if( this.interp === 'linear' ) {      
+    functionBody += `      ${this.name}_frac  = ${this.name}_phase - ${this.name}_index,
+      ${this.name}_base  = memory[ ${this.name}_dataIdx +  ${this.name}_index ],
+      ${this.name}_next  = ${next},`
+      
+      if( this.boundmode === 'ignore' ) {
+        functionBody += `
+      ${this.name}_out   = ${this.name}_index >= ${this.data.buffer.length - 1} || ${this.name}_index < 0 ? 0 : ${this.name}_base + ${this.name}_frac * ( memory[ ${this.name}_dataIdx + ${this.name}_next ] - ${this.name}_base )\n\n`
+      }else{
+        functionBody += `
+      ${this.name}_out   = ${this.name}_base + ${this.name}_frac * ( memory[ ${this.name}_dataIdx + ${this.name}_next ] - ${this.name}_base )\n\n`
+      }
+    }else{
+      functionBody += `      ${this.name}_out = memory[ ${this.name}_dataIdx + ${this.name}_index ]\n\n`
+    }
+
+    } else { // mode is simple
+      functionBody = `memory[ ${idx} + ${ inputs[0] } ]`
+      
+      return functionBody
+    }
+
+    gen.memo[ this.name ] = this.name + '_out'
+
+    return [ this.name+'_out', functionBody ]
+  },
+
+  defaults : { channels:1, mode:'phase', interp:'linear', boundmode:'wrap' }
+}
+
+module.exports = ( input_data, index=0, properties ) => {
+  let ugen = Object.create( proto )
+
+  //console.log( dataUgen, gen.data )
+
+  // XXX why is dataUgen not the actual function? some type of browserify nonsense...
+  const finalData = typeof input_data.basename === 'undefined' ? gen.lib.data( input_data ) : input_data
+
+  Object.assign( ugen, 
+    { 
+      'data':     finalData,
+      dataName:   finalData.name,
+      uid:        gen.getUID(),
+      inputs:     [ index, finalData ],
+    },
+    proto.defaults,
+    properties 
+  )
+  
+  ugen.name = ugen.basename + ugen.uid
+
+  return ugen
+}
+
+
+},{"./data.js":93,"./gen.js":107}],132:[function(require,module,exports){
+'use strict'
+
+let gen   = require( './gen.js' ),
+    accum = require( './accum.js' ),
+    mul   = require( './mul.js' ),
+    proto = { basename:'phasor' },
+    div   = require( './div.js' )
+
+const defaults = { min: -1, max: 1 }
+
+module.exports = ( frequency = 1, reset = 0, _props ) => {
+  const props = Object.assign( {}, defaults, _props )
+
+  const range = props.max - props.min
+
+  const ugen = typeof frequency === 'number' 
+    ? accum( (frequency * range) / gen.samplerate, reset, props ) 
+    : accum( 
+        div( 
+          mul( frequency, range ),
+          gen.samplerate
+        ), 
+        reset, props 
+    )
+
+  ugen.name = proto.basename + gen.getUID()
+
+  return ugen
+}
+
+},{"./accum.js":77,"./div.js":98,"./gen.js":107,"./mul.js":125}],133:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js'),
+    mul  = require('./mul.js'),
+    wrap = require('./wrap.js')
+
+let proto = {
+  basename:'poke',
+
+  gen() {
+    let dataName = 'memory',
+        inputs = gen.getInputs( this ),
+        idx, out, wrapped
+    
+    idx = this.data.gen()
+
+    //gen.requestMemory( this.memory )
+    //wrapped = wrap( this.inputs[1], 0, this.dataLength ).gen()
+    //idx = wrapped[0]
+    //gen.functionBody += wrapped[1]
+    let outputStr = this.inputs[1] === 0 ?
+      `  ${dataName}[ ${idx} ] = ${inputs[0]}\n` :
+      `  ${dataName}[ ${idx} + ${inputs[1]} ] = ${inputs[0]}\n`
+
+    if( this.inline === undefined ) {
+      gen.functionBody += outputStr
+    }else{
+      return [ this.inline, outputStr ]
+    }
+  }
+}
+module.exports = ( data, value, index, properties ) => {
+  let ugen = Object.create( proto ),
+      defaults = { channels:1 } 
+
+  if( properties !== undefined ) Object.assign( defaults, properties )
+
+  Object.assign( ugen, { 
+    data,
+    dataName:   data.name,
+    dataLength: data.buffer.length,
+    uid:        gen.getUID(),
+    inputs:     [ value, index ],
+  },
+  defaults )
+
+
+  ugen.name = ugen.basename + ugen.uid
+  
+  gen.histories.set( ugen.name, ugen )
+
+  return ugen
+}
+
+},{"./gen.js":107,"./mul.js":125,"./wrap.js":152}],134:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'pow',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) || isNaN( inputs[1] ) ) {
+      gen.closures.add({ 'pow': isWorklet ? 'Math.pow' : Math.pow })
+
+      out = `${ref}pow( ${inputs[0]}, ${inputs[1]} )` 
+
+    } else {
+      if( typeof inputs[0] === 'string' && inputs[0][0] === '(' ) {
+        inputs[0] = inputs[0].slice(1,-1)
+      }
+      if( typeof inputs[1] === 'string' && inputs[1][0] === '(' ) {
+        inputs[1] = inputs[1].slice(1,-1)
+      }
+
+      out = Math.pow( parseFloat( inputs[0] ), parseFloat( inputs[1]) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = (x,y) => {
+  let pow = Object.create( proto )
+
+  pow.inputs = [ x,y ]
+  pow.id = gen.getUID()
+  pow.name = `${pow.basename}{pow.id}`
+
+  return pow
+}
+
+},{"./gen.js":107}],135:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+const proto = {
+  basename:'process',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    gen.closures.add({ [''+this.funcname] : this.func })
+
+    out = `  var ${this.name} = gen['${this.funcname}'](`
+
+    inputs.forEach( (v,i,arr ) => {
+      out += arr[ i ]
+      if( i < arr.length - 1 ) out += ','
+    })
+
+    out += ')\n'
+
+    gen.memo[ this.name ] = this.name
+
+    return [this.name, out]
+    
+    return out
+  }
+}
+
+module.exports = (...args) => {
+  const process = {}// Object.create( proto )
+  const id = gen.getUID()
+  process.name = 'process' + id 
+
+  process.func = new Function( ...args )
+
+  //gen.globals[ process.name ] = process.func
+
+  process.call = function( ...args  ) {
+    const output = Object.create( proto )
+    output.funcname = process.name
+    output.func = process.func
+    output.name = 'process_out_' + id
+    output.process = process
+
+    output.inputs = args
+
+    return output
+  }
+
+  return process 
+}
+
+},{"./gen.js":107}],136:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' ),
+    history = require( './history.js' ),
+    sub     = require( './sub.js' ),
+    add     = require( './add.js' ),
+    mul     = require( './mul.js' ),
+    memo    = require( './memo.js' ),
+    delta   = require( './delta.js' ),
+    wrap    = require( './wrap.js' )
+
+let proto = {
+  basename:'rate',
+
+  gen() {
+    let inputs = gen.getInputs( this ),
+        phase  = history(),
+        inMinus1 = history(),
+        genName = 'gen.' + this.name,
+        filter, sum, out
+
+    gen.closures.add({ [ this.name ]: this }) 
+
+    out = 
+` var ${this.name}_diff = ${inputs[0]} - ${genName}.lastSample
+  if( ${this.name}_diff < -.5 ) ${this.name}_diff += 1
+  ${genName}.phase += ${this.name}_diff * ${inputs[1]}
+  if( ${genName}.phase > 1 ) ${genName}.phase -= 1
+  ${genName}.lastSample = ${inputs[0]}
+`
+    out = ' ' + out
+
+    return [ genName + '.phase', out ]
+  }
+}
+
+module.exports = ( in1, rate ) => {
+  let ugen = Object.create( proto )
+
+  Object.assign( ugen, { 
+    phase:      0,
+    lastSample: 0,
+    uid:        gen.getUID(),
+    inputs:     [ in1, rate ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./add.js":80,"./delta.js":97,"./gen.js":107,"./history.js":111,"./memo.js":119,"./mul.js":125,"./sub.js":144,"./wrap.js":152}],137:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'round',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.round' : Math.round })
+
+      out = `${ref}round( ${inputs[0]} )`
+
+    } else {
+      out = Math.round( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let round = Object.create( proto )
+
+  round.inputs = [ x ]
+
+  return round
+}
+
+},{"./gen.js":107}],138:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' )
+
+let proto = {
+  basename:'sah',
+
+  gen() {
+    let inputs = gen.getInputs( this ), out
+
+    //gen.data[ this.name ] = 0
+    //gen.data[ this.name + '_control' ] = 0
+
+    gen.requestMemory( this.memory )
+
+
+    out = 
+` var ${this.name}_control = memory[${this.memory.control.idx}],
+      ${this.name}_trigger = ${inputs[1]} > ${inputs[2]} ? 1 : 0
+
+  if( ${this.name}_trigger !== ${this.name}_control  ) {
+    if( ${this.name}_trigger === 1 ) 
+      memory[${this.memory.value.idx}] = ${inputs[0]}
+    
+    memory[${this.memory.control.idx}] = ${this.name}_trigger
+  }
+`
+    
+    gen.memo[ this.name ] = `memory[${this.memory.value.idx}]`//`gen.data.${this.name}`
+
+    return [ `memory[${this.memory.value.idx}]`, ' ' +out ]
+  }
+}
+
+module.exports = ( in1, control, threshold=0, properties ) => {
+  let ugen = Object.create( proto ),
+      defaults = { init:0 }
+
+  if( properties !== undefined ) Object.assign( defaults, properties )
+
+  Object.assign( ugen, { 
+    lastSample: 0,
+    uid:        gen.getUID(),
+    inputs:     [ in1, control,threshold ],
+    memory: {
+      control: { idx:null, length:1 },
+      value:   { idx:null, length:1 },
+    }
+  },
+  defaults )
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],139:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'selector',
+
+  gen() {
+    let inputs = gen.getInputs( this ), out, returnValue = 0
+    
+    switch( inputs.length ) {
+      case 2 :
+        returnValue = inputs[1]
+        break;
+      case 3 :
+        out = `  var ${this.name}_out = ${inputs[0]} === 1 ? ${inputs[1]} : ${inputs[2]}\n\n`;
+        returnValue = [ this.name + '_out', out ]
+        break;  
+      default:
+        out = 
+` var ${this.name}_out = 0
+  switch( ${inputs[0]} + 1 ) {\n`
+
+        for( let i = 1; i < inputs.length; i++ ){
+          out +=`    case ${i}: ${this.name}_out = ${inputs[i]}; break;\n` 
+        }
+
+        out += '  }\n\n'
+        
+        returnValue = [ this.name + '_out', ' ' + out ]
+    }
+
+    gen.memo[ this.name ] = this.name + '_out'
+
+    return returnValue
+  },
+}
+
+module.exports = ( ...inputs ) => {
+  let ugen = Object.create( proto )
+  
+  Object.assign( ugen, {
+    uid:     gen.getUID(),
+    inputs
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],140:[function(require,module,exports){
+'use strict'
+
+let gen   = require( './gen.js' ),
+    accum = require( './accum.js' ),
+    counter= require( './counter.js' ),
+    peek  = require( './peek.js' ),
+    ssd   = require( './history.js' ),
+    data  = require( './data.js' ),
+    proto = { basename:'seq' }
+
+module.exports = ( durations = 11025, values = [0,1], phaseIncrement = 1) => {
+  let clock
+  
+  if( Array.isArray( durations ) ) {
+    // we want a counter that is using our current
+    // rate value, but we want the rate value to be derived from
+    // the counter. must insert a single-sample dealy to avoid
+    // infinite loop.
+    const clock2 = counter( 0, 0, durations.length )
+    const __durations = peek( data( durations ), clock2, { mode:'simple' }) 
+    clock = counter( phaseIncrement, 0, __durations )
+    
+    // add one sample delay to avoid codegen loop
+    const s = ssd()
+    s.in( clock.wrap )
+    clock2.inputs[0] = s.out
+  }else{
+    // if the rate argument is a single value we don't need to
+    // do anything tricky.
+    clock = counter( phaseIncrement, 0, durations )
+  }
+  
+  const stepper = accum( clock.wrap, 0, { min:0, max:values.length })
+   
+  const ugen = peek( data( values ), stepper, { mode:'simple' })
+
+  ugen.name = proto.basename + gen.getUID()
+  ugen.trigger = clock.wrap
+
+  return ugen
+}
+
+},{"./accum.js":77,"./counter.js":91,"./data.js":93,"./gen.js":107,"./history.js":111,"./peek.js":131}],141:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  name:'sign',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ [ this.name ]: isWorklet ? 'Math.sign' : Math.sign })
+
+      out = `${ref}sign( ${inputs[0]} )`
+
+    } else {
+      out = Math.sign( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let sign = Object.create( proto )
+
+  sign.inputs = [ x ]
+
+  return sign
+}
+
+},{"./gen.js":107}],142:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'sin',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ 'sin': isWorklet ? 'Math.sin' : Math.sin })
+
+      out = `${ref}sin( ${inputs[0]} )` 
+
+    } else {
+      out = Math.sin( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let sin = Object.create( proto )
+
+  sin.inputs = [ x ]
+  sin.id = gen.getUID()
+  sin.name = `${sin.basename}{sin.id}`
+
+  return sin
+}
+
+},{"./gen.js":107}],143:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' ),
+    history = require( './history.js' ),
+    sub     = require( './sub.js' ),
+    add     = require( './add.js' ),
+    mul     = require( './mul.js' ),
+    memo    = require( './memo.js' ),
+    gt      = require( './gt.js' ),
+    div     = require( './div.js' ),
+    _switch = require( './switch.js' )
+
+module.exports = ( in1, slideUp = 1, slideDown = 1 ) => {
+  let y1 = history(0),
+      filter, slideAmount
+
+  //y (n) = y (n-1) + ((x (n) - y (n-1))/slide) 
+  slideAmount = _switch( gt(in1,y1.out), slideUp, slideDown )
+
+  filter = memo( add( y1.out, div( sub( in1, y1.out ), slideAmount ) ) )
+
+  y1.in( filter )
+
+  return filter
+}
+
+},{"./add.js":80,"./div.js":98,"./gen.js":107,"./gt.js":108,"./history.js":111,"./memo.js":119,"./mul.js":125,"./sub.js":144,"./switch.js":145}],144:[function(require,module,exports){
+'use strict'
+
+const gen = require('./gen.js')
+
+const proto = {
+  basename:'sub',
+  gen() {
+    let inputs = gen.getInputs( this ),
+        out=0,
+        diff = 0,
+        needsParens = false, 
+        numCount = 0,
+        lastNumber = inputs[ 0 ],
+        lastNumberIsUgen = isNaN( lastNumber ), 
+        subAtEnd = false,
+        hasUgens = false,
+        returnValue = 0
+
+    this.inputs.forEach( value => { if( isNaN( value ) ) hasUgens = true })
+
+    out = '  var ' + this.name + ' = '
+
+    inputs.forEach( (v,i) => {
+      if( i === 0 ) return
+
+      let isNumberUgen = isNaN( v ),
+          isFinalIdx   = i === inputs.length - 1
+
+      if( !lastNumberIsUgen && !isNumberUgen ) {
+        lastNumber = lastNumber - v
+        out += lastNumber
+        return
+      }else{
+        needsParens = true
+        out += `${lastNumber} - ${v}`
+      }
+
+      if( !isFinalIdx ) out += ' - ' 
+    })
+
+    out += '\n'
+
+    returnValue = [ this.name, out ]
+
+    gen.memo[ this.name ] = this.name
+
+    return returnValue
+  }
+
+}
+
+module.exports = ( ...args ) => {
+  let sub = Object.create( proto )
+
+  Object.assign( sub, {
+    id:     gen.getUID(),
+    inputs: args
+  })
+       
+  sub.name = 'sub' + sub.id
+
+  return sub
+}
+
+},{"./gen.js":107}],145:[function(require,module,exports){
+'use strict'
+
+let gen = require( './gen.js' )
+
+let proto = {
+  basename:'switch',
+
+  gen() {
+    let inputs = gen.getInputs( this ), out
+
+    if( inputs[1] === inputs[2] ) return inputs[1] // if both potential outputs are the same just return one of them
+    
+    out = `  var ${this.name}_out = ${inputs[0]} === 1 ? ${inputs[1]} : ${inputs[2]}\n`
+
+    gen.memo[ this.name ] = `${this.name}_out`
+
+    return [ `${this.name}_out`, out ]
+  },
+
+}
+
+module.exports = ( control, in1 = 1, in2 = 0 ) => {
+  let ugen = Object.create( proto )
+  Object.assign( ugen, {
+    uid:     gen.getUID(),
+    inputs:  [ control, in1, in2 ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./gen.js":107}],146:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'t60',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this ),
+        returnValue
+
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ [ 'exp' ]: isWorklet ? 'Math.exp' : Math.exp })
+
+      out = `  var ${this.name} = ${ref}exp( -6.907755278921 / ${inputs[0]} )\n\n`
+     
+      gen.memo[ this.name ] = out
+      
+      returnValue = [ this.name, out ]
+    } else {
+      out = Math.exp( -6.907755278921 / inputs[0] )
+
+      returnValue = out
+    }    
+
+    return returnValue
+  }
+}
+
+module.exports = x => {
+  let t60 = Object.create( proto )
+
+  t60.inputs = [ x ]
+  t60.name = proto.basename + gen.getUID()
+
+  return t60
+}
+
+},{"./gen.js":107}],147:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'tan',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ 'tan': isWorklet ? 'Math.tan' : Math.tan })
+
+      out = `${ref}tan( ${inputs[0]} )` 
+
+    } else {
+      out = Math.tan( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let tan = Object.create( proto )
+
+  tan.inputs = [ x ]
+  tan.id = gen.getUID()
+  tan.name = `${tan.basename}{tan.id}`
+
+  return tan
+}
+
+},{"./gen.js":107}],148:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js')
+
+let proto = {
+  basename:'tanh',
+
+  gen() {
+    let out,
+        inputs = gen.getInputs( this )
+    
+    
+    const isWorklet = gen.mode === 'worklet'
+    const ref = isWorklet? '' : 'gen.'
+
+    if( isNaN( inputs[0] ) ) {
+      gen.closures.add({ 'tanh': isWorklet ? 'Math.tan' : Math.tanh })
+
+      out = `${ref}tanh( ${inputs[0]} )` 
+
+    } else {
+      out = Math.tanh( parseFloat( inputs[0] ) )
+    }
+    
+    return out
+  }
+}
+
+module.exports = x => {
+  let tanh = Object.create( proto )
+
+  tanh.inputs = [ x ]
+  tanh.id = gen.getUID()
+  tanh.name = `${tanh.basename}{tanh.id}`
+
+  return tanh
+}
+
+},{"./gen.js":107}],149:[function(require,module,exports){
+'use strict'
+
+let gen     = require( './gen.js' ),
+    lt      = require( './lt.js' ),
+    accum   = require( './accum.js' ),
+    div     = require( './div.js' )
+
+module.exports = ( frequency=440, pulsewidth=.5 ) => {
+  let graph = lt( accum( div( frequency, 44100 ) ), pulsewidth )
+
+  graph.name = `train${gen.getUID()}`
+
+  return graph
+}
+
+
+},{"./accum.js":77,"./div.js":98,"./gen.js":107,"./lt.js":115}],150:[function(require,module,exports){
+'use strict'
+
+const AWPF = require( './external/audioworklet-polyfill.js' ),
+      gen  = require( './gen.js' ),
+      data = require( './data.js' )
+
+let isStereo = false
+
+const utilities = {
+  ctx: null,
+  buffers: {},
+  isStereo:false,
+
+  clear() {
+    if( this.workletNode !== undefined ) {
+      this.workletNode.disconnect()
+    }else{
+      this.callback = () => 0
+    }
+    this.clear.callbacks.forEach( v => v() )
+    this.clear.callbacks.length = 0
+
+    this.isStereo = false
+
+    if( gen.graph !== null ) gen.free( gen.graph )
+  },
+
+  createContext( bufferSize = 2048 ) {
+    const AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext
+    
+    // tell polyfill global object and buffersize
+    AWPF( window, bufferSize )
+
+    const start = () => {
+      if( typeof AC !== 'undefined' ) {
+        this.ctx = new AC({ latencyHint:.0125 })
+
+        gen.samplerate = this.ctx.sampleRate
+
+        if( document && document.documentElement && 'ontouchstart' in document.documentElement ) {
+          window.removeEventListener( 'touchstart', start )
+        }else{
+          window.removeEventListener( 'mousedown', start )
+          window.removeEventListener( 'keydown', start )
+        }
+
+        const mySource = utilities.ctx.createBufferSource()
+        mySource.connect( utilities.ctx.destination )
+        mySource.start()
+      }
+    }
+
+    if( document && document.documentElement && 'ontouchstart' in document.documentElement ) {
+      window.addEventListener( 'touchstart', start )
+    }else{
+      window.addEventListener( 'mousedown', start )
+      window.addEventListener( 'keydown', start )
+    }
+
+    return this
+  },
+
+  createScriptProcessor() {
+    this.node = this.ctx.createScriptProcessor( 1024, 0, 2 )
+    this.clearFunction = function() { return 0 }
+    if( typeof this.callback === 'undefined' ) this.callback = this.clearFunction
+
+    this.node.onaudioprocess = function( audioProcessingEvent ) {
+      var outputBuffer = audioProcessingEvent.outputBuffer;
+
+      var left = outputBuffer.getChannelData( 0 ),
+          right= outputBuffer.getChannelData( 1 ),
+          isStereo = utilities.isStereo
+
+     for( var sample = 0; sample < left.length; sample++ ) {
+        var out = utilities.callback()
+
+        if( isStereo === false ) {
+          left[ sample ] = right[ sample ] = out 
+        }else{
+          left[ sample  ] = out[0]
+          right[ sample ] = out[1]
+        }
+      }
+    }
+
+    this.node.connect( this.ctx.destination )
+
+    return this
+  },
+
+  // remove starting stuff and add tabs
+  prettyPrintCallback( cb ) {
+    // get rid of "function gen" and start with parenthesis
+    // const shortendCB = cb.toString().slice(9)
+    const cbSplit = cb.toString().split('\n')
+    const cbTrim = cbSplit.slice( 3, -2 )
+    const cbTabbed = cbTrim.map( v => '      ' + v ) 
+    
+    return cbTabbed.join('\n')
+  },
+
+  createParameterDescriptors( cb ) {
+    // [{name: 'amplitude', defaultValue: 0.25, minValue: 0, maxValue: 1}];
+    let paramStr = ''
+
+    //for( let ugen of cb.params.values() ) {
+    //  paramStr += `{ name:'${ugen.name}', defaultValue:${ugen.value}, minValue:${ugen.min}, maxValue:${ugen.max} },\n      `
+    //}
+    for( let ugen of cb.params.values() ) {
+      paramStr += `{ name:'${ugen.name}', automationRate:'k-rate', defaultValue:${ugen.defaultValue}, minValue:${ugen.min}, maxValue:${ugen.max} },\n      `
+    }
+    return paramStr
+  },
+
+  createParameterDereferences( cb ) {
+    let str = cb.params.size > 0 ? '\n      ' : ''
+    for( let ugen of cb.params.values() ) {
+      str += `const ${ugen.name} = parameters.${ugen.name}[0]\n      `
+    }
+
+    return str
+  },
+
+  createParameterArguments( cb ) {
+    let  paramList = ''
+    for( let ugen of cb.params.values() ) {
+      paramList += ugen.name + '[i],'
+    }
+    paramList = paramList.slice( 0, -1 )
+
+    return paramList
+  },
+
+  createInputDereferences( cb ) {
+    let str = cb.inputs.size > 0 ? '\n' : ''
+    for( let input of  cb.inputs.values() ) {
+      str += `const ${input.name} = inputs[ ${input.inputNumber} ][ ${input.channelNumber} ]\n      `
+    }
+
+    return str
+  },
+
+
+  createInputArguments( cb ) {
+    let  paramList = ''
+    for( let input of cb.inputs.values() ) {
+      paramList += input.name + '[i],'
+    }
+    paramList = paramList.slice( 0, -1 )
+
+    return paramList
+  },
+      
+  createFunctionDereferences( cb ) {
+    let memberString = cb.members.size > 0 ? '\n' : ''
+    let memo = {}
+    for( let dict of cb.members.values() ) {
+      const name = Object.keys( dict )[0],
+            value = dict[ name ]
+
+      if( memo[ name ] !== undefined ) continue
+      memo[ name ] = true
+
+      memberString += `      const ${name} = ${value}\n`
+    }
+
+    return memberString
+  },
+
+  createWorkletProcessor( graph, name, debug, mem=44100*10 ) {
+    //const mem = MemoryHelper.create( 4096, Float64Array )
+    const cb = gen.createCallback( graph, mem, debug )
+    const inputs = cb.inputs
+
+    // get all inputs and create appropriate audioparam initializers
+    const parameterDescriptors = this.createParameterDescriptors( cb )
+    const parameterDereferences = this.createParameterDereferences( cb )
+    const paramList = this.createParameterArguments( cb )
+    const inputDereferences = this.createInputDereferences( cb )
+    const inputList = this.createInputArguments( cb )   
+    const memberString = this.createFunctionDereferences( cb )
+
+    // change output based on number of channels.
+    const genishOutputLine = cb.isStereo === false
+      ? `left[ i ] = memory[0]`
+      : `left[ i ] = memory[0];\n\t\tright[ i ] = memory[1]\n`
+
+    const prettyCallback = this.prettyPrintCallback( cb )
+
+    /***** begin callback code ****/
+    // note that we have to check to see that memory has been passed
+    // to the worker before running the callback function, otherwise
+    // it can be passed too slowly and fail on occassion
+
+    const workletCode = `
+class ${name}Processor extends AudioWorkletProcessor {
+
+  static get parameterDescriptors() {
+    const params = [
+      ${ parameterDescriptors }      
+    ]
+    return params
+  }
+ 
+  constructor( options ) {
+    super( options )
+    this.port.onmessage = this.handleMessage.bind( this )
+    this.initialized = false
+  }
+
+  handleMessage( event ) {
+    if( event.data.key === 'init' ) {
+      this.memory = event.data.memory
+      this.initialized = true
+    }else if( event.data.key === 'set' ) {
+      this.memory[ event.data.idx ] = event.data.value
+    }else if( event.data.key === 'get' ) {
+      this.port.postMessage({ key:'return', idx:event.data.idx, value:this.memory[event.data.idx] })     
+    }
+  }
+
+  process( inputs, outputs, parameters ) {
+    if( this.initialized === true ) {
+      const output = outputs[0]
+      const left   = output[ 0 ]
+      const right  = output[ 1 ]
+      const len    = left.length
+      const memory = this.memory ${parameterDereferences}${inputDereferences}${memberString}
+
+      for( let i = 0; i < len; ++i ) {
+        ${prettyCallback}
+        ${genishOutputLine}
+      }
+    }
+    return true
+  }
+}
+    
+registerProcessor( '${name}', ${name}Processor)`
+
+    
+    /***** end callback code *****/
+
+
+    if( debug === true ) console.log( workletCode )
+
+    const url = window.URL.createObjectURL(
+      new Blob(
+        [ workletCode ], 
+        { type: 'text/javascript' }
+      )
+    )
+
+    return [ url, workletCode, inputs, cb.params, cb.isStereo ] 
+  },
+
+  registeredForNodeAssignment: [],
+  register( ugen ) {
+    if( this.registeredForNodeAssignment.indexOf( ugen ) === -1 ) {
+      this.registeredForNodeAssignment.push( ugen )
+    }
+  },
+
+  playWorklet( graph, name, debug=false, mem=44100 * 60 ) {
+    utilities.clear()
+
+    const [ url, codeString, inputs, params, isStereo ] = utilities.createWorkletProcessor( graph, name, debug, mem )
+
+    const nodePromise = new Promise( (resolve,reject) => {
+   
+      utilities.ctx.audioWorklet.addModule( url ).then( ()=> {
+        const workletNode = new AudioWorkletNode( utilities.ctx, name, { outputChannelCount:[ isStereo ? 2 : 1 ] })
+
+        workletNode.callbacks = {}
+        workletNode.onmessage = function( event ) {
+          if( event.data.message === 'return' ) {
+            workletNode.callbacks[ event.data.idx ]( event.data.value )
+            delete workletNode.callbacks[ event.data.idx ]
+          }
+        }
+
+        workletNode.getMemoryValue = function( idx, cb ) {
+          this.workletCallbacks[ idx ] = cb
+          this.workletNode.port.postMessage({ key:'get', idx: idx })
+        }
+        
+        workletNode.port.postMessage({ key:'init', memory:gen.memory.heap })
+        utilities.workletNode = workletNode
+
+        utilities.registeredForNodeAssignment.forEach( ugen => ugen.node = workletNode )
+        utilities.registeredForNodeAssignment.length = 0
+
+        // assign all params as properties of node for easier reference 
+        for( let dict of inputs.values() ) {
+          const name = Object.keys( dict )[0]
+          const param = workletNode.parameters.get( name )
+      
+          Object.defineProperty( workletNode, name, {
+            set( v ) {
+              param.value = v
+            },
+            get() {
+              return param.value
+            }
+          })
+        }
+
+        for( let ugen of params.values() ) {
+          const name = ugen.name
+          const param = workletNode.parameters.get( name )
+          ugen.waapi = param 
+          // initialize?
+          param.value = ugen.defaultValue
+
+          Object.defineProperty( workletNode, name, {
+            set( v ) {
+              param.value = v
+            },
+            get() {
+              return param.value
+            }
+          })
+        }
+
+        if( utilities.console ) utilities.console.setValue( codeString )
+
+        workletNode.connect( utilities.ctx.destination )
+
+        resolve( workletNode )
+      })
+
+    })
+
+    return nodePromise
+  },
+  
+  playGraph( graph, debug, mem=44100*10, memType=Float32Array ) {
+    utilities.clear()
+    if( debug === undefined ) debug = false
+          
+    this.isStereo = Array.isArray( graph )
+
+    utilities.callback = gen.createCallback( graph, mem, debug, false, memType )
+    
+    if( utilities.console ) utilities.console.setValue( utilities.callback.toString() )
+
+    return utilities.callback
+  },
+
+  loadSample( soundFilePath, data ) {
+    const isLoaded = utilities.buffers[ soundFilePath ] !== undefined
+
+    let req = new XMLHttpRequest()
+    req.open( 'GET', soundFilePath, true )
+    req.responseType = 'arraybuffer' 
+    
+    let promise = new Promise( (resolve,reject) => {
+      if( !isLoaded ) {
+        req.onload = function() {
+          var audioData = req.response
+
+          utilities.ctx.decodeAudioData( audioData, (buffer) => {
+            data.buffer = buffer.getChannelData(0)
+            utilities.buffers[ soundFilePath ] = data.buffer
+            resolve( data.buffer )
+          })
+        }
+      }else{
+        setTimeout( ()=> resolve( utilities.buffers[ soundFilePath ] ), 0 )
+      }
+    })
+
+    if( !isLoaded ) req.send()
+
+    return promise
+  }
+
+}
+
+utilities.clear.callbacks = []
+
+module.exports = utilities
+
+},{"./data.js":93,"./external/audioworklet-polyfill.js":102,"./gen.js":107}],151:[function(require,module,exports){
+'use strict'
+
+/*
+ * many windows here adapted from https://github.com/corbanbrook/dsp.js/blob/master/dsp.js
+ * starting at line 1427
+ * taken 8/15/16
+*/ 
+
+const windows = module.exports = { 
+  bartlett( length, index ) {
+    return 2 / (length - 1) * ((length - 1) / 2 - Math.abs(index - (length - 1) / 2)) 
+  },
+
+  bartlettHann( length, index ) {
+    return 0.62 - 0.48 * Math.abs(index / (length - 1) - 0.5) - 0.38 * Math.cos( 2 * Math.PI * index / (length - 1))
+  },
+
+  blackman( length, index, alpha ) {
+    let a0 = (1 - alpha) / 2,
+        a1 = 0.5,
+        a2 = alpha / 2
+
+    return a0 - a1 * Math.cos(2 * Math.PI * index / (length - 1)) + a2 * Math.cos(4 * Math.PI * index / (length - 1))
+  },
+
+  cosine( length, index ) {
+    return Math.cos(Math.PI * index / (length - 1) - Math.PI / 2)
+  },
+
+  gauss( length, index, alpha ) {
+    return Math.pow(Math.E, -0.5 * Math.pow((index - (length - 1) / 2) / (alpha * (length - 1) / 2), 2))
+  },
+
+  hamming( length, index ) {
+    return 0.54 - 0.46 * Math.cos( Math.PI * 2 * index / (length - 1))
+  },
+
+  hann( length, index ) {
+    return 0.5 * (1 - Math.cos( Math.PI * 2 * index / (length - 1)) )
+  },
+
+  lanczos( length, index ) {
+    let x = 2 * index / (length - 1) - 1;
+    return Math.sin(Math.PI * x) / (Math.PI * x)
+  },
+
+  rectangular( length, index ) {
+    return 1
+  },
+
+  triangular( length, index ) {
+    return 2 / length * (length / 2 - Math.abs(index - (length - 1) / 2))
+  },
+
+  // parabola
+  welch( length, _index, ignore, shift=0 ) {
+    //w[n] = 1 - Math.pow( ( n - ( (N-1) / 2 ) ) / (( N-1 ) / 2 ), 2 )
+    const index = shift === 0 ? _index : (_index + Math.floor( shift * length )) % length
+    const n_1_over2 = (length - 1) / 2 
+
+    return 1 - Math.pow( ( index - n_1_over2 ) / n_1_over2, 2 )
+  },
+  inversewelch( length, _index, ignore, shift=0 ) {
+    //w[n] = 1 - Math.pow( ( n - ( (N-1) / 2 ) ) / (( N-1 ) / 2 ), 2 )
+    let index = shift === 0 ? _index : (_index + Math.floor( shift * length )) % length
+    const n_1_over2 = (length - 1) / 2
+
+    return Math.pow( ( index - n_1_over2 ) / n_1_over2, 2 )
+  },
+
+  parabola( length, index ) {
+    if( index <= length / 2 ) {
+      return windows.inversewelch( length / 2, index ) - 1
+    }else{
+      return 1 - windows.inversewelch( length / 2, index - length / 2 )
+    }
+  },
+
+  exponential( length, index, alpha ) {
+    return Math.pow( index / length, alpha )
+  },
+
+  linear( length, index ) {
+    return index / length
+  }
+}
+
+},{}],152:[function(require,module,exports){
+'use strict'
+
+let gen  = require('./gen.js'),
+    floor= require('./floor.js'),
+    sub  = require('./sub.js'),
+    memo = require('./memo.js')
+
+let proto = {
+  basename:'wrap',
+
+  gen() {
+    let code,
+        inputs = gen.getInputs( this ),
+        signal = inputs[0], min = inputs[1], max = inputs[2],
+        out, diff
+
+    //out = `(((${inputs[0]} - ${this.min}) % ${diff}  + ${diff}) % ${diff} + ${this.min})`
+    //const long numWraps = long((v-lo)/range) - (v < lo);
+    //return v - range * double(numWraps);   
+    
+    if( this.min === 0 ) {
+      diff = max
+    }else if ( isNaN( max ) || isNaN( min ) ) {
+      diff = `${max} - ${min}`
+    }else{
+      diff = max - min
+    }
+
+    out =
+` var ${this.name} = ${inputs[0]}
+  if( ${this.name} < ${this.min} ) ${this.name} += ${diff}
+  else if( ${this.name} > ${this.max} ) ${this.name} -= ${diff}
+
+`
+
+    return [ this.name, ' ' + out ]
+  },
+}
+
+module.exports = ( in1, min=0, max=1 ) => {
+  let ugen = Object.create( proto )
+
+  Object.assign( ugen, { 
+    min, 
+    max,
+    uid:    gen.getUID(),
+    inputs: [ in1, min, max ],
+  })
+  
+  ugen.name = `${ugen.basename}${ugen.uid}`
+
+  return ugen
+}
+
+},{"./floor.js":104,"./gen.js":107,"./memo.js":119,"./sub.js":144}],153:[function(require,module,exports){
+'use strict';
+
+var MemoryHelper = {
+  create: function create() {
+    var size = arguments.length <= 0 || arguments[0] === undefined ? 4096 : arguments[0];
+    var memtype = arguments.length <= 1 || arguments[1] === undefined ? Float32Array : arguments[1];
+
+    var helper = Object.create(this);
+
+    Object.assign(helper, {
+      heap: new memtype(size),
+      list: {},
+      freeList: {}
+    });
+
+    return helper;
+  },
+  alloc: function alloc(amount) {
+    var idx = -1;
+
+    if (amount > this.heap.length) {
+      throw Error('Allocation request is larger than heap size of ' + this.heap.length);
+    }
+
+    for (var key in this.freeList) {
+      var candidateSize = this.freeList[key];
+
+      if (candidateSize >= amount) {
+        idx = key;
+
+        this.list[idx] = amount;
+
+        if (candidateSize !== amount) {
+          var newIndex = idx + amount,
+              newFreeSize = void 0;
+
+          for (var _key in this.list) {
+            if (_key > newIndex) {
+              newFreeSize = _key - newIndex;
+              this.freeList[newIndex] = newFreeSize;
+            }
+          }
+        }
+        
+        break;
+      }
+    }
+    
+    if( idx !== -1 ) delete this.freeList[ idx ]
+
+    if (idx === -1) {
+      var keys = Object.keys(this.list),
+          lastIndex = void 0;
+
+      if (keys.length) {
+        // if not first allocation...
+        lastIndex = parseInt(keys[keys.length - 1]);
+
+        idx = lastIndex + this.list[lastIndex];
+      } else {
+        idx = 0;
+      }
+
+      this.list[idx] = amount;
+    }
+
+    if (idx + amount >= this.heap.length) {
+      throw Error('No available blocks remain sufficient for allocation request.');
+    }
+    return idx;
+  },
+  free: function free(index) {
+    if (typeof this.list[index] !== 'number') {
+      throw Error('Calling free() on non-existing block.');
+    }
+
+    this.list[index] = 0;
+
+    var size = 0;
+    for (var key in this.list) {
+      if (key > index) {
+        size = key - index;
+        break;
+      }
+    }
+
+    this.freeList[index] = size;
+  }
+};
+
+module.exports = MemoryHelper;
+
+},{}],154:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -11917,6 +12698,962 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],155:[function(require,module,exports){
+// A library of seedable RNGs implemented in Javascript.
+//
+// Usage:
+//
+// var seedrandom = require('seedrandom');
+// var random = seedrandom(1); // or any seed.
+// var x = random();       // 0 <= x < 1.  Every bit is random.
+// var x = random.quick(); // 0 <= x < 1.  32 bits of randomness.
+
+// alea, a 53-bit multiply-with-carry generator by Johannes Baagøe.
+// Period: ~2^116
+// Reported to pass all BigCrush tests.
+var alea = require('./lib/alea');
+
+// xor128, a pure xor-shift generator by George Marsaglia.
+// Period: 2^128-1.
+// Reported to fail: MatrixRank and LinearComp.
+var xor128 = require('./lib/xor128');
+
+// xorwow, George Marsaglia's 160-bit xor-shift combined plus weyl.
+// Period: 2^192-2^32
+// Reported to fail: CollisionOver, SimpPoker, and LinearComp.
+var xorwow = require('./lib/xorwow');
+
+// xorshift7, by François Panneton and Pierre L'ecuyer, takes
+// a different approach: it adds robustness by allowing more shifts
+// than Marsaglia's original three.  It is a 7-shift generator
+// with 256 bits, that passes BigCrush with no systmatic failures.
+// Period 2^256-1.
+// No systematic BigCrush failures reported.
+var xorshift7 = require('./lib/xorshift7');
+
+// xor4096, by Richard Brent, is a 4096-bit xor-shift with a
+// very long period that also adds a Weyl generator. It also passes
+// BigCrush with no systematic failures.  Its long period may
+// be useful if you have many generators and need to avoid
+// collisions.
+// Period: 2^4128-2^32.
+// No systematic BigCrush failures reported.
+var xor4096 = require('./lib/xor4096');
+
+// Tyche-i, by Samuel Neves and Filipe Araujo, is a bit-shifting random
+// number generator derived from ChaCha, a modern stream cipher.
+// https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
+// Period: ~2^127
+// No systematic BigCrush failures reported.
+var tychei = require('./lib/tychei');
+
+// The original ARC4-based prng included in this library.
+// Period: ~2^1600
+var sr = require('./seedrandom');
+
+sr.alea = alea;
+sr.xor128 = xor128;
+sr.xorwow = xorwow;
+sr.xorshift7 = xorshift7;
+sr.xor4096 = xor4096;
+sr.tychei = tychei;
+
+module.exports = sr;
+
+},{"./lib/alea":156,"./lib/tychei":157,"./lib/xor128":158,"./lib/xor4096":159,"./lib/xorshift7":160,"./lib/xorwow":161,"./seedrandom":162}],156:[function(require,module,exports){
+// A port of an algorithm by Johannes Baagøe <baagoe@baagoe.com>, 2010
+// http://baagoe.com/en/RandomMusings/javascript/
+// https://github.com/nquinlan/better-random-numbers-for-javascript-mirror
+// Original work is under MIT license -
+
+// Copyright (C) 2010 by Johannes Baagøe <baagoe@baagoe.org>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+
+
+(function(global, module, define) {
+
+function Alea(seed) {
+  var me = this, mash = Mash();
+
+  me.next = function() {
+    var t = 2091639 * me.s0 + me.c * 2.3283064365386963e-10; // 2^-32
+    me.s0 = me.s1;
+    me.s1 = me.s2;
+    return me.s2 = t - (me.c = t | 0);
+  };
+
+  // Apply the seeding algorithm from Baagoe.
+  me.c = 1;
+  me.s0 = mash(' ');
+  me.s1 = mash(' ');
+  me.s2 = mash(' ');
+  me.s0 -= mash(seed);
+  if (me.s0 < 0) { me.s0 += 1; }
+  me.s1 -= mash(seed);
+  if (me.s1 < 0) { me.s1 += 1; }
+  me.s2 -= mash(seed);
+  if (me.s2 < 0) { me.s2 += 1; }
+  mash = null;
+}
+
+function copy(f, t) {
+  t.c = f.c;
+  t.s0 = f.s0;
+  t.s1 = f.s1;
+  t.s2 = f.s2;
+  return t;
+}
+
+function impl(seed, opts) {
+  var xg = new Alea(seed),
+      state = opts && opts.state,
+      prng = xg.next;
+  prng.int32 = function() { return (xg.next() * 0x100000000) | 0; }
+  prng.double = function() {
+    return prng() + (prng() * 0x200000 | 0) * 1.1102230246251565e-16; // 2^-53
+  };
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+function Mash() {
+  var n = 0xefc8249d;
+
+  var mash = function(data) {
+    data = String(data);
+    for (var i = 0; i < data.length; i++) {
+      n += data.charCodeAt(i);
+      var h = 0.02519603282416938 * n;
+      n = h >>> 0;
+      h -= n;
+      h *= n;
+      n = h >>> 0;
+      h -= n;
+      n += h * 0x100000000; // 2^32
+    }
+    return (n >>> 0) * 2.3283064365386963e-10; // 2^-32
+  };
+
+  return mash;
+}
+
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.alea = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],157:[function(require,module,exports){
+// A Javascript implementaion of the "Tyche-i" prng algorithm by
+// Samuel Neves and Filipe Araujo.
+// See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this, strseed = '';
+
+  // Set up generator function.
+  me.next = function() {
+    var b = me.b, c = me.c, d = me.d, a = me.a;
+    b = (b << 25) ^ (b >>> 7) ^ c;
+    c = (c - d) | 0;
+    d = (d << 24) ^ (d >>> 8) ^ a;
+    a = (a - b) | 0;
+    me.b = b = (b << 20) ^ (b >>> 12) ^ c;
+    me.c = c = (c - d) | 0;
+    me.d = (d << 16) ^ (c >>> 16) ^ a;
+    return me.a = (a - b) | 0;
+  };
+
+  /* The following is non-inverted tyche, which has better internal
+   * bit diffusion, but which is about 25% slower than tyche-i in JS.
+  me.next = function() {
+    var a = me.a, b = me.b, c = me.c, d = me.d;
+    a = (me.a + me.b | 0) >>> 0;
+    d = me.d ^ a; d = d << 16 ^ d >>> 16;
+    c = me.c + d | 0;
+    b = me.b ^ c; b = b << 12 ^ d >>> 20;
+    me.a = a = a + b | 0;
+    d = d ^ a; me.d = d = d << 8 ^ d >>> 24;
+    me.c = c = c + d | 0;
+    b = b ^ c;
+    return me.b = (b << 7 ^ b >>> 25);
+  }
+  */
+
+  me.a = 0;
+  me.b = 0;
+  me.c = 2654435769 | 0;
+  me.d = 1367130551;
+
+  if (seed === Math.floor(seed)) {
+    // Integer seed.
+    me.a = (seed / 0x100000000) | 0;
+    me.b = seed | 0;
+  } else {
+    // String seed.
+    strseed += seed;
+  }
+
+  // Mix in string seed, then discard an initial batch of 64 values.
+  for (var k = 0; k < strseed.length + 20; k++) {
+    me.b ^= strseed.charCodeAt(k) | 0;
+    me.next();
+  }
+}
+
+function copy(f, t) {
+  t.a = f.a;
+  t.b = f.b;
+  t.c = f.c;
+  t.d = f.d;
+  return t;
+};
+
+function impl(seed, opts) {
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.tychei = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],158:[function(require,module,exports){
+// A Javascript implementaion of the "xor128" prng algorithm by
+// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this, strseed = '';
+
+  me.x = 0;
+  me.y = 0;
+  me.z = 0;
+  me.w = 0;
+
+  // Set up generator function.
+  me.next = function() {
+    var t = me.x ^ (me.x << 11);
+    me.x = me.y;
+    me.y = me.z;
+    me.z = me.w;
+    return me.w ^= (me.w >>> 19) ^ t ^ (t >>> 8);
+  };
+
+  if (seed === (seed | 0)) {
+    // Integer seed.
+    me.x = seed;
+  } else {
+    // String seed.
+    strseed += seed;
+  }
+
+  // Mix in string seed, then discard an initial batch of 64 values.
+  for (var k = 0; k < strseed.length + 64; k++) {
+    me.x ^= strseed.charCodeAt(k) | 0;
+    me.next();
+  }
+}
+
+function copy(f, t) {
+  t.x = f.x;
+  t.y = f.y;
+  t.z = f.z;
+  t.w = f.w;
+  return t;
+}
+
+function impl(seed, opts) {
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xor128 = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],159:[function(require,module,exports){
+// A Javascript implementaion of Richard Brent's Xorgens xor4096 algorithm.
+//
+// This fast non-cryptographic random number generator is designed for
+// use in Monte-Carlo algorithms. It combines a long-period xorshift
+// generator with a Weyl generator, and it passes all common batteries
+// of stasticial tests for randomness while consuming only a few nanoseconds
+// for each prng generated.  For background on the generator, see Brent's
+// paper: "Some long-period random number generators using shifts and xors."
+// http://arxiv.org/pdf/1004.3115v1.pdf
+//
+// Usage:
+//
+// var xor4096 = require('xor4096');
+// random = xor4096(1);                        // Seed with int32 or string.
+// assert.equal(random(), 0.1520436450538547); // (0, 1) range, 53 bits.
+// assert.equal(random.int32(), 1806534897);   // signed int32, 32 bits.
+//
+// For nonzero numeric keys, this impelementation provides a sequence
+// identical to that by Brent's xorgens 3 implementaion in C.  This
+// implementation also provides for initalizing the generator with
+// string seeds, or for saving and restoring the state of the generator.
+//
+// On Chrome, this prng benchmarks about 2.1 times slower than
+// Javascript's built-in Math.random().
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this;
+
+  // Set up generator function.
+  me.next = function() {
+    var w = me.w,
+        X = me.X, i = me.i, t, v;
+    // Update Weyl generator.
+    me.w = w = (w + 0x61c88647) | 0;
+    // Update xor generator.
+    v = X[(i + 34) & 127];
+    t = X[i = ((i + 1) & 127)];
+    v ^= v << 13;
+    t ^= t << 17;
+    v ^= v >>> 15;
+    t ^= t >>> 12;
+    // Update Xor generator array state.
+    v = X[i] = v ^ t;
+    me.i = i;
+    // Result is the combination.
+    return (v + (w ^ (w >>> 16))) | 0;
+  };
+
+  function init(me, seed) {
+    var t, v, i, j, w, X = [], limit = 128;
+    if (seed === (seed | 0)) {
+      // Numeric seeds initialize v, which is used to generates X.
+      v = seed;
+      seed = null;
+    } else {
+      // String seeds are mixed into v and X one character at a time.
+      seed = seed + '\0';
+      v = 0;
+      limit = Math.max(limit, seed.length);
+    }
+    // Initialize circular array and weyl value.
+    for (i = 0, j = -32; j < limit; ++j) {
+      // Put the unicode characters into the array, and shuffle them.
+      if (seed) v ^= seed.charCodeAt((j + 32) % seed.length);
+      // After 32 shuffles, take v as the starting w value.
+      if (j === 0) w = v;
+      v ^= v << 10;
+      v ^= v >>> 15;
+      v ^= v << 4;
+      v ^= v >>> 13;
+      if (j >= 0) {
+        w = (w + 0x61c88647) | 0;     // Weyl.
+        t = (X[j & 127] ^= (v + w));  // Combine xor and weyl to init array.
+        i = (0 == t) ? i + 1 : 0;     // Count zeroes.
+      }
+    }
+    // We have detected all zeroes; make the key nonzero.
+    if (i >= 128) {
+      X[(seed && seed.length || 0) & 127] = -1;
+    }
+    // Run the generator 512 times to further mix the state before using it.
+    // Factoring this as a function slows the main generator, so it is just
+    // unrolled here.  The weyl generator is not advanced while warming up.
+    i = 127;
+    for (j = 4 * 128; j > 0; --j) {
+      v = X[(i + 34) & 127];
+      t = X[i = ((i + 1) & 127)];
+      v ^= v << 13;
+      t ^= t << 17;
+      v ^= v >>> 15;
+      t ^= t >>> 12;
+      X[i] = v ^ t;
+    }
+    // Storing state as object members is faster than using closure variables.
+    me.w = w;
+    me.X = X;
+    me.i = i;
+  }
+
+  init(me, seed);
+}
+
+function copy(f, t) {
+  t.i = f.i;
+  t.w = f.w;
+  t.X = f.X.slice();
+  return t;
+};
+
+function impl(seed, opts) {
+  if (seed == null) seed = +(new Date);
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (state.X) copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xor4096 = impl;
+}
+
+})(
+  this,                                     // window object or global
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+},{}],160:[function(require,module,exports){
+// A Javascript implementaion of the "xorshift7" algorithm by
+// François Panneton and Pierre L'ecuyer:
+// "On the Xorgshift Random Number Generators"
+// http://saluc.engr.uconn.edu/refs/crypto/rng/panneton05onthexorshift.pdf
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this;
+
+  // Set up generator function.
+  me.next = function() {
+    // Update xor generator.
+    var X = me.x, i = me.i, t, v, w;
+    t = X[i]; t ^= (t >>> 7); v = t ^ (t << 24);
+    t = X[(i + 1) & 7]; v ^= t ^ (t >>> 10);
+    t = X[(i + 3) & 7]; v ^= t ^ (t >>> 3);
+    t = X[(i + 4) & 7]; v ^= t ^ (t << 7);
+    t = X[(i + 7) & 7]; t = t ^ (t << 13); v ^= t ^ (t << 9);
+    X[i] = v;
+    me.i = (i + 1) & 7;
+    return v;
+  };
+
+  function init(me, seed) {
+    var j, w, X = [];
+
+    if (seed === (seed | 0)) {
+      // Seed state array using a 32-bit integer.
+      w = X[0] = seed;
+    } else {
+      // Seed state using a string.
+      seed = '' + seed;
+      for (j = 0; j < seed.length; ++j) {
+        X[j & 7] = (X[j & 7] << 15) ^
+            (seed.charCodeAt(j) + X[(j + 1) & 7] << 13);
+      }
+    }
+    // Enforce an array length of 8, not all zeroes.
+    while (X.length < 8) X.push(0);
+    for (j = 0; j < 8 && X[j] === 0; ++j);
+    if (j == 8) w = X[7] = -1; else w = X[j];
+
+    me.x = X;
+    me.i = 0;
+
+    // Discard an initial 256 values.
+    for (j = 256; j > 0; --j) {
+      me.next();
+    }
+  }
+
+  init(me, seed);
+}
+
+function copy(f, t) {
+  t.x = f.x.slice();
+  t.i = f.i;
+  return t;
+}
+
+function impl(seed, opts) {
+  if (seed == null) seed = +(new Date);
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (state.x) copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xorshift7 = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+},{}],161:[function(require,module,exports){
+// A Javascript implementaion of the "xorwow" prng algorithm by
+// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this, strseed = '';
+
+  // Set up generator function.
+  me.next = function() {
+    var t = (me.x ^ (me.x >>> 2));
+    me.x = me.y; me.y = me.z; me.z = me.w; me.w = me.v;
+    return (me.d = (me.d + 362437 | 0)) +
+       (me.v = (me.v ^ (me.v << 4)) ^ (t ^ (t << 1))) | 0;
+  };
+
+  me.x = 0;
+  me.y = 0;
+  me.z = 0;
+  me.w = 0;
+  me.v = 0;
+
+  if (seed === (seed | 0)) {
+    // Integer seed.
+    me.x = seed;
+  } else {
+    // String seed.
+    strseed += seed;
+  }
+
+  // Mix in string seed, then discard an initial batch of 64 values.
+  for (var k = 0; k < strseed.length + 64; k++) {
+    me.x ^= strseed.charCodeAt(k) | 0;
+    if (k == strseed.length) {
+      me.d = me.x << 10 ^ me.x >>> 4;
+    }
+    me.next();
+  }
+}
+
+function copy(f, t) {
+  t.x = f.x;
+  t.y = f.y;
+  t.z = f.z;
+  t.w = f.w;
+  t.v = f.v;
+  t.d = f.d;
+  return t;
+}
+
+function impl(seed, opts) {
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xorwow = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],162:[function(require,module,exports){
+/*
+Copyright 2019 David Bau.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+
+(function (global, pool, math) {
+//
+// The following constants are related to IEEE 754 limits.
+//
+
+var width = 256,        // each RC4 output is 0 <= x < 256
+    chunks = 6,         // at least six RC4 outputs for each double
+    digits = 52,        // there are 52 significant digits in a double
+    rngname = 'random', // rngname: name for Math.random and Math.seedrandom
+    startdenom = math.pow(width, chunks),
+    significance = math.pow(2, digits),
+    overflow = significance * 2,
+    mask = width - 1,
+    nodecrypto;         // node.js crypto module, initialized at the bottom.
+
+//
+// seedrandom()
+// This is the seedrandom function described above.
+//
+function seedrandom(seed, options, callback) {
+  var key = [];
+  options = (options == true) ? { entropy: true } : (options || {});
+
+  // Flatten the seed string or build one from local entropy if needed.
+  var shortseed = mixkey(flatten(
+    options.entropy ? [seed, tostring(pool)] :
+    (seed == null) ? autoseed() : seed, 3), key);
+
+  // Use the seed to initialize an ARC4 generator.
+  var arc4 = new ARC4(key);
+
+  // This function returns a random double in [0, 1) that contains
+  // randomness in every bit of the mantissa of the IEEE 754 value.
+  var prng = function() {
+    var n = arc4.g(chunks),             // Start with a numerator n < 2 ^ 48
+        d = startdenom,                 //   and denominator d = 2 ^ 48.
+        x = 0;                          //   and no 'extra last byte'.
+    while (n < significance) {          // Fill up all significant digits by
+      n = (n + x) * width;              //   shifting numerator and
+      d *= width;                       //   denominator and generating a
+      x = arc4.g(1);                    //   new least-significant-byte.
+    }
+    while (n >= overflow) {             // To avoid rounding up, before adding
+      n /= 2;                           //   last byte, shift everything
+      d /= 2;                           //   right using integer math until
+      x >>>= 1;                         //   we have exactly the desired bits.
+    }
+    return (n + x) / d;                 // Form the number within [0, 1).
+  };
+
+  prng.int32 = function() { return arc4.g(4) | 0; }
+  prng.quick = function() { return arc4.g(4) / 0x100000000; }
+  prng.double = prng;
+
+  // Mix the randomness into accumulated entropy.
+  mixkey(tostring(arc4.S), pool);
+
+  // Calling convention: what to return as a function of prng, seed, is_math.
+  return (options.pass || callback ||
+      function(prng, seed, is_math_call, state) {
+        if (state) {
+          // Load the arc4 state from the given state if it has an S array.
+          if (state.S) { copy(state, arc4); }
+          // Only provide the .state method if requested via options.state.
+          prng.state = function() { return copy(arc4, {}); }
+        }
+
+        // If called as a method of Math (Math.seedrandom()), mutate
+        // Math.random because that is how seedrandom.js has worked since v1.0.
+        if (is_math_call) { math[rngname] = prng; return seed; }
+
+        // Otherwise, it is a newer calling convention, so return the
+        // prng directly.
+        else return prng;
+      })(
+  prng,
+  shortseed,
+  'global' in options ? options.global : (this == math),
+  options.state);
+}
+
+//
+// ARC4
+//
+// An ARC4 implementation.  The constructor takes a key in the form of
+// an array of at most (width) integers that should be 0 <= x < (width).
+//
+// The g(count) method returns a pseudorandom integer that concatenates
+// the next (count) outputs from ARC4.  Its return value is a number x
+// that is in the range 0 <= x < (width ^ count).
+//
+function ARC4(key) {
+  var t, keylen = key.length,
+      me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
+
+  // The empty key [] is treated as [0].
+  if (!keylen) { key = [keylen++]; }
+
+  // Set up S using the standard key scheduling algorithm.
+  while (i < width) {
+    s[i] = i++;
+  }
+  for (i = 0; i < width; i++) {
+    s[i] = s[j = mask & (j + key[i % keylen] + (t = s[i]))];
+    s[j] = t;
+  }
+
+  // The "g" method returns the next (count) outputs as one number.
+  (me.g = function(count) {
+    // Using instance members instead of closure state nearly doubles speed.
+    var t, r = 0,
+        i = me.i, j = me.j, s = me.S;
+    while (count--) {
+      t = s[i = mask & (i + 1)];
+      r = r * width + s[mask & ((s[i] = s[j = mask & (j + t)]) + (s[j] = t))];
+    }
+    me.i = i; me.j = j;
+    return r;
+    // For robust unpredictability, the function call below automatically
+    // discards an initial batch of values.  This is called RC4-drop[256].
+    // See http://google.com/search?q=rsa+fluhrer+response&btnI
+  })(width);
+}
+
+//
+// copy()
+// Copies internal state of ARC4 to or from a plain object.
+//
+function copy(f, t) {
+  t.i = f.i;
+  t.j = f.j;
+  t.S = f.S.slice();
+  return t;
+};
+
+//
+// flatten()
+// Converts an object tree to nested arrays of strings.
+//
+function flatten(obj, depth) {
+  var result = [], typ = (typeof obj), prop;
+  if (depth && typ == 'object') {
+    for (prop in obj) {
+      try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
+    }
+  }
+  return (result.length ? result : typ == 'string' ? obj : obj + '\0');
+}
+
+//
+// mixkey()
+// Mixes a string seed into a key that is an array of integers, and
+// returns a shortened string seed that is equivalent to the result key.
+//
+function mixkey(seed, key) {
+  var stringseed = seed + '', smear, j = 0;
+  while (j < stringseed.length) {
+    key[mask & j] =
+      mask & ((smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++));
+  }
+  return tostring(key);
+}
+
+//
+// autoseed()
+// Returns an object for autoseeding, using window.crypto and Node crypto
+// module if available.
+//
+function autoseed() {
+  try {
+    var out;
+    if (nodecrypto && (out = nodecrypto.randomBytes)) {
+      // The use of 'out' to remember randomBytes makes tight minified code.
+      out = out(width);
+    } else {
+      out = new Uint8Array(width);
+      (global.crypto || global.msCrypto).getRandomValues(out);
+    }
+    return tostring(out);
+  } catch (e) {
+    var browser = global.navigator,
+        plugins = browser && browser.plugins;
+    return [+new Date, global, plugins, global.screen, tostring(pool)];
+  }
+}
+
+//
+// tostring()
+// Converts an array of charcodes to a string
+//
+function tostring(a) {
+  return String.fromCharCode.apply(0, a);
+}
+
+//
+// When seedrandom.js is loaded, we immediately mix a few bits
+// from the built-in RNG into the entropy pool.  Because we do
+// not want to interfere with deterministic PRNG state later,
+// seedrandom will not call math.random on its own again after
+// initialization.
+//
+mixkey(math.random(), pool);
+
+//
+// Nodejs and AMD support: export the implementation as a module using
+// either convention.
+//
+if ((typeof module) == 'object' && module.exports) {
+  module.exports = seedrandom;
+  // When in node.js, try using crypto package for autoseeding.
+  try {
+    nodecrypto = require('crypto');
+  } catch (ex) {}
+} else if ((typeof define) == 'function' && define.amd) {
+  define(function() { return seedrandom; });
+} else {
+  // When included as a plain script, set up Math.seedrandom global.
+  math['seed' + rngname] = seedrandom;
+}
+
+
+// End anonymous scope, and pass initial values.
+})(
+  // global: `self` in browsers (including strict mode and web workers),
+  // otherwise `this` in Node and other environments
+  (typeof self !== 'undefined') ? self : this,
+  [],     // pool: entropy pool starts empty
+  Math    // math: package containing random, pow, and seedrandom
+);
+
+},{"crypto":73}],163:[function(require,module,exports){
 /*
 Copyright (c) 2014, Yahoo! Inc. All rights reserved.
 Copyrights licensed under the New BSD License.
@@ -12091,629 +13828,7 @@ module.exports = function serialize(obj, options) {
     });
 }
 
-},{}],156:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],157:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],158:[function(require,module,exports){
-(function (process,global){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
-        try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
-        }
-      default:
-        return x;
-    }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
-
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
-}
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":157,"_process":154,"inherits":156}],159:[function(require,module,exports){
+},{}],164:[function(require,module,exports){
 /*
  * Generated by PEG.js 0.10.0.
  *
@@ -15092,1840 +16207,7 @@ module.exports = {
   parse:       peg$parse
 };
 
-},{}],160:[function(require,module,exports){
-function bjorklund(slots, pulses){
-  var pattern = [],
-      count = [],
-      remainder = [pulses],
-      divisor = slots - pulses,
-      level = 0,
-      build_pattern = function(lv){
-        if( lv == -1 ){ pattern.push(0); }
-        else if( lv == -2 ){ pattern.push(1); }
-        else{
-          for(var x=0; x<count[lv]; x++){
-            build_pattern(lv-1);
-          }
-
-          if(remainder[lv]){
-            build_pattern(lv-2);
-          }
-        }
-      }
-  ;
-
-  while(remainder[level] > 1){
-    count.push(Math.floor(divisor/remainder[level]));
-    remainder.push(divisor%remainder[level]);
-    divisor = remainder[level];
-    level++;
-  }
-  count.push(divisor);
-
-  build_pattern(level);
-
-  return pattern.reverse();
-}
-
-
-module.exports = function(m, k){
-  if(m > k) return bjorklund(m, k);
-  else return bjorklund(k, m);
-};
-
-},{}],161:[function(require,module,exports){
-/**
- * @license Fraction.js v4.0.12 09/09/2015
- * http://www.xarg.org/2014/03/rational-numbers-in-javascript/
- *
- * Copyright (c) 2015, Robert Eisele (robert@xarg.org)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- **/
-
-
-/**
- *
- * This class offers the possibility to calculate fractions.
- * You can pass a fraction in different formats. Either as array, as double, as string or as an integer.
- *
- * Array/Object form
- * [ 0 => <nominator>, 1 => <denominator> ]
- * [ n => <nominator>, d => <denominator> ]
- *
- * Integer form
- * - Single integer value
- *
- * Double form
- * - Single double value
- *
- * String form
- * 123.456 - a simple double
- * 123/456 - a string fraction
- * 123.'456' - a double with repeating decimal places
- * 123.(456) - synonym
- * 123.45'6' - a double with repeating last place
- * 123.45(6) - synonym
- *
- * Example:
- *
- * var f = new Fraction("9.4'31'");
- * f.mul([-4, 3]).div(4.9);
- *
- */
-
-(function(root) {
-
-  "use strict";
-
-  // Maximum search depth for cyclic rational numbers. 2000 should be more than enough.
-  // Example: 1/7 = 0.(142857) has 6 repeating decimal places.
-  // If MAX_CYCLE_LEN gets reduced, long cycles will not be detected and toString() only gets the first 10 digits
-  var MAX_CYCLE_LEN = 2000;
-
-  // Parsed data to avoid calling "new" all the time
-  var P = {
-    "s": 1,
-    "n": 0,
-    "d": 1
-  };
-
-  function createError(name) {
-
-    function errorConstructor() {
-      var temp = Error.apply(this, arguments);
-      temp['name'] = this['name'] = name;
-      this['stack'] = temp['stack'];
-      this['message'] = temp['message'];
-    }
-
-    /**
-     * Error constructor
-     *
-     * @constructor
-     */
-    function IntermediateInheritor() {}
-    IntermediateInheritor.prototype = Error.prototype;
-    errorConstructor.prototype = new IntermediateInheritor();
-
-    return errorConstructor;
-  }
-
-  var DivisionByZero = Fraction['DivisionByZero'] = createError('DivisionByZero');
-  var InvalidParameter = Fraction['InvalidParameter'] = createError('InvalidParameter');
-
-  function assign(n, s) {
-
-    if (isNaN(n = parseInt(n, 10))) {
-      throwInvalidParam();
-    }
-    return n * s;
-  }
-
-  function throwInvalidParam() {
-    throw new InvalidParameter();
-  }
-
-  var parse = function(p1, p2) {
-
-    var n = 0, d = 1, s = 1;
-    var v = 0, w = 0, x = 0, y = 1, z = 1;
-
-    var A = 0, B = 1;
-    var C = 1, D = 1;
-
-    var N = 10000000;
-    var M;
-
-    if (p1 === undefined || p1 === null) {
-      /* void */
-    } else if (p2 !== undefined) {
-      n = p1;
-      d = p2;
-      s = n * d;
-    } else
-      switch (typeof p1) {
-
-        case "object":
-        {
-          if ("d" in p1 && "n" in p1) {
-            n = p1["n"];
-            d = p1["d"];
-            if ("s" in p1)
-              n *= p1["s"];
-          } else if (0 in p1) {
-            n = p1[0];
-            if (1 in p1)
-              d = p1[1];
-          } else {
-            throwInvalidParam();
-          }
-          s = n * d;
-          break;
-        }
-        case "number":
-        {
-          if (p1 < 0) {
-            s = p1;
-            p1 = -p1;
-          }
-
-          if (p1 % 1 === 0) {
-            n = p1;
-          } else if (p1 > 0) { // check for != 0, scale would become NaN (log(0)), which converges really slow
-
-            if (p1 >= 1) {
-              z = Math.pow(10, Math.floor(1 + Math.log(p1) / Math.LN10));
-              p1 /= z;
-            }
-
-            // Using Farey Sequences
-            // http://www.johndcook.com/blog/2010/10/20/best-rational-approximation/
-
-            while (B <= N && D <= N) {
-              M = (A + C) / (B + D);
-
-              if (p1 === M) {
-                if (B + D <= N) {
-                  n = A + C;
-                  d = B + D;
-                } else if (D > B) {
-                  n = C;
-                  d = D;
-                } else {
-                  n = A;
-                  d = B;
-                }
-                break;
-
-              } else {
-
-                if (p1 > M) {
-                  A += C;
-                  B += D;
-                } else {
-                  C += A;
-                  D += B;
-                }
-
-                if (B > N) {
-                  n = C;
-                  d = D;
-                } else {
-                  n = A;
-                  d = B;
-                }
-              }
-            }
-            n *= z;
-          } else if (isNaN(p1) || isNaN(p2)) {
-            d = n = NaN;
-          }
-          break;
-        }
-        case "string":
-        {
-          B = p1.match(/\d+|./g);
-
-          if (B === null)
-            throwInvalidParam();
-
-          if (B[A] === '-') {// Check for minus sign at the beginning
-            s = -1;
-            A++;
-          } else if (B[A] === '+') {// Check for plus sign at the beginning
-            A++;
-          }
-
-          if (B.length === A + 1) { // Check if it's just a simple number "1234"
-            w = assign(B[A++], s);
-          } else if (B[A + 1] === '.' || B[A] === '.') { // Check if it's a decimal number
-
-            if (B[A] !== '.') { // Handle 0.5 and .5
-              v = assign(B[A++], s);
-            }
-            A++;
-
-            // Check for decimal places
-            if (A + 1 === B.length || B[A + 1] === '(' && B[A + 3] === ')' || B[A + 1] === "'" && B[A + 3] === "'") {
-              w = assign(B[A], s);
-              y = Math.pow(10, B[A].length);
-              A++;
-            }
-
-            // Check for repeating places
-            if (B[A] === '(' && B[A + 2] === ')' || B[A] === "'" && B[A + 2] === "'") {
-              x = assign(B[A + 1], s);
-              z = Math.pow(10, B[A + 1].length) - 1;
-              A += 3;
-            }
-
-          } else if (B[A + 1] === '/' || B[A + 1] === ':') { // Check for a simple fraction "123/456" or "123:456"
-            w = assign(B[A], s);
-            y = assign(B[A + 2], 1);
-            A += 3;
-          } else if (B[A + 3] === '/' && B[A + 1] === ' ') { // Check for a complex fraction "123 1/2"
-            v = assign(B[A], s);
-            w = assign(B[A + 2], s);
-            y = assign(B[A + 4], 1);
-            A += 5;
-          }
-
-          if (B.length <= A) { // Check for more tokens on the stack
-            d = y * z;
-            s = /* void */
-                    n = x + d * v + z * w;
-            break;
-          }
-
-          /* Fall through on error */
-        }
-        default:
-          throwInvalidParam();
-      }
-
-    if (d === 0) {
-      throw new DivisionByZero();
-    }
-
-    P["s"] = s < 0 ? -1 : 1;
-    P["n"] = Math.abs(n);
-    P["d"] = Math.abs(d);
-  };
-
-  function modpow(b, e, m) {
-
-    var r = 1;
-    for (; e > 0; b = (b * b) % m, e >>= 1) {
-
-      if (e & 1) {
-        r = (r * b) % m;
-      }
-    }
-    return r;
-  }
-
-
-  function cycleLen(n, d) {
-
-    for (; d % 2 === 0;
-            d /= 2) {
-    }
-
-    for (; d % 5 === 0;
-            d /= 5) {
-    }
-
-    if (d === 1) // Catch non-cyclic numbers
-      return 0;
-
-    // If we would like to compute really large numbers quicker, we could make use of Fermat's little theorem:
-    // 10^(d-1) % d == 1
-    // However, we don't need such large numbers and MAX_CYCLE_LEN should be the capstone,
-    // as we want to translate the numbers to strings.
-
-    var rem = 10 % d;
-    var t = 1;
-
-    for (; rem !== 1; t++) {
-      rem = rem * 10 % d;
-
-      if (t > MAX_CYCLE_LEN)
-        return 0; // Returning 0 here means that we don't print it as a cyclic number. It's likely that the answer is `d-1`
-    }
-    return t;
-  }
-
-
-     function cycleStart(n, d, len) {
-
-    var rem1 = 1;
-    var rem2 = modpow(10, len, d);
-
-    for (var t = 0; t < 300; t++) { // s < ~log10(Number.MAX_VALUE)
-      // Solve 10^s == 10^(s+t) (mod d)
-
-      if (rem1 === rem2)
-        return t;
-
-      rem1 = rem1 * 10 % d;
-      rem2 = rem2 * 10 % d;
-    }
-    return 0;
-  }
-
-  function gcd(a, b) {
-
-    if (!a)
-      return b;
-    if (!b)
-      return a;
-
-    while (1) {
-      a %= b;
-      if (!a)
-        return b;
-      b %= a;
-      if (!b)
-        return a;
-    }
-  };
-
-  /**
-   * Module constructor
-   *
-   * @constructor
-   * @param {number|Fraction=} a
-   * @param {number=} b
-   */
-  function Fraction(a, b) {
-
-    if (!(this instanceof Fraction)) {
-      return new Fraction(a, b);
-    }
-
-    parse(a, b);
-
-    if (Fraction['REDUCE']) {
-      a = gcd(P["d"], P["n"]); // Abuse a
-    } else {
-      a = 1;
-    }
-
-    this["s"] = P["s"];
-    this["n"] = P["n"] / a;
-    this["d"] = P["d"] / a;
-  }
-
-  /**
-   * Boolean global variable to be able to disable automatic reduction of the fraction
-   *
-   */
-  Fraction['REDUCE'] = 1;
-
-  Fraction.prototype = {
-
-    "s": 1,
-    "n": 0,
-    "d": 1,
-
-    /**
-     * Calculates the absolute value
-     *
-     * Ex: new Fraction(-4).abs() => 4
-     **/
-    "abs": function() {
-
-      return new Fraction(this["n"], this["d"]);
-    },
-
-    /**
-     * Inverts the sign of the current fraction
-     *
-     * Ex: new Fraction(-4).neg() => 4
-     **/
-    "neg": function() {
-
-      return new Fraction(-this["s"] * this["n"], this["d"]);
-    },
-
-    /**
-     * Adds two rational numbers
-     *
-     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => 467 / 30
-     **/
-    "add": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * this["n"] * P["d"] + P["s"] * this["d"] * P["n"],
-              this["d"] * P["d"]
-              );
-    },
-
-    /**
-     * Subtracts two rational numbers
-     *
-     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => -427 / 30
-     **/
-    "sub": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * this["n"] * P["d"] - P["s"] * this["d"] * P["n"],
-              this["d"] * P["d"]
-              );
-    },
-
-    /**
-     * Multiplies two rational numbers
-     *
-     * Ex: new Fraction("-17.(345)").mul(3) => 5776 / 111
-     **/
-    "mul": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * P["s"] * this["n"] * P["n"],
-              this["d"] * P["d"]
-              );
-    },
-
-    /**
-     * Divides two rational numbers
-     *
-     * Ex: new Fraction("-17.(345)").inverse().div(3)
-     **/
-    "div": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * P["s"] * this["n"] * P["d"],
-              this["d"] * P["n"]
-              );
-    },
-
-    /**
-     * Clones the actual object
-     *
-     * Ex: new Fraction("-17.(345)").clone()
-     **/
-    "clone": function() {
-      return new Fraction(this);
-    },
-
-    /**
-     * Calculates the modulo of two rational numbers - a more precise fmod
-     *
-     * Ex: new Fraction('4.(3)').mod([7, 8]) => (13/3) % (7/8) = (5/6)
-     **/
-    "mod": function(a, b) {
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return new Fraction(NaN);
-      }
-
-      if (a === undefined) {
-        return new Fraction(this["s"] * this["n"] % this["d"], 1);
-      }
-
-      parse(a, b);
-      if (0 === P["n"] && 0 === this["d"]) {
-        Fraction(0, 0); // Throw DivisionByZero
-      }
-
-      /*
-       * First silly attempt, kinda slow
-       *
-       return that["sub"]({
-       "n": num["n"] * Math.floor((this.n / this.d) / (num.n / num.d)),
-       "d": num["d"],
-       "s": this["s"]
-       });*/
-
-      /*
-       * New attempt: a1 / b1 = a2 / b2 * q + r
-       * => b2 * a1 = a2 * b1 * q + b1 * b2 * r
-       * => (b2 * a1 % a2 * b1) / (b1 * b2)
-       */
-      return new Fraction(
-              this["s"] * (P["d"] * this["n"]) % (P["n"] * this["d"]),
-              P["d"] * this["d"]
-              );
-    },
-
-    /**
-     * Calculates the fractional gcd of two rational numbers
-     *
-     * Ex: new Fraction(5,8).gcd(3,7) => 1/56
-     */
-    "gcd": function(a, b) {
-
-      parse(a, b);
-
-      // gcd(a / b, c / d) = gcd(a, c) / lcm(b, d)
-
-      return new Fraction(gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]), P["d"] * this["d"]);
-    },
-
-    /**
-     * Calculates the fractional lcm of two rational numbers
-     *
-     * Ex: new Fraction(5,8).lcm(3,7) => 15
-     */
-    "lcm": function(a, b) {
-
-      parse(a, b);
-
-      // lcm(a / b, c / d) = lcm(a, c) / gcd(b, d)
-
-      if (P["n"] === 0 && this["n"] === 0) {
-        return new Fraction;
-      }
-      return new Fraction(P["n"] * this["n"], gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]));
-    },
-
-    /**
-     * Calculates the ceil of a rational number
-     *
-     * Ex: new Fraction('4.(3)').ceil() => (5 / 1)
-     **/
-    "ceil": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.ceil(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Calculates the floor of a rational number
-     *
-     * Ex: new Fraction('4.(3)').floor() => (4 / 1)
-     **/
-    "floor": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.floor(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Rounds a rational numbers
-     *
-     * Ex: new Fraction('4.(3)').round() => (4 / 1)
-     **/
-    "round": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.round(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Gets the inverse of the fraction, means numerator and denumerator are exchanged
-     *
-     * Ex: new Fraction([-3, 4]).inverse() => -4 / 3
-     **/
-    "inverse": function() {
-
-      return new Fraction(this["s"] * this["d"], this["n"]);
-    },
-
-    /**
-     * Calculates the fraction to some integer exponent
-     *
-     * Ex: new Fraction(-1,2).pow(-3) => -8
-     */
-    "pow": function(m) {
-
-      if (m < 0) {
-        return new Fraction(Math.pow(this['s'] * this["d"], -m), Math.pow(this["n"], -m));
-      } else {
-        return new Fraction(Math.pow(this['s'] * this["n"], m), Math.pow(this["d"], m));
-      }
-    },
-
-    /**
-     * Check if two rational numbers are the same
-     *
-     * Ex: new Fraction(19.6).equals([98, 5]);
-     **/
-    "equals": function(a, b) {
-
-      parse(a, b);
-      return this["s"] * this["n"] * P["d"] === P["s"] * P["n"] * this["d"]; // Same as compare() === 0
-    },
-
-    /**
-     * Check if two rational numbers are the same
-     *
-     * Ex: new Fraction(19.6).equals([98, 5]);
-     **/
-    "compare": function(a, b) {
-
-      parse(a, b);
-      var t = (this["s"] * this["n"] * P["d"] - P["s"] * P["n"] * this["d"]);
-      return (0 < t) - (t < 0);
-    },
-
-    "simplify": function(eps) {
-
-      // First naive implementation, needs improvement
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return this;
-      }
-
-      var cont = this['abs']()['toContinued']();
-
-      eps = eps || 0.001;
-
-      function rec(a) {
-        if (a.length === 1)
-          return new Fraction(a[0]);
-        return rec(a.slice(1))['inverse']()['add'](a[0]);
-      }
-
-      for (var i = 0; i < cont.length; i++) {
-        var tmp = rec(cont.slice(0, i + 1));
-        if (tmp['sub'](this['abs']())['abs']().valueOf() < eps) {
-          return tmp['mul'](this['s']);
-        }
-      }
-      return this;
-    },
-
-    /**
-     * Check if two rational numbers are divisible
-     *
-     * Ex: new Fraction(19.6).divisible(1.5);
-     */
-    "divisible": function(a, b) {
-
-      parse(a, b);
-      return !(!(P["n"] * this["d"]) || ((this["n"] * P["d"]) % (P["n"] * this["d"])));
-    },
-
-    /**
-     * Returns a decimal representation of the fraction
-     *
-     * Ex: new Fraction("100.'91823'").valueOf() => 100.91823918239183
-     **/
-    'valueOf': function() {
-
-      return this["s"] * this["n"] / this["d"];
-    },
-
-    /**
-     * Returns a string-fraction representation of a Fraction object
-     *
-     * Ex: new Fraction("1.'3'").toFraction() => "4 1/3"
-     **/
-    'toFraction': function(excludeWhole) {
-
-      var whole, str = "";
-      var n = this["n"];
-      var d = this["d"];
-      if (this["s"] < 0) {
-        str += '-';
-      }
-
-      if (d === 1) {
-        str += n;
-      } else {
-
-        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
-          str += whole;
-          str += " ";
-          n %= d;
-        }
-
-        str += n;
-        str += '/';
-        str += d;
-      }
-      return str;
-    },
-
-    /**
-     * Returns a latex representation of a Fraction object
-     *
-     * Ex: new Fraction("1.'3'").toLatex() => "\frac{4}{3}"
-     **/
-    'toLatex': function(excludeWhole) {
-
-      var whole, str = "";
-      var n = this["n"];
-      var d = this["d"];
-      if (this["s"] < 0) {
-        str += '-';
-      }
-
-      if (d === 1) {
-        str += n;
-      } else {
-
-        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
-          str += whole;
-          n %= d;
-        }
-
-        str += "\\frac{";
-        str += n;
-        str += '}{';
-        str += d;
-        str += '}';
-      }
-      return str;
-    },
-
-    /**
-     * Returns an array of continued fraction elements
-     *
-     * Ex: new Fraction("7/8").toContinued() => [0,1,7]
-     */
-    'toContinued': function() {
-
-      var t;
-      var a = this['n'];
-      var b = this['d'];
-      var res = [];
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return res;
-      }
-
-      do {
-        res.push(Math.floor(a / b));
-        t = a % b;
-        a = b;
-        b = t;
-      } while (a !== 1);
-
-      return res;
-    },
-
-    /**
-     * Creates a string representation of a fraction with all digits
-     *
-     * Ex: new Fraction("100.'91823'").toString() => "100.(91823)"
-     **/
-    'toString': function(dec) {
-
-      var g;
-      var N = this["n"];
-      var D = this["d"];
-
-      if (isNaN(N) || isNaN(D)) {
-        return "NaN";
-      }
-
-      if (!Fraction['REDUCE']) {
-        g = gcd(N, D);
-        N /= g;
-        D /= g;
-      }
-
-      dec = dec || 15; // 15 = decimal places when no repitation
-
-      var cycLen = cycleLen(N, D); // Cycle length
-      var cycOff = cycleStart(N, D, cycLen); // Cycle start
-
-      var str = this['s'] === -1 ? "-" : "";
-
-      str += N / D | 0;
-
-      N %= D;
-      N *= 10;
-
-      if (N)
-        str += ".";
-
-      if (cycLen) {
-
-        for (var i = cycOff; i--; ) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-        str += "(";
-        for (var i = cycLen; i--; ) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-        str += ")";
-      } else {
-        for (var i = dec; N && i--; ) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-      }
-      return str;
-    }
-  };
-
-  if (typeof define === "function" && define["amd"]) {
-    define([], function() {
-      return Fraction;
-    });
-  } else if (typeof exports === "object") {
-    Object.defineProperty(exports, "__esModule", {'value': true});
-    Fraction['default'] = Fraction;
-    Fraction['Fraction'] = Fraction;
-    module['exports'] = Fraction;
-  } else {
-    root['Fraction'] = Fraction;
-  }
-
-})(this);
-
-},{}],162:[function(require,module,exports){
-// A library of seedable RNGs implemented in Javascript.
-//
-// Usage:
-//
-// var seedrandom = require('seedrandom');
-// var random = seedrandom(1); // or any seed.
-// var x = random();       // 0 <= x < 1.  Every bit is random.
-// var x = random.quick(); // 0 <= x < 1.  32 bits of randomness.
-
-// alea, a 53-bit multiply-with-carry generator by Johannes Baagøe.
-// Period: ~2^116
-// Reported to pass all BigCrush tests.
-var alea = require('./lib/alea');
-
-// xor128, a pure xor-shift generator by George Marsaglia.
-// Period: 2^128-1.
-// Reported to fail: MatrixRank and LinearComp.
-var xor128 = require('./lib/xor128');
-
-// xorwow, George Marsaglia's 160-bit xor-shift combined plus weyl.
-// Period: 2^192-2^32
-// Reported to fail: CollisionOver, SimpPoker, and LinearComp.
-var xorwow = require('./lib/xorwow');
-
-// xorshift7, by François Panneton and Pierre L'ecuyer, takes
-// a different approach: it adds robustness by allowing more shifts
-// than Marsaglia's original three.  It is a 7-shift generator
-// with 256 bits, that passes BigCrush with no systmatic failures.
-// Period 2^256-1.
-// No systematic BigCrush failures reported.
-var xorshift7 = require('./lib/xorshift7');
-
-// xor4096, by Richard Brent, is a 4096-bit xor-shift with a
-// very long period that also adds a Weyl generator. It also passes
-// BigCrush with no systematic failures.  Its long period may
-// be useful if you have many generators and need to avoid
-// collisions.
-// Period: 2^4128-2^32.
-// No systematic BigCrush failures reported.
-var xor4096 = require('./lib/xor4096');
-
-// Tyche-i, by Samuel Neves and Filipe Araujo, is a bit-shifting random
-// number generator derived from ChaCha, a modern stream cipher.
-// https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
-// Period: ~2^127
-// No systematic BigCrush failures reported.
-var tychei = require('./lib/tychei');
-
-// The original ARC4-based prng included in this library.
-// Period: ~2^1600
-var sr = require('./seedrandom');
-
-sr.alea = alea;
-sr.xor128 = xor128;
-sr.xorwow = xorwow;
-sr.xorshift7 = xorshift7;
-sr.xor4096 = xor4096;
-sr.tychei = tychei;
-
-module.exports = sr;
-
-},{"./lib/alea":163,"./lib/tychei":164,"./lib/xor128":165,"./lib/xor4096":166,"./lib/xorshift7":167,"./lib/xorwow":168,"./seedrandom":169}],163:[function(require,module,exports){
-// A port of an algorithm by Johannes Baagøe <baagoe@baagoe.com>, 2010
-// http://baagoe.com/en/RandomMusings/javascript/
-// https://github.com/nquinlan/better-random-numbers-for-javascript-mirror
-// Original work is under MIT license -
-
-// Copyright (C) 2010 by Johannes Baagøe <baagoe@baagoe.org>
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
-
-
-(function(global, module, define) {
-
-function Alea(seed) {
-  var me = this, mash = Mash();
-
-  me.next = function() {
-    var t = 2091639 * me.s0 + me.c * 2.3283064365386963e-10; // 2^-32
-    me.s0 = me.s1;
-    me.s1 = me.s2;
-    return me.s2 = t - (me.c = t | 0);
-  };
-
-  // Apply the seeding algorithm from Baagoe.
-  me.c = 1;
-  me.s0 = mash(' ');
-  me.s1 = mash(' ');
-  me.s2 = mash(' ');
-  me.s0 -= mash(seed);
-  if (me.s0 < 0) { me.s0 += 1; }
-  me.s1 -= mash(seed);
-  if (me.s1 < 0) { me.s1 += 1; }
-  me.s2 -= mash(seed);
-  if (me.s2 < 0) { me.s2 += 1; }
-  mash = null;
-}
-
-function copy(f, t) {
-  t.c = f.c;
-  t.s0 = f.s0;
-  t.s1 = f.s1;
-  t.s2 = f.s2;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new Alea(seed),
-      state = opts && opts.state,
-      prng = xg.next;
-  prng.int32 = function() { return (xg.next() * 0x100000000) | 0; }
-  prng.double = function() {
-    return prng() + (prng() * 0x200000 | 0) * 1.1102230246251565e-16; // 2^-53
-  };
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-function Mash() {
-  var n = 0xefc8249d;
-
-  var mash = function(data) {
-    data = String(data);
-    for (var i = 0; i < data.length; i++) {
-      n += data.charCodeAt(i);
-      var h = 0.02519603282416938 * n;
-      n = h >>> 0;
-      h -= n;
-      h *= n;
-      n = h >>> 0;
-      h -= n;
-      n += h * 0x100000000; // 2^32
-    }
-    return (n >>> 0) * 2.3283064365386963e-10; // 2^-32
-  };
-
-  return mash;
-}
-
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.alea = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],164:[function(require,module,exports){
-// A Javascript implementaion of the "Tyche-i" prng algorithm by
-// Samuel Neves and Filipe Araujo.
-// See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  // Set up generator function.
-  me.next = function() {
-    var b = me.b, c = me.c, d = me.d, a = me.a;
-    b = (b << 25) ^ (b >>> 7) ^ c;
-    c = (c - d) | 0;
-    d = (d << 24) ^ (d >>> 8) ^ a;
-    a = (a - b) | 0;
-    me.b = b = (b << 20) ^ (b >>> 12) ^ c;
-    me.c = c = (c - d) | 0;
-    me.d = (d << 16) ^ (c >>> 16) ^ a;
-    return me.a = (a - b) | 0;
-  };
-
-  /* The following is non-inverted tyche, which has better internal
-   * bit diffusion, but which is about 25% slower than tyche-i in JS.
-  me.next = function() {
-    var a = me.a, b = me.b, c = me.c, d = me.d;
-    a = (me.a + me.b | 0) >>> 0;
-    d = me.d ^ a; d = d << 16 ^ d >>> 16;
-    c = me.c + d | 0;
-    b = me.b ^ c; b = b << 12 ^ d >>> 20;
-    me.a = a = a + b | 0;
-    d = d ^ a; me.d = d = d << 8 ^ d >>> 24;
-    me.c = c = c + d | 0;
-    b = b ^ c;
-    return me.b = (b << 7 ^ b >>> 25);
-  }
-  */
-
-  me.a = 0;
-  me.b = 0;
-  me.c = 2654435769 | 0;
-  me.d = 1367130551;
-
-  if (seed === Math.floor(seed)) {
-    // Integer seed.
-    me.a = (seed / 0x100000000) | 0;
-    me.b = seed | 0;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 20; k++) {
-    me.b ^= strseed.charCodeAt(k) | 0;
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.a = f.a;
-  t.b = f.b;
-  t.c = f.c;
-  t.d = f.d;
-  return t;
-};
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.tychei = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
 },{}],165:[function(require,module,exports){
-// A Javascript implementaion of the "xor128" prng algorithm by
-// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  me.x = 0;
-  me.y = 0;
-  me.z = 0;
-  me.w = 0;
-
-  // Set up generator function.
-  me.next = function() {
-    var t = me.x ^ (me.x << 11);
-    me.x = me.y;
-    me.y = me.z;
-    me.z = me.w;
-    return me.w ^= (me.w >>> 19) ^ t ^ (t >>> 8);
-  };
-
-  if (seed === (seed | 0)) {
-    // Integer seed.
-    me.x = seed;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 64; k++) {
-    me.x ^= strseed.charCodeAt(k) | 0;
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.x = f.x;
-  t.y = f.y;
-  t.z = f.z;
-  t.w = f.w;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xor128 = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],166:[function(require,module,exports){
-// A Javascript implementaion of Richard Brent's Xorgens xor4096 algorithm.
-//
-// This fast non-cryptographic random number generator is designed for
-// use in Monte-Carlo algorithms. It combines a long-period xorshift
-// generator with a Weyl generator, and it passes all common batteries
-// of stasticial tests for randomness while consuming only a few nanoseconds
-// for each prng generated.  For background on the generator, see Brent's
-// paper: "Some long-period random number generators using shifts and xors."
-// http://arxiv.org/pdf/1004.3115v1.pdf
-//
-// Usage:
-//
-// var xor4096 = require('xor4096');
-// random = xor4096(1);                        // Seed with int32 or string.
-// assert.equal(random(), 0.1520436450538547); // (0, 1) range, 53 bits.
-// assert.equal(random.int32(), 1806534897);   // signed int32, 32 bits.
-//
-// For nonzero numeric keys, this impelementation provides a sequence
-// identical to that by Brent's xorgens 3 implementaion in C.  This
-// implementation also provides for initalizing the generator with
-// string seeds, or for saving and restoring the state of the generator.
-//
-// On Chrome, this prng benchmarks about 2.1 times slower than
-// Javascript's built-in Math.random().
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this;
-
-  // Set up generator function.
-  me.next = function() {
-    var w = me.w,
-        X = me.X, i = me.i, t, v;
-    // Update Weyl generator.
-    me.w = w = (w + 0x61c88647) | 0;
-    // Update xor generator.
-    v = X[(i + 34) & 127];
-    t = X[i = ((i + 1) & 127)];
-    v ^= v << 13;
-    t ^= t << 17;
-    v ^= v >>> 15;
-    t ^= t >>> 12;
-    // Update Xor generator array state.
-    v = X[i] = v ^ t;
-    me.i = i;
-    // Result is the combination.
-    return (v + (w ^ (w >>> 16))) | 0;
-  };
-
-  function init(me, seed) {
-    var t, v, i, j, w, X = [], limit = 128;
-    if (seed === (seed | 0)) {
-      // Numeric seeds initialize v, which is used to generates X.
-      v = seed;
-      seed = null;
-    } else {
-      // String seeds are mixed into v and X one character at a time.
-      seed = seed + '\0';
-      v = 0;
-      limit = Math.max(limit, seed.length);
-    }
-    // Initialize circular array and weyl value.
-    for (i = 0, j = -32; j < limit; ++j) {
-      // Put the unicode characters into the array, and shuffle them.
-      if (seed) v ^= seed.charCodeAt((j + 32) % seed.length);
-      // After 32 shuffles, take v as the starting w value.
-      if (j === 0) w = v;
-      v ^= v << 10;
-      v ^= v >>> 15;
-      v ^= v << 4;
-      v ^= v >>> 13;
-      if (j >= 0) {
-        w = (w + 0x61c88647) | 0;     // Weyl.
-        t = (X[j & 127] ^= (v + w));  // Combine xor and weyl to init array.
-        i = (0 == t) ? i + 1 : 0;     // Count zeroes.
-      }
-    }
-    // We have detected all zeroes; make the key nonzero.
-    if (i >= 128) {
-      X[(seed && seed.length || 0) & 127] = -1;
-    }
-    // Run the generator 512 times to further mix the state before using it.
-    // Factoring this as a function slows the main generator, so it is just
-    // unrolled here.  The weyl generator is not advanced while warming up.
-    i = 127;
-    for (j = 4 * 128; j > 0; --j) {
-      v = X[(i + 34) & 127];
-      t = X[i = ((i + 1) & 127)];
-      v ^= v << 13;
-      t ^= t << 17;
-      v ^= v >>> 15;
-      t ^= t >>> 12;
-      X[i] = v ^ t;
-    }
-    // Storing state as object members is faster than using closure variables.
-    me.w = w;
-    me.X = X;
-    me.i = i;
-  }
-
-  init(me, seed);
-}
-
-function copy(f, t) {
-  t.i = f.i;
-  t.w = f.w;
-  t.X = f.X.slice();
-  return t;
-};
-
-function impl(seed, opts) {
-  if (seed == null) seed = +(new Date);
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (state.X) copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xor4096 = impl;
-}
-
-})(
-  this,                                     // window object or global
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-},{}],167:[function(require,module,exports){
-// A Javascript implementaion of the "xorshift7" algorithm by
-// François Panneton and Pierre L'ecuyer:
-// "On the Xorgshift Random Number Generators"
-// http://saluc.engr.uconn.edu/refs/crypto/rng/panneton05onthexorshift.pdf
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this;
-
-  // Set up generator function.
-  me.next = function() {
-    // Update xor generator.
-    var X = me.x, i = me.i, t, v, w;
-    t = X[i]; t ^= (t >>> 7); v = t ^ (t << 24);
-    t = X[(i + 1) & 7]; v ^= t ^ (t >>> 10);
-    t = X[(i + 3) & 7]; v ^= t ^ (t >>> 3);
-    t = X[(i + 4) & 7]; v ^= t ^ (t << 7);
-    t = X[(i + 7) & 7]; t = t ^ (t << 13); v ^= t ^ (t << 9);
-    X[i] = v;
-    me.i = (i + 1) & 7;
-    return v;
-  };
-
-  function init(me, seed) {
-    var j, w, X = [];
-
-    if (seed === (seed | 0)) {
-      // Seed state array using a 32-bit integer.
-      w = X[0] = seed;
-    } else {
-      // Seed state using a string.
-      seed = '' + seed;
-      for (j = 0; j < seed.length; ++j) {
-        X[j & 7] = (X[j & 7] << 15) ^
-            (seed.charCodeAt(j) + X[(j + 1) & 7] << 13);
-      }
-    }
-    // Enforce an array length of 8, not all zeroes.
-    while (X.length < 8) X.push(0);
-    for (j = 0; j < 8 && X[j] === 0; ++j);
-    if (j == 8) w = X[7] = -1; else w = X[j];
-
-    me.x = X;
-    me.i = 0;
-
-    // Discard an initial 256 values.
-    for (j = 256; j > 0; --j) {
-      me.next();
-    }
-  }
-
-  init(me, seed);
-}
-
-function copy(f, t) {
-  t.x = f.x.slice();
-  t.i = f.i;
-  return t;
-}
-
-function impl(seed, opts) {
-  if (seed == null) seed = +(new Date);
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (state.x) copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xorshift7 = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-},{}],168:[function(require,module,exports){
-// A Javascript implementaion of the "xorwow" prng algorithm by
-// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  // Set up generator function.
-  me.next = function() {
-    var t = (me.x ^ (me.x >>> 2));
-    me.x = me.y; me.y = me.z; me.z = me.w; me.w = me.v;
-    return (me.d = (me.d + 362437 | 0)) +
-       (me.v = (me.v ^ (me.v << 4)) ^ (t ^ (t << 1))) | 0;
-  };
-
-  me.x = 0;
-  me.y = 0;
-  me.z = 0;
-  me.w = 0;
-  me.v = 0;
-
-  if (seed === (seed | 0)) {
-    // Integer seed.
-    me.x = seed;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 64; k++) {
-    me.x ^= strseed.charCodeAt(k) | 0;
-    if (k == strseed.length) {
-      me.d = me.x << 10 ^ me.x >>> 4;
-    }
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.x = f.x;
-  t.y = f.y;
-  t.z = f.z;
-  t.w = f.w;
-  t.v = f.v;
-  t.d = f.d;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xorwow = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],169:[function(require,module,exports){
-/*
-Copyright 2019 David Bau.
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-*/
-
-(function (global, pool, math) {
-//
-// The following constants are related to IEEE 754 limits.
-//
-
-var width = 256,        // each RC4 output is 0 <= x < 256
-    chunks = 6,         // at least six RC4 outputs for each double
-    digits = 52,        // there are 52 significant digits in a double
-    rngname = 'random', // rngname: name for Math.random and Math.seedrandom
-    startdenom = math.pow(width, chunks),
-    significance = math.pow(2, digits),
-    overflow = significance * 2,
-    mask = width - 1,
-    nodecrypto;         // node.js crypto module, initialized at the bottom.
-
-//
-// seedrandom()
-// This is the seedrandom function described above.
-//
-function seedrandom(seed, options, callback) {
-  var key = [];
-  options = (options == true) ? { entropy: true } : (options || {});
-
-  // Flatten the seed string or build one from local entropy if needed.
-  var shortseed = mixkey(flatten(
-    options.entropy ? [seed, tostring(pool)] :
-    (seed == null) ? autoseed() : seed, 3), key);
-
-  // Use the seed to initialize an ARC4 generator.
-  var arc4 = new ARC4(key);
-
-  // This function returns a random double in [0, 1) that contains
-  // randomness in every bit of the mantissa of the IEEE 754 value.
-  var prng = function() {
-    var n = arc4.g(chunks),             // Start with a numerator n < 2 ^ 48
-        d = startdenom,                 //   and denominator d = 2 ^ 48.
-        x = 0;                          //   and no 'extra last byte'.
-    while (n < significance) {          // Fill up all significant digits by
-      n = (n + x) * width;              //   shifting numerator and
-      d *= width;                       //   denominator and generating a
-      x = arc4.g(1);                    //   new least-significant-byte.
-    }
-    while (n >= overflow) {             // To avoid rounding up, before adding
-      n /= 2;                           //   last byte, shift everything
-      d /= 2;                           //   right using integer math until
-      x >>>= 1;                         //   we have exactly the desired bits.
-    }
-    return (n + x) / d;                 // Form the number within [0, 1).
-  };
-
-  prng.int32 = function() { return arc4.g(4) | 0; }
-  prng.quick = function() { return arc4.g(4) / 0x100000000; }
-  prng.double = prng;
-
-  // Mix the randomness into accumulated entropy.
-  mixkey(tostring(arc4.S), pool);
-
-  // Calling convention: what to return as a function of prng, seed, is_math.
-  return (options.pass || callback ||
-      function(prng, seed, is_math_call, state) {
-        if (state) {
-          // Load the arc4 state from the given state if it has an S array.
-          if (state.S) { copy(state, arc4); }
-          // Only provide the .state method if requested via options.state.
-          prng.state = function() { return copy(arc4, {}); }
-        }
-
-        // If called as a method of Math (Math.seedrandom()), mutate
-        // Math.random because that is how seedrandom.js has worked since v1.0.
-        if (is_math_call) { math[rngname] = prng; return seed; }
-
-        // Otherwise, it is a newer calling convention, so return the
-        // prng directly.
-        else return prng;
-      })(
-  prng,
-  shortseed,
-  'global' in options ? options.global : (this == math),
-  options.state);
-}
-
-//
-// ARC4
-//
-// An ARC4 implementation.  The constructor takes a key in the form of
-// an array of at most (width) integers that should be 0 <= x < (width).
-//
-// The g(count) method returns a pseudorandom integer that concatenates
-// the next (count) outputs from ARC4.  Its return value is a number x
-// that is in the range 0 <= x < (width ^ count).
-//
-function ARC4(key) {
-  var t, keylen = key.length,
-      me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
-
-  // The empty key [] is treated as [0].
-  if (!keylen) { key = [keylen++]; }
-
-  // Set up S using the standard key scheduling algorithm.
-  while (i < width) {
-    s[i] = i++;
-  }
-  for (i = 0; i < width; i++) {
-    s[i] = s[j = mask & (j + key[i % keylen] + (t = s[i]))];
-    s[j] = t;
-  }
-
-  // The "g" method returns the next (count) outputs as one number.
-  (me.g = function(count) {
-    // Using instance members instead of closure state nearly doubles speed.
-    var t, r = 0,
-        i = me.i, j = me.j, s = me.S;
-    while (count--) {
-      t = s[i = mask & (i + 1)];
-      r = r * width + s[mask & ((s[i] = s[j = mask & (j + t)]) + (s[j] = t))];
-    }
-    me.i = i; me.j = j;
-    return r;
-    // For robust unpredictability, the function call below automatically
-    // discards an initial batch of values.  This is called RC4-drop[256].
-    // See http://google.com/search?q=rsa+fluhrer+response&btnI
-  })(width);
-}
-
-//
-// copy()
-// Copies internal state of ARC4 to or from a plain object.
-//
-function copy(f, t) {
-  t.i = f.i;
-  t.j = f.j;
-  t.S = f.S.slice();
-  return t;
-};
-
-//
-// flatten()
-// Converts an object tree to nested arrays of strings.
-//
-function flatten(obj, depth) {
-  var result = [], typ = (typeof obj), prop;
-  if (depth && typ == 'object') {
-    for (prop in obj) {
-      try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
-    }
-  }
-  return (result.length ? result : typ == 'string' ? obj : obj + '\0');
-}
-
-//
-// mixkey()
-// Mixes a string seed into a key that is an array of integers, and
-// returns a shortened string seed that is equivalent to the result key.
-//
-function mixkey(seed, key) {
-  var stringseed = seed + '', smear, j = 0;
-  while (j < stringseed.length) {
-    key[mask & j] =
-      mask & ((smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++));
-  }
-  return tostring(key);
-}
-
-//
-// autoseed()
-// Returns an object for autoseeding, using window.crypto and Node crypto
-// module if available.
-//
-function autoseed() {
-  try {
-    var out;
-    if (nodecrypto && (out = nodecrypto.randomBytes)) {
-      // The use of 'out' to remember randomBytes makes tight minified code.
-      out = out(width);
-    } else {
-      out = new Uint8Array(width);
-      (global.crypto || global.msCrypto).getRandomValues(out);
-    }
-    return tostring(out);
-  } catch (e) {
-    var browser = global.navigator,
-        plugins = browser && browser.plugins;
-    return [+new Date, global, plugins, global.screen, tostring(pool)];
-  }
-}
-
-//
-// tostring()
-// Converts an array of charcodes to a string
-//
-function tostring(a) {
-  return String.fromCharCode.apply(0, a);
-}
-
-//
-// When seedrandom.js is loaded, we immediately mix a few bits
-// from the built-in RNG into the entropy pool.  Because we do
-// not want to interfere with deterministic PRNG state later,
-// seedrandom will not call math.random on its own again after
-// initialization.
-//
-mixkey(math.random(), pool);
-
-//
-// Nodejs and AMD support: export the implementation as a module using
-// either convention.
-//
-if ((typeof module) == 'object' && module.exports) {
-  module.exports = seedrandom;
-  // When in node.js, try using crypto package for autoseeding.
-  try {
-    nodecrypto = require('crypto');
-  } catch (ex) {}
-} else if ((typeof define) == 'function' && define.amd) {
-  define(function() { return seedrandom; });
-} else {
-  // When included as a plain script, set up Math.seedrandom global.
-  math['seed' + rngname] = seedrandom;
-}
-
-
-// End anonymous scope, and pass initial values.
-})(
-  // global: `self` in browsers (including strict mode and web workers),
-  // otherwise `this` in Node and other environments
-  (typeof self !== 'undefined') ? self : this,
-  [],     // pool: entropy pool starts empty
-  Math    // math: package containing random, pow, and seedrandom
-);
-
-},{"crypto":151}],170:[function(require,module,exports){
 const parse = require('../dist/tidal.js').parse
 const query = require('./queryArc.js' ).queryArc
 const Fraction = require( 'fraction.js' )
@@ -16985,7 +16267,7 @@ const Pattern = ( patternString, opts ) => {
 
 module.exports = Pattern
 
-},{"../dist/tidal.js":159,"./queryArc.js":171,"fraction.js":161}],171:[function(require,module,exports){
+},{"../dist/tidal.js":164,"./queryArc.js":166,"fraction.js":75}],166:[function(require,module,exports){
 const Fraction = require( 'fraction.js' )
 const util     = require( 'util' )
 const bjork    = require( 'bjork' ) 
@@ -17573,17 +16855,637 @@ const handlers = {
 
 module.exports.queryArc = queryArc
 
-},{"bjork":160,"fraction.js":161,"seedrandom":162,"util":158}]},{},[114])(114)
-});
-let processor = null
+},{"bjork":72,"fraction.js":75,"seedrandom":155,"util":169}],167:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
 
+},{}],168:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],169:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":168,"_process":154,"inherits":167}]},{},[35])(35)
+});
 class GibberishProcessor extends AudioWorkletProcessor {
   static get parameterDescriptors() {}
 
   constructor( options ) {
     super( options )
     
-    Gibberish = window.Gibberish
+    Gibberish = global.Gibberish
     Gibberish.ctx = { sampleRate }
     Gibberish.genish.hasWorklet = false
     Gibberish.preventProxy = true
@@ -17600,7 +17502,6 @@ class GibberishProcessor extends AudioWorkletProcessor {
     Gibberish.worklet = { ugens: this.ugens }
 
     this.ugens.set( Gibberish.id, Gibberish )
-    processor = this
 
     this.messages = []
   }
@@ -17880,5 +17781,5 @@ class GibberishProcessor extends AudioWorkletProcessor {
     return true
   }
 }
-window.Gibberish.workletProcessor = GibberishProcessor 
-           registerProcessor( 'gibberish', window.Gibberish.workletProcessor );
+global.Gibberish.workletProcessor = GibberishProcessor 
+           registerProcessor( 'gibberish', global.Gibberish.workletProcessor );
