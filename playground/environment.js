@@ -6,6 +6,8 @@ const Graphics = require( 'gibber.graphics.lib' )
 const createProxies = require( './proxies.js' )
 const codeMarkup = require( './codeMarkup.js' )
 
+const Toastr = require('toastr')
+
 const CodeMirror = require( 'codemirror' )
 require("../node_modules/codemirror/addon/dialog/dialog.js")
 require("../node_modules/acorn/dist/acorn.js")
@@ -249,7 +251,16 @@ lead.note.seq(
 
   const workletPath = './gibberish_worklet.js' 
   const start = () => {
-    cm.setValue( defaultCode )
+
+    if( window.location.search !== '' ) {
+      // use slice to get rid of ?
+      const val = atob( window.location.search.slice(1) )
+      cm.setValue(val)
+    }else{
+      cm.setValue( defaultCode )
+    }
+
+    
     const promises = Gibber.init([
       {
         name:    'Audio',
@@ -660,3 +671,37 @@ var flash = function(cm, pos) {
 
   window.setTimeout(cb, 250);
 }
+
+window.getlink = function( name='link' ) {
+  const lines = cm.getValue().split('\n')
+  if( lines[ lines.length - 1].indexOf('getlink') > -1 ) {
+    lines.pop()
+  }
+
+  const code = btoa( lines.join('\n' ) )
+  const link = `${window.location.protocol}//${window.location.host}${window.location.pathname}?${code}`
+
+  Toastr.options = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": false,
+    "progressBar": false,
+    "positionClass": "toast-bottom-center",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": 0,
+    "extendedTimeOut": 0,
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut",
+    "tapToDismiss": false
+  }
+
+  Toastr["info"](`<a href="${link}">${name}</a>`, "Your sketch link:")
+
+  return link
+}
+

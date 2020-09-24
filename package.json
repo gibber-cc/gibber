@@ -10,6 +10,7 @@
     "gulp-uglify": "^3.0.0",
     "serialize-javascript": "^1.5.0",
     "tern": "^0.24.1",
+    "toastr": "^2.1.4",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.0"
