@@ -25,6 +25,27 @@ body {
   box-sizing:border-box !important;
 }
 
+select {
+  width:15em
+}
+.connect {
+  margin-left:.5em 
+}
+button, input {
+  background:black;
+  border:1px solid #666;
+  color:#ddd;
+  font-family: Helvetica Neue, sans-serif;
+  background:rgba(46,50,53,1);
+}
+
+input { width:6em }
+
+label { 
+font-size:.8em; 
+margin-left:2em;
+}
+
 #graphics {
   width:100%;
   height:100%;

@@ -13,7 +13,10 @@
     "toastr": "^2.1.4",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
-    "watchify": "^3.11.0"
+    "watchify": "^3.11.0",
+    "y-codemirror": "^2.0.9",
+    "y-websocket": "^1.3.3",
+    "yjs": "^13.3.2"
   },
   "dependencies": {
     "acorn": "^6.2.0",
@@ -21,7 +24,9 @@
     "gibber.audio.lib": "latest",
     "gibber.core.lib": "latest",
     "gibber.graphics.lib": "latest",
-    "http-server": "^0.12.3"
+    "http-server": "^0.12.3",
+    "node-static": "^0.7.11",
+    "ws": "^7.3.1"
   },
   "scripts": {
     "install": "npx gulp",

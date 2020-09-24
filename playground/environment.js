@@ -5,6 +5,7 @@ const Graphics = require( 'gibber.graphics.lib' )
 
 const createProxies = require( './proxies.js' )
 const codeMarkup = require( './codeMarkup.js' )
+const share      = require( './share.js' )
 
 const Toastr = require('toastr')
 
@@ -51,6 +52,7 @@ window.onload = function() {
     extraKeys:{ 'Ctrl-Space':'autocomplete' },
     hintOptions:{ hint:CodeMirror.hint.javascript }
   })
+
 
   Babel.registerPlugin( 'jsdsp', jsdsp )
 
@@ -728,3 +730,35 @@ window.getlink = function( name='link' ) {
   return link
 }
 
+window.addEventListener('load', function() {
+  document.querySelector('#connect').addEventListener( 'click', function() {
+    const closeconnect = function() {
+      share( cm, document.querySelector('#connectname' ).value,  document.querySelector('#connectroom' ).value )
+      return true
+    }
+
+    Toastr.options = {
+      "debug": false,
+      "closeButton": true,
+      "closeHtml": "<button>go</button>",
+      "newestOnTop": false,
+      "progressBar": false,
+      "positionClass": "toast-top-center",
+      "preventDuplicates": false,
+      "onclick": null,
+      "onCloseClick": closeconnect,
+      "showDuration": "300",
+      "hideDuration": "1000",
+      "timeOut": 0,
+      "extendedTimeOut": 0,
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut",
+      "tapToDismiss": false
+    }
+
+    const t = Toastr["info"]( "<input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'> ")
+  })
+
+})
