@@ -672,6 +672,27 @@ var flash = function(cm, pos) {
   window.setTimeout(cb, 250);
 }
 
+// taken wih gratitude from https://stackoverflow.com/a/52082569
+function copyToClipboard(text) {
+    var selected = false
+    var el = document.createElement('textarea')
+    el.value = text
+    el.setAttribute('readonly', '')
+    el.style.position = 'absolute'
+    el.style.left = '-9999px'
+    document.body.appendChild(el)
+    if (document.getSelection().rangeCount > 0) {
+        selected = document.getSelection().getRangeAt(0)
+    }
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+    if (selected) {
+        document.getSelection().removeAllRanges()
+        document.getSelection().addRange(selected)
+    }
+}
+
 window.getlink = function( name='link' ) {
   const lines = cm.getValue().split('\n')
   if( lines[ lines.length - 1].indexOf('getlink') > -1 ) {
@@ -686,7 +707,7 @@ window.getlink = function( name='link' ) {
     "debug": false,
     "newestOnTop": false,
     "progressBar": false,
-    "positionClass": "toast-bottom-center",
+    "positionClass": "toast-top-center",
     "preventDuplicates": false,
     "onclick": null,
     "showDuration": "300",
@@ -700,7 +721,9 @@ window.getlink = function( name='link' ) {
     "tapToDismiss": false
   }
 
-  Toastr["info"](`<a href="${link}">${name}</a>`, "Your sketch link:")
+  copyToClipboard( link )
+  //Toastr["info"](`<a href="${link}">${name}</a>`, "Your sketch link:")
+  Toastr["success"]("Your sketch link was copied to the clipboard.")
 
   return link
 }
