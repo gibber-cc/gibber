@@ -68134,6 +68134,13 @@ window.addEventListener( 'keydown', e => {
   }
 })
 
+let isNetworked = false
+
+const runCodeOverNetwork = function( selectedCode ) {
+  console.log( 'sending:', selectedCode )
+  __socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
+}
+
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
@@ -68148,6 +68155,8 @@ CodeMirror.keyMap.playground =  {
   ${selectedCode.code}
 }`
       code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
+
+      runCodeOverNetwork( selectedCode )
 
       flash( cm, selectedCode.selection )
 
@@ -68450,11 +68459,13 @@ window.getlink = function( name='link' ) {
 
   return link
 }
-
+let __socket = null
 window.addEventListener('load', function() {
   document.querySelector('#connect').addEventListener( 'click', function() {
     const closeconnect = function() {
-      share( cm, document.querySelector('#connectname' ).value,  document.querySelector('#connectroom' ).value )
+      const { socket } = share( cm, document.querySelector('#connectname' ).value,  document.querySelector('#connectroom' ).value )
+      __socket = socket
+      isNetworked = true
       return true
     }
 
@@ -68479,7 +68490,7 @@ window.addEventListener('load', function() {
       "tapToDismiss": false
     }
 
-    const t = Toastr["info"]( "<input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'> ")
+    const t = Toastr["info"]( "<input style='font-family:monospace' type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' style='font-family:monospace' id='connectroom'> ")
   })
 
 })
@@ -68637,7 +68648,8 @@ const initShare = function( editor, username='anonymous', room='default' ) {
             console.log( msg.body )
             break
           case 'eval':
-            eval( msg.body )
+            console.log( 'eval cmd' )
+            runNetworkedCode( msg.body )
             break
           default:
             console.log( 'error for message:', event.data )
@@ -68648,6 +68660,70 @@ const initShare = function( editor, username='anonymous', room='default' ) {
         socket.send( JSON.stringify( msg ) )
       }
 
+      const runNetworkedCode = function( selectedCode ) {
+
+        window.genish = Gibber.Audio.Gen.ugens
+      //var code = shouldUseJSDSP ? Babel.transform(selectedCode.code, { presets: [], plugins:['jsdsp'] }).code : selectedCode.code
+      let code = `{
+  'use jsdsp'
+  ${selectedCode.code}
+}`
+        code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
+
+        console.log( selectedCode )
+
+        flash( editor, selectedCode.selection )
+
+        const func = new Function( code )
+
+        Gibber.shouldDelay = Gibber.Audio.shouldDelay = true
+
+        const preWindowMembers = Object.keys( window )
+        func()
+        const postWindowMembers = Object.keys( window )
+
+        if( preWindowMembers.length !== postWindowMembers.length ) {
+          createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
+        }
+      
+        //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
+        const markupFunction = () => {
+          Environment.codeMarkup.process( 
+            selectedCode.code, 
+            selectedCode.selection, 
+            editor, 
+            Gibber.currentTrack 
+          ) 
+        }
+
+        markupFunction.origin = func
+
+        if( !Environment.debug ) {
+          Gibber.Scheduler.functionsToExecute.push( func )
+          if( Environment.annotations === true ) {
+            Gibber.Scheduler.functionsToExecute.push( markupFunction  )
+          }
+        }else{
+          //func()
+          if( Environment.annotations === true ) markupFunction()
+        }
+      }
+var flash = function(cm, pos) {
+  var sel,
+  cb = function() { sel.clear() }
+
+  if (pos !== null) {
+    if( pos.start ) { // if called from a findBlock keymap
+      sel = cm.markText( pos.start, pos.end, { className:"CodeMirror-highlight" } );
+    }else{ // called with single line
+      sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
+    }
+  }else{ // called with selected block
+    sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } );
+  }
+
+  window.setTimeout(cb, 250);
+}
       //resolve({ provider, ydoc, yText, Y, socket, send })
       return { provider, ydoc, yText, Y, socket, send }
 

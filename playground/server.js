@@ -23,6 +23,7 @@ const wss2= new WebSocket.Server({ port: 8081 });
 wss2.on('connection', function connection(ws) {
   ws.on('message', function incoming(data) {
     const msg = JSON.parse( data ) 
+    console.log( 'message:', msg )
 
     wss2.clients.forEach(function each(client) {
       if( ws !== client ) {

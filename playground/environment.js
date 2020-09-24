@@ -413,6 +413,13 @@ window.addEventListener( 'keydown', e => {
   }
 })
 
+let isNetworked = false
+
+const runCodeOverNetwork = function( selectedCode ) {
+  console.log( 'sending:', selectedCode )
+  __socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
+}
+
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
@@ -427,6 +434,8 @@ CodeMirror.keyMap.playground =  {
   ${selectedCode.code}
 }`
       code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
+
+      runCodeOverNetwork( selectedCode )
 
       flash( cm, selectedCode.selection )
 
@@ -729,11 +738,13 @@ window.getlink = function( name='link' ) {
 
   return link
 }
-
+let __socket = null
 window.addEventListener('load', function() {
   document.querySelector('#connect').addEventListener( 'click', function() {
     const closeconnect = function() {
-      share( cm, document.querySelector('#connectname' ).value,  document.querySelector('#connectroom' ).value )
+      const { socket } = share( cm, document.querySelector('#connectname' ).value,  document.querySelector('#connectroom' ).value )
+      __socket = socket
+      isNetworked = true
       return true
     }
 
@@ -758,7 +769,7 @@ window.addEventListener('load', function() {
       "tapToDismiss": false
     }
 
-    const t = Toastr["info"]( "<input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'> ")
+    const t = Toastr["info"]( "<input style='font-family:monospace' type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' style='font-family:monospace' id='connectroom'> ")
   })
 
 })
