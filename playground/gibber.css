@@ -29,8 +29,14 @@ select {
   width:15em
 }
 .connect {
-  margin-left:.5em 
+  margin:.5em; 
+  font-family:monospace;
+  width:14em;
+  margin-right:1em;
+  right:0;
+  display:block
 }
+
 button, input {
   background:black;
   border:1px solid #666;

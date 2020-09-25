@@ -7670,7 +7670,7 @@ const Graphics = {
           key:name,
           priority:0, 
         })
-        .start( Gibber.Auido.Clock.time( delay ) )
+        .start( Gibber.Audio.Clock.time( delay ) )
 
         obj.__sequencers.push( obj[ '__'+name ][ number ] )
         // return object for method chaining
@@ -68459,39 +68459,49 @@ window.getlink = function( name='link' ) {
 
   return link
 }
+
 let __socket = null
+let __connected = false
+
 window.addEventListener('load', function() {
-  document.querySelector('#connect').addEventListener( 'click', function() {
+  document.querySelector('#connect').onclick = function() {
     const closeconnect = function() {
-      const { socket } = share( cm, document.querySelector('#connectname' ).value,  document.querySelector('#connectroom' ).value )
+      const { socket } = share( 
+        cm, 
+        document.querySelector('#connectname' ).value,  
+        document.querySelector('#connectroom' ).value 
+      )
       __socket = socket
       isNetworked = true
+      menu.remove()
+
+      document.querySelector('#connect').innerText = 'disconnect'
+      document.querySelector('#connect').onclick = null
       return true
     }
 
-    Toastr.options = {
-      "debug": false,
-      "closeButton": true,
-      "closeHtml": "<button>go</button>",
-      "newestOnTop": false,
-      "progressBar": false,
-      "positionClass": "toast-top-center",
-      "preventDuplicates": false,
-      "onclick": null,
-      "onCloseClick": closeconnect,
-      "showDuration": "300",
-      "hideDuration": "1000",
-      "timeOut": 0,
-      "extendedTimeOut": 0,
-      "showEasing": "swing",
-      "hideEasing": "linear",
-      "showMethod": "fadeIn",
-      "hideMethod": "fadeOut",
-      "tapToDismiss": false
-    }
+    const menu = document.createElement('div')
+    menu.setAttribute('id', 'connectmenu')
+    menu.style.width = '12.5em'
+    menu.style.height = '5.5em'
+    menu.style.position = 'absolute';
+    menu.style.display = 'block';
+    menu.style.border = '1px #666 solid'
+    menu.style.borderTop = 0
+    menu.style.top = '3em'
+    menu.style.right = 0 
+    menu.style.zIndex = 1000
 
-    const t = Toastr["info"]( "<input style='font-family:monospace' type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' style='font-family:monospace' id='connectroom'> ")
-  })
+    menu.innerHTML = `<input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><button id='connect-btn' style='float:right; margin-right:.5em'>go</button>`
+
+    document.body.appendChild( menu )
+    document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'
+    document.getElementById('connectname').focus()
+    document.getElementById('connectname').select()
+
+    document.getElementById('connect-btn').onclick = closeconnect
+    
+  }
 
 })
 
@@ -74257,6 +74267,8 @@ const Scheduler = {
 
       this.phase++
     }
+
+    return this.phase
   },
 
   advance( amt ) {
@@ -75101,6 +75113,12 @@ const utilities = {
   },
 
   workletHandlers: {
+    phase( event ) {
+      Gibberish.phase = event.data.value
+      if( typeof Gibberish.onphaseupdate === 'function' ) {
+        Gibberish.onphaseupdate( Gibberish.phase )
+      }
+    },
     __sequencer( event ) {
       const message = event.data
       const id = message.id
