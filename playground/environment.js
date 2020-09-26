@@ -1,4 +1,3 @@
-//const Gibber = window.Gibber = require( 'gibber.audio.lib' )
 const Gibber = window.Gibber = require( 'gibber.core.lib' )
 const Audio  = require( 'gibber.audio.lib' )
 const Graphics = require( 'gibber.graphics.lib' )
@@ -30,7 +29,7 @@ require("../node_modules/codemirror/addon/hint/show-hint.js")
 require("../node_modules/codemirror/addon/hint/javascript-hint.js")
 require("../node_modules/codemirror/addon/tern/tern.js")
 
-    
+
 let cm, cmconsole, exampleCode, 
     isStereo = false,
     environment = {

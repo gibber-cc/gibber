@@ -3,7 +3,9 @@ const WebSocket         = require('ws'),
       StaticServer      = require('node-static').Server,
       setupWSConnection = require('y-websocket/bin/utils.js').setupWSConnection,
       production        = process.env.PRODUCTION != null,
-      port              = process.env.PORT || 9080
+      port              = process.env.SERVER_PORT || 9080 
+
+require( 'dotenv' ).config()
 
 const staticServer = new StaticServer('.', { cache: production ? 3600 : false, gzip: production })
 
@@ -18,7 +20,7 @@ wss.on('connection', (conn, req) => setupWSConnection(conn, req, { gc: req.url.s
 
 server.listen( port )
 
-const wss2= new WebSocket.Server({ port: 8081 });
+const wss2= new WebSocket.Server({ port: process.env.SOCKET_PORT || 9081 });
  
 wss2.on('connection', function connection(ws) {
   ws.on('message', function incoming(data) {

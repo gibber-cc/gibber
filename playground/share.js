@@ -1,15 +1,11 @@
-//import * as Y from 'yjs'
-const Y = require('yjs')
-//import { WebsocketProvider } from 'y-websocket'
-const WebsocketProvider = require('y-websocket').WebsocketProvider
-//import { CodemirrorBinding } from 'y-codemirror'
-const CodemirrorBinding = require('y-codemirror').CodemirrorBinding
+const Y = require( 'yjs' ),
+      WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
+      CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
 
 const initShare = function( editor, username='anonymous', room='default' ) {
       const ydoc = new Y.Doc()
       const provider = new WebsocketProvider(
-       'ws://127.0.0.1:8080',
-       //'ws://gibber.cc:8080',
+       'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SERVER_PORT,
        room,
        ydoc,
        { connect:true }
@@ -20,7 +16,8 @@ const initShare = function( editor, username='anonymous', room='default' ) {
 
       binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
 
-      const socket = new WebSocket('ws://127.0.0.1:8081')
+      // process.env variables are substituted in build script, and defined in .env file
+      const socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
 
       // Listen for messages
       socket.addEventListener('message', function (event) {

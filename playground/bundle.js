@@ -72178,7 +72178,6 @@ return Marker
 
 
 },{"./annotations/markup/arrayExpression.js":236,"./annotations/markup/binaryExpression.js":237,"./annotations/markup/callExpression.js":238,"./annotations/markup/identifier.js":239,"./annotations/markup/literal.js":240,"./annotations/markup/tidal.js":241,"./annotations/markup/unaryExpression.js":242,"./annotations/standalone/hexStepsAnnotations.js":243,"./annotations/standalone/scoreAnnotation.js":244,"./annotations/standalone/stepsAnnotation.js":245,"./annotations/update/anonymousAnnotation.js":246,"./annotations/update/createBorderCycle.js":247,"./annotations/update/euclidAnnotation.js":248,"./annotations/update/lookupAnnotation.js":249,"./annotations/visitors.js":251,"./annotations/waveform.js":252,"acorn":130,"acorn-walk":129}],254:[function(require,module,exports){
-//const Gibber = window.Gibber = require( 'gibber.audio.lib' )
 const Gibber = window.Gibber = require( 'gibber.core.lib' )
 const Audio  = require( 'gibber.audio.lib' )
 const Graphics = require( 'gibber.graphics.lib' )
@@ -72210,7 +72209,7 @@ require("../node_modules/codemirror/addon/hint/show-hint.js")
 require("../node_modules/codemirror/addon/hint/javascript-hint.js")
 require("../node_modules/codemirror/addon/tern/tern.js")
 
-    
+
 let cm, cmconsole, exampleCode, 
     isStereo = false,
     environment = {
@@ -72992,8 +72991,8 @@ const CodemirrorBinding = require('y-codemirror').CodemirrorBinding
 const initShare = function( editor, username='anonymous', room='default' ) {
       const ydoc = new Y.Doc()
       const provider = new WebsocketProvider(
-       'ws://127.0.0.1:8080',
-       //'ws://gibber.cc:8080',
+       'ws://'+ "127.0.0.1" +':' + "9080",
+       //`ws://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
        room,
        ydoc,
        { connect:true }
@@ -73004,7 +73003,7 @@ const initShare = function( editor, username='anonymous', room='default' ) {
 
       binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
 
-      const socket = new WebSocket('ws://127.0.0.1:8081')
+      const socket = new WebSocket( 'ws://'+ "127.0.0.1" +':' + "9091" )
 
       // Listen for messages
       socket.addEventListener('message', function (event) {
