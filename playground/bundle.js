@@ -72829,7 +72829,7 @@ window.addEventListener('load', function() {
       isNetworked = true
 
       environment.showArgHints = false
-      environemnt.showCompletions = false
+      environment.showCompletions = false
       
       menu.remove()
 
