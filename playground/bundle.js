@@ -72827,6 +72827,10 @@ window.addEventListener('load', function() {
       )
       __socket = socket
       isNetworked = true
+
+      environment.showArgHints = false
+      environemnt.showCompletions = false
+      
       menu.remove()
 
       document.querySelector('#connect').innerText = 'disconnect'
