@@ -415,13 +415,15 @@ window.addEventListener( 'keydown', e => {
 let isNetworked = false
 
 const runCodeOverNetwork = function( selectedCode ) {
-  console.log( 'sending:', selectedCode )
   __socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
 }
 
-const runCode = function( cm, useBlock=false, useDelay=true ) {
+// shouldRunNetworkCode is used to prevent recursive ws sending of code
+// while isNetworked is used to test for acive ws connection
+// selectedCode can be set via ws messages
+environment.runCode = function( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null ) {
   try {
-    const selectedCode = getSelectionCodeColumn( cm, useBlock )
+    if( selectedCode === null ) selectedCode = environment.getSelectionCodeColumn( cm, useBlock )
 
     window.genish = Gibber.Audio.Gen.ugens
     
@@ -431,9 +433,9 @@ const runCode = function( cm, useBlock=false, useDelay=true ) {
 }`
     code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
 
-    if( isNetworked ) runCodeOverNetwork( selectedCode )
+    if( isNetworked && shouldRunNetworkCode ) runCodeOverNetwork( selectedCode )
 
-    flash( cm, selectedCode.selection )
+    environment.flash( cm, selectedCode.selection )
 
     const func = new Function( code )
 
@@ -447,7 +449,6 @@ const runCode = function( cm, useBlock=false, useDelay=true ) {
       createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
     }
 
-    //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
     const markupFunction = () => {
       Environment.codeMarkup.process( 
         selectedCode.code, 
@@ -479,24 +480,22 @@ const runCode = function( cm, useBlock=false, useDelay=true ) {
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
-  'Ctrl-Enter'( cm )  { runCode( cm, false, true  ) },
-  'Shift-Enter'( cm ) { runCode( cm, false, false ) },
-  'Alt-Enter'( cm )   { runCode( cm, true,  true  ) },
+  'Ctrl-Enter'( cm )  { environment.runCode( cm, false, true  ) },
+  'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
+  'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
 
   'Ctrl-.'( cm ) {
     Gibber.clear()
 
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
-    //Gibberish.generateCallback()
-    //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
   'Shift-Ctrl-C'(cm) { toggleSidebar() },
 
   "Shift-Ctrl-=": function(cm) {
     fontSize += .2
     document.querySelector('#editor').style.fontSize = fontSize + 'em'
-    document.querySelector('#editor').style.paddingLeft= (fontSize/4) + 'em'
+    document.querySelector('#editor').style.paddingLeft = (fontSize/4) + 'em'
     cm.refresh()
   },
 
@@ -522,7 +521,7 @@ const toggleSidebar = () => {
     Environment.sidebar.style.display = Environment.sidebar.isVisible ? 'block' : 'none'
 }
 
-const getSelectionCodeColumn = function( cm, findBlock ) {
+environment.getSelectionCodeColumn = function( cm, findBlock ) {
   let  pos = cm.getCursor(), 
   text = null
 
@@ -562,7 +561,7 @@ const getSelectionCodeColumn = function( cm, findBlock ) {
   return { selection: pos, code: text }
 }
 
-const flash = function(cm, pos) {
+environment.flash = function(cm, pos) {
   let sel,
       cb = function() { sel.clear() }
 

@@ -72595,13 +72595,15 @@ window.addEventListener( 'keydown', e => {
 let isNetworked = false
 
 const runCodeOverNetwork = function( selectedCode ) {
-  console.log( 'sending:', selectedCode )
   __socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
 }
 
-const runCode = function( cm, useBlock=false, useDelay=true ) {
+// shouldRunNetworkCode is used to prevent recursive ws sending of code
+// while isNetworked is used to test for acive ws connection
+// selectedCode can be set via ws messages
+environment.runCode = function( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null ) {
   try {
-    const selectedCode = getSelectionCodeColumn( cm, useBlock )
+    if( selectedCode === null ) selectedCode = environment.getSelectionCodeColumn( cm, useBlock )
 
     window.genish = Gibber.Audio.Gen.ugens
     
@@ -72611,9 +72613,9 @@ const runCode = function( cm, useBlock=false, useDelay=true ) {
 }`
     code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
 
-    if( isNetworked ) runCodeOverNetwork( selectedCode )
+    if( isNetworked && shouldRunNetworkCode ) runCodeOverNetwork( selectedCode )
 
-    flash( cm, selectedCode.selection )
+    environment.flash( cm, selectedCode.selection )
 
     const func = new Function( code )
 
@@ -72627,7 +72629,6 @@ const runCode = function( cm, useBlock=false, useDelay=true ) {
       createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
     }
 
-    //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
     const markupFunction = () => {
       Environment.codeMarkup.process( 
         selectedCode.code, 
@@ -72659,24 +72660,22 @@ const runCode = function( cm, useBlock=false, useDelay=true ) {
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
-  'Ctrl-Enter'( cm )  { runCode( cm, false, true  ) },
-  'Shift-Enter'( cm ) { runCode( cm, false, false ) },
-  'Alt-Enter'( cm )   { runCode( cm, true,  true  ) },
+  'Ctrl-Enter'( cm )  { environment.runCode( cm, false, true  ) },
+  'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
+  'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
 
   'Ctrl-.'( cm ) {
     Gibber.clear()
 
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
-    //Gibberish.generateCallback()
-    //cmconsole.setValue( fixCallback( Gibberish.callback.toString() ) )
   },
   'Shift-Ctrl-C'(cm) { toggleSidebar() },
 
   "Shift-Ctrl-=": function(cm) {
     fontSize += .2
     document.querySelector('#editor').style.fontSize = fontSize + 'em'
-    document.querySelector('#editor').style.paddingLeft= (fontSize/4) + 'em'
+    document.querySelector('#editor').style.paddingLeft = (fontSize/4) + 'em'
     cm.refresh()
   },
 
@@ -72702,7 +72701,7 @@ const toggleSidebar = () => {
     Environment.sidebar.style.display = Environment.sidebar.isVisible ? 'block' : 'none'
 }
 
-const getSelectionCodeColumn = function( cm, findBlock ) {
+environment.getSelectionCodeColumn = function( cm, findBlock ) {
   let  pos = cm.getCursor(), 
   text = null
 
@@ -72742,7 +72741,7 @@ const getSelectionCodeColumn = function( cm, findBlock ) {
   return { selection: pos, code: text }
 }
 
-const flash = function(cm, pos) {
+environment.flash = function(cm, pos) {
   let sel,
       cb = function() { sel.clear() }
 
@@ -72981,118 +72980,42 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 module.exports = createProxies
 
 },{}],256:[function(require,module,exports){
-//import * as Y from 'yjs'
-const Y = require('yjs')
-//import { WebsocketProvider } from 'y-websocket'
-const WebsocketProvider = require('y-websocket').WebsocketProvider
-//import { CodemirrorBinding } from 'y-codemirror'
-const CodemirrorBinding = require('y-codemirror').CodemirrorBinding
+const Y = require( 'yjs' ),
+      WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
+      CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
 
 const initShare = function( editor, username='anonymous', room='default' ) {
-      const ydoc = new Y.Doc()
-      const provider = new WebsocketProvider(
-       'ws://'+ "127.0.0.1" +':' + "9080",
-       //`ws://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
-       room,
-       ydoc,
-       { connect:true }
-      )
+  const ydoc = new Y.Doc(),
+        provider = new WebsocketProvider(
+          'ws://'+ "127.0.0.1" +':' + "9080",
+          room,
+          ydoc,
+          { connect:true }
+        ),
+        yText = ydoc.getText( 'codemirror' ),
+        binding = new CodemirrorBinding( yText, editor, provider.awareness ),
+        // process.env variables are substituted in build script, and defined in .env file
+        socket = new WebSocket( 'ws://'+ "127.0.0.1" +':' + "9091" )
 
-      const yText = ydoc.getText('codemirror')
-      const binding = new CodemirrorBinding(yText, editor, provider.awareness)
+  binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
 
-      binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
+  // Listen for messages
+  socket.addEventListener('message', function (event) {
+    const msg = JSON.parse( event.data )
 
-      const socket = new WebSocket( 'ws://'+ "127.0.0.1" +':' + "9091" )
-
-      // Listen for messages
-      socket.addEventListener('message', function (event) {
-        const msg = JSON.parse( event.data )
-
-        switch( msg.cmd ) {
-          case 'msg':
-            console.log( msg.body )
-            break
-          case 'eval':
-            console.log( 'eval cmd' )
-            runNetworkedCode( msg.body )
-            break
-          default:
-            console.log( 'error for message:', event.data )
-        }
-      })
-
-      const send = function( msg ) {
-        socket.send( JSON.stringify( msg ) )
-      }
-
-      const runNetworkedCode = function( selectedCode ) {
-
-        window.genish = Gibber.Audio.Gen.ugens
-      //var code = shouldUseJSDSP ? Babel.transform(selectedCode.code, { presets: [], plugins:['jsdsp'] }).code : selectedCode.code
-      let code = `{
-  'use jsdsp'
-  ${selectedCode.code}
-}`
-        code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
-
-        console.log( selectedCode )
-
-        flash( editor, selectedCode.selection )
-
-        const func = new Function( code )
-
-        Gibber.shouldDelay = Gibber.Audio.shouldDelay = true
-
-        const preWindowMembers = Object.keys( window )
-        func()
-        const postWindowMembers = Object.keys( window )
-
-        if( preWindowMembers.length !== postWindowMembers.length ) {
-          createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
-        }
-      
-        //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
-        const markupFunction = () => {
-          Environment.codeMarkup.process( 
-            selectedCode.code, 
-            selectedCode.selection, 
-            editor, 
-            Gibber.currentTrack 
-          ) 
-        }
-
-        markupFunction.origin = func
-
-        if( !Environment.debug ) {
-          Gibber.Scheduler.functionsToExecute.push( func )
-          if( Environment.annotations === true ) {
-            Gibber.Scheduler.functionsToExecute.push( markupFunction  )
-          }
-        }else{
-          //func()
-          if( Environment.annotations === true ) markupFunction()
-        }
-      }
-var flash = function(cm, pos) {
-  var sel,
-  cb = function() { sel.clear() }
-
-  if (pos !== null) {
-    if( pos.start ) { // if called from a findBlock keymap
-      sel = cm.markText( pos.start, pos.end, { className:"CodeMirror-highlight" } );
-    }else{ // called with single line
-      sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
+    switch( msg.cmd ) {
+      case 'msg':
+        console.log( msg.body )
+        break
+      case 'eval':
+        Environment.runCode( editor, false, true, false, msg.body ) 
+        break
+      default:
+        console.log( 'error for message:', event.data )
     }
-  }else{ // called with selected block
-    sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } );
-  }
+  })
 
-  window.setTimeout(cb, 250);
-}
-      //resolve({ provider, ydoc, yText, Y, socket, send })
-      return { provider, ydoc, yText, Y, socket, send }
-
+  return { provider, ydoc, yText, Y, socket }
 }
 
 module.exports = initShare 
