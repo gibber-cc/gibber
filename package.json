@@ -21,6 +21,7 @@
   "dependencies": {
     "acorn": "^6.2.0",
     "acorn-walk": "^6.2.0",
+    "dotenv": "^8.2.0",
     "gibber.audio.lib": "latest",
     "gibber.core.lib": "latest",
     "gibber.graphics.lib": "latest",

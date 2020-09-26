@@ -420,174 +420,70 @@ const runCodeOverNetwork = function( selectedCode ) {
   __socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
 }
 
+const runCode = function( cm, useBlock=false, useDelay=true ) {
+  try {
+    const selectedCode = getSelectionCodeColumn( cm, useBlock )
+
+    window.genish = Gibber.Audio.Gen.ugens
+    
+    let code = `{
+  'use jsdsp'
+  ${selectedCode.code}
+}`
+    code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
+
+    if( isNetworked ) runCodeOverNetwork( selectedCode )
+
+    flash( cm, selectedCode.selection )
+
+    const func = new Function( code )
+
+    Gibber.shouldDelay = Gibber.Audio.shouldDelay = useDelay 
+
+    const preWindowMembers = Object.keys( window )
+    func()
+    const postWindowMembers = Object.keys( window )
+
+    if( preWindowMembers.length !== postWindowMembers.length ) {
+      createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
+    }
+
+    //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
+    const markupFunction = () => {
+      Environment.codeMarkup.process( 
+        selectedCode.code, 
+        selectedCode.selection, 
+        cm, 
+        Gibber.currentTrack 
+      ) 
+    }
+
+    markupFunction.origin = func
+
+    if( !Environment.debug ) {
+      Gibber.Scheduler.functionsToExecute.push( func )
+      if( Environment.annotations === true ) {
+        Gibber.Scheduler.functionsToExecute.push( markupFunction  )
+      }
+    }else{
+      //func()
+      if( Environment.annotations === true ) markupFunction()
+    }
+  } catch (e) {
+    console.log( e )
+    return
+  }
+
+  Gibber.shouldDelay = false
+}
+
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
-  'Ctrl-Enter'( cm ) {
-    try {
-      const selectedCode = getSelectionCodeColumn( cm, false )
+  'Ctrl-Enter'( cm )  { runCode( cm, false, true  ) },
+  'Shift-Enter'( cm ) { runCode( cm, false, false ) },
+  'Alt-Enter'( cm )   { runCode( cm, true,  true  ) },
 
-      window.genish = Gibber.Audio.Gen.ugens
-      //var code = shouldUseJSDSP ? Babel.transform(selectedCode.code, { presets: [], plugins:['jsdsp'] }).code : selectedCode.code
-      let code = `{
-  'use jsdsp'
-  ${selectedCode.code}
-}`
-      code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
-
-      runCodeOverNetwork( selectedCode )
-
-      flash( cm, selectedCode.selection )
-
-      const func = new Function( code )
-
-      Gibber.shouldDelay = Gibber.Audio.shouldDelay = true
-
-      const preWindowMembers = Object.keys( window )
-      func()
-      const postWindowMembers = Object.keys( window )
-
-      if( preWindowMembers.length !== postWindowMembers.length ) {
-        createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
-      }
-      
-      //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
-      const markupFunction = () => {
-        Environment.codeMarkup.process( 
-          selectedCode.code, 
-          selectedCode.selection, 
-          cm, 
-          Gibber.currentTrack 
-        ) 
-      }
-
-      markupFunction.origin = func
-
-      if( !Environment.debug ) {
-        Gibber.Scheduler.functionsToExecute.push( func )
-        if( Environment.annotations === true ) {
-          Gibber.Scheduler.functionsToExecute.push( markupFunction  )
-        }
-      }else{
-        //func()
-        if( Environment.annotations === true ) markupFunction()
-      }
-    } catch (e) {
-      console.log( e )
-      return
-    }
-    
-    Gibber.shouldDelay = false
-  },
-  'Shift-Enter'( cm ) {
-    try {
-      const selectedCode = getSelectionCodeColumn( cm, false )
-
-      window.genish = Gibber.Audio.Gen.ugens
-      //var code = shouldUseJSDSP ? Babel.transform(selectedCode.code, { presets: [], plugins:['jsdsp'] }).code : selectedCode.code
-      let code = `{
-  'use jsdsp'
-  ${selectedCode.code}
-}`
-      code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
-
-      flash( cm, selectedCode.selection )
-
-      const func = new Function( code )
-
-      Gibber.shouldDelay = Gibber.Audio.shouldDelay = false 
-
-      const preWindowMembers = Object.keys( window )
-      func()
-      const postWindowMembers = Object.keys( window )
-
-      if( preWindowMembers.length !== postWindowMembers.length ) {
-        createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
-      }
-      
-      //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack ),
-      const markupFunction = () => {
-        Environment.codeMarkup.process( 
-          selectedCode.code, 
-          selectedCode.selection, 
-          cm, 
-          Gibber.currentTrack 
-        ) 
-      }
-
-      markupFunction.origin = func
-
-      if( !Environment.debug ) {
-        Gibber.Scheduler.functionsToExecute.push( func )
-        if( Environment.annotations === true ) {
-          Gibber.Scheduler.functionsToExecute.push( markupFunction  )
-        }
-      }else{
-        //func()
-        if( Environment.annotations === true ) markupFunction()
-      }
-    } catch (e) {
-      console.log( e )
-      return
-    }
-    
-    Gibber.shouldDelay = false
-  },
-
-  'Alt-Enter'( cm ) {
-    try {
-      var selectedCode = getSelectionCodeColumn( cm, true )
-
-      window.genish = Gibber.Audio.Gen.ugens
-      //var code = shouldUseJSDSP ? Babel.transform(selectedCode.code, { presets: [], plugins:['jsdsp'] }).code : selectedCode.code
-      let code = `{
-  'use jsdsp'
-  ${selectedCode.code}
-}`
-
-      code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
-      flash( cm, selectedCode.selection )
-
-      var func = new Function( code )
-
-      Gibber.shouldDelay = Gibber.Audio.shouldDelay = true 
-      const preWindowMembers = Object.keys( window )
-      func()
-      const postWindowMembers = Object.keys( window )
-
-      if( preWindowMembers.length !== postWindowMembers.length ) {
-        createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
-      }
-
-      //const func = new Function( selectedCode.code ).bind( Gibber.currentTrack )
-      const markupFunction = () => {
-        Environment.codeMarkup.process( 
-          selectedCode.code, 
-          selectedCode.selection, 
-          cm, 
-          Gibber.currentTrack 
-        ) 
-      }
-
-      markupFunction.origin = func
-
-      if( !Environment.debug ) {
-        Gibber.Scheduler.functionsToExecute.push( func )
-        if( Environment.annotations === true ) {
-          Gibber.Scheduler.functionsToExecute.push( markupFunction  )
-        }
-      }else{
-        //func()
-        if( Environment.annotations === true ) markupFunction()
-      }
-
-    } catch (e) {
-      console.log( e )
-      return
-    }
-
-    Gibber.shouldDelay = false
-  },
   'Ctrl-.'( cm ) {
     Gibber.clear()
 
@@ -626,8 +522,9 @@ const toggleSidebar = () => {
 
     Environment.sidebar.style.display = Environment.sidebar.isVisible ? 'block' : 'none'
 }
-var getSelectionCodeColumn = function( cm, findBlock ) {
-  var pos = cm.getCursor(), 
+
+const getSelectionCodeColumn = function( cm, findBlock ) {
+  let  pos = cm.getCursor(), 
   text = null
 
   if( !findBlock ) {
@@ -640,9 +537,9 @@ var getSelectionCodeColumn = function( cm, findBlock ) {
       //pos = null
     }
   }else{
-    var startline = pos.line, 
-    endline = pos.line,
-    pos1, pos2, sel
+    let startline = pos.line, 
+        endline = pos.line,
+        pos1, pos2, sel
 
     while ( startline > 0 && cm.getLine( startline ) !== "" ) { startline-- }
     while ( endline < cm.lineCount() && cm.getLine( endline ) !== "" ) { endline++ }
@@ -656,9 +553,9 @@ var getSelectionCodeColumn = function( cm, findBlock ) {
   }
 
   if( pos.start === undefined ) {
-    var lineNumber = pos.line,
-    start = 0,
-    end = text.length
+    let lineNumber = pos.line,
+        start = 0,
+        end = text.length
 
     pos = { start:{ line:lineNumber, ch:start }, end:{ line:lineNumber, ch: end } }
   }
@@ -666,9 +563,9 @@ var getSelectionCodeColumn = function( cm, findBlock ) {
   return { selection: pos, code: text }
 }
 
-var flash = function(cm, pos) {
-  var sel,
-  cb = function() { sel.clear() }
+const flash = function(cm, pos) {
+  let sel,
+      cb = function() { sel.clear() }
 
   if (pos !== null) {
     if( pos.start ) { // if called from a findBlock keymap
@@ -677,10 +574,10 @@ var flash = function(cm, pos) {
       sel = cm.markText( { line: pos.line, ch:0 }, { line: pos.line, ch:null }, { className: "CodeMirror-highlight" } )
     }
   }else{ // called with selected block
-    sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } );
+    sel = cm.markText( cm.getCursor(true), cm.getCursor(false), { className: "CodeMirror-highlight" } )
   }
 
-  window.setTimeout(cb, 250);
+  window.setTimeout( cb, 250 )
 }
 
 // taken wih gratitude from https://stackoverflow.com/a/52082569
@@ -756,6 +653,8 @@ window.addEventListener('load', function() {
 
       document.querySelector('#connect').innerText = 'disconnect'
       document.querySelector('#connect').onclick = null
+
+      __connected = true
       return true
     }
 
@@ -763,8 +662,8 @@ window.addEventListener('load', function() {
     menu.setAttribute('id', 'connectmenu')
     menu.style.width = '12.5em'
     menu.style.height = '5.5em'
-    menu.style.position = 'absolute';
-    menu.style.display = 'block';
+    menu.style.position = 'absolute'
+    menu.style.display = 'block'
     menu.style.border = '1px #666 solid'
     menu.style.borderTop = 0
     menu.style.top = '3em'
@@ -779,7 +678,6 @@ window.addEventListener('load', function() {
     document.getElementById('connectname').select()
 
     document.getElementById('connect-btn').onclick = closeconnect
-    
   }
 
 })
