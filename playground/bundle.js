@@ -72986,7 +72986,6 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 module.exports = createProxies
 
 },{}],256:[function(require,module,exports){
-(function (process){
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
@@ -72994,7 +72993,7 @@ const Y = require( 'yjs' ),
 const initShare = function( editor, username='anonymous', room='default' ) {
   const ydoc = new Y.Doc(),
         provider = new WebsocketProvider(
-          'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SERVER_PORT,
+          'ws://'+ "127.0.0.1" +':' + "9080",
           room,
           ydoc,
           { connect:true }
@@ -73002,7 +73001,7 @@ const initShare = function( editor, username='anonymous', room='default' ) {
         yText = ydoc.getText( 'codemirror' ),
         binding = new CodemirrorBinding( yText, editor, provider.awareness ),
         // process.env variables are substituted in build script, and defined in .env file
-        socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
+        socket = new WebSocket( 'ws://'+ "127.0.0.1" +':' + "9081" )
 
   binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
 
@@ -73027,8 +73026,7 @@ const initShare = function( editor, username='anonymous', room='default' ) {
 
 module.exports = initShare 
 
-}).call(this,require('_process'))
-},{"_process":200,"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
+},{"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
