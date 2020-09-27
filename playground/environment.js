@@ -266,7 +266,7 @@ lead.note.seq(
       {
         name:    'Audio',
         plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath }
+        options: { workletPath, latencyHint:.05 }
       },
       {
         name:    'Graphics',

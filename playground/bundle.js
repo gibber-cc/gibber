@@ -4724,11 +4724,12 @@ const Audio = {
   __defaults : {
     workletPath: '../dist/gibberish_worklet.js',
     ctx:         null,
-    bufferSize:  2048
+    bufferSize:  2048,
+    latencyHint: .05
   },
 
   init( options, Gibber  ) {
-    let { workletPath, ctx, bufferSize } = Object.assign( {}, this.__defaults, options ) 
+    let { workletPath, ctx, bufferSize, latencyHint } = Object.assign( {}, this.__defaults, options ) 
     this.Gibber = Gibber
     this.Core = Gibber
 
@@ -4748,7 +4749,7 @@ const Audio = {
 
     const p = new Promise( (resolve, reject) => {
       if( ctx === null ) {
-        ctx = new AC({ latencyHint:.05 })
+        ctx = new AC({ latencyHint })
         //ctx = new AudioContext()
       }
 
@@ -8291,12 +8292,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           ? v => typeof v === 'number' ? Audio.Clock.time( v ) : v 
           : null
 
-        Audio.createProperty( obj, propertyName, __wrappedObject[ propertyName ], null, 0, transform )//, timeProps, Audio )
-        //Audio.createProperty( __wrappedObject, propertyName, __wrappedObject[ propertyName ], null, 0, transform )//, timeProps, Audio )
+        const value = __wrappedObject[ propertyName ] === undefined 
+          ? __wrappedObject.__properties__[ propertyName ]
+          : __wrappedObject[ propertyName ]
+
+        Audio.createProperty( obj, propertyName, value, null, 0, transform )
 
         // create per-voice version of property... what properties should be excluded?
         if( description.name.indexOf('Poly') > -1 ) {
-          Audio.createProperty( obj, propertyName+'V', __wrappedObject[ propertyName], null, 0, transform, true )//, timeProps, Audio, true )
+          Audio.createProperty( obj, propertyName+'V', value, null, 0, transform, true )//, timeProps, Audio, true )
 
           //createProperty( obj, propertyName, __wrappedObject, timeProps, Audio, true )
           // we don't have a way to add properties to objects in the processor thread
@@ -72448,7 +72452,7 @@ lead.note.seq(
       {
         name:    'Audio',
         plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath }
+        options: { workletPath, latencyHint:.05 }
       },
       {
         name:    'Graphics',
@@ -72986,6 +72990,7 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 module.exports = createProxies
 
 },{}],256:[function(require,module,exports){
+(function (process){
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
@@ -72993,7 +72998,7 @@ const Y = require( 'yjs' ),
 const initShare = function( editor, username='anonymous', room='default' ) {
   const ydoc = new Y.Doc(),
         provider = new WebsocketProvider(
-          'ws://'+ "127.0.0.1" +':' + "9080",
+          'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SERVER_PORT,
           room,
           ydoc,
           { connect:true }
@@ -73001,7 +73006,7 @@ const initShare = function( editor, username='anonymous', room='default' ) {
         yText = ydoc.getText( 'codemirror' ),
         binding = new CodemirrorBinding( yText, editor, provider.awareness ),
         // process.env variables are substituted in build script, and defined in .env file
-        socket = new WebSocket( 'ws://'+ "127.0.0.1" +':' + "9081" )
+        socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
 
   binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
 
@@ -73026,7 +73031,8 @@ const initShare = function( editor, username='anonymous', room='default' ) {
 
 module.exports = initShare 
 
-},{"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"_process":200,"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
