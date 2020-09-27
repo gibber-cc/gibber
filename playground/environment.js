@@ -480,6 +480,7 @@ environment.runCode = function( cm, useBlock=false, useDelay=true, shouldRunNetw
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
+  'Cmd-Enter'( cm )   { environment.runCode( cm, false, true  ) },
   'Ctrl-Enter'( cm )  { environment.runCode( cm, false, true  ) },
   'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },

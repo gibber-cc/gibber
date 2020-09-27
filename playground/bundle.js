@@ -5339,7 +5339,7 @@ const addMethod = ( obj, name, __value = 1, propOverrideName ) => {
       }
 
       // XXX you have to add a method that does all this shit on the worklet. crap.
-      obj['__'+name].sequencers[ number ] = obj['__'+name][ number ] = Audio.Seq({ 
+      obj['__'+name].sequencers[ number ] = obj['__'+name][ number ] = Audio.Core.Seq({ 
         values, 
         timings, 
         target:obj.__wrapped__, 
@@ -9666,6 +9666,8 @@ const Gibber = {
   },
 
   addSequencing( obj, name, priority, value, prefix='' ) {
+    if( obj[ prefix+name ] === undefined ) obj[ prefix+name ] = {}
+
     obj[ prefix+name ].sequencers = []
     obj[ prefix+name ].seq = function ( values, timings, number = 0, delay = 0 ) {
       if( value !== undefined ) value.name = obj.name
@@ -10251,7 +10253,7 @@ const patternWrapper = function( Gibber ) {
               // getting this clearing to work, perhaps related to proxy behaviors?
               const __seq = Gibber.Seq.sequencers.find( s => s.id === out[ key ][ i ].id )
               if( __seq !== undefined ) {
-                Gibber.Gibberish.worklet.port.postMessage({ address:'method', object:__seq.id, name:'stop', args:[] })
+                Gibber.Audio.Gibberish.worklet.port.postMessage({ address:'method', object:__seq.id, name:'stop', args:[] })
               
                 __seq.stop()
                 __seq.clear()
@@ -10324,14 +10326,16 @@ const patternWrapper = function( Gibber ) {
     fnc.sequences = {}
 
     if( Gibberish.mode === 'worklet' ) {
+
       for( let key of PatternProto.__methodNames ) { 
-        fnc.sequences[ key ] = Gibber.Core !== undefined 
-          ? Gibber.Core.addSequencing( fnc, key, 2 ) 
-          : Gibber.addSequencing( fnc,key,2 )
+        Gibber.addSequencing( fnc,key,2,undefined )
       }
-      fnc.sequences.reset = Gibber.Core !== undefined 
-        ? Gibber.Core.addSequencing( fnc, 'reset', 1 )
-        : Gibber.addSequencing( fnc, 'reset', 1 )
+      //for( let key of PatternProto.__methodNames ) { 
+      //  fnc.sequencers[ key ] = Gibber.Core !== undefined 
+      //    ? Gibber.Core.addSequencing( fnc, key, 2 ) 
+      //    : Gibber.addSequencing( fnc,key,2 )
+      //}
+      fnc.sequences.reset = Gibber.addSequencing( fnc, 'reset', 1 )
     }
     
     // TODO: Gibber.createProxyProperties( fnc, { 'stepSize':0, 'start':0, 'end':0 })
@@ -10647,13 +10651,18 @@ module.exports = function( Gibber ) {
     // if x.y.seq() etc. 
     // standalone === false is most common use case
     if( props.standalone === false ) { 
-      let prevSeq = target[ '__' + key ].sequencers[ props.number ] 
+      // required ternary because pattern methohds don't have __ prefix 
+      const targetProp = target[ '__' + key ] === undefined 
+        ? target[ key ] 
+        : target[ '__' + key ]
+      
+      const prevSeq = targetProp.sequencers[ props.number ] 
       if( prevSeq !== undefined ) { 
         prevSeq.clear();
       }
 
       // XXX you have to add a method that does all this shit on the worklet. crap.
-      target[ '__' + key ].sequencers[ props.number ] = target[ '__'+key ][ props.number ] = seq
+      targetProp.sequencers[ props.number ] = targetProp[ props.number ] = seq
       seq.start( Gibber.Audio.Clock.time( delay ) )
     }
 
@@ -72666,6 +72675,7 @@ environment.runCode = function( cm, useBlock=false, useDelay=true, shouldRunNetw
 CodeMirror.keyMap.playground =  {
   fallthrough:'default',
 
+  'Cmd-Enter'( cm )   { environment.runCode( cm, false, true  ) },
   'Ctrl-Enter'( cm )  { environment.runCode( cm, false, true  ) },
   'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
