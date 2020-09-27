@@ -290,7 +290,7 @@ const Waveform = {
             const value = shouldDrawDot ? data.value : data
             const scaledValue = ( value - widget.min ) / range
 
-            const yValue = scaledValue * (wHeight) - 1.5 
+            const yValue = Math.round(scaledValue * (wHeight)) - 1 
             
             if( shouldDrawDot === true ) {
               widget.ctx.fillStyle = COLORS.DOT
