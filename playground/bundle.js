@@ -4956,7 +4956,7 @@ const Audio = {
       }else if( typeof v === 'object' && v !== null && v.type === 'gen' ) {
         // gen objects can be referred to without the graphics/audio abstraction,
         // in which case they will have no .render() function, and don't need to be rendered
-        const gen = v.render !== undefined ? v.render() : from
+        const gen = v.render !== undefined ? v.render() : v 
 
         obj['__'+ name ].value = gen
         value = { id: gen.id }
@@ -7354,8 +7354,8 @@ module.exports = {
   },
 
   winsome : {
-    presetInit : function() { 
-      this.lfo = Gibber.oscillators.Sine({ frequency:2, gain:.075 })
+    presetInit : function( audio ) { 
+      this.lfo = audio.oscillators.Sine({ frequency:2, gain:.075 })
       this.lfo.connect( this.cutoff )
       this.lfo.connect( this.detune2 )
       this.lfo.connect( this.detune3 )
@@ -7460,8 +7460,8 @@ module.exports = {
   easyfx : {
     attack: audio=> audio.Clock.ms(1),
     decay:2,
-    presetInit: function() {
-      this.fx.add( Gibber.effects.Delay( Clock.time(1/6), .3) )
+    presetInit: function( audio ) {
+      this.fx.add( audio.effects.Delay( Clock.time(1/6), .3) )
     },
     cutoff:.125,
     glide:1000,
@@ -7474,8 +7474,8 @@ module.exports = {
   chords: {
     attack: audio=> audio.Clock.ms(1),
     decay:1/2,
-    presetInit: function() {
-      this.fx.add( Gibber.effects.Delay( Clock.time(1/6), .75) )
+    presetInit: function( audio ) {
+      this.fx.add( audio.effects.Delay( Clock.time(1/6), .75) )
     },
     amp:.3,
     octave2:0,
@@ -7490,8 +7490,8 @@ module.exports = {
   'chords.short': {
     attack: audio=> audio.Clock.ms(1),
     decay:1/8,
-    presetInit: function() {
-      this.delay = audio.effects.Delay({ delay:Clock.time(1/8), feedback:.5, wetdry:.25 }) 
+    presetInit: function( audio ) {
+      this.delay = audio.effects.Delay({ delay:audio.Clock.time(1/8), feedback:.5, wetdry:.25 }) 
       this.fx.push( this.delay )
     },
     amp:.3,
@@ -7569,7 +7569,7 @@ module.exports = {
     detune3:0,
     detune2:0,
     filterMult:0,
-    presetInit: function() { this.fx.add( Gibber.Audio.FX.Gain(.1), Gibber.Audio.FX.Delay(1/6,.75) ) }
+    presetInit: function( audio ) { this.fx.add( audio.effects.Gain(.1), audio.effects.Delay(1/6,.75) ) }
   },
 
 }
@@ -8493,13 +8493,13 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           dest.mods.push( obj )
 
           const sum = dest.mods.concat( dest.preModValue )
-          const add = Gibber.binops.Add( ...sum ) 
+          const add = Audio.binops.Add( ...sum ) 
           // below works for oscillators, above works for instruments...
           //const add = Gibber.Gibberish.binops.Add( ...sum ) 
           add.__useMapping = false
-          dest.ugen[ dest.name ] = add
+          dest.__owner[ dest.name ] = add
 
-          obj.__wrapped__.connected.push( [ dest.ugen[ dest.name ], obj ] )
+          obj.__wrapped__.connected.push( [ dest.__owner[ dest.name ], obj ] )
         }else{
           // if no fx chain, connect directly to output
           if( obj.fx.length === 0 ) {
@@ -9536,6 +9536,8 @@ const Gibber = {
       tidals:[],
       mods:[],
       name,
+      type:obj.type,
+      __owner:obj,
 
       fade( from=0, to=1, time=4 ) {
         Gibber[ obj.type ].createFade( from, to, time, obj, name )
@@ -72860,6 +72862,8 @@ window.addEventListener('load', function() {
     document.getElementById('connectname').select()
 
     document.getElementById('connect-btn').onclick = closeconnect
+
+    menu.onblur = ()=> { console.log('blur'); menu.remove() }
   }
 
 })
@@ -72984,6 +72988,7 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 module.exports = createProxies
 
 },{}],256:[function(require,module,exports){
+(function (process){
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
@@ -72991,7 +72996,7 @@ const Y = require( 'yjs' ),
 const initShare = function( editor, username='anonymous', room='default' ) {
   const ydoc = new Y.Doc(),
         provider = new WebsocketProvider(
-          'ws://'+ "127.0.0.1" +':' + "9080",
+          'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SERVER_PORT,
           room,
           ydoc,
           { connect:true }
@@ -72999,7 +73004,7 @@ const initShare = function( editor, username='anonymous', room='default' ) {
         yText = ydoc.getText( 'codemirror' ),
         binding = new CodemirrorBinding( yText, editor, provider.awareness ),
         // process.env variables are substituted in build script, and defined in .env file
-        socket = new WebSocket( 'ws://'+ "127.0.0.1" +':' + "9091" )
+        socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
 
   binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
 
@@ -73024,7 +73029,8 @@ const initShare = function( editor, username='anonymous', room='default' ) {
 
 module.exports = initShare 
 
-},{"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"_process":200,"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
