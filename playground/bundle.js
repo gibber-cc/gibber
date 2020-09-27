@@ -4986,7 +4986,7 @@ const Audio = {
     if( from === null ) from = obj[ name ].value
     if( to === null ) to = obj[ name ].value
 
-    time = Gibber.Clock.time( time )
+    time = Audio.Clock.time( time )
 
     // XXX only covers condition where ramps from fades are assigned...
     // does this need to be more generic?
@@ -4997,7 +4997,7 @@ const Audio = {
       to = to.to.value
     }
 
-    let ramp = Gibber.envelopes.Ramp({ from, to, length:time, shouldLoop:false })
+    let ramp = Audio.envelopes.Ramp({ from, to, length:time, shouldLoop:false })
     // this is a key to not use an envelope follower for mapping
     ramp.__useMapping = false
 
