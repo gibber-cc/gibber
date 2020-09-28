@@ -72455,7 +72455,6 @@ lead.note.seq(
     }else{
       cm.setValue( defaultCode )
     }
-
     
     const promises = Gibber.init([
       {
@@ -72471,6 +72470,20 @@ lead.note.seq(
     ]).then( ()=> {
       Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
       Gibber.export( window ) 
+      //setupFFT( Marching.FFT )
+
+      const fft = window.FFT = Marching.FFT
+      fft.input = Gibber.Audio.Gibberish.worklet
+      fft.__hasInput = true
+      fft.ctx = Gibber.Audio.Gibberish.ctx
+
+      fft.start = function() {  
+        fft.createFFT()
+        fft.input.connect( fft.FFT )
+        fft.interval = setInterval( fft.fftCallback, 1000/60 )
+      }
+
+      fft.clear = function() { clearInterval( fft.interval ) }
     }) 
 
     environment.editor = cm
@@ -72549,37 +72562,6 @@ lead.note.seq(
   }
 }
 
-/*const setupSplit = function() {
-  const splitDiv = document.querySelector( '#splitbar' ),
-        editor   = document.querySelector( '#editor'   ),
-        sidebar  = document.querySelector( '#console'  )
-
-  const mouseup = evt => {
-    window.removeEventListener( 'mousemove', mousemove )
-    window.removeEventListener( 'mouseup', mouseup )
-  }
-
-  const mousemove = evt => {
-    const splitPos = evt.clientX
-
-    editor.style.width = splitPos + 'px'
-    sidebar.style.left = splitPos  + 'px'
-    sidebar.style.width = (window.innerWidth - splitPos) + 'px'
-  }
-
-  splitDiv.addEventListener( 'mousedown', evt => {
-    window.addEventListener( 'mousemove', mousemove )
-    window.addEventListener( 'mouseup', mouseup )
-  })
-}*/
-
-const fixCallback = function( cb ) {
-  const cbarr = cb.split( '\n' )
-  cbarr.splice(1,1)
-  cbarr[0] += ') {'
-
-  return cbarr.join('\n')
-}
 
 let shouldUseProxies = false
 environment.proxies = []
@@ -72610,7 +72592,8 @@ window.addEventListener( 'keydown', e => {
 let isNetworked = false
 
 const runCodeOverNetwork = function( selectedCode ) {
-  __socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
+  //socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
+  binding.awareness.setLocalStateField( 'code', [selectedCode] )
 }
 
 // shouldRunNetworkCode is used to prevent recursive ws sending of code
@@ -72836,13 +72819,58 @@ let __connected = false
 window.addEventListener('load', function() {
   document.querySelector('#connect').onclick = function() {
     const closeconnect = function() {
-      const { socket } = share( 
+      const { socket, provider, binding } = share( 
         cm, 
         document.querySelector('#connectname' ).value,  
         document.querySelector('#connectroom' ).value 
       )
       __socket = socket
       isNetworked = true
+
+      window.socket = socket
+      window.binding = binding
+      window.provider = provider
+
+      /* all user data is stored in the yjs awareness object.
+       * we store a hash representing this data in the states object.
+       * whenever yjs signals that user state has changed,
+       * it gives us a key representing the user. We then
+       * check to see if the text value of the code has changed,
+       * and, if so, that code gets executed. XXX this scheme
+       * fails for code that gets executed repeatedly!!!
+       */
+      const states = {}
+
+      binding.awareness.on( 'change', data => {
+        // new user, copy state
+        if( data.added.length > 0 ) {
+          const idx = data.added[0]
+          states[ idx ] = binding.awareness.states.get( idx )
+        }
+        // potential code update, but could also be cursor pos etc.
+        if( data.updated.length > 0 ) {
+          const idx = data.updated[0] 
+          const curr = binding.awareness.states.get( idx )
+          // if code is contained in update...
+          if( curr.code !== undefined ) {
+            const code = curr.code[0]
+            // ...and if we have stored code for this user
+            if( states[ idx ].code !== undefined ) {
+              // check to see if stored code is same as updated code
+              if( code.code !== states[idx].code.code ) {
+                // if not, replace code in states hash and run it!
+                states[ idx ].code = code
+                environment.runCode( cm, false, true, false, code )
+              }
+            }else{
+              // if we don't have any stored code for this user
+              // this is their first execution... store and run
+              states[ idx ].code = code
+              environment.runCode( cm, false, true, false, code )
+            }
+          }
+        }
+      })
 
       environment.showArgHints = false
       environment.showCompletions = false
@@ -72878,6 +72906,20 @@ window.addEventListener('load', function() {
     document.getElementById('connect-btn').onclick = closeconnect
   }
 
+  const setupFFT = function( fft ) {
+    window.FFT = fft
+    fft.input = Gibber.Audio.Gibberish.worklet
+    fft.__hasInput = true
+    fft.ctx = Gibber.Audio.Gibberish.ctx
+
+    fft.start = function() {  
+      fft.createFFT()
+      fft.input.connect( fft.FFT )
+      fft.interval = setInterval( fft.fftCallback, 1000/60 )
+    }
+
+    fft.clear = function() { clearInterval( fft.interval ) }
+  }
 })
 
 },{"../node_modules/acorn-loose/dist/acorn-loose.js":128,"../node_modules/acorn-walk/dist/walk.js":129,"../node_modules/acorn/dist/acorn.js":130,"../node_modules/codemirror/addon/dialog/dialog.js":134,"../node_modules/codemirror/addon/edit/closebrackets.js":135,"../node_modules/codemirror/addon/edit/matchbrackets.js":136,"../node_modules/codemirror/addon/hint/javascript-hint.js":137,"../node_modules/codemirror/addon/hint/show-hint.js":138,"../node_modules/codemirror/addon/tern/tern.js":139,"../node_modules/codemirror/mode/javascript/javascript.js":141,"../node_modules/tern/doc/demo/polyfill.js":217,"../node_modules/tern/lib/comment.js":218,"../node_modules/tern/lib/def.js":219,"../node_modules/tern/lib/infer.js":220,"../node_modules/tern/lib/signal.js":221,"../node_modules/tern/lib/tern.js":222,"../node_modules/tern/plugin/doc_comment.js":223,"./codeMarkup.js":253,"./proxies.js":255,"./share.js":256,"codemirror":140,"gibber.audio.lib":80,"gibber.core.lib":117,"gibber.graphics.lib":127,"toastr":225}],255:[function(require,module,exports){
@@ -73000,7 +73042,6 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 module.exports = createProxies
 
 },{}],256:[function(require,module,exports){
-(function (process){
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
@@ -73008,7 +73049,7 @@ const Y = require( 'yjs' ),
 const initShare = function( editor, username='anonymous', room='default' ) {
   const ydoc = new Y.Doc(),
         provider = new WebsocketProvider(
-          'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SERVER_PORT,
+          'ws://'+ "127.0.0.1" +':' + "9080",
           room,
           ydoc,
           { connect:true }
@@ -73016,13 +73057,16 @@ const initShare = function( editor, username='anonymous', room='default' ) {
         yText = ydoc.getText( 'codemirror' ),
         binding = new CodemirrorBinding( yText, editor, provider.awareness ),
         // process.env variables are substituted in build script, and defined in .env file
-        socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
+        //socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
+        socket = provider.ws
 
   binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
 
   // Listen for messages
   socket.addEventListener('message', function (event) {
-    const msg = JSON.parse( event.data )
+    if( event.data instanceof ArrayBuffer ) return 
+
+    const msg = JSON.parse( JSON.stringify(event.data) )
 
     switch( msg.cmd ) {
       case 'msg':
@@ -73036,13 +73080,12 @@ const initShare = function( editor, username='anonymous', room='default' ) {
     }
   })
 
-  return { provider, ydoc, yText, Y, socket }
+  return { provider, ydoc, yText, Y, socket, binding }
 }
 
 module.exports = initShare 
 
-}).call(this,require('_process'))
-},{"_process":200,"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
+},{"y-codemirror":230,"y-websocket":234,"yjs":235}],257:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
