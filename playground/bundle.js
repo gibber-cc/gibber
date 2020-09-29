@@ -72224,7 +72224,6 @@ require("../node_modules/codemirror/addon/hint/show-hint.js")
 require("../node_modules/codemirror/addon/hint/javascript-hint.js")
 require("../node_modules/codemirror/addon/tern/tern.js")
 
-
 let cm, cmconsole, exampleCode, 
     isStereo = false,
     environment = {
@@ -72301,36 +72300,35 @@ window.onload = function() {
 
   cm.getWrapperElement().addEventListener( 'click', e => {
     if( e.altKey === true ) {
-
-        let obj
-        let node = e.path[0]
-        while( node.parentNode.className.indexOf( 'CodeMirror-line' ) === -1 ) {
-          node = node.parentNode
+      let obj
+      let node = e.path[0]
+      while( node.parentNode.className.indexOf( 'CodeMirror-line' ) === -1 ) {
+        node = node.parentNode
+      }
+      const split = node.innerText.split( '=' )[0].split('.')
+      let txt = null
+      try {
+        obj = window[  split[0].trim() ]
+        for( let i = 1; i < split.length; i++ ) {
+          obj = obj[ split[ i ].trim() ]
         }
-        const split = node.innerText.split( '=' )[0].split('.')
-        let txt = null
-        try {
-          obj = window[  split[0].trim() ]
-          for( let i = 1; i < split.length; i++ ) {
-            obj = obj[ split[ i ].trim() ]
-          }
-          if( obj !== undefined )
-            txt = obj.value !== undefined ? obj.value : obj
-        } catch(e) {
-          throw e
-        }
+        if( obj !== undefined )
+          txt = obj.value !== undefined ? obj.value : obj
+      } catch(e) {
+        throw e
+      }
 
-        if( obj !== undefined ) {
-          // XXX ideally this would return a promise that we could use to insert the current
-          // value of the property into once the DOM node has been added. 
-          // Instead we have to use a hacky setTimeout... to fix this we need to edit
-          // the ternserver itself.
-          server.showDocs( cm ) 
+      if( obj !== undefined ) {
+        // XXX ideally this would return a promise that we could use to insert the current
+        // value of the property into once the DOM node has been added. 
+        // Instead we have to use a hacky setTimeout... to fix this we need to edit
+        // the ternserver itself.
+        server.showDocs( cm ) 
 
-          setTimeout( ()=>{
-            cm.state.ternTooltip.children[0].innerHTML = `value: ${txt} ${cm.state.ternTooltip.children[0].innerHTML}`
-          }, 50 )
-        }
+        setTimeout( ()=>{
+          cm.state.ternTooltip.children[0].innerHTML = `value: ${txt} ${cm.state.ternTooltip.children[0].innerHTML}`
+        }, 50 )
+      }
     }
   })
 
@@ -72593,7 +72591,13 @@ let isNetworked = false
 
 const runCodeOverNetwork = function( selectedCode ) {
   //socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
-  binding.awareness.setLocalStateField( 'code', [selectedCode] )
+  //binding.awareness.setLocalStateField( 'code', [selectedCode] )
+  console.log( selectedCode )
+  const sel = selectedCode.selection,
+        end = sel.end,
+        start = sel.start
+        
+  commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code ])
 }
 
 // shouldRunNetworkCode is used to prevent recursive ws sending of code
@@ -72819,7 +72823,7 @@ let __connected = false
 window.addEventListener('load', function() {
   document.querySelector('#connect').onclick = function() {
     const closeconnect = function() {
-      const { socket, provider, binding } = share( 
+      const { socket, provider, binding, chatData, commands } = share( 
         cm, 
         document.querySelector('#connectname' ).value,  
         document.querySelector('#connectroom' ).value 
@@ -72830,47 +72834,23 @@ window.addEventListener('load', function() {
       window.socket = socket
       window.binding = binding
       window.provider = provider
+      window.chatData = chatData
+      window.commands = commands
 
-      /* all user data is stored in the yjs awareness object.
-       * we store a hash representing this data in the states object.
-       * whenever yjs signals that user state has changed,
-       * it gives us a key representing the user. We then
-       * check to see if the text value of the code has changed,
-       * and, if so, that code gets executed. XXX this scheme
-       * fails for code that gets executed repeatedly!!!
-       */
-      const states = {}
-
-      binding.awareness.on( 'change', data => {
-        // new user, copy state
-        if( data.added.length > 0 ) {
-          const idx = data.added[0]
-          states[ idx ] = binding.awareness.states.get( idx )
-        }
-        // potential code update, but could also be cursor pos etc.
-        if( data.updated.length > 0 ) {
-          const idx = data.updated[0] 
-          const curr = binding.awareness.states.get( idx )
-          // if code is contained in update...
-          if( curr.code !== undefined ) {
-            const code = curr.code[0]
-            // ...and if we have stored code for this user
-            if( states[ idx ].code !== undefined ) {
-              // check to see if stored code is same as updated code
-              if( code.code !== states[idx].code.code ) {
-                // if not, replace code in states hash and run it!
-                states[ idx ].code = code
-                environment.runCode( cm, false, true, false, code )
-              }
-            }else{
-              // if we don't have any stored code for this user
-              // this is their first execution... store and run
-              states[ idx ].code = code
-              environment.runCode( cm, false, true, false, code )
-            }
+      commands.observe( e => {
+        if( e.transaction.local === false ) {
+          const arr = e.changes.delta[0].insert
+          const code = {
+            selection:{
+              start: { line:arr[0], ch:arr[1] },
+              end:   { line:arr[2], ch:arr[3] }
+            },
+            code: arr[4]
           }
+
+          environment.runCode( cm, false, true, false, code )
         }
-      })
+      } )
 
       environment.showArgHints = false
       environment.showCompletions = false
@@ -73055,9 +73035,9 @@ const initShare = function( editor, username='anonymous', room='default' ) {
           { connect:true }
         ),
         yText = ydoc.getText( 'codemirror' ),
+        chatData = ydoc.getArray('chat'),
+        commands = ydoc.getArray('commands'),
         binding = new CodemirrorBinding( yText, editor, provider.awareness ),
-        // process.env variables are substituted in build script, and defined in .env file
-        //socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
         socket = provider.ws
 
   binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
@@ -73080,7 +73060,7 @@ const initShare = function( editor, username='anonymous', room='default' ) {
     }
   })
 
-  return { provider, ydoc, yText, Y, socket, binding }
+  return { provider, ydoc, yText, Y, socket, binding, chatData, commands }
 }
 
 module.exports = initShare 

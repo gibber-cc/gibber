@@ -12,14 +12,9 @@ const gulp        = require( 'gulp' ),
 dotenv.config({ path:'./playground/.env' })
 
 gulp.task( 'client', function(){
-  //var out = gulp.src( './js/audio.js' )//gulp.src( './node_modules/gibber.core.lib/scripts/gibber.js')
   const out = browserify({ transform:['envify'] })
     .require( './playground/environment.js', { entry: true })
     .bundle()
-    //.pipe( replace( 'process.env.SERVER_ADDRESS', process.env.SERVER_ADDRESS ) )
-    //.pipe( replace( 'process.env.SERVER_PORT',    process.env.SERVER_PORT ) )
-    //.pipe( replace( 'process.env.SOCKET_ADDRESS', process.env.SOCKET_ADDRESS ) )
-    //.pipe( replace( 'process.env.SOCKET_PORT',    process.env.SOCKET_PORT ) )
     .on( 'error', console.log )
     .pipe( source( 'bundle.js' ) )
     .pipe( gulp.dest( './playground' ) )
@@ -32,7 +27,7 @@ gulp.task( 'client', function(){
 });
 
 gulp.task('watch', function() {
-  var bundler = watchify( browserify( './playground/environment.js', { entry:true } ) );
+  var bundler = watchify( browserify( './playground/environment.js', { entry:true, transform:['envify'] } ) );
 
   bundler.on('update', rebundle);
 

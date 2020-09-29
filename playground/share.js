@@ -11,9 +11,9 @@ const initShare = function( editor, username='anonymous', room='default' ) {
           { connect:true }
         ),
         yText = ydoc.getText( 'codemirror' ),
+        chatData = ydoc.getArray('chat'),
+        commands = ydoc.getArray('commands'),
         binding = new CodemirrorBinding( yText, editor, provider.awareness ),
-        // process.env variables are substituted in build script, and defined in .env file
-        //socket = new WebSocket( 'ws://'+ process.env.SERVER_ADDRESS +':' + process.env.SOCKET_PORT )
         socket = provider.ws
 
   binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
@@ -36,7 +36,7 @@ const initShare = function( editor, username='anonymous', room='default' ) {
     }
   })
 
-  return { provider, ydoc, yText, Y, socket, binding }
+  return { provider, ydoc, yText, Y, socket, binding, chatData, commands }
 }
 
 module.exports = initShare 
