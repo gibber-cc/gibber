@@ -1,33 +1,32 @@
 const Gibber = window.Gibber = require( 'gibber.core.lib' )
-const Audio  = require( 'gibber.audio.lib' )
-const Graphics = require( 'gibber.graphics.lib' )
+      Audio         = require( 'gibber.audio.lib' ),
+      Graphics      = require( 'gibber.graphics.lib' ),
+      createProxies = require( './proxies.js' ),
+      codeMarkup    = require( './codeMarkup.js' ),
+      {setupShare,makeMsg} = require( './share.js' ),
+      Toastr        = require('toastr'),
+      CodeMirror    = require( 'codemirror' )
 
-const createProxies = require( './proxies.js' )
-const codeMarkup = require( './codeMarkup.js' )
-const share      = require( './share.js' )
-
-const Toastr = require('toastr')
-
-const CodeMirror = require( 'codemirror' )
-require("../node_modules/codemirror/addon/dialog/dialog.js")
-require("../node_modules/acorn/dist/acorn.js")
-require("../node_modules/acorn-loose/dist/acorn-loose.js")
-require("../node_modules/acorn-walk/dist/walk.js")
-require("../node_modules/tern/doc/demo/polyfill.js")
-require("../node_modules/tern/lib/signal.js")
+require( "../node_modules/codemirror/addon/dialog/dialog.js" )
+require( "../node_modules/acorn/dist/acorn.js" )
+require( "../node_modules/acorn-loose/dist/acorn-loose.js")
+require( "../node_modules/acorn-walk/dist/walk.js" )
+require( "../node_modules/tern/doc/demo/polyfill.js" )
+require( "../node_modules/tern/lib/signal.js" )
 
 // seemingly required as global by codemirror addon (sheesh)
-window.tern = require("../node_modules/tern/lib/tern.js")
-require("../node_modules/tern/lib/def.js")
-require("../node_modules/tern/lib/comment.js")
-require("../node_modules/tern/lib/infer.js")
-require("../node_modules/tern/plugin/doc_comment.js")
-require("../node_modules/codemirror/mode/javascript/javascript.js")
-require("../node_modules/codemirror/addon/edit/matchbrackets.js")
-require("../node_modules/codemirror/addon/edit/closebrackets.js")
-require("../node_modules/codemirror/addon/hint/show-hint.js")
-require("../node_modules/codemirror/addon/hint/javascript-hint.js")
-require("../node_modules/codemirror/addon/tern/tern.js")
+window.tern = require("../node_modules/tern/lib/tern.js" )
+
+require( "../node_modules/tern/lib/def.js" )
+require( "../node_modules/tern/lib/comment.js" )
+require( "../node_modules/tern/lib/infer.js" )
+require( "../node_modules/tern/plugin/doc_comment.js" )
+require( "../node_modules/codemirror/mode/javascript/javascript.js" )
+require( "../node_modules/codemirror/addon/edit/matchbrackets.js" )
+require( "../node_modules/codemirror/addon/edit/closebrackets.js" )
+require( "../node_modules/codemirror/addon/hint/show-hint.js" )
+require( "../node_modules/codemirror/addon/hint/javascript-hint.js" )
+require( "../node_modules/codemirror/addon/tern/tern.js" )
 
 let cm, cmconsole, exampleCode, 
     isStereo = false,
@@ -392,12 +391,11 @@ window.addEventListener( 'keydown', e => {
   }
 })
 
-let isNetworked = false
+let networkConfig = { isNetworked :false }
 
 const runCodeOverNetwork = function( selectedCode ) {
   //socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
   //binding.awareness.setLocalStateField( 'code', [selectedCode] )
-  console.log( selectedCode )
   const sel = selectedCode.selection,
         end = sel.end,
         start = sel.start
@@ -420,7 +418,7 @@ environment.runCode = function( cm, useBlock=false, useDelay=true, shouldRunNetw
 }`
     code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
 
-    if( isNetworked && shouldRunNetworkCode ) runCodeOverNetwork( selectedCode )
+    if( networkConfig.isNetworked && shouldRunNetworkCode ) runCodeOverNetwork( selectedCode )
 
     environment.flash( cm, selectedCode.selection )
 
@@ -622,87 +620,13 @@ window.getlink = function( name='link' ) {
   return link
 }
 
+window.msg = function( msg ) {
+  chatData.unshift([{ username, msg }]) 
+}
+
 let __socket = null
 let __connected = false
 
-window.addEventListener('load', function() {
-  document.querySelector('#connect').onclick = function() {
-    const closeconnect = function() {
-      const { socket, provider, binding, chatData, commands } = share( 
-        cm, 
-        document.querySelector('#connectname' ).value,  
-        document.querySelector('#connectroom' ).value 
-      )
-      __socket = socket
-      isNetworked = true
+window.makeMsg = makeMsg
+window.addEventListener('load', ()=> setupShare(cm, environment, networkConfig ) )
 
-      window.socket = socket
-      window.binding = binding
-      window.provider = provider
-      window.chatData = chatData
-      window.commands = commands
-
-      commands.observe( e => {
-        if( e.transaction.local === false ) {
-          const arr = e.changes.delta[0].insert
-          const code = {
-            selection:{
-              start: { line:arr[0], ch:arr[1] },
-              end:   { line:arr[2], ch:arr[3] }
-            },
-            code: arr[4]
-          }
-
-          environment.runCode( cm, false, true, false, code )
-        }
-      } )
-
-      environment.showArgHints = false
-      environment.showCompletions = false
-      
-      menu.remove()
-
-      document.querySelector('#connect').innerText = 'disconnect'
-      document.querySelector('#connect').onclick = null
-
-      __connected = true
-      return true
-    }
-
-    const menu = document.createElement('div')
-    menu.setAttribute('id', 'connectmenu')
-    menu.style.width = '12.5em'
-    menu.style.height = '5.5em'
-    menu.style.position = 'absolute'
-    menu.style.display = 'block'
-    menu.style.border = '1px #666 solid'
-    menu.style.borderTop = 0
-    menu.style.top = '3em'
-    menu.style.right = 0 
-    menu.style.zIndex = 1000
-
-    menu.innerHTML = `<input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><button id='connect-btn' style='float:right; margin-right:.5em'>go</button>`
-
-    document.body.appendChild( menu )
-    document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'
-    document.getElementById('connectname').focus()
-    document.getElementById('connectname').select()
-
-    document.getElementById('connect-btn').onclick = closeconnect
-  }
-
-  const setupFFT = function( fft ) {
-    window.FFT = fft
-    fft.input = Gibber.Audio.Gibberish.worklet
-    fft.__hasInput = true
-    fft.ctx = Gibber.Audio.Gibberish.ctx
-
-    fft.start = function() {  
-      fft.createFFT()
-      fft.input.connect( fft.FFT )
-      fft.interval = setInterval( fft.fftCallback, 1000/60 )
-    }
-
-    fft.clear = function() { clearInterval( fft.interval ) }
-  }
-})
