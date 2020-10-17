@@ -83,8 +83,13 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
       })
 
       chatData.observe( e => {
-        const msg = e.changes.delta[0].insert[0]
-        makeMsg( msg.username, msg.value )
+        console.log( e )
+        const msgs = e.changes.delta[0].insert
+        for( let i = msgs.length-1; i>=0; i-- ) {
+          const msg = msgs[ i ]
+
+          makeMsg( msg.username, msg.value )
+        }
       })
 
       environment.showArgHints = false
@@ -165,7 +170,8 @@ const createChatWindow = function() {
   const msgs = document.createElement('div')
   Object.assign( msgs.style, {
     height:'calc(100% - 4em)',
-    width:'calc(100% - 2px)'
+    width:'calc(100% - 2px)',
+    'overflow-y':'scroll'
   })
   msgs.setAttribute( 'id', 'chatmsgs' )
 
@@ -186,6 +192,7 @@ const makeMsg = function( user, msg ) {
   })
   div.innerHTML = `<span style="background:black; color:white; padding:0 .5em">${user}:</span> ${msg}`
   chatDiv.appendChild( div )
+  chatDiv.scrollTop = chatDiv.scrollHeight
 
 }
 
