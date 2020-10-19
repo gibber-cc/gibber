@@ -6112,7 +6112,20 @@ const Gen  = {
   isGen:true,
   debug:false,
 
+  wavetable( frequency, props ) {
+    const g = Audio.Gibberish.genish 
+    let dataProps = { immutable:true }
+
+    // use global references if applicable
+    if( props.name !== undefined ) dataProps.global = props.name
+
+    const buffer = Gen.ugens.data( props.buffer, 1, dataProps )
+
+    return Gen.ugens.peek( buffer, Gen.ugens.phasor( frequency, 0, { min:0 } ) )
+  },
+
   init() {
+    Gen.ugens.wavetable = Gen.__wavetable
     Gen.createBinopFunctions()
     Gen.createMonopFunctions()
 
@@ -6123,6 +6136,10 @@ const Gen  = {
     //Gen.names.push( ...Object.keys( Gen.composites ) )
     Gen.names.push( 'gen' )
     Gen.names.push( 'lfo' )
+    Gen.names.push( 'sine' )
+    Gen.names.push( 'square' )
+    Gen.names.push( 'tri' )
+    Gen.names.push( 'saw' )
 
     //Gibber.subscribe( 'clear', ()=> Gen.lastConnected.length = 0 )
   },
@@ -6266,6 +6283,7 @@ const Gen  = {
     clamp:  { properties: ['0', '1', '2'], str:'clamp' },
     ternary:{ properties: ['0', '1', '2'], str:'switch' },
     selector:{ properties: ['0', '1', '2'], str:'selector' },
+    peek:   { properties:['0','1'], str:'peek' } 
   },
 
   _count: 0,
@@ -6381,9 +6399,21 @@ const Gen  = {
   },
 
   composites: { 
+    sine( frequency=2, amp=4, center=0 ) {
+      return Gen.composites.lfo( 'sine', frequency, amp, center )
+    },
+    square( frequency=2, amp=4, center=0 ) {
+      return Gen.composites.lfo( 'square', frequency, amp, center )
+    },
+    saw( frequency=2, amp=4, center=0 ) {
+      return Gen.composites.lfo( 'saw', frequency, amp, center )
+    },
+    tri( frequency=2, amp=4, center=0 ) {
+      return Gen.composites.lfo( 'tri', frequency, amp, center )
+    },
     lfo( type = 'sine', frequency = 2, amp = .5, center = .5 ) {
       const g = Gen.ugens 
-      const gibberish= Gibber.Gibberish
+      const gibberish= Audio.Gibberish
       let osc
 
       switch( type ) {
@@ -6393,13 +6423,13 @@ const Gen  = {
         case 'square':
           osc = g.gt( g.phasor( frequency ), 0 ) 
           break;
-        //case 'triangle':
-        //  // 1 - 4 * Math.abs(( (i / 1024) + 0.25) % 1 - 0.5)
-        //  osc = g.sub( 1, g.mul( 4, g.abs( g.sub( g.mod( g.add( g.abs(g.phasor( frequency )), .25 ), 1 ), .5 ) ) ) )
-        //  break;
         case 'noise':
           osc = g.noise()
           break;
+        //case 'triangle':
+        //case 'tri':
+        //  osc = Gen.wavetable( frequency, { buffer:gibberish.oscillators.Triangle.buffer, name:'triangle' } )
+        //  break;
         case 'sine':
         default:
           osc = g.cycle( frequency )
@@ -6408,36 +6438,29 @@ const Gen  = {
 
       const _mul   = g.mul( osc, amp ),
             _add   = g.add( center, _mul ) 
-       
-      _add.frequency = (v) => {
-        if( v === undefined ) {
-          return osc[ 0 ]()
-        }else{
-          osc[0]( v )
+
+      const lfo = Gen.make( _add )
+
+      Object.defineProperties( lfo, {
+        frequency: {
+          set(v) { lfo.p1 = v },
+          get()  { return lfo.p1 }
+        },
+        gain: {
+          set(v) { lfo.p2 = v },
+          get()  { return lfo.p2 }
+        },
+        bias: {
+          set(v) { lfo.p0 = v },
+          get()  { return lfo.p0 }
         }
+      })
+
+      lfo.copy = function() {
+        return Gen.composites.lfo( type, this.frequency.value, this.gain.value, this.bias.value )
       }
 
-      _add.amp = (v) => {
-        if( v === undefined ) {
-          return _mul[ 1 ]()
-        }else{
-          _mul[1]( v )
-        }
-      }
-
-      _add.center = (v) => {
-        if( v === undefined ) {
-          return _add[ 0 ]()
-        }else{
-          _add[0]( v )
-        }
-      }
-
-      //Gibber.addSequencing( _add, 'frequency' )
-      //Gibber.addSequencing( _add, 'amp' )
-      //Gibber.addSequencing( _add, 'center' )
-
-      return Gen.make( _add, ['center', 'frequency', 'gain'] )
+      return lfo
     },
 
     fade( time = 1, from = 1, to = 0 ) {
@@ -6495,16 +6518,20 @@ const Gen  = {
     this.ugens.in = __in
   },
 
+
   // defer creating genish object until we know whether
   // this will be used by an audio or visual object
   make( graph, propertyNames ) {
     const defer = { 
       graph, 
+      __graph:graph,
       propertyNames,
       type:'gen',
       id: Audio.Gibberish.utilities.getUID(),
       rendered:null,
-
+      copy() {
+        return Gen.make( this.__graph )
+      },
       render( samplerate=44100, type='audio' ) {
         if( type === 'audio' ) {
           if( this.rendered === null ) { 
@@ -6520,6 +6547,7 @@ const Gen  = {
               })
             } 
             this.rendered.widget = this.widget
+            this.rendered.__graph = graph
           }
 
           return this.rendered
@@ -7189,6 +7217,14 @@ module.exports = {
     shape:'exponential'
   },
 
+  perc:{
+    attack : 1/4096,
+    index : .5,
+    cmRatio : 4/3,
+    decay : 1/8,
+    shape:'exponential'
+  },
+
   'bass.electro' : {
     cmRatio:1,
     index:3,
@@ -7619,6 +7655,18 @@ module.exports = {
     glide:100
   },
 
+  'bass.hollow': {
+    Q:.2,
+    filterType:2,
+    filterMult:4,
+    cutoff:1.25,
+    saturation:20,
+    attack:1/8192,
+    decay:1/4,
+    octave:-3,
+    glide:1000
+  },
+
   'bleep.dry': { 
     attack:1/256, decay:1/32, 
     waveform:'sine' 
@@ -7759,7 +7807,8 @@ let Gibber = null
 
 const Theory = {
   // needed to force library to be serialized for transport to 
-  // worklet processor
+  // worklet processor, must use key:function() {} format
+  // for methods for serialize to work
   __Tune:Tune,
 
   Tune:null,
@@ -8008,12 +8057,22 @@ const Theory = {
         post:'store'
       })
 
+      Gibber.subscribe( 'clear', () => this.reset() )
       this.initProperties()
     }
+
     this.__initDegrees()
   },
 
-  freeze: function() {
+  reset:function() {
+    Theory.root = 440
+    Theory.mode = 'aeolian'
+    Theory.tuning = 'et'
+    Theory.degree = 'i'
+    Theory.offset = 0
+  },
+
+  freeze:function() {
     if( Gibberish.mode === 'worklet' ) {
       Gibber.Theory.degree.sequencers.forEach( s => s.stop() )  
       Gibber.Theory.offset.sequencers.forEach( s => s.stop() )  
@@ -8022,7 +8081,7 @@ const Theory = {
     }
   },
 
-  thaw: function() {
+  thaw:function() {
     if( Gibberish.mode === 'worklet' ) {
       this.degree.sequencers.forEach( s => s.start() )  
       this.offset.sequencers.forEach( s => s.start() )  
@@ -8275,6 +8334,8 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         const children = this.__wrapped__.voices
         const incr = 1/(children.length-1) * amt
         children.forEach( (c,i) => c.pan = (.5 - amt/2) + i * incr )
+
+        return obj
       }
       obj.voices = obj.__wrapped__.voices
     }
@@ -9804,6 +9865,16 @@ const patternWrapper = function( Gibber ) {
       }
     },
 
+    copy() {
+      const p = Pattern( ...this.values )
+      //this.filters.forEach( f => p.addFilter( f ) )
+      p.start = this.start
+      p.end   = this.end
+      p.phase = this.phase
+
+      return p
+    },
+
     __methodNames:  [
       'rotate','switch','invert','flip',
       'transpose','reverse','shuffle','scale',
@@ -9915,7 +9986,12 @@ const patternWrapper = function( Gibber ) {
         this.seq = seq
       },
 
-      range() {
+      range(...args) {
+        if( this.__rendered !== this ) {
+          this.__rendered.range( ...args )
+          return this
+        }
+
         if( !fnc.__frozen ) {
           let start, end
           
@@ -9941,7 +10017,11 @@ const patternWrapper = function( Gibber ) {
         return fnc
       },
       
-      set() {
+      set(...args) {
+        if( this.__rendered !== this ) {
+          this.__rendered.set(...args)
+          return this
+        }
         if( !fnc.__frozen ) {
 
           let args = Array.isArray( arguments[ 0 ] ) ? arguments[ 0 ] : arguments
@@ -9968,6 +10048,10 @@ const patternWrapper = function( Gibber ) {
       },
        
       reverse() {
+        if( this.__rendered !== this ) {
+          this.__rendered.reverse()
+          return this
+        }
         if( !fnc.__frozen ) {
           let array = fnc.values,
               left = null,
@@ -10067,6 +10151,10 @@ const patternWrapper = function( Gibber ) {
       },
     
       reset() { 
+        if( this.__rendered !== this ) {
+          this.__rendered.reset()
+          return this
+        }
         if( !fnc.__frozen ) {
           // XXX replace with some type of standard deep copy
           if( Array.isArray( fnc.original[0] ) ) {
@@ -10095,6 +10183,10 @@ const patternWrapper = function( Gibber ) {
       store() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
 
       transpose( amt ) { 
+        if( this.__rendered !== this ) {
+          this.__rendered.transpose( amt )
+          return this
+        }
         if( !fnc.__frozen ) {
           for( let i = 0; i < fnc.values.length; i++ ) { 
             let val = fnc.values[ i ]
@@ -10122,6 +10214,10 @@ const patternWrapper = function( Gibber ) {
       },
 
       shuffle() { 
+        if( this.__rendered !== this ) {
+          this.__rendered.shuffle( )
+          return this
+        }
         if( !fnc.__frozen ) {
           Gibber.Utility.shuffle( fnc.values )
           fnc._onchange()
@@ -10131,6 +10227,10 @@ const patternWrapper = function( Gibber ) {
       },
 
       scale( amt ) { 
+        if( this.__rendered !== this ) {
+          this.__rendered.scale( amt )
+          return this
+        }
         if( !fnc.__frozen ) {
           fnc.values.map( (val, idx, array) => {
             if( Array.isArray( val ) ) {
@@ -10158,6 +10258,10 @@ const patternWrapper = function( Gibber ) {
       },
 
       flip() {
+        if( this.__rendered !== this ) {
+          this.__rendered.flip( )
+          return this
+        }
         if( !fnc.__frozen ) {
           let start = [],
               ordered = null
@@ -10185,6 +10289,10 @@ const patternWrapper = function( Gibber ) {
       },
       
       invert() {
+        if( this.__rendered !== this ) {
+          this.__rendered.invert( )
+          return this
+        }
         if( !fnc.__frozen ) {
           let prime0 = fnc.values[ 0 ]
           
@@ -10207,6 +10315,10 @@ const patternWrapper = function( Gibber ) {
       },
     
       switch( to ) {
+        if( this.__rendered !== this ) {
+          this.__rendered.switch( to )
+          return this
+        }
         if( !fnc.__frozen ) {
           if( fnc.storage[ to ] ) {
             fnc.values = fnc.storage[ to ].slice( 0 )
@@ -10219,6 +10331,10 @@ const patternWrapper = function( Gibber ) {
       },
     
       rotate( amt ) {
+        if( this.__rendered !== this ) {
+          this.__rendered.rotate( amt )
+          return this
+        }
         if( !fnc.__frozen ) {
           if( amt > 0 ) {
             while( amt > 0 ) {
@@ -10359,7 +10475,7 @@ const patternWrapper = function( Gibber ) {
         out = Gibberish.Proxy( 'pattern', { inputs:fnc.values, isPattern:true, filters:fnc.filters, id:fnc.id }, fnc ) 
 
         if( isGen === true ) { 
-          // must have a priority or it screws us codegen for analysis
+          // must have a priority or it screws up codegen for analysis
           args[0].priority = 0
           Gibberish.analyzers.push( args[0] )
           Gibberish.dirty( Gibberish.analyzers )
@@ -10375,6 +10491,8 @@ const patternWrapper = function( Gibber ) {
       Pattern.children.push( out )
 
       if( fnc.onrender ) fnc.onrender( out )
+
+      fnc.__rendered = out
 
       return out
     }
@@ -10465,26 +10583,9 @@ module.exports = patternWrapper
 
 },{}],119:[function(require,module,exports){
 module.exports = function( Gibber ) {
-
-  const Seq = function( props ) { 
-    let   __values  = props.values
-    const __timings = props.timings
-    const delay     = props.delay
-    const target    = props.target
-    const key       = props.key
-    const priority  = props.priority
-    let   rate      = props.rate || 1
-    let   density   = props.density || 1
-    let   autotrig  = false
-    const render    = props.render || 'Audio'
-
-    const Gibberish = Gibber.Audio.Gibberish !== undefined ? Gibber.Audio.Gibberish : null
-
-    if( __values.type === 'gen' ) __values = __values.render()
-
-    const values = Array.isArray( __values ) 
-      ? Gibber.Pattern( ...__values ).render()
-      : Gibber.Pattern( __values    ).render()
+  const addValuesFilters = (seq,key,target) => {
+    const values = seq.values
+    const __values = seq.values
 
     if( __values.randomFlag ) {
       values.addFilter( ( args,ptrn ) => {
@@ -10508,6 +10609,35 @@ module.exports = function( Gibber ) {
         return args
       })
     } 
+
+  }
+  const Seq = function( props ) { 
+    let   __values  = props.values
+    const __timings = props.timings
+    const delay     = props.delay
+    const target    = props.target
+    const key       = props.key
+    const priority  = props.priority
+    let   rate      = props.rate || 1
+    let   density   = props.density || 1
+    let   autotrig  = false
+    const render    = props.render || 'Audio'
+
+    const Gibberish = Gibber.Audio.Gibberish !== undefined ? Gibber.Audio.Gibberish : null
+
+    if( __values.type === 'gen' ) __values = __values.render()
+
+    // convert to pattern if needed and render
+    const values = Array.isArray( __values ) 
+      ? Gibber.Pattern( ...__values ).render()
+      : typeof __values === 'function' && __values.isPattern 
+        ? __values.render()
+        : Gibber.Pattern( __values ).render()
+
+    // if an array of values is passed, let users call pattern method on that array, for example:
+    // a.note.seq( b=[0,1,2,3], 1/4 )
+    // b.transpose.seq( 1,1 )
+    if( Array.isArray( __values ) ) Object.assign( __values, values )
 
     // process time values
     if( Gibber[ render ].timeProps[ target.name ] !== undefined && Gibber[ render ].timeProps[ target.name ].indexOf( key ) !== -1  ) {
@@ -10573,6 +10703,9 @@ module.exports = function( Gibber ) {
       timings.__delayAnnotations = true
     }
 
+    // if an array is passed to the seq, enable users to call pattern methods on array
+    if( Array.isArray( __timings ) ) Object.assign( __timings, timings )
+
     const clear = render === 'Audio'
       ? function() {
           this.stop()
@@ -10615,6 +10748,8 @@ module.exports = function( Gibber ) {
     const seq = Gibber.Audio.Gibberish.Sequencer2({ values, timings, density, target, key, priority, rate:1/*Gibber.Clock.AudioClock*/, clear, autotrig, mainthreadonly:props.mainthreadonly })
 
     values.setSeq( seq )
+
+    addValuesFilters( seq,key )
 
     if( autotrig === false ) {
       timings.setSeq( seq )
@@ -71771,7 +71906,9 @@ const Marker = {
   },
   
   markPatternsForSeq( seq, nodes, state, cb, container, seqNumber = 0 ) {
-    const valuesNode = nodes[0]
+    if( seq === undefined ) return
+    let valuesNode = nodes[0]
+    if( valuesNode.type === 'AssignmentExpression' ) valuesNode = valuesNode.right
     valuesNode.offset = Marker.offset
     
     // XXX We have to markup the timings node first, as there is the potential for 
@@ -71781,7 +71918,8 @@ const Marker = {
     // will be off and not valid.
     
     if( nodes[1] !== undefined ) {
-      const timingsNode = nodes[1] 
+      let timingsNode = nodes[1]
+      if( timingsNode.type === 'AssignmentExpression' ) timingsNode = timingsNode.right
       timingsNode.offset = Marker.offset
       Marker.patternMarkupFunctions[ timingsNode.type ]( timingsNode, state, seq, 'timings', container, seqNumber )
     }
@@ -78351,7 +78489,7 @@ module.exports = function( Gibberish ) {
       const osc   = Oscillators.factory( 'triangle', g.in( 'frequency' ), props.antialias )
       const graph = g.mul( osc, g.in('gain' ) )
 
-      const out =Gibberish.factory( tri, graph, ['oscillators','triangle'], props )
+      const out = Gibberish.factory( tri, graph, ['oscillators','triangle'], props )
 
       return out
     },
@@ -79531,7 +79669,7 @@ const utilities = {
       const id = message.id
       const eventName = message.name
       const obj = Gibberish.worklet.ugens.get( id )
-      if( obj !== undefined )
+      if( obj !== undefined && obj.publish !== undefined )
         obj.publish( eventName, message )
     },
     callback( event ) {

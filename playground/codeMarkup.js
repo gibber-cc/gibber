@@ -109,7 +109,9 @@ const Marker = {
   },
   
   markPatternsForSeq( seq, nodes, state, cb, container, seqNumber = 0 ) {
-    const valuesNode = nodes[0]
+    if( seq === undefined ) return
+    let valuesNode = nodes[0]
+    if( valuesNode.type === 'AssignmentExpression' ) valuesNode = valuesNode.right
     valuesNode.offset = Marker.offset
     
     // XXX We have to markup the timings node first, as there is the potential for 
@@ -119,7 +121,8 @@ const Marker = {
     // will be off and not valid.
     
     if( nodes[1] !== undefined ) {
-      const timingsNode = nodes[1] 
+      let timingsNode = nodes[1]
+      if( timingsNode.type === 'AssignmentExpression' ) timingsNode = timingsNode.right
       timingsNode.offset = Marker.offset
       Marker.patternMarkupFunctions[ timingsNode.type ]( timingsNode, state, seq, 'timings', container, seqNumber )
     }
