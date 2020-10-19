@@ -83,7 +83,6 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
       })
 
       chatData.observe( e => {
-        console.log( e )
         const msgs = e.changes.delta[0].insert
         for( let i = msgs.length-1; i>=0; i-- ) {
           const msg = msgs[ i ]
@@ -99,6 +98,7 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
 
       document.querySelector('#connect').innerText = 'disconnect'
       document.querySelector('#connect').onclick = null
+      document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
 
       createChatWindow()
 
@@ -109,7 +109,7 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
     const menu = document.createElement('div')
     menu.setAttribute('id', 'connectmenu')
     menu.style.width = '12.5em'
-    menu.style.height = '5.5em'
+    menu.style.height = '11.5em'
     menu.style.position = 'absolute'
     menu.style.display = 'block'
     menu.style.border = '1px #666 solid'
@@ -118,7 +118,7 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
     menu.style.right = 0 
     menu.style.zIndex = 1000
 
-    menu.innerHTML = `<input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><button id='connect-btn' style='float:right; margin-right:.5em'>go</button>`
+    menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
 
     document.body.appendChild( menu )
     document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'
@@ -126,7 +126,14 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
     document.getElementById('connectname').select()
 
     document.getElementById('connect-btn').onclick = closeconnect
+
+    const blurfnc = ()=> {
+      menu.remove()
+      document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+    }
+    document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
   }
+
 }
 
 const createChatWindow = function() {
@@ -143,7 +150,6 @@ const createChatWindow = function() {
   })
 
   writer.onchange = () => {
-    //makeMsg( username, writer.value )
     chatData.unshift([
       { username, value:writer.value }
     ])
@@ -153,8 +159,6 @@ const createChatWindow = function() {
   const container = document.createElement('div')
   Object.assign( container.style, {
     position:'absolute',
-    //backgroundColor:'rgba(46,50,53,1)',
-    //overflowY:'scroll',
     width:'300px',
     right:0,
     top: headerHeight + 'px',

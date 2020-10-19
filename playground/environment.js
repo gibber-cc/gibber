@@ -207,7 +207,11 @@ window.onload = function() {
   }
 
   
-  const defaultCode = `Theory.tuning = 'slendro'
+  const defaultCode = `// hit alt+enter to run all code
+// or run line/selection with ctrl+enter.
+// ctrl+period to stop all sounds.
+ 
+Theory.tuning = 'slendro'
 Theory.mode = null
   
 verb = Bus2('spaceverb')

@@ -1,6 +1,3 @@
-// hit alt+enter to run all code
-// or go line by line with ctrl+enter.
-// ctrl+period to stop all sounds.
 Clock.bpm = 140
  
 verb = Bus2('spaceverb')
