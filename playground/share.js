@@ -171,7 +171,7 @@ const createChatWindow = function() {
   Object.assign( msgs.style, {
     height:'calc(100% - 4em)',
     width:'calc(100% - 2px)',
-    'overflow-y':'scroll'
+    'overflow-y':'auto'
   })
   msgs.setAttribute( 'id', 'chatmsgs' )
 

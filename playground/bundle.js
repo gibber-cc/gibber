@@ -72540,45 +72540,43 @@ window.onload = function() {
   }
 
   
-  const defaultCode = `// hit alt+enter to run all code
-// or go line by line with ctrl+enter
-Clock.bpm = 140
- 
+  const defaultCode = `Theory.tuning = 'slendro'
+Theory.mode = null
+  
 verb = Bus2('spaceverb')
+delay = Bus2('delay.1/3').connect( verb, .1 )
+  
+perc = PolyFM('perc', { voices:3 })
+  .connect( verb, .35 ).connect( delay, .65 )
+  .spread(.975)
+  .note.seq( sine( btof(8),7,0 ), 1/8,  0 )
+  .note.seq( sine( btof(4),3,0 ), 1/16, 1 )
+  .note.seq( sine( btof(8),7,7 ), 1/6,  2 )
+  .loudness.seq( sine(4.33,.35,.7)  )
  
-perc = PolySynth('square.perc')
-perc.connect( verb, .35 ).connect()
-perc.spread(1)
+kik = Kick()
+  .trigger.seq( 1,1/4 )
  
-perc.note.seq( 
-  gen( cycle(2) * 7 ), 
-  Hex(0x8036) 
-)
-perc.note.seq( 
-  gen( 7 + cycle(2.25) * 4 ), 
-  Hex(0x4541), 
-  1 
-)
-perc.loudnessV.seq( gen( .65 + cycle(1.5) * .5 ) )
+hat = Hat({ decay:.0125 })
+  .trigger.seq( [1,.5], 1/4, 0, 1/8 )
  
-bass = Monosynth('bassPad', { decay:4 })
-bass.connect( verb, .5 )
-bass.note.seq( [0,-1,-2,-4], 4 )
+bass = Synth('bass.hollow')
+  .note.seq( [0,1,2,-1], 1 )
+  .trigger.seq( [.75,.5,.25], [1/4,1/8] )
  
-k = Kick()
-k.trigger.seq( 1,1/4 )
+clave = Clave({ gain:.1 }).connect( verb, .25 )
+  .trigger.seq( .5, e = Euclid(3,8) )
  
-h = Hat()
-h.connect( verb, .15 )
-h.trigger.tidal( '<.5 .35*3 [.5 .25] [.75 .25 .5 .25]>' )
-h.decay = gen( .05 + cycle(2)* .025 )
+e.rotate.seq( [1,-1], 2, 0, 4 )
  
-lead = Synth( 'cry', { gain:.1, octave:1 })
-lead.connect( verb, 1 )
-lead.note.seq( 
-  gen( cycle(.15) * 7 ), 
-  [1/2,1,2] 
-)`
+fm = FM({ feedback:.0015, decay:1/2 })
+  .connect( verb, .35 ).connect( delay, .125 )
+	.note.seq( 
+  	sine( btof(4.5),4,5 ), 
+  	Hex(0x8032,1/4 ),
+  	0,
+    8
+  )`
 
   const workletPath = './gibberish_worklet.js' 
   const start = () => {
@@ -72650,9 +72648,10 @@ lead.note.seq(
 
   const select = document.querySelector( 'select' ),
         files = [
-          ['demo #1: intro', 'intro.js'],
+          ['demo #1: intro', 'newintro.js'],
           ['demo #2: acid', 'acid.js'],
-          ['demo #3: geometry melds', 'meld.js'],
+          ['demo #3: moody', 'intro.js'],
+          ['demo #4: geometry melds', 'meld.js'],
 
           ['tutorial #1: running/stopping code', 'intro.tutorial.js'],
           ['tutorial #2: creating objects', 'creating.objects.js'],
@@ -73257,7 +73256,7 @@ const createChatWindow = function() {
   Object.assign( msgs.style, {
     height:'calc(100% - 4em)',
     width:'calc(100% - 2px)',
-    'overflow-y':'scroll'
+    'overflow-y':'auto'
   })
   msgs.setAttribute( 'id', 'chatmsgs' )
 
