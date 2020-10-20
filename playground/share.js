@@ -108,6 +108,7 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
 
     const menu = document.createElement('div')
     menu.setAttribute('id', 'connectmenu')
+    menu.setAttribute('class', 'menu' )
     menu.style.width = '12.5em'
     menu.style.height = '11.5em'
     menu.style.position = 'absolute'
@@ -118,7 +119,7 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
     menu.style.right = 0 
     menu.style.zIndex = 1000
 
-    menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
+    menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
 
     document.body.appendChild( menu )
     document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'

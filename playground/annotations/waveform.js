@@ -1,7 +1,7 @@
 const COLORS = {
-  FILL:'rgba(46,50,53,1)',
-  STROKE:'#aaa',
-  DOT:'rgba(89, 151, 198, 1)'//'rgba(0,0,255,1)'
+  FILL:'var(--b_high)',//'rgba(46,50,53,1)',
+  STROKE:'var(--f_med)',//'#aaa',
+  DOT:'var(--f_high)'//'rgba(89, 151, 198, 1)'//'rgba(0,0,255,1)'
 }
 
 let Gibber = null
@@ -50,8 +50,8 @@ const Waveform = {
     widget.style.borderRight = '1px solid #666'
     widget.setAttribute( 'width', widget.padding * 2 + widget.waveWidth )
     widget.setAttribute( 'height', 13 )
-    widget.ctx.fillStyle = COLORS.FILL 
-    widget.ctx.strokeStyle = COLORS.STROKE
+    widget.ctx.fillStyle = Environment.theme.get('f_high')//COLORS.FILL 
+    widget.ctx.strokeStyle = Environment.theme.get('f_med')//COLORS.FILL 
     widget.ctx.font = '10px monospace'
     widget.ctx.lineWidth = 1
     widget.gen = patternObject !== null ? patternObject.value : walkState.gen.value//Gibber.Gen.lastConnected.shift()
@@ -257,7 +257,8 @@ const Waveform = {
 
       if( typeof widget === 'object' && widget.ctx !== undefined ) {
 
-        widget.ctx.fillStyle = COLORS.FILL
+        widget.ctx.strokeStyle = Environment.theme.get('f_med')
+        widget.ctx.fillStyle = Environment.theme.get('f_med') 
         widget.ctx.clearRect( 0,0, widget.width, widget.height )
 
         // draw left border
@@ -293,7 +294,7 @@ const Waveform = {
             const yValue = Math.round(scaledValue * (wHeight)) - 1 
             
             if( shouldDrawDot === true ) {
-              widget.ctx.fillStyle = COLORS.DOT
+              widget.ctx.fillStyle = Environment.theme.get('f_high') //COLORS.DOT
               widget.ctx.lineTo( i + widget.padding + .5, wHeight - yValue )
               widget.ctx.fillRect( i + widget.padding - 1, wHeight - yValue - 1.5, 3, 3)
             }else{
@@ -355,7 +356,7 @@ const Waveform = {
         const reverseHeight = widget.isFade === true && __min > __max 
 
         // draw min/max
-        widget.ctx.fillStyle = COLORS.STROKE
+        widget.ctx.fillStyle = Environment.theme.get('f_med')//COLORS.STROKE
         widget.ctx.textAlign = 'right'
         widget.ctx.fillText( __min, widget.padding - 2, reverseHeight === false ? widget.height : widget.height / 2 )
         widget.ctx.textAlign = 'left'

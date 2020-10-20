@@ -1,31 +1,32 @@
-const Gibber = window.Gibber = require( 'gibber.core.lib' ),
+const Gibber        = require( 'gibber.core.lib' ),
       Audio         = require( 'gibber.audio.lib' ),
       Graphics      = require( 'gibber.graphics.lib' ),
       createProxies = require( './proxies.js' ),
       codeMarkup    = require( './codeMarkup.js' ),
-      {setupShare,makeMsg} = require( './share.js' ),
-      CodeMirror    = require( 'codemirror' )
+      CodeMirror    = require( 'codemirror' ),
+      Theme         = require( './resources/js/theme.js' ),
+      {setupShare,makeMsg} = require( './share.js' )
 
-require( "../node_modules/codemirror/addon/dialog/dialog.js" )
-require( "../node_modules/acorn/dist/acorn.js" )
-require( "../node_modules/acorn-loose/dist/acorn-loose.js")
-require( "../node_modules/acorn-walk/dist/walk.js" )
-require( "../node_modules/tern/doc/demo/polyfill.js" )
-require( "../node_modules/tern/lib/signal.js" )
+require( '../node_modules/codemirror/addon/dialog/dialog.js' )
+require( '../node_modules/acorn/dist/acorn.js' )
+require( '../node_modules/acorn-loose/dist/acorn-loose.js' )
+require( '../node_modules/acorn-walk/dist/walk.js' )
+require( '../node_modules/tern/doc/demo/polyfill.js' )
+require( '../node_modules/tern/lib/signal.js' )
 
 // seemingly required as global by codemirror addon (sheesh)
-window.tern = require("../node_modules/tern/lib/tern.js" )
+window.tern = require( '../node_modules/tern/lib/tern.js' )
 
-require( "../node_modules/tern/lib/def.js" )
-require( "../node_modules/tern/lib/comment.js" )
-require( "../node_modules/tern/lib/infer.js" )
-require( "../node_modules/tern/plugin/doc_comment.js" )
-require( "../node_modules/codemirror/mode/javascript/javascript.js" )
-require( "../node_modules/codemirror/addon/edit/matchbrackets.js" )
-require( "../node_modules/codemirror/addon/edit/closebrackets.js" )
-require( "../node_modules/codemirror/addon/hint/show-hint.js" )
-require( "../node_modules/codemirror/addon/hint/javascript-hint.js" )
-require( "../node_modules/codemirror/addon/tern/tern.js" )
+require( '../node_modules/tern/lib/def.js' )
+require( '../node_modules/tern/lib/comment.js' )
+require( '../node_modules/tern/lib/infer.js' )
+require( '../node_modules/tern/plugin/doc_comment.js' )
+require( '../node_modules/codemirror/mode/javascript/javascript.js' )
+require( '../node_modules/codemirror/addon/edit/matchbrackets.js' )
+require( '../node_modules/codemirror/addon/edit/closebrackets.js' )
+require( '../node_modules/codemirror/addon/hint/show-hint.js' )
+require( '../node_modules/codemirror/addon/hint/javascript-hint.js' )
+require( '../node_modules/codemirror/addon/tern/tern.js' )
 
 let cm, cmconsole, exampleCode, 
     isStereo = false,
@@ -35,7 +36,21 @@ let cm, cmconsole, exampleCode,
     },
     fontSize = 1
 
+window.Gibber = Gibber
+
 window.onload = function() {
+  const theme = new Theme()
+  theme.install( document.body )
+  theme.start()
+  environment.theme = theme
+  const themename = localStorage.getItem('themename')
+
+  if( themename !== null ) {
+    document.querySelector('#themer').src = `./resources/themes/${themename}.png`
+  }else{
+    document.querySelector('#themer').src = `./resources/themes/noir.png`
+  }
+  
   cm = CodeMirror( document.querySelector('#editor'), {
     mode:   'javascript',
     value:  '// click in the editor to begin!!!',
@@ -364,12 +379,13 @@ fm = FM({ feedback:.0015, decay:1/2 })
 
     req.send()
   }
+
+  setupThemeMenu()
 }
 
 
 let shouldUseProxies = false
 environment.proxies = []
-
 
 const shouldUseJSDSP = true
 
@@ -601,17 +617,18 @@ window.getlink = function( name='link' ) {
   // DRY... also used for gabber button
   const menu = document.createElement('div')
   menu.setAttribute('id', 'connectmenu')
+  menu.setAttribute('class', 'menu' )
   menu.style.width = '12.5em'
   menu.style.height = '4.5em'
   menu.style.position = 'absolute'
   menu.style.display = 'block'
-  menu.style.border = '1px #666 solid'
+  menu.style.border = '1px var(--f_inv) solid'
   menu.style.borderTop = 0
   menu.style.top = '3em'
   menu.style.right = 0 
   menu.style.zIndex = 1000
 
-  menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em'>A link containing your code has been copied to the clipboad.</p><button id='closelink' style='float:right; margin-right:.5em'>close</buttton>`
+  menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>A link containing your code has been copied to the clipboad.</p><button id='closelink' style='float:right; margin-right:.5em'>close</buttton>`
 
   document.body.appendChild( menu )
   document.querySelector('#connectmenu').style.left = document.querySelector('#sharebtn').offsetLeft + 'px'
@@ -628,6 +645,81 @@ window.getlink = function( name='link' ) {
 
 window.msg = function( msg ) {
   chatData.unshift([{ username, msg }]) 
+}
+
+const themes = [
+  'apollo.svg',
+  'battlestation.svg',
+  'lotus.svg',
+  'marble.svg',
+  'murata.svg',
+  'ninetynine.svg',
+  'noir.svg',
+  'nord.svg',
+  'sonicpi.svg',
+  'soyuz.svg',
+  'zenburn.svg'
+]
+
+const setupThemeMenu = function() {
+  const btn = document.getElementById('themer')
+
+  btn.onclick = function() {
+    const menu = document.querySelector('#thememenu')
+    menu.style.display = 'block'
+    menu.setAttribute('class', 'menu' )
+    menu.style.width = '68px'
+    menu.style.height = 'calc(38px*11)'
+    menu.style.position = 'absolute'
+    menu.style.display = 'block'
+    menu.style.border = '1px var(--f_inv) solid'
+    menu.style.borderTop = 0
+    menu.style.top = '3em'
+    menu.style.right = 0 
+    menu.style.zIndex = 1000
+
+    const list = menu.firstElementChild
+    // array-like
+    const items= [ ...list.children ]
+    items.forEach( (li,idx) => {
+      const img = li.firstElementChild
+
+      img.style.width = '64px'
+      img.style.height = '34px' 
+      img.style.border = '2px solid var(--b_low)'
+
+      img.onmouseover = ()=> {
+        img.style.border = `2px solid var(--f_med)`
+      }
+      img.onmouseout = ()=> {
+        img.style.border = '2px solid var(--b_low)'
+      }
+
+      img.width = 64
+      img.height= 34
+      img.onclick = ()=> {
+        document.querySelector('#themer').src = `./resources/themes/${themes[idx].split('.')[0]}.png`
+        localStorage.setItem( 'themename', themes[idx].split('.')[0] )
+
+        fetch( './resources/themes/'+themes[idx] )
+          .then( data => data.text() )
+          .then( text => {
+            Environment.theme.load( text ) 
+          })
+      }
+    })
+
+    document.body.appendChild( menu )
+    menu.style.left = btn.offsetLeft + 'px'
+    const blurfnc = ()=> {
+      menu.style.display = 'none'
+      document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+    }
+    document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
+    //document.querySelector('#closelink').onclick = blurfnc      
+  }
+
+  
 }
 
 

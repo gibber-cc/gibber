@@ -16,13 +16,29 @@
   font-family:Menlo, monospace !important;
 }
 
+#themer {
+  width:40px;
+  height:34px;
+  position:relative;
+  top:.7em;
+}
+
 body { 
   margin: 0;
   box-sizing:border;
   color:#ddd;
   font-family: Helvetica Neue, sans-serif;
-  background:rgba(46,50,53,1);
+  /*background:rgba(46,50,53,1);*/
+  background:var(--background);
   box-sizing:border-box !important;
+}
+
+#thememenu ul { 
+  list-style:none;
+  padding:0; margin:0
+}
+#thememenu {
+  display:none; 
 }
 
 select {
@@ -38,17 +54,27 @@ select {
 }
 
 #connectmenu {
-  background:rgba(46,50,53,1);
+  background:var(--b_inv)
 }
 
 button, input {
   background:transparent;
-  border:1px solid #666;
-  color:#ddd;
+  border-width:1px;
+  border-style:solid;
+  border-color:var(--f_med);
+  color:var(--f_med);
   font-family: Helvetica Neue, sans-serif;
 }
 
+.menu button, .menu input {
+  /*border:1px solid #666;*/
+  /*color:#ddd;*/
+  border-color:var(--f_inv);
+  color:var(--f_inv);
+}
+
 input { width:6em }
+#themer { width:4em }
 
 label { 
   font-size:.8em; 
@@ -68,7 +94,7 @@ header {
   top:0; left:0;
   width:100%; 
   height:3em; 
-  border-bottom:1px solid #666;
+  border-bottom:1px solid var(--f_med);
   padding-left:1em;
   box-sizing:border-box;
   z-index:1;
@@ -76,12 +102,13 @@ header {
 
 select{ 
   display:inline-block;
-  background:rgba(46,50,53,1);
-  color: #ccc;
+  /*background:rgba(46,50,53,1);*/
+  background:var(--background);
+  color: var(--f_med);
   -webkit-border-radius:0px;
   -moz-border-radius:0px;
   border-radius:0px;
-  border-color: #555;
+  border-color: var(--f_med); 
 }
 
 h1 {
@@ -91,7 +118,8 @@ h1 {
   padding-right: 2em;
   height:3em;
   display:inline-block;
-  margin:0
+  margin:0;
+  color:var(--f_med);
 }
 
 header span { font-size: .8em; }
@@ -115,7 +143,7 @@ header span { font-size: .8em; }
   position:absolute;
   right:1em;
 }
-#reference a{ color: #ccc !important; margin-left: 1em }
+#reference a{ color: var(--f_med) !important; margin-left: 1em }
 #reference a img { position:relative; top:.75em }
 
 .CodeMirror-matchingbracket {
@@ -127,22 +155,24 @@ header span { font-size: .8em; }
   font-family:Menlo, monospace;
   font-size:.8em;
   background:transparent;
-  color:rgb( 153 ) !important
 }
 
-span.cm-comment { color:rgb(121,121,121) !important }
+/*span.cm-comment { color:rgb(121,121,121) !important }*/
+span.cm-comment { color:var(--f_low) !important }
 
 span.cm-property, 
 span.cm-attribute,
 span.cm-variable,
 span.cm-variable-2,
 .cm-def,
-.cm-s-default { color: rgba(173,173,173,1) !important }
+.cm-s-default { color: var(--f_high) !important }
+/*.cm-s-default { color: rgba(173,173,173,1) !important }*/
 
 span.cm-keyword,
-span.cm-number, .cm-s-default .cm-atom, .cm-s-default .cm-number { color:rgba(89, 151, 198, 1) !important }
-
-span.cm-string, span.cm-string-2 {color: rgb(225, 225, 225) !important }
+span.cm-number, .cm-s-default .cm-atom, .cm-s-default .cm-number { color:var(--f_med) !important }
+/*span.cm-number, .cm-s-default .cm-atom, .cm-s-default .cm-number { color:rgba(89, 151, 198, 1) !important }*/
+/*span.cm-string, span.cm-string-2 {color: rgb(225, 225, 225) !important }*/
+span.cm-string, span.cm-string-2 {color: var(--f_high) !important; font-weight:bold}
 
 
 .CodeMirror-Tern-fname { color: white !important; font-weight:bold }
@@ -190,18 +220,18 @@ li.CodeMirror-hint-active {
 }
 
 .CodeMirror-cursor {
-  background: rgba(255,255,255,.5);
+  background: var(--f_med);
   border: none !important;
   width: .5em !important;
   display: block;
 }
 
 .CodeMirror-selected {
-  background:rgba(84,84,84,1) !important;
+  background:var(--b_low) !important;
 }
 
 .CodeMirror-highlight {
-  background:rgba(255,255,255,.5)
+  background:var(--b_low)
 }
 
 #main{
@@ -247,37 +277,37 @@ img {
 }
 
 .annotation-full {
-  border-color: #999;
+  border-color: var(--f_high); 
 }
 
 .annotation-highlight { background-color: #ffffff }
 
 .annotation-border { 
   /* border-color:#999 !important; */
-  border-color:#999;
+  border-color:var(--f_med);
   border-width:1px;
   border-style:solid
 }
 
-.annotation-right-border    { border-right-color:#999 }
-.annotation-left-border     { border-left-color:#999 }
-.annotation-top-border      { border-top-color:#999 } 
-.annotation-bottom-border   { border-bottom-color:#999 }
+.annotation-right-border    { border-right-color:var(--f_low) }
+.annotation-left-border     { border-left-color:var(--f_low) }
+.annotation-top-border      { border-top-color:var(--f_low) } 
+.annotation-bottom-border   { border-bottom-color:var(--f_low) }
 
-.annotation-right-border-cycle   { border-right-color:#ddd  !important }
-.annotation-left-border-cycle    { border-left-color:#ddd   !important }
-.annotation-top-border-cycle     { border-top-color:#ddd    !important } 
-.annotation-bottom-border-cycle  { border-bottom-color:#ddd !important }
+.annotation-right-border-cycle   { border-right-color:var(--f_med)  !important }
+.annotation-left-border-cycle    { border-left-color:var(--f_med)   !important }
+.annotation-top-border-cycle     { border-top-color:var(--f_med)    !important } 
+.annotation-bottom-border-cycle  { border-bottom-color:var(--f_med) !important }
 
 .annotation-no-left-border  { border-left-color:transparent  !important }
 .annotation-no-right-border { border-right-color:transparent !important }
 
 .annotation-border-left {
-  border-left-color:#999;
+  border-left-color:var(--f_high);
 }
 
 .annotation-border-right {
-  border-right-color: #999;
+  border-right-color:var(--f_high);
 }
 
 .annotation-no-horizontal-border { 
@@ -292,8 +322,8 @@ img {
 }
 
 .annotation-array {
-  border-top-color:#999;
-  border-bottom-color:#999;
+  border-top-color:var(--f_high);
+  border-bottom-color:var(--f_high);
 }
 
 .annotation-binop {
@@ -309,8 +339,9 @@ img {
 }
 
 .euclid1 {
-  border-color:#eee !important; 
-  background-color:#ccc
+  /*border-color:#eee !important; */
+  background-color:var(--b_inv);
+  color:var(--f_inv)
 }
 
 .euclid0 {
@@ -329,16 +360,17 @@ img {
 }
 
 .tidal {
-  border-color: #666 !important;
+  border-color: var(--f_low) !important;
   padding:0 2px !important
 }
 
 .tidal-bright {
-  border-color:#aaa !important
+  border-color:var(--f_high) !important
 }
 
 span.tidalblock {
-  color:#bbb !important
+  /*color:#bbb !important*/
+  /*font-weight:bold*/
 }
 
 .vtree-leaf-label { 	
