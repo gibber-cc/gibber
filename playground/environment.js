@@ -1,10 +1,9 @@
-const Gibber = window.Gibber = require( 'gibber.core.lib' )
+const Gibber = window.Gibber = require( 'gibber.core.lib' ),
       Audio         = require( 'gibber.audio.lib' ),
       Graphics      = require( 'gibber.graphics.lib' ),
       createProxies = require( './proxies.js' ),
       codeMarkup    = require( './codeMarkup.js' ),
       {setupShare,makeMsg} = require( './share.js' ),
-      Toastr        = require('toastr'),
       CodeMirror    = require( 'codemirror' )
 
 require( "../node_modules/codemirror/addon/dialog/dialog.js" )
@@ -597,28 +596,32 @@ window.getlink = function( name='link' ) {
   const code = btoa( lines.join('\n' ) )
   const link = `${window.location.protocol}//${window.location.host}${window.location.pathname}?${code}`
 
-  Toastr.options = {
-    "closeButton": true,
-    "debug": false,
-    "newestOnTop": false,
-    "progressBar": false,
-    "positionClass": "toast-top-center",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": 0,
-    "extendedTimeOut": 0,
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut",
-    "tapToDismiss": false
-  }
-
   copyToClipboard( link )
-  //Toastr["info"](`<a href="${link}">${name}</a>`, "Your sketch link:")
-  Toastr["success"]("Your sketch link was copied to the clipboard.")
+
+  // DRY... also used for gabber button
+  const menu = document.createElement('div')
+  menu.setAttribute('id', 'connectmenu')
+  menu.style.width = '12.5em'
+  menu.style.height = '4.5em'
+  menu.style.position = 'absolute'
+  menu.style.display = 'block'
+  menu.style.border = '1px #666 solid'
+  menu.style.borderTop = 0
+  menu.style.top = '3em'
+  menu.style.right = 0 
+  menu.style.zIndex = 1000
+
+  menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em'>A link containing your code has been copied to the clipboad.</p><button id='closelink' style='float:right; margin-right:.5em'>close</buttton>`
+
+  document.body.appendChild( menu )
+  document.querySelector('#connectmenu').style.left = document.querySelector('#sharebtn').offsetLeft + 'px'
+
+  const blurfnc = ()=> {
+    menu.remove()
+    document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+  }
+  document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
+  document.querySelector('#closelink').onclick = blurfnc
 
   return link
 }
@@ -627,9 +630,13 @@ window.msg = function( msg ) {
   chatData.unshift([{ username, msg }]) 
 }
 
+
 let __socket = null
 let __connected = false
 
 window.makeMsg = makeMsg
-window.addEventListener('load', ()=> setupShare(cm, environment, networkConfig ) )
+window.addEventListener('load', ()=> {
+  document.getElementById('sharebtn').onclick = getlink
+  setupShare(cm, environment, networkConfig ) 
+})
 
