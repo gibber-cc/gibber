@@ -3,7 +3,7 @@ Gibber is a live coding environment for the web browser, combining music synthes
 
 ## Playgrounds ##
 - [Version 1](https://gibber.cc)
-- [Version 2 (alpha status, but try it!)](https://gibber-cc.github.io/gibber/playground)
+- [Version 2 (alpha status, but try it!)](https://gibber.cc/alpha/playground/)
 
 ## Building Gibber ##
 There are three main components this repo wraps, in addition to providing the editing interface.
