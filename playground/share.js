@@ -115,7 +115,7 @@ const setupShareHandler = function( cm, environment, networkConfig ) {
     menu.style.display = 'block'
     menu.style.border = '1px #666 solid'
     menu.style.borderTop = 0
-    menu.style.top = '3em'
+    menu.style.top = '2.5em'
     menu.style.right = 0 
     menu.style.zIndex = 1000
 

@@ -67,6 +67,17 @@ button, input {
   font-family: Helvetica Neue, sans-serif;
 }
 
+#hidebtn { 
+  cursor:pointer;
+  border-style:none !important;
+  position:absolute;
+  right:.5em;
+  top:.5em;
+  color:var(--f_med);
+  z-index:1;
+}
+#hidebtn:focus { outline:0; }
+
 .menu button, .menu input {
   /*border:1px solid #666;*/
   /*color:#ddd;*/
@@ -143,10 +154,14 @@ header span { font-size: .8em; }
 
 #reference {
   position:absolute;
-  right:1em;
+  right:3em;
   top:-.5em;
 }
-#reference a{ color: var(--f_med) !important; margin-left: 1em }
+#reference a { 
+  color: var(--f_med) !important; 
+  margin-left: 2em 
+}
+
 #reference a img { position:relative; top:.75em }
 
 .CodeMirror-matchingbracket {

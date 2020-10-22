@@ -306,6 +306,7 @@ fm = FM({ feedback:.0015, decay:1/2 })
       fft.clear = function() { clearInterval( fft.interval ) }
 
       Metronome.init( Gibber )
+      environment.metronome = Metronome
     }) 
 
     environment.editor = cm
@@ -385,6 +386,7 @@ fm = FM({ feedback:.0015, decay:1/2 })
   }
 
   setupThemeMenu()
+  setupCollapseBtn()
 }
 
 
@@ -628,7 +630,7 @@ window.getlink = function( name='link' ) {
   menu.style.display = 'block'
   menu.style.border = '1px var(--f_inv) solid'
   menu.style.borderTop = 0
-  menu.style.top = '3em'
+  menu.style.top = '2.5em'
   menu.style.right = 0 
   menu.style.zIndex = 1000
 
@@ -678,7 +680,7 @@ const setupThemeMenu = function() {
     menu.style.display = 'block'
     menu.style.border = '1px var(--f_inv) solid'
     menu.style.borderTop = 0
-    menu.style.top = '3em'
+    menu.style.top = '2.5em'
     menu.style.right = 0 
     menu.style.zIndex = 1000
 
@@ -722,8 +724,37 @@ const setupThemeMenu = function() {
     document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
     //document.querySelector('#closelink').onclick = blurfnc      
   }
+}
 
-  
+let isHeaderHidden = false
+const setupCollapseBtn = function() {
+  const hidebtn = document.querySelector( '#hidebtn' )
+  const met = document.querySelector('#metronome')
+
+  hidebtn.addEventListener( 'click', function(e) {
+    if( isHeaderHidden === false ) {
+      document.querySelector('header').style.display = 'none'
+      hidebtn.innerHTML= '&#9660;'
+      //hidebtn.style.opacity = .5 
+      met.style.removeProperty( 'left' ) 
+      met.style.right = '2em'
+      met.style.top = '.3em'
+      met.height /= 2
+      met.width  /= 2
+      Metronome.widthMod = 2
+    }else{
+      document.querySelector('header').style.display = 'block'
+      hidebtn.innerHTML = '&#9650;'
+      //hidebtn.style.opacity = 1
+      met.style.removeProperty( 'right' )
+      met.style.left = 0
+      met.style.top = 0
+      met.height *= 2
+      Metronome.widthMod = 1
+      met.width *= 2
+    }
+    isHeaderHidden = !isHeaderHidden
+  })
 }
 
 

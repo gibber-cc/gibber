@@ -8,10 +8,11 @@ const Metronome = {
   height: null,
   color: '#252525',
   beat: 0,
+  widthMod:1,
   
   draw( beat, beatsPerMeasure ) {
     if( this.shouldDraw && this.ctx !== null ) {
-      const beatWidth = this.width / beatsPerMeasure,
+      const beatWidth = this.width / beatsPerMeasure / this.widthMod,
             beatPos = ( beat ) * beatWidth
     
       this.ctx.clearRect( 0, 0, this.width, this.height )
