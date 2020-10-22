@@ -9952,6 +9952,7 @@ const Scheduler = {
   clear() {
     this.queue.data.length = 0;
     this.queue.length = 0;
+    this.phase = 0;
   },
 
   add(time, func, priority = 0) {
@@ -10830,7 +10831,7 @@ module.exports = function (Gibberish) {
         const id = message.id;
         const eventName = message.name;
         const obj = Gibberish.worklet.ugens.get(id);
-        if (obj !== undefined) obj.publish(eventName, message);
+        if (obj !== undefined && obj.publish !== undefined) obj.publish(eventName, message);
       },
       callback(event) {
         if (typeof Gibberish.oncallback === 'function') {
@@ -17511,7 +17512,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
     Gibberish.ugens = this.ugens = new Map()
 
     // XXX ridiculous hack to get around processor not having a worklet property
-    Gibberish.worklet = { ugens: this.ugens }
+    Gibberish.worklet = { ugens: this.ugens, port:this.port }
 
     this.ugens.set( Gibberish.id, Gibberish )
 
@@ -17606,7 +17607,9 @@ class GibberishProcessor extends AudioWorkletProcessor {
 
         properties.id = rep.id
         
-        ugen = properties.isop === true || properties.isPattern === true ? constructor( ...properties.inputs ) :  constructor( properties )
+        ugen = properties.isop === true || properties.isPattern === true 
+          ? constructor( ...properties.inputs ) 
+          : constructor( properties )
 
         if( properties.isPattern ) {
           for( let key in properties ) {

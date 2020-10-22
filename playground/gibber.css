@@ -17,18 +17,19 @@
 }
 
 #themer {
-  width:40px;
-  height:34px;
+  width:4em;
+  height:1.5em;
+  /*width:40px;*/
+  /*height:34px;*/
   position:relative;
-  top:.7em;
+  top:.5em;
+  object-fit:cover
 }
 
 body { 
   margin: 0;
-  box-sizing:border;
   color:#ddd;
   font-family: Helvetica Neue, sans-serif;
-  /*background:rgba(46,50,53,1);*/
   background:var(--background);
   box-sizing:border-box !important;
 }
@@ -74,7 +75,6 @@ button, input {
 }
 
 input { width:6em }
-#themer { width:4em }
 
 label { 
   font-size:.8em; 
@@ -93,7 +93,7 @@ header {
   position:relative;
   top:0; left:0;
   width:100%; 
-  height:3em; 
+  height:2.5em; 
   border-bottom:1px solid var(--f_med);
   padding-left:1em;
   box-sizing:border-box;
@@ -109,17 +109,19 @@ select{
   -moz-border-radius:0px;
   border-radius:0px;
   border-color: var(--f_med); 
+  margin-left:3em;
 }
 
 h1 {
   font-size: 1em;
   font-weight: normal;
-  padding-top:1em;
-  padding-right: 2em;
-  height:3em;
   display:inline-block;
   margin:0;
-  color:var(--f_med);
+  color:var(--f_high);
+}
+
+#metronome {
+  position:absolute;
 }
 
 header span { font-size: .8em; }
@@ -142,6 +144,7 @@ header span { font-size: .8em; }
 #reference {
   position:absolute;
   right:1em;
+  top:-.5em;
 }
 #reference a{ color: var(--f_med) !important; margin-left: 1em }
 #reference a img { position:relative; top:.75em }

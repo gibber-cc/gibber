@@ -5,6 +5,7 @@ const Gibber        = require( 'gibber.core.lib' ),
       codeMarkup    = require( './codeMarkup.js' ),
       CodeMirror    = require( 'codemirror' ),
       Theme         = require( './resources/js/theme.js' ),
+      Metronome     = require( './metronome.js' ),
       {setupShare,makeMsg} = require( './share.js' )
 
 require( '../node_modules/codemirror/addon/dialog/dialog.js' )
@@ -50,6 +51,7 @@ window.onload = function() {
   }else{
     document.querySelector('#themer').src = `./resources/themes/noir.png`
   }
+
   
   cm = CodeMirror( document.querySelector('#editor'), {
     mode:   'javascript',
@@ -283,7 +285,7 @@ fm = FM({ feedback:.0015, decay:1/2 })
       {
         name:    'Graphics',
         plugin:  Graphics,
-        options: { canvas:document.querySelector('canvas' ) }
+        options: { canvas:document.querySelector( '#graphics' ) }
       }
     ]).then( ()=> {
       Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
@@ -302,6 +304,8 @@ fm = FM({ feedback:.0015, decay:1/2 })
       }
 
       fft.clear = function() { clearInterval( fft.interval ) }
+
+      Metronome.init( Gibber )
     }) 
 
     environment.editor = cm
