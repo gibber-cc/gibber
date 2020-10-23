@@ -62159,9 +62159,10 @@ const Y = require( 'yjs' ),
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
 
 const initShare = function( editor, username='anonymous', room='default' ) {
+  const protocol = window.location.hostname = '127.0.0.1' ? 'ws' : 'wss'
   const ydoc = new Y.Doc(),
         provider = new WebsocketProvider(
-          'ws://'+ "127.0.0.1" +':' + "9080",
+          `${protocol}://${window.location.host}`,
           room,
           ydoc,
           { connect:true }
