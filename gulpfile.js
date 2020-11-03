@@ -18,12 +18,8 @@ gulp.task( 'client', function(){
     .on( 'error', console.log )
     .pipe( source( 'bundle.js' ) )
     .pipe( gulp.dest( './playground' ) )
-/*    .pipe( buffer() )
-    .pipe( uglify() )
-    .pipe( rename('gibber.audio.lib.min.js') )
-    .pipe( gulp.dest('./build/') )
-*/    
-    return out
+  
+  return out
 });
 
 gulp.task('watch', function() {
@@ -39,9 +35,6 @@ gulp.task('watch', function() {
       .on( 'error', console.log ) 
       .pipe( source( 'bundle.js' ) )
       .pipe( gulp.dest( './playground/' ) )
-      // .pipe( uglify() )
-      // .pipe( rename('gibber.audio.lib.min.js') )
-      // .pipe( gulp.dest('./build/') )
   }
 
   return rebundle();

@@ -10797,7 +10797,8 @@ module.exports = function (Gibberish) {
 
         Gibberish.worklet.connect(Gibberish.ctx.destination);
         Gibberish.worklet.port.onmessage = event => {
-          Gibberish.utilities.workletHandlers[event.data.address](event);
+          const callback = Gibberish.utilities.workletHandlers[event.data.address];
+          if (typeof callback === 'function') callback(event);
         };
         Gibberish.worklet.ugens = new Map();
 

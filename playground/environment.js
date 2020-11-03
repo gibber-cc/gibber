@@ -736,7 +736,6 @@ const setupCollapseBtn = function() {
       document.querySelector('header').style.display = 'none'
       hidebtn.innerHTML= '&#9660;'
       //hidebtn.style.opacity = .5 
-      met.style.removeProperty( 'left' ) 
       met.style.right = '2em'
       met.style.top = '.3em'
       met.height /= 2
@@ -767,3 +766,40 @@ window.addEventListener('load', ()=> {
   setupShare(cm, environment, networkConfig ) 
 })
 
+
+window.use = function( ...libs ) {
+  if( libs.length === 1 ) { 
+    return window.__use( libs[0] ) 
+  }else{
+    return Promise.all( libs.map( l => window.__use( l ) ) )
+  }
+}
+
+window.__use = function( lib ) {
+  let p
+  if( lib === 'vim' ) {
+    window.CodeMirror = CodeMirror
+    p = new Promise( (res,rej) => {
+      const __p = window.__use( 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/keymap/vim.min.js' ).then( ()=> {
+        CodeMirror.keyMap.playground.fallthrough = 'vim'
+        cm.setOption( 'vimMode', true )
+        cm.setOption( 'extraKeys', CodeMirror.keyMap.playground )
+        res()
+      })
+    })
+  }else{
+    p = new Promise( (res,rej) => {
+      const script = document.createElement( 'script' )
+      script.src = lib
+
+      document.querySelector( 'head' ).appendChild( script )
+
+      script.onload = function() {
+        //msg( `${lib} has been loaded.`, 'new module loaded' )
+        res()
+      }
+    }) 
+  }
+  
+  return p
+}

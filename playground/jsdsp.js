@@ -63,7 +63,7 @@ module.exports = function({ types: t }) {
     
     ConditionalExpression( path, state ) {
       //console.log( 'jsdsp:', state.usejsdsp )
-      state.usejsdsp = true
+      state.usejsdsp = false 
       if( state.usejsdsp === false ) return
 
       // don't transform if arguments are both number literals
