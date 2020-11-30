@@ -1,6 +1,6 @@
-// hit alt+enter to run all code
-// or run line/selection with ctrl+enter.
-// ctrl+period to stop all sounds.
+// hit alt+return (opt+return in macOS) to run all code
+// or run single line / current selection with ctrl+return.
+// ctrl+period stops all sounds.
 Theory.tuning = 'slendro'
 Theory.mode = null
   

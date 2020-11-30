@@ -282,9 +282,10 @@ module.exports = ( attackTime = 44100, decayTime = 44100, _props ) => {
   out.trigger = ()=> {
     if( usingWorklet === true && out.node !== null ) {
       out.node.port.postMessage({ key:'set', idx:completeFlag.memory.values.idx, value:0 })
-    }else{
-      gen.memory.heap[ completeFlag.memory.values.idx ] = 0
     }
+    //else{
+    //  gen.memory.heap[ completeFlag.memory.values.idx ] = 0
+    //}
     _bang.trigger()
   }
 
@@ -8857,7 +8858,6 @@ module.exports = function (Gibberish) {
   };
 
   const envCheckFactory = function (voice, _poly) {
-
     const envCheck = () => {
       const phase = Gibberish.memory.heap[voice.__phase__.memory.value.idx];
       if (voice.rate > 0 && phase > voice.end || voice.rate < 0 && phase < 0) {
@@ -10236,17 +10236,18 @@ module.exports = function (Gibberish) {
   const Sequencer = props => {
     let __seq;
     const seq = {
+      type: 'seq',
       __isRunning: false,
 
       __valuesPhase: 0,
       __timingsPhase: 0,
-      __type: 'seq',
+      //__type:'seq',
       __onlyRunsOnce: false,
       __repeatCount: null,
 
       tick(priority) {
         let value = typeof seq.values === 'function' ? seq.values : seq.values[seq.__valuesPhase++ % seq.values.length],
-            timing = typeof seq.timings === 'function' ? seq.timings : seq.timings[seq.__timingsPhase++ % seq.timings.length],
+            timing = typeof seq.timings === 'function' ? seq.timings : seq.timings !== null ? seq.timings[seq.__timingsPhase++ % seq.timings.length] : null,
             shouldRun = true;
 
         if (seq.__onlyRunsOnce === true) {
@@ -10268,31 +10269,37 @@ module.exports = function (Gibberish) {
         // XXX this supports an edge case in Gibber, where patterns like Euclid / Hex return
         // objects indicating both whether or not they should should trigger values as well
         // as the next time they should run. perhaps this could be made more generalizable?
-        if (typeof timing === 'object') {
-          if (timing.shouldExecute === 1) {
-            shouldRun = true;
-          } else {
-            shouldRun = false;
+        if (timing !== null) {
+          if (typeof timing === 'object') {
+            if (timing.shouldExecute === 1) {
+              shouldRun = true;
+            } else {
+              shouldRun = false;
+            }
+            timing = timing.time;
           }
-          timing = timing.time;
-        }
 
-        timing *= seq.rate;
+          timing *= seq.rate;
+        } else {
+          shouldRun = false;
+        }
 
         if (shouldRun) {
           if (seq.mainthreadonly !== undefined) {
             if (typeof value === 'function') {
               value = value();
             }
+            //console.log( 'main thread only' )
             Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
           } else if (typeof value === 'function' && seq.target === undefined) {
             value();
           } else if (typeof seq.target[seq.key] === 'function') {
+            //console.log( seq.key, seq.target )
             if (typeof value === 'function') value = value();
-            seq.target[seq.key](value);
+            if (value !== Sequencer.DO_NOT_OUTPUT) seq.target[seq.key](value);
           } else {
             if (typeof value === 'function') value = value();
-            seq.target[seq.key] = value;
+            if (value !== Sequencer.DO_NOT_OUTPUT) seq.target[seq.key](value);
           }
 
           if (seq.reportOutput === true) {
@@ -10308,9 +10315,25 @@ module.exports = function (Gibberish) {
         }
 
         if (Gibberish.mode === 'processor') {
-          if (seq.__isRunning === true && !isNaN(timing)) {
+          if (seq.__isRunning === true && !isNaN(timing) && seq.autotrig === false) {
             Gibberish.scheduler.add(timing, seq.tick, seq.priority);
           }
+        }
+      },
+      fire() {
+        let value = typeof this.values === 'function' ? this.values : this.values[this.__valuesPhase++ % this.values.length];
+        if (typeof value === 'function' && this.target === undefined) {
+          value();
+        } else if (typeof this.target[this.key] === 'function') {
+          if (typeof value === 'function') {
+            value = value();
+          }
+          if (value !== this.DNR) {
+            this.target[this.key](value);
+          }
+        } else {
+          if (typeof value === 'function') value = value();
+          if (value !== this.DNR) this.target[this.key] = value;
         }
       },
 
@@ -10372,11 +10395,13 @@ module.exports = function (Gibberish) {
     return __seq;
   };
 
-  Sequencer.defaults = { priority: 100000, values: [], timings: [], rate: 1, reportOutput: false };
+  Sequencer.defaults = { priority: 100000, rate: 1, reportOutput: false, autotrig: false };
 
   Sequencer.make = function (values, timings, target, key, priority, reportOutput) {
     return Sequencer({ values, timings, target, key, priority, reportOutput });
   };
+
+  Sequencer.DO_NOT_OUTPUT = -987654321;
 
   return Sequencer;
 };
