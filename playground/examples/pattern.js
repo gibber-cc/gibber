@@ -20,82 +20,86 @@ can be sequenced.
 ** __--__--__--__--__--__--__--__*/
 
 // create two kick drum patterns
+// assign second one to variable 'e'
 kik = Kick()
-kik.trigger.seq( 1, Euclid(3,8) )
-kik.trigger.seq( .5, Euclid(5,16), 1 )
+kik.trigger.seq( 1,  Euclid(3,8) )
+kik.trigger.seq( .5, e = Euclid(5,16) 1 )
 
 // move timings pattern in second sequence
 // one position to the right (try running this multiple times!)
-kik.trigger[1].timings.rotate(1)
+e.rotate(1)
 
 // reset timings pattern to original value
-kik.trigger[1].timings.reset()
+e.reset()
 
 // now we'll sequence tthe pattern to shift each measure
-kik.trigger[1].timings.rotate.seq( 1,1 )
+e.rotate.seq( 1,1 )
 
 // let's try this with some melodic content using
-// the .transpose functtion on a values pattern
+// the .transpose functtion on a values pattern. For
+// all the subsequent examples, we'll create a patttern
+// and assign it to the variable "notes"
 
 Gibber.clear()
  
 syn = Synth( 'bleep' )
-syn.note.seq( [0,2,4,5], 1/4 )
-syn.note[0].values.transpose.seq( 1,1 )
+
+syn.note.seq( notes = [0,1,4,5], 1/4 )
+notes.transpose.seq( 1,1 )
 
 // tell it to reset every 8 measures
-syn.note[0].values.reset.seq( 1,8 )
+notes.reset.seq( 1,8 )
 
 Gibber.clear()
 
 // below is a catalog of all the possible 
 // pattern transformations.
-b = Synth( 'bleep' ).note.seq( [0,3,2,1,5,4,3,6], 1/8 )
+b = Synth( 'bleep' ).note.seq( notes = [0,3,2,1,5,4,3,6], 1/8 )
 
 // only play first four notes of pattern
-b.note[0].values.range(0,3)
+notes.range(0,3)
 
 // play all notes again
-b.note[0].values.range(0, 7)
+notes.range(0, 7)
 
 // move pattern 1 slot to the right
-b.note[0].values.rotate( 1 ) 
+notes.rotate( 1 ) 
 
 // move pattern 1 slot to the left
-b.note[0].values.rotate( -1 )
+notes.rotate( -1 )
 
 // invert the pattern
-b.note[0].values.invert()
+notes.invert()
 
 // reverse the pattern()
-b.note[0].values.reverse()
+notes.reverse()
 
 // store the pattern
-b.note[0].values.store()
+notes.store()
 
 // reset pattern to original value
-b.note[0].values.reset()
+notes.reset()
 
 // switch to stored pattern
-b.note[0].values.switch( 1 )
+notes.switch( 1 )
 
 // switch to original, which is always stored in slot 0
-b.note[0].values.switch( 0 )
+notes.switch( 0 )
 
 // transpose by an octave
-b.note[0].values.transpose( -7 )
+notes.transpose( -7 )
 
 // scale intervals by a factor of 2
-b.note[0].values.scale( 2 )
+notes.scale( 2 )
 
 // reset
-b.note[0].values.reset()
+notes.reset()
 
 // sequence calls to parameter functions
-b.note[0].values.invert.seq( 1, [ 1,2,4 ] )
-b.note[0].values.reverse.seq( 1, [ 1,2,4 ] )
-b.note[0].values.rotate.seq( [-1,1], [1/2,1,2,4,8] )
-b.note[0].values.transpose.seq( [-1,1], [2,4,8] )
+notes.invert.seq( 1, [ 1,2,4 ] )
+notes.reverse.seq( 1, [ 1,2,4 ] )
+notes.rotate.seq( [-1,1], [1/2,1,2,4,8] )
+notes.transpose.seq( [-1,1], [2,4,8] )
 
 Gibber.clear()
 
@@ -104,7 +108,25 @@ Gibber.clear()
 // values. Here's a simple example of changing a
 // bass line every measure:
 
-f = FM('bass').note.seq( [0,7], 1/8 )
+f = FM('bass').note.seq( notes = [0,7], 1/8 )
 
-f.note[0].values.set.seq([ [0,7],[0,5],[1,3],[2,4] ], 1 )
+notes.set.seq([ [0,7],[0,5],[1,3],[2,4] ], 1 )
 
+// alhough we think it's easiest to assign 
+// pattterns to variables and then manipulate
+// them through that variable, you can also
+// access patterns directly through the
+// sequencers containing them. For example:
+
+syn = PolySynth('square.perc')
+syn.note.seq( [0,1,2,3], 1/4, 0 )
+syn.note.seq( [7,8,9], Euclid(3,8), 1 )
+
+// access the "values" of our 0 sequence
+syn.note[0].values.transpose(1)
+
+// access the "values" of our 1 sequence
+syn.note[1].values.reverse(1)
+
+// acecss the "timings" of our 1 sequence
+syn.note[1].timings.rotate.seq( 1,1 )
