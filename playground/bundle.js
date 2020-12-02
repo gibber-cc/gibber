@@ -5561,8 +5561,16 @@ module.exports = function( Audio ) {
         },
         target:target.id,
         method,
-        args
+        args,
+        name:dict.name
       }
+
+      //Object.defineProperty( cp[ key ], 'loudness', {
+      //  set(v) {
+      //    console.log( 'loudness:', v, Gibberish.worklet.ugens.get( this.target ))
+      //    Gibberish.worklet.ugens.get( this.target ).loudness = v
+      //  }
+      //})
       cp[ dict.name ] = target
     }
 
@@ -7210,7 +7218,14 @@ module.exports = {
     decay:1/16,
     octave:-2
   },
-
+  deepbass : {
+    cmRatio:1,
+    index:3,
+    attack:1/256,
+    decay:1/2,
+    octave:-3,
+    feedback:.005
+  },
   kick:{
     attack : 1/4096,
     index : 5,
@@ -9931,7 +9946,7 @@ const patternWrapper = function( Gibber ) {
     __methodNames:  [
       'rotate','switch','invert','flip',
       'transpose','reverse','shuffle','scale',
-      'store', 'range', 'set', 'freeze', 'thaw'
+      'store', 'range', 'set', 'freeze', 'thaw', 'double'
     ]
 
   })
@@ -10040,7 +10055,7 @@ const patternWrapper = function( Gibber ) {
       },
 
       range(...args) {
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.range( ...args )
           return this
         }
@@ -10069,9 +10084,32 @@ const patternWrapper = function( Gibber ) {
 
         return fnc
       },
-      
+      double(...args) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
+          this.__rendered.double(...args)
+          return this
+        }
+        if( !fnc.__frozen ) {
+
+          fnc.values.push( ...fnc.values ) 
+          
+          fnc.end = fnc.values.length - 1
+          
+          // if( fnc.end > fnc.values.length - 1 ) {
+          //   fnc.end = fnc.values.length - 1
+          // }else if( fnc.end < )
+          if( Gibberish.mode === 'processor' ) {
+            fnc.__message( 'values', fnc.values ) 
+            fnc.__message( '_onchange', true ) 
+          }
+          fnc._onchange()
+        }
+        
+        return fnc
+      },   
+
       set(...args) {
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.set(...args)
           return this
         }
@@ -10101,7 +10139,7 @@ const patternWrapper = function( Gibber ) {
       },
        
       reverse() {
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.reverse()
           return this
         }
@@ -10204,7 +10242,7 @@ const patternWrapper = function( Gibber ) {
       },
     
       reset() { 
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.reset()
           return this
         }
@@ -10236,7 +10274,7 @@ const patternWrapper = function( Gibber ) {
       store() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
 
       transpose( amt ) { 
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.transpose( amt )
           return this
         }
@@ -10267,7 +10305,7 @@ const patternWrapper = function( Gibber ) {
       },
 
       shuffle() { 
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.shuffle( )
           return this
         }
@@ -10280,7 +10318,7 @@ const patternWrapper = function( Gibber ) {
       },
 
       scale( amt ) { 
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.scale( amt )
           return this
         }
@@ -10311,7 +10349,7 @@ const patternWrapper = function( Gibber ) {
       },
 
       flip() {
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.flip( )
           return this
         }
@@ -10342,7 +10380,7 @@ const patternWrapper = function( Gibber ) {
       },
       
       invert() {
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.invert( )
           return this
         }
@@ -10368,7 +10406,7 @@ const patternWrapper = function( Gibber ) {
       },
     
       switch( to ) {
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.switch( to )
           return this
         }
@@ -10384,7 +10422,7 @@ const patternWrapper = function( Gibber ) {
       },
     
       rotate( amt ) {
-        if( this.__rendered !== this ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
           this.__rendered.rotate( amt )
           return this
         }
@@ -10845,7 +10883,7 @@ module.exports = function( Gibber ) {
     // if x.y.seq() etc. 
     // standalone === false is most common use case
     if( props.standalone === false ) { 
-      // required ternary because pattern methohds don't have __ prefix 
+      // required ternary because pattern methods don't have __ prefix 
       const targetProp = target[ '__' + key ] === undefined 
         ? target[ key ] 
         : target[ '__' + key ]
@@ -10887,13 +10925,10 @@ const Steps = {
     
     stepseq.seqs = {}
 
-    for ( let _key in _steps ) {
+    for( let _key in _steps ) {
       let values = _steps[ _key ]
       const parsedKey = parseInt( _key )
-      const key =  isNaN( parsedKey ) ? _key : parsedKey
-
-      //let seq = Gibber.Seq( key, Gibber.Hex( values ), 'midinote', track, 0 )
-      //seq.trackID = track.id
+      const key = isNaN( parsedKey ) ? _key : parsedKey
 
       let usesStringValues = false
       if( values.isPattern !== true ) {
@@ -10910,10 +10945,13 @@ const Steps = {
       const seq = Gibber.Seq({
         values: usesStringValues ? values : key,
         timings: usesStringValues ?  [ 1  / values.length ] : values,
-        'key': target.__isEnsemble !== true ? 'note' : 'play', 
-        target, 
+        'key': target.__isEnsemble !== true ? 'note' : 'trigger', 
+        target: target.__isEnsemble ? target[ target[ key ].name ] : target, 
         priority:0
       })
+
+      const onlyUsesVelocity = typeof key === 'string'
+
 
       if( usesStringValues ) {
         seq.values.addFilter( new Function( 'args', 'ptrn', 
@@ -10921,15 +10959,19 @@ const Steps = {
               velocity = parseInt( sym, 16 ) / 15
 
           if( isNaN( velocity ) ) {
-            velocity = 0
+            velocity = sym === 'x' 
+              ? 1
+              : sym === 'X'
+                ? 1.5
+                : 0
           }
 
           // TODO: is there a better way to get access to beat, beatOffset and scheduler?
           if( velocity !== 0 ) {
-            ptrn.seq.target.loudness = velocity
+            ${ onlyUsesVelocity ? '' :'ptrn.seq.target.__triggerLoudness = velocity' }
           }
 
-          args[ 0 ] = sym === '.' ? -987654321 : ${typeof key === 'string' ? `'${key}'` : key }
+          args[ 0 ] = sym === '.' ? -987654321 : ${typeof key === 'string' ? 'velocity' : key }
 
           return args
         `) )
@@ -10940,21 +10982,83 @@ const Steps = {
     }
 
     stepseq.start()
-    //stepseq.addPatternMethods()
+    stepseq.addPatternMethods()
 
     return stepseq
   },
   
+  /* two parts:
+   * 1. The easy part, make methods that can be called from the main thread
+   *    and run over every seq instance in the step sequencer
+   * 2. The hard part, make an object that lives in the audio thread
+   *    and can be sequenced. It needs references to all sequencers in the 
+   *    step sequencer.
+   */
   addPatternMethods() {
+    // XXX shouldn't use audio id by default... sigh
+    const id = Gibber.Audio.Gibberish.utilities.getUID()
+
+    // store ids of all controlled sequencers
+    const seqIds = []
+    for( let key in this.seqs ) {
+      seqIds.push( this.seqs[ key ].id )
+    }
+
+    // this object will be transferred to audio thread
+    const obj = { id, seqIds }
+
     groupMethodNames.forEach( name => {
-      this[ name ] = function( ...args ) {
-        for( let key in this.seqs ) {
-          this.seqs[ key ].values[ name ].apply( this, args )
-        }
+      // EASY PART 
+      this[ name ] = function( ...args ) { 
+        for( let key in this.seqs ) { 
+          this.seqs[ key ].values[ name ].apply( this, args ) 
+        } 
       }
-    
-      //Gibber.addSequencingToMethod( this, name, 1 )
+
+      this[ name ].sequencers = []
+      this[ name ].seq = ( values, timings, number = 0, delay = 0 ) => {
+        const s = Gibber.Seq({ 
+          values, 
+          timings, 
+          target:this.__wrapped,
+          key:name,
+          priority:1,
+        }).start()
+        
+        this[ name ].sequencers.push( s )
+
+        // needed for annotations
+        this[ name ][ number ] = s
+
+        return this 
+      } 
+
+      // store function body to create function in audio thread representation of steps
+      // needs to be one line for stringify / parsing
+      // XXX ugh arguments? is there ever more than one argument?
+      obj[ name ] = `for( let seq of this.seqs ) { seq.values.${name}.apply( this, arguments ); seq.timings.${name}.apply( this, arguments )}`
     })
+
+    // HARD PART
+    // code to be evaluated in audio thread
+    // 1. create a new object, steps, bassed on stringifying obj
+    // 2. add all of the transform methods
+    // 3. store all controlled sequencers in steps.seqs after getting references
+    //    from Gibberish.ugens 
+    const code = `const steps = JSON.parse( \`${JSON.stringify(obj)}\` )
+      const methods = ${JSON.stringify( groupMethodNames ) }
+      steps.seqs = steps.seqIds.map( id => Gibberish.ugens.get( id ) )
+      for( let method of methods ) {
+        steps[ method ] = new Function( steps[ method ] ) 
+      }
+      Gibberish.ugens.set( steps.id, steps )`
+ 
+    Gibber.Audio.Gibberish.worklet.port.postMessage({
+      address:'eval',
+      code
+    }) 
+
+    this.__wrapped = obj
   },
 
   start() {
@@ -10975,126 +11079,19 @@ const Steps = {
     for( let key in this.seqs ) {
       this.seqs[ key ].timings.clear()
     }
-  },
-
-
-  //rotate( amt ) {
-  //  for( let key in this.seqs ) { 
-  //    this.seqs[ key ].values.rotate( amt )
-  //  }
-  //},
-
-}
-
-const groupMethodNames = [ 
-  'rotate', 'reverse', 'transpose', 'range',
-  'shuffle', 'scale', 'repeat', 'switch', 'store', 
-  'reset','flip', 'invert', 'set'
-]
-
-return Steps.create
-
-}
-
-
-
-/*
-const Steps = {
-  type:'Steps',
-  create( _steps, target ) {
-    let stepseq = Object.create( Steps )
-  
-    stepseq.seqs = {}
-
-    //  create( values, timings, key, object = null, priority=0 )
-    for( let _key in _steps ) {
-      const values = _steps[ _key ].split('')
-      const parsedKey = parseInt( _key )
-      const key =  isNaN(parsedKey) ? _key : parsedKey
-
-      debugger
-      const seq = Gibber.Seq({
-        values, 
-        timings:[1 / values.length],
-        'key': target.__isEnsemble !== true ? 'note' : 'play', 
-        target, 
-        priority:0
-      })
-
-      // need to define custom function to use key as value
-      seq.values.addFilter( new Function( 'args', 'ptrn', 
-       `let sym = args[ 0 ],
-            velocity = parseInt( sym, 16 ) / 15
-
-        if( isNaN( velocity ) ) {
-          velocity = 0
-        }
-
-        // TODO: is there a better way to get access to beat, beatOffset and scheduler?
-        if( velocity !== 0 ) {
-          ptrn.seq.target.loudness = velocity
-        }
-
-        args[ 0 ] = sym === '.' ? ptrn.DNR : ${typeof key === 'string' ? `'${key}'` : key }
-
-        return args
-      `) )
-
-      stepseq.seqs[ _key ] = seq
-      stepseq[ _key ] = seq.values
-    }
-
-    stepseq.start()
-    //stepseq.addPatternMethods()
-
-    return stepseq
-  },
-
-  addPatternMethods() {
-    groupMethodNames.map( (name) => {
-      this[ name ] = function( ...args ) {
-        for( let key in this.seqs ) {
-          this.seqs[ key ].values[ name ].apply( this, args )
-        }
-      }
-  
-      Gibber.addSequencingToMethod( this, name, 1 )
-    })
-  },
-
-  start() {
-    for( let key in this.seqs ) { 
-      this.seqs[ key ].start()
-    }
-  },
-
-  stop() {
-    for( let key in this.seqs ) { 
-      this.seqs[ key ].stop()
-    }
-  },
-
-  clear() { this.stop() },
-
-
-rotate( amt ) {
-  for( let key in this.seqs ) { 
-    this.seqs[ key ].values.rotate( amt )
   }
-},
+
 }
 
 const groupMethodNames = [ 
   'rotate', 'reverse', 'transpose', 'range',
-  'shuffle', 'scale', 'repeat', 'switch', 'store', 
-  'reset','flip', 'invert', 'set'
+  'shuffle', 'scale', 'repeat', 'store', 
+  'reset','flip', 'invert', 'set', 'double'
 ]
 
 return Steps.create
 
 }
-
-*/
 
 },{}],122:[function(require,module,exports){
 module.exports = function( Gibber ) {
@@ -59269,7 +59266,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
             }
 
             let spanName = `.step_${key}_${currentIdx}`,
-                currentValue = step.value[ currentIdx ]
+                currentValue = pattern.values[ currentIdx ]
 
             span = $( spanName )
 
@@ -60524,7 +60521,7 @@ const Marker = {
     // If the timings node is already marked up, the mark will simply move with the text addition.
     // However, if the timing mode is marked up after, the position information provided by the parser
     // will be off and not valid.
-    
+
     if( nodes[1] !== undefined ) {
       let timingsNode = nodes[1]
       if( timingsNode.type === 'AssignmentExpression' ) timingsNode = timingsNode.right
@@ -61231,6 +61228,8 @@ fm = FM({ feedback:.0015, decay:1/2 })
     ]).then( ()=> {
       Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
       Gibber.export( window ) 
+      window.Graphics = Gibber.Graphics
+      window.Audio    = Gibber.Audio
       //setupFFT( Marching.FFT )
 
       const fft = window.FFT = Marching.FFT
@@ -68160,7 +68159,7 @@ const Sequencer = props => {
         }else{
           if( typeof value === 'function' ) value = value()
           if( value !== seq.DNR )
-            seq.target[ seq.key ]( value )
+            seq.target[ seq.key ] = value
         }
 
         if( seq.reportOutput === true ) {
@@ -68920,7 +68919,7 @@ const makeAndSendObject = function( __name, values, obj ) {
   Gibberish.worklet.port.postMessage( obj.__meta__ )
 }
 
-const doNotProxy = [ 'connected', 'input', 'callback', 'inputNames', 'on', 'off','publish' ]
+const doNotProxy = [ 'connected', 'input', 'wrap', 'callback', 'inputNames', 'on', 'off','publish' ]
    
 const __proxy = function( __name, values, obj ) {
 

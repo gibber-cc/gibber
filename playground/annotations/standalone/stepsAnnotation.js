@@ -116,7 +116,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
             }
 
             let spanName = `.step_${key}_${currentIdx}`,
-                currentValue = step.value[ currentIdx ]
+                currentValue = pattern.values[ currentIdx ]
 
             span = $( spanName )
 

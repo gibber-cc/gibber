@@ -10238,12 +10238,11 @@ module.exports = function (Gibberish) {
     const seq = {
       type: 'seq',
       __isRunning: false,
-
       __valuesPhase: 0,
       __timingsPhase: 0,
-      //__type:'seq',
       __onlyRunsOnce: false,
       __repeatCount: null,
+      DNR: -987654321,
 
       tick(priority) {
         let value = typeof seq.values === 'function' ? seq.values : seq.values[seq.__valuesPhase++ % seq.values.length],
@@ -10296,10 +10295,10 @@ module.exports = function (Gibberish) {
           } else if (typeof seq.target[seq.key] === 'function') {
             //console.log( seq.key, seq.target )
             if (typeof value === 'function') value = value();
-            if (value !== Sequencer.DO_NOT_OUTPUT) seq.target[seq.key](value);
+            if (value !== seq.DNR) seq.target[seq.key](value);
           } else {
             if (typeof value === 'function') value = value();
-            if (value !== Sequencer.DO_NOT_OUTPUT) seq.target[seq.key](value);
+            if (value !== seq.DNR) seq.target[seq.key] = value;
           }
 
           if (seq.reportOutput === true) {
@@ -11050,7 +11049,7 @@ module.exports = function (Gibberish) {
     Gibberish.worklet.port.postMessage(obj.__meta__);
   };
 
-  const doNotProxy = ['connected', 'input', 'callback', 'inputNames', 'on', 'off', 'publish'];
+  const doNotProxy = ['connected', 'input', 'wrap', 'callback', 'inputNames', 'on', 'off', 'publish'];
 
   const __proxy = function (__name, values, obj) {
 

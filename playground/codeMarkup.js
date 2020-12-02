@@ -119,7 +119,7 @@ const Marker = {
     // If the timings node is already marked up, the mark will simply move with the text addition.
     // However, if the timing mode is marked up after, the position information provided by the parser
     // will be off and not valid.
-    
+
     if( nodes[1] !== undefined ) {
       let timingsNode = nodes[1]
       if( timingsNode.type === 'AssignmentExpression' ) timingsNode = timingsNode.right
