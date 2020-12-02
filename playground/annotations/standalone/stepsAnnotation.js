@@ -136,11 +136,15 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
           pattern._onchange = () => {
             // .column is used by mark(), .ch is used by replaceRange
-            step.loc.start.ch = step.loc.start.column + 1
+            //step.loc.start.ch = step.loc.start.column + 1 
+            const start = Object.assign( {}, step.loc.start )
+            const end = Object.assign( {}, step.loc.end )
+            start.ch = step.loc.start.column + 1 
+            end.ch -= useComma ? 3 : 2
 
             // must add ending quotation mark back in... XXX hmmm, what if they use double quotes?
             // lots of hackery here...
-            marker.doc.replaceRange( pattern.values.join('') + "'" + (useComma ? ',' : ''), step.loc.start, step.loc.end )
+            marker.doc.replaceRange( pattern.values.join('') /*+ "'" + (useComma ? ',' : '')*/, start, end )
             mark( step, key, cm, track )
           }
         }
@@ -169,10 +173,11 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
       pattern.clear = () => {
         //track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid' })
         if( typeof __clear === 'function' ) __clear.call( pattern )
-        pattern.reset()
+        //pattern.reset()
+        console.log( 'span:', span, span.remove )
         if( span !== undefined ) {
-          span.remove( 'euclid0' ) 
-          span.remove( 'euclid1' ) 
+          span.toggle( 'euclid0' ) 
+          span.toggle( 'euclid1' ) 
         }
       }
 
