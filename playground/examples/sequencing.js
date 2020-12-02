@@ -76,11 +76,11 @@ syn.note.seq( 2, 1/2, 1 )
 syn.note.seq( 3, 1/3, 2 ) 
 syn.note.seq( 5, 1/7, 3 )
 
-// We can also sequence calls to midichord. You might remember from the first tutorial
-// that we pass midichord an array of values, where each value represents one note. This
-// means we need to pass an array of arrays in order to move between different chords.
+// We can also sequence calls to chord. You might remember from the first tutorial
+// that we pass chord an array of values, where each value represents one note. This
+// means we need to pass an *array of arrays* in order to move between different chords.
 
 syn.stop()
 syn.chord.seq( [[0,2,4], [1,5,7]], 1/2 )
 
-// Even we're only sequencing a single chord, we still need to pass a 2D array. 
+// IMPORTANT:Even if we're only sequencing a single chord, we still need to pass a 2D array. 
