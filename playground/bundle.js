@@ -4712,6 +4712,7 @@ const Audio = {
       obj.Clock = this.Clock
       obj.WavePattern = this.WavePattern
       obj.Gen = this.Gen
+      obj.stop = this.stop
 
       obj.Out = this.Out
       obj.Make = this.Make
@@ -4840,6 +4841,13 @@ const Audio = {
     Audio.publish('clear')
   },
 
+  stop() {
+    Gibber.Seq.sequencers.forEach( s => s.stop() )
+  },
+
+  start() {
+    Gibber.Seq.sequencers.forEach( s => s.start() )
+  },
   onload() {},
 
   createUgens() {
@@ -7179,6 +7187,7 @@ module.exports = {
       this.snare.decay = .05
       this.closedHat.decay = .05
       this.openHat.decay = .2
+      this.cowbell.decay = .1
     }
   },
   long: {
@@ -7547,6 +7556,20 @@ module.exports = {
     filterType:1,
     filterMult:3,
     Q:.75,
+  },
+
+  wander: {
+    attack: 1/2,
+    decay:  2,
+    presetInit: function( audio ) {},
+    amp:.2,
+    detune2:.501,
+    detune3:-.501,
+    cutoff:.2,
+    glide:5000,
+    filterType:1,
+    filterMult:1.5,
+    Q:.25,
   },
 
   'chords.short': {
