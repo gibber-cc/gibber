@@ -11,7 +11,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   track.markup.textMarkers[ 'step' ].children = []
 
   const instance = window[ objectName ]
-  const objectClassName = objectName + '_steps'
+  const objectClassName = objectName + '_steps_' + Math.round( Math.random() * 100000 )
 
   let count = 0
   for( let key in steps ) {
@@ -95,7 +95,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
               pos.loc.start.ch += i
               pos.loc.end.ch = pos.loc.start.ch + 1
 
-              const posMark = _cm.markText( pos.loc.start, pos.loc.end, { className:`step_${_key}_${i} euclid` })
+              const posMark = _cm.markText( pos.loc.start, pos.loc.end, { className:`${className}_${_key}_${i} euclid` })
               _track.markup.textMarkers.step[ _key ].pattern[ i ] = posMark
             }
           }
@@ -115,7 +115,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
               span.remove( 'euclid1' )
             }
 
-            let spanName = `.step_${key}_${currentIdx}`,
+            let spanName = `.${className}_${key}_${currentIdx}`,
                 currentValue = pattern.values[ currentIdx ]
 
             span = $( spanName )
@@ -174,10 +174,9 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
         //track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid' })
         if( typeof __clear === 'function' ) __clear.call( pattern )
         //pattern.reset()
-        console.log( 'span:', span, span.remove )
         if( span !== undefined ) {
-          span.toggle( 'euclid0' ) 
-          span.toggle( 'euclid1' ) 
+          span.remove( 'euclid0' ) 
+          span.remove( 'euclid1' ) 
         }
       }
 
