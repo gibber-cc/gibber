@@ -290,6 +290,11 @@ fm = FM({ feedback:.0015, decay:1/2 })
     ]).then( ()=> {
       Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
       Gibber.export( window ) 
+
+      window.future = function( fnc, time, dict ) {
+        Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
+      } 
+
       window.Graphics = Gibber.Graphics
       window.Audio    = Gibber.Audio
       //setupFFT( Marching.FFT )
