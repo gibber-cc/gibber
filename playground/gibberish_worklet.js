@@ -10834,8 +10834,9 @@ module.exports = function (Gibberish) {
       const keys = Object.keys(dict);
       const code = `
       const fnc = ${fnc.toString()}
-      const args = [${keys.map(key => dict[key].id).join(',')}]
-      const objs = args.map( v => Gibberish.processor.ugens.get(v) )
+      const args = [${keys.map(key => typeof dict[key] === 'object' ? dict[key].id : dict[key]).join(',')}]
+      console.log( args )
+      const objs = args.map( v => typeof v === 'number' ? Gibberish.processor.ugens.get(v) : v )
       Gibberish.scheduler.add( ${time}, ()=> fnc( ...objs ), 1 )
     `;
       Gibberish.worklet.port.postMessage({
