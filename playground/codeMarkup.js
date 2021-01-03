@@ -346,8 +346,7 @@ const Marker = {
             patternObject.update.currentIndex = patternObject.update.__currentIndex.shift()
           }
 
-
-         patternObject.update()
+          patternObject.update()
         }, wait ) 
       }
 
