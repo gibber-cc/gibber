@@ -51,7 +51,6 @@ window.onload = function() {
   }else{
     document.querySelector('#themer').src = `./resources/themes/noir.png`
   }
-
   
   cm = CodeMirror( document.querySelector('#editor'), {
     mode:   'javascript',
@@ -295,6 +294,27 @@ fm = FM({ feedback:.0015, decay:1/2 })
         Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
       } 
 
+      window.solo = function( ...soloed ) {
+        if( soloed.length > 0 ) {
+          Gibber.Seq.sequencers.forEach( s => {
+            let shouldStop = true
+            soloed.forEach( solo => {
+              if( s.target === solo.__wrapped__ ) shouldStop = false
+            })
+            if( shouldStop ) { 
+              s.stop()
+            }else{
+              if( s.__isRunning === false )
+                s.start( s.__delay || 0 )
+            }
+          })
+        }else{
+          Gibber.Seq.sequencers.forEach( s => {
+            if( s.__isRunning === false ) s.start( s.__delay || 0 ) 
+          })
+        }
+      }
+
       window.Graphics = Gibber.Graphics
       window.Audio    = Gibber.Audio
       //setupFFT( Marching.FFT )
@@ -434,10 +454,15 @@ const runCodeOverNetwork = function( selectedCode ) {
   commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code ])
 }
 
+// for highlighting "previewed code" across network
+environment.previewCode = function( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null ) {
+  environment.flash( cm, selectedCode.selection )
+}
+
 // shouldRunNetworkCode is used to prevent recursive ws sending of code
 // while isNetworked is used to test for acive ws connection
 // selectedCode can be set via ws messages
-environment.runCode = function( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null ) {
+environment.runCode = function( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null, preview=false ) {
   try {
     if( selectedCode === null ) selectedCode = environment.getSelectionCodeColumn( cm, useBlock )
 
@@ -500,6 +525,7 @@ CodeMirror.keyMap.playground =  {
   'Ctrl-Enter'( cm )  { environment.runCode( cm, false, true  ) },
   'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
+  'Alt-Shift-Enter'( cm ) { environment.runCode( cm, true, true, true ) },
 
   'Ctrl-.'( cm ) {
     Gibber.clear()
