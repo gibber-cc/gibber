@@ -10848,7 +10848,6 @@ const patternWrapper = function( Gibber ) {
         if( Gibberish.mode === 'worklet' ) {
           for( let key of PatternProto.__methodNames ) {
             for( let i = 0; i < out[ key ].sequencers.length; i++ ) {
-              console.log( 'clearing?' )
               // this can most certainly be optimized, but I had real problems
               // getting this clearing to work, perhaps related to proxy behaviors?
               const __seq = Gibber.Seq.sequencers.find( s => s.id === out[ key ][ i ].id )
