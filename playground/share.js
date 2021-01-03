@@ -3,7 +3,7 @@ const Y = require( 'yjs' ),
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
 
 const initShare = function( editor, username='anonymous', room='default' ) {
-  const protocol = window.location.hostname = '127.0.0.1' ? 'ws' : 'wss'
+  const protocol = window.location.hostname === '127.0.0.1' ? 'ws' : 'wss'
   const ydoc = new Y.Doc(),
         provider = new WebsocketProvider(
           `${protocol}://${window.location.host}`,
@@ -30,10 +30,13 @@ const initShare = function( editor, username='anonymous', room='default' ) {
         console.log( msg.body )
         break
       case 'eval':
-        Environment.runCode( editor, false, true, false, msg.body ) 
+        Environment.runCode( editor, false, true, false, msg.body, false ) 
+        break
+      case 'preview':
+        Environment.previewCode( editor, false, true, false, msg.body, true )
         break
       default:
-        console.log( 'error for message:', event.data )
+        console.log( 'error for networked message:', event.data )
     }
   })
 
