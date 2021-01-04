@@ -1837,7 +1837,6 @@ const gen = {
 
   createMemory( amount=4096, type ) {
     const mem = MemoryHelper.create( amount, type )
-    mem.alloc( 2, true )
     return mem
   },
 
@@ -1852,7 +1851,7 @@ const gen = {
       this.memory = mem
     }
     
-    this.outputIdx = 0//this.memory.alloc( 2, true )
+    this.outputIdx = this.memory.alloc( 2, true )
     this.emit( 'memory init' )
 
     //console.log( 'cb memory:', mem )
@@ -8622,16 +8621,13 @@ module.exports = function (Gibberish) {
       const keys = Object.keys(this.samplers);
       const key = keys[idx];
       this.currentSample = key;
-      if (typeof this.currentSample !== 'string') {
-        console.log(idx, keys, key);
-      }
     },
     note(rate) {
       this.rate = rate;
       if (rate > 0) {
         this.__trigger();
       } else {
-        this.__phase__.value = this.end * (this.data.buffer.length - 1);
+        this.__phase__.value = genish.mul(this.end, genish.sub(this.data.buffer.length, 1));
       }
     },
     trigger(volume) {
@@ -9949,7 +9945,7 @@ module.exports = function () {
 
   last.in(out);
 
-  out = genish.mul(out, 3.5);
+  out *= 3.5;
 
   return out;
 };
@@ -10146,7 +10142,7 @@ module.exports = function (Gibberish) {
           osc = g.cycle(frequency);
           break;
         case 'square':
-          if (antialias === true) {
+          if (antialias == true) {
             //osc = feedbackOsc( frequency, 1, .5, { type:1 })
             osc = polyBlep(frequency, { type });
           } else {
@@ -10238,35 +10234,35 @@ const polyBlep = function (__frequency, argumentProps) {
     // lt NOT gt to get correct phase
     osc = genish.sub(genish.mul(2, g.lt(t, .5)), 1);
   } else {
-    osc = 2 * t - 1;
+    osc = genish.sub(genish.mul(2, t), 1);
   }
   const case1 = g.lt(t, dt);
-  const case2 = g.gt(t, 1 - dt);
-  const adjustedT = g.switch(case1, t / dt, g.switch(case2, (t - 1) / dt, t));
+  const case2 = g.gt(t, genish.sub(1, dt));
+  const adjustedT = g.switch(case1, genish.div(t, dt), g.switch(case2, genish.div(genish.sub(t, 1), dt), t));
 
   // if/elseif/else with nested ternary operators
-  const blep = g.switch(case1, adjustedT + adjustedT - adjustedT * adjustedT - 1, g.switch(case2, adjustedT * adjustedT + adjustedT + adjustedT + 1,
+  const blep = g.switch(case1, genish.sub(genish.sub(genish.add(adjustedT, adjustedT), genish.mul(adjustedT, adjustedT)), 1), g.switch(case2, genish.add(genish.add(genish.add(genish.mul(adjustedT, adjustedT), adjustedT), adjustedT), 1),
   // final else case is 0
   0));
 
   // triangle waves are integrated square waves, so the below case accomodates both types
   if (type !== 'saw') {
-    osc = osc + blep;
-    const t_2 = g.memo(g.mod(t + .5, 1));
+    osc = genish.add(osc, blep);
+    const t_2 = g.memo(g.mod(genish.add(t, .5), 1));
     const case1_2 = g.lt(t_2, dt);
-    const case2_2 = g.gt(t_2, 1 - dt);
-    const adjustedT_2 = g.switch(case1_2, t_2 / dt, g.switch(case2_2, (t_2 - 1) / dt, t_2));
+    const case2_2 = g.gt(t_2, genish.sub(1, dt));
+    const adjustedT_2 = g.switch(case1_2, genish.div(t_2, dt), g.switch(case2_2, genish.div(genish.sub(t_2, 1), dt), t_2));
 
-    const blep2 = g.switch(case1_2, adjustedT_2 + adjustedT_2 - adjustedT_2 * adjustedT_2 - 1, g.switch(case2_2, adjustedT_2 * adjustedT_2 + adjustedT_2 + adjustedT_2 + 1, 0));
-    osc = osc - blep2;
+    const blep2 = g.switch(case1_2, genish.sub(genish.sub(genish.add(adjustedT_2, adjustedT_2), genish.mul(adjustedT_2, adjustedT_2)), 1), g.switch(case2_2, genish.add(genish.add(genish.add(genish.mul(adjustedT_2, adjustedT_2), adjustedT_2), adjustedT_2), 1), 0));
+    osc = genish.sub(osc, blep2);
 
     // leaky integrator to create triangle from square wave
     if (type === 'triangle') {
-      osc = dt * osc + (1 - dt) * mem.out;
+      osc = genish.add(genish.mul(dt, osc), genish.mul(genish.sub(1, dt), mem.out));
       mem.in(osc);
     }
   } else {
-    osc = osc - blep;
+    osc = genish.sub(osc, blep);
   }
 
   return osc;

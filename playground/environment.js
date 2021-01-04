@@ -366,6 +366,7 @@ fm = FM({ feedback:.0015, decay:1/2 })
   const select = document.querySelector( 'select' ),
         files = [
           ['demo #1: intro', 'newintro.js'],
+          ['demo #2: pick your sample', 'picksomesamples.js'],
           ['demo #2: acid', 'acid.js'],
           ['demo #3: moody', 'intro.js'],
           ['demo #4: geometry melds', 'meld.js'],
@@ -383,8 +384,9 @@ fm = FM({ feedback:.0015, decay:1/2 })
           ['music tutorial #3: arpeggios and signals', 'arp.js' ], 
           ['music tutorial #4: polyphony', 'polyphony.js' ], 
           ['music tutorial #5: freesound', 'freesound.js' ], 
-          ['music tutorial #6: step sequencing', 'steps.js' ], 
-          ['music tutorial #7: creating synths', 'make.js' ], 
+          ['music tutorial #6: samplers', 'sampler.js' ],
+          ['music tutorial #7: step sequencing', 'steps.js' ], 
+          ['music tutorial #8: creating synths', 'make.js' ], 
 
           ['graphics tutorial #1: intro to constructive solid geometry', 'graphics.intro.js' ],  
           ['graphics tutorial #2: lighting and materials', 'graphics.lighting.js' ], 
