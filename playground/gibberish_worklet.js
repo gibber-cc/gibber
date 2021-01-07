@@ -8622,28 +8622,50 @@ module.exports = function (Gibberish) {
       const key = keys[idx];
       this.currentSample = key;
     },
+    pickplay(__idx) {
+      const idx = Math.floor(__idx);
+      const keys = Object.keys(this.samplers);
+      const key = keys[idx];
+      this.currentSample = key;
+      this.trigger();
+    },
     note(rate) {
+      'no jsdsp';
+
       this.rate = rate;
       if (rate > 0) {
-        this.__trigger();
+        this.trigger(null, rate);
       } else {
-        this.__phase__.value = genish.mul(this.end, genish.sub(this.data.buffer.length, 1));
+        //this.__phase__.value = this.end * (this.data.buffer.length - 1)
+        this.trigger(null, rate);
       }
     },
-    trigger(volume) {
-      if (volume !== undefined) this.__triggerLoudness = volume;
+    trigger(volume, rate = 1) {
+      'no jsdsp';
+
+      if (volume !== undefined && volume !== null) this.__triggerLoudness = volume;
 
       if (Gibberish.mode === 'processor') {
         const sampler = this.samplers[this.currentSample];
+
+        // if sample isn't loaded...
+        if (sampler === undefined) return;
+
         const voice = this.__getVoice__();
 
         // set voice buffer length
         g.gen.memory.heap.set([sampler.dataLength], voice.bufferLength.memory.values.idx);
 
         // set voice data index
+
         g.gen.memory.heap.set([sampler.dataIdx], voice.bufferLoc.memory.values.idx);
 
-        voice.trigger();
+        if (rate < 0) {
+          const phase = sampler.dataIdx + sampler.dataLength - 1;
+          voice.phase.value = phase;
+        } else {
+          voice.trigger();
+        }
       }
     },
     __getVoice__() {
@@ -8654,7 +8676,7 @@ module.exports = function (Gibberish) {
   const Sampler = inputProps => {
     const syn = Object.create(proto);
 
-    const props = Object.assign({ onload: null, voiceCount: 0 }, Sampler.defaults, inputProps);
+    const props = Object.assign({ onload: null, voiceCount: 0, files: [] }, Sampler.defaults, inputProps);
 
     syn.isStereo = props.isStereo !== undefined ? props.isStereo : false;
 
@@ -8712,7 +8734,41 @@ module.exports = function (Gibberish) {
 
     // load in sample data
     const samplers = {};
-    for (let filename of props.files) {
+
+    // bound to individual sampler objects in loadSample function
+    syn.loadBuffer = function (buffer, onload) {
+      // main thread: when sample is loaded, copy it over message port
+      // processor thread: onload is called via messageport handler, and
+      // passed in the new buffer to be copied.
+      if (Gibberish.mode === 'worklet') {
+        const memIdx = Gibberish.memory.alloc(this.data.buffer.length, true);
+
+        Gibberish.worklet.port.postMessage({
+          address: 'copy_multi',
+          id: syn.id,
+          buffer: this.data.buffer,
+          filename: this.filename
+        });
+
+        if (typeof onload === 'function') onload(this, buffer);
+      } else if (Gibberish.mode === 'processor') {
+        this.data.buffer = buffer;
+
+        // set data memory spec before issuing memory request
+        this.dataLength = this.data.memory.values.length = this.data.dim = this.data.buffer.length;
+
+        // request memory to copy the bufer over
+        g.gen.requestMemory(this.data.memory, false);
+        g.gen.memory.heap.set(this.data.buffer, this.data.memory.values.idx);
+
+        // set location of buffer (does not work)
+        this.dataIdx = this.data.memory.values.idx;
+
+        syn.currentSample = this.filename;
+      }
+    };
+
+    syn.loadSample = function (filename, __onload, buffer = null) {
       'use jsdsp';
 
       const sampler = samplers[filename] = {
@@ -8720,50 +8776,14 @@ module.exports = function (Gibberish) {
         dataIdx: null,
         buffer: null,
         filename
-
-        // main thread: when sample is loaded, copy it over message port
-        // processor thread: onload is called via messageport handler, and
-        // passed in the new buffer to be copied.
-      };const onload = obj => {
-        if (Gibberish.mode === 'worklet') {
-          const memIdx = Gibberish.memory.alloc(sampler.data.buffer.length, true);
-
-          Gibberish.worklet.port.postMessage({
-            address: 'copy_multi',
-            id: syn.id,
-            buffer: sampler.data.buffer,
-            filename
-          });
-        } else if (Gibberish.mode === 'processor') {
-          sampler.data.buffer = obj;
-
-          // set data memory spec before issuing memory request
-          sampler.dataLength = sampler.data.memory.values.length = sampler.data.dim = sampler.data.buffer.length;
-
-          // set the length of the buffer (works)
-          //g.gen.memory.heap.set( [sampler.data.buffer.length], sampler.bufferLength.memory.values.idx )
-
-          // request memory to copy the bufer over
-          g.gen.requestMemory(sampler.data.memory, false);
-          g.gen.memory.heap.set(sampler.data.buffer, sampler.data.memory.values.idx);
-
-          // set location of buffer (does not work)
-          sampler.dataIdx = sampler.data.memory.values.idx;
-          //g.gen.memory.heap.set( [sampler.data.memory.values.idx], sampler.bufferLoc.memory.values.idx )
-
-          syn.currentSample = sampler.filename;
-        }
-
-        //if( typeof syn.onload === 'function' ){  
-        //  syn.onload( buffer || syn.data.buffer )
-        //}
       };
 
+      const onload = syn.loadBuffer.bind(sampler);
       // passing a filename to data will cause it to be loaded in the main thread
       // onload will then be called to pass the buffer over the messageport. In the
       // processor thread, make a placeholder until data is available.
       if (Gibberish.mode === 'worklet') {
-        sampler.data = g.data(filename, 1, { onload });
+        sampler.data = g.data(buffer !== null ? buffer : filename, 1, { onload });
 
         // check to see if a promise is returned; a valid
         // data object is only return if the file has been
@@ -8773,19 +8793,21 @@ module.exports = function (Gibberish) {
           sampler.data.then(d => {
             sampler.data = d;
             memo[filename] = sampler.data;
-            onload(sampler);
+            onload(sampler, __onload);
           });
         } else {
           // using a cached data buffer, no need
           // for asynchronous loading.
           memo[filename] = sampler;
-          onload(sampler);
+          onload(sampler, __onload);
         }
       } else {
         sampler.data = g.data(new Float32Array(), 1, { onload, filename });
         sampler.data.onload = onload;
       }
-    }
+    };
+
+    props.files.forEach(filename => syn.loadSample(filename));
 
     syn.__createGraph = function () {
       'use jsdsp';
@@ -8799,22 +8821,16 @@ module.exports = function (Gibberish) {
       }
     };
 
-    syn.loadBuffer = function (buffer) {
-      if (Gibberish.mode === 'processor') {
-        syn.data.buffer = buffer;
-        syn.data.memory.values.length = syn.data.dim = buffer.length;
-        //syn.__redoGraph() 
-      }
-    };
-
     syn.__createGraph();
 
     const out = Gibberish.factory(syn, syn.graph, ['instruments', 'multisampler'], props);
 
     Gibberish.preventProxy = true;
     Gibberish.proxyEnabled = false;
+
     out.voices = voices;
     out.samplers = samplers;
+
     Gibberish.proxyEnabled = true;
     Gibberish.preventProxy = false;
 
@@ -8833,25 +8849,9 @@ module.exports = function (Gibberish) {
     loudness: 1,
     maxVoices: 5,
     __triggerLoudness: 1
+  };
 
-    //const envCheckFactory = function( voice, _poly ) {
-    //  const envCheck = () => {
-    //    const phase = Gibberish.memory.heap[ voice.__phase__.memory.value.idx ]
-    //    if( ( voice.rate > 0 && phase > voice.end ) || ( voice.rate < 0 && phase < 0 ) ) {
-    //      _poly.disconnectUgen.call( _poly, voice )
-    //      voice.isConnected = false
-    //    }else{
-    //      Gibberish.blockCallbacks.push( envCheck )
-    //    }
-    //  }
-
-    //  return envCheck
-    //}
-
-    //const PolySampler = Gibberish.PolyTemplate( Sampler, ['rate','pan','gain','start','end','loops','bufferLength','__triggerLoudness','loudness'], envCheckFactory ) 
-
-    //return [ Sampler, PolySampler ]
-  };return Sampler;
+  return Sampler;
 };
 
 },{"./instrument.js":121,"genish.js":39}],127:[function(require,module,exports){
@@ -18194,7 +18194,11 @@ class GibberishProcessor extends AudioWorkletProcessor {
         // in this case, we wait until the next measure boundary.
         this.queue.push( event )
       }else{
-        target.samplers[ event.data.filename ].data.onload( event.data.buffer )
+        const sampler = target.samplers[ event.data.filename ]
+        if( sampler !== undefined ) 
+          sampler.data.onload( event.data.buffer )
+        else
+          target.loadSample( event.data.filename, null, event.data.buffer )
       }
     }else if( event.data.address === 'callback' ) {
       console.log( Gibberish.callback.toString() )

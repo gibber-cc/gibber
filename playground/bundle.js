@@ -6101,101 +6101,113 @@ module.exports = Filters
 module.exports = function( Audio ) {
   const token = '6a00f80ba02b2755a044cc4ef004febfc4ccd476'
 
-  const Freesound = function( query ) {
-    const sampler = Audio.instruments.Sampler({ panVoices:true })
-    queries[ typeof query ]( query, sampler )
+  const Freesound = function( query, options ) {
+    const props = Object.assign( { count:1, maxVoices:1, panVoices:true }, typeof query === 'object' ? query : options )
+    const sampler = Audio.instruments.Multisampler( props )
+    queries[ typeof query ]( query, sampler, props.count )
     return sampler
   }
 
-  Freesound.loaded = {};
+  Freesound.loaded = {}
+  Freesound.queries = {}
+
+  Freesound.defaults = {
+    sort:          'downloads',
+    single:        true,
+    searchFilename:true,
+    min: 0,
+    max: .5,
+    reverse:false,
+    count:15
+  }
 
   const queries = {
-    number( id, sampler ) {
+    number( id, sampler, num=0 ) {
       if (typeof Freesound.loaded[ id ] === 'undefined') {
         fetch( `https://freesound.org/apiv2/sounds/${id}/?&format=json&token=${token}` )
           .then( response => response.json() )
           .then( json => {
             const path = json.previews[ 'preview-hq-mp3' ]
-
-            sampler.path = path
-
-            Audio.Gibberish.proxyEnabled = false
-
-            sampler.__wrapped__.loadFile( path )
-
-            sampler.__wrapped__.onload = buffer => {
-              // XXX uncomment next line to reinstate memoization of audio buffers (with errors)
-              //Freesound.loaded[ filename ] = buffer
-              console.log( `freesound file #${id} loaded.` )
-            }
-
-            Audio.Gibberish.proxyEnabled = true
+            
+            sampler.loadSample( path )
+            console.log( 'loading:', path )
           }) 
       }else{
         if( Audio.Gibberish.mode === 'worklet' ) {
-          sampler.loadBuffer( Freesound.loaded[ id ] )
+          sampler.samplers[ num ].loadBuffer( Freesound.loaded[ id ] )
         }
       }
     },
 
     // search for text query, and then use returned id to 
     // fetch by number 
-    string( query, sampler ) {
+    string( query, sampler, count ) {
+      sampler.length = count
       console.log( 'Searching freesound for ' + query )
-      fetch( `https://freesound.org/apiv2/search/text/?query=${query}&token=${token}` )
+      let queryString ='https://freesound.org/apiv2/search/text/?'
+
+      if( query.indexOf( 'query' ) > -1 ) {
+        queryString += query
+        queryString += `&token=${token}&fields=name,id,previews`
+      }else{
+        queryString += `query=${query}&token=${token}&fields=name,id,previews&filter=original_filename:${query.split(' ')[0]} ac_single_event:true&sort=downloads_desc`
+
+      }
+
+      fetch( queryString )
         .then( data => data.json() )
         .then( sounds => {
-          const filename = sounds.results[0].name
-          const id = sounds.results[0].id
+            sampler.length = count < sounds.results.length ? count : sounds.results.length
+            for( let i = 0; i < count; i++ ) {
+              const result = sounds.results[i]
+              if( result !== undefined ) {
+                const filename = result.name,
+                      id = result.id,
+                      url = result.previews[ 'preview-hq-mp3' ] 
 
-          if( Freesound.loaded[ filename ] === undefined ) {
-            console.log( `loading freesound file: ${filename}` )
-            queries.number( id, sampler )
-          }else{
-            // XXX memoing the files causes an error
-            if( Audio.Gibberish.mode === 'worklet' ) {
-              sampler.loadBuffer( Freesound.loaded[ filename ] )
+                if( Freesound.loaded[ url ] === undefined ) {
+                  console.log( `loading freesound file: ${filename}` )
+
+                  sampler.loadSample( url, (__sampler,buffer) => {
+                    //if( Audio !== undefined && Audio.Gibberish.mode === 'worklet' ) {
+                      Freesound.loaded[ url ] = buffer.data.buffer
+                    //}
+                  })
+
+                }else{
+                  // XXX memoing the files causes an error
+                  if( Gibberish.mode === 'worklet' ) {
+                    console.log( 'reusing freesound file:', filename )
+
+                    //setTimeout( ()=> {
+                      sampler.loadSample( url, null, Freesound.loaded[ url ] )
+                    //}, 0 )
+                  }
+                }
+              }
             }
-          }
-      })
+        })
     },
 
-    // search by text query with filters/sorting,
-    // pick first hit or random according to query,
-    // fetch by associated id number 
-    object( query, sampler ) {
-      var key = query,
-          query = key.query,
-          filter = key.filter || null,
-          sort = key.sort || 'rating_desc',
-          page = key.page || 1;
-      
-      pick = key.pick
+    object( queryObj, sampler ) {
+      const q = Object.assign( {}, Freesound.defaults, queryObj )
+ 
+      let query = `query=${q.query}&format=json`
+  
+      query += `&filter=duration:[${q.min} TO ${q.max}]`
+      if( q.single ) query += ` ac_single_event:true`
+      if( q.searchFilename ) query += ` original_filename:${q.query}`
 
-      let path = `https://freesound.org/apiv2/search/text/?&query=${query}&format=json`
+      let sort = q.sort
 
-      if( filter !== null ) path += `&filter=${filter}`
-      path += `&sort=${sort}`
-      path += `&page=${page}`
-      path += `&token=${token}`
+      // user error check
+      if( sort === 'ratings' ) sort = 'rating'
 
-      if( typeof Freesound.loaded[ query ] === 'undefined') {
-        fetch( encodeURI( path ) )
-          .then( data => data.json() )
-          .then( json => {
-            const idx = pick === 'random'
-              ? Math.floor( Math.random() * json.results.length )
-              : 0
+      sort += q.reverse ? '_asc' : '_desc'
 
-            console.log( 'loading:', json.results[ idx ].name )
-            queries.number( json.results[ idx ].id, sampler )
-          })
-      }else{
-        // XXX memoing the files causes an error
-        if( Audio.Gibberish.mode === 'worklet' ) {
-          sampler.loadBuffer( Freesound.loaded[ query ] )
-        }
-      }
+      query += `&sort=${sort}`
+
+      queries.string( query, sampler, q.count )
     }
   }
 
@@ -6874,10 +6886,10 @@ const Instruments = {
       methods:[ 'note','trigger' ],
     },
     Sampler:{
-      methods:[ 'note','trigger', 'loadFile', 'loadBuffer' ],
+      methods:[ 'note', 'trigger', 'loadFile', 'loadBuffer' ],
     },
     Multisampler:{
-      methods:[ 'note','trigger', 'pick', 'pickFile'], 
+      methods:[ 'note', 'trigger', 'pick', 'pickFile', 'loadSample'], 
     },
     Snare:{
       methods:[ 'note','trigger' ],
@@ -8795,27 +8807,27 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
-        if( methodName !== 'note' || description.name.indexOf('Sampler') > -1 || description.name.indexOf('Freesound') > -1  ) {
+        if( methodName !== 'note' || description.name.indexOf('Sampler') > -1 || description.name.indexOf('Multisampler') > -1  ) {
           //obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
           obj[ methodName ] = function( ...args ) {
             if( args.length === 0 ) {
               __wrappedObject[ methodName ]()
-            }else if( args.length === 1 ) {
-              if( Array.isArray( args[0] ) ) {
-                obj[ methodName ].seq( args[0], 1/args[0].length )
-              }else if( typeof args[0] === 'string' ) {
-                obj[ methodName ].tidal( args[0] )
-              }else{
-                __wrappedObject[ methodName ]( args[0] )
-              }
-            }else{
+            }else{ //if( args.length === 1 ) {
+              //if( Array.isArray( args[0] ) ) {
+              //  obj[ methodName ].seq( args[0], 1/args[0].length )
+              //}else if( typeof args[0] === 'string' ) {
+              //  obj[ methodName ].tidal( args[0] )
+              //}else{
+                __wrappedObject[ methodName ]( ...args )
+              //}
+            }/*else{
               // could be a .tidal or a seq 
               if( typeof args[0] === 'string' ) { // must be tidal with tidal id #
                 obj[ methodName ].tidal( ...args )
               }else{
                 obj[ methodName ].seq( ...args )  // must be sequence
               }
-            }
+            }*/
             return obj
           }
         }else{
@@ -8835,12 +8847,14 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
                 shouldSendNoteNow = true
               }
             }else{
+              /*
               // could be a .tidal or a seq 
               if( typeof args[0] === 'string' ) { // must be tidal with tidal id #
                 obj[ methodName ].tidal( ...args )
               }else{
                 obj[ methodName ].seq( ...args )  // must be sequence
               }
+              */
             }
 
             // this should only be for direct calls from the IDE
@@ -66742,28 +66756,49 @@ module.exports = function( Gibberish ) {
       const key = keys[ idx ]
       this.currentSample = key
     },
+    pickplay( __idx ) {
+      const idx = Math.floor( __idx )
+      const keys = Object.keys( this.samplers )
+      const key = keys[ idx ]
+      this.currentSample = key
+      this.trigger()
+    },
     note( rate ) {
+      'no jsdsp'
       this.rate = rate
       if( rate > 0 ) {
-        this.__trigger()
+        this.trigger( null, rate )
       }else{
-        this.__phase__.value = this.end * (this.data.buffer.length - 1)
+        //this.__phase__.value = this.end * (this.data.buffer.length - 1)
+        this.trigger( null, rate )
       }
     },
-    trigger( volume ) {
-      if( volume !== undefined ) this.__triggerLoudness = volume
+    trigger( volume, rate=1 ) {
+      'no jsdsp'
+      if( volume !== undefined && volume !== null ) this.__triggerLoudness = volume
 
       if( Gibberish.mode === 'processor' ) {
         const sampler = this.samplers[ this.currentSample ]
+
+        // if sample isn't loaded...
+        if( sampler === undefined ) return
+
         const voice = this.__getVoice__()
 
         // set voice buffer length
         g.gen.memory.heap.set( [ sampler.dataLength ], voice.bufferLength.memory.values.idx )
 
         // set voice data index
+     
         g.gen.memory.heap.set( [ sampler.dataIdx ], voice.bufferLoc.memory.values.idx )
 
-        voice.trigger()
+        if( rate < 0 ) {
+          const phase = sampler.dataIdx + sampler.dataLength - 1
+          voice.phase.value = phase
+        }else{
+          // will reset phase to 0
+          voice.trigger()
+        }
       }
     },
     __getVoice__() {
@@ -66774,7 +66809,7 @@ module.exports = function( Gibberish ) {
   const Sampler = inputProps => {
     const syn = Object.create( proto )
 
-    const props = Object.assign( { onload:null, voiceCount:0 }, Sampler.defaults, inputProps )
+    const props = Object.assign( { onload:null, voiceCount:0, files:[] }, Sampler.defaults, inputProps )
 
     syn.isStereo = props.isStereo !== undefined ? props.isStereo : false
 
@@ -66824,8 +66859,8 @@ module.exports = function( Gibberish ) {
       voice.trigger = voice.bang.trigger
 
       voice.graph = g.ifelse(
-          // if phase is greater than start and less than end... 
-          g.and( 
+        // if phase is greater than start and less than end... 
+        g.and( 
           g.gte( voice.phase, start * voice.bufferLength[0] ), 
           g.lt(  voice.phase, end   * voice.bufferLength[0] ) 
         ),
@@ -66847,7 +66882,42 @@ module.exports = function( Gibberish ) {
 
     // load in sample data
     const samplers = {}
-    for( let filename of props.files ) {
+
+    // bound to individual sampler objects in loadSample function
+    syn.loadBuffer = function( buffer, onload ) {
+      // main thread: when sample is loaded, copy it over message port
+      // processor thread: onload is called via messageport handler, and
+      // passed in the new buffer to be copied.
+      if( Gibberish.mode === 'worklet' ) {
+        const memIdx = Gibberish.memory.alloc( this.data.buffer.length, true )
+
+        Gibberish.worklet.port.postMessage({
+          address:'copy_multi',
+          id:     syn.id,
+          buffer: this.data.buffer,
+          filename: this.filename
+        })
+
+        if( typeof onload === 'function' ) onload( this, buffer )
+
+      }else if( Gibberish.mode === 'processor' ) {
+        this.data.buffer = buffer 
+
+        // set data memory spec before issuing memory request
+        this.dataLength = this.data.memory.values.length = this.data.dim = this.data.buffer.length
+
+        // request memory to copy the bufer over
+        g.gen.requestMemory( this.data.memory, false )
+        g.gen.memory.heap.set( this.data.buffer, this.data.memory.values.idx )
+
+        // set location of buffer (does not work)
+        this.dataIdx = this.data.memory.values.idx
+
+        syn.currentSample = this.filename
+      }
+    }
+
+    syn.loadSample = function( filename, __onload, buffer=null ) {
       'use jsdsp'
 
       const sampler = samplers[ filename ] = {
@@ -66857,50 +66927,12 @@ module.exports = function( Gibberish ) {
         filename
       }
 
-      // main thread: when sample is loaded, copy it over message port
-      // processor thread: onload is called via messageport handler, and
-      // passed in the new buffer to be copied.
-      const onload = obj => {
-        if( Gibberish.mode === 'worklet' ) {
-          const memIdx = Gibberish.memory.alloc( sampler.data.buffer.length, true )
-
-          Gibberish.worklet.port.postMessage({
-            address:'copy_multi',
-            id:     syn.id,
-            buffer: sampler.data.buffer,
-            filename
-          })
-
-        }else if( Gibberish.mode === 'processor' ) {
-          sampler.data.buffer = obj
-
-          // set data memory spec before issuing memory request
-          sampler.dataLength = sampler.data.memory.values.length = sampler.data.dim = sampler.data.buffer.length
-
-          // set the length of the buffer (works)
-          //g.gen.memory.heap.set( [sampler.data.buffer.length], sampler.bufferLength.memory.values.idx )
-
-          // request memory to copy the bufer over
-          g.gen.requestMemory( sampler.data.memory, false )
-          g.gen.memory.heap.set( sampler.data.buffer, sampler.data.memory.values.idx )
-
-          // set location of buffer (does not work)
-          sampler.dataIdx = sampler.data.memory.values.idx
-          //g.gen.memory.heap.set( [sampler.data.memory.values.idx], sampler.bufferLoc.memory.values.idx )
-
-          syn.currentSample = sampler.filename
-        }
-
-        //if( typeof syn.onload === 'function' ){  
-        //  syn.onload( buffer || syn.data.buffer )
-        //}
-      }
-
+      const onload = syn.loadBuffer.bind( sampler ) 
       // passing a filename to data will cause it to be loaded in the main thread
       // onload will then be called to pass the buffer over the messageport. In the
       // processor thread, make a placeholder until data is available.
       if( Gibberish.mode === 'worklet' ) {
-        sampler.data = g.data( filename, 1, { onload })
+        sampler.data = g.data( buffer !== null ? buffer : filename, 1, { onload })
 
         // check to see if a promise is returned; a valid
         // data object is only return if the file has been
@@ -66910,19 +66942,21 @@ module.exports = function( Gibberish ) {
           sampler.data.then( d => {
             sampler.data = d
             memo[ filename ] = sampler.data 
-            onload( sampler )
+            onload( sampler, __onload )
           })
         }else{
           // using a cached data buffer, no need
           // for asynchronous loading.
           memo[ filename ] = sampler
-          onload( sampler )
+          onload( sampler, __onload )
         }     
       }else{
         sampler.data = g.data( new Float32Array(), 1, { onload, filename })
         sampler.data.onload = onload
       } 
     }
+
+    props.files.forEach( filename => syn.loadSample( filename ) )
 
     syn.__createGraph = function() {
       'use jsdsp'
@@ -66933,14 +66967,6 @@ module.exports = function( Gibberish ) {
       if( syn.panVoices === true ) { 
         const panner = g.pan( syn.graph, syn.graph, g.in( 'pan' ) ) 
         syn.graph = [ panner.left, panner.right ]
-      }
-    }
-
-    syn.loadBuffer = function( buffer ) {
-      if( Gibberish.mode === 'processor' ) {
-        syn.data.buffer = buffer
-        syn.data.memory.values.length = syn.data.dim = buffer.length
-        //syn.__redoGraph() 
       }
     }
 
@@ -66955,8 +66981,10 @@ module.exports = function( Gibberish ) {
 
     Gibberish.preventProxy = true
     Gibberish.proxyEnabled = false
+
     out.voices = voices
     out.samplers = samplers
+
     Gibberish.proxyEnabled = true
     Gibberish.preventProxy = false
 
@@ -66977,23 +67005,6 @@ module.exports = function( Gibberish ) {
     __triggerLoudness:1
   }
 
-  //const envCheckFactory = function( voice, _poly ) {
-  //  const envCheck = () => {
-  //    const phase = Gibberish.memory.heap[ voice.__phase__.memory.value.idx ]
-  //    if( ( voice.rate > 0 && phase > voice.end ) || ( voice.rate < 0 && phase < 0 ) ) {
-  //      _poly.disconnectUgen.call( _poly, voice )
-  //      voice.isConnected = false
-  //    }else{
-  //      Gibberish.blockCallbacks.push( envCheck )
-  //    }
-  //  }
-
-  //  return envCheck
-  //}
-
-  //const PolySampler = Gibberish.PolyTemplate( Sampler, ['rate','pan','gain','start','end','loops','bufferLength','__triggerLoudness','loudness'], envCheckFactory ) 
-
-  //return [ Sampler, PolySampler ]
   return Sampler
 }
    

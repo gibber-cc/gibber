@@ -14,6 +14,7 @@ the Freesound database in a number of ways.
 // download a specific sound identified by an id number obtained from the 
 // freesound.org website. For example, this next sound is taken from here:
 // http://www.freesound.org/people/RealRhodesSounds/sounds/4048/
+Clock.bpm = 90
 a = Freesound( 4048 )
 
 // play the sample once at original speed
@@ -34,24 +35,53 @@ a.loops = 1
 a.rate = 1.25
 
 // query the database for a particular term(s) and download the first response
-// by default these simple queries are limited to soundfiles under 10 seconds
+// by default these simple queries are limited to soundfiles under .5 seconds,
+// that are classified as single notes/sounds, and where the filename includes
+// the query term (as opposed to only including the query term in metadata).
 b = Freesound('crickets').fx.add( Freeverb() )
 b.loops = 1
-b.gain = .75
+b.trigger(1)
 
-// sort the returned results from best to worst according to user rating; 
-// the top result is picked by default.
-// set the query duration to files between 0–15 seconds.
-c = Freesound({ query:'atari', rating:'downloads_desc', filter:'duration:[0.0 TO 15.0]' })
-c.fx.add( Delay({ time:1/16, feedback:.15 }) )
+// here's a more complex query
+c = Freesound({ 
+  query:'atari -loop', // will search for atari sounds that aren't loops 
+  sort:'downloads',    // will sort sounds by downloads they have received
+  max:2,							 // sounds will be two seconds maximum in length
+  count:5							 // get 5 sounds
+})
+.fx.add( Delay({ time:1/16, feedback:.15 }) )
+
 // sequence the Freesound object to trigger notes at different
 // playback speeds and pan
-c.note.seq( [1,.25,.5,2], [1/2,1/4,1] )
+c.rate.seq( [1,.75,.5,2], [1/2,1/4,1] )
+c.trigger.seq( 1, 1/4 )
 c.pan = gen( .5 + cycle(.25) * .45 )
 
-// pick a random sample from the returned results
-d = Freesound({ query:'drums 90', pick:'random', filter:'duration:[0.0 TO 15.0]' })
-d.note( 1 )
-d.loops = 1
+// the number of sounds in the instrument is stored in .length
+// this line will sequence picking a sample with each trigger 
+c.pick.seq( Rndi(0, c.length) )
 
-// for more info about the query syntax please see http://www.freesound.org/docs/api/resources.html
+// pick a random sample from the returned results
+d = Freesound({ 
+  query:'drums +90 +bpm', // search for drums, 90, and bpm
+  max:5, 							    // max of five seconds in length
+  single:false, 					// files do not have to contain single sounds / notes
+  searchFilename:false,   // do not require query terms to be present in filename
+  count:5,								// load five samples...
+  maxVoices:1							// ... but only play one at a time
+})
+d.pick.seq( Rndi(0,d.length), 1 )
+d.trigger.seq( 1,1 )
+
+// the Freesound object uses the properties you pass to it to
+// build up a query string that is used to query the Freesound
+// database. You can also construct that query string yourself
+// if you want complete control over the query... there are lots
+// of powerful capabilities to explore this way.
+
+e = Freesound('query=kick&sort=rating_desc&filter=ac_single_event:true original_filename:kick duration:[0 TO .25]', { count:10 })
+e.trigger.seq( 1, Euclid(9,16))   
+e.pick.seq( gen( beats(8) * e.length ) )
+
+// here's the Freesound API documentation to help you construct your own queries: 
+// https://freesound.org/docs/api/resources_apiv2.html#text-search

@@ -31,7 +31,7 @@
 ** This starts the server on port 8080. Now to
 ** load a file (assuming its in the directory
 ** you specified above):
-/*
+*/
 
 s = Sampler({ filename:'http://127.0.0.1:8080/yourSammpleName.wav' })
 
