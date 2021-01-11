@@ -23,7 +23,7 @@ can be sequenced.
 // assign second one to variable 'e'
 kik = Kick()
 kik.trigger.seq( 1,  Euclid(3,8) )
-kik.trigger.seq( .5, e = Euclid(5,16) 1 )
+kik.trigger.seq( .5, e = Euclid(5,16), 1 )
 
 // move timings pattern in second sequence
 // one position to the right (try running this multiple times!)
