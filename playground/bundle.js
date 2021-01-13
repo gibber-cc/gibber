@@ -61716,17 +61716,6 @@ window.onload = function() {
     document.querySelector('#themer').src = `./resources/themes/noir.png`
   }
 
-  let lastError = ''
-  const error = window.console.error
-
-  window.console.error = function( ...args ) {
-    window.console.log( 'error?', args )
-    lastError = args
-    error.call( console, ...args )
-  }
-
-  window.showError = function() { console.log( lastError ) }
-
   const workletPath = './gibberish_worklet.js' 
   const start = () => {
     Gibber.init([
