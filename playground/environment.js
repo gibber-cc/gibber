@@ -6,7 +6,7 @@ const Gibber        = require( 'gibber.core.lib' ),
       Theme         = require( './resources/js/theme.js' ),
       Metronome     = require( './metronome.js' ),
       Editor        = require( './editor.js' ),
-      {setupShare,makeMsg} = require( './share.js' )
+      Share         = require( './share.js' )
 
 let cm, environment, cmconsole, exampleCode, 
     isStereo = false,
@@ -21,6 +21,7 @@ window.onload = function() {
   theme.install( document.body )
   theme.start()
   environment.theme = theme
+
   const themename = localStorage.getItem('themename')
 
   if( themename !== null ) {
@@ -28,6 +29,8 @@ window.onload = function() {
   }else{
     document.querySelector('#themer').src = `./resources/themes/noir.png`
   }
+
+  environment.share = Share
 
   const workletPath = './gibberish_worklet.js' 
   const start = () => {
@@ -175,15 +178,7 @@ window.onload = function() {
   setupRestartBtn()
 }
 
-const runCodeOverNetwork = function( selectedCode ) {
-  //socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
-  //binding.awareness.setLocalStateField( 'code', [selectedCode] )
-  const sel = selectedCode.selection,
-        end = sel.end,
-        start = sel.start
-        
-  commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code ])
-}
+
 
 // shouldRunNetworkCode is used to prevent recursive ws sending of code
 // while isNetworked is used to test for acive ws connection
@@ -394,10 +389,10 @@ const setupRestartBtn = function() {
 let __socket = null
 let __connected = false
 
-window.makeMsg = makeMsg
 window.addEventListener('load', ()=> {
   document.getElementById('sharebtn').onclick = getlink
-  //setupShare(cm, environment, networkConfig ) 
+  window.makeMsg = environment.share.makeMsg
+  environment.share.setupShareHandler(cm, environment, environment.networkConfig ) 
 })
 
 

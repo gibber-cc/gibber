@@ -22,6 +22,16 @@ let cm, cmconsole, exampleCode,
       showArgHints:true,
       showCompletions:true,
       CodeMirror,
+      runCodeOverNetwork( selectedCode ) {
+        //socket.send( JSON.stringify({ cmd:'eval', body:selectedCode }) ) 
+        //binding.awareness.setLocalStateField( 'code', [selectedCode] )
+        const sel = selectedCode.selection,
+          end = sel.end,
+          start = sel.start
+
+        Gibber.Environment.share.commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code ])
+      },
+
       runCode( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null, preview=false ) {
         try {
           if( selectedCode === null ) selectedCode = environment.getSelectionCodeColumn( cm, useBlock )
@@ -34,7 +44,7 @@ let cm, cmconsole, exampleCode,
       }`
           code = Babel.transform(code, { presets: [], plugins:['jsdsp'] }).code 
 
-          if( environment.networkConfig.isNetworked && shouldRunNetworkCode ) runCodeOverNetwork( selectedCode )
+          if( environment.networkConfig.isNetworked && shouldRunNetworkCode ) environment.runCodeOverNetwork( selectedCode )
 
           environment.flash( cm, selectedCode.selection )
 
