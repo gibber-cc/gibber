@@ -54,7 +54,7 @@ select {
   display:block
 }
 
-#connectmenu {
+#connectmenu, #restartnotification {
   background:var(--b_inv)
 }
 

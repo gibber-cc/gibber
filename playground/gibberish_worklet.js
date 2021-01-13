@@ -7365,7 +7365,7 @@ let Gibberish = {
 
   workletPath: './gibberish_worklet.js',
 
-  init(memAmount, ctx, mode = 'worklet') {
+  init(memAmount, ctx, mode = 'worklet', immediate = false) {
     let numBytes = isNaN(memAmount) ? 20 * 60 * 44100 : memAmount;
 
     // regardless of whether or not gibberish is using worklets,
@@ -7389,7 +7389,7 @@ let Gibberish = {
       const p = new Promise((resolve, reject) => {
 
         const pp = new Promise((__resolve, __reject) => {
-          this.utilities.createContext(ctx, startup.bind(this.utilities), __resolve);
+          this.utilities.createContext(ctx, startup.bind(this.utilities), __resolve, null, immediate);
         }).then(() => {
           Gibberish.preventProxy = true;
           Gibberish.load();
@@ -8664,6 +8664,7 @@ module.exports = function (Gibberish) {
           const phase = sampler.dataIdx + sampler.dataLength - 1;
           voice.phase.value = phase;
         } else {
+          // will reset phase to 0
           voice.trigger();
         }
       }
@@ -11151,7 +11152,7 @@ module.exports = function (Gibberish) {
       return Gibberish[name];
     },
 
-    createContext(ctx, cb, resolve, bufferSize = 2048) {
+    createContext(ctx, cb, resolve, bufferSize = 2048, immediate = false) {
       let AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext;
 
       AWPF(window, bufferSize);
@@ -11178,11 +11179,15 @@ module.exports = function (Gibberish) {
         if (typeof cb === 'function') cb(resolve);
       };
 
-      if (document && document.documentElement && 'ontouchstart' in document.documentElement) {
-        window.addEventListener('touchstart', start);
+      if (immediate === false) {
+        if (document && document.documentElement && 'ontouchstart' in document.documentElement) {
+          window.addEventListener('touchstart', start);
+        } else {
+          window.addEventListener('mousedown', start);
+          window.addEventListener('keydown', start);
+        }
       } else {
-        window.addEventListener('mousedown', start);
-        window.addEventListener('keydown', start);
+        start();
       }
 
       return Gibberish.ctx;
@@ -18248,7 +18253,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
 
       this.messages.length = 0
       // XXX is there some way to optimize this out?
-      if( callback === undefined && gibberish.graphIsDirty === false ) return true
+      //if( callback === undefined && gibberish.graphIsDirty === false ) return true
 
       let callbacklength = gibberish.blockCallbacks.length
 
@@ -18266,7 +18271,14 @@ class GibberishProcessor extends AudioWorkletProcessor {
       const len = outputs[0][0].length
       let phase = 0
       for (let i = 0; i < len; ++i) {
-        phase = scheduler.tick()
+        try {
+          phase = scheduler.tick()
+        } catch(e) {
+          console.error( e )
+          scheduler.queue.pop()
+          phase++ 
+          //continue
+        }
 
         if( gibberish.graphIsDirty ) {
           const oldCallback = callback
