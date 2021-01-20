@@ -3079,13 +3079,15 @@ module.exports = ( propName=0, value=0, min=0, max=1 ) => {
   if( typeof propName !== 'string' ) {
     ugen.name = ugen.basename + gen.getUID()
     ugen.initialValue = propName
+    ugen.min = value
+    ugen.max = min
   }else{
     ugen.name = propName
+    ugen.min = min
+    ugen.max = max
     ugen.initialValue = value
   }
 
-  ugen.min = min
-  ugen.max = max
   ugen.defaultValue = ugen.initialValue
 
   // for storing worklet nodes once they're instantiated
@@ -3104,7 +3106,7 @@ module.exports = ( propName=0, value=0, min=0, max=1 ) => {
     set( v ) {
       if( this.memory.value.idx !== null ) {
         if( this.isWorklet && this.waapi !== null ) {
-          this.waapi.value = v
+          this.waapi[ propName ].value = v
         }else{
           gen.memory.heap[ this.memory.value.idx ] = v
         } 
@@ -8640,6 +8642,20 @@ module.exports = function (Gibberish) {
         this.trigger(null, rate);
       }
     },
+    setpan(num = 0, value = .5) {
+      if (Gibberish.mode === 'processor') {
+        const voice = this.voices[num];
+        // set voice buffer length
+        g.gen.memory.heap.set([value], voice.pan.memory.values.idx);
+      }
+    },
+    setrate(num = 0, value = 1) {
+      if (Gibberish.mode === 'processor') {
+        const voice = this.voices[num];
+        // set voice buffer length
+        g.gen.memory.heap.set([value], voice.rate.memory.values.idx);
+      }
+    },
     trigger(volume, rate = 1) {
       'no jsdsp';
 
@@ -8715,10 +8731,13 @@ module.exports = function (Gibberish) {
       const voice = {
         bufferLength: g.data([1], 1, { meta: true }),
         bufferLoc: g.data([1], 1, { meta: true }),
-        bang: g.bang()
+        bang: g.bang(),
+        // XXX how do I change this from main thread?
+        pan: g.data([.5], 1, { meta: true }),
+        rate: g.data([1], 1, { meta: true })
       };
 
-      voice.phase = g.counter(rate, genish.mul(start, voice.bufferLength[0]), genish.mul(end, voice.bufferLength[0]), voice.bang, shouldLoop, { shouldWrap: false, initialValue: 9999999 });
+      voice.phase = g.counter(genish.mul(rate, voice.rate[0]), genish.mul(start, voice.bufferLength[0]), genish.mul(end, voice.bufferLength[0]), voice.bang, shouldLoop, { shouldWrap: false, initialValue: 9999999 });
 
       voice.trigger = voice.bang.trigger;
 
@@ -8729,6 +8748,9 @@ module.exports = function (Gibberish) {
       voice.peek = g.peekDyn(voice.bufferLoc[0], voice.bufferLength[0], voice.phase, { mode: 'samples' }),
       // ...else return 0
       0), loudness), triggerLoudness);
+
+      const pan = g.pan(voice.graph, voice.graph, voice.pan[0]);
+      voice.graph = [pan.left, pan.right];
 
       voices.push(voice);
     }
@@ -8814,10 +8836,13 @@ module.exports = function (Gibberish) {
       'use jsdsp';
 
       const graphs = voices.map(voice => voice.graph);
-      syn.graph = genish.mul(g.add(...graphs), g.in('gain'));
+      const left = g.add(...voices.map(voice => voice.graph[0]));
+      const right = g.add(...voices.map(voice => voice.graph[1]));
+      const gain = g.in('gain');
+      syn.graph = [genish.mul(left, gain), genish.mul(right, gain)];
 
       if (syn.panVoices === true) {
-        const panner = g.pan(syn.graph, syn.graph, g.in('pan'));
+        const panner = g.pan(syn.graph[0], syn.graph[1], g.in('pan'));
         syn.graph = [panner.left, panner.right];
       }
     };

@@ -36,8 +36,8 @@ a.rate = 1.25
 
 // query the database for a particular term(s) and download the first response
 // by default these simple queries are limited to soundfiles under .5 seconds,
-// that are classified as single notes/sounds, and where the filename includes
-// the query term (as opposed to only including the query term in metadata).
+// that are classified as single notes/sounds, and where the filename does not 
+// need to include the query term (the query term can just be in metadata). 
 b = Freesound('crickets').fx.add( Freeverb() )
 b.loops = 1
 b.trigger(1)
@@ -66,7 +66,7 @@ d = Freesound({
   query:'drums +90 +bpm', // search for drums, 90, and bpm
   max:5, 							    // max of five seconds in length
   single:false, 					// files do not have to contain single sounds / notes
-  searchFilename:false,   // do not require query terms to be present in filename
+  filename:false,   // do not require query terms to be present in filename
   count:5,								// load five samples...
   maxVoices:1							// ... but only play one at a time
 })
