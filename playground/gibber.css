@@ -307,6 +307,9 @@ img {
   border-style:solid
 }
 
+.patternEdit { background-color:var(--b_low) }
+.patternEditError{ background-color:#900 }
+
 .annotation-right-border    { border-right-color:var(--f_low) }
 .annotation-left-border     { border-left-color:var(--f_low) }
 .annotation-top-border      { border-top-color:var(--f_low) } 

@@ -44,6 +44,7 @@ module.exports = function( Gibber, cm, environment ) {
     })
   })
 
+  /*
   cm.getWrapperElement().addEventListener( 'click', e => {
     if( e.altKey === true ) {
       let obj
@@ -77,6 +78,7 @@ module.exports = function( Gibber, cm, environment ) {
       }
     }
   })
+  */
 
   var Pos = CodeMirror.Pos;
   var cls = "CodeMirror-Tern-";

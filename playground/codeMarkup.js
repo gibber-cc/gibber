@@ -77,7 +77,7 @@ const Marker = {
   
 
   // STARTING POINT FOR PARSING / MARKUP
-  process( code, position, codemirror, track ) {
+  process( code, position, codemirror ) {
     // store position offset from top of code editor
     // to use when marking patterns, since acorn will produce
     // relative offsets
@@ -106,6 +106,8 @@ const Marker = {
     })
 
     Gibber.Audio.Gibberish.proxyEnabled = true
+
+    return parsed
   },
   
   markPatternsForSeq( seq, nodes, state, cb, container, seqNumber = 0 ) {

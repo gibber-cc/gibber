@@ -58988,6 +58988,7 @@ module.exports = function( Marker ) {
     const cssName = patternName 
 
     patternObject.markers = []
+    patternObject.__isEditing = false
     patternObject.node = patternNode 
 
     if( target.markup === undefined ) Marker.prepareObject( target )
@@ -58995,112 +58996,203 @@ module.exports = function( Marker ) {
     // create marker for entire array...
     const arrayMarker = cm.markText( start, end, { className:cssName })
 
-    patternObject.__onclick = e => {
-      if( e.altKey == true ) {
-        if( e.shiftKey === true ) {
-          patternObject.reset()
+    let annotationsAreFrozen = false
+
+    let value = cm.getRange( start, end )
+    const intervalCheck = ()=> {
+      const pos = arrayMarker.find()
+      const current = cm.getRange( pos.from, pos.to )
+      if( current !== value ) {
+        value = current
+        const stripped = value.replace( ' ', '' )
+
+        let valid = true
+        if( stripped.indexOf( ',]' ) > -1 ) valid = false
+        if( stripped.indexOf( ',,' ) > -1 ) valid = false
+        if( stripped.indexOf( '[,' ) > -1 ) valid = false
+
+        if( valid ) { 
+          let arr
+          try{
+            arr = eval( value )
+          } catch( e ) {
+            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+            els.forEach( (el,i) => { 
+              el.classList.remove('patternEdit')
+              el.classList.add( 'patternEditError' )
+            })   
+          }
+
+          if( Array.isArray( arr ) ) {
+            const tmp = Gibber.shouldDelay
+            Gibber.shouldDelay = Gibber.Audio.shouldDelay = false 
+            patternObject.set( arr )
+            Gibber.shouldDelay = tmp
+
+            pos.start = pos.from
+            pos.end = pos.to
+            pos.horizontalOffset = pos.from.ch
+            const __patternNode = Environment.Annotations.process( value, pos, Environment.editor ).body[0].expression 
+            //__patternNode.start = patternNode.start
+            //__patternNode.end = __patternNode.start + value.length
+            patternObject.clear()
+            patternNode = __patternNode
+            makeMarkers()
+          }
         }else{
-          patternObject.__frozen = !patternObject.__frozen
+          const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+          els.forEach( (el,i) => { 
+            el.classList.remove( 'patternEdit' )
+            el.classList.add( 'patternEditError' )
+          })  
         }
       }
     }
-    setTimeout( ()=> {
-      document.querySelector( '.' + cssName ).onclick = patternObject.__onclick
+
+    patternObject.__onclick = e => {
+      if( e.altKey == true ) {
+      //  if( e.shiftKey === true ) {
+      //    patternObject.reset()
+      //  }else{
+      //    patternObject.__frozen = !patternObject.__frozen
+      //  }
+      //}else{
+
+        if( !patternObject.__isEditing ) {
+          annotationsAreFrozen = true
+          const pos = arrayMarker.find()
+          patternObject.__editMark = cm.markText( pos.from, pos.to, { className:'patternEdit' })
+          //console.log( 'FROZEN', cm.getRange( pos.from, pos.to ) )
+          //const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+          setTimeout( ()=> {
+            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+            els.forEach( (el,i) => { 
+              el.onclick = patternObject.__onclick
+              el.onchange = ()=> console.log( 'change:', el.innerText )
+              //el.classList.add( 'patternEdit' )
+            }) 
+          }, 50 )
+          patternObject.__interval = setInterval( intervalCheck, 100 )
+        }else{
+          //const els = Array.from( document.querySelectorAll( '.patternEdit' ) )
+        
+          //els.forEach( (el,i) => { 
+          //  el.classList.remove( 'patternEdit' ) 
+          //}) 
+          patternObject.__editMark.clear()
+
+          clearInterval( patternObject.__interval )
+        }
+
+        patternObject.__isEditing = !patternObject.__isEditing
+      }else if( e.shiftKey === true ) {
+          //patternObject.reset()
+        //}else{
+          patternObject.__frozen = !patternObject.__frozen
+        //}
+      }
+    }
+    // timeout needeed because applying css is not synchronous... I think
+    setTimeout( ()=> { 
+      Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = patternObject.__onclick )
     }, 500 )
     target.markup.textMarkers[ cssName ] = arrayMarker
 
-    // then create markers for individual elements
-    let count = 0
-    for( let element of patternNode.elements ) {
-      let cssClassName = patternName + '_' + count,
-          elementStart = Object.assign( {}, start ),
-          elementEnd   = Object.assign( {}, end   ),
-          marker
-      
-      elementStart.ch = element.loc.start.column// + Marker.offset.horizontal
-      elementEnd.ch   = element.loc.end.column //  + Marker.offset.horizontal
+    const makeMarkers = function( useOffset = false) {
+      // then create markers for individual elements
+      let count = 0
+      for( let element of patternNode.elements ) {
+        let cssClassName = patternName + '_' + count,
+            elementStart = Object.assign( {}, start ),
+            elementEnd   = Object.assign( {}, end   ),
+            marker
+        
+        elementStart.ch = element.loc.start.column + Marker.offset.horizontal
+        elementEnd.ch   = element.loc.end.column   + Marker.offset.horizontal
 
-      if( element.type === 'BinaryExpression' ) {
-        marker = cm.markText( elementStart, elementEnd, { 
-          'className': cssClassName + ' annotation',
-           startStyle: 'annotation-no-right-border',
-           endStyle: 'annotation-no-left-border',
-           //inclusiveLeft:true, inclusiveRight:true
-        })
+        if( element.type === 'BinaryExpression' ) {
+          marker = cm.markText( elementStart, elementEnd, { 
+            'className': cssClassName + ' annotation',
+             startStyle: 'annotation-no-right-border',
+             endStyle: 'annotation-no-left-border',
+             //inclusiveLeft:true, inclusiveRight:true
+          })
 
-        // create specific border for operator: top, bottom, no sides
-        const divStart = Object.assign( {}, elementStart )
-        const divEnd   = Object.assign( {}, elementEnd )
+          // create specific border for operator: top, bottom, no sides
+          const divStart = Object.assign( {}, elementStart )
+          const divEnd   = Object.assign( {}, elementEnd )
 
-        divStart.ch += 1
-        divEnd.ch -= 1
+          divStart.ch += 1
+          divEnd.ch -= 1
 
-        const marker2 = cm.markText( divStart, divEnd, { className:cssClassName + '_binop annotation-binop' })
+          const marker2 = cm.markText( divStart, divEnd, { className:cssClassName + '_binop annotation-binop' })
 
-        patternObject.markers.push( marker, marker2 )
+          patternObject.markers.push( marker, marker2 )
 
-      }else if (element.type === 'UnaryExpression' ) {
-        marker = cm.markText( elementStart, elementEnd, { 
-          'className': cssClassName + ' annotation', 
-          //inclusiveLeft: true,
-          //inclusiveRight: true
-        })
+        }else if (element.type === 'UnaryExpression' ) {
+          marker = cm.markText( elementStart, elementEnd, { 
+            'className': cssClassName + ' annotation', 
+            //inclusiveLeft: true,
+            //inclusiveRight: true
+          })
 
-        let start2 = Object.assign( {}, elementStart )
-        start2.ch += 1
-        let marker2 = cm.markText( elementStart, start2, { 
-          'className': cssClassName + ' annotation-no-right-border', 
-          //inclusiveLeft: true,
-          //inclusiveRight: true
-        })
+          let start2 = Object.assign( {}, elementStart )
+          start2.ch += 1
+          let marker2 = cm.markText( elementStart, start2, { 
+            'className': cssClassName + ' annotation-no-right-border', 
+            //inclusiveLeft: true,
+            //inclusiveRight: true
+          })
 
-        let marker3 = cm.markText( start2, elementEnd, { 
-          'className': cssClassName + ' annotation-no-left-border', 
-          //inclusiveLeft: true,
-          //inclusiveRight: true
-        })
+          let marker3 = cm.markText( start2, elementEnd, { 
+            'className': cssClassName + ' annotation-no-left-border', 
+            //inclusiveLeft: true,
+            //inclusiveRight: true
+          })
 
-        patternObject.markers.push( marker, marker2, marker3 )
-      }else if( element.type === 'ArrayExpression' ) {
-         marker = cm.markText( elementStart, elementEnd, { 
-          'className': cssClassName + ' annotation',
-          //inclusiveLeft:true, inclusiveRight:true,
-          startStyle:'annotation-left-border-start',
-          endStyle: 'annotation-right-border-end',
-         })
+          patternObject.markers.push( marker, marker2, marker3 )
+        }else if( element.type === 'ArrayExpression' ) {
+           marker = cm.markText( elementStart, elementEnd, { 
+            'className': cssClassName + ' annotation',
+            //inclusiveLeft:true, inclusiveRight:true,
+            startStyle:'annotation-left-border-start',
+            endStyle: 'annotation-right-border-end',
+           })
 
 
-         // mark opening array bracket
-         const arrayStart_start = Object.assign( {}, elementStart )
-         const arrayStart_end  = Object.assign( {}, elementStart )
-         arrayStart_end.ch += 1
-         cm.markText( arrayStart_start, arrayStart_end, { className:cssClassName + '_start' })
+           // mark opening array bracket
+           const arrayStart_start = Object.assign( {}, elementStart )
+           const arrayStart_end  = Object.assign( {}, elementStart )
+           arrayStart_end.ch += 1
+           cm.markText( arrayStart_start, arrayStart_end, { className:cssClassName + '_start' })
 
-         // mark closing array bracket
-         const arrayEnd_start = Object.assign( {}, elementEnd )
-         const arrayEnd_end   = Object.assign( {}, elementEnd )
-         arrayEnd_start.ch -=1
-         const marker2 = cm.markText( arrayEnd_start, arrayEnd_end, { className:cssClassName + '_end' })
+           // mark closing array bracket
+           const arrayEnd_start = Object.assign( {}, elementEnd )
+           const arrayEnd_end   = Object.assign( {}, elementEnd )
+           arrayEnd_start.ch -=1
+           const marker2 = cm.markText( arrayEnd_start, arrayEnd_end, { className:cssClassName + '_end' })
 
-         patternObject.markers.push( marker, marker2 )
+           patternObject.markers.push( marker, marker2 )
 
-      }else{
-        marker = cm.markText( elementStart, elementEnd, { 
-          'className': cssClassName + ' annotation',
-          //inclusiveLeft:true, inclusiveRight:true
-        })
+        }else{
+          marker = cm.markText( elementStart, elementEnd, { 
+            'className': cssClassName + ' annotation',
+            //inclusiveLeft:true, inclusiveRight:true
+          })
 
-        patternObject.markers.push( marker )
+          patternObject.markers.push( marker )
+        }
+
+        if( target.markup.textMarkers[ patternName  ] === undefined ) target.markup.textMarkers[ patternName ] = []
+        target.markup.textMarkers[ patternName ][ count ] = marker
+       
+        if( target.markup.cssClasses[ patternName ] === undefined ) target.markup.cssClasses[ patternName ] = []
+        target.markup.cssClasses[ patternName ][ count ] = cssClassName 
+        
+        count++
       }
-
-      if( target.markup.textMarkers[ patternName  ] === undefined ) target.markup.textMarkers[ patternName ] = []
-      target.markup.textMarkers[ patternName ][ count ] = marker
-     
-      if( target.markup.cssClasses[ patternName ] === undefined ) target.markup.cssClasses[ patternName ] = []
-      target.markup.cssClasses[ patternName ][ count ] = cssClassName 
-      
-      count++
     }
+    makeMarkers()
     
     let highlighted = { className:null, isArray:false },
         cycle = Marker._createBorderCycleFunction( patternName, patternObject )
@@ -59176,12 +59268,15 @@ module.exports = function( Marker ) {
       if( highlighted.className !== null ) { $( highlighted.className ).remove( 'annotation-border' ) }
       cycle.clear()
       patternObject.markers.forEach( marker => marker.clear() )
+      patternObject.__editMark.clear()
       if( __clear !== null ) __clear.call( patternObject )
     }
 
     Marker._addPatternFilter( patternObject )
     patternObject._onchange = () => { 
-      Marker._updatePatternContents( patternObject, patternName, target ) 
+      if( annotationsAreFrozen === false ) {
+        Marker._updatePatternContents( patternObject, patternName, target ) 
+      }
     }
   }
     
@@ -61094,7 +61189,7 @@ const Marker = {
   
 
   // STARTING POINT FOR PARSING / MARKUP
-  process( code, position, codemirror, track ) {
+  process( code, position, codemirror ) {
     // store position offset from top of code editor
     // to use when marking patterns, since acorn will produce
     // relative offsets
@@ -61123,6 +61218,8 @@ const Marker = {
     })
 
     Gibber.Audio.Gibberish.proxyEnabled = true
+
+    return parsed
   },
   
   markPatternsForSeq( seq, nodes, state, cb, container, seqNumber = 0 ) {
@@ -62882,6 +62979,7 @@ module.exports = function( Gibber, cm, environment ) {
     })
   })
 
+  /*
   cm.getWrapperElement().addEventListener( 'click', e => {
     if( e.altKey === true ) {
       let obj
@@ -62915,6 +63013,7 @@ module.exports = function( Gibber, cm, environment ) {
       }
     }
   })
+  */
 
   var Pos = CodeMirror.Pos;
   var cls = "CodeMirror-Tern-";
