@@ -18,9 +18,7 @@ module.exports = function( Marker ) {
     patternObject.node = patternNode 
 
     if( target.markup === undefined ) Marker.prepareObject( target )
-
-    // create marker for entire array...
-    const arrayMarker = cm.markText( start, end, { className:cssName })
+    if( Marker.arrayPatterns === undefined ) Marker.arrayPatterns = {}
 
     let annotationsAreFrozen = false
 
@@ -59,11 +57,26 @@ module.exports = function( Marker ) {
             pos.end = pos.to
             pos.horizontalOffset = pos.from.ch
             const __patternNode = Environment.Annotations.process( value, pos, Environment.editor ).body[0].expression 
-            //__patternNode.start = patternNode.start
-            //__patternNode.end = __patternNode.start + value.length
             patternObject.clear()
             patternNode = __patternNode
             makeMarkers()
+ 
+            // XXX using markText would be better clearly, but
+            // for some reason I can't get it to work? marking
+            // the individual spans does work though
+
+            //patternObject.__editMark = cm.markText( 
+            //  pos.from, pos.to, 
+            //  { 
+            //    className:'patternEdit'
+            //  }
+            //)
+
+            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+            els.forEach( (el,i) => { 
+              el.classList.add( 'patternEdit' )
+              el.classList.remove( 'patternEditError' )
+            }) 
           }
         }else{
           const els = Array.from( document.querySelectorAll( '.' + cssName ) )
@@ -85,29 +98,20 @@ module.exports = function( Marker ) {
       //}else{
 
         if( !patternObject.__isEditing ) {
+          console.log( 'start editing' )
           annotationsAreFrozen = true
           const pos = arrayMarker.find()
-          patternObject.__editMark = cm.markText( pos.from, pos.to, { className:'patternEdit' })
-          patternObject.markers.push( __editMarker )
-          //console.log( 'FROZEN', cm.getRange( pos.from, pos.to ) )
-          //const els = Array.from( document.querySelectorAll( '.' + cssName ) )
-          setTimeout( ()=> {
-            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
-            els.forEach( (el,i) => { 
-              el.onclick = patternObject.__onclick
-              el.onchange = ()=> console.log( 'change:', el.innerText )
-              //el.classList.add( 'patternEdit' )
-            }) 
-          }, 50 )
+          patternObject.__editMark = cm.markText( 
+            pos.from, pos.to, 
+            { 
+              className:'patternEdit'
+            }
+          )
+          patternObject.markers.push( patternObject.__editMark )
           patternObject.__interval = setInterval( intervalCheck, 100 )
         }else{
-          //const els = Array.from( document.querySelectorAll( '.patternEdit' ) )
-        
-          //els.forEach( (el,i) => { 
-          //  el.classList.remove( 'patternEdit' ) 
-          //}) 
+          console.log( 'stop editing' )
           patternObject.__editMark.clear()
-
           clearInterval( patternObject.__interval )
         }
 
@@ -120,9 +124,21 @@ module.exports = function( Marker ) {
       }
     }
     // timeout needeed because applying css is not synchronous... I think
-    setTimeout( ()=> { 
-      Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = patternObject.__onclick )
-    }, 500 )
+    //setTimeout( ()=> { 
+    //  Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = __onclick )
+    //}, 500 )
+    Marker.arrayPatterns[ cssName ] = patternObject.__onclick
+
+    // create marker for entire array...
+    // you have to pass the onclick as a string, otherwise codemirror will
+    // delete it from spans during random operations. We store the event handler
+    // globally so that we can use a closure. 
+    const arrayMarker = cm.markText( start, end, { 
+      className:cssName,
+      attributes:{
+        onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
+      }
+    })
     target.markup.textMarkers[ cssName ] = arrayMarker
 
     const makeMarkers = function( useOffset = false) {

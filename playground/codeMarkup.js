@@ -8,6 +8,7 @@ const Marker = {
   waveform: require( './annotations/waveform.js' )( Gibber ),
   _patternTypes: [ 'values', 'timings', 'index' ],
   globalIdentifiers:{},
+  arrayPatterns:{},
   Gibber,
 
   acorn, walk,

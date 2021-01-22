@@ -59001,9 +59001,7 @@ module.exports = function( Marker ) {
     patternObject.node = patternNode 
 
     if( target.markup === undefined ) Marker.prepareObject( target )
-
-    // create marker for entire array...
-    const arrayMarker = cm.markText( start, end, { className:cssName })
+    if( Marker.arrayPatterns === undefined ) Marker.arrayPatterns = {}
 
     let annotationsAreFrozen = false
 
@@ -59042,11 +59040,26 @@ module.exports = function( Marker ) {
             pos.end = pos.to
             pos.horizontalOffset = pos.from.ch
             const __patternNode = Environment.Annotations.process( value, pos, Environment.editor ).body[0].expression 
-            //__patternNode.start = patternNode.start
-            //__patternNode.end = __patternNode.start + value.length
             patternObject.clear()
             patternNode = __patternNode
             makeMarkers()
+ 
+            // XXX using markText would be better clearly, but
+            // for some reason I can't get it to work? marking
+            // the individual spans does work though
+
+            //patternObject.__editMark = cm.markText( 
+            //  pos.from, pos.to, 
+            //  { 
+            //    className:'patternEdit'
+            //  }
+            //)
+
+            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+            els.forEach( (el,i) => { 
+              el.classList.add( 'patternEdit' )
+              el.classList.remove( 'patternEditError' )
+            }) 
           }
         }else{
           const els = Array.from( document.querySelectorAll( '.' + cssName ) )
@@ -59068,29 +59081,20 @@ module.exports = function( Marker ) {
       //}else{
 
         if( !patternObject.__isEditing ) {
+          console.log( 'start editing' )
           annotationsAreFrozen = true
           const pos = arrayMarker.find()
-          patternObject.__editMark = cm.markText( pos.from, pos.to, { className:'patternEdit' })
-          patternObject.markers.push( __editMarker )
-          //console.log( 'FROZEN', cm.getRange( pos.from, pos.to ) )
-          //const els = Array.from( document.querySelectorAll( '.' + cssName ) )
-          setTimeout( ()=> {
-            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
-            els.forEach( (el,i) => { 
-              el.onclick = patternObject.__onclick
-              el.onchange = ()=> console.log( 'change:', el.innerText )
-              //el.classList.add( 'patternEdit' )
-            }) 
-          }, 50 )
+          patternObject.__editMark = cm.markText( 
+            pos.from, pos.to, 
+            { 
+              className:'patternEdit'
+            }
+          )
+          patternObject.markers.push( patternObject.__editMark )
           patternObject.__interval = setInterval( intervalCheck, 100 )
         }else{
-          //const els = Array.from( document.querySelectorAll( '.patternEdit' ) )
-        
-          //els.forEach( (el,i) => { 
-          //  el.classList.remove( 'patternEdit' ) 
-          //}) 
+          console.log( 'stop editing' )
           patternObject.__editMark.clear()
-
           clearInterval( patternObject.__interval )
         }
 
@@ -59103,9 +59107,21 @@ module.exports = function( Marker ) {
       }
     }
     // timeout needeed because applying css is not synchronous... I think
-    setTimeout( ()=> { 
-      Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = patternObject.__onclick )
-    }, 500 )
+    //setTimeout( ()=> { 
+    //  Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = __onclick )
+    //}, 500 )
+    Marker.arrayPatterns[ cssName ] = patternObject.__onclick
+
+    // create marker for entire array...
+    // you have to pass the onclick as a string, otherwise codemirror will
+    // delete it from spans during random operations. We store the event handler
+    // globally so that we can use a closure. 
+    const arrayMarker = cm.markText( start, end, { 
+      className:cssName,
+      attributes:{
+        onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
+      }
+    })
     target.markup.textMarkers[ cssName ] = arrayMarker
 
     const makeMarkers = function( useOffset = false) {
@@ -60215,6 +60231,8 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
       memberAnnotationEnd     = Object.assign( {}, pos.to ),
       initialized = false,
       markStart = null,
+      cssName = className,
+      start = pos.from,
       commentMarker,
       currentMarker, chEnd
 
@@ -60223,35 +60241,152 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 
   pos.to.ch -= 1
   cm.replaceRange( val, pos.from, pos.to )
+  
+  patternObject.markers = []
+  patternObject.__isEditing = false
 
   patternObject.commentMarker = cm.markText( pos.from, end, { className, atomic:false })
-  patternObject.__onclick = e => {
-    if( e.altKey == true ) {
-      console.log( 'click', e.shiftKey )
-      if( e.shiftKey === true ) {
-        patternObject.reset()
+  //patternObject.__onclick = e => {
+  //  if( e.altKey == true ) {
+  //    console.log( 'click', e.shiftKey )
+  //    if( e.shiftKey === true ) {
+  //      patternObject.reset()
+  //    }else{
+  //      patternObject.__frozen = !patternObject.__frozen
+  //    }
+  //  }
+  //}
+
+  let value = cm.getRange( start , end )
+  const intervalCheck = ()=> {
+    const pos = arrayMarker.find()
+    const current = cm.getRange( pos.from, pos.to )
+    if( current !== value ) {
+      value = current
+      const stripped = value.slice(3,-3) 
+
+      // create a binary number with results and see if it is valid
+      // if so we know we have all zeros and ones in the comment annotation
+      const numString = `0b${stripped}`
+      const num = eval( numString )
+      let valid = !isNaN( num )
+      console.log( value, numString, num, valid )
+
+      if( valid ) { 
+        let arr
+        try{
+          // remove 0b from start of number and convert characters to ints
+          arr = numString.slice(2).split('').map( v => parseInt(v) )
+        } catch( e ) {
+          const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+          els.forEach( (el,i) => { 
+            el.classList.remove('patternEdit')
+            el.classList.add( 'patternEditError' )
+          })   
+        }
+
+        if( Array.isArray( arr ) ) {
+          const tmp = Gibber.shouldDelay
+          Gibber.shouldDelay = Gibber.Audio.shouldDelay = false 
+          patternObject.set( arr )
+          Gibber.shouldDelay = tmp
+
+          pos.start = pos.from
+          pos.end = pos.to
+          pos.horizontalOffset = pos.from.ch
+
+          // XXX using markText would be better clearly, but
+          // for some reason I can't get it to work? marking
+          // the individual spans does work though
+
+          //patternObject.__editMark = cm.markText( 
+          //  pos.from, pos.to, 
+          //  { 
+          //    className:'patternEdit'
+          //  }
+          //)
+
+          const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+          els.forEach( (el,i) => { 
+            el.classList.add( 'patternEdit' )
+            el.classList.remove( 'patternEditError' )
+          }) 
+        }
       }else{
-        patternObject.__frozen = !patternObject.__frozen
+        const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+        els.forEach( (el,i) => { 
+          el.classList.remove( 'patternEdit' )
+          el.classList.add( 'patternEditError' )
+        })  
       }
     }
   }
 
-  setTimeout( ()=> {
-    document.querySelector( '.' + className ).onclick = patternObject.__onclick
-  }, 500 )
+  patternObject.__onclick = e => {
+    if( e.altKey == true ) {
+    //  if( e.shiftKey === true ) {
+    //    patternObject.reset()
+    //  }else{
+    //    patternObject.__frozen = !patternObject.__frozen
+    //  }
+    //}else{
 
+      if( !patternObject.__isEditing ) {
+        annotationsAreFrozen = true
+        const pos = arrayMarker.find()
+        patternObject.__editMark = cm.markText( 
+          pos.from, pos.to, 
+          { 
+            className:'patternEdit'
+          }
+        )
+        patternObject.markers.push( patternObject.__editMark )
+        patternObject.__interval = setInterval( intervalCheck, 100 )
+      }else{
+        patternObject.__editMark.clear()
+        clearInterval( patternObject.__interval )
+      }
+
+      patternObject.__isEditing = !patternObject.__isEditing
+    }else if( e.shiftKey === true ) {
+        //patternObject.reset()
+      //}else{
+        patternObject.__frozen = !patternObject.__frozen
+      //}
+    }
+  }
+  // timeout needeed because applying css is not synchronous... I think
+  //setTimeout( ()=> { 
+  //  Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = __onclick )
+  //}, 500 )
+  Marker.arrayPatterns[ cssName ] = patternObject.__onclick
+  
   if( track.markup === undefined ) Marker.prepareObject( track )
   track.markup.textMarkers[ className ] = {}
+  
+  // create marker for entire array...
+  // you have to pass the onclick as a string, otherwise codemirror will
+  // delete it from spans during random operations. We store the event handler
+  // globally so that we can use a closure. 
+  const arrayMarker = cm.markText( start, end, { 
+    className:cssName,
+    attributes:{
+      onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
+    }
+  })
+  track.markup.textMarkers[ cssName ] = arrayMarker
 
-  let mark = () => {
+  const mark = () => {
+
     // first time through, use the position given to us by the parser
     let range,start, end
 
     // get new position in case the pattern has moved via inserted line breaks 
     const pos = patternObject.commentMarker.find()
     if( pos === undefined ) return
-    let memberAnnotationStart   = Object.assign( {}, pos.from ),
-        memberAnnotationEnd     = Object.assign( {}, pos.to )
+
+    const memberAnnotationStart   = Object.assign( {}, pos.from ),
+          memberAnnotationEnd     = Object.assign( {}, pos.to )
 
     if( initialized === false ) {
       memberAnnotationStart.ch = annotationStartCh
@@ -60288,7 +60423,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
       start.ch -= 3
       end = Object.assign({}, start )
       end.ch = memberAnnotationEnd.ch + 3
-      patternObject.commentMarker = cm.markText( start, end, { className, atomic:true })
+      patternObject.commentMarker = cm.markText( start, end, { className, atomic:false })
     }
   }
 
@@ -60329,32 +60464,22 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 
   let clearing = false
   patternObject._onchange = () => {
-    //let delay = Utility.beatsToMs( 1,  Gibber.Scheduler.bpm )
-
+    // store cursor position to restore it after ccalling replaceRange
+    const cursorpos = marker.doc.getCursor()
     // markStart is a closure variable that will be used in the call to mark()
     if( clearing === false ) {
-    markStart = track.markup.textMarkers[ className ][ 0 ].find()
-    markEnd   = track.markup.textMarkers[ className ][ patternObject.values.length - 1  ].find()
+      //markStart = track.markup.textMarkers[ className ][ 0 ].find()
+      markStart = arrayMarker.find() 
+      markStart.from.ch += 3
+      markStart.to.ch += 3
+      markEnd   = track.markup.textMarkers[ className ][ patternObject.values.length - 1  ].find()
 
-    if( markStart !== undefined && markEnd !== undefined ) { 
-      marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, markEnd.to )
-    }
+      if( markStart !== undefined && markEnd !== undefined ) { 
+        marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, markEnd.to )
+      }
 
-    //for( let i = 0; i < patternObject.values.length; i++ ) {
-
-    //  let markerCh = track.markup.textMarkers[ className ][ i ],
-    //      pos = markerCh.find()
-
-    //  // break for loop and remark pattern if a character
-    //  // isn't found
-    //  if( pos === undefined ) {
-    //    break
-    //  }
-
-    //  marker.doc.replaceRange( '' + patternObject.values[ i ], pos.from, pos.to )
-    //}
-
-    mark()
+      mark()
+      marker.doc.setCursor( cursorpos )
     }
   }
 
@@ -60372,6 +60497,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
     const replacement = text[ text.length - 1 ] === ')' ? ')' : '' 
 
     cm.replaceRange( replacement, commentPos.from, end )
+    if( patternObject.__interval ) clearInterval( patternObject.__interval )
     patternObject.commentMarker.clear()
   }
 
@@ -61130,6 +61256,7 @@ const Marker = {
   waveform: require( './annotations/waveform.js' )( Gibber ),
   _patternTypes: [ 'values', 'timings', 'index' ],
   globalIdentifiers:{},
+  arrayPatterns:{},
   Gibber,
 
   acorn, walk,
