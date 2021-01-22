@@ -9119,7 +9119,11 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
 
           let s = Audio.Core.Seq({ values, timings, target:__wrappedObject, key:methodName, priority })
           
-          s.start( Audio.Clock.time( delay ) )
+          if( typeof delay !== 'function' ) {
+            s.start( Audio.Clock.time( delay ) )
+          }else{
+            delay.seqs.push( s )
+          }
           obj[ methodName ].sequencers[ number ] = obj[ methodName ][ number ] = s 
           obj.__sequencers.push( s )
 
@@ -11502,11 +11506,16 @@ module.exports = function( Gibber ) {
         prevSeq.clear();
       }
 
+
       // XXX you have to add a method that does all this shit on the worklet. crap.
       targetProp.sequencers[ props.number ] = seq
       targetProp[ props.number ] = seq 
       //target.__sequencers.push( seq )
-      seq.start( Gibber.Audio.Clock.time( delay ) )
+      if( typeof delay !== 'function' ) { 
+        seq.start( Gibber.Audio.Clock.time( delay ) )
+      } else {
+        delay.seqs.push( seq )
+      }
     }
 
     return seq
@@ -59062,6 +59071,7 @@ module.exports = function( Marker ) {
           annotationsAreFrozen = true
           const pos = arrayMarker.find()
           patternObject.__editMark = cm.markText( pos.from, pos.to, { className:'patternEdit' })
+          patternObject.markers.push( __editMarker )
           //console.log( 'FROZEN', cm.getRange( pos.from, pos.to ) )
           //const els = Array.from( document.querySelectorAll( '.' + cssName ) )
           setTimeout( ()=> {
@@ -59268,7 +59278,7 @@ module.exports = function( Marker ) {
       if( highlighted.className !== null ) { $( highlighted.className ).remove( 'annotation-border' ) }
       cycle.clear()
       patternObject.markers.forEach( marker => marker.clear() )
-      patternObject.__editMark.clear()
+      //patternObject.__editMark.clear()
       if( __clear !== null ) __clear.call( patternObject )
     }
 
@@ -62359,6 +62369,18 @@ window.__use = function( lib ) {
   }
   
   return p
+}
+
+
+// pass to synth.note.seq( 0, 1/4, 0, w=wait()
+// call later to start seq with w()
+window.wait = function() {
+  const fnc = function() {
+    fnc.seqs.forEach( seq => seq.start() )  
+  }
+  fnc.seqs = []
+
+  return fnc
 }
 
 },{"./codeMarkup.js":257,"./editor.js":258,"./metronome.js":260,"./resources/js/theme.js":262,"./share.js":263,"codemirror":146,"gibber.audio.lib":83,"gibber.core.lib":123,"gibber.graphics.lib":133}],260:[function(require,module,exports){

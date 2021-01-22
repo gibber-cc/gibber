@@ -88,6 +88,7 @@ module.exports = function( Marker ) {
           annotationsAreFrozen = true
           const pos = arrayMarker.find()
           patternObject.__editMark = cm.markText( pos.from, pos.to, { className:'patternEdit' })
+          patternObject.markers.push( __editMarker )
           //console.log( 'FROZEN', cm.getRange( pos.from, pos.to ) )
           //const els = Array.from( document.querySelectorAll( '.' + cssName ) )
           setTimeout( ()=> {
@@ -294,7 +295,7 @@ module.exports = function( Marker ) {
       if( highlighted.className !== null ) { $( highlighted.className ).remove( 'annotation-border' ) }
       cycle.clear()
       patternObject.markers.forEach( marker => marker.clear() )
-      patternObject.__editMark.clear()
+      //patternObject.__editMark.clear()
       if( __clear !== null ) __clear.call( patternObject )
     }
 

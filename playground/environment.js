@@ -432,3 +432,15 @@ window.__use = function( lib ) {
   
   return p
 }
+
+
+// pass to synth.note.seq( 0, 1/4, 0, w=wait()
+// call later to start seq with w()
+window.wait = function() {
+  const fnc = function() {
+    fnc.seqs.forEach( seq => seq.start() )  
+  }
+  fnc.seqs = []
+
+  return fnc
+}
