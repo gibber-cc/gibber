@@ -50,7 +50,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
       const numString = `0b${stripped}`
       const num = eval( numString )
       let valid = !isNaN( num )
-      console.log( value, numString, num, valid )
+      //console.log( value, numString, num, valid )
 
       if( valid ) { 
         let arr
@@ -246,16 +246,19 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
   patternObject._onchange = () => {
     // store cursor position to restore it after ccalling replaceRange
     const cursorpos = marker.doc.getCursor()
-    // markStart is a closure variable that will be used in the call to mark()
+
+    // IMPORTANT: markStart is a closure upvalue that is also used in mark()
     if( clearing === false ) {
-      //markStart = track.markup.textMarkers[ className ][ 0 ].find()
+      // offset annotation position to ignore starting /* + space
       markStart = arrayMarker.find() 
       markStart.from.ch += 3
       markStart.to.ch += 3
-      markEnd   = track.markup.textMarkers[ className ][ patternObject.values.length - 1  ].find()
 
-      if( markStart !== undefined && markEnd !== undefined ) { 
-        marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, markEnd.to )
+      // end = start + pattern length
+      const to = { line: markStart.from.line, ch: markStart.from.ch + patternObject.values.length }
+
+      if( markStart !== undefined ) { 
+        marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, to )
       }
 
       mark()

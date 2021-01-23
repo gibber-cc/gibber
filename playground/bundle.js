@@ -59573,11 +59573,9 @@ module.exports = function( Marker ) {
           startRow = line,
           endRow   = line + (node.loc.end.line - node.loc.start.line)
 
-    const marker = cm.markText( 
-      { line:startRow, ch:startCol }, 
-      { line:endRow, ch:endCol }, 
-      { className: 'annotation tidalblock' }
-    )
+    tidal.__isEditing = false
+    tidal.markers = []
+    let annotationsAreFrozen = false
 
     // this function recursively marks each number or string token in the pattern
     const markPattern = pattern => {
@@ -59654,6 +59652,107 @@ module.exports = function( Marker ) {
       }
     }
 
+    const clear = function() {
+      for( const [ key, value ] of Object.entries( markers ) ) {
+        value.marker.clear()
+      }
+    }
+      
+    let codestr = cm.getRange( { line:startRow, ch:startCol }, { line:endRow, ch:endCol } ) 
+    const intervalCheck = ()=> {
+      const pos = marker.find()
+      const current = cm.getRange( pos.from, pos.to ).slice(1,-1)
+      if( current !== codestr ) {
+        codestr = current//.slice(1,-1)
+
+        let valid = true
+        try{
+          Gibber.Audio.Gibberish.Tidal.Pattern( codestr )
+        }catch(e) {
+          valid = false
+        }
+        //console.log( value, numString, num, valid )
+
+        if( valid ) { 
+          const tmp = Gibber.shouldDelay
+          Gibber.shouldDelay = Gibber.Audio.shouldDelay = false 
+          tidal.set( codestr )
+          Gibber.shouldDelay = tmp
+
+          pos.start = pos.from
+          pos.end = pos.to
+          pos.horizontalOffset = pos.from.ch
+
+          clear()
+          markPattern( tidal.__pattern.__data )
+
+          const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+          els.forEach( (el,i) => { 
+            el.classList.add( 'patternEdit' )
+            el.classList.remove( 'patternEditError' )
+          }) 
+        }else{
+          const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+          els.forEach( (el,i) => { 
+            el.classList.remove( 'patternEdit' )
+            el.classList.add( 'patternEditError' )
+          })  
+        }
+      }
+    }
+    tidal.__onclick = e => {
+      if( e.altKey == true ) {
+      //  if( e.shiftKey === true ) {
+      //    patternObject.reset()
+      //  }else{
+      //    patternObject.__frozen = !patternObject.__frozen
+      //  }
+      //}else{
+
+        if( !tidal.__isEditing ) {
+          annotationsAreFrozen = true
+          const pos = marker.find()
+          tidal.__editMark = cm.markText( 
+            pos.from, pos.to, 
+            { 
+              className:'patternEdit'
+            }
+          )
+          tidal.markers.push( tidal.__editMark )
+          tidal.__interval = setInterval( intervalCheck, 100 )
+        }else{
+          tidal.__editMark.clear()
+          clearInterval( tidal.__interval )
+        }
+
+        tidal.__isEditing = !tidal.__isEditing
+      }else if( e.shiftKey === true ) {
+          //patternObject.reset()
+        //}else{
+          tidal.__frozen = !tidal.__frozen
+        //}
+      }
+    }
+
+    const cssName = 'tidal_'+pattern.uid 
+
+    Marker.arrayPatterns[ cssName ] = tidal.__onclick
+    
+    if( tidal.markup === undefined ) Marker.prepareObject( tidal )
+    tidal.markup.textMarkers[ cssName ] = {}
+    const marker = cm.markText( 
+      { line:startRow, ch:startCol }, 
+      { line:endRow, ch:endCol }, 
+      { 
+        className: `annotation tidalblock ${cssName}`,
+        attributes:{
+          onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
+        }
+      }
+    )
+
+    tidal.markup.textMarkers[ cssName ] = marker 
+
     tidal.update = function( val ) {
       const name = `tidal-${tidal.uid}-${tidal.update.uid}`
 
@@ -59681,11 +59780,11 @@ module.exports = function( Marker ) {
       }
     })
 
-    tidal.update.clear = function() {
+    tidal.clear = function() {
       clearCycle()
-      for( let key in markers ) {
-        markers[ key ].marker.clear()
-      }
+      if( tidal.__editMark !== undefined ) tidal.__editMark.clear()
+      marker.clear()
+      clear()
     }
 
   }
@@ -60270,7 +60369,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
       const numString = `0b${stripped}`
       const num = eval( numString )
       let valid = !isNaN( num )
-      console.log( value, numString, num, valid )
+      //console.log( value, numString, num, valid )
 
       if( valid ) { 
         let arr
@@ -60466,16 +60565,19 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
   patternObject._onchange = () => {
     // store cursor position to restore it after ccalling replaceRange
     const cursorpos = marker.doc.getCursor()
-    // markStart is a closure variable that will be used in the call to mark()
+
+    // IMPORTANT: markStart is a closure upvalue that is also used in mark()
     if( clearing === false ) {
-      //markStart = track.markup.textMarkers[ className ][ 0 ].find()
+      // offset annotation position to ignore starting /* + space
       markStart = arrayMarker.find() 
       markStart.from.ch += 3
       markStart.to.ch += 3
-      markEnd   = track.markup.textMarkers[ className ][ patternObject.values.length - 1  ].find()
 
-      if( markStart !== undefined && markEnd !== undefined ) { 
-        marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, markEnd.to )
+      // end = start + pattern length
+      const to = { line: markStart.from.line, ch: markStart.from.ch + patternObject.values.length }
+
+      if( markStart !== undefined ) { 
+        marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, to )
       }
 
       mark()
@@ -61947,7 +62049,6 @@ module.exports = function( Gibber ) {
     extraKeys:{ 'Ctrl-Space':'autocomplete' },
     hintOptions:{ hint:CodeMirror.hint.javascript }
   })
-
 
   Babel.registerPlugin( 'jsdsp', jsdsp )
 
@@ -69664,6 +69765,11 @@ const Sequencer = props => {
     stop() {
       seq.__isRunning = false
       return __seq
+    },
+
+    set( patternString ) {
+      seq.__pattern = Pattern( patternString, { addLocations:true, addUID:true, enclose:true })
+
     }
   }
 
@@ -69689,6 +69795,8 @@ let __uid = 0
 Sequencer.getUID = ()=> {
   return __uid++
 }
+
+Sequencer.Pattern = Pattern
 
 Sequencer.clock = { cps: 1 }
 

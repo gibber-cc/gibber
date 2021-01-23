@@ -162,7 +162,6 @@ module.exports = function( Gibber ) {
     hintOptions:{ hint:CodeMirror.hint.javascript }
   })
 
-
   Babel.registerPlugin( 'jsdsp', jsdsp )
 
   cm.setSize( null, '100%' )
