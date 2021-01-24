@@ -8389,6 +8389,12 @@ module.exports = {
     decay:4,
     gain:.125,
     shape:'exponential'
+  },
+
+  blank: {
+    filterType:0,
+    waveform:'sine',
+    antialias:false
   }
 }
 
@@ -10745,7 +10751,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }
-          fnc._onchange()
+          fnc._onchange( 'set', args )
         }
         
         return fnc
@@ -10774,7 +10780,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( '_onchange', true ) 
           }
 
-          fnc._onchange()
+          fnc._onchange( 'reverse', null )
         }
         
         return fnc
@@ -10879,12 +10885,13 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }  
-          fnc._onchange()
+          fnc._onchange( 'reset', null )
         }
 
         return fnc 
       },
-      store() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
+
+      store( pos ) { fnc.storage[ pos || fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
 
       transpose( amt ) { 
         if( this.__rendered !== undefined && this.__rendered !== this ) {
@@ -10909,9 +10916,9 @@ const patternWrapper = function( Gibber ) {
           }
           if( Gibberish.mode === 'processor' ) {
             fnc.__message( 'values', fnc.values ) 
-            fnc.__message( '_onchange', true ) 
+            fnc.__message( '_onchange', ['transpose', amt] ) 
           }      
-          fnc._onchange()
+          //fnc._onchange( 'transpose', amt )
         }
         
         return fnc
@@ -10924,7 +10931,7 @@ const patternWrapper = function( Gibber ) {
         }
         if( !fnc.__frozen ) {
           Gibber.Utility.shuffle( fnc.values )
-          fnc._onchange()
+          fnc._onchange( 'shuffule', null )
         }
         
         return fnc
@@ -10955,7 +10962,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }
-          fnc._onchange()
+          fnc._onchange( 'scale', amt )
         }
         
         return fnc
@@ -10986,7 +10993,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }       
-          fnc._onchange()
+          fnc._onchange( 'flip', null )
         }
       
         return fnc
@@ -11012,7 +11019,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( '_onchange', true ) 
           }
 
-          fnc._onchange()
+          fnc._onchange( 'invert', null )
         }
         
         return fnc
@@ -11028,7 +11035,7 @@ const patternWrapper = function( Gibber ) {
             fnc.values = fnc.storage[ to ].slice( 0 )
           }
           
-          fnc._onchange()
+          fnc._onchange( 'switch', to )
         }
         
         return fnc
@@ -11059,7 +11066,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( '_onchange', true ) 
           }
 
-          fnc._onchange()
+          fnc._onchange( 'rotate', amt )
         }
         
         return fnc
@@ -62085,6 +62092,9 @@ window.onload = function() {
           ['music tutorial #7: step sequencing', 'steps.js' ], 
           ['music tutorial #8: creating synths', 'make.js' ], 
 
+          ['sound design tutorial #1: oscillators', 'sounddesign_oscillators.js'],
+          ['sound design tutorial #2: envelopes', 'sounddesign_envelopes.js'],
+
           ['graphics tutorial #1: intro to constructive solid geometry', 'graphics.intro.js' ],  
           ['graphics tutorial #2: lighting and materials', 'graphics.lighting.js' ], 
           ['graphics tutorial #3: textures', 'texture.js' ]  
@@ -69537,6 +69547,11 @@ const Sequencer = props => {
     stop() {
       seq.__isRunning = false
       return __seq
+    },
+
+    set( patternString ) {
+      seq.__pattern = Pattern( patternString, { addLocations:true, addUID:true, enclose:true })
+
     }
   }
 
@@ -69562,6 +69577,8 @@ let __uid = 0
 Sequencer.getUID = ()=> {
   return __uid++
 }
+
+Sequencer.Pattern = Pattern
 
 Sequencer.clock = { cps: 1 }
 

@@ -147,6 +147,9 @@ window.onload = function() {
           ['music tutorial #7: step sequencing', 'steps.js' ], 
           ['music tutorial #8: creating synths', 'make.js' ], 
 
+          ['sound design tutorial #1: oscillators', 'sounddesign_oscillators.js'],
+          ['sound design tutorial #2: envelopes', 'sounddesign_envelopes.js'],
+
           ['graphics tutorial #1: intro to constructive solid geometry', 'graphics.intro.js' ],  
           ['graphics tutorial #2: lighting and materials', 'graphics.lighting.js' ], 
           ['graphics tutorial #3: textures', 'texture.js' ]  
