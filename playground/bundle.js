@@ -10745,7 +10745,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }
-          fnc._onchange()
+          fnc._onchange( 'set', args )
         }
         
         return fnc
@@ -10774,7 +10774,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( '_onchange', true ) 
           }
 
-          fnc._onchange()
+          fnc._onchange( 'reverse', null )
         }
         
         return fnc
@@ -10879,12 +10879,13 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }  
-          fnc._onchange()
+          fnc._onchange( 'reset', null )
         }
 
         return fnc 
       },
-      store() { fnc.storage[ fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
+
+      store( pos ) { fnc.storage[ pos || fnc.storage.length ] = fnc.values.slice( 0 ); return fnc; },
 
       transpose( amt ) { 
         if( this.__rendered !== undefined && this.__rendered !== this ) {
@@ -10909,9 +10910,9 @@ const patternWrapper = function( Gibber ) {
           }
           if( Gibberish.mode === 'processor' ) {
             fnc.__message( 'values', fnc.values ) 
-            fnc.__message( '_onchange', true ) 
+            fnc.__message( '_onchange', ['transpose', amt] ) 
           }      
-          fnc._onchange()
+          //fnc._onchange( 'transpose', amt )
         }
         
         return fnc
@@ -10924,7 +10925,7 @@ const patternWrapper = function( Gibber ) {
         }
         if( !fnc.__frozen ) {
           Gibber.Utility.shuffle( fnc.values )
-          fnc._onchange()
+          fnc._onchange( 'shuffule', null )
         }
         
         return fnc
@@ -10955,7 +10956,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }
-          fnc._onchange()
+          fnc._onchange( 'scale', amt )
         }
         
         return fnc
@@ -10986,7 +10987,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }       
-          fnc._onchange()
+          fnc._onchange( 'flip', null )
         }
       
         return fnc
@@ -11012,7 +11013,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( '_onchange', true ) 
           }
 
-          fnc._onchange()
+          fnc._onchange( 'invert', null )
         }
         
         return fnc
@@ -11028,7 +11029,7 @@ const patternWrapper = function( Gibber ) {
             fnc.values = fnc.storage[ to ].slice( 0 )
           }
           
-          fnc._onchange()
+          fnc._onchange( 'switch', to )
         }
         
         return fnc
@@ -11059,7 +11060,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( '_onchange', true ) 
           }
 
-          fnc._onchange()
+          fnc._onchange( 'rotate', amt )
         }
         
         return fnc
@@ -58998,6 +58999,7 @@ module.exports = function( Marker ) {
 
     patternObject.markers = []
     patternObject.__isEditing = false
+    patternObject.__isRecording = false
     patternObject.node = patternNode 
 
     if( target.markup === undefined ) Marker.prepareObject( target )
@@ -59072,16 +59074,13 @@ module.exports = function( Marker ) {
     }
 
     patternObject.__onclick = e => {
+      if( e.shiftKey == true ) {
+        //patternObject.freeze()
+        patternObject.__frozen = !patternObject.__frozen
+        //annotationsAreFrozen = true 
+      }
       if( e.altKey == true ) {
-      //  if( e.shiftKey === true ) {
-      //    patternObject.reset()
-      //  }else{
-      //    patternObject.__frozen = !patternObject.__frozen
-      //  }
-      //}else{
-
         if( !patternObject.__isEditing ) {
-          console.log( 'start editing' )
           annotationsAreFrozen = true
           const pos = arrayMarker.find()
           patternObject.__editMark = cm.markText( 
@@ -59093,23 +59092,56 @@ module.exports = function( Marker ) {
           patternObject.markers.push( patternObject.__editMark )
           patternObject.__interval = setInterval( intervalCheck, 100 )
         }else{
-          console.log( 'stop editing' )
           patternObject.__editMark.clear()
           clearInterval( patternObject.__interval )
         }
 
         patternObject.__isEditing = !patternObject.__isEditing
-      }else if( e.shiftKey === true ) {
-          //patternObject.reset()
-        //}else{
-          patternObject.__frozen = !patternObject.__frozen
-        //}
+      }
+
+      if( e.metaKey == true ) {
+        patternObject.__isRecording = !patternObject.__isRecording
+
+        if( patternObject.__isRecording ) {
+          patternObject.__history = []
+          annotationsAreFrozen = true
+        }else{
+          const pos = arrayMarker.find()
+          const current = cm.getRange( pos.from, pos.to )
+
+          //const stripped = value.replace( ' ', '' )
+
+          //let valid = true
+          //if( stripped.indexOf( ',]' ) > -1 ) valid = false
+          //if( stripped.indexOf( ',,' ) > -1 ) valid = false
+          //if( stripped.indexOf( '[,' ) > -1 ) valid = false
+
+          let arr
+          arr = eval( current )
+
+          pos.start = pos.from
+          pos.end = pos.to
+          pos.horizontalOffset = pos.from.ch
+          const __patternNode = Environment.Annotations.process( current, pos, Environment.editor ).body[0].expression 
+          
+          patternObject.clear()
+          patternNode = __patternNode
+          makeMarkers()
+
+          patternObject.set( arr )
+
+          annotationsAreFrozen = false
+          for( const op of patternObject.__history ) {
+            if( Array.isArray( op[1] ) ){
+              patternObject[ op[0] ]( ...op[1] )
+            }else{
+              patternObject[ op[0] ]( op[1] )
+            }
+          }          
+        } 
       }
     }
-    // timeout needeed because applying css is not synchronous... I think
-    //setTimeout( ()=> { 
-    //  Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = __onclick )
-    //}, 500 )
+
     Marker.arrayPatterns[ cssName ] = patternObject.__onclick
 
     // create marker for entire array...
@@ -59296,12 +59328,17 @@ module.exports = function( Marker ) {
       patternObject.markers.forEach( marker => marker.clear() )
       //patternObject.__editMark.clear()
       if( __clear !== null ) __clear.call( patternObject )
+      if( patternObject.__interval !== undefined ) clearInterval( patternObject.__interval )
     }
 
     Marker._addPatternFilter( patternObject )
-    patternObject._onchange = () => { 
+    patternObject._onchange = op => { 
       if( annotationsAreFrozen === false ) {
         Marker._updatePatternContents( patternObject, patternName, target ) 
+      }
+      if( patternObject.__isRecording ) {
+        console.log( op )
+        patternObject.__history.push( op )
       }
     }
   }
@@ -59785,6 +59822,7 @@ module.exports = function( Marker ) {
       if( tidal.__editMark !== undefined ) tidal.__editMark.clear()
       marker.clear()
       clear()
+      if( tidal.__interval ) clearInterval( tidal.__interval ) 
     }
 
   }

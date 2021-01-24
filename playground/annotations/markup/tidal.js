@@ -232,6 +232,7 @@ module.exports = function( Marker ) {
       if( tidal.__editMark !== undefined ) tidal.__editMark.clear()
       marker.clear()
       clear()
+      if( tidal.__interval ) clearInterval( tidal.__interval ) 
     }
 
   }
