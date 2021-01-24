@@ -149,6 +149,7 @@ window.onload = function() {
 
           ['sound design tutorial #1: oscillators', 'sounddesign_oscillators.js'],
           ['sound design tutorial #2: envelopes', 'sounddesign_envelopes.js'],
+          ['sound design tutorial #3: filters', 'sounddesign_filters.js'],
 
           ['graphics tutorial #1: intro to constructive solid geometry', 'graphics.intro.js' ],  
           ['graphics tutorial #2: lighting and materials', 'graphics.lighting.js' ], 
