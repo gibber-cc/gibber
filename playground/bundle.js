@@ -8389,6 +8389,12 @@ module.exports = {
     decay:4,
     gain:.125,
     shape:'exponential'
+  },
+
+  blank: {
+    filterType:0,
+    waveform:'sine',
+    antialias:false
   }
 }
 
@@ -62350,6 +62356,10 @@ window.onload = function() {
           ['music tutorial #6: samplers', 'sampler.js' ],
           ['music tutorial #7: step sequencing', 'steps.js' ], 
           ['music tutorial #8: creating synths', 'make.js' ], 
+
+          ['sound design tutorial #1: oscillators', 'sounddesign_oscillators.js'],
+          ['sound design tutorial #2: envelopes', 'sounddesign_envelopes.js'],
+          ['sound design tutorial #3: filters', 'sounddesign_filters.js'],
 
           ['graphics tutorial #1: intro to constructive solid geometry', 'graphics.intro.js' ],  
           ['graphics tutorial #2: lighting and materials', 'graphics.lighting.js' ], 
