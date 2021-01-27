@@ -1,6 +1,6 @@
 /* __--__--__--__--__--__--__--____
 
-audio fx and busses
+sound design: audio fx and busses
    
 This tutorial walks through adding
 effects to synths and also looks at
@@ -9,7 +9,7 @@ strategies for routing sound.
 ** __--__--__--__--__--__--__--__*/
 
 // first, let's make a delay effect.
-// the three two important parameters
+// the two important parameters
 // of the delay are "time" and "feedback".
 // "feedback" controls the number of
 // echoes and time controls the space
@@ -62,18 +62,26 @@ syn.note(0)
 // stereo fx and inputs:
 
 verb = Bus2().fx.add( Freeverb() )
-syn  = Synth('bleep')
-syn2 = Synth('bleep')
+syn  = Synth('square.perc', { pan:0 })
+syn2 = Synth('square.perc', { pan:1 })
 syn.connect( verb, .5 )
 syn2.connect( verb, .5 )
 
 syn.note(0)
-syn2.note(0)
+syn2.note(7)
 
 // this is particularly common for reverbs,
 // where you want to have the dry signal 
 // connected to the master bus but also have
 // it sent through the reverb fx for processing.
+// there are a number of presets for Bus2 that
+// basically just add fx to the bus so you can
+// use them as send effects. For example, 
+// 'spaceverb' is used in many of the gibber
+// demos. You can see a list of these presets
+// by opening up the developer tools console for
+// your browser and entering:
+// Gibber.Audio.Presets.misc.Bus2
 
 // in addition to having their own fx
 // chains, busses also have their own pan
@@ -83,7 +91,8 @@ syn2.note(0)
 // most synths connect to the master bus
 // in Gibber by default; for this type of
 // grouping to work you first have to
-// disconnect them.
+// disconnect them. *this is really important
+// to try and remember*
 
 bus   = Bus2().connect()
 drums = Drums().disconnect()
@@ -99,3 +108,7 @@ bus.fx.add( BitCrusher({ sampleRate:.5, bitDepth:.5}) )
 
 // sequence the effect
 bus.fx[0].sampleRate.seq( [.25,.35,.5], 1/2 )
+
+// we've only experimented with a few effects here,
+// but there's more to investigate in the
+// reference (linked in the menu).

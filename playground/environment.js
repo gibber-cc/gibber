@@ -123,47 +123,78 @@ window.onload = function() {
   window.onkeypress = start
 
   const select = document.querySelector( 'select' ),
-        files = [
-          ['demo #1: intro', 'newintro.js'],
-          ['demo #2: pick your sample', 'picksomesamples.js'],
-          ['demo #2: acid', 'acid.js'],
-          ['demo #3: moody', 'intro.js'],
-          ['demo #4: geometry melds', 'meld.js'],
-
-          ['tutorial #1: running/stopping code', 'intro.tutorial.js'],
-          ['tutorial #2: creating objects', 'creating.objects.js'],
-          ['tutorial #3: basic sequencing', 'sequencing.js'],
-          ['tutorial #4: patterns', 'pattern.js'],
-          ['tutorial #5: audiovisual mappings', 'mapping.js'],
-          ['tutorial #6: tidalcycles', 'tidal.js' ],
-          ['tutorial #7: modulation', 'modulation.js' ],
-
-          ['music tutorial #1: scales/tunings', 'scales.tunings.js'],
-          ['music tutorial #2: effects and busses', 'effects.js'],
-          ['music tutorial #3: arpeggios and signals', 'arp.js' ], 
-          ['music tutorial #4: polyphony', 'polyphony.js' ], 
-          ['music tutorial #5: freesound', 'freesound.js' ], 
-          ['music tutorial #6: samplers', 'sampler.js' ],
-          ['music tutorial #7: step sequencing', 'steps.js' ], 
-          ['music tutorial #8: creating synths', 'make.js' ], 
-
-          ['sound design tutorial #1: oscillators', 'sounddesign_oscillators.js'],
-          ['sound design tutorial #2: envelopes', 'sounddesign_envelopes.js'],
-          ['sound design tutorial #3: filters', 'sounddesign_filters.js'],
-
-          ['graphics tutorial #1: intro to constructive solid geometry', 'graphics.intro.js' ],  
-          ['graphics tutorial #2: lighting and materials', 'graphics.lighting.js' ], 
-          ['graphics tutorial #3: textures', 'texture.js' ]  
+    files = [
+      {
+        name:'demos',
+        options:[
+          ['intro', 'newintro.js'],
+          ['pick your sample', 'picksomesamples.js'],
+          ['acid', 'acid.js'],
+          ['moody', 'intro.js'],
+          ['geometry melds', 'meld.js']
         ]
+      },
 
-  for( let file of files ) {
-    const opt = document.createElement('option')
-    opt.innerText = file[0]
-    select.appendChild( opt )
+      {
+        name:'general tutorials',
+        options:[['1. running/stopping code', 'intro.tutorial.js'],
+          ['2. creating objects', 'creating.objects.js'],
+          ['3. basic sequencing', 'sequencing.js'],
+          ['4. patterns', 'pattern.js'],
+          ['5. audiovisual mappings', 'mapping.js'],
+          ['6. tidalcycles', 'tidal.js' ],
+          ['7. modulation', 'modulation.js' ]
+        ]
+      },
+
+      {
+        name:'music tutorials',
+        options:[
+          ['scales/tunings', 'scales.tunings.js'],
+          ['arpeggios and signals', 'arp.js' ], 
+          ['polyphony', 'polyphony.js' ], 
+          ['freesound', 'freesound.js' ], 
+          ['samplers', 'sampler.js' ],
+          ['step sequencing', 'steps.js' ],  
+        ]
+      }, 
+
+      {
+        name:'sound design tutorials',
+        options:[
+          ['oscillators', 'sounddesign_oscillators.js'],
+          ['envelopes', 'sounddesign_envelopes.js'],
+          ['filters', 'sounddesign_filters.js'],
+          ['effects and busses', 'effects.js'],
+          ['creating synths', 'make.js' ]
+        ]
+      }, 
+
+      {
+        name:'graphics tutorials',
+        options:[
+          ['intro to constructive solid geometry', 'graphics.intro.js' ],  
+          ['lighting and materials', 'graphics.lighting.js' ], 
+          ['textures', 'texture.js' ]
+        ]
+      }
+    ]
+
+
+  for( let cat of files ) {
+    const group = document.createElement('optgroup')
+    group.setAttribute('label', cat.name )
+    for( let file of cat.options ) {
+      const opt = document.createElement('option')
+      opt.innerText = file[0]
+      opt.setAttribute( 'file', file[1] )
+      group.appendChild( opt )
+    }
+    select.appendChild( group )
   }
 
   select.onchange = function( e ) {
-    loadexample( files[ select.selectedIndex ][1] )
+    loadexample( select[ select.selectedIndex ].getAttribute( 'file' ) )
   }
 
   const loadexample = function( filename ) {
@@ -408,31 +439,78 @@ window.use = function( ...libs ) {
   }
 }
 
+const libs = {}
 window.__use = function( lib ) {
-  let p
-  if( lib === 'vim' ) {
-    window.CodeMirror = CodeMirror
-    p = new Promise( (res,rej) => {
-      const __p = window.__use( 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/keymap/vim.min.js' ).then( ()=> {
-        CodeMirror.keyMap.playground.fallthrough = 'vim'
-        cm.setOption( 'vimMode', true )
-        cm.setOption( 'extraKeys', CodeMirror.keyMap.playground )
-        res()
-      })
-    })
-  }else{
-    p = new Promise( (res,rej) => {
-      const script = document.createElement( 'script' )
-      script.src = lib
+  const p = new Promise( (res, rej) => {
+    if( lib === 'vim' ) {
+      if( libs.vim !== undefined ) { res(); return }
+      // needed to load codemirror plugin
+      window.CodeMirror = CodeMirror
+        const __p = window.__use( 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/keymap/vim.min.js' ).then( ()=> {
+          CodeMirror.keyMap.playground.fallthrough = 'vim'
+          cm.setOption( 'vimMode', true )
+          cm.setOption( 'extraKeys', CodeMirror.keyMap.playground )
+          res()
+          libs.vim = null
+        })
+    }else if( lib === 'hydra' ) {
+      if( libs.Hydra !== undefined ) { res( libs.Hydra ); return }
 
-      document.querySelector( 'head' ).appendChild( script )
+      const hydrascript = document.createElement( 'script' )
+      hydrascript.src = 'https://cdn.jsdelivr.net/npm/hydra-synth@1.3.6/dist/hydra-synth.js'
+      document.querySelector( 'head' ).appendChild( hydrascript )
 
-      script.onload = function() {
-        //msg( `${lib} has been loaded.`, 'new module loaded' )
-        res()
-      }
-    }) 
-  }
+      hydrascript.onload = function() {
+        //msg( 'hydra is ready to texture', 'new module loaded' )
+        const Hydrasynth = Hydra
+        let __hydra = null
+
+        window.Hydra = function( w=500,h=500 ) {
+          //const canvas = document.createElement('canvas')
+          //canvas.width = w
+          //canvas.height = h
+          const canvas = document.getElementById('graphics')
+          canvas.width = w
+          canvas.height = h
+          canvas.style.width = `${w}px`
+          canvas.style.height= `${h}px`
+          console.log( canvas, __hydra )
+          const hydra = __hydra === null ?  new Hydrasynth({ canvas, global:false }) : __hydra
+          hydra.setResolution(w,h)
+
+          //if( __hydra === null ) {
+          //  hydra.synth.canvas = canvas
+          //}
+
+          //hydra.synth.texture = ()=> {
+          //  const t = Texture('canvas', { canvas:hydra.synth.canvas })
+          //  Marching.postrendercallbacks.push( ()=> t.update() )
+          //  hydra.synth.texture = t
+          //  return t
+          //}
+          
+          __hydra = hydra
+
+          return hydra.synth
+        }
+        libs.Hydra = Hydra
+
+        res( Hydra )
+      } 
+    }else{
+      p = new Promise( (res,rej) => {
+        const script = document.createElement( 'script' )
+        script.src = lib
+
+        document.querySelector( 'head' ).appendChild( script )
+
+        script.onload = function() {
+          //msg( `${lib} has been loaded.`, 'new module loaded' )
+          res()
+        }
+      }) 
+    }
+  })
   
   return p
 }

@@ -1821,6 +1821,7 @@ const gen = {
   samplerate: 44100, // change on audiocontext creation
   shouldLocalize: false,
   graph:null,
+  alwaysReturnArrays: false,
   globals:{
     windows: {},
   },
@@ -1951,11 +1952,20 @@ const gen = {
         value.gen()      
     })
 
-    let returnStatement =  `  return [ memory[${this.outputIdx}]`
-    for( let i = 1; i < numChannels; i++ ) {
-      returnStatement += `, memory[ ${this.outputIdx + i} ]`
+    let returnStatement =  `  return ` 
+
+    // if we are returning an array of values, add starting bracket
+    if( numChannels !== 1 || this.alwaysReturnArray === true ) {
+      returnStatement += '[ '
     }
-    returnStatement += ' ] '
+
+    returnStatement += `memory[ ${this.outputIdx} ]`
+    if( numChannels > 1 ) {
+      for( let i = 1; i < numChannels; i++ ) {
+        returnStatement += `, memory[ ${this.outputIdx + i} ]`
+      }
+      returnStatement += ' ] '
+    }
      // memory[${this.outputIdx + 1}] ]` : `  return memory[${this.outputIdx}]`
     
     this.functionBody = this.functionBody.split('\n')
