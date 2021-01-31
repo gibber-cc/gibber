@@ -422,7 +422,7 @@ window.__use = function( lib ) {
           
           __hydra = hydra
 
-          setTimeout( 0, ()=> environment.useProxies = true )
+          setTimeout( ()=> environment.useProxies = true, 0 )
           return hydra.synth
         }
         libs.Hydra = Hydra
