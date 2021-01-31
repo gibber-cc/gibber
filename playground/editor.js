@@ -17,6 +17,7 @@ let cm, cmconsole, exampleCode,
     fontSize = 1,
     environment = {
       proxies:[],
+      useProxies:true,
       createProxies: require( './proxies.js' ),
       networkConfig : { isNetworked :false },
       showArgHints:true,
@@ -56,7 +57,7 @@ let cm, cmconsole, exampleCode,
           func()
           const postWindowMembers = Object.keys( window )
 
-          if( preWindowMembers.length !== postWindowMembers.length ) {
+          if( preWindowMembers.length !== postWindowMembers.length && environment.useProxies === true )   {
             environment.createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
           }
 

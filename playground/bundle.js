@@ -9186,6 +9186,24 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     })
     obj.id = __wrappedObject.id
 
+    let out = 0 
+    Object.defineProperty( obj, '__out', {
+      configurable:false,
+      get() {
+        const output = __wrappedObject.output
+         
+        return output[1] === undefined ? output[0] : output[0] + output[1] 
+      },
+      set(v) {
+        //console.log( 'tried to change id:', obj )
+        //debugger
+      }
+    })
+
+    obj.out = function( scale=1, offset=0 ) {
+      return ()=> obj.__out * scale + offset
+    }
+
     // XXX where does shouldAddToUgen come from? Not from presets.js...
     if( properties !== undefined && properties.shouldAddToUgen ) Object.assign( obj, properties )
 
@@ -61961,6 +61979,7 @@ let cm, cmconsole, exampleCode,
     fontSize = 1,
     environment = {
       proxies:[],
+      useProxies:true,
       createProxies: require( './proxies.js' ),
       networkConfig : { isNetworked :false },
       showArgHints:true,
@@ -62000,7 +62019,7 @@ let cm, cmconsole, exampleCode,
           func()
           const postWindowMembers = Object.keys( window )
 
-          if( preWindowMembers.length !== postWindowMembers.length ) {
+          if( preWindowMembers.length !== postWindowMembers.length && environment.useProxies === true )   {
             environment.createProxies( preWindowMembers, postWindowMembers, window, Environment, Gibber )
           }
 
@@ -62597,25 +62616,39 @@ window.__use = function( lib ) {
 
       const hydrascript = document.createElement( 'script' )
       hydrascript.src = 'https://cdn.jsdelivr.net/npm/hydra-synth@1.3.6/dist/hydra-synth.js'
-      document.querySelector( 'head' ).appendChild( hydrascript )
 
       hydrascript.onload = function() {
         //msg( 'hydra is ready to texture', 'new module loaded' )
         const Hydrasynth = Hydra
         let __hydra = null
 
-        window.Hydra = function( w=500,h=500 ) {
+        window.Hydra = function( w=null,h=null ) {
+          environment.useProxies = false
           //const canvas = document.createElement('canvas')
           //canvas.width = w
           //canvas.height = h
-          const canvas = document.getElementById('graphics')
-          canvas.width = w
-          canvas.height = h
-          canvas.style.width = `${w}px`
-          canvas.style.height= `${h}px`
+          const canvas = document.createElement('canvas')//getElementById('graphics')
+          canvas.width = w === null ? window.innerWidth : w
+          canvas.height = h === null ? window.innerHeight : h
+          canvas.style.width = `${canvas.width}px`
+          canvas.style.height= `${canvas.height}px`
           console.log( canvas, __hydra )
-          const hydra = __hydra === null ?  new Hydrasynth({ canvas, global:false }) : __hydra
-          hydra.setResolution(w,h)
+          const hydra = __hydra === null ?  new Hydrasynth({ canvas, global:false, detectAudio:false }) : __hydra
+          document.getElementById('graphics').remove()
+          canvas.setAttribute('id','graphics')
+          document.body.appendChild( canvas )
+
+          window.hydra = hydra
+          Gibber.subscribe( 'clear', ()=> hydra.hush() )
+          hydra.setResolution(canvas.width,canvas.height)
+
+          if( Gibber.Environment ) {
+            const sheet = window.document.styleSheets[ window.document.styleSheets.length - 1 ]
+            sheet.insertRule(
+              '.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', 
+              sheet.cssRules.length
+            )
+          }
 
           //if( __hydra === null ) {
           //  hydra.synth.canvas = canvas
@@ -62630,12 +62663,15 @@ window.__use = function( lib ) {
           
           __hydra = hydra
 
+          setTimeout( 0, ()=> environment.useProxies = true )
           return hydra.synth
         }
         libs.Hydra = Hydra
 
         res( Hydra )
       } 
+
+      document.querySelector( 'head' ).appendChild( hydrascript )
     }else{
       p = new Promise( (res,rej) => {
         const script = document.createElement( 'script' )
@@ -62722,7 +62758,8 @@ module.exports = function() {
       options:[
         ['intro to constructive solid geometry', 'graphics.intro.js' ],  
         ['lighting and materials', 'graphics.lighting.js' ], 
-        ['textures', 'texture.js' ]
+        ['textures', 'texture.js' ],
+        ['hydra', 'hydra.js' ]
       ]
     }
   ]

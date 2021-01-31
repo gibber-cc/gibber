@@ -53,7 +53,8 @@ module.exports = function() {
       options:[
         ['intro to constructive solid geometry', 'graphics.intro.js' ],  
         ['lighting and materials', 'graphics.lighting.js' ], 
-        ['textures', 'texture.js' ]
+        ['textures', 'texture.js' ],
+        ['hydra', 'hydra.js' ]
       ]
     }
   ]
