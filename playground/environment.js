@@ -383,15 +383,12 @@ window.__use = function( lib ) {
 
         window.Hydra = function( w=null,h=null ) {
           environment.useProxies = false
-          //const canvas = document.createElement('canvas')
-          //canvas.width = w
-          //canvas.height = h
-          const canvas = document.createElement('canvas')//getElementById('graphics')
+          const canvas = document.createElement('canvas')
           canvas.width = w === null ? window.innerWidth : w
           canvas.height = h === null ? window.innerHeight : h
           canvas.style.width = `${canvas.width}px`
           canvas.style.height= `${canvas.height}px`
-          console.log( canvas, __hydra )
+
           const hydra = __hydra === null ?  new Hydrasynth({ canvas, global:false, detectAudio:false }) : __hydra
           document.getElementById('graphics').remove()
           canvas.setAttribute('id','graphics')
@@ -409,17 +406,6 @@ window.__use = function( lib ) {
             )
           }
 
-          //if( __hydra === null ) {
-          //  hydra.synth.canvas = canvas
-          //}
-
-          //hydra.synth.texture = ()=> {
-          //  const t = Texture('canvas', { canvas:hydra.synth.canvas })
-          //  Marching.postrendercallbacks.push( ()=> t.update() )
-          //  hydra.synth.texture = t
-          //  return t
-          //}
-          
           __hydra = hydra
 
           setTimeout( ()=> environment.useProxies = true, 0 )
@@ -427,22 +413,90 @@ window.__use = function( lib ) {
         }
         libs.Hydra = Hydra
 
+        Gibber.Audio.Ugen.OUTPUT = 0
         res( Hydra )
       } 
 
       document.querySelector( 'head' ).appendChild( hydrascript )
-    }else{
-      p = new Promise( (res,rej) => {
-        const script = document.createElement( 'script' )
-        script.src = lib
+    } else if( lib === 'p5' ) {
+      if( libs.P5 !== undefined ) { res( libs.P5 ); return }
 
-        document.querySelector( 'head' ).appendChild( script )
+      // mute console error messages that are related to 
+      // namespace clashes, log function is restored after
+      // p5 script has been loaded.
+      console.__log = console.log
+      console.log = function() {} 
 
-        script.onload = function() {
-          //msg( `${lib} has been loaded.`, 'new module loaded' )
-          res()
+      const p5script = document.createElement( 'script' )
+      p5script.src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js'
+
+      window.setup = function(){
+        if( Gibber.Environment ) {
+          const sheet = window.document.styleSheets[ window.document.styleSheets.length - 1 ]
+          sheet.insertRule(
+            '.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', 
+            sheet.cssRules.length
+          )
         }
-      }) 
+        createCanvas( window.innerWidth,window.innerHeight )
+
+        // manage the draw loop ourselves so we can handle errors
+        noLoop()
+        window.__userDraw = window.draw
+        window.__broken = false
+        window.__draw = function() {
+          // if the current draw function isn't broken...
+          if( !window.__broken ) {
+            try {
+              // try to redraw
+              redraw()
+            }catch(e) {
+              // if redraw fails print error and set broken flag
+              console.log( e )
+              window.__broken = true
+            }
+          }
+
+          // if the user has created a new draw function...
+          if( window.__userDraw !== window.draw ) {
+            // store the new draw function...
+            window.__userDraw = window.draw
+            // ...and set the broken flag to false so that we 
+            // try to resume drawing.
+            window.__broken = false
+          }
+
+          window.__cancel = window.requestAnimationFrame( window.__draw )
+        }
+
+        window.__draw()
+      }
+
+      p5script.onload = function() {
+        Gibber.subscribe( 'clear', ()=> {
+          clear()
+        })
+
+        // .out() from ugens returns scalar, not function
+        Gibber.Audio.Ugen.OUTPUT = 1
+        libs.P5 = window.P5
+
+        res( window.P5 )
+        console.log = console.__log
+      } 
+
+      document.querySelector( 'head' ).appendChild( p5script )
+     
+    } else {
+      const script = document.createElement( 'script' )
+      script.src = lib
+
+      document.querySelector( 'head' ).appendChild( script )
+
+      script.onload = function() {
+        //msg( `${lib} has been loaded.`, 'new module loaded' )
+        res()
+      }
     }
   })
   

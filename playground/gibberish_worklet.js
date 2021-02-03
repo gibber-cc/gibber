@@ -8706,7 +8706,6 @@ module.exports = function (Gibberish) {
     filterMode: 0, // 0 = LP, 1 = HP, 2 = BP, 3 = Notch
     saturation: .5,
     filterMult: 2,
-    isLowPass: true,
     loudness: 1,
     __triggerLoudness: 1
   };
@@ -9886,6 +9885,7 @@ module.exports = function (Gibberish) {
         type: 'bus',
         inputs: [1, .5],
         isStereo: true,
+        output,
         __properties__: props
       }, Bus2.defaults, props);
 
