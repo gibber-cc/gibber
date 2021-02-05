@@ -2,7 +2,7 @@
 
 sound design: filters
    
-There are currently four different filter types (models) available in Gibber. 
+There are currently four different filter models available in Gibber. 
 While the first two are only lowpass, the SVF and biquad come with multiple
 modes.
 
@@ -12,26 +12,28 @@ modes.
 4. Filter12Biquad - 12dB per octave biquad. lp, hp, bp.
 
 These filters can all be used as a built-in parts of the Synth, FM,
-and Monosynth instruments. You can use a value of 0 for .filterType to
+and Monosynth instruments. You can use a value of 0 for .filterModel to
 remove filtering from the signal chain of instruments.
+
+IMPORTANT: .filterMode is very different from .filterModel!!!
     
 ** __--__--__--__--__--__--__--__*/
 
 s = Synth()
 
 // default:  
-// moog filter (filterType:1)
+// moog filter (filterModel:1)
 // lowpass (filterMode:0)
 s.note(0)
 
-// 303-style (filterType:2)
+// 303-style (filterModel:2)
 // lowpass (filterMode:0)
-s.filterType = 2
+s.filterModel = 2
 s.note(0)
 
 // state variable (filter)
 // lowpass
-s.filterType = 3
+s.filterModel = 3
 s.note(0)
 
 // highpass
@@ -48,7 +50,7 @@ s.note(0)
 
 // biquad (filter)
 // lowpass
-s.filterType = 4
+s.filterModel = 4
 s.note(0)
 
 // highpass
@@ -60,7 +62,7 @@ s.filterMode = 2
 s.note(0)
 
 // There are a number of properties that affect the filter
-// besides .filterType and .filterMode. The first is .cutoff,
+// besides .filterModel and .filterMode. The first is .cutoff,
 // which is measured from 0-1. 
 
 Gibber.clear()
@@ -100,7 +102,7 @@ s.Q = .925
 // the resulting signal as it goes through the filter.
 
 s = Synth({
-  filterType:2, attack:1/512, decay:1/4, octave:-2, glide:500, Q:.75
+  filterModel:2, attack:1/512, decay:1/4, octave:-2, glide:500, Q:.75
 }).note.seq( [-7,0,7,0,14],[ 1/4,1/8 ] )
  
 s.saturation = 150

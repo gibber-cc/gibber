@@ -6,7 +6,9 @@ Most synths in Gibber can only play
 one note at a time; they are 
 monophonic. This tutorial describes
 special features / considerations
-for Gibber's polyphonic synths.
+for Gibber's polyphonic synths,
+currently PolySynth, PolyFM, PolyComplex,
+PolyConga, PolyMono, and the Multisampler.
 
 ** __--__--__--__--__--__--__--__*/
 
@@ -45,7 +47,7 @@ perc.pan = 0 // pan to left
 perc.pan = 1 // pan to right
 perc.pan = .5 // pan to center
 
-// ...but you can also pan (and more generally) modify
+// ...but you can also pan (and more generally modify)
 // the individual voices of the polysynth. In this
 // case we'll pan each of the four voices of our poly
 // synth across the stereo spectrum.
@@ -112,3 +114,27 @@ perc.QV.seq( gen( .5 + cycle(6) * .485 )  )
 // note that, by not passing a timings pattern to our .seq call,
 // these sequences are triggered / sampled every time a note is
 // played by default.
+
+// the number of voices a synth has is controlled by the
+// .maxVoices property, which can *only be set in the
+// constructor*. So, for a four-voice synth, you could
+// use:
+
+s = PolySynth({ maxVoices:4 })
+s.chord([0,2,3,5])
+
+// as seen above, polysynths have an additional chord()
+// method you can use to play multiple notes at once. This
+// method accepts an array, which means when you sequence
+// it, you need to pass an array of arrays, otherwisee you
+// will get an error.
+
+s.chord.seq( [[0,2,3,4], [3,4,7,8]], 1 )
+
+// even if you're seqeuencing a repeated single chord, you
+// still need an array of arrays. Last but not least, there's
+// a shortcut for defining the number of voices, as shown
+// below and in most of the gibber demos:
+
+s = Synth[4]()
+// same as s = PolySynth({ maxVoices:4 })

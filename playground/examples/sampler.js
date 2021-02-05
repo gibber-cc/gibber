@@ -114,3 +114,13 @@ s.pick.seq( gen( beats(16) * s.length ) )
 // to run your own local webserver, so that
 // large directories of files can be loaded 
 // quickly.
+
+// as a shorthand, you can create a multisampler
+// with multiple voices (it can play different samples
+// at the same time) using the same shorthand 
+// as defining polyphony on synths. For example,
+// the following creates a five voice multisampler:
+
+s = Sampler[5]( 'kicks' )
+s.trigger.seq( 1, 1/16 )
+s.pick.seq( gen( beats(16) * s.length ) )

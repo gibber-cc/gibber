@@ -8,7 +8,7 @@
 // select all and hit control+enter to run, or hit
 // alt (option on mac) + enter
  
-verb = Bus2('spaceverb')
+verb = Reverb( 'space' ).bus() 
  
 bass = Monosynth('bass.stab')
   .connect( verb, .075 )
@@ -27,7 +27,7 @@ clave.gain.fade( 0, null, 8 )
 kick = Kick('tight')
   .trigger.seq( 1,1/4,0,4 )
  
-drums = Multisampler('cr7030')
+drums = Sampler[4]('cr7030')
 	.trigger.seq( 1, h = Hex(0x3695), 0, 4 )
  
 drums.pick.seq( 
@@ -37,7 +37,7 @@ drums.pick.seq(
  
 h.rotate.seq( -1,1,0,8 )
  
-bleeps = Multisampler('bleeps', { loudness:.25 }).connect( verb, .05 )
+bleeps = Sampler[4]('bleeps', { loudness:.25 }).connect( verb, .05 )
   .trigger.seq( 
     1, 
     h1 = Hex(0x8a7a),

@@ -6248,7 +6248,7 @@ module.exports = function (Gibberish) {
 
       let props = Object.assign({}, filters.defaults, _props);
 
-      switch (props.filterType) {
+      switch (props.filterModel) {
         case 1:
           filteredOsc = g.zd24(input, g.min(g.in('Q'), .9999), cutoff, 0); // g.max(.005, g.min( cutoff, 1 ) ) )
           break;
@@ -6274,7 +6274,7 @@ module.exports = function (Gibberish) {
       return filteredOsc;
     },
 
-    defaults: { filterMode: 0, filterType: 0 }
+    defaults: { filterMode: 0, filterModel: 0 }
   };
 
   filters.export = target => {
@@ -8061,7 +8061,7 @@ module.exports = function (Gibberish) {
 
         let complexWithGain = genish.mul(filteredOsc, g.in('gain'));
         // XXX ugly, ugly hack
-        if (props.filterType !== 2) complexWithGain = genish.mul(complexWithGain, saturation);
+        if (props.filterModel !== 2) complexWithGain = genish.mul(complexWithGain, saturation);
 
         if (syn.panVoices === true) {
           panner = g.pan(complexWithGain, complexWithGain, g.in('pan'));
@@ -8076,7 +8076,7 @@ module.exports = function (Gibberish) {
       }
     };
 
-    syn.__requiresRecompilation = ['waveform', 'antialias', 'filterType', 'filterMode', 'useADSR', 'shape'];
+    syn.__requiresRecompilation = ['waveform', 'antialias', 'filterModel', 'filterMode', 'useADSR', 'shape'];
     syn.__createGraph();
 
     const out = Gibberish.factory(syn, syn.graph, ['instruments', 'complex'], props);
@@ -8107,7 +8107,8 @@ module.exports = function (Gibberish) {
     filterMult: 2,
     Q: .25,
     cutoff: .5,
-    filterType: 1,
+    //filterType:1,
+    filterModel: 1,
     filterMode: 0,
     isStereo: false,
     pregain: 4,
@@ -8115,7 +8116,7 @@ module.exports = function (Gibberish) {
     bias: 0
 
     // do not include velocity, which shoudl always be per voice
-  };let PolyComplex = Gibberish.PolyTemplate(Complex, ['frequency', 'attack', 'decay', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'Q', 'cutoff', 'resonance', 'antialias', 'filterType', 'waveform', 'filterMode', '__triggerLoudness', 'loudness', 'pregain', 'postgain', 'bias']);
+  };let PolyComplex = Gibberish.PolyTemplate(Complex, ['frequency', 'attack', 'decay', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'Q', 'cutoff', 'resonance', 'antialias', 'filterModel', 'waveform', 'filterMode', '__triggerLoudness', 'loudness', 'pregain', 'postgain', 'bias']);
   PolyComplex.defaults = Complex.defaults;
 
   return [Complex, PolyComplex];
@@ -8259,7 +8260,7 @@ module.exports = function (Gibberish) {
         const carrierOsc = Gibberish.oscillators.factory(syn.carrierWaveform, g.add(slidingFreq, modOscWithEnvAvg), syn.antialias);
 
         // XXX horrible hack below to "use" saturation even when not using a diode filter 
-        const carrierOscWithEnv = props.filterType === 2 ? genish.mul(carrierOsc, env) : g.mul(carrierOsc, g.mul(env, saturation));
+        const carrierOscWithEnv = props.filterModel === 2 ? genish.mul(carrierOsc, env) : g.mul(carrierOsc, g.mul(env, saturation));
 
         const baseCutoffFreq = genish.mul(g.in('cutoff'), genish.div(frequency, genish.div(g.gen.samplerate, 16)));
         const cutoff = g.min(genish.mul(genish.mul(baseCutoffFreq, g.pow(2, genish.mul(g.in('filterMult'), Loudness))), env), .995);
@@ -8282,7 +8283,7 @@ module.exports = function (Gibberish) {
       return env;
     };
 
-    syn.__requiresRecompilation = ['carrierWaveform', 'modulatorWaveform', 'antialias', 'filterType', 'filterMode'];
+    syn.__requiresRecompilation = ['carrierWaveform', 'modulatorWaveform', 'antialias', 'filterModel', 'filterMode'];
     const env = syn.__createGraph();
 
     const out = Gibberish.factory(syn, syn.graph, ['instruments', 'FM'], props);
@@ -8316,14 +8317,14 @@ module.exports = function (Gibberish) {
     filterMult: 1.5,
     Q: .25,
     cutoff: .35,
-    filterType: 0,
+    filterModel: 0,
     filterMode: 0,
     loudness: 1,
     __triggerLoudness: 1
 
   };
 
-  const PolyFM = Gibberish.PolyTemplate(FM, ['glide', 'frequency', 'attack', 'decay', 'pulsewidth', 'pan', 'gain', 'cmRatio', 'index', 'saturation', 'filterMult', 'Q', 'cutoff', 'antialias', 'filterType', 'carrierWaveform', 'modulatorWaveform', 'filterMode', 'feedback', 'useADSR', 'sustain', 'release', 'sustainLevel', '__triggerLoudness', 'loudness']);
+  const PolyFM = Gibberish.PolyTemplate(FM, ['glide', 'frequency', 'attack', 'decay', 'pulsewidth', 'pan', 'gain', 'cmRatio', 'index', 'saturation', 'filterMult', 'Q', 'cutoff', 'antialias', 'filterModel', 'carrierWaveform', 'modulatorWaveform', 'filterMode', 'feedback', 'useADSR', 'sustain', 'release', 'sustainLevel', '__triggerLoudness', 'loudness']);
   PolyFM.defaults = FM.defaults;
 
   return [FM, PolyFM];
@@ -8656,7 +8657,7 @@ module.exports = function (Gibberish) {
       const oscSum = g.add(...oscs),
 
       // XXX horrible hack below to "use" saturation even when not using a diode filter 
-      oscWithEnv = props.filterType === 2 ? g.mul(oscSum, env) : g.sub(g.add(g.mul(oscSum, env), saturation), saturation),
+      oscWithEnv = props.filterModel === 2 ? g.mul(oscSum, env) : g.sub(g.add(g.mul(oscSum, env), saturation), saturation),
             baseCutoffFreq = g.mul(g.in('cutoff'), g.div(frequency, g.gen.samplerate / 16)),
             cutoff = g.mul(g.mul(baseCutoffFreq, g.pow(2, g.mul(g.in('filterMult'), Loudness))), env),
             filteredOsc = Gibberish.filters.factory(oscWithEnv, cutoff, g.in('saturation'), syn);
@@ -8673,7 +8674,7 @@ module.exports = function (Gibberish) {
       syn.env = env;
     };
 
-    syn.__requiresRecompilation = ['waveform', 'antialias', 'filterType', 'filterMode'];
+    syn.__requiresRecompilation = ['waveform', 'antialias', 'filterModel', 'filterMode'];
     syn.__createGraph();
 
     const out = Gibberish.factory(syn, syn.graph, ['instruments', 'Monosynth'], props);
@@ -8702,7 +8703,8 @@ module.exports = function (Gibberish) {
     panVoices: false,
     glide: 1,
     antialias: false,
-    filterType: 1,
+    //filterType: 1,
+    filterModel: 1,
     filterMode: 0, // 0 = LP, 1 = HP, 2 = BP, 3 = Notch
     saturation: .5,
     filterMult: 2,
@@ -8710,7 +8712,7 @@ module.exports = function (Gibberish) {
     __triggerLoudness: 1
   };
 
-  let PolyMono = Gibberish.PolyTemplate(Mono, ['frequency', 'attack', 'decay', 'cutoff', 'Q', 'detune2', 'detune3', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'antialias', 'filterType', 'waveform', 'filterMode', 'loudness', '__triggerLoudness']);
+  let PolyMono = Gibberish.PolyTemplate(Mono, ['frequency', 'attack', 'decay', 'cutoff', 'Q', 'detune2', 'detune3', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'antialias', 'filterModel', 'waveform', 'filterMode', 'loudness', '__triggerLoudness']);
   PolyMono.defaults = Mono.defaults;
 
   return [Mono, PolyMono];
@@ -9489,7 +9491,7 @@ module.exports = function (Gibberish) {
 
         // XXX This line has to be here for correct code generation to work when
         // saturation is not being used... obviously this should cancel out. 
-        if (syn.filterType !== 2) synthWithGain = genish.sub(genish.add(synthWithGain, saturation), saturation);
+        if (syn.filterModel !== 2) synthWithGain = genish.sub(genish.add(synthWithGain, saturation), saturation);
 
         if (syn.panVoices === true) {
           panner = g.pan(synthWithGain, synthWithGain, g.in('pan'));
@@ -9508,7 +9510,7 @@ module.exports = function (Gibberish) {
       return env;
     };
 
-    syn.__requiresRecompilation = ['waveform', 'antialias', 'filterType', 'filterMode', 'useADSR', 'shape'];
+    syn.__requiresRecompilation = ['waveform', 'antialias', 'filterModel', 'filterMode', 'useADSR', 'shape'];
     const env = syn.__createGraph();
 
     const out = Gibberish.factory(syn, syn.graph, ['instruments', 'synth'], props, null, true, ['saturation']);
@@ -9541,11 +9543,11 @@ module.exports = function (Gibberish) {
     filterMult: 2,
     Q: .25,
     cutoff: .5,
-    filterType: 1,
+    filterModel: 1,
     filterMode: 0
 
     // do not include velocity, which shoudl always be per voice
-  };let PolySynth = Gibberish.PolyTemplate(Synth, ['frequency', 'attack', 'decay', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'Q', 'cutoff', 'resonance', 'antialias', 'filterType', 'waveform', 'filterMode', '__triggerLoudness', 'loudness']);
+  };let PolySynth = Gibberish.PolyTemplate(Synth, ['frequency', 'attack', 'decay', 'pulsewidth', 'pan', 'gain', 'glide', 'saturation', 'filterMult', 'Q', 'cutoff', 'resonance', 'antialias', 'filterModel', 'waveform', 'filterMode', '__triggerLoudness', 'loudness']);
   PolySynth.defaults = Synth.defaults;
 
   return [Synth, PolySynth];
@@ -9885,7 +9887,7 @@ module.exports = function (Gibberish) {
         type: 'bus',
         inputs: [1, .5],
         isStereo: true,
-        output,
+        out: output,
         __properties__: props
       }, Bus2.defaults, props);
 
@@ -18415,6 +18417,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
       const len = outputs[0][0].length
       let phase = 0
       for (let i = 0; i < len; ++i) {
+        // run sequencers, catch errors and remove from queue
         try {
           phase = scheduler.tick()
         } catch(e) {
@@ -18424,17 +18427,21 @@ class GibberishProcessor extends AudioWorkletProcessor {
           //continue
         }
 
+        // if sequencing triggers codegen...
         if( gibberish.graphIsDirty ) {
           const oldCallback = callback
           const oldUgens = ugens.slice(0)
           const oldNames = gibberish.callbackNames.slice(0)
 
+          // generate callback and try to catch errors...
           let cb
           try{
             cb = gibberish.generateCallback()
           } catch(e) {
             console.log( 'callback error:', e )
 
+            // restore callback 
+            // XXX should some type of notification be sent to the main thread?
             cb = oldCallback
             gibberish.callbackUgens = oldUgens
             gibberish.callbackNames = oldNames
@@ -18443,9 +18450,12 @@ class GibberishProcessor extends AudioWorkletProcessor {
           } finally {
             ugens = gibberish.callbackUgens
             this.callback = callback = cb
+            // tell main thread that new callback has been created
+            // in case it wants to display it / do something else
             this.port.postMessage({ address:'callback', code:cb.toString() }) 
           } 
         }
+
         const out = callback.apply( null, ugens )
 
         output[0][ i ] = out[0]

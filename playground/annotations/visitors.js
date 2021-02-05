@@ -22,10 +22,12 @@ module.exports = function( Marker ) {
           // check to see if this is a constructor followed by a call to .seq() or .connect()
           try {
             if( expression.right.callee.object.callee === undefined ) {
-              if( expression.right.callee.object.object.type === 'CallExpression' ) {
-                Marker.globalIdentifiers[ expression.left.name ] = expression.right 
-                visitors.CallExpression( expression.right, state, cb, window[ expression.left.name ], expression.left.name )
-                return
+              if( expression.right.callee.object.object !== undefined ) {
+                if( expression.right.callee.object.object.type === 'CallExpression' ) {
+                  Marker.globalIdentifiers[ expression.left.name ] = expression.right 
+                  visitors.CallExpression( expression.right, state, cb, window[ expression.left.name ], expression.left.name )
+                  return
+                }
               }
             }else{
               name = expression.right.callee.object.callee.name
@@ -217,6 +219,7 @@ module.exports = function( Marker ) {
           // sequence from the faux-AST we created earlier. We then pass in the 
           // MemberExpression node that was used to sequence this property. 
           for( let i = tree.length - 2; i >= 1; i-=2 ) {
+            if( node === undefined ) return
             let seqNumber = node.arguments.length > 2 ? node.arguments[2].raw : 0
 
             try{

@@ -4,8 +4,8 @@ Clock.bpm = 120
 Theory.root = 'd#4'
 Theory.mode = 'dorian'
  
-verb  = Bus2( 'spaceverb' )
-delay = Bus2( 'delay.1/6' )
+verb  = Reverb( 'space' ).bus() 
+delay = Delay( '1/6' ).bus()
  
 bass = Synth('acidBass2', { saturation:20, gain:.3 })
   .connect( delay, .25 )
@@ -27,7 +27,7 @@ hat.trigger.seq( [1,.5], [1/8, 1/16] )
 hat.decay = gen( .02 + cycle( beats(16) * 4 ) * .0125 )
 hat.fx.add( Distortion({ pregain:100, postgain:.1 }) )
  
-pad = PolySynth('rhodes', { decay:8, gain:.15 })
+pad = Synth[4]('rhodes', { decay:8, gain:.15 })
 pad.fx[0].connect( Out, .125)
 pad.fx[0].connect( verb, 1 )
 pad.chord.seq([[0,2,4,6], [1,2,4,7]], 4 )
