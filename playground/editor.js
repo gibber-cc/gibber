@@ -250,7 +250,7 @@ CodeMirror.keyMap.playground =  {
   'Ctrl-Enter'( cm )  { environment.runCode( cm, false, true  ) },
   'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
-  'Alt-Shift-Enter'( cm ) { environment.runCode( cm, true, true, true ) },
+  'Shift-Alt-Enter'( cm ) { environment.runCode( cm, true, false, true ) },
 
   'Ctrl-.'( cm ) {
     Gibber.clear()

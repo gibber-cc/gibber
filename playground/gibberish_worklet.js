@@ -18396,6 +18396,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
       const scheduler = gibberish.scheduler
       let   callback  = this.callback
       let   ugens     = gibberish.callbackUgens 
+      Gibberish.outputs = outputs
 
       this.messages.length = 0
       // XXX is there some way to optimize this out?

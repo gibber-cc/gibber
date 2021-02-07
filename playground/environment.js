@@ -8,6 +8,7 @@ const Gibber        = require( 'gibber.core.lib' ),
       Editor        = require( './editor.js' ),
       Share         = require( './share.js' ),
       setupExamples = require( './examples.js' )
+      //Gibberwocky   = require( 'gibberwocky' )
 
 let cm, environment, cmconsole, exampleCode, 
     isStereo = false,
@@ -39,7 +40,7 @@ window.onload = function() {
       {
         name:    'Audio',
         plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath, latencyHint:.05 }
+        options: { workletPath, latencyHint:.001 }
       },
       {
         name:    'Graphics',
@@ -513,4 +514,44 @@ window.wait = function() {
   fnc.seqs = []
 
   return fnc
+}
+
+window.__Gibberwocky = function() {
+
+Gibber.Audio.Gibberish.worklet.port.postMessage({
+  address:'eval',
+  code:`Gibberish.scheduler.shouldSync = true; Gibberish.isPlaying = false`
+})
+
+Gibber.shouldDelay = Gibber.Audio.shouldDelay = false
+
+Gibber.ws = new WebSocket('ws://localhost:8082')
+ 
+setTimeout( function() {
+  Gibber.ws.onmessage = function( data ) {
+    //console.log( data.data )
+    if( data.data.indexOf( 'bit 1' ) > -1 ) {
+      Gibber.Audio.Gibberish.worklet.port.postMessage({
+        address:'eval',
+        code:'if( Gibberish.isPlaying === true ) Gibberish.scheduler.shouldSync = false'
+      })
+    }else if( data.data.indexOf( 'ply 1' ) > -1 ) {
+      console.log( 'play' )
+      //Environment.metronome.clear()
+      //Environment.metronome.beat = 0
+      Gibber.Audio.Gibberish.worklet.port.postMessage({
+        address:'eval',
+        code:'Gibberish.isPlaying = true;'
+      })
+    }else if( data.data.indexOf( 'ply 0' ) > -1 ) {
+      console.log( 'stop' )
+      Environment.metronome.clear()
+      Gibber.Audio.Gibberish.worklet.port.postMessage({
+        address:'eval',
+        code:'Gibberish.isPlaying = false; Gibberish.scheduler.shouldSync = true;' //Gibberish.Clock.beatCount = 0;'
+      })
+    }else if( data.data.indexOf( 'bpm' ) > -1 ) {
+      Clock.bpm = data.data.split(' ')[2]
+    }
+  }}, 250 )
 }
