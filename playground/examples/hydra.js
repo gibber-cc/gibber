@@ -1,3 +1,4 @@
+
 /* __--__--__--__--__--__--__--____
 
 using hydra in gibber
@@ -55,7 +56,7 @@ osc( ()=> Math.random() * 50 ).out()
 
 // clearing gibber (with ctrl+period) will
 // stop hydra. You can also call hush() to
-// do this
+// do this without clearing audio/music.
 
 hush()
 
@@ -86,5 +87,79 @@ osc(100,.1,1)
   .kaleid( k.out(25,2) )
   .out()
 
+// you might notice that the rise / fall
+// in size of the square is a little hectic.
+// by default, gibber tracks each sound over
+// a window of 1024 samples. if we increase
+// that number, we'll get smoother animations.
+// if we decrease it, we'll get a sharper response
+// to transients. Try changing the smooth variable
+// below to values between 64 and 8192 to see the
+// difference it makes:
+
+
+smooth = 64
+osc(100,.1,1)
+  .kaleid( k.out(25,2,smooth) )
+  .out()
+
 // try it out using multiple instruments
 // mapped to different hydra functions!
+
+// gibber also has its own FFT functionality
+// that you can use if you want to map with
+// the overall spectrum of music instead of
+// using individual components; the standard
+// hydra FFT functions are not available. To
+// start gibber's FFT running:
+
+FFT.start()
+
+// At this point you have acccess to FFT.low,
+// FFT.mid, and FFT.high. Start with the kick
+// below + hydra, and then add in the clave to
+// see the efffect.
+
+kik = Kick('deep').trigger.seq( 1, 1/2 )
+
+osc( 10,0,()=> FFT.low * 15 )
+  .modulate( noise( ()=> FFT.high * 500 ) )
+  .out()
+
+clave = Clave().trigger.seq( 1, 1/2, 0, 1/4 )
+
+
+/* increasing the window size (how many samples 
+of audio the FFT looks at) will result in
+smoother animations, while decreasing it will
+results in quicker response to transients. 
+The window size must be a power of 2 and 
+defaults to 512; doubling and halving it is
+an easy way to experiment with different sizes.
+*/
+
+// run multiple times for greater effect
+FFT.windowSize *= 2
+
+/* 
+By default, the FFT assigns frequences 
+<150 Hz to FFT.low, 150-1400Hz to
+FFT.mid, and all remaining frequencies
+to FFT.high. However, you can also
+define your own boundaries by passing
+an array to FFT.start(); if you do this
+the averages will then be in FFT[0], 
+FFT[1], FFT[2] etc. 
+*/
+
+use( 'hydra' ).then( init => init() )
+
+// 0: 0-100Hz
+// 1: 100-500Hz
+// 2: 500-2000Hz
+// 3: 2000-22050Hz
+FFT.start([100,500,2000,22050])
+
+osc( 10,0,()=> FFT[0] * 15 )
+  .modulate( noise( ()=> FFT[2] + FFT[3] * 5 ) )
+  .out()

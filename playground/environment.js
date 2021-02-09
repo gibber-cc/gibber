@@ -85,7 +85,8 @@ window.onload = function() {
       fft.__hasInput = true
       fft.ctx = Gibber.Audio.Gibberish.ctx
 
-      fft.start = function() {  
+      fft.start = function( bins=null ) { 
+        fft.bins = bins 
         fft.createFFT()
         fft.input.connect( fft.FFT )
         fft.interval = setInterval( fft.fftCallback, 1000/60 )

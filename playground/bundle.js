@@ -5423,6 +5423,7 @@ const Clock = {
   id:null,
   nogibberish:true,
   bpm:140,
+  __lastBPM:140,
   seq:null,
 
   store:function() { 
@@ -5475,12 +5476,13 @@ const Clock = {
         post: 'store'    
       })
       
-      let bpm = 140
+      let bpm = this.__lastBPM
       Object.defineProperty( this, 'bpm', {
         get() { return bpm },
         set(v){ 
           bpm = v
           if( Gibberish.mode === 'worklet' ) {
+            this.__lastBPM = v
             if( Audio.Gibber.Tidal !== undefined ) Audio.Gibber.Tidal.cps = bpm/120/2
             Gibberish.worklet.port.postMessage({
               address:'set',
@@ -5510,7 +5512,7 @@ const Clock = {
       //  name:'audioClock'
       //})
 
-      this.bpm = 140
+      this.bpm = this.__lastBPM
     }
 
     if( Gibberish.mode === 'processor' )
@@ -62472,7 +62474,8 @@ window.onload = function() {
       fft.__hasInput = true
       fft.ctx = Gibber.Audio.Gibberish.ctx
 
-      fft.start = function() {  
+      fft.start = function( bins=null ) { 
+        fft.bins = bins 
         fft.createFFT()
         fft.input.connect( fft.FFT )
         fft.interval = setInterval( fft.fftCallback, 1000/60 )
@@ -75997,6 +76000,7 @@ const Audio = {
 
     let __windowSize = 512
     Object.defineProperty( Audio, 'windowSize', {
+      configurable:true,
       get() { return __windowSize },
       set(v){
         __windowSize = v
