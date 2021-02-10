@@ -18,7 +18,7 @@ const share = {
           binding = new CodemirrorBinding( yText, editor, provider.awareness ),
           socket = provider.ws
 
-    binding.awareness.setLocalStateField('user', { color: '#008833', name:username  })
+    binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
 
     // Listen for messages
     socket.addEventListener('message', function (event) {
@@ -47,6 +47,7 @@ const share = {
   setupShareHandler( cm, environment, networkConfig ) {
     document.querySelector('#connect').onclick = function() {
       const closeconnect = function() {
+        const shouldShowChat = document.querySelector('#showChat').checked 
         const username = document.querySelector( '#connectname' ).value  
         const { socket, provider, binding, chatData, commands } = share.initShare( 
           cm, 
@@ -74,7 +75,6 @@ const share = {
             const inserts = e.changes.delta[0].insert
             for( let i = inserts.length - 1; i > 0; i -= 5 ) {
               const arr = e.changes.delta[0].insert.slice( i-4, i+1 )
-              console.log( arr )
               const code = {
                 selection:{
                   start: { line:arr[0], ch:arr[1] },
@@ -83,7 +83,6 @@ const share = {
                 code: arr[4]
               }
 
-              
               environment.runCode( cm, false, true, false, code )
             }
           }
@@ -103,11 +102,20 @@ const share = {
         
         menu.remove()
 
-        document.querySelector('#connect').innerText = 'disconnect'
-        document.querySelector('#connect').onclick = null
+        const btn = document.querySelector('#connect')
+        btn.innerText = 'disconnect'
+        btn.onclick = ()=> {
+          provider.destroy()
+        } 
         document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
 
-        share.createChatWindow()
+        if( shouldShowChat ) {
+          share.createChatWindow()
+          share.chatDisplayed = true
+        }else{
+          Environment.CodeMirror.keyMap.playground['Ctrl-M'] = cm => share.quickmsg( Environment.editor, false, true  )
+          share.chatDisplayed = false
+        }
 
         __connected = true
         return true
@@ -117,7 +125,7 @@ const share = {
       menu.setAttribute('id', 'connectmenu')
       menu.setAttribute('class', 'menu' )
       menu.style.width = '12.5em'
-      menu.style.height = '11.5em'
+      menu.style.height = '12.5em'
       menu.style.position = 'absolute'
       menu.style.display = 'block'
       menu.style.border = '1px #666 solid'
@@ -126,7 +134,7 @@ const share = {
       menu.style.right = 0 
       menu.style.zIndex = 1000
 
-      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
+      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><input type='checkbox' checked style='width:1em' id='showChat'><label for='showChat'>display chat?</label><br><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
 
       document.body.appendChild( menu )
       document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'
@@ -143,6 +151,8 @@ const share = {
     }
 
   },
+
+  quickmsg() { console.log( 'msg' ) },
 
   createChatWindow() {
     const headerHeight = document.querySelector('header').offsetHeight
@@ -192,19 +202,20 @@ const share = {
     document.body.appendChild( container )
   },
   makeMsg( user, msg ) {
-    const chatDiv = document.querySelector('#chatmsgs')
-    const div = document.createElement('div')
+    if( share.chatDisplayed ) {
+      const chatDiv = document.querySelector('#chatmsgs')
+      const div = document.createElement('div')
 
-    Object.assign( div.style, {
-      width:'100%',
-      position:'relative',
-      display:'block',
-      marginBottom:'.25em'
-    })
-    div.innerHTML = `<span style="background:black; color:white; padding:0 .5em">${user}:</span> ${msg}`
-    chatDiv.appendChild( div )
-    chatDiv.scrollTop = chatDiv.scrollHeight
-
+      Object.assign( div.style, {
+        width:'100%',
+        position:'relative',
+        display:'block',
+        marginBottom:'.25em'
+      })
+      div.innerHTML = `<span style="background:black; color:white; padding:0 .5em">${user}:</span> ${msg}`
+      chatDiv.appendChild( div )
+      chatDiv.scrollTop = chatDiv.scrollHeight
+    }
   }
 }
 

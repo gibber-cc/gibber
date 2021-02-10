@@ -40,7 +40,7 @@ window.onload = function() {
       {
         name:    'Audio',
         plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath, latencyHint:.001 }
+        options: { workletPath, latencyHint:.05 }
       },
       {
         name:    'Graphics',

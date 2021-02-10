@@ -152,8 +152,6 @@ the averages will then be in FFT[0],
 FFT[1], FFT[2] etc. 
 */
 
-use( 'hydra' ).then( init => init() )
-
 // 0: 0-100Hz
 // 1: 100-500Hz
 // 2: 500-2000Hz

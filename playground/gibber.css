@@ -89,8 +89,12 @@ input { width:6em }
 
 label { 
   font-size:.8em; 
-  margin-left:2em;
+  color:var(--f_inv);
+  top:-.15em;
+  position:relative;
 }
+
+#showChat { width:1em; margin-left:.5em; display:inline }
 
 #graphics, main {
   width:100%;
