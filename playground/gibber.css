@@ -72,7 +72,7 @@ button, input {
   border-style:none !important;
   position:absolute;
   right:.5em;
-  top:.5em;
+  top:1em;
   color:var(--f_med);
   z-index:1;
 }
@@ -136,6 +136,7 @@ h1 {
 }
 
 #metronome {
+  z-index:1;
   position:absolute;
 }
 
@@ -159,12 +160,18 @@ header span { font-size: .8em; }
 #reference {
   position:absolute;
   right:3em;
-  top:-.5em;
+  top:.15em;
 }
 #reference a { 
   color: var(--f_med) !important; 
-  margin-left: 2em 
+  margin-left: 1em 
 }
+
+#reference ul {
+  list-style:none
+}
+
+#reference li { display:inline }
 
 #reference a img { position:relative; top:.75em }
 

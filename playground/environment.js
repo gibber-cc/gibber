@@ -383,9 +383,11 @@ window.__use = function( lib ) {
         const Hydrasynth = Hydra
         let __hydra = null
 
-        window.Hydra = function( w=null,h=null ) {
+        window.Hydra = function( cnvs=null ) {
+          const w = null
+          const h = null
           environment.useProxies = false
-          const canvas = document.createElement('canvas')
+          const canvas = cnvs !== null ? cnvs :  document.createElement('canvas')
           canvas.width = w === null ? window.innerWidth : w
           canvas.height = h === null ? window.innerHeight : h
           canvas.style.width = `${canvas.width}px`
