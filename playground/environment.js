@@ -96,6 +96,8 @@ window.onload = function() {
 
       Metronome.init( Gibber )
       environment.metronome = Metronome
+
+      cm.__setup()
     }) 
 
     environment.editor = cm
@@ -281,7 +283,7 @@ const setupCollapseBtn = function() {
   const hidebtn = document.querySelector( '#hidebtn' )
   const met = document.querySelector('#metronome')
 
-  hidebtn.addEventListener( 'click', function(e) {
+  environment.togglemenu = function(e) {
     if( isHeaderHidden === false ) {
       document.querySelector('header').style.display = 'none'
       hidebtn.innerHTML= '&#9660;'
@@ -303,7 +305,8 @@ const setupCollapseBtn = function() {
       met.width *= 2
     }
     isHeaderHidden = !isHeaderHidden
-  })
+  }
+  hidebtn.addEventListener( 'click', environment.togglemenu ) 
 }
 
 const setupRestartBtn = function() {

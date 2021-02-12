@@ -190,7 +190,9 @@ module.exports = function( Gibber ) {
   // setup autocomplete etc.
   require( './tern.js' )( Gibber, cm, environment )
 
-  const defaultCode = `// hit alt+enter to run all code
+  cm.__setup = function() {
+
+    const defaultCode = `// hit alt+enter to run all code
 // or run line/selection with ctrl+enter.
 // ctrl+period to stop all sounds.
  
@@ -232,14 +234,27 @@ fm = FM({ feedback:.0015, decay:1/2 })
     8
   )`
 
-  if( window.location.search !== '' ) {
-    // use slice to get rid of ?
-    const val = atob( window.location.search.slice(1) )
-    cm.setValue(val)
-  }else{
-    cm.setValue( defaultCode )
+    if( window.location.search !== '' ) {
+      // use slice to get rid of ?
+      const query = window.location.search.slice(1)
+      const params = query.split('&')
+      const code = params[0]
+      const auto = params[1] !== undefined && params[1].split('=')[1] === 'true' ? true : false    
+      const val = atob( code )
+      cm.setValue(val)
+      
+      if( auto ) {
+        cm.execCommand('selectAll')
+        environment.runCode( cm, false, true )
+        //cm.execCommand('undoSelection')
+        cm.setSelection({ line:0, ch:0 })
+        environment.togglemenu()
+      }
+    }else{
+      cm.setValue( defaultCode )
+    }
   }
-
+    
   return [cm,environment] 
 }
 
