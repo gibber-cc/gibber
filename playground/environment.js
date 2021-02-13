@@ -487,7 +487,8 @@ window.__use = function( lib ) {
         // .out() from ugens returns scalar, not function
         Gibber.Audio.Ugen.OUTPUT = 1
         libs.P5 = window.P5
-
+        
+        window.p5 = window.p5.instance
         res( window.P5 )
         console.log = console.__log
       } 
