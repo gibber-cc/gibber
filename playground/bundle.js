@@ -7442,7 +7442,8 @@ module.exports = {
     bias:.35,
     gain:1,
     decay:1/5,
-    pregain:4
+    pregain:4,
+    description:'a short, clean sounding preset with a minimum of distortion/wavefolding.'
   },
   
   'perc': {
@@ -7450,6 +7451,7 @@ module.exports = {
     gain:1,
     decay:1/5,
     pregain:5,
+    description:'a short, clean sounding preset with a minimum of distortion/wavefolding.'
   },
 
   stab: {
@@ -7465,7 +7467,8 @@ module.exports = {
     saturation:50,
     presetInit( audio ) {
       this.fx.push( audio.effects.Distortion('earshred') )
-    }
+    },
+    description:'a short, heavily distorted and filtered sound. in addition to the standard Complex wavefolding, this preset also adds an additional Distortion effect (preset earsred).'
   }
 
 }
@@ -63697,6 +63700,7 @@ require( '../node_modules/tern/lib/def.js' )
 require( '../node_modules/tern/lib/comment.js' )
 require( '../node_modules/tern/lib/infer.js' )
 require( '../node_modules/tern/plugin/doc_comment.js' )
+require( '../node_modules/codemirror/addon/hint/show-hint.js' )
 require( '../node_modules/codemirror/addon/tern/tern.js' )
 
 module.exports = function( Gibber, cm, environment ) {
@@ -63704,6 +63708,47 @@ module.exports = function( Gibber, cm, environment ) {
   const filter = function( doc, query, request,error,data ) {
     debugger
   } 
+
+  const showPresetNames = function( cm, change ) {
+    Environment.editor.showHint({
+      hint: function() {
+        const line = cm.getLine( change.from.line )
+        const start = line.slice(0, change.from.ch )
+        let name = ''
+        for( let i = start.length - 1; i >= 0; i-- ) {
+          const char = start[i]
+          if( char !== '(' && char !== ' ' && char !== '=' ) {
+            name = char + name
+          }else if( char === '=' ) {
+            break
+          }
+        }
+        
+        if( name === 'Reverb' ) { name = 'Freeverb' }
+
+        const Presets = Gibber.Audio.Presets
+        let presetCategory = null
+        if( Presets.instruments[ name ] !== undefined ) presetCategory = Presets.instruments[ name ]
+        if( Presets.effects[ name ] !== undefined ) presetCategory = Presets.effects[ name ]
+
+        if( presetCategory !== null ) {
+          const obj = {
+            list: Object.keys( presetCategory ).map( key => {
+              const completion = {
+                text: key,
+                shown() { console.log( 'showing ', key ) }
+              }
+              return completion
+            }),
+            from:{ line:change.from.line, ch:change.from.ch+1 }, 
+            to: { line:change.to.line, ch:change.to.ch+1 },
+            shown() { console.log( 'called' ) }
+          }
+          return obj
+        }
+      }
+    })
+  }
 
   let server
   fetch('./gibber.def.json')
@@ -63719,15 +63764,18 @@ module.exports = function( Gibber, cm, environment ) {
 
     cm.on( 'cursorActivity', function( cm ) { 
       if( environment.showArgHints === true ) {
-        server.updateArgHints( cm ) 
+        //server.updateArgHints( cm ) 
       }
     })
 
     cm.on( 'change', function( cm, change ) {
       if( environment.showCompletions === true ) {
-        if( change.text[ change.text.length - 1 ] === '.' ) {
-          //console.log( 'complete' )
+        
+        const lastChar = change.text[ change.text.length - 1 ]
+        if( lastChar === '.' ) {
           server.complete( cm )
+        }else if( lastChar === "'" || lastChar === '"' || lastChar==="''") {
+          showPresetNames( cm, change )
         }
       }
     })
@@ -63842,7 +63890,7 @@ module.exports = function( Gibber, cm, environment ) {
 
 }
 
-},{"../node_modules/codemirror/addon/tern/tern.js":147,"../node_modules/tern/doc/demo/polyfill.js":224,"../node_modules/tern/lib/comment.js":225,"../node_modules/tern/lib/def.js":226,"../node_modules/tern/lib/infer.js":227,"../node_modules/tern/lib/signal.js":228,"../node_modules/tern/lib/tern.js":229,"../node_modules/tern/plugin/doc_comment.js":230}],268:[function(require,module,exports){
+},{"../node_modules/codemirror/addon/hint/show-hint.js":146,"../node_modules/codemirror/addon/tern/tern.js":147,"../node_modules/tern/doc/demo/polyfill.js":224,"../node_modules/tern/lib/comment.js":225,"../node_modules/tern/lib/def.js":226,"../node_modules/tern/lib/infer.js":227,"../node_modules/tern/lib/signal.js":228,"../node_modules/tern/lib/tern.js":229,"../node_modules/tern/plugin/doc_comment.js":230}],268:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
