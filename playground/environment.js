@@ -23,6 +23,8 @@ window.onload = function() {
   theme.install( document.body )
   theme.start()
   environment.theme = theme
+  environment.useComments = true
+
 
   const themename = localStorage.getItem('themename')
 
@@ -97,6 +99,12 @@ window.onload = function() {
       Metronome.init( Gibber )
       environment.metronome = Metronome
 
+      Gibber.subscribe( 'clear', ()=> {
+        for( let key in Environment.sounds ) {
+          delete Environment.sounds[ key ]
+        }
+      })
+
       cm.__setup()
     }) 
 
@@ -114,6 +122,41 @@ window.onload = function() {
       Gibberish.oncallback = function( cb ) {
         environment.console.setValue( cb.toString() )
       }
+    }
+
+    const rpad = function( value, pad ) {
+      let out = value+''
+      const len = (value + '').length
+
+      if( len < pad ) {
+        for( let i = pad - len; i > 0; i-- ) {
+          out += '&nbsp;'
+        }
+      }else if( len > pad ) {
+        out = out.slice( 0, pad )
+      }
+
+      return out
+    }
+
+    environment.showStats = function() {
+      const display = document.createElement('div')
+      display.setAttribute( 'id', 'stats' )
+      document.body.appendChild( display )
+      
+      const statsCallback = function() {
+        window.requestAnimationFrame( statsCallback )
+        let txt = '|&nbsp;'
+        Object.entries( Environment.sounds ).forEach( arr => {
+          let value = arr[1].__out
+          if( value < .001 ) value = '0.000' 
+          value = rpad( value, 5 )
+          txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
+        })
+
+        display.innerHTML = txt 
+      }
+      window.requestAnimationFrame( statsCallback )
     }
 
     environment.Annotations = environment.codeMarkup 
@@ -562,3 +605,5 @@ setTimeout( function() {
     }
   }}, 250 )
 }
+
+

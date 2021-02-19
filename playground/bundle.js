@@ -1957,7 +1957,7 @@ const gen = {
     }
 
     returnStatement += `memory[ ${this.outputIdx} ]`
-    if( numChannels > 1 ) {
+    if( numChannels > 1 || this.alwaysReturnArray === true ) {
       for( let i = 1; i < numChannels; i++ ) {
         returnStatement += `, memory[ ${this.outputIdx + i} ]`
       }
@@ -8096,10 +8096,9 @@ module.exports = {
   },
 
   noise: {
-    resonance:20,
     decay:1/2,
     cutoff:.3,
-    glide:.99995,
+    glide:10000,
     detune3:0,
     detune2:0,
     filterMult:0,
@@ -60589,292 +60588,301 @@ const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
 module.exports = ( patternObject, marker, className, cm, track, patternNode, Marker ) => {
-  let val ='/* ' + patternObject.values.join('')  + ' */',
-      pos = marker.find(),
-      end = Object.assign( {}, pos.to ),
-      annotationStartCh = pos.from.ch + 3,
-      annotationEndCh   = annotationStartCh + 1,
-      memberAnnotationStart   = Object.assign( {}, pos.from ),
-      memberAnnotationEnd     = Object.assign( {}, pos.to ),
-      initialized = false,
-      markStart = null,
-      cssName = className,
-      start = pos.from,
-      commentMarker,
-      currentMarker, chEnd
-
-  patternObject.__delayAnnotations = false
-  end.ch = pos.from.ch + val.length
-
-  pos.to.ch -= 1
-  cm.replaceRange( val, pos.from, pos.to )
   
-  patternObject.markers = []
-  patternObject.__isEditing = false
+  let out
+  if( window.Environment.useComments === true ) {
+    let val ='/* ' + patternObject.values.join('')  + ' */',
+        pos = marker.find(),
+        end = Object.assign( {}, pos.to ),
+        annotationStartCh = pos.from.ch + 3,
+        annotationEndCh   = annotationStartCh + 1,
+        memberAnnotationStart   = Object.assign( {}, pos.from ),
+        memberAnnotationEnd     = Object.assign( {}, pos.to ),
+        initialized = false,
+        markStart = null,
+        cssName = className,
+        start = pos.from,
+        commentMarker,
+        currentMarker, chEnd
 
-  patternObject.commentMarker = cm.markText( pos.from, end, { className, atomic:false })
-  //patternObject.__onclick = e => {
-  //  if( e.altKey == true ) {
-  //    console.log( 'click', e.shiftKey )
-  //    if( e.shiftKey === true ) {
-  //      patternObject.reset()
-  //    }else{
-  //      patternObject.__frozen = !patternObject.__frozen
-  //    }
-  //  }
-  //}
+    patternObject.__delayAnnotations = false
+    end.ch = pos.from.ch + val.length
 
-  let value = cm.getRange( start , end )
-  const intervalCheck = ()=> {
-    const pos = arrayMarker.find()
-    const current = cm.getRange( pos.from, pos.to )
-    if( current !== value ) {
-      value = current
-      const stripped = value.slice(3,-3) 
+    pos.to.ch -= 1
+    cm.replaceRange( val, pos.from, pos.to )
+    
+    patternObject.markers = []
+    patternObject.__isEditing = false
 
-      // create a binary number with results and see if it is valid
-      // if so we know we have all zeros and ones in the comment annotation
-      const numString = `0b${stripped}`
-      const num = eval( numString )
-      let valid = !isNaN( num )
-      //console.log( value, numString, num, valid )
+    patternObject.commentMarker = cm.markText( pos.from, end, { className, atomic:false })
+    //patternObject.__onclick = e => {
+    //  if( e.altKey == true ) {
+    //    console.log( 'click', e.shiftKey )
+    //    if( e.shiftKey === true ) {
+    //      patternObject.reset()
+    //    }else{
+    //      patternObject.__frozen = !patternObject.__frozen
+    //    }
+    //  }
+    //}
 
-      if( valid ) { 
-        let arr
-        try{
-          // remove 0b from start of number and convert characters to ints
-          arr = numString.slice(2).split('').map( v => parseInt(v) )
-        } catch( e ) {
+    let value = cm.getRange( start , end )
+    const intervalCheck = ()=> {
+      const pos = arrayMarker.find()
+      const current = cm.getRange( pos.from, pos.to )
+      if( current !== value ) {
+        value = current
+        const stripped = value.slice(3,-3) 
+
+        // create a binary number with results and see if it is valid
+        // if so we know we have all zeros and ones in the comment annotation
+        const numString = `0b${stripped}`
+        const num = eval( numString )
+        let valid = !isNaN( num )
+        //console.log( value, numString, num, valid )
+
+        if( valid ) { 
+          let arr
+          try{
+            // remove 0b from start of number and convert characters to ints
+            arr = numString.slice(2).split('').map( v => parseInt(v) )
+          } catch( e ) {
+            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+            els.forEach( (el,i) => { 
+              el.classList.remove('patternEdit')
+              el.classList.add( 'patternEditError' )
+            })   
+          }
+
+          if( Array.isArray( arr ) ) {
+            const tmp = Gibber.shouldDelay
+            Gibber.shouldDelay = Gibber.Audio.shouldDelay = false 
+            patternObject.set( arr )
+            Gibber.shouldDelay = tmp
+
+            pos.start = pos.from
+            pos.end = pos.to
+            pos.horizontalOffset = pos.from.ch
+
+            // XXX using markText would be better clearly, but
+            // for some reason I can't get it to work? marking
+            // the individual spans does work though
+
+            //patternObject.__editMark = cm.markText( 
+            //  pos.from, pos.to, 
+            //  { 
+            //    className:'patternEdit'
+            //  }
+            //)
+
+            const els = Array.from( document.querySelectorAll( '.' + cssName ) )
+            els.forEach( (el,i) => { 
+              el.classList.add( 'patternEdit' )
+              el.classList.remove( 'patternEditError' )
+            }) 
+          }
+        }else{
           const els = Array.from( document.querySelectorAll( '.' + cssName ) )
           els.forEach( (el,i) => { 
-            el.classList.remove('patternEdit')
+            el.classList.remove( 'patternEdit' )
             el.classList.add( 'patternEditError' )
-          })   
+          })  
         }
-
-        if( Array.isArray( arr ) ) {
-          const tmp = Gibber.shouldDelay
-          Gibber.shouldDelay = Gibber.Audio.shouldDelay = false 
-          patternObject.set( arr )
-          Gibber.shouldDelay = tmp
-
-          pos.start = pos.from
-          pos.end = pos.to
-          pos.horizontalOffset = pos.from.ch
-
-          // XXX using markText would be better clearly, but
-          // for some reason I can't get it to work? marking
-          // the individual spans does work though
-
-          //patternObject.__editMark = cm.markText( 
-          //  pos.from, pos.to, 
-          //  { 
-          //    className:'patternEdit'
-          //  }
-          //)
-
-          const els = Array.from( document.querySelectorAll( '.' + cssName ) )
-          els.forEach( (el,i) => { 
-            el.classList.add( 'patternEdit' )
-            el.classList.remove( 'patternEditError' )
-          }) 
-        }
-      }else{
-        const els = Array.from( document.querySelectorAll( '.' + cssName ) )
-        els.forEach( (el,i) => { 
-          el.classList.remove( 'patternEdit' )
-          el.classList.add( 'patternEditError' )
-        })  
       }
     }
-  }
 
-  patternObject.__onclick = e => {
-    if( e.altKey == true ) {
-    //  if( e.shiftKey === true ) {
-    //    patternObject.reset()
-    //  }else{
-    //    patternObject.__frozen = !patternObject.__frozen
-    //  }
-    //}else{
+    patternObject.__onclick = e => {
+      if( e.altKey == true ) {
+      //  if( e.shiftKey === true ) {
+      //    patternObject.reset()
+      //  }else{
+      //    patternObject.__frozen = !patternObject.__frozen
+      //  }
+      //}else{
 
-      if( !patternObject.__isEditing ) {
-        annotationsAreFrozen = true
-        const pos = arrayMarker.find()
-        patternObject.__editMark = cm.markText( 
-          pos.from, pos.to, 
+        if( !patternObject.__isEditing ) {
+          annotationsAreFrozen = true
+          const pos = arrayMarker.find()
+          patternObject.__editMark = cm.markText( 
+            pos.from, pos.to, 
+            { 
+              className:'patternEdit'
+            }
+          )
+          patternObject.markers.push( patternObject.__editMark )
+          patternObject.__interval = setInterval( intervalCheck, 100 )
+        }else{
+          patternObject.__editMark.clear()
+          clearInterval( patternObject.__interval )
+        }
+
+        patternObject.__isEditing = !patternObject.__isEditing
+      }else if( e.shiftKey === true ) {
+          //patternObject.reset()
+        //}else{
+          patternObject.__frozen = !patternObject.__frozen
+        //}
+      }
+    }
+    // timeout needeed because applying css is not synchronous... I think
+    //setTimeout( ()=> { 
+    //  Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = __onclick )
+    //}, 500 )
+    Marker.arrayPatterns[ cssName ] = patternObject.__onclick
+    
+    if( track.markup === undefined ) Marker.prepareObject( track )
+    track.markup.textMarkers[ className ] = {}
+    
+    // create marker for entire array...
+    // you have to pass the onclick as a string, otherwise codemirror will
+    // delete it from spans during random operations. We store the event handler
+    // globally so that we can use a closure. 
+    const arrayMarker = cm.markText( start, end, { 
+      className:cssName,
+      attributes:{
+        onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
+      }
+    })
+    track.markup.textMarkers[ cssName ] = arrayMarker
+
+    const mark = () => {
+
+      // first time through, use the position given to us by the parser
+      let range,start, end
+
+      // get new position in case the pattern has moved via inserted line breaks 
+      const pos = patternObject.commentMarker.find()
+      if( pos === undefined ) return
+
+      const memberAnnotationStart   = Object.assign( {}, pos.from ),
+            memberAnnotationEnd     = Object.assign( {}, pos.to )
+
+      if( initialized === false ) {
+        memberAnnotationStart.ch = annotationStartCh
+        memberAnnotationEnd.ch   = annotationEndCh
+        initialized = true
+      }else{
+        // after the first time through, every update to the pattern store the current
+        // position of the first element (in markStart) before replacing. Use this to generate position
+        // info. REPLACING TEXT REMOVES TEXT MARKERS.
+        range = markStart
+        start = range.from
+        memberAnnotationStart.ch = start.ch
+        memberAnnotationEnd.ch = start.ch + 1 
+      }
+
+      for( let i = 0; i < patternObject.values.length; i++ ) {
+        window.__ignore = patternObject
+        track.markup.textMarkers[ className ][ i ] = cm.markText(
+          memberAnnotationStart,  memberAnnotationEnd,
           { 
-            className:'patternEdit'
+            'className': `${className}_${i} euclid`
           }
         )
-        patternObject.markers.push( patternObject.__editMark )
-        patternObject.__interval = setInterval( intervalCheck, 100 )
+
+        memberAnnotationStart.ch += 1
+        memberAnnotationEnd.ch   += 1
+
+        setTimeout( ()=> {
+          document.querySelector( `.${className}_${i}` ).onclick = patternObject.__onclick
+        }, 50 )
+      }
+
+      if( start !== undefined ) {
+        start.ch -= 3
+        end = Object.assign({}, start )
+        end.ch = memberAnnotationEnd.ch + 3
+        patternObject.commentMarker = cm.markText( start, end, { className, atomic:false })
+      }
+    }
+
+    mark()
+
+    // XXX: there's a bug when you sequence pattern transformations, and then insert newlines ABOVE the annotation
+    let count = 0, span, update, activeSpans = []
+
+    update = () => {
+      // XXX what happened??? this should be incremented by 1, and there
+      // should be no need for Math.floor
+      // works with 1 increment in HexSteps but not in Hex... :(
+      count += 1
+      let currentIdx = Math.floor( count ) % patternObject.values.length
+
+      if( span !== undefined ) {
+        span.remove( 'euclid0' )
+      }
+
+      let spanName = `.${className}_${currentIdx}`,
+          currentValue = patternObject.values[ currentIdx ]
+
+      span = $( spanName )
+
+      // deliberate ==
+      if( currentValue == 1 ) {
+        span.add( 'euclid0' )
+        span.add( 'euclid1' )
+        activeSpans.push( span )
+        setTimeout( ()=> { 
+          activeSpans.forEach( _span => _span.remove( 'euclid1' ) )
+          activeSpans.length = 0 
+        }, 50 )
       }else{
-        patternObject.__editMark.clear()
-        clearInterval( patternObject.__interval )
+        span.add( 'euclid0' )
       }
-
-      patternObject.__isEditing = !patternObject.__isEditing
-    }else if( e.shiftKey === true ) {
-        //patternObject.reset()
-      //}else{
-        patternObject.__frozen = !patternObject.__frozen
-      //}
-    }
-  }
-  // timeout needeed because applying css is not synchronous... I think
-  //setTimeout( ()=> { 
-  //  Array.from( document.querySelectorAll( '.' + cssName ) ).forEach( el => el.onclick = __onclick )
-  //}, 500 )
-  Marker.arrayPatterns[ cssName ] = patternObject.__onclick
-  
-  if( track.markup === undefined ) Marker.prepareObject( track )
-  track.markup.textMarkers[ className ] = {}
-  
-  // create marker for entire array...
-  // you have to pass the onclick as a string, otherwise codemirror will
-  // delete it from spans during random operations. We store the event handler
-  // globally so that we can use a closure. 
-  const arrayMarker = cm.markText( start, end, { 
-    className:cssName,
-    attributes:{
-      onclick: `Environment.codeMarkup.arrayPatterns['${cssName}']( event )`
-    }
-  })
-  track.markup.textMarkers[ cssName ] = arrayMarker
-
-  const mark = () => {
-
-    // first time through, use the position given to us by the parser
-    let range,start, end
-
-    // get new position in case the pattern has moved via inserted line breaks 
-    const pos = patternObject.commentMarker.find()
-    if( pos === undefined ) return
-
-    const memberAnnotationStart   = Object.assign( {}, pos.from ),
-          memberAnnotationEnd     = Object.assign( {}, pos.to )
-
-    if( initialized === false ) {
-      memberAnnotationStart.ch = annotationStartCh
-      memberAnnotationEnd.ch   = annotationEndCh
-      initialized = true
-    }else{
-      // after the first time through, every update to the pattern store the current
-      // position of the first element (in markStart) before replacing. Use this to generate position
-      // info. REPLACING TEXT REMOVES TEXT MARKERS.
-      range = markStart
-      start = range.from
-      memberAnnotationStart.ch = start.ch
-      memberAnnotationEnd.ch = start.ch + 1 
     }
 
-    for( let i = 0; i < patternObject.values.length; i++ ) {
-      window.__ignore = patternObject
-      track.markup.textMarkers[ className ][ i ] = cm.markText(
-        memberAnnotationStart,  memberAnnotationEnd,
-        { 
-          'className': `${className}_${i} euclid`
+    let clearing = false
+    patternObject._onchange = () => {
+      // store cursor position to restore it after ccalling replaceRange
+      const cursorpos = marker.doc.getCursor()
+
+      // IMPORTANT: markStart is a closure upvalue that is also used in mark()
+      if( clearing === false ) {
+        // offset annotation position to ignore starting /* + space
+        markStart = arrayMarker.find() 
+        markStart.from.ch += 3
+        markStart.to.ch += 3
+
+        // end = start + pattern length
+        const to = { line: markStart.from.line, ch: markStart.from.ch + patternObject.values.length }
+
+        if( markStart !== undefined ) { 
+          marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, to )
         }
-      )
 
-      memberAnnotationStart.ch += 1
-      memberAnnotationEnd.ch   += 1
-
-      setTimeout( ()=> {
-        document.querySelector( `.${className}_${i}` ).onclick = patternObject.__onclick
-      }, 50 )
-    }
-
-    if( start !== undefined ) {
-      start.ch -= 3
-      end = Object.assign({}, start )
-      end.ch = memberAnnotationEnd.ch + 3
-      patternObject.commentMarker = cm.markText( start, end, { className, atomic:false })
-    }
-  }
-
-  mark()
-
-  // XXX: there's a bug when you sequence pattern transformations, and then insert newlines ABOVE the annotation
-  let count = 0, span, update, activeSpans = []
-
-  update = () => {
-    // XXX what happened??? this should be incremented by 1, and there
-    // should be no need for Math.floor
-    // works with 1 increment in HexSteps but not in Hex... :(
-    count += 1
-    let currentIdx = Math.floor( count ) % patternObject.values.length
-
-    if( span !== undefined ) {
-      span.remove( 'euclid0' )
-    }
-
-    let spanName = `.${className}_${currentIdx}`,
-        currentValue = patternObject.values[ currentIdx ]
-
-    span = $( spanName )
-
-    // deliberate ==
-    if( currentValue == 1 ) {
-      span.add( 'euclid0' )
-      span.add( 'euclid1' )
-      activeSpans.push( span )
-      setTimeout( ()=> { 
-        activeSpans.forEach( _span => _span.remove( 'euclid1' ) )
-        activeSpans.length = 0 
-      }, 50 )
-    }else{
-      span.add( 'euclid0' )
-    }
-  }
-
-  let clearing = false
-  patternObject._onchange = () => {
-    // store cursor position to restore it after ccalling replaceRange
-    const cursorpos = marker.doc.getCursor()
-
-    // IMPORTANT: markStart is a closure upvalue that is also used in mark()
-    if( clearing === false ) {
-      // offset annotation position to ignore starting /* + space
-      markStart = arrayMarker.find() 
-      markStart.from.ch += 3
-      markStart.to.ch += 3
-
-      // end = start + pattern length
-      const to = { line: markStart.from.line, ch: markStart.from.ch + patternObject.values.length }
-
-      if( markStart !== undefined ) { 
-        marker.doc.replaceRange( '' + patternObject.values.join(''), markStart.from, to )
+        mark()
+        marker.doc.setCursor( cursorpos )
       }
-
-      mark()
-      marker.doc.setCursor( cursorpos )
     }
+
+    patternObject.clear = () => {
+      clearing = true
+      const commentPos = patternObject.commentMarker.find()
+
+      // if this gets called twice...
+      if( commentPos === undefined ) return
+
+      // check to see if the last character is a parenthesis... if so we could
+      // not add 1 to commentPos.to.ch so that we don't accidentally delete it.
+      const end = { line:commentPos.to.line, ch:commentPos.to.ch+1 } 
+      const text = cm.getRange( commentPos.from, end )
+      const replacement = text[ text.length - 1 ] === ')' ? ')' : '' 
+
+      cm.replaceRange( replacement, commentPos.from, end )
+      if( patternObject.__interval ) clearInterval( patternObject.__interval )
+      patternObject.commentMarker.clear()
+    }
+
+    // XXX remove global reference somehow...
+    Gibber.subscribe( 'clear', patternObject.clear )
+    out = update
   }
 
-  patternObject.clear = () => {
-    clearing = true
-    const commentPos = patternObject.commentMarker.find()
-
-    // if this gets called twice...
-    if( commentPos === undefined ) return
-
-    // check to see if the last character is a parenthesis... if so we could
-    // not add 1 to commentPos.to.ch so that we don't accidentally delete it.
-    const end = { line:commentPos.to.line, ch:commentPos.to.ch+1 } 
-    const text = cm.getRange( commentPos.from, end )
-    const replacement = text[ text.length - 1 ] === ')' ? ')' : '' 
-
-    cm.replaceRange( replacement, commentPos.from, end )
-    if( patternObject.__interval ) clearInterval( patternObject.__interval )
-    patternObject.commentMarker.clear()
+  if( window.Environment.useComments === false ) {
+    out = ()=>{}
   }
 
-  // XXX remove global reference somehow...
-  Gibber.subscribe( 'clear', patternObject.clear )
-
-  return update 
+  return out 
 }
 
 
@@ -62476,6 +62484,8 @@ window.onload = function() {
   theme.install( document.body )
   theme.start()
   environment.theme = theme
+  environment.useComments = true
+
 
   const themename = localStorage.getItem('themename')
 
@@ -62550,6 +62560,12 @@ window.onload = function() {
       Metronome.init( Gibber )
       environment.metronome = Metronome
 
+      Gibber.subscribe( 'clear', ()=> {
+        for( let key in Environment.sounds ) {
+          delete Environment.sounds[ key ]
+        }
+      })
+
       cm.__setup()
     }) 
 
@@ -62567,6 +62583,41 @@ window.onload = function() {
       Gibberish.oncallback = function( cb ) {
         environment.console.setValue( cb.toString() )
       }
+    }
+
+    const rpad = function( value, pad ) {
+      let out = value+''
+      const len = (value + '').length
+
+      if( len < pad ) {
+        for( let i = pad - len; i > 0; i-- ) {
+          out += '&nbsp;'
+        }
+      }else if( len > pad ) {
+        out = out.slice( 0, pad )
+      }
+
+      return out
+    }
+
+    environment.showStats = function() {
+      const display = document.createElement('div')
+      display.setAttribute( 'id', 'stats' )
+      document.body.appendChild( display )
+      
+      const statsCallback = function() {
+        window.requestAnimationFrame( statsCallback )
+        let txt = '|&nbsp;'
+        Object.entries( Environment.sounds ).forEach( arr => {
+          let value = arr[1].__out
+          if( value < .001 ) value = '0.000' 
+          value = rpad( value, 5 )
+          txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
+        })
+
+        display.innerHTML = txt 
+      }
+      window.requestAnimationFrame( statsCallback )
     }
 
     environment.Annotations = environment.codeMarkup 
@@ -63016,6 +63067,8 @@ setTimeout( function() {
   }}, 250 )
 }
 
+
+
 },{"./codeMarkup.js":259,"./editor.js":260,"./examples.js":262,"./metronome.js":263,"./resources/js/theme.js":265,"./share.js":266,"codemirror":148,"gibber.audio.lib":83,"gibber.core.lib":125,"gibber.graphics.lib":135}],262:[function(require,module,exports){
 module.exports = function() {
   const select = document.querySelector( 'select' )
@@ -63176,11 +63229,23 @@ const Metronome = {
 module.exports = Metronome
 
 },{}],264:[function(require,module,exports){
+const sounds = {}
+
 const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
   const newProps = post.filter( prop => pre.indexOf( prop ) === -1 )
 
   for( let prop of newProps ) {
     let ugen = proxiedObj[ prop ]
+
+    if( ugen.__wrapped__ !== undefined ) {
+      if( ugen.__wrapped__.type === 'instrument' || ugen.__wrapped__.type === 'bus' ) {
+        sounds[ prop ] = ugen
+        environment.sounds = sounds
+        ugen.__onclear = function() {
+          delete sounds[ prop ] 
+        }
+      }
+    }
 
     Object.defineProperty( proxiedObj, prop, {
       get() { return ugen },
@@ -65821,6 +65886,8 @@ let Delay = inputProps => {
       feedbackHistoryR.in( echoR )
       const right = g.mix( rightInput, echoR, wetdry )
 
+      //const panner = g.pan( left, right, g.in('pan') ) 
+      //delay.graph = [ panner.left, panner.right ]
       delay.graph = [ left, right ]
     }else{
       delay.graph = left 
@@ -65844,7 +65911,8 @@ Delay.defaults = {
   input:0,
   feedback:.5,
   time: 11025,
-  wetdry: .5
+  wetdry: .5,
+  pan:.5
 }
 
 return Delay
@@ -65944,7 +66012,7 @@ let ugen = require( '../ugen.js' )()
 let effect = Object.create( ugen )
 
 Object.assign( effect, {
-  defaults: { bypass:false, inputGain:1 },
+  defaults: { bypass:false, inputGain:1, pan:.5 },
   type:'effect'
 })
 

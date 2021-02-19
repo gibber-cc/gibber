@@ -1,8 +1,20 @@
+const sounds = {}
+
 const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
   const newProps = post.filter( prop => pre.indexOf( prop ) === -1 )
 
   for( let prop of newProps ) {
     let ugen = proxiedObj[ prop ]
+
+    if( ugen.__wrapped__ !== undefined ) {
+      if( ugen.__wrapped__.type === 'instrument' || ugen.__wrapped__.type === 'bus' ) {
+        sounds[ prop ] = ugen
+        environment.sounds = sounds
+        ugen.__onclear = function() {
+          delete sounds[ prop ] 
+        }
+      }
+    }
 
     Object.defineProperty( proxiedObj, prop, {
       get() { return ugen },

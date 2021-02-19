@@ -1960,7 +1960,7 @@ const gen = {
     }
 
     returnStatement += `memory[ ${this.outputIdx} ]`
-    if( numChannels > 1 ) {
+    if( numChannels > 1 || this.alwaysReturnArray === true ) {
       for( let i = 1; i < numChannels; i++ ) {
         returnStatement += `, memory[ ${this.outputIdx + i} ]`
       }
@@ -6781,6 +6781,8 @@ module.exports = function (Gibberish) {
         feedbackHistoryR.in(echoR);
         const right = g.mix(rightInput, echoR, wetdry);
 
+        //const panner = g.pan( left, right, g.in('pan') ) 
+        //delay.graph = [ panner.left, panner.right ]
         delay.graph = [left, right];
       } else {
         delay.graph = left;
@@ -6799,7 +6801,8 @@ module.exports = function (Gibberish) {
     input: 0,
     feedback: .5,
     time: 11025,
-    wetdry: .5
+    wetdry: .5,
+    pan: .5
   };
 
   return Delay;
@@ -6892,7 +6895,7 @@ let ugen = require('../ugen.js')();
 let effect = Object.create(ugen);
 
 Object.assign(effect, {
-  defaults: { bypass: false, inputGain: 1 },
+  defaults: { bypass: false, inputGain: 1, pan: .5 },
   type: 'effect'
 });
 
