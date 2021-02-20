@@ -1,6 +1,7 @@
 const __Identifier = function( Marker ) {
 
   const mark = function( node, state, patternType, seqNumber ) {
+
     const [ className, start, end ] = Marker._getNamesAndPosition( node, state, patternType, seqNumber )
     const cssName = className + '_' + seqNumber
     const commentStart = end
@@ -44,7 +45,7 @@ const __Identifier = function( Marker ) {
   // Arp in the variable 'a' and pass 'a' into a sequence, 'a' is the Identifier
   // and this function will be called to mark up the associated pattern.
   const Identifier = function( patternNode, state, seq, patternType, containerNode, seqNumber ) {
-    if( patternNode.processed === true ) return 
+    if( patternNode.processed === true ||  window.Environment.useComments === false ) return 
 
     const cm = state.cm
     const track = seq.target//object
