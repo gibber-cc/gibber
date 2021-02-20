@@ -147,14 +147,16 @@ window.onload = function() {
       const statsCallback = function() {
         window.requestAnimationFrame( statsCallback )
         let txt = '|&nbsp;'
-        Object.entries( Environment.sounds ).forEach( arr => {
-          let value = arr[1].__out
-          if( value < .001 ) value = '0.000' 
-          value = rpad( value, 5 )
-          txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
-        })
+        if( Environment.sounds !== undefined && Environment.sounds !== null ) {
+          Object.entries( Environment.sounds ).forEach( arr => {
+            let value = arr[1].__out
+            if( value < .001 ) value = '0.000' 
+            value = rpad( value, 5 )
+            txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
+          })
 
-        display.innerHTML = txt 
+          display.innerHTML = txt
+        } 
       }
       window.requestAnimationFrame( statsCallback )
     }
