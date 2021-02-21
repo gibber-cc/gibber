@@ -13054,8 +13054,19 @@ const Graphics = {
       const f = to[ '__' + name ].follow = Follow({ input: from, bufferSize:4096 })
 
       Marching.callbacks.push( time => {
+        //console.log( f.output, f )
         if( f.output !== undefined ) {
-          to[ name ] = f.output
+          let val
+          if( Array.isArray( f.output ) ) {
+            if( f.output[1] !== undefined ) {
+              val = (f.output[0] + f.output[1]) / 2
+            }else{
+              val = f.output[0]
+            }
+          }else{
+            val = f.output
+          }
+          to[ name ] = val 
         }
       })
 
