@@ -6312,6 +6312,29 @@ module.exports = function( Audio ) {
     count:15
   }
 
+  // add Freesound[5] notation...
+  for( let i = 0; i < 10; i++ ) {
+    Freesound[ i ] = function( ...args ) {
+      if( args.length > 0 ) {
+        if( typeof args[0] === 'string' ) {
+          if( args.length > 1 ) {
+            if( typeof args[1] === 'object' ) {
+              args[1].maxVoices = i || 1
+            } 
+          }else{
+            args[1] = { maxVoices:i || 1 }
+          }
+        }else if( typeof args[0] === 'object' ) {
+          args[0].maxVoices = i || 1
+        }
+      }else{
+        args[0] = { maxVoices:i || 1 }
+      } 
+
+      return Freesound( ...args ) 
+    }
+  }
+
   const queries = {
     number( id, sampler, num=0 ) {
       if (typeof Freesound.loaded[ id ] === 'undefined') {
