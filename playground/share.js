@@ -3,6 +3,9 @@ const Y = require( 'yjs' ),
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
 
 const share = {
+  addUser( userInfo ) {
+    console.log( userInfo )
+  },
   initShare( editor, username='anonymous', room='default' ) {
     const protocol = window.location.hostname === '127.0.0.1' ? 'ws' : 'wss'
     const ydoc = new Y.Doc(),
@@ -14,6 +17,7 @@ const share = {
           ),
           yText = ydoc.getText( 'codemirror' + room ),
           chatData = ydoc.getArray('chat' + room ),
+          userData = ydoc.getArray('user' + room ),
           commands = ydoc.getArray('commands' + room ),
           binding = new CodemirrorBinding( yText, editor, provider.awareness ),
           socket = provider.ws
@@ -27,6 +31,9 @@ const share = {
       const msg = JSON.parse( JSON.stringify(event.data) )
 
       switch( msg.cmd ) {
+        case 'user':
+          share.addUser( msg.body )
+          break
         case 'msg':
           console.log( msg.body )
           break
@@ -41,7 +48,7 @@ const share = {
       }
     })
 
-    return { provider, ydoc, yText, Y, socket, binding, chatData, commands }
+    return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData }
   },
 
   setupShareHandler( cm, environment, networkConfig ) {
@@ -55,6 +62,8 @@ const share = {
           document.querySelector( '#connectroom' ).value 
         )
         share.commands = commands
+
+        //commands.unshift([ 'user','test' ])
 
         __socket = socket
         networkConfig.isNetworked = true
@@ -125,7 +134,7 @@ const share = {
       menu.setAttribute('id', 'connectmenu')
       menu.setAttribute('class', 'menu' )
       menu.style.width = '12.5em'
-      menu.style.height = '12.5em'
+      menu.style.height = '13.5em'
       menu.style.position = 'absolute'
       menu.style.display = 'block'
       menu.style.border = '1px #666 solid'
@@ -134,7 +143,7 @@ const share = {
       menu.style.right = 0 
       menu.style.zIndex = 1000
 
-      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><input type='checkbox' checked style='width:1em' id='showChat'><label for='showChat'>display chat?</label><br><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
+      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><input type='checkbox' checked style='width:1em' id='showChat'><label for='showChat'>display chat?</label><br><input type='checkbox' checked style='width:1em' id='useSharedEditorBox' disabled><label for='useSharedEditorBox'>share editor?</label><br><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
 
       document.body.appendChild( menu )
       document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'

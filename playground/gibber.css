@@ -94,7 +94,7 @@ label {
   position:relative;
 }
 
-#showChat { width:1em; margin-left:.5em; display:inline }
+#showChat, #useSharedEditorBox { width:1em; margin-left:.5em; display:inline }
 
 #graphics, main {
   width:100%;

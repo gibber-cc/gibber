@@ -37,142 +37,134 @@ window.onload = function() {
   environment.share = Share
 
   const workletPath = './gibberish_worklet.js' 
-  const start = () => {
-    Gibber.init([
-      {
-        name:    'Audio',
-        plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath, latencyHint:.05 }
-      },
-      {
-        name:    'Graphics',
-        plugin:  Graphics,
-        options: { canvas:document.querySelector( '#graphics' ) }
-      }
-    ]).then( ()=> {
-      Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
-      Gibber.export( window ) 
 
-      window.future = function( fnc, time, dict ) {
-        Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
-      } 
+  Gibber.init([
+    {
+      name:    'Audio',
+      plugin:  Audio, // Audio is required, imported, or grabbed via <script>
+      options: { workletPath, latencyHint:.05 }
+    },
+    {
+      name:    'Graphics',
+      plugin:  Graphics,
+      options: { canvas:document.querySelector( '#graphics' ) }
+    }
+  ]).then( ()=> {
+    Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
+    Gibber.export( window ) 
 
-      window.solo = function( ...soloed ) {
-        if( soloed.length > 0 ) {
-          Gibber.Seq.sequencers.forEach( s => {
-            let shouldStop = true
-            soloed.forEach( solo => {
-              if( s.target === solo.__wrapped__ ) shouldStop = false
-            })
-            if( shouldStop ) { 
-              s.stop()
-            }else{
-              if( s.__isRunning === false )
-                s.start( s.__delay || 0 )
-            }
+    window.future = function( fnc, time, dict ) {
+      Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
+    } 
+
+    window.solo = function( ...soloed ) {
+      if( soloed.length > 0 ) {
+        Gibber.Seq.sequencers.forEach( s => {
+          let shouldStop = true
+          soloed.forEach( solo => {
+            if( s.target === solo.__wrapped__ ) shouldStop = false
           })
-        }else{
-          Gibber.Seq.sequencers.forEach( s => {
-            if( s.__isRunning === false ) s.start( s.__delay || 0 ) 
-          })
-        }
-      }
-
-      window.Graphics = Gibber.Graphics
-      window.Audio    = Gibber.Audio
-      //setupFFT( Marching.FFT )
-
-      const fft = window.FFT = Marching.FFT
-      fft.input = Gibber.Audio.Gibberish.worklet
-      fft.__hasInput = true
-      fft.ctx = Gibber.Audio.Gibberish.ctx
-
-      fft.start = function( bins=null ) { 
-        fft.bins = bins 
-        fft.createFFT()
-        fft.input.connect( fft.FFT )
-        fft.interval = setInterval( fft.fftCallback, 1000/60 )
-      }
-
-      fft.clear = function() { clearInterval( fft.interval ) }
-
-      Metronome.init( Gibber )
-      environment.metronome = Metronome
-
-      Gibber.subscribe( 'clear', ()=> {
-        for( let key in Environment.sounds ) {
-          delete Environment.sounds[ key ]
-        }
-      })
-
-      cm.__setup()
-    }) 
-
-    environment.editor = cm
-    //environment.console = cmconsole
-    window.Environment = environment
-    environment.annotations = true
-
-    // XXX this should not be in 'debug' mode...
-    environment.debug = true
-    environment.codeMarkup = codeMarkup( Gibber )
-    environment.codeMarkup.init()
-
-    environment.displayCallbackUpdates = function() {
-      Gibberish.oncallback = function( cb ) {
-        environment.console.setValue( cb.toString() )
+          if( shouldStop ) { 
+            s.stop()
+          }else{
+            if( s.__isRunning === false )
+              s.start( s.__delay || 0 )
+          }
+        })
+      }else{
+        Gibber.Seq.sequencers.forEach( s => {
+          if( s.__isRunning === false ) s.start( s.__delay || 0 ) 
+        })
       }
     }
 
-    const rpad = function( value, pad ) {
-      let out = value+''
-      const len = (value + '').length
+    window.Graphics = Gibber.Graphics
+    window.Audio    = Gibber.Audio
+    //setupFFT( Marching.FFT )
 
-      if( len < pad ) {
-        for( let i = pad - len; i > 0; i-- ) {
-          out += '&nbsp;'
-        }
-      }else if( len > pad ) {
-        out = out.slice( 0, pad )
-      }
+    const fft = window.FFT = Marching.FFT
+    fft.input = Gibber.Audio.Gibberish.worklet
+    fft.__hasInput = true
+    fft.ctx = Gibber.Audio.Gibberish.ctx
 
-      return out
+    fft.start = function( bins=null ) { 
+      fft.bins = bins 
+      fft.createFFT()
+      fft.input.connect( fft.FFT )
+      fft.interval = setInterval( fft.fftCallback, 1000/60 )
     }
 
-    environment.showStats = function() {
-      const display = document.createElement('div')
-      display.setAttribute( 'id', 'stats' )
-      document.body.appendChild( display )
-      
-      const statsCallback = function() {
-        window.requestAnimationFrame( statsCallback )
-        let txt = '|&nbsp;'
-        if( Environment.sounds !== undefined && Environment.sounds !== null ) {
-          Object.entries( Environment.sounds ).forEach( arr => {
-            let value = arr[1].__out
-            if( value < .001 ) value = '0.000' 
-            value = rpad( value, 5 )
-            txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
-          })
+    fft.clear = function() { clearInterval( fft.interval ) }
 
-          display.innerHTML = txt
-        } 
+    Metronome.init( Gibber )
+    environment.metronome = Metronome
+
+    Gibber.subscribe( 'clear', ()=> {
+      for( let key in Environment.sounds ) {
+        delete Environment.sounds[ key ]
       }
-      window.requestAnimationFrame( statsCallback )
+    })
+
+    cm.__setup()
+  }) 
+
+  environment.editor = cm
+  //environment.console = cmconsole
+  window.Environment = environment
+  environment.annotations = true
+
+  // XXX this should not be in 'debug' mode...
+  environment.debug = true
+  environment.codeMarkup = codeMarkup( Gibber )
+  environment.codeMarkup.init()
+
+  environment.displayCallbackUpdates = function() {
+    Gibberish.oncallback = function( cb ) {
+      environment.console.setValue( cb.toString() )
     }
-
-    environment.Annotations = environment.codeMarkup 
-    
-    Gibber.Environment = environment
-
-    window.onclick = null
-    window.onkeypress = null
   }
 
-  window.onclick = start
-  window.onkeypress = start
+  const rpad = function( value, pad ) {
+    let out = value+''
+    const len = (value + '').length
 
+    if( len < pad ) {
+      for( let i = pad - len; i > 0; i-- ) {
+        out += '&nbsp;'
+      }
+    }else if( len > pad ) {
+      out = out.slice( 0, pad )
+    }
+
+    return out
+  }
+
+  environment.showStats = function() {
+    const display = document.createElement('div')
+    display.setAttribute( 'id', 'stats' )
+    document.body.appendChild( display )
+    
+    const statsCallback = function() {
+      window.requestAnimationFrame( statsCallback )
+      let txt = '|&nbsp;'
+      if( Environment.sounds !== undefined && Environment.sounds !== null ) {
+        Object.entries( Environment.sounds ).forEach( arr => {
+          let value = arr[1].__out
+          if( value < .001 ) value = '0.000' 
+          value = rpad( value, 5 )
+          txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
+        })
+
+        display.innerHTML = txt
+      } 
+    }
+    window.requestAnimationFrame( statsCallback )
+  }
+
+  environment.Annotations = environment.codeMarkup 
   
+  Gibber.Environment = environment
+
   setupExamples()
   setupThemeMenu()
   setupCollapseBtn()

@@ -4919,6 +4919,7 @@ const Audio = {
       obj.Theory = this.Theory
       obj.Freesound = this.Freesound
       obj.Clock = this.Clock
+      obj.Clock.export( obj )
       obj.WavePattern = this.WavePattern
       obj.Gen = this.Gen
       obj.stop = this.stop
@@ -5418,6 +5419,7 @@ module.exports = Busses
 const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 
+// XXX must use form key:function() {} due to serialization
 const Clock = {
   __beatCount:0,
   id:null,
@@ -5425,6 +5427,12 @@ const Clock = {
   bpm:140,
   __lastBPM:140,
   seq:null,
+
+  export:function( obj ) {
+    obj.btos = Clock.btos.bind( Clock )
+    obj.btoms = Clock.btoms.bind( Clock )
+    obj.stob = Clock.stob.bind( Clock )
+  },
 
   store:function() { 
     Gibberish.Clock = this
@@ -62539,142 +62547,134 @@ window.onload = function() {
   environment.share = Share
 
   const workletPath = './gibberish_worklet.js' 
-  const start = () => {
-    Gibber.init([
-      {
-        name:    'Audio',
-        plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-        options: { workletPath, latencyHint:.05 }
-      },
-      {
-        name:    'Graphics',
-        plugin:  Graphics,
-        options: { canvas:document.querySelector( '#graphics' ) }
-      }
-    ]).then( ()=> {
-      Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
-      Gibber.export( window ) 
 
-      window.future = function( fnc, time, dict ) {
-        Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
-      } 
+  Gibber.init([
+    {
+      name:    'Audio',
+      plugin:  Audio, // Audio is required, imported, or grabbed via <script>
+      options: { workletPath, latencyHint:.05 }
+    },
+    {
+      name:    'Graphics',
+      plugin:  Graphics,
+      options: { canvas:document.querySelector( '#graphics' ) }
+    }
+  ]).then( ()=> {
+    Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
+    Gibber.export( window ) 
 
-      window.solo = function( ...soloed ) {
-        if( soloed.length > 0 ) {
-          Gibber.Seq.sequencers.forEach( s => {
-            let shouldStop = true
-            soloed.forEach( solo => {
-              if( s.target === solo.__wrapped__ ) shouldStop = false
-            })
-            if( shouldStop ) { 
-              s.stop()
-            }else{
-              if( s.__isRunning === false )
-                s.start( s.__delay || 0 )
-            }
+    window.future = function( fnc, time, dict ) {
+      Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
+    } 
+
+    window.solo = function( ...soloed ) {
+      if( soloed.length > 0 ) {
+        Gibber.Seq.sequencers.forEach( s => {
+          let shouldStop = true
+          soloed.forEach( solo => {
+            if( s.target === solo.__wrapped__ ) shouldStop = false
           })
-        }else{
-          Gibber.Seq.sequencers.forEach( s => {
-            if( s.__isRunning === false ) s.start( s.__delay || 0 ) 
-          })
-        }
-      }
-
-      window.Graphics = Gibber.Graphics
-      window.Audio    = Gibber.Audio
-      //setupFFT( Marching.FFT )
-
-      const fft = window.FFT = Marching.FFT
-      fft.input = Gibber.Audio.Gibberish.worklet
-      fft.__hasInput = true
-      fft.ctx = Gibber.Audio.Gibberish.ctx
-
-      fft.start = function( bins=null ) { 
-        fft.bins = bins 
-        fft.createFFT()
-        fft.input.connect( fft.FFT )
-        fft.interval = setInterval( fft.fftCallback, 1000/60 )
-      }
-
-      fft.clear = function() { clearInterval( fft.interval ) }
-
-      Metronome.init( Gibber )
-      environment.metronome = Metronome
-
-      Gibber.subscribe( 'clear', ()=> {
-        for( let key in Environment.sounds ) {
-          delete Environment.sounds[ key ]
-        }
-      })
-
-      cm.__setup()
-    }) 
-
-    environment.editor = cm
-    //environment.console = cmconsole
-    window.Environment = environment
-    environment.annotations = true
-
-    // XXX this should not be in 'debug' mode...
-    environment.debug = true
-    environment.codeMarkup = codeMarkup( Gibber )
-    environment.codeMarkup.init()
-
-    environment.displayCallbackUpdates = function() {
-      Gibberish.oncallback = function( cb ) {
-        environment.console.setValue( cb.toString() )
+          if( shouldStop ) { 
+            s.stop()
+          }else{
+            if( s.__isRunning === false )
+              s.start( s.__delay || 0 )
+          }
+        })
+      }else{
+        Gibber.Seq.sequencers.forEach( s => {
+          if( s.__isRunning === false ) s.start( s.__delay || 0 ) 
+        })
       }
     }
 
-    const rpad = function( value, pad ) {
-      let out = value+''
-      const len = (value + '').length
+    window.Graphics = Gibber.Graphics
+    window.Audio    = Gibber.Audio
+    //setupFFT( Marching.FFT )
 
-      if( len < pad ) {
-        for( let i = pad - len; i > 0; i-- ) {
-          out += '&nbsp;'
-        }
-      }else if( len > pad ) {
-        out = out.slice( 0, pad )
-      }
+    const fft = window.FFT = Marching.FFT
+    fft.input = Gibber.Audio.Gibberish.worklet
+    fft.__hasInput = true
+    fft.ctx = Gibber.Audio.Gibberish.ctx
 
-      return out
+    fft.start = function( bins=null ) { 
+      fft.bins = bins 
+      fft.createFFT()
+      fft.input.connect( fft.FFT )
+      fft.interval = setInterval( fft.fftCallback, 1000/60 )
     }
 
-    environment.showStats = function() {
-      const display = document.createElement('div')
-      display.setAttribute( 'id', 'stats' )
-      document.body.appendChild( display )
-      
-      const statsCallback = function() {
-        window.requestAnimationFrame( statsCallback )
-        let txt = '|&nbsp;'
-        if( Environment.sounds !== undefined && Environment.sounds !== null ) {
-          Object.entries( Environment.sounds ).forEach( arr => {
-            let value = arr[1].__out
-            if( value < .001 ) value = '0.000' 
-            value = rpad( value, 5 )
-            txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
-          })
+    fft.clear = function() { clearInterval( fft.interval ) }
 
-          display.innerHTML = txt
-        } 
+    Metronome.init( Gibber )
+    environment.metronome = Metronome
+
+    Gibber.subscribe( 'clear', ()=> {
+      for( let key in Environment.sounds ) {
+        delete Environment.sounds[ key ]
       }
-      window.requestAnimationFrame( statsCallback )
+    })
+
+    cm.__setup()
+  }) 
+
+  environment.editor = cm
+  //environment.console = cmconsole
+  window.Environment = environment
+  environment.annotations = true
+
+  // XXX this should not be in 'debug' mode...
+  environment.debug = true
+  environment.codeMarkup = codeMarkup( Gibber )
+  environment.codeMarkup.init()
+
+  environment.displayCallbackUpdates = function() {
+    Gibberish.oncallback = function( cb ) {
+      environment.console.setValue( cb.toString() )
     }
-
-    environment.Annotations = environment.codeMarkup 
-    
-    Gibber.Environment = environment
-
-    window.onclick = null
-    window.onkeypress = null
   }
 
-  window.onclick = start
-  window.onkeypress = start
+  const rpad = function( value, pad ) {
+    let out = value+''
+    const len = (value + '').length
 
+    if( len < pad ) {
+      for( let i = pad - len; i > 0; i-- ) {
+        out += '&nbsp;'
+      }
+    }else if( len > pad ) {
+      out = out.slice( 0, pad )
+    }
+
+    return out
+  }
+
+  environment.showStats = function() {
+    const display = document.createElement('div')
+    display.setAttribute( 'id', 'stats' )
+    document.body.appendChild( display )
+    
+    const statsCallback = function() {
+      window.requestAnimationFrame( statsCallback )
+      let txt = '|&nbsp;'
+      if( Environment.sounds !== undefined && Environment.sounds !== null ) {
+        Object.entries( Environment.sounds ).forEach( arr => {
+          let value = arr[1].__out
+          if( value < .001 ) value = '0.000' 
+          value = rpad( value, 5 )
+          txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
+        })
+
+        display.innerHTML = txt
+      } 
+    }
+    window.requestAnimationFrame( statsCallback )
+  }
+
+  environment.Annotations = environment.codeMarkup 
   
+  Gibber.Environment = environment
+
   setupExamples()
   setupThemeMenu()
   setupCollapseBtn()
@@ -63579,6 +63579,9 @@ const Y = require( 'yjs' ),
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
 
 const share = {
+  addUser( userInfo ) {
+    console.log( userInfo )
+  },
   initShare( editor, username='anonymous', room='default' ) {
     const protocol = window.location.hostname === '127.0.0.1' ? 'ws' : 'wss'
     const ydoc = new Y.Doc(),
@@ -63590,6 +63593,7 @@ const share = {
           ),
           yText = ydoc.getText( 'codemirror' + room ),
           chatData = ydoc.getArray('chat' + room ),
+          userData = ydoc.getArray('user' + room ),
           commands = ydoc.getArray('commands' + room ),
           binding = new CodemirrorBinding( yText, editor, provider.awareness ),
           socket = provider.ws
@@ -63603,6 +63607,9 @@ const share = {
       const msg = JSON.parse( JSON.stringify(event.data) )
 
       switch( msg.cmd ) {
+        case 'user':
+          share.addUser( msg.body )
+          break
         case 'msg':
           console.log( msg.body )
           break
@@ -63617,7 +63624,7 @@ const share = {
       }
     })
 
-    return { provider, ydoc, yText, Y, socket, binding, chatData, commands }
+    return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData }
   },
 
   setupShareHandler( cm, environment, networkConfig ) {
@@ -63631,6 +63638,8 @@ const share = {
           document.querySelector( '#connectroom' ).value 
         )
         share.commands = commands
+
+        //commands.unshift([ 'user','test' ])
 
         __socket = socket
         networkConfig.isNetworked = true
@@ -63701,7 +63710,7 @@ const share = {
       menu.setAttribute('id', 'connectmenu')
       menu.setAttribute('class', 'menu' )
       menu.style.width = '12.5em'
-      menu.style.height = '12.5em'
+      menu.style.height = '13.5em'
       menu.style.position = 'absolute'
       menu.style.display = 'block'
       menu.style.border = '1px #666 solid'
@@ -63710,7 +63719,7 @@ const share = {
       menu.style.right = 0 
       menu.style.zIndex = 1000
 
-      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><input type='checkbox' checked style='width:1em' id='showChat'><label for='showChat'>display chat?</label><br><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
+      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><input type='checkbox' checked style='width:1em' id='showChat'><label for='showChat'>display chat?</label><br><input type='checkbox' checked style='width:1em' id='useSharedEditorBox' disabled><label for='useSharedEditorBox'>share editor?</label><br><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
 
       document.body.appendChild( menu )
       document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'
@@ -67258,7 +67267,7 @@ module.exports = function( Gibberish ) {
     const frequency = g.in( 'frequency' ),
           loudness  = g.in( 'loudness' ), 
           triggerLoudness = g.in( '__triggerLoudness' ),
-          glide   = g.in( 'glide' ),
+          glide   = g.max( 1, g.in( 'glide' ) ),
           slidingFreq = g.slide( frequency, glide, glide ),
           attack  = g.in( 'attack' ), 
           decay   = g.in( 'decay' ),
@@ -67465,7 +67474,7 @@ module.exports = function( Gibberish ) {
     let syn = Object.create( instrument )
 
     let frequency = g.in( 'frequency' ),
-        glide = g.in( 'glide' ),
+        glide = g.max( 1, g.in( 'glide' ) ),
         slidingFreq = g.slide( frequency, glide, glide ),
         cmRatio = g.in( 'cmRatio' ),
         index = g.in( 'index' ),
@@ -67736,7 +67745,7 @@ module.exports = function( Gibberish ) {
           impulse = g.mul( g.noise(), env ),
           feedback = g.history(),
           frequency = g.in('frequency'),
-          glide = g.in( 'glide' ),
+          glide = g.max( 1, g.in( 'glide' ) ),
           slidingFrequency = g.slide( frequency, glide, glide ),
           delay = g.delay( g.add( impulse, feedback.out ), g.div( sampleRate, slidingFrequency )),
           decayed = g.mul( delay, g.t60( g.mul( g.in('decay'), slidingFrequency ) ) ),
@@ -67870,7 +67879,7 @@ module.exports = function( Gibberish ) {
     const syn = Object.create( instrument ),
           oscs = [], 
           frequency = g.in( 'frequency' ),
-          glide = g.in( 'glide' ),
+          glide = g.max( 1, g.in( 'glide' ) ),
           slidingFreq = g.memo( g.slide( frequency, glide, glide ) ),
           attack = g.in( 'attack' ), decay = g.in( 'decay' ),
           sustain = g.in( 'sustain' ), sustainLevel = g.in( 'sustainLevel' ),
@@ -68762,7 +68771,7 @@ module.exports = function( Gibberish ) {
     const frequency = g.in( 'frequency' ),
           loudness  = g.in( 'loudness' ), 
           triggerLoudness = g.in( '__triggerLoudness' ),
-          glide = g.in( 'glide' ),
+          glide = g.max( 1, g.in( 'glide' ) ),
           slidingFreq = g.slide( frequency, glide, glide ),
           attack = g.in( 'attack' ), decay = g.in( 'decay' ),
           sustain = g.in( 'sustain' ), sustainLevel = g.in( 'sustainLevel' ),
