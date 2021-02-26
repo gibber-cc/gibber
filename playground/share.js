@@ -54,16 +54,19 @@ const share = {
   setupShareHandler( cm, environment, networkConfig ) {
     document.querySelector('#connect').onclick = function() {
       const closeconnect = function() {
-        const shouldShowChat = document.querySelector('#showChat').checked 
-        const username = document.querySelector( '#connectname' ).value  
-        const { socket, provider, binding, chatData, commands } = share.initShare( 
+        const shouldShowChat  = document.querySelector('#showChat').checked,
+              useSharedEditor = document.querySelector('#useSharedEditorBox').checked,
+              username = document.querySelector( '#connectname' ).value,  
+              roomname = document.querySelector( '#connectroom' ).value
+
+        const { socket, provider, binding, chatData, commands, userData } = share.initShare( 
           cm, 
           username, 
-          document.querySelector( '#connectroom' ).value 
+          roomname
         )
         share.commands = commands
 
-        //commands.unshift([ 'user','test' ])
+        userData.unshift([{ username }])
 
         __socket = socket
         networkConfig.isNetworked = true
@@ -106,6 +109,20 @@ const share = {
           }
         })
 
+        const users = []
+        userData.observe( e => {
+          const msgs = e.changes.delta[0].insert
+          for( let i = msgs.length-1; i>=0; i-- ) {
+            const msg = msgs[ i ]
+
+            if( users.indexOf( msg.username ) === -1 ) {
+              users.push( msg.username )
+              if( useSharedEditor === false ) {
+                createSplits( msg.username, users )
+              }
+            }
+          }
+        })
         environment.showArgHints = false
         environment.showCompletions = false
         
@@ -159,6 +176,35 @@ const share = {
       document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
     }
 
+  },
+
+  createSplits( mostRecentUser, usernames ) {
+    let grid = [[]]
+    
+    switch( usernames.length ) {
+      case 2: grid[0] = [usernames[0], usernames[1]]; break; 
+      case 3: 
+        grid[0] = [usernames[0], usernames[1]]
+        grid[1] = [usernames[2]]
+        break
+      case 4:
+        grid[0] = [usernames[0], usernames[1]]
+        grid[1] = [usernames[2], usernames[3]]
+        break
+      case 5:
+        grid[0] = [usernames[0], usernames[1], usernames[4]]
+        grid[1] = [usernames[2], usernames[3]]
+        break
+      case 6:
+        grid[0] = [usernames[0], usernames[1], usernames[4]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        break
+
+      default:
+        grid[0][0] = mostRecentUser
+        // 1 user, do nothing
+    }
+    
   },
 
   quickmsg() { console.log( 'msg' ) },

@@ -5189,6 +5189,8 @@ const Audio = {
       })
 
       wrappedTo[ name ] = f
+      //to[ '__'+name].value = f
+
     }else if( from.type === 'gen' ) {
       // gen objects can be referred to without the graphics/audio abstraction,
       // in which case they will have no .render() function, and don't need to be rendered
@@ -5204,7 +5206,7 @@ const Audio = {
     const setter = v => {
       let value, shouldSend = true
 
-      if( typeof v === 'number' || typeof v === 'string' ) {
+      if( typeof v === 'number' || typeof v === 'string' || v === null ) {
         value = transform !== null ? transform( v ) : v
 
         if( isPoly === true ) {
@@ -5231,11 +5233,36 @@ const Audio = {
 
         obj['__'+ name ].value = gen
         value = { id: gen.id }
-      }else{
-        obj[ '__'+name].value = v
-        value = v !== null ? { id:v.id } : v
+      }else if( typeof v === 'object' ) { //&& typeof v !== null ) {
+        //if( obj.__useMapping === false || name === 'input' ) {
+        //  obj[ '__'+name].value = v
+        //  value = v !== null ? { id:v.id } : v
+        //}else{
+        //  //Audio.createMapping( v, obj, name, obj.__wrapped__ )
+        //  const f = obj[ '__' + name ].follow = Follow({ input: v })
+
+        //  let m = f.multiplier
+        //  Object.defineProperty( obj[ name ], 'multiplier', {
+        //    get() { return m },
+        //    set(v) { m = v; f.multiplier = m }
+        //  })
+
+        //  let o = f.offset
+        //  Object.defineProperty( obj[ name ], 'offset', {
+        //    get() { return o },
+        //    set(v) { o = v; f.offset = o }
+        //  })
+
+          //wrappedTo[ name ] = f
+          //obj[ '__'+name ].value = f.__wrapped__
+          //value = { id:f.id }
+          obj[ '__'+name ].value = v.__wrapped__
+          value = { id:v.id }
+        //}
+               //
+        //obj[ '__'+name].value = v
+        //value = v !== null ? { id:v.id } : v
       }
-      //Audio.createMapping( v, obj, name, obj.__wrapped__ )
 
       if( Gibberish.mode === 'worklet' && shouldSend === true ) {
         Gibberish.worklet.port.postMessage({
@@ -5908,13 +5935,18 @@ module.exports = function( Audio ) {
     }
 
     ens.tidal = (pattern,num=0) => {
-      if( ens.tidals[ num ] !== undefined ) ens.tidals[ num ].stop()
-
-      ens.tidals[ num ] = Audio.Gibber.Tidal({
+      const t =  Audio.Gibber.Tidal({
         target:ens,
         key:'play',
         pattern
-      }).start()
+      })
+
+      if( t !== null ) {
+        if( ens.tidals[ num ] !== undefined ) ens.tidals[ num ].stop()
+
+        ens.tidals[ num ] = t
+        t.start()
+      }
 
       return ens
     }
@@ -9264,23 +9296,24 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         }
         obj[ methodName ].tidal= function( pattern, number=0, delay=0 ) {
           let prevSeq = obj[ methodName ].tidals[ number ] 
-          if( prevSeq !== undefined ) { 
-            const idx = obj.__tidals.indexOf( prevSeq )
-            obj.__tidals.splice( idx, 1 )
-            prevSeq.stop()
-            prevSeq.clear()
-            // removeSeq( obj, prevSeq )
-          }
-
           let s = Audio.Core.Tidal({ pattern, target:__wrappedObject, key:methodName })
-          
-          s.start( Audio.Clock.time( delay ) )
-          obj[ methodName ].tidals[ number ] = obj[ methodName ][ number ] = s 
-          obj.__tidals.push( s )
+          if( s !== null ) {
+            if( prevSeq !== undefined ) { 
+              const idx = obj.__tidals.indexOf( prevSeq )
+              obj.__tidals.splice( idx, 1 )
+              prevSeq.stop()
+              prevSeq.clear()
+              // removeSeq( obj, prevSeq )
+            }
 
-          // XXX need to clean this up! this is solely here for annotations, and to 
-          // match what I did for ensembles... 
-          obj[ methodName ].__tidal = s
+            s.start( Audio.Clock.time( delay ) )
+            obj[ methodName ].tidals[ number ] = obj[ methodName ][ number ] = s 
+            obj.__tidals.push( s )
+
+            // XXX need to clean this up! this is solely here for annotations, and to 
+            // match what I did for ensembles... 
+            obj[ methodName ].__tidal = s
+          }
 
           // return object for method chaining
           return obj
@@ -10941,14 +10974,17 @@ const patternWrapper = function( Gibber ) {
           return this
         }
         if( !fnc.__frozen ) {
-
           let args = Array.isArray( arguments[ 0 ] ) ? arguments[ 0 ] : arguments
           
           fnc.values.length = 0
+
+          const tmp = [] 
           
           for( let i = 0; i < args.length; i++ ) {
-            fnc.values.push( args[ i ] )
+            const val = args[i].isPattern === true ? args[ i ].original.slice(0) : args[ i ] 
+            tmp.push( val )
           }
+          fnc.values = tmp
           
           fnc.end = fnc.values.length - 1
           
@@ -10959,7 +10995,7 @@ const patternWrapper = function( Gibber ) {
             fnc.__message( 'values', fnc.values ) 
             fnc.__message( '_onchange', true ) 
           }
-          fnc._onchange( 'set', args )
+          fnc._onchange( 'set', fnc.values ) //args )
         }
         
         return fnc
@@ -11548,6 +11584,7 @@ module.exports = function( Gibber ) {
       __values = __values.render()
     }
 
+    if( Array.isArray( __values ) && __values.length <= 0 ) throw Error('arrays passed to sequences must have at least one value inside of them')
     // convert to pattern if needed and render
     const values = Array.isArray( __values ) 
       ? Gibber.Pattern( ...__values ).render()
@@ -11990,6 +12027,22 @@ module.exports = function( Gibber ) {
         return args
       })
     }
+
+    let p
+    try {
+      p = Gibber.Audio.Gibberish.Tidal.Pattern( pattern ) 
+    } catch(e) {
+      console.error(`Your Tidal pattern ${pattern} uses invalid syntax`)
+      return null
+    }
+
+    const tokens = [...pattern.matchAll(/[a-zA-Z]+/g)].map( v=>v[0] )
+      tokens.forEach( t => {
+        if( target[ t ] === undefined ) {
+          console.error(`Your Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.`)
+          return null
+        }
+      })
 
     const seq = Gibber.Audio.Gibberish.Tidal({ pattern, target, key, priority, filters, mainthreadonly:props.mainthreadonly })
     seq.clear = clear
@@ -63630,16 +63683,19 @@ const share = {
   setupShareHandler( cm, environment, networkConfig ) {
     document.querySelector('#connect').onclick = function() {
       const closeconnect = function() {
-        const shouldShowChat = document.querySelector('#showChat').checked 
-        const username = document.querySelector( '#connectname' ).value  
-        const { socket, provider, binding, chatData, commands } = share.initShare( 
+        const shouldShowChat  = document.querySelector('#showChat').checked,
+              useSharedEditor = document.querySelector('#useSharedEditorBox').checked,
+              username = document.querySelector( '#connectname' ).value,  
+              roomname = document.querySelector( '#connectroom' ).value
+
+        const { socket, provider, binding, chatData, commands, userData } = share.initShare( 
           cm, 
           username, 
-          document.querySelector( '#connectroom' ).value 
+          roomname
         )
         share.commands = commands
 
-        //commands.unshift([ 'user','test' ])
+        userData.unshift([{ username }])
 
         __socket = socket
         networkConfig.isNetworked = true
@@ -63682,6 +63738,20 @@ const share = {
           }
         })
 
+        const users = []
+        userData.observe( e => {
+          const msgs = e.changes.delta[0].insert
+          for( let i = msgs.length-1; i>=0; i-- ) {
+            const msg = msgs[ i ]
+
+            if( users.indexOf( msg.username ) === -1 ) {
+              users.push( msg.username )
+              if( useSharedEditor === false ) {
+                createSplits( msg.username, users )
+              }
+            }
+          }
+        })
         environment.showArgHints = false
         environment.showCompletions = false
         
@@ -63735,6 +63805,35 @@ const share = {
       document.querySelector('.CodeMirror-scroll').addEventListener( 'click', blurfnc )
     }
 
+  },
+
+  createSplits( mostRecentUser, usernames ) {
+    let grid = [[]]
+    
+    switch( usernames.length ) {
+      case 2: grid[0] = [usernames[0], usernames[1]]; break; 
+      case 3: 
+        grid[0] = [usernames[0], usernames[1]]
+        grid[1] = [usernames[2]]
+        break
+      case 4:
+        grid[0] = [usernames[0], usernames[1]]
+        grid[1] = [usernames[2], usernames[3]]
+        break
+      case 5:
+        grid[0] = [usernames[0], usernames[1], usernames[4]]
+        grid[1] = [usernames[2], usernames[3]]
+        break
+      case 6:
+        grid[0] = [usernames[0], usernames[1], usernames[4]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        break
+
+      default:
+        grid[0][0] = mostRecentUser
+        // 1 user, do nothing
+    }
+    
   },
 
   quickmsg() { console.log( 'msg' ) },
