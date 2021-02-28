@@ -14,13 +14,15 @@ module.exports = function() {
 
     {
       name:'general tutorials',
-      options:[['1. running/stopping code', 'intro.tutorial.js'],
-        ['2. creating objects', 'creating.objects.js'],
-        ['3. basic sequencing', 'sequencing.js'],
-        ['4. patterns', 'pattern.js'],
-        ['5. audiovisual mappings', 'mapping.js'],
-        ['6. tidalcycles', 'tidal.js' ],
-        ['7. modulation', 'modulation.js' ]
+      options:[
+        ['1. running/stopping code', 'intro.tutorial.js'],
+        ['2. using the console', 'console.js'],
+        ['3. creating objects', 'creating.objects.js'],
+        ['4. basic sequencing', 'sequencing.js'],
+        ['5. patterns', 'pattern.js'],
+        ['6. audiovisual mappings', 'mapping.js'],
+        ['7. tidalcycles', 'tidal.js' ],
+        ['8. modulation', 'modulation.js' ]
       ]
     },
 

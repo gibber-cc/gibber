@@ -54,7 +54,17 @@ let cm, cmconsole, exampleCode,
           Gibber.shouldDelay = Gibber.Audio.shouldDelay = useDelay 
 
           const preWindowMembers = Object.keys( window )
-          func()
+          let err = null
+          try {
+            func()
+          } catch(e) {
+            environment.console.error( e.toString(), e )
+            err = e
+          } finally {
+
+            environment.console.__printNotifications()
+            environment.console.__clearNotifications()
+          }
           const postWindowMembers = Object.keys( window )
 
           if( preWindowMembers.length !== postWindowMembers.length && environment.useProxies === true )   {
@@ -289,6 +299,8 @@ CodeMirror.keyMap.playground =  {
   'Shift-Enter'( cm ) { environment.runCode( cm, false, false ) },
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
   'Shift-Alt-Enter'( cm ) { environment.runCode( cm, true, false, true ) },
+
+  'Ctrl-\\'( cm ) { environment.console.clear() }, 
 
   'Ctrl-.'( cm ) {
     Gibber.clear()

@@ -7,7 +7,8 @@ const Gibber        = require( 'gibber.core.lib' ),
       Metronome     = require( './metronome.js' ),
       Editor        = require( './editor.js' ),
       Share         = require( './share.js' ),
-      setupExamples = require( './examples.js' )
+      setupExamples = require( './examples.js' ),
+      __Console       = require( './console.js' )
       //Gibberwocky   = require( 'gibberwocky' )
 
 let cm, environment, cmconsole, exampleCode, 
@@ -25,6 +26,7 @@ window.onload = function() {
   environment.theme = theme
   environment.useComments = true
 
+  environment.console = window.Console = __Console( environment )
 
   const themename = localStorage.getItem('themename')
 
@@ -56,6 +58,8 @@ window.onload = function() {
     window.future = function( fnc, time, dict ) {
       Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
     } 
+
+    environment.console.init( Gibber )
 
     window.solo = function( ...soloed ) {
       if( soloed.length > 0 ) {
@@ -103,12 +107,13 @@ window.onload = function() {
       for( let key in Environment.sounds ) {
         delete Environment.sounds[ key ]
       }
+      Console.log( '%cgibber has been cleared.', 'background:#006;color:white; padding:.5em' )
     })
 
     cm.__setup()
-    console.log( 
-      '%c\ngibber is now running. thanks for playing!\n', 
-      `color:${Environment.theme.get('f_high')};background:${Environment.theme.get('background')}` 
+    Console.log( 
+      '%cgibber is now running. thanks for playing!', 
+      `color:white;background:black; padding:1em; width:100%` 
     ) 
   }) 
 
