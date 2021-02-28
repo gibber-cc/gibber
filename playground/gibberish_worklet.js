@@ -6533,7 +6533,8 @@ module.exports = function (Gibberish) {
   BitCrusher.defaults = {
     input: 0,
     bitDepth: .5,
-    sampleRate: .5
+    sampleRate: .5,
+    inputGain: 1
   };
 
   return BitCrusher;
@@ -6632,6 +6633,7 @@ module.exports = function (Gibberish) {
 
   Shuffler.defaults = {
     input: 0,
+    inputGain: 1,
     rate: 22050,
     chance: .25,
     reverseChance: .5,
@@ -6799,6 +6801,7 @@ module.exports = function (Gibberish) {
 
   Delay.defaults = {
     input: 0,
+    inputGain: 1,
     feedback: .5,
     time: 11025,
     wetdry: .5,
@@ -6880,6 +6883,7 @@ module.exports = function (Gibberish) {
 
   Distortion.defaults = {
     input: 0,
+    inputGain: 1,
     shape1: .1,
     shape2: .1,
     pregain: 5,
@@ -6895,7 +6899,7 @@ let ugen = require('../ugen.js')();
 let effect = Object.create(ugen);
 
 Object.assign(effect, {
-  defaults: { bypass: false, inputGain: 1, pan: .5 },
+  defaults: { bypass: false },
   type: 'effect'
 });
 
@@ -7001,6 +7005,7 @@ module.exports = function (Gibberish) {
 
   Flanger.defaults = {
     input: 0,
+    inputGain: 1,
     feedback: .81,
     offset: .125,
     frequency: 1
@@ -7091,6 +7096,7 @@ module.exports = function (Gibberish) {
 
   Freeverb.defaults = {
     input: 0,
+    inputGain: 1,
     wet1: 1,
     wet2: 0,
     dry: .5,
@@ -7152,6 +7158,7 @@ module.exports = function (Gibberish) {
 
   RingMod.defaults = {
     input: 0,
+    inputGain: 1,
     frequency: 220,
     gain: 1,
     mix: 1
@@ -7219,6 +7226,7 @@ module.exports = function (Gibberish) {
 
   Tremolo.defaults = {
     input: 0,
+    inputGain: 1,
     frequency: 2,
     amount: 1,
     shape: 'sine'
@@ -7293,6 +7301,7 @@ module.exports = function (Gibberish) {
 
   Vibrato.defaults = {
     input: 0,
+    inputGain: 1,
     feedback: .01,
     amount: .5,
     frequency: 4

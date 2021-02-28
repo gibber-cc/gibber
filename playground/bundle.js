@@ -6384,7 +6384,7 @@ module.exports = function( Audio ) {
             const path = json.previews[ 'preview-hq-mp3' ]
             
             sampler.loadSample( path )
-            console.log( 'loading:', path )
+            //console.log( 'loading:', path )
           }) 
       }else{
         if( Audio.Gibberish.mode === 'worklet' ) {
@@ -6395,11 +6395,11 @@ module.exports = function( Audio ) {
 
     // search for text query, and then use returned id to 
     // fetch by number 
-    string( query, sampler, count ) {
+    string( query, sampler, count, originalQuery ) {
       sampler.length = count
-      console.log( 'Searching freesound for ' + query )
       let queryString ='https://freesound.org/apiv2/search/text/?'
 
+      console.group('Querying Freesound for: ' + originalQuery || query )
       if( query.indexOf( 'query' ) > -1 ) {
         queryString += query
         queryString += `&token=${token}&fields=name,id,previews`
@@ -6411,35 +6411,37 @@ module.exports = function( Audio ) {
       fetch( queryString )
         .then( data => data.json() )
         .then( sounds => {
-            sampler.length = count < sounds.results.length ? count : sounds.results.length
-            for( let i = 0; i < sampler.length; i++ ) {
-              const result = sounds.results[i]
-              if( result !== undefined ) {
-                const filename = result.name,
-                      id = result.id,
-                      url = result.previews[ 'preview-hq-mp3' ] 
+          if( sounds.results.length > 0 ) {
+            console.log(`%c${sounds.results.length} sounds found. Starting downloads:`, `background:black;color:white`)
+          }else{
+            console.log(`%cNo sounds were found for this query!`, `background:red;color:white`)
+          }
+          sampler.length = count < sounds.results.length ? count : sounds.results.length
+          console.table( sounds.results.map( r=>r.name ) )
+          for( let i = 0; i < sampler.length; i++ ) {
+            const result = sounds.results[i]
+            if( result !== undefined ) {
+              const filename = result.name,
+                    id = result.id,
+                    url = result.previews[ 'preview-hq-mp3' ] 
 
-                if( Freesound.loaded[ url ] === undefined ) {
-                  console.log( `loading freesound file: ${filename}` )
+              if( Freesound.loaded[ url ] === undefined ) {
+                //console.log( `%c${filename}`, `color:white;background:#333333;` )
 
-                  sampler.loadSample( url, (__sampler,buffer) => {
-                    //if( Audio !== undefined && Audio.Gibberish.mode === 'worklet' ) {
-                      Freesound.loaded[ url ] = buffer.data.buffer
-                    //}
-                  })
+                sampler.loadSample( url, (__sampler,buffer) => {
+                  Freesound.loaded[ url ] = buffer.data.buffer
+                })
 
-                }else{
-                  // XXX memoing the files causes an error
-                  if( Gibberish.mode === 'worklet' ) {
-                    console.log( 'reusing freesound file:', filename )
-
-                    //setTimeout( ()=> {
-                      sampler.loadSample( url, null, Freesound.loaded[ url ] )
-                    //}, 0 )
-                  }
+              }else{
+                // XXX memoing the files causes an error
+                if( Gibberish.mode === 'worklet' ) {
+                  //console.log( 'reusing freesound file:', filename )
+                  sampler.loadSample( url, null, Freesound.loaded[ url ] )
                 }
               }
             }
+          }
+          console.groupEnd()
         })
     },
 
@@ -6461,7 +6463,7 @@ module.exports = function( Audio ) {
 
       query += `&sort=${sort}`
 
-      queries.string( query, sampler, q.count )
+      queries.string( query, sampler, q.count, q.query )
     }
   }
 
@@ -7176,7 +7178,7 @@ const Instruments = {
       methods:[ 'note', 'trigger', 'loadFile', 'loadBuffer' ],
     },
     Multisampler:{
-      methods:[ 'note', 'trigger', 'pick', 'pickFile', 'loadSample', 'setpan', 'setrate' ], 
+      methods:[ 'note', 'trigger', 'pick', 'pickFile', 'pickplay', 'loadSample', 'setpan', 'setrate' ], 
     },
     Snare:{
       methods:[ 'note','trigger' ],
@@ -9134,6 +9136,11 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         return obj
       }
       obj.voices = obj.__wrapped__.voices
+      obj.inspect = function() {
+        console.group( 'Inspecting ' + description.name )
+        console.table( Object.assign({}, obj.voices[0].__wrapped__.__properties__, obj.__wrapped__.__properties__ ) )
+        console.groupEnd()
+      }
     }
 
     // createProperty = function( obj, propertyName, __wrappedObject, timeProps, Audio, isPoly=false ) {
@@ -9356,6 +9363,22 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       set(v) {}
     })
 
+    obj.inspect = ()=> {
+      console.group( 'Inspecting ' + description.name )
+      const keys = Object.keys( obj.__wrapped__.__properties__ )
+      const props = {}
+      keys.forEach( key => {
+        if( key[0] !== '_' ) {
+          if( obj[ key ] !== null && obj[ key ] !== undefined ) {
+            props[ key ] = obj[ key ].value
+          }
+        }
+      })
+      console.table( props ) 
+      //console.table( obj.__wrapped__.__properties__ )
+      console.groupEnd()
+    }
+
     obj.out = function( scale=1, offset=0, bufferSize=null ) {
       // if the buffer size changes...
       if( bufferSize !== null ) {
@@ -9473,7 +9496,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           }
         }
       }else{
-        console.warn( 'You cannot connect to a number; perhaps you meant this to be the level for your connection?' )
+        console.log( '%cYou cannot connect to a number; perhaps you meant this to be the level for your connection?', 'color:white;background:#900' )
       }
 
       return obj 
@@ -9510,6 +9533,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           if( obj.fx.length === 0 ) obj.connect( Audio.Master )
         }
       }
+
     }else if( obj.__wrapped__.type === 'effect' ) {
       obj.bus = function() {
         const b = Audio.busses.Bus2()
@@ -9532,6 +9556,29 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             }
           }
         })
+
+        p.inspect = function() {
+          console.group( 'Inspecting ' + description.name + ' ' + 'Bus' )
+
+          const objKeys = Object.keys( obj.__wrapped__.__properties__ )
+          const __obj = {}
+          objKeys.forEach( key => {
+            if( key[0] !== '_' && key !== 'bypass' ) {
+              __obj[ key ] = obj[ key ].value !== undefined
+                ? obj[ key ].value
+                : obj.__wrapped__.__properties__[ key ].value
+            }
+          })
+          console.group( description.name.toLowerCase() )
+          console.table( __obj )
+          console.groupEnd()
+
+          console.group('bus')
+          console.table( b.__wrapped__.__properties__ )
+          console.groupEnd()
+
+          console.groupEnd()
+        }
 
         return p
       }
@@ -12032,14 +12079,14 @@ module.exports = function( Gibber ) {
     try {
       p = Gibber.Audio.Gibberish.Tidal.Pattern( pattern ) 
     } catch(e) {
-      console.error(`Your Tidal pattern ${pattern} uses invalid syntax`)
+      console.log(`%c\nYour Tidal pattern ${pattern} used invalid syntax.\n`, `color:white;background:#900` )
       return null
     }
 
     const tokens = [...pattern.matchAll(/[a-zA-Z]+/g)].map( v=>v[0] )
       tokens.forEach( t => {
         if( target[ t ] === undefined ) {
-          console.error(`Your Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.`)
+          console.error(`%c\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.`, `color:white;background:#900` ) 
           return null
         }
       })
@@ -62417,13 +62464,36 @@ let cm, cmconsole, exampleCode,
       }
    } 
 
+   const startingText = `
+/* welcome!
+
+to improve your gibbering, we suggest 
+opening your browser's development console, 
+which will display a variety of important 
+messages. use one of the keystrokes below to
+open it:
+
+               chrome/edge               firefox
+win/lin |   ctrl + shift + j    |    ctrl + shift + i
+mac     | command + option + j  |  command + option + i
+
+...and for best results, use chrome.
+
+   ************************************************
+  **************************************************
+ ***                                              ***
+**** ready? click anywhere in the editor to begin ****
+ ***                                              ***
+  **************************************************
+   ***********************************************/`
+
 module.exports = function( Gibber ) {
   const editor = {}
   const cm = CodeMirror( document.querySelector('#editor'), {
     mode:   'javascript',
-    value:  '// click in the editor to begin!!!',
+    value:  startingText, 
     keyMap: 'playground',
-    autofocus: true,
+    autofocus: false,
     //matchBrackets:true,
     indentUnit:2,
     autoCloseBrackets:true,
@@ -62669,6 +62739,10 @@ window.onload = function() {
     })
 
     cm.__setup()
+    console.log( 
+      '%c\ngibber is now running. thanks for playing!\n', 
+      `color:${Environment.theme.get('f_high')};background:${Environment.theme.get('background')}` 
+    ) 
   }) 
 
   environment.editor = cm
@@ -65766,7 +65840,8 @@ let BitCrusher = inputProps => {
 BitCrusher.defaults = {
   input:0,
   bitDepth:.5,
-  sampleRate: .5
+  sampleRate: .5,
+  inputGain:1
 }
 
 return BitCrusher
@@ -65885,6 +65960,7 @@ module.exports = function( Gibberish ) {
   
   Shuffler.defaults = {
     input:0,
+    inputGain:1,
     rate:22050,
     chance:.25,
     reverseChance:.5,
@@ -66060,6 +66136,7 @@ let Delay = inputProps => {
 
 Delay.defaults = {
   input:0,
+  inputGain:1,
   feedback:.5,
   time: 11025,
   wetdry: .5,
@@ -66147,6 +66224,7 @@ module.exports = function( Gibberish ) {
 
   Distortion.defaults = {
     input:0,
+    inputGain:1,
     shape1:.1,
     shape2:.1,
     pregain:5,
@@ -66163,7 +66241,7 @@ let ugen = require( '../ugen.js' )()
 let effect = Object.create( ugen )
 
 Object.assign( effect, {
-  defaults: { bypass:false, inputGain:1, pan:.5 },
+  defaults: { bypass:false },
   type:'effect'
 })
 
@@ -66282,6 +66360,7 @@ let Flanger = inputProps => {
 
 Flanger.defaults = {
   input:0,
+  inputGain:1,
   feedback:.81,
   offset:.125,
   frequency:1
@@ -66387,6 +66466,7 @@ const Freeverb = inputProps => {
 
 Freeverb.defaults = {
   input: 0,
+  inputGain:1,
   wet1: 1,
   wet2: 0,
   dry: .5,
@@ -66455,6 +66535,7 @@ let RingMod = inputProps => {
 
 RingMod.defaults = {
   input:0,
+  inputGain:1,
   frequency:220,
   gain: 1, 
   mix:1
@@ -66528,6 +66609,7 @@ const Tremolo = inputProps => {
 
 Tremolo.defaults = {
   input:0,
+  inputGain:1,
   frequency:2,
   amount: 1, 
   shape:'sine'
@@ -66615,6 +66697,7 @@ const Vibrato = inputProps => {
 
 Vibrato.defaults = {
   input:0,
+  inputGain:1,
   feedback:.01,
   amount:.5,
   frequency:4
@@ -70785,7 +70868,7 @@ const utilities = {
     return Gibberish[ name ]
   },
 
-  createContext( ctx, cb, resolve, bufferSize=2048, immediate=false ) {
+  createContext( ctx, cb, resolve, bufferSize=2048, immediate=false, useKeys=false ) {
     let AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext
 
     AWPF( window, bufferSize )
@@ -70801,7 +70884,7 @@ const utilities = {
           window.removeEventListener( 'touchstart', start )
         }else{
           window.removeEventListener( 'mousedown', start )
-          window.removeEventListener( 'keydown', start )
+          if( useKeys ) window.removeEventListener( 'keydown', start )
         }
 
         const mySource = utilities.ctx.createBufferSource()
@@ -70817,7 +70900,7 @@ const utilities = {
         window.addEventListener( 'touchstart', start )
       }else{
         window.addEventListener( 'mousedown', start )
-        window.addEventListener( 'keydown', start )
+        if( useKeys ) window.addEventListener( 'keydown', start )
       }
     }else{
       start()

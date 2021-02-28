@@ -148,13 +148,36 @@ let cm, cmconsole, exampleCode,
       }
    } 
 
+   const startingText = `
+/* welcome!
+
+to improve your gibbering, we suggest 
+opening your browser's development console, 
+which will display a variety of important 
+messages. use one of the keystrokes below to
+open it:
+
+               chrome/edge               firefox
+win/lin |   ctrl + shift + j    |    ctrl + shift + i
+mac     | command + option + j  |  command + option + i
+
+...and for best results, use chrome.
+
+   ************************************************
+  **************************************************
+ ***                                              ***
+**** ready? click anywhere in the editor to begin ****
+ ***                                              ***
+  **************************************************
+   ***********************************************/`
+
 module.exports = function( Gibber ) {
   const editor = {}
   const cm = CodeMirror( document.querySelector('#editor'), {
     mode:   'javascript',
-    value:  '// click in the editor to begin!!!',
+    value:  startingText, 
     keyMap: 'playground',
-    autofocus: true,
+    autofocus: false,
     //matchBrackets:true,
     indentUnit:2,
     autoCloseBrackets:true,

@@ -106,6 +106,10 @@ window.onload = function() {
     })
 
     cm.__setup()
+    console.log( 
+      '%c\ngibber is now running. thanks for playing!\n', 
+      `color:${Environment.theme.get('f_high')};background:${Environment.theme.get('background')}` 
+    ) 
   }) 
 
   environment.editor = cm
