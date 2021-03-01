@@ -10911,6 +10911,31 @@ module.exports = function (Gibberish) {
       Gibberish.utilities.createPubSub(seq);
     }
     // need a separate reference to the properties for worklet meta-programming
+    if (typeof props.values === 'object' && props.values.requiresRender === true) {
+      if (Gibberish.mode === 'processor') {
+        const keys = Object.keys(props.values.dict);
+        const objs = Object.values(props.values.dict).map(v => typeof v === 'object' ? Gibberish.processor.ugens.get(v.id) : v);
+
+        // we create a new inner function using the function constructor,
+        // where every argument is codegen'd as an upvalue to the
+        // returned function. after codegen we call the functon
+        // to get the inner function with the upvalues andd
+        // return that.
+        let code = '';
+        keys.forEach(k => {
+          let line = `let ${k} = `;
+          const value = props.values.dict[k];
+          const getter = typeof value === 'object' ? `Gibberish.processor.ugens.get(${value.id})` : value;
+          line += value;
+          code += line + '\n';
+        });
+        code += `return function() { ${props.values.fncstr} }`;
+
+        const fnc = new Function(code)();
+
+        props.values = fnc;
+      }
+    }
     const properties = Object.assign({}, Sequencer.defaults, props);
     Object.assign(seq, properties);
     seq.__properties__ = properties;
@@ -11310,7 +11335,7 @@ module.exports = function (Gibberish) {
       return Gibberish[name];
     },
 
-    createContext(ctx, cb, resolve, bufferSize = 2048, immediate = false) {
+    createContext(ctx, cb, resolve, bufferSize = 2048, immediate = false, useKeys = false) {
       let AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext;
 
       AWPF(window, bufferSize);
@@ -11326,7 +11351,7 @@ module.exports = function (Gibberish) {
             window.removeEventListener('touchstart', start);
           } else {
             window.removeEventListener('mousedown', start);
-            window.removeEventListener('keydown', start);
+            if (useKeys) window.removeEventListener('keydown', start);
           }
 
           const mySource = utilities.ctx.createBufferSource();
@@ -11342,7 +11367,7 @@ module.exports = function (Gibberish) {
           window.addEventListener('touchstart', start);
         } else {
           window.addEventListener('mousedown', start);
-          window.addEventListener('keydown', start);
+          if (useKeys) window.addEventListener('keydown', start);
         }
       } else {
         start();
@@ -11520,6 +11545,20 @@ module.exports = function (Gibberish) {
       obj.wrap = this.wrap;
       obj.future = this.future;
       obj.Make = this.Make;
+    },
+
+    // for wrapping upvalues in a dictionary and passing function across thread
+    // to be reconstructed.
+    // ex; wrapped = fn( ()=> { return Math.random() * test }, { test:20 })
+    // syn.note.seq( wrapped, 1/4 )
+    fn(fnc, dict = {}) {
+      const fncstr = fnc.toString();
+      const firstBracketIdx = fncstr.indexOf('{');
+      const code = fncstr.slice(firstBracketIdx + 1, -1);
+      const s = { requiresRender: true, filters: [], fncstr: code, args: [], dict, addFilter(f) {
+          this.filters.push(f);
+        } };
+      return s;
     },
 
     getUID() {

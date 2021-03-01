@@ -6337,7 +6337,8 @@ module.exports = function( Audio ) {
   const Freesound = function( query, options ) {
     const props = Object.assign( { count:1, maxVoices:1, panVoices:true }, typeof query === 'object' ? query : options )
     const sampler = Audio.instruments.Multisampler( props )
-    queries[ typeof query ]( query, sampler, props.count )
+    setTimeout( ()=>queries[ typeof query ]( query, sampler, props.count ), 0 )
+ 
     return sampler
   }
 
@@ -6414,6 +6415,7 @@ module.exports = function( Audio ) {
         .then( data => data.json() )
         .then( sounds => {
           if( sounds.results.length > 0 ) {
+            if( sounds.results.length > count ) sounds.results = sounds.results.slice(0,count)
             console.log(`%c${sounds.results.length} sounds found. Starting downloads:`, `background:black;color:white`)
           }else{
             console.log(`%cNo sounds were found for this query!`, `background:red;color:white`)
@@ -11641,7 +11643,9 @@ module.exports = function( Gibber ) {
       ? Gibber.Pattern( ...__values ).render()
       : typeof __values === 'function' && __values.isPattern 
         ? __values.render()
-        : Gibber.Pattern( __values ).render()
+        : __values.requiresRender 
+          ? __values
+          : Gibber.Pattern( __values ).render()
 
     // if an array of values is passed, let users call pattern method on that array, for example:
     // a.note.seq( b=[0,1,2,3], 1/4 )
@@ -11760,7 +11764,7 @@ module.exports = function( Gibber ) {
     // XXX need to abstract this so that a graphics sequencer could also be called...
     const seq = Gibber.Audio.Gibberish.Sequencer({ values, timings, density, target, key, priority, rate:1/*Gibber.Clock.AudioClock*/, clear, autotrig, mainthreadonly:props.mainthreadonly })
 
-    values.setSeq( seq )
+    if( values.setSeq ) values.setSeq( seq )
 
     addValuesFilters( seq,key )
 
@@ -62390,9 +62394,9 @@ module.exports = function( environment ) {
       Gibber.subscribe( 'new sequence', seq => {
         let msg = ''
         if( seq.target.__meta__ !== undefined ) {
-          msg = `sequence controlling ${seq.key} on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+          msg = `sequence controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
         }else{
-          msg = `sequence controlling ${seq.key} on ${seq.target.name} now running.`
+          msg = `sequence controlling '${seq.key}' on ${seq.target.name} now running.`
         } 
         this.__notifications['new sequence']( msg )
       })
@@ -62400,16 +62404,17 @@ module.exports = function( environment ) {
       Gibber.subscribe( 'new tidal', seq => {
         let msg = ''
         if( seq.target.__meta__ !== undefined ) {
-          msg = `tidal pattern controlling ${seq.key} on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+          msg = `tidal pattern controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
         }else{
-          msg = `tidal pattern controlling ${seq.key} on ${seq.target.name} now running.`
+          msg = `tidal pattern controlling '${seq.key}' on ${seq.target.name} now running.`
         } 
         this.__notifications['new tidal']( msg )
       })
 
       Gibber.subscribe( 'error', this.__notifications.error )
 
-      console.warn = Console.warn
+      window.console.warn = Console.warn
+      window.console.error = Console.error
     },
 
     error( msg, e ) {
@@ -62850,7 +62855,9 @@ window.onload = function() {
 
     window.Graphics = Gibber.Graphics
     window.Audio    = Gibber.Audio
+    window.fn = Gibber.Audio.Gibberish.utilities.fn
     //setupFFT( Marching.FFT )
+    
 
     const fft = window.FFT = Marching.FFT
     fft.input = Gibber.Audio.Gibberish.worklet
@@ -70603,6 +70610,38 @@ const Sequencer = props => {
     Gibberish.utilities.createPubSub( seq )
   }
   // need a separate reference to the properties for worklet meta-programming
+  if( typeof props.values === 'object' && props.values.requiresRender === true ) {
+    if( Gibberish.mode === 'processor' ) {
+      const keys = Object.keys( props.values.dict )
+      const objs = Object.values( props.values.dict )
+        .map( v => typeof v === 'object' 
+          ? Gibberish.processor.ugens.get(v.id) 
+          : v 
+        )
+
+      // we create a new inner function using the function constructor,
+      // where every argument is codegen'd as an upvalue to the
+      // returned function. after codegen we call the functon
+      // to get the inner function with the upvalues andd
+      // return that.
+      let code = ''
+      keys.forEach( k => {
+        let line = `let ${k} = `
+        const value = props.values.dict[ k ]
+        const getter = typeof value === 'object' 
+          ? `Gibberish.processor.ugens.get(${ value.id })`
+          : value
+        line += value
+        code += line + '\n'
+
+      })  
+      code +=`return function() { ${ props.values.fncstr } }` 
+
+      const fnc = new Function( code )()
+
+      props.values = fnc 
+    }
+  }
   const properties = Object.assign( {}, Sequencer.defaults, props )
   Object.assign( seq, properties ) 
   seq.__properties__ = properties
@@ -71217,6 +71256,18 @@ const utilities = {
     obj.wrap = this.wrap
     obj.future = this.future
     obj.Make = this.Make
+  },
+
+  // for wrapping upvalues in a dictionary and passing function across thread
+  // to be reconstructed.
+  // ex; wrapped = fn( ()=> { return Math.random() * test }, { test:20 })
+  // syn.note.seq( wrapped, 1/4 )
+  fn( fnc, dict={}) {
+    const fncstr = fnc.toString()
+    const firstBracketIdx = fncstr.indexOf('{')
+    const code = fncstr.slice(firstBracketIdx+1, -1 )
+    const s = { requiresRender:true, filters:[], fncstr:code, args:[], dict, addFilter( f ) { this.filters.push(f) } }  
+    return s
   },
 
   getUID() { return uid++ }

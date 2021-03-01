@@ -84,7 +84,9 @@ window.onload = function() {
 
     window.Graphics = Gibber.Graphics
     window.Audio    = Gibber.Audio
+    window.fn = Gibber.Audio.Gibberish.utilities.fn
     //setupFFT( Marching.FFT )
+    
 
     const fft = window.FFT = Marching.FFT
     fft.input = Gibber.Audio.Gibberish.worklet

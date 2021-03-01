@@ -58,9 +58,9 @@ module.exports = function( environment ) {
       Gibber.subscribe( 'new sequence', seq => {
         let msg = ''
         if( seq.target.__meta__ !== undefined ) {
-          msg = `sequence controlling ${seq.key} on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+          msg = `sequence controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
         }else{
-          msg = `sequence controlling ${seq.key} on ${seq.target.name} now running.`
+          msg = `sequence controlling '${seq.key}' on ${seq.target.name} now running.`
         } 
         this.__notifications['new sequence']( msg )
       })
@@ -68,16 +68,17 @@ module.exports = function( environment ) {
       Gibber.subscribe( 'new tidal', seq => {
         let msg = ''
         if( seq.target.__meta__ !== undefined ) {
-          msg = `tidal pattern controlling ${seq.key} on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+          msg = `tidal pattern controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
         }else{
-          msg = `tidal pattern controlling ${seq.key} on ${seq.target.name} now running.`
+          msg = `tidal pattern controlling '${seq.key}' on ${seq.target.name} now running.`
         } 
         this.__notifications['new tidal']( msg )
       })
 
       Gibber.subscribe( 'error', this.__notifications.error )
 
-      console.warn = Console.warn
+      window.console.warn = Console.warn
+      window.console.error = Console.error
     },
 
     error( msg, e ) {
