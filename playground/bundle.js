@@ -11652,6 +11652,7 @@ module.exports = function( Gibber ) {
     // b.transpose.seq( 1,1 )
     if( Array.isArray( __values ) ) {
       Object.assign( __values, values )
+      __values.addFilter = values.addFilter.bind( values )
     } else if (typeof __values === 'object' && __values.type==='gen') {
       props.values.addFilter = values.addFilter.bind( values )
     }

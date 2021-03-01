@@ -38,11 +38,12 @@ drums.pick.seq(
 h.rotate.seq( -1,1,0,8 )
  
 bleeps = Sampler[4]('bleeps', { loudness:.25 }).connect( verb, .05 )
-  .trigger.seq( 
-    1, 
-    h1 = Hex(0x8a7a),
-    0, 12 
-  )
+
+bleeps.trigger.seq( 
+  1, 
+  h1 = Hex(0x8a7a),
+  0, 12 
+)
  
 bleeps.pick.seq( 
   gen( beats(8) * bleeps.length ), 
