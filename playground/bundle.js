@@ -63043,6 +63043,13 @@ window.onload = function() {
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
 
+    window.run = fnc => { 
+      Gibberish.worklet.port.__postMessage({ 
+        address:'eval', 
+        code:fnc.toString().split('=>')[1] 
+      })
+    }
+
     const fft = window.FFT = Marching.FFT
     fft.input = Gibber.Audio.Gibberish.worklet
     fft.__hasInput = true
