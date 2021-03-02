@@ -10917,7 +10917,7 @@ module.exports = function (Gibberish) {
     if (typeof props.values === 'object' && props.values.requiresRender === true) {
       if (Gibberish.mode === 'processor') {
         const keys = Object.keys(props.values.dict);
-        const objs = Object.values(props.values.dict).map(v => typeof v === 'object' ? Gibberish.processor.ugens.get(v.id) : v);
+        const objs = Object.values(props.values.dict).map(v => typeof v === 'object' && !Array.isArray(v) ? Gibberish.processor.ugens.get(v.id) : v);
 
         // we create a new inner function using the function constructor,
         // where every argument is codegen'd as an upvalue to the
@@ -10928,8 +10928,8 @@ module.exports = function (Gibberish) {
         keys.forEach(k => {
           let line = `let ${k} = `;
           const value = props.values.dict[k];
-          const getter = typeof value === 'object' ? `Gibberish.processor.ugens.get(${value.id})` : value;
-          line += value;
+          const getter = typeof value === 'object' ? Array.isArray(value) ? `[${value.toString()}]` : `Gibberish.processor.ugens.get(${value.id})` : value;
+          line += getter;
           code += line + '\n';
         });
         code += `return function() { ${props.values.fncstr} }`;

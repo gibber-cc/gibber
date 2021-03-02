@@ -70818,7 +70818,7 @@ const Sequencer = props => {
     if( Gibberish.mode === 'processor' ) {
       const keys = Object.keys( props.values.dict )
       const objs = Object.values( props.values.dict )
-        .map( v => typeof v === 'object' 
+        .map( v => typeof v === 'object' && !Array.isArray( v )
           ? Gibberish.processor.ugens.get(v.id) 
           : v 
         )
@@ -70833,9 +70833,11 @@ const Sequencer = props => {
         let line = `let ${k} = `
         const value = props.values.dict[ k ]
         const getter = typeof value === 'object' 
-          ? `Gibberish.processor.ugens.get(${ value.id })`
+          ? Array.isArray( value )
+            ? `[${value.toString()}]`
+            : `Gibberish.processor.ugens.get(${ value.id })`
           : value
-        line += value
+        line += getter 
         code += line + '\n'
 
       })  
