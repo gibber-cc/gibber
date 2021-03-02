@@ -10808,6 +10808,8 @@ module.exports = function (Gibberish) {
           shouldRun = false;
         }
 
+        if (value === Sequencer.DO_NOT_OUTPUT) shouldRun = false;
+
         if (shouldRun) {
           if (seq.mainthreadonly !== undefined) {
             if (typeof value === 'function') {
