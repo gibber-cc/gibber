@@ -92,7 +92,7 @@ let cm, cmconsole, exampleCode,
             if( environment.annotations === true ) markupFunction()
           }
         } catch (e) {
-          console.log( e )
+          environment.console.error( e.message.split('\n')[0], e )
           return
         }
 

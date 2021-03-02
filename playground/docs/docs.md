@@ -71,6 +71,14 @@ The majority of 3D objects in gibber include methods found in this prototype.
 
 **shouldAnimate** *boolean* (optional) - Controls whether or not the geometry is rendered on a per-frame basis (true) or is only rendered a single time (false).
 
+postprocessing
+----
+Postprocessing effects are applied to a scene *after* it has been rendered to a 2D plane. In some cases they also uses a depth buffer, which stores the position of any object coloring a pixel on the z-axis. Common examples of postprocessing effects include color correction, motion blur, and depth of field (bokeh).
+
+
+#### Methods ####
+
+#### Properties ####
 geometry
 ----
 *Prototype: [operation](#prototypes-operation)*
@@ -721,3 +729,119 @@ A texture can be applied to a geometry in order to pattern its surface; it can a
 #### Properties ####
 ### Texture.scale ###
 *float* default: 1.  The scale property determines the size, or resolution, of the texture. For example, when 'dots' texture is assigned to a cube with a scale of 10 there will be 10x10 dots on each side of the cube. A scale value of 1 will yiled a single dot centered on each side.
+
+# Postprocessing 
+Bloom
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The Bloom effect creates blurred glow effects in areas of the scene that are brighter than a specific *threshold* property.
+
+
+#### Properties ####
+### Bloom.threshold ###
+*float* default: 0.  Pixels with a brightness value above the threshold property will be spread their brightness to adjacent pixels, creating a glow effect.
+### Bloom.amount ###
+*float* default: 0.01.  The amount to boost the brightness of pixels that this effect operates on. High values (above 2) will result in blurred offsets that create duplicate images.
+Blur
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The Blur effect... blurs the final image on both axes. This operation can be repeated multiple times via the `.repetitions` argument to the constructor, and the number of samples used in the blur can also be increased in the constructor. Increasing these values will create a higher quality blur at an increased computational expense. The blur can cheaply be expanded by simply using the `.amount` property, which can be freely modified at runtime.
+
+
+#### Properties ####
+### Blur.amount ###
+*float* default: 0.01.  The amount to boost the brightness of pixels that this effect operates on. High values (above 2) will result in blurred offsets that create duplicate images.
+### Blur.repetitions ###
+*int* default: 2.  How many times to apply the blur effect. This property can *only be set in the constructor; it is not runtime editable.*
+### Blur.taps ###
+*int* default: 5.  The number of neighboring pixels that are sampled to genereate the blur. The available options are 5,9, and 13. This property can *only be set in the constructor; it is not runtime editable.*
+Brightness
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The `Brightness` effect increases/decreases the overall brightness of the scene based on the `.amount` property.
+
+
+#### Properties ####
+### Brightness.amount ###
+*float* default: 0.25.  Values above 0 increase the original brightness of the scene, values below 0 decrease it.
+Contast
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The `Brightness` effect increases/decreases the overall contrast of the scene based on the `.amount` property.
+
+
+#### Properties ####
+### Contast.amount ###
+*float* default: 0.5.  Values below 1 decrease the original contrast of the scene.
+Edge
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The `Edge` effect finds the edges of images using the [sobel operator](https://en.wikipedia.org/wiki/Sobel_operator), potentially resulting in a stylized, cartoonish effect result.
+
+
+#### Properties ####
+Focus
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+`Focus` is used to create a depth-of-field effect, where parts of the image that are currently in focus (according to the value of the `.depth` property) will appear crisp, while the rest of the image is blurred.
+
+
+#### Properties ####
+### Focus.depth ###
+*float* default: 0.  Given a value of 0, objects far from the camera will be blurred. Given a value of 1, objects close to the camera will be blurred.
+### Focus.radius ###
+*float* default: 0.01.  How much of the image is in focus. Larger areas will result in mmore of the image being crisp at the specified depth level.
+Godrays
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+`Focus` is used to create a depth-of-field effect, where parts of the image that are currently in focus (according to the value of the `.depth` property) will appear crisp, while the rest of the image is blurred.
+
+
+#### Properties ####
+### Godrays.decay ###
+*float* default: 1.  How fast the rays fade as they travel from their source. Values higher than `1` will create feedback that can quickly overwhelm a scene.
+### Godrays.weight ###
+*float* default: 0.01.  Multiplies the original background colors; higher values lead to brighter rays. This property expects very low values, typically between 0-.02.
+### Godrays.density ###
+*float* default: 1.  How close samples are together.
+### Godrays.threshold ###
+*float* default: 0.9.  Controls at what depth (where 1 is the farthest visible depth) the rays begin.
+Hue
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The `Hue` effect shifts the hue of objects below a provided depth threshold. Using the default threshold value of .99 the scene will be inverted while the background retains its original color. With a threshold value of 1 the background color will also be changed.
+
+
+#### Properties ####
+### Hue.threshold ###
+*float* default: 0.99.  Object fragments with a depth below this number (where depth is normalized to be between 0–1) will have their color shifted, other parts of the scene will be unaffected. A depth of .99 should usually keep the background color the same while changing the rest of the scene.
+### Hue.shift ###
+*float* default: 0.5.  The amount to shift the hue in the HSV color space.
+Invert
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The `Invert` effect inverts the color of objects below a provided depth threshold. Using the default threshold value of .99 (really, any value lower than 1) the scene will be inverted while the background retains its original color. With a threshold value of 1 the background color will also be changed.
+
+
+#### Properties ####
+### Invert.threshold ###
+*float* default: 0.99.  Object fragments with a depth below this number (where depth is normalized to be between 0–1) will have their color inverted, other parts of the scene will be unaffected. A depth of .99 should usually keep the background color the same while changing the rest of the scene.
+MotionBlur
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The `MotionBlur` effect can be used to create everything from subtle blurring based on movement in the scene (similiar to the blurring created by 'real-life' movement) to trippy feedback fun.
+
+
+#### Properties ####
+### MotionBlur.amount ###
+*float* default: 0.7.  The amount of feedback used to create the blur effect. Values above `.9` can be quite fun and experimental, while lower values can be used to create pseudo-realistic blurring around moving objects.
