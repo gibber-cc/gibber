@@ -57,11 +57,15 @@ module.exports = function( environment ) {
       Gibber.Audio.subscribe( 'new ugen', this.__notifications['new ugen'] )
       Gibber.subscribe( 'new sequence', seq => {
         let msg = ''
-        if( seq.target.__meta__ !== undefined ) {
-          msg = `sequence controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+        if( seq.target !== undefined ) {
+          if( seq.target.__meta__ !== undefined ) {
+            msg = `sequence controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+          }else{
+            msg = `sequence controlling '${seq.key}' on ${seq.target.name} now running.`
+          } 
         }else{
-          msg = `sequence controlling '${seq.key}' on ${seq.target.name} now running.`
-        } 
+          msg = `standalone sequencer created and running.`
+        }
         this.__notifications['new sequence']( msg )
       })
 

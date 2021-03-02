@@ -11658,18 +11658,20 @@ module.exports = function( Gibber ) {
     }
 
     // process time values
-    if( Gibber[ render ].timeProps[ target.name ] !== undefined && Gibber[ render ].timeProps[ target.name ].indexOf( key ) !== -1  ) {
-      const filter = render === 'Audio' 
-        ? (args,ptrn) => {
-            args[0] = Gibberish.Clock.time( args[0] )
-            return args
-          }
-        : (args,ptrn) => {
-            args[0] = Gibber.Audio.Clock.time( args[0] )
-            return args
-          }
+    if( target !== undefined ) {
+      if( Gibber[ render ].timeProps[ target.name ] !== undefined && Gibber[ render ].timeProps[ target.name ].indexOf( key ) !== -1  ) {
+        const filter = render === 'Audio' 
+          ? (args,ptrn) => {
+              args[0] = Gibberish.Clock.time( args[0] )
+              return args
+            }
+          : (args,ptrn) => {
+              args[0] = Gibber.Audio.Clock.time( args[0] )
+              return args
+            }
 
-      values.addFilter( filter )
+        values.addFilter( filter )
+      }
     }
 
     let timings
@@ -11772,26 +11774,30 @@ module.exports = function( Gibber ) {
     if( autotrig === false ) {
       timings.setSeq( seq )
     }else{
-      if( target.autotrig === undefined ) {
-        target.autotrig = []
-        Gibber.Audio.Gibberish.worklet.port.postMessage({
-          address:'property',
-          name:'autotrig',
-          value:[],
-          object:target.id
-        })
+      if( target !== undefined ) {
+        if( target.autotrig === undefined ) {
+          target.autotrig = []
+          Gibber.Audio.Gibberish.worklet.port.postMessage({
+            address:'property',
+            name:'autotrig',
+            value:[],
+            object:target.id
+          })
 
-      }
-      // object name key value
-      if( Gibber.Audio.Gibberish.mode === 'worklet' ) {
-        Gibber.Audio.Gibberish.worklet.port.postMessage({
-          address:'addObjectToProperty',
-          name:'autotrig',
-          object:target.id,
-          key:target.autotrig.length,
-          value:seq.id
-        })
-        target.autotrig.push( seq )
+        }
+        // object name key value
+        if( Gibber.Audio.Gibberish.mode === 'worklet' ) {
+          Gibber.Audio.Gibberish.worklet.port.postMessage({
+            address:'addObjectToProperty',
+            name:'autotrig',
+            object:target.id,
+            key:target.autotrig.length,
+            value:seq.id
+          })
+          target.autotrig.push( seq )
+        }
+      }else{
+        throw Error('you must define timings for any sequence without a target')
       }
     } 
 
@@ -62578,11 +62584,15 @@ module.exports = function( environment ) {
       Gibber.Audio.subscribe( 'new ugen', this.__notifications['new ugen'] )
       Gibber.subscribe( 'new sequence', seq => {
         let msg = ''
-        if( seq.target.__meta__ !== undefined ) {
-          msg = `sequence controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+        if( seq.target !== undefined ) {
+          if( seq.target.__meta__ !== undefined ) {
+            msg = `sequence controlling '${seq.key}' on ${seq.target.__meta__.name[1] || seq.target.__meta__.name[0] } now running.`
+          }else{
+            msg = `sequence controlling '${seq.key}' on ${seq.target.name} now running.`
+          } 
         }else{
-          msg = `sequence controlling '${seq.key}' on ${seq.target.name} now running.`
-        } 
+          msg = `standalone sequencer created and running.`
+        }
         this.__notifications['new sequence']( msg )
       })
 
@@ -70626,6 +70636,7 @@ module.exports = function( Gibberish ) {
 
 
 },{"../ugen.js":339,"../workletProxy.js":341,"genish.js":40}],337:[function(require,module,exports){
+(function (global){
 const __proxy = require( '../workletProxy.js' )
 
 module.exports = function( Gibberish ) {
@@ -70816,8 +70827,8 @@ const Sequencer = props => {
       // where every argument is codegen'd as an upvalue to the
       // returned function. after codegen we call the functon
       // to get the inner function with the upvalues andd
-      // return that.
-      let code = ''
+      // return that. Store references to globals as upvalues as well.
+      let code = 'let Gibberish = __Gibberish, global = __global;\n'
       keys.forEach( k => {
         let line = `let ${k} = `
         const value = props.values.dict[ k ]
@@ -70830,7 +70841,8 @@ const Sequencer = props => {
       })  
       code +=`return function() { ${ props.values.fncstr } }` 
 
-      const fnc = new Function( code )()
+      // pass in globals to be used as upvalues in final function
+      const fnc = new Function( '__Gibberish', '__global', code )( Gibberish, global )
 
       props.values = fnc 
     }
@@ -70856,6 +70868,7 @@ return Sequencer
 
 }
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../workletProxy.js":341}],338:[function(require,module,exports){
 const __proxy = require( '../workletProxy.js' )
 const Pattern = require( 'tidal.pegjs' )

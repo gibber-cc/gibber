@@ -10752,6 +10752,7 @@ module.exports = function (Gibberish) {
 };
 
 },{"../ugen.js":151,"../workletProxy.js":153,"genish.js":40}],149:[function(require,module,exports){
+(function (global){
 const __proxy = require('../workletProxy.js');
 
 module.exports = function (Gibberish) {
@@ -10922,8 +10923,8 @@ module.exports = function (Gibberish) {
         // where every argument is codegen'd as an upvalue to the
         // returned function. after codegen we call the functon
         // to get the inner function with the upvalues andd
-        // return that.
-        let code = '';
+        // return that. Store references to globals as upvalues as well.
+        let code = 'let Gibberish = __Gibberish, global = __global;\n';
         keys.forEach(k => {
           let line = `let ${k} = `;
           const value = props.values.dict[k];
@@ -10933,7 +10934,8 @@ module.exports = function (Gibberish) {
         });
         code += `return function() { ${props.values.fncstr} }`;
 
-        const fnc = new Function(code)();
+        // pass in globals to be used as upvalues in final function
+        const fnc = new Function('__Gibberish', '__global', code)(Gibberish, global);
 
         props.values = fnc;
       }
@@ -10958,6 +10960,7 @@ module.exports = function (Gibberish) {
   return Sequencer;
 };
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../workletProxy.js":153}],150:[function(require,module,exports){
 const __proxy = require('../workletProxy.js');
 const Pattern = require('tidal.pegjs');
