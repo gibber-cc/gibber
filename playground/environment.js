@@ -440,19 +440,19 @@ window.__use = function( lib ) {
         const Hydrasynth = Hydra
         let __hydra = null
 
-        window.Hydra = function( cnvs=null ) {
+        window.Hydra = function( shouldSrcGibberCanvas=false ) {
           const w = null
           const h = null
           environment.useProxies = false
-          const canvas = cnvs !== null ? cnvs :  document.createElement('canvas')
+          const canvas = document.createElement('canvas')
           canvas.width = w === null ? window.innerWidth : w
           canvas.height = h === null ? window.innerHeight : h
           canvas.style.width = `${canvas.width}px`
           canvas.style.height= `${canvas.height}px`
 
           const hydra = __hydra === null ?  new Hydrasynth({ canvas, global:false, detectAudio:false }) : __hydra
-          document.getElementById('graphics').remove()
-          canvas.setAttribute('id','graphics')
+          document.getElementById('graphics').style = 'visibility:hidden'
+          canvas.setAttribute('class','graphics')
           document.body.appendChild( canvas )
 
           window.hydra = hydra
@@ -465,6 +465,12 @@ window.__use = function( lib ) {
               '.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', 
               sheet.cssRules.length
             )
+            if( shouldSrcGibberCanvas ) {
+              s0.init({ 
+                src:document.querySelector('#graphics'), 
+                dynamic:true 
+              })
+            }
           }
 
           __hydra = hydra
