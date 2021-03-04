@@ -182,6 +182,14 @@ mac     | command + option + j  |  command + option + i
    ***********************************************/`
 
 module.exports = function( Gibber ) {
+
+  const keys = {
+    w:0,
+    a:0,
+    s:0,
+    d:0,
+    alt:0
+  }
   const editor = {}
   const cm = CodeMirror( document.querySelector('#editor'), {
     mode:   'javascript',
@@ -287,7 +295,52 @@ fm = FM({ feedback:.0015, decay:1/2 })
       cm.setValue( defaultCode )
     }
   }
+
+  const SDF = Marching
+  SDF.keys = {
+    w:0,
+    a:0,
+    s:0,
+    d:0,
+    alt:0
+  }
     
+  cm.on('keyup', (cm, event) => {
+    if( SDF.cameraEnabled ) {
+      const code = event.key//.code.slice(3).toLowerCase()
+      SDF.keys[ code ] = 0
+    }else if( event.key === 'Alt' ) {
+      for( let key in SDF.keys ) {
+        SDF.keys[ key ] = 0
+      }
+    } 
+  })
+
+  cm.on('keydown', (cm,event) => {
+    if( SDF.cameraEnabled ) {
+      SDF.keys[ event.key ] = 1
+      event.codemirrorIgnore = 1
+      event.preventDefault()
+    }
+  })
+
+  window.addEventListener( 'keydown', e => {
+    if( e.key === 'C' && e.ctrlKey === true && e.shiftKey === true ) {
+      Marching.cameraEnabled = !Marching.cameraEnabled
+      //document.querySelector('#cameratoggle').checked = Marching.cameraEnabled
+      if( Marching.cameraEnabled ) Marching.camera.on()
+    }
+    if( e.key === '.' && e.ctrlKey === true && e.shiftKey === true ) {
+      SDF.pause()
+    }else if( SDF.cameraEnabled ) {
+      SDF.keys[ e.key ] = 1
+    }
+  })
+  window.addEventListener( 'keyup', e => {
+    if( SDF.cameraEnabled ) {
+      SDF.keys[ e.key ] = 0
+    }
+  })
   return [cm,environment] 
 }
 
@@ -300,6 +353,14 @@ CodeMirror.keyMap.playground =  {
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
   'Shift-Alt-Enter'( cm ) { environment.runCode( cm, true, false, true ) },
 
+  //'Shift-Ctrl-C'(cm) {
+  //  Marching.cameraEnabled = !Marching.cameraEnabled
+  //  //document.querySelector('#cameratoggle').checked = Marching.cameraEnabled
+  //  if( Marching.cameraEnabled ) 
+  //    Marching.camera.on()
+  //  //else
+  //    //Marching.camera.off()
+  //},
   'Ctrl-\\'( cm ) { environment.console.clear() }, 
 
   'Ctrl-.'( cm ) {
@@ -308,7 +369,7 @@ CodeMirror.keyMap.playground =  {
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
   },
-  'Shift-Ctrl-C'(cm) { toggleSidebar() },
+  //'Shift-Ctrl-C'(cm) { toggleSidebar() },
 
   "Shift-Ctrl-=": function(cm) {
     fontSize += .2

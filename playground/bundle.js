@@ -12950,6 +12950,7 @@ const Graphics = {
     obj.Texture  = Marching.Texture
     obj.Camera = Graphics.camera
     obj.Fog = Graphics.fog.bind( Graphics )
+    obj.Voxels = Graphics.voxels.bind( Graphics )
     obj.Background = Graphics.background.bind( Graphics )
     obj.Light = Graphics.light.bind( Graphics ) 
     obj.Marching = Marching
@@ -13026,6 +13027,12 @@ const Graphics = {
   },
 
   background( color=Marching.vectors.Vec3(0) ) { Graphics.__background = color },
+  voxels( v = .1 ) { 
+    Graphics.useVoxels = true
+    Graphics.__voxelSize = v
+    return this
+  },
+
   fog( amount=.25, color=Marching.vectors.Vec3(0), shouldRender=true) {
     this.__fogColor = color
     this.__fogAmount = amount
@@ -13166,6 +13173,9 @@ const Graphics = {
           }
 
           let scene = Marching.createScene( wrapped )
+          if( Graphics.useVoxels ) {
+            scene = scene.voxel( Graphics.__voxelSize )
+          }
           if( Graphics.__fogAmount !== 0 ) {
             scene = scene.fog( Graphics.__fogAmount, Graphics.__fogColor, false )
           }
@@ -62821,6 +62831,14 @@ mac     | command + option + j  |  command + option + i
    ***********************************************/`
 
 module.exports = function( Gibber ) {
+
+  const keys = {
+    w:0,
+    a:0,
+    s:0,
+    d:0,
+    alt:0
+  }
   const editor = {}
   const cm = CodeMirror( document.querySelector('#editor'), {
     mode:   'javascript',
@@ -62926,7 +62944,52 @@ fm = FM({ feedback:.0015, decay:1/2 })
       cm.setValue( defaultCode )
     }
   }
+
+  const SDF = Marching
+  SDF.keys = {
+    w:0,
+    a:0,
+    s:0,
+    d:0,
+    alt:0
+  }
     
+  cm.on('keyup', (cm, event) => {
+    if( SDF.cameraEnabled ) {
+      const code = event.key//.code.slice(3).toLowerCase()
+      SDF.keys[ code ] = 0
+    }else if( event.key === 'Alt' ) {
+      for( let key in SDF.keys ) {
+        SDF.keys[ key ] = 0
+      }
+    } 
+  })
+
+  cm.on('keydown', (cm,event) => {
+    if( SDF.cameraEnabled ) {
+      SDF.keys[ event.key ] = 1
+      event.codemirrorIgnore = 1
+      event.preventDefault()
+    }
+  })
+
+  window.addEventListener( 'keydown', e => {
+    if( e.key === 'C' && e.ctrlKey === true && e.shiftKey === true ) {
+      Marching.cameraEnabled = !Marching.cameraEnabled
+      //document.querySelector('#cameratoggle').checked = Marching.cameraEnabled
+      if( Marching.cameraEnabled ) Marching.camera.on()
+    }
+    if( e.key === '.' && e.ctrlKey === true && e.shiftKey === true ) {
+      SDF.pause()
+    }else if( SDF.cameraEnabled ) {
+      SDF.keys[ e.key ] = 1
+    }
+  })
+  window.addEventListener( 'keyup', e => {
+    if( SDF.cameraEnabled ) {
+      SDF.keys[ e.key ] = 0
+    }
+  })
   return [cm,environment] 
 }
 
@@ -62939,6 +63002,14 @@ CodeMirror.keyMap.playground =  {
   'Alt-Enter'( cm )   { environment.runCode( cm, true,  true  ) },
   'Shift-Alt-Enter'( cm ) { environment.runCode( cm, true, false, true ) },
 
+  //'Shift-Ctrl-C'(cm) {
+  //  Marching.cameraEnabled = !Marching.cameraEnabled
+  //  //document.querySelector('#cameratoggle').checked = Marching.cameraEnabled
+  //  if( Marching.cameraEnabled ) 
+  //    Marching.camera.on()
+  //  //else
+  //    //Marching.camera.off()
+  //},
   'Ctrl-\\'( cm ) { environment.console.clear() }, 
 
   'Ctrl-.'( cm ) {
@@ -62947,7 +63018,7 @@ CodeMirror.keyMap.playground =  {
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
   },
-  'Shift-Ctrl-C'(cm) { toggleSidebar() },
+  //'Shift-Ctrl-C'(cm) { toggleSidebar() },
 
   "Shift-Ctrl-=": function(cm) {
     fontSize += .2
@@ -63517,6 +63588,12 @@ window.__use = function( lib ) {
         libs.P5 = window.P5
         
         window.p5 = window.p5.instance
+        window.p5.hydra = function() {
+          s0.init({ 
+            src:document.querySelector('.p5Canvas'), 
+            dynamic:true 
+          })
+        }
         res( window.P5 )
         console.log = console.__log
       } 
@@ -63705,7 +63782,8 @@ const Metronome = {
             beatPos = ( beat ) * beatWidth
     
       this.ctx.clearRect( 0, 0, this.width, this.height )
-      this.ctx.fillStyle = Gibber.Environment.theme.get('b_low')
+      this.ctx.globalAlpha = .75
+      this.ctx.fillStyle = Gibber.Environment.theme.get('b_med')
       this.ctx.fillRect(  beatPos, 0,  beatWidth, this.height )
     }
   },
@@ -79974,7 +80052,9 @@ const FX = {
       this.chain,
       colorTexture, 
       gl, 
-      { channels: [ depthTexture, null ] }
+      // pass null to create second scratch channel
+      // this is the samplerNum for arguments
+      { channels: [ depthTexture, null, null ] }
     )
   }, 
 
@@ -80026,7 +80106,19 @@ const FX = {
     return primitive
   },
 
-  Bloom( __threshold=0, __boost=.5 ) {
+  Bloom( __threshold=0, __horizontal = .5, __vertical=.5,  __boost=.5, taps = 9, reps = 3, num=1 ) {
+    const fx = {},
+          threshold  = FX.wrapProperty( fx, 'threshold',  __threshold ),
+          horizontal = FX.wrapProperty( fx, 'vertical',  __vertical ),
+          vertical   = FX.wrapProperty( fx, 'horizontal',  __horizontal ),
+          boost      = FX.wrapProperty( fx, 'amount', __boost ) 
+
+    fx.__wrapped__ = MP.bloom( threshold, horizontal, vertical, boost, num, taps, reps ) 
+
+    return fx
+  },
+
+  BloomOld( __threshold=0, __boost=.5 ) {
     const fx = {},
           threshold  = FX.wrapProperty( fx, 'threshold',  __threshold ),
           boost      = FX.wrapProperty( fx, 'amount', __boost ) 
@@ -80063,9 +80155,14 @@ const FX = {
     return fx
   },
 
-  Edge() {
+  Edge( mode=0, color=1 ) {
     const fx = {}
-    fx.__wrapped__ = MP.sobel()
+
+    switch( mode ) {
+      case 0: fx.__wrapped__ = MP.sobel(); break;
+      case 1: fx.__wrapped__ = MP.edge( color,0 ); break;
+      case 2: fx.__wrapped__ = MP.edgecolor( MP.vec4(...color) ); break;
+    }
 
     return fx 
   },
@@ -80169,7 +80266,8 @@ const FX = {
     const fx = {},
           amount = FX.wrapProperty( fx, 'amount', __amount, v => 1-v )
 
-    fx.__wrapped__ = MP.motionblur( 1, amount ) 
+    // 1 is the sampler for blur, and 2 is for motionbblur
+    fx.__wrapped__ = MP.motionblur( 2, amount ) 
 
     return fx
   },

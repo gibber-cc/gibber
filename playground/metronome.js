@@ -16,7 +16,8 @@ const Metronome = {
             beatPos = ( beat ) * beatWidth
     
       this.ctx.clearRect( 0, 0, this.width, this.height )
-      this.ctx.fillStyle = Gibber.Environment.theme.get('b_low')
+      this.ctx.globalAlpha = .75
+      this.ctx.fillStyle = Gibber.Environment.theme.get('b_med')
       this.ctx.fillRect(  beatPos, 0,  beatWidth, this.height )
     }
   },

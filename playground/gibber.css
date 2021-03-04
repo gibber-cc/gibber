@@ -42,9 +42,6 @@ body {
   display:none; 
 }
 
-select {
-  width:15em
-}
 .connect {
   margin:.5em; 
   font-family:monospace;
@@ -116,9 +113,10 @@ header {
 }
 
 select{ 
+  width:15em;
   display:inline-block;
   /*background:rgba(46,50,53,1);*/
-  background:var(--background);
+  background: transparent;
   color: var(--f_med);
   -webkit-border-radius:0px;
   -moz-border-radius:0px;

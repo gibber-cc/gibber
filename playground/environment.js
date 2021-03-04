@@ -549,6 +549,12 @@ window.__use = function( lib ) {
         libs.P5 = window.P5
         
         window.p5 = window.p5.instance
+        window.p5.hydra = function() {
+          s0.init({ 
+            src:document.querySelector('.p5Canvas'), 
+            dynamic:true 
+          })
+        }
         res( window.P5 )
         console.log = console.__log
       } 
