@@ -627,7 +627,7 @@ module.exports = ( _props ) => {
     if( usingWorklet === true && ugen.node !== null ) {
       ugen.node.port.postMessage({ key:'set', idx:ugen.memory.value.idx, value:ugen.max })
     }else{
-      gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
+      if( gen.memory !== undefined ) gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
     }
   }
 
@@ -9185,6 +9185,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }
     }
 
+    if( description.methods.indexOf( 'note' ) > -1 ) description.methods.push( 'notef' )
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
@@ -9251,6 +9252,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             return obj
           }
 
+          Gibberish.worklet.port.postMessage({
+            address:'addMethod',
+            id:__wrappedObject.id,
+            key:'notef',
+            function:`function( note ){ 
+              this.___note( note, this.__triggerLoudness ) 
+            }`
+          })
+
           // when a message is received at the address 'monkeyPatch',
           // Gibberish will create a copy of the method identified by
           // the 'key' field, and then assign it back to the object prefaced
@@ -9279,6 +9289,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             }`
           })
           
+        }
+
+        if( methodName === 'notef' ) {
+          obj.notef = function( ...args ) {
+            __wrappedObject.frequency = args[0]
+            __wrappedObject.trigger( __wrappedObject.__triggerLoudness )
+
+            return obj
+          }
         }
 
         obj[ methodName ].sequencers = []
@@ -9331,6 +9350,8 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           // return object for method chaining
           return obj
         }
+
+        
       }
     }
 
@@ -12637,7 +12658,13 @@ module.exports = [
     name: "Edge",
     prototype: "postprocessing",
     doc: "The `Edge` effect finds the edges of images using the [sobel operator](https://en.wikipedia.org/wiki/Sobel_operator), potentially resulting in a stylized, cartoonish effect result.",
-    properties: {}
+    properties: {
+       mode: {
+        type: "int",          
+        default: 0,
+        doc: "The mode property sets what algorithm is used by the Edge filter, with one of three possibilities: 0 - Classic Sobel edge detection; 1 "
+      }   
+    }
   },
   {
     name: "Focus",
@@ -12982,12 +13009,13 @@ const Graphics = {
       this.make( name, Marching.distanceDeforms[ name ] )
     }
 
-    const fx = ['Antialias', 'Bloom', 'Blur', 'Contrast', 'Edge', 'Focus', 'Godrays','Hue','Invert','MotionBlur']
+    const fx = ['Antialias', 'Bloom2', 'Blur', 'Contrast', 'Edge', 'Focus', 'Godrays','Hue','Invert','MotionBlur']
     //for( let name of fx ) {
     //  this.make( name, Marching.fx[ name ], true )
     //}
     this.make( 'Antialias', Marching.fx.Antialias, true )
     this.make( 'Bloom', Marching.fx.Bloom, true, [ 'amount', 'threshold' ] )
+    this.make( 'Bloom2', Marching.fx.Bloom2, true, [ 'amount', 'threshold', 'vertical','horizonta' ] )
     this.make( 'Blur', Marching.fx.Blur, true, [ 'amount' ] )
     this.make( 'Edge', Marching.fx.Edge, true )
     this.make( 'Contrast', Marching.fx.Contrast, true, ['amount'] )
@@ -78220,7 +78248,7 @@ const Transform = require( './transform.js' )
 
 const descriptions = {
   Elongation: {
-    parameters:[ { name:'distance', type:'vec3', default:Vec3(0) } ],
+    parameters:[ { name:'active', type:'float', default:1. },{ name:'distance', type:'vec3', default:Vec3(0) } ],
     func:`
       vec4 opElongate( in vec3 p, in vec3 h ) {
         //return vec4( p-clamp(p,-h,h), 0.0 ); // faster, but produces zero in the interior elongated box
@@ -78248,18 +78276,19 @@ const descriptions = {
     parameters:[ 
       { name:'count', type:'float', default:5 },
       { name:'distance', type:'vec3', default:Vec3(.25) },
-
+      { name:'active', type:'float', default:1. }
     ],
     emit( name='p', transform=null) {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
-      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`
 
       if( transform !== null ) this.transform.apply( transform, false )
       this.transform.invert()
 
+      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`
+
       let preface =`
-          vec4 ${pName} = vec4( polarRepeat( ${pointString}, ${this.__target.count.emit() } ), 1. ); 
+          vec4 ${pName} = vec4( polarRepeat( ${pointString}, ${this.__target.count.emit() } ) * ${this.transform.emit_scale()}, 1. ); 
           ${pName} -= vec4(${this.__target.distance.emit()}.x,0.,0.,0.);\n`
 
       const sdf = this.sdf.emit( pName )
@@ -78270,7 +78299,7 @@ const descriptions = {
     }
   },
   Mirror: {
-    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) } ],
+    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },{ name:'active', type:'float', default:1. }  ],
     extra:[{ name:'dims', type:'local', default:'xyz' }],
 
     emit( name='p', transform=null, notused=null, scale=null ) {
@@ -78307,7 +78336,7 @@ const descriptions = {
 
   //if( typeof sdf.preface === 'string' ) preface += sdf.preface
   Repetition: {
-    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) } ],
+    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },  { name:'active', type:'float', default:1. }],
     emit( name='p', transform=null ) {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
@@ -78446,7 +78475,7 @@ const getDomainOps = function( SDF ) {
           op[ extra.name ] = args[ count - 1 ] || extra.default
         }
       }
-
+      op.sdf.active = op.active
       op.__setTexture = function(tex,props) {
         if( typeof tex === 'string' ) {
           this.texture = op.texture.bind( this )
@@ -80079,6 +80108,7 @@ const FX = {
     obj.Antialias  = FX.Antialias
     obj.Blur       = FX.Blur
     obj.Bloom      = FX.Bloom
+    obj.BloomOld   = FX.BloomOld
     obj.Brightness = FX.Brightness
     obj.Contrast   = FX.Contrast
     obj.Edge       = FX.Edge
@@ -80106,7 +80136,7 @@ const FX = {
     return primitive
   },
 
-  Bloom( __threshold=0, __horizontal = .5, __vertical=.5,  __boost=.5, taps = 9, reps = 3, num=1 ) {
+  Bloom( __threshold=0, __boost = .5, __horizontal=1, __vertical=1, taps = 9, reps = 3, num=1 ) {
     const fx = {},
           threshold  = FX.wrapProperty( fx, 'threshold',  __threshold ),
           horizontal = FX.wrapProperty( fx, 'vertical',  __vertical ),
@@ -80715,8 +80745,8 @@ module.exports = {
       { name:'v3', type:'vec3', default:[.5,.0,0] },
     ],
 
-    primitivestring( pname ) { 
-      return `udtriangle( ${pname}, ${this.v1.emit()}, ${this.v2.emit()}, ${this.v3.emit()} )`
+    primitiveString( pname ) { 
+      return `udTriangle( ${pname}, ${this.v1.emit()}, ${this.v2.emit()}, ${this.v3.emit()} )`
     },
     glslify:glsl(["#define GLSLIFY 1\n    float dot2( in vec3 v ) { return dot(v,v); }\nfloat udTriangle( vec3 p, vec3 a, vec3 b, vec3 c )\n{\n    vec3 ba = b - a; vec3 pa = p - a;\n    vec3 cb = c - b; vec3 pb = p - b;\n    vec3 ac = a - c; vec3 pc = p - c;\n    vec3 nor = cross( ba, ac );\n\n    return sqrt(\n    (sign(dot(cross(ba,nor),pa)) +\n     sign(dot(cross(cb,nor),pb)) +\n     sign(dot(cross(ac,nor),pc))<2.0)\n     ?\n     min( min(\n     dot2(ba*clamp(dot(ba,pa)/dot2(ba),0.0,1.0)-pa),\n     dot2(cb*clamp(dot(cb,pb)/dot2(cb),0.0,1.0)-pb) ),\n     dot2(ac*clamp(dot(ac,pc)/dot2(ac),0.0,1.0)-pc) )\n     :\n     dot(nor,pa)*dot(nor,pa)/dot2(nor) );\n}\n\n"])
   }, 
@@ -81660,6 +81690,8 @@ const SceneNode = ()=> Object.create( SceneNode.prototype )
 const Matrix = require( './external/matrix.js' )
 
 SceneNode.prototype = {
+  active: 1,
+
 	emit() { return "#NotImplemented#"; },
 
 	emit_decl() { return ""; },
