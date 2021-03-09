@@ -11630,7 +11630,7 @@ module.exports = function( Gibber ) {
     }
 
     // trigger autotrig patterns
-    if( key === 'note' || key === 'chord' || key === 'trigger' ) {
+    if( key === 'note' || key === 'chord' || key === 'trigger' || key === 'notef' ) {
       values.addFilter( ( args,ptrn ) => {
         if( ptrn.seq.target.autotrig !== undefined ) {
           for( let s of ptrn.seq.target.autotrig ) {
