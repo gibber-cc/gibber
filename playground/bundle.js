@@ -9185,7 +9185,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }
     }
 
-    if( description.methods.indexOf( 'note' ) > -1 ) description.methods.push( 'notef' )
+    if( description.methods !== null && description.methods.indexOf( 'note' ) > -1 ) description.methods.push( 'notef' )
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
@@ -83248,7 +83248,7 @@ const SceneNode = require( './sceneNode.js' ),
 
 const Vignette = function( Scene, SDF ) {
 
-  const Vgn = function( radius=0.1, smoothness=.1 ) {
+  const Vgn = function( radius=0.1, smoothness=16 ) {
     const vgn = Object.create( Vgn.prototype )
     const __radius = param_wrap( radius, float_var_gen( radius ) )  
     
@@ -83278,7 +83278,7 @@ const Vignette = function( Scene, SDF ) {
  
   Object.assign( Vgn.prototype, {
     emit() {
-      return `  color *= vignette( v_uv, ${this.radius.emit()}, ${this.smoothness.emit()} );`
+      return `  color *= vignette( uv, ${this.radius.emit()}, ${this.smoothness.emit()} );`
     },
    
     emit_decl() {
@@ -83286,7 +83286,7 @@ const Vignette = function( Scene, SDF ) {
       // taken from https://gist.github.com/r-lyeh-archived/170b53fcdc0e17afcf15
       // originally iq
       const preface = `  float vignette(vec2 uv, float radius, float smoothness) {
-        return radius + 0.5*16.0*uv.x*uv.y*(1.0-uv.x)*(1.0-uv.y); 
+        return radius + 0.5*smoothness*uv.x*uv.y*(1.0-uv.x)*(1.0-uv.y); 
       }
   `
       if( SDF.memo.vgn === undefined ) {
