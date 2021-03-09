@@ -24,6 +24,9 @@ instrument
 ### instrument.note(  *scaleIndex* ) ###
 **scaleIndex** *int* (required) - The arguent scale index is converted to Hz according to the currently selected tuning and mode.
 
+### instrument.notef(  *frequency* ) ###
+**frequency** *float* (required) - The direct frequency to be played, bypassing gibber's theory / tuning systems.
+
 ### instrument.trigger(  *loudness* ) ###
 **loudness** *float* (required) - This sets the loudness for a single triggering of the instrument. You can also directly set the overall loudness of the instrument using the `.loudness` property, or scale the overall signal using `.gain`.
 
@@ -785,6 +788,8 @@ The `Edge` effect finds the edges of images using the [sobel operator](https://e
 
 
 #### Properties ####
+### Edge.mode ###
+*int* default: 0.  The mode property sets what algorithm is used by the Edge filter, with one of three possibilities: 0 - Classic Sobel edge detection; 1 
 Focus
 ----
 *Prototype: [postprocessing](#prototypes-postprocessing)*
