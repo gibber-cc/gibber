@@ -63187,6 +63187,8 @@ window.onload = function() {
           code:str.slice( idx ).trim()
         })
       }
+
+      Clock = Gibberish.Clock
     })
 
     Gibber.Audio.Gibberish.utilities.workletHandlers.eval = function( evt ) {
