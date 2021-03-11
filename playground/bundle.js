@@ -11700,6 +11700,8 @@ module.exports = function( Gibber ) {
     let timings
     if( Array.isArray( __timings ) ) {
       timings  = Gibber.Pattern( ...__timings )
+      Object.assign( __timings, timings )
+      __timings.addFilter = timings.addFilter.bind( timings )
     }else if( typeof __timings === 'function' && __timings.isPattern === true ) {
       timings = __timings
     }else if( __timings !== undefined && __timings !== null ) {
@@ -11710,7 +11712,10 @@ module.exports = function( Gibber ) {
     }
 
     if( timings !== null ) timings = timings.render()
-
+    if( Array.isArray( __timings ) ) {
+      Object.assign( __timings, timings )
+      __timings.addFilter = timings.addFilter.bind( timings )
+    }
     if( autotrig === false ) {
       if( __timings.randomFlag ) {
         timings.addFilter( ( args,ptrn ) => {
