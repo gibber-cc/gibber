@@ -63760,6 +63760,13 @@ module.exports = function() {
         ['hydra', 'hydra.js' ],
         ['p5.js', 'p5.js' ]
       ]
+    },
+
+    {
+      name:'advanced prograaming tutorials',
+      options:[
+        ['pattern filters', 'patternfilters.js'] 
+      ]
     }
   ]
 

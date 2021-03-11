@@ -11,7 +11,7 @@
 verb = Reverb( 'space' ).bus() 
  
 bass = Monosynth('bass.stab')
-  .connect( verb, .075 )
+  .connect( verb, .225 )
   .note.seq( 
     gen( beats(8) * 4 ), 
     Euclid(5,16) 
@@ -19,7 +19,7 @@ bass = Monosynth('bass.stab')
  
 bass.gain.fade( 0, null, 8 )
  
-clave = Clave().connect( verb, .05 )
+clave = Clave().connect( verb, .15 )
   .trigger.seq( [.25,.4], Euclid(3,8) )
  
 clave.gain.fade( 0, null, 8 )
@@ -37,8 +37,10 @@ drums.pick.seq(
  
 h.rotate.seq( -1,1,0,8 )
  
-bleeps = Sampler[4]('bleeps', { loudness:.25 }).connect( verb, .05 )
-
+bleeps = Sampler[6]('bleeps', { loudness:.25 })
+  .spread( .9 )
+  .connect( verb, .15 )
+ 
 bleeps.trigger.seq( 
   1, 
   h1 = Hex(0x8a7a),
@@ -52,7 +54,7 @@ bleeps.pick.seq(
  
 h1.rotate.seq( 1,1,0,20 )
  
-clap = Clap().connect( verb, .15 )
+clap = Clap().connect( verb, .35 )
   .trigger.seq( 1,2,0,16.25 )
  
 snare = Snare('snappy')
