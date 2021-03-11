@@ -87,11 +87,37 @@ window.onload = function() {
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
 
+    //window.run = fnc => { 
+    //  const code = fnc.toString().split('=>')[1] 
+    //  console.log( 'code:', code )
+    //  Gibberish.worklet.port.__postMessage({ 
+    //    address:'eval', 
+    //    code
+    //  })
+    //}
     window.run = fnc => { 
+      const str = fnc.toString()
+      const idx = str.indexOf('=>') + 2
+      const code = str.slice( idx ).trim()
       Gibberish.worklet.port.__postMessage({ 
-        address:'eval', 
-        code:fnc.toString().split('=>')[1] 
+        address:'eval',
+        code
       })
+    }
+
+    window.run( ()=> {
+      global.main = function( fnc ) { 
+        let str = fnc.toString()
+        let idx = str.indexOf('=>') + 2
+        Gibberish.processor.port.postMessage({
+          address:'eval',
+          code:str.slice( idx ).trim()
+        })
+      }
+    })
+
+    Gibber.Audio.Gibberish.utilities.workletHandlers.eval = function( evt ) {
+      eval( evt.data.code )
     }
 
     const fft = window.FFT = Marching.FFT

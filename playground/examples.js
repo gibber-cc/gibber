@@ -64,7 +64,8 @@ module.exports = function() {
     {
       name:'advanced prograaming tutorials',
       options:[
-        ['pattern filters', 'patternfilters.js'] 
+        ['pattern filters', 'patternfilters.js'], 
+        ['multithreaded programming', 'multithreaded.js'] 
       ]
     }
   ]

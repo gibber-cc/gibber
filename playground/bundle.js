@@ -63065,6 +63065,7 @@ CodeMirror.keyMap.playground =  {
 }
 
 },{"../node_modules/acorn-loose/dist/acorn-loose.js":137,"../node_modules/acorn-walk/dist/walk.js":138,"../node_modules/acorn/dist/acorn.js":139,"../node_modules/codemirror/addon/dialog/dialog.js":143,"../node_modules/codemirror/addon/edit/closebrackets.js":144,"../node_modules/codemirror/addon/edit/matchbrackets.js":145,"../node_modules/codemirror/addon/hint/javascript-hint.js":146,"../node_modules/codemirror/addon/hint/show-hint.js":147,"../node_modules/codemirror/mode/javascript/javascript.js":150,"./proxies.js":266,"./tern.js":269,"codemirror":149}],263:[function(require,module,exports){
+(function (global){
 const Gibber        = require( 'gibber.core.lib' ),
       Audio         = require( 'gibber.audio.lib' ),
       Graphics      = require( 'gibber.graphics.lib' ),
@@ -63154,11 +63155,37 @@ window.onload = function() {
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
 
+    //window.run = fnc => { 
+    //  const code = fnc.toString().split('=>')[1] 
+    //  console.log( 'code:', code )
+    //  Gibberish.worklet.port.__postMessage({ 
+    //    address:'eval', 
+    //    code
+    //  })
+    //}
     window.run = fnc => { 
+      const str = fnc.toString()
+      const idx = str.indexOf('=>') + 2
+      const code = str.slice( idx ).trim()
       Gibberish.worklet.port.__postMessage({ 
-        address:'eval', 
-        code:fnc.toString().split('=>')[1] 
+        address:'eval',
+        code
       })
+    }
+
+    window.run( ()=> {
+      global.main = function( fnc ) { 
+        let str = fnc.toString()
+        let idx = str.indexOf('=>') + 2
+        Gibberish.processor.port.postMessage({
+          address:'eval',
+          code:str.slice( idx ).trim()
+        })
+      }
+    })
+
+    Gibber.Audio.Gibberish.utilities.workletHandlers.eval = function( evt ) {
+      eval( evt.data.code )
     }
 
     const fft = window.FFT = Marching.FFT
@@ -63698,6 +63725,7 @@ setTimeout( function() {
 
 
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./codeMarkup.js":260,"./console.js":261,"./editor.js":262,"./examples.js":264,"./metronome.js":265,"./resources/js/theme.js":267,"./share.js":268,"codemirror":149,"gibber.audio.lib":83,"gibber.core.lib":125,"gibber.graphics.lib":136}],264:[function(require,module,exports){
 module.exports = function() {
   const select = document.querySelector( 'select' )
@@ -63765,7 +63793,8 @@ module.exports = function() {
     {
       name:'advanced prograaming tutorials',
       options:[
-        ['pattern filters', 'patternfilters.js'] 
+        ['pattern filters', 'patternfilters.js'], 
+        ['multithreaded programming', 'multithreaded.js'] 
       ]
     }
   ]
