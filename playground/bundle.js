@@ -63837,7 +63837,8 @@ module.exports = function() {
       name:'advanced prograaming tutorials',
       options:[
         ['pattern filters', 'patternfilters.js'], 
-        ['multithreaded programming', 'multithreaded.js'] 
+        ['multithreaded programming', 'multithreaded.js'], 
+        ['temporal recursions', 'temporalrecursion.js'] 
       ]
     }
   ]
