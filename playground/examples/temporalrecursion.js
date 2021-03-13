@@ -40,11 +40,11 @@ this one.
 
 // make an instrument
 k = Kick()
- 
+  
 // create the temporal recursion
 tr( function(...args) { 
   k.trigger(.5)
-  console.log( Gibberish.time )
+  console.log( time )
   return 1/4
 }, 'test', { k } )
 
@@ -55,10 +55,22 @@ tr( function(...args) {
 
 k = Kick() 
 tr( function() { 
-  k.trigger(.5 + Math.sin(Gibberish.time) * .5 )
+  k.trigger(.5 + sin(time) * .5 )
  
-  return Gibberish.time % 1 > .75 ? 1/16 : 1/8
+  return time % 1 > .75 ? 1/16 : 1/8
 }, 'test', { k } )
+
+// in practice, it turns out writing these types of functions
+// needs some basic math operations, which we've made global.
+// these include sin,cos,min,max,round,floor,ceil, and random.
+// note that you can access any of the standard javascript
+// Math functions and constants through the global Math object
+// (e.g. Math.PI). IMPORTANT: in the main thread, these
+// functions have the same names but *very* different
+// capabilities. In the main thread they're used to create
+// signals (see the arpeggios and signals tutorial), while
+// in the audio thread their used for standard math operations.
+// It's confusing, but it's what we've got for now.
 
 // also note that { k } is a JS shortcut for creating
 // the object { 'k':k }, where 'k' is the name of
@@ -68,9 +80,9 @@ tr( function() {
 
 kick = Kick() 
 tr( function() { 
-  blahblahblah.trigger(.5 + Math.sin(Gibberish.time) * .5 )
+  blahblahblah.trigger(.5 + sin(time) * .5 )
  
-  return Gibberish.time % 1 > .75 ? 1/16 : 1/8
+  return time % 1 > .75 ? 1/16 : 1/8
 }, 'test', { blahblahblah: kick } )
 
 // ...but in general using that object creation shortcut
@@ -87,11 +99,11 @@ tr( function() {
 k = Kick()
 c = Clave()
 h = Hat()
-
+ 
 tr( function(...args) { 
-  const idx = Math.abs( Math.sin( Gibberish.time*4 ) ) * 3
-  args[ Math.floor(idx) ].trigger( .5 +  Math.random() / 2 )
-  return Math.random() > .5 ? 1/8 : 1/16
+  const idx = abs( sin( time*4 ) ) * 3
+  args[ floor(idx) ].trigger( .5 + random() / 2 )
+  return random() > .5 ? 1/8 : 1/16
 }, 'test', { k,c,h } )
 
 // play around with the above function... remember you can
@@ -101,31 +113,32 @@ tr( function(...args) {
 // we can access any variables stored in the audio
 // thread from within our temporal recursion. 
 d = EDrums()
-
+ 
 run( ()=> global.durs = [1/16,1/8,1/16,1/8,1/4] )
-
+ 
 tr( function( d ) {
-  const idx = (Gibberish.time*2.5) % 6
+  const idx = (time*2.5) % 6
   d.play( idx )
-  return global.durs[ Gibberish.time*2 % 5 | 0 ]
+  return global.durs[ time*2 % 5 | 0 ]
 }, 'drums', { d })
 
 
 // of course we can have more than one
-// recursion at once...
+// recursion at once... all we have to do is
+// make sure we name them differently so the
+// second one doesn't replace the first.
 f = Freesound[5]({ query:'amen +break', max:.35 }).spread(.9)
  
 tr( function( f ) {
-  f.pick( (Gibberish.time*20 % 10) | 0 )
+  f.pick( time*20 % 10 | 0 )
   f.trigger(1)
-  f.end = Gibberish.time*10 % 1
   return 1/16
 }, 'freesound', { f })
  
 f2 = Freesound[4]({ query:'kick', max:.2 }).spread(.5)
  
 tr( function( f2 ) {
-  f2.pick( (Gibberish.time*7 % 13) | 0 )
+  f2.pick( time*7 % 13 | 0 )
   f2.trigger(1)
   return 1/8
 }, 'freesound2', { f2 })

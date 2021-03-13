@@ -1,7 +1,17 @@
 const global = typeof window === 'undefined' ? {} : window;
-        let Gibberish = null; 
-        let Clock = null;
-        let initialized = false;
+        let Gibberish = null, 
+            Clock = null,
+            time  = 0,
+            sin   = null,
+            cos   = null,
+            abs   = null,
+            random= null,
+            floor = null,
+            ceil  = null,
+            round = null,
+            min   = null,
+            max   = null,
+            initialized = false;
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Gibberish = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict'
 
@@ -18217,6 +18227,8 @@ function hasOwnProperty(obj, prop) {
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./support/isBuffer":173,"_process":159,"inherits":172}]},{},[116])(116)
 });
+// global variables are actually declared in the build (gulp) file
+// and are Gibberish, global, Clock, time, and many Math functions
 class GibberishProcessor extends AudioWorkletProcessor {
   static get parameterDescriptors() {}
 
@@ -18535,7 +18547,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
         }
 
         //XXX sub real samplerate sheesh
-        Gibberish.time += 1/44100
+        time += 1/44100
         const out = callback.apply( null, ugens )
 
         output[0][ i ] = out[0]

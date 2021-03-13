@@ -110,10 +110,25 @@ window.onload = function() {
       Clock = Gibberish.Clock
     })
 
-    window.run( ()=> global.recursions = {} )
-    Gibber.Audio.subscribe( 'restart', ()=> {
-      window.run( ()=> global.recursions = {} )
-    })
+    const setupGlobals = function() {
+      window.run( ()=> {
+        global.recursions = {}
+        sin = Math.sin
+        cos = Math.cos
+        abs = Math.abs
+        floor = Math.floor
+        ceil = Math.ceil
+        random = Math.random
+        round = Math.round
+        min = Math.min
+        max = Math.max
+      })
+    }
+
+    setupGlobals()
+
+    Gibber.Audio.subscribe( 'restart', setupGlobals )
+    
 
     window.tr = function( fnc, name, dict, immediate=0 ) {
       let code = fnc.toString()
