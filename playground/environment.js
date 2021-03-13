@@ -87,14 +87,6 @@ window.onload = function() {
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
 
-    //window.run = fnc => { 
-    //  const code = fnc.toString().split('=>')[1] 
-    //  console.log( 'code:', code )
-    //  Gibberish.worklet.port.__postMessage({ 
-    //    address:'eval', 
-    //    code
-    //  })
-    //}
     window.run = fnc => { 
       const str = fnc.toString()
       const idx = str.indexOf('=>') + 2
@@ -117,6 +109,43 @@ window.onload = function() {
 
       Clock = Gibberish.Clock
     })
+
+    window.run( ()=> global.recursions = {} )
+    Gibber.Audio.subscribe( 'restart', ()=> {
+      window.run( ()=> global.recursions = {} )
+    })
+
+    window.tr = function( fnc, name, dict, immediate=0 ) {
+      let code = fnc.toString()
+      const keys = Object.keys( dict )
+     
+      code = `
+      if( global.recursions['${name}'] !== undefined ) {
+        const idx = Gibberish.scheduler.queue.data.findIndex( evt => evt.func.toString().indexOf( "global.recursions['${name}']") > -1 )
+        if( idx > -1 ) {
+          Gibberish.scheduler.queue.data.splice( idx, 1 )
+          Gibberish.scheduler.queue.length--
+        }
+      }
+      const args = [${keys.map( key => typeof dict[key] === 'object' ? dict[ key ].id : `'${dict[ key]}'` ).join(',')}]
+      const objs = args.map( v=> Gibberish.ugens.get(v) );
+      (global.recursions['${name}'] = function ${name} (${keys}) { 
+        const __nexttime__ = ( ${code} )(${keys}) || 1
+        if( __nexttime__ ) Gibberish.scheduler.add( Clock.time( __nexttime__ ), (${keys})=>global.recursions['${name}'](...objs), 1 )
+      })(...objs)`
+
+      if( immediate === 0 ) {
+        Gibberish.worklet.port.postMessage({ 
+          address:'eval',
+          code
+        })
+      }else{
+        Gibberish.worklet.port.__postMessage({ 
+          address:'eval',
+          code
+        })
+      }
+    }
 
     Gibber.Audio.Gibberish.utilities.workletHandlers.eval = function( evt ) {
       eval( evt.data.code )

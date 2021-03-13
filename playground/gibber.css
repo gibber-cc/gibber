@@ -203,6 +203,7 @@ span.cm-attribute,
 span.cm-variable,
 span.cm-variable-2,
 .cm-def,
+.cm-meta,
 .cm-s-default { color: var(--f_high) !important }
 /*.cm-s-default { color: rgba(173,173,173,1) !important }*/
 

@@ -5069,6 +5069,7 @@ const Audio = {
 
       //Audio.clear()
       console.log( 'audio engine successfully restarted.' )
+      Audio.publish( 'restart' )
     })
   },
 
@@ -5910,7 +5911,8 @@ module.exports = function( Audio ) {
       cp[ dict.name ] = target
     }
 
-    cp.play = function( key ) {
+    cp.play = function( __key ) {
+      const key = isNaN(__key) ? __key : parseInt( __key ) 
       if( Gibberish.mode === 'processor' ) {
         Gibberish.worklet.ugens.get( this[ key ].target )[ this[ key ].method ]( ...this[ key ].args )
       }else{
@@ -11642,6 +11644,36 @@ module.exports = function( Gibber ) {
     } 
   }
 
+  const addTimingFilters = function( seq,key,renderMode ) {
+    const __timings = seq.timings
+    if( __timings.randomFlag ) {
+      __timings.addFilter( ( args,ptrn ) => {
+        const range = ptrn.values.length - 1
+        const idx = Math.round( Math.random() * range )
+        return [ ptrn.values[ idx ], 1, idx ] 
+      })
+      //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
+      //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
+      //}
+    }
+
+    const filter = renderMode === 'Audio' 
+      ? (args,ptrn) => {
+        if( typeof args[0] === 'number' ) {
+          args[0] = Gibberish.Clock.time( args[0] )
+        }
+        return args
+      }
+      : (args,ptrn) => {
+        if( typeof args[0] === 'number' ) {
+          args[0] = Gibber.Clock.time( args[0] )
+        }
+        return args
+      }  
+
+    seq.timings.addFilter( filter ) 
+  }
+
   const Seq = function( props ) { 
     let   __values  = props.values
     const __timings = props.timings
@@ -11682,7 +11714,9 @@ module.exports = function( Gibber ) {
 
     // process time values
     if( target !== undefined ) {
-      if( Gibber[ render ].timeProps[ target.name ] !== undefined && Gibber[ render ].timeProps[ target.name ].indexOf( key ) !== -1  ) {
+      if( Gibber[ render ].timeProps[ target.name ] !== undefined 
+        && Gibber[ render ].timeProps[ target.name ].indexOf( key ) !== -1  ) {
+
         const filter = render === 'Audio' 
           ? (args,ptrn) => {
               args[0] = Gibberish.Clock.time( args[0] )
@@ -11696,54 +11730,26 @@ module.exports = function( Gibber ) {
         values.addFilter( filter )
       }
     }
+ 
+    const timings = Array.isArray( __timings ) 
+      ? Gibber.Pattern( ...__timings ).render()
+      : typeof __timings === 'function' && __timings.isPattern 
+        ? __timings.render()
+        : __timings.requiresRender 
+          ? __timings
+          : __timings === undefined || __timings === null 
+            ? null
+            : Gibber.Pattern( __timings ).render()
 
-    let timings
-    if( Array.isArray( __timings ) ) {
-      timings  = Gibber.Pattern( ...__timings )
-      Object.assign( __timings, timings )
-      __timings.addFilter = timings.addFilter.bind( timings )
-    }else if( typeof __timings === 'function' && __timings.isPattern === true ) {
-      timings = __timings
-    }else if( __timings !== undefined && __timings !== null ) {
-      timings = Gibber.Pattern( __timings )
-    }else{
-      timings = null
-      autotrig = true
-    }
+    if( timings === null ) autotrig = true
 
-    if( timings !== null ) timings = timings.render()
     if( Array.isArray( __timings ) ) {
       Object.assign( __timings, timings )
       __timings.addFilter = timings.addFilter.bind( timings )
     }
     if( autotrig === false ) {
-      if( __timings.randomFlag ) {
-        timings.addFilter( ( args,ptrn ) => {
-          const range = ptrn.values.length - 1
-          const idx = Math.round( Math.random() * range )
-          return [ ptrn.values[ idx ], 1, idx ] 
-        })
-        //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
-        //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
-        //}
-      }
       timings.output = { time:'time', shouldExecute:0 }
       timings.density = 1
-      const filter = render === 'Audio' 
-        ? (args,ptrn) => {
-          if( typeof args[0] === 'number' )
-            args[0] = Gibberish.Clock.time( args[0] )
-
-          return args
-        }
-        : (args,ptrn) => {
-          if( typeof args[0] === 'number' )
-            args[0] = Gibber.Clock.time( args[0] )
-
-          return args
-        }  
-
-      timings.addFilter( filter ) 
 
       // XXX delay annotations so that they occur after values annotations have occurred. There might
       // need to be more checks for this flag in the various annotation update files... right now
@@ -11752,7 +11758,7 @@ module.exports = function( Gibber ) {
     }
 
     // if an array is passed to the seq, enable users to call pattern methods on array
-    if( Array.isArray( __timings ) ) Object.assign( __timings, timings )
+    //if( Array.isArray( __timings ) ) Object.assign( __timings, timings )
 
     const clear = render === 'Audio'
       ? function() {
@@ -11800,7 +11806,8 @@ module.exports = function( Gibber ) {
     addValuesFilters( seq,key )
 
     if( autotrig === false ) {
-      timings.setSeq( seq )
+      addTimingFilters( seq,key,render )
+      if( timings.setSeq ) timings.setSeq( seq )
     }else{
       if( target !== undefined ) {
         if( target.autotrig === undefined ) {
@@ -63160,14 +63167,6 @@ window.onload = function() {
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
 
-    //window.run = fnc => { 
-    //  const code = fnc.toString().split('=>')[1] 
-    //  console.log( 'code:', code )
-    //  Gibberish.worklet.port.__postMessage({ 
-    //    address:'eval', 
-    //    code
-    //  })
-    //}
     window.run = fnc => { 
       const str = fnc.toString()
       const idx = str.indexOf('=>') + 2
@@ -63190,6 +63189,43 @@ window.onload = function() {
 
       Clock = Gibberish.Clock
     })
+
+    window.run( ()=> global.recursions = {} )
+    Gibber.Audio.subscribe( 'restart', ()=> {
+      window.run( ()=> global.recursions = {} )
+    })
+
+    window.tr = function( fnc, name, dict, immediate=0 ) {
+      let code = fnc.toString()
+      const keys = Object.keys( dict )
+     
+      code = `
+      if( global.recursions['${name}'] !== undefined ) {
+        const idx = Gibberish.scheduler.queue.data.findIndex( evt => evt.func.toString().indexOf( "global.recursions['${name}']") > -1 )
+        if( idx > -1 ) {
+          Gibberish.scheduler.queue.data.splice( idx, 1 )
+          Gibberish.scheduler.queue.length--
+        }
+      }
+      const args = [${keys.map( key => typeof dict[key] === 'object' ? dict[ key ].id : `'${dict[ key]}'` ).join(',')}]
+      const objs = args.map( v=> Gibberish.ugens.get(v) );
+      (global.recursions['${name}'] = function ${name} (${keys}) { 
+        const __nexttime__ = ( ${code} )(${keys}) || 1
+        if( __nexttime__ ) Gibberish.scheduler.add( Clock.time( __nexttime__ ), (${keys})=>global.recursions['${name}'](...objs), 1 )
+      })(...objs)`
+
+      if( immediate === 0 ) {
+        Gibberish.worklet.port.postMessage({ 
+          address:'eval',
+          code
+        })
+      }else{
+        Gibberish.worklet.port.__postMessage({ 
+          address:'eval',
+          code
+        })
+      }
+    }
 
     Gibber.Audio.Gibberish.utilities.workletHandlers.eval = function( evt ) {
       eval( evt.data.code )
@@ -70531,6 +70567,18 @@ const Scheduler = {
     this.queue.push({ time, func, priority })
   },
 
+  // delete a function that is already scheduled.
+  // note that this will only delete the first scheduled
+  // execution; use removeAll as needed.
+  remove( func ) {
+    const idx = this.queue.data.findIndex( evt => evt.func === func )
+    console.log( 'FOUND', idx, this.queue.data[ idx ] )
+    if( idx > -1 ) {
+      this.queue.data.splice( idx, 1 )
+      this.queue.length-- 
+    }
+  },
+
   tick( usingSync = false ) {
     if( this.shouldSync === usingSync ) {
       if( this.queue.length ) {
@@ -70798,6 +70846,40 @@ const __proxy = require( '../workletProxy.js' )
 
 module.exports = function( Gibberish ) {
 
+const renderFnc = function( pattern ) {
+  const keys = Object.keys( pattern.dict )
+  const objs = Object.values( pattern.dict )
+    .map( v => typeof v === 'object' && !Array.isArray( v )
+    ? Gibberish.processor.ugens.get(v.id) 
+    : v 
+    )
+
+  // we create a new inner function using the function constructor,
+  // where every argument is codegen'd as an upvalue to the
+  // returned function. after codegen we call the functon
+  // to get the inner function with the upvalues andd
+  // return that. Store references to globals as upvalues as well.
+  let code = 'let Gibberish = __Gibberish, global = __global;\n'
+  keys.forEach( k => {
+    let line = `let ${k} = `
+    const value = pattern.dict[ k ]
+    const getter = typeof value === 'object' 
+      ? Array.isArray( value )
+      ? `[${value.toString()}]`
+      : `Gibberish.processor.ugens.get(${ value.id })`
+      : value
+    line += getter 
+    code += line + '\n'
+
+  })  
+  code +=`return function() { ${ pattern.fncstr } }` 
+
+  // pass in globals to be used as upvalues in final function
+  const fnc = new Function( '__Gibberish', '__global', code )( Gibberish, global )
+
+  return fnc 
+}
+
 const proxy = __proxy( Gibberish )
 
 const Sequencer = props => {
@@ -70969,43 +71051,16 @@ const Sequencer = props => {
 
   if( Gibberish.mode === 'worklet' ) {
     Gibberish.utilities.createPubSub( seq )
-  }
-  // need a separate reference to the properties for worklet meta-programming
-  if( typeof props.values === 'object' && props.values.requiresRender === true ) {
-    if( Gibberish.mode === 'processor' ) {
-      const keys = Object.keys( props.values.dict )
-      const objs = Object.values( props.values.dict )
-        .map( v => typeof v === 'object' && !Array.isArray( v )
-          ? Gibberish.processor.ugens.get(v.id) 
-          : v 
-        )
-
-      // we create a new inner function using the function constructor,
-      // where every argument is codegen'd as an upvalue to the
-      // returned function. after codegen we call the functon
-      // to get the inner function with the upvalues andd
-      // return that. Store references to globals as upvalues as well.
-      let code = 'let Gibberish = __Gibberish, global = __global;\n'
-      keys.forEach( k => {
-        let line = `let ${k} = `
-        const value = props.values.dict[ k ]
-        const getter = typeof value === 'object' 
-          ? Array.isArray( value )
-            ? `[${value.toString()}]`
-            : `Gibberish.processor.ugens.get(${ value.id })`
-          : value
-        line += getter 
-        code += line + '\n'
-
-      })  
-      code +=`return function() { ${ props.values.fncstr } }` 
-
-      // pass in globals to be used as upvalues in final function
-      const fnc = new Function( '__Gibberish', '__global', code )( Gibberish, global )
-
-      props.values = fnc 
+  }else{
+    // need a separate reference to the properties for worklet meta-programming
+    if( typeof props.values === 'object' && props.values.requiresRender === true ) {
+      props.values = renderFnc( props.values )
+    }
+    if( typeof props.timings === 'object' && props.timings.requiresRender === true ) {
+      props.timings = renderFnc( props.timings )
     }
   }
+
   const properties = Object.assign( {}, Sequencer.defaults, props )
   Object.assign( seq, properties ) 
   seq.__properties__ = properties

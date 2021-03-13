@@ -10487,6 +10487,18 @@ const Scheduler = {
     this.queue.push({ time, func, priority });
   },
 
+  // delete a function that is already scheduled.
+  // note that this will only delete the first scheduled
+  // execution; use removeAll as needed.
+  remove(func) {
+    const idx = this.queue.data.findIndex(evt => evt.func === func);
+    console.log('FOUND', idx, this.queue.data[idx]);
+    if (idx > -1) {
+      this.queue.data.splice(idx, 1);
+      this.queue.length--;
+    }
+  },
+
   tick(usingSync = false) {
     if (this.shouldSync === usingSync) {
       if (this.queue.length) {
@@ -10758,6 +10770,31 @@ const __proxy = require('../workletProxy.js');
 
 module.exports = function (Gibberish) {
 
+  const renderFnc = function (pattern) {
+    const keys = Object.keys(pattern.dict);
+    const objs = Object.values(pattern.dict).map(v => typeof v === 'object' && !Array.isArray(v) ? Gibberish.processor.ugens.get(v.id) : v);
+
+    // we create a new inner function using the function constructor,
+    // where every argument is codegen'd as an upvalue to the
+    // returned function. after codegen we call the functon
+    // to get the inner function with the upvalues andd
+    // return that. Store references to globals as upvalues as well.
+    let code = 'let Gibberish = __Gibberish, global = __global;\n';
+    keys.forEach(k => {
+      let line = `let ${k} = `;
+      const value = pattern.dict[k];
+      const getter = typeof value === 'object' ? Array.isArray(value) ? `[${value.toString()}]` : `Gibberish.processor.ugens.get(${value.id})` : value;
+      line += getter;
+      code += line + '\n';
+    });
+    code += `return function() { ${pattern.fncstr} }`;
+
+    // pass in globals to be used as upvalues in final function
+    const fnc = new Function('__Gibberish', '__global', code)(Gibberish, global);
+
+    return fnc;
+  };
+
   const proxy = __proxy(Gibberish);
 
   const Sequencer = props => {
@@ -10913,34 +10950,16 @@ module.exports = function (Gibberish) {
 
     if (Gibberish.mode === 'worklet') {
       Gibberish.utilities.createPubSub(seq);
-    }
-    // need a separate reference to the properties for worklet meta-programming
-    if (typeof props.values === 'object' && props.values.requiresRender === true) {
-      if (Gibberish.mode === 'processor') {
-        const keys = Object.keys(props.values.dict);
-        const objs = Object.values(props.values.dict).map(v => typeof v === 'object' && !Array.isArray(v) ? Gibberish.processor.ugens.get(v.id) : v);
-
-        // we create a new inner function using the function constructor,
-        // where every argument is codegen'd as an upvalue to the
-        // returned function. after codegen we call the functon
-        // to get the inner function with the upvalues andd
-        // return that. Store references to globals as upvalues as well.
-        let code = 'let Gibberish = __Gibberish, global = __global;\n';
-        keys.forEach(k => {
-          let line = `let ${k} = `;
-          const value = props.values.dict[k];
-          const getter = typeof value === 'object' ? Array.isArray(value) ? `[${value.toString()}]` : `Gibberish.processor.ugens.get(${value.id})` : value;
-          line += getter;
-          code += line + '\n';
-        });
-        code += `return function() { ${props.values.fncstr} }`;
-
-        // pass in globals to be used as upvalues in final function
-        const fnc = new Function('__Gibberish', '__global', code)(Gibberish, global);
-
-        props.values = fnc;
+    } else {
+      // need a separate reference to the properties for worklet meta-programming
+      if (typeof props.values === 'object' && props.values.requiresRender === true) {
+        props.values = renderFnc(props.values);
+      }
+      if (typeof props.timings === 'object' && props.timings.requiresRender === true) {
+        props.timings = renderFnc(props.timings);
       }
     }
+
     const properties = Object.assign({}, Sequencer.defaults, props);
     Object.assign(seq, properties);
     seq.__properties__ = properties;
@@ -18216,6 +18235,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
     Gibberish.preventProxy = false
     Gibberish.debug = false 
     Gibberish.processor = this
+    Gibberish.time = 0
 
     this.port.onmessage = this.handleMessage.bind( this )
     this.queue = []
@@ -18514,6 +18534,8 @@ class GibberishProcessor extends AudioWorkletProcessor {
           } 
         }
 
+        //XXX sub real samplerate sheesh
+        Gibberish.time += 1/44100
         const out = callback.apply( null, ugens )
 
         output[0][ i ] = out[0]
