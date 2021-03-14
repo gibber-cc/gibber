@@ -9023,15 +9023,16 @@ module.exports = function (Gibberish) {
 const Gibberish = require('../index.js');
 
 module.exports = {
-  note(freq) {
+  note(freq, loudness = null) {
     // will be sent to processor node via proxy method...
     if (Gibberish.mode !== 'worklet') {
       let voice = this.__getVoice__();
       //Object.assign( voice, this.properties )
       //if( gain === undefined ) gain = this.gain
       //voice.gain = gain
-      voice.__triggerLoudness = this.__triggerLoudness;
-      voice.note(freq, this.__triggerLoudness);
+      if (loudness === null) loudness = this.__triggerLoudness;
+      voice.__triggerLoudness = loudness;
+      voice.note(freq, loudness);
       this.__runVoice__(voice, this);
       this.triggerNote = freq;
     }

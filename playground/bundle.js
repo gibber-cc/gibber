@@ -9258,8 +9258,9 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             address:'addMethod',
             id:__wrappedObject.id,
             key:'notef',
-            function:`function( note ){ 
-              this.___note( note, this.__triggerLoudness ) 
+            function:`function( note, __loudness=null ){
+              const loudness = __loudness = null ? this.__triggerLoudness : __loudness
+              this.___note( note, loudness ) 
             }`
           })
 
@@ -9273,7 +9274,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             address:'monkeyPatch',
             id:__wrappedObject.id,
             key:'note',
-            function:`function( note ){ 
+            function:`function( note, __loudness ){ 
               const octave = this.octave || 0
               let notesInOctave = 7
               const mode = Gibberish.Theory.mode
@@ -9287,7 +9288,8 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
               const offset = octave * notesInOctave
               let __note = Gibberish.Theory.note( note + offset );
 
-              this.___note( __note, this.__triggerLoudness ) 
+              const loudness = __loudness = null ? this.__triggerLoudness : __loudness
+              this.___note( __note, loudness ) 
             }`
           })
           
@@ -63209,7 +63211,6 @@ window.onload = function() {
 
     Gibber.Audio.subscribe( 'restart', setupGlobals )
     
-
     window.tr = function( fnc, name, dict, immediate=0 ) {
       let code = fnc.toString()
       const keys = Object.keys( dict )
@@ -63222,11 +63223,23 @@ window.onload = function() {
           Gibberish.scheduler.queue.length--
         }
       }
-      const args = [${keys.map( key => typeof dict[key] === 'object' ? dict[ key ].id : `'${dict[ key]}'` ).join(',')}]
-      const objs = args.map( v=> Gibberish.ugens.get(v) );
-      (global.recursions['${name}'] = function ${name} (${keys}) { 
+      const objs = [${keys.map( key => typeof dict[key] === 'object' 
+        ? dict[ key ].id !== undefined 
+          ? 'Gibberish.ugens.get(' + dict[ key ].id + ')'
+          : JSON.stringify( dict[ key ] )
+        : `'${dict[ key]}'` ).join(',')
+}]
+      ;(global.recursions['${name}'] = function ${name} (${keys}) { 
         const __nexttime__ = ( ${code} )(${keys}) || 1
-        if( __nexttime__ ) Gibberish.scheduler.add( Clock.time( __nexttime__ ), (${keys})=>global.recursions['${name}'](...objs), 1 )
+        if( __nexttime__ ) {
+          Gibberish.scheduler.add( 
+            Clock.time( __nexttime__ ), 
+            (${keys})=>{
+              global.recursions['${name}'](...objs)
+            }, 
+            1 
+          )
+        }
       })(...objs)`
 
       if( immediate === 0 ) {
@@ -69033,15 +69046,16 @@ module.exports = function( Gibberish ) {
 const Gibberish = require( '../index.js' )
 
 module.exports = {
-  note( freq ) {
+  note( freq, loudness=null ) {
     // will be sent to processor node via proxy method...
     if( Gibberish.mode !== 'worklet' ) {
       let voice = this.__getVoice__()
       //Object.assign( voice, this.properties )
       //if( gain === undefined ) gain = this.gain
       //voice.gain = gain
-      voice.__triggerLoudness = this.__triggerLoudness
-      voice.note( freq, this.__triggerLoudness )
+      if( loudness === null ) loudness = this.__triggerLoudness
+      voice.__triggerLoudness = loudness
+      voice.note( freq, loudness )
       this.__runVoice__( voice, this )
       this.triggerNote = freq
     }

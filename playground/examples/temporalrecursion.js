@@ -142,3 +142,32 @@ tr( function( f2 ) {
   f2.trigger(1)
   return 1/8
 }, 'freesound2', { f2 })
+
+// in addition to passing instruments, you can also
+// pass objects containing (relatively simple) state
+// to use in your recursion. any state object is 
+// converted to a string and passed to the audio thread
+// where it is parseed, so make sure your state only contains
+// simple numbers, strings, or arrays of numbers and strings.
+// in the example below (originally by eris and remixed by
+// charlie)  we use the _ character to store state. the
+// state is then used to determine when samples are switched
+// in a Freesound instrument.
+verb = Reverb('space').bus()
+ 
+f = Freesound({ query:'snare', max:.35 }).connect( verb, .35)
+ 
+tr( function( f, _ ) {
+  f.pick( _.num )
+  if( _.i++ >= 32 ) {
+    _.num = ++_.num % 15
+    _.i = 0
+  }
+ 
+  f.trigger( 1 )    
+  f.start = Math.sin(time*3)*0.2+0.21
+  f.rate = Math.cos(time*1.1)*0.5+1
+  f.pan = .5 + Math.sin(time) / 3
+ 
+  return Math.sin(time)*0.05+0.07
+}, 'freesound', { f, _:{ i:0, num:0 } })

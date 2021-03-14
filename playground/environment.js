@@ -129,7 +129,6 @@ window.onload = function() {
 
     Gibber.Audio.subscribe( 'restart', setupGlobals )
     
-
     window.tr = function( fnc, name, dict, immediate=0 ) {
       let code = fnc.toString()
       const keys = Object.keys( dict )
@@ -142,11 +141,23 @@ window.onload = function() {
           Gibberish.scheduler.queue.length--
         }
       }
-      const args = [${keys.map( key => typeof dict[key] === 'object' ? dict[ key ].id : `'${dict[ key]}'` ).join(',')}]
-      const objs = args.map( v=> Gibberish.ugens.get(v) );
-      (global.recursions['${name}'] = function ${name} (${keys}) { 
+      const objs = [${keys.map( key => typeof dict[key] === 'object' 
+        ? dict[ key ].id !== undefined 
+          ? 'Gibberish.ugens.get(' + dict[ key ].id + ')'
+          : JSON.stringify( dict[ key ] )
+        : `'${dict[ key]}'` ).join(',')
+}]
+      ;(global.recursions['${name}'] = function ${name} (${keys}) { 
         const __nexttime__ = ( ${code} )(${keys}) || 1
-        if( __nexttime__ ) Gibberish.scheduler.add( Clock.time( __nexttime__ ), (${keys})=>global.recursions['${name}'](...objs), 1 )
+        if( __nexttime__ ) {
+          Gibberish.scheduler.add( 
+            Clock.time( __nexttime__ ), 
+            (${keys})=>{
+              global.recursions['${name}'](...objs)
+            }, 
+            1 
+          )
+        }
       })(...objs)`
 
       if( immediate === 0 ) {
