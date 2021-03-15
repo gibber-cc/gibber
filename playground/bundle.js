@@ -11737,11 +11737,12 @@ module.exports = function( Gibber ) {
       ? Gibber.Pattern( ...__timings ).render()
       : typeof __timings === 'function' && __timings.isPattern 
         ? __timings.render()
-        : __timings.requiresRender 
-          ? __timings
-          : __timings === undefined || __timings === null 
-            ? null
+        : __timings === undefined || __timings === null 
+          ? null
+          : __timings.requiresRender
+            ? __timings
             : Gibber.Pattern( __timings ).render()
+
 
     if( timings === null ) autotrig = true
 
@@ -71098,7 +71099,7 @@ const Sequencer = props => {
     if( typeof props.values === 'object' && props.values.requiresRender === true ) {
       props.values = renderFnc( props.values )
     }
-    if( typeof props.timings === 'object' && props.timings.requiresRender === true ) {
+    if( props.timings !== null && typeof props.timings === 'object' && props.timings.requiresRender === true ) {
       props.timings = renderFnc( props.timings )
     }
   }

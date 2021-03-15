@@ -10977,7 +10977,7 @@ module.exports = function (Gibberish) {
       if (typeof props.values === 'object' && props.values.requiresRender === true) {
         props.values = renderFnc(props.values);
       }
-      if (typeof props.timings === 'object' && props.timings.requiresRender === true) {
+      if (props.timings !== null && typeof props.timings === 'object' && props.timings.requiresRender === true) {
         props.timings = renderFnc(props.timings);
       }
     }
