@@ -6407,9 +6407,9 @@ module.exports = function( Audio ) {
       console.group('Querying Freesound for: ' + originalQuery || query )
       if( query.indexOf( 'query' ) > -1 ) {
         queryString += query
-        queryString += `&token=${token}&fields=name,id,previews`
+        queryString += `&token=${token}&fields=name,id,previews,username,license&page_size=${count} `
       }else{
-        queryString += `query=${query}&token=${token}&fields=name,id,previews&filter=original_filename:${query.split(' ')[0]} ac_single_event:true&sort=downloads_desc`
+        queryString += `query=${query}&token=${token}&fields=name,id,previews,username,license&filter=original_filename:${query.split(' ')[0]} ac_single_event:true&sort=downloads_desc&page_size=${count}`
 
       }
 
@@ -6423,7 +6423,7 @@ module.exports = function( Audio ) {
             console.log(`%cNo sounds were found for this query!`, `background:red;color:white`)
           }
           sampler.length = count < sounds.results.length ? count : sounds.results.length
-          console.table( sounds.results.map( r=>r.name ) )
+          console.table( sounds.results.map( r=>({file:r.name,author:r.username,license:'CC/'+r.license.split('/').slice(4).join('/')}) ) )
           for( let i = 0; i < sampler.length; i++ ) {
             const result = sounds.results[i]
             if( result !== undefined ) {
