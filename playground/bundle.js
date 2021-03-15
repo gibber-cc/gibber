@@ -63197,7 +63197,11 @@ window.onload = function() {
       window.run( ()=> {
         global.recursions = {}
         sin = Math.sin
+        sinn = v => .5 + Math.sin(v) * .5
+        sinr = v => Math.round( Math.sin(v) )
         cos = Math.cos
+        cosn = v => .5 + Math.cos(v) * .5
+        cosr = v => Math.round( Math.cos(v) )
         abs = Math.abs
         floor = Math.floor
         ceil = Math.ceil
