@@ -826,14 +826,14 @@ let proto = {
         wrap = ''
     // must check for reset before storing value for output
     if( !(typeof this.inputs[3] === 'number' && this.inputs[3] < 1) ) { 
-      out += `  if( ${_reset} >= 1 ) ${valueRef} = ${_min}\n`
+      out += `  if( ${_reset} >= 1 ) ${valueRef} = ${_incr} > 0 ? ${_min} : ${_max}\n`
     }
 
     out += `  var ${this.name}_value = ${valueRef};\n  ${valueRef} += ${_incr}\n` // store output value before accumulating  
     
     if( typeof this.max === 'number' && this.max !== Infinity && typeof this.min !== 'number' ) {
       wrap = 
-`  if( ${valueRef} >= ${this.max} &&  ${loops} > 0) {
+`  if( ${valueRef} >= ${this.max} && ${loops} > 0) {
     ${valueRef} -= ${diff}
     ${wrapRef} = 1
   }else{
@@ -68769,59 +68769,64 @@ module.exports = function( Gibberish ) {
       const keys = Object.keys( this.samplers )
       const key = keys[ idx ]
       this.currentSample = key
-      this.trigger()
+      return this.trigger()
     },
     note( rate ) {
-      'no jsdsp'
-      this.rate = rate
-      if( rate > 0 ) {
-        this.trigger( null, rate )
-      }else{
-        //this.__phase__.value = this.end * (this.data.buffer.length - 1)
-        this.trigger( null, rate )
-      }
+      //this.rate = rate
+      return this.trigger( null, rate )
     },
     setpan( num=0, value=.5 ) {
       if( Gibberish.mode === 'processor' ) {
         const voice = this.voices[ num ]
         // set voice buffer length
-        g.gen.memory.heap.set( [ value ], voice.pan.memory.values.idx )
+        //g.gen.memory.heap.set( [ value ], voice.pan.memory.values.idx )
+        voice.pan = value
       }
     },
     setrate( num=0, value=1 ) {
       if( Gibberish.mode === 'processor' ) {
         const voice = this.voices[ num ]
         // set voice buffer length
-        g.gen.memory.heap.set( [ value ], voice.rate.memory.values.idx )
+        //g.gen.memory.heap.set( [ value ], voice.rate.memory.values.idx )
+        voice.rate = value
       }
     },
-    trigger( volume, rate=1 ) {
+    trigger( volume=null, rate=null ) {
       'no jsdsp'
-      if( volume !== undefined && volume !== null ) this.__triggerLoudness = volume
+      if( volume !== null ) this.__triggerLoudness = volume
 
+      let voice = null
       if( Gibberish.mode === 'processor' ) {
         const sampler = this.samplers[ this.currentSample ]
 
         // if sample isn't loaded...
         if( sampler === undefined ) return
 
-        const voice = this.__getVoice__()
+        voice = this.__getVoice__()
 
         // set voice buffer length
-        g.gen.memory.heap.set( [ sampler.dataLength ], voice.bufferLength.memory.values.idx )
+        g.gen.memory.heap[ voice.bufferLength.memory.values.idx ] = sampler.dataLength
 
         // set voice data index
-     
-        g.gen.memory.heap.set( [ sampler.dataIdx ], voice.bufferLoc.memory.values.idx )
+        g.gen.memory.heap[ voice.bufferLoc.memory.values.idx ] = sampler.dataIdx
 
-        if( rate < 0 ) {
-          const phase = sampler.dataIdx + sampler.dataLength - 1
-          voice.phase.value = phase
-        }else{
-          // will reset phase to 0
-          voice.trigger()
-        }
+        //if( rate !== null ) g.gen.memory.heap[ voice.rate.memory.values.idx ] = rate
+        if( rate !== null ) voice.rate = rate 
+        //if( rate < 0 ) {
+        //  const phase = sampler.dataIdx + Math.round((sampler.dataLength/2)) - 1
+        //  console.log( 'phase:', phase, 'length:', sampler.dataLength, 'start:', sampler.dataIdx )
+        //  //voice.phase.value = phase
+        //  //g.gen.memory.heap[ voice.phase.memory.value.idx ] = phase
+        //}else{
+        //  // will reset phase to 0
+        //  voice.trigger()
+        //}
+        
+        voice.trigger()
+        //g.gen.memory.heap[ voice.rate.memory.values.idx ] = rate
       }
+
+      return voice
     },
     __getVoice__() {
       return this.voices[ this.voiceCount++ % this.voices.length ]
@@ -68868,15 +68873,21 @@ module.exports = function( Gibberish ) {
         bufferLoc:    g.data( [1], 1, { meta:true }),
         bang: g.bang(),
         // XXX how do I change this from main thread?
-        pan: g.data( [.5], 1, { meta:true }),
-        rate: g.data( [1], 1, { meta:true }),
+        __pan: g.data( [.5], 1, { meta:true }),
+        __rate: g.data( [1], 1, { meta:true }),
+        set pan(v) {
+          g.gen.memory.heap[ this.__pan.memory.values.idx ] = v
+        },
+        set rate(v) {
+          g.gen.memory.heap[ this.__rate.memory.values.idx ] = v
+        },
       }
 
       voice.phase = g.counter( 
-        rate * voice.rate[0], 
+        rate * voice.__rate[0], 
         start * voice.bufferLength[0],
         end * voice.bufferLength[0], 
-        voice.bang, 
+        voice.bang,
         shouldLoop, 
         { shouldWrap:false, initialValue:9999999 }
       )
@@ -68902,7 +68913,7 @@ module.exports = function( Gibberish ) {
       * loudness 
       * triggerLoudness 
       
-      const pan = g.pan( voice.graph, voice.graph, voice.pan[0] )
+      const pan = g.pan( voice.graph, voice.graph, voice.__pan[0] )
       voice.graph = [ pan.left, pan.right ]
 
       voices.push( voice )
@@ -69027,6 +69038,7 @@ module.exports = function( Gibberish ) {
     pan: .5,
     rate: 1,
     panVoices:false,
+    shouldLoop:false,
     loops: 0,
     start:0,
     end:1,
