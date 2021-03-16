@@ -126,6 +126,7 @@ window.onload = function() {
         round = Math.round
         min = Math.min
         max = Math.max
+        g = global
       })
     }
 

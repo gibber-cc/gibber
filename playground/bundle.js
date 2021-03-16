@@ -9149,6 +9149,9 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         console.table( Object.assign({}, obj.voices[0].__wrapped__.__properties__, obj.__wrapped__.__properties__ ) )
         console.groupEnd()
       }
+      for( let i = 0; i < 20; i++ ) {
+        Object.defineProperty( obj, i, { get() { return obj.voices[i] } })
+      }
     }
 
     // createProperty = function( obj, propertyName, __wrappedObject, timeProps, Audio, isPoly=false ) {
@@ -9449,10 +9452,38 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     const __fx = []
     __fx.__push = __fx.push.bind( __fx )
     __fx.add = function( ...args ) {
-      args.forEach( fx => obj.fx.push( fx ) )
+      args.forEach( fx => obj.__fx.push( fx ) )
+      console.log( `added ${args.length} effect(s) to ${obj.name}` )
       return obj
     }
-    obj.fx = new Proxy( __fx, {
+    __fx.inspect = function() {
+      if( __fx.length > 0 )
+        console.table( __fx.map( fx=>fx.name ) )
+      else
+        console.log( `there are no effects on ${obj.name} to inspect.` )
+    }
+    __fx.remove = function( effect=null ) {
+      if( effect === null ) {
+        obj.__fx.length = 0
+        console.log( `all effects from ${obj.name} were removed.` )
+      }else if( typeof effect === 'number' ) {
+        // XXX broken for indices that !== 0
+        const del = obj.__fx.splice( effect, 1 )
+        console.log( `${del[0].name} at fx slot ${effect} was removed from ${obj.name}.` ) 
+      }else if( typeof effect === 'string' ) {
+        const indexesToErase = []
+        __fx.forEach( (__effect,i) => { if( effect.name === __effect.name ) indexesToErase.push( i ) })
+        console.log( `${indexesToErase.length} effect(s) were removed from ${obj.name}.` ) 
+        for( let i = __fx.length - 1; i >= 0; i-- ) {
+          if( indexesToErase.includes( i ) ) __fx.splice( i, 1 )
+        }   
+      } else if( typeof effect === 'object' ) {
+        const idx = __fx.indexOf( effect )
+        __fx.splice( idx, 1 )
+        console.log( `effect ${effect.name} was removed from ${obj.name}.` ) 
+      }
+    }
+    obj.__fx = new Proxy( __fx, {
       set( target, property, value, receiver ) {
 
         const lengthCheck = target.length
@@ -9495,6 +9526,31 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         }
 
         return true
+      }
+    })
+
+    Object.defineProperty( obj, 'fx', {
+      get() { return obj.__fx },
+      set(v) {
+        const tmpLength = obj.__fx.length
+        obj.__fx.length = 0
+        if( Array.isArray( v ) ) {
+          v.forEach( effect => obj.__fx.push( effect ) ) 
+        }else{
+          obj.__fx.push( v ) 
+        }
+
+        if( tmpLength > 0 ) {
+
+            console.log( `${tmpLength} effect(s) were replaced with ${obj.__fx.length} effect(s) on ${obj.name}` )
+        }else{
+
+          if( Array.isArray( v ) ) {
+            console.log( `${v.length} effect(s) were added to the fx chain of ${obj.name}` )
+          }else{
+            console.log( `a ${v.name} was added to the fx chain  of ${obj.name}` )
+          }
+        }
       }
     })
 
@@ -10859,8 +10915,31 @@ const patternWrapper = function( Gibber ) {
     // used when _onchange has not been assigned to individual patterns
     _onchange() {},
 
-    addFilter( filter ) {
+    // XXX it would be nice if filters used a similar style to fx chains...
+    // pattern.filters.add( ) etc.
+    addFilter( filter, name=null ) {
+      if( name !== null ) {
+        filter.__name = name
+        const idx = this.filters.findIndex( f => f.__name === name )
+        this.filters.splice( idx, 1 )  
+      }
       this.filters.push( filter )
+      return this
+    },
+
+    removeFilter( idx=null ) {
+      if( idx !== null ) {
+        this.filters.splice( idx, 1 )  
+      }else{
+        this.filters.length = 0
+      }
+
+      return this
+    },
+
+    inspect() {
+      if( Gibberish.mode === 'processor' ) 
+        console.table({ values:this.values.toString(), 'number of filters':this.filters.length, phase:this.phase })
     },
 
     render( cat='Audio' ) {
@@ -11456,6 +11535,21 @@ const patternWrapper = function( Gibber ) {
     
     fnc.end = fnc.values.length - 1
     
+    /*
+    fnc.filters.test = function() { console.log( 'test' ) }
+    
+    fnc.filters.add = function( f ) {
+      this.filters.push( f )
+    }.bind(fnc)
+    fnc.filters.remove = function( idx ) {
+      console.log( 'filter:', this )
+      this.filters.splice( idx, 1 )
+    }.bind( fnc )
+    fnc.filters.inspect = function() {
+      console.log( `there are currenly ${this.length} filters on this pattern` )
+    }.bind(fnc)
+    */
+
     if( Array.isArray( fnc.values[0] ) ) {
       const arr = []
       for( let i = 0; i < fnc.values.length; i++ ) {
@@ -11710,8 +11804,12 @@ module.exports = function( Gibber ) {
     if( Array.isArray( __values ) ) {
       Object.assign( __values, values )
       __values.addFilter = values.addFilter.bind( values )
-    } else if (typeof __values === 'object' && __values.type==='gen') {
+      __values.removeFilter = values.removeFilter.bind( values )
+      __values.inspect = values.inspect.bind( values )
+    } else if( typeof __values === 'object' && __values.type==='gen' ) {
       props.values.addFilter = values.addFilter.bind( values )
+      props.values.removeFilter = values.removeFilter.bind( values )
+      props.values.inspect = values.inspect.bind( values )
     }
 
     // process time values
@@ -63209,6 +63307,7 @@ window.onload = function() {
         round = Math.round
         min = Math.min
         max = Math.max
+        g = global
       })
     }
 
