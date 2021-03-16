@@ -9472,7 +9472,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         console.log( `${del[0].name} at fx slot ${effect} was removed from ${obj.name}.` ) 
       }else if( typeof effect === 'string' ) {
         const indexesToErase = []
-        __fx.forEach( (__effect,i) => { if( effect.name === __effect.name ) indexesToErase.push( i ) })
+        __fx.forEach( (__effect,i) => { if( effect === __effect.name ) indexesToErase.push( i ) })
         console.log( `${indexesToErase.length} effect(s) were removed from ${obj.name}.` ) 
         for( let i = __fx.length - 1; i >= 0; i-- ) {
           if( indexesToErase.includes( i ) ) __fx.splice( i, 1 )
