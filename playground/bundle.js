@@ -11728,7 +11728,7 @@ module.exports = function( Gibber ) {
     }
 
     // trigger autotrig patterns
-    if( key === 'note' || key === 'chord' || key === 'trigger' || key === 'notef' ) {
+    if( key === 'note' || key === 'chord' || key === 'trigger' || key === 'notef' || key === 'pickplay' ) {
       values.addFilter( ( args,ptrn ) => {
         if( ptrn.seq.target.autotrig !== undefined ) {
           for( let s of ptrn.seq.target.autotrig ) {
@@ -11767,6 +11767,13 @@ module.exports = function( Gibber ) {
         return args
       }  
 
+    seq.timings.addFilter( (args,ptrn)=>{
+      if( args[0] === 0 ) {
+        ptrn.seq.stop()
+        console.warn( 'sequencer attempting to fire with a time of zero; this will result in an infinite loop, so the sequencer has been stopped.' )
+      }
+      return args
+    })
     seq.timings.addFilter( filter ) 
   }
 
@@ -63334,8 +63341,12 @@ window.onload = function() {
         : `'${dict[ key]}'` ).join(',')
 }]
       ;(global.recursions['${name}'] = function ${name} (${keys}) { 
-        const __nexttime__ = ( ${code} )(${keys}) || 1
-        if( __nexttime__ ) {
+        let __nexttime__ = ( ${code} )(${keys})
+        if( isNaN( __nexttime__ ) === false && __nexttime__ <= 0 ) {
+          console.warn( 'temporal recursion scheduled with a time <= 0; this would create a potentially infinite loop. substituting a time of one measure.' )
+          __nexttime__ = 1
+        }
+        if( __nexttime__ && __nexttime__ > 0 ) {
           Gibberish.scheduler.add( 
             Clock.time( __nexttime__ ), 
             (${keys})=>{

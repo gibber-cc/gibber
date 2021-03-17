@@ -153,8 +153,12 @@ window.onload = function() {
         : `'${dict[ key]}'` ).join(',')
 }]
       ;(global.recursions['${name}'] = function ${name} (${keys}) { 
-        const __nexttime__ = ( ${code} )(${keys}) || 1
-        if( __nexttime__ ) {
+        let __nexttime__ = ( ${code} )(${keys})
+        if( isNaN( __nexttime__ ) === false && __nexttime__ <= 0 ) {
+          console.warn( 'temporal recursion scheduled with a time <= 0; this would create a potentially infinite loop. substituting a time of one measure.' )
+          __nexttime__ = 1
+        }
+        if( __nexttime__ && __nexttime__ > 0 ) {
           Gibberish.scheduler.add( 
             Clock.time( __nexttime__ ), 
             (${keys})=>{
