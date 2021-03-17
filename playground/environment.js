@@ -75,8 +75,23 @@ window.onload = function() {
               s.start( s.__delay || 0 )
           }
         })
+        Gibber.Tidal.sequencers.forEach( s => {
+          let shouldStop = true
+          soloed.forEach( solo => {
+            if( s.target === solo.__wrapped__ ) shouldStop = false
+          })
+          if( shouldStop ) { 
+            s.stop()
+          }else{
+            if( s.__isRunning === false )
+              s.start( s.__delay || 0 )
+          }
+        })
       }else{
         Gibber.Seq.sequencers.forEach( s => {
+          if( s.__isRunning === false ) s.start( s.__delay || 0 ) 
+        })
+        Gibber.Tidal.sequencers.forEach( s => {
           if( s.__isRunning === false ) s.start( s.__delay || 0 ) 
         })
       }
