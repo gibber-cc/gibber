@@ -6792,8 +6792,11 @@ const Gen  = {
   },
 
   composites: { 
-    sine( frequency=2, amp=4, center=0 ) {
-      return Gen.composites.lfo( 'sine', frequency, amp, center )
+    sine( frequency=2, amp=4, center=0, shouldRound=false ) {
+      return Gen.composites.lfo( 'sine', frequency, amp, center, shouldRound )
+    },
+    siner( frequency=2, amp=4, center=0 ) {
+      return Gen.composites.lfo( 'sine', frequency, amp, center, true )
     },
     square( frequency=2, amp=4, center=0 ) {
       return Gen.composites.lfo( 'square', frequency, amp, center )
@@ -6804,7 +6807,7 @@ const Gen  = {
     tri( frequency=2, amp=4, center=0 ) {
       return Gen.composites.lfo( 'tri', frequency, amp, center )
     },
-    lfo( type = 'sine', frequency = 2, amp = .5, center = .5 ) {
+    lfo( type = 'sine', frequency = 2, amp = .5, center = .5, shouldRound = false ) {
       const g = Gen.ugens 
       const gibberish= Audio.Gibberish
       let osc
@@ -6832,7 +6835,9 @@ const Gen  = {
       const _mul   = g.mul( osc, amp ),
             _add   = g.add( center, _mul ) 
 
-      const lfo = Gen.make( _add )
+
+
+      const lfo = shouldRound ? Gen.make( g.round( _add ) ) : Gen.make( _add )
 
       Object.defineProperties( lfo, {
         frequency: {
@@ -8933,39 +8938,69 @@ const Theory = {
   // REMEMBER THAT THE .note METHOD IS ALSO MONKEY-PATCHED
   // IN ugen.js, THIS IS WHERE MOST OF THE AWPROCESSOR NOTE
   // METHOD IS IMPLEMENTED.
-  note: function( idx, octave=0 ) {
-    let finalIdx, mode = null
+  note: function( __idx, octave=0, round=true ) {
+    let finalIdx, mode = null, __float = __idx % 1, baseOctave, nextOctave
 
-    if( idx % 1 !== 0 ) {
-      idx = Math.round( idx )
+    let isInt = __float === 0
+    if( !isInt && round===true ) {
+      __idx = Math.round( __idx )
+      isInt = true
     }
+    
+    let baseIndex = __idx < 0 ? Math.ceil( __idx ) : Math.floor( __idx ),
+        nextIndex = __idx >= 0 ? baseIndex + 1 : baseIndex - 1
 
-    idx += Gibberish.Theory.__offset
+    baseIndex += Gibberish.Theory.__offset
+    nextIndex += Gibberish.Theory.__offset
 
     if( Gibberish.Theory.mode !== 'chromatic' && Gibberish.Theory.mode !== null ) {
       mode = Gibberish.Theory.modes[ Gibberish.Theory.mode ]
-      octave = Math.floor( idx / mode.length )
-
+      baseOctave = Math.floor( baseIndex / mode.length )
+      nextOctave = Math.floor( nextIndex / mode.length )
+      
       // XXX this looks crazy ugly but works with negative note numbers...
-      finalIdx = idx < 0 
-        ? mode[ (mode.length - (Math.abs(idx) % mode.length)) % mode.length ] 
-        : mode[ Math.abs( idx ) % mode.length ]
+      baseIndex = baseIndex < 0 
+        ? mode[ (mode.length - (Math.abs( baseIndex ) % mode.length)) % mode.length ] 
+        : mode[ Math.abs( baseIndex ) % mode.length ]
 
+      if( !isInt ) {
+        nextIndex = nextIndex < 0 
+          ? mode[ (mode.length - (Math.abs( nextIndex ) % mode.length)) % mode.length ] 
+          : mode[ Math.abs( nextIndex ) % mode.length ]
+      }
     }else{
       // null mode also means to use 'chromatic' mode
       mode = Gibberish.Theory.modes[ 'chromatic' ]
       const l = Gibberish.Theory.Tune.scale.length 
-      octave = Math.floor( idx / l )
-      finalIdx = idx < 0 
-        ? mode[ (l - (Math.abs(idx) % l)) % l ] 
-        : mode[ Math.abs( idx ) % l ]
+      baseOctave = Math.floor( baseIndex / l )
+      nextOctave = Math.floor( baseIndex / l )
+
+      baseIndex = baseIndex < 0 
+        ? mode[ (l - (Math.abs( baseIndex ) % l)) % l ] 
+        : mode[ Math.abs( baseIndex ) % l ]
+
+      if( !isInt ) {
+        nextIndex = nextIndex < 0 
+          ? mode[ (l - (Math.abs( nextIndex ) % l)) % l ] 
+          : mode[ Math.abs( nextIndex ) % l ]
+      }
     }
 
-    finalIdx += this.__degree.offset
+    baseIndex += this.__degree.offset
+    nextIndex += this.__degree.offset
 
-    const freq = Gibberish.Theory.Tune.note( finalIdx, octave )
+    let outputFreq = 0
+    if( !isInt ) {
+      const freq0 = Gibberish.Theory.Tune.note( baseIndex, baseOctave )
+      const freq1 = Gibberish.Theory.Tune.note( nextIndex, nextOctave )
+      let   diff  = freq1 - freq0
+      if( __idx < 0 ) diff *= -1
+      outputFreq = freq0 + (diff*__float)
+    }else{
+      outputFreq = Gibberish.Theory.Tune.note( baseIndex, baseOctave )
+    }
 
-    return freq
+    return outputFreq 
   },
 }
 
@@ -9190,7 +9225,11 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
       }
     }
 
-    if( description.methods !== null && description.methods.indexOf( 'note' ) > -1 ) description.methods.push( 'notef' )
+    if( description.methods !== null && description.methods.indexOf( 'note' ) > -1 ) { 
+      description.methods.push( 'notef' )
+      description.methods.push( 'notec' )
+    }
+
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
@@ -9266,7 +9305,15 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
               this.___note( note, loudness ) 
             }`
           })
-
+          Gibberish.worklet.port.postMessage({
+            address:'addMethod',
+            id:__wrappedObject.id,
+            key:'notec',
+            function:`function( note, __loudness=null ){
+              const loudness = __loudness = null ? this.__triggerLoudness : __loudness
+              this.note( note, loudness, false ) 
+            }`
+          })
           // when a message is received at the address 'monkeyPatch',
           // Gibberish will create a copy of the method identified by
           // the 'key' field, and then assign it back to the object prefaced
@@ -9277,7 +9324,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
             address:'monkeyPatch',
             id:__wrappedObject.id,
             key:'note',
-            function:`function( note, __loudness ){ 
+            function:`function( note, __loudness, round=true ){ 
               const octave = this.octave || 0
               let notesInOctave = 7
               const mode = Gibberish.Theory.mode
@@ -9289,7 +9336,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
               }
 
               const offset = octave * notesInOctave
-              let __note = Gibberish.Theory.note( note + offset );
+              let __note = Gibberish.Theory.note( note + offset, 0, round )
 
               const loudness = __loudness = null ? this.__triggerLoudness : __loudness
               this.___note( __note, loudness ) 
@@ -9307,6 +9354,14 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           }
         }
 
+        if( methodName === 'notec' ) {
+          obj.notec = function( ...args ) {
+            __wrappedObject.frequency = args[0]
+            __wrappedObject.trigger( __wrappedObject.__triggerLoudness )
+
+            return obj
+          }
+        }
         obj[ methodName ].sequencers = []
         obj[ methodName ].tidals = []
 

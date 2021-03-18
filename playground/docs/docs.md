@@ -27,6 +27,9 @@ instrument
 ### instrument.notef(  *frequency* ) ###
 **frequency** *float* (required) - The direct frequency to be played, bypassing gibber's theory / tuning systems.
 
+### instrument.notec(  *scaleIndex* ) ###
+**scaleIndex** *float* (required) - The arguent scale index is converted to Hz according to the currently selected tuning and mode. Unlike note(), in notec() floating point scale indices are supported and will be linearly interpolated between pitches
+
 ### instrument.trigger(  *loudness* ) ###
 **loudness** *float* (required) - This sets the loudness for a single triggering of the instrument. You can also directly set the overall loudness of the instrument using the `.loudness` property, or scale the overall signal using `.gain`.
 
