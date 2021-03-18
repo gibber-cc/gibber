@@ -77,3 +77,20 @@ Theory.tuning = 'bach2'
 
 Theory.tuning = 'slendro'
 Theory.mode = null
+
+// with all that that said, there are times when you 
+// might want to bypass the music theory system in
+// gibber altogether, and just provide direct frequncy
+// values to instruments. you can do that using the
+// .notef() method.
+
+s = Synth('bleep').notef.seq( [100,200,300,400], 1/4 )
+
+// by default, note() rounds any arguments you send to
+// it so that they can be used to look up notes in 
+// gibber's current scale. however, the notec method
+// (for "note continuous") lets you interpolate betweeen
+// scale indices for a full continuous range of pitches.
+
+s = Synth('square.perc')
+s.notec.seq( [0,.25,.5,.75,1,1.25,1.5,1.75,2], 1/8 )
