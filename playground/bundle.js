@@ -8723,6 +8723,9 @@ const Theory = {
       Object.defineProperty( this, 'root', {
         get() { return this.__root },
         set(v) {
+          if( typeof v=== 'string' ) {
+            v = this.__noteToFreq( v )
+          } 
           this.__root = v
           this.Tune.tonicize( this.__root )
         }
