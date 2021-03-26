@@ -9725,7 +9725,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           console.groupEnd()
         }
 
-        return p
+        return b
       }
     }
     //console.log( `%c${description.name} created.`, 'color:white;background:#009' )
@@ -66819,6 +66819,7 @@ let __Chorus = inputProps => {
 
 __Chorus.defaults = {
   input:0,
+  inputGain:1,
   slowFrequency: .18,
   slowGain:3,
   fastFrequency:6,
