@@ -11,7 +11,7 @@
 verb = Reverb( 'space' ).bus() 
  
 bass = Monosynth('bass.stab')
-  .connect( verb, .225 )
+  .connect( verb, .1 )
   .note.seq( 
     gen( beats(8) * 4 ), 
     Euclid(5,16) 

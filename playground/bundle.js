@@ -63118,7 +63118,7 @@ bass = Synth( 'bass.hollow' )
   .trigger.seq( [.75,.5,.25], [1/4,1/8] )
  
 clave = Clave({ gain:.1 }).connect( verb, .25 )
-  .trigger.seq( .5, e = Euclid(3,8))
+  .trigger.seq( .5, e = Euclid(3,8) )
  
 e.rotate.seq( [1,-1], 2, 0, 4 )
  
