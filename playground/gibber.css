@@ -15,6 +15,19 @@
 
   font-family:Menlo, monospace !important;
 }
+@media only screen and (max-width: 950px) {
+  #reference { display:none } 
+}
+@media only screen and (max-width: 600px) {
+  #sharebtn, #connect, #restart { display:none } 
+}
+@media only screen and (max-width: 400px) {
+  #themer { display:none } 
+  header { padding-top:.5em }
+}
+@media only screen and (max-width: 325px) {
+  #examplesMenu { display:none } 
+}
 
 #themer {
   width:4em;
