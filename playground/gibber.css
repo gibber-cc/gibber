@@ -18,14 +18,14 @@
 @media only screen and (max-width: 950px) {
   #reference { display:none } 
 }
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 615px) {
   #sharebtn, #connect, #restart { display:none } 
 }
 @media only screen and (max-width: 400px) {
   #themer { display:none } 
-  header { padding-top:.5em }
+  header { padding-top:.55em }
 }
-@media only screen and (max-width: 325px) {
+@media only screen and (max-width: 335px) {
   #examplesMenu { display:none } 
 }
 

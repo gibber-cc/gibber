@@ -5846,6 +5846,15 @@ const Effects = {
       const shouldUsePool = poolEffects.indexOf( effectName ) > -1 
 
       effects[ effectName ] = Ugen( gibberishConstructor, description, Audio, shouldUsePool )
+      
+      effects[ effectName ].presets = Audio.Presets.effects[ effectName ] 
+      if( effects[ effectName ].presets !== undefined ) {
+        effects[ effectName ].presets.inspect = function() {
+          console.table( this )
+        }
+      }else{
+        effects[ effectName ].presets = { inspect() { console.log( `${effectName} has no presets.` ) } }
+      }
     }
 
     effects.Reverb = function( ...args ) {
@@ -7154,6 +7163,15 @@ const Instruments = {
         }
       }
 
+
+      instruments[ instrumentName ].presets = Audio.Presets.instruments[ instrumentName ] 
+      if( instruments[ instrumentName ].presets !== undefined ) {
+        instruments[ instrumentName ].presets.inspect = function() {
+          console.table( this )
+        }
+      }else{
+        instruments[ instrumentName ].presets = { inspect() { console.log( `${instrumentName} has no presets.` ) } }
+      }
     }
     instruments.Pluck = instruments.Karplus
     return instruments
@@ -8407,7 +8425,8 @@ module.exports = {
     attack:1/8192,
     decay:1/10,
     octave:-3,
-    glide:2000
+    glide:2000,
+    description:`A sawtooth feeding a TB303-style lowpass filter, with high Q settings and a short envelope.`
   },
 
   acidBass2: {
