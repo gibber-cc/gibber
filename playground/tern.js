@@ -41,7 +41,7 @@ module.exports = function( Gibber, cm, environment ) {
 
         if( presetCategory !== null ) {
           const obj = {
-            list: Object.keys( presetCategory ).map( key => {
+            list: Object.keys( presetCategory ).filter( k => k !== 'inspect' ).map( key => {
               const completion = {
                 text: key,
                 shown() { console.log( 'showing ', key ) }

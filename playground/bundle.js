@@ -7348,6 +7348,7 @@ const Presets = {
     if( typeof args[0] === 'object' ) {
       output = args[ 0 ]  
     }else if( typeof args[0] === 'string' ){
+      if( args[0] === 'inspect' ) return null
       output = {}
       const preset = Presets[ description.category ][ description.name ][ args[0] ]
 
@@ -64811,7 +64812,7 @@ module.exports = function( Gibber, cm, environment ) {
 
         if( presetCategory !== null ) {
           const obj = {
-            list: Object.keys( presetCategory ).map( key => {
+            list: Object.keys( presetCategory ).filter( k => k !== 'inspect' ).map( key => {
               const completion = {
                 text: key,
                 shown() { console.log( 'showing ', key ) }
