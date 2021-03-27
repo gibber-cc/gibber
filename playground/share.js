@@ -48,7 +48,12 @@ const share = {
       }
     })
 
-    return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData }
+    const clear = function( clearEditor = false ){ 
+      Gibber.clear()
+      commands.delete( 0, commands.length )
+      if( clearEditor ) editor.setValue('')
+    }
+    return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData, clear }
   },
 
   setupShareHandler( cm, environment, networkConfig ) {
@@ -59,11 +64,12 @@ const share = {
               username = document.querySelector( '#connectname' ).value,  
               roomname = document.querySelector( '#connectroom' ).value
 
-        const { socket, provider, binding, chatData, commands, userData } = share.initShare( 
+        const { socket, provider, binding, chatData, commands, userData, clear } = share.initShare(
           cm, 
           username, 
           roomname
         )
+        share.clear = clear
         share.commands = commands
 
         userData.unshift([{ username }])
@@ -77,6 +83,9 @@ const share = {
         window.chatData = chatData
         window.commands = commands
         window.username = username
+        window.Gabber = {
+          clear
+        }
 
         commands.observe( e => {
           if( e.transaction.local === false ) {
@@ -84,18 +93,21 @@ const share = {
             // if we did this would allow late users to potentially "catch up"
             // with a performance...
 
-            const inserts = e.changes.delta[0].insert
-            for( let i = inserts.length - 1; i > 0; i -= 5 ) {
-              const arr = e.changes.delta[0].insert.slice( i-4, i+1 )
-              const code = {
-                selection:{
-                  start: { line:arr[0], ch:arr[1] },
-                  end:   { line:arr[2], ch:arr[3] }
-                },
-                code: arr[4]
-              }
+            // make sure there commands to run...
+            if( e.changes.delta.length > 0 ) {
+              const inserts = e.changes.delta[0].insert
+              for( let i = inserts.length - 1; i > 0; i -= 5 ) {
+                const arr = e.changes.delta[0].insert.slice( i-4, i+1 )
+                const code = {
+                  selection:{
+                    start: { line:arr[0], ch:arr[1] },
+                    end:   { line:arr[2], ch:arr[3] }
+                  },
+                  code: arr[4]
+                }
 
-              environment.runCode( cm, false, true, false, code )
+                environment.runCode( cm, false, true, false, code )
+              }
             }
           }
         })
@@ -206,8 +218,6 @@ const share = {
     }
     
   },
-
-  quickmsg() { console.log( 'msg' ) },
 
   createChatWindow() {
     const headerHeight = document.querySelector('header').offsetHeight
