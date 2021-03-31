@@ -5,6 +5,7 @@ module.exports = function() {
       name:'demos',
       options:[
         ['intro', 'newintro.js'],
+        ['fractal fun', 'fractal_fun.js'],
         ['pick your sample', 'picksomesamples.js'],
         ['acid', 'acid.js'],
         ['moody', 'intro.js'],

@@ -101,6 +101,7 @@ window.onload = function() {
     window.Audio    = Gibber.Audio
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
+    window.printcb = Gibber.Audio.printcb
 
     window.run = fnc => { 
       const str = fnc.toString()

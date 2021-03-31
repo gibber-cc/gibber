@@ -9232,7 +9232,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         Audio.createProperty( obj, propertyName, value, null, 0, transform )
 
         // create per-voice version of property... what properties should be excluded?
-        if( description.name.indexOf('Poly') > -1 ) {
+        if( description.name.indexOf('Poly') > -1 || description.name.indexOf('Multi') > -1 ) {
           Audio.createProperty( obj, propertyName+'V', value, null, 0, transform, true )//, timeProps, Audio, true )
 
           //createProperty( obj, propertyName, __wrappedObject, timeProps, Audio, true )
@@ -63368,6 +63368,7 @@ window.onload = function() {
     window.Audio    = Gibber.Audio
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
+    window.printcb = Gibber.Audio.printcb
 
     window.run = fnc => { 
       const str = fnc.toString()
@@ -64014,6 +64015,7 @@ module.exports = function() {
       name:'demos',
       options:[
         ['intro', 'newintro.js'],
+        ['fractal fun', 'fractal_fun.js'],
         ['pick your sample', 'picksomesamples.js'],
         ['acid', 'acid.js'],
         ['moody', 'intro.js'],
