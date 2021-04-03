@@ -1,6 +1,7 @@
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
-      CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
+      CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding,
+      Editor = require( './editor.js' )
 
 const share = {
   addUser( userInfo ) {
@@ -83,9 +84,7 @@ const share = {
         window.chatData = chatData
         window.commands = commands
         window.username = username
-        window.Gabber = {
-          clear
-        }
+        window.Gabber = { clear }
 
         commands.observe( e => {
           if( e.transaction.local === false ) {
@@ -130,7 +129,7 @@ const share = {
             if( users.indexOf( msg.username ) === -1 ) {
               users.push( msg.username )
               if( useSharedEditor === false ) {
-                createSplits( msg.username, users )
+                share.createSplits( msg.username, users )
               }
             }
           }
@@ -215,6 +214,38 @@ const share = {
       default:
         grid[0][0] = mostRecentUser
         // 1 user, do nothing
+    }
+
+    const editor = document.querySelector( '#editor' )
+
+    const cells = Array.from( document.querySelectorAll( '.editorCell' ) )
+    for( let cm of cells ) cm.remove()
+    const codemirrors = Array.from( document.querySelectorAll( '.CodeMirror' ) )
+    for( let cm of codemirrors ) cm.remove()
+    
+    console.log( 'grid:', grid )
+    const width  = editor.offsetWidth,
+          height = editor.offsetHeight,
+          editorHeight = height / grid.length
+
+    let count = 0, rowCount = 0
+    for( let row of grid ) {
+      const rowcount = row.length,
+            editorWidth = width / rowcount
+
+      let cellCount = 0
+      for( let cell of row ) {
+        const div = document.createElement('div')
+        div.setAttribute( 'width', editorWidth )
+        div.setAttribute( 'height', editorHeight )
+        div.setAttribute( 'id', 'cell'+count++ )
+        div.setAttribute( 'class', 'editorCell' )
+        div.style = `position:absolute; display:block; width:${editorWidth}; height:${editorHeight}; top:${rowCount*editorHeight}; left:${cellCount*editorWidth};`
+        cellCount++
+        editor.appendChild(div)
+      }
+
+      rowCount++
     }
     
   },

@@ -181,7 +181,7 @@ mac     | command + option + j  |  command + option + i
   **************************************************
    ***********************************************/`
 
-module.exports = function( Gibber ) {
+module.exports = function( Gibber, element = '#editor' ) {
 
   const keys = {
     w:0,
@@ -191,7 +191,7 @@ module.exports = function( Gibber ) {
     alt:0
   }
   const editor = {}
-  const cm = CodeMirror( document.querySelector('#editor'), {
+  const cm = CodeMirror( document.querySelector( element ), {
     mode:   'javascript',
     value:  startingText, 
     keyMap: 'playground',

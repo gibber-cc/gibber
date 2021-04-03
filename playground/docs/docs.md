@@ -459,6 +459,22 @@ A waveshaping distortion taken from Csound, which calls it a 'modified hyperboli
 *float* default: 2, range: 0-10.  This the boost that is applied to the input signal; applying more of a boost will create more distortion.
 ### Distortion.postgain ###
 *float* default: 1, range: 0-1.  This property can be used to decrease the volume of the signal after it has gone through the wavefolder.
+Filter
+----
+*Prototype: [effect](#prototypes-effect)*
+
+A filter effect with different models (ladder, diode, biquad etc.) and modes (lowpass, highpass etc.). All models support lowpass filtering, but only biquad and svf filter support highpass, bandpass, and notch filtering.
+
+
+#### Properties ####
+### Filter.cutoff ###
+*float* default: 0.25, range: 0-1.  This controls the cutoff frequency of the filter, normalized to 0-1. For a lowpass filter, frequencies above this value will be attenuated. For a highpass filter, frequencies below this value will be attenuated.
+### Filter.Q ###
+*float* default: .25, range: 0-1.  This is the 'quality' of the filter, which controls how much of a boost is present around the cutoff frequency. This boost to the cutoff frequency yields the classic filter sweep sound when the cutoff frequency changes over time.
+### Filter.model ###
+*int* default: 1, range: 1-5.  The model the filter uses can only be specified when the filter is constructed, options include: 1-Moog-style Ladder filter (LP), 2-TB303-style Diode Filter (LP), 3-State Variable Filter (LP,BP,HP), 4-Biquad Filter (LP, HP, BP, Notch)
+### Filter.mode ###
+*int* default: 0, range: 0-3.  The filter mode determines how frequencies are attenuated. 1-Lowpass: frequencies above the cutoff frequencies are attenuated, 2-Highpass: filters below the cutoff frequency are attenuated, 3-Bandpass: Frequencies outside of a band surrounding the cutoff frequency are attenuated, and 4-Notch: frequencies around the cutoff frequency are attenuated.
 Flanger
 ----
 *Prototype: [effect](#prototypes-effect)*
@@ -491,6 +507,18 @@ This is a reverberation model that uses four allpass filters in series and then 
 *float* default: 1, range: 0-1.  Using different values for this and .wet2 will affect the stereo output by sending some of the left output to the right channel and vice versa. With a value of 1 for this property and 0 for .wet2 each output will only go to one channel.
 ### Freeverb.wet2 ###
 *float* default: 0, range: 0-1.  Using different values for this and .wet1 will affect the stereo output by sending some of the left output to the right channel and vice versa. With a value of 0 for this property and 1 for .wet1 each output will only go to one channel.
+RingMod
+----
+*Prototype: [effect](#prototypes-effect)*
+
+A classic effect where the output of a sine wave running at audio rate frequencies modulates the amplitude of another sound; when the output of the sinewave is running at sub-audio rates this is equivalent to Tremolo.
+
+
+#### Properties ####
+### RingMod.frequency ###
+*float* default: 220, range: 0.01-22050.  The frequency of the sine oscillator used for modulation
+### RingMod.mix ###
+*float* default: 1, range: 0-1.  The mix of the wet to dry signal
 Vibrato
 ----
 *Prototype: [effect](#prototypes-effect)*

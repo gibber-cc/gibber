@@ -6149,13 +6149,28 @@ module.exports = function (Gibberish) {
   const DiodeZDF = inputProps => {
     const zdf = Object.create(filter);
     const props = Object.assign({}, DiodeZDF.defaults, filter.defaults, inputProps);
+    let out;
+
+    zdf.__requiresRecompilation = ['input'];
+    zdf.__createGraph = function () {
+      let isStereo = false;
+      if (out === undefined) {
+        isStereo = props.input !== undefined && props.input.isStereo !== undefined ? props.input.isStereo : false;
+      } else {
+        isStereo = out.input.isStereo;
+        out.isStereo = isStereo;
+      }
+
+      zdf.graph = Gibberish.genish.zd24(genish.in('input'), genish.in('Q'), genish.in('cutoff'), isStereo);
+    };
+
     const isStereo = props.input.isStereo;
 
     Object.assign(zdf, props);
 
-    const __out = Gibberish.factory(zdf, Gibberish.genish.diodeZDF(g.in('input'), g.in('Q'), g.in('cutoff'), g.in('saturation'), isStereo), ['filters', 'Filter24TB303'], props);
+    out = Gibberish.factory(zdf, Gibberish.genish.diodeZDF(g.in('input'), g.in('Q'), g.in('cutoff'), g.in('saturation'), isStereo), ['filters', 'Filter24TB303'], props);
 
-    return __out;
+    return out;
   };
 
   DiodeZDF.defaults = {
@@ -6747,6 +6762,7 @@ module.exports = function (Gibberish) {
 
       __Chorus.defaults = {
             input: 0,
+            inputGain: 1,
             slowFrequency: .18,
             slowGain: 3,
             fastFrequency: 6,

@@ -6297,6 +6297,10 @@ module.exports = Tune
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
+const filterNames = [
+  "none", "Filter24Moog", "Filter24TB303", "Filter12SVF", "Filter12Biquad", "Filter24Classic"
+]
+
 const Filters = {
   create( Audio ) {
     const filters = {}
@@ -6319,6 +6323,17 @@ const Filters = {
     }
 
     filters.LPF = filters.Filter24Moog
+
+    filters.Filter = function( props ) {
+      if( props === undefined ) props = { model: 1 }
+      if( props.model === undefined ) props.model = 1
+
+      const name = filterNames[ props.model ]
+
+      delete props.model
+
+      return filters[ name ]( props ) 
+    }
 
     const description = { 
       properties: Object.assign( {}, Gibberish.filters[ 'Filter12Biquad' ].defaults, { mode:1 } ),
@@ -63057,7 +63072,7 @@ mac     | command + option + j  |  command + option + i
   **************************************************
    ***********************************************/`
 
-module.exports = function( Gibber ) {
+module.exports = function( Gibber, element = '#editor' ) {
 
   const keys = {
     w:0,
@@ -63067,7 +63082,7 @@ module.exports = function( Gibber ) {
     alt:0
   }
   const editor = {}
-  const cm = CodeMirror( document.querySelector('#editor'), {
+  const cm = CodeMirror( document.querySelector( element ), {
     mode:   'javascript',
     value:  startingText, 
     keyMap: 'playground',
@@ -64484,7 +64499,8 @@ module.exports = Theme
 },{}],268:[function(require,module,exports){
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
-      CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding
+      CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding,
+      Editor = require( './editor.js' )
 
 const share = {
   addUser( userInfo ) {
@@ -64567,9 +64583,7 @@ const share = {
         window.chatData = chatData
         window.commands = commands
         window.username = username
-        window.Gabber = {
-          clear
-        }
+        window.Gabber = { clear }
 
         commands.observe( e => {
           if( e.transaction.local === false ) {
@@ -64614,7 +64628,7 @@ const share = {
             if( users.indexOf( msg.username ) === -1 ) {
               users.push( msg.username )
               if( useSharedEditor === false ) {
-                createSplits( msg.username, users )
+                share.createSplits( msg.username, users )
               }
             }
           }
@@ -64700,6 +64714,38 @@ const share = {
         grid[0][0] = mostRecentUser
         // 1 user, do nothing
     }
+
+    const editor = document.querySelector( '#editor' )
+
+    const cells = Array.from( document.querySelectorAll( '.editorCell' ) )
+    for( let cm of cells ) cm.remove()
+    const codemirrors = Array.from( document.querySelectorAll( '.CodeMirror' ) )
+    for( let cm of codemirrors ) cm.remove()
+    
+    console.log( 'grid:', grid )
+    const width  = editor.offsetWidth,
+          height = editor.offsetHeight,
+          editorHeight = height / grid.length
+
+    let count = 0, rowCount = 0
+    for( let row of grid ) {
+      const rowcount = row.length,
+            editorWidth = width / rowcount
+
+      let cellCount = 0
+      for( let cell of row ) {
+        const div = document.createElement('div')
+        div.setAttribute( 'width', editorWidth )
+        div.setAttribute( 'height', editorHeight )
+        div.setAttribute( 'id', 'cell'+count++ )
+        div.setAttribute( 'class', 'editorCell' )
+        div.style = `position:absolute; display:block; width:${editorWidth}; height:${editorHeight}; top:${rowCount*editorHeight}; left:${cellCount*editorWidth};`
+        cellCount++
+        editor.appendChild(div)
+      }
+
+      rowCount++
+    }
     
   },
 
@@ -64770,7 +64816,7 @@ const share = {
 
 module.exports = share 
 
-},{"y-codemirror":237,"y-websocket":241,"yjs":242}],269:[function(require,module,exports){
+},{"./editor.js":262,"y-codemirror":237,"y-websocket":241,"yjs":242}],269:[function(require,module,exports){
 require( '../node_modules/tern/doc/demo/polyfill.js' )
 require( '../node_modules/tern/lib/signal.js' )
 
@@ -66192,18 +66238,33 @@ module.exports = function( Gibberish ) {
   const DiodeZDF = inputProps => {
     const zdf      = Object.create( filter )
     const props    = Object.assign( {}, DiodeZDF.defaults, filter.defaults, inputProps )
+    let out
+
+    zdf.__requiresRecompilation = [ 'input' ]
+    zdf.__createGraph = function() {
+      let isStereo = false
+      if( out === undefined ) {
+        isStereo = props.input !== undefined && props.input.isStereo !== undefined ? props.input.isStereo : false 
+      }else{
+        isStereo = out.input.isStereo
+        out.isStereo = isStereo
+      }
+
+      zdf.graph = Gibberish.genish.zd24( genish.in('input'), genish.in('Q'), genish.in('cutoff'), isStereo ) 
+    } 
+
     const isStereo = props.input.isStereo 
 
     Object.assign( zdf, props )
 
-    const __out = Gibberish.factory(
+    out = Gibberish.factory(
       zdf, 
       Gibberish.genish.diodeZDF( g.in('input'), g.in('Q'), g.in('cutoff'), g.in('saturation'), isStereo ), 
       ['filters','Filter24TB303'],
       props
     )
 
-    return __out 
+    return out 
   }
 
   DiodeZDF.defaults = {
@@ -78711,6 +78772,37 @@ const descriptions = {
 
       let preface =`
         vec4 ${pName} = vec4( (mod( ${pointString}, ${this.__target.distance.emit()} ) - .5 * ${this.__target.distance.emit()}) * ${this.transform.emit_scale()}, 1.);\n`
+
+      const sdf = this.sdf.emit( pName )//, this.transform )//, 1, this.__target.distance )
+
+      if( typeof sdf.preface === 'string' ) preface += sdf.preface 
+
+      return { out:sdf.out, preface }
+    }
+  },
+  // https://www.shadertoy.com/view/wlyBWm
+  // https://www.shadertoy.com/view/NdS3Dh
+  SmoothRepetition: {
+    parameters: [ { name:'distance', type:'vec3', default:Vec3(0) },  { name:'smoothness', type:'float', default:.5 }],
+    emit( name='p', transform=null ) {
+      const pId = VarAlloc.alloc()
+      const pName = 'p' + pId
+
+      //if( transform !== null ) this.transform.apply( transform, false )
+      
+      //this.transform.invert()
+     
+      const pointString =  name//`( ${name} * ${this.transform.emit()} ).xyz`;
+
+//    vec2 smoothrepeat_asin_sin(vec2 p,float smooth_size,float size){
+//    p/=size;
+//    p=asin(sin(p)*(1.0-smooth_size));
+//    return p*size;
+
+      let preface =`
+        vec3 ${pName}Mod = ${pointString}.xyz/${this.__target.distance.emit()};
+        ${pName}Mod = asin( sin( ${pName}Mod ) * (1.0 - ${this.__target.smoothness.emit()} ) );
+        vec4 ${pName} = vec4( ${pName}Mod * ${this.__target.distance.emit()} * ${this.transform.emit_scale()}, 1. );\n`
 
       const sdf = this.sdf.emit( pName )//, this.transform )//, 1, this.__target.distance )
 
