@@ -1,13 +1,13 @@
+// despair, all ye who enter here...
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
       CodemirrorBinding = require( 'y-codemirror' ).CodemirrorBinding,
       Editor = require( './editor.js' )
 
 const share = {
-  addUser( userInfo ) {
-    console.log( userInfo )
-  },
-  initShare( editor, username='anonymous', room='default' ) {
+  addUser( userInfo ) { console.log( userInfo ) },
+
+  initShare( editor, username='anonymous', room='default', useSharedEditor=true ) {
     const protocol = window.location.hostname === '127.0.0.1' ? 'ws' : 'wss'
     const ydoc = new Y.Doc(),
           provider = new WebsocketProvider(
@@ -16,44 +16,27 @@ const share = {
             ydoc,
             { connect:true }
           ),
-          yText = ydoc.getText( 'codemirror' + room ),
-          chatData = ydoc.getArray('chat' + room ),
-          userData = ydoc.getArray('user' + room ),
-          commands = ydoc.getArray('commands' + room ),
-          binding = new CodemirrorBinding( yText, editor, provider.awareness ),
-          socket = provider.ws
+          chatData = ydoc.getArray( 'chat' + room ),
+          userData = ydoc.getArray( 'user' + room ),
+          commands = ydoc.getArray( 'commands' + room ),
+          socket   = provider.ws
 
-    binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
+    if( useSharedEditor ) {
+      yText = ydoc.getText( 'codemirror' + room ),
+      binding = new CodemirrorBinding( yText, editor, provider.awareness )
+      binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
+    }else{
+      yText = null 
+      binding = null
+    }
 
-    // Listen for messages
-    socket.addEventListener('message', function (event) {
-      if( event.data instanceof ArrayBuffer ) return 
-
-      const msg = JSON.parse( JSON.stringify(event.data) )
-
-      switch( msg.cmd ) {
-        case 'user':
-          share.addUser( msg.body )
-          break
-        case 'msg':
-          console.log( msg.body )
-          break
-        case 'eval':
-          Environment.runCode( editor, false, true, false, msg.body, false ) 
-          break
-        case 'preview':
-          Environment.previewCode( editor, false, true, false, msg.body, true )
-          break
-        default:
-          console.log( 'error for networked message:', event.data )
-      }
-    })
-
-    const clear = function( clearEditor = false ){ 
+    const clear = function( clearEditor = false, clearUsers=false ){ 
       Gibber.clear()
       commands.delete( 0, commands.length )
+      if( clearUsers === true ) userData.delete( 0, userData.length )
       if( clearEditor ) editor.setValue('')
     }
+
     return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData, clear }
   },
 
@@ -65,10 +48,11 @@ const share = {
               username = document.querySelector( '#connectname' ).value,  
               roomname = document.querySelector( '#connectroom' ).value
 
-        const { socket, provider, binding, chatData, commands, userData, clear } = share.initShare(
+        const { socket, provider, binding, chatData, commands, userData, clear, ydoc } = share.initShare(
           cm, 
           username, 
-          roomname
+          roomname,
+          useSharedEditor
         )
         share.clear = clear
         share.commands = commands
@@ -122,17 +106,23 @@ const share = {
 
         const users = []
         userData.observe( e => {
-          const msgs = e.changes.delta[0].insert
-          for( let i = msgs.length-1; i>=0; i-- ) {
-            const msg = msgs[ i ]
-
-            if( users.indexOf( msg.username ) === -1 ) {
-              users.push( msg.username )
-              if( useSharedEditor === false ) {
-                share.createSplits( msg.username, users )
+          //console.log( e.changes )
+          //const delta = e.changes.delta[0]
+          //if( delta !== undefined ) {
+            //const msgs = e.changes.delta[0].insert
+            const msgs = e.changes.added
+            //if( msgs !== undefined ) {
+              //for( let i = msgs.length-1; i>=0; i-- ) {
+            for( let msg of msgs ) {
+              //const msg = msgs[ i ]
+              const __username = msg.content.arr[0].username
+              if( users.indexOf( __username ) === -1 ) {
+                users.push( __username )
+                if( useSharedEditor === false ) {
+                  share.createSplits( __username, users, ydoc, roomname, username )
+                }
               }
             }
-          }
         })
         environment.showArgHints = false
         environment.showCompletions = false
@@ -171,7 +161,7 @@ const share = {
       menu.style.right = 0 
       menu.style.zIndex = 1000
 
-      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><input type='checkbox' checked style='width:1em' id='showChat'><label for='showChat'>display chat?</label><br><input type='checkbox' checked style='width:1em' id='useSharedEditorBox' disabled><label for='useSharedEditorBox'>share editor?</label><br><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
+      menu.innerHTML = `<p style='font-size:.7em; margin:.5em; margin-bottom:1.5em; color:var(--f_inv)'>gabber is a server for shared performances / chat. joining a gabber performance will make your code execute on all connected computers in the same room... and their code execute on yours.</p><input type='text' value='your name' class='connect' id='connectname'><input class='connect' type='text' value='room name' id='connectroom'><input type='checkbox' style='width:1em' id='showChat'><label for='showChat'>display chat?</label><br><input type='checkbox' checked style='width:1em' id='useSharedEditorBox'><label for='useSharedEditorBox'>share editor?</label><br><button id='connect-btn' style='float:right; margin-right:.5em'>join</button>`
 
       document.body.appendChild( menu )
       document.querySelector('#connectmenu').style.left = document.querySelector('#connect').offsetLeft + 'px'
@@ -189,8 +179,10 @@ const share = {
 
   },
 
-  createSplits( mostRecentUser, usernames ) {
+  createSplits( mostRecentUser, usernames, ydoc, roomname, username ) {
     let grid = [[]]
+
+    if( usernames.indexOf( window.username ) === -1 ) usernames.unshift( window.username )
     
     switch( usernames.length ) {
       case 2: grid[0] = [usernames[0], usernames[1]]; break; 
@@ -223,7 +215,6 @@ const share = {
     const codemirrors = Array.from( document.querySelectorAll( '.CodeMirror' ) )
     for( let cm of codemirrors ) cm.remove()
     
-    console.log( 'grid:', grid )
     const width  = editor.offsetWidth,
           height = editor.offsetHeight,
           editorHeight = height / grid.length
@@ -235,18 +226,38 @@ const share = {
 
       let cellCount = 0
       for( let cell of row ) {
+        const id = 'cell'+count++
         const div = document.createElement('div')
         div.setAttribute( 'width', editorWidth )
         div.setAttribute( 'height', editorHeight )
-        div.setAttribute( 'id', 'cell'+count++ )
+        div.setAttribute( 'id', id )
         div.setAttribute( 'class', 'editorCell' )
-        div.style = `position:absolute; display:block; width:${editorWidth}; height:${editorHeight}; top:${rowCount*editorHeight}; left:${cellCount*editorWidth};`
-        cellCount++
         editor.appendChild(div)
+        const [cm] = Editor( Gibber, '#'+id, cell === username )
+        cm.setValue( '' )
+
+        let style = `padding-left:1em; position:absolute; display:block; width:${editorWidth}; height:${editorHeight}; top:${rowCount*editorHeight}; left:${cellCount*editorWidth}; border:0px solid #999; box-sizing:border-box;`
+        if( rowCount === 0 && grid.length > 1 ) style += 'border-bottom-width:1px;'
+        if( cellCount !== 0 ) style +=  'border-left-width:1px;'
+        div.style = style
+        div.editor = cm
+
+        const namediv = document.createElement('div')
+        namediv.innerText = cell
+        namediv.style = 'text-align:right; padding:.25em; position:absolute; right:0; top:0; background: var(--b_inv); color: var(--f_inv ); height:1.25em; width:10em; box-sizing:border-box;'
+        
+        div.appendChild( namediv )
+        const yText = ydoc.getText( 'codemirror' + roomname + cell )
+        const binding = new CodemirrorBinding( yText, div.editor, provider.awareness )
+        binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
+
+        cellCount++
       }
 
       rowCount++
     }
+
+    share.grid = grid
     
   },
 

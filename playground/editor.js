@@ -181,7 +181,7 @@ mac     | command + option + j  |  command + option + i
   **************************************************
    ***********************************************/`
 
-module.exports = function( Gibber, element = '#editor' ) {
+module.exports = function( Gibber, element = '#editor', userEditable=true ) {
 
   const keys = {
     w:0,
@@ -197,6 +197,7 @@ module.exports = function( Gibber, element = '#editor' ) {
     keyMap: 'playground',
     autofocus: false,
     //matchBrackets:true,
+    readOnly: userEditable === true ? false : 'nocursor',
     indentUnit:2,
     autoCloseBrackets:true,
     tabSize:2,
