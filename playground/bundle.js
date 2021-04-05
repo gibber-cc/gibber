@@ -64216,7 +64216,7 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 
     Object.defineProperty( proxiedObj, prop, {
       get() { return ugen },
-      set(value) {
+      set( value ) {
 
         const member = ugen
         if( member !== undefined && value !== undefined) {
@@ -64309,7 +64309,13 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
         
         if( ugen !== undefined ) {
           if( ugen.clear !== undefined ) {
-            //ugen.clear()
+            // XXX this was commented out at some point for unknown reasons, but it demonstrably
+            // corrects annotation errors in blocks of code like:
+            // s = Synth('bleep')
+            //   .note.seq( sine(5,3), Euclid(5,8) )
+            // where re-executing both triggers proxy substitution and also
+            // stops/starts a running sequence, so, including it again for now
+            ugen.clear()
           }else if( ugen.__onclear !== undefined ) {
             // XXX does this condition ever happen?
             ugen.__onclear()     
