@@ -6514,7 +6514,7 @@ const binops = [
 const monops = [
   'abs','acos','acosh','asin','asinh','atan','atan2','atanh','cos','cosh',
   'sin','sinh','tan','tanh', 'floor',
-  'ceil', 'round', 'sign', 'trunc', 'fract', 'param', 'in'
+  'ceil', 'round', 'sign', 'trunc', 'fract', 'param', 'in',
 ]
 
 const noops = [
@@ -6702,7 +6702,8 @@ const Gen  = {
     clamp:  { properties: ['0', '1', '2'], str:'clamp' },
     ternary:{ properties: ['0', '1', '2'], str:'switch' },
     selector:{ properties: ['0', '1', '2'], str:'selector' },
-    peek:   { properties:['0','1'], str:'peek' } 
+    peek:   { properties:['0','1'], str:'peek' },
+    data:   { properties:[], str:'data' }
   },
 
   _count: 0,
@@ -6841,27 +6842,38 @@ const Gen  = {
       switch( type ) {
         case 'saw':
           osc = g.phasor( frequency )
-          break;
+          break
         case 'square':
-          osc = g.gt( g.phasor( frequency ), 0 ) 
-          break;
+          osc = g.add( g.mul( g.gt( g.phasor( frequency ), 0 ), 2 ), -1 )
+          break
         case 'noise':
-          osc = g.noise()
-          break;
-        //case 'triangle':
-        //case 'tri':
-        //  osc = Gen.wavetable( frequency, { buffer:gibberish.oscillators.Triangle.buffer, name:'triangle' } )
-        //  break;
+          osc = g.sub( g.mul( g.noise(), 2 ), 1 )
+          break
+        case 'triangle':
+        case 'tri':
+          const p = g.phasor( frequency )
+          osc = g.sub(
+            1, 
+            g.mul( 
+              4, 
+              g.abs(
+                g.sub( 
+                  g.round( p ),
+                  p
+                )
+              )
+            )
+          )
+            
+          break
         case 'sine':
         default:
           osc = g.cycle( frequency )
-          break;
+          break
       }
 
       const _mul   = g.mul( osc, amp ),
             _add   = g.add( center, _mul ) 
-
-
 
       const lfo = shouldRound ? Gen.make( g.round( _add ) ) : Gen.make( _add )
 
