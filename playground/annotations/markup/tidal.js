@@ -38,7 +38,7 @@ module.exports = function( Marker ) {
         let val = pattern.value //typeof pattern.value === 'string' ? pattern.value.trim() : pattern.value
         let uid = pattern.uid
 
-        while( typeof val !== 'string' && typeof val !== 'number' && val !== undefined ) {
+        while( typeof val !== 'string' && typeof val !== 'number' && val !== undefined && val !== '?' ) {
           const __store = val
 
           // get, for example, uids of values in repeat patterns

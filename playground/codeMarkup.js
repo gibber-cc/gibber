@@ -102,7 +102,7 @@ const Marker = {
       try{
         walk.recursive( node, state, Marker.visitors )
       }catch(e){
-        console.warn('Annotation error ->', e )
+        console.log( e ) 
       }
     })
 
