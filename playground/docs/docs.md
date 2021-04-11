@@ -560,6 +560,84 @@ A wavefolding effect, where a signal is 'folded' repeatedly when it exceeds a ce
 ### Wavefolder.postgain ###
 *float* default: 1, range: 0-1.  This property can be used to decrease the volume of the signal after it has gone through the wavefolder.
 
+# Audio Misc 
+lfo
+----
+The lfo is a shorthand for creating signal processing objects that can be used to modulate properties. It is called by passing a waveform (default 'sine', but also 'square', 'saw', 'tri', and 'noise'), a frequency, a gain, and a bias (center point). The waveform can only be set when the lfo is first created, the other three properties can be freely changed / sequenced.
+
+
+#### Properties ####
+### lfo.frequency ###
+*float* default: 2.  A frequency in Hz for the lfo to run at. For beat-synced lfos, use the btof() function (beats-to-frequency).
+### lfo.gain ###
+*float* default: 0.5.  The amplitude of the lfo.
+### lfo.bias ###
+*float* default: 0.5.  The center point for the output of lfos. All lfos are bipolar (they have positive and negative valuess) around this center point.
+sine
+----
+A shorthand to create a lfo that uses a sine oscillator.
+
+
+#### Properties ####
+### sine.frequency ###
+*float* default: 2.  A frequency in Hz for the lfo to run at. For beat-synced lfos, use the btof() function (beats-to-frequency).
+### sine.gain ###
+*float* default: 0.5.  The amplitude of the lfo.
+### sine.bias ###
+*float* default: 0.5.  The center point for the output of lfos. All lfos are bipolar (they have positive and negative valuess) around this center point.
+tri
+----
+A shorthand to create a lfo that uses a triangle oscillator.
+
+
+#### Properties ####
+### tri.frequency ###
+*float* default: 2.  A frequency in Hz for the lfo to run at. For beat-synced lfos, use the btof() function (beats-to-frequency).
+### tri.gain ###
+*float* default: 4.  The amplitude of the lfo.
+### tri.bias ###
+*float* default: 0.  The center point for the output of lfos. All lfos are bipolar (they have positive and negative valuess) around this center point.
+square
+----
+A shorthand to create a lfo that uses a square wave oscillator.
+
+
+#### Properties ####
+### square.frequency ###
+*float* default: 2.  A frequency in Hz for the lfo to run at. For beat-synced lfos, use the btof() function (beats-to-frequency).
+### square.gain ###
+*float* default: 4.  The amplitude of the lfo.
+### square.bias ###
+*float* default: 0.  The center point for the output of lfos. All lfos are bipolar (they have positive and negative valuess) around this center point.
+saw
+----
+A shorthand to create a lfo that uses a sawtooth oscillator.
+
+
+#### Properties ####
+### saw.frequency ###
+*float* default: 2.  A frequency in Hz for the lfo to run at. For beat-synced lfos, use the btof() function (beats-to-frequency).
+### saw.gain ###
+*float* default: 4.  The amplitude of the lfo.
+### saw.bias ###
+*float* default: 0.  The center point for the output of lfos. All lfos are bipolar (they have positive and negative valuess) around this center point.
+Theory
+----
+The `Theory` object controls harmony inside of gibber, including the ability to specify chord progressions and tunings.
+
+
+#### Properties ####
+### Theory.mode ###
+*string* default: aeolian.  When the `Theory.mode` property is not set to `null`, only certain pitches in a given tuning will be played ussing the standard `.note` method of instruments. A value of `null` means that all pitches in the tuning can be played e.g. a chromatic scale. This property is primarily used in conjunction with "Western" tuning systems. The available modes are ["ionian", "dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "melodicminor", "wholeHalf", "halfWhole", "chromatic"]. 
+### Theory.root ###
+*float* default: 440.  The base tuning value for all pitches in the tuning system.
+### Theory.tuning ###
+*string* default: et.  The tuning property controls the ratios of each pitch in the harmonic system. There are thousands of tunings that are available; these can be explored at the [tune.js website](http://abbernie.github.io/tune/scales.html).
+### Theory.offset ###
+*int* default: 0.  The offset property will transpose all sequences.
+### Theory.degree ###
+*string*  The degree property controls both the `.offset` and the `.mode` of the `Theory` object. For example, a value of 'III' says that the offset is 3 and the mode is 'major', while a value of 'viio' (diminshed-7 chord) specifies an offset of 7 and a mode of 'locrian'. The '+', '++', '-', and '--' modified can be added to degree values to raise or lower them by one or two octaves.
+
 # Geometries
 Box
 ----

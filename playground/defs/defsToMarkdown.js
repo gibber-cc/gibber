@@ -105,6 +105,15 @@ for( let effect of gibberDef.effects ) {
   text = displayMethods( effect, text )
   text = displayProperties( effect, text )  
 }
+text += `
+# Audio Misc 
+`
+
+for( let misc of gibberDef.audioMisc ) {
+  text = displayHeader( misc, text )
+  text = displayMethods( misc, text )
+  text = displayProperties( misc, text )  
+}
 
 text += `
 # Geometries
