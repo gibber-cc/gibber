@@ -11007,7 +11007,17 @@ const patternWrapper = function( Gibber ) {
       let args = [ val, 1, idx ] // 1 is phaseModifier
 
       for( let filter of this.filters ) {
-        args = filter( args, this ) 
+        const __args = args
+        try {
+          args = filter( args, this ) 
+        } catch( e ) {
+          console.error( e )
+          console.log( 'filter problem?' )
+          console.log( `removing bad filter from pattern: ${filter.toString()}` ) 
+          const idx = this.filters.indexOf( filter )
+          this.filters.splice( idx, 1 )
+          args = __args
+        }
       }
 
       // XXX why is this one off from the worklet-side pattern id?
@@ -68744,8 +68754,11 @@ Object.assign( instrument, {
     // if binop is should be used...
     if( isNaN( this.frequency ) ) { 
       // and if we are assigning binop for the first time...
-
       let obj = Gibberish.processor.ugens.get( this.frequency.id )
+      if( obj === undefined ) {
+        console.error( `Incorrect note ${this.frequency} assigned to ${this.ugenName}; this value will be ignored.` )
+        return
+      } 
       if( obj.isop !== true ) {
         obj.inputs[0] = freq
       }else{
@@ -68765,8 +68778,12 @@ Object.assign( instrument, {
   },
 
   trigger( loudness = 1 ) {
-    this.__triggerLoudness = loudness
-    this.env.trigger()
+    if( isNaN( loudness ) ) {
+      console.error( `A non-number was passed to trigger() on ${this.ugenName}; this value will be ignored and the envelope will not be triggered.` )
+    }else{
+      this.__triggerLoudness = loudness
+      this.env.trigger()
+    }
   },
 
 })

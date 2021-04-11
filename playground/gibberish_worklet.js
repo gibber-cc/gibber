@@ -8441,6 +8441,10 @@ Object.assign(instrument, {
       // and if we are assigning binop for the first time...
 
       let obj = Gibberish.processor.ugens.get(this.frequency.id);
+      if (obj === undefined) {
+        console.error(`Incorrect note ${this.frequency} assigned to ${this.ugenName}; this value will be ignored.`);
+        return;
+      }
       if (obj.isop !== true) {
         obj.inputs[0] = freq;
       } else {
@@ -8460,8 +8464,12 @@ Object.assign(instrument, {
   },
 
   trigger(loudness = 1) {
-    this.__triggerLoudness = loudness;
-    this.env.trigger();
+    if (isNaN(loudness)) {
+      console.error(`A non-number was passed to trigger() on ${this.ugenName}; this value will be ignored and the envelope will not be triggered.`);
+    } else {
+      this.__triggerLoudness = loudness;
+      this.env.trigger();
+    }
   }
 
 });
@@ -18351,7 +18359,14 @@ class GibberishProcessor extends AudioWorkletProcessor {
   playQueue() {
     // must set delay property to false!!! otherwise the message
     // will be delayed continually...
-    this.queue.forEach( m => { m.data.delay = false; this.handleMessage( m ) } )
+    this.queue.forEach( m => { 
+      m.data.delay = false; 
+      try {
+        this.handleMessage( m ) 
+      }catch( e ) {
+        console.error( e )
+      }
+    })
     this.queue.length = 0
   }
 
