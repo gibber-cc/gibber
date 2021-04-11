@@ -8439,10 +8439,9 @@ Object.assign(instrument, {
     // if binop is should be used...
     if (isNaN(this.frequency)) {
       // and if we are assigning binop for the first time...
-
       let obj = Gibberish.processor.ugens.get(this.frequency.id);
       if (obj === undefined) {
-        console.error(`Incorrect note ${this.frequency} assigned to ${this.ugenName}; this value will be ignored.`);
+        throw Error(`Incorrect note ${this.frequency} assigned to ${this.ugenName}; this value will be ignored.`);
         return;
       }
       if (obj.isop !== true) {
@@ -8465,7 +8464,7 @@ Object.assign(instrument, {
 
   trigger(loudness = 1) {
     if (isNaN(loudness)) {
-      console.error(`A non-number was passed to trigger() on ${this.ugenName}; this value will be ignored and the envelope will not be triggered.`);
+      throw Error(`A non-number was passed to trigger() on ${this.ugenName}; this value will be ignored and the envelope will not be triggered.`);
     } else {
       this.__triggerLoudness = loudness;
       this.env.trigger();
@@ -10901,32 +10900,37 @@ module.exports = function (Gibberish) {
         if (value === Sequencer.DO_NOT_OUTPUT) shouldRun = false;
 
         if (shouldRun) {
-          if (seq.mainthreadonly !== undefined) {
-            if (typeof value === 'function') {
-              value = value();
+          try {
+            if (seq.mainthreadonly !== undefined) {
+              if (typeof value === 'function') {
+                value = value();
+              }
+              //console.log( 'main thread only' )
+              Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
+            } else if (typeof value === 'function' && seq.target === undefined) {
+              value();
+            } else if (typeof seq.target[seq.key] === 'function') {
+              //console.log( seq.key, seq.target )
+              if (typeof value === 'function') value = value();
+              if (value !== seq.DNR) seq.target[seq.key](value);
+            } else {
+              if (typeof value === 'function') value = value();
+              if (value !== seq.DNR) seq.target[seq.key] = value;
             }
-            //console.log( 'main thread only' )
-            Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
-          } else if (typeof value === 'function' && seq.target === undefined) {
-            value();
-          } else if (typeof seq.target[seq.key] === 'function') {
-            //console.log( seq.key, seq.target )
-            if (typeof value === 'function') value = value();
-            if (value !== seq.DNR) seq.target[seq.key](value);
-          } else {
-            if (typeof value === 'function') value = value();
-            if (value !== seq.DNR) seq.target[seq.key] = value;
-          }
 
-          if (seq.reportOutput === true) {
-            Gibberish.processor.port.postMessage({
-              address: '__sequencer',
-              id: seq.id,
-              name: 'output',
-              value,
-              phase: seq.__valuesPhase,
-              length: seq.values.length
-            });
+            if (seq.reportOutput === true) {
+              Gibberish.processor.port.postMessage({
+                address: '__sequencer',
+                id: seq.id,
+                name: 'output',
+                value,
+                phase: seq.__valuesPhase,
+                length: seq.values.length
+              });
+            }
+          } catch (e) {
+            console.error(`A sequence targeting ${seq.target.ugenName}.${seq.key} contains an improper value and will be stopped.`);
+            return;
           }
         }
 
@@ -18612,10 +18616,16 @@ class GibberishProcessor extends AudioWorkletProcessor {
         }
       }     
       if( this.messages.length > 0 ) {
-        this.port.postMessage({ 
-          address:'state', 
-          messages:this.messages 
-        })
+        try{ 
+          this.port.postMessage({ 
+            address:'state', 
+            messages:this.messages 
+          })
+        } catch( e ) {
+          console.groupCollapsed( 'There was an error passing state from the audio thread to the main thread.' )
+          console.error( e )
+          console.groupEnd()
+        }
       }
       this.port.postMessage({
         address:'phase',
