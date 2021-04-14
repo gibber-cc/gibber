@@ -8791,7 +8791,11 @@ const Theory = {
       Object.defineProperty( this, 'mode', {
         get()  { return this.__mode },
         set(v) { 
-          this.__mode = v 
+          if( this.modes[ v ] !== undefined || v === null ) {
+            this.__mode = v 
+          }else{
+            console.error( `The mode "${v}" is not valid. Valid modes include ${Object.keys(this.modes).toString()}, and null. No change to Theory.mode was applied.` )
+          }
         }
       })
 
@@ -8960,8 +8964,14 @@ const Theory = {
 
       const path = this.__loadingPrefix + name + '.js' 
       fetch( path )
-        .catch( err => console.error( err ) )
-        .then( data => data.json() )
+        .catch( console.err )
+        .then( data => {
+          if( data.ok ) {
+            return data.json()
+          }else{
+            console.error( `The tuning ${name} wasn't found. Please visit http://abbernie.github.io/tune/scales.html to find the names of valid tunings.`) 
+          } 
+        })
         .then( json => {
           this.__tuning.value = name
           Gibberish.worklet.port.postMessage({
@@ -13180,7 +13190,7 @@ const Graphics = {
   __scene:       [],
   __fogColor:    Marching.vectors.Vec3(0),
   __fogAmount:   0,
-  __background:  Marching.vectors.Vec3(0),
+  __background:  Marching.vectors.Vec4(0,0,0,1),
   __onrender:    [],
   __protomethods:['translate','scale','rotate','texture','material', 'bump'],
   __lights:[],
@@ -13310,7 +13320,7 @@ const Graphics = {
     }
   },
 
-  background( color=Marching.vectors.Vec3(0) ) { Graphics.__background = color },
+  background( color=Marching.vectors.Vec4(0,0,0,1) ) { Graphics.__background = color },
   voxels( v = .1 ) { 
     Graphics.useVoxels = true
     Graphics.__voxelSize = v
@@ -72656,7 +72666,8 @@ const BG = function( Scene, SDF ) {
     if( SDF.memo.background === undefined ) {
       const bg = Object.create( Background.prototype )
 
-      const __color = param_wrap( Vec3(color), vec3_var_gen( 0,0,0, 'bg' ), 'bg' )  
+      if( color !== undefined && color.type === 'vec3' ) color = Vec4( color.x, color.y, color.z, 1 )
+      const __color = param_wrap( Vec4( color ), vec4_var_gen( 0,0,0,1, 'bg' ), 'bg' )  
       
       Object.defineProperty( bg, 'color', {
         get() { return __color },
@@ -74023,8 +74034,46 @@ const descriptions = {
       return { out:sdf.out, preface }
     }
   },
+  SmoothPolar: {
+    parameters:[ 
+      { name:'count', type:'float', default:5 },
+      { name:'distance', type:'vec3', default:Vec3(.25) },
+      { name:'active', type:'float', default:1. }
+    ],
+    emit( name='p', transform=null) {
+      const pId = VarAlloc.alloc()
+      const pName = 'p' + pId
+
+      if( transform !== null ) this.transform.apply( transform, false )
+      this.transform.invert()
+
+      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`
+
+      //s repetitions
+      ////m smoothness (0-1)
+      ////c correction (0-1)
+      ////d object displace from center
+/*vec2 smoothRot(vec2 p,float s,float m,float c,float d){
+  s*=0.5;
+  float k=length(p);
+  float x=asin(sin(atan(p.x,p.y)*s)*(1.0-m))*k;
+  float ds=k*s;
+  float y=mix(ds,2.0*ds-sqrt(x*x+ds*ds),c);
+  return vec2(x/s,y/s-d);
+}*/ 
+      let preface =`
+          vec4 ${pName} = vec4( polarRepeat( ${pointString}, ${this.__target.count.emit() } ) * ${this.transform.emit_scale()}, 1. ); 
+          ${pName} -= vec4(${this.__target.distance.emit()}.x,0.,0.,0.);\n`
+
+      const sdf = this.sdf.emit( pName )
+
+      if( typeof sdf.preface === 'string' ) preface += sdf.preface
+
+      return { out:sdf.out, preface }
+    }
+  },
 }
-  
+
 const getDomainOps = function( SDF ) {
   const ops = {}
 
@@ -74675,7 +74724,7 @@ const Fogger = function( Scene, SDF ) {
  
   Object.assign( Fog.prototype, {
     emit() {
-      return `  color = applyFog( color, t.x, ${this.amount.emit()} );`
+      return `  color.rgb = applyFog( color.rgb, t.x, ${this.amount.emit()} );`
     },
    
     emit_decl() {
@@ -76805,7 +76854,7 @@ const getMainContinuous = function( steps, minDistance, maxDistance, postprocess
     // everything is flipped using perspective-camera
     pos.x *= ( resolution.x / -resolution.y );
 
-    vec3 color = bg; 
+    vec4 color = bg; 
     vec3 ro = camera_pos;
     vec3 rd = normalize( mat3(camera) * vec3( pos, 2. ) ); 
     
@@ -76818,12 +76867,12 @@ const getMainContinuous = function( steps, minDistance, maxDistance, postprocess
       //zdist = rd.z * t.x;
       vec3 nor = calcNormal( samplePos );
 
-      color = lighting( samplePos, nor, ro, rd, t.y, true ); 
+      color = vec4( lighting( samplePos, nor, ro, rd, t.y, true ), 1. ); 
     }
 
     ${postprocessing}
     
-    col = clamp( vec4( color, 1.0 ), 0., 1. );
+    col = clamp( vec4( color ), 0., 1. );
 
     float normalizedDepth = t.x / ${maxDistance};  //1. - exp( -t.x );// 1. / (1. + abs(samplePos.z-ro.z) );
     depth = abs(samplePos.z - ro.z ) < ${maxDistance} ? vec4( vec3( 1.-normalizedDepth ), 1. ) : vec4(0.);
@@ -76884,7 +76933,7 @@ const getMainVoxels = function( steps, postprocessing, voxelSize = .1 ) {
     // everything is flipped using perspective-camera
     pos.x *= ( resolution.x / -resolution.y );
     
-    vec3 color = bg; 
+    vec4 color = bg; 
     vec3 ro = camera_pos;
     vec3 rd = normalize( mat3(camera) * vec3( pos, 2. ) ); 
                  
@@ -76893,15 +76942,15 @@ const getMainVoxels = function( steps, postprocessing, voxelSize = .1 ) {
     
     vec3 nor;
     if (mask.x) {
-      color = vec3(0.5);
+      color = vec4(vec3(0.5), 1.);
       nor = vec3(1.,0.,0.);
     }
     if (mask.y) {
-      color = vec3(1.0);
+      color = vec4( vec3(1.0), 1. );
       nor = vec3(0.,1.,0.);
     }
     if (mask.z) {
-      color = vec3(0.75);
+      color = vec4( vec3(0.75), 1. );
       nor = vec3(0.,0.,1.);
     }
     if( vd.distance.x == -100000. ) {
@@ -76912,13 +76961,13 @@ const getMainVoxels = function( steps, postprocessing, voxelSize = .1 ) {
     bool hit = false;
     if( color != bg ) {
       vec3 pos = vd.distance; 
-      color *= lighting( pos * modAmount, nor, ro, rd, float(vd.id), false ); 
+      color.xyz *= lighting( pos * modAmount, nor, ro, rd, float(vd.id), false ); 
       hit = true;
     }
 
     vec3 t = vec3( length(vd.distance-ro) );
   ${postprocessing}; 
-    col = vec4( color, 1. ); 
+    col = color;//vec4( color, 1. ); 
 
     float normalizedDepth = length( (vd.distance-ro) * ${voxelSize.toFixed(1)} ); 
     depth = hit == true ? vec4( vec3(1.-normalizedDepth), 1. ) : vec4(0.);
