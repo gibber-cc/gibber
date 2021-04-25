@@ -126,12 +126,12 @@ s.chord([0,2,3,5])
 // as seen above, polysynths have an additional chord()
 // method you can use to play multiple notes at once. This
 // method accepts an array, which means when you sequence
-// it, you need to pass an array of arrays, otherwisee you
+// it, you need to pass an array of arrays, otherwise you
 // will get an error.
 
 s.chord.seq( [[0,2,3,4], [3,4,7,8]], 1 )
 
-// even if you're seqeuencing a repeated single chord, you
+// even if you're sequencing a repeated single chord, you
 // still need an array of arrays. Last but not least, there's
 // a shortcut for defining the number of voices, as shown
 // below and in most of the gibber demos:

@@ -3,7 +3,7 @@
 executing / stopping code
    
 we won't worry about what the code 
-is doing yet, instaed we'll just 
+is doing yet, instead we'll just 
 look at how to run it and stop it. 
 There's a bit more to this than you 
 might assume...

@@ -2,7 +2,7 @@
  *
  * tutorial #3: basic sequencing
  *    
- *    This tutorial will provide an introdution to 
+ *    This tutorial will provide an introduction to 
  *    sequencing in gibber. Gibber lets you sequence 
  *    calls to most methods of audiovisual objects 
  *    as well as changes to any of their
@@ -63,7 +63,7 @@ syn.note.seq( 0, 1/4 )
 // ...you'll notice only the second one actually triggers. By default, Gibber
 // will replace an existing sequence with a new one. To stop this, you can pass an ID number 
 // as a third argument to calls to .seq(). In the examples of sequencing we've seen so far,
-// no ID has been given, which means gibber assumees a default ID of 0 for each
+// no ID has been given, which means gibber assumes a default ID of 0 for each
 // sequence. When you launch a sequence on a channel that has the same ID as another running 
 // sequence, the older sequence is stopped. If the sequences have different IDs they run 
 // concurrently. This makes it easy to create polyrhythms.

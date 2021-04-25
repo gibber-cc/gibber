@@ -19,7 +19,7 @@ s = Synth()
 
 // quite a list! hopefully after this tutorial series we'll understand
 // what each of these is responsible for. instruments/presets 
-// are basically a colleectin of settings for these properties. 
+// are basically a collection of settings for these properties. 
 // For example, the default Synth in gibber comes with a low-pass
 // filter enabled, a sawtooth oscillator, and a half-second
 // envelope among other characteristics. You can hear what
@@ -63,7 +63,7 @@ s.waveform = 'saw'
 
 // there's one other type of waveform that unfortunately can't be assigned
 // after creating a synth (due to a bug): pwm, which stands for "pulsewidth modulation". 
-// It might be easist to think of this is a high value (the pulse) followed by 
+// It might be easiest to think of this is a high value (the pulse) followed by 
 // a low value. The pulsewidth property determines the relationship
 // (width) of the high vs low signal. A value of .5 would generate a square
 // wave.

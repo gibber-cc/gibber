@@ -13,7 +13,7 @@ strategies for routing sound.
 // of the delay are "time" and "feedback".
 // "feedback" controls the number of
 // echoes and time controls the space
-// betwen them.
+// between them.
 
 delay = Delay({ time:1/6, feedback:.75 })
 

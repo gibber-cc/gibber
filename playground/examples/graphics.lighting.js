@@ -54,7 +54,7 @@ Union2(
 
 /* __--__--__--__--__--__--__--__--
 
-Note that each geomety's color is
+Note that each geometry's color is
 determined by both properties of its
 material and the lights in the scene.
 For example, we could change the scene
@@ -85,7 +85,7 @@ default lighting scheme, which has
 some properties baked in, and 
 customize everything by hand. The
 example below uses the Phong
-lighting model, with an additioanl
+lighting model, with an additional
 Fresnel effect added. We'll als
 use a simple white light positioned
 to the upper left of the scene's
@@ -183,7 +183,7 @@ Union2(
 /* __--__--__--__--__--__--__--__--
  *
  * The effect is especially easy to see
- * on fields of repeated geoemtries. Run
+ * on fields of repeated geometries. Run
  * the code below, and then uncomment
  * the fog and run it again.
  *

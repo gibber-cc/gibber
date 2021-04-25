@@ -35,7 +35,7 @@ a.loops = 1
 a.rate = 1.25
 
 // query the database for a particular term(s) and download the first response
-// by default these simple queries are limited to soundfiles under .5 seconds,
+// by default these simple queries are limited to sound files under .5 seconds,
 // that are classified as single notes/sounds, and where the filename does not 
 // need to include the query term (the query term can just be in metadata). 
 b = Freesound('crickets').fx.add( Freeverb() )

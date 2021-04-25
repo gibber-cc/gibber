@@ -13,12 +13,12 @@ and tell them to do tasks.
 // by calling a *constructor*. Constructors
 // are functions that can be identified by
 // the capitalization of their first letter.
-// (there are some execeptions to this in 
+// (there are some exceptions to this in 
 // Gibber). Run the code below:
 
 Synth()
 
-// By placing parenthsis after the name of
+// By placing parenthesis after the name of
 // the constructor, we call it and tell it
 // to make a new object. In many cases, we
 // want to store that object so that we can
@@ -65,7 +65,7 @@ syn.note( 0 )
 
 // Note that the synth has a very different
 // sound and is in a lower octave by default;
-// this is due to the inforatmion stored in
+// this is due to the information stored in
 // the preset. Preset names must be passed
 // inside of quotation marks; in programming
 // we call this information "strings".
@@ -89,7 +89,7 @@ syn.note( 0 )
 syn = Synth( 'bleep', { waveform:'saw', shape:'exponential' })
 syn.note( 0 )
 
-// afer you create new object, you can get a list
+// after you create new object, you can get a list
 // of the tasks it can do and the properties it 
 // has by just typing the name of the variable you
 // stored the object in and hitting the period key.

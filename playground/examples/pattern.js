@@ -32,12 +32,12 @@ e.rotate(1)
 // reset timings pattern to original value
 e.reset()
 
-// now we'll sequence tthe pattern to shift each measure
+// now we'll sequence the pattern to shift each measure
 e.rotate.seq( 1,1 )
 
 // let's try this with some melodic content using
-// the .transpose functtion on a values pattern. For
-// all the subsequent examples, we'll create a patttern
+// the .transpose function on a values pattern. For
+// all the subsequent examples, we'll create a pattern
 // and assign it to the variable "notes"
 
 Gibber.clear()
@@ -112,8 +112,8 @@ f = FM('bass').note.seq( notes = [0,7], 1/8 )
 
 notes.set.seq([ [0,7],[0,5],[1,3],[2,4] ], 1 )
 
-// alhough we think it's easiest to assign 
-// pattterns to variables and then manipulate
+// although we think it's easiest to assign 
+// patterns to variables and then manipulate
 // them through that variable, you can also
 // access patterns directly through the
 // sequencers containing them. For example:

@@ -39,7 +39,7 @@ s = Sampler({ filename:'http://127.0.0.1:8080/yourSammpleName.wav' })
 ** doesn't use the default tuning system in
 ** gibber, instead it controls the rate the
 ** sample is played back at. Let's use a sample
-** on Gibber's server to experiemnt.
+** on Gibber's server to experiment.
 */
 
 s = Sampler({ filename:'resources/audiofiles/openhat.wav' })
@@ -77,7 +77,7 @@ s.trigger.seq( 1,1/4 )
 s.end.seq( [.05,.1,.2,.5], 1 )
 
 // OK, let's move on to the Multisampler, which
-// lets you load multple files. Here's a quick
+// lets you load multiple files. Here's a quick
 // example using Gibber's drums samples:
 
 Gibber.clear()
