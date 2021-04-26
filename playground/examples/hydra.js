@@ -24,7 +24,7 @@ on hydra itself, see the hydra website.
 // use the external file. the use() function
 // returns a JavaScript promise that yields
 // the hydra constructor. You don't really
-// need to care about what thae means... just
+// need to care about what that means... just
 // run the following line of code to start hydra
 // in gibber:
 
@@ -115,10 +115,10 @@ osc(100,.1,1)
 
 FFT.start()
 
-// At this point you have acccess to FFT.low,
+// At this point you have access to FFT.low,
 // FFT.mid, and FFT.high. Start with the kick
 // below + hydra, and then add in the clave to
-// see the efffect.
+// see the effect.
 
 kik = Kick('deep').trigger.seq( 1, 1/2 )
 
@@ -142,7 +142,7 @@ an easy way to experiment with different sizes.
 FFT.windowSize *= 2
 
 /* 
-By default, the FFT assigns frequences 
+By default, the FFT assigns frequencies 
 <150 Hz to FFT.low, 150-1400Hz to
 FFT.mid, and all remaining frequencies
 to FFT.high. However, you can also

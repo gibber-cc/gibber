@@ -7,7 +7,7 @@ works in gibber. The use of envelopes in
 gibber is opinionated... they affect
 everything from amplitude of instruments
 to how FM modulation and feedback is
-appled. The goal is for this envelope to affect
+applied. The goal is for this envelope to affect
 the *perceptual* loudness of the instrument, as
 opposed to only affecting the amplitude.
 So, while many other systems only
@@ -82,7 +82,7 @@ s.sustain = 1/8
 s.sustainLevel = .5
 s.release = 1/2
 
-// .sustainLevel determines the "steady state" of theh envelope,
+// .sustainLevel determines the "steady state" of the envelope,
 // while .sustain determines how long the envelope remains at
 // that value. .release determines how long it takes for the
 // envelope to fade to 0 after the sustained portion is complete.
@@ -93,7 +93,7 @@ s.release = 1/2
 // sound is typically perceived logarithmically, not linearly, so
 // changing  the .shape property from "linear" to "exponential" can 
 // create sounds that might be more interesting. "exponential" is 
-// espeecially nice for short percussive attacks/decays. Compare:
+// specially nice for short percussive attacks/decays. Compare:
 
 s = Synth().note.seq( 0, 1/2 )
 
@@ -150,5 +150,5 @@ s.loudness.fade( 0, null, 4 )
 
 // OK, you should hopefully have a pretty good understanding how
 // enveloping works in gibber, and how you can use the loudness and
-// gain properties to control perceptal loudness vs the output strength
+// gain properties to control perceptual loudness vs the output strength
 // of an instrument. Next up is an in depth discussion of filters.

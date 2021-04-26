@@ -26,7 +26,7 @@ s.note.seq( [0,1,2,3,4,5,6,7,8,9,10,11,12], 1/16 )
 // currently uses #s only.
 Theory.root = 'c4'
 
-// aeolian, dorian, phyrigian, ionian, mixolydian, lydian etc.
+// aeolian, dorian, phrygian, ionian, mixolydian, lydian etc.
 Theory.mode = 'lydian'
 Theory.mode = 'phrygian'
 
@@ -40,7 +40,7 @@ Theory.mode = 'ionian'
 s = Synth('square.perc')
 s.note.seq( [0,1,2,3,4,5,6,7], 1/16 )
 
-// ... changing the degreee to IV will move to
+// ... changing the degree to IV will move to
 // F major, or iv for F minor:
 
 Theory.degree = 'IV'
@@ -80,7 +80,7 @@ Theory.mode = null
 
 // with all that that said, there are times when you 
 // might want to bypass the music theory system in
-// gibber altogether, and just provide direct frequncy
+// gibber altogether, and just provide direct frequency
 // values to instruments. you can do that using the
 // .notef() method.
 
@@ -89,7 +89,7 @@ s = Synth('bleep').notef.seq( [100,200,300,400], 1/4 )
 // by default, note() rounds any arguments you send to
 // it so that they can be used to look up notes in 
 // gibber's current scale. however, the notec method
-// (for "note continuous") lets you interpolate betweeen
+// (for "note continuous") lets you interpolate between
 // scale indices for a full continuous range of pitches.
 
 s = Synth('square.perc')

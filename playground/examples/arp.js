@@ -8,7 +8,7 @@ https://youtu.be/VnqS8hQVhXA?t=492
 
 This relies on knowing a little bit 
 about genish.js, a JavaScript DSP
-ibrary inspired by the gen~ extension
+library inspired by the gen~ extension
 for Max/MSP. You can learn more about
 genish.js at:
 
@@ -28,7 +28,7 @@ syn = Monosynth( 'shinybass' ).connect( verb, .25 )
 // The accum function increments a number every sample
 // by an amount that you pass as its first parameter,
 // and wraps back to 0 when gets higher than 1. Remember,
-// this operation is occuring at the sample rate (typically
+// this operation is occurring at the sample rate (typically
 // 44100 times per second) so the number can exceed 1 fairly
 // quickly.
 

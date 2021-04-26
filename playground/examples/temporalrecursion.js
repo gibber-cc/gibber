@@ -4,7 +4,7 @@ advanced concepts: temporal recursions
 
 A temporal recursion is a function that
 calls itself over time. For a more
-complex take on what is possibble with
+complex take on what is possible with
 them, see Andrew Sorensen's essay on
 the subject: 
 
@@ -88,7 +88,7 @@ tr( function() {
 // ...but in general using that object creation shortcut
 // is quicker / more convenient. it's not important if
 // this doesn't make sense to you, but for the functional 
-// programmming folks who are cuirious, when the function 
+// programming folks who are curious, when the function 
 // is passed to the audio thread these variables become upvalues 
 // to it.
 
@@ -147,7 +147,7 @@ tr( function( f2 ) {
 // pass objects containing (relatively simple) state
 // to use in your recursion. any state object is 
 // converted to a string and passed to the audio thread
-// where it is parseed, so make sure your state only contains
+// where it is parsed, so make sure your state only contains
 // simple numbers, strings, or arrays of numbers and strings.
 // in the example below (originally by eris and remixed by
 // charlie)  we use the _ character to store state. the

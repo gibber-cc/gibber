@@ -2,7 +2,7 @@
 
 advanced concepts: pattern filters
 
-Please do the pattern and sequecning
+Please do the pattern and sequencing
 tutorials before this one.
 
 gibber lets you defined "filters" that
@@ -104,7 +104,7 @@ ptrn.addFilter( (args, __ptrn) => {
 
 // one final point to note: these filters are
 // run in the audio thread, so they don't have
-// automatic acceess to variables you create. 
+// automatic access to variables you create. 
 // check out the tutorial on multithreaded
 // for more information, but for now, know that
 // the following will NOT work.

@@ -1,6 +1,6 @@
 /* __--__--__--__--__--__--__--____
 
-advanced concepts: multithreaded programming
+advanced concepts: multi-threaded programming
 
 gibber runs audio + interaction in
 two separate threads. When you
@@ -10,7 +10,7 @@ code editor and gui are running) a
 corresponding audio object is 
 created in the audio thread. When
 you change a value on an audio 
-object in the main thraed, that
+object in the main thread, that
 change is forwarded to the 
 counterpart in the audio thread.
 Since sequencing is performed in
@@ -46,7 +46,7 @@ run( ()=> console.log(this) )
 // you should see an AudioWorkletProcessor
 // printed to the console. In JS, workers 
 // and worklets are objects that manage
-// threads and interthread communication.
+// threads and inter-thread communication.
 // congrats... you've just run a function
 // in the audio thread, run by the 
 // AudioWorkletProcessor that was printed
@@ -78,7 +78,7 @@ run( ()=> {
 // a global offset variable.
 
 // we'll use this as the filter for each
-// of our patternss
+// of our patterns
 filter = args => {
   args[0] += global.offset
   return args
@@ -95,7 +95,7 @@ p1.addFilter( filter )
 p2.addFilter( filter )
 p3.addFilter( filter )
 
-// now we can changee the offset
+// now we can change the offset
 // try running this next line with
 // different values to hear how it affects
 // all three sequences.
@@ -133,7 +133,7 @@ test = (phase,seq) => {
 // because gibber extracts the function body and
 // sends it to the audio thread as a string, the
 // function must explicitly use the return keyword
-// (normmaly single line arrow functions don't require
+// (normally single line arrow functions don't require
 // this). now that we have our function, we pass it
 // to fn(), along with a dictionary containing
 // any extra info the function requires to execute.

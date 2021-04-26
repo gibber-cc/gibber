@@ -4,7 +4,7 @@ using the console
    
 The browser console can help you debug 
 errors and understand what gibber is 
-doing. There are intructions for 
+doing. There are instructions for 
 opening the console when you first 
 open gibber, here they are again:
 
@@ -13,7 +13,7 @@ win/lin |   ctrl + shift + j    |    ctrl + shift + i
 mac     | command + option + j  |  command + option + i
 
 This tutorial will go over some
-useful tricks for using the conse.
+useful tricks for using the console.
     
 ** __--__--__--__--__--__--__--__*/
 
@@ -33,7 +33,7 @@ k.trigger.seq( 1,1/4 )
 
 k.inspect()
 
-// after a few of these run, you mght want to clear
+// after a few of these run, you might want to clear
 // your console. You can do this with the following:
 
 Console.clear()
@@ -58,7 +58,7 @@ Console.detail = 5
 m = Synth().note.seq( 0, 1/4 )
 
 // more than five messages, so messages are grouped
-// and collapsed (be susre to run all the code below
+// and collapsed (be sure to run all the code below
 // at once):
 verb = Reverb('space').bus()
 synth = Synth[3]('square.perc').connect( verb, .1 )
