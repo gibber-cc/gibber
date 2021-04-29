@@ -11079,19 +11079,21 @@ module.exports = function (Gibberish) {
                 value = event.value,
                 uid = event.uid;
 
-            // for bjorklund etc.
-            if (typeof value === 'object') value = value.value;
+            if (value !== -987654321) {
+              // for bjorklund etc.
+              if (typeof value === 'object') value = value.value;
 
-            if (seq.filters !== null) value = seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, uid), value);
-            if (seq.mainthreadonly !== undefined) {
-              if (typeof value === 'function') {
-                value = value();
+              if (seq.filters !== null) value = seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, uid), value);
+              if (seq.mainthreadonly !== undefined) {
+                if (typeof value === 'function') {
+                  value = value();
+                }
+                Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
+              } else if (typeof seq.target[seq.key] === 'function') {
+                seq.target[seq.key](value);
+              } else {
+                seq.target[seq.key] = value;
               }
-              Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
-            } else if (typeof seq.target[seq.key] === 'function') {
-              seq.target[seq.key](value);
-            } else {
-              seq.target[seq.key] = value;
             }
           }
         } else {
@@ -11108,10 +11110,12 @@ module.exports = function (Gibberish) {
             }
           }
 
-          if (typeof seq.target[seq.key] === 'function') {
-            seq.target[seq.key](value);
-          } else {
-            seq.target[seq.key] = value;
+          if (value !== -987654321) {
+            if (typeof seq.target[seq.key] === 'function') {
+              seq.target[seq.key](value);
+            } else {
+              seq.target[seq.key] = value;
+            }
           }
         }
 
@@ -17689,6 +17693,8 @@ const bjork    = require( 'bjork' )
 const log      = util.inspect
 const srand    = require( 'seedrandom' )
 
+const REST = -987654321
+
 const rnd = function( phase ) {
   //console.log( 'phase', phase.toFraction() )
   return new srand( phase.toFraction() )()
@@ -17878,7 +17884,15 @@ const getPhaseIncr = pattern => {
 }
 
 const handlers = {
-  rest( state ) { return state },
+  rest( state, pattern, phase, duration ) { 
+    //if( phase.valueOf() === 0 ) {
+      const evt = { arc:Arc( phase, phase.add( duration ) ), value:REST }
+      if( pattern.uid !== undefined ) evt.uid = pattern.uid
+      state.push(evt)
+    //}
+
+      return state 
+  },
 
   // standard lists e.g. '0 1 2 3' or '[0 1 2]'
   group( state, pattern, phase, duration, overrideIncr=null ) {
