@@ -11137,24 +11137,10 @@ module.exports = function (Gibberish) {
             timing = seq.__events[0].arc.start.sub(startTime).valueOf();
           }
 
-          timing *= Math.ceil(Gibberish.ctx.sampleRate / Sequencer.clock.cps) + 1;
+          //timing *= Math.ceil( Gibberish.ctx.sampleRate / Sequencer.clock.cps ) + 1 
+          timing *= Gibberish.ctx.sampleRate / Sequencer.clock.cps;
 
           if (seq.__isRunning === true && !isNaN(timing) && timing > 0) {
-            // XXX this supports an edge case in Gibber, where patterns like Euclid / Hex return
-            // objects indicating both whether or not they should should trigger values as well
-            // as the next time they should run. perhaps this could be made more generalizable?
-
-            //if( typeof timing === 'object' ) {
-            //  if( timing.shouldExecute === 1 ) {
-            //    shouldRun = true
-            //  }else{
-            //    shouldRun = false
-            //  }
-            //  timing = timing.time 
-            //}
-
-            //timing *= seq.rate
-
             Gibberish.scheduler.add(timing, seq.tick, seq.priority);
           }
         }
