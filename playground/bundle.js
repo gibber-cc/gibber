@@ -8759,9 +8759,9 @@ const Theory = {
         1
       )
 
-      Gibber.createProperty( this, 'mode', 'aeolian', null, 5 )
-      Gibber.createProperty( this, 'offset', 0, null, 5 )
-      Gibber.createProperty( this, 'degree', 'i', null, 5 )
+      Gibber.createProperty( this, 'mode', 'aeolian', null, 0 )
+      Gibber.createProperty( this, 'offset', 0, null, 0 )
+      Gibber.createProperty( this, 'degree', 'i', null, 0 )
 
       //setTimeout( ()=> Theory.tuning = 'et', 250 )
       this.tuning = 'et'
@@ -9445,7 +9445,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
         obj[ methodName ].sequencers = []
         obj[ methodName ].tidals = []
 
-        obj[ methodName ].seq = function( values, timings, number=0, delay=0, priority=0 ) {
+        obj[ methodName ].seq = function( values, timings, number=0, delay=0, priority=10000 ) {
           let prevSeq = obj[ methodName ].sequencers[ number ] 
           if( prevSeq !== undefined ) { 
             const idx = obj.__sequencers.indexOf( prevSeq )
@@ -12390,21 +12390,23 @@ module.exports = function( Gibber ) {
       return null
     }
 
-    const tokens = [...pattern.matchAll(/[a-zA-Z]+/g)].map( v=>v[0] )
-    let tokenNotFound = false
-    tokens.forEach( t => {
-      if( target[ t ] === undefined ) {
-        //console.error(
-        //  `%c\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.`, 
-        //  `color:white;background:#900` 
-        //  ) 
-        
-        Gibber.publish( 'error', `\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.\n` )
-        tokenNotFound = true
-      }
-    })
+    if( key !== 'degree' ) {
+      const tokens = [...pattern.matchAll(/[a-zA-Z]+/g)].map( v=>v[0] )
+      let tokenNotFound = false
+      tokens.forEach( t => {
+        if( target[ t ] === undefined ) {
+          //console.error(
+          //  `%c\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.`, 
+          //  `color:white;background:#900` 
+          //  ) 
+          
+          Gibber.publish( 'error', `\nYour Tidal pattern is using a token (${t}) that can't be found on the targeted instrument.\n` )
+          tokenNotFound = true
+        }
+      })
 
-    if( tokenNotFound === true ) return null
+      if( tokenNotFound === true ) return null
+    }
 
     const seq = Gibber.Audio.Gibberish.Tidal({ pattern, target, key, priority, filters, mainthreadonly:props.mainthreadonly })
     seq.clear = clear
@@ -12425,8 +12427,10 @@ module.exports = function( Gibber ) {
     if( props.standalone === false ) {
       let prevSeq = target[ '__' + key ].tidals[ number ] 
       if( prevSeq !== undefined ) {
-        const idx = target.__sequencers.indexOf( prevSeq )
-        target.__sequencers.splice( idx, 1 )
+        if( target.__sequencers !== undefined ) {
+          const idx = target.__sequencers.indexOf( prevSeq )
+          target.__sequencers.splice( idx, 1 )
+        }
         // XXX stop() destroys an extra sequencer for some reason????
         prevSeq.stop()
         prevSeq.clear()
@@ -70945,11 +70949,19 @@ let Gibberish = null
 const Scheduler = {
   phase: 0,
 
+  // lower priority vaules win, however priority
+  // cannot be negative for some unknown reason...
   queue: new Queue( ( a, b ) => {
     if( a.time === b.time ) { 
-      return a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0;
+      const order = a.priority < b.priority 
+        ? -1 
+        : a.priority > b.priority 
+          ? 1 
+          : 0
+
+      return order
     }else{
-      return a.time - b.time //a.time.minus( b.time )
+      return a.time - b.time
     }
   }),
 
@@ -70974,7 +70986,7 @@ const Scheduler = {
   // execution; use removeAll as needed.
   remove( func ) {
     const idx = this.queue.data.findIndex( evt => evt.func === func )
-    console.log( 'FOUND', idx, this.queue.data[ idx ] )
+    //console.log( 'FOUND', idx, this.queue.data[ idx ] )
     if( idx > -1 ) {
       this.queue.data.splice( idx, 1 )
       this.queue.length-- 
@@ -71286,6 +71298,8 @@ const proxy = __proxy( Gibberish )
 
 const Sequencer = props => {
   let __seq
+  let floatError = 0
+
   const seq = {
     type:'seq',
     __isRunning:false,
@@ -71383,7 +71397,9 @@ const Sequencer = props => {
       
       if( Gibberish.mode === 'processor' ) {
         if( seq.__isRunning === true && !isNaN( timing ) && seq.autotrig === false ) {
+          timing += floatError
           Gibberish.scheduler.add( timing, seq.tick, seq.priority )
+          floatError = timing - Math.floor( timing )
         }
       }
     },
@@ -71477,7 +71493,7 @@ const Sequencer = props => {
   return __seq
 }
 
-Sequencer.defaults = { priority:100000, rate:1, reportOutput:false, autotrig:false }
+Sequencer.defaults = { priority:100, rate:1, reportOutput:false, autotrig:false }
 
 Sequencer.make = function( values, timings, target, key, priority, reportOutput ) {
   return Sequencer({ values, timings, target, key, priority, reportOutput })
@@ -71500,6 +71516,7 @@ const proxy = __proxy( Gibberish )
 
 const Sequencer = props => {
   let __seq
+  let floatError = 0
   const seq = {
     __isRunning:false,
 
@@ -71594,7 +71611,8 @@ const Sequencer = props => {
         }
         
         //timing *= Math.ceil( Gibberish.ctx.sampleRate / Sequencer.clock.cps ) + 1 
-        timing *= Gibberish.ctx.sampleRate / Sequencer.clock.cps 
+        timing *= Gibberish.ctx.sampleRate / Sequencer.clock.cps + floatError
+        floatError = timing - Math.floor( timing ) 
 
         if( seq.__isRunning === true && !isNaN( timing ) && timing > 0 ) {
           Gibberish.scheduler.add( timing, seq.tick, seq.priority )

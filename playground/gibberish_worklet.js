@@ -10513,11 +10513,15 @@ let Gibberish = null;
 const Scheduler = {
   phase: 0,
 
+  // lower priority vaules win, however priority
+  // cannot be negative for some unknown reason...
   queue: new Queue((a, b) => {
     if (a.time === b.time) {
-      return a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0;
+      const order = a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0;
+
+      return order;
     } else {
-      return a.time - b.time; //a.time.minus( b.time )
+      return a.time - b.time;
     }
   }),
 
@@ -10542,7 +10546,7 @@ const Scheduler = {
   // execution; use removeAll as needed.
   remove(func) {
     const idx = this.queue.data.findIndex(evt => evt.func === func);
-    console.log('FOUND', idx, this.queue.data[idx]);
+    //console.log( 'FOUND', idx, this.queue.data[ idx ] )
     if (idx > -1) {
       this.queue.data.splice(idx, 1);
       this.queue.length--;
@@ -10849,6 +10853,8 @@ module.exports = function (Gibberish) {
 
   const Sequencer = props => {
     let __seq;
+    let floatError = 0;
+
     const seq = {
       type: 'seq',
       __isRunning: false,
@@ -10936,7 +10942,9 @@ module.exports = function (Gibberish) {
 
         if (Gibberish.mode === 'processor') {
           if (seq.__isRunning === true && !isNaN(timing) && seq.autotrig === false) {
+            timing += floatError;
             Gibberish.scheduler.add(timing, seq.tick, seq.priority);
+            floatError = timing - Math.floor(timing);
           }
         }
       },
@@ -11024,7 +11032,7 @@ module.exports = function (Gibberish) {
     return __seq;
   };
 
-  Sequencer.defaults = { priority: 100000, rate: 1, reportOutput: false, autotrig: false };
+  Sequencer.defaults = { priority: 100, rate: 1, reportOutput: false, autotrig: false };
 
   Sequencer.make = function (values, timings, target, key, priority, reportOutput) {
     return Sequencer({ values, timings, target, key, priority, reportOutput });
@@ -11046,6 +11054,7 @@ module.exports = function (Gibberish) {
 
   const Sequencer = props => {
     let __seq;
+    let floatError = 0;
     const seq = {
       __isRunning: false,
 
@@ -11138,7 +11147,8 @@ module.exports = function (Gibberish) {
           }
 
           //timing *= Math.ceil( Gibberish.ctx.sampleRate / Sequencer.clock.cps ) + 1 
-          timing *= Gibberish.ctx.sampleRate / Sequencer.clock.cps;
+          timing *= Gibberish.ctx.sampleRate / Sequencer.clock.cps + floatError;
+          floatError = timing - Math.floor(timing);
 
           if (seq.__isRunning === true && !isNaN(timing) && timing > 0) {
             Gibberish.scheduler.add(timing, seq.tick, seq.priority);
