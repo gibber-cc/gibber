@@ -9436,9 +9436,14 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
 
         if( methodName === 'notec' ) {
           obj.notec = function( ...args ) {
-            __wrappedObject.frequency = args[0]
-            __wrappedObject.trigger( __wrappedObject.__triggerLoudness )
-
+            //__wrappedObject.frequency = args[0]
+            //__wrappedObject.trigger( __wrappedObject.__triggerLoudness )
+            Gibberish.worklet.port.postMessage({
+              address:'method',
+              object:__wrappedObject.id,
+              name:'notec',
+              args
+            })
             return obj
           }
         }
