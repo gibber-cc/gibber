@@ -3088,7 +3088,7 @@ let proto = {
 
 }
 
-module.exports = ( leftInput, rightInput, pan =.5, properties ) => {
+module.exports = ( leftInput, rightInput, pan =.5 ) => {
   if( gen.globals.panL === undefined ) proto.initTable()
 
   let ugen = Object.create( proto )
@@ -4195,7 +4195,7 @@ const utilities = {
 
     const start = () => {
       if( typeof AC !== 'undefined' ) {
-        this.ctx = new AC({ latencyHint:.0125 })
+        this.ctx = new AC({ latencyHint:.0 })
 
         gen.samplerate = this.ctx.sampleRate
 
@@ -6384,7 +6384,7 @@ module.exports = function( Audio ) {
   }
 
   // add Freesound[5] notation...
-  for( let i = 0; i < 10; i++ ) {
+  for( let i = 0; i < 20; i++ ) {
     Freesound[ i ] = function( ...args ) {
       if( args.length > 0 ) {
         if( typeof args[0] === 'string' ) {
@@ -7161,7 +7161,7 @@ const Instruments = {
 
       // for poly notation like Synth[3]()
       // create or extend dictionary with maxVoices property
-      for( let i = 0; i < 10; i++ ) {
+      for( let i = 0; i < 20; i++ ) {
         instruments[ instrumentName ][i] = function( ...args ) {
           if( args.length > 0 ) {
             if( typeof args[0] === 'string' ) {
@@ -8530,9 +8530,9 @@ module.exports = {
     attack:1/2, decay:1.5, gain:.045,
     panVoices:true,
     presetInit: function( audio ) {
-      this.chorus = audio.effects.Chorus('lush')
-      this.fx.add( this.chorus  )
-      this.bitCrusher = audio.effects.BitCrusher({ bitDepth:.5 })
+      //this.chorus = audio.effects.Chorus('lush', { isStereo:true })
+      //this.fx.add( this.chorus  )
+      this.bitCrusher = audio.effects.BitCrusher({ bitDepth:.5, isStereo:true })
       this.fx.add( this.bitCrusher )
       //// gen( .5 + cycle( btof(16) ) * .35
       this.srmod = audio.Gen.make( audio.Gen.ugens.add( .5, audio.Gen.ugens.mul( audio.Gen.ugens.cycle(.125/2), .35 ) ) )
@@ -13284,13 +13284,13 @@ const Graphics = {
       this.make( name, Marching.distanceDeforms[ name ] )
     }
 
-    const fx = ['Antialias', 'Bloom2', 'Blur', 'Contrast', 'Edge', 'Focus', 'Godrays','Hue','Invert','MotionBlur']
+    const fx = ['Antialias', 'BloomOld','Bloom', 'Blur', 'Contrast', 'Edge', 'Focus', 'Godrays','Hue','Invert','MotionBlur']
     //for( let name of fx ) {
     //  this.make( name, Marching.fx[ name ], true )
     //}
     this.make( 'Antialias', Marching.fx.Antialias, true )
-    this.make( 'Bloom', Marching.fx.Bloom, true, [ 'amount', 'threshold' ] )
-    this.make( 'Bloom2', Marching.fx.Bloom2, true, [ 'amount', 'threshold', 'vertical','horizonta' ] )
+    this.make( 'BloomOld', Marching.fx.BloomOld, true, [ 'amount', 'threshold' ] )
+    this.make( 'Bloom', Marching.fx.Bloom, true, [ 'amount', 'threshold', 'vertical','horizontal' ] )
     this.make( 'Blur', Marching.fx.Blur, true, [ 'amount' ] )
     this.make( 'Edge', Marching.fx.Edge, true )
     this.make( 'Contrast', Marching.fx.Contrast, true, ['amount'] )
@@ -63446,6 +63446,31 @@ window.onload = function() {
     window.fn = Gibber.Audio.Gibberish.utilities.fn
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
     window.printcb = Gibber.Audio.printcb
+
+    window.find = function( name ) {
+      let out = { notfound:true, disconnect() {} }
+      Out.inputs.forEach( input => {
+        if( typeof input === 'object' ) {
+          if( input.__meta__.name[1] === name ) {
+            let found = false
+              for( let key of Environment.proxies ) {
+                if( window[ key ].__wrapped__ === input ) {
+                  found = true
+                    break
+                }                                            
+              }
+            if( found === false ) {
+              console.log( 'found orphan ' + name )
+                out = input
+                return
+            }
+          }
+        }
+      })
+
+      if( out.notfound === true ) console.log( `No ${name} was found` )
+        return out
+    }
 
     window.run = fnc => { 
       const str = fnc.toString()
