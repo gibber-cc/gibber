@@ -103,6 +103,32 @@ window.onload = function() {
     window._ = Gibber.Audio.Gibberish.Sequencer.DO_NOT_OUTPUT
     window.printcb = Gibber.Audio.printcb
 
+    
+    window.find = function( name ) {
+      let out = { notfound:true, disconnect() {} }
+      Out.inputs.forEach( input => {
+        if( typeof input === 'object' ) {
+          if( input.__meta__.name[1] === name ) {
+            let found = false
+            for( let key of Environment.proxies ) {
+              if( window[ key ].__wrapped__ === input ) {
+                found = true
+                break
+              }                                            
+            }
+            if( found === false ) {
+              console.log( 'found orphan ' + name )
+              out = input
+              return
+            }
+          }
+        }
+      })
+
+      if( out.notfound === true ) console.log( `No ${name} was found` )
+      return out
+    }
+
     window.run = fnc => { 
       const str = fnc.toString()
       const idx = str.indexOf('=>') + 2
