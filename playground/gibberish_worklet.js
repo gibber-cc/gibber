@@ -1,5 +1,5 @@
 const global = typeof window === 'undefined' ? {} : window;
-        let Gibberish = null, 
+        let Gibberish = null,
             Clock = null,
             time  = 0,
             sin   = null,
@@ -15,8 +15,9 @@ const global = typeof window === 'undefined' ? {} : window;
             round = null,
             min   = null,
             max   = null,
-            g     = null,
-            initialized = false;
+            g     = null
+
+        let initialized = false;
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Gibberish = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict'
 
@@ -646,7 +647,7 @@ module.exports = ( _props ) => {
     if( usingWorklet === true && ugen.node !== null ) {
       ugen.node.port.postMessage({ key:'set', idx:ugen.memory.value.idx, value:ugen.max })
     }else{
-      if( gen.memory !== undefined ) gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
+      gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
     }
   }
 
@@ -845,14 +846,14 @@ let proto = {
         wrap = ''
     // must check for reset before storing value for output
     if( !(typeof this.inputs[3] === 'number' && this.inputs[3] < 1) ) { 
-      out += `  if( ${_reset} >= 1 ) ${valueRef} = ${_incr} > 0 ? ${_min} : ${_max}\n`
+      out += `  if( ${_reset} >= 1 ) ${valueRef} = ${_min}\n`
     }
 
     out += `  var ${this.name}_value = ${valueRef};\n  ${valueRef} += ${_incr}\n` // store output value before accumulating  
     
     if( typeof this.max === 'number' && this.max !== Infinity && typeof this.min !== 'number' ) {
       wrap = 
-`  if( ${valueRef} >= ${this.max} && ${loops} > 0) {
+`  if( ${valueRef} >= ${this.max} &&  ${loops} > 0) {
     ${valueRef} -= ${diff}
     ${wrapRef} = 1
   }else{
@@ -2151,7 +2152,7 @@ gen.__proto__ = new EE()
 
 module.exports = gen
 
-},{"events":155,"memory-helper":81}],34:[function(require,module,exports){
+},{"events":156,"memory-helper":81}],34:[function(require,module,exports){
 'use strict'
 
 let gen  = require('./gen.js')
@@ -4802,9 +4803,7 @@ var MemoryHelper = {
   },
   free: function free(index) {
     if (typeof this.list[index] !== 'number') {
-      //throw Error('Calling free() on non-existing block.');
-      console.warn('calling free() on non-existing block:', index, this.list )
-      return
+      throw Error('Calling free() on non-existing block.');
     }
 
     this.list[index] = 0;
@@ -6149,28 +6148,13 @@ module.exports = function (Gibberish) {
   const DiodeZDF = inputProps => {
     const zdf = Object.create(filter);
     const props = Object.assign({}, DiodeZDF.defaults, filter.defaults, inputProps);
-    let out;
-
-    zdf.__requiresRecompilation = ['input'];
-    zdf.__createGraph = function () {
-      let isStereo = false;
-      if (out === undefined) {
-        isStereo = props.input !== undefined && props.input.isStereo !== undefined ? props.input.isStereo : false;
-      } else {
-        isStereo = out.input.isStereo;
-        out.isStereo = isStereo;
-      }
-
-      zdf.graph = Gibberish.genish.zd24(genish.in('input'), genish.in('Q'), genish.in('cutoff'), isStereo);
-    };
-
     const isStereo = props.input.isStereo;
 
     Object.assign(zdf, props);
 
-    out = Gibberish.factory(zdf, Gibberish.genish.diodeZDF(g.in('input'), g.in('Q'), g.in('cutoff'), g.in('saturation'), isStereo), ['filters', 'Filter24TB303'], props);
+    const __out = Gibberish.factory(zdf, Gibberish.genish.diodeZDF(g.in('input'), g.in('Q'), g.in('cutoff'), g.in('saturation'), isStereo), ['filters', 'Filter24TB303'], props);
 
-    return out;
+    return __out;
   };
 
   DiodeZDF.defaults = {
@@ -6564,8 +6548,7 @@ module.exports = function (Gibberish) {
   BitCrusher.defaults = {
     input: 0,
     bitDepth: .5,
-    sampleRate: .5,
-    inputGain: 1
+    sampleRate: .5
   };
 
   return BitCrusher;
@@ -6664,7 +6647,6 @@ module.exports = function (Gibberish) {
 
   Shuffler.defaults = {
     input: 0,
-    inputGain: 1,
     rate: 22050,
     chance: .25,
     reverseChance: .5,
@@ -6762,7 +6744,6 @@ module.exports = function (Gibberish) {
 
       __Chorus.defaults = {
             input: 0,
-            inputGain: 1,
             slowFrequency: .18,
             slowGain: 3,
             fastFrequency: 6,
@@ -6815,8 +6796,6 @@ module.exports = function (Gibberish) {
         feedbackHistoryR.in(echoR);
         const right = g.mix(rightInput, echoR, wetdry);
 
-        //const panner = g.pan( left, right, g.in('pan') ) 
-        //delay.graph = [ panner.left, panner.right ]
         delay.graph = [left, right];
       } else {
         delay.graph = left;
@@ -6833,11 +6812,9 @@ module.exports = function (Gibberish) {
 
   Delay.defaults = {
     input: 0,
-    inputGain: 1,
     feedback: .5,
     time: 11025,
-    wetdry: .5,
-    pan: .5
+    wetdry: .5
   };
 
   return Delay;
@@ -6915,7 +6892,6 @@ module.exports = function (Gibberish) {
 
   Distortion.defaults = {
     input: 0,
-    inputGain: 1,
     shape1: .1,
     shape2: .1,
     pregain: 5,
@@ -6931,7 +6907,7 @@ let ugen = require('../ugen.js')();
 let effect = Object.create(ugen);
 
 Object.assign(effect, {
-  defaults: { bypass: false },
+  defaults: { bypass: false, inputGain: 1 },
   type: 'effect'
 });
 
@@ -7037,7 +7013,6 @@ module.exports = function (Gibberish) {
 
   Flanger.defaults = {
     input: 0,
-    inputGain: 1,
     feedback: .81,
     offset: .125,
     frequency: 1
@@ -7128,7 +7103,6 @@ module.exports = function (Gibberish) {
 
   Freeverb.defaults = {
     input: 0,
-    inputGain: 1,
     wet1: 1,
     wet2: 0,
     dry: .5,
@@ -7190,7 +7164,6 @@ module.exports = function (Gibberish) {
 
   RingMod.defaults = {
     input: 0,
-    inputGain: 1,
     frequency: 220,
     gain: 1,
     mix: 1
@@ -7258,7 +7231,6 @@ module.exports = function (Gibberish) {
 
   Tremolo.defaults = {
     input: 0,
-    inputGain: 1,
     frequency: 2,
     amount: 1,
     shape: 'sine'
@@ -7333,7 +7305,6 @@ module.exports = function (Gibberish) {
 
   Vibrato.defaults = {
     input: 0,
-    inputGain: 1,
     feedback: .01,
     amount: .5,
     frequency: 4
@@ -7524,7 +7495,7 @@ let Gibberish = {
 
   workletPath: './gibberish_worklet.js',
 
-  init(memAmount, ctx, mode = 'worklet', immediate = false) {
+  init(memAmount, ctx, mode = 'worklet') {
     let numBytes = isNaN(memAmount) ? 20 * 60 * 44100 : memAmount;
 
     // regardless of whether or not gibberish is using worklets,
@@ -7548,7 +7519,7 @@ let Gibberish = {
       const p = new Promise((resolve, reject) => {
 
         const pp = new Promise((__resolve, __reject) => {
-          this.utilities.createContext(ctx, startup.bind(this.utilities), __resolve, null, immediate);
+          this.utilities.createContext(ctx, startup.bind(this.utilities), __resolve);
         }).then(() => {
           Gibberish.preventProxy = true;
           Gibberish.load();
@@ -7979,7 +7950,7 @@ Gibberish.utilities = require('./utilities.js')(Gibberish);
 
 module.exports = Gibberish;
 
-},{"./analysis/analyzer.js":82,"./analysis/analyzers.js":83,"./envelopes/envelopes.js":88,"./factory.js":93,"./filters/filters.js":100,"./fx/effect.js":108,"./fx/effects.js":109,"./instruments/instrument.js":123,"./instruments/instruments.js":124,"./instruments/polyMixin.js":129,"./instruments/polytemplate.js":130,"./misc/binops.js":135,"./misc/bus.js":136,"./misc/bus2.js":137,"./misc/monops.js":138,"./misc/panner.js":139,"./misc/time.js":140,"./oscillators/oscillators.js":143,"./scheduling/scheduler.js":147,"./scheduling/seq2.js":148,"./scheduling/sequencer.js":149,"./scheduling/tidal.js":150,"./ugen.js":151,"./utilities.js":152,"./workletProxy.js":153,"genish.js":40,"memory-helper":156}],117:[function(require,module,exports){
+},{"./analysis/analyzer.js":82,"./analysis/analyzers.js":83,"./envelopes/envelopes.js":88,"./factory.js":93,"./filters/filters.js":100,"./fx/effect.js":108,"./fx/effects.js":109,"./instruments/instrument.js":123,"./instruments/instruments.js":124,"./instruments/polyMixin.js":129,"./instruments/polytemplate.js":130,"./misc/binops.js":135,"./misc/bus.js":136,"./misc/bus2.js":137,"./misc/monops.js":138,"./misc/panner.js":139,"./misc/time.js":140,"./oscillators/oscillators.js":143,"./scheduling/scheduler.js":147,"./scheduling/seq2.js":148,"./scheduling/sequencer.js":149,"./scheduling/tidal.js":150,"./ugen.js":151,"./utilities.js":152,"./workletProxy.js":153,"genish.js":40,"memory-helper":158}],117:[function(require,module,exports){
 const g = require('genish.js'),
       instrument = require('./instrument.js');
 
@@ -9062,16 +9033,15 @@ module.exports = function (Gibberish) {
 const Gibberish = require('../index.js');
 
 module.exports = {
-  note(freq, loudness = null) {
+  note(freq) {
     // will be sent to processor node via proxy method...
     if (Gibberish.mode !== 'worklet') {
       let voice = this.__getVoice__();
       //Object.assign( voice, this.properties )
       //if( gain === undefined ) gain = this.gain
       //voice.gain = gain
-      if (loudness === null) loudness = this.__triggerLoudness;
-      voice.__triggerLoudness = loudness;
-      voice.note(freq, loudness);
+      voice.__triggerLoudness = this.__triggerLoudness;
+      voice.note(freq, this.__triggerLoudness);
       this.__runVoice__(voice, this);
       this.triggerNote = freq;
     }
@@ -9233,6 +9203,7 @@ module.exports = function (Gibberish) {
     for (let property of props) {
       if (property === 'pan' || property === 'id') continue;
       Object.defineProperty(synth, property, {
+        configurable: true,
         get() {
           return synth.properties[property] || ugen.defaults[property];
         },
@@ -9679,6 +9650,7 @@ module.exports = function (Gibberish) {
   const createProperties = function (p, id) {
     for (let i = 0; i < 2; i++) {
       Object.defineProperty(p, i, {
+        configurable: true,
         get() {
           return p.inputs[i];
         },
@@ -9950,7 +9922,6 @@ module.exports = function (Gibberish) {
         type: 'bus',
         inputs: [1, .5],
         isStereo: true,
-        out: output,
         __properties__: props
       }, Bus2.defaults, props);
 
@@ -10513,15 +10484,11 @@ let Gibberish = null;
 const Scheduler = {
   phase: 0,
 
-  // lower priority vaules win, however priority
-  // cannot be negative for some unknown reason...
   queue: new Queue((a, b) => {
     if (a.time === b.time) {
-      const order = a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0;
-
-      return order;
+      return a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0;
     } else {
-      return a.time - b.time;
+      return a.time - b.time; //a.time.minus( b.time )
     }
   }),
 
@@ -10539,18 +10506,8 @@ const Scheduler = {
     time += this.phase;
 
     this.queue.push({ time, func, priority });
-  },
 
-  // delete a function that is already scheduled.
-  // note that this will only delete the first scheduled
-  // execution; use removeAll as needed.
-  remove(func) {
-    const idx = this.queue.data.findIndex(evt => evt.func === func);
-    //console.log( 'FOUND', idx, this.queue.data[ idx ] )
-    if (idx > -1) {
-      this.queue.data.splice(idx, 1);
-      this.queue.length--;
-    }
+    return this.phase;
   },
 
   tick(usingSync = false) {
@@ -11054,7 +11011,6 @@ module.exports = function (Gibberish) {
 
   const Sequencer = props => {
     let __seq;
-    let floatError = 0;
     const seq = {
       __isRunning: false,
 
@@ -11088,21 +11044,19 @@ module.exports = function (Gibberish) {
                 value = event.value,
                 uid = event.uid;
 
-            if (value !== -987654321) {
-              // for bjorklund etc.
-              if (typeof value === 'object') value = value.value;
+            // for bjorklund etc.
+            if (typeof value === 'object') value = value.value;
 
-              if (seq.filters !== null) value = seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, uid), value);
-              if (seq.mainthreadonly !== undefined) {
-                if (typeof value === 'function') {
-                  value = value();
-                }
-                Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
-              } else if (typeof seq.target[seq.key] === 'function') {
-                seq.target[seq.key](value);
-              } else {
-                seq.target[seq.key] = value;
+            if (seq.filters !== null) value = seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, uid), value);
+            if (seq.mainthreadonly !== undefined) {
+              if (typeof value === 'function') {
+                value = value();
               }
+              Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
+            } else if (typeof seq.target[seq.key] === 'function') {
+              seq.target[seq.key](value);
+            } else {
+              seq.target[seq.key] = value;
             }
           }
         } else {
@@ -11119,12 +11073,10 @@ module.exports = function (Gibberish) {
             }
           }
 
-          if (value !== -987654321) {
-            if (typeof seq.target[seq.key] === 'function') {
-              seq.target[seq.key](value);
-            } else {
-              seq.target[seq.key] = value;
-            }
+          if (typeof seq.target[seq.key] === 'function') {
+            seq.target[seq.key](value);
+          } else {
+            seq.target[seq.key] = value;
           }
         }
 
@@ -11146,11 +11098,24 @@ module.exports = function (Gibberish) {
             timing = seq.__events[0].arc.start.sub(startTime).valueOf();
           }
 
-          //timing *= Math.ceil( Gibberish.ctx.sampleRate / Sequencer.clock.cps ) + 1 
-          timing *= Gibberish.ctx.sampleRate / Sequencer.clock.cps + floatError;
-          floatError = timing - Math.floor(timing);
+          timing *= Math.ceil(Gibberish.ctx.sampleRate / Sequencer.clock.cps) + 1;
 
           if (seq.__isRunning === true && !isNaN(timing) && timing > 0) {
+            // XXX this supports an edge case in Gibber, where patterns like Euclid / Hex return
+            // objects indicating both whether or not they should should trigger values as well
+            // as the next time they should run. perhaps this could be made more generalizable?
+
+            //if( typeof timing === 'object' ) {
+            //  if( timing.shouldExecute === 1 ) {
+            //    shouldRun = true
+            //  }else{
+            //    shouldRun = false
+            //  }
+            //  timing = timing.time 
+            //}
+
+            //timing *= seq.rate
+
             Gibberish.scheduler.add(timing, seq.tick, seq.priority);
           }
         }
@@ -11234,7 +11199,7 @@ module.exports = function (Gibberish) {
   return Sequencer;
 };
 
-},{"../workletProxy.js":153,"tidal.pegjs":173}],151:[function(require,module,exports){
+},{"../workletProxy.js":153,"tidal.pegjs":170}],151:[function(require,module,exports){
 let Gibberish = null;
 
 const __ugen = function (__Gibberish) {
@@ -11415,7 +11380,7 @@ module.exports = function (Gibberish) {
       return Gibberish[name];
     },
 
-    createContext(ctx, cb, resolve, bufferSize = 2048, immediate = false, useKeys = false) {
+    createContext(ctx, cb, resolve, bufferSize = 2048) {
       let AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext;
 
       AWPF(window, bufferSize);
@@ -11431,7 +11396,7 @@ module.exports = function (Gibberish) {
             window.removeEventListener('touchstart', start);
           } else {
             window.removeEventListener('mousedown', start);
-            if (useKeys) window.removeEventListener('keydown', start);
+            window.removeEventListener('keydown', start);
           }
 
           const mySource = utilities.ctx.createBufferSource();
@@ -11442,15 +11407,11 @@ module.exports = function (Gibberish) {
         if (typeof cb === 'function') cb(resolve);
       };
 
-      if (immediate === false) {
-        if (document && document.documentElement && 'ontouchstart' in document.documentElement) {
-          window.addEventListener('touchstart', start);
-        } else {
-          window.addEventListener('mousedown', start);
-          if (useKeys) window.addEventListener('keydown', start);
-        }
+      if (document && document.documentElement && 'ontouchstart' in document.documentElement) {
+        window.addEventListener('touchstart', start);
       } else {
-        start();
+        window.addEventListener('mousedown', start);
+        window.addEventListener('keydown', start);
       }
 
       return Gibberish.ctx;
@@ -11621,12 +11582,6 @@ module.exports = function (Gibberish) {
       return out;
     },
 
-    export(obj) {
-      obj.wrap = this.wrap;
-      obj.future = this.future;
-      obj.Make = this.Make;
-    },
-
     // for wrapping upvalues in a dictionary and passing function across thread
     // to be reconstructed.
     // ex; wrapped = fn( ()=> { return Math.random() * test }, { test:20 })
@@ -11639,6 +11594,12 @@ module.exports = function (Gibberish) {
           this.filters.push(f);
         } };
       return s;
+    },
+
+    export(obj) {
+      obj.wrap = this.wrap;
+      obj.future = this.future;
+      obj.Make = this.Make;
     },
 
     getUID() {
@@ -11807,9 +11768,50 @@ module.exports = function (Gibberish) {
   return __proxy;
 };
 
-},{"serialize-javascript":158}],154:[function(require,module,exports){
+},{"serialize-javascript":168}],154:[function(require,module,exports){
+function bjorklund(slots, pulses){
+  var pattern = [],
+      count = [],
+      remainder = [pulses],
+      divisor = slots - pulses,
+      level = 0,
+      build_pattern = function(lv){
+        if( lv == -1 ){ pattern.push(0); }
+        else if( lv == -2 ){ pattern.push(1); }
+        else{
+          for(var x=0; x<count[lv]; x++){
+            build_pattern(lv-1);
+          }
+
+          if(remainder[lv]){
+            build_pattern(lv-2);
+          }
+        }
+      }
+  ;
+
+  while(remainder[level] > 1){
+    count.push(Math.floor(divisor/remainder[level]));
+    remainder.push(divisor%remainder[level]);
+    divisor = remainder[level];
+    level++;
+  }
+  count.push(divisor);
+
+  build_pattern(level);
+
+  return pattern.reverse();
+}
+
+
+module.exports = function(m, k){
+  if(m > k) return bjorklund(m, k);
+  else return bjorklund(k, m);
+};
 
 },{}],155:[function(require,module,exports){
+
+},{}],156:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -12334,100 +12336,922 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],156:[function(require,module,exports){
-'use strict';
-
-var MemoryHelper = {
-  create: function create() {
-    var size = arguments.length <= 0 || arguments[0] === undefined ? 4096 : arguments[0];
-    var memtype = arguments.length <= 1 || arguments[1] === undefined ? Float32Array : arguments[1];
-
-    var helper = Object.create(this);
-
-    Object.assign(helper, {
-      heap: new memtype(size),
-      list: {},
-      freeList: {}
-    });
-
-    return helper;
-  },
-  alloc: function alloc(amount) {
-    var idx = -1;
-
-    if (amount > this.heap.length) {
-      throw Error('Allocation request is larger than heap size of ' + this.heap.length);
-    }
-
-    for (var key in this.freeList) {
-      var candidateSize = this.freeList[key];
-
-      if (candidateSize >= amount) {
-        idx = key;
-
-        this.list[idx] = amount;
-
-        if (candidateSize !== amount) {
-          var newIndex = idx + amount,
-              newFreeSize = void 0;
-
-          for (var _key in this.list) {
-            if (_key > newIndex) {
-              newFreeSize = _key - newIndex;
-              this.freeList[newIndex] = newFreeSize;
-            }
-          }
-        }
-        
-        break;
-      }
-    }
-    
-    if( idx !== -1 ) delete this.freeList[ idx ]
-
-    if (idx === -1) {
-      var keys = Object.keys(this.list),
-          lastIndex = void 0;
-
-      if (keys.length) {
-        // if not first allocation...
-        lastIndex = parseInt(keys[keys.length - 1]);
-
-        idx = lastIndex + this.list[lastIndex];
-      } else {
-        idx = 0;
-      }
-
-      this.list[idx] = amount;
-    }
-
-    if (idx + amount >= this.heap.length) {
-      throw Error('No available blocks remain sufficient for allocation request.');
-    }
-    return idx;
-  },
-  free: function free(index) {
-    if (typeof this.list[index] !== 'number') {
-      throw Error('Calling free() on non-existing block.');
-    }
-
-    this.list[index] = 0;
-
-    var size = 0;
-    for (var key in this.list) {
-      if (key > index) {
-        size = key - index;
-        break;
-      }
-    }
-
-    this.freeList[index] = size;
-  }
-};
-
-module.exports = MemoryHelper;
-
 },{}],157:[function(require,module,exports){
+/**
+ * @license Fraction.js v4.1.1 23/05/2021
+ * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
+ *
+ * Copyright (c) 2021, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
+
+
+/**
+ *
+ * This class offers the possibility to calculate fractions.
+ * You can pass a fraction in different formats. Either as array, as double, as string or as an integer.
+ *
+ * Array/Object form
+ * [ 0 => <nominator>, 1 => <denominator> ]
+ * [ n => <nominator>, d => <denominator> ]
+ *
+ * Integer form
+ * - Single integer value
+ *
+ * Double form
+ * - Single double value
+ *
+ * String form
+ * 123.456 - a simple double
+ * 123/456 - a string fraction
+ * 123.'456' - a double with repeating decimal places
+ * 123.(456) - synonym
+ * 123.45'6' - a double with repeating last place
+ * 123.45(6) - synonym
+ *
+ * Example:
+ *
+ * var f = new Fraction("9.4'31'");
+ * f.mul([-4, 3]).div(4.9);
+ *
+ */
+
+(function(root) {
+
+  "use strict";
+
+  // Maximum search depth for cyclic rational numbers. 2000 should be more than enough.
+  // Example: 1/7 = 0.(142857) has 6 repeating decimal places.
+  // If MAX_CYCLE_LEN gets reduced, long cycles will not be detected and toString() only gets the first 10 digits
+  var MAX_CYCLE_LEN = 2000;
+
+  // Parsed data to avoid calling "new" all the time
+  var P = {
+    "s": 1,
+    "n": 0,
+    "d": 1
+  };
+
+  function createError(name) {
+
+    function errorConstructor() {
+      var temp = Error.apply(this, arguments);
+      temp['name'] = this['name'] = name;
+      this['stack'] = temp['stack'];
+      this['message'] = temp['message'];
+    }
+
+    /**
+     * Error constructor
+     *
+     * @constructor
+     */
+    function IntermediateInheritor() { }
+    IntermediateInheritor.prototype = Error.prototype;
+    errorConstructor.prototype = new IntermediateInheritor();
+
+    return errorConstructor;
+  }
+
+  var DivisionByZero = Fraction['DivisionByZero'] = createError('DivisionByZero');
+  var InvalidParameter = Fraction['InvalidParameter'] = createError('InvalidParameter');
+
+  function assign(n, s) {
+
+    if (isNaN(n = parseInt(n, 10))) {
+      throwInvalidParam();
+    }
+    return n * s;
+  }
+
+  function throwInvalidParam() {
+    throw new InvalidParameter();
+  }
+
+  function factorize(num) {
+
+    var factors = {};
+
+    var n = num;
+    var i = 2;
+    var s = 4;
+
+    while (s <= n) {
+
+      while (n % i === 0) {
+        n /= i;
+        factors[i] = (factors[i] || 0) + 1;
+      }
+      s += 1 + 2 * i++;
+    }
+
+    if (n !== num) {
+      if (n > 1)
+      factors[n] = (factors[n] || 0) + 1;
+    } else {
+      factors[num] = (factors[num] || 0) + 1;
+    }
+    return factors;
+  }
+
+  var parse = function(p1, p2) {
+
+    var n = 0, d = 1, s = 1;
+    var v = 0, w = 0, x = 0, y = 1, z = 1;
+
+    var A = 0, B = 1;
+    var C = 1, D = 1;
+
+    var N = 10000000;
+    var M;
+
+    if (p1 === undefined || p1 === null) {
+      /* void */
+    } else if (p2 !== undefined) {
+      n = p1;
+      d = p2;
+      s = n * d;
+    } else
+      switch (typeof p1) {
+
+        case "object":
+          {
+            if ("d" in p1 && "n" in p1) {
+              n = p1["n"];
+              d = p1["d"];
+              if ("s" in p1)
+                n *= p1["s"];
+            } else if (0 in p1) {
+              n = p1[0];
+              if (1 in p1)
+                d = p1[1];
+            } else {
+              throwInvalidParam();
+            }
+            s = n * d;
+            break;
+          }
+        case "number":
+          {
+            if (p1 < 0) {
+              s = p1;
+              p1 = -p1;
+            }
+
+            if (p1 % 1 === 0) {
+              n = p1;
+            } else if (p1 > 0) { // check for != 0, scale would become NaN (log(0)), which converges really slow
+
+              if (p1 >= 1) {
+                z = Math.pow(10, Math.floor(1 + Math.log(p1) / Math.LN10));
+                p1 /= z;
+              }
+
+              // Using Farey Sequences
+              // http://www.johndcook.com/blog/2010/10/20/best-rational-approximation/
+
+              while (B <= N && D <= N) {
+                M = (A + C) / (B + D);
+
+                if (p1 === M) {
+                  if (B + D <= N) {
+                    n = A + C;
+                    d = B + D;
+                  } else if (D > B) {
+                    n = C;
+                    d = D;
+                  } else {
+                    n = A;
+                    d = B;
+                  }
+                  break;
+
+                } else {
+
+                  if (p1 > M) {
+                    A += C;
+                    B += D;
+                  } else {
+                    C += A;
+                    D += B;
+                  }
+
+                  if (B > N) {
+                    n = C;
+                    d = D;
+                  } else {
+                    n = A;
+                    d = B;
+                  }
+                }
+              }
+              n *= z;
+            } else if (isNaN(p1) || isNaN(p2)) {
+              d = n = NaN;
+            }
+            break;
+          }
+        case "string":
+          {
+            B = p1.match(/\d+|./g);
+
+            if (B === null)
+              throwInvalidParam();
+
+            if (B[A] === '-') {// Check for minus sign at the beginning
+              s = -1;
+              A++;
+            } else if (B[A] === '+') {// Check for plus sign at the beginning
+              A++;
+            }
+
+            if (B.length === A + 1) { // Check if it's just a simple number "1234"
+              w = assign(B[A++], s);
+            } else if (B[A + 1] === '.' || B[A] === '.') { // Check if it's a decimal number
+
+              if (B[A] !== '.') { // Handle 0.5 and .5
+                v = assign(B[A++], s);
+              }
+              A++;
+
+              // Check for decimal places
+              if (A + 1 === B.length || B[A + 1] === '(' && B[A + 3] === ')' || B[A + 1] === "'" && B[A + 3] === "'") {
+                w = assign(B[A], s);
+                y = Math.pow(10, B[A].length);
+                A++;
+              }
+
+              // Check for repeating places
+              if (B[A] === '(' && B[A + 2] === ')' || B[A] === "'" && B[A + 2] === "'") {
+                x = assign(B[A + 1], s);
+                z = Math.pow(10, B[A + 1].length) - 1;
+                A += 3;
+              }
+
+            } else if (B[A + 1] === '/' || B[A + 1] === ':') { // Check for a simple fraction "123/456" or "123:456"
+              w = assign(B[A], s);
+              y = assign(B[A + 2], 1);
+              A += 3;
+            } else if (B[A + 3] === '/' && B[A + 1] === ' ') { // Check for a complex fraction "123 1/2"
+              v = assign(B[A], s);
+              w = assign(B[A + 2], s);
+              y = assign(B[A + 4], 1);
+              A += 5;
+            }
+
+            if (B.length <= A) { // Check for more tokens on the stack
+              d = y * z;
+              s = /* void */
+              n = x + d * v + z * w;
+              break;
+            }
+
+            /* Fall through on error */
+          }
+        default:
+          throwInvalidParam();
+      }
+
+    if (d === 0) {
+      throw new DivisionByZero();
+    }
+
+    P["s"] = s < 0 ? -1 : 1;
+    P["n"] = Math.abs(n);
+    P["d"] = Math.abs(d);
+  };
+
+  function modpow(b, e, m) {
+
+    var r = 1;
+    for (; e > 0; b = (b * b) % m, e >>= 1) {
+
+      if (e & 1) {
+        r = (r * b) % m;
+      }
+    }
+    return r;
+  }
+
+
+  function cycleLen(n, d) {
+
+    for (; d % 2 === 0;
+      d /= 2) {
+    }
+
+    for (; d % 5 === 0;
+      d /= 5) {
+    }
+
+    if (d === 1) // Catch non-cyclic numbers
+      return 0;
+
+    // If we would like to compute really large numbers quicker, we could make use of Fermat's little theorem:
+    // 10^(d-1) % d == 1
+    // However, we don't need such large numbers and MAX_CYCLE_LEN should be the capstone,
+    // as we want to translate the numbers to strings.
+
+    var rem = 10 % d;
+    var t = 1;
+
+    for (; rem !== 1; t++) {
+      rem = rem * 10 % d;
+
+      if (t > MAX_CYCLE_LEN)
+        return 0; // Returning 0 here means that we don't print it as a cyclic number. It's likely that the answer is `d-1`
+    }
+    return t;
+  }
+
+
+  function cycleStart(n, d, len) {
+
+    var rem1 = 1;
+    var rem2 = modpow(10, len, d);
+
+    for (var t = 0; t < 300; t++) { // s < ~log10(Number.MAX_VALUE)
+      // Solve 10^s == 10^(s+t) (mod d)
+
+      if (rem1 === rem2)
+        return t;
+
+      rem1 = rem1 * 10 % d;
+      rem2 = rem2 * 10 % d;
+    }
+    return 0;
+  }
+
+  function gcd(a, b) {
+
+    if (!a)
+      return b;
+    if (!b)
+      return a;
+
+    while (1) {
+      a %= b;
+      if (!a)
+        return b;
+      b %= a;
+      if (!b)
+        return a;
+    }
+  };
+
+  /**
+   * Module constructor
+   *
+   * @constructor
+   * @param {number|Fraction=} a
+   * @param {number=} b
+   */
+  function Fraction(a, b) {
+
+    if (!(this instanceof Fraction)) {
+      return new Fraction(a, b);
+    }
+
+    parse(a, b);
+
+    if (Fraction['REDUCE']) {
+      a = gcd(P["d"], P["n"]); // Abuse a
+    } else {
+      a = 1;
+    }
+
+    this["s"] = P["s"];
+    this["n"] = P["n"] / a;
+    this["d"] = P["d"] / a;
+  }
+
+  /**
+   * Boolean global variable to be able to disable automatic reduction of the fraction
+   *
+   */
+  Fraction['REDUCE'] = 1;
+
+  Fraction.prototype = {
+
+    "s": 1,
+    "n": 0,
+    "d": 1,
+
+    /**
+     * Calculates the absolute value
+     *
+     * Ex: new Fraction(-4).abs() => 4
+     **/
+    "abs": function() {
+
+      return new Fraction(this["n"], this["d"]);
+    },
+
+    /**
+     * Inverts the sign of the current fraction
+     *
+     * Ex: new Fraction(-4).neg() => 4
+     **/
+    "neg": function() {
+
+      return new Fraction(-this["s"] * this["n"], this["d"]);
+    },
+
+    /**
+     * Adds two rational numbers
+     *
+     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => 467 / 30
+     **/
+    "add": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+        this["s"] * this["n"] * P["d"] + P["s"] * this["d"] * P["n"],
+        this["d"] * P["d"]
+      );
+    },
+
+    /**
+     * Subtracts two rational numbers
+     *
+     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => -427 / 30
+     **/
+    "sub": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+        this["s"] * this["n"] * P["d"] - P["s"] * this["d"] * P["n"],
+        this["d"] * P["d"]
+      );
+    },
+
+    /**
+     * Multiplies two rational numbers
+     *
+     * Ex: new Fraction("-17.(345)").mul(3) => 5776 / 111
+     **/
+    "mul": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+        this["s"] * P["s"] * this["n"] * P["n"],
+        this["d"] * P["d"]
+      );
+    },
+
+    /**
+     * Divides two rational numbers
+     *
+     * Ex: new Fraction("-17.(345)").inverse().div(3)
+     **/
+    "div": function(a, b) {
+
+      parse(a, b);
+      return new Fraction(
+        this["s"] * P["s"] * this["n"] * P["d"],
+        this["d"] * P["n"]
+      );
+    },
+
+    /**
+     * Clones the actual object
+     *
+     * Ex: new Fraction("-17.(345)").clone()
+     **/
+    "clone": function() {
+      return new Fraction(this);
+    },
+
+    /**
+     * Calculates the modulo of two rational numbers - a more precise fmod
+     *
+     * Ex: new Fraction('4.(3)').mod([7, 8]) => (13/3) % (7/8) = (5/6)
+     **/
+    "mod": function(a, b) {
+
+      if (isNaN(this['n']) || isNaN(this['d'])) {
+        return new Fraction(NaN);
+      }
+
+      if (a === undefined) {
+        return new Fraction(this["s"] * this["n"] % this["d"], 1);
+      }
+
+      parse(a, b);
+      if (0 === P["n"] && 0 === this["d"]) {
+        Fraction(0, 0); // Throw DivisionByZero
+      }
+
+      /*
+       * First silly attempt, kinda slow
+       *
+       return that["sub"]({
+       "n": num["n"] * Math.floor((this.n / this.d) / (num.n / num.d)),
+       "d": num["d"],
+       "s": this["s"]
+       });*/
+
+      /*
+       * New attempt: a1 / b1 = a2 / b2 * q + r
+       * => b2 * a1 = a2 * b1 * q + b1 * b2 * r
+       * => (b2 * a1 % a2 * b1) / (b1 * b2)
+       */
+      return new Fraction(
+        this["s"] * (P["d"] * this["n"]) % (P["n"] * this["d"]),
+        P["d"] * this["d"]
+      );
+    },
+
+    /**
+     * Calculates the fractional gcd of two rational numbers
+     *
+     * Ex: new Fraction(5,8).gcd(3,7) => 1/56
+     */
+    "gcd": function(a, b) {
+
+      parse(a, b);
+
+      // gcd(a / b, c / d) = gcd(a, c) / lcm(b, d)
+
+      return new Fraction(gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]), P["d"] * this["d"]);
+    },
+
+    /**
+     * Calculates the fractional lcm of two rational numbers
+     *
+     * Ex: new Fraction(5,8).lcm(3,7) => 15
+     */
+    "lcm": function(a, b) {
+
+      parse(a, b);
+
+      // lcm(a / b, c / d) = lcm(a, c) / gcd(b, d)
+
+      if (P["n"] === 0 && this["n"] === 0) {
+        return new Fraction;
+      }
+      return new Fraction(P["n"] * this["n"], gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]));
+    },
+
+    /**
+     * Calculates the ceil of a rational number
+     *
+     * Ex: new Fraction('4.(3)').ceil() => (5 / 1)
+     **/
+    "ceil": function(places) {
+
+      places = Math.pow(10, places || 0);
+
+      if (isNaN(this["n"]) || isNaN(this["d"])) {
+        return new Fraction(NaN);
+      }
+      return new Fraction(Math.ceil(places * this["s"] * this["n"] / this["d"]), places);
+    },
+
+    /**
+     * Calculates the floor of a rational number
+     *
+     * Ex: new Fraction('4.(3)').floor() => (4 / 1)
+     **/
+    "floor": function(places) {
+
+      places = Math.pow(10, places || 0);
+
+      if (isNaN(this["n"]) || isNaN(this["d"])) {
+        return new Fraction(NaN);
+      }
+      return new Fraction(Math.floor(places * this["s"] * this["n"] / this["d"]), places);
+    },
+
+    /**
+     * Rounds a rational numbers
+     *
+     * Ex: new Fraction('4.(3)').round() => (4 / 1)
+     **/
+    "round": function(places) {
+
+      places = Math.pow(10, places || 0);
+
+      if (isNaN(this["n"]) || isNaN(this["d"])) {
+        return new Fraction(NaN);
+      }
+      return new Fraction(Math.round(places * this["s"] * this["n"] / this["d"]), places);
+    },
+
+    /**
+     * Gets the inverse of the fraction, means numerator and denominator are exchanged
+     *
+     * Ex: new Fraction([-3, 4]).inverse() => -4 / 3
+     **/
+    "inverse": function() {
+
+      return new Fraction(this["s"] * this["d"], this["n"]);
+    },
+
+    /**
+     * Calculates the fraction to some rational exponent, if possible
+     *
+     * Ex: new Fraction(-1,2).pow(-3) => -8
+     */
+    "pow": function(a, b) {
+
+      parse(a, b);
+
+      // Trivial case when exp is an integer
+
+      if (P['d'] === 1) {
+
+        if (P['s'] < 0) {
+          return new Fraction(Math.pow(this['s'] * this["d"], P['n']), Math.pow(this["n"], P['n']));
+        } else {
+          return new Fraction(Math.pow(this['s'] * this["n"], P['n']), Math.pow(this["d"], P['n']));
+        }
+      }
+
+      // Negative roots become complex
+      //     (-a/b)^(c/d) = x
+      // <=> (-1)^(c/d) * (a/b)^(c/d) = x
+      // <=> (cos(pi) + i*sin(pi))^(c/d) * (a/b)^(c/d) = x         # rotate 1 by 180°
+      // <=> (cos(c*pi/d) + i*sin(c*pi/d)) * (a/b)^(c/d) = x       # DeMoivre's formula in Q ( https://proofwiki.org/wiki/De_Moivre%27s_Formula/Rational_Index )
+      // From which follows that only for c=0 the root is non-complex. c/d is a reduced fraction, so that sin(c/dpi)=0 occurs for d=1, which is handled by our trivial case.
+      if (this['s'] < 0) return null;
+
+      // Now prime factor n and d
+      var N = factorize(this['n']);
+      var D = factorize(this['d']);
+
+      // Exponentiate and take root for n and d individually
+      var n = 1;
+      var d = 1;
+      for (var k in N) {
+        if (k === '1') continue;
+        if (k === '0') {
+          n = 0;
+          break;
+        }
+        N[k]*= P['n'];
+
+        if (N[k] % P['d'] === 0) {
+          N[k]/= P['d'];
+        } else return null;
+        n*= Math.pow(k, N[k]);
+      }
+
+      for (var k in D) {
+        if (k === '1') continue;
+        D[k]*= P['n'];
+
+        if (D[k] % P['d'] === 0) {
+          D[k]/= P['d'];
+        } else return null;
+        d*= Math.pow(k, D[k]);
+      }
+
+      if (P['s'] < 0) {
+        return new Fraction(d, n);
+      }
+      return new Fraction(n, d);
+    },
+
+    /**
+     * Check if two rational numbers are the same
+     *
+     * Ex: new Fraction(19.6).equals([98, 5]);
+     **/
+    "equals": function(a, b) {
+
+      parse(a, b);
+      return this["s"] * this["n"] * P["d"] === P["s"] * P["n"] * this["d"]; // Same as compare() === 0
+    },
+
+    /**
+     * Check if two rational numbers are the same
+     *
+     * Ex: new Fraction(19.6).equals([98, 5]);
+     **/
+    "compare": function(a, b) {
+
+      parse(a, b);
+      var t = (this["s"] * this["n"] * P["d"] - P["s"] * P["n"] * this["d"]);
+      return (0 < t) - (t < 0);
+    },
+
+    "simplify": function(eps) {
+
+      // First naive implementation, needs improvement
+
+      if (isNaN(this['n']) || isNaN(this['d'])) {
+        return this;
+      }
+
+      var cont = this['abs']()['toContinued']();
+
+      eps = eps || 0.001;
+
+      function rec(a) {
+        if (a.length === 1)
+          return new Fraction(a[0]);
+        return rec(a.slice(1))['inverse']()['add'](a[0]);
+      }
+
+      for (var i = 0; i < cont.length; i++) {
+        var tmp = rec(cont.slice(0, i + 1));
+        if (tmp['sub'](this['abs']())['abs']().valueOf() < eps) {
+          return tmp['mul'](this['s']);
+        }
+      }
+      return this;
+    },
+
+    /**
+     * Check if two rational numbers are divisible
+     *
+     * Ex: new Fraction(19.6).divisible(1.5);
+     */
+    "divisible": function(a, b) {
+
+      parse(a, b);
+      return !(!(P["n"] * this["d"]) || ((this["n"] * P["d"]) % (P["n"] * this["d"])));
+    },
+
+    /**
+     * Returns a decimal representation of the fraction
+     *
+     * Ex: new Fraction("100.'91823'").valueOf() => 100.91823918239183
+     **/
+    'valueOf': function() {
+
+      return this["s"] * this["n"] / this["d"];
+    },
+
+    /**
+     * Returns a string-fraction representation of a Fraction object
+     *
+     * Ex: new Fraction("1.'3'").toFraction() => "4 1/3"
+     **/
+    'toFraction': function(excludeWhole) {
+
+      var whole, str = "";
+      var n = this["n"];
+      var d = this["d"];
+      if (this["s"] < 0) {
+        str += '-';
+      }
+
+      if (d === 1) {
+        str += n;
+      } else {
+
+        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
+          str += whole;
+          str += " ";
+          n %= d;
+        }
+
+        str += n;
+        str += '/';
+        str += d;
+      }
+      return str;
+    },
+
+    /**
+     * Returns a latex representation of a Fraction object
+     *
+     * Ex: new Fraction("1.'3'").toLatex() => "\frac{4}{3}"
+     **/
+    'toLatex': function(excludeWhole) {
+
+      var whole, str = "";
+      var n = this["n"];
+      var d = this["d"];
+      if (this["s"] < 0) {
+        str += '-';
+      }
+
+      if (d === 1) {
+        str += n;
+      } else {
+
+        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
+          str += whole;
+          n %= d;
+        }
+
+        str += "\\frac{";
+        str += n;
+        str += '}{';
+        str += d;
+        str += '}';
+      }
+      return str;
+    },
+
+    /**
+     * Returns an array of continued fraction elements
+     *
+     * Ex: new Fraction("7/8").toContinued() => [0,1,7]
+     */
+    'toContinued': function() {
+
+      var t;
+      var a = this['n'];
+      var b = this['d'];
+      var res = [];
+
+      if (isNaN(a) || isNaN(b)) {
+        return res;
+      }
+
+      do {
+        res.push(Math.floor(a / b));
+        t = a % b;
+        a = b;
+        b = t;
+      } while (a !== 1);
+
+      return res;
+    },
+
+    /**
+     * Creates a string representation of a fraction with all digits
+     *
+     * Ex: new Fraction("100.'91823'").toString() => "100.(91823)"
+     **/
+    'toString': function(dec) {
+
+      var g;
+      var N = this["n"];
+      var D = this["d"];
+
+      if (isNaN(N) || isNaN(D)) {
+        return "NaN";
+      }
+
+      if (!Fraction['REDUCE']) {
+        g = gcd(N, D);
+        N /= g;
+        D /= g;
+      }
+
+      dec = dec || 15; // 15 = decimal places when no repetation
+
+      var cycLen = cycleLen(N, D); // Cycle length
+      var cycOff = cycleStart(N, D, cycLen); // Cycle start
+
+      var str = this['s'] === -1 ? "-" : "";
+
+      str += N / D | 0;
+
+      N %= D;
+      N *= 10;
+
+      if (N)
+        str += ".";
+
+      if (cycLen) {
+
+        for (var i = cycOff; i--;) {
+          str += N / D | 0;
+          N %= D;
+          N *= 10;
+        }
+        str += "(";
+        for (var i = cycLen; i--;) {
+          str += N / D | 0;
+          N %= D;
+          N *= 10;
+        }
+        str += ")";
+      } else {
+        for (var i = dec; N && i--;) {
+          str += N / D | 0;
+          N %= D;
+          N *= 10;
+        }
+      }
+      return str;
+    }
+  };
+
+  if (typeof define === "function" && define["amd"]) {
+    define([], function() {
+      return Fraction;
+    });
+  } else if (typeof exports === "object") {
+    Object.defineProperty(Fraction, "__esModule", { 'value': true });
+    Fraction['default'] = Fraction;
+    Fraction['Fraction'] = Fraction;
+    module['exports'] = Fraction;
+  } else {
+    root['Fraction'] = Fraction;
+  }
+
+})(this);
+
+},{}],158:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],159:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -12613,7 +13437,963 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],158:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
+// A library of seedable RNGs implemented in Javascript.
+//
+// Usage:
+//
+// var seedrandom = require('seedrandom');
+// var random = seedrandom(1); // or any seed.
+// var x = random();       // 0 <= x < 1.  Every bit is random.
+// var x = random.quick(); // 0 <= x < 1.  32 bits of randomness.
+
+// alea, a 53-bit multiply-with-carry generator by Johannes Baagøe.
+// Period: ~2^116
+// Reported to pass all BigCrush tests.
+var alea = require('./lib/alea');
+
+// xor128, a pure xor-shift generator by George Marsaglia.
+// Period: 2^128-1.
+// Reported to fail: MatrixRank and LinearComp.
+var xor128 = require('./lib/xor128');
+
+// xorwow, George Marsaglia's 160-bit xor-shift combined plus weyl.
+// Period: 2^192-2^32
+// Reported to fail: CollisionOver, SimpPoker, and LinearComp.
+var xorwow = require('./lib/xorwow');
+
+// xorshift7, by François Panneton and Pierre L'ecuyer, takes
+// a different approach: it adds robustness by allowing more shifts
+// than Marsaglia's original three.  It is a 7-shift generator
+// with 256 bits, that passes BigCrush with no systmatic failures.
+// Period 2^256-1.
+// No systematic BigCrush failures reported.
+var xorshift7 = require('./lib/xorshift7');
+
+// xor4096, by Richard Brent, is a 4096-bit xor-shift with a
+// very long period that also adds a Weyl generator. It also passes
+// BigCrush with no systematic failures.  Its long period may
+// be useful if you have many generators and need to avoid
+// collisions.
+// Period: 2^4128-2^32.
+// No systematic BigCrush failures reported.
+var xor4096 = require('./lib/xor4096');
+
+// Tyche-i, by Samuel Neves and Filipe Araujo, is a bit-shifting random
+// number generator derived from ChaCha, a modern stream cipher.
+// https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
+// Period: ~2^127
+// No systematic BigCrush failures reported.
+var tychei = require('./lib/tychei');
+
+// The original ARC4-based prng included in this library.
+// Period: ~2^1600
+var sr = require('./seedrandom');
+
+sr.alea = alea;
+sr.xor128 = xor128;
+sr.xorwow = xorwow;
+sr.xorshift7 = xorshift7;
+sr.xor4096 = xor4096;
+sr.tychei = tychei;
+
+module.exports = sr;
+
+},{"./lib/alea":161,"./lib/tychei":162,"./lib/xor128":163,"./lib/xor4096":164,"./lib/xorshift7":165,"./lib/xorwow":166,"./seedrandom":167}],161:[function(require,module,exports){
+// A port of an algorithm by Johannes Baagøe <baagoe@baagoe.com>, 2010
+// http://baagoe.com/en/RandomMusings/javascript/
+// https://github.com/nquinlan/better-random-numbers-for-javascript-mirror
+// Original work is under MIT license -
+
+// Copyright (C) 2010 by Johannes Baagøe <baagoe@baagoe.org>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+
+
+(function(global, module, define) {
+
+function Alea(seed) {
+  var me = this, mash = Mash();
+
+  me.next = function() {
+    var t = 2091639 * me.s0 + me.c * 2.3283064365386963e-10; // 2^-32
+    me.s0 = me.s1;
+    me.s1 = me.s2;
+    return me.s2 = t - (me.c = t | 0);
+  };
+
+  // Apply the seeding algorithm from Baagoe.
+  me.c = 1;
+  me.s0 = mash(' ');
+  me.s1 = mash(' ');
+  me.s2 = mash(' ');
+  me.s0 -= mash(seed);
+  if (me.s0 < 0) { me.s0 += 1; }
+  me.s1 -= mash(seed);
+  if (me.s1 < 0) { me.s1 += 1; }
+  me.s2 -= mash(seed);
+  if (me.s2 < 0) { me.s2 += 1; }
+  mash = null;
+}
+
+function copy(f, t) {
+  t.c = f.c;
+  t.s0 = f.s0;
+  t.s1 = f.s1;
+  t.s2 = f.s2;
+  return t;
+}
+
+function impl(seed, opts) {
+  var xg = new Alea(seed),
+      state = opts && opts.state,
+      prng = xg.next;
+  prng.int32 = function() { return (xg.next() * 0x100000000) | 0; }
+  prng.double = function() {
+    return prng() + (prng() * 0x200000 | 0) * 1.1102230246251565e-16; // 2^-53
+  };
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+function Mash() {
+  var n = 0xefc8249d;
+
+  var mash = function(data) {
+    data = String(data);
+    for (var i = 0; i < data.length; i++) {
+      n += data.charCodeAt(i);
+      var h = 0.02519603282416938 * n;
+      n = h >>> 0;
+      h -= n;
+      h *= n;
+      n = h >>> 0;
+      h -= n;
+      n += h * 0x100000000; // 2^32
+    }
+    return (n >>> 0) * 2.3283064365386963e-10; // 2^-32
+  };
+
+  return mash;
+}
+
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.alea = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],162:[function(require,module,exports){
+// A Javascript implementaion of the "Tyche-i" prng algorithm by
+// Samuel Neves and Filipe Araujo.
+// See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this, strseed = '';
+
+  // Set up generator function.
+  me.next = function() {
+    var b = me.b, c = me.c, d = me.d, a = me.a;
+    b = (b << 25) ^ (b >>> 7) ^ c;
+    c = (c - d) | 0;
+    d = (d << 24) ^ (d >>> 8) ^ a;
+    a = (a - b) | 0;
+    me.b = b = (b << 20) ^ (b >>> 12) ^ c;
+    me.c = c = (c - d) | 0;
+    me.d = (d << 16) ^ (c >>> 16) ^ a;
+    return me.a = (a - b) | 0;
+  };
+
+  /* The following is non-inverted tyche, which has better internal
+   * bit diffusion, but which is about 25% slower than tyche-i in JS.
+  me.next = function() {
+    var a = me.a, b = me.b, c = me.c, d = me.d;
+    a = (me.a + me.b | 0) >>> 0;
+    d = me.d ^ a; d = d << 16 ^ d >>> 16;
+    c = me.c + d | 0;
+    b = me.b ^ c; b = b << 12 ^ d >>> 20;
+    me.a = a = a + b | 0;
+    d = d ^ a; me.d = d = d << 8 ^ d >>> 24;
+    me.c = c = c + d | 0;
+    b = b ^ c;
+    return me.b = (b << 7 ^ b >>> 25);
+  }
+  */
+
+  me.a = 0;
+  me.b = 0;
+  me.c = 2654435769 | 0;
+  me.d = 1367130551;
+
+  if (seed === Math.floor(seed)) {
+    // Integer seed.
+    me.a = (seed / 0x100000000) | 0;
+    me.b = seed | 0;
+  } else {
+    // String seed.
+    strseed += seed;
+  }
+
+  // Mix in string seed, then discard an initial batch of 64 values.
+  for (var k = 0; k < strseed.length + 20; k++) {
+    me.b ^= strseed.charCodeAt(k) | 0;
+    me.next();
+  }
+}
+
+function copy(f, t) {
+  t.a = f.a;
+  t.b = f.b;
+  t.c = f.c;
+  t.d = f.d;
+  return t;
+};
+
+function impl(seed, opts) {
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.tychei = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],163:[function(require,module,exports){
+// A Javascript implementaion of the "xor128" prng algorithm by
+// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this, strseed = '';
+
+  me.x = 0;
+  me.y = 0;
+  me.z = 0;
+  me.w = 0;
+
+  // Set up generator function.
+  me.next = function() {
+    var t = me.x ^ (me.x << 11);
+    me.x = me.y;
+    me.y = me.z;
+    me.z = me.w;
+    return me.w ^= (me.w >>> 19) ^ t ^ (t >>> 8);
+  };
+
+  if (seed === (seed | 0)) {
+    // Integer seed.
+    me.x = seed;
+  } else {
+    // String seed.
+    strseed += seed;
+  }
+
+  // Mix in string seed, then discard an initial batch of 64 values.
+  for (var k = 0; k < strseed.length + 64; k++) {
+    me.x ^= strseed.charCodeAt(k) | 0;
+    me.next();
+  }
+}
+
+function copy(f, t) {
+  t.x = f.x;
+  t.y = f.y;
+  t.z = f.z;
+  t.w = f.w;
+  return t;
+}
+
+function impl(seed, opts) {
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xor128 = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],164:[function(require,module,exports){
+// A Javascript implementaion of Richard Brent's Xorgens xor4096 algorithm.
+//
+// This fast non-cryptographic random number generator is designed for
+// use in Monte-Carlo algorithms. It combines a long-period xorshift
+// generator with a Weyl generator, and it passes all common batteries
+// of stasticial tests for randomness while consuming only a few nanoseconds
+// for each prng generated.  For background on the generator, see Brent's
+// paper: "Some long-period random number generators using shifts and xors."
+// http://arxiv.org/pdf/1004.3115v1.pdf
+//
+// Usage:
+//
+// var xor4096 = require('xor4096');
+// random = xor4096(1);                        // Seed with int32 or string.
+// assert.equal(random(), 0.1520436450538547); // (0, 1) range, 53 bits.
+// assert.equal(random.int32(), 1806534897);   // signed int32, 32 bits.
+//
+// For nonzero numeric keys, this impelementation provides a sequence
+// identical to that by Brent's xorgens 3 implementaion in C.  This
+// implementation also provides for initalizing the generator with
+// string seeds, or for saving and restoring the state of the generator.
+//
+// On Chrome, this prng benchmarks about 2.1 times slower than
+// Javascript's built-in Math.random().
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this;
+
+  // Set up generator function.
+  me.next = function() {
+    var w = me.w,
+        X = me.X, i = me.i, t, v;
+    // Update Weyl generator.
+    me.w = w = (w + 0x61c88647) | 0;
+    // Update xor generator.
+    v = X[(i + 34) & 127];
+    t = X[i = ((i + 1) & 127)];
+    v ^= v << 13;
+    t ^= t << 17;
+    v ^= v >>> 15;
+    t ^= t >>> 12;
+    // Update Xor generator array state.
+    v = X[i] = v ^ t;
+    me.i = i;
+    // Result is the combination.
+    return (v + (w ^ (w >>> 16))) | 0;
+  };
+
+  function init(me, seed) {
+    var t, v, i, j, w, X = [], limit = 128;
+    if (seed === (seed | 0)) {
+      // Numeric seeds initialize v, which is used to generates X.
+      v = seed;
+      seed = null;
+    } else {
+      // String seeds are mixed into v and X one character at a time.
+      seed = seed + '\0';
+      v = 0;
+      limit = Math.max(limit, seed.length);
+    }
+    // Initialize circular array and weyl value.
+    for (i = 0, j = -32; j < limit; ++j) {
+      // Put the unicode characters into the array, and shuffle them.
+      if (seed) v ^= seed.charCodeAt((j + 32) % seed.length);
+      // After 32 shuffles, take v as the starting w value.
+      if (j === 0) w = v;
+      v ^= v << 10;
+      v ^= v >>> 15;
+      v ^= v << 4;
+      v ^= v >>> 13;
+      if (j >= 0) {
+        w = (w + 0x61c88647) | 0;     // Weyl.
+        t = (X[j & 127] ^= (v + w));  // Combine xor and weyl to init array.
+        i = (0 == t) ? i + 1 : 0;     // Count zeroes.
+      }
+    }
+    // We have detected all zeroes; make the key nonzero.
+    if (i >= 128) {
+      X[(seed && seed.length || 0) & 127] = -1;
+    }
+    // Run the generator 512 times to further mix the state before using it.
+    // Factoring this as a function slows the main generator, so it is just
+    // unrolled here.  The weyl generator is not advanced while warming up.
+    i = 127;
+    for (j = 4 * 128; j > 0; --j) {
+      v = X[(i + 34) & 127];
+      t = X[i = ((i + 1) & 127)];
+      v ^= v << 13;
+      t ^= t << 17;
+      v ^= v >>> 15;
+      t ^= t >>> 12;
+      X[i] = v ^ t;
+    }
+    // Storing state as object members is faster than using closure variables.
+    me.w = w;
+    me.X = X;
+    me.i = i;
+  }
+
+  init(me, seed);
+}
+
+function copy(f, t) {
+  t.i = f.i;
+  t.w = f.w;
+  t.X = f.X.slice();
+  return t;
+};
+
+function impl(seed, opts) {
+  if (seed == null) seed = +(new Date);
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (state.X) copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xor4096 = impl;
+}
+
+})(
+  this,                                     // window object or global
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+},{}],165:[function(require,module,exports){
+// A Javascript implementaion of the "xorshift7" algorithm by
+// François Panneton and Pierre L'ecuyer:
+// "On the Xorgshift Random Number Generators"
+// http://saluc.engr.uconn.edu/refs/crypto/rng/panneton05onthexorshift.pdf
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this;
+
+  // Set up generator function.
+  me.next = function() {
+    // Update xor generator.
+    var X = me.x, i = me.i, t, v, w;
+    t = X[i]; t ^= (t >>> 7); v = t ^ (t << 24);
+    t = X[(i + 1) & 7]; v ^= t ^ (t >>> 10);
+    t = X[(i + 3) & 7]; v ^= t ^ (t >>> 3);
+    t = X[(i + 4) & 7]; v ^= t ^ (t << 7);
+    t = X[(i + 7) & 7]; t = t ^ (t << 13); v ^= t ^ (t << 9);
+    X[i] = v;
+    me.i = (i + 1) & 7;
+    return v;
+  };
+
+  function init(me, seed) {
+    var j, w, X = [];
+
+    if (seed === (seed | 0)) {
+      // Seed state array using a 32-bit integer.
+      w = X[0] = seed;
+    } else {
+      // Seed state using a string.
+      seed = '' + seed;
+      for (j = 0; j < seed.length; ++j) {
+        X[j & 7] = (X[j & 7] << 15) ^
+            (seed.charCodeAt(j) + X[(j + 1) & 7] << 13);
+      }
+    }
+    // Enforce an array length of 8, not all zeroes.
+    while (X.length < 8) X.push(0);
+    for (j = 0; j < 8 && X[j] === 0; ++j);
+    if (j == 8) w = X[7] = -1; else w = X[j];
+
+    me.x = X;
+    me.i = 0;
+
+    // Discard an initial 256 values.
+    for (j = 256; j > 0; --j) {
+      me.next();
+    }
+  }
+
+  init(me, seed);
+}
+
+function copy(f, t) {
+  t.x = f.x.slice();
+  t.i = f.i;
+  return t;
+}
+
+function impl(seed, opts) {
+  if (seed == null) seed = +(new Date);
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (state.x) copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xorshift7 = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+},{}],166:[function(require,module,exports){
+// A Javascript implementaion of the "xorwow" prng algorithm by
+// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
+
+(function(global, module, define) {
+
+function XorGen(seed) {
+  var me = this, strseed = '';
+
+  // Set up generator function.
+  me.next = function() {
+    var t = (me.x ^ (me.x >>> 2));
+    me.x = me.y; me.y = me.z; me.z = me.w; me.w = me.v;
+    return (me.d = (me.d + 362437 | 0)) +
+       (me.v = (me.v ^ (me.v << 4)) ^ (t ^ (t << 1))) | 0;
+  };
+
+  me.x = 0;
+  me.y = 0;
+  me.z = 0;
+  me.w = 0;
+  me.v = 0;
+
+  if (seed === (seed | 0)) {
+    // Integer seed.
+    me.x = seed;
+  } else {
+    // String seed.
+    strseed += seed;
+  }
+
+  // Mix in string seed, then discard an initial batch of 64 values.
+  for (var k = 0; k < strseed.length + 64; k++) {
+    me.x ^= strseed.charCodeAt(k) | 0;
+    if (k == strseed.length) {
+      me.d = me.x << 10 ^ me.x >>> 4;
+    }
+    me.next();
+  }
+}
+
+function copy(f, t) {
+  t.x = f.x;
+  t.y = f.y;
+  t.z = f.z;
+  t.w = f.w;
+  t.v = f.v;
+  t.d = f.d;
+  return t;
+}
+
+function impl(seed, opts) {
+  var xg = new XorGen(seed),
+      state = opts && opts.state,
+      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
+  prng.double = function() {
+    do {
+      var top = xg.next() >>> 11,
+          bot = (xg.next() >>> 0) / 0x100000000,
+          result = (top + bot) / (1 << 21);
+    } while (result === 0);
+    return result;
+  };
+  prng.int32 = xg.next;
+  prng.quick = prng;
+  if (state) {
+    if (typeof(state) == 'object') copy(state, xg);
+    prng.state = function() { return copy(xg, {}); }
+  }
+  return prng;
+}
+
+if (module && module.exports) {
+  module.exports = impl;
+} else if (define && define.amd) {
+  define(function() { return impl; });
+} else {
+  this.xorwow = impl;
+}
+
+})(
+  this,
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
+);
+
+
+
+},{}],167:[function(require,module,exports){
+/*
+Copyright 2019 David Bau.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+
+(function (global, pool, math) {
+//
+// The following constants are related to IEEE 754 limits.
+//
+
+var width = 256,        // each RC4 output is 0 <= x < 256
+    chunks = 6,         // at least six RC4 outputs for each double
+    digits = 52,        // there are 52 significant digits in a double
+    rngname = 'random', // rngname: name for Math.random and Math.seedrandom
+    startdenom = math.pow(width, chunks),
+    significance = math.pow(2, digits),
+    overflow = significance * 2,
+    mask = width - 1,
+    nodecrypto;         // node.js crypto module, initialized at the bottom.
+
+//
+// seedrandom()
+// This is the seedrandom function described above.
+//
+function seedrandom(seed, options, callback) {
+  var key = [];
+  options = (options == true) ? { entropy: true } : (options || {});
+
+  // Flatten the seed string or build one from local entropy if needed.
+  var shortseed = mixkey(flatten(
+    options.entropy ? [seed, tostring(pool)] :
+    (seed == null) ? autoseed() : seed, 3), key);
+
+  // Use the seed to initialize an ARC4 generator.
+  var arc4 = new ARC4(key);
+
+  // This function returns a random double in [0, 1) that contains
+  // randomness in every bit of the mantissa of the IEEE 754 value.
+  var prng = function() {
+    var n = arc4.g(chunks),             // Start with a numerator n < 2 ^ 48
+        d = startdenom,                 //   and denominator d = 2 ^ 48.
+        x = 0;                          //   and no 'extra last byte'.
+    while (n < significance) {          // Fill up all significant digits by
+      n = (n + x) * width;              //   shifting numerator and
+      d *= width;                       //   denominator and generating a
+      x = arc4.g(1);                    //   new least-significant-byte.
+    }
+    while (n >= overflow) {             // To avoid rounding up, before adding
+      n /= 2;                           //   last byte, shift everything
+      d /= 2;                           //   right using integer math until
+      x >>>= 1;                         //   we have exactly the desired bits.
+    }
+    return (n + x) / d;                 // Form the number within [0, 1).
+  };
+
+  prng.int32 = function() { return arc4.g(4) | 0; }
+  prng.quick = function() { return arc4.g(4) / 0x100000000; }
+  prng.double = prng;
+
+  // Mix the randomness into accumulated entropy.
+  mixkey(tostring(arc4.S), pool);
+
+  // Calling convention: what to return as a function of prng, seed, is_math.
+  return (options.pass || callback ||
+      function(prng, seed, is_math_call, state) {
+        if (state) {
+          // Load the arc4 state from the given state if it has an S array.
+          if (state.S) { copy(state, arc4); }
+          // Only provide the .state method if requested via options.state.
+          prng.state = function() { return copy(arc4, {}); }
+        }
+
+        // If called as a method of Math (Math.seedrandom()), mutate
+        // Math.random because that is how seedrandom.js has worked since v1.0.
+        if (is_math_call) { math[rngname] = prng; return seed; }
+
+        // Otherwise, it is a newer calling convention, so return the
+        // prng directly.
+        else return prng;
+      })(
+  prng,
+  shortseed,
+  'global' in options ? options.global : (this == math),
+  options.state);
+}
+
+//
+// ARC4
+//
+// An ARC4 implementation.  The constructor takes a key in the form of
+// an array of at most (width) integers that should be 0 <= x < (width).
+//
+// The g(count) method returns a pseudorandom integer that concatenates
+// the next (count) outputs from ARC4.  Its return value is a number x
+// that is in the range 0 <= x < (width ^ count).
+//
+function ARC4(key) {
+  var t, keylen = key.length,
+      me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
+
+  // The empty key [] is treated as [0].
+  if (!keylen) { key = [keylen++]; }
+
+  // Set up S using the standard key scheduling algorithm.
+  while (i < width) {
+    s[i] = i++;
+  }
+  for (i = 0; i < width; i++) {
+    s[i] = s[j = mask & (j + key[i % keylen] + (t = s[i]))];
+    s[j] = t;
+  }
+
+  // The "g" method returns the next (count) outputs as one number.
+  (me.g = function(count) {
+    // Using instance members instead of closure state nearly doubles speed.
+    var t, r = 0,
+        i = me.i, j = me.j, s = me.S;
+    while (count--) {
+      t = s[i = mask & (i + 1)];
+      r = r * width + s[mask & ((s[i] = s[j = mask & (j + t)]) + (s[j] = t))];
+    }
+    me.i = i; me.j = j;
+    return r;
+    // For robust unpredictability, the function call below automatically
+    // discards an initial batch of values.  This is called RC4-drop[256].
+    // See http://google.com/search?q=rsa+fluhrer+response&btnI
+  })(width);
+}
+
+//
+// copy()
+// Copies internal state of ARC4 to or from a plain object.
+//
+function copy(f, t) {
+  t.i = f.i;
+  t.j = f.j;
+  t.S = f.S.slice();
+  return t;
+};
+
+//
+// flatten()
+// Converts an object tree to nested arrays of strings.
+//
+function flatten(obj, depth) {
+  var result = [], typ = (typeof obj), prop;
+  if (depth && typ == 'object') {
+    for (prop in obj) {
+      try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
+    }
+  }
+  return (result.length ? result : typ == 'string' ? obj : obj + '\0');
+}
+
+//
+// mixkey()
+// Mixes a string seed into a key that is an array of integers, and
+// returns a shortened string seed that is equivalent to the result key.
+//
+function mixkey(seed, key) {
+  var stringseed = seed + '', smear, j = 0;
+  while (j < stringseed.length) {
+    key[mask & j] =
+      mask & ((smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++));
+  }
+  return tostring(key);
+}
+
+//
+// autoseed()
+// Returns an object for autoseeding, using window.crypto and Node crypto
+// module if available.
+//
+function autoseed() {
+  try {
+    var out;
+    if (nodecrypto && (out = nodecrypto.randomBytes)) {
+      // The use of 'out' to remember randomBytes makes tight minified code.
+      out = out(width);
+    } else {
+      out = new Uint8Array(width);
+      (global.crypto || global.msCrypto).getRandomValues(out);
+    }
+    return tostring(out);
+  } catch (e) {
+    var browser = global.navigator,
+        plugins = browser && browser.plugins;
+    return [+new Date, global, plugins, global.screen, tostring(pool)];
+  }
+}
+
+//
+// tostring()
+// Converts an array of charcodes to a string
+//
+function tostring(a) {
+  return String.fromCharCode.apply(0, a);
+}
+
+//
+// When seedrandom.js is loaded, we immediately mix a few bits
+// from the built-in RNG into the entropy pool.  Because we do
+// not want to interfere with deterministic PRNG state later,
+// seedrandom will not call math.random on its own again after
+// initialization.
+//
+mixkey(math.random(), pool);
+
+//
+// Nodejs and AMD support: export the implementation as a module using
+// either convention.
+//
+if ((typeof module) == 'object' && module.exports) {
+  module.exports = seedrandom;
+  // When in node.js, try using crypto package for autoseeding.
+  try {
+    nodecrypto = require('crypto');
+  } catch (ex) {}
+} else if ((typeof define) == 'function' && define.amd) {
+  define(function() { return seedrandom; });
+} else {
+  // When included as a plain script, set up Math.seedrandom global.
+  math['seed' + rngname] = seedrandom;
+}
+
+
+// End anonymous scope, and pass initial values.
+})(
+  // global: `self` in browsers (including strict mode and web workers),
+  // otherwise `this` in Node and other environments
+  (typeof self !== 'undefined') ? self : this,
+  [],     // pool: entropy pool starts empty
+  Math    // math: package containing random, pow, and seedrandom
+);
+
+},{"crypto":155}],168:[function(require,module,exports){
 /*
 Copyright (c) 2014, Yahoo! Inc. All rights reserved.
 Copyrights licensed under the New BSD License.
@@ -12788,629 +14568,7 @@ module.exports = function serialize(obj, options) {
     });
 }
 
-},{}],159:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],160:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],161:[function(require,module,exports){
-(function (process,global){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
-        try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
-        }
-      default:
-        return x;
-    }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
-
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
-}
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":160,"_process":157,"inherits":159}],162:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 /*
  * Generated by PEG.js 0.10.0.
  *
@@ -13622,8 +14780,8 @@ function peg$parse(input, options) {
       peg$c19 = peg$literalExpectation("?", false),
       peg$c20 = function(value) {
         const out = { type:'degrade', value }
-        //return out
-        return addLoc( out, location() )
+        return out
+        //return addLoc( out, location() )
       },
       peg$c21 = "*",
       peg$c22 = peg$literalExpectation("*", false),
@@ -15789,1840 +16947,7 @@ module.exports = {
   parse:       peg$parse
 };
 
-},{}],163:[function(require,module,exports){
-function bjorklund(slots, pulses){
-  var pattern = [],
-      count = [],
-      remainder = [pulses],
-      divisor = slots - pulses,
-      level = 0,
-      build_pattern = function(lv){
-        if( lv == -1 ){ pattern.push(0); }
-        else if( lv == -2 ){ pattern.push(1); }
-        else{
-          for(var x=0; x<count[lv]; x++){
-            build_pattern(lv-1);
-          }
-
-          if(remainder[lv]){
-            build_pattern(lv-2);
-          }
-        }
-      }
-  ;
-
-  while(remainder[level] > 1){
-    count.push(Math.floor(divisor/remainder[level]));
-    remainder.push(divisor%remainder[level]);
-    divisor = remainder[level];
-    level++;
-  }
-  count.push(divisor);
-
-  build_pattern(level);
-
-  return pattern.reverse();
-}
-
-
-module.exports = function(m, k){
-  if(m > k) return bjorklund(m, k);
-  else return bjorklund(k, m);
-};
-
-},{}],164:[function(require,module,exports){
-/**
- * @license Fraction.js v4.0.12 09/09/2015
- * http://www.xarg.org/2014/03/rational-numbers-in-javascript/
- *
- * Copyright (c) 2015, Robert Eisele (robert@xarg.org)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- **/
-
-
-/**
- *
- * This class offers the possibility to calculate fractions.
- * You can pass a fraction in different formats. Either as array, as double, as string or as an integer.
- *
- * Array/Object form
- * [ 0 => <nominator>, 1 => <denominator> ]
- * [ n => <nominator>, d => <denominator> ]
- *
- * Integer form
- * - Single integer value
- *
- * Double form
- * - Single double value
- *
- * String form
- * 123.456 - a simple double
- * 123/456 - a string fraction
- * 123.'456' - a double with repeating decimal places
- * 123.(456) - synonym
- * 123.45'6' - a double with repeating last place
- * 123.45(6) - synonym
- *
- * Example:
- *
- * var f = new Fraction("9.4'31'");
- * f.mul([-4, 3]).div(4.9);
- *
- */
-
-(function(root) {
-
-  "use strict";
-
-  // Maximum search depth for cyclic rational numbers. 2000 should be more than enough.
-  // Example: 1/7 = 0.(142857) has 6 repeating decimal places.
-  // If MAX_CYCLE_LEN gets reduced, long cycles will not be detected and toString() only gets the first 10 digits
-  var MAX_CYCLE_LEN = 2000;
-
-  // Parsed data to avoid calling "new" all the time
-  var P = {
-    "s": 1,
-    "n": 0,
-    "d": 1
-  };
-
-  function createError(name) {
-
-    function errorConstructor() {
-      var temp = Error.apply(this, arguments);
-      temp['name'] = this['name'] = name;
-      this['stack'] = temp['stack'];
-      this['message'] = temp['message'];
-    }
-
-    /**
-     * Error constructor
-     *
-     * @constructor
-     */
-    function IntermediateInheritor() {}
-    IntermediateInheritor.prototype = Error.prototype;
-    errorConstructor.prototype = new IntermediateInheritor();
-
-    return errorConstructor;
-  }
-
-  var DivisionByZero = Fraction['DivisionByZero'] = createError('DivisionByZero');
-  var InvalidParameter = Fraction['InvalidParameter'] = createError('InvalidParameter');
-
-  function assign(n, s) {
-
-    if (isNaN(n = parseInt(n, 10))) {
-      throwInvalidParam();
-    }
-    return n * s;
-  }
-
-  function throwInvalidParam() {
-    throw new InvalidParameter();
-  }
-
-  var parse = function(p1, p2) {
-
-    var n = 0, d = 1, s = 1;
-    var v = 0, w = 0, x = 0, y = 1, z = 1;
-
-    var A = 0, B = 1;
-    var C = 1, D = 1;
-
-    var N = 10000000;
-    var M;
-
-    if (p1 === undefined || p1 === null) {
-      /* void */
-    } else if (p2 !== undefined) {
-      n = p1;
-      d = p2;
-      s = n * d;
-    } else
-      switch (typeof p1) {
-
-        case "object":
-        {
-          if ("d" in p1 && "n" in p1) {
-            n = p1["n"];
-            d = p1["d"];
-            if ("s" in p1)
-              n *= p1["s"];
-          } else if (0 in p1) {
-            n = p1[0];
-            if (1 in p1)
-              d = p1[1];
-          } else {
-            throwInvalidParam();
-          }
-          s = n * d;
-          break;
-        }
-        case "number":
-        {
-          if (p1 < 0) {
-            s = p1;
-            p1 = -p1;
-          }
-
-          if (p1 % 1 === 0) {
-            n = p1;
-          } else if (p1 > 0) { // check for != 0, scale would become NaN (log(0)), which converges really slow
-
-            if (p1 >= 1) {
-              z = Math.pow(10, Math.floor(1 + Math.log(p1) / Math.LN10));
-              p1 /= z;
-            }
-
-            // Using Farey Sequences
-            // http://www.johndcook.com/blog/2010/10/20/best-rational-approximation/
-
-            while (B <= N && D <= N) {
-              M = (A + C) / (B + D);
-
-              if (p1 === M) {
-                if (B + D <= N) {
-                  n = A + C;
-                  d = B + D;
-                } else if (D > B) {
-                  n = C;
-                  d = D;
-                } else {
-                  n = A;
-                  d = B;
-                }
-                break;
-
-              } else {
-
-                if (p1 > M) {
-                  A += C;
-                  B += D;
-                } else {
-                  C += A;
-                  D += B;
-                }
-
-                if (B > N) {
-                  n = C;
-                  d = D;
-                } else {
-                  n = A;
-                  d = B;
-                }
-              }
-            }
-            n *= z;
-          } else if (isNaN(p1) || isNaN(p2)) {
-            d = n = NaN;
-          }
-          break;
-        }
-        case "string":
-        {
-          B = p1.match(/\d+|./g);
-
-          if (B === null)
-            throwInvalidParam();
-
-          if (B[A] === '-') {// Check for minus sign at the beginning
-            s = -1;
-            A++;
-          } else if (B[A] === '+') {// Check for plus sign at the beginning
-            A++;
-          }
-
-          if (B.length === A + 1) { // Check if it's just a simple number "1234"
-            w = assign(B[A++], s);
-          } else if (B[A + 1] === '.' || B[A] === '.') { // Check if it's a decimal number
-
-            if (B[A] !== '.') { // Handle 0.5 and .5
-              v = assign(B[A++], s);
-            }
-            A++;
-
-            // Check for decimal places
-            if (A + 1 === B.length || B[A + 1] === '(' && B[A + 3] === ')' || B[A + 1] === "'" && B[A + 3] === "'") {
-              w = assign(B[A], s);
-              y = Math.pow(10, B[A].length);
-              A++;
-            }
-
-            // Check for repeating places
-            if (B[A] === '(' && B[A + 2] === ')' || B[A] === "'" && B[A + 2] === "'") {
-              x = assign(B[A + 1], s);
-              z = Math.pow(10, B[A + 1].length) - 1;
-              A += 3;
-            }
-
-          } else if (B[A + 1] === '/' || B[A + 1] === ':') { // Check for a simple fraction "123/456" or "123:456"
-            w = assign(B[A], s);
-            y = assign(B[A + 2], 1);
-            A += 3;
-          } else if (B[A + 3] === '/' && B[A + 1] === ' ') { // Check for a complex fraction "123 1/2"
-            v = assign(B[A], s);
-            w = assign(B[A + 2], s);
-            y = assign(B[A + 4], 1);
-            A += 5;
-          }
-
-          if (B.length <= A) { // Check for more tokens on the stack
-            d = y * z;
-            s = /* void */
-                    n = x + d * v + z * w;
-            break;
-          }
-
-          /* Fall through on error */
-        }
-        default:
-          throwInvalidParam();
-      }
-
-    if (d === 0) {
-      throw new DivisionByZero();
-    }
-
-    P["s"] = s < 0 ? -1 : 1;
-    P["n"] = Math.abs(n);
-    P["d"] = Math.abs(d);
-  };
-
-  function modpow(b, e, m) {
-
-    var r = 1;
-    for (; e > 0; b = (b * b) % m, e >>= 1) {
-
-      if (e & 1) {
-        r = (r * b) % m;
-      }
-    }
-    return r;
-  }
-
-
-  function cycleLen(n, d) {
-
-    for (; d % 2 === 0;
-            d /= 2) {
-    }
-
-    for (; d % 5 === 0;
-            d /= 5) {
-    }
-
-    if (d === 1) // Catch non-cyclic numbers
-      return 0;
-
-    // If we would like to compute really large numbers quicker, we could make use of Fermat's little theorem:
-    // 10^(d-1) % d == 1
-    // However, we don't need such large numbers and MAX_CYCLE_LEN should be the capstone,
-    // as we want to translate the numbers to strings.
-
-    var rem = 10 % d;
-    var t = 1;
-
-    for (; rem !== 1; t++) {
-      rem = rem * 10 % d;
-
-      if (t > MAX_CYCLE_LEN)
-        return 0; // Returning 0 here means that we don't print it as a cyclic number. It's likely that the answer is `d-1`
-    }
-    return t;
-  }
-
-
-     function cycleStart(n, d, len) {
-
-    var rem1 = 1;
-    var rem2 = modpow(10, len, d);
-
-    for (var t = 0; t < 300; t++) { // s < ~log10(Number.MAX_VALUE)
-      // Solve 10^s == 10^(s+t) (mod d)
-
-      if (rem1 === rem2)
-        return t;
-
-      rem1 = rem1 * 10 % d;
-      rem2 = rem2 * 10 % d;
-    }
-    return 0;
-  }
-
-  function gcd(a, b) {
-
-    if (!a)
-      return b;
-    if (!b)
-      return a;
-
-    while (1) {
-      a %= b;
-      if (!a)
-        return b;
-      b %= a;
-      if (!b)
-        return a;
-    }
-  };
-
-  /**
-   * Module constructor
-   *
-   * @constructor
-   * @param {number|Fraction=} a
-   * @param {number=} b
-   */
-  function Fraction(a, b) {
-
-    if (!(this instanceof Fraction)) {
-      return new Fraction(a, b);
-    }
-
-    parse(a, b);
-
-    if (Fraction['REDUCE']) {
-      a = gcd(P["d"], P["n"]); // Abuse a
-    } else {
-      a = 1;
-    }
-
-    this["s"] = P["s"];
-    this["n"] = P["n"] / a;
-    this["d"] = P["d"] / a;
-  }
-
-  /**
-   * Boolean global variable to be able to disable automatic reduction of the fraction
-   *
-   */
-  Fraction['REDUCE'] = 1;
-
-  Fraction.prototype = {
-
-    "s": 1,
-    "n": 0,
-    "d": 1,
-
-    /**
-     * Calculates the absolute value
-     *
-     * Ex: new Fraction(-4).abs() => 4
-     **/
-    "abs": function() {
-
-      return new Fraction(this["n"], this["d"]);
-    },
-
-    /**
-     * Inverts the sign of the current fraction
-     *
-     * Ex: new Fraction(-4).neg() => 4
-     **/
-    "neg": function() {
-
-      return new Fraction(-this["s"] * this["n"], this["d"]);
-    },
-
-    /**
-     * Adds two rational numbers
-     *
-     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => 467 / 30
-     **/
-    "add": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * this["n"] * P["d"] + P["s"] * this["d"] * P["n"],
-              this["d"] * P["d"]
-              );
-    },
-
-    /**
-     * Subtracts two rational numbers
-     *
-     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => -427 / 30
-     **/
-    "sub": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * this["n"] * P["d"] - P["s"] * this["d"] * P["n"],
-              this["d"] * P["d"]
-              );
-    },
-
-    /**
-     * Multiplies two rational numbers
-     *
-     * Ex: new Fraction("-17.(345)").mul(3) => 5776 / 111
-     **/
-    "mul": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * P["s"] * this["n"] * P["n"],
-              this["d"] * P["d"]
-              );
-    },
-
-    /**
-     * Divides two rational numbers
-     *
-     * Ex: new Fraction("-17.(345)").inverse().div(3)
-     **/
-    "div": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-              this["s"] * P["s"] * this["n"] * P["d"],
-              this["d"] * P["n"]
-              );
-    },
-
-    /**
-     * Clones the actual object
-     *
-     * Ex: new Fraction("-17.(345)").clone()
-     **/
-    "clone": function() {
-      return new Fraction(this);
-    },
-
-    /**
-     * Calculates the modulo of two rational numbers - a more precise fmod
-     *
-     * Ex: new Fraction('4.(3)').mod([7, 8]) => (13/3) % (7/8) = (5/6)
-     **/
-    "mod": function(a, b) {
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return new Fraction(NaN);
-      }
-
-      if (a === undefined) {
-        return new Fraction(this["s"] * this["n"] % this["d"], 1);
-      }
-
-      parse(a, b);
-      if (0 === P["n"] && 0 === this["d"]) {
-        Fraction(0, 0); // Throw DivisionByZero
-      }
-
-      /*
-       * First silly attempt, kinda slow
-       *
-       return that["sub"]({
-       "n": num["n"] * Math.floor((this.n / this.d) / (num.n / num.d)),
-       "d": num["d"],
-       "s": this["s"]
-       });*/
-
-      /*
-       * New attempt: a1 / b1 = a2 / b2 * q + r
-       * => b2 * a1 = a2 * b1 * q + b1 * b2 * r
-       * => (b2 * a1 % a2 * b1) / (b1 * b2)
-       */
-      return new Fraction(
-              this["s"] * (P["d"] * this["n"]) % (P["n"] * this["d"]),
-              P["d"] * this["d"]
-              );
-    },
-
-    /**
-     * Calculates the fractional gcd of two rational numbers
-     *
-     * Ex: new Fraction(5,8).gcd(3,7) => 1/56
-     */
-    "gcd": function(a, b) {
-
-      parse(a, b);
-
-      // gcd(a / b, c / d) = gcd(a, c) / lcm(b, d)
-
-      return new Fraction(gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]), P["d"] * this["d"]);
-    },
-
-    /**
-     * Calculates the fractional lcm of two rational numbers
-     *
-     * Ex: new Fraction(5,8).lcm(3,7) => 15
-     */
-    "lcm": function(a, b) {
-
-      parse(a, b);
-
-      // lcm(a / b, c / d) = lcm(a, c) / gcd(b, d)
-
-      if (P["n"] === 0 && this["n"] === 0) {
-        return new Fraction;
-      }
-      return new Fraction(P["n"] * this["n"], gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]));
-    },
-
-    /**
-     * Calculates the ceil of a rational number
-     *
-     * Ex: new Fraction('4.(3)').ceil() => (5 / 1)
-     **/
-    "ceil": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.ceil(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Calculates the floor of a rational number
-     *
-     * Ex: new Fraction('4.(3)').floor() => (4 / 1)
-     **/
-    "floor": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.floor(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Rounds a rational numbers
-     *
-     * Ex: new Fraction('4.(3)').round() => (4 / 1)
-     **/
-    "round": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.round(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Gets the inverse of the fraction, means numerator and denumerator are exchanged
-     *
-     * Ex: new Fraction([-3, 4]).inverse() => -4 / 3
-     **/
-    "inverse": function() {
-
-      return new Fraction(this["s"] * this["d"], this["n"]);
-    },
-
-    /**
-     * Calculates the fraction to some integer exponent
-     *
-     * Ex: new Fraction(-1,2).pow(-3) => -8
-     */
-    "pow": function(m) {
-
-      if (m < 0) {
-        return new Fraction(Math.pow(this['s'] * this["d"], -m), Math.pow(this["n"], -m));
-      } else {
-        return new Fraction(Math.pow(this['s'] * this["n"], m), Math.pow(this["d"], m));
-      }
-    },
-
-    /**
-     * Check if two rational numbers are the same
-     *
-     * Ex: new Fraction(19.6).equals([98, 5]);
-     **/
-    "equals": function(a, b) {
-
-      parse(a, b);
-      return this["s"] * this["n"] * P["d"] === P["s"] * P["n"] * this["d"]; // Same as compare() === 0
-    },
-
-    /**
-     * Check if two rational numbers are the same
-     *
-     * Ex: new Fraction(19.6).equals([98, 5]);
-     **/
-    "compare": function(a, b) {
-
-      parse(a, b);
-      var t = (this["s"] * this["n"] * P["d"] - P["s"] * P["n"] * this["d"]);
-      return (0 < t) - (t < 0);
-    },
-
-    "simplify": function(eps) {
-
-      // First naive implementation, needs improvement
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return this;
-      }
-
-      var cont = this['abs']()['toContinued']();
-
-      eps = eps || 0.001;
-
-      function rec(a) {
-        if (a.length === 1)
-          return new Fraction(a[0]);
-        return rec(a.slice(1))['inverse']()['add'](a[0]);
-      }
-
-      for (var i = 0; i < cont.length; i++) {
-        var tmp = rec(cont.slice(0, i + 1));
-        if (tmp['sub'](this['abs']())['abs']().valueOf() < eps) {
-          return tmp['mul'](this['s']);
-        }
-      }
-      return this;
-    },
-
-    /**
-     * Check if two rational numbers are divisible
-     *
-     * Ex: new Fraction(19.6).divisible(1.5);
-     */
-    "divisible": function(a, b) {
-
-      parse(a, b);
-      return !(!(P["n"] * this["d"]) || ((this["n"] * P["d"]) % (P["n"] * this["d"])));
-    },
-
-    /**
-     * Returns a decimal representation of the fraction
-     *
-     * Ex: new Fraction("100.'91823'").valueOf() => 100.91823918239183
-     **/
-    'valueOf': function() {
-
-      return this["s"] * this["n"] / this["d"];
-    },
-
-    /**
-     * Returns a string-fraction representation of a Fraction object
-     *
-     * Ex: new Fraction("1.'3'").toFraction() => "4 1/3"
-     **/
-    'toFraction': function(excludeWhole) {
-
-      var whole, str = "";
-      var n = this["n"];
-      var d = this["d"];
-      if (this["s"] < 0) {
-        str += '-';
-      }
-
-      if (d === 1) {
-        str += n;
-      } else {
-
-        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
-          str += whole;
-          str += " ";
-          n %= d;
-        }
-
-        str += n;
-        str += '/';
-        str += d;
-      }
-      return str;
-    },
-
-    /**
-     * Returns a latex representation of a Fraction object
-     *
-     * Ex: new Fraction("1.'3'").toLatex() => "\frac{4}{3}"
-     **/
-    'toLatex': function(excludeWhole) {
-
-      var whole, str = "";
-      var n = this["n"];
-      var d = this["d"];
-      if (this["s"] < 0) {
-        str += '-';
-      }
-
-      if (d === 1) {
-        str += n;
-      } else {
-
-        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
-          str += whole;
-          n %= d;
-        }
-
-        str += "\\frac{";
-        str += n;
-        str += '}{';
-        str += d;
-        str += '}';
-      }
-      return str;
-    },
-
-    /**
-     * Returns an array of continued fraction elements
-     *
-     * Ex: new Fraction("7/8").toContinued() => [0,1,7]
-     */
-    'toContinued': function() {
-
-      var t;
-      var a = this['n'];
-      var b = this['d'];
-      var res = [];
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return res;
-      }
-
-      do {
-        res.push(Math.floor(a / b));
-        t = a % b;
-        a = b;
-        b = t;
-      } while (a !== 1);
-
-      return res;
-    },
-
-    /**
-     * Creates a string representation of a fraction with all digits
-     *
-     * Ex: new Fraction("100.'91823'").toString() => "100.(91823)"
-     **/
-    'toString': function(dec) {
-
-      var g;
-      var N = this["n"];
-      var D = this["d"];
-
-      if (isNaN(N) || isNaN(D)) {
-        return "NaN";
-      }
-
-      if (!Fraction['REDUCE']) {
-        g = gcd(N, D);
-        N /= g;
-        D /= g;
-      }
-
-      dec = dec || 15; // 15 = decimal places when no repitation
-
-      var cycLen = cycleLen(N, D); // Cycle length
-      var cycOff = cycleStart(N, D, cycLen); // Cycle start
-
-      var str = this['s'] === -1 ? "-" : "";
-
-      str += N / D | 0;
-
-      N %= D;
-      N *= 10;
-
-      if (N)
-        str += ".";
-
-      if (cycLen) {
-
-        for (var i = cycOff; i--; ) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-        str += "(";
-        for (var i = cycLen; i--; ) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-        str += ")";
-      } else {
-        for (var i = dec; N && i--; ) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-      }
-      return str;
-    }
-  };
-
-  if (typeof define === "function" && define["amd"]) {
-    define([], function() {
-      return Fraction;
-    });
-  } else if (typeof exports === "object") {
-    Object.defineProperty(exports, "__esModule", {'value': true});
-    Fraction['default'] = Fraction;
-    Fraction['Fraction'] = Fraction;
-    module['exports'] = Fraction;
-  } else {
-    root['Fraction'] = Fraction;
-  }
-
-})(this);
-
-},{}],165:[function(require,module,exports){
-// A library of seedable RNGs implemented in Javascript.
-//
-// Usage:
-//
-// var seedrandom = require('seedrandom');
-// var random = seedrandom(1); // or any seed.
-// var x = random();       // 0 <= x < 1.  Every bit is random.
-// var x = random.quick(); // 0 <= x < 1.  32 bits of randomness.
-
-// alea, a 53-bit multiply-with-carry generator by Johannes Baagøe.
-// Period: ~2^116
-// Reported to pass all BigCrush tests.
-var alea = require('./lib/alea');
-
-// xor128, a pure xor-shift generator by George Marsaglia.
-// Period: 2^128-1.
-// Reported to fail: MatrixRank and LinearComp.
-var xor128 = require('./lib/xor128');
-
-// xorwow, George Marsaglia's 160-bit xor-shift combined plus weyl.
-// Period: 2^192-2^32
-// Reported to fail: CollisionOver, SimpPoker, and LinearComp.
-var xorwow = require('./lib/xorwow');
-
-// xorshift7, by François Panneton and Pierre L'ecuyer, takes
-// a different approach: it adds robustness by allowing more shifts
-// than Marsaglia's original three.  It is a 7-shift generator
-// with 256 bits, that passes BigCrush with no systmatic failures.
-// Period 2^256-1.
-// No systematic BigCrush failures reported.
-var xorshift7 = require('./lib/xorshift7');
-
-// xor4096, by Richard Brent, is a 4096-bit xor-shift with a
-// very long period that also adds a Weyl generator. It also passes
-// BigCrush with no systematic failures.  Its long period may
-// be useful if you have many generators and need to avoid
-// collisions.
-// Period: 2^4128-2^32.
-// No systematic BigCrush failures reported.
-var xor4096 = require('./lib/xor4096');
-
-// Tyche-i, by Samuel Neves and Filipe Araujo, is a bit-shifting random
-// number generator derived from ChaCha, a modern stream cipher.
-// https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
-// Period: ~2^127
-// No systematic BigCrush failures reported.
-var tychei = require('./lib/tychei');
-
-// The original ARC4-based prng included in this library.
-// Period: ~2^1600
-var sr = require('./seedrandom');
-
-sr.alea = alea;
-sr.xor128 = xor128;
-sr.xorwow = xorwow;
-sr.xorshift7 = xorshift7;
-sr.xor4096 = xor4096;
-sr.tychei = tychei;
-
-module.exports = sr;
-
-},{"./lib/alea":166,"./lib/tychei":167,"./lib/xor128":168,"./lib/xor4096":169,"./lib/xorshift7":170,"./lib/xorwow":171,"./seedrandom":172}],166:[function(require,module,exports){
-// A port of an algorithm by Johannes Baagøe <baagoe@baagoe.com>, 2010
-// http://baagoe.com/en/RandomMusings/javascript/
-// https://github.com/nquinlan/better-random-numbers-for-javascript-mirror
-// Original work is under MIT license -
-
-// Copyright (C) 2010 by Johannes Baagøe <baagoe@baagoe.org>
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
-
-
-(function(global, module, define) {
-
-function Alea(seed) {
-  var me = this, mash = Mash();
-
-  me.next = function() {
-    var t = 2091639 * me.s0 + me.c * 2.3283064365386963e-10; // 2^-32
-    me.s0 = me.s1;
-    me.s1 = me.s2;
-    return me.s2 = t - (me.c = t | 0);
-  };
-
-  // Apply the seeding algorithm from Baagoe.
-  me.c = 1;
-  me.s0 = mash(' ');
-  me.s1 = mash(' ');
-  me.s2 = mash(' ');
-  me.s0 -= mash(seed);
-  if (me.s0 < 0) { me.s0 += 1; }
-  me.s1 -= mash(seed);
-  if (me.s1 < 0) { me.s1 += 1; }
-  me.s2 -= mash(seed);
-  if (me.s2 < 0) { me.s2 += 1; }
-  mash = null;
-}
-
-function copy(f, t) {
-  t.c = f.c;
-  t.s0 = f.s0;
-  t.s1 = f.s1;
-  t.s2 = f.s2;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new Alea(seed),
-      state = opts && opts.state,
-      prng = xg.next;
-  prng.int32 = function() { return (xg.next() * 0x100000000) | 0; }
-  prng.double = function() {
-    return prng() + (prng() * 0x200000 | 0) * 1.1102230246251565e-16; // 2^-53
-  };
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-function Mash() {
-  var n = 0xefc8249d;
-
-  var mash = function(data) {
-    data = String(data);
-    for (var i = 0; i < data.length; i++) {
-      n += data.charCodeAt(i);
-      var h = 0.02519603282416938 * n;
-      n = h >>> 0;
-      h -= n;
-      h *= n;
-      n = h >>> 0;
-      h -= n;
-      n += h * 0x100000000; // 2^32
-    }
-    return (n >>> 0) * 2.3283064365386963e-10; // 2^-32
-  };
-
-  return mash;
-}
-
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.alea = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],167:[function(require,module,exports){
-// A Javascript implementaion of the "Tyche-i" prng algorithm by
-// Samuel Neves and Filipe Araujo.
-// See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  // Set up generator function.
-  me.next = function() {
-    var b = me.b, c = me.c, d = me.d, a = me.a;
-    b = (b << 25) ^ (b >>> 7) ^ c;
-    c = (c - d) | 0;
-    d = (d << 24) ^ (d >>> 8) ^ a;
-    a = (a - b) | 0;
-    me.b = b = (b << 20) ^ (b >>> 12) ^ c;
-    me.c = c = (c - d) | 0;
-    me.d = (d << 16) ^ (c >>> 16) ^ a;
-    return me.a = (a - b) | 0;
-  };
-
-  /* The following is non-inverted tyche, which has better internal
-   * bit diffusion, but which is about 25% slower than tyche-i in JS.
-  me.next = function() {
-    var a = me.a, b = me.b, c = me.c, d = me.d;
-    a = (me.a + me.b | 0) >>> 0;
-    d = me.d ^ a; d = d << 16 ^ d >>> 16;
-    c = me.c + d | 0;
-    b = me.b ^ c; b = b << 12 ^ d >>> 20;
-    me.a = a = a + b | 0;
-    d = d ^ a; me.d = d = d << 8 ^ d >>> 24;
-    me.c = c = c + d | 0;
-    b = b ^ c;
-    return me.b = (b << 7 ^ b >>> 25);
-  }
-  */
-
-  me.a = 0;
-  me.b = 0;
-  me.c = 2654435769 | 0;
-  me.d = 1367130551;
-
-  if (seed === Math.floor(seed)) {
-    // Integer seed.
-    me.a = (seed / 0x100000000) | 0;
-    me.b = seed | 0;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 20; k++) {
-    me.b ^= strseed.charCodeAt(k) | 0;
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.a = f.a;
-  t.b = f.b;
-  t.c = f.c;
-  t.d = f.d;
-  return t;
-};
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.tychei = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],168:[function(require,module,exports){
-// A Javascript implementaion of the "xor128" prng algorithm by
-// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  me.x = 0;
-  me.y = 0;
-  me.z = 0;
-  me.w = 0;
-
-  // Set up generator function.
-  me.next = function() {
-    var t = me.x ^ (me.x << 11);
-    me.x = me.y;
-    me.y = me.z;
-    me.z = me.w;
-    return me.w ^= (me.w >>> 19) ^ t ^ (t >>> 8);
-  };
-
-  if (seed === (seed | 0)) {
-    // Integer seed.
-    me.x = seed;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 64; k++) {
-    me.x ^= strseed.charCodeAt(k) | 0;
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.x = f.x;
-  t.y = f.y;
-  t.z = f.z;
-  t.w = f.w;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xor128 = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],169:[function(require,module,exports){
-// A Javascript implementaion of Richard Brent's Xorgens xor4096 algorithm.
-//
-// This fast non-cryptographic random number generator is designed for
-// use in Monte-Carlo algorithms. It combines a long-period xorshift
-// generator with a Weyl generator, and it passes all common batteries
-// of stasticial tests for randomness while consuming only a few nanoseconds
-// for each prng generated.  For background on the generator, see Brent's
-// paper: "Some long-period random number generators using shifts and xors."
-// http://arxiv.org/pdf/1004.3115v1.pdf
-//
-// Usage:
-//
-// var xor4096 = require('xor4096');
-// random = xor4096(1);                        // Seed with int32 or string.
-// assert.equal(random(), 0.1520436450538547); // (0, 1) range, 53 bits.
-// assert.equal(random.int32(), 1806534897);   // signed int32, 32 bits.
-//
-// For nonzero numeric keys, this impelementation provides a sequence
-// identical to that by Brent's xorgens 3 implementaion in C.  This
-// implementation also provides for initalizing the generator with
-// string seeds, or for saving and restoring the state of the generator.
-//
-// On Chrome, this prng benchmarks about 2.1 times slower than
-// Javascript's built-in Math.random().
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this;
-
-  // Set up generator function.
-  me.next = function() {
-    var w = me.w,
-        X = me.X, i = me.i, t, v;
-    // Update Weyl generator.
-    me.w = w = (w + 0x61c88647) | 0;
-    // Update xor generator.
-    v = X[(i + 34) & 127];
-    t = X[i = ((i + 1) & 127)];
-    v ^= v << 13;
-    t ^= t << 17;
-    v ^= v >>> 15;
-    t ^= t >>> 12;
-    // Update Xor generator array state.
-    v = X[i] = v ^ t;
-    me.i = i;
-    // Result is the combination.
-    return (v + (w ^ (w >>> 16))) | 0;
-  };
-
-  function init(me, seed) {
-    var t, v, i, j, w, X = [], limit = 128;
-    if (seed === (seed | 0)) {
-      // Numeric seeds initialize v, which is used to generates X.
-      v = seed;
-      seed = null;
-    } else {
-      // String seeds are mixed into v and X one character at a time.
-      seed = seed + '\0';
-      v = 0;
-      limit = Math.max(limit, seed.length);
-    }
-    // Initialize circular array and weyl value.
-    for (i = 0, j = -32; j < limit; ++j) {
-      // Put the unicode characters into the array, and shuffle them.
-      if (seed) v ^= seed.charCodeAt((j + 32) % seed.length);
-      // After 32 shuffles, take v as the starting w value.
-      if (j === 0) w = v;
-      v ^= v << 10;
-      v ^= v >>> 15;
-      v ^= v << 4;
-      v ^= v >>> 13;
-      if (j >= 0) {
-        w = (w + 0x61c88647) | 0;     // Weyl.
-        t = (X[j & 127] ^= (v + w));  // Combine xor and weyl to init array.
-        i = (0 == t) ? i + 1 : 0;     // Count zeroes.
-      }
-    }
-    // We have detected all zeroes; make the key nonzero.
-    if (i >= 128) {
-      X[(seed && seed.length || 0) & 127] = -1;
-    }
-    // Run the generator 512 times to further mix the state before using it.
-    // Factoring this as a function slows the main generator, so it is just
-    // unrolled here.  The weyl generator is not advanced while warming up.
-    i = 127;
-    for (j = 4 * 128; j > 0; --j) {
-      v = X[(i + 34) & 127];
-      t = X[i = ((i + 1) & 127)];
-      v ^= v << 13;
-      t ^= t << 17;
-      v ^= v >>> 15;
-      t ^= t >>> 12;
-      X[i] = v ^ t;
-    }
-    // Storing state as object members is faster than using closure variables.
-    me.w = w;
-    me.X = X;
-    me.i = i;
-  }
-
-  init(me, seed);
-}
-
-function copy(f, t) {
-  t.i = f.i;
-  t.w = f.w;
-  t.X = f.X.slice();
-  return t;
-};
-
-function impl(seed, opts) {
-  if (seed == null) seed = +(new Date);
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (state.X) copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xor4096 = impl;
-}
-
-})(
-  this,                                     // window object or global
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
 },{}],170:[function(require,module,exports){
-// A Javascript implementaion of the "xorshift7" algorithm by
-// François Panneton and Pierre L'ecuyer:
-// "On the Xorgshift Random Number Generators"
-// http://saluc.engr.uconn.edu/refs/crypto/rng/panneton05onthexorshift.pdf
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this;
-
-  // Set up generator function.
-  me.next = function() {
-    // Update xor generator.
-    var X = me.x, i = me.i, t, v, w;
-    t = X[i]; t ^= (t >>> 7); v = t ^ (t << 24);
-    t = X[(i + 1) & 7]; v ^= t ^ (t >>> 10);
-    t = X[(i + 3) & 7]; v ^= t ^ (t >>> 3);
-    t = X[(i + 4) & 7]; v ^= t ^ (t << 7);
-    t = X[(i + 7) & 7]; t = t ^ (t << 13); v ^= t ^ (t << 9);
-    X[i] = v;
-    me.i = (i + 1) & 7;
-    return v;
-  };
-
-  function init(me, seed) {
-    var j, w, X = [];
-
-    if (seed === (seed | 0)) {
-      // Seed state array using a 32-bit integer.
-      w = X[0] = seed;
-    } else {
-      // Seed state using a string.
-      seed = '' + seed;
-      for (j = 0; j < seed.length; ++j) {
-        X[j & 7] = (X[j & 7] << 15) ^
-            (seed.charCodeAt(j) + X[(j + 1) & 7] << 13);
-      }
-    }
-    // Enforce an array length of 8, not all zeroes.
-    while (X.length < 8) X.push(0);
-    for (j = 0; j < 8 && X[j] === 0; ++j);
-    if (j == 8) w = X[7] = -1; else w = X[j];
-
-    me.x = X;
-    me.i = 0;
-
-    // Discard an initial 256 values.
-    for (j = 256; j > 0; --j) {
-      me.next();
-    }
-  }
-
-  init(me, seed);
-}
-
-function copy(f, t) {
-  t.x = f.x.slice();
-  t.i = f.i;
-  return t;
-}
-
-function impl(seed, opts) {
-  if (seed == null) seed = +(new Date);
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (state.x) copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xorshift7 = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-},{}],171:[function(require,module,exports){
-// A Javascript implementaion of the "xorwow" prng algorithm by
-// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  // Set up generator function.
-  me.next = function() {
-    var t = (me.x ^ (me.x >>> 2));
-    me.x = me.y; me.y = me.z; me.z = me.w; me.w = me.v;
-    return (me.d = (me.d + 362437 | 0)) +
-       (me.v = (me.v ^ (me.v << 4)) ^ (t ^ (t << 1))) | 0;
-  };
-
-  me.x = 0;
-  me.y = 0;
-  me.z = 0;
-  me.w = 0;
-  me.v = 0;
-
-  if (seed === (seed | 0)) {
-    // Integer seed.
-    me.x = seed;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 64; k++) {
-    me.x ^= strseed.charCodeAt(k) | 0;
-    if (k == strseed.length) {
-      me.d = me.x << 10 ^ me.x >>> 4;
-    }
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.x = f.x;
-  t.y = f.y;
-  t.z = f.z;
-  t.w = f.w;
-  t.v = f.v;
-  t.d = f.d;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xorwow = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],172:[function(require,module,exports){
-/*
-Copyright 2019 David Bau.
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-*/
-
-(function (global, pool, math) {
-//
-// The following constants are related to IEEE 754 limits.
-//
-
-var width = 256,        // each RC4 output is 0 <= x < 256
-    chunks = 6,         // at least six RC4 outputs for each double
-    digits = 52,        // there are 52 significant digits in a double
-    rngname = 'random', // rngname: name for Math.random and Math.seedrandom
-    startdenom = math.pow(width, chunks),
-    significance = math.pow(2, digits),
-    overflow = significance * 2,
-    mask = width - 1,
-    nodecrypto;         // node.js crypto module, initialized at the bottom.
-
-//
-// seedrandom()
-// This is the seedrandom function described above.
-//
-function seedrandom(seed, options, callback) {
-  var key = [];
-  options = (options == true) ? { entropy: true } : (options || {});
-
-  // Flatten the seed string or build one from local entropy if needed.
-  var shortseed = mixkey(flatten(
-    options.entropy ? [seed, tostring(pool)] :
-    (seed == null) ? autoseed() : seed, 3), key);
-
-  // Use the seed to initialize an ARC4 generator.
-  var arc4 = new ARC4(key);
-
-  // This function returns a random double in [0, 1) that contains
-  // randomness in every bit of the mantissa of the IEEE 754 value.
-  var prng = function() {
-    var n = arc4.g(chunks),             // Start with a numerator n < 2 ^ 48
-        d = startdenom,                 //   and denominator d = 2 ^ 48.
-        x = 0;                          //   and no 'extra last byte'.
-    while (n < significance) {          // Fill up all significant digits by
-      n = (n + x) * width;              //   shifting numerator and
-      d *= width;                       //   denominator and generating a
-      x = arc4.g(1);                    //   new least-significant-byte.
-    }
-    while (n >= overflow) {             // To avoid rounding up, before adding
-      n /= 2;                           //   last byte, shift everything
-      d /= 2;                           //   right using integer math until
-      x >>>= 1;                         //   we have exactly the desired bits.
-    }
-    return (n + x) / d;                 // Form the number within [0, 1).
-  };
-
-  prng.int32 = function() { return arc4.g(4) | 0; }
-  prng.quick = function() { return arc4.g(4) / 0x100000000; }
-  prng.double = prng;
-
-  // Mix the randomness into accumulated entropy.
-  mixkey(tostring(arc4.S), pool);
-
-  // Calling convention: what to return as a function of prng, seed, is_math.
-  return (options.pass || callback ||
-      function(prng, seed, is_math_call, state) {
-        if (state) {
-          // Load the arc4 state from the given state if it has an S array.
-          if (state.S) { copy(state, arc4); }
-          // Only provide the .state method if requested via options.state.
-          prng.state = function() { return copy(arc4, {}); }
-        }
-
-        // If called as a method of Math (Math.seedrandom()), mutate
-        // Math.random because that is how seedrandom.js has worked since v1.0.
-        if (is_math_call) { math[rngname] = prng; return seed; }
-
-        // Otherwise, it is a newer calling convention, so return the
-        // prng directly.
-        else return prng;
-      })(
-  prng,
-  shortseed,
-  'global' in options ? options.global : (this == math),
-  options.state);
-}
-
-//
-// ARC4
-//
-// An ARC4 implementation.  The constructor takes a key in the form of
-// an array of at most (width) integers that should be 0 <= x < (width).
-//
-// The g(count) method returns a pseudorandom integer that concatenates
-// the next (count) outputs from ARC4.  Its return value is a number x
-// that is in the range 0 <= x < (width ^ count).
-//
-function ARC4(key) {
-  var t, keylen = key.length,
-      me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
-
-  // The empty key [] is treated as [0].
-  if (!keylen) { key = [keylen++]; }
-
-  // Set up S using the standard key scheduling algorithm.
-  while (i < width) {
-    s[i] = i++;
-  }
-  for (i = 0; i < width; i++) {
-    s[i] = s[j = mask & (j + key[i % keylen] + (t = s[i]))];
-    s[j] = t;
-  }
-
-  // The "g" method returns the next (count) outputs as one number.
-  (me.g = function(count) {
-    // Using instance members instead of closure state nearly doubles speed.
-    var t, r = 0,
-        i = me.i, j = me.j, s = me.S;
-    while (count--) {
-      t = s[i = mask & (i + 1)];
-      r = r * width + s[mask & ((s[i] = s[j = mask & (j + t)]) + (s[j] = t))];
-    }
-    me.i = i; me.j = j;
-    return r;
-    // For robust unpredictability, the function call below automatically
-    // discards an initial batch of values.  This is called RC4-drop[256].
-    // See http://google.com/search?q=rsa+fluhrer+response&btnI
-  })(width);
-}
-
-//
-// copy()
-// Copies internal state of ARC4 to or from a plain object.
-//
-function copy(f, t) {
-  t.i = f.i;
-  t.j = f.j;
-  t.S = f.S.slice();
-  return t;
-};
-
-//
-// flatten()
-// Converts an object tree to nested arrays of strings.
-//
-function flatten(obj, depth) {
-  var result = [], typ = (typeof obj), prop;
-  if (depth && typ == 'object') {
-    for (prop in obj) {
-      try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
-    }
-  }
-  return (result.length ? result : typ == 'string' ? obj : obj + '\0');
-}
-
-//
-// mixkey()
-// Mixes a string seed into a key that is an array of integers, and
-// returns a shortened string seed that is equivalent to the result key.
-//
-function mixkey(seed, key) {
-  var stringseed = seed + '', smear, j = 0;
-  while (j < stringseed.length) {
-    key[mask & j] =
-      mask & ((smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++));
-  }
-  return tostring(key);
-}
-
-//
-// autoseed()
-// Returns an object for autoseeding, using window.crypto and Node crypto
-// module if available.
-//
-function autoseed() {
-  try {
-    var out;
-    if (nodecrypto && (out = nodecrypto.randomBytes)) {
-      // The use of 'out' to remember randomBytes makes tight minified code.
-      out = out(width);
-    } else {
-      out = new Uint8Array(width);
-      (global.crypto || global.msCrypto).getRandomValues(out);
-    }
-    return tostring(out);
-  } catch (e) {
-    var browser = global.navigator,
-        plugins = browser && browser.plugins;
-    return [+new Date, global, plugins, global.screen, tostring(pool)];
-  }
-}
-
-//
-// tostring()
-// Converts an array of charcodes to a string
-//
-function tostring(a) {
-  return String.fromCharCode.apply(0, a);
-}
-
-//
-// When seedrandom.js is loaded, we immediately mix a few bits
-// from the built-in RNG into the entropy pool.  Because we do
-// not want to interfere with deterministic PRNG state later,
-// seedrandom will not call math.random on its own again after
-// initialization.
-//
-mixkey(math.random(), pool);
-
-//
-// Nodejs and AMD support: export the implementation as a module using
-// either convention.
-//
-if ((typeof module) == 'object' && module.exports) {
-  module.exports = seedrandom;
-  // When in node.js, try using crypto package for autoseeding.
-  try {
-    nodecrypto = require('crypto');
-  } catch (ex) {}
-} else if ((typeof define) == 'function' && define.amd) {
-  define(function() { return seedrandom; });
-} else {
-  // When included as a plain script, set up Math.seedrandom global.
-  math['seed' + rngname] = seedrandom;
-}
-
-
-// End anonymous scope, and pass initial values.
-})(
-  // global: `self` in browsers (including strict mode and web workers),
-  // otherwise `this` in Node and other environments
-  (typeof self !== 'undefined') ? self : this,
-  [],     // pool: entropy pool starts empty
-  Math    // math: package containing random, pow, and seedrandom
-);
-
-},{"crypto":154}],173:[function(require,module,exports){
 const parse = require('../dist/tidal.js').parse
 const query = require('./queryArc.js' ).queryArc
 const Fraction = require( 'fraction.js' )
@@ -17682,14 +17007,12 @@ const Pattern = ( patternString, opts ) => {
 
 module.exports = Pattern
 
-},{"../dist/tidal.js":162,"./queryArc.js":174,"fraction.js":164}],174:[function(require,module,exports){
+},{"../dist/tidal.js":169,"./queryArc.js":171,"fraction.js":157}],171:[function(require,module,exports){
 const Fraction = require( 'fraction.js' )
 const util     = require( 'util' )
 const bjork    = require( 'bjork' ) 
 const log      = util.inspect
 const srand    = require( 'seedrandom' )
-
-const REST = -987654321
 
 const rnd = function( phase ) {
   //console.log( 'phase', phase.toFraction() )
@@ -17880,15 +17203,7 @@ const getPhaseIncr = pattern => {
 }
 
 const handlers = {
-  rest( state, pattern, phase, duration ) { 
-    //if( phase.valueOf() === 0 ) {
-      const evt = { arc:Arc( phase, phase.add( duration ) ), value:REST }
-      if( pattern.uid !== undefined ) evt.uid = pattern.uid
-      state.push(evt)
-    //}
-
-      return state 
-  },
+  rest( state ) { return state },
 
   // standard lists e.g. '0 1 2 3' or '[0 1 2]'
   group( state, pattern, phase, duration, overrideIncr=null ) {
@@ -18280,10 +17595,631 @@ const handlers = {
 
 module.exports.queryArc = queryArc
 
-},{"bjork":163,"fraction.js":164,"seedrandom":165,"util":161}]},{},[116])(116)
+},{"bjork":154,"fraction.js":157,"seedrandom":160,"util":174}],172:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],173:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],174:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":173,"_process":159,"inherits":172}]},{},[116])(116)
 });
-// global variables are actually declared in the build (gulp) file
-// and are Gibberish, global, Clock, time, and many Math functions
+
 class GibberishProcessor extends AudioWorkletProcessor {
   static get parameterDescriptors() {}
 
