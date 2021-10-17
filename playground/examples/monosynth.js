@@ -35,7 +35,7 @@ unique.
 // so these three frequencies are all separated by an octave.
 
 m = Monosynth({ 
-  detune2:-.75, detune3:1, antialias:true, octave:-1
+  detune2:-.5, detune3:1, antialias:true, octave:-1
 }).note.seq( 0, 1/4 )
 
 // perhaps counter-intuitively, if we change detune2 to

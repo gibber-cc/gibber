@@ -44,7 +44,8 @@ syn.decay.seq( [1/16,1/4,1/2], 1/2 )
 // for visual objects. In the example below, we'll sequence
 // the fold property of the Julia fractal, and the scale property
 // of the fractal's texture.
-fractal = Julia().scale(2).texture('dots', { scale:50 }).render()
+fractal = Julia().texture('dots', { scale:50 }).render('fractal.low')
+camera.pos.z = 3
 fractal.fold.seq( [1,2,3,5], 1/2 )
 fractal.texture.scale.seq( [2,20,50,100], 1/4 )
 

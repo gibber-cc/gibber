@@ -44,7 +44,7 @@ window.onload = function() {
     {
       name:    'Audio',
       plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-      options: { workletPath, latencyHint:.05 }
+      options: { workletPath, latencyHint:'playback' }
     },
     {
       name:    'Graphics',
@@ -255,7 +255,7 @@ window.onload = function() {
     cm.__setup()
     Console.log( 
       '%cgibber is now running. thanks for playing!', 
-      `color:white;background:black; padding:1em; width:100%` 
+      `color:black;background:white; width:100%` 
     ) 
   }) 
 

@@ -7627,6 +7627,48 @@ module.exports = {
   },
   '1/6' : {
     time:1/6, feedback:.35, wetdry:1
+  },
+  '1/8' : {
+    time:1/8, feedback:.35, wetdry:1
+  },
+  '1/9' : {
+    time:1/9, feedback:.35, wetdry:1
+  },
+  '1/3.fb' : {
+    time:1/3, feedback:.85, wetdry:1 
+  },
+  '1/6.fb' : {
+    time:1/6, feedback:.85, wetdry:1
+  },
+  '1/8.fb' : {
+    time:1/8, feedback:.85, wetdry:1
+  },
+  '1/9.fb' : {
+    time:1/9, feedback:.85, wetdry:1
+  },
+  '1/3.dry' : {
+    time:1/3, feedback:.35, wetdry:.5 
+  },
+  '1/6.dry' : {
+    time:1/6, feedback:.35, wetdry:.5
+  },
+  '1/8.dry' : {
+    time:1/8, feedback:.35, wetdry:.5
+  },
+  '1/9.dry' : {
+    time:1/9, feedback:.35, wetdry:.5
+  },
+  '1/3.dry.fb' : {
+    time:1/3, feedback:.85, wetdry:.5 
+  },
+  '1/6.dry.fb' : {
+    time:1/6, feedback:.35, wetdry:.5
+  },
+  '1/8.dry.fb' : {
+    time:1/8, feedback:.85, wetdry:.5
+  },
+  '1/9.dry.fb' : {
+    time:1/9, feedback:.85, wetdry:.5
   }
 }
 
@@ -9789,7 +9831,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
 
         const p = new Proxy( b, {
           set( target, property, value, receiver ) {
-            //console.log( 'set:', target, property, value, receiver )
+            // console.log( 'set:', target, property, value, receiver )
             if( b[ property ] === undefined && property !== 'input' ) {
               obj[ property ] = value
             }else{
@@ -9811,7 +9853,8 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           const objKeys = Object.keys( obj.__wrapped__.__properties__ )
           const __obj = {}
           objKeys.forEach( key => {
-            if( key[0] !== '_' && key !== 'bypass' ) {
+            //console.log( 'key:', key, obj.__wrapped__ )
+            if( key[0] !== '_' && key !== 'bypass' && obj[key] !== undefined ) {
               __obj[ key ] = obj[ key ].value !== undefined
                 ? obj[ key ].value
                 : obj.__wrapped__.__properties__[ key ].value
@@ -9828,7 +9871,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           console.groupEnd()
         }
 
-        return b
+        return p
       }
     }
     //console.log( `%c${description.name} created.`, 'color:white;background:#009' )
@@ -63409,7 +63452,7 @@ window.onload = function() {
     {
       name:    'Audio',
       plugin:  Audio, // Audio is required, imported, or grabbed via <script>
-      options: { workletPath, latencyHint:.05 }
+      options: { workletPath, latencyHint:'playback' }
     },
     {
       name:    'Graphics',
@@ -63620,7 +63663,7 @@ window.onload = function() {
     cm.__setup()
     Console.log( 
       '%cgibber is now running. thanks for playing!', 
-      `color:white;background:black; padding:1em; width:100%` 
+      `color:black;background:white; width:100%` 
     ) 
   }) 
 
@@ -78880,11 +78923,6 @@ const descriptions = {
      
       const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`;
 
-//    vec2 smoothrepeat_asin_sin(vec2 p,float smooth_size,float size){
-//    p/=size;
-//    p=asin(sin(p)*(1.0-smooth_size));
-//    return p*size;
-
       let preface =`
         vec3 ${pName}Mod = ${pointString}/${this.__target.distance.emit()};
         ${pName}Mod = asin( sin( ${pName}Mod ) * (1.0 - ${this.__target.smoothness.emit()} ) );
@@ -78900,17 +78938,36 @@ const descriptions = {
   SmoothPolar: {
     parameters:[ 
       { name:'count', type:'float', default:5 },
-      { name:'distance', type:'vec3', default:Vec3(.25) },
-      { name:'active', type:'float', default:1. }
+      { name:'distance', type:'vec3', default:Vec3(.5) },
+      { name:'smoothness', type:'float', default:.0 },
+      { name:'correction', type:'float', default:0 }
     ],
     emit( name='p', transform=null) {
       const pId = VarAlloc.alloc()
       const pName = 'p' + pId
 
       if( transform !== null ) this.transform.apply( transform, false )
+      
       this.transform.invert()
+     
+      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`;
 
-      const pointString =  `( ${name} * ${this.transform.emit()} ).xyz`
+      let preface =`
+        vec3  ${pName}p = ${pointString};
+        float ${pName}count = ${this.__target.count.emit()} * .5; 
+        float ${pName}k = length( ${pName}p );
+        float ${pName}x = asin( sin( atan(${pName}p.x, ${pName}p.z)*${pName}count)*(1.-${this.__target.smoothness.emit()}))*${pName}k;
+        float ${pName}ds = ${pName}k * ${pName}count;
+        float ${pName}y = mix( ${pName}ds, 2.0-${pName}ds-sqrt(${pName}x*${pName}x+${pName}ds*${pName}ds),${this.__target.correction.emit()});
+        vec2 ${pName}xy = vec2( ${pName}x/${pName}count, ${pName}y/${pName}count-${this.__target.distance.emit()});
+        vec4 ${pName} = vec4( ${pName}xy.x, ${pName}p.y, ${pName}xy.y, 1. );
+        ${pName}.xyz *= ${this.transform.emit_scale()};`
+
+      const sdf = this.sdf.emit( pName )
+
+      if( typeof sdf.preface === 'string' ) preface += sdf.preface 
+
+      return { out:sdf.out, preface }
 
       //s repetitions
       ////m smoothness (0-1)
@@ -78924,15 +78981,6 @@ const descriptions = {
   float y=mix(ds,2.0*ds-sqrt(x*x+ds*ds),c);
   return vec2(x/s,y/s-d);
 }*/ 
-      let preface =`
-          vec4 ${pName} = vec4( polarRepeat( ${pointString}, ${this.__target.count.emit() } ) * ${this.transform.emit_scale()}, 1. ); 
-          ${pName} -= vec4(${this.__target.distance.emit()}.x,0.,0.,0.);\n`
-
-      const sdf = this.sdf.emit( pName )
-
-      if( typeof sdf.preface === 'string' ) preface += sdf.preface
-
-      return { out:sdf.out, preface }
     }
   },
 }
@@ -80152,7 +80200,11 @@ const SDF = {
 
     const drawProgram = gl.createProgram()
     const fragSource = ` #version 300 es
-  precision mediump float;
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+  #else
+    precision mediump float;
+  #endif
 
   uniform sampler2D uSampler;
   uniform vec2 resolution;
@@ -81846,7 +81898,11 @@ module.exports = function( variables, scene, preface, geometries, lighting, post
     : getMainVoxels( steps, postprocessing, voxelSize )
 
     const fs_source = `     #version 300 es
-      precision mediump float;
+      #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+      #else
+        precision mediump float;
+      #endif
 
       float PI = 3.141592653589793;
       
