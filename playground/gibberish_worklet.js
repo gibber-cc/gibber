@@ -9538,7 +9538,6 @@ module.exports = function (Gibberish) {
       'no jsdsp';
 
       const midinote = 69 + 12 * Math.log2(freq / 440);
-      console.log(midinote);
       this.midinote(midinote);
     },
     midipick(midinote) {
