@@ -9528,11 +9528,18 @@ module.exports = function (Gibberish) {
       this.currentSample = key;
       return this.trigger();
     },
-    note(rate) {
+    __note(rate) {
       // soundfont measures pitch in cents
       // originalPitch = findMidiForHz( hz ) * 100 // (100 cents per midi index)
       // rate = Math.pow(2, (100.0 * pitch - originalPitch) / 1200.0) // 1200 cents per octave
       return this.trigger(null, rate);
+    },
+    note(freq) {
+      'no jsdsp';
+
+      const midinote = 69 + 12 * Math.log2(freq / 440);
+      console.log(midinote);
+      this.midinote(midinote);
     },
     midipick(midinote) {
       // loop through zones to find correct sample #
@@ -9554,7 +9561,7 @@ module.exports = function (Gibberish) {
       const samplePitch = this.midipick(midinote);
       const pitch = Math.pow(2, (100 * midinote - samplePitch) / 1200);
       //const pitch = 1//Math.pow( 2, (samplePitch ) ) 
-      this.note(pitch);
+      this.__note(pitch);
     },
     midichord(frequencies) {
       if (Gibberish !== undefined && Gibberish.mode !== 'worklet') {
@@ -9562,6 +9569,13 @@ module.exports = function (Gibberish) {
         this.triggerChord = frequencies;
       }
     },
+    chord(frequencies) {
+      if (Gibberish !== undefined && Gibberish.mode !== 'worklet') {
+        frequencies.forEach(v => this.note(v));
+        this.triggerChord = frequencies;
+      }
+    },
+
     setpan(num = 0, value = .5) {
       if (Gibberish.mode === 'processor') {
         const voice = this.voices[num];
@@ -9814,12 +9828,23 @@ module.exports = function (Gibberish) {
       return sampler;
     };
 
-    syn.loadBank = function (soundNumber = 1, bankIndex = 0) {
+    syn.load = function (soundNumber = 0, bankIndex = 0) {
       'no jsdsp';
 
       // need to memoize... already storing in soundfonts
 
       if (Gibberish.mode === 'processor') return;
+
+      // in case users pass name of soundfont instead of number
+      if (typeof soundNumber === 'string') {
+        let __soundNumber = Soundfont.names.indexOf(soundNumber);
+        if (__soundNumber === -1) {
+          __soundNumber = 0;
+          console.warn(`The ${soundNumber} Soundfont can't be found. Using Piano instead.`);
+        }
+        soundNumber = __soundNumber;
+      }
+
       let num = soundNumber + '0';
       if (soundNumber < 100) num = '0' + num;
       if (soundNumber < 10) num = '0' + num;
