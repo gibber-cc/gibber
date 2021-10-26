@@ -8651,7 +8651,7 @@ module.exports = {}
 for( let name of names ) {
   module.exports[ name ] = {
     presetInit( audio, props ) {
-      this.load( names.indexOf( name ), props.bank || 0 )
+      this.load( names.indexOf( name ), props === undefined ? 0 : props.bank || 0 )
     }
   }
 }
