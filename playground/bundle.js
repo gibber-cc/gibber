@@ -1056,6 +1056,10 @@ module.exports = ( x, y=1, properties ) => {
     //}
   }else if( x instanceof Float32Array ) {
     buffer = x
+  }else if( x instanceof Uint8Array ) {
+    buffer = x
+  }else if( x instanceof AudioBuffer ) {
+    buffer = x.getChannelData(0)
   }
   
   ugen = Object.create( proto ) 
@@ -7261,6 +7265,9 @@ const Instruments = {
     Multisampler:{
       methods:[ 'note', 'trigger', 'pick', 'pickFile', 'pickplay', 'loadSample', 'setpan', 'setrate' ], 
     },
+    Soundfont:{
+      methods:[ 'note', 'trigger', 'midinote', 'midichord', 'loadBank', 'setpan', 'setrate' ], 
+    },
     Snare:{
       methods:[ 'note','trigger' ],
     },
@@ -9376,7 +9383,7 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
     // wrap methods and add sequencing to them
     if( description.methods !== null ) {
       for( let methodName of description.methods ) {
-        if( methodName !== 'note' || description.name.indexOf('Sampler') > -1 || description.name.indexOf('Multisampler') > -1  ) {
+        if( methodName !== 'note' || description.name.indexOf('Sampler') > -1 || description.name.indexOf('Multisampler') > -1 || description.name.indexOf('Soundfont') > -1 ) {
           //obj[ methodName ] = __wrappedObject[ methodName ].bind( __wrappedObject )
           obj[ methodName ] = function( ...args ) {
             if( args.length === 0 ) {
@@ -14006,7 +14013,7 @@ const Graphics = {
 
 module.exports = Graphics
 
-},{"../defs/graphics.js":132,"marching":368}],137:[function(require,module,exports){
+},{"../defs/graphics.js":132,"marching":369}],137:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('acorn')) :
   typeof define === 'function' && define.amd ? define(['exports', 'acorn'], factory) :
@@ -65198,7 +65205,7 @@ Object.assign( analyzer, {
 
 module.exports = analyzer
 
-},{"../ugen.js":339}],271:[function(require,module,exports){
+},{"../ugen.js":340}],271:[function(require,module,exports){
 module.exports = function( Gibberish ) {
   const { In, Out, SSD } = require( './singlesampledelay.js'  )( Gibberish )
 
@@ -65439,7 +65446,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":339,"./analyzer.js":270,"genish.js":40}],273:[function(require,module,exports){
+},{"../ugen.js":340,"./analyzer.js":270,"genish.js":40}],273:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       proxy    = require( '../workletProxy.js' ),
@@ -65556,7 +65563,7 @@ return { In, Out, SSD }
 
 }
 
-},{"../ugen.js":339,"../workletProxy.js":341,"./analyzer.js":270,"genish.js":40}],274:[function(require,module,exports){
+},{"../ugen.js":340,"../workletProxy.js":342,"./analyzer.js":270,"genish.js":40}],274:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -65584,7 +65591,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":339,"genish.js":40}],275:[function(require,module,exports){
+},{"../ugen.js":340,"genish.js":40}],275:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -65629,7 +65636,7 @@ module.exports = function( Gibberish ) {
   return ADSR
 }
 
-},{"../ugen.js":339,"genish.js":40}],276:[function(require,module,exports){
+},{"../ugen.js":340,"genish.js":40}],276:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
@@ -65699,7 +65706,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":339,"genish.js":40}],278:[function(require,module,exports){
+},{"../ugen.js":340,"genish.js":40}],278:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
 },{"./realm.js":280,"dup":28}],279:[function(require,module,exports){
 /*
@@ -66022,7 +66029,7 @@ module.exports = function( Gibberish ) {
   return factory
 }
 
-},{"./fx/effect.js":296,"./workletProxy.js":341}],282:[function(require,module,exports){
+},{"./fx/effect.js":296,"./workletProxy.js":342}],282:[function(require,module,exports){
 let g = require( 'genish.js' )
  
 // constructor for schroeder allpass filters
@@ -66443,7 +66450,7 @@ Object.assign( filter, {
 
 module.exports = filter
 
-},{"../ugen.js":339}],287:[function(require,module,exports){
+},{"../ugen.js":340}],287:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -67246,7 +67253,7 @@ Object.assign( effect, {
 
 module.exports = effect
 
-},{"../ugen.js":339}],297:[function(require,module,exports){
+},{"../ugen.js":340}],297:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const effects = {
@@ -68357,7 +68364,7 @@ Gibberish.utilities = require( './utilities.js' )( Gibberish )
 
 module.exports = Gibberish
 
-},{"./analysis/analyzer.js":270,"./analysis/analyzers.js":271,"./envelopes/envelopes.js":276,"./factory.js":281,"./filters/filters.js":288,"./fx/effect.js":296,"./fx/effects.js":297,"./instruments/instrument.js":311,"./instruments/instruments.js":312,"./instruments/polyMixin.js":317,"./instruments/polytemplate.js":318,"./misc/binops.js":323,"./misc/bus.js":324,"./misc/bus2.js":325,"./misc/monops.js":326,"./misc/panner.js":327,"./misc/time.js":328,"./oscillators/oscillators.js":331,"./scheduling/scheduler.js":335,"./scheduling/seq2.js":336,"./scheduling/sequencer.js":337,"./scheduling/tidal.js":338,"./ugen.js":339,"./utilities.js":340,"./workletProxy.js":341,"genish.js":40,"memory-helper":344}],305:[function(require,module,exports){
+},{"./analysis/analyzer.js":270,"./analysis/analyzers.js":271,"./envelopes/envelopes.js":276,"./factory.js":281,"./filters/filters.js":288,"./fx/effect.js":296,"./fx/effects.js":297,"./instruments/instrument.js":311,"./instruments/instruments.js":312,"./instruments/polyMixin.js":317,"./instruments/polytemplate.js":318,"./misc/binops.js":324,"./misc/bus.js":325,"./misc/bus2.js":326,"./misc/monops.js":327,"./misc/panner.js":328,"./misc/time.js":329,"./oscillators/oscillators.js":332,"./scheduling/scheduler.js":336,"./scheduling/seq2.js":337,"./scheduling/sequencer.js":338,"./scheduling/tidal.js":339,"./ugen.js":340,"./utilities.js":341,"./workletProxy.js":342,"genish.js":40,"memory-helper":345}],305:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -68871,7 +68878,7 @@ Object.assign(instrument, {
 
 module.exports = instrument
 
-},{"../ugen.js":339}],312:[function(require,module,exports){
+},{"../ugen.js":340}],312:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
 const instruments = {
@@ -68882,7 +68889,8 @@ const instruments = {
   Cowbell     : require( './cowbell.js' )( Gibberish ),
   Tom         : require( './tom.js' )( Gibberish ),
   Clap        : require( './clap.dsp.js' )( Gibberish ),
-  Multisampler: require( './multisampler.dsp.js' )( Gibberish )
+  Multisampler: require( './multisampler.dsp.js' )( Gibberish ),
+  Soundfont   : require( './soundfont.js' )( Gibberish )
 }
 
 instruments.Clave.defaults.frequency = 2500
@@ -68908,7 +68916,7 @@ return instruments
 
 }
 
-},{"./clap.dsp.js":305,"./complex.dsp.js":306,"./conga.js":307,"./cowbell.js":308,"./fm.dsp.js":309,"./hat.js":310,"./karplusstrong.js":313,"./kick.js":314,"./monosynth.dsp.js":315,"./multisampler.dsp.js":316,"./sampler.js":319,"./snare.js":320,"./synth.dsp.js":321,"./tom.js":322}],313:[function(require,module,exports){
+},{"./clap.dsp.js":305,"./complex.dsp.js":306,"./conga.js":307,"./cowbell.js":308,"./fm.dsp.js":309,"./hat.js":310,"./karplusstrong.js":313,"./kick.js":314,"./monosynth.dsp.js":315,"./multisampler.dsp.js":316,"./sampler.js":319,"./snare.js":320,"./soundfont.js":321,"./synth.dsp.js":322,"./tom.js":323}],313:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -69175,7 +69183,7 @@ module.exports = function( Gibberish ) {
   return [ Mono, PolyMono ]
 }
 
-},{"../oscillators/fmfeedbackosc.js":330,"./instrument.js":311,"genish.js":40}],316:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":331,"./instrument.js":311,"genish.js":40}],316:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -69683,7 +69691,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../workletProxy.js":341,"genish.js":40}],319:[function(require,module,exports){
+},{"../workletProxy.js":342,"genish.js":40}],319:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -69953,6 +69961,576 @@ module.exports = function( Gibberish ) {
 }
 
 },{"./instrument.js":311,"genish.js":40}],321:[function(require,module,exports){
+/*fetch( '0000_Aspirin_sf2_file.json' )
+.then( res => res.json() )
+.then( json => {
+  window.zones = json.zones
+  console.log( window.zones )
+})
+
+ab = Gibberish.utilities..decodeArrayBuffer( zones[0].file )
+genish.utilities.ctx.decodeAudioData( ab, buffer => {
+  __ab = buffer
+  console.log( 'buffer made' )
+})
+
+
+_d = data( __ab )
+play( peek( _d, phasor(1,0,{min:0}) ) )
+*/
+
+const g = require( 'genish.js' ),
+      instrument = require( './instrument.js' )
+
+const genish = g
+
+const soundfonts = {}
+
+const banks = [
+  'Aspirin',
+  'Chaos',
+  'FluidR3',
+  'GeneralUserGS',
+  'JCLive'
+]
+
+module.exports = function( Gibberish ) {
+  const proto = Object.create( instrument )
+  const memo = {}
+  
+  Object.assign( proto, {
+    pickFile( sample ) {
+      this.currentSample = sample
+    },
+    pick( __idx ) {
+      const idx = Math.floor( __idx )
+      const keys = Object.keys( this.samplers )
+      const key = keys[ idx ]
+      this.currentSample = key
+    },
+    pickplay( __idx ) {
+      const idx = Math.floor( __idx )
+      const keys = Object.keys( this.samplers )
+      const key = keys[ idx ]
+      this.currentSample = key
+      return this.trigger()
+    },
+    note( rate ) {
+      // soundfont measures pitch in cents
+      // originalPitch = findMidiForHz( hz ) * 100 // (100 cents per midi index)
+      // rate = Math.pow(2, (100.0 * pitch - originalPitch) / 1200.0) // 1200 cents per octave
+      return this.trigger( null, rate )
+    },
+    midipick( midinote ) {
+      // loop through zones to find correct sample #
+      let idx = 0, pitch = 0
+      for( let zone of this.zones ) {
+        if( midinote >= zone.keyRangeLow && midinote <= zone.keyRangeHigh ) {
+          pitch = zone.originalPitch
+          break;
+        }
+        idx++
+      }
+      this.pick( idx )
+      return pitch
+    },
+    midinote( midinote ) {
+      'no jsdsp'
+      const samplePitch = this.midipick( midinote )
+      const pitch = Math.pow( 2, (100 * midinote - samplePitch ) / 1200 ) 
+      //const pitch = 1//Math.pow( 2, (samplePitch ) ) 
+      this.note( pitch )
+    }, 
+    midichord( frequencies ) {
+      if( Gibberish !== undefined && Gibberish.mode !== 'worklet' ) {
+        frequencies.forEach( v => this.midinote( v ) )
+        this.triggerChord = frequencies
+      }
+    },
+    setpan( num=0, value=.5 ) {
+      if( Gibberish.mode === 'processor' ) {
+        const voice = this.voices[ num ]
+        // set voice buffer length
+        //g.gen.memory.heap.set( [ value ], voice.pan.memory.values.idx )
+        voice.pan = value
+      }
+    },
+    setrate( num=0, value=1 ) {
+      if( Gibberish.mode === 'processor' ) {
+        const voice = this.voices[ num ]
+        // set voice buffer length
+        //g.gen.memory.heap.set( [ value ], voice.rate.memory.values.idx )
+        voice.rate = value
+      }
+    },
+    trigger( volume=null, rate=null ) {
+      'no jsdsp'
+      if( volume !== null ) this.__triggerLoudness = volume
+
+      let voice = null
+      if( Gibberish.mode === 'processor' ) {
+        const sampler = this.samplers[ this.currentSample ]
+
+        // if sample isn't loaded...
+        if( sampler === undefined ) return
+
+        voice = this.__getVoice__()
+
+        // set voice buffer length
+        g.gen.memory.heap[ voice.bufferLength.memory.values.idx ] = sampler.dataLength
+
+        // set voice data index
+        g.gen.memory.heap[ voice.bufferLoc.memory.values.idx ] = sampler.dataIdx
+
+        g.gen.memory.heap[ voice.__loopStart.memory.values.idx ] = sampler.zone.loopStart
+        g.gen.memory.heap[ voice.__loopEnd.memory.values.idx   ] = sampler.zone.loopEnd
+
+        if( rate !== null ) voice.rate = rate 
+        
+        voice.trigger()
+        //g.gen.memory.heap[ voice.rate.memory.values.idx ] = rate
+      }
+
+      return voice
+    },
+    __getVoice__() {
+      return this.voices[ this.voiceCount++ % this.voices.length ]
+    },
+  })
+
+  const Soundfont = inputProps => {
+    const syn = Object.create( proto )
+
+    const props = Object.assign( { onload:null, voiceCount:0, files:[] }, Soundfont.defaults, inputProps )
+
+    syn.isStereo = props.isStereo !== undefined ? props.isStereo : false
+
+    const start = g.in( 'start' ), end = g.in( 'end' ), 
+          rate = g.in( 'rate' ), shouldLoop = g.in( 'loops' ),
+          loudness = g.in( 'loudness' ),
+          triggerLoudness = g.in( '__triggerLoudness' ),
+          // rate storage is used to determine whether we're playing
+          // the sample forward or in reverse, for use in the 'trigger' method.
+          rateStorage = g.data([0], 1, { meta:true })
+
+    Object.assign( syn, props )
+
+    if( Gibberish.mode === 'worklet' ) {
+      syn.__meta__ = {
+        address:'add',
+        name: ['instruments', 'Multisampler'],
+        properties: JSON.stringify(props), 
+        id: syn.id
+      }
+
+      Gibberish.worklet.ugens.set( syn.id, syn )
+
+      Gibberish.worklet.port.postMessage( syn.__meta__ )
+    }
+
+    // create all our vocecs
+    const voices = []
+    for( let i = 0; i < syn.maxVoices; i++ ) {
+      'use jsdsp'
+
+      const voice = {
+        bufferLength: g.data( [1], 1, { meta:true }),
+        bufferLoc:    g.data( [1], 1, { meta:true }),
+        bang: g.bang(),
+        // XXX how do I change this from main thread?
+        __pan: g.data( [.5], 1, { meta:true }),
+        __rate: g.data( [1], 1, { meta:true }),
+        __shouldLoop: g.data( [1], 1, { meta:true }),
+        __loopStart: g.data( [1], 1, { meta:true }),
+        __loopEnd:   g.data( [1], 1, { meta:true }),
+ 
+        set pan(v) {
+          g.gen.memory.heap[ this.__pan.memory.values.idx ] = v
+        },
+        set rate(v) {
+          g.gen.memory.heap[ this.__rate.memory.values.idx ] = v
+        },
+      }
+
+      voice.phase = g.counter( 
+        rate * voice.__rate[0], 
+        start * voice.bufferLength[0],
+        end * voice.bufferLength[0], 
+        voice.bang,
+        shouldLoop, 
+        { shouldWrap:false, initialValue:9999999 }
+      )
+
+      voice.trigger = voice.bang.trigger
+
+      voice.graph = g.ifelse(
+        // if phase is greater than start and less than end... 
+        g.and( 
+          g.gte( voice.phase, start * voice.bufferLength[0] ), 
+          g.lt(  voice.phase, end   * voice.bufferLength[0] ) 
+        ),
+        // ...read data
+        voice.peek = g.peekDyn( 
+          voice.bufferLoc[0], 
+          voice.bufferLength[0],
+          voice.phase,
+          { mode:'samples' }
+        ),
+        // ...else return 0
+        0
+      ) 
+      * loudness 
+      * triggerLoudness 
+
+      // start of attempt to loop sustain...
+      //voice.graph = g.ifelse(
+      //  // if phase is greater than start and less than end... 
+      //  g.and( 
+      //    g.gte( voice.phase, start * voice.bufferLength[0] ), 
+      //    g.lt(  voice.phase, end   * voice.bufferLength[0] ) 
+      //  ),
+      //  // ...read data
+      //  voice.peek = g.peekDyn( 
+      //    voice.bufferLoc[0], 
+      //    voice.bufferLength[0],
+      //    voice.phase,
+      //    { mode:'samples' }
+      //  ),
+      //  // ...else return 0
+      //  g.ifelse(
+      //    g.and(
+      //      voice.__shouldLoop[0],
+      //      g.gt( voice.phase, voice.__loopEnd[0] )
+      //    ),
+      //    g.peekDyn( 
+      //      voice.bufferLoc[0], 
+      //      voice.bufferLength[0],
+      //      g.add( 
+      //        voice.__loopStart[0],
+      //        g.mod(
+      //          voice.phase,
+      //          //g.sub( voice.phase, voice.__loopStart[0] ),
+      //          g.sub( voice.__loopEnd[0], voice.__loopStart[0] )
+      //        )
+      //      ),
+      //      { mode:'samples' }
+      //    ),
+      //    0
+      //  )
+      //) 
+      //* loudness 
+      //* triggerLoudness 
+      
+      const pan = g.pan( voice.graph, voice.graph, voice.__pan[0] )
+      voice.graph = [ pan.left, pan.right ]
+
+      voices.push( voice )
+    }
+
+    // load in sample data
+    const samplers = {}
+
+    // bound to individual sampler objects in loadSample function
+    syn.loadBuffer = function( buffer, onload ) {
+      // main thread: when sample is loaded, copy it over message port
+      // processor thread: onload is called via messageport handler, and
+      // passed in the new buffer to be copied.
+      if( Gibberish.mode === 'worklet' ) {
+        const memIdx = Gibberish.memory.alloc( this.data.buffer.length, true )
+
+        Gibberish.worklet.port.postMessage({
+          address:'copy_multi',
+          id:     syn.id,
+          buffer: this.data.buffer,
+          filename: this.filename
+        })
+
+        if( typeof onload === 'function' ) onload( this, buffer )
+
+      }else if( Gibberish.mode === 'processor' ) {
+        this.data.buffer = buffer 
+
+        // set data memory spec before issuing memory request
+        this.dataLength = this.data.memory.values.length = this.data.dim = this.data.buffer.length
+        this.zone = syn.zones[ this.filename ]
+
+        // request memory to copy the bufer over
+        g.gen.requestMemory( this.data.memory, false )
+        g.gen.memory.heap.set( this.data.buffer, this.data.memory.values.idx )
+
+        // set location of buffer (does not work)
+        this.dataIdx = this.data.memory.values.idx
+
+        syn.currentSample = this.filename
+      }
+    }
+
+    syn.loadSample = function( filename, __onload, buffer=null ) {
+      'use jsdsp'
+
+      const sampler = samplers[ filename ] = {
+        dataLength: null,
+        dataIdx: null,
+        buffer: null,
+        filename
+      }
+
+      const onload = syn.loadBuffer.bind( sampler ) 
+      // passing a filename to data will cause it to be loaded in the main thread
+      // onload will then be called to pass the buffer over the messageport. In the
+      // processor thread, make a placeholder until data is available.
+      if( Gibberish.mode === 'worklet' ) {
+        sampler.data = g.data( buffer !== null ? buffer : filename, 1, { onload })
+
+        // check to see if a promise is returned; a valid
+        // data object is only return if the file has been
+        // previously loaded and the corresponding buffer has
+        // been cached.
+        if( sampler.data instanceof Promise ) {
+          sampler.data.then( d => {
+            sampler.data = d
+            memo[ filename ] = sampler.data 
+            onload( sampler, __onload )
+          })
+        }else{
+          // using a cached data buffer, no need
+          // for asynchronous loading.
+          memo[ filename ] = sampler
+          sampler.dataLength = buffer.length
+          onload( sampler, __onload )
+        }     
+      }else{
+        // not sure if first case will happen with soundfonts (it does with regular multisampler)
+        if( buffer === null ) {
+          sampler.data = g.data( new Float32Array(), 1, { onload, filename })
+          sampler.data.onload = onload
+        }else{
+          sampler.data = g.data( buffer, 1, { onload, filename })
+          //sampler.data.onload = onload
+          onload( buffer, __onload )
+        }
+      }
+
+      return sampler
+    }
+
+    syn.loadBank = function( soundNumber=1, bankIndex=0 ) {
+      'no jsdsp'
+
+      // need to memoize... already storing in soundfonts
+      if( Gibberish.mode === 'processor' ) return
+      let num = (soundNumber) + '0'
+      if( soundNumber < 100 ) num = '0'+num
+      if( soundNumber < 10 )  num = '0'+num
+
+      fetch( `${Soundfont.resourcePath}${num}_${banks[bankIndex]}.sf2.json` )
+        .then( res => res.json() )
+        .then( json => {
+          const zones = soundfonts[ soundNumber ] = json.zones
+          this.zones = zones
+          for( let i = 0; i < zones.length; i++) {
+            const zone = zones[i]
+            const ab = Gibberish.utilities.base64.decodeArrayBuffer( zone.file )
+            g.utilities.ctx.decodeAudioData( ab, buffer => {
+              zone.sampler = syn.loadSample( i, null, buffer )
+            })
+          }
+        })
+    }
+
+    //props.files.forEach( filename => syn.loadSample( filename ) )
+
+    syn.__createGraph = function() {
+      'use jsdsp'
+      
+      const graphs = voices.map( voice => voice.graph )
+      const left = g.add( ...voices.map( voice => voice.graph[0] ) )
+      const right = g.add( ...voices.map( voice => voice.graph[1] ) )
+      const gain = g.in( 'gain' )
+      syn.graph = [ left * gain, right * gain ]
+
+      if( syn.panVoices === true ) { 
+        const panner = g.pan( syn.graph[0], syn.graph[1], g.in( 'pan' ) ) 
+        syn.graph = [ panner.left, panner.right ]
+      }
+    }
+
+    syn.__createGraph()
+
+    const out = Gibberish.factory( 
+      syn,
+      syn.graph,
+      ['instruments','soundfont'], 
+      props 
+    ) 
+
+    Gibberish.preventProxy = true
+    Gibberish.proxyEnabled = false
+
+    out.voices = voices
+    out.samplers = samplers
+
+    Gibberish.proxyEnabled = true
+    Gibberish.preventProxy = false
+
+    return out
+  }
+
+  Soundfont.defaults = {
+    gain: 1,
+    pan: .5,
+    rate: 1,
+    panVoices:false,
+    shouldLoop:false,
+    loops: 0,
+    start:0,
+    end:1,
+    bufferLength:-999999999,
+    loudness:1,
+    maxVoices:5, 
+    __triggerLoudness:1
+  }
+
+  Soundfont.resourcePath = 'resources/soundfonts/'
+  Soundfont.names = [
+    "Acoustic Grand Piano",
+    "Bright Acoustic Piano",
+    "Electric Grand Piano",
+    "Honky-tonk Piano",
+    "Electric Piano 1",
+    "Electric Piano 2",
+    "Harpsichord",
+    "Clavi",
+    "Celesta",
+    "Glockenspiel",
+    "Music Box",
+    "Vibraphone",
+    "Marimba",
+    "Xylophone",
+    "Tubular Bells",
+    "Dulcimer",
+    "Drawbar Organ",
+    "Percussive Organ",
+    "Rock Organ",
+    "Church Organ",
+    "Reed Organ",
+    "Accordion",
+    "Harmonica",
+    "Tango Accordion",
+    "Acoustic Guitar (nylon)",
+    "Acoustic Guitar (steel)",
+    "Electric Guitar (jazz)",
+    "Electric Guitar (clean)",
+    "Electric Guitar (muted)",
+    "Overdriven Guitar",
+    "Distortion Guitar",
+    "Guitar harmonics",
+    "Acoustic Bass",
+    "Electric Bass (finger)",
+    "Electric Bass (pick)",
+    "Fretless Bass",
+    "Slap Bass 1",
+    "Slap Bass 2",
+    "Synth Bass 1",
+    "Synth Bass 2",
+    "Violin",
+    "Viola",
+    "Cello",
+    "Contrabass",
+    "Tremolo Strings",
+    "Pizzicato Strings",
+    "Orchestral Harp",
+    "Timpani",
+    "String Ensemble 1",
+    "String Ensemble 2",
+    "SynthStrings 1",
+    "SynthStrings 2",
+    "Choir Aahs",
+    "Voice Oohs",
+    "Synth Voice",
+    "Orchestra Hit",
+    "Trumpet",
+    "Trombone",
+    "Tuba",
+    "Muted Trumpet",
+    "French Horn",
+    "Brass Section",
+    "SynthBrass 1",
+    "SynthBrass 2",
+    "Soprano Sax",
+    "Alto Sax",
+    "Tenor Sax",
+    "Baritone Sax",
+    "Oboe",
+    "English Horn",
+    "Bassoon",
+    "Clarinet",
+    "Piccolo",
+    "Flute",
+    "Recorder",
+    "Pan Flute",
+    "Blown Bottle",
+    "Shakuhachi",
+    "Whistle",
+    "Ocarina",
+    "Lead 1 (square)",
+    "Lead 2 (sawtooth)",
+    "Lead 3 (calliope)",
+    "Lead 4 (chiff)",
+    "Lead 5 (charang)",
+    "Lead 6 (voice)",
+    "Lead 7 (fifths)",
+    "Lead 8 (bass + lead)",
+    "Pad 1 (new age)",
+    "Pad 2 (warm)",
+    "Pad 3 (polysynth)",
+    "Pad 4 (choir)",
+    "Pad 5 (bowed)",
+    "Pad 6 (metallic)",
+    "Pad 7 (halo)",
+    "Pad 8 (sweep)",
+    "FX 1 (rain)",
+    "FX 2 (soundtrack)",
+    "FX 3 (crystal)",
+    "FX 4 (atmosphere)",
+    "FX 5 (brightness)",
+    "FX 6 (goblins)",
+    "FX 7 (echoes)",
+    "FX 8 (sci-fi)",
+    "Sitar",
+    "Banjo",
+    "Shamisen",
+    "Koto",
+    "Kalimba",
+    "Bag pipe",
+    "Fiddle",
+    "Shanai",
+    "Tinkle Bell",
+    "Agogo",
+    "Steel Drums",
+    "Woodblock",
+    "Taiko Drum",
+    "Melodic Tom",
+    "Synth Drum",
+    "Reverse Cymbal",
+    "Guitar Fret Noise",
+    "Breath Noise",
+    "Seashore",
+    "Bird Tweet",
+    "Telephone Ring",
+    "Helicopter",
+    "Applause",
+    "Gunshot"
+  ]
+
+  Soundfont.inspect = function() {
+    console.table( Soundfont.names )
+  }
+
+  return Soundfont
+}
+
+},{"./instrument.js":311,"genish.js":40}],322:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -70072,7 +70650,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":311,"genish.js":40}],322:[function(require,module,exports){
+},{"./instrument.js":311,"genish.js":40}],323:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -70123,7 +70701,7 @@ module.exports = function( Gibberish ) {
   return Tom
 }
 
-},{"./instrument.js":311,"genish.js":40}],323:[function(require,module,exports){
+},{"./instrument.js":311,"genish.js":40}],324:[function(require,module,exports){
 const ugenproto = require( '../ugen.js' )(),
      __proxy     = require( '../workletProxy.js' ),
      g = require( 'genish.js' )
@@ -70239,7 +70817,7 @@ module.exports = function( Gibberish ) {
   return Binops
 }
 
-},{"../ugen.js":339,"../workletProxy.js":341,"genish.js":40}],324:[function(require,module,exports){
+},{"../ugen.js":340,"../workletProxy.js":342,"genish.js":40}],325:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )(),
     __proxy= require( '../workletProxy.js' )
@@ -70330,7 +70908,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":339,"../workletProxy.js":341,"genish.js":40}],325:[function(require,module,exports){
+},{"../ugen.js":340,"../workletProxy.js":342,"genish.js":40}],326:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       __proxy = require( '../workletProxy.js' )
@@ -70469,7 +71047,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":339,"../workletProxy.js":341,"genish.js":40}],326:[function(require,module,exports){
+},{"../ugen.js":340,"../workletProxy.js":342,"genish.js":40}],327:[function(require,module,exports){
 const  g    = require( 'genish.js'  ),
        ugen = require( '../ugen.js' )()
 
@@ -70531,7 +71109,7 @@ module.exports = function( Gibberish ) {
   return Monops
 }
 
-},{"../ugen.js":339,"genish.js":40}],327:[function(require,module,exports){
+},{"../ugen.js":340,"genish.js":40}],328:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 const ugen = require( '../ugen.js' )()
@@ -70568,7 +71146,7 @@ return Panner
 
 }
 
-},{"../ugen.js":339,"genish.js":40}],328:[function(require,module,exports){
+},{"../ugen.js":340,"genish.js":40}],329:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const Time = {
@@ -70597,7 +71175,7 @@ module.exports = function( Gibberish ) {
   return Time
 }
 
-},{}],329:[function(require,module,exports){
+},{}],330:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       noise = genish.noise
@@ -70618,7 +71196,7 @@ module.exports = function() {
   return out
 }
 
-},{"genish.js":40}],330:[function(require,module,exports){
+},{"genish.js":40}],331:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
@@ -70694,7 +71272,7 @@ let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
 
 module.exports = feedbackOsc
 
-},{"genish.js":40}],331:[function(require,module,exports){
+},{"genish.js":40}],332:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       feedbackOsc = require( './fmfeedbackosc.js' ),
@@ -70873,7 +71451,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":339,"./brownnoise.dsp.js":329,"./fmfeedbackosc.js":330,"./pinknoise.dsp.js":332,"./polyblep.dsp.js":333,"./wavetable.js":334,"genish.js":40}],332:[function(require,module,exports){
+},{"../ugen.js":340,"./brownnoise.dsp.js":330,"./fmfeedbackosc.js":331,"./pinknoise.dsp.js":333,"./polyblep.dsp.js":334,"./wavetable.js":335,"genish.js":40}],333:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       data = genish.data,
@@ -70900,7 +71478,7 @@ module.exports = function() {
 
 }
 
-},{"genish.js":40}],333:[function(require,module,exports){
+},{"genish.js":40}],334:[function(require,module,exports){
 const genish = require( 'genish.js' )
 const g = genish
 
@@ -70973,7 +71551,7 @@ const polyBlep = function( __frequency, argumentProps ) {
 
 module.exports = polyBlep 
 
-},{"genish.js":40}],334:[function(require,module,exports){
+},{"genish.js":40}],335:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )()
 
@@ -71007,7 +71585,7 @@ module.exports = function( Gibberish ) {
   return Wavetable
 }
 
-},{"../ugen.js":339,"genish.js":40}],335:[function(require,module,exports){
+},{"../ugen.js":340,"genish.js":40}],336:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 
 let Gibberish = null
@@ -71088,7 +71666,7 @@ Object.defineProperty( Scheduler, 'shouldSync', {
 
 module.exports = Scheduler
 
-},{"../external/priorityqueue.js":279}],336:[function(require,module,exports){
+},{"../external/priorityqueue.js":279}],337:[function(require,module,exports){
 const g = require( 'genish.js' ),
       __proxy = require( '../workletProxy.js' ),
       ugen = require( '../ugen.js' )()
@@ -71302,7 +71880,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":339,"../workletProxy.js":341,"genish.js":40}],337:[function(require,module,exports){
+},{"../ugen.js":340,"../workletProxy.js":342,"genish.js":40}],338:[function(require,module,exports){
 (function (global){
 const __proxy = require( '../workletProxy.js' )
 
@@ -71554,7 +72132,7 @@ return Sequencer
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../workletProxy.js":341}],338:[function(require,module,exports){
+},{"../workletProxy.js":342}],339:[function(require,module,exports){
 const __proxy = require( '../workletProxy.js' )
 const Pattern = require( 'tidal.pegjs' )
 
@@ -71755,7 +72333,7 @@ return Sequencer
 
 }
 
-},{"../workletProxy.js":341,"tidal.pegjs":355}],339:[function(require,module,exports){
+},{"../workletProxy.js":342,"tidal.pegjs":356}],340:[function(require,module,exports){
 let Gibberish = null
 
 const __ugen = function( __Gibberish ) {
@@ -71902,7 +72480,7 @@ const __ugen = function( __Gibberish ) {
 
 module.exports = __ugen
 
-},{}],340:[function(require,module,exports){
+},{}],341:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       AWPF = require( './external/audioworklet-polyfill.js' )
 
@@ -72151,20 +72729,76 @@ const utilities = {
     return s
   },
 
+  run( fnc ) { 
+    const str = fnc.tostring()
+    const idx = str.indexof('=>') + 2
+    const code = str.slice( idx ).trim()
+    Gibberish.worklet.port.postMessage({ 
+      address:'eval',
+      code
+    })
+  },
+
   export( obj ) {
     obj.wrap = this.wrap
     obj.future = this.future
     obj.Make = this.Make
   },
 
-  getUID() { return uid++ }
+  getUID() { return uid++ },
+
+  base64 : {
+    _keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+    // will return a  Uint8Array type
+    decodeArrayBuffer: function(input) {
+        var bytes = (input.length/4) * 3;
+        var ab = new ArrayBuffer(bytes);
+        this.decode(input, ab);
+
+        return ab;
+    },
+    decode: function(input, arrayBuffer) {
+      //get last chars to see if are valid
+      var lkey1 = this._keyStr.indexOf(input.charAt(input.length-1));		 
+      var lkey2 = this._keyStr.indexOf(input.charAt(input.length-2));		 
+      var bytes = (input.length/4) * 3;
+      if (lkey1 == 64) bytes--; //padding chars, so skip
+      if (lkey2 == 64) bytes--; //padding chars, so skip
+      var uarray;
+      var chr1, chr2, chr3;
+      var enc1, enc2, enc3, enc4;
+      var i = 0;
+      var j = 0;
+      if (arrayBuffer)
+          uarray = new Uint8Array(arrayBuffer);
+      else
+          uarray = new Uint8Array(bytes);
+      input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+      for (i=0; i<bytes; i+=3) {	
+          //get the 3 octects in 4 ascii chars
+          enc1 = this._keyStr.indexOf(input.charAt(j++));
+          enc2 = this._keyStr.indexOf(input.charAt(j++));
+          enc3 = this._keyStr.indexOf(input.charAt(j++));
+          enc4 = this._keyStr.indexOf(input.charAt(j++));
+
+          chr1 = (enc1 << 2) | (enc2 >> 4);
+          chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+          chr3 = ((enc3 & 3) << 6) | enc4;
+
+          uarray[i] = chr1;			
+          if (enc3 != 64) uarray[i+1] = chr2;
+          if (enc4 != 64) uarray[i+2] = chr3;
+      }
+      return uarray;	
+    }
+  }
 }
 
 return utilities
 
 }
 
-},{"./external/audioworklet-polyfill.js":278,"genish.js":40}],341:[function(require,module,exports){
+},{"./external/audioworklet-polyfill.js":278,"genish.js":40}],342:[function(require,module,exports){
 const serialize = require('serialize-javascript')
 
 module.exports = function( Gibberish ) {
@@ -72323,7 +72957,7 @@ return __proxy
 
 }
 
-},{"serialize-javascript":353}],342:[function(require,module,exports){
+},{"serialize-javascript":354}],343:[function(require,module,exports){
 function bjorklund(slots, pulses){
   var pattern = [],
       count = [],
@@ -72364,7 +72998,7 @@ module.exports = function(m, k){
   else return bjorklund(k, m);
 };
 
-},{}],343:[function(require,module,exports){
+},{}],344:[function(require,module,exports){
 /**
  * @license Fraction.js v4.1.1 23/05/2021
  * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
@@ -73277,9 +73911,9 @@ module.exports = function(m, k){
 
 })(this);
 
-},{}],344:[function(require,module,exports){
+},{}],345:[function(require,module,exports){
 arguments[4][81][0].apply(exports,arguments)
-},{"dup":81}],345:[function(require,module,exports){
+},{"dup":81}],346:[function(require,module,exports){
 // A library of seedable RNGs implemented in Javascript.
 //
 // Usage:
@@ -73341,7 +73975,7 @@ sr.tychei = tychei;
 
 module.exports = sr;
 
-},{"./lib/alea":346,"./lib/tychei":347,"./lib/xor128":348,"./lib/xor4096":349,"./lib/xorshift7":350,"./lib/xorwow":351,"./seedrandom":352}],346:[function(require,module,exports){
+},{"./lib/alea":347,"./lib/tychei":348,"./lib/xor128":349,"./lib/xor4096":350,"./lib/xorshift7":351,"./lib/xorwow":352,"./seedrandom":353}],347:[function(require,module,exports){
 // A port of an algorithm by Johannes Baagøe <baagoe@baagoe.com>, 2010
 // http://baagoe.com/en/RandomMusings/javascript/
 // https://github.com/nquinlan/better-random-numbers-for-javascript-mirror
@@ -73457,7 +74091,7 @@ if (module && module.exports) {
 
 
 
-},{}],347:[function(require,module,exports){
+},{}],348:[function(require,module,exports){
 // A Javascript implementaion of the "Tyche-i" prng algorithm by
 // Samuel Neves and Filipe Araujo.
 // See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
@@ -73562,7 +74196,7 @@ if (module && module.exports) {
 
 
 
-},{}],348:[function(require,module,exports){
+},{}],349:[function(require,module,exports){
 // A Javascript implementaion of the "xor128" prng algorithm by
 // George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
 
@@ -73645,7 +74279,7 @@ if (module && module.exports) {
 
 
 
-},{}],349:[function(require,module,exports){
+},{}],350:[function(require,module,exports){
 // A Javascript implementaion of Richard Brent's Xorgens xor4096 algorithm.
 //
 // This fast non-cryptographic random number generator is designed for
@@ -73793,7 +74427,7 @@ if (module && module.exports) {
   (typeof define) == 'function' && define   // present with an AMD loader
 );
 
-},{}],350:[function(require,module,exports){
+},{}],351:[function(require,module,exports){
 // A Javascript implementaion of the "xorshift7" algorithm by
 // François Panneton and Pierre L'ecuyer:
 // "On the Xorgshift Random Number Generators"
@@ -73892,7 +74526,7 @@ if (module && module.exports) {
 );
 
 
-},{}],351:[function(require,module,exports){
+},{}],352:[function(require,module,exports){
 // A Javascript implementaion of the "xorwow" prng algorithm by
 // George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
 
@@ -73980,7 +74614,7 @@ if (module && module.exports) {
 
 
 
-},{}],352:[function(require,module,exports){
+},{}],353:[function(require,module,exports){
 /*
 Copyright 2019 David Bau.
 
@@ -74235,9 +74869,9 @@ if ((typeof module) == 'object' && module.exports) {
   Math    // math: package containing random, pow, and seedrandom
 );
 
-},{"crypto":141}],353:[function(require,module,exports){
+},{"crypto":141}],354:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],354:[function(require,module,exports){
+},{"dup":122}],355:[function(require,module,exports){
 /*
  * Generated by PEG.js 0.10.0.
  *
@@ -76616,7 +77250,7 @@ module.exports = {
   parse:       peg$parse
 };
 
-},{}],355:[function(require,module,exports){
+},{}],356:[function(require,module,exports){
 const parse = require('../dist/tidal.js').parse
 const query = require('./queryArc.js' ).queryArc
 const Fraction = require( 'fraction.js' )
@@ -76676,7 +77310,7 @@ const Pattern = ( patternString, opts ) => {
 
 module.exports = Pattern
 
-},{"../dist/tidal.js":354,"./queryArc.js":356,"fraction.js":343}],356:[function(require,module,exports){
+},{"../dist/tidal.js":355,"./queryArc.js":357,"fraction.js":344}],357:[function(require,module,exports){
 const Fraction = require( 'fraction.js' )
 const util     = require( 'util' )
 const bjork    = require( 'bjork' ) 
@@ -77264,7 +77898,7 @@ const handlers = {
 
 module.exports.queryArc = queryArc
 
-},{"bjork":342,"fraction.js":343,"seedrandom":345,"util":236}],357:[function(require,module,exports){
+},{"bjork":343,"fraction.js":344,"seedrandom":346,"util":236}],358:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen } = require( './var.js' )
@@ -77444,7 +78078,7 @@ Alterations.Halve.RIGHT = 2
 
 module.exports = Alterations
 
-},{"./sceneNode.js":379,"./utils.js":384,"./var.js":385}],358:[function(require,module,exports){
+},{"./sceneNode.js":380,"./utils.js":385,"./var.js":386}],359:[function(require,module,exports){
 const Audio = {
   __hasInput: false,
   ctx: null,
@@ -77559,7 +78193,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{}],359:[function(require,module,exports){
+},{}],360:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' )
@@ -77618,7 +78252,7 @@ const BG = function( Scene, SDF ) {
 
 module.exports = BG 
 
-},{"./sceneNode.js":379,"./utils.js":384,"./var.js":385,"./vec.js":386}],360:[function(require,module,exports){
+},{"./sceneNode.js":380,"./utils.js":385,"./var.js":386,"./vec.js":387}],361:[function(require,module,exports){
 const vec3 = require('gl-vec3')
 const mat4 = require('gl-mat4')
 
@@ -77858,7 +78492,7 @@ const Camera = {
 
 module.exports = Camera
 
-},{"gl-mat4":466,"gl-vec3":500}],361:[function(require,module,exports){
+},{"gl-mat4":467,"gl-vec3":501}],362:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -78106,7 +78740,7 @@ DistanceOps.Halve.RIGHT = 2
 module.exports = DistanceOps
 
 
-},{"./sceneNode.js":379,"./transform.js":383,"./utils.js":384,"./var.js":385}],362:[function(require,module,exports){
+},{"./sceneNode.js":380,"./transform.js":384,"./utils.js":385,"./var.js":386}],363:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -78432,7 +79066,7 @@ for( let name in ops ) {
 
 module.exports = DistanceOps
 
-},{"./distanceOperationsGLSL.js":363,"./sceneNode.js":379,"./transform.js":383,"./utils.js":384,"./var.js":385}],363:[function(require,module,exports){
+},{"./distanceOperationsGLSL.js":364,"./sceneNode.js":380,"./transform.js":384,"./utils.js":385,"./var.js":386}],364:[function(require,module,exports){
 module.exports = {
   Union:{
     float:`
@@ -78791,7 +79425,7 @@ module.exports = {
       `
 }
 
-},{}],364:[function(require,module,exports){
+},{}],365:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -79176,7 +79810,7 @@ const getDomainOps = function( SDF ) {
 
 module.exports = getDomainOps
 
-},{"./sceneNode.js":379,"./transform.js":383,"./utils.js":384,"./var.js":385,"./vec.js":386}],365:[function(require,module,exports){
+},{"./sceneNode.js":380,"./transform.js":384,"./utils.js":385,"./var.js":386,"./vec.js":387}],366:[function(require,module,exports){
 // matrix.js - taken from https://github.com/evanw/lightgl.js/
 
 // Represents a 4x4 matrix stored in row-major order that uses Float32Arrays
@@ -79573,7 +80207,7 @@ Matrix.lookAt = function(ex, ey, ez, cx, cy, cz, ux, uy, uz, result) {
 
 module.exports = Matrix
 
-},{}],366:[function(require,module,exports){
+},{}],367:[function(require,module,exports){
 const emit_float = function( a ) {
 	if (a % 1 === 0)
 		return a.toFixed( 1 )
@@ -79596,7 +80230,7 @@ const Float = function( x=0 ) {
 
 module.exports = Float
 
-},{}],367:[function(require,module,exports){
+},{}],368:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -79672,7 +80306,7 @@ const Fogger = function( Scene, SDF ) {
 
 module.exports = Fogger
 
-},{"./sceneNode.js":379,"./utils.js":384,"./var.js":385,"./vec.js":386}],368:[function(require,module,exports){
+},{"./sceneNode.js":380,"./utils.js":385,"./var.js":386,"./vec.js":387}],369:[function(require,module,exports){
 'use strict'
 
 const Marching = require( './main.js' )
@@ -79687,7 +80321,7 @@ window.Marching = Marching
 
 module.exports = Marching
 
-},{"./main.js":371}],369:[function(require,module,exports){
+},{"./main.js":372}],370:[function(require,module,exports){
 const emit_int = function( a ) {
 	if( a % 1 !== 0 )
 		return Math.round( a )
@@ -79710,7 +80344,7 @@ const Int = function( x=0 ) {
 
 module.exports = Int
 
-},{}],370:[function(require,module,exports){
+},{}],371:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -79992,7 +80626,7 @@ module.exports = Lights
 /*
 */
 
-},{"./sceneNode.js":379,"./utils.js":384,"./var.js":385,"./vec.js":386,"glslify":528}],371:[function(require,module,exports){
+},{"./sceneNode.js":380,"./utils.js":385,"./var.js":386,"./vec.js":387,"glslify":529}],372:[function(require,module,exports){
 const SDF = {
   camera:           require( './camera.js' ),
   __primitives:     require( './primitives.js' ),
@@ -80454,7 +81088,7 @@ const SDF = {
 
 module.exports = SDF
 
-},{"./alterations.js":357,"./audio.js":358,"./camera.js":360,"./distanceDeformations.js":361,"./distanceOperations.js":362,"./domainOperations.js":364,"./lighting.js":370,"./material.js":372,"./mergepass.js":373,"./noise.js":374,"./primitives.js":376,"./renderFragmentShader.js":377,"./scene.js":378,"./texture.js":380,"./var.js":385,"./vec.js":386}],372:[function(require,module,exports){
+},{"./alterations.js":358,"./audio.js":359,"./camera.js":361,"./distanceDeformations.js":362,"./distanceOperations.js":363,"./domainOperations.js":365,"./lighting.js":371,"./material.js":373,"./mergepass.js":374,"./noise.js":375,"./primitives.js":377,"./renderFragmentShader.js":378,"./scene.js":379,"./texture.js":381,"./var.js":386,"./vec.js":387}],373:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -80687,7 +81321,7 @@ const __Materials = function( SDF ) {
 
 module.exports = __Materials
 
-},{"./sceneNode.js":379,"./utils.js":384,"./var.js":385,"./vec.js":386,"glslify":528}],373:[function(require,module,exports){
+},{"./sceneNode.js":380,"./utils.js":385,"./var.js":386,"./vec.js":387,"glslify":529}],374:[function(require,module,exports){
 const MP   = require( '@bandaloo/merge-pass' )
 
 const FX = {
@@ -80940,7 +81574,7 @@ const FX = {
 
 module.exports = FX
 
-},{"@bandaloo/merge-pass":439}],374:[function(require,module,exports){
+},{"@bandaloo/merge-pass":440}],375:[function(require,module,exports){
 const glsl = require( 'glslify' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -81027,7 +81661,7 @@ return Noise
 
 module.exports = getNoise 
 
-},{"./sceneNode.js":379,"./utils.js":384,"./var.js":385,"glslify":528}],375:[function(require,module,exports){
+},{"./sceneNode.js":380,"./utils.js":385,"./var.js":386,"glslify":529}],376:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 module.exports = {
@@ -81395,7 +82029,7 @@ module.exports = {
 
 }
 
-},{"glslify":528}],376:[function(require,module,exports){
+},{"glslify":529}],377:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -81714,7 +82348,7 @@ const createPrimitives = function( SDF ) {
 
 module.exports = createPrimitives
 
-},{"./primitiveDescriptions.js":375,"./sceneNode.js":379,"./transform.js":383,"./utils.js":384,"./var.js":385,"./vec.js":386}],377:[function(require,module,exports){
+},{"./primitiveDescriptions.js":376,"./sceneNode.js":380,"./transform.js":384,"./utils.js":385,"./var.js":386,"./vec.js":387}],378:[function(require,module,exports){
 const getMainContinuous = function( steps, minDistance, maxDistance, postprocessing ) {
   const out = `
   // adapted from https://www.shadertoy.com/view/ldfSWs
@@ -82029,7 +82663,7 @@ ${main}
     return fs_source
   }
 
-},{}],378:[function(require,module,exports){
+},{}],379:[function(require,module,exports){
 const getFog = require( './fog.js' )
 const vignette = require( './vignette.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -82319,7 +82953,7 @@ const getScene = function( SDF ) {
 
 module.exports = getScene 
 
-},{"./background.js":359,"./fog.js":367,"./lighting.js":370,"./utils.js":384,"./var.js":385,"./vignette.js":387}],379:[function(require,module,exports){
+},{"./background.js":360,"./fog.js":368,"./lighting.js":371,"./utils.js":385,"./var.js":386,"./vignette.js":388}],380:[function(require,module,exports){
 const SceneNode = ()=> Object.create( SceneNode.prototype )
 const Matrix = require( './external/matrix.js' )
 
@@ -82421,7 +83055,7 @@ ops.forEach( op => {
 
 module.exports = SceneNode
 
-},{"./external/matrix.js":365}],380:[function(require,module,exports){
+},{"./external/matrix.js":366}],381:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       getPixels = require( 'get-pixels' ),
       createTexture = require( 'gl-texture2d' ),
@@ -82778,7 +83412,7 @@ const __Textures = function( SDF ) {
 
 module.exports = __Textures
 
-},{"./sceneNode.js":379,"./textureDescriptions.js":381,"./textureWrap.js":382,"./utils.js":384,"./var.js":385,"./vec.js":386,"get-pixels":450,"gl-texture2d":481}],381:[function(require,module,exports){
+},{"./sceneNode.js":380,"./textureDescriptions.js":382,"./textureWrap.js":383,"./utils.js":385,"./var.js":386,"./vec.js":387,"get-pixels":451,"gl-texture2d":482}],382:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 const textures = {
@@ -83076,7 +83710,7 @@ const textures = {
 
 module.exports = textures
 
-},{"glslify":528}],382:[function(require,module,exports){
+},{"glslify":529}],383:[function(require,module,exports){
 module.exports = `
     // p = point on surface, p0 = object center
     vec2 getUVCubic(vec3 p ){
@@ -83138,7 +83772,7 @@ module.exports = `vec3 t3(sampler2D tex, vec3 p, vec3 n)
     }`
     */
 
-},{}],383:[function(require,module,exports){
+},{}],384:[function(require,module,exports){
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const Matrix = require( './external/matrix.js' )
@@ -83347,7 +83981,7 @@ MatrixWrap.prototype = {
 
 module.exports = MatrixWrap
 
-},{"./external/matrix.js":365,"./utils.js":384,"./var.js":385}],384:[function(require,module,exports){
+},{"./external/matrix.js":366,"./utils.js":385,"./var.js":386}],385:[function(require,module,exports){
 const Var = require('./var.js').Var
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 
@@ -83389,7 +84023,7 @@ const processVec3 = function( val ) {
 
 module.exports = { param_wrap, MaterialID, processVec2, processVec3 }
 
-},{"./var.js":385,"./vec.js":386}],385:[function(require,module,exports){
+},{"./var.js":386,"./vec.js":387}],386:[function(require,module,exports){
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 const float = require( './float.js' )
 const int   = require( './int.js' )
@@ -83594,7 +84228,7 @@ function vec4_var_gen( x, y, z, w, name=null ) {
 }
 */
 
-},{"./float.js":366,"./int.js":369,"./vec.js":386}],386:[function(require,module,exports){
+},{"./float.js":367,"./int.js":370,"./vec.js":387}],387:[function(require,module,exports){
 const Vec2 = function (x=0, y=0) {
   if( x.type === 'vec2' ) return x  
   const v = Object.create( Vec2.prototype )
@@ -83875,7 +84509,7 @@ Vec4.prototype = {
 
 module.exports = { Vec2, Vec3, Vec4 } 
 
-},{}],387:[function(require,module,exports){
+},{}],388:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -83949,7 +84583,7 @@ const Vignette = function( Scene, SDF ) {
 
 module.exports = Vignette 
 
-},{"./sceneNode.js":379,"./utils.js":384,"./var.js":385}],388:[function(require,module,exports){
+},{"./sceneNode.js":380,"./utils.js":385,"./var.js":386}],389:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CodeBuilder = exports.channelSamplerName = void 0;
@@ -84140,7 +84774,7 @@ class CodeBuilder {
 }
 exports.CodeBuilder = CodeBuilder;
 
-},{"./exprs/expr":402,"./settings":441,"./webglprogramloop":443}],389:[function(require,module,exports){
+},{"./exprs/expr":403,"./settings":442,"./webglprogramloop":444}],390:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a1 = exports.Arity1HomogenousExpr = void 0;
@@ -84175,7 +84809,7 @@ function a1(name, val) {
 }
 exports.a1 = a1;
 
-},{"./expr":402}],390:[function(require,module,exports){
+},{"./expr":403}],391:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a2 = exports.Arity2HomogenousExpr = void 0;
@@ -84219,7 +84853,7 @@ function a2(name, val1, val2) {
 }
 exports.a2 = a2;
 
-},{"./expr":402}],391:[function(require,module,exports){
+},{"./expr":403}],392:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bloom = exports.BloomLoop = void 0;
@@ -84303,7 +84937,7 @@ function bloom(threshold, horizontal, vertical, boost, samplerNum, taps, reps) {
 }
 exports.bloom = bloom;
 
-},{"../mergepass":440,"./arity2":390,"./blurexpr":393,"./brightnessexpr":394,"./channelsampleexpr":396,"./contrastexpr":397,"./expr":402,"./fragcolorexpr":403,"./opexpr":420,"./vecexprs":436}],392:[function(require,module,exports){
+},{"../mergepass":441,"./arity2":391,"./blurexpr":394,"./brightnessexpr":395,"./channelsampleexpr":397,"./contrastexpr":398,"./expr":403,"./fragcolorexpr":404,"./opexpr":421,"./vecexprs":437}],393:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blur2d = exports.Blur2dLoop = void 0;
@@ -84356,7 +84990,7 @@ function blur2d(horizontalExpr, verticalExpr, reps, taps, samplerNum) {
 }
 exports.blur2d = blur2d;
 
-},{"../mergepass":440,"./blurexpr":393,"./expr":402,"./vecexprs":436}],393:[function(require,module,exports){
+},{"../mergepass":441,"./blurexpr":394,"./expr":403,"./vecexprs":437}],394:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gauss = exports.BlurExpr = void 0;
@@ -84412,7 +85046,7 @@ function gauss(direction, taps = 5, samplerNum) {
 }
 exports.gauss = gauss;
 
-},{"../glslfunctions":438,"./expr":402}],394:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],395:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brightness = exports.Brightness = void 0;
@@ -84445,7 +85079,7 @@ function brightness(val, col) {
 }
 exports.brightness = brightness;
 
-},{"../glslfunctions":438,"./expr":402,"./fragcolorexpr":403}],395:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403,"./fragcolorexpr":404}],396:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.changecomp = exports.ChangeCompExpr = void 0;
@@ -84534,7 +85168,7 @@ function changecomp(vec, setter, comps, op) {
 }
 exports.changecomp = changecomp;
 
-},{"./expr":402,"./getcompexpr":407}],396:[function(require,module,exports){
+},{"./expr":403,"./getcompexpr":408}],397:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.channel = exports.ChannelSampleExpr = void 0;
@@ -84580,7 +85214,7 @@ function channel(channel, vec) {
 }
 exports.channel = channel;
 
-},{"../codebuilder":388,"../glslfunctions":438,"./expr":402,"./normfragcoordexpr":418}],397:[function(require,module,exports){
+},{"../codebuilder":389,"../glslfunctions":439,"./expr":403,"./normfragcoordexpr":419}],398:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contrast = exports.ContrastExpr = void 0;
@@ -84612,7 +85246,7 @@ function contrast(val, col) {
 }
 exports.contrast = contrast;
 
-},{"../glslfunctions":438,"./expr":402,"./fragcolorexpr":403}],398:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403,"./fragcolorexpr":404}],399:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.depth2occlusion = exports.DepthToOcclusionExpr = void 0;
@@ -84660,7 +85294,7 @@ function depth2occlusion(depthCol, newCol, threshold) {
 }
 exports.depth2occlusion = depth2occlusion;
 
-},{"./channelsampleexpr":396,"./expr":402,"./vecexprs":436}],399:[function(require,module,exports){
+},{"./channelsampleexpr":397,"./expr":403,"./vecexprs":437}],400:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dof = exports.DoFLoop = void 0;
@@ -84706,7 +85340,7 @@ function dof(depth, rad, depthInfo, reps) {
 }
 exports.dof = dof;
 
-},{"../mergepass":440,"./arity2":390,"./blurexpr":393,"./channelsampleexpr":396,"./expr":402,"./gaussianexpr":406,"./getcompexpr":407,"./opexpr":420,"./vecexprs":436}],400:[function(require,module,exports){
+},{"../mergepass":441,"./arity2":391,"./blurexpr":394,"./channelsampleexpr":397,"./expr":403,"./gaussianexpr":407,"./getcompexpr":408,"./opexpr":421,"./vecexprs":437}],401:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edgecolor = exports.EdgeColorExpr = void 0;
@@ -84744,7 +85378,7 @@ function edgecolor(color, samplerNum, stepped) {
 }
 exports.edgecolor = edgecolor;
 
-},{"./arity2":390,"./expr":402,"./fragcolorexpr":403,"./monochromeexpr":413,"./sobelexpr":431,"./vecexprs":436}],401:[function(require,module,exports){
+},{"./arity2":391,"./expr":403,"./fragcolorexpr":404,"./monochromeexpr":414,"./sobelexpr":432,"./vecexprs":437}],402:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edge = exports.EdgeExpr = void 0;
@@ -84780,7 +85414,7 @@ function edge(style, samplerNum) {
 }
 exports.edge = edge;
 
-},{"./brightnessexpr":394,"./expr":402,"./getcompexpr":407,"./invertexpr":411,"./monochromeexpr":413,"./opexpr":420,"./sobelexpr":431}],402:[function(require,module,exports){
+},{"./brightnessexpr":395,"./expr":403,"./getcompexpr":408,"./invertexpr":412,"./monochromeexpr":414,"./opexpr":421,"./sobelexpr":432}],403:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tag = exports.wrapInValue = exports.pfloat = exports.Operator = exports.WrappedExpr = exports.ExprVec4 = exports.ExprVec3 = exports.ExprVec2 = exports.float = exports.ExprFloat = exports.BasicFloat = exports.ExprVec = exports.BasicVec4 = exports.BasicVec3 = exports.BasicVec2 = exports.BasicVec = exports.PrimitiveVec4 = exports.PrimitiveVec3 = exports.PrimitiveVec2 = exports.PrimitiveVec = exports.PrimitiveFloat = exports.Primitive = exports.mut = exports.Mutable = exports.cvec4 = exports.cvec3 = exports.cvec2 = exports.cfloat = exports.Expr = void 0;
@@ -85240,7 +85874,7 @@ function tag(strings, ...values) {
 }
 exports.tag = tag;
 
-},{"../mergepass":440,"../utils":442,"../webglprogramloop":443}],403:[function(require,module,exports){
+},{"../mergepass":441,"../utils":443,"../webglprogramloop":444}],404:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fcolor = exports.FragColorExpr = void 0;
@@ -85259,7 +85893,7 @@ function fcolor() {
 }
 exports.fcolor = fcolor;
 
-},{"./expr":402}],404:[function(require,module,exports){
+},{"./expr":403}],405:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pixel = exports.FragCoordExpr = void 0;
@@ -85280,7 +85914,7 @@ function pixel() {
 }
 exports.pixel = pixel;
 
-},{"./expr":402}],405:[function(require,module,exports){
+},{"./expr":403}],406:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fxaa = void 0;
@@ -85300,7 +85934,7 @@ function fxaa() {
 }
 exports.fxaa = fxaa;
 
-},{"../glslfunctions":438,"./expr":402}],406:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],407:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gaussian = exports.GaussianExpr = void 0;
@@ -85340,7 +85974,7 @@ function gaussian(x, a = 0, b = 1) {
 }
 exports.gaussian = gaussian;
 
-},{"../glslfunctions":438,"./expr":402}],407:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],408:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get4comp = exports.get3comp = exports.get2comp = exports.getcomp = exports.Get4CompExpr = exports.Get3CompExpr = exports.Get2CompExpr = exports.GetCompExpr = exports.checkLegalComponents = exports.typeStringToLength = void 0;
@@ -85494,7 +86128,7 @@ function get4comp(vec, comps) {
 }
 exports.get4comp = get4comp;
 
-},{"./expr":402}],408:[function(require,module,exports){
+},{"./expr":403}],409:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.godrays = exports.GodRaysExpr = void 0;
@@ -85610,7 +86244,7 @@ function godrays(options = {}) {
 }
 exports.godrays = godrays;
 
-},{"../glslfunctions":438,"./expr":402,"./fragcolorexpr":403,"./vecexprs":436}],409:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403,"./fragcolorexpr":404,"./vecexprs":437}],410:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.grain = exports.GrainExpr = void 0;
@@ -85642,7 +86276,7 @@ function grain(val) {
 }
 exports.grain = grain;
 
-},{"../glslfunctions":438,"./expr":402}],410:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],411:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hsv2rgb = exports.HSVToRGBExpr = void 0;
@@ -85671,7 +86305,7 @@ function hsv2rgb(col) {
 }
 exports.hsv2rgb = hsv2rgb;
 
-},{"../glslfunctions":438,"./expr":402}],411:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],412:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.invert = exports.InvertExpr = void 0;
@@ -85699,7 +86333,7 @@ function invert(col) {
 }
 exports.invert = invert;
 
-},{"../glslfunctions":438,"./expr":402}],412:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],413:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.len = exports.LenExpr = void 0;
@@ -85722,7 +86356,7 @@ function len(vec) {
 }
 exports.len = len;
 
-},{"./expr":402}],413:[function(require,module,exports){
+},{"./expr":403}],414:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.monochrome = exports.MonochromeExpr = void 0;
@@ -85751,7 +86385,7 @@ function monochrome(col) {
 }
 exports.monochrome = monochrome;
 
-},{"../glslfunctions":438,"./expr":402}],414:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],415:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.motionblur = exports.MotionBlurLoop = void 0;
@@ -85793,7 +86427,7 @@ function motionblur(target, persistence) {
 }
 exports.motionblur = motionblur;
 
-},{"../mergepass":440,"./channelsampleexpr":396,"./expr":402,"./fragcolorexpr":403,"./opexpr":420}],415:[function(require,module,exports){
+},{"../mergepass":441,"./channelsampleexpr":397,"./expr":403,"./fragcolorexpr":404,"./opexpr":421}],416:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mouse = exports.MouseExpr = void 0;
@@ -85815,7 +86449,7 @@ function mouse() {
 }
 exports.mouse = mouse;
 
-},{"./expr":402}],416:[function(require,module,exports){
+},{"./expr":403}],417:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.center = exports.NormCenterFragCoordExpr = void 0;
@@ -85836,7 +86470,7 @@ function center() {
 }
 exports.center = center;
 
-},{"./expr":402}],417:[function(require,module,exports){
+},{"./expr":403}],418:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.norm = exports.NormExpr = void 0;
@@ -85860,7 +86494,7 @@ function norm(vec) {
 }
 exports.norm = norm;
 
-},{"./expr":402}],418:[function(require,module,exports){
+},{"./expr":403}],419:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pos = exports.NormFragCoordExpr = void 0;
@@ -85883,7 +86517,7 @@ function pos() {
 }
 exports.pos = pos;
 
-},{"./expr":402}],419:[function(require,module,exports){
+},{"./expr":403}],420:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nmouse = exports.NormMouseExpr = void 0;
@@ -85905,7 +86539,7 @@ function nmouse() {
 }
 exports.nmouse = nmouse;
 
-},{"./expr":402}],420:[function(require,module,exports){
+},{"./expr":403}],421:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.op = exports.OpExpr = void 0;
@@ -85944,7 +86578,7 @@ function op(left, op, right) {
 }
 exports.op = op;
 
-},{"./expr":402}],421:[function(require,module,exports){
+},{"./expr":403}],422:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fractalize = exports.perlin = exports.PerlinExpr = void 0;
@@ -85995,7 +86629,7 @@ function fractalize(pos, octaves, func) {
 }
 exports.fractalize = fractalize;
 
-},{"../glslfunctions":438,"./expr":402,"./opexpr":420}],422:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403,"./opexpr":421}],423:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pblur = exports.PowerBlurLoop = void 0;
@@ -86037,7 +86671,7 @@ function pblur(size) {
 }
 exports.pblur = pblur;
 
-},{"../mergepass":440,"./blurexpr":393,"./expr":402,"./vecexprs":436}],423:[function(require,module,exports){
+},{"../mergepass":441,"./blurexpr":394,"./expr":403,"./vecexprs":437}],424:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.random = exports.RandomExpr = void 0;
@@ -86068,7 +86702,7 @@ function random(seed) {
 }
 exports.random = random;
 
-},{"../glslfunctions":438,"./expr":402,"./normfragcoordexpr":418}],424:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403,"./normfragcoordexpr":419}],425:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.region = void 0;
@@ -86128,7 +86762,7 @@ function region(space, success, failure, not = false) {
 }
 exports.region = region;
 
-},{"../mergepass":440,"./expr":402,"./fragcolorexpr":403,"./getcompexpr":407,"./normfragcoordexpr":418,"./opexpr":420,"./ternaryexpr":432}],425:[function(require,module,exports){
+},{"../mergepass":441,"./expr":403,"./fragcolorexpr":404,"./getcompexpr":408,"./normfragcoordexpr":419,"./opexpr":421,"./ternaryexpr":433}],426:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolution = exports.ResolutionExpr = void 0;
@@ -86146,7 +86780,7 @@ function resolution() {
 }
 exports.resolution = resolution;
 
-},{"./expr":402}],426:[function(require,module,exports){
+},{"./expr":403}],427:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rgb2hsv = exports.RGBToHSVExpr = void 0;
@@ -86176,7 +86810,7 @@ function rgb2hsv(col) {
 }
 exports.rgb2hsv = rgb2hsv;
 
-},{"../glslfunctions":438,"./expr":402}],427:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],428:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rotate = exports.RotateExpr = void 0;
@@ -86212,7 +86846,7 @@ function rotate(vec, angle) {
 }
 exports.rotate = rotate;
 
-},{"../glslfunctions":438,"./expr":402}],428:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],429:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.input = exports.SceneSampleExpr = void 0;
@@ -86243,7 +86877,7 @@ function input(vec) {
 }
 exports.input = input;
 
-},{"./expr":402,"./normfragcoordexpr":418}],429:[function(require,module,exports){
+},{"./expr":403,"./normfragcoordexpr":419}],430:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SetColorExpr = void 0;
@@ -86260,7 +86894,7 @@ class SetColorExpr extends expr_1.ExprVec4 {
 }
 exports.SetColorExpr = SetColorExpr;
 
-},{"./expr":402}],430:[function(require,module,exports){
+},{"./expr":403}],431:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.simplex = exports.SimplexNoise = void 0;
@@ -86288,7 +86922,7 @@ function simplex(pos) {
 }
 exports.simplex = simplex;
 
-},{"../glslfunctions":438,"./expr":402}],431:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],432:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sobel = exports.SobelExpr = void 0;
@@ -86314,7 +86948,7 @@ function sobel(samplerNum) {
 }
 exports.sobel = sobel;
 
-},{"../glslfunctions":438,"./expr":402}],432:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],433:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ternary = exports.TernaryExpr = void 0;
@@ -86379,7 +87013,7 @@ function ternary(floats, success, failure, not = false) {
 }
 exports.ternary = ternary;
 
-},{"./expr":402}],433:[function(require,module,exports){
+},{"./expr":403}],434:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.time = exports.TimeExpr = void 0;
@@ -86398,7 +87032,7 @@ function time() {
 }
 exports.time = time;
 
-},{"./expr":402}],434:[function(require,module,exports){
+},{"./expr":403}],435:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translate = exports.TranslateExpr = void 0;
@@ -86431,7 +87065,7 @@ function translate(vec, pos) {
 }
 exports.translate = translate;
 
-},{"./expr":402}],435:[function(require,module,exports){
+},{"./expr":403}],436:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.truedepth = exports.TrueDepthExpr = void 0;
@@ -86457,7 +87091,7 @@ function truedepth(depth) {
 }
 exports.truedepth = truedepth;
 
-},{"../glslfunctions":438,"./expr":402}],436:[function(require,module,exports){
+},{"../glslfunctions":439,"./expr":403}],437:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pvec4 = exports.pvec3 = exports.pvec2 = exports.vec4 = exports.vec3 = exports.vec2 = void 0;
@@ -86508,11 +87142,11 @@ function pvec4(comp1, comp2, comp3, comp4) {
 }
 exports.pvec4 = pvec4;
 
-},{"./expr":402}],437:[function(require,module,exports){
+},{"./expr":403}],438:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],438:[function(require,module,exports){
+},{}],439:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.glslFuncs = void 0;
@@ -86832,7 +87466,7 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 }`,
 };
 
-},{}],439:[function(require,module,exports){
+},{}],440:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -86896,7 +87530,7 @@ __exportStar(require("./exprs/ternaryexpr"), exports);
 __exportStar(require("./exprs/regiondecorator"), exports);
 __exportStar(require("./exprs/expr"), exports);
 
-},{"./exprs/arity1":389,"./exprs/arity2":390,"./exprs/bloomloop":391,"./exprs/blur2dloop":392,"./exprs/blurexpr":393,"./exprs/brightnessexpr":394,"./exprs/changecompexpr":395,"./exprs/channelsampleexpr":396,"./exprs/contrastexpr":397,"./exprs/depthtoocclusionexpr":398,"./exprs/dofloop":399,"./exprs/edgecolorexpr":400,"./exprs/edgeexpr":401,"./exprs/expr":402,"./exprs/fragcolorexpr":403,"./exprs/fragcoordexpr":404,"./exprs/fxaaexpr":405,"./exprs/getcompexpr":407,"./exprs/godraysexpr":408,"./exprs/grainexpr":409,"./exprs/hsvtorgbexpr":410,"./exprs/invertexpr":411,"./exprs/lenexpr":412,"./exprs/monochromeexpr":413,"./exprs/motionblurloop":414,"./exprs/mouseexpr":415,"./exprs/normcenterfragcoordexpr":416,"./exprs/normexpr":417,"./exprs/normfragcoordexpr":418,"./exprs/normmouseexpr":419,"./exprs/opexpr":420,"./exprs/perlinexpr":421,"./exprs/powerblur":422,"./exprs/randomexpr":423,"./exprs/regiondecorator":424,"./exprs/resolutionexpr":425,"./exprs/rgbtohsvexpr":426,"./exprs/rotateexpr":427,"./exprs/scenesampleexpr":428,"./exprs/simplexexpr":430,"./exprs/sobelexpr":431,"./exprs/ternaryexpr":432,"./exprs/timeexpr":433,"./exprs/translateexpr":434,"./exprs/truedepthexpr":435,"./exprs/vecexprs":436,"./exprtypes":437,"./glslfunctions":438,"./mergepass":440,"./settings":441}],440:[function(require,module,exports){
+},{"./exprs/arity1":390,"./exprs/arity2":391,"./exprs/bloomloop":392,"./exprs/blur2dloop":393,"./exprs/blurexpr":394,"./exprs/brightnessexpr":395,"./exprs/changecompexpr":396,"./exprs/channelsampleexpr":397,"./exprs/contrastexpr":398,"./exprs/depthtoocclusionexpr":399,"./exprs/dofloop":400,"./exprs/edgecolorexpr":401,"./exprs/edgeexpr":402,"./exprs/expr":403,"./exprs/fragcolorexpr":404,"./exprs/fragcoordexpr":405,"./exprs/fxaaexpr":406,"./exprs/getcompexpr":408,"./exprs/godraysexpr":409,"./exprs/grainexpr":410,"./exprs/hsvtorgbexpr":411,"./exprs/invertexpr":412,"./exprs/lenexpr":413,"./exprs/monochromeexpr":414,"./exprs/motionblurloop":415,"./exprs/mouseexpr":416,"./exprs/normcenterfragcoordexpr":417,"./exprs/normexpr":418,"./exprs/normfragcoordexpr":419,"./exprs/normmouseexpr":420,"./exprs/opexpr":421,"./exprs/perlinexpr":422,"./exprs/powerblur":423,"./exprs/randomexpr":424,"./exprs/regiondecorator":425,"./exprs/resolutionexpr":426,"./exprs/rgbtohsvexpr":427,"./exprs/rotateexpr":428,"./exprs/scenesampleexpr":429,"./exprs/simplexexpr":431,"./exprs/sobelexpr":432,"./exprs/ternaryexpr":433,"./exprs/timeexpr":434,"./exprs/translateexpr":435,"./exprs/truedepthexpr":436,"./exprs/vecexprs":437,"./exprtypes":438,"./glslfunctions":439,"./mergepass":441,"./settings":442}],441:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendTexture = exports.makeTexture = exports.Merger = exports.loop = exports.EffectLoop = exports.EffectDictionary = void 0;
@@ -87331,7 +87965,7 @@ function sendTexture(gl, src) {
 }
 exports.sendTexture = sendTexture;
 
-},{"./codebuilder":388,"./exprs/expr":402,"./exprs/fragcolorexpr":403,"./exprs/regiondecorator":424,"./exprs/scenesampleexpr":428,"./exprs/setcolorexpr":429,"./exprs/ternaryexpr":432,"./settings":441,"./webglprogramloop":443}],441:[function(require,module,exports){
+},{"./codebuilder":389,"./exprs/expr":403,"./exprs/fragcolorexpr":404,"./exprs/regiondecorator":425,"./exprs/scenesampleexpr":429,"./exprs/setcolorexpr":430,"./exprs/ternaryexpr":433,"./settings":442,"./webglprogramloop":444}],442:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.settings = void 0;
@@ -87347,7 +87981,7 @@ exports.settings = {
     offset: 0,
 };
 
-},{}],442:[function(require,module,exports){
+},{}],443:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brandWithRegion = exports.brandWithChannel = exports.captureAndAppend = void 0;
@@ -87432,7 +88066,7 @@ function brandWithRegion(expr, funcIndex, space) {
 }
 exports.brandWithRegion = brandWithRegion;
 
-},{"./glslfunctions":438}],443:[function(require,module,exports){
+},{"./glslfunctions":439}],444:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebGLProgramLoop = exports.WebGLProgramLeaf = exports.updateNeeds = void 0;
@@ -87666,7 +88300,7 @@ class WebGLProgramLoop {
 }
 exports.WebGLProgramLoop = WebGLProgramLoop;
 
-},{"./settings":441}],444:[function(require,module,exports){
+},{"./settings":442}],445:[function(require,module,exports){
 /**
  * Bit twiddling hacks for JavaScript.
  *
@@ -87872,7 +88506,7 @@ exports.nextCombination = function(v) {
 }
 
 
-},{}],445:[function(require,module,exports){
+},{}],446:[function(require,module,exports){
 "use strict"
 
 var createThunk = require("./lib/thunk.js")
@@ -87983,7 +88617,7 @@ function compileCwise(user_args) {
 
 module.exports = compileCwise
 
-},{"./lib/thunk.js":447}],446:[function(require,module,exports){
+},{"./lib/thunk.js":448}],447:[function(require,module,exports){
 "use strict"
 
 var uniq = require("uniq")
@@ -88343,7 +88977,7 @@ function generateCWiseOp(proc, typesig) {
 }
 module.exports = generateCWiseOp
 
-},{"uniq":538}],447:[function(require,module,exports){
+},{"uniq":539}],448:[function(require,module,exports){
 "use strict"
 
 // The function below is called when constructing a cwise function object, and does the following:
@@ -88431,7 +89065,7 @@ function createThunk(proc) {
 
 module.exports = createThunk
 
-},{"./compile.js":446}],448:[function(require,module,exports){
+},{"./compile.js":447}],449:[function(require,module,exports){
 (function (Buffer){
 
 /**
@@ -88489,7 +89123,7 @@ function dataUriToBuffer (uri) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":142}],449:[function(require,module,exports){
+},{"buffer":142}],450:[function(require,module,exports){
 "use strict"
 
 function dupe_array(count, value, i) {
@@ -88539,7 +89173,7 @@ function dupe(count, value) {
 }
 
 module.exports = dupe
-},{}],450:[function(require,module,exports){
+},{}],451:[function(require,module,exports){
 (function (Buffer,process){
 'use strict'
 
@@ -88677,7 +89311,7 @@ module.exports = function getPixels(url, type, cb) {
   }
 }
 }).call(this,{"isBuffer":require("../../../gibber/node_modules/is-buffer/index.js")},require('_process'))
-},{"../../../gibber/node_modules/is-buffer/index.js":155,"_process":208,"data-uri-to-buffer":448,"ndarray":534,"ndarray-pack":532,"omggif":535,"path":206,"through":536}],451:[function(require,module,exports){
+},{"../../../gibber/node_modules/is-buffer/index.js":155,"_process":208,"data-uri-to-buffer":449,"ndarray":535,"ndarray-pack":533,"omggif":536,"path":206,"through":537}],452:[function(require,module,exports){
 module.exports = adjoint;
 
 /**
@@ -88711,7 +89345,7 @@ function adjoint(out, a) {
     out[15] =  (a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11));
     return out;
 };
-},{}],452:[function(require,module,exports){
+},{}],453:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -88740,7 +89374,7 @@ function clone(a) {
     out[15] = a[15];
     return out;
 };
-},{}],453:[function(require,module,exports){
+},{}],454:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -88769,7 +89403,7 @@ function copy(out, a) {
     out[15] = a[15];
     return out;
 };
-},{}],454:[function(require,module,exports){
+},{}],455:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -88797,7 +89431,7 @@ function create() {
     out[15] = 1;
     return out;
 };
-},{}],455:[function(require,module,exports){
+},{}],456:[function(require,module,exports){
 module.exports = determinant;
 
 /**
@@ -88828,7 +89462,7 @@ function determinant(a) {
     // Calculate the determinant
     return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 };
-},{}],456:[function(require,module,exports){
+},{}],457:[function(require,module,exports){
 module.exports = fromQuat;
 
 /**
@@ -88876,7 +89510,7 @@ function fromQuat(out, q) {
 
     return out;
 };
-},{}],457:[function(require,module,exports){
+},{}],458:[function(require,module,exports){
 module.exports = fromRotation
 
 /**
@@ -88931,7 +89565,7 @@ function fromRotation(out, rad, axis) {
   return out
 }
 
-},{}],458:[function(require,module,exports){
+},{}],459:[function(require,module,exports){
 module.exports = fromRotationTranslation;
 
 /**
@@ -88985,7 +89619,7 @@ function fromRotationTranslation(out, q, v) {
     
     return out;
 };
-},{}],459:[function(require,module,exports){
+},{}],460:[function(require,module,exports){
 module.exports = fromScaling
 
 /**
@@ -89019,7 +89653,7 @@ function fromScaling(out, v) {
   return out
 }
 
-},{}],460:[function(require,module,exports){
+},{}],461:[function(require,module,exports){
 module.exports = fromTranslation
 
 /**
@@ -89053,7 +89687,7 @@ function fromTranslation(out, v) {
   return out
 }
 
-},{}],461:[function(require,module,exports){
+},{}],462:[function(require,module,exports){
 module.exports = fromXRotation
 
 /**
@@ -89090,7 +89724,7 @@ function fromXRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],462:[function(require,module,exports){
+},{}],463:[function(require,module,exports){
 module.exports = fromYRotation
 
 /**
@@ -89127,7 +89761,7 @@ function fromYRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],463:[function(require,module,exports){
+},{}],464:[function(require,module,exports){
 module.exports = fromZRotation
 
 /**
@@ -89164,7 +89798,7 @@ function fromZRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],464:[function(require,module,exports){
+},{}],465:[function(require,module,exports){
 module.exports = frustum;
 
 /**
@@ -89201,7 +89835,7 @@ function frustum(out, left, right, bottom, top, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],465:[function(require,module,exports){
+},{}],466:[function(require,module,exports){
 module.exports = identity;
 
 /**
@@ -89229,7 +89863,7 @@ function identity(out) {
     out[15] = 1;
     return out;
 };
-},{}],466:[function(require,module,exports){
+},{}],467:[function(require,module,exports){
 module.exports = {
   create: require('./create')
   , clone: require('./clone')
@@ -89262,7 +89896,7 @@ module.exports = {
   , str: require('./str')
 }
 
-},{"./adjoint":451,"./clone":452,"./copy":453,"./create":454,"./determinant":455,"./fromQuat":456,"./fromRotation":457,"./fromRotationTranslation":458,"./fromScaling":459,"./fromTranslation":460,"./fromXRotation":461,"./fromYRotation":462,"./fromZRotation":463,"./frustum":464,"./identity":465,"./invert":467,"./lookAt":468,"./multiply":469,"./ortho":470,"./perspective":471,"./perspectiveFromFieldOfView":472,"./rotate":473,"./rotateX":474,"./rotateY":475,"./rotateZ":476,"./scale":477,"./str":478,"./translate":479,"./transpose":480}],467:[function(require,module,exports){
+},{"./adjoint":452,"./clone":453,"./copy":454,"./create":455,"./determinant":456,"./fromQuat":457,"./fromRotation":458,"./fromRotationTranslation":459,"./fromScaling":460,"./fromTranslation":461,"./fromXRotation":462,"./fromYRotation":463,"./fromZRotation":464,"./frustum":465,"./identity":466,"./invert":468,"./lookAt":469,"./multiply":470,"./ortho":471,"./perspective":472,"./perspectiveFromFieldOfView":473,"./rotate":474,"./rotateX":475,"./rotateY":476,"./rotateZ":477,"./scale":478,"./str":479,"./translate":480,"./transpose":481}],468:[function(require,module,exports){
 module.exports = invert;
 
 /**
@@ -89318,7 +89952,7 @@ function invert(out, a) {
 
     return out;
 };
-},{}],468:[function(require,module,exports){
+},{}],469:[function(require,module,exports){
 var identity = require('./identity');
 
 module.exports = lookAt;
@@ -89409,7 +90043,7 @@ function lookAt(out, eye, center, up) {
 
     return out;
 };
-},{"./identity":465}],469:[function(require,module,exports){
+},{"./identity":466}],470:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -89452,7 +90086,7 @@ function multiply(out, a, b) {
     out[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
     return out;
 };
-},{}],470:[function(require,module,exports){
+},{}],471:[function(require,module,exports){
 module.exports = ortho;
 
 /**
@@ -89489,7 +90123,7 @@ function ortho(out, left, right, bottom, top, near, far) {
     out[15] = 1;
     return out;
 };
-},{}],471:[function(require,module,exports){
+},{}],472:[function(require,module,exports){
 module.exports = perspective;
 
 /**
@@ -89523,7 +90157,7 @@ function perspective(out, fovy, aspect, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],472:[function(require,module,exports){
+},{}],473:[function(require,module,exports){
 module.exports = perspectiveFromFieldOfView;
 
 /**
@@ -89565,7 +90199,7 @@ function perspectiveFromFieldOfView(out, fov, near, far) {
 }
 
 
-},{}],473:[function(require,module,exports){
+},{}],474:[function(require,module,exports){
 module.exports = rotate;
 
 /**
@@ -89630,7 +90264,7 @@ function rotate(out, a, rad, axis) {
     }
     return out;
 };
-},{}],474:[function(require,module,exports){
+},{}],475:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -89675,7 +90309,7 @@ function rotateX(out, a, rad) {
     out[11] = a23 * c - a13 * s;
     return out;
 };
-},{}],475:[function(require,module,exports){
+},{}],476:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -89720,7 +90354,7 @@ function rotateY(out, a, rad) {
     out[11] = a03 * s + a23 * c;
     return out;
 };
-},{}],476:[function(require,module,exports){
+},{}],477:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -89765,7 +90399,7 @@ function rotateZ(out, a, rad) {
     out[7] = a13 * c - a03 * s;
     return out;
 };
-},{}],477:[function(require,module,exports){
+},{}],478:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -89797,7 +90431,7 @@ function scale(out, a, v) {
     out[15] = a[15];
     return out;
 };
-},{}],478:[function(require,module,exports){
+},{}],479:[function(require,module,exports){
 module.exports = str;
 
 /**
@@ -89812,7 +90446,7 @@ function str(a) {
                     a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' + 
                     a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
 };
-},{}],479:[function(require,module,exports){
+},{}],480:[function(require,module,exports){
 module.exports = translate;
 
 /**
@@ -89851,7 +90485,7 @@ function translate(out, a, v) {
 
     return out;
 };
-},{}],480:[function(require,module,exports){
+},{}],481:[function(require,module,exports){
 module.exports = transpose;
 
 /**
@@ -89901,7 +90535,7 @@ function transpose(out, a) {
     
     return out;
 };
-},{}],481:[function(require,module,exports){
+},{}],482:[function(require,module,exports){
 'use strict'
 
 var ndarray = require('ndarray')
@@ -90464,7 +91098,7 @@ function createTexture2D(gl) {
   throw new Error('gl-texture2d: Invalid arguments for texture2d constructor')
 }
 
-},{"ndarray":534,"ndarray-ops":531,"typedarray-pool":537}],482:[function(require,module,exports){
+},{"ndarray":535,"ndarray-ops":532,"typedarray-pool":538}],483:[function(require,module,exports){
 module.exports = add;
 
 /**
@@ -90481,7 +91115,7 @@ function add(out, a, b) {
     out[2] = a[2] + b[2]
     return out
 }
-},{}],483:[function(require,module,exports){
+},{}],484:[function(require,module,exports){
 module.exports = angle
 
 var fromValues = require('./fromValues')
@@ -90510,7 +91144,7 @@ function angle(a, b) {
     }     
 }
 
-},{"./dot":493,"./fromValues":499,"./normalize":510}],484:[function(require,module,exports){
+},{"./dot":494,"./fromValues":500,"./normalize":511}],485:[function(require,module,exports){
 module.exports = ceil
 
 /**
@@ -90527,7 +91161,7 @@ function ceil(out, a) {
   return out
 }
 
-},{}],485:[function(require,module,exports){
+},{}],486:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -90543,7 +91177,7 @@ function clone(a) {
     out[2] = a[2]
     return out
 }
-},{}],486:[function(require,module,exports){
+},{}],487:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -90559,7 +91193,7 @@ function copy(out, a) {
     out[2] = a[2]
     return out
 }
-},{}],487:[function(require,module,exports){
+},{}],488:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -90574,7 +91208,7 @@ function create() {
     out[2] = 0
     return out
 }
-},{}],488:[function(require,module,exports){
+},{}],489:[function(require,module,exports){
 module.exports = cross;
 
 /**
@@ -90594,10 +91228,10 @@ function cross(out, a, b) {
     out[2] = ax * by - ay * bx
     return out
 }
-},{}],489:[function(require,module,exports){
+},{}],490:[function(require,module,exports){
 module.exports = require('./distance')
 
-},{"./distance":490}],490:[function(require,module,exports){
+},{"./distance":491}],491:[function(require,module,exports){
 module.exports = distance;
 
 /**
@@ -90613,10 +91247,10 @@ function distance(a, b) {
         z = b[2] - a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],491:[function(require,module,exports){
+},{}],492:[function(require,module,exports){
 module.exports = require('./divide')
 
-},{"./divide":492}],492:[function(require,module,exports){
+},{"./divide":493}],493:[function(require,module,exports){
 module.exports = divide;
 
 /**
@@ -90633,7 +91267,7 @@ function divide(out, a, b) {
     out[2] = a[2] / b[2]
     return out
 }
-},{}],493:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
 module.exports = dot;
 
 /**
@@ -90646,10 +91280,10 @@ module.exports = dot;
 function dot(a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
-},{}],494:[function(require,module,exports){
+},{}],495:[function(require,module,exports){
 module.exports = 0.000001
 
-},{}],495:[function(require,module,exports){
+},{}],496:[function(require,module,exports){
 module.exports = equals
 
 var EPSILON = require('./epsilon')
@@ -90673,7 +91307,7 @@ function equals(a, b) {
           Math.abs(a2 - b2) <= EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)))
 }
 
-},{"./epsilon":494}],496:[function(require,module,exports){
+},{"./epsilon":495}],497:[function(require,module,exports){
 module.exports = exactEquals
 
 /**
@@ -90687,7 +91321,7 @@ function exactEquals(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
 }
 
-},{}],497:[function(require,module,exports){
+},{}],498:[function(require,module,exports){
 module.exports = floor
 
 /**
@@ -90704,7 +91338,7 @@ function floor(out, a) {
   return out
 }
 
-},{}],498:[function(require,module,exports){
+},{}],499:[function(require,module,exports){
 module.exports = forEach;
 
 var vec = require('./create')()
@@ -90749,7 +91383,7 @@ function forEach(a, stride, offset, count, fn, arg) {
         
         return a
 }
-},{"./create":487}],499:[function(require,module,exports){
+},{"./create":488}],500:[function(require,module,exports){
 module.exports = fromValues;
 
 /**
@@ -90767,7 +91401,7 @@ function fromValues(x, y, z) {
     out[2] = z
     return out
 }
-},{}],500:[function(require,module,exports){
+},{}],501:[function(require,module,exports){
 module.exports = {
   EPSILON: require('./epsilon')
   , create: require('./create')
@@ -90816,7 +91450,7 @@ module.exports = {
   , forEach: require('./forEach')
 }
 
-},{"./add":482,"./angle":483,"./ceil":484,"./clone":485,"./copy":486,"./create":487,"./cross":488,"./dist":489,"./distance":490,"./div":491,"./divide":492,"./dot":493,"./epsilon":494,"./equals":495,"./exactEquals":496,"./floor":497,"./forEach":498,"./fromValues":499,"./inverse":501,"./len":502,"./length":503,"./lerp":504,"./max":505,"./min":506,"./mul":507,"./multiply":508,"./negate":509,"./normalize":510,"./random":511,"./rotateX":512,"./rotateY":513,"./rotateZ":514,"./round":515,"./scale":516,"./scaleAndAdd":517,"./set":518,"./sqrDist":519,"./sqrLen":520,"./squaredDistance":521,"./squaredLength":522,"./sub":523,"./subtract":524,"./transformMat3":525,"./transformMat4":526,"./transformQuat":527}],501:[function(require,module,exports){
+},{"./add":483,"./angle":484,"./ceil":485,"./clone":486,"./copy":487,"./create":488,"./cross":489,"./dist":490,"./distance":491,"./div":492,"./divide":493,"./dot":494,"./epsilon":495,"./equals":496,"./exactEquals":497,"./floor":498,"./forEach":499,"./fromValues":500,"./inverse":502,"./len":503,"./length":504,"./lerp":505,"./max":506,"./min":507,"./mul":508,"./multiply":509,"./negate":510,"./normalize":511,"./random":512,"./rotateX":513,"./rotateY":514,"./rotateZ":515,"./round":516,"./scale":517,"./scaleAndAdd":518,"./set":519,"./sqrDist":520,"./sqrLen":521,"./squaredDistance":522,"./squaredLength":523,"./sub":524,"./subtract":525,"./transformMat3":526,"./transformMat4":527,"./transformQuat":528}],502:[function(require,module,exports){
 module.exports = inverse;
 
 /**
@@ -90832,10 +91466,10 @@ function inverse(out, a) {
   out[2] = 1.0 / a[2]
   return out
 }
-},{}],502:[function(require,module,exports){
+},{}],503:[function(require,module,exports){
 module.exports = require('./length')
 
-},{"./length":503}],503:[function(require,module,exports){
+},{"./length":504}],504:[function(require,module,exports){
 module.exports = length;
 
 /**
@@ -90850,7 +91484,7 @@ function length(a) {
         z = a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],504:[function(require,module,exports){
+},{}],505:[function(require,module,exports){
 module.exports = lerp;
 
 /**
@@ -90871,7 +91505,7 @@ function lerp(out, a, b, t) {
     out[2] = az + t * (b[2] - az)
     return out
 }
-},{}],505:[function(require,module,exports){
+},{}],506:[function(require,module,exports){
 module.exports = max;
 
 /**
@@ -90888,7 +91522,7 @@ function max(out, a, b) {
     out[2] = Math.max(a[2], b[2])
     return out
 }
-},{}],506:[function(require,module,exports){
+},{}],507:[function(require,module,exports){
 module.exports = min;
 
 /**
@@ -90905,10 +91539,10 @@ function min(out, a, b) {
     out[2] = Math.min(a[2], b[2])
     return out
 }
-},{}],507:[function(require,module,exports){
+},{}],508:[function(require,module,exports){
 module.exports = require('./multiply')
 
-},{"./multiply":508}],508:[function(require,module,exports){
+},{"./multiply":509}],509:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -90925,7 +91559,7 @@ function multiply(out, a, b) {
     out[2] = a[2] * b[2]
     return out
 }
-},{}],509:[function(require,module,exports){
+},{}],510:[function(require,module,exports){
 module.exports = negate;
 
 /**
@@ -90941,7 +91575,7 @@ function negate(out, a) {
     out[2] = -a[2]
     return out
 }
-},{}],510:[function(require,module,exports){
+},{}],511:[function(require,module,exports){
 module.exports = normalize;
 
 /**
@@ -90965,7 +91599,7 @@ function normalize(out, a) {
     }
     return out
 }
-},{}],511:[function(require,module,exports){
+},{}],512:[function(require,module,exports){
 module.exports = random;
 
 /**
@@ -90987,7 +91621,7 @@ function random(out, scale) {
     out[2] = z * scale
     return out
 }
-},{}],512:[function(require,module,exports){
+},{}],513:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -91017,7 +91651,7 @@ function rotateX(out, a, b, c){
     return out
 }
 
-},{}],513:[function(require,module,exports){
+},{}],514:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -91047,7 +91681,7 @@ function rotateY(out, a, b, c){
     return out
 }
 
-},{}],514:[function(require,module,exports){
+},{}],515:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -91077,7 +91711,7 @@ function rotateZ(out, a, b, c){
     return out
 }
 
-},{}],515:[function(require,module,exports){
+},{}],516:[function(require,module,exports){
 module.exports = round
 
 /**
@@ -91094,7 +91728,7 @@ function round(out, a) {
   return out
 }
 
-},{}],516:[function(require,module,exports){
+},{}],517:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -91111,7 +91745,7 @@ function scale(out, a, b) {
     out[2] = a[2] * b
     return out
 }
-},{}],517:[function(require,module,exports){
+},{}],518:[function(require,module,exports){
 module.exports = scaleAndAdd;
 
 /**
@@ -91129,7 +91763,7 @@ function scaleAndAdd(out, a, b, scale) {
     out[2] = a[2] + (b[2] * scale)
     return out
 }
-},{}],518:[function(require,module,exports){
+},{}],519:[function(require,module,exports){
 module.exports = set;
 
 /**
@@ -91147,13 +91781,13 @@ function set(out, x, y, z) {
     out[2] = z
     return out
 }
-},{}],519:[function(require,module,exports){
+},{}],520:[function(require,module,exports){
 module.exports = require('./squaredDistance')
 
-},{"./squaredDistance":521}],520:[function(require,module,exports){
+},{"./squaredDistance":522}],521:[function(require,module,exports){
 module.exports = require('./squaredLength')
 
-},{"./squaredLength":522}],521:[function(require,module,exports){
+},{"./squaredLength":523}],522:[function(require,module,exports){
 module.exports = squaredDistance;
 
 /**
@@ -91169,7 +91803,7 @@ function squaredDistance(a, b) {
         z = b[2] - a[2]
     return x*x + y*y + z*z
 }
-},{}],522:[function(require,module,exports){
+},{}],523:[function(require,module,exports){
 module.exports = squaredLength;
 
 /**
@@ -91184,10 +91818,10 @@ function squaredLength(a) {
         z = a[2]
     return x*x + y*y + z*z
 }
-},{}],523:[function(require,module,exports){
+},{}],524:[function(require,module,exports){
 module.exports = require('./subtract')
 
-},{"./subtract":524}],524:[function(require,module,exports){
+},{"./subtract":525}],525:[function(require,module,exports){
 module.exports = subtract;
 
 /**
@@ -91204,7 +91838,7 @@ function subtract(out, a, b) {
     out[2] = a[2] - b[2]
     return out
 }
-},{}],525:[function(require,module,exports){
+},{}],526:[function(require,module,exports){
 module.exports = transformMat3;
 
 /**
@@ -91222,7 +91856,7 @@ function transformMat3(out, a, m) {
     out[2] = x * m[2] + y * m[5] + z * m[8]
     return out
 }
-},{}],526:[function(require,module,exports){
+},{}],527:[function(require,module,exports){
 module.exports = transformMat4;
 
 /**
@@ -91243,7 +91877,7 @@ function transformMat4(out, a, m) {
     out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w
     return out
 }
-},{}],527:[function(require,module,exports){
+},{}],528:[function(require,module,exports){
 module.exports = transformQuat;
 
 /**
@@ -91272,7 +91906,7 @@ function transformQuat(out, a, q) {
     out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx
     return out
 }
-},{}],528:[function(require,module,exports){
+},{}],529:[function(require,module,exports){
 module.exports = function(strings) {
   if (typeof strings === 'string') strings = [strings]
   var exprs = [].slice.call(arguments,1)
@@ -91284,7 +91918,7 @@ module.exports = function(strings) {
   return parts.join('')
 }
 
-},{}],529:[function(require,module,exports){
+},{}],530:[function(require,module,exports){
 "use strict"
 
 function iota(n) {
@@ -91296,9 +91930,9 @@ function iota(n) {
 }
 
 module.exports = iota
-},{}],530:[function(require,module,exports){
+},{}],531:[function(require,module,exports){
 arguments[4][155][0].apply(exports,arguments)
-},{"dup":155}],531:[function(require,module,exports){
+},{"dup":155}],532:[function(require,module,exports){
 "use strict"
 
 var compile = require("cwise-compiler")
@@ -91761,7 +92395,7 @@ exports.equals = compile({
 
 
 
-},{"cwise-compiler":445}],532:[function(require,module,exports){
+},{"cwise-compiler":446}],533:[function(require,module,exports){
 "use strict"
 
 var ndarray = require("ndarray")
@@ -91784,10 +92418,10 @@ module.exports = function convert(arr, result) {
   return result
 }
 
-},{"./doConvert.js":533,"ndarray":534}],533:[function(require,module,exports){
+},{"./doConvert.js":534,"ndarray":535}],534:[function(require,module,exports){
 module.exports=require('cwise-compiler')({"args":["array","scalar","index"],"pre":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"body":{"body":"{\nvar _inline_1_v=_inline_1_arg1_,_inline_1_i\nfor(_inline_1_i=0;_inline_1_i<_inline_1_arg2_.length-1;++_inline_1_i) {\n_inline_1_v=_inline_1_v[_inline_1_arg2_[_inline_1_i]]\n}\n_inline_1_arg0_=_inline_1_v[_inline_1_arg2_[_inline_1_arg2_.length-1]]\n}","args":[{"name":"_inline_1_arg0_","lvalue":true,"rvalue":false,"count":1},{"name":"_inline_1_arg1_","lvalue":false,"rvalue":true,"count":1},{"name":"_inline_1_arg2_","lvalue":false,"rvalue":true,"count":4}],"thisVars":[],"localVars":["_inline_1_i","_inline_1_v"]},"post":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"funcName":"convert","blockSize":64})
 
-},{"cwise-compiler":445}],534:[function(require,module,exports){
+},{"cwise-compiler":446}],535:[function(require,module,exports){
 var iota = require("iota-array")
 var isBuffer = require("is-buffer")
 
@@ -92138,7 +92772,7 @@ function wrappedNDArrayCtor(data, shape, stride, offset) {
 
 module.exports = wrappedNDArrayCtor
 
-},{"iota-array":529,"is-buffer":530}],535:[function(require,module,exports){
+},{"iota-array":530,"is-buffer":531}],536:[function(require,module,exports){
 // (c) Dean McNamee <dean@gmail.com>, 2013.
 //
 // https://github.com/deanm/omggif
@@ -92947,7 +93581,7 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
 // CommonJS.
 try { exports.GifWriter = GifWriter; exports.GifReader = GifReader } catch(e) {}
 
-},{}],536:[function(require,module,exports){
+},{}],537:[function(require,module,exports){
 (function (process){
 var Stream = require('stream')
 
@@ -93059,7 +93693,7 @@ function through (write, end, opts) {
 
 
 }).call(this,require('_process'))
-},{"_process":208,"stream":224}],537:[function(require,module,exports){
+},{"_process":208,"stream":224}],538:[function(require,module,exports){
 (function (global){
 'use strict'
 
@@ -93314,7 +93948,7 @@ exports.clearCache = function clearCache() {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bit-twiddle":444,"buffer":142,"dup":449}],538:[function(require,module,exports){
+},{"bit-twiddle":445,"buffer":142,"dup":450}],539:[function(require,module,exports){
 "use strict"
 
 function unique_pred(list, compare) {
