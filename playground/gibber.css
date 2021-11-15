@@ -40,6 +40,7 @@
 }
 
 body { 
+  height:100%; /* needed for calls to calc() in child elements */
   margin: 0;
   color:#ddd;
   font-family: Helvetica Neue, sans-serif;
