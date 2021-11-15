@@ -1076,10 +1076,6 @@ module.exports = ( x, y=1, properties ) => {
     //}
   }else if( x instanceof Float32Array ) {
     buffer = x
-  }else if( x instanceof Uint8Array ) {
-    buffer = x
-  }else if( x instanceof AudioBuffer ) {
-    buffer = x.getChannelData(0)
   }
   
   ugen = Object.create( proto ) 
@@ -2614,8 +2610,6 @@ let proto = {
     gen.memo[ this.name ] = this.name
 
     return [this.name, out]
-    
-    return out
   }
 }
 
@@ -2652,8 +2646,6 @@ let proto = {
     gen.memo[ this.name ] = this.name
 
     return [this.name, out]
-    
-    return out
   }
 }
 
@@ -3573,8 +3565,6 @@ const proto = {
     gen.memo[ this.name ] = this.name
 
     return [this.name, out]
-    
-    return out
   }
 }
 
@@ -8814,6 +8804,15 @@ module.exports = function (Gibberish) {
 
         //if( rate !== null ) g.gen.memory.heap[ voice.rate.memory.values.idx ] = rate
         if (rate !== null) voice.rate = rate;
+        if (rate > 0) {
+          voice.trigger();
+        } else {
+          console.log('reverse?', rate);
+          voice.bang.trigger();
+          //voice.phase.value = 0
+          voice.phase.value = sampler.dataLength - 1;
+          console.log('phase', voice.phase.value);
+        }
         //if( rate < 0 ) {
         //  const phase = sampler.dataIdx + Math.round((sampler.dataLength/2)) - 1
         //  console.log( 'phase:', phase, 'length:', sampler.dataLength, 'start:', sampler.dataIdx )
@@ -8824,7 +8823,7 @@ module.exports = function (Gibberish) {
         //  voice.trigger()
         //}
 
-        voice.trigger();
+        //voice.trigger()
         //g.gen.memory.heap[ voice.rate.memory.values.idx ] = rate
       }
 
@@ -8868,7 +8867,6 @@ module.exports = function (Gibberish) {
       Gibberish.worklet.port.postMessage(syn.__meta__);
     }
 
-    // create all our vocecs
     const voices = [];
     for (let i = 0; i < syn.maxVoices; i++) {
       'use jsdsp';
@@ -8880,6 +8878,14 @@ module.exports = function (Gibberish) {
         // XXX how do I change this from main thread?
         __pan: g.data([.5], 1, { meta: true }),
         __rate: g.data([1], 1, { meta: true }),
+        __shouldLoop: g.data([1], 1, { meta: true }),
+        __loudness: g.data([1], 1, { meta: true }),
+        get loudness() {
+          return g.gen.memory.heap[this.__loudness.memory.values.idx];
+        },
+        set loudness(v) {
+          g.gen.memory.heap[this.__loudness.memory.values.idx] = v;
+        },
         set pan(v) {
           g.gen.memory.heap[this.__pan.memory.values.idx] = v;
         },
@@ -8898,7 +8904,7 @@ module.exports = function (Gibberish) {
       // ...read data
       voice.peek = g.peekDyn(voice.bufferLoc[0], voice.bufferLength[0], voice.phase, { mode: 'samples' }),
       // ...else return 0
-      0), loudness), triggerLoudness);
+      0), loudness), voice.__loudness[0]);
 
       const pan = g.pan(voice.graph, voice.graph, voice.__pan[0]);
       voice.graph = [pan.left, pan.right];
@@ -9528,19 +9534,19 @@ module.exports = function (Gibberish) {
       this.currentSample = key;
       return this.trigger();
     },
-    __note(rate) {
+    __note(rate, loudness = null) {
       // soundfont measures pitch in cents
       // originalPitch = findMidiForHz( hz ) * 100 // (100 cents per midi index)
       // rate = Math.pow(2, (100.0 * pitch - originalPitch) / 1200.0) // 1200 cents per octave
-      return this.trigger(null, rate);
+      return this.trigger(loudness, rate);
     },
-    note(freq) {
+    note(freq, loudness = null) {
       'no jsdsp';
 
       const midinote = 69 + 12 * Math.log2(freq / 440);
-      this.midinote(midinote);
+      this.midinote(midinote, loudness);
     },
-    midipick(midinote) {
+    midipick(midinote, loudness) {
       // loop through zones to find correct sample #
       let idx = 0,
           pitch = 0;
@@ -9554,13 +9560,13 @@ module.exports = function (Gibberish) {
       this.pick(idx);
       return pitch;
     },
-    midinote(midinote) {
+    midinote(midinote, loudness = null) {
       'no jsdsp';
 
       const samplePitch = this.midipick(midinote);
       const pitch = Math.pow(2, (100 * midinote - samplePitch) / 1200);
       //const pitch = 1//Math.pow( 2, (samplePitch ) ) 
-      this.__note(pitch);
+      this.__note(pitch, loudness);
     },
     midichord(frequencies) {
       if (Gibberish !== undefined && Gibberish.mode !== 'worklet') {
@@ -9593,8 +9599,7 @@ module.exports = function (Gibberish) {
     },
     trigger(volume = null, rate = null) {
       'no jsdsp';
-
-      if (volume !== null) this.__triggerLoudness = volume;
+      //if( volume !== null ) this.__triggerLoudness = volume
 
       let voice = null;
       if (Gibberish.mode === 'processor') {
@@ -9614,10 +9619,11 @@ module.exports = function (Gibberish) {
         g.gen.memory.heap[voice.__loopStart.memory.values.idx] = sampler.zone.loopStart;
         g.gen.memory.heap[voice.__loopEnd.memory.values.idx] = sampler.zone.loopEnd;
 
+        if (volume !== null) g.gen.memory.heap[voice.loudness.memory.values.idx] = volume;
+
         if (rate !== null) voice.rate = rate;
 
         voice.trigger();
-        //g.gen.memory.heap[ voice.rate.memory.values.idx ] = rate
       }
 
       return voice;
@@ -9650,7 +9656,7 @@ module.exports = function (Gibberish) {
     if (Gibberish.mode === 'worklet') {
       syn.__meta__ = {
         address: 'add',
-        name: ['instruments', 'Multisampler'],
+        name: ['instruments', 'Soundfont'],
         properties: JSON.stringify(props),
         id: syn.id
       };
@@ -9675,7 +9681,13 @@ module.exports = function (Gibberish) {
         __shouldLoop: g.data([1], 1, { meta: true }),
         __loopStart: g.data([1], 1, { meta: true }),
         __loopEnd: g.data([1], 1, { meta: true }),
-
+        __loudness: g.data([1], 1, { meta: true }),
+        get loudness() {
+          return g.gen.memory.heap[this.__loudness.memory.values.idx];
+        },
+        set loudness(v) {
+          g.gen.memory.heap[this.__loudness.memory.values.idx] = v;
+        },
         set pan(v) {
           g.gen.memory.heap[this.__pan.memory.values.idx] = v;
         },
@@ -9694,7 +9706,7 @@ module.exports = function (Gibberish) {
       // ...read data
       voice.peek = g.peekDyn(voice.bufferLoc[0], voice.bufferLength[0], voice.phase, { mode: 'samples' }),
       // ...else return 0
-      0), loudness), triggerLoudness);
+      0), loudness), voice.__loudness[0]);
 
       // start of attempt to loop sustain...
       //voice.graph = g.ifelse(
@@ -11967,10 +11979,12 @@ module.exports = function (Gibberish) {
           } else if (obj !== undefined) {
             const propSplit = propName.split('.');
             if (obj[propSplit[0]] !== undefined) {
-              if (typeof obj[propSplit[0]][propSplit[1]] !== 'function') {
-                obj[propSplit[0]][propSplit[1]] = value;
-              } else {
-                obj[propSplit[0]][propSplit[1]](value);
+              if (propSplit[1] !== undefined) {
+                if (typeof obj[propSplit[0]][propSplit[1]] !== 'function') {
+                  obj[propSplit[0]][propSplit[1]] = value;
+                } else {
+                  obj[propSplit[0]][propSplit[1]](value);
+                }
               }
             } else {
               //console.log( 'undefined split property!', id, propSplit[0], propSplit[1], value, obj )
@@ -13748,8 +13762,111 @@ function functionBindPolyfill(context) {
 })(this);
 
 },{}],159:[function(require,module,exports){
-arguments[4][81][0].apply(exports,arguments)
-},{"dup":81}],160:[function(require,module,exports){
+'use strict'
+
+let MemoryHelper = {
+  create( sizeOrBuffer=4096, memtype=Float32Array ) {
+    let helper = Object.create( this )
+
+    // conveniently, buffer constructors accept either a size or an array buffer to use...
+    // so, no matter which is passed to sizeOrBuffer it should work.
+    Object.assign( helper, {
+      heap: new memtype( sizeOrBuffer ),
+      list: {},
+      freeList: {}
+    })
+
+    return helper
+  },
+
+  alloc( size, immutable ) {
+    let idx = -1
+
+    if( size > this.heap.length ) {
+      throw Error( 'Allocation request is larger than heap size of ' + this.heap.length )
+    }
+
+    for( let key in this.freeList ) {
+      let candidate = this.freeList[ key ]
+
+      if( candidate.size >= size ) {
+        idx = key
+
+        this.list[ idx ] = { size, immutable, references:1 }
+
+        if( candidate.size !== size ) {
+          let newIndex = idx + size,
+              newFreeSize
+
+          for( let key in this.list ) {
+            if( key > newIndex ) {
+              newFreeSize = key - newIndex
+              this.freeList[ newIndex ] = newFreeSize
+            }
+          }
+        }
+
+        break
+      }
+    }
+
+    if( idx !== -1 ) delete this.freeList[ idx ]
+
+    if( idx === -1 ) {
+      let keys = Object.keys( this.list ),
+          lastIndex
+
+      if( keys.length ) { // if not first allocation...
+        lastIndex = parseInt( keys[ keys.length - 1 ] )
+
+        idx = lastIndex + this.list[ lastIndex ].size
+      }else{
+        idx = 0
+      }
+
+      this.list[ idx ] = { size, immutable, references:1 }
+    }
+
+    if( idx + size >= this.heap.length ) {
+      throw Error( 'No available blocks remain sufficient for allocation request.' )
+    }
+    return idx
+  },
+
+  addReference( index ) {
+    if( this.list[ index ] !== undefined ) { 
+      this.list[ index ].references++
+    }
+  },
+
+  free( index ) {
+    if( this.list[ index ] === undefined ) {
+      throw Error( 'Calling free() on non-existing block.' )
+    }
+
+    let slot = this.list[ index ]
+    if( slot === 0 ) return
+    slot.references--
+
+    if( slot.references === 0 && slot.immutable !== true ) {    
+      this.list[ index ] = 0
+
+      let freeBlockSize = 0
+      for( let key in this.list ) {
+        if( key > index ) {
+          freeBlockSize = key - index
+          break
+        }
+      }
+
+      this.freeList[ index ] = freeBlockSize
+    }
+  },
+}
+
+module.exports = MemoryHelper
+
+},{}],160:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -18744,6 +18861,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
 
     // XXX ridiculous hack to get around processor not having a worklet property
     Gibberish.worklet = { ugens: this.ugens, port:this.port }
+    Gibberish.genish.gen.samplerate = sampleRate
 
     this.ugens.set( Gibberish.id, Gibberish )
 
@@ -19002,6 +19120,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
       const output = outputs[ 0 ]
       const len = outputs[0][0].length
       let phase = 0
+
       for (let i = 0; i < len; ++i) {
         // run sequencers, catch errors and remove from queue
         try {
@@ -19043,7 +19162,7 @@ class GibberishProcessor extends AudioWorkletProcessor {
         }
 
         //XXX sub real samplerate sheesh
-        time += 1/44100
+        time += 1/sampleRate
 
         if( callback !== undefined ) {
           const out = callback.apply( null, ugens )
