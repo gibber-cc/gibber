@@ -843,6 +843,16 @@ A texture can be applied to a geometry in order to pattern its surface; it can a
 *float* default: 1.  The scale property determines the size, or resolution, of the texture. For example, when 'dots' texture is assigned to a cube with a scale of 10 there will be 10x10 dots on each side of the cube. A scale value of 1 will yiled a single dot centered on each side.
 
 # Postprocessing 
+Antialias
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The Antialias effect smooths jagged edges in images using the Fast Approximate Anti-Aliasing (FXAA) algortihm. The construtor accepts a numerical argument which determines the number of times the algorithm will be applied; each application requires a complete render stage so it's best to use values < 10, or even < 5.
+
+
+#### Properties ####
+### Antialias.repetitions ###
+*int* default: 1.  How many times to apply the antialias effect. This property can *only be set in the constructor; it is not runtime editable.*
 Bloom
 ----
 *Prototype: [postprocessing](#prototypes-postprocessing)*
