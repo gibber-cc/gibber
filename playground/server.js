@@ -1,7 +1,7 @@
 const WebSocket         = require( 'ws' ),
       http              = require( 'http' ),
       StaticServer      = require( 'node-static' ).Server,
-      setupWSConnection = require( 'y-websocket/bin/utils.js' ).setupWSConnection,
+      setupWSConnection = require( 'y-websocket' ).setupWSConnection,
       production        = process.env.PRODUCTION  != null,
       port              = process.env.SERVER_PORT || 9080 
 
