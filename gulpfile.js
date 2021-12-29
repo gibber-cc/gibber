@@ -7,13 +7,17 @@ const gulp        = require( 'gulp' ),
       source      = require( 'vinyl-source-stream' ),
       fs          = require( 'fs' ),
       dotenv      = require( 'dotenv' ),
-      envify      = require( 'envify' )
+      envify      = require( 'envify' ),
+      esmify      = require( 'esmify' ),
+      tsify       = require( 'tsify' )
 
 dotenv.config({ path:'./playground/.env' })
 
 gulp.task( 'client', function(){
   const out = browserify({ transform:['envify'] })
     .require( './playground/environment.js', { entry: true })
+    .plugin( tsify )
+    .plugin( esmify )
     .bundle()
     .on( 'error', console.log )
     .pipe( source( 'bundle.js' ) )
