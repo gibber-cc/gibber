@@ -5,7 +5,14 @@
   "main": "js/index.js",
   "dependencies": {
     "dotenv": "^10.0.0",
-    "node-static": "^0.7.11"
+    "envify": "^4.1.0",
+    "glslify": "^7.1.1",
+    "gulp-replace": "^1.1.3",
+    "gulp-uglify": "^3.0.2",
+    "node-static": "^0.7.11",
+    "tsify": "^5.0.4",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
   },
   "devDependencies": {
     "acorn": "^6.2.0",
@@ -26,7 +33,8 @@
   "scripts": {
     "start": "cd playground; node server.js",
     "link": "npm link gibber.audio.lib gibber.graphics.lib gibber.core.lib",
-    "build": "npx browserify playground/environment.js -p esmify > playground/bundle.js"
+    "build": "npx browserify playground/environment.js -p esmify > playground/bundle.js",
+    "postinstall": "cd node_modules/marching; npm i; cd ../../"
   },
   "repository": {
     "type": "git",
