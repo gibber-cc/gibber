@@ -8,15 +8,13 @@ const gulp        = require( 'gulp' ),
       fs          = require( 'fs' ),
       dotenv      = require( 'dotenv' ),
       envify      = require( 'envify' ),
-      esmify      = require( 'esmify' ),
-      tsify       = require( 'tsify' )
+      esmify      = require( 'esmify' )
 
 dotenv.config({ path:'./playground/.env' })
 
 gulp.task( 'client', function(){
-  const out = browserify({ transform:['envify'] })
+  const out = browserify({ transform:[ 'envify' ] })
     .require( './playground/environment.js', { entry: true })
-    .plugin( tsify )
     .plugin( esmify )
     .bundle()
     .on( 'error', console.log )
@@ -27,13 +25,14 @@ gulp.task( 'client', function(){
 });
 
 gulp.task('watch', function() {
-  var bundler = watchify( browserify( './playground/environment.js', { entry:true, transform:['envify'] } ) );
+  const bundler = watchify( browserify( './playground/environment.js', { entry:true, transform:['envify'] } ) );
 
-  bundler.on('update', rebundle);
+  bundler.on('update', rebundle)
 
   function rebundle() {
     const date = new Date()
     console.log("recompiling... ", date.getHours(), date.getMinutes(), date.getSeconds() )
+
     return bundler.bundle()
       // log errors if they happen
       .on( 'error', console.log ) 
@@ -41,7 +40,7 @@ gulp.task('watch', function() {
       .pipe( gulp.dest( './playground/' ) )
   }
 
-  return rebundle();
+  return rebundle()
 });
 
-gulp.task( 'default', ['client'] )
+gulp.task( 'default', gulp.series('client') )
