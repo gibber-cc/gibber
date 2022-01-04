@@ -889,13 +889,16 @@ module.exports = ( incr=1, min=0, max=Infinity, reset=0, loops=1,  properties ) 
   defaults )
  
   Object.defineProperty( ugen, 'value', {
-    get() {
+    get() { 
+      //console.log( 'counter value', this.memory.value.idx, gen.memory.heap[ this.memory.value.idx ], gen.memory )
+        
       if( this.memory.value.idx !== null ) {
         return gen.memory.heap[ this.memory.value.idx ]
       }
     },
     set( v ) {
       if( this.memory.value.idx !== null ) {
+        //console.log( 'settting counter', v )
         gen.memory.heap[ this.memory.value.idx ] = v 
       }
     }
@@ -1056,6 +1059,10 @@ module.exports = ( x, y=1, properties ) => {
     //}
   }else if( x instanceof Float32Array ) {
     buffer = x
+  }else if( x instanceof Uint8Array ) {
+    buffer = x
+  }else if( x instanceof AudioBuffer ) {
+    buffer = x.getChannelData(0)
   }
   
   ugen = Object.create( proto ) 
@@ -2132,7 +2139,7 @@ gen.__proto__ = new EE()
 
 module.exports = gen
 
-},{"events":156,"memory-helper":81}],34:[function(require,module,exports){
+},{"events":155,"memory-helper":527}],34:[function(require,module,exports){
 'use strict'
 
 let gen  = require('./gen.js')
@@ -4704,99 +4711,6 @@ module.exports = ( in1, min=0, max=1 ) => {
 }
 
 },{"./floor.js":30,"./gen.js":33,"./memo.js":45,"./sub.js":72}],81:[function(require,module,exports){
-'use strict';
-
-var MemoryHelper = {
-  create: function create() {
-    var size = arguments.length <= 0 || arguments[0] === undefined ? 4096 : arguments[0];
-    var memtype = arguments.length <= 1 || arguments[1] === undefined ? Float32Array : arguments[1];
-
-    var helper = Object.create(this);
-
-    Object.assign(helper, {
-      heap: new memtype(size),
-      list: {},
-      freeList: {}
-    });
-
-    return helper;
-  },
-  alloc: function alloc(amount) {
-    var idx = -1;
-
-    if (amount > this.heap.length) {
-      throw Error('Allocation request is larger than heap size of ' + this.heap.length);
-    }
-
-    for (var key in this.freeList) {
-      var candidateSize = this.freeList[key];
-
-      if (candidateSize >= amount) {
-        idx = key;
-
-        this.list[idx] = amount;
-
-        if (candidateSize !== amount) {
-          var newIndex = idx + amount,
-              newFreeSize = void 0;
-
-          for (var _key in this.list) {
-            if (_key > newIndex) {
-              newFreeSize = _key - newIndex;
-              this.freeList[newIndex] = newFreeSize;
-            }
-          }
-        }
-        
-        break;
-      }
-    }
-    
-    if( idx !== -1 ) delete this.freeList[ idx ]
-
-    if (idx === -1) {
-      var keys = Object.keys(this.list),
-          lastIndex = void 0;
-
-      if (keys.length) {
-        // if not first allocation...
-        lastIndex = parseInt(keys[keys.length - 1]);
-
-        idx = lastIndex + this.list[lastIndex];
-      } else {
-        idx = 0;
-      }
-
-      this.list[idx] = amount;
-    }
-
-    if (idx + amount >= this.heap.length) {
-      throw Error('No available blocks remain sufficient for allocation request.');
-    }
-    return idx;
-  },
-  free: function free(index) {
-    if (typeof this.list[index] !== 'number') {
-      throw Error('Calling free() on non-existing block.');
-    }
-
-    this.list[index] = 0;
-
-    var size = 0;
-    for (var key in this.list) {
-      if (key > index) {
-        size = key - index;
-        break;
-      }
-    }
-
-    this.freeList[index] = size;
-  }
-};
-
-module.exports = MemoryHelper;
-
-},{}],82:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -4851,7 +4765,7 @@ const Analysis = {
 
 module.exports = Analysis 
 
-},{"./ugen.js":119,"gibberish-dsp":292}],83:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],82:[function(require,module,exports){
 "use strict";
 
 const Gibberish = require('gibberish-dsp');
@@ -5372,7 +5286,7 @@ const Audio = {
 };
 module.exports = Audio;
 
-},{"./analysis.js":82,"./binops.js":84,"./busses.js":85,"./clock.js":86,"./drums.js":87,"./effects.js":88,"./ensemble.js":89,"./envelopes.js":90,"./external/audioworklet-polyfill.js":91,"./filters.js":94,"./freesound.js":95,"./gen.js":96,"./instruments.js":97,"./make.js":98,"./oscillators.js":99,"./presets.js":100,"./theory.js":118,"./ugen.js":119,"./utility.js":120,"./waveObjects.js":121,"./wavePattern.js":122,"gibberish-dsp":292}],84:[function(require,module,exports){
+},{"./analysis.js":81,"./binops.js":83,"./busses.js":84,"./clock.js":85,"./drums.js":86,"./effects.js":87,"./ensemble.js":88,"./envelopes.js":89,"./external/audioworklet-polyfill.js":90,"./filters.js":93,"./freesound.js":94,"./gen.js":95,"./instruments.js":96,"./make.js":97,"./oscillators.js":98,"./presets.js":99,"./theory.js":117,"./ugen.js":118,"./utility.js":119,"./waveObjects.js":120,"./wavePattern.js":121,"gibberish-dsp":291}],83:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -5412,7 +5326,7 @@ const Binops = {
 
 module.exports = Binops
 
-},{"./ugen.js":119,"gibberish-dsp":292}],85:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],84:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -5464,7 +5378,7 @@ const Busses = {
 
 module.exports = Busses
 
-},{"./ugen.js":119,"gibberish-dsp":292}],86:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],85:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 
@@ -5647,7 +5561,7 @@ const Clock = {
 
 module.exports = Clock
 
-},{"gibberish-dsp":292,"serialize-javascript":123}],87:[function(require,module,exports){
+},{"gibberish-dsp":291,"serialize-javascript":122}],86:[function(require,module,exports){
 const Ugen = require( './ugen.js' )
 const Presets = require( './presets.js' )
 
@@ -5839,7 +5753,7 @@ module.exports = function( __Audio ) {
   return { Drums, EDrums }
 }
 
-},{"./presets.js":100,"./ugen.js":119}],88:[function(require,module,exports){
+},{"./presets.js":99,"./ugen.js":118}],87:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -5909,7 +5823,7 @@ const Effects = {
 
 module.exports = Effects
 
-},{"./ugen.js":119,"gibberish-dsp":292}],89:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],88:[function(require,module,exports){
 module.exports = function( Audio ) {
   const Gibberish = Audio.Gibberish
   const Ensemble = function( props ) {
@@ -6004,7 +5918,7 @@ module.exports = function( Audio ) {
   return Ensemble
 }
 
-},{}],90:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -6037,9 +5951,9 @@ const Envelopes = {
 
 module.exports = Envelopes
 
-},{"./ugen.js":119,"gibberish-dsp":292}],91:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],90:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
-},{"./realm.js":92,"dup":28}],92:[function(require,module,exports){
+},{"./realm.js":91,"dup":28}],91:[function(require,module,exports){
 
 
 /**
@@ -6086,7 +6000,7 @@ module.exports = function Realm (scope, parentElement) {
   this.exec = win.$hook.call(scope, scope, console);
 }
 
-},{}],93:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 
 // See all scales at: http://abbernie.github.io/tune/scales.html
 
@@ -6314,7 +6228,7 @@ Tune.prototype.root = function(newmidi, newfreq) {
 
 module.exports = Tune
 
-},{}],94:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -6377,7 +6291,7 @@ const Filters = {
 
 module.exports = Filters
 
-},{"./ugen.js":119,"gibberish-dsp":292}],95:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],94:[function(require,module,exports){
 module.exports = function( Audio ) {
   const token = '6a00f80ba02b2755a044cc4ef004febfc4ccd476'
 
@@ -6521,7 +6435,7 @@ module.exports = function( Audio ) {
   return Freesound
 }
 
-},{}],96:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 module.exports = function( Audio ) {
   
 const binops = [ 
@@ -6894,20 +6808,25 @@ const Gen  = {
       const _mul   = g.mul( osc, amp ),
             _add   = g.add( center, _mul ) 
 
-      const lfo = shouldRound ? Gen.make( g.round( _add ) ) : Gen.make( _add )
+      const lfo = shouldRound 
+        ? Gen.make( g.round( _add ), ['bias', 'frequency', 'gain'] ) 
+        : Gen.make( _add, [ 'bias', 'frequency', 'gain'] )
 
       Object.defineProperties( lfo, {
         frequency: {
-          set(v) { lfo.p1 = v },
-          get()  { return lfo.p1 }
+          configurable:true,
+          set(v) { lfo.rendered.p1 = v },
+          get()  { return lfo.rendered.p1 }
         },
         gain: {
-          set(v) { lfo.p2 = v },
-          get()  { return lfo.p2 }
+          configurable:true,
+          set(v) { lfo.rendered.p2 = v },
+          get()  { return lfo.rendered.p2 }
         },
         bias: {
-          set(v) { lfo.p0 = v },
-          get()  { return lfo.p0 }
+          configurable:true,
+          set(v) { lfo.rendered.p0 = v },
+          get()  { return lfo.rendered.p0 }
         }
       })
 
@@ -7120,9 +7039,11 @@ const Gen  = {
     if( Array.isArray( propertyNames )) {
       for( let i = 0; i < propertyNames.length; i++ ){
         const propertyName = propertyNames[ i ]
+        const desc = Object.getOwnPropertyDescriptor( target, propertyName )
         if( out[ 'p'+i ] !== undefined && propertyName !== null && propertyName !== undefined ){
           out[ '__'+propertyName ] = out[ 'p'+i ]
           Object.defineProperty( out, propertyName, {
+            configurable:true,
             get() { return out[ '__' + propertyName ] },
             set(v){
               if( v === undefined || v === null ) return
@@ -7130,10 +7051,13 @@ const Gen  = {
             }
           })
           Object.defineProperty( target, propertyName, {
+            configurable:true,
             get() { return out[ '__' + propertyName ] },
             set(v){
               if( v === undefined || v === null ) return
               out[ '__' + propertyName ].value = v
+
+              if( typeof desc.set === 'function' ) desc.set.call( target, v )
             }
           })
 
@@ -7155,7 +7079,7 @@ Gen.init()
 return Gen 
 }
 
-},{}],97:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -7301,7 +7225,7 @@ const Instruments = {
 
 module.exports = Instruments
 
-},{"./ugen.js":119,"gibberish-dsp":292}],98:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],97:[function(require,module,exports){
 module.exports = function( Audio ) {
   const Gibberish = Audio.Gibberish
 
@@ -7357,7 +7281,7 @@ sine.frequency.seq( [110,220,330], 1/8 )
 sine.connect()
 */
 
-},{}],99:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -7390,7 +7314,7 @@ const Oscillators = {
 
 module.exports = Oscillators
 
-},{"./ugen.js":119,"gibberish-dsp":292}],100:[function(require,module,exports){
+},{"./ugen.js":118,"gibberish-dsp":291}],99:[function(require,module,exports){
 const Presets = {
   process( description, args, Audio ) {
     let output
@@ -7473,7 +7397,7 @@ Presets.instruments.PolyMono = Presets.instruments.Monosynth
 
 module.exports = Presets
 
-},{"./presets/bus2_presets.js":101,"./presets/chorus_presets.js":102,"./presets/complex_presets.js":103,"./presets/delay_presets.js":104,"./presets/distortion_presets.js":105,"./presets/drums_presets.js":106,"./presets/edrums_presets.js":107,"./presets/flanger_presets.js":108,"./presets/fm_presets.js":109,"./presets/hat_presets.js":110,"./presets/kick_presets.js":111,"./presets/monosynth_presets.js":112,"./presets/multisampler.js":113,"./presets/reverb.js":114,"./presets/snare_presets.js":115,"./presets/soundfont_presets.js":116,"./presets/synth_presets.js":117}],101:[function(require,module,exports){
+},{"./presets/bus2_presets.js":100,"./presets/chorus_presets.js":101,"./presets/complex_presets.js":102,"./presets/delay_presets.js":103,"./presets/distortion_presets.js":104,"./presets/drums_presets.js":105,"./presets/edrums_presets.js":106,"./presets/flanger_presets.js":107,"./presets/fm_presets.js":108,"./presets/hat_presets.js":109,"./presets/kick_presets.js":110,"./presets/monosynth_presets.js":111,"./presets/multisampler.js":112,"./presets/reverb.js":113,"./presets/snare_presets.js":114,"./presets/soundfont_presets.js":115,"./presets/synth_presets.js":116}],100:[function(require,module,exports){
 module.exports = {
 
   'spaceverb': {
@@ -7555,7 +7479,7 @@ module.exports = {
   },
 }
 
-},{}],102:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 module.exports = {
 
   lush: {
@@ -7585,7 +7509,7 @@ module.exports = {
 
 }
 
-},{}],103:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 module.exports = {
   'plucked': {
     bias:.35,
@@ -7622,7 +7546,7 @@ module.exports = {
 
 }
 
-},{}],104:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 module.exports = {
   '1/3' : {
     time:1/3, feedback:.35, wetdry:1 
@@ -7674,7 +7598,7 @@ module.exports = {
   }
 }
 
-},{}],105:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 module.exports = {
 
   crunch: {
@@ -7702,7 +7626,7 @@ module.exports = {
   }
 }
 
-},{}],106:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 module.exports = {
 
   earshred: {
@@ -7738,7 +7662,7 @@ module.exports = {
 
 }
 
-},{}],107:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 module.exports = {
 
   earshred: {
@@ -7806,7 +7730,7 @@ module.exports = {
 
 }
 
-},{}],108:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 module.exports = {
   moderate: {
     feedback: .25,
@@ -7822,7 +7746,7 @@ module.exports = {
 
 }
 
-},{}],109:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 module.exports = {
 
   bass : {
@@ -7952,14 +7876,14 @@ module.exports = {
   }
 }
 
-},{}],110:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 module.exports = {
   short: {
     decay:.01
   }
 }
 
-},{}],111:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 module.exports = {
 
   deep: {
@@ -7987,7 +7911,7 @@ module.exports = {
 
 }
 
-},{}],112:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 module.exports = {
 
   'short.dry' : { 
@@ -8298,7 +8222,7 @@ module.exports = {
 
 }
 
-},{}],113:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 module.exports = {
 
   drums: { 
@@ -8482,7 +8406,7 @@ module.exports = {
   }
 }
 
-},{}],114:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 module.exports = {
 
   'space': {
@@ -8491,7 +8415,7 @@ module.exports = {
   }
 }
 
-},{}],115:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 module.exports = {
 
   snappy: {
@@ -8508,7 +8432,7 @@ module.exports = {
 
 }
 
-},{}],116:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
  const names = [
     "Acoustic Grand Piano",
     "Bright Acoustic Piano",
@@ -8651,7 +8575,7 @@ for( let name of names ) {
 }
 
 
-},{}],117:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 module.exports = {
 
   acidBass: {
@@ -8828,7 +8752,7 @@ module.exports = {
   }
 }
 
-},{}],118:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 const Tune      = require( './external/tune-api-only.js' )
@@ -9276,7 +9200,7 @@ const Theory = {
 
 module.exports = Theory
 
-},{"./external/tune-api-only.js":93,"gibberish-dsp":292,"serialize-javascript":123}],119:[function(require,module,exports){
+},{"./external/tune-api-only.js":92,"gibberish-dsp":291,"serialize-javascript":122}],118:[function(require,module,exports){
 const Presets = require( './presets.js' )
 const Theory  = require( './theory.js' )
 const Gibberish = require( 'gibberish-dsp' )
@@ -10048,7 +9972,7 @@ Ugen.OUTPUT = 1
 
 module.exports = Ugen
 
-},{"./presets.js":100,"./theory.js":118,"gibberish-dsp":292}],120:[function(require,module,exports){
+},{"./presets.js":99,"./theory.js":117,"gibberish-dsp":291}],119:[function(require,module,exports){
 const Utility = {
   rndf( min=0, max=1, number, canRepeat=true ) {
     let out = 0
@@ -10251,7 +10175,7 @@ const Utility = {
 
 module.exports = Utility
 
-},{}],121:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 module.exports = function( Gibber ) {
    const gen = Gibber.Gen.make  
 
@@ -10356,7 +10280,7 @@ module.exports = function( Gibber ) {
   return WavePatterns
 }
 
-},{}],122:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 module.exports = function( Gibber ) {
 
   const WavePattern = function( ugen ) {
@@ -10373,7 +10297,7 @@ module.exports = function( Gibber ) {
   return WavePattern
 }
 
-},{}],123:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 /*
 Copyright (c) 2014, Yahoo! Inc. All rights reserved.
 Copyrights licensed under the New BSD License.
@@ -10548,7 +10472,7 @@ module.exports = function serialize(obj, options) {
     });
 }
 
-},{}],124:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 let Pattern = Gibber.Pattern
@@ -10786,7 +10710,7 @@ Euclid.test = function( testKey ) {
 return Euclid
 }
 
-},{}],125:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 const Pattern = Gibber.Pattern
@@ -10869,7 +10793,7 @@ return Hex
 
 }
 
-},{}],126:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 "use strict";
 
 const Gibber = {
@@ -11153,7 +11077,7 @@ const Gibber = {
 };
 module.exports = Gibber;
 
-},{"./euclid.js":124,"./hex.js":125,"./pattern.js":127,"./seq.js":128,"./steps.js":129,"./tidal.js":130,"./triggers.js":131}],127:[function(require,module,exports){
+},{"./euclid.js":123,"./hex.js":124,"./pattern.js":126,"./seq.js":127,"./steps.js":128,"./tidal.js":129,"./triggers.js":130}],126:[function(require,module,exports){
 const patternWrapper = function( Gibber ) {
   "use strict"
 
@@ -12040,7 +11964,7 @@ patternWrapper.transfer = function( Audio, constructorString ) {
 
 module.exports = patternWrapper
 
-},{}],128:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 module.exports = function( Gibber ) {
   const addValuesFilters = (seq,key,target) => {
     const values = seq.values
@@ -12324,7 +12248,7 @@ module.exports = function( Gibber ) {
 
 }
 
-},{}],129:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 module.exports = function( Gibber ) {
  
 const Steps = {
@@ -12502,7 +12426,7 @@ return Steps.create
 
 }
 
-},{}],130:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 module.exports = function( Gibber ) {
 
   const Seq = function( props ) { 
@@ -12653,7 +12577,7 @@ module.exports = function( Gibber ) {
 
 }
 
-},{}],131:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 module.exports = function( Gibber ) {
 
 const Pattern = Gibber.Pattern
@@ -12695,7 +12619,7 @@ return Triggers
 
 }
 
-},{}],132:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 const optional = true,
       required = true
 
@@ -12901,7 +12825,7 @@ module.exports = [
     }
   },
 ]
-},{}],133:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 module.exports = {
   prototypes:  require('./prototypes_defs.js'),
   misc:        require('./misc_defs.js'),
@@ -12909,7 +12833,7 @@ module.exports = {
   postprocessing: require('./postprocessing.js' )
 }
 
-},{"./geometries_defs.js":132,"./misc_defs.js":134,"./postprocessing.js":135,"./prototypes_defs.js":136}],134:[function(require,module,exports){
+},{"./geometries_defs.js":131,"./misc_defs.js":133,"./postprocessing.js":134,"./prototypes_defs.js":135}],133:[function(require,module,exports){
 const optional = true,
       required = true
 
@@ -13035,11 +12959,24 @@ module.exports = [
     }
   },
 ]
-},{}],135:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 const optional = true,
       required = true
 
 module.exports = [
+  {
+    name: "Antialias",
+    prototype: "postprocessing",
+    doc: "The Antialias effect smooths jagged edges in images using the Fast Approximate Anti-Aliasing (FXAA) algortihm. The construtor accepts a numerical argument which determines the number of times the algorithm will be applied; each application requires a complete render stage so it's best to use values < 10, or even < 5.",
+    properties: {
+      repetitions: {
+        type: "int",          
+        default: 1,
+        doc: "How many times to apply the antialias effect. This property can *only be set in the constructor; it is not runtime editable.*", 
+      }
+    }
+  },
+
   {
     name: "Bloom",
     prototype: "postprocessing",
@@ -13217,7 +13154,7 @@ module.exports = [
   },
 ]
 
-},{}],136:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
 const optional = true,
       required = true,
       overloaded = '?'
@@ -13358,12 +13295,15 @@ module.exports = [
   }
 }]
 
-},{}],137:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 "use strict";
 
 const Marching = require('marching');
 
-let Gibber = null;
+let Gibber = null,
+    storepos,
+    storedir,
+    storerot;
 const excludeFromSequencing = ['material'];
 const Graphics = {
   defs: require('../defs/graphics.js'),
@@ -14128,7 +14068,7 @@ const Graphics = {
 };
 module.exports = Graphics;
 
-},{"../defs/graphics.js":133,"marching":357}],138:[function(require,module,exports){
+},{"../defs/graphics.js":132,"marching":356}],137:[function(require,module,exports){
 "use strict";
 
 (function (global, factory) {
@@ -15893,7 +15833,7 @@ module.exports = Graphics;
   });
 });
 
-},{"acorn":143}],139:[function(require,module,exports){
+},{"acorn":142}],138:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17656,7 +17596,7 @@ function parse(input, options) {
   return LooseParser.parse(input, options);
 }
 
-},{"acorn":143}],140:[function(require,module,exports){
+},{"acorn":142}],139:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -18116,7 +18056,7 @@ function parse(input, options) {
 
 }));
 
-},{}],141:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18772,7 +18712,7 @@ base.MethodDefinition = base.Property = function (node, st, c) {
   c(node.value, st, "Expression");
 };
 
-},{}],142:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 "use strict";
 
 (function (global, factory) {
@@ -25302,7 +25242,7 @@ base.MethodDefinition = base.Property = function (node, st, c) {
   });
 });
 
-},{}],143:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -31835,7 +31775,7 @@ function tokenizer(input, options) {
   return Parser.tokenizer(input, options);
 }
 
-},{}],144:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -31987,9 +31927,9 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],145:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 
-},{}],146:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -33770,7 +33710,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":144,"buffer":146,"ieee754":157}],147:[function(require,module,exports){
+},{"base64-js":143,"buffer":145,"ieee754":156}],146:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/LICENSE
 
@@ -33935,7 +33875,7 @@ function numberIsNaN (obj) {
   });
 });
 
-},{"../../lib/codemirror":153}],148:[function(require,module,exports){
+},{"../../lib/codemirror":152}],147:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/LICENSE
 
@@ -34138,7 +34078,7 @@ function numberIsNaN (obj) {
   }
 });
 
-},{"../../lib/codemirror":153}],149:[function(require,module,exports){
+},{"../../lib/codemirror":152}],148:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/LICENSE
 
@@ -34300,7 +34240,7 @@ function numberIsNaN (obj) {
   });
 });
 
-},{"../../lib/codemirror":153}],150:[function(require,module,exports){
+},{"../../lib/codemirror":152}],149:[function(require,module,exports){
 "use strict";
 
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -34471,7 +34411,7 @@ function numberIsNaN (obj) {
   }
 });
 
-},{"../../lib/codemirror":153}],151:[function(require,module,exports){
+},{"../../lib/codemirror":152}],150:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/LICENSE
 
@@ -35002,7 +34942,7 @@ function numberIsNaN (obj) {
   CodeMirror.defineOption("hintOptions", null);
 });
 
-},{"../../lib/codemirror":153}],152:[function(require,module,exports){
+},{"../../lib/codemirror":152}],151:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/LICENSE
 
@@ -35754,7 +35694,7 @@ function numberIsNaN (obj) {
   }
 });
 
-},{"../../lib/codemirror":153}],153:[function(require,module,exports){
+},{"../../lib/codemirror":152}],152:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/LICENSE
 
@@ -45595,7 +45535,7 @@ function numberIsNaN (obj) {
 
 })));
 
-},{}],154:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 "use strict";
 
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -46822,7 +46762,7 @@ function numberIsNaN (obj) {
   });
 });
 
-},{"../../lib/codemirror":153}],155:[function(require,module,exports){
+},{"../../lib/codemirror":152}],154:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -46931,7 +46871,7 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-},{"buffer":146}],156:[function(require,module,exports){
+},{"buffer":145}],155:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -47456,7 +47396,7 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],157:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -47543,7 +47483,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],158:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -47572,7 +47512,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],159:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -47595,14 +47535,14 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],160:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],161:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -47637,7 +47577,7 @@ const cryptoRandomBuffer = isoCrypto !== null ? len => {
 };
 exports.cryptoRandomBuffer = cryptoRandomBuffer;
 
-},{}],162:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -47763,7 +47703,7 @@ const flatten = arr => arr.reduce((acc, val) => acc.concat(val), []);
 
 exports.flatten = flatten;
 
-},{}],163:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -47929,7 +47869,7 @@ exports.BITS31 = BITS31;
 const BITS32 = 0xFFFFFFFF;
 exports.BITS32 = BITS32;
 
-},{}],164:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -48064,7 +48004,7 @@ const publish = (room, data) => {
 
 exports.publish = publish;
 
-},{"./buffer.js":165,"./map.js":179,"./storage.js":189}],165:[function(require,module,exports){
+},{"./buffer.js":164,"./map.js":178,"./storage.js":188}],164:[function(require,module,exports){
 (function (Buffer){(function (){
 "use strict";
 
@@ -48225,7 +48165,7 @@ const decodeAny = buf => decoding.readAny(decoding.createDecoder(buf));
 exports.decodeAny = decodeAny;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./decoding.js":167,"./encoding.js":170,"./environment.js":171,"./string.js":190,"buffer":146}],166:[function(require,module,exports){
+},{"./decoding.js":166,"./encoding.js":169,"./environment.js":170,"./string.js":189,"buffer":145}],165:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -48250,7 +48190,7 @@ const undefinedToNull = v => v === undefined ? null : v;
 
 exports.undefinedToNull = undefinedToNull;
 
-},{}],167:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -49054,7 +48994,7 @@ class StringDecoder {
 
 exports.StringDecoder = StringDecoder;
 
-},{"./binary.js":163,"./buffer.js":165,"./math.js":180}],168:[function(require,module,exports){
+},{"./binary.js":162,"./buffer.js":164,"./math.js":179}],167:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -49175,7 +49115,7 @@ const simpleDiffArray = (a, b, compare = _function.equalityStrict) => {
 
 exports.simpleDiffArray = simpleDiffArray;
 
-},{"./function.js":174}],169:[function(require,module,exports){
+},{"./function.js":173}],168:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -49620,7 +49560,7 @@ const isParentOf = (parent, child) => {
 
 exports.isParentOf = isParentOf;
 
-},{"./map.js":179,"./pair.js":186}],170:[function(require,module,exports){
+},{"./map.js":178,"./pair.js":185}],169:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -50614,7 +50554,7 @@ class StringEncoder {
 
 exports.StringEncoder = StringEncoder;
 
-},{"./binary.js":163,"./buffer.js":165,"./math.js":180,"./number.js":183}],171:[function(require,module,exports){
+},{"./binary.js":162,"./buffer.js":164,"./math.js":179,"./number.js":182}],170:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 
@@ -50770,7 +50710,7 @@ const production = hasConf('production');
 exports.production = production;
 
 }).call(this)}).call(this,require('_process'))
-},{"./conditions.js":166,"./map.js":179,"./storage.js":189,"./string.js":190,"_process":196}],172:[function(require,module,exports){
+},{"./conditions.js":165,"./map.js":178,"./storage.js":188,"./string.js":189,"_process":195}],171:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -50820,7 +50760,7 @@ const unexpectedCase = () => {
 
 exports.unexpectedCase = unexpectedCase;
 
-},{}],173:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -50959,7 +50899,7 @@ const createDebouncer = timeout => {
 
 exports.createDebouncer = createDebouncer;
 
-},{}],174:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -51157,7 +51097,7 @@ const equalityDeep = (a, b) => {
 
 exports.equalityDeep = equalityDeep;
 
-},{"./array.js":162,"./object.js":184}],175:[function(require,module,exports){
+},{"./array.js":161,"./object.js":183}],174:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -51178,7 +51118,7 @@ Object.defineProperty(exports, "performance", {
 
 var _isomorphic = require("isomorphic.js");
 
-},{"isomorphic.js":161}],176:[function(require,module,exports){
+},{"isomorphic.js":160}],175:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -51276,7 +51216,7 @@ const iteratorMap = (iterator, fmap) => createIterator(() => {
 
 exports.iteratorMap = iteratorMap;
 
-},{}],177:[function(require,module,exports){
+},{}],176:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -51308,7 +51248,7 @@ exports.stringify = stringify;
 const parse = JSON.parse;
 exports.parse = parse;
 
-},{}],178:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -51821,7 +51761,7 @@ const createModuleLogger = moduleName => {
 
 exports.createModuleLogger = createModuleLogger;
 
-},{"./dom.js":169,"./environment.js":171,"./eventloop.js":173,"./function.js":174,"./json.js":177,"./map.js":179,"./math.js":180,"./pair.js":186,"./symbol.js":191,"./time.js":192}],179:[function(require,module,exports){
+},{"./dom.js":168,"./environment.js":170,"./eventloop.js":172,"./function.js":173,"./json.js":176,"./map.js":178,"./math.js":179,"./pair.js":185,"./symbol.js":190,"./time.js":191}],178:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -51966,7 +51906,7 @@ const all = (m, f) => {
 
 exports.all = all;
 
-},{}],180:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52057,7 +51997,7 @@ const isNegativeZero = n => n !== 0 ? n < 0 : 1 / n < 0;
 
 exports.isNegativeZero = isNegativeZero;
 
-},{}],181:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52149,7 +52089,7 @@ const prefix = (n, baseMultiplier = 0) => {
 
 exports.prefix = prefix;
 
-},{"./math.js":180}],182:[function(require,module,exports){
+},{"./math.js":179}],181:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52204,7 +52144,7 @@ const createMutex = () => {
 
 exports.createMutex = createMutex;
 
-},{}],183:[function(require,module,exports){
+},{}],182:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52252,7 +52192,7 @@ exports.isNaN = isNaN;
 const parseInt = Number.parseInt;
 exports.parseInt = parseInt;
 
-},{"./binary.js":163,"./math.js":180}],184:[function(require,module,exports){
+},{"./binary.js":162,"./math.js":179}],183:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52384,7 +52324,7 @@ const equalFlat = (a, b) => a === b || length(a) === length(b) && every(a, (val,
 
 exports.equalFlat = equalFlat;
 
-},{}],185:[function(require,module,exports){
+},{}],184:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52488,7 +52428,7 @@ class Observable {
 
 exports.Observable = Observable;
 
-},{"./array.js":162,"./map.js":179,"./set.js":188}],186:[function(require,module,exports){
+},{"./array.js":161,"./map.js":178,"./set.js":187}],185:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52562,7 +52502,7 @@ const map = (arr, f) => arr.map(p => f(p.left, p.right));
 
 exports.map = map;
 
-},{}],187:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52612,7 +52552,7 @@ c => (c ^ uint32() & 15 >> c / 4).toString(16));
 
 exports.uuidv4 = uuidv4;
 
-},{"./isomorphic.js":175,"./math.js":180}],188:[function(require,module,exports){
+},{"./isomorphic.js":174,"./math.js":179}],187:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52639,7 +52579,7 @@ const toArray = set => Array.from(set);
 
 exports.toArray = toArray;
 
-},{}],189:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52726,7 +52666,7 @@ eventHandler);
 
 exports.onChange = onChange;
 
-},{}],190:[function(require,module,exports){
+},{}],189:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52892,7 +52832,7 @@ exports._decodeUtf8Native = _decodeUtf8Native;
 const decodeUtf8 = utf8TextDecoder ? _decodeUtf8Native : _decodeUtf8Polyfill;
 exports.decodeUtf8 = decodeUtf8;
 
-},{}],191:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52923,7 +52863,7 @@ const isSymbol = s => typeof s === 'symbol';
 
 exports.isSymbol = isSymbol;
 
-},{}],192:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52995,7 +52935,7 @@ const humanizeDuration = d => {
 
 exports.humanizeDuration = humanizeDuration;
 
-},{"./math.js":180,"./metric.js":181}],193:[function(require,module,exports){
+},{"./math.js":179,"./metric.js":180}],192:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -53052,7 +52992,7 @@ const encodeQueryParams = params => object.map(params, (val, key) => `${encodeUR
 
 exports.encodeQueryParams = encodeQueryParams;
 
-},{"./object.js":184}],194:[function(require,module,exports){
+},{"./object.js":183}],193:[function(require,module,exports){
 (function (process){(function (){
 // .dirname, .basename, and .extname methods are extracted from Node.js v8.11.1,
 // backported and transplited with Babel, with backwards-compat fixes
@@ -53358,7 +53298,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":196}],195:[function(require,module,exports){
+},{"_process":195}],194:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -53407,7 +53347,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":196}],196:[function(require,module,exports){
+},{"_process":195}],195:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -53593,10 +53533,10 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],197:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 module.exports = require('./lib/_stream_duplex.js');
 
-},{"./lib/_stream_duplex.js":198}],198:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":197}],197:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -53728,7 +53668,7 @@ Duplex.prototype._destroy = function (err, cb) {
 
   pna.nextTick(cb, err);
 };
-},{"./_stream_readable":200,"./_stream_writable":202,"core-util-is":155,"inherits":158,"process-nextick-args":195}],199:[function(require,module,exports){
+},{"./_stream_readable":199,"./_stream_writable":201,"core-util-is":154,"inherits":157,"process-nextick-args":194}],198:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -53776,7 +53716,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":201,"core-util-is":155,"inherits":158}],200:[function(require,module,exports){
+},{"./_stream_transform":200,"core-util-is":154,"inherits":157}],199:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -54798,7 +54738,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":198,"./internal/streams/BufferList":203,"./internal/streams/destroy":204,"./internal/streams/stream":205,"_process":196,"core-util-is":155,"events":156,"inherits":158,"isarray":160,"process-nextick-args":195,"safe-buffer":206,"string_decoder/":207,"util":145}],201:[function(require,module,exports){
+},{"./_stream_duplex":197,"./internal/streams/BufferList":202,"./internal/streams/destroy":203,"./internal/streams/stream":204,"_process":195,"core-util-is":154,"events":155,"inherits":157,"isarray":159,"process-nextick-args":194,"safe-buffer":205,"string_decoder/":206,"util":144}],200:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -55013,7 +54953,7 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":198,"core-util-is":155,"inherits":158}],202:[function(require,module,exports){
+},{"./_stream_duplex":197,"core-util-is":154,"inherits":157}],201:[function(require,module,exports){
 (function (process,global,setImmediate){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -55703,7 +55643,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
-},{"./_stream_duplex":198,"./internal/streams/destroy":204,"./internal/streams/stream":205,"_process":196,"core-util-is":155,"inherits":158,"process-nextick-args":195,"safe-buffer":206,"timers":220,"util-deprecate":221}],203:[function(require,module,exports){
+},{"./_stream_duplex":197,"./internal/streams/destroy":203,"./internal/streams/stream":204,"_process":195,"core-util-is":154,"inherits":157,"process-nextick-args":194,"safe-buffer":205,"timers":219,"util-deprecate":220}],202:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -55783,7 +55723,7 @@ if (util && util.inspect && util.inspect.custom) {
     return this.constructor.name + ' ' + obj;
   };
 }
-},{"safe-buffer":206,"util":145}],204:[function(require,module,exports){
+},{"safe-buffer":205,"util":144}],203:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -55858,10 +55798,10 @@ module.exports = {
   destroy: destroy,
   undestroy: undestroy
 };
-},{"process-nextick-args":195}],205:[function(require,module,exports){
+},{"process-nextick-args":194}],204:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":156}],206:[function(require,module,exports){
+},{"events":155}],205:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -55925,7 +55865,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":146}],207:[function(require,module,exports){
+},{"buffer":145}],206:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -56222,10 +56162,10 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":206}],208:[function(require,module,exports){
+},{"safe-buffer":205}],207:[function(require,module,exports){
 module.exports = require('./readable').PassThrough
 
-},{"./readable":209}],209:[function(require,module,exports){
+},{"./readable":208}],208:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -56234,13 +56174,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":198,"./lib/_stream_passthrough.js":199,"./lib/_stream_readable.js":200,"./lib/_stream_transform.js":201,"./lib/_stream_writable.js":202}],210:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":197,"./lib/_stream_passthrough.js":198,"./lib/_stream_readable.js":199,"./lib/_stream_transform.js":200,"./lib/_stream_writable.js":201}],209:[function(require,module,exports){
 module.exports = require('./readable').Transform
 
-},{"./readable":209}],211:[function(require,module,exports){
+},{"./readable":208}],210:[function(require,module,exports){
 module.exports = require('./lib/_stream_writable.js');
 
-},{"./lib/_stream_writable.js":202}],212:[function(require,module,exports){
+},{"./lib/_stream_writable.js":201}],211:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -56369,7 +56309,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":156,"inherits":158,"readable-stream/duplex.js":197,"readable-stream/passthrough.js":208,"readable-stream/readable.js":209,"readable-stream/transform.js":210,"readable-stream/writable.js":211}],213:[function(require,module,exports){
+},{"events":155,"inherits":157,"readable-stream/duplex.js":196,"readable-stream/passthrough.js":207,"readable-stream/readable.js":208,"readable-stream/transform.js":209,"readable-stream/writable.js":210}],212:[function(require,module,exports){
 // Shims to fill in enough of ECMAScript 5 to make Tern run. Does not
 // supply standard-compliant methods, in that some functionality is
 // left out (such as second argument to Object.create, self args in
@@ -56451,7 +56391,7 @@ G=function(b,c,a){a=F(b,c,a);a===e?delete b[c]:b[c]=a},F=function(b,c,a){var d=b
 }());
 })();
 
-},{}],214:[function(require,module,exports){
+},{}],213:[function(require,module,exports){
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     return mod(exports);
@@ -56540,7 +56480,7 @@ G=function(b,c,a){a=F(b,c,a);a===e?delete b[c]:b[c]=a},F=function(b,c,a){var d=b
   };
 });
 
-},{}],215:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 // Type description parser
 //
 // Type description JSON files (such as ecmascript.json and browser.json)
@@ -57273,7 +57213,7 @@ G=function(b,c,a){a=F(b,c,a);a===e?delete b[c]:b[c]=a},F=function(b,c,a){var d=b
   return exports;
 });
 
-},{}],216:[function(require,module,exports){
+},{}],215:[function(require,module,exports){
 "use strict";
 
 // Main type inference engine
@@ -59812,7 +59752,7 @@ G=function(b,c,a){a=F(b,c,a);a===e?delete b[c]:b[c]=a},F=function(b,c,a){var d=b
   def = exports.def = def.init({}, exports);
 });
 
-},{"./def":215,"./signal":217,"acorn":143,"acorn-loose":139,"acorn-walk":141}],217:[function(require,module,exports){
+},{"./def":214,"./signal":216,"acorn":142,"acorn-loose":138,"acorn-walk":140}],216:[function(require,module,exports){
 (function(root, mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     return mod(exports);
@@ -59865,7 +59805,7 @@ G=function(b,c,a){a=F(b,c,a);a===e?delete b[c]:b[c]=a},F=function(b,c,a){var d=b
   };
 });
 
-},{}],218:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 "use strict";
 
 // The Tern server object
@@ -61186,7 +61126,7 @@ G=function(b,c,a){a=F(b,c,a);a===e?delete b[c]:b[c]=a},F=function(b,c,a){var d=b
   exports.version = "0.24.3";
 });
 
-},{"./infer":216,"./signal":217,"acorn":143,"acorn-walk":141}],219:[function(require,module,exports){
+},{"./infer":215,"./signal":216,"acorn":142,"acorn-walk":140}],218:[function(require,module,exports){
 // Parses comments above variable declarations, function declarations,
 // and object properties as docstrings and JSDoc-style type
 // annotations.
@@ -61713,7 +61653,7 @@ G=function(b,c,a){a=F(b,c,a);a===e?delete b[c]:b[c]=a},F=function(b,c,a){var d=b
   }
 });
 
-},{"../lib/comment":214,"../lib/infer":216,"../lib/tern":218,"acorn":143,"acorn-walk":141}],220:[function(require,module,exports){
+},{"../lib/comment":213,"../lib/infer":215,"../lib/tern":217,"acorn":142,"acorn-walk":140}],219:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -61792,7 +61732,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":196,"timers":220}],221:[function(require,module,exports){
+},{"process/browser.js":195,"timers":219}],220:[function(require,module,exports){
 (function (global){(function (){
 
 /**
@@ -61863,7 +61803,7 @@ function config (name) {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],222:[function(require,module,exports){
+},{}],221:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -61888,14 +61828,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],223:[function(require,module,exports){
+},{}],222:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],224:[function(require,module,exports){
+},{}],223:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -62485,7 +62425,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":223,"_process":196,"inherits":222}],225:[function(require,module,exports){
+},{"./support/isBuffer":222,"_process":195,"inherits":221}],224:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -62980,7 +62920,7 @@ exports.CodemirrorBinding = CodemirrorBinding;
 const CodeMirrorBinding = CodemirrorBinding;
 exports.CodeMirrorBinding = CodeMirrorBinding;
 
-},{"codemirror":153,"lib0/diff.js":168,"lib0/eventloop.js":173,"lib0/function.js":174,"lib0/math.js":180,"lib0/mutex.js":182,"yjs":230}],226:[function(require,module,exports){
+},{"codemirror":152,"lib0/diff.js":167,"lib0/eventloop.js":172,"lib0/function.js":173,"lib0/math.js":179,"lib0/mutex.js":181,"yjs":229}],225:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63036,7 +62976,7 @@ const readAuthMessage = (decoder, y, permissionDeniedHandler) => {
 
 exports.readAuthMessage = readAuthMessage;
 
-},{"lib0/decoding":167,"lib0/encoding":170,"yjs":230}],227:[function(require,module,exports){
+},{"lib0/decoding":166,"lib0/encoding":169,"yjs":229}],226:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63428,7 +63368,7 @@ const applyAwarenessUpdate = (awareness, update, origin) => {
 
 exports.applyAwarenessUpdate = applyAwarenessUpdate;
 
-},{"lib0/decoding":167,"lib0/encoding":170,"lib0/function":174,"lib0/math":180,"lib0/observable":185,"lib0/time":192,"yjs":230}],228:[function(require,module,exports){
+},{"lib0/decoding":166,"lib0/encoding":169,"lib0/function":173,"lib0/math":179,"lib0/observable":184,"lib0/time":191,"yjs":229}],227:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63598,8 +63538,7 @@ const readSyncMessage = (decoder, encoder, doc, transactionOrigin) => {
 
 exports.readSyncMessage = readSyncMessage;
 
-},{"lib0/decoding":167,"lib0/encoding":170,"yjs":230}],229:[function(require,module,exports){
-(function (process){(function (){
+},{"lib0/decoding":166,"lib0/encoding":169,"yjs":229}],228:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63609,27 +63548,27 @@ exports.WebsocketProvider = void 0;
 
 var Y = _interopRequireWildcard(require("yjs"));
 
-var bc = _interopRequireWildcard(require("lib0/broadcastchannel"));
+var bc = _interopRequireWildcard(require("lib0/broadcastchannel.js"));
 
-var time = _interopRequireWildcard(require("lib0/time"));
+var time = _interopRequireWildcard(require("lib0/time.js"));
 
-var encoding = _interopRequireWildcard(require("lib0/encoding"));
+var encoding = _interopRequireWildcard(require("lib0/encoding.js"));
 
-var decoding = _interopRequireWildcard(require("lib0/decoding"));
+var decoding = _interopRequireWildcard(require("lib0/decoding.js"));
 
-var syncProtocol = _interopRequireWildcard(require("y-protocols/sync"));
+var syncProtocol = _interopRequireWildcard(require("y-protocols/sync.js"));
 
-var authProtocol = _interopRequireWildcard(require("y-protocols/auth"));
+var authProtocol = _interopRequireWildcard(require("y-protocols/auth.js"));
 
-var awarenessProtocol = _interopRequireWildcard(require("y-protocols/awareness"));
+var awarenessProtocol = _interopRequireWildcard(require("y-protocols/awareness.js"));
 
-var mutex = _interopRequireWildcard(require("lib0/mutex"));
+var mutex = _interopRequireWildcard(require("lib0/mutex.js"));
 
-var _observable = require("lib0/observable");
+var _observable = require("lib0/observable.js");
 
-var math = _interopRequireWildcard(require("lib0/math"));
+var math = _interopRequireWildcard(require("lib0/math.js"));
 
-var url = _interopRequireWildcard(require("lib0/url"));
+var url = _interopRequireWildcard(require("lib0/url.js"));
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -63940,14 +63879,10 @@ class WebsocketProvider extends _observable.Observable {
       broadcastMessage(this, encoding.toUint8Array(encoder));
     };
 
-    this._beforeUnloadHandler = () => {
-      awarenessProtocol.removeAwarenessStates(this.awareness, [doc.clientID], 'window unload');
-    };
-
     if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', this._beforeUnloadHandler);
-    } else if (typeof process !== 'undefined') {
-      process.on('exit', () => this._beforeUnloadHandler);
+      window.addEventListener('beforeunload', () => {
+        awarenessProtocol.removeAwarenessStates(this.awareness, [doc.clientID], 'window unload');
+      });
     }
 
     awareness.on('update', this._awarenessUpdateHandler);
@@ -63991,13 +63926,6 @@ class WebsocketProvider extends _observable.Observable {
 
     clearInterval(this._checkInterval);
     this.disconnect();
-
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('beforeunload', this._beforeUnloadHandler);
-    } else if (typeof process !== 'undefined') {
-      process.off('exit', () => this._beforeUnloadHandler);
-    }
-
     this.awareness.off('update', this._awarenessUpdateHandler);
     this.doc.off('update', this._updateHandler);
     super.destroy();
@@ -64068,8 +63996,7 @@ class WebsocketProvider extends _observable.Observable {
 
 exports.WebsocketProvider = WebsocketProvider;
 
-}).call(this)}).call(this,require('_process'))
-},{"_process":196,"lib0/broadcastchannel":164,"lib0/decoding":167,"lib0/encoding":170,"lib0/math":180,"lib0/mutex":182,"lib0/observable":185,"lib0/time":192,"lib0/url":193,"y-protocols/auth":226,"y-protocols/awareness":227,"y-protocols/sync":228,"yjs":230}],230:[function(require,module,exports){
+},{"lib0/broadcastchannel.js":163,"lib0/decoding.js":166,"lib0/encoding.js":169,"lib0/math.js":179,"lib0/mutex.js":181,"lib0/observable.js":184,"lib0/time.js":191,"lib0/url.js":192,"y-protocols/auth.js":225,"y-protocols/awareness.js":226,"y-protocols/sync.js":227,"yjs":229}],229:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 
@@ -75490,7 +75417,7 @@ if (glo[importIdentifier] === true) {
 glo[importIdentifier] = true;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lib0/array":162,"lib0/binary":163,"lib0/buffer":165,"lib0/decoding":167,"lib0/encoding":170,"lib0/error":172,"lib0/function":174,"lib0/iterator":176,"lib0/logging":178,"lib0/map":179,"lib0/math":180,"lib0/object":184,"lib0/observable":185,"lib0/random":187,"lib0/set":188,"lib0/time":192}],231:[function(require,module,exports){
+},{"lib0/array":161,"lib0/binary":162,"lib0/buffer":164,"lib0/decoding":166,"lib0/encoding":169,"lib0/error":171,"lib0/function":173,"lib0/iterator":175,"lib0/logging":177,"lib0/map":178,"lib0/math":179,"lib0/object":183,"lib0/observable":184,"lib0/random":186,"lib0/set":187,"lib0/time":191}],230:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -75856,7 +75783,7 @@ module.exports = function( Marker ) {
 }
 
 
-},{"../utilities.js":245}],232:[function(require,module,exports){
+},{"../utilities.js":244}],231:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -75905,7 +75832,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],233:[function(require,module,exports){
+},{}],232:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -75930,7 +75857,7 @@ module.exports = function( Marker ) {
   return CallExpression
 }
 
-},{}],234:[function(require,module,exports){
+},{}],233:[function(require,module,exports){
 const __Identifier = function( Marker ) {
 
   const mark = function( node, state, patternType, seqNumber ) {
@@ -76060,7 +75987,7 @@ const __Identifier = function( Marker ) {
 
 module.exports = __Identifier
 
-},{}],235:[function(require,module,exports){
+},{}],234:[function(require,module,exports){
 module.exports = function( Marker ) {
   // Marker.patternMarkupFunctions[ valuesNode.type ]( valuesNode, state, seq, 'values', container, seqNumber )
 
@@ -76097,7 +76024,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],236:[function(require,module,exports){
+},{}],235:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -76340,7 +76267,7 @@ module.exports = function( Marker ) {
   return Tidal 
 }
 
-},{"../utilities.js":245}],237:[function(require,module,exports){
+},{"../utilities.js":244}],236:[function(require,module,exports){
 module.exports = function( Marker ) {
   
   // for negative literals e.g. -10
@@ -76388,7 +76315,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],238:[function(require,module,exports){
+},{}],237:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
@@ -76491,7 +76418,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"../update/euclidAnnotation.js":243,"../utilities.js":245}],239:[function(require,module,exports){
+},{"../update/euclidAnnotation.js":242,"../utilities.js":244}],238:[function(require,module,exports){
 
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
@@ -76526,7 +76453,7 @@ module.exports = function( node, cm, track, objectName, vOffset=0 ) {
   }
 }
 
-},{"../utilities.js":245}],240:[function(require,module,exports){
+},{"../utilities.js":244}],239:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
@@ -76715,7 +76642,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
 }  
 
-},{"../update/euclidAnnotation.js":243,"../utilities.js":245}],241:[function(require,module,exports){
+},{"../update/euclidAnnotation.js":242,"../utilities.js":244}],240:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm ) => {
   patternObject.commentMarker = marker
   let out
@@ -76762,7 +76689,7 @@ module.exports = ( patternObject, marker, className, cm ) => {
 }
 
 
-},{}],242:[function(require,module,exports){
+},{}],241:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -76870,7 +76797,7 @@ module.exports = function( classNamePrefix, patternObject ) {
 }
 
 
-},{"../utilities.js":245}],243:[function(require,module,exports){
+},{"../utilities.js":244}],242:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -77173,7 +77100,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 }
 
 
-},{"../utilities.js":245}],244:[function(require,module,exports){
+},{"../utilities.js":244}],243:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm, track, patternNode, patternType, seqNumber ) => {
   Gibber.Environment.codeMarkup.processGen( patternNode, cm, null, patternObject, null, -1 )
 
@@ -77191,7 +77118,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, pat
 }
 
 
-},{}],245:[function(require,module,exports){
+},{}],244:[function(require,module,exports){
 const Utility = module.exports = {
   elementArray: function( list ) {
     let out = []
@@ -77222,7 +77149,7 @@ const Utility = module.exports = {
 
 }
 
-},{}],246:[function(require,module,exports){
+},{}],245:[function(require,module,exports){
 module.exports = function( Marker ) {
 
   const strip = function( unstripped ) {
@@ -77515,7 +77442,7 @@ module.exports = function( Marker ) {
   return visitors
 }
 
-},{}],247:[function(require,module,exports){
+},{}],246:[function(require,module,exports){
 const COLORS = {
   FILL:'var(--b_high)',//'rgba(46,50,53,1)',
   STROKE:'var(--f_med)',//'#aaa',
@@ -77913,7 +77840,7 @@ module.exports = function( __Gibber ) {
   return Waveform
 }
 
-},{}],248:[function(require,module,exports){
+},{}],247:[function(require,module,exports){
 const acorn = require( 'acorn' )
 const walk  = require( 'acorn-walk' )
 //const Utility = require( '../js/utility.js' )
@@ -78451,7 +78378,7 @@ return Marker
 
 
 
-},{"./annotations/markup/arrayExpression.js":231,"./annotations/markup/binaryExpression.js":232,"./annotations/markup/callExpression.js":233,"./annotations/markup/identifier.js":234,"./annotations/markup/literal.js":235,"./annotations/markup/tidal.js":236,"./annotations/markup/unaryExpression.js":237,"./annotations/standalone/hexStepsAnnotations.js":238,"./annotations/standalone/scoreAnnotation.js":239,"./annotations/standalone/stepsAnnotation.js":240,"./annotations/update/anonymousAnnotation.js":241,"./annotations/update/createBorderCycle.js":242,"./annotations/update/euclidAnnotation.js":243,"./annotations/update/lookupAnnotation.js":244,"./annotations/visitors.js":246,"./annotations/waveform.js":247,"acorn":143,"acorn-walk":141}],249:[function(require,module,exports){
+},{"./annotations/markup/arrayExpression.js":230,"./annotations/markup/binaryExpression.js":231,"./annotations/markup/callExpression.js":232,"./annotations/markup/identifier.js":233,"./annotations/markup/literal.js":234,"./annotations/markup/tidal.js":235,"./annotations/markup/unaryExpression.js":236,"./annotations/standalone/hexStepsAnnotations.js":237,"./annotations/standalone/scoreAnnotation.js":238,"./annotations/standalone/stepsAnnotation.js":239,"./annotations/update/anonymousAnnotation.js":240,"./annotations/update/createBorderCycle.js":241,"./annotations/update/euclidAnnotation.js":242,"./annotations/update/lookupAnnotation.js":243,"./annotations/visitors.js":245,"./annotations/waveform.js":246,"acorn":142,"acorn-walk":140}],248:[function(require,module,exports){
 module.exports = function( environment ) {
   const Console = {
     detail:1,
@@ -78561,7 +78488,7 @@ module.exports = function( environment ) {
   return Console
 }
 
-},{}],250:[function(require,module,exports){
+},{}],249:[function(require,module,exports){
 const CodeMirror    = require( 'codemirror' )
 
 require( '../node_modules/codemirror/addon/dialog/dialog.js' )
@@ -78952,7 +78879,7 @@ CodeMirror.keyMap.playground =  {
         
 }
 
-},{"../node_modules/acorn-loose/dist/acorn-loose.js":138,"../node_modules/acorn-walk/dist/walk.js":140,"../node_modules/acorn/dist/acorn.js":142,"../node_modules/codemirror/addon/dialog/dialog.js":147,"../node_modules/codemirror/addon/edit/closebrackets.js":148,"../node_modules/codemirror/addon/edit/matchbrackets.js":149,"../node_modules/codemirror/addon/hint/javascript-hint.js":150,"../node_modules/codemirror/addon/hint/show-hint.js":151,"../node_modules/codemirror/mode/javascript/javascript.js":154,"./proxies.js":254,"./tern.js":257,"codemirror":153}],251:[function(require,module,exports){
+},{"../node_modules/acorn-loose/dist/acorn-loose.js":137,"../node_modules/acorn-walk/dist/walk.js":139,"../node_modules/acorn/dist/acorn.js":141,"../node_modules/codemirror/addon/dialog/dialog.js":146,"../node_modules/codemirror/addon/edit/closebrackets.js":147,"../node_modules/codemirror/addon/edit/matchbrackets.js":148,"../node_modules/codemirror/addon/hint/javascript-hint.js":149,"../node_modules/codemirror/addon/hint/show-hint.js":150,"../node_modules/codemirror/mode/javascript/javascript.js":153,"./proxies.js":253,"./tern.js":256,"codemirror":152}],250:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 
@@ -79712,7 +79639,7 @@ window.__Gibberwocky = function () {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./codeMarkup.js":248,"./console.js":249,"./editor.js":250,"./examples.js":252,"./metronome.js":253,"./resources/js/theme.js":255,"./share.js":256,"codemirror":153,"gibber.audio.lib":83,"gibber.core.lib":126,"gibber.graphics.lib":137}],252:[function(require,module,exports){
+},{"./codeMarkup.js":247,"./console.js":248,"./editor.js":249,"./examples.js":251,"./metronome.js":252,"./resources/js/theme.js":254,"./share.js":255,"codemirror":152,"gibber.audio.lib":82,"gibber.core.lib":125,"gibber.graphics.lib":136}],251:[function(require,module,exports){
 module.exports = function() {
   const select = document.querySelector( 'select' )
   const files = [
@@ -79815,7 +79742,7 @@ module.exports = function() {
   }
 }
 
-},{}],253:[function(require,module,exports){
+},{}],252:[function(require,module,exports){
 let Gibber = null
 
 const Metronome = {
@@ -79884,7 +79811,7 @@ const Metronome = {
 
 module.exports = Metronome
 
-},{}],254:[function(require,module,exports){
+},{}],253:[function(require,module,exports){
 const sounds = {}
 
 const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
@@ -80021,7 +79948,7 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 
 module.exports = createProxies
 
-},{}],255:[function(require,module,exports){
+},{}],254:[function(require,module,exports){
 // from https://github.com/hundredrabbits/Themes
 'use strict'
 
@@ -80192,7 +80119,7 @@ const Theme = function(client) {
 
 module.exports = Theme
 
-},{}],256:[function(require,module,exports){
+},{}],255:[function(require,module,exports){
 // despair, all ye who enter here...
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
@@ -80523,7 +80450,7 @@ const share = {
 
 module.exports = share 
 
-},{"./editor.js":250,"y-codemirror":225,"y-websocket":229,"yjs":230}],257:[function(require,module,exports){
+},{"./editor.js":249,"y-codemirror":224,"y-websocket":228,"yjs":229}],256:[function(require,module,exports){
 require( '../node_modules/tern/doc/demo/polyfill.js' )
 require( '../node_modules/tern/lib/signal.js' )
 
@@ -80724,7 +80651,7 @@ module.exports = function( Gibber, cm, environment ) {
 
 }
 
-},{"../node_modules/codemirror/addon/hint/show-hint.js":151,"../node_modules/codemirror/addon/tern/tern.js":152,"../node_modules/tern/doc/demo/polyfill.js":213,"../node_modules/tern/lib/comment.js":214,"../node_modules/tern/lib/def.js":215,"../node_modules/tern/lib/infer.js":216,"../node_modules/tern/lib/signal.js":217,"../node_modules/tern/lib/tern.js":218,"../node_modules/tern/plugin/doc_comment.js":219}],258:[function(require,module,exports){
+},{"../node_modules/codemirror/addon/hint/show-hint.js":150,"../node_modules/codemirror/addon/tern/tern.js":151,"../node_modules/tern/doc/demo/polyfill.js":212,"../node_modules/tern/lib/comment.js":213,"../node_modules/tern/lib/def.js":214,"../node_modules/tern/lib/infer.js":215,"../node_modules/tern/lib/signal.js":216,"../node_modules/tern/lib/tern.js":217,"../node_modules/tern/plugin/doc_comment.js":218}],257:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
@@ -80736,7 +80663,7 @@ Object.assign( analyzer, {
 
 module.exports = analyzer
 
-},{"../ugen.js":328}],259:[function(require,module,exports){
+},{"../ugen.js":327}],258:[function(require,module,exports){
 module.exports = function( Gibberish ) {
   const { In, Out, SSD } = require( './singlesampledelay.js'  )( Gibberish )
 
@@ -80761,7 +80688,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./follow.dsp.js":260,"./singlesampledelay.js":261}],260:[function(require,module,exports){
+},{"./follow.dsp.js":259,"./singlesampledelay.js":260}],259:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       ugen = require( '../ugen.js' )
@@ -80977,7 +80904,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":328,"./analyzer.js":258,"genish.js":40}],261:[function(require,module,exports){
+},{"../ugen.js":327,"./analyzer.js":257,"genish.js":40}],260:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       proxy    = require( '../workletProxy.js' ),
@@ -81094,7 +81021,7 @@ return { In, Out, SSD }
 
 }
 
-},{"../ugen.js":328,"../workletProxy.js":330,"./analyzer.js":258,"genish.js":40}],262:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"./analyzer.js":257,"genish.js":40}],261:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -81122,7 +81049,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":328,"genish.js":40}],263:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],262:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -81167,7 +81094,7 @@ module.exports = function( Gibberish ) {
   return ADSR
 }
 
-},{"../ugen.js":328,"genish.js":40}],264:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],263:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
@@ -81203,7 +81130,7 @@ module.exports = function( Gibberish ) {
   return Envelopes
 }
 
-},{"./ad.js":262,"./adsr.js":263,"./ramp.js":265,"genish.js":40}],265:[function(require,module,exports){
+},{"./ad.js":261,"./adsr.js":262,"./ramp.js":264,"genish.js":40}],264:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -81237,9 +81164,9 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":328,"genish.js":40}],266:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],265:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
-},{"./realm.js":268,"dup":28}],267:[function(require,module,exports){
+},{"./realm.js":267,"dup":28}],266:[function(require,module,exports){
 /*
  * https://github.com/antimatter15/heapqueue.js/blob/master/heapqueue.js
  *
@@ -81353,7 +81280,7 @@ HeapQueue.prototype.pop = function(){
 
 module.exports = HeapQueue
 
-},{}],268:[function(require,module,exports){
+},{}],267:[function(require,module,exports){
 
 /**
  * Copyright 2018 Google LLC
@@ -81399,7 +81326,7 @@ module.exports = function Realm (scope, parentElement) {
   this.exec = win.$hook.call(scope, scope, console);
 }
 
-},{}],269:[function(require,module,exports){
+},{}],268:[function(require,module,exports){
 const __proxy = require( './workletProxy.js' )
 const effectProto = require( './fx/effect.js' )
 
@@ -81560,7 +81487,7 @@ module.exports = function( Gibberish ) {
   return factory
 }
 
-},{"./fx/effect.js":284,"./workletProxy.js":330}],270:[function(require,module,exports){
+},{"./fx/effect.js":283,"./workletProxy.js":329}],269:[function(require,module,exports){
 let g = require( 'genish.js' )
  
 // constructor for schroeder allpass filters
@@ -81577,7 +81504,7 @@ let allPass = function( _input, length=500, feedback=.5 ) {
 
 module.exports = allPass
 
-},{"genish.js":40}],271:[function(require,module,exports){
+},{"genish.js":40}],270:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -81741,7 +81668,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":274,"genish.js":40}],272:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],271:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 ) {
@@ -81760,7 +81687,7 @@ let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 
 
 module.exports = combFilter
 
-},{"genish.js":40}],273:[function(require,module,exports){
+},{"genish.js":40}],272:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -81970,7 +81897,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./filter.js":274,"genish.js":40}],274:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],273:[function(require,module,exports){
 let ugen = require( '../ugen.js' )()
 
 let filter = Object.create( ugen )
@@ -81981,7 +81908,7 @@ Object.assign( filter, {
 
 module.exports = filter
 
-},{"../ugen.js":328}],275:[function(require,module,exports){
+},{"../ugen.js":327}],274:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -82051,7 +81978,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":274,"genish.js":40}],276:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],275:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const g = Gibberish.genish
@@ -82115,7 +82042,7 @@ return filters
 
 }
 
-},{"./allpass.js":270,"./biquad.dsp.js":271,"./combfilter.js":272,"./diodeFilterZDF.js":273,"./filter24.js":275,"./ladder.dsp.js":277,"./svf.js":278}],277:[function(require,module,exports){
+},{"./allpass.js":269,"./biquad.dsp.js":270,"./combfilter.js":271,"./diodeFilterZDF.js":272,"./filter24.js":274,"./ladder.dsp.js":276,"./svf.js":277}],276:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       filterProto = require( './filter.js' )
 
@@ -82235,7 +82162,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":274,"genish.js":40}],278:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],277:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -82313,7 +82240,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":274,"genish.js":40}],279:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],278:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -82391,7 +82318,7 @@ return BitCrusher
 
 }
 
-},{"./effect.js":284,"genish.js":40}],280:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],279:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -82516,7 +82443,7 @@ module.exports = function( Gibberish ) {
   return Shuffler 
 }
 
-},{"./effect.js":284,"genish.js":40}],281:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],280:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
   
@@ -82613,7 +82540,7 @@ return __Chorus
 
 }
 
-},{"./effect.js":284,"genish.js":40}],282:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],281:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -82685,7 +82612,7 @@ return Delay
 
 }
 
-},{"./effect.js":284,"genish.js":40}],283:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],282:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -82772,7 +82699,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./effect.js":284,"genish.js":40}],284:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],283:[function(require,module,exports){
 let ugen = require( '../ugen.js' )()
 
 let effect = Object.create( ugen )
@@ -82784,7 +82711,7 @@ Object.assign( effect, {
 
 module.exports = effect
 
-},{"../ugen.js":328}],285:[function(require,module,exports){
+},{"../ugen.js":327}],284:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const effects = {
@@ -82815,7 +82742,7 @@ return effects
 
 }
 
-},{"./bitCrusher.js":279,"./bufferShuffler.js":280,"./chorus.js":281,"./delay.js":282,"./distortion.dsp.js":283,"./flanger.js":286,"./freeverb.js":287,"./ringMod.js":288,"./tremolo.js":289,"./vibrato.js":290,"./wavefolder.dsp.js":291}],286:[function(require,module,exports){
+},{"./bitCrusher.js":278,"./bufferShuffler.js":279,"./chorus.js":280,"./delay.js":281,"./distortion.dsp.js":282,"./flanger.js":285,"./freeverb.js":286,"./ringMod.js":287,"./tremolo.js":288,"./vibrato.js":289,"./wavefolder.dsp.js":290}],285:[function(require,module,exports){
 let g = require( 'genish.js' ),
     proto = require( './effect.js' )
 
@@ -82906,7 +82833,7 @@ return Flanger
 
 }
 
-},{"./effect.js":284,"genish.js":40}],287:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],286:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83014,7 +82941,7 @@ return Freeverb
 }
 
 
-},{"./effect.js":284,"genish.js":40}],288:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],287:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -83079,7 +83006,7 @@ return RingMod
 
 }
 
-},{"./effect.js":284,"genish.js":40}],289:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],288:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83152,7 +83079,7 @@ return Tremolo
 
 }
 
-},{"./effect.js":284,"genish.js":40}],290:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],289:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83239,7 +83166,7 @@ return Vibrato
 
 }
 
-},{"./effect.js":284,"genish.js":40}],291:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],290:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83389,7 +83316,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./effect.js":284,"genish.js":40}],292:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],291:[function(require,module,exports){
 let MemoryHelper = require( 'memory-helper' ),
     genish       = require( 'genish.js' )
     
@@ -83895,7 +83822,7 @@ Gibberish.utilities = require( './utilities.js' )( Gibberish )
 
 module.exports = Gibberish
 
-},{"./analysis/analyzer.js":258,"./analysis/analyzers.js":259,"./envelopes/envelopes.js":264,"./factory.js":269,"./filters/filters.js":276,"./fx/effect.js":284,"./fx/effects.js":285,"./instruments/instrument.js":299,"./instruments/instruments.js":300,"./instruments/polyMixin.js":305,"./instruments/polytemplate.js":306,"./misc/binops.js":312,"./misc/bus.js":313,"./misc/bus2.js":314,"./misc/monops.js":315,"./misc/panner.js":316,"./misc/time.js":317,"./oscillators/oscillators.js":320,"./scheduling/scheduler.js":324,"./scheduling/seq2.js":325,"./scheduling/sequencer.js":326,"./scheduling/tidal.js":327,"./ugen.js":328,"./utilities.js":329,"./workletProxy.js":330,"genish.js":40,"memory-helper":333}],293:[function(require,module,exports){
+},{"./analysis/analyzer.js":257,"./analysis/analyzers.js":258,"./envelopes/envelopes.js":263,"./factory.js":268,"./filters/filters.js":275,"./fx/effect.js":283,"./fx/effects.js":284,"./instruments/instrument.js":298,"./instruments/instruments.js":299,"./instruments/polyMixin.js":304,"./instruments/polytemplate.js":305,"./misc/binops.js":311,"./misc/bus.js":312,"./misc/bus2.js":313,"./misc/monops.js":314,"./misc/panner.js":315,"./misc/time.js":316,"./oscillators/oscillators.js":319,"./scheduling/scheduler.js":323,"./scheduling/seq2.js":324,"./scheduling/sequencer.js":325,"./scheduling/tidal.js":326,"./ugen.js":327,"./utilities.js":328,"./workletProxy.js":329,"genish.js":40,"memory-helper":332}],292:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -83965,7 +83892,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],294:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],293:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       __wavefold   = require( '../fx/wavefolder.dsp.js' )
@@ -84091,7 +84018,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../fx/wavefolder.dsp.js":291,"./instrument.js":299,"genish.js":40}],295:[function(require,module,exports){
+},{"../fx/wavefolder.dsp.js":290,"./instrument.js":298,"genish.js":40}],294:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84132,7 +84059,7 @@ module.exports = function( Gibberish ) {
   return [ Conga, PolyConga ]
 }
 
-},{"./instrument.js":299,"genish.js":40}],296:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],295:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84176,7 +84103,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],297:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],296:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -84307,7 +84234,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],298:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],297:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84361,7 +84288,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],299:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],298:[function(require,module,exports){
 const ugen = require('../ugen.js')();
 
 const instrument = Object.create(ugen);
@@ -84409,7 +84336,7 @@ Object.assign(instrument, {
 
 module.exports = instrument
 
-},{"../ugen.js":328}],300:[function(require,module,exports){
+},{"../ugen.js":327}],299:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
 const instruments = {
@@ -84447,7 +84374,7 @@ return instruments
 
 }
 
-},{"./clap.dsp.js":293,"./complex.dsp.js":294,"./conga.js":295,"./cowbell.js":296,"./fm.dsp.js":297,"./hat.js":298,"./karplusstrong.js":301,"./kick.js":302,"./monosynth.dsp.js":303,"./multisampler.dsp.js":304,"./sampler.js":307,"./snare.js":308,"./soundfont.js":309,"./synth.dsp.js":310,"./tom.js":311}],301:[function(require,module,exports){
+},{"./clap.dsp.js":292,"./complex.dsp.js":293,"./conga.js":294,"./cowbell.js":295,"./fm.dsp.js":296,"./hat.js":297,"./karplusstrong.js":300,"./kick.js":301,"./monosynth.dsp.js":302,"./multisampler.dsp.js":303,"./sampler.js":306,"./snare.js":307,"./soundfont.js":308,"./synth.dsp.js":309,"./tom.js":310}],300:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -84539,7 +84466,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],302:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],301:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84590,7 +84517,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],303:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],302:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       feedbackOsc = require( '../oscillators/fmfeedbackosc.js' )
@@ -84714,7 +84641,7 @@ module.exports = function( Gibberish ) {
   return [ Mono, PolyMono ]
 }
 
-},{"../oscillators/fmfeedbackosc.js":319,"./instrument.js":299,"genish.js":40}],304:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":318,"./instrument.js":298,"genish.js":40}],303:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -84785,11 +84712,11 @@ module.exports = function( Gibberish ) {
         if( rate > 0 ) {
           voice.trigger()
         }else{
-          console.log( 'reverse?', rate )
+          //console.log( 'reverse?', rate )
           voice.bang.trigger()
           //voice.phase.value = 0
           voice.phase.value = sampler.dataLength - 1
-          console.log( 'phase', voice.phase.value )
+          //console.log( 'phase', voice.phase.value )
         }
         //if( rate < 0 ) {
         //  const phase = sampler.dataIdx + Math.round((sampler.dataLength/2)) - 1
@@ -85037,7 +84964,7 @@ module.exports = function( Gibberish ) {
   return Sampler
 }
 
-},{"./instrument.js":299,"genish.js":40}],305:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],304:[function(require,module,exports){
 // XXX TOO MANY GLOBAL GIBBERISH VALUES
 
 const Gibberish = require( '../index.js' )
@@ -85125,7 +85052,7 @@ module.exports = {
   triggerNote:null
 }
 
-},{"../index.js":292}],306:[function(require,module,exports){
+},{"../index.js":291}],305:[function(require,module,exports){
 /*
  * This files creates a factory generating polysynth constructors.
  */
@@ -85238,7 +85165,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../workletProxy.js":330,"genish.js":40}],307:[function(require,module,exports){
+},{"../workletProxy.js":329,"genish.js":40}],306:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -85463,7 +85390,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./instrument.js":299,"genish.js":40}],308:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],307:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
   
@@ -85514,7 +85441,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],309:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],308:[function(require,module,exports){
 /*fetch( '0000_Aspirin_sf2_file.json' )
 .then( res => res.json() )
 .then( json => {
@@ -86115,7 +86042,7 @@ module.exports = function( Gibberish ) {
   return Soundfont
 }
 
-},{"./instrument.js":299,"genish.js":40}],310:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],309:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -86235,7 +86162,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":299,"genish.js":40}],311:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],310:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -86286,7 +86213,7 @@ module.exports = function( Gibberish ) {
   return Tom
 }
 
-},{"./instrument.js":299,"genish.js":40}],312:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],311:[function(require,module,exports){
 const ugenproto = require( '../ugen.js' )(),
      __proxy     = require( '../workletProxy.js' ),
      g = require( 'genish.js' )
@@ -86402,7 +86329,7 @@ module.exports = function( Gibberish ) {
   return Binops
 }
 
-},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],313:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],312:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )(),
     __proxy= require( '../workletProxy.js' )
@@ -86493,7 +86420,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],314:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],313:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       __proxy = require( '../workletProxy.js' )
@@ -86632,7 +86559,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],315:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],314:[function(require,module,exports){
 const  g    = require( 'genish.js'  ),
        ugen = require( '../ugen.js' )()
 
@@ -86694,7 +86621,7 @@ module.exports = function( Gibberish ) {
   return Monops
 }
 
-},{"../ugen.js":328,"genish.js":40}],316:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],315:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 const ugen = require( '../ugen.js' )()
@@ -86731,7 +86658,7 @@ return Panner
 
 }
 
-},{"../ugen.js":328,"genish.js":40}],317:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],316:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const Time = {
@@ -86760,7 +86687,7 @@ module.exports = function( Gibberish ) {
   return Time
 }
 
-},{}],318:[function(require,module,exports){
+},{}],317:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       noise = genish.noise
@@ -86781,7 +86708,7 @@ module.exports = function() {
   return out
 }
 
-},{"genish.js":40}],319:[function(require,module,exports){
+},{"genish.js":40}],318:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
@@ -86857,7 +86784,7 @@ let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
 
 module.exports = feedbackOsc
 
-},{"genish.js":40}],320:[function(require,module,exports){
+},{"genish.js":40}],319:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       feedbackOsc = require( './fmfeedbackosc.js' ),
@@ -87036,7 +86963,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":328,"./brownnoise.dsp.js":318,"./fmfeedbackosc.js":319,"./pinknoise.dsp.js":321,"./polyblep.dsp.js":322,"./wavetable.js":323,"genish.js":40}],321:[function(require,module,exports){
+},{"../ugen.js":327,"./brownnoise.dsp.js":317,"./fmfeedbackosc.js":318,"./pinknoise.dsp.js":320,"./polyblep.dsp.js":321,"./wavetable.js":322,"genish.js":40}],320:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       data = genish.data,
@@ -87063,7 +86990,7 @@ module.exports = function() {
 
 }
 
-},{"genish.js":40}],322:[function(require,module,exports){
+},{"genish.js":40}],321:[function(require,module,exports){
 const genish = require( 'genish.js' )
 const g = genish
 
@@ -87136,7 +87063,7 @@ const polyBlep = function( __frequency, argumentProps ) {
 
 module.exports = polyBlep 
 
-},{"genish.js":40}],323:[function(require,module,exports){
+},{"genish.js":40}],322:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )()
 
@@ -87170,7 +87097,7 @@ module.exports = function( Gibberish ) {
   return Wavetable
 }
 
-},{"../ugen.js":328,"genish.js":40}],324:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],323:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 
 let Gibberish = null
@@ -87251,7 +87178,7 @@ Object.defineProperty( Scheduler, 'shouldSync', {
 
 module.exports = Scheduler
 
-},{"../external/priorityqueue.js":267}],325:[function(require,module,exports){
+},{"../external/priorityqueue.js":266}],324:[function(require,module,exports){
 const g = require( 'genish.js' ),
       __proxy = require( '../workletProxy.js' ),
       ugen = require( '../ugen.js' )()
@@ -87465,7 +87392,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":328,"../workletProxy.js":330,"genish.js":40}],326:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],325:[function(require,module,exports){
 (function (global){(function (){
 const __proxy = require( '../workletProxy.js' )
 
@@ -87717,7 +87644,7 @@ return Sequencer
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../workletProxy.js":330}],327:[function(require,module,exports){
+},{"../workletProxy.js":329}],326:[function(require,module,exports){
 const __proxy = require( '../workletProxy.js' )
 const Pattern = require( 'tidal.pegjs' )
 
@@ -87918,7 +87845,7 @@ return Sequencer
 
 }
 
-},{"../workletProxy.js":330,"tidal.pegjs":344}],328:[function(require,module,exports){
+},{"../workletProxy.js":329,"tidal.pegjs":343}],327:[function(require,module,exports){
 let Gibberish = null
 
 const __ugen = function( __Gibberish ) {
@@ -88065,7 +87992,7 @@ const __ugen = function( __Gibberish ) {
 
 module.exports = __ugen
 
-},{}],329:[function(require,module,exports){
+},{}],328:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       AWPF = require( './external/audioworklet-polyfill.js' )
 
@@ -88385,7 +88312,7 @@ return utilities
 
 }
 
-},{"./external/audioworklet-polyfill.js":266,"genish.js":40}],330:[function(require,module,exports){
+},{"./external/audioworklet-polyfill.js":265,"genish.js":40}],329:[function(require,module,exports){
 const serialize = require('serialize-javascript')
 
 module.exports = function( Gibberish ) {
@@ -88544,7 +88471,7 @@ return __proxy
 
 }
 
-},{"serialize-javascript":342}],331:[function(require,module,exports){
+},{"serialize-javascript":341}],330:[function(require,module,exports){
 function bjorklund(slots, pulses){
   var pattern = [],
       count = [],
@@ -88585,7 +88512,7 @@ module.exports = function(m, k){
   else return bjorklund(k, m);
 };
 
-},{}],332:[function(require,module,exports){
+},{}],331:[function(require,module,exports){
 /**
  * @license Fraction.js v4.1.1 23/05/2021
  * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
@@ -89498,112 +89425,100 @@ module.exports = function(m, k){
 
 })(this);
 
-},{}],333:[function(require,module,exports){
-'use strict'
+},{}],332:[function(require,module,exports){
+'use strict';
 
-let MemoryHelper = {
-  create( sizeOrBuffer=4096, memtype=Float32Array ) {
-    let helper = Object.create( this )
+var MemoryHelper = {
+  create: function create() {
+    var size = arguments.length <= 0 || arguments[0] === undefined ? 4096 : arguments[0];
+    var memtype = arguments.length <= 1 || arguments[1] === undefined ? Float32Array : arguments[1];
 
-    // conveniently, buffer constructors accept either a size or an array buffer to use...
-    // so, no matter which is passed to sizeOrBuffer it should work.
-    Object.assign( helper, {
-      heap: new memtype( sizeOrBuffer ),
+    var helper = Object.create(this);
+
+    Object.assign(helper, {
+      heap: new memtype(size),
       list: {},
       freeList: {}
-    })
+    });
 
-    return helper
+    return helper;
   },
+  alloc: function alloc(amount) {
+    var idx = -1;
 
-  alloc( size, immutable ) {
-    let idx = -1
-
-    if( size > this.heap.length ) {
-      throw Error( 'Allocation request is larger than heap size of ' + this.heap.length )
+    if (amount > this.heap.length) {
+      throw Error('Allocation request is larger than heap size of ' + this.heap.length);
     }
 
-    for( let key in this.freeList ) {
-      let candidate = this.freeList[ key ]
+    for (var key in this.freeList) {
+      var candidateSize = this.freeList[key];
 
-      if( candidate.size >= size ) {
-        idx = key
+      if (candidateSize >= amount) {
+        idx = key;
 
-        this.list[ idx ] = { size, immutable, references:1 }
+        this.list[idx] = amount;
 
-        if( candidate.size !== size ) {
-          let newIndex = idx + size,
-              newFreeSize
+        if (candidateSize !== amount) {
+          var newIndex = idx + amount,
+              newFreeSize = void 0;
 
-          for( let key in this.list ) {
-            if( key > newIndex ) {
-              newFreeSize = key - newIndex
-              this.freeList[ newIndex ] = newFreeSize
+          for (var _key in this.list) {
+            if (_key > newIndex) {
+              newFreeSize = _key - newIndex;
+              this.freeList[newIndex] = newFreeSize;
             }
           }
         }
-
-        break
+        
+        break;
       }
     }
-
+    
     if( idx !== -1 ) delete this.freeList[ idx ]
 
-    if( idx === -1 ) {
-      let keys = Object.keys( this.list ),
-          lastIndex
+    if (idx === -1) {
+      var keys = Object.keys(this.list),
+          lastIndex = void 0;
 
-      if( keys.length ) { // if not first allocation...
-        lastIndex = parseInt( keys[ keys.length - 1 ] )
+      if (keys.length) {
+        // if not first allocation...
+        lastIndex = parseInt(keys[keys.length - 1]);
 
-        idx = lastIndex + this.list[ lastIndex ].size
-      }else{
-        idx = 0
+        idx = lastIndex + this.list[lastIndex];
+      } else {
+        idx = 0;
       }
 
-      this.list[ idx ] = { size, immutable, references:1 }
+      this.list[idx] = amount;
     }
 
-    if( idx + size >= this.heap.length ) {
-      throw Error( 'No available blocks remain sufficient for allocation request.' )
+    if (idx + amount >= this.heap.length) {
+      throw Error('No available blocks remain sufficient for allocation request.');
     }
-    return idx
+    return idx;
   },
-
-  addReference( index ) {
-    if( this.list[ index ] !== undefined ) { 
-      this.list[ index ].references++
-    }
-  },
-
-  free( index ) {
-    if( this.list[ index ] === undefined ) {
-      throw Error( 'Calling free() on non-existing block.' )
+  free: function free(index) {
+    if (typeof this.list[index] !== 'number') {
+      throw Error('Calling free() on non-existing block.');
     }
 
-    let slot = this.list[ index ]
-    if( slot === 0 ) return
-    slot.references--
+    this.list[index] = 0;
 
-    if( slot.references === 0 && slot.immutable !== true ) {    
-      this.list[ index ] = 0
-
-      let freeBlockSize = 0
-      for( let key in this.list ) {
-        if( key > index ) {
-          freeBlockSize = key - index
-          break
-        }
+    var size = 0;
+    for (var key in this.list) {
+      if (key > index) {
+        size = key - index;
+        break;
       }
-
-      this.freeList[ index ] = freeBlockSize
     }
-  },
-}
 
-module.exports = MemoryHelper
+    this.freeList[index] = size;
+  }
+};
 
-},{}],334:[function(require,module,exports){
+module.exports = MemoryHelper;
+
+},{}],333:[function(require,module,exports){
 // A library of seedable RNGs implemented in Javascript.
 //
 // Usage:
@@ -89665,7 +89580,7 @@ sr.tychei = tychei;
 
 module.exports = sr;
 
-},{"./lib/alea":335,"./lib/tychei":336,"./lib/xor128":337,"./lib/xor4096":338,"./lib/xorshift7":339,"./lib/xorwow":340,"./seedrandom":341}],335:[function(require,module,exports){
+},{"./lib/alea":334,"./lib/tychei":335,"./lib/xor128":336,"./lib/xor4096":337,"./lib/xorshift7":338,"./lib/xorwow":339,"./seedrandom":340}],334:[function(require,module,exports){
 // A port of an algorithm by Johannes Baagøe <baagoe@baagoe.com>, 2010
 // http://baagoe.com/en/RandomMusings/javascript/
 // https://github.com/nquinlan/better-random-numbers-for-javascript-mirror
@@ -89781,7 +89696,7 @@ if (module && module.exports) {
 
 
 
-},{}],336:[function(require,module,exports){
+},{}],335:[function(require,module,exports){
 // A Javascript implementaion of the "Tyche-i" prng algorithm by
 // Samuel Neves and Filipe Araujo.
 // See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
@@ -89886,7 +89801,7 @@ if (module && module.exports) {
 
 
 
-},{}],337:[function(require,module,exports){
+},{}],336:[function(require,module,exports){
 // A Javascript implementaion of the "xor128" prng algorithm by
 // George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
 
@@ -89969,7 +89884,7 @@ if (module && module.exports) {
 
 
 
-},{}],338:[function(require,module,exports){
+},{}],337:[function(require,module,exports){
 // A Javascript implementaion of Richard Brent's Xorgens xor4096 algorithm.
 //
 // This fast non-cryptographic random number generator is designed for
@@ -90117,7 +90032,7 @@ if (module && module.exports) {
   (typeof define) == 'function' && define   // present with an AMD loader
 );
 
-},{}],339:[function(require,module,exports){
+},{}],338:[function(require,module,exports){
 // A Javascript implementaion of the "xorshift7" algorithm by
 // François Panneton and Pierre L'ecuyer:
 // "On the Xorgshift Random Number Generators"
@@ -90216,7 +90131,7 @@ if (module && module.exports) {
 );
 
 
-},{}],340:[function(require,module,exports){
+},{}],339:[function(require,module,exports){
 // A Javascript implementaion of the "xorwow" prng algorithm by
 // George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
 
@@ -90304,7 +90219,7 @@ if (module && module.exports) {
 
 
 
-},{}],341:[function(require,module,exports){
+},{}],340:[function(require,module,exports){
 /*
 Copyright 2019 David Bau.
 
@@ -90559,9 +90474,9 @@ if ((typeof module) == 'object' && module.exports) {
   Math    // math: package containing random, pow, and seedrandom
 );
 
-},{"crypto":145}],342:[function(require,module,exports){
-arguments[4][123][0].apply(exports,arguments)
-},{"dup":123}],343:[function(require,module,exports){
+},{"crypto":144}],341:[function(require,module,exports){
+arguments[4][122][0].apply(exports,arguments)
+},{"dup":122}],342:[function(require,module,exports){
 /*
  * Generated by PEG.js 0.10.0.
  *
@@ -92940,7 +92855,7 @@ module.exports = {
   parse:       peg$parse
 };
 
-},{}],344:[function(require,module,exports){
+},{}],343:[function(require,module,exports){
 const parse = require('../dist/tidal.js').parse
 const query = require('./queryArc.js' ).queryArc
 const Fraction = require( 'fraction.js' )
@@ -93000,7 +92915,7 @@ const Pattern = ( patternString, opts ) => {
 
 module.exports = Pattern
 
-},{"../dist/tidal.js":343,"./queryArc.js":345,"fraction.js":332}],345:[function(require,module,exports){
+},{"../dist/tidal.js":342,"./queryArc.js":344,"fraction.js":331}],344:[function(require,module,exports){
 const Fraction = require( 'fraction.js' )
 const util     = require( 'util' )
 const bjork    = require( 'bjork' ) 
@@ -93588,7 +93503,7 @@ const handlers = {
 
 module.exports.queryArc = queryArc
 
-},{"bjork":331,"fraction.js":332,"seedrandom":334,"util":224}],346:[function(require,module,exports){
+},{"bjork":330,"fraction.js":331,"seedrandom":333,"util":223}],345:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen } = require( './var.js' )
@@ -93768,7 +93683,7 @@ Alterations.Halve.RIGHT = 2
 
 module.exports = Alterations
 
-},{"./sceneNode.js":368,"./utils.js":373,"./var.js":374}],347:[function(require,module,exports){
+},{"./sceneNode.js":367,"./utils.js":372,"./var.js":373}],346:[function(require,module,exports){
 const Audio = {
   __hasInput: false,
   ctx: null,
@@ -93883,7 +93798,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{}],348:[function(require,module,exports){
+},{}],347:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' )
@@ -93942,7 +93857,7 @@ const BG = function( Scene, SDF ) {
 
 module.exports = BG 
 
-},{"./sceneNode.js":368,"./utils.js":373,"./var.js":374,"./vec.js":375}],349:[function(require,module,exports){
+},{"./sceneNode.js":367,"./utils.js":372,"./var.js":373,"./vec.js":374}],348:[function(require,module,exports){
 const vec3 = require('gl-vec3')
 const mat4 = require('gl-mat4')
 
@@ -94182,7 +94097,7 @@ const Camera = {
 
 module.exports = Camera
 
-},{"gl-mat4":455,"gl-vec3":489}],350:[function(require,module,exports){
+},{"gl-mat4":454,"gl-vec3":488}],349:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -94430,7 +94345,7 @@ DistanceOps.Halve.RIGHT = 2
 module.exports = DistanceOps
 
 
-},{"./sceneNode.js":368,"./transform.js":372,"./utils.js":373,"./var.js":374}],351:[function(require,module,exports){
+},{"./sceneNode.js":367,"./transform.js":371,"./utils.js":372,"./var.js":373}],350:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -94756,7 +94671,7 @@ for( let name in ops ) {
 
 module.exports = DistanceOps
 
-},{"./distanceOperationsGLSL.js":352,"./sceneNode.js":368,"./transform.js":372,"./utils.js":373,"./var.js":374}],352:[function(require,module,exports){
+},{"./distanceOperationsGLSL.js":351,"./sceneNode.js":367,"./transform.js":371,"./utils.js":372,"./var.js":373}],351:[function(require,module,exports){
 module.exports = {
   Union:{
     float:`
@@ -95115,7 +95030,7 @@ module.exports = {
       `
 }
 
-},{}],353:[function(require,module,exports){
+},{}],352:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -95495,7 +95410,7 @@ const getDomainOps = function( SDF ) {
 
 module.exports = getDomainOps
 
-},{"./sceneNode.js":368,"./transform.js":372,"./utils.js":373,"./var.js":374,"./vec.js":375}],354:[function(require,module,exports){
+},{"./sceneNode.js":367,"./transform.js":371,"./utils.js":372,"./var.js":373,"./vec.js":374}],353:[function(require,module,exports){
 // matrix.js - taken from https://github.com/evanw/lightgl.js/
 
 // Represents a 4x4 matrix stored in row-major order that uses Float32Arrays
@@ -95892,7 +95807,7 @@ Matrix.lookAt = function(ex, ey, ez, cx, cy, cz, ux, uy, uz, result) {
 
 module.exports = Matrix
 
-},{}],355:[function(require,module,exports){
+},{}],354:[function(require,module,exports){
 const emit_float = function( a ) {
 	if (a % 1 === 0)
 		return a.toFixed( 1 )
@@ -95915,7 +95830,7 @@ const Float = function( x=0 ) {
 
 module.exports = Float
 
-},{}],356:[function(require,module,exports){
+},{}],355:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -95991,7 +95906,7 @@ const Fogger = function( Scene, SDF ) {
 
 module.exports = Fogger
 
-},{"./sceneNode.js":368,"./utils.js":373,"./var.js":374,"./vec.js":375}],357:[function(require,module,exports){
+},{"./sceneNode.js":367,"./utils.js":372,"./var.js":373,"./vec.js":374}],356:[function(require,module,exports){
 'use strict'
 
 const Marching = require( './main.js' )
@@ -96006,7 +95921,7 @@ window.Marching = Marching
 
 module.exports = Marching
 
-},{"./main.js":360}],358:[function(require,module,exports){
+},{"./main.js":359}],357:[function(require,module,exports){
 const emit_int = function( a ) {
 	if( a % 1 !== 0 )
 		return Math.round( a )
@@ -96029,7 +95944,7 @@ const Int = function( x=0 ) {
 
 module.exports = Int
 
-},{}],359:[function(require,module,exports){
+},{}],358:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -96311,7 +96226,7 @@ module.exports = Lights
 /*
 */
 
-},{"./sceneNode.js":368,"./utils.js":373,"./var.js":374,"./vec.js":375,"glslify":517}],360:[function(require,module,exports){
+},{"./sceneNode.js":367,"./utils.js":372,"./var.js":373,"./vec.js":374,"glslify":516}],359:[function(require,module,exports){
 const SDF = {
   camera:           require( './camera.js' ),
   __primitives:     require( './primitives.js' ),
@@ -96769,7 +96684,7 @@ const SDF = {
 
 module.exports = SDF
 
-},{"./alterations.js":346,"./audio.js":347,"./camera.js":349,"./distanceDeformations.js":350,"./distanceOperations.js":351,"./domainOperations.js":353,"./lighting.js":359,"./material.js":361,"./mergepass.js":362,"./noise.js":363,"./primitives.js":365,"./renderFragmentShader.js":366,"./scene.js":367,"./texture.js":369,"./var.js":374,"./vec.js":375}],361:[function(require,module,exports){
+},{"./alterations.js":345,"./audio.js":346,"./camera.js":348,"./distanceDeformations.js":349,"./distanceOperations.js":350,"./domainOperations.js":352,"./lighting.js":358,"./material.js":360,"./mergepass.js":361,"./noise.js":362,"./primitives.js":364,"./renderFragmentShader.js":365,"./scene.js":366,"./texture.js":368,"./var.js":373,"./vec.js":374}],360:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -97002,7 +96917,7 @@ const __Materials = function( SDF ) {
 
 module.exports = __Materials
 
-},{"./sceneNode.js":368,"./utils.js":373,"./var.js":374,"./vec.js":375,"glslify":517}],362:[function(require,module,exports){
+},{"./sceneNode.js":367,"./utils.js":372,"./var.js":373,"./vec.js":374,"glslify":516}],361:[function(require,module,exports){
 const MP   = require( '@bandaloo/merge-pass' )
 
 const FX = {
@@ -97255,7 +97170,7 @@ const FX = {
 
 module.exports = FX
 
-},{"@bandaloo/merge-pass":428}],363:[function(require,module,exports){
+},{"@bandaloo/merge-pass":427}],362:[function(require,module,exports){
 const glsl = require( 'glslify' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -97342,7 +97257,7 @@ return Noise
 
 module.exports = getNoise 
 
-},{"./sceneNode.js":368,"./utils.js":373,"./var.js":374,"glslify":517}],364:[function(require,module,exports){
+},{"./sceneNode.js":367,"./utils.js":372,"./var.js":373,"glslify":516}],363:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 module.exports = {
@@ -97684,7 +97599,7 @@ module.exports = {
       }\n`
   },
   
- 	Triangle: {
+	Triangle: {
     parameters:[
       { name:'v1', type:'vec3', default:[0,-.5,0] },
       { name:'v2', type:'vec3', default:[-.5,.0,0] },
@@ -97711,7 +97626,7 @@ module.exports = {
 
 }
 
-},{"glslify":517}],365:[function(require,module,exports){
+},{"glslify":516}],364:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -98030,7 +97945,7 @@ const createPrimitives = function( SDF ) {
 
 module.exports = createPrimitives
 
-},{"./primitiveDescriptions.js":364,"./sceneNode.js":368,"./transform.js":372,"./utils.js":373,"./var.js":374,"./vec.js":375}],366:[function(require,module,exports){
+},{"./primitiveDescriptions.js":363,"./sceneNode.js":367,"./transform.js":371,"./utils.js":372,"./var.js":373,"./vec.js":374}],365:[function(require,module,exports){
 const getMainContinuous = function( steps, minDistance, maxDistance, postprocessing ) {
   const out = `
   // adapted from https://www.shadertoy.com/view/ldfSWs
@@ -98341,7 +98256,7 @@ ${main}
     return fs_source
   }
 
-},{}],367:[function(require,module,exports){
+},{}],366:[function(require,module,exports){
 const getFog = require( './fog.js' )
 const vignette = require( './vignette.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -98631,7 +98546,7 @@ const getScene = function( SDF ) {
 
 module.exports = getScene 
 
-},{"./background.js":348,"./fog.js":356,"./lighting.js":359,"./utils.js":373,"./var.js":374,"./vignette.js":376}],368:[function(require,module,exports){
+},{"./background.js":347,"./fog.js":355,"./lighting.js":358,"./utils.js":372,"./var.js":373,"./vignette.js":375}],367:[function(require,module,exports){
 const SceneNode = ()=> Object.create( SceneNode.prototype )
 const Matrix = require( './external/matrix.js' )
 
@@ -98733,7 +98648,7 @@ ops.forEach( op => {
 
 module.exports = SceneNode
 
-},{"./external/matrix.js":354}],369:[function(require,module,exports){
+},{"./external/matrix.js":353}],368:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       getPixels = require( 'get-pixels' ),
       createTexture = require( 'gl-texture2d' ),
@@ -99090,7 +99005,7 @@ const __Textures = function( SDF ) {
 
 module.exports = __Textures
 
-},{"./sceneNode.js":368,"./textureDescriptions.js":370,"./textureWrap.js":371,"./utils.js":373,"./var.js":374,"./vec.js":375,"get-pixels":439,"gl-texture2d":470}],370:[function(require,module,exports){
+},{"./sceneNode.js":367,"./textureDescriptions.js":369,"./textureWrap.js":370,"./utils.js":372,"./var.js":373,"./vec.js":374,"get-pixels":438,"gl-texture2d":469}],369:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 const textures = {
@@ -99388,7 +99303,7 @@ const textures = {
 
 module.exports = textures
 
-},{"glslify":517}],371:[function(require,module,exports){
+},{"glslify":516}],370:[function(require,module,exports){
 module.exports = `
     // p = point on surface, p0 = object center
     vec2 getUVCubic(vec3 p ){
@@ -99450,7 +99365,7 @@ module.exports = `vec3 t3(sampler2D tex, vec3 p, vec3 n)
     }`
     */
 
-},{}],372:[function(require,module,exports){
+},{}],371:[function(require,module,exports){
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const Matrix = require( './external/matrix.js' )
@@ -99659,7 +99574,7 @@ MatrixWrap.prototype = {
 
 module.exports = MatrixWrap
 
-},{"./external/matrix.js":354,"./utils.js":373,"./var.js":374}],373:[function(require,module,exports){
+},{"./external/matrix.js":353,"./utils.js":372,"./var.js":373}],372:[function(require,module,exports){
 const Var = require('./var.js').Var
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 
@@ -99701,7 +99616,7 @@ const processVec3 = function( val ) {
 
 module.exports = { param_wrap, MaterialID, processVec2, processVec3 }
 
-},{"./var.js":374,"./vec.js":375}],374:[function(require,module,exports){
+},{"./var.js":373,"./vec.js":374}],373:[function(require,module,exports){
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 const float = require( './float.js' )
 const int   = require( './int.js' )
@@ -99906,7 +99821,7 @@ function vec4_var_gen( x, y, z, w, name=null ) {
 }
 */
 
-},{"./float.js":355,"./int.js":358,"./vec.js":375}],375:[function(require,module,exports){
+},{"./float.js":354,"./int.js":357,"./vec.js":374}],374:[function(require,module,exports){
 const Vec2 = function (x=0, y=0) {
   if( x.type === 'vec2' ) return x  
   const v = Object.create( Vec2.prototype )
@@ -100187,7 +100102,7 @@ Vec4.prototype = {
 
 module.exports = { Vec2, Vec3, Vec4 } 
 
-},{}],376:[function(require,module,exports){
+},{}],375:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -100261,7 +100176,7 @@ const Vignette = function( Scene, SDF ) {
 
 module.exports = Vignette 
 
-},{"./sceneNode.js":368,"./utils.js":373,"./var.js":374}],377:[function(require,module,exports){
+},{"./sceneNode.js":367,"./utils.js":372,"./var.js":373}],376:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CodeBuilder = exports.channelSamplerName = void 0;
@@ -100452,7 +100367,7 @@ class CodeBuilder {
 }
 exports.CodeBuilder = CodeBuilder;
 
-},{"./exprs/expr":391,"./settings":430,"./webglprogramloop":432}],378:[function(require,module,exports){
+},{"./exprs/expr":390,"./settings":429,"./webglprogramloop":431}],377:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a1 = exports.Arity1HomogenousExpr = void 0;
@@ -100487,7 +100402,7 @@ function a1(name, val) {
 }
 exports.a1 = a1;
 
-},{"./expr":391}],379:[function(require,module,exports){
+},{"./expr":390}],378:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a2 = exports.Arity2HomogenousExpr = void 0;
@@ -100531,7 +100446,7 @@ function a2(name, val1, val2) {
 }
 exports.a2 = a2;
 
-},{"./expr":391}],380:[function(require,module,exports){
+},{"./expr":390}],379:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bloom = exports.BloomLoop = void 0;
@@ -100615,7 +100530,7 @@ function bloom(threshold, horizontal, vertical, boost, samplerNum, taps, reps) {
 }
 exports.bloom = bloom;
 
-},{"../mergepass":429,"./arity2":379,"./blurexpr":382,"./brightnessexpr":383,"./channelsampleexpr":385,"./contrastexpr":386,"./expr":391,"./fragcolorexpr":392,"./opexpr":409,"./vecexprs":425}],381:[function(require,module,exports){
+},{"../mergepass":428,"./arity2":378,"./blurexpr":381,"./brightnessexpr":382,"./channelsampleexpr":384,"./contrastexpr":385,"./expr":390,"./fragcolorexpr":391,"./opexpr":408,"./vecexprs":424}],380:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blur2d = exports.Blur2dLoop = void 0;
@@ -100668,7 +100583,7 @@ function blur2d(horizontalExpr, verticalExpr, reps, taps, samplerNum) {
 }
 exports.blur2d = blur2d;
 
-},{"../mergepass":429,"./blurexpr":382,"./expr":391,"./vecexprs":425}],382:[function(require,module,exports){
+},{"../mergepass":428,"./blurexpr":381,"./expr":390,"./vecexprs":424}],381:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gauss = exports.BlurExpr = void 0;
@@ -100724,7 +100639,7 @@ function gauss(direction, taps = 5, samplerNum) {
 }
 exports.gauss = gauss;
 
-},{"../glslfunctions":427,"./expr":391}],383:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],382:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brightness = exports.Brightness = void 0;
@@ -100757,7 +100672,7 @@ function brightness(val, col) {
 }
 exports.brightness = brightness;
 
-},{"../glslfunctions":427,"./expr":391,"./fragcolorexpr":392}],384:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390,"./fragcolorexpr":391}],383:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.changecomp = exports.ChangeCompExpr = void 0;
@@ -100846,7 +100761,7 @@ function changecomp(vec, setter, comps, op) {
 }
 exports.changecomp = changecomp;
 
-},{"./expr":391,"./getcompexpr":396}],385:[function(require,module,exports){
+},{"./expr":390,"./getcompexpr":395}],384:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.channel = exports.ChannelSampleExpr = void 0;
@@ -100892,7 +100807,7 @@ function channel(channel, vec) {
 }
 exports.channel = channel;
 
-},{"../codebuilder":377,"../glslfunctions":427,"./expr":391,"./normfragcoordexpr":407}],386:[function(require,module,exports){
+},{"../codebuilder":376,"../glslfunctions":426,"./expr":390,"./normfragcoordexpr":406}],385:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contrast = exports.ContrastExpr = void 0;
@@ -100924,7 +100839,7 @@ function contrast(val, col) {
 }
 exports.contrast = contrast;
 
-},{"../glslfunctions":427,"./expr":391,"./fragcolorexpr":392}],387:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390,"./fragcolorexpr":391}],386:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.depth2occlusion = exports.DepthToOcclusionExpr = void 0;
@@ -100972,7 +100887,7 @@ function depth2occlusion(depthCol, newCol, threshold) {
 }
 exports.depth2occlusion = depth2occlusion;
 
-},{"./channelsampleexpr":385,"./expr":391,"./vecexprs":425}],388:[function(require,module,exports){
+},{"./channelsampleexpr":384,"./expr":390,"./vecexprs":424}],387:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dof = exports.DoFLoop = void 0;
@@ -101018,7 +100933,7 @@ function dof(depth, rad, depthInfo, reps) {
 }
 exports.dof = dof;
 
-},{"../mergepass":429,"./arity2":379,"./blurexpr":382,"./channelsampleexpr":385,"./expr":391,"./gaussianexpr":395,"./getcompexpr":396,"./opexpr":409,"./vecexprs":425}],389:[function(require,module,exports){
+},{"../mergepass":428,"./arity2":378,"./blurexpr":381,"./channelsampleexpr":384,"./expr":390,"./gaussianexpr":394,"./getcompexpr":395,"./opexpr":408,"./vecexprs":424}],388:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edgecolor = exports.EdgeColorExpr = void 0;
@@ -101056,7 +100971,7 @@ function edgecolor(color, samplerNum, stepped) {
 }
 exports.edgecolor = edgecolor;
 
-},{"./arity2":379,"./expr":391,"./fragcolorexpr":392,"./monochromeexpr":402,"./sobelexpr":420,"./vecexprs":425}],390:[function(require,module,exports){
+},{"./arity2":378,"./expr":390,"./fragcolorexpr":391,"./monochromeexpr":401,"./sobelexpr":419,"./vecexprs":424}],389:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edge = exports.EdgeExpr = void 0;
@@ -101092,7 +101007,7 @@ function edge(style, samplerNum) {
 }
 exports.edge = edge;
 
-},{"./brightnessexpr":383,"./expr":391,"./getcompexpr":396,"./invertexpr":400,"./monochromeexpr":402,"./opexpr":409,"./sobelexpr":420}],391:[function(require,module,exports){
+},{"./brightnessexpr":382,"./expr":390,"./getcompexpr":395,"./invertexpr":399,"./monochromeexpr":401,"./opexpr":408,"./sobelexpr":419}],390:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tag = exports.wrapInValue = exports.pfloat = exports.Operator = exports.WrappedExpr = exports.ExprVec4 = exports.ExprVec3 = exports.ExprVec2 = exports.float = exports.ExprFloat = exports.BasicFloat = exports.ExprVec = exports.BasicVec4 = exports.BasicVec3 = exports.BasicVec2 = exports.BasicVec = exports.PrimitiveVec4 = exports.PrimitiveVec3 = exports.PrimitiveVec2 = exports.PrimitiveVec = exports.PrimitiveFloat = exports.Primitive = exports.mut = exports.Mutable = exports.cvec4 = exports.cvec3 = exports.cvec2 = exports.cfloat = exports.Expr = void 0;
@@ -101552,7 +101467,7 @@ function tag(strings, ...values) {
 }
 exports.tag = tag;
 
-},{"../mergepass":429,"../utils":431,"../webglprogramloop":432}],392:[function(require,module,exports){
+},{"../mergepass":428,"../utils":430,"../webglprogramloop":431}],391:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fcolor = exports.FragColorExpr = void 0;
@@ -101571,7 +101486,7 @@ function fcolor() {
 }
 exports.fcolor = fcolor;
 
-},{"./expr":391}],393:[function(require,module,exports){
+},{"./expr":390}],392:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pixel = exports.FragCoordExpr = void 0;
@@ -101592,7 +101507,7 @@ function pixel() {
 }
 exports.pixel = pixel;
 
-},{"./expr":391}],394:[function(require,module,exports){
+},{"./expr":390}],393:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fxaa = void 0;
@@ -101612,7 +101527,7 @@ function fxaa() {
 }
 exports.fxaa = fxaa;
 
-},{"../glslfunctions":427,"./expr":391}],395:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],394:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gaussian = exports.GaussianExpr = void 0;
@@ -101652,7 +101567,7 @@ function gaussian(x, a = 0, b = 1) {
 }
 exports.gaussian = gaussian;
 
-},{"../glslfunctions":427,"./expr":391}],396:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],395:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get4comp = exports.get3comp = exports.get2comp = exports.getcomp = exports.Get4CompExpr = exports.Get3CompExpr = exports.Get2CompExpr = exports.GetCompExpr = exports.checkLegalComponents = exports.typeStringToLength = void 0;
@@ -101806,7 +101721,7 @@ function get4comp(vec, comps) {
 }
 exports.get4comp = get4comp;
 
-},{"./expr":391}],397:[function(require,module,exports){
+},{"./expr":390}],396:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.godrays = exports.GodRaysExpr = void 0;
@@ -101922,7 +101837,7 @@ function godrays(options = {}) {
 }
 exports.godrays = godrays;
 
-},{"../glslfunctions":427,"./expr":391,"./fragcolorexpr":392,"./vecexprs":425}],398:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390,"./fragcolorexpr":391,"./vecexprs":424}],397:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.grain = exports.GrainExpr = void 0;
@@ -101954,7 +101869,7 @@ function grain(val) {
 }
 exports.grain = grain;
 
-},{"../glslfunctions":427,"./expr":391}],399:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],398:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hsv2rgb = exports.HSVToRGBExpr = void 0;
@@ -101983,7 +101898,7 @@ function hsv2rgb(col) {
 }
 exports.hsv2rgb = hsv2rgb;
 
-},{"../glslfunctions":427,"./expr":391}],400:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],399:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.invert = exports.InvertExpr = void 0;
@@ -102011,7 +101926,7 @@ function invert(col) {
 }
 exports.invert = invert;
 
-},{"../glslfunctions":427,"./expr":391}],401:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],400:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.len = exports.LenExpr = void 0;
@@ -102034,7 +101949,7 @@ function len(vec) {
 }
 exports.len = len;
 
-},{"./expr":391}],402:[function(require,module,exports){
+},{"./expr":390}],401:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.monochrome = exports.MonochromeExpr = void 0;
@@ -102063,7 +101978,7 @@ function monochrome(col) {
 }
 exports.monochrome = monochrome;
 
-},{"../glslfunctions":427,"./expr":391}],403:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],402:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.motionblur = exports.MotionBlurLoop = void 0;
@@ -102105,7 +102020,7 @@ function motionblur(target, persistence) {
 }
 exports.motionblur = motionblur;
 
-},{"../mergepass":429,"./channelsampleexpr":385,"./expr":391,"./fragcolorexpr":392,"./opexpr":409}],404:[function(require,module,exports){
+},{"../mergepass":428,"./channelsampleexpr":384,"./expr":390,"./fragcolorexpr":391,"./opexpr":408}],403:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mouse = exports.MouseExpr = void 0;
@@ -102127,7 +102042,7 @@ function mouse() {
 }
 exports.mouse = mouse;
 
-},{"./expr":391}],405:[function(require,module,exports){
+},{"./expr":390}],404:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.center = exports.NormCenterFragCoordExpr = void 0;
@@ -102148,7 +102063,7 @@ function center() {
 }
 exports.center = center;
 
-},{"./expr":391}],406:[function(require,module,exports){
+},{"./expr":390}],405:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.norm = exports.NormExpr = void 0;
@@ -102172,7 +102087,7 @@ function norm(vec) {
 }
 exports.norm = norm;
 
-},{"./expr":391}],407:[function(require,module,exports){
+},{"./expr":390}],406:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pos = exports.NormFragCoordExpr = void 0;
@@ -102195,7 +102110,7 @@ function pos() {
 }
 exports.pos = pos;
 
-},{"./expr":391}],408:[function(require,module,exports){
+},{"./expr":390}],407:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nmouse = exports.NormMouseExpr = void 0;
@@ -102217,7 +102132,7 @@ function nmouse() {
 }
 exports.nmouse = nmouse;
 
-},{"./expr":391}],409:[function(require,module,exports){
+},{"./expr":390}],408:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.op = exports.OpExpr = void 0;
@@ -102256,7 +102171,7 @@ function op(left, op, right) {
 }
 exports.op = op;
 
-},{"./expr":391}],410:[function(require,module,exports){
+},{"./expr":390}],409:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fractalize = exports.perlin = exports.PerlinExpr = void 0;
@@ -102307,7 +102222,7 @@ function fractalize(pos, octaves, func) {
 }
 exports.fractalize = fractalize;
 
-},{"../glslfunctions":427,"./expr":391,"./opexpr":409}],411:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390,"./opexpr":408}],410:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pblur = exports.PowerBlurLoop = void 0;
@@ -102349,7 +102264,7 @@ function pblur(size) {
 }
 exports.pblur = pblur;
 
-},{"../mergepass":429,"./blurexpr":382,"./expr":391,"./vecexprs":425}],412:[function(require,module,exports){
+},{"../mergepass":428,"./blurexpr":381,"./expr":390,"./vecexprs":424}],411:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.random = exports.RandomExpr = void 0;
@@ -102380,7 +102295,7 @@ function random(seed) {
 }
 exports.random = random;
 
-},{"../glslfunctions":427,"./expr":391,"./normfragcoordexpr":407}],413:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390,"./normfragcoordexpr":406}],412:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.region = void 0;
@@ -102440,7 +102355,7 @@ function region(space, success, failure, not = false) {
 }
 exports.region = region;
 
-},{"../mergepass":429,"./expr":391,"./fragcolorexpr":392,"./getcompexpr":396,"./normfragcoordexpr":407,"./opexpr":409,"./ternaryexpr":421}],414:[function(require,module,exports){
+},{"../mergepass":428,"./expr":390,"./fragcolorexpr":391,"./getcompexpr":395,"./normfragcoordexpr":406,"./opexpr":408,"./ternaryexpr":420}],413:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolution = exports.ResolutionExpr = void 0;
@@ -102458,7 +102373,7 @@ function resolution() {
 }
 exports.resolution = resolution;
 
-},{"./expr":391}],415:[function(require,module,exports){
+},{"./expr":390}],414:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rgb2hsv = exports.RGBToHSVExpr = void 0;
@@ -102488,7 +102403,7 @@ function rgb2hsv(col) {
 }
 exports.rgb2hsv = rgb2hsv;
 
-},{"../glslfunctions":427,"./expr":391}],416:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],415:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rotate = exports.RotateExpr = void 0;
@@ -102524,7 +102439,7 @@ function rotate(vec, angle) {
 }
 exports.rotate = rotate;
 
-},{"../glslfunctions":427,"./expr":391}],417:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],416:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.input = exports.SceneSampleExpr = void 0;
@@ -102555,7 +102470,7 @@ function input(vec) {
 }
 exports.input = input;
 
-},{"./expr":391,"./normfragcoordexpr":407}],418:[function(require,module,exports){
+},{"./expr":390,"./normfragcoordexpr":406}],417:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SetColorExpr = void 0;
@@ -102572,7 +102487,7 @@ class SetColorExpr extends expr_1.ExprVec4 {
 }
 exports.SetColorExpr = SetColorExpr;
 
-},{"./expr":391}],419:[function(require,module,exports){
+},{"./expr":390}],418:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.simplex = exports.SimplexNoise = void 0;
@@ -102600,7 +102515,7 @@ function simplex(pos) {
 }
 exports.simplex = simplex;
 
-},{"../glslfunctions":427,"./expr":391}],420:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],419:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sobel = exports.SobelExpr = void 0;
@@ -102626,7 +102541,7 @@ function sobel(samplerNum) {
 }
 exports.sobel = sobel;
 
-},{"../glslfunctions":427,"./expr":391}],421:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],420:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ternary = exports.TernaryExpr = void 0;
@@ -102691,7 +102606,7 @@ function ternary(floats, success, failure, not = false) {
 }
 exports.ternary = ternary;
 
-},{"./expr":391}],422:[function(require,module,exports){
+},{"./expr":390}],421:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.time = exports.TimeExpr = void 0;
@@ -102710,7 +102625,7 @@ function time() {
 }
 exports.time = time;
 
-},{"./expr":391}],423:[function(require,module,exports){
+},{"./expr":390}],422:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translate = exports.TranslateExpr = void 0;
@@ -102743,7 +102658,7 @@ function translate(vec, pos) {
 }
 exports.translate = translate;
 
-},{"./expr":391}],424:[function(require,module,exports){
+},{"./expr":390}],423:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.truedepth = exports.TrueDepthExpr = void 0;
@@ -102769,7 +102684,7 @@ function truedepth(depth) {
 }
 exports.truedepth = truedepth;
 
-},{"../glslfunctions":427,"./expr":391}],425:[function(require,module,exports){
+},{"../glslfunctions":426,"./expr":390}],424:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pvec4 = exports.pvec3 = exports.pvec2 = exports.vec4 = exports.vec3 = exports.vec2 = void 0;
@@ -102820,11 +102735,11 @@ function pvec4(comp1, comp2, comp3, comp4) {
 }
 exports.pvec4 = pvec4;
 
-},{"./expr":391}],426:[function(require,module,exports){
+},{"./expr":390}],425:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],427:[function(require,module,exports){
+},{}],426:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.glslFuncs = void 0;
@@ -103144,7 +103059,7 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 }`,
 };
 
-},{}],428:[function(require,module,exports){
+},{}],427:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -103208,7 +103123,7 @@ __exportStar(require("./exprs/ternaryexpr"), exports);
 __exportStar(require("./exprs/regiondecorator"), exports);
 __exportStar(require("./exprs/expr"), exports);
 
-},{"./exprs/arity1":378,"./exprs/arity2":379,"./exprs/bloomloop":380,"./exprs/blur2dloop":381,"./exprs/blurexpr":382,"./exprs/brightnessexpr":383,"./exprs/changecompexpr":384,"./exprs/channelsampleexpr":385,"./exprs/contrastexpr":386,"./exprs/depthtoocclusionexpr":387,"./exprs/dofloop":388,"./exprs/edgecolorexpr":389,"./exprs/edgeexpr":390,"./exprs/expr":391,"./exprs/fragcolorexpr":392,"./exprs/fragcoordexpr":393,"./exprs/fxaaexpr":394,"./exprs/getcompexpr":396,"./exprs/godraysexpr":397,"./exprs/grainexpr":398,"./exprs/hsvtorgbexpr":399,"./exprs/invertexpr":400,"./exprs/lenexpr":401,"./exprs/monochromeexpr":402,"./exprs/motionblurloop":403,"./exprs/mouseexpr":404,"./exprs/normcenterfragcoordexpr":405,"./exprs/normexpr":406,"./exprs/normfragcoordexpr":407,"./exprs/normmouseexpr":408,"./exprs/opexpr":409,"./exprs/perlinexpr":410,"./exprs/powerblur":411,"./exprs/randomexpr":412,"./exprs/regiondecorator":413,"./exprs/resolutionexpr":414,"./exprs/rgbtohsvexpr":415,"./exprs/rotateexpr":416,"./exprs/scenesampleexpr":417,"./exprs/simplexexpr":419,"./exprs/sobelexpr":420,"./exprs/ternaryexpr":421,"./exprs/timeexpr":422,"./exprs/translateexpr":423,"./exprs/truedepthexpr":424,"./exprs/vecexprs":425,"./exprtypes":426,"./glslfunctions":427,"./mergepass":429,"./settings":430}],429:[function(require,module,exports){
+},{"./exprs/arity1":377,"./exprs/arity2":378,"./exprs/bloomloop":379,"./exprs/blur2dloop":380,"./exprs/blurexpr":381,"./exprs/brightnessexpr":382,"./exprs/changecompexpr":383,"./exprs/channelsampleexpr":384,"./exprs/contrastexpr":385,"./exprs/depthtoocclusionexpr":386,"./exprs/dofloop":387,"./exprs/edgecolorexpr":388,"./exprs/edgeexpr":389,"./exprs/expr":390,"./exprs/fragcolorexpr":391,"./exprs/fragcoordexpr":392,"./exprs/fxaaexpr":393,"./exprs/getcompexpr":395,"./exprs/godraysexpr":396,"./exprs/grainexpr":397,"./exprs/hsvtorgbexpr":398,"./exprs/invertexpr":399,"./exprs/lenexpr":400,"./exprs/monochromeexpr":401,"./exprs/motionblurloop":402,"./exprs/mouseexpr":403,"./exprs/normcenterfragcoordexpr":404,"./exprs/normexpr":405,"./exprs/normfragcoordexpr":406,"./exprs/normmouseexpr":407,"./exprs/opexpr":408,"./exprs/perlinexpr":409,"./exprs/powerblur":410,"./exprs/randomexpr":411,"./exprs/regiondecorator":412,"./exprs/resolutionexpr":413,"./exprs/rgbtohsvexpr":414,"./exprs/rotateexpr":415,"./exprs/scenesampleexpr":416,"./exprs/simplexexpr":418,"./exprs/sobelexpr":419,"./exprs/ternaryexpr":420,"./exprs/timeexpr":421,"./exprs/translateexpr":422,"./exprs/truedepthexpr":423,"./exprs/vecexprs":424,"./exprtypes":425,"./glslfunctions":426,"./mergepass":428,"./settings":429}],428:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendTexture = exports.makeTexture = exports.Merger = exports.loop = exports.EffectLoop = exports.EffectDictionary = void 0;
@@ -103643,7 +103558,7 @@ function sendTexture(gl, src) {
 }
 exports.sendTexture = sendTexture;
 
-},{"./codebuilder":377,"./exprs/expr":391,"./exprs/fragcolorexpr":392,"./exprs/regiondecorator":413,"./exprs/scenesampleexpr":417,"./exprs/setcolorexpr":418,"./exprs/ternaryexpr":421,"./settings":430,"./webglprogramloop":432}],430:[function(require,module,exports){
+},{"./codebuilder":376,"./exprs/expr":390,"./exprs/fragcolorexpr":391,"./exprs/regiondecorator":412,"./exprs/scenesampleexpr":416,"./exprs/setcolorexpr":417,"./exprs/ternaryexpr":420,"./settings":429,"./webglprogramloop":431}],429:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.settings = void 0;
@@ -103659,7 +103574,7 @@ exports.settings = {
     offset: 0,
 };
 
-},{}],431:[function(require,module,exports){
+},{}],430:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brandWithRegion = exports.brandWithChannel = exports.captureAndAppend = void 0;
@@ -103744,7 +103659,7 @@ function brandWithRegion(expr, funcIndex, space) {
 }
 exports.brandWithRegion = brandWithRegion;
 
-},{"./glslfunctions":427}],432:[function(require,module,exports){
+},{"./glslfunctions":426}],431:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebGLProgramLoop = exports.WebGLProgramLeaf = exports.updateNeeds = void 0;
@@ -103978,7 +103893,7 @@ class WebGLProgramLoop {
 }
 exports.WebGLProgramLoop = WebGLProgramLoop;
 
-},{"./settings":430}],433:[function(require,module,exports){
+},{"./settings":429}],432:[function(require,module,exports){
 /**
  * Bit twiddling hacks for JavaScript.
  *
@@ -104184,7 +104099,7 @@ exports.nextCombination = function(v) {
 }
 
 
-},{}],434:[function(require,module,exports){
+},{}],433:[function(require,module,exports){
 "use strict"
 
 var createThunk = require("./lib/thunk.js")
@@ -104295,7 +104210,7 @@ function compileCwise(user_args) {
 
 module.exports = compileCwise
 
-},{"./lib/thunk.js":436}],435:[function(require,module,exports){
+},{"./lib/thunk.js":435}],434:[function(require,module,exports){
 "use strict"
 
 var uniq = require("uniq")
@@ -104655,7 +104570,7 @@ function generateCWiseOp(proc, typesig) {
 }
 module.exports = generateCWiseOp
 
-},{"uniq":527}],436:[function(require,module,exports){
+},{"uniq":526}],435:[function(require,module,exports){
 "use strict"
 
 // The function below is called when constructing a cwise function object, and does the following:
@@ -104743,7 +104658,7 @@ function createThunk(proc) {
 
 module.exports = createThunk
 
-},{"./compile.js":435}],437:[function(require,module,exports){
+},{"./compile.js":434}],436:[function(require,module,exports){
 (function (Buffer){(function (){
 
 /**
@@ -104801,7 +104716,7 @@ function dataUriToBuffer (uri) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":146}],438:[function(require,module,exports){
+},{"buffer":145}],437:[function(require,module,exports){
 "use strict"
 
 function dupe_array(count, value, i) {
@@ -104851,7 +104766,7 @@ function dupe(count, value) {
 }
 
 module.exports = dupe
-},{}],439:[function(require,module,exports){
+},{}],438:[function(require,module,exports){
 (function (Buffer,process){(function (){
 'use strict'
 
@@ -104989,7 +104904,7 @@ module.exports = function getPixels(url, type, cb) {
   }
 }
 }).call(this)}).call(this,{"isBuffer":require("../../../gibber/node_modules/is-buffer/index.js")},require('_process'))
-},{"../../../gibber/node_modules/is-buffer/index.js":159,"_process":196,"data-uri-to-buffer":437,"ndarray":523,"ndarray-pack":521,"omggif":524,"path":194,"through":525}],440:[function(require,module,exports){
+},{"../../../gibber/node_modules/is-buffer/index.js":158,"_process":195,"data-uri-to-buffer":436,"ndarray":522,"ndarray-pack":520,"omggif":523,"path":193,"through":524}],439:[function(require,module,exports){
 module.exports = adjoint;
 
 /**
@@ -105023,7 +104938,7 @@ function adjoint(out, a) {
     out[15] =  (a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11));
     return out;
 };
-},{}],441:[function(require,module,exports){
+},{}],440:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -105052,7 +104967,7 @@ function clone(a) {
     out[15] = a[15];
     return out;
 };
-},{}],442:[function(require,module,exports){
+},{}],441:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -105081,7 +104996,7 @@ function copy(out, a) {
     out[15] = a[15];
     return out;
 };
-},{}],443:[function(require,module,exports){
+},{}],442:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -105109,7 +105024,7 @@ function create() {
     out[15] = 1;
     return out;
 };
-},{}],444:[function(require,module,exports){
+},{}],443:[function(require,module,exports){
 module.exports = determinant;
 
 /**
@@ -105140,7 +105055,7 @@ function determinant(a) {
     // Calculate the determinant
     return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 };
-},{}],445:[function(require,module,exports){
+},{}],444:[function(require,module,exports){
 module.exports = fromQuat;
 
 /**
@@ -105188,7 +105103,7 @@ function fromQuat(out, q) {
 
     return out;
 };
-},{}],446:[function(require,module,exports){
+},{}],445:[function(require,module,exports){
 module.exports = fromRotation
 
 /**
@@ -105243,7 +105158,7 @@ function fromRotation(out, rad, axis) {
   return out
 }
 
-},{}],447:[function(require,module,exports){
+},{}],446:[function(require,module,exports){
 module.exports = fromRotationTranslation;
 
 /**
@@ -105297,7 +105212,7 @@ function fromRotationTranslation(out, q, v) {
     
     return out;
 };
-},{}],448:[function(require,module,exports){
+},{}],447:[function(require,module,exports){
 module.exports = fromScaling
 
 /**
@@ -105331,7 +105246,7 @@ function fromScaling(out, v) {
   return out
 }
 
-},{}],449:[function(require,module,exports){
+},{}],448:[function(require,module,exports){
 module.exports = fromTranslation
 
 /**
@@ -105365,7 +105280,7 @@ function fromTranslation(out, v) {
   return out
 }
 
-},{}],450:[function(require,module,exports){
+},{}],449:[function(require,module,exports){
 module.exports = fromXRotation
 
 /**
@@ -105402,7 +105317,7 @@ function fromXRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],451:[function(require,module,exports){
+},{}],450:[function(require,module,exports){
 module.exports = fromYRotation
 
 /**
@@ -105439,7 +105354,7 @@ function fromYRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],452:[function(require,module,exports){
+},{}],451:[function(require,module,exports){
 module.exports = fromZRotation
 
 /**
@@ -105476,7 +105391,7 @@ function fromZRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],453:[function(require,module,exports){
+},{}],452:[function(require,module,exports){
 module.exports = frustum;
 
 /**
@@ -105513,7 +105428,7 @@ function frustum(out, left, right, bottom, top, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],454:[function(require,module,exports){
+},{}],453:[function(require,module,exports){
 module.exports = identity;
 
 /**
@@ -105541,7 +105456,7 @@ function identity(out) {
     out[15] = 1;
     return out;
 };
-},{}],455:[function(require,module,exports){
+},{}],454:[function(require,module,exports){
 module.exports = {
   create: require('./create')
   , clone: require('./clone')
@@ -105574,7 +105489,7 @@ module.exports = {
   , str: require('./str')
 }
 
-},{"./adjoint":440,"./clone":441,"./copy":442,"./create":443,"./determinant":444,"./fromQuat":445,"./fromRotation":446,"./fromRotationTranslation":447,"./fromScaling":448,"./fromTranslation":449,"./fromXRotation":450,"./fromYRotation":451,"./fromZRotation":452,"./frustum":453,"./identity":454,"./invert":456,"./lookAt":457,"./multiply":458,"./ortho":459,"./perspective":460,"./perspectiveFromFieldOfView":461,"./rotate":462,"./rotateX":463,"./rotateY":464,"./rotateZ":465,"./scale":466,"./str":467,"./translate":468,"./transpose":469}],456:[function(require,module,exports){
+},{"./adjoint":439,"./clone":440,"./copy":441,"./create":442,"./determinant":443,"./fromQuat":444,"./fromRotation":445,"./fromRotationTranslation":446,"./fromScaling":447,"./fromTranslation":448,"./fromXRotation":449,"./fromYRotation":450,"./fromZRotation":451,"./frustum":452,"./identity":453,"./invert":455,"./lookAt":456,"./multiply":457,"./ortho":458,"./perspective":459,"./perspectiveFromFieldOfView":460,"./rotate":461,"./rotateX":462,"./rotateY":463,"./rotateZ":464,"./scale":465,"./str":466,"./translate":467,"./transpose":468}],455:[function(require,module,exports){
 module.exports = invert;
 
 /**
@@ -105630,7 +105545,7 @@ function invert(out, a) {
 
     return out;
 };
-},{}],457:[function(require,module,exports){
+},{}],456:[function(require,module,exports){
 var identity = require('./identity');
 
 module.exports = lookAt;
@@ -105721,7 +105636,7 @@ function lookAt(out, eye, center, up) {
 
     return out;
 };
-},{"./identity":454}],458:[function(require,module,exports){
+},{"./identity":453}],457:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -105764,7 +105679,7 @@ function multiply(out, a, b) {
     out[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
     return out;
 };
-},{}],459:[function(require,module,exports){
+},{}],458:[function(require,module,exports){
 module.exports = ortho;
 
 /**
@@ -105801,7 +105716,7 @@ function ortho(out, left, right, bottom, top, near, far) {
     out[15] = 1;
     return out;
 };
-},{}],460:[function(require,module,exports){
+},{}],459:[function(require,module,exports){
 module.exports = perspective;
 
 /**
@@ -105835,7 +105750,7 @@ function perspective(out, fovy, aspect, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],461:[function(require,module,exports){
+},{}],460:[function(require,module,exports){
 module.exports = perspectiveFromFieldOfView;
 
 /**
@@ -105877,7 +105792,7 @@ function perspectiveFromFieldOfView(out, fov, near, far) {
 }
 
 
-},{}],462:[function(require,module,exports){
+},{}],461:[function(require,module,exports){
 module.exports = rotate;
 
 /**
@@ -105942,7 +105857,7 @@ function rotate(out, a, rad, axis) {
     }
     return out;
 };
-},{}],463:[function(require,module,exports){
+},{}],462:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -105987,7 +105902,7 @@ function rotateX(out, a, rad) {
     out[11] = a23 * c - a13 * s;
     return out;
 };
-},{}],464:[function(require,module,exports){
+},{}],463:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -106032,7 +105947,7 @@ function rotateY(out, a, rad) {
     out[11] = a03 * s + a23 * c;
     return out;
 };
-},{}],465:[function(require,module,exports){
+},{}],464:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -106077,7 +105992,7 @@ function rotateZ(out, a, rad) {
     out[7] = a13 * c - a03 * s;
     return out;
 };
-},{}],466:[function(require,module,exports){
+},{}],465:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -106109,7 +106024,7 @@ function scale(out, a, v) {
     out[15] = a[15];
     return out;
 };
-},{}],467:[function(require,module,exports){
+},{}],466:[function(require,module,exports){
 module.exports = str;
 
 /**
@@ -106124,7 +106039,7 @@ function str(a) {
                     a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' + 
                     a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
 };
-},{}],468:[function(require,module,exports){
+},{}],467:[function(require,module,exports){
 module.exports = translate;
 
 /**
@@ -106163,7 +106078,7 @@ function translate(out, a, v) {
 
     return out;
 };
-},{}],469:[function(require,module,exports){
+},{}],468:[function(require,module,exports){
 module.exports = transpose;
 
 /**
@@ -106213,7 +106128,7 @@ function transpose(out, a) {
     
     return out;
 };
-},{}],470:[function(require,module,exports){
+},{}],469:[function(require,module,exports){
 'use strict'
 
 var ndarray = require('ndarray')
@@ -106776,7 +106691,7 @@ function createTexture2D(gl) {
   throw new Error('gl-texture2d: Invalid arguments for texture2d constructor')
 }
 
-},{"ndarray":523,"ndarray-ops":520,"typedarray-pool":526}],471:[function(require,module,exports){
+},{"ndarray":522,"ndarray-ops":519,"typedarray-pool":525}],470:[function(require,module,exports){
 module.exports = add;
 
 /**
@@ -106793,7 +106708,7 @@ function add(out, a, b) {
     out[2] = a[2] + b[2]
     return out
 }
-},{}],472:[function(require,module,exports){
+},{}],471:[function(require,module,exports){
 module.exports = angle
 
 var fromValues = require('./fromValues')
@@ -106822,7 +106737,7 @@ function angle(a, b) {
     }     
 }
 
-},{"./dot":482,"./fromValues":488,"./normalize":499}],473:[function(require,module,exports){
+},{"./dot":481,"./fromValues":487,"./normalize":498}],472:[function(require,module,exports){
 module.exports = ceil
 
 /**
@@ -106839,7 +106754,7 @@ function ceil(out, a) {
   return out
 }
 
-},{}],474:[function(require,module,exports){
+},{}],473:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -106855,7 +106770,7 @@ function clone(a) {
     out[2] = a[2]
     return out
 }
-},{}],475:[function(require,module,exports){
+},{}],474:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -106871,7 +106786,7 @@ function copy(out, a) {
     out[2] = a[2]
     return out
 }
-},{}],476:[function(require,module,exports){
+},{}],475:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -106886,7 +106801,7 @@ function create() {
     out[2] = 0
     return out
 }
-},{}],477:[function(require,module,exports){
+},{}],476:[function(require,module,exports){
 module.exports = cross;
 
 /**
@@ -106906,10 +106821,10 @@ function cross(out, a, b) {
     out[2] = ax * by - ay * bx
     return out
 }
-},{}],478:[function(require,module,exports){
+},{}],477:[function(require,module,exports){
 module.exports = require('./distance')
 
-},{"./distance":479}],479:[function(require,module,exports){
+},{"./distance":478}],478:[function(require,module,exports){
 module.exports = distance;
 
 /**
@@ -106925,10 +106840,10 @@ function distance(a, b) {
         z = b[2] - a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],480:[function(require,module,exports){
+},{}],479:[function(require,module,exports){
 module.exports = require('./divide')
 
-},{"./divide":481}],481:[function(require,module,exports){
+},{"./divide":480}],480:[function(require,module,exports){
 module.exports = divide;
 
 /**
@@ -106945,7 +106860,7 @@ function divide(out, a, b) {
     out[2] = a[2] / b[2]
     return out
 }
-},{}],482:[function(require,module,exports){
+},{}],481:[function(require,module,exports){
 module.exports = dot;
 
 /**
@@ -106958,10 +106873,10 @@ module.exports = dot;
 function dot(a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
-},{}],483:[function(require,module,exports){
+},{}],482:[function(require,module,exports){
 module.exports = 0.000001
 
-},{}],484:[function(require,module,exports){
+},{}],483:[function(require,module,exports){
 module.exports = equals
 
 var EPSILON = require('./epsilon')
@@ -106985,7 +106900,7 @@ function equals(a, b) {
           Math.abs(a2 - b2) <= EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)))
 }
 
-},{"./epsilon":483}],485:[function(require,module,exports){
+},{"./epsilon":482}],484:[function(require,module,exports){
 module.exports = exactEquals
 
 /**
@@ -106999,7 +106914,7 @@ function exactEquals(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
 }
 
-},{}],486:[function(require,module,exports){
+},{}],485:[function(require,module,exports){
 module.exports = floor
 
 /**
@@ -107016,7 +106931,7 @@ function floor(out, a) {
   return out
 }
 
-},{}],487:[function(require,module,exports){
+},{}],486:[function(require,module,exports){
 module.exports = forEach;
 
 var vec = require('./create')()
@@ -107061,7 +106976,7 @@ function forEach(a, stride, offset, count, fn, arg) {
         
         return a
 }
-},{"./create":476}],488:[function(require,module,exports){
+},{"./create":475}],487:[function(require,module,exports){
 module.exports = fromValues;
 
 /**
@@ -107079,7 +106994,7 @@ function fromValues(x, y, z) {
     out[2] = z
     return out
 }
-},{}],489:[function(require,module,exports){
+},{}],488:[function(require,module,exports){
 module.exports = {
   EPSILON: require('./epsilon')
   , create: require('./create')
@@ -107128,7 +107043,7 @@ module.exports = {
   , forEach: require('./forEach')
 }
 
-},{"./add":471,"./angle":472,"./ceil":473,"./clone":474,"./copy":475,"./create":476,"./cross":477,"./dist":478,"./distance":479,"./div":480,"./divide":481,"./dot":482,"./epsilon":483,"./equals":484,"./exactEquals":485,"./floor":486,"./forEach":487,"./fromValues":488,"./inverse":490,"./len":491,"./length":492,"./lerp":493,"./max":494,"./min":495,"./mul":496,"./multiply":497,"./negate":498,"./normalize":499,"./random":500,"./rotateX":501,"./rotateY":502,"./rotateZ":503,"./round":504,"./scale":505,"./scaleAndAdd":506,"./set":507,"./sqrDist":508,"./sqrLen":509,"./squaredDistance":510,"./squaredLength":511,"./sub":512,"./subtract":513,"./transformMat3":514,"./transformMat4":515,"./transformQuat":516}],490:[function(require,module,exports){
+},{"./add":470,"./angle":471,"./ceil":472,"./clone":473,"./copy":474,"./create":475,"./cross":476,"./dist":477,"./distance":478,"./div":479,"./divide":480,"./dot":481,"./epsilon":482,"./equals":483,"./exactEquals":484,"./floor":485,"./forEach":486,"./fromValues":487,"./inverse":489,"./len":490,"./length":491,"./lerp":492,"./max":493,"./min":494,"./mul":495,"./multiply":496,"./negate":497,"./normalize":498,"./random":499,"./rotateX":500,"./rotateY":501,"./rotateZ":502,"./round":503,"./scale":504,"./scaleAndAdd":505,"./set":506,"./sqrDist":507,"./sqrLen":508,"./squaredDistance":509,"./squaredLength":510,"./sub":511,"./subtract":512,"./transformMat3":513,"./transformMat4":514,"./transformQuat":515}],489:[function(require,module,exports){
 module.exports = inverse;
 
 /**
@@ -107144,10 +107059,10 @@ function inverse(out, a) {
   out[2] = 1.0 / a[2]
   return out
 }
-},{}],491:[function(require,module,exports){
+},{}],490:[function(require,module,exports){
 module.exports = require('./length')
 
-},{"./length":492}],492:[function(require,module,exports){
+},{"./length":491}],491:[function(require,module,exports){
 module.exports = length;
 
 /**
@@ -107162,7 +107077,7 @@ function length(a) {
         z = a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],493:[function(require,module,exports){
+},{}],492:[function(require,module,exports){
 module.exports = lerp;
 
 /**
@@ -107183,7 +107098,7 @@ function lerp(out, a, b, t) {
     out[2] = az + t * (b[2] - az)
     return out
 }
-},{}],494:[function(require,module,exports){
+},{}],493:[function(require,module,exports){
 module.exports = max;
 
 /**
@@ -107200,7 +107115,7 @@ function max(out, a, b) {
     out[2] = Math.max(a[2], b[2])
     return out
 }
-},{}],495:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
 module.exports = min;
 
 /**
@@ -107217,10 +107132,10 @@ function min(out, a, b) {
     out[2] = Math.min(a[2], b[2])
     return out
 }
-},{}],496:[function(require,module,exports){
+},{}],495:[function(require,module,exports){
 module.exports = require('./multiply')
 
-},{"./multiply":497}],497:[function(require,module,exports){
+},{"./multiply":496}],496:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -107237,7 +107152,7 @@ function multiply(out, a, b) {
     out[2] = a[2] * b[2]
     return out
 }
-},{}],498:[function(require,module,exports){
+},{}],497:[function(require,module,exports){
 module.exports = negate;
 
 /**
@@ -107253,7 +107168,7 @@ function negate(out, a) {
     out[2] = -a[2]
     return out
 }
-},{}],499:[function(require,module,exports){
+},{}],498:[function(require,module,exports){
 module.exports = normalize;
 
 /**
@@ -107277,7 +107192,7 @@ function normalize(out, a) {
     }
     return out
 }
-},{}],500:[function(require,module,exports){
+},{}],499:[function(require,module,exports){
 module.exports = random;
 
 /**
@@ -107299,7 +107214,7 @@ function random(out, scale) {
     out[2] = z * scale
     return out
 }
-},{}],501:[function(require,module,exports){
+},{}],500:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -107329,7 +107244,7 @@ function rotateX(out, a, b, c){
     return out
 }
 
-},{}],502:[function(require,module,exports){
+},{}],501:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -107359,7 +107274,7 @@ function rotateY(out, a, b, c){
     return out
 }
 
-},{}],503:[function(require,module,exports){
+},{}],502:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -107389,7 +107304,7 @@ function rotateZ(out, a, b, c){
     return out
 }
 
-},{}],504:[function(require,module,exports){
+},{}],503:[function(require,module,exports){
 module.exports = round
 
 /**
@@ -107406,7 +107321,7 @@ function round(out, a) {
   return out
 }
 
-},{}],505:[function(require,module,exports){
+},{}],504:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -107423,7 +107338,7 @@ function scale(out, a, b) {
     out[2] = a[2] * b
     return out
 }
-},{}],506:[function(require,module,exports){
+},{}],505:[function(require,module,exports){
 module.exports = scaleAndAdd;
 
 /**
@@ -107441,7 +107356,7 @@ function scaleAndAdd(out, a, b, scale) {
     out[2] = a[2] + (b[2] * scale)
     return out
 }
-},{}],507:[function(require,module,exports){
+},{}],506:[function(require,module,exports){
 module.exports = set;
 
 /**
@@ -107459,13 +107374,13 @@ function set(out, x, y, z) {
     out[2] = z
     return out
 }
-},{}],508:[function(require,module,exports){
+},{}],507:[function(require,module,exports){
 module.exports = require('./squaredDistance')
 
-},{"./squaredDistance":510}],509:[function(require,module,exports){
+},{"./squaredDistance":509}],508:[function(require,module,exports){
 module.exports = require('./squaredLength')
 
-},{"./squaredLength":511}],510:[function(require,module,exports){
+},{"./squaredLength":510}],509:[function(require,module,exports){
 module.exports = squaredDistance;
 
 /**
@@ -107481,7 +107396,7 @@ function squaredDistance(a, b) {
         z = b[2] - a[2]
     return x*x + y*y + z*z
 }
-},{}],511:[function(require,module,exports){
+},{}],510:[function(require,module,exports){
 module.exports = squaredLength;
 
 /**
@@ -107496,10 +107411,10 @@ function squaredLength(a) {
         z = a[2]
     return x*x + y*y + z*z
 }
-},{}],512:[function(require,module,exports){
+},{}],511:[function(require,module,exports){
 module.exports = require('./subtract')
 
-},{"./subtract":513}],513:[function(require,module,exports){
+},{"./subtract":512}],512:[function(require,module,exports){
 module.exports = subtract;
 
 /**
@@ -107516,7 +107431,7 @@ function subtract(out, a, b) {
     out[2] = a[2] - b[2]
     return out
 }
-},{}],514:[function(require,module,exports){
+},{}],513:[function(require,module,exports){
 module.exports = transformMat3;
 
 /**
@@ -107534,7 +107449,7 @@ function transformMat3(out, a, m) {
     out[2] = x * m[2] + y * m[5] + z * m[8]
     return out
 }
-},{}],515:[function(require,module,exports){
+},{}],514:[function(require,module,exports){
 module.exports = transformMat4;
 
 /**
@@ -107555,7 +107470,7 @@ function transformMat4(out, a, m) {
     out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w
     return out
 }
-},{}],516:[function(require,module,exports){
+},{}],515:[function(require,module,exports){
 module.exports = transformQuat;
 
 /**
@@ -107584,7 +107499,7 @@ function transformQuat(out, a, q) {
     out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx
     return out
 }
-},{}],517:[function(require,module,exports){
+},{}],516:[function(require,module,exports){
 module.exports = function(strings) {
   if (typeof strings === 'string') strings = [strings]
   var exprs = [].slice.call(arguments,1)
@@ -107596,7 +107511,7 @@ module.exports = function(strings) {
   return parts.join('')
 }
 
-},{}],518:[function(require,module,exports){
+},{}],517:[function(require,module,exports){
 "use strict"
 
 function iota(n) {
@@ -107608,9 +107523,9 @@ function iota(n) {
 }
 
 module.exports = iota
-},{}],519:[function(require,module,exports){
-arguments[4][159][0].apply(exports,arguments)
-},{"dup":159}],520:[function(require,module,exports){
+},{}],518:[function(require,module,exports){
+arguments[4][158][0].apply(exports,arguments)
+},{"dup":158}],519:[function(require,module,exports){
 "use strict"
 
 var compile = require("cwise-compiler")
@@ -108073,7 +107988,7 @@ exports.equals = compile({
 
 
 
-},{"cwise-compiler":434}],521:[function(require,module,exports){
+},{"cwise-compiler":433}],520:[function(require,module,exports){
 "use strict"
 
 var ndarray = require("ndarray")
@@ -108096,10 +108011,10 @@ module.exports = function convert(arr, result) {
   return result
 }
 
-},{"./doConvert.js":522,"ndarray":523}],522:[function(require,module,exports){
+},{"./doConvert.js":521,"ndarray":522}],521:[function(require,module,exports){
 module.exports=require('cwise-compiler')({"args":["array","scalar","index"],"pre":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"body":{"body":"{\nvar _inline_1_v=_inline_1_arg1_,_inline_1_i\nfor(_inline_1_i=0;_inline_1_i<_inline_1_arg2_.length-1;++_inline_1_i) {\n_inline_1_v=_inline_1_v[_inline_1_arg2_[_inline_1_i]]\n}\n_inline_1_arg0_=_inline_1_v[_inline_1_arg2_[_inline_1_arg2_.length-1]]\n}","args":[{"name":"_inline_1_arg0_","lvalue":true,"rvalue":false,"count":1},{"name":"_inline_1_arg1_","lvalue":false,"rvalue":true,"count":1},{"name":"_inline_1_arg2_","lvalue":false,"rvalue":true,"count":4}],"thisVars":[],"localVars":["_inline_1_i","_inline_1_v"]},"post":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"funcName":"convert","blockSize":64})
 
-},{"cwise-compiler":434}],523:[function(require,module,exports){
+},{"cwise-compiler":433}],522:[function(require,module,exports){
 var iota = require("iota-array")
 var isBuffer = require("is-buffer")
 
@@ -108450,7 +108365,7 @@ function wrappedNDArrayCtor(data, shape, stride, offset) {
 
 module.exports = wrappedNDArrayCtor
 
-},{"iota-array":518,"is-buffer":519}],524:[function(require,module,exports){
+},{"iota-array":517,"is-buffer":518}],523:[function(require,module,exports){
 // (c) Dean McNamee <dean@gmail.com>, 2013.
 //
 // https://github.com/deanm/omggif
@@ -109259,7 +109174,7 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
 // CommonJS.
 try { exports.GifWriter = GifWriter; exports.GifReader = GifReader } catch(e) {}
 
-},{}],525:[function(require,module,exports){
+},{}],524:[function(require,module,exports){
 (function (process){(function (){
 var Stream = require('stream')
 
@@ -109371,7 +109286,7 @@ function through (write, end, opts) {
 
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":196,"stream":212}],526:[function(require,module,exports){
+},{"_process":195,"stream":211}],525:[function(require,module,exports){
 (function (global){(function (){
 'use strict'
 
@@ -109626,7 +109541,7 @@ exports.clearCache = function clearCache() {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bit-twiddle":433,"buffer":146,"dup":438}],527:[function(require,module,exports){
+},{"bit-twiddle":432,"buffer":145,"dup":437}],526:[function(require,module,exports){
 "use strict"
 
 function unique_pred(list, compare) {
@@ -109685,4 +109600,109 @@ function unique(list, compare, sorted) {
 
 module.exports = unique
 
-},{}]},{},[251]);
+},{}],527:[function(require,module,exports){
+'use strict'
+
+let MemoryHelper = {
+  create( sizeOrBuffer=4096, memtype=Float32Array ) {
+    let helper = Object.create( this )
+
+    // conveniently, buffer constructors accept either a size or an array buffer to use...
+    // so, no matter which is passed to sizeOrBuffer it should work.
+    Object.assign( helper, {
+      heap: new memtype( sizeOrBuffer ),
+      list: {},
+      freeList: {}
+    })
+
+    return helper
+  },
+
+  alloc( size, immutable ) {
+    let idx = -1
+
+    if( size > this.heap.length ) {
+      throw Error( 'Allocation request is larger than heap size of ' + this.heap.length )
+    }
+
+    for( let key in this.freeList ) {
+      let candidate = this.freeList[ key ]
+
+      if( candidate.size >= size ) {
+        idx = key
+
+        this.list[ idx ] = { size, immutable, references:1 }
+
+        if( candidate.size !== size ) {
+          let newIndex = idx + size,
+              newFreeSize
+
+          for( let key in this.list ) {
+            if( key > newIndex ) {
+              newFreeSize = key - newIndex
+              this.freeList[ newIndex ] = newFreeSize
+            }
+          }
+        }
+
+        break
+      }
+    }
+
+    if( idx !== -1 ) delete this.freeList[ idx ]
+
+    if( idx === -1 ) {
+      let keys = Object.keys( this.list ),
+          lastIndex
+
+      if( keys.length ) { // if not first allocation...
+        lastIndex = parseInt( keys[ keys.length - 1 ] )
+
+        idx = lastIndex + this.list[ lastIndex ].size
+      }else{
+        idx = 0
+      }
+
+      this.list[ idx ] = { size, immutable, references:1 }
+    }
+
+    if( idx + size >= this.heap.length ) {
+      throw Error( 'No available blocks remain sufficient for allocation request.' )
+    }
+    return idx
+  },
+
+  addReference( index ) {
+    if( this.list[ index ] !== undefined ) { 
+      this.list[ index ].references++
+    }
+  },
+
+  free( index ) {
+    if( this.list[ index ] === undefined ) {
+      throw Error( 'Calling free() on non-existing block.' )
+    }
+
+    let slot = this.list[ index ]
+    if( slot === 0 ) return
+    slot.references--
+
+    if( slot.references === 0 && slot.immutable !== true ) {    
+      this.list[ index ] = 0
+
+      let freeBlockSize = 0
+      for( let key in this.list ) {
+        if( key > index ) {
+          freeBlockSize = key - index
+          break
+        }
+      }
+
+      this.freeList[ index ] = freeBlockSize
+    }
+  },
+}
+
+module.exports = MemoryHelper
+
+},{}]},{},[250]);
