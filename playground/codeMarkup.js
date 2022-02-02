@@ -424,7 +424,7 @@ const Marker = {
 
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
           if( itemClass !== null ) {
-            itemClass.textContent = pattern.values[ i ]
+            itemClass.textContent = pattern.values[ i ] !== -987654321 ? pattern.values[i] : '_'
             // check to see if a pattern has an onclick event, if so, assign it to value marker
             // since replacing .textContent seems to remove it (XXX I don't think this removal should occur?)
             if( pattern.__onclick !== null && pattern.__onclick !== undefined ) itemClass.onclick = pattern.__onclick
@@ -453,7 +453,7 @@ const Marker = {
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
           if( itemClass !== null ) {
             if( pattern.__onclick !== null && pattern.__onclick !== undefined ) itemClass.onclick = pattern.__onclick
-            itemClass.textContent = pattern.values[ 0 ]
+            itemClass.textContent = pattern.values[ 0 ] !== -987654321 ? pattern.values[0] : '_'
           }
         }
       }
