@@ -6719,6 +6719,8 @@ const patternWrapper = function( Gibber ) {
 
 
     let out 
+    const DNR = -987654321 
+
     Object.assign( fnc, {
       category:'audio',
       start : 0,
@@ -7030,14 +7032,14 @@ const patternWrapper = function( Gibber ) {
           fnc.values.map( (val, idx, array) => {
             if( Array.isArray( val ) ) {
               array[ idx ] = val.map( inside  => {
-                if( typeof inside === 'number' && inside !== Gibber.Seq.DNR) {
+                if( typeof inside === 'number' && inside !== DNR) {
                   return fnc.integersOnly ? Math.round( inside * amt ) : inside * amt
                 } else {
                   return inside
                 }
               })
             }else{
-              if( typeof val === 'number' && val !== Gibber.Seq.DNR ) {
+              if( typeof val === 'number' && val !== DNR ) {
                 array[ idx ] = fnc.integersOnly ? Math.round( val * amt ) : val * amt
               }
             }
@@ -7089,10 +7091,11 @@ const patternWrapper = function( Gibber ) {
           return this
         }
         if( !fnc.__frozen ) {
-          let prime0 = fnc.values[ 0 ]
+          // first non-rest value
+          let prime0 = fnc.values.find( v=> v !== DNR )
           
           for( let i = 1; i < fnc.values.length; i++ ) {
-            if( typeof fnc.values[ i ] === 'number' && fnc.values[i] !== Gibber.Seq.DNR ) {
+            if( typeof fnc.values[ i ] === 'number' && fnc.values[i] !== DNR ) {
               let inverse = prime0 + (prime0 - fnc.values[ i ])
               fnc.values[ i ] = inverse
             }
