@@ -28,6 +28,7 @@
     "gibber.core.lib": "latest",
     "gibber.graphics.lib": "latest",
     "http-server": "^0.12.3",
+    "minimist": "^1.2.6",
     "node-static": "^0.7.11",
     "ws": "^7.3.1"
   },
