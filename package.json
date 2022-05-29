@@ -8,7 +8,7 @@
     "gl-vec3": "^1.1.3",
     "marching": "^1.1.4",
     "minimist": "^1.2.6",
-    "node-static": "^0.7.11",
+    "node-static": "github:cloudhead/node-static",
     "ws": "^7.3.1",
     "y-websocket": "1.3.12",
     "yjs": "^13.3.2"
@@ -21,16 +21,16 @@
     "dotenv": "^10.0.0",
     "envify": "^4.1.0",
     "esmify": "^2.1.1",
-    "gibber.audio.lib": "latest",
+    "gibber.audio.lib": "^1.0.0",
     "gibber.core.lib": "latest",
-    "gibber.graphics.lib": "^2.0.4",
+    "gibber.graphics.lib": "^1.0.1",
     "gulp": "^4.0.2",
     "gulp-replace": "^1.1.3",
     "gulp-uglify": "^3.0.2",
     "tern": "^0.24.1",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
-    "watchify": "^3.11.1",
+    "watchify": "^4.0.0",
     "y-codemirror": "^2.0.9"
   },
   "scripts": {
