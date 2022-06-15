@@ -2,8 +2,9 @@
 Gibber is a live coding environment for the web browser, combining music synthesis and sequencing with ray-marching 3d graphics.
 
 ## Playgrounds ##
+No installation needed, play it on the web!
+
 - [Version 2](https://gibber.cc/alpha/playground/)
-- [Version 1](https://gibber.cc)
 
 ## Start it up ##
 You must have [node.js](https://nodejs.org/en/) installed to run a local copy of gibber.
