@@ -31,7 +31,7 @@
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^4.0.0",
-    "y-codemirror": "^2.0.9"
+    "y-codemirror": "^3.0.1"
   },
   "scripts": {
     "start": "cd playground; node server.js",
