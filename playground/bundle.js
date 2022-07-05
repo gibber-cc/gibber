@@ -80282,7 +80282,6 @@ const share = {
     if( useSharedEditor ) {
       yText = ydoc.getText( 'codemirror' + room ),
       binding = new CodemirrorBinding( yText, editor, provider.awareness )
-      //binding.on( 'cursorActivity', editor => console.log( 'cursor changed...', editor ) )
 
       binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
     }else{
@@ -80395,7 +80394,6 @@ const share = {
 
     const users = []
     userData.observe( e => {
-      //console.log( e.changes )
       //const delta = e.changes.delta[0]
       //if( delta !== undefined ) {
         //const msgs = e.changes.delta[0].insert
@@ -80415,7 +80413,7 @@ const share = {
     })
     environment.showArgHints = false
     environment.showCompletions = false
-    environment.annotations = true
+    environment.annotations = false 
     
     //document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
 
@@ -80429,7 +80427,7 @@ const share = {
 
     __connected = true
 
-    window.alert( `Welcome to gibber performance ${roomname}! You must close this dialog box and then click in the gibber interface to begin watching the performance. You should see the metronome start running in the upper left corner of the window. Enjoy the show!` )
+    window.alert( `Welcome to gibber performance ${roomname}! You must close this dialog box and then click in the gibber interface to begin watching the performance. You'll see the metronome start running in the upper left corner of the window after clicking in the interface, and hopefully the performers will begin coding shortly. Enjoy the show!` )
 
     return true
 
@@ -80477,8 +80475,8 @@ const share = {
             // make sure there commands to run...
             if( e.changes.delta.length > 0 ) {
               const inserts = e.changes.delta[0].insert
-              for( let i = inserts.length - 1; i > 0; i -= 5 ) {
-                const arr = e.changes.delta[0].insert.slice( i-4, i+1 )
+              for( let i = inserts.length - 1; i > 0; i -= 6 ) {
+                const arr = e.changes.delta[0].insert.slice( i-5, i+1 )
                 const code = {
                   selection:{
                     start: { line:arr[0], ch:arr[1] },
@@ -80671,7 +80669,6 @@ const share = {
           ydoc.scrollData.unshift([
             { username, left:scrollInfo.left, top:scrollInfo.top }
           ])
-          console.log( 'cursor changed...' ) 
         })
         binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
 
@@ -80681,6 +80678,7 @@ const share = {
       rowCount++
     }
 
+    environment.annotations = false
     share.grid = grid
   },
 
