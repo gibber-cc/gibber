@@ -30,7 +30,7 @@ let cm, cmconsole, exampleCode,
           end = sel.end,
           start = sel.start
 
-        Gibber.Environment.share.commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code ])
+        Gibber.Environment.share.commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code, Gibber.Environment.share.username ])
       },
 
       runCode( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null, preview=false ) {
