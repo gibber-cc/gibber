@@ -281,17 +281,20 @@ fm = FM({ feedback:.0015, decay:1/2 })
       const query = window.location.search.slice(1)
       const params = query.split('&')
       const code = params[0]
-      const auto = params[1] !== undefined && params[1].split('=')[1] === 'true' ? true : false    
-      const val = atob( code )
-      cm.setValue(val)
-      
-      if( auto ) {
-        cm.execCommand('selectAll')
-        environment.runCode( cm, false, true )
-        //cm.execCommand('undoSelection')
-        cm.setSelection({ line:0, ch:0 })
-        environment.togglemenu()
+      if( code.indexOf( 'show=' ) === -1 ) {
+        const auto = params[1] !== undefined && params[1].split('=')[1] === 'true' ? true : false    
+        const val = atob( code )
+        cm.setValue(val)
+        
+        if( auto ) {
+          cm.execCommand('selectAll')
+          environment.runCode( cm, false, true )
+          //cm.execCommand('undoSelection')
+          cm.setSelection({ line:0, ch:0 })
+          environment.togglemenu()
+        }
       }
+      // else share.js will launch spectator view of live performance
     }else{
       cm.setValue( defaultCode )
     }

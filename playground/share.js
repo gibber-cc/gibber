@@ -40,7 +40,124 @@ const share = {
     return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData, clear }
   },
 
+  spectator() {
+    const url = window.location.toString()
+    const arr = url.split('?show=')
+    const showid = arr[1]
+    const username = 'spectator'
+    const networkConfig = Environment.networkConfig
+    const environment = Environment
+    const useSharedEditor = false
+    const roomname = showid
+
+    const { 
+      socket, 
+      provider, 
+      binding,
+      chatData, 
+      commands, 
+      userData, 
+      clear, 
+      ydoc 
+    } = share.initShare(
+      Environment.editor, 
+      'spectator', 
+      showid,
+      false
+    )
+
+    share.clear = clear
+    share.commands = commands
+
+    __socket = socket
+    networkConfig.isNetworked = true
+
+    window.socket = socket
+    window.binding = binding
+    window.provider = provider
+    window.chatData = chatData
+    window.commands = commands
+    window.username = username
+    window.Gabber = { clear }
+
+    commands.observe( e => {
+      if( e.transaction.local === false ) {
+        // XXX only process last change, should we process all changes?
+        // if we did this would allow late users to potentially "catch up"
+        // with a performance...
+
+        // make sure there commands to run...
+        if( e.changes.delta.length > 0 ) {
+          const inserts = e.changes.delta[0].insert
+          for( let i = inserts.length - 1; i > 0; i -= 5 ) {
+            const arr = e.changes.delta[0].insert.slice( i-4, i+1 )
+            const code = {
+              selection:{
+                start: { line:arr[0], ch:arr[1] },
+                end:   { line:arr[2], ch:arr[3] }
+              },
+              code: arr[4]
+            }
+
+            environment.runCode( Environment.editor, false, true, false, code )
+          }
+        }
+      }
+    })
+
+    chatData.observe( e => {
+      const msgs = e.changes.delta[0].insert
+      for( let i = msgs.length-1; i>=0; i-- ) {
+        const msg = msgs[ i ]
+
+        makeMsg( msg.username, msg.value )
+      }
+    })
+
+    const users = []
+    userData.observe( e => {
+      //console.log( e.changes )
+      //const delta = e.changes.delta[0]
+      //if( delta !== undefined ) {
+        //const msgs = e.changes.delta[0].insert
+        const msgs = e.changes.added
+        //if( msgs !== undefined ) {
+          //for( let i = msgs.length-1; i>=0; i-- ) {
+        for( let msg of msgs ) {
+          //const msg = msgs[ i ]
+          const __username = msg.content.arr[0].username
+          if( users.indexOf( __username ) === -1 && __username !== 'spectator' ) {
+            users.push( __username )
+            if( useSharedEditor === false ) {
+              share.createSplits( __username, users, ydoc, roomname, username )
+            }
+          }
+        }
+    })
+    environment.showArgHints = false
+    environment.showCompletions = false
+    
+    //document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+
+    //if( shouldShowChat ) {
+    //  share.createChatWindow()
+    //  share.chatDisplayed = true
+    //}else{
+    //  Environment.CodeMirror.keyMap.playground['Ctrl-M'] = cm => share.quickmsg( Environment.editor, false, true  )
+    //  share.chatDisplayed = false
+    //}
+
+    __connected = true
+
+    window.alert( `Welcome to gibber performance ${roomname}! You must close this dialog box and then click in the gibber interface to begin watching the performance. You should see the metronome start running in the upper left corner of the window. Enjoy the show!` )
+
+    return true
+
+
+  },
+
   setupShareHandler( cm, environment, networkConfig ) {
+    share.spectator()
     document.querySelector('#connect').onclick = function() {
       const closeconnect = function() {
         const shouldShowChat  = document.querySelector('#showChat').checked,
@@ -57,7 +174,8 @@ const share = {
         share.clear = clear
         share.commands = commands
 
-        userData.unshift([{ username }])
+        if( username !== 'spectator' )
+          userData.unshift([{ username }])
 
         __socket = socket
         networkConfig.isNetworked = true
@@ -116,7 +234,7 @@ const share = {
             for( let msg of msgs ) {
               //const msg = msgs[ i ]
               const __username = msg.content.arr[0].username
-              if( users.indexOf( __username ) === -1 ) {
+              if( users.indexOf( __username ) === -1 && __username !== 'spectator' ) {
                 users.push( __username )
                 if( useSharedEditor === false ) {
                   share.createSplits( __username, users, ydoc, roomname, username )
@@ -180,9 +298,10 @@ const share = {
   },
 
   createSplits( mostRecentUser, usernames, ydoc, roomname, username ) {
+    if( mostRecentUser === 'spectator' ) return
     let grid = [[]]
 
-    if( usernames.indexOf( window.username ) === -1 ) usernames.unshift( window.username )
+    if( usernames.indexOf( window.username ) === -1 && window.username !== 'spectator' ) usernames.unshift( window.username )
     
     switch( usernames.length ) {
       case 2: grid[0] = [usernames[0], usernames[1]]; break; 
