@@ -129,8 +129,11 @@ const share = {
       for( let i = msgs.length-1; i>=0; i-- ) {
         const msg = msgs[ i ]
 
-        if( msg !== undefined && msg.username !== 'spectator' )
-          share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+        if( msg !== undefined && msg.username !== 'spectator' ) {
+          if( share.editors[ msg.username ] !== undefined ) {
+            share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+          }
+        }
       }
     })
     ydoc.scrollData = scrollData
@@ -249,8 +252,11 @@ const share = {
           for( let i = msgs.length-1; i>=0; i-- ) {
             const msg = msgs[ i ]
 
-            if( msg !== undefined && msg.username !== 'spectator' )
-              share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+            if( msg !== undefined && msg.username !== 'spectator' ) {
+              if( share.editors[ msg.username ] !== undefined ) {
+                share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+              }
+            }
           }
         })
 
@@ -421,7 +427,7 @@ const share = {
       rowCount++
     }
 
-    environment.annotations = false
+    Environment.annotations = false
     share.grid = grid
   },
 
