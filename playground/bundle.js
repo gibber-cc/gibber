@@ -12066,9 +12066,8 @@ module.exports = patternWrapper
 module.exports = function( Gibber ) {
   const addValuesFilters = (seq,key,target) => {
     const values = seq.values
-    const __values = seq.values
 
-    if( __values.randomFlag ) {
+    if( values.randomFlag ) {
       values.addFilter( ( args,ptrn ) => {
         const range = ptrn.values.length - 1
         const idx = Math.round( Math.random() * range )
@@ -12077,6 +12076,8 @@ module.exports = function( Gibber ) {
       //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
       //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
       //}
+    }else{
+      debugger
     }
 
     // trigger autotrig patterns
@@ -12160,11 +12161,13 @@ module.exports = function( Gibber ) {
     // if an array of values is passed, let users call pattern method on that array, for example:
     // a.note.seq( b=[0,1,2,3], 1/4 )
     // b.transpose.seq( 1,1 )
+    // also set random flag if needed
     if( Array.isArray( __values ) ) {
       Object.assign( __values, values )
       __values.addFilter = values.addFilter.bind( values )
       __values.removeFilter = values.removeFilter.bind( values )
       __values.inspect = values.inspect.bind( values )
+      if( __values.randomFlag !== undefined ) values.randomFlag = __values.randomFlag
     } else if( typeof __values === 'object' && __values.type==='gen' ) {
       props.values.addFilter = values.addFilter.bind( values )
       props.values.removeFilter = values.removeFilter.bind( values )
@@ -12206,6 +12209,7 @@ module.exports = function( Gibber ) {
     if( Array.isArray( __timings ) ) {
       Object.assign( __timings, timings )
       __timings.addFilter = timings.addFilter.bind( timings )
+      if( __timings.randomFlag !== undefined ) timings.randomFlag = __timings.randomFlag
     }
     if( autotrig === false ) {
       timings.output = { time:'time', shouldExecute:0 }
