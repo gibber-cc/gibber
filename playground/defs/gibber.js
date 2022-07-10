@@ -3,6 +3,7 @@ module.exports = {
     graphics:  require('../../node_modules/gibber.graphics.lib/defs/prototypes_defs.js'),
     audio:     require('../../node_modules/gibber.audio.lib/defs/audio/prototypes_defs.js'),
   },
+  common:      require('./common.js' ),
   effects:     require('../../node_modules/gibber.audio.lib/defs/audio/effects_defs.js'),
   instruments: require('../../node_modules/gibber.audio.lib/defs/audio/instruments_defs.js'),
   audioMisc:   require('../../node_modules/gibber.audio.lib/defs/audio/misc.js'),
