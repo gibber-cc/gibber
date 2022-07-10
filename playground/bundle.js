@@ -11567,6 +11567,8 @@ const patternWrapper = function( Gibber ) {
    //
    //      return this
    //    },
+      //  TODO how do we make this run in the audio thread?
+      //  syn.note.seq( [0,1,2,3].rnd( 1/16,2, 1/3,3 )
       repeat() {
         let counts = {}
       
@@ -12076,8 +12078,6 @@ module.exports = function( Gibber ) {
       //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
       //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
       //}
-    }else{
-      debugger
     }
 
     // trigger autotrig patterns
@@ -78965,6 +78965,11 @@ fm = FM({ feedback:.0015, decay:1/2 })
       SDF.pause()
     }else if( SDF.cameraEnabled ) {
       SDF.keys[ e.key ] = 1
+    }else if( e.key === '.' && e.ctrlKey === true ) {
+      Gibber.clear()
+
+      for( let key of environment.proxies ) delete window[ key ]
+      environment.proxies.length = 0
     }
   })
   window.addEventListener( 'keyup', e => {
@@ -78994,12 +78999,12 @@ CodeMirror.keyMap.playground =  {
   //},
   'Ctrl-\\'( cm ) { environment.console.clear() }, 
 
-  'Ctrl-.'( cm ) {
-    Gibber.clear()
+  //'Ctrl-.'( cm ) {
+  //  Gibber.clear()
 
-    for( let key of environment.proxies ) delete window[ key ]
-    environment.proxies.length = 0
-  },
+  //  for( let key of environment.proxies ) delete window[ key ]
+  //  environment.proxies.length = 0
+  //},
   //'Shift-Ctrl-C'(cm) { toggleSidebar() },
 
   "Shift-Ctrl-=": function(cm) {
