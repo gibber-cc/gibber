@@ -79807,9 +79807,10 @@ module.exports = function() {
         ['3. creating objects', 'creating.objects.js'],
         ['4. basic sequencing', 'sequencing.js'],
         ['5. patterns', 'pattern.js'],
-        ['6. audiovisual mappings', 'mapping.js'],
-        ['7. tidalcycles', 'tidal.js' ],
-        ['8. modulation', 'modulation.js' ]
+        ['6. randomness', 'random.js'],
+        ['7. audiovisual mappings', 'mapping.js'],
+        ['8. tidalcycles', 'tidal.js' ],
+        ['9. modulation', 'modulation.js' ]
       ]
     },
 
