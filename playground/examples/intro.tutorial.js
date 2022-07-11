@@ -22,7 +22,9 @@ Box().render()
 
 // To stop any currently running audiovisuals
 // press Control+. (control + period)
-// Do this now.
+// Do this now. For some keyboard layouts, this
+// combination won't work; if that happens to you
+// try Shift+Control+period. 
 
 // You can also highlight multiple lines of code
 // to run them all at once. Try this with the

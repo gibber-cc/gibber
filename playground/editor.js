@@ -372,12 +372,18 @@ CodeMirror.keyMap.playground =  {
   //},
   'Ctrl-\\'( cm ) { environment.console.clear() }, 
 
-  //'Ctrl-.'( cm ) {
-  //  Gibber.clear()
+  'Ctrl-.'( cm ) {
+    Gibber.clear()
 
-  //  for( let key of environment.proxies ) delete window[ key ]
-  //  environment.proxies.length = 0
-  //},
+    for( let key of environment.proxies ) delete window[ key ]
+    environment.proxies.length = 0
+  },
+  'Shift-Ctrl-.'( cm ) {
+    Gibber.clear()
+
+    for( let key of environment.proxies ) delete window[ key ]
+    environment.proxies.length = 0
+  },
   //'Shift-Ctrl-C'(cm) { toggleSidebar() },
 
   "Shift-Ctrl-=": function(cm) {
