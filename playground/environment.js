@@ -7,6 +7,7 @@ const Gibber        = require( 'gibber.core.lib' ),
       Metronome     = require( './metronome.js' ),
       Editor        = require( './editor.js' ),
       Share         = require( './share.js' ),
+      Storage       = require( './storage.js' ),
       setupExamples = require( './examples.js' ),
       __Console       = require( './console.js' )
       //Gibberwocky   = require( 'gibberwocky' )
@@ -27,6 +28,9 @@ window.onload = function() {
   environment.useComments = true
 
   environment.console = window.Console = __Console( environment )
+  environment.Storage = Storage
+  
+  Storage.init()
 
   const themename = localStorage.getItem('themename')
 
@@ -257,6 +261,8 @@ window.onload = function() {
       '%cgibber is now running. thanks for playing!', 
       `color:black;background:white; width:100%` 
     ) 
+
+    Storage.runUserSetup()
   }) 
 
   environment.editor = cm

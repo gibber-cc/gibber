@@ -400,4 +400,15 @@ CodeMirror.keyMap.playground =  {
     cm.refresh()
   },
         
+  'Shift-Ctrl-S'( cm ) {
+    const value = cm.getValue()
+    environment.Storage.values.savedText = value
+    environment.Storage.save()
+    console.log( 'code saved.' )
+  },
+  'Shift-Ctrl-L'( cm ) {
+    const value = environment.Storage.values.savedText
+    cm.setValue( value )
+    console.log( 'code loaded.' )
+  },
 }
