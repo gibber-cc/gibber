@@ -20,11 +20,12 @@ module.exports = function() {
         ['2. using the console', 'console.js'],
         ['3. creating objects', 'creating.objects.js'],
         ['4. basic sequencing', 'sequencing.js'],
-        ['5. patterns', 'pattern.js'],
-        ['6. randomness', 'random.js'],
-        ['7. audiovisual mappings', 'mapping.js'],
-        ['8. tidalcycles', 'tidal.js' ],
-        ['9. modulation', 'modulation.js' ]
+        ['5. key commands', 'keymappings.js' ],
+        ['6. patterns', 'pattern.js'],
+        ['7. randomness', 'random.js'],
+        ['8. audiovisual mappings', 'mapping.js'],
+        ['9. tidalcycles', 'tidal.js' ],
+        ['10. modulation', 'modulation.js' ]
       ]
     },
 
