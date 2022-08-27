@@ -7,11 +7,22 @@ No installation needed, play it on the web!
 - [Version 2](https://gibber.cc/alpha/playground/)
 
 ## Start it up ##
-You must have [node.js](https://nodejs.org/en/) installed to run a local copy of gibber.
 
-1. After cloning this repo (or installing via npm), install all required modules by executing `npm i` from within the repo.
-2. From the top level of the repo, run `npm start`. 
-3. You can now load gibber at http://127.0.0.1:9080
+To make the playground work locally, you need to run a web server. You can do this using either Visual Studio Code or node.js
+
+### Starting the Server using Visual Studio Code
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/)
+2. Install the [Live Server extension](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+3. Open the `playground` folder in VS Code, using the "Open Folder..." menu item
+4. Click the "Go Live" link in the bottom status bar - a server will start and your browser will open to the playground automatically!
+
+### Starting the server using Node.js
+
+1. Install [Node.js](https://nodejs.org/en/) if you don't already have it.
+2. After cloning this gibber repo (or installing via npm), install all required modules by executing `npm i` from within the repo.
+3. From the top level of the repo, run `npm start`. 
+4. You can now load gibber at http://127.0.0.1:9080
 
 ## Building Gibber ##
 There are three main components this repo wraps, in addition to providing the editing interface.
