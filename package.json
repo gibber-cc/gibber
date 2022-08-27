@@ -17,7 +17,7 @@
     "acorn": "^6.2.0",
     "acorn-walk": "^6.2.0",
     "browserify": "^16.2.0",
-    "codemirror": "^5.55.0",
+    "codemirror": "^5.65.7",
     "dotenv": "^10.0.0",
     "envify": "^4.1.0",
     "esmify": "^2.1.1",
