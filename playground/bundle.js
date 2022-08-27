@@ -5746,6 +5746,7 @@ module.exports = function( __Audio ) {
     if( Audio.autoConnect === true ) drums.connect()
 
     drums.__sequencers = [ ]
+
     //if( typeof score === 'string' ) {
     //  drums.seq = Audio.Seq({
     //    target:drums,
@@ -5770,7 +5771,7 @@ module.exports = function( __Audio ) {
     addMethod( drums, 'end', 1 )
 
     props = Presets.process( { name:'Drums', category:'instruments' }, args, Audio )
-    if( props !== undefined && props.__presetInit__ !== undefined ) {
+    if( props !== undefined ) {
       Object.assign( drums, props )
       if( props.__presetInit__ !== undefined ) props.__presetInit__.call( drums, Audio )
     }
@@ -8870,6 +8871,7 @@ const Theory = {
   __offset:0,
   __degree:'i',
   __loadingPrefix:'js/external/tune.json/', 
+  __loadingExt:'js',
   __tunings:{
     et: {
       root:'60',
@@ -9187,7 +9189,7 @@ const Theory = {
         return
       }
 
-      const path = this.__loadingPrefix + name + '.js' 
+      const path = this.__loadingPrefix + name + '.' + this.__loadingExt 
       fetch( path )
         .catch( console.err )
         .then( data => {
@@ -9198,28 +9200,50 @@ const Theory = {
           } 
         })
         .then( json => {
-          this.__tuning.value = name
-          Gibberish.worklet.port.postMessage({
-            address:'addToProperty',
-            object:this.id,
-            name:'__tunings',
-            key:name,
-            value:json
-          })
+          this.addScaleJSON( json, name )
+          //this.__tuning.value = name
+          //Gibberish.worklet.port.postMessage({
+          //  address:'addToProperty',
+          //  object:this.id,
+          //  name:'__tunings',
+          //  key:name,
+          //  value:json
+          //})
 
-          Gibberish.worklet.port.postMessage({
-            address:'method',
-            object:this.id,
-            name:'loadScale',
-            args:[name]
-          })
+          //Gibberish.worklet.port.postMessage({
+          //  address:'method',
+          //  object:this.id,
+          //  name:'loadScale',
+          //  args:[name]
+          //})
 
-          this.__tunings[ name ] = json
-          this.Tune.loadScale( name )
+          //this.__tunings[ name ] = json
+          //this.Tune.loadScale( name )
         })
     }else{
       this.Tune.loadScale( name )
     }
+  },
+
+  addScaleJSON: function( json, name ) {
+    this.__tuning.value = name
+    Gibberish.worklet.port.postMessage({
+      address:'addToProperty',
+      object:this.id,
+      name:'__tunings',
+      key:name,
+      value:json
+    })
+
+    Gibberish.worklet.port.postMessage({
+      address:'method',
+      object:this.id,
+      name:'loadScale',
+      args:[name]
+    })
+
+    this.__tunings[ name ] = json
+    this.Tune.loadScale( name )
   },
 
   // REMEMBER THAT THE .note METHOD IS ALSO MONKEY-PATCHED
@@ -10201,9 +10225,9 @@ const Utility = {
   time( v ) { return Gibber.Audio.Clock.time( v ) },
   btof( beats ) { return 1 / (beats * ( 60 / Gibber.Audio.Clock.bpm )) },
 
-  random() {
+  random(...args) {
     this.randomFlag = true
-    this.randomArgs = Array.prototype.slice.call( arguments, 0 )
+    this.randomArgs = args
 
     return this
   },
@@ -11408,6 +11432,7 @@ const patternWrapper = function( Gibber ) {
       __listeners: [],
       onchange : null,
       isop:true,
+      repeats: {},
       isGen,
 
       freeze( shouldFreezeTheory = true ) {
@@ -11569,11 +11594,13 @@ const patternWrapper = function( Gibber ) {
    //    },
       //  TODO how do we make this run in the audio thread?
       //  syn.note.seq( [0,1,2,3].rnd( 1/16,2, 1/3,3 )
-      repeat() {
-        let counts = {}
-      
+      repeat( ...args ) {
+        if( this.__rendered !== undefined && this.__rendered !== this ) {
+          this.__rendered.repeat(...args)
+          return this
+        }
         for( let i = 0; i < arguments.length; i +=2 ) {
-          counts[ arguments[ i ] ] = {
+          fnc.repeats[ arguments[ i ] ] = {
             phase: 0,
             target: arguments[ i + 1 ]
           }
@@ -11584,26 +11611,26 @@ const patternWrapper = function( Gibber ) {
           let value = args[ 0 ], phaseModifier = args[ 1 ], output = args
           
           //console.log( args, counts )
-          if( repeating === false && counts[ value ] ) {
+          if( repeating === false && fnc.repeats[ value ] ) {
             repeating = true
             repeatValue = value
             repeatIndex = args[2]
           }
           
           if( repeating === true ) {
-            if( counts[ repeatValue ].phase !== counts[ repeatValue ].target ) {
+            if( fnc.repeats[ repeatValue ].phase !== fnc.repeats[ repeatValue ].target ) {
               output[ 0 ] = repeatValue            
               output[ 1 ] = 0
               output[ 2 ] = repeatIndex
               //[ val, 1, idx ]
-              counts[ repeatValue ].phase++
+              fnc.repeats[ repeatValue ].phase++
             }else{
-              counts[ repeatValue ].phase = 0
+              fnc.repeats[ repeatValue ].phase = 0
               output[ 1 ] = 1
               if( value !== repeatValue ) { 
                 repeating = false
               }else{
-                counts[ repeatValue ].phase++
+                fnc.repeats[ repeatValue ].phase++
               }
             }
           }
@@ -12069,15 +12096,17 @@ module.exports = function( Gibber ) {
   const addValuesFilters = (seq,key,target) => {
     const values = seq.values
 
+    // XXX support [1/8,1/4,1/16].rnd( 1/16, 2 ) syntax
+    // to always play 1/16th notes twice
     if( values.randomFlag ) {
       values.addFilter( ( args,ptrn ) => {
         const range = ptrn.values.length - 1
         const idx = Math.round( Math.random() * range )
         return [ ptrn.values[ idx ], 1, idx ] 
       })
-      //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
-      //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
-      //}
+      for( let i = 0; i < values.randomArgs.length; i+=2 ) {
+        values.repeat( values.randomArgs[ i ], values.randomArgs[ i + 1 ] )
+      }
     }
 
     // trigger autotrig patterns
@@ -12101,9 +12130,9 @@ module.exports = function( Gibber ) {
         const idx = Math.round( Math.random() * range )
         return [ ptrn.values[ idx ], 1, idx ] 
       })
-      //for( let i = 0; i < this.values.randomArgs.length; i+=2 ) {
-      //  valuesPattern.repeat( this.values.randomArgs[ i ], this.values.randomArgs[ i + 1 ] )
-      //}
+      for( let i = 0; i < __timings.randomArgs.length; i+=2 ) {
+        __timings.repeat( __timings.randomArgs[ i ], __timings.randomArgs[ i + 1 ] )
+      }
     }
 
     const filter = renderMode === 'Audio' 
@@ -12168,6 +12197,7 @@ module.exports = function( Gibber ) {
       __values.removeFilter = values.removeFilter.bind( values )
       __values.inspect = values.inspect.bind( values )
       if( __values.randomFlag !== undefined ) values.randomFlag = __values.randomFlag
+      if( __values.randomArgs !== undefined ) values.randomArgs = __values.randomArgs
     } else if( typeof __values === 'object' && __values.type==='gen' ) {
       props.values.addFilter = values.addFilter.bind( values )
       props.values.removeFilter = values.removeFilter.bind( values )
@@ -12210,6 +12240,7 @@ module.exports = function( Gibber ) {
       Object.assign( __timings, timings )
       __timings.addFilter = timings.addFilter.bind( timings )
       if( __timings.randomFlag !== undefined ) timings.randomFlag = __timings.randomFlag
+      if( __timings.randomArgs !== undefined ) timings.randomArgs = __timings.randomArgs
     }
     if( autotrig === false ) {
       timings.output = { time:'time', shouldExecute:0 }
@@ -33814,7 +33845,7 @@ function numberIsNaN (obj) {
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"base64-js":144,"buffer":146,"ieee754":157}],147:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 // Open simple dialogs on top of an editor. Relies on dialog.css.
 
@@ -33979,7 +34010,7 @@ function numberIsNaN (obj) {
 
 },{"../../lib/codemirror":153}],148:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -34182,7 +34213,7 @@ function numberIsNaN (obj) {
 
 },{"../../lib/codemirror":153}],149:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -34346,7 +34377,7 @@ function numberIsNaN (obj) {
 "use strict";
 
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 (function (mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("../../lib/codemirror"));else if (typeof define == "function" && define.amd) // AMD
@@ -34515,7 +34546,7 @@ function numberIsNaN (obj) {
 
 },{"../../lib/codemirror":153}],151:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 // declare global: DOMRect
 
@@ -34825,7 +34856,7 @@ function numberIsNaN (obj) {
         hints.style.width = (winW - 5) + "px";
         overlapX -= (box.right - box.left) - winW;
       }
-      hints.style.left = (left = pos.left - overlapX - offsetLeft) + "px";
+      hints.style.left = (left = Math.max(pos.left - overlapX - offsetLeft, 0)) + "px";
     }
     if (scrolls) for (var node = hints.firstChild; node; node = node.nextSibling)
       node.style.paddingRight = cm.display.nativeBarWidth + "px"
@@ -35046,7 +35077,7 @@ function numberIsNaN (obj) {
 
 },{"../../lib/codemirror":153}],152:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 // Glue code between CodeMirror and Tern.
 //
@@ -35636,10 +35667,16 @@ function numberIsNaN (obj) {
   }
 
   function dialog(cm, text, f) {
-    if (cm.openDialog)
-      cm.openDialog(text + ": <input type=text>", f);
-    else
+    if (cm.openDialog) {
+      var fragment = document.createDocumentFragment();
+      fragment.appendChild(document.createTextNode(text + ": "));
+      var input = document.createElement("input");
+      input.type = "text";
+      fragment.appendChild(input);
+      cm.openDialog(fragment, f);
+    } else {
       f(prompt(text, ""));
+    }
   }
 
   // Tooltips
@@ -35798,9 +35835,9 @@ function numberIsNaN (obj) {
 
 },{"../../lib/codemirror":153}],153:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
-// This is CodeMirror (https://codemirror.net), a code editor
+// This is CodeMirror (https://codemirror.net/5), a code editor
 // implemented in JavaScript on top of the browser's DOM.
 //
 // You can find some technical background for some of the code below
@@ -35825,7 +35862,8 @@ function numberIsNaN (obj) {
   var ie_version = ie && (ie_upto10 ? document.documentMode || 6 : +(edge || ie_11up)[1]);
   var webkit = !edge && /WebKit\//.test(userAgent);
   var qtwebkit = webkit && /Qt\/\d+\.\d+/.test(userAgent);
-  var chrome = !edge && /Chrome\//.test(userAgent);
+  var chrome = !edge && /Chrome\/(\d+)/.exec(userAgent);
+  var chrome_version = chrome && +chrome[1];
   var presto = /Opera\//.test(userAgent);
   var safari = /Apple Computer/.test(navigator.vendor);
   var mac_geMountainLion = /Mac OS X 1\d\D([8-9]|\d\d)\D/.test(userAgent);
@@ -35910,15 +35948,15 @@ function numberIsNaN (obj) {
     } while (child = child.parentNode)
   }
 
-  function activeElt() {
+  function activeElt(doc) {
     // IE and Edge may throw an "Unspecified Error" when accessing document.activeElement.
     // IE < 10 will throw when accessed while the page is loading or in an iframe.
     // IE > 9 and Edge will throw when accessed in an iframe if document.body is unavailable.
     var activeElement;
     try {
-      activeElement = document.activeElement;
+      activeElement = doc.activeElement;
     } catch(e) {
-      activeElement = document.body || null;
+      activeElement = doc.body || null;
     }
     while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement)
       { activeElement = activeElement.shadowRoot.activeElement; }
@@ -35941,6 +35979,10 @@ function numberIsNaN (obj) {
     { selectInput = function(node) { node.selectionStart = 0; node.selectionEnd = node.value.length; }; }
   else if (ie) // Suppress mysterious IE10 errors
     { selectInput = function(node) { try { node.select(); } catch(_e) {} }; }
+
+  function doc(cm) { return cm.display.wrapper.ownerDocument }
+
+  function win(cm) { return doc(cm).defaultView }
 
   function bind(f) {
     var args = Array.prototype.slice.call(arguments, 1);
@@ -37123,7 +37165,7 @@ function numberIsNaN (obj) {
   // Add a span to a line.
   function addMarkedSpan(line, span, op) {
     var inThisOp = op && window.WeakSet && (op.markedSpans || (op.markedSpans = new WeakSet));
-    if (inThisOp && inThisOp.has(line.markedSpans)) {
+    if (inThisOp && line.markedSpans && inThisOp.has(line.markedSpans)) {
       line.markedSpans.push(span);
     } else {
       line.markedSpans = line.markedSpans ? line.markedSpans.concat([span]) : [span];
@@ -38150,12 +38192,14 @@ function numberIsNaN (obj) {
   function mapFromLineView(lineView, line, lineN) {
     if (lineView.line == line)
       { return {map: lineView.measure.map, cache: lineView.measure.cache} }
-    for (var i = 0; i < lineView.rest.length; i++)
-      { if (lineView.rest[i] == line)
-        { return {map: lineView.measure.maps[i], cache: lineView.measure.caches[i]} } }
-    for (var i$1 = 0; i$1 < lineView.rest.length; i$1++)
-      { if (lineNo(lineView.rest[i$1]) > lineN)
-        { return {map: lineView.measure.maps[i$1], cache: lineView.measure.caches[i$1], before: true} } }
+    if (lineView.rest) {
+      for (var i = 0; i < lineView.rest.length; i++)
+        { if (lineView.rest[i] == line)
+          { return {map: lineView.measure.maps[i], cache: lineView.measure.caches[i]} } }
+      for (var i$1 = 0; i$1 < lineView.rest.length; i$1++)
+        { if (lineNo(lineView.rest[i$1]) > lineN)
+          { return {map: lineView.measure.maps[i$1], cache: lineView.measure.caches[i$1], before: true} } }
+    }
   }
 
   // Render a line into the hidden node display.externalMeasured. Used
@@ -38369,22 +38413,24 @@ function numberIsNaN (obj) {
     cm.display.lineNumChars = null;
   }
 
-  function pageScrollX() {
+  function pageScrollX(doc) {
     // Work around https://bugs.chromium.org/p/chromium/issues/detail?id=489206
     // which causes page_Offset and bounding client rects to use
     // different reference viewports and invalidate our calculations.
-    if (chrome && android) { return -(document.body.getBoundingClientRect().left - parseInt(getComputedStyle(document.body).marginLeft)) }
-    return window.pageXOffset || (document.documentElement || document.body).scrollLeft
+    if (chrome && android) { return -(doc.body.getBoundingClientRect().left - parseInt(getComputedStyle(doc.body).marginLeft)) }
+    return doc.defaultView.pageXOffset || (doc.documentElement || doc.body).scrollLeft
   }
-  function pageScrollY() {
-    if (chrome && android) { return -(document.body.getBoundingClientRect().top - parseInt(getComputedStyle(document.body).marginTop)) }
-    return window.pageYOffset || (document.documentElement || document.body).scrollTop
+  function pageScrollY(doc) {
+    if (chrome && android) { return -(doc.body.getBoundingClientRect().top - parseInt(getComputedStyle(doc.body).marginTop)) }
+    return doc.defaultView.pageYOffset || (doc.documentElement || doc.body).scrollTop
   }
 
   function widgetTopHeight(lineObj) {
+    var ref = visualLine(lineObj);
+    var widgets = ref.widgets;
     var height = 0;
-    if (lineObj.widgets) { for (var i = 0; i < lineObj.widgets.length; ++i) { if (lineObj.widgets[i].above)
-      { height += widgetHeight(lineObj.widgets[i]); } } }
+    if (widgets) { for (var i = 0; i < widgets.length; ++i) { if (widgets[i].above)
+      { height += widgetHeight(widgets[i]); } } }
     return height
   }
 
@@ -38404,8 +38450,8 @@ function numberIsNaN (obj) {
     else { yOff -= cm.display.viewOffset; }
     if (context == "page" || context == "window") {
       var lOff = cm.display.lineSpace.getBoundingClientRect();
-      yOff += lOff.top + (context == "window" ? 0 : pageScrollY());
-      var xOff = lOff.left + (context == "window" ? 0 : pageScrollX());
+      yOff += lOff.top + (context == "window" ? 0 : pageScrollY(doc(cm)));
+      var xOff = lOff.left + (context == "window" ? 0 : pageScrollX(doc(cm)));
       rect.left += xOff; rect.right += xOff;
     }
     rect.top += yOff; rect.bottom += yOff;
@@ -38419,8 +38465,8 @@ function numberIsNaN (obj) {
     var left = coords.left, top = coords.top;
     // First move into "page" coordinate system
     if (context == "page") {
-      left -= pageScrollX();
-      top -= pageScrollY();
+      left -= pageScrollX(doc(cm));
+      top -= pageScrollY(doc(cm));
     } else if (context == "local" || !context) {
       var localBox = cm.display.sizer.getBoundingClientRect();
       left += localBox.left;
@@ -38949,13 +38995,19 @@ function numberIsNaN (obj) {
     var curFragment = result.cursors = document.createDocumentFragment();
     var selFragment = result.selection = document.createDocumentFragment();
 
+    var customCursor = cm.options.$customCursor;
+    if (customCursor) { primary = true; }
     for (var i = 0; i < doc.sel.ranges.length; i++) {
       if (!primary && i == doc.sel.primIndex) { continue }
       var range = doc.sel.ranges[i];
       if (range.from().line >= cm.display.viewTo || range.to().line < cm.display.viewFrom) { continue }
       var collapsed = range.empty();
-      if (collapsed || cm.options.showCursorWhenSelecting)
-        { drawSelectionCursor(cm, range.head, curFragment); }
+      if (customCursor) {
+        var head = customCursor(cm, range);
+        if (head) { drawSelectionCursor(cm, head, curFragment); }
+      } else if (collapsed || cm.options.showCursorWhenSelecting) {
+        drawSelectionCursor(cm, range.head, curFragment);
+      }
       if (!collapsed)
         { drawSelectionRange(cm, range, selFragment); }
     }
@@ -38973,9 +39025,8 @@ function numberIsNaN (obj) {
 
     if (/\bcm-fat-cursor\b/.test(cm.getWrapperElement().className)) {
       var charPos = charCoords(cm, head, "div", null, null);
-      if (charPos.right - charPos.left > 0) {
-        cursor.style.width = (charPos.right - charPos.left) + "px";
-      }
+      var width = charPos.right - charPos.left;
+      cursor.style.width = (width > 0 ? width : cm.defaultCharWidth()) + "px";
     }
 
     if (pos.other) {
@@ -39231,8 +39282,9 @@ function numberIsNaN (obj) {
     if (signalDOMEvent(cm, "scrollCursorIntoView")) { return }
 
     var display = cm.display, box = display.sizer.getBoundingClientRect(), doScroll = null;
+    var doc = display.wrapper.ownerDocument;
     if (rect.top + box.top < 0) { doScroll = true; }
-    else if (rect.bottom + box.top > (window.innerHeight || document.documentElement.clientHeight)) { doScroll = false; }
+    else if (rect.bottom + box.top > (doc.defaultView.innerHeight || doc.documentElement.clientHeight)) { doScroll = false; }
     if (doScroll != null && !phantom) {
       var scrollNode = elt("div", "\u200b", null, ("position: absolute;\n                         top: " + (rect.top - display.viewOffset - paddingTop(cm.display)) + "px;\n                         height: " + (rect.bottom - rect.top + scrollGap(cm) + display.barHeight) + "px;\n                         left: " + (rect.left) + "px; width: " + (Math.max(2, rect.right - rect.left)) + "px;"));
       cm.display.lineSpace.appendChild(scrollNode);
@@ -39448,6 +39500,7 @@ function numberIsNaN (obj) {
       this.vert.firstChild.style.height =
         Math.max(0, measure.scrollHeight - measure.clientHeight + totalHeight) + "px";
     } else {
+      this.vert.scrollTop = 0;
       this.vert.style.display = "";
       this.vert.firstChild.style.height = "0";
     }
@@ -39485,13 +39538,13 @@ function numberIsNaN (obj) {
   NativeScrollbars.prototype.zeroWidthHack = function () {
     var w = mac && !mac_geMountainLion ? "12px" : "18px";
     this.horiz.style.height = this.vert.style.width = w;
-    this.horiz.style.pointerEvents = this.vert.style.pointerEvents = "none";
+    this.horiz.style.visibility = this.vert.style.visibility = "hidden";
     this.disableHoriz = new Delayed;
     this.disableVert = new Delayed;
   };
 
   NativeScrollbars.prototype.enableZeroWidthBar = function (bar, delay, type) {
-    bar.style.pointerEvents = "auto";
+    bar.style.visibility = "";
     function maybeDisable() {
       // To find out whether the scrollbar is still visible, we
       // check whether the element under the pixel in the bottom
@@ -39502,7 +39555,7 @@ function numberIsNaN (obj) {
       var box = bar.getBoundingClientRect();
       var elt = type == "vert" ? document.elementFromPoint(box.right - 1, (box.top + box.bottom) / 2)
           : document.elementFromPoint((box.right + box.left) / 2, box.bottom - 1);
-      if (elt != bar) { bar.style.pointerEvents = "none"; }
+      if (elt != bar) { bar.style.visibility = "hidden"; }
       else { delay.set(1000, maybeDisable); }
     }
     delay.set(1000, maybeDisable);
@@ -39683,7 +39736,7 @@ function numberIsNaN (obj) {
       cm.display.maxLineChanged = false;
     }
 
-    var takeFocus = op.focus && op.focus == activeElt();
+    var takeFocus = op.focus && op.focus == activeElt(doc(cm));
     if (op.preparedSelection)
       { cm.display.input.showSelection(op.preparedSelection, takeFocus); }
     if (op.updatedDisplay || op.startHeight != cm.doc.height)
@@ -39860,11 +39913,11 @@ function numberIsNaN (obj) {
 
   function selectionSnapshot(cm) {
     if (cm.hasFocus()) { return null }
-    var active = activeElt();
+    var active = activeElt(doc(cm));
     if (!active || !contains(cm.display.lineDiv, active)) { return null }
     var result = {activeElt: active};
     if (window.getSelection) {
-      var sel = window.getSelection();
+      var sel = win(cm).getSelection();
       if (sel.anchorNode && sel.extend && contains(cm.display.lineDiv, sel.anchorNode)) {
         result.anchorNode = sel.anchorNode;
         result.anchorOffset = sel.anchorOffset;
@@ -39876,11 +39929,12 @@ function numberIsNaN (obj) {
   }
 
   function restoreSelection(snapshot) {
-    if (!snapshot || !snapshot.activeElt || snapshot.activeElt == activeElt()) { return }
+    if (!snapshot || !snapshot.activeElt || snapshot.activeElt == activeElt(snapshot.activeElt.ownerDocument)) { return }
     snapshot.activeElt.focus();
     if (!/^(INPUT|TEXTAREA)$/.test(snapshot.activeElt.nodeName) &&
         snapshot.anchorNode && contains(document.body, snapshot.anchorNode) && contains(document.body, snapshot.focusNode)) {
-      var sel = window.getSelection(), range = document.createRange();
+      var doc = snapshot.activeElt.ownerDocument;
+      var sel = doc.defaultView.getSelection(), range = doc.createRange();
       range.setEnd(snapshot.anchorNode, snapshot.anchorOffset);
       range.collapse(false);
       sel.removeAllRanges();
@@ -40298,6 +40352,17 @@ function numberIsNaN (obj) {
   }
 
   function onScrollWheel(cm, e) {
+    // On Chrome 102, viewport updates somehow stop wheel-based
+    // scrolling. Turning off pointer events during the scroll seems
+    // to avoid the issue.
+    if (chrome && chrome_version == 102) {
+      if (cm.display.chromeScrollHack == null) { cm.display.sizer.style.pointerEvents = "none"; }
+      else { clearTimeout(cm.display.chromeScrollHack); }
+      cm.display.chromeScrollHack = setTimeout(function () {
+        cm.display.chromeScrollHack = null;
+        cm.display.sizer.style.pointerEvents = "";
+      }, 100);
+    }
     var delta = wheelEventDelta(e), dx = delta.x, dy = delta.y;
     var pixelsPerUnit = wheelPixelsPerUnit;
     if (e.deltaMode === 0) {
@@ -40981,7 +41046,7 @@ function numberIsNaN (obj) {
       var range = sel.ranges[i];
       var old = sel.ranges.length == doc.sel.ranges.length && doc.sel.ranges[i];
       var newAnchor = skipAtomic(doc, range.anchor, old && old.anchor, bias, mayClear);
-      var newHead = skipAtomic(doc, range.head, old && old.head, bias, mayClear);
+      var newHead = range.head == range.anchor ? newAnchor : skipAtomic(doc, range.head, old && old.head, bias, mayClear);
       if (out || newAnchor != range.anchor || newHead != range.head) {
         if (!out) { out = sel.ranges.slice(0, i); }
         out[i] = new Range(newAnchor, newHead);
@@ -43033,7 +43098,7 @@ function numberIsNaN (obj) {
   function onKeyDown(e) {
     var cm = this;
     if (e.target && e.target != cm.display.input.getField()) { return }
-    cm.curOp.focus = activeElt();
+    cm.curOp.focus = activeElt(doc(cm));
     if (signalDOMEvent(cm, e)) { return }
     // IE does strange things with escape.
     if (ie && ie_version < 11 && e.keyCode == 27) { e.returnValue = false; }
@@ -43140,7 +43205,7 @@ function numberIsNaN (obj) {
     }
     if (clickInGutter(cm, e)) { return }
     var pos = posFromMouse(cm, e), button = e_button(e), repeat = pos ? clickRepeat(pos, button) : "single";
-    window.focus();
+    win(cm).focus();
 
     // #3261: make sure, that we're not starting a second selection
     if (button == 1 && cm.state.selectingText)
@@ -43195,7 +43260,7 @@ function numberIsNaN (obj) {
 
   function leftButtonDown(cm, pos, repeat, event) {
     if (ie) { setTimeout(bind(ensureFocus, cm), 0); }
-    else { cm.curOp.focus = activeElt(); }
+    else { cm.curOp.focus = activeElt(doc(cm)); }
 
     var behavior = configureMouse(cm, repeat, event);
 
@@ -43265,19 +43330,19 @@ function numberIsNaN (obj) {
   // Normal selection, as opposed to text dragging.
   function leftButtonSelect(cm, event, start, behavior) {
     if (ie) { delayBlurEvent(cm); }
-    var display = cm.display, doc = cm.doc;
+    var display = cm.display, doc$1 = cm.doc;
     e_preventDefault(event);
 
-    var ourRange, ourIndex, startSel = doc.sel, ranges = startSel.ranges;
+    var ourRange, ourIndex, startSel = doc$1.sel, ranges = startSel.ranges;
     if (behavior.addNew && !behavior.extend) {
-      ourIndex = doc.sel.contains(start);
+      ourIndex = doc$1.sel.contains(start);
       if (ourIndex > -1)
         { ourRange = ranges[ourIndex]; }
       else
         { ourRange = new Range(start, start); }
     } else {
-      ourRange = doc.sel.primary();
-      ourIndex = doc.sel.primIndex;
+      ourRange = doc$1.sel.primary();
+      ourIndex = doc$1.sel.primIndex;
     }
 
     if (behavior.unit == "rectangle") {
@@ -43294,18 +43359,18 @@ function numberIsNaN (obj) {
 
     if (!behavior.addNew) {
       ourIndex = 0;
-      setSelection(doc, new Selection([ourRange], 0), sel_mouse);
-      startSel = doc.sel;
+      setSelection(doc$1, new Selection([ourRange], 0), sel_mouse);
+      startSel = doc$1.sel;
     } else if (ourIndex == -1) {
       ourIndex = ranges.length;
-      setSelection(doc, normalizeSelection(cm, ranges.concat([ourRange]), ourIndex),
+      setSelection(doc$1, normalizeSelection(cm, ranges.concat([ourRange]), ourIndex),
                    {scroll: false, origin: "*mouse"});
     } else if (ranges.length > 1 && ranges[ourIndex].empty() && behavior.unit == "char" && !behavior.extend) {
-      setSelection(doc, normalizeSelection(cm, ranges.slice(0, ourIndex).concat(ranges.slice(ourIndex + 1)), 0),
+      setSelection(doc$1, normalizeSelection(cm, ranges.slice(0, ourIndex).concat(ranges.slice(ourIndex + 1)), 0),
                    {scroll: false, origin: "*mouse"});
-      startSel = doc.sel;
+      startSel = doc$1.sel;
     } else {
-      replaceOneSelection(doc, ourIndex, ourRange, sel_mouse);
+      replaceOneSelection(doc$1, ourIndex, ourRange, sel_mouse);
     }
 
     var lastPos = start;
@@ -43315,19 +43380,19 @@ function numberIsNaN (obj) {
 
       if (behavior.unit == "rectangle") {
         var ranges = [], tabSize = cm.options.tabSize;
-        var startCol = countColumn(getLine(doc, start.line).text, start.ch, tabSize);
-        var posCol = countColumn(getLine(doc, pos.line).text, pos.ch, tabSize);
+        var startCol = countColumn(getLine(doc$1, start.line).text, start.ch, tabSize);
+        var posCol = countColumn(getLine(doc$1, pos.line).text, pos.ch, tabSize);
         var left = Math.min(startCol, posCol), right = Math.max(startCol, posCol);
         for (var line = Math.min(start.line, pos.line), end = Math.min(cm.lastLine(), Math.max(start.line, pos.line));
              line <= end; line++) {
-          var text = getLine(doc, line).text, leftPos = findColumn(text, left, tabSize);
+          var text = getLine(doc$1, line).text, leftPos = findColumn(text, left, tabSize);
           if (left == right)
             { ranges.push(new Range(Pos(line, leftPos), Pos(line, leftPos))); }
           else if (text.length > leftPos)
             { ranges.push(new Range(Pos(line, leftPos), Pos(line, findColumn(text, right, tabSize)))); }
         }
         if (!ranges.length) { ranges.push(new Range(start, start)); }
-        setSelection(doc, normalizeSelection(cm, startSel.ranges.slice(0, ourIndex).concat(ranges), ourIndex),
+        setSelection(doc$1, normalizeSelection(cm, startSel.ranges.slice(0, ourIndex).concat(ranges), ourIndex),
                      {origin: "*mouse", scroll: false});
         cm.scrollIntoView(pos);
       } else {
@@ -43342,8 +43407,8 @@ function numberIsNaN (obj) {
           anchor = maxPos(oldRange.to(), range.head);
         }
         var ranges$1 = startSel.ranges.slice(0);
-        ranges$1[ourIndex] = bidiSimplify(cm, new Range(clipPos(doc, anchor), head));
-        setSelection(doc, normalizeSelection(cm, ranges$1, ourIndex), sel_mouse);
+        ranges$1[ourIndex] = bidiSimplify(cm, new Range(clipPos(doc$1, anchor), head));
+        setSelection(doc$1, normalizeSelection(cm, ranges$1, ourIndex), sel_mouse);
       }
     }
 
@@ -43359,9 +43424,9 @@ function numberIsNaN (obj) {
       var cur = posFromMouse(cm, e, true, behavior.unit == "rectangle");
       if (!cur) { return }
       if (cmp(cur, lastPos) != 0) {
-        cm.curOp.focus = activeElt();
+        cm.curOp.focus = activeElt(doc(cm));
         extendTo(cur);
-        var visible = visibleLines(display, doc);
+        var visible = visibleLines(display, doc$1);
         if (cur.line >= visible.to || cur.line < visible.from)
           { setTimeout(operation(cm, function () {if (counter == curCount) { extend(e); }}), 150); }
       } else {
@@ -43386,7 +43451,7 @@ function numberIsNaN (obj) {
       }
       off(display.wrapper.ownerDocument, "mousemove", move);
       off(display.wrapper.ownerDocument, "mouseup", up);
-      doc.history.lastSelOrigin = null;
+      doc$1.history.lastSelOrigin = null;
     }
 
     var move = operation(cm, function (e) {
@@ -43986,7 +44051,7 @@ function numberIsNaN (obj) {
     var pasted = e.clipboardData && e.clipboardData.getData("Text");
     if (pasted) {
       e.preventDefault();
-      if (!cm.isReadOnly() && !cm.options.disableInput)
+      if (!cm.isReadOnly() && !cm.options.disableInput && cm.hasFocus())
         { runInOp(cm, function () { return applyTextInput(cm, pasted, 0, null, "paste"); }); }
       return true
     }
@@ -44063,7 +44128,7 @@ function numberIsNaN (obj) {
 
     CodeMirror.prototype = {
       constructor: CodeMirror,
-      focus: function(){window.focus(); this.display.input.focus();},
+      focus: function(){win(this).focus(); this.display.input.focus();},
 
       setOption: function(option, value) {
         var options = this.options, old = options[option];
@@ -44387,7 +44452,7 @@ function numberIsNaN (obj) {
 
         signal(this, "overwriteToggle", this, this.state.overwrite);
       },
-      hasFocus: function() { return this.display.input.getField() == activeElt() },
+      hasFocus: function() { return this.display.input.getField() == activeElt(doc(this)) },
       isReadOnly: function() { return !!(this.options.readOnly || this.doc.cantEdit) },
 
       scrollTo: methodOp(function (x, y) { scrollToCoords(this, x, y); }),
@@ -44568,7 +44633,7 @@ function numberIsNaN (obj) {
   function findPosV(cm, pos, dir, unit) {
     var doc = cm.doc, x = pos.left, y;
     if (unit == "page") {
-      var pageSize = Math.min(cm.display.wrapper.clientHeight, window.innerHeight || document.documentElement.clientHeight);
+      var pageSize = Math.min(cm.display.wrapper.clientHeight, win(cm).innerHeight || doc(cm).documentElement.clientHeight);
       var moveAmount = Math.max(pageSize - .5 * textHeight(cm.display), 3);
       y = (dir > 0 ? pos.bottom : pos.top) + dir * moveAmount;
 
@@ -44668,7 +44733,7 @@ function numberIsNaN (obj) {
       var kludge = hiddenTextarea(), te = kludge.firstChild;
       cm.display.lineSpace.insertBefore(kludge, cm.display.lineSpace.firstChild);
       te.value = lastCopied.text.join("\n");
-      var hadFocus = activeElt();
+      var hadFocus = activeElt(div.ownerDocument);
       selectInput(te);
       setTimeout(function () {
         cm.display.lineSpace.removeChild(kludge);
@@ -44691,7 +44756,7 @@ function numberIsNaN (obj) {
 
   ContentEditableInput.prototype.prepareSelection = function () {
     var result = prepareSelection(this.cm, false);
-    result.focus = activeElt() == this.div;
+    result.focus = activeElt(this.div.ownerDocument) == this.div;
     return result
   };
 
@@ -44787,7 +44852,7 @@ function numberIsNaN (obj) {
 
   ContentEditableInput.prototype.focus = function () {
     if (this.cm.options.readOnly != "nocursor") {
-      if (!this.selectionInEditor() || activeElt() != this.div)
+      if (!this.selectionInEditor() || activeElt(this.div.ownerDocument) != this.div)
         { this.showSelection(this.prepareSelection(), true); }
       this.div.focus();
     }
@@ -45290,7 +45355,7 @@ function numberIsNaN (obj) {
   TextareaInput.prototype.supportsTouch = function () { return false };
 
   TextareaInput.prototype.focus = function () {
-    if (this.cm.options.readOnly != "nocursor" && (!mobile || activeElt() != this.textarea)) {
+    if (this.cm.options.readOnly != "nocursor" && (!mobile || activeElt(this.textarea.ownerDocument) != this.textarea)) {
       try { this.textarea.focus(); }
       catch (e) {} // IE8 will throw if the textarea is display: none or not in DOM
     }
@@ -45413,9 +45478,9 @@ function numberIsNaN (obj) {
     input.wrapper.style.cssText = "position: static";
     te.style.cssText = "position: absolute; width: 30px; height: 30px;\n      top: " + (e.clientY - wrapperBox.top - 5) + "px; left: " + (e.clientX - wrapperBox.left - 5) + "px;\n      z-index: 1000; background: " + (ie ? "rgba(255, 255, 255, .05)" : "transparent") + ";\n      outline: none; border-width: 0; outline: none; overflow: hidden; opacity: .05; filter: alpha(opacity=5);";
     var oldScrollY;
-    if (webkit) { oldScrollY = window.scrollY; } // Work around Chrome issue (#2712)
+    if (webkit) { oldScrollY = te.ownerDocument.defaultView.scrollY; } // Work around Chrome issue (#2712)
     display.input.focus();
-    if (webkit) { window.scrollTo(null, oldScrollY); }
+    if (webkit) { te.ownerDocument.defaultView.scrollTo(null, oldScrollY); }
     display.input.reset();
     // Adds "Select all" to context menu in FF
     if (!cm.somethingSelected()) { te.value = input.prevInput = " "; }
@@ -45497,7 +45562,7 @@ function numberIsNaN (obj) {
     // Set autofocus to true if this textarea is focused, or if it has
     // autofocus and no other element is focused.
     if (options.autofocus == null) {
-      var hasFocus = activeElt();
+      var hasFocus = activeElt(textarea.ownerDocument);
       options.autofocus = hasFocus == textarea ||
         textarea.getAttribute("autofocus") != null && hasFocus == document.body;
     }
@@ -45631,7 +45696,7 @@ function numberIsNaN (obj) {
 
   addLegacyProps(CodeMirror);
 
-  CodeMirror.version = "5.63.3";
+  CodeMirror.version = "5.65.7";
 
   return CodeMirror;
 
@@ -45641,7 +45706,7 @@ function numberIsNaN (obj) {
 "use strict";
 
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 (function (mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("../../lib/codemirror"));else if (typeof define == "function" && define.amd) // AMD
@@ -46077,6 +46142,8 @@ function numberIsNaN (obj) {
       cx.state.context = new Context(cx.state.context, cx.state.localVars, true);
       cx.state.localVars = null;
     }
+
+    pushcontext.lex = pushblockcontext.lex = true;
 
     function popcontext() {
       cx.state.localVars = cx.state.context.vars;
