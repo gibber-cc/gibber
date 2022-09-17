@@ -17295,16 +17295,15 @@ module.exports = function (Gibberish) {
 "use strict";
 
 var __proxy = require('../workletProxy.js'),
-    mini = require('../external/mini.js'); //const Pattern = require( 'tidal.pegjs' )
-
+    mini = require('../external/mini.js');
 
 module.exports = function (Gibberish) {
   const proxy = __proxy(Gibberish);
 
   const Sequencer = props => {
-    let __seq;
+    let __seq,
+        i = 0;
 
-    let i = 0;
     const seq = {
       __isRunning: false,
       __phase: 0,
@@ -17314,11 +17313,15 @@ module.exports = function (Gibberish) {
       __events: null,
 
       tick(priority) {
-        // running for first time, perform a query
+        let startTime; // running for first time, perform a query
+
         if (seq.__events === null || seq.__events.length === 0) {
+          startTime = seq.__phase;
           seq.__events = seq.__pattern.queryArc(seq.__phase++, 1);
 
           seq.__events.sort((a, b) => a.whole.begin.valueOf() > b.whole.begin.valueOf());
+        } else {
+          startTime = seq.__events[0].whole.begin;
         }
 
         if (seq.__events.length <= 0) {
@@ -17330,8 +17333,6 @@ module.exports = function (Gibberish) {
 
           return;
         }
-
-        const startTime = seq.__events[0].whole.begin;
 
         if (seq.key !== 'chord') {
           while (seq.__events.length > 0 && startTime.valueOf() >= seq.__events[0].whole.begin.valueOf()) {
