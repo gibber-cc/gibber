@@ -4858,7 +4858,7 @@ const Analysis = {
 
 module.exports = Analysis 
 
-},{"./ugen.js":119,"gibberish-dsp":293}],83:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],83:[function(require,module,exports){
 "use strict";
 
 const Gibberish = require('gibberish-dsp');
@@ -5379,7 +5379,7 @@ const Audio = {
 };
 module.exports = Audio;
 
-},{"./analysis.js":82,"./binops.js":84,"./busses.js":85,"./clock.js":86,"./drums.js":87,"./effects.js":88,"./ensemble.js":89,"./envelopes.js":90,"./external/audioworklet-polyfill.js":91,"./filters.js":94,"./freesound.js":95,"./gen.js":96,"./instruments.js":97,"./make.js":98,"./oscillators.js":99,"./presets.js":100,"./theory.js":118,"./ugen.js":119,"./utility.js":120,"./waveObjects.js":121,"./wavePattern.js":122,"gibberish-dsp":293}],84:[function(require,module,exports){
+},{"./analysis.js":82,"./binops.js":84,"./busses.js":85,"./clock.js":86,"./drums.js":87,"./effects.js":88,"./ensemble.js":89,"./envelopes.js":90,"./external/audioworklet-polyfill.js":91,"./filters.js":94,"./freesound.js":95,"./gen.js":96,"./instruments.js":97,"./make.js":98,"./oscillators.js":99,"./presets.js":100,"./theory.js":118,"./ugen.js":119,"./utility.js":120,"./waveObjects.js":121,"./wavePattern.js":122,"gibberish-dsp":291}],84:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -5419,7 +5419,7 @@ const Binops = {
 
 module.exports = Binops
 
-},{"./ugen.js":119,"gibberish-dsp":293}],85:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],85:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const Ugen      = require( './ugen.js' )
 
@@ -5471,7 +5471,7 @@ const Busses = {
 
 module.exports = Busses
 
-},{"./ugen.js":119,"gibberish-dsp":293}],86:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],86:[function(require,module,exports){
 const Gibberish = require( 'gibberish-dsp' )
 const serialize = require( 'serialize-javascript' )
 
@@ -5654,7 +5654,7 @@ const Clock = {
 
 module.exports = Clock
 
-},{"gibberish-dsp":293,"serialize-javascript":123}],87:[function(require,module,exports){
+},{"gibberish-dsp":291,"serialize-javascript":123}],87:[function(require,module,exports){
 const Ugen = require( './ugen.js' )
 const Presets = require( './presets.js' )
 
@@ -5917,7 +5917,7 @@ const Effects = {
 
 module.exports = Effects
 
-},{"./ugen.js":119,"gibberish-dsp":293}],89:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],89:[function(require,module,exports){
 module.exports = function( Audio ) {
   const Gibberish = Audio.Gibberish
   const Ensemble = function( props ) {
@@ -6045,7 +6045,7 @@ const Envelopes = {
 
 module.exports = Envelopes
 
-},{"./ugen.js":119,"gibberish-dsp":293}],91:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],91:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
 },{"./realm.js":92,"dup":28}],92:[function(require,module,exports){
 
@@ -6385,7 +6385,7 @@ const Filters = {
 
 module.exports = Filters
 
-},{"./ugen.js":119,"gibberish-dsp":293}],95:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],95:[function(require,module,exports){
 module.exports = function( Audio ) {
   const token = '6a00f80ba02b2755a044cc4ef004febfc4ccd476'
 
@@ -7319,7 +7319,7 @@ const Instruments = {
 
 module.exports = Instruments
 
-},{"./ugen.js":119,"gibberish-dsp":293}],98:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],98:[function(require,module,exports){
 module.exports = function( Audio ) {
   const Gibberish = Audio.Gibberish
 
@@ -7408,7 +7408,7 @@ const Oscillators = {
 
 module.exports = Oscillators
 
-},{"./ugen.js":119,"gibberish-dsp":293}],100:[function(require,module,exports){
+},{"./ugen.js":119,"gibberish-dsp":291}],100:[function(require,module,exports){
 const Presets = {
   process( description, args, Audio ) {
     let output
@@ -9317,7 +9317,7 @@ const Theory = {
 
 module.exports = Theory
 
-},{"./external/tune-api-only.js":93,"gibberish-dsp":293,"serialize-javascript":123}],119:[function(require,module,exports){
+},{"./external/tune-api-only.js":93,"gibberish-dsp":291,"serialize-javascript":123}],119:[function(require,module,exports){
 const Presets = require( './presets.js' )
 const Theory  = require( './theory.js' )
 const Gibberish = require( 'gibberish-dsp' )
@@ -10089,7 +10089,7 @@ Ugen.OUTPUT = 1
 
 module.exports = Ugen
 
-},{"./presets.js":100,"./theory.js":118,"gibberish-dsp":293}],120:[function(require,module,exports){
+},{"./presets.js":100,"./theory.js":118,"gibberish-dsp":291}],120:[function(require,module,exports){
 const Utility = {
   rndf( min=0, max=1, number, canRepeat=true ) {
     let out = 0
@@ -11176,7 +11176,7 @@ const Gibber = {
     };
 
     obj[prefix + name].tidal = function (pattern, number = 0, delay = 0) {
-      if (value !== undefined) value.name = obj.name;
+      if (value !== undefined && typeof value !== 'number') value.name = obj.name;
       const type = obj.type === 'gen' ? 'audio' : obj.type;
       const s = Gibber.Tidal({
         pattern,
@@ -14201,7 +14201,7 @@ const Graphics = {
 };
 module.exports = Graphics;
 
-},{"../defs/graphics.js":133,"marching":358}],138:[function(require,module,exports){
+},{"../defs/graphics.js":133,"marching":343}],138:[function(require,module,exports){
 "use strict";
 
 (function (global, factory) {
@@ -61973,628 +61973,6 @@ function config (name) {
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],222:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],223:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],224:[function(require,module,exports){
-(function (process,global){(function (){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
-        try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
-        }
-      default:
-        return x;
-    }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
-
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
-}
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-}).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":223,"_process":196,"inherits":222}],225:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63123,7 +62501,7 @@ exports.CodemirrorBinding = CodemirrorBinding;
 const CodeMirrorBinding = CodemirrorBinding;
 exports.CodeMirrorBinding = CodeMirrorBinding;
 
-},{"codemirror":153,"lib0/diff":168,"lib0/eventloop":173,"lib0/function":174,"lib0/math":180,"lib0/mutex":182,"lib0/observable":185,"yjs":230}],226:[function(require,module,exports){
+},{"codemirror":153,"lib0/diff":168,"lib0/eventloop":173,"lib0/function":174,"lib0/math":180,"lib0/mutex":182,"lib0/observable":185,"yjs":227}],223:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63179,7 +62557,7 @@ const readAuthMessage = (decoder, y, permissionDeniedHandler) => {
 
 exports.readAuthMessage = readAuthMessage;
 
-},{"lib0/decoding":167,"lib0/encoding":170,"yjs":230}],227:[function(require,module,exports){
+},{"lib0/decoding":167,"lib0/encoding":170,"yjs":227}],224:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63571,7 +62949,7 @@ const applyAwarenessUpdate = (awareness, update, origin) => {
 
 exports.applyAwarenessUpdate = applyAwarenessUpdate;
 
-},{"lib0/decoding":167,"lib0/encoding":170,"lib0/function":174,"lib0/math":180,"lib0/observable":185,"lib0/time":192,"yjs":230}],228:[function(require,module,exports){
+},{"lib0/decoding":167,"lib0/encoding":170,"lib0/function":174,"lib0/math":180,"lib0/observable":185,"lib0/time":192,"yjs":227}],225:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -63741,7 +63119,7 @@ const readSyncMessage = (decoder, encoder, doc, transactionOrigin) => {
 
 exports.readSyncMessage = readSyncMessage;
 
-},{"lib0/decoding":167,"lib0/encoding":170,"yjs":230}],229:[function(require,module,exports){
+},{"lib0/decoding":167,"lib0/encoding":170,"yjs":227}],226:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -64199,7 +63577,7 @@ class WebsocketProvider extends _observable.Observable {
 
 exports.WebsocketProvider = WebsocketProvider;
 
-},{"lib0/broadcastchannel.js":164,"lib0/decoding.js":167,"lib0/encoding.js":170,"lib0/math.js":180,"lib0/mutex.js":182,"lib0/observable.js":185,"lib0/time.js":192,"lib0/url.js":193,"y-protocols/auth.js":226,"y-protocols/awareness.js":227,"y-protocols/sync.js":228,"yjs":230}],230:[function(require,module,exports){
+},{"lib0/broadcastchannel.js":164,"lib0/decoding.js":167,"lib0/encoding.js":170,"lib0/math.js":180,"lib0/mutex.js":182,"lib0/observable.js":185,"lib0/time.js":192,"lib0/url.js":193,"y-protocols/auth.js":223,"y-protocols/awareness.js":224,"y-protocols/sync.js":225,"yjs":227}],227:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 
@@ -75620,7 +74998,7 @@ if (glo[importIdentifier] === true) {
 glo[importIdentifier] = true;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lib0/array":162,"lib0/binary":163,"lib0/buffer":165,"lib0/decoding":167,"lib0/encoding":170,"lib0/error":172,"lib0/function":174,"lib0/iterator":176,"lib0/logging":178,"lib0/map":179,"lib0/math":180,"lib0/object":184,"lib0/observable":185,"lib0/random":187,"lib0/set":188,"lib0/time":192}],231:[function(require,module,exports){
+},{"lib0/array":162,"lib0/binary":163,"lib0/buffer":165,"lib0/decoding":167,"lib0/encoding":170,"lib0/error":172,"lib0/function":174,"lib0/iterator":176,"lib0/logging":178,"lib0/map":179,"lib0/math":180,"lib0/object":184,"lib0/observable":185,"lib0/random":187,"lib0/set":188,"lib0/time":192}],228:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -75986,7 +75364,7 @@ module.exports = function( Marker ) {
 }
 
 
-},{"../utilities.js":245}],232:[function(require,module,exports){
+},{"../utilities.js":242}],229:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -76035,7 +75413,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],233:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 module.exports = function( Marker ) {
   'use strict'
 
@@ -76060,7 +75438,7 @@ module.exports = function( Marker ) {
   return CallExpression
 }
 
-},{}],234:[function(require,module,exports){
+},{}],231:[function(require,module,exports){
 const __Identifier = function( Marker ) {
 
   const mark = function( node, state, patternType, seqNumber ) {
@@ -76190,7 +75568,7 @@ const __Identifier = function( Marker ) {
 
 module.exports = __Identifier
 
-},{}],235:[function(require,module,exports){
+},{}],232:[function(require,module,exports){
 module.exports = function( Marker ) {
   // Marker.patternMarkupFunctions[ valuesNode.type ]( valuesNode, state, seq, 'values', container, seqNumber )
 
@@ -76227,7 +75605,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],236:[function(require,module,exports){
+},{}],233:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -76242,7 +75620,7 @@ module.exports = function( Marker ) {
 
     const cm       = state.cm,
           target   = tidal.target, // XXX seq.object for gibberwocky
-          pattern  = tidal.__pattern.__data,
+          pattern  = tidal.__pattern,
           markers  = {},
           line     = node.loc.start.line - 1 + node.offset.vertical,
           startCol = node.loc.start.column,
@@ -76253,77 +75631,70 @@ module.exports = function( Marker ) {
     tidal.__isEditing = false
     tidal.markers = []
     let annotationsAreFrozen = false
+    let mod = 0
 
-    // this function recursively marks each number or string token in the pattern
-    const markPattern = pattern => {
-      if( pattern.type === 'repeat' ) {
-        markPattern( pattern.value )
-      }else if( pattern.values !== undefined ) {
-        // recursively mark patterns
-        pattern.values.forEach( markPattern )
-      }else if( pattern.left !== undefined ) { // polymeter
-        markPattern( pattern.left )
-        markPattern( pattern.right )
-      }else if( pattern.value !== undefined ) {
-        let val = pattern.value //typeof pattern.value === 'string' ? pattern.value.trim() : pattern.value
-        let uid = pattern.uid
-
-        while( typeof val !== 'string' && typeof val !== 'number' && val !== undefined && val !== '?' ) {
-          const __store = val
-
-          // get, for example, uids of values in repeat patterns
-          uid = val.uid
-          val = val.values || val.value
-          
-          if( val === undefined ) console.warn( 'tidal annotation leads to undefined:', __store )
-
-          if( typeof val === 'function' ) {
-            if( Array.isArray( __store ) ) {
-              __store.forEach( markPattern )
-              return
-            }
-          }
-        }
-
-        if( typeof val === 'string' ) val = val.trim()
-
-        const loc = pattern.location
-        if( shouldTrim( pattern.type ) ) {
-          const len = typeof val === 'string' ? val.length : (''+val).length
-          
-          // check for whitespace and trim accordingly
-          if( len < loc.end.column - loc.start.column ){
-            loc.end.column = loc.start.column + len
-          }
-        }
-
-        const className = `tidal-${tidal.uid}-${uid}`
-        
-        const lineModY = node.loc.start.line === node.loc.end.line ? -1 : 0
-        const lineModX = node.loc.start.line === node.loc.end.line ? node.loc.start.column : -1
-
-        const tokenStart = { line:line + loc.start.line + lineModY, ch:lineModX + loc.start.column }
-        const tokenEnd   = { line:line + loc.end.line   + lineModY, ch:lineModX + loc.end.column } 
-
-        const marker = cm.markText( 
-          tokenStart, 
-          tokenEnd,  
-          { className: className+' cm-number tidal' } 
-        )
-
-        markers[ className ] = pattern
-        
-        pattern.cycle = Marker._createBorderCycleFunction( className, pattern )
-        pattern.type = 'tidal'
-        pattern.marker = marker
+    const markElement = ele => {
+      if( ele.type_ === 'pattern' ) {
+        const elements = ele.source_
+        elements.forEach( markElement )
+        return
       }
-    }
+      const className = `tidal-${tidal.uid}-${ele.location_.start.column}`,
+            loc = ele.location_,
+            value = ele.source_
 
+      if( value.type_ === 'pattern' ) {
+        const elements = value.source_
+        elements.forEach( markElement )
+        return
+      }
+      
+      
+      let   trimmedValue = value.trim(),
+            lineModY = node.loc.start.line === node.loc.end.line ? -1 : 0,
+            lineModX = node.loc.start.line === node.loc.end.line ? node.loc.start.column-1 : 0
+
+      lineModX += mod
+      mod = 0
+      const tokenStart = { 
+        line:line + loc.start.line + lineModY, 
+        ch:lineModX + loc.start.column 
+      }
+
+      const tokenEnd   = { 
+        line:line + loc.end.line + lineModY, 
+        ch:lineModX + loc.start.column + trimmedValue.length  
+      } 
+
+      const marker = cm.markText( 
+        tokenStart, 
+        tokenEnd,  
+        { className: className+' cm-number tidal' } 
+      )
+
+      markers[ className ] = pattern
+
+      pattern.cycle = Marker._createBorderCycleFunction( className, pattern )
+      pattern.type = 'tidal'
+      pattern.marker = marker
+
+      if( ele.options_ !== null ) mod++
+    }
+    
+    const markPattern = pattern => {
+      const ast = pattern.ast[0]
+      const elements = ast.source_
+      //console.log( elements[0].loc.start.column )
+
+      elements.forEach( markElement )
+      mod = 0
+    }
+     
     const clearCycle = name => {
       if( markers[ name ] ) {
         let cycle = markers[ name ].cycle
         cycle.tm = setTimeout( function() {
-          cycle.clear()
+          //cycle.clear()
           $( '.' + name ).remove( 'tidal-bright' )
         }, 250 )
       }
@@ -76411,7 +75782,7 @@ module.exports = function( Marker ) {
       }
     }
 
-    const cssName = 'tidal_'+pattern.uid 
+    const cssName = 'tidal_'+ tidal.uid 
 
     Marker.arrayPatterns[ cssName ] = tidal.__onclick
     
@@ -76435,15 +75806,23 @@ module.exports = function( Marker ) {
 
       $( '.' + name ).add( 'tidal-bright' ) 
 
-      const cycle = markers[ name ].cycle
+      //const marker = markers[ name ]
+      //let cycle = null
+      //if( marker !== undefined ) cycle = marker.cycle
+      //if( cycle === null ) return
+      //if( cycle.tm !== undefined ) {
+      //  clearTimeout( cycle.tm )
+      //  cycle.tm = undefined
+      //}
 
-      if( cycle.tm !== undefined ) clearTimeout( cycle.tm )
-
-      cycle() 
-      clearCycle( name )
+      //cycle() 
+      //clearCycle( name )
+      setTimeout( ()=> {
+        $( '.' + name ).remove( 'tidal-bright' ) 
+      }, 125 )
     }
 
-    tidal.update.uid = pattern.uid
+    tidal.update.uid = 0
 
     markPattern( pattern )
 
@@ -76470,7 +75849,7 @@ module.exports = function( Marker ) {
   return Tidal 
 }
 
-},{"../utilities.js":245}],237:[function(require,module,exports){
+},{"../utilities.js":242}],234:[function(require,module,exports){
 module.exports = function( Marker ) {
   
   // for negative literals e.g. -10
@@ -76518,7 +75897,7 @@ module.exports = function( Marker ) {
 
 }
 
-},{}],238:[function(require,module,exports){
+},{}],235:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
@@ -76621,7 +76000,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"../update/euclidAnnotation.js":243,"../utilities.js":245}],239:[function(require,module,exports){
+},{"../update/euclidAnnotation.js":240,"../utilities.js":242}],236:[function(require,module,exports){
 
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
@@ -76656,7 +76035,7 @@ module.exports = function( node, cm, track, objectName, vOffset=0 ) {
   }
 }
 
-},{"../utilities.js":245}],240:[function(require,module,exports){
+},{"../utilities.js":242}],237:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
@@ -76845,7 +76224,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 
 }  
 
-},{"../update/euclidAnnotation.js":243,"../utilities.js":245}],241:[function(require,module,exports){
+},{"../update/euclidAnnotation.js":240,"../utilities.js":242}],238:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm ) => {
   patternObject.commentMarker = marker
   let out
@@ -76892,7 +76271,7 @@ module.exports = ( patternObject, marker, className, cm ) => {
 }
 
 
-},{}],242:[function(require,module,exports){
+},{}],239:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -77000,7 +76379,7 @@ module.exports = function( classNamePrefix, patternObject ) {
 }
 
 
-},{"../utilities.js":245}],243:[function(require,module,exports){
+},{"../utilities.js":242}],240:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 
@@ -77303,7 +76682,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
 }
 
 
-},{"../utilities.js":245}],244:[function(require,module,exports){
+},{"../utilities.js":242}],241:[function(require,module,exports){
 module.exports = ( patternObject, marker, className, cm, track, patternNode, patternType, seqNumber ) => {
   Gibber.Environment.codeMarkup.processGen( patternNode, cm, null, patternObject, null, -1 )
 
@@ -77321,7 +76700,7 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, pat
 }
 
 
-},{}],245:[function(require,module,exports){
+},{}],242:[function(require,module,exports){
 const Utility = module.exports = {
   elementArray: function( list ) {
     let out = []
@@ -77352,7 +76731,7 @@ const Utility = module.exports = {
 
 }
 
-},{}],246:[function(require,module,exports){
+},{}],243:[function(require,module,exports){
 module.exports = function( Marker ) {
 
   const strip = function( unstripped ) {
@@ -77645,7 +77024,7 @@ module.exports = function( Marker ) {
   return visitors
 }
 
-},{}],247:[function(require,module,exports){
+},{}],244:[function(require,module,exports){
 const COLORS = {
   FILL:'var(--b_high)',//'rgba(46,50,53,1)',
   STROKE:'var(--f_med)',//'#aaa',
@@ -78043,7 +77422,7 @@ module.exports = function( __Gibber ) {
   return Waveform
 }
 
-},{}],248:[function(require,module,exports){
+},{}],245:[function(require,module,exports){
 const acorn = require( 'acorn' )
 const walk  = require( 'acorn-walk' )
 //const Utility = require( '../js/utility.js' )
@@ -78581,7 +77960,7 @@ return Marker
 
 
 
-},{"./annotations/markup/arrayExpression.js":231,"./annotations/markup/binaryExpression.js":232,"./annotations/markup/callExpression.js":233,"./annotations/markup/identifier.js":234,"./annotations/markup/literal.js":235,"./annotations/markup/tidal.js":236,"./annotations/markup/unaryExpression.js":237,"./annotations/standalone/hexStepsAnnotations.js":238,"./annotations/standalone/scoreAnnotation.js":239,"./annotations/standalone/stepsAnnotation.js":240,"./annotations/update/anonymousAnnotation.js":241,"./annotations/update/createBorderCycle.js":242,"./annotations/update/euclidAnnotation.js":243,"./annotations/update/lookupAnnotation.js":244,"./annotations/visitors.js":246,"./annotations/waveform.js":247,"acorn":143,"acorn-walk":141}],249:[function(require,module,exports){
+},{"./annotations/markup/arrayExpression.js":228,"./annotations/markup/binaryExpression.js":229,"./annotations/markup/callExpression.js":230,"./annotations/markup/identifier.js":231,"./annotations/markup/literal.js":232,"./annotations/markup/tidal.js":233,"./annotations/markup/unaryExpression.js":234,"./annotations/standalone/hexStepsAnnotations.js":235,"./annotations/standalone/scoreAnnotation.js":236,"./annotations/standalone/stepsAnnotation.js":237,"./annotations/update/anonymousAnnotation.js":238,"./annotations/update/createBorderCycle.js":239,"./annotations/update/euclidAnnotation.js":240,"./annotations/update/lookupAnnotation.js":241,"./annotations/visitors.js":243,"./annotations/waveform.js":244,"acorn":143,"acorn-walk":141}],246:[function(require,module,exports){
 module.exports = function( environment ) {
   const Console = {
     detail:1,
@@ -78691,7 +78070,7 @@ module.exports = function( environment ) {
   return Console
 }
 
-},{}],250:[function(require,module,exports){
+},{}],247:[function(require,module,exports){
 const CodeMirror    = require( 'codemirror' )
 
 require( '../node_modules/codemirror/addon/dialog/dialog.js' )
@@ -79107,7 +78486,7 @@ CodeMirror.keyMap.playground =  {
   },
 }
 
-},{"../node_modules/acorn-loose/dist/acorn-loose.js":138,"../node_modules/acorn-walk/dist/walk.js":140,"../node_modules/acorn/dist/acorn.js":142,"../node_modules/codemirror/addon/dialog/dialog.js":147,"../node_modules/codemirror/addon/edit/closebrackets.js":148,"../node_modules/codemirror/addon/edit/matchbrackets.js":149,"../node_modules/codemirror/addon/hint/javascript-hint.js":150,"../node_modules/codemirror/addon/hint/show-hint.js":151,"../node_modules/codemirror/mode/javascript/javascript.js":154,"./proxies.js":254,"./tern.js":258,"codemirror":153}],251:[function(require,module,exports){
+},{"../node_modules/acorn-loose/dist/acorn-loose.js":138,"../node_modules/acorn-walk/dist/walk.js":140,"../node_modules/acorn/dist/acorn.js":142,"../node_modules/codemirror/addon/dialog/dialog.js":147,"../node_modules/codemirror/addon/edit/closebrackets.js":148,"../node_modules/codemirror/addon/edit/matchbrackets.js":149,"../node_modules/codemirror/addon/hint/javascript-hint.js":150,"../node_modules/codemirror/addon/hint/show-hint.js":151,"../node_modules/codemirror/mode/javascript/javascript.js":154,"./proxies.js":251,"./tern.js":255,"codemirror":153}],248:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 
@@ -79871,7 +79250,7 @@ window.__Gibberwocky = function () {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./codeMarkup.js":248,"./console.js":249,"./editor.js":250,"./examples.js":252,"./metronome.js":253,"./resources/js/theme.js":255,"./share.js":256,"./storage.js":257,"codemirror":153,"gibber.audio.lib":83,"gibber.core.lib":126,"gibber.graphics.lib":137}],252:[function(require,module,exports){
+},{"./codeMarkup.js":245,"./console.js":246,"./editor.js":247,"./examples.js":249,"./metronome.js":250,"./resources/js/theme.js":252,"./share.js":253,"./storage.js":254,"codemirror":153,"gibber.audio.lib":83,"gibber.core.lib":126,"gibber.graphics.lib":137}],249:[function(require,module,exports){
 module.exports = function() {
   const select = document.querySelector( 'select' )
   const files = [
@@ -79976,7 +79355,7 @@ module.exports = function() {
   }
 }
 
-},{}],253:[function(require,module,exports){
+},{}],250:[function(require,module,exports){
 let Gibber = null
 
 const Metronome = {
@@ -80045,7 +79424,7 @@ const Metronome = {
 
 module.exports = Metronome
 
-},{}],254:[function(require,module,exports){
+},{}],251:[function(require,module,exports){
 const sounds = {}
 
 const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
@@ -80182,7 +79561,7 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
 
 module.exports = createProxies
 
-},{}],255:[function(require,module,exports){
+},{}],252:[function(require,module,exports){
 // from https://github.com/hundredrabbits/Themes
 'use strict'
 
@@ -80353,7 +79732,7 @@ const Theme = function(client) {
 
 module.exports = Theme
 
-},{}],256:[function(require,module,exports){
+},{}],253:[function(require,module,exports){
 // despair, all ye who enter here...
 const Y = require( 'yjs' ),
       WebsocketProvider = require( 'y-websocket'  ).WebsocketProvider,
@@ -80854,7 +80233,7 @@ const share = {
 
 module.exports = share 
 
-},{"./editor.js":250,"y-codemirror":225,"y-websocket":229,"yjs":230}],257:[function(require,module,exports){
+},{"./editor.js":247,"y-codemirror":222,"y-websocket":226,"yjs":227}],254:[function(require,module,exports){
 const __Storage = {
   values : null,
   savedText: null,
@@ -80894,7 +80273,7 @@ const __Storage = {
 
 module.exports = __Storage
 
-},{}],258:[function(require,module,exports){
+},{}],255:[function(require,module,exports){
 require( '../node_modules/tern/doc/demo/polyfill.js' )
 require( '../node_modules/tern/lib/signal.js' )
 
@@ -81095,7 +80474,7 @@ module.exports = function( Gibber, cm, environment ) {
 
 }
 
-},{"../node_modules/codemirror/addon/hint/show-hint.js":151,"../node_modules/codemirror/addon/tern/tern.js":152,"../node_modules/tern/doc/demo/polyfill.js":213,"../node_modules/tern/lib/comment.js":214,"../node_modules/tern/lib/def.js":215,"../node_modules/tern/lib/infer.js":216,"../node_modules/tern/lib/signal.js":217,"../node_modules/tern/lib/tern.js":218,"../node_modules/tern/plugin/doc_comment.js":219}],259:[function(require,module,exports){
+},{"../node_modules/codemirror/addon/hint/show-hint.js":151,"../node_modules/codemirror/addon/tern/tern.js":152,"../node_modules/tern/doc/demo/polyfill.js":213,"../node_modules/tern/lib/comment.js":214,"../node_modules/tern/lib/def.js":215,"../node_modules/tern/lib/infer.js":216,"../node_modules/tern/lib/signal.js":217,"../node_modules/tern/lib/tern.js":218,"../node_modules/tern/plugin/doc_comment.js":219}],256:[function(require,module,exports){
 let ugen = require( '../ugen.js' )
 
 let analyzer = Object.create( ugen )
@@ -81107,7 +80486,7 @@ Object.assign( analyzer, {
 
 module.exports = analyzer
 
-},{"../ugen.js":329}],260:[function(require,module,exports){
+},{"../ugen.js":327}],257:[function(require,module,exports){
 module.exports = function( Gibberish ) {
   const { In, Out, SSD } = require( './singlesampledelay.js'  )( Gibberish )
 
@@ -81132,7 +80511,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./follow.dsp.js":261,"./singlesampledelay.js":262}],261:[function(require,module,exports){
+},{"./follow.dsp.js":258,"./singlesampledelay.js":259}],258:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       ugen = require( '../ugen.js' )
@@ -81348,7 +80727,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":329,"./analyzer.js":259,"genish.js":40}],262:[function(require,module,exports){
+},{"../ugen.js":327,"./analyzer.js":256,"genish.js":40}],259:[function(require,module,exports){
 const g = require( 'genish.js' ),
       analyzer = require( './analyzer.js' ),
       proxy    = require( '../workletProxy.js' ),
@@ -81465,7 +80844,7 @@ return { In, Out, SSD }
 
 }
 
-},{"../ugen.js":329,"../workletProxy.js":331,"./analyzer.js":259,"genish.js":40}],263:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"./analyzer.js":256,"genish.js":40}],260:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -81493,7 +80872,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":329,"genish.js":40}],264:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],261:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -81538,7 +80917,7 @@ module.exports = function( Gibberish ) {
   return ADSR
 }
 
-},{"../ugen.js":329,"genish.js":40}],265:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],262:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 module.exports = function( Gibberish ) {
@@ -81574,7 +80953,7 @@ module.exports = function( Gibberish ) {
   return Envelopes
 }
 
-},{"./ad.js":263,"./adsr.js":264,"./ramp.js":266,"genish.js":40}],266:[function(require,module,exports){
+},{"./ad.js":260,"./adsr.js":261,"./ramp.js":263,"genish.js":40}],263:[function(require,module,exports){
 const ugen = require( '../ugen.js' ),
       g = require( 'genish.js' )
 
@@ -81608,9 +80987,4612 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":329,"genish.js":40}],267:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],264:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
-},{"./realm.js":269,"dup":28}],268:[function(require,module,exports){
+},{"./realm.js":267,"dup":28}],265:[function(require,module,exports){
+"use strict";
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toStringTag]: { value: "Module" } });
+function peg$subclass(child, parent) {
+  function C() {
+    this.constructor = child;
+  }
+  C.prototype = parent.prototype;
+  child.prototype = new C();
+}
+function peg$SyntaxError(message, expected, found, location) {
+  var self = Error.call(this, message);
+  if (Object.setPrototypeOf) {
+    Object.setPrototypeOf(self, peg$SyntaxError.prototype);
+  }
+  self.expected = expected;
+  self.found = found;
+  self.location = location;
+  self.name = "SyntaxError";
+  return self;
+}
+peg$subclass(peg$SyntaxError, Error);
+function peg$padEnd(str, targetLength, padString) {
+  padString = padString || " ";
+  if (str.length > targetLength) {
+    return str;
+  }
+  targetLength -= str.length;
+  padString += padString.repeat(targetLength);
+  return str + padString.slice(0, targetLength);
+}
+peg$SyntaxError.prototype.format = function(sources) {
+  var str = "Error: " + this.message;
+  if (this.location) {
+    var src = null;
+    var k;
+    for (k = 0; k < sources.length; k++) {
+      if (sources[k].source === this.location.source) {
+        src = sources[k].text.split(/\r\n|\n|\r/g);
+        break;
+      }
+    }
+    var s = this.location.start;
+    var loc = this.location.source + ":" + s.line + ":" + s.column;
+    if (src) {
+      var e = this.location.end;
+      var filler = peg$padEnd("", s.line.toString().length, " ");
+      var line = src[s.line - 1];
+      var last = s.line === e.line ? e.column : line.length + 1;
+      var hatLen = last - s.column || 1;
+      str += "\n --> " + loc + "\n" + filler + " |\n" + s.line + " | " + line + "\n" + filler + " | " + peg$padEnd("", s.column - 1, " ") + peg$padEnd("", hatLen, "^");
+    } else {
+      str += "\n at " + loc;
+    }
+  }
+  return str;
+};
+peg$SyntaxError.buildMessage = function(expected, found) {
+  var DESCRIBE_EXPECTATION_FNS = {
+    literal: function(expectation) {
+      return '"' + literalEscape(expectation.text) + '"';
+    },
+    class: function(expectation) {
+      var escapedParts = expectation.parts.map(function(part) {
+        return Array.isArray(part) ? classEscape(part[0]) + "-" + classEscape(part[1]) : classEscape(part);
+      });
+      return "[" + (expectation.inverted ? "^" : "") + escapedParts.join("") + "]";
+    },
+    any: function() {
+      return "any character";
+    },
+    end: function() {
+      return "end of input";
+    },
+    other: function(expectation) {
+      return expectation.description;
+    }
+  };
+  function hex(ch) {
+    return ch.charCodeAt(0).toString(16).toUpperCase();
+  }
+  function literalEscape(s) {
+    return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\0/g, "\\0").replace(/\t/g, "\\t").replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/[\x00-\x0F]/g, function(ch) {
+      return "\\x0" + hex(ch);
+    }).replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) {
+      return "\\x" + hex(ch);
+    });
+  }
+  function classEscape(s) {
+    return s.replace(/\\/g, "\\\\").replace(/\]/g, "\\]").replace(/\^/g, "\\^").replace(/-/g, "\\-").replace(/\0/g, "\\0").replace(/\t/g, "\\t").replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/[\x00-\x0F]/g, function(ch) {
+      return "\\x0" + hex(ch);
+    }).replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) {
+      return "\\x" + hex(ch);
+    });
+  }
+  function describeExpectation(expectation) {
+    return DESCRIBE_EXPECTATION_FNS[expectation.type](expectation);
+  }
+  function describeExpected(expected2) {
+    var descriptions = expected2.map(describeExpectation);
+    var i, j;
+    descriptions.sort();
+    if (descriptions.length > 0) {
+      for (i = 1, j = 1; i < descriptions.length; i++) {
+        if (descriptions[i - 1] !== descriptions[i]) {
+          descriptions[j] = descriptions[i];
+          j++;
+        }
+      }
+      descriptions.length = j;
+    }
+    switch (descriptions.length) {
+      case 1:
+        return descriptions[0];
+      case 2:
+        return descriptions[0] + " or " + descriptions[1];
+      default:
+        return descriptions.slice(0, -1).join(", ") + ", or " + descriptions[descriptions.length - 1];
+    }
+  }
+  function describeFound(found2) {
+    return found2 ? '"' + literalEscape(found2) + '"' : "end of input";
+  }
+  return "Expected " + describeExpected(expected) + " but " + describeFound(found) + " found.";
+};
+function peg$parse(input, options) {
+  options = options !== void 0 ? options : {};
+  var peg$FAILED = {};
+  var peg$source = options.grammarSource;
+  var peg$startRuleFunctions = { start: peg$parsestart };
+  var peg$startRuleFunction = peg$parsestart;
+  var peg$c0 = ".";
+  var peg$c1 = "-";
+  var peg$c2 = "+";
+  var peg$c3 = "0";
+  var peg$c4 = ",";
+  var peg$c5 = "|";
+  var peg$c6 = '"';
+  var peg$c7 = "'";
+  var peg$c8 = "#";
+  var peg$c9 = "^";
+  var peg$c10 = "_";
+  var peg$c11 = ":";
+  var peg$c12 = "[";
+  var peg$c13 = "]";
+  var peg$c14 = "<";
+  var peg$c15 = ">";
+  var peg$c16 = "@";
+  var peg$c17 = "!";
+  var peg$c18 = "(";
+  var peg$c19 = ")";
+  var peg$c20 = "/";
+  var peg$c21 = "*";
+  var peg$c22 = "%";
+  var peg$c23 = "?";
+  var peg$c24 = "struct";
+  var peg$c25 = "target";
+  var peg$c26 = "euclid";
+  var peg$c27 = "slow";
+  var peg$c28 = "rotL";
+  var peg$c29 = "rotR";
+  var peg$c30 = "fast";
+  var peg$c31 = "scale";
+  var peg$c32 = "//";
+  var peg$c33 = "cat";
+  var peg$c34 = "$";
+  var peg$c35 = "setcps";
+  var peg$c36 = "setbpm";
+  var peg$c37 = "hush";
+  var peg$r0 = /^[1-9]/;
+  var peg$r1 = /^[eE]/;
+  var peg$r2 = /^[0-9]/;
+  var peg$r3 = /^[ \n\r\t]/;
+  var peg$r4 = /^[0-9a-zA-Z~]/;
+  var peg$r5 = /^[^\n]/;
+  var peg$e0 = peg$otherExpectation("number");
+  var peg$e1 = peg$literalExpectation(".", false);
+  var peg$e2 = peg$classExpectation([["1", "9"]], false, false);
+  var peg$e3 = peg$classExpectation(["e", "E"], false, false);
+  var peg$e4 = peg$literalExpectation("-", false);
+  var peg$e5 = peg$literalExpectation("+", false);
+  var peg$e6 = peg$literalExpectation("0", false);
+  var peg$e7 = peg$classExpectation([["0", "9"]], false, false);
+  var peg$e8 = peg$otherExpectation("whitespace");
+  var peg$e9 = peg$classExpectation([" ", "\n", "\r", "	"], false, false);
+  var peg$e10 = peg$literalExpectation(",", false);
+  var peg$e11 = peg$literalExpectation("|", false);
+  var peg$e12 = peg$literalExpectation('"', false);
+  var peg$e13 = peg$literalExpectation("'", false);
+  var peg$e14 = peg$classExpectation([["0", "9"], ["a", "z"], ["A", "Z"], "~"], false, false);
+  var peg$e15 = peg$literalExpectation("#", false);
+  var peg$e16 = peg$literalExpectation("^", false);
+  var peg$e17 = peg$literalExpectation("_", false);
+  var peg$e18 = peg$literalExpectation(":", false);
+  var peg$e19 = peg$literalExpectation("[", false);
+  var peg$e20 = peg$literalExpectation("]", false);
+  var peg$e21 = peg$literalExpectation("<", false);
+  var peg$e22 = peg$literalExpectation(">", false);
+  var peg$e23 = peg$literalExpectation("@", false);
+  var peg$e24 = peg$literalExpectation("!", false);
+  var peg$e25 = peg$literalExpectation("(", false);
+  var peg$e26 = peg$literalExpectation(")", false);
+  var peg$e27 = peg$literalExpectation("/", false);
+  var peg$e28 = peg$literalExpectation("*", false);
+  var peg$e29 = peg$literalExpectation("%", false);
+  var peg$e30 = peg$literalExpectation("?", false);
+  var peg$e31 = peg$literalExpectation("struct", false);
+  var peg$e32 = peg$literalExpectation("target", false);
+  var peg$e33 = peg$literalExpectation("euclid", false);
+  var peg$e34 = peg$literalExpectation("slow", false);
+  var peg$e35 = peg$literalExpectation("rotL", false);
+  var peg$e36 = peg$literalExpectation("rotR", false);
+  var peg$e37 = peg$literalExpectation("fast", false);
+  var peg$e38 = peg$literalExpectation("scale", false);
+  var peg$e39 = peg$literalExpectation("//", false);
+  var peg$e40 = peg$classExpectation(["\n"], true, false);
+  var peg$e41 = peg$literalExpectation("cat", false);
+  var peg$e42 = peg$literalExpectation("$", false);
+  var peg$e43 = peg$literalExpectation("setcps", false);
+  var peg$e44 = peg$literalExpectation("setbpm", false);
+  var peg$e45 = peg$literalExpectation("hush", false);
+  var peg$f0 = function() {
+    return parseFloat(text());
+  };
+  var peg$f1 = function(chars) {
+    return chars.join("");
+  };
+  var peg$f2 = function(s) {
+    return s;
+  };
+  var peg$f3 = function(sc) {
+    sc.arguments_.alignment = "t";
+    return sc;
+  };
+  var peg$f4 = function(a) {
+    return { weight: a };
+  };
+  var peg$f5 = function(a) {
+    return { replicate: a };
+  };
+  var peg$f6 = function(p, s, r) {
+    return { operator: { type_: "bjorklund", arguments_: { pulse: p, step: s, rotation: r || 0 } } };
+  };
+  var peg$f7 = function(a) {
+    return { operator: { type_: "stretch", arguments_: { amount: a } } };
+  };
+  var peg$f8 = function(a) {
+    return { operator: { type_: "stretch", arguments_: { amount: "1/" + a } } };
+  };
+  var peg$f9 = function(a) {
+    return { operator: { type_: "fixed-step", arguments_: { amount: a } } };
+  };
+  var peg$f10 = function(a) {
+    return { operator: { type_: "degradeBy", arguments_: { amount: a ? a : 0.5 } } };
+  };
+  var peg$f11 = function(s, o) {
+    return new ElementStub(s, o);
+  };
+  var peg$f12 = function(s) {
+    return new PatternStub(s, "h");
+  };
+  var peg$f13 = function(tail) {
+    return { alignment: "v", list: tail };
+  };
+  var peg$f14 = function(tail) {
+    return { alignment: "r", list: tail };
+  };
+  var peg$f15 = function(head, tail) {
+    if (tail && tail.list.length > 0) {
+      return new PatternStub([head, ...tail.list], tail.alignment);
+    } else {
+      return head;
+    }
+  };
+  var peg$f16 = function(sc) {
+    return sc;
+  };
+  var peg$f17 = function(s) {
+    return { name: "struct", args: { sequence: s } };
+  };
+  var peg$f18 = function(s) {
+    return { name: "target", args: { name: s } };
+  };
+  var peg$f19 = function(p, s, r) {
+    return { name: "bjorklund", args: { pulse: parseInt(p), step: parseInt(s) } };
+  };
+  var peg$f20 = function(a) {
+    return { name: "stretch", args: { amount: a } };
+  };
+  var peg$f21 = function(a) {
+    return { name: "shift", args: { amount: "-" + a } };
+  };
+  var peg$f22 = function(a) {
+    return { name: "shift", args: { amount: a } };
+  };
+  var peg$f23 = function(a) {
+    return { name: "stretch", args: { amount: "1/" + a } };
+  };
+  var peg$f24 = function(s) {
+    return { name: "scale", args: { scale: s.join("") } };
+  };
+  var peg$f25 = function(s, v) {
+    return v;
+  };
+  var peg$f26 = function(s, ss) {
+    ss.unshift(s);
+    return new PatternStub(ss, "t");
+  };
+  var peg$f27 = function(sg) {
+    return sg;
+  };
+  var peg$f28 = function(o, soc) {
+    return new OperatorStub(o.name, o.args, soc);
+  };
+  var peg$f29 = function(sc) {
+    return sc;
+  };
+  var peg$f30 = function(c) {
+    return c;
+  };
+  var peg$f31 = function(v) {
+    return new CommandStub("setcps", { value: v });
+  };
+  var peg$f32 = function(v) {
+    return new CommandStub("setcps", { value: v / 120 / 2 });
+  };
+  var peg$f33 = function() {
+    return new CommandStub("hush");
+  };
+  var peg$currPos = 0;
+  var peg$savedPos = 0;
+  var peg$posDetailsCache = [{ line: 1, column: 1 }];
+  var peg$maxFailPos = 0;
+  var peg$maxFailExpected = [];
+  var peg$silentFails = 0;
+  var peg$result;
+  if ("startRule" in options) {
+    if (!(options.startRule in peg$startRuleFunctions)) {
+      throw new Error(`Can't start parsing from rule "` + options.startRule + '".');
+    }
+    peg$startRuleFunction = peg$startRuleFunctions[options.startRule];
+  }
+  function text() {
+    return input.substring(peg$savedPos, peg$currPos);
+  }
+  function location() {
+    return peg$computeLocation(peg$savedPos, peg$currPos);
+  }
+  function peg$literalExpectation(text2, ignoreCase) {
+    return { type: "literal", text: text2, ignoreCase };
+  }
+  function peg$classExpectation(parts, inverted, ignoreCase) {
+    return { type: "class", parts, inverted, ignoreCase };
+  }
+  function peg$endExpectation() {
+    return { type: "end" };
+  }
+  function peg$otherExpectation(description) {
+    return { type: "other", description };
+  }
+  function peg$computePosDetails(pos) {
+    var details = peg$posDetailsCache[pos];
+    var p;
+    if (details) {
+      return details;
+    } else {
+      p = pos - 1;
+      while (!peg$posDetailsCache[p]) {
+        p--;
+      }
+      details = peg$posDetailsCache[p];
+      details = {
+        line: details.line,
+        column: details.column
+      };
+      while (p < pos) {
+        if (input.charCodeAt(p) === 10) {
+          details.line++;
+          details.column = 1;
+        } else {
+          details.column++;
+        }
+        p++;
+      }
+      peg$posDetailsCache[pos] = details;
+      return details;
+    }
+  }
+  function peg$computeLocation(startPos, endPos) {
+    var startPosDetails = peg$computePosDetails(startPos);
+    var endPosDetails = peg$computePosDetails(endPos);
+    return {
+      source: peg$source,
+      start: {
+        offset: startPos,
+        line: startPosDetails.line,
+        column: startPosDetails.column
+      },
+      end: {
+        offset: endPos,
+        line: endPosDetails.line,
+        column: endPosDetails.column
+      }
+    };
+  }
+  function peg$fail(expected) {
+    if (peg$currPos < peg$maxFailPos) {
+      return;
+    }
+    if (peg$currPos > peg$maxFailPos) {
+      peg$maxFailPos = peg$currPos;
+      peg$maxFailExpected = [];
+    }
+    peg$maxFailExpected.push(expected);
+  }
+  function peg$buildStructuredError(expected, found, location2) {
+    return new peg$SyntaxError(
+      peg$SyntaxError.buildMessage(expected, found),
+      expected,
+      found,
+      location2
+    );
+  }
+  function peg$parsestart() {
+    var s0;
+    s0 = peg$parsestatement();
+    return s0;
+  }
+  function peg$parsenumber() {
+    var s0, s2;
+    peg$silentFails++;
+    s0 = peg$currPos;
+    peg$parseminus();
+    s2 = peg$parseint();
+    if (s2 !== peg$FAILED) {
+      peg$parsefrac();
+      peg$parseexp();
+      peg$savedPos = s0;
+      s0 = peg$f0();
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e0);
+      }
+    }
+    return s0;
+  }
+  function peg$parsedecimal_point() {
+    var s0;
+    if (input.charCodeAt(peg$currPos) === 46) {
+      s0 = peg$c0;
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e1);
+      }
+    }
+    return s0;
+  }
+  function peg$parsedigit1_9() {
+    var s0;
+    if (peg$r0.test(input.charAt(peg$currPos))) {
+      s0 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e2);
+      }
+    }
+    return s0;
+  }
+  function peg$parsee() {
+    var s0;
+    if (peg$r1.test(input.charAt(peg$currPos))) {
+      s0 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e3);
+      }
+    }
+    return s0;
+  }
+  function peg$parseexp() {
+    var s0, s1, s2, s3, s4;
+    s0 = peg$currPos;
+    s1 = peg$parsee();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseminus();
+      if (s2 === peg$FAILED) {
+        s2 = peg$parseplus();
+      }
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      s3 = [];
+      s4 = peg$parseDIGIT();
+      if (s4 !== peg$FAILED) {
+        while (s4 !== peg$FAILED) {
+          s3.push(s4);
+          s4 = peg$parseDIGIT();
+        }
+      } else {
+        s3 = peg$FAILED;
+      }
+      if (s3 !== peg$FAILED) {
+        s1 = [s1, s2, s3];
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsefrac() {
+    var s0, s1, s2, s3;
+    s0 = peg$currPos;
+    s1 = peg$parsedecimal_point();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$parseDIGIT();
+      if (s3 !== peg$FAILED) {
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          s3 = peg$parseDIGIT();
+        }
+      } else {
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = [s1, s2];
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseint() {
+    var s0, s1, s2, s3;
+    s0 = peg$parsezero();
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parsedigit1_9();
+      if (s1 !== peg$FAILED) {
+        s2 = [];
+        s3 = peg$parseDIGIT();
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          s3 = peg$parseDIGIT();
+        }
+        s1 = [s1, s2];
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+    return s0;
+  }
+  function peg$parseminus() {
+    var s0;
+    if (input.charCodeAt(peg$currPos) === 45) {
+      s0 = peg$c1;
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e4);
+      }
+    }
+    return s0;
+  }
+  function peg$parseplus() {
+    var s0;
+    if (input.charCodeAt(peg$currPos) === 43) {
+      s0 = peg$c2;
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e5);
+      }
+    }
+    return s0;
+  }
+  function peg$parsezero() {
+    var s0;
+    if (input.charCodeAt(peg$currPos) === 48) {
+      s0 = peg$c3;
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e6);
+      }
+    }
+    return s0;
+  }
+  function peg$parseDIGIT() {
+    var s0;
+    if (peg$r2.test(input.charAt(peg$currPos))) {
+      s0 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e7);
+      }
+    }
+    return s0;
+  }
+  function peg$parsews() {
+    var s0, s1;
+    peg$silentFails++;
+    s0 = [];
+    if (peg$r3.test(input.charAt(peg$currPos))) {
+      s1 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e9);
+      }
+    }
+    while (s1 !== peg$FAILED) {
+      s0.push(s1);
+      if (peg$r3.test(input.charAt(peg$currPos))) {
+        s1 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) {
+          peg$fail(peg$e9);
+        }
+      }
+    }
+    peg$silentFails--;
+    s1 = peg$FAILED;
+    if (peg$silentFails === 0) {
+      peg$fail(peg$e8);
+    }
+    return s0;
+  }
+  function peg$parsecomma() {
+    var s0, s1, s2, s3;
+    s0 = peg$currPos;
+    s1 = peg$parsews();
+    if (input.charCodeAt(peg$currPos) === 44) {
+      s2 = peg$c4;
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e10);
+      }
+    }
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parsews();
+      s1 = [s1, s2, s3];
+      s0 = s1;
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsepipe() {
+    var s0, s1, s2, s3;
+    s0 = peg$currPos;
+    s1 = peg$parsews();
+    if (input.charCodeAt(peg$currPos) === 124) {
+      s2 = peg$c5;
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e11);
+      }
+    }
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parsews();
+      s1 = [s1, s2, s3];
+      s0 = s1;
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsequote() {
+    var s0;
+    if (input.charCodeAt(peg$currPos) === 34) {
+      s0 = peg$c6;
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e12);
+      }
+    }
+    if (s0 === peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 39) {
+        s0 = peg$c7;
+        peg$currPos++;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) {
+          peg$fail(peg$e13);
+        }
+      }
+    }
+    return s0;
+  }
+  function peg$parsestep_char() {
+    var s0;
+    if (peg$r4.test(input.charAt(peg$currPos))) {
+      s0 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e14);
+      }
+    }
+    if (s0 === peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 45) {
+        s0 = peg$c1;
+        peg$currPos++;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) {
+          peg$fail(peg$e4);
+        }
+      }
+      if (s0 === peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 35) {
+          s0 = peg$c8;
+          peg$currPos++;
+        } else {
+          s0 = peg$FAILED;
+          if (peg$silentFails === 0) {
+            peg$fail(peg$e15);
+          }
+        }
+        if (s0 === peg$FAILED) {
+          if (input.charCodeAt(peg$currPos) === 46) {
+            s0 = peg$c0;
+            peg$currPos++;
+          } else {
+            s0 = peg$FAILED;
+            if (peg$silentFails === 0) {
+              peg$fail(peg$e1);
+            }
+          }
+          if (s0 === peg$FAILED) {
+            if (input.charCodeAt(peg$currPos) === 94) {
+              s0 = peg$c9;
+              peg$currPos++;
+            } else {
+              s0 = peg$FAILED;
+              if (peg$silentFails === 0) {
+                peg$fail(peg$e16);
+              }
+            }
+            if (s0 === peg$FAILED) {
+              if (input.charCodeAt(peg$currPos) === 95) {
+                s0 = peg$c10;
+                peg$currPos++;
+              } else {
+                s0 = peg$FAILED;
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$e17);
+                }
+              }
+              if (s0 === peg$FAILED) {
+                if (input.charCodeAt(peg$currPos) === 58) {
+                  s0 = peg$c11;
+                  peg$currPos++;
+                } else {
+                  s0 = peg$FAILED;
+                  if (peg$silentFails === 0) {
+                    peg$fail(peg$e18);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return s0;
+  }
+  function peg$parsestep() {
+    var s0, s2, s3;
+    s0 = peg$currPos;
+    peg$parsews();
+    s2 = [];
+    s3 = peg$parsestep_char();
+    if (s3 !== peg$FAILED) {
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$parsestep_char();
+      }
+    } else {
+      s2 = peg$FAILED;
+    }
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parsews();
+      peg$savedPos = s0;
+      s0 = peg$f1(s2);
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsesub_cycle() {
+    var s0, s2, s4, s6;
+    s0 = peg$currPos;
+    peg$parsews();
+    if (input.charCodeAt(peg$currPos) === 91) {
+      s2 = peg$c12;
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e19);
+      }
+    }
+    if (s2 !== peg$FAILED) {
+      peg$parsews();
+      s4 = peg$parsestack_or_choose();
+      if (s4 !== peg$FAILED) {
+        peg$parsews();
+        if (input.charCodeAt(peg$currPos) === 93) {
+          s6 = peg$c13;
+          peg$currPos++;
+        } else {
+          s6 = peg$FAILED;
+          if (peg$silentFails === 0) {
+            peg$fail(peg$e20);
+          }
+        }
+        if (s6 !== peg$FAILED) {
+          peg$parsews();
+          peg$savedPos = s0;
+          s0 = peg$f2(s4);
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsetimeline() {
+    var s0, s2, s4, s6;
+    s0 = peg$currPos;
+    peg$parsews();
+    if (input.charCodeAt(peg$currPos) === 60) {
+      s2 = peg$c14;
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e21);
+      }
+    }
+    if (s2 !== peg$FAILED) {
+      peg$parsews();
+      s4 = peg$parsesingle_cycle();
+      if (s4 !== peg$FAILED) {
+        peg$parsews();
+        if (input.charCodeAt(peg$currPos) === 62) {
+          s6 = peg$c15;
+          peg$currPos++;
+        } else {
+          s6 = peg$FAILED;
+          if (peg$silentFails === 0) {
+            peg$fail(peg$e22);
+          }
+        }
+        if (s6 !== peg$FAILED) {
+          peg$parsews();
+          peg$savedPos = s0;
+          s0 = peg$f3(s4);
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice() {
+    var s0;
+    s0 = peg$parsestep();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsesub_cycle();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsetimeline();
+      }
+    }
+    return s0;
+  }
+  function peg$parseslice_modifier() {
+    var s0;
+    s0 = peg$parseslice_weight();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parseslice_bjorklund();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parseslice_slow();
+        if (s0 === peg$FAILED) {
+          s0 = peg$parseslice_fast();
+          if (s0 === peg$FAILED) {
+            s0 = peg$parseslice_fixed_step();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parseslice_replicate();
+              if (s0 === peg$FAILED) {
+                s0 = peg$parseslice_degrade();
+              }
+            }
+          }
+        }
+      }
+    }
+    return s0;
+  }
+  function peg$parseslice_weight() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 64) {
+      s1 = peg$c16;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e23);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsenumber();
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f4(s2);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice_replicate() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 33) {
+      s1 = peg$c17;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e24);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsenumber();
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f5(s2);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice_bjorklund() {
+    var s0, s1, s3, s5, s7, s11, s13;
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 40) {
+      s1 = peg$c18;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e25);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsenumber();
+      if (s3 !== peg$FAILED) {
+        peg$parsews();
+        s5 = peg$parsecomma();
+        if (s5 !== peg$FAILED) {
+          peg$parsews();
+          s7 = peg$parsenumber();
+          if (s7 !== peg$FAILED) {
+            peg$parsews();
+            peg$parsecomma();
+            peg$parsews();
+            s11 = peg$parsenumber();
+            if (s11 === peg$FAILED) {
+              s11 = null;
+            }
+            peg$parsews();
+            if (input.charCodeAt(peg$currPos) === 41) {
+              s13 = peg$c19;
+              peg$currPos++;
+            } else {
+              s13 = peg$FAILED;
+              if (peg$silentFails === 0) {
+                peg$fail(peg$e26);
+              }
+            }
+            if (s13 !== peg$FAILED) {
+              peg$savedPos = s0;
+              s0 = peg$f6(s3, s7, s11);
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice_slow() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 47) {
+      s1 = peg$c20;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e27);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsenumber();
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f7(s2);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice_fast() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 42) {
+      s1 = peg$c21;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e28);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsenumber();
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f8(s2);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice_fixed_step() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 37) {
+      s1 = peg$c22;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e29);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsenumber();
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f9(s2);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice_degrade() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 63) {
+      s1 = peg$c23;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e30);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsenumber();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      peg$savedPos = s0;
+      s0 = peg$f10(s2);
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslice_with_modifier() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    s1 = peg$parseslice();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseslice_modifier();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      peg$savedPos = s0;
+      s0 = peg$f11(s1, s2);
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsesingle_cycle() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    s1 = [];
+    s2 = peg$parseslice_with_modifier();
+    if (s2 !== peg$FAILED) {
+      while (s2 !== peg$FAILED) {
+        s1.push(s2);
+        s2 = peg$parseslice_with_modifier();
+      }
+    } else {
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$f12(s1);
+    }
+    s0 = s1;
+    return s0;
+  }
+  function peg$parsestack_tail() {
+    var s0, s1, s2, s3, s4;
+    s0 = peg$currPos;
+    s1 = [];
+    s2 = peg$currPos;
+    s3 = peg$parsecomma();
+    if (s3 !== peg$FAILED) {
+      s4 = peg$parsesingle_cycle();
+      if (s4 !== peg$FAILED) {
+        s2 = s4;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s2;
+      s2 = peg$FAILED;
+    }
+    if (s2 !== peg$FAILED) {
+      while (s2 !== peg$FAILED) {
+        s1.push(s2);
+        s2 = peg$currPos;
+        s3 = peg$parsecomma();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsesingle_cycle();
+          if (s4 !== peg$FAILED) {
+            s2 = s4;
+          } else {
+            peg$currPos = s2;
+            s2 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+      }
+    } else {
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$f13(s1);
+    }
+    s0 = s1;
+    return s0;
+  }
+  function peg$parsechoose_tail() {
+    var s0, s1, s2, s3, s4;
+    s0 = peg$currPos;
+    s1 = [];
+    s2 = peg$currPos;
+    s3 = peg$parsepipe();
+    if (s3 !== peg$FAILED) {
+      s4 = peg$parsesingle_cycle();
+      if (s4 !== peg$FAILED) {
+        s2 = s4;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s2;
+      s2 = peg$FAILED;
+    }
+    if (s2 !== peg$FAILED) {
+      while (s2 !== peg$FAILED) {
+        s1.push(s2);
+        s2 = peg$currPos;
+        s3 = peg$parsepipe();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsesingle_cycle();
+          if (s4 !== peg$FAILED) {
+            s2 = s4;
+          } else {
+            peg$currPos = s2;
+            s2 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+      }
+    } else {
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$f14(s1);
+    }
+    s0 = s1;
+    return s0;
+  }
+  function peg$parsestack_or_choose() {
+    var s0, s1, s2;
+    s0 = peg$currPos;
+    s1 = peg$parsesingle_cycle();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsestack_tail();
+      if (s2 === peg$FAILED) {
+        s2 = peg$parsechoose_tail();
+      }
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      peg$savedPos = s0;
+      s0 = peg$f15(s1, s2);
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsesequence() {
+    var s0, s2, s3, s4;
+    s0 = peg$currPos;
+    peg$parsews();
+    s2 = peg$parsequote();
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parsestack_or_choose();
+      if (s3 !== peg$FAILED) {
+        s4 = peg$parsequote();
+        if (s4 !== peg$FAILED) {
+          peg$savedPos = s0;
+          s0 = peg$f16(s3);
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseoperator() {
+    var s0;
+    s0 = peg$parsescale();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parseslow();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsefast();
+        if (s0 === peg$FAILED) {
+          s0 = peg$parsetarget();
+          if (s0 === peg$FAILED) {
+            s0 = peg$parsebjorklund();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parsestruct();
+              if (s0 === peg$FAILED) {
+                s0 = peg$parserotR();
+                if (s0 === peg$FAILED) {
+                  s0 = peg$parserotL();
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return s0;
+  }
+  function peg$parsestruct() {
+    var s0, s1, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 6) === peg$c24) {
+      s1 = peg$c24;
+      peg$currPos += 6;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e31);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsesequence_or_operator();
+      if (s3 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f17(s3);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsetarget() {
+    var s0, s1, s3, s4, s5;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 6) === peg$c25) {
+      s1 = peg$c25;
+      peg$currPos += 6;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e32);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsequote();
+      if (s3 !== peg$FAILED) {
+        s4 = peg$parsestep();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsequote();
+          if (s5 !== peg$FAILED) {
+            peg$savedPos = s0;
+            s0 = peg$f18(s4);
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsebjorklund() {
+    var s0, s1, s3, s5;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 6) === peg$c26) {
+      s1 = peg$c26;
+      peg$currPos += 6;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e33);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parseint();
+      if (s3 !== peg$FAILED) {
+        peg$parsews();
+        s5 = peg$parseint();
+        if (s5 !== peg$FAILED) {
+          peg$parsews();
+          peg$parseint();
+          peg$savedPos = s0;
+          s0 = peg$f19(s3, s5);
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parseslow() {
+    var s0, s1, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c27) {
+      s1 = peg$c27;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e34);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsenumber();
+      if (s3 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f20(s3);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parserotL() {
+    var s0, s1, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c28) {
+      s1 = peg$c28;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e35);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsenumber();
+      if (s3 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f21(s3);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parserotR() {
+    var s0, s1, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c29) {
+      s1 = peg$c29;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e36);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsenumber();
+      if (s3 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f22(s3);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsefast() {
+    var s0, s1, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c30) {
+      s1 = peg$c30;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e37);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsenumber();
+      if (s3 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f23(s3);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsescale() {
+    var s0, s1, s3, s4, s5;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 5) === peg$c31) {
+      s1 = peg$c31;
+      peg$currPos += 5;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e38);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsequote();
+      if (s3 !== peg$FAILED) {
+        s4 = [];
+        s5 = peg$parsestep_char();
+        if (s5 !== peg$FAILED) {
+          while (s5 !== peg$FAILED) {
+            s4.push(s5);
+            s5 = peg$parsestep_char();
+          }
+        } else {
+          s4 = peg$FAILED;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsequote();
+          if (s5 !== peg$FAILED) {
+            peg$savedPos = s0;
+            s0 = peg$f24(s4);
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsecomment() {
+    var s0, s1, s2, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c32) {
+      s1 = peg$c32;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e39);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      if (peg$r5.test(input.charAt(peg$currPos))) {
+        s3 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) {
+          peg$fail(peg$e40);
+        }
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        if (peg$r5.test(input.charAt(peg$currPos))) {
+          s3 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) {
+            peg$fail(peg$e40);
+          }
+        }
+      }
+      s1 = [s1, s2];
+      s0 = s1;
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsecat() {
+    var s0, s1, s3, s5, s6, s7, s8, s9;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 3) === peg$c33) {
+      s1 = peg$c33;
+      peg$currPos += 3;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e41);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      if (input.charCodeAt(peg$currPos) === 91) {
+        s3 = peg$c12;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) {
+          peg$fail(peg$e19);
+        }
+      }
+      if (s3 !== peg$FAILED) {
+        peg$parsews();
+        s5 = peg$parsesequence_or_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = [];
+          s7 = peg$currPos;
+          s8 = peg$parsecomma();
+          if (s8 !== peg$FAILED) {
+            s9 = peg$parsesequence_or_operator();
+            if (s9 !== peg$FAILED) {
+              peg$savedPos = s7;
+              s7 = peg$f25(s5, s9);
+            } else {
+              peg$currPos = s7;
+              s7 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s7;
+            s7 = peg$FAILED;
+          }
+          while (s7 !== peg$FAILED) {
+            s6.push(s7);
+            s7 = peg$currPos;
+            s8 = peg$parsecomma();
+            if (s8 !== peg$FAILED) {
+              s9 = peg$parsesequence_or_operator();
+              if (s9 !== peg$FAILED) {
+                peg$savedPos = s7;
+                s7 = peg$f25(s5, s9);
+              } else {
+                peg$currPos = s7;
+                s7 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s7;
+              s7 = peg$FAILED;
+            }
+          }
+          s7 = peg$parsews();
+          if (input.charCodeAt(peg$currPos) === 93) {
+            s8 = peg$c13;
+            peg$currPos++;
+          } else {
+            s8 = peg$FAILED;
+            if (peg$silentFails === 0) {
+              peg$fail(peg$e20);
+            }
+          }
+          if (s8 !== peg$FAILED) {
+            peg$savedPos = s0;
+            s0 = peg$f26(s5, s6);
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsesequence_or_group() {
+    var s0;
+    s0 = peg$parsecat();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsesequence();
+    }
+    return s0;
+  }
+  function peg$parsesequence_or_operator() {
+    var s0, s1, s3, s4, s5;
+    s0 = peg$currPos;
+    s1 = peg$parsesequence_or_group();
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = [];
+      s4 = peg$parsecomment();
+      while (s4 !== peg$FAILED) {
+        s3.push(s4);
+        s4 = peg$parsecomment();
+      }
+      peg$savedPos = s0;
+      s0 = peg$f27(s1);
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parseoperator();
+      if (s1 !== peg$FAILED) {
+        peg$parsews();
+        if (input.charCodeAt(peg$currPos) === 36) {
+          s3 = peg$c34;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) {
+            peg$fail(peg$e42);
+          }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsews();
+          s5 = peg$parsesequence_or_operator();
+          if (s5 !== peg$FAILED) {
+            peg$savedPos = s0;
+            s0 = peg$f28(s1, s5);
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+    return s0;
+  }
+  function peg$parsesequ_or_operator_or_comment() {
+    var s0, s1;
+    s0 = peg$currPos;
+    s1 = peg$parsesequence_or_operator();
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$f29(s1);
+    }
+    s0 = s1;
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsecomment();
+    }
+    return s0;
+  }
+  function peg$parsesequence_definition() {
+    var s0;
+    s0 = peg$parsesequ_or_operator_or_comment();
+    return s0;
+  }
+  function peg$parsecommand() {
+    var s0, s2;
+    s0 = peg$currPos;
+    peg$parsews();
+    s2 = peg$parsesetcps();
+    if (s2 === peg$FAILED) {
+      s2 = peg$parsesetbpm();
+      if (s2 === peg$FAILED) {
+        s2 = peg$parsehush();
+      }
+    }
+    if (s2 !== peg$FAILED) {
+      peg$parsews();
+      peg$savedPos = s0;
+      s0 = peg$f30(s2);
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsesetcps() {
+    var s0, s1, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 6) === peg$c35) {
+      s1 = peg$c35;
+      peg$currPos += 6;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e43);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsenumber();
+      if (s3 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f31(s3);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsesetbpm() {
+    var s0, s1, s3;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 6) === peg$c36) {
+      s1 = peg$c36;
+      peg$currPos += 6;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e44);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$parsews();
+      s3 = peg$parsenumber();
+      if (s3 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f32(s3);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    return s0;
+  }
+  function peg$parsehush() {
+    var s0, s1;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c37) {
+      s1 = peg$c37;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) {
+        peg$fail(peg$e45);
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$f33();
+    }
+    s0 = s1;
+    return s0;
+  }
+  function peg$parsestatement() {
+    var s0;
+    s0 = peg$parsesequence_definition();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsecommand();
+    }
+    return s0;
+  }
+  var PatternStub = function(source, alignment) {
+    this.type_ = "pattern";
+    this.arguments_ = { alignment };
+    this.source_ = source;
+  };
+  var OperatorStub = function(name, args, source) {
+    this.type_ = name;
+    this.arguments_ = args;
+    this.source_ = source;
+  };
+  var ElementStub = function(source, options2) {
+    this.type_ = "element";
+    this.source_ = source;
+    this.options_ = options2;
+    this.location_ = location();
+  };
+  var CommandStub = function(name, options2) {
+    this.type_ = "command";
+    this.name_ = name;
+    this.options_ = options2;
+  };
+  peg$result = peg$startRuleFunction();
+  if (peg$result !== peg$FAILED && peg$currPos === input.length) {
+    return peg$result;
+  } else {
+    if (peg$result !== peg$FAILED && peg$currPos < input.length) {
+      peg$fail(peg$endExpectation());
+    }
+    throw peg$buildStructuredError(
+      peg$maxFailExpected,
+      peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
+      peg$maxFailPos < input.length ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1) : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)
+    );
+  }
+}
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+}
+var fraction$1 = { exports: {} };
+/**
+ * @license Fraction.js v4.2.0 05/03/2022
+ * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
+ *
+ * Copyright (c) 2021, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
+(function(module2, exports2) {
+  (function(root) {
+    var MAX_CYCLE_LEN = 2e3;
+    var P = {
+      "s": 1,
+      "n": 0,
+      "d": 1
+    };
+    function assign(n, s) {
+      if (isNaN(n = parseInt(n, 10))) {
+        throw Fraction2["InvalidParameter"];
+      }
+      return n * s;
+    }
+    function newFraction(n, d) {
+      if (d === 0) {
+        throw Fraction2["DivisionByZero"];
+      }
+      var f = Object.create(Fraction2.prototype);
+      f["s"] = n < 0 ? -1 : 1;
+      n = n < 0 ? -n : n;
+      var a = gcd2(n, d);
+      f["n"] = n / a;
+      f["d"] = d / a;
+      return f;
+    }
+    function factorize(num) {
+      var factors = {};
+      var n = num;
+      var i = 2;
+      var s = 4;
+      while (s <= n) {
+        while (n % i === 0) {
+          n /= i;
+          factors[i] = (factors[i] || 0) + 1;
+        }
+        s += 1 + 2 * i++;
+      }
+      if (n !== num) {
+        if (n > 1)
+          factors[n] = (factors[n] || 0) + 1;
+      } else {
+        factors[num] = (factors[num] || 0) + 1;
+      }
+      return factors;
+    }
+    var parse = function(p1, p2) {
+      var n = 0, d = 1, s = 1;
+      var v = 0, w = 0, x = 0, y = 1, z = 1;
+      var A = 0, B = 1;
+      var C = 1, D = 1;
+      var N = 1e7;
+      var M;
+      if (p1 === void 0 || p1 === null)
+        ;
+      else if (p2 !== void 0) {
+        n = p1;
+        d = p2;
+        s = n * d;
+        if (n % 1 !== 0 || d % 1 !== 0) {
+          throw Fraction2["NonIntegerParameter"];
+        }
+      } else
+        switch (typeof p1) {
+          case "object": {
+            if ("d" in p1 && "n" in p1) {
+              n = p1["n"];
+              d = p1["d"];
+              if ("s" in p1)
+                n *= p1["s"];
+            } else if (0 in p1) {
+              n = p1[0];
+              if (1 in p1)
+                d = p1[1];
+            } else {
+              throw Fraction2["InvalidParameter"];
+            }
+            s = n * d;
+            break;
+          }
+          case "number": {
+            if (p1 < 0) {
+              s = p1;
+              p1 = -p1;
+            }
+            if (p1 % 1 === 0) {
+              n = p1;
+            } else if (p1 > 0) {
+              if (p1 >= 1) {
+                z = Math.pow(10, Math.floor(1 + Math.log(p1) / Math.LN10));
+                p1 /= z;
+              }
+              while (B <= N && D <= N) {
+                M = (A + C) / (B + D);
+                if (p1 === M) {
+                  if (B + D <= N) {
+                    n = A + C;
+                    d = B + D;
+                  } else if (D > B) {
+                    n = C;
+                    d = D;
+                  } else {
+                    n = A;
+                    d = B;
+                  }
+                  break;
+                } else {
+                  if (p1 > M) {
+                    A += C;
+                    B += D;
+                  } else {
+                    C += A;
+                    D += B;
+                  }
+                  if (B > N) {
+                    n = C;
+                    d = D;
+                  } else {
+                    n = A;
+                    d = B;
+                  }
+                }
+              }
+              n *= z;
+            } else if (isNaN(p1) || isNaN(p2)) {
+              d = n = NaN;
+            }
+            break;
+          }
+          case "string": {
+            B = p1.match(/\d+|./g);
+            if (B === null)
+              throw Fraction2["InvalidParameter"];
+            if (B[A] === "-") {
+              s = -1;
+              A++;
+            } else if (B[A] === "+") {
+              A++;
+            }
+            if (B.length === A + 1) {
+              w = assign(B[A++], s);
+            } else if (B[A + 1] === "." || B[A] === ".") {
+              if (B[A] !== ".") {
+                v = assign(B[A++], s);
+              }
+              A++;
+              if (A + 1 === B.length || B[A + 1] === "(" && B[A + 3] === ")" || B[A + 1] === "'" && B[A + 3] === "'") {
+                w = assign(B[A], s);
+                y = Math.pow(10, B[A].length);
+                A++;
+              }
+              if (B[A] === "(" && B[A + 2] === ")" || B[A] === "'" && B[A + 2] === "'") {
+                x = assign(B[A + 1], s);
+                z = Math.pow(10, B[A + 1].length) - 1;
+                A += 3;
+              }
+            } else if (B[A + 1] === "/" || B[A + 1] === ":") {
+              w = assign(B[A], s);
+              y = assign(B[A + 2], 1);
+              A += 3;
+            } else if (B[A + 3] === "/" && B[A + 1] === " ") {
+              v = assign(B[A], s);
+              w = assign(B[A + 2], s);
+              y = assign(B[A + 4], 1);
+              A += 5;
+            }
+            if (B.length <= A) {
+              d = y * z;
+              s = n = x + d * v + z * w;
+              break;
+            }
+          }
+          default:
+            throw Fraction2["InvalidParameter"];
+        }
+      if (d === 0) {
+        throw Fraction2["DivisionByZero"];
+      }
+      P["s"] = s < 0 ? -1 : 1;
+      P["n"] = Math.abs(n);
+      P["d"] = Math.abs(d);
+    };
+    function modpow(b, e, m) {
+      var r = 1;
+      for (; e > 0; b = b * b % m, e >>= 1) {
+        if (e & 1) {
+          r = r * b % m;
+        }
+      }
+      return r;
+    }
+    function cycleLen(n, d) {
+      for (; d % 2 === 0; d /= 2) {
+      }
+      for (; d % 5 === 0; d /= 5) {
+      }
+      if (d === 1)
+        return 0;
+      var rem = 10 % d;
+      var t = 1;
+      for (; rem !== 1; t++) {
+        rem = rem * 10 % d;
+        if (t > MAX_CYCLE_LEN)
+          return 0;
+      }
+      return t;
+    }
+    function cycleStart(n, d, len) {
+      var rem1 = 1;
+      var rem2 = modpow(10, len, d);
+      for (var t = 0; t < 300; t++) {
+        if (rem1 === rem2)
+          return t;
+        rem1 = rem1 * 10 % d;
+        rem2 = rem2 * 10 % d;
+      }
+      return 0;
+    }
+    function gcd2(a, b) {
+      if (!a)
+        return b;
+      if (!b)
+        return a;
+      while (1) {
+        a %= b;
+        if (!a)
+          return b;
+        b %= a;
+        if (!b)
+          return a;
+      }
+    }
+    function Fraction2(a, b) {
+      parse(a, b);
+      if (this instanceof Fraction2) {
+        a = gcd2(P["d"], P["n"]);
+        this["s"] = P["s"];
+        this["n"] = P["n"] / a;
+        this["d"] = P["d"] / a;
+      } else {
+        return newFraction(P["s"] * P["n"], P["d"]);
+      }
+    }
+    Fraction2["DivisionByZero"] = new Error("Division by Zero");
+    Fraction2["InvalidParameter"] = new Error("Invalid argument");
+    Fraction2["NonIntegerParameter"] = new Error("Parameters must be integer");
+    Fraction2.prototype = {
+      "s": 1,
+      "n": 0,
+      "d": 1,
+      "abs": function() {
+        return newFraction(this["n"], this["d"]);
+      },
+      "neg": function() {
+        return newFraction(-this["s"] * this["n"], this["d"]);
+      },
+      "add": function(a, b) {
+        parse(a, b);
+        return newFraction(
+          this["s"] * this["n"] * P["d"] + P["s"] * this["d"] * P["n"],
+          this["d"] * P["d"]
+        );
+      },
+      "sub": function(a, b) {
+        parse(a, b);
+        return newFraction(
+          this["s"] * this["n"] * P["d"] - P["s"] * this["d"] * P["n"],
+          this["d"] * P["d"]
+        );
+      },
+      "mul": function(a, b) {
+        parse(a, b);
+        return newFraction(
+          this["s"] * P["s"] * this["n"] * P["n"],
+          this["d"] * P["d"]
+        );
+      },
+      "div": function(a, b) {
+        parse(a, b);
+        return newFraction(
+          this["s"] * P["s"] * this["n"] * P["d"],
+          this["d"] * P["n"]
+        );
+      },
+      "clone": function() {
+        return newFraction(this["s"] * this["n"], this["d"]);
+      },
+      "mod": function(a, b) {
+        if (isNaN(this["n"]) || isNaN(this["d"])) {
+          return new Fraction2(NaN);
+        }
+        if (a === void 0) {
+          return newFraction(this["s"] * this["n"] % this["d"], 1);
+        }
+        parse(a, b);
+        if (0 === P["n"] && 0 === this["d"]) {
+          throw Fraction2["DivisionByZero"];
+        }
+        return newFraction(
+          this["s"] * (P["d"] * this["n"]) % (P["n"] * this["d"]),
+          P["d"] * this["d"]
+        );
+      },
+      "gcd": function(a, b) {
+        parse(a, b);
+        return newFraction(gcd2(P["n"], this["n"]) * gcd2(P["d"], this["d"]), P["d"] * this["d"]);
+      },
+      "lcm": function(a, b) {
+        parse(a, b);
+        if (P["n"] === 0 && this["n"] === 0) {
+          return newFraction(0, 1);
+        }
+        return newFraction(P["n"] * this["n"], gcd2(P["n"], this["n"]) * gcd2(P["d"], this["d"]));
+      },
+      "ceil": function(places) {
+        places = Math.pow(10, places || 0);
+        if (isNaN(this["n"]) || isNaN(this["d"])) {
+          return new Fraction2(NaN);
+        }
+        return newFraction(Math.ceil(places * this["s"] * this["n"] / this["d"]), places);
+      },
+      "floor": function(places) {
+        places = Math.pow(10, places || 0);
+        if (isNaN(this["n"]) || isNaN(this["d"])) {
+          return new Fraction2(NaN);
+        }
+        return newFraction(Math.floor(places * this["s"] * this["n"] / this["d"]), places);
+      },
+      "round": function(places) {
+        places = Math.pow(10, places || 0);
+        if (isNaN(this["n"]) || isNaN(this["d"])) {
+          return new Fraction2(NaN);
+        }
+        return newFraction(Math.round(places * this["s"] * this["n"] / this["d"]), places);
+      },
+      "inverse": function() {
+        return newFraction(this["s"] * this["d"], this["n"]);
+      },
+      "pow": function(a, b) {
+        parse(a, b);
+        if (P["d"] === 1) {
+          if (P["s"] < 0) {
+            return newFraction(Math.pow(this["s"] * this["d"], P["n"]), Math.pow(this["n"], P["n"]));
+          } else {
+            return newFraction(Math.pow(this["s"] * this["n"], P["n"]), Math.pow(this["d"], P["n"]));
+          }
+        }
+        if (this["s"] < 0)
+          return null;
+        var N = factorize(this["n"]);
+        var D = factorize(this["d"]);
+        var n = 1;
+        var d = 1;
+        for (var k in N) {
+          if (k === "1")
+            continue;
+          if (k === "0") {
+            n = 0;
+            break;
+          }
+          N[k] *= P["n"];
+          if (N[k] % P["d"] === 0) {
+            N[k] /= P["d"];
+          } else
+            return null;
+          n *= Math.pow(k, N[k]);
+        }
+        for (var k in D) {
+          if (k === "1")
+            continue;
+          D[k] *= P["n"];
+          if (D[k] % P["d"] === 0) {
+            D[k] /= P["d"];
+          } else
+            return null;
+          d *= Math.pow(k, D[k]);
+        }
+        if (P["s"] < 0) {
+          return newFraction(d, n);
+        }
+        return newFraction(n, d);
+      },
+      "equals": function(a, b) {
+        parse(a, b);
+        return this["s"] * this["n"] * P["d"] === P["s"] * P["n"] * this["d"];
+      },
+      "compare": function(a, b) {
+        parse(a, b);
+        var t = this["s"] * this["n"] * P["d"] - P["s"] * P["n"] * this["d"];
+        return (0 < t) - (t < 0);
+      },
+      "simplify": function(eps) {
+        if (isNaN(this["n"]) || isNaN(this["d"])) {
+          return this;
+        }
+        eps = eps || 1e-3;
+        var thisABS = this["abs"]();
+        var cont = thisABS["toContinued"]();
+        for (var i = 1; i < cont.length; i++) {
+          var s = newFraction(cont[i - 1], 1);
+          for (var k = i - 2; k >= 0; k--) {
+            s = s["inverse"]()["add"](cont[k]);
+          }
+          if (s["sub"](thisABS)["abs"]().valueOf() < eps) {
+            return s["mul"](this["s"]);
+          }
+        }
+        return this;
+      },
+      "divisible": function(a, b) {
+        parse(a, b);
+        return !(!(P["n"] * this["d"]) || this["n"] * P["d"] % (P["n"] * this["d"]));
+      },
+      "valueOf": function() {
+        return this["s"] * this["n"] / this["d"];
+      },
+      "toFraction": function(excludeWhole) {
+        var whole, str = "";
+        var n = this["n"];
+        var d = this["d"];
+        if (this["s"] < 0) {
+          str += "-";
+        }
+        if (d === 1) {
+          str += n;
+        } else {
+          if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
+            str += whole;
+            str += " ";
+            n %= d;
+          }
+          str += n;
+          str += "/";
+          str += d;
+        }
+        return str;
+      },
+      "toLatex": function(excludeWhole) {
+        var whole, str = "";
+        var n = this["n"];
+        var d = this["d"];
+        if (this["s"] < 0) {
+          str += "-";
+        }
+        if (d === 1) {
+          str += n;
+        } else {
+          if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
+            str += whole;
+            n %= d;
+          }
+          str += "\\frac{";
+          str += n;
+          str += "}{";
+          str += d;
+          str += "}";
+        }
+        return str;
+      },
+      "toContinued": function() {
+        var t;
+        var a = this["n"];
+        var b = this["d"];
+        var res = [];
+        if (isNaN(a) || isNaN(b)) {
+          return res;
+        }
+        do {
+          res.push(Math.floor(a / b));
+          t = a % b;
+          a = b;
+          b = t;
+        } while (a !== 1);
+        return res;
+      },
+      "toString": function(dec) {
+        var N = this["n"];
+        var D = this["d"];
+        if (isNaN(N) || isNaN(D)) {
+          return "NaN";
+        }
+        dec = dec || 15;
+        var cycLen = cycleLen(N, D);
+        var cycOff = cycleStart(N, D, cycLen);
+        var str = this["s"] < 0 ? "-" : "";
+        str += N / D | 0;
+        N %= D;
+        N *= 10;
+        if (N)
+          str += ".";
+        if (cycLen) {
+          for (var i = cycOff; i--; ) {
+            str += N / D | 0;
+            N %= D;
+            N *= 10;
+          }
+          str += "(";
+          for (var i = cycLen; i--; ) {
+            str += N / D | 0;
+            N %= D;
+            N *= 10;
+          }
+          str += ")";
+        } else {
+          for (var i = dec; N && i--; ) {
+            str += N / D | 0;
+            N %= D;
+            N *= 10;
+          }
+        }
+        return str;
+      }
+    };
+    {
+      Object.defineProperty(Fraction2, "__esModule", { "value": true });
+      Fraction2["default"] = Fraction2;
+      Fraction2["Fraction"] = Fraction2;
+      module2["exports"] = Fraction2;
+    }
+  })();
+})(fraction$1);
+const Fraction$1 = /* @__PURE__ */ getDefaultExportFromCjs(fraction$1.exports);
+Fraction$1.prototype.sam = function() {
+  return this.floor();
+};
+Fraction$1.prototype.nextSam = function() {
+  return this.sam().add(1);
+};
+Fraction$1.prototype.wholeCycle = function() {
+  return new TimeSpan(this.sam(), this.nextSam());
+};
+Fraction$1.prototype.cyclePos = function() {
+  return this.sub(this.sam());
+};
+Fraction$1.prototype.lt = function(other) {
+  return this.compare(other) < 0;
+};
+Fraction$1.prototype.gt = function(other) {
+  return this.compare(other) > 0;
+};
+Fraction$1.prototype.lte = function(other) {
+  return this.compare(other) <= 0;
+};
+Fraction$1.prototype.gte = function(other) {
+  return this.compare(other) >= 0;
+};
+Fraction$1.prototype.eq = function(other) {
+  return this.compare(other) == 0;
+};
+Fraction$1.prototype.max = function(other) {
+  return this.gt(other) ? this : other;
+};
+Fraction$1.prototype.min = function(other) {
+  return this.lt(other) ? this : other;
+};
+Fraction$1.prototype.show = function() {
+  return this.s * this.n + "/" + this.d;
+};
+Fraction$1.prototype.or = function(other) {
+  return this.eq(0) ? other : this;
+};
+const fraction = (n) => {
+  if (typeof n === "number") {
+    n = String(n);
+  }
+  return Fraction$1(n);
+};
+const gcd = (...fractions) => {
+  return fractions.reduce((gcd2, fraction2) => gcd2.gcd(fraction2), fraction(1));
+};
+fraction._original = Fraction$1;
+class TimeSpan {
+  constructor(begin, end) {
+    this.begin = fraction(begin);
+    this.end = fraction(end);
+  }
+  get spanCycles() {
+    const spans = [];
+    var begin = this.begin;
+    const end = this.end;
+    const end_sam = end.sam();
+    while (end.gt(begin)) {
+      if (begin.sam().equals(end_sam)) {
+        spans.push(new TimeSpan(begin, this.end));
+        break;
+      }
+      const next_begin = begin.nextSam();
+      spans.push(new TimeSpan(begin, next_begin));
+      begin = next_begin;
+    }
+    return spans;
+  }
+  get duration() {
+    return this.end.sub(this.begin);
+  }
+  cycleArc() {
+    const b = this.begin.cyclePos();
+    const e = b.add(this.duration);
+    return new TimeSpan(b, e);
+  }
+  withTime(func_time) {
+    return new TimeSpan(func_time(this.begin), func_time(this.end));
+  }
+  withEnd(func_time) {
+    return new TimeSpan(this.begin, func_time(this.end));
+  }
+  withCycle(func_time) {
+    const sam = this.begin.sam();
+    const b = sam.add(func_time(this.begin.sub(sam)));
+    const e = sam.add(func_time(this.end.sub(sam)));
+    return new TimeSpan(b, e);
+  }
+  intersection(other) {
+    const intersect_begin = this.begin.max(other.begin);
+    const intersect_end = this.end.min(other.end);
+    if (intersect_begin.gt(intersect_end)) {
+      return void 0;
+    }
+    if (intersect_begin.equals(intersect_end)) {
+      if (intersect_begin.equals(this.end) && this.begin.lt(this.end)) {
+        return void 0;
+      }
+      if (intersect_begin.equals(other.end) && other.begin.lt(other.end)) {
+        return void 0;
+      }
+    }
+    return new TimeSpan(intersect_begin, intersect_end);
+  }
+  intersection_e(other) {
+    const result = this.intersection(other);
+    if (result == void 0) {
+      throw "TimeSpans do not intersect";
+    }
+    return result;
+  }
+  midpoint() {
+    return this.begin.add(this.duration.div(fraction(2)));
+  }
+  equals(other) {
+    return this.begin.equals(other.begin) && this.end.equals(other.end);
+  }
+  show() {
+    return this.begin.show() + " -> " + this.end.show();
+  }
+}
+class Hap {
+  constructor(whole, part, value, context = {}, stateful = false) {
+    this.whole = whole;
+    this.part = part;
+    this.value = value;
+    this.context = context;
+    this.stateful = stateful;
+    if (stateful) {
+      console.assert(typeof this.value === "function", "Stateful values must be functions");
+    }
+  }
+  get duration() {
+    return this.whole.end.sub(this.whole.begin);
+  }
+  wholeOrPart() {
+    return this.whole ? this.whole : this.part;
+  }
+  withSpan(func) {
+    const whole = this.whole ? func(this.whole) : void 0;
+    return new Hap(whole, func(this.part), this.value, this.context);
+  }
+  withValue(func) {
+    return new Hap(this.whole, this.part, func(this.value), this.context);
+  }
+  hasOnset() {
+    return this.whole != void 0 && this.whole.begin.equals(this.part.begin);
+  }
+  resolveState(state) {
+    if (this.stateful && this.hasOnset()) {
+      console.log("stateful");
+      const func = this.value;
+      const [newState, newValue] = func(state);
+      return [newState, new Hap(this.whole, this.part, newValue, this.context, false)];
+    }
+    return [state, this];
+  }
+  spanEquals(other) {
+    return this.whole == void 0 && other.whole == void 0 || this.whole.equals(other.whole);
+  }
+  equals(other) {
+    return this.spanEquals(other) && this.part.equals(other.part) && this.value === other.value;
+  }
+  show() {
+    return "(" + (this.whole == void 0 ? "~" : this.whole.show()) + ", " + this.part.show() + ", " + this.value + ")";
+  }
+  showWhole() {
+    return `${this.whole == void 0 ? "~" : this.whole.show()}: ${typeof this.value === "object" ? JSON.stringify(this.value) : this.value}`;
+  }
+  combineContext(b) {
+    const a = this;
+    return { ...a.context, ...b.context, locations: (a.context.locations || []).concat(b.context.locations || []) };
+  }
+  setContext(context) {
+    return new Hap(this.whole, this.part, this.value, context);
+  }
+}
+class State {
+  constructor(span, controls2 = {}) {
+    this.span = span;
+    this.controls = controls2;
+  }
+  setSpan(span) {
+    return new State(span, this.controls);
+  }
+  withSpan(func) {
+    return this.setSpan(func(this.span));
+  }
+  setControls(controls2) {
+    return new State(this.span, controls2);
+  }
+}
+const isNote = (name) => /^[a-gA-G][#b]*[0-9]$/.test(name);
+const tokenizeNote = (note) => {
+  var _a;
+  if (typeof note !== "string") {
+    return [];
+  }
+  const [pc, acc = "", oct] = ((_a = note.match(/^([a-gA-G])([#bs]*)([0-9])?$/)) == null ? void 0 : _a.slice(1)) || [];
+  if (!pc) {
+    return [];
+  }
+  return [pc, acc, oct ? Number(oct) : void 0];
+};
+const toMidi = (note) => {
+  const [pc, acc, oct] = tokenizeNote(note);
+  if (!pc) {
+    throw new Error('not a note: "' + note + '"');
+  }
+  const chroma = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 }[pc.toLowerCase()];
+  const offset = (acc == null ? void 0 : acc.split("").reduce((o, char) => o + { "#": 1, b: -1, s: 1 }[char], 0)) || 0;
+  return (Number(oct) + 1) * 12 + chroma + offset;
+};
+const fromMidi = (n) => {
+  return Math.pow(2, (n - 69) / 12) * 440;
+};
+const getFreq = (noteOrMidi) => {
+  if (typeof noteOrMidi === "number") {
+    return fromMidi(noteOrMidi);
+  }
+  return fromMidi(toMidi(noteOrMidi));
+};
+const midi2note = (n) => {
+  const oct = Math.floor(n / 12) - 1;
+  const pc = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"][n % 12];
+  return pc + oct;
+};
+const mod = (n, m) => (n % m + m) % m;
+const getPlayableNoteValue = (hap) => {
+  let { value: note, context } = hap;
+  if (typeof note === "object" && !Array.isArray(note)) {
+    note = note.note || note.n || note.value;
+  }
+  if (typeof note === "number" && context.type !== "frequency") {
+    note = fromMidi(hap.value);
+  } else if (typeof note === "number" && context.type === "frequency") {
+    note = hap.value;
+  } else if (typeof note !== "string" || !isNote(note)) {
+    throw new Error("not a note: " + JSON.stringify(note));
+  }
+  return note;
+};
+const getFrequency = (hap) => {
+  let { value, context } = hap;
+  if (typeof value === "object" && value.freq) {
+    return value.freq;
+  }
+  if (typeof value === "number" && context.type !== "frequency") {
+    value = fromMidi(hap.value);
+  } else if (typeof value === "string" && isNote(value)) {
+    value = fromMidi(toMidi(hap.value));
+  } else if (typeof value !== "number") {
+    throw new Error("not a note or frequency:" + value);
+  }
+  return value;
+};
+const rotate = (arr, n) => arr.slice(n).concat(arr.slice(0, n));
+const pipe = (...funcs) => {
+  return funcs.reduce(
+    (f, g) => (...args) => f(g(...args)),
+    (x) => x
+  );
+};
+const compose = (...funcs) => pipe(...funcs.reverse());
+const removeUndefineds = (xs) => xs.filter((x) => x != void 0);
+const flatten = (arr) => [].concat(...arr);
+const id = (a) => a;
+const constant = (a, b) => a;
+const listRange = (min, max) => Array.from({ length: max - min + 1 }, (_, i) => i + min);
+function curry(func, overload) {
+  const fn = function curried(...args) {
+    if (args.length >= func.length) {
+      return func.apply(this, args);
+    } else {
+      const partial = function(...args2) {
+        return curried.apply(this, args.concat(args2));
+      };
+      if (overload) {
+        overload(partial, args);
+      }
+      return partial;
+    }
+  };
+  if (overload) {
+    overload(fn, []);
+  }
+  return fn;
+}
+function unionWithObj(a, b, func) {
+  const common = Object.keys(a).filter((k) => Object.keys(b).includes(k));
+  return Object.assign({}, a, b, Object.fromEntries(common.map((k) => [k, func(a[k], b[k])])));
+}
+curry((a, b) => a * b);
+curry((f, anyFunctor) => anyFunctor.map(f));
+function drawLine(pat, chars = 60) {
+  let cycle = 0;
+  let pos = fraction(0);
+  let lines = [""];
+  let emptyLine = "";
+  while (lines[0].length < chars) {
+    const haps = pat.queryArc(cycle, cycle + 1);
+    const durations = haps.filter((hap) => hap.hasOnset()).map((hap) => hap.duration);
+    const charFraction = gcd(...durations);
+    const totalSlots = charFraction.inverse();
+    lines = lines.map((line) => line + "|");
+    emptyLine += "|";
+    for (let i = 0; i < totalSlots; i++) {
+      const [begin, end] = [pos, pos.add(charFraction)];
+      const matches = haps.filter((hap) => hap.whole.begin.lte(begin) && hap.whole.end.gte(end));
+      const missingLines = matches.length - lines.length;
+      if (missingLines > 0) {
+        lines = lines.concat(Array(missingLines).fill(emptyLine));
+      }
+      lines = lines.map((line, i2) => {
+        const hap = matches[i2];
+        if (hap) {
+          const isOnset = hap.whole.begin.eq(begin);
+          const char = isOnset ? "" + hap.value : "-";
+          return line + char;
+        }
+        return line + ".";
+      });
+      emptyLine += ".";
+      pos = pos.add(charFraction);
+    }
+    cycle++;
+  }
+  return lines.join("\n");
+}
+class Pattern$1 {
+  constructor(query) {
+    __publicField(this, "_Pattern", true);
+    this.query = query;
+  }
+  queryArc(begin, end) {
+    return this.query(new State(new TimeSpan(begin, end)));
+  }
+  _splitQueries() {
+    const pat = this;
+    const q = (state) => {
+      return flatten(state.span.spanCycles.map((subspan) => pat.query(state.setSpan(subspan))));
+    };
+    return new Pattern$1(q);
+  }
+  withQuerySpan(func) {
+    return new Pattern$1((state) => this.query(state.withSpan(func)));
+  }
+  withQueryTime(func) {
+    return new Pattern$1((state) => this.query(state.withSpan((span) => span.withTime(func))));
+  }
+  withHapSpan(func) {
+    return new Pattern$1((state) => this.query(state).map((hap) => hap.withSpan(func)));
+  }
+  withHapTime(func) {
+    return this.withHapSpan((span) => span.withTime(func));
+  }
+  _withHaps(func) {
+    return new Pattern$1((state) => func(this.query(state)));
+  }
+  _withHap(func) {
+    return this._withHaps((haps) => haps.map(func));
+  }
+  _setContext(context) {
+    return this._withHap((hap) => hap.setContext(context));
+  }
+  _withContext(func) {
+    return this._withHap((hap) => hap.setContext(func(hap.context)));
+  }
+  _stripContext() {
+    return this._withHap((hap) => hap.setContext({}));
+  }
+  withLocation(start, end) {
+    const location = {
+      start: { line: start[0], column: start[1], offset: start[2] },
+      end: { line: end[0], column: end[1], offset: end[2] }
+    };
+    return this._withContext((context) => {
+      const locations = (context.locations || []).concat([location]);
+      return { ...context, locations };
+    });
+  }
+  withMiniLocation(start, end) {
+    const offset = {
+      start: { line: start[0], column: start[1], offset: start[2] },
+      end: { line: end[0], column: end[1], offset: end[2] }
+    };
+    return this._withContext((context) => {
+      let locations = context.locations || [];
+      locations = locations.map(({ start: start2, end: end2 }) => {
+        const colOffset = start2.line === 1 ? offset.start.column : 0;
+        return {
+          start: {
+            ...start2,
+            line: start2.line - 1 + (offset.start.line - 1) + 1,
+            column: start2.column - 1 + colOffset
+          },
+          end: {
+            ...end2,
+            line: end2.line - 1 + (offset.start.line - 1) + 1,
+            column: end2.column - 1 + colOffset
+          }
+        };
+      });
+      return { ...context, locations };
+    });
+  }
+  withValue(func) {
+    return new Pattern$1((state) => this.query(state).map((hap) => hap.withValue(func)));
+  }
+  fmap(func) {
+    return this.withValue(func);
+  }
+  _filterHaps(hap_test) {
+    return new Pattern$1((state) => this.query(state).filter(hap_test));
+  }
+  _filterValues(value_test) {
+    return new Pattern$1((state) => this.query(state).filter((hap) => value_test(hap.value)));
+  }
+  _removeUndefineds() {
+    return this._filterValues((val) => val != void 0);
+  }
+  onsetsOnly() {
+    return this._filterHaps((hap) => hap.hasOnset());
+  }
+  discreteOnly() {
+    return this._filterHaps((hap) => hap.whole);
+  }
+  _appWhole(whole_func, pat_val) {
+    const pat_func = this;
+    const query = function(state) {
+      const hap_funcs = pat_func.query(state);
+      const hap_vals = pat_val.query(state);
+      const apply = function(hap_func, hap_val) {
+        const s = hap_func.part.intersection(hap_val.part);
+        if (s == void 0) {
+          return void 0;
+        }
+        return new Hap(
+          whole_func(hap_func.whole, hap_val.whole),
+          s,
+          hap_func.value(hap_val.value),
+          hap_val.combineContext(hap_func)
+        );
+      };
+      return flatten(
+        hap_funcs.map((hap_func) => removeUndefineds(hap_vals.map((hap_val) => apply(hap_func, hap_val))))
+      );
+    };
+    return new Pattern$1(query);
+  }
+  appBoth(pat_val) {
+    const whole_func = function(span_a, span_b) {
+      if (span_a == void 0 || span_b == void 0) {
+        return void 0;
+      }
+      return span_a.intersection_e(span_b);
+    };
+    return this._appWhole(whole_func, pat_val);
+  }
+  appLeft(pat_val) {
+    const pat_func = this;
+    const query = function(state) {
+      const haps = [];
+      for (const hap_func of pat_func.query(state)) {
+        const hap_vals = pat_val.query(state.setSpan(hap_func.wholeOrPart()));
+        for (const hap_val of hap_vals) {
+          const new_whole = hap_func.whole;
+          const new_part = hap_func.part.intersection(hap_val.part);
+          if (new_part) {
+            const new_value = hap_func.value(hap_val.value);
+            const new_context = hap_val.combineContext(hap_func);
+            const hap = new Hap(new_whole, new_part, new_value, new_context);
+            haps.push(hap);
+          }
+        }
+      }
+      return haps;
+    };
+    return new Pattern$1(query);
+  }
+  appRight(pat_val) {
+    const pat_func = this;
+    const query = function(state) {
+      const haps = [];
+      for (const hap_val of pat_val.query(state)) {
+        const hap_funcs = pat_func.query(state.setSpan(hap_val.wholeOrPart()));
+        for (const hap_func of hap_funcs) {
+          const new_whole = hap_val.whole;
+          const new_part = hap_func.part.intersection(hap_val.part);
+          if (new_part) {
+            const new_value = hap_func.value(hap_val.value);
+            const new_context = hap_val.combineContext(hap_func);
+            const hap = new Hap(new_whole, new_part, new_value, new_context);
+            haps.push(hap);
+          }
+        }
+      }
+      return haps;
+    };
+    return new Pattern$1(query);
+  }
+  firstCycle(with_context = false) {
+    var self = this;
+    if (!with_context) {
+      self = self._stripContext();
+    }
+    return self.query(new State(new TimeSpan(fraction(0), fraction(1))));
+  }
+  get _firstCycleValues() {
+    return this.firstCycle().map((hap) => hap.value);
+  }
+  get _showFirstCycle() {
+    return this.firstCycle().map(
+      (hap) => `${hap.value}: ${hap.whole.begin.toFraction()} - ${hap.whole.end.toFraction()}`
+    );
+  }
+  _sortHapsByPart() {
+    return this._withHaps(
+      (haps) => haps.sort(
+        (a, b) => a.part.begin.sub(b.part.begin).or(a.part.end.sub(b.part.end)).or(a.whole.begin.sub(b.whole.begin).or(a.whole.end.sub(b.whole.end)))
+      )
+    );
+  }
+  _opIn(other, func) {
+    return this.fmap(func).appLeft(reify$2(other));
+  }
+  _opOut(other, func) {
+    return this.fmap(func).appRight(reify$2(other));
+  }
+  _opMix(other, func) {
+    return this.fmap(func).appBoth(reify$2(other));
+  }
+  _opSqueeze(other, func) {
+    const otherPat = reify$2(other);
+    return this.fmap((a) => otherPat.fmap((b) => func(a)(b)))._squeezeJoin();
+  }
+  _opSqueezeOut(other, func) {
+    const thisPat = this;
+    const otherPat = reify$2(other);
+    return otherPat.fmap((a) => thisPat.fmap((b) => func(b)(a)))._squeezeJoin();
+  }
+  _opTrig(other, func) {
+    const otherPat = reify$2(other);
+    return otherPat.fmap((b) => this.fmap((a) => func(a)(b)))._trigJoin();
+  }
+  _opTrigzero(other, func) {
+    const otherPat = reify$2(other);
+    return otherPat.fmap((b) => this.fmap((a) => func(a)(b)))._TrigzeroJoin();
+  }
+  _asNumber(dropfails = false, softfail = false) {
+    return this._withHap((hap) => {
+      const asNumber = Number(hap.value);
+      if (!isNaN(asNumber)) {
+        return hap.withValue(() => asNumber);
+      }
+      const specialValue = {
+        e: Math.E,
+        pi: Math.PI
+      }[hap.value];
+      if (typeof specialValue !== "undefined") {
+        return hap.withValue(() => specialValue);
+      }
+      if (isNote(hap.value)) {
+        return new Hap(hap.whole, hap.part, toMidi(hap.value), { ...hap.context, type: "midi" });
+      }
+      if (dropfails) {
+        return void 0;
+      }
+      if (softfail) {
+        return hap;
+      }
+      throw new Error('cannot parse as number: "' + hap.value + '"');
+    });
+  }
+  round() {
+    return this._asNumber().fmap((v) => Math.round(v));
+  }
+  floor() {
+    return this._asNumber().fmap((v) => Math.floor(v));
+  }
+  ceil() {
+    return this._asNumber().fmap((v) => Math.ceil(v));
+  }
+  _toBipolar() {
+    return this.fmap((x) => x * 2 - 1);
+  }
+  _fromBipolar() {
+    return this.fmap((x) => (x + 1) / 2);
+  }
+  range(min, max) {
+    return this.mul(max - min).add(min);
+  }
+  rangex(min, max) {
+    return this.range(Math.log(min), Math.log(max)).fmap(Math.exp);
+  }
+  range2(min, max) {
+    return this._fromBipolar().range(min, max);
+  }
+  _bindWhole(choose_whole, func) {
+    const pat_val = this;
+    const query = function(state) {
+      const withWhole = function(a, b) {
+        return new Hap(
+          choose_whole(a.whole, b.whole),
+          b.part,
+          b.value,
+          Object.assign({}, a.context, b.context, {
+            locations: (a.context.locations || []).concat(b.context.locations || [])
+          })
+        );
+      };
+      const match = function(a) {
+        return func(a.value).query(state.setSpan(a.part)).map((b) => withWhole(a, b));
+      };
+      return flatten(pat_val.query(state).map((a) => match(a)));
+    };
+    return new Pattern$1(query);
+  }
+  bind(func) {
+    const whole_func = function(a, b) {
+      if (a == void 0 || b == void 0) {
+        return void 0;
+      }
+      return a.intersection_e(b);
+    };
+    return this._bindWhole(whole_func, func);
+  }
+  join() {
+    return this.bind(id);
+  }
+  outerBind(func) {
+    return this._bindWhole((a, _) => a, func);
+  }
+  outerJoin() {
+    return this.outerBind(id);
+  }
+  innerBind(func) {
+    return this._bindWhole((_, b) => b, func);
+  }
+  innerJoin() {
+    return this.innerBind(id);
+  }
+  _trigJoin(cycleZero = false) {
+    const pat_of_pats = this;
+    return new Pattern$1((state) => {
+      return pat_of_pats.discreteOnly().query(state).map((outer_hap) => {
+        return outer_hap.value.late(cycleZero ? outer_hap.whole.begin : outer_hap.whole.begin.cyclePos()).query(state).map(
+          (inner_hap) => new Hap(
+            inner_hap.whole ? inner_hap.whole.intersection(outer_hap.whole) : void 0,
+            inner_hap.part.intersection(outer_hap.part),
+            inner_hap.value
+          ).setContext(outer_hap.combineContext(inner_hap))
+        ).filter((hap) => hap.part);
+      }).flat();
+    });
+  }
+  _TrigzeroJoin() {
+    return this._trigJoin(true);
+  }
+  _squeezeJoin() {
+    const pat_of_pats = this;
+    function query(state) {
+      const haps = pat_of_pats.discreteOnly().query(state);
+      function flatHap(outerHap) {
+        const pat = outerHap.value._compressSpan(outerHap.wholeOrPart().cycleArc());
+        const innerHaps = pat.query(state.setSpan(outerHap.part));
+        function munge(outer, inner) {
+          let whole = void 0;
+          if (inner.whole && outer.whole) {
+            whole = inner.whole.intersection(outer.whole);
+            if (!whole) {
+              return void 0;
+            }
+          }
+          const part = inner.part.intersection(outer.part);
+          if (!part) {
+            return void 0;
+          }
+          const context = inner.combineContext(outer);
+          return new Hap(whole, part, inner.value, context);
+        }
+        return innerHaps.map((innerHap) => munge(outerHap, innerHap));
+      }
+      const result = flatten(haps.map(flatHap));
+      return result.filter((x) => x);
+    }
+    return new Pattern$1(query);
+  }
+  _squeezeBind(func) {
+    return this.fmap(func)._squeezeJoin();
+  }
+  _apply(func) {
+    return func(this);
+  }
+  layer(...funcs) {
+    return stack$1(...funcs.map((func) => func(this)));
+  }
+  _patternify(func) {
+    const pat = this;
+    const patterned = function(...args) {
+      args = args.map((arg) => isPattern(arg) ? arg.fmap((value) => value.value || value) : arg);
+      const pat_arg = sequence$1(...args);
+      return pat_arg.fmap((arg) => func.call(pat, arg)).innerJoin();
+    };
+    return patterned;
+  }
+  _fastGap(factor) {
+    const qf = function(span) {
+      const cycle = span.begin.sam();
+      const begin = cycle.add(span.begin.sub(cycle).mul(factor).min(1));
+      const end = cycle.add(span.end.sub(cycle).mul(factor).min(1));
+      return new TimeSpan(begin, end);
+    };
+    const ef = function(span) {
+      const cycle = span.begin.sam();
+      const begin = cycle.add(span.begin.sub(cycle).div(factor).min(1));
+      const end = cycle.add(span.end.sub(cycle).div(factor).min(1));
+      return new TimeSpan(begin, end);
+    };
+    return this.withQuerySpan(qf).withHapSpan(ef)._splitQueries();
+  }
+  _compress(b, e) {
+    if (b.gt(e) || b.gt(1) || e.gt(1) || b.lt(0) || e.lt(0)) {
+      return silence$1;
+    }
+    return this._fastGap(fraction(1).div(e.sub(b)))._late(b);
+  }
+  _compressSpan(span) {
+    return this._compress(span.begin, span.end);
+  }
+  _fast(factor) {
+    const fastQuery = this.withQueryTime((t) => t.mul(factor));
+    return fastQuery.withHapTime((t) => t.div(factor));
+  }
+  _slow(factor) {
+    return this._fast(fraction(1).div(factor));
+  }
+  _inside(factor, f) {
+    return f(this._slow(factor))._fast(factor);
+  }
+  _outside(factor, f) {
+    return f(this._fast(factor))._slow(factor);
+  }
+  _ply(factor) {
+    return this.fmap((x) => pure$1(x)._fast(factor))._squeezeJoin();
+  }
+  _chop(n) {
+    const slices = Array.from({ length: n }, (x, i) => i);
+    const slice_objects = slices.map((i) => ({ begin: i / n, end: (i + 1) / n }));
+    const func = function(o) {
+      return sequence$1(slice_objects.map((slice_o) => Object.assign({}, o, slice_o)));
+    };
+    return this._squeezeBind(func);
+  }
+  _striate(n) {
+    const slices = Array.from({ length: n }, (x, i) => i);
+    const slice_objects = slices.map((i) => ({ begin: i / n, end: (i + 1) / n }));
+    const slicePat = slowcat$1(...slice_objects);
+    return this.set(slicePat)._fast(n);
+  }
+  _cpm(cpm) {
+    return this._fast(cpm / 60);
+  }
+  _early(offset) {
+    offset = fraction(offset);
+    return this.withQueryTime((t) => t.add(offset)).withHapTime((t) => t.sub(offset));
+  }
+  _late(offset) {
+    offset = fraction(offset);
+    return this._early(fraction(0).sub(offset));
+  }
+  _zoom(s, e) {
+    e = fraction(e);
+    s = fraction(s);
+    const d = e.sub(s);
+    return this.withQuerySpan((span) => span.withCycle((t) => t.mul(d).add(s))).withHapSpan((span) => span.withCycle((t) => t.sub(s).div(d)))._splitQueries();
+  }
+  _zoomArc(a) {
+    return this.zoom(a.begin, a.end);
+  }
+  _linger(t) {
+    if (t == 0) {
+      return silence$1;
+    } else if (t < 0) {
+      return this._zoom(t.add(1), 1)._slow(t);
+    }
+    return this._zoom(0, t)._slow(t);
+  }
+  _color(color) {
+    return this._withContext((context) => ({ ...context, color }));
+  }
+  log() {
+    return this._withHap((e) => {
+      var _a;
+      return e.setContext({ ...e.context, logs: (((_a = e.context) == null ? void 0 : _a.logs) || []).concat([e.show()]) });
+    });
+  }
+  drawLine() {
+    console.log(drawLine(this));
+    return this;
+  }
+  _segment(rate) {
+    return this.struct(pure$1(true)._fast(rate));
+  }
+  invert() {
+    return this.fmap((x) => !x);
+  }
+  inv() {
+    return this.invert();
+  }
+  when(binary_pat, func) {
+    const true_pat = binary_pat._filterValues(id);
+    const false_pat = binary_pat._filterValues((val) => !val);
+    const with_pat = true_pat.fmap((_) => (y) => y).appRight(func(this));
+    const without_pat = false_pat.fmap((_) => (y) => y).appRight(this);
+    return stack$1(with_pat, without_pat);
+  }
+  off(time_pat, func) {
+    return stack$1(this, func(this.late(time_pat)));
+  }
+  every(n, func) {
+    const pat = this;
+    const pats = Array(n - 1).fill(pat);
+    pats.unshift(func(pat));
+    return slowcatPrime(...pats);
+  }
+  brak() {
+    return this.when(slowcat$1(false, true), (x) => fastcat(x, silence$1)._late(0.25));
+  }
+  rev() {
+    const pat = this;
+    const query = function(state) {
+      const span = state.span;
+      const cycle = span.begin.sam();
+      const next_cycle = span.begin.nextSam();
+      const reflect = function(to_reflect) {
+        const reflected = to_reflect.withTime((time2) => cycle.add(next_cycle.sub(time2)));
+        const tmp = reflected.begin;
+        reflected.begin = reflected.end;
+        reflected.end = tmp;
+        return reflected;
+      };
+      const haps = pat.query(state.setSpan(reflect(span)));
+      return haps.map((hap) => hap.withSpan(reflect));
+    };
+    return new Pattern$1(query)._splitQueries();
+  }
+  palindrome() {
+    return this.every(2, rev);
+  }
+  juxBy(by, func) {
+    by /= 2;
+    const elem_or = function(dict, key, dflt) {
+      if (key in dict) {
+        return dict[key];
+      }
+      return dflt;
+    };
+    const left = this.withValue((val) => Object.assign({}, val, { pan: elem_or(val, "pan", 0.5) - by }));
+    const right = this.withValue((val) => Object.assign({}, val, { pan: elem_or(val, "pan", 0.5) + by }));
+    return stack$1(left, func(right));
+  }
+  _jux(func) {
+    return this.juxBy(1, func);
+  }
+  stack(...pats) {
+    return stack$1(this, ...pats);
+  }
+  sequence(...pats) {
+    return sequence$1(this, ...pats);
+  }
+  seq(...pats) {
+    return sequence$1(this, ...pats);
+  }
+  cat(...pats) {
+    return cat(this, ...pats);
+  }
+  fastcat(...pats) {
+    return fastcat(this, ...pats);
+  }
+  slowcat(...pats) {
+    return slowcat$1(this, ...pats);
+  }
+  superimpose(...funcs) {
+    return this.stack(...funcs.map((func) => func(this)));
+  }
+  stutWith(times, time2, func) {
+    return stack$1(...listRange(0, times - 1).map((i) => func(this.late(fraction(time2).mul(i)), i)));
+  }
+  stut(times, feedback, time2) {
+    return this.stutWith(times, time2, (pat, i) => pat.velocity(Math.pow(feedback, i)));
+  }
+  _echoWith(times, time2, func) {
+    return stack$1(...listRange(0, times - 1).map((i) => func(this.late(fraction(time2).mul(i)), i)));
+  }
+  _echo(times, time2, feedback) {
+    return this._echoWith(times, time2, (pat, i) => pat.velocity(Math.pow(feedback, i)));
+  }
+  iter(times, back = false) {
+    return slowcat$1(...listRange(0, times - 1).map((i) => back ? this.late(i / times) : this.early(i / times)));
+  }
+  iterBack(times) {
+    return this.iter(times, true);
+  }
+  _chunk(n, func, back = false) {
+    const binary = Array(n - 1).fill(false);
+    binary.unshift(true);
+    const binary_pat = sequence$1(...binary).iter(n, back);
+    return this.when(binary_pat, func);
+  }
+  _chunkBack(n, func) {
+    return this._chunk(n, func, true);
+  }
+  _bypass(on2) {
+    on2 = Boolean(parseInt(on2));
+    return on2 ? silence$1 : this;
+  }
+  hush() {
+    return silence$1;
+  }
+  _duration(value) {
+    return this.withHapSpan((span) => new TimeSpan(span.begin, span.begin.add(value)));
+  }
+  _legato(value) {
+    return this.withHapSpan((span) => new TimeSpan(span.begin, span.begin.add(span.end.sub(span.begin).mul(value))));
+  }
+  _velocity(velocity) {
+    return this._withContext((context) => ({ ...context, velocity: (context.velocity || 1) * velocity }));
+  }
+  _loopAt(factor, cps = 1) {
+    return this.speed(1 / factor * cps).unit("c").slow(factor);
+  }
+  onTrigger(onTrigger) {
+    return this._withHap((hap) => hap.setContext({ ...hap.context, onTrigger }));
+  }
+  log(func = id) {
+    return this._withHap(
+      (hap) => hap.setContext({
+        ...hap.context,
+        onTrigger: (...args) => {
+          if (hap.context.onTrigger) {
+            hap.context.onTrigger(...args);
+          }
+          console.log(func(...args));
+        }
+      })
+    );
+  }
+  logValues(func = id) {
+    return this.log((_, hap) => func(hap.value));
+  }
+}
+function _composeOp(a, b, func) {
+  function _nonFunctionObject(x) {
+    return x instanceof Object && !(x instanceof Function);
+  }
+  if (_nonFunctionObject(a) || _nonFunctionObject(b)) {
+    if (!_nonFunctionObject(a)) {
+      a = { value: a };
+    }
+    if (!_nonFunctionObject(b)) {
+      b = { value: b };
+    }
+    return unionWithObj(a, b, func);
+  }
+  return func(a, b);
+}
+(function() {
+  const num = (pat) => pat._asNumber();
+  const numOrString = (pat) => pat._asNumber(false, true);
+  const composers = {
+    set: [(a, b) => b],
+    keep: [(a, b) => a],
+    keepif: [(a, b) => b ? a : void 0],
+    add: [(a, b) => a + b, numOrString],
+    sub: [(a, b) => a - b, num],
+    mul: [(a, b) => a * b, num],
+    div: [(a, b) => a / b, num],
+    mod: [mod, num],
+    pow: [Math.pow, num],
+    _and: [(a, b) => a & b, num],
+    _or: [(a, b) => a | b, num],
+    _xor: [(a, b) => a ^ b, num],
+    _lshift: [(a, b) => a << b, num],
+    _rshift: [(a, b) => a >> b, num],
+    lt: [(a, b) => a < b],
+    gt: [(a, b) => a > b],
+    lte: [(a, b) => a <= b],
+    gte: [(a, b) => a >= b],
+    eq: [(a, b) => a == b],
+    eqt: [(a, b) => a === b],
+    ne: [(a, b) => a != b],
+    net: [(a, b) => a !== b],
+    and: [(a, b) => a && b],
+    or: [(a, b) => a || b],
+    func: [(a, b) => b(a)]
+  };
+  for (const [what, [op, preprocess]] of Object.entries(composers)) {
+    for (const how of ["In", "Out", "Mix", "Squeeze", "SqueezeOut", "Trig", "Trigzero"]) {
+      Pattern$1.prototype[what + how] = function(...other) {
+        var pat = this;
+        other = sequence$1(other);
+        if (preprocess) {
+          pat = preprocess(pat);
+          other = preprocess(other);
+        }
+        var result = pat["_op" + how](other, (a) => (b) => _composeOp(a, b, op));
+        if (what === "keepif") {
+          result = result._removeUndefineds();
+        }
+        return result;
+      };
+      if (how === "Squeeze") {
+        Pattern$1.prototype[what + "SqueezeIn"] = Pattern$1.prototype[what + how];
+      }
+      if (how === "In") {
+        Pattern$1.prototype[what] = Pattern$1.prototype[what + how];
+      } else {
+        if (what === "set") {
+          Pattern$1.prototype[how.toLowerCase()] = Pattern$1.prototype[what + how];
+        }
+      }
+    }
+  }
+  Pattern$1.prototype.struct = Pattern$1.prototype.keepifOut;
+  Pattern$1.prototype.structAll = Pattern$1.prototype.keepOut;
+  Pattern$1.prototype.mask = Pattern$1.prototype.keepifIn;
+  Pattern$1.prototype.maskAll = Pattern$1.prototype.keepIn;
+  Pattern$1.prototype.reset = Pattern$1.prototype.keepifTrig;
+  Pattern$1.prototype.resetAll = Pattern$1.prototype.keepTrig;
+  Pattern$1.prototype.restart = Pattern$1.prototype.keepifTrigzero;
+  Pattern$1.prototype.restartAll = Pattern$1.prototype.keepTrigzero;
+})();
+Pattern$1.prototype.patternified = [
+  "apply",
+  "chop",
+  "color",
+  "cpm",
+  "duration",
+  "early",
+  "fast",
+  "jux",
+  "late",
+  "legato",
+  "linger",
+  "ply",
+  "segment",
+  "striate",
+  "slow",
+  "velocity"
+];
+Pattern$1.prototype.factories = {
+  pure: pure$1,
+  stack: stack$1,
+  slowcat: slowcat$1,
+  fastcat,
+  cat,
+  timeCat: timeCat$1,
+  sequence: sequence$1,
+  seq,
+  polymeter,
+  pm,
+  polyrhythm,
+  pr
+};
+const silence$1 = new Pattern$1((_) => []);
+function pure$1(value) {
+  function query(state) {
+    return state.span.spanCycles.map((subspan) => new Hap(fraction(subspan.begin).wholeCycle(), subspan, value));
+  }
+  return new Pattern$1(query);
+}
+function isPattern(thing) {
+  const is = thing instanceof Pattern$1 || thing._Pattern;
+  if (!thing instanceof Pattern$1) {
+    console.warn(
+      `Found Pattern that fails "instanceof Pattern" check.
+      This may happen if you are using multiple versions of @strudel.cycles/core. 
+      Please check by running "npm ls @strudel.cycles/core".`
+    );
+  }
+  return is;
+}
+function reify$2(thing) {
+  if (isPattern(thing)) {
+    return thing;
+  }
+  return pure$1(thing);
+}
+function stack$1(...pats) {
+  pats = pats.map((pat) => Array.isArray(pat) ? sequence$1(...pat) : reify$2(pat));
+  const query = (state) => flatten(pats.map((pat) => pat.query(state)));
+  return new Pattern$1(query);
+}
+function slowcat$1(...pats) {
+  pats = pats.map((pat) => Array.isArray(pat) ? sequence$1(...pat) : reify$2(pat));
+  const query = function(state) {
+    const span = state.span;
+    const pat_n = mod(span.begin.sam(), pats.length);
+    const pat = pats[pat_n];
+    if (!pat) {
+      return [];
+    }
+    const offset = span.begin.floor().sub(span.begin.div(pats.length).floor());
+    return pat.withHapTime((t) => t.add(offset)).query(state.setSpan(span.withTime((t) => t.sub(offset))));
+  };
+  return new Pattern$1(query)._splitQueries();
+}
+function slowcatPrime(...pats) {
+  pats = pats.map(reify$2);
+  const query = function(state) {
+    const pat_n = Math.floor(state.span.begin) % pats.length;
+    const pat = pats[pat_n];
+    return (pat == null ? void 0 : pat.query(state)) || [];
+  };
+  return new Pattern$1(query)._splitQueries();
+}
+function fastcat(...pats) {
+  return slowcat$1(...pats)._fast(pats.length);
+}
+function cat(...pats) {
+  return slowcat$1(...pats);
+}
+function timeCat$1(...timepats) {
+  const total = timepats.map((a) => a[0]).reduce((a, b) => a.add(b), fraction(0));
+  let begin = fraction(0);
+  const pats = [];
+  for (const [time2, pat] of timepats) {
+    const end = begin.add(time2);
+    pats.push(reify$2(pat)._compress(begin.div(total), end.div(total)));
+    begin = end;
+  }
+  return stack$1(...pats);
+}
+function sequence$1(...pats) {
+  return fastcat(...pats);
+}
+function seq(...pats) {
+  return fastcat(...pats);
+}
+function _sequenceCount(x) {
+  if (Array.isArray(x)) {
+    if (x.length == 0) {
+      return [silence$1, 0];
+    }
+    if (x.length == 1) {
+      return _sequenceCount(x[0]);
+    }
+    return [fastcat(...x.map((a) => _sequenceCount(a)[0])), x.length];
+  }
+  return [reify$2(x), 1];
+}
+function polymeterSteps(steps, ...args) {
+  const seqs = args.map((a) => _sequenceCount(a));
+  if (seqs.length == 0) {
+    return silence$1;
+  }
+  if (steps == 0) {
+    steps = seqs[0][1];
+  }
+  const pats = [];
+  for (const seq2 of seqs) {
+    if (seq2[1] == 0) {
+      next;
+    }
+    if (steps == seq2[1]) {
+      pats.push(seq2[0]);
+    } else {
+      pats.push(seq2[0]._fast(fraction(steps).div(fraction(seq2[1]))));
+    }
+  }
+  return stack$1(...pats);
+}
+function polymeter(...args) {
+  return polymeterSteps(0, ...args);
+}
+function pm(...args) {
+  polymeter(...args);
+}
+function polyrhythm(...xs) {
+  const seqs = xs.map((a) => sequence$1(a));
+  if (seqs.length == 0) {
+    return silence$1;
+  }
+  return stack$1(...seqs);
+}
+function pr(args) {
+  polyrhythm(args);
+}
+const add = curry((a, pat) => pat.add(a));
+const chop = curry((a, pat) => pat.chop(a));
+const chunk = curry((a, pat) => pat.chunk(a));
+const chunkBack = curry((a, pat) => pat.chunkBack(a));
+const div = curry((a, pat) => pat.div(a));
+const early = curry((a, pat) => pat.early(a));
+const echo = curry((a, b, c, pat) => pat.echo(a, b, c));
+const every = curry((i, f, pat) => pat.every(i, f));
+const fast = curry((a, pat) => pat.fast(a));
+const inv = (pat) => pat.inv();
+const invert = (pat) => pat.invert();
+const iter = curry((a, pat) => pat.iter(a));
+const iterBack = curry((a, pat) => pat.iter(a));
+const jux = curry((f, pat) => pat.jux(f));
+const juxBy = curry((by, f, pat) => pat.juxBy(by, f));
+const late = curry((a, pat) => pat.late(a));
+const linger = curry((a, pat) => pat.linger(a));
+const mask = curry((a, pat) => pat.mask(a));
+const mul = curry((a, pat) => pat.mul(a));
+const off = curry((t, f, pat) => pat.off(t, f));
+const ply = curry((a, pat) => pat.ply(a));
+const range = curry((a, b, pat) => pat.range(a, b));
+const range2 = curry((a, b, pat) => pat.range2(a, b));
+const rev = (pat) => pat.rev();
+const slow = curry((a, pat) => pat.slow(a));
+const struct = curry((a, pat) => pat.struct(a));
+const sub = curry((a, pat) => pat.sub(a));
+const superimpose = curry((array, pat) => pat.superimpose(...array));
+const set = curry((a, pat) => pat.set(a));
+const when = curry((binary, f, pat) => pat.when(binary, f));
+Pattern$1.prototype.composable = { fast, slow, early, late, superimpose };
+function makeComposable(func) {
+  Object.entries(Pattern$1.prototype.composable).forEach(([functionName, composable]) => {
+    func[functionName] = (...args) => {
+      const composition = compose(func, composable(...args));
+      return makeComposable(composition);
+    };
+  });
+  return func;
+}
+const patternify2 = (f) => (pata, patb, pat) => pata.fmap((a) => (b) => f.call(pat, a, b)).appLeft(patb).innerJoin();
+const patternify3 = (f) => (pata, patb, patc, pat) => pata.fmap((a) => (b) => (c) => f.call(pat, a, b, c)).appLeft(patb).appLeft(patc).innerJoin();
+const patternify4 = (f) => (pata, patb, patc, patd, pat) => pata.fmap((a) => (b) => (c) => (d) => f.call(pat, a, b, c, d)).appLeft(patb).appLeft(patc).appLeft(patd).innerJoin();
+Pattern$1.prototype.echo = function(...args) {
+  args = args.map(reify$2);
+  return patternify3(Pattern$1.prototype._echo)(...args, this);
+};
+Pattern$1.prototype.echoWith = function(...args) {
+  args = args.map(reify$2);
+  return patternify3(Pattern$1.prototype._echoWith)(...args, this);
+};
+Pattern$1.prototype.chunk = function(...args) {
+  args = args.map(reify$2);
+  return patternify2(Pattern$1.prototype._chunk)(...args, this);
+};
+Pattern$1.prototype.chunkBack = function(...args) {
+  args = args.map(reify$2);
+  return patternify2(Pattern$1.prototype._chunkBack)(...args, this);
+};
+Pattern$1.prototype.loopAt = function(...args) {
+  args = args.map(reify$2);
+  return patternify2(Pattern$1.prototype._loopAt)(...args, this);
+};
+Pattern$1.prototype.zoom = function(...args) {
+  args = args.map(reify$2);
+  return patternify2(Pattern$1.prototype._zoom)(...args, this);
+};
+Pattern$1.prototype.compress = function(...args) {
+  args = args.map(reify$2);
+  return patternify2(Pattern$1.prototype._compress)(...args, this);
+};
+Pattern$1.prototype.outside = function(...args) {
+  args = args.map(reify$2);
+  return patternify2(Pattern$1.prototype._outside)(...args, this);
+};
+Pattern$1.prototype.inside = function(...args) {
+  args = args.map(reify$2);
+  return patternify2(Pattern$1.prototype._inside)(...args, this);
+};
+Pattern$1.prototype.bootstrap = function() {
+  const bootstrapped = Object.fromEntries(
+    Object.entries(Pattern$1.prototype.composable).map(([functionName, composable]) => {
+      if (Pattern$1.prototype[functionName]) {
+        Pattern$1.prototype[functionName] = makeComposable(Pattern$1.prototype[functionName]);
+      }
+      return [functionName, curry(composable, makeComposable)];
+    })
+  );
+  this.patternified.forEach((prop) => {
+    Pattern$1.prototype[prop] = function(...args) {
+      return this._patternify(Pattern$1.prototype["_" + prop])(...args);
+    };
+  });
+  return bootstrapped;
+};
+Pattern$1.prototype.define = (name, func, options = {}) => {
+  if (options.composable) {
+    Pattern$1.prototype.composable[name] = func;
+  }
+  if (options.patternified) {
+    Pattern$1.prototype.patternified = Pattern$1.prototype.patternified.concat([name]);
+  }
+  Pattern$1.prototype.bootstrap();
+};
+Pattern$1.prototype.define("hush", (pat) => pat.hush(), { patternified: false, composable: true });
+Pattern$1.prototype.define("bypass", (pat) => pat.bypass(on), { patternified: true, composable: true });
+const controls = {};
+const generic_params = [
+  ["s", "s", "sound"],
+  ["f", "n", "The note or sample number to choose for a synth or sampleset"],
+  ["f", "note", "The note or pitch to play a sound or synth with"],
+  ["f", "accelerate", "a pattern of numbers that speed up (or slow down) samples while they play."],
+  [
+    "f",
+    "gain",
+    "a pattern of numbers that specify volume. Values less than 1 make the sound quieter. Values greater than 1 make the sound louder. For the linear equivalent, see @amp@."
+  ],
+  ["f", "amp", "like @gain@, but linear."],
+  [
+    "f",
+    "attack",
+    "a pattern of numbers to specify the attack time (in seconds) of an envelope applied to each sample."
+  ],
+  ["f", "decay", ""],
+  ["f", "sustain", ""],
+  [
+    "f",
+    "release",
+    "a pattern of numbers to specify the release time (in seconds) of an envelope applied to each sample."
+  ],
+  [
+    "f",
+    "hold",
+    "a pattern of numbers to specify the hold time (in seconds) of an envelope applied to each sample. Only takes effect if `attack` and `release` are also specified."
+  ],
+  ["f", "bandf", "A pattern of numbers from 0 to 1. Sets the center frequency of the band-pass filter."],
+  ["f", "bandq", "a pattern of anumbers from 0 to 1. Sets the q-factor of the band-pass filter."],
+  [
+    "f",
+    "begin",
+    "a pattern of numbers from 0 to 1. Skips the beginning of each sample, e.g. `0.25` to cut off the first quarter from each sample."
+  ],
+  [
+    "f",
+    "end",
+    "the same as `begin`, but cuts the end off samples, shortening them; e.g. `0.75` to cut off the last quarter of each sample."
+  ],
+  ["f", "loop", "loops the sample (from `begin` to `end`) the specified number of times."],
+  ["f", "legato", "controls the amount of overlap between two adjacent sounds"],
+  [
+    "f",
+    "crush",
+    "bit crushing, a pattern of numbers from 1 (for drastic reduction in bit-depth) to 16 (for barely no reduction)."
+  ],
+  [
+    "f",
+    "coarse",
+    "fake-resampling, a pattern of numbers for lowering the sample rate, i.e. 1 for original 2 for half, 3 for a third and so on."
+  ],
+  ["i", "channel", "choose the channel the pattern is sent to in superdirt"],
+  [
+    "i",
+    "cut",
+    "In the style of classic drum-machines, `cut` will stop a playing sample as soon as another samples with in same cutgroup is to be played. An example would be an open hi-hat followed by a closed one, essentially muting the open."
+  ],
+  ["f", "cutoff", "a pattern of numbers from 0 to 1. Applies the cutoff frequency of the low-pass filter."],
+  [
+    "f",
+    "hcutoff",
+    "a pattern of numbers from 0 to 1. Applies the cutoff frequency of the high-pass filter. Also has alias @hpf@"
+  ],
+  [
+    "f",
+    "hresonance",
+    "a pattern of numbers from 0 to 1. Applies the resonance of the high-pass filter. Has alias @hpq@"
+  ],
+  ["f", "resonance", "a pattern of numbers from 0 to 1. Specifies the resonance of the low-pass filter."],
+  ["f", "djf", "DJ filter, below 0.5 is low pass filter, above is high pass filter."],
+  ["f", "delay", "a pattern of numbers from 0 to 1. Sets the level of the delay signal."],
+  ["f", "delayfeedback", "a pattern of numbers from 0 to 1. Sets the amount of delay feedback."],
+  ["f", "delaytime", "a pattern of numbers from 0 to 1. Sets the length of the delay."],
+  [
+    "f",
+    "lock",
+    "A pattern of numbers. Specifies whether delaytime is calculated relative to cps. When set to 1, delaytime is a direct multiple of a cycle."
+  ],
+  ["f", "detune", ""],
+  [
+    "f",
+    "dry",
+    "when set to `1` will disable all reverb for this pattern. See `room` and `size` for more information about reverb."
+  ],
+  [
+    "f",
+    "fadeTime",
+    "Used when using begin/end or chop/striate and friends, to change the fade out time of the 'grain' envelope."
+  ],
+  [
+    "f",
+    "fadeInTime",
+    "As with fadeTime, but controls the fade in time of the grain envelope. Not used if the grain begins at position 0 in the sample."
+  ],
+  ["f", "freq", ""],
+  ["f", "gate", ""],
+  ["f", "leslie", ""],
+  ["f", "lrate", ""],
+  ["f", "lsize", ""],
+  ["f", "degree", ""],
+  ["f", "mtranspose", ""],
+  ["f", "ctranspose", ""],
+  ["f", "harmonic", ""],
+  ["f", "stepsPerOctave", ""],
+  ["f", "octaveR", ""],
+  [
+    "f",
+    "nudge",
+    "Nudges events into the future by the specified number of seconds. Negative numbers work up to a point as well (due to internal latency)"
+  ],
+  ["i", "octave", ""],
+  ["f", "offset", ""],
+  [
+    "i",
+    "orbit",
+    "a pattern of numbers. An `orbit` is a global parameter context for patterns. Patterns with the same orbit will share hardware output bus offset and global effects, e.g. reverb and delay. The maximum number of orbits is specified in the superdirt startup, numbers higher than maximum will wrap around."
+  ],
+  ["f", "overgain", ""],
+  ["f", "overshape", ""],
+  [
+    "f",
+    "pan",
+    "a pattern of numbers between 0 and 1, from left to right (assuming stereo), once round a circle (assuming multichannel)"
+  ],
+  [
+    "f",
+    "panspan",
+    "a pattern of numbers between -inf and inf, which controls how much multichannel output is fanned out (negative is backwards ordering)"
+  ],
+  [
+    "f",
+    "pansplay",
+    "a pattern of numbers between 0.0 and 1.0, which controls the multichannel spread range (multichannel only)"
+  ],
+  [
+    "f",
+    "panwidth",
+    "a pattern of numbers between 0.0 and inf, which controls how much each channel is distributed over neighbours (multichannel only)"
+  ],
+  [
+    "f",
+    "panorient",
+    "a pattern of numbers between -1.0 and 1.0, which controls the relative position of the centre pan in a pair of adjacent speakers (multichannel only)"
+  ],
+  ["f", "rate", "used in SuperDirt softsynths as a control rate or 'speed'"],
+  ["f", "slide", ""],
+  ["f", "semitone", ""],
+  ["f", "velocity", ""],
+  ["f", "voice", ""],
+  ["f", "room", "a pattern of numbers from 0 to 1. Sets the level of reverb."],
+  [
+    "f",
+    "size",
+    "a pattern of numbers from 0 to 1. Sets the perceptual size (reverb time) of the `room` to be used in reverb."
+  ],
+  [
+    "f",
+    "shape",
+    "wave shaping distortion, a pattern of numbers from 0 for no distortion up to 1 for loads of distortion."
+  ],
+  [
+    "f",
+    "speed",
+    "a pattern of numbers which changes the speed of sample playback, i.e. a cheap way of changing pitch. Negative values will play the sample backwards!"
+  ],
+  [
+    "s",
+    "unit",
+    'used in conjunction with `speed`, accepts values of "r" (rate, default behavior), "c" (cycles), or "s" (seconds). Using `unit "c"` means `speed` will be interpreted in units of cycles, e.g. `speed "1"` means samples will be stretched to fill a cycle. Using `unit "s"` means the playback speed will be adjusted so that the duration is the number of seconds specified by `speed`.'
+  ],
+  ["f", "squiz", ""],
+  ["f", "stutterdepth", ""],
+  ["f", "stuttertime", ""],
+  ["f", "timescale", ""],
+  ["f", "timescalewin", ""],
+  [
+    "s",
+    "vowel",
+    "formant filter to make things sound like vowels, a pattern of either `a`, `e`, `i`, `o` or `u`. Use a rest (`~`) for no effect."
+  ],
+  ["f", "waveloss", ""],
+  ["f", "dur", ""],
+  ["f", "expression", ""],
+  ["f", "sustainpedal", ""],
+  ["f", "tremolodepth", "Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'"],
+  ["f", "tremolorate", "Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'"],
+  ["f", "phaserdepth", "Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'"],
+  ["f", "phaserrate", "Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'"],
+  ["f", "fshift", "frequency shifter"],
+  ["f", "fshiftnote", "frequency shifter"],
+  ["f", "fshiftphase", "frequency shifter"],
+  ["f", "triode", "tube distortion"],
+  ["f", "krush", "shape/bass enhancer"],
+  ["f", "kcutoff", ""],
+  ["f", "octer", "octaver effect"],
+  ["f", "octersub", "octaver effect"],
+  ["f", "octersubsub", "octaver effect"],
+  ["f", "ring", "ring modulation"],
+  ["f", "ringf", "ring modulation"],
+  ["f", "ringdf", "ring modulation"],
+  ["f", "distort", "noisy fuzzy distortion"],
+  ["f", "freeze", "Spectral freeze"],
+  ["f", "xsdelay", ""],
+  ["f", "tsdelay", ""],
+  ["f", "real", "Spectral conform"],
+  ["f", "imag", ""],
+  ["f", "enhance", "Spectral enhance"],
+  ["f", "partials", ""],
+  ["f", "comb", "Spectral comb"],
+  ["f", "smear", "Spectral smear"],
+  ["f", "scram", "Spectral scramble"],
+  ["f", "binshift", "Spectral binshift"],
+  ["f", "hbrick", "High pass sort of spectral filter"],
+  ["f", "lbrick", "Low pass sort of spectral filter"],
+  ["f", "midichan", ""],
+  ["f", "control", ""],
+  ["f", "ccn", ""],
+  ["f", "ccv", ""],
+  ["f", "polyTouch", ""],
+  ["f", "midibend", ""],
+  ["f", "miditouch", ""],
+  ["f", "ctlNum", ""],
+  ["f", "frameRate", ""],
+  ["f", "frames", ""],
+  ["f", "hours", ""],
+  ["s", "midicmd", ""],
+  ["f", "minutes", ""],
+  ["f", "progNum", ""],
+  ["f", "seconds", ""],
+  ["f", "songPtr", ""],
+  ["f", "uid", ""],
+  ["f", "val", ""],
+  ["f", "cps", ""],
+  ["f", "clip", ""]
+];
+const _name = (name, ...pats) => sequence$1(...pats).withValue((x) => ({ [name]: x }));
+const _setter = (func, name) => function(...pats) {
+  if (!pats.length) {
+    return this.fmap((value) => ({ [name]: value }));
+  }
+  return this.set(func(...pats));
+};
+generic_params.forEach(([type, name, description]) => {
+  controls[name] = (...pats) => _name(name, ...pats);
+  Pattern$1.prototype[name] = _setter(controls[name], name);
+});
+controls.createParam = (name) => {
+  const func = (...pats) => _name(name, ...pats);
+  Pattern$1.prototype[name] = _setter(func, name);
+  return (...pats) => _name(name, ...pats);
+};
+controls.createParams = (...names) => names.reduce((acc, name) => Object.assign(acc, { [name]: createParam(name) }), {});
+function bjorklund(slots, pulses) {
+  var pattern = [], count = [], remainder = [pulses], divisor = slots - pulses, level = 0, build_pattern = function(lv) {
+    if (lv == -1) {
+      pattern.push(0);
+    } else if (lv == -2) {
+      pattern.push(1);
+    } else {
+      for (var x = 0; x < count[lv]; x++) {
+        build_pattern(lv - 1);
+      }
+      if (remainder[lv]) {
+        build_pattern(lv - 2);
+      }
+    }
+  };
+  while (remainder[level] > 1) {
+    count.push(Math.floor(divisor / remainder[level]));
+    remainder.push(divisor % remainder[level]);
+    divisor = remainder[level];
+    level++;
+  }
+  count.push(divisor);
+  build_pattern(level);
+  return pattern.reverse();
+}
+var bjork = function(m, k) {
+  if (m > k)
+    return bjorklund(m, k);
+  else
+    return bjorklund(k, m);
+};
+const euclid = (pulses, steps, rotation = 0) => {
+  const b = bjork(steps, pulses);
+  if (rotation) {
+    return rotate(b, -rotation);
+  }
+  return b;
+};
+Pattern$1.prototype.euclid = function(pulses, steps, rotation = 0) {
+  return this.struct(euclid(pulses, steps, rotation));
+};
+Pattern$1.prototype.euclidLegato = function(pulses, steps, rotation = 0) {
+  const bin_pat = euclid(pulses, steps, rotation);
+  const firstOne = bin_pat.indexOf(1);
+  const gapless = rotate(bin_pat, firstOne).join("").split("1").slice(1).map((s) => [s.length + 1, true]);
+  return this.struct(timeCat$1(...gapless)).late(fraction(firstOne).div(steps));
+};
+function steady(value) {
+  return new Pattern$1((state) => [new Hap(void 0, state.span, value)]);
+}
+const signal = (func) => {
+  const query = (state) => [new Hap(void 0, state.span, func(state.span.midpoint()))];
+  return new Pattern$1(query);
+};
+const isaw = signal((t) => 1 - t % 1);
+const isaw2 = isaw._toBipolar();
+const saw = signal((t) => t % 1);
+const saw2 = saw._toBipolar();
+const sine2 = signal((t) => Math.sin(Math.PI * 2 * t));
+const sine = sine2._fromBipolar();
+const cosine = sine._early(fraction(1).div(4));
+const cosine2 = sine2._early(fraction(1).div(4));
+const square = signal((t) => Math.floor(t * 2 % 2));
+const square2 = square._toBipolar();
+const tri = fastcat(isaw, saw);
+const tri2 = fastcat(isaw2, saw2);
+const time = signal(id);
+const xorwise = (x) => {
+  const a = x << 13 ^ x;
+  const b = a >> 17 ^ a;
+  return b << 5 ^ b;
+};
+const _frac = (x) => x - Math.trunc(x);
+const timeToIntSeed = (x) => xorwise(Math.trunc(_frac(x / 300) * 536870912));
+const intSeedToRand = (x) => x % 536870912 / 536870912;
+const timeToRand = (x) => Math.abs(intSeedToRand(timeToIntSeed(x)));
+const rand = signal(timeToRand);
+const rand2 = rand._toBipolar();
+const _brandBy = (p) => rand.fmap((x) => x < p);
+const brandBy = (pPat) => reify$2(pPat).fmap(_brandBy).innerJoin();
+const brand = _brandBy(0.5);
+const _irand = (i) => rand.fmap((x) => Math.trunc(x * i));
+const irand = (ipat) => reify$2(ipat).fmap(_irand).innerJoin();
+const __chooseWith = (pat, xs) => {
+  xs = xs.map(reify$2);
+  if (xs.length == 0) {
+    return silence$1;
+  }
+  return pat.range(0, xs.length).fmap((i) => xs[Math.floor(i)]);
+};
+const chooseWith = (pat, xs) => {
+  return __chooseWith(pat, xs).outerJoin();
+};
+const chooseInWith = (pat, xs) => {
+  return __chooseWith(pat, xs).innerJoin();
+};
+const choose = (...xs) => chooseWith(rand, xs);
+Pattern$1.prototype.choose = function(...xs) {
+  return chooseWith(this, xs);
+};
+Pattern$1.prototype.choose2 = function(...xs) {
+  return chooseWith(this._fromBipolar(), xs);
+};
+const chooseCycles = (...xs) => chooseInWith(rand.segment(1), xs);
+const randcat = chooseCycles;
+const _wchooseWith = function(pat, ...pairs) {
+  const values = pairs.map((pair) => reify$2(pair[0]));
+  const weights = [];
+  let accum = 0;
+  for (const pair of pairs) {
+    accum += pair[1];
+    weights.push(accum);
+  }
+  const total = accum;
+  const match = function(r) {
+    const find = r * total;
+    return values[weights.findIndex((x) => x > find, weights)];
+  };
+  return pat.fmap(match);
+};
+const wchooseWith = (...args) => _wchooseWith(...args).outerJoin();
+const wchoose = (...pairs) => wchooseWith(rand, ...pairs);
+const wchooseCycles = (...pairs) => _wchooseWith(rand, ...pairs).innerJoin();
+const perlinWith = (pat) => {
+  const pata = pat.fmap(Math.floor);
+  const patb = pat.fmap((t) => Math.floor(t) + 1);
+  const smootherStep = (x) => 6 * x ** 5 - 15 * x ** 4 + 10 * x ** 3;
+  const interp = (x) => (a) => (b) => a + smootherStep(x) * (b - a);
+  return pat.sub(pata).fmap(interp).appBoth(pata.fmap(timeToRand)).appBoth(patb.fmap(timeToRand));
+};
+const perlin = perlinWith(time);
+Pattern$1.prototype._degradeByWith = function(withPat, x) {
+  return this.fmap((a) => (_) => a).appLeft(withPat._filterValues((v) => v > x));
+};
+Pattern$1.prototype._degradeBy = function(x) {
+  return this._degradeByWith(rand, x);
+};
+Pattern$1.prototype.degrade = function() {
+  return this._degradeBy(0.5);
+};
+Pattern$1.prototype._undegradeBy = function(x) {
+  return this._degradeByWith(
+    rand.fmap((r) => 1 - r),
+    x
+  );
+};
+Pattern$1.prototype.undegrade = function() {
+  return this._undegradeBy(0.5);
+};
+Pattern$1.prototype._sometimesBy = function(x, func) {
+  return stack$1(this._degradeBy(x), func(this._undegradeBy(1 - x)));
+};
+Pattern$1.prototype.sometimesBy = function(patx, func) {
+  const pat = this;
+  return reify$2(patx).fmap((x) => pat._sometimesBy(x, func)).innerJoin();
+};
+Pattern$1.prototype._sometimesByPre = function(x, func) {
+  return stack$1(this._degradeBy(x), func(this).undegradeBy(1 - x));
+};
+Pattern$1.prototype.sometimesByPre = function(patx, func) {
+  const pat = this;
+  return reify$2(patx).fmap((x) => pat._sometimesByPre(x, func)).innerJoin();
+};
+Pattern$1.prototype.sometimes = function(func) {
+  return this._sometimesBy(0.5, func);
+};
+Pattern$1.prototype.sometimesPre = function(func) {
+  return this._sometimesByPre(0.5, func);
+};
+Pattern$1.prototype._someCyclesBy = function(x, func) {
+  return stack$1(
+    this._degradeByWith(rand._segment(1), x),
+    func(this._degradeByWith(rand.fmap((r) => 1 - r)._segment(1), 1 - x))
+  );
+};
+Pattern$1.prototype.someCyclesBy = function(patx, func) {
+  const pat = this;
+  return reify$2(patx).fmap((x) => pat._someCyclesBy(x, func)).innerJoin();
+};
+Pattern$1.prototype.someCycles = function(func) {
+  return this._someCyclesBy(0.5, func);
+};
+Pattern$1.prototype.often = function(func) {
+  return this.sometimesBy(0.75, func);
+};
+Pattern$1.prototype.rarely = function(func) {
+  return this.sometimesBy(0.25, func);
+};
+Pattern$1.prototype.almostNever = function(func) {
+  return this.sometimesBy(0.1, func);
+};
+Pattern$1.prototype.almostAlways = function(func) {
+  return this.sometimesBy(0.9, func);
+};
+Pattern$1.prototype.never = function(func) {
+  return this;
+};
+Pattern$1.prototype.always = function(func) {
+  return func(this);
+};
+Pattern$1.prototype.patternified.push("degradeBy", "undegradeBy");
+let synth;
+try {
+  synth = window == null ? void 0 : window.speechSynthesis;
+} catch (err) {
+  console.warn("cannot use window: not in browser?");
+}
+let allVoices = synth == null ? void 0 : synth.getVoices();
+function speak(words, lang, voice) {
+  synth.cancel();
+  const utterance = new SpeechSynthesisUtterance(words);
+  utterance.lang = lang;
+  allVoices = synth.getVoices();
+  const voices = allVoices.filter((v) => v.lang.includes(lang));
+  if (typeof voice === "number") {
+    utterance.voice = voices[voice % voices.length];
+  } else if (typeof voice === "string") {
+    utterance.voice = voices.find((voice2) => voice2.name === voice2);
+  }
+  speechSynthesis.speak(utterance);
+}
+Pattern$1.prototype._speak = function(lang, voice) {
+  return this._withHap((hap) => {
+    const onTrigger = (time2, hap2) => {
+      speak(hap2.value, lang, voice);
+    };
+    return hap.setContext({ ...hap.context, onTrigger });
+  });
+};
+Pattern$1.prototype.speak = function(lang, voice) {
+  return patternify2(Pattern$1.prototype._speak)(reify(lang), reify(voice), this);
+};
+const gist = (route, cache = true) => fetch(`https://gist.githubusercontent.com/${route}?cachebust=${cache ? "" : Date.now()}`).then((res) => res.text()).then((code) => eval(code));
+console.log(
+  "%c // \u{1F300} @strudel.cycles/core loaded \u{1F300}",
+  "background-color: black;color:white;padding:4px;border-radius:15px"
+);
+if (globalThis._strudelLoaded) {
+  console.warn(
+    `@strudel.cycles/core was loaded more than once...
+This might happen when you have multiple versions of strudel installed. 
+Please check with "npm ls @strudel.cycles/core".`
+  );
+}
+globalThis._strudelLoaded = true;
+const strudel = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  Fraction: fraction,
+  gist,
+  Hap,
+  Pattern: Pattern$1,
+  silence: silence$1,
+  pure: pure$1,
+  isPattern,
+  reify: reify$2,
+  stack: stack$1,
+  slowcat: slowcat$1,
+  slowcatPrime,
+  fastcat,
+  cat,
+  timeCat: timeCat$1,
+  sequence: sequence$1,
+  seq,
+  polymeterSteps,
+  polymeter,
+  pm,
+  polyrhythm,
+  pr,
+  add,
+  chop,
+  chunk,
+  chunkBack,
+  div,
+  early,
+  echo,
+  every,
+  fast,
+  inv,
+  invert,
+  iter,
+  iterBack,
+  jux,
+  juxBy,
+  late,
+  linger,
+  mask,
+  mul,
+  off,
+  ply,
+  range,
+  range2,
+  rev,
+  slow,
+  struct,
+  sub,
+  superimpose,
+  set,
+  when,
+  makeComposable,
+  patternify2,
+  patternify3,
+  patternify4,
+  steady,
+  signal,
+  isaw,
+  isaw2,
+  saw,
+  saw2,
+  sine2,
+  sine,
+  cosine,
+  cosine2,
+  square,
+  square2,
+  tri,
+  tri2,
+  time,
+  rand,
+  rand2,
+  _brandBy,
+  brandBy,
+  brand,
+  _irand,
+  irand,
+  __chooseWith,
+  chooseWith,
+  chooseInWith,
+  choose,
+  chooseCycles,
+  randcat,
+  wchoose,
+  wchooseCycles,
+  perlinWith,
+  perlin,
+  State,
+  TimeSpan,
+  isNote,
+  tokenizeNote,
+  toMidi,
+  fromMidi,
+  getFreq,
+  midi2note,
+  mod,
+  getPlayableNoteValue,
+  getFrequency,
+  rotate,
+  pipe,
+  compose,
+  removeUndefineds,
+  flatten,
+  id,
+  constant,
+  listRange,
+  curry
+}, Symbol.toStringTag, { value: "Module" }));
+const { pure, Pattern, Fraction, stack, slowcat, sequence, timeCat, silence, reify: reify$1 } = strudel;
+var _seedState = 0;
+const randOffset = 2e-4;
+function _nextSeed() {
+  return _seedState++;
+}
+const applyOptions = (parent) => (pat, i) => {
+  const ast = parent.source_[i];
+  const options = ast.options_;
+  const operator = options == null ? void 0 : options.operator;
+  if (operator) {
+    switch (operator.type_) {
+      case "stretch":
+        const speed = Fraction(operator.arguments_.amount).inverse();
+        return reify$1(pat).fast(speed);
+      case "bjorklund":
+        return pat.euclid(operator.arguments_.pulse, operator.arguments_.step, operator.arguments_.rotation);
+      case "degradeBy":
+        return reify$1(pat)._degradeByWith(rand.early(randOffset * _nextSeed()).segment(1), operator.arguments_.amount);
+    }
+    console.warn(`operator "${operator.type_}" not implemented`);
+  }
+  if (options == null ? void 0 : options.weight) {
+    return pat;
+  }
+  const unimplemented = Object.keys(options || {}).filter((key) => key !== "operator");
+  if (unimplemented.length) {
+    console.warn(
+      `option${unimplemented.length > 1 ? "s" : ""} ${unimplemented.map((o) => `"${o}"`).join(", ")} not implemented`
+    );
+  }
+  return pat;
+};
+function resolveReplications(ast) {
+  ast.source_ = ast.source_.map((child) => {
+    const { replicate, ...options } = child.options_ || {};
+    if (replicate) {
+      return {
+        ...child,
+        options_: { ...options, weight: replicate },
+        source_: {
+          type_: "pattern",
+          arguments_: {
+            alignment: "h"
+          },
+          source_: [
+            {
+              type_: "element",
+              source_: child.source_,
+              location_: child.location_,
+              options_: {
+                operator: {
+                  type_: "stretch",
+                  arguments_: { amount: Fraction(replicate).inverse().toString() }
+                }
+              }
+            }
+          ]
+        }
+      };
+    }
+    return child;
+  });
+}
+function patternifyAST(ast) {
+  let p;
+  switch (ast.type_) {
+    case "pattern":
+      resolveReplications(ast);
+      const children = ast.source_.map(patternifyAST).map(applyOptions(ast));
+      const alignment = ast.arguments_.alignment;
+      if (alignment === "v") {
+        return stack(...children);
+      }
+      if (alignment === "r") {
+        return chooseInWith(rand.early(randOffset * _nextSeed()).segment(1), children);
+      }
+      const weightedChildren = ast.source_.some((child) => {
+        var _a;
+        return !!((_a = child.options_) == null ? void 0 : _a.weight);
+      });
+      if (!weightedChildren && alignment === "t") {
+        return slowcat(...children);
+      }
+      if (weightedChildren) {
+        const pat = timeCat(...ast.source_.map((child, i) => {
+          var _a;
+          return [((_a = child.options_) == null ? void 0 : _a.weight) || 1, children[i]];
+        }));
+        if (alignment === "t") {
+          const weightSum = ast.source_.reduce((sum, child) => {
+            var _a;
+            return sum + (((_a = child.options_) == null ? void 0 : _a.weight) || 1);
+          }, 0);
+          return pat._slow(weightSum);
+        }
+        return pat;
+      }
+      return sequence(...children);
+    case "element":
+      if (ast.source_ === "~") {
+        return silence;
+      }
+      if (typeof ast.source_ !== "object") {
+        if (!ast.location_) {
+          console.warn("no location for", ast);
+          return ast.source_;
+        }
+        const { start, end } = ast.location_;
+        const value = !isNaN(Number(ast.source_)) ? Number(ast.source_) : ast.source_;
+        return pure(value).withLocation([start.line, start.column, start.offset], [end.line, end.column, end.offset]);
+      }
+      p = patternifyAST(ast.source_);
+      p.ast = ast;
+      return p;
+    case "stretch":
+      p = patternifyAST(ast.source_).slow(ast.arguments_.amount);
+      p.ast = ast;
+      return p;
+    default:
+      console.warn(`node type "${ast.type_}" not implemented -> returning silence`);
+      return silence;
+  }
+}
+const mini = (...strings) => {
+  const pats = strings.map((str) => {
+    const ast = peg$parse(`"${str}"`);
+    const p = patternifyAST(ast);
+    p.ast = ast;
+    return p;
+  });
+  const s = sequence(...pats);
+  s.ast = pats.map((_pat) => _pat.ast);
+  return s;
+};
+const h = (string) => {
+  const ast = peg$parse(string);
+  const p = patternifyAST(ast);
+  p.ast = ast;
+  return p;
+};
+Pattern.prototype.define("mini", mini, { composable: true });
+Pattern.prototype.define("m", mini, { composable: true });
+Pattern.prototype.define("h", h, { composable: true });
+function minify(thing) {
+  if (typeof thing === "string") {
+    return mini(thing);
+  }
+  return reify$1(thing);
+}
+exports.SyntaxError = peg$SyntaxError;
+exports.h = h;
+exports.mini = mini;
+exports.minify = minify;
+exports.parse = peg$parse;
+exports.patternifyAST = patternifyAST;
+
+},{}],266:[function(require,module,exports){
 /*
  * https://github.com/antimatter15/heapqueue.js/blob/master/heapqueue.js
  *
@@ -81724,7 +85706,7 @@ HeapQueue.prototype.pop = function(){
 
 module.exports = HeapQueue
 
-},{}],269:[function(require,module,exports){
+},{}],267:[function(require,module,exports){
 
 /**
  * Copyright 2018 Google LLC
@@ -81770,7 +85752,7 @@ module.exports = function Realm (scope, parentElement) {
   this.exec = win.$hook.call(scope, scope, console);
 }
 
-},{}],270:[function(require,module,exports){
+},{}],268:[function(require,module,exports){
 const __proxy = require( './workletProxy.js' )
 const effectProto = require( './fx/effect.js' )
 
@@ -81931,7 +85913,7 @@ module.exports = function( Gibberish ) {
   return factory
 }
 
-},{"./fx/effect.js":285,"./workletProxy.js":331}],271:[function(require,module,exports){
+},{"./fx/effect.js":283,"./workletProxy.js":329}],269:[function(require,module,exports){
 let g = require( 'genish.js' )
  
 // constructor for schroeder allpass filters
@@ -81948,7 +85930,7 @@ let allPass = function( _input, length=500, feedback=.5 ) {
 
 module.exports = allPass
 
-},{"genish.js":40}],272:[function(require,module,exports){
+},{"genish.js":40}],270:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -82112,7 +86094,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":275,"genish.js":40}],273:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],271:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 ) {
@@ -82131,7 +86113,7 @@ let combFilter = function( _input, combLength, damping=.5*.4, feedbackCoeff=.84 
 
 module.exports = combFilter
 
-},{"genish.js":40}],274:[function(require,module,exports){
+},{"genish.js":40}],272:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -82341,7 +86323,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./filter.js":275,"genish.js":40}],275:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],273:[function(require,module,exports){
 let ugen = require( '../ugen.js' )()
 
 let filter = Object.create( ugen )
@@ -82352,7 +86334,7 @@ Object.assign( filter, {
 
 module.exports = filter
 
-},{"../ugen.js":329}],276:[function(require,module,exports){
+},{"../ugen.js":327}],274:[function(require,module,exports){
 let g = require( 'genish.js' ),
     filter = require( './filter.js' )
 
@@ -82422,7 +86404,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":275,"genish.js":40}],277:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],275:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const g = Gibberish.genish
@@ -82486,7 +86468,7 @@ return filters
 
 }
 
-},{"./allpass.js":271,"./biquad.dsp.js":272,"./combfilter.js":273,"./diodeFilterZDF.js":274,"./filter24.js":276,"./ladder.dsp.js":278,"./svf.js":279}],278:[function(require,module,exports){
+},{"./allpass.js":269,"./biquad.dsp.js":270,"./combfilter.js":271,"./diodeFilterZDF.js":272,"./filter24.js":274,"./ladder.dsp.js":276,"./svf.js":277}],276:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       filterProto = require( './filter.js' )
 
@@ -82606,7 +86588,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":275,"genish.js":40}],279:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],277:[function(require,module,exports){
 const g = require( 'genish.js' ),
       filter = require( './filter.js' )
 
@@ -82684,7 +86666,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./filter.js":275,"genish.js":40}],280:[function(require,module,exports){
+},{"./filter.js":273,"genish.js":40}],278:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -82762,7 +86744,7 @@ return BitCrusher
 
 }
 
-},{"./effect.js":285,"genish.js":40}],281:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],279:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -82887,7 +86869,7 @@ module.exports = function( Gibberish ) {
   return Shuffler 
 }
 
-},{"./effect.js":285,"genish.js":40}],282:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],280:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
   
@@ -82984,7 +86966,7 @@ return __Chorus
 
 }
 
-},{"./effect.js":285,"genish.js":40}],283:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],281:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -83056,7 +87038,7 @@ return Delay
 
 }
 
-},{"./effect.js":285,"genish.js":40}],284:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],282:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83143,7 +87125,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./effect.js":285,"genish.js":40}],285:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],283:[function(require,module,exports){
 let ugen = require( '../ugen.js' )()
 
 let effect = Object.create( ugen )
@@ -83155,7 +87137,7 @@ Object.assign( effect, {
 
 module.exports = effect
 
-},{"../ugen.js":329}],286:[function(require,module,exports){
+},{"../ugen.js":327}],284:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const effects = {
@@ -83186,7 +87168,7 @@ return effects
 
 }
 
-},{"./bitCrusher.js":280,"./bufferShuffler.js":281,"./chorus.js":282,"./delay.js":283,"./distortion.dsp.js":284,"./flanger.js":287,"./freeverb.js":288,"./ringMod.js":289,"./tremolo.js":290,"./vibrato.js":291,"./wavefolder.dsp.js":292}],287:[function(require,module,exports){
+},{"./bitCrusher.js":278,"./bufferShuffler.js":279,"./chorus.js":280,"./delay.js":281,"./distortion.dsp.js":282,"./flanger.js":285,"./freeverb.js":286,"./ringMod.js":287,"./tremolo.js":288,"./vibrato.js":289,"./wavefolder.dsp.js":290}],285:[function(require,module,exports){
 let g = require( 'genish.js' ),
     proto = require( './effect.js' )
 
@@ -83277,7 +87259,7 @@ return Flanger
 
 }
 
-},{"./effect.js":285,"genish.js":40}],288:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],286:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83385,7 +87367,7 @@ return Freeverb
 }
 
 
-},{"./effect.js":285,"genish.js":40}],289:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],287:[function(require,module,exports){
 let g = require( 'genish.js' ),
     effect = require( './effect.js' )
 
@@ -83450,7 +87432,7 @@ return RingMod
 
 }
 
-},{"./effect.js":285,"genish.js":40}],290:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],288:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83523,7 +87505,7 @@ return Tremolo
 
 }
 
-},{"./effect.js":285,"genish.js":40}],291:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],289:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83610,7 +87592,7 @@ return Vibrato
 
 }
 
-},{"./effect.js":285,"genish.js":40}],292:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],290:[function(require,module,exports){
 const g = require( 'genish.js' ),
       effect = require( './effect.js' )
 
@@ -83760,7 +87742,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./effect.js":285,"genish.js":40}],293:[function(require,module,exports){
+},{"./effect.js":283,"genish.js":40}],291:[function(require,module,exports){
 let MemoryHelper = require( 'memory-helper' ),
     genish       = require( 'genish.js' )
     
@@ -84266,7 +88248,7 @@ Gibberish.utilities = require( './utilities.js' )( Gibberish )
 
 module.exports = Gibberish
 
-},{"./analysis/analyzer.js":259,"./analysis/analyzers.js":260,"./envelopes/envelopes.js":265,"./factory.js":270,"./filters/filters.js":277,"./fx/effect.js":285,"./fx/effects.js":286,"./instruments/instrument.js":300,"./instruments/instruments.js":301,"./instruments/polyMixin.js":306,"./instruments/polytemplate.js":307,"./misc/binops.js":313,"./misc/bus.js":314,"./misc/bus2.js":315,"./misc/monops.js":316,"./misc/panner.js":317,"./misc/time.js":318,"./oscillators/oscillators.js":321,"./scheduling/scheduler.js":325,"./scheduling/seq2.js":326,"./scheduling/sequencer.js":327,"./scheduling/tidal.js":328,"./ugen.js":329,"./utilities.js":330,"./workletProxy.js":331,"genish.js":40,"memory-helper":334}],294:[function(require,module,exports){
+},{"./analysis/analyzer.js":256,"./analysis/analyzers.js":257,"./envelopes/envelopes.js":262,"./factory.js":268,"./filters/filters.js":275,"./fx/effect.js":283,"./fx/effects.js":284,"./instruments/instrument.js":298,"./instruments/instruments.js":299,"./instruments/polyMixin.js":304,"./instruments/polytemplate.js":305,"./misc/binops.js":311,"./misc/bus.js":312,"./misc/bus2.js":313,"./misc/monops.js":314,"./misc/panner.js":315,"./misc/time.js":316,"./oscillators/oscillators.js":319,"./scheduling/scheduler.js":323,"./scheduling/seq2.js":324,"./scheduling/sequencer.js":325,"./scheduling/tidal.js":326,"./ugen.js":327,"./utilities.js":328,"./workletProxy.js":329,"genish.js":40,"memory-helper":330}],292:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -84336,7 +88318,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],295:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],293:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       __wavefold   = require( '../fx/wavefolder.dsp.js' )
@@ -84462,7 +88444,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../fx/wavefolder.dsp.js":292,"./instrument.js":300,"genish.js":40}],296:[function(require,module,exports){
+},{"../fx/wavefolder.dsp.js":290,"./instrument.js":298,"genish.js":40}],294:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84503,7 +88485,7 @@ module.exports = function( Gibberish ) {
   return [ Conga, PolyConga ]
 }
 
-},{"./instrument.js":300,"genish.js":40}],297:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],295:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84547,7 +88529,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],298:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],296:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -84678,7 +88660,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],299:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],297:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84732,7 +88714,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],300:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],298:[function(require,module,exports){
 const ugen = require('../ugen.js')();
 
 const instrument = Object.create(ugen);
@@ -84780,7 +88762,7 @@ Object.assign(instrument, {
 
 module.exports = instrument
 
-},{"../ugen.js":329}],301:[function(require,module,exports){
+},{"../ugen.js":327}],299:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
 const instruments = {
@@ -84818,7 +88800,7 @@ return instruments
 
 }
 
-},{"./clap.dsp.js":294,"./complex.dsp.js":295,"./conga.js":296,"./cowbell.js":297,"./fm.dsp.js":298,"./hat.js":299,"./karplusstrong.js":302,"./kick.js":303,"./monosynth.dsp.js":304,"./multisampler.dsp.js":305,"./sampler.js":308,"./snare.js":309,"./soundfont.js":310,"./synth.dsp.js":311,"./tom.js":312}],302:[function(require,module,exports){
+},{"./clap.dsp.js":292,"./complex.dsp.js":293,"./conga.js":294,"./cowbell.js":295,"./fm.dsp.js":296,"./hat.js":297,"./karplusstrong.js":300,"./kick.js":301,"./monosynth.dsp.js":302,"./multisampler.dsp.js":303,"./sampler.js":306,"./snare.js":307,"./soundfont.js":308,"./synth.dsp.js":309,"./tom.js":310}],300:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -84910,7 +88892,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],303:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],301:[function(require,module,exports){
 let g = require( 'genish.js' ),
     instrument = require( './instrument.js' )
 
@@ -84961,7 +88943,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],304:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],302:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' ),
       feedbackOsc = require( '../oscillators/fmfeedbackosc.js' )
@@ -85085,7 +89067,7 @@ module.exports = function( Gibberish ) {
   return [ Mono, PolyMono ]
 }
 
-},{"../oscillators/fmfeedbackosc.js":320,"./instrument.js":300,"genish.js":40}],305:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":318,"./instrument.js":298,"genish.js":40}],303:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -85408,7 +89390,7 @@ module.exports = function( Gibberish ) {
   return Sampler
 }
 
-},{"./instrument.js":300,"genish.js":40}],306:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],304:[function(require,module,exports){
 // XXX TOO MANY GLOBAL GIBBERISH VALUES
 
 const Gibberish = require( '../index.js' )
@@ -85496,7 +89478,7 @@ module.exports = {
   triggerNote:null
 }
 
-},{"../index.js":293}],307:[function(require,module,exports){
+},{"../index.js":291}],305:[function(require,module,exports){
 /*
  * This files creates a factory generating polysynth constructors.
  */
@@ -85609,7 +89591,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../workletProxy.js":331,"genish.js":40}],308:[function(require,module,exports){
+},{"../workletProxy.js":329,"genish.js":40}],306:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -85834,7 +89816,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"./instrument.js":300,"genish.js":40}],309:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],307:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
   
@@ -85885,7 +89867,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],310:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],308:[function(require,module,exports){
 /*fetch( '0000_Aspirin_sf2_file.json' )
 .then( res => res.json() )
 .then( json => {
@@ -86486,7 +90468,7 @@ module.exports = function( Gibberish ) {
   return Soundfont
 }
 
-},{"./instrument.js":300,"genish.js":40}],311:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],309:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -86606,7 +90588,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"./instrument.js":300,"genish.js":40}],312:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],310:[function(require,module,exports){
 const g = require( 'genish.js' ),
       instrument = require( './instrument.js' )
 
@@ -86657,7 +90639,7 @@ module.exports = function( Gibberish ) {
   return Tom
 }
 
-},{"./instrument.js":300,"genish.js":40}],313:[function(require,module,exports){
+},{"./instrument.js":298,"genish.js":40}],311:[function(require,module,exports){
 const ugenproto = require( '../ugen.js' )(),
      __proxy     = require( '../workletProxy.js' ),
      g = require( 'genish.js' )
@@ -86773,7 +90755,7 @@ module.exports = function( Gibberish ) {
   return Binops
 }
 
-},{"../ugen.js":329,"../workletProxy.js":331,"genish.js":40}],314:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],312:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )(),
     __proxy= require( '../workletProxy.js' )
@@ -86864,7 +90846,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":329,"../workletProxy.js":331,"genish.js":40}],315:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],313:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       __proxy = require( '../workletProxy.js' )
@@ -87003,7 +90985,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":329,"../workletProxy.js":331,"genish.js":40}],316:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],314:[function(require,module,exports){
 const  g    = require( 'genish.js'  ),
        ugen = require( '../ugen.js' )()
 
@@ -87065,7 +91047,7 @@ module.exports = function( Gibberish ) {
   return Monops
 }
 
-},{"../ugen.js":329,"genish.js":40}],317:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],315:[function(require,module,exports){
 const g = require( 'genish.js' )
 
 const ugen = require( '../ugen.js' )()
@@ -87102,7 +91084,7 @@ return Panner
 
 }
 
-},{"../ugen.js":329,"genish.js":40}],318:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],316:[function(require,module,exports){
 module.exports = function( Gibberish ) {
 
   const Time = {
@@ -87131,7 +91113,7 @@ module.exports = function( Gibberish ) {
   return Time
 }
 
-},{}],319:[function(require,module,exports){
+},{}],317:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       noise = genish.noise
@@ -87152,7 +91134,7 @@ module.exports = function() {
   return out
 }
 
-},{"genish.js":40}],320:[function(require,module,exports){
+},{"genish.js":40}],318:[function(require,module,exports){
 let g = require( 'genish.js' )
 
 let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
@@ -87228,7 +91210,7 @@ let feedbackOsc = function( frequency, filter, pulsewidth=.5, argumentProps ) {
 
 module.exports = feedbackOsc
 
-},{"genish.js":40}],321:[function(require,module,exports){
+},{"genish.js":40}],319:[function(require,module,exports){
 const g = require( 'genish.js' ),
       ugen = require( '../ugen.js' )(),
       feedbackOsc = require( './fmfeedbackosc.js' ),
@@ -87407,7 +91389,7 @@ module.exports = function( Gibberish ) {
 
 }
 
-},{"../ugen.js":329,"./brownnoise.dsp.js":319,"./fmfeedbackosc.js":320,"./pinknoise.dsp.js":322,"./polyblep.dsp.js":323,"./wavetable.js":324,"genish.js":40}],322:[function(require,module,exports){
+},{"../ugen.js":327,"./brownnoise.dsp.js":317,"./fmfeedbackosc.js":318,"./pinknoise.dsp.js":320,"./polyblep.dsp.js":321,"./wavetable.js":322,"genish.js":40}],320:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       ssd = genish.history,
       data = genish.data,
@@ -87434,7 +91416,7 @@ module.exports = function() {
 
 }
 
-},{"genish.js":40}],323:[function(require,module,exports){
+},{"genish.js":40}],321:[function(require,module,exports){
 const genish = require( 'genish.js' )
 const g = genish
 
@@ -87507,7 +91489,7 @@ const polyBlep = function( __frequency, argumentProps ) {
 
 module.exports = polyBlep 
 
-},{"genish.js":40}],324:[function(require,module,exports){
+},{"genish.js":40}],322:[function(require,module,exports){
 let g = require( 'genish.js' ),
     ugen = require( '../ugen.js' )()
 
@@ -87541,7 +91523,7 @@ module.exports = function( Gibberish ) {
   return Wavetable
 }
 
-},{"../ugen.js":329,"genish.js":40}],325:[function(require,module,exports){
+},{"../ugen.js":327,"genish.js":40}],323:[function(require,module,exports){
 const Queue = require( '../external/priorityqueue.js' )
 
 let Gibberish = null
@@ -87622,7 +91604,7 @@ Object.defineProperty( Scheduler, 'shouldSync', {
 
 module.exports = Scheduler
 
-},{"../external/priorityqueue.js":268}],326:[function(require,module,exports){
+},{"../external/priorityqueue.js":266}],324:[function(require,module,exports){
 const g = require( 'genish.js' ),
       __proxy = require( '../workletProxy.js' ),
       ugen = require( '../ugen.js' )()
@@ -87836,7 +91818,7 @@ module.exports = function( Gibberish ) {
 }
 
 
-},{"../ugen.js":329,"../workletProxy.js":331,"genish.js":40}],327:[function(require,module,exports){
+},{"../ugen.js":327,"../workletProxy.js":329,"genish.js":40}],325:[function(require,module,exports){
 (function (global){(function (){
 const __proxy = require( '../workletProxy.js' )
 
@@ -88088,208 +92070,219 @@ return Sequencer
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../workletProxy.js":331}],328:[function(require,module,exports){
-const __proxy = require( '../workletProxy.js' )
-const Pattern = require( 'tidal.pegjs' )
+},{"../workletProxy.js":329}],326:[function(require,module,exports){
+const __proxy = require( '../workletProxy.js' ),
+      mini    = require( '../external/mini.js' )
 
-module.exports = function( Gibberish ) {
+//const Pattern = require( 'tidal.pegjs' )
 
-const proxy = __proxy( Gibberish )
+module.exports = function (Gibberish) {
+  const proxy = __proxy(Gibberish);
 
-const Sequencer = props => {
-  let __seq
-  const seq = {
-    __isRunning:false,
+  const Sequencer = props => {
+    let __seq;
+    let i = 0
+    const seq = {
+      __isRunning: false,
+      __phase: 0,
+      __type: 'seq',
+      __pattern: mini.mini(props.pattern),
+      //Pattern( props.pattern, { addLocations:true, addUID:true, enclose:true }),
+      __events: null,
 
-    __phase:  0,
-    __type:'seq',
-    __pattern: Pattern( props.pattern, { addLocations:true, addUID:true, enclose:true }),
-    __events: null,
+      tick(priority) {
+        // running for first time, perform a query
+        if (seq.__events === null || seq.__events.length === 0) {
+          seq.__events = seq.__pattern.queryArc(seq.__phase++, 1)
+          seq.__events.sort( (a,b) => a.whole.begin.valueOf() > b.whole.begin.valueOf() )
+        } 
 
-    tick( priority ) {
-      // running for first time, perform a query
-      if( seq.__events === null || seq.__events.length === 0 ) {
-        seq.__events = seq.__pattern.query( seq.__phase++, 1 )
-      }
-
-      // used when scheduling events that are very far apart
-      if( seq.__events.length <= 0 ) {
-        if( Gibberish.mode === 'processor' ) {
-          if( seq.__isRunning === true  ) {
-            Gibberish.scheduler.add( Gibberish.ctx.sampleRate / Sequencer.clock.cps, seq.tick, seq.priority )
-          }
-
-        }
-
-        return
-      }
-
-      const startTime = seq.__events[ 0 ].arc.start
-
-      if( seq.key !== 'chord' ) {
-        while( seq.__events.length > 0 && startTime.valueOf() === seq.__events[0].arc.start.valueOf() ) {
-          let event  = seq.__events.shift(),
-              value  = event.value,
-              uid    = event.uid
-
-          // for bjorklund etc.
-          if( typeof value === 'object' ) value = value.value
-
-          if( seq.filters !== null ) value = seq.filters.reduce( (currentValue, filter) => filter( currentValue, seq, uid ), value )  
-          if( seq.mainthreadonly !== undefined ) {
-            if( typeof value === 'function' ) {
-              value = value()
+        if (seq.__events.length <= 0) {
+          if (Gibberish.mode === 'processor') {
+            if (seq.__isRunning === true) {
+              Gibberish.scheduler.add(Gibberish.ctx.sampleRate / Sequencer.clock.cps, seq.tick, seq.priority)
             }
-            Gibberish.processor.messages.push( seq.mainthreadonly, seq.key, value )
-          }else if( typeof seq.target[ seq.key ] === 'function' ) {
-            seq.target[ seq.key ]( value )
-          }else{
-            seq.target[ seq.key ] = value
           }
-        }
-      }else{
-        let value = seq.__events.filter( evt => startTime.valueOf() === evt.arc.start.valueOf() ).map( evt => evt.value )
-        let uid = seq.__events[0].uid
 
-        const events = seq.__events.splice( 0, value.length )
-
-        if( seq.filters !== null ) {
-          if( value.length === 1 ) {
-            value = seq.filters.reduce( (currentValue, filter) => filter( currentValue, seq, uid ), value )  
-          }else{
-            value.forEach( (v,i) => seq.filters.reduce( (currentValue, filter) => filter( currentValue, seq, events[ i ].uid ), v ) )
-          }
+          return;
         }
 
-        if( typeof seq.target[ seq.key ] === 'function' ) {
-          seq.target[ seq.key ]( value )
-        }else{
-          seq.target[ seq.key ] = value
+        const startTime = seq.__events[0].whole.begin;
+
+        if (seq.key !== 'chord') {
+          while (seq.__events.length > 0 && startTime.valueOf() >= seq.__events[0].whole.begin.valueOf()) {
+            let event = seq.__events.shift()
+            
+            // make sure we should trigger sound
+            if( !event.hasOnset() ) continue
+
+            let value = event.value,
+                uid   = event.context.locations[0].start.column 
+
+            //console.log( 'evt', uid, event.context.locations )
+
+            if (typeof value === 'object') value = value.value;
+            if (seq.filters !== null) 
+              value = seq.filters.reduce( (currentValue, filter) => filter(currentValue, seq, uid), value)
+
+            if (seq.mainthreadonly !== undefined) {
+              if (typeof value === 'function') {
+                value = value();
+              }
+              
+              Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
+            } else if (typeof seq.target[seq.key] === 'function') {
+              seq.target[seq.key](value)
+            } else {
+              seq.target[seq.key] = value
+            }
+          }
+        } else {
+          let value = seq.__events.filter(evt => startTime.valueOf() === evt.whole.begin.valueOf()).map(evt => evt.value);
+
+          let uid = seq.__events[0].context.locations[0].start.column
+
+          const events = seq.__events.splice(0, value.length);
+
+          if (seq.filters !== null) {
+            if (value.length === 1) {
+              value = seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, uid), value);
+            } else {
+              value.forEach((v, i) => seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, events[i].uid), v));
+            }
+          }
+
+          if (typeof seq.target[seq.key] === 'function') {
+            seq.target[seq.key](value);
+          } else {
+            seq.target[seq.key] = value;
+          }
+        }
+
+        if (Gibberish.mode === 'processor') {
+          let timing;
+
+          if (seq.__events.length <= 0) {
+            let time = 0;
+
+            while (seq.__events.length <= 0) {
+              seq.__events = seq.__pattern.queryArc(seq.__phase, ++seq.__phase  );
+            } 
+
+            seq.__events.sort( (a,b) => a.whole.begin.valueOf() > b.whole.begin.valueOf() )
+          } 
+
+          timing = seq.__events[0].whole.begin.sub(startTime).valueOf();
+          if( timing.valueOf() < 0 ) timing += 1
+          //if( timing <= 0 ) timing = Math.abs( timing )
+
+          //console.log( seq.__events[0].whole.begin.toString(), startTime.toString(), timing  )
+
+          //console.log( 'timings:', timing, startTime.valueOf(), seq.__events[0].whole.begin.valueOf() )
+          timing *= Math.ceil(Gibberish.ctx.sampleRate / Sequencer.clock.cps);
+          //console.log( 'timing:', timing, startTime.valueOf(), seq.__events[0].whole.begin.valueOf() )
+          if (seq.__isRunning === true && !isNaN(timing) ) {
+            Gibberish.scheduler.add(timing, seq.tick, seq.priority);
+          }
+        }
+      },
+
+      rotate(amt) {
+        seq.__phase += amt;
+        return __seq;
+      },
+
+      start(delay = 0) {
+        seq.__isRunning = true;
+        Gibberish.scheduler.add(delay, seq.tick, seq.priority);
+        return __seq;
+      },
+
+      stop() {
+        seq.__isRunning = false;
+        return __seq;
+      },
+
+      set(patternString) {
+        seq.__pattern = Pattern(patternString, {
+          addLocations: true,
+          addUID: true,
+          enclose: true
+        });
+      }
+
+    };
+    props.id = Gibberish.factory.getUID(); // need a separate reference to the properties for worklet meta-programming
+
+    const properties = Object.assign({}, Sequencer.defaults, props);
+    Object.assign(seq, properties);
+    seq.__properties__ = properties;
+    __seq = proxy(['Tidal'], properties, seq);
+    return __seq;
+  };
+
+  Sequencer.defaults = {
+    priority: 100000,
+    pattern: '',
+    rate: 1,
+    filters: null
+  };
+
+  Sequencer.make = function (values, timings, target, key, priority) {
+    return Sequencer({
+      values,
+      timings,
+      target,
+      key,
+      priority
+    });
+  };
+
+  let __uid = 0;
+
+  Sequencer.getUID = () => {
+    return __uid++;
+  };
+
+  Sequencer.Pattern = mini.mini;
+  Sequencer.clock = {
+    cps: 1
+  };
+  Sequencer.id = Gibberish.utilities.getUID();
+  Sequencer.mini = mini.mini
+
+  if (Gibberish.mode === 'worklet') {
+    Gibberish.worklet.port.postMessage({
+      address: 'eval',
+      code: `Gibberish.Tidal.clock.id = ${Sequencer.id}; Gibberish.ugens.set( ${Sequencer.id}, Gibberish.Tidal.clock )`
+    });
+    let cps = 1;
+    Object.defineProperty(Sequencer, 'cps', {
+      get() {
+        return cps;
+      },
+
+      set(v) {
+        cps = v;
+
+        if (Gibberish.mode === 'worklet') {
+          Gibberish.worklet.port.postMessage({
+            address: 'set',
+            object: Sequencer.id,
+            name: 'cps',
+            value: cps
+          });
         }
       }
 
-      if( Gibberish.mode === 'processor' ) {
-        let timing
-        if( seq.__events.length <= 0 ) {
-          let time = 0
-          while( seq.__events.length <= 0 ) {
-            seq.__events = seq.__pattern.query( seq.__phase++, 1 )
-            time++
-          }
-          //seq.__events.forEach( evt => {
-          //  evt.arc.start = evt.arc.start.add( 1 ).sub( startTime ) 
-          //  evt.arc.end   = evt.arc.end.add( 1 ).sub( startTime )
-          //})
-
-          timing = time - startTime.valueOf() 
-        }else{
-          timing = seq.__events[0].arc.start.sub( startTime ).valueOf() 
-        }
-        
-        timing *= Math.ceil( Gibberish.ctx.sampleRate / Sequencer.clock.cps ) + 1 
-
-        if( seq.__isRunning === true && !isNaN( timing ) && timing > 0 ) {
-          // XXX this supports an edge case in Gibber, where patterns like Euclid / Hex return
-          // objects indicating both whether or not they should should trigger values as well
-          // as the next time they should run. perhaps this could be made more generalizable?
-          
-          //if( typeof timing === 'object' ) {
-          //  if( timing.shouldExecute === 1 ) {
-          //    shouldRun = true
-          //  }else{
-          //    shouldRun = false
-          //  }
-          //  timing = timing.time 
-          //}
-
-          //timing *= seq.rate
-
-          Gibberish.scheduler.add( timing, seq.tick, seq.priority )
-        }
-      }
-
-
-    },
-
-    rotate( amt ) {
-      seq.__phase += amt
-      return __seq 
-    },
-
-    start( delay = 0 ) {
-      seq.__isRunning = true
-      Gibberish.scheduler.add( delay, seq.tick, seq.priority )
-      return __seq
-    },
-
-    stop() {
-      seq.__isRunning = false
-      return __seq
-    },
-
-    set( patternString ) {
-      seq.__pattern = Pattern( patternString, { addLocations:true, addUID:true, enclose:true })
-
-    }
+    });
   }
 
-  props.id = Gibberish.factory.getUID()
+  return Sequencer;
+};
 
-  // need a separate reference to the properties for worklet meta-programming
-  const properties = Object.assign( {}, Sequencer.defaults, props )
-  Object.assign( seq, properties ) 
-  seq.__properties__ = properties
 
-  __seq =  proxy( ['Tidal'], properties, seq )
-
-  return __seq
-}
-
-Sequencer.defaults = { priority:100000, pattern:'', rate:1, filters:null }
-
-Sequencer.make = function( values, timings, target, key, priority ) {
-  return Sequencer({ values, timings, target, key, priority })
-}
-
-let __uid = 0
-Sequencer.getUID = ()=> {
-  return __uid++
-}
-
-Sequencer.Pattern = Pattern
-
-Sequencer.clock = { cps: 1 }
-
-Sequencer.id = Gibberish.utilities.getUID()
-
-if( Gibberish.mode === 'worklet' ) {
-  Gibberish.worklet.port.postMessage({
-    address:'eval',
-    code:`Gibberish.Tidal.clock.id = ${Sequencer.id}; Gibberish.ugens.set( ${Sequencer.id}, Gibberish.Tidal.clock )`
-  })
-  
-  let cps = 1
-  Object.defineProperty( Sequencer, 'cps', {
-    get() { return cps },
-    set(v){ 
-      cps = v
-      if( Gibberish.mode === 'worklet' ) {
-        Gibberish.worklet.port.postMessage({
-          address:'set',
-          object:Sequencer.id,
-          name:'cps',
-          value:cps 
-        }) 
-      }
-    }
-  })
-}
-
-return Sequencer
-
-}
-
-},{"../workletProxy.js":331,"tidal.pegjs":345}],329:[function(require,module,exports){
+},{"../external/mini.js":265,"../workletProxy.js":329}],327:[function(require,module,exports){
 let Gibberish = null
 
 const __ugen = function( __Gibberish ) {
@@ -88436,7 +92429,7 @@ const __ugen = function( __Gibberish ) {
 
 module.exports = __ugen
 
-},{}],330:[function(require,module,exports){
+},{}],328:[function(require,module,exports){
 const genish = require( 'genish.js' ),
       AWPF = require( './external/audioworklet-polyfill.js' )
 
@@ -88616,6 +92609,7 @@ const utilities = {
           const propSplit = propName.split('.')
           if( obj[ propSplit[ 0 ] ] !== undefined ) {
             if( propSplit[1] !== undefined ) {
+              //console.log( obj, propSplit[0], propSplit[1], value )
               if( typeof obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ] !== 'function' ) {
                 obj[ propSplit[ 0 ] ][ propSplit[ 1 ] ] = value
               }else{
@@ -88756,7 +92750,7 @@ return utilities
 
 }
 
-},{"./external/audioworklet-polyfill.js":267,"genish.js":40}],331:[function(require,module,exports){
+},{"./external/audioworklet-polyfill.js":264,"genish.js":40}],329:[function(require,module,exports){
 const serialize = require('serialize-javascript')
 
 module.exports = function( Gibberish ) {
@@ -88915,4948 +92909,11 @@ return __proxy
 
 }
 
-},{"serialize-javascript":343}],332:[function(require,module,exports){
-function bjorklund(slots, pulses){
-  var pattern = [],
-      count = [],
-      remainder = [pulses],
-      divisor = slots - pulses,
-      level = 0,
-      build_pattern = function(lv){
-        if( lv == -1 ){ pattern.push(0); }
-        else if( lv == -2 ){ pattern.push(1); }
-        else{
-          for(var x=0; x<count[lv]; x++){
-            build_pattern(lv-1);
-          }
-
-          if(remainder[lv]){
-            build_pattern(lv-2);
-          }
-        }
-      }
-  ;
-
-  while(remainder[level] > 1){
-    count.push(Math.floor(divisor/remainder[level]));
-    remainder.push(divisor%remainder[level]);
-    divisor = remainder[level];
-    level++;
-  }
-  count.push(divisor);
-
-  build_pattern(level);
-
-  return pattern.reverse();
-}
-
-
-module.exports = function(m, k){
-  if(m > k) return bjorklund(m, k);
-  else return bjorklund(k, m);
-};
-
-},{}],333:[function(require,module,exports){
-/**
- * @license Fraction.js v4.1.1 23/05/2021
- * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
- *
- * Copyright (c) 2021, Robert Eisele (robert@xarg.org)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- **/
-
-
-/**
- *
- * This class offers the possibility to calculate fractions.
- * You can pass a fraction in different formats. Either as array, as double, as string or as an integer.
- *
- * Array/Object form
- * [ 0 => <nominator>, 1 => <denominator> ]
- * [ n => <nominator>, d => <denominator> ]
- *
- * Integer form
- * - Single integer value
- *
- * Double form
- * - Single double value
- *
- * String form
- * 123.456 - a simple double
- * 123/456 - a string fraction
- * 123.'456' - a double with repeating decimal places
- * 123.(456) - synonym
- * 123.45'6' - a double with repeating last place
- * 123.45(6) - synonym
- *
- * Example:
- *
- * var f = new Fraction("9.4'31'");
- * f.mul([-4, 3]).div(4.9);
- *
- */
-
-(function(root) {
-
-  "use strict";
-
-  // Maximum search depth for cyclic rational numbers. 2000 should be more than enough.
-  // Example: 1/7 = 0.(142857) has 6 repeating decimal places.
-  // If MAX_CYCLE_LEN gets reduced, long cycles will not be detected and toString() only gets the first 10 digits
-  var MAX_CYCLE_LEN = 2000;
-
-  // Parsed data to avoid calling "new" all the time
-  var P = {
-    "s": 1,
-    "n": 0,
-    "d": 1
-  };
-
-  function createError(name) {
-
-    function errorConstructor() {
-      var temp = Error.apply(this, arguments);
-      temp['name'] = this['name'] = name;
-      this['stack'] = temp['stack'];
-      this['message'] = temp['message'];
-    }
-
-    /**
-     * Error constructor
-     *
-     * @constructor
-     */
-    function IntermediateInheritor() { }
-    IntermediateInheritor.prototype = Error.prototype;
-    errorConstructor.prototype = new IntermediateInheritor();
-
-    return errorConstructor;
-  }
-
-  var DivisionByZero = Fraction['DivisionByZero'] = createError('DivisionByZero');
-  var InvalidParameter = Fraction['InvalidParameter'] = createError('InvalidParameter');
-
-  function assign(n, s) {
-
-    if (isNaN(n = parseInt(n, 10))) {
-      throwInvalidParam();
-    }
-    return n * s;
-  }
-
-  function throwInvalidParam() {
-    throw new InvalidParameter();
-  }
-
-  function factorize(num) {
-
-    var factors = {};
-
-    var n = num;
-    var i = 2;
-    var s = 4;
-
-    while (s <= n) {
-
-      while (n % i === 0) {
-        n /= i;
-        factors[i] = (factors[i] || 0) + 1;
-      }
-      s += 1 + 2 * i++;
-    }
-
-    if (n !== num) {
-      if (n > 1)
-      factors[n] = (factors[n] || 0) + 1;
-    } else {
-      factors[num] = (factors[num] || 0) + 1;
-    }
-    return factors;
-  }
-
-  var parse = function(p1, p2) {
-
-    var n = 0, d = 1, s = 1;
-    var v = 0, w = 0, x = 0, y = 1, z = 1;
-
-    var A = 0, B = 1;
-    var C = 1, D = 1;
-
-    var N = 10000000;
-    var M;
-
-    if (p1 === undefined || p1 === null) {
-      /* void */
-    } else if (p2 !== undefined) {
-      n = p1;
-      d = p2;
-      s = n * d;
-    } else
-      switch (typeof p1) {
-
-        case "object":
-          {
-            if ("d" in p1 && "n" in p1) {
-              n = p1["n"];
-              d = p1["d"];
-              if ("s" in p1)
-                n *= p1["s"];
-            } else if (0 in p1) {
-              n = p1[0];
-              if (1 in p1)
-                d = p1[1];
-            } else {
-              throwInvalidParam();
-            }
-            s = n * d;
-            break;
-          }
-        case "number":
-          {
-            if (p1 < 0) {
-              s = p1;
-              p1 = -p1;
-            }
-
-            if (p1 % 1 === 0) {
-              n = p1;
-            } else if (p1 > 0) { // check for != 0, scale would become NaN (log(0)), which converges really slow
-
-              if (p1 >= 1) {
-                z = Math.pow(10, Math.floor(1 + Math.log(p1) / Math.LN10));
-                p1 /= z;
-              }
-
-              // Using Farey Sequences
-              // http://www.johndcook.com/blog/2010/10/20/best-rational-approximation/
-
-              while (B <= N && D <= N) {
-                M = (A + C) / (B + D);
-
-                if (p1 === M) {
-                  if (B + D <= N) {
-                    n = A + C;
-                    d = B + D;
-                  } else if (D > B) {
-                    n = C;
-                    d = D;
-                  } else {
-                    n = A;
-                    d = B;
-                  }
-                  break;
-
-                } else {
-
-                  if (p1 > M) {
-                    A += C;
-                    B += D;
-                  } else {
-                    C += A;
-                    D += B;
-                  }
-
-                  if (B > N) {
-                    n = C;
-                    d = D;
-                  } else {
-                    n = A;
-                    d = B;
-                  }
-                }
-              }
-              n *= z;
-            } else if (isNaN(p1) || isNaN(p2)) {
-              d = n = NaN;
-            }
-            break;
-          }
-        case "string":
-          {
-            B = p1.match(/\d+|./g);
-
-            if (B === null)
-              throwInvalidParam();
-
-            if (B[A] === '-') {// Check for minus sign at the beginning
-              s = -1;
-              A++;
-            } else if (B[A] === '+') {// Check for plus sign at the beginning
-              A++;
-            }
-
-            if (B.length === A + 1) { // Check if it's just a simple number "1234"
-              w = assign(B[A++], s);
-            } else if (B[A + 1] === '.' || B[A] === '.') { // Check if it's a decimal number
-
-              if (B[A] !== '.') { // Handle 0.5 and .5
-                v = assign(B[A++], s);
-              }
-              A++;
-
-              // Check for decimal places
-              if (A + 1 === B.length || B[A + 1] === '(' && B[A + 3] === ')' || B[A + 1] === "'" && B[A + 3] === "'") {
-                w = assign(B[A], s);
-                y = Math.pow(10, B[A].length);
-                A++;
-              }
-
-              // Check for repeating places
-              if (B[A] === '(' && B[A + 2] === ')' || B[A] === "'" && B[A + 2] === "'") {
-                x = assign(B[A + 1], s);
-                z = Math.pow(10, B[A + 1].length) - 1;
-                A += 3;
-              }
-
-            } else if (B[A + 1] === '/' || B[A + 1] === ':') { // Check for a simple fraction "123/456" or "123:456"
-              w = assign(B[A], s);
-              y = assign(B[A + 2], 1);
-              A += 3;
-            } else if (B[A + 3] === '/' && B[A + 1] === ' ') { // Check for a complex fraction "123 1/2"
-              v = assign(B[A], s);
-              w = assign(B[A + 2], s);
-              y = assign(B[A + 4], 1);
-              A += 5;
-            }
-
-            if (B.length <= A) { // Check for more tokens on the stack
-              d = y * z;
-              s = /* void */
-              n = x + d * v + z * w;
-              break;
-            }
-
-            /* Fall through on error */
-          }
-        default:
-          throwInvalidParam();
-      }
-
-    if (d === 0) {
-      throw new DivisionByZero();
-    }
-
-    P["s"] = s < 0 ? -1 : 1;
-    P["n"] = Math.abs(n);
-    P["d"] = Math.abs(d);
-  };
-
-  function modpow(b, e, m) {
-
-    var r = 1;
-    for (; e > 0; b = (b * b) % m, e >>= 1) {
-
-      if (e & 1) {
-        r = (r * b) % m;
-      }
-    }
-    return r;
-  }
-
-
-  function cycleLen(n, d) {
-
-    for (; d % 2 === 0;
-      d /= 2) {
-    }
-
-    for (; d % 5 === 0;
-      d /= 5) {
-    }
-
-    if (d === 1) // Catch non-cyclic numbers
-      return 0;
-
-    // If we would like to compute really large numbers quicker, we could make use of Fermat's little theorem:
-    // 10^(d-1) % d == 1
-    // However, we don't need such large numbers and MAX_CYCLE_LEN should be the capstone,
-    // as we want to translate the numbers to strings.
-
-    var rem = 10 % d;
-    var t = 1;
-
-    for (; rem !== 1; t++) {
-      rem = rem * 10 % d;
-
-      if (t > MAX_CYCLE_LEN)
-        return 0; // Returning 0 here means that we don't print it as a cyclic number. It's likely that the answer is `d-1`
-    }
-    return t;
-  }
-
-
-  function cycleStart(n, d, len) {
-
-    var rem1 = 1;
-    var rem2 = modpow(10, len, d);
-
-    for (var t = 0; t < 300; t++) { // s < ~log10(Number.MAX_VALUE)
-      // Solve 10^s == 10^(s+t) (mod d)
-
-      if (rem1 === rem2)
-        return t;
-
-      rem1 = rem1 * 10 % d;
-      rem2 = rem2 * 10 % d;
-    }
-    return 0;
-  }
-
-  function gcd(a, b) {
-
-    if (!a)
-      return b;
-    if (!b)
-      return a;
-
-    while (1) {
-      a %= b;
-      if (!a)
-        return b;
-      b %= a;
-      if (!b)
-        return a;
-    }
-  };
-
-  /**
-   * Module constructor
-   *
-   * @constructor
-   * @param {number|Fraction=} a
-   * @param {number=} b
-   */
-  function Fraction(a, b) {
-
-    if (!(this instanceof Fraction)) {
-      return new Fraction(a, b);
-    }
-
-    parse(a, b);
-
-    if (Fraction['REDUCE']) {
-      a = gcd(P["d"], P["n"]); // Abuse a
-    } else {
-      a = 1;
-    }
-
-    this["s"] = P["s"];
-    this["n"] = P["n"] / a;
-    this["d"] = P["d"] / a;
-  }
-
-  /**
-   * Boolean global variable to be able to disable automatic reduction of the fraction
-   *
-   */
-  Fraction['REDUCE'] = 1;
-
-  Fraction.prototype = {
-
-    "s": 1,
-    "n": 0,
-    "d": 1,
-
-    /**
-     * Calculates the absolute value
-     *
-     * Ex: new Fraction(-4).abs() => 4
-     **/
-    "abs": function() {
-
-      return new Fraction(this["n"], this["d"]);
-    },
-
-    /**
-     * Inverts the sign of the current fraction
-     *
-     * Ex: new Fraction(-4).neg() => 4
-     **/
-    "neg": function() {
-
-      return new Fraction(-this["s"] * this["n"], this["d"]);
-    },
-
-    /**
-     * Adds two rational numbers
-     *
-     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => 467 / 30
-     **/
-    "add": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-        this["s"] * this["n"] * P["d"] + P["s"] * this["d"] * P["n"],
-        this["d"] * P["d"]
-      );
-    },
-
-    /**
-     * Subtracts two rational numbers
-     *
-     * Ex: new Fraction({n: 2, d: 3}).add("14.9") => -427 / 30
-     **/
-    "sub": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-        this["s"] * this["n"] * P["d"] - P["s"] * this["d"] * P["n"],
-        this["d"] * P["d"]
-      );
-    },
-
-    /**
-     * Multiplies two rational numbers
-     *
-     * Ex: new Fraction("-17.(345)").mul(3) => 5776 / 111
-     **/
-    "mul": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-        this["s"] * P["s"] * this["n"] * P["n"],
-        this["d"] * P["d"]
-      );
-    },
-
-    /**
-     * Divides two rational numbers
-     *
-     * Ex: new Fraction("-17.(345)").inverse().div(3)
-     **/
-    "div": function(a, b) {
-
-      parse(a, b);
-      return new Fraction(
-        this["s"] * P["s"] * this["n"] * P["d"],
-        this["d"] * P["n"]
-      );
-    },
-
-    /**
-     * Clones the actual object
-     *
-     * Ex: new Fraction("-17.(345)").clone()
-     **/
-    "clone": function() {
-      return new Fraction(this);
-    },
-
-    /**
-     * Calculates the modulo of two rational numbers - a more precise fmod
-     *
-     * Ex: new Fraction('4.(3)').mod([7, 8]) => (13/3) % (7/8) = (5/6)
-     **/
-    "mod": function(a, b) {
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return new Fraction(NaN);
-      }
-
-      if (a === undefined) {
-        return new Fraction(this["s"] * this["n"] % this["d"], 1);
-      }
-
-      parse(a, b);
-      if (0 === P["n"] && 0 === this["d"]) {
-        Fraction(0, 0); // Throw DivisionByZero
-      }
-
-      /*
-       * First silly attempt, kinda slow
-       *
-       return that["sub"]({
-       "n": num["n"] * Math.floor((this.n / this.d) / (num.n / num.d)),
-       "d": num["d"],
-       "s": this["s"]
-       });*/
-
-      /*
-       * New attempt: a1 / b1 = a2 / b2 * q + r
-       * => b2 * a1 = a2 * b1 * q + b1 * b2 * r
-       * => (b2 * a1 % a2 * b1) / (b1 * b2)
-       */
-      return new Fraction(
-        this["s"] * (P["d"] * this["n"]) % (P["n"] * this["d"]),
-        P["d"] * this["d"]
-      );
-    },
-
-    /**
-     * Calculates the fractional gcd of two rational numbers
-     *
-     * Ex: new Fraction(5,8).gcd(3,7) => 1/56
-     */
-    "gcd": function(a, b) {
-
-      parse(a, b);
-
-      // gcd(a / b, c / d) = gcd(a, c) / lcm(b, d)
-
-      return new Fraction(gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]), P["d"] * this["d"]);
-    },
-
-    /**
-     * Calculates the fractional lcm of two rational numbers
-     *
-     * Ex: new Fraction(5,8).lcm(3,7) => 15
-     */
-    "lcm": function(a, b) {
-
-      parse(a, b);
-
-      // lcm(a / b, c / d) = lcm(a, c) / gcd(b, d)
-
-      if (P["n"] === 0 && this["n"] === 0) {
-        return new Fraction;
-      }
-      return new Fraction(P["n"] * this["n"], gcd(P["n"], this["n"]) * gcd(P["d"], this["d"]));
-    },
-
-    /**
-     * Calculates the ceil of a rational number
-     *
-     * Ex: new Fraction('4.(3)').ceil() => (5 / 1)
-     **/
-    "ceil": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.ceil(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Calculates the floor of a rational number
-     *
-     * Ex: new Fraction('4.(3)').floor() => (4 / 1)
-     **/
-    "floor": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.floor(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Rounds a rational numbers
-     *
-     * Ex: new Fraction('4.(3)').round() => (4 / 1)
-     **/
-    "round": function(places) {
-
-      places = Math.pow(10, places || 0);
-
-      if (isNaN(this["n"]) || isNaN(this["d"])) {
-        return new Fraction(NaN);
-      }
-      return new Fraction(Math.round(places * this["s"] * this["n"] / this["d"]), places);
-    },
-
-    /**
-     * Gets the inverse of the fraction, means numerator and denominator are exchanged
-     *
-     * Ex: new Fraction([-3, 4]).inverse() => -4 / 3
-     **/
-    "inverse": function() {
-
-      return new Fraction(this["s"] * this["d"], this["n"]);
-    },
-
-    /**
-     * Calculates the fraction to some rational exponent, if possible
-     *
-     * Ex: new Fraction(-1,2).pow(-3) => -8
-     */
-    "pow": function(a, b) {
-
-      parse(a, b);
-
-      // Trivial case when exp is an integer
-
-      if (P['d'] === 1) {
-
-        if (P['s'] < 0) {
-          return new Fraction(Math.pow(this['s'] * this["d"], P['n']), Math.pow(this["n"], P['n']));
-        } else {
-          return new Fraction(Math.pow(this['s'] * this["n"], P['n']), Math.pow(this["d"], P['n']));
-        }
-      }
-
-      // Negative roots become complex
-      //     (-a/b)^(c/d) = x
-      // <=> (-1)^(c/d) * (a/b)^(c/d) = x
-      // <=> (cos(pi) + i*sin(pi))^(c/d) * (a/b)^(c/d) = x         # rotate 1 by 180°
-      // <=> (cos(c*pi/d) + i*sin(c*pi/d)) * (a/b)^(c/d) = x       # DeMoivre's formula in Q ( https://proofwiki.org/wiki/De_Moivre%27s_Formula/Rational_Index )
-      // From which follows that only for c=0 the root is non-complex. c/d is a reduced fraction, so that sin(c/dpi)=0 occurs for d=1, which is handled by our trivial case.
-      if (this['s'] < 0) return null;
-
-      // Now prime factor n and d
-      var N = factorize(this['n']);
-      var D = factorize(this['d']);
-
-      // Exponentiate and take root for n and d individually
-      var n = 1;
-      var d = 1;
-      for (var k in N) {
-        if (k === '1') continue;
-        if (k === '0') {
-          n = 0;
-          break;
-        }
-        N[k]*= P['n'];
-
-        if (N[k] % P['d'] === 0) {
-          N[k]/= P['d'];
-        } else return null;
-        n*= Math.pow(k, N[k]);
-      }
-
-      for (var k in D) {
-        if (k === '1') continue;
-        D[k]*= P['n'];
-
-        if (D[k] % P['d'] === 0) {
-          D[k]/= P['d'];
-        } else return null;
-        d*= Math.pow(k, D[k]);
-      }
-
-      if (P['s'] < 0) {
-        return new Fraction(d, n);
-      }
-      return new Fraction(n, d);
-    },
-
-    /**
-     * Check if two rational numbers are the same
-     *
-     * Ex: new Fraction(19.6).equals([98, 5]);
-     **/
-    "equals": function(a, b) {
-
-      parse(a, b);
-      return this["s"] * this["n"] * P["d"] === P["s"] * P["n"] * this["d"]; // Same as compare() === 0
-    },
-
-    /**
-     * Check if two rational numbers are the same
-     *
-     * Ex: new Fraction(19.6).equals([98, 5]);
-     **/
-    "compare": function(a, b) {
-
-      parse(a, b);
-      var t = (this["s"] * this["n"] * P["d"] - P["s"] * P["n"] * this["d"]);
-      return (0 < t) - (t < 0);
-    },
-
-    "simplify": function(eps) {
-
-      // First naive implementation, needs improvement
-
-      if (isNaN(this['n']) || isNaN(this['d'])) {
-        return this;
-      }
-
-      var cont = this['abs']()['toContinued']();
-
-      eps = eps || 0.001;
-
-      function rec(a) {
-        if (a.length === 1)
-          return new Fraction(a[0]);
-        return rec(a.slice(1))['inverse']()['add'](a[0]);
-      }
-
-      for (var i = 0; i < cont.length; i++) {
-        var tmp = rec(cont.slice(0, i + 1));
-        if (tmp['sub'](this['abs']())['abs']().valueOf() < eps) {
-          return tmp['mul'](this['s']);
-        }
-      }
-      return this;
-    },
-
-    /**
-     * Check if two rational numbers are divisible
-     *
-     * Ex: new Fraction(19.6).divisible(1.5);
-     */
-    "divisible": function(a, b) {
-
-      parse(a, b);
-      return !(!(P["n"] * this["d"]) || ((this["n"] * P["d"]) % (P["n"] * this["d"])));
-    },
-
-    /**
-     * Returns a decimal representation of the fraction
-     *
-     * Ex: new Fraction("100.'91823'").valueOf() => 100.91823918239183
-     **/
-    'valueOf': function() {
-
-      return this["s"] * this["n"] / this["d"];
-    },
-
-    /**
-     * Returns a string-fraction representation of a Fraction object
-     *
-     * Ex: new Fraction("1.'3'").toFraction() => "4 1/3"
-     **/
-    'toFraction': function(excludeWhole) {
-
-      var whole, str = "";
-      var n = this["n"];
-      var d = this["d"];
-      if (this["s"] < 0) {
-        str += '-';
-      }
-
-      if (d === 1) {
-        str += n;
-      } else {
-
-        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
-          str += whole;
-          str += " ";
-          n %= d;
-        }
-
-        str += n;
-        str += '/';
-        str += d;
-      }
-      return str;
-    },
-
-    /**
-     * Returns a latex representation of a Fraction object
-     *
-     * Ex: new Fraction("1.'3'").toLatex() => "\frac{4}{3}"
-     **/
-    'toLatex': function(excludeWhole) {
-
-      var whole, str = "";
-      var n = this["n"];
-      var d = this["d"];
-      if (this["s"] < 0) {
-        str += '-';
-      }
-
-      if (d === 1) {
-        str += n;
-      } else {
-
-        if (excludeWhole && (whole = Math.floor(n / d)) > 0) {
-          str += whole;
-          n %= d;
-        }
-
-        str += "\\frac{";
-        str += n;
-        str += '}{';
-        str += d;
-        str += '}';
-      }
-      return str;
-    },
-
-    /**
-     * Returns an array of continued fraction elements
-     *
-     * Ex: new Fraction("7/8").toContinued() => [0,1,7]
-     */
-    'toContinued': function() {
-
-      var t;
-      var a = this['n'];
-      var b = this['d'];
-      var res = [];
-
-      if (isNaN(a) || isNaN(b)) {
-        return res;
-      }
-
-      do {
-        res.push(Math.floor(a / b));
-        t = a % b;
-        a = b;
-        b = t;
-      } while (a !== 1);
-
-      return res;
-    },
-
-    /**
-     * Creates a string representation of a fraction with all digits
-     *
-     * Ex: new Fraction("100.'91823'").toString() => "100.(91823)"
-     **/
-    'toString': function(dec) {
-
-      var g;
-      var N = this["n"];
-      var D = this["d"];
-
-      if (isNaN(N) || isNaN(D)) {
-        return "NaN";
-      }
-
-      if (!Fraction['REDUCE']) {
-        g = gcd(N, D);
-        N /= g;
-        D /= g;
-      }
-
-      dec = dec || 15; // 15 = decimal places when no repetation
-
-      var cycLen = cycleLen(N, D); // Cycle length
-      var cycOff = cycleStart(N, D, cycLen); // Cycle start
-
-      var str = this['s'] === -1 ? "-" : "";
-
-      str += N / D | 0;
-
-      N %= D;
-      N *= 10;
-
-      if (N)
-        str += ".";
-
-      if (cycLen) {
-
-        for (var i = cycOff; i--;) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-        str += "(";
-        for (var i = cycLen; i--;) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-        str += ")";
-      } else {
-        for (var i = dec; N && i--;) {
-          str += N / D | 0;
-          N %= D;
-          N *= 10;
-        }
-      }
-      return str;
-    }
-  };
-
-  if (typeof define === "function" && define["amd"]) {
-    define([], function() {
-      return Fraction;
-    });
-  } else if (typeof exports === "object") {
-    Object.defineProperty(Fraction, "__esModule", { 'value': true });
-    Fraction['default'] = Fraction;
-    Fraction['Fraction'] = Fraction;
-    module['exports'] = Fraction;
-  } else {
-    root['Fraction'] = Fraction;
-  }
-
-})(this);
-
-},{}],334:[function(require,module,exports){
+},{"serialize-javascript":331}],330:[function(require,module,exports){
 arguments[4][81][0].apply(exports,arguments)
-},{"dup":81}],335:[function(require,module,exports){
-// A library of seedable RNGs implemented in Javascript.
-//
-// Usage:
-//
-// var seedrandom = require('seedrandom');
-// var random = seedrandom(1); // or any seed.
-// var x = random();       // 0 <= x < 1.  Every bit is random.
-// var x = random.quick(); // 0 <= x < 1.  32 bits of randomness.
-
-// alea, a 53-bit multiply-with-carry generator by Johannes Baagøe.
-// Period: ~2^116
-// Reported to pass all BigCrush tests.
-var alea = require('./lib/alea');
-
-// xor128, a pure xor-shift generator by George Marsaglia.
-// Period: 2^128-1.
-// Reported to fail: MatrixRank and LinearComp.
-var xor128 = require('./lib/xor128');
-
-// xorwow, George Marsaglia's 160-bit xor-shift combined plus weyl.
-// Period: 2^192-2^32
-// Reported to fail: CollisionOver, SimpPoker, and LinearComp.
-var xorwow = require('./lib/xorwow');
-
-// xorshift7, by François Panneton and Pierre L'ecuyer, takes
-// a different approach: it adds robustness by allowing more shifts
-// than Marsaglia's original three.  It is a 7-shift generator
-// with 256 bits, that passes BigCrush with no systmatic failures.
-// Period 2^256-1.
-// No systematic BigCrush failures reported.
-var xorshift7 = require('./lib/xorshift7');
-
-// xor4096, by Richard Brent, is a 4096-bit xor-shift with a
-// very long period that also adds a Weyl generator. It also passes
-// BigCrush with no systematic failures.  Its long period may
-// be useful if you have many generators and need to avoid
-// collisions.
-// Period: 2^4128-2^32.
-// No systematic BigCrush failures reported.
-var xor4096 = require('./lib/xor4096');
-
-// Tyche-i, by Samuel Neves and Filipe Araujo, is a bit-shifting random
-// number generator derived from ChaCha, a modern stream cipher.
-// https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
-// Period: ~2^127
-// No systematic BigCrush failures reported.
-var tychei = require('./lib/tychei');
-
-// The original ARC4-based prng included in this library.
-// Period: ~2^1600
-var sr = require('./seedrandom');
-
-sr.alea = alea;
-sr.xor128 = xor128;
-sr.xorwow = xorwow;
-sr.xorshift7 = xorshift7;
-sr.xor4096 = xor4096;
-sr.tychei = tychei;
-
-module.exports = sr;
-
-},{"./lib/alea":336,"./lib/tychei":337,"./lib/xor128":338,"./lib/xor4096":339,"./lib/xorshift7":340,"./lib/xorwow":341,"./seedrandom":342}],336:[function(require,module,exports){
-// A port of an algorithm by Johannes Baagøe <baagoe@baagoe.com>, 2010
-// http://baagoe.com/en/RandomMusings/javascript/
-// https://github.com/nquinlan/better-random-numbers-for-javascript-mirror
-// Original work is under MIT license -
-
-// Copyright (C) 2010 by Johannes Baagøe <baagoe@baagoe.org>
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
-
-
-(function(global, module, define) {
-
-function Alea(seed) {
-  var me = this, mash = Mash();
-
-  me.next = function() {
-    var t = 2091639 * me.s0 + me.c * 2.3283064365386963e-10; // 2^-32
-    me.s0 = me.s1;
-    me.s1 = me.s2;
-    return me.s2 = t - (me.c = t | 0);
-  };
-
-  // Apply the seeding algorithm from Baagoe.
-  me.c = 1;
-  me.s0 = mash(' ');
-  me.s1 = mash(' ');
-  me.s2 = mash(' ');
-  me.s0 -= mash(seed);
-  if (me.s0 < 0) { me.s0 += 1; }
-  me.s1 -= mash(seed);
-  if (me.s1 < 0) { me.s1 += 1; }
-  me.s2 -= mash(seed);
-  if (me.s2 < 0) { me.s2 += 1; }
-  mash = null;
-}
-
-function copy(f, t) {
-  t.c = f.c;
-  t.s0 = f.s0;
-  t.s1 = f.s1;
-  t.s2 = f.s2;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new Alea(seed),
-      state = opts && opts.state,
-      prng = xg.next;
-  prng.int32 = function() { return (xg.next() * 0x100000000) | 0; }
-  prng.double = function() {
-    return prng() + (prng() * 0x200000 | 0) * 1.1102230246251565e-16; // 2^-53
-  };
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-function Mash() {
-  var n = 0xefc8249d;
-
-  var mash = function(data) {
-    data = String(data);
-    for (var i = 0; i < data.length; i++) {
-      n += data.charCodeAt(i);
-      var h = 0.02519603282416938 * n;
-      n = h >>> 0;
-      h -= n;
-      h *= n;
-      n = h >>> 0;
-      h -= n;
-      n += h * 0x100000000; // 2^32
-    }
-    return (n >>> 0) * 2.3283064365386963e-10; // 2^-32
-  };
-
-  return mash;
-}
-
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.alea = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],337:[function(require,module,exports){
-// A Javascript implementaion of the "Tyche-i" prng algorithm by
-// Samuel Neves and Filipe Araujo.
-// See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  // Set up generator function.
-  me.next = function() {
-    var b = me.b, c = me.c, d = me.d, a = me.a;
-    b = (b << 25) ^ (b >>> 7) ^ c;
-    c = (c - d) | 0;
-    d = (d << 24) ^ (d >>> 8) ^ a;
-    a = (a - b) | 0;
-    me.b = b = (b << 20) ^ (b >>> 12) ^ c;
-    me.c = c = (c - d) | 0;
-    me.d = (d << 16) ^ (c >>> 16) ^ a;
-    return me.a = (a - b) | 0;
-  };
-
-  /* The following is non-inverted tyche, which has better internal
-   * bit diffusion, but which is about 25% slower than tyche-i in JS.
-  me.next = function() {
-    var a = me.a, b = me.b, c = me.c, d = me.d;
-    a = (me.a + me.b | 0) >>> 0;
-    d = me.d ^ a; d = d << 16 ^ d >>> 16;
-    c = me.c + d | 0;
-    b = me.b ^ c; b = b << 12 ^ d >>> 20;
-    me.a = a = a + b | 0;
-    d = d ^ a; me.d = d = d << 8 ^ d >>> 24;
-    me.c = c = c + d | 0;
-    b = b ^ c;
-    return me.b = (b << 7 ^ b >>> 25);
-  }
-  */
-
-  me.a = 0;
-  me.b = 0;
-  me.c = 2654435769 | 0;
-  me.d = 1367130551;
-
-  if (seed === Math.floor(seed)) {
-    // Integer seed.
-    me.a = (seed / 0x100000000) | 0;
-    me.b = seed | 0;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 20; k++) {
-    me.b ^= strseed.charCodeAt(k) | 0;
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.a = f.a;
-  t.b = f.b;
-  t.c = f.c;
-  t.d = f.d;
-  return t;
-};
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.tychei = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],338:[function(require,module,exports){
-// A Javascript implementaion of the "xor128" prng algorithm by
-// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  me.x = 0;
-  me.y = 0;
-  me.z = 0;
-  me.w = 0;
-
-  // Set up generator function.
-  me.next = function() {
-    var t = me.x ^ (me.x << 11);
-    me.x = me.y;
-    me.y = me.z;
-    me.z = me.w;
-    return me.w ^= (me.w >>> 19) ^ t ^ (t >>> 8);
-  };
-
-  if (seed === (seed | 0)) {
-    // Integer seed.
-    me.x = seed;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 64; k++) {
-    me.x ^= strseed.charCodeAt(k) | 0;
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.x = f.x;
-  t.y = f.y;
-  t.z = f.z;
-  t.w = f.w;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xor128 = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],339:[function(require,module,exports){
-// A Javascript implementaion of Richard Brent's Xorgens xor4096 algorithm.
-//
-// This fast non-cryptographic random number generator is designed for
-// use in Monte-Carlo algorithms. It combines a long-period xorshift
-// generator with a Weyl generator, and it passes all common batteries
-// of stasticial tests for randomness while consuming only a few nanoseconds
-// for each prng generated.  For background on the generator, see Brent's
-// paper: "Some long-period random number generators using shifts and xors."
-// http://arxiv.org/pdf/1004.3115v1.pdf
-//
-// Usage:
-//
-// var xor4096 = require('xor4096');
-// random = xor4096(1);                        // Seed with int32 or string.
-// assert.equal(random(), 0.1520436450538547); // (0, 1) range, 53 bits.
-// assert.equal(random.int32(), 1806534897);   // signed int32, 32 bits.
-//
-// For nonzero numeric keys, this impelementation provides a sequence
-// identical to that by Brent's xorgens 3 implementaion in C.  This
-// implementation also provides for initalizing the generator with
-// string seeds, or for saving and restoring the state of the generator.
-//
-// On Chrome, this prng benchmarks about 2.1 times slower than
-// Javascript's built-in Math.random().
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this;
-
-  // Set up generator function.
-  me.next = function() {
-    var w = me.w,
-        X = me.X, i = me.i, t, v;
-    // Update Weyl generator.
-    me.w = w = (w + 0x61c88647) | 0;
-    // Update xor generator.
-    v = X[(i + 34) & 127];
-    t = X[i = ((i + 1) & 127)];
-    v ^= v << 13;
-    t ^= t << 17;
-    v ^= v >>> 15;
-    t ^= t >>> 12;
-    // Update Xor generator array state.
-    v = X[i] = v ^ t;
-    me.i = i;
-    // Result is the combination.
-    return (v + (w ^ (w >>> 16))) | 0;
-  };
-
-  function init(me, seed) {
-    var t, v, i, j, w, X = [], limit = 128;
-    if (seed === (seed | 0)) {
-      // Numeric seeds initialize v, which is used to generates X.
-      v = seed;
-      seed = null;
-    } else {
-      // String seeds are mixed into v and X one character at a time.
-      seed = seed + '\0';
-      v = 0;
-      limit = Math.max(limit, seed.length);
-    }
-    // Initialize circular array and weyl value.
-    for (i = 0, j = -32; j < limit; ++j) {
-      // Put the unicode characters into the array, and shuffle them.
-      if (seed) v ^= seed.charCodeAt((j + 32) % seed.length);
-      // After 32 shuffles, take v as the starting w value.
-      if (j === 0) w = v;
-      v ^= v << 10;
-      v ^= v >>> 15;
-      v ^= v << 4;
-      v ^= v >>> 13;
-      if (j >= 0) {
-        w = (w + 0x61c88647) | 0;     // Weyl.
-        t = (X[j & 127] ^= (v + w));  // Combine xor and weyl to init array.
-        i = (0 == t) ? i + 1 : 0;     // Count zeroes.
-      }
-    }
-    // We have detected all zeroes; make the key nonzero.
-    if (i >= 128) {
-      X[(seed && seed.length || 0) & 127] = -1;
-    }
-    // Run the generator 512 times to further mix the state before using it.
-    // Factoring this as a function slows the main generator, so it is just
-    // unrolled here.  The weyl generator is not advanced while warming up.
-    i = 127;
-    for (j = 4 * 128; j > 0; --j) {
-      v = X[(i + 34) & 127];
-      t = X[i = ((i + 1) & 127)];
-      v ^= v << 13;
-      t ^= t << 17;
-      v ^= v >>> 15;
-      t ^= t >>> 12;
-      X[i] = v ^ t;
-    }
-    // Storing state as object members is faster than using closure variables.
-    me.w = w;
-    me.X = X;
-    me.i = i;
-  }
-
-  init(me, seed);
-}
-
-function copy(f, t) {
-  t.i = f.i;
-  t.w = f.w;
-  t.X = f.X.slice();
-  return t;
-};
-
-function impl(seed, opts) {
-  if (seed == null) seed = +(new Date);
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (state.X) copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xor4096 = impl;
-}
-
-})(
-  this,                                     // window object or global
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-},{}],340:[function(require,module,exports){
-// A Javascript implementaion of the "xorshift7" algorithm by
-// François Panneton and Pierre L'ecuyer:
-// "On the Xorgshift Random Number Generators"
-// http://saluc.engr.uconn.edu/refs/crypto/rng/panneton05onthexorshift.pdf
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this;
-
-  // Set up generator function.
-  me.next = function() {
-    // Update xor generator.
-    var X = me.x, i = me.i, t, v, w;
-    t = X[i]; t ^= (t >>> 7); v = t ^ (t << 24);
-    t = X[(i + 1) & 7]; v ^= t ^ (t >>> 10);
-    t = X[(i + 3) & 7]; v ^= t ^ (t >>> 3);
-    t = X[(i + 4) & 7]; v ^= t ^ (t << 7);
-    t = X[(i + 7) & 7]; t = t ^ (t << 13); v ^= t ^ (t << 9);
-    X[i] = v;
-    me.i = (i + 1) & 7;
-    return v;
-  };
-
-  function init(me, seed) {
-    var j, w, X = [];
-
-    if (seed === (seed | 0)) {
-      // Seed state array using a 32-bit integer.
-      w = X[0] = seed;
-    } else {
-      // Seed state using a string.
-      seed = '' + seed;
-      for (j = 0; j < seed.length; ++j) {
-        X[j & 7] = (X[j & 7] << 15) ^
-            (seed.charCodeAt(j) + X[(j + 1) & 7] << 13);
-      }
-    }
-    // Enforce an array length of 8, not all zeroes.
-    while (X.length < 8) X.push(0);
-    for (j = 0; j < 8 && X[j] === 0; ++j);
-    if (j == 8) w = X[7] = -1; else w = X[j];
-
-    me.x = X;
-    me.i = 0;
-
-    // Discard an initial 256 values.
-    for (j = 256; j > 0; --j) {
-      me.next();
-    }
-  }
-
-  init(me, seed);
-}
-
-function copy(f, t) {
-  t.x = f.x.slice();
-  t.i = f.i;
-  return t;
-}
-
-function impl(seed, opts) {
-  if (seed == null) seed = +(new Date);
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (state.x) copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xorshift7 = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-},{}],341:[function(require,module,exports){
-// A Javascript implementaion of the "xorwow" prng algorithm by
-// George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-
-(function(global, module, define) {
-
-function XorGen(seed) {
-  var me = this, strseed = '';
-
-  // Set up generator function.
-  me.next = function() {
-    var t = (me.x ^ (me.x >>> 2));
-    me.x = me.y; me.y = me.z; me.z = me.w; me.w = me.v;
-    return (me.d = (me.d + 362437 | 0)) +
-       (me.v = (me.v ^ (me.v << 4)) ^ (t ^ (t << 1))) | 0;
-  };
-
-  me.x = 0;
-  me.y = 0;
-  me.z = 0;
-  me.w = 0;
-  me.v = 0;
-
-  if (seed === (seed | 0)) {
-    // Integer seed.
-    me.x = seed;
-  } else {
-    // String seed.
-    strseed += seed;
-  }
-
-  // Mix in string seed, then discard an initial batch of 64 values.
-  for (var k = 0; k < strseed.length + 64; k++) {
-    me.x ^= strseed.charCodeAt(k) | 0;
-    if (k == strseed.length) {
-      me.d = me.x << 10 ^ me.x >>> 4;
-    }
-    me.next();
-  }
-}
-
-function copy(f, t) {
-  t.x = f.x;
-  t.y = f.y;
-  t.z = f.z;
-  t.w = f.w;
-  t.v = f.v;
-  t.d = f.d;
-  return t;
-}
-
-function impl(seed, opts) {
-  var xg = new XorGen(seed),
-      state = opts && opts.state,
-      prng = function() { return (xg.next() >>> 0) / 0x100000000; };
-  prng.double = function() {
-    do {
-      var top = xg.next() >>> 11,
-          bot = (xg.next() >>> 0) / 0x100000000,
-          result = (top + bot) / (1 << 21);
-    } while (result === 0);
-    return result;
-  };
-  prng.int32 = xg.next;
-  prng.quick = prng;
-  if (state) {
-    if (typeof(state) == 'object') copy(state, xg);
-    prng.state = function() { return copy(xg, {}); }
-  }
-  return prng;
-}
-
-if (module && module.exports) {
-  module.exports = impl;
-} else if (define && define.amd) {
-  define(function() { return impl; });
-} else {
-  this.xorwow = impl;
-}
-
-})(
-  this,
-  (typeof module) == 'object' && module,    // present in node.js
-  (typeof define) == 'function' && define   // present with an AMD loader
-);
-
-
-
-},{}],342:[function(require,module,exports){
-/*
-Copyright 2019 David Bau.
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-*/
-
-(function (global, pool, math) {
-//
-// The following constants are related to IEEE 754 limits.
-//
-
-var width = 256,        // each RC4 output is 0 <= x < 256
-    chunks = 6,         // at least six RC4 outputs for each double
-    digits = 52,        // there are 52 significant digits in a double
-    rngname = 'random', // rngname: name for Math.random and Math.seedrandom
-    startdenom = math.pow(width, chunks),
-    significance = math.pow(2, digits),
-    overflow = significance * 2,
-    mask = width - 1,
-    nodecrypto;         // node.js crypto module, initialized at the bottom.
-
-//
-// seedrandom()
-// This is the seedrandom function described above.
-//
-function seedrandom(seed, options, callback) {
-  var key = [];
-  options = (options == true) ? { entropy: true } : (options || {});
-
-  // Flatten the seed string or build one from local entropy if needed.
-  var shortseed = mixkey(flatten(
-    options.entropy ? [seed, tostring(pool)] :
-    (seed == null) ? autoseed() : seed, 3), key);
-
-  // Use the seed to initialize an ARC4 generator.
-  var arc4 = new ARC4(key);
-
-  // This function returns a random double in [0, 1) that contains
-  // randomness in every bit of the mantissa of the IEEE 754 value.
-  var prng = function() {
-    var n = arc4.g(chunks),             // Start with a numerator n < 2 ^ 48
-        d = startdenom,                 //   and denominator d = 2 ^ 48.
-        x = 0;                          //   and no 'extra last byte'.
-    while (n < significance) {          // Fill up all significant digits by
-      n = (n + x) * width;              //   shifting numerator and
-      d *= width;                       //   denominator and generating a
-      x = arc4.g(1);                    //   new least-significant-byte.
-    }
-    while (n >= overflow) {             // To avoid rounding up, before adding
-      n /= 2;                           //   last byte, shift everything
-      d /= 2;                           //   right using integer math until
-      x >>>= 1;                         //   we have exactly the desired bits.
-    }
-    return (n + x) / d;                 // Form the number within [0, 1).
-  };
-
-  prng.int32 = function() { return arc4.g(4) | 0; }
-  prng.quick = function() { return arc4.g(4) / 0x100000000; }
-  prng.double = prng;
-
-  // Mix the randomness into accumulated entropy.
-  mixkey(tostring(arc4.S), pool);
-
-  // Calling convention: what to return as a function of prng, seed, is_math.
-  return (options.pass || callback ||
-      function(prng, seed, is_math_call, state) {
-        if (state) {
-          // Load the arc4 state from the given state if it has an S array.
-          if (state.S) { copy(state, arc4); }
-          // Only provide the .state method if requested via options.state.
-          prng.state = function() { return copy(arc4, {}); }
-        }
-
-        // If called as a method of Math (Math.seedrandom()), mutate
-        // Math.random because that is how seedrandom.js has worked since v1.0.
-        if (is_math_call) { math[rngname] = prng; return seed; }
-
-        // Otherwise, it is a newer calling convention, so return the
-        // prng directly.
-        else return prng;
-      })(
-  prng,
-  shortseed,
-  'global' in options ? options.global : (this == math),
-  options.state);
-}
-
-//
-// ARC4
-//
-// An ARC4 implementation.  The constructor takes a key in the form of
-// an array of at most (width) integers that should be 0 <= x < (width).
-//
-// The g(count) method returns a pseudorandom integer that concatenates
-// the next (count) outputs from ARC4.  Its return value is a number x
-// that is in the range 0 <= x < (width ^ count).
-//
-function ARC4(key) {
-  var t, keylen = key.length,
-      me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
-
-  // The empty key [] is treated as [0].
-  if (!keylen) { key = [keylen++]; }
-
-  // Set up S using the standard key scheduling algorithm.
-  while (i < width) {
-    s[i] = i++;
-  }
-  for (i = 0; i < width; i++) {
-    s[i] = s[j = mask & (j + key[i % keylen] + (t = s[i]))];
-    s[j] = t;
-  }
-
-  // The "g" method returns the next (count) outputs as one number.
-  (me.g = function(count) {
-    // Using instance members instead of closure state nearly doubles speed.
-    var t, r = 0,
-        i = me.i, j = me.j, s = me.S;
-    while (count--) {
-      t = s[i = mask & (i + 1)];
-      r = r * width + s[mask & ((s[i] = s[j = mask & (j + t)]) + (s[j] = t))];
-    }
-    me.i = i; me.j = j;
-    return r;
-    // For robust unpredictability, the function call below automatically
-    // discards an initial batch of values.  This is called RC4-drop[256].
-    // See http://google.com/search?q=rsa+fluhrer+response&btnI
-  })(width);
-}
-
-//
-// copy()
-// Copies internal state of ARC4 to or from a plain object.
-//
-function copy(f, t) {
-  t.i = f.i;
-  t.j = f.j;
-  t.S = f.S.slice();
-  return t;
-};
-
-//
-// flatten()
-// Converts an object tree to nested arrays of strings.
-//
-function flatten(obj, depth) {
-  var result = [], typ = (typeof obj), prop;
-  if (depth && typ == 'object') {
-    for (prop in obj) {
-      try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
-    }
-  }
-  return (result.length ? result : typ == 'string' ? obj : obj + '\0');
-}
-
-//
-// mixkey()
-// Mixes a string seed into a key that is an array of integers, and
-// returns a shortened string seed that is equivalent to the result key.
-//
-function mixkey(seed, key) {
-  var stringseed = seed + '', smear, j = 0;
-  while (j < stringseed.length) {
-    key[mask & j] =
-      mask & ((smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++));
-  }
-  return tostring(key);
-}
-
-//
-// autoseed()
-// Returns an object for autoseeding, using window.crypto and Node crypto
-// module if available.
-//
-function autoseed() {
-  try {
-    var out;
-    if (nodecrypto && (out = nodecrypto.randomBytes)) {
-      // The use of 'out' to remember randomBytes makes tight minified code.
-      out = out(width);
-    } else {
-      out = new Uint8Array(width);
-      (global.crypto || global.msCrypto).getRandomValues(out);
-    }
-    return tostring(out);
-  } catch (e) {
-    var browser = global.navigator,
-        plugins = browser && browser.plugins;
-    return [+new Date, global, plugins, global.screen, tostring(pool)];
-  }
-}
-
-//
-// tostring()
-// Converts an array of charcodes to a string
-//
-function tostring(a) {
-  return String.fromCharCode.apply(0, a);
-}
-
-//
-// When seedrandom.js is loaded, we immediately mix a few bits
-// from the built-in RNG into the entropy pool.  Because we do
-// not want to interfere with deterministic PRNG state later,
-// seedrandom will not call math.random on its own again after
-// initialization.
-//
-mixkey(math.random(), pool);
-
-//
-// Nodejs and AMD support: export the implementation as a module using
-// either convention.
-//
-if ((typeof module) == 'object' && module.exports) {
-  module.exports = seedrandom;
-  // When in node.js, try using crypto package for autoseeding.
-  try {
-    nodecrypto = require('crypto');
-  } catch (ex) {}
-} else if ((typeof define) == 'function' && define.amd) {
-  define(function() { return seedrandom; });
-} else {
-  // When included as a plain script, set up Math.seedrandom global.
-  math['seed' + rngname] = seedrandom;
-}
-
-
-// End anonymous scope, and pass initial values.
-})(
-  // global: `self` in browsers (including strict mode and web workers),
-  // otherwise `this` in Node and other environments
-  (typeof self !== 'undefined') ? self : this,
-  [],     // pool: entropy pool starts empty
-  Math    // math: package containing random, pow, and seedrandom
-);
-
-},{"crypto":145}],343:[function(require,module,exports){
+},{"dup":81}],331:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"dup":123}],344:[function(require,module,exports){
-/*
- * Generated by PEG.js 0.10.0.
- *
- * http://pegjs.org/
- */
-
-"use strict";
-
-function peg$subclass(child, parent) {
-  function ctor() { this.constructor = child; }
-  ctor.prototype = parent.prototype;
-  child.prototype = new ctor();
-}
-
-function peg$SyntaxError(message, expected, found, location) {
-  this.message  = message;
-  this.expected = expected;
-  this.found    = found;
-  this.location = location;
-  this.name     = "SyntaxError";
-
-  if (typeof Error.captureStackTrace === "function") {
-    Error.captureStackTrace(this, peg$SyntaxError);
-  }
-}
-
-peg$subclass(peg$SyntaxError, Error);
-
-peg$SyntaxError.buildMessage = function(expected, found) {
-  var DESCRIBE_EXPECTATION_FNS = {
-        literal: function(expectation) {
-          return "\"" + literalEscape(expectation.text) + "\"";
-        },
-
-        "class": function(expectation) {
-          var escapedParts = "",
-              i;
-
-          for (i = 0; i < expectation.parts.length; i++) {
-            escapedParts += expectation.parts[i] instanceof Array
-              ? classEscape(expectation.parts[i][0]) + "-" + classEscape(expectation.parts[i][1])
-              : classEscape(expectation.parts[i]);
-          }
-
-          return "[" + (expectation.inverted ? "^" : "") + escapedParts + "]";
-        },
-
-        any: function(expectation) {
-          return "any character";
-        },
-
-        end: function(expectation) {
-          return "end of input";
-        },
-
-        other: function(expectation) {
-          return expectation.description;
-        }
-      };
-
-  function hex(ch) {
-    return ch.charCodeAt(0).toString(16).toUpperCase();
-  }
-
-  function literalEscape(s) {
-    return s
-      .replace(/\\/g, '\\\\')
-      .replace(/"/g,  '\\"')
-      .replace(/\0/g, '\\0')
-      .replace(/\t/g, '\\t')
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/[\x00-\x0F]/g,          function(ch) { return '\\x0' + hex(ch); })
-      .replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) { return '\\x'  + hex(ch); });
-  }
-
-  function classEscape(s) {
-    return s
-      .replace(/\\/g, '\\\\')
-      .replace(/\]/g, '\\]')
-      .replace(/\^/g, '\\^')
-      .replace(/-/g,  '\\-')
-      .replace(/\0/g, '\\0')
-      .replace(/\t/g, '\\t')
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/[\x00-\x0F]/g,          function(ch) { return '\\x0' + hex(ch); })
-      .replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) { return '\\x'  + hex(ch); });
-  }
-
-  function describeExpectation(expectation) {
-    return DESCRIBE_EXPECTATION_FNS[expectation.type](expectation);
-  }
-
-  function describeExpected(expected) {
-    var descriptions = new Array(expected.length),
-        i, j;
-
-    for (i = 0; i < expected.length; i++) {
-      descriptions[i] = describeExpectation(expected[i]);
-    }
-
-    descriptions.sort();
-
-    if (descriptions.length > 0) {
-      for (i = 1, j = 1; i < descriptions.length; i++) {
-        if (descriptions[i - 1] !== descriptions[i]) {
-          descriptions[j] = descriptions[i];
-          j++;
-        }
-      }
-      descriptions.length = j;
-    }
-
-    switch (descriptions.length) {
-      case 1:
-        return descriptions[0];
-
-      case 2:
-        return descriptions[0] + " or " + descriptions[1];
-
-      default:
-        return descriptions.slice(0, -1).join(", ")
-          + ", or "
-          + descriptions[descriptions.length - 1];
-    }
-  }
-
-  function describeFound(found) {
-    return found ? "\"" + literalEscape(found) + "\"" : "end of input";
-  }
-
-  return "Expected " + describeExpected(expected) + " but " + describeFound(found) + " found.";
-};
-
-function peg$parse(input, options) {
-  options = options !== void 0 ? options : {};
-
-  var peg$FAILED = {},
-
-      peg$startRuleFunctions = { pattern: peg$parsepattern },
-      peg$startRuleFunction  = peg$parsepattern,
-
-      peg$c0 = function(value) {
-        let out = value
-        if( options.enclose === true && value.type !== 'group' ) {
-          out = { type:'group', values:[ value ] }
-        }
-        
-        return out
-      },
-      peg$c1 = function(_valuesstart, _valuesend) {
-        _valuesend.unshift( _valuesstart )
-        const values = _valuesend
-
-        let out
-        
-        if( values.type === undefined ) {
-          // getting nested arrays with feet...
-          out = {
-            values:Array.isArray( values[0] ) ? values[0] : values,
-            type:'group' 
-          }
-        }else{
-          out = values
-          out.type = 'group'
-        }
-       
-        addLoc( out, location() )
-
-        return out
-      },
-      peg$c2 = peg$otherExpectation("group"),
-      peg$c3 = "[",
-      peg$c4 = peg$literalExpectation("[", false),
-      peg$c5 = "]",
-      peg$c6 = peg$literalExpectation("]", false),
-      peg$c7 = function(values) {
-        const out = {
-          values,
-          type:'group' 
-        }
-        
-        return addLoc( out, location() ) 
-      },
-      peg$c8 = peg$otherExpectation("term"),
-      peg$c9 = function(body) {return body},
-      peg$c10 = "(",
-      peg$c11 = peg$literalExpectation("(", false),
-      peg$c12 = ",",
-      peg$c13 = peg$literalExpectation(",", false),
-      peg$c14 = ")",
-      peg$c15 = peg$literalExpectation(")", false),
-      peg$c16 = function(value, pulses, slots, rotation) {
-        const result = {
-          type:'bjorklund',
-          pulses, 
-          slots, 
-          value,
-          'rotation': rotation.length > 0 ? rotation[ 0 ] : null
-        }
-       
-        const withLoc = addLoc( result, location() ) 
-        //withLoc.value.uid = withLoc.uid
-        return withLoc
-      },
-      peg$c17 = function(body) { return body },
-      peg$c18 = "?",
-      peg$c19 = peg$literalExpectation("?", false),
-      peg$c20 = function(value) {
-        const out = { type:'degrade', value }
-        return out
-        //return addLoc( out, location() )
-      },
-      peg$c21 = "*",
-      peg$c22 = peg$literalExpectation("*", false),
-      peg$c23 = function(value, rate) {
-        const r =  { type:'speed', rate, value }
-
-        if( options.addLocations === true ) {
-          r.location = {
-            start:value.location.start,
-            end: rate.location.end
-          }
-        }
-        
-        return r 
-      },
-      peg$c24 = "/",
-      peg$c25 = peg$literalExpectation("/", false),
-      peg$c26 = function(value, rate) {
-        /*const r =  { type:'slow', rate, value }*/
-
-        //if( options.addLocations === true ) {
-        //  r.location = {
-        //    start:value.location.start,
-        //    end: rate.location.end
-        //  }
-        //}
-        //const group = value.type === 'group'
-        //  ? value
-        const group = { type:'group', values:[ value ] }
-
-        const onestep = {
-          type:'onestep',
-          values:[ group ]
-        }
-
-        for( let i = 0; i < rate.value - 1; i++ ) {
-          group.values.push({ type:'rest' })
-        }
-
-        addLoc( onestep, location() )
-        return onestep
-        /*return r */
-      },
-      peg$c27 = "{",
-      peg$c28 = peg$literalExpectation("{", false),
-      peg$c29 = "}",
-      peg$c30 = peg$literalExpectation("}", false),
-      peg$c31 = function(left, right) {
-        const result = { 
-          'left':{
-            type:'group',
-            values:left
-          }, 
-          'right':{
-            type:'group',
-            values:right,
-          },
-          type: 'polymeter' 
-        }
-
-        addLoc( result.left, location() )
-        addLoc( result.right, location() )
-        addLoc( result, location() )
-
-        return result
-      },
-      peg$c32 = "~",
-      peg$c33 = peg$literalExpectation("~", false),
-      peg$c34 = function() {
-       return { type:'rest' }
-      },
-      peg$c35 = function(start, end) {
-        const out = {
-          type:'group',
-          values: start.map( grp => grp[0] )
-        }
-        out.values.push( end )
-
-        return addLoc( out, location() )
-      },
-      peg$c36 = function(value) {
-        return value
-      },
-      peg$c37 = function(body, end) {
-        const values = body.map( val => val[0] )
-
-        values.push( end )
-
-        const result = {
-          type: 'layers',
-          values
-        }
-
-        return addLoc( result, location() )
-      },
-      peg$c38 = "<",
-      peg$c39 = peg$literalExpectation("<", false),
-      peg$c40 = ">",
-      peg$c41 = peg$literalExpectation(">", false),
-      peg$c42 = function(body, end) {
-        const onestep = {
-          type:'onestep',
-          values:[body]
-        }
-
-        if( end !== null ) {
-          onestep.values.push( end )
-        }
-
-        return addLoc( onestep, location() )
-      },
-      peg$c43 = peg$otherExpectation("word"),
-      peg$c44 = /^[letter number]/,
-      peg$c45 = peg$classExpectation(["l", "e", "t", "t", "e", "r", " ", "n", "u", "m", "b", "e", "r"], false, false),
-      peg$c46 = function(value) { 
-        return addLoc( { type:typeof value, value, }, location() )
-      },
-      peg$c47 = function(l) {
-        return addLoc( { type:'string', value:text().trim() }, location() )
-      },
-      peg$c48 = /^[^ [\] {} () \t\n\r '*' '\/' '.' '~' '?' ',' '>' '<' ]/,
-      peg$c49 = peg$classExpectation([" ", "[", "]", " ", "{", "}", " ", "(", ")", " ", "\t", "\n", "\r", " ", "'", "*", "'", " ", "'", "/", "'", " ", "'", ".", "'", " ", "'", "~", "'", " ", "'", "?", "'", " ", "'", ",", "'", " ", "'", ">", "'", " ", "'", "<", "'", " "], true, false),
-      peg$c50 = function(value) {
-        return addLoc( {type:'string', value }, location() )
-      },
-      peg$c51 = ".",
-      peg$c52 = peg$literalExpectation(".", false),
-      peg$c53 = "-",
-      peg$c54 = peg$literalExpectation("-", false),
-      peg$c55 = /^[0-9]/,
-      peg$c56 = peg$classExpectation([["0", "9"]], false, false),
-      peg$c57 = function() {
-        return addLoc( { type:'number', value:+text().trim() }, location() )
-      },
-      peg$c58 = peg$otherExpectation("whitespace"),
-      peg$c59 = /^[ \t\n\r ]/,
-      peg$c60 = peg$classExpectation([" ", "\t", "\n", "\r", " "], false, false),
-
-      peg$currPos          = 0,
-      peg$savedPos         = 0,
-      peg$posDetailsCache  = [{ line: 1, column: 1 }],
-      peg$maxFailPos       = 0,
-      peg$maxFailExpected  = [],
-      peg$silentFails      = 0,
-
-      peg$resultsCache = {},
-
-      peg$result;
-
-  if ("startRule" in options) {
-    if (!(options.startRule in peg$startRuleFunctions)) {
-      throw new Error("Can't start parsing from rule \"" + options.startRule + "\".");
-    }
-
-    peg$startRuleFunction = peg$startRuleFunctions[options.startRule];
-  }
-
-  function text() {
-    return input.substring(peg$savedPos, peg$currPos);
-  }
-
-  function location() {
-    return peg$computeLocation(peg$savedPos, peg$currPos);
-  }
-
-  function expected(description, location) {
-    location = location !== void 0 ? location : peg$computeLocation(peg$savedPos, peg$currPos)
-
-    throw peg$buildStructuredError(
-      [peg$otherExpectation(description)],
-      input.substring(peg$savedPos, peg$currPos),
-      location
-    );
-  }
-
-  function error(message, location) {
-    location = location !== void 0 ? location : peg$computeLocation(peg$savedPos, peg$currPos)
-
-    throw peg$buildSimpleError(message, location);
-  }
-
-  function peg$literalExpectation(text, ignoreCase) {
-    return { type: "literal", text: text, ignoreCase: ignoreCase };
-  }
-
-  function peg$classExpectation(parts, inverted, ignoreCase) {
-    return { type: "class", parts: parts, inverted: inverted, ignoreCase: ignoreCase };
-  }
-
-  function peg$anyExpectation() {
-    return { type: "any" };
-  }
-
-  function peg$endExpectation() {
-    return { type: "end" };
-  }
-
-  function peg$otherExpectation(description) {
-    return { type: "other", description: description };
-  }
-
-  function peg$computePosDetails(pos) {
-    var details = peg$posDetailsCache[pos], p;
-
-    if (details) {
-      return details;
-    } else {
-      p = pos - 1;
-      while (!peg$posDetailsCache[p]) {
-        p--;
-      }
-
-      details = peg$posDetailsCache[p];
-      details = {
-        line:   details.line,
-        column: details.column
-      };
-
-      while (p < pos) {
-        if (input.charCodeAt(p) === 10) {
-          details.line++;
-          details.column = 1;
-        } else {
-          details.column++;
-        }
-
-        p++;
-      }
-
-      peg$posDetailsCache[pos] = details;
-      return details;
-    }
-  }
-
-  function peg$computeLocation(startPos, endPos) {
-    var startPosDetails = peg$computePosDetails(startPos),
-        endPosDetails   = peg$computePosDetails(endPos);
-
-    return {
-      start: {
-        offset: startPos,
-        line:   startPosDetails.line,
-        column: startPosDetails.column
-      },
-      end: {
-        offset: endPos,
-        line:   endPosDetails.line,
-        column: endPosDetails.column
-      }
-    };
-  }
-
-  function peg$fail(expected) {
-    if (peg$currPos < peg$maxFailPos) { return; }
-
-    if (peg$currPos > peg$maxFailPos) {
-      peg$maxFailPos = peg$currPos;
-      peg$maxFailExpected = [];
-    }
-
-    peg$maxFailExpected.push(expected);
-  }
-
-  function peg$buildSimpleError(message, location) {
-    return new peg$SyntaxError(message, null, null, location);
-  }
-
-  function peg$buildStructuredError(expected, found, location) {
-    return new peg$SyntaxError(
-      peg$SyntaxError.buildMessage(expected, found),
-      expected,
-      found,
-      location
-    );
-  }
-
-  function peg$parsepattern() {
-    var s0, s1;
-
-    var key    = peg$currPos * 28 + 0,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parsefeet();
-    if (s1 === peg$FAILED) {
-      s1 = peg$parselist();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parseterm();
-      }
-    }
-    if (s1 !== peg$FAILED) {
-      peg$savedPos = s0;
-      s1 = peg$c0(s1);
-    }
-    s0 = s1;
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parselist() {
-    var s0, s1, s2, s3, s4, s5;
-
-    var key    = peg$currPos * 28 + 1,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parse_();
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parseterm();
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parse_();
-        if (s3 !== peg$FAILED) {
-          s4 = [];
-          s5 = peg$parseterm();
-          if (s5 !== peg$FAILED) {
-            while (s5 !== peg$FAILED) {
-              s4.push(s5);
-              s5 = peg$parseterm();
-            }
-          } else {
-            s4 = peg$FAILED;
-          }
-          if (s4 !== peg$FAILED) {
-            s5 = peg$parse_();
-            if (s5 !== peg$FAILED) {
-              peg$savedPos = s0;
-              s1 = peg$c1(s2, s4);
-              s0 = s1;
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsegroup() {
-    var s0, s1, s2, s3, s4, s5, s6, s7;
-
-    var key    = peg$currPos * 28 + 2,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    peg$silentFails++;
-    s0 = peg$currPos;
-    s1 = peg$parse_();
-    if (s1 !== peg$FAILED) {
-      if (input.charCodeAt(peg$currPos) === 91) {
-        s2 = peg$c3;
-        peg$currPos++;
-      } else {
-        s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c4); }
-      }
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parse_();
-        if (s3 !== peg$FAILED) {
-          s4 = [];
-          s5 = peg$parseterm();
-          if (s5 !== peg$FAILED) {
-            while (s5 !== peg$FAILED) {
-              s4.push(s5);
-              s5 = peg$parseterm();
-            }
-          } else {
-            s4 = peg$FAILED;
-          }
-          if (s4 !== peg$FAILED) {
-            s5 = peg$parse_();
-            if (s5 !== peg$FAILED) {
-              if (input.charCodeAt(peg$currPos) === 93) {
-                s6 = peg$c5;
-                peg$currPos++;
-              } else {
-                s6 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c6); }
-              }
-              if (s6 !== peg$FAILED) {
-                s7 = peg$parse_();
-                if (s7 !== peg$FAILED) {
-                  peg$savedPos = s0;
-                  s1 = peg$c7(s4);
-                  s0 = s1;
-                } else {
-                  peg$currPos = s0;
-                  s0 = peg$FAILED;
-                }
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-    peg$silentFails--;
-    if (s0 === peg$FAILED) {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c2); }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parseterm() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 3,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    peg$silentFails++;
-    s0 = peg$currPos;
-    s1 = peg$parseeuclid();
-    if (s1 === peg$FAILED) {
-      s1 = peg$parsespeed();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parseslow();
-        if (s1 === peg$FAILED) {
-          s1 = peg$parsedegrade();
-          if (s1 === peg$FAILED) {
-            s1 = peg$parselayer();
-            if (s1 === peg$FAILED) {
-              s1 = peg$parsenumber();
-              if (s1 === peg$FAILED) {
-                s1 = peg$parseletters();
-                if (s1 === peg$FAILED) {
-                  s1 = peg$parsepolymeter();
-                  if (s1 === peg$FAILED) {
-                    s1 = peg$parsegroup();
-                    if (s1 === peg$FAILED) {
-                      s1 = peg$parseletter();
-                      if (s1 === peg$FAILED) {
-                        s1 = peg$parserest();
-                        if (s1 === peg$FAILED) {
-                          s1 = peg$parseonestep();
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c9(s1);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-    peg$silentFails--;
-    if (s0 === peg$FAILED) {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c8); }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parseeuclid() {
-    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15;
-
-    var key    = peg$currPos * 28 + 4,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parse_();
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parsenoteuclid();
-      if (s2 !== peg$FAILED) {
-        if (input.charCodeAt(peg$currPos) === 40) {
-          s3 = peg$c10;
-          peg$currPos++;
-        } else {
-          s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c11); }
-        }
-        if (s3 !== peg$FAILED) {
-          s4 = peg$parse_();
-          if (s4 !== peg$FAILED) {
-            s5 = peg$parseterm();
-            if (s5 !== peg$FAILED) {
-              if (input.charCodeAt(peg$currPos) === 44) {
-                s6 = peg$c12;
-                peg$currPos++;
-              } else {
-                s6 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c13); }
-              }
-              if (s6 !== peg$FAILED) {
-                s7 = peg$parse_();
-                if (s7 !== peg$FAILED) {
-                  s8 = peg$parseterm();
-                  if (s8 !== peg$FAILED) {
-                    s9 = peg$parse_();
-                    if (s9 !== peg$FAILED) {
-                      if (input.charCodeAt(peg$currPos) === 41) {
-                        s10 = peg$c14;
-                        peg$currPos++;
-                      } else {
-                        s10 = peg$FAILED;
-                        if (peg$silentFails === 0) { peg$fail(peg$c15); }
-                      }
-                      if (s10 === peg$FAILED) {
-                        s10 = null;
-                      }
-                      if (s10 !== peg$FAILED) {
-                        if (input.charCodeAt(peg$currPos) === 44) {
-                          s11 = peg$c12;
-                          peg$currPos++;
-                        } else {
-                          s11 = peg$FAILED;
-                          if (peg$silentFails === 0) { peg$fail(peg$c13); }
-                        }
-                        if (s11 === peg$FAILED) {
-                          s11 = null;
-                        }
-                        if (s11 !== peg$FAILED) {
-                          s12 = peg$parse_();
-                          if (s12 !== peg$FAILED) {
-                            s13 = [];
-                            s14 = peg$parseterm();
-                            while (s14 !== peg$FAILED) {
-                              s13.push(s14);
-                              s14 = peg$parseterm();
-                            }
-                            if (s13 !== peg$FAILED) {
-                              s14 = peg$parse_();
-                              if (s14 !== peg$FAILED) {
-                                if (input.charCodeAt(peg$currPos) === 41) {
-                                  s15 = peg$c14;
-                                  peg$currPos++;
-                                } else {
-                                  s15 = peg$FAILED;
-                                  if (peg$silentFails === 0) { peg$fail(peg$c15); }
-                                }
-                                if (s15 === peg$FAILED) {
-                                  s15 = null;
-                                }
-                                if (s15 !== peg$FAILED) {
-                                  peg$savedPos = s0;
-                                  s1 = peg$c16(s2, s5, s8, s13);
-                                  s0 = s1;
-                                } else {
-                                  peg$currPos = s0;
-                                  s0 = peg$FAILED;
-                                }
-                              } else {
-                                peg$currPos = s0;
-                                s0 = peg$FAILED;
-                              }
-                            } else {
-                              peg$currPos = s0;
-                              s0 = peg$FAILED;
-                            }
-                          } else {
-                            peg$currPos = s0;
-                            s0 = peg$FAILED;
-                          }
-                        } else {
-                          peg$currPos = s0;
-                          s0 = peg$FAILED;
-                        }
-                      } else {
-                        peg$currPos = s0;
-                        s0 = peg$FAILED;
-                      }
-                    } else {
-                      peg$currPos = s0;
-                      s0 = peg$FAILED;
-                    }
-                  } else {
-                    peg$currPos = s0;
-                    s0 = peg$FAILED;
-                  }
-                } else {
-                  peg$currPos = s0;
-                  s0 = peg$FAILED;
-                }
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenoteuclid() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 5,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parsegroup();
-    if (s1 === peg$FAILED) {
-      s1 = peg$parsenumber();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parseword();
-        if (s1 === peg$FAILED) {
-          s1 = peg$parseletters();
-          if (s1 === peg$FAILED) {
-            s1 = peg$parseletter();
-            if (s1 === peg$FAILED) {
-              s1 = peg$parserest();
-              if (s1 === peg$FAILED) {
-                s1 = peg$parseonestep();
-              }
-            }
-          }
-        }
-      }
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c17(s1);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsedegrade() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 6,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parsenotdegrade();
-    if (s1 !== peg$FAILED) {
-      if (input.charCodeAt(peg$currPos) === 63) {
-        s2 = peg$c18;
-        peg$currPos++;
-      } else {
-        s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c19); }
-      }
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c20(s1);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenotdegrade() {
-    var s0;
-
-    var key    = peg$currPos * 28 + 7,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$parsenumber();
-    if (s0 === peg$FAILED) {
-      s0 = peg$parsespeed();
-      if (s0 === peg$FAILED) {
-        s0 = peg$parseslow();
-        if (s0 === peg$FAILED) {
-          s0 = peg$parseeuclid();
-          if (s0 === peg$FAILED) {
-            s0 = peg$parsegroup();
-            if (s0 === peg$FAILED) {
-              s0 = peg$parseletter();
-              if (s0 === peg$FAILED) {
-                s0 = peg$parseonestep();
-              }
-            }
-          }
-        }
-      }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsespeed() {
-    var s0, s1, s2, s3, s4, s5, s6;
-
-    var key    = peg$currPos * 28 + 8,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parsenotspeed();
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        if (input.charCodeAt(peg$currPos) === 42) {
-          s3 = peg$c21;
-          peg$currPos++;
-        } else {
-          s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c22); }
-        }
-        if (s3 !== peg$FAILED) {
-          s4 = peg$parse_();
-          if (s4 !== peg$FAILED) {
-            s5 = peg$parsenotspeed();
-            if (s5 !== peg$FAILED) {
-              s6 = peg$parse_();
-              if (s6 !== peg$FAILED) {
-                peg$savedPos = s0;
-                s1 = peg$c23(s1, s5);
-                s0 = s1;
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenotspeed() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 9,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parseeuclid();
-    if (s1 === peg$FAILED) {
-      s1 = peg$parsepolymeter();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parsenumber();
-        if (s1 === peg$FAILED) {
-          s1 = peg$parselayer();
-          if (s1 === peg$FAILED) {
-            s1 = peg$parseletters();
-            if (s1 === peg$FAILED) {
-              s1 = peg$parsegroup();
-              if (s1 === peg$FAILED) {
-                s1 = peg$parseletter();
-                if (s1 === peg$FAILED) {
-                  s1 = peg$parserest();
-                  if (s1 === peg$FAILED) {
-                    s1 = peg$parseonestep();
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c17(s1);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parseslow() {
-    var s0, s1, s2, s3, s4, s5, s6;
-
-    var key    = peg$currPos * 28 + 10,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parsenotslow();
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        if (input.charCodeAt(peg$currPos) === 47) {
-          s3 = peg$c24;
-          peg$currPos++;
-        } else {
-          s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c25); }
-        }
-        if (s3 !== peg$FAILED) {
-          s4 = peg$parse_();
-          if (s4 !== peg$FAILED) {
-            s5 = peg$parsenotslow();
-            if (s5 !== peg$FAILED) {
-              s6 = peg$parse_();
-              if (s6 !== peg$FAILED) {
-                peg$savedPos = s0;
-                s1 = peg$c26(s1, s5);
-                s0 = s1;
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenotslow() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 11,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parseeuclid();
-    if (s1 === peg$FAILED) {
-      s1 = peg$parsepolymeter();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parsenumber();
-        if (s1 === peg$FAILED) {
-          s1 = peg$parselayer();
-          if (s1 === peg$FAILED) {
-            s1 = peg$parseletters();
-            if (s1 === peg$FAILED) {
-              s1 = peg$parsegroup();
-              if (s1 === peg$FAILED) {
-                s1 = peg$parseletter();
-                if (s1 === peg$FAILED) {
-                  s1 = peg$parserest();
-                  if (s1 === peg$FAILED) {
-                    s1 = peg$parseonestep();
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c17(s1);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsepolymeter() {
-    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
-
-    var key    = peg$currPos * 28 + 12,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parse_();
-    if (s1 !== peg$FAILED) {
-      if (input.charCodeAt(peg$currPos) === 123) {
-        s2 = peg$c27;
-        peg$currPos++;
-      } else {
-        s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c28); }
-      }
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parse_();
-        if (s3 !== peg$FAILED) {
-          s4 = [];
-          s5 = peg$parseterm();
-          if (s5 !== peg$FAILED) {
-            while (s5 !== peg$FAILED) {
-              s4.push(s5);
-              s5 = peg$parseterm();
-            }
-          } else {
-            s4 = peg$FAILED;
-          }
-          if (s4 !== peg$FAILED) {
-            if (input.charCodeAt(peg$currPos) === 44) {
-              s5 = peg$c12;
-              peg$currPos++;
-            } else {
-              s5 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c13); }
-            }
-            if (s5 !== peg$FAILED) {
-              s6 = peg$parse_();
-              if (s6 !== peg$FAILED) {
-                s7 = [];
-                s8 = peg$parseterm();
-                if (s8 !== peg$FAILED) {
-                  while (s8 !== peg$FAILED) {
-                    s7.push(s8);
-                    s8 = peg$parseterm();
-                  }
-                } else {
-                  s7 = peg$FAILED;
-                }
-                if (s7 !== peg$FAILED) {
-                  s8 = peg$parse_();
-                  if (s8 !== peg$FAILED) {
-                    if (input.charCodeAt(peg$currPos) === 125) {
-                      s9 = peg$c29;
-                      peg$currPos++;
-                    } else {
-                      s9 = peg$FAILED;
-                      if (peg$silentFails === 0) { peg$fail(peg$c30); }
-                    }
-                    if (s9 !== peg$FAILED) {
-                      s10 = peg$parse_();
-                      if (s10 !== peg$FAILED) {
-                        peg$savedPos = s0;
-                        s1 = peg$c31(s4, s7);
-                        s0 = s1;
-                      } else {
-                        peg$currPos = s0;
-                        s0 = peg$FAILED;
-                      }
-                    } else {
-                      peg$currPos = s0;
-                      s0 = peg$FAILED;
-                    }
-                  } else {
-                    peg$currPos = s0;
-                    s0 = peg$FAILED;
-                  }
-                } else {
-                  peg$currPos = s0;
-                  s0 = peg$FAILED;
-                }
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parserest() {
-    var s0, s1;
-
-    var key    = peg$currPos * 28 + 13,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    if (input.charCodeAt(peg$currPos) === 126) {
-      s1 = peg$c32;
-      peg$currPos++;
-    } else {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c33); }
-    }
-    if (s1 !== peg$FAILED) {
-      peg$savedPos = s0;
-      s1 = peg$c34();
-    }
-    s0 = s1;
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsefeet() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 14,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = [];
-    s2 = peg$parsefoot();
-    if (s2 !== peg$FAILED) {
-      while (s2 !== peg$FAILED) {
-        s1.push(s2);
-        s2 = peg$parsefoot();
-      }
-    } else {
-      s1 = peg$FAILED;
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parsenotfoot();
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c35(s1, s2);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsefoot() {
-    var s0, s1, s2, s3;
-
-    var key    = peg$currPos * 28 + 15,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = [];
-    s2 = peg$parsenotfoot();
-    if (s2 !== peg$FAILED) {
-      while (s2 !== peg$FAILED) {
-        s1.push(s2);
-        s2 = peg$parsenotfoot();
-      }
-    } else {
-      s1 = peg$FAILED;
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parsedot();
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parse_();
-        if (s3 !== peg$FAILED) {
-          peg$savedPos = s0;
-          s1 = peg$c36(s1);
-          s0 = s1;
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenotfoot() {
-    var s0;
-
-    var key    = peg$currPos * 28 + 16,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$parselist();
-    if (s0 === peg$FAILED) {
-      s0 = peg$parsedegrade();
-      if (s0 === peg$FAILED) {
-        s0 = peg$parsepolymeter();
-        if (s0 === peg$FAILED) {
-          s0 = peg$parserest();
-          if (s0 === peg$FAILED) {
-            s0 = peg$parsespeed();
-            if (s0 === peg$FAILED) {
-              s0 = peg$parseslow();
-              if (s0 === peg$FAILED) {
-                s0 = peg$parseeuclid();
-                if (s0 === peg$FAILED) {
-                  s0 = peg$parsenumber();
-                  if (s0 === peg$FAILED) {
-                    s0 = peg$parseletter();
-                    if (s0 === peg$FAILED) {
-                      s0 = peg$parseletters();
-                      if (s0 === peg$FAILED) {
-                        s0 = peg$parseword();
-                        if (s0 === peg$FAILED) {
-                          s0 = peg$parseonestep();
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parselayer() {
-    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9;
-
-    var key    = peg$currPos * 28 + 17,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parse_();
-    if (s1 !== peg$FAILED) {
-      if (input.charCodeAt(peg$currPos) === 91) {
-        s2 = peg$c3;
-        peg$currPos++;
-      } else {
-        s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c4); }
-      }
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parse_();
-        if (s3 !== peg$FAILED) {
-          s4 = [];
-          s5 = peg$currPos;
-          s6 = peg$parsenotlayer();
-          if (s6 !== peg$FAILED) {
-            s7 = peg$parse_();
-            if (s7 !== peg$FAILED) {
-              if (input.charCodeAt(peg$currPos) === 44) {
-                s8 = peg$c12;
-                peg$currPos++;
-              } else {
-                s8 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c13); }
-              }
-              if (s8 !== peg$FAILED) {
-                s9 = peg$parse_();
-                if (s9 !== peg$FAILED) {
-                  s6 = [s6, s7, s8, s9];
-                  s5 = s6;
-                } else {
-                  peg$currPos = s5;
-                  s5 = peg$FAILED;
-                }
-              } else {
-                peg$currPos = s5;
-                s5 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s5;
-              s5 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s5;
-            s5 = peg$FAILED;
-          }
-          if (s5 !== peg$FAILED) {
-            while (s5 !== peg$FAILED) {
-              s4.push(s5);
-              s5 = peg$currPos;
-              s6 = peg$parsenotlayer();
-              if (s6 !== peg$FAILED) {
-                s7 = peg$parse_();
-                if (s7 !== peg$FAILED) {
-                  if (input.charCodeAt(peg$currPos) === 44) {
-                    s8 = peg$c12;
-                    peg$currPos++;
-                  } else {
-                    s8 = peg$FAILED;
-                    if (peg$silentFails === 0) { peg$fail(peg$c13); }
-                  }
-                  if (s8 !== peg$FAILED) {
-                    s9 = peg$parse_();
-                    if (s9 !== peg$FAILED) {
-                      s6 = [s6, s7, s8, s9];
-                      s5 = s6;
-                    } else {
-                      peg$currPos = s5;
-                      s5 = peg$FAILED;
-                    }
-                  } else {
-                    peg$currPos = s5;
-                    s5 = peg$FAILED;
-                  }
-                } else {
-                  peg$currPos = s5;
-                  s5 = peg$FAILED;
-                }
-              } else {
-                peg$currPos = s5;
-                s5 = peg$FAILED;
-              }
-            }
-          } else {
-            s4 = peg$FAILED;
-          }
-          if (s4 !== peg$FAILED) {
-            s5 = peg$parsenotlayer();
-            if (s5 !== peg$FAILED) {
-              s6 = peg$parse_();
-              if (s6 !== peg$FAILED) {
-                if (input.charCodeAt(peg$currPos) === 93) {
-                  s7 = peg$c5;
-                  peg$currPos++;
-                } else {
-                  s7 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c6); }
-                }
-                if (s7 !== peg$FAILED) {
-                  s8 = peg$parse_();
-                  if (s8 !== peg$FAILED) {
-                    peg$savedPos = s0;
-                    s1 = peg$c37(s4, s5);
-                    s0 = s1;
-                  } else {
-                    peg$currPos = s0;
-                    s0 = peg$FAILED;
-                  }
-                } else {
-                  peg$currPos = s0;
-                  s0 = peg$FAILED;
-                }
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenotlayer() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 18,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parsespeed();
-    if (s1 === peg$FAILED) {
-      s1 = peg$parseslow();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parselist();
-        if (s1 === peg$FAILED) {
-          s1 = peg$parsenumber();
-          if (s1 === peg$FAILED) {
-            s1 = peg$parseletters();
-            if (s1 === peg$FAILED) {
-              s1 = peg$parseeuclid();
-              if (s1 === peg$FAILED) {
-                s1 = peg$parsepolymeter();
-                if (s1 === peg$FAILED) {
-                  s1 = peg$parsegroup();
-                  if (s1 === peg$FAILED) {
-                    s1 = peg$parseletter();
-                    if (s1 === peg$FAILED) {
-                      s1 = peg$parserest();
-                      if (s1 === peg$FAILED) {
-                        s1 = peg$parseonestep();
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c17(s1);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parseonestep() {
-    var s0, s1, s2, s3, s4, s5, s6, s7;
-
-    var key    = peg$currPos * 28 + 19,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    if (input.charCodeAt(peg$currPos) === 60) {
-      s1 = peg$c38;
-      peg$currPos++;
-    } else {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c39); }
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parsenotonestep();
-        if (s3 !== peg$FAILED) {
-          if (input.charCodeAt(peg$currPos) === 44) {
-            s4 = peg$c12;
-            peg$currPos++;
-          } else {
-            s4 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c13); }
-          }
-          if (s4 === peg$FAILED) {
-            s4 = null;
-          }
-          if (s4 !== peg$FAILED) {
-            s5 = peg$parsenotonestep();
-            if (s5 === peg$FAILED) {
-              s5 = null;
-            }
-            if (s5 !== peg$FAILED) {
-              s6 = peg$parse_();
-              if (s6 !== peg$FAILED) {
-                if (input.charCodeAt(peg$currPos) === 62) {
-                  s7 = peg$c40;
-                  peg$currPos++;
-                } else {
-                  s7 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c41); }
-                }
-                if (s7 !== peg$FAILED) {
-                  peg$savedPos = s0;
-                  s1 = peg$c42(s3, s5);
-                  s0 = s1;
-                } else {
-                  peg$currPos = s0;
-                  s0 = peg$FAILED;
-                }
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenotonestep() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 20,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parselist();
-    if (s1 === peg$FAILED) {
-      s1 = peg$parseeuclid();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parsepolymeter();
-        if (s1 === peg$FAILED) {
-          s1 = peg$parseword();
-          if (s1 === peg$FAILED) {
-            s1 = peg$parsegroup();
-            if (s1 === peg$FAILED) {
-              s1 = peg$parsenumber();
-              if (s1 === peg$FAILED) {
-                s1 = peg$parseletter();
-                if (s1 === peg$FAILED) {
-                  s1 = peg$parserest();
-                  if (s1 === peg$FAILED) {
-                    s1 = peg$parselayer();
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$parse_();
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c17(s1);
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parseword() {
-    var s0, s1, s2, s3, s4;
-
-    var key    = peg$currPos * 28 + 21,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    peg$silentFails++;
-    s0 = peg$currPos;
-    s1 = peg$parse_();
-    if (s1 !== peg$FAILED) {
-      s2 = peg$currPos;
-      s3 = [];
-      if (peg$c44.test(input.charAt(peg$currPos))) {
-        s4 = input.charAt(peg$currPos);
-        peg$currPos++;
-      } else {
-        s4 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c45); }
-      }
-      if (s4 !== peg$FAILED) {
-        while (s4 !== peg$FAILED) {
-          s3.push(s4);
-          if (peg$c44.test(input.charAt(peg$currPos))) {
-            s4 = input.charAt(peg$currPos);
-            peg$currPos++;
-          } else {
-            s4 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c45); }
-          }
-        }
-      } else {
-        s3 = peg$FAILED;
-      }
-      if (s3 !== peg$FAILED) {
-        s2 = input.substring(s2, peg$currPos);
-      } else {
-        s2 = s3;
-      }
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parse_();
-        if (s3 !== peg$FAILED) {
-          peg$savedPos = s0;
-          s1 = peg$c46(s2);
-          s0 = s1;
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-    peg$silentFails--;
-    if (s0 === peg$FAILED) {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c43); }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parseletters() {
-    var s0, s1, s2, s3;
-
-    var key    = peg$currPos * 28 + 22,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$parse_();
-    if (s1 !== peg$FAILED) {
-      s2 = [];
-      s3 = peg$parseletter();
-      if (s3 !== peg$FAILED) {
-        while (s3 !== peg$FAILED) {
-          s2.push(s3);
-          s3 = peg$parseletter();
-        }
-      } else {
-        s2 = peg$FAILED;
-      }
-      if (s2 !== peg$FAILED) {
-        s3 = peg$parse_();
-        if (s3 !== peg$FAILED) {
-          peg$savedPos = s0;
-          s1 = peg$c47(s2);
-          s0 = s1;
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parseletter() {
-    var s0, s1, s2;
-
-    var key    = peg$currPos * 28 + 23,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    s1 = peg$currPos;
-    if (peg$c48.test(input.charAt(peg$currPos))) {
-      s2 = input.charAt(peg$currPos);
-      peg$currPos++;
-    } else {
-      s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c49); }
-    }
-    if (s2 !== peg$FAILED) {
-      s1 = input.substring(s1, peg$currPos);
-    } else {
-      s1 = s2;
-    }
-    if (s1 !== peg$FAILED) {
-      peg$savedPos = s0;
-      s1 = peg$c50(s1);
-    }
-    s0 = s1;
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsedot() {
-    var s0;
-
-    var key    = peg$currPos * 28 + 24,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    if (input.charCodeAt(peg$currPos) === 46) {
-      s0 = peg$c51;
-      peg$currPos++;
-    } else {
-      s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c52); }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsequestion() {
-    var s0;
-
-    var key    = peg$currPos * 28 + 25,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    if (input.charCodeAt(peg$currPos) === 63) {
-      s0 = peg$c18;
-      peg$currPos++;
-    } else {
-      s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c19); }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parsenumber() {
-    var s0, s1, s2, s3, s4, s5, s6;
-
-    var key    = peg$currPos * 28 + 26,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    s0 = peg$currPos;
-    if (input.charCodeAt(peg$currPos) === 45) {
-      s1 = peg$c53;
-      peg$currPos++;
-    } else {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c54); }
-    }
-    if (s1 === peg$FAILED) {
-      s1 = null;
-    }
-    if (s1 !== peg$FAILED) {
-      s2 = peg$currPos;
-      s3 = [];
-      if (peg$c55.test(input.charAt(peg$currPos))) {
-        s4 = input.charAt(peg$currPos);
-        peg$currPos++;
-      } else {
-        s4 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c56); }
-      }
-      if (s4 !== peg$FAILED) {
-        while (s4 !== peg$FAILED) {
-          s3.push(s4);
-          if (peg$c55.test(input.charAt(peg$currPos))) {
-            s4 = input.charAt(peg$currPos);
-            peg$currPos++;
-          } else {
-            s4 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c56); }
-          }
-        }
-      } else {
-        s3 = peg$FAILED;
-      }
-      if (s3 !== peg$FAILED) {
-        if (input.charCodeAt(peg$currPos) === 46) {
-          s4 = peg$c51;
-          peg$currPos++;
-        } else {
-          s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c52); }
-        }
-        if (s4 !== peg$FAILED) {
-          s5 = [];
-          if (peg$c55.test(input.charAt(peg$currPos))) {
-            s6 = input.charAt(peg$currPos);
-            peg$currPos++;
-          } else {
-            s6 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c56); }
-          }
-          while (s6 !== peg$FAILED) {
-            s5.push(s6);
-            if (peg$c55.test(input.charAt(peg$currPos))) {
-              s6 = input.charAt(peg$currPos);
-              peg$currPos++;
-            } else {
-              s6 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c56); }
-            }
-          }
-          if (s5 !== peg$FAILED) {
-            s3 = [s3, s4, s5];
-            s2 = s3;
-          } else {
-            peg$currPos = s2;
-            s2 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s2;
-          s2 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s2;
-        s2 = peg$FAILED;
-      }
-      if (s2 === peg$FAILED) {
-        s2 = peg$currPos;
-        if (input.charCodeAt(peg$currPos) === 46) {
-          s3 = peg$c51;
-          peg$currPos++;
-        } else {
-          s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c52); }
-        }
-        if (s3 === peg$FAILED) {
-          s3 = null;
-        }
-        if (s3 !== peg$FAILED) {
-          s4 = [];
-          if (peg$c55.test(input.charAt(peg$currPos))) {
-            s5 = input.charAt(peg$currPos);
-            peg$currPos++;
-          } else {
-            s5 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c56); }
-          }
-          if (s5 !== peg$FAILED) {
-            while (s5 !== peg$FAILED) {
-              s4.push(s5);
-              if (peg$c55.test(input.charAt(peg$currPos))) {
-                s5 = input.charAt(peg$currPos);
-                peg$currPos++;
-              } else {
-                s5 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c56); }
-              }
-            }
-          } else {
-            s4 = peg$FAILED;
-          }
-          if (s4 !== peg$FAILED) {
-            s3 = [s3, s4];
-            s2 = s3;
-          } else {
-            peg$currPos = s2;
-            s2 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s2;
-          s2 = peg$FAILED;
-        }
-      }
-      if (s2 !== peg$FAILED) {
-        peg$savedPos = s0;
-        s1 = peg$c57();
-        s0 = s1;
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
-      }
-    } else {
-      peg$currPos = s0;
-      s0 = peg$FAILED;
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-  function peg$parse_() {
-    var s0, s1;
-
-    var key    = peg$currPos * 28 + 27,
-        cached = peg$resultsCache[key];
-
-    if (cached) {
-      peg$currPos = cached.nextPos;
-
-      return cached.result;
-    }
-
-    peg$silentFails++;
-    s0 = [];
-    if (peg$c59.test(input.charAt(peg$currPos))) {
-      s1 = input.charAt(peg$currPos);
-      peg$currPos++;
-    } else {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c60); }
-    }
-    while (s1 !== peg$FAILED) {
-      s0.push(s1);
-      if (peg$c59.test(input.charAt(peg$currPos))) {
-        s1 = input.charAt(peg$currPos);
-        peg$currPos++;
-      } else {
-        s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c60); }
-      }
-    }
-    peg$silentFails--;
-    if (s0 === peg$FAILED) {
-      s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c58); }
-    }
-
-    peg$resultsCache[key] = { nextPos: peg$currPos, result: s0 };
-
-    return s0;
-  }
-
-
-    const addLocations = options.addLocations
-   
-    let uid = 0
-    const addLoc = function( value, location ) {
-      if( addLocations === true ) {
-        value.location = location
-      }
-      
-      if( options.addUID === true ) {
-        value.uid = uid++
-      }
-
-      return value
-    }
-
-
-  peg$result = peg$startRuleFunction();
-
-  if (peg$result !== peg$FAILED && peg$currPos === input.length) {
-    return peg$result;
-  } else {
-    if (peg$result !== peg$FAILED && peg$currPos < input.length) {
-      peg$fail(peg$endExpectation());
-    }
-
-    throw peg$buildStructuredError(
-      peg$maxFailExpected,
-      peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
-      peg$maxFailPos < input.length
-        ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
-        : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)
-    );
-  }
-}
-
-module.exports = {
-  SyntaxError: peg$SyntaxError,
-  parse:       peg$parse
-};
-
-},{}],345:[function(require,module,exports){
-const parse = require('../dist/tidal.js').parse
-const query = require('./queryArc.js' ).queryArc
-const Fraction = require( 'fraction.js' )
-
-/* The Pattern object is used to parse a pattern
- * a single time and then query it repeatedly, assuming
- * different start and end times for each query. A priority
- * queue is used to sort the events... 
-*/
-const Pattern = ( patternString, opts ) => {
-  if( typeof patternString !== 'string' )
-    throw 'You must provide a string to generate the pattern from'
-
-  let __data
-  try{
-    __data = parse( patternString, opts )
-  }catch( e ) {
-    throw `We were unable to parse the pattern ${patternString}. ${e.toString()}`
-  }
-
-  const ptrn = {
-    __rawString: patternString,
-    __data,
-
-    events: null,
-
-    __sort( a,b ) { return a.arc.start.compare( b.arc.start ) },
-    query( start, duration ) {
-      if( typeof start !== 'object' ) start = Fraction( start )
-      if( typeof duration !== 'object' ) duration = Fraction( duration )
-
-      ptrn.events = query( 
-        ptrn.__data, 
-        start,
-        duration 
-      )
-      .sort( ptrn.__sort )
-
-      return ptrn.events
-    },
-
-    print() {
-      if( ptrn.events !== null ) {
-        ptrn.events.forEach( v => 
-          console.log( 
-            `${v.arc.start.toFraction()} - ${v.arc.end.toFraction()}: [ ${v.value.toString()} ]` 
-          ) 
-        )
-      }else{
-        console.log( 'No events have been generated from the pattern; have you queried it yet?' )
-      }
-    }
-  }
-
-  return ptrn
-}
-
-module.exports = Pattern
-
-},{"../dist/tidal.js":344,"./queryArc.js":346,"fraction.js":333}],346:[function(require,module,exports){
-const Fraction = require( 'fraction.js' )
-const util     = require( 'util' )
-const bjork    = require( 'bjork' ) 
-const log      = util.inspect
-const srand    = require( 'seedrandom' )
-
-const rnd = function( phase ) {
-  //console.log( 'phase', phase.toFraction() )
-  return new srand( phase.toFraction() )()
-}
-
-/* queryArc
- *
- * Generates events for provided pattern, starting at
- * an initial phase, subdivides queries in individual 
- * cycles if duration of query is greater than 1 cycle.
- * Filters events outside of the the intended range. 
- * Remaps events to be relative to the initial phase.
- */
-const queryArc = function( pattern, phase, duration ) {
-  const start         = phase.clone(),
-        end           = start.add( duration ),
-        // get phase offset if scheduling begins in middle of event arc
-        adjustedPhase = adjustPhase( phase, getPhaseIncr( pattern ), end )
-
-  let eventList
-
-  // if we're querying an arc that is less than or equal to one cycle in length..
-  if( duration.valueOf() <= 1 ) {
-    eventList = processPattern( 
-      pattern, 
-      duration, 
-      adjustedPhase, 
-      null, 
-      null, 
-      false//shouldRemap( pattern ) 
-    )
-  }else{
-    // for longer arcs we need to query one cycle at a time
-    eventList = []
-    let count = 0
-    for( let i = adjustedPhase.valueOf(); i < adjustedPhase.add( duration ).valueOf(); i++ ) {
-      eventList = eventList.concat( 
-        processPattern( 
-          pattern, 
-          Fraction(1),
-          adjustedPhase.add( count++ ), 
-          null, 
-          null, 
-          false
-        )
-      )
-    }
-  }
-
-  // prune any events that fall before our start phase or after our end phase
-  eventList = eventList.filter( evt => {
-    return (evt.arc.start.valueOf() >= start.valueOf() 
-        && evt.arc.start.valueOf()  <  end.valueOf() ) 
-  })
-  // remap events to make their arcs relative to initial phase argument
-  .map( evt => {
-    evt.arc.start = evt.arc.start.sub( start )
-    evt.arc.end   = evt.arc.end.sub( start )
-    return evt
-  })
- 
-  //console.log( 'eventList:', log(eventList,{depth:4}) )
-  return eventList
-}
-
-// if an event is found that represents a pattern (as opposed to a constant) this function
-// is called to query the pattern and map any generated events to the appropriate timespan
-const processPattern = ( pattern, duration, phase, phaseIncr=null, override = null, shouldRemapArcs=false ) => {
-  //if( phaseIncr !== null ) debugger
-  const state = []
-  state.phase = phase
-  let events = handlers[ pattern.type ]( 
-    state, 
-    pattern, 
-    /*shouldReset( pattern ) === true ? Fraction(0) :*/ phase.clone(), 
-    // XXX this is confusing. we are getting around a problem
-    // with polymeters where duplicate events are generated by
-    // not passing a phaseIncr... it's not needed since there's an
-    // override. But this doesn't seem like correct way to solve
-    // this problem and will probably cause future problems...
-    phaseIncr !== null ? duration.div( phaseIncr ) : duration, 
-    override 
-  )
-
-  // if needed, remap arcs for events
-  if( shouldRemapArcs === true ) {
-    if( phaseIncr === null ) phaseIncr = getPhaseIncr( pattern )
-    events = events.map( v => ({
-      value: v.value,
-      arc: getMappedArc( v.arc, phase.clone(), phaseIncr )
-    }) )
-  }
- 
-  return events 
-}
-// placeholder for potentially adding more goodies (parent arc etc.) later
-const Arc = ( start, end ) => ({ start, end })
-
-const shouldNotRemap = ['polymeter', 'onestep']
-const shouldRemap = pattern => shouldNotRemap.indexOf( pattern.type ) === -1
-
-// XXX seems like getMappedArc should be changed to what onestep and group are now using?
-// would that change work with how getMappedArc is used in processPattern?
-
-// map arc time values to appropriate durations
-const getMappedArc = ( arc, phase, phaseIncr ) => {
-  let mappedArc
-  
-  if( phase.mod( phaseIncr ).valueOf() !== 0 ) {
-    mappedArc = Arc( 
-      arc.start.mul( phaseIncr ).add( phase ), 
-      arc.end.mul( phaseIncr ).add( phaseIncr.mod( phase ) ) 
-    )
-  }else{
-    mappedArc = Arc( 
-      arc.start.mul( phaseIncr ).add( phase ), 
-      arc.end.mul( phaseIncr ).add( phase ) 
-    )
-  }
-  
-  return mappedArc
-}
-
-// if initial phase is in the middle of an arc, advance to the end by calculating the difference
-// between the current phase and the start of the next arc, and increasing phase accordingly.
-const adjustPhase = ( phase, phaseIncr, end ) => phase.valueOf() === 0 
-  ? Fraction(0) 
-  : phase.sub( phase.mod( phaseIncr ) )
-
-// check to see if phase should advance to next event, or, if next event is too far in the future, to the
-// end of the current duration being requested.
-const advancePhase = ( phase, phaseIncr, end ) => phase + phaseIncr <= end ? phase.add( phaseIncr ) : end 
-
-// calculate the duration of the current event being processed.
-const calculateDuration = ( phase, phaseIncr, end ) => phase + phaseIncr <= end ? phaseIncr : end.sub( phase )
-
-// get an index number for a pattern for a particular phase
-const getIndex = ( pattern, phase ) => {
-  let idx = 0
-  if( pattern.options !== undefined ) {
-    if( pattern.options.overrideIncr === true ) {
-      idx = phase.div( pattern.options.incr ).mod( pattern.values.length ).floor()
-    }
-  }else{
-    // default list behavior
-    idx = phase.mul( Fraction( pattern.values.length ) ).mod( pattern.values.length ).floor()
-  }
-
-  return idx.valueOf()
-}
-
-// in addition to 'fast', phase resets are also necessary when indexing subpatterns,
-// which are currently arrays with no defined .type property, hence the inclusion of
-// undefined in the array below
-const shouldResetPhase = [ 'repeat', undefined, 'group', 'layers' ] 
-
-// XXX does these need to look at all parents recursively? Right now we're only using one generation...
-const shouldReset = pattern => {
-  const reset = shouldResetPhase.indexOf( pattern.type ) > -1 
-  const parent = pattern.parent !== undefined && shouldResetPhase.indexOf( pattern.parent.type ) > -1
-
-  return reset && parent
-}
-
-// I assume this will need to be a switch on pattern.type in the future...
-const getPhaseIncr = pattern => {
-  let incr
-
-  switch( pattern.type ) {
-    case 'polymeter': incr = Fraction( 1, pattern.left.values.length ); break;
-    case 'number': case 'string': incr = Fraction( 1 ); break;
-    case 'onestep': incr = null; break;
-    default:
-      if( pattern.values === undefined ){
-        incr = Fraction(1)
-      } else {
-        incr = Fraction( 1, pattern.values.length )
-        //let len = 0
-        //pattern.values.forEach( v => len += v.type === 'slow' ? v.rate.value : 1 )
-        //incr = Fraction( 1, len ) 
-      }
-      break;
-
-  }
-
-  return incr
-}
-
-const handlers = {
-  rest( state ) { return state },
-
-  // standard lists e.g. '0 1 2 3' or '[0 1 2]'
-  group( state, pattern, phase, duration, overrideIncr=null ) {
-    const start     = phase.clone(),
-          end       = start.add( duration ),
-          phaseIncr = overrideIncr === null 
-            ? getPhaseIncr( pattern ) 
-            : overrideIncr
-          
-    let eventList = []
-
-    //console.log( 
-    //  'type:',  pattern.type, 
-    //  'phase:', phase.toFraction(),
-    //  'incr:',  phaseIncr.toFraction(),
-    //  'dur:',   duration.toFraction()
-    //)
-    
-    while( phase.compare( end ) < 0 ) {
-      // if pattern is a list, read using current phase, else read directly
-      const member = Array.isArray( pattern.values ) === true 
-        ? pattern.values[ getIndex( pattern, phase ) ] 
-        : pattern.value
-
-      // get duration of current event being processed
-      const dur = calculateDuration( phase, phaseIncr, end )
-
-      // if value is not a numeric or string constant (if it's a pattern)...
-      if( member === undefined || (isNaN( member.value ) && typeof member.value !== 'string') ) {
-        // query the pattern and remap time values appropriately 
-        if( member !== undefined ) member.parent = pattern
-        //console.log( 'processing ', pattern.type, member.type, dur.toFraction(),  phaseIncr.toFraction() )
-        const events = processPattern( 
-          member, 
-          Fraction(1), 
-          //member.type !== 'slow' ? Fraction(0) : phase.clone(), 
-          Fraction(0),
-          null, //getPhaseIncr(member),
-          null, 
-          false//shouldRemap( member )
-        )
-        .map( evt => {
-          evt.arc.start = evt.arc.start.mul( dur ).add( phase )
-          evt.arc.end   = evt.arc.end.mul( dur ).add( phase )
-          return evt
-        })
-
-        eventList = eventList.concat( events )
-      }else{
-        // XXX shouldn't we just process all patterns???
-        // member does not need further processing, so add to event list
-        const evt = { 
-          value:member.value, 
-          arc:Arc( phase, phase.add( dur ) ),
-        }
-        if( member.uid !== undefined ) evt.uid = member.uid 
-
-        eventList.push( evt )
-      }
-
-      // assuming we are starting / ending at a regular phase increment value...
-      
-      if( phase.mod( phaseIncr ).valueOf() === 0 ) {
-        phase = advancePhase( phase, phaseIncr, end )
-      }else{
-        // advance phase to next phase increment
-        phase = phase.add( phaseIncr.sub( phase.mod( phaseIncr ) ) ) 
-      }
-    }
-
-    // prune any events that fall before our start phase or after our end phase
-    eventList = eventList.filter( evt => {
-      return evt.arc.start.valueOf() >= start.valueOf() && evt.arc.start.valueOf() < end.valueOf()
-    })
-   
-    return state.concat( eventList )
-  },
-
-  bjorklund( state, pattern, phase, duration ) {
-    const onesAndZeros = bjork( pattern.pulses.value, pattern.slots.value )
-    let rotation = pattern.rotation !== null ? pattern.rotation.value : 0
-    
-    // rotate right
-    if( rotation > 0 ) {
-      while( rotation > 0 ) {
-        const right = onesAndZeros.pop()
-        onesAndZeros.unshift( right )
-        rotation--
-      }
-    } else if( rotation < 0 ) {
-      // rotate left
-      while( rotation < 0 ) {
-        const left = onesAndZeros.shift()
-        onesAndZeros.push( left )
-        rotation++
-      }
-    }
-    
-    const slotDuration = duration.div( pattern.slots.value )
-    const valueIsValue = pattern.value.type === 'number' || pattern.value.type === 'string'
-
-    const events = onesAndZeros.map( ( shouldInclude, i, arr ) => {
-      let evt
-      // don't process unless an actual event will be included...
-      if( shouldInclude === 1 ) {
-        const startPhase = phase.add( slotDuration.mul( i ) )
-        evt = {
-          shouldInclude,
-          // XXX is there a case where we should use more than 
-          // the first value by querying the value pattern?
-          value:valueIsValue ? pattern.value : processPattern( pattern.value, slotDuration, startPhase )[0].value,
-          arc:Arc( startPhase, startPhase.add( slotDuration ) ) 
-        }
-      }else{
-        evt = { shouldInclude }
-      }
-
-      return evt
-    })
-    .filter( evt => {
-      let shouldInclude = evt.shouldInclude
-
-      // needed to pass tests and is also cleaner...
-      delete evt.shouldInclude
-      return shouldInclude === 1
-    })
-
-    events.forEach( evt => {
-      evt.uid = pattern.value.uid
-      state.push( evt ) 
-    })
-    
-    return state
-  },
-
-  onestep( state, pattern, phase, duration ) {
-    pattern.values.forEach( group => {
-      // initialize, then increment. this assumes that the pattern will be parsed once,
-      // and then the resulting data structure will be queried repeatedly, enabling the use
-      // of state.
-      group.count = group.count === undefined ? 0 : group.count + 1
-
-      const subpattern = group.values[ group.count % group.values.length ]
-      const dur = duration.valueOf() <= 1 ? Fraction(1) : duration 
-      const durDiff = duration.mul( dur ) 
-
-      const events = processPattern( 
-        subpattern, 
-        dur,
-        Fraction(0), 
-        null,
-        null,null,true
-      ).map( evt => {
-        evt.arc.start = evt.arc.start.mul( duration ).add( phase )
-        evt.arc.end = evt.arc.end.mul( duration ).add( phase )
-
-        return evt
-      })  
-
-      state.push( ...events )
-    })
-
-    return state
-  },
-
-  number( state, pattern, phase, duration ) {
-    //if( phase.valueOf() === 0 ) {
-      const evt = { arc:Arc( phase, phase.add( duration ) ), value:pattern.value }
-      if( pattern.uid !== undefined ) evt.uid = pattern.uid
-      state.push(evt)
-    //}
-    return state 
-  },
-
-  string( state, pattern, phase, duration ) {
-    const evt = { arc:Arc( phase, phase.add( duration ) ), value:pattern.value }
-    if( pattern.uid !== undefined ) evt.uid = pattern.uid
-    state.push(evt)
-    return state 
-  },
-
-  degrade( state, pattern, phase, duration ) {
-    // attempt to seed random... rnd( state.phase )
-    const rnum = Math.random()
-    //console.log( 'rnd:', rnum, state.phase.toFraction() )
-    if( rnum > .5 ) {
-      const evt = { 
-        arc:Arc( phase, phase.add( duration ) ), 
-        value:pattern.value.value
-      }
-
-      //console.log( 'adding', evt )
-
-      if( pattern.uid !== undefined ) evt.uid = pattern.uid
-
-      state.push( evt )
-    }
-
-    return state 
-  },
-
-  polymeter( state, pattern, phase, duration ) {
-    pattern.left.parent = pattern.right.parent = pattern
-
-    const incr  = Fraction( 1, pattern.left.values.length )
-    const left  = processPattern( pattern.left, duration, phase.clone(), duration, incr, false )
-
-    pattern.right.options = { overrideIncr: true, incr }
-    const right = processPattern( pattern.right, duration, phase.clone(), duration, incr, false ) 
-
-    return state.concat( left ).concat( right )
-  },
-
-  layers( state, pattern, phase, duration ) {
-    //pattern.left.parent = pattern.right.parent = pattern
-    for( const group of pattern.values ) {
-      const incr = getPhaseIncr( group )
-      const events = processPattern( group, duration.clone(), phase.clone(), duration, null, false)
-      // not sure why excess events are generated, but they need to be filtered...
-      .filter( evt => 
-        evt.arc.start.valueOf() >= phase.valueOf() 
-        && evt.arc.start.valueOf() < phase.add( duration ).valueOf()
-      )
-      
-      //console.log( 'group:', util.inspect( group, { depth:3 }) )
-      //console.log( 'state:', util.inspect( events, { depth:3 }))
-      state = state.concat( events )
-    }
-
-    return state
-  },
-
-  slow( state, pattern, phase, duration ) {
-    const speed = pattern.rate.value
-
-    let events
-    //if( phase.valueOf() % speed === 0 ) {
-      // XXX why do we need this edge case?
-      const phaseDiff = phase.sub( phase.div( speed ) )
-
-      if( pattern.value.type !== 'layers' ) {
-        //events = queryArc(
-        //  pattern.value,
-        //  phase.div( speed ),
-        //  duration.div( speed )
-        //)
-        //console.log( duration, phase, speed )
-        //events = processPattern(
-        //  pattern.value,
-        //  duration.mul( speed ),
-        //  phase.div( speed )
-        //)       
-        events = queryArc(
-          pattern.value,
-          Fraction(0),
-          duration.div( speed ) 
-        ).map( evt => {
-          const diff = evt.arc.end.sub( evt.arc.start )
-          evt.arc.start = evt.arc.start.add( phase )
-          evt.arc.end   = evt.arc.start.add( duration.mul( speed ) ).add( phase )
-          //console.log( diff, duration.mul( speed ), evt.arc.start, evt.arc.end )
-          return evt
-        })
-      }else{
-        events = handlers.layers( state, pattern.value, phase.div( speed ), duration.div( speed ) )
-      }
-
-      //console.log( log( events, { depth:3 }), phase.add( duration ).toFraction() )
-      //if( pattern.value.type === 'group' ) {
-      //  events = events.map( evt => {
-      //    evt.arc.start = evt.arc.start.mul( speed )
-      //    evt.arc.end   = evt.arc.end.mul( speed )
-      //    return evt
-      //  })
-      //}
-      //events = events.map( evt => {
-      //  evt.arc.start = evt.arc.start.add( phaseDiff )
-      //  evt.arc.end   = evt.arc.end.add( phaseDiff )
-      //  //evt.arc.start = evt.arc.start.add( phase )
-      //  //evt.arc.end   = evt.arc.end.add( phase )
-      //  return evt
-      //})
-      //.filter( evt => evt.arc.start.valueOf() < phase.add( duration ).valueOf() )
-    //}
-    //console.log( 'slow:', log( events, { depth:3 }), phase.add( duration ).toFraction() )
-
-    if( events !== undefined ) state = state.concat( events )
-
-    return state
-  },
-
-//const processPattern = ( pattern, duration, phase, phaseIncr=null, override = null, shouldRemapArcs=true ) => {
-  speed( state, pattern, phase, duration ) {
-    // the general process of increasing the speed of a pattern is to query
-    // for a longer duration according to the speed, and the scale the resulting
-    // events.
-    
-    // following explanation from yaxu for how subpatterns work with rates...
-    // https://talk.lurk.org/channel/tidal?msg=z5ck73H9EvxQwMqq6 
-    // re: pattern a*[2 4 8]
-    // "Anyway what happens in this kind of situation is that it splits the cycle in three, 
-    // each a window on what would have happened if you'd have sped things up by the given number
-    // so for the first third you'd get a third of two a's
-    // for the second third you'd get the second third of four a's..."
-    
-    const speed = pattern.rate.value
-    const events = queryArc(
-      pattern.value,
-      Fraction(0),
-      duration.mul( speed ) 
-    ).map( evt => {
-      evt.arc.start = evt.arc.start.div( speed ).add( phase )
-      evt.arc.end   = evt.arc.end.div( speed ).add( phase )
-      return evt
-    })
-
-    // XXX account for having a speeds pattern!!!!
-    /*
-    
-    const incr = Fraction(1, speeds.length)
-    const speeds = queryArc( pattern.rate, Fraction(0), Fraction(1) )
-
-    for( let i = 0; i < speeds.length; i++ ) {
-      let speed = speeds[ i ].value
-
-      if( pattern.operator === '*' ) {
-        //events = queryArc( 
-        //  pattern.value,
-        //  phase.clone(), //Fraction( 0 ), 
-        //  Fraction( speed ).mul( duration )
-        //)
-        events = processPattern(
-          pattern.value,
-          duration.mul( speed ),
-          phase.clone()//Fraction( speed ).mul( duration )
-          //phase.clone() 
-        )
-          
-        // remap events to correct time spans
-        .map( evt => {
-          evt.arc.start = evt.arc.start.div( speed )//.add( phase )
-          evt.arc.end   = evt.arc.end.div( speed )//.add( phase )
-          return evt
-        })
-        //.filter( evt => 
-        //  evt.arc.start.compare( incr.mul( i ) ) >= 0 
-        //    && evt.arc.start.compare( incr.mul( i+1 ) ) < 0 
-        //))
-        // add to previous events
-        .concat( events )
-      }else{
-        speed = 1/speed
-        //console.log( 'phase:', phase.mul( speed ) )
-        events = processPattern( 
-          pattern.value, 
-          duration.mul( Fraction( speed ) ), 
-          phase.mul( speed ),
-          getPhaseIncr( pattern ).mul( speed ), null, false
-        )
-        //console.log( 'events:', log( events, { depth:4 } ) )
-        // remap events to correct time spans
-        events.map( evt => {
-          if( evt.arc.start.valueOf() !== 0 ) {
-            // XXX I don't know why this is necessary but it gets rid of a off-by-one error
-            evt.arc.start = evt.arc.start.sub( phase.div( 1/speed ) )
-          }
-
-          // also, does the event length need to be adjusted? might as well...
-          //console.log( 'end:', evt.arc.end.toFraction(), phase.toFraction(), speed )
-          evt.arc.end = evt.arc.end.mul( 1/speed )//.mul( 1/speed )
-          //evt.arc.end.sub( phase.div( 1/speed ) ).add( 1/speed - 1)
-
-          return evt
-        })
-        // remove events don't fall in the current window
-        .filter( evt => 
-          evt.arc.start.compare( incr.mul(i) ) >= 0 && 
-          evt.arc.start.compare( incr.mul(i+1) ) <= 0 
-        )
-        // add to previous events
-        .concat( events )
-      }
-    }*/
-
-    //console.log( 'events:', log( events, { depth:4 }) )
-    return state.concat( events )
-  },
-}
-
-module.exports.queryArc = queryArc
-
-},{"bjork":332,"fraction.js":333,"seedrandom":335,"util":224}],347:[function(require,module,exports){
+},{"dup":123}],332:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen } = require( './var.js' )
@@ -94036,7 +93093,7 @@ Alterations.Halve.RIGHT = 2
 
 module.exports = Alterations
 
-},{"./sceneNode.js":369,"./utils.js":374,"./var.js":375}],348:[function(require,module,exports){
+},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360}],333:[function(require,module,exports){
 const Audio = {
   __hasInput: false,
   ctx: null,
@@ -94151,7 +93208,7 @@ const Audio = {
 
 module.exports = Audio
 
-},{}],349:[function(require,module,exports){
+},{}],334:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' )
@@ -94216,7 +93273,7 @@ const BG = function( Scene, SDF ) {
 
 module.exports = BG 
 
-},{"./sceneNode.js":369,"./utils.js":374,"./var.js":375,"./vec.js":376}],350:[function(require,module,exports){
+},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361}],335:[function(require,module,exports){
 const vec3 = require('gl-vec3')
 const mat4 = require('gl-mat4')
 
@@ -94456,7 +93513,7 @@ const Camera = {
 
 module.exports = Camera
 
-},{"gl-mat4":456,"gl-vec3":490}],351:[function(require,module,exports){
+},{"gl-mat4":441,"gl-vec3":475}],336:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -94704,7 +93761,7 @@ DistanceOps.Halve.RIGHT = 2
 module.exports = DistanceOps
 
 
-},{"./sceneNode.js":369,"./transform.js":373,"./utils.js":374,"./var.js":375}],352:[function(require,module,exports){
+},{"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360}],337:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -95030,7 +94087,7 @@ for( let name in ops ) {
 
 module.exports = DistanceOps
 
-},{"./distanceOperationsGLSL.js":353,"./sceneNode.js":369,"./transform.js":373,"./utils.js":374,"./var.js":375}],353:[function(require,module,exports){
+},{"./distanceOperationsGLSL.js":338,"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360}],338:[function(require,module,exports){
 module.exports = {
   Union:{
     float:`
@@ -95389,7 +94446,7 @@ module.exports = {
       `
 }
 
-},{}],354:[function(require,module,exports){
+},{}],339:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -95769,7 +94826,7 @@ const getDomainOps = function( SDF ) {
 
 module.exports = getDomainOps
 
-},{"./sceneNode.js":369,"./transform.js":373,"./utils.js":374,"./var.js":375,"./vec.js":376}],355:[function(require,module,exports){
+},{"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360,"./vec.js":361}],340:[function(require,module,exports){
 // matrix.js - taken from https://github.com/evanw/lightgl.js/
 
 // Represents a 4x4 matrix stored in row-major order that uses Float32Arrays
@@ -96166,7 +95223,7 @@ Matrix.lookAt = function(ex, ey, ez, cx, cy, cz, ux, uy, uz, result) {
 
 module.exports = Matrix
 
-},{}],356:[function(require,module,exports){
+},{}],341:[function(require,module,exports){
 const emit_float = function( a ) {
 	if (a % 1 === 0)
 		return a.toFixed( 1 )
@@ -96189,7 +95246,7 @@ const Float = function( x=0 ) {
 
 module.exports = Float
 
-},{}],357:[function(require,module,exports){
+},{}],342:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -96265,7 +95322,7 @@ const Fogger = function( Scene, SDF ) {
 
 module.exports = Fogger
 
-},{"./sceneNode.js":369,"./utils.js":374,"./var.js":375,"./vec.js":376}],358:[function(require,module,exports){
+},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361}],343:[function(require,module,exports){
 'use strict'
 
 const Marching = require( './main.js' )
@@ -96280,7 +95337,7 @@ window.Marching = Marching
 
 module.exports = Marching
 
-},{"./main.js":361}],359:[function(require,module,exports){
+},{"./main.js":346}],344:[function(require,module,exports){
 const emit_int = function( a ) {
 	if( a % 1 !== 0 )
 		return Math.round( a )
@@ -96303,7 +95360,7 @@ const Int = function( x=0 ) {
 
 module.exports = Int
 
-},{}],360:[function(require,module,exports){
+},{}],345:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -96585,7 +95642,7 @@ module.exports = Lights
 /*
 */
 
-},{"./sceneNode.js":369,"./utils.js":374,"./var.js":375,"./vec.js":376,"glslify":518}],361:[function(require,module,exports){
+},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361,"glslify":503}],346:[function(require,module,exports){
 const SDF = {
   camera:           require( './camera.js' ),
   __primitives:     require( './primitives.js' ),
@@ -97043,7 +96100,7 @@ const SDF = {
 
 module.exports = SDF
 
-},{"./alterations.js":347,"./audio.js":348,"./camera.js":350,"./distanceDeformations.js":351,"./distanceOperations.js":352,"./domainOperations.js":354,"./lighting.js":360,"./material.js":362,"./mergepass.js":363,"./noise.js":364,"./primitives.js":366,"./renderFragmentShader.js":367,"./scene.js":368,"./texture.js":370,"./var.js":375,"./vec.js":376}],362:[function(require,module,exports){
+},{"./alterations.js":332,"./audio.js":333,"./camera.js":335,"./distanceDeformations.js":336,"./distanceOperations.js":337,"./domainOperations.js":339,"./lighting.js":345,"./material.js":347,"./mergepass.js":348,"./noise.js":349,"./primitives.js":351,"./renderFragmentShader.js":352,"./scene.js":353,"./texture.js":355,"./var.js":360,"./vec.js":361}],347:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen } = require( './var.js' ),
@@ -97276,7 +96333,7 @@ const __Materials = function( SDF ) {
 
 module.exports = __Materials
 
-},{"./sceneNode.js":369,"./utils.js":374,"./var.js":375,"./vec.js":376,"glslify":518}],363:[function(require,module,exports){
+},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"./vec.js":361,"glslify":503}],348:[function(require,module,exports){
 const MP   = require( '@bandaloo/merge-pass' )
 
 const FX = {
@@ -97529,7 +96586,7 @@ const FX = {
 
 module.exports = FX
 
-},{"@bandaloo/merge-pass":429}],364:[function(require,module,exports){
+},{"@bandaloo/merge-pass":414}],349:[function(require,module,exports){
 const glsl = require( 'glslify' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -97616,7 +96673,7 @@ return Noise
 
 module.exports = getNoise 
 
-},{"./sceneNode.js":369,"./utils.js":374,"./var.js":375,"glslify":518}],365:[function(require,module,exports){
+},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360,"glslify":503}],350:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 module.exports = {
@@ -97985,7 +97042,7 @@ module.exports = {
 
 }
 
-},{"glslify":518}],366:[function(require,module,exports){
+},{"glslify":503}],351:[function(require,module,exports){
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const SceneNode = require( './sceneNode.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -98304,7 +97361,7 @@ const createPrimitives = function( SDF ) {
 
 module.exports = createPrimitives
 
-},{"./primitiveDescriptions.js":365,"./sceneNode.js":369,"./transform.js":373,"./utils.js":374,"./var.js":375,"./vec.js":376}],367:[function(require,module,exports){
+},{"./primitiveDescriptions.js":350,"./sceneNode.js":354,"./transform.js":358,"./utils.js":359,"./var.js":360,"./vec.js":361}],352:[function(require,module,exports){
 const getMainContinuous = function( steps, minDistance, maxDistance, postprocessing, bg='vec4(0.,0.,0.,1.)' ) {
   const out = `
   // adapted from https://www.shadertoy.com/view/ldfSWs
@@ -98612,7 +97669,7 @@ ${main}
     return fs_source
   }
 
-},{}],368:[function(require,module,exports){
+},{}],353:[function(require,module,exports){
 const getFog = require( './fog.js' )
 const vignette = require( './vignette.js' )
 const { param_wrap, MaterialID } = require( './utils.js' )
@@ -98903,7 +97960,7 @@ const getScene = function( SDF ) {
 
 module.exports = getScene 
 
-},{"./background.js":349,"./fog.js":357,"./lighting.js":360,"./utils.js":374,"./var.js":375,"./vignette.js":377}],369:[function(require,module,exports){
+},{"./background.js":334,"./fog.js":342,"./lighting.js":345,"./utils.js":359,"./var.js":360,"./vignette.js":362}],354:[function(require,module,exports){
 const SceneNode = ()=> Object.create( SceneNode.prototype )
 const Matrix = require( './external/matrix.js' )
 
@@ -99005,7 +98062,7 @@ ops.forEach( op => {
 
 module.exports = SceneNode
 
-},{"./external/matrix.js":355}],370:[function(require,module,exports){
+},{"./external/matrix.js":340}],355:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       getPixels = require( 'get-pixels' ),
       createTexture = require( 'gl-texture2d' ),
@@ -99362,7 +98419,7 @@ const __Textures = function( SDF ) {
 
 module.exports = __Textures
 
-},{"./sceneNode.js":369,"./textureDescriptions.js":371,"./textureWrap.js":372,"./utils.js":374,"./var.js":375,"./vec.js":376,"get-pixels":440,"gl-texture2d":471}],371:[function(require,module,exports){
+},{"./sceneNode.js":354,"./textureDescriptions.js":356,"./textureWrap.js":357,"./utils.js":359,"./var.js":360,"./vec.js":361,"get-pixels":425,"gl-texture2d":456}],356:[function(require,module,exports){
 const glsl = require( 'glslify' )
 
 const textures = {
@@ -99660,7 +98717,7 @@ const textures = {
 
 module.exports = textures
 
-},{"glslify":518}],372:[function(require,module,exports){
+},{"glslify":503}],357:[function(require,module,exports){
 module.exports = `
     // p = point on surface, p0 = object center
     vec2 getUVCubic(vec3 p ){
@@ -99722,7 +98779,7 @@ module.exports = `vec3 t3(sampler2D tex, vec3 p, vec3 n)
     }`
     */
 
-},{}],373:[function(require,module,exports){
+},{}],358:[function(require,module,exports){
 const { param_wrap, MaterialID } = require( './utils.js' )
 const { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc }  = require( './var.js' )
 const Matrix = require( './external/matrix.js' )
@@ -99931,7 +98988,7 @@ MatrixWrap.prototype = {
 
 module.exports = MatrixWrap
 
-},{"./external/matrix.js":355,"./utils.js":374,"./var.js":375}],374:[function(require,module,exports){
+},{"./external/matrix.js":340,"./utils.js":359,"./var.js":360}],359:[function(require,module,exports){
 const Var = require('./var.js').Var
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 
@@ -99973,7 +99030,7 @@ const processVec3 = function( val ) {
 
 module.exports = { param_wrap, MaterialID, processVec2, processVec3 }
 
-},{"./var.js":375,"./vec.js":376}],375:[function(require,module,exports){
+},{"./var.js":360,"./vec.js":361}],360:[function(require,module,exports){
 const { Vec2, Vec3, Vec4 } = require( './vec.js' )
 const float = require( './float.js' )
 const int   = require( './int.js' )
@@ -100178,7 +99235,7 @@ function vec4_var_gen( x, y, z, w, name=null ) {
 }
 */
 
-},{"./float.js":356,"./int.js":359,"./vec.js":376}],376:[function(require,module,exports){
+},{"./float.js":341,"./int.js":344,"./vec.js":361}],361:[function(require,module,exports){
 const Vec2 = function (x=0, y=0) {
   if( x.type === 'vec2' ) return x  
   const v = Object.create( Vec2.prototype )
@@ -100459,7 +99516,7 @@ Vec4.prototype = {
 
 module.exports = { Vec2, Vec3, Vec4 } 
 
-},{}],377:[function(require,module,exports){
+},{}],362:[function(require,module,exports){
 const SceneNode = require( './sceneNode.js' ),
       { param_wrap, MaterialID } = require( './utils.js' ),
       { Var, float_var_gen, vec2_var_gen, vec3_var_gen, vec4_var_gen, int_var_gen, VarAlloc } = require( './var.js' )
@@ -100533,7 +99590,7 @@ const Vignette = function( Scene, SDF ) {
 
 module.exports = Vignette 
 
-},{"./sceneNode.js":369,"./utils.js":374,"./var.js":375}],378:[function(require,module,exports){
+},{"./sceneNode.js":354,"./utils.js":359,"./var.js":360}],363:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CodeBuilder = exports.channelSamplerName = void 0;
@@ -100724,7 +99781,7 @@ class CodeBuilder {
 }
 exports.CodeBuilder = CodeBuilder;
 
-},{"./exprs/expr":392,"./settings":431,"./webglprogramloop":433}],379:[function(require,module,exports){
+},{"./exprs/expr":377,"./settings":416,"./webglprogramloop":418}],364:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a1 = exports.Arity1HomogenousExpr = void 0;
@@ -100759,7 +99816,7 @@ function a1(name, val) {
 }
 exports.a1 = a1;
 
-},{"./expr":392}],380:[function(require,module,exports){
+},{"./expr":377}],365:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.a2 = exports.Arity2HomogenousExpr = void 0;
@@ -100803,7 +99860,7 @@ function a2(name, val1, val2) {
 }
 exports.a2 = a2;
 
-},{"./expr":392}],381:[function(require,module,exports){
+},{"./expr":377}],366:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bloom = exports.BloomLoop = void 0;
@@ -100887,7 +99944,7 @@ function bloom(threshold, horizontal, vertical, boost, samplerNum, taps, reps) {
 }
 exports.bloom = bloom;
 
-},{"../mergepass":430,"./arity2":380,"./blurexpr":383,"./brightnessexpr":384,"./channelsampleexpr":386,"./contrastexpr":387,"./expr":392,"./fragcolorexpr":393,"./opexpr":410,"./vecexprs":426}],382:[function(require,module,exports){
+},{"../mergepass":415,"./arity2":365,"./blurexpr":368,"./brightnessexpr":369,"./channelsampleexpr":371,"./contrastexpr":372,"./expr":377,"./fragcolorexpr":378,"./opexpr":395,"./vecexprs":411}],367:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blur2d = exports.Blur2dLoop = void 0;
@@ -100940,7 +99997,7 @@ function blur2d(horizontalExpr, verticalExpr, reps, taps, samplerNum) {
 }
 exports.blur2d = blur2d;
 
-},{"../mergepass":430,"./blurexpr":383,"./expr":392,"./vecexprs":426}],383:[function(require,module,exports){
+},{"../mergepass":415,"./blurexpr":368,"./expr":377,"./vecexprs":411}],368:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gauss = exports.BlurExpr = void 0;
@@ -100996,7 +100053,7 @@ function gauss(direction, taps = 5, samplerNum) {
 }
 exports.gauss = gauss;
 
-},{"../glslfunctions":428,"./expr":392}],384:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],369:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brightness = exports.Brightness = void 0;
@@ -101029,7 +100086,7 @@ function brightness(val, col) {
 }
 exports.brightness = brightness;
 
-},{"../glslfunctions":428,"./expr":392,"./fragcolorexpr":393}],385:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377,"./fragcolorexpr":378}],370:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.changecomp = exports.ChangeCompExpr = void 0;
@@ -101118,7 +100175,7 @@ function changecomp(vec, setter, comps, op) {
 }
 exports.changecomp = changecomp;
 
-},{"./expr":392,"./getcompexpr":397}],386:[function(require,module,exports){
+},{"./expr":377,"./getcompexpr":382}],371:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.channel = exports.ChannelSampleExpr = void 0;
@@ -101164,7 +100221,7 @@ function channel(channel, vec) {
 }
 exports.channel = channel;
 
-},{"../codebuilder":378,"../glslfunctions":428,"./expr":392,"./normfragcoordexpr":408}],387:[function(require,module,exports){
+},{"../codebuilder":363,"../glslfunctions":413,"./expr":377,"./normfragcoordexpr":393}],372:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contrast = exports.ContrastExpr = void 0;
@@ -101196,7 +100253,7 @@ function contrast(val, col) {
 }
 exports.contrast = contrast;
 
-},{"../glslfunctions":428,"./expr":392,"./fragcolorexpr":393}],388:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377,"./fragcolorexpr":378}],373:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.depth2occlusion = exports.DepthToOcclusionExpr = void 0;
@@ -101244,7 +100301,7 @@ function depth2occlusion(depthCol, newCol, threshold) {
 }
 exports.depth2occlusion = depth2occlusion;
 
-},{"./channelsampleexpr":386,"./expr":392,"./vecexprs":426}],389:[function(require,module,exports){
+},{"./channelsampleexpr":371,"./expr":377,"./vecexprs":411}],374:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dof = exports.DoFLoop = void 0;
@@ -101290,7 +100347,7 @@ function dof(depth, rad, depthInfo, reps) {
 }
 exports.dof = dof;
 
-},{"../mergepass":430,"./arity2":380,"./blurexpr":383,"./channelsampleexpr":386,"./expr":392,"./gaussianexpr":396,"./getcompexpr":397,"./opexpr":410,"./vecexprs":426}],390:[function(require,module,exports){
+},{"../mergepass":415,"./arity2":365,"./blurexpr":368,"./channelsampleexpr":371,"./expr":377,"./gaussianexpr":381,"./getcompexpr":382,"./opexpr":395,"./vecexprs":411}],375:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edgecolor = exports.EdgeColorExpr = void 0;
@@ -101328,7 +100385,7 @@ function edgecolor(color, samplerNum, stepped) {
 }
 exports.edgecolor = edgecolor;
 
-},{"./arity2":380,"./expr":392,"./fragcolorexpr":393,"./monochromeexpr":403,"./sobelexpr":421,"./vecexprs":426}],391:[function(require,module,exports){
+},{"./arity2":365,"./expr":377,"./fragcolorexpr":378,"./monochromeexpr":388,"./sobelexpr":406,"./vecexprs":411}],376:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edge = exports.EdgeExpr = void 0;
@@ -101364,7 +100421,7 @@ function edge(style, samplerNum) {
 }
 exports.edge = edge;
 
-},{"./brightnessexpr":384,"./expr":392,"./getcompexpr":397,"./invertexpr":401,"./monochromeexpr":403,"./opexpr":410,"./sobelexpr":421}],392:[function(require,module,exports){
+},{"./brightnessexpr":369,"./expr":377,"./getcompexpr":382,"./invertexpr":386,"./monochromeexpr":388,"./opexpr":395,"./sobelexpr":406}],377:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tag = exports.wrapInValue = exports.pfloat = exports.Operator = exports.WrappedExpr = exports.ExprVec4 = exports.ExprVec3 = exports.ExprVec2 = exports.float = exports.ExprFloat = exports.BasicFloat = exports.ExprVec = exports.BasicVec4 = exports.BasicVec3 = exports.BasicVec2 = exports.BasicVec = exports.PrimitiveVec4 = exports.PrimitiveVec3 = exports.PrimitiveVec2 = exports.PrimitiveVec = exports.PrimitiveFloat = exports.Primitive = exports.mut = exports.Mutable = exports.cvec4 = exports.cvec3 = exports.cvec2 = exports.cfloat = exports.Expr = void 0;
@@ -101824,7 +100881,7 @@ function tag(strings, ...values) {
 }
 exports.tag = tag;
 
-},{"../mergepass":430,"../utils":432,"../webglprogramloop":433}],393:[function(require,module,exports){
+},{"../mergepass":415,"../utils":417,"../webglprogramloop":418}],378:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fcolor = exports.FragColorExpr = void 0;
@@ -101843,7 +100900,7 @@ function fcolor() {
 }
 exports.fcolor = fcolor;
 
-},{"./expr":392}],394:[function(require,module,exports){
+},{"./expr":377}],379:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pixel = exports.FragCoordExpr = void 0;
@@ -101864,7 +100921,7 @@ function pixel() {
 }
 exports.pixel = pixel;
 
-},{"./expr":392}],395:[function(require,module,exports){
+},{"./expr":377}],380:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fxaa = void 0;
@@ -101884,7 +100941,7 @@ function fxaa() {
 }
 exports.fxaa = fxaa;
 
-},{"../glslfunctions":428,"./expr":392}],396:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],381:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gaussian = exports.GaussianExpr = void 0;
@@ -101924,7 +100981,7 @@ function gaussian(x, a = 0, b = 1) {
 }
 exports.gaussian = gaussian;
 
-},{"../glslfunctions":428,"./expr":392}],397:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],382:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get4comp = exports.get3comp = exports.get2comp = exports.getcomp = exports.Get4CompExpr = exports.Get3CompExpr = exports.Get2CompExpr = exports.GetCompExpr = exports.checkLegalComponents = exports.typeStringToLength = void 0;
@@ -102078,7 +101135,7 @@ function get4comp(vec, comps) {
 }
 exports.get4comp = get4comp;
 
-},{"./expr":392}],398:[function(require,module,exports){
+},{"./expr":377}],383:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.godrays = exports.GodRaysExpr = void 0;
@@ -102194,7 +101251,7 @@ function godrays(options = {}) {
 }
 exports.godrays = godrays;
 
-},{"../glslfunctions":428,"./expr":392,"./fragcolorexpr":393,"./vecexprs":426}],399:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377,"./fragcolorexpr":378,"./vecexprs":411}],384:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.grain = exports.GrainExpr = void 0;
@@ -102226,7 +101283,7 @@ function grain(val) {
 }
 exports.grain = grain;
 
-},{"../glslfunctions":428,"./expr":392}],400:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],385:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hsv2rgb = exports.HSVToRGBExpr = void 0;
@@ -102255,7 +101312,7 @@ function hsv2rgb(col) {
 }
 exports.hsv2rgb = hsv2rgb;
 
-},{"../glslfunctions":428,"./expr":392}],401:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],386:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.invert = exports.InvertExpr = void 0;
@@ -102283,7 +101340,7 @@ function invert(col) {
 }
 exports.invert = invert;
 
-},{"../glslfunctions":428,"./expr":392}],402:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],387:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.len = exports.LenExpr = void 0;
@@ -102306,7 +101363,7 @@ function len(vec) {
 }
 exports.len = len;
 
-},{"./expr":392}],403:[function(require,module,exports){
+},{"./expr":377}],388:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.monochrome = exports.MonochromeExpr = void 0;
@@ -102335,7 +101392,7 @@ function monochrome(col) {
 }
 exports.monochrome = monochrome;
 
-},{"../glslfunctions":428,"./expr":392}],404:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],389:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.motionblur = exports.MotionBlurLoop = void 0;
@@ -102377,7 +101434,7 @@ function motionblur(target, persistence) {
 }
 exports.motionblur = motionblur;
 
-},{"../mergepass":430,"./channelsampleexpr":386,"./expr":392,"./fragcolorexpr":393,"./opexpr":410}],405:[function(require,module,exports){
+},{"../mergepass":415,"./channelsampleexpr":371,"./expr":377,"./fragcolorexpr":378,"./opexpr":395}],390:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mouse = exports.MouseExpr = void 0;
@@ -102399,7 +101456,7 @@ function mouse() {
 }
 exports.mouse = mouse;
 
-},{"./expr":392}],406:[function(require,module,exports){
+},{"./expr":377}],391:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.center = exports.NormCenterFragCoordExpr = void 0;
@@ -102420,7 +101477,7 @@ function center() {
 }
 exports.center = center;
 
-},{"./expr":392}],407:[function(require,module,exports){
+},{"./expr":377}],392:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.norm = exports.NormExpr = void 0;
@@ -102444,7 +101501,7 @@ function norm(vec) {
 }
 exports.norm = norm;
 
-},{"./expr":392}],408:[function(require,module,exports){
+},{"./expr":377}],393:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pos = exports.NormFragCoordExpr = void 0;
@@ -102467,7 +101524,7 @@ function pos() {
 }
 exports.pos = pos;
 
-},{"./expr":392}],409:[function(require,module,exports){
+},{"./expr":377}],394:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nmouse = exports.NormMouseExpr = void 0;
@@ -102489,7 +101546,7 @@ function nmouse() {
 }
 exports.nmouse = nmouse;
 
-},{"./expr":392}],410:[function(require,module,exports){
+},{"./expr":377}],395:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.op = exports.OpExpr = void 0;
@@ -102528,7 +101585,7 @@ function op(left, op, right) {
 }
 exports.op = op;
 
-},{"./expr":392}],411:[function(require,module,exports){
+},{"./expr":377}],396:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fractalize = exports.perlin = exports.PerlinExpr = void 0;
@@ -102579,7 +101636,7 @@ function fractalize(pos, octaves, func) {
 }
 exports.fractalize = fractalize;
 
-},{"../glslfunctions":428,"./expr":392,"./opexpr":410}],412:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377,"./opexpr":395}],397:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pblur = exports.PowerBlurLoop = void 0;
@@ -102621,7 +101678,7 @@ function pblur(size) {
 }
 exports.pblur = pblur;
 
-},{"../mergepass":430,"./blurexpr":383,"./expr":392,"./vecexprs":426}],413:[function(require,module,exports){
+},{"../mergepass":415,"./blurexpr":368,"./expr":377,"./vecexprs":411}],398:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.random = exports.RandomExpr = void 0;
@@ -102652,7 +101709,7 @@ function random(seed) {
 }
 exports.random = random;
 
-},{"../glslfunctions":428,"./expr":392,"./normfragcoordexpr":408}],414:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377,"./normfragcoordexpr":393}],399:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.region = void 0;
@@ -102712,7 +101769,7 @@ function region(space, success, failure, not = false) {
 }
 exports.region = region;
 
-},{"../mergepass":430,"./expr":392,"./fragcolorexpr":393,"./getcompexpr":397,"./normfragcoordexpr":408,"./opexpr":410,"./ternaryexpr":422}],415:[function(require,module,exports){
+},{"../mergepass":415,"./expr":377,"./fragcolorexpr":378,"./getcompexpr":382,"./normfragcoordexpr":393,"./opexpr":395,"./ternaryexpr":407}],400:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolution = exports.ResolutionExpr = void 0;
@@ -102730,7 +101787,7 @@ function resolution() {
 }
 exports.resolution = resolution;
 
-},{"./expr":392}],416:[function(require,module,exports){
+},{"./expr":377}],401:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rgb2hsv = exports.RGBToHSVExpr = void 0;
@@ -102760,7 +101817,7 @@ function rgb2hsv(col) {
 }
 exports.rgb2hsv = rgb2hsv;
 
-},{"../glslfunctions":428,"./expr":392}],417:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],402:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rotate = exports.RotateExpr = void 0;
@@ -102796,7 +101853,7 @@ function rotate(vec, angle) {
 }
 exports.rotate = rotate;
 
-},{"../glslfunctions":428,"./expr":392}],418:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],403:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.input = exports.SceneSampleExpr = void 0;
@@ -102827,7 +101884,7 @@ function input(vec) {
 }
 exports.input = input;
 
-},{"./expr":392,"./normfragcoordexpr":408}],419:[function(require,module,exports){
+},{"./expr":377,"./normfragcoordexpr":393}],404:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SetColorExpr = void 0;
@@ -102844,7 +101901,7 @@ class SetColorExpr extends expr_1.ExprVec4 {
 }
 exports.SetColorExpr = SetColorExpr;
 
-},{"./expr":392}],420:[function(require,module,exports){
+},{"./expr":377}],405:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.simplex = exports.SimplexNoise = void 0;
@@ -102872,7 +101929,7 @@ function simplex(pos) {
 }
 exports.simplex = simplex;
 
-},{"../glslfunctions":428,"./expr":392}],421:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],406:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sobel = exports.SobelExpr = void 0;
@@ -102898,7 +101955,7 @@ function sobel(samplerNum) {
 }
 exports.sobel = sobel;
 
-},{"../glslfunctions":428,"./expr":392}],422:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],407:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ternary = exports.TernaryExpr = void 0;
@@ -102963,7 +102020,7 @@ function ternary(floats, success, failure, not = false) {
 }
 exports.ternary = ternary;
 
-},{"./expr":392}],423:[function(require,module,exports){
+},{"./expr":377}],408:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.time = exports.TimeExpr = void 0;
@@ -102982,7 +102039,7 @@ function time() {
 }
 exports.time = time;
 
-},{"./expr":392}],424:[function(require,module,exports){
+},{"./expr":377}],409:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translate = exports.TranslateExpr = void 0;
@@ -103015,7 +102072,7 @@ function translate(vec, pos) {
 }
 exports.translate = translate;
 
-},{"./expr":392}],425:[function(require,module,exports){
+},{"./expr":377}],410:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.truedepth = exports.TrueDepthExpr = void 0;
@@ -103041,7 +102098,7 @@ function truedepth(depth) {
 }
 exports.truedepth = truedepth;
 
-},{"../glslfunctions":428,"./expr":392}],426:[function(require,module,exports){
+},{"../glslfunctions":413,"./expr":377}],411:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pvec4 = exports.pvec3 = exports.pvec2 = exports.vec4 = exports.vec3 = exports.vec2 = void 0;
@@ -103092,11 +102149,11 @@ function pvec4(comp1, comp2, comp3, comp4) {
 }
 exports.pvec4 = pvec4;
 
-},{"./expr":392}],427:[function(require,module,exports){
+},{"./expr":377}],412:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],428:[function(require,module,exports){
+},{}],413:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.glslFuncs = void 0;
@@ -103416,7 +102473,7 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 }`,
 };
 
-},{}],429:[function(require,module,exports){
+},{}],414:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -103480,7 +102537,7 @@ __exportStar(require("./exprs/ternaryexpr"), exports);
 __exportStar(require("./exprs/regiondecorator"), exports);
 __exportStar(require("./exprs/expr"), exports);
 
-},{"./exprs/arity1":379,"./exprs/arity2":380,"./exprs/bloomloop":381,"./exprs/blur2dloop":382,"./exprs/blurexpr":383,"./exprs/brightnessexpr":384,"./exprs/changecompexpr":385,"./exprs/channelsampleexpr":386,"./exprs/contrastexpr":387,"./exprs/depthtoocclusionexpr":388,"./exprs/dofloop":389,"./exprs/edgecolorexpr":390,"./exprs/edgeexpr":391,"./exprs/expr":392,"./exprs/fragcolorexpr":393,"./exprs/fragcoordexpr":394,"./exprs/fxaaexpr":395,"./exprs/getcompexpr":397,"./exprs/godraysexpr":398,"./exprs/grainexpr":399,"./exprs/hsvtorgbexpr":400,"./exprs/invertexpr":401,"./exprs/lenexpr":402,"./exprs/monochromeexpr":403,"./exprs/motionblurloop":404,"./exprs/mouseexpr":405,"./exprs/normcenterfragcoordexpr":406,"./exprs/normexpr":407,"./exprs/normfragcoordexpr":408,"./exprs/normmouseexpr":409,"./exprs/opexpr":410,"./exprs/perlinexpr":411,"./exprs/powerblur":412,"./exprs/randomexpr":413,"./exprs/regiondecorator":414,"./exprs/resolutionexpr":415,"./exprs/rgbtohsvexpr":416,"./exprs/rotateexpr":417,"./exprs/scenesampleexpr":418,"./exprs/simplexexpr":420,"./exprs/sobelexpr":421,"./exprs/ternaryexpr":422,"./exprs/timeexpr":423,"./exprs/translateexpr":424,"./exprs/truedepthexpr":425,"./exprs/vecexprs":426,"./exprtypes":427,"./glslfunctions":428,"./mergepass":430,"./settings":431}],430:[function(require,module,exports){
+},{"./exprs/arity1":364,"./exprs/arity2":365,"./exprs/bloomloop":366,"./exprs/blur2dloop":367,"./exprs/blurexpr":368,"./exprs/brightnessexpr":369,"./exprs/changecompexpr":370,"./exprs/channelsampleexpr":371,"./exprs/contrastexpr":372,"./exprs/depthtoocclusionexpr":373,"./exprs/dofloop":374,"./exprs/edgecolorexpr":375,"./exprs/edgeexpr":376,"./exprs/expr":377,"./exprs/fragcolorexpr":378,"./exprs/fragcoordexpr":379,"./exprs/fxaaexpr":380,"./exprs/getcompexpr":382,"./exprs/godraysexpr":383,"./exprs/grainexpr":384,"./exprs/hsvtorgbexpr":385,"./exprs/invertexpr":386,"./exprs/lenexpr":387,"./exprs/monochromeexpr":388,"./exprs/motionblurloop":389,"./exprs/mouseexpr":390,"./exprs/normcenterfragcoordexpr":391,"./exprs/normexpr":392,"./exprs/normfragcoordexpr":393,"./exprs/normmouseexpr":394,"./exprs/opexpr":395,"./exprs/perlinexpr":396,"./exprs/powerblur":397,"./exprs/randomexpr":398,"./exprs/regiondecorator":399,"./exprs/resolutionexpr":400,"./exprs/rgbtohsvexpr":401,"./exprs/rotateexpr":402,"./exprs/scenesampleexpr":403,"./exprs/simplexexpr":405,"./exprs/sobelexpr":406,"./exprs/ternaryexpr":407,"./exprs/timeexpr":408,"./exprs/translateexpr":409,"./exprs/truedepthexpr":410,"./exprs/vecexprs":411,"./exprtypes":412,"./glslfunctions":413,"./mergepass":415,"./settings":416}],415:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendTexture = exports.makeTexture = exports.Merger = exports.loop = exports.EffectLoop = exports.EffectDictionary = void 0;
@@ -103915,7 +102972,7 @@ function sendTexture(gl, src) {
 }
 exports.sendTexture = sendTexture;
 
-},{"./codebuilder":378,"./exprs/expr":392,"./exprs/fragcolorexpr":393,"./exprs/regiondecorator":414,"./exprs/scenesampleexpr":418,"./exprs/setcolorexpr":419,"./exprs/ternaryexpr":422,"./settings":431,"./webglprogramloop":433}],431:[function(require,module,exports){
+},{"./codebuilder":363,"./exprs/expr":377,"./exprs/fragcolorexpr":378,"./exprs/regiondecorator":399,"./exprs/scenesampleexpr":403,"./exprs/setcolorexpr":404,"./exprs/ternaryexpr":407,"./settings":416,"./webglprogramloop":418}],416:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.settings = void 0;
@@ -103931,7 +102988,7 @@ exports.settings = {
     offset: 0,
 };
 
-},{}],432:[function(require,module,exports){
+},{}],417:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.brandWithRegion = exports.brandWithChannel = exports.captureAndAppend = void 0;
@@ -104016,7 +103073,7 @@ function brandWithRegion(expr, funcIndex, space) {
 }
 exports.brandWithRegion = brandWithRegion;
 
-},{"./glslfunctions":428}],433:[function(require,module,exports){
+},{"./glslfunctions":413}],418:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebGLProgramLoop = exports.WebGLProgramLeaf = exports.updateNeeds = void 0;
@@ -104250,7 +103307,7 @@ class WebGLProgramLoop {
 }
 exports.WebGLProgramLoop = WebGLProgramLoop;
 
-},{"./settings":431}],434:[function(require,module,exports){
+},{"./settings":416}],419:[function(require,module,exports){
 /**
  * Bit twiddling hacks for JavaScript.
  *
@@ -104456,7 +103513,7 @@ exports.nextCombination = function(v) {
 }
 
 
-},{}],435:[function(require,module,exports){
+},{}],420:[function(require,module,exports){
 "use strict"
 
 var createThunk = require("./lib/thunk.js")
@@ -104567,7 +103624,7 @@ function compileCwise(user_args) {
 
 module.exports = compileCwise
 
-},{"./lib/thunk.js":437}],436:[function(require,module,exports){
+},{"./lib/thunk.js":422}],421:[function(require,module,exports){
 "use strict"
 
 var uniq = require("uniq")
@@ -104927,7 +103984,7 @@ function generateCWiseOp(proc, typesig) {
 }
 module.exports = generateCWiseOp
 
-},{"uniq":528}],437:[function(require,module,exports){
+},{"uniq":513}],422:[function(require,module,exports){
 "use strict"
 
 // The function below is called when constructing a cwise function object, and does the following:
@@ -105015,7 +104072,7 @@ function createThunk(proc) {
 
 module.exports = createThunk
 
-},{"./compile.js":436}],438:[function(require,module,exports){
+},{"./compile.js":421}],423:[function(require,module,exports){
 (function (Buffer){(function (){
 
 /**
@@ -105073,7 +104130,7 @@ function dataUriToBuffer (uri) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":146}],439:[function(require,module,exports){
+},{"buffer":146}],424:[function(require,module,exports){
 "use strict"
 
 function dupe_array(count, value, i) {
@@ -105123,7 +104180,7 @@ function dupe(count, value) {
 }
 
 module.exports = dupe
-},{}],440:[function(require,module,exports){
+},{}],425:[function(require,module,exports){
 (function (Buffer,process){(function (){
 'use strict'
 
@@ -105261,7 +104318,7 @@ module.exports = function getPixels(url, type, cb) {
   }
 }
 }).call(this)}).call(this,{"isBuffer":require("../../../gibber/node_modules/is-buffer/index.js")},require('_process'))
-},{"../../../gibber/node_modules/is-buffer/index.js":159,"_process":196,"data-uri-to-buffer":438,"ndarray":524,"ndarray-pack":522,"omggif":525,"path":194,"through":526}],441:[function(require,module,exports){
+},{"../../../gibber/node_modules/is-buffer/index.js":159,"_process":196,"data-uri-to-buffer":423,"ndarray":509,"ndarray-pack":507,"omggif":510,"path":194,"through":511}],426:[function(require,module,exports){
 module.exports = adjoint;
 
 /**
@@ -105295,7 +104352,7 @@ function adjoint(out, a) {
     out[15] =  (a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11));
     return out;
 };
-},{}],442:[function(require,module,exports){
+},{}],427:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -105324,7 +104381,7 @@ function clone(a) {
     out[15] = a[15];
     return out;
 };
-},{}],443:[function(require,module,exports){
+},{}],428:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -105353,7 +104410,7 @@ function copy(out, a) {
     out[15] = a[15];
     return out;
 };
-},{}],444:[function(require,module,exports){
+},{}],429:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -105381,7 +104438,7 @@ function create() {
     out[15] = 1;
     return out;
 };
-},{}],445:[function(require,module,exports){
+},{}],430:[function(require,module,exports){
 module.exports = determinant;
 
 /**
@@ -105412,7 +104469,7 @@ function determinant(a) {
     // Calculate the determinant
     return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 };
-},{}],446:[function(require,module,exports){
+},{}],431:[function(require,module,exports){
 module.exports = fromQuat;
 
 /**
@@ -105460,7 +104517,7 @@ function fromQuat(out, q) {
 
     return out;
 };
-},{}],447:[function(require,module,exports){
+},{}],432:[function(require,module,exports){
 module.exports = fromRotation
 
 /**
@@ -105515,7 +104572,7 @@ function fromRotation(out, rad, axis) {
   return out
 }
 
-},{}],448:[function(require,module,exports){
+},{}],433:[function(require,module,exports){
 module.exports = fromRotationTranslation;
 
 /**
@@ -105569,7 +104626,7 @@ function fromRotationTranslation(out, q, v) {
     
     return out;
 };
-},{}],449:[function(require,module,exports){
+},{}],434:[function(require,module,exports){
 module.exports = fromScaling
 
 /**
@@ -105603,7 +104660,7 @@ function fromScaling(out, v) {
   return out
 }
 
-},{}],450:[function(require,module,exports){
+},{}],435:[function(require,module,exports){
 module.exports = fromTranslation
 
 /**
@@ -105637,7 +104694,7 @@ function fromTranslation(out, v) {
   return out
 }
 
-},{}],451:[function(require,module,exports){
+},{}],436:[function(require,module,exports){
 module.exports = fromXRotation
 
 /**
@@ -105674,7 +104731,7 @@ function fromXRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],452:[function(require,module,exports){
+},{}],437:[function(require,module,exports){
 module.exports = fromYRotation
 
 /**
@@ -105711,7 +104768,7 @@ function fromYRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],453:[function(require,module,exports){
+},{}],438:[function(require,module,exports){
 module.exports = fromZRotation
 
 /**
@@ -105748,7 +104805,7 @@ function fromZRotation(out, rad) {
     out[15] = 1
     return out
 }
-},{}],454:[function(require,module,exports){
+},{}],439:[function(require,module,exports){
 module.exports = frustum;
 
 /**
@@ -105785,7 +104842,7 @@ function frustum(out, left, right, bottom, top, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],455:[function(require,module,exports){
+},{}],440:[function(require,module,exports){
 module.exports = identity;
 
 /**
@@ -105813,7 +104870,7 @@ function identity(out) {
     out[15] = 1;
     return out;
 };
-},{}],456:[function(require,module,exports){
+},{}],441:[function(require,module,exports){
 module.exports = {
   create: require('./create')
   , clone: require('./clone')
@@ -105846,7 +104903,7 @@ module.exports = {
   , str: require('./str')
 }
 
-},{"./adjoint":441,"./clone":442,"./copy":443,"./create":444,"./determinant":445,"./fromQuat":446,"./fromRotation":447,"./fromRotationTranslation":448,"./fromScaling":449,"./fromTranslation":450,"./fromXRotation":451,"./fromYRotation":452,"./fromZRotation":453,"./frustum":454,"./identity":455,"./invert":457,"./lookAt":458,"./multiply":459,"./ortho":460,"./perspective":461,"./perspectiveFromFieldOfView":462,"./rotate":463,"./rotateX":464,"./rotateY":465,"./rotateZ":466,"./scale":467,"./str":468,"./translate":469,"./transpose":470}],457:[function(require,module,exports){
+},{"./adjoint":426,"./clone":427,"./copy":428,"./create":429,"./determinant":430,"./fromQuat":431,"./fromRotation":432,"./fromRotationTranslation":433,"./fromScaling":434,"./fromTranslation":435,"./fromXRotation":436,"./fromYRotation":437,"./fromZRotation":438,"./frustum":439,"./identity":440,"./invert":442,"./lookAt":443,"./multiply":444,"./ortho":445,"./perspective":446,"./perspectiveFromFieldOfView":447,"./rotate":448,"./rotateX":449,"./rotateY":450,"./rotateZ":451,"./scale":452,"./str":453,"./translate":454,"./transpose":455}],442:[function(require,module,exports){
 module.exports = invert;
 
 /**
@@ -105902,7 +104959,7 @@ function invert(out, a) {
 
     return out;
 };
-},{}],458:[function(require,module,exports){
+},{}],443:[function(require,module,exports){
 var identity = require('./identity');
 
 module.exports = lookAt;
@@ -105993,7 +105050,7 @@ function lookAt(out, eye, center, up) {
 
     return out;
 };
-},{"./identity":455}],459:[function(require,module,exports){
+},{"./identity":440}],444:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -106036,7 +105093,7 @@ function multiply(out, a, b) {
     out[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
     return out;
 };
-},{}],460:[function(require,module,exports){
+},{}],445:[function(require,module,exports){
 module.exports = ortho;
 
 /**
@@ -106073,7 +105130,7 @@ function ortho(out, left, right, bottom, top, near, far) {
     out[15] = 1;
     return out;
 };
-},{}],461:[function(require,module,exports){
+},{}],446:[function(require,module,exports){
 module.exports = perspective;
 
 /**
@@ -106107,7 +105164,7 @@ function perspective(out, fovy, aspect, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],462:[function(require,module,exports){
+},{}],447:[function(require,module,exports){
 module.exports = perspectiveFromFieldOfView;
 
 /**
@@ -106149,7 +105206,7 @@ function perspectiveFromFieldOfView(out, fov, near, far) {
 }
 
 
-},{}],463:[function(require,module,exports){
+},{}],448:[function(require,module,exports){
 module.exports = rotate;
 
 /**
@@ -106214,7 +105271,7 @@ function rotate(out, a, rad, axis) {
     }
     return out;
 };
-},{}],464:[function(require,module,exports){
+},{}],449:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -106259,7 +105316,7 @@ function rotateX(out, a, rad) {
     out[11] = a23 * c - a13 * s;
     return out;
 };
-},{}],465:[function(require,module,exports){
+},{}],450:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -106304,7 +105361,7 @@ function rotateY(out, a, rad) {
     out[11] = a03 * s + a23 * c;
     return out;
 };
-},{}],466:[function(require,module,exports){
+},{}],451:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -106349,7 +105406,7 @@ function rotateZ(out, a, rad) {
     out[7] = a13 * c - a03 * s;
     return out;
 };
-},{}],467:[function(require,module,exports){
+},{}],452:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -106381,7 +105438,7 @@ function scale(out, a, v) {
     out[15] = a[15];
     return out;
 };
-},{}],468:[function(require,module,exports){
+},{}],453:[function(require,module,exports){
 module.exports = str;
 
 /**
@@ -106396,7 +105453,7 @@ function str(a) {
                     a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' + 
                     a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
 };
-},{}],469:[function(require,module,exports){
+},{}],454:[function(require,module,exports){
 module.exports = translate;
 
 /**
@@ -106435,7 +105492,7 @@ function translate(out, a, v) {
 
     return out;
 };
-},{}],470:[function(require,module,exports){
+},{}],455:[function(require,module,exports){
 module.exports = transpose;
 
 /**
@@ -106485,7 +105542,7 @@ function transpose(out, a) {
     
     return out;
 };
-},{}],471:[function(require,module,exports){
+},{}],456:[function(require,module,exports){
 'use strict'
 
 var ndarray = require('ndarray')
@@ -107048,7 +106105,7 @@ function createTexture2D(gl) {
   throw new Error('gl-texture2d: Invalid arguments for texture2d constructor')
 }
 
-},{"ndarray":524,"ndarray-ops":521,"typedarray-pool":527}],472:[function(require,module,exports){
+},{"ndarray":509,"ndarray-ops":506,"typedarray-pool":512}],457:[function(require,module,exports){
 module.exports = add;
 
 /**
@@ -107065,7 +106122,7 @@ function add(out, a, b) {
     out[2] = a[2] + b[2]
     return out
 }
-},{}],473:[function(require,module,exports){
+},{}],458:[function(require,module,exports){
 module.exports = angle
 
 var fromValues = require('./fromValues')
@@ -107094,7 +106151,7 @@ function angle(a, b) {
     }     
 }
 
-},{"./dot":483,"./fromValues":489,"./normalize":500}],474:[function(require,module,exports){
+},{"./dot":468,"./fromValues":474,"./normalize":485}],459:[function(require,module,exports){
 module.exports = ceil
 
 /**
@@ -107111,7 +106168,7 @@ function ceil(out, a) {
   return out
 }
 
-},{}],475:[function(require,module,exports){
+},{}],460:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -107127,7 +106184,7 @@ function clone(a) {
     out[2] = a[2]
     return out
 }
-},{}],476:[function(require,module,exports){
+},{}],461:[function(require,module,exports){
 module.exports = copy;
 
 /**
@@ -107143,7 +106200,7 @@ function copy(out, a) {
     out[2] = a[2]
     return out
 }
-},{}],477:[function(require,module,exports){
+},{}],462:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -107158,7 +106215,7 @@ function create() {
     out[2] = 0
     return out
 }
-},{}],478:[function(require,module,exports){
+},{}],463:[function(require,module,exports){
 module.exports = cross;
 
 /**
@@ -107178,10 +106235,10 @@ function cross(out, a, b) {
     out[2] = ax * by - ay * bx
     return out
 }
-},{}],479:[function(require,module,exports){
+},{}],464:[function(require,module,exports){
 module.exports = require('./distance')
 
-},{"./distance":480}],480:[function(require,module,exports){
+},{"./distance":465}],465:[function(require,module,exports){
 module.exports = distance;
 
 /**
@@ -107197,10 +106254,10 @@ function distance(a, b) {
         z = b[2] - a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],481:[function(require,module,exports){
+},{}],466:[function(require,module,exports){
 module.exports = require('./divide')
 
-},{"./divide":482}],482:[function(require,module,exports){
+},{"./divide":467}],467:[function(require,module,exports){
 module.exports = divide;
 
 /**
@@ -107217,7 +106274,7 @@ function divide(out, a, b) {
     out[2] = a[2] / b[2]
     return out
 }
-},{}],483:[function(require,module,exports){
+},{}],468:[function(require,module,exports){
 module.exports = dot;
 
 /**
@@ -107230,10 +106287,10 @@ module.exports = dot;
 function dot(a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
-},{}],484:[function(require,module,exports){
+},{}],469:[function(require,module,exports){
 module.exports = 0.000001
 
-},{}],485:[function(require,module,exports){
+},{}],470:[function(require,module,exports){
 module.exports = equals
 
 var EPSILON = require('./epsilon')
@@ -107257,7 +106314,7 @@ function equals(a, b) {
           Math.abs(a2 - b2) <= EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)))
 }
 
-},{"./epsilon":484}],486:[function(require,module,exports){
+},{"./epsilon":469}],471:[function(require,module,exports){
 module.exports = exactEquals
 
 /**
@@ -107271,7 +106328,7 @@ function exactEquals(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
 }
 
-},{}],487:[function(require,module,exports){
+},{}],472:[function(require,module,exports){
 module.exports = floor
 
 /**
@@ -107288,7 +106345,7 @@ function floor(out, a) {
   return out
 }
 
-},{}],488:[function(require,module,exports){
+},{}],473:[function(require,module,exports){
 module.exports = forEach;
 
 var vec = require('./create')()
@@ -107333,7 +106390,7 @@ function forEach(a, stride, offset, count, fn, arg) {
         
         return a
 }
-},{"./create":477}],489:[function(require,module,exports){
+},{"./create":462}],474:[function(require,module,exports){
 module.exports = fromValues;
 
 /**
@@ -107351,7 +106408,7 @@ function fromValues(x, y, z) {
     out[2] = z
     return out
 }
-},{}],490:[function(require,module,exports){
+},{}],475:[function(require,module,exports){
 module.exports = {
   EPSILON: require('./epsilon')
   , create: require('./create')
@@ -107400,7 +106457,7 @@ module.exports = {
   , forEach: require('./forEach')
 }
 
-},{"./add":472,"./angle":473,"./ceil":474,"./clone":475,"./copy":476,"./create":477,"./cross":478,"./dist":479,"./distance":480,"./div":481,"./divide":482,"./dot":483,"./epsilon":484,"./equals":485,"./exactEquals":486,"./floor":487,"./forEach":488,"./fromValues":489,"./inverse":491,"./len":492,"./length":493,"./lerp":494,"./max":495,"./min":496,"./mul":497,"./multiply":498,"./negate":499,"./normalize":500,"./random":501,"./rotateX":502,"./rotateY":503,"./rotateZ":504,"./round":505,"./scale":506,"./scaleAndAdd":507,"./set":508,"./sqrDist":509,"./sqrLen":510,"./squaredDistance":511,"./squaredLength":512,"./sub":513,"./subtract":514,"./transformMat3":515,"./transformMat4":516,"./transformQuat":517}],491:[function(require,module,exports){
+},{"./add":457,"./angle":458,"./ceil":459,"./clone":460,"./copy":461,"./create":462,"./cross":463,"./dist":464,"./distance":465,"./div":466,"./divide":467,"./dot":468,"./epsilon":469,"./equals":470,"./exactEquals":471,"./floor":472,"./forEach":473,"./fromValues":474,"./inverse":476,"./len":477,"./length":478,"./lerp":479,"./max":480,"./min":481,"./mul":482,"./multiply":483,"./negate":484,"./normalize":485,"./random":486,"./rotateX":487,"./rotateY":488,"./rotateZ":489,"./round":490,"./scale":491,"./scaleAndAdd":492,"./set":493,"./sqrDist":494,"./sqrLen":495,"./squaredDistance":496,"./squaredLength":497,"./sub":498,"./subtract":499,"./transformMat3":500,"./transformMat4":501,"./transformQuat":502}],476:[function(require,module,exports){
 module.exports = inverse;
 
 /**
@@ -107416,10 +106473,10 @@ function inverse(out, a) {
   out[2] = 1.0 / a[2]
   return out
 }
-},{}],492:[function(require,module,exports){
+},{}],477:[function(require,module,exports){
 module.exports = require('./length')
 
-},{"./length":493}],493:[function(require,module,exports){
+},{"./length":478}],478:[function(require,module,exports){
 module.exports = length;
 
 /**
@@ -107434,7 +106491,7 @@ function length(a) {
         z = a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],494:[function(require,module,exports){
+},{}],479:[function(require,module,exports){
 module.exports = lerp;
 
 /**
@@ -107455,7 +106512,7 @@ function lerp(out, a, b, t) {
     out[2] = az + t * (b[2] - az)
     return out
 }
-},{}],495:[function(require,module,exports){
+},{}],480:[function(require,module,exports){
 module.exports = max;
 
 /**
@@ -107472,7 +106529,7 @@ function max(out, a, b) {
     out[2] = Math.max(a[2], b[2])
     return out
 }
-},{}],496:[function(require,module,exports){
+},{}],481:[function(require,module,exports){
 module.exports = min;
 
 /**
@@ -107489,10 +106546,10 @@ function min(out, a, b) {
     out[2] = Math.min(a[2], b[2])
     return out
 }
-},{}],497:[function(require,module,exports){
+},{}],482:[function(require,module,exports){
 module.exports = require('./multiply')
 
-},{"./multiply":498}],498:[function(require,module,exports){
+},{"./multiply":483}],483:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -107509,7 +106566,7 @@ function multiply(out, a, b) {
     out[2] = a[2] * b[2]
     return out
 }
-},{}],499:[function(require,module,exports){
+},{}],484:[function(require,module,exports){
 module.exports = negate;
 
 /**
@@ -107525,7 +106582,7 @@ function negate(out, a) {
     out[2] = -a[2]
     return out
 }
-},{}],500:[function(require,module,exports){
+},{}],485:[function(require,module,exports){
 module.exports = normalize;
 
 /**
@@ -107549,7 +106606,7 @@ function normalize(out, a) {
     }
     return out
 }
-},{}],501:[function(require,module,exports){
+},{}],486:[function(require,module,exports){
 module.exports = random;
 
 /**
@@ -107571,7 +106628,7 @@ function random(out, scale) {
     out[2] = z * scale
     return out
 }
-},{}],502:[function(require,module,exports){
+},{}],487:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -107601,7 +106658,7 @@ function rotateX(out, a, b, c){
     return out
 }
 
-},{}],503:[function(require,module,exports){
+},{}],488:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -107631,7 +106688,7 @@ function rotateY(out, a, b, c){
     return out
 }
 
-},{}],504:[function(require,module,exports){
+},{}],489:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -107661,7 +106718,7 @@ function rotateZ(out, a, b, c){
     return out
 }
 
-},{}],505:[function(require,module,exports){
+},{}],490:[function(require,module,exports){
 module.exports = round
 
 /**
@@ -107678,7 +106735,7 @@ function round(out, a) {
   return out
 }
 
-},{}],506:[function(require,module,exports){
+},{}],491:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -107695,7 +106752,7 @@ function scale(out, a, b) {
     out[2] = a[2] * b
     return out
 }
-},{}],507:[function(require,module,exports){
+},{}],492:[function(require,module,exports){
 module.exports = scaleAndAdd;
 
 /**
@@ -107713,7 +106770,7 @@ function scaleAndAdd(out, a, b, scale) {
     out[2] = a[2] + (b[2] * scale)
     return out
 }
-},{}],508:[function(require,module,exports){
+},{}],493:[function(require,module,exports){
 module.exports = set;
 
 /**
@@ -107731,13 +106788,13 @@ function set(out, x, y, z) {
     out[2] = z
     return out
 }
-},{}],509:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
 module.exports = require('./squaredDistance')
 
-},{"./squaredDistance":511}],510:[function(require,module,exports){
+},{"./squaredDistance":496}],495:[function(require,module,exports){
 module.exports = require('./squaredLength')
 
-},{"./squaredLength":512}],511:[function(require,module,exports){
+},{"./squaredLength":497}],496:[function(require,module,exports){
 module.exports = squaredDistance;
 
 /**
@@ -107753,7 +106810,7 @@ function squaredDistance(a, b) {
         z = b[2] - a[2]
     return x*x + y*y + z*z
 }
-},{}],512:[function(require,module,exports){
+},{}],497:[function(require,module,exports){
 module.exports = squaredLength;
 
 /**
@@ -107768,10 +106825,10 @@ function squaredLength(a) {
         z = a[2]
     return x*x + y*y + z*z
 }
-},{}],513:[function(require,module,exports){
+},{}],498:[function(require,module,exports){
 module.exports = require('./subtract')
 
-},{"./subtract":514}],514:[function(require,module,exports){
+},{"./subtract":499}],499:[function(require,module,exports){
 module.exports = subtract;
 
 /**
@@ -107788,7 +106845,7 @@ function subtract(out, a, b) {
     out[2] = a[2] - b[2]
     return out
 }
-},{}],515:[function(require,module,exports){
+},{}],500:[function(require,module,exports){
 module.exports = transformMat3;
 
 /**
@@ -107806,7 +106863,7 @@ function transformMat3(out, a, m) {
     out[2] = x * m[2] + y * m[5] + z * m[8]
     return out
 }
-},{}],516:[function(require,module,exports){
+},{}],501:[function(require,module,exports){
 module.exports = transformMat4;
 
 /**
@@ -107827,7 +106884,7 @@ function transformMat4(out, a, m) {
     out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w
     return out
 }
-},{}],517:[function(require,module,exports){
+},{}],502:[function(require,module,exports){
 module.exports = transformQuat;
 
 /**
@@ -107856,7 +106913,7 @@ function transformQuat(out, a, q) {
     out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx
     return out
 }
-},{}],518:[function(require,module,exports){
+},{}],503:[function(require,module,exports){
 module.exports = function(strings) {
   if (typeof strings === 'string') strings = [strings]
   var exprs = [].slice.call(arguments,1)
@@ -107868,7 +106925,7 @@ module.exports = function(strings) {
   return parts.join('')
 }
 
-},{}],519:[function(require,module,exports){
+},{}],504:[function(require,module,exports){
 "use strict"
 
 function iota(n) {
@@ -107880,9 +106937,9 @@ function iota(n) {
 }
 
 module.exports = iota
-},{}],520:[function(require,module,exports){
+},{}],505:[function(require,module,exports){
 arguments[4][159][0].apply(exports,arguments)
-},{"dup":159}],521:[function(require,module,exports){
+},{"dup":159}],506:[function(require,module,exports){
 "use strict"
 
 var compile = require("cwise-compiler")
@@ -108345,7 +107402,7 @@ exports.equals = compile({
 
 
 
-},{"cwise-compiler":435}],522:[function(require,module,exports){
+},{"cwise-compiler":420}],507:[function(require,module,exports){
 "use strict"
 
 var ndarray = require("ndarray")
@@ -108368,10 +107425,10 @@ module.exports = function convert(arr, result) {
   return result
 }
 
-},{"./doConvert.js":523,"ndarray":524}],523:[function(require,module,exports){
+},{"./doConvert.js":508,"ndarray":509}],508:[function(require,module,exports){
 module.exports=require('cwise-compiler')({"args":["array","scalar","index"],"pre":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"body":{"body":"{\nvar _inline_1_v=_inline_1_arg1_,_inline_1_i\nfor(_inline_1_i=0;_inline_1_i<_inline_1_arg2_.length-1;++_inline_1_i) {\n_inline_1_v=_inline_1_v[_inline_1_arg2_[_inline_1_i]]\n}\n_inline_1_arg0_=_inline_1_v[_inline_1_arg2_[_inline_1_arg2_.length-1]]\n}","args":[{"name":"_inline_1_arg0_","lvalue":true,"rvalue":false,"count":1},{"name":"_inline_1_arg1_","lvalue":false,"rvalue":true,"count":1},{"name":"_inline_1_arg2_","lvalue":false,"rvalue":true,"count":4}],"thisVars":[],"localVars":["_inline_1_i","_inline_1_v"]},"post":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"funcName":"convert","blockSize":64})
 
-},{"cwise-compiler":435}],524:[function(require,module,exports){
+},{"cwise-compiler":420}],509:[function(require,module,exports){
 var iota = require("iota-array")
 var isBuffer = require("is-buffer")
 
@@ -108722,7 +107779,7 @@ function wrappedNDArrayCtor(data, shape, stride, offset) {
 
 module.exports = wrappedNDArrayCtor
 
-},{"iota-array":519,"is-buffer":520}],525:[function(require,module,exports){
+},{"iota-array":504,"is-buffer":505}],510:[function(require,module,exports){
 // (c) Dean McNamee <dean@gmail.com>, 2013.
 //
 // https://github.com/deanm/omggif
@@ -109531,7 +108588,7 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
 // CommonJS.
 try { exports.GifWriter = GifWriter; exports.GifReader = GifReader } catch(e) {}
 
-},{}],526:[function(require,module,exports){
+},{}],511:[function(require,module,exports){
 (function (process){(function (){
 var Stream = require('stream')
 
@@ -109643,7 +108700,7 @@ function through (write, end, opts) {
 
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":196,"stream":212}],527:[function(require,module,exports){
+},{"_process":196,"stream":212}],512:[function(require,module,exports){
 (function (global){(function (){
 'use strict'
 
@@ -109898,7 +108955,7 @@ exports.clearCache = function clearCache() {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bit-twiddle":434,"buffer":146,"dup":439}],528:[function(require,module,exports){
+},{"bit-twiddle":419,"buffer":146,"dup":424}],513:[function(require,module,exports){
 "use strict"
 
 function unique_pred(list, compare) {
@@ -109957,4 +109014,4 @@ function unique(list, compare, sorted) {
 
 module.exports = unique
 
-},{}]},{},[251]);
+},{}]},{},[248]);
