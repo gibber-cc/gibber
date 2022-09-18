@@ -10,7 +10,7 @@ module.exports = function( environment ) {
     // augmented in init() based on message names
     __notifications : {
       error( msg ) {
-        Console.simpleError(msg) 
+        Console.error( msg ) 
       }
     },
 

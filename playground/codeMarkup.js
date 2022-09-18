@@ -102,7 +102,7 @@ const Marker = {
       try{
         walk.recursive( node, state, Marker.visitors )
       }catch(e){
-        console.log( e ) 
+        Gibber.Environment.console.error( e.message, e ) 
       }
     })
 
