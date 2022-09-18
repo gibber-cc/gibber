@@ -10594,104 +10594,56 @@ module.exports = function( Gibber ) {
 
 let Pattern = Gibber.Pattern
 
-let flatten = function(){
-   let flat = []
-   for ( let i = 0, l = this.length; i < l; i++ ){
-     let type = Object.prototype.toString.call( this[ i ]).split(' ').pop().split( ']' ).shift().toLowerCase()
-
-     if (type) { 
-       flat = flat.concat( /^(array|collection|arguments|object)$/.test( type ) ? flatten.call( this[i] ) : this[i]) 
-     }
-   }
-   return flat
-}
-
-let createStartingArray = function( length, ones ) {
-  let out = []
-  for( let i = 0; i < ones; i++ ) {
-    out.push( [1] )
+// taken from https://github.com/mkontogiannis/euclidean-rhythms
+const getPattern = (pulses, steps) => {
+  if (pulses < 0 || steps < 0 || steps < pulses) {
+  	return [];
   }
-  for( let j = ones; j < length; j++ ) {
-    out.push( 0 )
-  }
-  return out
-}
 
-let printArray = function( array ) {
-  let str = ''
-  for( let i = 0; i < array.length; i++ ) {
-    let outerElement = array[ i ]
-    if( Array.isArray( outerElement ) ) {
-      str += '['
-      for( let j = 0; j < outerElement.length; j++ ) {
-        str += outerElement[ j ]
-      }
-      str += '] '
-    }else{
-      str += outerElement + ''
+  let first = new Array(pulses).fill([1]);
+  let second = new Array(steps - pulses).fill([0]);
+
+  let firstLength = first.length;
+  let minLength = Math.min(firstLength, second.length);
+
+  let loopThreshold = 0;
+  while (minLength > loopThreshold) {
+  	if (loopThreshold === 0) {
+  		loopThreshold = 1;
+  	}
+
+    for (var x = 0; x < minLength; x++) {
+      first[x] = Array.prototype.concat.call(first[x], second[x]);
     }
-  }
 
-  return str
-}
-
-let arraysEqual = function( a, b ) {
-  if ( a === b ) return true
-  if ( a == null || b == null ) return false
-  if ( a.length != b.length ) return false
-
-  for ( let i = 0; i < a.length; ++i ) {
-    if ( a[ i ] !== b[ i ] ) return false
-  }
-
-  return true
-}
-
-let getLargestArrayCount = function( input ) {
-  let length = 0, count = 0
-
-  for( let i = 0; i < input.length; i++ ) {
-    if( Array.isArray( input[ i ] ) ) { 
-      if( input[ i ].length > length ) {
-        length = input[ i ].length
-        count = 1
-      }else if( input[ i ].length === length ) {
-        count++
-      }
+    if (minLength === firstLength) {
+    	second = Array.prototype.slice.call(second, minLength);
     }
-  }
+    else {
+      second = Array.prototype.slice.call(first, minLength);
+      first = Array.prototype.slice.call(first, 0, minLength);
+    }
+    firstLength = first.length;
+    minLength = Math.min(firstLength, second.length);
+	}
 
-  return count
-}
+  let pattern = [];
+  first.forEach(f => {
+    pattern = Array.prototype.concat.call(pattern, f);
+  });
+  second.forEach(s => {
+    pattern = Array.prototype.concat.call(pattern, s);
+  });
 
-let Euclid = function( ones, length, time, rotation ) {
+  return pattern;
+};
+
+
+let Euclid = function( ones, length, time, rotation=0 ) {
   let count = 0,
-      out = createStartingArray( length, ones ),
       onesAndZeros
 
- 	function Inner( n,k ) {
-    let operationCount = count++ === 0 ? k : getLargestArrayCount( out ),
-        moveCandidateCount = out.length - operationCount,
-        numberOfMoves = operationCount >= moveCandidateCount ? moveCandidateCount : operationCount
-
-    if( numberOfMoves > 1 || count === 1 ) {
-      for( let i = 0; i < numberOfMoves; i++ ) {
-        let willBeMoved = out.pop(), isArray = Array.isArray( willBeMoved )
-        out[ i ].push( willBeMoved )
-        if( isArray ) { 
-          flatten.call( out[ i ] )
-        }
-      }
-    }
-
-    if( n % k !== 0 ) {
-      return Inner( k, n % k )
-    }else {
-      return flatten.call( out )
-    }
-  }
-  
-  onesAndZeros = Inner( length, ones )
+  onesAndZeros = getPattern( ones,length )
 
   let pattern = Gibber.Pattern( ...onesAndZeros )
 
@@ -10742,11 +10694,10 @@ let Euclid = function( ones, length, time, rotation ) {
 
   //Gibber.addSequencingToMethod( pattern, 'reseed' )
 
-  // out = calculateRhythms( onesAndZeros, dur )
-  // out.initial = onesAndZeros
-  if( typeof rotation === 'number' ) pattern.rotate( rotation )
-  return pattern //out
+  if( rotation !== 0 ) pattern.rotate( rotation )
+  return pattern
 }
+
 // E(5,8) = [ .25, .125, .25, .125, .25 ]
 let calculateRhythms = function( values, dur ) {
   let out = []
@@ -10797,7 +10748,7 @@ Euclid.test = function( testKey ) {
   if( typeof testKey !== 'string' ) {
     for( let key in answers ) {
       let expectedResult = answers[ key ],
-          result = flatten.call( Euclid.apply( null, key.split(',') ) ).join('')
+          result = Euclid.apply( null, key.split(',').map( v => parseInt(v) ) ).values.join('')
 
       console.log( result, expectedResult )
 
@@ -92121,20 +92072,20 @@ module.exports = function( Gibberish ) {
 
             //console.log( 'evt', uid, event.context.locations )
 
-            if (typeof value === 'object') value = value.value;
-            if (seq.filters !== null) 
+            if ( typeof value === 'object' ) value = value.value;
+            if ( seq.filters !== null ) 
               value = seq.filters.reduce( (currentValue, filter) => filter(currentValue, seq, uid), value)
 
-            if (seq.mainthreadonly !== undefined) {
-              if (typeof value === 'function') {
-                value = value();
+            if ( seq.mainthreadonly !== undefined ) {
+              if ( typeof value === 'function' ) {
+                value = value()
               }
               
-              Gibberish.processor.messages.push(seq.mainthreadonly, seq.key, value);
-            } else if (typeof seq.target[seq.key] === 'function') {
-              seq.target[seq.key](value)
+              Gibberish.processor.messages.push( seq.mainthreadonly, seq.key, value )
+            } else if ( typeof seq.target[seq.key] === 'function' ) {
+              seq.target [seq.key ]( value )
             } else {
-              seq.target[seq.key] = value
+              seq.target[ seq.key ] = value
             }
           }
         } else {
@@ -92144,45 +92095,48 @@ module.exports = function( Gibberish ) {
 
           const events = seq.__events.splice(0, value.length);
 
-          if (seq.filters !== null) {
-            if (value.length === 1) {
-              value = seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, uid), value);
+          if( seq.filters !== null ) {
+            if( value.length === 1 ) {
+              value = seq.filters.reduce( (currentValue, filter) => filter( currentValue, seq, uid ), value )
             } else {
-              value.forEach((v, i) => seq.filters.reduce((currentValue, filter) => filter(currentValue, seq, events[i].uid), v));
+              value.forEach((v, i) => { 
+                return seq.filters.reduce( (currentValue, filter) => filter( currentValue, seq, events[i].uid ), v )
+              })
             }
           }
 
           if (typeof seq.target[seq.key] === 'function') {
-            seq.target[seq.key](value);
+            seq.target[ seq.key ]( value )
           } else {
-            seq.target[seq.key] = value;
+            seq.target[ seq.key ] = value
           }
         }
 
         if (Gibberish.mode === 'processor') {
-          let timing;
+          let timing
 
-          if (seq.__events.length <= 0) {
-            let time = 0;
+          if(seq.__events.length <= 0) {
+            let time = 0
 
             while (seq.__events.length <= 0) {
-              seq.__events = seq.__pattern.queryArc(seq.__phase, ++seq.__phase  );
+              seq.__events = seq.__pattern.queryArc(seq.__phase, ++seq.__phase  )
             } 
 
             seq.__events.sort( (a,b) => a.whole.begin.valueOf() > b.whole.begin.valueOf() )
           } 
 
-          timing = seq.__events[0].whole.begin.sub(startTime).valueOf();
+          timing = seq.__events[0].whole.begin.sub( startTime ).valueOf()
           if( timing.valueOf() < 0 ) timing += 1
+
           //if( timing <= 0 ) timing = Math.abs( timing )
 
           //console.log( seq.__events[0].whole.begin.toString(), startTime.toString(), timing  )
 
           //console.log( 'timings:', timing, startTime.valueOf(), seq.__events[0].whole.begin.valueOf() )
-          timing *= Math.ceil(Gibberish.ctx.sampleRate / Sequencer.clock.cps);
+          timing *= Math.ceil( Gibberish.ctx.sampleRate / Sequencer.clock.cps )
           //console.log( 'timing:', timing, startTime.valueOf(), seq.__events[0].whole.begin.valueOf() )
-          if (seq.__isRunning === true && !isNaN(timing) ) {
-            Gibberish.scheduler.add(timing, seq.tick, seq.priority);
+          if( seq.__isRunning === true && !isNaN( timing ) ) {
+            Gibberish.scheduler.add( timing, seq.tick, seq.priority )
           }
         }
       },
