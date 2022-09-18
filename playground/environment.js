@@ -318,6 +318,26 @@ window.onload = function() {
     window.requestAnimationFrame( statsCallback )
   }
 
+  window.watchers = []
+  window.watch = function( method, cb, seqId=0 ) {
+    const pos = window.watchers.length
+    window.watchers.push( cb )
+    eval(`method.__owner[ method.__name ][ seqId ].values.addFilter( args => {
+      global.main( eval( '()=>window.watchers[${pos}](' + args[0] + ')' ) )
+      return args
+    })`)
+  }
+  watchers.clear = (fnc=null) => {
+    if( fnc === null ) {
+      watchers.length = 0
+      return
+    }
+    const pos = watchers.findIndex( fnc )
+    watchers.splice( pos, 1 )
+  }
+
+  Gibber.subscribe( 'clear', ()=> watchers.length = 0 )
+
   environment.Annotations = environment.codeMarkup 
   
   Gibber.Environment = environment
