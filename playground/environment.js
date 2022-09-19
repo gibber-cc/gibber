@@ -296,11 +296,12 @@ window.onload = function() {
     return out
   }
 
-  environment.showStats = function() {
+  environment.showStats = function( rate = 30 ) {
     const display = document.createElement('div')
     display.setAttribute( 'id', 'stats' )
     document.body.appendChild( display )
     
+    let frameCounter = 0, toggle = true
     const statsCallback = function() {
       window.requestAnimationFrame( statsCallback )
       let txt = '|&nbsp;'
@@ -309,10 +310,19 @@ window.onload = function() {
           let value = arr[1].__out
           if( value < .001 ) value = '0.000' 
           value = rpad( value, 5 )
-          txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
+          const gain = typeof arr[1].gain.value === 'object' ? 1 : arr[1].gain.value
+          let color = 'white', bg = 'transparent'
+
+          // if ugen has been faded out, flash a warning
+          if( gain < .00001 ) {
+            color = toggle ? 'red' : 'white'
+            bg    = toggle ? 'white' : 'red'
+          }
+          txt += `<span style="color:${color}; background:${bg}">${arr[0]}:${value}&nbsp;</span>|&nbsp;` 
         })
 
         display.innerHTML = txt
+        if( frameCounter++ % rate === 0 ) toggle = !toggle
       } 
     }
     window.requestAnimationFrame( statsCallback )

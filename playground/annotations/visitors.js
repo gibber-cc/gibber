@@ -5,6 +5,23 @@ module.exports = function( Marker ) {
     return stripped
   }
 
+  const handleMapping = function( node, state ) {
+    if( node.type === 'ExpressionStatement' ) {
+      const expression = node.expression
+      if( expression.right.type === 'CallExpression' ) {
+        // potential call to .out
+        if( expression.right.callee.type === 'MemberExpression' ) {
+          // verified that it is a member expression
+          const memberExpr = expression.right.callee
+          if( memberExpr.property.name === 'out' ) {
+            console.log( 'FOUND AN OUT / MAPPING', memberExpr )
+            const mapping = Marker.patternMarkupFunctions.Mapping( expression.left, memberExpr, node, state )
+          }
+        }
+      }
+    }
+  }
+
   const visitors = {
     Literal( node, state, cb ) {
       state.push( node.value )
@@ -12,11 +29,24 @@ module.exports = function( Marker ) {
     Identifier( node, state, cb ) {
       state.push( strip( node.name ) )
     },
+    ArrowFunctionExpression( expr, state, cb ) {
+      console.log( expr.right.body.body )
+      for( let node of expr.right.body.body ) {
+        handleMapping( node, state )
+      }
+    },
+    FunctionExpression( node, state, cb ) {
+      console.log( 'function body:', node.body.body )
+    },
     AssignmentExpression( expression, state, cb ) {
       // first check to see if the right operand is a callexpression
-      if( expression.right.type === 'CallExpression' ) {
-
-                
+      if( expression.right.type === 'ArrowFunctionExpression' ) {
+        visitors.ArrowFunctionExpression( expression, state, cb )
+        return
+      } else if( expression.right.type === 'FunctionExpression' ) {
+        visitors.FunctionExpression( expression.right, state, cb )
+        return
+      } else if( expression.right.type === 'CallExpression' ) {
         let name
         if( expression.right.callee.type === 'MemberExpression' ) {
           // check to see if this is a constructor followed by a call to .seq() or .connect()

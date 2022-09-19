@@ -363,6 +363,7 @@ const Marker = {
   patternMarkupFunctions: {
 
     __Tidal:            require( './annotations/markup/tidal.js' ),
+    __Mapping:          require( './annotations/markup/mapping.js' ),
     __Literal:          require( './annotations/markup/literal.js' ),
     __Identifier:       require( './annotations/markup/identifier.js' ),
     __UnaryExpression:  require( './annotations/markup/unaryExpression.js'  ),
