@@ -362,6 +362,36 @@ const share = {
         grid[1] = [usernames[2], usernames[3], usernames[5]]
         break
 
+      case 7:
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[7]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        break
+
+      case 8:
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[7]]
+        grid[1] = [usernames[2], usernames[3], usernames[5], usernames[8]]
+        break
+
+      case 9:
+        grid[0] = [usernames[0], usernames[1], usernames[4]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        grid[2] = [usernames[6], usernames[7], usernames[8]]
+        break
+      case 10:
+        grid[0] = [usernames[0], usernames[1], usernames[4]  usernames[9]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        grid[2] = [usernames[6], usernames[7], usernames[8]]
+        break
+      case 11:
+        grid[0] = [usernames[0], usernames[1], usernames[4]  usernames[9]]
+        grid[1] = [usernames[2], usernames[3], usernames[5], usernames[10]]
+        grid[2] = [usernames[6], usernames[7], usernames[8]]
+        break
+      case 12:
+        grid[0] = [usernames[0], usernames[1], usernames[4]  usernames[9]]
+        grid[1] = [usernames[2], usernames[3], usernames[5], usernames[10]]
+        grid[2] = [usernames[6], usernames[7], usernames[8], usernames[11]]
+        break
       default:
         grid[0][0] = mostRecentUser
         // 1 user, do nothing
