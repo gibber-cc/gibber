@@ -18,6 +18,13 @@ const Marker = {
 
   __visitors:require( './annotations/visitors.js' ),
 
+  enabled: {
+    selections: true,
+    comments:   true,
+    waveforms:  true,
+    binary:     true
+  },
+
   // pass Marker object to patternMarkupFunctions as a closure
   init() { 
     for( let key in this.patternMarkupFunctions ) {
@@ -31,7 +38,22 @@ const Marker = {
     Gibber.subscribe( 'clear', this.clear )
   },
 
-  clear() { Marker.waveform.clear() },
+  commentClasses: ['gibber_comment', 'euclid', 'hex'],
+
+  clear() { 
+    Marker.waveform.clear() 
+    Gibber.Environment.editor.getAllMarks().forEach( m => {
+      Marker.commentClasses.forEach( __class => {
+        if( m.className.indexOf( __class  ) > -1 ) {
+          const pos = m.find()
+          if( pos !== undefined )
+            m.doc.cm.replaceRange( '', pos.from, pos.to )
+        }
+      })
+      m.clear()
+    }) 
+    Gibber.Environment.editor.getAllMarks().forEach( m => m.clear() )
+  },
   
   prepareObject( obj ) {
     obj.markup = {

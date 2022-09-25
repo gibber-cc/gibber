@@ -39,7 +39,8 @@ module.exports = function( Marker ) {
       console.log( 'function body:', node.body.body )
     },
     AssignmentExpression( expression, state, cb ) {
-      // first check to see if the right operand is a callexpression
+      // first check if lefthand side has a mapping, if so remove
+      
       if( expression.right.type === 'ArrowFunctionExpression' ) {
         visitors.ArrowFunctionExpression( expression, state, cb )
         return

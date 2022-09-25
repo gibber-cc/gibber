@@ -378,17 +378,17 @@ const share = {
         grid[2] = [usernames[6], usernames[7], usernames[8]]
         break
       case 10:
-        grid[0] = [usernames[0], usernames[1], usernames[4]  usernames[9]]
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[9]]
         grid[1] = [usernames[2], usernames[3], usernames[5]]
         grid[2] = [usernames[6], usernames[7], usernames[8]]
         break
       case 11:
-        grid[0] = [usernames[0], usernames[1], usernames[4]  usernames[9]]
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[9]]
         grid[1] = [usernames[2], usernames[3], usernames[5], usernames[10]]
         grid[2] = [usernames[6], usernames[7], usernames[8]]
         break
       case 12:
-        grid[0] = [usernames[0], usernames[1], usernames[4]  usernames[9]]
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[9]]
         grid[1] = [usernames[2], usernames[3], usernames[5], usernames[10]]
         grid[2] = [usernames[6], usernames[7], usernames[8], usernames[11]]
         break
@@ -456,6 +456,7 @@ const share = {
 
       rowCount++
     }
+
 
     Environment.annotations = false
     share.grid = grid
