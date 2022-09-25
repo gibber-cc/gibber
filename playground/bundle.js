@@ -5727,10 +5727,10 @@ module.exports = function( __Audio ) {
 
     const temp = Audio.autoConnect
     Audio.autoConnect = false
-    const k  = Audio.instruments.Sampler({ filename:'./resources/audiofiles/kick.wav' })
-    const s  = Audio.instruments.Sampler({ filename:'./resources/audiofiles/snare.wav' })
-    const ch = Audio.instruments.Sampler({ filename:'./resources/audiofiles/hat.wav' })
-    const oh = Audio.instruments.Sampler({ filename:'./resources/audiofiles/openhat.wav' })
+    const k  = Audio.instruments.Sampler({ files:['./resources/audiofiles/kick.wav' ] })
+    const s  = Audio.instruments.Sampler({ files:['./resources/audiofiles/snare.wav' ] })
+    const ch = Audio.instruments.Sampler({ files:['./resources/audiofiles/hat.wav' ] })
+    const oh = Audio.instruments.Sampler({ files:['./resources/audiofiles/openhat.wav' ] })
     Audio.autoConnect = temp
 
     const drums = Audio.Ensemble({
@@ -7229,7 +7229,7 @@ const Instruments = {
           // use monophonic version if voice count is 1 or less
           let name
           if( i > 1 && instrumentName !== 'Multisampler' ) {
-            name = instrumentName ===  'Poly'+instrumentName
+            name = instrumentName =  'Poly'+instrumentName
             if( name === 'PolyMonosynth' ) name = 'PolyMono' 
           }else{
             name = instrumentName
