@@ -1,6 +1,6 @@
 {
   "name": "gibber",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Audiovisual creative coding environment",
   "main": "js/index.js",
   "dependencies": {
