@@ -76626,7 +76626,8 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
         memberAnnotationEnd.ch   += 1
 
         setTimeout( ()=> {
-          document.querySelector( `.${className}_${i}` ).onclick = patternObject.__onclick
+          const ele = document.querySelector( `.${className}_${i}` )
+          if( ele !== null ) ele.onclick = patternObject.__onclick
         }, 50 )
       }
 
