@@ -33,22 +33,40 @@
 ** you specified above):
 */
 
-s = Sampler({ filename:'http://127.0.0.1:8080/yourSammpleName.wav' })
+s = Sampler('http://127.0.0.1:8080/yourSammpleName.wav')
 
 /* Great! When you call .note on a Sampler, it
 ** doesn't use the default tuning system in
 ** gibber, instead it controls the rate the
 ** sample is played back at. Let's use a sample
-** on Gibber's server to experiment.
+** on Gibber's server to experiment. We can 
+** see a list of samples on the server by calling
+** Sampler.list() with our browser console open.
+** Make sure to scroll through the list! Entries
+** that end with .wav, .aif, or .mp3 are audiofiles
+** while other entries are directories.
 */
 
-s = Sampler({ filename:'resources/audiofiles/openhat.wav' })
+// show all samples
+Sampler.list()
+
+// show all samples in the cr7030 directory
+Sampler.list('cr7030')
+
+// show all samples in the dirt/juno directory
+Sampler.list('dirt/juno')
+
+// let's load one of thosee juno samples
+s = Sampler('dirt/juno/09_juno_pad_c_minor_filter.wav')
 
 // playback at normal rate
 s.note(1)
 
 // playback at 3x speed
 s.note(3)
+
+// let's try a sample that works well in reverse
+s = Sampler('openhat.wav')
 
 // playback in reverse
 s.note(-1)
@@ -60,7 +78,7 @@ s.note.seq( [3,3,-1],[1/4,1/4,1/2] )
 // control the rate property separately
 
 Gibber.clear()
-s = Sampler({ filename:'resources/audiofiles/openhat.wav' })
+s = Sampler('openhat.wav')
 s.trigger.seq( 1, 1/4 )
 s.rate = gen( 1 + cycle(1) * .75 )
 
@@ -72,16 +90,14 @@ s.rate.seq( [-1,1,2,-2,4,-4], Euclid(3,8) )
 // sample is played (range 0–1).
 
 Gibber.clear()
-s = Sampler({ filename:'resources/audiofiles/openhat.wav' })
+s = Sampler( 'openhat.wav' )
 s.trigger.seq( 1,1/4 )
 s.end.seq( [.05,.1,.2,.5], 1 )
 
-// OK, let's move on to the Multisampler, which
-// lets you load multiple files. Here's a quick
-// example using Gibber's drums samples:
-
+// We can also load multiple files on
+// initialization
 Gibber.clear()
-s = Multisampler({
+s = Sampler({
   files:[
     'resources/audiofiles/kick.wav',
     'resources/audiofiles/hat.wav',
@@ -90,26 +106,23 @@ s = Multisampler({
   ]
 })
 
-
 s.trigger.seq( 1,1/16 )
 // pick lets you choose which file is triggered
 // make sure you don't pick a number higher than
 // then number of samples you've loaded!
 s.pick.seq( Rndi(0,3) )
 
-// We've uploaded a few fun Multisampler presets
-// to play with. They are drums (same as above),
-// beatbox, cr7030, bleeps, and kicks. Each preset
-// has a length property that will tell you how
+// You can also easily load a directory of sounds.
+// Each sampler has a length property that will tell you how
 // many samples it contains. So, for example, if
 // we want to loop through all the kicks:
 
 Gibber.clear()
-s = Multisampler('kicks')
+s = Sampler('kicks')
 s.trigger.seq( 1, 1/16 )
 s.pick.seq( gen( beats(16) * s.length ) )
 
-// Note that in the 'kicks' preset there are
+// Note that in the 'kicks' directory there are
 // 90 files... this is why it makes sense
 // to run your own local webserver, so that
 // large directories of files can be loaded 
@@ -124,3 +137,4 @@ s.pick.seq( gen( beats(16) * s.length ) )
 s = Sampler[5]( 'kicks' )
 s.trigger.seq( 1, 1/16 )
 s.pick.seq( gen( beats(16) * s.length ) )
+s.spread(.95)

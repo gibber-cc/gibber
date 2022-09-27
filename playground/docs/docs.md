@@ -104,6 +104,56 @@ Any 3D geometry in gibber includes methods from this prototype.
 **modifiers** *object* (optional) - This optional object contains key/value pairs that modify the preset/texture passed as the first argument.
 
 
+# Misc
+## Rndi
+ This creates a function that outputs random integers within a given range; although the function is intended for use within sequences it can be called like any ordinary JavaScript function.
+ 
+#### Arguments ####
+### min ###
+*int* default: 0.  The (inclusive) minimum number the Rndi instance will output
+### max ###
+*int* default: 1.  The (inclusive) maximum number the Rndi instance will output
+### quantity ###
+*int* default: 1.  The number of integers to output. If the value is more than one an array will be returned, which is useful for sequencing random chords.
+### canRepeat ###
+*boolean* default: false.  If this value is false (the default) and quantity is higher than 1, the numbers will be unique, assuming that the range of possible integers is higher than the quantity requested.
+## Rndf
+ This creates a function that outputs random floats within a given range; although the function is intended for use within sequences it can be called like any ordinary JavaScript function.
+ 
+#### Arguments ####
+### min ###
+*float* default: 0.  The (inclusive) minimum number the Rndf instance will output
+### max ###
+*flaot* default: 1.  The (inclusive) maximum number the Rndf instance will output
+### quantity ###
+*int* default: 1.  The number of floats to output. If the value is more than one an array will be returned, which is useful for sequencing random chords.
+### canRepeat ###
+*boolean* default: false.  If this value is false (the default) and quantity is higher than 1, the numbers will be unique, assuming that the range of possible floats is higher than the quantity requested.
+## rndf
+ rndf is a function you can call to immediately output a random float (or array of floats) in a given range. As opposed to Rndf, which is intended for use in sequences, you might use rndf to randomly set a property value every time you execute the function.
+ 
+#### Arguments ####
+### min ###
+*float* default: 0.  The (inclusive) minimum of the output range.
+### max ###
+*float* default: 1.  The (inclusive) maximum number of the output range.
+### quantity ###
+*int* default: 1.  The number of floats to output. If the value is more than one an array will be returned.
+### canRepeat ###
+*boolean* default: false.  If this value is false (the default) and quantity is higher than 1, each number in the output will be unique, assuming that the range of possible floats is higher than the quantity requested.
+## rndi
+ rndi is a function you can call to immediately output a random int (or array of ints) in a given range. As opposed to Rndi, which is intended for use in sequences, you might use rndi to randomly set a property value every time you execute the function.
+ 
+#### Arguments ####
+### min ###
+*int* default: 0.  The (inclusive) minimum of the output range.
+### max ###
+*int* default: 1.  The (inclusive) maximum number of the output range.
+### quantity ###
+*int* default: 1.  The number of ints to output. If the value is more than one an array will be returned.
+### canRepeat ###
+*boolean* default: false.  If this value is false (the default) and quantity is higher than 1, each number in the output will be unique, assuming that the range of possible ints is higher than the quantity requested.
+
 # Instruments
 FM
 ----
@@ -843,6 +893,16 @@ A texture can be applied to a geometry in order to pattern its surface; it can a
 *float* default: 1.  The scale property determines the size, or resolution, of the texture. For example, when 'dots' texture is assigned to a cube with a scale of 10 there will be 10x10 dots on each side of the cube. A scale value of 1 will yiled a single dot centered on each side.
 
 # Postprocessing 
+Antialias
+----
+*Prototype: [postprocessing](#prototypes-postprocessing)*
+
+The Antialias effect smooths jagged edges in images using the Fast Approximate Anti-Aliasing (FXAA) algortihm. The construtor accepts a numerical argument which determines the number of times the algorithm will be applied; each application requires a complete render stage so it's best to use values < 10, or even < 5.
+
+
+#### Properties ####
+### Antialias.repetitions ###
+*int* default: 1.  How many times to apply the antialias effect. This property can *only be set in the constructor; it is not runtime editable.*
 Bloom
 ----
 *Prototype: [postprocessing](#prototypes-postprocessing)*

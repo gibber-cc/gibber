@@ -5,6 +5,7 @@ module.exports = function( Marker ) {
   'use strict'
 
   const ArrayExpression = function( patternNode, state, seq, patternType, container=null, index=0, isLookup=false ) {
+    if( Marker.enabled.selections === false ) return
     if( patternNode.processed === true ) return 
 
     const cm = state.cm

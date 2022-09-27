@@ -30,7 +30,7 @@ let cm, cmconsole, exampleCode,
           end = sel.end,
           start = sel.start
 
-        Gibber.Environment.share.commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code ])
+        Gibber.Environment.share.commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code, Gibber.Environment.share.username ])
       },
 
       runCode( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null, preview=false ) {
@@ -281,17 +281,20 @@ fm = FM({ feedback:.0015, decay:1/2 })
       const query = window.location.search.slice(1)
       const params = query.split('&')
       const code = params[0]
-      const auto = params[1] !== undefined && params[1].split('=')[1] === 'true' ? true : false    
-      const val = atob( code )
-      cm.setValue(val)
-      
-      if( auto ) {
-        cm.execCommand('selectAll')
-        environment.runCode( cm, false, true )
-        //cm.execCommand('undoSelection')
-        cm.setSelection({ line:0, ch:0 })
-        environment.togglemenu()
+      if( code.indexOf( 'show=' ) === -1 ) {
+        const auto = params[1] !== undefined && params[1].split('=')[1] === 'true' ? true : false    
+        const val = atob( code )
+        cm.setValue(val)
+        
+        if( auto ) {
+          cm.execCommand('selectAll')
+          environment.runCode( cm, false, true )
+          //cm.execCommand('undoSelection')
+          cm.setSelection({ line:0, ch:0 })
+          environment.togglemenu()
+        }
       }
+      // else share.js will launch spectator view of live performance
     }else{
       cm.setValue( defaultCode )
     }
@@ -335,6 +338,11 @@ fm = FM({ feedback:.0015, decay:1/2 })
       SDF.pause()
     }else if( SDF.cameraEnabled ) {
       SDF.keys[ e.key ] = 1
+    }else if( e.key === '.' && e.ctrlKey === true ) {
+      Gibber.clear()
+
+      for( let key of environment.proxies ) delete window[ key ]
+      environment.proxies.length = 0
     }
   })
   window.addEventListener( 'keyup', e => {
@@ -370,6 +378,12 @@ CodeMirror.keyMap.playground =  {
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
   },
+  'Shift-Ctrl-.'( cm ) {
+    Gibber.clear()
+
+    for( let key of environment.proxies ) delete window[ key ]
+    environment.proxies.length = 0
+  },
   //'Shift-Ctrl-C'(cm) { toggleSidebar() },
 
   "Shift-Ctrl-=": function(cm) {
@@ -386,4 +400,15 @@ CodeMirror.keyMap.playground =  {
     cm.refresh()
   },
         
+  'Shift-Ctrl-S'( cm ) {
+    const value = cm.getValue()
+    environment.Storage.values.savedText = value
+    environment.Storage.save()
+    console.log( 'code saved.' )
+  },
+  'Shift-Ctrl-L'( cm ) {
+    const value = environment.Storage.values.savedText
+    cm.setValue( value )
+    console.log( 'code loaded.' )
+  },
 }

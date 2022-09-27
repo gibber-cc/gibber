@@ -18,6 +18,13 @@ const Marker = {
 
   __visitors:require( './annotations/visitors.js' ),
 
+  enabled: {
+    selections: true,
+    comments:   true,
+    waveforms:  true,
+    binary:     true
+  },
+
   // pass Marker object to patternMarkupFunctions as a closure
   init() { 
     for( let key in this.patternMarkupFunctions ) {
@@ -31,7 +38,22 @@ const Marker = {
     Gibber.subscribe( 'clear', this.clear )
   },
 
-  clear() { Marker.waveform.clear() },
+  commentClasses: ['gibber_comment', 'euclid', 'hex'],
+
+  clear() { 
+    Marker.waveform.clear() 
+    Gibber.Environment.editor.getAllMarks().forEach( m => {
+      Marker.commentClasses.forEach( __class => {
+        if( m.className.indexOf( __class  ) > -1 ) {
+          const pos = m.find()
+          if( pos !== undefined )
+            m.doc.cm.replaceRange( '', pos.from, pos.to )
+        }
+      })
+      m.clear()
+    }) 
+    Gibber.Environment.editor.getAllMarks().forEach( m => m.clear() )
+  },
   
   prepareObject( obj ) {
     obj.markup = {
@@ -102,7 +124,7 @@ const Marker = {
       try{
         walk.recursive( node, state, Marker.visitors )
       }catch(e){
-        console.log( e ) 
+        Gibber.Environment.console.error( e.message, e ) 
       }
     })
 
@@ -363,6 +385,7 @@ const Marker = {
   patternMarkupFunctions: {
 
     __Tidal:            require( './annotations/markup/tidal.js' ),
+    __Mapping:          require( './annotations/markup/mapping.js' ),
     __Literal:          require( './annotations/markup/literal.js' ),
     __Identifier:       require( './annotations/markup/identifier.js' ),
     __UnaryExpression:  require( './annotations/markup/unaryExpression.js'  ),
@@ -424,7 +447,7 @@ const Marker = {
 
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
           if( itemClass !== null ) {
-            itemClass.textContent = pattern.values[ i ]
+            itemClass.textContent = pattern.values[ i ] !== -987654321 ? pattern.values[i] : '_'
             // check to see if a pattern has an onclick event, if so, assign it to value marker
             // since replacing .textContent seems to remove it (XXX I don't think this removal should occur?)
             if( pattern.__onclick !== null && pattern.__onclick !== undefined ) itemClass.onclick = pattern.__onclick
@@ -453,7 +476,7 @@ const Marker = {
           const itemClass = document.querySelector('.' + marker.className.split(' ')[0] )
           if( itemClass !== null ) {
             if( pattern.__onclick !== null && pattern.__onclick !== undefined ) itemClass.onclick = pattern.__onclick
-            itemClass.textContent = pattern.values[ 0 ]
+            itemClass.textContent = pattern.values[ 0 ] !== -987654321 ? pattern.values[0] : '_'
           }
         }
       }

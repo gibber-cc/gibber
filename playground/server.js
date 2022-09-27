@@ -1,21 +1,40 @@
 const WebSocket         = require( 'ws' ),
+      fs                = require( 'fs' ),
       http              = require( 'http' ),
       StaticServer      = require( 'node-static' ).Server,
-      setupWSConnection = require( 'y-websocket/bin/utils.js' ).setupWSConnection,
+      utils             = require( 'y-websocket/bin/utils.js' ),
+      express           = require( 'express' ),
+      app               = express(),
+      serveIndex        = require( 'serve-index' ),
+      setupWSConnection = utils.setupWSConnection,
       production        = process.env.PRODUCTION  != null,
       port              = process.env.SERVER_PORT || 9080 
 
 require( 'dotenv' ).config()
 
-const staticServer = new StaticServer( '.', { cache: production ? 3600 : false, gzip: production })
+//const staticServer = new StaticServer( '.', { cache: production ? 3600 : false, gzip: production })
 
-const server = http.createServer((request, response) => {
-  request.addListener( 'end', () => {
-    staticServer.serve( request, response )
-  }).resume()
+//const server = http.createServer((request, response) => {
+//  request.addListener( 'end', () => {
+//    staticServer.serve( request, response )
+//  }).resume()
+//})
+
+app.use( express.static( './', { 
+  setHeaders: function(res, path) {
+    res.set("Cross-Origin-Embedder-Policy", "require-corp")
+    res.set("Cross-Origin-Opener-Policy",   "same-origin")
+  }  
+}) )
+   
+app.use( function(req,res,next) {
+  fs.readdir( __dirname + req.url, function(err,files) {
+    res.json( files )
+    next() 
+  })
 })
 
-const wss = new WebSocket.Server({ server })
+const wss = new WebSocket.Server({ server:app })
 
 const rooms = {}
 
@@ -35,6 +54,6 @@ wss.on('connection', (conn, req) => {
   //}
 })
 
-server.listen( port )
+app.listen( port )
 
 console.log(`Listening to http://localhost:${port} ${production ? '(production)' : ''}`)

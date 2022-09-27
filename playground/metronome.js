@@ -33,7 +33,9 @@ const Metronome = {
     if( __beat !== Metronome.beat ) {
       Metronome.draw( __beat, 4 )
       Metronome.beat = __beat
+      Gibber.publish( 'metronome.tick', __beat )
     }
+
   },
   
   init( __Gibber ) {

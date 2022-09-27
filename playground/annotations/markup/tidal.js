@@ -12,7 +12,7 @@ module.exports = function( Marker ) {
 
     const cm       = state.cm,
           target   = tidal.target, // XXX seq.object for gibberwocky
-          pattern  = tidal.__pattern.__data,
+          pattern  = tidal.__pattern,
           markers  = {},
           line     = node.loc.start.line - 1 + node.offset.vertical,
           startCol = node.loc.start.column,
@@ -23,77 +23,70 @@ module.exports = function( Marker ) {
     tidal.__isEditing = false
     tidal.markers = []
     let annotationsAreFrozen = false
+    let mod = 0
 
-    // this function recursively marks each number or string token in the pattern
-    const markPattern = pattern => {
-      if( pattern.type === 'repeat' ) {
-        markPattern( pattern.value )
-      }else if( pattern.values !== undefined ) {
-        // recursively mark patterns
-        pattern.values.forEach( markPattern )
-      }else if( pattern.left !== undefined ) { // polymeter
-        markPattern( pattern.left )
-        markPattern( pattern.right )
-      }else if( pattern.value !== undefined ) {
-        let val = pattern.value //typeof pattern.value === 'string' ? pattern.value.trim() : pattern.value
-        let uid = pattern.uid
-
-        while( typeof val !== 'string' && typeof val !== 'number' && val !== undefined && val !== '?' ) {
-          const __store = val
-
-          // get, for example, uids of values in repeat patterns
-          uid = val.uid
-          val = val.values || val.value
-          
-          if( val === undefined ) console.warn( 'tidal annotation leads to undefined:', __store )
-
-          if( typeof val === 'function' ) {
-            if( Array.isArray( __store ) ) {
-              __store.forEach( markPattern )
-              return
-            }
-          }
-        }
-
-        if( typeof val === 'string' ) val = val.trim()
-
-        const loc = pattern.location
-        if( shouldTrim( pattern.type ) ) {
-          const len = typeof val === 'string' ? val.length : (''+val).length
-          
-          // check for whitespace and trim accordingly
-          if( len < loc.end.column - loc.start.column ){
-            loc.end.column = loc.start.column + len
-          }
-        }
-
-        const className = `tidal-${tidal.uid}-${uid}`
-        
-        const lineModY = node.loc.start.line === node.loc.end.line ? -1 : 0
-        const lineModX = node.loc.start.line === node.loc.end.line ? node.loc.start.column : -1
-
-        const tokenStart = { line:line + loc.start.line + lineModY, ch:lineModX + loc.start.column }
-        const tokenEnd   = { line:line + loc.end.line   + lineModY, ch:lineModX + loc.end.column } 
-
-        const marker = cm.markText( 
-          tokenStart, 
-          tokenEnd,  
-          { className: className+' cm-number tidal' } 
-        )
-
-        markers[ className ] = pattern
-        
-        pattern.cycle = Marker._createBorderCycleFunction( className, pattern )
-        pattern.type = 'tidal'
-        pattern.marker = marker
+    const markElement = ele => {
+      if( ele.type_ === 'pattern' ) {
+        const elements = ele.source_
+        elements.forEach( markElement )
+        return
       }
-    }
+      const className = `tidal-${tidal.uid}-${ele.location_.start.column}`,
+            loc = ele.location_,
+            value = ele.source_
 
+      if( value.type_ === 'pattern' ) {
+        const elements = value.source_
+        elements.forEach( markElement )
+        return
+      }
+      
+      
+      let   trimmedValue = value.trim(),
+            lineModY = node.loc.start.line === node.loc.end.line ? -1 : 0,
+            lineModX = node.loc.start.line === node.loc.end.line ? node.loc.start.column-1 : 0
+
+      lineModX += mod
+      mod = 0
+      const tokenStart = { 
+        line:line + loc.start.line + lineModY, 
+        ch:lineModX + loc.start.column 
+      }
+
+      const tokenEnd   = { 
+        line:line + loc.end.line + lineModY, 
+        ch:lineModX + loc.start.column + trimmedValue.length  
+      } 
+
+      const marker = cm.markText( 
+        tokenStart, 
+        tokenEnd,  
+        { className: className+' cm-number tidal' } 
+      )
+
+      markers[ className ] = pattern
+
+      pattern.cycle = Marker._createBorderCycleFunction( className, pattern )
+      pattern.type = 'tidal'
+      pattern.marker = marker
+
+      if( ele.options_ !== null ) mod++
+    }
+    
+    const markPattern = pattern => {
+      const ast = pattern.ast[0]
+      const elements = ast.source_
+      //console.log( elements[0].loc.start.column )
+
+      elements.forEach( markElement )
+      mod = 0
+    }
+     
     const clearCycle = name => {
       if( markers[ name ] ) {
         let cycle = markers[ name ].cycle
         cycle.tm = setTimeout( function() {
-          cycle.clear()
+          //cycle.clear()
           $( '.' + name ).remove( 'tidal-bright' )
         }, 250 )
       }
@@ -181,7 +174,7 @@ module.exports = function( Marker ) {
       }
     }
 
-    const cssName = 'tidal_'+pattern.uid 
+    const cssName = 'tidal_'+ tidal.uid 
 
     Marker.arrayPatterns[ cssName ] = tidal.__onclick
     
@@ -205,15 +198,23 @@ module.exports = function( Marker ) {
 
       $( '.' + name ).add( 'tidal-bright' ) 
 
-      const cycle = markers[ name ].cycle
+      //const marker = markers[ name ]
+      //let cycle = null
+      //if( marker !== undefined ) cycle = marker.cycle
+      //if( cycle === null ) return
+      //if( cycle.tm !== undefined ) {
+      //  clearTimeout( cycle.tm )
+      //  cycle.tm = undefined
+      //}
 
-      if( cycle.tm !== undefined ) clearTimeout( cycle.tm )
-
-      cycle() 
-      clearCycle( name )
+      //cycle() 
+      //clearCycle( name )
+      setTimeout( ()=> {
+        $( '.' + name ).remove( 'tidal-bright' ) 
+      }, 125 )
     }
 
-    tidal.update.uid = pattern.uid
+    tidal.update.uid = 0
 
     markPattern( pattern )
 

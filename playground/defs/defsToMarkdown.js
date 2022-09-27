@@ -42,12 +42,13 @@ const displayMethods = function( obj, __text ) {
   return __text + text
 }
 
-const displayProperties = function( obj, __text ) {
+const displayProperties = function( obj, __text, propertiesText='Properties' ) {
   let text = ''
   if( obj.properties !== undefined ) {
     text = `
-#### Properties ####
+#### ${propertiesText} ####
 `
+    const __name = propertiesText==='Properties' ? obj.name + '.' : ''
     for( let name in obj.properties ) {
       const property = obj.properties[ name ]
       const __default = property.default !== undefined ? `default: ${property.default}` : ''
@@ -58,7 +59,7 @@ const displayProperties = function( obj, __text ) {
           : `${__default}. `
         : ''
       
-      text +=`### ${obj.name}.${name} ###\n`
+      text +=`### ${__name}${name} ###\n`
       text += `*${property.type}* ${meta} ${property.doc}\n`
     }
   }
@@ -84,6 +85,15 @@ for( let proto of gibberDef.prototypes.graphics ) {
   text = displayHeader( proto, text )
   text = displayMethods( proto, text )
   text = displayProperties( proto, text )  
+}
+
+text += `
+# Misc
+`
+
+for( let misc of gibberDef.common ) {
+  text += `## ${misc.name}\n ${misc.doc}\n `
+  text = displayProperties( misc, text, 'Arguments' )
 }
 
 text += `

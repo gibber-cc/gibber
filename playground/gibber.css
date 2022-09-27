@@ -40,6 +40,7 @@
 }
 
 body { 
+  height:100%; /* needed for calls to calc() in child elements */
   margin: 0;
   color:#ddd;
   font-family: Helvetica Neue, sans-serif;
@@ -452,6 +453,19 @@ span.tidalblock {
 .rangeInside {
   color:rgba(102, 153, 221, 1) !important;
 }
+
+.mapping-start::before {
+  content: '\26EF';
+  position:absolute;
+  left: 0px;
+  top:-.5em;
+}
+
+.ms-0::before { color:rgb(137, 138, 166) }
+.ms-1::before { color:rgb(201, 187, 207) }
+.ms-2::before { color:rgb(183, 211, 223) }
+.ms-3::before { color:rgb(214, 239, 237) }
+
 
 .cm-s-default .rangeOutside { color: #666 }
 

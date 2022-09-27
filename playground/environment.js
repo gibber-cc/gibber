@@ -7,6 +7,8 @@ const Gibber        = require( 'gibber.core.lib' ),
       Metronome     = require( './metronome.js' ),
       Editor        = require( './editor.js' ),
       Share         = require( './share.js' ),
+      Storage       = require( './storage.js' ),
+      Collab        = require( './collab.js' ),
       setupExamples = require( './examples.js' ),
       __Console       = require( './console.js' )
       //Gibberwocky   = require( 'gibberwocky' )
@@ -19,6 +21,7 @@ window.Gibber = Gibber
 
 window.onload = function() {
   [cm,environment] = Editor( Gibber )
+  Gibber.extensions = {}
 
   const theme = new Theme()
   theme.install( document.body )
@@ -27,6 +30,9 @@ window.onload = function() {
   environment.useComments = true
 
   environment.console = window.Console = __Console( environment )
+  environment.Storage = Storage
+  
+  Storage.init()
 
   const themename = localStorage.getItem('themename')
 
@@ -54,6 +60,8 @@ window.onload = function() {
   ]).then( ()=> {
     Gibber.Audio.Theory.__loadingPrefix = './resources/tune.json/' 
     Gibber.export( window ) 
+
+    addSamplerExtensions( Gibber )
 
     window.future = function( fnc, time, dict ) {
       Gibber.Audio.Gibberish.utilities.future( fnc, Clock.btos(time*4), dict )
@@ -256,7 +264,9 @@ window.onload = function() {
     Console.log( 
       '%cgibber is now running. thanks for playing!', 
       `color:black;background:white; width:100%` 
-    ) 
+    )
+
+    Storage.runUserSetup()
   }) 
 
   environment.editor = cm
@@ -275,46 +285,13 @@ window.onload = function() {
     }
   }
 
-  const rpad = function( value, pad ) {
-    let out = value+''
-    const len = (value + '').length
-
-    if( len < pad ) {
-      for( let i = pad - len; i > 0; i-- ) {
-        out += '&nbsp;'
-      }
-    }else if( len > pad ) {
-      out = out.slice( 0, pad )
-    }
-
-    return out
-  }
-
-  environment.showStats = function() {
-    const display = document.createElement('div')
-    display.setAttribute( 'id', 'stats' )
-    document.body.appendChild( display )
-    
-    const statsCallback = function() {
-      window.requestAnimationFrame( statsCallback )
-      let txt = '|&nbsp;'
-      if( Environment.sounds !== undefined && Environment.sounds !== null ) {
-        Object.entries( Environment.sounds ).forEach( arr => {
-          let value = arr[1].__out
-          if( value < .001 ) value = '0.000' 
-          value = rpad( value, 5 )
-          txt += `${arr[0]}:${value}&nbsp;|&nbsp;` 
-        })
-
-        display.innerHTML = txt
-      } 
-    }
-    window.requestAnimationFrame( statsCallback )
-  }
-
+  
   environment.Annotations = environment.codeMarkup 
   
   Gibber.Environment = environment
+
+  Collab( Gibber, environment )
+
 
   setupExamples()
   setupThemeMenu()
@@ -322,7 +299,63 @@ window.onload = function() {
   setupRestartBtn()
 }
 
+// these extensions are specific for the gibber server
+// and won't work unless you're using it or some other
+// middleware (like serve-index) to serve directory indexes
+const exts = ['wav','aif','mp3','aiff']
+const ignore = ['txt','md', 'git']
+const addSamplerExtensions = function( Gibber ) {
+  Gibber.Audio.instruments.Sampler.list = function( dir=null ) {
+    let url = '../resources/audiofiles' 
+    url += dir === null ? '' : '/'+dir 
+    fetch( url )
+    .then( res => res.json() )
+    .then( json => {
+      const filtered = json.filter( v => ignore.indexOf(v.split('.').pop()) === -1 )
+      console.table( filtered )
+    })
+  }
 
+  // this extension is added to individual instances inside
+  // of gibber.audio.lib/instruments.js
+  //Gibber.Audio.instruments.extensions.Sampler = {
+  Gibber.extensions.Sampler = {
+    load( name ='' ) {
+      const ext = name.split('.').pop()
+      const isDir = exts.findIndex( v => v===ext ) === -1
+      let url
+
+      // if absolute path is used...
+      if( name.indexOf('http') > -1 ) {
+        url = name
+      }else{
+        // ... otherwise use gibber's standard locations
+        url = isDir ? '../resources/audiofiles/' + name : './resources/audiofiles/' + name
+      }
+
+      if( !isDir ) {
+        this.loadSample( url )
+      }else{
+        fetch( url )
+          .then( res =>  res.json() )
+          .then( data => {
+            const filtered = data.filter( v => exts.indexOf(v.split('.').pop()) > -1 )
+            filtered.forEach( file => {
+              const url = `./resources/audiofiles/${name}/${file}` 
+              // different names for sampler / multisampler... sigh
+              if( this.loadFile !== undefined ) 
+                this.loadFile( url )
+              else
+                this.loadSample( url )
+            })
+            this.length = data.length
+          })
+      }
+    }
+
+  }
+
+}
 
 // shouldRunNetworkCode is used to prevent recursive ws sending of code
 // while isNetworked is used to test for acive ws connection
@@ -724,43 +757,43 @@ window.wait = function() {
 }
 
 window.__Gibberwocky = function() {
+  Gibber.Audio.Gibberish.worklet.port.postMessage({
+    address:'eval',
+    code:`Gibberish.scheduler.shouldSync = true; Gibberish.isPlaying = false`
+  })
 
-Gibber.Audio.Gibberish.worklet.port.postMessage({
-  address:'eval',
-  code:`Gibberish.scheduler.shouldSync = true; Gibberish.isPlaying = false`
-})
+  Gibber.shouldDelay = Gibber.Audio.shouldDelay = false
 
-Gibber.shouldDelay = Gibber.Audio.shouldDelay = false
-
-Gibber.ws = new WebSocket('ws://localhost:8082')
- 
-setTimeout( function() {
-  Gibber.ws.onmessage = function( data ) {
-    //console.log( data.data )
-    if( data.data.indexOf( 'bit 1' ) > -1 ) {
-      Gibber.Audio.Gibberish.worklet.port.postMessage({
-        address:'eval',
-        code:'if( Gibberish.isPlaying === true ) Gibberish.scheduler.shouldSync = false'
-      })
-    }else if( data.data.indexOf( 'ply 1' ) > -1 ) {
-      console.log( 'play' )
-      //Environment.metronome.clear()
-      //Environment.metronome.beat = 0
-      Gibber.Audio.Gibberish.worklet.port.postMessage({
-        address:'eval',
-        code:'Gibberish.isPlaying = true;'
-      })
-    }else if( data.data.indexOf( 'ply 0' ) > -1 ) {
-      console.log( 'stop' )
-      Environment.metronome.clear()
-      Gibber.Audio.Gibberish.worklet.port.postMessage({
-        address:'eval',
-        code:'Gibberish.isPlaying = false; Gibberish.scheduler.shouldSync = true;' //Gibberish.Clock.beatCount = 0;'
-      })
-    }else if( data.data.indexOf( 'bpm' ) > -1 ) {
-      Clock.bpm = data.data.split(' ')[2]
+  Gibber.ws = new WebSocket('ws://localhost:8082')
+   
+  setTimeout( function() {
+    Gibber.ws.onmessage = function( data ) {
+      //console.log( data.data )
+      if( data.data.indexOf( 'bit 1' ) > -1 ) {
+        Gibber.Audio.Gibberish.worklet.port.postMessage({
+          address:'eval',
+          code:'if( Gibberish.isPlaying === true ) Gibberish.scheduler.shouldSync = false'
+        })
+      }else if( data.data.indexOf( 'ply 1' ) > -1 ) {
+        console.log( 'play' )
+        //Environment.metronome.clear()
+        //Environment.metronome.beat = 0
+        Gibber.Audio.Gibberish.worklet.port.postMessage({
+          address:'eval',
+          code:'Gibberish.isPlaying = true;'
+        })
+      }else if( data.data.indexOf( 'ply 0' ) > -1 ) {
+        console.log( 'stop' )
+        Environment.metronome.clear()
+        Gibber.Audio.Gibberish.worklet.port.postMessage({
+          address:'eval',
+          code:'Gibberish.isPlaying = false; Gibberish.scheduler.shouldSync = true;' //Gibberish.Clock.beatCount = 0;'
+        })
+      }else if( data.data.indexOf( 'bpm' ) > -1 ) {
+        Clock.bpm = data.data.split(' ')[2]
+      }
     }
-  }}, 250 )
+  }, 250 )
 }
 
 

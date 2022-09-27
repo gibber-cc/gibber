@@ -23,7 +23,7 @@ module.exports = ( patternObject, marker, className, cm ) => {
 
       if( patternObject.commentMarker ) patternObject.commentMarker.clear()
 
-      patternObject.commentMarker = cm.markText( pos.from, end, { className, atomic:false })
+      patternObject.commentMarker = cm.markText( pos.from, end, { className:className + ' gibber_comment', atomic:false })
 
     }
 
@@ -34,7 +34,9 @@ module.exports = ( patternObject, marker, className, cm ) => {
         cm.replaceRange( '', commentPos.from, commentPos.to )
         patternObject.commentMarker.clear()
         delete patternObject.commentMarker
-      } catch( e ) {} // yes, I just did that XXX 
+      } catch( e ) {
+        console.error( e )
+      } // yes, I just did that XXX 
     }
 
     out = update

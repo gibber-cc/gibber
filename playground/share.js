@@ -18,12 +18,14 @@ const share = {
           ),
           chatData = ydoc.getArray( 'chat' + room ),
           userData = ydoc.getArray( 'user' + room ),
+          scrollData = ydoc.getArray( 'scroll' + room ),
           commands = ydoc.getArray( 'commands' + room ),
           socket   = provider.ws
 
     if( useSharedEditor ) {
       yText = ydoc.getText( 'codemirror' + room ),
       binding = new CodemirrorBinding( yText, editor, provider.awareness )
+
       binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
     }else{
       yText = null 
@@ -37,10 +39,149 @@ const share = {
       if( clearEditor ) editor.setValue('')
     }
 
-    return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData, clear }
+    share.username = username
+
+    return { provider, ydoc, yText, Y, socket, binding, chatData, commands, userData, clear, scrollData }
+  },
+
+  spectator() {
+    const url = window.location.toString()
+    if( url.indexOf( '?show=' ) === -1 ) return
+
+    const arr = url.split('?show=')
+    const showid = arr[1]
+    const username = 'spectator'
+    const networkConfig = Environment.networkConfig
+    const environment = Environment
+    const useSharedEditor = false
+    const roomname = showid
+
+    const { 
+      socket, 
+      provider, 
+      binding,
+      chatData, 
+      commands, 
+      userData, 
+      scrollData,
+      clear, 
+      ydoc 
+    } = share.initShare(
+      Environment.editor, 
+      'spectator', 
+      showid,
+      false
+    )
+
+    share.clear = clear
+    share.commands = commands
+
+    __socket = socket
+    networkConfig.isNetworked = true
+
+    window.socket = socket
+    window.binding = binding
+    window.provider = provider
+    window.chatData = chatData
+    window.commands = commands
+    window.username = username
+    window.Gabber = { clear }
+
+    commands.observe( e => {
+      if( e.transaction.local === false ) {
+        // XXX only process last change, should we process all changes?
+        // if we did this would allow late users to potentially "catch up"
+        // with a performance...
+
+        // make sure there commands to run...
+        if( e.changes.delta.length > 0 ) {
+          const inserts = e.changes.delta[0].insert
+          for( let i = inserts.length - 1; i > 0; i -= 6 ) {
+            const arr = e.changes.delta[0].insert.slice( i-5, i+1 )
+            const code = {
+              selection:{
+                start: { line:arr[0], ch:arr[1] },
+                end:   { line:arr[2], ch:arr[3] }
+              },
+              code: arr[4]
+            }
+
+            const cm = share.editors[ arr[5] ]
+            environment.runCode( cm, false, true, false, code )
+          }
+        }
+      }
+    })
+
+    chatData.observe( e => {
+      const msgs = e.changes.delta[0].insert
+      for( let i = msgs.length-1; i>=0; i-- ) {
+        const msg = msgs[ i ]
+
+        makeMsg( msg.username, msg.value )
+      }
+    })
+
+    scrollData.observe( e => {
+      const msgs = e.changes.delta[0].insert
+      if( msgs === undefined ) return
+
+      for( let i = msgs.length-1; i>=0; i-- ) {
+        const msg = msgs[ i ]
+
+        if( msg !== undefined && msg.username !== 'spectator' ) {
+          if( share.editors[ msg.username ] !== undefined ) {
+            share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+          }
+        }
+      }
+    })
+    ydoc.scrollData = scrollData
+
+    const users = []
+    userData.observe( e => {
+      //const delta = e.changes.delta[0]
+      //if( delta !== undefined ) {
+        //const msgs = e.changes.delta[0].insert
+        const msgs = e.changes.added
+        //if( msgs !== undefined ) {
+          //for( let i = msgs.length-1; i>=0; i-- ) {
+        for( let msg of msgs ) {
+          //const msg = msgs[ i ]
+          const __username = msg.content.arr[0].username
+          if( users.indexOf( __username ) === -1 && __username !== 'spectator' ) {
+            users.push( __username )
+            if( useSharedEditor === false ) {
+              share.createSplits( __username, users, ydoc, roomname, username )
+            }
+          }
+        }
+    })
+    environment.showArgHints = false
+    environment.showCompletions = false
+    environment.annotations = false 
+    
+    //document.querySelector('.CodeMirror-scroll').removeEventListener( 'click', blurfnc )
+
+    //if( shouldShowChat ) {
+    //  share.createChatWindow()
+    //  share.chatDisplayed = true
+    //}else{
+    //  Environment.CodeMirror.keyMap.playground['Ctrl-M'] = cm => share.quickmsg( Environment.editor, false, true  )
+    //  share.chatDisplayed = false
+    //}
+
+    __connected = true
+
+    window.alert( `Welcome to gibber performance ${roomname}! You must close this dialog box and then click in the gibber interface to begin watching the performance. You'll see the metronome start running in the upper left corner of the window after clicking in the interface, and hopefully the performers will begin coding shortly. Enjoy the show!` )
+
+    return true
+
+
   },
 
   setupShareHandler( cm, environment, networkConfig ) {
+    share.spectator()
     document.querySelector('#connect').onclick = function() {
       const closeconnect = function() {
         const shouldShowChat  = document.querySelector('#showChat').checked,
@@ -48,7 +189,7 @@ const share = {
               username = document.querySelector( '#connectname' ).value,  
               roomname = document.querySelector( '#connectroom' ).value
 
-        const { socket, provider, binding, chatData, commands, userData, clear, ydoc } = share.initShare(
+        const { socket, provider, binding, chatData, commands, userData, scrollData, clear, ydoc } = share.initShare(
           cm, 
           username, 
           roomname,
@@ -57,7 +198,8 @@ const share = {
         share.clear = clear
         share.commands = commands
 
-        userData.unshift([{ username }])
+        if( username !== 'spectator' )
+          userData.unshift([{ username }])
 
         __socket = socket
         networkConfig.isNetworked = true
@@ -79,8 +221,8 @@ const share = {
             // make sure there commands to run...
             if( e.changes.delta.length > 0 ) {
               const inserts = e.changes.delta[0].insert
-              for( let i = inserts.length - 1; i > 0; i -= 5 ) {
-                const arr = e.changes.delta[0].insert.slice( i-4, i+1 )
+              for( let i = inserts.length - 1; i > 0; i -= 6 ) {
+                const arr = e.changes.delta[0].insert.slice( i-5, i+1 )
                 const code = {
                   selection:{
                     start: { line:arr[0], ch:arr[1] },
@@ -104,6 +246,22 @@ const share = {
           }
         })
 
+        scrollData.observe( e => {
+          const msgs = e.changes.delta[0].insert
+          if( msgs === undefined ) return
+          for( let i = msgs.length-1; i>=0; i-- ) {
+            const msg = msgs[ i ]
+
+            if( msg !== undefined && msg.username !== 'spectator' ) {
+              if( share.editors[ msg.username ] !== undefined ) {
+                share.editors[ msg.username ].scrollTo( msg.left, msg.top )
+              }
+            }
+          }
+        })
+
+        ydoc.scrollData = scrollData
+
         const users = []
         userData.observe( e => {
           //console.log( e.changes )
@@ -116,7 +274,7 @@ const share = {
             for( let msg of msgs ) {
               //const msg = msgs[ i ]
               const __username = msg.content.arr[0].username
-              if( users.indexOf( __username ) === -1 ) {
+              if( users.indexOf( __username ) === -1 && __username !== 'spectator' ) {
                 users.push( __username )
                 if( useSharedEditor === false ) {
                   share.createSplits( __username, users, ydoc, roomname, username )
@@ -180,9 +338,10 @@ const share = {
   },
 
   createSplits( mostRecentUser, usernames, ydoc, roomname, username ) {
+    if( mostRecentUser === 'spectator' ) return
     let grid = [[]]
 
-    if( usernames.indexOf( window.username ) === -1 ) usernames.unshift( window.username )
+    if( usernames.indexOf( window.username ) === -1 && window.username !== 'spectator' ) usernames.unshift( window.username )
     
     switch( usernames.length ) {
       case 2: grid[0] = [usernames[0], usernames[1]]; break; 
@@ -203,6 +362,36 @@ const share = {
         grid[1] = [usernames[2], usernames[3], usernames[5]]
         break
 
+      case 7:
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[7]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        break
+
+      case 8:
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[7]]
+        grid[1] = [usernames[2], usernames[3], usernames[5], usernames[8]]
+        break
+
+      case 9:
+        grid[0] = [usernames[0], usernames[1], usernames[4]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        grid[2] = [usernames[6], usernames[7], usernames[8]]
+        break
+      case 10:
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[9]]
+        grid[1] = [usernames[2], usernames[3], usernames[5]]
+        grid[2] = [usernames[6], usernames[7], usernames[8]]
+        break
+      case 11:
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[9]]
+        grid[1] = [usernames[2], usernames[3], usernames[5], usernames[10]]
+        grid[2] = [usernames[6], usernames[7], usernames[8]]
+        break
+      case 12:
+        grid[0] = [usernames[0], usernames[1], usernames[4], usernames[9]]
+        grid[1] = [usernames[2], usernames[3], usernames[5], usernames[10]]
+        grid[2] = [usernames[6], usernames[7], usernames[8], usernames[11]]
+        break
       default:
         grid[0][0] = mostRecentUser
         // 1 user, do nothing
@@ -219,6 +408,8 @@ const share = {
           height = editor.offsetHeight,
           editorHeight = height / grid.length
 
+    share.editors = {}
+
     let count = 0, rowCount = 0
     for( let row of grid ) {
       const rowcount = row.length,
@@ -226,8 +417,10 @@ const share = {
 
       let cellCount = 0
       for( let cell of row ) {
+        count++
         const id = 'cell'+count++
         const div = document.createElement('div')
+        div.setAttribute( 'user', cell )
         div.setAttribute( 'width', editorWidth )
         div.setAttribute( 'height', editorHeight )
         div.setAttribute( 'id', id )
@@ -241,6 +434,7 @@ const share = {
         if( cellCount !== 0 ) style +=  'border-left-width:1px;'
         div.style = style
         div.editor = cm
+        share.editors[ cell ] = cm
 
         const namediv = document.createElement('div')
         namediv.innerText = cell
@@ -249,6 +443,12 @@ const share = {
         div.appendChild( namediv )
         const yText = ydoc.getText( 'codemirror' + roomname + cell )
         const binding = new CodemirrorBinding( yText, div.editor, provider.awareness )
+        binding.on( 'cursorActivity', editor => {
+          const scrollInfo = div.editor.getScrollInfo()
+          ydoc.scrollData.unshift([
+            { username, left:scrollInfo.left, top:scrollInfo.top }
+          ])
+        })
         binding.awareness.setLocalStateField( 'user', { color: '#008833', name:username  })
 
         cellCount++
@@ -257,8 +457,9 @@ const share = {
       rowCount++
     }
 
+
+    Environment.annotations = false
     share.grid = grid
-    
   },
 
   createChatWindow() {
