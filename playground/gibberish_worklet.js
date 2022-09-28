@@ -647,8 +647,7 @@ module.exports = ( _props ) => {
     if( usingWorklet === true && ugen.node !== null ) {
       ugen.node.port.postMessage({ key:'set', idx:ugen.memory.value.idx, value:ugen.max })
     }else{
-      if( gen.memory && gen.memory.heap )
-        gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
+      gen.memory.heap[ ugen.memory.value.idx ] = ugen.max 
     }
   }
 
@@ -2160,7 +2159,7 @@ gen.__proto__ = new EE()
 
 module.exports = gen
 
-},{"events":156,"memory-helper":81}],34:[function(require,module,exports){
+},{"events":155,"memory-helper":158}],34:[function(require,module,exports){
 'use strict'
 
 let gen  = require('./gen.js')
@@ -4732,99 +4731,6 @@ module.exports = ( in1, min=0, max=1 ) => {
 }
 
 },{"./floor.js":30,"./gen.js":33,"./memo.js":45,"./sub.js":72}],81:[function(require,module,exports){
-'use strict';
-
-var MemoryHelper = {
-  create: function create() {
-    var size = arguments.length <= 0 || arguments[0] === undefined ? 4096 : arguments[0];
-    var memtype = arguments.length <= 1 || arguments[1] === undefined ? Float32Array : arguments[1];
-
-    var helper = Object.create(this);
-
-    Object.assign(helper, {
-      heap: new memtype(size),
-      list: {},
-      freeList: {}
-    });
-
-    return helper;
-  },
-  alloc: function alloc(amount) {
-    var idx = -1;
-
-    if (amount > this.heap.length) {
-      throw Error('Allocation request is larger than heap size of ' + this.heap.length);
-    }
-
-    for (var key in this.freeList) {
-      var candidateSize = this.freeList[key];
-
-      if (candidateSize >= amount) {
-        idx = key;
-
-        this.list[idx] = amount;
-
-        if (candidateSize !== amount) {
-          var newIndex = idx + amount,
-              newFreeSize = void 0;
-
-          for (var _key in this.list) {
-            if (_key > newIndex) {
-              newFreeSize = _key - newIndex;
-              this.freeList[newIndex] = newFreeSize;
-            }
-          }
-        }
-        
-        break;
-      }
-    }
-    
-    if( idx !== -1 ) delete this.freeList[ idx ]
-
-    if (idx === -1) {
-      var keys = Object.keys(this.list),
-          lastIndex = void 0;
-
-      if (keys.length) {
-        // if not first allocation...
-        lastIndex = parseInt(keys[keys.length - 1]);
-
-        idx = lastIndex + this.list[lastIndex];
-      } else {
-        idx = 0;
-      }
-
-      this.list[idx] = amount;
-    }
-
-    if (idx + amount >= this.heap.length) {
-      throw Error('No available blocks remain sufficient for allocation request.');
-    }
-    return idx;
-  },
-  free: function free(index) {
-    if (typeof this.list[index] !== 'number') {
-      throw Error('Calling free() on non-existing block.');
-    }
-
-    this.list[index] = 0;
-
-    var size = 0;
-    for (var key in this.list) {
-      if (key > index) {
-        size = key - index;
-        break;
-      }
-    }
-
-    this.freeList[index] = size;
-  }
-};
-
-module.exports = MemoryHelper;
-
-},{}],82:[function(require,module,exports){
 "use strict";
 
 var ugen = require('../ugen.js');
@@ -4836,7 +4742,7 @@ Object.assign(analyzer, {
 });
 module.exports = analyzer;
 
-},{"../ugen.js":153}],83:[function(require,module,exports){
+},{"../ugen.js":152}],82:[function(require,module,exports){
 "use strict";
 
 module.exports = function (Gibberish) {
@@ -4866,7 +4772,7 @@ module.exports = function (Gibberish) {
   return analyzers;
 };
 
-},{"./follow.dsp.js":84,"./singlesampledelay.js":85}],84:[function(require,module,exports){
+},{"./follow.dsp.js":83,"./singlesampledelay.js":84}],83:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -5074,7 +4980,7 @@ module.exports = function (Gibberish) {
   return Follow;
 };
 
-},{"../ugen.js":153,"./analyzer.js":82,"genish.js":40}],85:[function(require,module,exports){
+},{"../ugen.js":152,"./analyzer.js":81,"genish.js":40}],84:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -5195,7 +5101,7 @@ module.exports = function (Gibberish) {
   };
 };
 
-},{"../ugen.js":153,"../workletProxy.js":155,"./analyzer.js":82,"genish.js":40}],86:[function(require,module,exports){
+},{"../ugen.js":152,"../workletProxy.js":154,"./analyzer.js":81,"genish.js":40}],85:[function(require,module,exports){
 "use strict";
 
 var ugen = require('../ugen.js'),
@@ -5227,7 +5133,7 @@ module.exports = function (Gibberish) {
   return AD;
 };
 
-},{"../ugen.js":153,"genish.js":40}],87:[function(require,module,exports){
+},{"../ugen.js":152,"genish.js":40}],86:[function(require,module,exports){
 "use strict";
 
 var ugen = require('../ugen.js'),
@@ -5269,7 +5175,7 @@ module.exports = function (Gibberish) {
   return ADSR;
 };
 
-},{"../ugen.js":153,"genish.js":40}],88:[function(require,module,exports){
+},{"../ugen.js":152,"genish.js":40}],87:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js');
@@ -5309,7 +5215,7 @@ module.exports = function (Gibberish) {
   return Envelopes;
 };
 
-},{"./ad.js":86,"./adsr.js":87,"./ramp.js":89,"genish.js":40}],89:[function(require,module,exports){
+},{"./ad.js":85,"./adsr.js":86,"./ramp.js":88,"genish.js":40}],88:[function(require,module,exports){
 "use strict";
 
 var ugen = require('../ugen.js'),
@@ -5343,7 +5249,7 @@ module.exports = function (Gibberish) {
   return Ramp;
 };
 
-},{"../ugen.js":153,"genish.js":40}],90:[function(require,module,exports){
+},{"../ugen.js":152,"genish.js":40}],89:[function(require,module,exports){
 "use strict";
 
 /**
@@ -5481,7 +5387,7 @@ var AWPF = function (self = window, bufferSize = 4096) {
 
 module.exports = AWPF;
 
-},{"./realm.js":93}],91:[function(require,module,exports){
+},{"./realm.js":92}],90:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -11311,7 +11217,7 @@ exports.mini = mini;
 exports.minify = minify;
 exports.patternifyAST = patternifyAST;
 
-},{}],92:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 "use strict";
 
 /*
@@ -11442,7 +11348,7 @@ HeapQueue.prototype.pop = function () {
 
 module.exports = HeapQueue;
 
-},{}],93:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 "use strict";
 
 /**
@@ -11489,7 +11395,7 @@ module.exports = function Realm(scope, parentElement) {
   this.exec = win.$hook.call(scope, scope, console);
 };
 
-},{}],94:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 "use strict";
 
 var __proxy = require('./workletProxy.js');
@@ -11661,7 +11567,7 @@ module.exports = function (Gibberish) {
   return factory;
 };
 
-},{"./fx/effect.js":109,"./workletProxy.js":155}],95:[function(require,module,exports){
+},{"./fx/effect.js":108,"./workletProxy.js":154}],94:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'); // constructor for schroeder allpass filters
@@ -11681,7 +11587,7 @@ var allPass = function (_input, length = 500, feedback = .5) {
 
 module.exports = allPass;
 
-},{"genish.js":40}],96:[function(require,module,exports){
+},{"genish.js":40}],95:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -11842,7 +11748,7 @@ module.exports = function (Gibberish) {
   return Biquad;
 };
 
-},{"./filter.js":99,"genish.js":40}],97:[function(require,module,exports){
+},{"./filter.js":98,"genish.js":40}],96:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js');
@@ -11863,7 +11769,7 @@ var combFilter = function (_input, combLength, damping = .5 * .4, feedbackCoeff 
 
 module.exports = combFilter;
 
-},{"genish.js":40}],98:[function(require,module,exports){
+},{"genish.js":40}],97:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12025,7 +11931,7 @@ module.exports = function (Gibberish) {
   return DiodeZDF;
 };
 
-},{"./filter.js":99,"genish.js":40}],99:[function(require,module,exports){
+},{"./filter.js":98,"genish.js":40}],98:[function(require,module,exports){
 "use strict";
 
 var ugen = require('../ugen.js')();
@@ -12038,7 +11944,7 @@ Object.assign(filter, {
 });
 module.exports = filter;
 
-},{"../ugen.js":153}],100:[function(require,module,exports){
+},{"../ugen.js":152}],99:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12102,7 +12008,7 @@ module.exports = function (Gibberish) {
   return Filter24;
 };
 
-},{"./filter.js":99,"genish.js":40}],101:[function(require,module,exports){
+},{"./filter.js":98,"genish.js":40}],100:[function(require,module,exports){
 "use strict";
 
 module.exports = function (Gibberish) {
@@ -12173,7 +12079,7 @@ module.exports = function (Gibberish) {
   return filters;
 };
 
-},{"./allpass.js":95,"./biquad.dsp.js":96,"./combfilter.js":97,"./diodeFilterZDF.js":98,"./filter24.js":100,"./ladder.dsp.js":102,"./svf.js":103}],102:[function(require,module,exports){
+},{"./allpass.js":94,"./biquad.dsp.js":95,"./combfilter.js":96,"./diodeFilterZDF.js":97,"./filter24.js":99,"./ladder.dsp.js":101,"./svf.js":102}],101:[function(require,module,exports){
 "use strict";
 
 var genish = require('genish.js'),
@@ -12275,7 +12181,7 @@ module.exports = function (Gibberish) {
   return Zd24;
 };
 
-},{"./filter.js":99,"genish.js":40}],103:[function(require,module,exports){
+},{"./filter.js":98,"genish.js":40}],102:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12352,7 +12258,7 @@ module.exports = function (Gibberish) {
   return SVF;
 };
 
-},{"./filter.js":99,"genish.js":40}],104:[function(require,module,exports){
+},{"./filter.js":98,"genish.js":40}],103:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12413,7 +12319,7 @@ module.exports = function (Gibberish) {
   return BitCrusher;
 };
 
-},{"./effect.js":109,"genish.js":40}],105:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],104:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12515,7 +12421,7 @@ module.exports = function (Gibberish) {
   return Shuffler;
 };
 
-},{"./effect.js":109,"genish.js":40}],106:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],105:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12614,7 +12520,7 @@ module.exports = function (Gibberish) {
   return __Chorus;
 };
 
-},{"./effect.js":109,"genish.js":40}],107:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],106:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12683,7 +12589,7 @@ module.exports = function (Gibberish) {
   return Delay;
 };
 
-},{"./effect.js":109,"genish.js":40}],108:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],107:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12762,7 +12668,7 @@ module.exports = function (Gibberish) {
   return Distortion;
 };
 
-},{"./effect.js":109,"genish.js":40}],109:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],108:[function(require,module,exports){
 "use strict";
 
 var ugen = require('../ugen.js')();
@@ -12777,7 +12683,7 @@ Object.assign(effect, {
 });
 module.exports = effect;
 
-},{"../ugen.js":153}],110:[function(require,module,exports){
+},{"../ugen.js":152}],109:[function(require,module,exports){
 "use strict";
 
 module.exports = function (Gibberish) {
@@ -12808,7 +12714,7 @@ module.exports = function (Gibberish) {
   return effects;
 };
 
-},{"./bitCrusher.js":104,"./bufferShuffler.js":105,"./chorus.js":106,"./delay.js":107,"./distortion.dsp.js":108,"./flanger.js":111,"./freeverb.js":112,"./ringMod.js":113,"./tremolo.js":114,"./vibrato.js":115,"./wavefolder.dsp.js":116}],111:[function(require,module,exports){
+},{"./bitCrusher.js":103,"./bufferShuffler.js":104,"./chorus.js":105,"./delay.js":106,"./distortion.dsp.js":107,"./flanger.js":110,"./freeverb.js":111,"./ringMod.js":112,"./tremolo.js":113,"./vibrato.js":114,"./wavefolder.dsp.js":115}],110:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12888,7 +12794,7 @@ module.exports = function (Gibberish) {
   return Flanger;
 };
 
-},{"./effect.js":109,"genish.js":40}],112:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],111:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -12976,7 +12882,7 @@ module.exports = function (Gibberish) {
   return Freeverb;
 };
 
-},{"./effect.js":109,"genish.js":40}],113:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],112:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -13032,7 +12938,7 @@ module.exports = function (Gibberish) {
   return RingMod;
 };
 
-},{"./effect.js":109,"genish.js":40}],114:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],113:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -13097,7 +13003,7 @@ module.exports = function (Gibberish) {
   return Tremolo;
 };
 
-},{"./effect.js":109,"genish.js":40}],115:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],114:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -13173,7 +13079,7 @@ module.exports = function (Gibberish) {
   return Vibrato;
 };
 
-},{"./effect.js":109,"genish.js":40}],116:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],115:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -13299,7 +13205,7 @@ module.exports = function (Gibberish) {
   return [Wavefolder, wavestage];
 };
 
-},{"./effect.js":109,"genish.js":40}],117:[function(require,module,exports){
+},{"./effect.js":108,"genish.js":40}],116:[function(require,module,exports){
 "use strict";
 
 var MemoryHelper = require('memory-helper'),
@@ -13340,7 +13246,7 @@ var Gibberish = {
   },
   workletPath: './gibberish_worklet.js',
 
-  init(memAmount, ctx, mode = 'worklet') {
+  init(memAmount, ctx, mode = 'worklet', ctxOptions) {
     let numBytes = isNaN(memAmount) ? 20 * 60 * 44100 : memAmount; // regardless of whether or not gibberish is using worklets,
     // we still want genish to output vanilla js functions instead
     // of audio worklet classes; these functions will be called
@@ -13356,7 +13262,7 @@ var Gibberish = {
     if (this.mode === 'worklet') {
       const p = new Promise((resolve, reject) => {
         const pp = new Promise((__resolve, __reject) => {
-          this.utilities.createContext(ctx, startup.bind(this.utilities), __resolve);
+          this.utilities.createContext(ctx, startup.bind(this.utilities), __resolve, ctxOptions);
         }).then(() => {
           Gibberish.preventProxy = true;
           Gibberish.load();
@@ -13762,7 +13668,7 @@ Gibberish.prototypes.Ugen = Gibberish.prototypes.ugen = require('./ugen.js')(Gib
 Gibberish.utilities = require('./utilities.js')(Gibberish);
 module.exports = Gibberish;
 
-},{"./analysis/analyzer.js":82,"./analysis/analyzers.js":83,"./envelopes/envelopes.js":88,"./factory.js":94,"./filters/filters.js":101,"./fx/effect.js":109,"./fx/effects.js":110,"./instruments/instrument.js":124,"./instruments/instruments.js":125,"./instruments/polyMixin.js":130,"./instruments/polytemplate.js":131,"./misc/binops.js":137,"./misc/bus.js":138,"./misc/bus2.js":139,"./misc/monops.js":140,"./misc/panner.js":141,"./misc/time.js":142,"./oscillators/oscillators.js":145,"./scheduling/scheduler.js":149,"./scheduling/seq2.js":150,"./scheduling/sequencer.js":151,"./scheduling/tidal.js":152,"./ugen.js":153,"./utilities.js":154,"./workletProxy.js":155,"genish.js":40,"memory-helper":157}],118:[function(require,module,exports){
+},{"./analysis/analyzer.js":81,"./analysis/analyzers.js":82,"./envelopes/envelopes.js":87,"./factory.js":93,"./filters/filters.js":100,"./fx/effect.js":108,"./fx/effects.js":109,"./instruments/instrument.js":123,"./instruments/instruments.js":124,"./instruments/polyMixin.js":129,"./instruments/polytemplate.js":130,"./misc/binops.js":136,"./misc/bus.js":137,"./misc/bus2.js":138,"./misc/monops.js":139,"./misc/panner.js":140,"./misc/time.js":141,"./oscillators/oscillators.js":144,"./scheduling/scheduler.js":148,"./scheduling/seq2.js":149,"./scheduling/sequencer.js":150,"./scheduling/tidal.js":151,"./ugen.js":152,"./utilities.js":153,"./workletProxy.js":154,"genish.js":40,"memory-helper":156}],117:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -13839,7 +13745,7 @@ module.exports = function (Gibberish) {
   return Clap;
 };
 
-},{"./instrument.js":124,"genish.js":40}],119:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],118:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -13947,7 +13853,7 @@ module.exports = function (Gibberish) {
   return [Complex, PolyComplex];
 };
 
-},{"../fx/wavefolder.dsp.js":116,"./instrument.js":124,"genish.js":40}],120:[function(require,module,exports){
+},{"../fx/wavefolder.dsp.js":115,"./instrument.js":123,"genish.js":40}],119:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -13987,7 +13893,7 @@ module.exports = function (Gibberish) {
   return [Conga, PolyConga];
 };
 
-},{"./instrument.js":124,"genish.js":40}],121:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],120:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -14025,7 +13931,7 @@ module.exports = function (Gibberish) {
   return Cowbell;
 };
 
-},{"./instrument.js":124,"genish.js":40}],122:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],121:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -14135,7 +14041,7 @@ module.exports = function (Gibberish) {
   return [FM, PolyFM];
 };
 
-},{"./instrument.js":124,"genish.js":40}],123:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],122:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -14187,7 +14093,7 @@ module.exports = function (Gibberish) {
   return Hat;
 };
 
-},{"./instrument.js":124,"genish.js":40}],124:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],123:[function(require,module,exports){
 "use strict";
 
 var ugen = require('../ugen.js')();
@@ -14238,7 +14144,7 @@ Object.assign(instrument, {
 });
 module.exports = instrument;
 
-},{"../ugen.js":153}],125:[function(require,module,exports){
+},{"../ugen.js":152}],124:[function(require,module,exports){
 "use strict";
 
 module.exports = function (Gibberish) {
@@ -14275,7 +14181,7 @@ module.exports = function (Gibberish) {
   return instruments;
 };
 
-},{"./clap.dsp.js":118,"./complex.dsp.js":119,"./conga.js":120,"./cowbell.js":121,"./fm.dsp.js":122,"./hat.js":123,"./karplusstrong.js":126,"./kick.js":127,"./monosynth.dsp.js":128,"./multisampler.dsp.js":129,"./sampler.js":132,"./snare.js":133,"./soundfont.js":134,"./synth.dsp.js":135,"./tom.js":136}],126:[function(require,module,exports){
+},{"./clap.dsp.js":117,"./complex.dsp.js":118,"./conga.js":119,"./cowbell.js":120,"./fm.dsp.js":121,"./hat.js":122,"./karplusstrong.js":125,"./kick.js":126,"./monosynth.dsp.js":127,"./multisampler.dsp.js":128,"./sampler.js":131,"./snare.js":132,"./soundfont.js":133,"./synth.dsp.js":134,"./tom.js":135}],125:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -14364,7 +14270,7 @@ module.exports = function (Gibberish) {
   return [Karplus, PolyKarplus];
 };
 
-},{"./instrument.js":124,"genish.js":40}],127:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],126:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -14411,7 +14317,7 @@ module.exports = function (Gibberish) {
   return Kick;
 };
 
-},{"./instrument.js":124,"genish.js":40}],128:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],127:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -14524,7 +14430,7 @@ module.exports = function (Gibberish) {
   return [Mono, PolyMono];
 };
 
-},{"../oscillators/fmfeedbackosc.js":144,"./instrument.js":124,"genish.js":40}],129:[function(require,module,exports){
+},{"../oscillators/fmfeedbackosc.js":143,"./instrument.js":123,"genish.js":40}],128:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -14600,6 +14506,7 @@ module.exports = function (Gibberish) {
         // then the direction will be forward, as they are multiplied
         // ... two positives or two negatives will both create a 
         // positive value
+        // assume positive value if a modulation is applied to rate
 
         const samplerRate = typeof this.rate === 'object' ? 1 : this.rate;
         const dir = Math.sign(voice.rate) === Math.sign(samplerRate) ? 1 : 0;
@@ -14836,7 +14743,7 @@ module.exports = function (Gibberish) {
   return Sampler;
 };
 
-},{"./instrument.js":124,"genish.js":40}],130:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],129:[function(require,module,exports){
 "use strict";
 
 // XXX TOO MANY GLOBAL GIBBERISH VALUES
@@ -14932,7 +14839,7 @@ module.exports = {
   triggerNote: null
 };
 
-},{"../index.js":117}],131:[function(require,module,exports){
+},{"../index.js":116}],130:[function(require,module,exports){
 "use strict";
 
 /*
@@ -15044,7 +14951,7 @@ module.exports = function (Gibberish) {
   return TemplateFactory;
 };
 
-},{"../workletProxy.js":155,"genish.js":40}],132:[function(require,module,exports){
+},{"../workletProxy.js":154,"genish.js":40}],131:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -15254,7 +15161,7 @@ module.exports = function (Gibberish) {
   return [Sampler, PolySampler];
 };
 
-},{"./instrument.js":124,"genish.js":40}],133:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],132:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -15307,7 +15214,7 @@ module.exports = function (Gibberish) {
   return Snare;
 };
 
-},{"./instrument.js":124,"genish.js":40}],134:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],133:[function(require,module,exports){
 "use strict";
 
 /*fetch( '0000_Aspirin_sf2_file.json' )
@@ -15766,7 +15673,7 @@ module.exports = function (Gibberish) {
   return Soundfont;
 };
 
-},{"./instrument.js":124,"genish.js":40}],135:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],134:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -15870,7 +15777,7 @@ module.exports = function (Gibberish) {
   return [Synth, PolySynth];
 };
 
-},{"./instrument.js":124,"genish.js":40}],136:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],135:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -15917,7 +15824,7 @@ module.exports = function (Gibberish) {
   return Tom;
 };
 
-},{"./instrument.js":124,"genish.js":40}],137:[function(require,module,exports){
+},{"./instrument.js":123,"genish.js":40}],136:[function(require,module,exports){
 "use strict";
 
 var ugenproto = require('../ugen.js')(),
@@ -16098,7 +16005,7 @@ module.exports = function (Gibberish) {
   return Binops;
 };
 
-},{"../ugen.js":153,"../workletProxy.js":155,"genish.js":40}],138:[function(require,module,exports){
+},{"../ugen.js":152,"../workletProxy.js":154,"genish.js":40}],137:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -16193,7 +16100,7 @@ module.exports = function (Gibberish) {
   return constructor;
 };
 
-},{"../ugen.js":153,"../workletProxy.js":155,"genish.js":40}],139:[function(require,module,exports){
+},{"../ugen.js":152,"../workletProxy.js":154,"genish.js":40}],138:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -16316,7 +16223,7 @@ module.exports = function (Gibberish) {
   return constructor;
 };
 
-},{"../ugen.js":153,"../workletProxy.js":155,"genish.js":40}],140:[function(require,module,exports){
+},{"../ugen.js":152,"../workletProxy.js":154,"genish.js":40}],139:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -16394,7 +16301,7 @@ module.exports = function (Gibberish) {
   return Monops;
 };
 
-},{"../ugen.js":153,"genish.js":40}],141:[function(require,module,exports){
+},{"../ugen.js":152,"genish.js":40}],140:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js');
@@ -16427,7 +16334,7 @@ module.exports = function (Gibberish) {
   return Panner;
 };
 
-},{"../ugen.js":153,"genish.js":40}],142:[function(require,module,exports){
+},{"../ugen.js":152,"genish.js":40}],141:[function(require,module,exports){
 "use strict";
 
 module.exports = function (Gibberish) {
@@ -16452,7 +16359,7 @@ module.exports = function (Gibberish) {
   return Time;
 };
 
-},{}],143:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 "use strict";
 
 var genish = require('genish.js'),
@@ -16470,7 +16377,7 @@ module.exports = function () {
   return out;
 };
 
-},{"genish.js":40}],144:[function(require,module,exports){
+},{"genish.js":40}],143:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js');
@@ -16522,7 +16429,7 @@ var feedbackOsc = function (frequency, filter, pulsewidth = .5, argumentProps) {
 
 module.exports = feedbackOsc;
 
-},{"genish.js":40}],145:[function(require,module,exports){
+},{"genish.js":40}],144:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -16729,7 +16636,7 @@ module.exports = function (Gibberish) {
   return Oscillators;
 };
 
-},{"../ugen.js":153,"./brownnoise.dsp.js":143,"./fmfeedbackosc.js":144,"./pinknoise.dsp.js":146,"./polyblep.dsp.js":147,"./wavetable.js":148,"genish.js":40}],146:[function(require,module,exports){
+},{"../ugen.js":152,"./brownnoise.dsp.js":142,"./fmfeedbackosc.js":143,"./pinknoise.dsp.js":145,"./polyblep.dsp.js":146,"./wavetable.js":147,"genish.js":40}],145:[function(require,module,exports){
 "use strict";
 
 var genish = require('genish.js'),
@@ -16755,7 +16662,7 @@ module.exports = function () {
   return out;
 };
 
-},{"genish.js":40}],147:[function(require,module,exports){
+},{"genish.js":40}],146:[function(require,module,exports){
 "use strict";
 
 var genish = require('genish.js');
@@ -16813,7 +16720,7 @@ var polyBlep = function (__frequency, argumentProps) {
 
 module.exports = polyBlep;
 
-},{"genish.js":40}],148:[function(require,module,exports){
+},{"genish.js":40}],147:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -16844,7 +16751,7 @@ module.exports = function (Gibberish) {
   return Wavetable;
 };
 
-},{"../ugen.js":153,"genish.js":40}],149:[function(require,module,exports){
+},{"../ugen.js":152,"genish.js":40}],148:[function(require,module,exports){
 "use strict";
 
 var Queue = require('../external/priorityqueue.js');
@@ -16930,7 +16837,7 @@ Object.defineProperty(Scheduler, 'shouldSync', {
 });
 module.exports = Scheduler;
 
-},{"../external/priorityqueue.js":92}],150:[function(require,module,exports){
+},{"../external/priorityqueue.js":91}],149:[function(require,module,exports){
 "use strict";
 
 var g = require('genish.js'),
@@ -17155,7 +17062,7 @@ module.exports = function (Gibberish) {
   return Seq2.create;
 };
 
-},{"../ugen.js":153,"../workletProxy.js":155,"genish.js":40}],151:[function(require,module,exports){
+},{"../ugen.js":152,"../workletProxy.js":154,"genish.js":40}],150:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -17396,7 +17303,7 @@ module.exports = function (Gibberish) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../workletProxy.js":155}],152:[function(require,module,exports){
+},{"../workletProxy.js":154}],151:[function(require,module,exports){
 "use strict";
 
 var __proxy = require('../workletProxy.js'),
@@ -17607,7 +17514,7 @@ module.exports = function (Gibberish) {
   return Sequencer;
 };
 
-},{"../external/mini.js":91,"../workletProxy.js":155}],153:[function(require,module,exports){
+},{"../external/mini.js":90,"../workletProxy.js":154}],152:[function(require,module,exports){
 "use strict";
 
 var Gibberish = null;
@@ -17739,7 +17646,7 @@ var __ugen = function (__Gibberish) {
 
 module.exports = __ugen;
 
-},{}],154:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 "use strict";
 
 var genish = require('genish.js'),
@@ -17773,14 +17680,18 @@ module.exports = function (Gibberish) {
       return Gibberish[name];
     },
 
-    createContext(ctx, cb, resolve, bufferSize = 2048) {
+    createContext(ctx = null, cb, resolve, options) {
       let AC = typeof AudioContext === 'undefined' ? webkitAudioContext : AudioContext;
-      AWPF(window, bufferSize);
+      if (options === undefined) options = {
+        latencyHint: .025
+      };
+      if (options.bufferSize === undefined) options.bufferSize = 2048;
+      AWPF(window, options.bufferSize);
 
       const start = () => {
         if (typeof AC !== 'undefined') {
-          this.ctx = Gibberish.ctx = ctx === undefined ? new AC({
-            latencyHint: .025
+          this.ctx = Gibberish.ctx = ctx === null ? new AC({
+            latencyHint: options.latencyHint
           }) : ctx;
           genish.gen.samplerate = this.ctx.sampleRate;
           genish.utilities.ctx = this.ctx;
@@ -18085,7 +17996,7 @@ module.exports = function (Gibberish) {
   return utilities;
 };
 
-},{"./external/audioworklet-polyfill.js":90,"genish.js":40}],155:[function(require,module,exports){
+},{"./external/audioworklet-polyfill.js":89,"genish.js":40}],154:[function(require,module,exports){
 "use strict";
 
 var serialize = require('serialize-javascript');
@@ -18249,7 +18160,7 @@ module.exports = function (Gibberish) {
   return __proxy;
 };
 
-},{"serialize-javascript":158}],156:[function(require,module,exports){
+},{"serialize-javascript":157}],155:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -18774,9 +18685,100 @@ function functionBindPolyfill(context) {
   };
 }
 
+},{}],156:[function(require,module,exports){
+'use strict';
+
+var MemoryHelper = {
+  create: function create() {
+    var size = arguments.length <= 0 || arguments[0] === undefined ? 4096 : arguments[0];
+    var memtype = arguments.length <= 1 || arguments[1] === undefined ? Float32Array : arguments[1];
+
+    var helper = Object.create(this);
+
+    Object.assign(helper, {
+      heap: new memtype(size),
+      list: {},
+      freeList: {}
+    });
+
+    return helper;
+  },
+  alloc: function alloc(amount) {
+    var idx = -1;
+
+    if (amount > this.heap.length) {
+      throw Error('Allocation request is larger than heap size of ' + this.heap.length);
+    }
+
+    for (var key in this.freeList) {
+      var candidateSize = this.freeList[key];
+
+      if (candidateSize >= amount) {
+        idx = key;
+
+        this.list[idx] = amount;
+
+        if (candidateSize !== amount) {
+          var newIndex = idx + amount,
+              newFreeSize = void 0;
+
+          for (var _key in this.list) {
+            if (_key > newIndex) {
+              newFreeSize = _key - newIndex;
+              this.freeList[newIndex] = newFreeSize;
+            }
+          }
+        }
+        
+        break;
+      }
+    }
+    
+    if( idx !== -1 ) delete this.freeList[ idx ]
+
+    if (idx === -1) {
+      var keys = Object.keys(this.list),
+          lastIndex = void 0;
+
+      if (keys.length) {
+        // if not first allocation...
+        lastIndex = parseInt(keys[keys.length - 1]);
+
+        idx = lastIndex + this.list[lastIndex];
+      } else {
+        idx = 0;
+      }
+
+      this.list[idx] = amount;
+    }
+
+    if (idx + amount >= this.heap.length) {
+      throw Error('No available blocks remain sufficient for allocation request.');
+    }
+    return idx;
+  },
+  free: function free(index) {
+    if (typeof this.list[index] !== 'number') {
+      throw Error('Calling free() on non-existing block.');
+    }
+
+    this.list[index] = 0;
+
+    var size = 0;
+    for (var key in this.list) {
+      if (key > index) {
+        size = key - index;
+        break;
+      }
+    }
+
+    this.freeList[index] = size;
+  }
+};
+
+module.exports = MemoryHelper;
+
 },{}],157:[function(require,module,exports){
-arguments[4][81][0].apply(exports,arguments)
-},{"dup":81}],158:[function(require,module,exports){
 /*
 Copyright (c) 2014, Yahoo! Inc. All rights reserved.
 Copyrights licensed under the New BSD License.
@@ -18951,7 +18953,112 @@ module.exports = function serialize(obj, options) {
     });
 }
 
-},{}]},{},[117])(117)
+},{}],158:[function(require,module,exports){
+'use strict'
+
+let MemoryHelper = {
+  create( sizeOrBuffer=4096, memtype=Float32Array ) {
+    let helper = Object.create( this )
+
+    // conveniently, buffer constructors accept either a size or an array buffer to use...
+    // so, no matter which is passed to sizeOrBuffer it should work.
+    Object.assign( helper, {
+      heap: new memtype( sizeOrBuffer ),
+      list: {},
+      freeList: {}
+    })
+
+    return helper
+  },
+
+  alloc( size, immutable ) {
+    let idx = -1
+
+    if( size > this.heap.length ) {
+      throw Error( 'Allocation request is larger than heap size of ' + this.heap.length )
+    }
+
+    for( let key in this.freeList ) {
+      let candidate = this.freeList[ key ]
+
+      if( candidate.size >= size ) {
+        idx = key
+
+        this.list[ idx ] = { size, immutable, references:1 }
+
+        if( candidate.size !== size ) {
+          let newIndex = idx + size,
+              newFreeSize
+
+          for( let key in this.list ) {
+            if( key > newIndex ) {
+              newFreeSize = key - newIndex
+              this.freeList[ newIndex ] = newFreeSize
+            }
+          }
+        }
+
+        break
+      }
+    }
+
+    if( idx !== -1 ) delete this.freeList[ idx ]
+
+    if( idx === -1 ) {
+      let keys = Object.keys( this.list ),
+          lastIndex
+
+      if( keys.length ) { // if not first allocation...
+        lastIndex = parseInt( keys[ keys.length - 1 ] )
+
+        idx = lastIndex + this.list[ lastIndex ].size
+      }else{
+        idx = 0
+      }
+
+      this.list[ idx ] = { size, immutable, references:1 }
+    }
+
+    if( idx + size >= this.heap.length ) {
+      throw Error( 'No available blocks remain sufficient for allocation request.' )
+    }
+    return idx
+  },
+
+  addReference( index ) {
+    if( this.list[ index ] !== undefined ) { 
+      this.list[ index ].references++
+    }
+  },
+
+  free( index ) {
+    if( this.list[ index ] === undefined ) {
+      throw Error( 'Calling free() on non-existing block.' )
+    }
+
+    let slot = this.list[ index ]
+    if( slot === 0 ) return
+    slot.references--
+
+    if( slot.references === 0 && slot.immutable !== true ) {    
+      this.list[ index ] = 0
+
+      let freeBlockSize = 0
+      for( let key in this.list ) {
+        if( key > index ) {
+          freeBlockSize = key - index
+          break
+        }
+      }
+
+      this.freeList[ index ] = freeBlockSize
+    }
+  },
+}
+
+module.exports = MemoryHelper
+
+},{}]},{},[116])(116)
 });
 
 class GibberishProcessor extends AudioWorkletProcessor {
