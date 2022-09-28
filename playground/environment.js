@@ -46,6 +46,12 @@ window.onload = function() {
 
   const workletPath = './gibberish_worklet.js' 
 
+  // trying to avoid double strudel messages from being in the worklet
+  // unfortunately this also removes tune.js message
+  // log is restored after audio is initialized
+  console.__log = console.log
+  console.log = ()=>{}
+
   Gibber.init([
     {
       name:    'Audio',
@@ -68,6 +74,7 @@ window.onload = function() {
     } 
 
     environment.console.init( Gibber )
+    console.log = console.__log
 
     window.solo = function( ...soloed ) {
       if( soloed.length > 0 ) {
@@ -253,11 +260,12 @@ window.onload = function() {
     Metronome.init( Gibber )
     environment.metronome = Metronome
 
-    Gibber.subscribe( 'clear', ()=> {
+    Gibber.subscribe( 'clear', shouldPrint => {
       for( let key in Environment.sounds ) {
         delete Environment.sounds[ key ]
       }
-      Console.log( '%cgibber has been cleared.', 'background:#006;color:white; padding:.5em' )
+      if( shouldPrint )
+        Console.log( '%cgibber has been cleared.', 'background:#006;color:white; padding:.5em' )
     })
 
     cm.__setup()
@@ -284,14 +292,12 @@ window.onload = function() {
       environment.console.setValue( cb.toString() )
     }
   }
-
   
   environment.Annotations = environment.codeMarkup 
   
   Gibber.Environment = environment
 
   Collab( Gibber, environment )
-
 
   setupExamples()
   setupThemeMenu()

@@ -1,24 +1,14 @@
 const WebSocket         = require( 'ws' ),
       fs                = require( 'fs' ),
       http              = require( 'http' ),
-      StaticServer      = require( 'node-static' ).Server,
       utils             = require( 'y-websocket/bin/utils.js' ),
       express           = require( 'express' ),
       app               = express(),
-      serveIndex        = require( 'serve-index' ),
       setupWSConnection = utils.setupWSConnection,
       production        = process.env.PRODUCTION  != null,
       port              = process.env.SERVER_PORT || 9080 
 
 require( 'dotenv' ).config()
-
-//const staticServer = new StaticServer( '.', { cache: production ? 3600 : false, gzip: production })
-
-//const server = http.createServer((request, response) => {
-//  request.addListener( 'end', () => {
-//    staticServer.serve( request, response )
-//  }).resume()
-//})
 
 app.use( express.static( './', { 
   setHeaders: function(res, path) {

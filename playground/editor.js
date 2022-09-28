@@ -30,7 +30,11 @@ let cm, cmconsole, exampleCode,
           end = sel.end,
           start = sel.start
 
-        Gibber.Environment.share.commands.unshift([ start.line, start.ch, end.line, end.ch, selectedCode.code, Gibber.Environment.share.username ])
+        Gibber.Environment.share.commands.unshift([ 
+          start.line, start.ch, end.line, end.ch, 
+          selectedCode.code, 
+          Gibber.Environment.share.username 
+        ])
       },
 
       runCode( cm, useBlock=false, useDelay=true, shouldRunNetworkCode=true, selectedCode=null, preview=false ) {
@@ -339,7 +343,7 @@ fm = FM({ feedback:.0015, decay:1/2 })
     }else if( SDF.cameraEnabled ) {
       SDF.keys[ e.key ] = 1
     }else if( e.key === '.' && e.ctrlKey === true ) {
-      Gibber.clear()
+      Gibber.clear( false )
 
       for( let key of environment.proxies ) delete window[ key ]
       environment.proxies.length = 0
@@ -372,11 +376,12 @@ CodeMirror.keyMap.playground =  {
   //},
   'Ctrl-\\'( cm ) { environment.console.clear() }, 
 
-  'Ctrl-.'( cm ) {
+  'Ctrl-.'( cm, ...args ) {
     Gibber.clear()
 
     for( let key of environment.proxies ) delete window[ key ]
     environment.proxies.length = 0
+    //e.preventDefault()
   },
   'Shift-Ctrl-.'( cm ) {
     Gibber.clear()
