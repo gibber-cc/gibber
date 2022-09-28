@@ -51,6 +51,8 @@ window.onload = function() {
   // log is restored after audio is initialized
   console.__log = console.log
   console.log = ()=>{}
+  console.__warn = console.warn
+  console.warn = ()=>{}
 
   Gibber.init([
     {
@@ -75,6 +77,7 @@ window.onload = function() {
 
     environment.console.init( Gibber )
     console.log = console.__log
+    console.warn = console.__warn
 
     window.solo = function( ...soloed ) {
       if( soloed.length > 0 ) {
