@@ -12,19 +12,21 @@ module.exports = ( patternObject, marker, className, cm ) => {
       if( patternValue.length > 8 ) patternValue = patternValue.slice(0,8) 
 
       let val ='/* ' + patternValue + ' */',
-        pos = patternObject.commentMarker.find(),
+        pos = patternObject.commentMarker.find()
+
+      if( pos !== undefined ) {
         end = Object.assign( {}, pos.to )
 
-      //pos.from.ch += 1
-      end.ch = pos.from.ch + val.length 
-      //pos.from.ch += 1
+        //pos.from.ch += 1
+        end.ch = pos.from.ch + val.length 
+        //pos.from.ch += 1
 
-      cm.replaceRange( val, pos.from, pos.to )
+        cm.replaceRange( val, pos.from, pos.to )
 
-      if( patternObject.commentMarker ) patternObject.commentMarker.clear()
+        if( patternObject.commentMarker ) patternObject.commentMarker.clear()
 
-      patternObject.commentMarker = cm.markText( pos.from, end, { className:className + ' gibber_comment', atomic:false })
-
+        patternObject.commentMarker = cm.markText( pos.from, end, { className:className + ' gibber_comment', atomic:false })
+      }
     }
 
     patternObject.clear = () => {
