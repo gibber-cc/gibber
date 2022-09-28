@@ -11096,7 +11096,7 @@ const patternWrapper = function( Gibber ) {
     Gibberish = Gibber.Gibberish
   }
 
-  let PatternProto = Object.create( function(){} )
+  const PatternProto = Object.create( function(){} )
 
   // this prototype is somewhat limited, as we want to be able to add
   // .seq() methods to everything. This means that every pattern needs its own
@@ -11137,7 +11137,6 @@ const patternWrapper = function( Gibber ) {
           args = filter( args, this ) 
         } catch( e ) {
           console.error( e )
-          console.log( 'filter problem?' )
           console.log( `removing bad filter from pattern: ${filter.toString()}` ) 
           const idx = this.filters.indexOf( filter )
           this.filters.splice( idx, 1 )
@@ -11299,6 +11298,12 @@ const patternWrapper = function( Gibber ) {
     }
 
 
+    //if( Array.isArray( args ) ) {
+    //  if( args.patterns === undefined ) {
+    //    args.patterns = []
+    //  }
+    //  args.patterns.push( fnc )
+    //} 
 
     let out 
     const DNR = -987654321 
@@ -12090,6 +12095,9 @@ module.exports = function( Gibber ) {
       __values.inspect = values.inspect.bind( values )
       if( __values.randomFlag !== undefined ) values.randomFlag = __values.randomFlag
       if( __values.randomArgs !== undefined ) values.randomArgs = __values.randomArgs
+      
+      __values.addPattern( values )
+     
     } else if( typeof __values === 'object' && __values.type==='gen' ) {
       props.values.addFilter = values.addFilter.bind( values )
       props.values.removeFilter = values.removeFilter.bind( values )
@@ -12133,6 +12141,8 @@ module.exports = function( Gibber ) {
       __timings.addFilter = timings.addFilter.bind( timings )
       if( __timings.randomFlag !== undefined ) timings.randomFlag = __timings.randomFlag
       if( __timings.randomArgs !== undefined ) timings.randomArgs = __timings.randomArgs
+
+      __timings.addPattern( timings )
     }
     if( autotrig === false ) {
       timings.output = { time:'time', shouldExecute:0 }
@@ -79526,7 +79536,13 @@ const Metronome = {
 module.exports = Metronome
 
 },{}],252:[function(require,module,exports){
-const sounds = {}
+ sounds = {}
+
+// list of patterns for each array
+// we can't place the patterns on the arrays themselves
+// because these need to be serialized when they are sent
+// to the worklet
+window.__arrays = []
 
 const handleConnections = function( member, newUgen ) {
   if( member.__wrapped__.connected !== undefined ) {
@@ -79565,6 +79581,35 @@ const handleConnections = function( member, newUgen ) {
       member.disconnect()
     }
   } 
+}
+
+let uid = 0
+Array.prototype.addPattern = function( pattern ) {
+  const patterns = window.__arrays[ this.uid ]
+  if( patterns !== undefined )
+    patterns.push( pattern )
+}
+const proxyArray = function( arr, prop, proxiedObj, environment, Gibber ) {
+  arr.uid = uid++
+  window.__arrays[ arr.uid ] = [] 
+  Object.defineProperty( proxiedObj, prop, {
+    get() { return arr },
+    set( newarr ) {
+      newarr.uid = arr.uid
+
+      if( newarr !== undefined) {
+        // replace array in any patterns using it
+        const patterns = window.__arrays[ arr.uid ]
+        if( patterns !== undefined ) {
+          patterns.forEach( pattern => {
+            pattern.set( newarr )
+          })
+        }
+        
+        arr = newarr
+      }
+    }
+  })
 }
 
 const proxyUgen = function( ugen, prop, proxiedObj, environment, Gibber ) {
@@ -79637,7 +79682,9 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
     const shouldProxyArray = !shouldProxyUgen && Array.isArray( obj )
 
     if( shouldProxyUgen ) {
-       proxyUgen( obj, prop, proxiedObj, environment, Gibber )
+      proxyUgen( obj, prop, proxiedObj, environment, Gibber )
+    }else if( shouldProxyArray ) {
+      proxyArray( obj, prop, proxiedObj, environment, Gibber )
     }
 
     environment.proxies.push( prop )

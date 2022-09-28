@@ -1,4 +1,10 @@
-const sounds = {}
+ sounds = {}
+
+// list of patterns for each array
+// we can't place the patterns on the arrays themselves
+// because these need to be serialized when they are sent
+// to the worklet
+window.__arrays = []
 
 const handleConnections = function( member, newUgen ) {
   if( member.__wrapped__.connected !== undefined ) {
@@ -37,6 +43,35 @@ const handleConnections = function( member, newUgen ) {
       member.disconnect()
     }
   } 
+}
+
+let uid = 0
+Array.prototype.addPattern = function( pattern ) {
+  const patterns = window.__arrays[ this.uid ]
+  if( patterns !== undefined )
+    patterns.push( pattern )
+}
+const proxyArray = function( arr, prop, proxiedObj, environment, Gibber ) {
+  arr.uid = uid++
+  window.__arrays[ arr.uid ] = [] 
+  Object.defineProperty( proxiedObj, prop, {
+    get() { return arr },
+    set( newarr ) {
+      newarr.uid = arr.uid
+
+      if( newarr !== undefined) {
+        // replace array in any patterns using it
+        const patterns = window.__arrays[ arr.uid ]
+        if( patterns !== undefined ) {
+          patterns.forEach( pattern => {
+            pattern.set( newarr )
+          })
+        }
+        
+        arr = newarr
+      }
+    }
+  })
 }
 
 const proxyUgen = function( ugen, prop, proxiedObj, environment, Gibber ) {
@@ -109,7 +144,9 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
     const shouldProxyArray = !shouldProxyUgen && Array.isArray( obj )
 
     if( shouldProxyUgen ) {
-       proxyUgen( obj, prop, proxiedObj, environment, Gibber )
+      proxyUgen( obj, prop, proxiedObj, environment, Gibber )
+    }else if( shouldProxyArray ) {
+      proxyArray( obj, prop, proxiedObj, environment, Gibber )
     }
 
     environment.proxies.push( prop )
