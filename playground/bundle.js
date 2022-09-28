@@ -78578,7 +78578,7 @@ window.onload = function () {
     // Audio is required, imported, or grabbed via <script>
     options: {
       workletPath,
-      latencyHint: .25
+      latencyHint: 'playback'
     }
   }, {
     name: 'Graphics',
@@ -79347,6 +79347,7 @@ module.exports = function() {
         ['freesound', 'freesound.js' ], 
         ['samplers', 'sampler.js' ],
         ['step sequencing', 'steps.js' ],  
+        ['using soundfonts', 'soundfont.js' ],  
       ]
     }, 
 
@@ -90504,7 +90505,7 @@ module.exports = function( Gibberish ) {
     gain: 1,
     pan: .5,
     rate: 1,
-    panVoices:false,
+    panVoices:true,
     shouldLoop:false,
     loops: 0,
     start:0,

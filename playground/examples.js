@@ -38,6 +38,7 @@ module.exports = function() {
         ['freesound', 'freesound.js' ], 
         ['samplers', 'sampler.js' ],
         ['step sequencing', 'steps.js' ],  
+        ['using soundfonts', 'soundfont.js' ],  
       ]
     }, 
 
