@@ -38,18 +38,20 @@ const Marker = {
     Gibber.subscribe( 'clear', this.clear )
   },
 
-  commentClasses: ['gibber_comment', 'euclid', 'hex'],
+  commentClasses: ['gibber_comment', 'hex'],
 
   clear() { 
     Marker.waveform.clear() 
     Gibber.Environment.editor.getAllMarks().forEach( m => {
-      Marker.commentClasses.forEach( __class => {
-        if( m.className.indexOf( __class  ) > -1 ) {
-          const pos = m.find()
-          if( pos !== undefined )
-            m.doc.cm.replaceRange( '', pos.from, pos.to )
-        }
-      })
+      if( m.className !== undefined ) {
+        Marker.commentClasses.forEach( __class => {
+          if( m.className.indexOf( __class  ) > -1 ) {
+            const pos = m.find()
+            if( pos !== undefined )
+              m.doc.cm.replaceRange( '', pos.from, pos.to )
+          }
+        })
+      }
       m.clear()
     }) 
     Gibber.Environment.editor.getAllMarks().forEach( m => m.clear() )
@@ -414,10 +416,10 @@ const Marker = {
   },
 
   standalone: {
-    Score: require( './annotations/standalone/scoreAnnotation.js' ),
-    Steps: require( './annotations/standalone/stepsAnnotation.js' ),
+    //Score:    require( './annotations/standalone/scoreAnnotation.js' ),
+    Steps:    require( './annotations/standalone/stepsAnnotation.js' ),
     HexSteps: require( './annotations/standalone/hexStepsAnnotations.js' ),
-    //Drums:  require( './annotations/standalone/drumsAnnotation.js' ),
+    Drums:    require( './annotations/standalone/drumsAnnotation.js' ),
     //EDrums: require( './annotations/standalone/drumsAnnotation.js' )
   },
 

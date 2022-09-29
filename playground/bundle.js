@@ -75786,6 +75786,113 @@ module.exports = function( Marker ) {
 },{}],233:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
+module.exports = function( node, cm, track, objectName, state, cb ) {
+
+  const Marker = Environment.codeMarkup // tsk tsk tsk global...
+
+  // accomodate directly passing pattern for annotation instead of name, for Triggers
+  const patternObject = typeof objectName === 'string' ? window[ objectName ].seq.values : objectName
+
+  // the location of the node containing the drums sequence depends on whether
+  // or not a call to .connect() is added to the Drums constructor. 
+  const drumsStringNode = node.callee.object !== undefined ? node.callee.object.arguments[0] : node.arguments[0]
+
+  track.markup.textMarkers[ 'pattern' ] = []
+  track.markup.textMarkers[ 'pattern' ].children = []
+
+  let nodePosStart = Object.assign( {}, drumsStringNode.loc.start ),
+      nodePosEnd   = Object.assign( {}, drumsStringNode.loc.end )
+
+  nodePosStart.line += Marker.offset.vertical - 1 
+  nodePosStart.ch = nodePosStart.column + 1
+  nodePosEnd.line += Marker.offset.vertical - 1
+  nodePosEnd.ch = nodePosEnd.column - 1
+
+  track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid' })
+
+  let marker
+  const mark = function() {
+    let startPos = track.markup.textMarkers.string.find()//{ loc:{ start:{}, end:{}} }
+    for( let i = 0; i < drumsStringNode.value.length; i++ ) {
+      let pos = { loc:{ start:{}, end:{}} }
+      Object.assign( pos.loc.start, startPos.from )
+      Object.assign( pos.loc.end  , startPos.to )
+      pos.loc.start.ch += i
+      pos.loc.end.ch = pos.loc.start.ch + 1
+
+      patternObject.marker = marker = cm.markText( pos.loc.start, pos.loc.end, { className:`step_${ patternObject.id }_${i} euclid` })
+      track.markup.textMarkers.pattern[ i ] = marker
+    }
+  }
+  
+  mark()
+
+  let span
+  const update = () => {
+    let currentIdx = update.currentIndex // count++ % step.value.length
+
+    if( span !== undefined ) {
+      span.remove( 'euclid0' )
+      //span.remove( 'euclid1' )
+    }
+
+    let spanName = `.step_${patternObject.id}_${currentIdx}`,
+        currentValue = patternObject.update.value
+
+    span = $( spanName )
+
+    span.add( 'euclid0' )
+    if( currentValue !== Gibber.Seq.DNR && ( typeof currentValue === 'object' && currentValue.shouldExecute !== 0 ) ) {
+      span.add( 'euclid1' )
+
+      setTimeout( ()=> { 
+        span.remove( 'euclid1' ) 
+        span.add( 'euclid0' )
+      }, 50 )
+    }
+    
+
+    //span.add( 'euclid0' )
+  }
+
+  patternObject._onchange = () => {
+    const pos = track.markup.textMarkers.string.find()
+    if( pos !== undefined && pos !== null ) { 
+      marker.doc.replaceRange( patternObject.values.join(''), pos.from, pos.to )
+      track.markup.textMarkers.string = cm.markText( pos.from, pos.to )
+      mark( pos.from.line ) 
+    }
+  }
+
+  patternObject.update = update
+  patternObject.update.value = []
+
+  let currentIndex = 0
+  Object.defineProperty( patternObject.update, 'currentIndex', {
+    get() { return currentIndex },
+    set(v){ 
+      currentIndex = v; 
+      patternObject.update()
+    }
+  })
+
+  const __clear = patternObject.clear
+
+  patternObject.clear = () => {
+    track.markup.textMarkers.string = cm.markText( nodePosStart, nodePosEnd, { className:'euclid' })
+    patternObject.reset()
+    if( typeof __clear === 'function' ) __clear.call( patternObject )
+  }
+
+  Gibber.subscribe( 'clear', patternObject.clear )
+
+  Marker._addPatternFilter( patternObject )
+}  
+
+
+},{"../utilities.js":240}],234:[function(require,module,exports){
+const Utility = require( '../utilities.js' )
+const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
 
 module.exports = function( node, cm, track, objectName, state, cb ) {
@@ -75886,42 +75993,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
 }  
 
 
-},{"../update/euclidAnnotation.js":238,"../utilities.js":240}],234:[function(require,module,exports){
-
-const Utility = require( '../utilities.js' )
-const $ = Utility.create
-
-module.exports = function( node, cm, track, objectName, vOffset=0 ) {
-  let timelineNodes = node.arguments[ 0 ].elements
-  //console.log( timelineNodes )
-  track.markup.textMarkers[ 'score' ] = []
-
-  for( let i = 0; i < timelineNodes.length; i+=2 ) {
-    let timeNode = timelineNodes[ i ],
-      functionNode = timelineNodes[ i + 1 ]
-
-    functionNode.loc.start.line += vOffset - 1
-    functionNode.loc.end.line   += vOffset - 1
-    functionNode.loc.start.ch = functionNode.loc.start.column
-    functionNode.loc.end.ch = functionNode.loc.end.column
-
-    let marker = cm.markText( functionNode.loc.start, functionNode.loc.end, { className:`score${i/2}` } )
-    track.markup.textMarkers[ 'score' ][ i/2 ] = marker
-
-  }
-
-  let lastClass = 'score0'
-  $( '.' + lastClass ).add( 'scoreCurrentIndex' )
-  // TODO: global object usage is baaaad methinks?
-  
-  window[ objectName ].onadvance = ( idx ) => {
-    $( '.' + lastClass ).remove( 'scoreCurrentIndex' )
-    lastClass = `score${idx}`
-    $( '.' + lastClass ).add( 'scoreCurrentIndex' ) 
-  }
-}
-
-},{"../utilities.js":240}],235:[function(require,module,exports){
+},{"../update/euclidAnnotation.js":238,"../utilities.js":240}],235:[function(require,module,exports){
 const Utility = require( '../utilities.js' )
 const $ = Utility.create
 const EuclidAnnotation = require( '../update/euclidAnnotation.js' )
@@ -77385,18 +77457,20 @@ const Marker = {
     Gibber.subscribe( 'clear', this.clear )
   },
 
-  commentClasses: ['gibber_comment', 'euclid', 'hex'],
+  commentClasses: ['gibber_comment', 'hex'],
 
   clear() { 
     Marker.waveform.clear() 
     Gibber.Environment.editor.getAllMarks().forEach( m => {
-      Marker.commentClasses.forEach( __class => {
-        if( m.className.indexOf( __class  ) > -1 ) {
-          const pos = m.find()
-          if( pos !== undefined )
-            m.doc.cm.replaceRange( '', pos.from, pos.to )
-        }
-      })
+      if( m.className !== undefined ) {
+        Marker.commentClasses.forEach( __class => {
+          if( m.className.indexOf( __class  ) > -1 ) {
+            const pos = m.find()
+            if( pos !== undefined )
+              m.doc.cm.replaceRange( '', pos.from, pos.to )
+          }
+        })
+      }
       m.clear()
     }) 
     Gibber.Environment.editor.getAllMarks().forEach( m => m.clear() )
@@ -77761,10 +77835,10 @@ const Marker = {
   },
 
   standalone: {
-    Score: require( './annotations/standalone/scoreAnnotation.js' ),
-    Steps: require( './annotations/standalone/stepsAnnotation.js' ),
+    //Score:    require( './annotations/standalone/scoreAnnotation.js' ),
+    Steps:    require( './annotations/standalone/stepsAnnotation.js' ),
     HexSteps: require( './annotations/standalone/hexStepsAnnotations.js' ),
-    //Drums:  require( './annotations/standalone/drumsAnnotation.js' ),
+    Drums:    require( './annotations/standalone/drumsAnnotation.js' ),
     //EDrums: require( './annotations/standalone/drumsAnnotation.js' )
   },
 
@@ -77905,7 +77979,7 @@ return Marker
 
 
 
-},{"./annotations/markup/arrayExpression.js":225,"./annotations/markup/binaryExpression.js":226,"./annotations/markup/callExpression.js":227,"./annotations/markup/identifier.js":228,"./annotations/markup/literal.js":229,"./annotations/markup/mapping.js":230,"./annotations/markup/tidal.js":231,"./annotations/markup/unaryExpression.js":232,"./annotations/standalone/hexStepsAnnotations.js":233,"./annotations/standalone/scoreAnnotation.js":234,"./annotations/standalone/stepsAnnotation.js":235,"./annotations/update/anonymousAnnotation.js":236,"./annotations/update/createBorderCycle.js":237,"./annotations/update/euclidAnnotation.js":238,"./annotations/update/lookupAnnotation.js":239,"./annotations/visitors.js":241,"./annotations/waveform.js":242,"acorn":140,"acorn-walk":138}],244:[function(require,module,exports){
+},{"./annotations/markup/arrayExpression.js":225,"./annotations/markup/binaryExpression.js":226,"./annotations/markup/callExpression.js":227,"./annotations/markup/identifier.js":228,"./annotations/markup/literal.js":229,"./annotations/markup/mapping.js":230,"./annotations/markup/tidal.js":231,"./annotations/markup/unaryExpression.js":232,"./annotations/standalone/drumsAnnotation.js":233,"./annotations/standalone/hexStepsAnnotations.js":234,"./annotations/standalone/stepsAnnotation.js":235,"./annotations/update/anonymousAnnotation.js":236,"./annotations/update/createBorderCycle.js":237,"./annotations/update/euclidAnnotation.js":238,"./annotations/update/lookupAnnotation.js":239,"./annotations/visitors.js":241,"./annotations/waveform.js":242,"acorn":140,"acorn-walk":138}],244:[function(require,module,exports){
 module.exports = function( Gibber, Environment ) {
   const rpad = function( value, pad ) {
     let out = value+''

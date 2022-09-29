@@ -1,6 +1,7 @@
+const Utility = require( '../utilities.js' )
 const $ = Utility.create
-
 module.exports = function( node, cm, track, objectName, state, cb ) {
+
   const Marker = Environment.codeMarkup // tsk tsk tsk global...
 
   // accomodate directly passing pattern for annotation instead of name, for Triggers
@@ -69,14 +70,12 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   }
 
   patternObject._onchange = () => {
-    //let delay = Utility.beatsToMs( 1,  Gibber.Scheduler.bpm )
-    //Gibber.Environment.animationScheduler.add( () => {
     const pos = track.markup.textMarkers.string.find()
-    marker.doc.replaceRange( patternObject.values.join(''), pos.from, pos.to )
-    track.markup.textMarkers.string = cm.markText( pos.from, pos.to )
-    //console.log( pos, track.markup.textMarkers.string )
-    mark( pos.from.line ) 
-    //}, delay ) 
+    if( pos !== undefined && pos !== null ) { 
+      marker.doc.replaceRange( patternObject.values.join(''), pos.from, pos.to )
+      track.markup.textMarkers.string = cm.markText( pos.from, pos.to )
+      mark( pos.from.line ) 
+    }
   }
 
   patternObject.update = update
