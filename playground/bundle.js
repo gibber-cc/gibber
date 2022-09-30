@@ -10997,14 +10997,14 @@ const Gibber = {
   },
 
   // XXX stop clock from being cleared.
-  clear() {
+  clear(shouldPrint = true) {
     for (let plugin of Gibber.plugins) {
       plugin.plugin.clear();
     }
 
     this.Seq.clear();
     this.Tidal.clear();
-    this.publish('clear');
+    this.publish('clear', shouldPrint);
   },
 
   onload() {},
@@ -11212,7 +11212,7 @@ const patternWrapper = function( Gibber ) {
     Gibberish = Gibber.Gibberish
   }
 
-  let PatternProto = Object.create( function(){} )
+  const PatternProto = Object.create( function(){} )
 
   // this prototype is somewhat limited, as we want to be able to add
   // .seq() methods to everything. This means that every pattern needs its own
@@ -11253,7 +11253,6 @@ const patternWrapper = function( Gibber ) {
           args = filter( args, this ) 
         } catch( e ) {
           console.error( e )
-          console.log( 'filter problem?' )
           console.log( `removing bad filter from pattern: ${filter.toString()}` ) 
           const idx = this.filters.indexOf( filter )
           this.filters.splice( idx, 1 )
@@ -11415,6 +11414,12 @@ const patternWrapper = function( Gibber ) {
     }
 
 
+    //if( Array.isArray( args ) ) {
+    //  if( args.patterns === undefined ) {
+    //    args.patterns = []
+    //  }
+    //  args.patterns.push( fnc )
+    //} 
 
     let out 
     const DNR = -987654321 
@@ -12206,6 +12211,9 @@ module.exports = function( Gibber ) {
       __values.inspect = values.inspect.bind( values )
       if( __values.randomFlag !== undefined ) values.randomFlag = __values.randomFlag
       if( __values.randomArgs !== undefined ) values.randomArgs = __values.randomArgs
+      
+      __values.addPattern( values )
+     
     } else if( typeof __values === 'object' && __values.type==='gen' ) {
       props.values.addFilter = values.addFilter.bind( values )
       props.values.removeFilter = values.removeFilter.bind( values )
@@ -12249,6 +12257,8 @@ module.exports = function( Gibber ) {
       __timings.addFilter = timings.addFilter.bind( timings )
       if( __timings.randomFlag !== undefined ) timings.randomFlag = __timings.randomFlag
       if( __timings.randomArgs !== undefined ) timings.randomArgs = __timings.randomArgs
+
+      __timings.addPattern( timings )
     }
     if( autotrig === false ) {
       timings.output = { time:'time', shouldExecute:0 }
@@ -79885,11 +79895,11 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
   for( let prop of newProps ) {
     let obj = proxiedObj[ prop ]
     const isObject = obj !== undefined && typeof obj === 'object'
-    if( !isObject ) return
+    if( !isObject ) continue
 
     const shouldProxyUgen  = obj.__wrapped__ !== undefined
     const shouldProxyArray = !shouldProxyUgen && Array.isArray( obj )
-
+    
     if( shouldProxyUgen ) {
       proxyUgen( obj, prop, proxiedObj, environment, Gibber )
     }else if( shouldProxyArray ) {

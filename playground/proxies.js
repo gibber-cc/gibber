@@ -138,11 +138,11 @@ const createProxies = function( pre, post, proxiedObj, environment, Gibber ) {
   for( let prop of newProps ) {
     let obj = proxiedObj[ prop ]
     const isObject = obj !== undefined && typeof obj === 'object'
-    if( !isObject ) return
+    if( !isObject ) continue
 
     const shouldProxyUgen  = obj.__wrapped__ !== undefined
     const shouldProxyArray = !shouldProxyUgen && Array.isArray( obj )
-
+    
     if( shouldProxyUgen ) {
       proxyUgen( obj, prop, proxiedObj, environment, Gibber )
     }else if( shouldProxyArray ) {

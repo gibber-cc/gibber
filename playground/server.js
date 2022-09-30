@@ -1,5 +1,6 @@
 const WebSocket         = require( 'ws' ),
       fs                = require( 'fs' ),
+      cors              = require( 'cors' ),
       http              = require( 'http' ),
       utils             = require( 'y-websocket/bin/utils.js' ),
       express           = require( 'express' ),
@@ -9,6 +10,8 @@ const WebSocket         = require( 'ws' ),
       port              = process.env.SERVER_PORT || 9080 
 
 require( 'dotenv' ).config()
+
+app.use( cors() )
 
 app.use( express.static( './', { 
   setHeaders: function(res, path) {
