@@ -8,13 +8,13 @@ module.exports = function( Marker ) {
   const handleMapping = function( node, state ) {
     if( node.type === 'ExpressionStatement' ) {
       const expression = node.expression
-      if( expression.right.type === 'CallExpression' ) {
+      if( expression.right !== undefined && expression.right.type === 'CallExpression' ) {
         // potential call to .out
         if( expression.right.callee.type === 'MemberExpression' ) {
           // verified that it is a member expression
           const memberExpr = expression.right.callee
           if( memberExpr.property.name === 'out' ) {
-            console.log( 'FOUND AN OUT / MAPPING', memberExpr )
+            //console.log( 'FOUND AN OUT / MAPPING', memberExpr )
             const mapping = Marker.patternMarkupFunctions.Mapping( expression.left, memberExpr, node, state )
           }
         }
@@ -30,9 +30,10 @@ module.exports = function( Marker ) {
       state.push( strip( node.name ) )
     },
     ArrowFunctionExpression( expr, state, cb ) {
-      console.log( expr.right.body.body )
-      for( let node of expr.right.body.body ) {
-        handleMapping( node, state )
+      if( expr.right.body.body !== undefined ) {
+        for( let node of expr.right.body.body ) {
+          handleMapping( node, state )
+        }
       }
     },
     FunctionExpression( node, state, cb ) {
