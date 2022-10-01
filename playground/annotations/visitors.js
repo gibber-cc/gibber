@@ -138,6 +138,7 @@ module.exports = function( Marker ) {
               //w.target = leftName
             }
           }
+          state.push( leftName )
 
           cb( right, state )
 
@@ -181,11 +182,16 @@ module.exports = function( Marker ) {
           
         let count = 1
         obj = window[ state[0] ]
+        if( obj === undefined ) return
+
         while( state[ count ] !== 'tidal' ) {
           obj = obj[ state[ count++ ] ]
         }
 
-        const tidal = obj.tidals[ seqNumber ]
+        // handle both syn.note.tidal and syn.tidal
+        const tidal = obj.tidals !== undefined 
+          ? obj.tidals[ seqNumber ]
+          : obj[ obj.__seqDefault ].tidals[ seqNumber ]
 
         Marker.markPatternsForTidal( tidal, node.arguments, state, cb, node, 0 )
 
