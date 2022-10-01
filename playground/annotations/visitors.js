@@ -182,10 +182,17 @@ module.exports = function( Marker ) {
           
         let count = 1
         obj = window[ state[0] ]
-        if( obj === undefined ) return
+        let skipIterateState = false
+        if( obj === undefined ) {
+          obj = window[ state[1] ]
+          if( obj === undefined ) return
+          skipIterateState = true
+        }
 
-        while( state[ count ] !== 'tidal' ) {
-          obj = obj[ state[ count++ ] ]
+        if( !skipIterateState ) {
+          while( state[ count ] !== 'tidal' ) {
+            obj = obj[ state[ count++ ] ]
+          }
         }
 
         // handle both syn.note.tidal and syn.tidal
@@ -232,6 +239,17 @@ module.exports = function( Marker ) {
           // first, count the number of calls to .seq in this expression
           const seqCount = state.reduce( (count, value) => count + (value==='seq'? 1 : 0 ), 0 )
 
+          // if seqCount === 1, form is s = Synth('bleep').seq( [0,1,2,3], 1/4 )
+          if( seqCount === 1 && window[ state[1] ] !== undefined ) {
+            let tmp = [ state[1], window[ state[1] ].__seqDefault, 'seq' ]
+            let seq = Marker.getObj( tmp, true, seqNumber )
+            tmp.cm = state.cm
+            const callNodes = state.nodes.filter( v => v.type === 'CallExpression' )
+            Marker.markPatternsForSeq( seq, callNodes[0].arguments, tmp, cb, callNodes[0], seqNumber )
+
+            return
+
+          }
           // next, loop through our call expressions and pass in the appropriate note. the
           // nodes are added in reverse order to the listing of objects/properties/seq in state,
           // so we pop each node out of our node stack.
