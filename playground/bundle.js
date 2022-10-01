@@ -6411,7 +6411,7 @@ module.exports = function( Audio ) {
             const path = json.previews[ 'preview-hq-mp3' ]
             
             sampler.loadSample( path )
-            //console.log( 'loading:', path )
+            console.log( 'freesound now loading:', path )
           }) 
       }else{
         if( Audio.Gibberish.mode === 'worklet' ) {
@@ -7198,7 +7198,7 @@ const Instruments = {
           // use monophonic version if voice count is 1 or less
           let name
           if( i > 1 && instrumentName !== 'Multisampler' ) {
-            name = instrumentName =  'Poly'+instrumentName
+            name = 'Poly'+instrumentName
             if( name === 'PolyMonosynth' ) name = 'PolyMono' 
           }else{
             name = instrumentName
@@ -10109,9 +10109,11 @@ const Ugen = function( gibberishConstructor, description, Audio, shouldUsePool =
           obj[ methodName ].__tidal = s
         }
 
+
         // return object for method chaining
         return obj
-      } 
+      }
+      obj.__seqDefault = seqDefaults[ obj.name ] || 'trigger'
     }
     //console.log( `%c${description.name} created.`, 'color:white;background:#009' )
     Audio.publish( 'new ugen', description.name + ' created'  )
@@ -75992,6 +75994,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   // the location of the node containing the drums sequence depends on whether
   // or not a call to .connect() is added to the Drums constructor. 
   const drumsStringNode = node.callee.object !== undefined ? node.callee.object.arguments[0] : node.arguments[0]
+  if( drumsStringNode === undefined ) return
 
   track.markup.textMarkers[ 'pattern' ] = []
   track.markup.textMarkers[ 'pattern' ].children = []
@@ -76546,8 +76549,11 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
   let out
   if( window.Environment.useComments === true ) {
     let val ='/* ' + patternObject.values.join('')  + ' */',
-        pos = marker.find(),
-        end = Object.assign( {}, pos.to ),
+        pos = marker.find()
+    
+    if( pos === undefined ) return 
+
+    let end = Object.assign( {}, pos.to ),
         annotationStartCh = pos.from.ch + 3,
         annotationEndCh   = annotationStartCh + 1,
         memberAnnotationStart   = Object.assign( {}, pos.from ),
@@ -77031,6 +77037,7 @@ module.exports = function( Marker ) {
               //w.target = leftName
             }
           }
+          state.push( leftName )
 
           cb( right, state )
 
@@ -77074,11 +77081,23 @@ module.exports = function( Marker ) {
           
         let count = 1
         obj = window[ state[0] ]
-        while( state[ count ] !== 'tidal' ) {
-          obj = obj[ state[ count++ ] ]
+        let skipIterateState = false
+        if( obj === undefined ) {
+          obj = window[ state[1] ]
+          if( obj === undefined ) return
+          skipIterateState = true
         }
 
-        const tidal = obj.tidals[ seqNumber ]
+        if( !skipIterateState ) {
+          while( state[ count ] !== 'tidal' ) {
+            obj = obj[ state[ count++ ] ]
+          }
+        }
+
+        // handle both syn.note.tidal and syn.tidal
+        const tidal = obj.tidals !== undefined 
+          ? obj.tidals[ seqNumber ]
+          : obj[ obj.__seqDefault ].tidals[ seqNumber ]
 
         Marker.markPatternsForTidal( tidal, node.arguments, state, cb, node, 0 )
 
@@ -77119,6 +77138,17 @@ module.exports = function( Marker ) {
           // first, count the number of calls to .seq in this expression
           const seqCount = state.reduce( (count, value) => count + (value==='seq'? 1 : 0 ), 0 )
 
+          // if seqCount === 1, form is s = Synth('bleep').seq( [0,1,2,3], 1/4 )
+          if( seqCount === 1 && window[ state[1] ] !== undefined ) {
+            let tmp = [ state[1], window[ state[1] ].__seqDefault, 'seq' ]
+            let seq = Marker.getObj( tmp, true, seqNumber )
+            tmp.cm = state.cm
+            const callNodes = state.nodes.filter( v => v.type === 'CallExpression' )
+            Marker.markPatternsForSeq( seq, callNodes[0].arguments, tmp, cb, callNodes[0], seqNumber )
+
+            return
+
+          }
           // next, loop through our call expressions and pass in the appropriate note. the
           // nodes are added in reverse order to the listing of objects/properties/seq in state,
           // so we pop each node out of our node stack.
