@@ -18,6 +18,7 @@ with "regular" 3D graphics libraries.
 // this means adding and subtracting shapes. 
 // For example, we can render a box:
 
+Graphics.quality = 'low' // or 'med' or 'high
 b = Box().render()
 
 // we can render a sphere...

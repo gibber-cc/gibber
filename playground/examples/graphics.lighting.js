@@ -20,6 +20,11 @@ its color.
 
 ** __--__--__--__--__--__--__--__*/
 
+// we'll use high quality graphics for
+// this tutorial with no animation
+Graphics.quality = 'high'
+Graphics.animate = false
+
 Union2(
   Sphere( 1 ).translate(-1.25),
   Sphere( 1 )
@@ -27,7 +32,7 @@ Union2(
     .material( 'normal' ),
   Plane()
 )
-.render(10,false)
+.render()
 
 /* __--__--__--__--__--__--__--__--
 
@@ -50,7 +55,7 @@ Union2(
     .material( 'red' ),
   Plane().material( 'yellow' )
 )
-.render(10,false)
+.render()
 
 /* __--__--__--__--__--__--__--__--
 
@@ -74,7 +79,7 @@ Union2(
     .translate(1)
     .material( 'red' ),
   Plane().material( 'yellow' )
-).render(10,false)
+).render()
 
 
 /* __--__--__--__--__--__--__--__--
@@ -100,7 +105,7 @@ Union2(
   Sphere( 1 ).material( mat1 ),
   Plane().material( mat1 )
 )
-.render(10,false)
+.render()
 
 /* __--__--__--__--__--__--__--__--
 
@@ -130,7 +135,7 @@ Union2(
   Sphere( 1 ).material( mat1 ),
   Plane().material( mat2 )
 )
-.render(10,false)
+.render()
 
 /* __--__--__--__--__--__--__--__--
 
@@ -151,7 +156,7 @@ Union2(
   Sphere( 1 ).material( mat1 ),
   Plane().material( mat2 )
 )
-  .render(10,false)
+  .render()
 
 /* __--__--__--__--__--__--__--__--
 
@@ -178,7 +183,7 @@ Union2(
     .material( 'red' ),
   Plane().material( 'yellow' )
 )
-  .render(10,false)
+.render()
 
 /* __--__--__--__--__--__--__--__--
  *
@@ -199,4 +204,4 @@ Repeat(
   Sphere( .25 ).material( mat1 ),
   Vec3( .75)
 )
-.render(10,false)
+.render()

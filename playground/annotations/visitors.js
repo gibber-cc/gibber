@@ -37,7 +37,7 @@ module.exports = function( Marker ) {
       }
     },
     FunctionExpression( node, state, cb ) {
-      console.log( 'function body:', node.body.body )
+      //console.log( 'function body:', node.body.body )
     },
     AssignmentExpression( expression, state, cb ) {
       // first check if lefthand side has a mapping, if so remove

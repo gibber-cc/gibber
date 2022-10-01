@@ -13465,6 +13465,7 @@ const Graphics = {
   animate: true,
   camera: null,
   initialized: false,
+  __ruleIdx: null,
   __doNotExport: ['export', 'init', 'run', 'make'],
   __running: false,
   __scene: [],
@@ -13586,18 +13587,19 @@ const Graphics = {
 
     this.clear = () => {
       Marching.clear();
-      /*
-      const sheet = window.document.styleSheets[ window.document.styleSheets.length - 1 ]
-      if( sheet.cssRules.length > 0 ) {
-        sheet.deleteRule(
-          sheet.cssRules.length - 1
-        )
+      const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
+
+      if (sheet.cssRules.length > 0 && Graphics.__ruleIdx !== null) {
+        sheet.deleteRule(Graphics.__ruleIdx);
+        Graphics.__ruleIdx = null;
       }
-      */
 
       if (typeof window.onframe === 'function') {
         window.onframe = function () {};
       }
+
+      this.background();
+      this.fog(0, Marching.vectors.Vec3(0), false);
     };
 
     Gibber.subscribe('clear', this.clear);
@@ -13658,11 +13660,15 @@ const Graphics = {
     };
 
     Graphics.__onrender.push(() => {
-      Graphics.createProperty(obj, 'color', Graphics.scene.postprocessing[0].color, Graphics.scene.postprocessing[0]);
+      if (Graphics.scene.postprocessing[0]) {
+        Graphics.createProperty(obj, 'color', Graphics.scene.postprocessing[0].color, Graphics.scene.postprocessing[0]);
+      }
     });
 
     Graphics.__onrender.push(() => {
-      Graphics.createProperty(obj, 'amount', Graphics.scene.postprocessing[0].amount, Graphics.scene.postprocessing[0]);
+      if (Graphics.scene.postprocessing[0]) {
+        Graphics.createProperty(obj, 'amount', Graphics.scene.postprocessing[0].amount, Graphics.scene.postprocessing[0]);
+      }
     });
 
     return obj;
@@ -13773,7 +13779,7 @@ const Graphics = {
 
           if (Gibber.Environment) {
             const sheet = window.document.styleSheets[window.document.styleSheets.length - 1];
-            sheet.insertRule('.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', sheet.cssRules.length);
+            Graphics.__ruleIdx = sheet.insertRule('.CodeMirror pre { background-color: rgba( 0,0,0,.75 ) !important; }', sheet.cssRules.length);
           }
 
           return instance;
@@ -76936,7 +76942,7 @@ module.exports = function( Marker ) {
       }
     },
     FunctionExpression( node, state, cb ) {
-      console.log( 'function body:', node.body.body )
+      //console.log( 'function body:', node.body.body )
     },
     AssignmentExpression( expression, state, cb ) {
       // first check if lefthand side has a mapping, if so remove
