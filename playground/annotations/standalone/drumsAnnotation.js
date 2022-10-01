@@ -10,6 +10,7 @@ module.exports = function( node, cm, track, objectName, state, cb ) {
   // the location of the node containing the drums sequence depends on whether
   // or not a call to .connect() is added to the Drums constructor. 
   const drumsStringNode = node.callee.object !== undefined ? node.callee.object.arguments[0] : node.arguments[0]
+  if( drumsStringNode === undefined ) return
 
   track.markup.textMarkers[ 'pattern' ] = []
   track.markup.textMarkers[ 'pattern' ].children = []
