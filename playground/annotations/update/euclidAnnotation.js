@@ -6,8 +6,11 @@ module.exports = ( patternObject, marker, className, cm, track, patternNode, Mar
   let out
   if( window.Environment.useComments === true ) {
     let val ='/* ' + patternObject.values.join('')  + ' */',
-        pos = marker.find(),
-        end = Object.assign( {}, pos.to ),
+        pos = marker.find()
+    
+    if( pos === undefined ) return 
+
+    let end = Object.assign( {}, pos.to ),
         annotationStartCh = pos.from.ch + 3,
         annotationEndCh   = annotationStartCh + 1,
         memberAnnotationStart   = Object.assign( {}, pos.from ),
